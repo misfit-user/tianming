@@ -108,6 +108,7 @@ function checkEq(actual, expected, msg) {
 load('tm-engine-constants.js');
 load('tm-faction-membership.js');
 load('tm-military.js');
+load('tm-battle-contract.js');
 load('tm-region-enrich.js');
 load('tm-char-full-schema.js');
 load('tm-rel-graph.js');
@@ -127,7 +128,7 @@ check(context.DA && context.DA.armies, 'DataAccess armies facade missing');
 
 const endturnSource = readEndturnSource();
 check(endturnSource.indexOf('MilitarySystems.getMilitarySystems(GM)') >= 0, 'sc18 should inject militarySystems catalog context');
-check(endturnSource.indexOf('p18.battleResult') >= 0 && endturnSource.indexOf('MilitarySystems.applyBattleResult(p18.battleResult') >= 0, 'sc18 should apply structured battleResult');
+check(endturnSource.indexOf('MilitarySystems.consumeBattleResults(p18, GM)') >= 0 && typeof MS.consumeBattleResults === 'function', 'sc18 should apply structured single/multiple battle results through the shared contract');
 check(endturnSource.indexOf('affectedArmies:[{armyId,side,loss,moraleDelta,loyaltyDelta,state,commanderFate}]') >= 0, 'sc18 should request affectedArmies');
 check(endturnSource.indexOf('_battleResultCasualtyFactions') >= 0, 'sc18 should track battleResult casualty factions before faction action writeback');
 check(endturnSource.indexOf('_skipCasualtyWriteback') >= 0, 'sc18 should skip duplicated faction casualties already covered by battleResult');

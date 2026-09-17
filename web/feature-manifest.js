@@ -8,6 +8,14 @@
   root.TM.Features.registerManifest({
     version: 1,
     features: {
+      reliefGovernance: {
+        scripts: ['tm-relief-governance.js?v=20260909-channels', 'tm-relief-governance-ui.js?v=20260909-hide-register'],
+        dependsOn: [],
+        platform: 'any',
+        loadPolicy: 'manual-inspection-only',
+        sideEffects: 'none',
+        provides: ['TM.ReliefGovernance', 'TM.ReliefGovernanceUI']
+      },
       browserTestHarness: {
         scripts: ['tm-test-harness.js?v=2026042714'],
         dependsOn: [],
@@ -41,14 +49,15 @@
       },
       formalMapLabels: {
         scripts: [
-          'tm-map-label-geo.js?v=20260705-noframe',
-          'tm-map-label-collide.js?v=20260705-noframe'
+          'tm-map-label-geo.js?v=20260915-zoom-preload',
+          'tm-map-realm-layout.js?v=20260915-zoom-preload',
+          'tm-map-label-collide.js?v=20260915-zoom-preload'
         ],
         dependsOn: [],
         platform: 'any',
         loadPolicy: 'first-formal-map-render',
         sideEffects: 'none',
-        provides: ['TMMapLabelGeo', 'TMMapLabelCollide'],
+        provides: ['TMMapLabelGeo', 'TMMapRealmLayout', 'TMMapLabelCollide'],
         init: function () {
           var map = root.TMFormalBridge && root.TMFormalBridge.map;
           if (map && typeof map.onMapLabelFeatureReady === 'function') map.onMapLabelFeatureReady();

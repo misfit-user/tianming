@@ -1,0 +1,170 @@
+{
+  "auditBaseline": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+  "testedHead": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+  "mode": "checkout-function-extraction",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "fullModuleBlob": "bb007ed1a4f8152866ccc03f335ebc75bf1ee364",
+  "generatedAt": "2026-09-07T06:32:37.579Z",
+  "boundaries": [
+    "Not Electron E2E",
+    "Mocked network and renderer dependencies",
+    "Filesystem failures are injected",
+    "No real accounts or user saves accessed",
+    "NOT_REPRODUCED is not proof of correctness"
+  ],
+  "summary": {
+    "probes": 11,
+    "defectsPresent": 11,
+    "controlsPassed": 2,
+    "harnessErrors": 0
+  },
+  "results": [
+    {
+      "id": "CONTROL-01",
+      "label": "stable keys and turn validation reject known aliases",
+      "status": "CONTROL_PASS",
+      "evidence": {
+        "ok": true,
+        "rejected": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "id": "CONTROL-02",
+      "label": "same turn transaction publish is idempotent",
+      "status": "CONTROL_PASS",
+      "evidence": {
+        "ok": true,
+        "recovered": true
+      }
+    },
+    {
+      "id": "TM-AUD-01",
+      "label": "different timelines overwrite the same per-turn bundle",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "sameFinalPath": true,
+        "branchAtOriginalPath": "B",
+        "oldRecoveryError": "回合分卷暂存记录不存在或不匹配"
+      }
+    },
+    {
+      "id": "TM-AUD-02",
+      "label": "workshop overwrite loses old package when copying fails",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "error": "Injected copy ENOSPC",
+        "oldPreserved": false,
+        "partialNewTree": true,
+        "indexWritten": false
+      }
+    },
+    {
+      "id": "TM-AUD-03a",
+      "label": "stale account/me combines a new token with old account identity",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "tokenOwner": "B",
+        "displayedUser": "A"
+      }
+    },
+    {
+      "id": "TM-AUD-03b",
+      "label": "late login response restores session after logout completed",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "loggedOutBeforeReply": true,
+        "loggedInAfterStaleReply": true
+      }
+    },
+    {
+      "id": "TM-AUD-04",
+      "label": "manual save callback mutates a different live world",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "liveWorld": "world-B",
+        "liveSaveName": "SAVE-FOR-A",
+        "enterGameCalls": 1
+      }
+    },
+    {
+      "id": "TM-AUD-05",
+      "label": "legacy save string loads but list-style object is rejected",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "stringReferenceWorks": true,
+        "objectReferenceError": "存档标识非法"
+      }
+    },
+    {
+      "id": "TM-AUD-06a",
+      "label": "CI accepts an empty report after runner failure",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "exitCode": 0,
+        "messages": [
+          "[ci-smokes] PASS — 共 0 个 · 白名单豁免 0 个"
+        ]
+      }
+    },
+    {
+      "id": "TM-AUD-06b",
+      "label": "CI waives an unrelated syntax failure by file name",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "exitCode": 0,
+        "messages": [
+          "[ci-smokes] 豁免(缺资产白名单): smoke-audio-bgm.js",
+          "[ci-smokes] PASS — 共 1 个 · 白名单豁免 1 个"
+        ]
+      }
+    },
+    {
+      "id": "TM-AUD-07",
+      "label": "network predicate misses hexadecimal IPv4-mapped loopback",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "dottedMappedBlocked": true,
+        "hexMappedBlocked": false,
+        "literalV4Blocked": true,
+        "scope": "predicate only; no DNS/TLS/Electron exploitation attempted"
+      }
+    },
+    {
+      "id": "TM-AUD-08",
+      "label": "export write failure destroys an existing backup payload",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "reportedFailure": true,
+        "originalPreserved": false,
+        "resultingBytes": 1
+      }
+    },
+    {
+      "id": "TM-AUD-09",
+      "label": "saveToSlot loses both success and failure return values",
+      "status": "DEFECT_PRESENT",
+      "evidence": {
+        "defect": true,
+        "successResult": "undefined",
+        "failureResult": "undefined"
+      }
+    }
+  ]
+}

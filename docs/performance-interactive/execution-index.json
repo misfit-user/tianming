@@ -1,0 +1,1909 @@
+[
+  {
+    "label": "interactive-profile-before",
+    "command": [
+      "node",
+      "scripts/perf/inspect-electron.cjs",
+      "--temp-root",
+      "E:/tianming-perf-temp",
+      "--cpu-profile"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:33:14.775Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 560498.3037,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-profile-before-7748ff9d-68e8-4b7e-a1fa-0fd21bd70a66",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "f2c5910aa94a83424b0500d4738020bbef745888a7bc1fac165ac16a009cc443",
+        "exportedTextSha256": "209ab42644de852b3542e784c2b6801c080aaf3a737949055ab60403639e00f2",
+        "key": [
+          "interactive-profile-before-7748ff9d-68e8-4b7e-a1fa-0fd21bd70a66",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-profile-before-7748ff9d-68e8-4b7e-a1fa-0fd21bd70a66",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "text-bridge-red",
+    "command": [
+      "node",
+      "web/scripts/smoke-autosave-text-bridge.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:45:13.678Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "3142b295e0d0aa0367dcf4b60e0c5359b7eb57b39695ceb7e6500396f0b579ac",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "0277d54bffdba6b4348b0c0eabc9d61c94dc2254dadbcd342d09c4122bf8fb72",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 281.07090000000005,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\text-bridge-red-dd6d6cc4-5671-42e1-a076-01814404aede",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "text-bridge-red-dd6d6cc4-5671-42e1-a076-01814404aede",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "7292e070bc8e5e36c28e2dd69d5f05f75e7c5f420584f44b84258ecc6e340acc",
+        "exportedTextSha256": "c52daeed0bc7c6d7ca3b60103bf7d99a4a09b9ae27bf2aecc68c538c7f35ec84",
+        "key": [
+          "text-bridge-red-dd6d6cc4-5671-42e1-a076-01814404aede",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "text-bridge-green",
+    "command": [
+      "node",
+      "web/scripts/smoke-autosave-text-bridge.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:45:59.785Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "3142b295e0d0aa0367dcf4b60e0c5359b7eb57b39695ceb7e6500396f0b579ac",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "0277d54bffdba6b4348b0c0eabc9d61c94dc2254dadbcd342d09c4122bf8fb72",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 216.21770000000004,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\text-bridge-green-d70adcb7-2f38-4819-b478-ee7b2f4f66b9",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "c5002e8d3375394a27bfff9f2ec436ea5e6bb619cf16ca10db251692bdf02067",
+        "exportedTextSha256": "c5002e8d3375394a27bfff9f2ec436ea5e6bb619cf16ca10db251692bdf02067",
+        "key": [
+          "text-bridge-green-d70adcb7-2f38-4819-b478-ee7b2f4f66b9",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "text-bridge-green-d70adcb7-2f38-4819-b478-ee7b2f4f66b9",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-paired-pilot",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "E:/tianming-perf-temp/baseline-interactive-54d1",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:46:28.427Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "3142b295e0d0aa0367dcf4b60e0c5359b7eb57b39695ceb7e6500396f0b579ac",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "0277d54bffdba6b4348b0c0eabc9d61c94dc2254dadbcd342d09c4122bf8fb72",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 252941.1889,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-paired-pilot-3be7a754-3094-4a8e-94ad-a0b2f1fe8acf",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "6f3b83164ab12b4c703573a0c4417a67870cb95bc26f253a01deb083f8bc732d",
+        "exportedTextSha256": "75759f7b7b7b8388c8a4ba2c3f62d0a3182908fd78c24b56838cc6b4280c5c87",
+        "key": [
+          "autosave-paired-pilot-3be7a754-3094-4a8e-94ad-a0b2f1fe8acf",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-paired-pilot-3be7a754-3094-4a8e-94ad-a0b2f1fe8acf",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-shaosong-pilot",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "E:/tianming-perf-temp/baseline-interactive-54d1",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--scenario",
+      "sc-jianyan1-1127-shaosong",
+      "--main-profile",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:53:29.795Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "83270216fc71b6eee3373eac97bccc50c2ea438a603e5b034b5cb0cb713228d4",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 101335.86020000001,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-shaosong-pilot-caf4053e-8776-4e6a-ba09-c543871d4470",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "c44a07a9ffbc8c60607a85df68deb4751fd5d136e4b6ce6b833b2836139cb9cc",
+        "exportedTextSha256": "2398cfe002005a7a5b235da73c944452eff9f3f3de84c2c07af631e2b875f720",
+        "key": [
+          "autosave-shaosong-pilot-caf4053e-8776-4e6a-ba09-c543871d4470",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-shaosong-pilot-caf4053e-8776-4e6a-ba09-c543871d4470",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-shaosong-pilot2",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "E:/tianming-perf-temp/baseline-interactive-54d1",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--scenario",
+      "sc-jianyan1-1127-shaosong",
+      "--main-profile",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:59:34.329Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "b2097224abfe7d12891d0f7df18babf825447b0ad4bab80ce1b0f32f86fb1cf0",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 260784.68209999998,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-shaosong-pilot2-5b15e399-0686-4b13-88a6-f496b64a6a74",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "355938a405ae83883ab014b66a4f49552f7fe4e29b571d692442abc601b490c3",
+        "exportedTextSha256": "204319af3d871c57141004a696e39082b38fa7f4f60b25a6ef88c80ba771a4e4",
+        "key": [
+          "autosave-shaosong-pilot2-5b15e399-0686-4b13-88a6-f496b64a6a74",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-shaosong-pilot2-5b15e399-0686-4b13-88a6-f496b64a6a74",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-shaosong-pilot3",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "E:/tianming-perf-temp/baseline-interactive-54d1",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--scenario",
+      "sc-jianyan1-1127-shaosong",
+      "--main-profile",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:05:18.779Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 242118.1569,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-shaosong-pilot3-a402a55c-da5d-4de9-b208-567d6ae7efbd",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "b7def9f1b69039956fa0579f72cdf8a0a27d85be30e31de20ff11d7aee2da4f5",
+        "exportedTextSha256": "5833c609505a7294ae66940a862d0dc371369965ddc019d6757ff76489513304",
+        "key": [
+          "autosave-shaosong-pilot3-a402a55c-da5d-4de9-b208-567d6ae7efbd",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-shaosong-pilot3-a402a55c-da5d-4de9-b208-567d6ae7efbd",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-save-regression",
+    "command": [
+      "node",
+      "web/scripts/smoke-desktop-autosave-committed-world.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:07:40.376Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 504.08169999999996,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-save-regression-c94d7e61-16a4-408c-9084-1b09f8b76ac4",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "92223f59ac218454ae1eca256bd521c020f27132403aac72b2017ead49947f60",
+        "exportedTextSha256": "92223f59ac218454ae1eca256bd521c020f27132403aac72b2017ead49947f60",
+        "key": [
+          "interactive-save-regression-c94d7e61-16a4-408c-9084-1b09f8b76ac4",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-save-regression-c94d7e61-16a4-408c-9084-1b09f8b76ac4",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-runtime-save",
+    "command": [
+      "node",
+      "web/scripts/smoke-runtime-save-consistency.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:12:59.617Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 652.1954999999998,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-runtime-save-a992159b-13ba-4e54-b5b6-3b777a9a29c1",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "d28c78a9a09b16423438ef4e97da9752a798b1c3887f43ea339fffb977aaf2cd",
+        "exportedTextSha256": "d28c78a9a09b16423438ef4e97da9752a798b1c3887f43ea339fffb977aaf2cd",
+        "key": [
+          "interactive-runtime-save-a992159b-13ba-4e54-b5b6-3b777a9a29c1",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e2f9b4436f0f17f265d8ce9129d18fa49252ffd826bec6559b30226327ace93f",
+        "exportedTextSha256": "654632a1cce120e2b92678952d1d32193df9e3fc1457cad4cfa6af8037996518",
+        "key": [
+          "interactive-runtime-save-a992159b-13ba-4e54-b5b6-3b777a9a29c1",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-same-volume-pilot",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "<user-profile>/Desktop/tianming-perf-interactive-baseline",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--scenario",
+      "sc-jianyan1-1127-shaosong",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:13:23.770Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "a274cd06c48264b0f0cce3c9556db8a2dc539809515191606ef4f05913b1b8b1",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 416572.473,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-same-volume-pilot-1e4b66fd-0e95-4532-a359-a6328ca3caa8",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "381b7282f75e64f2172597bc0961c777cff856229361668b03aed0c0c5b529df",
+        "exportedTextSha256": "73aba7cf08635e8c98f47f8fa2c6eee2cf1e0b1a12a847d9b02e598d0d114dac",
+        "key": [
+          "autosave-same-volume-pilot-1e4b66fd-0e95-4532-a359-a6328ca3caa8",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-same-volume-pilot-1e4b66fd-0e95-4532-a359-a6328ca3caa8",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-text-final",
+    "command": [
+      "node",
+      "web/scripts/smoke-autosave-text-bridge.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:14:18.483Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 348.61069999999995,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-text-final-3e5db38c-0c2b-490a-8b40-677fb5b3ccb0",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "4c70d764324431084fdd0866c892c3c9fbed005e38bbb208fb61fa0d7f3c54c4",
+        "exportedTextSha256": "4c70d764324431084fdd0866c892c3c9fbed005e38bbb208fb61fa0d7f3c54c4",
+        "key": [
+          "interactive-text-final-3e5db38c-0c2b-490a-8b40-677fb5b3ccb0",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-text-final-3e5db38c-0c2b-490a-8b40-677fb5b3ccb0",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-profile-after",
+    "command": [
+      "node",
+      "scripts/perf/inspect-electron.cjs",
+      "--temp-root",
+      "E:/tianming-perf-temp",
+      "--cpu-profile"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:21:11.845Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 504450.0328,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-profile-after-758c125a-265c-4ddf-85f6-eae849ec27e9",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "fa64f6c43a9da42d8929d8e1740f55a3586016b65317cdce11a3aba043af6550",
+        "exportedTextSha256": "5de7839c27f9eabf7bcb054d6cc570a10d2b240d6c4b81e511887bdab27aecd1",
+        "key": [
+          "interactive-profile-after-758c125a-265c-4ddf-85f6-eae849ec27e9",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-profile-after-758c125a-265c-4ddf-85f6-eae849ec27e9",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-runtime-final",
+    "command": [
+      "node",
+      "web/scripts/smoke-runtime-save-consistency.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:28:41.709Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 844.5885999999998,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-runtime-final-427b6f49-ae18-4e4e-8b77-b82b7789be3b",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "ab409ecbb332f952b7cd1b475e9d5303f70d792ac593c16ce12a6c70d14abf86",
+        "exportedTextSha256": "ab409ecbb332f952b7cd1b475e9d5303f70d792ac593c16ce12a6c70d14abf86",
+        "key": [
+          "interactive-runtime-final-427b6f49-ae18-4e4e-8b77-b82b7789be3b",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "a49b8d97a8783c4b8302e5650d3a451f9b1e9a67a8927c7e3a09376213bab9ac",
+        "exportedTextSha256": "731a95b58943237d5279be192b201ecfe721a814a515b8ad49357473be82d458",
+        "key": [
+          "interactive-runtime-final-427b6f49-ae18-4e4e-8b77-b82b7789be3b",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "autosave-tianqi-paired",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "<user-profile>/Desktop/tianming-perf-interactive-baseline",
+      "--repeats",
+      "1",
+      "--autosave",
+      "--scenario",
+      "sc-tianqi7-1627",
+      "--samples",
+      "E:/tianming-perf-temp/tm-perf-round1-Lhzt3N/shared-samples",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:30:31.604Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "78bf100183cb6435563fd799ba96165383072c80edce8db5995ae9b3a3cd2acf",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 261087.4677,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\autosave-tianqi-paired-605c3fa2-6aad-4d9d-b16a-bdf341fec093",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "54cd58f8d406a655db058633c57bbd2289e24492d6aa85ad88395c6290f25ca8",
+        "exportedTextSha256": "611a9da8b31e3fca857f94555ac568e3caed4a7ad45bd79594cf9e202bade333",
+        "key": [
+          "autosave-tianqi-paired-605c3fa2-6aad-4d9d-b16a-bdf341fec093",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "autosave-tianqi-paired-605c3fa2-6aad-4d9d-b16a-bdf341fec093",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-startup-sync",
+    "command": [
+      "node",
+      "web/scripts/build-startup-phase-manifest.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:35:49.955Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 614.394,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-startup-sync-4b95ddd0-5b02-46b3-9e1b-929a56707afd",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+        "exportedTextSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+        "key": [
+          "interactive-startup-sync-4b95ddd0-5b02-46b3-9e1b-929a56707afd",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-startup-sync-4b95ddd0-5b02-46b3-9e1b-929a56707afd",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-official-sync",
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:35:55.222Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 6024.554300000001,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-official-sync-c4cbc785-c40a-4b74-b5e8-cf849004ab21",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+        "exportedTextSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+        "key": [
+          "interactive-official-sync-c4cbc785-c40a-4b74-b5e8-cf849004ab21",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-official-sync-c4cbc785-c40a-4b74-b5e8-cf849004ab21",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-electron-final",
+    "command": [
+      "node",
+      "scripts/verify-electron-bridge.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:36:07.939Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 62759.0281,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-electron-final-7ab9b6dc-9598-4111-8c85-983cf8ecb483",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "0ae3e6f6dc120e9f6e32634a7983b6acd710f43bc2fa64bb2b9f1f562597d54b",
+        "exportedTextSha256": "c54a9ac2dfa66ccaaba1133d39abda9d038686de5bd04032c6f696978722a7fd",
+        "key": [
+          "interactive-electron-final-7ab9b6dc-9598-4111-8c85-983cf8ecb483",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-electron-final-7ab9b6dc-9598-4111-8c85-983cf8ecb483",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-baseline-sync",
+    "command": [
+      "node",
+      "scripts/sync-hot-baseline.js",
+      "--write",
+      "--version",
+      "1.3.4.11",
+      "--asset-root",
+      "<user-profile>/Desktop/tianming",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:36:38.814Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 88919.9639,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-baseline-sync-d21aafa6-dacb-406a-9401-56e435c38db9",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "50fab47891d01102bc762fb6dae0fa920b730d3ff727e1140614764fad8c37a0",
+        "exportedTextSha256": "1d966907d9263fd6950d213f7986c701349df34198dd8fa1ae60823787a8a445",
+        "key": [
+          "interactive-baseline-sync-d21aafa6-dacb-406a-9401-56e435c38db9",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-baseline-sync-d21aafa6-dacb-406a-9401-56e435c38db9",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-architecture-final",
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:36:50.328Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 71039.7438,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-architecture-final-155cfbeb-1ef4-4c4e-9fd7-1326d807d486",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "23e2dfc4fc83c2d39c22eefcea5bbe71795456d238f7d4885acebd02d6aa88be",
+        "exportedTextSha256": "23e2dfc4fc83c2d39c22eefcea5bbe71795456d238f7d4885acebd02d6aa88be",
+        "key": [
+          "interactive-architecture-final-155cfbeb-1ef4-4c4e-9fd7-1326d807d486",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-architecture-final-155cfbeb-1ef4-4c4e-9fd7-1326d807d486",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-smoke-final",
+    "command": [
+      "node",
+      "web/scripts/ci-smokes.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:39:58.807Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 224405.4563,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-smoke-final-d98a8e92-8079-4b94-b449-d22327ace6c1",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "70706bd895562faf2458733b0e67db698541ba8f70d39f194137dbbfb533bd05",
+        "exportedTextSha256": "bf3bf663dc11451cdef2e5a4abaf8cde831390792ebf3b7b5ce734b8c295004b",
+        "key": [
+          "interactive-smoke-final-d98a8e92-8079-4b94-b449-d22327ace6c1",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159",
+        "exportedTextSha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159",
+        "key": [
+          "interactive-smoke-final-d98a8e92-8079-4b94-b449-d22327ace6c1",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-release-final",
+    "command": [
+      "node",
+      "scripts/verify-release-contract.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:40:09.882Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 4309.896000000001,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-release-final-851b63a0-1d76-4bec-a03f-859e459f81d0",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "2d73892aa064b17fd7cf3590d87582eceea23b0c7882a17e1e43842aee3b745c",
+        "exportedTextSha256": "2d73892aa064b17fd7cf3590d87582eceea23b0c7882a17e1e43842aee3b745c",
+        "key": [
+          "interactive-release-final-851b63a0-1d76-4bec-a03f-859e459f81d0",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-release-final-851b63a0-1d76-4bec-a03f-859e459f81d0",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-official-final",
+    "command": [
+      "node",
+      "web/scripts/verify-official-scenario-parity.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:40:18.860Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 7592.086399999999,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-official-final-fd905ea0-78bf-4695-a084-78207c1d5618",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+        "exportedTextSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+        "key": [
+          "interactive-official-final-fd905ea0-78bf-4695-a084-78207c1d5618",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-official-final-fd905ea0-78bf-4695-a084-78207c1d5618",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-hot-gates-final",
+    "command": [
+      "node",
+      "web/scripts/verify-hot-builder-gates.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:40:31.013Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 9133.4697,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-hot-gates-final-96618dc5-3eb9-4e98-8630-42fa75930201",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+        "exportedTextSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+        "key": [
+          "interactive-hot-gates-final-96618dc5-3eb9-4e98-8630-42fa75930201",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-hot-gates-final-96618dc5-3eb9-4e98-8630-42fa75930201",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-tls-final",
+    "command": [
+      "node",
+      "scripts/verify-remote-tls.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:41:38.818Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 4452.382300000001,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-tls-final-373a9261-4c77-4681-9b7b-80213b907f1a",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+        "exportedTextSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+        "key": [
+          "interactive-tls-final-373a9261-4c77-4681-9b7b-80213b907f1a",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-tls-final-373a9261-4c77-4681-9b7b-80213b907f1a",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-audit-final",
+    "command": [
+      "npm",
+      "audit",
+      "--omit=dev",
+      "--audit-level=high",
+      "--registry=https://registry.npmjs.org"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:41:51.856Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 12471.6071,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-audit-final-0a89dceb-8530-472b-b18a-19c8e9552e77",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+        "exportedTextSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+        "key": [
+          "interactive-audit-final-0a89dceb-8530-472b-b18a-19c8e9552e77",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+        "exportedTextSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+        "key": [
+          "interactive-audit-final-0a89dceb-8530-472b-b18a-19c8e9552e77",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-mobile-dryrun",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/verify-staging-dryrun.ps1"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:42:34.499Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 3339.4003,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-mobile-dryrun-5b775f4d-fad6-4eab-a6d9-2e73a77902b5",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "5ccc51ad488510ad6a70b6cfd5485a4b1a25d0c29e92efed0e3c4b2fa2b986ee",
+        "exportedTextSha256": "5ccc51ad488510ad6a70b6cfd5485a4b1a25d0c29e92efed0e3c4b2fa2b986ee",
+        "key": [
+          "interactive-mobile-dryrun-5b775f4d-fad6-4eab-a6d9-2e73a77902b5",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-mobile-dryrun-5b775f4d-fad6-4eab-a6d9-2e73a77902b5",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-mobile-stage",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/stage-web-for-cap.ps1",
+      "-WwwDir",
+      "E:/tianming-perf-temp/mobile-www-interactive-20260908-0038"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:42:43.942Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 72830.3438,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-mobile-stage-b1fefaba-f2a0-495e-8195-e859174e3099",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "625dcbba64b8673b4e4cb98b1b8e5cdd1b41550b3fd157debf59727826218323",
+        "exportedTextSha256": "625dcbba64b8673b4e4cb98b1b8e5cdd1b41550b3fd157debf59727826218323",
+        "key": [
+          "interactive-mobile-stage-b1fefaba-f2a0-495e-8195-e859174e3099",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-mobile-stage-b1fefaba-f2a0-495e-8195-e859174e3099",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-repro-final",
+    "command": [
+      "node",
+      "web/scripts/audit-repro.cjs",
+      "--repo",
+      "<user-profile>/Desktop/tianming-perf-round1",
+      "--expect-clean"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:42:55.478Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 2370.8532999999998,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-repro-final-a676b5c3-11b8-4bfa-bba9-5ec6432863c3",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "f69cf07ece47871904df6783e2f500c7f6913c32aa9301f3c249d5937ecb5164",
+        "exportedTextSha256": "df785d72bde47aa591f136b40ac9c3788a06f356afa6698df66015dc4b76de61",
+        "key": [
+          "interactive-repro-final-a676b5c3-11b8-4bfa-bba9-5ec6432863c3",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-repro-final-a676b5c3-11b8-4bfa-bba9-5ec6432863c3",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-workshop-isolated",
+    "command": [
+      "node",
+      "web/scripts/smoke-workshop-lock-recovery.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:45:34.253Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 34797.469,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-workshop-isolated-b0621c1b-99aa-4f26-9b9d-ad8dd13b0e9d",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+        "exportedTextSha256": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+        "key": [
+          "interactive-workshop-isolated-b0621c1b-99aa-4f26-9b9d-ad8dd13b0e9d",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "6b5b8b1a02912fa79b20ae861e709835c290b08469c6936b08da3308276b2018",
+        "exportedTextSha256": "43c8fb6c4f5801d6ef185af48c261910446c25d4cd7ac1f6fecfc6fc1f5ee7a5",
+        "key": [
+          "interactive-workshop-isolated-b0621c1b-99aa-4f26-9b9d-ad8dd13b0e9d",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-mobile-verify",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/verify-staged-web.ps1",
+      "-TargetDir",
+      "E:/tianming-perf-temp/mobile-www-interactive-20260908-0038"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:45:45.816Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 7814.9773000000005,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-mobile-verify-ea1a8444-a629-42ee-97fe-875a2e635b3b",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "2277333ed7b2a5cc7b430f2815a6890c023fb7c66ac71e8ff70e23c3d60b01bd",
+        "exportedTextSha256": "2277333ed7b2a5cc7b430f2815a6890c023fb7c66ac71e8ff70e23c3d60b01bd",
+        "key": [
+          "interactive-mobile-verify-ea1a8444-a629-42ee-97fe-875a2e635b3b",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-mobile-verify-ea1a8444-a629-42ee-97fe-875a2e635b3b",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-baseline-check",
+    "command": [
+      "node",
+      "scripts/sync-hot-baseline.js",
+      "--check",
+      "--version",
+      "1.3.4.11",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:45:56.010Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 3994.9219999999996,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-baseline-check-6aaae722-4687-4d0a-aa36-88c7155dcb73",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+        "exportedTextSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+        "key": [
+          "interactive-baseline-check-6aaae722-4687-4d0a-aa36-88c7155dcb73",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "key": [
+          "interactive-baseline-check-6aaae722-4687-4d0a-aa36-88c7155dcb73",
+          "stderr.log"
+        ]
+      }
+    }
+  },
+  {
+    "label": "interactive-workshop-baseline",
+    "command": [
+      "node",
+      "<user-profile>/Desktop/tianming-perf-interactive-baseline/web/scripts/smoke-workshop-lock-recovery.js"
+    ],
+    "head": "54d1f6504047c9e4fc7e25357ff3a4ca75774a7c",
+    "status": "M preload-impl.js\n M scripts/electron/bridge-main.cjs\n M scripts/electron/desktop-cases.cjs\n M scripts/perf/inspect-electron-cases.cjs\n M scripts/perf/inspect-electron.cjs\n M scripts/perf/round1-electron.cjs\n M web/.hot-update-manifest.json\n M web/scripts/smoke-runtime-save-consistency.js\n M web/tm-save-lifecycle.js\n?? docs/performance-interactive.md\n?? scripts/perf/autosave-electron-cases.cjs\n?? scripts/perf/summarize-interactive.cjs\n?? web/scripts/smoke-autosave-text-bridge.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T16:47:22.695Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-interactive.md": "30ac84f64c5d6bd8ccd631c5896d47a320033cf30329e75e2f6da2ee2edb11b8",
+      "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0",
+      "scripts/electron/bridge-main.cjs": "1a202c007adba014586c966f07d923f480cf2f5d5c6120b69962e69d85e63966",
+      "scripts/electron/desktop-cases.cjs": "db870e7dc1e1d2ac340417f3e3263f3ab30aa3072c9c42da896557adf60bea27",
+      "scripts/perf/autosave-electron-cases.cjs": "74ec497fb32525e94564638273a0c52a593f9494c00710e123b516b6351617de",
+      "scripts/perf/inspect-electron-cases.cjs": "2594799bc5697a5c93b008a41e0d2172f084a94f1d627d23165e972d362e8fb9",
+      "scripts/perf/inspect-electron.cjs": "0bffc374101082d267be76684fcc368d9b0412319d4d9d8370fe10929339b16d",
+      "scripts/perf/round1-electron.cjs": "7ec5d6e1899c1ad4a1f1d6677c491cc88893106baf90b52ac91a197240b4c15d",
+      "scripts/perf/summarize-interactive.cjs": "6a436bb04db4dabbc107ae4e7daaa0654dbe5fcf6339463964e87eecc77123aa",
+      "web/.hot-update-manifest.json": "d15d422d9103a24dede661a814792dc5a92dc9fc34dc2ac1d607603bb058dd58",
+      "web/scripts/smoke-autosave-text-bridge.js": "836ef523be317568b8880f7d985cb4590f3237454f920bc56b90b58c3ae13724",
+      "web/scripts/smoke-runtime-save-consistency.js": "715cd3578c45119983463f9f0a8b8ec8b02eeaeba71375313bb55050c744f61c",
+      "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 34881.5266,
+    "complete": true,
+    "directory": "web\\dev-tools\\perf-round1\\interactive-workshop-baseline-081d990e-3b69-4315-bc07-85a410680e96",
+    "logs": {
+      "stdout.log": {
+        "sourceSha256": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+        "exportedTextSha256": "8bf410dab0e03d790781cd5fa93328fd7e2eb4de692bc2549e1574b9541f9ab9",
+        "key": [
+          "interactive-workshop-baseline-081d990e-3b69-4315-bc07-85a410680e96",
+          "stdout.log"
+        ]
+      },
+      "stderr.log": {
+        "sourceSha256": "b96be41e6acb03332185c874c82f5763c2dc8db6578910b1f5529a8e2985ec34",
+        "exportedTextSha256": "3092b6811c9acc67ae27476f2baf49f5d63a7a2066b8a10b2920e3e68fa5585e",
+        "key": [
+          "interactive-workshop-baseline-081d990e-3b69-4315-bc07-85a410680e96",
+          "stderr.log"
+        ]
+      }
+    }
+  }
+]

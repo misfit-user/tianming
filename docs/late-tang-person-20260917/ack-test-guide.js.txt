@@ -1,0 +1,8 @@
+// Test fixture only: dismiss first-run help in the isolated Electron test profile.
+// These are the help dialog's ordinary close controls, not game actions or account settings.
+await js(`(() => {
+  const guideButton = document.querySelector('#tm-firstturn-guide button.bt.bp');
+  if (guideButton) guideButton.click();
+  const hintButton = document.querySelector('#tm-nokey-banner button.bt.bs');
+  if (hintButton) hintButton.click();
+})()`);

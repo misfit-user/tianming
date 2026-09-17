@@ -67,7 +67,11 @@
   function openShizhengPreviewPanel(){ return bridge._openShizhengPreviewPanel(); }
   function closeModule(){ return bridge._closeModule(); }
   function returnFormalHomeSoon(){ return bridge._returnFormalHomeSoon(); }
-  function saveFormalDraftsToGM(captureOpen){ return bridge._saveFormalDraftsToGM(captureOpen); }
+  var deskDraftCaptureDepth = 0;
+  function saveFormalDraftsToGM(captureOpen){
+    if (deskDraftCaptureDepth) return;
+    return bridge._saveFormalDraftsToGM(captureOpen);
+  }
   function restoreFormalDraftsFromGM(force){ return bridge._restoreFormalDraftsFromGM(force); }
   function handleModuleAction(action, data){ return bridge._handleModuleAction(action, data); }
   function updateRailBadges(){ return bridge._updateRailBadges(); }
@@ -150,9 +154,29 @@
     ov.id = id;
     ov.className = 'tm-desk-overlay tm-bridge-overlay show';
     ov.innerHTML = '<div class="tm-bridge-scrim" data-close-bridge="1"></div>' + html;
+    var overlayWorld = window.GM;
+    if (id === 'tm-action-memorial-overlay') {
+      var memorialLease = typeof window._tmCaptureWorldLease === 'function' ? window._tmCaptureWorldLease() : null;
+      ov.__tmMemorialCurrent = function(){
+        return window.GM === overlayWorld && (!memorialLease || typeof window._tmWorldLeaseCurrent === 'function' && window._tmWorldLeaseCurrent(memorialLease));
+      };
+    }
     ov.addEventListener('click', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) { ov.remove(); return; }
       if (e.target === ov || (e.target && e.target.closest && e.target.closest('[data-close-bridge]'))) {
         closeDeskOverlay();
+        return;
+      }
+      if (e.target && e.target.closest && e.target.closest('[data-desk-edict-archive]')) {
+        if (window.GM !== overlayWorld) return;
+        var archive = ov.querySelector('.arc-modal');
+        var archiveBody = ov.querySelector('.arc-body');
+        if (archive && archiveBody) {
+          var archiveScroll = archiveBody.scrollTop;
+          archiveBody.innerHTML = renderFormalEdictArchive();
+          archive.classList.add('show');
+          archiveBody.scrollTop = archiveScroll;
+        }
         return;
       }
       var btn = e.target && e.target.closest ? e.target.closest('[data-desk-action],[data-module-action]') : null;
@@ -160,6 +184,7 @@
       handleDeskAction(btn.dataset.deskAction || btn.dataset.moduleAction, btn.dataset, id);
     });
     ov.addEventListener('input', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) return;
       var search = e.target && e.target.closest ? e.target.closest('[data-desk-letter-search]') : null;
       if (search) {
         state.letterSearch = String(search.value || '');
@@ -192,6 +217,7 @@
       if (edict) updateFormalEdictDraft(edict);
     });
     ov.addEventListener('change', function(e){
+      if (id === 'tm-action-memorial-overlay' && !ov.__tmMemorialCurrent()) return;
       var draft = e.target && e.target.closest ? e.target.closest('[data-letter-draft-field]') : null;
       if (draft) {
         updateFormalLetterDraft(draft);
@@ -270,9 +296,18 @@
 
   function captureDeskOverlayState(root){
     if (!root || !root.querySelectorAll) return;
-    Array.prototype.forEach.call(root.querySelectorAll('[data-letter-draft-field]'), updateFormalLetterDraft);
-    Array.prototype.forEach.call(root.querySelectorAll('[data-desk-memorial-reply]'), updateFormalMemorialReply);
-    Array.prototype.forEach.call(root.querySelectorAll('[data-desk-edict-cat],[data-desk-edict-body],[data-desk-player-action],#edict-pol,#edict-mil,#edict-dip,#edict-eco,#edict-oth,#xinglu-pub'), updateFormalEdictDraft);
+    if (root.id === 'tm-action-memorial-overlay' && (!root.__tmMemorialCurrent || !root.__tmMemorialCurrent())) return;
+    // Collect all fields before cloning/publishing the same aggregate once.
+    // Ordinary input/change still persists immediately; nesting and errors must
+    // not leave later input trapped in a suspended-persistence state.
+    deskDraftCaptureDepth++;
+    try {
+      Array.prototype.forEach.call(root.querySelectorAll('[data-letter-draft-field]'), updateFormalLetterDraft);
+      Array.prototype.forEach.call(root.querySelectorAll('[data-desk-memorial-reply]'), updateFormalMemorialReply);
+      Array.prototype.forEach.call(root.querySelectorAll('[data-desk-edict-cat],[data-desk-edict-body],[data-desk-player-action],#edict-pol,#edict-mil,#edict-dip,#edict-eco,#edict-oth,#xinglu-pub'), updateFormalEdictDraft);
+    } finally {
+      deskDraftCaptureDepth--;
+    }
     saveFormalDraftsToGM(false);
   }
 
@@ -518,7 +553,7 @@
     actionText = String(actionText || '').trim();
     if (!actionText) return false;
     recordDeskPlayerActionHistory(gm, actionText);
-    deskDecision('player_action', actionText, '已记入主角行止，过回合推演会读取其人物、皇威、民心影响');
+    deskDecision('player_action', actionText, '已录入起居注，留待史官续记');
     recordDeskActionSignal('player-action-desk', {
       id: 'xinglu-' + (gm.turn || 1),
       topic: '主角行止',
@@ -614,7 +649,7 @@
     var edictType = 'policy';
     try { if (typeof window.classifyEdict === 'function') edictType = window.classifyEdict(body) || edictType; } catch(_) {}
     var typeText = deskValue('[data-desk-edict-type]', '诏令') || '诏令';
-    var receiver = deskValue('[data-desk-edict-receiver]', '内阁、六部、都察院') || '内阁、六部、都察院';
+    var receiver = deskValue('[data-desk-edict-receiver]', '中枢及有关有司') || '中枢及有关有司';
     var title = compactText(body.replace(/\s+/g, ' '), 32) || '御前诏令';
     var forecast = null;
     try { if (typeof window.generateEdictForecast === 'function') forecast = window.generateEdictForecast(edictType); } catch(_) {}
@@ -658,7 +693,7 @@
         targetId: 'xinglu-' + entry.id
       }, 'phase8-edict-player-action');
     }
-    deskDecision('edict', body, '已进入诏令追踪，后续过回合推演会读取执行与阻力');
+    deskDecision('edict', body, '诏令已付有司，候报办理情形');
     recordDeskActionSignal('publish-edict-desk', {
       id: entry.id,
       topic: title,
@@ -684,7 +719,7 @@
     state.playerAction = '';
     clearFormalDraftStore(['edictDraft', 'edictDrafts', 'playerAction']);
     deskRefreshLegacy();
-    toast('诏令已颁行，过回合会进入执行推演');
+    toast('诏令已颁付有司');
     openZhaoPreviewPanel();
   }
 
@@ -843,6 +878,7 @@
     if (!name) return;
     var gm = deskGM();
     gm._pendingLetterTo = name;
+    state.letterMultiMode = false;
     state.letterTarget = name;
     state.letterDraft = state.letterDraft || {};
     state.letterDraft.to = name;
@@ -1032,7 +1068,7 @@
     if (multiOn) { state.letterMultiMode = false; state.letterMultiTargets = []; }
     saveFormalDraftsToGM(false);
     deskRefreshLegacy();
-    toast(multiCount ? ('已群发 ' + multiCount + ' 函') : (draftOnly ? '鸿雁草稿已保存' : '信函已发出，驿递系统会继续结算'));
+    toast(multiCount ? ('已群发 ' + multiCount + ' 函') : (draftOnly ? '鸿雁草稿已保存' : '信已付驿，静候回音'));
     openHongyanPreviewPanel();
   }
 
@@ -1046,7 +1082,7 @@
     deskRemember(to, '御前留记：' + compactText(body, 80), '平', 4);
     deskRecord('人物记忆', to, body, ['鸿雁','人物记忆']);
     deskRefreshLegacy();
-    toast('已写入人物记忆');
+    toast('已作御前留记');
   }
 
   function deskSelectRecord(id){
@@ -1156,12 +1192,14 @@
     } else if (action === 'publish-edict-desk') {
       deskPublishEdict();
     } else if (action === 'select-memorial-desk') {
+      captureDeskOverlayState(document.getElementById('tm-action-memorial-overlay'));
       state.memorialId = data.id || '';
-      openYueZouPreviewPanel();
+      if (!__p8mp.refreshFormalMemorialSelection(document.getElementById('tm-action-memorial-overlay'), false)) openYueZouPreviewPanel();
     } else if (action === 'memorial-unseal-desk') {
+      captureDeskOverlayState(document.getElementById('tm-action-memorial-overlay'));
       state.memorialOpened = state.memorialOpened || {};
       if (data.id) state.memorialOpened[data.id] = true;
-      openYueZouPreviewPanel();
+      if (!__p8mp.refreshFormalMemorialSelection(document.getElementById('tm-action-memorial-overlay'), true)) openYueZouPreviewPanel();
     } else if (action === 'memorial-filter-desk') {
       state.memorialFilter = data.filter || 'all';
       openYueZouPreviewPanel();
@@ -1463,8 +1501,8 @@
       'body.tm-phase8-formal .tm-bridge-panel{position:absolute;box-sizing:border-box;}',
       'body.tm-phase8-formal .tm-action-panel{left:58px;top:74px;width:min(1080px,calc(100vw - 132px));height:min(720px,calc(100vh - 118px));overflow:visible;transform:translateX(-12px);transition:transform .18s ease,opacity .18s ease;opacity:.98;}',
       'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel{transform:translateX(0);}',
-      'body.tm-phase8-formal .tm-action-panel.edict-shell{left:50%;top:54px;width:calc(100vw - 130px);height:calc(100vh - 104px);transform:translate(-50%,10px);}',
-      'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.edict-shell{transform:translate(-50%,0);}',
+      'body.tm-phase8-formal .tm-action-panel.edict-shell{left:65px;top:54px;width:calc(100vw - 130px);height:calc(100vh - 104px);transform:translateY(10px);opacity:1;}',
+      'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.edict-shell{transform:none;}',
       'body.tm-phase8-formal .tm-action-panel.memorial-shell{left:40px;right:40px;top:64px;width:auto;height:min(820px,calc(100vh - 94px));transform:none;}',
       'body.tm-phase8-formal .tm-bridge-overlay.show .tm-action-panel.memorial-shell{transform:none;}',
       'body.tm-phase8-formal .tm-action-panel.letter-shell{left:50%;top:60px;width:min(1440px,calc(100vw - 64px));height:min(860px,calc(100vh - 90px));transform:translate(-50%,10px);}',
@@ -1762,7 +1800,7 @@
 
   function renderEdictSuggestionItem(x, index){
     var realIndex = x.realIndex == null ? index : x.realIndex;
-    return '<article class="edict-sug-v2">' +
+    return '<article class="edict-sug-v2" data-edict-suggestion-index="' + attr(realIndex) + '">' +
       edictSuggestionPortraitHtml(x) +
       '<div><b>【' + esc(x.source || '御案') + (x.from ? ' · ' + esc(x.from) : '') + '】</b>' +
       (x.topic ? '<p style="margin-bottom:2px;color:#c9a045;font-style:italic;">〔' + esc(x.topic) + '〕</p>' : '') +
@@ -1947,8 +1985,24 @@
 
   function dismissFormalEdictSuggestion(realIndex){
     var list = formalEdictSuggestionList();
+    if (!Number.isInteger(realIndex) || realIndex < 0 || realIndex >= list.length || !list[realIndex]) return;
     if (list[realIndex]) list[realIndex].used = true;
-    openZhaoPreviewPanel();
+    var overlay = document.getElementById('tm-action-edict-overlay');
+    if (!overlay) return; // 删除建议不是重新打开圣旨页的命令。
+    var row = overlay.querySelector('[data-edict-suggestion-index="' + realIndex + '"]');
+    var lostFocus = row && row.contains(document.activeElement);
+    var next = row && (row.nextElementSibling || row.previousElementSibling);
+    if (row) row.remove();
+    var menu = document.getElementById('_edictAdoptMenu'); if (menu) menu.remove();
+    var count = getEdictSuggestionRows().length;
+    var badge = overlay.querySelector('.col-sug-t small'); if (badge) badge.textContent = count + ' 条';
+    var host = overlay.querySelector('.sug-list');
+    if (!count && host) host.innerHTML = '<article class="edict-sug-v2 edict-sug-empty"><div><b>暂无御案建议</b><p>召开朝议、问对或处理奏疏后，可摘入诏书草拟。</p></div></article>';
+    if (lostFocus) {
+      var target = next && next.querySelector('.edict-sug-delete');
+      if (target) target.focus({ preventScroll:true });
+      else if (host) { host.tabIndex = -1; host.focus({ preventScroll:true }); }
+    }
   }
 
   function showFormalEdictAdoptMenu(evt, realIndex){
@@ -2085,14 +2139,14 @@
 + '.ed-yuan .edict-prom-card .epc-btn{font-family:inherit;font-size:12px;letter-spacing:0.04em;cursor:pointer;padding:5px 14px;border-radius:6px;border:1px solid rgba(168,131,58,0.4);background:rgba(255,252,243,0.6);color:#574733;transition:all .14s;}'
 + '.ed-yuan .edict-prom-card .epc-btn:hover{background:#fffdf6;border-color:#a8833a;color:#241d15;}'
 + '.ed-yuan .edict-prom-card .epc-note{font-size:11px;color:#9c8b6b;letter-spacing:0.02em;}'
-+ '.ed-yuan .erow{flex:1;min-height:0;position:relative;display:flex;gap:14px;padding:7px 6px 9px 10px;border-radius:6px;opacity:0;animation:edy-catIn .42s ease forwards;transition:background .22s ease;}'
++ '.ed-yuan .erow{flex:1;min-height:0;position:relative;display:flex;gap:14px;padding:7px 6px 9px 10px;border-radius:6px;opacity:1;animation:edy-catIn .42s ease backwards;transition:background .22s ease;}'
 + '.ed-yuan .erow[data-cat="政"]{--sc:#5a6fae;--sc-glow:rgba(90,111,174,0.16);}.ed-yuan .erow[data-cat="军"]{--sc:#a83228;--sc-glow:rgba(168,50,40,0.16);}.ed-yuan .erow[data-cat="外"]{--sc:#3f7a68;--sc-glow:rgba(63,122,104,0.16);}.ed-yuan .erow[data-cat="经"]{--sc:#9a7730;--sc-glow:rgba(154,119,48,0.18);}.ed-yuan .erow[data-cat="他"]{--sc:#7a6a52;--sc-glow:rgba(122,106,82,0.14);}'
 + '.ed-yuan .erow::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--sc,var(--gold));opacity:0;transform:scaleY(0.35);transform-origin:center;transition:opacity .22s,transform .22s;}'
 + '.ed-yuan .erow:focus-within::before{opacity:0.82;transform:scaleY(1);}'
 + '.ed-yuan .erow:focus-within{background:radial-gradient(135% 135% at 0% 50%,var(--sc-glow,rgba(168,131,58,0.08)),transparent 70%);}'
 + '.ed-yuan .erow:not(:last-child)::after{content:"";position:absolute;left:78px;right:8px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(168,131,58,0.28) 12%,rgba(168,131,58,0.28) 88%,transparent);}'
 + '.ed-yuan .seal-col{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:2px;width:52px;}'
-+ '.ed-yuan .seal-hint{font-size:10.5px;line-height:1.3;color:var(--ink-faint);text-align:center;opacity:0.78;transition:color .2s,opacity .2s;}'
++ '.ed-yuan .seal-hint{font-size:10.5px;line-height:1.3;color:var(--ink-soft);text-align:center;opacity:1;transition:color .2s,opacity .2s;}'
 + '.ed-yuan .erow:focus-within .seal-hint{color:var(--sc);opacity:1;}'
 + '.ed-yuan .cell-seal{flex:0 0 auto;position:relative;width:50px;height:50px;}'
 + '.ed-yuan .cell-seal::before{content:"";position:absolute;inset:4px;border:1.5px solid var(--sc,var(--gold-d));border-radius:4px;transform:rotate(45deg);background:rgba(255,253,243,0.4);box-shadow:inset 0 0 0 3px rgba(255,255,255,0.45),0 1px 2px rgba(80,56,24,0.18),0 0 10px var(--sc-glow,transparent);}'
@@ -2104,7 +2158,7 @@
 + '.ed-yuan .erow-body{flex:1;min-height:0;display:flex;flex-direction:column;}'
 + '.ed-yuan .cat-field{flex:1;min-height:44px;width:100%;font-family:var(--font);font-size:16px;line-height:1.95;color:var(--ink);background-color:#faf4e6;background-image:repeating-linear-gradient(180deg,rgba(0,0,0,0) 0 29px,rgba(168,131,58,0.10) 29px 30px);background-position:0 9px;border:none;border-radius:3px;padding:3px 7px;resize:none;outline:none;overflow-y:auto;scrollbar-width:none;transition:background .18s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}'
 + '.ed-yuan .cat-field::-webkit-scrollbar{width:0;height:0;display:none;}'
-+ '.ed-yuan .cat-field::placeholder{color:rgba(120,104,76,0.62);line-height:1.6;}'
++ '.ed-yuan .cat-field::placeholder{color:#796440;opacity:1;line-height:1.6;}'
 + '.ed-yuan .cat-field:focus{background-color:#fffdf6;}'
 + '.ed-yuan .ed-forecast{flex:0 0 auto;position:relative;font-size:11.5px;line-height:1.45;color:#3c6053;letter-spacing:0.02em;padding:3px 6px 0 16px;}'
 + '.ed-yuan .ed-forecast::before{content:"批";position:absolute;left:0;top:3px;font-size:10px;color:var(--cinnabar);border:1px solid var(--cinnabar);border-radius:2px;padding:0 1px;line-height:1.3;opacity:0.78;transform:rotate(-6deg);}'
@@ -2166,7 +2220,9 @@
 + '.ed-yuan .arc-item .a-mark{margin-right:5px;}'
 + '.ed-yuan .arc-item .a-assignee{color:var(--jade);font-size:12px;}'
 + '.ed-yuan .arc-item .a-fb{color:var(--ink-faint);font-size:12.5px;font-style:italic;margin-top:4px;padding-left:4px;}'
-+ '@keyframes edy-unroll{0%{opacity:0;transform:scaleX(0.62);filter:brightness(1.12);}60%{opacity:1;}100%{opacity:1;transform:scaleX(1);filter:none;}}'
+// 展开后回到原生文字绘制：不把整页文字留在缩放/滤镜的动画填充层；延迟入场仍保留首帧。
++ '.ed-yuan .silk,.ed-yuan .silk-head,.ed-yuan .col-sug,.ed-yuan .col-actions{animation-fill-mode:backwards;}'
++ '@keyframes edy-unroll{0%{opacity:0;transform:scaleX(0.62);filter:brightness(1.12);}60%{opacity:1;}100%{opacity:1;transform:none;filter:none;}}'
 + '@keyframes edy-rollerSettle{0%{opacity:0;transform:translateY(-10px) scaleY(0.9);}100%{opacity:1;transform:none;}}'
 + '@keyframes edy-headDrop{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:none;}}'
 + '@keyframes edy-colInL{from{opacity:0;transform:translateX(-22px);}to{opacity:1;transform:none;}}'
@@ -2224,30 +2280,11 @@
 + 'body.tm-phase8-formal .ed-yuan .edict-sug-delete{display:inline-flex !important;align-items:center;justify-content:center;flex:0 0 auto;width:28px !important;white-space:nowrap;}'; if (st.__tmCss !== __css) { st.__tmCss = __css; st.textContent = __css; }
   }
 
-  function renderFormalEdictPanel(){
-    restoreFormalDraftsFromGM(false);
-    installEdictYuanStyles();
+  function renderFormalEdictArchive(){
     var gm = window.GM || {};
-    var role = '天子';
-    var sc = (typeof window.findScenarioById === 'function') ? window.findScenarioById(gm.sid) : null;
-    if (sc && sc.role) role = sc.role;
-    var icon = typeof window.tmIcon === 'function' ? window.tmIcon : function(){ return ''; };
-    var cats = [
-      {id:'edict-pol', keys:['policy','political'], cat:'政', cs1:'政', cs2:'令', hint:'朝政·吏治', placeholder:'请输入政令诏书内容……\n例如：着吏部澄清铨选、起复废籍贤良、纠劾贪墨之吏，以正朝纲。'},
-      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：诏蓟辽督师整饬关宁防务、缮治城堡、核实兵额，毋得虚冒。'},
-      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：谕宣大抚镇羁縻插汉诸部、慎启边衅，以市赏怀远人。'},
-      {id:'edict-eco', keys:['finance','economic','economy'], cat:'经', cs1:'经', cs2:'济', hint:'税赋·漕运', placeholder:'请输入经济诏书内容……\n例如：诏免被灾州县积逋钱粮、开常平仓平粜、停不急之征。'},
-      {id:'edict-oth', keys:['other','private'], cat:'他', cs1:'其', cs2:'他', hint:'礼制·恩典', placeholder:'请输入其他诏书内容……\n例如：诏修两朝实录、旌表忠孝节义、蠲免逋负、肆赦天下。'}
-    ];
-    var suggestions = getEdictSuggestionRows();
-    var nf = '奉天承运皇帝<i class="hc-sep"></i>诏曰：';
-    var subDate = (typeof window.getTSText === 'function') ? window.getTSText(Number(gm.turn || 1)) : ('第 ' + (gm.turn || 1) + ' 回合');
-    // 往期诏令档案 → 历史诏书弹窗 (与议事清册拆开·删 details 改 modal)
     var archiveHtml = '';
-    var archiveCount = 0;
     if (gm._edictTracker && gm._edictTracker.length > 0) {
       var allEdicts = gm._edictTracker.filter(function(e){ return e && Number(e.turn || 0) < Number(gm.turn || 1); });
-      archiveCount = allEdicts.length;
       if (allEdicts.length > 0) {
         var byTurn = {};
         allEdicts.forEach(function(e){ (byTurn[e.turn] || (byTurn[e.turn] = [])).push(e); });
@@ -2267,6 +2304,33 @@
       }
     }
     if (!archiveHtml) archiveHtml = '<div class="arc-turn">尚无往期诏令</div><div class="arc-item" style="--st-c:#9c8b6b;">诏付有司、过回合后，历次诏令的承办与回执将归档于此。</div>';
+    return archiveHtml;
+  }
+
+  function renderFormalEdictPanel(){
+    restoreFormalDraftsFromGM(false);
+    installEdictYuanStyles();
+    var gm = window.GM || {};
+    var role = '天子';
+    var sc = (typeof window.findScenarioById === 'function') ? window.findScenarioById(gm.sid) : null;
+    if (sc && sc.role) role = sc.role;
+    var icon = typeof window.tmIcon === 'function' ? window.tmIcon : function(){ return ''; };
+    var cats = [
+      {id:'edict-pol', keys:['policy','political'], cat:'政', cs1:'政', cs2:'令', hint:'朝政·吏治', placeholder:'请输入政令诏书内容……\n例如：着吏部澄清铨选、起复废籍贤良、纠劾贪墨之吏，以正朝纲。'},
+      {id:'edict-mil', keys:['military'], cat:'军', cs1:'军', cs2:'令', hint:'边镇·粮饷', placeholder:'请输入军令诏书内容……\n例如：命边将修葺城防，接济戍军，具报沿途粮运所需。'},
+      {id:'edict-dip', keys:['diplomatic','diplomacy'], cat:'外', cs1:'外', cs2:'交', hint:'藩属·和战', placeholder:'请输入外交诏书内容……\n例如：遣使往聘，商议互市与边民往来，约定会谈之地。'},
+      {id:'edict-eco', keys:['finance','economic','economy'], cat:'经', cs1:'经', cs2:'济', hint:'税赋·漕运', placeholder:'请输入经济诏书内容……\n例如：诏免被灾州县积逋钱粮、开常平仓平粜、停不急之征。'},
+      {id:'edict-oth', keys:['other','private'], cat:'他', cs1:'其', cs2:'他', hint:'礼制·恩典', placeholder:'请输入其他诏书内容……\n例如：诏修两朝实录、旌表忠孝节义、蠲免逋负、肆赦天下。'}
+    ];
+    var suggestions = getEdictSuggestionRows();
+    var nf = '奉天承运皇帝<i class="hc-sep"></i>诏曰：';
+    var subDate = (typeof window.getTSText === 'function') ? window.getTSText(Number(gm.turn || 1)) : ('第 ' + (gm.turn || 1) + ' 回合');
+    // Hidden history only needs a count here. Build its complete original markup
+    // on the explicit archive action, using current data rather than a stale cache.
+    var archiveCount = 0;
+    if (gm._edictTracker && gm._edictTracker.length > 0) {
+      archiveCount = gm._edictTracker.filter(function(e){ return e && Number(e.turn || 0) < Number(gm.turn || 1); }).length;
+    }
 
     var html = '<section class="ed-yuan" data-tab="edict">';
     html += '<div class="scroll-wrap"><div class="roller-v"></div>';
@@ -2278,7 +2342,7 @@
     html += '<button type="button" class="ed-tab" data-tab="xinglu" onclick="var p=this.closest(&quot;.ed-yuan&quot;);p.setAttribute(&quot;data-tab&quot;,&quot;xinglu&quot;);p.querySelectorAll(&quot;.ed-tab&quot;).forEach(function(t){t.classList.toggle(&quot;active&quot;,t.getAttribute(&quot;data-tab&quot;)===&quot;xinglu&quot;);});">主角行止</button>';
     html += '</div>';
     html += '<div class="head-center"><div class="hc-main">' + nf + '</div><div class="hc-sub">' + esc(subDate) + '</div></div>';
-    html += '<div class="head-right"><button type="button" class="link-btn" onclick="this.closest(&quot;.ed-yuan&quot;).querySelector(&quot;.arc-modal&quot;).classList.add(&quot;show&quot;);"><span>🗞</span>历史诏书<span class="n">' + esc(archiveCount) + '</span></button></div>';
+    html += '<div class="head-right"><button type="button" class="link-btn" data-desk-edict-archive="1"><span>🗞</span>历史诏书<span class="n">' + esc(archiveCount) + '</span></button></div>';
     html += '</div>';
     // ── 三栏主体 ──
     html += '<div class="silk-body">';
@@ -2297,7 +2361,7 @@
     });
     if (_promThisTurn.length) {
       html += '<div class="edict-prom-card">';
-      html += '<div class="epc-hd"><span class="epc-seal">颁</span><b>本回合已颁行诏书</b><em>已合并各类旨意 · 将作为一道完整诏书整体推演</em></div>';
+      html += '<div class="epc-hd"><span class="epc-seal">颁</span><b>本回合已颁行诏书</b><em>各类旨意合为一诏 · 已付有司承行</em></div>';
       _promThisTurn.forEach(function(e){
         html += '<div class="epc-body wd-selectable">' + fullHongyanText(e.text, '（空）', 'epc-text') + '</div>';
         html += '<div class="epc-acts">' + actionBtn('撤回改拟', 'edict-prom-revoke-desk', { id:e.id || '' }, 'epc-btn') + '<span class="epc-note">如需修改·撤回后全文放回「政令」草拟·可重新润色颁行</span></div>';
@@ -2343,7 +2407,7 @@
     // 历史诏书弹窗
     html += '<div class="arc-modal"><div class="arc-scrim" onclick="this.closest(&quot;.arc-modal&quot;).classList.remove(&quot;show&quot;);"></div>';
     html += '<div class="arc-card"><div class="arc-card-hd"><span class="ah-l"><span class="ah-seal">史</span>历 史 诏 书</span><span class="arc-x" onclick="this.closest(&quot;.arc-modal&quot;).classList.remove(&quot;show&quot;);">×</span></div>';
-    html += '<div class="arc-body">' + archiveHtml + '</div></div></div>';
+    html += '<div class="arc-body"></div></div></div>';
     html += '</div>';     // /silk
     html += '<div class="roller-v"></div></div>';     // /scroll-wrap
     html += '</section>';
@@ -2391,21 +2455,21 @@
     var left = deskTabs(['诏令','草稿','旧诏'], 0) + deskList(issueItems, '暂无可纳入诏令的御案议题。', { action:'add-edict-desk' });
     var main = '<h3 class="tm-desk-title">诏令草拟</h3>' +
       '<div class="tm-desk-field"><span>诏令类型</span><select data-desk-edict-type><option>敕令</option><option>谕旨</option><option>诰命</option><option>手诏</option><option>密旨</option></select></div>' +
-      '<div class="tm-desk-field"><span>收受衙门</span><input data-desk-edict-receiver value="内阁、六部、都察院"></div>' +
+      '<div class="tm-desk-field"><span>收受衙门</span><input data-desk-edict-receiver value="中枢及有关有司"></div>' +
       '<div class="tm-desk-field"><span>关联议题</span><input data-desk-edict-issue value="' + attr((issues[0] && issues[0].title) || '御案待裁') + '"></div>' +
       '<textarea aria-label="诏令正文" data-desk-edict-body>' + esc(draft.join('\n')) + '</textarea>' +
-      '<div class="tm-desk-actions">' + deskAction('颁行诏令','publish-edict-desk',{}, true) + deskAction('交内阁票拟','save-edict-desk',{ stage:'review' }) + deskAction('存为草稿','save-edict-desk',{ stage:'draft' }) + deskAction('清空草诏','clear-edict-desk') + '</div>' +
-      '<h4 class="tm-desk-subtitle">旧诏令页职能</h4>' +
-      '<table class="tm-desk-table"><tr><th>项目</th><th>承接内容</th></tr><tr><td>合法性</td><td>校验皇权、诏令通过率、衙门承接能力</td></tr><tr><td>执行链</td><td>皇帝 → 内阁/司礼监 → 六部 → 地方/军镇</td></tr><tr><td>结果</td><td>写入近事、史官实录、变量影响与人物态度</td></tr></table>';
+      '<div class="tm-desk-actions">' + deskAction('颁行诏令','publish-edict-desk',{}, true) + deskAction('交中枢拟议','save-edict-desk',{ stage:'review' }) + deskAction('存为草稿','save-edict-desk',{ stage:'draft' }) + deskAction('清空草诏','clear-edict-desk') + '</div>' +
+      '<h4 class="tm-desk-subtitle">奉诏行事</h4>' +
+      '<table class="tm-desk-table"><tr><th>项目</th><th>办理事宜</th></tr><tr><td>核议</td><td>候中枢核议，有关有司奉行</td></tr><tr><td>承办</td><td>御前 → 中枢及有关有司 → 州县、军镇</td></tr><tr><td>复奏</td><td>候有司奉行复奏</td></tr></table>';
     var right = '<h4 class="tm-desk-subtitle">诏令影响预估</h4>' + deskStats([
       ['待纳议题', issues.length + ' 件'],
       ['草诏段落', draft.length + ' 条'],
       ['本回合', getTurnText(window.GM && GM.turn)],
       ['后续归档', '近事 / 实录']
     ]) + '<h4 class="tm-desk-subtitle">风险</h4>' +
-      deskCard('票拟阻滞', '诏令过宽或财源不明时，内阁、户部、兵部可能推诿或要求复议。') +
-      deskCard('可联动', '可从此处转入朝议、奏疏批复、史官实录与人物记忆。');
-    openDeskOverlay('tm-zhao-overlay', deskPanelShell('edict', '撰写诏书', '承接旧 UI「诏令」标签页：草拟、校验、下发、留档', left, main, right));
+      deskCard('票拟阻滞', '事有窒碍，候中枢及有关有司具奏请旨。') +
+      deskCard('案牍备查', '历次诏令及奉行文书，留案备查。');
+    openDeskOverlay('tm-zhao-overlay', deskPanelShell('edict', '撰写诏书', '草拟诏令，交议、颁行与留案', left, main, right));
   }
 
   function openYueZouPreviewPanel(){
@@ -2421,16 +2485,16 @@
     var main = '<h3 class="tm-desk-title">奏疏批阅</h3>' +
       deskRows([['题名', selected.title || '暂无奏疏'], ['具奏', selected.from || '臣工'], ['衙门', selected.dept || '通政司'], ['状态', selected.status || '待批']]) +
       deskCard('奏疏正文', selected.text || '暂无正文。') +
-      '<h4 class="tm-desk-subtitle">朱批</h4><textarea aria-label="朱批" data-desk-memorial-reply>着有关衙门速核，限期具册。若事涉军国钱粮，令内阁会同户部、兵部并议。</textarea>' +
+      '<h4 class="tm-desk-subtitle">朱批</h4><textarea aria-label="朱批" data-desk-memorial-reply>着有关衙门速核，限期具册。若事涉军国钱粮，令中枢会同有关有司并议。</textarea>' +
       '<div class="tm-desk-actions">' + deskAction('准奏','memorial-decision-desk',{ id:selected.id || '', decision:'approved' }, true) + deskAction('驳回','memorial-decision-desk',{ id:selected.id || '', decision:'rejected' }) + deskAction('批示','memorial-decision-desk',{ id:selected.id || '', decision:'annotated' }) + deskAction('留中','memorial-decision-desk',{ id:selected.id || '', decision:'hold' }) + deskAction('转朝议','memorial-decision-desk',{ id:selected.id || '', decision:'court_debate' }) + deskAction('拟诏','memorial-edict-desk',{ id:selected.id || '' }) + '</div>';
-    var right = '<h4 class="tm-desk-subtitle">旧奏疏页侧栏</h4>' + deskStats([
+    var right = '<h4 class="tm-desk-subtitle">奏疏案目</h4>' + deskStats([
       ['待批', mems.length + ' 件'],
       ['急件', mems.filter(function(x){ return /急|urgent|high/i.test(String(x.status) + String(x.title)); }).length + ' 件'],
       ['可转议', getIssues().length + ' 项'],
       ['归档', '史官 / 近事']
-    ]) + deskCard('筛选', '按急缓、衙门、人物、地区、变量、是否已批分类。') +
-      deskCard('批复后', '写入近事、御案时政、人物记忆与史官档案。');
-    openDeskOverlay('tm-zoushu-overlay', deskPanelShell('memorial', '百官奏疏', '承接旧 UI「奏疏」标签页：筛选、阅览、朱批、转议', left, main, right));
+    ]) + deskCard('筛选', '可按急缓、衙门、具奏人及批阅情形查阅。') +
+      deskCard('批复后', '候有司奉行复奏。');
+    openDeskOverlay('tm-zoushu-overlay', deskPanelShell('memorial', '百官奏疏', '百官呈奏，御览批答', left, main, right));
   }
 
   function openHongyanPreviewPanel(){
@@ -2504,6 +2568,7 @@
   bridge.drafts.openZhaoPreviewPanel = openZhaoPreviewPanel;
   bridge.drafts.openYueZouPreviewPanel = openYueZouPreviewPanel;
   bridge.drafts.openHongyanPreviewPanel = openHongyanPreviewPanel;
+  bridge.drafts.targetLetter = deskTargetLetter;
   bridge.drafts.openShiluPreviewPanel = openShiluPreviewPanel;
   bridge.drafts.handleDeskAction = handleDeskAction;
   bridge.drafts.recordDeskActionSignal = recordDeskActionSignal;

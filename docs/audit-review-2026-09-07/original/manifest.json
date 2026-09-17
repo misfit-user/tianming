@@ -1,0 +1,61 @@
+{
+  "baseline": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+  "note": "These SHA-256 values identify the generated audit package files; only the two full-copy Git blob hashes in README were compared with the remote original.",
+  "files": [
+    {
+      "path": "AUDIT.md",
+      "bytes": 28943,
+      "sha256": "d9e9c020c0565908797b8d75706ca6b034cbf4373cb23544299e7ea6a61f074f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2772,
+      "sha256": "581226bfc70833ec40be20425572f48c87d072769ec583c4f32c4619fcadb3fb"
+    },
+    {
+      "path": "audit-repro.cjs",
+      "bytes": 19198,
+      "sha256": "180da765c04919c9e3f1b3cdc43e439dcda59f7ce1a78b07f1dbc2e3877b0a66"
+    },
+    {
+      "path": "ci-log-excerpt.txt",
+      "bytes": 3430,
+      "sha256": "04d9faea1e21dd8b2448d89fdfd7ee1bef4dc60e3bd4fa91469c59885d97789f"
+    },
+    {
+      "path": "fixtures/ci-smokes.js",
+      "bytes": 1649,
+      "sha256": "0fdf52797b0adddcc6b27d08f2a4038fa9acf207c638a9d42d65808899e20547"
+    },
+    {
+      "path": "fixtures/main-excerpts.js",
+      "bytes": 7885,
+      "sha256": "cfe224f7d209999950c36ad2414c37b9ba7b6b34d80110f41c5ef2e2babd2882"
+    },
+    {
+      "path": "fixtures/main-turn-data-commit.js",
+      "bytes": 7669,
+      "sha256": "0fd25fab617821e6b8e54fc18471e8592d7d48d332212d66a8a739879101bffc"
+    },
+    {
+      "path": "fixtures/renderer-excerpts.js",
+      "bytes": 2708,
+      "sha256": "e5066d631f7a523d7e97b0f8429a383dda6977fc9a41d15e1b21bebed7bf71cf"
+    },
+    {
+      "path": "repro-expect-clean-output.txt",
+      "bytes": 2346,
+      "sha256": "928e11a8f29b8cf4ea658ed4b3c368082ef2f2f7c04ea3155b2ae7f76cb5ac95"
+    },
+    {
+      "path": "repro-output.txt",
+      "bytes": 2346,
+      "sha256": "928e11a8f29b8cf4ea658ed4b3c368082ef2f2f7c04ea3155b2ae7f76cb5ac95"
+    },
+    {
+      "path": "repro-results.json",
+      "bytes": 4644,
+      "sha256": "b45bb931eddadf119f99afaf3deeabff9b91763cc552165fe982e7b9a978fe50"
+    }
+  ]
+}

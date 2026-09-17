@@ -24,6 +24,7 @@
 
   var FAIL_THRESHOLD = 2, RETRY_EVERY = 5;
   var DONE_STATUS = { executed: 1, done: 1, terminated: 1, failed: 1, abandoned: 1, completed: 1 };
+  var inflight = new WeakMap();
 
   function _dbg() { try { if (global.DebugLog && typeof global.DebugLog.log === 'function') global.DebugLog.log.apply(global.DebugLog, ['ai'].concat(Array.prototype.slice.call(arguments))); } catch (e) {} }
   function _now() { return (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0; }
@@ -36,6 +37,12 @@
   function _logRun(GM, e) { try { if (!GM._edictOversightLog) GM._edictOversightLog = []; GM._edictOversightLog.push(e); if (GM._edictOversightLog.length > 20) GM._edictOversightLog = GM._edictOversightLog.slice(-20); } catch (x) {} }
 
   // ── 活诏令：从 _edictTracker 收所有未了结的(跨回合)·cap 防 prompt 膨胀 ──
+  function deliveryReady(GM,e) {
+    var ids=e.letterId?[e.letterId]:(Array.isArray(e._letterIds)?e._letterIds:[]);
+    if((e.source==='letter'||e.status==='pending_delivery')&&!ids.length)return false;
+    return ids.every(function(id){var matches=(GM.letters||[]).filter(function(l){return l&&l.id===id;});
+      return matches.length===1&&/^(delivered|replied|read)$/.test(matches[0].status||'');});
+  }
   function activeEdicts(GM) {
     GM = GM || global.GM;
     var tracker = (GM && GM._edictTracker) || [];
@@ -43,12 +50,14 @@
     var out = [];
     tracker.forEach(function (e, i) {
       if (!e || !e.content) return;
+      if (e._reliefCaseId) return; // Retired standalone pilot: preserve records without auto-settling them.
+      if (!deliveryReady(GM,e)) return;
       var st = String(e.status || 'pending').toLowerCase();
       if (DONE_STATUS[st]) return;                       // 已了结的不追
       if ((e.progressPercent || 0) >= 100) return;
       if (e.turn && turn - e.turn > 24) return;          // 太老的(>24回合)弃追·防无限累积
       out.push({
-        oid: 'e' + i, _idx: i, category: e.category || '', content: String(e.content).slice(0, 120),
+        oid: 'e' + i, _idx: i, _entry: e, _sourceState: JSON.stringify([e.content,e.status,e.assignee,e.letterId]), category: e.category || '', content: String(e.content).slice(0, 120),
         issuedTurn: e.turn || 0, age: e.turn ? (turn - e.turn) : 0, status: st,
         progress: e.progressPercent || 0, assignee: e.assignee || '',
         lastFeedback: String(e.feedback || '').slice(0, 80),
@@ -113,15 +122,19 @@
     var turn = GM.turn || 0;
     var byOid = {}; active.forEach(function (a) { byOid[a.oid] = a; });
     var updated = 0, sabotaged = 0;
+    var accepted = new Set();
     var reports = Array.isArray(parsed.reports) ? parsed.reports.slice(0, 20) : [];
     reports.forEach(function (r) {
       if (!r || !r.oid) return;
       var a = byOid[r.oid]; if (!a) return;
       var entry = GM._edictTracker && GM._edictTracker[a._idx]; if (!entry) return;
+      if (accepted.has(r.oid) || !deliveryReady(GM,entry) || (a._entry && (entry !== a._entry || a._sourceState !== JSON.stringify([entry.content,entry.status,entry.assignee,entry.letterId])))) return;
+      accepted.add(r.oid);
       // 更新跨回合生命周期(真评估·替时间猜)
       if (typeof r.executionLevel === 'number') entry.progressPercent = Math.max(0, Math.min(100, r.executionLevel));
       if (r.status) entry.status = String(r.status);
       if (r.reason || r.evidence) entry.feedback = String(r.reason || r.evidence || '').slice(0, 120);
+      if (r.nextAdvice) entry._nextAdvice = String(r.nextAdvice).slice(0,400);
       if (r.chainEffect) { if (!Array.isArray(entry._chainEffects)) entry._chainEffects = []; entry._chainEffects.push({ turn: turn, effect: String(r.chainEffect).slice(0, 100), by: r.sabotageBy || '' }); if (entry._chainEffects.length > 12) entry._chainEffects = entry._chainEffects.slice(-12); }
       if ((entry.progressPercent || 0) >= 100 && !DONE_STATUS[String(entry.status).toLowerCase()]) entry.status = 'executed';
       if (r.sabotageBy && (r.status === 'stalled' || r.status === 'sabotaged')) sabotaged++;
@@ -157,13 +170,21 @@
     return active;
   }
 
-  async function run(GM, opts) {
+  async function runOnce(GM, opts) {
     opts = opts || {};
     GM = GM || global.GM;
     if (!GM) return { skipped: 'noGM' };
+    // Explicit detached Node callers are supported when no live world is bound.
+    // A production caller must never submit another world's report.
+    if (global.GM != null && global.GM !== GM) return { stale:true };
     var P = global.P || {};
     if (!P.ai || !P.ai.key) return { skipped: 'noKey' };
     var active = activeEdicts(GM);
+    var identity = { liveGM:global.GM, p:global.P, campaign:GM._campaignId, timeline:GM._timelineId, load:global._tmLoadGen || 0, turn:GM.turn };
+    var lease = typeof global._tmCaptureWorldLease === 'function' ? global._tmCaptureWorldLease() : null;
+    function isCurrent() { return !(opts.signal && opts.signal.aborted) && identity.liveGM === global.GM && identity.p === global.P &&
+      identity.campaign === GM._campaignId && identity.timeline === GM._timelineId && identity.load === (global._tmLoadGen || 0) && identity.turn === GM.turn &&
+      (!lease || typeof global._tmWorldLeaseCurrent === 'function' && global._tmWorldLeaseCurrent(lease)); }
     if (!active.length) { GM._edictEfficacyReport = { turn: GM.turn || 0, total: 0, skipped: true }; return { skipped: 'noActiveEdicts', turn: GM.turn || 0 }; }
     if (typeof global.callAIMessages !== 'function') return { skipped: 'noCaller' };
     var req = buildRequest(GM, active, opts);
@@ -172,10 +193,12 @@
     try {
       raw = await global.callAIMessages([{ role: 'system', content: req.system }, { role: 'user', content: req.user }], opts.maxTok || 3000, opts.signal || null, opts.tier || 'primary', { priority: 'background', timeoutMs: opts.timeoutMs || 60000, maxRetries: 1, id: 'edict_oversight' });
     } catch (e) {
+      if (!isCurrent()) return { stale:true };
       GM._edictOversightFailStreak = (GM._edictOversightFailStreak || 0) + 1;
       _logRun(GM, { turn: req.turn, failed: true, reason: 'call', error: String(e && e.message || e), streak: GM._edictOversightFailStreak, ts: _now() });
       return { failed: true, error: String(e && e.message || e), streak: GM._edictOversightFailStreak };
     }
+    if (!isCurrent()) return { stale:true };
     var parsed = null;
     try { parsed = (typeof global.extractJSON === 'function') ? global.extractJSON(raw) : JSON.parse(raw); } catch (e) {}
     if (!parsed || !Array.isArray(parsed.reports)) {
@@ -192,6 +215,14 @@
   }
 
   function lastRun(GM) { GM = GM || global.GM; var l = GM && GM._edictOversightLog; return (l && l.length) ? l[l.length - 1] : null; }
+
+  function run(GM, opts) {
+    GM = GM || global.GM;
+    if (!GM) return Promise.resolve({skipped:'noGM'});
+    if (inflight.has(GM)) return inflight.get(GM);
+    var promise = runOnce(GM,opts).finally(function(){if(inflight.get(GM) === promise)inflight.delete(GM);});
+    inflight.set(GM,promise);return promise;
+  }
 
   TM.EdictOversight = {
     run: run, shouldHandle: shouldHandle, activeEdicts: activeEdicts,

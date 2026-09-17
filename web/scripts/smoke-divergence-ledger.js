@@ -28,7 +28,7 @@ function sliceFn(src, marker) {
 console.log('smoke-divergence-ledger');
 
 const hist = fs.readFileSync(path.join(ROOT, 'tm-history-events.js'), 'utf8');
-const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const patches = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
 
 // —— 抽取 _tcAppendDivergence 本体(安家于 tm-history-events.js·史实域) ——
@@ -133,7 +133,7 @@ ok(clause.indexOf('· ' + WEI) < 0, '⑦ clause 约束文本无逐条姓名名�
 
 // ⑧ index.html <script> 标签存在性(删标签即红)
 var indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-['tm-patches-start.js', 'tm-history-events.js', 'tm-ai-infra.js'].forEach(function (f) {
+['tm-patches-start.js', 'tm-history-events.js', 'tm-ai-infra-retry.js', 'tm-ai-infra.js'].forEach(function (f) {
   ok(new RegExp('<script src="' + f.replace(/\./g, '\\.') + '\\?v=').test(indexHtml), '⑧ index.html 装载 <script> ' + f);
 });
 

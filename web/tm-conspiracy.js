@@ -336,7 +336,19 @@
   }
 
   // ─── 结算单条阴谋·返回 true 表示已了结(从活跃表移除) ───
+  function _institutionalPalacePlot(G,plot) {
+    if(!plot||plot.kind!=='palace_coup')return false;
+    var pm=G&&G.huangquan&&G.huangquan.powerMinister;
+    return !!(pm&&pm.mode==='institutional')||!!(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional');
+  }
+  function _deferPalaceResolution(G,plot,reason) {
+    reason=reason||'宫中动向尚须具实查核，废立与拿问不得仅凭疑势定案';
+    if(!plot._resolutionPending)plot._resolutionPending={turn:G.turn||0,reason:reason};
+    return {ok:false,applied:false,requiresResolution:true,reason:reason};
+  }
+
   function _resolve(G, plot) {
+    if(_institutionalPalacePlot(G,plot)&&(plot._resolutionPending||plot.momentum>=CFG.ripeThreshold||plot.exposure>=CFG.exposeThreshold)){_deferPalaceResolution(G,plot);return false;}
     var throne = _isThronePlot(plot);
     var crimeFail = throne ? 'coup_failed' : 'plot_failed';
     var crimeUncover = throne ? 'coup_failed' : 'plot_uncovered';
@@ -367,7 +379,7 @@
         return false;
       }
       if ((G.turn || 0) - plot._ripeSince >= CFG.ripeTimeout) {
-        if (_resolutionOn()) { _resolveRipe(G, plot); return true; }   // 刀丁4·五级发动出口(引擎定判)；flag OFF 落下方旧自破兜底(零回归)
+        if (_resolutionOn()) { var result=_resolveRipe(G,plot);return !(result&&result.requiresResolution); }   // 刀丁4·五级发动出口(引擎定判)；flag OFF 落下方旧自破兜底(零回归)
         _settle(G, plot, crimeFail, 'failed', '事机不密·迁延败露', false);
         _eb('谋反', plot.ringleader + ' 谋事迁延，机泄事败，终就缚。');
         return true;
@@ -443,6 +455,7 @@
     return SEED_UPRISING_RE.test(String(plot._narrativePlan || plot.reason || ''));
   }
   function _resolveRipe(G, plot) {
+    if(_institutionalPalacePlot(G,plot))return _deferPalaceResolution(G,plot);
     // 民变 modifier 优先(plan 含 民/义军/流)→ 交 revolt 实体系统
     if (_isUprisingPlan(plot)) return _resolveUprising(G, plot);
     var kind = plot.kind;
@@ -500,7 +513,8 @@
     var authC = global.AuthorityComplete;
     if (hw < 30 && hq < 40 && authC && typeof authC.powerMinisterEndgame === 'function') {
       // 复用 R1d 废帝(_powerMinisterEndgame·非终局·玩家角色不死则续玩)·勿在此另起弑君终局。
-      authC.powerMinisterEndgame({ name: plot.ringleader, innerCourt: _isInnerCourt(lead) }, 'usurpation', { turn: G.turn || 0 });
+      var result=authC.powerMinisterEndgame({ name: plot.ringleader, innerCourt: _isInnerCourt(lead) }, 'usurpation', { turn: G.turn || 0 });
+      if(result&&result.requiresResolution)return _deferPalaceResolution(G,plot,result.reason);
       _recordConspiracy(G, plot, 'palace_coup', 'succeeded', '宫变废立·' + (_isInnerCourt(lead) ? '挟主' : '禅代') + '得逞', false);
       _eb('国变', plot.ringleader + ' 宫变得逞，废立之局成。');
     } else {
@@ -605,6 +619,7 @@
 
   function _kindCN(k) { return ({ coup: '图谋社稷', regicide: '弑君', palace_coup: '宫变', mutiny: '兵变', plot: '构陷政敌' })[k] || '阴谋'; }
   function _heatCN(p) {
+    if(p._resolutionPending)return '尚待查实';
     if (p.stage === 'ripe') return '将发';
     if (p.momentum >= 70) return '酝酿已深';
     if (p.momentum >= 40) return '渐成气候';
@@ -625,9 +640,11 @@
     G = G || _G();
     var plots = activePlots(G);
     if (!plots.length) return '';
-    var brew = plots.filter(function (p) { return p.stage !== 'ripe'; });
-    var ripe = plots.filter(function (p) { return p.stage === 'ripe'; });
+    var pending=plots.filter(function(p){return p._resolutionPending;}),brew = plots.filter(function (p) { return !p._resolutionPending&&p.stage !== 'ripe'; });
+    var ripe = plots.filter(function (p) { return !p._resolutionPending&&p.stage === 'ripe'; });
     var s = '【密谋·暗流】朝中暗流涌动（机械引擎逐回合推演·密谋值满100将发、败露满100则事泄就擒·请据火候在叙事中呼应·勿凭空另起重复阴谋）：\n';
+    if(pending.length)s='【宫中动向与查核】疑势与确证须分，以下未有处分及承办回报者，不得先叙为废立得逞或已被拿问。\n';
+    pending.forEach(function(p){s+='  '+p.ringleader+'所涉宫中动向：'+p._resolutionPending.reason+'。\n';});
     brew.forEach(function (p) {
       s += '  ' + p.ringleader + ' 暗中' + _kindCN(p.kind) + (p.target ? ('（指 ' + p.target + '）') : '') + '·' + _heatCN(p)
         + _plotRuntime(G, p, '同谋')

@@ -1,0 +1,3 @@
+{"executable":"git","args":["diff","6ce797ae..HEAD","--check"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T17:21:31.760Z","head":"5ed032afe65cc041dd4d890227ada23e736b4713"}
+
+{"name":"handoff-diff","executable":"git","args":["diff","6ce797ae..HEAD","--check"],"exitCode":0,"signal":null,"durationMs":434,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\handoff-diff.log"}

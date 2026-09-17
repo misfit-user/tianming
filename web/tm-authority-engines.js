@@ -91,6 +91,38 @@
     memorialObjection: 8, heavenlySign: 25, selfBlame: 24, _default: 15
   };
 
+  function _authorityScenario(G) {
+    G = G || global.GM;
+    if (!G) return null;
+    var sc = null;
+    try { sc = typeof global.findScenarioById === 'function' ? global.findScenarioById(G.sid) : null; } catch (_) {}
+    if (!sc && global.P && (!global.P.id || global.P.id === G.sid)) sc = global.P;
+    return sc;
+  }
+
+  function isIndependentAuthorityLedger() {
+    var G = global.GM, saved = G && G.huangquan && G.huangquan.accounting;
+    if (saved && saved.schema === 'tm-authority-ledger/2') return true;
+    var sc = _authorityScenario();
+    return !!(sc && sc.authorityConfig && sc.authorityConfig.accounting && sc.authorityConfig.accounting.schema === 'tm-authority-ledger/2');
+  }
+
+  function _regionalMinxinInitial(fallback) {
+    if (!isIndependentAuthorityLedger()) return fallback;
+    var bridge = global.IntegrationBridge, G = global.GM;
+    if (!bridge || typeof bridge.getLeafDivisions !== 'function') return fallback;
+    var sum = 0, total = 0;
+    bridge.getLeafDivisions(G.adminHierarchy || (global.P && global.P.adminHierarchy), 'player').forEach(function(d) {
+      var value = typeof d.minxin === 'number' ? d.minxin : d.minxinLocal;
+      var pd = d.populationDetail || d.population || {};
+      var weight = typeof pd.actualMouths === 'number' ? pd.actualMouths : pd.mouths;
+      if (typeof weight !== 'number' && typeof d.population === 'number') weight = d.population;
+      if (typeof value !== 'number' || !isFinite(value) || typeof weight !== 'number' || !isFinite(weight) || weight <= 0) return;
+      sum += Math.max(0, Math.min(100, value)) * weight; total += weight;
+    });
+    return total > 0 ? sum / total : fallback;
+  }
+
   function _readInitialValue(key, defaultVal) {
     var sc = null;
     try { sc = (typeof global.findScenarioById === 'function') ? global.findScenarioById(global.GM.sid) : null; } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-authority-engines');}catch(_){}}
@@ -349,6 +381,72 @@
   // ① 选择性衰减分类：事件类（过去就淡）每回合衰；状态类（前因在就维持·消失才回暖）不无脑衰·靠重评/前因判定。
   var HUANGQUAN_DRAIN_EVENT = { militaryDefeat: 1, memorialObjection: 1 };   // 事件类·每回合衰减回血
 
+  function powerMinisterMode(G) {
+    G=G||global.GM||{};var hq=G.huangquan||{},pm=hq.powerMinister;
+    if(pm&&pm.mode)return pm.mode;
+    if(hq._declaredPowerMinisterMode)return hq._declaredPowerMinisterMode;
+    var sc=_authorityScenario(G),initial=sc&&sc.authorityConfig&&sc.authorityConfig.initial;
+    return initial&&initial.powerMinister&&initial.powerMinister.mode||'legacy';
+  }
+  function _initialPowerMinister(spec) {
+    if(!spec||(!spec.name&&!spec.characterId))return null;
+    // Legacy faction here is the minister's supporter-name list, not a character's allegiance.
+    var pm=JSON.parse(JSON.stringify(Object.assign({},spec,{faction:Array.isArray(spec.faction)?spec.faction:[]}))),G=global.GM||{};
+    if(!pm.name&&pm.characterId){var ch=(G.chars||[]).find(function(c){return c&&c.id===pm.characterId;});if(ch)pm.name=ch.name;}
+    if(pm.activatedTurn==null)pm.activatedTurn=0;
+    pm.controlLevel=typeof pm.controlLevel==='number'&&isFinite(pm.controlLevel)?Math.max(0,Math.min(1,pm.controlLevel)):.3;
+    if(pm.interceptions==null)pm.interceptions=0;if(pm.counterEdicts==null)pm.counterEdicts=0;
+    return pm;
+  }
+  function _pmSameFaction(G,a,b) {
+    if(!a||!b)return true;if(a===b)return true;
+    var f=(G.facs||G.factions||[]).find(function(f){return f&&(f.id===a||f.name===a);});return !!f&&(f.id===b||f.name===b);
+  }
+  function readPowerMinisterEligibility(ch,G) {
+    G=G||global.GM||{};var info=G.playerInfo||(global.P&&global.P.playerInfo)||{},fid=info.factionId||info.factionName||G.playerFactionId||'',held=[],commands=[];
+    var identities=ch?[ch.courtRole,ch.role]:[],inner=identities.indexOf('eunuch')>=0,outerIdentity=identities.indexOf('chief_minister')>=0||identities.indexOf('regent')>=0;
+    var result={active:false,eligible:false,innerCourt:inner,officeIds:[],officeNames:[],armyIds:[],factionId:fid,evidence:'none',reason:'missing-character'};
+    if(!ch)return result;if(ch.alive===false){result.reason='dead';return result;}
+    if(!_pmSameFaction(G,ch.factionId||ch.faction||ch.ownerFactionId,fid)){result.reason='other-faction';return result;}
+    var fac=(G.facs||G.factions||[]).find(function(f){return f&&(f.id===fid||f.name===fid);}),tree=Array.isArray(G.officeTree)?G.officeTree:fac&&fac.officeTree,known=Array.isArray(tree);
+    function holder(p){var ids=[],holders=Array.isArray(p.holders)?p.holders:[];if(p.holderId)ids.push(p.holderId);(Array.isArray(p.holderIds)?p.holderIds:[]).forEach(function(id){ids.push(id);});holders.forEach(function(h){if(h&&typeof h==='object')ids.push(h.characterId||h.id);});if(ids.length)return ids.indexOf(ch.id)>=0;var names=[p.holder].concat(holders.filter(function(h){return typeof h==='string';}));return names.indexOf(ch.name)>=0&&(G.chars||[]).filter(function(c){return c&&c.name===ch.name;}).length===1;}
+    function walk(nodes){(nodes||[]).forEach(function(d){if(!d)return;(d.positions||[]).forEach(function(p){if(!p||p.disabled||p.abolished||p.active===false||p.occupancyStatus==='vacant'||!holder(p))return;if(!_pmSameFaction(G,p.factionId||p.ownerFactionId||d.factionId||d.faction,fid))return;held.push(p);});walk(d.subs||d.children||d.divisions);});}walk(tree);
+    (G.armies||[]).forEach(function(a){if(!a||a.destroyed||!_pmSameFaction(G,a.factionId||a.faction||a.ownerFactionId,fid))return;var chain=a.commandChain;if(!chain||chain.mode!=='receipt')return;if((chain.custodians||[]).some(function(c){return c&&(c.characterId||c.id)===ch.id;}))commands.push(a);});
+    var title=ch.officialTitle||'',retired=/致仕|乞骸|休致|归田|丁忧|守制/.test(title)||ch._rotatedOut===true;
+    var legacyOuter=/宰相|丞相|首辅|摄政|大将军|太师/.test(title);
+    var powerful=held.filter(function(p){var powers=p.powers||{};return p.powerMinisterEligible===true||p.authority==='decision'||powers.militaryCommand===true||powers.appointment===true;});
+    var occupiedRanks=powerful.map(function(p){return Number(p.rankLevel);}).filter(function(v){return isFinite(v)&&v>0;});
+    var rank=occupiedRanks.length?Math.min.apply(Math,occupiedRanks):0;if(!rank){try{rank=global.TMPromotion&&global.TMPromotion.resolveRankLevel?global.TMPromotion.resolveRankLevel(ch,G):Number(ch.rankLevel)||0;}catch(_){}}
+    var explicitEligible=powerful.some(function(p){return p.powerMinisterEligible===true;});
+    result.officeIds=powerful.map(function(p){return p.id;}).filter(Boolean);result.officeNames=powerful.map(function(p){return p.name;}).filter(Boolean);result.armyIds=commands.map(function(a){return a.id;}).filter(Boolean);result.rankLevel=rank;result.officeRegistryKnown=known;
+    result.active=!!(powerful.length||commands.length||(!known&&!retired&&title));
+    result.eligible=result.active&&(explicitEligible||((inner||outerIdentity||legacyOuter)&&((known?powerful.length>0:!retired)&&(!inner||(rank>0&&rank<=6)))));
+    result.evidence=commands.length?'confirmed-command':powerful.length?'occupied-office':!known&&title?'legacy-title':'none';result.reason=result.active?'active':'no-current-power';return result;
+  }
+  function readPowerMinisterStatus(pm,G) {
+    G=G||global.GM||{};pm=pm||(G.huangquan&&G.huangquan.powerMinister);if(!pm)return {active:false,reason:'no-power-minister'};
+    if(!Array.isArray(G.chars)||!G.chars.length)return {active:false,pending:true,reason:'characters-not-ready'};
+    var matches=G.chars.filter(function(c){return c&&(pm.characterId?c.id===pm.characterId:c.name===pm.name);}),ch=matches.length===1?matches[0]:null;
+    var state=readPowerMinisterEligibility(ch,G);state.character=ch;state.characterId=ch&&ch.id;
+    if(pm.factionId&&!_pmSameFaction(G,pm.factionId,state.factionId)){state.active=false;state.reason='other-faction';}
+    if((pm.mode||powerMinisterMode(G))==='institutional'){
+      if(ch&&state.reason!=='dead'&&state.reason!=='other-faction'&&!state.officeRegistryKnown&&!state.armyIds.length){state.active=false;state.pending=true;state.reason='offices-not-ready';return state;}
+      if(state.reason==='active'&&Array.isArray(pm.officeIds)&&pm.officeIds.length&&!state.armyIds.length&&!state.officeIds.some(function(id){return pm.officeIds.indexOf(id)>=0;})){state.active=false;state.reason='declared-office-lost';}
+      if(!state.active&&state.reason==='no-current-power'&&!state.officeRegistryKnown)state.pending=true;
+    }else state.active=state.active&&state.eligible;
+    return state;
+  }
+  function draftPowerMinisterInstruction(spec) {
+    spec=spec||{};var G=spec.game||global.GM,pm=G&&G.huangquan&&G.huangquan.powerMinister;if(!G||!pm)return {ok:false,reason:'无可议的职掌处境'};
+    var name=spec.targetName||pm.name||'掌事者', action=spec.action||'review',titles={secret_edict:'密谕',rotate_officials:'核议任免',military_reform_against_pm:'核议军权交接',court_spy:'查问职掌',marriage_alliance:'议婚',public_humiliation:'召见申谕',execute_power_minister:'勘问处置',purge:'勘问处置',execute:'议定刑名',exile:'议定外谪'};
+    var label=titles[action]||'核议职掌',content=spec.content||('拟'+label+'：'+name+'所涉职掌，请具明承办人、凭据、期限与交接办法，俟御前审定再行。');
+    if(!Array.isArray(G._edictSuggestions))G._edictSuggestions=[]; // arch-ok: explicit player intent uses the existing unsubmitted edict suggestion ledger; no political or fiscal outcome is applied.
+    var prior=G._edictSuggestions.find(function(r){return r&&!r.used&&r.sourceSystem==='authority-institutional'&&r.content===content&&r.turn===G.turn;});
+    if(!prior){prior={id:'political-intent-'+String(G.turn||0)+'-'+G._edictSuggestions.length,source:'御前',from:'御前',sourceSystem:'authority-institutional',content:content,turn:G.turn,used:false,targetId:pm.characterId||null,action:action};G._edictSuggestions.push(prior);} // arch-ok: explicit player intent is only a draft consumed by the existing edict UI.
+    if(G===global.GM&&typeof global._renderEdictSuggestions==='function')global._renderEdictSuggestions();if(G===global.GM&&typeof global.toast==='function')global.toast('已拟入诏意，请在诏令中审定承办与期限');
+    return {ok:true,proposed:true,applied:false,suggestionId:prior.id,content:content};
+  }
+
   function _ensureHuangquan() {
     var G = global.GM;
     if (!G) return null;
@@ -368,7 +466,7 @@
         },
         sources: {}, drains: {},
         ministers: { ironGrip:false, factionControl:0, objectionRate:0.2 },
-        powerMinister: pmInit.name ? { name: pmInit.name, activatedTurn: 0, controlLevel: pmInit.controlLevel || 0.3, faction: [], interceptions: 0, counterEdicts: 0 } : null,
+        powerMinister: _initialPowerMinister(pmInit),
         history: { purges:[], reforms:[] }
       };
       HUANGQUAN_SOURCES_8.forEach(function(s){ G.huangquan.sources[s] = 0; });
@@ -381,12 +479,23 @@
       HUANGQUAN_SOURCES_8.forEach(function(s){ if (G.huangquan.sources[s] === undefined) G.huangquan.sources[s] = 0; });
       HUANGQUAN_DRAINS_8.forEach(function(d){ if (G.huangquan.drains[d] === undefined) G.huangquan.drains[d] = 0; });
     }
+    var authorityState=G.huangquan;
+    if(!authorityState._powerMinisterInitialApplied){
+      var scenario=_authorityScenario(G),declared=scenario&&scenario.authorityConfig&&scenario.authorityConfig.initial&&scenario.authorityConfig.initial.powerMinister;
+      if(!authorityState.powerMinister&&(G.turn==null||G.turn<=1))authorityState.powerMinister=_initialPowerMinister(declared); // arch-ok: authority initialization owns the once-only scenario political seed, without changing evolved PM authorityState.
+      if(declared&&declared.mode)authorityState._declaredPowerMinisterMode=declared.mode; // arch-ok: authority owner retains declared PM policy after its incumbent leaves office.
+      authorityState._powerMinisterInitialApplied=true; // arch-ok: scenario initialization receipt prevents re-seeding after an actual removal.
+    }
+    if (isIndependentAuthorityLedger() && !G.huangquan.accounting) {
+      var sc = _authorityScenario();
+      G.huangquan.accounting = JSON.parse(JSON.stringify(sc.authorityConfig.accounting)); // arch-ok: authority owner persists declared dimensions, never replaces evolved values
+    }
     return G.huangquan;
   }
 
   function _getHuangquanPhase(idx) {
     if (idx >= 70) return 'strong';
-    if (idx >= 40) return 'moderate';
+    if (idx >= (isIndependentAuthorityLedger() ? 35 : 40)) return 'moderate';
     return 'weak';
   }
 
@@ -457,7 +566,7 @@
   function getUnifiedHuangquanPhaseHandler() {
     var G = global.GM;
     if (!G || !G.huangquan) return null;
-    var idx = G.huangquan.index || 55;
+    var idx = isIndependentAuthorityLedger() && typeof G.huangquan.index === 'number' && isFinite(G.huangquan.index) ? G.huangquan.index : G.huangquan.index || 55;
     if (idx >= 70) return {
       phase: 'absolute',
       name: '专制段',
@@ -518,6 +627,28 @@
     };
   }
 
+  function adjustHuangquanDimension(dimension, delta, reason, opts) {
+    var hq = _ensureHuangquan();
+    if (!hq || !isIndependentAuthorityLedger()) return { ok:false, reason:'legacy-accounting' };
+    if (['central','provincial','military','imperial'].indexOf(dimension) < 0) return { ok:false, reason:'unknown-dimension' };
+    var cleanReason = _authorityCleanReason(reason, opts), amount = Number(delta);
+    if (!cleanReason || !isFinite(amount) || !amount) return { ok:false, reason:!cleanReason ? 'missing-reason' : 'invalid-delta' };
+    var sd = hq.subDims && hq.subDims[dimension];
+    if (!sd || typeof sd.value !== 'number' || !isFinite(sd.value)) return { ok:false, reason:'missing-dimension' };
+    var oldValue = sd.value;
+    sd.value = Math.max(0, Math.min(100, oldValue + amount));
+    sd.trend = sd.value > oldValue ? 'rising' : sd.value < oldValue ? 'falling' : 'stable';
+    _recordAuthorityChange('huangquan', '皇权', 'huangquan.subDims.' + dimension + '.value', oldValue, sd.value, cleanReason, opts && opts.source || 'authority-dimension');
+    return { ok:true, dimension:dimension, oldValue:oldValue, newValue:sd.value, delta:sd.value-oldValue, reason:cleanReason };
+  }
+
+  function _applyHuangquanDimensionSource(source, delta, reason, opts) {
+    if (!isIndependentAuthorityLedger() || !delta) return;
+    var key = opts && opts.dimension;
+    if (!key) key = { militaryCentral:'military', militaryDefeat:'military', tour:'provincial', heirDecision:'imperial', eunuchsRelatives:'imperial', trustedMinister:'central', factionConsuming:'central', cabinetization:'central', structureReform:'central', personalRule:'central', executePM:'central' }[source];
+    if (key) adjustHuangquanDimension(key, delta, reason, { source:source });
+  }
+
   function adjustHuangquan(source, delta, reason, opts) {
     var hq = _ensureHuangquan();
     if (!hq) return { ok: false, reason: 'missing-huangquan' };
@@ -542,6 +673,7 @@
     var oldValue = typeof hq.index === 'number' && isFinite(hq.index) ? hq.index : 55;
     hq.index = Math.max(0, Math.min(100, oldValue + amount));
     var applied = hq.index - oldValue;
+    _applyHuangquanDimensionSource(source, applied, cleanReason, opts);
     if (applied > 0 && hq.sources[source] !== undefined) hq.sources[source] += applied;
     if (applied < 0 && hq.drains[source] !== undefined) hq.drains[source] += -applied;
     var newPhase = _getHuangquanPhase(hq.index);
@@ -570,11 +702,12 @@
   function _tickHuangquan(ctx, mr) {
     var hq = _ensureHuangquan();
     if (!hq) return;
+    var institutional=powerMinisterMode(global.GM)==='institutional';
     // 长期信任权臣坐大
     var longTrusted = (global.GM.chars || []).filter(function(c) {
       return c.alive !== false && c.officialTitle && (c.officialTitle.indexOf('宰相') >= 0 || c.officialTitle.indexOf('丞相') >= 0 || c.officialTitle.indexOf('首辅') >= 0);
     });
-    if (longTrusted.length > 0) {
+    if (!institutional && longTrusted.length > 0) {
       var top = longTrusted[0];
       if ((top._tenureMonths || 0) > 60 && top.ambition > 70) {
         adjustHuangquan('trustedMinister', -0.2 * mr, '权臣坐大');
@@ -584,7 +717,7 @@
     var scandalous = (global.GM.chars || []).filter(function(c) {
       return c.alive !== false && (c.role === 'eunuch' || c.role === 'empress_relative' || c.role === 'consort_relative');
     });
-    if (scandalous.length > 2) {
+    if (!institutional && scandalous.length > 2) {
       adjustHuangquan('eunuchsRelatives', -0.15 * mr * scandalous.length / 2, '内宦外戚');
     }
     // ── P-ZV7 ①A 选择性衰减（皇权扣分多是持续状态·不无脑衰·按前因判定回暖）──
@@ -596,11 +729,11 @@
     });
     // 状态类·权臣坐大：前因(权臣久任+高野心)还在则上方已维持；前因消失→回暖
     var _trustedActive = longTrusted.length > 0 && (longTrusted[0]._tenureMonths || 0) > 60 && longTrusted[0].ambition > 70;
-    if (!_trustedActive && (hq.drains.trustedMinister || 0) > 0) {
+    if (!institutional && !_trustedActive && (hq.drains.trustedMinister || 0) > 0) {
       var ht = Math.min(hq.drains.trustedMinister, P_ZV7_HQ_DECAY * mr); hq.index = Math.min(100, hq.index + ht); hq.drains.trustedMinister -= ht;
     }
     // 状态类·宦官外戚：前因(scandalous>2)消失→回暖
-    if (scandalous.length <= 2 && (hq.drains.eunuchsRelatives || 0) > 0) {
+    if (!institutional && scandalous.length <= 2 && (hq.drains.eunuchsRelatives || 0) > 0) {
       var he = Math.min(hq.drains.eunuchsRelatives, P_ZV7_HQ_DECAY * mr); hq.index = Math.min(100, hq.index + he); hq.drains.eunuchsRelatives -= he;
     }
     // ── P-ZV7 ①A·其余 4 个持续状态接前因信号（前因在→维持·消失→0.5 回暖）。无信号则 cleared=false·绝不假回血。──
@@ -664,6 +797,7 @@
   }
 
   function _executePurge(targetName) {
+    if(powerMinisterMode(global.GM)==='institutional')return draftPowerMinisterInstruction({action:'purge',targetName:targetName});
     var hq = _ensureHuangquan();
     if (!hq) return { ok: false };
     var target = (global.GM.chars || []).find(function(c) { return c.name === targetName; });
@@ -711,7 +845,7 @@
     var G = global.GM;
     if (!G) return null;
     if (!G.minxin || typeof G.minxin === 'number') {
-      var oldVal = typeof G.minxin === 'number' ? G.minxin : _readInitialValue('minxin', 60);
+      var oldVal = typeof G.minxin === 'number' ? G.minxin : _regionalMinxinInitial(_readInitialValue('minxin', 60));
       var mxClInit = _readInitialObject('minxinByClass') || {};
       G.minxin = {
         trueIndex: oldVal,
@@ -729,6 +863,17 @@
       Object.keys(mxClInit).forEach(function(cl) {
         G.minxin.byClass[cl] = { index: mxClInit[cl], trend: 'stable', factors: {} };
       });
+      if (isIndependentAuthorityLedger() && !Object.keys(mxClInit).length) {
+        var classBridge = global.TM && global.TM.ClassMinxinBridge;
+        if (classBridge && typeof classBridge.syncByClass === 'function') classBridge.syncByClass(G, { source:'authority-opening', turn:G.turn });
+        else {
+          var sc = _authorityScenario();
+          (G.classes || (sc && sc.classes) || []).forEach(function(cls) {
+            var key = cls && (cls.classKey || cls.key || cls.id || cls.name);
+            if (key && typeof cls.satisfaction === 'number' && isFinite(cls.satisfaction)) G.minxin.byClass[key] = { index:cls.satisfaction, true:cls.satisfaction, className:cls.name, trend:'stable', factors:{} }; // arch-ok: authority owner initializes scenario class accounts once
+          });
+        }
+      }
     } else {
       if (!G.minxin.sources) G.minxin.sources = {};
       if (!G.minxin.byRegion) G.minxin.byRegion = {};
@@ -830,6 +975,7 @@
   }
 
   function filterQueryOptionsByPhase(allOptions) {
+    if(powerMinisterMode(global.GM)==='institutional')return allOptions;
     var G = global.GM;
     var hq = G.huangquan && G.huangquan.index || 55;
     if (hq >= 75) {
@@ -1515,6 +1661,8 @@
     adjustHuangwei: adjustHuangwei,
     regularizeHuangweiCaps: regularizeHuangweiCaps,
     adjustHuangquan: adjustHuangquan,
+    adjustHuangquanDimension: adjustHuangquanDimension,
+    isIndependentAuthorityLedger: isIndependentAuthorityLedger,
     regularizeHuangquanCaps: regularizeHuangquanCaps,
     setHuangquan: setHuangquan,
     adjustMinxin: adjustMinxin,
@@ -1542,6 +1690,10 @@
     getVariableLinkageMatrix: getVariableLinkageMatrix,
     getVariableLinkageSummary: getVariableLinkageSummary,
     VARIABLE_LINKAGE_VARIABLES: VARIABLE_LINKAGE_VARIABLES,
+    powerMinisterMode: powerMinisterMode,
+    readPowerMinisterEligibility: readPowerMinisterEligibility,
+    readPowerMinisterStatus: readPowerMinisterStatus,
+    draftPowerMinisterInstruction: draftPowerMinisterInstruction,
     VERSION: 1
   };
 

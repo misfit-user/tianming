@@ -7,7 +7,7 @@ const path = require('path');
 const vm = require('vm');
 
 const WEB = path.resolve(__dirname, '..');
-const infraSource = fs.readFileSync(path.join(WEB, 'tm-ai-infra.js'), 'utf8');
+const infraSource = (fs.readFileSync(path.join(WEB, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(WEB, 'tm-ai-infra.js'), 'utf8'));
 const budgetSource = fs.readFileSync(path.join(WEB, 'tm-endturn-ai-sc1-budget.js'), 'utf8');
 const endturnSource = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
 

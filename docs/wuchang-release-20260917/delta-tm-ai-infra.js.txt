@@ -1,0 +1,1467 @@
+diff --git a/web/tm-ai-infra.js b/web/tm-ai-infra.js
+index ff116874..1f414c04 100644
+--- a/web/tm-ai-infra.js
++++ b/web/tm-ai-infra.js
+@@ -384,6 +384,24 @@ function _recordCacheStats(usage) {
+ //   个别代理不认 cache_control 字段会回 400。撞到就由 _aiFetchWithRetryInner 脱字段重试一次，
+
+ //   并把本会话停用闸置位（_maybeCacheSys / buildCachedMessages 读它），之后整局不再打标记，自愈不复发。
+
+ var _aiCacheCtrlDisabled = false;
+
++// 把 body.messages 里「带 cache_control 的数组型 content」拍回纯字符串·返回是否真剥离了（仅动含 cache_control 的，真·多模态数组不碰）
+
++function _stripCacheControlFromBody(body) {
++  if (!body || !Array.isArray(body.messages)) return false;
+
++  var stripped = false;
+
++  for (var i = 0; i < body.messages.length; i++) {
+
++    var m = body.messages[i];
+
++    if (m && Array.isArray(m.content) && m.content.some(function(b){ return b && b.cache_control; })) {
+
++      m.content = m.content.map(function(b){ return (b && typeof b.text === 'string') ? b.text : ''; }).join('');
+
++      stripped = true;
+
++    }
+
++  }
+
++  return stripped;
++}
++
++function _isContextLengthResponse(status, text) {
++  if (Number(status) !== 400) return false;
++  return /context(?:_|\s|-)*(?:length|window)|maximum context|too many (?:input )?tokens|prompt (?:is )?too long|token limit|上下文.{0,8}(?:过长|超限)|超出.{0,8}(?:上下文|token)/i.test(String(text || ''));
++}
+ 
+
+ /**
+
+  * 构建缓存友好的 messages：字节级前缀稳定·变动内容在尾部
+
+@@ -464,8 +482,8 @@ function estimateTokens(text) {
+  * 返回 { contextK, budget, warn80, warn95 }
+
+  */
+
+ function getPromptBudget() {
+
+-  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 32 };
+
+-  var contextK = cp.contextK || 32;
+
++  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 256 };
+
++  var contextK = cp.contextK || 256;
+
+   // 留 1/4 给响应+缓冲
+
+   var budget = Math.floor(contextK * 1024 * 0.75);
+
+   return { contextK: contextK, budget: budget, warn80: Math.floor(budget * 0.8), warn95: Math.floor(budget * 0.95) };
+
+@@ -521,15 +539,15 @@ function checkPromptTokenBudget(promptText, onWarn) {
+   };
+
+ })(typeof window !== 'undefined' ? window : this);
+
+ 
+
+-async function _aiFetchWithRetryInner(url, body, signal, opts) {
++async function _aiFetchWithRetryInner(url, body, signal, opts) {
+
+   opts = opts || {};
+
+   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
+
+-  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
++  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
+
+   // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
+
+   var key = opts.apiKey || P.ai.key;
+
+-  var lastError = null;
+-  var _ccStripped = false;   // cache_control 撞 400 脱字段重试·每请求只脱一次
+-  var _contextReduced = false; // context-length 400 只允许一次调用方提供的更严预算重编排
++  var lastError = null;
+
++  var _ccStripped = false;   // cache_control 撞 400 脱字段重试·每请求只脱一次
+
++  var _contextReduced = false; // context-length 400 只允许一次调用方提供的更严预算重编排
+
+   // 粗估 token 预算（仅警告，不截断：截断是调用方的职责）
+
+   try {
+
+     if (body && body.messages && typeof checkPromptTokenBudget === 'function') {
+
+@@ -537,61 +555,61 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
+       checkPromptTokenBudget(_combined);
+
+     }
+
+   } catch(_tkE) {}
+
+-  for (var attempt = 0; attempt <= maxRetries; attempt++) {
+-    var ctrl = new AbortController();
+-    var timedOut = false;
+-    var requestPhase = 'headers', timeoutError, rejectDeadline;
+-    var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
+-    var timeoutAborter = function() {
+-      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
+-      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
+-      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+-    };
++  for (var attempt = 0; attempt <= maxRetries; attempt++) {
+
++    var ctrl = new AbortController();
+
++    var timedOut = false;
+
++    var requestPhase = 'headers', timeoutError, rejectDeadline;
+
++    var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
+
++    var timeoutAborter = function() {
+
++      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
+
++      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
+
++      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+
++    };
+
+     var externalAborter = function() { var error = _aiCancelledError(signal); rejectDeadline(error); ctrl.abort(error); };
+-    var timer = setTimeout(timeoutAborter, timeoutMs);
+-    if (signal) {
+-      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
+-      signal.addEventListener('abort', externalAborter);
++    var timer = setTimeout(timeoutAborter, timeoutMs);
+
++    if (signal) {
+
++      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
+
++      signal.addEventListener('abort', externalAborter);
+
+     }
+
+-    try {
+
+-      var resp = await Promise.race([fetch(url, {
+-        method: 'POST',
+
++    try {
++      var resp = await Promise.race([(typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
++        method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+
+         body: JSON.stringify(body),
+
+-        signal: ctrl.signal
+-      }), deadline]);
+-      requestPhase = 'body';
++        signal: ctrl.signal, timeoutMs: timeoutMs
+
++      }), deadline]);
+
++      requestPhase = 'body';
+
+       // 429 速率限制：读 Retry-After 延迟
+
+-      if (resp.status === 429 && attempt < maxRetries) {
++      if (resp.status === 429 && attempt < maxRetries) {
+
+         clearTimeout(timer);
+         if (resp.body && typeof resp.body.cancel === 'function') resp.body.cancel().catch(function() {});
+-        var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
+
+-        var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
+
+-        console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
+
++        var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
++        var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
++        console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
+         await _aiWaitForRetry(delay429, signal);
+-        continue;
+
+-      }
+
+-      if (!resp.ok) {
+
++        continue;
++      }
++      if (!resp.ok) {
+         var errText = '';
+
+-        try { errText = await Promise.race([resp.text(), deadline]); } catch(_e) {}
+-        if (timedOut) throw timeoutError;
+-        if (signal && signal.aborted) throw _aiCancelledError(signal);
+-        clearTimeout(timer);
+-        lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
+-        lastError.status = resp.status;
+-        _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
+-        var _isContextLength = _isContextLengthResponse(resp.status, errText);
+-        if (_isContextLength) {
+-          lastError.code = 'context_length_exceeded';
+-          lastError.contextOverflow = true;
+-          if (!_contextReduced && typeof opts.contextOverflowReducer === 'function') {
+-            try {
+-              var _beforeBody = JSON.stringify(body);
+-              var _reducedBody = opts.contextOverflowReducer(body, {
+-                status: resp.status,
+-                responseText: errText,
+-                attempt: attempt,
+-                emergencyRetry: 1
++        try { errText = await Promise.race([resp.text(), deadline]); } catch(_e) {}
+
++        if (timedOut) throw timeoutError;
+
++        if (signal && signal.aborted) throw _aiCancelledError(signal);
+
++        clearTimeout(timer);
+
++        lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
+
++        lastError.status = resp.status;
+
++        _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
+
++        var _isContextLength = _isContextLengthResponse(resp.status, errText);
+
++        if (_isContextLength) {
+
++          lastError.code = 'context_length_exceeded';
+
++          lastError.contextOverflow = true;
+
++          if (!_contextReduced && typeof opts.contextOverflowReducer === 'function') {
+
++            try {
+
++              var _beforeBody = JSON.stringify(body);
+
++              var _reducedBody = opts.contextOverflowReducer(body, {
+
++                status: resp.status,
+
++                responseText: errText,
+
++                attempt: attempt,
+
++                emergencyRetry: 1
+
+               });
+               var _afterBody = _reducedBody ? JSON.stringify(_reducedBody) : '';
+               if (_reducedBody && _afterBody.length < _beforeBody.length) {
+@@ -610,86 +628,86 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
+         // 400 且本请求带了 cache_control → 大概率中转代理不认该字段：脱掉 cache_control 就地重试一次，
+         //   并本会话停用缓存标记（防每回合都先撞一次 400）。仅脱一次，避免无限重试。
+         if (resp.status === 400 && !_isContextLength && !_ccStripped && _stripCacheControlFromBody(body)) {
+-          _ccStripped = true;
+
+-          _aiCacheCtrlDisabled = true;
+
+-          console.warn('[AI] 400 且请求含 cache_control·疑代理不认·已脱字段重试并本会话停用 prompt 缓存标记');
+
+-          continue;
+
+-        }
+
+-        // 5xx 可重试；4xx（除 429）不重试
+
+-        if (resp.status >= 500 && attempt < maxRetries) {
+
++          _ccStripped = true;
++          _aiCacheCtrlDisabled = true;
++          console.warn('[AI] 400 且请求含 cache_control·疑代理不认·已脱字段重试并本会话停用 prompt 缓存标记');
++          continue;
++        }
++        // 5xx 可重试；4xx（除 429）不重试
++        if (resp.status >= 500 && attempt < maxRetries) {
+           await _aiWaitForRetry(1000 * Math.pow(2, attempt), signal);
+-          continue;
+
+-        }
+
+-        throw lastError;
+
+-      }
+
++          continue;
++        }
++        throw lastError;
++      }
+       var data = await Promise.race([resp.json(), deadline]);
+       if (timedOut) throw timeoutError;
+       if (signal && signal.aborted) throw _aiCancelledError(signal);
+-      clearTimeout(timer);
++      clearTimeout(timer);
+
+       _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
+
+       // 记录缓存命中统计
+
+       if (data && data.usage && typeof _recordCacheStats === 'function') _recordCacheStats(data.usage);
+
+       return data;
+
+-    } catch(e) {
+-      clearTimeout(timer);
+-      if (timedOut) e = timeoutError;
+-      else if (signal && signal.aborted) e = _aiCancelledError(signal);
+-      lastError = e;
+-      // 外部 signal 主动中断——不重试
+-      if (signal && signal.aborted) throw e;
+-      // 明确的 4xx（429 已在响应分支处理）是请求错误；不得被通用网络重试再次原样发送。
+-      if (e && e.status >= 400 && e.status < 500 && e.status !== 429) {
+-        if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+-        throw e;
+-      }
+-      // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
+
+-      //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
+
+-      if (timedOut) {
+
+-        var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
+-        if (_bigReq || attempt >= 1) {
+
+-          if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+
+-          throw e;
+
+-        }
+
++    } catch(e) {
+
++      clearTimeout(timer);
+
++      if (timedOut) e = timeoutError;
+
++      else if (signal && signal.aborted) e = _aiCancelledError(signal);
+
++      lastError = e;
+
++      // 外部 signal 主动中断——不重试
+
++      if (signal && signal.aborted) throw e;
+
++      // 明确的 4xx（429 已在响应分支处理）是请求错误；不得被通用网络重试再次原样发送。
+
++      if (e && e.status >= 400 && e.status < 500 && e.status !== 429) {
+
++        if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+
++        throw e;
+
+       }
+
+-      // 网络错误 / 小请求首次超时——指数退避重试
+
++      // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
++      //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
++      if (timedOut) {
++        var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
++        if (_bigReq || attempt >= 1) {
++          if (!e.lastRaw) e.lastRaw = _aiLastRaw;
++          throw e;
++        }
++      }
++      // 网络错误 / 小请求首次超时——指数退避重试
+       if (attempt < maxRetries) {
+
+         var delayRetry = 1000 * Math.pow(2, attempt);
+
+         console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
+
+-        await _aiWaitForRetry(delayRetry, signal);
++        await _aiWaitForRetry(delayRetry, signal);
+
+       } else {
+
+         // 挂载最后的原始响应
+
+         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+
+         throw e;
+
+-      }
+-    } finally {
+-      clearTimeout(timer);
+-      if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', externalAborter);
+-    }
+-  }
++      }
+
++    } finally {
+
++      clearTimeout(timer);
+
++      if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', externalAborter);
+
++    }
+
++  }
+
+   throw lastError || new Error('_aiFetchWithRetry: 重试耗尽');
+
+ }
+
+ 
+
+ // ============================================================
+
+-// 失败态人话化（2026-07-02）：把 AI 调用的技术性报错翻成「哪坏了 + 该去哪修」的人话。
+
+-//   此前过回合/探测失败直接把 error.message 甩给玩家（HTTP 401: {"error"...}），新手无从下手。
+
+-//   分类不出返回 null → 调用方回退原文（不吞信息）。挂 window 供过回合/设置探测等出错兜底共用。
+
+-// ============================================================
+
+-function _tmAiErrHuman(err) {
+
+-  try {
+
+-    var msg = String((err && err.message) || err || '');
+-    var m = msg.match(/HTTP (\d{3})/);
+-    var status = (err && err.status) || (m ? +m[1] : 0);
+-    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的规则与上下文超过配置上限' + (err && err.contextTokens ? '（当前 ' + Math.round(err.contextTokens / 1024) + 'K）' : '') + '，不能靠删减内容继续推演。请核对「设置 → AI · 模型」的上下文容量，或使用支持足够上下文的接口。';
+-    if (err && err.code === 'AI_ABORTED') return '本次 AI 请求已取消，没有继续重试。';
+-    if (err && err.code === 'AI_TIMEOUT') return 'AI 请求在' + (err.phase === 'body' ? '读取完整正文' : '等待响应头') + '时超过 ' + Math.round(err.timeoutMs / 1000) + ' 秒期限，未收到完整结果；这不能单凭日志判断为模型故障，可检查诊断后重试。';
++// 失败态人话化（2026-07-02）：把 AI 调用的技术性报错翻成「哪坏了 + 该去哪修」的人话。
++//   此前过回合/探测失败直接把 error.message 甩给玩家（HTTP 401: {"error"...}），新手无从下手。
++//   分类不出返回 null → 调用方回退原文（不吞信息）。挂 window 供过回合/设置探测等出错兜底共用。
++// ============================================================
++function _tmAiErrHuman(err) {
++  try {
++    var msg = String((err && err.message) || err || '');
+
++    var m = msg.match(/HTTP (\d{3})/);
+
++    var status = (err && err.status) || (m ? +m[1] : 0);
+
++    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的规则与上下文超过配置上限' + (err && err.contextTokens ? '（当前 ' + Math.round(err.contextTokens / 1024) + 'K）' : '') + '，不能靠删减内容继续推演。请核对「设置 → AI · 模型」的上下文容量，或使用支持足够上下文的接口。';
+
++    if (err && err.code === 'AI_ABORTED') return '本次 AI 请求已取消，没有继续重试。';
+
++    if (err && err.code === 'AI_TIMEOUT') return 'AI 请求在' + (err.phase === 'body' ? '读取完整正文' : '等待响应头') + '时超过 ' + Math.round(err.timeoutMs / 1000) + ' 秒期限，未收到完整结果；这不能单凭日志判断为模型故障，可检查诊断后重试。';
+
+     if (/API未配置|API地址未配置|未配置可用 API|未配置 API key/.test(msg)) return '尚未配置 AI 密钥或接口地址——请到「设置 → AI · 模型」填写 API 地址、模型名与密钥。';
+
+     if (status === 401 || /invalid[ _]?api[ _]?key|incorrect api key|unauthorized|authentication/i.test(msg)) return 'AI 密钥无效或已过期（401）——请到「设置 → AI · 模型」核对密钥是否填对、是否仍有效。';
+
+     if (status === 402 || /insufficient_quota|insufficient balance|exceeded your current quota|欠费|余额不足|quota/i.test(msg)) return 'AI 账户额度不足或欠费——请前往所用 API 平台查看余额充值，或更换密钥。';
+
+     if (status === 403) return 'AI 接口拒绝访问（403）——密钥无权调用该模型，或所在网络/中转不被允许；请核对模型权限或更换中转。';
+
+-    if (status === 404 || /model.{0,20}(not.{0,8}found|does not exist)|无此模型/i.test(msg)) return '接口路径或模型名不存在（404）——请到「设置 → AI · 模型」核对 API 地址与模型名拼写。';
+
+-    if (status === 429 || /rate.?limit|too many requests/i.test(msg)) return 'AI 接口限速（429）且重试后仍被拒——稍候片刻再试；频繁出现可换中转或升级所用平台套餐。';
+
+-    if (status >= 500) return 'AI 服务端故障（' + status + '）——对方服务器暂时不稳，稍候重试；反复出现可更换中转或改用官方接口。';
+
+-    if ((err && err.name === 'AbortError') || /\babort/i.test(msg) || /timeout|超时/i.test(msg)) return 'AI 响应超时——网络不稳或模型推理过慢；可稍候重试，或到「设置」换更快的模型/中转。';
+
++    if (status === 404 || /model.{0,20}(not.{0,8}found|does not exist)|无此模型/i.test(msg)) return '接口路径或模型名不存在（404）——请到「设置 → AI · 模型」核对 API 地址与模型名拼写。';
++    if (status === 429 || /rate.?limit|too many requests/i.test(msg)) return 'AI 接口限速（429）且重试后仍被拒——稍候片刻再试；频繁出现可换中转或升级所用平台套餐。';
++    if (status >= 500) return 'AI 服务端故障（' + status + '）——对方服务器暂时不稳，稍候重试；反复出现可更换中转或改用官方接口。';
++    if ((err && err.name === 'AbortError') || /\babort/i.test(msg) || /timeout|超时/i.test(msg)) return 'AI 响应超时——网络不稳或模型推理过慢；可稍候重试，或到「设置」换更快的模型/中转。';
+     if (!status && /failed to fetch|networkerror|network error|load failed/i.test(msg)) return '网络不可达——连不上 AI 接口；请检查网络连接与「设置」中的 API 地址（部分接口需中转可达）。';
+
+     if (/unexpected token|unexpected end of json|json 解析|截断/i.test(msg)) return 'AI 返回内容解析失败——多为模型太弱或输出被截断；建议换更强模型（本作主推演需单次输出 ≥8K）。';
+
+     return null;
+
+@@ -748,20 +766,20 @@ async function callAI(prompt,maxTok,signal,tier,opts){
+   var key=_aiCfg.key || (P.ai&&P.ai.key) || '';if(!key)throw new Error("API\u672A\u914D\u7F6E");
+
+   var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
+
+   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
+
+-  var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+-  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
++  var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+
++  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
+
+   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
+
+-  var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
++  var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
+
+   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
+
+-  if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
+-  if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, 'openai');
+-  var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
++  if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
+
++  if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
+
++  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, 'openai');
+
++  var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
+
+   // Phase 7·补 id 参数·byId 拆分
+
+-  if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
+
+-  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
+-}
+
+-
+
++  if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
++  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
+
++}
++
+ /**
+
+  * Wave 2 · tool_use 强约束调用·全 API 兼容
+
+  * 让 AI 必须以结构化 tool_call 输出·消除"narrative 与 JSON 不一致"根因
+
+@@ -776,7 +794,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
+  * @param {string} prompt - 提示词
+
+  * @param {Array<{name:string, description:string, parameters:object}>} tools - 工具定义（JSON Schema parameters）
+
+  * @param {{maxTok?:number, signal?:AbortSignal, tier?:string, forceTool?:string, allowText?:boolean}} [opts]
+
+- * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean, error?:object}>}
++ * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean, error?:object}>}
+
+  *   - text: AI 文本输出（如有）
+
+  *   - toolCalls: 解析后的工具调用列表·每项 {name, input(parsed object)}
+
+  *   - fallback: true 表示走了文本→JSON 解析路径
+
+@@ -810,31 +828,31 @@ async function callAIWithTools(prompt, tools, opts) {
+   var isAnthropicNative = provider === 'anthropic' && /api\.anthropic\.com/i.test(userUrl);
+
+   // Gemini 原生：用 generateContent 接口（非 /v1beta/openai/）
+
+   var isGeminiNative = provider === 'gemini' && /generativelanguage\.googleapis\.com/i.test(userUrl) && !/\/v1beta\/openai\//i.test(userUrl);
+
+-  var maxTok = opts.maxTok || 2000;
+-  var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+-
+-  // Additive failure metadata: never return an Error/lastRaw (which may contain
+-  // request contents or credentials) to a UI consumer. Existing callers can
+-  // still inspect text/toolCalls; structured-only agents can stop failed rounds.
+-  function _toolErrorInfo(error) {
+-    var status = Number(error && error.status) || 0;
+-    var code = (opts.signal && opts.signal.aborted) ? 'aborted' :
+-      (error && error.code === 'tool-timeout') ? 'tool-timeout' :
+-      (error && error.code === 'tool-choice-unsupported') ? 'tool-choice-unsupported' :
+-      status ? 'tool-http-error' : 'tool-call-failed';
+-    return { code: code, status: status, message: status ? ('HTTP ' + status) : code };
+-  }
+-  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+-  async function _runFallback(cause) {
+-    try {
+-      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+-      var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
+-      return { text: String(raw||''), toolCalls: calls, fallback: true,
+-        error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
+-    } catch(_fe) {
+-      var info = _toolErrorInfo(_fe);
+-      console.warn('[callAIWithTools] fallback 也失败:', info.code, info.status);
+-      return { text: '', toolCalls: [], fallback: true, error: info };
++  var maxTok = opts.maxTok || 2000;
+
++  var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+
++
+
++  // Additive failure metadata: never return an Error/lastRaw (which may contain
+
++  // request contents or credentials) to a UI consumer. Existing callers can
+
++  // still inspect text/toolCalls; structured-only agents can stop failed rounds.
+
++  function _toolErrorInfo(error) {
+
++    var status = Number(error && error.status) || 0;
+
++    var code = (opts.signal && opts.signal.aborted) ? 'aborted' :
+
++      (error && error.code === 'tool-timeout') ? 'tool-timeout' :
+
++      (error && error.code === 'tool-choice-unsupported') ? 'tool-choice-unsupported' :
+
++      status ? 'tool-http-error' : 'tool-call-failed';
+
++    return { code: code, status: status, message: status ? ('HTTP ' + status) : code };
+
++  }
+
++  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+
++  async function _runFallback(cause) {
+
++    try {
+
++      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+
++      var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
+
++      return { text: String(raw||''), toolCalls: calls, fallback: true,
+
++        error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
+
++    } catch(_fe) {
+
++      var info = _toolErrorInfo(_fe);
+
++      console.warn('[callAIWithTools] fallback 也失败:', info.code, info.status);
+
++      return { text: '', toolCalls: [], fallback: true, error: info };
+
+     }
+
+   }
+
+ 
+
+@@ -892,55 +910,55 @@ async function callAIWithTools(prompt, tools, opts) {
+     if (opts.forceTool) body.tool_choice = { type: 'function', function: { name: opts.forceTool } };
+
+     else body.tool_choice = 'auto';  // 多数兼容 API 不识别 'required'·用 auto + 内 prompt 强调
+
+     headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
+
+-    parseMode = 'openai';
+-  }
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, parseMode);
+-  // Use the effective request URL, not the primary config when tier=secondary.
+-  // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
+-  if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
+-  // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
++    parseMode = 'openai';
+
++  }
+
++  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, parseMode);
+
++  // Use the effective request URL, not the primary config when tier=secondary.
+
++  // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
+
++  if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
+
++  // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
+
+   var data;
+
+-  async function _toolFetchQueued() {
+-    var ctrl = new AbortController();
+-    var timedOut = false;
+-    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+-    if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
+-    var onExternalAbort = function() { ctrl.abort(); };
+-    if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+-    try {
+-      var choiceRetried = false;
+-      while (true) {
+-        if (ctrl.signal.aborted) throw new Error('Aborted');
+-        var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+-        if (!resp.ok) {
+-          var errT = '';
++  async function _toolFetchQueued() {
+
++    var ctrl = new AbortController();
+
++    var timedOut = false;
+
++    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+
++    if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
+
++    var onExternalAbort = function() { ctrl.abort(); };
+
++    if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+
++    try {
+
++      var choiceRetried = false;
+
++      while (true) {
+
++        if (ctrl.signal.aborted) throw new Error('Aborted');
+
++        var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+
++        if (!resp.ok) {
+
++          var errT = '';
+
+           try { errT = await resp.text(); } catch(_){ }
+           var choiceUnsupported = resp.status === 400 && /thinking mode does not support (?:this )?tool_choice/i.test(errT);
+           // Unknown compatible proxies can expose the same policy. One repair,
+           // same timer/abort/queue slot; unrelated errors use the existing fallback.
+           if (choiceUnsupported && parseMode === 'openai' && !choiceRetried && body.tool_choice !== undefined) {
+             choiceRetried = true;
+-            _tmAIToolJSON.omitChoice(body, opts.forceTool);
+-            console.warn('[callAIWithTools] 思考模式不支持 tool_choice·省略该参数后重试一次');
+-            continue;
+-          }
+-          console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
+-          var err = new Error('HTTP ' + resp.status);
+-          err.status = resp.status;
+-          if (choiceUnsupported) err.code = 'tool-choice-unsupported';
+-          throw err;
+-        }
+-        return await resp.json();
+-      }
++            _tmAIToolJSON.omitChoice(body, opts.forceTool);
+
++            console.warn('[callAIWithTools] 思考模式不支持 tool_choice·省略该参数后重试一次');
+
++            continue;
+
++          }
+
++          console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
+
++          var err = new Error('HTTP ' + resp.status);
+
++          err.status = resp.status;
+
++          if (choiceUnsupported) err.code = 'tool-choice-unsupported';
+
++          throw err;
+
++        }
+
++        return await resp.json();
+
++      }
+
+     } catch (error) {
+       if (timedOut && !(opts.signal && opts.signal.aborted)) {
+         var timeoutError = new Error('AI tool request timed out'); timeoutError.code = 'tool-timeout'; throw timeoutError;
+       }
+-      throw error;
+-    } finally {
+-      clearTimeout(timer);
+-      if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+-    }
++      throw error;
+
++    } finally {
+
++      clearTimeout(timer);
+
++      if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+
++    }
+
+   }
+
+   try {
+
+     if (typeof _aiQueue !== 'undefined' && _aiQueue && typeof _aiQueue.enqueue === 'function') {
+
+@@ -948,11 +966,11 @@ async function callAIWithTools(prompt, tools, opts) {
+     } else {
+
+       data = await _toolFetchQueued();
+
+     }
+
+-  } catch(e) {
+-    var failure = _toolErrorInfo(e);
+-    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+-    console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
+-    return await _runFallback(e);
++  } catch(e) {
+
++    var failure = _toolErrorInfo(e);
+
++    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+
++    console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
+
++    return await _runFallback(e);
+
+   }
+
+   if (data && data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, (opts && opts.id) || 'callAIWithTools');
+
+   // ─── 解析响应·三路径分支 ───
+
+@@ -982,13 +1000,13 @@ async function callAIWithTools(prompt, tools, opts) {
+         if (Array.isArray(msg.tool_calls)) {
+
+           msg.tool_calls.forEach(function(tc) {
+
+             var fn = tc.function || {};
+
+-            var input = _tmAIToolJSON.decode(fn.arguments);
+-            if (fn.name && input !== null) toolCalls.push({ name: fn.name, input: input });
++            var input = _tmAIToolJSON.decode(fn.arguments);
+
++            if (fn.name && input !== null) toolCalls.push({ name: fn.name, input: input });
+
+           });
+
+         }
+
+         // 兼容某些代理把 function_call (单数·OpenAI 旧字段) 当作 tool_use 返回
+
+         if (toolCalls.length === 0 && msg.function_call && msg.function_call.name) {
+
+-          toolCalls.push({ name: msg.function_call.name, input: _tmAIToolJSON.decode(msg.function_call.arguments) });
++          toolCalls.push({ name: msg.function_call.name, input: _tmAIToolJSON.decode(msg.function_call.arguments) });
+
+         }
+
+       }
+
+       // 兼容某些代理直接返回 anthropic 风格 content[]·尝试解析
+
+@@ -1001,10 +1019,10 @@ async function callAIWithTools(prompt, tools, opts) {
+     }
+
+   } catch(_parseE) {
+
+     console.warn('[callAIWithTools] 响应解析异常·走 fallback:', _parseE);
+
+-    return await _runFallback(_parseE);
++    return await _runFallback(_parseE);
+
+   }
+
+   // 如果完全没有 toolCalls 且有 text·尝试从 text 抽取 JSON 作为兜底
+
+-  if (toolCalls.length === 0 && text) toolCalls = _tmAIToolJSON.parse(text);
++  if (toolCalls.length === 0 && text) toolCalls = _tmAIToolJSON.parse(text);
+
+   // 刀H2(2026-07-02·CC max_tokens 动态调整对照) · 纯增量字段:输出是否被 maxTok 截断(finish_reason)。
+
+   //   调用方(如回合推演 agent)可据此提升输出上限重试;不读该字段的调用方一切如旧。
+
+   var _truncH2 = false;
+
+@@ -1012,9 +1030,9 @@ async function callAIWithTools(prompt, tools, opts) {
+     _truncH2 = !!((data.choices && data.choices[0] && (data.choices[0].finish_reason === 'length' || data.choices[0].stop_reason === 'length' || data.choices[0].finish_reason === 'max_tokens'))
+
+       || data.stop_reason === 'max_tokens'
+
+       || (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'MAX_TOKENS'));
+
+-  } catch (_tH2E) {}
+-  toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
+-  return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
++  } catch (_tH2E) {}
+
++  toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
+
++  return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
+
+ }
+
+ 
+
+ /**
+
+@@ -1044,16 +1062,16 @@ async function callAISmart(prompt, maxTok, options) {
+     }
+
+ 
+
+     try {
+
+-      var result = await callAI(currentPrompt, maxTok, signal, options.tier, {
++      var result = await callAI(currentPrompt, maxTok, signal, options.tier, {
+
+         priority: options.priority || 'normal',
+
+         timeoutMs: options.timeoutMs,
+
+-        maxRetries: (options.fetchMaxRetries != null) ? options.fetchMaxRetries : 1,
+-        contextOverflowReducer: options.contextOverflowReducer
+-      });
+
++        maxRetries: (options.fetchMaxRetries != null) ? options.fetchMaxRetries : 1,
+
++        contextOverflowReducer: options.contextOverflowReducer
+
++      });
+ 
+
+       // Append to existing content
+
+-      if (allContent.length > 0) {
+
+-        allContent += '\n\n' + result;
+
++      if (allContent.length > 0) {
++        allContent += '\n\n' + result;
+       } else {
+
+         allContent = result;
+
+       }
+
+@@ -1076,14 +1094,14 @@ async function callAISmart(prompt, maxTok, options) {
+       }
+
+ 
+
+       return allContent;
+
+-    } catch(e) {
+-      if ((signal && signal.aborted) || _aiErrorIsTerminal(e)) throw e;
+-      if (attemptCount < maxRetries) {
++    } catch(e) {
+
++      if ((signal && signal.aborted) || _aiErrorIsTerminal(e)) throw e;
+
++      if (attemptCount < maxRetries) {
+
+         console.warn('[AI Smart] 调用失败，重试中... (' + attemptCount + '/' + maxRetries + ')');
+
+-        await _aiWaitForRetry(1000, signal);
+-        return await attemptCall();
+
+-      } else {
+
+-        throw e;
+
++        await _aiWaitForRetry(1000, signal);
+
++        return await attemptCall();
++      } else {
++        throw e;
+       }
+
+     }
+
+   }
+
+@@ -1137,15 +1155,15 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
+     }
+
+   }
+
+   var body = { model: _aiCfgM.model || (P.ai&&P.ai.model) || "gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
+
+-  var fetchOpts2 = { apiKey: key, priority: opts.priority || 'normal' };
++  var fetchOpts2 = { apiKey: key, priority: opts.priority || 'normal' };
+
+   if (opts.timeoutMs != null) fetchOpts2.timeoutMs = opts.timeoutMs;
+
+-  if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
+-  if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfgM, 'openai');
++  if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
+
++  if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
+
++  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfgM, 'openai');
+
+   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts2);
+   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAIMessages');
+
+   return _tmAITextResult(data, opts.requireText === true, _scaledTok2);
+-}
+
++}
+ 
+
+ /**
+
+  * 流式 AI 调用（SSE）
+
+@@ -1154,12 +1172,12 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
+  * @param {{signal?:AbortSignal, onChunk?:function(string):void, onDone?:function(string):void}} [opts]
+
+  * @returns {Promise<string>} 完整回复
+
+  */
+
+-async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+-  opts = opts || {};
+-  var _finalizedBody = null;
+-  if (opts.finalizedBody !== undefined) {
+-    if (!opts.finalizedBody || typeof opts.finalizedBody !== 'object' || Array.isArray(opts.finalizedBody)) {
+-      throw new Error('流式 finalizedBody 非法');
++async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+
++  opts = opts || {};
+
++  var _finalizedBody = null;
+
++  if (opts.finalizedBody !== undefined) {
+
++    if (!opts.finalizedBody || typeof opts.finalizedBody !== 'object' || Array.isArray(opts.finalizedBody)) {
+
++      throw new Error('流式 finalizedBody 非法');
+
+     }
+     _finalizedBody = opts.finalizedBodyDetached === true
+       ? opts.finalizedBody
+@@ -1168,12 +1186,12 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+     if (!Number.isFinite(_exactMax) || _exactMax <= 0) throw new Error('流式 finalizedBody.max_tokens 非法');
+     maxTok = Math.floor(_exactMax);
+   }
+-  // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
+
+-  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback) {
+
+-    var _oS = Object.assign({}, opts, { _noSecFallback: true });
+
+-    try { return await _callAIMessagesStreamDirect(messages, maxTok, _oS); }
+
+-    catch (e) {
+
+-      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await _callAIMessagesStreamDirect(messages, maxTok, Object.assign({}, _oS, { tier: 'primary' })); }
+
++  // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
++  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback) {
++    var _oS = Object.assign({}, opts, { _noSecFallback: true });
++    try { return await _callAIMessagesStreamDirect(messages, maxTok, _oS); }
++    catch (e) {
++      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await _callAIMessagesStreamDirect(messages, maxTok, Object.assign({}, _oS, { tier: 'primary' })); }
+       throw e;
+
+     }
+
+   }
+
+@@ -1184,41 +1202,41 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+   var key = _aiCfg.key || (P.ai && P.ai.key) || ''; if (!key) throw new Error('API未配置');
+
+   var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(opts.tier) : _buildAIUrl();
+
+   if (!url) throw new Error('API地址未配置');
+
+-  var ctrl = new AbortController();
+-  var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+-  if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 同 _toolFetchQueued·已置位预检(2026-07-04 审查定罪)
+-  var onExternalAbort = function() { ctrl.abort(); };
+-  if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+-  var _scaledTok = _finalizedBody
++  var ctrl = new AbortController();
+
++  var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+
++  if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 同 _toolFetchQueued·已置位预检(2026-07-04 审查定罪)
+
++  var onExternalAbort = function() { ctrl.abort(); };
+
++  if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+
++  var _scaledTok = _finalizedBody
+
+     ? maxTok
+     : Math.round((maxTok || 500) * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+   try {
+-    // M4·Anthropic cache_control：原生 Anthropic API + sys 足够长 → 加 cache_control 享 90% 折扣
+
++    // M4·Anthropic cache_control：原生 Anthropic API + sys 足够长 → 加 cache_control 享 90% 折扣
+     var _msgsStream = messages;
+     try {
+       var _providerS = (typeof _detectAIProvider === 'function') ? _detectAIProvider() : '';
+       var _isNativeS = (P.ai && P.ai.url && /api\.anthropic\.com/i.test(P.ai.url));
+       if (!_finalizedBody && _providerS === 'anthropic' && _isNativeS && messages && messages.length > 0) {
+         var _firstS = messages[0];
+
+-        if (_firstS && _firstS.role === 'system' && typeof _firstS.content === 'string' && _firstS.content.length > 1500) {
+
+-          _msgsStream = messages.slice();
+
+-          _msgsStream[0] = { role: 'system', content: [{ type: 'text', text: _firstS.content, cache_control: { type: 'ephemeral' } }] };
+
+-        }
+
+-      }
+
++        if (_firstS && _firstS.role === 'system' && typeof _firstS.content === 'string' && _firstS.content.length > 1500) {
++          _msgsStream = messages.slice();
++          _msgsStream[0] = { role: 'system', content: [{ type: 'text', text: _firstS.content, cache_control: { type: 'ephemeral' } }] };
++        }
++      }
+     } catch(_cE) {}
+
+-    var _bodyCore = _finalizedBody || {
+-      model: (_aiCfg && _aiCfg.model) || (P.ai && P.ai.model) || 'gpt-4o', messages: _msgsStream,
+-      temperature: (opts.temperature !== undefined) ? opts.temperature : (P.ai.temp || 0.8),
+-      max_tokens: _scaledTok
+-    };
+-    if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
++    var _bodyCore = _finalizedBody || {
+
++      model: (_aiCfg && _aiCfg.model) || (P.ai && P.ai.model) || 'gpt-4o', messages: _msgsStream,
+
++      temperature: (opts.temperature !== undefined) ? opts.temperature : (P.ai.temp || 0.8),
+
++      max_tokens: _scaledTok
+
++    };
+
++    if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
+
+     if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
+     _bodyCore.stream = true;
+-    var resp = await fetch(url, {
+
+-      method: 'POST',
+
+-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+
+-      body: JSON.stringify(_bodyCore),
+
+-      signal: ctrl.signal
+
++    var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
++      body: JSON.stringify(_bodyCore),
++      signal: ctrl.signal
+     });
+
+     if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+     // 非流式回退（部分代理不支持stream）
+
+@@ -1263,26 +1281,26 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+     }
+
+     if (opts.onDone) opts.onDone(full);
+
+     return full;
+
+-  } finally {
+-    clearTimeout(timer);
+-    if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+-  }
+-}
+-
+
++  } finally {
+
++    clearTimeout(timer);
+
++    if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+
++  }
+
++}
+
++
+ async function callAIMessagesStream(messages, maxTok, opts) {
+-  opts = opts || {};
+
+-  if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
+
+-    return _callAIMessagesStreamDirect(messages, maxTok, opts);
+
++  opts = opts || {};
++  if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
++    return _callAIMessagesStreamDirect(messages, maxTok, opts);
+   }
+
+-  var queuedOpts = Object.assign({}, opts, { skipQueue: true });
+
++  var queuedOpts = Object.assign({}, opts, { skipQueue: true });
+   return _aiQueue.enqueue(function() {
+
+     return _callAIMessagesStreamDirect(messages, maxTok, queuedOpts);
+
+   }, opts.priority || 'normal');
+
+-}
+-
+-// 已经通过最终物理预算审核的请求必须原样发送。除 stream:true 外，模型、消息、
+-// completion 上限、strict schema/tools 等都不得在 transport 层重新解释或放大。
+-async function callAIBodyStream(finalizedBody, opts) {
++}
+
++
+
++// 已经通过最终物理预算审核的请求必须原样发送。除 stream:true 外，模型、消息、
+
++// completion 上限、strict schema/tools 等都不得在 transport 层重新解释或放大。
+
++async function callAIBodyStream(finalizedBody, opts) {
+
+   opts = opts || {};
+   if (!finalizedBody || typeof finalizedBody !== 'object' || Array.isArray(finalizedBody)) {
+     throw new Error('SC1 finalized stream body 非法');
+@@ -1305,11 +1323,11 @@ async function callAIBodyStream(finalizedBody, opts) {
+   }
+   return _aiQueue.enqueue(run, opts.priority || 'normal');
+ }
+-
+
+-// ============================================================
+
+-// GameHooks — 统一钩子系统，替代猴子补丁链
+
+-// 用法：GameHooks.on('enterGame:after', fn)  注册回调
+
+-//       GameHooks.run('enterGame:after')       触发所有回调
+
++
++// ============================================================
++// GameHooks — 统一钩子系统，替代猴子补丁链
++// 用法：GameHooks.on('enterGame:after', fn)  注册回调
++//       GameHooks.run('enterGame:after')       触发所有回调
+ // ============================================================
+
+ /**
+
+  * 统一钩子系统 - 替代猴子补丁链
+
+@@ -2086,13 +2104,13 @@ function calcDateFromTurn(turn){
+ /** turn + P.time 是权威日期；GM.year/month/day 仅为旧读者兼容镜像。 */ function _tmSyncGMCalendar(targetGM, turn){
+
+   var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null), timeConfig = null; try { timeConfig = (typeof P !== 'undefined' && P) ? P.time : null; } catch (_) {}
+
+   if (!G || typeof calcDateFromTurn !== 'function' || !timeConfig) return null; // 缺 P.time 时保留旧档镜像，不写 adYear=0 占位
+
+-  var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
+
+-  var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
+
++  var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
++  var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
+   G.year = Number(di.adYear); G.month = isFinite(Number(month)) ? Number(month) : 1; G.day = isFinite(Number(day)) ? Number(day) : 1; return { year: G.year, month: G.month, day: G.day };
+
+ }
+
+ 
+
+-function _tmTimeDisplayParts(turn){
+-  if(!P.time) return { main:'第'+turn+'回合', tip:'' };
++function _tmTimeDisplayParts(turn){
+
++  if(!P.time) return { main:'第'+turn+'回合', tip:'' };
+
+   var di=calcDateFromTurn(turn);
+
+   var t=P.time;
+
+ 
+
+@@ -2122,12 +2140,12 @@ function _tmTimeDisplayParts(turn){
+   // 农历配置未提供公历对照，不能将同一组月日伪装成公历日期。
+
+   var adStr=(di.adYear<0?'公元前'+Math.abs(di.adYear):('公元'+di.adYear))+'年';
+
+   if(t.calendar!=='lunar')adStr+=di.solarMonth+'月'+di.solarDay+'日';
+
+-  tipParts.push(adStr);
+
+-  // 农历日期（中文）
+
+-  tipParts.push('农历'+lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
+
+-  // 干支年
+
+-  if(t.enableGanzhiYear!==false)tipParts.push(di.gzYearStr+'年');
+
+-
+
++  tipParts.push(adStr);
++  // 农历日期（中文）
++  tipParts.push('农历'+lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
++  // 干支年
++  if(t.enableGanzhiYear!==false)tipParts.push(di.gzYearStr+'年');
++
+   return { main:main, tip:tipParts.join(' | ') };
+ }
+ 
+@@ -2145,20 +2163,20 @@ function getTS(turn){
+ function createTSElement(turn){
+   var parts=_tmTimeDisplayParts(turn);
+   var span=document.createElement('span');
+-  span.textContent=parts.main;
+-  span.title=parts.tip;
+-  span.style.cursor='help';
+-  span.style.borderBottom='1px dotted var(--gold-d)';
+-  return span;
++  span.textContent=parts.main;
+
++  span.title=parts.tip;
+
++  span.style.cursor='help';
+
++  span.style.borderBottom='1px dotted var(--gold-d)';
+
++  return span;
+
+ }
+-
+
+-/**
+
++
++/**
+  * 获取纯文本时间（用于日志/存档等不需要HTML的场景）
+
+  * @returns {string}
+
+  */
+
+-function getTSText(turn){
+-  return _tmTimeDisplayParts(turn).main;
+-}
++function getTSText(turn){
+
++  return _tmTimeDisplayParts(turn).main;
+
++}
+
+ function getSE(turn){var si=(P.time.startS+(turn-1))%(P.time.seasons||[]).length;return(P.time.sEffects||[])[si]||"";}
+
+ 
+
+ /** 构建 NPC 时空约束提示词·注入任意 NPC 对话/奏疏/书信/决策 prompt 前
+
+@@ -2388,12 +2406,12 @@ function _buildLongTermActionsDigest() {
+     activeProjs.forEach(function(p) {
+
+       var elapsed = (p.startTurn ? (GM.turn - p.startTurn) : '?');
+
+       var etaText = (p.endTurn && p.endTurn > GM.turn) ? '·目标 T' + p.endTurn + ' 完工' : '';
+
+-      lines.push('  · 【' + (p.type || '工程') + '】' + p.name + '·' + p.status + '·进度 ' + (p.progress || 0) + '%·已 ' + elapsed + ' 回合' + (p.leader ? '·' + p.leader + '督办' : '') + etaText);
+
+-    });
+
+-    lines.push('  ※ 续推须给新 progress（高于上次）·或写 status=completed/abandoned·不写则系统判为停滞');
+
+-  }
+
+-  return lines.length > 0 ? lines.join('\n') : '';
+
+-}
+
++      lines.push('  · 【' + (p.type || '工程') + '】' + p.name + '·' + p.status + '·进度 ' + (p.progress || 0) + '%·已 ' + elapsed + ' 回合' + (p.leader ? '·' + p.leader + '督办' : '') + etaText);
++    });
++    lines.push('  ※ 续推须给新 progress（高于上次）·或写 status=completed/abandoned·不写则系统判为停滞');
++  }
++  return lines.length > 0 ? lines.join('\n') : '';
++}
+ function renderEraNamesList(){
+   var t=P.time;var el=_$("t-era-list");if(!el)return;var eraList=Array.isArray(t.eraNames)?t.eraNames:[];
+   if(!eraList.length){var empty=document.createElement('div');empty.style.cssText='color:var(--txt-d);font-size:12px';empty.textContent='暂无';if(el.replaceChildren)el.replaceChildren(empty);else{el.textContent='';el.appendChild(empty);}return;}
+@@ -2404,12 +2422,12 @@ function renderEraNamesList(){
+     input('t-era-y-'+i,'number',Number.isFinite(Number(e.startYear))?Number(e.startYear):0,'年','60px');
+     input('t-era-m-'+i,'number',Number.isFinite(Number(e.startMonth))?Number(e.startMonth):1,'月','44px');
+     input('t-era-d-'+i,'number',Number.isFinite(Number(e.startDay))?Number(e.startDay):1,'日','44px');
+-    var save=document.createElement('button');save.type='button';save.className='bd bsm';save.textContent='保';save.addEventListener('click',function(){window._eraUpd(i);});row.appendChild(save);
+-    var del=document.createElement('button');del.type='button';del.className='bd bsm';del.textContent='删';del.addEventListener('click',function(){window._eraDel(i);});row.appendChild(del);return row;
+-  });
+-  if(el.replaceChildren)el.replaceChildren.apply(el,rows);else{el.textContent='';rows.forEach(function(row){el.appendChild(row);});}
+-}
+-window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderEraNamesList();};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderEraNamesList();};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;var d=document.getElementById("t-era-d-"+i);if(d)e.startDay=+d.value||1;saveT();};function saveT(){var t=P.time;var ids=["t-year","t-prefix","t-suffix","t-per-turn","t-seasons","t-start-s","t-reign","t-reign-y","t-display","t-template","t-start-month","t-start-day"];ids.forEach(function(id){var el=_$(id);if(!el)return;var v=el.value;if(id==="t-year")t.year=+v;else if(id==="t-prefix")t.prefix=v;else if(id==="t-suffix")t.suffix=v;else if(id==="t-per-turn")t.perTurn=v;else if(id==="t-seasons")t.seasons=v.split(",").map(function(s){return s.trim();});else if(id==="t-start-s")t.startS=+v;else if(id==="t-reign")t.reign=v;else if(id==="t-reign-y")t.reignY=+v;else if(id==="t-display")t.display=v;else if(id==="t-template")t.template=v;else if(id==="t-start-month")t.startMonth=+v||1;else if(id==="t-start-day")t.startDay=+v||1;});var egz=_$("t-enable-ganzhi");if(egz)t.enableGanzhi=egz.checked;var egzd=_$("t-enable-ganzhi-day");if(egzd)t.enableGanzhiDay=egzd.checked;var een=_$("t-enable-era-name");if(een)t.enableEraName=een.checked;toast("已保存");}
++    var save=document.createElement('button');save.type='button';save.className='bd bsm';save.textContent='保';save.addEventListener('click',function(){window._eraUpd(i);});row.appendChild(save);
+
++    var del=document.createElement('button');del.type='button';del.className='bd bsm';del.textContent='删';del.addEventListener('click',function(){window._eraDel(i);});row.appendChild(del);return row;
+
++  });
+
++  if(el.replaceChildren)el.replaceChildren.apply(el,rows);else{el.textContent='';rows.forEach(function(row){el.appendChild(row);});}
+
++}
+
++window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderEraNamesList();};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderEraNamesList();};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.getElementById("t-era-m-"+i);if(m)e.startMonth=+m.value||1;var d=document.getElementById("t-era-d-"+i);if(d)e.startDay=+d.value||1;saveT();};function saveT(){var t=P.time;var ids=["t-year","t-prefix","t-suffix","t-per-turn","t-seasons","t-start-s","t-reign","t-reign-y","t-display","t-template","t-start-month","t-start-day"];ids.forEach(function(id){var el=_$(id);if(!el)return;var v=el.value;if(id==="t-year")t.year=+v;else if(id==="t-prefix")t.prefix=v;else if(id==="t-suffix")t.suffix=v;else if(id==="t-per-turn")t.perTurn=v;else if(id==="t-seasons")t.seasons=v.split(",").map(function(s){return s.trim();});else if(id==="t-start-s")t.startS=+v;else if(id==="t-reign")t.reign=v;else if(id==="t-reign-y")t.reignY=+v;else if(id==="t-display")t.display=v;else if(id==="t-template")t.template=v;else if(id==="t-start-month")t.startMonth=+v||1;else if(id==="t-start-day")t.startDay=+v||1;});var egz=_$("t-enable-ganzhi");if(egz)t.enableGanzhi=egz.checked;var egzd=_$("t-enable-ganzhi-day");if(egzd)t.enableGanzhiDay=egzd.checked;var een=_$("t-enable-era-name");if(een)t.enableEraName=een.checked;toast("已保存");}
+
+ function loadT(){var t=P.time;var map={"t-year":t.year,"t-prefix":t.prefix||"","t-suffix":t.suffix||"","t-per-turn":t.perTurn||"1s","t-seasons":(t.seasons||[]).join(","),"t-start-s":t.startS||0,"t-reign":t.reign||"","t-reign-y":t.reignY||1,"t-display":t.display||"year_season","t-template":t.template||"","t-start-month":t.startMonth||1,"t-start-day":t.startDay||1};Object.keys(map).forEach(function(id){var el=_$(id);if(el)el.value=map[id];});var egz=_$("t-enable-ganzhi");if(egz)egz.checked=!!t.enableGanzhi;var egzd=_$("t-enable-ganzhi-day");if(egzd)egzd.checked=!!t.enableGanzhiDay;var een=_$("t-enable-era-name");if(een)een.checked=!!t.enableEraName;renderEraNamesList();}
+
+ 
+
+ // ============================================================
+
+@@ -2461,7 +2479,7 @@ var ImageAPI = {
+     var cfg = this.getConfig();
+
+     if (!cfg.supported) return Promise.reject(new Error('\u672A\u914D\u7F6E\u751F\u56FEAPI'));
+
+     options = options || {};
+
+-    return fetch(cfg.url, {
+
++    return (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(cfg.url, {
+
+       method: 'POST',
+
+       headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key},
+
+       body: JSON.stringify({
+
+@@ -2583,12 +2601,12 @@ function ensureAIDiagnostics(turn) {
+   } catch(_persistE) {}
+
+   d.memory = d.memory || { events: [], snapshots: [] };
+
+   d.memory.events = Array.isArray(d.memory.events) ? d.memory.events : [];
+
+-  d.memory.snapshots = Array.isArray(d.memory.snapshots) ? d.memory.snapshots : [];
+
+-  return d;
+
+-}
+
+-
+
+-// Phase 7·完整 4 区成本面板·读 GM._costHistory + TokenUsageTracker.getSnapshot + GM._turnAiResults
+
+-// 调用方·设置面板"AI 成本面板"按钮·或 TM.ai.showCostPanel()
+
++  d.memory.snapshots = Array.isArray(d.memory.snapshots) ? d.memory.snapshots : [];
++  return d;
++}
++
++// Phase 7·完整 4 区成本面板·读 GM._costHistory + TokenUsageTracker.getSnapshot + GM._turnAiResults
++// 调用方·设置面板"AI 成本面板"按钮·或 TM.ai.showCostPanel()
+ function _formatCostMoney(n) { return typeof n !== 'number' || !isFinite(n) ? '$0' : '$' + (n < 0.01 ? n.toFixed(4) : n.toFixed(3)); }
+ function _formatCostTime(ms) { return typeof ms !== 'number' || !isFinite(ms) || ms < 0 ? '0ms' : (ms < 1000 ? Math.round(ms) + 'ms' : (ms / 1000).toFixed(1) + 's'); }
+ function _costPanelFinite(value, fallback) { var n = Number(value); return Number.isFinite(n) ? n : fallback; }
+@@ -2727,12 +2745,12 @@ function _buildAICostPanelElement() {
+   return backdrop;
+ }
+ function showAICostPanel() {
+-  if (typeof document === 'undefined') return;
+-  var prev = document.getElementById('ai-cost-panel-backdrop');
+-  if (prev) prev.remove();
+-  var panel = _buildAICostPanelElement();
+-  if (panel) document.body.appendChild(panel);
+-}
++  if (typeof document === 'undefined') return;
+
++  var prev = document.getElementById('ai-cost-panel-backdrop');
+
++  if (prev) prev.remove();
+
++  var panel = _buildAICostPanelElement();
+
++  if (panel) document.body.appendChild(panel);
+
++}
+
+ 
+
+ // Phase 7.5 D·sysP cache 失效·P.ai.prompt / P.ai.rules / summaryRule 改后清 GM._lastSysPHash
+
+ // 让下回合 _maybeCacheSys 知道 sys 变了·不再走 anthropic cache_control (避免无效命中)
+
+

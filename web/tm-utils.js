@@ -639,8 +639,9 @@ function showPrompt(message, defaultValue, callback) {
   var cancelBtn = document.createElement('button');
   cancelBtn.textContent = '取消';
   cancelBtn.className = 'bt';
+  var closePrompt = function() { if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(overlay); else overlay.remove(); };
   cancelBtn.onclick = function() {
-    overlay.remove();
+    closePrompt();
     if (callback) callback(null);
   };
 
@@ -649,7 +650,7 @@ function showPrompt(message, defaultValue, callback) {
   okBtn.className = 'bt bp';
   okBtn.onclick = function() {
     var val = input.value;
-    overlay.remove();
+    closePrompt();
     if (callback) callback(val);
   };
 
@@ -669,7 +670,8 @@ function showPrompt(message, defaultValue, callback) {
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 
-  setTimeout(function() { input.focus(); }, 100);
+  if (typeof _tmPresentModal === 'function') _tmPresentModal(overlay, cancelBtn.onclick, input);
+  else setTimeout(function() { if (overlay.isConnected !== false) input.focus(); }, 100);
 }
 
 // ============================================================
@@ -2058,6 +2060,8 @@ function _getAITier(tier) {
       key: _s.key,
       url: _s.url,
       model: _s.model || P.ai.model || 'gpt-4o-mini',
+      thinking: _s.thinking,
+      thinkingProtocol: _s.thinkingProtocol,
       tier: 'secondary'
     };
   }
@@ -2065,6 +2069,8 @@ function _getAITier(tier) {
     key: (P.ai && P.ai.key) || '',
     url: (P.ai && P.ai.url) || '',
     model: (P.ai && P.ai.model) || 'gpt-4o',
+    thinking: P.ai && P.ai.thinking,
+    thinkingProtocol: P.ai && P.ai.thinkingProtocol,
     tier: 'primary'
   };
 }

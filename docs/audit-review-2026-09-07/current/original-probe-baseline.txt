@@ -1,0 +1,29 @@
+{"command":["node","docs/audit-review-2026-09-07/original/audit-repro.cjs","--repo","<USER_HOME>/Desktop/tianming-audit-baseline","--expect-clean"],"cwd":"<USER_HOME>\\Desktop\\tianming-audit-review","head":"14130f77ef1976f9b3cd8b311b4aef77636e7d90","tree":"1be7372436c0a86f35946b1ba99579b6fa3eb0d6","statusBefore":" M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n","platform":"win32","release":"10.0.26200","arch":"x64","node":"v24.14.0","startedAt":"2026-09-07T06:32:36.866Z","exitCode":1,"signal":null,"durationMs":1325,"statusAfter":" M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n"}
+CONTROL_PASS CONTROL-01 stable keys and turn validation reject known aliases
+  {"ok":true,"rejected":[true,true,true,true,true]}
+CONTROL_PASS CONTROL-02 same turn transaction publish is idempotent
+  {"ok":true,"recovered":true}
+DEFECT_PRESENT TM-AUD-01 different timelines overwrite the same per-turn bundle
+  {"defect":true,"sameFinalPath":true,"branchAtOriginalPath":"B","oldRecoveryError":"回合分卷暂存记录不存在或不匹配"}
+DEFECT_PRESENT TM-AUD-02 workshop overwrite loses old package when copying fails
+  {"defect":true,"error":"Injected copy ENOSPC","oldPreserved":false,"partialNewTree":true,"indexWritten":false}
+DEFECT_PRESENT TM-AUD-03a stale account/me combines a new token with old account identity
+  {"defect":true,"tokenOwner":"B","displayedUser":"A"}
+DEFECT_PRESENT TM-AUD-03b late login response restores session after logout completed
+  {"defect":true,"loggedOutBeforeReply":true,"loggedInAfterStaleReply":true}
+DEFECT_PRESENT TM-AUD-04 manual save callback mutates a different live world
+  {"defect":true,"liveWorld":"world-B","liveSaveName":"SAVE-FOR-A","enterGameCalls":1}
+DEFECT_PRESENT TM-AUD-05 legacy save string loads but list-style object is rejected
+  {"defect":true,"stringReferenceWorks":true,"objectReferenceError":"存档标识非法"}
+DEFECT_PRESENT TM-AUD-06a CI accepts an empty report after runner failure
+  {"defect":true,"exitCode":0,"messages":["[ci-smokes] PASS — 共 0 个 · 白名单豁免 0 个"]}
+DEFECT_PRESENT TM-AUD-06b CI waives an unrelated syntax failure by file name
+  {"defect":true,"exitCode":0,"messages":["[ci-smokes] 豁免(缺资产白名单): smoke-audio-bgm.js","[ci-smokes] PASS — 共 1 个 · 白名单豁免 1 个"]}
+DEFECT_PRESENT TM-AUD-07 network predicate misses hexadecimal IPv4-mapped loopback
+  {"defect":true,"dottedMappedBlocked":true,"hexMappedBlocked":false,"literalV4Blocked":true,"scope":"predicate only; no DNS/TLS/Electron exploitation attempted"}
+DEFECT_PRESENT TM-AUD-08 export write failure destroys an existing backup payload
+  {"defect":true,"reportedFailure":true,"originalPreserved":false,"resultingBytes":1}
+DEFECT_PRESENT TM-AUD-09 saveToSlot loses both success and failure return values
+  {"defect":true,"successResult":"undefined","failureResult":"undefined"}
+
+SUMMARY {"probes":11,"defectsPresent":11,"controlsPassed":2,"harnessErrors":0}

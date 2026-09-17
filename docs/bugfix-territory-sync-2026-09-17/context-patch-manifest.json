@@ -1,0 +1,15 @@
+{
+  "updatedAt": "2026-09-17T09:06:19.720Z",
+  "files": [
+    {
+      "path": "web/map-integration.js",
+      "before": "22d610c4f1f8ff9ec84e2eecc8edce2a07e383a5403800f9501d2c3f262f6df5",
+      "after": "8cf8050e27ff6c7fed6758fb7834154c05f8a1f3077d322899f8c072c8232f8b"
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "before": "0b45995d159cf8105b705be650994021972b6774e6159adc3f03e03903d17edd",
+      "after": "1b3909d47727e5f9120a3138dd75fe6bb8823cfe1fe65859fd8af794223b74e2"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ const aiSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 const followupSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-followup.js'), 'utf8');
 const saveSrc = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const patchesSrc = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
-const infraSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 
 // ─── #1·SC1 增量 retry ───
 assert(/function\s+_findMissingSc1Fields/.test(aiSrc), '#1·_findMissingSc1Fields 存在');

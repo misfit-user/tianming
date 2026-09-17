@@ -1,0 +1,4 @@
+{"executable":"node","args":["web/scripts/sync-official-scenarios.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:45:03.611Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+[official-sync] sync PASS · sources=2 artifacts=9
+
+{"name":"official-sync","executable":"node","args":["web/scripts/sync-official-scenarios.js"],"exitCode":0,"signal":null,"durationMs":2457,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\official-sync.log"}

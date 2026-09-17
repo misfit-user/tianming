@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-09-17T18:56:22.985115",
+  "files": [
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 65899030,
+      "sha256": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28"
+    },
+    {
+      "path": "web/tm-office-system.js",
+      "bytes": 105369,
+      "sha256": "45a3d9ed333293d529ad55dbdb3cf0232b5e6f2de444bb0aa71ee8fe7d01c110"
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "bytes": 128358,
+      "sha256": "9042325424aa511d1c98991214de64a64b25258cde18e9f9f2ee87ae0bb7316a"
+    },
+    {
+      "path": "web/tm-renwu-tuzhi.js",
+      "bytes": 166198,
+      "sha256": "19e2bfa46c85f6faeba4b70a9cfefb117b5ce9799d464e927f2cbb2bb7329b20"
+    },
+    {
+      "path": "web/phase8-formal-modules.js",
+      "bytes": 95947,
+      "sha256": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18"
+    },
+    {
+      "path": "web/assets/reference/tang840-characters.json",
+      "bytes": 67124,
+      "sha256": "1d24281f0fdbd359a48e8113fcc1c899015e09c1279190c43a03947553811e53"
+    }
+  ],
+  "componentReport": "ui-component-final-report.json",
+  "componentPassed": true,
+  "componentCases": 13,
+  "fullStressPassed": false,
+  "note": "See 最终验收补记.md for unresolved renderer stress crashes and whole-workspace checks."
+}

@@ -1,0 +1,4 @@
+{"executable":"node","args":["web/scripts/smoke-audit-safe-remote.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:22:18.975Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+PASS address equivalence, pinned lookup and per-hop validation; controlled Node loopback only, not an Electron SSRF attack
+
+{"name":"safe-remote-retest","executable":"node","args":["web/scripts/smoke-audit-safe-remote.js"],"exitCode":0,"signal":null,"durationMs":561,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\safe-remote-retest.log"}

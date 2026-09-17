@@ -47,6 +47,9 @@ function makeNode(tag) {
     click() { (this.listeners.click || []).forEach((handler) => handler({ currentTarget: this, target: this })); },
     classList: { add() {}, remove() {}, contains() { return false; } }
   };
+  Object.defineProperty(node, 'firstElementChild', {
+    get() { return node.children.find((child) => child && child.nodeType === 1) || null; }
+  });
   Object.defineProperty(node, 'id', {
     get() { return nodeId; },
     set(value) { nodeId = String(value || ''); if (nodeId) elements[nodeId] = node; }

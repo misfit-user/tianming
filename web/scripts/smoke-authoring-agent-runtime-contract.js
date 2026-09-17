@@ -67,6 +67,7 @@ assert(atomicOk.ok && atomicOk.atomic && atomicDraft.name === '新名' && atomic
   const noOpDraft = { characters: [{ name: '甲', loyalty: 50 }] };
   let noOpRound = 0;
   const noOpRun = await AA.runAuthoringLoop(noOpDraft, '保持现值并复查', {
+    toolPacks: ['bulk'], // 本用例验证批改回执，明确提供被测工具，不靠模型越过工具清单。
     noMemoryRecall: true,
     caller: async function() {
       noOpRound++;

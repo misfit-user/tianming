@@ -1,0 +1,42 @@
+[
+  {
+    "path": "web/phase8-formal-map-dossier.js",
+    "conflicts": 2
+  },
+  {
+    "path": "web/scripts/smoke-military-execution-binding.js",
+    "conflicts": 1
+  },
+  {
+    "path": "web/tm-ai-infra-model-detect.js",
+    "conflicts": 0
+  },
+  {
+    "path": "web/tm-ai-infra-retry.js",
+    "conflicts": 1
+  },
+  {
+    "path": "web/tm-ai-infra.js",
+    "conflicts": 4
+  },
+  {
+    "path": "web/tm-api-models.js",
+    "conflicts": 1
+  },
+  {
+    "path": "web/tm-endturn-ai.js",
+    "conflicts": 0
+  },
+  {
+    "path": "web/tm-endturn-apply-stages.js",
+    "conflicts": 0
+  },
+  {
+    "path": "web/tm-fiscal-engine.js",
+    "conflicts": 7
+  },
+  {
+    "path": "web/tm-patches-start.js",
+    "conflicts": 2
+  }
+]

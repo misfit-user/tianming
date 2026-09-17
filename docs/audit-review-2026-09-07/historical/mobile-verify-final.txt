@@ -1,0 +1,4 @@
+{"executable":"powershell.exe","args":["-NoProfile","-ExecutionPolicy","Bypass","-File","mobile/scripts/verify-staged-web.ps1","-TargetDir","<USER_HOME>\\AppData\\Local\\Temp\\tianming-audit-stage-a58064fd45f04237aac09fe0b0247b13"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:57:58.833Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+[release-tree] verify PASS · files=1099 bytes=935295366 allowedExtra=0 sha256=f1a95b976562f47986dab0b1b3fabb06ca899354de4c73252ef63f6cc8a473ad
+
+{"name":"mobile-verify-final","executable":"powershell.exe","args":["-NoProfile","-ExecutionPolicy","Bypass","-File","mobile/scripts/verify-staged-web.ps1","-TargetDir","<USER_HOME>\\AppData\\Local\\Temp\\tianming-audit-stage-a58064fd45f04237aac09fe0b0247b13"],"exitCode":0,"signal":null,"durationMs":6980,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\mobile-verify-final.log"}

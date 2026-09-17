@@ -192,7 +192,7 @@ function ok(cond, msg) {
       { toolCalls: [{ name: 'flagUncertain', input: { path: 'characters.张居正.bio', reason: '生平细节部分靠推测' } }] },
       { toolCalls: [{ name: 'finish', input: { summary: '加入张居正，存疑处已标注' } }] }
     ]);
-    const resHC = await AA.runAuthoringLoop(draftHC, '加入张居正', { caller: callerHC });
+    const resHC = await AA.runAuthoringLoop(draftHC, '加入张居正', { caller: callerHC, toolPacks:['history'] });
     ok(resHC.finished && resHC.stopReason === 'finish', 'checkHistory 流程正常 finish');
     ok(resHC.transcript.some(t => t.name === 'checkHistory'), 'transcript 含 checkHistory 自核步骤');
     const hcStep = resHC.transcript.find(t => t.name === 'checkHistory');
@@ -227,7 +227,7 @@ function ok(cond, msg) {
       };
     }
     const draftCR = AA.makeDraft({ name: '初稿名', factions: [{ name: '甲' }], characters: [{ name: '张三', faction: '甲' }] });
-    const resCR = await AA.runWithCritics(draftCR, '设定一个甲势力开局', { caller: criticsCaller() });
+    const resCR = await AA.runWithCritics(draftCR, '设定一个甲势力开局', { caller: criticsCaller(), toolPacks:['history'] });
     ok(resCR.critiqued && resCR.steps.length === 4, '会审走完四阶段：拟稿+史官+谏官+修订');
     ok(resCR.steps[0].role === '国师·拟稿' && resCR.steps[0].result.finished, '①国师拟稿 finish');
     ok(resCR.steps[1].role === '史官·史实审' && !!resCR.steps[1].result.review, '②史官产出审阅报告');
@@ -386,6 +386,7 @@ function ok(cond, msg) {
     console.log('— S4: 旧编辑器 adapter —');
     let renderAllCalls = 0, saveScriptCalls = 0;
     const fakeG = {
+      TM: { legacyEditorDocument: { id: 'legacy-test-document' } },
       scriptData: { name: '原', factions: [{ name: '明' }], _phase6: 'keep' },
       renderAll: () => { renderAllCalls++; },
       saveScript: () => { saveScriptCalls++; }
@@ -410,8 +411,14 @@ function ok(cond, msg) {
     const resetAdapter = AA.makeResetEditorAdapter(fakeReset);
     ok(resetAdapter.isAvailable(), '新 adapter 在 RESET_APP 存在时可用');
     ok(resetAdapter.getScenario().name === '原新', '新 adapter 取 state.scenario');
+    let missingProtocolRejected = false;
+    try { resetAdapter.commit({ name: '不能走导入覆盖' }); } catch (e) { missingProtocolRejected = /安全案卷编辑协议/.test(e.message); }
+    ok(missingProtocolRejected && applied === null, '旧宿主缺少编辑协议时拒绝，不回退导入覆盖');
+    const editLease = { document: { id: 'test-document' }, revision: 0 };
+    fakeReset.TM_SCENARIO_EDITOR_RESET_APP.captureDocumentLease = () => editLease;
+    fakeReset.TM_SCENARIO_EDITOR_RESET_APP.commitScenarioEdit = (parsed, label, lease) => { applied = { parsed, label, lease }; return { ok: true }; };
     resetAdapter.commit({ name: '新剧本' });
-    ok(applied && applied.parsed.name === '新剧本' && /AI/.test(applied.label), 'commit 调 applyImportedScenario(draft,label)');
+    ok(applied && applied.parsed.name === '新剧本' && /国师/.test(applied.label) && applied.lease === editLease, 'commit 调独立 commitScenarioEdit 并传递实际租约');
 
     console.log('— S4: detectAdapter —');
     ok(AA.detectAdapter(fakeReset).id === 'scenario-editor-reset', 'detect 优先新编辑器');
@@ -422,11 +429,12 @@ function ok(cond, msg) {
     console.log('— S5: schema 指南 + 实体模板 —');
     const guide = AA.buildSchemaGuide();
     ok(/factions/.test(guide) && /characters/.test(guide) && /adminHierarchy/.test(guide), 'schema 指南列出主要实体');
-    ok(/population\.mouths/.test(guide) && /父级/.test(guide), 'schema 指南含区划父>=子人口约束');
+    ok(/populationDetail\.mouths/.test(guide) && /父级/.test(guide), 'schema 指南含正式区划父>=子人口约束');
     ok(/禁止英译/.test(guide), 'schema 指南含禁英译约束');
     ok(/factions\[\]\.name/.test(guide) || /必须等于某个 factions/.test(guide), 'schema 指南含势力引用约束');
     ok(AA.ENTITY_TEMPLATES.character && 'loyalty' in AA.ENTITY_TEMPLATES.character, 'ENTITY_TEMPLATES.character 含 loyalty 骨架');
-    ok(AA.ENTITY_TEMPLATES.division.population && 'mouths' in AA.ENTITY_TEMPLATES.division.population, 'ENTITY_TEMPLATES.division 含 population.mouths');
+    ok(AA.ENTITY_TEMPLATES.division.populationDetail && 'mouths' in AA.ENTITY_TEMPLATES.division.populationDetail && typeof AA.ENTITY_TEMPLATES.division.population === 'number', 'ENTITY_TEMPLATES.division 对齐官方 population 数值与 populationDetail.mouths');
+    ok(Array.isArray(AA.ENTITY_TEMPLATES.division.children) && !('divisions' in AA.ENTITY_TEMPLATES.division), '区划子级使用 children，不能继续指导 agent 写错 divisions');
 
     console.log('— S5: schema 指南进入 system（可缓存）+ 用户需求进 conversation —');
     let capSystem = '', capConv = null;

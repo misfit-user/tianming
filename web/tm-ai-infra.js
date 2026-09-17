@@ -482,11 +482,21 @@ function estimateTokens(text) {
  * 返回 { contextK, budget, warn80, warn95 }
  */
 function getPromptBudget() {
-  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 32 };
-  var contextK = cp.contextK || 32;
+  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 256 };
+  var contextK = cp.contextK || 256;
   // 留 1/4 给响应+缓冲
   var budget = Math.floor(contextK * 1024 * 0.75);
-  return { contextK: contextK, budget: budget, warn80: Math.floor(budget * 0.8), warn95: Math.floor(budget * 0.95) };
+  // warn 阈值 0.80 / critical 阈值 0.995（原 0.95·中间试过 0.98 仍不够）
+  // 0.95 对 128K+ 模型太敏感：玩家实测 SC1 估算 192923 常在 0.95*196608≈186778 上方抖
+  // critical → Call A 压缩大幅裁切叙事上下文，效果反而比不触发好
+  // 抬到 0.995 → 真正接近 budget 上限才触发（196608*0.995≈195625·SC1 的 192923 不触发）
+  // 留 0.5% 缓冲（约 1000 tokens）防 budget 估算误差
+  return {
+    contextK: contextK,
+    budget: budget,
+    warn80: Math.floor(budget * 0.8),
+    warn95: Math.floor(budget * 0.995)  // 历史命名 warn95 但实为 critical 阈值（0.995）；下游 smoke 引用 warn95 别名保持一致
+  };
 }
 /**
  * 检查 prompt 是否接近预算，超 80% 返回 'warn'，超 95% 返回 'critical'，否则返回 'ok'
@@ -540,35 +550,43 @@ function checkPromptTokenBudget(promptText, onWarn) {
 })(typeof window !== 'undefined' ? window : this);
 
 // ============================================================
-//  1.7.5 AI 调用基础设施（重试 + 超时 + 429 处理 + raw 保留）
+//  softTrimNarrativeSections·warn 降载共用 helper (2026-09-17)
+//  玩家实测 SC1 飘在 80..99.5% 区间·critical 阈值抬到 0.995 后·
+//  warn 区间不再触发 Call A·但次要 section（门阀家族/近期NPC动向/民心14源/民心分阶层）
+//  没必要占满 prompt·提前截头到 maxKeep 字·给主字段（帑廪/玩家圣旨/近期事件）腾地方。
+//  关键 section 原样保留·截断处挂明示标签方便诊断面板/玩家自查。
+//  返回 { text, trimmedChars }·调用方决定怎么用（toast/console/TM.tokens 诊断）
 // ============================================================
-var _aiLastRaw = { url: '', body: null, response: null, error: null, ts: 0 };
-/**
- * 统一的 AI fetch 包装：3 次指数退避重试、180s 超时、429 读取 Retry-After、原始响应保留供 debug。
- * 返回已解析的 JSON。抛出时 error.lastRaw 含现场信息。
- */
-async function _aiFetchWithRetry(url, body, signal, opts) {
+var TM_SOFT_TRIM_RULES = [
+  { rx: /(【门阀家族】)([\s\S]{400,}?)(?=\n【|\n\n【|$)/, maxKeep: 400, label: '门阀家族' },
+  { rx: /(【近期NPC动向】)([\s\S]{400,}?)(?=\n【|\n\n【|$)/, maxKeep: 400, label: '近期NPC动向' },
+  { rx: /(\n  民心·主要驱动：)([\s\S]{400,}?)(?=\n\n【|$)/, maxKeep: 400, label: '民心14源' },
+  { rx: /(\n  民心·分阶层：)([\s\S]{400,}?)(?=\n  腐败·|\n\n【|$)/, maxKeep: 400, label: '民心分阶层' }
+];
+function softTrimNarrativeSections(text, opts) {
   opts = opts || {};
-  var priority = opts.priority || 'normal';
-  // 所有 AI 调用走队列，受全局 maxConcurrent + minInterval 约束
-  return _aiQueue.enqueue(function() {
-    return _aiFetchWithRetryInner(url, body, signal, opts);
-  }, priority);
-}
-
-// 第三刀·超时按输出体量分级：只放宽不收紧（小请求维持 180s 零回归，大输出 sc1 等放宽到 600s 上限）。
-// 依据：生成 N 个 output token 约需 N×(20~40ms)，2 万 token 的 sc1 在慢模型/高负载第三方代理下 180s 根本不够，
-// 一超时就被原样重发，正是 retry 风暴的根源。调用方显式传 opts.timeoutMs 时一律尊重。
-function _aiComputeTimeout(maxTok, optsTimeoutMs) {
-  if (optsTimeoutMs != null) return optsTimeoutMs;
-  var t = Number(maxTok) || 2000;
-  return Math.min(200000, Math.max(30000, Math.round(t * 15)));
+  if (!text || typeof text !== 'string') return { text: text, trimmedChars: 0, hits: [] };
+  var rules = Array.isArray(opts.rules) && opts.rules.length ? opts.rules : TM_SOFT_TRIM_RULES;
+  var trimmedChars = 0;
+  var hits = [];
+  var out = text;
+  rules.forEach(function(rule) {
+    var keep = rule.maxKeep != null ? rule.maxKeep : 400;
+    out = out.replace(rule.rx, function(m, head, body) {
+      if (!body || body.length <= keep) return m;
+      var cut = body.length - keep;
+      trimmedChars += cut;
+      hits.push({ label: rule.label || '?', cut: cut });
+      return head + body.slice(0, keep) + '\n  …[warn 降载·截 ' + cut + ' 字]';
+    });
+  });
+  return { text: out, trimmedChars: trimmedChars, hits: hits };
 }
 
 async function _aiFetchWithRetryInner(url, body, signal, opts) {
   opts = opts || {};
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
-  var timeoutMs = _aiComputeTimeout(body && body.max_tokens, opts.timeoutMs);
+  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
   // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
   var key = opts.apiKey || P.ai.key;
   var lastError = null;
@@ -584,32 +602,43 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
   for (var attempt = 0; attempt <= maxRetries; attempt++) {
     var ctrl = new AbortController();
     var timedOut = false;
-    var timeoutAborter = function() { timedOut = true; ctrl.abort(); };
-    var externalAborter = function() { ctrl.abort(); };
+    var requestPhase = 'headers', timeoutError, rejectDeadline;
+    var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
+    var timeoutAborter = function() {
+      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
+      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
+      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+    };
+    var externalAborter = function() { var error = _aiCancelledError(signal); rejectDeadline(error); ctrl.abort(error); };
     var timer = setTimeout(timeoutAborter, timeoutMs);
     if (signal) {
-      if (signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); }
+      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
       signal.addEventListener('abort', externalAborter);
     }
     try {
-      var resp = await fetch(url, {
+      var resp = await Promise.race([(typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify(body),
-        signal: ctrl.signal
-      });
-      clearTimeout(timer);
+        signal: ctrl.signal, timeoutMs: timeoutMs
+      }), deadline]);
+      requestPhase = 'body';
       // 429 速率限制：读 Retry-After 延迟
       if (resp.status === 429 && attempt < maxRetries) {
+        clearTimeout(timer);
+        if (resp.body && typeof resp.body.cancel === 'function') resp.body.cancel().catch(function() {});
         var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
         var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
         console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
-        await new Promise(function(r) { setTimeout(r, delay429); });
+        await _aiWaitForRetry(delay429, signal);
         continue;
       }
       if (!resp.ok) {
         var errText = '';
-        try { errText = await resp.text(); } catch(_e) {}
+        try { errText = await Promise.race([resp.text(), deadline]); } catch(_e) {}
+        if (timedOut) throw timeoutError;
+        if (signal && signal.aborted) throw _aiCancelledError(signal);
+        clearTimeout(timer);
         lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
         lastError.status = resp.status;
         _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
@@ -650,21 +679,26 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
         }
         // 5xx 可重试；4xx（除 429）不重试
         if (resp.status >= 500 && attempt < maxRetries) {
-          await new Promise(function(r) { setTimeout(r, 1000 * Math.pow(2, attempt)); });
+          await _aiWaitForRetry(1000 * Math.pow(2, attempt), signal);
           continue;
         }
         throw lastError;
       }
-      var data = await resp.json();
+      var data = await Promise.race([resp.json(), deadline]);
+      if (timedOut) throw timeoutError;
+      if (signal && signal.aborted) throw _aiCancelledError(signal);
+      clearTimeout(timer);
       _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
       // 记录缓存命中统计
       if (data && data.usage && typeof _recordCacheStats === 'function') _recordCacheStats(data.usage);
       return data;
     } catch(e) {
       clearTimeout(timer);
+      if (timedOut) e = timeoutError;
+      else if (signal && signal.aborted) e = _aiCancelledError(signal);
       lastError = e;
-      // 外部 signal 主动中断——不重试
-      if (signal && signal.aborted) throw e;
+      // 外部取消和原生桥接失败不重发（原生已发出的 POST 无法物理取消）
+      if ((signal && signal.aborted) || (e && (e._tmNativeTransport || (timedOut && typeof _tmAINativePlatform === 'function' && _tmAINativePlatform())))) throw e;
       // 明确的 4xx（429 已在响应分支处理）是请求错误；不得被通用网络重试再次原样发送。
       if (e && e.status >= 400 && e.status < 500 && e.status !== 429) {
         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
@@ -673,7 +707,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
       //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
       if (timedOut) {
-        var _bigReq = !!(body && body.max_tokens && body.max_tokens > 8000);
+        var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
         if (_bigReq || attempt >= 1) {
           if (!e.lastRaw) e.lastRaw = _aiLastRaw;
           throw e;
@@ -683,7 +717,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       if (attempt < maxRetries) {
         var delayRetry = 1000 * Math.pow(2, attempt);
         console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
-        await new Promise(function(r) { setTimeout(r, delayRetry); });
+        await _aiWaitForRetry(delayRetry, signal);
       } else {
         // 挂载最后的原始响应
         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
@@ -707,7 +741,9 @@ function _tmAiErrHuman(err) {
     var msg = String((err && err.message) || err || '');
     var m = msg.match(/HTTP (\d{3})/);
     var status = (err && err.status) || (m ? +m[1] : 0);
-    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的历史与规则超过模型上下文上限——系统已停止本次推演并回滚，没有提交半回合；请缩减持续法令/长期议题或提高模型上下文配置。';
+    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的规则与上下文超过配置上限' + (err && err.contextTokens ? '（当前 ' + Math.round(err.contextTokens / 1024) + 'K）' : '') + '，不能靠删减内容继续推演。请核对「设置 → AI · 模型」的上下文容量，或使用支持足够上下文的接口。';
+    if (err && err.code === 'AI_ABORTED') return '本次 AI 请求已取消，没有继续重试。';
+    if (err && err.code === 'AI_TIMEOUT') return 'AI 请求在' + (err.phase === 'body' ? '读取完整正文' : '等待响应头') + '时超过 ' + Math.round(err.timeoutMs / 1000) + ' 秒期限，未收到完整结果；这不能单凭日志判断为模型故障，可检查诊断后重试。';
     if (/API未配置|API地址未配置|未配置可用 API|未配置 API key/.test(msg)) return '尚未配置 AI 密钥或接口地址——请到「设置 → AI · 模型」填写 API 地址、模型名与密钥。';
     if (status === 401 || /invalid[ _]?api[ _]?key|incorrect api key|unauthorized|authentication/i.test(msg)) return 'AI 密钥无效或已过期（401）——请到「设置 → AI · 模型」核对密钥是否填对、是否仍有效。';
     if (status === 402 || /insufficient_quota|insufficient balance|exceeded your current quota|欠费|余额不足|quota/i.test(msg)) return 'AI 账户额度不足或欠费——请前往所用 API 平台查看余额充值，或更换密钥。';
@@ -775,17 +811,17 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(tier) : _buildAIUrl();
   if(!url)throw new Error("API\u5730\u5740\u672A\u914D\u7F6E");
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
   var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, 'openai');
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
   // Phase 7·补 id 参数·byId 拆分
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
 }
 
 /**
@@ -802,7 +838,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
  * @param {string} prompt - 提示词
  * @param {Array<{name:string, description:string, parameters:object}>} tools - 工具定义（JSON Schema parameters）
  * @param {{maxTok?:number, signal?:AbortSignal, tier?:string, forceTool?:string, allowText?:boolean}} [opts]
- * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean}>}
+ * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean, error?:object}>}
  *   - text: AI 文本输出（如有）
  *   - toolCalls: 解析后的工具调用列表·每项 {name, input(parsed object)}
  *   - fallback: true 表示走了文本→JSON 解析路径
@@ -839,38 +875,28 @@ async function callAIWithTools(prompt, tools, opts) {
   var maxTok = opts.maxTok || 2000;
   var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
 
-  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
-  function _fallbackPromptWithSchema() {
-    var schemaDesc = '【工具定义】API 不支持 tool_use·请按以下 JSON Schema 直接返回纯 JSON·必须包含 tool_call 字段:\n';
-    schemaDesc += '可用工具:\n';
-    tools.forEach(function(t) {
-      schemaDesc += '- ' + t.name + ': ' + (t.description || '') + '\n';
-      schemaDesc += '  参数: ' + JSON.stringify(t.parameters || {}) + '\n';
-    });
-    schemaDesc += '\n返回格式（必须是纯 JSON·不要 markdown 包裹）:\n';
-    schemaDesc += '{"tool_calls":[{"name":"<工具名>","input":{<符合 schema 的参数>}}]}\n';
-    if (opts.forceTool) schemaDesc += '\n本次必须使用工具: ' + opts.forceTool + '\n';
-    return prompt + '\n\n' + schemaDesc;
+  // Additive failure metadata: never return an Error/lastRaw (which may contain
+  // request contents or credentials) to a UI consumer. Existing callers can
+  // still inspect text/toolCalls; structured-only agents can stop failed rounds.
+  function _toolErrorInfo(error) {
+    var status = Number(error && error.status) || 0;
+    var code = (opts.signal && opts.signal.aborted) ? 'aborted' :
+      (error && error.code === 'tool-timeout') ? 'tool-timeout' :
+      (error && error.code === 'tool-choice-unsupported') ? 'tool-choice-unsupported' :
+      status ? 'tool-http-error' : 'tool-call-failed';
+    return { code: code, status: status, message: status ? ('HTTP ' + status) : code };
   }
-  async function _runFallback() {
+  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+  async function _runFallback(cause) {
     try {
-      var raw = await callAI(_fallbackPromptWithSchema(), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
-      var parsed = null;
-      try { parsed = robustParseJSON(raw); }
-      catch(_pe) { console.warn('[callAIWithTools/fallback] JSON 解析失败:', _pe); }
-      var calls = [];
-      if (parsed && Array.isArray(parsed.tool_calls)) {
-        parsed.tool_calls.forEach(function(c) {
-          if (c && c.name) calls.push({ name: c.name, input: c.input || c.arguments || {} });
-        });
-      } else if (parsed && parsed.name && parsed.input) {
-        // 兼容单调用形式
-        calls.push({ name: parsed.name, input: parsed.input });
-      }
-      return { text: String(raw||''), toolCalls: calls, fallback: true };
+      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+      var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
+      return { text: String(raw||''), toolCalls: calls, fallback: true,
+        error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
     } catch(_fe) {
-      console.warn('[callAIWithTools] fallback 也失败:', _fe);
-      return { text: '', toolCalls: [], fallback: true };
+      var info = _toolErrorInfo(_fe);
+      console.warn('[callAIWithTools] fallback 也失败:', info.code, info.status);
+      return { text: '', toolCalls: [], fallback: true, error: info };
     }
   }
 
@@ -930,26 +956,49 @@ async function callAIWithTools(prompt, tools, opts) {
     headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
     parseMode = 'openai';
   }
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, parseMode);
+  // Use the effective request URL, not the primary config when tier=secondary.
+  // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
+  if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
   // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
   var data;
   async function _toolFetchQueued() {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+    var timedOut = false;
+    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
     if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
     var onExternalAbort = function() { ctrl.abort(); };
     if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
     try {
-      var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
-      if (!resp.ok) {
-        var errT = '';
-        try { errT = await resp.text(); } catch(_){ }
-        console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + '): ' + errT.substring(0, 200));
-        var err = new Error('HTTP ' + resp.status);
-        err.status = resp.status;
-        err.toolFallback = true;
-        throw err;
+      var choiceRetried = false;
+      while (true) {
+        if (ctrl.signal.aborted) throw new Error('Aborted');
+        var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+        if (!resp.ok) {
+          var errT = '';
+          try { errT = await resp.text(); } catch(_){ }
+          var choiceUnsupported = resp.status === 400 && /thinking mode does not support (?:this )?tool_choice/i.test(errT);
+          // Unknown compatible proxies can expose the same policy. One repair,
+          // same timer/abort/queue slot; unrelated errors use the existing fallback.
+          if (choiceUnsupported && parseMode === 'openai' && !choiceRetried && body.tool_choice !== undefined) {
+            choiceRetried = true;
+            _tmAIToolJSON.omitChoice(body, opts.forceTool);
+            console.warn('[callAIWithTools] 思考模式不支持 tool_choice·省略该参数后重试一次');
+            continue;
+          }
+          console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
+          var err = new Error('HTTP ' + resp.status);
+          err.status = resp.status;
+          if (choiceUnsupported) err.code = 'tool-choice-unsupported';
+          throw err;
+        }
+        return await resp.json();
       }
-      return await resp.json();
+    } catch (error) {
+      if (timedOut && !(opts.signal && opts.signal.aborted)) {
+        var timeoutError = new Error('AI tool request timed out'); timeoutError.code = 'tool-timeout'; throw timeoutError;
+      }
+      throw error;
     } finally {
       clearTimeout(timer);
       if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
@@ -962,9 +1011,10 @@ async function callAIWithTools(prompt, tools, opts) {
       data = await _toolFetchQueued();
     }
   } catch(e) {
-    try { if (typeof timer !== 'undefined') clearTimeout(timer); } catch(_) {}
-    console.warn('[callAIWithTools] fetch 异常·走 fallback:', e && e.message || e);
-    return await _runFallback();
+    var failure = _toolErrorInfo(e);
+    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+    console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
+    return await _runFallback(e);
   }
   if (data && data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, (opts && opts.id) || 'callAIWithTools');
   // ─── 解析响应·三路径分支 ───
@@ -994,17 +1044,13 @@ async function callAIWithTools(prompt, tools, opts) {
         if (Array.isArray(msg.tool_calls)) {
           msg.tool_calls.forEach(function(tc) {
             var fn = tc.function || {};
-            var input = {};
-            try { input = JSON.parse(fn.arguments || '{}'); }
-            catch(_pe) { console.warn('[callAIWithTools] tool_call arguments JSON 解析失败:', fn.arguments); }
-            if (fn.name) toolCalls.push({ name: fn.name, input: input });
+            var input = _tmAIToolJSON.decode(fn.arguments);
+            if (fn.name && input !== null) toolCalls.push({ name: fn.name, input: input });
           });
         }
         // 兼容某些代理把 function_call (单数·OpenAI 旧字段) 当作 tool_use 返回
         if (toolCalls.length === 0 && msg.function_call && msg.function_call.name) {
-          var _inp = {};
-          try { _inp = JSON.parse(msg.function_call.arguments || '{}'); } catch(_pe2) {}
-          toolCalls.push({ name: msg.function_call.name, input: _inp });
+          toolCalls.push({ name: msg.function_call.name, input: _tmAIToolJSON.decode(msg.function_call.arguments) });
         }
       }
       // 兼容某些代理直接返回 anthropic 风格 content[]·尝试解析
@@ -1017,18 +1063,10 @@ async function callAIWithTools(prompt, tools, opts) {
     }
   } catch(_parseE) {
     console.warn('[callAIWithTools] 响应解析异常·走 fallback:', _parseE);
-    return await _runFallback();
+    return await _runFallback(_parseE);
   }
   // 如果完全没有 toolCalls 且有 text·尝试从 text 抽取 JSON 作为兜底
-  if (toolCalls.length === 0 && text) {
-    try {
-      var maybeJson = null;
-      maybeJson = robustParseJSON(text);
-      if (maybeJson && Array.isArray(maybeJson.tool_calls)) {
-        maybeJson.tool_calls.forEach(function(c) { if (c && c.name) toolCalls.push({ name: c.name, input: c.input || {} }); });
-      }
-    } catch(_textParseE) {}
-  }
+  if (toolCalls.length === 0 && text) toolCalls = _tmAIToolJSON.parse(text);
   // 刀H2(2026-07-02·CC max_tokens 动态调整对照) · 纯增量字段:输出是否被 maxTok 截断(finish_reason)。
   //   调用方(如回合推演 agent)可据此提升输出上限重试;不读该字段的调用方一切如旧。
   var _truncH2 = false;
@@ -1037,6 +1075,7 @@ async function callAIWithTools(prompt, tools, opts) {
       || data.stop_reason === 'max_tokens'
       || (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'MAX_TOKENS'));
   } catch (_tH2E) {}
+  toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
   return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
 }
 
@@ -1100,10 +1139,10 @@ async function callAISmart(prompt, maxTok, options) {
 
       return allContent;
     } catch(e) {
-      if (e && (e.code === 'mandatory_context_overflow' || e.code === 'context_length_exceeded')) throw e;
+      if ((signal && signal.aborted) || _aiErrorIsTerminal(e)) throw e;
       if (attemptCount < maxRetries) {
         console.warn('[AI Smart] 调用失败，重试中... (' + attemptCount + '/' + maxRetries + ')');
-        await new Promise(function(resolve) { setTimeout(resolve, 1000); }); // Wait 1s before retry
+        await _aiWaitForRetry(1000, signal);
         return await attemptCall();
       } else {
         throw e;
@@ -1164,11 +1203,10 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
   if (opts.timeoutMs != null) fetchOpts2.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
+  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfgM, 'openai');
   var data = await _aiFetchWithRetry(url, body, signal, fetchOpts2);
   if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAIMessages');
-  if(data.choices&&data.choices[0]&&data.choices[0].message)return data.choices[0].message.content;
-  if(data.content&&Array.isArray(data.content))return data.content.map(function(b){return b.text||"";}).join("");
-  return "";
+  return _tmAITextResult(data, opts.requireText === true, _scaledTok2);
 }
 
 /**
@@ -1188,7 +1226,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     _finalizedBody = opts.finalizedBodyDetached === true
       ? opts.finalizedBody
       : JSON.parse(JSON.stringify(opts.finalizedBody));
-    var _exactMax = Number(_finalizedBody.max_tokens);
+    var _exactMax = Number(_finalizedBody.max_completion_tokens != null ? _finalizedBody.max_completion_tokens : _finalizedBody.max_tokens);
     if (!Number.isFinite(_exactMax) || _exactMax <= 0) throw new Error('流式 finalizedBody.max_tokens 非法');
     maxTok = Math.floor(_exactMax);
   }
@@ -1236,8 +1274,9 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
       max_tokens: _scaledTok
     };
     if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
+    if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
     _bodyCore.stream = true;
-    var resp = await fetch(url, {
+    var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify(_bodyCore),
@@ -1321,7 +1360,7 @@ async function callAIBodyStream(finalizedBody, opts) {
     skipQueue: true
   });
   var run = function() {
-    return _callAIMessagesStreamDirect(exactBody.messages, exactBody.max_tokens, streamOpts);
+    return _callAIMessagesStreamDirect(exactBody.messages, exactBody.max_completion_tokens != null ? exactBody.max_completion_tokens : exactBody.max_tokens, streamOpts);
   };
   if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
     return run();
@@ -1997,6 +2036,16 @@ function lunarMonthName(m){ return _LUNAR_MONTHS[(m-1)%12]||('第'+m+'月'); }
 /** 农历日名 */
 function lunarDayName(d){ return _LUNAR_DAYS[(d-1)%30]||('第'+d+'日'); }
 
+/** 农历一至三月为春；物候随月份展示，不冒充当天节气。 */
+function _tmSeasonFromDate(di){
+  var m=di&&Number(di.lunarMonth);
+  if(!(m>=1&&m<=12))m=1;
+  var q=Math.floor((m-1)/3),i=(m-1)%3;
+  var season=['春','夏','秋','冬'][q];
+  var desc=[['东风解冻','雷乃发声','萍始生'],['蝼蝈鸣','蜩始鸣','腐草为萤'],['凉风至','鸿雁来','草木黄落'],['水始冰','蚯蚓结','鸡始乳']];
+  return {season:season,name:['孟','仲','季'][i]+season,description:desc[q][i]};
+}
+
 function getEraDisplay(y,mo,dy){
   var eraList=(GM.eraNames||[]);var best=null;
   eraList.forEach(function(e){
@@ -2015,11 +2064,11 @@ function getEraDisplay(y,mo,dy){
  * 从回合号计算完整日期信息
  *
  * 关键设计：同时追踪公历（阳历）和农历日期
- * - 公历日期用于干支日计算（天文学精确）
+ * - 公历起点可用于干支日计算；农历起点未作公历换算时不推定干支日
  * - 农历日期用于游戏显示（历史感）
- * - P.time.startMonth/startDay = 公历起始日期（用于推算）
+ * - P.time.calendar=lunar 时 startMonth/startDay 也是农历起点
  * - P.time.startLunarMonth/startLunarDay = 对应的农历日期（用于显示）
- *   若未设置，默认按公历月-1近似
+ *   未指定农历且不是 lunar 配置时，保留旧的公历月-1近似
  *
  * @returns {{adYear,solarMonth,solarDay,lunarMonth,lunarDay,season,eraInfo,gzYearStr,gzDayStr,reignYear}}
  */
@@ -2036,12 +2085,13 @@ function getCurrentGameDay(){
 function calcDateFromTurn(turn){
   if(!P.time) return {adYear:0,solarMonth:1,solarDay:1,lunarMonth:1,lunarDay:1,season:'春',gzYearStr:'',gzDayStr:''};
   var t=P.time;
-  // 公历起始日期（用于干支计算）
+  var isLunar=t.calendar==='lunar';
+  // 旧阳历配置保留公历推进；农历配置的月日以农历字段为准。
   var solarM=(Number(t.startMonth)>=1&&Number(t.startMonth)<=12)?Math.floor(Number(t.startMonth)):1;
   var solarD=(Number(t.startDay)>=1&&Number(t.startDay)<=31)?Math.floor(Number(t.startDay)):1;
-  // 农历起始日期（用于显示；未设置则从公历近似推算）
-  var lunarM=t.startLunarMonth||(solarM>1?solarM-1:12);
-  var lunarD=t.startLunarDay||solarD;
+  // 显式农历配置不可再把正月近似减成腊月。
+  var lunarM=(Number(t.startLunarMonth)>=1&&Number(t.startLunarMonth)<=12)?Math.floor(Number(t.startLunarMonth)):(isLunar?solarM:(solarM>1?solarM-1:12));
+  var lunarD=(Number(t.startLunarDay)>=1&&Number(t.startLunarDay)<=30)?Math.floor(Number(t.startLunarDay)):Math.min(solarD,30);
   var baseYear=(t.year!=null&&isFinite(Number(t.year)))?Number(t.year):((t.startYear!=null&&isFinite(Number(t.startYear)))?Number(t.startYear):1);
 
   // 每回合推进天数（统一用 _getDaysPerTurn）
@@ -2063,35 +2113,33 @@ function calcDateFromTurn(turn){
   }
 
   // === 农历日期推进（用于显示）===
-  // 农历简化：每月29或30日交替（平均29.53日）
+  // 沿用每月三十日的游戏历推进；这里不作真实朔闰换算。
   var ly=baseYear, lm=lunarM, ld=lunarD+totalDays;
   while(ld>30){ld-=30;lm++;}
-  // 农历年份跟公历年份对齐（简化处理）
   while(lm>12){lm-=12;ly++;}
-  // 注意：农历年份用公历年份（因为年号/干支年都基于公历）
-  ly=sy;
+  // 农历年在正月进位；未声明农历的旧配置保留原公历年契约。
+  var displayYear=isLunar?ly:sy;
 
   // 季节由农历月份决定
   var season=_SEASON_FROM_MONTH[lm]||'春';
 
-  // 干支年：用公历年
-  var gzY=gzYear(sy);
-  // 干支日：用精确的公历日期（这是正确的！）
-  var gzD=gzDay(sy,sm,sd);
+  var gzY=gzYear(displayYear);
+  // 没有公历对照的农历起点不能推定干支日。
+  var gzD=(!isLunar&&t.enableGanzhiDay!==false)?gzDay(sy,sm,sd):'';
 
-  // 年号：用公历年+农历月日判断
+  // 年号：随当前历法的年份与农历月日判断
   var eraInfo=null;
   if(t.enableEraName&&GM.eraNames&&GM.eraNames.length){
-    eraInfo=getEraDisplay(sy,lm,ld);
+    eraInfo=getEraDisplay(displayYear,lm,ld);
   }
 
   // 年号年数
   var _beforeAnniversary = (sm < solarM) || (sm === solarM && sd < solarD);
-  var reignYear=(t.reignY!=null?Number(t.reignY):1)+Math.max(0, sy-baseYear-(_beforeAnniversary?1:0));
+  var reignYear=(t.reignY!=null?Number(t.reignY):1)+Math.max(0,isLunar?ly-baseYear:sy-baseYear-(_beforeAnniversary?1:0));
 
   return {
-    adYear:sy, solarMonth:sm, solarDay:sd,
-    lunarMonth:lm, lunarDay:ld, season:season,
+    adYear:displayYear, solarYear:sy, solarMonth:sm, solarDay:sd,
+    lunarYear:ly, lunarMonth:lm, lunarDay:ld, season:season, calendar:isLunar?'lunar':'solar',
     eraInfo:eraInfo, gzYearStr:gzY, gzDayStr:gzD,
     reignYear:reignYear
   };
@@ -2101,7 +2149,8 @@ function calcDateFromTurn(turn){
   var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null), timeConfig = null; try { timeConfig = (typeof P !== 'undefined' && P) ? P.time : null; } catch (_) {}
   if (!G || typeof calcDateFromTurn !== 'function' || !timeConfig) return null; // 缺 P.time 时保留旧档镜像，不写 adYear=0 占位
   var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
-  G.year = Number(di.adYear); G.month = isFinite(Number(di.solarMonth)) ? Number(di.solarMonth) : 1; G.day = isFinite(Number(di.solarDay)) ? Number(di.solarDay) : 1; return { year: G.year, month: G.month, day: G.day };
+  var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
+  G.year = Number(di.adYear); G.month = isFinite(Number(month)) ? Number(month) : 1; G.day = isFinite(Number(day)) ? Number(day) : 1; return { year: G.year, month: G.month, day: G.day };
 }
 
 function _tmTimeDisplayParts(turn){
@@ -2127,18 +2176,19 @@ function _tmTimeDisplayParts(turn){
   } else {
     main+=di.season+_mn; // 春正月、夏六月、秋八月等
   }
-  // 干支日（始终显示）
-  main+=di.gzDayStr+'日';
+  // 显式关闭干支日或没有公历对照时，直接显示农历日。
+  main+=(t.enableGanzhiDay!==false&&di.gzDayStr)?di.gzDayStr+'日':lunarDayName(di.lunarDay);
 
   // === 副格式（tooltip）===
   var tipParts=[];
-  // 公元日期（精确公历）
-  var adStr=(di.adYear<0?'公元前'+Math.abs(di.adYear):('公元'+di.adYear))+'年'+di.solarMonth+'月'+di.solarDay+'日';
+  // 农历配置未提供公历对照，不能将同一组月日伪装成公历日期。
+  var adStr=(di.adYear<0?'公元前'+Math.abs(di.adYear):('公元'+di.adYear))+'年';
+  if(t.calendar!=='lunar')adStr+=di.solarMonth+'月'+di.solarDay+'日';
   tipParts.push(adStr);
   // 农历日期（中文）
-  tipParts.push(lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
+  tipParts.push('农历'+lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
   // 干支年
-  tipParts.push(di.gzYearStr+'年');
+  if(t.enableGanzhiYear!==false)tipParts.push(di.gzYearStr+'年');
 
   return { main:main, tip:tipParts.join(' | ') };
 }
@@ -2473,7 +2523,7 @@ var ImageAPI = {
     var cfg = this.getConfig();
     if (!cfg.supported) return Promise.reject(new Error('\u672A\u914D\u7F6E\u751F\u56FEAPI'));
     options = options || {};
-    return fetch(cfg.url, {
+    return (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(cfg.url, {
       method: 'POST',
       headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key},
       body: JSON.stringify({

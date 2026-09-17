@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "sourceSha256": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28",
+  "checks": [
+    "434 identical stable IDs, names and order",
+    "81 historical and 353 fictional",
+    "79 people with 93 quotations, 2 explicitly pending",
+    "References bind every historical character by ID",
+    "Fictional characters contain no invented ancient citations",
+    "All people have the agreed applicable fields",
+    "Portraits, identities, wealth, relations and game values preserved",
+    "Player memory and agency preserved",
+    "Unrelated map, setting and other top-level scenario values preserved",
+    "Three corrected posts agree in all three runtime data sources",
+    "Faction data unchanged except the nine justified seat fields",
+    "Honorary titles do not create substantive office claims",
+    "Canonical JSON roundtrip",
+    "Official manifest references installed source bytes"
+  ],
+  "otherScenarioObservations": [
+    {
+      "file": "scenarios/天启七年·九月（官方）.json",
+      "before": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+      "now": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c"
+    },
+    {
+      "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "before": "0e43d46ba32849b7df2b14da99470f059286976f06a482547fcc9057255bd1c7",
+      "now": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04"
+    }
+  ],
+  "note": "Concurrent Shaosong changes are recorded, not reverted. This report does not assert whole-project release readiness."
+}

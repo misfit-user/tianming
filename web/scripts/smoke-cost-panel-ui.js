@@ -11,7 +11,7 @@ const ROOT = path.resolve(__dirname, '..');
 const passed = { value: 0 };
 const assert = makeAssert(passed);
 
-const infraSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infraSrc = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const patchesSrc = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
 
 // ─── builder + show 函数 ───

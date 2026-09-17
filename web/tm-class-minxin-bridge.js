@@ -299,6 +299,116 @@
     return leaves;
   }
 
+
+  // Current regional conditions are a stock; pressure ledger entries are changes to that stock.
+  // Resolve actual administrative ancestry, never a substring of a foreign place name.
+  var _regionIndex = {root:null,ah:null,turn:null,entries:null,queries:new Map()};
+  function regionEntries(root) {
+    root = pickRoot(root);
+    var ah = root.adminHierarchy || (global.P && global.P.adminHierarchy) || {};
+    var turn=Number(root.turn)||0;
+    if (_regionIndex.root===root && _regionIndex.ah===ah && _regionIndex.turn===turn && _regionIndex.entries) return _regionIndex.entries;
+    _regionIndex={root:root,ah:ah,turn:turn,entries:null,queries:new Map()};
+    var result = [];
+    var entries = Array.isArray(ah.divisions) ? [['player', ah]] : Object.keys(ah).map(function(k) { return [k, ah[k]]; });
+    entries.forEach(function(pair) {
+      var key = pair[0], branch = pair[1] || {};
+      var aliases = [key, branch.name, branch.factionId, branch.id];
+      if (key === 'player') aliases.push(root.playerFaction, root.playerFactionId, global.P && global.P.playerInfo && global.P.playerInfo.factionName);
+      toArray(root.facs || root.factions).forEach(function(f) {
+        if (f && (f.isPlayer && key === 'player' || aliases.indexOf(f.id) >= 0 || aliases.indexOf(f.name) >= 0)) aliases.push(f.id, f.name);
+      });
+      aliases = aliases.filter(Boolean).map(explicitKey);
+      function walk(nodes, parents) {
+        toArray(nodes).forEach(function(n) {
+          if (!n || typeof n !== 'object') return;
+          var children = toArray(n.children || n.divisions || n.subs);
+          if (children.length) walk(children, parents.concat([n]));
+          else result.push({ leaf:n, ancestors:parents, factionKey:key, factionAliases:aliases });
+        });
+      }
+      walk(Array.isArray(branch) ? branch : branch.divisions || branch.children, []);
+    });
+    _regionIndex.entries=result; return result;
+  }
+
+  function resolveRegions(root, descriptor, faction) {
+    var d = descriptor && typeof descriptor === 'object' ? descriptor : { region:descriptor };
+    var stable = d.regionId || d.mapRegionId || d.adminBinding || d.id;
+    var name = d.region || d.regionName || d.name || d.division || d.title;
+    var owner = d.factionId || d.faction || d.ownerFactionId || d.owner || d.factionName || faction;
+    var requested = explicitKey(stable || name);
+    if (!requested) return [];
+    var entries=regionEntries(root), cacheKey=explicitKey(owner)+'|'+(stable?'id:':'name:')+requested;
+    if(_regionIndex.queries.has(cacheKey))return _regionIndex.queries.get(cacheKey);
+    var rows = entries.filter(function(e) {
+      if (owner && e.factionAliases.indexOf(explicitKey(owner)) < 0) return false;
+      return [e.leaf].concat(e.ancestors).some(function(n) {
+        var keys = stable ? [n.id, n.regionId, n.mapRegionId, !n.id ? n.name : null] : [n.id, n.name, n.regionId, n.mapRegionId, n.officialName];
+        return keys.filter(Boolean).some(function(k) { return explicitKey(k) === requested; });
+      });
+    });
+    // Unscoped homonyms are unknown, not permission to touch both countries.
+    if (!owner && rows.some(function(e) { return e.factionKey !== rows[0].factionKey; })) rows=[];
+    _regionIndex.queries.set(cacheKey,rows); return rows;
+  }
+
+  function regionSnapshot(root, descriptor) {
+    root = pickRoot(root);
+    var selected = resolveRegions(root, descriptor);
+    var values = [], sum = 0, weightSum = 0, classes = getClasses(root);
+    selected.forEach(function(e) {
+      var localRows = e.leaf.socialConditions && e.leaf.socialConditions.classes;
+      if (Array.isArray(localRows) && localRows.length) {
+        localRows.forEach(function(v) {
+          if (!v || v.satisfaction==null || !isFinite(Number(v.satisfaction))) return;
+          var weight=Number(v.weight!=null?v.weight:1); if(!isFinite(weight)||weight<=0)return;
+          var pd=e.leaf.populationDetail||e.leaf.population||{}, localWeight=weight*(selected.length>1?Math.max(1,Number(pd.mouths)||1):1);
+          var linked=classes.find(function(c){return c && (v.classId ? String(c.id||c.key)===String(v.classId) : classNameOf(c)===(v.className||v.name));});
+          var delta=0;
+          if(linked && v.classBaselineSatisfaction!=null && isFinite(Number(v.classBaselineSatisfaction)) && linked.satisfaction!=null && isFinite(Number(linked.satisfaction)))delta=Number(linked.satisfaction)-Number(v.classBaselineSatisfaction);
+          var satisfaction=clamp(Number(v.satisfaction)+delta,0,100);
+          sum+=(100-satisfaction)*localWeight;weightSum+=localWeight;
+          values.push({regionId:e.leaf.id||e.leaf.name,factionId:e.factionKey,classKey:v.classId||v.className||v.name,className:v.className||v.name,satisfaction:satisfaction,localSatisfaction:Number(v.satisfaction),classDelta:delta,weight:weight,reason:v.reason||v.note||''});
+        });
+        return;
+      }
+      classes.forEach(function(cls) {
+        if (!cls) return;
+        var faction = cls.factionId || cls.faction;
+        if (faction && e.factionAliases.indexOf(explicitKey(faction)) < 0) return;
+        if (!faction && e.factionKey !== 'player') return;
+        var variant = null, specificity = -1;
+        toArray(cls.regionalVariants).forEach(function(v) {
+          if (!v) return;
+          var hits = resolveRegions(root, v, faction || e.factionKey);
+          if (!hits.some(function(h) { return h.leaf === e.leaf; })) return;
+          var rank = 1 / Math.max(1, hits.length);
+          if (rank > specificity) { variant = v; specificity = rank; }
+        });
+        var raw = variant && variant.satisfaction != null ? variant.satisfaction : cls.satisfaction;
+        if (raw === null || raw === undefined || raw === '' || !isFinite(Number(raw))) return;
+        var explicitWeight = variant && (variant.weight != null ? variant.weight : variant.share);
+        var weight = explicitWeight != null ? Number(explicitWeight) : classPopulationShare(cls) || 1;
+        if (!isFinite(weight) || weight <= 0) return;
+        // An aggregate district uses population weights without treating absent population as zero.
+        var pd = e.leaf.populationDetail || e.leaf.population || {};
+        var localWeight = weight * (selected.length > 1 ? Math.max(1, Number(pd.mouths) || 1) : 1);
+        var satisfaction = clamp(Number(raw), 0, 100);
+        sum += (100 - satisfaction) * localWeight; weightSum += localWeight;
+        values.push({ regionId:e.leaf.id || e.leaf.name, factionId:e.factionKey, classKey:classKeyOf(cls), className:classNameOf(cls), satisfaction:satisfaction, weight:weight, reason:variant && (variant.note || variant.reason) || compact(cls.demands || '', 160) });
+      });
+    });
+    var recent = toArray(root._classMinxinBridgeLedger).filter(function(row) {
+      return toArray(row && row.appliedRegions).concat(toArray(row && row.regionWeights)).some(function(r) {
+        return resolveRegions(root, r, row.factionId || '').some(function(h) { return selected.some(function(e) { return e.leaf === h.leaf; }); });
+      });
+    }).slice(-8);
+    var names = [];
+    values.slice().sort(function(a,b) { return a.satisfaction - b.satisfaction; }).forEach(function(v) { if (names.indexOf(v.className) < 0) names.push(v.className); });
+    return { ready:weightSum > 0, score:weightSum > 0 ? Math.round(sum / weightSum) : null, count:values.length, classNames:names.slice(0,3), reason:values.length ? values.slice().sort(function(a,b) { return a.satisfaction-b.satisfaction; })[0].reason : '', current:values, recent:recent, recentDelta:recent.reduce(function(n,r) { return n + (Number(r.delta)||0); },0) };
+  }
+
   function resolveRegionWeights(root, payload, cls) {
     var rows = [];
     toArray(payload && (payload.regionWeights || payload.regionalWeights || payload.regions)).forEach(function(r) {
@@ -307,7 +417,7 @@
       if (!region) return;
       var weight = Number(r.weight != null ? r.weight : r.share);
       if (!isFinite(weight) || weight <= 0) weight = 1;
-      rows.push({ region: region, weight: weight });
+      rows.push({ region: region, regionId: r.regionId, factionId: r.factionId || r.faction || payload.factionId || payload.faction, weight: weight });
     });
     if (!rows.length && cls) {
       toArray(cls.regionalVariants || cls.regionWeights || cls.regions).forEach(function(r) {
@@ -316,14 +426,20 @@
         if (!region) return;
         var weight = Number(r.weight != null ? r.weight : r.share);
         if (!isFinite(weight) || weight <= 0) weight = 1;
-        rows.push({ region: region, weight: weight });
+        rows.push({ region: region, regionId: r.regionId, factionId: r.factionId || r.faction || cls.factionId || cls.faction, weight: weight });
       });
     }
-    var byKey = {};
+    var expanded = [];
     rows.forEach(function(r) {
-      var key = normalizeName(r.region);
+      var hits = resolveRegions(root, r, cls && (cls.factionId || cls.faction));
+      if (!hits.length && !regionEntries(root).length) { expanded.push(r); return; }
+      hits.forEach(function(e) { expanded.push({ region:String(e.leaf.id || e.leaf.name), regionId:String(e.leaf.id || e.leaf.name), factionId:e.factionKey, weight:r.weight / hits.length }); });
+    });
+    var byKey = {};
+    expanded.forEach(function(r) {
+      var key = explicitKey(r.factionId) + '|' + explicitKey(r.regionId || r.region);
       if (!key) return;
-      byKey[key] = byKey[key] || { region: r.region, weight: 0 };
+      byKey[key] = byKey[key] || { region:r.region, regionId:r.regionId, factionId:r.factionId, weight:0 };
       byKey[key].weight += r.weight;
     });
     return Object.keys(byKey).map(function(k) { return byKey[k]; });
@@ -468,7 +584,7 @@
       if (!leaves) leaves = getLeafDivisions(root);
       var totalWeight = regionWeights.reduce(function(sum, r) { return sum + Math.max(0, Number(r.weight) || 0); }, 0) || 1;
       regionWeights.forEach(function(r) {
-        var matched = leaves.filter(function(leaf) { return matchLeaf(leaf, r.region); });
+        var matched = resolveRegions(root, r).map(function(e) { return e.leaf; });
         if (!matched.length) return;
         var weightedDelta = delta * ((Number(r.weight) || 1) / totalWeight);
         matched.forEach(function(leaf) {
@@ -478,7 +594,7 @@
           leaf.minxin = next;
           if (leaf.minxinLocal !== undefined) leaf.minxinLocal = next;
           appliedRegions.push({
-            region: compact(leaf.name || leaf.id || r.region, 100),
+            region: compact(leaf.id || leaf.name || r.region, 100), regionId:leaf.id || leaf.name, factionId:r.factionId,
             before: round2(old),
             after: next,
             delta: round2(next - old)
@@ -974,7 +1090,7 @@
     formatForPrompt: formatForPrompt,
     _classKeyOf: classKeyOf,
     _resolveRegionWeights: resolveRegionWeights,
-    _getLeafDivisions: getLeafDivisions
+    _getLeafDivisions: getLeafDivisions, regionEntries:regionEntries, resolveRegions:resolveRegions, regionSnapshot:regionSnapshot
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = TM.ClassMinxinBridge;

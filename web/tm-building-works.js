@@ -199,6 +199,10 @@
     return Math.max(10, Math.round(cost * _upkeepRateFor(bld, typeDef))); // S6·按类分档(原一刀切 2%)
   }
 
+  function repairCostFor(bld, typeDef) {
+    return Math.max(20, Math.round(num(bld && bld.costActual, num(typeDef && typeDef.baseCost, 0)) * 0.3));
+  }
+
   // S7·营造可观测账：一座建筑的「真贡献」（实入账 appliedDelta·非 per-level 规则）+ 维护 + 工成之利 + 半损态。
   //   实入账=完工真写进叶子的增量(经费效封顶/造价放大后的实值)·让玩家看见每座建筑究竟为本地添了什么。
   var _LEDGER_NAMES = {
@@ -218,14 +222,15 @@
       var v = num(applied[k]); if (!v) return;
       lines.push((_LEDGER_NAMES[k] || k) + ' ' + (v > 0 ? '+' : '') + _fmtLedgerAmt(v));
     });
-    var cost = num(bld && bld.costActual, num(typeDef && typeDef.baseCost, 0));
-    var flow = Math.round(buildingFlowPct(cost) * Math.max(1, num(bld && bld.level, 1)) * 1000) / 10;  // 工成之利 岁入 %/回合(1 位小数)
+    var status = (bld && bld.status) || 'completed';
+    var flow = status === 'completed' ? Math.round(effectiveBuildingFlowPct(bld, typeDef) * 1000) / 10 : 0;
     return {
       applied: lines,                                   // 实入账(真为本地所添·已入账)
       upkeep: upkeepFor(bld, typeDef),                  // 养护 两/回合(S6 分档)
+      repairCost: repairCostFor(bld, typeDef),          // 修缮与 tick 共用，地方库支付
       flowPct: flow > 0 ? flow : 0,                     // 工成之利·岁入 +X%/回合
       damaged: !!(bld && (bld.status === 'damaged' || bld._damageReverted)),
-      status: (bld && bld.status) || 'completed'
+      status: status
     };
   }
 
@@ -467,17 +472,20 @@
     if (cost < 1000) return 0; // 小役不成势
     return Math.min(0.03, Math.max(0.005, cost / 2000000));
   }
+  function effectiveBuildingFlowPct(bld, typeDef) {
+    var cost = num(bld && bld.costActual, num(typeDef && typeDef.baseCost, 0));
+    return Math.min(0.06, buildingFlowPct(cost) * Math.max(1, num(bld && bld.level, 1)));
+  }
   function grantBuildingStatus(div, bld, P, GM) {
     var RS = statusApi();
     if (!RS) return;
-    var cost = num(bld.costActual, num((typeDefFor(bld.name, P) || {}).baseCost, 0));
-    var pct = buildingFlowPct(cost) * Math.max(1, num(bld.level, 1));
+    var pct = effectiveBuildingFlowPct(bld, typeDefFor(bld.name, P));
     if (pct <= 0) return;
     try {
       RS.add(div, {
         kind: 'building', name: '「' + bld.name + '」之利',
         desc: '工成而百业随兴——地方岁入随之而长',
-        econPct: Math.min(0.06, pct), source: 'building:' + bld.name
+        econPct: pct, source: 'building:' + bld.name
       }, GM);
     } catch (_) {}
   }
@@ -513,9 +521,9 @@
       eb('建设', div.name + '的「' + bld.name + '」遭' + (_freshSev >= 3 ? '大灾' : '灾') + '·半损（效用减半，待修缮）');
       return;                                            // 本回合不再走常维护
     }
-    // S6·修缮：半损建筑·地方库银可支半费(造价 30%)则葺治复完
+    // S6·修缮：半损建筑·地方库银足付造价 30%（至少 20 两）则葺治复完
     if (bld.status === 'damaged') {
-      var _rcost = Math.max(20, Math.round(num(bld.costActual, num((typeDefFor(bld.name, P) || {}).baseCost, 0)) * 0.3));
+      var _rcost = repairCostFor(bld, typeDefFor(bld.name, P));
       if (money && num(money.stock) >= _rcost) {
         money.stock = num(money.stock) - _rcost;
         if (money.available != null) money.available = Math.max(0, num(money.available) - _rcost);

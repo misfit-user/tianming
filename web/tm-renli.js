@@ -101,7 +101,50 @@
     return null;
   }
 
-  function presentDing(pd) { return Math.max(0, num(pd.ding, 0) - num(pd.fugitives, 0)); } // 实际在地丁
+  function _fledDing(pd) { return Math.max(0, num(pd.fledDing != null ? pd.fledDing : pd.fugitives, 0)); }
+  function presentDing(pd) { return Math.max(0, num(pd.ding, 0) - _fledDing(pd)); } // 显式丁账不用逃口直接减丁
+  function _mouthsPerDing(pd) { return Math.max(1, num(pd.mouthsPerDing, num(pd.mouths,0) / Math.max(1,num(pd.ding,0)))); }
+  function _setFledDing(pd, next, GM) {
+    next = Math.round(clamp(next,0,num(pd.ding,0)));
+    var change=next-_fledDing(pd), HE=typeof HujiEngine!=='undefined'?HujiEngine:null;
+    if(HE && typeof HE.applyRegistrationStatusChange==='function'){
+      var result=HE.applyRegistrationStatusChange({root:GM,detail:pd,status:'fled',deltaDing:change,cause:'役政与迁复'});
+      if(result&&result.ok)return num(result.appliedDing,0);
+    }
+    if (pd.fledDing == null) { pd.fugitives = next; return change; }
+    pd.fledDing = next;
+    pd.fugitives = Math.round(clamp(num(pd.fugitives,0) + change * _mouthsPerDing(pd),0,Math.max(0,num(pd.mouths,0)-num(pd.hiddenCount,0))));
+    return change;
+  }
+  function _addHiddenDing(pd, added, GM) {
+    var HE=typeof HujiEngine!=='undefined'?HujiEngine:null;
+    if(HE && typeof HE.applyRegistrationStatusChange==='function'){
+      var result=HE.applyRegistrationStatusChange({root:GM,detail:pd,status:'hidden',deltaDing:added,cause:'役政与清籍'});
+      if(result&&result.ok)return num(result.appliedDing,0);
+    }
+    if (pd.hiddenDing == null) { pd.hiddenCount = Math.max(0,num(pd.hiddenCount,0) + added); return added; }
+    var next = Math.round(clamp(num(pd.hiddenDing,0)+added,0,presentDing(pd)));
+    var change = next - num(pd.hiddenDing,0); pd.hiddenDing = next;
+    pd.hiddenCount = Math.round(clamp(num(pd.hiddenCount,0)+change*_mouthsPerDing(pd),0,Math.max(0,num(pd.mouths,0)-num(pd.fugitives,0))));
+    return change;
+  }
+  // The administrative service roll differs from physical agricultural labor.
+  // Status mutations already adjust registered/taxable people; do not subtract hidden or fled people again.
+  function _serviceDing(pd, physical) {
+    var registered=num(pd.registeredDing,0), onRoll=num(pd.registeredMouths,0), covered=pd.taxableMouths;
+    var known=covered!=null && pd.registeredMouths!=null && isFinite(Number(covered)) && isFinite(Number(pd.registeredMouths));
+    var service=known?(onRoll>0?registered*clamp(Number(covered)/onRoll,0,1):0):num(pd.taxableDing,0);
+    return Math.max(0,Math.min(physical,Math.round(service)));
+  }
+  function _explicitInputs(leaf) {
+    var pd=popOf(leaf)||{}, seed=leaf.renliSeed||{}, missing=[];
+    if (seed.accounting !== 'explicit-ding') return missing;
+    ['ding','registeredDing','fledDing','hiddenDing','baselineExemptDing','registeredLand'].forEach(function(k){if(pd[k]==null || !isFinite(Number(pd[k])) || Number(pd[k])<0)missing.push('populationDetail.'+k);});
+    ['annualCorveeDays','annualDraftDays','laborYearDays','annualFoodNeedPerMouth','annualYieldPerMu','dingPerMuMin','dingPerMuOptimal'].forEach(function(k){if(seed[k]==null || !isFinite(Number(seed[k])) || Number(seed[k])<0 || k==='laborYearDays' && Number(seed[k])===0)missing.push('renliSeed.'+k);});
+    if(num(seed.dingPerMuMin,0)<=0 || num(seed.dingPerMuOptimal,0)<num(seed.dingPerMuMin,0))missing.push('renliSeed.dingPerMuMin/Optimal');
+    if(!(pd.registeredMouths!=null && pd.taxableMouths!=null && isFinite(Number(pd.registeredMouths)) && isFinite(Number(pd.taxableMouths))) && !(pd.taxableDing!=null && isFinite(Number(pd.taxableDing))))missing.push('populationDetail.registeredMouths/taxableMouths');
+    return missing;
+  }
 
   // ── R1：ensure / 种子 / 近账 ───────────────────────────────────────────
   function ensureLeafFields(leaf) {
@@ -109,7 +152,7 @@
     if (!pd) return null;
     if (!pd.alloc || typeof pd.alloc !== 'object') pd.alloc = {};
     ALLOC_KEYS.forEach(function (k) { if (typeof pd.alloc[k] !== 'number') pd.alloc[k] = 0; });
-    if (typeof pd.registeredDing !== 'number') pd.registeredDing = num(pd.ding, 0); // 册载丁默认=实在丁
+    if (typeof pd.registeredDing !== 'number' && !(leaf.renliSeed && leaf.renliSeed.accounting === 'explicit-ding')) pd.registeredDing = num(pd.ding, 0); // 旧剧本兼容；显式丁账不把实丁冒作册丁
     return pd;
   }
 
@@ -120,7 +163,7 @@
     var r = GM.renli.byRegion[regionId];
     if (!r) {
       r = GM.renli.byRegion[regionId] = {
-        soil: clamp((seed && seed.soilBase != null) ? seed.soilBase : SEED_DEFAULTS.soilBase, 0, 100),
+        ready:false, soil: clamp((seed && seed.soilBase != null) ? seed.soilBase : SEED_DEFAULTS.soilBase, 0, 100),
         cultivatedLand: 0, fallowLand: 0, corveeRate: 0,
         levyPolicy: { strength: 'normal', remitTurns: 0 }, ledger: []
       };
@@ -168,7 +211,8 @@
   function levyableDing(leaf) {
     var pd = popOf(leaf); if (!pd) return 0;
     var present = presentDing(pd);
-    return Math.max(0, present - Math.min(num(pd.exemptDing, 0), present));
+    var physical=Math.max(0, present - Math.min(num(pd.exemptDing, 0), present));
+    return leaf.renliSeed && leaf.renliSeed.accounting==='explicit-ding' ? _serviceDing(pd,physical) : physical;
   }
 
   // 分配不变量：务农+役+征 ≤ 实在丁（不超总丁·逃亡发生于分配之后故用 ding 上界）；优免 ⊆ 务农；各项 ≥0
@@ -205,7 +249,7 @@
     if (!cls || !delta) return;
     if (!Array.isArray(cls.regionalVariants)) cls.regionalVariants = [];
     var v = null;
-    for (var i = 0; i < cls.regionalVariants.length; i++) { var rv = cls.regionalVariants[i]; if (rv && String(rv.region) === String(regionId)) { v = rv; break; } }
+    for (var i = 0; i < cls.regionalVariants.length; i++) { var rv = cls.regionalVariants[i]; if (rv && String(rv.regionId || rv.region) === String(regionId)) { v = rv; break; } }
     if (!v) { v = { region: String(regionId), satisfaction: num(cls.satisfaction, 50) }; cls.regionalVariants.push(v); }
     var d = clamp(delta, -VARIANT_CAP, VARIANT_CAP);
     v.satisfaction = clamp(num(v.satisfaction, 50) + d, 0, 100);
@@ -218,33 +262,70 @@
     return 0.7;
   }
   function _regLandOf(leaf, pd) {
+    if(leaf.renliSeed && leaf.renliSeed.accounting==='explicit-ding' && leaf.economyBase && leaf.economyBase.farmland!=null)return Math.max(0,num(leaf.economyBase.farmland,0)); // 总田供民食，籍田只供核税
     var rl = num(pd.registeredLand, 0); if (rl > 0) return rl;
     if (leaf.environment && num(leaf.environment.arableLand, 0) > 0) return num(leaf.environment.arableLand, 0);
     if (leaf.economyBase && num(leaf.economyBase.farmland, 0) > 0) return num(leaf.economyBase.farmland, 0); // 真天启府叶田亩在 economyBase.farmland（A3 实探）
     return num(pd.arableLand, 0);
   }
 
+
+  // Annual local production is not current food access: trading towns can import food.
+  // A current confirmed shortfall (including a confirmed zero) outranks a general disaster flag.
+  function _foodEvidence(GM,leaf,r,annualNeed,annualGap) {
+    if(!(leaf.renliSeed && leaf.renliSeed.accounting==='explicit-ding'))return {known:true,annualGap:annualGap,source:'legacy'};
+    var turn=num(GM&&GM.turn,0), records=[];
+    if(leaf.foodShortfall && typeof leaf.foodShortfall==='object')records.push(leaf.foodShortfall);
+    (r.ledger||[]).forEach(function(row){if(row && row.key==='foodShortfall')records.push(row);});
+    var current=records.filter(function(row){var value=row&&(row.amount!=null?row.amount:row.value!=null?row.value:row.delta);return row && value!=null && isFinite(Number(value)) && Number(row.turn)===turn && row.confirmed!==false;}).slice(-1)[0];
+    if(current){
+      var amount=Math.max(0,num(current.amount,current.value!=null?current.value:current.delta));
+      var fraction=current.periodDays!=null?Math.max(1/360,num(current.periodDays,30)/360):_yearFraction(GM);
+      return {known:true,annualGap:Math.min(annualNeed,amount/fraction),source:'confirmed-shortfall'};
+    }
+    var affected=!!leaf._warZone || (r._warScarTurn!=null && Number(r._warScarTurn)===turn);
+    if(!affected)affected=(leaf.statusEffects||[]).some(function(e){return e && e.kind==='disaster' && Number(e.econPct)<0 && e.active!==false && (e.endTurn==null||Number(e.endTurn)>=turn) && (e.remainingTurns==null||Number(e.remainingTurns)>0);});
+    if(!affected)affected=(GM.activeDisasters||[]).some(function(d){
+      if(!d || d.active===false || d.status==='resolved')return false;
+      var start=num(d.startedTurn,d.startTurn!=null?d.startTurn:turn), duration=d.duration;
+      if(turn<start || duration!=null && turn-start>=Number(duration))return false;
+      var B=typeof TM!=='undefined' && TM.ClassMinxinBridge;
+      if(B && B.resolveRegions)return B.resolveRegions(GM,{regionId:d.regionId,region:d.region,factionId:d.factionId||d.faction}).some(function(e){return String(e.leaf.id||e.leaf.name)===regionIdOf(leaf);});
+      return String(d.regionId||d.region||'')===regionIdOf(leaf);
+    });
+    return {known:affected,annualGap:affected?annualGap:0,source:affected?'current-disaster-or-war':'annual-balance-only'};
+  }
+  function _foodEffectsGap(GM,leaf,r){return _foodEvidence(GM,leaf,r,num(r.foodNeed,0),num(r.foodDeficit,0)).annualGap;}
+
   // 单地域 tick（确定性·闭式·每地 O(1)）。写 alloc + 既有 fugitives/hiddenCount + GM.renli 派生；不动 ding 总量。
-  function tickLeaf(GM, leaf) {
+  function tickLeaf(GM, leaf, options) {
     var pd = popOf(leaf); if (!pd) return null;
     ensureLeafFields(leaf);
     var rid = regionIdOf(leaf);
     var seed = leaf.renliSeed || {};
     var r = ensureRegion(GM, rid, seed);
+    var deriveOnly = options && options.prime === true;
+    var explicit = seed.accounting === 'explicit-ding';
+    var missing = _explicitInputs(leaf);
+    r.ready = !!leaf.renliSeed && missing.length === 0; r.missingInputs = missing;
+    if (missing.length) { r.corveeRate=null; r.cultivatedLand=null; r.fallowLand=null; return {regionId:rid,ready:false,missingInputs:missing}; }
 
     var ding = Math.max(0, num(pd.ding, 0));                 // 实在丁（真相源·只读）
     var present = presentDing(pd);                            // 在地丁 = ding − 逃亡
     var exempt = Math.min(Math.max(0, num(pd.exemptDing, 0)), present); // 优免（R4 由 gongming 填）
-    var leviable = Math.max(0, present - (r.tanding ? 0 : exempt)); // 可征丁（摊丁入亩后优免不再蔽役·役随田走·R8）
+    var physical = Math.max(0, present - (r.tanding ? 0 : exempt));
+    var leviable = explicit ? _serviceDing(pd,physical) : physical; // 可征丁（摊丁入亩后优免不再蔽役·役随田走·R8）
 
     // 劳动力分流（R3.5：役 corvee + 军役 draft 共争同一可征丁池 → 军农争丁）
     var pol = r.levyPolicy || (r.levyPolicy = { strength: 'normal', remitTurns: 0 });
     var lm = clamp(num(seed.laborMarketDepth, SEED_DEFAULTS.laborMarketDepth), 0, 0.95);
     // 役需(丁)：诏书显式设则用之；否则已种子地域取标准常役底盘（册载丁×常役系数×征发强度·A1）·未种子=0
     var _sMult = STRENGTH_DEMAND_MULT[pol.strength] || 1.0;
-    var _baselineCorvee = leaf.renliSeed ? Math.round(num(pd.registeredDing, 0) * BASELINE_CORVEE_FRAC * _sMult) : 0;
+    var roleShare = explicit ? num(seed.annualCorveeDays,0) / num(seed.laborYearDays,300) : BASELINE_CORVEE_FRAC;
+    var _baselineCorvee = leaf.renliSeed ? Math.round(num(pd.registeredDing, 0) * roleShare * _sMult) : 0;
     var demand = (pol.corveeDemand != null) ? Math.max(0, num(pol.corveeDemand, 0)) : _baselineCorvee;
-    var draftDemand = Math.max(0, num(pol.draftDemand, 0));    // 募兵+民夫转运需(丁)·R3.5·campaign/诏书设
+    var draftDemand = Math.max(0, num(pol.draftDemand, explicit ? num(pd.registeredDing,0)*num(seed.annualDraftDays,0)/num(seed.laborYearDays,300) : 0));    // 募兵+民夫转运需(丁)·R3.5·campaign/诏书设
+    draftDemand = Math.round(draftDemand);
     var commuted = Math.round(demand * lm);                    // 募役折银（不抽田丁·军役不折银）
     var wanted = Math.max(0, demand - commuted);
     var remit = num(pol.remitTurns, 0) > 0;
@@ -258,7 +339,7 @@
     // 农政层激活条件：仅「已种子(renliSeed)且有地数据」的地域才算粮/饥荒/逃亡/满意度；
     // 其余惰性（只留 alloc·良性）——R3 在 live 游戏对未种子地域零行为变更，待 R4 种子+校准激活。
     var regLand = _regLandOf(leaf, pd);
-    if (!leaf.renliSeed || regLand <= 0) {
+    if (!leaf.renliSeed || (!explicit && regLand <= 0)) {
       r.cultivatedLand = 0; r.fallowLand = 0;
       r.corveeRate = Math.round(corveeRate * 10000) / 10000;
       r.grainOutput = 0; r.foodNeed = 0; r.foodDeficit = 0; r.signal = 0;
@@ -271,54 +352,64 @@
     var dc = num(seed.doubleCropping, SEED_DEFAULTS.doubleCropping);
     var ww = clamp(num(r.waterworks != null ? r.waterworks : seed.waterworks, SEED_DEFAULTS.waterworks), 0, 100);
     var rho = regLand > 0 ? (farm / regLand) : 0;
+    var rhoMin=explicit?num(seed.dingPerMuMin,RHO_MIN):RHO_MIN, rhoOptimal=explicit?num(seed.dingPerMuOptimal,RHO_STAR):RHO_STAR;
     var cult, fallow;
     if (regLand <= 0) { cult = 0; fallow = 0; }
-    else if (rho >= RHO_MIN) { cult = regLand; fallow = 0; }
-    else { cult = Math.round(farm / RHO_MIN); fallow = Math.max(0, regLand - cult); }
-    var Q = _qOf(rho);
-    var grain = Math.round(cult * BASE_YIELD * (soil / 100) * Q * dc * weather);
+    else if (rho >= rhoMin) { cult = regLand; fallow = 0; }
+    else { cult = Math.round(farm / rhoMin); fallow = Math.max(0, regLand - cult); }
+    var Q = explicit ? (rho>=rhoOptimal?1:(rho<rhoMin?0.7:clamp(0.7+0.3*(rho-rhoMin)/Math.max(0.00001,rhoOptimal-rhoMin),0.7,1))) : _qOf(rho);
+    var grain = Math.round(cult * num(seed.annualYieldPerMu,BASE_YIELD) * (soil / 100) * Q * dc * weather);
 
     // 缺粮（饥荒·R3）：民食 = 口 × subsistence；不含赋（赋由 cascade）
-    var foodNeed = Math.round(num(pd.mouths, 0) * SUBSIST);
-    var deficit = Math.max(0, foodNeed - grain);
-    var deficitRatio = foodNeed > 0 ? (deficit / foodNeed) : 0;
+    var foodNeed = Math.round(num(pd.actualMouths,num(pd.mouths, 0)) * num(seed.annualFoodNeedPerMouth,SUBSIST));
+    var otherFood=Math.round(num(pd.actualMouths,num(pd.mouths,0))*Math.max(0,num(seed.annualOtherFoodPerMouth,0)));
+    var foodSupply=grain+otherFood;
+    var deficit = Math.max(0, foodNeed - foodSupply);
+    var foodEvidence=_foodEvidence(GM,leaf,r,foodNeed,deficit);
+    var deficitRatio = foodNeed > 0 ? (foodEvidence.annualGap / foodNeed) : 0;
+    r.foodImpactKnown=foodEvidence.known; r.foodImpactSource=foodEvidence.source;
 
     // 满意度原始信号（役负 + 缺粮）——交 tick() 过总闸·本函数不写满意度
     var sRole = -K_ROLE * Math.max(0, corveeRate - CORVEE_LINE);
     var sGrain = -K_GRAIN * deficitRatio;
-    var signal = sRole + sGrain;
+    var step = explicit ? _yearFraction(GM) : 1;
+    var signal = (sRole + sGrain) * step;
 
     // 三裂口（R3·写既有叶子字段·不动 ding 总量）：逃亡 + 隐丁（诡寄待 R4 优免归集）
-    if (present > 0) {
+    if (present > 0 && !deriveOnly) {
       var fleeFrac = clamp(FLEE_A * Math.max(0, corveeRate - CORVEE_LINE) + FLEE_B * deficitRatio, 0, 0.5);
-      var newFug = Math.round(present * fleeFrac);
+      var newFug = Math.round(present * fleeFrac * step);
       if (newFug > 0) {
-        pd.fugitives = Math.min(num(pd.fugitives, 0) + newFug, Math.round(ding * FLEE_CAP)); // 逃亡→既有 fugitives
+        newFug = _setFledDing(pd, Math.min(_fledDing(pd) + newFug, Math.round(ding * FLEE_CAP)), GM); // 逃亡→既有 fugitives
         ledgerPush(GM, rid, 'fugitives', newFug, '役负/缺粮逃亡', 'renli');
       }
       var hideFrac = clamp(HIDE_C * Math.max(0, corveeRate - CORVEE_LINE), 0, 0.2);
-      var newHid = Math.round(present * hideFrac);
-      if (newHid > 0) pd.hiddenCount = num(pd.hiddenCount, 0) + newHid; // 隐丁→既有 hiddenCount
+      var newHid = Math.round(present * hideFrac * step);
+      if (newHid > 0) _addHiddenDing(pd,newHid,GM); // 隐丁→既有 hiddenCount
       // 诡寄（R4）：役重→自耕农投献士绅避役（留田务农·转入优免不可征）→ commendedDing（下回合 refreshExempt 折叠进 exempt）
       var commendFrac = clamp(COMMEND_K * Math.max(0, corveeRate - CORVEE_LINE), 0, 0.3);
-      var newCommend = Math.round(leviable * commendFrac);
+      var newCommend = Math.round(leviable * commendFrac * step);
       if (newCommend > 0) { pd.commendedDing = Math.min(num(pd.commendedDing, 0) + newCommend, Math.round(ding * 0.5)); ledgerPush(GM, rid, 'commended', newCommend, '役重诡寄投献', 'renli'); }
     }
 
     // 地力慢变（影响下回合）
     var dSoil = 0;
-    if (rho < RHO_STAR) dSoil -= 2;
+    if (rho < rhoOptimal) dSoil -= 2;
     if (weather < 0.85) dSoil -= 1;
-    if (rho >= RHO_STAR && ww >= 60) dSoil += 1;
-    r.soil = clamp(soil + dSoil, 5, 95);
+    if (rho >= rhoOptimal && ww >= 60) dSoil += 1;
+    if (!deriveOnly) r.soil = clamp(soil + dSoil * step, 5, 95);
 
     r.cultivatedLand = cult; r.fallowLand = fallow;
     r.corveeRate = Math.round(corveeRate * 10000) / 10000;
+    r.registeredRoleRate = num(pd.registeredDing,0)>0 ? Math.round(levied/num(pd.registeredDing,0)*10000)/10000 : null;
+    r.physicalRoleRate = physical>0 ? Math.round(levied/physical*10000)/10000 : 0;
+    r.roleFulfillment = wanted+draftDemand>0 ? Math.round(levied/(wanted+draftDemand)*10000)/10000 : 1;
+    r.agriculturePeriodDays = explicit ? 360 : null;
     r.rho = Math.round(rho * 10000) / 10000;
     r.q = Math.round(Q * 10000) / 10000;
-    r.grainOutput = grain; r.foodNeed = foodNeed; r.foodDeficit = deficit;
+    r.grainOutput = grain; r.otherFoodEquivalent=otherFood; r.foodSupply=foodSupply; r.foodNeed = foodNeed; r.foodDeficit = deficit;
     r.signal = Math.round(signal * 100) / 100;
-    if (num(pol.remitTurns, 0) > 0) pol.remitTurns = num(pol.remitTurns, 0) - 1; // 蠲免倒计（R6）
+    if (!deriveOnly && num(pol.remitTurns, 0) > 0) pol.remitTurns = num(pol.remitTurns, 0) - 1; // 蠲免倒计（R6）
     return { regionId: rid, present: present, corveeRate: corveeRate, deficit: deficit, signal: signal };
   }
 
@@ -373,7 +464,7 @@
     var sev = (opts.severity != null) ? clamp(opts.severity, 0, 1) : clamp(num(opts.casualties, 0) / ding, 0, 0.5); // 烈度=伤亡/丁
     if (sev <= 0) return null;
     var flee = Math.round(present * sev * 0.5); // 兵燹驱民
-    if (flee > 0) { pd.fugitives = Math.min(num(pd.fugitives, 0) + flee, Math.round(ding * FLEE_CAP)); ledgerPush(GM, String(regionId), 'fugitives', flee, '兵燹驱民', 'war'); }
+    if (flee > 0) { flee=_setFledDing(pd, Math.min(_fledDing(pd) + flee, Math.round(ding * FLEE_CAP)),GM); ledgerPush(GM, String(regionId), 'fugitives', flee, '兵燹驱民', 'war'); }
     var soilHit = Math.round(sev * 30), waterHit = Math.round(sev * 20);
     r.soil = clamp(num(r.soil, seed.soilBase != null ? seed.soilBase : SEED_DEFAULTS.soilBase) - soilHit, 5, 95);
     r.waterworks = clamp(num(r.waterworks != null ? r.waterworks : seed.waterworks, SEED_DEFAULTS.waterworks) - waterHit, 0, 100);
@@ -436,7 +527,7 @@
       var pd = popOf(l); if (!pd) return;
       var rr = (GM.renli.byRegion && GM.renli.byRegion[regionIdOf(l)]) || {};
       var cap = (typeof rr.exemptCapFactor === 'number') ? rr.exemptCapFactor : 1; // 限制优免（R6 变法）
-      pd.exemptDing = Math.max(0, Math.round((gentry[regionIdOf(l)] || 0) * cap + num(pd.commendedDing, 0))); // 士绅优免×限免 + 诡寄
+      pd.exemptDing = Math.min(presentDing(pd), Math.max(0, Math.round((num(pd.baselineExemptDing,0) + (gentry[regionIdOf(l)] || 0)) * cap + num(pd.commendedDing, 0)))); // 士绅优免×限免 + 诡寄
     });
   }
   // A3a 激活·试点种子（数据驱动·中立·无朝代硬编）：读 GM.renliPilot=[{region,seed}|name]·对未种子地域 seedRegion（幂等·不重置已种子地力/棘轮）。无配置→零行为(未激活)。
@@ -529,10 +620,10 @@
       var rid = regionIdOf(leaf);
       var r = getRegion(GM, rid); if (!r) return;
       var ding = Math.max(0, num(pd.ding, 0));
-      var foodNeed = num(r.foodNeed, 0), deficit = num(r.foodDeficit, 0);
+      var foodNeed = num(r.foodNeed, 0), deficit = _foodEffectsGap(GM,leaf,r);
       var deficitRatio = foodNeed > 0 ? clamp(deficit / foodNeed, 0, 1) : 0;
       var corveeRate = num(r.corveeRate, 0);
-      var fleeRatio = ding > 0 ? clamp(num(pd.fugitives, 0) / ding, 0, 1) : 0;
+      var fleeRatio = ding > 0 ? clamp(_fledDing(pd) / ding, 0, 1) : 0;
       // 连续亏空回合（缺粮不结转·派生计数·随 r._warScarTurn 范式存 byRegion·assertNoDingInRenli 不涉）
       r.deficitTurns = (deficit > 0) ? (num(r.deficitTurns, 0) + 1) : 0;
       // ① 民心通道：粮荒/役负/逃亡严重度→有界压低本府 div.minxin（落 GM 叶子=民变真值源）
@@ -542,9 +633,9 @@
         if (dMin < 0 && _pushRegionMinxin(GM, leaf, dMin)) ledgerPush(GM, rid, 'minxin', dMin, '役政崩坏·民心缓蚀', 'renli');
       }
       // ② 流寇通道：§5 全崩(逃亡>20% ∧ 连续亏空≥2 ∧ 农户满意度<35)→本回合新逃丁分流进既有逃户池→既有流寇凝聚
-      var seen = num(pd._renliFugSeen, num(pd.fugitives, 0));
-      var inc = Math.max(0, num(pd.fugitives, 0) - seen);
-      pd._renliFugSeen = num(pd.fugitives, 0);              // 更新基线（防 backlog 一次性倾泻·只取每回合增量）
+      var seen = num(pd._renliFugSeen, _fledDing(pd));
+      var inc = Math.max(0, _fledDing(pd) - seen);
+      pd._renliFugSeen = _fledDing(pd);              // 更新基线（防 backlog 一次性倾泻·只取每回合增量）
       var sat = _farmerSatForRegion(farmers, rid);
       var inCollapse = (fleeRatio > COLLAPSE_FLEE && num(r.deficitTurns, 0) >= COLLAPSE_DEFICIT_TURNS && sat < COLLAPSE_SAT);
       if (inCollapse && inc > 0) {
@@ -600,6 +691,45 @@
     try { applyGrainShortfall(GM, Pp); } catch (_) {}
   }
 
+
+  function _yearFraction(GM) {
+    var Pp=_P()||{}, current=null;
+    if(typeof _getDaysPerTurn==='function'){try{current=_getDaysPerTurn();}catch(_){}}
+    var days=current!=null && isFinite(Number(current)) && Number(current)>0 ? Number(current) : num(GM && (GM.turnDays || GM.daysPerTurn),num(Pp.time && Pp.time.daysPerTurn,num(Pp.conf && Pp.conf.daysPerTurn,num(GM&&GM.fiscalConfig&&GM.fiscalConfig.daysPerTurn,30))));
+    return clamp(days/360,1/360,1);
+  }
+  function _allAdminLeaves(GM,Pp) {
+    var ah=GM && GM.adminHierarchy || Pp && Pp.adminHierarchy || {}, out=[];
+    var branches=Array.isArray(ah.divisions)?[ah]:Object.keys(ah).map(function(k){return ah[k];});
+    function walk(ns){(ns||[]).forEach(function(n){var kids=n && (n.children||n.divisions);if(kids&&kids.length)walk(kids);else if(n)out.push(n);});}
+    branches.forEach(function(b){walk(Array.isArray(b)?b:b&&b.divisions);});return out;
+  }
+  // Idempotent opening derivation. No demographic flow, soil erosion, elapsed policy time,
+  // treasury settlement, satisfaction signal, or court/letter generation occurs here.
+  function prime(GM,Pp) {
+    if(!GM)return {ready:0,missing:[]}; Pp=Pp||_P();
+    ensurePilotSeeds(GM,Pp);
+    var out={ready:0,missing:[],unconfigured:0};
+    _allAdminLeaves(GM,Pp).forEach(function(leaf){
+      if(!leaf.renliSeed){out.unconfigured++;return;}
+      var pd=popOf(leaf), r=ensureRegion(GM,regionIdOf(leaf),leaf.renliSeed);
+      if(pd && pd.baselineExemptDing!=null)pd.exemptDing=Math.min(presentDing(pd),Math.max(0,Math.round(num(pd.baselineExemptDing,0)*num(r.exemptCapFactor,1)+num(pd.commendedDing,0))));
+      var result=tickLeaf(GM,leaf,{prime:true});
+      if(r.ready)out.ready++;else out.missing.push({regionId:regionIdOf(leaf),fields:result&&result.missingInputs||['renliSeed']});
+    });
+    return out;
+  }
+  function forMapRegion(GM,region) {
+    if(!GM || !GM.renli || !GM.renli.byRegion || !region)return null;
+    var br=GM.renli.byRegion, key=region.id||region.regionId||region.mapRegionId;
+    if(key && br[key])return br[key].ready===false?null:br[key];
+    // An ID that identifies a different country must not borrow a player's homonymous name.
+    if(key)return null;
+    var matches=_allAdminLeaves(GM,_P()).filter(function(l){return l.name===region.name;});
+    if(matches.length!==1)return null;
+    var found=br[regionIdOf(matches[0])];return found&&found.ready!==false?found:null;
+  }
+
   // ── R6：变法 ops（玩家杠杆 + 党派代价·仅已种子地域·诏书触发见 recognizeEdictReform·R6c）──
   function _reformGate(GM, classMatch, delta, source, reason) {
     var CE = _classEngine(); if (!CE || typeof CE.gateSatisfaction !== 'function') return;
@@ -629,10 +759,10 @@
       out.waterworksBefore = num(r.waterworks != null ? r.waterworks : seed.waterworks, SEED_DEFAULTS.waterworks);
       r.waterworks = clamp(out.waterworksBefore + amt, 0, 100); out.waterworks = r.waterworks;
     } else if (type === 'resettle' || type === '招抚流民') {
-      var before = num(pd.fugitives, 0);
+      var before = _fledDing(pd);
       var back = (opts.amount != null) ? Math.round(num(opts.amount, 0)) : Math.round(before * clamp(num(opts.fraction, 0.4), 0, 1));
-      pd.fugitives = Math.max(0, before - back);
-      out.fugitivesBefore = before; out.fugitivesAfter = pd.fugitives; out.resettled = before - pd.fugitives;
+      _setFledDing(pd, Math.max(0, before - back),GM);
+      out.fugitivesBefore = before; out.fugitivesAfter = _fledDing(pd); out.resettled = before - _fledDing(pd);
       _reformGate(GM, '农户', 4, 'reform-resettle', '招抚流民·复业');
     } else if (type === 'survey' || type === '清丈' || type === '清丈田亩') {
       var f = clamp(num(opts.recoverFactor, 0.3), 0, 1);
@@ -643,8 +773,10 @@
       _reformGate(GM, '士', -8, 'reform-survey', '清丈田亩·触士绅');           // 党派代价
     } else if (type === 'reregister' || type === '重修黄册' || type === '大造黄册') {
       out.registeredDingBefore = num(pd.registeredDing, 0);
-      pd.registeredDing = num(pd.ding, 0);                                     // 册实归一·棘轮归零
-      out.hiddenCleared = num(pd.hiddenCount, 0); pd.hiddenCount = 0;          // 隐丁现形入册
+      var hiddenBefore=num(pd.hiddenCount,0);
+      if(seed.accounting==='explicit-ding') _addHiddenDing(pd,-num(pd.hiddenDing,0),GM);
+      else { pd.registeredDing=num(pd.ding,0); pd.hiddenCount=0; }
+      out.hiddenCleared=hiddenBefore-num(pd.hiddenCount,0); // 只登记已核实隐丁，不把全部籍外居民强作新籍
       pd.commendedDing = Math.round(num(pd.commendedDing, 0) * 0.5);          // 诡寄部分现形
       out.registeredDing = pd.registeredDing;
     } else if (type === 'whip' || type === '一条鞭法' || type === '役折银') {
@@ -830,12 +962,13 @@
       var pd = popOf(leaf); if (!pd) return;
       var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
       var ding = Math.max(0, num(pd.ding, 0));
-      var fleeRatio = ding > 0 ? num(pd.fugitives, 0) / ding : 0;
+      var fleeRatio = ding > 0 ? _fledDing(pd) / ding : 0;
       var corveeRate = num(r.corveeRate, 0);
       var need = num(r.foodNeed, 0), deficit = num(r.foodDeficit, 0);
       var deficitRatio = need > 0 ? deficit / need : 0;
       var parts = ['役负' + _gradeCorvee(corveeRate) + '(' + Math.round(corveeRate * 100) + '%)'];
-      if (need > 0) parts.push(deficit > 0 ? ('缺粮' + Math.round(deficitRatio * 100) + '%') : '粮足');
+      if (need > 0) parts.push(leaf.renliSeed.accounting==='explicit-ding' ? (deficit>0?'年度本地产食不足'+Math.round(deficitRatio*100)+'%（须靠调入；并非已确认当期饥荒）':'年度本地产食可供民食') : (deficit > 0 ? ('缺粮' + Math.round(deficitRatio * 100) + '%') : '粮足'));
+      if(leaf.renliSeed.accounting==='explicit-ding' && _foodEffectsGap(GM,leaf,r)>0)parts.push('当期灾困或缺食已有记录');
       if (num(r.fallowLand, 0) > 0) parts.push('抛荒' + Math.round(num(r.fallowLand, 0)) + '亩');
       if (fleeRatio > 0.03) parts.push('逃亡' + Math.round(fleeRatio * 100) + '%');
       var pol = r.levyPolicy || {};
@@ -898,7 +1031,7 @@
       var pd = popOf(leaf); if (!pd) return;
       var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
       var ding = Math.max(0, num(pd.ding, 0));
-      var fleeRate = ding > 0 ? clamp(num(pd.fugitives, 0) / ding, 0, 1) : 0;
+      var fleeRate = ding > 0 ? clamp(_fledDing(pd) / ding, 0, 1) : 0;
       var corveeRate = num(r.corveeRate, 0);
       var cult = num(r.cultivatedLand, 0), fallow = num(r.fallowLand, 0);
       var fallowShare = (cult + fallow) > 0 ? clamp(fallow / (cult + fallow), 0, 1) : 0;
@@ -947,7 +1080,7 @@
       var r = getRegion(GM, rid); if (!r) return;
       var pd = popOf(leaf); var ding = pd ? Math.max(0, num(pd.ding, 0)) : 0;
       var tCorvee = num(r.corveeRate, 0);
-      var tFlee = ding > 0 ? num(pd.fugitives, 0) / ding : 0;
+      var tFlee = ding > 0 ? _fledDing(pd) / ding : 0;
       var cult = num(r.cultivatedLand, 0), fallow = num(r.fallowLand, 0);
       var tFallow = (cult + fallow) > 0 ? fallow / (cult + fallow) : 0;
       var conceal = num(rep.conceal, 0);
@@ -976,9 +1109,9 @@
       var pd = popOf(leaf); if (!pd) return;
       var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
       var ding = Math.max(0, num(pd.ding, 0));
-      var fleeRatio = ding > 0 ? num(pd.fugitives, 0) / ding : 0;
+      var fleeRatio = ding > 0 ? _fledDing(pd) / ding : 0;
       var corveeRate = num(r.corveeRate, 0);
-      var deficit = num(r.foodDeficit, 0), need = num(r.foodNeed, 0);
+      var deficit = _foodEffectsGap(GM,leaf,r), need = num(r.foodNeed, 0);
       var deficitRatio = need > 0 ? deficit / need : 0;
       var hasBad = corveeRate > CORVEE_LINE || fleeRatio > 0.05 || deficit > 0 || num(r.fallowLand, 0) > 0;
       if (!hasBad) return;                                          // 太平无事不奏不密报（省界面噪声）
@@ -1048,6 +1181,8 @@
   function _guoku(GM) { return (GM && GM.guoku && typeof GM.guoku === 'object') ? GM.guoku : null; }
   function applyGrainShortfall(GM, Pp) {
     Pp = Pp || _P();
+    var accounting=(GM && GM.fiscalConfig && GM.fiscalConfig.accounting) || (Pp && Pp.fiscalConfig && Pp.fiscalConfig.accounting);
+    if(accounting && accounting.schema==='tm-fiscal-ledger/2')return 0; // 统一财政已算实际税粮，民食缺口不再直接扣国库库存
     var gk = _guoku(GM); if (!gk || typeof gk.grain !== 'number') return 0;  // 无帑廪粮账→inert
     var ls = leaves(Pp).filter(function (l) { return l && l.renliSeed; });
     if (!ls.length) return 0;
@@ -1055,9 +1190,9 @@
     ls.forEach(function (leaf) {
       var pd = popOf(leaf); if (!pd) return;
       var rid = regionIdOf(leaf), r = getRegion(GM, rid); if (!r) return;
-      var deficit = num(r.foodDeficit, 0);
+      var deficit = _foodEffectsGap(GM,leaf,r);
       if (deficit <= 0) { r._grainShortfall = 0; return; }
-      var sf = Math.round(deficit * GRAIN_TAX_SHARE);
+      var sf = Math.round(deficit * GRAIN_TAX_SHARE * (leaf.renliSeed.accounting === 'explicit-ding' ? _yearFraction(GM) : 1));
       if (sf <= 0) { r._grainShortfall = 0; return; }
       raws.push({ rid: rid, r: r, sf: sf }); rawTotal += sf;
     });
@@ -1078,9 +1213,9 @@
   var api = {
     ALLOC_KEYS: ALLOC_KEYS, SEED_DEFAULTS: SEED_DEFAULTS,
     RHO_STAR: RHO_STAR, RHO_MIN: RHO_MIN, BASE_YIELD: BASE_YIELD, STRENGTH_CAP: STRENGTH_CAP,
-    CORVEE_LINE: CORVEE_LINE, SUBSIST: SUBSIST,
+    CORVEE_LINE: CORVEE_LINE, SUBSIST: SUBSIST, foodEvidence:_foodEvidence,
     leaves: leaves, popOf: popOf, presentDing: presentDing,
-    ensureLeafFields: ensureLeafFields, ensureRegion: ensureRegion, ensureDefaults: ensureDefaults,
+    ensureLeafFields: ensureLeafFields, ensureRegion: ensureRegion, ensureDefaults: ensureDefaults, prime:prime, forMapRegion:forMapRegion,
     seedRegion: seedRegion, ledgerPush: ledgerPush, getRegion: getRegion,
     levyableDing: levyableDing, allocValid: allocValid, assertNoDingInRenli: assertNoDingInRenli,
     findFarmerClass: findFarmerClass, applyRegionalVariant: applyRegionalVariant,

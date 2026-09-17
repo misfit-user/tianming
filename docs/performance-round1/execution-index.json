@@ -1,0 +1,2460 @@
+[
+  {
+    "label": "baseline-a",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-canonical-utf8.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:37:19.312Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "1b0492975e192a24c0536f1f357dccae2ab5c9c029c2ec3ea88d4762d4ff8b93",
+      "web/phase8-formal-map.js": "89df207343b7d69f46d76f428b49cfbbf20086633026d339f8b056f4b1b217d2",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 275.0004,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\baseline-a-4c2bcac7-694a-4d71-86bb-66203dc2336d",
+    "logs": {
+      "stdout.log": {
+        "sha256": "8fed1f0349f6bb53031123ddf57e6c440dcd3b10839b6ab361f8f0f4f05c3871",
+        "bytes": 437,
+        "exported": "logs.json",
+        "key": [
+          "baseline-a-4c2bcac7-694a-4d71-86bb-66203dc2336d",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "8fed1f0349f6bb53031123ddf57e6c440dcd3b10839b6ab361f8f0f4f05c3871"
+      },
+      "stderr.log": {
+        "sha256": "b7f56347c3544d87b742ed875b8ece8e752163eeba60686e7933198147358335",
+        "bytes": 1409,
+        "exported": "logs.json",
+        "key": [
+          "baseline-a-4c2bcac7-694a-4d71-86bb-66203dc2336d",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "5448555fa49e8f4da7668f83d56fc8e1d3199c6f06501846b6e3b6e808d3c6dd"
+      }
+    }
+  },
+  {
+    "label": "slice-a",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-canonical-utf8.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:38:02.309Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "89df207343b7d69f46d76f428b49cfbbf20086633026d339f8b056f4b1b217d2",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 243.09939999999995,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\slice-a-6a2a241a-fa22-4060-a453-4af1cfd52f0d",
+    "logs": {
+      "stdout.log": {
+        "sha256": "8c012bbdacad7ccd5e6112fd25ac5e02d5539cf4102d2454a60e041547822ee8",
+        "bytes": 583,
+        "exported": "logs.json",
+        "key": [
+          "slice-a-6a2a241a-fa22-4060-a453-4af1cfd52f0d",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "8c012bbdacad7ccd5e6112fd25ac5e02d5539cf4102d2454a60e041547822ee8"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "slice-a-6a2a241a-fa22-4060-a453-4af1cfd52f0d",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "baseline-b",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-map-render-path.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:39:47.038Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "89df207343b7d69f46d76f428b49cfbbf20086633026d339f8b056f4b1b217d2",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 1838.4245,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\baseline-b-cbca0df1-219a-496f-9303-73220c22fcc2",
+    "logs": {
+      "stdout.log": {
+        "sha256": "5498fb44411d273fe48eab2346fd6dfa589dd83c6fdbec88e3c3b43f43df66af",
+        "bytes": 101,
+        "exported": "logs.json",
+        "key": [
+          "baseline-b-cbca0df1-219a-496f-9303-73220c22fcc2",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "5498fb44411d273fe48eab2346fd6dfa589dd83c6fdbec88e3c3b43f43df66af"
+      },
+      "stderr.log": {
+        "sha256": "86b645021e9f7c87d58bd3ee95d1ef2802a18e365f43bc6414373db5ed8089c0",
+        "bytes": 10941,
+        "exported": "logs.json",
+        "key": [
+          "baseline-b-cbca0df1-219a-496f-9303-73220c22fcc2",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "a3dc4fcd0de0664644eb3d9b6e5be3e297f44ebcf994e3e4d25d85757490f878"
+      }
+    }
+  },
+  {
+    "label": "slice-b",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-map-render-path.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:40:09.832Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 3330.9721999999997,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\slice-b-1c6be054-04cc-47a4-8d34-9b85a71149f3",
+    "logs": {
+      "stdout.log": {
+        "sha256": "a20be1a2d7ae3bc93dd63bac931307e91052fb65a7834d95e03e48bc089b46bb",
+        "bytes": 781,
+        "exported": "logs.json",
+        "key": [
+          "slice-b-1c6be054-04cc-47a4-8d34-9b85a71149f3",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "a20be1a2d7ae3bc93dd63bac931307e91052fb65a7834d95e03e48bc089b46bb"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "slice-b-1c6be054-04cc-47a4-8d34-9b85a71149f3",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "slice-ab-arch",
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:42:07.745Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 21035.5458,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\slice-ab-arch-a2fc392b-a35e-4daf-ae69-6722c41c8155",
+    "logs": {
+      "stdout.log": {
+        "sha256": "fba430c293058d8301155cf5a6816bc71b688718e17d83e6fdbf984662fc8106",
+        "bytes": 707,
+        "exported": "logs.json",
+        "key": [
+          "slice-ab-arch-a2fc392b-a35e-4daf-ae69-6722c41c8155",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "fba430c293058d8301155cf5a6816bc71b688718e17d83e6fdbf984662fc8106"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "slice-ab-arch-a2fc392b-a35e-4daf-ae69-6722c41c8155",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "baseline-c",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-save-preparation.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:45:37.113Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 5220.5812000000005,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\baseline-c-b376735a-b29e-4260-9082-7571099383c2",
+    "logs": {
+      "stdout.log": {
+        "sha256": "e0789623285e5a9bda5c8806d7e8136c3aed25d2d34c26921f1c8f4c741e6ba7",
+        "bytes": 25,
+        "exported": "logs.json",
+        "key": [
+          "baseline-c-b376735a-b29e-4260-9082-7571099383c2",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "e0789623285e5a9bda5c8806d7e8136c3aed25d2d34c26921f1c8f4c741e6ba7"
+      },
+      "stderr.log": {
+        "sha256": "b7ca2131c84f0601a193b54e24d197328e30c30c54cb3d87f332247321765ad4",
+        "bytes": 12814,
+        "exported": "logs.json",
+        "key": [
+          "baseline-c-b376735a-b29e-4260-9082-7571099383c2",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "c03d71c3f582ebd07725ef4c5c41a2df0847378306baf5c087f9446898d85346"
+      }
+    }
+  },
+  {
+    "label": "baseline-c-adapted",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-save-preparation.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:46:01.492Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 18330.177799999998,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\baseline-c-adapted-2cc44f51-12da-4a0d-824b-22d866b506f0",
+    "logs": {
+      "stdout.log": {
+        "sha256": "6cbd3500903e5834f370f3d2e95714dd1ca5dbae43c3fdabd0003870ff028b92",
+        "bytes": 1070,
+        "exported": "logs.json",
+        "key": [
+          "baseline-c-adapted-2cc44f51-12da-4a0d-824b-22d866b506f0",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "6cbd3500903e5834f370f3d2e95714dd1ca5dbae43c3fdabd0003870ff028b92"
+      },
+      "stderr.log": {
+        "sha256": "afa9bb5bec7c21e1bd3d3251a2a03d73341efc97c4de4a0f8600f092bdbe23a7",
+        "bytes": 3958,
+        "exported": "logs.json",
+        "key": [
+          "baseline-c-adapted-2cc44f51-12da-4a0d-824b-22d866b506f0",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "f0abc601ab8fea1fb870e3a2af11629ea66d3a829f6217a27a805eed7a47f62c"
+      }
+    }
+  },
+  {
+    "label": "slice-c",
+    "command": [
+      "node",
+      "web/scripts/smoke-perf-save-preparation.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:47:52.503Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 16515.0994,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\slice-c-89948c2d-795e-4449-bc2c-6482e0e66a8b",
+    "logs": {
+      "stdout.log": {
+        "sha256": "913d589c25341434857ea165733f25c9e2030b41a6ab2631046031a304ffee92",
+        "bytes": 1497,
+        "exported": "logs.json",
+        "key": [
+          "slice-c-89948c2d-795e-4449-bc2c-6482e0e66a8b",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "913d589c25341434857ea165733f25c9e2030b41a6ab2631046031a304ffee92"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "slice-c-89948c2d-795e-4449-bc2c-6482e0e66a8b",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "microbench",
+    "command": [
+      "node",
+      "scripts/perf/round1-microbench.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "9"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:50:05.125Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 68838.4144,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\microbench-bb762f24-2521-4d44-9a73-13f56df3ed65",
+    "logs": {
+      "stdout.log": {
+        "sha256": "f18505c75df69a3545a83933873fe80365c340d9955ee4cefeaffb06608f48c0",
+        "bytes": 2646,
+        "exported": "logs.json",
+        "key": [
+          "microbench-bb762f24-2521-4d44-9a73-13f56df3ed65",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "3993a8d2feda3c716053c37f7dfa1d1a5002463f94a02f17f2e36f181fefed3d"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "microbench-bb762f24-2521-4d44-9a73-13f56df3ed65",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "slice-c-arch",
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:50:15.694Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 16549.1338,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\slice-c-arch-6df62e24-8b9c-42cc-b1b5-df3f6ead55ea",
+    "logs": {
+      "stdout.log": {
+        "sha256": "961af701b5abe2d8d2d3d7ad2d6f2bc71988de7889baf7cb91b742ab86c8bee6",
+        "bytes": 707,
+        "exported": "logs.json",
+        "key": [
+          "slice-c-arch-6df62e24-8b9c-42cc-b1b5-df3f6ead55ea",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "961af701b5abe2d8d2d3d7ad2d6f2bc71988de7889baf7cb91b742ab86c8bee6"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "slice-c-arch-6df62e24-8b9c-42cc-b1b5-df3f6ead55ea",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-exploratory",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T13:56:22.072Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 42899.6997,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-exploratory-e239e383-1685-4f05-bca1-3a60a6fd9a66",
+    "logs": {
+      "stdout.log": {
+        "sha256": "e589fea95a82ab34226cc54c173d09c70f380c6b57eaee1ba7ffe75e0df11036",
+        "bytes": 804,
+        "exported": "logs.json",
+        "key": [
+          "electron-exploratory-e239e383-1685-4f05-bca1-3a60a6fd9a66",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "420b35d7092b98404ddd8d4ab42489474b16f1114156d4f15cd33dfd93c1b7f4"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-exploratory-e239e383-1685-4f05-bca1-3a60a6fd9a66",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-adapter-diagnostic",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:02:24.101Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 13433.7872,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-adapter-diagnostic-f22d07cb-082a-4cea-a9e3-434e578180ed",
+    "logs": {
+      "stdout.log": {
+        "sha256": "622a5a06e7380d3a03f565f778177173d894beda301096c13b1ed2b890019fec",
+        "bytes": 879,
+        "exported": "logs.json",
+        "key": [
+          "electron-adapter-diagnostic-f22d07cb-082a-4cea-a9e3-434e578180ed",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "1c7323a8c50c45f770934275824178146bbb8ff1ec354a0ea2b59cd9379a9cab"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-adapter-diagnostic-f22d07cb-082a-4cea-a9e3-434e578180ed",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-exploratory-clock",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:03:47.364Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 241208.5609,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-exploratory-clock-ac25a1a2-2ae2-4e06-854b-02ba1c2c4c2d",
+    "logs": {
+      "stdout.log": {
+        "sha256": "e24a248b9f39e10b7a1a3109ce23aa7f72ab7dc49edf19d485e6e7d8d59c23ee",
+        "bytes": 466,
+        "exported": "logs.json",
+        "key": [
+          "electron-exploratory-clock-ac25a1a2-2ae2-4e06-854b-02ba1c2c4c2d",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "b7aa9573b84af40e7035ea5a2db27a70c76dce990c4091ad774162a91c23874f"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-exploratory-clock-ac25a1a2-2ae2-4e06-854b-02ba1c2c4c2d",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "official-hash-sync",
+    "command": [
+      "node",
+      "scripts/sync-hot-baseline.js",
+      "--write",
+      "--version",
+      "1.3.4.11",
+      "--asset-root",
+      "<user-profile>/Desktop/tianming",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:04:07.953Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 46425.8356,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\official-hash-sync-77d34208-357f-42df-bcbb-f6d1bd62eff6",
+    "logs": {
+      "stdout.log": {
+        "sha256": "d368917490715f47efd4974807ba2f40f1f69bb58a9d795d23473727105f8467",
+        "bytes": 176,
+        "exported": "logs.json",
+        "key": [
+          "official-hash-sync-77d34208-357f-42df-bcbb-f6d1bd62eff6",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "f6197549453ca61e388a4e6a8856cb31f711e189632f1314b33902c42eb2dcc3"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "official-hash-sync-77d34208-357f-42df-bcbb-f6d1bd62eff6",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "full-smoke",
+    "command": [
+      "node",
+      "web/scripts/ci-smokes.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:06:26.501Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 102509.6487,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\full-smoke-e7119023-d0a0-46be-b602-a0ddd6c17710",
+    "logs": {
+      "stdout.log": {
+        "sha256": "ed8bb46d411d7cadf63f7fbddbf8508cc204ca336f7e968f4253a9b6cdf5ce2f",
+        "bytes": 3809,
+        "exported": "logs.json",
+        "key": [
+          "full-smoke-e7119023-d0a0-46be-b602-a0ddd6c17710",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "06dbb3e6fd1080bc953125a24b1b20135a9ae8acd54520e598825620397f62d1"
+      },
+      "stderr.log": {
+        "sha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159",
+        "bytes": 46,
+        "exported": "logs.json",
+        "key": [
+          "full-smoke-e7119023-d0a0-46be-b602-a0ddd6c17710",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "8ed4e4289c982d57660974c564ff35637093aea3205b31dc534ebf8c61483159"
+      }
+    }
+  },
+  {
+    "label": "official-scenario-sync",
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:07:24.478Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 5367.0117,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\official-scenario-sync-1a49fcc2-c87a-41df-85c9-0f6e31c24323",
+    "logs": {
+      "stdout.log": {
+        "sha256": "53543ed96be8edcc91dd0311b30afacf4308c833d24742e1bda84d40b77d315d",
+        "bytes": 221,
+        "exported": "logs.json",
+        "key": [
+          "official-scenario-sync-1a49fcc2-c87a-41df-85c9-0f6e31c24323",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "53543ed96be8edcc91dd0311b30afacf4308c833d24742e1bda84d40b77d315d"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "official-scenario-sync-1a49fcc2-c87a-41df-85c9-0f6e31c24323",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "release-contract",
+    "command": [
+      "node",
+      "scripts/verify-release-contract.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:07:33.506Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 3218.9134999999997,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\release-contract-64ef1b61-b741-4743-b947-4f1de682bed0",
+    "logs": {
+      "stdout.log": {
+        "sha256": "7ca36865671f7039360d55964c657200a132576dae5b8df118f5f9b9383b5363",
+        "bytes": 10468,
+        "exported": "logs.json",
+        "key": [
+          "release-contract-64ef1b61-b741-4743-b947-4f1de682bed0",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "7ca36865671f7039360d55964c657200a132576dae5b8df118f5f9b9383b5363"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "release-contract-64ef1b61-b741-4743-b947-4f1de682bed0",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "startup-manifest-sync",
+    "command": [
+      "node",
+      "web/scripts/build-startup-phase-manifest.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:09:43.718Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 272.52699999999993,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\startup-manifest-sync-775fc77d-bdcf-4321-8aba-2f235b0f1cb3",
+    "logs": {
+      "stdout.log": {
+        "sha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+        "bytes": 81,
+        "exported": "logs.json",
+        "key": [
+          "startup-manifest-sync-775fc77d-bdcf-4321-8aba-2f235b0f1cb3",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "startup-manifest-sync-775fc77d-bdcf-4321-8aba-2f235b0f1cb3",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-visible-draft",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:10:04.242Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 75702.014,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-visible-draft-d1f8fca7-44a7-4af0-8ac5-e88dc531c96c",
+    "logs": {
+      "stdout.log": {
+        "sha256": "345b22094d06b25860fde770071f4a3dca9c9e11df7b708af8bcaee3cfe029de",
+        "bytes": 396,
+        "exported": "logs.json",
+        "key": [
+          "electron-visible-draft-d1f8fca7-44a7-4af0-8ac5-e88dc531c96c",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "b3aef25dbd78aa26f94f8e0bf24ea66e3e16f7623988d96643acb8f1eaac1231"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-visible-draft-d1f8fca7-44a7-4af0-8ac5-e88dc531c96c",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "adapted-save-tests",
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "smoke-save-integrity-audit|smoke-save-saved-clone|smoke-save-slim|smoke-write-gate-expansion|smoke-startup-phase-observability",
+      "--no-retry"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:10:15.155Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 296.14480000000003,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\adapted-save-tests-45fd3fea-fc72-4cb2-8955-1586909b0738",
+    "logs": {
+      "stdout.log": {
+        "sha256": "c5fa8c825bcd0227514cdbf7bd87e28f931a2efe051016bddeae209057847a3d",
+        "bytes": 82,
+        "exported": "logs.json",
+        "key": [
+          "adapted-save-tests-45fd3fea-fc72-4cb2-8955-1586909b0738",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "c5fa8c825bcd0227514cdbf7bd87e28f931a2efe051016bddeae209057847a3d"
+      },
+      "stderr.log": {
+        "sha256": "35409f97bbf50570d62511361df1b39ff1bb2cf58e3b2e469ea94f30ce2f6cff",
+        "bytes": 69,
+        "exported": "logs.json",
+        "key": [
+          "adapted-save-tests-45fd3fea-fc72-4cb2-8955-1586909b0738",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "35409f97bbf50570d62511361df1b39ff1bb2cf58e3b2e469ea94f30ce2f6cff"
+      }
+    }
+  },
+  {
+    "label": "adapted-save-tests-correct-selection",
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "smoke-save-integrity-audit",
+      "--grep",
+      "smoke-save-saved-clone",
+      "--grep",
+      "smoke-save-slim",
+      "--grep",
+      "smoke-write-gate-expansion",
+      "--grep",
+      "smoke-startup-phase-observability",
+      "--no-retry"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:10:50.274Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 1,
+    "signal": null,
+    "elapsedMs": 1516.3047000000001,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\adapted-save-tests-correct-selection-a28febce-481e-4633-85b8-d5e0aedef321",
+    "logs": {
+      "stdout.log": {
+        "sha256": "a0ea5330cc3c7e97530eb19b80397fcffe10e4d811f2721976a2317b782d4f6b",
+        "bytes": 724,
+        "exported": "logs.json",
+        "key": [
+          "adapted-save-tests-correct-selection-a28febce-481e-4633-85b8-d5e0aedef321",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "a0ea5330cc3c7e97530eb19b80397fcffe10e4d811f2721976a2317b782d4f6b"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "adapted-save-tests-correct-selection-a28febce-481e-4633-85b8-d5e0aedef321",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "official-parity",
+    "command": [
+      "node",
+      "web/scripts/verify-official-scenario-parity.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:10:53.852Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 2970.875,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\official-parity-e653fce2-7061-484a-b227-4d1b4a32820e",
+    "logs": {
+      "stdout.log": {
+        "sha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+        "bytes": 1574,
+        "exported": "logs.json",
+        "key": [
+          "official-parity-e653fce2-7061-484a-b227-4d1b4a32820e",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "official-parity-e653fce2-7061-484a-b227-4d1b4a32820e",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "hot-builder-gates",
+    "command": [
+      "node",
+      "web/scripts/verify-hot-builder-gates.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:10:59.051Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 3784.0984,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\hot-builder-gates-b9a4b716-2d5a-4142-9432-53841f29cbe5",
+    "logs": {
+      "stdout.log": {
+        "sha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+        "bytes": 1108,
+        "exported": "logs.json",
+        "key": [
+          "hot-builder-gates-b9a4b716-2d5a-4142-9432-53841f29cbe5",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "hot-builder-gates-b9a4b716-2d5a-4142-9432-53841f29cbe5",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "save-slim-policy",
+    "command": [
+      "node",
+      "web/scripts/smoke-save-slim.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:11:22.158Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 205.9031,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\save-slim-policy-c86d73d1-4243-4354-bfa3-7afe1d952ead",
+    "logs": {
+      "stdout.log": {
+        "sha256": "97a678cfacc3f9cda88bcf53c6b3dbc71ba859531631ed7b2e67c946f8e0af40",
+        "bytes": 4090,
+        "exported": "logs.json",
+        "key": [
+          "save-slim-policy-c86d73d1-4243-4354-bfa3-7afe1d952ead",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "97a678cfacc3f9cda88bcf53c6b3dbc71ba859531631ed7b2e67c946f8e0af40"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "save-slim-policy-c86d73d1-4243-4354-bfa3-7afe1d952ead",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-complete-adapter",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:12:39.967Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 200858.574,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-complete-adapter-8721024d-e9cb-4ee9-a6d7-63d8e45e666c",
+    "logs": {
+      "stdout.log": {
+        "sha256": "540512c3fb93d511ef276c5865fc14f979219e1462b457eff28244966caa5a6a",
+        "bytes": 193,
+        "exported": "logs.json",
+        "key": [
+          "electron-complete-adapter-8721024d-e9cb-4ee9-a6d7-63d8e45e666c",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "f123d302eccef161081e339d769ba177f3808c73e553c07677242f94a855f049"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-complete-adapter-8721024d-e9cb-4ee9-a6d7-63d8e45e666c",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "dependency-audit",
+    "command": [
+      "npm",
+      "audit",
+      "--omit=dev",
+      "--audit-level=high",
+      "--registry=https://registry.npmjs.org"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:12:50.608Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 4997.3219,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\dependency-audit-ac24e89b-2e86-449d-ac2a-9b53684d23c7",
+    "logs": {
+      "stdout.log": {
+        "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+        "bytes": 24,
+        "exported": "logs.json",
+        "key": [
+          "dependency-audit-ac24e89b-2e86-449d-ac2a-9b53684d23c7",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3"
+      },
+      "stderr.log": {
+        "sha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+        "bytes": 233,
+        "exported": "logs.json",
+        "key": [
+          "dependency-audit-ac24e89b-2e86-449d-ac2a-9b53684d23c7",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7"
+      }
+    }
+  },
+  {
+    "label": "final-architecture",
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:22:33.365Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 17359.3765,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\final-architecture-ba3f3757-b258-4a1e-84e6-6ef6b645c7c4",
+    "logs": {
+      "stdout.log": {
+        "sha256": "7b76025dd0d48a02a2914f05edda069bdfa7f8c600b591b52e129b5f92453bca",
+        "bytes": 707,
+        "exported": "logs.json",
+        "key": [
+          "final-architecture-ba3f3757-b258-4a1e-84e6-6ef6b645c7c4",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "7b76025dd0d48a02a2914f05edda069bdfa7f8c600b591b52e129b5f92453bca"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "final-architecture-ba3f3757-b258-4a1e-84e6-6ef6b645c7c4",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "official-hash-sync-final",
+    "command": [
+      "node",
+      "scripts/sync-hot-baseline.js",
+      "--write",
+      "--version",
+      "1.3.4.11",
+      "--asset-root",
+      "<user-profile>/Desktop/tianming",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:22:44.035Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 34946.3791,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\official-hash-sync-final-9218fe76-cbea-4f8f-b705-bd39fe9b7d2d",
+    "logs": {
+      "stdout.log": {
+        "sha256": "50fab47891d01102bc762fb6dae0fa920b730d3ff727e1140614764fad8c37a0",
+        "bytes": 176,
+        "exported": "logs.json",
+        "key": [
+          "official-hash-sync-final-9218fe76-cbea-4f8f-b705-bd39fe9b7d2d",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "1d966907d9263fd6950d213f7986c701349df34198dd8fa1ae60823787a8a445"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "official-hash-sync-final-9218fe76-cbea-4f8f-b705-bd39fe9b7d2d",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "audit-checkout-probes",
+    "command": [
+      "node",
+      "web/scripts/audit-repro.cjs",
+      "--repo",
+      "<user-profile>/Desktop/tianming-perf-round1",
+      "--expect-clean"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:23:51.509Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "a6289075222f3cf8353a34beca35b7450ca4e6c0739e986425ea76bf36dd17cc",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 493.5754999999999,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\audit-checkout-probes-725f1767-d859-4844-ab7d-835cde7e3088",
+    "logs": {
+      "stdout.log": {
+        "sha256": "f69cf07ece47871904df6783e2f500c7f6913c32aa9301f3c249d5937ecb5164",
+        "bytes": 2480,
+        "exported": "logs.json",
+        "key": [
+          "audit-checkout-probes-725f1767-d859-4844-ab7d-835cde7e3088",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "df785d72bde47aa591f136b40ac9c3788a06f356afa6698df66015dc4b76de61"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "audit-checkout-probes-725f1767-d859-4844-ab7d-835cde7e3088",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "full-smoke-final",
+    "command": [
+      "node",
+      "web/scripts/ci-smokes.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:24:54.141Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "a6289075222f3cf8353a34beca35b7450ca4e6c0739e986425ea76bf36dd17cc",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 92266.4679,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\full-smoke-final-b9842a6d-da9e-4ca7-939a-30283cc903f0",
+    "logs": {
+      "stdout.log": {
+        "sha256": "4ab071ccde80c225660540fd5c199c56cd32bc7d5b0c2ca8afc2d450c328ba35",
+        "bytes": 3281,
+        "exported": "logs.json",
+        "key": [
+          "full-smoke-final-b9842a6d-da9e-4ca7-939a-30283cc903f0",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "53deee34f0371e6b300bb3bafa76bd7322e3e35af54013760628c2ef1ae9457b"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "full-smoke-final-b9842a6d-da9e-4ca7-939a-30283cc903f0",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-regression",
+    "command": [
+      "node",
+      "scripts/verify-electron-bridge.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:25:05.149Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "a6289075222f3cf8353a34beca35b7450ca4e6c0739e986425ea76bf36dd17cc",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 37465.3372,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-regression-05f6d79c-57f1-4fbd-843d-bf58a8594ae1",
+    "logs": {
+      "stdout.log": {
+        "sha256": "b52ef09a705bf494cd80575794a4345a5b05d24f44cf8df04c4230d71d49410c",
+        "bytes": 4327,
+        "exported": "logs.json",
+        "key": [
+          "electron-regression-05f6d79c-57f1-4fbd-843d-bf58a8594ae1",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "060e92f807f6cb2a0ce74599d12e4b209b0e211775aa659ef4481d8e62858b29"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-regression-05f6d79c-57f1-4fbd-843d-bf58a8594ae1",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "controlled-tls",
+    "command": [
+      "node",
+      "scripts/verify-remote-tls.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:25:16.064Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "a6289075222f3cf8353a34beca35b7450ca4e6c0739e986425ea76bf36dd17cc",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 1390.0249,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\controlled-tls-fe852d96-cf18-4cf5-a0d2-905af0106eb8",
+    "logs": {
+      "stdout.log": {
+        "sha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+        "bytes": 559,
+        "exported": "logs.json",
+        "key": [
+          "controlled-tls-fe852d96-cf18-4cf5-a0d2-905af0106eb8",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "controlled-tls-fe852d96-cf18-4cf5-a0d2-905af0106eb8",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "mobile-dryrun",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/verify-staging-dryrun.ps1"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:26:26.237Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 1118.7475,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\mobile-dryrun-e1a644de-7de5-43bd-ba33-2ee0bc94bb71",
+    "logs": {
+      "stdout.log": {
+        "sha256": "5169a4407e67ce434d45e4e2ba0428b4ac9db3b6206620470d6e51cca09b0fa6",
+        "bytes": 69,
+        "exported": "logs.json",
+        "key": [
+          "mobile-dryrun-e1a644de-7de5-43bd-ba33-2ee0bc94bb71",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "5169a4407e67ce434d45e4e2ba0428b4ac9db3b6206620470d6e51cca09b0fa6"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "mobile-dryrun-e1a644de-7de5-43bd-ba33-2ee0bc94bb71",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "mobile-stage",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/stage-web-for-cap.ps1",
+      "-WwwDir",
+      "E:/tianming-perf-temp/mobile-www-round1-5223106"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:26:29.557Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 31048.1425,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\mobile-stage-79a7eddd-e16c-4c22-9e7b-3a02f1432569",
+    "logs": {
+      "stdout.log": {
+        "sha256": "b76871903c4505900fb8d05b31b3a5b39b2841946145978c3b886a1cec4f40e9",
+        "bytes": 178,
+        "exported": "logs.json",
+        "key": [
+          "mobile-stage-79a7eddd-e16c-4c22-9e7b-3a02f1432569",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "b76871903c4505900fb8d05b31b3a5b39b2841946145978c3b886a1cec4f40e9"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "mobile-stage-79a7eddd-e16c-4c22-9e7b-3a02f1432569",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "mobile-verify",
+    "command": [
+      "powershell",
+      "-NoProfile",
+      "-File",
+      "mobile/scripts/verify-staged-web.ps1",
+      "-TargetDir",
+      "E:/tianming-perf-temp/mobile-www-round1-5223106"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:27:49.355Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 2219.6561,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\mobile-verify-1b06478d-5791-40b1-b3c3-a8398a07babc",
+    "logs": {
+      "stdout.log": {
+        "sha256": "785a688253d5adba27e1270ce32278aecbcd89782564b00fbee95d2e16ef80ab",
+        "bytes": 143,
+        "exported": "logs.json",
+        "key": [
+          "mobile-verify-1b06478d-5791-40b1-b3c3-a8398a07babc",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "785a688253d5adba27e1270ce32278aecbcd89782564b00fbee95d2e16ef80ab"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "mobile-verify-1b06478d-5791-40b1-b3c3-a8398a07babc",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "hot-baseline-check",
+    "command": [
+      "node",
+      "scripts/sync-hot-baseline.js",
+      "--check",
+      "--version",
+      "1.3.4.11",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:27:53.793Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 1047.9569000000001,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\hot-baseline-check-52f49e67-c181-4521-a64e-26e1733bc475",
+    "logs": {
+      "stdout.log": {
+        "sha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+        "bytes": 118,
+        "exported": "logs.json",
+        "key": [
+          "hot-baseline-check-52f49e67-c181-4521-a64e-26e1733bc475",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "hot-baseline-check-52f49e67-c181-4521-a64e-26e1733bc475",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "microbench-final",
+    "command": [
+      "node",
+      "scripts/perf/round1-microbench.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "9",
+      "--out",
+      "web/dev-tools/perf-round1/microbench-final.json"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:28:11.384Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 69034.6443,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\microbench-final-3769edaf-47d5-4e83-b4d4-ad3d53bce103",
+    "logs": {
+      "stdout.log": {
+        "sha256": "47eaa899d51ec481fd4d2c324686078538c9281ac721b9cdf764c845cf3864ba",
+        "bytes": 2673,
+        "exported": "logs.json",
+        "key": [
+          "microbench-final-3769edaf-47d5-4e83-b4d4-ad3d53bce103",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "2dfe88419abff73da1ca8fbb19ffb17102555d2a10f082f5d610e7244b31740c"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "microbench-final-3769edaf-47d5-4e83-b4d4-ad3d53bce103",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-performance-final",
+    "command": [
+      "node",
+      "scripts/perf/round1-electron.cjs",
+      "--baseline",
+      "../tianming-perf-baseline",
+      "--repeats",
+      "3",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:30:15.234Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "scripts/electron/bridge-main.cjs": "47138cfb914086d7ab6799cf9b1f36bb98df1ab21d8c567a47028009e0ad499b",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 706813.9045,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-performance-final-24f86a4f-dc21-4641-8bb8-f13f4ebc0063",
+    "logs": {
+      "stdout.log": {
+        "sha256": "98d9359749fc11964499955d59b6a47b90a74a4abef3c2aca05c5b000145262e",
+        "bytes": 329,
+        "exported": "logs.json",
+        "key": [
+          "electron-performance-final-24f86a4f-dc21-4641-8bb8-f13f4ebc0063",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "40d3792fc863105130e85d3468721c9e0af5256fecab72e8d6c2083dbc009cc6"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-performance-final-24f86a4f-dc21-4641-8bb8-f13f4ebc0063",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "computer-use-inspection",
+    "command": [
+      "node",
+      "scripts/perf/inspect-electron.cjs",
+      "--temp-root",
+      "E:/tianming-perf-temp"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? docs/performance-round1/\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T14:49:51.259Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-round1/electron-raw.json": "541fa67965f38c504f6bc6a9e29a71c912a210cdfdab47780997fb1d8d473ba1",
+      "docs/performance-round1/execution-index.json": "5ffc0d23a4d37bda4499ed47da181c13187efef12ac7c665c6acab8899f87990",
+      "docs/performance-round1/microbench-raw.json": "2f0de31b58201ade5562b1bca590b40a0851267e8b400bab5394d90f7c8b6820",
+      "docs/performance-round1/summary.json": "bad345d90c6c55d7ed73a0c242385f4afc16531889b95c2eb8f3b040526241e4",
+      "scripts/electron/bridge-main.cjs": "32f1a22fe306118f813951d255f34df35bff59bad85a92e0e3e6282e22b4cef6",
+      "scripts/perf/inspect-electron-cases.cjs": "9cbddf039306d04d6bda46b568eb72ae7434292be7b68858d6b7f85afe8a392b",
+      "scripts/perf/inspect-electron.cjs": "336149b02a3eea7c5c1f188ddc04b81e88ee43fd5c719628ce486c5d409592be",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "scripts/perf/summarize.cjs": "49fc712990fe2c53e439bb56721b2cd7de9b54d0e1ee9ccfa7c1e4109e6d81d5",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 679232.7775999999,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\computer-use-inspection-b2cce97d-b005-40c8-9926-2f875e796e07",
+    "logs": {
+      "stdout.log": {
+        "sha256": "f3d2c77e667b12ab4331e983a46f1f815e1cd92327f702ae0e2d033473a7dfb3",
+        "bytes": 155,
+        "exported": "logs.json",
+        "key": [
+          "computer-use-inspection-b2cce97d-b005-40c8-9926-2f875e796e07",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "e634b6bf2c4e5640db446b11d2829e6ea1f5181d30cdc58a595ba0f0a897d787"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "computer-use-inspection-b2cce97d-b005-40c8-9926-2f875e796e07",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "electron-final-regression",
+    "command": [
+      "node",
+      "scripts/verify-electron-bridge.js"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? docs/performance-round1/\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:03:09.630Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-round1/electron-raw.json": "541fa67965f38c504f6bc6a9e29a71c912a210cdfdab47780997fb1d8d473ba1",
+      "docs/performance-round1/execution-index.json": "5ffc0d23a4d37bda4499ed47da181c13187efef12ac7c665c6acab8899f87990",
+      "docs/performance-round1/microbench-raw.json": "2f0de31b58201ade5562b1bca590b40a0851267e8b400bab5394d90f7c8b6820",
+      "docs/performance-round1/summary.json": "bad345d90c6c55d7ed73a0c242385f4afc16531889b95c2eb8f3b040526241e4",
+      "scripts/electron/bridge-main.cjs": "32f1a22fe306118f813951d255f34df35bff59bad85a92e0e3e6282e22b4cef6",
+      "scripts/perf/inspect-electron-cases.cjs": "9cbddf039306d04d6bda46b568eb72ae7434292be7b68858d6b7f85afe8a392b",
+      "scripts/perf/inspect-electron.cjs": "336149b02a3eea7c5c1f188ddc04b81e88ee43fd5c719628ce486c5d409592be",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "scripts/perf/summarize.cjs": "49fc712990fe2c53e439bb56721b2cd7de9b54d0e1ee9ccfa7c1e4109e6d81d5",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 21928.2407,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\electron-final-regression-84254cd7-5c51-4d02-91a7-03fb36686971",
+    "logs": {
+      "stdout.log": {
+        "sha256": "a40dae80021bdf50e019cb32258c36a8e14ecfd7e171a9deb688c2748e0fa511",
+        "bytes": 4327,
+        "exported": "logs.json",
+        "key": [
+          "electron-final-regression-84254cd7-5c51-4d02-91a7-03fb36686971",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "68228debf3b416ae73099f368aee52e7fedea0b3f5659abab7518ff471bcbb3f"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "electron-final-regression-84254cd7-5c51-4d02-91a7-03fb36686971",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "final-slices",
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "smoke-perf-canonical-utf8",
+      "--grep",
+      "smoke-perf-map-render-path",
+      "--grep",
+      "smoke-perf-save-preparation"
+    ],
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "status": "M scripts/electron/bridge-main.cjs\n M web/.hot-update-manifest.json\n M web/phase8-formal-map.js\n M web/scripts/benchmark-round20-workloads.js\n M web/scripts/smoke-round20-performance-isolation.js\n M web/scripts/smoke-runtime-save-consistency.js\n M web/scripts/smoke-save-integrity-audit.js\n M web/scripts/smoke-save-saved-clone.js\n M web/scripts/smoke-save-slim.js\n M web/scripts/smoke-turn-capture-work-count.js\n M web/scripts/smoke-write-gate-expansion.js\n M web/startup-script-phases.json\n M web/tm-save-lifecycle.js\n M web/tm-storage.js\n?? docs/performance-round1/\n?? scripts/perf/\n?? web/scripts/lib-perf-round1.js\n?? web/scripts/smoke-perf-canonical-utf8.js\n?? web/scripts/smoke-perf-map-render-path.js\n?? web/scripts/smoke-perf-save-preparation.js",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:03:20.448Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-round1/electron-raw.json": "541fa67965f38c504f6bc6a9e29a71c912a210cdfdab47780997fb1d8d473ba1",
+      "docs/performance-round1/execution-index.json": "5ffc0d23a4d37bda4499ed47da181c13187efef12ac7c665c6acab8899f87990",
+      "docs/performance-round1/microbench-raw.json": "2f0de31b58201ade5562b1bca590b40a0851267e8b400bab5394d90f7c8b6820",
+      "docs/performance-round1/summary.json": "bad345d90c6c55d7ed73a0c242385f4afc16531889b95c2eb8f3b040526241e4",
+      "scripts/electron/bridge-main.cjs": "32f1a22fe306118f813951d255f34df35bff59bad85a92e0e3e6282e22b4cef6",
+      "scripts/perf/inspect-electron-cases.cjs": "9cbddf039306d04d6bda46b568eb72ae7434292be7b68858d6b7f85afe8a392b",
+      "scripts/perf/inspect-electron.cjs": "336149b02a3eea7c5c1f188ddc04b81e88ee43fd5c719628ce486c5d409592be",
+      "scripts/perf/round1-electron-cases.cjs": "3c0593da67e437e8d7d85183cf81f0973992dcf55954be6b273880a0fc7be94a",
+      "scripts/perf/round1-electron.cjs": "da0fcaad53b6ca6cf3115e2394d2b5a7fb263196a98df0b9fd63466169deeb82",
+      "scripts/perf/round1-microbench.cjs": "472583b93c81a95e214536b38b56be141d118c458e1361413bffd35a49a036c1",
+      "scripts/perf/run.cjs": "ff563b755920cac4ce28ec3c12508bcc7e7ac32aba268cef37c0992a2ff0ce3a",
+      "scripts/perf/summarize.cjs": "49fc712990fe2c53e439bb56721b2cd7de9b54d0e1ee9ccfa7c1e4109e6d81d5",
+      "web/.hot-update-manifest.json": "b3a5df25e57412cea1a5435c9ffc3fb5500645dc66d168b508f8e5a4335f0673",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/scripts/benchmark-round20-workloads.js": "a26f6b89097fa79b08bc261f5f5d7209d4ef346b30482b12a0a4b26309865a5b",
+      "web/scripts/lib-perf-round1.js": "01c19510e96ee9cb955652f0d05b36d620f8ec991b697c267d7b5edd9574213b",
+      "web/scripts/smoke-perf-canonical-utf8.js": "43b0e66a7cc8bd90d770522f9e9e5684046a5f32f72b202f7cb980a75c019459",
+      "web/scripts/smoke-perf-map-render-path.js": "0fdb17a85827fab91c5728e12314cbdf256a24b5a18b3e6a8a64f0a274b09fb7",
+      "web/scripts/smoke-perf-save-preparation.js": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+      "web/scripts/smoke-round20-performance-isolation.js": "edee6485a02c53015a8869a5e716269d9333a68777d6653601ddee460bd46c54",
+      "web/scripts/smoke-runtime-save-consistency.js": "dfb075f58a403ca57efce88ad76889462c99c9e220da0c483f73c040249d297f",
+      "web/scripts/smoke-save-integrity-audit.js": "74571a36c831aab8c8464e1f687ce26df55c80640f94bd5e451bba93a65c39d2",
+      "web/scripts/smoke-save-saved-clone.js": "f72ff96d436a873b5001eb4b3bf41b6e11f851417beb304a28c68d30274c5a6e",
+      "web/scripts/smoke-save-slim.js": "7333e0350a8323ef33835497e7cd832eb9b5c301fac7722972ef5239066a5300",
+      "web/scripts/smoke-turn-capture-work-count.js": "7e81e045beb9bd7dedc2249c2d4212d9b97e60577ca9455dee9135c02aae78ea",
+      "web/scripts/smoke-write-gate-expansion.js": "290926a0e0d8aba849661d4241d4a0e1858d9ab0cf1fa2a8c79c1b9bdd1c4876",
+      "web/startup-script-phases.json": "4586b5a496c4a986cc6165bd4d8ee656398bf0029adf2f22b42b3d9ba2d28021",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f",
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 21509.1545,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\final-slices-d544a7fb-38aa-4c92-a542-c39a0130d1cc",
+    "logs": {
+      "stdout.log": {
+        "sha256": "78c62a7c2c33f40daad4151e44d77349e33dbf987d1d884c787ef4510061f4fd",
+        "bytes": 489,
+        "exported": "logs.json",
+        "key": [
+          "final-slices-d544a7fb-38aa-4c92-a542-c39a0130d1cc",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "78c62a7c2c33f40daad4151e44d77349e33dbf987d1d884c787ef4510061f4fd"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "final-slices-d544a7fb-38aa-4c92-a542-c39a0130d1cc",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  {
+    "label": "final-byte-review",
+    "command": [
+      "node",
+      "-e",
+      "const fs=require('fs'),cp=require('child_process'),assert=require('assert/strict'),crypto=require('crypto');const s=JSON.parse(fs.readFileSync('docs/performance-round1/summary.json'));for(const [p,h] of Object.entries(s.measuredCode.candidate.sourceHashes))assert.equal(crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex'),h,p);cp.execFileSync('git',['diff','--check']);cp.execFileSync('git',['diff','--check','814f3af65f6bd24f02fe8dc245eb9d7e31ea8489']);const unchanged=cp.execFileSync('git',['diff','--name-only','814f3af65f6bd24f02fe8dc245eb9d7e31ea8489','--','package.json','package-lock.json','web/version.json','mobile/release-version.json','web/index.html','scenarios'],{encoding:'utf8'});assert.equal(unchanged,'');const original=cp.execFileSync('git',['-C','../tianming','status','--porcelain'],{encoding:'utf8'});assert.equal(original,'');assert.equal(cp.execFileSync('git',['-C','../tianming','rev-parse','HEAD'],{encoding:'utf8'}).trim(),'5ed032afe65cc041dd4d890227ada23e736b4713');console.log('PASS measured production hashes, diff whitespace, unchanged versions/scenarios/index, preserved original worktree');"
+    ],
+    "head": "e27313329338b20deee8ebd4c287c75daadfe3d5",
+    "status": "M scripts/perf/summarize.cjs\n?? docs/performance-round1.md\n?? docs/performance-round1/",
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "memoryBytes": 25480257536,
+    "startedAt": "2026-09-07T15:22:55.828Z",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    },
+    "dirtyFileHashes": {
+      "docs/performance-round1.md": "b40499d94b14eb1524ebc35521aaea034bada10baeb4457c5f13cfdfedf69f6d",
+      "docs/performance-round1/additional-evidence.json": "e521610dd00062b36d52b19a11f99fd9a3a13913ff47cb85e2ba371a8192298d",
+      "docs/performance-round1/computer-use-report.json": "59adb1191ea55400067407db0dcc5c3e62feeaadb9d653049255b43862bd7a10",
+      "docs/performance-round1/computer-use-source.json": "516d24363c4949d62ffaa561fa106fcb970d7896222158828ff3e1a269a27e34",
+      "docs/performance-round1/computer-use-trace.json": "dffc4ab2cca2032f8dcf5fc60576da6955ec67142f70b6f1cf6b6a2b92b7b733",
+      "docs/performance-round1/electron-bridge-final.json": "925d0239f7eec55a6abf42941dd299d3e86a0cdc910ffc3a9adab83450d1a15a",
+      "docs/performance-round1/electron-raw.json": "541fa67965f38c504f6bc6a9e29a71c912a210cdfdab47780997fb1d8d473ba1",
+      "docs/performance-round1/execution-index.json": "da13b156c2d399b6f2d93e9641610c27fa0112ff298b77dfaa1d17d7bef38231",
+      "docs/performance-round1/logs.json": "204f117754c2fb2b1f3dfbd15aa2cce49659293ae02df450c90ac5234faa2156",
+      "docs/performance-round1/microbench-raw.json": "2f0de31b58201ade5562b1bca590b40a0851267e8b400bab5394d90f7c8b6820",
+      "docs/performance-round1/smoke-final.json": "aedc9ff61385cacc7a1490c3cd59a2b1c26af7d1b075005dccf8867c5ff4b137",
+      "docs/performance-round1/summary.json": "8d7e54c6f1c62a705b47127ee5d35ec0fdb69bd3bcfc63bf1566855a8fa23179",
+      "scripts/perf/summarize.cjs": "b24fba0909299fa0bb7a8823ca34fa54a8218dffe9c5ec994d15e568d90b1ece"
+    },
+    "exitCode": 0,
+    "signal": null,
+    "elapsedMs": 1681.7315,
+    "complete": true,
+    "evidenceDirectory": "web\\dev-tools\\perf-round1\\final-byte-review-2ddc7d10-36bd-46f2-8d97-574dedb3a98b",
+    "logs": {
+      "stdout.log": {
+        "sha256": "f6726e97e91f99a66c4bcae5e530576a565d1d7e4b0d9e4d55c893005c91cfad",
+        "bytes": 114,
+        "exported": "logs.json",
+        "key": [
+          "final-byte-review-2ddc7d10-36bd-46f2-8d97-574dedb3a98b",
+          "stdout.log"
+        ],
+        "exportedTextSha256": "f6726e97e91f99a66c4bcae5e530576a565d1d7e4b0d9e4d55c893005c91cfad"
+      },
+      "stderr.log": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "exported": "logs.json",
+        "key": [
+          "final-byte-review-2ddc7d10-36bd-46f2-8d97-574dedb3a98b",
+          "stderr.log"
+        ],
+        "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  }
+]

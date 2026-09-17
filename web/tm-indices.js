@@ -1374,6 +1374,12 @@ var WorldHelper = {
     if (!Array.isArray(G.chars)) G.chars = [];
     var registered = _repairRegisteredChar(G, data, options);
     if (registered) return registered;
+    // historical-agency-v21: the common ingress also covers direct AI additions and fallbacks.
+    var agency = global.TM && global.TM.HistoricalAgency;
+    if (G === global.GM && agency && agency.isPlayerDriven() && data && (data.isHistorical === true || agency.findProfile(data.name))) {
+      var temporal = agency.temporalEligibility(data, {year:G.year});
+      if (!temporal.ok) throw new Error('史实不可现：' + temporal.reason);
+    }
     var ch = _normalizeChar(data, options);
     var counterBefore = G._entityIdCounters && G._entityIdCounters.char;
     var countersExisted = !!G._entityIdCounters;

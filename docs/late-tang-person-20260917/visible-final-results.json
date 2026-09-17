@@ -1,0 +1,35 @@
+[
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/tm-renwu-tuzhi.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.11
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/smoke-renwu-source-reader.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.13
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/smoke-renwu-multioffice-display.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.17
+  },
+  {
+    "command": [
+      "C:\\Users\\37814\\Desktop\\tianming\\node_modules\\electron\\dist\\electron.exe",
+      "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\electron-main.cjs"
+    ],
+    "exitCode": 0,
+    "seconds": 19.97
+  }
+]

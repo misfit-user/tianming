@@ -128,6 +128,8 @@ function _wdPrepareAudienceRenderState() {
 
 function renderWenduiChars(force, options){
   options = options || {};
+  // 原渠道处理请见后同步导航待办，即使旧名册页当前隐藏也不能保留过期红泡。
+  if (window.TMPhase8FormalBridge && typeof window.TMPhase8FormalBridge._updateRailBadges === 'function') window.TMPhase8FormalBridge._updateRailBadges();
   // 性能·2026-06-10·与纪录类面板同范式:gt-wendui 隐藏时跳过(renderGameState 尾部无条件调它·
   // 全名册数百卡+肖像重建纯浪费)·切到该页时 switchGTab 传 force=true 强制渲染
   if(!force && typeof _gtTabVisible==='function' && !_gtTabVisible('gt-wendui')) return;
@@ -191,6 +193,7 @@ function renderWenduiChars(force, options){
     if (c.isPlayer) return false;
     if (c._mourning) return false;
     if (c._lastMetTurn === GM.turn) return false;
+    if (c._lastAudienceDeniedTurn === GM.turn) return false;
     try {
       var _sa = (typeof _wdDeriveAudienceAgenda === 'function') ? _wdDeriveAudienceAgenda(c) : null;
       if (_sa && _sa.seek) return true;
@@ -395,9 +398,14 @@ function openWenduiModal(name, mode, prefillMsg) {
       if (typeof toast === 'function') toast(_msg.split('\n')[0]);
       // 对远方者·直接跳传书
       if (!/已薨|下狱|流放|病重/.test(_reasons.join(''))) {
-        if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
-        if (typeof GM !== 'undefined') GM._pendingLetterTo = name;
-        setTimeout(function(){ if (typeof renderLetterPanel === 'function') renderLetterPanel(); }, 50);
+        var _letterBridge = window.TMPhase8FormalBridge && TMPhase8FormalBridge.drafts;
+        if (_letterBridge && typeof _letterBridge.targetLetter === 'function') {
+          _letterBridge.targetLetter(name);
+        } else {
+          if (typeof GM !== 'undefined') GM._pendingLetterTo = name;
+          if (typeof switchGTab === 'function') switchGTab(null, 'gt-letter');
+          setTimeout(function(){ if (typeof renderLetterPanel === 'function') renderLetterPanel(); }, 50);
+        }
       }
       return;
     }
@@ -1488,6 +1496,7 @@ function _wdDenyAudience(name) {
     if (GM._wdRefusedCounsel.length > 40) GM._wdRefusedCounsel = GM._wdRefusedCounsel.slice(-40);
   }
   if (ch) {
+    ch._lastAudienceDeniedTurn = GM.turn || 1; // 仅抑制本回合已拒的动态请见；不冒充已接见。
     var _loyHit = _urgent ? -2 : -1;
     if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(ch, _loyHit, '求见被拒于殿外', { source: 'wendui-audience-denied' });
     else ch.loyalty = Math.max(0, Math.min(100, ((typeof ch.loyalty === 'number') ? ch.loyalty : 50) + _loyHit));
@@ -1668,6 +1677,8 @@ function _wdDeclineOvernight() {
 /** 拒见队列中的某条 */
 function _wdDismissPending(ref) {
   var q = _wdResolvePending(ref); if (!q) return;   // 按 _qid 主键解析(非 render-time index)
+  var ch = typeof findCharByName === 'function' ? findCharByName(q.name) : null;
+  if (ch) ch._lastAudienceDeniedTurn = GM.turn || 1;
   if (typeof NpcMemorySystem !== 'undefined') {
     NpcMemorySystem.remember(q.name, '求见陛下被拒——' + (q.reason || ''), '忧', 4);
   }

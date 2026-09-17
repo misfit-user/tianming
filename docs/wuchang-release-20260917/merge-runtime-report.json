@@ -1,0 +1,218 @@
+[
+  {
+    "path": "web/map-integration.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "794ee55a2c1bfefd63612053e508e4179283871d606406388b1d0f9bf1d315ab",
+    "mainSha256": "22d610c4f1f8ff9ec84e2eecc8edce2a07e383a5403800f9501d2c3f262f6df5",
+    "mergeExit": 0,
+    "mergedSha256": "794ee55a2c1bfefd63612053e508e4179283871d606406388b1d0f9bf1d315ab"
+  },
+  {
+    "path": "web/phase8-formal-map-dossier.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "5fbf579cf69a945ab18318d5d8aec54db3e878318565a1201077b5582e9e067d",
+    "mainSha256": "e9e96600a525f878f78593353cc858bfa5c2a0a99aac45645dda2b5833a8acb2",
+    "mergeExit": 2,
+    "error": ""
+  },
+  {
+    "path": "web/phase8-formal-modules.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\phase8-formal-modules.js",
+    "localSha256": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18",
+    "mainSha256": "782d8449b844fbd2ec5d2a493534daf633a1d7ef1557f27e951d9e665bfeba6e",
+    "mergeExit": 0,
+    "mergedSha256": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18"
+  },
+  {
+    "path": "web/scripts/smoke-military-execution-binding.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "9cfa731b5cb2d34ad1defc8a8d41dcbd8f6b19e804be597c957c7ddfee0854cc",
+    "mainSha256": "8930c7bf6a0946743296674a62b9f9ff14330af630c14c2decfc8adbbef392cf",
+    "mergeExit": 1,
+    "error": ""
+  },
+  {
+    "path": "web/scripts/smoke-tianqi-map-runtime.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "dabb8b32a126a471fbed147a0b3adb4972d462c0949217c6908beb0d2a8d6a5e",
+    "mainSha256": "a3b8fb1aa93fa1b1aa1fce7a9374829f94302ffb13ca07d6dc15b04f31932ea1",
+    "mergeExit": 0,
+    "mergedSha256": "dabb8b32a126a471fbed147a0b3adb4972d462c0949217c6908beb0d2a8d6a5e"
+  },
+  {
+    "path": "web/tm-ai-change-narrative.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91",
+    "mainSha256": "e920fc79c1521328d5239a5042856694fcab34623eae6a2b0970837a704c657f",
+    "mergeExit": 0,
+    "mergedSha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91"
+  },
+  {
+    "path": "web/tm-ai-infra-model-detect.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "c03f4ccb70cf179cfa968a48cd5c2a15c00532ccc575bf787dc68f4fb3fa9351",
+    "mainSha256": "258e4df72874b8b4b65f2c59ecdac598768bc877f0154f346a861c5ea6a69743",
+    "mergeExit": 5,
+    "error": ""
+  },
+  {
+    "path": "web/tm-ai-infra-retry.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "fe49769ab7b07a0680ba83758d66e3967943810cef373ee9555f09c6481a48d5",
+    "mainSha256": "540228ee09ee1afcdec4b6665a928cf679c8695cdd66af6dcf4e54c4404845c6",
+    "mergeExit": 1,
+    "error": ""
+  },
+  {
+    "path": "web/tm-ai-infra.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "4d5cbd8e48afdebed8d7345096183fbb5bea5edba210ccfd83fab050cf86d073",
+    "mainSha256": "80c6b185808b1aee9207cc21fb4222dd51e4a92a68637d89f2740bc687c1c5ff",
+    "mergeExit": 31,
+    "error": ""
+  },
+  {
+    "path": "web/tm-api-models.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "1b67a240d301cd761adca302c753e652ba7c5e1b3f91602af96e39bb9cc1523e",
+    "mainSha256": "58ae5e2c093d18bccfa99706d5aaa66b0bc464e50d70f506430691451be9492d",
+    "mergeExit": 1,
+    "error": ""
+  },
+  {
+    "path": "web/tm-chaoyi-tinyi.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\web\\.bak-shizheng-tinyi-2026-09-17T07-43-29-579Z\\tm-chaoyi-tinyi.js",
+    "localSha256": "57f02d01af8ca726c182fa0098c63661d5993689a13b73e441e3e67a72c1ec4e",
+    "mainSha256": "cb6da6080f0a79aeed6841186b87038461f3311a809aff80858c754fa0807e3f",
+    "mergeExit": 0,
+    "mergedSha256": "57f02d01af8ca726c182fa0098c63661d5993689a13b73e441e3e67a72c1ec4e"
+  },
+  {
+    "path": "web/tm-edict-parser.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "3fa54d3c75e668f4a090bf77db1cce6c8fcb94c8df961bf2daae1ff415133cd7",
+    "mainSha256": "abc5a53cf82194366a93c639e0d059202a05d8bd4475ac2612f54e6c2af44f73",
+    "mergeExit": 0,
+    "mergedSha256": "3fa54d3c75e668f4a090bf77db1cce6c8fcb94c8df961bf2daae1ff415133cd7"
+  },
+  {
+    "path": "web/tm-endturn-ai.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "34514dc8d705f12955e3a3bb0445fa5c0e3e9ec8c525395c047f32c39fe56769",
+    "mainSha256": "c8a4de49ad8e0658e147e21b3421fbd739dd35ca36b565a07158576fd5562170",
+    "mergeExit": 24,
+    "error": ""
+  },
+  {
+    "path": "web/tm-endturn-apply-stages.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "395deaed2ec145351d25caf8152f2c9ea71945cec9d091f2f5af0181e131e729",
+    "mainSha256": "0b6c16149169e07bcec507a11d9910874d0bb7c76998fd99b616749fb3451626",
+    "mergeExit": 2,
+    "error": ""
+  },
+  {
+    "path": "web/tm-endturn-apply.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-endturn-apply.js",
+    "localSha256": "dffd0bcd60d87b5be02435c33cd2897ab74f6459a4a2691d4221aeb4021c2388",
+    "mainSha256": "15175e85f830b15dfffc019f09e423567cc274002cd77e0e06f890a682b7cb90",
+    "mergeExit": 0,
+    "mergedSha256": "a4827787488272bba6a3bb77abce787e693898539aeef631475badde8637dbf5"
+  },
+  {
+    "path": "web/tm-endturn-edict.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "00a8853cbcab136a5deeb358d0366f84319e28339847c65d56871b056ca45c0b",
+    "mainSha256": "27d5487d53d99c31f60b2ae2a129bdacff7f057ee631c6737fd8e691d72cc7fe",
+    "mergeExit": 0,
+    "mergedSha256": "ccaabb5e1a3c6bed6c30a1fa6b6bd903538639608371230987b177c7f67abfd6"
+  },
+  {
+    "path": "web/tm-endturn-prompt.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "1b3909d47727e5f9120a3138dd75fe6bb8823cfe1fe65859fd8af794223b74e2",
+    "mainSha256": "36544f844645732db94c643ca04d635f4a5fc61acdbf57701c03ac15bf34c5f3",
+    "mergeExit": 0,
+    "mergedSha256": "2a921fca5b3954d6c06ad62e97f665625777fd49e8db2c5989e81c2ffd5dd67c"
+  },
+  {
+    "path": "web/tm-faction-derived-economy.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "ea6f47fe177b91e67beef6e9d2dc024a0c15e9e0d60dc03a070d0140eb83c06c",
+    "mainSha256": "5a5091da00914711348ff34bebad1162d18f286aa4acdc489f298d7d08d63241",
+    "mergeExit": 0,
+    "mergedSha256": "ea6f47fe177b91e67beef6e9d2dc024a0c15e9e0d60dc03a070d0140eb83c06c"
+  },
+  {
+    "path": "web/tm-faction-membership.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "f100978575281926d994d0c4dbf075ce90477a9dce1208b06fc8ca3c9e098f3c",
+    "mainSha256": "396c45df15c0072c47b06ba0bd8296f9792e91c67e9b8395d9c88c32b3e383ee",
+    "mergeExit": 0,
+    "mergedSha256": "f100978575281926d994d0c4dbf075ce90477a9dce1208b06fc8ca3c9e098f3c"
+  },
+  {
+    "path": "web/tm-fiscal-engine.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "3e2c3d30b9100daa14bca3bd234b30d55281c5f74de2a30cb4d493fc9284cc6a",
+    "mainSha256": "784abcac77be3f8e83d3903d208fe7d2e9822cc74ba5c25219194e72d776c1cc",
+    "mergeExit": 7,
+    "error": ""
+  },
+  {
+    "path": "web/tm-map-system.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "ba2961aa90a291c88555d6f44511a19801e22f2cf0e396bf7945bb21e55405e6",
+    "mainSha256": "dce9af4206ce066617867c1dae01592f0ad0a3e485edcebaf541ede33cc2fec2",
+    "mergeExit": 0,
+    "mergedSha256": "ba2961aa90a291c88555d6f44511a19801e22f2cf0e396bf7945bb21e55405e6"
+  },
+  {
+    "path": "web/tm-office-system.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\tm-office-system.js",
+    "localSha256": "45a3d9ed333293d529ad55dbdb3cf0232b5e6f2de444bb0aa71ee8fe7d01c110",
+    "mainSha256": "ae67917c7c4b8cf8aad291f25b155dd4acb27f81eb67044af2d58c889153f04a",
+    "mergeExit": 0,
+    "mergedSha256": "6bcc42dc9bc681dc6172d4eeae61d1bd4bef6faf002acde40684e642522fd49d"
+  },
+  {
+    "path": "web/tm-patches-start.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "9042325424aa511d1c98991214de64a64b25258cde18e9f9f2ee87ae0bb7316a",
+    "mainSha256": "01ab9655a3be36c539c1be94bf5156f079085de967bb74c4d8bf431e4b903443",
+    "mergeExit": 1,
+    "error": ""
+  },
+  {
+    "path": "web/tm-patches.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c",
+    "mainSha256": "f4c215990129687111d3276b6e887bdc6a38f83f47ba9f387abc7259395a4700",
+    "mergeExit": 0,
+    "mergedSha256": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c"
+  },
+  {
+    "path": "web/tm-renwu-tuzhi.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\tm-renwu-tuzhi.js",
+    "localSha256": "19e2bfa46c85f6faeba4b70a9cfefb117b5ce9799d464e927f2cbb2bb7329b20",
+    "mainSha256": "ada672792f15c57a70a37fddea1112794f68000ca71ed08b44bced4a7dd9e2fe",
+    "mergeExit": 0,
+    "mergedSha256": "19e2bfa46c85f6faeba4b70a9cfefb117b5ce9799d464e927f2cbb2bb7329b20"
+  },
+  {
+    "path": "web/tm-shizheng-panel.js",
+    "base": "C:\\Users\\37814\\Desktop\\tianming\\web\\.bak-shizheng-tinyi-2026-09-17T07-43-29-579Z\\tm-shizheng-panel.js",
+    "localSha256": "d165ac592f7b8aaaed0d472be434647f3548af5afe4e52be8c8a0c344f7481ed",
+    "mainSha256": "ba859c6bcffd3137133bc40bba65de4180df93efb1a3158355e5ffac3594591a",
+    "mergeExit": 0,
+    "mergedSha256": "d165ac592f7b8aaaed0d472be434647f3548af5afe4e52be8c8a0c344f7481ed"
+  },
+  {
+    "path": "web/tm-three-systems-ext.js",
+    "base": "3f8065cb9cf09b414cf35dc3deccca59560f733b",
+    "localSha256": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41",
+    "mainSha256": "99e3060b66fa882ff7e0553499a619047c5436ee452a97740dd9affe59b11828",
+    "mergeExit": 0,
+    "mergedSha256": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41"
+  }
+]

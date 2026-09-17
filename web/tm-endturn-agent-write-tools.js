@@ -225,16 +225,37 @@
     if (!nm) return { ok: false, reason: '缺 armyName(军队名)' };
     var change = { armyName: nm };
     if (input.action) change.action = input.action;                       // create 创建 / 其余更新
-    if (input.soldiersDelta != null) change.soldiersDelta = input.soldiersDelta;  // 募兵(+)/损耗(-)
-    else if (input.soldiers != null) change.soldiers = input.soldiers;     // 设定兵力
+    if (input.soldiersDelta != null) change.soldiers_delta = input.soldiersDelta; // canonical delta，不再静默丢掉camelCase
+    else if (input.soldiers != null) {
+      var targetArmy = root.TM && root.TM.AIChange && root.TM.AIChange.Army && root.TM.AIChange.Army.findArmyForAIChange(gm, nm);
+      if (input.action === 'create') change.soldiers = input.soldiers;
+      else if (targetArmy) change.soldiers_delta = Number(input.soldiers) - Number(targetArmy.soldiers != null ? targetArmy.soldiers : targetArmy.strength || 0);
+      else return { ok: false, reason: '未找到需要设定兵力的军队·' + nm };
+    }
+    if ((input.soldiersDelta != null && !isFinite(Number(input.soldiersDelta))) || (input.soldiers != null && (!isFinite(Number(input.soldiers)) || Number(input.soldiers) < 0))) return { ok: false, reason: '兵额须为有效非负数，增减须为有效数值' };
     if (input.location != null) change.location = input.location;          // 调动移防
     if (input.commander != null) change.commander = input.commander;       // 改将
     if (input.state != null) change.state = input.state;                   // 解散='disbanded' 等
     if (input.faction != null) change.faction = input.faction;
     var res; try { res = fn(change, {}); } catch (e) { _recordFail(gm, 'army', nm, 'engine 异常:' + (e && e.message)); return { ok: false, reason: 'engine 异常:' + (e && e.message) }; }
     if (res && res.ok === false) { _recordFail(gm, 'army', nm, res.reason || '军令失败'); return { ok: false, reason: res.reason || '军令失败' }; }
+    if (res && res.changed === false) return { ok: true, changed: false, path: 'armies/' + nm };
     _report(gm, { type: 'change', path: 'armies/' + nm, new: _brief(change), reason: (input.reason || '') + '·军令', turn: gm.turn || 0, _agent: true, _op: 'army' });
     return { ok: true, path: 'armies/' + nm };
+  }
+
+  function _semBattle(gm, input) {
+    var ms = root.MilitarySystems, br = input && input.battleResult;
+    if (!gm || !ms || !ms.validateBattleResult || !br || !br.battleId) return { ok: false, reason: '须提供唯一battleId和完整battleResult，且军事引擎须已加载' };
+    br = Object.assign({}, br); delete br._fromTactical; delete br._spoilsDone; delete br._retreatDone; // 模型不能伪装战术回填绕过亲征
+    var validation = ms.validateBattleResult(br, gm);
+    if (!validation.ok) return { ok: false, reason: validation.errors.join('；') };
+    var before = (gm._pendingAbstractBattles || []).some(function(old) { return old && old.battleId === br.battleId; });
+    var result = ms.applyBattleResult(br, gm);
+    if (!result || (!result.ok && !result.deferred)) return { ok: false, reason: result && result.reason || '战斗未登记' };
+    var changed = !before && !result.duplicate;
+    if (changed) _report(gm, { type: 'military', path: 'battleHistory/' + br.battleId, reason: result.deferred ? '战斗已登记，待亲征/委任裁决；不得再扣同场伤亡或先改占领' : '战果已结算', turn: gm.turn || 0, _agent: true, _op: 'battle' });
+    return { ok: true, changed: changed, deferred: !!result.deferred, path: 'battleHistory/' + br.battleId };
   }
 
   // ── ③ 外交战和(宣战/议和/邦交)·复用 declareWar/endWar/setFactionRelation(canonical)──
@@ -349,6 +370,17 @@
   // ── ④ 建筑工程(兴工/拆毁)·兴工 push 工程(引擎 tick 自动完工入账)·拆毁复用 TM.BuildingWorks.revertBuilding(逆回经济效果)──
   function _semBuilding(gm, input, ctx) {
     if (!gm) return { ok: false, reason: '无存档' };
+    var BO = TM.BuildingOrders, batch = ctx && ctx.input && ctx.input.buildingOrders;
+    var managed = BO && batch && BO.matching(gm, root.P || {}, batch, input);
+    if (input.requestId || input.decision || managed) {
+      if (!BO || !batch) return { ok: false, reason: '营造案未从本回合原诏书提交' };
+      var disposition = Object.assign({}, input, { requestId: input.requestId || managed.id, decision: input.decision || 'approve' });
+      if (input.cost !== undefined) disposition.costActual = input.cost;
+      if (input.turns !== undefined) disposition.timeActual = input.turns;
+      var orderResult = BO.execute(gm, root.P || {}, batch, disposition, !!ctx.input._agentModeSelected);
+      if (orderResult.ok && orderResult.changed) _report(gm, { type: 'change', path: 'building-order.' + disposition.requestId, new: '已落账开工', reason: input.reason || '原诏书营造核办', turn: gm.turn || 0, _agent: true });
+      orderResult.verified = !!orderResult.ok; return orderResult;
+    }
     var action = String((input && input.action) || 'start').toLowerCase();
     var region = input && input.region;
     if (!region) return { ok: false, reason: '缺 region(地块名)' };
@@ -505,7 +537,8 @@
     var old = ch.location || '';
     loc = String(loc).slice(0, 60);
     if (input.traveling) { ch._travelTo = loc; }                 // 在途:现居不变·正往 loc
-    else { ch.location = loc; ch._travelTo = ''; }               // 已抵:现居 loc
+    else { ch.location = loc; ch._travelTo = ''; }
+    if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', gm);               // 已抵:现居 loc
     ch._changed = true;
     _report(gm, { type: 'change', path: 'chars/' + nm + '/location', old: old, new: (input.traveling ? ('(正往)' + loc) : loc), reason: (input.reason || '') + (input.traveling ? '·启程' : '·移驻'), turn: gm.turn || 0, _agent: true, _op: 'move_character' });
     return { ok: true, path: 'chars/' + nm + '/location', old: old, new: loc };
@@ -592,10 +625,11 @@
     { name: 'remove_field', description: '删除数组中的一项(推演后果:部队覆灭/党派清洗/阶层消亡/势力剪除等)。path=数组路径(如 parties/classes/armies/facs)·用 index(下标数字) 或 match(id/名称) 指定删哪项。**禁删玩家本人/玩家势力**·确属推演结果才删。', parameters: { type: 'object', properties: { path: { type: 'string' }, index: { type: 'number', description: '要删项的下标(与 match 二选一)' }, match: { type: 'string', description: '要删项的 id/名称(与 index 二选一)' }, reason: { type: 'string' } }, required: ['path'] } },
     { name: 'adjust_fiscal_item', description: '增/改/停/删收入支出流水项(开税源/砍军费/设年例·走财政引擎立即作用余额·勿裸改guoku)。kind=income/expense·action=add(默认)/update/stop/remove·target=guoku(默认)/neitang/province:地名·amount金额(增改需正)·recurring年例。', parameters: { type: 'object', properties: { kind: { type: 'string', description: 'income收入/expense支出' }, action: { type: 'string', description: 'add/update/stop/remove' }, target: { type: 'string', description: 'guoku/neitang/province:地名' }, name: { type: 'string', description: '项目名(如盐税/辽东军费)' }, category: { type: 'string' }, amount: { type: 'number' }, resource: { type: 'string', description: 'money(默认)/grain/cloth' }, recurring: { type: 'boolean' }, reason: { type: 'string' } }, required: ['kind'] } },
     // ── ② 军事指挥 ③ 外交战和(走真引擎) ──
+    { name: 'resolve_battle', description: '登记实际发生的一场战斗，亲征开启时排队等待玩家裁决，否则结算。battleResult须含唯一battleId、胜败势力、真实攻守军队引用、伤亡，可含占领和将领命运。同场不可另用command_army扣伤亡或先改占领；行军/疾病损耗不是战斗。', parameters: { type: 'object', properties: { battleResult: { type: 'object', properties: { battleId: { type: 'string' }, winnerFactionId: { type: 'string' }, loserFactionId: { type: 'string' }, attackerArmyId: { type: 'string' }, defenderArmyId: { type: 'string' }, casualties: { type: 'object', properties: { attacker: { type: 'number' }, defender: { type: 'number' } } }, affectedArmies: { type: 'array', items: { type: 'object' } }, occupiedCityIds: { type: 'array', items: { type: 'string' } }, commanderFate: { type: 'object' } }, required: ['battleId','winnerFactionId','loserFactionId','attackerArmyId','defenderArmyId','casualties'] } }, required: ['battleResult'] } },
     { name: 'command_army', description: '军事指挥:募兵/调动/改将/创建/解散(走军队引擎·勿裸改armies)。armyName军名·soldiersDelta兵力增减·location移防·commander主将·action=create创建·state=disbanded解散。', parameters: { type: 'object', properties: { armyName: { type: 'string' }, soldiersDelta: { type: 'number' }, soldiers: { type: 'number' }, location: { type: 'string' }, commander: { type: 'string' }, action: { type: 'string' }, state: { type: 'string' }, faction: { type: 'string' }, reason: { type: 'string' } }, required: ['armyName'] } },
     { name: 'diplomatic_action', description: '外交战和(走外交引擎·勿裸改activeWars/stance):action=declare_war宣战(attacker/defender·可casusBelli)/make_peace议和(warId 或 attacker+defender定位)/set_relation设邦交(from/to + value绝对值或delta增减或type关系)。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'declare_war/make_peace/set_relation' }, attacker: { type: 'string' }, defender: { type: 'string' }, casusBelli: { type: 'string' }, warId: { type: 'string' }, from: { type: 'string' }, to: { type: 'string' }, value: { type: 'number' }, delta: { type: 'number' }, type: { type: 'string' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── ④ 建筑工程 ① 行政区划改制 ──
-    { name: 'building_project', description: '建筑工程(优先走 CustomBuildAgent.approveBuild 正式兴工账):action=start兴工(region地块开建·扣款入账·逐回合推进自动完工)/demolish拆毁(必须逆回已完工效果)。region地块名·name工程名·turns工期(默认3)·cost耗费·level等级。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'start/demolish' }, region: { type: 'string', description: '地块名' }, name: { type: 'string', description: '工程名' }, turns: { type: 'number' }, cost: { type: 'number' }, level: { type: 'number' }, category: { type: 'string' }, description: { type: 'string' }, judgedEffects: { type: 'string' }, effectsStructured: { type: 'object' }, reason: { type: 'string' } }, required: ['region'] } },
+    { name: 'building_project', description: '原诏书营造案必须带 requestId、decision(approve/defer/reject)、reason，原案费用/工期/效果可引用，不另扣同笔国库。非营造案的世界自走工程仍用action=start/demolish + region地块名 + name工程名 + turns工期 + cost耗费。', parameters: { type: 'object', properties: { requestId: { type: 'string' }, decision: { type: 'string', enum: ['approve','defer','reject'] }, action: { type: 'string', description: 'start/demolish' }, region: { type: 'string', description: '地块名' }, name: { type: 'string', description: '工程名' }, turns: { type: 'number' }, cost: { type: 'number' }, level: { type: 'number' }, category: { type: 'string' }, description: { type: 'string' }, judgedEffects: { type: 'string' }, effectsStructured: { type: 'object' }, reason: { type: 'string' } }, anyOf: [{required:['requestId']},{required:['region']}] } },
     { name: 'restructure_division', description: '行政区划事务(设府/废县/真实改隶/升降):action=modify(fields:name/regionType/level/governor/改隶用parentId)/add(需parent)/remove。根区划不可废/改隶；含下级或建筑的区划默认不可废，明确级联时 force=true。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'modify/add/remove' }, region: { type: 'string' }, fields: { type: 'object', description: 'name/regionType/level/governor/parentId' }, parent: { type: 'string', description: 'add 上级地块名' }, name: { type: 'string', description: 'add 新区划名' }, regionType: { type: 'string' }, level: { type: 'number' }, force: { type: 'boolean', description: 'remove 时明确允许级联废除非空区划' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── 舆地变迁:人物所在地 / 迁都 / 地块易主变色 ──
     { name: 'move_character', description: '更改人物所在地(移驻/赴任/在途)。name 人物名·location 目的地名·traveling=true 则记"正往(在途未到)"、false(默认)记"现居(已抵)"。用于人物因任职/出征/流放/还朝而移动。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, location: { type: 'string', description: '目的地(地名)' }, traveling: { type: 'boolean', description: 'true=在途未到/false=已抵(默认)' }, reason: { type: 'string' } }, required: ['name', 'location'] } },
@@ -605,7 +639,7 @@
   ];
   function _domainOf(name) {
     if (/treasury|fiscal/.test(name)) return 'fiscal';
-    if (/army/.test(name)) return 'military';
+    if (/army|battle/.test(name)) return 'military';
     if (/diplomatic|region_owner/.test(name)) return 'diplomacy';
     if (/official|character/.test(name)) return 'personnel';
     if (/building/.test(name)) return 'building';
@@ -616,7 +650,7 @@
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
       risk: /remove|restructure|diplomatic|region_owner|relocate/.test(d.name) ? 'high' : 'medium',
-      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state',
+      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle',
       postconditions: ['返回标准 ToolReceipt', '写入成功必须进入 _turnReport'],
       invariants: ['玩家身份不可删除或改写', '正式账优先走领域引擎']
     });
@@ -631,6 +665,9 @@
   async function handle(name, input, ctx) {
     input = input || {};
     var gm = _GM(ctx);
+    if (name === 'adjust_treasury' && TM.BuildingOrders && TM.BuildingOrders.ownedPayment(ctx && ctx.input && ctx.input.buildingOrders, input)) {
+      return { ok: false, changed: false, name: name, text: '营造案造价由 building_project 唯一落账，禁止重复扣款' };
+    }
     var reason = input.reason || 'agent 推演';
     var r;
     var reportBefore = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
@@ -644,6 +681,7 @@
       case 'remove_field':     r = _semRemove(gm, input); break;
       case 'adjust_fiscal_item': r = _semFiscalItem(gm, input); break;
       case 'command_army':       r = _semArmy(gm, input); break;
+      case 'resolve_battle':     r = _semBattle(gm, input); break;
       case 'diplomatic_action':  r = _semDiplomacy(gm, input); break;
       case 'building_project':   r = _semBuilding(gm, input, ctx); break;
       case 'restructure_division': r = _semDivision(gm, input); break;
@@ -656,7 +694,7 @@
     var reportAfter = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     if (r && r.ok && r.changed == null) r.changed = reportAfter > reportBefore;
     if (r && r.ok && r.verified == null) r.verified = true;
-    var text = r.ok
+    var text = r.deferred ? '✓ 战斗已登记，待玩家亲征或委任后结算；尚未扣兵/占领，不得重复写同场后果。' : r.ok
       ? (r.changed === false
         ? '○ 无需改 ' + (r.path || input.path || r.target || r.region || name) + '（当前值已满足·不计为落地）'
         : '✓ 已改 ' + (r.path || input.path || r.target || r.region || name) + (r.old !== undefined ? ' :' + _brief(r.old) + '→' + _brief(r.new) : (r.new !== undefined ? ' =' + _brief(r.new) : '')) + '(已落地·入回合报告)')

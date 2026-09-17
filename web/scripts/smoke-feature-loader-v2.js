@@ -67,6 +67,7 @@ function makeEnvironment(options = {}) {
           dispose() { lifecycle.onlineDispose += 1; }
         };
       } else if (src === 'tm-map-label-geo.js') context.TMMapLabelGeo = {};
+      else if (src === 'tm-map-realm-layout.js') context.TMMapRealmLayout = {};
       else if (src === 'tm-map-label-collide.js') context.TMMapLabelCollide = {};
       else if (src === 'retry-once.js') context.RetryOnce = {};
       else if (src === 'always-fail.js') {
@@ -296,7 +297,7 @@ function makeEnvironment(options = {}) {
   const touch = makeEnvironment({ platform: 'capacitor' });
   const mapLabels = await touch.root.TM.Features.ensure('formalMapLabels');
   assert.strictEqual(mapLabels.ok, true, 'platform any feature loads on touch/capacitor');
-  assert(touch.root.TMMapLabelGeo && touch.root.TMMapLabelCollide, 'touch branch receives both map label providers');
+  assert(touch.root.TMMapLabelGeo && touch.root.TMMapRealmLayout && touch.root.TMMapLabelCollide, 'touch branch receives all three map label providers');
   assert.strictEqual((await touch.root.TM.Features.ensure('desktopUpdate')).code, 'not-applicable', 'touch branch rejects desktop-only feature');
 
   console.log('[smoke-feature-loader-v2] PASS assertions=51');

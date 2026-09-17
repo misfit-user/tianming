@@ -1,0 +1,1642 @@
+{
+  "people": [
+    {
+      "name": "崔珙",
+      "title": "刑部尚书",
+      "location": "京兆府·长安",
+      "honor": []
+    },
+    {
+      "name": "李固言",
+      "title": "剑南西川节度使",
+      "location": "成都府",
+      "honor": [
+        "检校尚书左仆射"
+      ]
+    },
+    {
+      "name": "杜悰",
+      "title": "户部尚书",
+      "location": "京兆府·长安",
+      "honor": [
+        "驸马都尉"
+      ]
+    },
+    {
+      "name": "崔龟从",
+      "title": "户部侍郎",
+      "location": "京兆府·长安",
+      "honor": []
+    },
+    {
+      "name": "郑肃",
+      "title": "河中节度使",
+      "location": "河中府",
+      "honor": [
+        "检校礼部尚书"
+      ]
+    }
+  ],
+  "seats": [
+    {
+      "name": "门下侍郎·同平章事",
+      "holder": "杨嗣复",
+      "holderId": "char-e0aa358a5382"
+    },
+    {
+      "name": "中书侍郎·同平章事",
+      "holder": "李珏",
+      "holderId": "char-09a2964a484b"
+    },
+    {
+      "name": "中书侍郎·同平章事",
+      "holder": "崔郸",
+      "holderId": "char-c280bfadc208"
+    },
+    {
+      "name": "尚书左仆射",
+      "holder": "郑覃",
+      "holderId": "char-7cbde09ac245"
+    },
+    {
+      "name": "尚书右仆射",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "尚书左丞",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "尚书右丞",
+      "holder": "韦温",
+      "holderId": "char-2c100296089c"
+    },
+    {
+      "name": "吏部尚书",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "吏部侍郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "吏部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "吏部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司封郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司封员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司勋郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司勋员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "考功郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "考功员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "户部尚书",
+      "holder": "杜悰",
+      "holderId": "char-c4e575644b83"
+    },
+    {
+      "name": "户部侍郎",
+      "holder": "崔龟从",
+      "holderId": "char-984049d9c161"
+    },
+    {
+      "name": "户部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "户部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "度支郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "度支员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "金部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "金部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "仓部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "仓部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "礼部尚书",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "礼部侍郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "礼部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "礼部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "祠部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "祠部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "膳部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "膳部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "主客郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "主客员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兵部尚书",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兵部侍郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兵部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兵部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "职方郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "职方员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "驾部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "驾部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "库部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "库部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "刑部尚书",
+      "holder": "崔珙",
+      "holderId": "char-535ea9c19b97"
+    },
+    {
+      "name": "刑部侍郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "刑部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "刑部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "都官郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "都官员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "比部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "比部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司门郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司门员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "工部尚书",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "工部侍郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "工部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "工部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "屯田郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "屯田员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "虞部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "虞部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "水部郎中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "水部员外郎",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "堂后主书·吏房",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "堂后主书·枢机房",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "堂后主书·兵房",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "堂后主书·户房",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "堂后主书·刑礼房",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "给事中",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "左补阙",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "左拾遗",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "中书舍人",
+      "holder": "李让夷",
+      "holderId": "char-bd8868a9546f"
+    },
+    {
+      "name": "右补阙",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "右拾遗",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "起居舍人·兼谏议大夫",
+      "holder": "魏谟",
+      "holderId": "char-8337e0dcb17a"
+    },
+    {
+      "name": "中书舍人",
+      "holder": "李回",
+      "holderId": "char-b9f08ed4b554"
+    },
+    {
+      "name": "谏议大夫",
+      "holder": "裴夷直",
+      "holderId": "char-c52f336d4ff1"
+    },
+    {
+      "name": "左补阙·史馆修撰",
+      "holder": "杜牧",
+      "holderId": "char-f66c94d9050d"
+    },
+    {
+      "name": "御史大夫",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "御史中丞",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "监察御史",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "翰林学士承旨",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "中书舍人·翰林学士",
+      "holder": "周墀",
+      "holderId": "char-f2e364765a5b"
+    },
+    {
+      "name": "太常卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太常少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "光禄卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "光禄少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "卫尉卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "卫尉少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "宗正卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "宗正少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太仆卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太仆少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "大理卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "大理少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鸿胪卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鸿胪少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司农卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "司农少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太府卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太府少卿",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "国子祭酒",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "国子司业",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "少府监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "少府少监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "将作大监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "将作少监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "军器监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "军器丞",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "都水使者",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "都水丞",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "秘书监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "秘书少监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "殿中监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "殿中少监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "内侍监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "内侍少监",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "盐铁转运使",
+      "holder": "崔珙",
+      "holderId": "char-535ea9c19b97"
+    },
+    {
+      "name": "判度支",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "盐铁推官",
+      "holder": "姚勖",
+      "holderId": "char-a59eefd2f333"
+    },
+    {
+      "name": "枢密使",
+      "holder": "刘弘逸",
+      "holderId": "char-9a747f5c8d41"
+    },
+    {
+      "name": "枢密使",
+      "holder": "薛季棱",
+      "holderId": "char-0e9fcb9e8981"
+    },
+    {
+      "name": "左神策军中尉",
+      "holder": "仇士良",
+      "holderId": "char-a557fdeaa135"
+    },
+    {
+      "name": "右神策军中尉",
+      "holder": "鱼弘志",
+      "holderId": "char-de20cd2e9cf8"
+    },
+    {
+      "name": "京兆尹",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "京兆少尹",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "河中节度使",
+      "holder": "郑肃",
+      "holderId": "char-a9816a4d9603"
+    },
+    {
+      "name": "河中节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "金商都防御使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "金商防御判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "东都留守",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "东都留守判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "陕虢观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "陕虢观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "河阳三城使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "河阳判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "河东节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "河东节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "振武节度使",
+      "holder": "刘沔",
+      "holderId": "char-ad2ce35dd501"
+    },
+    {
+      "name": "振武节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "天德军防御使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "天德军判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "朔方节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "朔方节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "夏绥银宥节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "夏绥银宥节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鄜坊节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鄜坊节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "丹州防御使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "丹州防御判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "邠宁节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "邠宁节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "泾原节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "泾原节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "凤翔节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "凤翔节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义武军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义武军节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义昌军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义昌节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "平卢淄青节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "平卢淄青节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "天平军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "天平节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兖海观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "兖海观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "宣武军节度使",
+      "holder": "李绅",
+      "holderId": "char-dd7e7eab9343"
+    },
+    {
+      "name": "宣武节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义成军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "义成节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "忠武军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "忠武节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "武宁军节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "武宁节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "淮南节度使",
+      "holder": "李德裕",
+      "holderId": "char-ca29d914f13a"
+    },
+    {
+      "name": "淮南节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鄂岳观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "鄂岳观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "浙西观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "浙西观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "浙东观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "浙东观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "宣歙观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "宣歙观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "福建观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "福建观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "江南西道观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "江南西道观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "湖南观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "湖南观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "荆南节度使",
+      "holder": "李石",
+      "holderId": "char-a4b634810ee8"
+    },
+    {
+      "name": "荆南节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "山南东道节度使",
+      "holder": "牛僧孺",
+      "holderId": "char-ddce57d3a48e"
+    },
+    {
+      "name": "山南东道节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "山南西道节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "山南西道节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "剑南西川节度使",
+      "holder": "李固言",
+      "holderId": "char-f289fdad7d0e"
+    },
+    {
+      "name": "剑南西川节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "剑南东川节度使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "剑南东川节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "黔中观察使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "黔中观察判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "岭南节度使",
+      "holder": "卢钧",
+      "holderId": "char-e6445e2e0cd8"
+    },
+    {
+      "name": "岭南节度判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "桂管经略使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "桂管经略判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "容管经略使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "容管经略判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "邕管经略使",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "邕管经略判官",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "安南都护",
+      "holder": "马植",
+      "holderId": "char-cc286b8e50dd"
+    },
+    {
+      "name": "安南副都护",
+      "holder": "",
+      "holderId": ""
+    },
+    {
+      "name": "太子少傅·分司东都",
+      "holder": "白居易",
+      "holderId": "char-4db0d950f314"
+    },
+    {
+      "name": "太子宾客·分司东都",
+      "holder": "刘禹锡",
+      "holderId": "char-8c0945ba0b6c"
+    },
+    {
+      "name": "太子宾客·分司东都",
+      "holder": "李宗闵",
+      "holderId": "char-2bf08096d186"
+    },
+    {
+      "name": "华州刺史",
+      "holder": "陈夷行",
+      "holderId": "char-efc4b7c189fa"
+    }
+  ],
+  "diagnostic": {
+    "character": {
+      "id": "char-984049d9c161",
+      "sid": "sc-tang840-840",
+      "name": "崔龟从",
+      "title": "户部侍郎·判本司事·权判吏部尚书铨事",
+      "officialTitle": "户部侍郎",
+      "role": "户部侍郎·判本司事·权判吏部尚书铨事",
+      "isPlayer": false,
+      "isRoyal": false,
+      "alive": true,
+      "age": 45,
+      "gender": "男",
+      "location": "京兆府·长安",
+      "faction": "唐朝廷",
+      "party": "",
+      "partyRank": "成员",
+      "rankLevel": 12,
+      "traits": [
+        "diligent",
+        "patient"
+      ],
+      "personality": "熟记典故，耐得住反复查勘，遇俗说冒充经义便生厌意。重条贯，有时不顾办事人已经连夜劳顿。",
+      "bio": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。\n\n现任户部侍郎，判本司事，并权判吏部尚书铨事；须核计户部事务与铨选文书。礼学是此前积累的专长，不以泛称礼官替代当前职掌。",
+      "isHistorical": true,
+      "historicalFacts": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。",
+      "personalGoal": "厘清继统丧祭的称谓与仪次，使此次礼文不留下后日争论。",
+      "innerThought": "祝文只差一字，亲属之义便变了。请先核明，不可因日迫而混称。",
+      "stressSources": [
+        "现任户部侍郎，判本司事，并权判吏部尚书铨事；须核计户部事务与铨选文书。礼学是此前积累的专长，不以泛称礼官替代当前职掌。"
+      ],
+      "diction": "引典简短，答问直接指出某字所指；不爱浮饰，常拿两条旧例并列。",
+      "resources": {
+        "privateWealth": {
+          "accounting": {
+            "schema": "tm-character-economy/2"
+          },
+          "money": 320,
+          "grain": 24,
+          "cloth": 6,
+          "land": 0,
+          "treasure": 0,
+          "commerce": 0,
+          "slaves": 1,
+          "debt": 0,
+          "landHoldings": [],
+          "houses": [],
+          "shops": [],
+          "treasures": [],
+          "livestock": [],
+          "investments": [],
+          "debts": [],
+          "receivables": [],
+          "familyBusiness": []
+        },
+        "fame": 27,
+        "hiddenWealth": 0,
+        "publicTreasury": {
+          "known": true,
+          "linkedPost": "度支总库",
+          "linkedRegion": null,
+          "balance": 2682100,
+          "grain": 2166520,
+          "cloth": 606860,
+          "deficit": 0,
+          "isReadOnly": true,
+          "accounts": [
+            {
+              "known": true,
+              "exists": true,
+              "id": "guoku",
+              "name": "度支总库",
+              "kind": "physical",
+              "scope": "central",
+              "factionId": "唐朝廷",
+              "physicalAccountIds": [
+                "guoku"
+              ],
+              "resources": {
+                "money": {
+                  "stock": 2682100,
+                  "available": 2682100,
+                  "quota": 6000000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                },
+                "grain": {
+                  "stock": 2166520,
+                  "available": 2166520,
+                  "quota": 7000000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                },
+                "cloth": {
+                  "stock": 606860,
+                  "available": 606860,
+                  "quota": 450000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                }
+              },
+              "period": {
+                "turn": 1,
+                "turnKey": "sc-tang840-840:1",
+                "days": 10,
+                "daysPerMonth": 30,
+                "daysPerYear": 360,
+                "unit": {
+                  "money": "贯",
+                  "grain": "石",
+                  "cloth": "匹"
+                }
+              },
+              "missing": [],
+              "isReadOnly": true,
+              "bindings": [
+                {
+                  "positionId": "office-e89790fddee5",
+                  "title": "户部侍郎",
+                  "role": "oversight"
+                }
+              ]
+            }
+          ]
+        },
+        "virtueMerit": 127,
+        "virtueStage": 2,
+        "entrustedAccounts": {
+          "known": true,
+          "accounts": [
+            {
+              "known": true,
+              "exists": true,
+              "id": "guoku",
+              "name": "度支总库",
+              "kind": "physical",
+              "scope": "central",
+              "factionId": "唐朝廷",
+              "physicalAccountIds": [
+                "guoku"
+              ],
+              "resources": {
+                "money": {
+                  "stock": 2682100,
+                  "available": 2682100,
+                  "quota": 6000000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                },
+                "grain": {
+                  "stock": 2166520,
+                  "available": 2166520,
+                  "quota": 7000000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                },
+                "cloth": {
+                  "stock": 606860,
+                  "available": 606860,
+                  "quota": 450000,
+                  "used": null,
+                  "deficit": null,
+                  "thisTurnIn": 0,
+                  "thisTurnOut": 0,
+                  "known": true
+                }
+              },
+              "period": {
+                "turn": 1,
+                "turnKey": "sc-tang840-840:1",
+                "days": 10,
+                "daysPerMonth": 30,
+                "daysPerYear": 360,
+                "unit": {
+                  "money": "贯",
+                  "grain": "石",
+                  "cloth": "匹"
+                }
+              },
+              "missing": [],
+              "isReadOnly": true,
+              "bindings": [
+                {
+                  "positionId": "office-e89790fddee5",
+                  "title": "户部侍郎",
+                  "role": "oversight"
+                }
+              ]
+            }
+          ],
+          "isReadOnly": true
+        },
+        "publicPurse": {
+          "known": true,
+          "money": 2682100,
+          "grain": 2166520,
+          "cloth": 606860,
+          "isReadOnly": true
+        },
+        "stress": 41,
+        "health": 88
+      },
+      "career": [
+        {
+          "date": "此前",
+          "title": "礼官",
+          "note": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。",
+          "desc": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。",
+          "milestone": false
+        }
+      ],
+      "_memory": [
+        {
+          "event": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。",
+          "emotion": "记念",
+          "weight": 7,
+          "importance": 7,
+          "turn": -1
+        }
+      ],
+      "relations": {
+        "郑肃": {
+          "affinity": 62.5,
+          "trust": 40,
+          "respect": 50,
+          "fear": 0,
+          "hostility": 0,
+          "labels": [
+            "礼学同道"
+          ]
+        },
+        "郑覃": {
+          "affinity": 62.5,
+          "trust": 40,
+          "respect": 50,
+          "fear": 0,
+          "hostility": 0,
+          "labels": [
+            "经学往来"
+          ]
+        },
+        "杨嗣复": {
+          "affinity": 62.5,
+          "trust": 40,
+          "respect": 50,
+          "fear": 0,
+          "hostility": 0,
+          "labels": [
+            "丧仪议事"
+          ]
+        }
+      },
+      "family": "清河崔氏",
+      "stance": "厘清继统丧祭的称谓与仪次，使此次礼文不留下后日争论。",
+      "loyalty": 47,
+      "ambition": 69,
+      "intelligence": 83,
+      "valor": 21,
+      "military": 29,
+      "administration": 76,
+      "management": 67,
+      "charisma": 64,
+      "diplomacy": 57,
+      "benevolence": 75,
+      "integrity": 38,
+      "speechStyle": "引典简短，答问直接指出某字所指；不爱浮饰，常拿两条旧例并列。",
+      "description": "现任户部侍郎，判本司事，并权判吏部尚书铨事；须核计户部事务与铨选文书。礼学是此前积累的专长，不以泛称礼官替代当前职掌。",
+      "valueSystem": "熟记典故，耐得住反复查勘，遇俗说冒充经义便生厌意。重条贯，有时不顾办事人已经连夜劳顿。",
+      "aiPersonaText": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。\n\n现任户部侍郎，判本司事，并权判吏部尚书铨事；须核计户部事务与铨选文书。礼学是此前积累的专长，不以泛称礼官替代当前职掌。\n\n熟记典故，耐得住反复查勘，遇俗说冒充经义便生厌意。重条贯，有时不顾办事人已经连夜劳顿。\n\n厘清继统丧祭的称谓与仪次，使此次礼文不留下后日争论。\n\n引典简短，答问直接指出某字所指；不爱浮饰，常拿两条旧例并列。\n\n祝文只差一字，亲属之义便变了。请先核明，不可因日迫而混称。",
+      "health": 88,
+      "stress": 41,
+      "traitIds": [
+        "diligent",
+        "patient"
+      ],
+      "partyIds": [],
+      "classRepresentativeFor": [],
+      "portrait": "assets/portraits/tang840/generic/tang_civil_young_02.png",
+      "background": "清河人，进士后又登制科与书判拔萃，长于历代礼制。任太常博士时，曾议兄弟相继的宗庙称谓，又请将九宫贵神从大祠降等，常从一字一句里辨明尊卑。",
+      "personalGoals": [
+        "厘清继统丧祭的称谓与仪次，使此次礼文不留下后日争论。"
+      ],
+      "dialogues": [
+        "祝文只差一字，亲属之义便变了。请先核明，不可因日迫而混称。"
+      ],
+      "occupation": "户部侍郎·判本司事·权判吏部尚书铨事",
+      "rosterRole": "civil",
+      "works": [],
+      "economyConfig": {
+        "accounting": {
+          "schema": "tm-character-economy/2"
+        },
+        "livelihoodType": "official",
+        "livelihoodName": "京官与幕职家计",
+        "context": "现任户部侍郎，判本司事，并权判吏部尚书铨事；须核计户部事务与铨选文书。礼学是此前积累的专长，不以泛称礼官替代当前职掌。",
+        "incomeStreams": [],
+        "expenseStreams": [
+          {
+            "id": "char-984049d9c161-household",
+            "kind": "household",
+            "label": "衣食、燃料与日用",
+            "monthly": {
+              "money": 10,
+              "grain": 2,
+              "cloth": 0.1
+            }
+          }
+        ],
+        "supportArrangements": [],
+        "assetOwnerId": "household:char-984049d9c161",
+        "salaryMode": "funded-receipts-only"
+      },
+      "socialClass": "civilOfficial",
+      "appearance": "",
+      "ethnicity": "",
+      "faith": "",
+      "birthplace": "",
+      "birthTime": "",
+      "zi": "玄告",
+      "haoName": "",
+      "familyTier": "common",
+      "familyStatus": "",
+      "familyRole": "",
+      "mentor": "",
+      "hobbies": "",
+      "secret": "",
+      "learning": "元和十二年进士；贤良方正、书判拔萃",
+      "culture": "",
+      "familyMembers": [
+        {
+          "name": "崔诚",
+          "relation": "父",
+          "note": "亲等见史料；未核生卒与在世状态。"
+        }
+      ],
+      "redLines": [],
+      "personalGrudges": [],
+      "skills": [
+        "礼制议论",
+        "经籍研读",
+        "制诰撰述"
+      ],
+      "historicalSources": [
+        "【史家资料，非人物记忆】《旧唐书》卷一百七十六：“崔龜從，字玄告，清河人。祖璜，父誠，官微。龜從，元和十二年擢進士第，又登賢良方正制科，及書判拔萃二科，釋褐拜右拾遺。太和二年，改太常博士。” 来源：https://zh.wikisource.org/wiki/舊唐書/卷176",
+        "【史家资料，非人物记忆】《旧唐书》卷一百七十六：“三年三月，人為戶部侍郎，判本司事。四年，權判吏部尚書銓事。” 来源：https://zh.wikisource.org/wiki/舊唐書/卷176"
+      ],
+      "type": "historical",
+      "isFictional": false,
+      "behaviorMode": "熟记典故，耐得住反复查勘，遇俗说冒充经义便生厌意。重条贯，有时不顾办事人已经连夜劳顿。",
+      "coreMotivations": [
+        "厘清继统丧祭的称谓与仪次，使此次礼文不留下后日争论。"
+      ],
+      "factionId": "唐朝廷",
+      "father": "崔诚",
+      "historicalSourceRef": "assets/reference/tang840-characters.json",
+      "historicalSourceKey": "char-984049d9c161",
+      "officialTitles": [
+        "户部侍郎",
+        "判本司事",
+        "权判吏部尚书铨事"
+      ],
+      "concurrentTitles": [
+        "判本司事",
+        "权判吏部尚书铨事"
+      ],
+      "concurrentTitle": "判本司事、权判吏部尚书铨事",
+      "honoraryTitles": [],
+      "officeEvidenceNote": "权判铨事不是实授吏部尚书；此前礼学经历不等于当前礼官。",
+      "_eventOpinions": [],
+      "spouse": false,
+      "children": [],
+      "parentOf": null,
+      "position": "户部侍郎",
+      "centralization": 2,
+      "redistributionRate": 0.3,
+      "finance": {
+        "income": 0,
+        "tribute": 0,
+        "redistribution": 0,
+        "netIncome": 0,
+        "expenses": {
+          "fixed": [],
+          "discretionary": [],
+          "illicit": [],
+          "imperial": []
+        }
+      },
+      "prestige": 0,
+      "posts": [],
+      "studentsIds": [],
+      "sameYearMates": [],
+      "sameTownNetwork": [],
+      "partyLoyal": 0,
+      "opportunismScore": 63,
+      "partyDeviation": 0,
+      "partyHistory": [],
+      "factionRef": {
+        "type": "faction",
+        "id": "唐朝廷",
+        "since": 1
+      },
+      "officeRef": {
+        "type": "office",
+        "id": "户部侍郎",
+        "since": 1
+      },
+      "motherId": "",
+      "spouseId": "",
+      "mentorId": "",
+      "designatedHeirId": "",
+      "_loyalty": 47,
+      "_ambition": 69,
+      "_intelligence": 83,
+      "_valor": 21,
+      "_benevolence": 75,
+      "_age": 45,
+      "_health": 88,
+      "_position": "户部侍郎",
+      "economyLedger": {
+        "schema": "tm-character-economy/2",
+        "salaryReceiptIds": [],
+        "entries": [],
+        "arrears": {
+          "money": 0,
+          "grain": 0,
+          "cloth": 0
+        }
+      },
+      "superior": "",
+      "officeDuties": "",
+      "friends": "",
+      "playerRelation": "",
+      "clanPrestige": 50,
+      "courtesyName": "玄告",
+      "partyRef": null,
+      "lastInteractionMemory": null,
+      "recognitionState": {
+        "subject": "",
+        "familiarity": 0,
+        "level": "陌生",
+        "lastTurn": 0,
+        "lastEvent": "",
+        "lastEmotion": "平",
+        "lastType": "general",
+        "lastSource": "",
+        "lastWho": "",
+        "summary": "",
+        "history": []
+      },
+      "privateWealthDetailed": {
+        "cash": 0,
+        "lands": [],
+        "houses": [],
+        "shops": [],
+        "treasures": [],
+        "familyBusinesses": []
+      }
+    },
+    "claims": [
+      "户部侍郎",
+      "判本司事",
+      "权判吏部尚书铨事"
+    ],
+    "score": 0,
+    "scorer": "function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {\n  var ct = _offNormalizeTitleName(claimTitle);\n  var np = _offNormalizeTitleName(posName);\n  var nd = _offNormalizeTitleName(deptName);\n  if (!ct || !np) return 0;\n  // A duty or honorary designation is not a substantive office with a similar name.\n  // Preserve exact authored seats, including explicitly modeled duty positions.\n  if (ct !== np && ct !== nd + np && /^(?:检校|追赠|赠|加衔|(?:权)?判.+事$)/.test(ct)) return 0;\n  var sc = 0;\n  if (ct === np) sc = 100;\n  else if (ct === nd + np) sc = 98;\n  else if (np.indexOf(ct) >= 0 && ct.length >= 3) sc = 88;\n  else if (ct.indexOf(np) >= 0 && np.length >= 3) sc = 86;\n  else if (_offLongestCommonSub(ct, np) >= 4) sc = 76;\n  else {\n    var core = _offCoreOfPos(posName);\n    if (core && ct.indexOf(core) >= 0) {\n      var dtoks = _offDeptTokens(deptName);\n      var deptHit = dtoks.some(function(d){ return d && ct.indexOf(d) >= 0; });\n      var posEmbedsDept = dtoks.some(function(d){ return d && np.indexOf(d) >= 0; });\n      if (deptHit) sc = 72;\n      else if (posEmbedsDept) sc ",
+    "scripts": [
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-system.js?v=20260914tang-treasury23",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-fallback.js?v=20260618-officefb",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-runtime.js?v=20260914tang-treasury23",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-runtime-summary-appoint.js?v=20260914tang-treasury23",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-panel.js?v=20260914tang-treasury23",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-flags.js?v=20260620-officeact",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-powermap.js?v=20260909-character-actions",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-dutystate.js?v=20260620-officeact",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-authority.js?v=20260620-officeact",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-reform.js?v=20260620-officeact",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-charter.js?v=20260721",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-recall-agent.js?v=20260620-officeact",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-hongyan-office.js?v=20260910-building-orders",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-vacancy.js?v=2026062002",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-faction-npc-office.js?v=2026051001",
+      "file:///C:/Users/37814/Desktop/tianming/web/tm-office-editor.js?v=20260911-scenario-origin",
+      "file:///C:/Users/37814/Desktop/tianming/web/editor-office-deep.js?v=2026050301"
+    ]
+  }
+}

@@ -13,7 +13,7 @@ function assert(cond, msg) {
 }
 
 // 第二十三拆：模型探测族(probeModel*/detect*/getCompressionParams)迁 tm-ai-infra-model-detect.js·拼接(origin 先·契约随人走)
-const infra = read('tm-ai-infra.js') + '\n' + read('tm-ai-infra-model-detect.js');
+const infra = (read('tm-ai-infra-retry.js') + '\n' + read('tm-ai-infra.js')) + '\n' + read('tm-ai-infra-model-detect.js');
 const settings = read('tm-player-settings.js');
 
 assert(infra.includes('async function probeModelEvidenceAudit'), 'probeModelEvidenceAudit missing');

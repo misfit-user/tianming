@@ -308,7 +308,7 @@
   function actionTraySpecs(){
     return [
       ['zhao-btn','edict','action-edict-card.png','撰写诏书','御案','起草政令','撰写诏书·起草政令'],
-      ['zhao-btn-2','memorial','action-memorial-card.png','百官奏疏','内阁','御览奏报','百官奏疏·御览臣工奏报'],
+      ['zhao-btn-2','memorial','action-memorial-card.png','百官奏疏','章奏','御览奏报','百官奏疏·御览臣工奏报'],
       ['zhao-btn-3','letter','action-letter-card.png','鸿雁传书','驿传','遣使通信','鸿雁传书·遣使通信'],
       ['zhao-btn-4','records','action-annals-card.png','史官实录','史馆','回合档案','史官实录·阅览回合档案']
     ];

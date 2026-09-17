@@ -521,7 +521,7 @@ function validatorApi(ctx) {
     ok(/function _wgLoadGen\([^)]*\)\s*\{[^}]*_tmLoadGen/.test(valSrc) && /function _wgAllNamesSig[\s\S]{0,400}_wgLoadGen\(/.test(valSrc) && /function _wgCourtTextSig[\s\S]{0,600}_wgLoadGen\(/.test(valSrc), '三轮4 契约·allNames/court 缓存签名经 _wgLoadGen 并入 _tmLoadGen(读档代际)');
     // SKIP 契约：五缓存键入存档黑名单·派生不落档
     const lifeSrc = fs2.readFileSync(path2.join(ROOT, 'tm-save-lifecycle' + '.js'), 'utf8');
-    const skipSeg = lifeSrc.slice(lifeSrc.indexOf('var SKIP = {'), lifeSrc.indexOf('var SKIP = {') + 1600);
+    const skipSeg = lifeSrc.slice(lifeSrc.indexOf('function _tmSaveSnapshotSkipKeys('), lifeSrc.indexOf('function _autoSaveSnapshotGM('));
     ok(/_wgAllNamesCache:1/.test(skipSeg) && /_wgAllNamesSigVal:1/.test(skipSeg) && /_wgCourtTextCache:1/.test(skipSeg) && /_wgCourtTextSigVal:1/.test(skipSeg), '三轮4 契约·_wg*Cache 四键入 _autoSaveSnapshotGM SKIP(派生缓存不入档)');
   }
 

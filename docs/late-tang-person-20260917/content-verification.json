@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "otherScenarioObservations": [
+    {
+      "path": "scenarios/天启七年·九月（官方）.json",
+      "before": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+      "now": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c"
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "before": "0e43d46ba32849b7df2b14da99470f059286976f06a482547fcc9057255bd1c7",
+      "now": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04"
+    }
+  ],
+  "warnings": [
+    "scenarios/绍宋·建炎元年八月（官方）.json changed during this session; not reverted or edited by this patch"
+  ],
+  "checks": [
+    "434 unique people unchanged IDs/order/names",
+    "81 historical / 353 fictional",
+    "81 reference records, 79 quoted, 93 passages, 2 pending",
+    "all fields covered without false histories",
+    "reference ID links correct",
+    "three definite seats corrected and mirrored",
+    "player agency and memory preserved",
+    "later Cui Gong appointment stays in reader only",
+    "honorary not ordinary office claims",
+    "Zheng Su correct location and no central ritual post",
+    "unrelated scenario fields unchanged",
+    "faction mirror differs only by the three verified appointments",
+    "faction office mirror equals named registry",
+    "identity, images, wealth, relations and numbers unchanged",
+    "JSON save/load roundtrip retains additions"
+  ],
+  "sourceSha256": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28",
+  "counts": {
+    "characters": 434,
+    "historical": 81,
+    "fictional": 353,
+    "quotedPeople": 79,
+    "originalQuotes": 93,
+    "originalPending": 2
+  }
+}

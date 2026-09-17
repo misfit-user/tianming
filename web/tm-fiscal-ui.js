@@ -114,6 +114,47 @@
   //  年度决算弹窗 + 地方分账 Tab
   // ═══════════════════════════════════════════════════════════════════
 
+  // Read-only display index. Live administrative names win over legacy region snapshots.
+  // Rebuild per report so renaming a division or loading another save cannot leave stale labels.
+  function regionLabelsForDisplay(G) {
+    G = G || {};
+    var names = new Map(), seen = new Set(), queue = [];
+    function label(value) {
+      return typeof value === 'string' && value.trim() && !/^div_/i.test(value.trim()) ? value.trim() : '';
+    }
+    function enqueue(nodes) {
+      if (!nodes || typeof nodes !== 'object') return;
+      if (Array.isArray(nodes)) { nodes.forEach(function(node) { queue.push({ node:node }); }); return; }
+      if (nodes.id != null || nodes.name || nodes.divisions || nodes.children || nodes.subRegions) { queue.push({ node:nodes }); return; }
+      Object.keys(nodes).forEach(function(key) { queue.push({ node:nodes[key], alias:key }); });
+    }
+    function index(roots) {
+      queue = []; enqueue(roots);
+      for (var i = 0; i < queue.length; i++) {
+        var entry = queue[i], node = entry.node;
+        if (!node || typeof node !== 'object') continue;
+        var name = label(node.name) || label(node.regionName);
+        if (name) [node.id, node.code, entry.alias, node.name].forEach(function(key) {
+          if (key != null && String(key) && !names.has(String(key))) names.set(String(key), name);
+        });
+        if (seen.has(node)) continue;
+        seen.add(node);
+        enqueue(node.divisions); enqueue(node.children); enqueue(node.subRegions);
+      }
+    }
+    index(G.adminHierarchy); index(G.regions);
+    var result = Object.create(null), records = (G.fiscal && G.fiscal.regions) || {};
+    Object.keys(records).forEach(function(id) {
+      var record = records[id] || {};
+      result[id] = names.get(id) || label(record.regionName) || label(record.name) || (/^div_/i.test(id) ? '地区未载' : id);
+    });
+    return result;
+  }
+
+  function fiscalText(value) {
+    return String(value).replace(/[&<>"']/g, function(ch) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]; });
+  }
+
   function openYearlyReport() {
     var G = global.GM;
     if (!G.guoku) { if (global.toast) global.toast('帑廪未初始化'); return; }
@@ -147,12 +188,13 @@
     body += '</div>';
     // 地方分账 tab
     if (G.fiscal && G.fiscal.regions) {
-      body += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:4px;">各省分账</div>';
+      var regionLabels = regionLabelsForDisplay(G);
+      body += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:4px;">各地区分账</div>';
       body += '<div style="max-height:200px;overflow-y:auto;background:var(--bg-2);padding:6px;font-size:0.7rem;">';
-      body += '<table style="width:100%;"><thead><tr style="color:var(--gold-500);"><th style="text-align:left;">省</th><th>名义</th><th>实征</th><th>留</th><th>起</th><th>皮</th><th>公</th></tr></thead><tbody>';
+      body += '<table style="width:100%;"><thead><tr style="color:var(--gold-500);"><th style="text-align:left;">地区</th><th>名义</th><th>实征</th><th>留</th><th>起</th><th>皮</th><th>公</th></tr></thead><tbody>';
       Object.keys(G.fiscal.regions).forEach(function(rid) {
-        var r = G.fiscal.regions[rid];
-        body += '<tr><td>' + rid + '</td>';
+        var r = G.fiscal.regions[rid] || {};
+        body += '<tr><td title="' + fiscalText(rid) + '">' + fiscalText(regionLabels[rid]) + '</td>';
         body += '<td>' + Math.round((r.claimedRevenue||0)/10000) + '</td>';
         body += '<td>' + Math.round((r.actualRevenue||0)/10000) + '</td>';
         body += '<td>' + Math.round((r.retainedBudget||0)/10000) + '</td>';
@@ -564,6 +606,7 @@
     processFiscalActionFeasibility: processFiscalActionFeasibility,
     executeFiscalAction: executeFiscalAction,
     openYearlyReport: openYearlyReport,
+    regionLabelsForDisplay: regionLabelsForDisplay,
     autoEnablePaperByDynasty: autoEnablePaperByDynasty,
     updateAcceptanceWithPurity: updateAcceptanceWithPurity,
     initEnhancedPrivateWealth: initEnhancedPrivateWealth,

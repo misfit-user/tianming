@@ -97,7 +97,7 @@ const htmlSrc = fs.readFileSync(path.join(WEB, 'index.html'), 'utf8');
 
 ok(/TM\.attachPinchPan\(stage/.test(mapSrc), '⑥ 舆图 installMapInteraction 接 attachPinchPan(stage)');
 ok(/pointerType === 'touch'\) return/.test(mapSrc), '⑥ 舆图 pointerdown 对 touch early-return(防 pointer+touch 双重 pan)');
-ok(/applyMapTransform\(\);[\s\S]{0,80}onEnd/.test(mapSrc) || /onGesture[\s\S]{0,600}applyMapTransform/.test(mapSrc), '⑥ 舆图 onGesture 施加后 applyMapTransform');
+ok(/onGesture:[\s\S]*?scheduleMapTransform\(\);\s*},\s*onEnd:/.test(mapSrc) && /function scheduleMapTransform[\s\S]{0,1200}applyMapTransform/.test(mapSrc), '⑥ 舆图 onGesture 经帧调度器施加 applyMapTransform');
 ok(/TM\.attachPinchPan\(wrap/.test(offSrc), '⑦ 官制树接 attachPinchPan(wrap)');
 ok(/shouldStart:\s*function/.test(offSrc) && /og-pos-card/.test(offSrc.slice(offSrc.indexOf('attachPinchPan(wrap'))), '⑦ 官制树 shouldStart 跳卡片(og-pos-card 等)保留点击');
 ok(/#ming-map-layer/.test(cssSrc) && /#office-tree-wrap-game/.test(cssSrc) && /touch-action:\s*none/.test(cssSrc), '⑧ tm-touch.css 两手势面 touch-action:none');

@@ -1,0 +1,17 @@
+[
+  {
+    "name": "reader-unit",
+    "exitCode": 0,
+    "seconds": 0.15
+  },
+  {
+    "name": "electron",
+    "exitCode": 0,
+    "seconds": 14.64
+  },
+  {
+    "name": "all-smokes",
+    "exitCode": 1,
+    "seconds": 262.36
+  }
+]

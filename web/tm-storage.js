@@ -85,10 +85,12 @@ var TM_SaveDB = (function() {
     return unescape(encodeURIComponent(text)).length;
   }
 
-  function _checksumJson(json) {
+  function _checksumJson(json, utf8Bytes) {
     return _perfWithSpan('save.checksum', async function() {
-      if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
-        var digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json));
+      if (typeof crypto !== 'undefined' && crypto.subtle && utf8Bytes) {
+        var digestPromise = crypto.subtle.digest('SHA-256', utf8Bytes);
+        utf8Bytes = null; // digest has accepted its input; do not retain it through compression.
+        var digest = await digestPromise;
         return Array.prototype.map.call(new Uint8Array(digest), function(byte) {
           return byte.toString(16).padStart(2, '0');
         }).join('');
@@ -109,23 +111,28 @@ var TM_SaveDB = (function() {
   function createCanonicalPayload(state, identity) {
     var json = _perfWithSpan('save.stringify', function() { return JSON.stringify(state); }, identity || {});
     if (typeof json !== 'string') return Promise.reject(new Error('canonical world state is not serializable'));
+    var utf8Bytes = _perfWithSpan('save.utf8', function() {
+      return typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(json) : null;
+    });
+    var jsonByteLength = utf8Bytes ? utf8Bytes.byteLength : _utf8ByteLength(json);
     _perfCount('save.stringify.count', 1);
-    _perfCount('save.stringify.bytes', _utf8ByteLength(json));
+    _perfCount('save.stringify.bytes', jsonByteLength);
     var compressedPromise = _perfWithSpan('save.compress', function() {
       _perfCount('save.compress.count', 1);
       return SaveCompression.compress(json);
     }, identity || {});
-    var checksumPromise = _checksumJson(json);
+    var checksumPromise = _checksumJson(json, utf8Bytes);
+    utf8Bytes = null;
     return Promise.all([compressedPromise, checksumPromise]).then(function(parts) {
       var compressed = parts[0];
       var compressedBytes = compressed && typeof compressed.size === 'number'
-        ? compressed.size : _utf8ByteLength(String(compressed));
+        ? compressed.size : (compressed === json ? jsonByteLength : _utf8ByteLength(String(compressed)));
       _perfCount('save.compressed.bytes', compressedBytes);
       return Object.freeze({
         identity: Object.freeze(Object.assign({}, identity || {})),
         state: state,
         json: json,
-        jsonByteLength: _utf8ByteLength(json),
+        jsonByteLength: jsonByteLength,
         checksum: parts[1],
         compressed: compressed,
         compressedByteLength: compressedBytes

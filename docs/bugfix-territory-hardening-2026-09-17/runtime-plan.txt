@@ -1,0 +1,65 @@
+function applyRuntimeAIMapChanges(aiResponse, mapData) {
+  if(!aiResponse || aiResponse.map_changes==null)return {ok:true,applied:0};
+  var changes=aiResponse.map_changes;
+  if(!changes || typeof changes!=='object' || Array.isArray(changes))throw new Error('地图变更格式无效');
+  var kinds=['ownership_changes','troop_changes','development_changes','events'],lists={},total=0;
+  kinds.forEach(function(k){if(changes[k]!=null && !Array.isArray(changes[k]))throw new Error('地图变更列表无效：'+k);lists[k]=changes[k] || [];total+=lists[k].length;});
+  if(!total)return {ok:true,applied:0,ownershipChanges:0};
+  var source=peekMapSource() || mapData;
+  if(!source || !Array.isArray(source.regions) || !source.regions.length)throw new Error('当前世界没有可更新的地图');
+  function resolve(row){
+    if(!row || typeof row!=='object' || Array.isArray(row))throw new Error('地图变更条目无效');
+    var explicit=row.region_id!=null && row.region_id!=='';
+    var ref=explicit?row.region_id:row.region_name;
+    if(typeof ref!=='string' && typeof ref!=='number')throw new Error('地图变更缺少地块引用');
+    var matches=explicit?source.regions.filter(function(r){return r && String(r.id)===String(ref);}):null;
+    if(explicit && matches.length!==1)throw new Error('地块 ID 不存在或不唯一：'+ref);
+    var r=explicit?matches[0]:findMapRegion(source,String(ref));
+    if(!r)throw new Error('地块不存在：'+ref);return r;
+  }
+  var owners=[],seen=new Map(),extras=[];
+  lists.ownership_changes.forEach(function(row){
+    var r=resolve(row);if(!Object.prototype.hasOwnProperty.call(row,'new_owner'))throw new Error('易主缺少 new_owner');
+    var owner=row.new_owner;if(owner!==null && typeof owner!=='string' && typeof owner!=='number')throw new Error('新势力引用无效');
+    var value=owner==null?'':String(owner).trim(),resolved=findScenarioFactionByMapValue(value,source);
+    var facs=(GM.facs || []).filter(function(f){return f && resolved && (String(f.id)===String(resolved.id) || f.name===value);});
+    if(value && facs.length!==1)throw new Error('目标势力不存在或不唯一：'+value);
+    var target=value?(facs[0].id || facs[0].name):'',id=r.id || r.name;
+    if(seen.has(id)){if(seen.get(id)!==target)throw new Error('同一地块存在冲突易主：'+id);return;}
+    seen.set(id,target);owners.push({regionRef:id,newOwner:target,reason:row.reason || 'AI推演领地易主'});
+  });
+  ['troop_changes','development_changes','events'].forEach(function(kind){lists[kind].forEach(function(row){
+    var r=resolve(row),op={id:r.id || r.name,kind:kind,reason:row.reason || 'AI推演地块变化'};
+    if(kind==='events'){
+      if(typeof row.description!=='string')throw new Error('地块事件描述无效');op.value=row.description;
+    }else{
+      if((typeof row.delta!=='number' && typeof row.delta!=='string') || String(row.delta).trim()==='' || !Number.isFinite(Number(row.delta)))throw new Error('地图数值变化不是有限数字');
+      op.value=Number(row.delta);
+    }
+    extras.push(op);
+  });});
+  var membership=typeof TM!=='undefined' && TM.FactionMembership;
+  if(owners.length && (!membership || typeof membership.applyProvinceTransfers!=='function'))throw new Error('统一领地写入模块未加载');
+  var hadMap=Object.prototype.hasOwnProperty.call(GM,'mapData'),oldMap=GM.mapData;
+  try{
+    var runtime=ensureWritableRuntimeMap({sourceMap:source,forceClone:source===oldMap && source.mapSchemaVersion!==TM_RUNTIME_MAP_SCHEMA_VERSION});
+    var records=extras.map(function(op){return findMapRegion(runtime,op.id);});
+    function applyExtras(){
+      extras.forEach(function(op,i){
+        var r=records[i],patch={};
+        if(op.kind==='troop_changes')patch.troops=Math.max(0,Number(r.troops || 0)+op.value);
+        else if(op.kind==='development_changes')patch.development=Math.max(0,Math.min(100,_mapSystemFiniteNumberOr(r.development,50)+op.value));
+        else patch.events=(r.events?r.events+'\n':'')+op.value;
+        updateMapRegionFields(r.id,patch,{mapData:runtime,reason:op.reason});
+      });return extras.length>0;
+    }
+    var result=membership && typeof membership.applyProvinceTransfers==='function'
+      ? membership.applyProvinceTransfers(owners,{records:records,mutate:applyExtras})
+      : (applyExtras(),{ok:true,applied:0,ownershipChanges:0});
+    result.applied+=extras.length;return result;
+  }catch(error){
+    // Legacy/template binding is part of this operation too; never leave a failed replacement map installed.
+    if(GM.mapData!==oldMap){if(hadMap)GM.mapData=oldMap;else delete GM.mapData;}
+    throw error;
+  }
+}

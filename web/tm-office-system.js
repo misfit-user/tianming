@@ -29,9 +29,29 @@
 // 官制双层模型——数据迁移与工具
 // ============================================================
 
+function _offDeclaredPublicTreasury(world) {
+  var g=world|| (typeof GM!=='undefined'?GM:{}),c=g.publicTreasuryConfig||g.scenario&&g.scenario.publicTreasuryConfig||g.scriptData&&g.scriptData.publicTreasuryConfig;
+  if(!c&&g.sid){
+    var sources=typeof P!=='undefined'&&P&&Array.isArray(P.scenarios)?P.scenarios:null,sc=sources&&sources.find(function(s){return s&&s.id===g.sid;});
+    if(!sc&&!sources&&typeof findScenarioById==='function'&&(typeof P==='undefined'||!P||P._indices&&P._indices.scenarioById)){try{sc=findScenarioById(g.sid);}catch(_uninitializedScenarioIndex){sc=null;}}
+    c=sc&&sc.publicTreasuryConfig;
+  }
+  if(!c&&typeof P!=='undefined'&&P&&(!g.sid||P.id===g.sid))c=P.publicTreasuryConfig;
+  return !!(c&&c.schema==='tm-public-treasury/2');
+}
+function _offTreasuryHandover(pos,fromId,toId,world,reason) {
+  if(typeof FiscalEngine!=='undefined'&&FiscalEngine.officeTreasuryAssignmentChanged)FiscalEngine.officeTreasuryAssignmentChanged({game:world||(typeof GM!=='undefined'?GM:{}),positionId:pos.id,fromCharacterId:fromId,toCharacterId:toId,reason:reason});
+}
+
 /** 迁移并双向同步 position 数据：老模型(headCount/actualCount/holder+additionalHolders) ↔ 新模型(establishedCount/vacancyCount/actualHolders) */
 function _offMigratePosition(pos, world) {
   if (!pos || typeof pos !== 'object') return;
+  if(!pos.treasuryBinding&&_offDeclaredPublicTreasury(world))pos.treasuryBinding={role:'none'};
+  if(pos.occupancyStatus==='unrecorded'&&!pos.holder&&!(pos.actualHolders||[]).some(function(h){return h&&h.generated!==false&&h.name;})){
+    var establishment=Number(pos.establishedCount!=null?pos.establishedCount:pos.headCount);if(!Number.isFinite(establishment)||establishment<0)establishment=1;
+    pos.headCount=pos.establishedCount=Math.floor(establishment);pos.unrecordedCount=pos.headCount;pos.actualCount=pos.headCount;pos.vacancyCount=0;
+    pos.actualHolders=[];pos.additionalHolders=[];pos.additionalHolderIds=[];pos.holder='';pos.holderId='';pos._migrated=true;return;
+  }
 
   // ── Step 1: 规范老字段 ──
   if (pos.headCount === undefined || pos.headCount === null || pos.headCount === '') pos.headCount = 1;
@@ -207,7 +227,7 @@ function _offSyncLegacyHolderFields(pos, world) {
   pos.additionalHolderIds = entries.slice(1).map(function(holder) {
     return holder.characterId ? String(holder.characterId) : '';
   });
-  if (Array.isArray(pos.actualHolders)) pos.actualCount = pos.actualHolders.length;
+  if (Array.isArray(pos.actualHolders)) pos.actualCount = pos.actualHolders.length+Math.max(0,Number(pos.unrecordedCount)||0);
 }
 
 /** 获取职位的具象人数——优先新模型 actualHolders，降级老模型 */
@@ -246,11 +266,13 @@ function _offPositionStats(pos) {
   var placeholders = Array.isArray(pos && pos.actualHolders)
     ? pos.actualHolders.filter(function(h) { return h && h.generated === false; }).length
     : 0;
-  var actual = holders.length + placeholders;
+  var unrecorded=Math.max(0,Number(pos.unrecordedCount)||0);
+  var actual = holders.length + placeholders + unrecorded;
   return {
     headCount: established,
     actualCount: actual,
     materialized: holders.length,
+    unrecorded:unrecorded,
     vacant: Math.max(0, established - actual),
     overstaffed: Math.max(0, actual - established),
     unmaterialized: Math.max(0, actual - holders.length),
@@ -335,7 +357,7 @@ function _offUniqueTitles(list) {
 
 // 官职后缀（识别 title 段是否真官职·防吸收描述/状态垃圾）
 var _OFF_TITLE_SUFFIX = /(尚书|侍郎|大学士|学士|都御史|通政使|寺卿|少卿|祭酒|司业|总督|总制|经略|督师|提督|巡抚|总兵|副总兵|参将|游击|布政使|按察使|参政|参议|知府|同知|知州|知县|给事中|詹事|洗马|修撰|编修|检讨|监正|监副|院使|宗人令|宗正|都督|都指挥|指挥使|镇抚|太师|太傅|太保|少师|少傅|少保)/;
-function _offGetCharOfficeTitles(ch) {
+function _offGetCharOfficeTitles(ch, opts) {
   if (!ch) return [];
   var arr = [];
   if (ch.officialTitle) arr.push(ch.officialTitle);
@@ -352,14 +374,26 @@ function _offGetCharOfficeTitles(ch) {
       if (clean.length >= 2 && _OFF_TITLE_SUFFIX.test(clean) && !arr.some(function(x){ return String(x).indexOf(clean) >= 0; })) arr.push(clean);
     });
   }
-  return _offUniqueTitles(arr);
+  var titles = _offUniqueTitles(arr);
+  if (!opts || !opts.displayOnly) return titles;
+  // Display only: composite titles and separately registered seats must not repeat.
+  // Exact components, not substring matching: 检校礼部尚书 is not 礼部尚书.
+  var seen = Object.create(null), out = [];
+  titles.forEach(function(t) {
+    var parts = /[（(]/.test(t) ? [t] : t.split(/[·、，,；;]/).map(function(x){ return x.trim(); }).filter(Boolean);
+    var fresh = parts.filter(function(x){ return !seen[x.replace(/^兼(?:任)?/, '')]; });
+    if (!fresh.length) return;
+    out.push(fresh.length === parts.length ? t : fresh.join('、'));
+    parts.forEach(function(x){ seen[x.replace(/^兼(?:任)?/, '')] = true; });
+  });
+  return out;
 }
 
 // 显示用·把某人全部官职(主职⊕兼职)拼为一行供 UI 显示多职(非仅主职)·主兼以「兼」连·兼职间顿号
 // opts.fallback: 无规范官职时兜底文案(默认 '')
 function _offFormatCharTitles(ch, opts) {
   opts = opts || {};
-  var titles = _offGetCharOfficeTitles(ch);
+  var titles = _offGetCharOfficeTitles(ch, { displayOnly: true });
   if (!titles.length) return (opts.fallback != null) ? opts.fallback : '';
   if (titles.length === 1) return titles[0];
   return titles[0] + '　兼　' + titles.slice(1).join('、');
@@ -393,7 +427,7 @@ function _offAddCharOfficeTitle(ch, title, opts) {
   var currentMain = _offNormalizeTitleName(ch.officialTitle || '');
   var titles;
 
-  if (opts.concurrent && currentMain && currentMain !== title) {
+  if (opts.concurrent && currentMain) {
     titles = _offUniqueTitles([currentMain].concat(existing).concat([title]));
     ch.officialTitle = currentMain;
     if (!ch.position) ch.position = currentMain;
@@ -534,10 +568,13 @@ function _offAppointCharacter(pos, characterOrId, options) {
     if (pos.actualHolders.length > pos.headCount) pos.headCount = pos.actualHolders.length;
     pos.actualCount = pos.actualHolders.length;
   }
+  if(pos.unrecordedCount>0)pos.unrecordedCount--;
+  if(pos.occupancyStatus)pos.occupancyStatus='occupied';
   _offSyncLegacyHolderFields(pos, options.world);
+  _offTreasuryHandover(pos,null,resolved.characterId,options.world,'任命交割');
   // vacancyCount 同步：编制 - 已任 (而非旧值)
   if (typeof pos.establishedCount === 'number') {
-    pos.vacancyCount = Math.max(0, pos.establishedCount - _offMaterializedCount(pos));
+    pos.vacancyCount = Math.max(0, pos.establishedCount - _offMaterializedCount(pos) - (pos.unrecordedCount||0));
   }
   return { ok: true, characterId: resolved.characterId, holder: slot };
 }
@@ -558,7 +595,9 @@ function _offDismissCharacter(pos, characterOrId, options) {
   var idx = pos.actualHolders.findIndex(function(holder) {
     return holder && holder.generated !== false && String(holder.characterId || '') === resolved.characterId;
   });
-  if (idx >= 0) {
+  if (idx >= 0 && _offDeclaredPublicTreasury(options.world)) {
+    pos.actualHolders.splice(idx,1);pos.occupancyStatus=pos.actualHolders.length||pos.unrecordedCount?'occupied':'vacant';pos.vacancyCount=Math.max(0,pos.establishedCount-pos.actualHolders.length-(pos.unrecordedCount||0));
+  } else if (idx >= 0) {
     // 替换为占位（保持位置计数）
     pos.actualHolders[idx] = {
       name: '', generated: false,
@@ -569,6 +608,7 @@ function _offDismissCharacter(pos, characterOrId, options) {
     };
   }
   _offSyncLegacyHolderFields(pos, options.world);
+  if(idx>=0)_offTreasuryHandover(pos,resolved.characterId,null,options.world,'卸任交割');
   return idx >= 0
     ? { ok: true, characterId: resolved.characterId }
     : { ok: false, reason: 'holder-not-found', characterId: resolved.characterId };
@@ -601,6 +641,8 @@ function _offVacatePersonSlot(pos, characterOrId, reason, world) {
   if (!Number.isFinite(established) || established < 0) established = Number(pos.headCount);
   if (!Number.isFinite(established) || established < 0) established = 1;
   pos.vacancyCount = Math.max(0, Math.floor(established) - pos.actualCount);
+  if(pos.occupancyStatus)pos.occupancyStatus=pos.actualCount?'occupied':'vacant';
+  _offTreasuryHandover(pos,resolved.characterId,null,world,reason||'卸任交割');
   return { ok: true, characterId: resolved.characterId };
 }
 
@@ -692,7 +734,7 @@ function _offSweepGhostHolders() {
 
 /** 获取部门的聚合统计 */
 function _offDeptStats(dept) {
-  var stats = { headCount: 0, actualCount: 0, materialized: 0, vacant: 0, overstaffed: 0, unmaterialized: 0, holders: [] };
+  var stats = { headCount: 0, actualCount: 0, materialized: 0, vacant: 0, overstaffed: 0, unmaterialized: 0, unrecorded:0, holders: [] };
   _offWalkOfficeTree([dept], function(n) {
     (n.positions||[]).forEach(function(p) {
       var posStats = _offPositionStats(p);
@@ -702,6 +744,7 @@ function _offDeptStats(dept) {
       stats.vacant += posStats.vacant;
       stats.overstaffed += posStats.overstaffed;
       stats.unmaterialized += posStats.unmaterialized;
+      stats.unrecorded += posStats.unrecorded||0;
       posStats.holders.forEach(function(h) { stats.holders.push(h); });
     });
   });
@@ -710,7 +753,7 @@ function _offDeptStats(dept) {
 
 /** 获取整棵树的聚合统计 */
 function _offTreeStats(tree) {
-  var stats = { headCount: 0, actualCount: 0, materialized: 0, vacant: 0, overstaffed: 0, unmaterialized: 0, depts: 0 };
+  var stats = { headCount: 0, actualCount: 0, materialized: 0, vacant: 0, overstaffed: 0, unmaterialized: 0, unrecorded:0, depts: 0 };
   _offWalkOfficeTree(tree||[], function(n) {
     stats.depts++;
     (n.positions||[]).forEach(function(p) {
@@ -721,6 +764,7 @@ function _offTreeStats(tree) {
       stats.vacant += posStats.vacant;
       stats.overstaffed += posStats.overstaffed;
       stats.unmaterialized += posStats.unmaterialized;
+      stats.unrecorded += posStats.unrecorded||0;
     });
   });
   return stats;
@@ -816,6 +860,50 @@ function getRankMeta(value, rankText) {
     if (Number(H[i] && H[i].level) === level) return H[i];
   }
   return null;
+}
+
+/** 人物可见品秩：实授官职和明确官品文本；社会地位/default rankLevel 不作官品。 */
+function getCharacterRankLabel(ch, world) {
+  if (!ch) return '';
+  var G = world || (typeof GM !== 'undefined' ? GM : null), H = _activeRankHierarchy();
+  var best = null, explicit = typeof ch.rank === 'string' ? ch.rank.trim() : '';
+  function consider(value) {
+    if (typeof value !== 'string' || !value.trim() || /^[-+]?\d+(?:\.\d+)?$/.test(value.trim())) return;
+    var label = value.trim(), meta = null;
+    H.forEach(function(r) { if (r && r.label && label.indexOf(r.label) >= 0 && (!meta || r.label.length > meta.label.length)) meta = r; });
+    if (!meta) return;
+    if (!best || Number(meta.level) < best.level) best = { label: label, level: Number(meta.level) };
+  }
+  function isHolder(value) {
+    if (!value) return false;
+    if (typeof value === 'object') return value.id && ch.id ? value.id === ch.id : value.name === ch.name;
+    return value === ch.name || (ch.id && value === ch.id);
+  }
+  var titles = [];
+  [ch.officialTitle, ch.title].concat(ch.concurrentTitles || []).forEach(function(s) {
+    if (typeof s !== 'string') return;
+    s.split(/[·、，,；;]|兼署|兼理|兼管|兼|加授|加官|加衔/).forEach(function(x) {
+      x = x.trim(); if (x && titles.indexOf(x) < 0) titles.push(x);
+    });
+  });
+  (function walk(nodes) {
+    (Array.isArray(nodes) ? nodes : nodes ? [nodes] : []).forEach(function(n) {
+      if (!n) return;
+      (n.positions || []).forEach(function(p) {
+        if (!p) return;
+        var bound = p.holderId && ch.id ? p.holderId === ch.id : isHolder(p.holder);
+        bound = bound || (p.actualHolders || []).some(isHolder) || (p.additionalHolders || []).some(isHolder);
+        var faction = p.faction || p.ownerFactionId || n.faction || n.ownerFactionId;
+        var sameRealm = !faction || !ch.faction || faction === ch.faction;
+        // 只认完整官名，不让商旅身份中的单字撞中官衔关键词。
+        if (bound || (sameRealm && titles.indexOf(p.name) >= 0)) consider(p.rank);
+      });
+      ['depts','subs','children'].forEach(function(k) { if (n[k]) walk(n[k]); });
+    });
+  })(G && G.officeTree);
+  consider(explicit);
+  if (best) return best.label;
+  return explicit && !/^[-+]?\d+(?:\.\d+)?$/.test(explicit) ? explicit : '';
 }
 
 function _orderedRankHierarchy() {
@@ -1099,6 +1187,7 @@ function _inferPublicTreasuryByRank(p, deptName) {
 // 若无 publicTreasuryInit 则按品级+部门自动推算·保证所有官职都有公库显示
 function _initOfficePublicTreasury(nodes, deptName) {
   if (!Array.isArray(nodes)) return;
+  if(_offDeclaredPublicTreasury())return; // Entity treasury initialization owns stocks; office bindings never create a second cash box.
   nodes.forEach(function(n) {
     if (!n) return;
     var dn = deptName ? (deptName + '·' + (n.name || '')) : (n.name || '');
@@ -1223,6 +1312,7 @@ function _initCharacterPrivateWealth(chars) {
   };
   (chars || []).forEach(function(ch) {
     if (!ch || ch.alive === false) return;
+    if(typeof CharEconEngine!=='undefined'&&CharEconEngine.isDeclaredCharacterEconomy&&CharEconEngine.isDeclaredCharacterEconomy(ch)){CharEconEngine.ensureCharResources(ch);CharEconEngine.updatePublicTreasuryMirror(ch);return;}
     if (!ch.resources) ch.resources = {};
     // 领袖：跳过五大类赋值，其私产=内帑/领袖私库 镜像（由 updatePublicTreasuryMirror 同步）
     if (_isLeader(ch)) {
@@ -1392,6 +1482,9 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   var np = _offNormalizeTitleName(posName);
   var nd = _offNormalizeTitleName(deptName);
   if (!ct || !np) return 0;
+  // A duty or honorary designation is not a substantive office with a similar name.
+  // Preserve exact authored seats, including explicitly modeled duty positions.
+  if (ct !== np && ct !== nd + np && /^(?:检校|追赠|赠|加衔|(?:权)?判.+事$)/.test(ct)) return 0;
   var sc = 0;
   if (ct === np) sc = 100;
   else if (ct === nd + np) sc = 98;
@@ -1595,6 +1688,7 @@ function _offVacateCharFromSeat(ch, dept, posName) {
 function _offSyncHoldersFromChars(opts) {
   opts = opts || {};
   if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.officeTree)) return { ok: false };
+  var declaredTreasury=_offDeclaredPublicTreasury(GM);
   // 签名守卫:渲染高频调用·状态未变则跳过重算(perf)
   if (opts.ifChanged && !opts.dedupChars) {
     var sig = (GM.turn || 0) + '|' + (GM.chars || []).length + '|' + (GM.playerFaction || '') + '|';
@@ -1712,6 +1806,8 @@ function _offSyncHoldersFromChars(opts) {
     if (used[ci]) continue;
     for (var si = 0; si < slots.length; si++) {
       if (slots[si].fill.length >= slots[si].cap) continue;
+      // Authored unknown holders are not vacancies for fuzzy auto-appointment.
+      if (slots[si].pos.occupancyStatus === 'unrecorded') continue;
       var s = _offTitleSlotScore(claims[ci].title, slots[si].dept, slots[si].posName, false);
       if (s >= 40) pairs.push({ ci: ci, si: si, s: s });
     }
@@ -1747,6 +1843,8 @@ function _offSyncHoldersFromChars(opts) {
   // ── 应用:把 fill 写回职位的 holder/actualHolders(保结构/编制/元数据) ──
   slots.forEach(function(sl){
     var p = sl.pos, filledClaims = sl.fill;
+    if(p.occupancyStatus==='unrecorded'&&!filledClaims.length){_offMigratePosition(p);return;}
+    if(p.occupancyStatus&&filledClaims.length){p.occupancyStatus='occupied';p.unrecordedCount=Math.max(0,(p.establishedCount||p.headCount||1)-filledClaims.length);}
     var named = filledClaims.map(function(claim) { return claim.name; });
     var keepPlaceholders = (Array.isArray(p.actualHolders) ? p.actualHolders : []).filter(function(h){ return h && h.generated === false; });
     var previousById = Object.create(null);
@@ -1772,13 +1870,14 @@ function _offSyncHoldersFromChars(opts) {
     _offSyncLegacyHolderFields(p);
     // 保留 office_aggregate 的匿名填充占位(generated:false 且有 filledTurn)计入实有
     var anonFilled = ah.filter(function(h){ return h && h.generated === false && h.filledTurn; }).length;
-    p.actualCount = named.length + anonFilled;
+    p.actualCount = named.length + anonFilled + (p.unrecordedCount||0);
     p.vacancyCount = Math.max(0, estab - p.actualCount);
   });
 
   // ── Pass 3: 编制外本朝活跃官→动态部门(按分类器归庭) ──
   var dynByGroup = {};
   for (var ci2 = 0; ci2 < claims.length; ci2++) {
+    if(declaredTreasury)break; // Personal styles and royal titles do not establish a staffed office. Explicitly created offices already exist in slots.
     if (used[ci2]) continue;
     var cl = claims[ci2];
     if (!cl.primary) continue; // 兼任未匹配的不单列(避免重复)

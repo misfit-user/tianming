@@ -37,8 +37,11 @@ function applyCharacterDeaths(p1) {
 
 // N2 nest-flatten: per-death cascade body extracted verbatim from applyCharacterDeaths() forEach(cd) (behavior-identical). the inline gm-write directive on the crownPrince line is carried verbatim within the body below.
 function applyOneDeath(cd) {
-  if (!cd.name || !cd.reason) return;
-  var ch = (typeof _fuzzyFindChar === 'function' ? _fuzzyFindChar(cd.name) : null) || findCharByName(cd.name);
+  if (!cd || (!cd.name && !cd.characterId) || !cd.reason) return;
+  var nativeDeath = typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM);
+  var ch = nativeDeath ? TM.NativeWorld.resolveCharacter(GM, cd.characterId ? {characterId:cd.characterId} : cd.name)
+    : ((typeof _fuzzyFindChar === 'function' ? _fuzzyFindChar(cd.name) : null) || findCharByName(cd.name));
+  if (nativeDeath && !ch) return {ok:false,code:'native-death-target-unresolved',reason:'死亡目标须为存在的稳定 ID 或唯一姓名'};
   if (!ch) return;
   // 唯一死亡 sink 必须幂等：同回合多个结构化入口指向同一人时，只执行一次级联/事件/声望结算。
   if (ch.alive === false || ch.dead === true) return;
@@ -59,10 +62,14 @@ function applyOneDeath(cd) {
   ch.concurrentTitle = '';
   ch._removedFromOfficeTurn = GM.turn || 0;
   ch._removedReason = '身故';
-  if (typeof recordCharacterArc === 'function') recordCharacterArc(cd.name, 'death', cd.reason);
-  if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(cd.name);
+  if (typeof recordCharacterArc === 'function') recordCharacterArc(nativeDeath ? ch.id : cd.name, 'death', cd.reason);
+  if (!nativeDeath && typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(cd.name);
+  if (nativeDeath && typeof _offVacateByCharId === 'function') {
+    var deathTrees=[GM.officeTree].concat(Object.keys(GM.nativeWorld.offices||{}).map(function(k){return GM.nativeWorld.offices[k];}),[GM.nativeWorld.baseOfficeTree]),seenDeathTrees=new Set();
+    deathTrees.forEach(function(tree){if(!Array.isArray(tree)||seenDeathTrees.has(tree))return;seenDeathTrees.add(tree);_offVacateByCharId(ch.id,'death',tree,{leaveVacancy:true,world:GM});});
+  }
   // 官制同步：将死者从所有 actualHolders 中移除（留占位）
-  if (GM.officeTree && typeof _offDismissPerson === 'function') {
+  if (!nativeDeath && GM.officeTree && typeof _offDismissPerson === 'function') {
     (function _clearDead(ns) {
       ns.forEach(function(n) {
         if (n.positions) n.positions.forEach(function(p) {
@@ -77,14 +84,15 @@ function applyOneDeath(cd) {
   // 相关角色记忆此人之死
   if (typeof NpcMemorySystem !== 'undefined') {
     (GM.chars||[]).forEach(function(c2) {
-      if (c2.alive === false || c2.name === cd.name) return;
+      if (c2.alive === false || (nativeDeath ? c2.id === ch.id : c2.name === cd.name)) return;
       var _rel = (c2.faction === ch.faction) || (c2.party === ch.party) || (c2.family && c2.family === ch.family);
-      if (_rel) NpcMemorySystem.remember(c2.name, cd.name + '离世：' + cd.reason, '忧', 7, cd.name);
+      if (nativeDeath) _rel = (c2.factionId && c2.factionId === ch.factionId) || (c2.familyId && c2.familyId === ch.familyId) || (Array.isArray(c2.relationships) && c2.relationships.some(function(r){return r.targetId===ch.id;}));
+      if (_rel) NpcMemorySystem.remember(nativeDeath ? c2.id : c2.name, cd.name + '离世：' + cd.reason, '忧', 7, nativeDeath ? ch.id : cd.name);
     });
   }
   addEB('\u6B7B\u4EA1', cd.name + '\uFF1A' + cd.reason);
   // 2.6: 事件总线广播角色死亡
-  if (typeof GameEventBus !== 'undefined') GameEventBus.emit('character:death', { name: cd.name, reason: cd.reason });
+  if (typeof GameEventBus !== 'undefined') GameEventBus.emit('character:death', { name: cd.name, characterId: ch.id, reason: cd.reason });
   // 家族影响——仅记录记忆和声望，具体情感反应由AI根据每人性格决定
   if (ch.family) {
     if (GM.families && GM.families[ch.family] && typeof updateFamilyRenown === 'function') {
@@ -93,8 +101,8 @@ function applyOneDeath(cd) {
     // 族人记住此事（AI根据性格决定悲痛/冷漠/窃喜）
     if (GM.chars && typeof NpcMemorySystem !== 'undefined') {
       GM.chars.forEach(function(fm) {
-        if (fm.alive !== false && fm.family === ch.family && fm.name !== cd.name) {
-          NpcMemorySystem.remember(fm.name, '\u65CF\u4EBA' + cd.name + '\u53BB\u4E16\uFF1A' + cd.reason, '\u5E73', 6, cd.name);
+        if (fm.alive !== false && (nativeDeath ? fm.familyId && fm.familyId===ch.familyId && fm.id!==ch.id : fm.family === ch.family && fm.name !== cd.name)) {
+          NpcMemorySystem.remember(nativeDeath ? fm.id : fm.name, '\u65CF\u4EBA' + cd.name + '\u53BB\u4E16\uFF1A' + cd.reason, '\u5E73', 6, nativeDeath ? ch.id : cd.name);
         }
       });
     }
@@ -102,8 +110,9 @@ function applyOneDeath(cd) {
   // 级联清理：军队统帅引用
   if (GM.armies) {
     GM.armies.forEach(function(army) {
-      if (army.commander === cd.name) {
+      if (nativeDeath ? army.commanderId === ch.id : army.commander === cd.name) {
         army.commander = '';
+        if (nativeDeath) army.commanderId = null;
         army.commanderTitle = '';
         army.morale = Math.max(0, (army.morale != null && isFinite(Number(army.morale)) ? Number(army.morale) : 50) - 15); // 主帅阵亡士气骤降
         addEB('\u519B\u4E8B', army.name + '\u4E3B\u5E05' + cd.name + '\u9635\u4EA1\uFF0C\u58EB\u6C14\u9AA4\u964D');
@@ -118,20 +127,23 @@ function applyOneDeath(cd) {
     var _isChild = (c3.father === _deadName || c3.mother === _deadName || c3.fatherId === ch.id || c3.fatherId === _deadName || c3.motherId === ch.id || c3.motherId === _deadName);
     var _childRefs = [].concat(ch.childrenIds || [], ch.children || []);
     if (!_isChild) _isChild = _childRefs.some(function(ref) { var key = ref && typeof ref === 'object' ? (ref.id || ref.characterId || ref.name) : ref; return key === c3.id || key === c3.name; });
+    if (nativeDeath) _isChild = c3.fatherId===ch.id || c3.motherId===ch.id || (Array.isArray(ch.childrenIds)&&ch.childrenIds.indexOf(c3.id)>=0);
     if (!_isChild) return;
     // 此NPC是死者子女→标记丁忧
     if (c3.officialTitle) {
       var _mourningDays = Number(P && P.mechanicsConfig && P.mechanicsConfig.mourningDays);
+      if (nativeDeath) { _mourningDays=Number((GM.nativeWorld.ruleset.config.government||{}).mourningDays); if(!isFinite(_mourningDays)||_mourningDays<=0)return; }
       if (!isFinite(_mourningDays) || _mourningDays <= 0) _mourningDays = 270; // 兼容旧默认 9×30 日，但不再绑定回合长度
       var _currentDay = (typeof getCurrentGameDay === 'function') ? Number(getCurrentGameDay()) : ((GM.turn - 1) * ((P.time && Number(P.time.daysPerTurn)) || 30));
       var _dpt = (typeof _getDaysPerTurn === 'function') ? Number(_getDaysPerTurn()) : ((P.time && Number(P.time.daysPerTurn)) || 30);
       c3._mourning = { since: GM.turn, sinceDay: _currentDay, untilDay: _currentDay + _mourningDays, until: GM.turn + Math.max(1, Math.ceil(_mourningDays / Math.max(1, _dpt))), parent: _deadName, durationDays: _mourningDays };
       addEB('丁忧', c3.name + '因' + _deadName + '去世而丁忧离职');
       if (typeof NpcMemorySystem !== 'undefined') {
-        NpcMemorySystem.remember(c3.name, '父/母' + _deadName + '去世，丁忧守丧', '悲', 10, _deadName);
+        NpcMemorySystem.remember(nativeDeath ? c3.id : c3.name, '父/母' + _deadName + '去世，丁忧守丧', '悲', 10, nativeDeath ? ch.id : _deadName);
       }
       // 生成时局要务——提醒玩家可夺情
       if (GM.currentIssues) {
+        if (nativeDeath && c3.factionId !== GM.startContext.playerFactionId) return;
         GM.currentIssues.push({
           id: 'issue_mourning_' + c3.name,
           title: c3.name + '丁忧——是否夺情？',
@@ -146,15 +158,16 @@ function applyOneDeath(cd) {
   // 级联清理：若死者是势力首领，标记势力动荡
   if (GM.facs) {
     GM.facs.forEach(function(fac) {
-      if (fac.leader !== cd.name) return;
+      if (nativeDeath ? (fac.leaderId || fac.leaderCharacterId) !== ch.id : fac.leader !== cd.name) return;
       fac.leader = '';
+      if (nativeDeath) {fac.leaderId=null;fac.leaderCharacterId=null;}
       addEB('\u52BF\u529B\u52A8\u6001', fac.name + '\u9996\u9886' + cd.name + '\u6B7B\u4EA1\uFF0C\u52BF\u529B\u52A8\u8361');
       fac.strength = Math.max(0, (fac.strength != null && isFinite(Number(fac.strength)) ? Number(fac.strength) : 50) - 10);
 
       // 封臣级联：宗主首领死亡→所有封臣忠诚度下降
       if (fac.vassals && fac.vassals.length > 0) {
         fac.vassals.forEach(function(vn) {
-          var vRuler = GM.chars ? GM.chars.find(function(c) { return c.faction === vn && c.alive !== false && (c.position === '\u541B\u4E3B' || c.position === '\u9996\u9886'); }) : null;
+          var vRuler = GM.chars ? GM.chars.find(function(c) { if(nativeDeath){var vf=GM.facs.find(function(f){return f.id===vn;});return vf&&c.id===(vf.leaderId||vf.leaderCharacterId)&&c.alive!==false;}return c.faction === vn && c.alive !== false && (c.position === '\u541B\u4E3B' || c.position === '\u9996\u9886'); }) : null;
           if (vRuler) {
             if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(vRuler, -10, '\u5B97\u4E3B\u4E4B\u6B7B', { source:'liege-death-vassal-loyalty' });
             else vRuler.loyalty = Math.max(0, ((typeof vRuler.loyalty === 'number' && isFinite(vRuler.loyalty)) ? vRuler.loyalty : 50) - 10);
@@ -167,10 +180,11 @@ function applyOneDeath(cd) {
       if (fac.liege) {
         // 查找继承人（子嗣或同族）
         var heir = GM.chars ? GM.chars.find(function(c) {
-          return c.alive !== false && c.faction === fac.name && c.name !== cd.name && (c.parentOf === cd.name || c.father === cd.name);
+          return nativeDeath ? c.alive!==false && c.id===fac.heirId : c.alive !== false && c.faction === fac.name && c.name !== cd.name && (c.parentOf === cd.name || c.father === cd.name);
         }) : null;
         if (heir) {
           fac.leader = heir.name;
+          if (nativeDeath) {fac.leaderId=heir.id;fac.leaderCharacterId=heir.id;}
           heir.position = '\u9996\u9886';
           addEB('\u5C01\u81E3\u7EE7\u627F', fac.name + '\u5C01\u81E3\u7531' + heir.name + '\u7EE7\u627F');
         } else {
@@ -185,7 +199,7 @@ function applyOneDeath(cd) {
       if (t.hereditary) {
         // 查找继承人
         var _titleHeir = GM.chars ? GM.chars.find(function(c) {
-          return c.alive !== false && c.name !== cd.name && (c.father === cd.name || (c.family && c.family === ch.family));
+          return nativeDeath ? c.alive!==false && c.id===(t.heirId || ch.designatedHeirId) : c.alive !== false && c.name !== cd.name && (c.father === cd.name || (c.family && c.family === ch.family));
         }) : null;
         if (_titleHeir) {
           if (!_titleHeir.titles) _titleHeir.titles = [];
@@ -213,8 +227,9 @@ function applyOneDeath(cd) {
       if (!_ahd || !_ahd.divisions) return;
       function _removeGov(divs) {
         divs.forEach(function(d) {
-          if (d.governor === cd.name) {
+          if (nativeDeath ? d.governorId===ch.id : d.governor === cd.name) {
             d.governor = '';
+            if (nativeDeath) d.governorId = null;
             addEB('\u884C\u653F', d.name + '\u4E3B\u5B98' + cd.name + '\u53BB\u4E16\uFF0C\u804C\u4F4D\u7A7A\u7F3A');
             // 同步省份
             if (GM.provinceStats && GM.provinceStats[d.name]) {
@@ -229,11 +244,12 @@ function applyOneDeath(cd) {
     });
   }
   // 级联清理：配偶死亡→后宫更新
-  if ((typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(ch) : ch.spouse === true) && GM.harem) {
+  var nativePlayer = nativeDeath ? TM.NativeWorld.info(GM).character : null;
+  if ((nativeDeath ? ch.spouseId===nativePlayer.id || nativePlayer.spouseId===ch.id : (typeof _tmIsPlayerConsort === 'function' ? _tmIsPlayerConsort(ch) : ch.spouse === true)) && GM.harem) {
     // 从继承人列表移除该配偶的子嗣（如果子嗣也死了的话由子嗣的死亡事件处理）
     // 从孕期列表移除
     if (GM.harem.pregnancies) {
-      GM.harem.pregnancies = GM.harem.pregnancies.filter(function(p) { return p.mother !== cd.name; });
+      GM.harem.pregnancies = GM.harem.pregnancies.filter(function(p) { return nativeDeath ? TM.NativeWorld.resolveCharacter(GM,p.motherId?{characterId:p.motherId}:p.mother)!==ch : p.mother !== cd.name; });
     }
     addEB('\u540E\u5BAB', cd.name + '\u85A8\u901D');
     // 重算继承人（如果有recalculateHeirs函数）
@@ -242,14 +258,15 @@ function applyOneDeath(cd) {
     }
   }
   // 级联清理：继承人死亡→从继承人列表中移除
-  if (GM.harem && Array.isArray(GM.harem.heirs) && GM.harem.heirs.some(function(h) { return h === cd.name || (h && h.name === cd.name); })) {
-    GM.harem.heirs = GM.harem.heirs.filter(function(h) { return !(h === cd.name || (h && h.name === cd.name)); });
+  if (GM.harem && Array.isArray(GM.harem.heirs) && GM.harem.heirs.some(function(h) { return nativeDeath ? TM.NativeWorld.resolveCharacter(GM,h)===ch : h === cd.name || (h && h.name === cd.name); })) {
+    GM.harem.heirs = GM.harem.heirs.filter(function(h) { return nativeDeath ? TM.NativeWorld.resolveCharacter(GM,h)!==ch : !(h === cd.name || (h && h.name === cd.name)); });
     addEB('\u7EE7\u627F', cd.name + '\u53BB\u4E16\uFF0C\u5DF2\u4ECE\u7EE7\u627F\u4EBA\u5E8F\u5217\u4E2D\u79FB\u9664');
   }
-  if (GM.harem && GM.harem.crownPrince === cd.name) {
+  if (GM.harem && (nativeDeath ? GM.harem.crownPrinceId===ch.id : GM.harem.crownPrince === cd.name)) {
     GM.harem.crownPrince = ''; // arch-ok 储君薨级联清理(国本刀2026-07-07·与本文件既有 harem 级联同区)
     var _pcCP = (GM.chars || []).find(function(x) { return x && x.isPlayer; });
-    if (_pcCP && _pcCP.designatedHeirId === cd.name) _pcCP.designatedHeirId = '';
+    if (nativeDeath) GM.harem.crownPrinceId = ''; // arch-ok: death owner clears the matching stable crown-prince reference
+    if (_pcCP && _pcCP.designatedHeirId === (nativeDeath ? ch.id : cd.name)) _pcCP.designatedHeirId = '';
     addEB('国本', '皇太子' + cd.name + '薨·东宫虚位，国本动摇');
   }
   _dbg('[AI Death] ' + cd.name + ': ' + cd.reason);

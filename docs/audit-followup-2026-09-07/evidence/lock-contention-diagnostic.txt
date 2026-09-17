@@ -1,0 +1,56 @@
+INTERRUPTED owner-identity-published
+PASS owner crash restarts twice without changing package/index
+INTERRUPTED ticket-published
+PASS ticket crash restarts twice without changing package/index
+INTERRUPTED private-owner-before-write
+PASS private-owner crash restarts twice without changing package/index
+INTERRUPTED complete-fixed-owner-published
+PASS published crash restarts twice without changing package/index
+INTERRUPTED complete-fixed-owner-published
+INTERRUPTED reclaimer-during-dead-owner-removal
+PASS reclaimer death is itself recoverable, without fixed recovery sentinel
+INTERRUPTED journal-published
+PASS unproven legacy recovery marker preserves journal and original data
+PASS unknown legacy empty lock is never stolen or deleted
+PASS proven dead legacy PID migration
+PASS publication failure leaves package/index unchanged and can retry
+PASS release after commit is warning, same-process retry cleans ownership
+PASS release-claim after commit is warning, same-process retry cleans ownership
+PASS live owner cannot be stolen by multiple contenders
+AssertionError [ERR_ASSERTION]: <USER_HOME>\Desktop\tianming-audit-review\web\scripts\smoke-workshop-lock-recovery.js:59
+      catch (e) { if (!/in-progress/.test(e.message)) throw e; i--; Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2); }
+                                                      ^
+
+Error: ENOENT: no such file or directory, lstat '<USER_HOME>\AppData\Local\Temp\tm-workshop-lock-Oeflyp\workshop\.lock-owners\owner-24984-c7a67ac9-accf-40b6-8c62-0a7923e82b50'
+    at Object.lstatSync (node:fs:1701:25)
+    at safe (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-transaction.js:16:39)
+    at participants (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-lock.js:28:19)
+    at Object.acquire (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-lock.js:71:22)
+    at exclusive (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-transaction.js:49:24)
+    at change (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-transaction.js:74:12)
+    at Object.setEnabled (<USER_HOME>\Desktop\tianming-audit-review\main-workshop-transaction.js:122:34)
+    at Object.<anonymous> (<USER_HOME>\Desktop\tianming-audit-review\web\scripts\smoke-workshop-lock-recovery.js:58:18)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'lstat',
+  path: '<USER_HOME>\\AppData\\Local\\Temp\\tm-workshop-lock-Oeflyp\\workshop\\.lock-owners\\owner-24984-c7a67ac9-accf-40b6-8c62-0a7923e82b50'
+}
+
+Node.js v24.14.0
+
+
+1 !== 0
+
+    at <USER_HOME>\Desktop\tianming-audit-review\web\scripts\smoke-workshop-lock-recovery.js:132:39
+    at Array.forEach (<anonymous>)
+    at <USER_HOME>\Desktop\tianming-audit-review\web\scripts\smoke-workshop-lock-recovery.js:132:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}

@@ -1,0 +1,28 @@
+{
+  "package": "onnxruntime-web",
+  "version": "1.14.0",
+  "registry": "https://registry.npmjs.org/",
+  "archiveIntegrity": "sha512-Kcqf43UMfW8mCydVGcX9OMXI2VN17c0p6XvR7IPSZzBf/6lteBzXHvcEVWDPmCKuGombl997HgLqj91F11DzXw==",
+  "files": [
+    {
+      "file": "vendor/transformers/ort-wasm-simd-threaded.wasm",
+      "bytes": 9960821,
+      "sha256": "ac23f2f3cbd519a65a0796f7c79eb34ead4c1f6f31eb06e14ed8a9579d697ef6"
+    },
+    {
+      "file": "vendor/transformers/ort-wasm-simd.wasm",
+      "bytes": 10014674,
+      "sha256": "9bd07bababc65f53d061f457233eeae501be7ceb8a2adb9eef52d87fe776d865"
+    },
+    {
+      "file": "vendor/transformers/ort-wasm-threaded.wasm",
+      "bytes": 9149637,
+      "sha256": "2ee2f715093aaacc0344bfb1610313eb49a3474e8afde5e4635f30ddfc7615c8"
+    },
+    {
+      "file": "vendor/transformers/ort-wasm.wasm",
+      "bytes": 9223228,
+      "sha256": "bbdcb6b3c7d294577d806077630460be4e13ca35a345acb5e81188e9649fa74a"
+    }
+  ]
+}

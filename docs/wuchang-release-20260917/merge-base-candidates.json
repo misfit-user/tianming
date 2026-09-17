@@ -1,0 +1,84 @@
+{
+  "web/map-integration.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\map-integration.js",
+      "mtime": "2026-09-17T17:47:53.312515"
+    }
+  ],
+  "web/phase8-formal-map-dossier.js": [],
+  "web/phase8-formal-modules.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\phase8-formal-modules.js",
+      "mtime": "2026-09-17T17:34:35.615458"
+    }
+  ],
+  "web/scripts/smoke-military-execution-binding.js": [],
+  "web/scripts/smoke-tianqi-map-runtime.js": [],
+  "web/tm-ai-change-narrative.js": [],
+  "web/tm-ai-infra-model-detect.js": [],
+  "web/tm-ai-infra-retry.js": [],
+  "web/tm-ai-infra.js": [],
+  "web/tm-api-models.js": [],
+  "web/tm-chaoyi-tinyi.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\web\\.bak-shizheng-tinyi-2026-09-17T07-43-29-579Z\\tm-chaoyi-tinyi.js",
+      "mtime": "2026-09-17T15:43:29.598148"
+    }
+  ],
+  "web/tm-edict-parser.js": [],
+  "web/tm-endturn-ai.js": [],
+  "web/tm-endturn-apply-stages.js": [],
+  "web/tm-endturn-apply.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-endturn-apply.js",
+      "mtime": "2026-09-17T17:47:53.308724"
+    }
+  ],
+  "web/tm-endturn-edict.js": [],
+  "web/tm-endturn-prompt.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-endturn-prompt.js",
+      "mtime": "2026-09-17T17:47:53.313602"
+    }
+  ],
+  "web/tm-faction-derived-economy.js": [],
+  "web/tm-faction-membership.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-faction-membership.js",
+      "mtime": "2026-09-17T17:47:53.308724"
+    }
+  ],
+  "web/tm-fiscal-engine.js": [],
+  "web/tm-map-system.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-map-system.js",
+      "mtime": "2026-09-17T17:47:53.309396"
+    }
+  ],
+  "web/tm-office-system.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\tm-office-system.js",
+      "mtime": "2026-09-17T17:34:35.604970"
+    }
+  ],
+  "web/tm-patches-start.js": [],
+  "web/tm-patches.js": [],
+  "web/tm-renwu-tuzhi.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435\\web\\tm-renwu-tuzhi.js",
+      "mtime": "2026-09-17T17:34:35.610875"
+    }
+  ],
+  "web/tm-shizheng-panel.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\web\\.bak-shizheng-tinyi-2026-09-17T07-43-29-579Z\\tm-shizheng-panel.js",
+      "mtime": "2026-09-17T15:43:29.596148"
+    }
+  ],
+  "web/tm-three-systems-ext.js": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\docs\\bugfix-territory-hardening-2026-09-17\\originals\\tm-three-systems-ext.js",
+      "mtime": "2026-09-17T17:47:53.311338"
+    }
+  ]
+}

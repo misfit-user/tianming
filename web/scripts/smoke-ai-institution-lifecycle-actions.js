@@ -37,7 +37,7 @@ function buildContext() {
     _turnReport: [],
     dynamicInstitutions: [],
     customOffices: [],
-    officeTree: { 中央: {} },
+    officeTree: [],
     guoku: { money: 5000000 },
     huangquan: { index: 60 },
     population: { byLegalStatus: {}, byRegion: {} },
@@ -63,6 +63,9 @@ function buildContext() {
   load(ctx, 'tm-ai-change-pathutils.js');
   load(ctx, 'tm-ai-change-army.js');
   load(ctx, 'tm-ai-change-narrative.js');
+  load(ctx, 'tm-office-creation.js');
+  load(ctx, 'tm-office-reform.js');
+  load(ctx, 'tm-fiscal-engine.js');
   load(ctx, 'tm-edict-parser.js');
   load(ctx, 'generated/tm-ai-change-applier.bundle.js');
 
@@ -81,6 +84,7 @@ function buildContext() {
   assert(created.rank === 5, 'created dynamic institution should preserve rank');
   assert(created.duties === '总理钱法与商税', 'created dynamic institution should preserve duties');
   assert(created.annualBudget === 30000, 'created dynamic institution should preserve annualBudget');
+  assert(ctx.GM.officeTree.some(n => n.name === '榷货司'), 'institution also lands in the real runtime tree');
   const createAudit = ctx.GM._aiStructuredPolicyActions.find(a => a && a.field === 'institution_changes' && a.lifecycle && a.lifecycle.action === 'create');
   assert(createAudit, 'create should record lifecycle audit metadata');
   assert(createAudit.result && Object.prototype.hasOwnProperty.call(createAudit.result, 'edict'), 'create should still keep the office reform tryExecute audit result');
@@ -96,6 +100,7 @@ function buildContext() {
   const abolished = ctx.GM.dynamicInstitutions.find(i => i && i.id === created.id);
   assert(abolished && abolished.stage === 'abolished', 'institution_changes:abolish should mark the dynamic institution abolished');
   assert(abolished.abolishedTurn === 63, 'abolish should stamp current turn');
+  assert(!ctx.GM.officeTree.some(n => n.name === '榷货司'), 'abolish removes the exact linked runtime department');
   assert(ctx.GM._aiStructuredPolicyActions.some(a => a && a.field === 'institution_changes' && a.lifecycle && a.lifecycle.action === 'abolish'), 'abolish should record lifecycle audit metadata');
   assert(abolishResult.applied.semantic && abolishResult.applied.semantic.ai_policy_actions === 1, 'abolish should count as one AI policy action');
 

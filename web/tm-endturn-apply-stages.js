@@ -397,6 +397,7 @@ inst._imprisonedTurn = GM.turn||0;
               class_updates: Array.isArray(p1.class_updates) ? p1.class_updates : [],
               region_updates: Array.isArray(p1.region_updates) ? p1.region_updates : [],
               project_updates: Array.isArray(p1.project_updates) ? p1.project_updates : [],
+              construction_receipts: ((ctx.apply && ctx.apply.buildingReceipts) || []).map(function(r) { return r && r.receipt; }).filter(Boolean), // 旧独立 stage 调用可无 apply；仅真实领域回执，不读取 AI 自填回执。
               anyPathChanges: Array.isArray(p1.anyPathChanges) ? p1.anyPathChanges : [],
               // 兜底：AI 常只写 personnel_changes (展示用) 而不写 office_assignments — applier 里做备胎消费
               personnel_changes: Array.isArray(p1.personnel_changes) ? p1.personnel_changes : [],
@@ -411,7 +412,16 @@ inst._imprisonedTurn = GM.turn||0;
             }
             _surfaceUnappliedChanges(_applyRes1, 'sc1主应用');  // 【落地核对】接住失败清单·让静默 #1 可见
             if (!_applyRes1 || _applyRes1.ok !== true || (_applyRes1.applied && _applyRes1.applied.failed && _applyRes1.applied.failed.length)) {
-              throw new Error('AI 主写回未能原子提交');
+              // 把失败条目的 reason/target 摘要塞进 Error.message，避免玩家只看到
+              // 一句「AI 主写回未能原子提交」却猜不到是哪几条、为啥失败。
+              var _failed1 = (_applyRes1 && _applyRes1.applied && Array.isArray(_applyRes1.applied.failed)) ? _applyRes1.applied.failed : [];
+              var _reasons1 = {};
+              _failed1.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons1[r]=(_reasons1[r]||0)+1; });
+              var _sum1 = Object.keys(_reasons1).map(function(r){ return r + '×' + _reasons1[r]; }).join('·');
+              var _sample1 = _failed1.slice(0, 3).map(function(f){
+                return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+              }).join(' | ');
+              throw new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
             }
           }
         } catch(_applyErr) {
@@ -838,6 +848,7 @@ inst._imprisonedTurn = GM.turn||0;
               });
               // 工程·物品·建筑补录
               _patch.construction_events.forEach(function(e) {
+                if (TM.BuildingOrders && TM.BuildingOrders.manages(GM, e.name, e.region, ctx.input && ctx.input.buildingOrders)) return; // 原营造案由唯一地区建筑账处理，补录不另造 activeProjects 影子。
                 if (!Array.isArray(GM.activeProjects)) GM.activeProjects = [];
                 if (e.action === 'build' || e.action === 'restore' || e.action === 'cast') {
                   GM.activeProjects.push({ kind: e.kind, name: e.name, region: e.region||'', cost: e.cost||0, action: e.action, status: 'in_progress', startedTurn: GM.turn||0, reason: e.reason||'', _autoFromReconcile: true });
@@ -931,7 +942,14 @@ inst._imprisonedTurn = GM.turn||0;
               });
               _surfaceUnappliedChanges(_applyRes2, 'reconcile补录');  // 【落地核对】二审补录也接住失败清单
               if (!_applyRes2 || _applyRes2.ok !== true || (_applyRes2.applied && _applyRes2.applied.failed && _applyRes2.applied.failed.length)) {
-                throw new Error('AI 二审补录未能原子提交');
+                var _failed2 = (_applyRes2 && _applyRes2.applied && Array.isArray(_applyRes2.applied.failed)) ? _applyRes2.applied.failed : [];
+                var _reasons2 = {};
+                _failed2.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons2[r]=(_reasons2[r]||0)+1; });
+                var _sum2 = Object.keys(_reasons2).map(function(r){ return r + '×' + _reasons2[r]; }).join('·');
+                var _sample2 = _failed2.slice(0, 3).map(function(f){
+                  return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+                }).join(' | ');
+                throw new Error('AI 二审补录未能原子提交(' + _failed2.length + ' 条' + (_sum2 ? '·' + _sum2 : '') + (_sample2 ? '·样本: ' + _sample2 : '') + ')');
               }
               if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
               GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });

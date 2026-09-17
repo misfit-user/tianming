@@ -1025,7 +1025,8 @@ async function aiDeepReadScenario(options) {
   // 剧本隔离根治：只读当前局 GM.rigidHistoryEvents(单剧本干净副本)·不喂跨剧本累积的 P 库·旧档按 sid 过滤兜底。
   var _rigidSrc = (GM && Array.isArray(GM.rigidHistoryEvents)) ? GM.rigidHistoryEvents
     : (typeof _tmActiveScenarioRows==='function' ? _tmActiveScenarioRows(P.rigidHistoryEvents) : (P.rigidHistoryEvents||[]));
-  if (_rigidSrc && _rigidSrc.length > 0) {
+  // historical-agency-v21
+  if (_rigidSrc && _rigidSrc.length > 0 && !(typeof TM !== 'undefined' && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(sc))) {
     var _untriggered = _rigidSrc.filter(function(e) { return !GM.triggeredHistoryEvents || !GM.triggeredHistoryEvents[e.id]; });
     if (_untriggered.length > 0) {
       blockG += '\u3010\u5386\u53F2\u8FDB\u7A0B\u63D0\u793A\u3011\u5269\u4F59' + _untriggered.length + '\u4E2A\u9884\u8BBE\u4E8B\u4EF6\u5F85\u89E6\u53D1\uFF08AI\u5E94\u5728\u53D9\u4E8B\u4E2D\u4E3A\u5176\u94FA\u57AB\uFF09\n';

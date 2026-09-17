@@ -1,0 +1,679 @@
+{
+  "schema": 1,
+  "scope": "local-only; synthetic inputs; no real provider or player data",
+  "startCommit": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+  "implementationCommit": "e91a2078182df4faf3decfbdcef87816fbc4f03c",
+  "branch": "codex/guoshi-recovery-completion",
+  "mainAtStart": "f102b56585faa48c47d362a91c5260f4cee1b8eb",
+  "environment": {
+    "platform": "win32",
+    "node": "v24.14.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "electron": "33.4.11"
+  },
+  "sourceBinding": {
+    "testHead": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+    "note": "Tests ran with the listed dirty hashes; every one equals the implementation commit blob. Later documentation only is not executed code.",
+    "files": {
+      ".github/workflows/ci.yml": "631b9f835f4bdf478ee7855497f589aaa8c0e3ecb6ec9a92cecc857678c6aff8",
+      "scripts/electron/authoring-recovery-cases.cjs": "2030edbdc7ce013268441d30e68fb0ef2a308ac13f8c08b4f9c6985a132547e8",
+      "scripts/electron/bridge-main.cjs": "b2495006be0159cbf6f61ffeaacb33196ce62ace042809f7995aafc7c22351da",
+      "scripts/verify-electron-bridge.js": "23402e66fbf008147aa4a34959715ece22332639bf5e11ccd37470a04cdc0cad",
+      "web/.hot-update-manifest.json": "7352e2a4099a5bec98aef01aa9d91b273b85a00ff8ee41e86d9a1362558740fa",
+      "web/editor-authoring-agent-ui.js": "5837b52128e03831a3d3ca34a7a831b22889012277a41b9f45bb097e03052373",
+      "web/editor-authoring-agent.js": "24d17a85c60578abbd8167d7dbdc12d6f63fdc62fd2f85ba4777f5275fc38e65",
+      "web/editor.html": "2c807935d582281360c656403b8322804d0f65a4974d4199cbf19568b81c93e8",
+      "web/preview/scenario-editor-reset-preview.html": "fa233f647f8218baa7208d620cc90e5087c6b980d1e590bcce08b3dc93352065",
+      "web/scripts/smoke-authoring-completion-recovery.js": "38d15488e053ba822b3fe8d25f16f262af6c0e9b62387bf2e9396744d142d9fc",
+      "web/scripts/smoke-authoring-tool-authorization.js": "3320bae33f3f4b6a4ab213720e0a5bdd6595fc22b8f2435bc55dea267af5aaf0",
+      "web/scripts/smoke-guoshi-cc-port.js": "c232b8c097ab8ef804c472d43276455a209140a8d8debcbd0feaa9e0da65ae88"
+    }
+  },
+  "fullSmoke": {
+    "path": "web/dev-tools/arch-guard/ci-0qf66Y/smoke-report.json",
+    "sha256": "1a1288a8ab85511dbbf1e37466e13197673a25bf7b502e8106a16d7f5b4873be",
+    "runId": "bca3ca70-6712-4dff-befe-a924e47cc6f2",
+    "summary": {
+      "pass": 927,
+      "fail": 0,
+      "skip": 0,
+      "waived": 2,
+      "waivedChecks": 7,
+      "total": 929
+    },
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "exit": 0,
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "exit": 0,
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ]
+  },
+  "electron": [
+    {
+      "path": "web/dev-tools/electron-bridge/8891ea58-3f21-4a67-bde0-9b8024b1d2e3/report.json",
+      "sha256": "e8240f33bf15e6a80508480c467b066f33aa452c299c2ed7432ae8c6611b3e43",
+      "ok": true,
+      "complete": true,
+      "modes": [
+        {
+          "mode": "authoring-recovery",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 17,
+          "fail": 0
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/7457c817-3462-4d4c-8015-554910bb7f4c/report.json",
+      "sha256": "92ebd27d9ef98233c6eb6fb0c0af7fbb15bd843412356f9198b6b13b5a6f7ce7",
+      "ok": true,
+      "complete": true,
+      "modes": [
+        {
+          "mode": "authoring-boundaries",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 20,
+          "fail": 0
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/a321c401-d436-4f90-bc2c-5dc19fe1a9bf/report.json",
+      "sha256": "d516a641c512ef05eb3d4ec08866cec065f41f05edac13252eba4c2e58433b33",
+      "ok": true,
+      "complete": true,
+      "modes": [
+        {
+          "mode": "authoring-stream",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 12,
+          "fail": 0
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/ae05afe8-6e00-4e01-9de8-7c0fd38b985f/report.json",
+      "sha256": "9904d1c8e4324ebb912c3367d90af36a73fa8bd7b8b00d27ffd5bfe6b0c6891a",
+      "ok": true,
+      "complete": true,
+      "modes": [
+        {
+          "mode": "production",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 12,
+          "fail": 0
+        },
+        {
+          "mode": "test-exports",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 11,
+          "fail": 0
+        },
+        {
+          "mode": "restart",
+          "ok": true,
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "pass": 6,
+          "fail": 0
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "label": "guoshi-recovery-arch",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-arch-212a9849-9c9a-4f83-8c39-854aae18d1f6",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 22724.214
+    },
+    {
+      "label": "guoshi-recovery-audit",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-audit-c65a4d6a-9b51-4b76-b064-821a879d81e2",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 3775.1752
+    },
+    {
+      "label": "guoshi-recovery-baseline",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-baseline-7864b067-1a21-4454-9c1f-42d1f37e7cb1",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js",
+        "--source-ref",
+        "b6b571b5"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 4170.069600000001
+    },
+    {
+      "label": "guoshi-recovery-baseline-final-adapter",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-baseline-final-adapter-5e059ee9-e56f-4d8e-8a3f-c15df665676e",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js",
+        "--source-ref",
+        "b6b571b5020478a9babed3ef35dd31c7f0e623db"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 9368.2155
+    },
+    {
+      "label": "guoshi-recovery-boundaries-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-boundaries-final-693c1d36-e5dc-44ef-af57-1112256787bf",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 18292.2459
+    },
+    {
+      "label": "guoshi-recovery-core-expanded",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-core-expanded-b82d0d28-d471-4be8-b241-42cac1be31cc",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 550.0418000000001
+    },
+    {
+      "label": "guoshi-recovery-core-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-core-final-7f089db2-5cbd-4e54-a8f5-d76b441db8c3",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 570.9703
+    },
+    {
+      "label": "guoshi-recovery-core-initial",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-core-initial-c0da8aba-9bd5-455a-a94e-9a0c1f00e481",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 319.5221
+    },
+    {
+      "label": "guoshi-recovery-core-wrappers",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-core-wrappers-7091b061-17ea-4088-acc4-f62164762599",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 371.52189999999996
+    },
+    {
+      "label": "guoshi-recovery-cr-diff-check",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-cr-diff-check-17cdb090-7eb8-4934-b036-8678567b6cdb",
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=cr-at-eol",
+        "diff",
+        "--check"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 231.07439999999997
+    },
+    {
+      "label": "guoshi-recovery-default-diff-check",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-default-diff-check-3a175598-ad1d-4e82-886f-9131147fae33",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 2,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 208.24019999999996
+    },
+    {
+      "label": "guoshi-recovery-desktop-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-desktop-final-8a454838-580f-40ff-8dcc-65857539c6b2",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 24041.9574
+    },
+    {
+      "label": "guoshi-recovery-edge-after",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-edge-after-de9d4445-cd0b-4240-9c95-7810ac3887ca",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 434.8239
+    },
+    {
+      "label": "guoshi-recovery-edge-before",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-edge-before-a2f65f4e-c848-4f32-91ed-1bdcd2a923dc",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 479.0508
+    },
+    {
+      "label": "guoshi-recovery-electron-baseline",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-electron-baseline-e3ca0358-7002-45ff-b96e-c09ecec07b79",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery",
+        "--repo",
+        "E:/tianming-perf-temp/guoshi-recovery-baseline"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 27712.5577
+    },
+    {
+      "label": "guoshi-recovery-electron-expanded",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-electron-expanded-7baffec6-f503-4d21-b459-48d9f7e6fb66",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14513.3316
+    },
+    {
+      "label": "guoshi-recovery-electron-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-electron-final-064678f4-a819-4732-bcca-d8b393d49de7",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 16281.523
+    },
+    {
+      "label": "guoshi-recovery-electron-initial",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-electron-initial-3f122575-26b3-417e-b9c0-393145ec8baa",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 13161.774300000001
+    },
+    {
+      "label": "guoshi-recovery-electron-pipelines",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-electron-pipelines-7ee9381d-27dc-4de3-a2f3-51263c131a35",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14102.5666
+    },
+    {
+      "label": "guoshi-recovery-final-baseline",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-final-baseline-1b1b8e7c-be20-4669-b66d-891fe2579af1",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js",
+        "--source-ref",
+        "b6b571b5020478a9babed3ef35dd31c7f0e623db"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 9344.116899999999
+    },
+    {
+      "label": "guoshi-recovery-full",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-full-50cfc757-73be-4bd6-bbc7-ec050e86cc19",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 75628.83099999999
+    },
+    {
+      "label": "guoshi-recovery-hot-check",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-hot-check-a57cca72-53b0-4e01-b282-58d7300cefa6",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 1189.7193
+    },
+    {
+      "label": "guoshi-recovery-hot-gates",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-hot-gates-cf6bd6af-1395-4471-b4d4-ac7c86acd69f",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 4196.035599999999
+    },
+    {
+      "label": "guoshi-recovery-hot-sync",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-hot-sync-f4074b15-39a9-490c-b34c-a6fbaabe54d4",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 53914.5304
+    },
+    {
+      "label": "guoshi-recovery-memory-before",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-memory-before-13dde9d0-e16f-41ad-b3fb-8be6a980bb11",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 12267.8144
+    },
+    {
+      "label": "guoshi-recovery-official-sync",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-official-sync-300452b5-820c-4aa9-8dbd-e402197d88c4",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 3056.0225
+    },
+    {
+      "label": "guoshi-recovery-parity",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-parity-f19825b5-46fb-464b-bc45-976e339fc64c",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 3160.1687
+    },
+    {
+      "label": "guoshi-recovery-release-contract",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-release-contract-e57a9b79-bffa-4ffe-ae7d-ec3d1c564654",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 1836.8883
+    },
+    {
+      "label": "guoshi-recovery-stream-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-stream-final-0b266c19-a356-4be4-a0ae-432fb5bcb20e",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-stream"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14728.7543
+    },
+    {
+      "label": "guoshi-recovery-topic-corrected",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-topic-corrected-6b8dd655-6da8-4e85-aee4-616a17814d30",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "agent-kernel",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14037.9856
+    },
+    {
+      "label": "guoshi-recovery-topic-final",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-topic-final-058b433c-c7cd-459f-ab26-0064fda4dc1b",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "agent-kernel",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 0,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14632.297
+    },
+    {
+      "label": "guoshi-recovery-topic-initial",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-topic-initial-0f81dcda-1769-4f7b-8dc9-c651b630e055",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "agent-kernel",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 8507.6815
+    },
+    {
+      "label": "guoshi-recovery-topic-second",
+      "path": "web/dev-tools/perf-round1/guoshi-recovery-topic-second-b3ed2bfa-1776-4e47-a671-3f200d48acd6",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "agent-kernel",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2"
+      ],
+      "head": "b6b571b5020478a9babed3ef35dd31c7f0e623db",
+      "exitCode": 1,
+      "signal": null,
+      "complete": true,
+      "elapsedMs": 14207.414
+    }
+  ]
+}

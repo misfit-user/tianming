@@ -1,0 +1,4 @@
+{"executable":"node","args":["web/scripts/build-renderer-modules.js","--check"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:54:55.831Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+[renderer-modules] PASS bundle is reproducible bytes=336456
+
+{"name":"module-reproducible","executable":"node","args":["web/scripts/build-renderer-modules.js","--check"],"exitCode":0,"signal":null,"durationMs":527,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\module-reproducible.log"}

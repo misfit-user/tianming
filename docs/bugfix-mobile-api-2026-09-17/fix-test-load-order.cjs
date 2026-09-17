@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const target=path.resolve(__dirname,'../../web/scripts/smoke-mobile-api-integration.js');
+const before=fs.readFileSync(target),text=before.toString('utf8');
+const from="const infra=read('tm-ai-infra.js'),detect=read('tm-ai-infra-model-detect.js');";
+const to="const [retry,infra,detect]=['tm-ai-infra-retry.js','tm-ai-infra.js','tm-ai-infra-model-detect.js'].map(read);";
+if(text.split(from).length!==2)throw Error('nonunique source anchor');
+let code=text.replace(from,to).replace('function loadMain(f){vm.runInContext(functionSource', 'function loadMain(f){vm.runInContext(retry,f.c);vm.runInContext(functionSource');
+new vm.Script(code,{filename:target});if(!fs.readFileSync(target).equals(before))throw Error('concurrent edit');
+fs.writeFileSync(target,code);if(fs.readFileSync(target,'utf8')!==code)throw Error('readback');console.log('TEST_LOAD_ORDER_ALIGNED');

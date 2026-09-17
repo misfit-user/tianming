@@ -101,29 +101,29 @@ function _settleCourtMeter() {
 //   · AI 先完：暂存 payload，绿 banner 提示；朝会毕时弹史记
 //   · 朝会先完：若 AI 仍在跑，自然过渡到加载进度
 function _showPostTurnCourtPromptAndStartEndTurn() {
-  if (GM.busy) return;
+  if (GM.busy || document.getElementById('post-turn-court-prompt')) return;
   var _bg = document.createElement('div');
   _bg.className = 'modal-bg show';
   _bg.id = 'post-turn-court-prompt';
   _bg.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:5000;';
   _bg.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:10px;padding:1.4rem 1.6rem;min-width:360px;max-width:460px;text-align:center;">'
-    + '<div style="font-size:1.05rem;color:var(--gold);font-weight:700;margin-bottom:0.7rem;">\u3014\u4ECA\u56DE\u5408\u5DF2\u7EC8\uFF0C\u6B32\u5F00\u4F8B\u884C\u671D\u4F1A\uFF1F\u3015</div>'
-    + '<div style="font-size:0.8rem;color:var(--txt-s);line-height:1.7;margin-bottom:1.1rem;text-align:left;padding:0 0.4rem;">'
-      + '\u00B7 \u9009\u5F00\u671D\uFF1A\u6709\u53F8\u540E\u53F0\u63A8\u6F14\u540C\u65F6\uFF0C\u5F00\u6B21\u6708\u6714\u671D\uFF1B\u672C\u671D\u4F1A\u7B97\u6B21\u56DE\u5408\u7684\u671D\u4F1A\uFF0C\u5F71\u54CD\u6B21\u56DE\u5408\u63A8\u6F14\n'
-      + '\u00B7 \u9009\u5426\uFF1A\u76F4\u63A5\u7B49\u5F85\u63A8\u6F14\u5B8C\u6BD5\uFF0C\u4E0D\u5F00\u671D\n'
-      + '\u00B7 \u52E4\u653F\u6807\u51C6\uFF1A\u6BCF\u56DE\u5408\u4EFB\u4E00\u6B21\u671D\u4F1A\uFF08\u6708\u521D\u6714\u671D\u6216\u6708\u4E2D\u5E38\u671D\uFF09\u5373\u8BA1\u52E4'
-    + '</div>'
+    + '<div style="font-size:1.05rem;color:var(--gold);font-weight:700;margin-bottom:0.7rem;">是否另召群臣议事？</div>'
+    + '<div style="font-size:0.8rem;color:var(--txt-s);line-height:1.7;margin-bottom:1.1rem;">有司承办诏令之际，可另听群臣陈事。朝会上议定的旨意，另行颁付有司。</div>'
     + '<div style="display:flex;gap:0.6rem;justify-content:center;">'
-      + '<button class="bt bp" style="padding:8px 24px;" onclick="_postTurnCourtChoose(true)">\uD83D\uDCDC \u5F00\u6714\u671D</button>'
-      + '<button class="bt" style="padding:8px 24px;" onclick="_postTurnCourtChoose(false)">\u9759\u5019\u6709\u53F8</button>'
-    + '</div>'
-    + '</div>';
+    + '<button class="bt bp" style="padding:8px 24px;" onclick="_postTurnCourtChoose(true)">召集朝会</button>'
+    + '<button class="bt" style="padding:8px 24px;" onclick="_postTurnCourtChoose(false)">静候有司</button>'
+    + '</div></div>';
   document.body.appendChild(_bg);
+  if (typeof _tmPresentModal === 'function') _tmPresentModal(_bg, function(){
+    if (typeof endTurn === 'function') endTurn._preSubmitInFlight = false;
+    _tmCloseModalLayer(_bg);
+  }, 'button:last-child');
+  else _bg.style.zIndex = '10031';
 }
 
 function _postTurnCourtChoose(openCourt) {
   var _bg = _$('post-turn-court-prompt');
-  if (_bg) _bg.remove();
+  if (_bg) { if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(_bg); else _bg.remove(); }
   if (typeof endTurn === 'function') endTurn._preSubmitInFlight = false;
   if (openCourt) {
     // 并发：启动 endTurn 主流程（不 await·让 AI 在后台跑）
@@ -173,7 +173,7 @@ function _showPostTurnCourtBanner() {
   var el = document.createElement('div');
   el.id = 'post-turn-court-banner';
   el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:4900;background:linear-gradient(90deg,rgba(184,154,83,0.18),rgba(184,154,83,0.08));border-top:2px solid var(--gold-d);padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:0.76rem;color:var(--gold);';
-  el.innerHTML = '<span style="font-weight:700;">〔朔朝〕</span><span id="post-turn-court-banner-msg">有司推演中……本朝决议施于次回合</span><span style="margin-left:auto;font-size:0.71rem;color:var(--txt-d);">AI 后台推演</span>';
+  el.innerHTML = '<span style="font-weight:700;">〔朝会〕</span><span id="post-turn-court-banner-msg">有司承办诏令中，此间议定之事另候颁行</span><span style="margin-left:auto;font-size:0.71rem;color:var(--txt-d);">候报</span>';
   document.body.appendChild(el);
 }
 

@@ -1,0 +1,187 @@
+{"executable":"node","args":["scripts/verify-release-contract.js"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:45:07.859Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+  ok·release-excludes schema
+  ok·canonical 热更基线是发布树 required file
+  ok·release-excludes 无重复
+  ok·安全排除项 _archive
+  ok·安全排除项 backups
+  ok·安全排除项 _screenshots
+  ok·安全排除项 test-results
+  ok·安全排除项 _codex_tmp
+  ok·安全排除项 dev-tools
+  ok·安全排除项 docs
+  ok·安全排除项 scripts
+  ok·安全排除项 tools
+  ok·安全排除项 godot
+  ok·安全排除项 .git
+  ok·安全排除项 node_modules
+  ok·安全排除项 .playwright-cli
+  ok·安全排除项 .cache
+  ok·安全排除项 .tmp
+  ok·安全排除项 tmp
+  ok·安全排除项 dist
+  ok·安全排除项 build
+  ok·安全排除项 release
+  ok·安全排除项 coverage
+  ok·安全排除项 .hot-update-staging
+  ok·安全排除项 _pw-scratch
+  ok·安全排除项 generated_images
+  ok·安全排除项 .vscode
+  ok·安全排除项 .bak-
+  ok·安全排除项 _codex
+  ok·安全排除项 .git-defunct-
+  ok·安全排除项 **/*.bak*
+  ok·安全排除项 **/*.log
+  ok·安全排除项 **/*.yml
+  ok·安全排除项 **/*.save.json
+  ok·安全排除项 **/_game-entry-shot.png
+  ok·安全排除项 **/_ingame*.png
+  ok·安全排除项 .claude/**
+  ok·安全排除项 output/**
+  ok·安全排除项 _audit_deadhandlers.py
+  ok·安全排除项 analyze_globals.py
+  ok·安全排除项 detect_globals.js
+  ok·安全排除项 scan_globals.js
+  ok·安全排除项 final_scan.sh
+  ok·安全排除项 scan.sh
+  ok·安全排除项 start-server.bat
+  ok·安全排除项 tm-tools.d.ts
+  ok·安全排除项 types.d.ts
+  ok·安全排除项 maps/**
+  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+  ok·安全排除项 preview-launch*.html
+  ok·安全排除项 preview-launch-assets/**
+  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+  ok·安全排除项 preview/shots/**
+  ok·安全排除项 preview/**/*verify*.png
+  ok·安全排除项 preview/home-ui-concepts/**
+  ok·安全排除项 preview/workshop-ui-concepts/**
+  ok·web 运行时引用/required files 未被误排：
+  ok·web 源体积/文件数在闸内：
+  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）
+  ok·发布树排除根目录游戏截图
+  ok·发布树排除根目录开发脚本与类型声明
+  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF
+  ok·发布树明确排除本机开发产物:.claude/launch.json
+  ok·发布树明确排除本机开发产物:output/playwright/shot.png
+  ok·发布树明确排除本机开发产物:maps/asia-map.png
+  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png
+  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png
+  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb
+  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx
+  ok·package-lock 根版本两处与 package.json 同版
+  ok·tracked mobile canonical version 与 buildVersion 同版
+  ok·electron-builder 消费 dir:_archive
+  ok·electron-builder 消费 dir:backups
+  ok·electron-builder 消费 dir:_screenshots
+  ok·electron-builder 消费 dir:test-results
+  ok·electron-builder 消费 dir:_codex_tmp
+  ok·electron-builder 消费 dir:dev-tools
+  ok·electron-builder 消费 dir:docs
+  ok·electron-builder 消费 dir:scripts
+  ok·electron-builder 消费 dir:tools
+  ok·electron-builder 消费 dir:godot
+  ok·electron-builder 消费 dir:.git
+  ok·electron-builder 消费 dir:node_modules
+  ok·electron-builder 消费 dir:.playwright-cli
+  ok·electron-builder 消费 dir:.cache
+  ok·electron-builder 消费 dir:.tmp
+  ok·electron-builder 消费 dir:tmp
+  ok·electron-builder 消费 dir:dist
+  ok·electron-builder 消费 dir:build
+  ok·electron-builder 消费 dir:release
+  ok·electron-builder 消费 dir:coverage
+  ok·electron-builder 消费 dir:.hot-update-staging
+  ok·electron-builder 消费 dir:_pw-scratch
+  ok·electron-builder 消费 dir:generated_images
+  ok·electron-builder 消费 dir:.vscode
+  ok·electron-builder 消费 prefix file:.bak-
+  ok·electron-builder 消费 prefix dir:.bak-
+  ok·electron-builder 消费 prefix file:_codex
+  ok·electron-builder 消费 prefix dir:_codex
+  ok·electron-builder 消费 prefix file:.git-defunct-
+  ok·electron-builder 消费 prefix dir:.git-defunct-
+  ok·electron-builder 消费 glob:**/*.bak*
+  ok·electron-builder 消费 glob:**/*.log
+  ok·electron-builder 消费 glob:**/*.yml
+  ok·electron-builder 消费 glob:**/*.save.json
+  ok·electron-builder 消费 glob:**/_game-entry-shot.png
+  ok·electron-builder 消费 glob:**/_ingame*.png
+  ok·electron-builder 消费 glob:.claude/**
+  ok·electron-builder 消费 glob:output/**
+  ok·electron-builder 消费 glob:_audit_deadhandlers.py
+  ok·electron-builder 消费 glob:analyze_globals.py
+  ok·electron-builder 消费 glob:detect_globals.js
+  ok·electron-builder 消费 glob:scan_globals.js
+  ok·electron-builder 消费 glob:final_scan.sh
+  ok·electron-builder 消费 glob:scan.sh
+  ok·electron-builder 消费 glob:start-server.bat
+  ok·electron-builder 消费 glob:tm-tools.d.ts
+  ok·electron-builder 消费 glob:types.d.ts
+  ok·electron-builder 消费 glob:maps/**
+  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+  ok·electron-builder 消费 glob:preview-launch*.html
+  ok·electron-builder 消费 glob:preview-launch-assets/**
+  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+  ok·electron-builder 消费 glob:preview/shots/**
+  ok·electron-builder 消费 glob:preview/**/*verify*.png
+  ok·electron-builder 消费 glob:preview/home-ui-concepts/**
+  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**
+  ok·electron-builder 消费 previewMockup 例外
+  ok·installer 固定携带热更新发布者公钥
+  ok·installer 携带回合分卷两阶段提交模块
+  ok·热更新固定公钥类型为 Ed25519
+  ok·三平台构建统一走受检 build-electron wrapper
+  ok·Windows builder 强制签名、编辑签名与更新发布者验证
+  ok·Windows 构建缺发布者/证书时 fail-closed
+  ok·Windows 保留仓主输出目录并锁定发布者/证书身份
+  ok·mac 使用平台本地可移植输出目录
+  ok·linux 使用平台本地可移植输出目录
+  ok·所有官方 JSON 均登记进统一生成器
+  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json
+  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json
+  ok·hot builder 消费共享 release-tree
+  ok·hot builder 收集战斗模型与本地语义模型扩展名
+  ok·新扩展名自动携带旧壳阻断所需 minAppVersion
+  ok·内容 OTA 构建器不再收集 main/preload 主进程代码
+  ok·热更新 manifest/feed 强制 Ed25519 发布者签名
+  ok·桌面壳层放行 collector 会发出的运行资产扩展名
+  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判
+  ok·Capgo/APK 消费共享 release-tree
+  ok·Capgo/APK staging 先生成官方剧本派生物
+  ok·Capacitor 只读取派生 www
+  ok·npm sync 强制 stage→cap sync→native hash verify
+  ok·open/run 不可绕过 sync gate
+  ok·native 仅容忍 Capacitor 两个注入文件
+  ok·native extra allowlist 仅放两项，其余仍 fail-closed
+  ok·派生目录已 ignore
+  ok·web canonical 热更基线未被 ignore
+  ok·canonical 热更基线存在且与 buildVersion 同版
+  ok·canonical 热更基线不含 main/preload 可执行桥
+  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产
+  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件
+FAIL AssertionError [ERR_ASSERTION]: canonical 基线逐路径/hash/size 对齐当前 production hot tree：FAIL Error: canonical hot baseline stale (5)
+stale canonical hash/size: tm-endturn-render.js
+stale canonical hash/size: tm-platform.js
+stale canonical hash/size: tm-post-turn-jobs.js
+stale canonical hash/size: tm-save-lifecycle.js
+stale canonical hash/size: tm-save-manager.js
+    at main (<USER_HOME>\Desktop\tianming\scripts\sync-hot-baseline.js:159:33)
+    at Object.<anonymous> (<USER_HOME>\Desktop\tianming\scripts\sync-hot-baseline.js:173:9)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntry
+    at ok (<USER_HOME>\Desktop\tianming\scripts\verify-release-contract.js:17:36)
+    at main (<USER_HOME>\Desktop\tianming\scripts\verify-release-contract.js:162:3)
+    at Object.<anonymous> (<USER_HOME>\Desktop\tianming\scripts\verify-release-contract.js:180:7)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+
+{"name":"release-before-baseline","executable":"node","args":["scripts/verify-release-contract.js"],"exitCode":1,"signal":null,"durationMs":4952,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\release-before-baseline.log"}

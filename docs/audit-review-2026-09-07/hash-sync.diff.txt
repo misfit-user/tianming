@@ -1,0 +1,70 @@
+commit da13419118801552f270387e9708e526af18eca0
+Author: misfit-user <slide@doane.edu>
+Date:   Sun Sep 6 01:05:43 2026 +0800
+
+    test(audit): adapt original defect probes and sync renderer hashes
+
+diff --git a/web/.hot-update-manifest.json b/web/.hot-update-manifest.json
+index 68a23f15..b1e4bccb 100644
+--- a/web/.hot-update-manifest.json
++++ b/web/.hot-update-manifest.json
+@@ -2,7 +2,7 @@
+   "type": "tianming-hot-update",
+   "version": "1.3.4.11",
+   "entry": "index.html",
+-  "generatedAt": "2026-08-27T18:23:07.144Z",
++  "generatedAt": "2026-09-05T16:46:51.966Z",
+   "files": [
+     {
+       "path": "_preview_map.json",
+@@ -4036,8 +4036,8 @@
+     },
+     {
+       "path": "tm-endturn-render.js",
+-      "sha256": "84d98b4f025d26784a856f804a96764c5b7e55139c2bb5626d5b6ffbd54bc32b",
+-      "size": 38264
++      "sha256": "46fe24bc5fc730777ded2dbf43ae3eb08cadf5c3eddfcdb40feb60dd9f077e07",
++      "size": 38410
+     },
+     {
+       "path": "tm-endturn-shiji-compose.js",
+@@ -5016,8 +5016,8 @@
+     },
+     {
+       "path": "tm-platform.js",
+-      "sha256": "bc5418f07ef7078709d498804717aed2adb590fa33d088a6c890d72b6c96d549",
+-      "size": 12674
++      "sha256": "fbcff53dab1b69e3ff562f198bcb431ebe595b7044efe29213a7e24cd28b3e98",
++      "size": 12849
+     },
+     {
+       "path": "tm-player-action-signals.js",
+@@ -5041,8 +5041,8 @@
+     },
+     {
+       "path": "tm-post-turn-jobs.js",
+-      "sha256": "8f27f9f012b66619a367c398cb88fa14eb64e67b20626c0f30cfbaba80c425e4",
+-      "size": 34127
++      "sha256": "359b3a778d5d25a3e29c8e391c721e1bbf39f01deb3e3a675ea7dfa5fbc7c89d",
++      "size": 34279
+     },
+     {
+       "path": "tm-promotion.js",
+@@ -5141,13 +5141,13 @@
+     },
+     {
+       "path": "tm-save-lifecycle.js",
+-      "sha256": "29cf86690f09ec924c62a2be53590374849eb9bb5cf0fab825dee98211cfc657",
+-      "size": 166630
++      "sha256": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d",
++      "size": 167790
+     },
+     {
+       "path": "tm-save-manager.js",
+-      "sha256": "19a3ad9e7eb7faee377abed3a5baa32f2db291dad408ee7e19ea8fdc99be7806",
+-      "size": 49231
++      "sha256": "09bc09cca6a82fba8321d11f0af7ab045f2e1036e5527948ad7f752100faf68b",
++      "size": 49827
+     },
+     {
+       "path": "tm-semantic-recall.js",

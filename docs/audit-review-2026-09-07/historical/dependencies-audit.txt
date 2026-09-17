@@ -1,0 +1,6 @@
+{"executable":"cmd","args":["/c","npm","audit","--omit=dev","--audit-level=high","--registry=https://registry.npmjs.org"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:45:14.614Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+npm warn Unknown project config "electron_mirror". This will stop working in the next major version of npm.
+npm warn Unknown project config "electron_builder_binaries_mirror". This will stop working in the next major version of npm.
+found 0 vulnerabilities
+
+{"name":"dependencies-audit","executable":"cmd","args":["/c","npm","audit","--omit=dev","--audit-level=high","--registry=https://registry.npmjs.org"],"exitCode":0,"signal":null,"durationMs":5306,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\dependencies-audit.log"}

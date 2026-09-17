@@ -54,4 +54,16 @@ reset();
 NeitangEngine.initFromDynasty('明', 'peak', { guoku_advanced: { innerTreasury: { money: null, '存银': 600000 } } });
 assertions += 1; assert(ctx.GM.neitang.balance === 600000, 'null innerTreasury.money must not shadow valid 存银');
 
+reset();
+ctx.GM.neitang = { balance: 0, money: 0 };
+NeitangEngine.initFromDynasty('楚', 'peak', { guoku_advanced: { innerTreasury: { money: 800000 } } });
+assertions += 1; assert(ctx.GM.neitang.money === 800000, 'money mirror must change at init boundary');
+assertions += 1; assert(ctx.GM.neitang.balance === ctx.GM.neitang.money && ctx.GM.neitang.money === ctx.GM.neitang.ledgers.money.stock, 'inner treasury money mirrors agree before any tick');
+reset();
+NeitangEngine.initFromDynasty('楚', 'peak', { neitang: { initialMoney: 0 }, guoku_advanced: { innerTreasury: { money: 800000 } } });
+assertions += 1; assert(ctx.GM.neitang.money === 0 && ctx.GM.neitang.ledgers.money.stock === 0, 'explicit zero wins over legacy alias');
+reset();
+NeitangEngine.initFromDynasty('楚', 'peak', { neitang: { initialMoney: 1.25 } });
+assertions += 1; assert(ctx.GM.neitang.money === 1.25, 'initial fractional currency is preserved');
+
 console.log('[smoke-neitang-inner-treasury-compat] pass assertions=' + assertions);

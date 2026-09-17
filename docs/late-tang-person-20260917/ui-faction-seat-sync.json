@@ -1,0 +1,79 @@
+{
+  "changes": [
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-2da9bdae1f01",
+      "key": "holder",
+      "before": "",
+      "after": "杜悰"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-2da9bdae1f01",
+      "key": "holderId",
+      "before": "",
+      "after": "char-c4e575644b83"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-2da9bdae1f01",
+      "key": "occupancyStatus",
+      "before": "unrecorded",
+      "after": "occupied"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-e89790fddee5",
+      "key": "holder",
+      "before": "",
+      "after": "崔龟从"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-e89790fddee5",
+      "key": "holderId",
+      "before": "",
+      "after": "char-984049d9c161"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-e89790fddee5",
+      "key": "occupancyStatus",
+      "before": "unrecorded",
+      "after": "occupied"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-43a6e9e38b0c",
+      "key": "holder",
+      "before": "",
+      "after": "郑肃"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-43a6e9e38b0c",
+      "key": "holderId",
+      "before": "",
+      "after": "char-a9816a4d9603"
+    },
+    {
+      "factionIndex": 1,
+      "faction": "唐朝廷",
+      "officeId": "office-43a6e9e38b0c",
+      "key": "occupancyStatus",
+      "before": "unrecorded",
+      "after": "occupied"
+    }
+  ],
+  "backup": "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\tang-before-faction-seat-sync-182615.json",
+  "before": "d7c76bf8310884ebdc6f29327cf9e3e8efdf3b9b8a9704c34cecfe0fdbcde373",
+  "after": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28"
+}

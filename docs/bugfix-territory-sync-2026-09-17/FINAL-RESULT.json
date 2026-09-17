@@ -1,0 +1,108 @@
+{
+  "status": "TARGETED_TESTS_PASS_WITH_EXISTING_ARCH_FAILURES",
+  "device": "LAPTOP-AV4J1O7I",
+  "directory": "C:\\Users\\37814\\Desktop\\tianming",
+  "verifiedAt": "2026-09-17T09:15:41.912Z",
+  "head": "5ed032afe65cc041dd4d890227ada23e736b4713",
+  "branch": "codex/audit-20260905",
+  "commitCreated": false,
+  "files": [
+    {
+      "path": "web/tm-faction-membership.js",
+      "before": "396c45df15c0072c47b06ba0bd8296f9792e91c67e9b8395d9c88c32b3e383ee",
+      "after": "280b28e10cb243c7a28bd18d94511ffb96fb114817896ce2019410d75b94410d",
+      "readbackMatches": true,
+      "backupMatches": true
+    },
+    {
+      "path": "web/tm-map-system.js",
+      "before": "dce9af4206ce066617867c1dae01592f0ad0a3e485edcebaf541ede33cc2fec2",
+      "after": "18dc9b92c20017b0ed7dc24cc3322edeb86a5400ae5774e640a4d60b3a1bd463",
+      "readbackMatches": true,
+      "backupMatches": true
+    },
+    {
+      "path": "web/tm-three-systems-ext.js",
+      "before": "99e3060b66fa882ff7e0553499a619047c5436ee452a97740dd9affe59b11828",
+      "after": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41",
+      "readbackMatches": true,
+      "backupMatches": true
+    },
+    {
+      "path": "web/map-integration.js",
+      "before": "22d610c4f1f8ff9ec84e2eecc8edce2a07e383a5403800f9501d2c3f262f6df5",
+      "after": "8cf8050e27ff6c7fed6758fb7834154c05f8a1f3077d322899f8c072c8232f8b",
+      "readbackMatches": true,
+      "backupMatches": true
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "before": "0b45995d159cf8105b705be650994021972b6774e6159adc3f03e03903d17edd",
+      "after": "1b3909d47727e5f9120a3138dd75fe6bb8823cfe1fe65859fd8af794223b74e2",
+      "readbackMatches": true,
+      "backupMatches": true
+    }
+  ],
+  "tests": [
+    {
+      "suite": "territory-ownership-sync",
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "suite": "territory-context-sync",
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "suite": "territory-render-economy",
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  ],
+  "relatedSmokes": {
+    "selected": 67,
+    "pass": 67,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "diffCheckExitCode": 0,
+  "architecture": {
+    "preexistingFailuresUnchanged": true,
+    "failures": [
+      "[lint-arch-all] FAIL  lint-dep-graph",
+      "    [lint-dep-graph] FAIL — index.html 新增悬空引用 3 个（typo？还是忘了挂 <script>？）：",
+      "    [lint-dep-graph] FAIL — editor.html 新增悬空引用 3 个（typo？还是忘了挂 <script>？）：",
+      "[lint-arch-all] FAIL  lint-global-providers",
+      "    [lint-global-providers] unapproved duplicate provider: _isContextLengthResponse => tm-ai-infra-retry.js -> tm-ai-infra.js",
+      "    [lint-global-providers] unapproved duplicate provider: _stripCacheControlFromBody => tm-ai-infra-retry.js -> tm-ai-infra.js",
+      "[lint-arch-all] FAIL  lint-file-size",
+      "    [lint-file-size] FAIL — 1 处：巨石只许拆、不许堆（alias+内联范式见 docs/arch-guards.md）",
+      "[lint-arch-all] FAIL  lint-split-contracts",
+      "    [lint-split-contracts] FAIL tm-save-world-validation.js 家族：index.html 缺装载点 tm-save-world-validation.js",
+      "    [lint-split-contracts] FAIL tm-military.js 家族：index.html 缺装载点 tm-battle-contract.js",
+      "    [lint-split-contracts] FAIL tm-military.js 家族：editor.html 缺装载点 tm-battle-contract.js",
+      "[lint-arch-all] FAIL  ref-check",
+      "[lint-arch-all] FAIL — 5/13 项未过"
+    ]
+  },
+  "validation": {
+    "productionWriterAndPromptExecuted": true,
+    "productionSvgAndBoundaryFunctionsExecuted": true,
+    "realFiscalProfileCalculationExecuted": true,
+    "storageValidation": "Synthetic JSON round-trip and world replacement rollback; not user save-file persistence",
+    "installedClientClicked": false,
+    "externalAiRequests": false,
+    "userSavesModified": false,
+    "dependenciesInstalled": false,
+    "globalSettingsChanged": false,
+    "pushed": false,
+    "released": false
+  }
+}

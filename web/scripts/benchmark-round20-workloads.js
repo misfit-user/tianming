@@ -19,7 +19,8 @@ function extractFunction(source, marker) {
   }
   throw new Error('missing function ' + marker);
 }
-const builderSource = extractFunction(lifecycle, 'function _autoSaveSnapshotGM(') + '\n'
+const builderSource = extractFunction(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n'
+  + extractFunction(lifecycle, 'function _autoSaveSnapshotGM(') + '\n'
   + extractFunction(lifecycle, 'function _buildSaveState(');
 
 function run(turns) {

@@ -619,6 +619,10 @@ function _cc3_buildSystemPromptStable() {
     'light-history': '轻度史实·NPC 大体符合史实·允许合理演绎',
     'yanyi': '演义模式·NPC 性格夸张·允许跨时空发挥'
   };
+  // historical-agency-v21
+  if (window.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven(sc)) {
+    modeMap[gameMode] = TM.HistoricalAgency.modeDescription(gameMode, sc) + TM.HistoricalAgency.promptText(sc);
+  }
   const diffMap = {
     '简单': '·NPC 多顺承·辞令较柔和·阻力较小',
     '普通': '',

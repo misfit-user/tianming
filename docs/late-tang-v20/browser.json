@@ -1,0 +1,86 @@
+{
+  "status": "PASS",
+  "sid": "sc-tang840-840",
+  "chars": 488,
+  "portraits": 488,
+  "classes": 24,
+  "regions": 575,
+  "effects": "function",
+  "credit": "function",
+  "decoded": 126,
+  "officialCards": 3,
+  "lazyLoad": true,
+  "nativeUiStart": true,
+  "saveLoad": true,
+  "hukou": {
+    "hidden": 3446028,
+    "effective": 3005305,
+    "nominal": 3769138,
+    "japan": true
+  },
+  "mechanics": {
+    "systemCounts": {
+      "神策禁军": 1,
+      "地方轮值守备": 25,
+      "地方募兵": 2,
+      "方镇军": 69,
+      "防御与守捉": 3,
+      "域外地方军": 3,
+      "王权供养军": 12,
+      "部众协同": 6
+    },
+    "execution": {
+      "stages": [
+        {
+          "name": "中枢议政",
+          "officer": "杨嗣复",
+          "ability": 84,
+          "loyalty": 55,
+          "note": ""
+        },
+        {
+          "name": "文书颁行",
+          "officer": "李回",
+          "ability": 79,
+          "loyalty": 38,
+          "note": ""
+        },
+        {
+          "name": "对口承办",
+          "officer": "崔郸",
+          "ability": 83,
+          "loyalty": 49,
+          "note": ""
+        },
+        {
+          "name": "执行核查",
+          "officer": "",
+          "ability": 0,
+          "loyalty": 0,
+          "note": "空缺"
+        }
+      ],
+      "summary": "中枢议政(杨嗣复 能力84 忠诚55)→文书颁行(李回 能力79 忠诚38)→对口承办(崔郸 能力83 忠诚49)→执行核查(空缺)"
+    },
+    "transfer": {
+      "target": "circuit-fcbb6db903e5",
+      "before": 0,
+      "id": "to_1_9cc1"
+    },
+    "flags": {
+      "reported": false,
+      "office": {
+        "officePowerPerceptionEnabled": true,
+        "officeDutyStateEnabled": false,
+        "officeAuthorityGateEnabled": false,
+        "officeReformAdjudicationEnabled": false,
+        "officeCharterEnabled": false,
+        "officeDynMigrationEnabled": false,
+        "officeRecallAgentEnabled": false,
+        "_master": false
+      },
+      "agentEdict": false
+    }
+  },
+  "errors": []
+}

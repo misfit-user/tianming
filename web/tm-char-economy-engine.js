@@ -42,7 +42,23 @@
     return out;
   }
 
+  function _declaredLedgerFor(ch) {
+    var ledger = global.TM && global.TM.CharacterEconomyLedger;
+    return ledger && ledger.isDeclared(ch) ? ledger : null;
+  }
+  function isDeclaredCharacterEconomy(ch) { return !!_declaredLedgerFor(ch); }
+  function receiveSalaryPayment(ch, receipt) {
+    var ledger = _declaredLedgerFor(ch);
+    return ledger ? ledger.receiveSalaryPayment(ch, receipt) : {ok:false, reason:'legacy-accounting'};
+  }
+  function settleSalaryReceipts(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    return ledger ? ledger.settleSalaryReceipts(ch) : {ok:false, reason:'legacy-accounting'};
+  }
+
   function normalizePrivateWealth(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.ensure(ch);
     if (!ch) return null;
     if (!ch.resources) ch.resources = {};
     var r = ch.resources;
@@ -73,6 +89,8 @@
   //   明细数组键(与扁平聚合并存·不冲突)：landHoldings[]/houses[]/shops[]/treasures[]/familyBusiness[]/debts[]/investments[]
   //   扁平 land(亩)/treasure/commerce/debt 仍是快路径聚合·领袖 isNeitang 镜像不受影响(走 money/grain/cloth)。
   function _calcPrivateSummary(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.summarize(ch);
     var zero = { money: 0, grain: 0, cloth: 0, totalValue: { money: 0, grain: 0, cloth: 0 } };
     if (!ch || !ch.resources) return zero;
     var pw = ch.resources.privateWealth || {};
@@ -268,9 +286,10 @@
 
   function buildEconomySnapshot(ch) {
     if (!ch) return null;
-    if (!ch.resources) ch.resources = {};
-    var r = ch.resources;
-    var privateWealth = normalizePrivateWealth(ch);
+    var ledger = _declaredLedgerFor(ch);
+    if (!ch.resources && !ledger) ch.resources = {};
+    var r = ch.resources || {};
+    var privateWealth = ledger ? ledger.readPrivate(ch) : normalizePrivateWealth(ch);
     var money = num(privateWealth && privateWealth.money);
     var publicPurse = r.publicPurse || null;
     var publicTreasury = r.publicTreasury || null;
@@ -462,7 +481,7 @@
     if (!ch.resources) ch.resources = {};
     var r = ch.resources;
     var ctx = getFactionLeaderContext(ch);
-    var isLeader = (ctx.type === 'emperor' || ctx.type === 'factionLeader');
+    var isLeader = !_declaredLedgerFor(ch) && (ctx.type === 'emperor' || ctx.type === 'factionLeader');
     var leaderLabel = ctx.type === 'emperor' ? '帑廪'
                     : ctx.type === 'factionLeader' ? (ctx.faction && (ctx.faction.name + '·国库') || '国库')
                     : null;
@@ -637,6 +656,8 @@
   var Income = {
     // 1. 俸禄
     salary: function(ch) {
+      var ledger = _declaredLedgerFor(ch);
+      if (ledger) return num(ledger.payroll(ch, 30).due.money);
       if (!ch.officialTitle) return 0;
       var base = rankSalary(ch);
       if (base <= 0) return 0;
@@ -650,6 +671,8 @@
     },
     // 2. 俸米
     salaryGrain: function(ch) {
+      var ledger = _declaredLedgerFor(ch);
+      if (ledger) return num(ledger.payroll(ch, 30).due.grain);
       if (!ch.officialTitle) return 0;
       return rankGrainSalary(ch);
     },
@@ -911,6 +934,12 @@
   // ═════════════════════════════════════════════════════════════
 
   function tickCharacter(ch, mr, fiscalCtx) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) {
+      var result = ledger.tickCharacter(ch, mr, fiscalCtx);
+      if (result.ok && !result.noOp) { var settledMr = result.periodDays / 30; tickStressHealth(ch, settledMr); tickVirtueMerit(ch, settledMr); tickFame(ch, settledMr); tickCharVariableLinkages(ch, settledMr); }
+      return result;
+    }
     if (!ch) return;
     if (ch.retired || ch.dead) return;
     ensureCharResources(ch);
@@ -1002,6 +1031,8 @@
   }
 
   function updatePublicTreasuryMirror(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.refreshPublic(ch);
     var pt = ch.resources.publicTreasury;
     if (!pt) return;
     var ctx = getFactionLeaderContext(ch);
@@ -1112,6 +1143,8 @@
 
   // 统一只读镜像（UI/外部读公库的唯一入口）—— 闲职/无官返回全零
   function getCharPublicTreasuryDisplay(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.publicDisplay(ch);
     var empty = { money: 0, grain: 0, cloth: 0, deficit: 0, isReadOnly: true, isInherited: false, linkedPost: null, linkedRegion: null, isGuoku: false };
     if (!ch) return empty;
     ensureCharResources(ch);
@@ -1134,6 +1167,7 @@
   // 去职追亏：离任时机构(职位/区域)仍有亏空 → 向离任者私产追偿，返回追回额
   //   surplus(盈余)无需移交——公库绑机构，盈余天然留任给继任，故只处理 deficit。
   function pursueTreasuryDeficit(ch, entity) {
+    if (_declaredLedgerFor(ch)) return {pursued:0, deficitRemaining:num(entity && entity.publicTreasury && entity.publicTreasury.money && entity.publicTreasury.money.deficit), requiresAdjudication:true};
     if (!ch || !entity || !entity.publicTreasury || !entity.publicTreasury.money) return { pursued: 0, deficitRemaining: 0 };
     ensureCharResources(ch);
     var m = entity.publicTreasury.money;
@@ -1272,6 +1306,7 @@
 
   // 估算隐匿总额 = 已追踪藏款 + 申报财产 × 隐匿率（未追踪那部分）
   function estimateHiddenWealth(ch) {
+    if (_declaredLedgerFor(ch)) return Math.max(0, num(ch && ch.resources && ch.resources.hiddenWealth));
     if (!ch) return 0;
     ensureCharResources(ch);
     var r = ch.resources, pw = r.privateWealth;
@@ -1310,6 +1345,8 @@
   }
 
   function confiscate(ch, opts) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.confiscate(ch, opts);
     if (!ch) return { success: false, reason: '无此人' };
     opts = opts || {};
     ensureCharResources(ch);
@@ -1435,6 +1472,8 @@
   }
 
   function distributeInheritance(ch) {
+    var ledger = _declaredLedgerFor(ch);
+    if (ledger) return ledger.inherit(ch);
     if (!ch.family || !ch.family.children) return;
     var total = (ch.resources.privateWealth.money || 0) +
                 (ch.resources.privateWealth.treasure || 0);
@@ -1718,7 +1757,7 @@
       var contribution = 0;
       clan.members.forEach(function(mId) {
         var m = (GM.chars || []).find(function(c) { return c.id === mId; });
-        if (m && m.resources && m.resources.privateWealth && m.resources.privateWealth.money > 100) {
+        if (m && !_declaredLedgerFor(m) && m.resources && m.resources.privateWealth && m.resources.privateWealth.money > 100) {
           var t = m.resources.privateWealth.money * 0.03 * mr;
           m.resources.privateWealth.money -= t;
           contribution += t;
@@ -1730,7 +1769,7 @@
       var sorted = clan.members.map(function(mId) {
         var m = (GM.chars || []).find(function(c) { return c.id === mId; });
         return m;
-      }).filter(function(m) { return m && m.resources; })
+      }).filter(function(m) { return m && m.resources && !_declaredLedgerFor(m); })
         .sort(function(a, b) {
           return (a.resources.privateWealth.money || 0) - (b.resources.privateWealth.money || 0);
         });
@@ -1749,12 +1788,14 @@
 
   // 供财政系统：发俸
   function paySalary(ch, amount) {
+    if (_declaredLedgerFor(ch)) return {ok:false, reason:'requires-payment-receipt'};
     ensureCharResources(ch);
     ch.resources.privateWealth.money += amount;
   }
 
   // 供腐败系统：贪腐入账
   function addBribeIncome(ch, amount, hiddenRatio) {
+    if (_declaredLedgerFor(ch)) return {ok:false, reason:'requires-funded-transfer'};
     ensureCharResources(ch);
     hiddenRatio = hiddenRatio || 0.4;
     ch.resources.privateWealth.money += amount * (1 - hiddenRatio);
@@ -1844,6 +1885,9 @@
 
   global.CharEconEngine = {
     tick: tick,
+    isDeclaredCharacterEconomy: isDeclaredCharacterEconomy,
+    receiveSalaryPayment: receiveSalaryPayment,
+    settleSalaryReceipts: settleSalaryReceipts,
     isEmperor: isEmperor,
     ensureCharResources: ensureCharResources,
     ensureCharComplete: ensureCharComplete,

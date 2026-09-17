@@ -45,6 +45,8 @@
    */
   TM.ceming.canSummon = function(profile) {
     if (!profile) return { ok: false, reason: '档案无效' };
+    // historical-agency-v21
+    if (global.TM && TM.HistoricalAgency && TM.HistoricalAgency.isPlayerDriven()) return TM.HistoricalAgency.temporalEligibility(profile);
 
     var mode = (typeof P !== 'undefined' && P.conf && P.conf.gameMode) || 'yanyi';
     var curYear = (typeof GM !== 'undefined' && GM.year) ||

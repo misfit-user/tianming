@@ -63,7 +63,7 @@ AA.memories.recall('需求', null, mockSel).then(function (blk) {
     }
     return Promise.resolve({ text: '', toolCalls: [{ id: 't3', name: 'finish', input: { summary: '完成测试：看了技能并记了记忆。' } }] });
   };
-  return AA.runAuthoringLoop(draft, '把张三丰满一下', { caller: mockCaller, cfg: {}, maxIterations: 6 }).then(function (r) {
+  return AA.runAuthoringLoop(draft, '把张三丰满一下', { caller: mockCaller, cfg: {}, maxIterations: 6, toolPacks: ['knowledge'] }).then(function (r) {
     ok(/可用技能/.test(sawSystem) && /人物塑造章法/.test(sawSystem) && /疆域与地图调整法/.test(sawSystem), 'system 含技能清单(内置+能力包)');
     ok(/相关记忆/.test(sawFirstUser) && /bg-0/.test(sawFirstUser) && !/bg-1/.test(sawFirstUser), '召回选择性注入首条 user');
     ok(!AA.memories.list().some(function (m) { return m.name === 'owner-pref'; }) && r.sideEffects.length === 1, 'agent saveMemory 先暂存·运行期不越过玩家批准');

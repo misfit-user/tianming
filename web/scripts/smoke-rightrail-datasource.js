@@ -118,7 +118,7 @@ ok(/filteredWorks\.length > 24 \? '<div class="tmrp-meta">余 ' \+ \(filteredWor
 
 // ── ⑦ 待见删除写口收口 + _qid 主键 ────────────────────────────
 ok(!/\.splice\(/.test(rail), '⑦ rightrail 无裸 splice(删除全走唯一写口)');
-ok(/window\._wdCleansePendingAudiences\(_wdKeep\)/.test(rail), '⑦ 右栏 render 清洗走 _wdCleansePendingAudiences');
+ok(/window\._wdCleansePendingAudiences\(rightWenduiKeepPending\)/.test(rail), '⑦ 右栏 render 清洗走 _wdCleansePendingAudiences（与只读角标共用谓词）');
 ok(/window\._wdRemovePendingAudience\(qid\)/.test(rail), '⑦ 暂却兜底按 _qid 删');
 ok(/data-right-action="wendui-queue" data-qid="/.test(rail) && /data-right-action="wendui-dismiss" data-qid="/.test(rail), '⑦ 队列按钮写 data-qid(稳定标识·非 render-time index)');
 ok(/var qid = \(data && data\.qid\)/.test(rail), '⑦ 队列 handler 按 data.qid 解析');

@@ -1,0 +1,123 @@
+{
+  "status": "SCOPED_MOBILE_API_FIX_VERIFIED_WITH_EXISTING_GUARD_FAILURES",
+  "device": "LAPTOP-AV4J1O7I",
+  "directory": "C:\\Users\\37814\\Desktop\\tianming",
+  "verifiedAt": "2026-09-17T11:21:57.944Z",
+  "head": "5ed032afe65cc041dd4d890227ada23e736b4713",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "before": "540228ee09ee1afcdec4b6665a928cf679c8695cdd66af6dcf4e54c4404845c6",
+      "after": "7db883ddd3173b0de2e35dbe2a98b258b01639c7cc40ffd7319d8a7799e2ac07",
+      "backupMatches": true,
+      "bytes": 10175
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "before": "019cb9e044298fd3ee222e61bc32f16959c705b36cb650300cc837272b903f68",
+      "after": "b3c9482fc5ab686080c4857af8c14418ec87ed878734a76113860b91a5f25a63",
+      "backupMatches": true,
+      "bytes": 164089
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "before": "2b129cd6689fc103920fd3548c6b9371bdd965f7d11ae86ef42a2afd8e54d13e",
+      "after": "c03f4ccb70cf179cfa968a48cd5c2a15c00532ccc575bf787dc68f4fb3fa9351",
+      "backupMatches": true,
+      "bytes": 74285
+    },
+    {
+      "file": "web/tm-api-models.js",
+      "before": "58ae5e2c093d18bccfa99706d5aaa66b0bc464e50d70f506430691451be9492d",
+      "after": "1b67a240d301cd761adca302c753e652ba7c5e1b3f91602af96e39bb9cc1523e",
+      "backupMatches": true,
+      "bytes": 5238
+    },
+    {
+      "file": "web/tm-patches.js",
+      "before": "f4c215990129687111d3276b6e887bdc6a38f83f47ba9f387abc7259395a4700",
+      "after": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c",
+      "backupMatches": true,
+      "bytes": 190664
+    }
+  ],
+  "tests": [
+    {
+      "suite": "mobile-api-integration",
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "suite": "mobile-api-transport",
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    }
+  ],
+  "relatedSmokes": {
+    "selected": 36,
+    "pass": 36,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "vendorComparison": {
+    "device": "LAPTOP-AV4J1O7I",
+    "vendorVersion": "6.2.1",
+    "vendorSource": "mobile\\node_modules\\@capacitor\\android\\capacitor\\src\\main\\assets\\native-bridge.js",
+    "cases": [
+      {
+        "name": "uppercase header",
+        "old": "invalid object string",
+        "fixed": "valid JSON"
+      },
+      {
+        "name": "vendor JSON",
+        "old": "invalid object string",
+        "fixed": "valid JSON"
+      },
+      {
+        "name": "abort/deadline",
+        "old": "abort ignored; no native timeouts",
+        "fixed": "local cancellation; bounded native timeouts"
+      }
+    ],
+    "realPhone": false,
+    "networkRequests": 0
+  },
+  "architecture": {
+    "beforeFailures": [
+      "lint-dep-graph",
+      "lint-file-size",
+      "lint-global-providers",
+      "lint-renderer-writeback-boundaries",
+      "lint-split-contracts",
+      "ref-check"
+    ],
+    "afterFailures": [
+      "lint-dep-graph",
+      "lint-file-size",
+      "lint-global-providers",
+      "lint-renderer-writeback-boundaries",
+      "lint-split-contracts",
+      "ref-check"
+    ],
+    "newFailureCategories": [],
+    "heapFailureBefore": true,
+    "heapFailureAfter": true
+  },
+  "diffCheckExitCode": 0,
+  "defaultDiffCheckExitCode": 2,
+  "diffCheckMode": "standard whitespace checks plus CRLF recognition; process-local only",
+  "installedSoftware": false,
+  "realAPIInvoked": false,
+  "realPhoneTested": false,
+  "phoneUpdated": false,
+  "commitCreated": false,
+  "pushed": false,
+  "released": false
+}

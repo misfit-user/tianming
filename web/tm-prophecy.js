@@ -41,7 +41,7 @@
     if (!G.minxin.prophecy) G.minxin.prophecy = { intensity: 0, pendingTriggers: [] };
     var mxLow = (typeof G.minxin.trueIndex === 'number' ? G.minxin.trueIndex : (typeof G.minxin.value === 'number' ? G.minxin.value : 60)) < 40;
     var crisisOn = (G.huangwei && G.huangwei.lostAuthorityCrisis && G.huangwei.lostAuthorityCrisis.active) ||
-                   (G.huangquan && G.huangquan.powerMinister);
+                   (G.huangquan && G.huangquan.powerMinister && !_institutionalPowerMinister(G));
     var pool = PROPHECY_LIBRARY.filter(function(p) {
       if (crisisOn) return true;
       return mxLow ? p.credibility > 0.55 : p.credibility < 0.6;
@@ -230,6 +230,17 @@
     return { ok: missing.length === 0, missing: missing };
   }
 
+  function _institutionalPowerMinister(G) {
+    var pm=G&&G.huangquan&&G.huangquan.powerMinister;
+    return !!(pm&&pm.mode==='institutional')||!!(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional');
+  }
+  function _draftInstitutionalCounter(G,action,opts) {
+    if(!_institutionalPowerMinister(G))return null;
+    if(!global.AuthorityEngines||!global.AuthorityEngines.draftPowerMinisterInstruction)return {ok:false,applied:false,requiresResolution:true,reason:'请拟诏交有司查议，俟承办回报再定'};
+    opts=opts&&typeof opts==='object'?opts:{};
+    return global.AuthorityEngines.draftPowerMinisterInstruction({game:G,action:action,targetName:opts.targetName,content:opts.instruction||opts.content});
+  }
+
   /** 玩家 7 种反击策略（当权臣段时） */
   var COUNTER_STRATEGIES = {
     secret_edict: {
@@ -376,10 +387,17 @@
     }
   };
 
+  // Keep direct effects and the UI entry on the same unsubmitted-edict path.
+  Object.keys(COUNTER_STRATEGIES).forEach(function(action){
+    var original=COUNTER_STRATEGIES[action].effect;
+    COUNTER_STRATEGIES[action].effect=function(G,opts){var draft=_draftInstitutionalCounter(G,action,opts);return draft||original(G,opts);};
+  });
+
   function invokeCounterStrategy(strategyId, opts) {
     var G = global.GM;
     var strat = COUNTER_STRATEGIES[strategyId];
     if (!strat) return { ok: false, reason: '未知策略' };
+    var draft=_draftInstitutionalCounter(G,strategyId,opts);if(draft)return Object.assign({strategyId:strategyId},draft);
     // 扣成本
     if (strat.cost) {
       Object.keys(strat.cost).forEach(function(k) {

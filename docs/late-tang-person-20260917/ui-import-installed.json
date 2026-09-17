@@ -1,0 +1,7 @@
+{
+  "file": "web/tm-office-system.js",
+  "backup": "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\ui-import-before-183307.js",
+  "before": "f86f50f63aa383eb410b83c4d459ff48ecd5a4ec1f124655bfbbbc5d1eb5181d",
+  "after": "45a3d9ed333293d529ad55dbdb3cf0232b5e6f2de444bb0aa71ee8fe7d01c110",
+  "reason": "Importing an already held main office concurrently must not erase legitimate additional posts."
+}

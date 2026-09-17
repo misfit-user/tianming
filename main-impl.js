@@ -41,7 +41,8 @@ const USER_DATA_DIR = app.getPath('userData');
 const BUNDLED_SCENARIOS_DIR = path.join(APP_ROOT_DIR, 'scenarios');
 const OFFICIAL_SCENARIO_FILES = [
   '天启七年·九月（官方）.json',
-  '绍宋·建炎元年八月（官方）.json'
+  '绍宋·建炎元年八月（官方）.json',
+  '晚唐·开成五年（官方）.json'
 ];
 
 // Writable runtime data must live under userData. Packaged builds may place
@@ -2787,7 +2788,9 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: {
       // preload 属于安装包信任边界，内容 OTA 不可替换。
-      preload: path.join(bundledAppRoot(), 'preload.js'),
+      // Sandboxed preload cannot require relative CommonJS files. Load the single
+      // self-contained bridge from the signed installation, never the content OTA.
+      preload: path.join(bundledAppRoot(), 'preload-impl.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -3094,7 +3097,7 @@ async function handleMenuImport() {
 
 // ============================================================
 //  IPC：响应网页发来的请求
-//  网页通过 preload.js 桥接调用这些函数
+//  网页通过 preload-impl.js 单文件桥接调用这些函数
 // ============================================================
 
 // --- 存档：保存 ---

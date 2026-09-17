@@ -1,0 +1,2210 @@
+{
+  "kind": "node-module-microbench",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+  "logicalCpus": 12,
+  "totalMemoryBytes": 25480257536,
+  "startedAt": "2026-09-07T14:28:11.832Z",
+  "baseline": {
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "sourceHashes": {
+      "web/tm-storage.js": "1b0492975e192a24c0536f1f357dccae2ab5c9c029c2ec3ea88d4762d4ff8b93",
+      "web/phase8-formal-map.js": "89df207343b7d69f46d76f428b49cfbbf20086633026d339f8b056f4b1b217d2",
+      "web/tm-save-lifecycle.js": "73aa17bcd48aa8912c937d81b30f44006ad46f2510aa77b865ac610cdc56df0d"
+    }
+  },
+  "candidate": {
+    "head": "814f3af65f6bd24f02fe8dc245eb9d7e31ea8489",
+    "sourceHashes": {
+      "web/tm-storage.js": "88252c2e8b36c6ec860fbd4b42821c7876ca1ccc02d5e03180b6678f85cb8c6c",
+      "web/phase8-formal-map.js": "fe592b5946d06f966e6d655425ebfe631c2223b564ecbb668c8c09832deb6d3b",
+      "web/tm-save-lifecycle.js": "bede41ffd73f13028e0317188e8a7f905e918cec4b150da344e4c646c1e6402f"
+    }
+  },
+  "repeats": 9,
+  "warmupsPerVariant": 2,
+  "gcControlled": false,
+  "scope": "actual functions; controlled DOM/providers for map only; actual save normalizers/serializers; no layout/paint/network measurement",
+  "samples": [
+    {
+      "name": "map/sc-jianyan1-1127-shaosong",
+      "regions": 182,
+      "oceans": 0,
+      "pointRegions": 182,
+      "inputHash": "ffbb42a2b05a99df3edbfc6ba10ec40ed666ab23e61a149443a925d7c9157acf",
+      "outputHash": "95126072158a85273cc1de754f234ea11934e0b5253b021d4910249b04f6ed0d",
+      "svgBytes": 280626,
+      "before": [
+        {
+          "ms": 36.25249999999994,
+          "pathCalls": 546
+        },
+        {
+          "ms": 18.809499999999957,
+          "pathCalls": 546
+        },
+        {
+          "ms": 15.68470000000002,
+          "pathCalls": 546
+        },
+        {
+          "ms": 24.098500000000058,
+          "pathCalls": 546
+        },
+        {
+          "ms": 23.551699999999983,
+          "pathCalls": 546
+        },
+        {
+          "ms": 25.735100000000102,
+          "pathCalls": 546
+        },
+        {
+          "ms": 26.184600000000046,
+          "pathCalls": 546
+        },
+        {
+          "ms": 20.398599999999988,
+          "pathCalls": 546
+        },
+        {
+          "ms": 26.444799999999987,
+          "pathCalls": 546
+        }
+      ],
+      "after": [
+        {
+          "ms": 6.565299999999979,
+          "pathCalls": 182
+        },
+        {
+          "ms": 8.109000000000037,
+          "pathCalls": 182
+        },
+        {
+          "ms": 6.610300000000052,
+          "pathCalls": 182
+        },
+        {
+          "ms": 10.47790000000009,
+          "pathCalls": 182
+        },
+        {
+          "ms": 9.081699999999955,
+          "pathCalls": 182
+        },
+        {
+          "ms": 8.275700000000143,
+          "pathCalls": 182
+        },
+        {
+          "ms": 10.680599999999913,
+          "pathCalls": 182
+        },
+        {
+          "ms": 10.850500000000011,
+          "pathCalls": 182
+        },
+        {
+          "ms": 10.647899999999936,
+          "pathCalls": 182
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 24.098500000000058,
+          "p95": 36.25249999999994,
+          "min": 15.68470000000002,
+          "max": 36.25249999999994
+        },
+        "after": {
+          "p50": 9.081699999999955,
+          "p95": 10.850500000000011,
+          "min": 6.565299999999979,
+          "max": 10.850500000000011
+        }
+      }
+    },
+    {
+      "name": "snapshot/sc-jianyan1-1127-shaosong/long=false",
+      "scenario": "sc-jianyan1-1127-shaosong",
+      "long": false,
+      "inputBytes": 13684902,
+      "outputBytes": 13766645,
+      "outputHash": "da0752ed89f4350f23a3d7d00885e566e2e716ab3923f5622724a3c623d8758e",
+      "before": [
+        {
+          "ms": 174.0702000000001,
+          "cloneCalls": 65,
+          "cloneMs": 162.6093000000028
+        },
+        {
+          "ms": 158.32439999999997,
+          "cloneCalls": 65,
+          "cloneMs": 150.7346000000016
+        },
+        {
+          "ms": 132.95229999999992,
+          "cloneCalls": 65,
+          "cloneMs": 123.9309000000012
+        },
+        {
+          "ms": 148.46659999999974,
+          "cloneCalls": 65,
+          "cloneMs": 142.37800000000334
+        },
+        {
+          "ms": 157.28800000000047,
+          "cloneCalls": 65,
+          "cloneMs": 149.01750000000266
+        },
+        {
+          "ms": 137.28490000000056,
+          "cloneCalls": 65,
+          "cloneMs": 127.40590000000248
+        },
+        {
+          "ms": 188.70299999999952,
+          "cloneCalls": 65,
+          "cloneMs": 176.1621999999943
+        },
+        {
+          "ms": 192.91160000000036,
+          "cloneCalls": 65,
+          "cloneMs": 187.16230000000178
+        },
+        {
+          "ms": 142.4351000000006,
+          "cloneCalls": 65,
+          "cloneMs": 133.40549999999712
+        }
+      ],
+      "after": [
+        {
+          "ms": 180.73840000000018,
+          "cloneCalls": 42,
+          "cloneMs": 171.91580000000113
+        },
+        {
+          "ms": 127.91759999999977,
+          "cloneCalls": 42,
+          "cloneMs": 119.69479999999885
+        },
+        {
+          "ms": 160.21309999999994,
+          "cloneCalls": 42,
+          "cloneMs": 151.76969999999937
+        },
+        {
+          "ms": 158.88839999999982,
+          "cloneCalls": 42,
+          "cloneMs": 148.4840000000013
+        },
+        {
+          "ms": 129.9337999999998,
+          "cloneCalls": 42,
+          "cloneMs": 119.51060000000325
+        },
+        {
+          "ms": 133.95939999999973,
+          "cloneCalls": 42,
+          "cloneMs": 127.60919999999987
+        },
+        {
+          "ms": 181.1172999999999,
+          "cloneCalls": 42,
+          "cloneMs": 169.22439999999915
+        },
+        {
+          "ms": 180.16899999999987,
+          "cloneCalls": 42,
+          "cloneMs": 170.56589999999778
+        },
+        {
+          "ms": 107.60509999999977,
+          "cloneCalls": 42,
+          "cloneMs": 101.93239999999878
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 157.28800000000047,
+          "p95": 192.91160000000036,
+          "min": 132.95229999999992,
+          "max": 192.91160000000036
+        },
+        "after": {
+          "p50": 158.88839999999982,
+          "p95": 181.1172999999999,
+          "min": 107.60509999999977,
+          "max": 181.1172999999999
+        }
+      }
+    },
+    {
+      "name": "snapshot/sc-jianyan1-1127-shaosong/long=true",
+      "scenario": "sc-jianyan1-1127-shaosong",
+      "long": true,
+      "inputBytes": 24221848,
+      "outputBytes": 24303605,
+      "outputHash": "0952b60d9bda7c1dc72f662785bddb35b06d313afbbe76ed9716542362e4584b",
+      "before": [
+        {
+          "ms": 231.57660000000033,
+          "cloneCalls": 65,
+          "cloneMs": 218.14999999999782
+        },
+        {
+          "ms": 167.98899999999958,
+          "cloneCalls": 65,
+          "cloneMs": 161.41590000001088
+        },
+        {
+          "ms": 165.67489999999998,
+          "cloneCalls": 65,
+          "cloneMs": 159.6030000000028
+        },
+        {
+          "ms": 196.0484000000015,
+          "cloneCalls": 65,
+          "cloneMs": 185.7550000000083
+        },
+        {
+          "ms": 209.6949999999997,
+          "cloneCalls": 65,
+          "cloneMs": 202.54780000000028
+        },
+        {
+          "ms": 216.51969999999892,
+          "cloneCalls": 65,
+          "cloneMs": 205.90710000000945
+        },
+        {
+          "ms": 235.43049999999857,
+          "cloneCalls": 65,
+          "cloneMs": 228.76590000000215
+        },
+        {
+          "ms": 182.6875999999993,
+          "cloneCalls": 65,
+          "cloneMs": 175.7280000000046
+        },
+        {
+          "ms": 228.7059999999983,
+          "cloneCalls": 65,
+          "cloneMs": 216.7792000000045
+        }
+      ],
+      "after": [
+        {
+          "ms": 199.79390000000058,
+          "cloneCalls": 42,
+          "cloneMs": 190.8864000000067
+        },
+        {
+          "ms": 152.15549999999985,
+          "cloneCalls": 42,
+          "cloneMs": 134.87530000000334
+        },
+        {
+          "ms": 159.9377999999997,
+          "cloneCalls": 42,
+          "cloneMs": 151.6157000000003
+        },
+        {
+          "ms": 157.5634000000009,
+          "cloneCalls": 42,
+          "cloneMs": 141.31820000000516
+        },
+        {
+          "ms": 162.97469999999885,
+          "cloneCalls": 42,
+          "cloneMs": 155.07620000001407
+        },
+        {
+          "ms": 200.33560000000034,
+          "cloneCalls": 42,
+          "cloneMs": 177.588400000006
+        },
+        {
+          "ms": 153.52599999999984,
+          "cloneCalls": 42,
+          "cloneMs": 145.9398000000092
+        },
+        {
+          "ms": 159.70949999999903,
+          "cloneCalls": 42,
+          "cloneMs": 136.9908000000014
+        },
+        {
+          "ms": 166.48689999999988,
+          "cloneCalls": 42,
+          "cloneMs": 160.3459000000039
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 209.6949999999997,
+          "p95": 235.43049999999857,
+          "min": 165.67489999999998,
+          "max": 235.43049999999857
+        },
+        "after": {
+          "p50": 159.9377999999997,
+          "p95": 200.33560000000034,
+          "min": 152.15549999999985,
+          "max": 200.33560000000034
+        }
+      }
+    },
+    {
+      "name": "canonical/sc-jianyan1-1127-shaosong/gzip=true",
+      "scenario": "sc-jianyan1-1127-shaosong",
+      "long": true,
+      "inputBytes": 24221848,
+      "outputBytes": 24303605,
+      "outputHash": "0952b60d9bda7c1dc72f662785bddb35b06d313afbbe76ed9716542362e4584b",
+      "gzip": true,
+      "asyncCompressionIsWallTimeNotBlockingTime": true,
+      "before": [
+        {
+          "ms": 807.9380999999994,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 243.181700000001,
+          "spans": {
+            "save.stringify": [
+              112.90129999999954
+            ],
+            "save.checksum": [
+              99.96680000000015
+            ],
+            "save.compress": [
+              514.786900000001
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 798.6399999999994,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 221.22299999999814,
+          "spans": {
+            "save.stringify": [
+              69.6862000000001
+            ],
+            "save.checksum": [
+              84.8156999999992
+            ],
+            "save.compress": [
+              566.219299999997
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 695.9968999999983,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 189.29260000000068,
+          "spans": {
+            "save.stringify": [
+              108.26889999999912
+            ],
+            "save.checksum": [
+              112.29509999999937
+            ],
+            "save.compress": [
+              468.9887999999992
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 891.759399999999,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 225.12399999999616,
+          "spans": {
+            "save.stringify": [
+              71.53769999999713
+            ],
+            "save.checksum": [
+              106.62980000000243
+            ],
+            "save.compress": [
+              658.2129000000023
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 739.3260999999984,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 232.2614999999969,
+          "spans": {
+            "save.stringify": [
+              78.85060000000158
+            ],
+            "save.checksum": [
+              93.48449999999866
+            ],
+            "save.compress": [
+              493.89540000000125
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 689.2031999999999,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 188.4239000000016,
+          "spans": {
+            "save.stringify": [
+              100.79060000000027
+            ],
+            "save.checksum": [
+              89.9297000000006
+            ],
+            "save.compress": [
+              459.58180000000357
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 825.9748,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 218.40760000000228,
+          "spans": {
+            "save.stringify": [
+              84.43240000000151
+            ],
+            "save.checksum": [
+              101.96559999999954
+            ],
+            "save.compress": [
+              587.4789999999994
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 848.2656999999999,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 203.4744000000028,
+          "spans": {
+            "save.stringify": [
+              81.68239999999787
+            ],
+            "save.checksum": [
+              101.53159999999843
+            ],
+            "save.compress": [
+              623.7122999999992
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 625.2387000000017,
+          "encodes": 3,
+          "encodedBytes": 72910815,
+          "encodeMs": 184.34100000000035,
+          "spans": {
+            "save.stringify": [
+              64.21280000000115
+            ],
+            "save.checksum": [
+              80.22969999999987
+            ],
+            "save.compress": [
+              430.53429999999935
+            ]
+          },
+          "compressedBytes": 2937071
+        }
+      ],
+      "after": [
+        {
+          "ms": 709.9742000000006,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 91.41760000000068,
+          "spans": {
+            "save.stringify": [
+              94.8714
+            ],
+            "save.utf8": [
+              91.44340000000011
+            ],
+            "save.checksum": [
+              41.76180000000022
+            ],
+            "save.compress": [
+              523.4912999999997
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 712.8751000000011,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 83.06500000000051,
+          "spans": {
+            "save.stringify": [
+              106.70050000000083
+            ],
+            "save.utf8": [
+              83.09349999999904
+            ],
+            "save.checksum": [
+              63.51610000000073
+            ],
+            "save.compress": [
+              522.9908000000014
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 768.3827000000019,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 71.24139999999898,
+          "spans": {
+            "save.stringify": [
+              101.76959999999963
+            ],
+            "save.utf8": [
+              71.30140000000029
+            ],
+            "save.checksum": [
+              49.66480000000229
+            ],
+            "save.compress": [
+              595.1525999999976
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 686.8639999999978,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 76.2071999999971,
+          "spans": {
+            "save.stringify": [
+              91.79199999999764
+            ],
+            "save.utf8": [
+              76.23579999999856
+            ],
+            "save.checksum": [
+              34.36540000000241
+            ],
+            "save.compress": [
+              518.7423999999992
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 781.1235000000015,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 94.22390000000087,
+          "spans": {
+            "save.stringify": [
+              83.03510000000097
+            ],
+            "save.utf8": [
+              94.25699999999779
+            ],
+            "save.checksum": [
+              33.02520000000004
+            ],
+            "save.compress": [
+              603.6963999999971
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 542.7335999999996,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 74.58959999999934,
+          "spans": {
+            "save.stringify": [
+              69.30840000000171
+            ],
+            "save.utf8": [
+              74.61390000000029
+            ],
+            "save.checksum": [
+              37.62169999999969
+            ],
+            "save.compress": [
+              398.72339999999895
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 799.0766000000003,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 89.9965000000011,
+          "spans": {
+            "save.stringify": [
+              69.66100000000006
+            ],
+            "save.utf8": [
+              90.03940000000148
+            ],
+            "save.checksum": [
+              39.6830000000009
+            ],
+            "save.compress": [
+              639.222600000001
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 734.2520000000004,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 54.42029999999795,
+          "spans": {
+            "save.stringify": [
+              79.48500000000058
+            ],
+            "save.utf8": [
+              54.445199999998295
+            ],
+            "save.checksum": [
+              46.15690000000177
+            ],
+            "save.compress": [
+              600.1768999999986
+            ]
+          },
+          "compressedBytes": 2937071
+        },
+        {
+          "ms": 724.7940999999992,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 84.02850000000035,
+          "spans": {
+            "save.stringify": [
+              98.93500000000131
+            ],
+            "save.utf8": [
+              84.04590000000098
+            ],
+            "save.checksum": [
+              50.69770000000062
+            ],
+            "save.compress": [
+              541.7338000000018
+            ]
+          },
+          "compressedBytes": 2937071
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 798.6399999999994,
+          "p95": 891.759399999999,
+          "min": 625.2387000000017,
+          "max": 891.759399999999
+        },
+        "after": {
+          "p50": 724.7940999999992,
+          "p95": 799.0766000000003,
+          "min": 542.7335999999996,
+          "max": 799.0766000000003
+        }
+      }
+    },
+    {
+      "name": "canonical/sc-jianyan1-1127-shaosong/gzip=false",
+      "scenario": "sc-jianyan1-1127-shaosong",
+      "long": true,
+      "inputBytes": 24221848,
+      "outputBytes": 24303605,
+      "outputHash": "0952b60d9bda7c1dc72f662785bddb35b06d313afbbe76ed9716542362e4584b",
+      "gzip": false,
+      "asyncCompressionIsWallTimeNotBlockingTime": true,
+      "before": [
+        {
+          "ms": 376.15550000000076,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 249.08320000000094,
+          "spans": {
+            "save.stringify": [
+              86.36030000000028
+            ],
+            "save.compress": [
+              76.72360000000117
+            ],
+            "save.checksum": [
+              97.78309999999692
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 384.1010000000024,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 261.61469999999827,
+          "spans": {
+            "save.stringify": [
+              78.45119999999952
+            ],
+            "save.compress": [
+              88.48739999999816
+            ],
+            "save.checksum": [
+              122.46050000000105
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 351.2965000000004,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 232.33380000000398,
+          "spans": {
+            "save.stringify": [
+              81.34929999999804
+            ],
+            "save.compress": [
+              80.72940000000017
+            ],
+            "save.checksum": [
+              98.47259999999733
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 369.1188000000002,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 255.20989999999802,
+          "spans": {
+            "save.stringify": [
+              65.16080000000147
+            ],
+            "save.compress": [
+              87.9268000000011
+            ],
+            "save.checksum": [
+              127.90460000000166
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 383.8707000000031,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 253.2654999999977,
+          "spans": {
+            "save.stringify": [
+              94.58749999999782
+            ],
+            "save.compress": [
+              75.37169999999969
+            ],
+            "save.checksum": [
+              92.76350000000093
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 421.9385000000002,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 263.959899999998,
+          "spans": {
+            "save.stringify": [
+              106.39660000000003
+            ],
+            "save.compress": [
+              74.7422000000006
+            ],
+            "save.checksum": [
+              111.17619999999806
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 401.69920000000275,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 271.9663999999939,
+          "spans": {
+            "save.stringify": [
+              86.1252999999997
+            ],
+            "save.compress": [
+              69.73780000000261
+            ],
+            "save.checksum": [
+              99.85640000000058
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 490.35339999999997,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 348.851800000004,
+          "spans": {
+            "save.stringify": [
+              110.7439000000013
+            ],
+            "save.compress": [
+              99.04819999999745
+            ],
+            "save.checksum": [
+              118.84760000000097
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 389.35570000000007,
+          "encodes": 4,
+          "encodedBytes": 97214420,
+          "encodeMs": 275.4702999999936,
+          "spans": {
+            "save.stringify": [
+              71.29780000000028
+            ],
+            "save.compress": [
+              75.80299999999988
+            ],
+            "save.checksum": [
+              105.88899999999558
+            ]
+          },
+          "compressedBytes": 24303605
+        }
+      ],
+      "after": [
+        {
+          "ms": 170.2381000000023,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 59.56980000000112,
+          "spans": {
+            "save.stringify": [
+              75.73199999999997
+            ],
+            "save.utf8": [
+              59.59389999999985
+            ],
+            "save.compress": [
+              8.89719999999943
+            ],
+            "save.checksum": [
+              34.8125
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 171.0061999999998,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 59.66400000000067,
+          "spans": {
+            "save.stringify": [
+              85.97439999999915
+            ],
+            "save.utf8": [
+              59.69389999999839
+            ],
+            "save.compress": [
+              7.971700000001874
+            ],
+            "save.checksum": [
+              25.272400000001653
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 213.08329999999842,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 70.67029999999795,
+          "spans": {
+            "save.stringify": [
+              88.65759999999864
+            ],
+            "save.utf8": [
+              70.70910000000003
+            ],
+            "save.compress": [
+              13.873400000000402
+            ],
+            "save.checksum": [
+              53.54950000000099
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 152.48349999999846,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 51.418399999998655,
+          "spans": {
+            "save.stringify": [
+              76.11799999999857
+            ],
+            "save.utf8": [
+              51.44350000000122
+            ],
+            "save.compress": [
+              7.783699999999953
+            ],
+            "save.checksum": [
+              24.848399999998946
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 228.65599999999904,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 73.41129999999976,
+          "spans": {
+            "save.stringify": [
+              102.56570000000283
+            ],
+            "save.utf8": [
+              73.4493999999977
+            ],
+            "save.compress": [
+              13.941200000001118
+            ],
+            "save.checksum": [
+              52.45940000000337
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 162.73099999999977,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 62.86769999999888,
+          "spans": {
+            "save.stringify": [
+              72.19940000000133
+            ],
+            "save.utf8": [
+              62.89519999999902
+            ],
+            "save.compress": [
+              9.57209999999759
+            ],
+            "save.checksum": [
+              27.55329999999958
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 149.02699999999822,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 48.382799999999406,
+          "spans": {
+            "save.stringify": [
+              74.03779999999824
+            ],
+            "save.utf8": [
+              48.4059999999954
+            ],
+            "save.compress": [
+              8.002800000002026
+            ],
+            "save.checksum": [
+              26.466800000001967
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 184.32329999999638,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 59.541299999997136,
+          "spans": {
+            "save.stringify": [
+              98.16589999999997
+            ],
+            "save.utf8": [
+              59.55550000000221
+            ],
+            "save.compress": [
+              8.031300000002375
+            ],
+            "save.checksum": [
+              26.540200000003097
+            ]
+          },
+          "compressedBytes": 24303605
+        },
+        {
+          "ms": 174.35669999999664,
+          "encodes": 1,
+          "encodedBytes": 24303605,
+          "encodeMs": 50.94220000000496,
+          "spans": {
+            "save.stringify": [
+              96.16960000000108
+            ],
+            "save.utf8": [
+              50.966599999999744
+            ],
+            "save.compress": [
+              8.566700000003038
+            ],
+            "save.checksum": [
+              27.085999999995693
+            ]
+          },
+          "compressedBytes": 24303605
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 384.1010000000024,
+          "p95": 490.35339999999997,
+          "min": 351.2965000000004,
+          "max": 490.35339999999997
+        },
+        "after": {
+          "p50": 171.0061999999998,
+          "p95": 228.65599999999904,
+          "min": 149.02699999999822,
+          "max": 228.65599999999904
+        }
+      }
+    },
+    {
+      "name": "map/sc-tianqi7-1627",
+      "regions": 43,
+      "oceans": 8,
+      "pointRegions": 0,
+      "inputHash": "e8377e40c2df12315ceb25a4f9b89b6dae57c348f9326019dee3935e78031a3f",
+      "outputHash": "ead7e0707780f78313b00db3ea7b3f8760fa76412919665a4270d8594bb67c35",
+      "svgBytes": 543987,
+      "before": [
+        {
+          "ms": 0.5910000000003492,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.613100000002305,
+          "pathCalls": 137
+        },
+        {
+          "ms": 1.0956999999980326,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.6706000000049244,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.611799999998766,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.6288000000058673,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.6154000000024098,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.6609000000025844,
+          "pathCalls": 137
+        },
+        {
+          "ms": 0.8101999999998952,
+          "pathCalls": 137
+        }
+      ],
+      "after": [
+        {
+          "ms": 0.6002999999982421,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.6527999999962049,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.7304000000003725,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.7839999999996508,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.6182999999946333,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.621899999998277,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.6596999999965192,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.6069999999963329,
+          "pathCalls": 51
+        },
+        {
+          "ms": 0.9150999999983469,
+          "pathCalls": 51
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 0.6288000000058673,
+          "p95": 1.0956999999980326,
+          "min": 0.5910000000003492,
+          "max": 1.0956999999980326
+        },
+        "after": {
+          "p50": 0.6527999999962049,
+          "p95": 0.9150999999983469,
+          "min": 0.6002999999982421,
+          "max": 0.9150999999983469
+        }
+      }
+    },
+    {
+      "name": "snapshot/sc-tianqi7-1627/long=false",
+      "scenario": "sc-tianqi7-1627",
+      "long": false,
+      "inputBytes": 10708130,
+      "outputBytes": 10774727,
+      "outputHash": "d267749337e7d17a0c3ab0018cac3c8a53ebd7e95b0e061c1ddd1d8405cbda3c",
+      "before": [
+        {
+          "ms": 205.99209999999584,
+          "cloneCalls": 64,
+          "cloneMs": 202.78940000001603
+        },
+        {
+          "ms": 213.4360000000015,
+          "cloneCalls": 64,
+          "cloneMs": 208.19019999999
+        },
+        {
+          "ms": 284.52130000000034,
+          "cloneCalls": 64,
+          "cloneMs": 280.83150000005116
+        },
+        {
+          "ms": 258.59829999999783,
+          "cloneCalls": 64,
+          "cloneMs": 254.58099999995466
+        },
+        {
+          "ms": 208.3179999999993,
+          "cloneCalls": 64,
+          "cloneMs": 204.70850000002974
+        },
+        {
+          "ms": 228.8472000000038,
+          "cloneCalls": 64,
+          "cloneMs": 225.0619000000006
+        },
+        {
+          "ms": 262.99149999999645,
+          "cloneCalls": 64,
+          "cloneMs": 259.9008000000031
+        },
+        {
+          "ms": 325.19689999999537,
+          "cloneCalls": 64,
+          "cloneMs": 321.4753999999666
+        },
+        {
+          "ms": 290.196100000001,
+          "cloneCalls": 64,
+          "cloneMs": 284.64010000001144
+        }
+      ],
+      "after": [
+        {
+          "ms": 166.88670000000275,
+          "cloneCalls": 41,
+          "cloneMs": 164.0868999999875
+        },
+        {
+          "ms": 172.65370000000257,
+          "cloneCalls": 41,
+          "cloneMs": 168.37739999996847
+        },
+        {
+          "ms": 184.09070000000065,
+          "cloneCalls": 41,
+          "cloneMs": 181.05550000002404
+        },
+        {
+          "ms": 170.8255000000063,
+          "cloneCalls": 41,
+          "cloneMs": 167.84710000000632
+        },
+        {
+          "ms": 184.88490000000456,
+          "cloneCalls": 41,
+          "cloneMs": 181.0650000000096
+        },
+        {
+          "ms": 163.09360000000015,
+          "cloneCalls": 41,
+          "cloneMs": 160.3480000000054
+        },
+        {
+          "ms": 151.39070000000356,
+          "cloneCalls": 41,
+          "cloneMs": 146.68349999999919
+        },
+        {
+          "ms": 181.58860000000277,
+          "cloneCalls": 41,
+          "cloneMs": 176.62529999998515
+        },
+        {
+          "ms": 252.57680000000255,
+          "cloneCalls": 41,
+          "cloneMs": 249.50039999996807
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 258.59829999999783,
+          "p95": 325.19689999999537,
+          "min": 205.99209999999584,
+          "max": 325.19689999999537
+        },
+        "after": {
+          "p50": 172.65370000000257,
+          "p95": 252.57680000000255,
+          "min": 151.39070000000356,
+          "max": 252.57680000000255
+        }
+      }
+    },
+    {
+      "name": "snapshot/sc-tianqi7-1627/long=true",
+      "scenario": "sc-tianqi7-1627",
+      "long": true,
+      "inputBytes": 21245076,
+      "outputBytes": 21311687,
+      "outputHash": "fc8c11c88299747a7bdf2cd44c486675f171ee699d8485c12e5ea864aa89fd1c",
+      "before": [
+        {
+          "ms": 402.1975999999995,
+          "cloneCalls": 64,
+          "cloneMs": 397.35689999996976
+        },
+        {
+          "ms": 290.05739999999787,
+          "cloneCalls": 64,
+          "cloneMs": 286.15650000004825
+        },
+        {
+          "ms": 267.96979999999894,
+          "cloneCalls": 64,
+          "cloneMs": 263.4147999999914
+        },
+        {
+          "ms": 323.04759999999806,
+          "cloneCalls": 64,
+          "cloneMs": 316.54039999999077
+        },
+        {
+          "ms": 288.226800000004,
+          "cloneCalls": 64,
+          "cloneMs": 284.06340000005
+        },
+        {
+          "ms": 331.0777999999991,
+          "cloneCalls": 64,
+          "cloneMs": 326.3771999999517
+        },
+        {
+          "ms": 271.799500000001,
+          "cloneCalls": 64,
+          "cloneMs": 267.42550000002666
+        },
+        {
+          "ms": 249.75300000000425,
+          "cloneCalls": 64,
+          "cloneMs": 245.98360000001412
+        },
+        {
+          "ms": 264.21450000000186,
+          "cloneCalls": 64,
+          "cloneMs": 259.4472000000169
+        }
+      ],
+      "after": [
+        {
+          "ms": 215.96579999999813,
+          "cloneCalls": 41,
+          "cloneMs": 212.90160000001924
+        },
+        {
+          "ms": 247.31230000000505,
+          "cloneCalls": 41,
+          "cloneMs": 239.52219999999215
+        },
+        {
+          "ms": 171.92250000000058,
+          "cloneCalls": 41,
+          "cloneMs": 166.3531999999759
+        },
+        {
+          "ms": 192.71579999999813,
+          "cloneCalls": 41,
+          "cloneMs": 189.72210000000632
+        },
+        {
+          "ms": 219.89170000000013,
+          "cloneCalls": 41,
+          "cloneMs": 214.1114000000016
+        },
+        {
+          "ms": 272.1952999999994,
+          "cloneCalls": 41,
+          "cloneMs": 268.63500000000204
+        },
+        {
+          "ms": 222.83399999999529,
+          "cloneCalls": 41,
+          "cloneMs": 219.83190000001923
+        },
+        {
+          "ms": 234.27810000000318,
+          "cloneCalls": 41,
+          "cloneMs": 231.28889999999956
+        },
+        {
+          "ms": 232.21330000000307,
+          "cloneCalls": 41,
+          "cloneMs": 226.13310000004276
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 288.226800000004,
+          "p95": 402.1975999999995,
+          "min": 249.75300000000425,
+          "max": 402.1975999999995
+        },
+        "after": {
+          "p50": 222.83399999999529,
+          "p95": 272.1952999999994,
+          "min": 171.92250000000058,
+          "max": 272.1952999999994
+        }
+      }
+    },
+    {
+      "name": "canonical/sc-tianqi7-1627/gzip=true",
+      "scenario": "sc-tianqi7-1627",
+      "long": true,
+      "inputBytes": 21245076,
+      "outputBytes": 21311687,
+      "outputHash": "fc8c11c88299747a7bdf2cd44c486675f171ee699d8485c12e5ea864aa89fd1c",
+      "gzip": true,
+      "asyncCompressionIsWallTimeNotBlockingTime": true,
+      "before": [
+        {
+          "ms": 794.9833999999973,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 202.9571999999971,
+          "spans": {
+            "save.stringify": [
+              112.2065999999977
+            ],
+            "save.checksum": [
+              89.03469999999652
+            ],
+            "save.compress": [
+              540.8315000000002
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 740.1834999999992,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 181.22060000000056,
+          "spans": {
+            "save.stringify": [
+              100.1226999999999
+            ],
+            "save.checksum": [
+              77.47340000000258
+            ],
+            "save.compress": [
+              508.97679999999673
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 682.0487000000066,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 204.92899999999645,
+          "spans": {
+            "save.stringify": [
+              86.7071999999971
+            ],
+            "save.checksum": [
+              97.84679999999935
+            ],
+            "save.compress": [
+              456.26870000000054
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 734.4674000000014,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 163.18769999998767,
+          "spans": {
+            "save.stringify": [
+              80.47789999999804
+            ],
+            "save.checksum": [
+              73.75730000000476
+            ],
+            "save.compress": [
+              535.8332000000009
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 874.5180000000037,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 230.94460000000254,
+          "spans": {
+            "save.stringify": [
+              117.35649999999441
+            ],
+            "save.checksum": [
+              101.7123999999967
+            ],
+            "save.compress": [
+              598.0768000000025
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 774.8609999999971,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 167.60899999999674,
+          "spans": {
+            "save.stringify": [
+              88.43559999999707
+            ],
+            "save.checksum": [
+              89.14349999999831
+            ],
+            "save.compress": [
+              570.0400000000009
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 727.5118000000002,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 173.35010000001057,
+          "spans": {
+            "save.stringify": [
+              88.04619999999704
+            ],
+            "save.checksum": [
+              90.70690000000468
+            ],
+            "save.compress": [
+              530.4423999999999
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 733.0384999999951,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 203.94219999999768,
+          "spans": {
+            "save.stringify": [
+              128.02300000000105
+            ],
+            "save.checksum": [
+              85.46360000000277
+            ],
+            "save.compress": [
+              453.4768999999942
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 715.6312000000034,
+          "encodes": 3,
+          "encodedBytes": 63935061,
+          "encodeMs": 167.1047999999937,
+          "spans": {
+            "save.stringify": [
+              112.84279999999853
+            ],
+            "save.checksum": [
+              78.43070000000444
+            ],
+            "save.compress": [
+              487.15209999999934
+            ]
+          },
+          "compressedBytes": 1849960
+        }
+      ],
+      "after": [
+        {
+          "ms": 584.2481000000043,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 65.99790000000212,
+          "spans": {
+            "save.stringify": [
+              81.67809999999736
+            ],
+            "save.utf8": [
+              66.0222999999969
+            ],
+            "save.checksum": [
+              42.03190000000177
+            ],
+            "save.compress": [
+              436.4779999999955
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 632.5277999999962,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 50.286299999999756,
+          "spans": {
+            "save.stringify": [
+              90.63630000000558
+            ],
+            "save.utf8": [
+              50.306299999996554
+            ],
+            "save.checksum": [
+              45.443499999993946
+            ],
+            "save.compress": [
+              491.5220000000045
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 660.0308999999979,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 55.3718000000008,
+          "spans": {
+            "save.stringify": [
+              85.56979999999749
+            ],
+            "save.utf8": [
+              55.396600000000035
+            ],
+            "save.checksum": [
+              39.31500000000233
+            ],
+            "save.compress": [
+              518.9939000000013
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 572.6165999999939,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 48.96220000000176,
+          "spans": {
+            "save.stringify": [
+              83.14130000000296
+            ],
+            "save.utf8": [
+              48.98389999999927
+            ],
+            "save.checksum": [
+              30.07289999999921
+            ],
+            "save.compress": [
+              440.41979999999603
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 587.7220000000016,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 67.72379999999976,
+          "spans": {
+            "save.stringify": [
+              102.13200000000506
+            ],
+            "save.utf8": [
+              67.75420000000304
+            ],
+            "save.checksum": [
+              22.90860000000248
+            ],
+            "save.compress": [
+              417.7353000000003
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 606.4689999999973,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 47.98099999999977,
+          "spans": {
+            "save.stringify": [
+              97.73159999999916
+            ],
+            "save.utf8": [
+              48.00050000000192
+            ],
+            "save.checksum": [
+              36.98200000000361
+            ],
+            "save.compress": [
+              460.65400000000227
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 648.6576999999961,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 46.59679999999935,
+          "spans": {
+            "save.stringify": [
+              70.55049999999756
+            ],
+            "save.utf8": [
+              46.618099999999686
+            ],
+            "save.checksum": [
+              47.80789999999979
+            ],
+            "save.compress": [
+              531.158199999998
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 708.0190999999977,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 50.41259999999602,
+          "spans": {
+            "save.stringify": [
+              111.99039999999513
+            ],
+            "save.utf8": [
+              50.4375
+            ],
+            "save.checksum": [
+              40.388300000005984
+            ],
+            "save.compress": [
+              545.5033999999941
+            ]
+          },
+          "compressedBytes": 1849960
+        },
+        {
+          "ms": 562.8634999999995,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 63.15359999999782,
+          "spans": {
+            "save.stringify": [
+              73.07480000000214
+            ],
+            "save.utf8": [
+              63.17490000000544
+            ],
+            "save.checksum": [
+              41.69760000000679
+            ],
+            "save.compress": [
+              426.5448000000033
+            ]
+          },
+          "compressedBytes": 1849960
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 734.4674000000014,
+          "p95": 874.5180000000037,
+          "min": 682.0487000000066,
+          "max": 874.5180000000037
+        },
+        "after": {
+          "p50": 606.4689999999973,
+          "p95": 708.0190999999977,
+          "min": 562.8634999999995,
+          "max": 708.0190999999977
+        }
+      }
+    },
+    {
+      "name": "canonical/sc-tianqi7-1627/gzip=false",
+      "scenario": "sc-tianqi7-1627",
+      "long": true,
+      "inputBytes": 21245076,
+      "outputBytes": 21311687,
+      "outputHash": "fc8c11c88299747a7bdf2cd44c486675f171ee699d8485c12e5ea864aa89fd1c",
+      "gzip": false,
+      "asyncCompressionIsWallTimeNotBlockingTime": true,
+      "before": [
+        {
+          "ms": 308.9302000000025,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 189.61659999999392,
+          "spans": {
+            "save.stringify": [
+              96.81979999999749
+            ],
+            "save.compress": [
+              57.39050000000134
+            ],
+            "save.checksum": [
+              72.71449999999459
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 375.387999999999,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 226.60309999998572,
+          "spans": {
+            "save.stringify": [
+              112.09870000000228
+            ],
+            "save.compress": [
+              82.57630000000063
+            ],
+            "save.checksum": [
+              107.76989999999932
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 431.96130000000267,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 298.4172000000035,
+          "spans": {
+            "save.stringify": [
+              96.91689999999653
+            ],
+            "save.compress": [
+              85.68940000000293
+            ],
+            "save.checksum": [
+              110.4519999999975
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 341.11769999998796,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 221.90770000001066,
+          "spans": {
+            "save.stringify": [
+              95.11160000000382
+            ],
+            "save.compress": [
+              63.87829999999667
+            ],
+            "save.checksum": [
+              80.31050000000687
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 366.5642999999982,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 230.79249999999593,
+          "spans": {
+            "save.stringify": [
+              98.63159999999334
+            ],
+            "save.compress": [
+              55.22880000001169
+            ],
+            "save.checksum": [
+              81.15179999999236
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 320.6999999999971,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 192.24210000000312,
+          "spans": {
+            "save.stringify": [
+              105.49039999999513
+            ],
+            "save.compress": [
+              52.271200000002864
+            ],
+            "save.checksum": [
+              68.1359999999986
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 358.2603999999992,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 235.19170000001031,
+          "spans": {
+            "save.stringify": [
+              96.25629999999364
+            ],
+            "save.compress": [
+              68.71910000000207
+            ],
+            "save.checksum": [
+              88.12459999999555
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 439.7646999999997,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 281.8076999999903,
+          "spans": {
+            "save.stringify": [
+              118.31879999999364
+            ],
+            "save.compress": [
+              88.17789999999513
+            ],
+            "save.checksum": [
+              115.54660000000149
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 449.25010000000475,
+          "encodes": 4,
+          "encodedBytes": 85246748,
+          "encodeMs": 286.8727999999828,
+          "spans": {
+            "save.stringify": [
+              119.40739999999641
+            ],
+            "save.compress": [
+              91.60950000000594
+            ],
+            "save.checksum": [
+              122.95709999999963
+            ]
+          },
+          "compressedBytes": 21311687
+        }
+      ],
+      "after": [
+        {
+          "ms": 251.07150000000547,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 75.10460000000603,
+          "spans": {
+            "save.stringify": [
+              131.05939999999828
+            ],
+            "save.utf8": [
+              75.14309999999386
+            ],
+            "save.compress": [
+              12.301799999993818
+            ],
+            "save.checksum": [
+              44.71689999999944
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 159.97219999999652,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 50.162600000003295,
+          "spans": {
+            "save.stringify": [
+              86.79039999999804
+            ],
+            "save.utf8": [
+              50.19459999999526
+            ],
+            "save.compress": [
+              6.907999999995809
+            ],
+            "save.checksum": [
+              22.87909999999829
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 179.14940000000206,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 47.61059999999998,
+          "spans": {
+            "save.stringify": [
+              94.47299999999814
+            ],
+            "save.utf8": [
+              47.653400000002875
+            ],
+            "save.compress": [
+              14.577100000002247
+            ],
+            "save.checksum": [
+              36.90190000000439
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 155.51330000000598,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 42.97380000000703,
+          "spans": {
+            "save.stringify": [
+              87.69040000000678
+            ],
+            "save.utf8": [
+              43.00219999998808
+            ],
+            "save.compress": [
+              8.586699999999837
+            ],
+            "save.checksum": [
+              24.73979999999574
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 165.7850000000035,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 50.435000000012224,
+          "spans": {
+            "save.stringify": [
+              83.12700000000768
+            ],
+            "save.utf8": [
+              50.501800000012736
+            ],
+            "save.compress": [
+              17.694499999997788
+            ],
+            "save.checksum": [
+              32.02270000000135
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 161.1145000000106,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 45.024299999990035,
+          "spans": {
+            "save.stringify": [
+              76.77929999999469
+            ],
+            "save.utf8": [
+              45.04979999999341
+            ],
+            "save.compress": [
+              11.353499999997439
+            ],
+            "save.checksum": [
+              39.19140000001062
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 174.79170000000158,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 53.207299999994575,
+          "spans": {
+            "save.stringify": [
+              94.38560000000871
+            ],
+            "save.utf8": [
+              53.24220000000787
+            ],
+            "save.compress": [
+              10.357499999998254
+            ],
+            "save.checksum": [
+              27.00899999999092
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 137.02659999999742,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 42.04619999999704,
+          "spans": {
+            "save.stringify": [
+              71.61079999999492
+            ],
+            "save.utf8": [
+              42.06970000000729
+            ],
+            "save.compress": [
+              7.273300000000745
+            ],
+            "save.checksum": [
+              23.275599999993574
+            ]
+          },
+          "compressedBytes": 21311687
+        },
+        {
+          "ms": 186.2597999999998,
+          "encodes": 1,
+          "encodedBytes": 21311687,
+          "encodeMs": 53.4314999999915,
+          "spans": {
+            "save.stringify": [
+              89.34489999999641
+            ],
+            "save.utf8": [
+              53.477899999998044
+            ],
+            "save.compress": [
+              21.277499999996508
+            ],
+            "save.checksum": [
+              43.30840000000899
+            ]
+          },
+          "compressedBytes": 21311687
+        }
+      ],
+      "summary": {
+        "before": {
+          "p50": 366.5642999999982,
+          "p95": 449.25010000000475,
+          "min": 308.9302000000025,
+          "max": 449.25010000000475
+        },
+        "after": {
+          "p50": 165.7850000000035,
+          "p95": 251.07150000000547,
+          "min": 137.02659999999742,
+          "max": 251.07150000000547
+        }
+      }
+    }
+  ],
+  "complete": true
+}

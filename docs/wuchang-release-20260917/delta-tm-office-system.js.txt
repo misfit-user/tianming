@@ -1,0 +1,117 @@
+diff --git a/web/tm-office-system.js b/web/tm-office-system.js
+index d3db5458..702a5c5b 100644
+--- a/web/tm-office-system.js
++++ b/web/tm-office-system.js
+@@ -357,7 +357,7 @@ function _offUniqueTitles(list) {
+ 
+ // 官职后缀（识别 title 段是否真官职·防吸收描述/状态垃圾）
+ var _OFF_TITLE_SUFFIX = /(尚书|侍郎|大学士|学士|都御史|通政使|寺卿|少卿|祭酒|司业|总督|总制|经略|督师|提督|巡抚|总兵|副总兵|参将|游击|布政使|按察使|参政|参议|知府|同知|知州|知县|给事中|詹事|洗马|修撰|编修|检讨|监正|监副|院使|宗人令|宗正|都督|都指挥|指挥使|镇抚|太师|太傅|太保|少师|少傅|少保)/;
+-function _offGetCharOfficeTitles(ch) {
++function _offGetCharOfficeTitles(ch, opts) {
+   if (!ch) return [];
+   var arr = [];
+   if (ch.officialTitle) arr.push(ch.officialTitle);
+@@ -374,14 +374,26 @@ function _offGetCharOfficeTitles(ch) {
+       if (clean.length >= 2 && _OFF_TITLE_SUFFIX.test(clean) && !arr.some(function(x){ return String(x).indexOf(clean) >= 0; })) arr.push(clean);
+     });
+   }
+-  return _offUniqueTitles(arr);
++  var titles = _offUniqueTitles(arr);
++  if (!opts || !opts.displayOnly) return titles;
++  // Display only: composite titles and separately registered seats must not repeat.
++  // Exact components, not substring matching: 检校礼部尚书 is not 礼部尚书.
++  var seen = Object.create(null), out = [];
++  titles.forEach(function(t) {
++    var parts = /[（(]/.test(t) ? [t] : t.split(/[·、，,；;]/).map(function(x){ return x.trim(); }).filter(Boolean);
++    var fresh = parts.filter(function(x){ return !seen[x.replace(/^兼(?:任)?/, '')]; });
++    if (!fresh.length) return;
++    out.push(fresh.length === parts.length ? t : fresh.join('、'));
++    parts.forEach(function(x){ seen[x.replace(/^兼(?:任)?/, '')] = true; });
++  });
++  return out;
+ }
+ 
+ // 显示用·把某人全部官职(主职⊕兼职)拼为一行供 UI 显示多职(非仅主职)·主兼以「兼」连·兼职间顿号
+ // opts.fallback: 无规范官职时兜底文案(默认 '')
+ function _offFormatCharTitles(ch, opts) {
+   opts = opts || {};
+-  var titles = _offGetCharOfficeTitles(ch);
++  var titles = _offGetCharOfficeTitles(ch, { displayOnly: true });
+   if (!titles.length) return (opts.fallback != null) ? opts.fallback : '';
+   if (titles.length === 1) return titles[0];
+   return titles[0] + '　兼　' + titles.slice(1).join('、');
+@@ -415,7 +427,7 @@ function _offAddCharOfficeTitle(ch, title, opts) {
+   var currentMain = _offNormalizeTitleName(ch.officialTitle || '');
+   var titles;
+ 
+-  if (opts.concurrent && currentMain && currentMain !== title) {
++  if (opts.concurrent && currentMain) {
+     titles = _offUniqueTitles([currentMain].concat(existing).concat([title]));
+     ch.officialTitle = currentMain;
+     if (!ch.position) ch.position = currentMain;
+@@ -514,14 +526,8 @@ function _offSeatPersonInPosition(pos, person, opts) {
+ function _offAppointCharacter(pos, characterOrId, options) {
+   if (!pos || !characterOrId) return { ok: false, reason: 'missing-position-or-character' };
+   options = options || {};
+-  var nativeWorld = options.world || (typeof GM !== 'undefined' ? GM : null);
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && !TM.NativeWorld.officePermission(nativeWorld, pos, options.actorCharacterId)) return {ok:false,reason:'native-appointment-authority-denied'};
+   var resolved = _offResolveCharacterIdentity(characterOrId, options.world);
+   if (!resolved.ok) return { ok: false, reason: resolved.reason };
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(nativeWorld)) {
+-    if (!TM.StartContracts.isAlive(resolved.char)) return {ok:false,reason:'native-appointment-dead'};
+-    if (!Array.isArray(pos.salaryPayments) || pos.salaryPayments.some(function(p){return !p||!Number.isFinite(p.amountPer30Days)||p.amountPer30Days<0||!nativeWorld.nativeWorld.accounts.some(function(a){return a.id===p.accountId;});})) return {ok:false,reason:'native-appointment-salary-contract-required'};
+-  }
+   _offMigratePosition(pos, options.world);
+   if (!Array.isArray(pos.actualHolders)) pos.actualHolders = [];
+   // ── 幽灵 holder 净化 ── 老剧本/老存档 holder 字段写了名字但 GM.chars 无此人·
+@@ -582,8 +588,6 @@ function _offAppointPerson(pos, person) {
+ function _offDismissCharacter(pos, characterOrId, options) {
+   if (!pos || !characterOrId) return { ok: false, reason: 'missing-position-or-character' };
+   options = options || {};
+-  var nativeWorld = options.world || (typeof GM !== 'undefined' ? GM : null);
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && !TM.NativeWorld.officePermission(nativeWorld, pos, options.actorCharacterId)) return {ok:false,reason:'native-appointment-authority-denied'};
+   var resolved = _offResolveCharacterIdentity(characterOrId, options.world);
+   if (!resolved.ok) return { ok: false, reason: resolved.reason };
+   _offMigratePosition(pos, options.world);
+@@ -1392,13 +1396,6 @@ function _findPositionByCharName(charName) {
+  * 皇帝/势力领袖/未在职者特例处理
+  */
+ function canPerformAction(charName, action) {
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) {
+-    var found = (GM.chars || []).filter(function(c){return c.id === charName;});
+-    if (!found.length) found = (GM.chars || []).filter(function(c){return c.name === charName;});
+-    var powers = {appointment:'appoint',taxCollect:'treasury',militaryCommand:'command'};
+-    var permitted = found.length === 1 && TM.NativeWorld.allowed(GM, powers[action] || action, GM.startContext.playerFactionId, null, found[0].id);
+-    return {can:permitted,reason:permitted?'明确政治授权':'无明确政治授权（显示称号不授予权限）'};
+-  }
+   // 皇帝绝对权
+   var ch = (GM.chars || []).find(function(c) { return c.name === charName; });
+   if (!ch) return { can: false, reason: '人不存' };
+@@ -1485,6 +1482,9 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
+   var np = _offNormalizeTitleName(posName);
+   var nd = _offNormalizeTitleName(deptName);
+   if (!ct || !np) return 0;
++  // A duty or honorary designation is not a substantive office with a similar name.
++  // Preserve exact authored seats, including explicitly modeled duty positions.
++  if (ct !== np && ct !== nd + np && /^(?:检校|追赠|赠|加衔|(?:权)?判.+事$)/.test(ct)) return 0;
+   var sc = 0;
+   if (ct === np) sc = 100;
+   else if (ct === nd + np) sc = 98;
+@@ -1688,7 +1688,6 @@ function _offVacateCharFromSeat(ch, dept, posName) {
+ function _offSyncHoldersFromChars(opts) {
+   opts = opts || {};
+   if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.officeTree)) return { ok: false };
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) return TM.NativeWorld.bindOffices(GM);
+   var declaredTreasury=_offDeclaredPublicTreasury(GM);
+   // 签名守卫:渲染高频调用·状态未变则跳过重算(perf)
+   if (opts.ifChanged && !opts.dedupChars) {
+@@ -1807,6 +1806,8 @@ function _offSyncHoldersFromChars(opts) {
+     if (used[ci]) continue;
+     for (var si = 0; si < slots.length; si++) {
+       if (slots[si].fill.length >= slots[si].cap) continue;
++      // Authored unknown holders are not vacancies for fuzzy auto-appointment.
++      if (slots[si].pos.occupancyStatus === 'unrecorded') continue;
+       var s = _offTitleSlotScore(claims[ci].title, slots[si].dept, slots[si].posName, false);
+       if (s >= 40) pairs.push({ ci: ci, si: si, s: s });
+     }
+

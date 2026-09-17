@@ -368,6 +368,8 @@
     options = options || {};
     var turn = Number(options.turn != null ? options.turn : root.turn) || 0;
     if (!item || item.status === 'resolved' || item.status === 'failed') return null;
+    // Unreleased standalone pilot data is retained, not reinterpreted as a normal fulfilled promise.
+    if (item.linkedIssue && (root.currentIssues || []).some(function(i){return i && i.id === item.linkedIssue && i.relief && i.relief.version === 1;})) return null;
     if (turn <= Number(item.lastSettlementTurn || item.createdTurn || item.turn || 0)) return null;
     var ctx = executionContext(root, item);
     var status = 'progress';

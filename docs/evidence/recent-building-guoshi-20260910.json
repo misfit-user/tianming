@@ -1,0 +1,628 @@
+{
+  "version": 1,
+  "base": "f102b56585faa48c47d362a91c5260f4cee1b8eb",
+  "codeHead": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+  "branch": "codex/recent-building-guoshi-delivery",
+  "scope": "Source merge only, no release; original user worktree preserved",
+  "codeTree": "23c474b67a8ac92b06eeca5158f74ed1b2efb7ff",
+  "changedFileHashes": {
+    ".github/workflows/ci.yml": "ccc8cc813643ddffb364d6cc02a3c8ef3a2568fb30409e312aa0a434f90b6e38",
+    "docs/bugfix-authoring-agent-stream-2026-09-10.md": "b9303ea4cf4619c13e726d7a359d1c462bbdce3014a1ff655d05ba0058552d6f",
+    "docs/building-first-round-2026-09-09.md": "a2f915755666a838d5513fa407b1db003546c47ecbc58041dec3fff2fbb3c403",
+    "docs/building-order-writeback-2026-09-10.md": "e5654967b72b9a0ba2bc9dd9b18b5e9c847c74f4cab7e2db1d9cab25a51fccc0",
+    "docs/evidence/guoshi-completion-recovery-20260910.json": "a8910eb080270f73b341af7f166bc09f496bf6ecce616693186a9bd7c0b78d02",
+    "docs/guoshi-boundaries-2026-09-10.md": "a2bd16f8e9b643cd9ab954b57742f79346a25c302403765da6d688ab51c4fe61",
+    "docs/guoshi-completion-recovery-2026-09-10.md": "c666c6cf4fa21654759151884cf873b60ea0f25ae82c44a5410e342c8b94d89a",
+    "docs/guoshi-efficiency-2026-09-10.md": "0a35ddacc0110e6bee9795bb25b2bfc3cff68913ccc274633e594670dbe7945b",
+    "scripts/electron/authoring-boundary-cases.cjs": "9fa1880ea57290c5f242efada7afd0287754c6ddb0364c244f0ee7e392d0f684",
+    "scripts/electron/authoring-efficiency-cases.cjs": "59b73340d7f1a219d90b9ca1a06ababbb6a98dab0b6e7ca07332d23b2e7f8d21",
+    "scripts/electron/authoring-recovery-cases.cjs": "2030edbdc7ce013268441d30e68fb0ef2a308ac13f8c08b4f9c6985a132547e8",
+    "scripts/electron/authoring-stream-cases.cjs": "bf3614175e005884b3593a4d146de86e9fcb6303b4dd2f5c466b1aedc83e6dce",
+    "scripts/electron/bridge-main.cjs": "a79ed2ab1e237be8d2aa011355683589f9f126a94cf38f46b5030823b80221f3",
+    "scripts/electron/building-appraisal-cases.cjs": "06961a588a0d18ab3e65e95b5e57809bb2399664e7b70f9bb14eab3e4a869447",
+    "scripts/electron/building-orders-cases.cjs": "c594d90e0d22e785ad3db715c43e2ae31affff1176cee9332349c4e8c0324861",
+    "scripts/perf/guoshi-cost.cjs": "7318a069d407a2ea24117c52f1e05534437327d123fa60f8cfb596df6ef72558",
+    "scripts/verify-electron-bridge.js": "80b8dc1b76e7b69964227aa9770c51030c8ae5618387428a58f6ecff5a5501cd",
+    "web/.hot-update-manifest.json": "783c21b4fe115c03221629e580009fe14b1e02acf8b861151be0be29e940b14e",
+    "web/editor-authoring-agent-provider.js": "d39bf457fc8d981f9cba6c7082e92d6943de1cf98ca2c2734f29129294dc686a",
+    "web/editor-authoring-agent-ui.js": "9bb7329d55abb750d3d762630b48793f19bd1df7eb4feefdd54e0ab76806bf70",
+    "web/editor-authoring-agent.js": "c87ed307ad72c5514dd7f062057c28c9eb07c857fc7eb04224a6000782e62c44",
+    "web/editor-fullgen.js": "6d6e25d084b3f890aa65a13dcf334db975379adbad7d19022324507788f36438",
+    "web/editor.html": "fdecec887a1f43a6e0b427857a9afadadf48d42536d01cd5a6ce7c580fd27276",
+    "web/generated/tm-ai-change-applier.bundle.js": "f9e82bd2cf82c9619185f576cdffa2776fd4cae592b43ca481cb68814206a4ba",
+    "web/index.html": "046d39fbba04caa7937ef0a11668018d8d5a6f2fecc0c0e3952e9ca714ea2589",
+    "web/modules/ai-change-applier/validators.js": "c90d064ef57bd60dbe47542cc63d3dd558ffabd311ee70dbb4a1c04d817b53d4",
+    "web/phase8-formal-map-dossier.js": "d00311df8b5a6472e502c7caed0f60a59eea82965e4c8ea015004c1ec3ff5841",
+    "web/preview/scenario-editor-reset-app.js": "c9a4f0bdd9c92def82d39403d009bc77d6b41ea7c3058f5e0a7d30282354f718",
+    "web/preview/scenario-editor-reset-preview.html": "35fdbdbc6a6bfc929684b84c36a2d1eb1e71d1f30050a9159dacff38417c572f",
+    "web/preview/scenario-editor-sandbox-bridge.js": "940d42fb6c99dd28e9a328e4bc1664968ddb7932597008195540fae6ca77b115",
+    "web/scripts/smoke-authoring-agent-runtime-contract.js": "70db53d93eb89dd85180936ad714c11b88583af22f3100e9bd8e61105ac7dbfd",
+    "web/scripts/smoke-authoring-agent-tools.js": "938e1c868889f79ef7b27ae0e8063cd0b4d9437c2e455b3d75e5d49ea6ec4a51",
+    "web/scripts/smoke-authoring-completion-recovery.js": "38d15488e053ba822b3fe8d25f16f262af6c0e9b62387bf2e9396744d142d9fc",
+    "web/scripts/smoke-authoring-document-lease.js": "85afa277932d0d5e865b8e4d3155819e66a649dcb3405aad92901f81d91b03b0",
+    "web/scripts/smoke-authoring-efficiency.js": "279c1f547c34bf17198dbf73afe14dd87c34742cf1209ce9784429eaa0a51778",
+    "web/scripts/smoke-authoring-provider-stream.js": "c3a120bde61ba5e420b6e850e3b11b8f83f22471cf9db116ec3f04061e03a6c3",
+    "web/scripts/smoke-authoring-tool-authorization.js": "3320bae33f3f4b6a4ab213720e0a5bdd6595fc22b8f2435bc55dea267af5aaf0",
+    "web/scripts/smoke-building-appraisal-compat.js": "d34f3608a53b3ad3f381ca4ec20a1cd5488996763bf3c93bd96695560f782ea5",
+    "web/scripts/smoke-building-order-sc1.js": "f433aa0ed57ae5b4a79208b364577f4d09dc8be02489bb393fd62f3a56108762",
+    "web/scripts/smoke-building-order-writeback.js": "e3e1847e43825703514cfa330866c16975f441ac1947f654a34c3983da5ab482",
+    "web/scripts/smoke-building-original-channels.js": "f2e159faa55d951666c698152223a9833a417e784301eefc21635aa9c9762965",
+    "web/scripts/smoke-building-payment-ledger.js": "a0d31bcbbd3ebcfa41c32045469bfb72f8e1b6043c54dac9e0af4d9487314f0b",
+    "web/scripts/smoke-electron-gate-process-result.js": "3378457b4dda9624102f19d68d4f37f940e5b0b26efad4e762925a095c2975ca",
+    "web/scripts/smoke-globalrules-build.js": "064877dce93733e08377063ea7da863e8b52c1eb5a856f733b93e8c38b368a2e",
+    "web/scripts/smoke-guoshi-cc-port.js": "c232b8c097ab8ef804c472d43276455a209140a8d8debcbd0feaa9e0da65ae88",
+    "web/scripts/smoke-guoshi-memskills.js": "c336ba2b919b96fcdb00f32285c317ad3df7cfac46c7602410b0590095632e33",
+    "web/scripts/smoke-guoshi-write-sanitize.js": "f232872c8e2be8d3868294a635d0aa2b5dbe55143554126e2be0e09c164d1bdc",
+    "web/scripts/smoke-quicktest-multiturn.js": "5c541debaca67b8d70fab154e3d9d90ea1764c7be2aaaba1e24e24d08c426cec",
+    "web/scripts/smoke-startup-phase-observability.js": "eb94bab1775db5dd420fa655dc79a634dbbac85a7d63506fb66a4c06a5b4cb95",
+    "web/scripts/smoke-talent-s4.js": "c1184c745b37ca83ea2b0feedaa1c4e6d113663a594781e74ade38ee02d30402",
+    "web/startup-script-phases.json": "bee7efe2b0079deccd18631e594a8a3b7d1e03f1a6c2c3ad9cfcf145cfc1b598",
+    "web/tm-agent-kernel.js": "81d355b9611d3f426c8ab99349ebdba4ac950a6bde8e7641aca61d056d4f7fec",
+    "web/tm-ai-output-validator.js": "bcc22b00c17e0921147885e462a39833a61526bfe447dfb98dedffa5bb8211a1",
+    "web/tm-ai-schema.js": "22ef99115b3af75e0753271068c468e38ed076782be6eb563424eb54304d1a06",
+    "web/tm-building-orders.js": "6c4f56505f3dfc0b163d250052f2c4455793234e00891db0639fc6a98bf2579f",
+    "web/tm-building-works.js": "c4e6fc24ba9451a5c54cfdba0aa2087762f948491f17c7a3d6bda57f53f92ed0",
+    "web/tm-custom-build-agent.js": "1a8654f60f40071d062d50cf3ebe1003119666737e3f1032020ea9b5a5083537",
+    "web/tm-endturn-agent-mode.js": "a27476846c1d9934e338c895e40a7f0c24c1772dd35fa854047a9e8dbff3a0ac",
+    "web/tm-endturn-agent-write-tools.js": "369a385ac908b6464451708852659d1548d50b72c98b783593f008a63f139398",
+    "web/tm-endturn-ai-infer.js": "25365f763ec58ffaa41d1c7702ad7d933a005dc209dc277ebb58dc2ae4fc3cec",
+    "web/tm-endturn-ai.js": "dacee6db353980f195fbd7f4bbf7fe247f2149c36d12f0530040525cc97999fd",
+    "web/tm-endturn-apply-stages.js": "0b6c16149169e07bcec507a11d9910874d0bb7c76998fd99b616749fb3451626",
+    "web/tm-endturn-apply.js": "a9c45b4f73ecc66b49bb1818d858d5f208efd74e4ff6b16274cec86ae5240512",
+    "web/tm-endturn-prep.js": "b177cf51d447362af45853250c0b75c1ffc8b39f32ee597f72ef4d33fc32b739",
+    "web/tm-hongyan-edict-ui.js": "1695a495f0fc40f85059edc4e028f6aa59c05cc59643f7f811254f2b86882237",
+    "web/tm-player-core.js": "f2d83eb2e87f0477a7882f1fc14072bba6828c7945e38439794f116bff81a5c1"
+  },
+  "fullSmoke": {
+    "path": "web/dev-tools/arch-guard/combined-two-workers.json",
+    "sha256": "61c064009c0a86399b6cd72aaaee2108614933c339cfe5bfe71d1ae0ad792b97",
+    "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+    "runId": "combined-two-workers-20260910",
+    "summary": {
+      "selected": 934,
+      "pass": 932,
+      "fail": 0,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "exit": 0,
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "exit": 0,
+        "checks": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ]
+  },
+  "localDefaultEightWorkers": {
+    "status": "FAIL on two attempts, preserved",
+    "failure": "unchanged workshop lock stress admission deadline",
+    "lockImplementationModified": false,
+    "assertionsOrWaiversRelaxed": false,
+    "alternative": "same 934 tests with existing --jobs 2, then identical validateReport gate; remote defaults unchanged"
+  },
+  "electron": [
+    {
+      "label": "combined-electron-boundaries",
+      "path": "web/dev-tools/electron-bridge/a2005ceb-ec18-4ac9-be7b-6b8cbba434b9/report.json",
+      "sha256": "a50e42851b19f13ca6b001edd70f7db21dc788e56a045fc86c45dd3c4904a32a",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "authoring-boundaries",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 20
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-building",
+      "path": "web/dev-tools/electron-bridge/5f151968-84ce-4b8b-86a1-7eb05037dad9/report.json",
+      "sha256": "97c39b93f0d8ecb77b2e71e88fbae72e8a9bd6b8ac0ad0ac60a8352e83a61e43",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "building-appraisal",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 27
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-desktop",
+      "path": "web/dev-tools/electron-bridge/f564c690-93d1-48a2-80fc-a39af94e04b8/report.json",
+      "sha256": "07625fef8c0c6f36a53939db483c03a071a7e31bf5a3a00e8c6b4b943471f90b",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "production",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 12
+        },
+        {
+          "mode": "test-exports",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 11
+        },
+        {
+          "mode": "restart",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 6
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-efficiency-shaosong",
+      "path": "web/dev-tools/electron-bridge/f276d9cc-d2c9-4d36-9d72-ce55ce37b9c1/report.json",
+      "sha256": "940cd986e554af9e3a80159f93132e2de2e201350439903540fada9f8f301528",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "authoring-efficiency",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 10
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-efficiency-tianqi",
+      "path": "web/dev-tools/electron-bridge/24cd0f58-98f2-4bb0-892c-49c9a3e4c43f/report.json",
+      "sha256": "a6d47f8eb19f04782160dc5b9574d5bd6e7b38952db7d9d316e3a70e62009488",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "authoring-efficiency",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 10
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-polish",
+      "path": "web/dev-tools/electron-bridge/fbd6ac7e-6911-4778-bc78-b1ca8d55b863/report.json",
+      "sha256": "c9f8a5746043785cd2be6fec185960559e2132b1835e380ceeaa882171ebe066",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "edict-polish",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 15
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-recovery",
+      "path": "web/dev-tools/electron-bridge/440a39e4-50e2-4827-bfe1-bccd0d559b0a/report.json",
+      "sha256": "5ad7b5abadfce9b208cae9206b78c2086224d7a0a35b372dffe439e032fbe4af",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "authoring-recovery",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 17
+        }
+      ]
+    },
+    {
+      "label": "combined-electron-stream",
+      "path": "web/dev-tools/electron-bridge/45aa671b-fc80-4a44-8791-6e5bfef16e9e/report.json",
+      "sha256": "639ceca11e14961bea770d527c2eb2c42b0da18187b3abd34192b517fd57e2ff",
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "modes": [
+        {
+          "mode": "authoring-stream",
+          "ok": true,
+          "exitCode": 0,
+          "error": null,
+          "signal": null,
+          "checks": 12
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "label": "combined-arch",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-arch-3d968750-1812-4852-893e-014d794a56e0"
+    },
+    {
+      "label": "combined-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-audit-7a16a8c6-ee35-4fe7-9788-fbf9efb3141b"
+    },
+    {
+      "label": "combined-audit-probes",
+      "command": [
+        "node",
+        "web/scripts/audit-repro.cjs",
+        "--repo",
+        "C:/Users/37814/Desktop/tianming-perf-round1",
+        "--expect-clean"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-audit-probes-8754c82c-40fb-43e7-8c8e-ba0fd62b4ac8"
+    },
+    {
+      "label": "combined-builder",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-builder-1b76d2ee-3905-434d-bede-28208afef9e6"
+    },
+    {
+      "label": "combined-byte-check",
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=cr-at-eol",
+        "diff",
+        "origin/main..HEAD",
+        "--check"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-byte-check-1b8b7124-1bb4-48df-ace6-b44d64b513cf"
+    },
+    {
+      "label": "combined-electron-boundaries",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-boundaries-0e6125ba-e908-412c-b9e3-5b0d59a6d051"
+    },
+    {
+      "label": "combined-electron-building",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--building-appraisal"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-building-fd60582e-b3a8-4ace-ade1-1b26845ffe3c"
+    },
+    {
+      "label": "combined-electron-desktop",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-desktop-2b133426-5797-4e69-880f-0d711f8ff161"
+    },
+    {
+      "label": "combined-electron-efficiency-shaosong",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-efficiency",
+        "--scenario",
+        "sc-jianyan1-1127-shaosong"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-efficiency-shaosong-30861736-6a92-482d-8086-983272f9257e"
+    },
+    {
+      "label": "combined-electron-efficiency-tianqi",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-efficiency"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-efficiency-tianqi-61377e4b-84fb-42ad-8859-ce62687504e5"
+    },
+    {
+      "label": "combined-electron-polish",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--edict-polish"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-polish-9daaa567-005d-4314-998b-23ae2111aef6"
+    },
+    {
+      "label": "combined-electron-recovery",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-recovery-eae60ad8-741d-408d-ba9d-0ffe38bb11f1"
+    },
+    {
+      "label": "combined-electron-stream",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-stream"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-electron-stream-7e9ef26c-8fae-4d38-9fca-1636dd4671b6"
+    },
+    {
+      "label": "combined-full",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 1,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-full-0b60e2e7-ea27-4b4d-9cea-9774ccc9bbb7"
+    },
+    {
+      "label": "combined-full-quiet",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 1,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-full-quiet-aa1b066e-881f-452d-8b42-b1f1102ddcf7"
+    },
+    {
+      "label": "combined-full-two-workers",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2",
+        "--report",
+        "C:/Users/37814/Desktop/tianming-perf-round1/web/dev-tools/arch-guard/combined-two-workers.json",
+        "--run-id",
+        "combined-two-workers-20260910"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-full-two-workers-b96e71a3-4146-40cc-8696-9a821f3b1dba"
+    },
+    {
+      "label": "combined-hot-final",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-hot-final-aaafb9a3-b6f2-4187-baab-5fd9aeef2ce8"
+    },
+    {
+      "label": "combined-hot-sync",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "head": "5231d72a5a72cd0604060b9e7d9497088a867257",
+      "status": "A  docs/building-first-round-2026-09-09.md\nA  docs/building-order-writeback-2026-09-10.md\nM  scripts/electron/building-appraisal-cases.cjs\nA  scripts/electron/building-orders-cases.cjs\nUU web/.hot-update-manifest.json\nM  web/generated/tm-ai-change-applier.bundle.js\nM  web/index.html\nM  web/modules/ai-change-applier/validators.js\nM  web/phase8-formal-map-dossier.js\nM  web/scripts/smoke-building-appraisal-compat.js\nA  web/scripts/smoke-building-order-sc1.js\nA  web/scripts/smoke-building-order-writeback.js\nA  web/scripts/smoke-building-original-channels.js\nA  web/scripts/smoke-building-payment-ledger.js\nM  web/scripts/smoke-globalrules-build.js\nM  web/scripts/smoke-startup-phase-observability.js\nM  web/scripts/smoke-talent-s4.js\nM  web/startup-script-phases.json\nM  web/tm-ai-output-validator.js\nM  web/tm-ai-schema.js\nA  web/tm-building-orders.js\nM  web/tm-building-works.js\nM  web/tm-custom-build-agent.js\nM  web/tm-endturn-agent-mode.js\nM  web/tm-endturn-agent-write-tools.js\nM  web/tm-endturn-ai-infer.js\nM  web/tm-endturn-ai.js\nM  web/tm-endturn-apply-stages.js\nM  web/tm-endturn-apply.js\nM  web/tm-endturn-prep.js\nM  web/tm-hongyan-edict-ui.js\nM  web/tm-player-core.js",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-hot-sync-eb3fafe3-3cb9-4498-9950-1a4fc30138bf"
+    },
+    {
+      "label": "combined-lock-isolated",
+      "command": [
+        "node",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-lock-isolated-2621dae0-72df-44c0-9e30-6917cb67cd8b"
+    },
+    {
+      "label": "combined-official-sync",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "head": "5231d72a5a72cd0604060b9e7d9497088a867257",
+      "status": "A  docs/building-first-round-2026-09-09.md\nA  docs/building-order-writeback-2026-09-10.md\nM  scripts/electron/building-appraisal-cases.cjs\nA  scripts/electron/building-orders-cases.cjs\nUU web/.hot-update-manifest.json\nM  web/generated/tm-ai-change-applier.bundle.js\nM  web/index.html\nM  web/modules/ai-change-applier/validators.js\nM  web/phase8-formal-map-dossier.js\nM  web/scripts/smoke-building-appraisal-compat.js\nA  web/scripts/smoke-building-order-sc1.js\nA  web/scripts/smoke-building-order-writeback.js\nA  web/scripts/smoke-building-original-channels.js\nA  web/scripts/smoke-building-payment-ledger.js\nM  web/scripts/smoke-globalrules-build.js\nM  web/scripts/smoke-startup-phase-observability.js\nM  web/scripts/smoke-talent-s4.js\nM  web/startup-script-phases.json\nM  web/tm-ai-output-validator.js\nM  web/tm-ai-schema.js\nA  web/tm-building-orders.js\nM  web/tm-building-works.js\nM  web/tm-custom-build-agent.js\nM  web/tm-endturn-agent-mode.js\nM  web/tm-endturn-agent-write-tools.js\nM  web/tm-endturn-ai-infer.js\nM  web/tm-endturn-ai.js\nM  web/tm-endturn-apply-stages.js\nM  web/tm-endturn-apply.js\nM  web/tm-endturn-prep.js\nM  web/tm-hongyan-edict-ui.js\nM  web/tm-player-core.js",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-official-sync-aebd7276-a379-4bc9-8122-196ec7c34935"
+    },
+    {
+      "label": "combined-parity",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-parity-89e8d28b-5ded-46f9-be21-7c887e380135"
+    },
+    {
+      "label": "combined-release",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-release-d2ed91e0-0bb3-4afd-ab2c-8568b1836b5d"
+    },
+    {
+      "label": "combined-strict-evidence",
+      "command": [
+        "node",
+        "-e",
+        "const fs=require(\"fs\"),lib=require(\"./web/scripts/lib-smoke-evidence\"),r=JSON.parse(fs.readFileSync(\"web/dev-tools/arch-guard/combined-two-workers.json\"));const result=lib.validateReport(r,{runId:\"combined-two-workers-20260910\",head:\"34d0cfd8a0228d6d8946f069cfd40d15c6f74193\",tests:lib.discover(),runnerExit:0});console.log(JSON.stringify(result));"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-strict-evidence-e94d6783-06d3-4b46-91f9-acc1edfe1414"
+    },
+    {
+      "label": "combined-topic",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--grep",
+        "agent-kernel",
+        "--grep",
+        "quicktest",
+        "--grep",
+        "building",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2"
+      ],
+      "head": "34d0cfd8a0228d6d8946f069cfd40d15c6f74193",
+      "status": "",
+      "exitCode": 0,
+      "complete": true,
+      "path": "web/dev-tools/perf-round1/combined-topic-4f99e9a9-0d51-4962-8df0-b875a7d493bb"
+    }
+  ]
+}

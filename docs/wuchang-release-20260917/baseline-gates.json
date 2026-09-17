@@ -1,0 +1,18 @@
+[
+  {
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js"
+    ],
+    "exitCode": 0,
+    "seconds": 9.75
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "exitCode": 0,
+    "seconds": 120.68
+  }
+]

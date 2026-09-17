@@ -5,11 +5,13 @@
  */
 (function () {
   'use strict';
-  var BATTLE_URL = 'battle/index.html';   // 打包路径(相对 web/·Electron/web/Capacitor 皆可达)
+  var BATTLE_URL = 'battle/index.html?v=20260914-battle7'; // 带缓存戳，避免旧iframe协议配新主游戏
+  var START_TIMEOUT = 12000;
 
   function launch(config) {
     return new Promise(function (resolve) {
       if (typeof document === 'undefined') { resolve(null); return; }
+      if (document.getElementById && document.getElementById('tm-battle-overlay')) { resolve({ error: '已有战场正在进行', code: 'battle-busy' }); return; }
       var overlay = document.createElement('div');
       overlay.id = 'tm-battle-overlay';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483600;background:#0a0907;';
@@ -27,31 +29,44 @@
       bar.appendChild(abortBtn);
       overlay.appendChild(iframe);
       overlay.appendChild(bar);
+      var progress = document.createElement('div');
+      progress.textContent = '正在准备战场…';
+      progress.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#e8d6a8;background:#0a0907;font:18px serif;pointer-events:none;';
+      overlay.insertBefore(progress, bar);
 
-      var done = false, started = false;
+      var done = false, started = false, retryTimer = null, deadline = null;
+      var sessionId = 'battle-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
       function finish(result) {
         if (done) return; done = true;
+        clearTimeout(retryTimer); clearTimeout(deadline);
         try { window.removeEventListener('message', onMsg); } catch (e) {}
         try { overlay.remove(); } catch (e) {}
         resolve(result);
       }
       function sendStart() {
-        if (started) return; started = true;
-        try { iframe.contentWindow.postMessage({ type: 'startBattle', config: config }, '*'); } catch (e) {}
+        if (done || started) return;
+        clearTimeout(retryTimer);
+        try { iframe.contentWindow.postMessage({ type: 'startBattle', sessionId: sessionId, config: config }, '*'); }
+        catch (e) { finish({ error: '无法发送战场数据：' + e.message, code: 'battle-start-send' }); return; }
+        retryTimer = setTimeout(sendStart, 500); // 同会战ID幂等重送，须收到子页确认才算启动
       }
       function onMsg(e) {
         if (iframe.contentWindow && e.source !== iframe.contentWindow) return;   // 只认本 iframe
         var d = e.data || {};
+        if (d.sessionId && d.sessionId !== sessionId) return;
         if (d.type === 'battleReady') sendStart();
-        else if (d.type === 'battleResult') finish(d.result || { outcome: 'unknown' });
+        else if (d.type === 'battleStarted' && d.sessionId === sessionId) { started = true; clearTimeout(retryTimer); clearTimeout(deadline); progress.remove(); }
+        else if (d.type === 'battleResult' && started) finish(d.result || { error: '战场未返回有效战果', code: 'battle-empty-result' });
         else if (d.type === 'battleAborted') finish(null);
-        else if (d.type === 'battleError') finish({ error: d.error });
+        else if (d.type === 'battleError') finish({ error: d.error || '战场运行失败', code: 'battle-runtime-error' });
       }
       window.addEventListener('message', onMsg);
-      iframe.addEventListener('load', function () { setTimeout(sendStart, 700); });   // 兜底:battleReady 漏接也能起战
-      abortBtn.onclick = function () { try { iframe.contentWindow.postMessage({ type: 'abort' }, '*'); } catch (e) {} finish(null); };
+      iframe.addEventListener('load', sendStart);
+      iframe.addEventListener('error', function () { finish({ error: '战场页面加载失败', code: 'battle-load-error' }); });
+      abortBtn.onclick = function () { try { iframe.contentWindow.postMessage({ type: 'abort', sessionId: sessionId }, '*'); } catch (e) {} finish(null); };
 
       document.body.appendChild(overlay);
+      deadline = setTimeout(function () { finish({ error: '战场启动超时，已转庙算', code: 'battle-start-timeout' }); }, START_TIMEOUT);
     });
   }
 
@@ -62,5 +77,5 @@
     return launch(cfg);
   }
 
-  if (typeof window !== 'undefined') window.TMBattleEmbed = { launch: launch, launchFromArmies: launchFromArmies, BATTLE_URL: BATTLE_URL };
+  if (typeof window !== 'undefined') window.TMBattleEmbed = { launch: launch, launchFromArmies: launchFromArmies, BATTLE_URL: BATTLE_URL, START_TIMEOUT: START_TIMEOUT };
 })();

@@ -49,7 +49,7 @@
     personnel_changes: 'array',
     gongming_grants: 'array',
     merit_changes: 'array',
-    vassal_changes: 'array', title_changes: 'array', building_changes: 'array',
+    vassal_changes: 'array', title_changes: 'array', building_changes: 'array', building_decisions: 'array',
     region_status_changes: 'array',
     admin_changes: 'array', admin_division_updates: 'array',
     harem_events: 'array', tech_civic_unlocks: 'array', policy_changes: 'array',

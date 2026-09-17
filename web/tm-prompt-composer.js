@@ -46,6 +46,56 @@
 
   var TM = global.TM = global.TM || {};
 
+
+  // historical-agency-v21: read the active scenario; never mirror policy into another state object.
+  function agencyScenario(sc) {
+    if (sc && typeof sc === 'object') return sc;
+    var G = global.GM || {}, P = global.P || {}, found = null;
+    if (G.sid && typeof global.findScenarioById === 'function') found = global.findScenarioById(G.sid);
+    if (found) return found;
+    if (P.scenario && (!G.sid || P.scenario.id === G.sid)) return P.scenario;
+    return { worldSettings: P.worldSettings || {} };
+  }
+  function agencyOn(sc) { var s = agencyScenario(sc); return !!(s.worldSettings && s.worldSettings.historicalOutcomePolicy === 'player-driven'); }
+  function agencyText(sc) {
+    if (!agencyOn(sc)) return '';
+    return '\n【本局历史与选择】以本局已经发生的事实和人物册为准。史料用于此前经历、制度与物质条件，不是开局之后必须兑现的命令。未来年号、任免、和战、宗教政策、灾变和政权兴亡由玩家及各方行动发展，不为贴合原史强制触发、补演或回退。玩家自定年号与合乎当下条件的不同选择不因偏离原史而受惩罚。当前剧本已配置的人物（包括虚构人物）仍存在；新入局史实人物须在当前年份已出生且在世，不从未来或往昔召来。不得预写未来履历，人物只知本人当时可得消息。\n';
+  }
+  function agencyMode(mode, sc) {
+    if (!agencyOn(sc)) return '';
+    var style = mode === 'strict_hist' ? '考据严谨、行文克制，依既往史料与当下制度推演。' : mode === 'light_hist' ? '史据为本，允许合理细节演绎。' : '叙事可富有戏剧性，人物与生活仍处在当前时代。';
+    return style + '后续历史不预定，年号与施政由玩家决定。新人物限当前已出生且在世者。';
+  }
+  function agencyAdvisor(sc) {
+    return '你是本局的历史与现实条件顾问。只评估玩家措施在当前制度、资源、人物关系中是否可行，以及可能而非必然的反应。不同于原史的年号、任免、和战或改革本身不是错误；不得为了回归原史制造惩罚或强制事件。可用已发生的真实先例说明条件差别，不把后来史事当预言。不改写玩家决定；若无额外现实障碍，deviations返回空数组。后果必须指出本局实际存在的主体与原因，拿不准不编造。' + agencyText(sc);
+  }
+  function agencyNumber(value) { if (value == null || value === '') return null; var n=Number(value); return isFinite(n)?n:null; }
+  function agencyProfile(name) {
+    var profiles=global.HISTORICAL_CHAR_PROFILES || {}, keys=Object.keys(profiles);
+    for(var i=0;i<keys.length;i++){var p=profiles[keys[i]];if(p && (p.name===name || p.displayName===name || (Array.isArray(p.aliases)&&p.aliases.indexOf(name)>=0)))return p;}
+    return null;
+  }
+  function agencyEligibility(profile, opts) {
+    opts=opts||{};profile=profile||{}; if(!agencyOn(opts.scenario))return {ok:true};
+    var G=global.GM||{}, P=global.P||{}, year=agencyNumber(opts.year);
+    if(year==null)year=agencyNumber(G.year);if(year==null)year=agencyNumber(P.time&&P.time.year);
+    if(year==null)return {ok:false,reason:'当前年份尚未确定'};
+    var known=agencyProfile(profile.name), b=agencyNumber(known&&known.birthYear), d=agencyNumber(known&&known.deathYear);
+    if(b==null)b=agencyNumber(profile.birthYear);if(d==null)d=agencyNumber(profile.deathYear);
+    var roster=(G.chars||[]).concat(G.allCharacters||[]), current=null;
+    for(var i=0;i<roster.length;i++){if(roster[i]&&roster[i].name===profile.name){current=roster[i];break;}}
+    if(current&&(current.alive===false||current.dead))return {ok:false,reason:'此人本局已经去世'};
+    if(b!=null&&b>year)return {ok:false,reason:'此人当前尚未出生'};
+    var aliveHere=!!(current&&current.alive===true);
+    if(d!=null&&d<year&&!aliveHere)return {ok:false,reason:'此人不在当前年代在世'};
+    if(b==null&&!aliveHere)return {ok:false,reason:'缺少可确认的出生年份'};
+    var age=b==null?agencyNumber(current&&current.age):year-b;
+    if(opts.minAge!=null&&(age==null||age<opts.minAge))return {ok:false,reason:'未达参与年龄'};
+    if(opts.maxAge!=null&&(age==null||age>opts.maxAge))return {ok:false,reason:'已超参与年龄'};
+    return {ok:true,age:age};
+  }
+  TM.HistoricalAgency={getScenario:agencyScenario,isPlayerDriven:agencyOn,promptText:agencyText,modeDescription:agencyMode,advisorInstruction:agencyAdvisor,temporalEligibility:agencyEligibility,findProfile:agencyProfile};
+
   function _str(v) { return v == null ? '' : String(v); }
   function _arr(v) { return Array.isArray(v) ? v.slice() : (v ? [v] : []); }
   function _num(v) {
@@ -76,7 +126,7 @@
     ctx = ctx || {};
     var sc = ctx.sc || {};
     var P = ctx.P || {};
-    if (P.ai && P.ai.prompt) return P.ai.prompt;
+    if (P.ai && P.ai.prompt) return P.ai.prompt + agencyText(sc);
     var s = '你是历史模拟AI。剧本:' + _str(sc.name) +
             '时代:' + _str(sc.era) +
             '角色:' + _str(sc.role) +
@@ -84,6 +134,7 @@
             '文风:' + _str(P.conf && P.conf.style);
     if (ctx.gameModeDesc) s += ctx.gameModeDesc;
     if (ctx.historicalCharLimit) s += ctx.historicalCharLimit;
+    s += agencyText(sc);
     return s;
   }
 

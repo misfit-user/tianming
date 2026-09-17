@@ -1,0 +1,956 @@
+{
+  "date": "2026-09-11",
+  "baseline": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+  "branch": "codex/fix-endturn-player-feedback",
+  "scope": "local game repair; no push/merge/deploy/server changes/player data/API calls",
+  "sourceHashes": {
+    ".gitattributes": "20666bfdbfd6c04dcccca02e97a6394ea88d860710f03e29ac8390c152d9340d",
+    ".github/workflows/ci.yml": "b86ced52cf8fd803d52546e9d55399ff19f26a046ae7686ff102b9c0c1192d3f",
+    "scripts/electron/bridge-main.cjs": "4cf7deebdb69f7f6c8e03f43a6f7e295a9ede250a75a950fcd85b8388d0ea51c",
+    "scripts/electron/player-feedback-cases.cjs": "482f81997c970b6dc4b9eb17352228712418a5b2c078de7ecf500a8b59768290",
+    "scripts/verify-electron-bridge.js": "61002846e5e987605bc291dcd6fddcf736f500e17be1ad55746be30c4b1ce2e2",
+    "web/.hot-update-manifest.json": "e796c9df7f3b1ab8df159e2c4bb6f404f81a6faa089d3c2ab1d5fb3bbfd31501",
+    "web/index.html": "8a41354555fbeeb12465ac0aac8acf4818a70f602aac8cac13e85bb1c8e10580",
+    "web/phase8-formal-bridge.js": "f5447b5b83d0eb65c64f58e30a74b113bb1582bd974ecb7f34ec42e8a983f9f3",
+    "web/phase8-formal-rightrail.js": "5c4417da31ba5f995a8cb12a339e4742c5f0ba1408710093048d66c1410c0593",
+    "web/scripts/lint-split-contracts.js": "9daa8fc819fa3ec2ac8e621843db5f1e3f347f6fcedebfec506f590714c3913b",
+    "web/scripts/run-smokes.js": "b66b61fa0de8ca8022fa24c80932aef3d30dbb957bbb3eafc2f2b8899148379a",
+    "web/scripts/smoke-agent-trunc-selfheal.js": "9036972c2c341e4c3a6a9ac1b9b31443f0f4acea4fa44f37b4b33047f60f6f91",
+    "web/scripts/smoke-ai-abort-listener-cleanup.js": "0ced4745ae7488d57229fa9db42d9461641079c8a09302ed522724d412e13065",
+    "web/scripts/smoke-ai-err-human.js": "1e0ea951c5fe59a6a98a3e1325a7ae10a0d07935953d598bc21f2875a75bc7af",
+    "web/scripts/smoke-ai-preflight-diagnostics.js": "e2e6718993d009549e90fa128a25db3f4c364af97e687c6d05f25fa93b8008cc",
+    "web/scripts/smoke-ai-transport-deadlines.js": "579a9ff0857266d9e84639e62af964d4a7e6166fc2e1ddc8364a9f2b1b5b8a55",
+    "web/scripts/smoke-army-roster-search.js": "78cdef551ab4e41b583a84b27a0e6d7598675553911c6fef8b8cecf10256e56f",
+    "web/scripts/smoke-building-appraisal-compat.js": "8ac968434e5b83571f0e94896ba17c537ddbfe1eb7fb813cf60fa4a0d9933937",
+    "web/scripts/smoke-calendar-contract.js": "cd47ec2b210e2b11abfb2c6df4ca7f7888b09e42450e033ea3765c58b9fd5dca",
+    "web/scripts/smoke-conn-quickcheck.js": "239f332a08625a86936641ccbc34b630b113f662473f365299155cc3dfcf9adc",
+    "web/scripts/smoke-context-hard-ceiling.js": "0f65c3544c672a2b86697f3b61ccbaca8776f81b05888e9c0147d9d28d22c184",
+    "web/scripts/smoke-cost-panel-ui.js": "e0a99498b3c61cad09413e260ad7c7239f83f2ce2cb238dbff1855fac28dc979",
+    "web/scripts/smoke-divergence-ledger.js": "86ef93bbd5b64416818b4e9875c88bdbec4b5510eea2a11d0083027d8d8b32c5",
+    "web/scripts/smoke-edict-polish-results.js": "16093084f3618ef0ec5383b7383817f7a0342950ff761fc2ced1f697e3372b02",
+    "web/scripts/smoke-endturn-fatal-boundary.js": "718a5f2716db7d82d8ddf559c7e2ac068d07f7fd46bee89c2245602bcd95c33b",
+    "web/scripts/smoke-endturn-performance-optimizations.js": "4a8b53673a1f0638e9a68d8628ff61561815a1604734622e2c05d0c4bc31cac9",
+    "web/scripts/smoke-endturn-speed-batch1.js": "e3cc9594a24fa9d0245b0411e9cc6526cd0007f345146cfab4a0c2cda6e34d3c",
+    "web/scripts/smoke-final-completion.js": "463989130c5eac715ddc082ca0d1a96ea47979b9bd47462e53bc1e4ffa5b0cdf",
+    "web/scripts/smoke-imageapi-url.js": "22936568ef3fc7f40c5a7362eb20f17715fe45776dbb0deff07c369e2c2f0441",
+    "web/scripts/smoke-ledger-consistency.js": "175b30b51e1a7206b21d7cef18e4661913a25e35a9ad2d8879ba966a6fe56bcf",
+    "web/scripts/smoke-memory-read-contract.js": "9cf0a17084c449f2326d785e999efcd079d429b17d3a2da163c1fc95ff3819aa",
+    "web/scripts/smoke-memory-sanitize.js": "fe6a2f99d327728d6c07a48ae6db09522d34199f354677afd8751017002b4428",
+    "web/scripts/smoke-model-context-identity.js": "d474ac30d82c59a0ca66741fdc6724d90a8180021c87d7cde89feb9a93c5d67a",
+    "web/scripts/smoke-model-probe-evidence.js": "77b3386968f27ece6c6540d4098f48e30fefd9409fda0b23cfd4989e196afb40",
+    "web/scripts/smoke-party-calibration-response.js": "6e1b50c3d91d09ab4e9a7d8693d8d3c89d165d75fd24f67d76527dd24c20f084",
+    "web/scripts/smoke-phase7-ux-collapse.js": "71bc1e655bf9153247ae0367610af489be64c16ec7e21f6735e2a645d6959e9e",
+    "web/scripts/smoke-prompt-cache-proxy-claude.js": "b1fb8fbd521f039a92f6a5566438f8cbf1777fe4941ba81cbf5d3c9fed38ae32",
+    "web/scripts/smoke-renderer-untrusted-dom.js": "3590fe8dd5d1b3e65be66e683bcdc0ce4e05d65a4cab26954d7d17b8da93a5f2",
+    "web/scripts/smoke-round19-cross-system-rollback.js": "391313b740b4195b05ae96c5967b086a18c8d3f43df3e67e67e1a31f155ba130",
+    "web/scripts/smoke-runner-resource-isolation.js": "3f86925ebadc8710e2fbefcfe44a485b7a70e08babc43f1a87f248550be8d9c6",
+    "web/scripts/smoke-sc1-stream-final-budget.js": "85e9a33842536181e1b8d40380b4427dcdda0a873285b3daf4559535f24d5a68",
+    "web/scripts/smoke-startup-phase-observability.js": "c2eb2baf8980b794a2b6484d61213d6ff3e861c91a801f870d7e4c7afc63430e",
+    "web/scripts/smoke-tc-dialogue-wave.js": "e364063c20a2995927db7c30b233bc51ded3685a41372dc9e845cde0a1269621",
+    "web/scripts/smoke-tc-history-wave.js": "b72157ba5e0443ea174f6d462fc9f3292a4e222ae930792eb78e064a4427577c",
+    "web/scripts/smoke-tc-keju-wave.js": "826fe1b0efcc11843e8042b4c938cbf8a9f7504604b50eb39a23d733ce912f5b",
+    "web/scripts/smoke-temporal-constraint.js": "5f049d34b59ed91c2902f1cd9a7412de599b0f1a2c2b7e24078dffd7d099874e",
+    "web/scripts/verify-secondary-fallback.js": "6e27c8a6b8ada4971b0dcafb909631c6d3bca95c718cb54cdbcf029bbee752a7",
+    "web/startup-script-phases.json": "d432e1a1f57d1360fe98f9910876e8103fcd140dbc19fa47cdeaa1eca452ab80",
+    "web/tm-ai-infra-json.js": "4947801d2d26ee60d166b7334ac3b0c1a229847dc3a2d61abdfe43c80a4baa7b",
+    "web/tm-ai-infra-model-detect.js": "258e4df72874b8b4b65f2c59ecdac598768bc877f0154f346a861c5ea6a69743",
+    "web/tm-ai-infra-retry.js": "b3aac60f99aa1e24242764058b7e5093581188980cd6ef11ed1fe3b84abf5a39",
+    "web/tm-ai-infra.js": "ba5dc246cb42b0228e23ecaa8bca162c0b23185599b2e3167b087425fb7949bb",
+    "web/tm-endturn-ai-infer.js": "792c6e7ab2550cedc07a4250b0be849bc08e7340fd5c8d090cc6143c1d34bf25",
+    "web/tm-endturn-ai-sc1-budget.js": "8b963517066cdc15231a9592b702acb7c297a69d43400f08b425f11dec3a9517",
+    "web/tm-endturn-ai.js": "9aa3669758df53bb6bc0c53bbad6292100b955cd95ef60d84dff1f7b7f9d678c",
+    "web/tm-party-class-llm-calibrator.js": "118b477542d2ac4584d00a88926e1ad27c3017704c59e42dba460829869be568"
+  },
+  "full": {
+    "path": "web/dev-tools/arch-guard/ci-yDu7mA/smoke-report.json",
+    "sha256": "755b98d2d1dfc8a24046c3f31dc946c13b1955928bf47c3e1a63a5b9b3a401ac",
+    "pass": 945,
+    "fail": 0,
+    "skip": 0,
+    "waived": 2,
+    "waivedChecks": 7,
+    "total": 947
+  },
+  "electron": {
+    "path": "web/dev-tools/electron-bridge/ca1a4297-c29c-486f-a7d4-2d707603f3ba/report.json",
+    "sha256": "9170dfdff6e8413928652e804948c2903787cbe5fc2090fdc5bd1e900ca6c7ce",
+    "checks": 20,
+    "scope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+    "screenshot": "web/dev-tools/electron-bridge/ca1a4297-c29c-486f-a7d4-2d707603f3ba/army-search.png"
+  },
+  "manifest": {
+    "files": 1098,
+    "version": "1.3.4.11",
+    "priorAssetsPreserved": 367,
+    "removed": []
+  },
+  "syntaxChecked": 51,
+  "executions": [
+    {
+      "directory": "web/dev-tools/new-scenario/player-army-search-dce84c61-57ca-4253-81a3-35befe0f55e5",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-army-roster-search.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:05:50.492Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "84a5314c79dd3983ef4c331a3f9ba0eb9b2e527f319d4fc783afcff74295acc0"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-army-search-baseline-10d3fe27-cf33-43ca-866c-690e61f21b48",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-army-roster-search.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:05:51.399Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "14dbe143b4e4f15ddbfa8816efb7b309e5cc37a1cf0ea0431ffb79fb319a842e"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-army-search-corrected-cc5ed55c-f28a-4784-b007-9bbc7a08560f",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-army-roster-search.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:06:26.173Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "bcdbd0573e2ece38e9cc50f057795661128340ec5a7855c7e1fb08f95e6c90aa"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-context-baseline-2388c216-90f3-498c-9706-7e092f671ff9",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-model-context-identity.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:13:16.914Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "84700f52136e800b80564ad10052a65dbb09fc8b34b04796a3d01f138170be38"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-context-fixed-f21ef943-ef16-4c5a-82f6-ceda212b3c74",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-model-context-identity.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:14:50.656Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "6763c27e71abb5a36b55dfe3f18035e98e2236856121fd585d2cac60415087d0"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-transport-baseline-5c781a51-ab1c-4e65-92c5-5ab15d1e830d",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-transport-deadlines.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:20:05.045Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "22e803e2be715c145a7220162162b91f6d8bc4e871a6506297cedf0f9a4c852d"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-transport-baseline-corrected-966504e6-75e1-4155-9d22-e1b11835917a",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-transport-deadlines.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:20:47.931Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "a65eb0dcdc727007045c5387a3aa4f53cfb5812695ed3c028169740b0d31ac21"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-transport-fixed-ffc6906a-b4df-41a1-9091-0fc30a3fcd51",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-transport-deadlines.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:25:11.059Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "82ff454f1e15d3134261ab5556c216cdf529494a1654c4f2d1d99d8d5cddfb74"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-abort-existing-028d536a-83cd-4172-b5dd-a513361a6ba8",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-abort-listener-cleanup.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:25:11.959Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "b05c78a0d05395cf510815d4ab5457effb49377fe57fb98d60c72c627dc56a40"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-transport-complete-cb60c91b-5d3a-4f90-8a7f-09e7aed173bf",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-transport-deadlines.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:32:12.017Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "60ad6566ea2bd30fa60c87a937a358887d5fb486585287a7e22b521db4cb7dbe"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-abort-cleanup-ef7f533c-ea10-4c8b-ac67-ab1f0bd7986c",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-abort-listener-cleanup.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:32:12.578Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "ffa2c117336ba7eb202765f4b0f54980887920ba20a713b1e71cfb2c9be0c02f"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-fatal-boundary-a1d587a8-72f6-4971-8450-924e5d3532c3",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-endturn-fatal-boundary.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:34:16.603Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "a93de523f282f01d09de4efe7d9da42a1ef443f36b50ebe5892162db705ab355"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-old-error-path-bb65247c-4002-4509-b9f5-4c9a429ac377",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-endturn-error-path.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:34:17.150Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "dff472a393c77cf215f8c4e5452ae807a0999bd0b2b86e30986892c14a0144d8"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-fatal-boundary-corrected-b784acac-485a-47f8-bd6f-1f081ff6663a",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-endturn-fatal-boundary.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:40:58.177Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "e5eac1c2d4eb927e53dc83209830fb86c3afe20f6fd305e1e80a293ca75511c9"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-fatal-boundary-baseline-41dd9efa-db31-41d7-86c6-2c4e2e855b82",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-endturn-fatal-boundary.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:41:20.845Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "b11c560935aad14c8a01a36602eb273fffc758e58709f0e7107321cc26915f09"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-arch-early-0f19e471-8f8a-4892-8163-26528d90ee80",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:41:42.861Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "a4ae2d59cdec6536ecf901e8e794370b4c41dd98c669fb69bc70ca8318b5a073"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-retry-split-614c7740-1474-475e-acd9-394c6b98f03b",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/dev-tools/new-scenario/split-player-retry.cjs"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:44:44.064Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "6a3a90c340006df31878b53a5e5d73641fbdfebad609873b5649536bcfb5d434"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-retry-test-loaders-c387bf37-8bb8-4f32-aa31-91de0990f595",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/dev-tools/new-scenario/load-player-retry.cjs"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:46:08.421Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "9bc72b08eb7a610b487d8c179144db70e3015a71b8085670664e0fb70a94fe51"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-focused-bc9ac2d8-5614-498a-8a4a-2670062d891b",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "ai-abort|ai-err-human|ai-preflight|ai-transport|army-roster|model-context|context-hard|sc1-stream|endturn-fatal|endturn-error|rightrail|model-probe|round19|semantic",
+        "--no-retry"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:47:26.401Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "aa3aeb3b1826dfb23b577562080895d04d97baa7433db597b4f317ee429dcba9"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-focused-corrected-f751a480-ded5-436c-a42a-91d0898d3e7f",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "ai",
+        "--grep",
+        "army",
+        "--grep",
+        "context",
+        "--grep",
+        "semantic",
+        "--grep",
+        "rightrail",
+        "--grep",
+        "round19",
+        "--grep",
+        "endturn",
+        "--no-retry"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T13:47:57.611Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "712ded4382b7ccacbf6ea01e82a9df64d21ed1126b65d7fc634d84029402ae07"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-electron-029d5756-4fea-4433-b2bd-710c6b61e085",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--player-feedback"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:00:59.470Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "fef43266a13bf5b1d9568648c66bff4cc6cf000d76010aab6da73c8b65f252cc"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-arch-split-8442eb93-f0af-4a83-8530-9533b8a64f1c",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:01:20.025Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "7afca6b499b9363304766f9e82bb27d941497a82a398f25bdcac6e195fb3835b"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-electron-corrected-28a4423a-bb22-404f-ae03-e6eadaacc30b",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--player-feedback"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:02:34.175Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "4851ce45ccefb78275f0e1604567b22c8f8fd4dff98d0143ae68197421a88664"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-context-complete-cf4378f8-dfec-4997-ba9d-778e79de95cd",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-model-context-identity.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:05:40.638Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "0be1b349032b4f2d864ec83d50aaf970accc85c523c2e2d6c697d6014865eda9"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-full-initial-111ea5f4-3985-4cc7-b0fe-f5b35a438c1b",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:07:23.090Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "1c639fdb0e053d50c4cf09c14b7722f8b0cdf9b086f88b74fd195763037a4e7a"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-army-baseline-final-2cabbc08-5082-43da-881c-862a78de691f",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-army-roster-search.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:07:53.431Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "b13f4e6dd92f03145df4f49544ce1798ee2c91b29611a804d7348b06ef1b91eb"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-context-baseline-final-ebfe3224-cde6-4a14-922f-df180b6e469a",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-model-context-identity.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:07:57.162Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "74138f8e1d121273cad095198434c2f63a7f3f94bb66a59349ccc1ed89b21672"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-startup-generated-30d5c772-e316-403f-89a1-352c7ec8bb28",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:10:22.521Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "e6b3b6324bc491e0338042c354bb5e592228c7c5228dc1bed084a42c7da4efde"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-official-sync-7909edfe-15c6-4759-8531-0d6bec2d2c02",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:10:26.628Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-official-parity-a008db00-b200-4cd6-9a99-e65b5f2788b6",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:12:12.266Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-baseline-write-b5d20fc7-618a-4017-845b-ac3a3d17aa27",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:12:13.204Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "c1633b0b0901a44356b2de21c80e28ec325c1cb6a96e2118f0a18658e2b2be3e"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-arch-final-815d031f-55de-45c7-ac10-52c2965765d2",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:12:50.945Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "cc5ef202d811c6e22616f75b1dd12e78faf91cdd4f8dcef33aedd888d1a87e2d"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-electron-final-32d4615b-db07-433d-ae26-72d9398b1386",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--player-feedback"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:12:58.933Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "b575911a7ad1dc0706cc7b156158eb8b92f01d14ef6ad6212fc5e6d62cc7b773"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-full-final-b1e58060-0e27-49b3-831c-65ae71208a95",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:13:02.504Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "17003cc7c7173d70ca9edc487b7a17951c55682c7711f3ab1bbe334aaa54b431"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-calibration-baseline-9f217806-c5da-4567-b6f8-3bf4201bf472",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-party-calibration-response.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:15:37.772Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "f4791a9b946129ff49a6283dba65532609fdbfdf00ce50cc412e5ef936e9c00a"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-calibration-fixed-2faa10e2-1f7a-42c5-b4ca-a7ac7c41217c",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-party-calibration-response.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:16:02.792Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "eccf717a10cc04e2ef44953e1fcd5e8c1e72b25a7e3ac4c810e7bdbc247a890e"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-arch-release-candidate-6e385424-0cb9-4bdc-a7b9-d25fe9eb60e8",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:17:44.493Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "7c86930a27c306a33e48d89a81ed6fe38cfcf8ad990d31112642e55211374a7d"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-baseline-final-write-fec42c9e-3e08-479b-b3e9-09df0c35f873",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:18:56.025Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "71bdaeb06aaa470fa83ee5477f05633db88f219c1dfa7a3186931b2f68e66c43"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-full-release-candidate-199a93cb-1594-4b3c-ac68-c0d5e6b9ccd5",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:19:01.215Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "ddce534868d678589bdcfb4a7c9f9136dc8db8f5215f74cd63c9eb50feb9712f"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-release-contract-7c1cecd6-a1b3-41c4-9cf9-61a78a4fea6c",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:20:02.589Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "7ba4f11fe5d4aa21b4974c44318020767e5e5347e313daecdb3867d4f3341a56"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-hot-builder-bc9e4069-bb14-4a0b-a7fd-d7c07bf21ba9",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:20:10.137Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-baseline-final-check-0d9fcedd-6532-4ee5-8e85-b6caa40c9bc2",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:21:03.949Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "259debaa4c4658b149c4d95bc9a8675fea0ef4c2ebd512f2d79779b8cbbe4435"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-electron-complete-e5f6589a-cfe9-4a00-8ad4-f6761110467f",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--player-feedback"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:21:34.960Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "cb15a959d4f6e2ea2b229ab06306b1f25aae59d4395190de84d36eb20194d4ea"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-transport-baseline-final-02f43d8f-896d-45ee-8cb6-e2ca02507b46",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-ai-transport-deadlines.js",
+        "--source-ref",
+        "690b1d5e2089b3df721b71b493e7208a19c19b2c"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:28:32.752Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "6ebcecd30a02fca7a59a42ea6dd8424d6dab1889108d88f690d57b15dd609f23"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-baseline-write-11e3055a-4de1-4479-825f-b74eff377aff",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:33:58.582Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "10a78dc80264a8b88f39f7de10485ecf9ff791c147fb82f1490ccbaae5fb1a61"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-host-guidance-ff5208a0-322d-4862-b829-7328d503d41e",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/dev-tools/new-scenario/check-host-guidance.cjs"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:34:15.657Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "977c6bfe05dceafdc8e524dd159bc687d696a760956a29e2eef5b9c07559e38f"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-full-ad4cd54f-256b-4fc0-9b06-0efbf82cc4d6",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:34:46.460Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "a1f75abaddec5d8a2817a8d1299844951e05994069c47deb2e4d37c80a05a5fc"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-electron-bdd68bd9-2a57-4f87-bbcc-cdc5f35f2250",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--player-feedback"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:34:49.672Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "71df4acf0098513ddc3ce3d5ca285883b7c4fe1f2b96f689b7acf30381eeb9f7"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-arch-7ff77fba-56ba-4a56-9dc8-5876fe65ea1c",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:34:55.607Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "be168259ba6ae91946f1e1b69e2cff1c0739056dd5d8a53f72c6759db630c26d"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-release-contract-d939b45c-70fd-48bc-afa6-89a837fa5324",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:36:49.465Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "d25a1d8230a8fda533ba525aa56a425f1d34e3b0c0071f526ef446f9d6bb3193"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-eof-baseline-check-b9bad6b0-e987-4f65-a431-991b93eae4f7",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:38:02.937Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "259debaa4c4658b149c4d95bc9a8675fea0ef4c2ebd512f2d79779b8cbbe4435"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-lock-isolated-46e7bb15-8653-4195-a1c0-fa64dc1bf647",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-workshop-lock-recovery.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:39:32.211Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "707db02d73643f82de342b66dedbcd26996843c225591ae1abb5621152b1652d"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-verified-full-1c1640f3-48e3-4833-9dd1-542f10ed9743",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:43:12.532Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "ff951389d85f304b9f1ec9c8f241e5d9f862d6dbf6754cb7c1197987265e6098"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-runner-before-de9cf8d3-7e4f-4dd5-a652-2ec44a3f1d7a",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-runner-resource-isolation.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:50:24.032Z",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "logSha256": "ad1dd4099c76e5042ba77b3e48d68a29c41984677c8f9a81d0056b8fedb416de"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-runner-after-d00d29b4-72fc-4205-9a02-5ef2d37555e5",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-runner-resource-isolation.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:51:21.234Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "4c90f05392a77b05424539c4d03e1ffc693e19703382b23f31e26f3eb11d2b21"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-scheduled-full-ef6ac58e-e9db-4745-a17d-2dd24e0d716a",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:54:04.325Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "c440574642b15a5e1beaafb99384f293b89f3ba106fe3f2618bf299dca200b77"
+    },
+    {
+      "directory": "web/dev-tools/new-scenario/player-scheduled-arch-0c4a11b6-add0-4bc7-8c12-9ce1c92d2ebd",
+      "head": "690b1d5e2089b3df721b71b493e7208a19c19b2c",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "node": "v24.14.0",
+      "at": "2026-09-11T14:56:16.609Z",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "logSha256": "e5fa5ce1def51d63ff1a043a11f2dfb3941bc3b5c727bb7d88b7730967c1e0ed"
+    }
+  ]
+}

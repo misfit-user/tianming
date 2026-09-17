@@ -1077,8 +1077,57 @@ if (typeof window !== 'undefined') {
   window._keyiAbort = _keyiAbort;
 }
 
+function _kejuQueuePending(entry) {
+  if (!GM._kejuPendingAssignment) GM._kejuPendingAssignment = [];
+  if (!GM._kejuPendingAssignment.some(function(p) { return p.name === entry.name && p.examId === entry.examId; })) {
+    GM._kejuPendingAssignment.push(entry);
+  }
+}
+
+function _kejuRenderNationalRoster(container, exam) {
+  var results = exam.dianshiResults || [];
+  var html = '<h3 style="color:var(--gold);">' + escHtml(_kejuStageName(exam, 'huishi')) + '放榜</h3>';
+  html += '<p>本场取士' + results.length + '人。取得' + escHtml(_kejuGraduateTitle()) + '，候铨叙用。</p>';
+  html += '<p>' + escHtml(exam.huishiTopic || '') + '</p>';
+  results.forEach(function(c, index) {
+    html += '<div style="padding:0.8rem 0;border-bottom:1px solid var(--bdr);"><strong>' + (index + 1) + '、' + escHtml(c.name) + '</strong>　' + escHtml(c.origin || '') + '　' + escHtml(c.class || '');
+    if (c.evaluation) html += '<p>' + escHtml(c.evaluation) + '</p>';
+    html += '<button class="bt bs bsm" onclick="viewAnswer(' + index + ')">阅卷</button> ';
+    html += '<button class="bt bs bsm" onclick="recruitCandidate(' + index + ')">阅人</button></div>';
+  });
+  html += '<button class="bt bp" onclick="finishKeju()" style="margin-top:1rem;">收榜·候铨</button>';
+  container.innerHTML = html;
+}
+
+function _kejuFinalizeNational(exam) {
+  if (exam._nationalFinalized) return;
+  var results = exam.dianshiResults || [];
+  if (!exam._nationalResultsReady || !results.length) return;
+  var title = _kejuGraduateTitle();
+  exam.gradPool = results.map(function(c) {
+    if (!(GM.chars || []).some(function(ch) { return ch && ch.name === c.name; })) _kejuBasicRecruit(c, title);
+    var entry = {name:c.name, rank:c.rank, origin:c.origin || '', score:c.score || 0, enrollTurn:GM.turn,
+      examId:exam.id, graduateTitle:title, requiresReview:true, allocatedOffice:null};
+    _kejuQueuePending(entry);
+    return entry;
+  });
+  exam._nationalFinalized = true;
+}
+
+function _kejuFinishNational(exam) {
+  if (!exam._nationalResultsReady || !exam.dianshiResults || !exam.dianshiResults.length) return;
+  _kejuFinalizeNational(exam);
+  _kejuArchiveExam(exam, P.keju.currentEnke === exam ? 'currentEnke' : 'currentExam');
+  var summary = _kejuStageName(exam, 'huishi') + '放榜，' + exam.dianshiResults.length + '人候铨。';
+  if (typeof addEB === 'function') addEB('科举', summary);
+  closeKejuModal();
+  if (typeof renderGameState === 'function') renderGameState();
+  toast(summary);
+}
+
 function renderFinishedStage(container) {
   var exam = P.keju.currentExam;
+  if (exam && !_kejuHasImperialExam(exam)) return _kejuRenderNationalRoster(container, exam);
   var results = exam.dianshiResults || [];
 
   // v5·F5·若有答卷但无 finalRanking·先显示钦定 UI
@@ -1173,8 +1222,8 @@ async function viewAnswer(index) {
   showLoading('生成答卷中...', 50);
 
   try {
-    var prompt = '你是考生' + candidate.name + '。请根据以下殿试题目作答。\n\n' +
-      '【题目】\n' + exam.playerQuestion + '\n\n' +
+    var prompt = '你是考生' + candidate.name + '。请根据以下' + _kejuStageName(exam, _kejuHasImperialExam(exam) ? 'dianshi' : 'huishi') + '题目作答。\n\n' +
+      '【题目】\n' + _kejuExamQuestion(exam) + '\n\n' +
       '【考生信息】\n' +
       '姓名：' + candidate.name + '\n' +
       '年龄：' + candidate.age + '\n' +
@@ -1189,7 +1238,7 @@ async function viewAnswer(index) {
       '直接输出答卷内容，不要JSON格式。';
 
     // 时空约束·扫描殿试题面+考生涉议人物·考生答卷(改clauseOnly·虚构考生未入GM·防塞全朝无关活人名成正向姓名诱导)（typeof守卫·防加载序）
-    if (typeof _buildTemporalConstraint === 'function') { try { var _tcMView = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(((exam && exam.playerQuestion) || ''), (candidate && candidate.name ? [candidate.name] : []), 10) : (candidate && candidate.name ? [candidate.name] : []); prompt += _buildTemporalConstraint(null, { clauseOnly: true, mentionedNames: _tcMView }); } catch (_tcE) {} }
+    if (typeof _buildTemporalConstraint === 'function') { try { var _tcMView = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_kejuExamQuestion(exam), (candidate && candidate.name ? [candidate.name] : []), 10) : (candidate && candidate.name ? [candidate.name] : []); prompt += _buildTemporalConstraint(null, { clauseOnly: true, mentionedNames: _tcMView }); } catch (_tcE) {} }
     var answer = await callAISmart(prompt, 1500, {minLength: 300, maxRetries: 2});
     candidate.fullAnswer = answer;
     hideLoading();
@@ -1279,6 +1328,12 @@ function recruitCandidate(index) {
   var exam = P.keju.currentExam;
   var candidate = exam.dianshiResults[index];
   if (!candidate) return;
+  if (!_kejuHasImperialExam(exam)) {
+    _kejuBasicRecruit(candidate, _kejuGraduateTitle());
+    if (typeof renderGameState === 'function') renderGameState();
+    toast(candidate.name + '已列人物志，候铨叙用。');
+    return;
+  }
   var candidateAge = typeof getValidAge === 'function' ? getValidAge(candidate, 25) : (Number.isFinite(Number(candidate.age)) && Number(candidate.age) >= 0 ? Math.floor(Number(candidate.age)) : 25);
   if (candidateAge < 20 || candidateAge > 70) {
     if (typeof toast === 'function') toast('\u8003\u751F\u5E74\u9F84\u4E0D\u7B26\u5408\u53D9\u7528\u5951\u7EA6', 'error');
@@ -1293,6 +1348,8 @@ function recruitCandidate(index) {
   var newChar = {
     name: candidate.name,
     age: candidateAge,
+    birthYear: candidate.birthYear,
+    deathYear: candidate.deathYear,
     gender: candidate.gender || '\u7537',
     origin: candidate.origin || '',
     ethnicity: candidate.ethnicity || '',
@@ -1318,9 +1375,9 @@ function recruitCandidate(index) {
     description: candidate.answerSummary || '',
     faith: '',
     culture: '',
-    type: 'historical',
+    type: candidate.isHistorical ? 'historical' : 'fictional',
     role: '\u65B0\u79D1\u8FDB\u58EB',
-    isHistorical: false,
+    isHistorical: !!candidate.isHistorical,
     recruited: true,
     recruitTurn: GM.turn,
     source: '\u79D1\u4E3E',
@@ -1333,6 +1390,7 @@ function recruitCandidate(index) {
   createRuntimeCharacter(newChar);
   GM.allCharacters.push({
     name: newChar.name, title: newChar.title, age: newChar.age, gender: newChar.gender,
+    birthYear: newChar.birthYear, deathYear: newChar.deathYear, isHistorical: newChar.isHistorical,
     personality: newChar.personality, desc: newChar.description, loyalty: newChar.loyalty,
     faction: newChar.faction, recruited: true, recruitTurn: GM.turn, source: '\u79D1\u4E3E'
   });
@@ -1481,6 +1539,7 @@ function _kejuAssignConfirm(candidateIdx, postIdx) {
 function finishKeju() {
   var exam = P.keju.currentExam;
   if (!exam) return;
+  if (!_kejuHasImperialExam(exam)) return _kejuFinishNational(exam);
 
   var results = exam.dianshiResults || [];
   var top3 = results.slice(0, 3).map(function(c) { return c.name; });
@@ -1549,11 +1608,10 @@ function finishKeju() {
   try { _kejuFinalize(exam); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '科举·G] finalize 失败') : console.warn('[科举·G] finalize 失败', e); }
 
   // P7: 科举入仕生命周期——未手动授官的进士进入待铨队列
-  if (!GM._kejuPendingAssignment) GM._kejuPendingAssignment = [];
   results.forEach(function(c) {
     var ch = typeof findCharByName === 'function' ? findCharByName(c.name) : null;
     if (ch && !ch.officialTitle && !ch.title) {
-      GM._kejuPendingAssignment.push({
+      _kejuQueuePending({
         name: c.name,
         rank: c.rank,
         enrollTurn: GM.turn,
@@ -1637,6 +1695,7 @@ function _kejuMobilityFlow(exam, stats, results) {
 /** 科举结束时的总结算 */
 function _kejuFinalize(exam) {
   if (!exam) return;
+  if (!_kejuHasImperialExam(exam)) return _kejuFinalizeNational(exam);
   var results = exam.dianshiResults || [];
   var fr = exam.finalRanking || {};
 
@@ -1659,6 +1718,7 @@ function _kejuFinalize(exam) {
   var unPlaced = results.slice(3).map(function(c){
     return {
       name: c.name, age: c.age, origin: c.origin, class: c.class, party: c.party,
+      birthYear: c.birthYear, deathYear: c.deathYear,
       score: c.score, rank: c.rank,
       answerSummary: (c.fullAnswer || c.answerSummary || '').slice(0, 200),
       personalityHint: c.personalityHint,
@@ -1716,11 +1776,13 @@ function _kejuBasicRecruit(candidate, rankTitle) {
   var candidateAge = typeof getValidAge === 'function' ? getValidAge(candidate, 25) : (Number.isFinite(Number(candidate.age)) && Number(candidate.age) >= 0 ? Math.floor(Number(candidate.age)) : 25);
   if (candidateAge < 20 || candidateAge > 70) return false;
   var bonus = P.keju.attributeBonus || {};
-  var key = rankTitle === '\u72B6\u5143' ? 'zhuangyuan' : rankTitle === '\u699C\u773C' ? 'bangyan' : 'tanhua';
+  var key = rankTitle === '\u72B6\u5143' ? 'zhuangyuan' : rankTitle === '\u699C\u773C' ? 'bangyan' : rankTitle === '\u63A2\u82B1' ? 'tanhua' : 'gongshi';
   var b = bonus[key] || {};
   createRuntimeCharacter({
     name: candidate.name,
     age: candidateAge,
+    birthYear: candidate.birthYear,
+    deathYear: candidate.deathYear,
     origin: candidate.origin,
     ethnicity: candidate.ethnicity || '\u6C49',
     class: candidate.class || '\u5BD2\u95E8',
@@ -1782,6 +1844,7 @@ async function _aiGenerateFullCharacter(candidate, rankKey) {
     _examinerHint +
     '\u3010\u57FA\u672C\u3011' + JSON.stringify({
       name: candidate.name, age: candidate.age, origin: candidate.origin,
+      birthYear: candidate.birthYear, deathYear: candidate.deathYear,
       class: candidate.class, party: candidate.party,
       score: candidate.score, rank: candidate.rank,
       isHistorical: candidate.isHistorical,
@@ -1842,6 +1905,8 @@ async function _aiGenerateFullCharacter(candidate, rankKey) {
       var newChar = {
         name: candidate.name,
         age: candidateAge,
+        birthYear: candidate.birthYear,
+        deathYear: candidate.deathYear,
         gender: '\u7537',
         ethnicity: candidate.ethnicity || '\u6C49',
         origin: candidate.origin,
@@ -2042,6 +2107,12 @@ function _kejuAutoAssign() {
   var assignmentWaitTurns = (typeof turnsForMonths === 'function') ? turnsForMonths(2) : 2;
   var assignmentExpireTurns = (typeof turnsForMonths === 'function') ? turnsForMonths(6) : 6;
   GM._kejuPendingAssignment = GM._kejuPendingAssignment.filter(function(p) {
+    // A terminal national examination grants eligibility; appointments require a separate review.
+    if (p.requiresReview) {
+      var reviewedChar = typeof findCharByName === 'function' ? findCharByName(p.name) : null;
+      if (reviewedChar && (reviewedChar.alive === false || reviewedChar.officialTitle)) return false;
+      return true;
+    }
     // 等待约2个月（模拟铨选时间）
     if (GM.turn - p.enrollTurn < assignmentWaitTurns) return true;
     var ch = typeof findCharByName === 'function' ? findCharByName(p.name) : null;

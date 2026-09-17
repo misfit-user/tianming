@@ -84,8 +84,8 @@ async function runLoaderContract() {
   await loader.ready();
 
   const entries = context.TMOfficialScenarioManifest.entries;
-  assert.strictEqual(entries.length, 2, 'manifest should expose both official scenarios');
-  assert.strictEqual(P.scenarios.length, 2, 'ready() should register two lightweight placeholders');
+  assert.strictEqual(entries.length, 3, 'manifest should expose all three official scenarios');
+  assert.strictEqual(P.scenarios.length, entries.length, 'ready() should register all lightweight placeholders');
   for (const entry of entries) {
     const placeholder = P.scenarios.find((scenario) => scenario.id === entry.id);
     assert(placeholder && placeholder._lazyOfficial === true, `${entry.id} should remain lazy before selection`);

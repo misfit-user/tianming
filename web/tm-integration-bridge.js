@@ -173,6 +173,9 @@
     }
     if (div.fiscalDetail && !div.fiscal) {
       div.fiscal = Object.assign({}, div.fiscalDetail);
+      ['compliance','skimmingRate','autonomyLevel'].forEach(function(key,i) {
+        div.fiscal[key] = Math.max(0, Math.min(1, _bridgeFiniteNumber(div.fiscalDetail[key], [0.7,0.1,0.3][i])));
+      });
       if (!div.fiscal.peasantBurden) div.fiscal.peasantBurden = { claimed: 0, actual: 0 };
       if (div.fiscal.annualTax === undefined) div.fiscal.annualTax = div.fiscalDetail.actualRevenue || 0;
     }
@@ -357,7 +360,8 @@
       }
       // 旧 GM.minxin.byRegion
       var legacyMx = G.minxin && G.minxin.byRegion && (G.minxin.byRegion[div.id] || G.minxin.byRegion[div.name]);
-      if (legacyMx && legacyMx.index !== undefined) {
+      var explicitAuthority = global.AuthorityEngines && global.AuthorityEngines.isIndependentAuthorityLedger && global.AuthorityEngines.isIndependentAuthorityLedger();
+      if (legacyMx && legacyMx.index !== undefined && !explicitAuthority) {
         div.minxin = legacyMx.index;
         div.minxinDetails = legacyMx;
       }
@@ -629,6 +633,12 @@
       }
     }
 
+    // Explicit six-department accounts are aggregated by their existing owner.
+    // This bridge must not create another set of default departments or overwrite saves.
+    var declaredCorruption = global.CorruptionEngine && global.CorruptionEngine.isDeclaredLedger && global.CorruptionEngine.isDeclaredLedger();
+    if (declaredCorruption) {
+      global.CorruptionEngine.syncIndexFromSubDepts('', { record:false, preserveTrend:true });
+    } else {
     // 3. 吏治 = 叶子按人口加权平均地方腐败 + 中央/县/军/内廷/技术五部门（6 部门融合）
     var weightedCorr = 0;
     leaves.forEach(function(div) {
@@ -662,6 +672,8 @@
         G.corruption.trueIndex = deptCnt > 0 ? deptSum / deptCnt : avgProvCorr;
         G.corruption.overall = G.corruption.trueIndex;
       }
+    }
+
     }
 
     // 4. 帑廪岁入摘要 = 叶子聚合（展示用；若 CascadeTax 已结算就不再覆写 guoku.monthlyIncome）

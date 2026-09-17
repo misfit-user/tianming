@@ -1,0 +1,150 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "0effc5b8-bcef-4692-9b99-c32da33f7a34",
+  "head": "14130f77ef1976f9b3cd8b311b4aef77636e7d90",
+  "expected": [
+    "smoke-audit-account-generation.js",
+    "smoke-audit-ci-evidence.js",
+    "smoke-audit-file-import.js",
+    "smoke-audit-manual-save-lease.js",
+    "smoke-audit-safe-remote.js",
+    "smoke-audit-save-files.js",
+    "smoke-audit-save-slot-results.js",
+    "smoke-audit-turn-ipc.js",
+    "smoke-audit-turn-namespaces.js",
+    "smoke-audit-workshop-transactions.js"
+  ],
+  "generatedAt": "2026-09-07T06:30:48.448Z",
+  "args": [
+    "--grep",
+    "smoke-audit-",
+    "--all",
+    "--no-retry",
+    "--report",
+    "web/dev-tools/audit-review/targeted-report.json"
+  ],
+  "summary": {
+    "selected": 10,
+    "pass": 10,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [],
+  "results": [
+    {
+      "name": "smoke-audit-account-generation.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 603,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS account generation: stale me/email/logout/login, inverse login, durable failure and token isolation\n"
+    },
+    {
+      "name": "smoke-audit-ci-evidence.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 774,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS CI fresh complete evidence, negative runner paths and granular asset waivers\n"
+    },
+    {
+      "name": "smoke-audit-file-import.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 1025,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS bounded import, real Worker, cancellation, timeout, error cleanup, concurrency, TOCTOU and pixel limits; Node headless only\n"
+    },
+    {
+      "name": "smoke-audit-manual-save-lease.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 318,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS manual save lease, detached state, failures, same-turn world replacement and serial intent order\n"
+    },
+    {
+      "name": "smoke-audit-safe-remote.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 525,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS address equivalence, pinned lookup and per-hop validation; controlled Node loopback only, not an Electron SSRF attack\n"
+    },
+    {
+      "name": "smoke-audit-save-files.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 738,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS actual save/list/load/delete IPC legacy roundtrip, collisions and atomic export failures\n"
+    },
+    {
+      "name": "smoke-audit-save-slot-results.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 279,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS save slot boolean results, awaited wrappers, quota/barrier/snapshot failures and load/delete completion\n"
+    },
+    {
+      "name": "smoke-audit-turn-ipc.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 891,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS actual turn namespace IPC read/list/summary/delete and strict turn segments\n"
+    },
+    {
+      "name": "smoke-audit-turn-namespaces.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 1049,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS audit turn namespaces: isolation, conflicts, restart, interrupted migration, scoped cleanup\n"
+    },
+    {
+      "name": "smoke-audit-workshop-transactions.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 4002,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS workshop copy/validate/rename/index failure, process interruption recovery, update, overlap, shared index serialization\n"
+    }
+  ],
+  "skipped": []
+}

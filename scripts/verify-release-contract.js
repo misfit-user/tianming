@@ -161,6 +161,7 @@ function main() {
   const baselineCheck = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'sync-hot-baseline.js'), '--check'], { cwd: ROOT, encoding: 'utf8' });
   ok(baselineCheck.status === 0, 'canonical 基线逐路径/hash/size 对齐当前 production hot tree：' + String(baselineCheck.stderr || baselineCheck.stdout || '').trim().slice(0, 800));
   const webRoot = path.join(ROOT, 'web');
+  ok(readJson(path.join(ROOT, 'package.json')).build.files.includes('main-artifact-export.js'), 'installer 携带受限制作制品导出模块');
   ok(assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(webRoot, '_unsafe-stage'))), 'staging 拒绝清空 web 源码子目录');
   ok(assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(ROOT, 'scripts'))), 'staging 拒绝清空已有普通目录');
   ok(!assertThrows(() => releaseTree.assertSafeStageTarget(ROOT, webRoot, path.join(ROOT, 'mobile', 'www'))), 'staging 仅放行已知 mobile/www 派生目录');

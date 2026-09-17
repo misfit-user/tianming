@@ -10,6 +10,7 @@ var TC = require('../tm-talent-cohorts.js');
 var TBB = require('../tm-talent-building-bridge.js');
 var BW = require('../tm-building-works.js');
 var CBA = require('../tm-custom-build-agent.js');
+require('../tm-fiscal-engine.js'); // 营建需真实财政引擎，后续人才/完工断言不变。
 
 var passed = 0, failed = 0;
 function ok(desc, cond) { if (cond) { passed++; console.log('  PASS ' + desc); } else { failed++; console.log('  FAIL ' + desc); } }
@@ -54,16 +55,17 @@ ok('既无 ref 也无新范式名 → null（非有效人才源）', CBA._normal
   ok('appraise：talentSource 并入 effectsStructured + out.appraisal.talentSource', out.ok && out.appraisal.effectsStructured && out.appraisal.effectsStructured.talentSource && out.appraisal.talentSource && out.appraisal.talentSource.newParadigm.label === '格致之学');
 
   // ── ⑤ 端到端：approveBuild 学校 → applyCompletion → talent-cohorts 注册 ──
-  var GMe = { turn: 5 }, Pe = { conf: { talentCohortEnabled: true } };
+  var GMe = { turn: 5, guoku: { money: 100000, balance: 100000 } }, Pe = { conf: { talentCohortEnabled: true } };
   var divE = { name: '武昌', buildings: [] };
   var appraisal = { feasibility: '合理', costActual: 100000, timeActual: 1, effectsStructured: { talentSource: { newParadigm: { label: '船政之学', absorptionKind: ['military'] }, graduates: 4000 } }, judgedEffects: '', reason: '' };
   var ab = CBA.approveBuild('武昌', appraisal, { name: '船政学堂', category: 'institutional' }, { P: Pe, GM: GMe, div: divE });
+  ok('人才工程扣款属于显式世界 GMe，未误写当前勘报世界 GMi', GMe.guoku.money === 0 && GMe.guoku.balance === GMe.guoku.ledgers.money.stock && !GMi.guoku);
   var bld = ab.building;
   var booked = BW.applyCompletion(divE, bld, Pe, GMe);
   var p = TC.findParadigm(GMe, '船政之学');
   ok('端到端：approveBuild 学校 → applyCompletion → talent-cohorts 注册范式 + 源(费效封顶 4000)',
     ab.ok && booked === true && p && p.kind === 'emergent' && p.sources[bld._talentSrcId] === 4000);
 
-  console.log('\n[smoke-talent-s4] ' + (failed === 0 ? 'ALL PASS ' : 'FAIL ') + passed + (failed ? ' / ' + failed + ' failed' : ' (11 checks)'));
+  console.log('\n[smoke-talent-s4] ' + (failed === 0 ? 'ALL PASS ' : 'FAIL ') + passed + ' / ' + (passed + failed) + ' checks');
   process.exit(failed === 0 ? 0 : 1);
 })();

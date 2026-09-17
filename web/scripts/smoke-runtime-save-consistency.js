@@ -14,7 +14,7 @@ function sliceFn(src, marker) {
   return src.slice(a, j);
 }
 
-const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
+const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const core = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
 const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');
@@ -33,7 +33,7 @@ const integrationBridge = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge
 const hujiEngine = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
 
 console.log('=== 1. unified save snapshot builder ===');
-const snapshotSrc = sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
+const snapshotSrc = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
 const builderSrc = sliceFn(lifecycle, 'function _buildSaveState(');
 const desktopResultSrc = sliceFn(lifecycle, 'function _tmDesktopAutoSaveResultOk(');
 ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽取');
@@ -76,7 +76,7 @@ ok(/_writeOk !== true[\s\S]*?throw new Error\('canonical 回合存档未原子�
   const markerAt = render.indexOf("localStorage.setItem('tm_autosave_mark'", batchAt);
   ok(markerAt > writesDoneAt && writesDoneAt > batchAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, markerAt + 300)), 'tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn');
 }
-ok(/var result = await window\.tianming\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
+ok(/var result =[\s\S]*?await window\.tianming\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
 ok(/_autoSaveLastSavedTurn = Number\(saveData\._saveMeta\.turn\)/.test(lifecycle), 'Electron 闲置跳存基线锚定已写 committed snapshot turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
@@ -134,12 +134,13 @@ ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[
   const hydrateAt = loadImpl.indexOf('await ChronicleSystem.hydrateDurableRecords(GM, P)');
   const receiptAt = loadImpl.indexOf('await _recoverPendingTurnDataPublish()');
   const forkAt = loadImpl.indexOf('_tmForkLoadedTimeline(GM');
-  const enableAt = loadImpl.indexOf('GM.busy = false');
+  const enableAt = loadImpl.indexOf('GM.busy = !!loadOptions.nativeStart');
   const showWorldAt = loadImpl.indexOf('_$("G").style.display="grid"');
   const enterAt = loadImpl.indexOf('enterGame()');
   ok(/function fullLoadGame\(data, loadOptions\)[\s\S]*?window\._tmLoadBarrier = barrier/.test(lifecycle)
     && hydrateAt >= 0 && receiptAt > hydrateAt && forkAt > receiptAt && enableAt > forkAt
-    && showWorldAt > enableAt && enterAt > showWorldAt,
+    && showWorldAt > enableAt && enterAt > showWorldAt
+    && /await loadOptions.beforeCommit\([\s\S]*?GM.busy = false/.test(lifecycle),
   '读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法');
   ok(/GM\.busy = true;[\s\S]*?GM\._loadHydrationPending = true;/.test(loadImpl)
     && /function _tmAwaitLoadBarrier\(\)[\s\S]*?result !== true[\s\S]*?throw new Error/.test(lifecycle)
@@ -214,6 +215,7 @@ ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifec
     console: { warn() {} }, parseInt, parseFloat, isNaN
   };
   vm.createContext(ctx);
+  ctx.window = ctx; // Settings owners run in the browser; optional APISettings is absent in this legacy-save fixture.
   vm.runInContext(applySrc + '\n' + allSrc + '\nsSaveAll();', ctx);
   const apiWrites = writes.filter(w => w[0] === 'tm_api');
   ok(apiWrites.length === 1, '保存全部只原子写 tm_api 一次');

@@ -1,0 +1,1214 @@
+{
+  "schemaVersion": 1,
+  "branch": "codex/fix-guoshi-continuation",
+  "start": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+  "codeCommit": "deb7ade1b79d5734d76a1045f822027e57d399ef",
+  "remoteMain": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+  "testedTreeNote": "Tests ran on start HEAD plus recorded dirtyFileHashes. All 13 code/test/workflow/manifest files match codeCommit byte-for-byte. Only .gitattributes CR-at-EOL recognition was added after full smoke; default diff --check then passed. No runtime edits after tests.",
+  "sourceHashes": {
+    ".gitattributes": "5936f29cfa916b25d35e24c92204edde092e3960d66cc652385af20d51928b78",
+    ".github/workflows/ci.yml": "9fae6b6a0dc3d0e5c4874e429877440aba6370155655c186ab7c7291555313f6",
+    "scripts/electron/authoring-continuation-cases.cjs": "44d69caa914c22fe7807f1a8cc8a72e912545e175ea88b16e60f105c5f10c0e3",
+    "scripts/electron/bridge-main.cjs": "505695fb6478d739d21ad992eaf73f8916719742dca67a32344681790c480ba5",
+    "scripts/verify-electron-bridge.js": "06f8e1010f4166929588f3832915ae7d7d0f2eedbf680373c532cff82add4d73",
+    "web/.hot-update-manifest.json": "ff064502ef477519955f9658d1b493b2b6b928b359565b5c9c7a3feb5f4340bc",
+    "web/editor-authoring-agent-provider.js": "c0b72c88cce7b7aecd25f1048ee99a32ba0e5df9cc091fff43d520a508fd867e",
+    "web/editor-authoring-agent-ui-icons.js": "0bc17472cba02bcf425424b099ac7df3fe8e5b218c4f3a5225e23f2c4b51bb0b",
+    "web/editor-authoring-agent-ui.js": "cc2edd6936afbab007a654d86b8b08caee255b91e52484893127f155199adf53",
+    "web/editor-authoring-agent.js": "6f55cb6b0342d36e4abb917b7c3d18fe0776d89f2286d6b9b2b7d77eeb5e057e",
+    "web/editor.html": "8f00d48c124a8d1c032edeba79d72e9976f79b0abd4b44681f63973fa40f4f07",
+    "web/preview/scenario-editor-reset-app.js": "5e8f4e70b180dd8e8ca3c6b7124324d2cea5b06b3f454a67c1e99ed558e3c268",
+    "web/preview/scenario-editor-reset-preview.html": "1a72dd908fa31afeda99bbc86ffb1ef9851f59d2610223fc8f8671afbb62fbd2",
+    "web/scripts/smoke-authoring-relay-continuation.js": "4f6a691cd2eecc2ab669f655c8c65ad2eea9d3e0069b6a996955e1f42dbb983f"
+  },
+  "baseline": {
+    "sourceRef": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+    "pass": 2,
+    "fail": 12,
+    "skip": 0,
+    "waived": 0,
+    "note": "14 behavior groups with the same final adapter; failures include compatibility expectations, not 12 independent player defects."
+  },
+  "regression": {
+    "pass": 14,
+    "fail": 0,
+    "skip": 0,
+    "waived": 0
+  },
+  "ci": {
+    "path": "web/dev-tools/arch-guard/ci-t70rYp/smoke-report.json",
+    "sha256": "2e2f17f1476173b352c45204e7a3ec4c19a5c6f1f3ce3a830135641e212fe9c3",
+    "runId": "08764a4e-3ba6-437a-9dcf-c8bfb19f36f7",
+    "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+    "complete": true,
+    "summary": {
+      "selected": 936,
+      "pass": 934,
+      "fail": 0,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "exit": 0,
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "exit": 0,
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ]
+  },
+  "electron": [
+    {
+      "path": "web/dev-tools/electron-bridge/2b3bde03-6ebc-4207-badd-cf2002cf020b/report.json",
+      "sha256": "180c858ae496ace7ae7aa9635d9d5ca351f95359ea7d0152965c6d4040b94632",
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "ok": true,
+      "modes": [
+        {
+          "mode": "authoring-continuation",
+          "exitCode": 0,
+          "ok": true,
+          "electron": "33.4.11",
+          "results": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "empty administrative hierarchy is usable in both views; invalid rows are preserved and identified",
+              "status": "PASS"
+            },
+            {
+              "name": "no-tool response stops within budget and preserves staged work without applying it",
+              "status": "PASS"
+            },
+            {
+              "name": "both recovery actions have readable opaque colors, spacing and keyboard focus in dark and light themes",
+              "status": "PASS"
+            },
+            {
+              "name": "mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload",
+              "status": "PASS"
+            },
+            {
+              "name": "after explicitly applying partial work, a new message edits the committed draft without replaying append",
+              "status": "PASS"
+            },
+            {
+              "name": "connection failure is bounded and shown distinctly from a no-tool response",
+              "status": "PASS"
+            },
+            {
+              "name": "cancelling the compatibility request stops it without a late write or automatic retry",
+              "status": "PASS"
+            }
+          ],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data"
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/6d252595-014d-4c20-b172-6274b9ed4066/report.json",
+      "sha256": "d29a0d774796d8391ae044686a0a58fc7fbd050b1795b4681faf0cd66c8c835a",
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "ok": true,
+      "modes": [
+        {
+          "mode": "authoring-recovery",
+          "exitCode": 0,
+          "ok": true,
+          "electron": "33.4.11",
+          "results": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "failed task retains draft, conversation and staged side effects without committing live data",
+              "status": "PASS"
+            },
+            {
+              "name": "real retry continues existing progress once; approval commits memory once and keeps original project",
+              "status": "PASS"
+            },
+            {
+              "name": "unresolved write never triggers automatic application or a completed UI state",
+              "status": "PASS"
+            },
+            {
+              "name": "manual partial application needs explicit confirmation and remains labelled incomplete",
+              "status": "PASS"
+            },
+            {
+              "name": "manual edits invalidate direct recovery; confirmed regeneration uses current live input",
+              "status": "PASS"
+            },
+            {
+              "name": "cross-project retry and old error-card handlers cannot act on a newer project/task",
+              "status": "PASS"
+            },
+            {
+              "name": "permission changes cannot revive an earlier write task under question-only mode",
+              "status": "PASS"
+            },
+            {
+              "name": "stop preserves completed draft work but only an explicit retry resumes with a new signal",
+              "status": "PASS"
+            },
+            {
+              "name": "orchestration UI retries only the interrupted subtask through the real provider",
+              "status": "PASS"
+            },
+            {
+              "name": "critic UI resumes the failed reviewer without replaying author or successful reviewer",
+              "status": "PASS"
+            },
+            {
+              "name": "memory-only approval failure leaves live scenario, pending work and memory storage intact",
+              "status": "PASS"
+            },
+            {
+              "name": "retrying memory-only approval persists once without committing or normalizing the scenario",
+              "status": "PASS"
+            }
+          ],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data"
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/781adee6-9ded-42c4-9300-bb395af9311c/report.json",
+      "sha256": "7989e3382035e9dedcc440dabbecc9246e506bd3ea0dcd7aa9334c2ebbdc4ce5",
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "ok": true,
+      "modes": [
+        {
+          "mode": "authoring-stream",
+          "exitCode": 0,
+          "ok": true,
+          "electron": "33.4.11",
+          "results": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-real-editor-and-default-provider",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-round39-finish-shows-real-diff-and-apply-button",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-real-apply-commits-selected-changes-not-before-approval",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-applied-result-survives-real-editor-reload",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-bad-tail-rejects-all-tools-and-shows-safe-retry",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-real-retry-finishes-and-applies-to-current-scenario",
+              "status": "PASS"
+            },
+            {
+              "name": "authoring-stream-real-stop-cancels-body-and-does-not-apply-prefix",
+              "status": "PASS"
+            }
+          ],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data"
+        }
+      ]
+    },
+    {
+      "path": "web/dev-tools/electron-bridge/94f136b8-792c-497d-861c-c23a3312ee50/report.json",
+      "sha256": "0d970b84d7d0eb724a3d0bad4578762d9f3fe1e60153b89a847735ec71388636",
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "ok": true,
+      "modes": [
+        {
+          "mode": "authoring-boundaries",
+          "exitCode": 0,
+          "ok": true,
+          "electron": "33.4.11",
+          "results": [
+            {
+              "name": "locked-electron-runtime",
+              "status": "PASS"
+            },
+            {
+              "name": "production-webpreferences",
+              "status": "PASS"
+            },
+            {
+              "name": "observed-turn-data-protocol",
+              "value": 2,
+              "status": "PASS",
+              "required": 2
+            },
+            {
+              "name": "real-bridge-and-ipc",
+              "status": "PASS"
+            },
+            {
+              "name": "production-test-exports-boundary",
+              "status": "PASS"
+            },
+            {
+              "name": "current-project edit preserves ID, original baseline, manual drafts and save/reload target",
+              "status": "PASS"
+            },
+            {
+              "name": "normal new import remains detached; unsaved same-name scenarios have different file keys",
+              "status": "PASS"
+            },
+            {
+              "name": "ordinary edits keep a lease; stale lease and changed revision both reject direct commit",
+              "status": "PASS"
+            },
+            {
+              "name": "A checkpoint cannot restore into B and remains available after rejected undo/restore",
+              "status": "PASS"
+            },
+            {
+              "name": "same-document checkpoint restore and undo preserve project association",
+              "status": "PASS"
+            },
+            {
+              "name": "same-field conflict is rejected; unrelated manual edit survives merge",
+              "status": "PASS"
+            },
+            {
+              "name": "late A model response after actual B load cannot apply, continue or bind a B session",
+              "status": "PASS"
+            },
+            {
+              "name": "new conversation after stale result can edit the current B normally",
+              "status": "PASS"
+            },
+            {
+              "name": "completed draft also rejects a same-name reload before Apply",
+              "status": "PASS"
+            },
+            {
+              "name": "actual question-only UI refuses model writes but permits explicit plan approval",
+              "status": "PASS"
+            },
+            {
+              "name": "failed provider leaves source unchanged and next fresh request succeeds",
+              "status": "PASS"
+            },
+            {
+              "name": "legacy double-encoded draft normalization still reports actual repair/drop counts",
+              "status": "PASS"
+            },
+            {
+              "name": "finished read-only review with no pending draft does not block a fresh task on B",
+              "status": "PASS"
+            },
+            {
+              "name": "question-only permission also gates the orchestrate UI entry",
+              "status": "PASS"
+            },
+            {
+              "name": "question-only permission also gates the critics UI entry",
+              "status": "PASS"
+            }
+          ],
+          "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data"
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "label": "guoshi-continuation-baseline",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js",
+        "--source-ref",
+        "76ade3e4d78c9190800bdbd9544b940f9ae327fc"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:07:11.854Z",
+      "exitCode": 1,
+      "complete": true,
+      "elapsedMs": 1047.2168000000001,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-b8f099b8-61d8-4a8d-afd0-12925c7c91fc/run.json",
+          "sha256": "7b22f318e23b0ff610320cb7da3b136a6f4c9b75233c4a50533ccc1e75ba65c0"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-b8f099b8-61d8-4a8d-afd0-12925c7c91fc/stdout.log",
+          "sha256": "ba43d107aa70536e21287b40a7033f00bdd421a95ea82a8d615649ea64c4a6bf"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-b8f099b8-61d8-4a8d-afd0-12925c7c91fc/stderr.log",
+          "sha256": "f30c3a4fc2966061354b0d40d7afb317c20ec120b6305e428840c722ee7bb44f"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-continuation-baseline-corrected",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js",
+        "--source-ref",
+        "76ade3e4d78c9190800bdbd9544b940f9ae327fc"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:07:41.669Z",
+      "exitCode": 1,
+      "complete": true,
+      "elapsedMs": 968.0838,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-corrected-2206d182-15f8-4076-9743-26a2259ccd14/run.json",
+          "sha256": "d098a6fc5cf253c6a1bd8ad0e50064ba8ac9e8b1fc7d7b20e1a9d388ad83a7f4"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-corrected-2206d182-15f8-4076-9743-26a2259ccd14/stdout.log",
+          "sha256": "ba43d107aa70536e21287b40a7033f00bdd421a95ea82a8d615649ea64c4a6bf"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-baseline-corrected-2206d182-15f8-4076-9743-26a2259ccd14/stderr.log",
+          "sha256": "e6d39301878360663e0cae311c9c7e8b6f1dca24141a237633be3752bdc08c2e"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-continuation-fixed-first",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:10:19.344Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 432.60800000000006,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-first-2f33d583-929f-41e2-b774-8d7eacd01173/run.json",
+          "sha256": "29994ab9c30dfa1219784d88d4a46251fc3d0a7acac93b4f8835e13ccf892faf"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-first-2f33d583-929f-41e2-b774-8d7eacd01173/stdout.log",
+          "sha256": "247b0b11a0012be26478dde2efeba7f36dce39a8b623e3816ba784ce06c5dd27"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-first-2f33d583-929f-41e2-b774-8d7eacd01173/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-related-first",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--no-retry"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:11:40.421Z",
+      "exitCode": 1,
+      "complete": true,
+      "elapsedMs": 6770.8817,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-first-778b49b2-2789-464b-9b12-a605d491d9e2/run.json",
+          "sha256": "65f793a93f47ad5ac3e1266eb6da9cf68fd968835e49024e1f14237ba80f0b19"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-first-778b49b2-2789-464b-9b12-a605d491d9e2/stdout.log",
+          "sha256": "9e1aaec1ccd3d8e20e7be5a1a8f116eb94eb38116f7965ee44da93b178752866"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-first-778b49b2-2789-464b-9b12-a605d491d9e2/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-related-fixed",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "authoring",
+        "--grep",
+        "guoshi",
+        "--no-retry"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:15:02.998Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 7441.266199999999,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-fixed-6e449ab0-8d5d-4c33-ab24-c3ad71f7975c/run.json",
+          "sha256": "54ddfa267fae4b2dd6e132a7d8c01c739ad5cf2090340f6f41e9df009a94bc61"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-fixed-6e449ab0-8d5d-4c33-ab24-c3ad71f7975c/stdout.log",
+          "sha256": "74b5975d0da038cbe9c0c2b768f205b43a516d0c84b490144b84ddde94075304"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-related-fixed-6e449ab0-8d5d-4c33-ab24-c3ad71f7975c/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-continuation-first",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:20:33.505Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 20270.2322,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-first-e3e1f321-dec9-4b4c-85a0-e939d61e5800/run.json",
+          "sha256": "ed1a547163860c2658e03476b619b293f79a5dd26d6cf5cff4eeeb891844691a"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-first-e3e1f321-dec9-4b4c-85a0-e939d61e5800/stdout.log",
+          "sha256": "36e4db12c547b6ffa9619e49690d39678ccbab2053b5d45b5cc72955e5b9bc7d"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-first-e3e1f321-dec9-4b4c-85a0-e939d61e5800/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-arch-first",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:20:58.684Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 19098.028899999998,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-first-fab4aab6-b0c7-4d54-90d1-cd8ced4968bb/run.json",
+          "sha256": "c6a453595059a03315c8938c3c4ab2c4018410274bf466b545caed47d0556098"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-first-fab4aab6-b0c7-4d54-90d1-cd8ced4968bb/stdout.log",
+          "sha256": "947fb67708925493ca697cc1f7bc52fe64b1da64089ba03d492faebe836d812f"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-first-fab4aab6-b0c7-4d54-90d1-cd8ced4968bb/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-continuation-fixed-expanded",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:23:58.129Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 485.9350999999999,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-expanded-576e5cdc-93f7-41b5-b858-a4cc967127a3/run.json",
+          "sha256": "6ae29b7127c3318cc1f05dcbb60144df291c87ff33cb2370dfd9a468aa79b297"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-expanded-576e5cdc-93f7-41b5-b858-a4cc967127a3/stdout.log",
+          "sha256": "2dcb41fe6b5a71c8cd33972241a129de5e29ae986038d4d9a5306dcda060e7de"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-continuation-fixed-expanded-576e5cdc-93f7-41b5-b858-a4cc967127a3/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-continuation-settled",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-app.js\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:24:00.551Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 19459.3827,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-settled-1e96da5e-a729-40b3-8add-c9dc5123b759/run.json",
+          "sha256": "0e0c331b4433e3e29868d03dc4204b99f9ca7b07669d8d58a87d8eea0b849268"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-settled-1e96da5e-a729-40b3-8add-c9dc5123b759/stdout.log",
+          "sha256": "d4d9749580d9babaac695073845c93fcc53dd5c104e8a26e6b43e9c4de79b68b"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-settled-1e96da5e-a729-40b3-8add-c9dc5123b759/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-scenario-sync",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:25:54.564Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 1972.6527,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-scenario-sync-caca9045-e0ab-4f04-98fc-f1497ea65b3b/run.json",
+          "sha256": "bb03d3d9c32bf50247def2876d80f3d0416811ec9b21d7290f745ce30d30fbe7"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-scenario-sync-caca9045-e0ab-4f04-98fc-f1497ea65b3b/stdout.log",
+          "sha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-scenario-sync-caca9045-e0ab-4f04-98fc-f1497ea65b3b/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-hot-baseline-sync",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:25:58.449Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 46896.7452,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-baseline-sync-af2d745a-b3c9-4602-88f7-76124e1cd125/run.json",
+          "sha256": "aed9433ec02ee97d195f0e2f9a36ae6f41a0cf96adf816cc5ff5d488b07b81c8"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-baseline-sync-af2d745a-b3c9-4602-88f7-76124e1cd125/stdout.log",
+          "sha256": "e93df062a56f11cb94fb08c24403e1c6812cebf12511d7b27398e5eca16de0bd"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-baseline-sync-af2d745a-b3c9-4602-88f7-76124e1cd125/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-baseline-final-adapter",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js",
+        "--source-ref",
+        "76ade3e4d78c9190800bdbd9544b940f9ae327fc"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:26:28.857Z",
+      "exitCode": 1,
+      "complete": true,
+      "elapsedMs": 1114.4147,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-baseline-final-adapter-90dfd4a9-6257-4e74-af22-4d71506f9f85/run.json",
+          "sha256": "70036604846d12dc35e5215dc36299613f69de55d3d69e1843dcae5b128a626f"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-baseline-final-adapter-90dfd4a9-6257-4e74-af22-4d71506f9f85/stdout.log",
+          "sha256": "c47ec5518c27010e46d743775068b3d2da77800e202d8890fa718044ebabc727"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-baseline-final-adapter-90dfd4a9-6257-4e74-af22-4d71506f9f85/stderr.log",
+          "sha256": "9fca86b7bfb0eb731a3a01f2b34613d1d5ea56a23e3f5a89446fc2cdde740905"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-recovery",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:26:32.182Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 14710.4632,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-recovery-6fd1dab9-3198-46aa-86d7-8a33e6105461/run.json",
+          "sha256": "89faa670d75c6ce0e84d36892264dcdbe5471bb41af6b850c36dc5db2c11db8e"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-recovery-6fd1dab9-3198-46aa-86d7-8a33e6105461/stdout.log",
+          "sha256": "8d943fc729ded75f1272ace3a14c7279520e726ae64e72627e6c2a401e0f2405"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-recovery-6fd1dab9-3198-46aa-86d7-8a33e6105461/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-ci-final",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:26:58.054Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 68688.5393,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-ci-final-5a40ffa8-7fe3-4a99-a38c-ba61c9bcebb2/run.json",
+          "sha256": "38e7055685b3b3226245205661d00ed23ac92109ebaff6c99a601fc4233b7b78"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-ci-final-5a40ffa8-7fe3-4a99-a38c-ba61c9bcebb2/stdout.log",
+          "sha256": "c1c7ecf0d984373b3368e728f59ad89d9188148afd0d7c67d599dfdd12d8efd3"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-ci-final-5a40ffa8-7fe3-4a99-a38c-ba61c9bcebb2/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-stream",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-stream"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:27:08.273Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 13421.2992,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-stream-df423c9a-67c2-4510-852c-e6617ff4ba42/run.json",
+          "sha256": "cf7d9ad0a8b639a90506f2368b99848d73c6c46e471152700e7c43380d582ff9"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-stream-df423c9a-67c2-4510-852c-e6617ff4ba42/stdout.log",
+          "sha256": "d31cfab7ccbe394cb62f0feecb1285e84601d352641523fc69daf61f5acc79e2"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-stream-df423c9a-67c2-4510-852c-e6617ff4ba42/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-parity",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:14.370Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 2931.2457999999997,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-parity-803076be-d942-4c04-a0c1-1f82a880238b/run.json",
+          "sha256": "5bff0a1db8399f3596aeb051900936ef927e604c03f12b10dd55f0c812b815fd"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-parity-803076be-d942-4c04-a0c1-1f82a880238b/stdout.log",
+          "sha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-parity-803076be-d942-4c04-a0c1-1f82a880238b/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-release-contract",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:14.452Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 1411.8766999999998,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-release-contract-70f24d88-f0da-4550-a7c1-4c25a32e72fa/run.json",
+          "sha256": "c47012db7769db9bfd8bb9ed805d88acc92a3c375118c322995c926418fa2598"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-release-contract-70f24d88-f0da-4550-a7c1-4c25a32e72fa/stdout.log",
+          "sha256": "6b4ee1fe44ba083381e03b76ee315197e82860386c653f4f964679ff21f48f1f"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-release-contract-70f24d88-f0da-4550-a7c1-4c25a32e72fa/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-hot-gates",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:14.572Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 3556.2357999999995,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-gates-6532bb08-f404-477f-83a8-95f79ed40c44/run.json",
+          "sha256": "bbd00c3fbeddc614688af6c4a4bb7a5addd90b69ce7b2d4795a47ede68f1c409"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-gates-6532bb08-f404-477f-83a8-95f79ed40c44/stdout.log",
+          "sha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-gates-6532bb08-f404-477f-83a8-95f79ed40c44/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-hot-check",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:14.691Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 1138.5511999999999,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-check-daf8fe41-56c1-49d7-a582-10cb25d6b203/run.json",
+          "sha256": "c3daf8cd443b11799e1b3852807e87242789933fb15db54a8a72c722f61972f3"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-check-daf8fe41-56c1-49d7-a582-10cb25d6b203/stdout.log",
+          "sha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-hot-check-daf8fe41-56c1-49d7-a582-10cb25d6b203/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:14.760Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 3665.6458,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-audit-99996840-fdd5-4722-a69c-3047a94f0ffa/run.json",
+          "sha256": "a9adb0ea186123e1b470ee87aecd56d8fde5bb0428bc34314124e97309cddbd6"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-audit-99996840-fdd5-4722-a69c-3047a94f0ffa/stdout.log",
+          "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-audit-99996840-fdd5-4722-a69c-3047a94f0ffa/stderr.log",
+          "sha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-arch-final",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:41.564Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 18520.587300000003,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-final-6c1d7338-d02d-47ac-837c-5c985ff535ff/run.json",
+          "sha256": "7862f5ef47809f15cff0d2dafd010437dfa70fa0421fec1cf2c016d3838ae17d"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-final-6c1d7338-d02d-47ac-837c-5c985ff535ff/stdout.log",
+          "sha256": "e2cf803d1726babb61e2b5c28bdac992a2d6b5d4aed6e1bd6ecf36d528d6ccb6"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-arch-final-6c1d7338-d02d-47ac-837c-5c985ff535ff/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-boundaries",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:28:51.527Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 13722.2979,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-boundaries-c9e2fcc0-ea51-4224-8b00-7a6ea8d0cbd0/run.json",
+          "sha256": "78cb5529116f61a1da2cd6417477177d678246df04254e3011f503511433aee9"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-boundaries-c9e2fcc0-ea51-4224-8b00-7a6ea8d0cbd0/stdout.log",
+          "sha256": "a03032ced7f618290f402c17e40b3d82d30bca19c4268c6cb47e44154aa732bb"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-boundaries-c9e2fcc0-ea51-4224-8b00-7a6ea8d0cbd0/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-diff-default",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:30:06.200Z",
+      "exitCode": 2,
+      "complete": true,
+      "elapsedMs": 262.3212,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-default-6fcb3bbf-3954-4f08-973d-c2034a50d0b1/run.json",
+          "sha256": "55ff3be9180ffac30b3d1139177fd6d0ded483b74c01bbbfa1c4eb90daa9d833"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-default-6fcb3bbf-3954-4f08-973d-c2034a50d0b1/stdout.log",
+          "sha256": "f8679a2521f4e00fbd874beb92660fd7b14cd7c8859471421ae0ee841bb1d54f"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-default-6fcb3bbf-3954-4f08-973d-c2034a50d0b1/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-diff-crlf",
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+        "diff",
+        "--check"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:30:17.277Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 201.44740000000002,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-crlf-f1cce8d4-5cdd-4714-9657-90304105f539/run.json",
+          "sha256": "e6c1f673b96479a86f63d9e434b7297eb28d81110050f9c1b909a9448fa43389"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-crlf-f1cce8d4-5cdd-4714-9657-90304105f539/stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-crlf-f1cce8d4-5cdd-4714-9657-90304105f539/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-electron-continuation-final",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:30:19.283Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 19261.6726,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-final-a024d2cd-06d3-4a36-be15-1de9842d4ff3/run.json",
+          "sha256": "0b28e0ecfa13be1d17839bd7fe0e95faa56eb94f6eb7a58669a2b93191e2a52e"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-final-a024d2cd-06d3-4a36-be15-1de9842d4ff3/stdout.log",
+          "sha256": "e9b1b0c7bc7e01e716e391ee5845e0349a14d06a5b1a73467562a6333464ab12"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-electron-continuation-final-a024d2cd-06d3-4a36-be15-1de9842d4ff3/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "label": "guoshi-diff-final",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "head": "76ade3e4d78c9190800bdbd9544b940f9ae327fc",
+      "status": "M .gitattributes\n M .github/workflows/ci.yml\n M scripts/electron/bridge-main.cjs\n M scripts/verify-electron-bridge.js\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui-icons.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-app.js\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-continuation-cases.cjs\n?? web/scripts/smoke-authoring-relay-continuation.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "startedAt": "2026-09-10T14:31:18.621Z",
+      "exitCode": 0,
+      "complete": true,
+      "elapsedMs": 166.19690000000003,
+      "files": [
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-final-cfa9769a-03dd-4cbc-aaff-f9db656791f0/run.json",
+          "sha256": "97fce3bbac5b1ac86f6e9cf17e2f84755d7d4c18b48b110aac5f332cd10a8820"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-final-cfa9769a-03dd-4cbc-aaff-f9db656791f0/stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "web/dev-tools/perf-round1/guoshi-diff-final-cfa9769a-03dd-4cbc-aaff-f9db656791f0/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ]
+}

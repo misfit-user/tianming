@@ -1,0 +1,81 @@
+  // Synchronous transaction, scoped to the current world; never persist closures in saves.
+  var _provinceBatch = null;
+  function _provinceKey(value) {
+    if (value && typeof value === 'object') value = value.id || value.divisionId || value.regionId;
+    if (typeof value !== 'string' && typeof value !== 'number') return '';
+    var key = String(value).trim();
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error('非法地块或势力引用');
+    return key;
+  }
+  function _provinceTarget(value, opts, map) {
+    if (value !== null && typeof value !== 'string' && typeof value !== 'number') throw new Error('易主缺少有效的新势力');
+    var ref = _provinceKey(opts && opts.targetFactionId || value), g = _gm();
+    if (!ref) return { id:'', name:'' };
+    var facs = Array.isArray(g.facs) ? g.facs : [], rows = facs.filter(function(f){return f && _provinceKey(f.id) === ref;});
+    if (!rows.length && !(opts && opts.targetFactionId)) rows = facs.filter(function(f){return f && _provinceKey(f.name) === ref;});
+    if (!rows.length && !(opts && opts.targetFactionId) && typeof global.findScenarioFactionByMapValue === 'function') {
+      var resolved = global.findScenarioFactionByMapValue(ref,map);
+      if (resolved) rows = facs.filter(function(f){return f && _provinceKey(f.id) === _provinceKey(resolved.id);});
+    }
+    if (rows.length !== 1 || !rows[0].name) throw new Error('目标势力不存在或不唯一：' + ref);
+    return rows[0];
+  }
+  function _provinceEffect(label, fn) {
+    try { fn(); } catch(error) {
+      try { if (global.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(error,label); else console.warn('['+label+']',error); } catch(_) {}
+    }
+  }
+  function withProvinceTransfers(fn) {
+    var g = _gm(); if (!g || typeof fn !== 'function') throw new Error('易主事务缺少运行态');
+    if (_provinceBatch) { if (_provinceBatch.world !== g) throw new Error('易主期间世界已切换'); return fn(_provinceBatch); }
+    var journal = [], seen = new Set();
+    var tx = { world:g, changed:false, events:[], mapChanges:[], lookup:null, remember:function(obj){
+      if (!obj || typeof obj !== 'object' || seen.has(obj)) return;
+      seen.add(obj); journal.push({obj:obj,before:Object.getOwnPropertyDescriptors(obj)});
+    }};
+    tx.remember(g); (g.facs || []).forEach(tx.remember); _provinceBatch = tx;
+    var result;
+    try {
+      result = fn(tx);
+      if (result && typeof result.then === 'function') throw new Error('易主事务必须同步完成');
+      if (_gm() !== g) throw new Error('易主期间世界已切换');
+      if (tx.changed) {
+        _refreshIndex(null,true);
+        tx.remember(g.turnChanges); if (g.turnChanges) tx.remember(g.turnChanges.map);
+        if (typeof global.pushMapTurnChange === 'function') tx.mapChanges.forEach(global.pushMapTurnChange);
+      }
+    } catch(error) {
+      for (var i=journal.length-1;i>=0;i--) {
+        var item=journal[i]; Reflect.ownKeys(item.obj).forEach(function(k){if (!Object.prototype.hasOwnProperty.call(item.before,k)) delete item.obj[k];});
+        Object.defineProperties(item.obj,item.before);
+      }
+      throw error;
+    } finally { _provinceBatch = null; }
+    if (tx.changed) {
+      tx.events.forEach(function(e){_emit('faction:provinceTransferred',e);});
+      // A failing legacy canvas must not suppress the formal SVG repaint.
+      _provinceEffect('territory-colors',function(){if ((g.mapData || g.map) && typeof global.updateMapColors==='function') global.updateMapColors({refresh:false});});
+      var ui=global.TMPhase8FormalBridge && global.TMPhase8FormalBridge.map;
+      _provinceEffect('territory-invalidate',function(){if (ui && typeof ui.invalidateFormalMap==='function') ui.invalidateFormalMap();});
+      _provinceEffect('territory-formal-refresh',function(){if (ui && typeof ui.refreshMapFromRuntime==='function') ui.refreshMapFromRuntime();});
+      _provinceEffect('territory-legacy-refresh',function(){if (typeof global.refreshMapDisplay==='function') global.refreshMapDisplay();});
+    }
+    return result;
+  }
+  function _provinceLookup(g) {
+    if (_provinceBatch && _provinceBatch.lookup) return _provinceBatch.lookup;
+    var map=g.mapData || g.map, regions=map && map.regions || [], divisions=[], seen=new Set();
+    var ids=new Map(),aliases=new Map(),divIds=new Map(),divNames=new Map(),mapped=new Map();
+    function add(idx,key,obj){key=_provinceKey(key);if (!key) return;if (!idx.has(key)) idx.set(key,obj);else if(idx.get(key)!==obj) idx.set(key,null);}
+    regions.forEach(function(r){if(!r)return;add(ids,r.id,r);[r.name,r.adminBinding,r.mapRegionId].forEach(function(k){add(aliases,k,r);});});
+    function walk(n){
+      if(!n || typeof n!=='object' || seen.has(n))return;seen.add(n);
+      if(Array.isArray(n)){n.forEach(walk);return;}
+      divisions.push(n);add(divIds,n.id,n);add(divNames,n.name,n);
+      (Array.isArray(n.mappedRegions)?n.mappedRegions:[]).forEach(function(k){add(mapped,k,n);});
+      ['children','divisions','prefectures','counties'].forEach(function(k){if(n[k])walk(n[k]);});
+    }
+    Object.keys(g.adminHierarchy || {}).forEach(function(k){walk(g.adminHierarchy[k]);});
+    var out={map:map,regions:regions,ids:ids,aliases:aliases,divIds:divIds,divNames:divNames,mapped:mapped};
+    if(_provinceBatch)_provinceBatch.lookup=out;return out;
+  }

@@ -188,6 +188,9 @@
         var _loc=a.garrison||a.location||'',_dest=a.destination||'';
         if(_loc||_dest){ html += '<span class="tm-army-full tm-fulltext-source"'+fullTextAttr((_loc?'\u9a7b '+_loc:'')+(_dest?' \u8d74 '+_dest:''))+' style="margin-left:auto;color:var(--txt-s);white-space:nowrap;">'+(_loc?'\u9a7b '+esc(_loc):'')+(_dest?' \u2192 '+esc(_dest):'')+'</span>'; }
         html += '</div>';
+        if (global.TM && TM.CommandAuthority && TM.CommandAuthority.enabled(a)) {
+          html += '<div class="tm-command-context" style="font-size:0.76rem;line-height:1.8;white-space:pre-wrap;padding:0.5rem 0;color:var(--txt-s);">' + esc(TM.CommandAuthority.describe(a)) + '</div>';
+        }
         // 编制·兵种构成 chips
         if (Array.isArray(a.composition) && a.composition.length) {
           var _ct=a.composition.reduce(function(s,c){return s+((c&&c.count)||0);},0)||1;
@@ -297,6 +300,13 @@
     var dest = prompt('调 '+aname+' 赴何处?', '');
     if (!dest) return;
     var a = (global.GM && GM.armies || []).find(function(x){return x.name === aname;});
+    var authority = global.TM && TM.CommandAuthority;
+    if (a && a.commandChain && a.commandChain.mode === 'receipt' && !authority) { _toast('军令交接尚待核验'); return; }
+    if (a && authority && authority.enabled(a)) {
+      authority.request(a, {destination:dest}, {text:'调' + aname + '赴' + dest});
+      _pushEdict('谕：调 ' + aname + ' 赴 ' + dest + '，令军中覆报点集与开拔日期。', '调兵');
+      _toast('军令已发，候军中回报'); return;
+    }
     if (a) {
       a.destination = dest;
       a.state = 'marching';
@@ -401,6 +411,14 @@
     if (!ch || ch.alive === false || ch.dead === true) { _toast('此人已殁或查无此人·不可拜将'); return; }   // ★死人/幽灵守卫
     var a = (global.GM && GM.armies || []).find(function(x){return x.name === aname;});
     if (!a) { _toast('未找到部队'); return; }
+    var authority = global.TM && TM.CommandAuthority;
+    if (a.commandChain && a.commandChain.mode === 'receipt' && !authority) { _toast('军令交接尚待核验'); return; }
+    if (authority && authority.enabled(a)) {
+      authority.request(a, {commander:name}, {text:'拟以' + name + '领' + aname});
+      _pushEdict('谕：以 ' + name + ' 领 ' + aname + '，军中具报交接情形。', '易将');
+      try { if (typeof closeGenericModal === 'function') closeGenericModal(); } catch (_) {}
+      _toast('任命已发，候交接回报'); return;
+    }
     // 直写主字段 + 4 读取别名(与引擎 _armyCurrentCommander 读取集一致)·清死亡卸职标记
     a.commander = name; a.commanderName = name; a.general = name; a.leader = name;
     a.commanderAlive = true; a._commanderLost = false;

@@ -1,0 +1,28 @@
+CONTROL_PASS CONTROL-01 stable keys and turn validation reject known aliases
+  {"ok":true,"rejected":[true,true,true,true,true]}
+CONTROL_PASS CONTROL-02 same turn transaction publish is idempotent
+  {"ok":true,"recovered":true}
+NOT_REPRODUCED TM-AUD-01 different timelines overwrite the same per-turn bundle
+  {"defect":false,"sameFinalPath":false,"branchAtOriginalPath":"A","oldRecoveryError":null}
+NOT_REPRODUCED TM-AUD-02 workshop overwrite loses old package when copying fails
+  {"defect":false,"error":"Injected copy ENOSPC","oldPreserved":true,"partialNewTree":false,"indexWritten":false}
+NOT_REPRODUCED TM-AUD-03a stale account/me combines a new token with old account identity
+  {"defect":false,"tokenOwner":"B","displayedUser":"B"}
+NOT_REPRODUCED TM-AUD-03b late login response restores session after logout completed
+  {"defect":false,"loggedOutBeforeReply":true,"loggedInAfterStaleReply":false}
+NOT_REPRODUCED TM-AUD-04 manual save callback mutates a different live world
+  {"defect":false,"liveWorld":"world-B","liveSaveName":"SAVE-FOR-B","enterGameCalls":0}
+NOT_REPRODUCED TM-AUD-05 legacy save string loads but list-style object is rejected
+  {"defect":false,"stringReferenceWorks":true,"objectReferenceError":null}
+NOT_REPRODUCED TM-AUD-06a CI accepts an empty report after runner failure
+  {"defect":false,"exitCode":1,"messages":["[ci-smokes] run=current HEAD=test-head report=<USER_HOME>\\Desktop\\tianming-audit-review\\web\\dev-tools\\arch-guard\\ci-unique\\smoke-report.json","smoke-evidence-runner-failed"]}
+NOT_REPRODUCED TM-AUD-06b CI waives an unrelated syntax failure by file name
+  {"defect":false,"exitCode":1,"messages":["[ci-smokes] run=current HEAD=test-head report=<USER_HOME>\\Desktop\\tianming-audit-review\\web\\dev-tools\\arch-guard\\ci-unique\\smoke-report.json","smoke-evidence-test-failed"]}
+NOT_REPRODUCED TM-AUD-07 network predicate misses hexadecimal IPv4-mapped loopback
+  {"defect":false,"dottedMappedBlocked":true,"hexMappedBlocked":true,"literalV4Blocked":true,"scope":"predicate only; no DNS/TLS/Electron exploitation attempted"}
+NOT_REPRODUCED TM-AUD-08 export write failure destroys an existing backup payload
+  {"defect":false,"reportedFailure":true,"originalPreserved":true,"resultingBytes":21}
+NOT_REPRODUCED TM-AUD-09 saveToSlot loses both success and failure return values
+  {"defect":false,"successResult":"true","failureResult":"false"}
+
+SUMMARY {"probes":11,"defectsPresent":0,"controlsPassed":2,"harnessErrors":0}

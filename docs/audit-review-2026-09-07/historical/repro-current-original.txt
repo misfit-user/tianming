@@ -1,0 +1,24 @@
+{"executable":"node","args":["web/dev-tools/audit-2026-09-05/repro-original/audit-repro.cjs","--repo","<USER_HOME>/Desktop/tianming","--expect-clean"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:34:51.514Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+CONTROL_PASS CONTROL-01 stable keys and turn validation reject known aliases
+  {"ok":true,"rejected":[true,true,true,true,true]}
+CONTROL_PASS CONTROL-02 same turn transaction publish is idempotent
+  {"ok":true,"recovered":true}
+NOT_REPRODUCED TM-AUD-01 different timelines overwrite the same per-turn bundle
+  {"defect":false,"sameFinalPath":false,"branchAtOriginalPath":"A","oldRecoveryError":null}
+NOT_REPRODUCED TM-AUD-02 workshop overwrite loses old package when copying fails
+  {"defect":false,"error":"workshopTransactions is not defined","oldPreserved":true,"partialNewTree":false,"indexWritten":false}
+HARNESS_ERROR TM-AUD-03a accountRequests is not defined
+HARNESS_ERROR TM-AUD-03b accountRequests is not defined
+evalmachine.<anonymous>:4
+  return accountRequests.request(req, body);
+  ^
+
+ReferenceError: accountRequests is not defined
+    at Object.handleOnlineRendererRequest (evalmachine.<anonymous>:4:3)
+    at <USER_HOME>\Desktop\tianming\web\dev-tools\audit-2026-09-05\repro-original\audit-repro.cjs:195:23
+    at probe (<USER_HOME>\Desktop\tianming\web\dev-tools\audit-2026-09-05\repro-original\audit-repro.cjs:85:28)
+    at <USER_HOME>\Desktop\tianming\web\dev-tools\audit-2026-09-05\repro-original\audit-repro.cjs:193:9
+
+Node.js v24.14.0
+
+{"name":"repro-current-original","executable":"node","args":["web/dev-tools/audit-2026-09-05/repro-original/audit-repro.cjs","--repo","<USER_HOME>/Desktop/tianming","--expect-clean"],"exitCode":1,"signal":null,"durationMs":385,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\repro-current-original.log"}

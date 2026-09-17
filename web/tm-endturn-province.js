@@ -1223,8 +1223,20 @@ function _peRenderQuickStats(div) {
   var eb = div.economyBase || {};
   var fis = div.fiscal || {};
   var pop = div.population || {};
-  var mouths = (typeof div.population === 'number') ? div.population : (pop.mouths || 0);
-  var households = pop.households || 0;
+  var detail = div.populationDetail || {};
+  function knownCount(values) {
+    for (var i = 0; i < values.length; i++) {
+      var v = values[i];
+      if ((typeof v === 'number' || (typeof v === 'string' && /^\s*\d+(?:\.\d+)?\s*$/.test(v))) && isFinite(Number(v)) && Number(v) >= 0) return Number(v);
+    }
+    return null; // 缺少户数不能冒充“0户”，也不能按总人口猜一个户数。
+  }
+  function registeredCount(unit) {
+    var m = String(div.registeredHouseholds || '').match(new RegExp('(\\d[\\d,，]*(?:\\.\\d+)?)\\s*(万|亿)?\\s*' + unit));
+    return m ? Number(m[1].replace(/[,，]/g, '')) * (m[2] === '亿' ? 1e8 : m[2] === '万' ? 1e4 : 1) : null;
+  }
+  var mouths = knownCount([typeof div.population === 'object' ? pop.mouths : div.population, detail.mouths, registeredCount('口')]);
+  var households = knownCount([pop.households, div.households, detail.households, registeredCount('户')]);
   var farmland = eb.farmland || 0;
   var commerce = eb.commerceVolume || 0;
   var coef = eb.commerceCoefficient != null ? eb.commerceCoefficient : 1.0;
@@ -1236,8 +1248,8 @@ function _peRenderQuickStats(div) {
 
   var html = '<div class="tm-div-quickstats">';
   html += '<div class="tm-div-qs"><div class="tm-div-qs-label">在编户口</div>'
-       + '<div class="tm-div-qs-val" style="color:var(--celadon-400);">' + _peN(mouths) + '</div>'
-       + '<div class="tm-div-qs-sub">' + _peN(households) + '户</div></div>';
+       + '<div class="tm-div-qs-val" style="color:var(--celadon-400);">' + (mouths == null ? '—' : _peN(mouths)) + '</div>'
+       + '<div class="tm-div-qs-sub">' + (households == null ? '户数未载' : _peN(households) + '户') + '</div></div>';
   html += '<div class="tm-div-qs"><div class="tm-div-qs-label">在编田亩</div>'
        + '<div class="tm-div-qs-val" style="color:#9bc28e;">' + _peN(farmland) + '</div>'
        + '<div class="tm-div-qs-sub">亩</div></div>';

@@ -1,1 +1,5 @@
-# web/battle = 打包自 桌面/天命御驾亲征/(源真相)·只含运行时8个glb·更新原型后须重拷·见接入spec §13.1
+# web/battle 入口最初打包自 桌面/天命御驾亲征/；运行时8个glb沿用原模型。
+# 2026-09-13起：亲征握手/战果修复与terrain-world.js、terrain-landscape.js在本仓维护。
+# 不可整页覆写旧原型而丢弃这些运行时修复；同步原型须保留接入契约并跑亲征/地图验收。
+# 第二阶段还包含terrain-navigation/motion/assets/shadows/props：可编辑程序资产、LOD、投影及通行规则均由本仓维护。
+# 第三阶段unit-command/assets/render提供稳定将领身份/能力、11兵种与将领兵模、三档LOD及缓冲池；旧GLB保留作兼容回退，不可用原型覆盖新链路。

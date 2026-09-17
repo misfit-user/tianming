@@ -1163,6 +1163,12 @@ export function createReconcile(deps) {
       return;
     }
     var r = api.applyBattleResult(aiOutput.battleResult, G);
+    if (r && r.deferred) {
+      aiOutput.battleResult._applierAftermathPending = true; // 随队列/存档保留，最终结算再给军功与败将涟漪
+      if (applied) { applied.semantic = applied.semantic || {}; applied.semantic.battleResultDeferred = 1; }
+      return; // 待玩家裁决不是写入失败，也不可提前发胜仗奖励
+    }
+    if (r && r.duplicate && arguments[3] !== r.result) return; // 只允许真实结算回调补一次后效，重试不重复加皇威
     if (r && r.ok) {
       if (applied) {
         if (!applied.semantic) applied.semantic = {};
@@ -1364,7 +1370,7 @@ export function createReconcile(deps) {
       var message = String(error && (error.message || error) || 'validator exception');
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
       else console.warn('[applier] ' + name + ' validator:', error);
-      if (aiOutput && aiOutput._strictValidation === true) {
+      if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
         if (!Array.isArray(applied.failed)) applied.failed = [];
         applied.failed.push({ validator: name, reason: 'validator exception', details: [message] });
       }

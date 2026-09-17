@@ -332,16 +332,88 @@
     // 全局感知（部门加权）
     var tot = 0, avg = 0;
     ['central','provincial','military','fiscal','judicial','imperial'].forEach(function(k) {
-      avg += c.subDepts[k].perceived;
-      tot++;
+      var w = _deptWeight(c, k);
+      avg += c.subDepts[k].perceived * w;
+      tot += w;
     });
     c.perceivedIndex = tot > 0 ? avg / tot : c.trueIndex;
+    _mirrorDeclaredDepts(c);
 
     // 可见性层
     c.visibilityTier = calcVisibilityTier();
   }
 
   var CORR_DEPTS = ['central','provincial','military','fiscal','judicial','imperial'];
+
+  // Explicit scenario accounts keep the six departments as the single source.
+  function _hasRuntimeDeclaredLedger() {
+    var state = global.GM;
+    return !!(state && state.corruption && state.corruption.accounting && state.corruption.accounting.schema === 'tm-corruption-ledger/2');
+  }
+
+  function _declaredScenarioCorruption() {
+    var state = global.GM, sc = null;
+    if (!state) return null;
+    try { sc = typeof global.findScenarioById === 'function' ? global.findScenarioById(state.sid) : null; } catch (_) {}
+    if (!sc && global.P && (!global.P.id || global.P.id === state.sid)) sc = global.P;
+    var config = sc && sc.corruption;
+    return config && config.accounting && config.accounting.schema === 'tm-corruption-ledger/2' ? config : null;
+  }
+
+  function isDeclaredLedger() {
+    return _hasRuntimeDeclaredLedger() || !!_declaredScenarioCorruption();
+  }
+
+  function ensureDeclaredLedger() {
+    if (!_hasRuntimeDeclaredLedger()) {
+      var config = _declaredScenarioCorruption();
+      if (config) initFromDynasty('', '', { corruption:config });
+    }
+    return _hasRuntimeDeclaredLedger();
+  }
+
+  function _deptWeight(c, key) {
+    if (!c || !c.accounting || c.accounting.schema !== 'tm-corruption-ledger/2') return 1;
+    var weights = c.accounting.departmentWeights || {};
+    var weight = typeof weights[key] === 'number' ? weights[key] : 1;
+    return isFinite(weight) && weight >= 0 ? weight : 1;
+  }
+
+  function _mirrorDeclaredDepts(c) {
+    if (!_hasRuntimeDeclaredLedger()) return;
+    var mirror = {};
+    CORR_DEPTS.forEach(function(key) { mirror[key] = c.subDepts[key].true; });
+    c.byDept = mirror; // arch-ok: corruption owner publishes six-department mirror only
+  }
+
+  function _reconcileDeclaredProvince(c) {
+    if (!_hasRuntimeDeclaredLedger()) return;
+    var bridge = global.IntegrationBridge;
+    if (!bridge || typeof bridge.getLeafDivisions !== 'function') return;
+    var leaves = bridge.getLeafDivisions(global.GM.adminHierarchy, 'player');
+    var sd = c.subDepts.provincial;
+    var last = c.accounting.provincialMirror;
+    // A legal department change applies to the existing regional conditions once.
+    // Initial regional data wins; an old saved mirror is never a scenario reset.
+    var delta = typeof last === 'number' && isFinite(last) ? sd.true - last : 0;
+    var total = 0, weight = 0;
+    leaves.forEach(function(div) {
+      var raw = typeof div.corruption === 'number' ? div.corruption : div.corruptionLocal;
+      if (typeof raw !== 'number' || !isFinite(raw)) return;
+      var pd = div.populationDetail || div.population || {};
+      var mouths = typeof pd.actualMouths === 'number' ? pd.actualMouths : pd.mouths;
+      if (typeof mouths !== 'number' && typeof div.population === 'number') mouths = div.population;
+      if (typeof mouths !== 'number' || !isFinite(mouths) || mouths <= 0) return;
+      var value = clamp(raw + (isFinite(delta) ? delta : 0), 0, 100);
+      if (delta) { div.corruption = value; div.corruptionLocal = value; }
+      total += value * mouths; weight += mouths;
+    });
+    if (!weight) return;
+    var bias = typeof sd.perceived === 'number' ? sd.true - sd.perceived : 0;
+    sd.true = total / weight;
+    sd.perceived = clamp(sd.true - bias, 0, sd.true);
+    c.accounting.provincialMirror = sd.true; // arch-ok: corruption owner tracks the last regional aggregate
+  }
 
   function _averageDeptTrue(c) {
     var total = 0, n = 0;
@@ -352,8 +424,9 @@
       if (!sd) return;
       var v = Number(sd.true);
       if (!isFinite(v)) return;
-      total += v;
-      n++;
+      var w = _deptWeight(c, k);
+      total += v * w;
+      n += w;
     });
     return n > 0 ? total / n : NaN;
   }
@@ -371,11 +444,13 @@
       }
       var p = Number(sd.perceived);
       if (!isFinite(p)) return;
-      total += p;
-      n++;
+      var w = _deptWeight(c, k);
+      total += p * w;
+      n += w;
     });
     c.perceivedIndex = n > 0 ? clamp(total / n, 0, 100) : fallback;
     c.visibilityTier = calcVisibilityTier();
+    _mirrorDeclaredDepts(c);
   }
 
   function _pushTurnReason(entry, reason) {
@@ -410,7 +485,9 @@
   function syncIndexFromSubDepts(reason, opts) {
     opts = opts || {};
     ensureCorruptionModel();
+    ensureDeclaredLedger();
     var c = GM.corruption;
+    _reconcileDeclaredProvince(c);
     var oldIndex = Number(c.trueIndex);
     if (!isFinite(oldIndex)) oldIndex = _averageDeptTrue(c);
     var next = _averageDeptTrue(c);
@@ -420,8 +497,10 @@
     c.overall = next;
     _syncPerceivedAverage(c, next);
     var threshold = typeof opts.trendThreshold === 'number' ? opts.trendThreshold : 0.0001;
-    c.trend = next > oldIndex + threshold ? 'rising' :
-              next < oldIndex - threshold ? 'falling' : 'stable';
+    if (!(opts.preserveTrend && Math.abs(next - oldIndex) <= threshold)) {
+      c.trend = next > oldIndex + threshold ? 'rising' :
+                next < oldIndex - threshold ? 'falling' : 'stable';
+    }
     if (opts.record !== false) _recordCorruptionIndexChange(oldIndex, next, reason);
     return next;
   }
@@ -477,10 +556,12 @@
     });
 
     // 2. 总指数 = 部门加权平均
+    _reconcileDeclaredProvince(GM.corruption);
     var totalTrue = 0, n = 0;
     ['central','provincial','military','fiscal','judicial','imperial'].forEach(function(k) {
-      totalTrue += GM.corruption.subDepts[k].true;
-      n++;
+      var w = _deptWeight(GM.corruption, k);
+      totalTrue += GM.corruption.subDepts[k].true * w;
+      n += w;
     });
     var oldIndex = GM.corruption.trueIndex;
     GM.corruption.trueIndex = n > 0 ? totalTrue / n : oldIndex;
@@ -763,6 +844,29 @@
   //   entrenchedFactions: [{ name, dept, strength, years }]
   function initFromDynasty(dynasty, phase, scenarioOverride) {
     ensureCorruptionModel();
+    var declared = scenarioOverride && scenarioOverride.corruption;
+    if (declared && declared.accounting && declared.accounting.schema === 'tm-corruption-ledger/2') {
+      var c = GM.corruption;
+      var initialized = _hasRuntimeDeclaredLedger();
+      // Schema adoption on an existing save must preserve its evolved department values.
+      var preserve = initialized || Number(GM.turn) > 1;
+      if (!initialized) c.accounting = JSON.parse(JSON.stringify(declared.accounting)); // arch-ok: corruption owner adopts explicit schema once
+      if (!preserve) {
+        var baseValue = typeof declared.trueIndex === 'number' ? clamp(declared.trueIndex, 0, 100) : c.trueIndex;
+        var perceivedBase = typeof declared.perceivedIndex === 'number' ? clamp(declared.perceivedIndex, 0, 100) : baseValue;
+        CORR_DEPTS.forEach(function(key) {
+          var input = declared.subDepts && declared.subDepts[key] || {};
+          var value = typeof input.true === 'number' && isFinite(input.true) ? clamp(input.true, 0, 100) : baseValue;
+          var perceived = typeof input.perceived === 'number' && isFinite(input.perceived) ? clamp(input.perceived, 0, value) : Math.min(perceivedBase, value);
+          c.subDepts[key] = Object.assign({}, input, { true:value, perceived:perceived, trend:input.trend || 'stable' }); // arch-ok: scenario initialization at corruption owner
+        });
+        if (declared.supervision) c.supervision = Object.assign(c.supervision, JSON.parse(JSON.stringify(declared.supervision))); // arch-ok: scenario initialization at corruption owner
+        if (declared.countermeasures) c.countermeasures = Object.assign(c.countermeasures, JSON.parse(JSON.stringify(declared.countermeasures))); // arch-ok: scenario initialization at corruption owner
+        if (Array.isArray(declared.entrenchedFactions)) c.entrenchedFactions = JSON.parse(JSON.stringify(declared.entrenchedFactions)); // arch-ok: scenario initialization at corruption owner
+      }
+      syncIndexFromSubDepts('', { record:false, preserveTrend:true });
+      return { dynasty:dynasty, phase:phase, base:c.trueIndex, overridden:true, declared:true, preserved:preserve };
+    }
 
     // 先应用朝代预设作为基础
     var preset = DYNASTY_PRESETS[dynasty];
@@ -1141,6 +1245,8 @@
     ensureModel: ensureCorruptionModel,
     updatePerceived: updatePerceived,
     syncIndexFromSubDepts: syncIndexFromSubDepts,
+    isDeclaredLedger: isDeclaredLedger,
+    ensureDeclaredLedger: ensureDeclaredLedger,
     calcVisibilityTier: calcVisibilityTier,
     getMonthRatio: getMonthRatio,
     Sources: Sources,

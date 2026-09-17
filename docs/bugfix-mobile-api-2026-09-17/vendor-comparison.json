@@ -1,0 +1,24 @@
+{
+  "device": "LAPTOP-AV4J1O7I",
+  "vendorVersion": "6.2.1",
+  "vendorSource": "mobile\\node_modules\\@capacitor\\android\\capacitor\\src\\main\\assets\\native-bridge.js",
+  "cases": [
+    {
+      "name": "uppercase header",
+      "old": "invalid object string",
+      "fixed": "valid JSON"
+    },
+    {
+      "name": "vendor JSON",
+      "old": "invalid object string",
+      "fixed": "valid JSON"
+    },
+    {
+      "name": "abort/deadline",
+      "old": "abort ignored; no native timeouts",
+      "fixed": "local cancellation; bounded native timeouts"
+    }
+  ],
+  "realPhone": false,
+  "networkRequests": 0
+}

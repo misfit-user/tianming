@@ -24,6 +24,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Record tested checkout identity
+        run: |
+          git rev-parse HEAD
+          git status --short
+          node -p 'JSON.stringify({node:process.version,platform:process.platform,arch:process.arch})'
       - name: Install release-gate dependencies
         run: npm ci --ignore-scripts
       - name: Audit production dependencies
@@ -44,6 +49,18 @@ jobs:
       - name: Full smoke suite
         working-directory: web
         run: node scripts/ci-smokes.js
+      - name: Audit checkout probes
+        run: node web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-evidence-${{ github.sha }}
+          path: |
+            web/dev-tools/arch-guard/ci-*/smoke-report.json
+            web/dev-tools/audit-2026-09-05/repro-adapted-results.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Stage main preview artifact
         if: github.event_name == 'push'
         run: node scripts/stage-web-release.js --target "${{ runner.temp }}/tianming-main-preview" --label main-preview
@@ -57,6 +74,93 @@ jobs:
           path: ${{ runner.temp }}/tianming-main-preview
           include-hidden-files: true
           retention-days: 7
+
+  electron-bridge:
+    name: electron-bridge
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies and Electron runtime
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node node_modules/electron/install.js
+      - name: Real sandbox bridge, desktop IPC and restart recovery
+        run: node scripts/verify-electron-bridge.js
+      - name: Desktop startup stays on menu and autosave recovery is opt-in
+        run: node scripts/verify-electron-bridge.js --startup-autosave
+      - name: Personal campaign real trigger, tactical result and fallback
+        run: node scripts/verify-electron-bridge.js --personal-campaign
+      - name: Tactical landscape profiles, picking and real WebGL rendering
+        run: node scripts/verify-electron-bridge.js --tactical-terrain
+      - name: Tactical routing, detailed assets, shadows and GPU recovery
+        run: node scripts/verify-electron-bridge.js --tactical-phase2
+      - name: Tactical troop models and commander abilities
+        run: node scripts/verify-electron-bridge.js --tactical-units
+      - name: Construction appraisal thinking tools and visible feedback
+        run: node scripts/verify-electron-bridge.js --building-appraisal
+      - name: Edict polish complete text and visible failure recovery
+        run: node scripts/verify-electron-bridge.js --edict-polish
+      - name: Edict settled text clarity, layout and draft preservation
+        run: node scripts/verify-electron-bridge.js --edict-clarity
+      - name: Memorial list continuity, drafts and reading preferences
+        run: node scripts/verify-electron-bridge.js --memorial-reading
+      - name: Character actions, office recommendations and existing appointment flow
+        run: node scripts/verify-electron-bridge.js --character-actions
+      - name: Edict office creation, recursive tree, appointment target and native save recovery
+        run: node scripts/verify-electron-bridge.js --office-writeback
+      - name: Right rail pending audiences, navigation and completion feedback
+        run: node scripts/verify-electron-bridge.js --rail-badges
+      - name: Player feedback army search, local fonts and fatal turn boundary
+        run: node scripts/verify-electron-bridge.js --player-feedback
+      - name: Treasury, help, rail, edict continuity and primary-secondary API controls
+        run: node scripts/verify-electron-bridge.js --seven-ui
+      - name: Authoring region paths and real editor persistence
+        run: node scripts/verify-electron-bridge.js --authoring-regions
+      - name: Workshop hierarchy, nested creation and saved editor readback
+        run: node scripts/verify-electron-bridge.js --workshop-hierarchy
+      - name: Authoring streamed tools, final result, approval and real editor persistence
+        run: node scripts/verify-electron-bridge.js --authoring-stream
+      - name: Guoshi project ownership and read-only execution (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-boundaries
+      - name: Guoshi truthful completion and same-project recovery (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-recovery
+      - name: Guoshi relay continuation, readable controls and empty administration (real Electron)
+        run: node scripts/verify-electron-bridge.js --authoring-continuation
+      - name: Verify authoring full-permission apply and response recovery
+        run: node scripts/verify-electron-bridge.js --authoring-autoapply
+      - name: Strategic map territory labels, native input and rendering performance
+        run: |
+          node scripts/verify-electron-bridge.js --strategic-map
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --strategic-map --scenario sc-jianyan1-1127-shaosong
+      - name: Startup mode continuation and full native menu flow
+        run: node scripts/verify-electron-bridge.js --startup-mode
+      - name: Guoshi bounded progress, instruction retention and actual game consumption
+        run: |
+          node scripts/verify-electron-bridge.js --authoring-efficiency
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --authoring-efficiency --scenario sc-jianyan1-1127-shaosong
+      - name: Controlled TLS address binding and redirects
+        run: node scripts/verify-remote-tls.js
+      - name: Relief pilot official scenarios, real UI and save recovery
+        run: |
+          node scripts/verify-electron-bridge.js --relief-pilot
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --relief-pilot --scenario sc-tianqi7-1627
+      - name: Preserve Electron evidence (including startup failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-bridge-${{ github.sha }}
+          path: web/dev-tools/electron-bridge/**
+          if-no-files-found: error
+          retention-days: 30
 
   mobile-release-contracts:
     name: mobile-release-contracts

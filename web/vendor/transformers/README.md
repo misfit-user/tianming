@@ -23,22 +23,19 @@ await import('./vendor/transformers/transformers.esm.js')
 
 ## 模型文件（不在本目录）
 
-bge-small-zh-v1.5 模型（~23 MB）由 transformers.js 在首次启用时自动下载到 IndexedDB 缓存。**Electron 离线场景下需要先在线启用一次**，让模型缓存到 IDB·之后即可离线使用。
+bge-small-zh-v1.5 的量化模型、配置与 tokenizer 随全量安装包放在 `web/vendor/models/Xenova/bge-small-zh-v1.5/`。运行时优先探测这些本地文件，并禁止本地加载失败时悄悄转为远程下载。未提供本地模型的网页部署，只有玩家显式开启远程回退后才尝试下载。
 
-如需完全离线：
-
-```js
-// 在 tm-semantic-recall.js 启用前
-transformers.env.localModelPath = './vendor/models/';
-transformers.env.allowRemoteModels = false;
-// 把 bge-small-zh-v1.5 的 onnx + tokenizer 文件放到 web/vendor/models/Xenova/bge-small-zh-v1.5/
-```
+全量安装包不依赖之前下载过模型的缓存；首装也可离线启用。`file:` / `capacitor:` 不使用不支持这些协议的 Cache API。
 
 模型文件清单可从 https://huggingface.co/Xenova/bge-small-zh-v1.5/tree/main 下载。
 
 ## WASM 文件
 
-ONNX 运行时的 .wasm 文件由 onnxruntime-web 在加载时按需下载。jsdelivr 的 `+esm` bundle 内置了 wasm fetch 路径·指向 jsdelivr CDN。完全离线还需手动 vendor `ort-wasm.wasm` / `ort-wasm-simd.wasm` 等到本目录。
+四个 `ort-wasm*.wasm` 已随包提供，与上方 ESM 的 `onnxruntime-web@1.14.0` 严格配套。主线程与 Worker 都通过 `env.backends.onnx.wasm.wasmPaths` 指定本目录，不依赖默认 CDN。
+
+`wasm-manifest.json` 记录官方 npm 包完整性值及各文件 SHA-256；授权和第三方声明见 `onnxruntime-LICENSE.txt`、`onnxruntime-ThirdPartyNotices.txt`。配置依据：[Transformers.js 本地资源文档](https://huggingface.co/docs/transformers.js/v2.17.2/custom_usage)、[ONNX Runtime Web 部署文档](https://onnxruntime.ai/docs/tutorials/web/deploy.html)。
+
+`node scripts/verify-semantic-offline.cjs` 从仓根执行：使用全新 Electron 隔离目录、生产 CSP、阻断所有外网请求，实际加载模型并产生归一化的 512 维向量；不调用模型 API、不读取玩家配置。
 
 ## 升级
 

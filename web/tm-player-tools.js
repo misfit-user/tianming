@@ -32,7 +32,7 @@
     body += _actionButton('huji_dashboard',  '📊 户口仪表盘',  '户籍总览+地域分布+曲线',     'PhaseF5.openHujiDashboard()');
     body += _actionButton('revolt',          '⚔ 民变干预',      '四策处置民变',               'PhaseD.openRevoltInterventionPanel()');
     body += _actionButton('annual_fuyi',     '📜 年度赋役',    '滑块调本年赋役基调',          'openAnnualFuyiPanel()');
-    body += _actionButton('power_counter',   '⚖️ 反击权臣',    '七策反击',                    'PhaseF5.openPowerCounterUI()');
+    body += _actionButton('power_counter', _institutionalPowerCounterMode(global.GM)?'⚖️ 职掌与交接':'⚖️ 反击权臣', _institutionalPowerCounterMode(global.GM)?'拟议职掌与交割':'七策反击', 'PhaseF5.openPowerCounterUI()');
     body += '</div>';
     body += '</div>';
     _showModal(body, '圣裁议题', 620);
@@ -195,12 +195,28 @@
     _showModal(body, '户口仪表盘', 700);
   }
 
+  function _institutionalPowerCounterMode(G) {
+    var pm=G&&G.huangquan&&G.huangquan.powerMinister;
+    return !!(pm&&pm.mode==='institutional')||!!(global.AuthorityEngines&&global.AuthorityEngines.powerMinisterMode&&global.AuthorityEngines.powerMinisterMode(G)==='institutional');
+  }
+  function _powerCounterEscape(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function _renderInstitutionalPowerCounter(G) {
+    var pm=G.huangquan.powerMinister,read=global.AuthorityEngines&&global.AuthorityEngines.readPowerMinisterStatus,state=read?read(pm,G):{},names=state.officeNames||[];
+    var rows=[['secret_edict','密谕','另拟密谕，具明奉命之人与回报期限。'],['rotate_officials','核议任免','具名议调有关官员，查明接任与交割办法。'],['military_reform_against_pm','核议军权','按军逐一查议调发、印信与易帅交割。'],['court_spy','查问职掌','具明查问的人事与凭据，议定承办之人。'],['marriage_alliance','议婚','先议婚聘对象与礼数，再俟各方答复。'],['public_humiliation','召见申谕','拟定召见与申谕之言，听其当面陈奏。'],['execute_power_minister','勘问处置','具明案由、证据与审问办法，俟案情覆奏。']];
+    var body='<div style="max-width:560px;font-family:inherit;"><div style="font-size:1rem;color:var(--gold-300);margin-bottom:0.6rem;">职掌与交接</div>';
+    body+='<div style="font-size:0.82rem;line-height:1.8;margin-bottom:10px;"><b>'+_powerCounterEscape(pm.name||'掌事者')+'</b>'+(names.length?' · '+_powerCounterEscape(names.join('、')):'')+'<br>'+_powerCounterEscape(pm.description||'朝中职掌既有承袭，诏令施行须问承办，兵权更易须验交割。')+'</div>';
+    body+='<div style="font-size:0.74rem;color:#d4be7a;margin-bottom:10px;">以下拟入诏意，具明承办与期限后，可再送有司议行。</div>';
+    rows.forEach(function(r){body+='<button class="btn" style="display:block;width:100%;padding:8px;margin-bottom:4px;text-align:left;" onclick="PhaseD.invokeCounterStrategy(\''+r[0]+'\');"><b>'+r[1]+'</b><br><span style="color:#d4be7a;font-size:0.72rem;">'+r[2]+'</span></button>';});
+    return body+'</div>';
+  }
+
   function openPowerCounterUI() {
     var G = global.GM;
-    if (!G.huangquan || !G.huangquan.powerMinister) {
-      if (global.toast) global.toast('朝中无权臣');
+    if (!G||!G.huangquan || !G.huangquan.powerMinister) {
+      if (global.toast) global.toast(_institutionalPowerCounterMode(G)?'朝中暂无待核的职掌处境':'朝中无权臣');
       return;
     }
+    if(_institutionalPowerCounterMode(G)){_showModal(_renderInstitutionalPowerCounter(G),'职掌与交接',580);return;}
     var pm = G.huangquan.powerMinister;
     var COUNTER = (typeof global.PhaseD !== 'undefined' && global.PhaseD.COUNTER_STRATEGIES) || {};
     var body = '<div style="max-width:560px;font-family:inherit;">';

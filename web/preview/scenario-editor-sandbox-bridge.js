@@ -459,6 +459,9 @@
 
   function runQuickTestFirstTurn(sc, opts) {
     opts = opts || {};
+    // 必须在开局规范化/回合推进前冻结原始测试输入；旧报告没有此字段则只能作历史参考。
+    var sourceFingerprint = global.TM && global.TM.AgentKernel && global.TM.AgentKernel.fingerprintScenario
+      ? global.TM.AgentKernel.fingerprintScenario(sc).catch(function(){return null;}) : Promise.resolve(null);
     var turnsWanted = Math.max(1, Math.min(10, parseInt(opts.turns, 10) || 3));
     var perTurnTimeoutMs = opts.perTurnTimeoutMs != null ? opts.perTurnTimeoutMs : 90000;
     var bootWaitMs = opts.bootWaitMs != null ? opts.bootWaitMs : 2000;
@@ -497,10 +500,14 @@
         if (typeof global._useSecondaryTier !== 'function' || !global._useSecondaryTier()) return false;
         var sec = global.P && global.P.ai && global.P.ai.secondary;
         if (!sec || !sec.key || !sec.url) return false;
-        _origAi = { key: global.P.ai.key, url: global.P.ai.url, model: global.P.ai.model };
+        _origAi = { key: global.P.ai.key, url: global.P.ai.url, model: global.P.ai.model,
+          thinking: global.P.ai.thinking, thinkingProtocol: global.P.ai.thinkingProtocol,
+          hasThinking: Object.prototype.hasOwnProperty.call(global.P.ai, 'thinking'),
+          hasThinkingProtocol: Object.prototype.hasOwnProperty.call(global.P.ai, 'thinkingProtocol') };
         global.P.ai.key = sec.key;
         global.P.ai.url = sec.url;
         if (sec.model) global.P.ai.model = sec.model;
+        global.P.ai.thinking = sec.thinking; global.P.ai.thinkingProtocol = sec.thinkingProtocol; // arch-ok temporary quick-test tier config, restored below without persistence
         report.aiTier = 'secondary';
         return true;
       } catch (_) { return false; }
@@ -512,6 +519,8 @@
           global.P.ai.key = _origAi.key;
           global.P.ai.url = _origAi.url;
           global.P.ai.model = _origAi.model;
+          if (_origAi.hasThinking) global.P.ai.thinking = _origAi.thinking; else delete global.P.ai.thinking; // arch-ok restore the exact pre-test optional config
+          if (_origAi.hasThinkingProtocol) global.P.ai.thinkingProtocol = _origAi.thinkingProtocol; else delete global.P.ai.thinkingProtocol; // arch-ok restore the exact pre-test optional config
         }
       } catch (_) {}
       _origAi = null;
@@ -571,7 +580,7 @@
       if (phaseNote) report.note = report.note ? (report.note + '；' + phaseNote) : phaseNote;
       if (global.removeEventListener) { global.removeEventListener('error', onWinErr); global.removeEventListener('unhandledrejection', onWinErr); }
       report.verdict = quickTestVerdict(report);
-      return writeQuickTestReport(report).then(function (ok) {
+      return sourceFingerprint.then(function(fp){report.sourceFingerprint=fp;return writeQuickTestReport(report);}).then(function (ok) {
         try {
           if (typeof global.toast === 'function') {
             var v = report.verdict || {};

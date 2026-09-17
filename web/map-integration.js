@@ -76,12 +76,18 @@ function generateMapContextForAI(mapData, gameState) {
         return '当前无地图数据。';
     }
 
-    const regions = mapData.regions;
-    const factions = gameState.factions || [];
+    // Detached, read-only view; partial/legacy map rows must not erase AI geography.
+    const regions = mapData.regions.filter(Boolean).map(r => Object.assign({},r,{
+        owner: r.currentOwner != null ? r.currentOwner : (r.owner || r.factionId || ''),
+        neighbors: Array.isArray(r.neighbors) ? r.neighbors : [],
+        resources: Array.isArray(r.resources) ? r.resources : []
+    }));
+    gameState = gameState || {};
+    const factions = gameState.facs || gameState.factions || [];
 
     // 1. 地图总览
     let context = `【地图总览】\n`;
-    context += `共有 ${regions.length} 个省份。\n\n`;
+    context += `共有 ${regions.length} 个地块。\n\n`;
 
     // 2. 势力分布
     const factionTerritories = {};
@@ -98,9 +104,26 @@ function generateMapContextForAI(mapData, gameState) {
     for (const [factionId, territories] of Object.entries(factionTerritories)) {
         const faction = factions.find(f => f.id === factionId || f.name === factionId);
         const factionName = faction ? faction.name : factionId;
-        context += `${factionName}：控制 ${territories.length} 个省份（${territories.slice(0, 5).join('、')}${territories.length > 5 ? '等' : ''}）\n`;
+        context += `${factionName}：控制 ${territories.length} 个地块（${territories.slice(0, 5).join('、')}${territories.length > 5 ? '等' : ''}）\n`;
     }
     context += `\n`;
+
+    // Recent confirmed transfers stay visible even beyond the five-name overview.
+    const factionLabel = value => {
+        const f=factions.find(x=>x && (x.id===value || x.name===value));
+        return f ? f.name : (value || '无主');
+    };
+    const now=Number(gameState.turn);
+    const transfers=regions.map(r=>({r:r,h:Array.isArray(r.ownerHistory)?r.ownerHistory[r.ownerHistory.length-1]:null}))
+        .filter(x=>x.h && (!Number.isFinite(now) || Number(x.h.turn)>=now-2))
+        .sort((a,b)=>Number(b.h.turn)-Number(a.h.turn));
+    if (transfers.length) {
+        context += '\n【近期已确认的领地易主】\n当前运行态归属优先于开局设定；以下变化已经生效，不要重复扣除或恢复旧归属。\n';
+        transfers.slice(0,32).forEach(x=>{
+            context += String(x.r.name || x.r.id).slice(0,60)+' ['+String(x.r.id).slice(0,60)+']：'+factionLabel(x.h.from)+' → '+factionLabel(x.r.owner)+'；第'+x.h.turn+'回合；'+String(x.h.reason || '').slice(0,80)+'\n';
+        });
+        if(transfers.length>32)context += '另有 '+(transfers.length-32)+' 处易主未逐条展开，势力分布为当前总览。\n';
+    }
 
     // 3. 战略要地
     context += `【战略要地】\n`;
@@ -147,32 +170,19 @@ function generateMapContextForAI(mapData, gameState) {
  * 查找边境冲突点
  */
 function findBorderConflicts(regions) {
-    const conflicts = [];
-
-    regions.forEach(r1 => {
-        if (!r1.owner) return;
-
-        r1.neighbors.forEach(neighborId => {
-            const r2 = regions.find(r => r.id === neighborId);
-            if (r2 && r2.owner && r2.owner !== r1.owner) {
-                // 避免重复
-                const exists = conflicts.some(c =>
-                    (c.region1 === r1.name && c.region2 === r2.name) ||
-                    (c.region1 === r2.name && c.region2 === r1.name)
-                );
-
-                if (!exists) {
-                    conflicts.push({
-                        region1: r1.name,
-                        owner1: r1.owner,
-                        region2: r2.name,
-                        owner2: r2.owner
-                    });
-                }
-            }
+    const conflicts=[], byId=new Map(), seen=new Set();
+    (regions || []).filter(Boolean).forEach(r=>byId.set(r.id,r));
+    byId.forEach(r1=>{
+        if(!r1.owner)return;
+        (Array.isArray(r1.neighbors)?r1.neighbors:[]).forEach(id=>{
+            const r2=byId.get(id);
+            if(!r2 || !r2.owner || r2.owner===r1.owner)return;
+            const key=JSON.stringify([String(r1.id),String(r2.id)].sort());
+            if(seen.has(key))return;
+            seen.add(key);
+            conflicts.push({region1:r1.name,owner1:r1.owner,region2:r2.name,owner2:r2.owner});
         });
     });
-
     return conflicts;
 }
 
@@ -352,7 +362,7 @@ function applyAIMapChanges(aiResponse, mapData) {
     if (typeof TMMapRuntime !== 'undefined' && TMMapRuntime && typeof TMMapRuntime.applyAIMapChanges === 'function') {
         // TMMapRuntime owns the live GM map.  Do not forward legacy P.map
         // references, which are immutable scenario templates after game start.
-        TMMapRuntime.applyAIMapChanges(aiResponse);
+        return TMMapRuntime.applyAIMapChanges(aiResponse);
         return;
     }
 

@@ -30,6 +30,67 @@
       : { money:'两', grain:'石', cloth:'匹' };
   }
 
+  function declaredLedger(ch) {
+    var ledger = global.TM && global.TM.CharacterEconomyLedger;
+    return ledger && ledger.isDeclared(ch) ? ledger : null;
+  }
+  function precise(v) { var value=Number(v)||0;return Math.abs(value)<10?String(Math.round(value*100)/100):Math.round(value).toLocaleString(); }
+  function resourceText(amount,unit) {
+    var labels=[];['money','grain','cloth'].forEach(function(k){var v=amount&&amount[k];if(typeof v==='number'&&isFinite(v)&&v!==0)labels.push(precise(v)+' '+unit[k]);});
+    return labels.length?labels.join('，'):'暂无';
+  }
+  function renderDeclaredSection(ch,ledger) {
+    var pw=ledger.readPrivate(ch),summary=ledger.summarize(ch),funds=ledger.publicAccounts(ch),cfg=ch.economyConfig||{},unit=Object.assign({},_getUnit(),cfg.units||{});
+    var html='<div class="char-detail-section"><div class="char-detail-section-title">家计与经手财物 '+renderCourtesyName(ch)+'</div>';
+    if(cfg.context)html+='<p style="font-size:0.79rem;line-height:1.8;">'+_escHtml(cfg.context)+'</p>';
+    html+='<div style="font-size:0.78rem;color:var(--gold);margin-bottom:6px;">私用钱粮</div>';
+    if(!pw.known)html+='<div style="font-size:0.74rem;color:var(--txt-d);">家中钱粮尚未查明。</div>';
+    else {
+      html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">';
+      html+=renderWealthItem('💰',cfg.moneyLabel||'现钱',precise(pw.money)+' '+unit.money,'var(--gold-400)');
+      html+=renderWealthItem('🌾','存粮',precise(pw.grain)+' '+unit.grain,'#6aa88a');
+      html+=renderWealthItem('🧵','存帛',precise(pw.cloth)+' '+unit.cloth,'#a88a6a');html+='</div>';
+    }
+    var items=[];
+    ['landHoldings','houses','shops','treasures','livestock','investments','familyBusiness'].forEach(function(key){(pw[key]||[]).forEach(function(a){
+      var label=a.name||a.location||'家中财物',scope=a.tenure==='family'?'族中共有':a.tenure==='temple'?'寺观所有':a.tenure==='office'?'随职受给':a.tenure==='leased'?'承租经营':a.tenure==='residence'?'寓居·权属待核':'自有';
+      var amount=key==='landHoldings'&&typeof a.area==='number'?precise(a.area)+'亩':(typeof a.count==='number'?precise(a.count)+(a.unit||''):'');
+      items.push('<div style="margin:3px 0;">'+_escHtml(label)+' · '+_escHtml(scope)+(amount?' · '+_escHtml(amount):'')+(a.note?' — '+_escHtml(a.note):'')+'</div>');
+    });});
+    (cfg.supportArrangements||[]).forEach(function(a){items.push('<div style="margin:3px 0;">'+_escHtml(a.name||'供养')+' — '+_escHtml(a.note||'')+'</div>');});
+    if(items.length)html+='<div style="font-size:0.76rem;line-height:1.7;margin-top:10px;"><div style="color:var(--gold);">田宅与生业</div>'+items.join('')+'</div>';
+    var debt=summary.debt,arrears=summary.arrears;
+    if(['money','grain','cloth'].some(function(k){return debt[k]||arrears[k];})) {
+      html+='<div style="font-size:0.76rem;line-height:1.7;margin-top:10px;color:var(--vermillion-400);">借欠 '+_escHtml(resourceText(debt,unit))+'</div>';
+      (pw.debts||[]).forEach(function(d){if(d.status!=='paid')html+='<div style="font-size:0.73rem;color:var(--txt-d);">'+_escHtml(d.creditor||d.label||'借项')+'：'+_escHtml(resourceText(typeof d.amount==='number'?{money:d.amount}:d.amount,unit))+(d.note?' · '+_escHtml(d.note):'')+'</div>';});
+      if(['money','grain','cloth'].some(function(k){return arrears[k];}))html+='<div style="font-size:0.73rem;">日用未偿 '+_escHtml(resourceText(arrears,unit))+'</div>';
+    }
+    if((pw.receivables||[]).length){html+='<div style="font-size:0.76rem;color:var(--gold);margin-top:10px;">应收未到</div>';pw.receivables.forEach(function(r){html+='<div style="font-size:0.73rem;line-height:1.7;">'+_escHtml(r.debtor||r.label||'欠款')+' · '+_escHtml(resourceText(typeof r.amount==='number'?{money:r.amount}:r.amount,unit))+(r.note?' · '+_escHtml(r.note):'')+'</div>';});}
+    if(funds.known&&funds.accounts&&funds.accounts.length){
+      html+='<div style="font-size:0.76rem;color:var(--gold);margin-top:12px;">经手府库</div>';
+      funds.accounts.forEach(function(a){
+        var stock={},available={},roles={custodian:'收掌',disburser:'承办支给',oversight:'监临核议'},bindings=a.bindings||[];
+        ['money','grain','cloth'].forEach(function(k){stock[k]=a.resources&&a.resources[k]&&a.resources[k].stock;available[k]=a.resources&&a.resources[k]&&a.resources[k].available;});
+        var duties=bindings.map(function(b){return(b.title?b.title+' · ':'')+(roles[b.role]||'职掌待核');}).filter(function(v,i,list){return list.indexOf(v)===i;});
+        var oversightOnly=bindings.length>0&&bindings.every(function(b){return b.role==='oversight';});
+        html+='<div style="font-size:0.74rem;line-height:1.7;padding:6px 0;border-bottom:1px solid var(--border);"><b>'+_escHtml(a.name)+'</b>';
+        if(duties.length)html+='<br>'+_escHtml(duties.join('；'));
+        html+='<br>库中 '+_escHtml(resourceText(stock,unit))+'<br>簿列可支 '+_escHtml(resourceText(available,unit));
+        if(oversightOnly)html+='<br><span style="color:var(--txt-d);">职在监临核议，支给另由收掌官承办。</span>';
+        html+='</div>';
+      });
+      html+='<div style="font-size:0.71rem;color:var(--txt-d);margin-top:4px;">这些钱粮随职掌交割，不入本人家产。</div>';
+    } else if(!funds.known)html+='<div style="font-size:0.73rem;color:var(--txt-d);margin-top:10px;">经手府库的簿册尚未齐备。</div>';
+    var plan=(cfg.incomeStreams||[]).map(function(s){return{label:s.label||'生计进项',amount:s.monthly||s.annual,period:s.monthly?'月':'年'};});
+    var payroll=ledger.payroll(ch,30);if(payroll.known&&['money','grain','cloth'].some(function(k){return payroll.due&&payroll.due[k]>0;}))plan.unshift({label:'应给俸料',amount:payroll.due,period:'月'});
+    if(plan.length){html+='<div style="font-size:0.76rem;color:var(--gold);margin-top:10px;">常年进项</div>';plan.forEach(function(s){html+='<div style="font-size:0.73rem;line-height:1.7;">'+_escHtml(s.label)+' · 每'+s.period+' '+_escHtml(resourceText(s.amount,unit))+'</div>';});}
+    var last=ch.economyLedger&&ch.economyLedger.lastSettlement;
+    if(last){html+='<div style="font-size:0.76rem;color:var(--gold);margin-top:10px;">近'+precise(last.periodDays)+'日收支</div><div style="font-size:0.73rem;line-height:1.7;">收入 '+_escHtml(resourceText(last.income,unit))+'<br>支出 '+_escHtml(resourceText(last.expense,unit))+'</div>';}
+    else if((cfg.expenseStreams||[]).length){html+='<div style="font-size:0.76rem;color:var(--gold);margin-top:10px;">家中常支</div>';cfg.expenseStreams.forEach(function(s){html+='<div style="font-size:0.73rem;line-height:1.7;">'+_escHtml(s.label||'家用')+' · 每'+(s.monthly?'月':'年')+' '+_escHtml(resourceText(s.monthly||s.annual,unit))+'</div>';});}
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">'+renderFameSeal(ch.resources&&ch.resources.fame)+renderVirtueBadge(ch.resources&&ch.resources.virtueMerit,ch.resources&&ch.resources.virtueStage)+'</div>';
+    html+='</div>';return html;
+  }
+
   // ─── 名望 印章 ───
   function _turnsForMonthsLocal(months) {
     if (typeof global.turnsForMonths === 'function') return global.turnsForMonths(months);
@@ -294,6 +355,8 @@
 
   function renderCharResourcesSection(ch) {
     if (!ch) return '';
+    var ledger = declaredLedger(ch);
+    if (ledger) return renderDeclaredSection(ch, ledger);
     if (typeof CharEconEngine !== 'undefined') {
       try { CharEconEngine.ensureCharResources(ch); } catch(_){}
       try { CharEconEngine.updatePublicTreasuryMirror(ch); } catch(_){}
@@ -393,6 +456,18 @@
     if (typeof CharEconEngine === 'undefined') return;
     var ch = (GM.chars || []).find(function(c) { return c.name === charName; });
     if (!ch) return;
+    var declared = declaredLedger(ch);
+    if (declared) {
+      var unit = Object.assign({}, _getUnit(), ch.economyConfig && ch.economyConfig.units || {});
+      var summary = declared.summarize(ch);
+      var body = '<div style="padding:1rem;line-height:1.8;">点验私存钱粮：' + _escHtml(resourceText(summary.stock, unit)) + '。<br>田宅、铺产另行登记，未变卖不折作现钱；经手公库不在本人家产之内。<br><label>查验程度 <select id="confIntensity"><option value="0.3">据现存簿契</option><option value="0.6" selected>勘合保人证言</option><option value="1">逐项深入查验</option></select></label></div>';
+      if (typeof openGenericModal === 'function') openGenericModal('籍没 · ' + ch.name, body, function() {
+        var result = CharEconEngine.confiscate(ch, {intensity:Number((document.getElementById('confIntensity')||{}).value)||0.6,destination:'guoku'});
+        if (typeof toast === 'function') toast(result.success ? '已入官：' + resourceText(result.recovered,unit) + '；田宅另附簿册' : result.reason);
+        if (typeof closeGenericModal === 'function') closeGenericModal();
+      });
+      return;
+    }
     var visible = (ch.resources.privateWealth.money || 0) +
                   (ch.resources.privateWealth.land || 0) * 5 +
                   (ch.resources.privateWealth.treasure || 0) +

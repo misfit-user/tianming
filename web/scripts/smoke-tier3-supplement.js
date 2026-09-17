@@ -11,7 +11,8 @@ function sliceFn(src, marker){ const a=src.indexOf(marker); if(a<0) return null;
 console.log('smoke-tier3-supplement');
 
 // ── quality 死字段复活 ──
-const mil = read('tm-military.js');
+const militaryCore = read('tm-military.js');
+const mil = read('tm-battle-contract.js');
 ok(/\/精锐\|精兵\|百战\|劲旅\/\.test\(_qmStr\)/.test(mil), '★quality 关键词归一(精锐/精兵/百战/劲旅→1.3)');
 ok(/\/新兵\|新募\|老弱\|疲\|羸\|乌合\/\.test\(_qmStr\)/.test(mil), '弱兵关键词(新兵/新募/老弱/疲/羸/乌合→0.7)');
 const cas = sliceFn(mil, 'function calculateArmyStrength(');

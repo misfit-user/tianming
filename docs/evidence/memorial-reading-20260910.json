@@ -1,0 +1,478 @@
+{
+  "baseline": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+  "codeCommit": "6ef9d2249b334926c82537874a3107be8b8f5417",
+  "branch": "codex/fix-memorial-reading",
+  "sourceHashes": {
+    ".github/workflows/ci.yml": "29437458d70a45abc3b5b466f111b92c49670e5daec38930cdcf3851732088a0",
+    "scripts/electron/bridge-main.cjs": "8a7345a932d1dcb29702cdcedf3ba2eca041044d256bbc6f1d37ba42a7bfa202",
+    "scripts/electron/memorial-reading-cases.cjs": "565b4d9f7c79075bcbc18cfef0991d611317066c46e6ec3a07706ce09d905b87",
+    "scripts/verify-electron-bridge.js": "c86deb4c9fd748fdae58bcb1c881b590467a6248dcf82c9e17a905b8c74c750b",
+    "web/.hot-update-manifest.json": "5f02ec11c5100bcd5980288eb6104ef56594254ba5d8c3f37211355a835fca1f",
+    "web/index.html": "7e21394d9d3d5fcf83cf9f6116fbd4eda2f375fd4a3d0dd76ffdaa2d6023a600",
+    "web/phase8-formal-drafts-message-panels.js": "4c1a2d30cec309e78629f7508145f4df0162d9ab4a0982545c80aba4a958e08e",
+    "web/phase8-formal-drafts.js": "f9806912043248b78691823f86967f1a403cb654905d42608759025cfb5bc134",
+    "web/scripts/smoke-memorial-reading-preferences.js": "f4aaf2d655493b63b099a6647dc5aacd058629c1259605dd25d84785c3c1c3e8",
+    "web/startup-script-phases.json": "a15b767c45662c08f2f3db28948851812aaf93b89e275004f55b47a6d02d5952",
+    "web/tm-theme-font.js": "8306871b9a8b375080eed797fcb279d4650a0916cda4c6390a346cce68b17ca1"
+  },
+  "full": {
+    "pass": 933,
+    "fail": 0,
+    "skip": 0,
+    "waived": 2,
+    "waivedChecks": 7,
+    "total": 935,
+    "runId": "1f158653-23d5-4c65-9d49-e8ebbd0acc3e",
+    "report": "web/dev-tools/arch-guard/ci-iUx7sO/smoke-report.json",
+    "reportSha256": "0107c221bc069785af5527c0224c45aeea6e8eb562101471857414b83c85e515",
+    "note": "Run used a dirty baseline checkout; all 11 tested modified-file hashes were checked byte-for-byte against the code commit before committing."
+  },
+  "electron": {
+    "report": "web/dev-tools/electron-bridge/35c434d8-b628-435a-b4fd-3607543d7788/report.json",
+    "sha256": "24db8fad48b8094299fa81ddd8ec1607134b8fd70c01c46c10b7e04ad54350c6",
+    "pass": 19,
+    "fail": 0,
+    "scope": "Real isolated Windows Electron 33.4.11; controlled input/data, not native OS mouse or Android device"
+  },
+  "runs": [
+    {
+      "label": "memorial-reading-baseline",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/dev-tools/memorial-reading-run.cjs"
+      ],
+      "exitCode": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T13:14:35.681Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-baseline-adec2186-a86f-4901-809a-463eaddf2b8c"
+    },
+    {
+      "label": "memorial-reading-after",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/dev-tools/memorial-reading-run.cjs"
+      ],
+      "exitCode": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T13:20:50.622Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-after-c907d96a-dc66-4497-aa92-3262bcd5036a"
+    },
+    {
+      "label": "memorial-reading-layout",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/dev-tools/memorial-reading-run.cjs"
+      ],
+      "exitCode": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T13:23:18.313Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-layout-0c04de0b-de16-4077-b719-4886ad4bc444"
+    },
+    {
+      "label": "memorial-reading-reachable",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:26:18.977Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-reachable-09eaf60f-8be6-4c49-8c54-5c202a3e9a51"
+    },
+    {
+      "label": "memorial-reading-arch",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:30:13.303Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-arch-719f0dc7-744c-4aba-a7a1-cc995bfb48ea"
+    },
+    {
+      "label": "memorial-reading-focused",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "memorial|zoushu|settings|fontscale|formal-draft|hongyan"
+      ],
+      "exitCode": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T13:30:23.209Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-focused-43a300d0-d1d4-40ca-998c-705087a5a255"
+    },
+    {
+      "label": "memorial-reading-focused-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/run-smokes.js",
+        "--grep",
+        "memorial",
+        "--grep",
+        "zoushu",
+        "--grep",
+        "settings",
+        "--grep",
+        "fontscale",
+        "--grep",
+        "formal-draft",
+        "--grep",
+        "hongyan",
+        "--no-retry"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:31:52.628Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-focused-final-7c02d4e7-53d4-424e-ac1e-6bcf444a99b8"
+    },
+    {
+      "label": "memorial-reading-official-sync",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:31:54.392Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-official-sync-45daf876-ab98-44c5-9a8e-7559415d51eb"
+    },
+    {
+      "label": "memorial-reading-hot-sync",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:31:57.406Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-hot-sync-e1aa2406-fbf5-404e-a0c9-4095a4da7459"
+    },
+    {
+      "label": "memorial-reading-final-electron",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:34:03.833Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-final-electron-6f90e0df-ac47-40b7-91fc-d5167432b6c4"
+    },
+    {
+      "label": "memorial-reading-hot-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:35:31.810Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-hot-final-69aad0fd-2b7f-4cdc-81ea-28ad5793c746"
+    },
+    {
+      "label": "memorial-reading-edict-regression",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--edict-clarity"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:17.233Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-edict-regression-f57a34b4-4fea-493b-9b54-b96a17f15a04"
+    },
+    {
+      "label": "memorial-reading-arch-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:17.332Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-arch-final-1509e1ea-0cd8-4307-879e-e385b49a77ad"
+    },
+    {
+      "label": "memorial-reading-contract",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:18.683Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-contract-7f039e41-ede4-4a1d-8212-43bf6f1e2a98"
+    },
+    {
+      "label": "memorial-reading-parity",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:21.118Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-parity-2204067c-aec3-48ab-a8c1-33055c312d52"
+    },
+    {
+      "label": "memorial-reading-builder",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:24.273Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-builder-d0c54303-03cc-436d-ab89-a44eb1b5fdfb"
+    },
+    {
+      "label": "memorial-reading-building-regression",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--building-appraisal"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:31.949Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-building-regression-4b1d7c4c-59fc-4373-a164-6eeee130c0b8"
+    },
+    {
+      "label": "memorial-reading-audit",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high",
+        "--registry=https://registry.npmjs.org"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:44.256Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-audit-a3512254-87e4-4bae-8fa0-a4dc0397bac7"
+    },
+    {
+      "label": "memorial-reading-desktop-regression",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:36:47.562Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-desktop-regression-ba084122-99f7-4089-8be2-65c629282501"
+    },
+    {
+      "label": "memorial-reading-full",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "exitCode": 1,
+      "complete": true,
+      "startedAt": "2026-09-10T13:37:54.369Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-full-418d85a9-f506-4053-b792-2e27a87f9f72"
+    },
+    {
+      "label": "memorial-reading-startup-sync",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:40:49.307Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-startup-sync-69f5f127-04ac-4ff8-b1e1-208169d91245"
+    },
+    {
+      "label": "memorial-reading-startup-check",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/smoke-startup-phase-observability.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:40:50.274Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-startup-check-9be2faa1-8090-4f1d-af7d-da6464d30ae9"
+    },
+    {
+      "label": "memorial-reading-hot-complete",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:40:51.390Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-hot-complete-34b0b7eb-6b44-4142-85c0-ff10e252d5f3"
+    },
+    {
+      "label": "memorial-reading-full-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:41:36.586Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-full-final-aa9b9fce-c4ae-4c95-816f-5b0cb0cf64ae"
+    },
+    {
+      "label": "memorial-reading-visual-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--memorial-reading"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:42:03.777Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-visual-final-21fd4b6e-1c33-48ae-9405-2ecd38315f09"
+    },
+    {
+      "label": "memorial-reading-preferences-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "web/scripts/smoke-memorial-reading-preferences.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:42:19.743Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-preferences-final-df389d43-4994-44e3-a924-6766a670498f"
+    },
+    {
+      "label": "memorial-reading-hash-check",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:43:31.278Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-hash-check-49afea49-3f79-4c3c-aad4-9c357eabac73"
+    },
+    {
+      "label": "memorial-reading-contract-final",
+      "head": "547e2bb14bd4a61cbe5927b2ca7c2c8f55859ff8",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "exitCode": 0,
+      "complete": true,
+      "startedAt": "2026-09-10T13:43:33.045Z",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "logs": "web/dev-tools/perf-round1/memorial-reading-contract-final-89b378cd-cd51-4b8d-b601-84bed0463177"
+    }
+  ]
+}

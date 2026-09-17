@@ -22,6 +22,7 @@
 
 /** @param {string} charName @param {string} eventType - appointment|dismissal|war|death|inheritance|achievement @param {string} description */
 function recordCharacterArc(charName, eventType, description) {
+  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) { var nativeChar=TM.NativeWorld.resolveCharacter(GM,charName); charName=nativeChar&&nativeChar.id; }
   if (!charName || !eventType) return;
   if (!GM.characterArcs) GM.characterArcs = {};
   if (!GM.characterArcs[charName]) GM.characterArcs[charName] = [];
@@ -67,6 +68,7 @@ function recordCharacterArc(charName, eventType, description) {
 
 /** 获取角色弧线摘要（供 AI prompt） */
 function getCharacterArcSummary(charName, maxEvents) {
+  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) { var nativeChar=TM.NativeWorld.resolveCharacter(GM,charName); charName=nativeChar&&nativeChar.id; }
   if (!GM.characterArcs || !GM.characterArcs[charName]) return '';
   var _arr = GM.characterArcs[charName];
   var _arch = (_arr[0] && _arr[0].type === 'arc_archive') ? _arr[0] : null;
@@ -88,7 +90,8 @@ function getAllCharacterArcContext(maxChars) {
   var result = '【人物履历】\n';
   names.slice(0, maxChars || 6).forEach(function(name) {
     var summary = getCharacterArcSummary(name, 3);
-    if (summary) result += '  ' + name + '：' + summary + '\n';
+    var nativeChar=typeof TM!=='undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM) ? TM.NativeWorld.resolveCharacter(GM,name) : null;
+    if (summary) result += '  ' + (nativeChar ? nativeChar.name+' ['+nativeChar.id+']' : name) + '：' + summary + '\n';
   });
   return result;
 }

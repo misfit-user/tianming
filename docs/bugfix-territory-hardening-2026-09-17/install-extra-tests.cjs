@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm');
+const target=path.resolve(__dirname,'../../web/scripts/smoke-territory-hardening.js');
+const before=fs.readFileSync(target,'utf8'),marker='(async()=>{let failed=0;for(const t of tests)';
+if(before.split(marker).length!==2)throw Error('test insertion anchor not unique');
+const extra=fs.readFileSync(path.join(__dirname,'extra-tests.txt'),'utf8');
+const next=before.replace(marker,extra+'\n'+marker);new vm.Script(next,{filename:target});
+fs.writeFileSync(path.join(__dirname,'hardening-21-tests.bak'),before,{flag:'wx'});
+fs.writeFileSync(target,next);
+console.log('EXTRA_TESTS_INSTALLED');

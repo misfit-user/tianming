@@ -417,16 +417,18 @@ var MilitarySystems = (function(global) {
 
   function getMilitarySystemForArmy(army, root) {
     army = army || {};
-    var systems = getMilitarySystems(root);
-    var keys = [
-      army.militarySystemId, army.systemId, army.militarySystem,
-      army.armyType, army.type, army.branch, army.paymentModel
-    ].filter(Boolean).map(function(v) { return String(v).toLowerCase(); });
+    var systems = getMilitarySystems(root), explicit = army.militarySystemId || army.systemId || army.militarySystem;
+    if (explicit) {
+      var declared = systems.filter(function(s) { return s.id === String(explicit) || s.name === String(explicit); });
+      return declared.length === 1 ? declared[0] : _normalizeSystem({ id: 'unclassified', name: '未定兵制' }, 0);
+    }
+    var keys = [army.armyType, army.type, army.branch, army.paymentModel].filter(Boolean).map(function(v) { return String(v).toLowerCase(); });
     for (var i = 0; i < systems.length; i++) {
       var s = systems[i];
       var hay = [s.id, s.name, s.recruitmentType, s.salaryType].map(function(v) { return String(v).toLowerCase(); });
       if (keys.some(function(k) { return hay.indexOf(k) >= 0; })) return s;
     }
+    // Unbound legacy campaigns retain their historical fallback until migrated.
     return systems[0] || _normalizeSystem(null, 0);
   }
 
@@ -1488,15 +1490,13 @@ var MarchSystem = (function() {
     };
   }
 
-  /**
-   * 创建行军命令
-   * @param {Object} army - 军队对象
-   * @param {string} from - 出发地
-   * @param {string} to - 目的地
-   * @param {Object} [aiGeoData] - AI地理推演数据(无地图模式) {routeKm, terrainDifficulty, hasOfficialRoad, estimatedDaysBase}
+  /** 创建 army 从 from 到 to 的行军命令。
+   * aiGeoData 提供无图地理参数与 commandReceipt；获准后仍按道路与天数推进。
    * @returns {Object|null} marchOrder
    */
   function createMarchOrder(army, from, to, aiGeoData) {
+    var ticket = typeof TM !== 'undefined' && TM.CommandAuthority && TM.CommandAuthority.prepareMarch(army,to,aiGeoData);
+    if ((army.commandChain && army.commandChain.mode === 'receipt' && !ticket) || (ticket && !ticket.allowed)) return null;
     var cfg = _getConfig();
     if (!cfg.enabled) return null;
 
@@ -1508,6 +1508,7 @@ var MarchSystem = (function() {
     if (mapEnabled && typeof findPath === 'function') {
       // ═══ 地图模式：A*寻路 ═══
       var pathResult = findPath(from, to, { avoidEnemy: true, faction: army.faction });
+      if (!pathResult || !Array.isArray(pathResult.path) || pathResult.path.length < 2) return null;
       if (pathResult) {
         path = pathResult.path || [];
         var distance = path.length;
@@ -1571,6 +1572,7 @@ var MarchSystem = (function() {
 
     army.destination = to;
     army.state = 'marching';
+    if (ticket) TM.CommandAuthority.commit(army, ticket);
 
     addEB('行军', army.name + '从' + from + '出发前往' + to + '，预计' + marchDays + '天(' + marchTurns + '回合)到达。' + routeDesc);
     _dbg('[March]', army.name, from, '→', to, marchDays + '天/' + marchTurns + '回合');
@@ -1595,6 +1597,7 @@ var MarchSystem = (function() {
           _army2.garrison = order.to;
           _army2.destination = '';
           _army2.state = 'garrison';
+          if (window.TMMapLocations) window.TMMapLocations.sync(_army2, 'army', GM, order.to);
           _army2._arrivedTurn = GM.turn || 0;
           _army2.supplyRatio = Math.max(0.3, 1.0 - (order.totalDays / 1000) * 0.3);
         }
@@ -1658,9 +1661,7 @@ var MarchSystem = (function() {
     return 1.0;
   }
 
-  // ★Wave2·军令移防(2026-07-07·玩家侧军令动词)：玩家对自家驻防军队下移防令·复用整套行军机器
-  //   (A*寻路/无图估算·advanceAll 逐回合推进·抵达自动接防·抽屉/过回合报告/部队详情三面已可视)。
-  //   校验后拒单诚实给因：闸关/查无此军/非我军/驻地不明/已在途/同地/地图模式无路可达(勿造瞬移单)。
+  // 玩家移防：先核对驻防、道路与军中回报，再交由行军系统推进。
   function orderMarch(armyRef, to) {
     var cfg = _getConfig();
     if (!cfg.enabled) return { ok: false, reason: '行军系统未启用（设置→玩法机制·深化可开）' };
@@ -1685,6 +1686,8 @@ var MarchSystem = (function() {
       try { pr = findPath(from, to, { avoidEnemy: true, faction: army.faction }); } catch (_prE) { pr = null; }
       if (!pr || !pr.path || !pr.path.length) return { ok: false, reason: '无路可达' + to + '（道路不通或为敌境所阻）' };
     }
+    var pending = typeof TM !== 'undefined' && TM.CommandAuthority && TM.CommandAuthority.requestMarch(army,to);
+    if (pending) return pending;
     var order = createMarchOrder(army, from, to, null);
     if (!order) return { ok: false, reason: '军令未能成行' };
     return { ok: true, order: order };

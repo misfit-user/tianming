@@ -1,0 +1,769 @@
+{
+  "type": "tianming-guoshi-response-recovery-evidence",
+  "date": "2026-09-11",
+  "base": "d87cbf606db85c90d1349283446d51c27269e087",
+  "main": "0d301d8daaf214db792ffb2f44b2cf85bbed0732",
+  "branch": "codex/fix-guoshi-empty-finalization",
+  "observedHead": "d87cbf606db85c90d1349283446d51c27269e087",
+  "limits": [
+    "Only local code/tests; no push, merge, deployment or release.",
+    "Real Electron uses controlled relay and temporary userData; not real configured relay proof.",
+    "First Electron run had one preexisting opacity assertion failure; unchanged assertion passed on repeat.",
+    "Native original window retains 21 pending changes; not reloaded or applied.",
+    "Original source sync was byte-checked and backed up; no player/API data copied."
+  ],
+  "sourceFiles": [
+    {
+      "path": "web/editor-authoring-agent-provider.js",
+      "bytes": 41986,
+      "sha256": "0ba376869abe437a5b1449dfcb57c8501b420d8828e77fc49bcdb1163527e387"
+    },
+    {
+      "path": "web/editor-authoring-agent.js",
+      "bytes": 307197,
+      "sha256": "3c8bba91ee932e08ee0fdc67d823306d3efd97ae9d9bf4bbdaa51eef3cee4c3a"
+    },
+    {
+      "path": "web/editor-authoring-agent-ui.js",
+      "bytes": 220402,
+      "sha256": "fb0f9b7b926815b43b68a43e997d202d87bd322980b8443dd5d87ae3a30aa500"
+    },
+    {
+      "path": "web/editor.html",
+      "bytes": 184711,
+      "sha256": "dfef7311d47b95276034891536f74a5aa6b43d1f9fdd5e099637718a8cdd648f"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-preview.html",
+      "bytes": 32349,
+      "sha256": "f9521e7e105daca7fa18b7eb7deeccc8c4b885209e976f0d3b730194750fe246"
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "bytes": 182592,
+      "sha256": "601e4c21e11b639a549710efeb7ee4a563921d0297b6a01c2d7aaeeeaa43e1c9"
+    },
+    {
+      "path": "web/scripts/smoke-authoring-response-recovery.js",
+      "bytes": 11981,
+      "sha256": "16a1c903deb411d42fdaf5205bec95d9073879fa2356ff9d792b53da4c935209"
+    },
+    {
+      "path": "web/scripts/smoke-guoshi-cc-port.js",
+      "bytes": 63551,
+      "sha256": "0ee5ebdae6f83c9758d1d23aa2cbcb744f76b498ab7799466ccd0e0ace45d1b7"
+    },
+    {
+      "path": "scripts/electron/authoring-response-recovery-cases.cjs",
+      "bytes": 6080,
+      "sha256": "b1897feafa59ea0919c2b2801d3fb44acae56c05b582c62b2deb31039a1577ac"
+    },
+    {
+      "path": "scripts/electron/authoring-continuation-cases.cjs",
+      "bytes": 16987,
+      "sha256": "bf5e928bf6af850f24daa5b1c682c41f42bbb175c1b72deef22284c32874c620"
+    }
+  ],
+  "originalSourceSync": [
+    {
+      "path": "web/editor-authoring-agent-provider.js",
+      "byteIdentical": true
+    },
+    {
+      "path": "web/editor-authoring-agent.js",
+      "byteIdentical": true
+    },
+    {
+      "path": "web/editor-authoring-agent-ui.js",
+      "byteIdentical": true
+    },
+    {
+      "path": "web/editor.html",
+      "byteIdentical": true
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-preview.html",
+      "byteIdentical": true
+    }
+  ],
+  "fullSmoke": {
+    "file": "web/dev-tools/arch-guard/ci-54Zw6A/smoke-report.json",
+    "sha256": "e841870ffae5bd366e9a54ed4e695c61c69df07a155f3b2c4163cc662d8dd727",
+    "runId": "15848599-fd1b-4685-833b-b7616f6de1cd",
+    "head": "d87cbf606db85c90d1349283446d51c27269e087",
+    "counts": {
+      "pass": 937,
+      "fail": 0,
+      "skip": 0,
+      "waived": 2,
+      "waivedChecks": 7,
+      "total": 939
+    }
+  },
+  "runs": [
+    {
+      "label": "response-baseline-66cc14b2-ae63-448e-8a63-e9011e5aa488",
+      "at": "2026-09-11T05:48:45.169Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-response-recovery.js",
+        "--source-ref",
+        "d87cbf606db85c90d1349283446d51c27269e087"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-baseline-66cc14b2-ae63-448e-8a63-e9011e5aa488/output.log",
+      "logSha256": "f0ecc268cbb78238b1b3d8f60a4447844781da966a8926f74d47db6c5320d857",
+      "result": "web/dev-tools/new-scenario/response-baseline-66cc14b2-ae63-448e-8a63-e9011e5aa488/result.json",
+      "resultSha256": "720572b58e1a99546adfc0466d5d630bdb72790830a7c53f38d58493dbf9c748",
+      "summaries": [
+        "PASS proven JSON-only endpoint remains compatible on continuation",
+        "PASS cancelled response cannot spend another retry or apply a late result",
+        "{\"pass\":2,\"fail\":9,\"skip\":0,\"waived\":0,\"sourceRef\":\"d87cbf606db85c90d1349283446d51c27269e087\"}"
+      ]
+    },
+    {
+      "label": "response-fixed-7a842339-b990-4eff-99f1-d479b5514f3b",
+      "at": "2026-09-11T05:50:36.100Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-fixed-7a842339-b990-4eff-99f1-d479b5514f3b/output.log",
+      "logSha256": "47062ea1c439212bff39900edc6aae3fb2a045c8b795eb9ece920a81196198b2",
+      "result": "web/dev-tools/new-scenario/response-fixed-7a842339-b990-4eff-99f1-d479b5514f3b/result.json",
+      "resultSha256": "29d0c7fdb44579d91e71417597fb4f45f538e1136dc52bbd30b929d3dfac08fa",
+      "summaries": [
+        "PASS resuming keeps the last output budget; an explicit larger starting budget is never reduced",
+        "PASS insufficient_system_resource is not unknown/empty and partial tools cannot execute",
+        "PASS aborted is not unknown/empty and partial tools cannot execute",
+        "PASS reasoning-only replies retry the original mode, never execute or log thought-shaped commands",
+        "PASS unsupported tool_choice repairs only that option and preserves native tools and reasoning",
+        "PASS resuming an older checkpoint does not resend empty assistant placeholders",
+        "PASS cancelled response cannot spend another retry or apply a late result",
+        "{\"pass\":11,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-related-dd7c9a05-ce46-4bf9-be16-e1fe707730d8",
+      "at": "2026-09-11T05:51:07.667Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-reasoning-continuity.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-related-dd7c9a05-ce46-4bf9-be16-e1fe707730d8/output.log",
+      "logSha256": "017670ac21892d28e0cfc4a33da67dc98e10e12d152604fc69caff63051116e7",
+      "result": "web/dev-tools/new-scenario/response-related-dd7c9a05-ce46-4bf9-be16-e1fe707730d8/result.json",
+      "resultSha256": "7740ed36ca29fa9e6a6208b290476f55a86a8864f2cf3c5769347210f2360c4d",
+      "summaries": [
+        "PASS reasoning-only tool-shaped text is never executed and gets a truthful sanitized diagnosis",
+        "PASS empty, refusal, malformed arguments and plain prose are not collapsed into one diagnosis",
+        "PASS truncated thinking never executes a prefix; existing output and retry limits remain bounded",
+        "PASS valid JSON compatibility calls retain safe format diagnostics, never reasoning commands",
+        "PASS unrecognized payload and a non-array native tool list have explicit safe diagnoses",
+        "PASS OpenAI continuation state is not leaked into other providers or no-tools requests",
+        "PASS cancellation after thinking response preserves live data and does not replay tools",
+        "{\"pass\":13,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-relay-f7a59d1b-560e-46ba-bc12-9123fa2574f6",
+      "at": "2026-09-11T05:51:08.514Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-relay-continuation.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-relay-f7a59d1b-560e-46ba-bc12-9123fa2574f6/output.log",
+      "logSha256": "2dcb41fe6b5a71c8cd33972241a129de5e29ae986038d4d9a5306dcda060e7de",
+      "result": "web/dev-tools/new-scenario/response-relay-f7a59d1b-560e-46ba-bc12-9123fa2574f6/result.json",
+      "resultSha256": "91d2ab1cc2cab730b254a450fb8074886356ded815cbd8d850cfba479b91aa2b",
+      "summaries": [
+        "PASS closed relay connection has one retry owner, explicit failure and a usable partial checkpoint",
+        "PASS connection self-test cannot advertise native tools when it only received prose",
+        "PASS native unsupported-tools fallback also has bounded network retries and preserves the error category",
+        "PASS JSON compatibility retains each user image, full schemas and separate system instructions for all providers",
+        "PASS textual calls cannot escape issued tools or read-only permissions",
+        "PASS normal ping still passes and abort never becomes a compatibility retry",
+        "PASS empty or invalid admin hierarchy renders an honest empty state without changing source data",
+        "{\"pass\":14,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-stream-653fd94c-4799-402e-9df8-2c519b2d3f4c",
+      "at": "2026-09-11T05:51:09.175Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-provider-stream.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-stream-653fd94c-4799-402e-9df8-2c519b2d3f4c/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f",
+      "result": "web/dev-tools/new-scenario/response-stream-653fd94c-4799-402e-9df8-2c519b2d3f4c/result.json",
+      "resultSha256": "a23e3f6b9b71563262afc87cacf68962e37ebde6319c17641a6d68291b879c83",
+      "summaries": [
+        "PASS provider error event fails closed with an explicit response error, not a raw payload",
+        "PASS empty stream fails closed with an explicit response error, not a raw payload",
+        "PASS cancellation after headers cancels body reading and returns no executable tools",
+        "PASS request deadline covers the response body, not only response headers",
+        "PASS concurrent responses do not share tool fragments or final summaries",
+        "PASS existing HTTP retry cap and non-retryable authentication behavior remain enforced",
+        "PASS 39-round real provider/agent loop reaches finish, retains edit and preserves original scenario",
+        "{\"sourceRef\":null,\"pass\":21,\"fail\":0,\"skip\":0,\"waived\":0}"
+      ]
+    },
+    {
+      "label": "response-arch-67e76616-dbd1-449a-b7a7-42e192364ce0",
+      "at": "2026-09-11T05:51:27.066Z",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-arch-67e76616-dbd1-449a-b7a7-42e192364ce0/output.log",
+      "logSha256": "a6feb5ba60db64479970ad58178ae1d9ffe793fb16af0a542bedda1dc56dffd4",
+      "result": "web/dev-tools/new-scenario/response-arch-67e76616-dbd1-449a-b7a7-42e192364ce0/result.json",
+      "resultSha256": "7292abdff97b359c96ae1f8f51f10d516e85b4e94f28a27410e291134b3d83ff",
+      "summaries": [
+        "[lint-arch-all] PASS — 架构守卫全绿"
+      ]
+    },
+    {
+      "label": "response-electron-98fe7d4a-46ae-496c-a7d9-bcf11fc168fb",
+      "at": "2026-09-11T05:55:50.562Z",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-electron-98fe7d4a-46ae-496c-a7d9-bcf11fc168fb/output.log",
+      "logSha256": "a40eb48a6c30a1019670cd85cd575cf5cf6f4c11d3ad802fee806b53215eb021",
+      "result": "web/dev-tools/new-scenario/response-electron-98fe7d4a-46ae-496c-a7d9-bcf11fc168fb/result.json",
+      "resultSha256": "77ef14152dbf136937f13fa0024e1bf05e117a4d26498012c852c28d4e72d019",
+      "summaries": [
+        "ELECTRON_REPORT web\\dev-tools\\electron-bridge\\45a8bc47-b4b9-4a68-9b4b-0ef85b4c97f2\\report.json"
+      ]
+    },
+    {
+      "label": "response-final-8d13adeb-61a8-4073-b29b-a4cc9bf257a2",
+      "at": "2026-09-11T05:56:15.688Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-final-8d13adeb-61a8-4073-b29b-a4cc9bf257a2/output.log",
+      "logSha256": "bcfeaa522134672b732dd5271cc82a5071c98bfba6564de754285fecc2e8297b",
+      "result": "web/dev-tools/new-scenario/response-final-8d13adeb-61a8-4073-b29b-a4cc9bf257a2/result.json",
+      "resultSha256": "31d3e86fd7b0be292ec5f89299e18ca2b002b057ede474756771571041059e11",
+      "summaries": [
+        "PASS reasoning-only replies retry the original mode, never execute or log thought-shaped commands",
+        "PASS unsupported tool_choice repairs only that option and preserves native tools and reasoning",
+        "PASS resuming an older checkpoint does not resend empty assistant placeholders",
+        "PASS cancelled response cannot spend another retry or apply a late result",
+        "PASS SSE insufficient_system_resource discards even a malformed tool prefix and permits bounded native recovery",
+        "PASS SSE aborted discards even a malformed tool prefix and permits bounded native recovery",
+        "PASS cancelling during response backoff stops before another HTTP request",
+        "{\"pass\":14,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-baseline-final-c8a038ac-9432-47ae-9523-2d2c69cf0894",
+      "at": "2026-09-11T05:56:16.696Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-response-recovery.js",
+        "--source-ref",
+        "d87cbf606db85c90d1349283446d51c27269e087"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-baseline-final-c8a038ac-9432-47ae-9523-2d2c69cf0894/output.log",
+      "logSha256": "4ba5d7308ef1dcb78c2cc7c40f445790edc9b38c8c165f068d9ba1e3c97a7841",
+      "result": "web/dev-tools/new-scenario/response-baseline-final-c8a038ac-9432-47ae-9523-2d2c69cf0894/result.json",
+      "resultSha256": "e514f31204146486d891993656436e846e34c15a3ce5df9b3c341bfe97ba2237",
+      "summaries": [
+        "PASS proven JSON-only endpoint remains compatible on continuation",
+        "PASS cancelled response cannot spend another retry or apply a late result",
+        "PASS cancelling during response backoff stops before another HTTP request",
+        "{\"pass\":3,\"fail\":11,\"skip\":0,\"waived\":0,\"sourceRef\":\"d87cbf606db85c90d1349283446d51c27269e087\"}"
+      ]
+    },
+    {
+      "label": "response-official-sync-48d863d7-8ad3-4ebf-8356-cd22a06fbfa2",
+      "at": "2026-09-11T05:57:13.241Z",
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-official-sync-48d863d7-8ad3-4ebf-8356-cd22a06fbfa2/output.log",
+      "logSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+      "result": "web/dev-tools/new-scenario/response-official-sync-48d863d7-8ad3-4ebf-8356-cd22a06fbfa2/result.json",
+      "resultSha256": "0fc6e88d82feeb1947d18df40960844f96529b225e61e439369589613a475259",
+      "summaries": []
+    },
+    {
+      "label": "response-startup-a71e914d-4c24-42e0-b7a9-f1df92de53c0",
+      "at": "2026-09-11T05:57:13.880Z",
+      "command": [
+        "node",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-startup-a71e914d-4c24-42e0-b7a9-f1df92de53c0/output.log",
+      "logSha256": "0c5c0ef29754e87bebdfc2fc9a1d1b5c791d9bde1c720d9fe160d43ec8bb3fc1",
+      "result": "web/dev-tools/new-scenario/response-startup-a71e914d-4c24-42e0-b7a9-f1df92de53c0/result.json",
+      "resultSha256": "fff1f511ec9c51f79fc28c4c39e926d7bdd30cca0e418e9de240688615b08fc6",
+      "summaries": []
+    },
+    {
+      "label": "response-electron-repeat-d9d2b37e-1977-4cbe-a9b0-c4119d8d33d7",
+      "at": "2026-09-11T05:57:32.818Z",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-electron-repeat-d9d2b37e-1977-4cbe-a9b0-c4119d8d33d7/output.log",
+      "logSha256": "d90475a48a14c16ae32e00fdddb36013c859e70b18b30f78ba8c3fd9a5c9390a",
+      "result": "web/dev-tools/new-scenario/response-electron-repeat-d9d2b37e-1977-4cbe-a9b0-c4119d8d33d7/result.json",
+      "resultSha256": "c29460b1375b204ae89ee7e9e1ef5b542c0757eac577a6036ec658adee957a6a",
+      "summaries": [
+        "ELECTRON_REPORT web\\dev-tools\\electron-bridge\\4212c8cd-635e-4323-a41c-7f293db1e925\\report.json"
+      ]
+    },
+    {
+      "label": "response-canonical-2043e645-ffa9-4041-af25-bc05179f0f40",
+      "at": "2026-09-11T05:57:59.590Z",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:\\Users\\37814\\Desktop\\tianming",
+        "--temp-root",
+        "E:\\tianming-relief-temp"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-canonical-2043e645-ffa9-4041-af25-bc05179f0f40/output.log",
+      "logSha256": "14ffcb179e3b28fc4596511d24677d126a745081e2aab4a8c2fa884d28722e58",
+      "result": "web/dev-tools/new-scenario/response-canonical-2043e645-ffa9-4041-af25-bc05179f0f40/result.json",
+      "resultSha256": "68d60853b47d633ba7073c09018dc8f2f3432f711b981f3cbad6bac21b1f63d0",
+      "summaries": []
+    },
+    {
+      "label": "response-release-65d2406f-cd52-49ce-a181-a7029ebadb25",
+      "at": "2026-09-11T05:58:53.354Z",
+      "command": [
+        "node",
+        "scripts/verify-release-contract.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-release-65d2406f-cd52-49ce-a181-a7029ebadb25/output.log",
+      "logSha256": "093f6ce558b81997be5f3f239b6f648a3c311ebf3da117faaeabe4783c464bcd",
+      "result": "web/dev-tools/new-scenario/response-release-65d2406f-cd52-49ce-a181-a7029ebadb25/result.json",
+      "resultSha256": "82c89de72dba3cc9f7bb3b4ea12604bf4895c293e3a7a7793a3c34622256dd2e",
+      "summaries": [
+        "PASS assertions=40",
+        "PASS assertions=166 files=692 bytes=129288635"
+      ]
+    },
+    {
+      "label": "response-parity-c4542e32-258f-4693-9975-278a4d19a435",
+      "at": "2026-09-11T05:58:57.065Z",
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-parity-c4542e32-258f-4693-9975-278a4d19a435/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+      "result": "web/dev-tools/new-scenario/response-parity-c4542e32-258f-4693-9975-278a4d19a435/result.json",
+      "resultSha256": "5a483423e349b253d0c0e0f79e78f63c440e632631308f0665336e05f3934c06",
+      "summaries": [
+        "PASS assertions=27"
+      ]
+    },
+    {
+      "label": "response-hot-40518606-36e6-4d1d-9228-6731037c11cc",
+      "at": "2026-09-11T05:59:01.451Z",
+      "command": [
+        "node",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-hot-40518606-36e6-4d1d-9228-6731037c11cc/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+      "result": "web/dev-tools/new-scenario/response-hot-40518606-36e6-4d1d-9228-6731037c11cc/result.json",
+      "resultSha256": "ad45e33d6edc49153dd59258809d957d2cdb392570dc714db4c6955d681c35cc",
+      "summaries": [
+        "PASS assertions=27"
+      ]
+    },
+    {
+      "label": "response-canonical-check-6d692ef9-8612-42bf-af87-6ac49849041f",
+      "at": "2026-09-11T05:59:03.205Z",
+      "command": [
+        "node",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-canonical-check-6d692ef9-8612-42bf-af87-6ac49849041f/output.log",
+      "logSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98",
+      "result": "web/dev-tools/new-scenario/response-canonical-check-6d692ef9-8612-42bf-af87-6ac49849041f/result.json",
+      "resultSha256": "77ca261d8cbb316a79b3cd323dd6b4b804d075ccd0201891f2e8ff5967043e12",
+      "summaries": [
+        "PASS canonical hot baseline files=687 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）"
+      ]
+    },
+    {
+      "label": "response-full-46baece6-76ed-4b72-91d1-a5ee1f8bc9c5",
+      "at": "2026-09-11T05:59:50.805Z",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-full-46baece6-76ed-4b72-91d1-a5ee1f8bc9c5/output.log",
+      "logSha256": "7a123c6a962288324b628a1b996ad2c360c71b6068613a882d01476e99d9f3fc",
+      "result": "web/dev-tools/new-scenario/response-full-46baece6-76ed-4b72-91d1-a5ee1f8bc9c5/result.json",
+      "resultSha256": "54eb51c9236c77ee9114d72789aa22e4f14a81a541387661f8430318da069fc1",
+      "summaries": []
+    },
+    {
+      "label": "response-cc-port-795c799f-d4b4-4726-b946-70248b8cb65c",
+      "at": "2026-09-11T06:01:54.863Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-guoshi-cc-port.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 1,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-cc-port-795c799f-d4b4-4726-b946-70248b8cb65c/output.log",
+      "logSha256": "ab66fec394b1ea43fc32d8ed65148310f0c00a5717972ff1d9ce65f60063933c",
+      "result": "web/dev-tools/new-scenario/response-cc-port-795c799f-d4b4-4726-b946-70248b8cb65c/result.json",
+      "resultSha256": "524283b0005352591a8867227625c081fd2cffd2133c16a71662fb3aac1b4362",
+      "summaries": []
+    },
+    {
+      "label": "response-cc-port-final-a497efec-a51f-49cf-9ba1-6174563ba93e",
+      "at": "2026-09-11T06:02:44.467Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-guoshi-cc-port.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-cc-port-final-a497efec-a51f-49cf-9ba1-6174563ba93e/output.log",
+      "logSha256": "1dc3afeb7bcf00cb0b9401f2bc01e9ed99106dee7164e146b2eb80176453872d",
+      "result": "web/dev-tools/new-scenario/response-cc-port-final-a497efec-a51f-49cf-9ba1-6174563ba93e/result.json",
+      "resultSha256": "4ba0ebe44aa5debbaa6d74d565824f4f480f82315ad14e9952af01beff774416",
+      "summaries": [
+        "PASS · 161 断言"
+      ]
+    },
+    {
+      "label": "response-architecture-final-f4caaaf2-55cb-4497-917b-7dc9a9649986",
+      "at": "2026-09-11T06:03:12.816Z",
+      "command": [
+        "node",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-architecture-final-f4caaaf2-55cb-4497-917b-7dc9a9649986/output.log",
+      "logSha256": "9ccfdc19804f16ee281992ae68895bb28d468f22ec3cf788b3b5fa015c6297f9",
+      "result": "web/dev-tools/new-scenario/response-architecture-final-f4caaaf2-55cb-4497-917b-7dc9a9649986/result.json",
+      "resultSha256": "baf05ebddd57f2b8d0ee64699d3358605df64b8e217f4b5cf82ea1e905c57fce",
+      "summaries": [
+        "[lint-arch-all] PASS — 架构守卫全绿"
+      ]
+    },
+    {
+      "label": "response-full-final-0d7a2b77-96f2-419a-800c-d8dda7cba69e",
+      "at": "2026-09-11T06:04:21.351Z",
+      "command": [
+        "node",
+        "web/scripts/ci-smokes.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-full-final-0d7a2b77-96f2-419a-800c-d8dda7cba69e/output.log",
+      "logSha256": "0820aaa4daaafc51f62a9fcf7f1cfc612ace109e629672aa585fbc277b222616",
+      "result": "web/dev-tools/new-scenario/response-full-final-0d7a2b77-96f2-419a-800c-d8dda7cba69e/result.json",
+      "resultSha256": "765ea3c7aa35b9691db8994d75918ff1e769e27dad0d506086802bc557de55f1",
+      "summaries": [
+        "[ci-smokes] PASS gate {\"pass\":937,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":939}"
+      ]
+    },
+    {
+      "label": "response-lease-5af984e0-c3bf-45c7-89a0-883bef1fe964",
+      "at": "2026-09-11T06:08:15.916Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-document-lease.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-lease-5af984e0-c3bf-45c7-89a0-883bef1fe964/output.log",
+      "logSha256": "371175c714bcb80699ccb37801a4a1b8c7e998bd75adc319226b38501cae8a16",
+      "result": "web/dev-tools/new-scenario/response-lease-5af984e0-c3bf-45c7-89a0-883bef1fe964/result.json",
+      "resultSha256": "c92155672aa9fd6f576b709577c798928ac77d9f8ed7d7c304a953eb89fe3c2f",
+      "summaries": [
+        "PASS same-name reimport rejects stale lease without modifying either input",
+        "PASS ordinary first save retains lease; explicit save-as copy starts another document",
+        "PASS late persisted A snapshot never adopts identity or clears dirty on B",
+        "PASS same-document edit during disk write keeps new dirty state and old comparison baseline",
+        "PASS storage rejection does not report success or change project identity",
+        "PASS two loads returning in reverse order honor latest open intent",
+        "PASS new import wins over earlier in-flight library load, while missing load preserves current document",
+        "{\"pass\":8,\"fail\":0,\"skip\":0,\"waived\":0}"
+      ]
+    },
+    {
+      "label": "response-permissions-a14ad0cf-93d8-4018-b262-d01591d410e4",
+      "at": "2026-09-11T06:08:16.920Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-tool-authorization.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-permissions-a14ad0cf-93d8-4018-b262-d01591d410e4/output.log",
+      "logSha256": "5ce1bc976ce48c987e64555c722efcaac91418f320a72b6cf8e60e5cb4b3bd4e",
+      "result": "web/dev-tools/new-scenario/response-permissions-a14ad0cf-93d8-4018-b262-d01591d410e4/result.json",
+      "resultSha256": "1e78699691b9a2defee0c8e03e3eca658c9781a5bf7571e47c2b30a520310e31",
+      "summaries": [
+        "PASS authorization also works without optional kernel",
+        "PASS explicit editing subset rejects a known but unoffered write",
+        "PASS approved editing still changes detached draft and stages memory for explicit commit",
+        "PASS allowed collection and destructive guards remain enforced",
+        "PASS parallel critics cannot mutate the author draft they are reviewing",
+        "PASS legacy actual in-place importer changes ownership even with identical name and id",
+        "PASS legacy host without load identity refuses unsafe commit",
+        "{\"pass\":11,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-recovery-c78f320f-2e28-4057-8568-e91a453682ed",
+      "at": "2026-09-11T06:08:18.155Z",
+      "command": [
+        "node",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-recovery-c78f320f-2e28-4057-8568-e91a453682ed/output.log",
+      "logSha256": "c668406e7cfc8f631f5b0edf6341e8a9afe279dd30e5ae61f441338d5dc2a7e1",
+      "result": "web/dev-tools/new-scenario/response-recovery-c78f320f-2e28-4057-8568-e91a453682ed/result.json",
+      "resultSha256": "ce545c7dbe1505be1088354567093165e2e7d1d1b0bfec2cc5016dfff2a5d360",
+      "summaries": [
+        "PASS resume handle is single-use and serialized copies cannot authorize execution",
+        "PASS orchestration resumes only the failed subtask and keeps earlier append exactly once",
+        "PASS critics resume only failed reviewer; author and completed review are not replayed",
+        "PASS one failed reviewer does not return until its live sibling settles",
+        "PASS memory-only result is staged work, not unchanged or already persisted",
+        "PASS a withdrawn partial finish cannot label a later completed response as partial",
+        "PASS stopped multi-call response retains paired tool messages for actual provider recovery",
+        "{\"pass\":22,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}"
+      ]
+    },
+    {
+      "label": "response-electron-boundaries-c5fe1ee0-ea29-463e-aedf-655c4c8f7448",
+      "at": "2026-09-11T06:08:47.167Z",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-electron-boundaries-c5fe1ee0-ea29-463e-aedf-655c4c8f7448/output.log",
+      "logSha256": "14cd993beb8ca4bd8b4f13516231017a8679411e1dbb7db5b1c61959c34c9209",
+      "result": "web/dev-tools/new-scenario/response-electron-boundaries-c5fe1ee0-ea29-463e-aedf-655c4c8f7448/result.json",
+      "resultSha256": "f13f63d6ad80de352ecea52c0dbbda4ce8e782df140cd9b879aad6de3fdd15e8",
+      "summaries": [
+        "ELECTRON_REPORT web\\dev-tools\\electron-bridge\\7b667026-46f3-4638-bbf7-78ed0d304061\\report.json"
+      ]
+    },
+    {
+      "label": "response-electron-recovery-1725f20a-cebc-4717-a1d7-bacd710d6cd8",
+      "at": "2026-09-11T06:09:10.638Z",
+      "command": [
+        "node",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "head": "d87cbf606db85c90d1349283446d51c27269e087",
+      "status": "M scripts/electron/authoring-continuation-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent-ui.js\n M web/editor-authoring-agent.js\n M web/editor.html\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-guoshi-cc-port.js\n?? docs/bugfix-guoshi-response-recovery-2026-09-11.md\n?? scripts/electron/authoring-response-recovery-cases.cjs\n?? web/scripts/smoke-authoring-response-recovery.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "log": "web/dev-tools/new-scenario/response-electron-recovery-1725f20a-cebc-4717-a1d7-bacd710d6cd8/output.log",
+      "logSha256": "0416b73cc804bf9ffeb237e15a3ce37068290f67871ebe91977287175a99afec",
+      "result": "web/dev-tools/new-scenario/response-electron-recovery-1725f20a-cebc-4717-a1d7-bacd710d6cd8/result.json",
+      "resultSha256": "c3d64e3e8783820136c72509e4fe110f7aa55d4ae559fc4375048bd353aa45cb",
+      "summaries": [
+        "ELECTRON_REPORT web\\dev-tools\\electron-bridge\\32b21161-f131-478b-a42a-e64447351e1c\\report.json"
+      ]
+    }
+  ]
+}

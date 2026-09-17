@@ -342,6 +342,10 @@
 
   function syncPopulationCaches(root) {
     root = pickRoot(root);
+    if (global.HujiEngine && global.HujiEngine.isPopulationLedgerV2 && global.HujiEngine.isPopulationLedgerV2(root) && TM.HujiRuntimeBridge) {
+      var maintained = TM.HujiRuntimeBridge.maintain(root,{source:'hukou-governance-ledger',applyHardEffects:false});
+      return maintained.snapshot.hukou;
+    }
     root.population = root.population && typeof root.population === 'object' ? root.population : {};
     root.population.national = root.population.national && typeof root.population.national === 'object' ? root.population.national : {};
     root.hukou = root.hukou && typeof root.hukou === 'object' ? root.hukou : {};
@@ -389,6 +393,7 @@
     var leaves = getLeafRegions(root);
     var total = leaves.reduce(function(sum, region) { return sum + detailValue(region, field); }, 0);
     if (total <= 0) {
+      if (global.HujiEngine && global.HujiEngine.isPopulationLedgerV2 && global.HujiEngine.isPopulationLedgerV2(root)) return 0;
       if (field === 'hiddenCount') {
         root.population = root.population || {};
         root.population.hiddenCount = Math.max(0, round(root.population.hiddenCount) - reduction);
@@ -416,6 +421,11 @@
       if (!region.populationDetail || typeof region.populationDetail !== 'object') {
         region.populationDetail = Object.assign({}, typeof detail === 'object' ? detail : {});
         detail = region.populationDetail;
+      }
+      if (global.HujiEngine && global.HujiEngine.isPopulationLedgerV2 && global.HujiEngine.isPopulationLedgerV2(root)) {
+        var changed = global.HujiEngine.applyRegistrationStatusChange({root:root,detail:detail,region:region,status:field === 'hiddenCount' ? 'hidden' : 'fled',deltaMouths:-share,cause:'hukou-governance'});
+        if (changed.ok) { var recovered = Math.max(0,-changed.appliedMouths); remaining -= recovered; applied += recovered; }
+        return;
       }
       if (field === 'hiddenCount') {
         detail.hiddenCount = Math.max(0, current - share);

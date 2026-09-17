@@ -1,0 +1,51 @@
+var _zhiReferenceCache=Object.create(null);
+function _zhiReferenceKey(c){
+  var path=c&&c.historicalSourceRef;
+  return typeof path==='string'&&/^assets\/reference\/[a-zA-Z0-9_-]+\.json$/.test(path)?path:'';
+}
+function _zhiLoadReference(p){
+  var c=p&&p._ref,key=_zhiReferenceKey(c);
+  if(!key||_zhiReferenceCache[key]||typeof fetch!=='function')return;
+  var item={loading:true,data:null,error:''};_zhiReferenceCache[key]=item;
+  fetch(key).then(function(res){if(!res.ok)throw new Error('HTTP '+res.status);return res.json();}).then(function(data){
+    if(!data||data.schemaVersion!==1||data.scenarioId!==c.sid||!data.characters)throw new Error('史料文件与剧本不匹配');
+    item.data=data;
+  }).catch(function(err){item.error='史料参考文件读取失败：'+String(err&&err.message||err);}).then(function(){
+    item.loading=false;
+    var current=findP(state.sel);
+    if(state.tab==='sources'&&current&&_zhiReferenceKey(current._ref)===key)renderMain();
+  });
+}
+function _zhiSourceParagraph(text){return '<div class="prose" style="white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0;font-size:14px;line-height:1.95;color:var(--ink-soft)">'+esc(String(text||''))+'</div>';}
+function _zhiSourceLink(url){
+  return typeof url==='string'&&/^https:\/\/[^\s]+$/.test(url)?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="font-family:inherit;font-size:12px;color:var(--cinnabar-d)">查看原始出处 ↗</a>':'';
+}
+function tabSources(p){
+  var c=p._ref||{},key=_zhiReferenceKey(c),cache=key&&_zhiReferenceCache[key],data=cache&&cache.data;
+  var entry=data&&data.scenarioId===c.sid&&data.characters[c.historicalSourceKey||c.id];
+  var html='<section class="sec full" data-zhi-sources><div class="sec-t">史 料 与 校 勘</div>'+_zhiSourceParagraph('这里是玩家阅览的史家资料，不是人物记忆。后事、异文和任命日待考分别标注；不会据此预定本局未来。');
+  if(c.isFictional===true||c.type==='fictional')html+=_zhiSourceParagraph('此人为剧本虚构角色，不配造古籍原文。'+(c.fictionalSources||[]).join('；'));
+  if(entry){
+    if(entry.status==='original-pending')html+=_zhiSourceParagraph('原文待核：已找到资料线索，但未完成可靠逐字释读，不以转述冒充原文。');
+    (entry.quotes||[]).forEach(function(q,i){html+='<article data-zhi-original><h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">'+esc((i+1)+'．'+q.book)+'</h4>'+_zhiSourceParagraph(q.text)+_zhiSourceLink(q.url)+'</article>';});
+    if(entry.note)html+='<h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">时点、异文与写入边界</h4>'+_zhiSourceParagraph(entry.note);
+    (entry.references||[]).forEach(function(q){html+=_zhiSourceParagraph(q.book)+_zhiSourceLink(q.url);});
+  }else{
+    var sources=[];['sourceNotes','sources','historicalSources'].forEach(function(k){var a=c[k];if(Array.isArray(a))a.forEach(function(x){if(typeof x==='string'&&x.trim()&&sources.indexOf(x)<0)sources.push(x);});});
+    sources.forEach(function(x){html+=_zhiSourceParagraph(x);});
+    if(cache&&cache.loading)html+=_zhiSourceParagraph('正在读取独立史料参考文件……');
+    else if(cache&&cache.error)html+=_zhiSourceParagraph(cache.error+' 已保留人物自带的参考条目。');
+    else if(!sources.length&&!c.isFictional)html+=_zhiSourceParagraph('暂未嵌入可靠原文。');
+  }
+  if(c.officeEvidenceNote)html+='<h4 style="font-family:inherit;font-size:15px;line-height:1.7;margin:16px 0 8px">官职校记</h4>'+_zhiSourceParagraph(c.officeEvidenceNote);
+  html+='</section><section class="sec full"><div class="sec-t">已 录 资 料 <small>未证内容保持未知，不由立绘或数值反推</small></div>';
+  [['表字',c.zi],['家族',c.family],['父',c.father],['母',c.mother],['生年',c.birthYear],['生辰记载',c.birthTime],['籍贯／出生地',c.birthplace],['学业',c.learning],['外貌依据',c.appearance],['爱好',c.hobbies],['技能说明',Array.isArray(c.skills)?c.skills.join('、'):c.skills]].forEach(function(row){if(row[1]!=null&&row[1]!=='')html+='<div class="row"><span class="k">'+esc(row[0])+'</span><span class="v" style="overflow-wrap:anywhere">'+esc(String(row[1]))+'</span></div>';});
+  (c.familyMembers||[]).forEach(function(m){if(m&&m.name)html+=_zhiSourceParagraph((m.relation||'亲属')+'：'+m.name+(m.note?'；'+m.note:''));});
+  return html+'</section>';
+}
+function _zhiHonoraryPills(p){
+  var a=p&&p._ref&&p._ref.honoraryTitles,seen=Object.create(null);
+  if(!Array.isArray(a))return '';
+  return a.filter(function(x){if(typeof x!=='string'||!x.trim()||seen[x])return false;seen[x]=true;return true;}).map(function(t){return '<span class="dh-pill" data-zhi-honorary title="加衔或身份称号；不据此占有中央实职或重复计俸">衔 '+esc(t)+'</span>';}).join('');
+}
+

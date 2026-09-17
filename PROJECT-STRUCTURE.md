@@ -13,7 +13,7 @@
 ```
 tianming/
 ├─ main.js / main-impl.js          Electron 主进程入口（main-impl 是真逻辑 ~91KB）
-├─ preload.js / preload-impl.js    预加载桥（渲染进程 ↔ 主进程 IPC）
+├─ preload-impl.js                沙箱单文件预加载桥（渲染进程 ↔ 主进程 IPC）
 ├─ package.json / package-lock.json  构建配置 + 依赖锁（无 src 构建：_no_build）
 ├─ .npmrc
 ├─ node_modules/                   依赖（electron / electron-builder / adm-zip / electron-updater）

@@ -30,8 +30,10 @@ assert(formal.includes('grid-template-columns:340px minmax(0,1fr) 320px;'),
   'formal action modules should give side columns and main content more room');
 assert(formal.includes('@media(max-width:1080px)'),
   'larger formal action modules should keep a narrower viewport fallback');
-assert(/tm-action-panel\.edict-shell\{left:50%;top:\d+px;width:(?:min\(1360px,calc\(100vw - 72px\)\)|calc\(100vw - 130px\));height:(?:min\(840px,calc\(100vh - 86px\)\)|calc\(100vh - 104px\));/.test(formal),
-  'edict action shell should be expanded');
+assert(formal.includes('tm-action-panel.edict-shell{left:65px;top:54px;width:calc(100vw - 130px);height:calc(100vh - 104px);'),
+  'edict action shell should retain its centered expanded bounds without translating the text layer');
+assert(formal.includes('tm-bridge-overlay.show .tm-action-panel.edict-shell{transform:none;}'),
+  'settled edict action shell should use native layout instead of a transformed text layer');
 assert(formal.includes('tm-action-panel.memorial-shell{left:40px;right:40px;top:64px;width:auto;height:min(820px,calc(100vh - 94px));'),
   'memorial action shell should be viewport-anchored and expanded');
 assert(formal.includes('tm-bridge-overlay.show .tm-action-panel.memorial-shell{transform:none;}'),

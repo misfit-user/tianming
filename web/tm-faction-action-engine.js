@@ -604,17 +604,20 @@
     var army = _findArmy(armyName);
     if (!army) return { ok:false, reason:'army not found', army:armyName };
     var oldCommander = _armyCommander(army);
-    var usedGlobal = false;
-    if (typeof global.applyAIArmyChange === 'function') {
+    if (army.commandChain && army.commandChain.mode === 'receipt' && !(global.TM && TM.CommandAuthority)) return {ok:false,reason:'军令交接尚待核验'};
+    var commandResult = global.TM && TM.CommandAuthority && TM.CommandAuthority.applyNpcOrder(army,fac,p,'faction-action-engine');
+    if (commandResult && !commandResult.ok) return commandResult;
+    var usedGlobal = !!commandResult;
+    if (!usedGlobal && typeof global.applyAIArmyChange === 'function') {
       try {
-        var res = global.applyAIArmyChange({ name:armyName, commander:commander, destination:p.destination, location:p.location, garrison:p.garrison, reason:p.reason || p.rationale || '' }, { source:'faction-action-engine' });
+        var res = global.applyAIArmyChange({name:armyName,commander:commander || undefined,destination:p.destination,location:p.location,garrison:p.garrison,reason:p.reason || p.rationale || ''},{source:'faction-action-engine'});
         usedGlobal = !!(res && res.ok);
       } catch(_){}
     }
     if (!usedGlobal && commander) _syncArmyCommanderAliases(army, commander);
     if (!usedGlobal) {
       if (p.destination) army.destination = p.destination;
-      if (p.location || p.garrison) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; }
+      if (p.location || p.garrison) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location); }
     }
     var soldiersDelta = _safeNum(p.soldiersDelta != null ? p.soldiersDelta : p.troopsDelta);
     var moraleDelta = _safeNum(p.moraleDelta);

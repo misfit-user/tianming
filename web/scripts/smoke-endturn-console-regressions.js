@@ -20,7 +20,7 @@ assert(!ceming.includes("\n    _switchTab('library');"), 'ceming dialog still ca
 assert(ceming.includes("TM.ceming._switchTab('library')"), 'ceming dialog does not call namespaced tab switcher');
 
 assert(semantic.includes('function probeSemanticAsset'), 'semantic recall local asset probe missing');
-assert(semantic.includes("var localModelRoot = './vendor/models/';"), 'semantic recall does not point at bundled vendor models');
+assert(semantic.includes("var localModelRoot = semanticAssetURL('./vendor/models/');"), 'semantic recall does not resolve bundled vendor models against its script URL');
 assert(semantic.includes("localModelPath + 'config.json'"), 'semantic recall does not probe local model config');
 assert(semantic.includes("localModelPath + 'tokenizer.json'"), 'semantic recall does not probe local tokenizer');
 assert(semantic.includes('transformers.env.allowRemoteModels = false;'), 'semantic recall local branch may still hit remote models');

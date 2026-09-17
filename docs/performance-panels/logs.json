@@ -1,0 +1,386 @@
+{
+  "panel-contract-shaosong-da1470f6-2b98-4aca-af48-0cb06fcf64c1": {
+    "stdout.log": {
+      "sourceSha256": "4a0a8e9bb45c4ca52849e73fbb6ed2d285b9d019815afb8661ad7f6dba37b50e",
+      "exportedTextSha256": "6106106e054d1c07ac398b9360b4b576bad4cb44b80809c5e24fc2cc8fa1d059",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-3f853734-bb2d-44d3-a986-cae34db0602d\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 18.1 frame2 1003.6 layout 62.9 style 11264.4 draftSaves 0\nPANEL 800 edict 0 close js 5.6 frame2 39.7 layout 0.2 style 51.2 draftSaves 1\n \nPANEL_EXIT 1 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-core-contracts-4b00f57c-4b6f-4575-8530-50051694342f": {
+    "stdout.log": {
+      "sourceSha256": "ab172986d174209bf9b81c17a0563572ec856284d70d82507ee33c5e46852459",
+      "exportedTextSha256": "ab172986d174209bf9b81c17a0563572ec856284d70d82507ee33c5e46852459",
+      "text": "[smoke-formal-ui-bridge-state] pass\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-arch-78ada8ff-c782-4a35-8916-017365532e9e": {
+    "stdout.log": {
+      "sourceSha256": "82fbfb59ac358e35bb9454ca133e9eea850a9076fd69071cf84482b46821dbac",
+      "exportedTextSha256": "82fbfb59ac358e35bb9454ca133e9eea850a9076fd69071cf84482b46821dbac",
+      "text": "[lint-arch-all] PASS  lint-gm-writes (2.7s)\n[lint-arch-all] PASS  lint-dep-graph (1.0s)\n[lint-arch-all] PASS  lint-global-providers (3.8s)\n[lint-arch-all] PASS  lint-feature-boundaries (0.2s)\n[lint-arch-all] PASS  lint-runtime-template-immutability (0.2s)\n[lint-arch-all] PASS  lint-renderer-writeback-boundaries (10.9s)\n[lint-arch-all] PASS  lint-renderer-module-boundaries (1.1s)\n[lint-arch-all] PASS  lint-file-size (0.6s)\n[lint-arch-all] PASS  lint-control-bytes (0.6s)\n[lint-arch-all] PASS  lint-split-contracts (0.3s)\n[lint-arch-all] PASS  lint-split-stamps (0.3s)\n[lint-arch-all] PASS  lint-smoke-family-order (1.6s)\n[lint-arch-all] PASS  ref-check (2.4s)\n\n[lint-arch-all] PASS — 架构守卫全绿\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-audit-3ef7a434-7791-496d-88f6-77a145293029": {
+    "stdout.log": {
+      "sourceSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "exportedTextSha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "text": "found 0 vulnerabilities\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+      "exportedTextSha256": "85f486e0beab44838d371df3d3bc54e5889ce2f4b2369e3c3088c4301dde67d7",
+      "text": "npm warn Unknown project config \"electron_mirror\". This will stop working in the next major version of npm.\nnpm warn Unknown project config \"electron_builder_binaries_mirror\". This will stop working in the next major version of npm.\n"
+    }
+  },
+  "panel-final-bridge-fe774544-1104-4af0-9ca1-ab31c2f6603b": {
+    "stdout.log": {
+      "sourceSha256": "2379256dfd2559e52139131a336433903b9c126ff30bb28702bf66b99cbe4444",
+      "exportedTextSha256": "41a13973c23a5878438d8498d2295fa10fc4e44d06b6dce7f938c0de99843a40",
+      "text": "{\"mode\":\"production\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"production\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"},{\"name\":\"canonical-world-and-receipt-committed-before-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-md14Wr\\\\production\"}}\n{\"mode\":\"test-exports\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"test-exports\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"legacy-and-hash-save-real-ipc-roundtrip\",\"status\":\"PASS\"},{\"name\":\"autosave-text-bridge-real-ipc-and-invalid-input-preserves-disk\",\"status\":\"PASS\"},{\"name\":\"manual-save-world-switch-barrier-and-late-real-ipc\",\"status\":\"PASS\"},{\"name\":\"atomic-export-real-ipc-failure-and-cancel\",\"status\":\"PASS\"},{\"name\":\"real-worker-import-cancel-timeout-error-and-recovery\",\"status\":\"PASS\"},{\"name\":\"workshop-overwrite-rollback-through-real-ipc\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-md14Wr\\\\exports\"}}\n{\"mode\":\"restart\",\"ok\":true,\"exitCode\":0,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"restart\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"canonical-receipt-and-folio-recover-after-real-process-exit\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; hidden window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"<user-profile>\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-md14Wr\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\3718c45b-05df-4439-a890-efec1865ebb9\\report.json\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-dom-shaosong-5c1a084a-a69a-4e89-a209-ec1d9e20810d": {
+    "stdout.log": {
+      "sourceSha256": "4d5dbf884f3f39d2e708a7fb365e5019eabdcff0234eccc12010ff2d18734ff3",
+      "exportedTextSha256": "718fdda9e576f0992f643b8fc1f7762db826285126448650af08a946c666e47d",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-b0408803-cd8b-4334-b3bf-b00dbbe08692\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 41.5 frame2 1093.9 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 0 close js 5.7 frame2 210.6 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/memorial\nPANEL 800 memorial 0 open js 16.6 frame2 1151.7 nativeMetrics not collected draftSaves 0\nPANEL 800 memorial 0 close js 6.2 frame2 38.9 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/letter\nPANEL 800 letter 0 open js 33.6 frame2 1519.1 nativeMetrics not collected draftSaves 0\nPANEL 800 letter 0 close js 14.2 frame2 116.2 nativeMetrics not collected draftSaves 1\n \nPANEL_EXIT 0 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-dom-tianqi-3d0843cb-7797-4b79-a673-d0895d73b9a3": {
+    "stdout.log": {
+      "sourceSha256": "10ac1460e57be720b43760acb83d85be5562df1f6aa0deff0f7b17dbe1fd2fc2",
+      "exportedTextSha256": "cd9653bfe166e314c189e230702d3c3ecfbf2eacf6dc610a3027512f0b3df68a",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-e3916e55-feaf-4600-b70d-88ab5974eebd\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 24.6 frame2 512.9 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 0 close js 6.4 frame2 41.9 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/memorial\nPANEL 800 memorial 0 open js 9.1 frame2 441.5 nativeMetrics not collected draftSaves 0\nPANEL 800 memorial 0 close js 3.5 frame2 26.3 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/letter\nPANEL 800 letter 0 open js 28.4 frame2 651.1 nativeMetrics not collected draftSaves 0\nPANEL 800 letter 0 close js 5.8 frame2 26.6 nativeMetrics not collected draftSaves 1\n \nPANEL_EXIT 1 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-dom-tianqi-quiet-fc24efd8-127c-4de6-85b9-1505e1b09805": {
+    "stdout.log": {
+      "sourceSha256": "5468016b59f5517008722638824b9086aa8eb5ad6b0c7f5edf4cffe62bbde67d",
+      "exportedTextSha256": "0d92224b2cf3cf67bd73fb18228090e8f826f41b40d03e4e1ac1ebccb4861df3",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-71f139a6-207f-4c5c-920b-327e59e56e00\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 32.2 frame2 457.1 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 0 close js 5.8 frame2 43.2 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/memorial\nPANEL 800 memorial 0 open js 7.6 frame2 529.1 nativeMetrics not collected draftSaves 0\nPANEL 800 memorial 0 close js 1.9 frame2 27.1 nativeMetrics not collected draftSaves 1\nPANEL_STAGE 800/letter\nPANEL 800 letter 0 open js 43.3 frame2 1139.9 nativeMetrics not collected draftSaves 0\nPANEL 800 letter 0 close js 8.9 frame2 30.5 nativeMetrics not collected draftSaves 1\n \nPANEL_EXIT 1 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-hash-check-64b21f89-2a4f-424c-be06-78bc104e0eaa": {
+    "stdout.log": {
+      "sourceSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+      "exportedTextSha256": "f0e9a43e9a3f57584f3f52ca1ab8c86e0a0a76477a2dc3e6fa4c7c70c2e143e7",
+      "text": "PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-hot-gates-6c86d493-3c9e-48b3-8912-60650475c15d": {
+    "stdout.log": {
+      "sourceSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+      "exportedTextSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+      "text": "  ok·A·健康树全量构建通过（exit 0）\n  ok·A·feed 版本正确\n  ok·A·清单含 index.html\n  ok·A·清单含 a.js\n  ok·A·清单含 b.js\n  ok·A·清单含 styles.css\n  ok·A·清单含 changelog.json\n  ok·A·清单含 version.json\n  ok·A·清单含 bundled-scenarios/合成（官方）.json\n  ok·A·草案/自用剧本不进入热更\n  ok·A2·GLB 运行资产可进入热更\n  ok·A2·GLB 自动要求 1.3.4.10 壳层\n  ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝\n  ok·A2·1.3.4.12 可发布 ONNX 运行资产\n  ok·A2·ONNX 自动要求 1.3.4.12 壳层\n  ok·B·GATE-0 拦 --files 部分包\n  ok·B·危险旗标放行（调试用）\n  ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）\n  ok·D·GATE-2 拦必含文件缺失\n  ok·E·首次构建通过\n  ok·E·GATE-3 拦相同版本重发\n  ok·E·GATE-3 拦更低版本\n  ok·E·更高版本放行\n  ok·F·GATE-5 拦 version.json 戳不一致\n  ok·F·--skip-stamp-check 放行（调试用）\n  ok·F·GATE-5 拦 meta 缺失\n  ok·G·GATE-4 zip↔manifest 对账在构建路径上\nPASS assertions=27\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-mobile-dry-23334c0d-721d-4f38-b657-e6e23311c45b": {
+    "stdout.log": {
+      "sourceSha256": "0494f2a43caf84b13844f7bcd609c1a2b193cfd917fc263abe1d04ce6dfa4670",
+      "exportedTextSha256": "0494f2a43caf84b13844f7bcd609c1a2b193cfd917fc263abe1d04ce6dfa4670",
+      "text": "[release-tree] dry-run PASS · files=689 bytes=129136973 excluded=43\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-mobile-stage-6a59c17b-3115-4b5b-a03e-b0516c28e0e3": {
+    "stdout.log": {
+      "sourceSha256": "222b9b5bc8f1beb6dde3dcbc73e3dde806da41ff46e9e127bdbb42def540e0af",
+      "exportedTextSha256": "222b9b5bc8f1beb6dde3dcbc73e3dde806da41ff46e9e127bdbb42def540e0af",
+      "text": "[official-sync] sync PASS · sources=2 artifacts=9\n[release-tree] stage PASS · files=689 bytes=129136973 sha256=e53c7cadef5355a4e4a3d3ea24fa7c67f08dbb040c57881256fd64df112d1005\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-mobile-verify-5d7e97a6-2096-4fed-b9b3-98d6aa243eee": {
+    "stdout.log": {
+      "sourceSha256": "9abe33e96894d1a74b22b0c119f2bcd5093132d1e9a87f68b4235126fbfe0f4b",
+      "exportedTextSha256": "9abe33e96894d1a74b22b0c119f2bcd5093132d1e9a87f68b4235126fbfe0f4b",
+      "text": "[release-tree] verify PASS · files=689 bytes=129136973 allowedExtra=0 sha256=e53c7cadef5355a4e4a3d3ea24fa7c67f08dbb040c57881256fd64df112d1005\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-parity-35e71978-d587-49c0-9a59-17da3cf7e9f9": {
+    "stdout.log": {
+      "sourceSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+      "exportedTextSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+      "text": "[official-sync] parity PASS · sources=2 artifacts=9\n  ok·seeder/preview/reset artifacts registered\n  ok·tianqi7 builtin embeds the complete root JSON\n  ok·tianqi7 builtin remains reviewable compact output\n  ok·tianqi7 seeder embeds the complete root JSON\n  ok·tianqi7 editor preview embeds the complete root JSON\n  ok·editor reset embeds the complete Tianqi root JSON (embedded=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, root=6342549/a66ec5dc5e00721c21e6d22404221a6b11bc2ea4b943699586510573ea2b43b9, differingKeys=)\n  ok·tianqi7 bundled JSON is byte-identical to root JSON\n  ok·shaosong builtin embeds the complete root JSON\n  ok·shaosong builtin remains reviewable compact output\n  ok·shaosong seeder embeds the complete root JSON\n  ok·shaosong editor preview embeds the complete root JSON\n  ok·shaosong bundled JSON is byte-identical to root JSON\n  ok·manifest.js equals manifest.json\n  ok·tianqi7 metadata exists\n  ok·tianqi7 metadata script sha256 is correct\n  ok·tianqi7 metadata script bytes is correct\n  ok·tianqi7 metadata source sha256 is correct\n  ok·tianqi7 metadata source bytes is correct\n  ok·tianqi7 metadata loader path is correct\n  ok·tianqi7 metadata counts are correct\n  ok·shaosong metadata exists\n  ok·shaosong metadata script sha256 is correct\n  ok·shaosong metadata script bytes is correct\n  ok·shaosong metadata source sha256 is correct\n  ok·shaosong metadata source bytes is correct\n  ok·shaosong metadata loader path is correct\n  ok·shaosong metadata counts are correct\nPASS assertions=27\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-probes-f6316ca1-6b38-45d6-b378-ca2b9da2f289": {
+    "stdout.log": {
+      "sourceSha256": "f69cf07ece47871904df6783e2f500c7f6913c32aa9301f3c249d5937ecb5164",
+      "exportedTextSha256": "df785d72bde47aa591f136b40ac9c3788a06f356afa6698df66015dc4b76de61",
+      "text": "CONTROL_PASS CONTROL-01 stable keys and turn validation reject known aliases\n  {\"ok\":true,\"rejected\":[true,true,true,true,true]}\nCONTROL_PASS CONTROL-02 same turn transaction publish is idempotent\n  {\"ok\":true,\"recovered\":true}\nNOT_REPRODUCED TM-AUD-01 different timelines overwrite the same per-turn bundle\n  {\"defect\":false,\"sameFinalPath\":false,\"branchAtOriginalPath\":\"A\",\"oldRecoveryError\":null}\nNOT_REPRODUCED TM-AUD-02 workshop overwrite loses old package when copying fails\n  {\"defect\":false,\"error\":\"Injected copy ENOSPC\",\"oldPreserved\":true,\"partialNewTree\":false,\"indexWritten\":false}\nNOT_REPRODUCED TM-AUD-03a stale account/me combines a new token with old account identity\n  {\"defect\":false,\"tokenOwner\":\"B\",\"displayedUser\":\"B\"}\nNOT_REPRODUCED TM-AUD-03b late login response restores session after logout completed\n  {\"defect\":false,\"loggedOutBeforeReply\":true,\"loggedInAfterStaleReply\":false}\nNOT_REPRODUCED TM-AUD-04 manual save callback mutates a different live world\n  {\"defect\":false,\"liveWorld\":\"world-B\",\"liveSaveName\":\"SAVE-FOR-B\",\"enterGameCalls\":0}\nNOT_REPRODUCED TM-AUD-05 legacy save string loads but list-style object is rejected\n  {\"defect\":false,\"stringReferenceWorks\":true,\"objectReferenceError\":null}\nNOT_REPRODUCED TM-AUD-06a CI accepts an empty report after runner failure\n  {\"defect\":false,\"exitCode\":1,\"messages\":[\"[ci-smokes] run=current HEAD=test-head report=<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\web\\\\dev-tools\\\\arch-guard\\\\ci-unique\\\\smoke-report.json\",\"smoke-evidence-runner-failed\"]}\nNOT_REPRODUCED TM-AUD-06b CI waives an unrelated syntax failure by file name\n  {\"defect\":false,\"exitCode\":1,\"messages\":[\"[ci-smokes] run=current HEAD=test-head report=<user-profile>\\\\Desktop\\\\tianming-perf-round1\\\\web\\\\dev-tools\\\\arch-guard\\\\ci-unique\\\\smoke-report.json\",\"smoke-evidence-test-failed\"]}\nNOT_REPRODUCED TM-AUD-07 network predicate misses hexadecimal IPv4-mapped loopback\n  {\"defect\":false,\"dottedMappedBlocked\":true,\"hexMappedBlocked\":true,\"literalV4Blocked\":true,\"scope\":\"predicate only; no DNS/TLS/Electron exploitation attempted\"}\nNOT_REPRODUCED TM-AUD-08 export write failure destroys an existing backup payload\n  {\"defect\":false,\"reportedFailure\":true,\"originalPreserved\":true,\"resultingBytes\":21}\nNOT_REPRODUCED TM-AUD-09 saveToSlot loses both success and failure return values\n  {\"defect\":false,\"successResult\":\"true\",\"failureResult\":\"false\"}\n\nSUMMARY {\"probes\":11,\"defectsPresent\":0,\"controlsPassed\":2,\"harnessErrors\":0}\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-release-992ca026-d27b-4502-9d97-54d41225615f": {
+    "stdout.log": {
+      "sourceSha256": "8a812e82fb003652d5fca3cf045b50137335f1b22c00ec6e657806aa4dbf8019",
+      "exportedTextSha256": "8a812e82fb003652d5fca3cf045b50137335f1b22c00ec6e657806aa4dbf8019",
+      "text": "  ok·release-excludes schema\n  ok·canonical 热更基线是发布树 required file\n  ok·release-excludes 无重复\n  ok·安全排除项 _archive\n  ok·安全排除项 backups\n  ok·安全排除项 _screenshots\n  ok·安全排除项 test-results\n  ok·安全排除项 _codex_tmp\n  ok·安全排除项 dev-tools\n  ok·安全排除项 docs\n  ok·安全排除项 scripts\n  ok·安全排除项 tools\n  ok·安全排除项 godot\n  ok·安全排除项 .git\n  ok·安全排除项 node_modules\n  ok·安全排除项 .playwright-cli\n  ok·安全排除项 .cache\n  ok·安全排除项 .tmp\n  ok·安全排除项 tmp\n  ok·安全排除项 dist\n  ok·安全排除项 build\n  ok·安全排除项 release\n  ok·安全排除项 coverage\n  ok·安全排除项 .hot-update-staging\n  ok·安全排除项 _pw-scratch\n  ok·安全排除项 generated_images\n  ok·安全排除项 .vscode\n  ok·安全排除项 .bak-\n  ok·安全排除项 _codex\n  ok·安全排除项 .git-defunct-\n  ok·安全排除项 **/*.bak*\n  ok·安全排除项 **/*.log\n  ok·安全排除项 **/*.yml\n  ok·安全排除项 **/*.save.json\n  ok·安全排除项 **/_game-entry-shot.png\n  ok·安全排除项 **/_ingame*.png\n  ok·安全排除项 .claude/**\n  ok·安全排除项 output/**\n  ok·安全排除项 _audit_deadhandlers.py\n  ok·安全排除项 analyze_globals.py\n  ok·安全排除项 detect_globals.js\n  ok·安全排除项 scan_globals.js\n  ok·安全排除项 final_scan.sh\n  ok·安全排除项 scan.sh\n  ok·安全排除项 start-server.bat\n  ok·安全排除项 tm-tools.d.ts\n  ok·安全排除项 types.d.ts\n  ok·安全排除项 maps/**\n  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·安全排除项 preview-launch*.html\n  ok·安全排除项 preview-launch-assets/**\n  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·安全排除项 preview/shots/**\n  ok·安全排除项 preview/**/*verify*.png\n  ok·安全排除项 preview/home-ui-concepts/**\n  ok·安全排除项 preview/workshop-ui-concepts/**\n  ok·web 运行时引用/required files 未被误排：\n  ok·web 源体积/文件数在闸内：\n  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）\n  ok·发布树排除根目录游戏截图\n  ok·发布树排除根目录开发脚本与类型声明\n  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF\n  ok·发布树明确排除本机开发产物:.claude/launch.json\n  ok·发布树明确排除本机开发产物:output/playwright/shot.png\n  ok·发布树明确排除本机开发产物:maps/asia-map.png\n  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png\n  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png\n  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb\n  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx\n  ok·package-lock 根版本两处与 package.json 同版\n  ok·tracked mobile canonical version 与 buildVersion 同版\n  ok·electron-builder 消费 dir:_archive\n  ok·electron-builder 消费 dir:backups\n  ok·electron-builder 消费 dir:_screenshots\n  ok·electron-builder 消费 dir:test-results\n  ok·electron-builder 消费 dir:_codex_tmp\n  ok·electron-builder 消费 dir:dev-tools\n  ok·electron-builder 消费 dir:docs\n  ok·electron-builder 消费 dir:scripts\n  ok·electron-builder 消费 dir:tools\n  ok·electron-builder 消费 dir:godot\n  ok·electron-builder 消费 dir:.git\n  ok·electron-builder 消费 dir:node_modules\n  ok·electron-builder 消费 dir:.playwright-cli\n  ok·electron-builder 消费 dir:.cache\n  ok·electron-builder 消费 dir:.tmp\n  ok·electron-builder 消费 dir:tmp\n  ok·electron-builder 消费 dir:dist\n  ok·electron-builder 消费 dir:build\n  ok·electron-builder 消费 dir:release\n  ok·electron-builder 消费 dir:coverage\n  ok·electron-builder 消费 dir:.hot-update-staging\n  ok·electron-builder 消费 dir:_pw-scratch\n  ok·electron-builder 消费 dir:generated_images\n  ok·electron-builder 消费 dir:.vscode\n  ok·electron-builder 消费 prefix file:.bak-\n  ok·electron-builder 消费 prefix dir:.bak-\n  ok·electron-builder 消费 prefix file:_codex\n  ok·electron-builder 消费 prefix dir:_codex\n  ok·electron-builder 消费 prefix file:.git-defunct-\n  ok·electron-builder 消费 prefix dir:.git-defunct-\n  ok·electron-builder 消费 glob:**/*.bak*\n  ok·electron-builder 消费 glob:**/*.log\n  ok·electron-builder 消费 glob:**/*.yml\n  ok·electron-builder 消费 glob:**/*.save.json\n  ok·electron-builder 消费 glob:**/_game-entry-shot.png\n  ok·electron-builder 消费 glob:**/_ingame*.png\n  ok·electron-builder 消费 glob:.claude/**\n  ok·electron-builder 消费 glob:output/**\n  ok·electron-builder 消费 glob:_audit_deadhandlers.py\n  ok·electron-builder 消费 glob:analyze_globals.py\n  ok·electron-builder 消费 glob:detect_globals.js\n  ok·electron-builder 消费 glob:scan_globals.js\n  ok·electron-builder 消费 glob:final_scan.sh\n  ok·electron-builder 消费 glob:scan.sh\n  ok·electron-builder 消费 glob:start-server.bat\n  ok·electron-builder 消费 glob:tm-tools.d.ts\n  ok·electron-builder 消费 glob:types.d.ts\n  ok·electron-builder 消费 glob:maps/**\n  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js\n  ok·electron-builder 消费 glob:preview-launch*.html\n  ok·electron-builder 消费 glob:preview-launch-assets/**\n  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif\n  ok·electron-builder 消费 glob:preview/shots/**\n  ok·electron-builder 消费 glob:preview/**/*verify*.png\n  ok·electron-builder 消费 glob:preview/home-ui-concepts/**\n  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**\n  ok·electron-builder 消费 previewMockup 例外\n  ok·installer 固定携带热更新发布者公钥\n  ok·installer 携带回合分卷两阶段提交模块\n  ok·热更新固定公钥类型为 Ed25519\n  ok·三平台构建统一走受检 build-electron wrapper\n  ok·Windows builder 强制签名、编辑签名与更新发布者验证\n  ok·Windows 构建缺发布者/证书时 fail-closed\n  ok·Windows 保留仓主输出目录并锁定发布者/证书身份\n  ok·mac 使用平台本地可移植输出目录\n  ok·linux 使用平台本地可移植输出目录\n  ok·所有官方 JSON 均登记进统一生成器\n  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json\n  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json\n  ok·hot builder 消费共享 release-tree\n  ok·hot builder 收集战斗模型与本地语义模型扩展名\n  ok·新扩展名自动携带旧壳阻断所需 minAppVersion\n  ok·内容 OTA 构建器不再收集 main/preload 主进程代码\n  ok·热更新 manifest/feed 强制 Ed25519 发布者签名\n  ok·桌面壳层放行 collector 会发出的运行资产扩展名\n  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判\n  ok·Capgo/APK 消费共享 release-tree\n  ok·Capgo/APK staging 先生成官方剧本派生物\n  ok·Capacitor 只读取派生 www\n  ok·npm sync 强制 stage→cap sync→native hash verify\n  ok·open/run 不可绕过 sync gate\n  ok·native 仅容忍 Capacitor 两个注入文件\n  ok·native extra allowlist 仅放两项，其余仍 fail-closed\n  ok·派生目录已 ignore\n  ok·web canonical 热更基线未被 ignore\n  ok·canonical 热更基线存在且与 buildVersion 同版\n  ok·canonical 热更基线不含 main/preload 可执行桥\n  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产\n  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件\n  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=684 version=1.3.4.11（容忍 410 条本 checkout 缺席的未跟踪资产条目）\n  ok·staging 拒绝清空 web 源码子目录\n  ok·staging 拒绝清空已有普通目录\n  ok·staging 仅放行已知 mobile/www 派生目录\n  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳\n  ok·release.js 显式 prepare/publish 两阶段\n  ok·prepare 要求 clean 短命分支与新版本\n  ok·只有 prepare 盖戳并刷新 tracked 基线\n  ok·prepare 无任何发布外写\n  ok·publish 构建前/上传前双重仓库闸\n  ok·publish 只消费已盖戳版本并复验基线\n  ok·publish 不修改 tracked 版本/基线\n  ok·最终仓库闸先于 GitHub 上传\n  ok·--no-upload 硬关闭 release 与 autodeploy 外写\n  ok·release tag 锁定已验证 main HEAD\n  ok·publish 拒绝 dirty/非 main/未同步\n  ok·prepare/publish 只信官方 origin\n  ok·prepare 基线写入复用 production manifest collector\n  ok·正式外写前验证 gh 当前账号为仓库 owner\n  ok·prepare 拒绝 main 与陈旧分支\n  ok·offline 不能绕过正式发布线上闸\n  ok·版本扇出采用只读规划、全量验证和原子应用三阶段\n  ok·版本文件与备份均经同目录 fsync+rename 原子提交\n  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚\n  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）\n  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）\n  ok·Pages 门禁·workflow_dispatch:\n  ok·Pages 门禁·fetch-depth: 0\n  ok·Pages 门禁·npm ci --ignore-scripts\n  ok·Pages 门禁·github.actor == github.repository_owner\n  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main\n  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js\n  ok·Pages 门禁·git diff --exit-code\n  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js\n  ok·Pages 门禁·node scripts/verify-release-contract.js\n  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js\n  ok·Pages 门禁·node scripts/lint-arch-all.js\n  ok·Pages 门禁·node scripts/ci-smokes.js\n  ok·Pages 门禁·node scripts/stage-web-release.js\n  ok·Pages 门禁·node scripts/verify-pages-artifact.js\n  ok·Pages 门禁·actions/deploy-pages@v4\n  ok·Pages 完整门禁严格先于部署\n  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）\n  ok·CONTRIBUTING 记录两阶段发版\n  ok·CLAUDE 协作约定记录两阶段发版\nPASS assertions=40\n  ok·两阶段 release/Pages 静态契约\nPASS assertions=166 files=689 bytes=129136973\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-smoke-51bc4162-ed2f-412a-96d1-0b4413404f2a": {
+    "stdout.log": {
+      "sourceSha256": "dc9d262e3826407a6033aa84bab6a25a2f3cfa6ad1ec2966c6223800a8f6fa24",
+      "exportedTextSha256": "e775b6b2a787098d231936af7301377a22570a1991df95f610e43c5b10fde0d1",
+      "text": "[ci-smokes] run=bbe45a30-66de-4ec0-80b3-154626de36e4 HEAD=5300ab4bf07fbb43a36a09f0919605f99aad2688 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-F7beEs\\smoke-report.json\n[run-smokes] 共 916 个 smoke · 选中 916 · 跳过 0 · 并发 8 · 超时 120s\n  [25/916] PASS    smoke-agent-mode-s13.js (0.3s)\n  [50/916] PASS    smoke-ai-structured-policy-actions.js (0.3s)\n  [75/916] PASS    smoke-audit-manual-save-lease.js (0.3s)\n  [100/916] PASS    smoke-battle-resolve.js (0.2s)\n  [125/916] PASS    smoke-changchao-ambient-isolation.js (0.2s)\n  [150/916] PASS    smoke-class-character-ui.js (0.2s)\n  [175/916] PASS    smoke-conspiracy-engine.js (0.3s)\n  [200/916] PASS    smoke-authoring-agent-optims.js (6.3s)\n  [225/916] PASS    smoke-dikuai-systems.js (0.3s)\n  [250/916] PASS    smoke-edict-office-reform-dynamic-lifecycle.js (0.4s)\n  [275/916] PASS    smoke-endturn-party-class-change-groups.js (0.3s)\n  [300/916] PASS    smoke-faction-ai-mainloop-bridge.js (0.3s)\n  [325/916] PASS    smoke-faction-npc-llm-ledger.js (0.5s)\n  [350/916] PASS    smoke-fiscal-target-alias-preflight.js (0.4s)\n  [375/916] PASS    smoke-globalrules-reback.js (0.3s)\n  [400/916] PASS    smoke-hearts-coverage.js (0.3s)\n  [425/916] PASS    smoke-institution-lifecycle-player-chain.js (0.3s)\n  [450/916] PASS    smoke-map-label-feature-late-binding.js (0.2s)\n  [475/916] PASS    smoke-memory-compress-consumer.js (0.5s)\n  [500/916] PASS    smoke-memory-manifest.js (0.5s)\n  [525/916] PASS    smoke-memory-trace-authority-lineage.js (0.6s)\n  [550/916] PASS    smoke-memory-workshop-preinference.js (0.6s)\n  [575/916] PASS    smoke-negotiation-sessions.js (0.6s)\n  [600/916] PASS    smoke-office-authority.js (0.4s)\n  [625/916] PASS    smoke-online-desktop-token-boundary.js (0.3s)\n  [650/916] PASS    smoke-perf-canonical-utf8.js (0.9s)\n  [675/916] PASS    smoke-player-natural-death-routing.js (0.4s)\n  [700/916] PASS    smoke-public-treasury-a3.js (0.5s)\n  [725/916] PASS    smoke-renli-prompt-context.js (0.5s)\n  [750/916] PASS    smoke-restored-deprecated-code-paths.js (0.4s)\n  [775/916] PASS    smoke-s8-talent-alert.js (0.3s)\n  [800/916] PASS    smoke-scenario-isolation.js (1.9s)\n  [825/916] PASS    smoke-state-snapshot-integrity.js (1.1s)\n  [850/916] PASS    smoke-tinyi-revoke-confirm.js (0.3s)\n  [875/916] PASS    smoke-wdsusp-suspicion.js (0.3s)\n  [900/916] PASS    smoke-workshop-runtime-truth-ui.js (0.3s)\n  [916/916] PASS    smoke-start-game-data-integrity.js (40.5s)\n\n[run-smokes] 完成：914 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 916 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 804s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  75.0s  smoke-full-turn-flow.js\n  45.8s  smoke-deploy-manifest-atomicity.js\n  42.5s  smoke-perf-save-preparation.js\n  40.5s  smoke-start-game-data-integrity.js\n  17.8s  smoke-workshop-lock-recovery.js\n  11.2s  smoke-character-location-travel.js\n  8.4s  smoke-phase8-map-live-panels.js\n  8.4s  smoke-encoding-check.js\n  7.7s  smoke-phase8-office-standalone.js\n  7.1s  smoke-party-goals-lifecycle.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-F7beEs/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":914,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":916}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-targeted-cc64fe79-2063-4d29-af99-df7759593782": {
+    "stdout.log": {
+      "sourceSha256": "86da4ddc1ead665e5b6fb90a3fe6218be9c07edbdd3ab83589cc59ad8c0962d1",
+      "exportedTextSha256": "86da4ddc1ead665e5b6fb90a3fe6218be9c07edbdd3ab83589cc59ad8c0962d1",
+      "text": "PASS opening edict does not build hidden archive content\nPASS same historical count is displayed without historical DOM\nPASS explicit archive action builds complete sorted escaped text\nPASS reopening archive sees in-place changes and retains scroll\nPASS close captures six fields with one aggregate persistence\nPASS draft whitespace and aliases retained\nPASS reopen restores all draft values\nPASS repeated close is a no-op once detached\nPASS letter and memorial capture share one save without dropping values\nPASS ordinary input still persists immediately\nPASS capture exception is not swallowed\nPASS exception restores capture depth for next operation\nPASS detached snapshot capture preserves live store\nPASS stale overlay cannot build archive for a different world\nPASS new world empty archive and drafts are not inherited\n[smoke-perf-desk-panels] 15 PASS\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-final-tls-c48c1399-5a64-4081-a47e-4ab81ecf7076": {
+    "stdout.log": {
+      "sourceSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+      "exportedTextSha256": "cbd4fcbf45abecace097dae25a3235c24864c4bb45d5e284050ae397a84c898e",
+      "text": "PASS validated address remains pinned after DNS source changes; Host and SNI preserved\nPASS each redirect performs new validation and uses a separate connection\nPASS redirect private address is rejected before a connection to that hop\nPASS cross-origin credentials cannot follow redirect\nPASS untrusted TLS certificate is rejected, no HTTP request or silent retry\n{\"complete\":true,\"PASS\":5,\"FAIL\":0,\"SKIP\":0,\"WAIVED\":0,\"runtime\":\"v24.14.0\",\"platform\":\"win32\",\"scope\":\"controlled loopback TLS, actual main-safe-remote transport; not a production SSRF attack\"}\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-focus-baseline-c61b8c8f-cc76-46a7-94e9-4eacfff4fc06": {
+    "stdout.log": {
+      "sourceSha256": "05bebf1afdb7404d3e0e7de644cd62a32ff96409e120b8c5e45f44c79765a372",
+      "exportedTextSha256": "ef01f9bf2602c22dd1d47114168a40d1a51080000e48f1b97f207da1a614e2d4",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-e6bafba7-5eec-4317-ac71-211ee24bb262\n\r\nPANEL 0 edict 0 open js 38.6 frame2 233.5 layout 88.3 style 1705.4 draftSaves 0\nPANEL 0 edict 0 close js 9.5 frame2 42.3 layout 2.1 style 61.3 draftSaves 7\nPANEL 0 edict 1 open js 14.9 frame2 31.2 layout 3.5 style 34.4 draftSaves 0\nPANEL 0 edict 1 close js 12.7 frame2 73.0 layout 3.2 style 3783.5 draftSaves 7\nPANEL 0 edict 2 open js 31.5 frame2 74.1 layout 8.0 style 42.8 draftSaves 0\nPANEL 0 edict 2 close js 4.9 frame2 70.5 layout 4.7 style 65.6 draftSaves 7\nPANEL 0 edict 3 open js 26.5 frame2 71.9 layout 6.3 style 62.2 draftSaves 0\nPANEL 0 edict 3 close js 7.5 frame2 63.2 layout 3.5 style 45.4 draftSaves 7\nPANEL 0 edict 4 open js 26.2 frame2 75.1 layout 6.2 style 60.6 draftSaves 0\nPANEL 0 edict 4 close js 5.8 frame2 36.1 layout 2.2 style 44.3 draftSaves 7\nPANEL 0 memorial 0 open js 16.0 frame2 318.1 layout 196.7 style 1270.5 draftSaves 0\nPANEL 0 memorial 0 close js 5.6 frame2 22.8 layout 1.9 style 63.8 draftSaves 2\nPANEL 0 memorial 1 open js 5.0 frame2 34.3 layout 8.6 style 21.3 draftSaves 0\nPANEL 0 memorial 1 close js 13.9 frame2 49.8 layout 2.3 style 4320.6 draftSaves 2\nPANEL 0 memorial 2 open js 5.3 frame2 38.2 layout 8.4 style 54.2 draftSaves 0\nPANEL 0 memorial 2 close js 8.7 frame2 35.1 layout 1.2 style 67.0 draftSaves 2\n \nPANEL_EXIT 1 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-focused-after-695634f9-07a0-46cc-893f-0418f3424ec8": {
+    "stdout.log": {
+      "sourceSha256": "7095be1741424d87f9f4b0a1c1e91c9bb4ce54c669877cd3c13b580265199b19",
+      "exportedTextSha256": "3d76154680a7447f1b3d7222afac4230f22cb93d5f3e38a9dd9907f76ffc5425",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-c1bb701a-b971-42f5-856b-7011149153a1\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 19.1 frame2 1066.0 layout 59.6 style 10456.5 draftSaves 0\nPANEL 800 edict 0 close js 7.1 frame2 46.1 layout 0.2 style 51.7 draftSaves 1\nPANEL 800 edict 1 open js 18.8 frame2 71.2 layout 1.2 style 8164.0 draftSaves 0\nPANEL 800 edict 1 close js 6.0 frame2 43.5 layout 0.2 style 49.5 draftSaves 1\nPANEL 800 edict 2 open js 13.6 frame2 55.4 layout 2.0 style 30.1 draftSaves 0\nPANEL 800 edict 2 close js 8.0 frame2 43.1 layout 0.4 style 39.4 draftSaves 1\n \nPANEL_EXIT 0 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-focused-before-26d187f4-7185-4e6b-9e1b-a36c78b2c9d5": {
+    "stdout.log": {
+      "sourceSha256": "6877e9b1cb402b0042340e0534b3cf7a7605af20ba1ec18f385d58460d97fd61",
+      "exportedTextSha256": "778fd2ecc5704ebd27843bef595f656926403445b2de606184f3a7298c3c8107",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-0411eae5-d161-4173-aa39-7eb286408e57\n\r\nPANEL_STAGE new-game\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 67.6 frame2 184.9 layout 58.2 style 6940.2 draftSaves 0\nPANEL 800 edict 0 close js 29.7 frame2 39.2 layout 0.2 style 8.7 draftSaves 7\nPANEL 800 edict 1 open js 50.3 frame2 116.2 layout 1.2 style 27.4 draftSaves 0\nPANEL 800 edict 1 close js 27.4 frame2 47.2 layout 0.2 style 2.9 draftSaves 7\nPANEL 800 edict 2 open js 60.5 frame2 149.6 layout 2.0 style 69.3 draftSaves 0\nPANEL 800 edict 2 close js 35.0 frame2 63.4 layout 0.3 style 3.8 draftSaves 7\n \nPANEL_EXIT 0 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-green-535883e8-896f-435b-be64-66f846610065": {
+    "stdout.log": {
+      "sourceSha256": "3f3266bef2248c946d9389c953929c008e54850eea1a1fb88253534ef86cc93a",
+      "exportedTextSha256": "3f3266bef2248c946d9389c953929c008e54850eea1a1fb88253534ef86cc93a",
+      "text": "PASS opening edict does not build hidden archive content\nPASS same historical count is displayed without historical DOM\nPASS explicit archive action builds complete sorted escaped text\nPASS reopening archive sees in-place changes\nPASS close captures six fields with one aggregate persistence\nPASS draft whitespace and aliases retained\nPASS reopen restores all draft values\nPASS repeated close is a no-op once detached\nPASS letter and memorial capture share one save without dropping values\nPASS ordinary input still persists immediately\nPASS capture exception is not swallowed\nPASS exception restores capture depth for next operation\nPASS detached snapshot capture preserves live store\nPASS stale overlay cannot build archive for a different world\nPASS new world empty archive and drafts are not inherited\n[smoke-perf-desk-panels] 15 PASS\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-merge-smoke-da5b6db3-7cc8-4894-84c1-20eb4b5d3805": {
+    "stdout.log": {
+      "sourceSha256": "7ab6e4a7d2adedbb05a432ccce81a986e25498d88804e86a315879a2f205871b",
+      "exportedTextSha256": "aced652219a1418eb5739c030f01bfebc1b10b42388d0e6d6833dc391aec9fe8",
+      "text": "[ci-smokes] run=c63680c3-5b4d-4041-a36b-a91d8de2d431 HEAD=08a1a99a4dfeb2def18f98d8608c9f0c09322141 report=<user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-5Vol6U\\smoke-report.json\n[run-smokes] 共 915 个 smoke · 选中 915 · 跳过 0 · 并发 8 · 超时 120s\n  [25/915] PASS    smoke-agent-mode-s2.js (0.3s)\n  [50/915] PASS    smoke-android-endturn-oom-guard.js (0.3s)\n  [75/915] PASS    smoke-audit-account-generation.js (0.5s)\n  [100/915] PASS    smoke-battle-retreat.js (0.2s)\n  [125/915] PASS    smoke-ceming-profile-schema.js (0.9s)\n  [150/915] PASS    smoke-class-character-relations.js (0.3s)\n  [175/915] PASS    smoke-conspiracy-engine.js (0.3s)\n  [200/915] PASS    smoke-court-social-uplift.js (0.4s)\n  [225/915] PASS    smoke-dikuai-systems.js (0.5s)\n  [250/915] PASS    smoke-dead-code-removal-guards.js (4.3s)\n  [275/915] PASS    smoke-endturn-narrative.js (0.3s)\n  [300/915] PASS    smoke-faction-ai-mainloop-bridge.js (0.3s)\n  [325/915] PASS    smoke-faction-npc-multiturn-e2e.js (0.4s)\n  [350/915] PASS    smoke-fixed-fit-modern-viewport-units.js (0.3s)\n  [375/915] PASS    smoke-gongming-aiface.js (0.2s)\n  [400/915] PASS    smoke-hearts-coverage.js (0.2s)\n  [425/915] PASS    smoke-institution-lifecycle-ui-surface.js (0.2s)\n  [450/915] PASS    smoke-guoshi-cc-port.js (6.4s)\n  [475/915] PASS    smoke-memory-compress-consumer.js (0.3s)\n  [500/915] PASS    smoke-memory-procedural-lessons.js (0.3s)\n  [525/915] PASS    smoke-memory-trace-core.js (0.3s)\n  [550/915] PASS    smoke-memory-workshop-rollup-undo.js (0.3s)\n  [575/915] PASS    smoke-nokey-endturn-guard.js (0.3s)\n  [600/915] PASS    smoke-office-apply-resolve-vacate.js (0.8s)\n  [625/915] PASS    smoke-online-desktop-token-boundary.js (0.2s)\n  [650/915] PASS    smoke-perf-canonical-utf8.js (0.5s)\n  [675/915] PASS    smoke-policy-detail-player-paths.js (0.4s)\n  [700/915] PASS    smoke-qiju-category-coverage.js (0.3s)\n  [725/915] PASS    smoke-renli-prompt-context.js (0.4s)\n  [750/915] PASS    smoke-restricted-roster.js (0.8s)\n  [775/915] PASS    smoke-save-integrity-audit.js (0.5s)\n  [800/915] PASS    smoke-serialization-roundtrip.js (0.3s)\n  [825/915] PASS    smoke-security-trust-boundary.js (5.4s)\n  [850/915] PASS    smoke-tinyi-revoke-confirm.js (0.2s)\n  [875/915] PASS    smoke-wendui-active-audience.js (0.2s)\n  [900/915] PASS    smoke-workshop-runtime-truth-ui.js (0.3s)\n  [915/915] PASS    smoke-start-game-data-integrity.js (43.5s)\n\n[run-smokes] 完成：913 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 915 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 793s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  63.4s  smoke-full-turn-flow.js\n  43.5s  smoke-start-game-data-integrity.js\n  42.9s  smoke-encoding-check.js\n  38.1s  smoke-perf-save-preparation.js\n  26.6s  smoke-deploy-manifest-atomicity.js\n  17.3s  smoke-workshop-lock-recovery.js\n  11.1s  smoke-character-location-travel.js\n  9.0s  smoke-eventbus-vestigial.js\n  8.2s  smoke-faction-binding-lint.js\n  7.0s  smoke-party-goals-lifecycle.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-5Vol6U/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":913,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":915}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-mouse-after-4922c490-6513-4c02-9948-2a7c7aee2420": {
+    "stdout.log": {
+      "sourceSha256": "8af7aa4a4e11e94840b5fb41670e9aba6988def33d1c7dfdfc93157fcfbbc84f",
+      "exportedTextSha256": "321a073533dc97156b83f006d2bb4bb4c6f9fc124d397124982c77018752b6cd",
+      "text": "INTERACTIVE_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\inspect-7c0693d3-3256-4015-823f-044e35fa6151\nINTERACTIVE_EXIT 0\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-open-before-90b9a8cb-c47e-441e-96c5-8b6bd26f63c7": {
+    "stdout.log": {
+      "sourceSha256": "e97216812be219653c2099ae90a4e4f647ebea87a2e5c4e2d6e4182cddd2422d",
+      "exportedTextSha256": "7b6fc0290c0dd986606675ab74ab6f5a239de2f26c4c31c5c4dd229f851365f5",
+      "text": "INTERACTIVE_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\inspect-b25e0af4-b806-4d0d-80ea-fa84dd637cab\nINTERACTIVE_EXIT 0\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-paired-base-f024ba90-90e4-44b8-8b11-acf5073e7b6c": {
+    "stdout.log": {
+      "sourceSha256": "a6ec30f31d2f530a54e51d0fcba140e902fa2560467d9e5708ef6e05e37c0922",
+      "exportedTextSha256": "af0fd200b54cd7931c00d427bf71ffc6d25af486cfb53846b07ed3997ec68314",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-1174005a-7f4f-4e37-b481-f1c53aa0c9d5\n\r\nPANEL_STAGE new-game\nPANEL_STAGE load-public-sample\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 218.8 frame2 2097.7 layout 454.8 style 2245.4 draftSaves 0\nPANEL 800 edict 0 close js 117.8 frame2 129.5 layout 0.1 style 453.6 draftSaves 7\nPANEL 800 edict 1 open js 171.5 frame2 625.7 layout 399.7 style 12806.0 draftSaves 0\nPANEL 800 edict 1 close js 63.3 frame2 79.5 layout 0.1 style 7.7 draftSaves 7\n \nPANEL_EXIT 1 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-paired-base-light-94406279-2f0c-48ec-bd48-7ed34ca66440": {
+    "stdout.log": {
+      "sourceSha256": "3b41c67d2f77803496d0997dc2081c76c6023fb50a29fedbf024771664e5866e",
+      "exportedTextSha256": "a8392a7127dc84eea0793cd8fdb53ebc0f7cb92e95fb38652918b1c76a12fbc9",
+      "text": "PANEL_EVIDENCE <user-profile>\\Desktop\\tianming-perf-round1\\web\\dev-tools\\perf-round1\\panels-dd806c19-7780-4212-b2b1-382fad17ea07\n\r\nPANEL_STAGE new-game\nPANEL_STAGE load-public-sample\nPANEL_STAGE initialized\nPANEL_STAGE instruments-ready\nPANEL_STAGE 800/edict\nPANEL 800 edict 0 open js 284.5 frame2 2932.2 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 0 close js 162.6 frame2 249.1 nativeMetrics not collected draftSaves 7\nPANEL 800 edict 1 open js 121.8 frame2 1386.5 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 1 close js 167.4 frame2 274.7 nativeMetrics not collected draftSaves 7\nPANEL 800 edict 2 open js 287.8 frame2 1350.4 nativeMetrics not collected draftSaves 0\nPANEL 800 edict 2 close js 199.5 frame2 246.3 nativeMetrics not collected draftSaves 7\n \nPANEL_EXIT 0 \n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-red-646c2416-aa96-47c8-b168-8ddf0a49332a": {
+    "stdout.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    },
+    "stderr.log": {
+      "sourceSha256": "4560e59d0ccd4978ce99feb609ae3b924df635390d4917be74efb7d1461d5d41",
+      "exportedTextSha256": "b44e13bc43ecb7636126ab78962aed3f9dff0b494500849fac8c8bb7fb601226",
+      "text": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n\r\n1 !== 0\r\n\r\n    at <user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-perf-desk-panels.js:41:72\r\n    at check (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-perf-desk-panels.js:8:25)\r\n    at Object.<anonymous> (<user-profile>\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-perf-desk-panels.js:41:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 1,\r\n  expected: 0,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    }
+  },
+  "panel-sync-hashes-eb179018-b745-49e1-9bd1-2ba9cc35a74f": {
+    "stdout.log": {
+      "sourceSha256": "acfdca91e5efcfb1784f3e7b14b5c4cc07a15f6c94bbce4b67da9de27428ad6b",
+      "exportedTextSha256": "2c8cc6a4f686e4bcd79fa7565de9d1a6c98f7f081d37cebfdd902ac1507d9a6f",
+      "text": "[hot-baseline] asset-root overlay files=410 bytes=806161938\nWROTE <user-profile>\\Desktop\\tianming-perf-round1\\web\\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=2\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-sync-official-6eced125-395b-404f-8b8b-d2d3f721606e": {
+    "stdout.log": {
+      "sourceSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+      "exportedTextSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+      "text": "[official-sync] sync PASS · sources=2 artifacts=9\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  },
+  "panel-sync-startup-55110ca7-3745-401a-be27-0e4344abd134": {
+    "stdout.log": {
+      "sourceSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+      "exportedTextSha256": "70784e7b3a736cba9f0c7fd3b7ef3b67ab04215facbdcc645a5114df2da82838",
+      "text": "[startup-phase-manifest] wrote startup-script-phases.json scripts=409 deferred=6\n"
+    },
+    "stderr.log": {
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exportedTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "text": ""
+    }
+  }
+}

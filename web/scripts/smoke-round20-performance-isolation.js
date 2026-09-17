@@ -87,7 +87,8 @@ function extractBetween(source, first, last) {
   vm.runInContext(read('tm-feudal-warfare.js'), context, { filename: 'tm-feudal-warfare.js' });
   const lifecycle = read('tm-save-lifecycle.js');
   vm.runInContext(
-    extractFunction(lifecycle, 'function _autoSaveSnapshotGM(') + '\n'
+    extractFunction(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n'
+      + extractFunction(lifecycle, 'function _autoSaveSnapshotGM(') + '\n'
       + extractFunction(lifecycle, 'function _buildSaveState(') + '\n'
       + extractBetween(read('tm-endturn-core.js'), 'function _tmCaptureEndTurnObject(', 'async function _tmFinalizeEndTurnTransaction('),
     context,

@@ -1,0 +1,27 @@
+{
+  "command": [
+    "node",
+    "web/scripts/run-smokes.js",
+    "--grep",
+    "smoke-audit-",
+    "--all",
+    "--no-retry",
+    "--report",
+    "web/dev-tools/audit-review/targeted-report.json"
+  ],
+  "cwd": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "head": "14130f77ef1976f9b3cd8b311b4aef77636e7d90",
+  "tree": "1be7372436c0a86f35946b1ba99579b6fa3eb0d6",
+  "statusBefore": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "arch": "x64",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T06:30:43.680Z",
+  "exitCode": 0,
+  "signal": null,
+  "durationMs": 5394,
+  "statusAfter": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "rawSha256": "20694a531a249d195dcd1d506d94cc4d0cb0edafc74811fa08ef77aa8332c8d2",
+  "publishedSha256": "20694a531a249d195dcd1d506d94cc4d0cb0edafc74811fa08ef77aa8332c8d2"
+}

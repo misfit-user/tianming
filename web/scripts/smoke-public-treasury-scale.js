@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert'),{performance}=require('perf_hooks');
+const web=path.resolve(__dirname,'..'),file=path.resolve(web,'../scenarios/晚唐·开成五年（官方）.json'),sc=JSON.parse(fs.readFileSync(file,'utf8')),copy=x=>JSON.parse(JSON.stringify(x));
+const RES=['money','grain','cloth'],timings={},counts={characters:sc.characters.length,factions:sc.factions.length},expected={},budgets=[];let checks=0;
+function ok(v,name){assert(v,name);checks++;}function near(a,b,name){ok(Math.abs(a-b)<.002,name+': '+a+' / '+b);}function timed(name,fn){const t=performance.now(),result=fn();timings[name]=+(performance.now()-t).toFixed(2);return result;}
+function box(n){return {stock:n,available:n,thisTurnIn:0,thisTurnOut:0,sources:{},sinks:{}};}function treasury(source){let a={ledgers:{}};for(const k of RES){a[k]=source['initial'+k[0].toUpperCase()+k.slice(1)]??source[k]??0;a.ledgers[k]=box(a[k]);}a.balance=a.money;return a;}
+const G={sid:sc.id,turn:1,currentDay:0,playerInfo:copy(sc.playerInfo),playerFactionId:sc.playerInfo.factionId,fiscalConfig:copy(sc.fiscalConfig),publicTreasuryConfig:copy(sc.publicTreasuryConfig),chars:copy(sc.characters),facs:copy(sc.factions),officeTree:copy(sc.officeTree),adminHierarchy:copy(sc.adminHierarchy),armies:copy(sc.military.initialTroops),guoku:treasury(sc.guoku),neitang:treasury(sc.neitang),map:copy(sc.map),mapData:copy(sc.mapData),populationConfig:copy(sc.populationConfig),characterEconomyConfig:copy(sc.characterEconomyConfig),settings:{},corruption:copy(sc.corruption)};
+function walk(nodes){for(const n of nodes||[]){counts.nodes=(counts.nodes||0)+1;let child=false;for(const key of ['children','divisions','subRegions'])if(n[key]?.length){child=true;walk(n[key]);}if(!child)counts.leaves=(counts.leaves||0)+1;}}for(const b of Object.values(G.adminHierarchy))walk(Array.isArray(b)?b:b.divisions);
+const c={GM:G,P:sc,Math,Date,JSON,Number,console:{log(){},warn(){},error(e){throw e;}},setTimeout(){},clearTimeout(){},setInterval(){},clearInterval(){},fetch(){throw Error('Network forbidden');},document:{addEventListener(){},getElementById(){return null;}},findScenarioById:()=>sc,_getDaysPerTurn:()=>sc.time.daysPerTurn||10};c.window=c;c.globalThis=c;vm.createContext(c);
+for(const f of ['tm-field-pipelines.js','tm-fiscal-statements.js','tm-fiscal-engine.js','tm-public-treasury.js','tm-char-economy-engine.js','tm-char-economy-ledger.js'])vm.runInContext(fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});
+timed('initializeAccountsMs',()=>ok(c.FiscalEngine.initializePublicTreasuries({game:G,scenario:sc}).ok,'real scenario public stores initialize'));
+timed('reference47BudgetsMs',()=>{for(const f of G.facs){const b=c.CascadeTax.previewBudget({game:G,faction:f.id,turnDays:30});assert(b);budgets.push({faction:f.id,budget:b});for(const item of b.expenses.items){if(item.characterId){expected[item.characterId]??={money:0,grain:0,cloth:0};for(const k of RES)expected[item.characterId][k]+=item.amounts[k];}for(const r of item.payrollRecipients||[]){expected[r.characterId]??={money:0,grain:0,cloth:0};for(const k of RES){const total=item.armyPeriodCost?.[k]||0;expected[r.characterId][k]+=total>0?(r.monthlyPay?.[k]||0)*item.amounts[k]/total:0;}}}}});
+counts.expenseItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.length,0);counts.localItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.filter(i=>i.funding==='local').length,0);
+ok(counts.characters>=400&&counts.factions>=40&&counts.leaves>=500&&counts.localItems>=500,'fixture covers actual late Tang scale');
+let previews=0,lists=0,regionIndexBuilds=0;const originalPreview=c.CascadeTax.previewBudget,originalList=c.TM.PublicTreasury.listAccountViews,originalRefs=c.TM.PublicTreasury.getRegionAccountRefs;
+c.CascadeTax.previewBudget=()=>{previews++;throw Error('Payroll cannot preview national budgets');};
+const before=JSON.stringify(G);
+timed('allCharacterDueMs',()=>{for(const ch of G.chars){const p=c.FiscalEngine.getCharacterPayroll({game:G,characterId:ch.id,days:30}),want=expected[ch.id]||{money:0,grain:0,cloth:0};for(const k of RES)near(p.due[k],want[k],'same salary as fiscal plan '+ch.id+'/'+k);}});
+ok(JSON.stringify(G)===before,'salary lookup is read-only');ok(previews===0,'all character due lookups preview zero national budgets');
+// A real collection gets the already calculated period budget; it may not render every account for each item.
+c.TM.PublicTreasury.listAccountViews=()=>{lists++;throw Error('Expense settlement cannot enumerate account views per item');};c.TM.PublicTreasury.getRegionAccountRefs=o=>{regionIndexBuilds++;return originalRefs(o);};
+timed('allFactionExpenseSettlementMs',()=>{for(const b of budgets)ok(c.FixedExpense.collect({game:G,faction:b.faction,turnDays:30,budget:b.budget}).ok,'actual resource expense settlement '+b.faction);});
+ok(lists===0,'expense settlement renders zero account lists');ok(regionIndexBuilds===counts.factions,'one current region-ref index per faction settlement');
+counts.receipts=G._salaryPaymentReceipts?.length||0;ok(counts.receipts>100,'large fixture includes real paid receipts');
+timed('allCharacterReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconEngine.settleSalaryReceipts(ch);});ok(previews===0,'all person receipt settlement previews zero budgets');
+const afterReceipts=G._salaryPaymentReceipts.map(r=>r.id).join('|');timed('repeatReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconEngine.settleSalaryReceipts(ch);});ok(G._salaryPaymentReceipts.map(r=>r.id).join('|')===afterReceipts,'receipt settlement never adds a second public payment');
+c.CascadeTax.previewBudget=originalPreview;c.TM.PublicTreasury.listAccountViews=originalList;c.TM.PublicTreasury.getRegionAccountRefs=originalRefs;
+// Coarse wall-clock guards catch accidental combinatorial work; operation counts above are the deterministic contract.
+ok(timings.allCharacterDueMs<30000,'434-person due lookup stays bounded');ok(timings.allFactionExpenseSettlementMs<60000,'all faction expense settlement stays bounded');ok(timings.allCharacterReceiptSettlementMs<15000,'receipt delivery stays bounded');
+console.log('[smoke-public-treasury-scale] PASS '+checks+' assertions '+JSON.stringify({counts,timings,previews,accountViewLists:lists,regionIndexBuilds}));

@@ -1,0 +1,35 @@
+{
+  "device": "LAPTOP-AV4J1O7I",
+  "at": "2026-09-17T11:10:48.030Z",
+  "files": [
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "before": "540228ee09ee1afcdec4b6665a928cf679c8695cdd66af6dcf4e54c4404845c6",
+      "after": "9923fb4714081506d718f1765df7e9bec2c8e17536f25d7d8e6a1179e5d1edfb"
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "before": "019cb9e044298fd3ee222e61bc32f16959c705b36cb650300cc837272b903f68",
+      "after": "d36d32f366e9e650d091661fd10374f621b6622bdee0c9984d78bb17cb55103e"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "before": "2b129cd6689fc103920fd3548c6b9371bdd965f7d11ae86ef42a2afd8e54d13e",
+      "after": "c03f4ccb70cf179cfa968a48cd5c2a15c00532ccc575bf787dc68f4fb3fa9351"
+    },
+    {
+      "file": "web/tm-api-models.js",
+      "before": "58ae5e2c093d18bccfa99706d5aaa66b0bc464e50d70f506430691451be9492d",
+      "after": "1b67a240d301cd761adca302c753e652ba7c5e1b3f91602af96e39bb9cc1523e"
+    },
+    {
+      "file": "web/tm-patches.js",
+      "before": "f4c215990129687111d3276b6e887bdc6a38f83f47ba9f387abc7259395a4700",
+      "after": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c"
+    }
+  ],
+  "counts": {
+    "tm-ai-infra.js": 4,
+    "tm-ai-infra-model-detect.js": 12
+  }
+}

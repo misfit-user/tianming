@@ -20,13 +20,29 @@ const scriptNames = Array.from(html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+\.j
 assert.strictEqual(manifest.scriptCount, scriptNames.length, 'startup manifest should cover every external JavaScript loaded by index.html');
 assert.deepStrictEqual(manifest.scripts.map((row) => row.script), scriptNames, 'startup manifest order should match index.html exactly');
 assert.strictEqual(manifest.version, 2, 'startup manifest should use the explicit feature-boundary schema');
-assert.strictEqual(manifest.deferredChangesApproved, 6, 'Feature Loader V2 should approve exactly the audited six-script cohort');
-assert.strictEqual(manifest.scriptCount, 409, 'Feature Loader V2 plus the AI applier bundle should reduce the eager startup chain from 416 to 409 scripts');
+assert.strictEqual(manifest.deferredChangesApproved, 9, 'the original six, two explicit relief providers and pure realm layout form the complete deferred set');
+assert.strictEqual(manifest.scriptCount, 416, 'the retained 415 scripts plus the shared battle contract form the complete eager set');
+assert.strictEqual(scriptNames.indexOf('tm-military.js')+1,scriptNames.indexOf('tm-battle-contract.js'),'shared battle contract immediately follows its canonical writer');
+assert.strictEqual(scriptNames.filter(name=>name==='tm-battle-contract.js').length,1,'battle contract loads exactly once');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-office-creation.js').length, 1, 'office creation loads exactly once');
+assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-office-reform.js'), 'creation contract precedes its structural writer');
+assert(scriptNames.indexOf('tm-office-creation.js') < scriptNames.indexOf('tm-edict-parser.js'), 'creation contract precedes natural-language edict dispatch');
+for (const name of ['tm-ai-request-options.js', 'tm-api-models.js', 'tm-api-settings.js']) {
+  assert.strictEqual(scriptNames.filter((src) => src === name).length, 1, name + ' is loaded exactly once');
+}
+assert(scriptNames.indexOf('tm-api-models.js') < scriptNames.indexOf('tm-api-settings.js'), 'model discovery loads before its settings controls');
+assert(scriptNames.indexOf('tm-api-settings.js') < scriptNames.indexOf('tm-patches.js'), 'settings controls load before the settings renderer');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-ai-infra-retry.js').length, 1, 'retry helpers load exactly once');
+assert.strictEqual(scriptNames.indexOf('tm-ai-infra-retry.js') + 1, scriptNames.indexOf('tm-ai-infra.js'), 'retry helpers directly precede their consumer');
+assert(scriptNames.indexOf('tm-ai-request-options.js') < scriptNames.indexOf('tm-ai-infra.js'), 'thinking policy loads before its transport consumers');
+assert.strictEqual(scriptNames.filter((name) => name === 'tm-building-orders.js').length, 1, 'the building-order owner must be loaded exactly once');
+assert(scriptNames.indexOf('tm-building-orders.js') > scriptNames.indexOf('tm-custom-build-agent.js'), 'the order owner follows its actual construction provider');
 assert(manifest.scripts.every((row) => row.lazySafe === false && row.loadPolicy === 'eager-ordered'), 'retained classic scripts should remain explicitly eager');
 assert(manifest.scripts.every((row) => Array.isArray(row.provides) && Array.isArray(row.consumes)), 'manifest should expose machine-readable provider and immediate-consumer inventories');
 assert(manifest.scripts.every((row) => row.mustLoadBefore.length === 0 && row.mustLoadAfter.length === 0), 'adjacent scripts must not be emitted as fake dependencies');
-assert(Array.isArray(manifest.features) && manifest.features.length === 4, 'startup manifest should expose four approved lazy features');
-assert.strictEqual(manifest.features.reduce((count, row) => count + row.scripts.length, 0), 6, 'feature definitions should own six deferred scripts');
+assert(Array.isArray(manifest.features) && manifest.features.length === 5, 'startup manifest exposes the original four and the relief pilot feature');
+assert.strictEqual(manifest.features.reduce((count, row) => count + row.scripts.length, 0), 9, 'feature definitions own exactly nine declared deferred scripts');
+assert(!scriptNames.includes('tm-relief-governance.js') && !scriptNames.includes('tm-relief-governance-ui.js'), 'relief must not add work to the eager startup chain');
 
 const sandbox = { console, Date, Math, JSON, performance, Promise, window: {} };
 sandbox.window.window = sandbox.window;

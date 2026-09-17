@@ -384,6 +384,9 @@ function _confirmMapMode(sid, useMap) {
 var _pendingGameMode = 'yanyi';
 function _showGameSetupModal(sid) {
   var sc = findScenarioById(sid);
+  // historical-agency-v21
+  var _startAgency = (typeof TM !== 'undefined') && TM.HistoricalAgency;
+  var _openHistory = !!(_startAgency && _startAgency.isPlayerDriven(sc));
   var defaultName = sc ? (sc.name || '新纪元') : '新纪元';
   // 加日期戳以区分多次开局
   var d = new Date();
@@ -423,7 +426,7 @@ function _showGameSetupModal(sid) {
   h += '<span style="color:var(--gold-400);font-weight:var(--weight-bold);font-size:var(--text-base);">演义</span>';
   h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">小说化 · 戏剧性</span>';
   h += '</div>';
-  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">AI 可自由发挥，允许架空情节。历史名臣全时段可现，戏剧张力最大。</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">' + (_openHistory ? _startAgency.modeDescription('yanyi',sc) : 'AI 可自由发挥，允许架空情节。历史名臣全时段可现，戏剧张力最大。') + '</div>';
   h += '</div>';
 
   // 轻度史实
@@ -431,9 +434,9 @@ function _showGameSetupModal(sid) {
   h += '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:4px;">';
   h += '<span>'+tmIcon('policy',16)+'</span>';
   h += '<span style="color:var(--celadon-400);font-weight:var(--weight-bold);font-size:var(--text-base);">轻度史实</span>';
-  h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">大事遵史 · 细节可演</span>';
+  h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">' + (_openHistory ? '史据为本 · 未来可变' : '大事遵史 · 细节可演') + '</span>';
   h += '</div>';
-  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">大事件（战争/朝代更替/重大改革）沿史脉发展，细节可因干预而变。名臣限开局前后二百年内。</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">' + (_openHistory ? _startAgency.modeDescription('light_hist',sc) : '大事件（战争/朝代更替/重大改革）沿史脉发展，细节可因干预而变。名臣限开局前后二百年内。') + '</div>';
   h += '</div>';
 
   // 严格史实
@@ -443,7 +446,7 @@ function _showGameSetupModal(sid) {
   h += '<span style="color:var(--vermillion-400);font-weight:var(--weight-bold);font-size:var(--text-base);">严格史实</span>';
   h += '<span style="font-size:var(--text-xs);color:var(--color-foreground-muted);margin-left:auto;">资治通鉴级 · 客观克制</span>';
   h += '</div>';
-  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">严格遵守史实，AI 参照史料与学术研究。数值渐变、信息不对称、政策延迟。名臣限开局前后百年。</div>';
+  h += '<div style="font-size:var(--text-xs);color:var(--color-foreground-secondary);line-height:var(--leading-normal);">' + (_openHistory ? _startAgency.modeDescription('strict_hist',sc) : '严格遵守史实，AI 参照史料与学术研究。数值渐变、信息不对称、政策延迟。名臣限开局前后百年。') + '</div>';
   h += '</div>';
 
   // 严格史实参考文本

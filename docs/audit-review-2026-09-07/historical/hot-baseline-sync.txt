@@ -1,0 +1,4 @@
+{"executable":"node","args":["scripts/sync-hot-baseline.js","--write","--version","1.3.4.11"],"cwd":"<USER_HOME>\\Desktop\\tianming","startedAt":"2026-09-05T16:46:48.472Z","head":"6ce797ae032857ff99722482768844c2e6d4a4c9"}
+WROTE <USER_HOME>\Desktop\tianming\web\.hot-update-manifest.json files=1094 version=1.3.4.11 fixed=5
+
+{"name":"hot-baseline-sync","executable":"node","args":["scripts/sync-hot-baseline.js","--write","--version","1.3.4.11"],"exitCode":0,"signal":null,"durationMs":3555,"log":"<USER_HOME>\\Desktop\\tianming\\web\\dev-tools\\audit-2026-09-05\\hot-baseline-sync.log"}

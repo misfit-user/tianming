@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm'),cp=require('child_process'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'../..'),at=process.argv.indexOf('--source-ref'),ref=at>=0?process.argv[at+1]:null;
+const read=p=>ref?cp.execFileSync('git',['show',ref+':web/'+p],{cwd:root,encoding:'utf8'}):fs.readFileSync(path.join(root,'web',p),'utf8');
+const json=read('tm-ai-infra-json.js'),retry=ref?'':read('tm-ai-infra-retry.js'),infra=retry+'\n'+read('tm-ai-infra.js');
+let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log('PASS '+name);}catch(e){fail++;console.error('FAIL '+name+': '+e.message);}}
+function fixture(){
+ const timers=new Set(),c={console:{log(){},warn(){},error(){}},AbortController,TextDecoder,TextEncoder,Response,performance,
+  P:{ai:{key:'synthetic-only',url:'https://fixture.invalid/v1',model:'fixture'},conf:{}},GM:{turn:1},localStorage:{getItem(){return null;}},
+  setTimeout(fn,ms){const t=setTimeout(()=>{timers.delete(t);fn();},ms>=1000?40:ms);timers.add(t);return t;},clearTimeout(t){timers.delete(t);clearTimeout(t);}};
+ c.window=c;vm.createContext(c);vm.runInContext(json,c);vm.runInContext(infra,c);c._aiQueue.enqueue=fn=>fn();
+ return{c,dispose(){for(const t of timers)clearTimeout(t);},request(opts={},signal){return c._aiFetchWithRetryInner('https://fixture.invalid/v1',{messages:[{role:'user',content:'完整正文'}],max_tokens:9000},signal,{apiKey:'synthetic-only',maxRetries:0,timeoutMs:15,...opts});}};
+}
+const okay=data=>({ok:true,status:200,headers:{get(){return null;}},json:async()=>data});
+function bodyAfter(signal,delay,value){return new Promise((resolve,reject)=>{const t=setTimeout(()=>{signal.removeEventListener('abort',abort);resolve(value);},delay);function abort(){clearTimeout(t);reject(signal.reason||Object.assign(Error('aborted'),{name:'AbortError'}));}signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();});}
+(async()=>{
+ await test('complete successful JSON is unchanged and timeout resources are cleaned',async()=>{const f=fixture();try{const raw={choices:[{message:{content:'完整中文 😀',reasoning_content:'保留但不冒充正文'}}],usage:{total_tokens:9}};f.c.fetch=async()=>okay(raw);assert.deepEqual(await f.request(),raw);}finally{f.dispose();}});
+ await test('deadline covers response body after successful headers',async()=>{const f=fixture();try{f.c.fetch=async(_u,o)=>({...okay({}),json:()=>bodyAfter(o.signal,65,{choices:[]})});await assert.rejects(f.request(),e=>e.code==='AI_TIMEOUT'&&e.phase==='body'&&e.timeoutMs===15);}finally{f.dispose();}});
+ await test('uncooperative body readers cannot outlive the request or publish a late result',async()=>{const f=fixture();try{f.c.fetch=async()=>({...okay({}),json:()=>new Promise(resolve=>setTimeout(()=>resolve({late:true}),45))});await assert.rejects(f.request(),e=>e.code==='AI_TIMEOUT');await new Promise(r=>setTimeout(r,55));assert.equal(f.c._aiLastRaw.response,null);}finally{f.dispose();}});
+ await test('deadline also covers an error response body, not a misleading late HTTP result',async()=>{const f=fixture();try{f.c.fetch=async(_u,o)=>({ok:false,status:503,headers:{get(){return null;}},text:()=>bodyAfter(o.signal,65,'server unavailable')});await assert.rejects(f.request(),e=>e.code==='AI_TIMEOUT'&&e.phase==='body');}finally{f.dispose();}});
+ await test('request deadline records its phase and large requests are not retried',async()=>{const f=fixture();let n=0;try{f.c.fetch=async(_u,o)=>{n++;return bodyAfter(o.signal,65,okay({}));};await assert.rejects(f.request({maxRetries:3}),e=>e.code==='AI_TIMEOUT'&&e.phase==='headers');assert.equal(n,1);}finally{f.dispose();}});
+ await test('external cancellation while reading body is not mislabeled or retried',async()=>{const f=fixture(),ctrl=new AbortController();let n=0;try{f.c.fetch=async(_u,o)=>{n++;setTimeout(()=>ctrl.abort(),3);return{...okay({}),json:()=>bodyAfter(o.signal,65,{})};};await assert.rejects(f.request({maxRetries:3,timeoutMs:100},ctrl.signal),e=>e.name==='AbortError'&&e.code==='AI_ABORTED');assert.equal(n,1);}finally{f.dispose();}});
+ await test('cancel during Retry-After finishes through the cancellation path',async()=>{const f=fixture(),ctrl=new AbortController();let n=0;try{f.c.fetch=async()=>{n++;setTimeout(()=>ctrl.abort(),3);return{ok:false,status:429,headers:{get(){return '30';}}};};await assert.rejects(f.request({maxRetries:3,timeoutMs:200},ctrl.signal),e=>e.code==='AI_ABORTED');assert.equal(n,1);}finally{f.dispose();}});
+ await test('transient server failure retains configured retry and returns exact successful data',async()=>{const f=fixture();let n=0;try{f.c.fetch=async()=>++n===1?{ok:false,status:503,headers:{get(){return null;}},text:async()=> 'temporary'}:okay({answer:'最终结果'});assert.deepEqual(await f.request({maxRetries:1,timeoutMs:200}),{answer:'最终结果'});assert.equal(n,2);}finally{f.dispose();}});
+ await test('smart wrapper does not restart timeout, cancellation, auth or hard-context failures',async()=>{for(const error of [Object.assign(Error('deadline'),{code:'AI_TIMEOUT'}),Object.assign(Error('cancel'),{name:'AbortError'}),Object.assign(Error('HTTP 401'),{status:401}),Object.assign(Error('required rules overflow'),{code:'mandatory_context_overflow'})]){const f=fixture();let n=0;try{f.c.callAI=async()=>{n++;throw error;};await assert.rejects(f.c.callAISmart('不可删减的指令',100,{maxRetries:3}),e=>e===error);assert.equal(n,1,error.code||error.name);}finally{f.dispose();}}});
+ await test('smart wrapper retains recovery for retryable network faults',async()=>{const f=fixture();let n=0;try{f.c.callAI=async()=>{if(++n===1)throw Error('network down');return '完整恢复结果';};assert.equal(await f.c.callAISmart('不可删减的指令',100,{maxRetries:2}),'完整恢复结果');assert.equal(n,2);}finally{f.dispose();}});
+ console.log(JSON.stringify({PASS:pass,FAIL:fail,SKIP:0,WAIVED:0,sourceRef:ref||'worktree'}));process.exitCode=fail?1:0;
+})();

@@ -403,15 +403,16 @@ async function main() {
     && /tempDir = await extractZipToTempChecked\(/.test(mainSource)
     && /preflightHotUpdateZip\(zipPath\)/.test(mainSource),
   'production hot-update extraction uses awaited bounded yauzl streaming instead of adm-zip');
-  check(/^\^?0\.6\./.test(packageJson.dependencies['adm-zip'])
-    && packageLock.packages['node_modules/adm-zip'].version === '0.6.0',
-  'remaining build-time adm-zip tooling is pinned to the patched 0.6 line');
+  check(!packageJson.dependencies['adm-zip'] && /^\^?0\.6\./.test(packageJson.devDependencies['adm-zip'])
+    && packageLock.packages['node_modules/adm-zip'].version === '0.6.0'
+    && packageLock.packages['node_modules/adm-zip'].dev === true,
+  'adm-zip is build/read tooling only, excluded from the production dependency closure');
   check(/^\^?6\.8\.9$/.test(packageJson.dependencies['electron-updater'])
     && packageLock.packages['node_modules/electron-updater'].version === '6.8.9'
     && packageLock.packages['node_modules/electron-updater/node_modules/builder-util-runtime'].version === '9.7.0',
   'runtime updater stack includes the cross-origin credential redirect fix');
-  check(packageLock.packages['node_modules/js-yaml'].version === '4.3.1',
-  'runtime YAML parser includes the merge-key and omap complexity fixes');
+  check(packageLock.packages['node_modules/js-yaml'].version === '4.3.2',
+  'runtime YAML parser also bounds repeated empty merge sources');
 
   // 打包进程即使继承测试环境变量，也不得暴露任何测试出口。
   electronStub.app.isPackaged = true;

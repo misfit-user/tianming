@@ -1,0 +1,385 @@
+{
+  "source": "web\\dev-tools\\perf-round1\\inspect-835f2de1-cdc5-497d-b8a1-0ad96ae571f5\\report.json",
+  "sourceSha256": "beea31b191b712009f37de4421f5c9fa93606d22fc0b4ecacd0d97f3b3bb941b",
+  "data": {
+    "complete": true,
+    "ok": true,
+    "mode": "performance-inspect",
+    "baseline": false,
+    "versions": {
+      "node": "20.18.3",
+      "acorn": "8.14.0",
+      "ada": "2.9.2",
+      "ares": "1.34.4",
+      "base64": "0.5.2",
+      "brotli": "1.0.9",
+      "cjs_module_lexer": "1.4.1",
+      "cldr": "44.1",
+      "icu": "74.2",
+      "llhttp": "8.1.2",
+      "modules": "130",
+      "napi": "9",
+      "nghttp2": "1.61.0",
+      "openssl": "0.0.0",
+      "simdutf": "5.6.4",
+      "tz": "2024a",
+      "undici": "6.21.1",
+      "unicode": "15.1",
+      "uv": "1.46.0",
+      "uvwasi": "0.0.21",
+      "v8": "13.0.245.25-electron.0",
+      "zlib": "1.3.0.1-motley",
+      "electron": "33.4.11",
+      "chrome": "130.0.6723.191"
+    },
+    "results": [
+      {
+        "name": "locked-electron-runtime",
+        "status": "PASS"
+      },
+      {
+        "name": "production-webpreferences",
+        "status": "PASS"
+      },
+      {
+        "name": "observed-turn-data-protocol",
+        "value": 2,
+        "status": "PASS",
+        "required": 2
+      },
+      {
+        "name": "real-bridge-and-ipc",
+        "status": "PASS"
+      },
+      {
+        "name": "production-test-exports-boundary",
+        "status": "PASS"
+      },
+      {
+        "name": "interactive-isolated-world",
+        "status": "PASS"
+      }
+    ],
+    "failures": [],
+    "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+    "temporaryUserData": "<isolated-user-data>",
+    "performance": {
+      "scope": "Computer Use observation; real production main/preload, isolated public state, external network denied. Tool observation intervals are NOT input latency or FPS.",
+      "sampleHash": null,
+      "scenario": "sc-jianyan1-1127-shaosong",
+      "root": "<user-profile>\\Desktop\\tianming-perf-round1",
+      "cpuProfiles": [
+        {
+          "name": "cpu-1.json",
+          "rendererEndMs": 56014.29999999702,
+          "samples": 12723
+        },
+        {
+          "name": "cpu-2.json",
+          "rendererEndMs": 76056.09999999776,
+          "samples": 11846
+        },
+        {
+          "name": "cpu-3.json",
+          "rendererEndMs": 96060.5,
+          "samples": 11860
+        },
+        {
+          "name": "cpu-4.json",
+          "rendererEndMs": 143786.29999999702,
+          "samples": 16839
+        },
+        {
+          "name": "cpu-5.json",
+          "rendererEndMs": 164461.79999999702,
+          "samples": 12561
+        },
+        {
+          "name": "cpu-6.json",
+          "rendererEndMs": 188933.09999999776,
+          "samples": 14813
+        },
+        {
+          "name": "cpu-7.json",
+          "rendererEndMs": 237996.09999999776,
+          "samples": 29408
+        },
+        {
+          "name": "cpu-8.json",
+          "rendererEndMs": 257975,
+          "samples": 11907
+        },
+        {
+          "name": "cpu-9.json",
+          "rendererEndMs": 277966.299999997,
+          "samples": 11876
+        },
+        {
+          "name": "cpu-10.json",
+          "rendererEndMs": 309047.19999999925,
+          "samples": 17958
+        },
+        {
+          "name": "cpu-11.json",
+          "rendererEndMs": 347844.799999997,
+          "samples": 23081
+        },
+        {
+          "name": "cpu-12.json",
+          "rendererEndMs": 371258.59999999776,
+          "samples": 13887
+        }
+      ],
+      "trace": {
+        "events": [
+          {
+            "type": "pointerup",
+            "at": 101503.39999999851,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 11.800000000745058
+          },
+          {
+            "type": "click",
+            "at": 101504,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 11.199999999254942
+          },
+          {
+            "type": "pointerup",
+            "at": 123999.19999999925,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 8.099999997764826
+          },
+          {
+            "type": "click",
+            "at": 123999.39999999851,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 7.899999998509884
+          },
+          {
+            "type": "pointerup",
+            "at": 201789.79999999702,
+            "tag": "DIV",
+            "id": "tm-changelog-ov",
+            "trusted": true,
+            "nextFrameMs": 180.80000000074506
+          },
+          {
+            "type": "click",
+            "at": 201794.5,
+            "tag": "DIV",
+            "id": "tm-changelog-ov",
+            "trusted": true,
+            "nextFrameMs": 176.09999999776483
+          },
+          {
+            "type": "pointerup",
+            "at": 308224.19999999925,
+            "tag": "DIV",
+            "id": "ming-map-layer",
+            "trusted": true,
+            "nextFrameMs": 7.899999998509884
+          },
+          {
+            "type": "click",
+            "at": 308224.799999997,
+            "tag": "DIV",
+            "id": "ming-map-layer",
+            "trusted": true,
+            "nextFrameMs": 7.300000000745058
+          },
+          {
+            "type": "pointerup",
+            "at": 347651.8999999985,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 185.60000000149012
+          },
+          {
+            "type": "click",
+            "at": 347652,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 185.5
+          },
+          {
+            "type": "pointerup",
+            "at": 404777,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 143.69999999925494
+          },
+          {
+            "type": "click",
+            "at": 404777.09999999776,
+            "tag": "BUTTON",
+            "id": "",
+            "trusted": true,
+            "nextFrameMs": 143.60000000149012
+          },
+          {
+            "type": "pointerup",
+            "at": 520942.3999999985,
+            "tag": "DIV",
+            "id": "ming-map-layer",
+            "trusted": true,
+            "nextFrameMs": 5.800000000745058
+          },
+          {
+            "type": "click",
+            "at": 520944,
+            "tag": "DIV",
+            "id": "ming-map-layer",
+            "trusted": true,
+            "nextFrameMs": 4.199999999254942
+          }
+        ],
+        "longTasks": [
+          {
+            "start": 9898.5,
+            "duration": 184
+          },
+          {
+            "start": 28110.5,
+            "duration": 1415
+          },
+          {
+            "start": 29646.79999999702,
+            "duration": 1350
+          },
+          {
+            "start": 52561.39999999851,
+            "duration": 52
+          },
+          {
+            "start": 61710.29999999702,
+            "duration": 2049
+          },
+          {
+            "start": 121709.39999999851,
+            "duration": 2281
+          },
+          {
+            "start": 184845.79999999702,
+            "duration": 52
+          },
+          {
+            "start": 184900.59999999776,
+            "duration": 53
+          },
+          {
+            "start": 194148.8999999985,
+            "duration": 56
+          },
+          {
+            "start": 200572.5,
+            "duration": 76
+          },
+          {
+            "start": 200737.3999999985,
+            "duration": 53
+          },
+          {
+            "start": 200791.79999999702,
+            "duration": 59
+          },
+          {
+            "start": 200851.29999999702,
+            "duration": 69
+          },
+          {
+            "start": 200969.59999999776,
+            "duration": 50
+          },
+          {
+            "start": 201021.09999999776,
+            "duration": 63
+          },
+          {
+            "start": 201594,
+            "duration": 103
+          },
+          {
+            "start": 201772.19999999925,
+            "duration": 243
+          },
+          {
+            "start": 241711.79999999702,
+            "duration": 5781
+          },
+          {
+            "start": 301709.5,
+            "duration": 2695
+          },
+          {
+            "start": 347606.19999999925,
+            "duration": 231
+          },
+          {
+            "start": 350580.299999997,
+            "duration": 98
+          },
+          {
+            "start": 361709.799999997,
+            "duration": 2012
+          },
+          {
+            "start": 404776.299999997,
+            "duration": 196
+          },
+          {
+            "start": 404990.8999999985,
+            "duration": 104
+          },
+          {
+            "start": 407630.09999999776,
+            "duration": 54
+          },
+          {
+            "start": 421719.3999999985,
+            "duration": 1978
+          },
+          {
+            "start": 541715.3999999985,
+            "duration": 2672
+          }
+        ],
+        "timings": {},
+        "started": 9869.099999997765,
+        "complete": false,
+        "perf": {
+          "map.labelCollision": {
+            "count": 3,
+            "sum": 2.7,
+            "avg": 0.9,
+            "min": 0.3,
+            "p50": 0.5,
+            "p95": 1.9,
+            "p99": 1.9,
+            "max": 1.9
+          }
+        },
+        "work": {
+          "counters": {
+            "map.labelGridLookups": 549,
+            "map.labelPairChecks": 84
+          },
+          "gauges": {},
+          "activeSpans": []
+        }
+      },
+      "complete": true
+    }
+  }
+}

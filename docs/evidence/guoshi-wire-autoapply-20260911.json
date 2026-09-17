@@ -1,0 +1,586 @@
+{
+  "schema": 1,
+  "scope": "Local Guoshi provider recovery and full-permission application; isolated synthetic HTTP and Electron, no player data or external delivery.",
+  "branch": "codex/fix-guoshi-response-autoapply",
+  "base": "c08478b5e8f7b430fed88c7e6c324d6fb7c06efa",
+  "generatedAt": "2026-09-11T16:13:32.341Z",
+  "sources": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "bytes": 7292,
+      "sha256": "866e1afa9325f27d20e3db813d1fc589a98e5ed5cbca58fc55e10a26026e7aae"
+    },
+    {
+      "file": "scripts/electron/authoring-autoapply-cases.cjs",
+      "bytes": 13974,
+      "sha256": "ea0d86a238313854a9ed6cb991d4424fefe201e75d373db0b58bce4146beab61"
+    },
+    {
+      "file": "scripts/electron/authoring-recovery-cases.cjs",
+      "bytes": 18602,
+      "sha256": "875b55ea35904d79670b65403d2b36a3279ff8b1e2b0d5a806fbe9196224cf65"
+    },
+    {
+      "file": "scripts/electron/authoring-stream-cases.cjs",
+      "bytes": 11708,
+      "sha256": "00275775753abc3424101b7c14618354bacf638b1b1d6d7e4eee5e5b4ac2c66e"
+    },
+    {
+      "file": "scripts/electron/bridge-main.cjs",
+      "bytes": 11208,
+      "sha256": "cda969c185d1f1b2d68887fbca85ff9165a473009bfc270297384cff46a276ac"
+    },
+    {
+      "file": "scripts/verify-electron-bridge.js",
+      "bytes": 4356,
+      "sha256": "963ffba7f025e9237ecb218d6977dc44c5047458d377193d36fcd2ca04945feb"
+    },
+    {
+      "file": "web/.hot-update-manifest.json",
+      "bytes": 182746,
+      "sha256": "3b227369a182cb5b3d04f394ca8e248fb7bb132ef8a3b5dac9435f6df8098fae"
+    },
+    {
+      "file": "web/editor-authoring-agent-provider.js",
+      "bytes": 48856,
+      "sha256": "d7bfd1522aaae27fba5ee39bfec3fffe49aadd5f167afe3eed2bb28f671c03ac"
+    },
+    {
+      "file": "web/editor-authoring-agent-ui.js",
+      "bytes": 220808,
+      "sha256": "dc356dd395b0f645e1aa212a7dc86900c2050594624fd816b76a12e0976f403e"
+    },
+    {
+      "file": "web/editor-authoring-agent.js",
+      "bytes": 308720,
+      "sha256": "4441103f4b62872acf2d61175843636ef053e8ad833d84424406267ab5781978"
+    },
+    {
+      "file": "web/editor.html",
+      "bytes": 184687,
+      "sha256": "7559d651aec5cf1e1348e856528b980ba21a08c6f934000ade352a9f8e099d37"
+    },
+    {
+      "file": "web/preview/scenario-editor-reset-preview.html",
+      "bytes": 32310,
+      "sha256": "ab1f2b398fb78685d5525bb414066c627b685d60f2bc77340b3e5da36000010e"
+    },
+    {
+      "file": "web/scripts/smoke-authoring-provider-stream.js",
+      "bytes": 13959,
+      "sha256": "38479707238a6dc441eee50889ec88be9ef3dd99cd9cd90975a586af5cf16c82"
+    },
+    {
+      "file": "web/scripts/smoke-authoring-relay-continuation.js",
+      "bytes": 13827,
+      "sha256": "55f2ce33b0f7e8ed7e6b92f56b7655818345b8890b073979d7cf3ccdc3aa9686"
+    },
+    {
+      "file": "web/scripts/smoke-authoring-wire-retry.js",
+      "bytes": 12301,
+      "sha256": "9e77712694103b1dd191ad2751897d49914b20bfbbef65c9986baedbb4f7d77d"
+    }
+  ],
+  "checks": [
+    {
+      "label": "guoshi-arch-first-b2bb4f1f-d714-4671-a13d-6aa168bb99b9",
+      "at": "2026-09-11T15:31:33.341Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-arch-first-b2bb4f1f-d714-4671-a13d-6aa168bb99b9/output.log",
+      "logSha256": "e49af875ed60d256df170df6ea67a22c6181e2bbb400a465b613e8f6073572ab"
+    },
+    {
+      "label": "guoshi-autoapply-baseline-ac6ad043-0d35-47b4-86d8-66ca2dbd8328",
+      "at": "2026-09-11T15:29:44.685Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-baseline-ac6ad043-0d35-47b4-86d8-66ca2dbd8328/output.log",
+      "logSha256": "13246248b66872fd00455504fe250d5b570d22623f05d6f8744443185e7f82fd",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/ba0f4f52-3cd0-4cdd-8458-1501548f9672/report.json",
+        "sha256": "56661b1eafe4f3b3f00c650358e25f253b2aee89779dd4d93921a244c9a3f0e3",
+        "ok": false,
+        "cases": 16,
+        "failures": [
+          "Error: full permission: approved plan execution commits without a second approval\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n100 !== 450\n\n    at applied (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:40:61)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:43:112\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:7:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:41:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:124:48)\n\nside-effect-only completed work commits without redundant approval in full permission\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ {\n+   adminHierarchy: {},\n+   characters: [],\n+   customPrompt: '保留玩家手写',\n+   factions: [],\n+   fiscalConfig: {\n+     treasury: 100\n+   },\n+   gameSettings: {\n+     daysPerTurn: 30,\n+     startYear: 1207\n+   },\n+   id: 'auto-memory',\n+   labels: [],\n+   name: '隔离放行案卷'\n+ }\n- null\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:76:146\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:7:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:75:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:124:48)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:82:28)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:124:48)"
+        ]
+      }
+    },
+    {
+      "label": "guoshi-autoapply-candidate-e36d5ee2-5111-440c-baa5-9188724e1784",
+      "at": "2026-09-11T16:01:24.037Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-candidate-e36d5ee2-5111-440c-baa5-9188724e1784/output.log",
+      "logSha256": "f8f6c6e5e2a59994afd891617ec32df29fe4478487d35c32b1671d466d95d04f",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/c19ae14c-9c54-41d0-b64a-4dc49b82748f/report.json",
+        "sha256": "36ab08ee5a2cbcaec0b7b1ffba88d2b2208a9abe231671c88b6b7b761073f39f",
+        "ok": true,
+        "cases": 23,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-autoapply-expanded-97e02023-65bd-4cff-8170-2de0c32a0495",
+      "at": "2026-09-11T15:36:07.704Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-expanded-97e02023-65bd-4cff-8170-2de0c32a0495/output.log",
+      "logSha256": "e2d12a9d72eb45ed4d642a8674441dc519f8cdf67f356204892a0b7a21760487",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/cb01ba35-75b7-4461-9540-8a148430076d/report.json",
+        "sha256": "3ba53df90a667ed7c42573561b3707f612ce3e5a06845fd696456bf06bb36532",
+        "ok": false,
+        "cases": 20,
+        "failures": [
+          "Error: an unconfirmed editor commit remains a visible failure, not an applied result\nError: An object could not be cloned.\n    at IpcRendererInternal.send (node:electron/js2c/sandbox_bundle:2:121908)\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121486)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-autoapply-cases.cjs:94:28)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:124:48)"
+        ]
+      }
+    },
+    {
+      "label": "guoshi-autoapply-final-f4d2ffaf-9885-4af6-9216-d14c24a6d95b",
+      "at": "2026-09-11T15:38:15.585Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-final-f4d2ffaf-9885-4af6-9216-d14c24a6d95b/output.log",
+      "logSha256": "0220617b454200474b8e0102b0543851e0f430052ae802e4de2b565d3604a37e",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/78972f2c-063e-47d9-9008-93827b6e3ed4/report.json",
+        "sha256": "f24b65e2f14044d32538a0027c74bda8b91573c19f8b33e00b28233fa7914439",
+        "ok": true,
+        "cases": 21,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-autoapply-fixed-001e1682-0309-41df-8a46-f4900301a750",
+      "at": "2026-09-11T15:31:14.556Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-fixed-001e1682-0309-41df-8a46-f4900301a750/output.log",
+      "logSha256": "8f602d7dfa763afcb41d4f4952d86f31b0121462418eaacbe07b7ce02f85f902",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/ec8985ea-fb2b-4eca-8433-347fa96d66c0/report.json",
+        "sha256": "20ff879d914c03f114bfa7dd1fb5c560db10a9ae7370b8edf2ea904574d47a2f",
+        "ok": true,
+        "cases": 18,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-autoapply-guarded-08ccfaa3-0cbc-4132-943a-170c817a3e30",
+      "at": "2026-09-11T15:48:34.010Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-guarded-08ccfaa3-0cbc-4132-943a-170c817a3e30/output.log",
+      "logSha256": "4e55c9a13d950828275d9cf1368172ab469ce4d269257fb7c608c56e1606577a",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/da1f977d-4f01-461a-b303-dabb5632e2f7/report.json",
+        "sha256": "b5265a40171bf0735cad04c6524477247db53448ed3039dfd9d893c1e59604cb",
+        "ok": true,
+        "cases": 22,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-autoapply-visible-27d7167d-df5a-47bb-aad0-c832f67dc85c",
+      "at": "2026-09-11T15:56:42.970Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-autoapply",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-autoapply-visible-27d7167d-df5a-47bb-aad0-c832f67dc85c/output.log",
+      "logSha256": "fcab5db0cb8eec45791866de9902936b1243f140b636f3bd16986b510741548f",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/2df9815a-1900-49cd-a014-f96b20f8b64e/report.json",
+        "sha256": "9d93a0e53429d76500dac4072882055f3c14993903341dac332833f28e78cad2",
+        "ok": true,
+        "cases": 23,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-baseline-sync-5205bab4-4c71-4bda-9267-4eea4d74305a",
+      "at": "2026-09-11T15:38:19.172Z",
+      "command": "scripts/sync-hot-baseline.js --write --version 1.3.4.11 --asset-root C:\\Users\\37814\\Desktop\\tianming --temp-root E:\\tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-baseline-sync-5205bab4-4c71-4bda-9267-4eea4d74305a/output.log",
+      "logSha256": "4f8f0b499680bb1693f8587454992a856a5f747dc2794a580169f6687d679bc3"
+    },
+    {
+      "label": "guoshi-candidate-arch-984d86ad-0fb0-4968-af50-b42c093083ce",
+      "at": "2026-09-11T16:01:34.975Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-candidate-arch-984d86ad-0fb0-4968-af50-b42c093083ce/output.log",
+      "logSha256": "ea8343c11d8c1783c588211850f1f7e0081923e78a1380ec43ce64868b5f4e27"
+    },
+    {
+      "label": "guoshi-candidate-baseline-check-8da53c35-f8be-496b-9629-9cf12f44a8b5",
+      "at": "2026-09-11T16:03:15.477Z",
+      "command": "scripts/sync-hot-baseline.js --check --version 1.3.4.11 --asset-root C:\\Users\\37814\\Desktop\\tianming --temp-root E:\\tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-candidate-baseline-check-8da53c35-f8be-496b-9629-9cf12f44a8b5/output.log",
+      "logSha256": "259debaa4c4658b149c4d95bc9a8675fea0ef4c2ebd512f2d79779b8cbbe4435"
+    },
+    {
+      "label": "guoshi-candidate-release-85d68d81-c16d-4b08-a0ab-6953173a089f",
+      "at": "2026-09-11T16:02:34.271Z",
+      "command": "scripts/verify-release-contract.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-candidate-release-85d68d81-c16d-4b08-a0ab-6953173a089f/output.log",
+      "logSha256": "838231e21e55f094d3dd4ad6863d9396eefbd85172f33e974710ac896c9ac838"
+    },
+    {
+      "label": "guoshi-electron-boundaries-05c9b36d-675b-4fde-9989-c753b99f4c22",
+      "at": "2026-09-11T15:51:07.812Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-boundaries",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-electron-boundaries-05c9b36d-675b-4fde-9989-c753b99f4c22/output.log",
+      "logSha256": "e091f5e127f616e77d7b79cf592791cdce231b0bae478a155fa5aa0abef7228c",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/49f4ea39-9492-47f3-bd18-e508a8597a25/report.json",
+        "sha256": "f34eea708ea7f398b3f9861ca46f8ad4c996274dc4579865b858c342a5d18661",
+        "ok": true,
+        "cases": 20,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-electron-continuation-ed77714d-a3d4-4c7d-a698-2e709ecabbf6",
+      "at": "2026-09-11T15:59:47.017Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-continuation",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-electron-continuation-ed77714d-a3d4-4c7d-a698-2e709ecabbf6/output.log",
+      "logSha256": "d4a24db9360096fc05d75b99e236c100fb360c78805d1914710e8c853f7621ec",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/ad61c612-530b-45d6-8027-863eca135261/report.json",
+        "sha256": "ef46d087da46b07b9181e384d369ec253e344d1322240585bb16900df266c055",
+        "ok": true,
+        "cases": 24,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-electron-recovery-05e38f9a-17cd-4d30-8bb9-510b4d74ba2d",
+      "at": "2026-09-11T15:52:31.458Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-recovery",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-electron-recovery-05e38f9a-17cd-4d30-8bb9-510b4d74ba2d/output.log",
+      "logSha256": "bbf605dc6a04393b74ed6d7b7040bd19edebfbdd3e7a195ea5d5fcbd2caf0c01",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/c6668c02-68e5-4d62-8dd6-aa50e58cd281/report.json",
+        "sha256": "5dab26bf2f64f904b4781f49e603c23af0fd7feba7c51ff1e86954ca7b3d2cc6",
+        "ok": false,
+        "cases": 16,
+        "failures": [
+          "Error: memory-only approval failure leaves live scenario, pending work and memory storage intact\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-recovery-cases.cjs:132:12\n    at async check (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:34)\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-recovery-cases.cjs:60:41)\n    at async module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-recovery-cases.cjs:129:3)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:47)\n    at module.exports (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\authoring-recovery-cases.cjs:141:89)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:122:47)"
+        ]
+      }
+    },
+    {
+      "label": "guoshi-electron-recovery-final-aea86e4d-1bfe-450c-b12d-522630c14803",
+      "at": "2026-09-11T15:54:59.966Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-recovery",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-electron-recovery-final-aea86e4d-1bfe-450c-b12d-522630c14803/output.log",
+      "logSha256": "92d72b5477cb042bc081b2b922720b1b7b969d24ef0f03c3cef5a4e55fc4c240",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/df0ddf20-db5f-4b41-8668-5f6a8cf0e885/report.json",
+        "sha256": "a2169a197d7687b112b7f6e5cdc72dd362299556ea9587ca499b750ec7fb96f6",
+        "ok": true,
+        "cases": 17,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-electron-stream-42fa66a4-c270-4e16-9bdd-7a41e20ecb42",
+      "at": "2026-09-11T15:49:32.436Z",
+      "command": "scripts/verify-electron-bridge.js --authoring-stream",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-electron-stream-42fa66a4-c270-4e16-9bdd-7a41e20ecb42/output.log",
+      "logSha256": "c4e1ddfdaabb0906320d758a5a463cbde3fbcc5c1f5aa600785ee087e17d1682",
+      "electron": {
+        "file": "web/dev-tools/electron-bridge/75366542-a3c7-4acc-8e8b-aefcbfa7963f/report.json",
+        "sha256": "3e6b5e27dbb92c1239769442c66afd025ce032d99d79f24c2ed45ac91e2ef369",
+        "ok": true,
+        "cases": 12,
+        "failures": []
+      }
+    },
+    {
+      "label": "guoshi-final-arch-d3ae3687-cb06-4edb-9bb2-a9030aad9ca2",
+      "at": "2026-09-11T15:49:08.918Z",
+      "command": "web/scripts/lint-arch-all.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-final-arch-d3ae3687-cb06-4edb-9bb2-a9030aad9ca2/output.log",
+      "logSha256": "0c1fc2336f6e7e7187b5eaa94c7e69cc936a420f1ad54445be5a34df131b1bf4"
+    },
+    {
+      "label": "guoshi-final-baseline-sync-7ba43f33-ae34-4dcc-aac5-3fa2b83a9650",
+      "at": "2026-09-11T16:00:55.650Z",
+      "command": "scripts/sync-hot-baseline.js --write --version 1.3.4.11 --asset-root C:\\Users\\37814\\Desktop\\tianming --temp-root E:\\tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-final-baseline-sync-7ba43f33-ae34-4dcc-aac5-3fa2b83a9650/output.log",
+      "logSha256": "10a78dc80264a8b88f39f7de10485ecf9ff791c147fb82f1490ccbaae5fb1a61"
+    },
+    {
+      "label": "guoshi-full-acceptance-435ad70d-b1f2-49d7-87cf-c92a715e40c7",
+      "at": "2026-09-11T16:11:37.303Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-full-acceptance-435ad70d-b1f2-49d7-87cf-c92a715e40c7/output.log",
+      "logSha256": "4b3f88a68bb0708b0eb173ee98f2d6b65ee701abee28f1a16bf906b3d77a08d4",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-vCogPA/smoke-report.json",
+        "sha256": "68e77102963728df8509a73379a8f6ea9759876934a04946576235b5fadf6137",
+        "summary": {
+          "selected": 948,
+          "pass": 946,
+          "fail": 0,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "failures": [],
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        }
+      }
+    },
+    {
+      "label": "guoshi-full-f572e650-aab8-48e7-8f6f-9431d90e078a",
+      "at": "2026-09-11T15:43:04.571Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-full-f572e650-aab8-48e7-8f6f-9431d90e078a/output.log",
+      "logSha256": "9e9a402eb9b11cfd7f8f7248d93aa9accd05bedae9e301a3a3fc4fc497934e22",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-b9bdVn/smoke-report.json",
+        "sha256": "b559878456878d9c9124844b072b3853bc88d2bfb4d60c7f78788d32e3af0f79",
+        "summary": {
+          "selected": 948,
+          "pass": 945,
+          "fail": 1,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "failures": [
+          {
+            "name": "smoke-workshop-lock-recovery.js",
+            "ms": 26946,
+            "exit": 1,
+            "output": "PASS one-shot ancestor inspection rejects denial and broken links without modifying package/index\nINTERRUPTED owner-identity-published\nPASS owner crash restarts twice without changing package/index\nINTERRUPTED ticket-published\nPASS ticket crash restarts twice without changing package/index\nINTERRUPTED private-owner-before-write\nPASS private-owner crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nPASS published crash restarts twice without changing package/index\nINTERRUPTED complete-fixed-owner-published\nINTERRUPTED reclaimer-during-dead-owner-removal\nPASS reclaimer death is itself recoverable, without fixed recovery sentinel\nINTERRUPTED journal-published\nPASS unproven legacy recovery marker preserves journal and original data\nPASS unknown legacy empty lock is never stolen or deleted\nPASS proven dead legacy PID migration\nPASS publication failure leaves package/index unchanged and can retry\nPASS release after commit is warning, same-process retry cleans ownership\nPASS release-claim after commit is warning, same-process retry cleans ownership\nPASS live owner cannot be stolen by multiple contenders\nSTRESS_DIAGNOSTIC {\"attempts\":154,\"commits\":17,\"busy\":137,\"io\":{\"lstatSync\":{\"count\":17270,\"ms\":11906.420399999859},\"mkdirSync\":{\"count\":616,\"ms\":1390.2673999999843},\"readdirSync\":{\"count\":1114,\"ms\":1781.8401000000104},\"rmSync\":{\"count\":154,\"ms\":1185.7144000000005},\"existsSync\":{\"count\":136,\"ms\":110.41700000001583},\"readFileSync\":{\"count\":85,\"ms\":641.6887000000065},\"openSync\":{\"count\":17,\"ms\":56.11589999999114},\"fsyncSync\":{\"count\":17,\"ms\":497.3100000000022},\"linkSync\":{\"count\":17,\"ms\":70.77580000000307},\"unlinkSync\":{\"count\":34,\"ms\":99.34590000000162}}}\nSTRESS_DIAGNOSTIC {\"attempts\":159,\"commits\":13,\"busy\":146,\"io\":{\"lstatSync\":{\"count\":17439,\"ms\":11947.590300000056},\"mkdirSync\":{\"count\":636,\"ms\":1690.0008000000316},\"readdirSync\":{\"count\":1160,\"ms\":1839.772899999965},\"rmSync\":{\"count\":159,\"ms\":1414.8472000000154},\"existsSync\":{\"count\":104,\"ms\":70.44990000000672},\"readFileSync\":{\"count\":65,\"ms\":278.19800000000265},\"openSync\":{\"count\":13,\"ms\":29.06880000000558},\"fsyncSync\":{\"count\":13,\"ms\":355.1462000000021},\"linkSync\":{\"count\":13,\"ms\":60.28929999999741},\"unlinkSync\":{\"count\":26,\"ms\":52.87880000000007}}}\nSTRESS_DIAGNOSTIC {\"attempts\":92,\"commits\":25,\"busy\":67,\"io\":{\"lstatSync\":{\"count\":12211,\"ms\":8376.333499999946},\"mkdirSync\":{\"count\":368,\"ms\":640.9989999999998},\"readdirSync\":{\"count\":643,\"ms\":1136.764699999991},\"rmSync\":{\"count\":92,\"ms\":651.2353000000032},\"existsSync\":{\"count\":200,\"ms\":158.87989999999098},\"readFileSync\":{\"count\":125,\"ms\":786.2002999999997},\"openSync\":{\"count\":25,\"ms\":49.26299999999901},\"fsyncSync\":{\"count\":25,\"ms\":557.8198999999954},\"linkSync\":{\"count\":25,\"ms\":97.9316999999985},\"unlinkSync\":{\"count\":50,\"ms\":115.97629999999191}}}\nSTRESS_DIAGNOSTIC {\"attempts\":133,\"commits\":25,\"busy\":108,\"io\":{\"lstatSync\":{\"count\":16525,\"ms\":11522.168999999996},\"mkdirSync\":{\"count\":532,\"ms\":1473.9120999999923},\"readdirSync\":{\"count\":969,\"ms\":1476.0009000000064},\"rmSync\":{\"count\":133,\"ms\":962.2128000000084},\"existsSync\":{\"count\":200,\"ms\":150.8012000000117},\"readFileSync\":{\"count\":125,\"ms\":771.0767999999857},\"openSync\":{\"count\":25,\"ms\":62.86670000000208},\"fsyncSync\":{\"count\":25,\"ms\":536.0467000000044},\"linkSync\":{\"count\":25,\"ms\":116.23450000000048},\"unlinkSync\":{\"count\":50,\"ms\":116.98369999998897}}}\nAssertionError [ERR_ASSERTION]: STRESS_DIAGNOSTIC {\"attempts\":154,\"commits\":17,\"busy\":137,\"io\":{\"lstatSync\":{\"count\":17270,\"ms\":11906.420399999859},\"mkdirSync\":{\"count\":616,\"ms\":1390.2673999999843},\"readdirSync\":{\"count\":1114,\"ms\":1781.8401000000104},\"rmSync\":{\"count\":154,\"ms\":1185.7144000000005},\"existsSync\":{\"count\":136,\"ms\":110.41700000001583},\"readFileSync\":{\"count\":85,\"ms\":641.6887000000065},\"openSync\":{\"count\":17,\"ms\":56.11589999999114},\"fsyncSync\":{\"count\":17,\"ms\":497.3100000000022},\"linkSync\":{\"count\":17,\"ms\":70.77580000000307},\"unlinkSync\":{\"count\":34,\"ms\":99.34590000000162}}}\nC:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:84\r\n        if (Date.now() > deadline) throw new Error('stress admission deadline exceeded');\r\n                                   ^\r\n\r\nError: stress admission deadline exceeded\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:84:42)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n\n\n1 !== 0\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:165:39\n    at Array.forEach (<anonymous>)\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-workshop-lock-recovery.js:165:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+          }
+        ],
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        }
+      }
+    },
+    {
+      "label": "guoshi-full-final-14bd9a87-1163-4d10-83fb-1a1d250b8074",
+      "at": "2026-09-11T16:06:27.262Z",
+      "command": "web/scripts/ci-smokes.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-full-final-14bd9a87-1163-4d10-83fb-1a1d250b8074/output.log",
+      "logSha256": "7508d411a8d4aefad91860baa26fed9c478a63b624df22300073dd46a0fcfbb9",
+      "full": {
+        "file": "web/dev-tools/arch-guard/ci-MwNsOh/smoke-report.json",
+        "sha256": "005468d1826eef56329eedb28983acad75b1bcffc5ee7f7a952bfbdf9a662d13",
+        "summary": {
+          "selected": 948,
+          "pass": 945,
+          "fail": 1,
+          "waived": 2,
+          "flaky": 0,
+          "suspect": 0,
+          "skipped": 0
+        },
+        "failures": [
+          {
+            "name": "smoke-authoring-relay-continuation.js",
+            "ms": 556,
+            "exit": 1,
+            "output": "PASS relay nested textual tool envelope edits the actual detached draft and finishes\nPASS legacy native function_call and textual arguments both use actual object inputs\nPASS malformed argument anywhere prevents execution of the entire textual batch\nPASS plain success claims and quoted examples never become successful tool execution\nPASS HTTP 200 without tools switches the next bounded round to JSON compatibility and retains partial work\nPASS no-tool allowance resets only after verified progress, not repeated empty replies\nPASS read-only no-tool recovery asks for its own terminal tool and never authorizes writes\nPASS closed relay connection has one retry owner, explicit failure and a usable partial checkpoint\nPASS connection self-test cannot advertise native tools when it only received prose\nFAIL native unsupported-tools fallback also has bounded network retries and preserves the error category\nAssertionError [ERR_ASSERTION]: The validation function is expected to return \"true\". Received false\n\nCaught error:\n\nError: 未收到完整 API 响应：连接可能被中转关闭、网络中断，或地址/跨域配置异常。请检查中转可用性；这不是“模型未调用工具”。（本轮已尝试 5 次，已停止自动重试；已完成的草稿保留，可待连接恢复后继续。）\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-relay-continuation.js:99:5\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-relay-continuation.js:22:39)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-relay-continuation.js:97:3\nPASS JSON compatibility retains each user image, full schemas and separate system instructions for all providers\nPASS textual calls cannot escape issued tools or read-only permissions\nPASS normal ping still passes and abort never becomes a compatibility retry\nPASS empty or invalid admin hierarchy renders an honest empty state without changing source data\n{\"pass\":13,\"fail\":1,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}\n"
+          }
+        ],
+        "scheduling": {
+          "parallelJobs": 8,
+          "resourceIsolated": [
+            "smoke-full-turn-flow.js",
+            "smoke-workshop-lock-recovery.js"
+          ]
+        }
+      }
+    },
+    {
+      "label": "guoshi-hot-builder-gates-1a614722-9c82-45d5-82f1-d4fbe011e366",
+      "at": "2026-09-11T15:52:48.232Z",
+      "command": "web/scripts/verify-hot-builder-gates.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-hot-builder-gates-1a614722-9c82-45d5-82f1-d4fbe011e366/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99"
+    },
+    {
+      "label": "guoshi-hot-check-00f4b0d0-48bd-4568-9695-337ee9373c00",
+      "at": "2026-09-11T15:56:12.159Z",
+      "command": "scripts/sync-hot-baseline.js --check --version 1.3.4.11 --asset-root C:\\Users\\37814\\Desktop\\tianming --temp-root E:\\tianming-relief-temp",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-hot-check-00f4b0d0-48bd-4568-9695-337ee9373c00/output.log",
+      "logSha256": "259debaa4c4658b149c4d95bc9a8675fea0ef4c2ebd512f2d79779b8cbbe4435"
+    },
+    {
+      "label": "guoshi-hot-fixtures-9dd5165f-26e4-44aa-aec3-f9cb309fe9f8",
+      "at": "2026-09-11T15:51:24.603Z",
+      "command": "web/scripts/verify-hotupdate-rebaseline.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-hot-fixtures-9dd5165f-26e4-44aa-aec3-f9cb309fe9f8/output.log",
+      "logSha256": "120f4c6a5ea6ab922e3eb21709cbaab15568d06f0bde4a55ae97c391c78ed046"
+    },
+    {
+      "label": "guoshi-lock-isolated-2c2e5cba-7709-4c95-bbfb-be16d47773e2",
+      "at": "2026-09-11T15:46:45.122Z",
+      "command": "web/scripts/smoke-workshop-lock-recovery.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-lock-isolated-2c2e5cba-7709-4c95-bbfb-be16d47773e2/output.log",
+      "logSha256": "3d8f1492380687615bc0b91e72737b6f260da06529929839852bb09d23c7927f"
+    },
+    {
+      "label": "guoshi-parity-83fa7ab3-6ac6-40f1-b7a1-a78915c1dc2a",
+      "at": "2026-09-11T15:42:28.006Z",
+      "command": "web/scripts/verify-official-scenario-parity.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-parity-83fa7ab3-6ac6-40f1-b7a1-a78915c1dc2a/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e"
+    },
+    {
+      "label": "guoshi-provider-final-db83718d-e7ec-446b-9fee-1d83c327d956",
+      "at": "2026-09-11T16:00:19.923Z",
+      "command": "web/scripts/smoke-authoring-provider-stream.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-provider-final-db83718d-e7ec-446b-9fee-1d83c327d956/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f"
+    },
+    {
+      "label": "guoshi-provider-regression-4cfec888-d348-45d0-b4ef-c86dd68d4485",
+      "at": "2026-09-11T15:29:39.539Z",
+      "command": "web/scripts/smoke-authoring-provider-stream.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-provider-regression-4cfec888-d348-45d0-b4ef-c86dd68d4485/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f"
+    },
+    {
+      "label": "guoshi-relay-final-497838f1-dd2f-45f5-8ce3-07707a304f59",
+      "at": "2026-09-11T16:08:53.167Z",
+      "command": "web/scripts/smoke-authoring-relay-continuation.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-relay-final-497838f1-dd2f-45f5-8ce3-07707a304f59/output.log",
+      "logSha256": "2dcb41fe6b5a71c8cd33972241a129de5e29ae986038d4d9a5306dcda060e7de"
+    },
+    {
+      "label": "guoshi-release-contract-cc0b392e-4119-4d72-81a4-4b4f9f768dd9",
+      "at": "2026-09-11T15:48:14.895Z",
+      "command": "scripts/verify-release-contract.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-release-contract-cc0b392e-4119-4d72-81a4-4b4f9f768dd9/output.log",
+      "logSha256": "b30475b8a3f500d8ce529393f7819306fbccc1a5b451f2d747eab775eee659ca"
+    },
+    {
+      "label": "guoshi-response-final-a7f9f1ed-a70a-4b5f-aa89-9605431589bb",
+      "at": "2026-09-11T16:00:21.482Z",
+      "command": "web/scripts/smoke-authoring-response-recovery.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-response-final-a7f9f1ed-a70a-4b5f-aa89-9605431589bb/output.log",
+      "logSha256": "2f04d4e911b9b962a16958c5aa7d4bf829d8edabc85eab0d9b08b83e9c9a6525"
+    },
+    {
+      "label": "guoshi-response-regression-9689dc4a-214e-46d7-8b5e-d21955607a8c",
+      "at": "2026-09-11T15:29:45.033Z",
+      "command": "web/scripts/smoke-authoring-response-recovery.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-response-regression-9689dc4a-214e-46d7-8b5e-d21955607a8c/output.log",
+      "logSha256": "2f04d4e911b9b962a16958c5aa7d4bf829d8edabc85eab0d9b08b83e9c9a6525"
+    },
+    {
+      "label": "guoshi-wire-accounting-baseline-c0f1e841-2103-4936-8a57-a1be4169876b",
+      "at": "2026-09-11T15:58:16.733Z",
+      "command": "web/scripts/smoke-authoring-wire-retry.js",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-wire-accounting-baseline-c0f1e841-2103-4936-8a57-a1be4169876b/output.log",
+      "logSha256": "9275d427cdcd2b4293d55b87d2ac52b2ea951bc506744120b3351e35e1f05056"
+    },
+    {
+      "label": "guoshi-wire-baseline-c8205d03-7178-4201-84f9-a1e330c4ba9e",
+      "at": "2026-09-11T15:20:30.686Z",
+      "command": "web/scripts/smoke-authoring-wire-retry.js --source-ref c08478b5",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-wire-baseline-c8205d03-7178-4201-84f9-a1e330c4ba9e/output.log",
+      "logSha256": "825f15749e99b2fce665aae55d74c6c83e785fd842e8f72dff6b03b74b96740c"
+    },
+    {
+      "label": "guoshi-wire-final-fd5c5eb9-5e45-4466-9df5-337b5599a719",
+      "at": "2026-09-11T15:59:01.074Z",
+      "command": "web/scripts/smoke-authoring-wire-retry.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-wire-final-fd5c5eb9-5e45-4466-9df5-337b5599a719/output.log",
+      "logSha256": "436abafd76795f4f528f23fcbe85e5a41d196b037d273a4d0fd8adcd26d12ef6"
+    },
+    {
+      "label": "guoshi-wire-fixed-0f8239ba-df81-492a-8d76-d24031c899af",
+      "at": "2026-09-11T15:22:45.975Z",
+      "command": "web/scripts/smoke-authoring-wire-retry.js",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/guoshi-wire-fixed-0f8239ba-df81-492a-8d76-d24031c899af/output.log",
+      "logSha256": "2eabcf392495f86d15b06ec423815a82003452e15b17f0862afdf0610ab7f13b"
+    }
+  ]
+}

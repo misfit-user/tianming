@@ -19,7 +19,7 @@ function assert(cond, msg) {
 
 console.log('smoke-endturn-speed-batch1');
 
-const infra = fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8');
+const infra = (fs.readFileSync(path.join(ROOT, 'tm-ai-infra-retry.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-ai-infra.js'), 'utf8'));
 const et = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai.js'), 'utf8');
 const mem = fs.readFileSync(path.join(ROOT, 'tm-memorials.js'), 'utf8');
 

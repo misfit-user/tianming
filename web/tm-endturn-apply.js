@@ -175,7 +175,17 @@
       // §4 sc1 写回（applyAITurnChanges + 各字段族 GM 落地·~4000 行）
       // ═══════════════════════════════════════════════════════════
       if(p1){
-        await ns.stages._applyCore_reconcile(ctx);
+        if (!TM.BuildingOrders && ctx.input.buildingOrders && ctx.input.buildingOrders.ids.length) throw new Error('营造案写回模块未加载，未执行旧版兼容写法');
+        if (TM.BuildingOrders) TM.BuildingOrders.protectOutput(GM, P, ctx.input.buildingOrders, p1);
+        var buildingTransaction = TM.BuildingOrders && TM.BuildingOrders.begin(GM, P, ctx.input.buildingOrders);
+        try {
+          if (TM.BuildingOrders) ctx.apply.buildingReceipts = TM.BuildingOrders.apply(GM, P, ctx.input.buildingOrders, p1, false);
+          await ns.stages._applyCore_reconcile(ctx);
+          if (buildingTransaction) buildingTransaction.commit();
+        } catch (buildingApplyError) {
+          if (buildingTransaction) buildingTransaction.rollback();
+          throw buildingApplyError;
+        }
 
         // v5·人物生成 B · 取消每回合 API 调用·改为玩家手动点击 pending 名时按需生成
         // scanMentionedCharacters 只允许登记 pending，不允许在回合推演中自动调用 AI 生成人物
@@ -236,14 +246,7 @@
           }
         }
 
-        // 应用 AI 返回的地图变化
-        if(p1.map_changes && P.map) {
-          try {
-            applyAIMapChanges(p1, P.map);
-          } catch(e) {
-            console.error('应用地图变化失败:', e);
-          }
-        }
+        // 地图变化在本响应的新势力登记后统一应用，见下方 map_changes。
         // 处理 NPC 自主行为（AI 报告的 NPC 独立行动）
         if (p1.npc_actions && Array.isArray(p1.npc_actions)) {
           p1.npc_actions.forEach(function(act) {
@@ -411,7 +414,7 @@
               // NPC 出逃/告老/游历——移动位置
               if (act.new_location) {
                 var _flCh = findCharByName(act.name);
-                if (_flCh) { _flCh.location = act.new_location; _flCh._locationExplicit = false; }
+                if (_flCh) { _flCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_flCh, 'character', undefined, act.new_location); _flCh._locationExplicit = false; }
               }
               if (act.behaviorType === 'flee') {
                 var _flCh2 = findCharByName(act.name);
@@ -531,7 +534,7 @@
             if (act.new_location && !mechanicallyExecuted) {
               var _nlCh = findCharByName(act.name);
               if (_nlCh && !_isSameLocation(_nlCh.location, act.new_location)) {
-                _nlCh.location = act.new_location;
+                _nlCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_nlCh, 'character', undefined, act.new_location);
                 _nlCh._locationExplicit = false;
               }
             }
@@ -1084,7 +1087,7 @@
             // 所在地变更（如被外派、流放、召回京城等）
             if (cu.new_location && typeof cu.new_location === 'string') {
               var _oldLoc = ch.location || GM._capital || '京城';
-              ch.location = cu.new_location;
+              ch.location = cu.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, cu.new_location);
               ch._locationExplicit = false; // AI设置的非编辑器显式
               if (_oldLoc !== cu.new_location) {
                 recordChange('characters', cu.name, 'location', _oldLoc, cu.new_location, cu.reason || 'AI推演');
@@ -2583,6 +2586,12 @@
             addEB('\u52BF\u529B', '\u3010\u65B0\u52BF\u529B\u7AD6\u8D77\u3011' + fc.name + '\u6210\u7ACB\uFF08' + (({military:'军镇',religious:'教门',warlord:'藩镇',foreign:'外藩',dynasty:'王朝',rebel:'义军',tribe:'部族',sect:'会党',separatist:'割据',bandit:'草寇',peasant:'民军'}[fc.type])||fc.type||'') + '\uFF09' + (fc.parentFaction?'\u2014\u2014\u8131\u79BB\u81EA' + fc.parentFaction:'') + (fc.triggerEvent?'\uFF1A' + fc.triggerEvent:''));
             if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u65B0\u52BF\u529B\u3011' + fc.name + '\u7AD6\u8D77\u3002' + (fc.reason||''), category: '\u52BF\u529B' });
           });
+        }
+
+        // 当前世界拥有地图；错误交回回合事务，不得吞掉后继续提交。
+        if(p1.map_changes) {
+          if (typeof applyAIMapChanges !== 'function') throw new Error('地图变更模块未加载，本回合未能完成写入');
+          ctx.apply.mapChanges = applyAIMapChanges(p1, GM.mapData || GM.map);
         }
 
         // ── 势力覆灭 ──
@@ -4297,6 +4306,7 @@
           var _pNameW = (P.playerInfo && P.playerInfo.characterName) || '';
           p1.cultural_works.forEach(function(w) {
             if (!w || !w.author || !w.content || !w.title) return;
+            if (typeof _tmFindPresetCulturalWork === 'function' && _tmFindPresetCulturalWork(GM,w)) return;
             // ── 玩家保护：作者是玩家——除非玩家在本回合诏令中明确命自己作，否则过滤 ──
             if (_pNameW && w.author === _pNameW) {
               // 检查 motivation 是否 commissioned（由玩家诏令命作）
@@ -4523,13 +4533,15 @@
             // 应用 currentEffects 到资源/阶层
             if (u.currentEffects && typeof u.currentEffects === 'object') {
               Object.keys(u.currentEffects).forEach(function(k) {
+                if (/^(stateTreasury|privateTreasury|guoku|neitang)(?:\.(money|grain|cloth))?$/.test(k)) {
+                  _tmRecordSemanticFailure('fiscal',u.edictId,'诏令收支须另具财务凭据，本项尚未入账');
+                  return;
+                }
                 var v = parseFloat(u.currentEffects[k]) || 0;
                 entry.totalEffects[k] = (entry.totalEffects[k] || 0) + v;
                 // 已有变量：直接应用
                 if (GM.vars && GM.vars[k]) {
                   GM.vars[k].value = Math.max(GM.vars[k].min || 0, Math.min(GM.vars[k].max || 999999999, (GM.vars[k].value || 0) + v));
-                } else if (k === 'stateTreasury' && typeof GM.stateTreasury === 'number') {
-                  GM.stateTreasury = Math.max(0, GM.stateTreasury + v);
                 }
               });
             }
@@ -5286,7 +5298,7 @@
             if (!tracker) {
               tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
             }
-            if (tracker) {
+            if (tracker && !tracker._reliefCaseId) {
               // 远方诏令——信使未送达前强制pending_delivery
               if (tracker._remoteTargets && tracker._letterIds && tracker._letterIds.length > 0) {
                 var _allDelivered = tracker._letterIds.every(function(lid) {

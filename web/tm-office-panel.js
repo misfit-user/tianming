@@ -747,7 +747,7 @@ function _npcAutoAppointVacancies() {
       if (!n) return;
       var chain = parentChain ? (parentChain + '·' + n.name) : n.name;
       (n.positions||[]).forEach(function(p) {
-        if (!p || p.holder) return; // 已有 holder 跳过
+        if (!p || p.holder || p.occupancyStatus==='unrecorded') return; // 有任官记录或任官未详均不自动造补员
         if (p._pendingEdict) return; // 玩家本回合诏令跳过
         var facName = _inferPosFaction(p, n.name, chain);
         // 仅补 NPC 派系职位·玩家势力不自动补
@@ -1643,8 +1643,10 @@ function confirmEndTurn(){
     '<button class="bt bs" id="cet-cancel" style="padding:0.5rem 1.5rem;">再斟酌</button>'+
     '</div></div>';
   document.body.appendChild(bg);
-  bg.querySelector('#cet-cancel').onclick=function(){document.body.removeChild(bg);};
-  bg.querySelector('#cet-ok').onclick=function(){document.body.removeChild(bg);endTurn();};
+  var closeConfirm=function(){if(typeof _tmCloseModalLayer==='function')_tmCloseModalLayer(bg);else bg.remove();};
+  bg.querySelector('#cet-cancel').onclick=closeConfirm;
+  bg.querySelector('#cet-ok').onclick=function(){closeConfirm();endTurn();};
+  if(typeof _tmPresentModal==='function')_tmPresentModal(bg,closeConfirm,'#cet-cancel');
 }
 
 

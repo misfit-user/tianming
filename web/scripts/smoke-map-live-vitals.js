@@ -87,7 +87,16 @@ ok(/vitals: vitals \}/.test(SRC), 'regionBundle 返回带 vitals');
 // ── 军务视图读活军（兵变险/欠饷/低气/缺粮）──
 ok(/b\.army && b\.army\.liveArmies/.test(SRC), 'armyViewScore 读绑定活军');
 ok(/_a\.mutinyRisk/.test(SRC) && /_a\.payArrearsMonths/.test(SRC), '军务计活态兵变险+欠饷');
-ok(/garrisonStress > 0\) score = Math\.max\(score, Math\.min\(100, garrisonStress\)\)/.test(SRC), '活态军情并入军务分');
+const armySource = SRC.match(/ {2}(function armyViewScore\([^)]*\)\{[\s\S]*?\n {2}\})/)[1];
+const levelSource = SRC.match(/ {2}(function parseLevelWord\([^)]*\)\{[\s\S]*?\n {2}\})/)[1];
+ctx.firstValue = function(){return Array.from(arguments).find(v=>v!==undefined&&v!==null&&v!=='');};
+ctx.hasDisplayValue = v=>v!==undefined&&v!==null&&v!=='';
+vm.runInContext(levelSource+'\n'+armySource,ctx);
+const armyView = (data,live,armies)=>ctx.armyViewScore({}, {data:data,liveDivision:live,pop:{mouths:10000},army:{troops:1000,liveArmies:armies}});
+ok(armyView({}, {}, [{payArrearsMonths:3}])===54, '无静态军压时，真实欠饷仍显示压力');
+ok(armyView({armyPressure:20}, {}, [{mutinyRisk:81}])===81, '兵变风险按活军抬高军务压力');
+ok(armyView({}, {_warZone:true}, [])===86, '缺基础军账时交战状态仍显示危急');
+ok(armyView({}, {}, [])===null, '缺军务账不捏造25分');
 
 console.log('\n[smoke-map-live-vitals] ' + (failed === 0 ? 'PASS' : 'FAIL') + ' — ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed === 0 ? 0 : 1);

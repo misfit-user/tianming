@@ -5,9 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
+const retry = fs.readFileSync(path.join(__dirname, '..', 'tm-ai-infra-retry.js'), 'utf8');
 const SRC = path.join(__dirname, '..', 'tm-ai-infra.js');
 // 第二十三拆：getCompressionParams 等迁 tm-ai-infra-model-detect.js·vm 须载全家族(origin 先·契约随人走)以忠实真实装载序
-const code = fs.readFileSync(SRC, 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '..', 'tm-ai-infra-model-detect.js'), 'utf8');
+const code = retry + '\n' + fs.readFileSync(SRC, 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '..', 'tm-ai-infra-model-detect.js'), 'utf8');
 
 // ─── 真实 tier 解析（从 tm-utils.js 原样复制，确保测试忠实）───
 function _getAITier(tier) {

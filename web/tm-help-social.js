@@ -420,56 +420,32 @@ function _buildClassicsHelpContent() {
 // 打开帮助界面
 function openHelp(topic) {
   var currentTopic = topic || HelpSystem.currentTopic;
-
+  if (!Object.prototype.hasOwnProperty.call(HelpSystem.topics, currentTopic)) currentTopic = 'overview';
+  var existing = document.getElementById('help-overlay');
+  if (existing && existing.querySelector('[data-help-body]')) { switchHelpTopic(currentTopic); return; }
+  closeHelp();
   var ov = document.createElement('div');
   ov.className = 'generic-modal-overlay';
   ov.id = 'help-overlay';
-
-  var html = '<div class="generic-modal" style="max-width:800px;max-height:85vh;display:flex;flex-direction:row;">';
-
-  // 左侧导航
-  html += '<div style="width:200px;border-right:1px solid var(--bg-3);padding:1rem;overflow-y:auto;">';
-  html += '<h3 style="color:var(--gold);margin-bottom:1rem;">帮助主题</h3>';
-
+  ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', '游戏帮助');
+  ov.innerHTML = '<div class="generic-modal" style="width:92vw;max-width:800px;height:85vh;max-height:680px;display:flex;flex-direction:row;overflow:hidden;">' +
+    '<nav data-help-nav aria-label="帮助主题" style="flex:0 0 clamp(130px,24vw,200px);min-width:0;box-sizing:border-box;border-right:1px solid var(--bg-3);padding:1rem;overflow-y:auto;overscroll-behavior:contain;">' +
+    '<h3 style="color:var(--gold);margin-bottom:1rem;">帮助主题</h3></nav>' +
+    '<div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;">' +
+    '<div class="generic-modal-header"><h3 data-help-title></h3><button type="button" class="bt bs bsm" aria-label="关闭帮助" onclick="closeHelp()">✕</button></div>' +
+    '<div class="generic-modal-body" data-help-body style="flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;line-height:1.8;font-size:0.9rem;overflow-wrap:anywhere;"></div></div></div>';
+  var nav = ov.querySelector('[data-help-nav]');
   Object.keys(HelpSystem.topics).forEach(function(key) {
-    var t = HelpSystem.topics[key];
-    var isActive = key === currentTopic;
-    html += '<div onclick="switchHelpTopic(\'' + key + '\')" style="';
-    html += 'padding:0.6rem;margin-bottom:0.3rem;cursor:pointer;border-radius:4px;';
-    html += 'background:' + (isActive ? 'var(--bg-3)' : 'transparent') + ';';
-    html += 'color:' + (isActive ? 'var(--gold)' : 'var(--txt)') + ';';
-    html += 'font-size:0.9rem;';
-    html += '">';
-    html += t.title;
-    html += '</div>';
+    var button = document.createElement('button');
+    button.type = 'button'; button.dataset.helpTopic = key; button.textContent = HelpSystem.topics[key].title;
+    button.style.cssText = 'display:block;width:100%;box-sizing:border-box;border:0;text-align:left;padding:0.6rem;margin:0 0 0.3rem;cursor:pointer;border-radius:4px;font:inherit;font-size:0.9rem;white-space:normal;';
+    button.addEventListener('click', function() { switchHelpTopic(key); });
+    nav.appendChild(button);
   });
-
-  html += '</div>';
-
-  // 右侧内容
-  html += '<div style="flex:1;display:flex;flex-direction:column;">';
-  html += '<div class="generic-modal-header">';
-  html += '<h3>' + HelpSystem.topics[currentTopic].title + '</h3>';
-  html += '<button onclick="closeHelp()">✕</button>';
-  html += '</div>';
-  html += '<div class="generic-modal-body" style="flex:1;overflow-y:auto;">';
-  html += '<div style="line-height:1.8;font-size:0.9rem;">';
-  var _topicEntry = HelpSystem.topics[currentTopic];
-  if (_topicEntry && _topicEntry.dynamicRender && currentTopic === 'classics' && typeof _buildClassicsHelpContent === 'function') {
-    html += _buildClassicsHelpContent();
-  } else {
-    html += _topicEntry ? _topicEntry.content : '';
-  }
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-
-  html += '</div>';
-
-  ov.innerHTML = html;
+  ov.addEventListener('click', function(e) { if (e.target === ov) closeHelp(); });
+  ov.addEventListener('keydown', function(e) { if (e.key === 'Escape') { e.stopPropagation(); closeHelp(); } });
   document.body.appendChild(ov);
-
-  HelpSystem.currentTopic = currentTopic;
+  switchHelpTopic(currentTopic);
 }
 
 function closeHelp() {
@@ -478,8 +454,22 @@ function closeHelp() {
 }
 
 function switchHelpTopic(topic) {
-  closeHelp();
-  openHelp(topic);
+  if (!Object.prototype.hasOwnProperty.call(HelpSystem.topics, topic)) return;
+  var ov = document.getElementById('help-overlay');
+  if (!ov || !ov.querySelector('[data-help-body]')) { openHelp(topic); return; }
+  if (ov.dataset.helpTopic === topic) return;
+  var entry = HelpSystem.topics[topic], body = ov.querySelector('[data-help-body]');
+  ov.querySelector('[data-help-title]').textContent = entry.title;
+  body.innerHTML = entry.dynamicRender && topic === 'classics' && typeof _buildClassicsHelpContent === 'function' ? _buildClassicsHelpContent() : (entry.content || '');
+  body.scrollTop = 0;
+  ov.querySelectorAll('button[data-help-topic]').forEach(function(button) {
+    var active = button.dataset.helpTopic === topic;
+    button.style.background = active ? 'var(--bg-3)' : 'transparent';
+    button.style.color = active ? 'var(--gold)' : 'var(--txt)';
+    button.setAttribute('aria-pressed', String(active));
+  });
+  ov.dataset.helpTopic = topic;
+  HelpSystem.currentTopic = topic;
 }
 
 // ─── 新手帮助入口 ───

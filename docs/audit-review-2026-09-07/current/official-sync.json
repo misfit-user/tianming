@@ -1,0 +1,21 @@
+{
+  "command": [
+    "node",
+    "web/scripts/sync-official-scenarios.js"
+  ],
+  "cwd": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "head": "14130f77ef1976f9b3cd8b311b4aef77636e7d90",
+  "tree": "1be7372436c0a86f35946b1ba99579b6fa3eb0d6",
+  "statusBefore": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "arch": "x64",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T06:27:13.655Z",
+  "exitCode": 0,
+  "signal": null,
+  "durationMs": 4232,
+  "statusAfter": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "rawSha256": "53543ed96be8edcc91dd0311b30afacf4308c833d24742e1bda84d40b77d315d",
+  "publishedSha256": "53543ed96be8edcc91dd0311b30afacf4308c833d24742e1bda84d40b77d315d"
+}

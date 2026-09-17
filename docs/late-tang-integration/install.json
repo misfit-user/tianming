@@ -1,0 +1,121 @@
+{
+  "status": "APPLIED",
+  "backup": "D:/Codex-Verification/tang840-official-install-backup",
+  "files": [
+    {
+      "path": "web/tm-faction-derived-economy.js",
+      "before": "85dc6eba8bd0bafdf21a8ee5a226764f415bfb4fa5cfe5a30f8608bdaf200155",
+      "after": "1c068b3905e7435627632c4a547df58d7601e6a06b831725ea08e37830dcac86"
+    },
+    {
+      "path": "web/tm-faction-npc-guoku.js",
+      "before": "05a5fcd7fb9dfb2670f4965eda468e09f82c805f2de42d61602bc1b79fb85acc",
+      "after": "d1ba04d9ae8407287f6e0953794b3b5222575d332fc03407d8a19de985b4cabc"
+    },
+    {
+      "path": "web/map-editor-to-game.js",
+      "before": "5c6dd5fb2a448daa931a491046ac38fcab06ebe35b4b52b02a7cf1b84af46c32",
+      "after": "2363bf1c61ad27ff4bb780e332fb9e7c380b61950b703929e7c732df833b2898"
+    },
+    {
+      "path": "web/tm-neitang-engine.js",
+      "before": "9a77446dcd5c44cd36b3c2747e6de79461c2f1c28a2b88fdf16148f7f7322dec",
+      "after": "c5c2028adb07ff51c1ab94dc38be88c8e793902767572161b6f81ab4698a0757"
+    },
+    {
+      "path": "web/tm-class-engine.js",
+      "before": "eb3d1aa52cedcfa152746ab29534223a16c35c065ceac12affc59189b0044502",
+      "after": "7e396a33682aefcd45f6e879a70fbe8c08182a16fcf011c87d14624cc2aa9636"
+    },
+    {
+      "path": "web/tm-history-events.js",
+      "before": "4c1db52c6309c6d65dc81df6ded4bc4b4bd7f80c08fbc3b2fb17f5d6657e9a66",
+      "after": "9a27a76b3c099df79e43a2ef51d2c19ef43b448b5c1962e0e55a7817703822c2"
+    },
+    {
+      "path": "web/tm-endturn-helpers.js",
+      "before": "3795a1728d848bc09470efae959e3cf840ca39c34b24e0011899ae2ed5d46422",
+      "after": "33f6e2c208925b637ca70354f5fd099beecfd300581c23ba73fe127e9b6244f1"
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "before": "dc21177eae481e991f99cd2309f2fb03a529eb7fa81c30124327f20f63d6748e",
+      "after": "a4109f438b7b2ba52a3309b67be05a08e69a2ccd0a10ad1870d350904b2f4abe"
+    },
+    {
+      "path": "web/tm-fiscal-engine.js",
+      "before": "abacc976d956f224b6a0adf79c5cf18d762712d497be0b7e4c9ca6a332e2d3ae",
+      "after": "7ed0bf81722d0a044e1b0b6c990b83e98b894509adcc88ef1fba67cf83b14bf0"
+    },
+    {
+      "path": "main-impl.js",
+      "before": "d087437d64dd0678490a254da5f02580e3d66d9b23b98eb6ce1793d7c7a550dd",
+      "after": "9ca89cbc65a283dae6275c36e353fdfe570bec7ef55d32d4e913cbec037d4e20"
+    },
+    {
+      "path": "web/index.html",
+      "before": "8a41354555fbeeb12465ac0aac8acf4818a70f602aac8cac13e85bb1c8e10580",
+      "after": "2a8e1f1ac9a7d702ef7fa90c8f0bafb1107ac301a9149584bc413187d562116d"
+    },
+    {
+      "path": "web/tm-official-scenario-seeder.js",
+      "before": "8f9b0d8f33dc4b8ccbb07e395401a7be4f27ea5b55c051ff465a93645cb135d2",
+      "after": "304dbbc3671e8e5549d3227ff37931ddc0a0a0dfdff6f54a1162041a1181c614"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "before": "d432e1a1f57d1360fe98f9910876e8103fcd140dbc19fa47cdeaa1eca452ab80",
+      "after": "fe36dab89dadde028fd8b42d0f5a5b0710f56365933d44ce7d80ac5cdb6136ff"
+    },
+    {
+      "path": "web/scripts/sync-official-scenarios.js",
+      "before": "2d340773ee0582e4a5ed470006d39467f874361e70c228b21784c477e79216a8",
+      "after": "0e96f6da8ed0675b421c126b864878a959184ef4a3413108a285e5c85ba9ab87"
+    },
+    {
+      "path": "web/scripts/smoke-official-scenario-lazy-loader.js",
+      "before": "81fe008ad7f0f2f82d6d3ae55f5814badba8ee48d6aac8d677141c72c50c6e8a",
+      "after": "d7d9d1f8d7b44401f14e4ca3d61f3a6ecaea46f8c7994470c3da166109482493"
+    },
+    {
+      "path": "web/scripts/smoke-class-engine.js",
+      "before": "ab67530f45688bcbdea3ea5abae065df0398d9ba91f326eb8f03363b34a0efbe",
+      "after": "9cced79824412a4a11e9e53219afd7e354378bac45e9f011d397e853c1f32277"
+    },
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "before": null,
+      "after": "6eab76760e2f72eaa383d8cbf268e63f3a1aa8b4eadd5a142a7811001baf3443"
+    },
+    {
+      "path": "web/scenarios/tang840-840.js",
+      "before": null,
+      "after": "a57d4a91ff1ea9734fdf26ca16d2e47ad4442c9373ada128ee015a5369a4e44e"
+    },
+    {
+      "path": "web/bundled-scenarios/晚唐·开成五年（官方）.json",
+      "before": null,
+      "after": "6eab76760e2f72eaa383d8cbf268e63f3a1aa8b4eadd5a142a7811001baf3443"
+    },
+    {
+      "path": "web/tm-official-scenario-bundle.js",
+      "before": "ee851969c184b11969b6ddf2a6afca24e6fab9f47c5a01305938b8d960e38300",
+      "after": "74e21f1798624dd4c6c4f34349bed243a7687325b7234c9038b217ae5eda09f8"
+    },
+    {
+      "path": "web/preview/official-scenarios-bundle.js",
+      "before": "c5abfd579c96273218d169feb9e65fbda5ca3148214a8100acecec396775ce9d",
+      "after": "ce2c6d63296ce3c15b2f9128492b06786729ad88c6747c027b16416121170e70"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.json",
+      "before": "904223b234b4f009bcc472c525cc9b02214105ea1dcd01c6e85d4714309f2ddc",
+      "after": "595dccbea637b6825cac51356b0ee7696ed679a71a101b99a3697a88711dfeb2"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.js",
+      "before": "2ea7ba05e4ebf5288ce8994ac309201e67ba926336d4f9d4171fc140202d9588",
+      "after": "a21303d44aa6f477d9be77bfac7a044b6bfd4ea2815b8b6f0429c4de84b4431a"
+    }
+  ]
+}

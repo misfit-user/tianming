@@ -1,0 +1,103 @@
+[
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/tm-office-system.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.08,
+    "log": "ui-final-check-0.log"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/tm-patches-start.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.09,
+    "log": "ui-final-check-1.log"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/tm-renwu-tuzhi.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.08,
+    "log": "ui-final-check-2.log"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/phase8-formal-modules.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.09,
+    "log": "ui-final-check-3.log"
+  },
+  {
+    "command": [
+      "node",
+      "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\ui-dedupe-test.mjs"
+    ],
+    "exitCode": 0,
+    "seconds": 0.12,
+    "log": "ui-final-check-4.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/smoke-renwu-multioffice-display.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.11,
+    "log": "ui-final-check-5.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/smoke-renwu-source-reader.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.14,
+    "log": "ui-final-check-6.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js",
+      "--check"
+    ],
+    "exitCode": 0,
+    "seconds": 15.09,
+    "log": "ui-final-check-7.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/verify-official-scenario-parity.js"
+    ],
+    "exitCode": 0,
+    "seconds": 21.31,
+    "log": "ui-final-check-8.log"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "web/tm-office-system.js",
+      "web/tm-patches-start.js",
+      "web/tm-renwu-tuzhi.js",
+      "web/phase8-formal-modules.js"
+    ],
+    "exitCode": 2,
+    "seconds": 0.14,
+    "log": "ui-final-check-9.log"
+  }
+]

@@ -1,0 +1,6 @@
+PASS validated address remains pinned after DNS source changes; Host and SNI preserved
+PASS each redirect performs new validation and uses a separate connection
+PASS redirect private address is rejected before a connection to that hop
+PASS cross-origin credentials cannot follow redirect
+PASS untrusted TLS certificate is rejected, no HTTP request or silent retry
+{"complete":true,"PASS":5,"FAIL":0,"SKIP":0,"WAIVED":0,"runtime":"v24.14.0","platform":"win32","scope":"controlled loopback TLS, actual main-safe-remote transport; not a production SSRF attack"}

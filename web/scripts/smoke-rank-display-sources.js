@@ -22,8 +22,8 @@ ok(/Math\.min\(_rankFromTitleStr\(ch\.officialTitle, nameRank\), _rankFromTitleS
 // ── 图志品级显示走权威 tm-renwu-tuzhi ──
 const TUZHI = R('tm-renwu-tuzhi.js');
 ok(/function _rankLabel\(c\)/.test(TUZHI), '_rankLabel 存在');
-ok(/TMPromotion\.resolveRankLevel\(c,_g\(\)\)/.test(TUZHI), '_rankLabel 走权威 resolveRankLevel(从实职派生·弃滞后散阶)');
-ok(/单一真相源=实职官衔|权威:从实职复合串派生/.test(TUZHI), '_rankLabel 注释标明单一真相源');
+ok(/getCharacterRankLabel\(c,_g\(\)\)/.test(TUZHI), '_rankLabel 走官制可见品秩真源（不同于升迁资历数值）');
+ok(/可见品秩走官制显示真源/.test(TUZHI), '_rankLabel 注释标明显示真源');
 
 // ── 头衔真源吸收 title 段 tm-office-system ──
 const OFF = R('tm-office-system.js');

@@ -48,15 +48,16 @@ assert(/_liteVariant:\s*true/.test(followupSrc),
   'Slice 4·lite mode 标记写入 GM._turnAiResults.subcall16');
 
 // ─── Slice 5·Q6·SC18 battleResult 后验 ───
-assert(/Phase 3 Q6·battleResult 后验/.test(followupSrc),
-  'Slice 5·battleResult 后验');
-assert(/_battleResultRejected/.test(followupSrc),
+const battleContract=fs.readFileSync(path.join(ROOT,'tm-battle-contract.js'),'utf8');
+assert(/MilitarySystems\.consumeBattleResults\(p18, GM\)/.test(followupSrc) && /validateBattleResult\(br, G\)/.test(battleContract),
+  'Slice 5·battleResult 后验走共享战果校验，不只锁旧注释');
+assert(/_battleResultRejected/.test(battleContract),
   'Slice 5·荒诞战役 reject 标记');
-assert(/commanderFate\.name 角色不存在/.test(followupSrc),
+assert(/br\.commanderFate/.test(battleContract) && /主将不存在或已故/.test(battleContract),
   'Slice 5·校验 commanderFate.name 存在');
-assert(/affectedArmies\.armyId 不存在/.test(followupSrc),
+assert(/参战军队不存在/.test(battleContract),
   'Slice 5·校验 affectedArmies.armyId 存在');
-assert(/winnerFactionId 不存在/.test(followupSrc),
+assert(/势力不存在/.test(battleContract),
   'Slice 5·校验 winnerFactionId 存在');
 
 console.log('[smoke-phase3-deep-refactor] pass assertions=' + passed.value);

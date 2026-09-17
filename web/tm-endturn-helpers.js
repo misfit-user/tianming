@@ -32,7 +32,12 @@ function _walkOfficeTree(nodes, visitor) {
 function findOfficeByFunction(funcKeyword) {
   if (!GM.officeTree || !funcKeyword) return null;
   var result = null;
+  var declared = false;
   _walkOfficeTree(GM.officeTree, function(n) {
+    if (Array.isArray(n.functions) && n.functions.indexOf(funcKeyword) >= 0) { declared = true; return false; }
+  });
+  _walkOfficeTree(GM.officeTree, function(n) {
+    if (declared && (!Array.isArray(n.functions) || n.functions.indexOf(funcKeyword) < 0)) return true;
     // 1. 检查部门职能数组
     var funcMatch = false;
     if (n.functions && n.functions.length > 0) {
@@ -2015,6 +2020,9 @@ async function _chooseIssueOption(issueId, choiceIdx) {
   _tmNormIssueChoices(issue);   // label→text·consequence→desc 兼容归一(否则 AI 裁定/民心归因/chosenText 拿到空文本)
   var ch = issue.choices[choiceIdx];
   if (!ch) return;
+  if (issue._scenarioEventId && typeof TM !== 'undefined' && TM.ScenarioEffects) {
+    return TM.ScenarioEffects.resolveIssue(issue, choiceIdx);
+  }
   if (issue.status === 'resolved' || issue._resolving) return; // AI 裁定 await 窗口(数秒)连点曾双裁定双落账(2026-07-04 审查定罪)
   issue._resolving = true;
   // 命门(v0.2·事件并入御案时政):开关开 → AI 据当前国势裁即时硬核连锁后果(applyAITurnChanges);固定 effect 降兜底。

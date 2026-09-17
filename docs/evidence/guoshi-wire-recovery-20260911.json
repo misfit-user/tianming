@@ -1,0 +1,1982 @@
+{
+  "type": "tianming-guoshi-wire-recovery-evidence",
+  "date": "2026-09-11",
+  "base": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+  "mainAtStart": "0d301d8daaf214db792ffb2f44b2cf85bbed0732",
+  "codeCommit": "dd517a2c188678f23ee3965ad6fe3abe34c0ab67",
+  "branch": "codex/fix-guoshi-sse-wire",
+  "sourceFiles": [
+    {
+      "path": "scripts/electron/authoring-response-recovery-cases.cjs",
+      "bytes": 9241,
+      "sha256": "41ec2cd84f8965e75c625aa0a76d6a4988368af808c204efe3aeaacbe15e78ab"
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "bytes": 182592,
+      "sha256": "b62b013f9856ffa42906770ef3bbb4e299ce075d0db09b3616b1241c175d246b"
+    },
+    {
+      "path": "web/editor-authoring-agent-provider.js",
+      "bytes": 46466,
+      "sha256": "3d1326da8a2b413015b7188d51918c418e796269487f102fabfb282a543e162c"
+    },
+    {
+      "path": "web/editor-authoring-agent.js",
+      "bytes": 307878,
+      "sha256": "e026c4b6e1f7c554d009b7244e636363cfec579535fe3904b345715046b54597"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-preview.html",
+      "bytes": 32341,
+      "sha256": "46c3852b169f077fc4605f45859c808d6fd4c6da9c263534c22dbd120a50d7f4"
+    },
+    {
+      "path": "web/scripts/smoke-authoring-efficiency.js",
+      "bytes": 11109,
+      "sha256": "d99a67b7eaa45477c874ec88a7aae8fed860c13a21333f3a09bc198545fb58d7"
+    },
+    {
+      "path": "web/scripts/smoke-authoring-response-recovery.js",
+      "bytes": 16070,
+      "sha256": "a7a6e9d6dd4e7b61e5eb67ffc15a9a5eeadef33aff072857f75c1308653135de"
+    },
+    {
+      "path": "web/scripts/smoke-authoring-sse-candidate-index.js",
+      "bytes": 8412,
+      "sha256": "5d1b1ca26ab2a4e779669759e7339108928f8079ab34dcb1139a888704d43bb2"
+    }
+  ],
+  "commands": [
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T07:40:39.066Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/stop-mid-batch-baseline-56472283-72cf-4c58-bd4c-794ac2d2f145/output.log",
+      "logSha256": "5f08f6077c31019d175aac841bfc69b56541450568bbccc8955bb972d96d892c",
+      "logBytes": 2021
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T07:41:11.557Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/stop-mid-batch-fixed-796acde3-caa0-446d-a3f4-0a1008a1bca3/output.log",
+      "logSha256": "b1412fbd054e8749440a3bf57d678303b7a6f5b4877def797e0037314d990277",
+      "logBytes": 1598
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T08:34:19.675Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-arch-candidate-5e59ff71-685c-41dc-8621-04ae8fd33a93/output.log",
+      "logSha256": "6ccdf57fd15463abfb5f645032873b522fcc4a8c1989a0712a3b90acd02e361f",
+      "logBytes": 707
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T08:00:22.084Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-arch-final-4d3401cc-1c83-4dec-b0df-d67f2f2f4aac/output.log",
+      "logSha256": "de80972432dcfaa6a9aba4c12a70ef9b0595265a4b239df221d89127881bcd48",
+      "logBytes": 708
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T07:26:41.877Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-architecture-adc2de75-fd88-431f-8c6a-8725dcd47b5a/output.log",
+      "logSha256": "c3fc3d2901ce8a4cf2ce835874f76ab7eda7e54bd964659dc08171c05fc4303a",
+      "logBytes": 707
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-tool-authorization.js"
+      ],
+      "at": "2026-09-11T08:00:54.948Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-authorization-final-72a7e34c-f656-4d6f-96bb-285c227b68b8/output.log",
+      "logSha256": "5ce1bc976ce48c987e64555c722efcaac91418f320a72b6cf8e60e5cb4b3bd4e",
+      "logBytes": 886
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js",
+        "--source-ref",
+        "be12ee40617a45d88d53e45fa85c009b3cb2fe7e"
+      ],
+      "at": "2026-09-11T08:28:54.262Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-baseline-sse-complete-32cede16-5807-445d-8f84-bcce5fd28d31/output.log",
+      "logSha256": "436f02b14b75d9e0a8f17f08bd318d610d2c0a12c5c5f90c0c98c978bdfa0738",
+      "logBytes": 5372
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js",
+        "--source-ref",
+        "be12ee40617a45d88d53e45fa85c009b3cb2fe7e"
+      ],
+      "at": "2026-09-11T08:28:55.506Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-baseline-stop-complete-960c3a71-87b6-4deb-ba96-65d4405e4961/output.log",
+      "logSha256": "3ea3773d35e36e1bbb0aae4ae1231f51abc355840c820db8929769d6ac0ed665",
+      "logBytes": 3800
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "at": "2026-09-11T08:39:42.938Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-boundaries-candidate-56f6a5a3-fb8c-42f5-95e9-235f48b4e24d/output.log",
+      "logSha256": "af860f3e60c32acb6d7eb6ed450cf7130795aa7ade0b261dae43d5b39d5fdf6e",
+      "logBytes": 2787
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-boundaries"
+      ],
+      "at": "2026-09-11T08:21:04.042Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-boundaries-final-ba4199bc-05e5-4a56-a3ee-a91085f97d86/output.log",
+      "logSha256": "b591ddeef85ee53fe55c8ba163829e718a7ac7e3555c64979d927e3b367881f4",
+      "logBytes": 2787
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js",
+        "--source-ref",
+        "be12ee40617a45d88d53e45fa85c009b3cb2fe7e"
+      ],
+      "at": "2026-09-11T07:09:34.859Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-candidate-baseline-24e4bb5c-433d-4eff-b085-737fa830ff9f/output.log",
+      "logSha256": "f916bb03a6bf7cc03ad039f81ed0fa53ccad30ccfafaba31b1c1b49d1bcf62da",
+      "logBytes": 4249
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T07:16:05.605Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-candidate-fixed-7b296bf1-a2f8-44b8-9250-fec1d3408e6f/output.log",
+      "logSha256": "f0409e65e1b205d53ede41927e8559f71870d4107092d45ed75c0998d5266d1a",
+      "logBytes": 811
+    },
+    {
+      "head": "dd517a2c188678f23ee3965ad6fe3abe34c0ab67",
+      "status": "",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T08:44:43.915Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-committed-response-f5ebe809-c410-4f86-a668-03a98e62b121/output.log",
+      "logSha256": "2f04d4e911b9b962a16958c5aa7d4bf829d8edabc85eab0d9b08b83e9c9a6525",
+      "logBytes": 1705
+    },
+    {
+      "head": "dd517a2c188678f23ee3965ad6fe3abe34c0ab67",
+      "status": "",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T08:44:43.126Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-committed-sse-b33c5a3f-019d-4081-b502-74deacd33cbf/output.log",
+      "logSha256": "7be38f8e614a698843ac7adacfd1723cd620b2ae5da7be75cfde9d9a929bdf8a",
+      "logBytes": 1099
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T08:34:21.130Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-contract-candidate-debc0f54-37a6-44b6-8dbe-9bd095eae64e/output.log",
+      "logSha256": "b1bb11fc53c35a1be3f83902877005a8a7be2f292da99db9699d1577798b8b3b",
+      "logBytes": 10468
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-efficiency.js"
+      ],
+      "at": "2026-09-11T08:00:23.565Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-efficient-final-a296dd45-62d9-402c-82d7-993e22d6f954/output.log",
+      "logSha256": "565076ef755b4674140295bfd5b0f663581e878f62880d2cec92f48f1c31058e",
+      "logBytes": 1196
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T08:28:22.479Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-electron-candidate-79884a08-a946-4d4e-a4ca-ba0fb76db4f5/output.log",
+      "logSha256": "899b33a6060f0592d90cdb96895b72b045247ff5f5d26fde73414ecadb6ed90b",
+      "logBytes": 3539
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T07:26:12.145Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-electron-e9757270-4202-4d43-9025-be5037e06460/output.log",
+      "logSha256": "69e8c101d0873c6db14329806734deae37939d207814ec669fdf9fd49b41295b",
+      "logBytes": 3063
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T08:20:35.986Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-electron-final-a00dba14-c3cb-4560-8caa-09e0f60baca6/output.log",
+      "logSha256": "8ac77f77a75bdfaadce19d63b6b49ea2c920c380bf613eba2fe8cc600f119caf",
+      "logBytes": 3539
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-continuation"
+      ],
+      "at": "2026-09-11T07:32:48.759Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-electron-r2-6f8cf6fa-4565-41de-ae7b-caeadb61c95b/output.log",
+      "logSha256": "222c04250ed2cd832e676f73dbb84dbd004c3c71343179194543be0d792e4d51",
+      "logBytes": 3415
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/lint-arch-all.js"
+      ],
+      "at": "2026-09-11T08:21:14.425Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-final-arch-9794ada9-8fd3-4ce8-94d1-4412157e9711/output.log",
+      "logSha256": "2879f8a397b6b2de6c54800d37e932fef0f1885ccad9d3d1ad0e71fd7cb2de21",
+      "logBytes": 708
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js",
+        "--source-ref",
+        "be12ee40617a45d88d53e45fa85c009b3cb2fe7e"
+      ],
+      "at": "2026-09-11T07:45:30.958Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-final-baseline-7f999262-a1b9-4bcd-b70a-ca3cd617d2d1/output.log",
+      "logSha256": "430998498fcad414635d5a4f38a3e6600cc22c75fb9618e87a04d2bfacf93b2c",
+      "logBytes": 4353
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--check",
+        "--version",
+        "1.3.4.11"
+      ],
+      "at": "2026-09-11T08:21:15.733Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-final-baseline-check-58d804fb-968f-473b-80e8-12e588b14660/output.log",
+      "logSha256": "bffa684d948704b5a1787b075925b389650a8a9ce8b876b41fbeb4442f5c3f98",
+      "logBytes": 118
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T07:45:27.663Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-final-smoke-515cd2d6-f5d6-422f-bfce-daf1bb2b902d/output.log",
+      "logSha256": "ba2ae7a437df49e24f69c549585e067b9a89807c54c8f52951ca7f702ddf533b",
+      "logBytes": 912
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T07:21:54.925Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-full-catalog-regression-63b80443-b278-4ba5-9499-4dc89bdf2b07/output.log",
+      "logSha256": "c585b0b9edcc46b3610893a53c23e7db828e72f58a285d44378e119436cda2b6",
+      "logBytes": 1497
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T08:18:20.932Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-full-smokes-c1df799b-92c2-43f0-b00a-922f85225f06/output.log",
+      "logSha256": "b55653791cd623ec4c8852ecd6ab4133b31f629fea9bad0f1715a951bbe8e679",
+      "logBytes": 3217
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/ci-smokes.js"
+      ],
+      "at": "2026-09-11T08:28:10.866Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-full-smokes-final-2e363f1c-4f03-4a63-b682-00a18e82a81f/output.log",
+      "logSha256": "d60fc79ea9ae2300b14b4342b3d2fc9facbcc8c94654bb7d3154af3b8f0baa5c",
+      "logBytes": 3270
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-efficiency.js"
+      ],
+      "at": "2026-09-11T07:20:34.938Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-full-tools-efficiency-8097e485-a141-4606-a4f7-589641b55c73/output.log",
+      "logSha256": "565076ef755b4674140295bfd5b0f663581e878f62880d2cec92f48f1c31058e",
+      "logBytes": 1196
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-tool-authorization.js"
+      ],
+      "at": "2026-09-11T07:20:36.410Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-full-tools-permissions-8133c862-bd87-4f32-8e97-9f0ec3bbeac8/output.log",
+      "logSha256": "5ce1bc976ce48c987e64555c722efcaac91418f320a72b6cf8e60e5cb4b3bd4e",
+      "logBytes": 886
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T08:06:11.490Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-hot-sync-1a266f9e-8cf7-4f3d-9286-c798fc05e418/output.log",
+      "logSha256": "e6c1fb2ba3a437fd5ac8f236d921f2a7fa15fa5e79170c9b819cc924655db947",
+      "logBytes": 176
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T08:19:21.690Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-hot-sync-final-2990b3ec-4d75-4ef5-95d2-9e0b14ff1fdb/output.log",
+      "logSha256": "25adc2bce03a0cb50f760b7febca801ee1d70262d7d40b9c96fc57d9a519a16e",
+      "logBytes": 176
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.4.11",
+        "--asset-root",
+        "C:/Users/37814/Desktop/tianming",
+        "--temp-root",
+        "E:/tianming-relief-temp"
+      ],
+      "at": "2026-09-11T08:27:02.364Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-hot-sync-final2-41ac1829-35fe-44e3-8b5a-364325938354/output.log",
+      "logSha256": "4dba4201cf86bde9a1b326ecd62f8fac4760cbc3ad4aded826825676c9ae6b7f",
+      "logBytes": 176
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "at": "2026-09-11T08:20:13.479Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-hotgates-final-b4e666a5-51c9-4048-a5d9-91d34c28da1b/output.log",
+      "logSha256": "c87c1e03f318ed2f676e34813f0589a7f187719930dd957127b82cdf29dabb99",
+      "logBytes": 1108
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js",
+        "--source-ref",
+        "be12ee40617a45d88d53e45fa85c009b3cb2fe7e"
+      ],
+      "at": "2026-09-11T07:50:10.966Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-midbatch-source-baseline-bb4b329e-fc83-4f65-91e7-b203d0f19cf3/output.log",
+      "logSha256": "7e4548c865d6920d1b7e3fce6a25212d5707e6deaaf1bb6e4da1fa0d97f665e3",
+      "logBytes": 3693
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T07:23:47.159Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-negotiation-bb2b67f0-a732-47b0-a58c-61ff3aabd30d/output.log",
+      "logSha256": "ba2ae7a437df49e24f69c549585e067b9a89807c54c8f52951ca7f702ddf533b",
+      "logBytes": 912
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T08:22:30.654Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-negotiation-complete-faa07513-da7f-4900-b15b-eeadf6cca84f/output.log",
+      "logSha256": "7be38f8e614a698843ac7adacfd1723cd620b2ae5da7be75cfde9d9a929bdf8a",
+      "logBytes": 1099
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "at": "2026-09-11T08:20:08.554Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-parity-final-cbc630a6-171f-444f-af7e-3094e35ef98e/output.log",
+      "logSha256": "76e27a09f9c0c3f9ecabc195f27e7bf7bf3988b17b84783c9c680a4cbc59dd7e",
+      "logBytes": 1574
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-plan-permissions.js"
+      ],
+      "at": "2026-09-11T08:00:24.107Z",
+      "exitCode": 1,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-permission-final-754a19a0-bd9c-473e-afbe-64c9c69f2c84/output.log",
+      "logSha256": "c0bc03d83ba2645c28c49cea3a680a23e331a18825d9aaf2277028900a80fa5e",
+      "logBytes": 741
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "at": "2026-09-11T08:39:56.762Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-recovery-candidate-ba89ca61-a431-4d07-8e2f-9cf7723175d1/output.log",
+      "logSha256": "c1ecadaa7416db7c934b2403316a1526e7fbd409408f4f6e2456f09ddf389843",
+      "logBytes": 2607
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-electron-bridge.js",
+        "--authoring-recovery"
+      ],
+      "at": "2026-09-11T08:21:25.197Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-recovery-final-fea28a64-9751-40ef-a25f-f3da71d05bf0/output.log",
+      "logSha256": "42339bfddec0129f1b2b61f26cd308db442ef4e9adf7d6b1bc8f38b205205219",
+      "logBytes": 2607
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T07:23:48.194Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-regression-response-5250b856-66e2-48bf-8081-21c8dfe34b3d/output.log",
+      "logSha256": "c585b0b9edcc46b3610893a53c23e7db828e72f58a285d44378e119436cda2b6",
+      "logBytes": 1497
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-completion-recovery.js"
+      ],
+      "at": "2026-09-11T07:47:04.127Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-related-completion-dd8d9bc2-e0f4-4861-b5a7-e9801dcb4890/output.log",
+      "logSha256": "c668406e7cfc8f631f5b0edf6341e8a9afe279dd30e5ae61f441338d5dc2a7e1",
+      "logBytes": 1826
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-reasoning-continuity.js"
+      ],
+      "at": "2026-09-11T07:47:01.902Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-related-reasoning-a4666f8b-b069-414c-8373-66324cedb14d/output.log",
+      "logSha256": "017670ac21892d28e0cfc4a33da67dc98e10e12d152604fc69caff63051116e7",
+      "logBytes": 1269
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-provider-stream.js"
+      ],
+      "at": "2026-09-11T07:47:03.055Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-related-stream-903eecb8-bdf3-4317-8ba0-a97f134fb59c/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f",
+      "logBytes": 1720
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "scripts/verify-release-contract.js"
+      ],
+      "at": "2026-09-11T08:20:10.137Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-release-final-c6fdf542-7b41-482f-9c0c-6674c309dbeb/output.log",
+      "logSha256": "cfe8e569ea536d26056f127e5cacfb0020528fc9fce67e19513b1c5e33759de2",
+      "logBytes": 10468
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-reasoning-continuity.js"
+      ],
+      "at": "2026-09-11T06:51:58.661Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-shape-regression-ed9897a7-f4c3-4609-abe0-4264abf9e7b1/output.log",
+      "logSha256": "017670ac21892d28e0cfc4a33da67dc98e10e12d152604fc69caff63051116e7",
+      "logBytes": 1269
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M web/editor-authoring-agent-provider.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-provider-stream.js"
+      ],
+      "at": "2026-09-11T06:52:00.052Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-shape-stream-5dc1b9e0-cf2e-4b4b-a572-7b12e76c21bc/output.log",
+      "logSha256": "ca00978a8275e3dab37ec042e3e270c9e6d0c66783d7fd622f962d8e3ed98f9f",
+      "logBytes": 1720
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/build-startup-phase-manifest.js"
+      ],
+      "at": "2026-09-11T08:05:00.033Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-startup-manifest-8354721e-0488-4215-bc83-83ce1349ffb1/output.log",
+      "logSha256": "0c5c0ef29754e87bebdfc2fc9a1d1b5c791d9bde1c720d9fe160d43ec8bb3fc1",
+      "logBytes": 81
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T07:56:59.448Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-stop-inflight-fa6230ef-2e8b-4393-bc88-15f9820da636/output.log",
+      "logSha256": "2f04d4e911b9b962a16958c5aa7d4bf829d8edabc85eab0d9b08b83e9c9a6525",
+      "logBytes": 1705
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-response-recovery.js"
+      ],
+      "at": "2026-09-11T08:09:02.136Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-stop-stream-final-c8afc672-fba3-4ba3-9c44-873f45180843/output.log",
+      "logSha256": "2f04d4e911b9b962a16958c5aa7d4bf829d8edabc85eab0d9b08b83e9c9a6525",
+      "logBytes": 1705
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/.hot-update-manifest.json\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/smoke-authoring-sse-candidate-index.js"
+      ],
+      "at": "2026-09-11T08:08:59.797Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-stream-continuation-2844ea4e-0509-4562-8769-af593f027f2a/output.log",
+      "logSha256": "b98de6c6944df336e27b6bfa57143534c573fac9b71113ee66dc632929c87775",
+      "logBytes": 1013
+    },
+    {
+      "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+      "status": "M scripts/electron/authoring-response-recovery-cases.cjs\n M web/editor-authoring-agent-provider.js\n M web/editor-authoring-agent.js\n M web/preview/scenario-editor-reset-preview.html\n M web/scripts/smoke-authoring-efficiency.js\n M web/scripts/smoke-authoring-response-recovery.js\n?? web/scripts/smoke-authoring-sse-candidate-index.js",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "at": "2026-09-11T08:04:59.090Z",
+      "exitCode": 0,
+      "signal": null,
+      "log": "web/dev-tools/new-scenario/wire-sync-official-1676a75b-d3a8-47fa-bb6d-b3e963bdd63b/output.log",
+      "logSha256": "79bcdcf5972c85f1965b2ca7f979806efc04283324a542c7bb6e3a0110f64309",
+      "logBytes": 51
+    }
+  ],
+  "wire": [
+    {
+      "at": "2026-09-11T07:13:25.830Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:13:32.415Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:13:40.331Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:30:09.113Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:30:19.483Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:30:32.293Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:30:47.754Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:31:00.774Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:31:12.016Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:38:03.311Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:38:19.703Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:38:31.101Z",
+      "protocol": "openai",
+      "kind": "empty",
+      "finishReason": "unknown",
+      "textChars": 0,
+      "reasoningChars": 0,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T07:59:52.254Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 6000
+    },
+    {
+      "at": "2026-09-11T08:00:03.314Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 34,
+      "reasoningChars": 151,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 346,
+        "choices": 346,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 346,
+        "message": 0,
+        "contentChars": 34,
+        "reasoningChars": 151,
+        "toolFragments": 283,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 6000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:00:45.815Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T08:01:16.006Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 70,
+      "reasoningChars": 1057,
+      "toolCalls": 4,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 359,
+        "choices": 359,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 359,
+        "message": 0,
+        "contentChars": 70,
+        "reasoningChars": 1057,
+        "toolFragments": 58,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 3000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:01:35.701Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T08:01:52.387Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 103,
+      "reasoningChars": 5930,
+      "toolCalls": 2,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 2002,
+        "choices": 2002,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 2002,
+        "message": 0,
+        "contentChars": 103,
+        "reasoningChars": 5930,
+        "toolFragments": 35,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 3000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:01:58.389Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T08:02:07.969Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 0,
+      "reasoningChars": 984,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 243,
+        "choices": 243,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 243,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 984,
+        "toolFragments": 27,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 3000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:02:32.998Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T08:04:31.200Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 3000
+    },
+    {
+      "at": "2026-09-11T08:05:02.307Z",
+      "protocol": "openai",
+      "kind": "truncated",
+      "finishReason": "length",
+      "textChars": 0,
+      "reasoningChars": 8969,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 2986,
+        "choices": 2986,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 2986,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 8969,
+        "toolFragments": 0,
+        "finishes": [
+          "absent",
+          "length"
+        ]
+      },
+      "maxTokens": 3000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:05:52.120Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 6000
+    },
+    {
+      "at": "2026-09-11T08:06:31.214Z",
+      "protocol": "openai",
+      "kind": "truncated",
+      "finishReason": "length",
+      "textChars": 0,
+      "reasoningChars": 15432,
+      "toolCalls": 0,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 5978,
+        "choices": 5978,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 5978,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 15432,
+        "toolFragments": 0,
+        "finishes": [
+          "absent",
+          "length"
+        ]
+      },
+      "maxTokens": 6000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:10:31.423Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:24:16.656Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:24:45.060Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 100,
+      "reasoningChars": 11316,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 4693,
+        "choices": 4693,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 4693,
+        "message": 0,
+        "contentChars": 100,
+        "reasoningChars": 11316,
+        "toolFragments": 796,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:24:59.152Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:25:38.246Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 46,
+      "reasoningChars": 8940,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 3673,
+        "choices": 3673,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 3673,
+        "message": 0,
+        "contentChars": 46,
+        "reasoningChars": 8940,
+        "toolFragments": 217,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:26:10.536Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:26:46.819Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 100,
+      "reasoningChars": 6653,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 6692,
+        "choices": 6692,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 6692,
+        "message": 0,
+        "contentChars": 100,
+        "reasoningChars": 6653,
+        "toolFragments": 4111,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:27:09.574Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:27:22.163Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 0,
+      "reasoningChars": 416,
+      "toolCalls": 3,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1829,
+        "choices": 1829,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 1829,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 416,
+        "toolFragments": 1695,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:27:29.697Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:27:34.088Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 0,
+      "reasoningChars": 381,
+      "toolCalls": 3,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 126,
+        "choices": 126,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 126,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 381,
+        "toolFragments": 6,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:27:40.241Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:27:51.504Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 63,
+      "reasoningChars": 4393,
+      "toolCalls": 2,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 1142,
+        "choices": 1142,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 1142,
+        "message": 0,
+        "contentChars": 63,
+        "reasoningChars": 4393,
+        "toolFragments": 40,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:28:01.624Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:28:08.389Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 86,
+      "reasoningChars": 1607,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 470,
+        "choices": 470,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 470,
+        "message": 0,
+        "contentChars": 86,
+        "reasoningChars": 1607,
+        "toolFragments": 41,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:28:14.521Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:28:23.849Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 0,
+      "reasoningChars": 223,
+      "toolCalls": 3,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 66,
+        "choices": 66,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 66,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 223,
+        "toolFragments": 6,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    },
+    {
+      "at": "2026-09-11T08:28:30.000Z",
+      "action": "retry-explicit-stream",
+      "wire": {
+        "format": "sse",
+        "frames": 1,
+        "choices": 0,
+        "indexes": [],
+        "delta": 0,
+        "message": 0,
+        "contentChars": 0,
+        "reasoningChars": 0,
+        "toolFragments": 0,
+        "finishes": []
+      },
+      "maxTokens": 16000
+    },
+    {
+      "at": "2026-09-11T08:28:35.852Z",
+      "protocol": "openai",
+      "kind": "native-tools",
+      "finishReason": "tool_calls",
+      "textChars": 27,
+      "reasoningChars": 96,
+      "toolCalls": 1,
+      "format": "native",
+      "wire": {
+        "format": "sse",
+        "frames": 407,
+        "choices": 407,
+        "indexes": [
+          "number:0"
+        ],
+        "delta": 407,
+        "message": 0,
+        "contentChars": 27,
+        "reasoningChars": 96,
+        "toolFragments": 367,
+        "finishes": [
+          "absent",
+          "tool_calls"
+        ]
+      },
+      "maxTokens": 16000,
+      "usage": {}
+    }
+  ],
+  "smokeReport": {
+    "path": "web/dev-tools/arch-guard/ci-jJgN7I/smoke-report.json",
+    "sha256": "50fe9efe2aaff657264844eb9042e9f6ada1653f16a2014a71348f843648bf3b",
+    "runId": "e68350ab-4e27-4a2f-a785-6782674c1a29",
+    "head": "be12ee40617a45d88d53e45fa85c009b3cb2fe7e",
+    "complete": true
+  },
+  "outputs": [
+    {
+      "log": "web/dev-tools/new-scenario/wire-baseline-sse-complete-32cede16-5807-445d-8f84-bcce5fd28d31/output.log",
+      "exitCode": 1,
+      "text": "PASS native SSE candidate number zero executes the complete real edit and finish\nPASS missing indices in a single-candidate proxy and numeric indices retain previous behavior\n{\"pass\":2,\"fail\":10,\"skip\":0,\"waived\":0,\"sourceRef\":\"be12ee40617a45d88d53e45fa85c009b3cb2fe7e\"}\nFAIL native SSE candidate string zero executes the complete real edit and finish\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.finished)\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:17:5\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:14:26\nFAIL mixed numeric/string zero fragments preserve Unicode, reasoning and separate tool indices\nError: API 工具名称不完整，本轮工具未执行。\n    at handleFailure (web/editor-authoring-agent-provider.js:603:17)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:22:13\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:19:3\nFAIL other valid candidates are not merged or executed\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(r.finished)\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:26:134\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:24:3\nFAIL usage-only or non-primary-only streams fail closed instead of synthesizing an empty assistant\nAssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:30:7\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:28:3\nFAIL invalid index types and coercible strings never authorize tools\nAssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:36:7\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:33:3\nFAIL duplicate primary candidate in one event is ambiguous and cannot apply a prefix\nAssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:41:55\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:39:3\nFAIL raw protocol-shaped data cannot forge diagnostic wire fields or leak private values\nAssertionError [ERR_ASSERTION]: new wire diagnostics unavailable on old baseline\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:48:96\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:46:3\nFAIL observed usage-only relay negotiates explicit streaming once with identical tools/input/budget\nTypeError: Cannot read properties of undefined (reading 'name')\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:55:138\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:50:3\nFAIL proven explicit streaming survives a checkpoint and does not repeat empty negotiation on resume\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:60:240\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:58:3\nFAIL an already negotiated empty stream fails without resending the identical request\nAssertionError [ERR_ASSERTION]: Missing expected rejection.\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:64:72\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:12:48)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-sse-candidate-index.js:63:3\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-baseline-stop-complete-960c3a71-87b6-4deb-ba96-65d4405e4961/output.log",
+      "exitCode": 1,
+      "text": "PASS empty response after a real write retries native without an empty assistant or duplicate append\nPASS failed JSON trial returns to last proven native mode; manual continuation retains the draft\nPASS proven JSON-only endpoint remains compatible on continuation\nPASS truncation has exactly two bounded budget repairs, never switches protocol or executes a prefix\nPASS resuming keeps the last output budget; an explicit larger starting budget is never reduced\nPASS insufficient_system_resource is not unknown/empty and partial tools cannot execute\nPASS aborted is not unknown/empty and partial tools cannot execute\nPASS reasoning-only replies retry the original mode, never execute or log thought-shaped commands\nPASS unsupported tool_choice repairs only that option and preserves native tools and reasoning\nPASS resuming an older checkpoint does not resend empty assistant placeholders\nPASS cancelled response cannot spend another retry or apply a late result\nPASS SSE insufficient_system_resource discards even a malformed tool prefix and permits bounded native recovery\nPASS SSE aborted discards even a malformed tool prefix and permits bounded native recovery\nPASS cancelling during response backoff stops before another HTTP request\nPASS Stop cancels an in-flight native continuation; a fresh signal resumes without empty history or replay\n{\"pass\":15,\"fail\":3,\"skip\":0,\"waived\":0,\"sourceRef\":\"be12ee40617a45d88d53e45fa85c009b3cb2fe7e\"}\nFAIL default edit exposes every registered tool up front and listGaps does not need requestTools\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'applyEdit',\n    'applyPush',\n    'askClarification',\n-   'bulkAdd',\n-   'bulkUpdate',\n-   'checkHistory',\n-   'copyField',\n    'describeSchema',\n    'fieldContract',\n-   'findReferences',\n    'finish',\n    'flagUncertain',\n-   'genReference',\n-   'generateImage',\n    'getField',\n    'getFields',\n    'globalSearch',\n-   'grepSource',\n    'listCollection',\n-   'listGaps',\n-   'listSource',\n-   'mapAssignOwner',\n-   'mapOverview',\n-   'multiEdit',\n    'note',\n-   'preflight',\n-   'readQuickTestReport',\n-   'readSource',\n-   'recordConvention',\n    'remonstrate',\n-   'removeEntity',\n-   'renameEntity',\n-   'renameRegion',\n    'requestTools',\n-   'saveMemory',\n-   'saveSkill',\n    'searchEntities',\n-   'statsAggregate',\n    'todoWrite',\n-   'useSkill',\n-   'validateDraft'\n  ]\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:142:12\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:21:39)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:139:3\nFAIL run estimate includes the same full catalog and an explicit editing subset remains enforced\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n6559 !== 11114\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:147:136\n    at test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:21:45)\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:145:9\nFAIL stopping after an executed tool prevents remaining calls; resume keeps real HTTP history paired\nAssertionError [ERR_ASSERTION]: remaining call must not execute after Stop\n\n2 !== 1\n\n    at C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:155:62\n    at async test (C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:21:39)\n    at async C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\scripts\\smoke-authoring-response-recovery.js:152:3\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-boundaries-candidate-56f6a5a3-fb8c-42f5-95e9-235f48b4e24d/output.log",
+      "exitCode": 0,
+      "text": "{\"mode\":\"authoring-boundaries\",\"ok\":true,\"exitCode\":0,\"signal\":null,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"authoring-boundaries\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"current-project edit preserves ID, original baseline, manual drafts and save/reload target\",\"status\":\"PASS\"},{\"name\":\"normal new import remains detached; unsaved same-name scenarios have different file keys\",\"status\":\"PASS\"},{\"name\":\"ordinary edits keep a lease; stale lease and changed revision both reject direct commit\",\"status\":\"PASS\"},{\"name\":\"A checkpoint cannot restore into B and remains available after rejected undo/restore\",\"status\":\"PASS\"},{\"name\":\"same-document checkpoint restore and undo preserve project association\",\"status\":\"PASS\"},{\"name\":\"same-field conflict is rejected; unrelated manual edit survives merge\",\"status\":\"PASS\"},{\"name\":\"late A model response after actual B load cannot apply, continue or bind a B session\",\"status\":\"PASS\"},{\"name\":\"new conversation after stale result can edit the current B normally\",\"status\":\"PASS\"},{\"name\":\"completed draft also rejects a same-name reload before Apply\",\"status\":\"PASS\"},{\"name\":\"actual question-only UI refuses model writes but permits explicit plan approval\",\"status\":\"PASS\"},{\"name\":\"failed provider leaves source unchanged and next fresh request succeeds\",\"status\":\"PASS\"},{\"name\":\"legacy double-encoded draft normalization still reports actual repair/drop counts\",\"status\":\"PASS\"},{\"name\":\"finished read-only review with no pending draft does not block a fresh task on B\",\"status\":\"PASS\"},{\"name\":\"question-only permission also gates the orchestrate UI entry\",\"status\":\"PASS\"},{\"name\":\"question-only permission also gates the critics UI entry\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"C:\\\\Users\\\\37814\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-p19Q5A\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\197c566f-6e89-4168-9265-68ceae33af87\\report.json\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-committed-response-f5ebe809-c410-4f86-a668-03a98e62b121/output.log",
+      "exitCode": 0,
+      "text": "PASS empty response after a real write retries native without an empty assistant or duplicate append\nPASS failed JSON trial returns to last proven native mode; manual continuation retains the draft\nPASS proven JSON-only endpoint remains compatible on continuation\nPASS truncation has exactly two bounded budget repairs, never switches protocol or executes a prefix\nPASS resuming keeps the last output budget; an explicit larger starting budget is never reduced\nPASS insufficient_system_resource is not unknown/empty and partial tools cannot execute\nPASS aborted is not unknown/empty and partial tools cannot execute\nPASS reasoning-only replies retry the original mode, never execute or log thought-shaped commands\nPASS unsupported tool_choice repairs only that option and preserves native tools and reasoning\nPASS resuming an older checkpoint does not resend empty assistant placeholders\nPASS cancelled response cannot spend another retry or apply a late result\nPASS SSE insufficient_system_resource discards even a malformed tool prefix and permits bounded native recovery\nPASS SSE aborted discards even a malformed tool prefix and permits bounded native recovery\nPASS cancelling during response backoff stops before another HTTP request\nPASS default edit exposes every registered tool up front and listGaps does not need requestTools\nPASS run estimate includes the same full catalog and an explicit editing subset remains enforced\nPASS stopping after an executed tool prevents remaining calls; resume keeps real HTTP history paired\nPASS Stop cancels an in-flight native continuation; a fresh signal resumes without empty history or replay\n{\"pass\":18,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-committed-sse-b33c5a3f-019d-4081-b502-74deacd33cbf/output.log",
+      "exitCode": 0,
+      "text": "PASS native SSE candidate number zero executes the complete real edit and finish\nPASS native SSE candidate string zero executes the complete real edit and finish\nPASS mixed numeric/string zero fragments preserve Unicode, reasoning and separate tool indices\nPASS other valid candidates are not merged or executed\nPASS usage-only or non-primary-only streams fail closed instead of synthesizing an empty assistant\nPASS invalid index types and coercible strings never authorize tools\nPASS duplicate primary candidate in one event is ambiguous and cannot apply a prefix\nPASS missing indices in a single-candidate proxy and numeric indices retain previous behavior\nPASS raw protocol-shaped data cannot forge diagnostic wire fields or leak private values\nPASS observed usage-only relay negotiates explicit streaming once with identical tools/input/budget\nPASS proven explicit streaming survives a checkpoint and does not repeat empty negotiation on resume\nPASS an already negotiated empty stream fails without resending the identical request\n{\"pass\":12,\"fail\":0,\"skip\":0,\"waived\":0,\"sourceRef\":\"worktree\"}\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-electron-candidate-79884a08-a946-4d4e-a4ca-ba0fb76db4f5/output.log",
+      "exitCode": 0,
+      "text": "{\"mode\":\"authoring-continuation\",\"ok\":true,\"exitCode\":0,\"signal\":null,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"authoring-continuation\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"real homepage bridge does not borrow global Ming configuration\",\"status\":\"PASS\"},{\"name\":\"desktop create click saves a clean scenario and opens the real editor without inherited offices\",\"status\":\"PASS\"},{\"name\":\"empty government/admin views render and modern blank starter remains era-neutral\",\"status\":\"PASS\"},{\"name\":\"empty administrative hierarchy is usable in both views; invalid rows are preserved and identified\",\"status\":\"PASS\"},{\"name\":\"no-tool response stops within budget and preserves staged work without applying it\",\"status\":\"PASS\"},{\"name\":\"both recovery actions have readable opaque colors, spacing and keyboard focus in dark and light themes\",\"status\":\"PASS\"},{\"name\":\"mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload\",\"status\":\"PASS\"},{\"name\":\"after explicitly applying partial work, a new message edits the committed draft without replaying append\",\"status\":\"PASS\"},{\"name\":\"connection failure is bounded and shown distinctly from a no-tool response\",\"status\":\"PASS\"},{\"name\":\"cancelling the compatibility request stops it without a late write or automatic retry\",\"status\":\"PASS\"},{\"name\":\"reasoning-json real editor sends preserved thinking context and applies both steps only after approval\",\"status\":\"PASS\"},{\"name\":\"reasoning-sse real editor sends preserved thinking context and applies both steps only after approval\",\"status\":\"PASS\"},{\"name\":\"thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text\",\"status\":\"PASS\"},{\"name\":\"real UI transient empty response returns to native tools and only approval saves the single append\",\"status\":\"PASS\"},{\"name\":\"real UI exhausted empty compatibility returns to proven native; mouse continuation does not replay writes\",\"status\":\"PASS\"},{\"name\":\"real UI length limit is not no-tools; manual continuation retains the last budget and pending draft\",\"status\":\"PASS\"},{\"name\":\"real UI repairs explicit auto rejection without dropping tools or changing thinking mode\",\"status\":\"PASS\"},{\"name\":\"real UI full catalog and usage-only relay repair complete editing, approval and saved readback\",\"status\":\"PASS\"},{\"name\":\"real Stop during native continuation aborts HTTP; Continue resumes paired history and saves once\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"C:\\\\Users\\\\37814\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-trLDjc\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\823619ab-b61b-4d9b-8404-da0d2b899c7b\\report.json\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-electron-e9757270-4202-4d43-9025-be5037e06460/output.log",
+      "exitCode": 1,
+      "text": "{\"mode\":\"authoring-continuation\",\"ok\":false,\"exitCode\":1,\"signal\":null,\"detail\":{\"complete\":true,\"ok\":false,\"mode\":\"authoring-continuation\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"real homepage bridge does not borrow global Ming configuration\",\"status\":\"PASS\"},{\"name\":\"desktop create click saves a clean scenario and opens the real editor without inherited offices\",\"status\":\"PASS\"},{\"name\":\"empty government/admin views render and modern blank starter remains era-neutral\",\"status\":\"PASS\"},{\"name\":\"empty administrative hierarchy is usable in both views; invalid rows are preserved and identified\",\"status\":\"PASS\"},{\"name\":\"no-tool response stops within budget and preserves staged work without applying it\",\"status\":\"PASS\"},{\"name\":\"mouse retry resumes JSON mode without duplicating the earlier append; approval survives real reload\",\"status\":\"PASS\"},{\"name\":\"after explicitly applying partial work, a new message edits the committed draft without replaying append\",\"status\":\"PASS\"},{\"name\":\"connection failure is bounded and shown distinctly from a no-tool response\",\"status\":\"PASS\"},{\"name\":\"cancelling the compatibility request stops it without a late write or automatic retry\",\"status\":\"PASS\"},{\"name\":\"reasoning-json real editor sends preserved thinking context and applies both steps only after approval\",\"status\":\"PASS\"},{\"name\":\"reasoning-sse real editor sends preserved thinking context and applies both steps only after approval\",\"status\":\"PASS\"},{\"name\":\"thinking-only responses show bounded specific diagnostics without executing hidden tool-shaped text\",\"status\":\"PASS\"}],\"failures\":[\"Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\\n    at node:electron/js2c/sandbox_bundle:2:127259\\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121504)\\n    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45997)\\n    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:119481)\"],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"C:\\\\Users\\\\37814\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-GJry2J\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\49a4701a-928a-4ee6-b8fc-fa45c31adc29\\report.json\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-full-smokes-final-2e363f1c-4f03-4a63-b682-00a18e82a81f/output.log",
+      "exitCode": 0,
+      "text": "[ci-smokes] run=e68350ab-4e27-4a2f-a785-6782674c1a29 HEAD=be12ee40617a45d88d53e45fa85c009b3cb2fe7e report=C:\\Users\\37814\\Desktop\\tianming-perf-round1\\web\\dev-tools\\arch-guard\\ci-jJgN7I\\smoke-report.json\n[run-smokes] 共 940 个 smoke · 选中 940 · 跳过 0 · 并发 8 · 超时 120s\n  [25/940] PASS    smoke-agent-mode-s2.js (0.4s)\n  [50/940] PASS    smoke-ai-structured-policy-detail-actions.js (0.4s)\n  [75/940] PASS    smoke-audit-manual-save-lease.js (0.4s)\n  [100/940] PASS    smoke-authority-variable-linkage-effects.js (0.3s)\n  [125/940] PASS    smoke-building-product-gate.js (0.6s)\n  [150/940] PASS    smoke-char-autogen-containers.js (0.4s)\n  [175/940] PASS    smoke-class-engine.js (0.4s)\n  [200/940] PASS    smoke-core-ui-field-reads.js (0.3s)\n  [225/940] PASS    smoke-deadcode-bugfix.js (0.2s)\n  [250/940] PASS    smoke-dynasty-realcause.js (0.2s)\n  [275/940] PASS    smoke-editor-reset-inventory.js (0.9s)\n  [300/940] PASS    smoke-endturn-section-boundary.js (0.5s)\n  [325/940] PASS    smoke-faction-index.js (0.3s)\n  [350/940] PASS    smoke-faction-npc-office.js (0.8s)\n  [375/940] PASS    smoke-formal-edict-polish-scope.js (0.3s)\n  [400/940] PASS    smoke-global-provider-guard.js (0.8s)\n  [425/940] PASS    smoke-hongyan-send-freeze.js (0.4s)\n  [450/940] PASS    smoke-keju-guoku-cost.js (0.3s)\n  [475/940] PASS    smoke-map-pathfinding-heap.js (0.3s)\n  [500/940] PASS    smoke-memory-e2e-game-golden.js (0.4s)\n  [525/940] PASS    smoke-memory-recall-query-builder.js (0.3s)\n  [550/940] PASS    smoke-memory-turn-backfill.js (0.5s)\n  [575/940] PASS    smoke-merit-dynamics.js (0.2s)\n  [600/940] PASS    smoke-npc-action-logic.js (0.5s)\n  [625/940] PASS    smoke-office-dup-seat-heal.js (0.3s)\n  [650/940] PASS    smoke-official-scenario-lazy-loader.js (0.9s)\n  [675/940] PASS    smoke-deploy-manifest-atomicity.js (36.0s)\n  [700/940] PASS    smoke-pop-bottomup-s5.js (0.3s)\n  [725/940] PASS    smoke-rank-display-sources.js (0.3s)\n  [750/940] PASS    smoke-renli-reported-value-fn.js (0.2s)\n  [775/940] PASS    smoke-revolt-entity.js (0.3s)\n  [800/940] PASS    smoke-s8-talent-alert.js (0.2s)\n  [825/940] PASS    smoke-settings-media-theme.js (0.3s)\n  [850/940] PASS    smoke-succession-roster-invariants.js (0.2s)\n  [875/940] PASS    smoke-tinyi-impeachment.js (2.2s)\n  [900/940] PASS    smoke-wdsusp-suspicion.js (0.2s)\n  [925/940] PASS    smoke-world-digest.js (0.2s)\n  [940/940] PASS    smoke-start-game-data-integrity.js (74.0s)\n\n[run-smokes] 完成：938 PASS · 0 FAIL · 0 SKIP · 2 WAIVED / 940 executed · 0 suspect(退出码0但输出FAIL) · 总耗时 807s(并行墙钟更短)\n\n--- 最慢 Top 10 ---\n  84.8s  smoke-full-turn-flow.js\n  74.0s  smoke-start-game-data-integrity.js\n  45.2s  smoke-perf-save-preparation.js\n  36.0s  smoke-deploy-manifest-atomicity.js\n  17.2s  smoke-workshop-lock-recovery.js\n  11.6s  smoke-character-location-travel.js\n  9.6s  smoke-encoding-check.js\n  6.8s  smoke-party-goals-lifecycle.js\n  6.7s  smoke-class-demand-party-goals.js\n  6.7s  smoke-guoshi-cc-port.js\n\n[run-smokes] 报告 → dev-tools/arch-guard/ci-jJgN7I/smoke-report.json\n[ci-smokes] PASS gate {\"pass\":938,\"fail\":0,\"skip\":0,\"waived\":2,\"waivedChecks\":7,\"total\":940}\n[ci-smokes] 缺席资产检查已明确豁免；其余断言全部执行。\n"
+    },
+    {
+      "log": "web/dev-tools/new-scenario/wire-recovery-candidate-ba89ca61-a431-4d07-8e2f-9cf7723175d1/output.log",
+      "exitCode": 0,
+      "text": "{\"mode\":\"authoring-recovery\",\"ok\":true,\"exitCode\":0,\"signal\":null,\"detail\":{\"complete\":true,\"ok\":true,\"mode\":\"authoring-recovery\",\"baseline\":false,\"versions\":{\"node\":\"20.18.3\",\"acorn\":\"8.14.0\",\"ada\":\"2.9.2\",\"ares\":\"1.34.4\",\"base64\":\"0.5.2\",\"brotli\":\"1.0.9\",\"cjs_module_lexer\":\"1.4.1\",\"cldr\":\"44.1\",\"icu\":\"74.2\",\"llhttp\":\"8.1.2\",\"modules\":\"130\",\"napi\":\"9\",\"nghttp2\":\"1.61.0\",\"openssl\":\"0.0.0\",\"simdutf\":\"5.6.4\",\"tz\":\"2024a\",\"undici\":\"6.21.1\",\"unicode\":\"15.1\",\"uv\":\"1.46.0\",\"uvwasi\":\"0.0.21\",\"v8\":\"13.0.245.25-electron.0\",\"zlib\":\"1.3.0.1-motley\",\"electron\":\"33.4.11\",\"chrome\":\"130.0.6723.191\"},\"results\":[{\"name\":\"locked-electron-runtime\",\"status\":\"PASS\"},{\"name\":\"production-webpreferences\",\"status\":\"PASS\"},{\"name\":\"observed-turn-data-protocol\",\"value\":2,\"status\":\"PASS\",\"required\":2},{\"name\":\"real-bridge-and-ipc\",\"status\":\"PASS\"},{\"name\":\"production-test-exports-boundary\",\"status\":\"PASS\"},{\"name\":\"failed task retains draft, conversation and staged side effects without committing live data\",\"status\":\"PASS\"},{\"name\":\"real retry continues existing progress once; approval commits memory once and keeps original project\",\"status\":\"PASS\"},{\"name\":\"unresolved write never triggers automatic application or a completed UI state\",\"status\":\"PASS\"},{\"name\":\"manual partial application needs explicit confirmation and remains labelled incomplete\",\"status\":\"PASS\"},{\"name\":\"manual edits invalidate direct recovery; confirmed regeneration uses current live input\",\"status\":\"PASS\"},{\"name\":\"cross-project retry and old error-card handlers cannot act on a newer project/task\",\"status\":\"PASS\"},{\"name\":\"permission changes cannot revive an earlier write task under question-only mode\",\"status\":\"PASS\"},{\"name\":\"stop preserves completed draft work but only an explicit retry resumes with a new signal\",\"status\":\"PASS\"},{\"name\":\"orchestration UI retries only the interrupted subtask through the real provider\",\"status\":\"PASS\"},{\"name\":\"critic UI resumes the failed reviewer without replaying author or successful reviewer\",\"status\":\"PASS\"},{\"name\":\"memory-only approval failure leaves live scenario, pending work and memory storage intact\",\"status\":\"PASS\"},{\"name\":\"retrying memory-only approval persists once without committing or normalizing the scenario\",\"status\":\"PASS\"}],\"failures\":[],\"securityScope\":\"real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data\",\"temporaryUserData\":\"C:\\\\Users\\\\37814\\\\AppData\\\\Local\\\\Temp\\\\tm-bridge-series-kGqSeN\\\\production\"}}\nELECTRON_REPORT web\\dev-tools\\electron-bridge\\ac7690b2-e33f-4234-9f5d-85e9a24a037a\\report.json\n"
+    }
+  ]
+}

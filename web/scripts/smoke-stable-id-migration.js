@@ -4,8 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const lifecyclePath = path.join(__dirname, '..', 'tm-save-lifecycle.js');
-const lifecycle = fs.readFileSync(lifecyclePath, 'utf8');
+const lifecycle = fs.readFileSync(path.join(__dirname, '..', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(__dirname, '..', 'tm-save-lifecycle.js'), 'utf8');
 
 function sliceFn(source, marker) {
   const start = source.indexOf(marker);

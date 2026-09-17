@@ -28,12 +28,12 @@ const setBody = set ? set[0] : '';
 ok(/fang: '坊'/.test(setBody) && /shi: '市'/.test(setBody) && /zhen: '镇'/.test(setBody), '② 聚落 fang→坊/shi→市/zhen→镇');
 
 // 渲染点接入格式化器(非裸 data.byAge/data.bySettlement)
-ok(/\['年龄', fmtByAge\(data\.byAge\)\]/.test(src), '③ 渲染:年龄走 fmtByAge(data.byAge)');
-ok(/\['聚落', fmtBySettlement\(data\.bySettlement\)\]/.test(src), '③ 渲染:聚落走 fmtBySettlement(data.bySettlement)');
+ok(src.includes("['年龄', fmtByAge(bkDemographicBreakdown(data, 'byAge'))]"), '③ 渲染:年龄经来源检查后专用格式化');
+ok(src.includes("['聚落', fmtBySettlement(bkDemographicBreakdown(data, 'bySettlement'))]"), '③ 渲染:聚落经来源检查后专用格式化');
 ok(!/\['年龄', data\.byAge\]/.test(src) && !/\['聚落', data\.bySettlement\]/.test(src), '③ 不再裸 dump data.byAge/data.bySettlement');
 
-// 性别/族群/信仰不动(本就正确·不误改)
-ok(/\['性别', data\.byGender\]/.test(src) && /\['族群', data\.byEthnicity\]/.test(src) && /\['信仰', data\.byFaith\]/.test(src), '· 性别/族群/信仰保持原样(不误改)');
+// 细分先检查来源；族群与信仰比例不得作为整数人口输出。
+ok(src.includes("['性别', bkDemographicBreakdown(data, 'byGender')]") && src.includes("bkPopulationGroup(bkDemographicBreakdown(data, 'byEthnicity'), 'ethnicity')") && src.includes("bkPopulationGroup(bkDemographicBreakdown(data, 'byFaith'), 'faith')"), '· 细分先核来源，族群与信仰按比例格式化');
 
 console.log('\nsmoke-region-age-settlement-labels ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F ? 1 : 0);

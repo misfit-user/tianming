@@ -60,6 +60,8 @@
   var _rightAdminRenderSeq = 0;
   var _rightOfficeRenderSeq = 0;
   var _rightWenduiRenderSeq = 0;
+  var _rightArmySearch = null;
+  var _rightArmySearchSeq = 0;
 
   // ── late-bound wrappers for orchestration calls (bridge.X / window.X) ─
   function openPanel(slot){ return bridge.openPanel(slot); }
@@ -420,7 +422,7 @@
 
   function rightWenduiIsSeeker(p){
     if (!p || !rightIssueAtCourt(p)) return false;
-    if (p._mourning || p._lastMetTurn === ((window.GM && GM.turn) || 1)) return false;
+    if (p._mourning || p._lastMetTurn === ((window.GM && GM.turn) || 1) || p._lastAudienceDeniedTurn === ((window.GM && GM.turn) || 1)) return false;
     // 单一真源：走 tm-wendui 的 _wdDeriveAudienceAgenda(与旧 UI【有臣求见】筛选、与本文件 rightWenduiSeekReason 同源)。
     // agenda 依赖 _npcCommitments/_wdRewardPunish/loyalty/stress 等真实处境，只挂在真身上→照 :409 取真身。
     var realCh = (typeof findCharByName === 'function' && findCharByName(p.name)) || p;
@@ -528,13 +530,8 @@
       '</div>';
   }
 
-  function renderRightWenduiPanel(){
-    var people = rightIssuePeople();
-    var gm = window.GM || {};
-    var rawPendingAudiences = Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : [];
-    // 清洗谓词(保留使节/剧本预置/后妃/本朝在场者·滤除混入的明确异势力求见者)。写口统一走 tm-wendui 的唯一
-    // 清洗 mutator(按谓词·非 index)，与旧 UI/各删除点同口，杜绝两套 UI 各持 render-time index 删错人。
-    var _wdKeep = function(q){
+  // 名单与导航红泡共用的只读筛选；角标读取不能清洗队列、补主键或生成新的请见。
+  function rightWenduiKeepPending(q){
       if (!q || !q.name) return false;
       if (!q.isConsort) {
         // 阵营闸(2026-07-04)：滤除旧版混入的明确异势力求见者(外邦君主)·使节/剧本预置/空 faction 者放行·与 tm-wendui 渲染清洗同款
@@ -551,19 +548,38 @@
         try { p = window.findCharByName(q.name); } catch(_) {}
       }
       return !!(p && rightIssueIsPlayerConsort(p));
+  }
+
+  function rightWenduiPendingState(){
+    var gm = window.GM || {};
+    var people = rightIssuePeople();
+    var pendingAudiences = (Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : []).filter(rightWenduiKeepPending);
+    var queued = new Set();
+    pendingAudiences.forEach(function(q){
+      var p = findPerson(q.name);
+      queued.add(p ? personKey(p) : 'name:' + q.name);
+    });
+    var atCourt = people.filter(rightIssueAtCourt);
+    var seekers = atCourt.filter(function(p){ return !queued.has(personKey(p)) && !queued.has('name:' + p.name) && rightWenduiIsSeeker(p); });
+    var pending = new Set(queued);
+    seekers.forEach(function(p){ pending.add(personKey(p)); });
+    return {
+      queue: pendingAudiences,
+      seekers: seekers,
+      waiting: atCourt.filter(function(p){ return !pending.has(personKey(p)) && !pending.has('name:' + p.name); }),
+      away: people.filter(function(p){ return !rightIssueAtCourt(p); }),
+      count: pending.size
     };
-    var pendingAudiences;
+  }
+
+  function renderRightWenduiPanel(){
+    // 保留既有清洗写口及稳定 _qid；红泡与名单均由上方只读查询派生。
     if (typeof window._wdCleansePendingAudiences === 'function') {
-      window._wdCleansePendingAudiences(_wdKeep);   // 唯一写口·仅在真有剔除时写回
-      pendingAudiences = Array.isArray(gm._pendingAudiences) ? gm._pendingAudiences : [];
-    } else {
-      pendingAudiences = rawPendingAudiences.filter(_wdKeep);   // 兜底：mutator 未载入时不写回·仅供本次渲染
+      window._wdCleansePendingAudiences(rightWenduiKeepPending);
     }
     if (typeof window._wdEnsurePendingQids === 'function') window._wdEnsurePendingQids();   // 渲染前补 _qid(队列按钮按 _qid 定位·非 index)
-    var atCourt = people.filter(rightIssueAtCourt);
-    var seekers = atCourt.filter(rightWenduiIsSeeker);
-    var waiting = atCourt.filter(function(p){ return seekers.indexOf(p) < 0; });
-    var away = people.filter(function(p){ return !rightIssueAtCourt(p); });
+    var pending = rightWenduiPendingState();
+    var pendingAudiences = pending.queue, seekers = pending.seekers, waiting = pending.waiting, away = pending.away;
     var waitingBody = waiting.length ? rightWenduiHydratedList('tmrp-wd-grid', waiting, function(p){
       return rightWenduiPersonCard(p, 'wendui-pick', '');
     }) : '';
@@ -575,6 +591,7 @@
     var queueBody = pendingAudiences.length ? '<div class="tmrp-wd-list">' + pendingAudiences.map(rightWenduiQueueItem).join('') + '</div>' : '';
     var seekerBody = seekers.length ? rightWenduiHydratedList('tmrp-wd-list', seekers, rightWenduiRequestItem) : '';
     return '<div class="tmrp-issue-shell tmrp-wendui">' +
+      '<div class="tmrp-meta" data-wendui-pending-count="' + pending.count + '" title="同一人多条来意保留，人数不重复计算">尚有 ' + pending.count + ' 人请见 · 点选下列人物接见，或暂却／不见。</div>' +
       '<div class="tmrp-summary cols4">' +
         '<div class="tmrp-stat"><b>' + esc(pendingAudiences.length) + '</b><span>候见</span></div>' +
         '<div class="tmrp-stat"><b>' + esc(seekers.length) + '</b><span>求见</span></div>' +
@@ -688,6 +705,63 @@
     return rightArmyFirst(a, ['name','id'], '未名部队');
   }
 
+  function rightArmyCommander(a){
+    return rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
+  }
+
+  function rightArmyLocation(a){
+    var value = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+    var regions = (typeof GM !== 'undefined' && GM && GM.mapData && GM.mapData.regions) || [];
+    var region = regions.find(function(r){ return r && (r.id === value || r.name === value); });
+    return (region && region.name) || rightArmyFirst(a, ['locationName','garrisonName'], value);
+  }
+
+  function rightArmySearchState(){
+    var g = window.GM, p = window.P, gen = window._tmLoadGen || 0;
+    var identity = JSON.stringify([g && g.sid, g && g._campaignId, g && g._timelineId]);
+    if (!_rightArmySearch || _rightArmySearch.gm !== g || _rightArmySearch.p !== p || _rightArmySearch.gen !== gen || _rightArmySearch.identity !== identity) {
+      _rightArmySearch = { gm:g, p:p, gen:gen, identity:identity, query:'', token:'army-search-' + (++_rightArmySearchSeq) };
+    }
+    return _rightArmySearch;
+  }
+
+  function rightArmySearchText(value){
+    var text = String(value == null ? '' : value);
+    if (text.normalize) text = text.normalize('NFKC');
+    return text.toLowerCase().trim();
+  }
+
+  function rightFilterArmyRows(rows, query){
+    var words = rightArmySearchText(query).split(/\s+/).filter(Boolean);
+    if (!words.length) return rows;
+    return rows.filter(function(row){
+      var a = row.army;
+      var text = rightArmySearchText([rightArmyName(a), a && a.id, rightArmyCommander(a), rightArmyLocation(a), rightArmyType(a)].join(' '));
+      return words.every(function(word){ return text.indexOf(word) >= 0; });
+    });
+  }
+
+  function rightUpdateArmySearch(input){
+    var shell = input && input.closest && input.closest('[data-army-search-owner]');
+    var search = rightArmySearchState();
+    if (!shell || !shell.isConnected || shell.getAttribute('data-army-search-owner') !== search.token) return;
+    search.query = String(input.value || '');
+    var rows = rightArmyRowsForRender(rightArmyList());
+    var found = rightFilterArmyRows(rows, search.query);
+    var list = shell.querySelector('[data-army-list-token]');
+    if (!list) return;
+    // Invalidate the older deferred hydration before replacing only the list.
+    // Keep the input node, IME composition, focus and selection intact.
+    list.setAttribute('data-army-list-token', 'army-' + (++_rightArmyRenderSeq));
+    list.innerHTML = found.length ? rightArmyGroupsHtml(rightBuildArmyGroups(found), state.selectedArmy)
+      : '<div class="tmrp-empty">未找到匹配部队，请换个名称、统帅、驻地或兵种。</div>';
+    list.scrollTop = 0;
+    var count = shell.querySelector('[data-army-search-count]');
+    if (count) count.textContent = '显示 ' + found.length + ' / ' + rows.length + ' 支';
+    var clear = shell.querySelector('[data-army-search-clear]');
+    if (clear) clear.disabled = !search.query;
+  }
+
   function rightArmyKey(a, idx){
     return String(rightArmyFirst(a, ['id','name'], 'army-' + idx));
   }
@@ -788,8 +862,8 @@
           var a = row.army;
           var key = row.key;
           var active = key === selectedKey;
-          var commander = rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
-          var location = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+          var commander = rightArmyCommander(a);
+          var location = rightArmyLocation(a);
           return '<button type="button" class="tmrp-person ' + (active ? 'active' : '') + '" data-right-action="army-select" data-id="' + attr(key) + '">' +
             '<span class="tmrp-avatar">军</span><span><b>' + esc(rightArmyName(a)) + '</b><span>' + esc(commander) + ' · ' + esc(location) + '</span></span><small>' + esc(rightArmyFmtNum(row.soldiers)) + '</small></button>';
         }).join('');
@@ -882,8 +956,17 @@
 
   function rightArmyMoneyText(a){
     var value = rightArmyFirst(a, ['salary','annualSalary','yearlySalary','upkeep','cost','monthlyCost'], '');
+    var labels = {money:'钱',grain:'粮',cloth:'帛',silver:'银'};
+    if (Array.isArray(value)) {
+      return value.map(function(row){
+        if (!row || typeof row !== 'object') return String(row == null ? '' : row);
+        var kind = row.resource || row.type || row.name || row.currency || '';
+        var amount = row.amount != null ? row.amount : row.value;
+        return (labels[kind] || kind) + ' ' + rightArmyFmtNum(amount) + (row.unit || '') + (row.period ? '／' + row.period : '');
+      }).filter(Boolean).join(' / ') || '未录';
+    }
     if (value && typeof value === 'object') {
-      return Object.keys(value).map(function(k){ return k + ' ' + rightArmyFmtNum(value[k]); }).join(' / ');
+      return Object.keys(value).map(function(k){ return (labels[k] || k) + ' ' + rightArmyFmtNum(value[k]); }).join(' / ');
     }
     if (value !== '') return isFinite(Number(value)) ? rightArmyFmtNum(value) : value;
     return '未录';
@@ -913,7 +996,7 @@
     var mutiny = rightArmyPercent(a, ['mutinyRisk','rebellionRisk'], 0);
     var hot = morale < 45 || supply < 35 || mutiny >= 55;
     var commander = rightArmyFirst(a, ['commander','commanderName','commanderDisplayName','commander_name','general','generalName','leader','leaderName','commandingOfficer','chiefCommander','chiefGeneral','mainGeneral'], '未置统帅');
-    var location = rightArmyFirst(a, ['location','garrison','station','theater','region'], '未置驻地');
+    var location = rightArmyLocation(a);
     var activity = rightArmyActivityText(rightArmyFirst(a, ['activity','state','status','currentAction'], '驻防'));
     // 行军可视化(Wave2·右栏详情卡):在途军队「当前动态」附趋向目的地+进度(取 GM.marchOrders 真进度·同朝野内情抽屉/过回合报告一致)
     try {
@@ -930,11 +1013,12 @@
       '<div><span>装备</span><b>' + esc(rightArmyEquipmentText(a)) + '</b></div>' +
       '</div>' +
       rightArmyRows([['当前动态', activity], ['说明', desc], ['所属', rightArmyFaction(a) || '未录'], ['补给/兵变险', Math.round(supply) + ' / ' + Math.round(mutiny)]]) +
+      ((window.TM && TM.CommandAuthority && TM.CommandAuthority.enabled(a)) ? '<div class="tm-command-context" style="font-size:13px;white-space:pre-wrap;line-height:1.8;padding:10px 0;">' + esc(TM.CommandAuthority.describe(a)) + '</div>' : '') +
       rightArmyBar('士气', morale) + rightArmyBar('训练', training) + rightArmyBar('忠诚', loyalty) + rightArmyBar('控制', control) +
       '<table class="tmrp-data-table"><thead><tr><th>项目</th><th>明细</th></tr></thead><tbody>' +
       '<tr><td>兵种构成</td><td>' + esc(rightArmyCompositionText(a.composition || a.unitsComposition || a.units)) + '</td></tr>' +
       '<tr><td>编制（队）</td><td>' + rightArmyUnitsHtml(a) + '</td></tr>' +
-      '<tr><td>岁饷</td><td>' + esc(rightArmyMoneyText(a)) + '</td></tr>' +
+      '<tr><td>饷给</td><td>' + esc(rightArmyMoneyText(a)) + '</td></tr>' +
       '<tr><td>军需</td><td>' + esc(rightArmyFirst(a, ['logistics','supplyState','supplyDepotId'], '未录')) + '</td></tr>' +
       '</tbody></table>' +
       '<div class="tmrp-action-row">' +
@@ -1005,7 +1089,7 @@
       var _lv4regs = revolts.filter(function(r){ return (Number(r.level)||0) >= 4; }).map(function(r){ return r.region || '某地'; }).slice(0, 2).join('、');
       junctures.push('民变已至「起义」' + (_lv4regs ? '（' + _lv4regs + '）' : '') + '·距改朝只欠一线——剿抚迟则天命移');
     }
-    if (pm && cl > 0.9) junctures.push((pm.name || '权臣') + '权柄已逾九分·距废立篡夺只欠一线——制衡迟则神器易主');
+    if (pm && pm.mode !== 'institutional' && cl > 0.9) junctures.push((pm.name || '权臣') + '权柄已逾九分·距废立篡夺只欠一线——制衡迟则神器易主');
     var _builtRebs = (Array.isArray(G._activeRevolts) ? G._activeRevolts : []).filter(function(r){ return r && r.organizationType === 'builtState'; });
     if (_builtRebs.length) junctures.push((_builtRebs[0].leaderName || _builtRebs[0].name || '巨寇') + '已成建制立国之势·问鼎只在旦夕');
     var juncHtml = junctures.slice(0, 3).map(function(t){ return '<div class="tmrp-step" style="color:#c9645a;"><b>一步之遥</b>' + esc(t) + '</div>'; }).join('');
@@ -1046,10 +1130,12 @@
     var selectedRow = rightFindArmyRow(rows, state.selectedArmy) || rows[0] || null;
     if (selectedRow) state.selectedArmy = selectedRow.key;
     var selectedKey = selectedRow ? selectedRow.key : '';
-    var groups = rightBuildArmyGroups(rows);
+    var search = rightArmySearchState();
+    var found = rightFilterArmyRows(rows, search.query);
+    var groups = rightBuildArmyGroups(found);
     var listToken = 'army-' + (++_rightArmyRenderSeq);
     var armyTab = state.rightArmyTab === 'overview' ? 'overview' : 'roster';   // 页签早判·默认名册(行12=玩家找的就是名册)·概览页不渲名册不排水合
-    var deferredList = rows.length > RIGHT_ARMY_INITIAL_ROWS;
+    var deferredList = found.length > RIGHT_ARMY_INITIAL_ROWS;
     var syncGroups = deferredList ? rightSliceArmyGroups(groups, RIGHT_ARMY_INITIAL_ROWS) : groups;
     if (deferredList && armyTab === 'roster') rightScheduleArmyListHydration(listToken, groups, selectedKey);
     var armyAlerts = rows.map(function(row){
@@ -1071,8 +1157,10 @@
         (armyAlerts.length > 5 ? '<div class="tmrp-meta">另有 ' + esc(armyAlerts.length - 5) + ' 部待察。</div>' : '') + '</section>'
       : '<section class="tmrp-card"><div class="tmrp-card-title"><span>军情概览</span><small>诸军态势</small></div><div class="tmrp-meta">诸军暂无士气、粮饷或兵变之虞，边防大体安稳。点名册中部队，可于左侧展开军情明细。</div></section>';
     // 页签分栏(2026-07-11·玩家反馈行12——名册压在概览下方要滑动·不够明显)：概览/部队名册两页·镜像 issue-tab 惯例
-    var rosterCard = '<section class="tmrp-card"><div class="tmrp-card-title"><span>部队名册</span><small>点部队·左侧展开军情</small></div>' +
-      (rows.length ? '<div class="tmrp-scroll compact tmrp-army-list" data-army-list-token="' + attr(listToken) + '">' + rightArmyGroupsHtml(syncGroups, selectedKey) + (deferredList ? '<div class="tmrp-meta">余下部队正在载入...</div>' : '') + '</div>' : '<div class="tmrp-empty">麾下暂无军队。</div>') +
+    var rosterCard = '<section class="tmrp-card" data-army-search-owner="' + attr(search.token) + '"><div class="tmrp-card-title"><span>部队名册</span><small>点部队·左侧展开军情</small></div>' +
+      '<div style="display:flex;gap:6px;align-items:center;margin:4px 0 7px"><input type="search" data-army-search aria-label="搜索部队名称、统帅、驻地或兵种" placeholder="搜索部队 / 统帅 / 驻地 / 兵种" value="' + attr(search.query) + '" style="min-width:0;flex:1;width:100%;padding:8px 10px;border:1px solid #8e7547;border-radius:3px;background:#1e1810;color:#f3e5bf;font:inherit;font-size:13px"><button type="button" class="tmrp-btn" data-army-search-clear' + (search.query ? '' : ' disabled') + '>清除</button></div>' +
+      '<div class="tmrp-meta" data-army-search-count role="status" aria-live="polite">显示 ' + esc(found.length) + ' / ' + esc(rows.length) + ' 支</div>' +
+      '<div class="tmrp-scroll compact tmrp-army-list" data-army-list-token="' + attr(listToken) + '">' + (found.length ? rightArmyGroupsHtml(syncGroups, selectedKey) + (deferredList ? '<div class="tmrp-meta">余下部队正在载入...</div>' : '') : '<div class="tmrp-empty">' + (rows.length ? '未找到匹配部队，请换个搜索词。' : '麾下暂无军队。') + '</div>') + '</div>' +
       '</section>';
     return '<div class="tmrp-army-shell">' +
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(armies.length) + '</b><span>军队</span></div><div class="tmrp-stat"><b>' + esc(rightArmyFmtNum(total)) + '</b><span>总兵力</span></div><div class="tmrp-stat"><b>' + esc(avgMorale + '/' + avgTraining) + '</b><span>士气/训练</span></div></div>' +
@@ -1431,37 +1519,34 @@
   }
 
   function rightWorks(){
-    var gm = window.GM || {};
-    var p = window.P || {};
-    var works = [];
-    function push(w, author, source, sourceIndex){
-      if (!w) return;
-      var meta = { _source: source || '', _sourceIndex: sourceIndex == null ? -1 : sourceIndex };
-      if (typeof w === 'string') {
-        works.push(Object.assign({ title: w, author: author || '无名', content: '', quality: 0 }, meta));
-      } else {
-        works.push(Object.assign({ author: author || w.author || '无名' }, w, meta));
-      }
+    var gm = window.GM || {}, p = window.P || {}, works = [], seen = Object.create(null);
+    function push(w, author, source, index){
+      if (!w || (w.sid && gm.sid && w.sid !== gm.sid)) return;
+      var row = typeof w === 'string' ? {title:w,author:author || '无名',content:'',quality:0} : Object.assign({author:author || w.author || w.creator || '无名'},w);
+      var key = row.id || (String(row.author || '') + '\n' + String(row.title || row.name || ''));
+      if (seen[key]) return;
+      seen[key] = true;
+      works.push(Object.assign(row,{_source:source,_sourceIndex:index}));
     }
-    [
-      ['GM.culturalWorks', gm.culturalWorks],
-      ['GM.works', gm.works],
-      ['GM.wenshiWorks', gm.wenshiWorks],
-      ['P.culturalWorks', p.culturalWorks],
-      ['P.presetWorks', p.presetWorks],
-      ['P.culturalConfig.presetWorks', p.culturalConfig && p.culturalConfig.presetWorks]
-    ].forEach(function(pair){
-      var source = pair[0];
-      var list = Array.isArray(pair[1]) ? pair[1] : [];
-      list.forEach(function(w, idx){ push(w, null, source, idx); });
-    });
-    if (!works.length) {
-      getPeople().forEach(function(c){
-        ['works','writings','documents','memorials'].forEach(function(k){
-          (Array.isArray(c && c[k]) ? c[k] : []).forEach(function(w, idx){ push(w, c.name, 'person.' + (c && c.name || '') + '.' + k, idx); });
-        });
+    function add(rows, source){ (Array.isArray(rows) ? rows : []).forEach(function(w,index){push(w,null,source,index);}); }
+    // The live collection is authoritative even when the player has deliberately emptied it.
+    if (Array.isArray(gm.culturalWorks)) {
+      add(gm.culturalWorks,'GM.culturalWorks');
+      if (gm.running || gm.sid || works.length) return works;
+    }
+    add(gm.works,'GM.works'); add(gm.wenshiWorks,'GM.wenshiWorks');
+    if (works.length) return works;
+    var sc = (Array.isArray(p.scenarios) ? p.scenarios : []).find(function(s){return s && s.id === gm.sid;});
+    if (!sc && p.scenario && (!gm.sid || p.scenario.id === gm.sid)) sc = p.scenario;
+    sc = sc || p;
+    add(sc.culturalWorks,'scenario.culturalWorks');
+    add(sc.presetWorks,'scenario.presetWorks');
+    add(sc.culturalConfig && sc.culturalConfig.presetWorks,'scenario.culturalConfig.presetWorks');
+    if (!works.length) getPeople().forEach(function(c){
+      ['works','writings','documents','memorials'].forEach(function(k){
+        (Array.isArray(c && c[k]) ? c[k] : []).forEach(function(w,index){push(w,c.name,'person.' + (c && c.name || '') + '.' + k,index);});
       });
-    }
+    });
     return works;
   }
 
@@ -1492,7 +1577,7 @@
     var kejuBadge = pk.currentExam ? '科举进行中' : (kejuEnabled ? ('进士 ' + jinshiCount + ' 名') : '未开科');
     return '<div class="tmrp-wenshi-shell">' +
       '<section class="tmrp-card tmrp-keju-hero">' +
-        '<div class="tmrp-card-title"><span>科举</span><small>开科取士·贡士·殿试·授官</small></div>' +
+        '<div class="tmrp-card-title"><span>科举</span><small>取士·考校·放榜·铨授</small></div>' +
         '<div class="tmrp-meta">' + esc(kejuBadge) + (pk.examSubjects ? ' · ' + esc(pk.examSubjects) : '') + '</div>' +
         '<div class="tmrp-action-row"><button type="button" class="tmrp-btn primary" data-right-action="keju-open">入科举主面板</button></div>' +
       '</section>' +
@@ -1514,7 +1599,7 @@
           '<div class="tmrp-card-title"><span>' + esc(title) + '</span><small>' + esc(rightWorkGenreLabel(w.genre || w.type)) + ' · ' + esc(w.triggerCategory || w.category || '文苑') + '</small></div>' +
           '<div class="tmrp-meta">' + esc(author) + ' · ' + esc(w.date || ('T' + (w.turn || '?'))) + ' · ' + esc(w.location || '未录') + '</div>' +
           '<div class="tmrp-meta">' + esc(excerpt || '暂无正文') + '</div>' +
-          '<div class="tmrp-chip-list"><span class="tmrp-pill">品 ' + esc(Math.round(Number(w.quality) || 0)) + '</span><span class="tmrp-pill">' + esc(rightWorkRiskLabel(w.politicalRisk || w.risk)) + '</span>' + (w.theme ? '<span class="tmrp-pill">' + esc(w.theme) + '</span>' : '') + '</div>' +
+          '<div class="tmrp-chip-list"><span class="tmrp-pill">' + esc(Number(w.quality) > 0 ? '品 ' + Math.round(Number(w.quality)) : '未品') + '</span><span class="tmrp-pill">' + esc(rightWorkRiskLabel(w.politicalRisk || w.risk)) + '</span>' + (w.theme ? '<span class="tmrp-pill">' + esc(w.theme) + '</span>' : '') + '</div>' +
           rightArmyRows([['创作背景', w.narrativeContext || w.background], ['政治暗线', w.politicalImplication || w.implication]]) +
           '<div class="tmrp-action-row"><button type="button" class="tmrp-btn" data-right-action="work-detail" data-index="' + attr(i) + '">详情</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="appreciate">赏析</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="inscribe">题序</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="echo">追和</button><button type="button" class="tmrp-btn" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="circulate">传抄</button>' + (w.isForbidden ? '<button type="button" class="tmrp-btn primary" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="unban">解禁</button>' : '<button type="button" class="tmrp-btn ' + (hot ? 'primary' : '') + '" data-right-action="work-action" data-index="' + attr(i) + '" data-work-action="ban">查禁</button>') + '</div>' +
           '</div></section>';
@@ -1550,7 +1635,7 @@
       return;
     }
     var labels = { appreciate:'赐阅赏析', inscribe:'御题赐序', echo:'追和', circulate:'传抄', ban:'查禁', unban:'解禁' };
-    rightAddEdictSuggestion('文事艺府', w.author || '文苑', labels[wa] || wa, (labels[wa] || wa) + '《' + (w.title || w.name || '无题') + '》');
+    rightAddEdictSuggestion('文事艺府', '御前', labels[wa] || wa, (labels[wa] || wa) + '《' + (w.title || w.name || '无题') + '》');
     toast('已纳入诏书建议库：' + (labels[wa] || wa));
   }
 
@@ -1618,7 +1703,7 @@
     var hot = list.filter(function(item){ return /危|乱|叛|灾|兵|饷|腐|急|警|hot|warn/i.test(String(item.type || '') + String(item.title || '') + String(item.text || '')); }).length;
     return '<div class="tmrp-rumor-shell">' +
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(list.length) + '</b><span>风闻</span></div><div class="tmrp-stat"><b>' + esc(hot) + '</b><span>待察</span></div><div class="tmrp-stat"><b>' + esc(state.eventLookback || 3) + '</b><span>回合</span></div></div>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>风闻情报</span><small>近事、邸报、人物与势力活动摘要</small></div><div class="tmrp-meta">这里读取事件栏同源数据，不另造静态传闻。可继续转入史官实录查看完整档案。</div></section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>风闻情报</span><small>近事、邸报、人物与势力活动摘要</small></div><div class="tmrp-meta">街巷传言、臣僚私语与远方来报汇于此处。言之凿凿，也未必就是实情。</div></section>' +
       (list.length ? '<div class="tmrp-scroll tall">' + list.map(function(item){
         var cls = /危|乱|叛|灾|兵|饷|腐|急|警|hot|warn/i.test(String(item.type || '') + String(item.title || '') + String(item.text || '')) ? 'hot' : '';
         return '<section class="tmrp-card ' + cls + '"><div class="tmrp-card-title"><span>' + esc(item.title || '未题') + '</span><small>' + esc(item.type || '近事') + ' · T' + esc(item.turn || '') + '</small></div><div class="tmrp-meta">' + esc(item.text || item.detail || item.time || '') + '</div></section>';
@@ -1765,8 +1850,8 @@
 
   var titles = {
     pcdebug: 'Party/Class Observability',
-    ol: '纲纪总览',
-    issue: '政务问对',
+    ol: '阶层与党派',
+    issue: '问对与朝议',
     policy: '文事科举',
     office: '钉选臣僚',
     army: '军务边防',
@@ -2585,7 +2670,17 @@
   function bindRightPanelActions(host){
     if (!host || host.__phase8RightPanelActions) return;
     host.__phase8RightPanelActions = true;
+    host.addEventListener('compositionstart', function(e){ if (e.target && e.target.matches('[data-army-search]')) e.target._tmArmyComposing = true; });
+    host.addEventListener('compositionend', function(e){ if (e.target && e.target.matches('[data-army-search]')) { e.target._tmArmyComposing = false; rightUpdateArmySearch(e.target); } });
+    host.addEventListener('input', function(e){ if (e.target && e.target.matches('[data-army-search]') && !e.isComposing && !e.target._tmArmyComposing) rightUpdateArmySearch(e.target); });
     host.addEventListener('click', function(e){
+      var clear = e.target && e.target.closest ? e.target.closest('[data-army-search-clear]') : null;
+      if (clear) {
+        e.preventDefault(); e.stopPropagation();
+        var shell = clear.closest('[data-army-search-owner]'), input = shell && shell.querySelector('[data-army-search]');
+        if (input) { input.value = ''; rightUpdateArmySearch(input); input.focus(); }
+        return;
+      }
       var btn = e.target && e.target.closest ? e.target.closest('[data-right-action]') : null;
       if (!btn) return;
       e.preventDefault();
@@ -2603,6 +2698,7 @@
   bridge.rightrail.titles = titles;
   bridge.rightrail.handleRightPanelAction = handleRightPanelAction;
   bridge.rightrail.bindRightPanelActions = bindRightPanelActions;
+  bridge.rightrail.pendingAudiences = rightWenduiPendingState;
   bridge.rightrail.rightCloseArmyFlyout = rightCloseArmyFlyout;
   bridge.rightrail.rightOpenArmyFlyout = rightOpenArmyFlyout;
   bridge.rightrail.refreshArmyFlyout = typeof refreshArmyFlyout === "function" ? refreshArmyFlyout : null;

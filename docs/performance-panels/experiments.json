@@ -1,0 +1,3379 @@
+[
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-0411eae5-d161-4173-aa39-7eb286408e57",
+    "execution": {
+      "runId": "0411eae5-d161-4173-aa39-7eb286408e57",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "hashes": {
+        "web/phase8-formal-drafts.js": "6a6096d7bb0e2cdb0f5cd50ca5882f3d84807c7d6afd1a7d966b1e3dfa1a0217",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 0,
+      "elapsedMs": 144079.4484
+    },
+    "report": {
+      "complete": true,
+      "ok": true,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/close",
+          "status": "PASS"
+        }
+      ],
+      "failures": [],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 119429,
+            "end": 119697.70000000019,
+            "syncMs": 67.60000000009313,
+            "frame1Ms": 151.80000000004657,
+            "frame2Ms": 184.9000000001397,
+            "tasks": [
+              {
+                "start": 119428.5,
+                "duration": 68
+              },
+              {
+                "start": 119497.30000000005,
+                "duration": 114
+              }
+            ],
+            "changes": [
+              {
+                "at": 119496.80000000005,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 40412,
+            "archiveNodes": 4800,
+            "delta": {
+              "LayoutCount": 2,
+              "RecalcStyleCount": 1313,
+              "LayoutDuration": 0.058246,
+              "RecalcStyleDuration": 6.9401530000000005,
+              "ScriptDuration": 0.139772,
+              "TaskDuration": 14.037779
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 141642.80000000005,
+            "end": 141762.80000000005,
+            "syncMs": 29.699999999953434,
+            "frame1Ms": 33,
+            "frame2Ms": 39.199999999953434,
+            "tasks": [
+              {
+                "start": 141571.6000000001,
+                "duration": 67
+              }
+            ],
+            "changes": [
+              {
+                "at": 141672.6000000001,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 35494,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 8,
+              "LayoutDuration": 0.00015800000000000536,
+              "RecalcStyleDuration": 0.00868900000000039,
+              "ScriptDuration": 0.032694999999999974,
+              "TaskDuration": 0.12479700000000093
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "open",
+            "start": 141790.40000000014,
+            "end": 141997.30000000005,
+            "syncMs": 50.300000000046566,
+            "frame1Ms": 59.0999999998603,
+            "frame2Ms": 116.19999999995343,
+            "tasks": [
+              {
+                "start": 141790.2000000002,
+                "duration": 50
+              },
+              {
+                "start": 141840.90000000014,
+                "duration": 65
+              }
+            ],
+            "changes": [
+              {
+                "at": 141840.80000000005,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 40411,
+            "archiveNodes": 4800,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 4,
+              "LayoutDuration": 0.0011700000000000044,
+              "RecalcStyleDuration": 0.027393,
+              "ScriptDuration": 0.050604999999999956,
+              "TaskDuration": 0.15883100000000638
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "close",
+            "start": 142026.30000000005,
+            "end": 142154.40000000014,
+            "syncMs": 27.4000000001397,
+            "frame1Ms": 32.300000000046566,
+            "frame2Ms": 47.199999999953434,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 142053.90000000014,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 35494,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.00018699999999999273,
+              "RecalcStyleDuration": 0.002909999999999968,
+              "ScriptDuration": 0.02893099999999993,
+              "TaskDuration": 0.058545000000009395
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "open",
+            "start": 142161.6000000001,
+            "end": 142427.1000000001,
+            "syncMs": 60.5,
+            "frame1Ms": 76.69999999995343,
+            "frame2Ms": 149.60000000009313,
+            "tasks": [
+              {
+                "start": 142161.40000000014,
+                "duration": 60
+              },
+              {
+                "start": 142222.30000000005,
+                "duration": 87
+              }
+            ],
+            "changes": [
+              {
+                "at": 142222.2000000002,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 40411,
+            "archiveNodes": 4800,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.0019860000000000017,
+              "RecalcStyleDuration": 0.0692750000000002,
+              "ScriptDuration": 0.06085700000000005,
+              "TaskDuration": 0.30408700000000977
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "close",
+            "start": 142503.40000000014,
+            "end": 142650.5,
+            "syncMs": 35,
+            "frame1Ms": 40.0999999998603,
+            "frame2Ms": 63.39999999990687,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 142538.7000000002,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 35494,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 6,
+              "LayoutDuration": 0.00032200000000000284,
+              "RecalcStyleDuration": 0.0038490000000006575,
+              "ScriptDuration": 0.04055399999999998,
+              "TaskDuration": 0.10186900000000776
+            }
+          }
+        ],
+        "cycles": 3,
+        "histories": [
+          800
+        ],
+        "panelName": "edict",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 3057.1535
+          },
+          {
+            "name": "initialized",
+            "at": 11759.912
+          },
+          {
+            "name": "instruments-ready",
+            "at": 119572.2407
+          },
+          {
+            "name": "800/edict",
+            "at": 120135.3449
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-1174005a-7f4f-4e37-b481-f1c53aa0c9d5",
+    "execution": {
+      "runId": "1174005a-7f4f-4e37-b481-f1c53aa0c9d5",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "sampleSha256": "3d4916bc9cb9cea8a79607214f90e08140afb8f1b9ce0b10f689a6296edd6157",
+      "hashes": {
+        "web/phase8-formal-drafts.js": "6a6096d7bb0e2cdb0f5cd50ca5882f3d84807c7d6afd1a7d966b1e3dfa1a0217",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 1,
+      "elapsedMs": 257318.1557
+    },
+    "report": {
+      "complete": true,
+      "ok": false,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/close",
+          "status": "PASS"
+        }
+      ],
+      "failures": [
+        "Error: electron-bridge-timeout\n    at Timeout._onTimeout (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:25)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"
+      ],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 110372.79999999981,
+            "end": 113007.1000000001,
+            "syncMs": 218.8000000002794,
+            "frame1Ms": 225.5,
+            "frame2Ms": 2097.7000000001863,
+            "tasks": [
+              {
+                "start": 110372.3999999999,
+                "duration": 224
+              },
+              {
+                "start": 110597.20000000019,
+                "duration": 1786
+              },
+              {
+                "start": 112467.6000000001,
+                "duration": 245
+              },
+              {
+                "start": 112799.1000000001,
+                "duration": 195
+              }
+            ],
+            "changes": [
+              {
+                "at": 110597.1000000001,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 112715.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 112715.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 112715.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 112715.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 112715.29999999981,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 58675,
+            "archiveNodes": 4800,
+            "delta": {
+              "LayoutCount": 4,
+              "RecalcStyleCount": 110,
+              "LayoutDuration": 0.454774,
+              "RecalcStyleDuration": 2.24538,
+              "ScriptDuration": 0.30028,
+              "TaskDuration": 6.761586
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 187413.7999999998,
+            "end": 187638.8999999999,
+            "syncMs": 117.8000000002794,
+            "frame1Ms": 121.20000000018626,
+            "frame2Ms": 129.5,
+            "tasks": [
+              {
+                "start": 187407.2000000002,
+                "duration": 124
+              }
+            ],
+            "changes": [
+              {
+                "at": 187531.7000000002,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 35591,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 129,
+              "LayoutDuration": 0.000136000000000025,
+              "RecalcStyleDuration": 0.4535929999999979,
+              "ScriptDuration": 0.12464799999999998,
+              "TaskDuration": 1.253809000000004
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "open",
+            "start": 202992.7000000002,
+            "end": 204535.2000000002,
+            "syncMs": 171.5,
+            "frame1Ms": 590.2999999998137,
+            "frame2Ms": 625.6999999997206,
+            "tasks": [
+              {
+                "start": 202992.3999999999,
+                "duration": 176
+              },
+              {
+                "start": 203169.2000000002,
+                "duration": 447
+              },
+              {
+                "start": 203617.7999999998,
+                "duration": 528
+              },
+              {
+                "start": 204165.2999999998,
+                "duration": 369
+              }
+            ],
+            "changes": [
+              {
+                "at": 203169.2000000002,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 50104,
+            "archiveNodes": 4800,
+            "delta": {
+              "LayoutCount": 3,
+              "RecalcStyleCount": 2120,
+              "LayoutDuration": 0.39974699999999996,
+              "RecalcStyleDuration": 12.806003000000004,
+              "ScriptDuration": 0.236529,
+              "TaskDuration": 26.848859000000004
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "close",
+            "start": 229714.7999999998,
+            "end": 229882.8999999999,
+            "syncMs": 63.3000000002794,
+            "frame1Ms": 66.20000000018626,
+            "frame2Ms": 79.5,
+            "tasks": [
+              {
+                "start": 229713.1000000001,
+                "duration": 65
+              }
+            ],
+            "changes": [
+              {
+                "at": 229778.2000000002,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 35591,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 7,
+              "LayoutDuration": 0.00012299999999998423,
+              "RecalcStyleDuration": 0.0076579999999992765,
+              "ScriptDuration": 0.06530799999999992,
+              "TaskDuration": 0.10656700000001251
+            }
+          }
+        ],
+        "cycles": 3,
+        "histories": [
+          800
+        ],
+        "panelName": "edict",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 17880.9504
+          },
+          {
+            "name": "load-public-sample",
+            "at": 20967.5022
+          },
+          {
+            "name": "initialized",
+            "at": 111261.3871
+          },
+          {
+            "name": "instruments-ready",
+            "at": 111339.2606
+          },
+          {
+            "name": "800/edict",
+            "at": 111371.5008
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-3f853734-bb2d-44d3-a986-cae34db0602d",
+    "execution": {
+      "runId": "3f853734-bb2d-44d3-a986-cae34db0602d",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "hashes": {
+        "web/phase8-formal-drafts.js": "8eddf4ccdf758e02c1af95ba9c58da11c460894d918c85db8e2be777e1d2f6b4",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 1,
+      "elapsedMs": 184106.9236
+    },
+    "report": {
+      "complete": true,
+      "ok": false,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "panel archive preserves every row, order and escaped content",
+          "status": "PASS"
+        }
+      ],
+      "failures": [
+        "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ ' 受控草稿 5 < > é 😀 '\n- '受控草稿 5 < > é 😀'\n    at <user-profile>\\Desktop\\tianming-perf-round1\\scripts\\perf\\panels-contracts.cjs:19:12\n    at async check (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:66:34)\n    at async module.exports (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\perf\\panels-contracts.cjs:10:3)\n    at async module.exports (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\perf\\panels-electron-cases.cjs:55:48)\n    at async WebContents.<anonymous> (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:109:67)"
+      ],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 93678.5,
+            "end": 94784.79999999981,
+            "syncMs": 18.09999999962747,
+            "frame1Ms": 19.09999999962747,
+            "frame2Ms": 1003.5999999996275,
+            "tasks": [
+              {
+                "start": 93696.79999999981,
+                "duration": 972
+              }
+            ],
+            "changes": [
+              {
+                "at": 93696.69999999972,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44177,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 1935,
+              "LayoutDuration": 0.06285,
+              "RecalcStyleDuration": 11.264375999999999,
+              "ScriptDuration": 0.051963999999999996,
+              "TaskDuration": 34.588308000000005
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 129605.69999999972,
+            "end": 129731.19999999972,
+            "syncMs": 5.600000000093132,
+            "frame1Ms": 7.899999999906868,
+            "frame2Ms": 39.700000000186265,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 129611.59999999963,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44060,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 9,
+              "LayoutDuration": 0.0002329999999999971,
+              "RecalcStyleDuration": 0.05123999999999995,
+              "ScriptDuration": 0.008790999999999993,
+              "TaskDuration": 0.15879699999999985
+            }
+          }
+        ],
+        "cycles": 1,
+        "histories": [
+          800
+        ],
+        "panelName": "edict",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 3257.958
+          },
+          {
+            "name": "initialized",
+            "at": 15895.7567
+          },
+          {
+            "name": "instruments-ready",
+            "at": 77700.6326
+          },
+          {
+            "name": "800/edict",
+            "at": 89827.238
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        },
+        "archive": {
+          "hidden": 0,
+          "count": 800,
+          "expected": 800,
+          "first": "✅政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。799 [执行:回归承办人]已收讫，遵令核验。",
+          "last": "⏳政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。0 [执行:回归承办人]已收讫，遵令核验。",
+          "sha": "f4e5d31404bb630176defc86d8178926adfc06ce0bb6c588425b25f7fb8b334d",
+          "shown": true
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-71f139a6-207f-4c5c-920b-327e59e56e00",
+    "execution": {
+      "runId": "71f139a6-207f-4c5c-920b-327e59e56e00",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "sampleSha256": null,
+      "hashes": {
+        "web/phase8-formal-drafts.js": "43df6fb05dfee8b90278c3e53ef77e24ffefe5102c888652e13f878db4ad3b50",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 1,
+      "elapsedMs": 259175.8309
+    },
+    "report": {
+      "complete": true,
+      "ok": false,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "panel archive preserves every row, order and escaped content",
+          "status": "PASS"
+        },
+        {
+          "name": "edict close/reopen keeps input, selection and detached snapshot semantics",
+          "status": "PASS"
+        },
+        {
+          "name": "project reload restores archived history and submitted draft source",
+          "status": "PASS"
+        }
+      ],
+      "failures": [
+        "Error: electron-bridge-timeout\n    at Timeout._onTimeout (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:25)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"
+      ],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-tianqi7-1627",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 106176.10000000056,
+            "end": 106729.30000000075,
+            "syncMs": 32.200000000186265,
+            "frame1Ms": 34.89999999944121,
+            "frame2Ms": 457.09999999962747,
+            "tasks": [
+              {
+                "start": 106208.90000000037,
+                "duration": 416
+              }
+            ],
+            "changes": [
+              {
+                "at": 106208.80000000075,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 31364,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 137116,
+            "end": 137253.7000000002,
+            "syncMs": 5.800000000745058,
+            "frame1Ms": 7.900000000372529,
+            "frame2Ms": 43.200000000186265,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 137122,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31247,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "open",
+            "start": 137294.2000000002,
+            "end": 137906.5,
+            "syncMs": 7.6000000005587935,
+            "frame1Ms": 9.299999999813735,
+            "frame2Ms": 529.1000000005588,
+            "tasks": [
+              {
+                "start": 137302,
+                "duration": 511
+              }
+            ],
+            "changes": [
+              {
+                "at": 137301.90000000037,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 31294,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "close",
+            "start": 155808.10000000056,
+            "end": 155921.60000000056,
+            "syncMs": 1.8999999994412065,
+            "frame1Ms": 9.799999999813735,
+            "frame2Ms": 27.09999999962747,
+            "tasks": [
+              {
+                "start": 154795.2000000002,
+                "duration": 1011
+              }
+            ],
+            "changes": [
+              {
+                "at": 155810,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31248,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "open",
+            "start": 164996,
+            "end": 166220.30000000075,
+            "syncMs": 43.30000000074506,
+            "frame1Ms": 45.5,
+            "frame2Ms": 1139.9000000003725,
+            "tasks": [
+              {
+                "start": 165040.60000000056,
+                "duration": 1089
+              }
+            ],
+            "changes": [
+              {
+                "at": 165040.60000000056,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 32192,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "close",
+            "start": 183258.90000000037,
+            "end": 183377.7000000002,
+            "syncMs": 8.900000000372529,
+            "frame1Ms": 10.700000000186265,
+            "frame2Ms": 30.5,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 183268,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31249,
+            "archiveNodes": 0,
+            "delta": null
+          }
+        ],
+        "cycles": 1,
+        "histories": [
+          800
+        ],
+        "panelName": "all",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 3063.3016
+          },
+          {
+            "name": "initialized",
+            "at": 106860.3785
+          },
+          {
+            "name": "instruments-ready",
+            "at": 106882.2666
+          },
+          {
+            "name": "800/edict",
+            "at": 106922.3763
+          },
+          {
+            "name": "800/memorial",
+            "at": 138047.6046
+          },
+          {
+            "name": "800/letter",
+            "at": 165758.1687
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "nativeMetrics": false,
+        "fixture": {
+          "history": 800,
+          "characters": 203,
+          "bytes": 410873
+        },
+        "archive": {
+          "hidden": 0,
+          "count": 800,
+          "expected": 800,
+          "first": "✅政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。799 [执行:回归承办人]已收讫，遵令核验。",
+          "last": "⏳政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。0 [执行:回归承办人]已收讫，遵令核验。",
+          "sha": "eb4baa5efaf1e277c0b25f8cb14519a5eb1d7c376ecea250e797a457e6b8d807",
+          "shown": true
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-b0408803-cd8b-4334-b3bf-b00dbbe08692",
+    "execution": {
+      "runId": "b0408803-cd8b-4334-b3bf-b00dbbe08692",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "sampleSha256": null,
+      "hashes": {
+        "web/phase8-formal-drafts.js": "43df6fb05dfee8b90278c3e53ef77e24ffefe5102c888652e13f878db4ad3b50",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 0,
+      "elapsedMs": 216131.22699999998
+    },
+    "report": {
+      "complete": true,
+      "ok": true,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "panel archive preserves every row, order and escaped content",
+          "status": "PASS"
+        },
+        {
+          "name": "edict close/reopen keeps input, selection and detached snapshot semantics",
+          "status": "PASS"
+        },
+        {
+          "name": "project reload restores archived history and submitted draft source",
+          "status": "PASS"
+        },
+        {
+          "name": "memorial close/reopen retains draft",
+          "status": "PASS"
+        },
+        {
+          "name": "letter close/reopen retains draft",
+          "status": "PASS"
+        }
+      ],
+      "failures": [],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 117437.09999999963,
+            "end": 118625.5,
+            "syncMs": 41.5,
+            "frame1Ms": 84.79999999981374,
+            "frame2Ms": 1093.9000000003725,
+            "tasks": [
+              {
+                "start": 117518.79999999981,
+                "duration": 1008
+              }
+            ],
+            "changes": [
+              {
+                "at": 117479,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 118562.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 118562.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 118562.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 118562.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 118562.29999999981,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44475,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 118640.89999999944,
+            "end": 118963.19999999925,
+            "syncMs": 5.7000000001862645,
+            "frame1Ms": 139.79999999981374,
+            "frame2Ms": 210.6000000005588,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 118646.79999999981,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44353,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "open",
+            "start": 122554.39999999944,
+            "end": 123826.29999999981,
+            "syncMs": 16.600000000558794,
+            "frame1Ms": 18.40000000037253,
+            "frame2Ms": 1151.7000000001863,
+            "tasks": [
+              {
+                "start": 122571.19999999925,
+                "duration": 1132
+              }
+            ],
+            "changes": [
+              {
+                "at": 122571.09999999963,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44634,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "close",
+            "start": 144305.89999999944,
+            "end": 144453.19999999925,
+            "syncMs": 6.2000000001862645,
+            "frame1Ms": 9.100000000558794,
+            "frame2Ms": 38.90000000037253,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 144312.2999999998,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44354,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "open",
+            "start": 144496.59999999963,
+            "end": 146138.19999999925,
+            "syncMs": 33.59999999962747,
+            "frame1Ms": 39.5,
+            "frame2Ms": 1519.0999999996275,
+            "tasks": [
+              {
+                "start": 144533.5,
+                "duration": 1477
+              }
+            ],
+            "changes": [
+              {
+                "at": 144533.2999999998,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 45334,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "close",
+            "start": 155179,
+            "end": 155379.69999999925,
+            "syncMs": 14.199999999254942,
+            "frame1Ms": 16.5,
+            "frame2Ms": 116.19999999925494,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 155193.2999999998,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44355,
+            "archiveNodes": 0,
+            "delta": null
+          }
+        ],
+        "cycles": 1,
+        "histories": [
+          800
+        ],
+        "panelName": "all",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 2764.633
+          },
+          {
+            "name": "initialized",
+            "at": 117799.1994
+          },
+          {
+            "name": "instruments-ready",
+            "at": 118027.4304
+          },
+          {
+            "name": "800/edict",
+            "at": 118062.2931
+          },
+          {
+            "name": "800/memorial",
+            "at": 123144.05
+          },
+          {
+            "name": "800/letter",
+            "at": 145107.4967
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "nativeMetrics": false,
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        },
+        "archive": {
+          "hidden": 0,
+          "count": 800,
+          "expected": 800,
+          "first": "✅政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。799 [执行:回归承办人]已收讫，遵令核验。",
+          "last": "⏳政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。0 [执行:回归承办人]已收讫，遵令核验。",
+          "sha": "f4e5d31404bb630176defc86d8178926adfc06ce0bb6c588425b25f7fb8b334d",
+          "shown": true
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-c1bb701a-b971-42f5-856b-7011149153a1",
+    "execution": {
+      "runId": "c1bb701a-b971-42f5-856b-7011149153a1",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "hashes": {
+        "web/phase8-formal-drafts.js": "8eddf4ccdf758e02c1af95ba9c58da11c460894d918c85db8e2be777e1d2f6b4",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 0,
+      "elapsedMs": 163374.3407
+    },
+    "report": {
+      "complete": true,
+      "ok": true,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/close",
+          "status": "PASS"
+        }
+      ],
+      "failures": [],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 96279.09999999963,
+            "end": 97430.59999999963,
+            "syncMs": 19.100000000093132,
+            "frame1Ms": 20.100000000093132,
+            "frame2Ms": 1066,
+            "tasks": [
+              {
+                "start": 96298.3999999999,
+                "duration": 1036
+              }
+            ],
+            "changes": [
+              {
+                "at": 96298.3999999999,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44177,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 1897,
+              "LayoutDuration": 0.059571,
+              "RecalcStyleDuration": 10.456520999999999,
+              "ScriptDuration": 0.057345999999999994,
+              "TaskDuration": 32.612835000000004
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 130645.29999999981,
+            "end": 130781.5,
+            "syncMs": 7.100000000093132,
+            "frame1Ms": 10.399999999906868,
+            "frame2Ms": 46.10000000009313,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 130652.69999999972,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44060,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 9,
+              "LayoutDuration": 0.00024199999999999916,
+              "RecalcStyleDuration": 0.05166900000000041,
+              "ScriptDuration": 0.009748999999999994,
+              "TaskDuration": 0.18238199999999694
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "open",
+            "start": 130828.79999999981,
+            "end": 130981.29999999981,
+            "syncMs": 18.799999999813735,
+            "frame1Ms": 20.200000000186265,
+            "frame2Ms": 71.20000000018626,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 130847.69999999972,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44177,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 1475,
+              "LayoutDuration": 0.0011910000000000046,
+              "RecalcStyleDuration": 8.164042,
+              "ScriptDuration": 0.07609400000000001,
+              "TaskDuration": 27.384331000000003
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "close",
+            "start": 161319.59999999963,
+            "end": 161449.3999999999,
+            "syncMs": 6,
+            "frame1Ms": 8,
+            "frame2Ms": 43.5,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 161325.8999999999,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44060,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 8,
+              "LayoutDuration": 0.00023999999999999716,
+              "RecalcStyleDuration": 0.04947999999999908,
+              "ScriptDuration": 0.010429999999999995,
+              "TaskDuration": 0.13608399999999676
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "open",
+            "start": 161462.8999999999,
+            "end": 161610.3999999999,
+            "syncMs": 13.600000000093132,
+            "frame1Ms": 15.199999999720603,
+            "frame2Ms": 55.39999999990687,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 161476.59999999963,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44177,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.002021000000000002,
+              "RecalcStyleDuration": 0.030097999999998848,
+              "ScriptDuration": 0.013796000000000003,
+              "TaskDuration": 0.12760699999999758
+            }
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "close",
+            "start": 161669.5,
+            "end": 161799,
+            "syncMs": 8,
+            "frame1Ms": 9.599999999627471,
+            "frame2Ms": 43.09999999962747,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 161677.8999999999,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 44060,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 9,
+              "LayoutDuration": 0.00043599999999999195,
+              "RecalcStyleDuration": 0.03939199999999943,
+              "ScriptDuration": 0.013483999999999996,
+              "TaskDuration": 0.1336159999999893
+            }
+          }
+        ],
+        "cycles": 3,
+        "histories": [
+          800
+        ],
+        "panelName": "edict",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 3562.7744
+          },
+          {
+            "name": "initialized",
+            "at": 16365.8692
+          },
+          {
+            "name": "instruments-ready",
+            "at": 80217.9186
+          },
+          {
+            "name": "800/edict",
+            "at": 92819.3074
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-dd806c19-7780-4212-b2b1-382fad17ea07",
+    "execution": {
+      "runId": "dd806c19-7780-4212-b2b1-382fad17ea07",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "sampleSha256": "3d4916bc9cb9cea8a79607214f90e08140afb8f1b9ce0b10f689a6296edd6157",
+      "hashes": {
+        "web/phase8-formal-drafts.js": "6a6096d7bb0e2cdb0f5cd50ca5882f3d84807c7d6afd1a7d966b1e3dfa1a0217",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 0,
+      "elapsedMs": 231151.5307
+    },
+    "report": {
+      "complete": true,
+      "ok": true,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/1/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/2/close",
+          "status": "PASS"
+        }
+      ],
+      "failures": [],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 120994,
+            "end": 124613.19999999972,
+            "syncMs": 284.5,
+            "frame1Ms": 302.79999999981374,
+            "frame2Ms": 2932.1999999997206,
+            "tasks": [
+              {
+                "start": 120993,
+                "duration": 301
+              },
+              {
+                "start": 121294.8999999999,
+                "duration": 2592
+              },
+              {
+                "start": 123923.3999999999,
+                "duration": 217
+              },
+              {
+                "start": 124241.29999999981,
+                "duration": 350
+              }
+            ],
+            "changes": [
+              {
+                "at": 121294.19999999972,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 124144.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 124144.29999999981,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 124144.3999999999,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 124144.3999999999,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 124144.3999999999,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 58675,
+            "archiveNodes": 4800,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 130875.3999999999,
+            "end": 131205.7999999998,
+            "syncMs": 162.60000000009313,
+            "frame1Ms": 166.29999999981374,
+            "frame2Ms": 249.10000000009313,
+            "tasks": [
+              {
+                "start": 130871.19999999972,
+                "duration": 167
+              },
+              {
+                "start": 131038.69999999972,
+                "duration": 81
+              }
+            ],
+            "changes": [
+              {
+                "at": 131038.19999999972,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44157,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "open",
+            "start": 131248.19999999972,
+            "end": 132839.8999999999,
+            "syncMs": 121.8000000002794,
+            "frame1Ms": 128.20000000018626,
+            "frame2Ms": 1386.5,
+            "tasks": [
+              {
+                "start": 131248,
+                "duration": 127
+              },
+              {
+                "start": 131375.5,
+                "duration": 1255
+              },
+              {
+                "start": 132670.8999999999,
+                "duration": 97
+              }
+            ],
+            "changes": [
+              {
+                "at": 131375.3999999999,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 58670,
+            "archiveNodes": 4800,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "close",
+            "start": 196186.19999999972,
+            "end": 200411.2999999998,
+            "syncMs": 167.40000000037253,
+            "frame1Ms": 170.5,
+            "frame2Ms": 274.70000000018626,
+            "tasks": [
+              {
+                "start": 195536.7999999998,
+                "duration": 646
+              },
+              {
+                "start": 196183,
+                "duration": 170
+              },
+              {
+                "start": 196458.69999999972,
+                "duration": 3951
+              }
+            ],
+            "changes": [
+              {
+                "at": 196353.8999999999,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44157,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "open",
+            "start": 200463,
+            "end": 201893.8999999999,
+            "syncMs": 287.79999999981374,
+            "frame1Ms": 301.60000000009313,
+            "frame2Ms": 1350.3999999999069,
+            "tasks": [
+              {
+                "start": 200462.69999999972,
+                "duration": 300
+              },
+              {
+                "start": 200762.8999999999,
+                "duration": 1047
+              },
+              {
+                "start": 201811.5,
+                "duration": 50
+              }
+            ],
+            "changes": [
+              {
+                "at": 200762.69999999972,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 58670,
+            "archiveNodes": 4800,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "close",
+            "start": 212414.2999999998,
+            "end": 212743,
+            "syncMs": 199.5,
+            "frame1Ms": 202,
+            "frame2Ms": 246.3000000002794,
+            "tasks": [
+              {
+                "start": 211361.69999999972,
+                "duration": 1023
+              },
+              {
+                "start": 212411.2999999998,
+                "duration": 202
+              }
+            ],
+            "changes": [
+              {
+                "at": 212613.8999999999,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44157,
+            "archiveNodes": 0,
+            "delta": null
+          }
+        ],
+        "cycles": 3,
+        "histories": [
+          800
+        ],
+        "panelName": "edict",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 4025.6559
+          },
+          {
+            "name": "load-public-sample",
+            "at": 6622.4075
+          },
+          {
+            "name": "initialized",
+            "at": 121704.8209
+          },
+          {
+            "name": "instruments-ready",
+            "at": 121734.7676
+          },
+          {
+            "name": "800/edict",
+            "at": 121757.7519
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "nativeMetrics": false,
+        "fixture": {
+          "history": 800,
+          "characters": 485,
+          "bytes": 410873
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-e3916e55-feaf-4600-b70d-88ab5974eebd",
+    "execution": {
+      "runId": "e3916e55-feaf-4600-b70d-88ab5974eebd",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "sampleSha256": null,
+      "hashes": {
+        "web/phase8-formal-drafts.js": "43df6fb05dfee8b90278c3e53ef77e24ffefe5102c888652e13f878db4ad3b50",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 1,
+      "elapsedMs": 245439.68660000002
+    },
+    "report": {
+      "complete": true,
+      "ok": false,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/memorial/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "800/letter/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "panel archive preserves every row, order and escaped content",
+          "status": "PASS"
+        }
+      ],
+      "failures": [
+        "Error: electron-bridge-timeout\n    at Timeout._onTimeout (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:25)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"
+      ],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-tianqi7-1627",
+        "samples": [
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 136842.40000000037,
+            "end": 137451,
+            "syncMs": 24.59999999962747,
+            "frame1Ms": 26.09999999962747,
+            "frame2Ms": 512.8999999994412,
+            "tasks": [
+              {
+                "start": 136867.5,
+                "duration": 480
+              }
+            ],
+            "changes": [
+              {
+                "at": 136867.40000000037,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 31364,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 171531.60000000056,
+            "end": 171665,
+            "syncMs": 6.3999999994412065,
+            "frame1Ms": 8.299999999813735,
+            "frame2Ms": 41.89999999944121,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 171538.10000000056,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31247,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "open",
+            "start": 171700,
+            "end": 172228.60000000056,
+            "syncMs": 9.100000000558794,
+            "frame1Ms": 10.900000000372529,
+            "frame2Ms": 441.5,
+            "tasks": [
+              {
+                "start": 171709.2999999998,
+                "duration": 422
+              }
+            ],
+            "changes": [
+              {
+                "at": 171709.10000000056,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 31294,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "close",
+            "start": 191006.2999999998,
+            "end": 191118.2999999998,
+            "syncMs": 3.5,
+            "frame1Ms": 6.400000000372529,
+            "frame2Ms": 26.300000000745058,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 191010.10000000056,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31248,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "open",
+            "start": 191130.10000000056,
+            "end": 191862.7000000002,
+            "syncMs": 28.399999999441206,
+            "frame1Ms": 30.59999999962747,
+            "frame2Ms": 651.0999999996275,
+            "tasks": [
+              {
+                "start": 191159.7999999998,
+                "duration": 614
+              }
+            ],
+            "changes": [
+              {
+                "at": 191159.7000000002,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 32192,
+            "archiveNodes": 0,
+            "delta": null
+          },
+          {
+            "history": 800,
+            "panel": "letter",
+            "iteration": 0,
+            "action": "close",
+            "start": 201195.60000000056,
+            "end": 201310.40000000037,
+            "syncMs": 5.7999999998137355,
+            "frame1Ms": 9.299999999813735,
+            "frame2Ms": 26.59999999962747,
+            "tasks": [
+              {
+                "start": 200152.2999999998,
+                "duration": 1040
+              }
+            ],
+            "changes": [
+              {
+                "at": 201201.5,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 1
+            },
+            "nodes": 31249,
+            "archiveNodes": 0,
+            "delta": null
+          }
+        ],
+        "cycles": 1,
+        "histories": [
+          800
+        ],
+        "panelName": "all",
+        "stages": [
+          {
+            "name": "new-game",
+            "at": 4077.8873
+          },
+          {
+            "name": "initialized",
+            "at": 137502.8313
+          },
+          {
+            "name": "instruments-ready",
+            "at": 137521.4944
+          },
+          {
+            "name": "800/edict",
+            "at": 137591.9473
+          },
+          {
+            "name": "800/memorial",
+            "at": 172472.165
+          },
+          {
+            "name": "800/letter",
+            "at": 191902.6776
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "nativeMetrics": false,
+        "fixture": {
+          "history": 800,
+          "characters": 203,
+          "bytes": 410873
+        },
+        "archive": {
+          "hidden": 0,
+          "count": 800,
+          "expected": 800,
+          "first": "✅政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。799 [执行:回归承办人]已收讫，遵令核验。",
+          "last": "⏳政令 受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。受控回归诏书：核实田亩钱粮，勿扰民。正常名称 & < > \"。0 [执行:回归承办人]已收讫，遵令核验。",
+          "sha": "eb4baa5efaf1e277c0b25f8cb14519a5eb1d7c376ecea250e797a457e6b8d807",
+          "shown": true
+        }
+      }
+    }
+  },
+  {
+    "directory": "web\\dev-tools\\perf-round1\\panels-e6bafba7-5eec-4317-ac71-211ee24bb262",
+    "execution": {
+      "runId": "e6bafba7-5eec-4317-ac71-211ee24bb262",
+      "head": "5300ab4bf07fbb43a36a09f0919605f99aad2688",
+      "platform": "win32",
+      "node": "v24.14.0",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "memoryBytes": 25480257536,
+      "window": {
+        "width": 1280,
+        "height": 800
+      },
+      "hashes": {
+        "web/phase8-formal-drafts.js": "6a6096d7bb0e2cdb0f5cd50ca5882f3d84807c7d6afd1a7d966b1e3dfa1a0217",
+        "web/phase8-formal-bridge.js": "efe0dd604bad93a3775af6635743cc3c8fc380c98c90e63e127be6c66c39e2f0",
+        "web/phase8-formal-modules.js": "bae115c396c32fdd7a2cba5224198bc05000114c2036964e2d487fc5529bff27",
+        "web/phase8-formal-drafts-message-panels.js": "4d00dbb09dba6243a05c7a1cc86dea128907213c449eb34c92500ff361b9e64f",
+        "web/tm-save-lifecycle.js": "9674a683b6a1c31f1d05e8eebc8a44b09458fa7929edeca41ef21e0ad1b68fda",
+        "preload-impl.js": "ac9481a13d2c11da79c2bd3d21912e4df057b9d7c9446c9828b6aed11210bcb0"
+      },
+      "exitCode": 1,
+      "elapsedMs": 241527.6896
+    },
+    "report": {
+      "complete": true,
+      "ok": false,
+      "mode": "performance-panels",
+      "baseline": false,
+      "versions": {
+        "node": "20.18.3",
+        "acorn": "8.14.0",
+        "ada": "2.9.2",
+        "ares": "1.34.4",
+        "base64": "0.5.2",
+        "brotli": "1.0.9",
+        "cjs_module_lexer": "1.4.1",
+        "cldr": "44.1",
+        "icu": "74.2",
+        "llhttp": "8.1.2",
+        "modules": "130",
+        "napi": "9",
+        "nghttp2": "1.61.0",
+        "openssl": "0.0.0",
+        "simdutf": "5.6.4",
+        "tz": "2024a",
+        "undici": "6.21.1",
+        "unicode": "15.1",
+        "uv": "1.46.0",
+        "uvwasi": "0.0.21",
+        "v8": "13.0.245.25-electron.0",
+        "zlib": "1.3.0.1-motley",
+        "electron": "33.4.11",
+        "chrome": "130.0.6723.191"
+      },
+      "results": [
+        {
+          "name": "locked-electron-runtime",
+          "status": "PASS"
+        },
+        {
+          "name": "production-webpreferences",
+          "status": "PASS"
+        },
+        {
+          "name": "observed-turn-data-protocol",
+          "value": 2,
+          "status": "PASS",
+          "required": 2
+        },
+        {
+          "name": "real-bridge-and-ipc",
+          "status": "PASS"
+        },
+        {
+          "name": "production-test-exports-boundary",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/1/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/2/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/2/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/3/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/3/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/4/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/edict/4/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/0/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/0/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/1/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/1/close",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/2/open",
+          "status": "PASS"
+        },
+        {
+          "name": "0/memorial/2/close",
+          "status": "PASS"
+        }
+      ],
+      "failures": [
+        "Error: electron-bridge-timeout\n    at Timeout._onTimeout (<user-profile>\\Desktop\\tianming-perf-round1\\scripts\\electron\\bridge-main.cjs:67:25)\n    at listOnTimeout (node:internal/timers:581:17)\n    at process.processTimers (node:internal/timers:519:7)"
+      ],
+      "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+      "temporaryUserData": "<isolated-test-data>",
+      "performance": {
+        "scenario": "sc-jianyan1-1127-shaosong",
+        "samples": [
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "open",
+            "start": 198407.90000000014,
+            "end": 199239.40000000014,
+            "syncMs": 38.5999999998603,
+            "frame1Ms": -16.4000000001397,
+            "frame2Ms": 233.49999999985448,
+            "tasks": [
+              {
+                "start": 198446.90000000014,
+                "duration": 701
+              }
+            ],
+            "changes": [
+              {
+                "at": 198446.7000000002,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 199175.7000000002,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 199175.7000000002,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 199175.7000000002,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 199175.7000000002,
+                "added": 1,
+                "removed": 0
+              },
+              {
+                "at": 199175.7000000002,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44185,
+            "archiveNodes": 2,
+            "delta": {
+              "LayoutCount": 2,
+              "RecalcStyleCount": 144,
+              "LayoutDuration": 0.08826300000000001,
+              "RecalcStyleDuration": 1.705373,
+              "ScriptDuration": 0.06851599999999997,
+              "TaskDuration": 5.2734450000000095
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 0,
+            "action": "close",
+            "start": 204332.30000000005,
+            "end": 204471.6000000001,
+            "syncMs": 9.5,
+            "frame1Ms": -7.668000000034226,
+            "frame2Ms": 42.299999999959255,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 204342,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44061,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 9,
+              "LayoutDuration": 0.002143999999999993,
+              "RecalcStyleDuration": 0.061323999999999934,
+              "ScriptDuration": 0.013342999999999994,
+              "TaskDuration": 0.19696500000000583
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "open",
+            "start": 204526.7000000002,
+            "end": 204665.90000000014,
+            "syncMs": 14.899999999906868,
+            "frame1Ms": -2.1000000001804437,
+            "frame2Ms": 31.199999999807915,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 204541.80000000005,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44180,
+            "archiveNodes": 2,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.00350700000000001,
+              "RecalcStyleDuration": 0.03440500000000002,
+              "ScriptDuration": 0.015315999999999996,
+              "TaskDuration": 0.13864799999998922
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 1,
+            "action": "close",
+            "start": 204801.80000000005,
+            "end": 204988.1000000001,
+            "syncMs": 12.699999999953434,
+            "frame1Ms": 6.22999999995227,
+            "frame2Ms": 72.99999999994179,
+            "tasks": [
+              {
+                "start": 204739,
+                "duration": 56
+              },
+              {
+                "start": 204815.6000000001,
+                "duration": 61
+              }
+            ],
+            "changes": [
+              {
+                "at": 204815.1000000001,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44061,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 580,
+              "LayoutDuration": 0.0032009999999999955,
+              "RecalcStyleDuration": 3.7835320000000006,
+              "ScriptDuration": 0.022293000000000007,
+              "TaskDuration": 7.648627000000005
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "open",
+            "start": 214617,
+            "end": 214812.80000000005,
+            "syncMs": 31.5,
+            "frame1Ms": -9.200000000011642,
+            "frame2Ms": 74.10000000000582,
+            "tasks": [
+              {
+                "start": 214648.90000000014,
+                "duration": 71
+              }
+            ],
+            "changes": [
+              {
+                "at": 214648.7000000002,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44180,
+            "archiveNodes": 2,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 4,
+              "LayoutDuration": 0.007963999999999999,
+              "RecalcStyleDuration": 0.042766999999999555,
+              "ScriptDuration": 0.032335,
+              "TaskDuration": 0.17912200000000666
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 2,
+            "action": "close",
+            "start": 214837.2000000002,
+            "end": 215037.80000000005,
+            "syncMs": 4.899999999906868,
+            "frame1Ms": 3.8999999998195563,
+            "frame2Ms": 70.49999999982538,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 214842.40000000014,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44061,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 7,
+              "LayoutDuration": 0.004677000000000001,
+              "RecalcStyleDuration": 0.06555300000000042,
+              "ScriptDuration": 0.008052000000000059,
+              "TaskDuration": 0.1910400000000152
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 3,
+            "action": "open",
+            "start": 215119.1000000001,
+            "end": 215323.40000000014,
+            "syncMs": 26.5,
+            "frame1Ms": -11.40000000008149,
+            "frame2Ms": 71.89999999990687,
+            "tasks": [
+              {
+                "start": 215146.40000000014,
+                "duration": 68
+              }
+            ],
+            "changes": [
+              {
+                "at": 215146.1000000001,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44180,
+            "archiveNodes": 2,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.006272,
+              "RecalcStyleDuration": 0.062195,
+              "ScriptDuration": 0.02697000000000005,
+              "TaskDuration": 0.21037799999999152
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 3,
+            "action": "close",
+            "start": 215344.5,
+            "end": 215525.2000000002,
+            "syncMs": 7.5,
+            "frame1Ms": -3.2999999999883585,
+            "frame2Ms": 63.20000000001164,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 215352.30000000005,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44061,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.0034519999999999967,
+              "RecalcStyleDuration": 0.04535499999999981,
+              "ScriptDuration": 0.01132500000000003,
+              "TaskDuration": 0.14167699999998717
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 4,
+            "action": "open",
+            "start": 215616.1000000001,
+            "end": 215802.7000000002,
+            "syncMs": 26.199999999953434,
+            "frame1Ms": -8.300000000104774,
+            "frame2Ms": 75.09999999991851,
+            "tasks": [
+              {
+                "start": 215642.80000000005,
+                "duration": 68
+              }
+            ],
+            "changes": [
+              {
+                "at": 215642.6000000001,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44180,
+            "archiveNodes": 2,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.006182999999999994,
+              "RecalcStyleDuration": 0.060576000000000185,
+              "ScriptDuration": 0.026679000000000008,
+              "TaskDuration": 0.20674700000000712
+            }
+          },
+          {
+            "history": 0,
+            "panel": "edict",
+            "iteration": 4,
+            "action": "close",
+            "start": 215821.7000000002,
+            "end": 215972.6000000001,
+            "syncMs": 5.7999999998137355,
+            "frame1Ms": 19.399999999819556,
+            "frame2Ms": 36.099999999802094,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 215827.80000000005,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 7
+            },
+            "nodes": 44061,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 5,
+              "LayoutDuration": 0.0022169999999999968,
+              "RecalcStyleDuration": 0.044331999999999816,
+              "ScriptDuration": 0.00763999999999998,
+              "TaskDuration": 0.13218700000001604
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "open",
+            "start": 216072.90000000014,
+            "end": 217071.1000000001,
+            "syncMs": 16,
+            "frame1Ms": 1.4999999998544808,
+            "frame2Ms": 318.0999999998603,
+            "tasks": [
+              {
+                "start": 216089,
+                "duration": 831
+              }
+            ],
+            "changes": [
+              {
+                "at": 216089,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44342,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 152,
+              "LayoutDuration": 0.19672200000000004,
+              "RecalcStyleDuration": 1.2705499999999992,
+              "ScriptDuration": 0.019703000000000026,
+              "TaskDuration": 4.140716999999995
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 0,
+            "action": "close",
+            "start": 220301.5,
+            "end": 220421.80000000005,
+            "syncMs": 5.600000000093132,
+            "frame1Ms": -10.5,
+            "frame2Ms": 22.79999999998836,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 220307.30000000005,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 2
+            },
+            "nodes": 44062,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 10,
+              "LayoutDuration": 0.0019499999999999518,
+              "RecalcStyleDuration": 0.06375500000000045,
+              "ScriptDuration": 0.009417000000000009,
+              "TaskDuration": 0.15972399999998288
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 1,
+            "action": "open",
+            "start": 220456.7000000002,
+            "end": 220599.7000000002,
+            "syncMs": 5,
+            "frame1Ms": 0.9659999998111743,
+            "frame2Ms": 34.299999999813735,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 220461.90000000014,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44342,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 4,
+              "LayoutDuration": 0.008567000000000047,
+              "RecalcStyleDuration": 0.021293999999999258,
+              "ScriptDuration": 0.005135000000000001,
+              "TaskDuration": 0.10821100000001138
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 1,
+            "action": "close",
+            "start": 220624.7000000002,
+            "end": 220801.6000000001,
+            "syncMs": 13.899999999906868,
+            "frame1Ms": -0.3000000001920853,
+            "frame2Ms": 49.799999999813735,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 220638.90000000014,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 2
+            },
+            "nodes": 44062,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 660,
+              "LayoutDuration": 0.002316999999999958,
+              "RecalcStyleDuration": 4.320551,
+              "ScriptDuration": 0.024499999999999966,
+              "TaskDuration": 9.038550999999984
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 2,
+            "action": "open",
+            "start": 231785.90000000014,
+            "end": 231954.6000000001,
+            "syncMs": 5.300000000046566,
+            "frame1Ms": 4.89999999984866,
+            "frame2Ms": 38.19999999986612,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 231791.40000000014,
+                "added": 1,
+                "removed": 0
+              }
+            ],
+            "counts": {},
+            "nodes": 44342,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 7,
+              "LayoutDuration": 0.008350000000000024,
+              "RecalcStyleDuration": 0.054228000000000165,
+              "ScriptDuration": 0.005361999999999978,
+              "TaskDuration": 0.18788299999999936
+            }
+          },
+          {
+            "history": 0,
+            "panel": "memorial",
+            "iteration": 2,
+            "action": "close",
+            "start": 232105.7000000002,
+            "end": 232247.2000000002,
+            "syncMs": 8.699999999953434,
+            "frame1Ms": 1.6639999998151325,
+            "frame2Ms": 35.099999999802094,
+            "tasks": [],
+            "changes": [
+              {
+                "at": 232114.80000000005,
+                "added": 0,
+                "removed": 1
+              }
+            ],
+            "counts": {
+              "save": 2
+            },
+            "nodes": 44062,
+            "archiveNodes": 0,
+            "delta": {
+              "LayoutCount": 1,
+              "RecalcStyleCount": 8,
+              "LayoutDuration": 0.0012240000000000029,
+              "RecalcStyleDuration": 0.06698999999999877,
+              "ScriptDuration": 0.010734999999999939,
+              "TaskDuration": 0.2122280000000103
+            }
+          }
+        ],
+        "scope": "Actual production renderer APIs in real sandbox Electron. Public deterministic UI fixture, no AI/network/player data; synthetic DOM clicks are separate from computer-use observations.",
+        "fixture": {
+          "history": 0,
+          "characters": 485,
+          "bytes": 2
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "command": [
+    "node",
+    "scripts/verify-release-contract.js"
+  ],
+  "cwd": "<USER_HOME>\\Desktop\\tianming-audit-review",
+  "head": "14130f77ef1976f9b3cd8b311b4aef77636e7d90",
+  "tree": "1be7372436c0a86f35946b1ba99579b6fa3eb0d6",
+  "statusBefore": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "arch": "x64",
+  "node": "v24.14.0",
+  "startedAt": "2026-09-07T06:28:20.688Z",
+  "exitCode": 0,
+  "signal": null,
+  "durationMs": 2804,
+  "statusAfter": " M .github/workflows/ci.yml\n?? docs/audit-review-2026-09-07/\n",
+  "rawSha256": "cdd820d2f9182163b9276f9b97767e6b5c785bc34ffe82ef827fd46cd5525729",
+  "publishedSha256": "cdd820d2f9182163b9276f9b97767e6b5c785bc34ffe82ef827fd46cd5525729"
+}

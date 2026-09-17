@@ -422,4 +422,26 @@ function checkScenario(label) {
 }
 
 checkScenario('182区草案');
-checkScenario('官方');
+const official = JSON.parse(fs.readFileSync(findScenarioFile('官方'), 'utf8'));
+if (official.map.id === 'shaosong-1127-182') checkScenario('官方');
+else {
+  assert(official.map.id === 'shaosong-three-tiers-r6', 'unexpected official map revision');
+  assert(official.map.regions.length === 566, 'R6 must retain all 566 regions');
+  assert(JSON.stringify(official.map) === JSON.stringify(official.mapData), 'canonical map mirrors differ');
+  assert(official.characters.length === 501 && official.military.initialTroops.length === 100, 'original character/army roster lost');
+  const regions = new Set(official.map.regions.map(r => r.id));
+  assert(regions.size === 566, 'duplicate region ID');
+  const accounts = new Set();
+  function walk(v) { if (!v || typeof v !== 'object') return; if (v.id) accounts.add(v.id); for (const x of Object.values(v)) if (x && typeof x === 'object') walk(x); }
+  walk(official.adminHierarchy);
+  for (const region of official.map.regions) {
+    assert(region.accountingLeafIds && region.accountingLeafIds.length, region.id + ' lacks accounting lineage');
+    for (const id of region.accountingLeafIds) assert(accounts.has(id), region.id + ' points to missing account ' + id);
+    assert(Number.isFinite(region.population) && region.population >= 0, region.id + ' invalid population');
+  }
+  assert(official.map.locationBindingContract.schema === 'source-text-location-v2', 'missing live location contract');
+  for (const entity of [...official.characters, ...official.military.initialTroops]) {
+    if (entity.regionId) assert(regions.has(entity.regionId), 'entity points to missing region: ' + entity.name);
+  }
+  console.log('[smoke-shaosong-target-map-regions] official R6: all regions, accounts, rosters and location bindings PASS');
+}

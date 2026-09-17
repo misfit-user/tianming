@@ -936,6 +936,7 @@ SettlementPipeline.register('armyMarch', '军队行军', function() {
       // 到达目的地
       army.location = army.destination;
       army.destination = '';
+      if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location);
       army._remainingDistance = 0;
       marchReports.push(army.name + '\u5DF2\u62B5\u8FBE' + army.location);
       if (typeof addEB === 'function') addEB('\u884C\u519B', army.name + '\u62B5\u8FBE' + army.location);

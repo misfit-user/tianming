@@ -193,7 +193,7 @@ srcHas('tm-ai-output-validator.js', /party_relation_changes/, 'validator：党�
 srcHas('phase8-formal-map-dossier.js', /localityLayer/, '军绑：聚落层名册（第二十五拆迁至 dossier sibling）');
 srcHas('phase8-formal-map-dossier.js', /regionHint/, '军绑：剧本 regionHint 扩展点（第二十五拆迁至 dossier sibling）');
 srcHas('phase8-formal-map-dossier.js', /分驻/, '军绑：散驻分摊（第二十五拆迁至 dossier sibling）');
-srcHas('scenarios/tianqi7-1627.js', /regionHint"?:\s*['"]北直隶['"]/, '剧本：京营/蓟州 regionHint');
+srcHas('scenarios/tianqi7-1627.js', /regionHint\\?"?:\s*\\?['"]北直隶/, '剧本：京营/蓟州 regionHint（生成器可内联为 JSON.parse 字符串字面量）');
 srcHas('phase8-formal-rightrail-social.js', /rightAgendaChips/, 'UI：议程条目徽');
 srcHas('phase8-formal-rightrail-social.js', /rightPartyLedgerRows/, 'UI：党势近账');
 srcHas('phase8-formal-bridge.js', /tmrp-ledger-row/, 'CSS：近账行样式');

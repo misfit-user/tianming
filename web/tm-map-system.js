@@ -385,9 +385,12 @@ function findMapRegion(mapData, regionRef) {
   }
   mapData = mapData || peekMapSource();
   if (!mapData || !Array.isArray(mapData.regions)) return null;
-  return mapData.regions.find(function(region) {
-    return region && (region.id === regionRef || region.name === regionRef || region.adminBinding === regionRef || region.mapRegionId === regionRef);
-  }) || null;
+  var exact=mapData.regions.filter(function(r){return r && String(r.id)===String(regionRef);});
+  if(exact.length>1)throw new Error('地块 ID 不唯一：'+regionRef);
+  if(exact.length)return exact[0];
+  var matches=mapData.regions.filter(function(r){if(!r)return false;var binding=r.adminBinding;if(binding && typeof binding==='object')binding=binding.id || binding.divisionId;return [r.name,binding,r.mapRegionId].some(function(v){return v!=null && String(v)===String(regionRef);});});
+  if(matches.length>1)throw new Error('地块引用不唯一，请使用稳定 ID：'+regionRef);
+  return matches[0] || null;
 }
 
 function pushMapTurnChange(change) {
@@ -398,13 +401,25 @@ function pushMapTurnChange(change) {
 }
 
 function setMapRegionOwner(regionRef, newOwner, opts) {
+  if (newOwner === undefined) return null;
+  if (newOwner === null) newOwner = '';
   opts = opts || {};
   var mapData = ensureWritableRuntimeMap({ sourceMap: opts.mapData });
   var region = findMapRegion(mapData, regionRef);
   if (!region) return null;
-  var resolved = findScenarioFactionByMapValue(newOwner, mapData);
+  if(typeof TM!=='undefined' && TM.FactionMembership && typeof TM.FactionMembership.applyProvinceTransfers==='function'){
+    TM.FactionMembership.applyProvinceTransfers([{regionRef:region.id || region.name,newOwner:opts.targetFactionId || newOwner,reason:opts.reason}],opts);
+    return region;
+  }
+  // One live-world transaction owns administration, countries and both map views.
+  if (typeof TM !== 'undefined' && TM.FactionMembership && TM.FactionMembership.assignProvince) {
+    TM.FactionMembership.assignProvince(region.id || region.name, newOwner, opts);
+    return region;
+  }
+  var resolved = findScenarioFactionByMapValue(newOwner, mapData) || { id:'', key:'', name:'', color:'' };
   var oldOwner = region.owner;
   var oldOwnerKey = region.ownerKey;
+  if (oldOwner === resolved.id && oldOwnerKey === resolved.key) return region;
   region.owner = resolved.id || newOwner;
   region.currentOwner = region.owner;
   region.controller = region.owner;
@@ -435,6 +450,8 @@ function setMapRegionOwner(regionRef, newOwner, opts) {
 }
 
 function updateMapRegionFields(regionRef, patch, opts) {
+  var ownerFields=['owner','currentOwner','controller','ownerKey','currentOwnerKey','controllerKey','factionId','factionKey','factionName','ownerName','ownerFactionId','controllerFactionId','sovereignFactionId','groupKey','stableOwnerKey','stableFactionId','mapFactionId'];
+  if(patch && [patch,patch.data].some(function(obj){return obj && ownerFields.some(function(k){return Object.prototype.hasOwnProperty.call(obj,k);});}))throw new Error('归属字段必须通过统一易主接口写入');
   opts = opts || {};
   var mapData = ensureWritableRuntimeMap({ sourceMap: opts.mapData });
   var region = findMapRegion(mapData, regionRef);
@@ -452,26 +469,77 @@ function updateMapRegionFields(regionRef, patch, opts) {
   return region;
 }
 
-function applyRuntimeAIMapChanges(aiResponse, mapData) {
-  if (!aiResponse || !aiResponse.map_changes) return;
-  // A caller-supplied P/scenario map is only a clone source. All writes land in GM.mapData.
-  mapData = ensureWritableRuntimeMap({ sourceMap: mapData });
-  var changes = aiResponse.map_changes;
-  (changes.ownership_changes || []).forEach(function(change) {
-    setMapRegionOwner(change.region_id || change.region_name, change.new_owner, { mapData: mapData, reason: change.reason || 'AI推演领地易主' });
+function _prepareRuntimeAIMapChanges(aiResponse,mapData) {
+  if(!aiResponse || aiResponse.map_changes==null)return {ok:true,applied:0};
+  var changes=aiResponse.map_changes;
+  if(!changes || typeof changes!=='object' || Array.isArray(changes))throw new Error('地图变更格式无效');
+  var kinds=['ownership_changes','troop_changes','development_changes','events'],lists={},total=0;
+  kinds.forEach(function(k){if(changes[k]!=null && !Array.isArray(changes[k]))throw new Error('地图变更列表无效：'+k);lists[k]=changes[k] || [];total+=lists[k].length;});
+  if(!total)return {ok:true,applied:0,ownershipChanges:0};
+  var source=peekMapSource() || mapData;
+  if(!source || !Array.isArray(source.regions) || !source.regions.length)throw new Error('当前世界没有可更新的地图');
+  function resolve(row){
+    if(!row || typeof row!=='object' || Array.isArray(row))throw new Error('地图变更条目无效');
+    var explicit=row.region_id!=null && row.region_id!=='';
+    var ref=explicit?row.region_id:row.region_name;
+    if(typeof ref!=='string' && typeof ref!=='number')throw new Error('地图变更缺少地块引用');
+    var matches=explicit?source.regions.filter(function(r){return r && String(r.id)===String(ref);}):null;
+    if(explicit && matches.length!==1)throw new Error('地块 ID 不存在或不唯一：'+ref);
+    var r=explicit?matches[0]:findMapRegion(source,String(ref));
+    if(!r)throw new Error('地块不存在：'+ref);return r;
+  }
+  var owners=[],seen=new Map(),extras=[];
+  lists.ownership_changes.forEach(function(row){
+    var r=resolve(row);if(!Object.prototype.hasOwnProperty.call(row,'new_owner'))throw new Error('易主缺少 new_owner');
+    var owner=row.new_owner;if(owner!==null && typeof owner!=='string' && typeof owner!=='number')throw new Error('新势力引用无效');
+    var value=owner==null?'':String(owner).trim(),resolved=findScenarioFactionByMapValue(value,source);
+    var facs=(GM.facs || []).filter(function(f){return f && resolved && (String(f.id)===String(resolved.id) || f.name===value);});
+    if(value && facs.length!==1)throw new Error('目标势力不存在或不唯一：'+value);
+    var target=value?(facs[0].id || facs[0].name):'',id=r.id || r.name;
+    if(seen.has(id)){if(seen.get(id)!==target)throw new Error('同一地块存在冲突易主：'+id);return;}
+    seen.set(id,target);owners.push({regionRef:id,newOwner:target,reason:row.reason || 'AI推演领地易主'});
   });
-  (changes.troop_changes || []).forEach(function(change) {
-    var region = findMapRegion(mapData, change.region_id || change.region_name);
-    if (region) updateMapRegionFields(region.id, { troops: Math.max(0, Number(region.troops || 0) + Number(change.delta || 0)) }, { mapData: mapData, reason: change.reason || 'AI推演驻军变化' });
-  });
-  (changes.development_changes || []).forEach(function(change) {
-    var region = findMapRegion(mapData, change.region_id || change.region_name);
-    if (region) updateMapRegionFields(region.id, { development: clamp(_mapSystemFiniteNumberOr(region.development, 50) + _mapSystemFiniteNumberOr(change.delta, 0), 0, 100) }, { mapData: mapData, reason: change.reason || 'AI推演发展度变化' });
-  });
-  (changes.events || []).forEach(function(event) {
-    var region = findMapRegion(mapData, event.region_id || event.region_name);
-    if (region) updateMapRegionFields(region.id, { events: (region.events ? region.events + '\n' : '') + (event.description || '') }, { mapData: mapData, reason: 'AI推演地块事件' });
-  });
+  ['troop_changes','development_changes','events'].forEach(function(kind){lists[kind].forEach(function(row){
+    var r=resolve(row),op={id:r.id || r.name,kind:kind,reason:row.reason || 'AI推演地块变化'};
+    if(kind==='events'){
+      if(typeof row.description!=='string')throw new Error('地块事件描述无效');op.value=row.description;
+    }else{
+      if((typeof row.delta!=='number' && typeof row.delta!=='string') || String(row.delta).trim()==='' || !Number.isFinite(Number(row.delta)))throw new Error('地图数值变化不是有限数字');
+      op.value=Number(row.delta);
+    }
+    extras.push(op);
+  });});
+  return {source:source,owners:owners,extras:extras,total:total};
+}
+
+function applyRuntimeAIMapChanges(aiResponse,mapData) {
+  var plan=_prepareRuntimeAIMapChanges(aiResponse,mapData);
+  if(!plan.total)return {ok:true,applied:0,ownershipChanges:0};
+  var source=plan.source,owners=plan.owners,extras=plan.extras;
+  var membership=typeof TM!=='undefined' && TM.FactionMembership;
+  if(owners.length && (!membership || typeof membership.applyProvinceTransfers!=='function'))throw new Error('统一领地写入模块未加载');
+  var hadMap=Object.prototype.hasOwnProperty.call(GM,'mapData'),oldMap=GM.mapData;
+  try{
+    var runtime=ensureWritableRuntimeMap({sourceMap:source,forceClone:source===oldMap && source.mapSchemaVersion!==TM_RUNTIME_MAP_SCHEMA_VERSION});
+    var records=extras.map(function(op){return findMapRegion(runtime,op.id);});
+    function applyExtras(){
+      extras.forEach(function(op,i){
+        var r=records[i],patch={};
+        if(op.kind==='troop_changes')patch.troops=Math.max(0,Number(r.troops || 0)+op.value);
+        else if(op.kind==='development_changes')patch.development=Math.max(0,Math.min(100,_mapSystemFiniteNumberOr(r.development,50)+op.value));
+        else patch.events=(r.events?r.events+'\n':'')+op.value;
+        updateMapRegionFields(r.id,patch,{mapData:runtime,reason:op.reason});
+      });return extras.length>0;
+    }
+    var result=membership && typeof membership.applyProvinceTransfers==='function'
+      ? membership.applyProvinceTransfers(owners,{records:records,mutate:applyExtras})
+      : (applyExtras(),{ok:true,applied:0,ownershipChanges:0});
+    result.applied+=extras.length;return result;
+  }catch(error){
+    // Legacy/template binding is part of this operation too; never leave a failed replacement map installed.
+    if(GM.mapData!==oldMap){if(hadMap)GM.mapData=oldMap;else delete GM.mapData;} // arch-ok: the map owner restores its own binding when the AI write transaction is rejected.
+    throw error;
+  }
 }
 
 function getMapAIContextData(mapData) {
@@ -1946,7 +2014,8 @@ function syncArmiesToMap() {
 
   GM.armies.forEach(function(army) {
     // location 兼容旧城市名，也接受稳定节点引用/locationId/regionId/mapRegionId。
-    var node = resolveMapNode(army.locationNode || army.locationId || army.regionId || army.mapRegionId || army.location);
+    var boundLocation = window.TMMapLocations && window.TMMapLocations.read(army, 'army', GM);
+    var node = resolveMapNode(boundLocation ? boundLocation.regionId : (army.locationNode || army.locationId || army.regionId || army.mapRegionId || army.location || army.garrison));
     if (!node) return;
 
     var mapArmy = {
@@ -1963,8 +2032,8 @@ function syncArmiesToMap() {
     };
 
     // 如果军队正在移动，设置目标位置
-    if (army.targetLocation || army.targetLocationNode || army.targetLocationId || army.targetRegionId) {
-      var targetNode = resolveMapNode(army.targetLocationNode || army.targetLocationId || army.targetRegionId || army.targetLocation);
+    if (army.targetLocation || army.targetLocationNode || army.targetLocationId || army.targetRegionId || army.destination) {
+      var targetNode = resolveMapNode(army.targetLocationNode || army.targetLocationId || army.targetRegionId || army.targetLocation || army.destination);
       if (targetNode) {
         mapArmy.moving = true;
         mapArmy.targetX = targetNode.x;
@@ -2055,6 +2124,10 @@ function resolveMapNode(ref) {
         var found = xy(row, row.id || key, groups[gi].type); if (found) return found;
       }
     }
+  }
+  if (window.TMMapLocations && window.TMMapLocations.enabled(GM.mapData)) {
+    var alias = window.TMMapLocations.resolveText(key, GM.mapData, {}, 'node', GM);
+    if (alias.regionId && alias.regionId !== key) return resolveMapNode(alias.regionId);
   }
   return null;
 }

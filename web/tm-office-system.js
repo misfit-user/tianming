@@ -357,7 +357,7 @@ function _offUniqueTitles(list) {
 
 // 官职后缀（识别 title 段是否真官职·防吸收描述/状态垃圾）
 var _OFF_TITLE_SUFFIX = /(尚书|侍郎|大学士|学士|都御史|通政使|寺卿|少卿|祭酒|司业|总督|总制|经略|督师|提督|巡抚|总兵|副总兵|参将|游击|布政使|按察使|参政|参议|知府|同知|知州|知县|给事中|詹事|洗马|修撰|编修|检讨|监正|监副|院使|宗人令|宗正|都督|都指挥|指挥使|镇抚|太师|太傅|太保|少师|少傅|少保)/;
-function _offGetCharOfficeTitles(ch) {
+function _offGetCharOfficeTitles(ch, opts) {
   if (!ch) return [];
   var arr = [];
   if (ch.officialTitle) arr.push(ch.officialTitle);
@@ -374,14 +374,26 @@ function _offGetCharOfficeTitles(ch) {
       if (clean.length >= 2 && _OFF_TITLE_SUFFIX.test(clean) && !arr.some(function(x){ return String(x).indexOf(clean) >= 0; })) arr.push(clean);
     });
   }
-  return _offUniqueTitles(arr);
+  var titles = _offUniqueTitles(arr);
+  if (!opts || !opts.displayOnly) return titles;
+  // Display only: composite titles and separately registered seats must not repeat.
+  // Exact components, not substring matching: 检校礼部尚书 is not 礼部尚书.
+  var seen = Object.create(null), out = [];
+  titles.forEach(function(t) {
+    var parts = /[（(]/.test(t) ? [t] : t.split(/[·、，,；;]/).map(function(x){ return x.trim(); }).filter(Boolean);
+    var fresh = parts.filter(function(x){ return !seen[x.replace(/^兼(?:任)?/, '')]; });
+    if (!fresh.length) return;
+    out.push(fresh.length === parts.length ? t : fresh.join('、'));
+    parts.forEach(function(x){ seen[x.replace(/^兼(?:任)?/, '')] = true; });
+  });
+  return out;
 }
 
 // 显示用·把某人全部官职(主职⊕兼职)拼为一行供 UI 显示多职(非仅主职)·主兼以「兼」连·兼职间顿号
 // opts.fallback: 无规范官职时兜底文案(默认 '')
 function _offFormatCharTitles(ch, opts) {
   opts = opts || {};
-  var titles = _offGetCharOfficeTitles(ch);
+  var titles = _offGetCharOfficeTitles(ch, { displayOnly: true });
   if (!titles.length) return (opts.fallback != null) ? opts.fallback : '';
   if (titles.length === 1) return titles[0];
   return titles[0] + '　兼　' + titles.slice(1).join('、');
@@ -415,7 +427,7 @@ function _offAddCharOfficeTitle(ch, title, opts) {
   var currentMain = _offNormalizeTitleName(ch.officialTitle || '');
   var titles;
 
-  if (opts.concurrent && currentMain && currentMain !== title) {
+  if (opts.concurrent && currentMain) {
     titles = _offUniqueTitles([currentMain].concat(existing).concat([title]));
     ch.officialTitle = currentMain;
     if (!ch.position) ch.position = currentMain;
@@ -1485,6 +1497,9 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   var np = _offNormalizeTitleName(posName);
   var nd = _offNormalizeTitleName(deptName);
   if (!ct || !np) return 0;
+  // A duty or honorary designation is not a substantive office with a similar name.
+  // Preserve exact authored seats, including explicitly modeled duty positions.
+  if (ct !== np && ct !== nd + np && /^(?:检校|追赠|赠|加衔|(?:权)?判.+事$)/.test(ct)) return 0;
   var sc = 0;
   if (ct === np) sc = 100;
   else if (ct === nd + np) sc = 98;
@@ -1807,6 +1822,8 @@ function _offSyncHoldersFromChars(opts) {
     if (used[ci]) continue;
     for (var si = 0; si < slots.length; si++) {
       if (slots[si].fill.length >= slots[si].cap) continue;
+      // Authored unknown holders are not vacancies for fuzzy auto-appointment.
+      if (slots[si].pos.occupancyStatus === 'unrecorded') continue;
       var s = _offTitleSlotScore(claims[ci].title, slots[si].dept, slots[si].posName, false);
       if (s >= 40) pairs.push({ ci: ci, si: si, s: s });
     }

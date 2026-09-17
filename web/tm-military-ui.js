@@ -78,7 +78,7 @@ function editArmy(i){
     '<div class="form-group"><label>士气</label><input type="number" id="gm_morale" value="'+(a.morale!=null?a.morale:70)+'" min="0" max="100"></div>'+
     '<div class="form-group"><label>补给</label><input type="number" id="gm_supply" value="'+(a.supply!=null?a.supply:80)+'" min="0" max="100"></div>';
   openGenericModal("编辑部队",body,function(){
-    a.name=gv("gm_name");a.commander=gv("gm_cmdr");a.location=gv("gm_loc");
+    a.name=gv("gm_name");a.commander=gv("gm_cmdr");a.location=gv("gm_loc");if (window.TMMapLocations) window.TMMapLocations.sync(a, 'army', undefined, a.location);
     // [Slice J·2026-05-10] 走 Membership API·替代直接 a.faction= 写
     var _newFac = gv("gm_faction") || "";
     if (window.TM && window.TM.FactionMembership && window.TM.FactionMembership.assignArmy) {

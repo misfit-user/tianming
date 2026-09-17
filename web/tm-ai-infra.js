@@ -464,8 +464,8 @@ function estimateTokens(text) {
  * 返回 { contextK, budget, warn80, warn95 }
  */
 function getPromptBudget() {
-  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 32 };
-  var contextK = cp.contextK || 32;
+  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 256 };
+  var contextK = cp.contextK || 256;
   // 留 1/4 给响应+缓冲
   var budget = Math.floor(contextK * 1024 * 0.75);
   return { contextK: contextK, budget: budget, warn80: Math.floor(budget * 0.8), warn95: Math.floor(budget * 0.95) };
@@ -554,11 +554,11 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       signal.addEventListener('abort', externalAborter);
     }
     try {
-      var resp = await Promise.race([fetch(url, {
+      var resp = await Promise.race([(typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify(body),
-        signal: ctrl.signal
+        signal: ctrl.signal, timeoutMs: timeoutMs
       }), deadline]);
       requestPhase = 'body';
       // 429 速率限制：读 Retry-After 延迟
@@ -635,6 +635,8 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       if (timedOut) e = timeoutError;
       else if (signal && signal.aborted) e = _aiCancelledError(signal);
       lastError = e;
+      // Native bridge cannot cancel an already-sent POST; do not replay after its local failure.
+      if (e && (e._tmNativeTransport || (timedOut && typeof _tmAINativePlatform === 'function' && _tmAINativePlatform()))) throw e;
       // 外部 signal 主动中断——不重试
       if (signal && signal.aborted) throw e;
       // 明确的 4xx（429 已在响应分支处理）是请求错误；不得被通用网络重试再次原样发送。
@@ -911,7 +913,7 @@ async function callAIWithTools(prompt, tools, opts) {
       var choiceRetried = false;
       while (true) {
         if (ctrl.signal.aborted) throw new Error('Aborted');
-        var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+        var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
         if (!resp.ok) {
           var errT = '';
           try { errT = await resp.text(); } catch(_){ }
@@ -1214,7 +1216,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
     if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
     _bodyCore.stream = true;
-    var resp = await fetch(url, {
+    var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify(_bodyCore),
@@ -2461,7 +2463,7 @@ var ImageAPI = {
     var cfg = this.getConfig();
     if (!cfg.supported) return Promise.reject(new Error('\u672A\u914D\u7F6E\u751F\u56FEAPI'));
     options = options || {};
-    return fetch(cfg.url, {
+    return (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(cfg.url, {
       method: 'POST',
       headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key},
       body: JSON.stringify({

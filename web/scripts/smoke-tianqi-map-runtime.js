@@ -90,6 +90,7 @@ function main() {
 
   const ctx = makeContext(sc);
   runFile(ctx, 'tm-map-system.js');
+  runFile(ctx, 'tm-faction-membership.js'); // AI ownership must use the country/map transaction together.
   runFile(ctx, 'map-integration.js');
 
   assert(ctx.TMMapRuntime, 'TMMapRuntime missing');

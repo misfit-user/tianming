@@ -278,58 +278,12 @@
   }
 
   function _setRegionOwnerMirrors(G, rec, fac, reason) {
-    if (!G || !rec || !fac) return false;
-    var facName = fac.name || fac.id || '';
-    var facId = fac.id || fac.name || '';
-    var regionRef = rec.id || rec.name;
-    var mapRegion = rec.mapRegion || _mapRegionByNameOrId(G, regionRef);
-    var oldOwner = mapRegion ? (mapRegion.ownerName || mapRegion.factionName || mapRegion.owner || '') : '';
-    var changed = false;
-    try {
-      if (global.TMMapRuntime && typeof global.TMMapRuntime.setRegionOwner === 'function') {
-        var updated = global.TMMapRuntime.setRegionOwner(regionRef, facName, { mapData:G.mapData, reason:reason || '叙事地块归属补录' });
-        if (updated) mapRegion = updated;
-      }
-    } catch(_) {}
-    if (mapRegion) {
-      if (_writeRegionOwnerAliases(mapRegion, facName, facId, true)) changed = true;
-      if (!mapRegion.data || typeof mapRegion.data !== 'object') mapRegion.data = {};
-      if (_writeRegionOwnerAliases(mapRegion.data, facName, facId, false)) changed = true;
-      if (fac.color) mapRegion.color = fac.color;
-    }
-    var div = rec.adminDiv || _findDivisionByNameOrId(G, rec.name || rec.id);
-    if (div) {
-      if (_writeRegionOwnerAliases(div, facName, facId, false)) changed = true;
-    }
-    if (!G._provinceToFaction) G._provinceToFaction = {};
-    try {
-      if (global.TM && TM.FactionMembership && typeof TM.FactionMembership.assignProvince === 'function') {
-        TM.FactionMembership.assignProvince(rec.name || rec.id, facName, { reason: reason || '叙事地块归属补录', silent: true });
-      }
-    } catch(_) {}
-    [rec.name, rec.id, mapRegion && mapRegion.name, mapRegion && mapRegion.id].filter(Boolean).forEach(function(k) {
-      G._provinceToFaction[k] = facName;
-    });
-    if (G.provinceStats && typeof G.provinceStats === 'object') {
-      var touched = false;
-      Object.keys(G.provinceStats).forEach(function(k) {
-        var st = G.provinceStats[k];
-        if (!st || typeof st !== 'object') return;
-        if ([rec.name, rec.id, mapRegion && mapRegion.name, mapRegion && mapRegion.id].filter(Boolean).some(function(v){ return _normalizeArmyKey(v) === _normalizeArmyKey(k); })) {
-          _writeRegionOwnerAliases(st, facName, facId, false);
-          touched = true;
-        }
-      });
-      if (!touched && (rec.id || rec.name)) {
-        G.provinceStats[rec.id || rec.name] = {};
-        _writeRegionOwnerAliases(G.provinceStats[rec.id || rec.name], facName, facId, false);
-      }
-    }
-    if (G._turnReport && oldOwner !== facName) {
-      G._turnReport.push({ type:'region_update', entity:rec.name || rec.id, field:'owner', old:oldOwner, new:facName, reason:reason || '叙事地块归属补录', turn:G.turn||0 });
-    }
-    _refreshMapFieldViews();
-    return changed || oldOwner !== facName;
+    if(!G || !rec || !fac)return false;
+    if(G!==global.GM)throw new Error('叙事易主不能修改非当前世界');
+    var membership=global.TM && TM.FactionMembership;
+    if(!membership || typeof membership.applyProvinceTransfers!=='function')throw new Error('叙事易主缺少统一领地写入模块');
+    var result=membership.applyProvinceTransfers([{regionRef:rec.mapRegion && rec.mapRegion.id || rec.adminDiv && rec.adminDiv.id || rec.id || rec.name,newOwner:fac.id || fac.name,reason:reason || '叙事地块归属补录'}],{silent:true});
+    return result.changed;
   }
 
   function _cleanRegionOfficeTitle(raw) {

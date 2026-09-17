@@ -1693,7 +1693,7 @@ function _sRenderConnReport(qr, ctxK, ctxSrc, outTok, outSrc, tier) {
     h += ' · <span style="color:' + (qr.echo === 'mismatch' ? 'var(--vermillion-400,#c04030)' : 'var(--txt-d)') + ';" title="API 实际返回的模型标识">' + echoTxt + '（' + esc(qr.responseModel) + '）</span>';
   }
   h += '</div>';
-  h += '<div>' + chip(qr.stream.ok, '流式', qr.stream.detail) + chip(qr.json.ok, '严格JSON', qr.json.detail) + chip(qr.usageSeen, 'usage用量', '是否返回 token 用量·关系成本统计与预算档位');
+  h += '<div>' + chip(qr.stream.ok || qr.stream.buffered, qr.stream.buffered ? '原生整包' : '流式', qr.stream.detail) + chip(qr.json.ok, '严格JSON', qr.json.detail) + chip(qr.usageSeen, 'usage用量', '是否返回 token 用量·关系成本统计与预算档位');
   if (ctxK > 0) h += '<span style="margin-right:0.6rem;">上下文 <b>' + ctxK + 'K</b><small style="color:var(--txt-d);">（' + esc(ctxSrc || '') + '）</small></span>';
   if (outTok > 0) h += '<span>输出 <b>' + Math.round(outTok / 1024) + 'K</b><small style="color:var(--txt-d);">（' + esc(outSrc || '') + '）</small></span>';
   else h += '<span style="color:var(--txt-d);">输出上限未知 · 建议实测</span>';
@@ -1738,7 +1738,7 @@ async function sTestSecondaryConn(){
   else{try{delete P.ai.secondary;}catch(_){}} // arch-ok 体检收尾·本无次API则拆除临时对象
 }
 async function sTestConn(){
-  var key=_$("s-key")?_$("s-key").value:"";var url=_$("s-url")?_$("s-url").value:"";
+  var key=_$("s-key")?_$("s-key").value.trim():"";var url=_$("s-url")?_$("s-url").value.trim():"";
   if(!key||!url){toast("填写");return;}var st=_$("s-status");if(st)st.textContent="正在体检…";
   // 临时更新P.ai以便体检与探测能使用未保存值·结束后恢复
   var _origKey=P.ai.key, _origUrl=P.ai.url, _origModel=P.ai.model;
@@ -2008,7 +2008,7 @@ async function _logicAuditOnStart(sc, options) {
       var ch = GM.chars.find(function(c) { return c.name === loc.name; });
       if (!ch) return;
       var old = ch.location;
-      ch.location = loc.location;
+      ch.location = loc.location; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, loc.location);
       delete ch._locationNeedAI; // 清除标记
       genCount++;
       _dbg('[LogicAudit] 生成所在地: ' + loc.name + ' → ' + loc.location + ' (' + (loc.reason || '') + ')');
@@ -2030,7 +2030,7 @@ async function _logicAuditOnStart(sc, options) {
         _dbg('[LogicAudit] 建议(未覆盖): ' + fix.name + ' "' + oldVal + '" → "' + fix.newValue + '" (' + (fix.reason || '') + ')');
         return;
       }
-      ch[fix.field] = fix.newValue;
+      ch[fix.field] = fix.newValue; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, fix.newValue);
       fixCount++;
       _dbg('[LogicAudit] 修正: ' + fix.name + ' "' + (oldVal || '') + '" → "' + fix.newValue + '" (' + (fix.reason || '') + ')');
     });

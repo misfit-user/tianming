@@ -2076,6 +2076,7 @@
       if (p.location || p.garrison) {
         army.location = p.location || p.garrison;
         army.garrison = p.garrison || p.location;
+        if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location);
       }
     }
     var rec = {

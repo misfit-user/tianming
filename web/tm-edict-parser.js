@@ -1412,7 +1412,24 @@
       execOk = exec && typeof exec === 'object' && Object.prototype.hasOwnProperty.call(exec, 'ok')
         ? exec.ok === true : !!exec;
       if (execOk && cls.typeKey === 'huji_reform') _recordEdictPolicyAction('huji', execParams.action || cls.typeKey, exec, text);
-    } catch(e) { console.error('[edict] exec', e); exec = false; execOk = false; }
+    } catch(e) {
+      console.error('[edict] exec', e);
+      exec = false; execOk = false;
+      // 金额解析失败不降级为「未识别」——玩家下的是「拨银五万」这种带明确数字的诏令，
+      // 跟「语焉不详需揣摩」完全是两回事。把 reason 显式带回去让 UI 能区分：
+      // · ambiguous / not-found → 走转奏疏/问对，让玩家改数字写法
+      // · out-of-range / invalid-character → 玩家看到「数额超限/语法怪」也好对症下药
+      if (e && e.code === 'TM_EDICT_AMOUNT_INVALID') {
+        return {
+          ok: false,
+          pathway: 'invalid',
+          reason: e.code,
+          details: e.details || null,
+          classification: cls,
+          amountError: true
+        };
+      }
+    }
     return { ok: execOk, pathway: 'direct', classification: cls, executionResult: exec };
   }
 

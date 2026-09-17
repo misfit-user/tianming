@@ -11,6 +11,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const syncer = require('./sync-official-scenarios.js');
+const { serializeScenarioExpression } = require('./official-scenario-expression.js');
+const { spawnSync } = require('child_process');
 
 let assertions = 0;
 function ok(condition, label) {
@@ -39,8 +41,9 @@ function main() {
     const builtin = artifact('web/' + entry.builtin);
     ok(builtin.includes('var scenario = ' + compact + ';'), entry.key + ' builtin embeds the complete root JSON');
     ok(builtin.split('\n').length <= 20, entry.key + ' builtin remains reviewable compact output');
-    ok(seeder.includes('"data":' + compact), entry.key + ' seeder embeds the complete root JSON');
-    ok(preview.includes('"' + entry.key + '":' + compact), entry.key + ' editor preview embeds the complete root JSON');
+    const expression = serializeScenarioExpression(entry.data);
+    ok(seeder.includes('"data":' + expression), entry.key + ' seeder includes lossless root expression');
+    ok(preview.includes('"' + entry.key + '":' + expression), entry.key + ' editor preview includes lossless root expression');
     if (entry.key === 'tianqi7') {
       const marker = '"scenario":';
       const start = reset.lastIndexOf(marker) + marker.length;
@@ -91,6 +94,14 @@ function main() {
     ok(meta.counts.characters === (entry.data.characters || []).length, entry.key + ' metadata counts are correct');
   });
 
+  // Format checks above supplement, never replace, full executed-consumer parity.
+  for (const mode of ['seeder','preview']) {
+    const child = spawnSync(process.execPath, [path.join(__dirname, 'verify-official-aggregate-worker.js'), mode],
+      { encoding:'utf8', timeout:180000, maxBuffer:1024*1024 });
+    if (child.status !== 0) throw new Error(mode + ' complete consumer parity failed: ' + (child.stderr || child.error || child.stdout));
+    const result = JSON.parse(child.stdout.trim());
+    ok(result.ok && result.checks >= built.entries.length, mode + ' all executed values and object isolation verified');
+  }
   console.log('PASS assertions=' + assertions);
 }
 

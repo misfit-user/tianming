@@ -239,6 +239,14 @@
       var DEF_TERR = { central_empire: 13, manchu_empire: 8, mongol_tribe: 5, tributary_kingdom: 8, european_outpost: 1, maritime_merchant: 3, native_chieftain: 3, rebellion: 1, military_jiedushi: 4, remnant_dynasty: 2, generic: 3 };
       territoryCount = DEF_TERR[paradigm] || 3;
     }
+    var accountingMap = global.GM && (global.GM.mapData || global.GM.map);
+    var sourcePartition = accountingMap && accountingMap.sourceBudgetModel === 'source-partition-v1';
+    if (sourcePartition) {
+      territoryCount = (accountingMap.regions || []).reduce(function(total,r) {
+        var owner=r.currentOwner || r.owner || r.factionId;
+        return total + ((owner===fac.id || owner===fac.name) ? Math.max(0,Number(r.data && r.data.legacyFiscalWeight)||0) : 0);
+      },0);
+    }
     var taxMoney = territoryCount * taxCoef.money;
     var taxGrain = territoryCount * taxCoef.grain;
     var annualTaxIncome = taxMoney + _grainToMoney(taxGrain);
@@ -260,7 +268,12 @@
         if (isFinite(Number(st.wealth))) f += (Number(st.wealth) - 55) / 100 * 0.25;
         if (isFinite(Number(st.corruption))) f -= Math.max(0, Number(st.corruption) - 30) / 100 * 0.20;
         if (isFinite(Number(st.unrest))) f -= Math.max(0, Number(st.unrest) - 30) / 100 * 0.25;
-        sum += f; n += 1;
+        var accountWeight=1;
+        if (sourcePartition) {
+          var cell=(accountingMap.regions || []).find(function(r){return r.id===p || r.name===p;});
+          if (cell) accountWeight=Math.max(0,Number(cell.data && cell.data.legacyFiscalWeight)||0);
+        }
+        sum += f*accountWeight; n += accountWeight;
       });
       if (n > 0) governanceFactor = _clamp(sum / n, 0.6, 1.15);
     })();

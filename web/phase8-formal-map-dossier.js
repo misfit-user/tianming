@@ -34,9 +34,13 @@
     var armies = Array.isArray(gm.armies) ? gm.armies : [];
     var map = getMapData() || {};
     var regions = map.regions || [];
+    var locationService = window.TMMapLocations;
+    var strictLocations = locationService && locationService.enabled(map);
+    var liveLocations = strictLocations ? armies.map(function(a) { return locationService.read(a, 'army', gm); }) : null;
     var sig = (gm.turn || 0) + ':' + armies.length + ':' +
       armies.reduce(function(a, x){ return a + (Number(x && x.soldiers) || 0); }, 0) + ':' + regions.length;
-    if (_armyRegionCache.sig === sig) return _armyRegionCache;
+    sig += ':' + JSON.stringify(armies.map(function(a, i) { return a && [a.id,a.garrison,a.location,a.regionId,a.garrisonRegionId,a.regionHint,a.soldiers,a.size,a.strength,a.faction,a.factionId,a.destroyed,a.disbanded,liveLocations && liveLocations[i] && liveLocations[i].regionId]; }));
+    if (_armyRegionCache.sig === sig && _armyRegionCache.world === gm && _armyRegionCache.map === map) return _armyRegionCache;
     // 聚落层名册（2026-06-12）：localityLayer 自带 regionId↔城名（宁远城/锦州城/皮岛/山海关…），
     // 是城名驻地的通用解（朝代地名仍归剧本数据·引擎只读结构）。
     var locByRegion = {};
@@ -92,13 +96,19 @@
       byRegion[rid].troops += soldiers;
       byRegion[rid].armies.push(label ? Object.assign({}, a, { name: String(a.name || '') + label, soldiers: soldiers }) : a);
     }
-    armies.forEach(function(a){
-      if (!a || a.destroyed) return;
+    armies.forEach(function(a, armyIndex){
+      if (!a || a.destroyed || a.disbanded) return;
       var soldiers = Math.max(0, Math.round(Number(a.soldiers || a.size || a.strength) || 0));
       if (soldiers <= 0) return;
       var garrisonText = String(a.garrison || a.location || '');
+      if (strictLocations) {
+        var bound = liveLocations[armyIndex];
+        if (!bound || !bound.regionId) unbound.push({ name: String(a.name || ''), garrison: garrisonText, soldiers: soldiers, status: bound && bound.status });
+        else addTo(bound.regionId, a, soldiers, bound.precision === 'representative' ? '·区域参考点' : '');
+        return;
+      }
       // ① 剧本 regionHint 直绑：不在区划树/聚落层的驻地（蓟州/固原/京师等）由剧本点名所属地块
-      var hint = a.regionHint || a.regionId;
+      var hint = a.garrisonRegionId || a.regionId || a.regionHint;
       var rid = hint ? matchRegion(String(hint)) : null;
       // ② 驻地名 token 两遍匹配（区划子树+聚落层城名）
       if (!rid) {
@@ -131,7 +141,7 @@
       if (!rid) { unbound.push({ name: String(a.name || ''), garrison: garrisonText, soldiers: soldiers }); return; }
       addTo(rid, a, soldiers);
     });
-    _armyRegionCache = { sig: sig, byRegion: byRegion, unboundCount: unbound.length, unbound: unbound };
+    _armyRegionCache = { sig: sig, world: gm, map: map, byRegion: byRegion, unboundCount: unbound.length, unbound: unbound };
     return _armyRegionCache;
   }
   function regionArmies(r){

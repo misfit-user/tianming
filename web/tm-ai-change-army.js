@@ -570,7 +570,7 @@
     if (commandTicket && commandTicket.allowed && commandTicket.orderId) {
       commandAuthority.commit(army, commandTicket); changed = true;
     }
-    if (changed) _refreshMilitaryViews(G);
+    if (changed) { if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', G); _refreshMilitaryViews(G); }
     return { ok:true, army:army, created:created, changed:changed, pending:!!(commandTicket && commandTicket.pending), orderId:commandTicket && commandTicket.orderId, reason:commandTicket && commandTicket.reason };
   }
 

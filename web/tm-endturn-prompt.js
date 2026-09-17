@@ -1822,8 +1822,9 @@
 
     if(GM.officeChanges&&GM.officeChanges.length>0)tp+="\u5B98\u5236\u53D8\u66F4(\u5F85\u751F\u6548):"+JSON.stringify(GM.officeChanges)+"\n";
     if(GM.keju && GM.keju.preparingExam) tp+="\u79D1\u4E3E\u7B79\u529E\u4E2D\uFF0C\u8BF7\u5728\u6B63\u6587\u4E2D\u5C55\u793A\u8FDB\u5C55\u3002\n";
-    if(P.map && P.map.regions && P.map.regions.length > 0) {
-      try { tp += generateMapContextForAI(P.map, P) + "\n"; } catch(e) { if(window.TM&&TM.errors) TM.errors.capture(e,'endturn.mapContextForAI'); }
+    var _livePromptMap = typeof TMMapRuntime !== 'undefined' && TMMapRuntime.peekMapSource ? TMMapRuntime.peekMapSource() : (GM.mapData || GM.map);
+    if(_livePromptMap && _livePromptMap.regions && _livePromptMap.regions.length > 0) {
+      try { tp += generateMapContextForAI(_livePromptMap, GM) + "\n"; } catch(e) { if(window.TM&&TM.errors) TM.errors.capture(e,'endturn.mapContextForAI'); }
     }
     if(sc&&sc.refText)tp+="\u53C2\u8003:"+sc.refText+"\n";
 

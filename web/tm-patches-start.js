@@ -2046,6 +2046,8 @@ function doActualStart(sid, requestToken){
               _syncCount++;
             });
           } else {
+            // 未考定不是空缺，不能用人物描述猜出一个在任者。
+            if (pos.occupancyStatus === 'unrecorded') return;
             // 职位空缺 → 从角色的title/officialTitle中寻找匹配
             var posName = pos.name || '';
             if (!posName) return;
@@ -2168,6 +2170,7 @@ function doActualStart(sid, requestToken){
   if (typeof _tmPrimeScenarioDigestFromText === 'function') _tmPrimeScenarioDigestFromText(sc);
   showLoading('\u8FDB\u5165\u6E38\u620F\u4E16\u754C...', 95);
   _tmStartRepairRuntimeData(sid, sc, _hasStartAI ? 'before-enter-api' : 'before-enter-local');
+  if (window.TMMapLocations) window.TMMapLocations.syncWorld(GM);
   _tmStartPrimeFormalRuntime(sid, sc, _hasStartAI ? 'before-enter-api' : 'before-enter-local');
   var _hasPresetMemorials = Array.isArray(GM.memorials) && GM.memorials.some(function(m){ return m && m._sid; });
   if (!_hasStartAI || _hasPresetMemorials) generateMemorials();

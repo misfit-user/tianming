@@ -246,14 +246,7 @@
           }
         }
 
-        // 应用 AI 返回的地图变化
-        if(p1.map_changes && P.map) {
-          try {
-            applyAIMapChanges(p1, P.map);
-          } catch(e) {
-            console.error('应用地图变化失败:', e);
-          }
-        }
+        // 地图变化在本响应的新势力登记后统一应用，见下方 map_changes。
         // 处理 NPC 自主行为（AI 报告的 NPC 独立行动）
         if (p1.npc_actions && Array.isArray(p1.npc_actions)) {
           p1.npc_actions.forEach(function(act) {
@@ -421,7 +414,7 @@
               // NPC 出逃/告老/游历——移动位置
               if (act.new_location) {
                 var _flCh = findCharByName(act.name);
-                if (_flCh) { _flCh.location = act.new_location; _flCh._locationExplicit = false; }
+                if (_flCh) { _flCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_flCh, 'character', undefined, act.new_location); _flCh._locationExplicit = false; }
               }
               if (act.behaviorType === 'flee') {
                 var _flCh2 = findCharByName(act.name);
@@ -541,7 +534,7 @@
             if (act.new_location && !mechanicallyExecuted) {
               var _nlCh = findCharByName(act.name);
               if (_nlCh && !_isSameLocation(_nlCh.location, act.new_location)) {
-                _nlCh.location = act.new_location;
+                _nlCh.location = act.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(_nlCh, 'character', undefined, act.new_location);
                 _nlCh._locationExplicit = false;
               }
             }
@@ -1094,7 +1087,7 @@
             // 所在地变更（如被外派、流放、召回京城等）
             if (cu.new_location && typeof cu.new_location === 'string') {
               var _oldLoc = ch.location || GM._capital || '京城';
-              ch.location = cu.new_location;
+              ch.location = cu.new_location; if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', undefined, cu.new_location);
               ch._locationExplicit = false; // AI设置的非编辑器显式
               if (_oldLoc !== cu.new_location) {
                 recordChange('characters', cu.name, 'location', _oldLoc, cu.new_location, cu.reason || 'AI推演');
@@ -2593,6 +2586,12 @@
             addEB('\u52BF\u529B', '\u3010\u65B0\u52BF\u529B\u7AD6\u8D77\u3011' + fc.name + '\u6210\u7ACB\uFF08' + (({military:'军镇',religious:'教门',warlord:'藩镇',foreign:'外藩',dynasty:'王朝',rebel:'义军',tribe:'部族',sect:'会党',separatist:'割据',bandit:'草寇',peasant:'民军'}[fc.type])||fc.type||'') + '\uFF09' + (fc.parentFaction?'\u2014\u2014\u8131\u79BB\u81EA' + fc.parentFaction:'') + (fc.triggerEvent?'\uFF1A' + fc.triggerEvent:''));
             if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u65B0\u52BF\u529B\u3011' + fc.name + '\u7AD6\u8D77\u3002' + (fc.reason||''), category: '\u52BF\u529B' });
           });
+        }
+
+        // 当前世界拥有地图；错误交回回合事务，不得吞掉后继续提交。
+        if(p1.map_changes) {
+          if (typeof applyAIMapChanges !== 'function') throw new Error('地图变更模块未加载，本回合未能完成写入');
+          ctx.apply.mapChanges = applyAIMapChanges(p1, GM.mapData || GM.map);
         }
 
         // ── 势力覆灭 ──

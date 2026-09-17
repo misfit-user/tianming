@@ -746,7 +746,7 @@
   }
 
   function tmfRenwuSourceNotes(p){
-    var raw = tmfRenwuArray(p && (p.sourceNotes || p.sources || p.historicalSources || p.notes || p.commentary));
+    var raw = []; ['sourceNotes','sources','historicalSources','notes','commentary'].some(function(key){ var a=tmfRenwuArray(p&&p[key]); if(!a.length)return false; raw=a; return true; });
     return raw.map(function(x){ return tmfRenwuText(x, ''); }).filter(Boolean);
   }
 

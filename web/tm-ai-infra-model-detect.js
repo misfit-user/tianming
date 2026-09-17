@@ -46,6 +46,8 @@ var _MODEL_CTX_MAP = [
   {p:'claude-2.1',k:200,o:4},{p:'claude-2',k:100,o:4},{p:'claude-instant',k:100,o:4},
 
   // === DeepSeek ===
+  {p:'deepseek-v4-flash-vision',k:256,o:32},{p:'deepseek-v4-flash',k:256,o:32},
+  {p:'deepseek-v4-pro',k:256,o:64},{p:'deepseek-v4',k:256,o:64},
   {p:'deepseek-r1-0528',k:128,o:64},{p:'deepseek-r1',k:128,o:64},
   {p:'deepseek-v3-0324',k:128,o:8},{p:'deepseek-v3',k:128,o:8},
   {p:'deepseek-chat',k:64,o:8},{p:'deepseek-coder',k:128,o:8},{p:'deepseek-reasoner',k:64,o:64},{p:'deepseek',k:64,o:8},
@@ -119,13 +121,19 @@ function _matchModelCtx(modelName) {
   }
   // 从URL推断提供商，给一个合理默认值
   var url = (P && P.ai && P.ai.url || '').toLowerCase();
+  // url 推断兜底——中转/代理常改模型名加自定义前缀（如 relay 把 deepseek-v4-flash
+  // 重命名成 relay-xxxx）。中转后面的真模型一般是 128K+，给保守 64K 比 32K 更稳，
+  // 但又不至于盲信白名单的 256K（部分中转真的压窗口）。
   if (url.indexOf('anthropic') >= 0) return 200;
-  if (url.indexOf('deepseek') >= 0) return 64;
+  if (url.indexOf('deepseek') >= 0) return 128;
   if (url.indexOf('moonshot') >= 0 || url.indexOf('kimi') >= 0) return 128;
   if (url.indexOf('dashscope') >= 0 || url.indexOf('tongyi') >= 0) return 128;
   if (url.indexOf('bigmodel') >= 0 || url.indexOf('zhipu') >= 0) return 128;
   if (url.indexOf('generativelanguage.googleapis') >= 0 || url.indexOf('vertex') >= 0) return 1024;
   if (url.indexOf('openrouter') >= 0) return 128; // OpenRouter多数模型≥128K
+  // 未知中转/relay：32K 的 budget=24K 会反复触发 sc1/sc07 critical→超时链。
+  // 提到 64K 仍保守（多数现代模型≥64K），但避免 32K 把 Call A 压缩误触成死循环。
+  if (url.indexOf('relay') >= 0 || url.indexOf('proxy') >= 0 || url.indexOf('bridge') >= 0 || url.indexOf('gateway') >= 0) return 64;
   return 0;
 }
 
@@ -285,7 +293,7 @@ async function detectModelContextSize(opts) {
     // 1a: /models/{id}
     var modelUrl = modelsBase + '/models/' + encodeURIComponent(model);
     _ctxLog('层1a: GET ' + modelUrl);
-    var resp1 = await fetch(modelUrl, {
+    var resp1 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(modelUrl, {
       method: 'GET',
       headers: { 'Authorization': 'Bearer ' + key, 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined
@@ -310,7 +318,7 @@ async function detectModelContextSize(opts) {
     if (!detectedK) {
       var listUrl = modelsBase + '/models';
       _ctxLog('层1b: GET ' + listUrl);
-      var resp1b = await fetch(listUrl, {
+      var resp1b = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(listUrl, {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + key, 'x-api-key': key },
         signal: AbortSignal.timeout ? AbortSignal.timeout(8000) : undefined
@@ -346,7 +354,7 @@ async function detectModelContextSize(opts) {
     try {
       var chatUrl2 = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(_tier) : _buildAIUrl();
       _ctxLog('层2: 发送探测请求提取usage');
-      var resp2 = await fetch(chatUrl2, {
+      var resp2 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl2, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({ model: model, messages: [{ role: 'user', content: 'Hi' }], temperature: 0, max_tokens: 5 }),
@@ -387,7 +395,7 @@ async function detectModelContextSize(opts) {
     try {
       var chatUrl3 = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(_tier) : _buildAIUrl();
       _ctxLog('层3: 双语询问模型');
-      var resp3 = await fetch(chatUrl3, {
+      var resp3 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl3, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({
@@ -453,7 +461,7 @@ async function detectModelContextSize(opts) {
         // 每个汉字约1.5-2 token，每次重复19字 ≈ 30 token
         var repeats = Math.ceil(probe.tokens / 30);
         var testBody = '这是一段用于检测AI模型上下文窗口容量的测试文本。'.repeat(repeats);
-        var resp4 = await fetch(chatUrl4, {
+        var resp4 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl4, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
           body: JSON.stringify({ model: model, messages: [{ role: 'user', content: testBody + '\nReply OK.' }], temperature: 0, max_tokens: 5 }),
@@ -547,7 +555,7 @@ async function detectModelOutputLimit(opts) {
     var target = tests[ti];
     _prog('实测输出 ' + Math.round(target/1024) + 'K tokens...');
     try {
-      var resp = await fetch(chatUrl, {
+      var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({
@@ -638,7 +646,7 @@ async function probeModelSelfReport(opts) {
   for (var qi = 0; qi < questions.length; qi++) {
     _prog('询问模型 ' + (qi+1) + '/' + questions.length + '...');
     try {
-      var resp = await fetch(chatUrl, {
+      var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({
@@ -789,7 +797,7 @@ async function probeModelEvidenceAudit(opts) {
       var t0 = Date.now();
       try {
         _prog(label + (attempt > 1 ? '（重试）' : ''));
-        var resp = await fetch(chatUrl, {
+        var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
           body: JSON.stringify({ model:_aiCfg.model || '', messages:messages, temperature:0, max_tokens:maxTokens || 256, stream:false }),
@@ -939,7 +947,7 @@ async function probeModelQuickCheck(opts) {
   // 1/3 连通·延迟·模型回声·usage
   _prog('快检 1/3：连通与模型回声…');
   var t0 = Date.now();
-  var r1 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000),
+  var r1 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000), timeoutMs: 20000,
     body: JSON.stringify({ model: _aiCfg.model || '', messages: [{ role: 'user', content: 'Reply with exactly: OK' }], temperature: 0, max_tokens: 8, stream: false }) });
   if (!r1.ok) { var _et = ''; try { _et = (await r1.text()).slice(0, 200); } catch(_) {} var _he = new Error('HTTP ' + r1.status + (_et ? ' · ' + _et : '')); _he.httpStatus = r1.status; throw _he; }
   var d1 = await r1.json();
@@ -958,11 +966,15 @@ async function probeModelQuickCheck(opts) {
   if (!report.usageSeen) report.warnings.push('响应缺 usage 用量字段，成本统计与预算档位可能失准');
   if (report.latencyMs > 8000) report.warnings.push('单次往返 ' + Math.round(report.latencyMs / 1000) + ' 秒，偏慢，过回合体感会拖长');
 
-  // 2/3 流式 SSE
+  // 2/3 流式 SSE：原生桥按整包返回，不能当作首包流式测速。
+  var _nativeBuffered = typeof _tmAINativePlatform === 'function' && _tmAINativePlatform();
   _prog('快检 2/3：流式支持…');
-  try {
+  if (_nativeBuffered) {
+    report.stream.buffered = true;
+    report.stream.detail = '手机原生通道为整包响应；不影响推演，不进行首包流式测速';
+  } else try {
     var t1 = Date.now();
-    var r2 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000),
+    var r2 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000), timeoutMs: 20000,
       body: JSON.stringify({ model: _aiCfg.model || '', messages: [{ role: 'user', content: 'Count: 1 2 3' }], temperature: 0, max_tokens: 16, stream: true }) });
     if (r2.ok && r2.body && r2.body.getReader) {
       var _rd = r2.body.getReader(); var _dec = new TextDecoder(); var _buf = ''; var _saw = false; var _reads = 0;
@@ -979,13 +991,13 @@ async function probeModelQuickCheck(opts) {
       report.stream.detail = r2.ok ? '环境不支持流式读取' : ('HTTP ' + r2.status);
     }
   } catch(_es) { report.stream.detail = _es.message || String(_es); }
-  if (!report.stream.ok) report.warnings.push('流式不可用：' + report.stream.detail + '（不碍推演，问天等逐字显示退化为整段）');
+  if (!report.stream.ok && !report.stream.buffered) report.warnings.push('流式不可用：' + report.stream.detail + '（不碍推演，问天等逐字显示退化为整段）');
 
   // 3/3 严格 JSON mini（回合结算依赖结构化输出·此项不过=大雷）
   _prog('快检 3/3：严格 JSON 遵循…');
   try {
     var t2 = Date.now();
-    var r3 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(25000),
+    var r3 = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(25000), timeoutMs: 25000,
       body: JSON.stringify({ model: _aiCfg.model || '', messages: [{ role: 'user', content: 'Return ONLY strict JSON. No markdown. Object must be exactly: {"probe":"tm-quick-v1","sum":407,"tags":["shi","nong","gong","shang"],"ok":true}' }], temperature: 0, max_tokens: 120, stream: false }) });
     if (r3.ok) {
       var d3 = await r3.json();
@@ -1024,7 +1036,7 @@ async function listAvailableModels(opts) {
   if (vm) baseUrl = vm[1];
   var listUrl = baseUrl + '/models';
   try {
-    var resp = await fetch(listUrl, {
+    var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(listUrl, {
       method: 'GET',
       headers: { 'Authorization': 'Bearer ' + key, 'x-api-key': key, 'anthropic-version': '2023-06-01' },
       signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined
@@ -1081,7 +1093,7 @@ function getModelContextSizeK() {
       if (Number.isFinite(_mk) && _mk > k) k = _mk;
     }
   } catch (_mkE) {}
-  return k > 0 ? k : 32; // 全未知模型的保守默认
+  return k > 0 ? k : 256; // 全未知模型的默认窗口（owner 2026-09-17 拍板：现今模型普遍 ≥256K·保守 32K 会让预算砍到 24K·prompt 反复 critical→压缩失败→超时链）
 }
 
 /**

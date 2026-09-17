@@ -256,8 +256,13 @@ function _openShizhengDetail(issueId) {
 function _shizhengConvene(issueId) {
   var GM = window.GM || {};
   var issue = (GM.currentIssues||[]).find(function(i){ return String(i.id) === String(issueId); });
-  var det = document.getElementById('shizheng-task-detail'); if (det) det.remove();
-  var ov = document.getElementById('shizheng-tasks-overlay'); if (ov) ov.remove();
+  if (!issue) { if (typeof toast === 'function') toast('议题已失效'); return false; }
+  if (typeof CY !== 'undefined' && CY.open && CY.phase !== 'setup') {
+    if (typeof toast === 'function') toast('已有议事进行中，请先退朝再召对。');
+    return false;
+  }
+  var det = document.getElementById('shizheng-task-detail');
+  var ov = document.getElementById('shizheng-tasks-overlay');
   // 修：旧版写错 DOM id cy-topic-input（全库无此元素）→ 议题丢失、弹空白朝议。
   // 改为推入 _pendingTinyiTopics 待议队列（与奏疏发廷议同源）+ 直开廷议筹备面板并预填真输入框 ty2-topic。
   var _szTopic = (issue && issue.title) ? (issue.title + (issue.description ? '·' + String(issue.description).slice(0, 60) : '')) : '';
@@ -276,10 +281,22 @@ function _shizhengConvene(issueId) {
     } catch(_szE){}
   }
   if (typeof _ty2_openSetup === 'function') {
-    _ty2_openSetup(); // 廷议筹备面板·读 _pendingTinyiTopics 出待议下拉
-    if (_szTopic) setTimeout(function(){ try { var t = document.getElementById('ty2-topic'); if (t) t.value = _szTopic; } catch(_){} }, 60);
+    // 统一入口先确保朝议宿主存在，再打开筹备；失败时保留原御案。
+    if (_ty2_openSetup() === false) return false;
+    var t = document.getElementById('ty2-topic');
+    if (!t) { if (typeof toast === 'function') toast('廷议筹备未能打开，议题已保留。'); return false; }
+    t.value = _szTopic;
+    var pendingIndex = (GM._pendingTinyiTopics || []).findIndex(function(x) { return x && x._memTinyiId === _szQid; });
+    if (pendingIndex >= 0 && typeof _ty2_pickPending === 'function') _ty2_pickPending({ value: String(pendingIndex) });
+    if (det) det.remove();
+    if (ov) ov.remove();
+    return true;
   } else if (typeof openChaoyi === 'function') {
-    openChaoyi(); // 兜底·议题已在待议队列
+    openChaoyi(); // 兜底·议题已在待议队列；没有筹备模块时不启动、不扣费。
+    if (document.getElementById('chaoyi-modal')) {
+      if (det) det.remove();
+      if (ov) ov.remove();
+    }
   } else if (typeof toast === 'function') { toast('朝议系统加载中'); }
 }
 

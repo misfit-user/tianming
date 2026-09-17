@@ -617,7 +617,7 @@
     if (!usedGlobal && commander) _syncArmyCommanderAliases(army, commander);
     if (!usedGlobal) {
       if (p.destination) army.destination = p.destination;
-      if (p.location || p.garrison) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; }
+      if (p.location || p.garrison) { army.location = p.location || p.garrison; army.garrison = p.garrison || p.location; if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', undefined, army.location); }
     }
     var soldiersDelta = _safeNum(p.soldiersDelta != null ? p.soldiersDelta : p.troopsDelta);
     var moraleDelta = _safeNum(p.moraleDelta);

@@ -14,7 +14,50 @@
 // 姊妹·tm-chaoyi.js·tm-chaoyi-changchao.js·tm-chaoyi-yuqian.js
 // ============================================================
 
+// 直达入口也必须有可见、完整的朝议宿主；不能把筹备窗当成议事界面。
+function _ty2_courtReady() {
+  var modal = document.getElementById('chaoyi-modal');
+  if (!modal || modal.isConnected === false || typeof CY === 'undefined' || !CY.open) return false;
+  var ids = ['cy-body', 'cy-footer', 'cy-topic', 'cy-input-row'];
+  for (var i = 0; i < ids.length; i++) {
+    var el = document.getElementById(ids[i]);
+    if (!el || !modal.contains(el)) return false;
+  }
+  var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(modal) : modal.style;
+  if (style && (style.display === 'none' || style.visibility === 'hidden')) return false;
+  return typeof modal.getClientRects !== 'function' || modal.getClientRects().length > 0;
+}
+
+function _ty2_setupError(error) {
+  try { window.TM && TM.errors && TM.errors.captureSilent(error, 'tinyi-startup'); } catch (_) {}
+  if (typeof toast === 'function') toast('廷议界面未能打开，未扣除精力；请重试。');
+  return false;
+}
+
+function _ty2_cancelSetup() {
+  var bg = document.getElementById('ty2-setup-bg');
+  if (bg && bg._ty2Starting) return;
+  window._ty2_pendingMeta = null;
+  if (bg && typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(bg);
+  else if (bg) bg.remove();
+}
+
 function _ty2_openSetup() {
+  try {
+  if (typeof _cy_isModeBlockedByFrequency === 'function' && _cy_isModeBlockedByFrequency('tinyi')) return false;
+  if (!_ty2_courtReady()) {
+    if (typeof CY !== 'undefined' && CY.open && CY.phase !== 'setup') return _ty2_setupError(new Error('court session already active'));
+    if (typeof openChaoyi !== 'function') return _ty2_setupError(new Error('court bootstrap unavailable'));
+    var stale = document.getElementById('chaoyi-modal'); if (stale) stale.remove();
+    openChaoyi();
+    if (!_ty2_courtReady()) return _ty2_setupError(new Error('court bootstrap incomplete'));
+  }
+  var court = document.getElementById('chaoyi-modal');
+  if (typeof _tmPresentModal === 'function' && !court.__tmModalLayer) _tmPresentModal(court, closeChaoyi);
+  if (document.getElementById('ty2-setup-bg')) return true;
+  CY.mode = 'tinyi';
+  window._ty2_pendingMeta = null;
+  var label = document.getElementById('cy-mode-label'); if (label) label.textContent = '🏛 廷议';
   var bg = document.createElement('div');
   bg.id = 'ty2-setup-bg';
   bg.style.cssText = 'position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;';
@@ -108,7 +151,7 @@ function _ty2_openSetup() {
   }
   html += '<div style="text-align:center;display:flex;gap:var(--space-2);justify-content:center;">';
   html += '<button class="bt bp" onclick="_ty2_startSession()">开议</button>';
-  html += '<button class="bt" onclick="this.closest(\'div[style*=fixed]\').remove();">取消</button>';
+  html += '<button class="bt" onclick="_ty2_cancelSetup()">取消</button>';
   html += '</div></div>';
   bg.innerHTML = html;
   document.body.appendChild(bg);
@@ -120,6 +163,12 @@ function _ty2_openSetup() {
       if (cust) cust.style.display = this.value === 'other' ? 'block' : 'none';
     });
   });
+  if (typeof _tmPresentModal === 'function') _tmPresentModal(bg, _ty2_cancelSetup, '#ty2-topic');
+  return true;
+  } catch (error) {
+    var failedSetup = document.getElementById('ty2-setup-bg'); if (failedSetup) failedSetup.remove();
+    return _ty2_setupError(error);
+  }
 }
 
 function _ty2_pickPending(sel) {
@@ -138,11 +187,14 @@ function _ty2_pickPending(sel) {
 }
 
 async function _ty2_startSession() {
+  var bg = document.getElementById('ty2-setup-bg');
+  if (!bg || bg._ty2Starting || bg._ty2Started) return false;
+  if (!_ty2_courtReady()) return _ty2_setupError(new Error('court host missing or hidden'));
+  if (typeof _cy_isModeBlockedByFrequency === 'function' && _cy_isModeBlockedByFrequency('tinyi')) return false;
   var topic = (_$('ty2-topic')||{}).value || '';
   topic = topic.trim();
   if (!topic) { toast('请输入议题'); return; }
   var pendingMeta = window._ty2_pendingMeta || null;
-  window._ty2_pendingMeta = null;
   var typeR = document.querySelector('input[name="ty2-type"]:checked');
   var ttype = typeR ? typeR.value : 'other';
   var tcustom = (_$('ty2-type-custom')||{}).value || '';
@@ -151,11 +203,6 @@ async function _ty2_startSession() {
   document.querySelectorAll('.ty2-extra:checked').forEach(function(c){ selected.push(c.value); });
   if (selected.length < 2) { toast('至少召集 2 人议事'); return; }
 
-  // 能量消耗
-  if (typeof _spendEnergy === 'function' && !_spendEnergy(15, '廷议')) return;
-
-  var bg = _$('ty2-setup-bg'); if (bg) bg.remove();
-
   // 按品级排序与议者
   selected.sort(function(a,b) {
     var ra = typeof getRankLevel === 'function' ? getRankLevel(_cyGetRank(findCharByName(a)||{})) : 99;
@@ -163,6 +210,15 @@ async function _ty2_startSession() {
     return ra - rb;
   });
 
+  var court = document.getElementById('chaoyi-modal');
+  var oldMarkup = court.innerHTML, oldClass = court.className, previousCY = CY;
+  var remainingTopics = pendingMeta && Array.isArray(GM._pendingTinyiTopics)
+    ? GM._pendingTinyiTopics.filter(function(x) { return x !== pendingMeta; }) : null;
+  var energySnapshot = null, energyAttempted = false;
+  bg._ty2Starting = true;
+  try {
+  CY = Object.assign({}, previousCY);
+  CY.mode = 'tinyi';
   CY.phase = 'tinyi2';
   CY._ty2 = {
     topic: topic,
@@ -181,10 +237,6 @@ async function _ty2_startSession() {
     _reformType: pendingMeta && pendingMeta.reformType,
     _reformId: pendingMeta && pendingMeta.reformId
   };
-  // 从待议题目列表中移除
-  if (pendingMeta && GM._pendingTinyiTopics) {
-    GM._pendingTinyiTopics = GM._pendingTinyiTopics.filter(function(x) { return x !== pendingMeta; });
-  }
   selected.forEach(function(n) { CY._ty2.stances[n] = { current: '待定', initial: '待定', locked: false, confidence: 0 }; });
 
   var body = _$('cy-body');
@@ -201,9 +253,40 @@ async function _ty2_startSession() {
   // 渲染立场板 + footer
   _ty2_render();
   // 2026-06 faithful landing·重排为左立绘 + 右立场板版式（对齐预览）
-  try { _ty2_relayout(); } catch(_tyLayoutErr) { try { window.TM && TM.errors && TM.errors.captureSilent(_tyLayoutErr, 'tinyi-relayout'); } catch(_) {} }
-  // 进入初议
-  _ty2_phaseInitialRound();
+  if (typeof _ty2_relayout === 'function') _ty2_relayout();
+  if (!_ty2_courtReady() || typeof _ty2_phaseInitialRound !== 'function') throw new Error('court startup incomplete');
+  // 宿主、首屏与输入栏成功后才扣费；扣费写口异常也必须原样回滚。
+  if (typeof _spendEnergy === 'function') {
+    if (typeof _captureEnergySnapshot !== 'function' || typeof _restoreEnergySnapshot !== 'function') throw new Error('energy rollback unavailable');
+    energySnapshot = _captureEnergySnapshot();
+    energyAttempted = true;
+    if (!_spendEnergy(15, '廷议')) {
+      var insufficient = new Error('insufficient energy'); insufficient._ty2Insufficient = true; throw insufficient;
+    }
+  }
+  if (typeof _tmCloseModalLayer === 'function') _tmCloseModalLayer(bg); else bg.remove();
+  if (remainingTopics) GM._pendingTinyiTopics = remainingTopics;
+  window._ty2_pendingMeta = null;
+  bg._ty2Started = true;
+  } catch (error) {
+    CY = previousCY;
+    if (energyAttempted && energySnapshot) {
+      try { _restoreEnergySnapshot(energySnapshot); } catch (restoreError) { _ty2_setupError(restoreError); }
+    }
+    court.innerHTML = oldMarkup; court.className = oldClass;
+    if (bg.isConnected === false) document.body.appendChild(bg);
+    if (!error._ty2Insufficient) _ty2_setupError(error);
+    return false;
+  } finally {
+    bg._ty2Starting = false;
+  }
+  // 初议属于已开启的会话；异步失败显式提示，不再无声消失。
+  try { await _ty2_phaseInitialRound(); }
+  catch (error) {
+    try { window.TM && TM.errors && TM.errors.captureSilent(error, 'tinyi-initial-round'); } catch (_) {}
+    if (typeof toast === 'function') toast('廷议陈议中断，请退朝后重试。');
+  }
+  return true;
 }
 
 /** 渲染立场板（七档光谱·真立绘缩略·立场迁移↗↘·魂）—— 2026-06 faithful landing 对齐 preview/tingyi-preview.html */

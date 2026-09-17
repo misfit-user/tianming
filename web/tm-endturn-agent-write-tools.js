@@ -537,7 +537,8 @@
     var old = ch.location || '';
     loc = String(loc).slice(0, 60);
     if (input.traveling) { ch._travelTo = loc; }                 // 在途:现居不变·正往 loc
-    else { ch.location = loc; ch._travelTo = ''; }               // 已抵:现居 loc
+    else { ch.location = loc; ch._travelTo = ''; }
+    if (root.TMMapLocations) root.TMMapLocations.sync(ch, 'character', gm);               // 已抵:现居 loc
     ch._changed = true;
     _report(gm, { type: 'change', path: 'chars/' + nm + '/location', old: old, new: (input.traveling ? ('(正往)' + loc) : loc), reason: (input.reason || '') + (input.traveling ? '·启程' : '·移驻'), turn: gm.turn || 0, _agent: true, _op: 'move_character' });
     return { ok: true, path: 'chars/' + nm + '/location', old: old, new: loc };

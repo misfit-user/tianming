@@ -18,6 +18,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { serializeScenarioExpression } = require('./official-scenario-expression.js');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const WEB_ROOT = path.join(REPO_ROOT, 'web');
@@ -86,23 +87,20 @@ function serializeBuiltin(entry) {
 }
 
 function serializeSeeder(entries) {
-  const bundle = entries.map((entry) => ({
-    filename: entry.filename.replace(/\.json$/, ''),
-    source: '../' + entry.sourceRel,
-    data: entry.data
-  }));
+  const bundle = '[' + entries.map((entry) => '{"filename":' + JSON.stringify(entry.filename.replace(/\.json$/, ''))
+    + ',"source":' + JSON.stringify('../' + entry.sourceRel)
+    + ',"data":' + serializeScenarioExpression(entry.data) + '}').join(',') + ']';
   return '// GENERATED FILE. Source: ../scenarios/*（官方）.json. Run `node web/scripts/sync-official-scenarios.js`.\n'
     + '(function(global){\n'
-    + '  global.TMOfficialScenarioBundle = ' + JSON.stringify(bundle) + ';\n'
+    + '  global.TMOfficialScenarioBundle = ' + bundle + ';\n'
     + '})(typeof window !== "undefined" ? window : globalThis);\n';
 }
 
 function serializePreview(entries) {
-  const bundle = {};
-  entries.forEach((entry) => { bundle[entry.key] = entry.data; });
+  const bundle = '{' + entries.map((entry) => JSON.stringify(entry.key) + ':' + serializeScenarioExpression(entry.data)).join(',') + '}';
   return '/* GENERATED FILE. Source: ../../scenarios/*（官方）.json. Run `node web/scripts/sync-official-scenarios.js`. */\n'
     + '(function(global){\n'
-    + '  global.TM_OFFICIAL_SCENARIOS = ' + JSON.stringify(bundle) + ';\n'
+    + '  global.TM_OFFICIAL_SCENARIOS = ' + bundle + ';\n'
     + '})(typeof window !== "undefined" ? window : globalThis);\n';
 }
 

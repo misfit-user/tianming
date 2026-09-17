@@ -4894,7 +4894,15 @@
           try { if (typeof recordAIDiagnostic === 'function') recordAIDiagnostic('subcall_failed', { id:'sc1_apply', label:'结构化应用', error:_applyInfo.message, status:_applyInfo.status, ms:_applyMs }); } catch(_) {}
           _seedRecordFromP1ForApplyFailure(ctx, p1);
           if (typeof toast === 'function') toast('⚠ 结构化数据已生成，但应用变更失败；本回合继续，详见AI诊断');
-          console.warn('[SC1 apply] failed after structured result:', _applyCbErr);
+          // 把未落地失败清单塞进日志参数——单看 _applyCbErr 只剩 Error 字符串，
+          // 玩家看不到是哪几条/为啥没落地；GM._unappliedChanges 里有但被藏。
+          var _unappliedDump = null;
+          try {
+            if (GM && Array.isArray(GM._unappliedChanges) && GM._unappliedChanges.length) {
+              _unappliedDump = GM._unappliedChanges.slice(-6);
+            }
+          } catch(_) {}
+          console.warn('[SC1 apply] failed after structured result:', _applyCbErr, _unappliedDump ? { unappliedTail: _unappliedDump } : '');
         }
       }
       }); // end Sub-call 1 _runSubcall

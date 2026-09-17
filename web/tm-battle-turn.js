@@ -164,7 +164,7 @@
         var s0 = Math.max(0, Math.round(+(a.soldiers || a.strength || 0) || 0)); if (s0 <= 0) return;
         var t = retreatTarget(GM, a);
         if (t.kind === 'retreat') {
-          a.location = a.garrison = t.to;                                // 溃退位移(spec O2·沿邻接退最近友控省)
+          a.location = a.garrison = t.to; if (window.TMMapLocations) window.TMMapLocations.sync(a, 'army', undefined, t.to);                                // 溃退位移(spec O2·沿邻接退最近友控省)
           note((a.name || '败军') + '兵败·沿路溃退至友控之地 ' + t.to);
         } else if (t.kind === 'surrounded') {
           var mor = +(a.morale || 0);

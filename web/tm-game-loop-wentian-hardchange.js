@@ -221,6 +221,7 @@ function _wtSetCharacterLocationHardChange(ch, value) {
   ];
   clearTravel.forEach(function(k) { try { delete ch[k]; } catch(_) {} });
   _wtMirrorCharacterHardChange(ch.name, { location: loc, place: loc, currentLocation: loc, loc: loc }, clearTravel);
+  if (window.TMMapLocations) window.TMMapLocations.syncWorld(window.GM);
 }
 
 function _wtApplyScalarHardChange(oldVal, op, value) {

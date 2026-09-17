@@ -3427,7 +3427,9 @@
       "loadPolicy": "eager-ordered",
       "platform": "any",
       "sideEffects": "legacy-unknown",
-      "provides": [],
+      "provides": [
+        "TMMapLocations"
+      ],
       "consumes": [],
       "dependsOn": [],
       "mustLoadBefore": [],

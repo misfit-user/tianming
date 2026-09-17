@@ -72,7 +72,7 @@ function serializeBuiltin(entry) {
     '/* GENERATED FILE. Source: ' + entry.sourceRel + '. Run `node web/scripts/sync-official-scenarios.js`. */',
     '(function(global) {',
     '  "use strict";',
-    '  var scenario = ' + JSON.stringify(entry.data) + ';',
+    '  var scenario = ' + serializeScenarioExpression(entry.data) + ';',
     '  function register() {',
     '    if (!global.P || !Array.isArray(global.P.scenarios)) { setTimeout(register, 200); return; }',
     '    var i = global.P.scenarios.findIndex(function(s) { return s && s.id === scenario.id; });',

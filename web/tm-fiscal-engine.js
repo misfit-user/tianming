@@ -647,7 +647,9 @@
       map.regions.forEach(function(r) {
         if (!r || !own(r.currentOwner || r.owner || r.factionId)) return;
         var binding = r.adminBinding && typeof r.adminBinding === 'object' ? (r.adminBinding.id || r.adminBinding.divisionId) : r.adminBinding;
-        add(byId[binding] || byId[r.mapRegionId] || byId[r.id] || byMapId[binding] || byMapId[r.mapRegionId] || byMapId[r.id] || named(r.name));
+        if (map.sourceBudgetModel === 'source-partition-v1' && Array.isArray(r.accountingLeafIds)) {
+          r.accountingLeafIds.forEach(function(id) { add(byId[id]); });
+        } else add(byId[binding] || byId[r.mapRegionId] || byId[r.id] || byMapId[binding] || byMapId[r.mapRegionId] || byMapId[r.id] || named(r.name));
       });
     } else {
       var player = budgetFaction(G, 'player');

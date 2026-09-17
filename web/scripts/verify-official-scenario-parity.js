@@ -39,7 +39,7 @@ function main() {
   built.entries.forEach((entry) => {
     const compact = JSON.stringify(entry.data);
     const builtin = artifact('web/' + entry.builtin);
-    ok(builtin.includes('var scenario = ' + compact + ';'), entry.key + ' builtin embeds the complete root JSON');
+    ok(builtin.includes('var scenario = ' + serializeScenarioExpression(entry.data) + ';'), entry.key + ' builtin embeds the complete lossless root expression');
     ok(builtin.split('\n').length <= 20, entry.key + ' builtin remains reviewable compact output');
     const expression = serializeScenarioExpression(entry.data);
     ok(seeder.includes('"data":' + expression), entry.key + ' seeder includes lossless root expression');

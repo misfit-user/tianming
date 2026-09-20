@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import cp from 'node:child_process';
+import path from 'node:path';
+import crypto from 'node:crypto';
+const dir = 'docs/api-wait-compatibility-20260920';
+const temporary = 'D:/tianming-task-artifacts-20260919/validation-tmp';
+fs.mkdirSync(temporary, { recursive: true }); process.env.TEMP = temporary; process.env.TMP = temporary;
+const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const listed = cp.execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', 'web', 'scenarios', 'package.json', 'package-lock.json', 'main-impl.js', 'preload-impl.js'], { encoding: 'utf8', maxBuffer: 8000000 }).split('\0');
+const files = [...new Set(listed.filter(file => /\.(?:js|mjs|json|html|css)$/.test(file) && fs.existsSync(file) && fs.statSync(file).isFile()))].sort();
+const before = files.map(file => ({ file, sha256: hash(file) }));
+fs.writeFileSync(dir + '/resumed-tested-inputs.json', JSON.stringify({ at: new Date().toISOString(), files: before }, null, 2));
+const results = [];
+fs.writeFileSync(dir + '/resumed-run-status.json', JSON.stringify({ complete: false, freshRunStartedAt: new Date().toISOString(), results }, null, 2));
+function run(name, args, timeout = 0) {
+  const out = fs.openSync(dir + '/' + name + '.log', 'w'), started = Date.now();
+  const result = cp.spawnSync(process.execPath, args, { stdio: ['ignore', out, out], timeout: timeout || undefined });
+  fs.closeSync(out);
+  results.push({ name, args, exit: result.status, signal: result.signal, ms: Date.now() - started, error: result.error && result.error.message || null });
+  fs.writeFileSync(dir + '/resumed-run-status.json', JSON.stringify({ complete: false, results }, null, 2));
+  console.log(name, 'exit', result.status, 'ms', Date.now() - started);
+}
+run('resumed-full-tests', ['web/scripts/run-smokes.js', '--all', '--no-retry', '--jobs', '2', '--report', dir + '/resumed-full-tests.json']);
+run('resumed-architecture', ['web/scripts/lint-arch-all.js'], 180000);
+run('resumed-official-parity', ['web/scripts/verify-official-scenario-parity.js'], 120000);
+run('resumed-startup-manifest', ['web/scripts/build-startup-phase-manifest.js', '--check'], 30000);
+run('resumed-browser', [dir + '/browser-proof.mjs'], 120000);
+const changed = before.filter(row => !fs.existsSync(row.file) || hash(row.file) !== row.sha256).map(row => row.file);
+const report = { at: new Date().toISOString(), complete: true, results, sourceCount: before.length, changedDuringRun: changed };
+fs.writeFileSync(dir + '/resumed-run-status.json', JSON.stringify(report, null, 2));
+console.log(JSON.stringify(report, null, 2));
+if (changed.length || results.some(row => row.exit !== 0)) process.exitCode = 1;

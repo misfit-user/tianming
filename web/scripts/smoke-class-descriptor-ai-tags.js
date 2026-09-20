@@ -46,10 +46,10 @@ const c3 = emerge({ name: '某新阶层', economicRole: '生产', influence: 22,
 ok(['上', '中', '下'].indexOf(c3.descriptor.stratum) >= 0, 'AI 非法 stratum「乱填」被纠正 (got ' + c3.descriptor.stratum + ')');
 
 // 4. 三处源契约
-const applySrc = fs.readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
+const applySrc = fs.readFileSync(path.join(WEB, 'tm-social-formation.js'), 'utf8');
 const schemaSrc = fs.readFileSync(path.join(WEB, 'tm-ai-schema.js'), 'utf8');
 const aiSrc = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
-ok(/descriptor: \(ce\.descriptor && typeof ce\.descriptor === 'object'\)/.test(applySrc), '源契约·apply class_emerge 透传 ce.descriptor→newC');
+ok(/raw\.descriptor&&typeof raw\.descriptor==='object'\)c\.descriptor=JSON\.parse\(JSON\.stringify\(raw\.descriptor\)\)/.test(applySrc), '源契约·apply class_emerge 透传 ce.descriptor→newC');
 ok(/class_emerge.*descriptor/.test(schemaSrc), '源契约·schema class_emerge desc 含 descriptor');
 ok(/class_emerge.*\\"descriptor\\":\{/.test(aiSrc), '源契约·prompt 模板含 descriptor 示例(内联词表)');
 

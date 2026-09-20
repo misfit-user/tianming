@@ -2063,6 +2063,7 @@ function _getAITier(tier) {
       model: _s.model || P.ai.model || 'gpt-4o-mini',
       thinking: _s.thinking,
       thinkingProtocol: _s.thinkingProtocol,
+      queueTimeoutMs: _s.queueTimeoutMs, firstResponseTimeoutMs: _s.firstResponseTimeoutMs, totalResponseTimeoutMs: _s.totalResponseTimeoutMs,
       tier: 'secondary'
     };
   }
@@ -2072,6 +2073,7 @@ function _getAITier(tier) {
     model: (P.ai && P.ai.model) || 'gpt-4o',
     thinking: P.ai && P.ai.thinking,
     thinkingProtocol: P.ai && P.ai.thinkingProtocol,
+    queueTimeoutMs: P.ai && P.ai.queueTimeoutMs, firstResponseTimeoutMs: P.ai && P.ai.firstResponseTimeoutMs, totalResponseTimeoutMs: P.ai && P.ai.totalResponseTimeoutMs,
     tier: 'primary'
   };
 }

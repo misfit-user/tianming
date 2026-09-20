@@ -141,7 +141,7 @@
       'body.tm-phase8-formal .generated-basemap{opacity:1;mix-blend-mode:normal;filter:none;}',
       '.tmf-map-basemap-empty{background:radial-gradient(circle at 40% 35%,rgba(217,184,116,.25),transparent 48%),linear-gradient(135deg,rgba(94,72,37,.34),rgba(31,49,46,.18));}',
       '#tmf-formal-map{position:absolute;inset:0;width:100%;height:100%;display:block;}',
-      '.tmf-map-world{transform-box:fill-box;transform-origin:0 0;}',
+      '.tmf-map-world{transform-box:view-box;transform-origin:0 0;}body.tm-phase8-formal #tmf-formal-map[data-zoom-rendering="vector"] path{vector-effect:non-scaling-stroke!important;filter:none!important;}body.tm-phase8-formal #tmf-formal-map[data-zoom-rendering="vector"] .tmf-ocean-label{display:none;}',
       '.tmf-map-paper-fill{fill:url(#tmf-sea-paper);fill-opacity:.84;}',
       '.tmf-generated-basemap{pointer-events:none;}.ming-map-paper{fill:url(#tmf-ming-paper);opacity:.07;pointer-events:none;}.east-sea-wash{fill:url(#tmf-east-sea);opacity:.035;pointer-events:none;}',
       '.east-base-region{display:block;pointer-events:none;fill:#778060;fill-opacity:.075;stroke:none;mix-blend-mode:multiply;fill-rule:evenodd;}.east-coastline{display:block;pointer-events:none;fill:none;stroke:#4b2d16;stroke-width:.58;stroke-opacity:.18;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;}',

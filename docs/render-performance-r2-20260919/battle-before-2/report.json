@@ -1,0 +1,56 @@
+{
+  "complete": true,
+  "errors": [],
+  "sourceSha256": "24200c706640af47c7d12dbbea3616d02f215e6e0a03b24d196dc0bf016fc8fd",
+  "menu": {
+    "counts": {
+      "draw": 2,
+      "step": 0
+    },
+    "ms": 1522.5,
+    "phase": "compose",
+    "paused": true,
+    "title": "",
+    "renderer": true
+  },
+  "visibleBattle": {
+    "counts": {
+      "draw": 1,
+      "step": 0
+    },
+    "ms": 1215.7000000029802,
+    "phase": "deploy",
+    "paused": true,
+    "title": "none",
+    "renderer": true
+  },
+  "returnedMenu": {
+    "counts": {
+      "draw": 2,
+      "step": 0
+    },
+    "ms": 1393.5,
+    "phase": "compose",
+    "paused": true,
+    "title": "flex",
+    "renderer": true
+  },
+  "gpu": {
+    "2d_canvas": "enabled",
+    "canvas_oop_rasterization": "enabled_on",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "enabled",
+    "vulkan": "disabled_off",
+    "webgl": "enabled",
+    "webgl2": "enabled",
+    "webgpu": "enabled",
+    "webnn": "disabled_off"
+  }
+}

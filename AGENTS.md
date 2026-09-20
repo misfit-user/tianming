@@ -111,3 +111,7 @@ CI（push main 触发 `guards` + `mobile-release-contracts`；ship-* release 触
 ---
 
 **一句话**：打包发版**全程走 `scripts/release.js`（两阶段 prepare/publish）**，别手搓任何一步；改派生物必 sync 且落相对路径；**OTA 必须自带全部 `web/assets`（~800MB+·绝不收敛成"只发跟踪码"·见第三节血泪教训）**；改完本机跑绿第五节全部门禁再报完成。
+
+## 网页与源码发布（不打包）
+
+仓主明确要求仅网页／源码时，使用同一两阶段命令并加 `--web-only`。prepare仍原子盖全部版本戳、刷新原生清单及canonical基线；publish仍要求clean main与origin/main完全一致、仓主身份和发布树验证，但不调用安装包、桌面热更、Capgo构建或自动部署指针。源码Release创建后，从main触发Pages并将checkout锁定到已验收提交。

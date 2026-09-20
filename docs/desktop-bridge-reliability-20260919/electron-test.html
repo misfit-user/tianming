@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8"><title>Isolated desktop bridge test</title>
+<script>
+const timers=new Map(),realSetTimeout=window.setTimeout.bind(window),realClearTimeout=window.clearTimeout.bind(window);let sequence=0;
+window.setTimeout=(fn,ms,...args)=>{if(ms!==60000)return realSetTimeout(fn,ms,...args);const key='test-'+(++sequence);timers.set(key,fn);return key;};
+window.clearTimeout=key=>{if(timers.has(key))timers.delete(key);else realClearTimeout(key);};
+window.fireBridgeDeadline=()=>{for(const [key,fn]of [...timers]){timers.delete(key);fn();}};
+window.GM={turn:4,_campaignId:'test-campaign',_timelineId:'test-timeline'};window.P={};
+</script>
+<script src="../../web/tm-endturn-reliability.js"></script>
+<script>
+(async()=>{
+ const results=[],api=TM.Endturn.Reliability;
+ const check=(name,value)=>{results.push({name,pass:!!value});if(!value)throw Error(name);};
+ const pause=()=>new Promise(resolve=>realSetTimeout(resolve,25));
+ const marker=(turn,id)=>({protocolVersion:2,saveName:'合成档案',campaignId:'test-campaign',timelineId:'test-timeline',turn,transactionId:id,stateChecksum:'synthetic-checksum'});
+ const data={context:{full:'完整人物、因果与长期记忆。'.repeat(100)},playerInput:{edicts:['完整诏令']},aiResults:{sc1:{outcome:'complete'},zhengwen:'完整叙事🙂'.repeat(500)},varChanges:{gold:-7}};
+ try{
+  const normal=marker(3,'txn-normal-1234');await api.callTurnBridge('stageTurnData',{...normal,data});
+  check('native stage does not publish before commit',(await testBridge.control('inspect',normal)).published===false);
+  await api.callTurnBridge('publishTurnData',normal);const disk=await testBridge.control('inspect',normal);
+  check('native publish keeps complete context',JSON.stringify(disk.data.context)===JSON.stringify(data.context));
+  check('native publish keeps complete narrative',disk.data['ai-results'].zhengwen===data.aiResults.zhengwen);
+  await api.callTurnBridge('recoverTurnData',normal);check('native recovery is idempotent',(await testBridge.control('inspect',normal)).data.transaction.transactionId===normal.transactionId);
+  const delayed=marker(4,'txn-delayed-1234');await api.callTurnBridge('stageTurnData',{...delayed,data});await testBridge.control('hold','publish');
+  const pending=api.callTurnBridge('publishTurnData',delayed).then(()=>null,e=>e.code);await pause();
+  const pre=await testBridge.control('inspect',delayed);check('main process can finish while acknowledgement is pending',pre.published===true);
+  fireBridgeDeadline();check('renderer reports unknown timeout instead of success',await pending==='TURN_BRIDGE_TIMEOUT');
+  const retry=await api.callTurnBridge('recoverTurnData',delayed).then(()=>null,e=>e.code);check('no duplicate invoke before first result arrives',retry==='TURN_BRIDGE_PENDING'&&(await testBridge.control('inspect',delayed)).counts.recover===1);
+  await testBridge.control('release');await pause();check('late native reply only releases its operation lock',api.bridgeDiagnostics().pending===0);
+  await api.callTurnBridge('recoverTurnData',delayed);check('confirmed retry recovers the original complete files',(await testBridge.control('inspect',delayed)).data['ai-results'].zhengwen===data.aiResults.zhengwen);
+  const unstaged=marker(5,'txn-stage-timeout-1234');await testBridge.control('hold','stage');const stage=api.callTurnBridge('stageTurnData',{...unstaged,data}).then(()=>null,e=>e.code);await pause();fireBridgeDeadline();
+  check('late stage never publishes an uncommitted world',await stage==='TURN_BRIDGE_TIMEOUT'&&!(await testBridge.control('inspect',unstaged)).published);
+  await testBridge.control('release');await pause();await api.callTurnBridge('discardTurnData',unstaged);
+  check('explicit discard after acknowledgement never creates a formal turn',!(await testBridge.control('inspect',unstaged)).published);
+  check('all native test calls clear renderer timers',timers.size===0&&api.bridgeDiagnostics().pending===0);
+  testBridge.report({ok:true,results,method:'actual Electron invoke and unchanged disk committer; synthetic files; only timeout events controlled'});
+ }catch(error){testBridge.report({ok:false,results,error:String(error.stack||error)});}
+})();
+</script>

@@ -138,7 +138,7 @@
     if (!key) return null;
     var share = parseSizeShare(cls.size);
     var nat = pop.national && Number(pop.national.mouths);
-    var mouths = (isFinite(share) && isFinite(nat) && nat > 0) ? Math.max(1, Math.round(nat * share)) : 0;
+    var mouths = cls._populationPending ? 0 : (isFinite(share) && isFinite(nat) && nat > 0) ? Math.max(1, Math.round(nat * share)) : 0;
     if (!byClass[key]) byClass[key] = { mouths: mouths, _emergedCell: true, _emergeTurn: (source && source.turn) || 0 };
     cls.populationKeys = keys.length ? keys.slice() : [key];
     return key;

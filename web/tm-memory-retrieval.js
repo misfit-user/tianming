@@ -96,13 +96,14 @@
   }
 
   function numberOrNull(value) {
+    if (value == null || value === "" || typeof value === "boolean") return null;
     var n = Number(value);
     return isFinite(n) ? n : null;
   }
 
   function textOf(hit) {
     hit = hit || {};
-    return String(hit.text != null ? hit.text : (hit.event != null ? hit.event : (hit.content != null ? hit.content : '')));
+    return String(hit.safeBody != null ? hit.safeBody : (hit.text != null ? hit.text : (hit.event != null ? hit.event : (hit.content != null ? hit.content : ''))));
   }
 
   function sourceOf(hit) {
@@ -193,8 +194,17 @@
   function memoryControlForHit(hit, opts) {
     opts = opts || {};
     var GM = opts.GM || {};
+    var durable = null, store = GM._memoryLongTerm;
+    if (!opts.ignoreDurable) {
+      var entry = _worldIndexEntry(GM);
+      if (entry && entry.longTermStore !== store) {
+        entry.longTermStore = store; entry.longTermControls = Object.create(null);
+        arr(store && store.records).forEach(function(record) { if (record.durableControl) entry.longTermControls[record.id] = record.durableControl; });
+      }
+      durable = hit && hit.durableControl || (entry && entry.longTermControls && hit && entry.longTermControls[hit.id]) || null;
+    }
     var controls = GM._memoryControls;
-    if (!controls) return null;
+    if (!controls) return durable;
     var keys = memoryControlKeys(hit);
     if (Array.isArray(controls)) {
       for (var i = 0; i < controls.length; i++) {
@@ -202,7 +212,7 @@
         var key = item.key || (item.type && item.id ? (item.type + ':' + item.id) : '');
         if (key && keys.indexOf(String(key)) >= 0) return compactMemoryControl(item, key);
       }
-      return null;
+      return durable;
     }
     if (typeof controls === 'object') {
       for (var j = 0; j < keys.length; j++) {
@@ -210,7 +220,7 @@
         if (ctrl) return compactMemoryControl(ctrl, keys[j]);
       }
     }
-    return null;
+    return durable;
   }
 
   function applyMemoryControls(hit, opts) {
@@ -265,20 +275,26 @@
   function audienceSuppressionReason(hit, opts) {
     opts = opts || {};
     hit = hit || {};
-    var audience = String(opts.audience || opts.actorScope || '').toLowerCase();
+    var scope = opts.actorScope || {};
+    if (typeof scope === 'string') scope = { kind: scope };
+    var audience = String(opts.audience || scope.kind || '').toLowerCase();
     if (!audience || audience === 'gm' || audience === 'system' || audience === 'designer') return '';
     var vis = String(hit.visibility || '').toLowerCase();
-    var actorId = String(opts.actorId || opts.actor || '').toLowerCase();
-    var factionId = String(opts.factionId || opts.faction || '').toLowerCase();
+    var actorId = String(opts.actorId || opts.actor || scope.actorId || scope.npcId || scope.id || '').toLowerCase();
+    var factionId = String(opts.factionId || opts.faction || scope.factionId || '').toLowerCase();
     var allowed = lowerList(hit.audience).concat(lowerList(hit.audiences));
+    scopeList(hit.readScope).concat(scopeList(hit.ownerScope)).forEach(function(token) { if (token.indexOf('npc:') === 0 || token.indexOf('faction:') === 0) allowed.push(token.slice(token.indexOf(':') + 1)); });
+    if (hit.ownerId) allowed.push(String(hit.ownerId).toLowerCase());
+    if (vis.indexOf('npc_private:') === 0) { allowed.push(vis.slice(12)); vis = 'npc_private'; }
+    if (vis.indexOf('faction_private:') === 0) { allowed.push(vis.slice(16)); vis = 'faction_private'; }
     if (audience === 'npc') {
       if (vis === 'player_known' || vis === 'player_only' || vis === 'gm_only') return 'audience_scope';
-      if (vis === 'npc_private' && allowed.length && (!actorId || allowed.indexOf(actorId) < 0)) return 'audience_scope';
+      if (vis === 'npc_private' && (!actorId || allowed.indexOf(actorId) < 0)) return 'audience_scope';
       if (vis === 'faction_private') return 'audience_scope';
     }
     if (audience === 'faction') {
       if (vis === 'player_known' || vis === 'player_only' || vis === 'gm_only' || vis === 'npc_private') return 'audience_scope';
-      if (vis === 'faction_private' && allowed.length && (!factionId || allowed.indexOf(factionId) < 0)) return 'audience_scope';
+      if (vis === 'faction_private' && (!factionId || allowed.indexOf(factionId) < 0)) return 'audience_scope';
     }
     if (audience === 'player') {
       if (vis === 'npc_private' || vis === 'faction_private' || vis === 'gm_only') return 'audience_scope';
@@ -286,9 +302,43 @@
     return '';
   }
 
+  function memoryBoundaryReason(hit, opts) {
+    hit = hit || {};
+    opts = opts || {};
+    var gm = opts.GM || {};
+    var states = [hit.status, hit.reviewStatus, hit.factStatus].map(function(s) { return String(s || '').toLowerCase(); });
+    if (states.indexOf('draft') >= 0 || states.indexOf('pending_review') >= 0) return 'pending_review';
+    if (states.indexOf('rejected') >= 0) return 'rejected';
+    if (states.indexOf('quarantine') >= 0 || states.indexOf('quarantined') >= 0) return 'quarantined';
+    if (states.indexOf('deleted') >= 0 || states.indexOf('deleted_tombstone') >= 0 || states.indexOf('redacted') >= 0) return 'deleted';
+    if (hit.active === false) return 'inactive';
+    if (hit.safeBody != null && !String(hit.safeBody).trim()) return 'empty_safe_body';
+    var bindings = [
+      ['worldId', opts.worldId || gm.worldId || gm._worldId || gm.scenarioId || gm.scenarioKey],
+      ['saveId', opts.saveId || gm.saveId || gm._saveId || gm.runId || gm.campaignId || gm._campaignId],
+      ['campaignId', opts.campaignId || gm.campaignId || gm._campaignId],
+      ['timelineId', opts.timelineId || gm.timelineId || gm._timelineId]
+    ];
+    for (var i = 0; i < bindings.length; i++) {
+      var field = bindings[i][0], expected = bindings[i][1];
+      if (expected != null && expected !== '' && hit[field] != null && hit[field] !== '' && String(hit[field]) !== String(expected)) {
+        // Loading forks the timeline: common parent history remains valid up to the fork, never after it.
+        var forkTurn = numberOrNull(gm._forkTurn);
+        var eventTurn = numberOrNull(hit.turn);
+        var learnedTurn = numberOrNull(hit.learnedAtTurn);
+        var parentHistory = field === 'timelineId' && String(expected) === String(gm.timelineId || gm._timelineId || '') && gm._parentTimelineId && String(hit[field]) === String(gm._parentTimelineId)
+          && forkTurn != null && eventTurn != null && eventTurn <= forkTurn && (learnedTurn == null || learnedTurn <= forkTurn);
+        if (!parentHistory) return 'world_scope';
+      }
+    }
+    return '';
+  }
+
   function suppressionReason(hit, opts) {
     opts = opts || {};
     if (!hit) return 'empty';
+    var boundary = memoryBoundaryReason(hit, opts);
+    if (boundary) return boundary;
     var turn = Number(opts.turn || 0);
     var ctrl = memoryControlForHit(hit, opts);
     if (ctrl && ctrl.markedFalse === true) return 'marked_false';
@@ -315,11 +365,14 @@
     opts = opts || {};
     var turn = numberOrNull(opts.turn);
     if (turn == null || opts.includeFuture === true) return '';
+    var eventTurn = numberOrNull(hit.turn);
+    var learnedTurn = numberOrNull(hit.learnedAtTurn);
     var intent = String(opts.intent || 'current_fact').toLowerCase();
     var validFrom = numberOrNull(hit.validFromTurn != null ? hit.validFromTurn : hit.validFrom);
     var validTo = numberOrNull(hit.validToTurn != null ? hit.validToTurn : hit.validTo);
     var expiredAt = numberOrNull(hit.expiredAtTurn != null ? hit.expiredAtTurn : hit.expiredAt);
     if (validFrom != null && turn < validFrom && intent !== 'historical_evidence') return 'not_yet_valid';
+    if ((eventTurn != null && eventTurn > turn) || (learnedTurn != null && learnedTurn > turn)) return 'future_memory';
     if ((validTo != null && turn > validTo) || (expiredAt != null && turn >= expiredAt)) {
       return intent === 'historical_evidence' ? '' : 'expired';
     }
@@ -362,6 +415,9 @@
       type: governanceTypeForHit(hit),
       body: textOf(hit),
       status: hit.status || 'active',
+      reviewStatus: hit.reviewStatus || '',
+      turn: hit.turn,
+      learnedAtTurn: hit.learnedAtTurn,
       authority: governanceAuthorityForHit(hit),
       visibility: visibilityOf(hit),
       factStatus: hit.factStatus || '',
@@ -377,11 +433,17 @@
     opts = opts || {};
     var MG = root.TM && root.TM.MemoryGovernance;
     if (!MG || typeof MG.evaluateEnvelope !== 'function') return '';
+    var actorScope = {};
+    if (opts.actorScope && typeof opts.actorScope === 'object') Object.keys(opts.actorScope).forEach(function(k) { actorScope[k] = opts.actorScope[k]; });
+    actorScope.kind = opts.audience || actorScope.kind || (typeof opts.actorScope === 'string' ? opts.actorScope : '');
+    actorScope.npcId = opts.actorId || opts.actor || actorScope.npcId || actorScope.actorId || actorScope.id || '';
+    actorScope.factionId = opts.factionId || opts.faction || actorScope.factionId || '';
     var evalResult = MG.evaluateEnvelope(governanceEnvFromHit(hit), {
       turn: opts.turn,
+      includeFuture: opts.includeFuture,
       intent: opts.intent || opts.retrievalIntent || 'current_fact',
       requiresAuthority: opts.requiresAuthority,
-      actorScope: opts.actorScope || {}
+      actorScope: actorScope
     });
     if (!evalResult || !evalResult.wouldReject || !Array.isArray(evalResult.reasons) || !evalResult.reasons.length) return '';
     return evalResult.reasons[0].code || 'governance_rejected';
@@ -653,8 +715,12 @@
       source: source,
       type: env.type || env.kind || '',
       turn: Number(env.turn || 0),
-      text: textOf({ text: env.safeBody || env.body }),
-      safeBody: env.safeBody || '',
+      text: textOf({ text: env.safeBody != null ? env.safeBody : env.body }),
+      safeBody: env.safeBody != null ? env.safeBody : (env.body || ''),
+      reviewStatus: env.reviewStatus || '',
+      campaignId: env.campaignId || '',
+      timelineId: env.timelineId || '',
+      entities: Array.isArray(env.entities) ? env.entities.slice() : [],
       status: env.status || 'active',
       importance: extra.importance != null ? Number(extra.importance) : (source === 'hard_state' ? 10 : (source === 'activeEdict' || source === 'imperialEdict' ? 9 : (source === 'commitment' ? 8 : 5))),
       relevance: source === 'hard_state' ? 0.95 : (source === 'activeEdict' || source === 'imperialEdict' ? 0.9 : 0.75),
@@ -678,6 +744,9 @@
       writeScope: env.writeScope || extra.writeScope || '',
       schemaVersion: env.schemaVersion || '',
       projectionVersion: env.projectionVersion,
+      memoryKind: env.memoryKind || (env.extra && env.extra.memoryKind) || (root.TM.MemoryLongTerm && Object.prototype.hasOwnProperty.call(root.TM.MemoryLongTerm.types, env.type) ? env.type : ""),
+      longTerm: env.longTerm === true,
+      durableControl: env.durableControl || null,
       saveId: env.saveId || '',
       worldId: env.worldId || '',
       ownerKind: env.ownerKind || extra.ownerKind || '',
@@ -981,18 +1050,21 @@
     var id = hit.id || hit.key || hit.uuid || '';
     var type = hit.type || hit.kind || hit.factStatus || '';
     if (id) return src + ':' + String(type || 'event') + ':id:' + String(id);
-    return src + ':text:' + textOf(hit).replace(/\s+/g, ' ').trim().slice(0, 80);
+    return src + ':text:' + textOf(hit).replace(/\s+/g, ' ').trim();
   }
 
-  function dedupeHits(hits) {
+  function dedupeHits(hits, onDuplicate) {
     if (!Array.isArray(hits)) return [];
-    var seen = {};
-    var seenText = {};
+    var seen = Object.create(null);
+    var seenText = Object.create(null);
     var out = [];
     hits.forEach(function(hit) {
       var key = dedupeKey(hit);
-      var tkey = sourceOf(hit) + ':text:' + textOf(hit).replace(/\s+/g, ' ').trim().slice(0, 80);
-      if (!key || seen[key] || (tkey && seenText[tkey])) return;
+      var tkey = sourceOf(hit) + ':' + String(hit.readScope || hit.ownerScope || '') + ':text:' + textOf(hit).replace(/\s+/g, ' ').trim();
+      if (!key || seen[key] || (tkey && seenText[tkey])) {
+        if (typeof onDuplicate === 'function') onDuplicate(hit);
+        return;
+      }
       seen[key] = true;
       if (tkey) seenText[tkey] = true;
       out.push(hit);
@@ -1347,7 +1419,7 @@
         if (reason) suppressed.push(compactSuppressed(hit, reason));
         else visible.push(hit);
       });
-      var deduped = dedupeHits(visible);
+      var deduped = dedupeHits(visible, function(hit) { suppressed.push(compactSuppressed(hit, 'duplicate_memory_fact')); });
       var relationIndex = _buildHitRelationIndex(deduped, opts);
       var kept = [];
       deduped.forEach(function(hit, index) {
@@ -1425,7 +1497,9 @@
 
   function packForInjection(recallResults, opts) {
     opts = opts || {};
-    var maxTokens = Number(opts.maxTokens || 0);
+    var hasBudget = opts.maxTokens != null && opts.maxTokens !== '';
+    var numericBudget = Number(opts.maxTokens);
+    var maxTokens = hasBudget ? (Number.isFinite(numericBudget) && numericBudget >= 0 ? Math.floor(numericBudget) : 8192) : 0;
     var groups = Array.isArray(recallResults) ? recallResults : [];
     var flat = [];
     groups.forEach(function(group, gi) {
@@ -1452,6 +1526,35 @@
       kept: [],
       suppressed: []
     };
+
+    var seenRecallIds = Object.create(null), seenRecallFacts = Object.create(null);
+    var recallPolicy = {};
+    Object.keys(opts).forEach(function(k) { recallPolicy[k] = opts[k]; });
+    recallPolicy.intent = opts.intent || 'historical_evidence';
+    diagnostics.duplicates = 0;
+    function duplicateAuthority(item) {
+      var h = item.hit || {}, registry = root.TM && root.TM.MemoryEvidenceRegistry;
+      var rank = h.authorityRank != null ? Number(h.authorityRank) : (registry && registry.getAuthorityRank ? registry.getAuthorityRank(h.authority) : 0);
+      return Number.isFinite(rank) ? rank : 0;
+    }
+    flat = flat.slice().sort(function(a, b) { return duplicateAuthority(b) - duplicateAuthority(a) || sortBudgetItems(a, b); }).filter(function(item) {
+      var hit = item.hit || {};
+      var reason = suppressionReason(hit, recallPolicy);
+      var scope = [hit.worldId, hit.saveId, hit.timelineId, hit.readScope, hit.ownerScope].join('|');
+      var id = hit.id || hit.key || hit.uuid;
+      var idKey = id ? scope + '|id:' + String(id) : '';
+      var factKey = scope + '|' + sourceOf(hit) + '|' + textOf(hit).replace(/\s+/g, ' ').trim();
+      if (!reason && ((idKey && seenRecallIds[idKey]) || seenRecallFacts[factKey])) reason = 'duplicate_memory_fact';
+      if (reason) {
+        var omitted = compactSuppressed(hit, reason, { budgetStage: 'dedupe', cost: item.cost });
+        suppressed.push(omitted); diagnostics.suppressed.push(omitted); diagnostics.dropped++;
+        if (reason === 'duplicate_memory_fact') diagnostics.duplicates++;
+        return false;
+      }
+      if (idKey) seenRecallIds[idKey] = true;
+      seenRecallFacts[factKey] = true;
+      return true;
+    }).sort(function(a, b) { return a.groupIndex - b.groupIndex || a.hitIndex - b.hitIndex; });
 
     function itemKey(item) {
       return item.groupIndex + ':' + item.hitIndex;
@@ -1497,7 +1600,7 @@
       if (!item) return false;
       var key = itemKey(item);
       if (selected[key] || rejected[key]) return false;
-      var canFit = !maxTokens || (used + item.cost <= maxTokens);
+      var canFit = !hasBudget || (used + item.cost <= maxTokens);
       if (canFit) {
         used += item.cost;
         selected[key] = true;

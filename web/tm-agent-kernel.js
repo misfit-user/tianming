@@ -172,12 +172,26 @@
       trace: trace,
       budget: createBudget(opts.budget || {}, trace),
       abort: function (reason) {
-        if (ctrl && !ctrl.signal.aborted) ctrl.abort(reason || 'aborted');
+        if (ctrl) { if (!ctrl.signal.aborted) ctrl.abort(reason || 'aborted'); }
         else signal.aborted = true;
         trace.add('abort', { reason: reason || 'aborted' });
       },
       snapshot: function () { return { aborted: !!signal.aborted, budget: run.budget.snapshot(), trace: trace.snapshot() }; }
     };
+    var deadlineTimer = null, parentAbort = null;
+    run.dispose = function() { if (deadlineTimer != null) clearTimeout(deadlineTimer); deadlineTimer = null; if (opts.signal && parentAbort) opts.signal.removeEventListener('abort', parentAbort); };
+    if (opts.signal) {
+      parentAbort = function() { run.abort(opts.signal.reason || 'parent-aborted'); run.dispose(); };
+      opts.signal.addEventListener('abort', parentAbort, { once: true });
+      if (opts.signal.aborted) parentAbort();
+    }
+    if (opts.enforceDeadline === true && !signal.aborted) {
+      var remaining = run.budget.snapshot().remaining.ms;
+      if (Number.isFinite(remaining)) {
+        deadlineTimer = setTimeout(function() { var e = new Error('Agent 回合总时限已到'); e.code = 'AI_REQUEST_DEADLINE'; e.name = 'TimeoutError'; run.abort(e); run.dispose(); }, Math.max(0, remaining));
+        if (deadlineTimer && typeof deadlineTimer.unref === 'function') deadlineTimer.unref();
+      }
+    }
     return run;
   }
 

@@ -324,6 +324,8 @@
     { name: 'get_relations', description: '【关系网】查某人/某势力的关系网(人际关系 + 势力邦交)·一把抓其盟友/敌对/恩怨。推演社会/朋党/邦交动态、谁会帮谁、谁会反谁时调。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名或势力名' } }, required: ['name'] } }
   ];
 
+  DEFS.push({ name: 'read_memory', description: '根据记忆 ID 展开证据与来源，不得编造 ID。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 } }, required: ['ids'] } },
+    { name: 'recall_related', description: '沿记忆因果、解决与矛盾关系追查一跳关联证据。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 } }, required: ['ids'] } });
   var SPECS = DEFS.map(function (d) { return Object.assign({}, d, { effect: 'read', domain: 'runtime-observe', pack: 'runtime-read', risk: 'low', idempotent: true }); });
   var REGISTRY = (TM.AgentKernel && TM.AgentKernel.createRegistry) ? TM.AgentKernel.createRegistry(SPECS) : null;
   var TOOL_SET = {};
@@ -334,6 +336,7 @@
     input = input || {};
     var gm = _GM(ctx);
     try {
+      if (TM.MemoryModeBridge && TM.MemoryModeBridge.isRead(name)) return await TM.MemoryModeBridge.read(name, input, ctx);
       switch (name) {
         case 'get_overview':   return { ok: true, name: name, text: _getOverview(gm) };
         case 'get_field':      return { ok: true, name: name, text: _getField(gm, input.path) };

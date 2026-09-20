@@ -1,0 +1,28 @@
+{
+  "started": "2026-09-17T10:46:50.882Z",
+  "complete": false,
+  "checks": [],
+  "errors": [],
+  "initial": {
+    "p": true,
+    "start": "function",
+    "loader": true,
+    "scenarios": [
+      {
+        "id": "sc-tianqi7-1627"
+      },
+      {
+        "id": "sc-jianyan1-1127-shaosong"
+      },
+      {
+        "id": "sc-tang840-840"
+      }
+    ]
+  },
+  "loaded": {
+    "id": "sc-jianyan1-1127-shaosong",
+    "regions": 566,
+    "circuits": 101
+  },
+  "error": "Native UI test timed out"
+}

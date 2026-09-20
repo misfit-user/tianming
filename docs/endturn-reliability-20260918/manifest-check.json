@@ -1,0 +1,5 @@
+{
+  "at": "2026-09-18T15:58:41.545Z",
+  "exit": 0,
+  "output": "[startup-phase-manifest] PASS scripts=419 deferred=9 phases={\"menu\":14,\"core\":85,\"world\":298,\"optional\":22}\n"
+}

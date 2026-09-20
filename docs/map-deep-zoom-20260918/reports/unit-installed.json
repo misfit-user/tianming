@@ -1,0 +1,60 @@
+{
+  "time": "2026-09-18T10:14:56.817Z",
+  "installed": true,
+  "passed": 13,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "unified-min-max-and-invalid-values",
+      "passed": true
+    },
+    {
+      "name": "button-reaches-128-and-keeps-center-fixed",
+      "passed": true
+    },
+    {
+      "name": "button-back-to-whole-map-range",
+      "passed": true
+    },
+    {
+      "name": "wheel-goes-beyond-both-old-limits",
+      "passed": true
+    },
+    {
+      "name": "wheel-after-large-button-zoom-does-not-snap-to-3-4",
+      "passed": true
+    },
+    {
+      "name": "wheel-preserves-sub-notch-distance",
+      "passed": true
+    },
+    {
+      "name": "restored-camera-is-clamped-and-finite",
+      "passed": true
+    },
+    {
+      "name": "actual-pinch-bridge-reaches-128",
+      "passed": true
+    },
+    {
+      "name": "pinch-in-and-out-retains-the-finger-anchor",
+      "passed": true
+    },
+    {
+      "name": "small-island-search-focus-is-readable-without-changing-geometry",
+      "passed": true
+    },
+    {
+      "name": "focus-never-zooms-back-out-from-user-detail",
+      "passed": true
+    },
+    {
+      "name": "deep-vector-and-compositor-transition-do-not-double-transform",
+      "passed": true
+    },
+    {
+      "name": "high-zoom-label-grid-memory-is-bounded-and-overlap-stays-exact",
+      "passed": true
+    }
+  ]
+}

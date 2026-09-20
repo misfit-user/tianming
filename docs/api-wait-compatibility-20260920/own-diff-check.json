@@ -1,0 +1,110 @@
+[
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-utils.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-agent-tools.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-api-settings.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-api-wait-compatibility.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-ai-transport-deadlines.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-stream-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-mobile-api-integration.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-request-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/index.html",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-tc-history-wave.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-ai-abort-listener-cleanup.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

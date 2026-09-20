@@ -1,0 +1,353 @@
+{
+  "capturedAt": "2026-09-19T12:02:14.290Z",
+  "tests": [
+    {
+      "name": "smoke-render-identity-cost.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-menu-render-idle.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-raster-display-cache.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-perf-map-render-path.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-render-resolution.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-view-scores.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-viewport-collision.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-zoom-preload.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-deterministic.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-embed-protocol.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-render-assets.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-editor-renderall-resilient.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-hud-retained.js",
+      "code": 0
+    }
+  ],
+  "map": {
+    "before": {
+      "complete": true,
+      "stats": {
+        "n": 12,
+        "min": 337.79999999701977,
+        "median": 376.1000000014901,
+        "max": 826.6999999992549
+      },
+      "mutations": 264,
+      "childList": 72,
+      "retained": true,
+      "regions": 566,
+      "gpu": {
+        "2d_canvas": "enabled",
+        "canvas_oop_rasterization": "enabled_on",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "vulkan": "disabled_off",
+        "webgl": "enabled",
+        "webgl2": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      }
+    },
+    "after-identity-1": {
+      "complete": true,
+      "stats": {
+        "n": 12,
+        "min": 31.699999999254942,
+        "median": 43.65000000037253,
+        "max": 68.09999999776483
+      },
+      "mutations": 228,
+      "childList": 36,
+      "retained": true,
+      "regions": 566,
+      "gpu": {
+        "2d_canvas": "enabled",
+        "canvas_oop_rasterization": "enabled_on",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "vulkan": "disabled_off",
+        "webgl": "enabled",
+        "webgl2": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      }
+    },
+    "after-final-1": {
+      "complete": true,
+      "stats": {
+        "n": 12,
+        "min": 64,
+        "median": 71.94999999925494,
+        "max": 128.60000000149012
+      },
+      "mutations": 48,
+      "childList": 36,
+      "retained": true,
+      "regions": 566,
+      "gpu": {
+        "2d_canvas": "enabled",
+        "canvas_oop_rasterization": "enabled_on",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "vulkan": "disabled_off",
+        "webgl": "enabled",
+        "webgl2": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      }
+    },
+    "finalReduction": 0.8086944961473813
+  },
+  "minimap": {
+    "variants": {
+      "before": {
+        "images": {
+          "initial": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+          "idle": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+          "pan": "c810630027a6b38f9ec2b0d67574eb9e41e2c29528321afea36d1d6698a6352b",
+          "selection": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+          "mutation": "7f55eec55b06ebec5c189874bec95ee7568d2b31ebe3ea27171b104c67d27df1",
+          "resize": "700938c895cb8257e8faed107a8f16445f3396f45fd89e92850a660143534b3c",
+          "mapReplacement": "33ec27e5e14e1cafe08d6bac5dc9fe4f2d23af910ba40e1a2d011f3415912464",
+          "foldedMutation": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c",
+          "repeatedForce": "2fe24e88998d663c1d20ac9d3ac67bd33f0db8d6eceadddf6ea4a6c59cdd1928"
+        },
+        "idle": {
+          "counts": {
+            "fillRect": 120,
+            "lineTo": 54120,
+            "fill": 18000
+          },
+          "ms": 65.80000000074506
+        },
+        "pan": {
+          "counts": {
+            "fillRect": 60,
+            "lineTo": 27060,
+            "fill": 9000
+          },
+          "ms": 14.399999998509884
+        },
+        "hidden": {}
+      },
+      "candidate": {
+        "images": {
+          "initial": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+          "idle": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+          "pan": "c810630027a6b38f9ec2b0d67574eb9e41e2c29528321afea36d1d6698a6352b",
+          "selection": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+          "mutation": "7f55eec55b06ebec5c189874bec95ee7568d2b31ebe3ea27171b104c67d27df1",
+          "resize": "700938c895cb8257e8faed107a8f16445f3396f45fd89e92850a660143534b3c",
+          "mapReplacement": "33ec27e5e14e1cafe08d6bac5dc9fe4f2d23af910ba40e1a2d011f3415912464",
+          "foldedMutation": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c",
+          "repeatedForce": "2fe24e88998d663c1d20ac9d3ac67bd33f0db8d6eceadddf6ea4a6c59cdd1928"
+        },
+        "idle": {
+          "counts": {},
+          "ms": 1.300000000745058
+        },
+        "pan": {
+          "counts": {
+            "drawImage": 30,
+            "fillRect": 30,
+            "lineTo": 60
+          },
+          "ms": 0.6999999992549419
+        },
+        "hidden": {}
+      }
+    },
+    "checks": [
+      {
+        "name": "pixel-identical-initial",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-idle",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-pan",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-selection",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-mutation",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-resize",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-mapReplacement",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-foldedMutation",
+        "passed": true
+      },
+      {
+        "name": "pixel-identical-repeatedForce",
+        "passed": true
+      },
+      {
+        "name": "idle-zero-draws",
+        "passed": true
+      },
+      {
+        "name": "pan-reuses-geometric-base",
+        "passed": true
+      },
+      {
+        "name": "folded-zero-draws",
+        "passed": true
+      }
+    ],
+    "complete": true,
+    "passed": true
+  },
+  "battle": {
+    "complete": true,
+    "errors": [],
+    "sourceSha256": "efaed2c6db9b96cdc8dadf5c4669ac6e531a204f61cd31f5080b0b5fc27a795a",
+    "menu": {
+      "counts": {
+        "draw": 0,
+        "step": 0
+      },
+      "ms": 1210.199999999255,
+      "phase": "compose",
+      "paused": true,
+      "title": "",
+      "renderer": true
+    },
+    "visibleBattle": {
+      "counts": {
+        "draw": 1,
+        "step": 0
+      },
+      "ms": 1210.6000000014901,
+      "phase": "deploy",
+      "paused": true,
+      "title": "none",
+      "renderer": true
+    },
+    "manualDraw": {
+      "times": [
+        50.20000000298023,
+        46.099999997764826,
+        39.80000000074506,
+        40.100000001490116,
+        36.79999999701977,
+        38.5
+      ],
+      "units": 111
+    },
+    "returnedMenu": {
+      "counts": {
+        "draw": 0,
+        "step": 0
+      },
+      "ms": 1206.199999999255,
+      "phase": "compose",
+      "paused": true,
+      "title": "flex",
+      "renderer": true
+    },
+    "hudBefore": {
+      "ms": 183.80000000074506,
+      "mutations": 540,
+      "children": 0
+    },
+    "hudAfter": {
+      "ms": 185.30000000074506,
+      "mutations": 180,
+      "children": 0
+    },
+    "hudIdentical": true,
+    "gpu": {
+      "2d_canvas": "enabled",
+      "canvas_oop_rasterization": "enabled_on",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "vulkan": "disabled_off",
+      "webgl": "enabled",
+      "webgl2": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "sourceHashes": {
+    "web/battle/index.html": "32d702963726562d03b6facd0e21bb71dd70fac31764a17b99b346e0b6159ba7",
+    "web/map-editor-minimap.js": "b883eefb2f9e8f49500c0167950d17819d88046bf7f25e7b1cb8e160c35acf71",
+    "web/phase8-formal-map.js": "be0e74b5a12ac116999034406284f738f92271c7ccbd8eb154c49e234b561fe8",
+    "web/map-editor-rastermaps.js": "70018eec61f64cc00e2e8cb85c4163d0cb93b46fc711c3cd38633bdb504e13a7"
+  }
+}

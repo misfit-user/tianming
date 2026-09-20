@@ -43,6 +43,8 @@
     if (kind === 'character' && /已殁|已故|已卒|已死|\d{4}.*(?:归后|年后)|待赴任|北上路上|北行途中|往来/.test(raw)) return result('unresolved', [], 'not-a-current-point');
     var direct = idsFor(raw);
     if (direct.length) return result(unique(direct).length === 1 ? 'resolved' : 'ambiguous', direct, 'exact-name-or-alias');
+    var exactArea = idx.areaNames.get(raw);
+    if (map.locationBindingContract.exactAreaPriority && exactArea) return result('area', exactArea, 'explicit-area-not-exact-point');
     // Parentheses describe alternatives or plans; do not let a longer future place win.
     var head = raw.split('(')[0].trim();
     var tokens = head.split(/[·／/、，,；;\s]+/).filter(Boolean), hits = [];

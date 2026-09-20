@@ -1,0 +1,29 @@
+[
+  {
+    "label": "before",
+    "scenario": "stage-never-replies",
+    "deadlines": 0,
+    "settled": false,
+    "canonicalSlots": 0
+  },
+  {
+    "label": "before",
+    "scenario": "discard-rejected",
+    "receiptRetained": false,
+    "stagedMarkerRetained": false
+  },
+  {
+    "label": "after",
+    "scenario": "stage-never-replies",
+    "deadlines": 1,
+    "settled": true,
+    "value": false,
+    "canonicalSlots": 0
+  },
+  {
+    "label": "after",
+    "scenario": "discard-rejected",
+    "receiptRetained": true,
+    "stagedMarkerRetained": true
+  }
+]

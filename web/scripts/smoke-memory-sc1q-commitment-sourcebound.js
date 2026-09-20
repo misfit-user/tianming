@@ -42,7 +42,15 @@ assert(commitment.basisRefs.some((r) => r.type === 'jishiRecords' && r.id === 'j
 assert.strictEqual(commitment.authority, 'rule_validated', 'persisted sc1q commitments should stay rule_validated');
 
 const applySource = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
-assert(applySource.includes("sourceRefs: [{ type: 'dialogueCommitment'"), 'endturn apply should write sourceRefs onto sc1q commitments');
-assert(applySource.includes('target.basisRefs = target.sourceRefs'), 'endturn apply should keep basisRefs aligned with sourceRefs');
+assert(applySource.includes('TM.ImperialOrders.fromDialogue(GM,'), 'endturn routes source-bound reconciliation through its owner');
+['tm-tax-policy.js','tm-imperial-orders.js'].forEach(file=>vm.runInNewContext(fs.readFileSync(path.join(ROOT,file),'utf8'),sandbox.window,{filename:file}));
+const realGame={turn:22,playerInfo:{factionName:'Court'},facs:[{id:'court',name:'Court'}],chars:[{id:'sun',name:'Minister Sun',faction:'Court',alive:true}],_npcCommitments:{}};
+sandbox.window.GM=realGame;sandbox.window.P={time:{daysPerTurn:30}};
+sandbox.window.TM.ImperialOrders.fromDialogue(realGame,[{npc:'Minister Sun',task:'inspect canal accounts',source_conv_id:'court-22-sun',category:'query',deadline:'3回合内'}],[]);
+const task=realGame._npcCommitments['Minister Sun'][0];
+assert(task.sourceRefs.some(r=>r.type==='dialogueCommitment'&&r.id==='court-22-sun'),'runtime writes actual dialogue source refs');
+assert.deepStrictEqual(task.basisRefs,task.sourceRefs,'runtime basis refs stay aligned');
+const projected=ME.collect(realGame,{turn:22}).find(e=>e.id===task.id);
+assert(projected&&projected.sourceRefs.some(r=>r.id==='court-22-sun'),'actual newly registered task keeps source through memory projection');
 
 console.log('smoke-memory-sc1q-commitment-sourcebound ok');

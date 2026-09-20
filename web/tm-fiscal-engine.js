@@ -698,7 +698,9 @@
       var rec = { id:node.id || node.name, name:node.name || node.id, resources:{}, taxes:[], collection:{money:global.FiscalStatement.collectionZero(),grain:global.FiscalStatement.collectionZero(),cloth:global.FiscalStatement.collectionZero()} };
       ['money','grain','cloth'].forEach(function(k) { rec.resources[k] = { claimedRevenue:0, actualRevenue:0, collectedRevenue:0, remittedToCenter:0, retainedBudget:0, skimmed:0, lostInTransit:0 }; });
       taxes.forEach(function(original) {
-        var tax = budgetTaxOverride(div, original), kind = tax.storeAs || 'money';
+        var tax = budgetTaxOverride(div, original);
+        if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax(G, div, tax, ctx);
+        var kind = tax.storeAs || 'money';
         if(tax.annual==null)tax.annual=true;
         if (tax.enabled === false || !rec.resources[kind]) return;
         var base = taxBase(div, tax), yf = tax.annual === false ? 1 : ctx.turnFracOfYear;
@@ -1453,6 +1455,7 @@
   }
 
   function computeTaxAmount(div, tax, ctx) {
+    if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax((ctx && ctx.game) || getGame(), div, tax, ctx);
     var base = taxBase(div, tax);
     if (base <= 0) return 0;
     var amount = base * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0);
@@ -1686,7 +1689,8 @@
       ? safeNumber(div.fiscalDetail && div.fiscalDetail.remittedToCenter, safeNumber(div.fiscal && div.fiscal.remittedToCenter, 0))
       : 0;
     if (_staticRemitAnnual > 0) {
-      var _staticExpect = Math.max(0, Math.round(_staticRemitAnnual * safeNumber(ctx && ctx.turnFracOfYear, 0)));
+      var _staticTaxFactor = global.TM && global.TM.TaxPolicy ? global.TM.TaxPolicy.staticFactor(G, div, ctx) : 1;
+      var _staticExpect = Math.max(0, Math.round(_staticRemitAnnual * safeNumber(ctx && ctx.turnFracOfYear, 0) * _staticTaxFactor));
       if (_staticExpect > 0 && remitMoney < _staticExpect * 0.5) {
         var _srTopUp = _staticExpect - remitMoney;
         if (_srTopUp > 0) {
@@ -1887,6 +1891,7 @@
     var turnDays = getTurnDays(opts, G);
     var turnFrac = Math.max(0.01, Math.min(1, turnDays / 365));
     var ctx = {
+      game:G, fiscalConfig:fc,
       centralLocalRules: fc.centralLocalRules || DEFAULT_ALLOCATION,
       logisticsLoss: fc.logisticsLoss != null ? safeNumber(fc.logisticsLoss, DEFAULT_LOGISTICS_LOSS) : DEFAULT_LOGISTICS_LOSS,
       turnDays: turnDays,
@@ -2783,6 +2788,8 @@
   }
 
   var api = {
+    taxPolicyCatalog: function(G){ return normalizeTaxListForCascade(getGame(G), getFiscalConfig(G)); },
+    assessTax: computeTaxAmount,
     VERSION: 1,
     DEFAULT_TAXES: DEFAULT_TAXES,
     DEFAULT_ALLOCATION: DEFAULT_ALLOCATION,

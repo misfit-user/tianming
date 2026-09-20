@@ -26,6 +26,15 @@
 
   function _cloneNpcApplyState(value) {
     if (value == null || typeof value !== 'object') return value;
+    if (value === global.GM || value === global.P) {
+      var plain = {};
+      Object.keys(value).forEach(function(k) {
+        if (k === '_postTurnJobs' || k === '_postTurnDetachedJobs' || k === '_indices') return;
+        var d = Object.getOwnPropertyDescriptor(value,k);
+        if (d && Object.prototype.hasOwnProperty.call(d,'value') && typeof d.value !== 'function') Object.defineProperty(plain,k,{value:d.value,enumerable:true,writable:true,configurable:true});
+      });
+      value = plain;
+    }
     if (typeof deepClone === 'function') return deepClone(value);
     return JSON.parse(JSON.stringify(value));
   }
@@ -44,7 +53,9 @@
       }
       return target;
     }
+    var rootState = target === global.GM || target === global.P;
     Object.keys(target || {}).forEach(function(key) {
+      if (rootState && (key === '_postTurnJobs' || key === '_postTurnDetachedJobs' || key === '_indices')) return;
       if (!Object.prototype.hasOwnProperty.call(snapshot || {}, key)) delete target[key];
     });
     Object.keys(snapshot || {}).forEach(function(key) {
@@ -71,6 +82,7 @@
     } catch (error) {
       _restoreNpcApplyState(gmRef, gmSnapshot);
       _restoreNpcApplyState(pRef, pSnapshot);
+      if (global.TM && TM.Indices && typeof TM.Indices.invalidate === "function") TM.Indices.invalidate(gmRef,pRef);
       try {
         if (global.TM && TM.errors && typeof TM.errors.capture === 'function') TM.errors.capture(error, 'npc-deep-result.atomic');
       } catch (_) {}
@@ -116,6 +128,7 @@
 
   ns.run = async function(ctx) {
     ensureGroups(ctx);
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     var _followupStart = Date.now();
     var edicts = ctx.input.edicts || {};
     var xinglu = ctx.input.xinglu || "";
@@ -2160,7 +2173,7 @@
         if (Array.isArray(GM.shijiHistory) && GM.shijiHistory.length > 0) {
           _ctx25c += '\n近 5 回合时政：\n';
           GM.shijiHistory.slice(-5).forEach(function(sh) {
-            if (sh.shizhengji) _ctx25c += 'T' + sh.turn + ': ' + String(sh.shizhengji).slice(0, 300) + '\n';
+            if (sh.shizhengji) _ctx25c += 'T' + sh.turn + ': ' + (global.TM && TM.AIResultContract ? TM.AIResultContract.historyText(sh.shizhengji) : String(sh.shizhengji)).slice(0, 300) + '\n';
           });
         }
         // sc28 上下文 (若可用)
@@ -3575,7 +3588,7 @@
             if(histJson && histJson.has_ai_hallucination) {
               _dbg('[历史检查] AI 幻觉:', histJson.ai_errors);
               // 替换 AI 自生的错误·玩家诏令引起的内容由 AI 保留
-              if (histJson.corrected_shizhengji) shizhengji = histJson.corrected_shizhengji;
+              if (histJson.corrected_shizhengji) shizhengji = (global.TM && TM.AIResultContract) ? TM.AIResultContract.text(histJson.corrected_shizhengji, 'corrected_shizhengji') : histJson.corrected_shizhengji;
               if (histJson.corrected_zhengwen) zhengwen = histJson.corrected_zhengwen;
               // 追加史官按注释
               if (histJson.note) {
@@ -3661,6 +3674,7 @@
     ctx.record.szjSummary = szjSummary || "";
     ctx.record.personnelChanges = Array.isArray(personnelChanges) ? personnelChanges : [];
     ctx.record.hourenXishuo = hourenXishuo || "";
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     ctx.record.suggestions = (ctx.results.sc2 && Array.isArray(ctx.results.sc2.suggestions)) ? ctx.results.sc2.suggestions : (Array.isArray(ctx.record.suggestions) ? ctx.record.suggestions : []);
     // v2.6 Slice 2.5.10·廷议 decay 接入点·tinyi-decay-contract.md
     // 民意度 / 言官离心 按 dynasty + monthsPerTurn decay·conveningPolitics 7-turn 后 reset·pending events 按 expireTurn 清理

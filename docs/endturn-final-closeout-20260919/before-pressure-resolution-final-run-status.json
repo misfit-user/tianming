@@ -1,0 +1,72 @@
+{
+  "at": "2026-09-19T14:26:06.313Z",
+  "commands": [
+    {
+      "name": "final-architecture",
+      "exit": 0,
+      "signal": null,
+      "ms": 23367
+    },
+    {
+      "name": "final-browser",
+      "exit": 0,
+      "signal": null,
+      "ms": 2803
+    },
+    {
+      "name": "final-full-tests",
+      "exit": 1,
+      "signal": null,
+      "ms": 980293
+    },
+    {
+      "name": "extra-smoke-battle-height-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 2031
+    },
+    {
+      "name": "extra-smoke-battle-menu-render-idle",
+      "exit": 0,
+      "signal": null,
+      "ms": 191
+    },
+    {
+      "name": "extra-smoke-battle-unit-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 2555
+    },
+    {
+      "name": "extra-smoke-raster-display-cache",
+      "exit": 0,
+      "signal": null,
+      "ms": 247
+    },
+    {
+      "name": "extra-smoke-render-identity-cost",
+      "exit": 0,
+      "signal": null,
+      "ms": 3610
+    },
+    {
+      "name": "extra-smoke-render-performance-r2",
+      "exit": 0,
+      "signal": null,
+      "ms": 1833
+    },
+    {
+      "name": "extra-smoke-ui-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 691
+    },
+    {
+      "name": "final-official-parity",
+      "exit": 0,
+      "signal": null,
+      "ms": 114136
+    }
+  ],
+  "changedDuringRun": []
+}

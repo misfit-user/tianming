@@ -1,0 +1,26 @@
+{
+  "at": "2026-09-19T11:31:34.242Z",
+  "sourceSHA": "fdfa2e4a6ce2a3ec4e4f9474128c6b313c95cffafd7891069874be50cf67daa1",
+  "version": {
+    "protocolVersion": "1.3",
+    "product": "Edg/153.0.4234.46",
+    "revision": "@af766475e4461bf7a8f44d601c8dfc6e7db82d66",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+    "jsVersion": "15.3.12.6"
+  },
+  "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789817493208",
+  "outcome": {
+    "ok": true,
+    "checks": [
+      "native IndexedDB commit",
+      "real page reload",
+      "full text equality",
+      "single inference",
+      "usage not duplicated",
+      "explicit clear"
+    ],
+    "calls": 1,
+    "chars": 17000
+  },
+  "error": null
+}

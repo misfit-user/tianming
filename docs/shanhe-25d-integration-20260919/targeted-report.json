@@ -1,0 +1,33 @@
+{
+  "outputDirectory": "D:/tianming-assistant-work/shanhe-25d-20260919/targeted-1789825220731",
+  "checks": [
+    {
+      "name": "smoke-map-viewport-collision.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 1783,
+      "sourceSha256": "7ff1a896eeadf07338695aab28e64ebbf49d2ce0941f2c94eaeff5c83522c4da"
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 928,
+      "sourceSha256": "92da246563f52d73675f758475444c7d7dc8bf202be35e55890adac7effe5014"
+    },
+    {
+      "name": "smoke-search-empty-state.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 337,
+      "sourceSha256": "abd8205decbafc393f510d04d4630215ce06fcd5acdd5c209c9382335f31a21d"
+    },
+    {
+      "name": "scoped-git-diff-check",
+      "status": 0,
+      "output": ""
+    }
+  ],
+  "passed": 4,
+  "failed": 0
+}

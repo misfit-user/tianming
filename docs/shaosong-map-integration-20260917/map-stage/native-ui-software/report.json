@@ -1,0 +1,36 @@
+{
+  "started": "2026-09-17T10:51:14.574Z",
+  "complete": false,
+  "checks": [],
+  "errors": [],
+  "initial": {
+    "p": true,
+    "start": "function",
+    "loader": true,
+    "scenarios": [
+      {
+        "id": "sc-tianqi7-1627"
+      },
+      {
+        "id": "sc-jianyan1-1127-shaosong"
+      },
+      {
+        "id": "sc-tang840-840"
+      }
+    ]
+  },
+  "loaded": {
+    "id": "sc-jianyan1-1127-shaosong",
+    "regions": 566,
+    "circuits": 101
+  },
+  "world": {
+    "running": true,
+    "sid": "sc-jianyan1-1127-shaosong",
+    "regions": 566,
+    "player": "大宋",
+    "characters": 485,
+    "armies": 103
+  },
+  "error": "Error: Map tier count mismatch {\"tier\":\"realm\",\"regions\":566}\n    at file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/verify-native-ui-software.mjs:39:49"
+}

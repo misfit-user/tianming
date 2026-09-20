@@ -47,6 +47,7 @@ function _newSessionToken() {
 }
 
 let _autoSaveSessionToken = '';
+let _autoSaveSessionRevision = 0;
 try {
   const current = ipcRenderer.sendSync('auto-save-session-current');
   if (current && current.success && current.token) _autoSaveSessionToken = String(current.token);
@@ -56,12 +57,17 @@ try {
 if (!_autoSaveSessionToken) _autoSaveSessionToken = _newSessionToken();
 
 function _invokeAutoSave(data) {
+  const requestToken = _autoSaveSessionToken, requestRevision = _autoSaveSessionRevision;
   return ipcRenderer.invoke('auto-save', {
     __tmAutoSaveEnvelope: 1,
-    sessionToken: _autoSaveSessionToken,
+    sessionToken: requestToken,
     data: data
   }).then(function(result) {
-    if (result && result.sessionToken) _autoSaveSessionToken = String(result.sessionToken);
+    // Only the current request may confirm its existing session; late replies never rotate it.
+    if (requestRevision === _autoSaveSessionRevision && requestToken === _autoSaveSessionToken
+        && result && result.success === true && result.sessionToken && String(result.sessionToken) !== requestToken) {
+      return Object.assign({}, result, { success: false, stale: true, error: '自动存档成功回执的会话不匹配，未采用该回执' });
+    }
     return result;
   });
 }
@@ -83,7 +89,7 @@ function _invokeAutoSaveJson(json) {
 function _rotateAutoSaveSession(token) {
   try {
     const result = ipcRenderer.sendSync('auto-save-session-rotate', String(token || ''));
-    if (result && result.success && result.token) _autoSaveSessionToken = String(result.token);
+    if (result && result.success && result.token) { _autoSaveSessionRevision++; _autoSaveSessionToken = String(result.token); }
     return result || { success: false, error: '主进程未返回 session 结果' };
   } catch (e) {
     return { success: false, error: e && e.message || String(e) };

@@ -68,6 +68,7 @@
   }
 
   function numberOrNull(value) {
+    if (value == null || value === "" || typeof value === "boolean") return null;
     var n = Number(value);
     return isFinite(n) ? n : null;
   }
@@ -107,6 +108,8 @@
     var s = clean(status, 40).toLowerCase();
     if (!s) return fallback || 'active';
     if (s === 'active' || s === 'pending' || s === 'executing' || s === 'partial' || s === 'obstructed' || s === 'pending_delivery' || s === 'delayed') return 'active';
+    if (s === 'draft' || s === 'pending_review' || s === 'rejected') return s;
+    if (s === 'accepted') return 'active';
     if (s === 'stale' || s === 'superseded') return s;
     if (s === 'deleted' || s === 'deleted_tombstone' || s === 'redacted') return 'deleted_tombstone';
     if (s === 'quarantined' || s === 'quarantine') return 'quarantined';
@@ -134,16 +137,19 @@
       id: clean(input.id, 120) || ('mem-' + hashText(body + ':' + clean(input.type, 40))),
       schemaVersion: clean(input.schemaVersion, 40) || SCHEMA_VERSION,
       projectionVersion: Number(input.projectionVersion || PROJECTION_VERSION),
-      saveId: clean(input.saveId || input.runId || input.campaignId, 120),
-      worldId: clean(input.worldId || input.scenarioId || input.scenarioKey, 120),
+      saveId: clean(input.saveId || input.runId || input.campaignId, 128),
+      worldId: clean(input.worldId || input.scenarioId || input.scenarioKey, 128),
       ownerScope: clean(input.ownerScope || input.scope || input.owner, 120),
-      readScope: clean(input.readScope || input.visibilityScope || input.audienceScope, 120),
+      readScope: clean(Array.isArray(input.readScope) ? input.readScope.join(' ') : (input.readScope || input.visibilityScope || input.audienceScope), 120),
       writeScope: clean(input.writeScope || input.reviewScope || input.writePolicy, 120),
       type: clean(input.type || input.kind, 40) || 'episodic_event',
       body: body,
-      safeBody: safeBodyText(input.safeBody || body, input.safeBodyMax || input.maxBody || 1000),
+      safeBody: safeBodyText(input.safeBody != null ? input.safeBody : body, input.safeBodyMax || input.maxBody || 1000),
       sourceRefs: sourceRefs,
       status: normalizeStatus(input.status, input.statusFallback || 'active'),
+      reviewStatus: clean(input.reviewStatus, 40),
+      campaignId: clean(input.campaignId || input._campaignId, 128),
+      timelineId: clean(input.timelineId || input._timelineId, 128),
       authority: clean(input.authority, 40) || 'raw_narrative',
       visibility: clean(input.visibility, 80) || 'public',
       turn: Number(input.turn || 0),
@@ -1023,9 +1029,16 @@
         status: 'active',
         authority: item.authority || item.source || 'ai_extracted',
         visibility: item.visibility || 'player_known',
-        turn: item.turn || item.enqueuedAtTurn || item.acceptedAtTurn || turn,
+        turn: item.turn != null ? item.turn : (item.enqueuedAtTurn != null ? item.enqueuedAtTurn : (item.acceptedAtTurn != null ? item.acceptedAtTurn : turn)),
         saveId: item.saveId,
         worldId: item.worldId,
+        campaignId: item.campaignId,
+        timelineId: item.timelineId,
+        reviewStatus: item.reviewStatus,
+        validFromTurn: item.validFromTurn,
+        validToTurn: item.validToTurn,
+        expiredAtTurn: item.expiredAtTurn,
+        learnedAtTurn: item.learnedAtTurn,
         ownerScope: item.ownerScope,
         readScope: item.readScope,
         writeScope: item.writeScope,
@@ -1225,6 +1238,31 @@
     });
   }
 
+  function pushPersonalOriginalEnvelopes(out, GM, opts, turn) {
+    var lc = root.TM && root.TM.LiveContext;
+    if (!lc || !GM) return;
+    var actorScope = opts.actorScope || {}, name = opts.actorId || opts.actorName || actorScope.npcId;
+    var system = opts.audience === 'system' || actorScope.kind === 'system';
+    if (!name && !system) return;
+    var query = String(opts.query || opts.topic || '');
+    if (!query && system) query = JSON.stringify(GM.edicts || {}) + ' ' + (GM._edictTracker || []).filter(function(e){return e&&e.turn===GM.turn;}).map(function(e){return e.content;}).join(' ');
+    var chars = (GM.chars || []).filter(function(ch){return ch && (name ? ch.id===name || ch.name===name : query.indexOf(ch.name)>=0 || GM._npcCommitments && (GM._npcCommitments[ch.name]||[]).some(function(c){return c&&c.status!=='completed';}));});
+    chars.slice(0,12).forEach(function(ch){
+      lc.recall(GM,ch,query,6).forEach(function(m){
+        var id=m.id || 'npc-original-'+hashText(ch.name+':'+m.turn+':'+m.event);
+        var unverified=m.factStatus==='unverified_claim'||m.source==='reported'||m.source==='rumor';
+        var body=ch.name+'：'+(unverified?'[个人报告，尚未核实] ':'[个人历史记录] ')+String(m.event||'');
+        out.push(makeEnvelope({id:id,type:'character_memory',body:body,maxBody:1800,
+          sourceRefs:[sourceRef('npcPersonalMemory',id,m.event,{turn:m.turn})],basisRefs:m.sourceRefs||[],
+          authority:unverified?'court_report':'event_log',visibility:'npc_private:'+(ch.id||ch.name),
+          audience:[ch.id||ch.name,ch.name,'system'],ownerKind:'character',ownerId:ch.id||ch.name,
+          status:'active',turn:m.turn,entities:[ch.id||ch.name,ch.name],lane:'L6_retrieved_evidence',
+          factStatus:unverified?'unverified_claim':'personal_historical_record',confidence:unverified?.55:.8,
+          reason:'projection:personal_original',extra:{taskId:m.taskId||'',importance:m.importance||5}}));
+      });
+    });
+  }
+
   function collect(GM, opts) {
     opts = opts || {};
     var out = [];
@@ -1251,6 +1289,15 @@
     pushCharacterArcEnvelopes(out, GM, turn);
     pushAcceptedMemoryEnvelopes(out, GM, turn);
     pushCharacterStanceEnvelopes(out, GM, turn);
+    pushPersonalOriginalEnvelopes(out, GM, opts, turn);
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.project) out = out.concat(root.TM.MemoryLongTerm.project(GM));
+    out.forEach(function(env) {
+      if (!GM) return;
+      if (!env.worldId) env.worldId = clean(GM.worldId || GM._worldId || GM.scenarioId || GM.scenarioKey, 128);
+      if (!env.saveId) env.saveId = clean(GM.saveId || GM._saveId || GM.runId || GM.campaignId || GM._campaignId, 128);
+      if (!env.campaignId) env.campaignId = clean(GM.campaignId || GM._campaignId, 128);
+      if (!env.timelineId) env.timelineId = clean(GM.timelineId || GM._timelineId, 128);
+    });
     return dedupe(out);
   }
 

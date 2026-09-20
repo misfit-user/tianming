@@ -1,0 +1,29 @@
+{
+  "backup": "D:/tianming-assistant-work/shanhe-25d-20260919/closeout-before-1789825131625",
+  "changes": [
+    "let svgWatch=null;",
+    "if(ready)return ready;const epoch=++loadEpoch;ready=(async()=>",
+    "canvas=document.createElement('canvas');canvas.className='tmf-shanhe-canvas';canvas.setAttribute('ar",
+    "Renderer.create(canvas,root.TM_SHANHE_ENV,urls",
+    "renderer=r;installCartography(r);",
+    "})().catch(fail);return ready;",
+    "else if(!renderer){ready=null;bootstrap();}",
+    "renderer.setScenario(nativeScenario(map,p));renderer._sceneLayoutCache.size>4&&renderer._sceneLayout",
+    "function hide(){restore();dirty=true;}",
+    "exportDiagnostics,hide,projection,screenToGame",
+    "version:'B5-native-1',enabled",
+    "renderer?.dispose();renderer=null;});"
+  ],
+  "files": [
+    {
+      "file": "C:\\Users\\37814\\Desktop\\tianming\\web\\tm-shanhe-runtime.js",
+      "before": "44de30327b4d146723492dd489aeac38bb52d34353e1538ed2fbbff240e82b57",
+      "after": "75b5eb01c2470464b5d27f72d1eba1399fb8e632321167f2695e0b7c6508b307"
+    },
+    {
+      "file": "C:\\Users\\37814\\Desktop\\tianming\\web\\phase8-formal-map.js",
+      "before": "aec24841f044a5dc6b5b69fccc064a87631ec3c3f92152c91f7ab375ee09e569",
+      "after": "ea326ebf9eab60e24cf72bc2dd2958175ebb331c9d2c4f83300dbf4b193acf31"
+    }
+  ]
+}

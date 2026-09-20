@@ -106,6 +106,7 @@ function makeContext(indexedDB, localStorage) {
   context.window = context;
   context.globalThis = context;
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-reliability.js'), 'utf8'), context, { filename: 'tm-endturn-reliability.js' });
   vm.runInContext(source, context, { filename: 'tm-storage.js' });
   return context;
 }

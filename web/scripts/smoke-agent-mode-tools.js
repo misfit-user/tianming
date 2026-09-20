@@ -85,7 +85,7 @@ function makeGM() {
   // ── defs 注册 ──
   const names = RT.defs().map(function (d) { return d.name; });
   assert(names.indexOf('get_dossier') >= 0 && names.indexOf('read_chronicle') >= 0 && names.indexOf('read_records') >= 0 && names.indexOf('get_relations') >= 0, '高阶+关系工具已注册进 defs(agent 可见可调)');
-  assert(names.length === 10, 'defs 共 10 工具(原6+高阶3+关系1)');
+  assert(names.length === 12 && names.includes('read_memory') && names.includes('recall_related'), 'defs 共十二工具，原十项及两项证据工具齐全');
 
   console.log('[smoke-agent-mode-tools] pass assertions=' + passed.value);
 })().catch(function (e) { console.error(e); process.exit(1); });

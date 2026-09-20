@@ -1,0 +1,1028 @@
+{
+  "checkedAt": "2026-09-17T09:59:39.470Z",
+  "status": "polity-labels-applied-map-not-applied",
+  "newMapApplied": false,
+  "officialSource": "scenarios/绍宋·建炎元年八月（官方）.json",
+  "beforeSha256": "0e43d46ba32849b7df2b14da99470f059286976f06a482547fcc9057255bd1c7",
+  "afterSha256": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04",
+  "verifiedLabelChanges": 853,
+  "nativeFactionResolutions": 224,
+  "originalAccounts": 182,
+  "sourceCharacters": 501,
+  "sourceArmies": 100,
+  "sourceEvents": 59,
+  "originalMapRegions": 182,
+  "polities": [
+    {
+      "id": "fac_song",
+      "name": "大宋"
+    },
+    {
+      "id": "fac_jin",
+      "name": "大金"
+    },
+    {
+      "id": "fac_xixia",
+      "name": "大夏"
+    }
+  ],
+  "accountTotals": {
+    "mouths": 111249000,
+    "zhizao": 74,
+    "kuangchang": 47,
+    "yuyao": 70
+  },
+  "mapInput": {
+    "sha256": "96bc2fee63879aa5c51619bd1ab6436a9c6462fe65612303babcf429c8816925",
+    "regions": 566,
+    "circuits": 101,
+    "allOwnersResolve": true,
+    "allCircuitsResolve": true
+  },
+  "mappingAssessment": {
+    "complete": false,
+    "reason": "New geometry and original accounting are not one-to-one. Some polities have fewer new map cells than original accounts. Direct attachment to the current single-division transfer function is not accepted as a preservation proof.",
+    "byFaction": [
+      {
+        "factionId": "fac_song",
+        "originalAccounts": 24,
+        "newMapCells": 277,
+        "sourceAccounts": [
+          {
+            "id": "div_1781320285806_3910",
+            "name": "成都府路·雅州"
+          },
+          {
+            "id": "div_1781321652810_217",
+            "name": "夔州路·夔州"
+          },
+          {
+            "id": "div_1781327567438_8817",
+            "name": "广南西路·桂州"
+          },
+          {
+            "id": "div_1781328222161_4358",
+            "name": "广南东路·广州"
+          },
+          {
+            "id": "div_1781347270363_2858",
+            "name": "广南西路·琼州"
+          },
+          {
+            "id": "div_1781348933976_6593",
+            "name": "江南西路·洪州"
+          },
+          {
+            "id": "div_1781349205847_2455",
+            "name": "福建路·福州"
+          },
+          {
+            "id": "div_1781351856060_5466",
+            "name": "两浙路·杭州"
+          },
+          {
+            "id": "div_1781352288643_2132",
+            "name": "京东两路·东平济南青州"
+          },
+          {
+            "id": "div_1781397694572_1060",
+            "name": "麟府路·麟州"
+          },
+          {
+            "id": "div_1781496969104_9532",
+            "name": "荆湖北路·鄂州"
+          },
+          {
+            "id": "div_1781496969104_1455",
+            "name": "京西北路·西京河南府"
+          },
+          {
+            "id": "div_1781497165369_5550",
+            "name": "泾原路·渭州"
+          },
+          {
+            "id": "div_1781497218186_3334",
+            "name": "利州路·兴元府"
+          },
+          {
+            "id": "div_1781497436724_9495",
+            "name": "荆湖南路·潭州"
+          },
+          {
+            "id": "div_1781497467553_2755",
+            "name": "京西南路·襄阳府"
+          },
+          {
+            "id": "div_1781497522354_5010",
+            "name": "江南东路·江宁府"
+          },
+          {
+            "id": "div_1781497597433_9652",
+            "name": "京畿路·东京开封府"
+          },
+          {
+            "id": "div_1781497627068_1120",
+            "name": "潼川府路·潼川府"
+          },
+          {
+            "id": "div_1781497666750_6328",
+            "name": "成都府路·成都府"
+          },
+          {
+            "id": "div_1781517373721_6009",
+            "name": "熙河兰廓路·熙州"
+          },
+          {
+            "id": "div_1781517381860_7552",
+            "name": "利州路·利州"
+          },
+          {
+            "id": "div_1781517873347_6141",
+            "name": "鄜延路·延安府"
+          },
+          {
+            "id": "div_1781517873347_1407",
+            "name": "秦凤路·凤翔府"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_jin",
+        "originalAccounts": 18,
+        "newMapCells": 87,
+        "sourceAccounts": [
+          {
+            "id": "div_1781352933684_5384",
+            "name": "西京路·大同府"
+          },
+          {
+            "id": "div_1781352947796_7235",
+            "name": "西京路·丰州天德军"
+          },
+          {
+            "id": "div_1781353113596_528",
+            "name": "西京路·云内州"
+          },
+          {
+            "id": "div_1781354836536_6660",
+            "name": "中京·大定府"
+          },
+          {
+            "id": "div_1781354884872_8567",
+            "name": "金西北边契丹诸部"
+          },
+          {
+            "id": "div_1781354940257_9797",
+            "name": "上京·临潢府"
+          },
+          {
+            "id": "div_1781355282408_4555",
+            "name": "金北边契丹诸部"
+          },
+          {
+            "id": "div_1781355389457_4291",
+            "name": "会宁府"
+          },
+          {
+            "id": "div_1781355478586_819",
+            "name": "合懒路"
+          },
+          {
+            "id": "div_1781355567346_9326",
+            "name": "辽阳府·复州"
+          },
+          {
+            "id": "div_1781355760530_5834",
+            "name": "胡里改万户"
+          },
+          {
+            "id": "div_1781497921769_4411",
+            "name": "河东南路·隆德府"
+          },
+          {
+            "id": "div_1781497994899_9662",
+            "name": "河北西路·真定府"
+          },
+          {
+            "id": "div_1781498010824_6498",
+            "name": "河北东路·河间府"
+          },
+          {
+            "id": "div_1781498019765_3252",
+            "name": "平州军帅司"
+          },
+          {
+            "id": "div_1781498061377_8807",
+            "name": "河东南路·河中府"
+          },
+          {
+            "id": "div_1781498100984_6331",
+            "name": "河东南路·平阳府"
+          },
+          {
+            "id": "div_1781498114835_4296",
+            "name": "河东北路·太原府"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_hebei_yijun",
+        "originalAccounts": 1,
+        "newMapCells": 4,
+        "sourceAccounts": [
+          {
+            "id": "div_1781497088960_7088",
+            "name": "磁相忠义寨"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_xixia",
+        "originalAccounts": 13,
+        "newMapCells": 17,
+        "sourceAccounts": [
+          {
+            "id": "div_1781355136177_3747",
+            "name": "肃州南境"
+          },
+          {
+            "id": "div_1781396396805_760",
+            "name": "肃州监军司"
+          },
+          {
+            "id": "div_1781397438204_2319",
+            "name": "甘州甘肃监军司"
+          },
+          {
+            "id": "div_1781397556155_6375",
+            "name": "西凉府"
+          },
+          {
+            "id": "div_1781397592435_3844",
+            "name": "怀德军"
+          },
+          {
+            "id": "div_1781397632377_3900",
+            "name": "中兴府"
+          },
+          {
+            "id": "div_1781397651196_5443",
+            "name": "夏州·宥州"
+          },
+          {
+            "id": "div_1781397675571_1009",
+            "name": "灵州·盐州"
+          },
+          {
+            "id": "div_1781397803525_1767",
+            "name": "建宁寨"
+          },
+          {
+            "id": "div_1781399219667_6447",
+            "name": "瓜州西平监军司"
+          },
+          {
+            "id": "div_1781399253834_4024",
+            "name": "沙州监军司"
+          },
+          {
+            "id": "div_1781517737733_8664",
+            "name": "甘州南境"
+          },
+          {
+            "id": "div_1781517737733_1421",
+            "name": "瓜州南境"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_dali",
+        "originalAccounts": 1,
+        "newMapCells": 8,
+        "sourceAccounts": [
+          {
+            "id": "div_1781327991857_7259",
+            "name": "云南·大理国"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_tubo",
+        "originalAccounts": 8,
+        "newMapCells": 9,
+        "sourceAccounts": [
+          {
+            "id": "div_1781355073401_8763",
+            "name": "青海西部诸部"
+          },
+          {
+            "id": "div_1781355155816_8574",
+            "name": "阿尔金山北麓诸部"
+          },
+          {
+            "id": "div_1781355214960_3469",
+            "name": "柴达木北缘诸部"
+          },
+          {
+            "id": "div_1781399977547_4126",
+            "name": "卫地诸部"
+          },
+          {
+            "id": "div_1781400032855_558",
+            "name": "卫地·逻些"
+          },
+          {
+            "id": "div_1781400081462_266",
+            "name": "藏地诸部"
+          },
+          {
+            "id": "div_1781400142449_9259",
+            "name": "雅隆诸部"
+          },
+          {
+            "id": "div_1781517494688_2820",
+            "name": "青唐北界诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_guge",
+        "originalAccounts": 1,
+        "newMapCells": 4,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400117880_4382",
+            "name": "阿里三围·古格"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_kham",
+        "originalAccounts": 11,
+        "newMapCells": 9,
+        "sourceAccounts": [
+          {
+            "id": "div_1781320242432_5349",
+            "name": "多康南缘诸部"
+          },
+          {
+            "id": "div_1781355004544_6738",
+            "name": "多康东北诸部"
+          },
+          {
+            "id": "div_1781355023938_2666",
+            "name": "多康东北缘诸部"
+          },
+          {
+            "id": "div_1781399765352_4554",
+            "name": "多康东南缘诸部"
+          },
+          {
+            "id": "div_1781399857240_6102",
+            "name": "多康川西诸部"
+          },
+          {
+            "id": "div_1781400186914_8724",
+            "name": "多康西部诸部"
+          },
+          {
+            "id": "div_1781400197584_2963",
+            "name": "多康西南诸部"
+          },
+          {
+            "id": "div_1781400209984_411",
+            "name": "多康中部诸部"
+          },
+          {
+            "id": "div_1781400221961_6335",
+            "name": "多康东部诸部"
+          },
+          {
+            "id": "div_1781400239223_6336",
+            "name": "多康东南诸部"
+          },
+          {
+            "id": "div_1781517431064_1684",
+            "name": "多康北缘诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_karakhan_east",
+        "originalAccounts": 16,
+        "newMapCells": 10,
+        "sourceAccounts": [
+          {
+            "id": "div_1781396278332_8754",
+            "name": "拨换"
+          },
+          {
+            "id": "div_1781396596863_9020",
+            "name": "精绝"
+          },
+          {
+            "id": "div_1781396637411_1817",
+            "name": "阿图什"
+          },
+          {
+            "id": "div_1781396669125_5104",
+            "name": "于阗"
+          },
+          {
+            "id": "div_1781396669125_2945",
+            "name": "莎车"
+          },
+          {
+            "id": "div_1781396688877_1976",
+            "name": "克里雅"
+          },
+          {
+            "id": "div_1781396688877_102",
+            "name": "尼雅"
+          },
+          {
+            "id": "div_1781396757028_482",
+            "name": "英吉沙"
+          },
+          {
+            "id": "div_1781396870749_7400",
+            "name": "疏勒"
+          },
+          {
+            "id": "div_1781396870749_1530",
+            "name": "据史德"
+          },
+          {
+            "id": "div_1781398917434_6580",
+            "name": "八剌沙衮"
+          },
+          {
+            "id": "div_1781398953201_7019",
+            "name": "姑墨"
+          },
+          {
+            "id": "div_1781399653816_6249",
+            "name": "怛罗斯"
+          },
+          {
+            "id": "div_1781517670495_2568",
+            "name": "温宿"
+          },
+          {
+            "id": "div_1781517670496_1113",
+            "name": "龟兹"
+          },
+          {
+            "id": "div_1781517679548_4691",
+            "name": "且末"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_karakhan_west",
+        "originalAccounts": 1,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781497361038_6100",
+            "name": "石国"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_qocho",
+        "originalAccounts": 11,
+        "newMapCells": 7,
+        "sourceAccounts": [
+          {
+            "id": "div_1781396380734_6185",
+            "name": "蒲昌"
+          },
+          {
+            "id": "div_1781399166962_2104",
+            "name": "北庭"
+          },
+          {
+            "id": "div_1781399219667_8436",
+            "name": "柳中"
+          },
+          {
+            "id": "div_1781399312581_33",
+            "name": "车师"
+          },
+          {
+            "id": "div_1781399325499_1598",
+            "name": "焉耆"
+          },
+          {
+            "id": "div_1781399384224_1412",
+            "name": "高昌"
+          },
+          {
+            "id": "div_1781399423953_7128",
+            "name": "西州"
+          },
+          {
+            "id": "div_1781399434553_5491",
+            "name": "交河"
+          },
+          {
+            "id": "div_1781517651722_8664",
+            "name": "伊州"
+          },
+          {
+            "id": "div_1781517679548_69",
+            "name": "轮台"
+          },
+          {
+            "id": "div_1781517708481_3401",
+            "name": "罗布泊东南诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_caoyuan",
+        "originalAccounts": 2,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781353164644_1158",
+            "name": "漠北西南诸部"
+          },
+          {
+            "id": "div_1781399059930_267",
+            "name": "乃蛮部·阿尔泰东麓"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_kereit",
+        "originalAccounts": 3,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781354750105_8756",
+            "name": "克烈部·杭爱东麓"
+          },
+          {
+            "id": "div_1781399059930_9261",
+            "name": "克烈部·土兀剌河"
+          },
+          {
+            "id": "div_1781399597964_518",
+            "name": "可敦城北境"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_merkit",
+        "originalAccounts": 1,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781354740329_267",
+            "name": "蔑儿乞部·色楞格河"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_mongol",
+        "originalAccounts": 4,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781353185402_6378",
+            "name": "蒙兀诸部·肯特山"
+          },
+          {
+            "id": "div_1781353301006_5039",
+            "name": "蒙兀诸部·鄂嫩河"
+          },
+          {
+            "id": "div_1781354621786_7079",
+            "name": "蒙兀诸部·三河源"
+          },
+          {
+            "id": "div_1781354767360_4346",
+            "name": "蒙兀诸部·克鲁伦河"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_tatar",
+        "originalAccounts": 5,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781354636130_9241",
+            "name": "塔塔儿西部"
+          },
+          {
+            "id": "div_1781354706273_5795",
+            "name": "塔塔儿东部"
+          },
+          {
+            "id": "div_1781354850978_1672",
+            "name": "塔塔儿南缘"
+          },
+          {
+            "id": "div_1781354875218_3811",
+            "name": "塔塔儿·捕鱼儿湖东部"
+          },
+          {
+            "id": "div_1781354907097_181",
+            "name": "塔塔儿·捕鱼儿湖西部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_qongirat",
+        "originalAccounts": 2,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781353125973_7975",
+            "name": "弘吉剌部·东部"
+          },
+          {
+            "id": "div_1781353290805_6476",
+            "name": "弘吉剌部·西部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_ongud",
+        "originalAccounts": 1,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781397870896_989",
+            "name": "阴山西部诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_goryeo",
+        "originalAccounts": 4,
+        "newMapCells": 11,
+        "sourceAccounts": [
+          {
+            "id": "div_1781355615401_4586",
+            "name": "高丽东界·北界"
+          },
+          {
+            "id": "div_1781400368921_7703",
+            "name": "高丽西海道"
+          },
+          {
+            "id": "div_1781400412737_9846",
+            "name": "高丽五道南部"
+          },
+          {
+            "id": "div_1781400471783_6944",
+            "name": "耽罗郡"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_daiviet",
+        "originalAccounts": 10,
+        "newMapCells": 9,
+        "sourceAccounts": [
+          {
+            "id": "div_1781349565199_7418",
+            "name": "广源州"
+          },
+          {
+            "id": "div_1781349824470_5515",
+            "name": "红河三角洲南缘"
+          },
+          {
+            "id": "div_1781349851998_1436",
+            "name": "谅州"
+          },
+          {
+            "id": "div_1781349885159_9314",
+            "name": "峰州"
+          },
+          {
+            "id": "div_1781349900872_5017",
+            "name": "农州"
+          },
+          {
+            "id": "div_1781349920055_2206",
+            "name": "富良府"
+          },
+          {
+            "id": "div_1781349947087_7864",
+            "name": "乂安州"
+          },
+          {
+            "id": "div_1781349981887_9247",
+            "name": "清化府"
+          },
+          {
+            "id": "div_1781349997872_7279",
+            "name": "海东路"
+          },
+          {
+            "id": "div_1781350622895_2856",
+            "name": "升龙京畿"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_pagan",
+        "originalAccounts": 4,
+        "newMapCells": 6,
+        "sourceAccounts": [
+          {
+            "id": "div_1781350142225_295",
+            "name": "上缅甸·蒲甘"
+          },
+          {
+            "id": "div_1781350274495_4414",
+            "name": "若开山地"
+          },
+          {
+            "id": "div_1781350291174_9801",
+            "name": "掸邦北部"
+          },
+          {
+            "id": "div_1781350305715_4661",
+            "name": "下缅甸孟地"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_xinan_tribes",
+        "originalAccounts": 8,
+        "newMapCells": 5,
+        "sourceAccounts": [
+          {
+            "id": "div_1781349366104_7290",
+            "name": "滇黔边诸部"
+          },
+          {
+            "id": "div_1781349402194_181",
+            "name": "强宗·休制诸部"
+          },
+          {
+            "id": "div_1781349430127_9836",
+            "name": "红河上游诸部"
+          },
+          {
+            "id": "div_1781349469455_7821",
+            "name": "特磨道诸部"
+          },
+          {
+            "id": "div_1781349528576_5328",
+            "name": "滇南溪洞诸部"
+          },
+          {
+            "id": "div_1781350070961_7094",
+            "name": "步雄诸部"
+          },
+          {
+            "id": "div_1781350108121_7039",
+            "name": "滇南诸部"
+          },
+          {
+            "id": "div_1781350233006_829",
+            "name": "嶍峨诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_jianchang",
+        "originalAccounts": 2,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781319524909_9396",
+            "name": "建昌南部诸部"
+          },
+          {
+            "id": "div_1781319876963_6025",
+            "name": "建昌诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_nw_yunnan",
+        "originalAccounts": 2,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781320436915_2696",
+            "name": "磨些诸部·滇西北"
+          },
+          {
+            "id": "div_1781320724075_8452",
+            "name": "西洱河诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_wumeng",
+        "originalAccounts": 5,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781319502316_8596",
+            "name": "乌撒诸部"
+          },
+          {
+            "id": "div_1781319647068_4625",
+            "name": "乌蒙乌撒东部诸部"
+          },
+          {
+            "id": "div_1781320525555_5507",
+            "name": "乌蒙诸部"
+          },
+          {
+            "id": "div_1781349341712_5958",
+            "name": "乌蒙乌撒南缘诸部"
+          },
+          {
+            "id": "div_1781350455463_3067",
+            "name": "罗婺诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_jinchi",
+        "originalAccounts": 5,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781350339046_4481",
+            "name": "滇西金齿诸部"
+          },
+          {
+            "id": "div_1781350358486_7868",
+            "name": "金齿诸部·伊洛瓦底上游"
+          },
+          {
+            "id": "div_1781350376226_9266",
+            "name": "金齿诸部·西北山地"
+          },
+          {
+            "id": "div_1781350389190_5641",
+            "name": "金齿诸部·西部山地"
+          },
+          {
+            "id": "div_1781350414374_3519",
+            "name": "金齿诸部·滇缅山地"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_japan",
+        "originalAccounts": 7,
+        "newMapCells": 47,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400616464_643",
+            "name": "西海道·大宰府"
+          },
+          {
+            "id": "div_1781400635057_5515",
+            "name": "南海道·四国"
+          },
+          {
+            "id": "div_1781400651881_7356",
+            "name": "山阳道·山阴道"
+          },
+          {
+            "id": "div_1781400673164_6669",
+            "name": "畿内"
+          },
+          {
+            "id": "div_1781400705823_4094",
+            "name": "东海道"
+          },
+          {
+            "id": "div_1781400715695_6981",
+            "name": "北陆道"
+          },
+          {
+            "id": "div_1781400739769_3153",
+            "name": "东山道·陆奥"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_nanhai",
+        "originalAccounts": 1,
+        "newMapCells": 4,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400517723_5245",
+            "name": "吕宋岛诸邦"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_liuqiu",
+        "originalAccounts": 1,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781396202102_998",
+            "name": "流求岛诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_mai",
+        "originalAccounts": 1,
+        "newMapCells": 1,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400532282_9863",
+            "name": "麻逸·民都洛"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_visayas",
+        "originalAccounts": 1,
+        "newMapCells": 3,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400559624_8594",
+            "name": "米沙鄢诸岛"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_butuan",
+        "originalAccounts": 1,
+        "newMapCells": 1,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400578456_7775",
+            "name": "蒲端国"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_beihai",
+        "originalAccounts": 5,
+        "newMapCells": 8,
+        "sourceAccounts": [
+          {
+            "id": "div_1781400785960_8090",
+            "name": "虾夷地"
+          },
+          {
+            "id": "div_1781400814895_6332",
+            "name": "流鬼诸部"
+          },
+          {
+            "id": "div_1781400840305_8989",
+            "name": "骨嵬诸部"
+          },
+          {
+            "id": "div_1781400860458_8911",
+            "name": "黑水诸部"
+          },
+          {
+            "id": "div_1781400887935_8938",
+            "name": "夜叉诸部"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_luodian",
+        "originalAccounts": 1,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781349316767_8229",
+            "name": "罗殿国"
+          }
+        ]
+      },
+      {
+        "factionId": "fac_ziqi",
+        "originalAccounts": 1,
+        "newMapCells": 2,
+        "sourceAccounts": [
+          {
+            "id": "div_1781349498966_6616",
+            "name": "自杞国"
+          }
+        ]
+      }
+    ]
+  },
+  "notRun": [
+    "new map migration",
+    "new map gameplay integration",
+    "complete client launch",
+    "save/read round trip",
+    "AI campaign"
+  ]
+}

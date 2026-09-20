@@ -65,7 +65,13 @@ async function _endTurn_stageTurnData(ctx, snapshot, canonicalPayload) {
   if (!(window.tianming && window.tianming.isDesktop && GM.saveName && presentation && presentation.turnData)) return true;
   if (typeof window.tianming.stageTurnData !== 'function') throw new Error('桌面回合分卷暂存接口缺失');
   if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷时间线协议需要更新桌面安装包');
+  var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+  if (!reliability || typeof reliability.callTurnBridge !== 'function') throw new Error('桌面分卷等待管理未加载');
+  var stageBridge = window.tianming, stageGM = GM, stageP = P, stageTurn = GM.turn, stageName = GM.saveName, stageGen = window._tmLoadGen || 0;
+  var stageCampaign = String(GM._campaignId || ''), stageTimeline = String(GM._timelineId || '');
+  function stageLeaseCurrent() { return window.tianming === stageBridge && GM === stageGM && P === stageP && GM.turn === stageTurn && GM.saveName === stageName && (window._tmLoadGen || 0) === stageGen && String(GM._campaignId || '') === stageCampaign && String(GM._timelineId || '') === stageTimeline; }
   var checksum = await _endTurn_stateChecksum(snapshot, canonicalPayload);
+  if (!stageLeaseCurrent()) throw new Error('分卷校验期间世界已改变，未发送旧数据');
   var marker = {
     protocolVersion: 2,
     saveName: GM.saveName,
@@ -75,7 +81,7 @@ async function _endTurn_stageTurnData(ctx, snapshot, canonicalPayload) {
     transactionId: String(ctx.meta.transactionId || ''),
     stateChecksum: checksum
   };
-  var result = await window.tianming.stageTurnData(Object.assign({ data: presentation.turnData }, marker));
+  var result = await reliability.callTurnBridge('stageTurnData', Object.assign({ data: presentation.turnData }, marker), { isCurrent: stageLeaseCurrent });
   if (!(result && result.success === true)) throw new Error('回合分卷暂存失败' + (result && result.error ? '：' + result.error : ''));
   ctx.meta.stagedTurnData = marker;
   return true;
@@ -84,14 +90,19 @@ async function _endTurn_stageTurnData(ctx, snapshot, canonicalPayload) {
 async function _endTurn_discardStagedTurnData(ctx) {
   var marker = ctx && ctx.meta && ctx.meta.stagedTurnData;
   if (!marker) return true;
-  try {
-    if (window.tianming && typeof window.tianming.discardTurnData === 'function') await window.tianming.discardTurnData(marker);
-  } finally {
-    if (typeof TM_SaveDB !== 'undefined' && TM_SaveDB && typeof TM_SaveDB.deleteTurnPublishReceipt === 'function') {
-      try { await TM_SaveDB.deleteTurnPublishReceipt(marker); } catch (_) {}
-    }
-    ctx.meta.stagedTurnData = null;
+  var receipt = ctx.meta.canonicalSaveReceipt || (ctx.meta.transaction && ctx.meta.transaction.canonicalSaveReceipt);
+  if (receipt && receipt.state === 'committed') throw new Error('主存档已提交，禁止丢弃待发布分卷');
+  var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+  if (!reliability || typeof reliability.callTurnBridge !== 'function') throw new Error('桌面分卷等待管理未加载');
+  var gm = GM, p = P, generation = window._tmLoadGen || 0;
+  function current() { return GM === gm && P === p && (window._tmLoadGen || 0) === generation && ctx.meta.stagedTurnData === marker; }
+  var result = await reliability.callTurnBridge('discardTurnData', marker, { isCurrent: current });
+  if (!result || result.success !== true) throw new Error('分卷丢弃未确认，保留原有恢复信息');
+  if (typeof TM_SaveDB !== 'undefined' && TM_SaveDB && typeof TM_SaveDB.deleteTurnPublishReceipt === 'function') {
+    if (await TM_SaveDB.deleteTurnPublishReceipt(marker, { writeGuard: current }) !== true) throw new Error('分卷已丢弃但回执清理失败');
   }
+  if (!current()) throw new Error('丢弃分卷期间世界已改变');
+  ctx.meta.stagedTurnData = null;
   return true;
 }
 
@@ -108,7 +119,9 @@ async function _endTurn_publishStagedTurnData(ctx) {
       String((GM && GM._campaignId) || '') === String(marker.campaignId || '') &&
       String((GM && GM._timelineId) || '') === String(marker.timelineId || '');
   }
-  var result = await window.tianming.publishTurnData(marker);
+  var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+  if (!reliability || typeof reliability.callTurnBridge !== 'function') throw new Error('桌面分卷等待管理未加载');
+  var result = await reliability.callTurnBridge('publishTurnData', marker, { isCurrent: publishLeaseCurrent });
   if (!(result && result.success === true)) throw new Error('回合分卷发布失败' + (result && result.error ? '：' + result.error : ''));
   if (!publishLeaseCurrent()) throw new Error('回合分卷发布完成时世界身份已变化');
   if (!(typeof TM_SaveDB !== 'undefined' && TM_SaveDB && typeof TM_SaveDB.deleteTurnPublishReceipt === 'function')) {
@@ -118,6 +131,7 @@ async function _endTurn_publishStagedTurnData(ctx) {
   if (cleared !== true) {
     throw new Error('回合分卷已发布，但 receipt 清理失败');
   }
+  if (!publishLeaseCurrent()) throw new Error('回合分卷清理结束时世界身份已变化');
   ctx.meta.stagedTurnData = null;
   return true;
 }
@@ -127,6 +141,7 @@ async function _endTurn_publishStagedTurnData(ctx) {
 function _endTurn_saveSnapshot(ctx) {
   if (typeof TM_SaveDB === 'undefined' || typeof TM_SaveDB.saveManyAtomic !== 'function' || typeof _buildSaveState !== 'function') return Promise.resolve(false);
   ctx = ctx || { meta: {} };
+  ctx.meta = ctx.meta || {};
   var _endturnSaveGM = GM;
   var _endturnSaveP = P;
   var _endturnSaveLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
@@ -143,6 +158,36 @@ function _endTurn_saveSnapshot(ctx) {
   };
   return (async function() {
     var _canonicalCommitted = false;
+    var _snapshotTask = null;
+    function _saveWarning(stage, error) {
+      var warnings = ctx.meta.turnSaveWarnings || (ctx.meta.turnSaveWarnings = []);
+      if (!warnings.some(function(w) { return w.stage === stage; })) warnings.push({ stage: stage, code: String(error && (error.code || error.name) || 'auxiliary-failure').slice(0, 80) });
+      try { console.warn('[AutoSave] 主存档已提交，附加步骤失败：' + stage, error); } catch (_) {}
+    }
+    function _receiptMatches(receipt) {
+      return receipt && receipt.state === 'committed' && receipt.transactionId === String(ctx.meta.transactionId || '')
+        && Array.isArray(receipt.slots) && receipt.slots.length === 2
+        && ['autosave', 'slot_0'].every(function(id) { return receipt.slots.some(function(slot) {
+          return slot.id === id && slot.turn === _endturnSaveTurn && slot.campaignId === _canonicalIdentity.campaignId && slot.timelineId === _canonicalIdentity.timelineId;
+        }); });
+    }
+    function _acceptCommit(receipt) {
+      if (_canonicalCommitted || !_receiptMatches(receipt)) return;
+      _canonicalCommitted = true;
+      ctx.meta.canonicalSaveReceipt = receipt;
+      if (ctx.meta.transaction) ctx.meta.transaction.canonicalSaveReceipt = receipt;
+      ctx.meta.canonicalWorldSnapshot = _autoState;
+      ctx.meta.canonicalWorldSnapshotMeta = { turn: _endturnSaveTurn, transactionId: String(ctx.meta.transactionId || ''), takeOwnership: true };
+      if (!_endturnSaveStillCurrent()) return;
+      _snapshotTask = Promise.resolve().then(function() {
+        if (typeof StateSnapshot === 'undefined' || !StateSnapshot || typeof StateSnapshot.save !== 'function') return { ok: true, skipped: true };
+        return StateSnapshot.save({ canonicalState: _autoState, canonicalPayload: _canonicalPayload, campaignId: _canonicalIdentity.campaignId, timelineId: _canonicalIdentity.timelineId, turn: _endturnSaveTurn });
+      }).then(function(result) {
+        if (result && result.ok === true) return;
+        _saveWarning('time-snapshot', result && result.error);
+      }, function(error) { _saveWarning('time-snapshot', error); });
+    }
+
     try {
       if (typeof _awaitPostTurnJobsForSave === 'function') {
         await _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
@@ -197,38 +242,35 @@ function _endTurn_saveSnapshot(ctx) {
         type: 'auto', turn: _endturnSaveTurn,
         scenarioName: _sc3 ? _sc3.name : '', eraName: _endturnSaveGM.eraName || ''
       };
+      ctx.meta.acceptReconciledCommit = async function() {
+        if (!_endturnSaveStillCurrent()) throw new Error('核对后的保存不再属于当前世界');
+        _acceptCommit({ state: 'committed', transactionId: String(ctx.meta.transactionId || ''), slots: ['autosave','slot_0'].map(function(id) {
+          return { id: id, turn: _endturnSaveTurn, campaignId: _canonicalIdentity.campaignId, timelineId: _canonicalIdentity.timelineId };
+        }) });
+        if (!_canonicalCommitted) throw new Error('无法确认恢复后的主存档回执');
+        await _snapshotTask;
+        if (!_endturnSaveStillCurrent()) throw new Error('附加快照期间世界已变化');
+        try { _clearPreEndturnMarkerAfterSave(_endturnSavePreId); } catch (_) {}
+        try { if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta); } catch (_) {}
+        try { localStorage.setItem('tm_autosave_mark', JSON.stringify({ turn: _autoMeta.turn, timestamp: Date.now(), scenarioName: _autoMeta.scenarioName, eraName: _autoMeta.eraName })); }
+        catch (_) { /* The verified canonical slots remain authoritative if a UI marker cannot be persisted. */ }
+      };
       var _autoWriteOptions = {
         writeGuard: _endturnSaveStillCurrent,
+        onCommitted: _acceptCommit,
         turnPublishReceipt: ctx.meta.stagedTurnData || null
       };
       var _writeOk = await TM_SaveDB.saveManyAtomic([
         { id: 'autosave', gameState: _autoState, canonicalPayload: _canonicalPayload, meta: _autoMeta },
         { id: 'slot_0', gameState: _autoState, canonicalPayload: _canonicalPayload, meta: _autoMeta }
       ], Object.assign({ transactionId: String(ctx.meta.transactionId || '') }, _autoWriteOptions));
-      if (_writeOk !== true) throw new Error('canonical 回合存档未原子落库');
-      _canonicalCommitted = true;
-      if (!_endturnSaveStillCurrent()) throw new Error('canonical 回合存档完成时世界身份已变化');
-      if (typeof StateSnapshot !== 'undefined' && StateSnapshot && typeof StateSnapshot.save === 'function') {
-        var snapshotResult = await StateSnapshot.save({
-          canonicalState: _autoState,
-          canonicalPayload: _canonicalPayload,
-          campaignId: String(_endturnSaveGM._campaignId || ''),
-          timelineId: String(_endturnSaveGM._timelineId || ''),
-          turn: _endturnSaveTurn
-        });
-        if (!snapshotResult || snapshotResult.ok !== true) {
-          var snapshotError = snapshotResult && snapshotResult.error;
-          console.warn('[StateSnapshot] canonical world committed but time snapshot failed:', snapshotError || snapshotResult);
-        }
-      }
-      // 只把已经与 autosave + slot_0 一起原子提交的独立快照交给桌面自动档；
-      // core 在世界事务 commit 成功后才正式提升，避免保存成功但内存事务身份失效时误发布。
-      ctx.meta.canonicalWorldSnapshot = _autoState;
-      ctx.meta.canonicalWorldSnapshotMeta = {
-        turn: _endturnSaveTurn,
-        transactionId: String(ctx.meta.transactionId || ''),
-        takeOwnership: true
-      };
+      if (_writeOk !== true && !_canonicalCommitted) throw new Error('canonical 回合存档未原子落库');
+      if (!_canonicalCommitted) _acceptCommit({ state: 'committed', transactionId: String(ctx.meta.transactionId || ''), slots: ['autosave', 'slot_0'].map(function(id) {
+        return { id: id, turn: _endturnSaveTurn, campaignId: _canonicalIdentity.campaignId, timelineId: _canonicalIdentity.timelineId };
+      }) });
+      if (!_endturnSaveStillCurrent()) { ctx.meta.stagedTurnData = null; return false; }
+      await _snapshotTask;
+      if (!_endturnSaveStillCurrent()) { ctx.meta.stagedTurnData = null; return false; }
       // 两个 canonical 槽位都提交后，才清恢复点并发布“已安全保存”标志。
       try { _clearPreEndturnMarkerAfterSave(_endturnSavePreId); } catch (_) {}
       try { if (typeof _updateSaveIndex === 'function') _updateSaveIndex(0, _autoMeta); } catch (_) {}
@@ -243,9 +285,17 @@ function _endTurn_saveSnapshot(ctx) {
       return true;
     } catch(e) {
       console.warn('[AutoSave] post-turn save failed:', e);
+      if (e && e.code === 'SAVE_WRITE_UNCONFIRMED' && !_canonicalCommitted) {
+        ctx.meta.saveWriteUnconfirmed = true;
+        if (ctx.meta.transaction) ctx.meta.transaction.saveWriteUnconfirmed = true;
+        throw e; // Do not discard staged data or infer rollback before the storage result is known.
+      }
       if (!_canonicalCommitted) {
         try { await _endTurn_discardStagedTurnData(ctx); } catch (_discardE) { console.warn('[AutoSave] discard staged turn-data failed:', _discardE); }
       } else {
+        _saveWarning('post-commit', e);
+        await _snapshotTask;
+        if (_endturnSaveStillCurrent()) return true;
         // 世界已与 receipt 同事务落库；若此刻恰好跨档，只保留 staging 供该战役下次加载补发。
         ctx.meta.stagedTurnData = null;
       }

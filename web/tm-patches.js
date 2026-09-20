@@ -703,6 +703,7 @@ openSettings=function(){
       // 注:agent-only 调参(记忆深度/自适应深化/工作上下文窗口)已移至「🧪实验模式→🤖Agent 模式」块(仅该模式生效·归位)
       return '<div class="settings-section" style="border-left:3px solid var(--celadon-500,#5a8f7f);background:rgba(126,184,167,0.03);">' +
         '<h4 style="color:var(--celadon-400,#7eb8a7);">⚡ 性能·成本控制</h4>' +
+        '<div id="s-call-budget-controls"></div>' +
         '<div style="font-size:0.72rem;color:var(--txt-d);margin:-0.3rem 0 0.6rem;line-height:1.55;">这些开关控制 AI 调用频率与本地资源使用·默认设置面向"质量优先"。</div>' +
         '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
           '<input type="checkbox" id="s-recall-gate" ' + (_gateOn?'checked ':'') + 'onchange="_togglePConf(\'recallGateEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
@@ -1383,6 +1384,7 @@ openSettings=function(){
     "<button class=\"bt bp\" onclick=\"sSaveAll()\" style=\"width:100%;padding:0.7rem;font-size:1rem;\">\u4FDD\u5B58\u6240\u6709\u8BBE\u7F6E</button>";
 
   if (window.TM && TM.APISettings) TM.APISettings.mount();
+  if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.mount();
   _settingsBuildTabs();
   setTimeout(function(){
     var p=_$("s-prov");if(p&&P.ai.provider)p.value=P.ai.provider;
@@ -1531,6 +1533,7 @@ function _sApplyPrimaryApiFields(){
   if (window.TM && TM.APISettings) TM.APISettings.read('primary', P.ai);
 }
 function sSaveAPI(){
+  try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   _sApplyPrimaryApiFields();
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
   // ★2026-07-01·修「桌面端保存主 API key·关游戏再进就丢」:key 真源在 localStorage.tm_api(启动时 tm-player-core.js:257
@@ -1542,6 +1545,7 @@ function sSaveAPI(){
   toast("\u2705 API\u5DF2\u4FDD\u5B58");
 }
 function sSaveAll(){
+  try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   // 先把主/次 API 面板全部合入内存，最后一次性写 tm_api；旧实现先持久化旧 secondary，
   // 随后只改内存，导致重启恢复旧次 key。
   _sApplyPrimaryApiFields();
@@ -1559,6 +1563,7 @@ function sSaveAll(){
     else if(P.ai) delete P.ai.secondary;
   }
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
+  if (window.TM && TM.CallBudgetSettings) { var callRetryDraft = TM.CallBudgetSettings.readConfig(); if (callRetryDraft) P.conf.aiCallRetryOverrides = callRetryDraft; } // arch-ok: existing settings-save owner commits a fully validated draft.
   // AI 记忆容量设置
   P.conf.memoryAnchorKeep=parseInt(_$("s-mem-anchor")?_$("s-mem-anchor").value:"40")||40;
   P.conf.memoryArchiveKeep=parseInt(_$("s-mem-archive")?_$("s-mem-archive").value:"20")||20;

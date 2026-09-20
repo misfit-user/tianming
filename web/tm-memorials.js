@@ -115,24 +115,31 @@ function _memMarkIllegalPresenter(m, where){
 // tm-save-lifecycle.js captures this function as _origGenMem and calls it from
 // the runtime wrapper, so this original body is live even though the global name
 // is overwritten later.
+// Retain source-bound task reports when ordinary or AI-generated memorials refresh.
+function _memMergeTaskReports(next){
+ var O=typeof TM!=='undefined'&&TM.ImperialOrders;
+ if(O&&O.mergeMemorials)return O.mergeMemorials(GM,next);
+ var keep=(GM.memorials||[]).filter(function(m){return m&&m._taskLedgerGenerated&&!m._playerRead&&!m.read;});
+ var seen=new Set();return keep.concat(next||[]).filter(function(m){var key=m&&(m._taskReportId||m.id);if(key&&seen.has(key))return false;if(key)seen.add(key);return !!m;});
+}
 function generateMemorials(){
   // tokens 预算 16000·原 2-4 份奏疏利用不足·按 tokens 量力而为生成更多
   // 默认提高到 6-10 份·玩家在编辑器可通过 memorialMin/memorialMax 覆盖
   var minCount = P.conf.memorialMin || 6;
   var maxCount = P.conf.memorialMax || 10;
   var count = minCount + Math.floor(random() * (maxCount - minCount + 1));
-  if(!GM.chars || GM.chars.length === 0){ GM.memorials = []; renderMemorials(); return; }
+  if(!GM.chars || GM.chars.length === 0){ GM.memorials = _memMergeTaskReports([]); renderMemorials(); return; }
   // 开局首回合：保留剧本预置奏疏(_sid 标记)·不被生成/AI 覆盖（修「开局空占位奏疏」bug：
   //   绍宋等剧本由 tm-patches 在 doActualStart 把 sc.memorials 真内容载入 GM.memorials，
   //   随后本函数被调用会把它们冲掉，故首回合若已有剧本预置奏疏则原样保留）
   if((GM.turn||1) <= 1){
     var _scMems = (GM.memorials||[]).filter(function(m){ return m && m._sid; });
-    if(_scMems.length){ GM.memorials = _scMems; renderMemorials(); return; }
+    if(_scMems.length){ GM.memorials = _memMergeTaskReports(_scMems); renderMemorials(); return; }
   }
   if(P.ai.key){ genMemorialsAI(count); return; }
   // 无AI：不再凭空生成空占位奏疏（原「<官>奏报：臣以为当务之急…」无实义·只会塞满空奏疏）。
   //   保留剧本预置(若有)·否则留空——等玩家配置 AI 或由剧本作者预置开局奏疏。
-  GM.memorials = (GM.memorials||[]).filter(function(m){ return m && m._sid; });
+  GM.memorials = _memMergeTaskReports((GM.memorials||[]).filter(function(m){ return m && m._sid; }));
   renderMemorials();
 }
 
@@ -583,7 +590,7 @@ async function genMemorialsAI(count){
         if (Array.isArray(GM.evtLog)) _memTopicText += ' ' + GM.evtLog.slice(-6).map(function(e){ return (e && e.text) || ''; }).join(' ');
         if (Array.isArray(GM._candidateEvents)) _memTopicText += ' ' + GM._candidateEvents.slice(0, 12).map(function(e){ return (e && (e.title || '')) + ' ' + (e && (e.payload || '')); }).join(' ');
         var _memMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_memTopicText, [], 10) : [];
-        prompt += _buildTemporalConstraint(null, { mentionedNames: _memMentioned });
+        prompt += _buildTemporalConstraint(null, { mentionedNames: _memMentioned, topic: _memTopicText });
       } catch (_tcMemE) {}
     }
     var c = await callAISmart(prompt, _dynamicMaxTok, {
@@ -691,7 +698,7 @@ async function genMemorialsAI(count){
           localMems.push(mem);
         }
       });
-      GM.memorials = localMems;
+      GM.memorials = _memMergeTaskReports(localMems);
 
       // Phase L·L5/F2/F3·post-spawn·detect 改革反对 / 门生上书 / 同年集会 subtype·写 NPC reformLean / memory
       try {
@@ -943,6 +950,7 @@ function _stageMemorialDecision(m, action, reply, extra) {
   if (!m) return;
   if (_memMarkIllegalPresenter(m, 'decision')) return;
   m.status = action;
+  if(m._taskReportId){m._playerRead=true;var report=(GM._imperialReports||[]).find(function(r){return r.id===m._taskReportId;});if(report)report.state='read';}
   m.reply = reply || '';
   if (extra && extra._referredTo) m._referredTo = extra._referredTo;
   // 清除已提交标记——玩家回合内改变决定后，commit 时重新处理

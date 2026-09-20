@@ -112,7 +112,7 @@ async function _scL2AIGenerate(turnOverride, lease) {
   if (bucketShiji.length) {
     tpL2 += '<shiji-history>\n';
     bucketShiji.forEach(function(s){
-      tpL2 += '  <turn n="' + s.turn + '">' + ((s.shizhengji || s.shilu_text || '').substring(0, 500)) + '</turn>\n';
+      tpL2 += '  <turn n="' + s.turn + '">' + ((window.TM && TM.AIResultContract ? TM.AIResultContract.historyText(s.shizhengji || s.shilu_text || '') : String(s.shizhengji || s.shilu_text || '')).substring(0, 500)) + '</turn>\n';
     });
     tpL2 += '</shiji-history>\n';
   }
@@ -428,7 +428,14 @@ function _runPostTurnJobAttempt(job) {
   job.failureObserved = false;
   job.attempts = (job.attempts || 0) + 1;
   job.totalAttempts = (job.totalAttempts || 0) + 1;
-  job.promise = Promise.resolve().then(job.run).then(function(value) {
+  job.promise = Promise.resolve().then(async function() {
+    var value = await job.run();
+    if (value && value.ok === false) {
+      var error = value.error instanceof Error ? value.error : new Error('后台任务返回失败：' + job.id);
+      error.code = error.code || 'post-turn-result-failed'; throw error;
+    }
+    return value;
+  }).then(function(value) {
     job.status = 'done';
     job.value = value;
     job.lastError = null;
@@ -486,6 +493,21 @@ function _postTurnJobPromiseForWait(job) {
   return job.promise;
 }
 
+async function _awaitPostTurnBatch(waiting, label) {
+  return Promise.all(waiting.map(function(job) {
+    return _postTurnJobPromiseForWait(job).then(function(result) {
+      if (result && result.ok === false) {
+        job.failureObserved = true;
+        var status = Number(result.error && result.error.status) || 0;
+        var error = new Error(label + job.id + (status ? '（HTTP ' + status + '）' : '') + '；必要记忆未完成，未宣布成功');
+        error.code = 'post-turn-critical-failed'; error.status = status;
+        error.postTurnFailures = [{ id:job.id, error:result.error, retryable:!!result.retryable, attempt:result.attempt }];
+        throw error;
+      }
+      return result;
+    });
+  }));
+}
 function _collectPostTurnFailures(waiting, results) {
   var failed = [];
   (results || []).forEach(function(result, index) {
@@ -540,7 +562,7 @@ async function _awaitPostTurnJobsById(ids) {
     return job && ids.indexOf(job.id) >= 0;
   });
   if (!waiting.length) return;
-  var results = await Promise.all(waiting.map(_postTurnJobPromiseForWait));
+  var results = await _awaitPostTurnBatch(waiting, '关键后台任务失败：');
   var failed = _collectPostTurnFailures(waiting, results);
   if (failed.length) {
     var error = new Error('关键后台任务失败：' + failed.map(function(item) { return item.id; }).join(', '));
@@ -611,7 +633,7 @@ async function _awaitPostTurnJobs(opts) {
   var waiting = criticalOnly ? pending.filter(_isCriticalPostTurnJob) : pending.slice();
   var remaining = criticalOnly ? pending.filter(function(job) { return !_isCriticalPostTurnJob(job); }) : [];
   _dbg('[PostTurn] wait', waiting.length, criticalOnly ? 'critical jobs' : 'jobs', 'detach', remaining.length);
-  var results = waiting.length ? await Promise.all(waiting.map(_postTurnJobPromiseForWait)) : [];
+  var results = waiting.length ? await _awaitPostTurnBatch(waiting, '关键后台任务失败：') : [];
   var failed = _collectPostTurnFailures(waiting, results);
   if (failed.length) {
     try {
@@ -654,7 +676,7 @@ async function _awaitPostTurnJobsForSave(ids) {
   }
   if (!wanted.length) return;
   _dbg('[PostTurn] wait before save:', wanted.map(function(job) { return job.id || '?'; }).join(','));
-  var results = await Promise.all(wanted.map(_postTurnJobPromiseForWait));
+  var results = await _awaitPostTurnBatch(wanted, '保存前关键后台任务失败：');
   var failed = _collectPostTurnFailures(wanted, results);
   if (failed.length) {
     var error = new Error('保存前关键后台任务失败：' + failed.map(function(item) { return item.id; }).join(', '));

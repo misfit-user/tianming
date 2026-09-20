@@ -207,6 +207,7 @@
       requiredSubFields: ['action'],
       consumedBy: ['endturn:9597']
     },
+    long_term_memory_updates: { type: 'array', desc: 'Source-bound long-term memory candidates; WriteGate only', requiredSubFields: ['kind', 'memory', 'confidence', 'source_refs'], consumedBy: ['MemoryTurnInference.collectPostTurnCandidates'] },
     character_memory_updates: {
       type: 'array',
       desc: 'AI-proposed character memory candidates; WriteGate only, never direct hard state',
@@ -260,6 +261,30 @@
     letters:            { type: 'array', desc: 'NPC 主动传书' },
     bigyear:            { type: 'object', desc: '大事年（年度事件）·@死字段 零消费(2026-06审计)·待事件系统统一时收编或删，勿新接（见 docs/event-system-unification-design.md）' },
     bigYearEvent:       { type: 'object', desc: '大事年单事件（兼容命名）·@死字段 零消费·同上' },
+
+    // ──────────────────────────────────────────────
+    // 2026-09-18 补登·玩家实测 AI 高频输出但 schema 漏认的字段
+    //   玩家截图 [unknown] 警告刷屏：`turn_summary`/`shizhengji_basis`/`resource_changes`/`faction_ai_outcomes`
+    //   这些字段 prompt 里有引导但 schema 漏认会被误判「AI 幻觉」
+    // ──────────────────────────────────────────────
+    turn_summary:         { type: 'string', desc: '本回合总结（SC1 主叙事压缩版）' },
+    shizhengji_basis:     { type: 'object', desc: '时政记参考依据/出处（人物·地点·事件锚点）' },
+    resource_changes:     { type: 'array', desc: '资源调整（人口/财政/物资）·应走 fiscal/population 通道·此字段仅供兼容' },
+    faction_ai_outcomes:  { type: 'array', desc: '势力 AI 推演结果（sc1c 主产字段·含内政/扩张/外交决策）' },
+
+    // ──────────────────────────────────────────────
+    // 2026-09-18 补登·SC1 主提示史记字段 (prompt 已引导·schema 漏认会误判幻觉)
+    //   玩家第二份截图 `player_status` 被标 unknown。这些字段在 sc1 主 prompt 明确点名，
+    //   在 _buildSc1JsonSchema (tm-endturn-ai.js) 里也都是 string 属性，validator 不跟节奏报幻觉。
+    // ──────────────────────────────────────────────
+    player_status:        { type: 'string', desc: '玩家角色当前政治/生存状态（SC1 主提示点名）' },
+    player_inner:         { type: 'string', desc: '玩家角色内心独白·第一人称（SC1 主提示点名）' },
+    szj_title:            { type: 'string', desc: '时政记副标题（sc1d 主产）' },
+    szj_summary:          { type: 'string', desc: '时政记一句话总结（sc1d 主产）' },
+    zhengwen:             { type: 'string', desc: '政文/史臣曰段落（sc1d 可选字段）' },
+    houren_xishuo:        { type: 'string', desc: '后人戏说段（sc2 可选）' },
+    basis_refs:           { type: 'array',  desc: 'sc1d 时政记/实录依据列表（只读追溯，不写事实）' },
+    office_dismissals:    { type: 'array',  desc: '官职罢免/革职（SC1 提示明确引导）' },
 
     // ──────────────────────────────────────────────
     // 已废弃字段（validator 打 warn 提示迁移）

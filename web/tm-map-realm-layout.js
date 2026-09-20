@@ -10,7 +10,7 @@
   });
 })(typeof window==='object'?window:globalThis,function(){
   'use strict';
-  let regions=new WeakMap(),serial=0;const layouts=new Map(),meshes=new Map(),counts={geometry:0,layouts:0,hits:0,rasterCells:0,meshes:0,meshHits:0},RAD=Math.PI/180;
+  let regions=new WeakMap(),pathSources=new WeakMap(),serial=0;const layouts=new Map(),meshes=new Map(),counts={geometry:0,layouts:0,hits:0,rasterCells:0,meshes:0,meshHits:0},RAD=Math.PI/180;
   // Parsed rings are immutable snapshots; raw in-place edits create new rings in region().
   let ringBands=new WeakMap();
   const workerURL=typeof document==='object'&&document.currentScript?document.currentScript.src:'';
@@ -119,10 +119,14 @@
   function bounds(rings){const b={minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity};for(const r of rings)for(const p of r){b.minX=Math.min(b.minX,p.x);b.minY=Math.min(b.minY,p.y);b.maxX=Math.max(b.maxX,p.x);b.maxY=Math.max(b.maxY,p.y);}b.width=b.maxX-b.minX;b.height=b.maxY-b.minY;return b;}
   function region(r){
     if(!r||typeof r!=='object')return null;const path=r.d||r.path,shape=Array.isArray(r.points)?r.points:Array.isArray(r.polygon)?r.polygon:Array.isArray(r.coords)?r.coords:[],extra=Array.isArray(r.extraPolygons)?r.extraPolygons:[];
-    const signature=path?'path:'+String(path):JSON.stringify([shape,extra]),old=regions.get(r);if(old&&old.signature===signature)return old;
+    const old=regions.get(r);
+    // Immutable strings can hit by source value without rebuilding multi-megabyte signatures.
+    // Arrays and custom stringifiable objects still use the full mutation-aware signature.
+    if(old&&typeof path==='string'&&path&&pathSources.get(r)===path)return old;
+    const signature=path?'path:'+String(path):JSON.stringify([shape,extra]);if(old&&old.signature===signature)return old;
     let rings;if(path)rings=ringsFromPath(path);else{const points=shape.length&&(typeof shape[0]==='number'||typeof shape[0]==='string')?Array.from({length:Math.floor(shape.length/2)},(_,i)=>[shape[i*2],shape[i*2+1]]):shape;rings=[ring(points),...extra.map(ring)].filter(r=>r.length);}
     const b=bounds(rings);let area=0;for(const rr of rings){let depth=0;for(const other of rings)if(other!==rr&&insideRing(other,rr[0].x,rr[0].y))depth++;area+=Math.abs(signedArea(rr))*(depth%2?-1:1);}
-    const value={signature,version:++serial,rings,bounds:b,area:Math.max(0,area)};regions.set(r,value);counts.geometry++;return value;
+    const value={signature,version:++serial,rings,bounds:b,area:Math.max(0,area)};regions.set(r,value);if(typeof path==='string')pathSources.set(r,path);else pathSources.delete(r);counts.geometry++;return value;
   }
   function contains(packs,x,y){for(const p of packs){const b=p.bounds;if(x<b.minX||x>b.maxX||y<b.minY||y>b.maxY)continue;let inside=false;for(const r of p.rings)if(insideRing(r,x,y))inside=!inside;if(inside)return true;}return false;}
   function raster(packs,angle,resolution){
@@ -226,5 +230,5 @@
     return parts.join('');
   }
 
-  return{region,ringsFromPath,contains,fit,fits,anchor,textAspect,administrativeGroups,boundaryMesh,prepare,get stats(){return{...counts,cachedLayouts:layouts.size,preparing:pending.size};},clear(){prepareEpoch++;regions=new WeakMap();ringBands=new WeakMap();layouts.clear();meshes.clear();if(prepareWorker){prepareWorker.terminate();prepareWorker=null;}for(const p of pending.values())p.complete(null);clearTimeout(workerIdle);}};
+  return{region,ringsFromPath,contains,fit,fits,anchor,textAspect,administrativeGroups,boundaryMesh,prepare,get stats(){return{...counts,cachedLayouts:layouts.size,preparing:pending.size};},clear(){prepareEpoch++;regions=new WeakMap();pathSources=new WeakMap();ringBands=new WeakMap();layouts.clear();meshes.clear();if(prepareWorker){prepareWorker.terminate();prepareWorker=null;}for(const p of pending.values())p.complete(null);clearTimeout(workerIdle);}};
 });

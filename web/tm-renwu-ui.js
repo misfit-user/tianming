@@ -29,6 +29,8 @@ var _rwRenderBatchSize=60;
 function _rwIsPanelVisible(){
   var panel=_$("gt-renwu");
   if(!panel)return true;
+  if(panel.isConnected===false||(typeof document!=='undefined'&&document.hidden))return false;
+  if(panel.getClientRects&&!panel.getClientRects().length)return false;
   if(panel.style&&panel.style.display==='none')return false;
   if(panel.style&&(panel.style.display==='block'||panel.style.display==='flex'))return true;
   if(typeof window!=='undefined'&&window.getComputedStyle){
@@ -73,7 +75,7 @@ function _rwRenderEntry(entry,ctx){
   return _rwRenderCard(entry.char,ctx);
 }
 
-function _rwAppendCardsChunked(el,entries,ctx,token,emptyHtml){
+function _rwAppendCardsChunked(el,entries,ctx,token,emptyHtml,force){
   if(!el)return;
   if(!entries||!entries.length){
     el.innerHTML=emptyHtml||'';
@@ -89,6 +91,8 @@ function _rwAppendCardsChunked(el,entries,ctx,token,emptyHtml){
   el.innerHTML=first.join('')||emptyHtml||'';
   function pump(){
     if(token!==_rwRenderBatchToken)return;
+    // Closing a panel must stop its queued DOM work; a later render starts fresh.
+    if(el.isConnected===false||(!force&&!_rwIsPanelVisible())){_rwNeedsRender=true;return;}
     var html='',batchCards=0;
     while(idx<entries.length){
       var entry=entries[idx++];
@@ -111,7 +115,7 @@ function _rwIsPlayerConsort(c) {
 
 function renderRenwu(force){
   var el=_$("rw-grid");var cnt=_$("rw-cnt");if(!el)return;
-  if(!force&&!_rwIsPanelVisible()){_rwNeedsRender=true;return;}
+  if(!force&&!_rwIsPanelVisible()){_rwNeedsRender=true;_rwRenderBatchToken++;return;}
   _rwNeedsRender=false;
   var _sbar=_$("rw-statbar"), _leg=_$("rw-legend");
 
@@ -231,7 +235,7 @@ function renderRenwu(force){
   }
 
   _rwRenderBatchToken++;
-  _rwAppendCardsChunked(el,_entries,_rwCtx,_rwRenderBatchToken,'<div class="rw-empty">\u671D \u91CE \u5BC2 \u5BC2\u3000\u65E0 \u5339 \u914D \u4E4B \u4EBA<br>\u8BD5\u8C03\u62AB\u89C8\u6216\u653E\u5BBD\u7B5B\u9009</div>');
+  _rwAppendCardsChunked(el,_entries,_rwCtx,_rwRenderBatchToken,'<div class="rw-empty">\u671D \u91CE \u5BC2 \u5BC2\u3000\u65E0 \u5339 \u914D \u4E4B \u4EBA<br>\u8BD5\u8C03\u62AB\u89C8\u6216\u653E\u5BBD\u7B5B\u9009</div>',!!force);
 }
 
 /** 派系→CSS 类 */

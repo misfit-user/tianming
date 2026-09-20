@@ -48,7 +48,7 @@ jobs:
         run: node scripts/lint-arch-all.js
       - name: Full smoke suite
         working-directory: web
-        run: node scripts/ci-smokes.js
+        run: node scripts/ci-smokes.js --jobs 2
       - name: Audit checkout probes
         run: node web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean
       - name: Preserve audit evidence
@@ -75,10 +75,15 @@ jobs:
           include-hidden-files: true
           retention-days: 7
 
-  electron-bridge:
-    name: electron-bridge
+  electron-bridge-cases:
+    name: electron-cases (${{ matrix.group }})
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        group: [core, battle, court, authoring, maps, official-authoring, relief]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -91,64 +96,99 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node node_modules/electron/install.js
       - name: Real sandbox bridge, desktop IPC and restart recovery
+        if: matrix.group == 'core'
         run: node scripts/verify-electron-bridge.js
       - name: Desktop startup stays on menu and autosave recovery is opt-in
+        if: matrix.group == 'core'
         run: node scripts/verify-electron-bridge.js --startup-autosave
       - name: Personal campaign real trigger, tactical result and fallback
+        if: matrix.group == 'battle'
         run: node scripts/verify-electron-bridge.js --personal-campaign
       - name: Tactical landscape profiles, picking and real WebGL rendering
+        if: matrix.group == 'battle'
         run: node scripts/verify-electron-bridge.js --tactical-terrain
       - name: Tactical routing, detailed assets, shadows and GPU recovery
+        if: matrix.group == 'battle'
         run: node scripts/verify-electron-bridge.js --tactical-phase2
       - name: Tactical troop models and commander abilities
+        if: matrix.group == 'battle'
         run: node scripts/verify-electron-bridge.js --tactical-units
       - name: Construction appraisal thinking tools and visible feedback
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --building-appraisal
       - name: Edict polish complete text and visible failure recovery
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --edict-polish
       - name: Edict settled text clarity, layout and draft preservation
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --edict-clarity
       - name: Memorial list continuity, drafts and reading preferences
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --memorial-reading
       - name: Character actions, office recommendations and existing appointment flow
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --character-actions
       - name: Edict office creation, recursive tree, appointment target and native save recovery
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --office-writeback
       - name: Right rail pending audiences, navigation and completion feedback
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --rail-badges
       - name: Player feedback army search, local fonts and fatal turn boundary
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --player-feedback
       - name: Treasury, help, rail, edict continuity and primary-secondary API controls
+        if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --seven-ui
       - name: Authoring region paths and real editor persistence
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-regions
       - name: Workshop hierarchy, nested creation and saved editor readback
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --workshop-hierarchy
       - name: Authoring streamed tools, final result, approval and real editor persistence
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-stream
       - name: Guoshi project ownership and read-only execution (real Electron)
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-boundaries
       - name: Guoshi truthful completion and same-project recovery (real Electron)
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-recovery
       - name: Guoshi relay continuation, readable controls and empty administration (real Electron)
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-continuation
       - name: Verify authoring full-permission apply and response recovery
+        if: matrix.group == 'authoring'
         run: node scripts/verify-electron-bridge.js --authoring-autoapply
       - name: Strategic map territory labels, native input and rendering performance
+        if: matrix.group == 'maps'
         run: |
           node scripts/verify-electron-bridge.js --strategic-map
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node scripts/verify-electron-bridge.js --strategic-map --scenario sc-jianyan1-1127-shaosong
+      - name: Default C1 terrain, live labels, native picking and original-map fallback
+        if: matrix.group == 'maps'
+        run: |
+          node scripts/verify-electron-bridge.js --shanhe-map
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --shanhe-map --scenario sc-jianyan1-1127-shaosong
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/verify-electron-bridge.js --shanhe-map --scenario sc-tang840-840
       - name: Startup mode continuation and full native menu flow
+        if: matrix.group == 'maps'
         run: node scripts/verify-electron-bridge.js --startup-mode
       - name: Guoshi bounded progress, instruction retention and actual game consumption
+        if: matrix.group == 'official-authoring'
         run: |
           node scripts/verify-electron-bridge.js --authoring-efficiency
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node scripts/verify-electron-bridge.js --authoring-efficiency --scenario sc-jianyan1-1127-shaosong
       - name: Controlled TLS address binding and redirects
+        if: matrix.group == 'core'
         run: node scripts/verify-remote-tls.js
       - name: Relief pilot official scenarios, real UI and save recovery
+        if: matrix.group == 'relief'
         run: |
           node scripts/verify-electron-bridge.js --relief-pilot
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -157,10 +197,21 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: electron-bridge-${{ github.sha }}
+          name: electron-bridge-${{ matrix.group }}-${{ github.sha }}
           path: web/dev-tools/electron-bridge/**
           if-no-files-found: error
           retention-days: 30
+
+  electron-bridge:
+    name: electron-bridge
+    needs: [electron-bridge-cases]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every original Electron group to pass
+        env:
+          RESULT: ${{ needs.electron-bridge-cases.result }}
+        run: test "$RESULT" = success
 
   mobile-release-contracts:
     name: mobile-release-contracts

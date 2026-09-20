@@ -101,9 +101,28 @@
     var parsed = draftRefs(game, text), refs = parsed.refs;
     if (parsed.errors.length) throw new Error(parsed.errors.join('；'));
     (game.edicts || []).forEach(function(e) {
-      if (!e || e.status !== 'promulgated' || e.turn !== game.turn || !e.buildingOrderRefs || !String(edicts.decree || '').includes(e.text)) return;
-      if (e.buildingBindingText !== e.text) throw new Error('已颁行诏书的营造绑定已变化，请重新颁行');
-      refs = refs.concat(e.buildingOrderRefs);
+      if (!e || e.status !== 'promulgated' || e.turn !== game.turn || !String(edicts.decree || '').includes(e.text)) return;
+      // ★ 2026-09-18·双补丁叠加（修玩家「已颁行诏书的营造绑定已变化」死档）
+      //
+      // 补丁 1·refs 为空直接跳过（另一 AI 贡献·最小防线保留方案）
+      //   病灶：「无营造案的普通诏书」也走 binding 校验——refs=[] + binding='' 时 ''!==text 恒成立
+      //   会被当成「营造绑定已变化」误伤拦截。refs 空 = 无事可核·直接跳过。
+      //
+      // 补丁 2·refs 非空但 binding 失配时自愈（本方·救存量存档）
+      //   玩家存档里已经落盘的 edict 可能 refs=[某营造案] 但 binding=''（早期漏写/合并微调），
+      //   让它 throw 就是死档。refs 是权威索引（营造案 ID 直接指工程），binding 只是 stale 快照——
+      //   binding 不准时收编 refs 而非逼玩家重返档。console.warn 留痕。
+      //
+      // 两道补丁缺一不可：补丁 1 救「普通诏书误伤」·补丁 2 救「refs 非空 + binding 空」存量档。
+      var _refsArr = Array.isArray(e.buildingOrderRefs) ? e.buildingOrderRefs : [];
+      if (!_refsArr.length) return;   // 补丁 1·无营造案·无事可核
+      if (e.buildingBindingText !== e.text) {   // 补丁 2·refs 非空但 binding 失配 → 自愈 + 留 warn
+        try {
+          console.warn('[building-orders] 诏书 binding 与当前 text 不一致·自动对齐 refs 权威·id=' + (e.id || '?') + '·binding.len=' + String(e.buildingBindingText || '').length + '·text.len=' + String(e.text || '').length);
+          e.buildingBindingText = e.text || '';
+        } catch(_healE) {}
+      }
+      refs = refs.concat(_refsArr);
     });
     refs = Array.from(new Set(refs));
     var scope = identity(game), batch = { id: id(), campaign: scope.campaign, timeline: scope.timeline, turn: game.turn || 0, loadGen: root._tmLoadGen || 0, ids: [] };

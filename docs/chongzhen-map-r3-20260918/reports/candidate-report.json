@@ -1,0 +1,36 @@
+{
+  "createdAt": "2026-09-18T05:51:36.688Z",
+  "sourceSha256": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+  "candidateSha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "regions": 307,
+  "groups": 43,
+  "accounts": 382,
+  "mappedAccountIds": 359,
+  "coarse": [
+    "鞑靼土默特部",
+    "哈萨克",
+    "瓦刺",
+    "苦兀（野人女真）",
+    "北哈萨克",
+    "东哈萨克",
+    "科尔沁",
+    "北山女真",
+    "喀尔喀蒙古",
+    "澳门（葡萄牙占）"
+  ],
+  "locationStats": {
+    "characters": {
+      "resolved": 149,
+      "unresolved": 39,
+      "ambiguous": 9,
+      "area": 6
+    },
+    "armies": {
+      "resolved": 37,
+      "ambiguous": 4,
+      "unresolved": 3,
+      "area": 4
+    }
+  },
+  "originalFieldsPreserved": true
+}

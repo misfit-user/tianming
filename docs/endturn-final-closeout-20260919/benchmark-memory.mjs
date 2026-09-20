@@ -1,0 +1,9 @@
+import fs from 'node:fs';import vm from 'node:vm';import crypto from 'node:crypto';import {performance} from 'node:perf_hooks';
+const dir='docs/endturn-final-closeout-20260919',files={before:'web/scripts/fixtures/memory-hybrid-reference.js',after:'web/tm-memory-hybrid.js'};
+const loaded={};for(const [name,file]of Object.entries(files)){const c={console,Map,Set,GM:{}};c.window=c;vm.runInNewContext(fs.readFileSync(file,'utf8'),c,{filename:file});loaded[name]=c.TM.MemoryHybrid;}
+let seed=96331;const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296),words=['黄河','赈灾','漕运','军粮','人物承诺','临安','建康','堤防','税赋','canal','levy','trade'];
+const hits=Array.from({length:360},(_,i)=>({id:'record-'+i,source:'court-'+i%5,text:Array.from({length:75},()=>words[Math.floor(random()*words.length)]).join(' '),entities:['人物'+i%11],turn:i%24}));
+const vectors=hits.filter((_,i)=>i%3===0).reverse(),queries=words.slice(0,8),results={};
+for(const [name,api]of Object.entries(loaded)){const times=[];let last='';for(let k=0;k<9;k++){const t=performance.now(),batch=queries.map(q=>api.fuse(api.lexical(hits,q,60),vectors,20));const elapsed=performance.now()-t;if(k>=2)times.push(elapsed);last=JSON.stringify(batch);}times.sort((a,b)=>a-b);results[name]={medianMs:Number(times[3].toFixed(3)),runs:times,sha256:crypto.createHash('sha256').update(last).digest('hex'),chars:last.length,sourceSha256:crypto.createHash('sha256').update(fs.readFileSync(files[name])).digest('hex')};}
+const out={at:new Date().toISOString(),fixture:{seed:96331,records:360,queries:queries.length,selected:20,warmups:2,measuredRuns:7},results,exactOutput:results.before.sha256===results.after.sha256,description:'Local lexical and RRF/diversity scoring only; identical ordered evidence and scores, no model requests.'};
+fs.writeFileSync(dir+'/memory-benchmark.json',JSON.stringify(out,null,2));console.log(JSON.stringify(out,null,2));if(!out.exactOutput)process.exitCode=1;

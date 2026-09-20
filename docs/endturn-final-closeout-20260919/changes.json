@@ -1,0 +1,611 @@
+[
+  {
+    "file": "web/index.html",
+    "before": "1850162d9e44be87e3812170fc154fdcef41fa4ec3a827697df7e2c7ca824fb3",
+    "after": "dce7b38c2b976ff3f1040e127ea07ff44d60c424597b8ee24a0d11a60c676c19",
+    "at": "2026-09-19T11:14:03.943Z"
+  },
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "before": "c538d832859ab41715e131a08f88bc19cb9d0610640f640886acf579f5e599f4",
+    "after": "3f9bd4079a1ecb4186d6e5c903fb4e58c4c9ea877e196c8157ce98ee5ac51fd9",
+    "at": "2026-09-19T11:14:04.384Z"
+  },
+  {
+    "file": "web/tm-endturn-ai-sc1-budget.js",
+    "before": "d14dd0c00cc49b232bb34d3b19ad6361b0fba2964bf64f130c161c842196168a",
+    "after": "636621fcaa529653c3863626e579fe7a426ff38c02bf97638ccbe960d8d3b98b",
+    "at": "2026-09-19T11:14:04.838Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "180e380b7ae23b2d812ec300fff3d4e4ba44f49d8e2abd62eac630fd71412a55",
+    "after": "129bc73d9bb753c0a98290362cc8f3b8536ae33a84fc34e54de4f52963a7a4ef",
+    "at": "2026-09-19T11:14:04.870Z"
+  },
+  {
+    "file": "web/tm-memory-hybrid.js",
+    "before": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e",
+    "after": "1080e50c78faafbbf4844169a0e452ed55fc458adadc37ad1611d2e552ce2ce3",
+    "at": "2026-09-19T11:14:05.072Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "97031ea842e8fc398d00aaab1fde18164b0b3162266207272f722b78d694ae0f",
+    "after": "fdfa2e4a6ce2a3ec4e4f9474128c6b313c95cffafd7891069874be50cf67daa1",
+    "at": "2026-09-19T11:14:05.250Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "6b35f95f424cd9d8a0b4c140a45b4476de991f69049fa11c8511d745a549275a",
+    "after": "6ce92e08e8af46f3be4e8df86b182366ff901ab2be34b69c199efbf233bbe0fc",
+    "at": "2026-09-19T11:14:05.364Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "dce7b38c2b976ff3f1040e127ea07ff44d60c424597b8ee24a0d11a60c676c19",
+    "after": "1af293ba6e647d855c973350a836d2f97890a2974522be43030639056cf1037c",
+    "at": "2026-09-19T11:14:05.379Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "1af293ba6e647d855c973350a836d2f97890a2974522be43030639056cf1037c",
+    "after": "9bb89ae32776cd1286e2ea8ca2604eced2f3162b8bda7387cbef5f52e0f5beed",
+    "at": "2026-09-19T11:18:23.508Z"
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "before": "401304504682a1cfab5626f1b1273d37f9dd7ee65cf08714bcb397783b91d274",
+    "after": "3b63e612f95545df9a05f75d7f249913fda7c450a31b0d08d4fd664b9c60ba55",
+    "at": "2026-09-19T11:18:23.527Z"
+  },
+  {
+    "file": "web/tm-storage.js",
+    "before": "3665523c70d206b68c2ecdd0f5f8e79b638746d24416b742ca83e2cc4cc83fb6",
+    "after": "10ef95f7dcd126a72438b7828dacac2a4da8a64b80df3bec71ecdb86eda54d71",
+    "at": "2026-09-19T11:18:25.565Z"
+  },
+  {
+    "file": "web/tm-storage.js",
+    "before": "10ef95f7dcd126a72438b7828dacac2a4da8a64b80df3bec71ecdb86eda54d71",
+    "after": "03407f4cf8628ca0c735e6a001f41cdb0c4dc5a0b64e30f4674f1b98dad34576",
+    "at": "2026-09-19T11:18:25.705Z"
+  },
+  {
+    "file": "web/tm-endturn-render.js",
+    "before": "f1a2ed21943d674167afa84e6ee2f8ee1d56de5468161163d6a46e1af4f7e02d",
+    "after": "0a9d93f850f9b7ba94524a8fb3ab206671f9ab09795aaf49ac94515647e7c146",
+    "at": "2026-09-19T11:18:25.726Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "6ce92e08e8af46f3be4e8df86b182366ff901ab2be34b69c199efbf233bbe0fc",
+    "after": "76c28f13561deb637a256da78a8442bc59d685e5370aa7dd6ce36692f57cdf38",
+    "at": "2026-09-19T11:18:25.744Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "9bb89ae32776cd1286e2ea8ca2604eced2f3162b8bda7387cbef5f52e0f5beed",
+    "after": "869c17726d61ab26fc0d78727ae81c160ab4664ca8e76845d8162fa985d43759",
+    "at": "2026-09-19T11:18:25.765Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "cca0afc251d74d2b1f82c8d2e28cc4603b924d10baa2026fc6472dd144a7a7e6",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T11:18:26.415Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "d62fe068785862b58ebe27833df1fd4bb6c353199d8c69d79b8d95fcd8f62da5",
+    "after": "c92271bce2f68db4a5fb8f4a449cf837e8f0603361817a29d94b024215ac1056",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T11:18:26.636Z"
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "before": "3b63e612f95545df9a05f75d7f249913fda7c450a31b0d08d4fd664b9c60ba55",
+    "after": "165dcdfbb3aff7b1c2b9f80b6e016b289baa853e2f15faf7ebbcc4e9c567e4c8",
+    "at": "2026-09-19T11:20:29.608Z"
+  },
+  {
+    "file": "web/scripts/lib-save-commit-boundary.js",
+    "before": "6ba89942d05d8fa84a5ddc8397048dd06f8e790438c31dabed3a929ffd772164",
+    "after": "8fb22037a01f958275b3b7c2691624d2a814501b02cedb071c8daf7bb718e614",
+    "at": "2026-09-19T11:20:29.626Z"
+  },
+  {
+    "file": "web/scripts/lib-perf-round1.js",
+    "before": "394f96d172d3eebb10f7f6636ad4cb996ad3f64e8d56589964281b7ee8183a83",
+    "after": "22335eec4344326beead4ad38b55798348181ed194a58107ebefb43a0d7b289a",
+    "at": "2026-09-19T11:20:29.639Z"
+  },
+  {
+    "file": "web/scripts/smoke-building-appraisal-compat.js",
+    "before": "8ac968434e5b83571f0e94896ba17c537ddbfe1eb7fb813cf60fa4a0d9933937",
+    "after": "02e45393a0c52070dd8c76e571552d10d5c9af1236fad21003c64abb56456d02",
+    "at": "2026-09-19T11:20:29.663Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T11:20:30.059Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "c92271bce2f68db4a5fb8f4a449cf837e8f0603361817a29d94b024215ac1056",
+    "after": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T11:20:30.310Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "a573242550b3c0f9f70ae51823694f3704a64a4929993e5531f19c5e145ef43d",
+    "after": "02f3f1b7638c571127b05a59dc3c4ba584b0ba674156d0e473ff22dabb83d165",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T11:20:30.698Z"
+  },
+  {
+    "file": "web/scripts/lib-perf-round1.js",
+    "before": "22335eec4344326beead4ad38b55798348181ed194a58107ebefb43a0d7b289a",
+    "after": "23e5295e2cc407adfcdec89561a180f5f719adc4f29d5e0135ddf0a12948dd2d",
+    "at": "2026-09-19T11:29:12.486Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-turn-output-contract.js",
+    "before": "033f778005a495687e77f4b2025ad361fc259536ec1f8ac56004b01865ab18d4",
+    "after": "89e294053c665dc68b65f6ff7072287f548113678555be110b360d9c0e5d68dd",
+    "at": "2026-09-19T11:29:12.506Z"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "before": "2104ecdabad2f81f067794265321112561dc4b2661b448090563569df8b9d60e",
+    "after": "a43d88c992548b50deef2fdc311927c6b361dce3747dd5ccc911aaa54c95002f",
+    "at": "2026-09-19T11:29:12.532Z"
+  },
+  {
+    "file": "web/phase8-formal-map-dossier.js",
+    "before": "12599cac2e05eb532fde2785935994f2444c261a85ef6c455d7a6fc15ccde679",
+    "after": "1262f98c3b7097dcbbd4a6af2e035f4cac0a3939d105d3e1503a7d78cf84393d",
+    "at": "2026-09-19T11:29:12.558Z"
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "before": "91fde5fce8c5949eb6c7cc462558ad3a5e8cba7ed7881296647efa1ff25f5b13",
+    "after": "baccf9485321530f177e34e1543350f560ddbec27d0bc30bd21fe0fb12fc15f3",
+    "at": "2026-09-19T11:29:12.711Z"
+  },
+  {
+    "file": "web/tm-endturn-recovery-vault.js",
+    "before": "5b374b975255a5324d0f449ddf6aba2a1cdfd1929ef0837954efcadef1a90204",
+    "after": "d402d0d9d3ffda30ffa51f60847b26c2b8d2684350b1f8ee9328eb7a38f7ee1a",
+    "at": "2026-09-19T12:00:18.792Z"
+  },
+  {
+    "file": "web/tm-endturn-recovery-vault.js",
+    "before": "d402d0d9d3ffda30ffa51f60847b26c2b8d2684350b1f8ee9328eb7a38f7ee1a",
+    "after": "a1e2aac215ddb735eda9bf685179d05d58224f9664f00527d6a8a1ff0b390394",
+    "at": "2026-09-19T12:00:37.922Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "fdfa2e4a6ce2a3ec4e4f9474128c6b313c95cffafd7891069874be50cf67daa1",
+    "after": "e2b9baa4c64f07ee89447339b6aafee5200fd173e2c2c88ebb885369d8675eb6",
+    "at": "2026-09-19T12:00:37.930Z"
+  },
+  {
+    "file": "web/tm-endturn-save-reconcile.js",
+    "before": "41884fd8d6294b411d394893d401e8ba7607f2622dbdc8ac9fb24554b0837d19",
+    "after": "692326b90f3d32ed61b8ed6cf893615d582616e4ee53c7686dd9ea371f3cee20",
+    "at": "2026-09-19T12:03:13.254Z"
+  },
+  {
+    "file": "web/tm-endturn-save-reconcile.js",
+    "before": "692326b90f3d32ed61b8ed6cf893615d582616e4ee53c7686dd9ea371f3cee20",
+    "after": "bd29f9f75b92814588eba64bb3f832f4a88b8c77fc2c58d2246eaff7778c7b8e",
+    "at": "2026-09-19T12:03:37.401Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "e2b9baa4c64f07ee89447339b6aafee5200fd173e2c2c88ebb885369d8675eb6",
+    "after": "6461ccfe9f0bd95c31dc95360718e52f506db2b99dafdafa46a5b5f91f055baa",
+    "at": "2026-09-19T12:07:15.881Z"
+  },
+  {
+    "file": "web/scripts/smoke-endturn-baseline-helpers.js",
+    "before": "5d7a20a50a32611de87d3dcf3326e7450c81d87298741a1cb61885de46a32377",
+    "after": "9a4120651089afb876171ccef52950a42412837e06646e0cd6709e0142579f56",
+    "at": "2026-09-19T12:07:16.052Z"
+  },
+  {
+    "file": "web/scripts/smoke-sc1q-sc19-upgrade.js",
+    "before": "37f43971d5de76d3f047f9ad90bd99c6ac267d90d2d2ad51eee0769eab47304c",
+    "after": "1d423dcaae2b561e7f868d785db4e7e6c3913da92e260312aad386f1a487e5cb",
+    "at": "2026-09-19T12:07:16.072Z"
+  },
+  {
+    "file": "web/scripts/smoke-search-empty-state.js",
+    "before": "b309291df0b5c446888bbcae7c78582e52223220ae3541f76c476aa312cbbe5d",
+    "after": "73413402c05a490628c3076c4ecd784c43ec2b8310be419e5ed0dcfd60d4cdf6",
+    "at": "2026-09-19T12:07:16.084Z"
+  },
+  {
+    "file": "web/scripts/headless-smoke.js",
+    "before": "7395fe5b62d33723eab4fc3c7fbaa8b507a6bf431766725bd46bda396ed6e34a",
+    "after": "e59644e5d34b0cbabfcbf22256a14b433c70d0f8363697ed180019012d020c5f",
+    "at": "2026-09-19T12:12:20.039Z"
+  },
+  {
+    "file": "web/scripts/smoke-search-empty-state.js",
+    "before": "73413402c05a490628c3076c4ecd784c43ec2b8310be419e5ed0dcfd60d4cdf6",
+    "after": "17f587104848969421abb590cc69da9d0379a3d8a4f83c05bbe7e6d9063829a5",
+    "at": "2026-09-19T12:17:40.939Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "20958df720f3b49f35be66e8df16f23c47677ea4ee9f32443b7b9e899fa67d90",
+    "after": "1bfc8cd89d88733fe212007f9e3e245445ff26d6b783685a8731adadf6d55cb0",
+    "at": "2026-09-19T12:20:58.339Z",
+    "externalAdoption": true,
+    "note": "Reviewed five parallel UI/performance test registrations; preserve all existing entries.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/parallel-observed/web/scripts/verify-all.js"
+  },
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "91a6523ea399b6415a5d1a2a802116c3042feb1ea4305207fbe4888baf6d61eb",
+    "after": "19009cda0532e56dc4aa832671825a1d5ee3ef71acf1b19ebafec31188e38268",
+    "at": "2026-09-19T12:20:58.351Z",
+    "externalAdoption": true,
+    "note": "Preserve parallel retained-render changes; only add an explicit AI-geography read guard.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/parallel-observed/web/phase8-formal-map.js"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "1bfc8cd89d88733fe212007f9e3e245445ff26d6b783685a8731adadf6d55cb0",
+    "after": "5b8079b0281f694d0354390b3ff9158bce92e6bb5164e8665f9b7edf65f741df",
+    "at": "2026-09-19T12:20:58.546Z"
+  },
+  {
+    "file": "web/scripts/smoke-final-save-reconcile.js",
+    "before": "f30e5d1b3973b736b443870d952588ddf09fe8a39dc9f02031035bcc883a5596",
+    "after": "65e2d8381c9a667ff5f1f92f2f7710256850c20776ffb68ce230c9fb16917376",
+    "at": "2026-09-19T12:20:58.564Z"
+  },
+  {
+    "file": "web/scripts/smoke-full-turn-flow.js",
+    "before": "9a10a08b942d59e525a8d804f347a1c8ce172d1c96c0ea062893d50d0a266b35",
+    "after": "bff5d81c2fd2cf4a671b7e2a0714ad3d1df1aa4ba8ecb9eefdb1af50fd82f8ed",
+    "at": "2026-09-19T12:20:58.675Z"
+  },
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "19009cda0532e56dc4aa832671825a1d5ee3ef71acf1b19ebafec31188e38268",
+    "after": "3f57c121bdfa622878d9b12272114bc195b67153fcca006b3da6276306903afc",
+    "at": "2026-09-19T12:20:58.695Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T12:23:37.663Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "after": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T12:23:37.863Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "02f3f1b7638c571127b05a59dc3c4ba584b0ba674156d0e473ff22dabb83d165",
+    "after": "a53514ccc9578b819e8d2975d1e1fe0c27294acf7a587bc32a1d68f6ccff11ac",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T12:23:38.199Z"
+  },
+  {
+    "file": "web/tm-endturn-render.js",
+    "before": "0a9d93f850f9b7ba94524a8fb3ab206671f9ab09795aaf49ac94515647e7c146",
+    "after": "5ef619119ff792210583ba6c44596974d2407cef5375752cf6e2fe61644748d5",
+    "at": "2026-09-19T12:25:40.377Z"
+  },
+  {
+    "file": "web/scripts/smoke-full-turn-flow.js",
+    "before": "bff5d81c2fd2cf4a671b7e2a0714ad3d1df1aa4ba8ecb9eefdb1af50fd82f8ed",
+    "after": "90bd575195b06f9c3b7526971bf7bdb684ea2d72cc363f0426b7ecdf171d6fe4",
+    "at": "2026-09-19T12:40:05.580Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "5b8079b0281f694d0354390b3ff9158bce92e6bb5164e8665f9b7edf65f741df",
+    "after": "a77a019c0db534123cd0f06d6410eb704e3c8e247448015627b6e6f49c2abda8",
+    "at": "2026-09-19T12:42:06.802Z",
+    "externalAdoption": true,
+    "note": "Preserve the independently added render-performance-r2 test."
+  },
+  {
+    "file": "web/scripts/run-smokes.js",
+    "before": "b53492fd2f58aa332f4681fb3033e8ec62cf8beb414bed21b07a52b335cbc430",
+    "after": "9da339535dc007935d315b88da8f7b9e463ccfd295f358642b19499524b725de",
+    "at": "2026-09-19T12:42:06.818Z"
+  },
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "before": "3f9bd4079a1ecb4186d6e5c903fb4e58c4c9ea877e196c8157ce98ee5ac51fd9",
+    "after": "c143114e5a7240b0644efa11a207e37726d32a66594b4f0d4c092212726dd286",
+    "at": "2026-09-19T12:43:16.062Z"
+  },
+  {
+    "file": "web/tm-endturn-ai-sc1-budget.js",
+    "before": "636621fcaa529653c3863626e579fe7a426ff38c02bf97638ccbe960d8d3b98b",
+    "after": "f097b48d9ff145ad0b580e5b7173fc5cfad6ddfde4691b08fc8764aa2edb87f8",
+    "at": "2026-09-19T12:43:16.294Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T12:43:21.876Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "after": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T12:43:22.081Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "a53514ccc9578b819e8d2975d1e1fe0c27294acf7a587bc32a1d68f6ccff11ac",
+    "after": "8bfbaa7dc988dfecf9d5ba03ceb1f9ee9a3d11bd587716d40654b0a4c87fd5d9",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T12:43:22.484Z"
+  },
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "3f57c121bdfa622878d9b12272114bc195b67153fcca006b3da6276306903afc",
+    "after": "7c58f367ba53585829ea7bbb03b56334f1145b672b28260c7367b3a238381552",
+    "at": "2026-09-19T12:54:21.779Z",
+    "externalAdoption": true,
+    "note": "Preserve the other window retained mapHTML implementation; own AI-geography guard is intact."
+  },
+  {
+    "file": "web/scripts/smoke-search-empty-state.js",
+    "before": "17f587104848969421abb590cc69da9d0379a3d8a4f83c05bbe7e6d9063829a5",
+    "after": "abd8205decbafc393f510d04d4630215ce06fcd5acdd5c209c9382335f31a21d",
+    "at": "2026-09-19T12:54:21.797Z"
+  },
+  {
+    "file": "web/scripts/headless-smoke.js",
+    "before": "e59644e5d34b0cbabfcbf22256a14b433c70d0f8363697ed180019012d020c5f",
+    "after": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7",
+    "at": "2026-09-19T12:59:28.199Z"
+  },
+  {
+    "file": "web/scripts/smoke-full-turn-flow.js",
+    "before": "90bd575195b06f9c3b7526971bf7bdb684ea2d72cc363f0426b7ecdf171d6fe4",
+    "after": "913216d7b8fb414f4ee19537b97994913c972d680579a036b345c237c2716559",
+    "at": "2026-09-19T12:59:28.218Z"
+  },
+  {
+    "file": "web/scripts/smoke-start-game-data-integrity.js",
+    "before": "423373825df6a237c761583cf6c252fc73d3f1039a4e7640cdf5da2363b1dfe7",
+    "after": "66605e04e727696f77d6885dbca11b192b45f067ca4b0ee0cbea3ba6c1b1c9b5",
+    "at": "2026-09-19T12:59:28.233Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "a28e180e984c186946885c990422b5a594134f5e1100c9308e33b171b945bcb9",
+    "after": "23a73e1341f19103a91adf27c741dd238921bf9991588c086bacb183d65fe53f",
+    "at": "2026-09-19T13:01:00.070Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "869c17726d61ab26fc0d78727ae81c160ab4664ca8e76845d8162fa985d43759",
+    "after": "458b4b113a86d329a61a99c7aa55fe59dc8e40ede738a0564eb4b95930a82550",
+    "at": "2026-09-19T13:02:08.008Z",
+    "externalAdoption": true,
+    "note": "Preserve the explicitly added 2.5D map adapter from the other window; every previous script and order is retained."
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "before": "165dcdfbb3aff7b1c2b9f80b6e016b289baa853e2f15faf7ebbcc4e9c567e4c8",
+    "after": "d9a0b874c41865a31aa90bbf4c1fc92e9cd298de7e1991b63f622361a6db6931",
+    "at": "2026-09-19T13:02:08.021Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T13:03:33.510Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "a77a019c0db534123cd0f06d6410eb704e3c8e247448015627b6e6f49c2abda8",
+    "after": "3d1100402a773110827c51fc295dc9d29eaf8730cf65b54fec91a11306b5a5aa",
+    "at": "2026-09-19T13:37:47.595Z",
+    "externalAdoption": true,
+    "note": "Retain the four new parallel rendering regression registrations and our recovery registrations.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/resume-observed-1789825067592/web/scripts/verify-all.js"
+  },
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "7c58f367ba53585829ea7bbb03b56334f1145b672b28260c7367b3a238381552",
+    "after": "aec24841f044a5dc6b5b69fccc064a87631ec3c3f92152c91f7ab375ee09e569",
+    "at": "2026-09-19T13:37:47.601Z",
+    "externalAdoption": true,
+    "note": "Retain parallel 2.5D map integration and retained-render optimizations; own AI-geography guard is intact.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/resume-observed-1789825067592/web/phase8-formal-map.js"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "401184793f1b5198f10b838d4f9add1ea62085cfa02e7c2a0f62f6bb481f763c",
+    "after": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "at": "2026-09-19T13:37:47.602Z",
+    "externalAdoption": true,
+    "note": "Generated manifest was empty at interrupted generator boundary; regenerate from the current index without changing source load order.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/resume-observed-1789825067592/web/startup-script-phases.json"
+  },
+  {
+    "file": "web/scripts/smoke-start-game-data-integrity.js",
+    "before": "66605e04e727696f77d6885dbca11b192b45f067ca4b0ee0cbea3ba6c1b1c9b5",
+    "after": "b83b454e94071177d2831f5ffd474f443a2543c140841df9064e96c6ae9ba680",
+    "at": "2026-09-19T13:37:47.754Z"
+  },
+  {
+    "file": "web/scripts/smoke-tang840-opening-ledgers.js",
+    "before": "5f726ba117cccc0a796b3e1d137b34c68e49136e8705d7ee48a5824a9abcc00e",
+    "after": "f5f40c8803f0bbc5c97a60278a6a44e898ab02fce3f2acee224cc5eed164d8e2",
+    "at": "2026-09-19T13:37:47.778Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "23a73e1341f19103a91adf27c741dd238921bf9991588c086bacb183d65fe53f",
+    "after": "52a5486e212ffa7d63bfc0a95c645e08c69b925427a92ffa0981cdc18285c78c",
+    "at": "2026-09-19T13:37:47.803Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T13:38:31.880Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "after": "4e22b77ad36346b93c693c7669d11db42b64bffbfa1e1b3681888f9bbd0359cf",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T13:38:32.174Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "8bfbaa7dc988dfecf9d5ba03ceb1f9ee9a3d11bd587716d40654b0a4c87fd5d9",
+    "after": "dc74d86e0a5db4b6a68bd0660c2c7b9dccbbf400582a46d6f9d649a86ae2b2bb",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T13:38:32.602Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "52a5486e212ffa7d63bfc0a95c645e08c69b925427a92ffa0981cdc18285c78c",
+    "after": "ad01fae2ef2541026653d521b62c800f95137a152368bb10901567d6f9d6510a",
+    "at": "2026-09-19T13:41:12.772Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "ad01fae2ef2541026653d521b62c800f95137a152368bb10901567d6f9d6510a",
+    "after": "7694af2a8edfc50c4fc95bf8c41e97b82a004c0131fb2e5282979d7de9b8784e",
+    "at": "2026-09-19T13:46:51.998Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "7694af2a8edfc50c4fc95bf8c41e97b82a004c0131fb2e5282979d7de9b8784e",
+    "after": "d846a91edac97fe564802fa0d062ccf0167ff832f613c1b2d60e52c654a1557c",
+    "at": "2026-09-19T13:51:04.498Z"
+  },
+  {
+    "file": "web/scripts/smoke-tang840-opening-ledgers.js",
+    "before": "f5f40c8803f0bbc5c97a60278a6a44e898ab02fce3f2acee224cc5eed164d8e2",
+    "after": "cc3e76735c007f65f8e81968da46c2bb46a1f3fe6511ad0c612d71f0f5b66cc7",
+    "at": "2026-09-19T13:51:14.383Z"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T13:51:15.165Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "4e22b77ad36346b93c693c7669d11db42b64bffbfa1e1b3681888f9bbd0359cf",
+    "after": "54c4e5bc8144c7a28c992975164bda200e3764d65255aae28c3bd4668e08020d",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T13:51:15.424Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "dc74d86e0a5db4b6a68bd0660c2c7b9dccbbf400582a46d6f9d649a86ae2b2bb",
+    "after": "d53cb244d2d833c72199b53203863f26a945166742582a2e0485f3ead3be7844",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T13:51:16.084Z"
+  },
+  {
+    "file": "web/scripts/smoke-phase8-map-live-panels.js",
+    "before": "f863b3322ff0c1ba53ac933264d63a957243b17849b932dff9fe515b6c49e8a4",
+    "after": "f75aee85662de7b55e2f77d100cf700141997e40412eccfb610c0cc2451b6ba5",
+    "at": "2026-09-19T13:58:59.333Z"
+  },
+  {
+    "file": "web/scripts/smoke-phase8-office-standalone.js",
+    "before": "3f51d27a54f809ec0471eb3416cbb32c29fa112b8eed9702116a4770e6e231ae",
+    "after": "64a6af5b0a5545b0d8cb8129a807b99f32827395e47ca68fac8dcff2c36af27b",
+    "at": "2026-09-19T13:58:59.374Z"
+  },
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "aec24841f044a5dc6b5b69fccc064a87631ec3c3f92152c91f7ab375ee09e569",
+    "after": "ea326ebf9eab60e24cf72bc2dd2958175ebb331c9d2c4f83300dbf4b193acf31",
+    "at": "2026-09-19T14:05:17.244Z",
+    "externalAdoption": true,
+    "note": "Reviewed single-line invalidation of the parallel 2.5D renderer; preserve it without modifying the memory or turn pipeline.",
+    "observedCopy": "docs/endturn-final-closeout-20260919/parallel-observed/map-invalidation-1789826717243.js"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "after": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+    "generator": "web/scripts/build-renderer-modules.js",
+    "at": "2026-09-19T14:07:08.981Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "54c4e5bc8144c7a28c992975164bda200e3764d65255aae28c3bd4668e08020d",
+    "after": "54c4e5bc8144c7a28c992975164bda200e3764d65255aae28c3bd4668e08020d",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "at": "2026-09-19T14:07:09.214Z"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "d53cb244d2d833c72199b53203863f26a945166742582a2e0485f3ead3be7844",
+    "after": "d53cb244d2d833c72199b53203863f26a945166742582a2e0485f3ead3be7844",
+    "generator": "scripts/build-native-preparation-manifest.cjs",
+    "at": "2026-09-19T14:07:09.643Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "d846a91edac97fe564802fa0d062ccf0167ff832f613c1b2d60e52c654a1557c",
+    "after": "0cc3fa5b67992109056e8f37bc815f425dc7e8ffc75c9ef48cf6718a92037835",
+    "at": "2026-09-19T14:50:12.266Z"
+  },
+  {
+    "file": "web/scripts/smoke-start-game-data-integrity.js",
+    "before": "b83b454e94071177d2831f5ffd474f443a2543c140841df9064e96c6ae9ba680",
+    "after": "3c51d3714d7d122372b9d2612768e48687b870119072b62b5e69adfeb43d7fa0",
+    "at": "2026-09-19T14:50:12.394Z"
+  },
+  {
+    "file": "web/scripts/smoke-tang840-opening-ledgers.js",
+    "before": "cc3e76735c007f65f8e81968da46c2bb46a1f3fe6511ad0c612d71f0f5b66cc7",
+    "after": "3f78c63f8e442763a8cc66db08483de237d2bcbad4d702cdc812ddf2e54c75b1",
+    "at": "2026-09-19T14:50:12.409Z"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "before": "0cc3fa5b67992109056e8f37bc815f425dc7e8ffc75c9ef48cf6718a92037835",
+    "after": "9c4808f76230306b7361b3affe1655df9237eed01e46a6c3f1efa470ecb31d19",
+    "at": "2026-09-19T14:56:43.302Z"
+  },
+  {
+    "file": "web/scripts/smoke-start-game-data-integrity.js",
+    "before": "3c51d3714d7d122372b9d2612768e48687b870119072b62b5e69adfeb43d7fa0",
+    "after": "c3c225a7ceb8705c1a70ea30987b74ef534cf2536202b9ce0db6b4d52a869e4b",
+    "at": "2026-09-19T14:56:43.326Z"
+  }
+]

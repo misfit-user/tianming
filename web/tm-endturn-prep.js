@@ -526,7 +526,7 @@ function _endTurn_collectInput() {
   }
 
   // 从诏令文本中提取结构化操作（记录供AI推演参考，由AI决定执行效果）
-  var allEdictText = [edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other, edicts.decree].join(' ');
+  var allEdictText = [edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other, edicts.decree].join('\n');
 
   // 2.2→2.3: 收集执行管线信息注入AI prompt（不做机械效果，效果完全由AI判断）
   if (typeof processEdictEffects === 'function' && allEdictText.trim()) {
@@ -691,6 +691,7 @@ function _endTurn_collectInput() {
 
   if (window.TM && TM.BuildingOrders) input.buildingOrders = TM.BuildingOrders.collect(GM, P, edicts);
   else if (Object.keys(edicts).some(function(k) { return String(edicts[k] || '').indexOf('〔营造案 build-') >= 0; }) || (GM.edicts || []).some(function(e) { return e && e.turn === GM.turn && e.status === 'promulgated' && e.buildingOrderRefs && e.buildingOrderRefs.length; })) throw new Error('营造案核办模块未加载，已停止提交，请重新加载游戏');
+  if (window.TM && TM.ImperialOrders) TM.ImperialOrders.tick(GM);
   return input;
 }
 

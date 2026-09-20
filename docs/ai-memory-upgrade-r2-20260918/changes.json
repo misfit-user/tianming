@@ -1,0 +1,291 @@
+[
+  {
+    "file": "web/index.html",
+    "before": "253f9d660cbcd9a4a77948c0e73a0e72ca5764ded458037aa0704a0619a6a688",
+    "after": "e02d43db0ef6583352de2bf2ab48b463246b7252267051c82602bfbc7edf35c0",
+    "at": "2026-09-18T11:55:53.630Z"
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "44dd7699300a364c33207b2cc9e4b64ced73b1e7c13aba272af71ad86155b123",
+    "after": "9967b71198f7606bb1163b2d8659b61dc07a19e56f0149ef7e52cc8ef65c0f21",
+    "at": "2026-09-18T11:56:10.824Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "2a2a96d1879de01184564f8e87a70052a0058f042fefe29243930f54b865adb9",
+    "after": "c21155a376356e23f6a6068ef9e976f9c18ce918a3cea65f01641bff7b617478",
+    "at": "2026-09-18T11:56:10.850Z"
+  },
+  {
+    "file": "web/tm-memory-writegate.js",
+    "before": "ea6a4fcd7e29c531506f277633f5eaaf447e6dcfbc0f39392a6fcff76f387885",
+    "after": "faa6a112b34a264b066945e51982fe6517bd0b388afbbe849a176ad3a24844e8",
+    "at": "2026-09-18T11:56:10.861Z"
+  },
+  {
+    "file": "web/tm-memory-turn-inference.js",
+    "before": "b789b122669f571d9f29e76eaa8fb8443b6db908c83ff0b55b85ad28618a70a6",
+    "after": "7dbbedc8e6a1f272bcfdfd140785e770c7f578d59d2b7daa1755564906f47572",
+    "at": "2026-09-18T11:56:10.874Z"
+  },
+  {
+    "file": "web/tm-memory-turn-rollup.js",
+    "before": "f2b856fdbcecc2ab672271d39a5dc8f5bd01a8b32eb4883e7eb2cb517748b37f",
+    "after": "39edbcc66be68f163c74588fc4b68eab50bcca3b12fef1a9ea8fe1eaed657b0a",
+    "at": "2026-09-18T11:56:10.884Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "1ae681f90f91be36bd8c6ed9c856faac52047a1bce70c470525f59c21c90f3a8",
+    "after": "1a7c0d53d5e13a0439cbf9f1c3ee0739f33520575cb4b6fd2a0d4afe6ccd9a8b",
+    "at": "2026-09-18T11:56:10.895Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "c5ed6545dc036cee1a2f1599d8977ae464aa4fc116ec95eee52a8d4df6350a72",
+    "after": "9e4574c56d0b401a15bcb0abcefeb41fe287663faa613fa2b1d6e73eda7e11aa",
+    "at": "2026-09-18T11:56:10.918Z"
+  },
+  {
+    "file": "web/tm-ai-output-validator.js",
+    "before": "8cd87b5aa17f7f64b9df44df4537641cef1d3288ad6c16a79a7ac7f65bb66a72",
+    "after": "7241a81a53a14fbd27235206cd7cbee4a49057b2d3c10b462056870233315261",
+    "at": "2026-09-18T11:56:10.930Z"
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "before": "bdd5b037da2c979f55e3cd7b82777ec2a2dff9015124c1876472962108d87056",
+    "after": "0f7853a7af24762264ca9ca67bfe8b6d568df617cf2c780cc28196186b1ea67c",
+    "at": "2026-09-18T11:56:10.941Z"
+  },
+  {
+    "file": "web/tm-ai-infra-model-detect.js",
+    "before": "c03f4ccb70cf179cfa968a48cd5c2a15c00532ccc575bf787dc68f4fb3fa9351",
+    "after": "5e4a64f0cef3dada1d040223e56d6e89dd6c9f14ec7aa575cf41661a85aff3d4",
+    "at": "2026-09-18T11:56:11.256Z"
+  },
+  {
+    "file": "web/tm-player-settings.js",
+    "before": "85e500a3e12871080ad9d3a0c4af3c25564462bac80795a5da49f4167815b4e9",
+    "after": "21ba756328cb3abaee3518c578bbf5c2d6f420b1ee9038fa48933a3ab8048bc7",
+    "at": "2026-09-18T11:56:11.275Z"
+  },
+  {
+    "file": "web/scripts/smoke-model-probe-evidence.js",
+    "before": "77b3386968f27ece6c6540d4098f48e30fefd9409fda0b23cfd4989e196afb40",
+    "after": "90befcd72b04da9d153f851d775c756106787f2c45c3ba3b3b424609a168c310",
+    "at": "2026-09-18T11:56:11.308Z"
+  },
+  {
+    "file": "web/tm-memory-agent-tools.js",
+    "before": "2bc79ddef6ea1136e3960f2ef8215635686cff89f00fbbf36286c3f802fa8fd9",
+    "after": "686e8315a3e4bf0db6dda949c6e2821ebdacc8a6bfa426d264ce9ff5d5525a66",
+    "at": "2026-09-18T12:01:31.637Z"
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "before": "558eea8bceb5b9f9405e1ad2a5d0e3447544cade9f00db7d404f541470f1bc46",
+    "after": "8f549041deaece13b2c9db2f8662ba81d617d63621531ff75455522d6b1ad813",
+    "at": "2026-09-18T12:05:38.552Z"
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "before": "8f549041deaece13b2c9db2f8662ba81d617d63621531ff75455522d6b1ad813",
+    "after": "1de728910a44748dc5296b2afc7f6e2a51b6ce0bafe9e4721b60b7aff1fb400e",
+    "at": "2026-09-18T12:06:53.102Z"
+  },
+  {
+    "file": "web/tm-memory-steward.js",
+    "before": "b66885ea557d11ce067952b358f6824f00a8dc6d02df62886ac58d3cb760f834",
+    "after": "2304261e654457b04e78cf076588762084e3121226ea9d511a2236e1e888ea47",
+    "at": "2026-09-18T12:06:53.322Z"
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "before": "0f7853a7af24762264ca9ca67bfe8b6d568df617cf2c780cc28196186b1ea67c",
+    "after": "6a13ddec72c3e82b9958cb3e780d0841d02fe991481ffe9c90242dd71c54b34e",
+    "at": "2026-09-18T12:09:02.809Z"
+  },
+  {
+    "file": "web/tm-ai-output-validator.js",
+    "before": "7241a81a53a14fbd27235206cd7cbee4a49057b2d3c10b462056870233315261",
+    "after": "be623a2b5aeeb0bfbcd31421c01c6835a4cea335efb2e3ce7f69912ee756c1d4",
+    "at": "2026-09-18T12:09:02.828Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "c21155a376356e23f6a6068ef9e976f9c18ce918a3cea65f01641bff7b617478",
+    "after": "7bbc5fc326a34a09e9335dac0550d7ce67f646df168a0198e77d7c2e7f097395",
+    "at": "2026-09-18T12:09:02.839Z"
+  },
+  {
+    "file": "web/tm-memory-hybrid.js",
+    "before": "f5c9c485401b6fa176d9cb525195f0ea41416a1b301b0267d487e1a54783f3dd",
+    "after": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e",
+    "at": "2026-09-18T12:09:02.853Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "9e4574c56d0b401a15bcb0abcefeb41fe287663faa613fa2b1d6e73eda7e11aa",
+    "after": "e8b06ed59ee1afd3ffff493db401c339aa9e909fa93bbfa8dab0e894595a660b",
+    "at": "2026-09-18T12:09:02.893Z"
+  },
+  {
+    "file": "web/tm-ai-infra-model-detect.js",
+    "before": "5e4a64f0cef3dada1d040223e56d6e89dd6c9f14ec7aa575cf41661a85aff3d4",
+    "after": "df8768238a79f3c6a7ebee19c2b3a1a87d2353a3bfccc3d39a6682bf99d9f7f4",
+    "at": "2026-09-18T12:09:02.938Z"
+  },
+  {
+    "file": "web/tm-memory-adaptive.js",
+    "before": "f100288beb66afe7a04250b6e0ca5e293a255f265b24d337322a0f6f3c43e0b3",
+    "after": "4b4095a2d61b70cab6724e64ff30fce509abce9307115ea8d86622390b75b110",
+    "at": "2026-09-18T12:15:09.172Z"
+  },
+  {
+    "file": "web/tm-memory-agent-tools.js",
+    "before": "686e8315a3e4bf0db6dda949c6e2821ebdacc8a6bfa426d264ce9ff5d5525a66",
+    "after": "e0927b8125fab1453bdce3800a687634f85ea34cef20bdd8ee66842a17fb5cdc",
+    "at": "2026-09-18T12:15:09.195Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "ed6ac1fc10877b9cfb50f1ce28297b2c773df3dee3383316c19401b2831a2a67",
+    "after": "c8c79bddb263f2e8e5b231a32a169fe4302ad142095fc153a71572a8539e47de",
+    "at": "2026-09-18T12:21:22.722Z"
+  },
+  {
+    "file": "web/tm-ai-infra-model-detect.js",
+    "before": "df8768238a79f3c6a7ebee19c2b3a1a87d2353a3bfccc3d39a6682bf99d9f7f4",
+    "after": "c86043193898fd1798d9fea0069b4d9e7b52f06254c71643cfc46c3ccee03694",
+    "at": "2026-09-18T12:21:22.747Z"
+  },
+  {
+    "file": "web/tm-player-settings.js",
+    "before": "21ba756328cb3abaee3518c578bbf5c2d6f420b1ee9038fa48933a3ab8048bc7",
+    "after": "d343eec7b393dc37f36473677fb7c82fddd7580e856ab5ce319f679cf5caa187",
+    "at": "2026-09-18T12:21:22.777Z"
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "before": "1de728910a44748dc5296b2afc7f6e2a51b6ce0bafe9e4721b60b7aff1fb400e",
+    "after": "88bb0cf1d02c60e25c68a0da4e4ec6ac378c2c41cca0077fe53c585046284799",
+    "at": "2026-09-18T12:21:22.796Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "c8c79bddb263f2e8e5b231a32a169fe4302ad142095fc153a71572a8539e47de",
+    "after": "935067a4ec44215e714c75363dd6736eac1a5b10c92beb85ccf2132e7d299470",
+    "at": "2026-09-18T12:21:22.816Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-adaptive-upgrade.js",
+    "before": "c10b361ea1c122e6dc7fa1999e97c098490772b2c2b37cca8f862af2185da58f",
+    "after": "fa3c473c5dfc8dac7b73cadaeff0ddc2e8f54ded822da9c0b4af36bcbe35e410",
+    "at": "2026-09-18T12:21:22.868Z"
+  },
+  {
+    "file": "web/tm-memory-long-term.js",
+    "before": "4106d826f3c127d96a0b7c070d0b8e09930a1367cea31a0bc0b545d50d8d9bf8",
+    "after": "1e99c5d94db05a85af789d4020f37822229bedd50656b91bef8c6ee182974b14",
+    "at": "2026-09-18T12:21:23.106Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "7bbc5fc326a34a09e9335dac0550d7ce67f646df168a0198e77d7c2e7f097395",
+    "after": "83cf6b5435d28b7a5b7e947afcae25beea0a9d7e4dfc54e2cf0b7e8ab9ce8f49",
+    "at": "2026-09-18T12:21:23.134Z"
+  },
+  {
+    "file": "web/tm-memory-controls.js",
+    "before": "b6cad9f90500a2d91b339760f5d7a76b3806628b1f96b1bd0d9851fe841666d6",
+    "after": "86765bf34b6b36782c3a739fdaabb124bc32a512097b07596001761219527ac7",
+    "at": "2026-09-18T12:21:23.146Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-model-detection.js",
+    "before": "70baacaa30e6664cac8e9a3cdf2deced89162872a31cf66839d0991541bc08b0",
+    "after": "fdae33e7cb67e3e0b5236d6186d46b6056c452329f23f6f4ed2b41095ba328f2",
+    "at": "2026-09-18T12:22:02.159Z"
+  },
+  {
+    "file": "web/scripts/lib-memory-upgrade-r2.js",
+    "before": "8e839138c65ebaf41199337c923056921ccf8eb9636db5ef66c878a9b5e0c1e3",
+    "after": "d85cff8b54b56f8929b7ea0f1bf8d6e1728a533ae25aa1fc798358fe3e232166",
+    "at": "2026-09-18T12:22:02.184Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-adaptive-upgrade.js",
+    "before": "fa3c473c5dfc8dac7b73cadaeff0ddc2e8f54ded822da9c0b4af36bcbe35e410",
+    "after": "d5e88bd2622a0cb15a58372aa7e29dc72b58c66b9690505155a3f6118a0ba3f0",
+    "at": "2026-09-18T12:22:02.238Z"
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "before": "88bb0cf1d02c60e25c68a0da4e4ec6ac378c2c41cca0077fe53c585046284799",
+    "after": "2a90706d784b26277315a22765e139d0417d80a1ea927d4a858725bb6b569dce",
+    "at": "2026-09-18T12:27:07.882Z"
+  },
+  {
+    "file": "web/tm-player-settings.js",
+    "before": "d343eec7b393dc37f36473677fb7c82fddd7580e856ab5ce319f679cf5caa187",
+    "after": "f229b0cd256dbfcd045e929733d8b639c5e08597af71114f192a869ffe05571e",
+    "at": "2026-09-18T12:27:07.906Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-vector-upgrade.js",
+    "before": "44ddceb6e5ce39ad21eeae04c503001b5488ab57647efcb114299002aac358a4",
+    "after": "6bea7dd740a4dcabacd681f30643c8da3edb4ffdd093de98490c227e599305b2",
+    "at": "2026-09-18T12:27:07.919Z"
+  },
+  {
+    "file": "web/tm-memory-long-term.js",
+    "before": "1e99c5d94db05a85af789d4020f37822229bedd50656b91bef8c6ee182974b14",
+    "after": "295ee128b5c3c6482c27da9d5e59f1a823a9685b0c9a12c41cf51e5b65beffe4",
+    "at": "2026-09-18T12:27:08.236Z"
+  },
+  {
+    "file": "web/tm-memory-adaptive.js",
+    "before": "4b4095a2d61b70cab6724e64ff30fce509abce9307115ea8d86622390b75b110",
+    "after": "b5b8b40857a2e4ccf02e108ac95e78d12a067e28c98714bb5eb2dc4a9fd514ca",
+    "at": "2026-09-18T12:27:08.297Z"
+  },
+  {
+    "file": "web/tm-ai-output-validator.js",
+    "before": "be623a2b5aeeb0bfbcd31421c01c6835a4cea335efb2e3ce7f69912ee756c1d4",
+    "after": "75e19e72780bd6e7e2ca4e982c3a437ace7aff93a77d6e18a89adf9c1dca4c59",
+    "at": "2026-09-18T12:32:05.131Z"
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "before": "6a13ddec72c3e82b9958cb3e780d0841d02fe991481ffe9c90242dd71c54b34e",
+    "after": "b05395956ee36f56470ace52fbaf7383db9ba74b145db49dc4c5e6d5ef8f21cb",
+    "at": "2026-09-18T12:32:05.637Z"
+  },
+  {
+    "file": "web/tm-ai-infra-model-detect.js",
+    "before": "c86043193898fd1798d9fea0069b4d9e7b52f06254c71643cfc46c3ccee03694",
+    "after": "800ce02cf730729918394a3bb2db4a96db5e48ec41c42eadfcec57a31842aa3c",
+    "at": "2026-09-18T12:32:06.140Z"
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "before": "2a90706d784b26277315a22765e139d0417d80a1ea927d4a858725bb6b569dce",
+    "after": "ef15a574eb6ecdcd1ed05d00d217797ca3f42203849581c99776c6222d427e71",
+    "at": "2026-09-18T12:32:07.957Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-adaptive-upgrade.js",
+    "before": "d5e88bd2622a0cb15a58372aa7e29dc72b58c66b9690505155a3f6118a0ba3f0",
+    "after": "f867e38fcaaa1bbfdb64b38dcc70908a2e4b3b8e2568f9d5ec2be6f8bcf30b30",
+    "at": "2026-09-18T12:38:52.337Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "99b138f8da1d62707a95394cbcfbcf488e0ed80fb1655a5b7ae7ebec1b310c01",
+    "after": "c144584cfc961c9917d2945183b0721480157bc3e64da89784babcaed082a7c0",
+    "at": "2026-09-18T12:44:39.548Z",
+    "generatedBy": "web/scripts/build-startup-phase-manifest.js"
+  }
+]

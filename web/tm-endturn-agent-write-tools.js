@@ -614,7 +614,33 @@
   }
 
   // ── 通用守护写工具(3) + 语义写工具(4·硬核账走引擎) + 删除(1) ──
+  function _semSocial(gm, input, kind) {
+    if (!gm || !TM.SocialFormation) return {ok:false,reason:'新群体登记模块未加载'};
+    var out = kind === 'party' ? TM.SocialFormation.createParty(gm,input,{source:'agent.form_party'}) : TM.SocialFormation.createClass(gm,input,{source:'agent.emerge_class'});
+    if (out.ok && out.changed) _report(gm,{type:kind+'_create',path:out.path,new:out.entity.name,reason:input.reason,turn:gm.turn||0,_agent:true,_op:kind==='party'?'form_party':'emerge_class'});
+    return out;
+  }
+  function _semOfficeCreate(gm,input) {
+    if (!gm || !TM.OfficeCreation || typeof root.applyReformToTree !== 'function') return {ok:false,reason:'官制创建入口未加载'};
+    var change = TM.OfficeCreation.normalize(input);
+    if (!change) return {ok:false,reason:'action须为create_department或create_position'};
+    var plan = TM.OfficeCreation.prepare(gm.officeTree || [],change);
+    if (!plan.ok) return {ok:false,reason:plan.summary};
+    if (plan.unchanged) return {ok:true,changed:false,path:'officeTree/'+(plan.node.id||plan.node.name)};
+    if (typeof root.officeFlagOn === 'function' && root.officeFlagOn('officeReformAdjudicationEnabled') && typeof root.enqueuePendingReform === 'function') {
+      var queued=root.enqueuePendingReform(gm,change);
+      if (queued) _report(gm,{type:'office_creation_pending',path:'officeTree/'+plan.node.name,reason:input.reason||'设署设职待议',turn:gm.turn||0,_agent:true,_op:'create_office'});
+      return {ok:true,changed:!!queued,deferred:true,verified:false,path:'officeTree/'+plan.node.name,summary:'设署设职方案已进入既有审批流程，尚未开设或任命'};
+    }
+    var result=root.applyReformToTree(gm,change);
+    if (result.applied) _report(gm,{type:'office_create',path:'officeTree/'+(result.nodeId||plan.node.name),reason:input.reason||result.summary,turn:gm.turn||0,_agent:true,_op:'create_office'});
+    return {ok:!!(result.applied||result.unchanged),changed:!!result.applied,reason:result.summary,path:'officeTree/'+(result.nodeId||plan.node.name)};
+  }
+
   var DEFS = [
+    {"name":"form_party","description":"登记本局实际形成的新党派。需要在册领袖/成员或已有阶层社会基础，以及本局形成依据。不能用push_field向parties追加。","parameters":{"type":"object","properties":{"name":{"type":"string"},"leader":{"type":"string"},"members":{"type":"array","items":{"type":"string"}},"ideology":{"type":"string"},"currentAgenda":{"type":"string"},"influence":{"type":"number"},"crossFaction":{"type":"boolean"},"socialBase":{"type":"array","items":{"type":"object","properties":{"class":{"type":"string"},"affinity":{"type":"number"}},"required":["class"]}},"reason":{"type":"string"}},"required":["name","reason"]}},
+    {"name":"emerge_class","description":"登记经济与社会演化已形成的新阶层。给出经济基础和来源；人口不凭空产生，只有明确fromClass和populationCount才从旧人口账转入。","parameters":{"type":"object","properties":{"name":{"type":"string"},"economicRole":{"type":"string"},"origin":{"type":"string"},"fromClass":{"type":"string"},"populationCount":{"type":"integer","minimum":0},"populationKeys":{"type":"array","items":{"type":"string"}},"representativeNpcs":{"type":"array","items":{"type":"string"}},"demands":{"type":"string"},"size":{"type":"string"},"reason":{"type":"string"}},"required":["name","economicRole","reason"]}},
+    {"name":"create_office","description":"设立新部门或在已有部门增设新官职，走正式官制创建/审批，不自动任命。action=create_department/create_position；dept部门名，position官职名，parentDept可指定上级。","parameters":{"type":"object","properties":{"action":{"type":"string","enum":["create_department","create_position"]},"dept":{"type":"string"},"position":{"type":"string"},"parentDept":{"type":"string"},"rank":{"type":"string"},"establishedCount":{"type":"integer","minimum":1},"positions":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"rank":{"type":"string"},"establishedCount":{"type":"integer"},"duties":{"type":"string"}},"required":["name"]}},"reason":{"type":"string"}},"required":["action","dept","reason"]}},
     { name: 'set_field', description: '设置存档任意字段为新值(路径化)。如 path="chars.0.mood" value="忧"。用于剧情/心境/关系等软字段。【勿用于国库/任职等硬核结构化账·那些用 adjust_treasury/appoint_official】', parameters: { type: 'object', properties: { path: { type: 'string' }, value: { description: '新值·任意类型(数/串/对象/数组)' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'value'] } },
     { name: 'adjust_field', description: '对数值字段增减(在原值上 +delta)。如 path="minxin" delta=-5。用于软数值。【国库增减用 adjust_treasury·勿裸改 guoku】', parameters: { type: 'object', properties: { path: { type: 'string' }, delta: { type: 'number' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'delta'] } },
     { name: 'push_field', description: '向已声明的事件日志 evtLog 追加一项，value 必须是 {turn?,type?,text,time?} 且 text 非空。人物/战争/奏疏/灾害等集合必须用对应领域工具。', parameters: { type: 'object', properties: { path: { type: 'string', description: '当前只允许 evtLog' }, value: { type: 'object', properties: { turn: { type: 'integer', minimum: 0 }, type: { type: 'string' }, text: { type: 'string' }, time: { type: 'string' } }, required: ['text'], additionalProperties: false }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'value'] } },
@@ -641,7 +667,8 @@
     if (/treasury|fiscal/.test(name)) return 'fiscal';
     if (/army|battle/.test(name)) return 'military';
     if (/diplomatic|region_owner/.test(name)) return 'diplomacy';
-    if (/official|character/.test(name)) return 'personnel';
+    if (/official|character|office/.test(name)) return 'personnel';
+    if (/party|class/.test(name)) return 'social';
     if (/building/.test(name)) return 'building';
     if (/division|region|capital/.test(name)) return 'geography';
     return 'state';
@@ -650,7 +677,7 @@
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
       risk: /remove|restructure|diplomatic|region_owner|relocate/.test(d.name) ? 'high' : 'medium',
-      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle',
+      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle' || ['form_party','emerge_class','create_office'].includes(d.name),
       postconditions: ['返回标准 ToolReceipt', '写入成功必须进入 _turnReport'],
       invariants: ['玩家身份不可删除或改写', '正式账优先走领域引擎']
     });
@@ -680,6 +707,9 @@
       case 'dismiss_official': r = _semDismiss(gm, input); break;
       case 'remove_field':     r = _semRemove(gm, input); break;
       case 'adjust_fiscal_item': r = _semFiscalItem(gm, input); break;
+      case 'form_party': r = _semSocial(gm,input,'party'); break;
+      case 'emerge_class': r = _semSocial(gm,input,'class'); break;
+      case 'create_office': r = _semOfficeCreate(gm,input); break;
       case 'command_army':       r = _semArmy(gm, input); break;
       case 'resolve_battle':     r = _semBattle(gm, input); break;
       case 'diplomatic_action':  r = _semDiplomacy(gm, input); break;
@@ -694,7 +724,7 @@
     var reportAfter = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     if (r && r.ok && r.changed == null) r.changed = reportAfter > reportBefore;
     if (r && r.ok && r.verified == null) r.verified = true;
-    var text = r.deferred ? '✓ 战斗已登记，待玩家亲征或委任后结算；尚未扣兵/占领，不得重复写同场后果。' : r.ok
+    var text = r.deferred ? (r.summary || '✓ 战斗已登记，待玩家亲征或委任后结算；尚未扣兵/占领，不得重复写同场后果。') : r.ok
       ? (r.changed === false
         ? '○ 无需改 ' + (r.path || input.path || r.target || r.region || name) + '（当前值已满足·不计为落地）'
         : '✓ 已改 ' + (r.path || input.path || r.target || r.region || name) + (r.old !== undefined ? ' :' + _brief(r.old) + '→' + _brief(r.new) : (r.new !== undefined ? ' =' + _brief(r.new) : '')) + '(已落地·入回合报告)')

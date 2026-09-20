@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Isolated API wait compatibility</title><pre id="result">pending</pre>
+<div id="settings-bg" class="show"><div><label>Model</label><input id="s-model" value="custom-model"></div><input id="s-url"><input id="s-key" value="fixture-only"><input id="s-prov"><div><label>Secondary</label><input id="s-sec-model" value="custom-model"></div><input id="s-sec-url"><input id="s-sec-key" value="fixture-only-secondary"><input id="s-sec-prov"></div>
+<script>
+var P={ai:{url:location.origin,key:'fixture-only',model:'custom-model',minInterval:1,maxConcurrent:1,secondary:{key:'fixture-only-secondary',url:location.origin,model:'custom-model'}},conf:{}},GM={turn:10,_campaignId:'synthetic',_timelineId:'synthetic'};
+var notices=[];function toast(t){notices.push(t);}
+</script>
+<script src="/tm-ai-infra-json.js"></script><script src="/tm-ai-infra-retry.js"></script><script src="/tm-ai-infra.js"></script><script src="/tm-ai-request-options.js"></script><script src="/tm-api-settings.js"></script>
+<script>
+TM.APIModels={endpoint:()=>({mode:'openai'})};function _buildAIUrl(){return location.origin+'/tools';}function _aiEffectiveTierIsSecondary(){return false;}
+(async()=>{var checks=[];function ok(v,n){if(!v)throw Error(n);checks.push(n);}try{
+ var body={model:'custom-model',messages:[{role:'user',content:'完整正文与全部推演依据。'}],max_tokens:16000};
+ var start=performance.now(),r=await _aiFetchWithRetry(location.origin+'/chat',body,null,{timeoutMs:300,maxRetries:0});
+ ok(r.choices[0].message.content==='完整正文，不能删减。'.repeat(500),'真实 HTTP 延迟正文完整返回');ok(performance.now()-start>=650,'响应晚于旧首响应期限仍成功');
+ var limited=false;try{await _aiFetchWithRetry(location.origin+'/chat',body,null,{timeoutMs:300,totalResponseTimeoutMs:200,maxRetries:0});}catch(e){limited=e.code==='AI_REQUEST_DEADLINE';}ok(limited,'显式总期限仍有效');
+ var auto={model:'custom-model',messages:body.messages};var text=await callAIBodyStream(auto,{timeoutMs:300});ok(text==='完整工具或流式正文','自动输出无 max_tokens 的流式入口成功');
+ var result=await callAIWithTools('全部推演',[{name:'inspect',parameters:{type:'object'}}],{timeoutMs:300});ok(result.toolCalls[0].input.deep===true,'原生工具长等待保留完整参数');
+ var ctrl=new AbortController(),p=_aiFetchWithRetry(location.origin+'/chat',body,ctrl.signal,{timeoutMs:300,maxRetries:3});setTimeout(()=>ctrl.abort(),100);var cancelled=false;try{await p;}catch(e){cancelled=e.code==='AI_ABORTED';}ok(cancelled,'读取正文期间取消，不重发');
+ TM.APISettings.mount();ok(document.getElementById('s-total-response-wait').value==='0','设置默认不强制截断');
+ document.getElementById('s-first-response-wait').value='60';document.getElementById('s-total-response-wait').value='900';var draft={};TM.APISettings.read('primary',draft);ok(draft.firstResponseTimeoutMs===60000&&draft.totalResponseTimeoutMs===900000,'时间设置通过原保存 owner 读取');
+ ok(!Object.hasOwn(draft,'thinking'),'未强制开启或关闭模型思考');var secondary={};TM.APISettings.read('secondary',secondary);ok(secondary.totalResponseTimeoutMs===0,'主次 API 限制各自保存');
+ ok(_aiWaitSnapshot().length===0,'完成与取消后清理等待记录');document.getElementById('result').textContent=JSON.stringify({ok:true,checks});
+}catch(e){document.getElementById('result').textContent=JSON.stringify({ok:false,checks,error:e.stack});}})();
+</script>

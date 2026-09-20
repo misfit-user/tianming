@@ -1,0 +1,69 @@
+{
+  "at": "2026-09-19T14:56:42.943Z",
+  "moved": [
+    {
+      "name": "ai-memory-upgrade-r2-20260918",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\ai-memory-upgrade-r2-20260918",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\ai-memory-upgrade-r2-20260918",
+      "bytes": 627845,
+      "files": 52
+    },
+    {
+      "name": "endturn-reliability-20260918",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-reliability-20260918",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\endturn-reliability-20260918",
+      "bytes": 599438,
+      "files": 49
+    },
+    {
+      "name": "endturn-recovery-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-recovery-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\endturn-recovery-20260919",
+      "bytes": 488822,
+      "files": 38
+    },
+    {
+      "name": "endturn-commit-reliability-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-commit-reliability-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\endturn-commit-reliability-20260919",
+      "bytes": 461679,
+      "files": 31
+    },
+    {
+      "name": "snapshot-deadlines-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\snapshot-deadlines-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\snapshot-deadlines-20260919",
+      "bytes": 285955,
+      "files": 31
+    },
+    {
+      "name": "storage-read-deadlines-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\storage-read-deadlines-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\storage-read-deadlines-20260919",
+      "bytes": 283003,
+      "files": 32
+    },
+    {
+      "name": "storage-write-reliability-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\storage-write-reliability-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\storage-write-reliability-20260919",
+      "bytes": 450790,
+      "files": 46
+    },
+    {
+      "name": "desktop-bridge-reliability-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\desktop-bridge-reliability-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\desktop-bridge-reliability-20260919",
+      "bytes": 329843,
+      "files": 41
+    },
+    {
+      "name": "desktop-autosave-reliability-20260919",
+      "source": "C:\\Users\\37814\\Desktop\\tianming\\docs\\desktop-autosave-reliability-20260919",
+      "destination": "D:\\tianming-task-artifacts-20260919\\prior-evidence-1789829798850\\desktop-autosave-reliability-20260919",
+      "bytes": 353363,
+      "files": 42
+    }
+  ],
+  "verified": true
+}

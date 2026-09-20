@@ -1,0 +1,141 @@
+{
+  "status": "installed-local-playtest-candidate",
+  "version": "B5-native-1.1",
+  "project": "C:/Users/37814/Desktop/tianming",
+  "launcher": "C:\\Users\\37814\\Desktop\\tianming\\启动天命-山河境实测.cmd",
+  "evidence": "D:\\tianming-assistant-work\\shanhe-25d-20260919\\delivery",
+  "nativeRun": "D:\\tianming-assistant-work\\shanhe-25d-20260919\\native-test-1789825165316",
+  "nativeChecks": {
+    "passed": 91,
+    "failed": 0
+  },
+  "staticChecks": {
+    "passed": 23,
+    "failed": 0
+  },
+  "existingRegressionGroups": [
+    {
+      "name": "smoke-map-viewport-collision.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 1783,
+      "sourceSha256": "7ff1a896eeadf07338695aab28e64ebbf49d2ce0941f2c94eaeff5c83522c4da"
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 928,
+      "sourceSha256": "92da246563f52d73675f758475444c7d7dc8bf202be35e55890adac7effe5014"
+    },
+    {
+      "name": "smoke-search-empty-state.js",
+      "status": 0,
+      "signal": null,
+      "elapsedMs": 337,
+      "sourceSha256": "abd8205decbafc393f510d04d4630215ce06fcd5acdd5c209c9382335f31a21d"
+    }
+  ],
+  "scopedDiffCheck": true,
+  "runtimeSources": [
+    {
+      "file": "web/tm-shanhe-runtime.js",
+      "sha256": "75b5eb01c2470464b5d27f72d1eba1399fb8e632321167f2695e0b7c6508b307"
+    },
+    {
+      "file": "web/vendor/shanhe25d/engine.js",
+      "sha256": "2de01001cba7a6fc5dd93bf19c3efedeca77fbdc04b27fe5de2f085f7c11f1f5"
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "458b4b113a86d329a61a99c7aa55fe59dc8e40ede738a0564eb4b95930a82550"
+    },
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "ea326ebf9eab60e24cf72bc2dd2958175ebb331c9d2c4f83300dbf4b193acf31"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "sc-tianqi7-1627",
+      "mapId": "tianqi-prefecture-refined-r3",
+      "regions": 307,
+      "coordinateChecks": 224,
+      "coordinateMaxError": 4.687428401686771e-13,
+      "relocatedCenterMetadata": {
+        "count": 0,
+        "maxMapPixels": 0
+      },
+      "gpu": {
+        "error": 0,
+        "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x0000A7A8) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      }
+    },
+    {
+      "id": "sc-tang840-840",
+      "mapId": "map-sc-tang840-840",
+      "regions": 575,
+      "coordinateChecks": 564,
+      "coordinateMaxError": 0.000005089000475365568,
+      "relocatedCenterMetadata": {
+        "count": 11,
+        "maxMapPixels": 117.66564165068307
+      },
+      "gpu": {
+        "error": 0,
+        "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x0000A7A8) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      }
+    },
+    {
+      "id": "sc-jianyan1-1127-shaosong",
+      "mapId": "shaosong-three-tiers-r6",
+      "regions": 566,
+      "coordinateChecks": 0,
+      "coordinateMaxError": 0,
+      "relocatedCenterMetadata": {
+        "count": 0,
+        "maxMapPixels": 0
+      },
+      "gpu": {
+        "error": 0,
+        "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x0000A7A8) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      }
+    }
+  ],
+  "pictures": [
+    {
+      "name": "sc-tianqi7-1627.png",
+      "bytes": 2291370,
+      "sha256": "5bdb3b8bc880c4e376c60d39fabfac0c495f9691acdd4ac69427cfd849b4612a"
+    },
+    {
+      "name": "sc-tang840-840.png",
+      "bytes": 2523632,
+      "sha256": "827f8766a1f855a215a8b69154e32f095d489043b6c4bb9edd298dc36cb3a0e6"
+    },
+    {
+      "name": "sc-jianyan1-1127-shaosong.png",
+      "bytes": 1972704,
+      "sha256": "565d4c676199d87a84fc7c472c5509fb24fcf3186b65748a7d20100394416e21"
+    }
+  ],
+  "artResourcesUnchanged": true,
+  "originalInteractionReused": true,
+  "personalSavesAccessed": false,
+  "scenarioSourceFilesUnchanged": true,
+  "apiRequestsUsed": false,
+  "gitCommitPushOrDeploy": false,
+  "benchmarkFPS": false,
+  "limits": [
+    "Original game page loaded in isolated Electron windows; full normal account/save startup and long-play FPS are not certified.",
+    "Test-only renderer heap setting --max-old-space-size=4096; normal launcher settings are unchanged.",
+    "Artistic heightfield is display-only, not DEM or AI simulation input.",
+    "Song uses its declared independent X/Y projection; zero coordinate controls means no additional control set, not surveyed accuracy.",
+    "Older incomplete/empty reports are preserved and are not counted.",
+    "Native views keep a temporary 2D fallback; browser back-forward-cache recovery was not separately validated."
+  ],
+  "testNotes": "No reduction to approved B5 textures, environment data or model/lighting code; engine delta only expands allowed camera span."
+}

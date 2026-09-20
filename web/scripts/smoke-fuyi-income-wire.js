@@ -29,7 +29,8 @@ function cta(fuyiAdjust, tax) {
     TM: undefined, window: undefined, console: console,
     Math: Math, Number: Number, Object: Object, Array: Array, isFinite: isFinite
   };
-  vm.createContext(ctx);
+  ctx.global = ctx; // Preserve the real fiscal IIFE closure while testing the extracted function.
+vm.createContext(ctx);
   vm.runInContext(fiscalSrc.slice(i0, i1) + '\nthis.__cta = computeTaxAmount;', ctx);
   return ctx.__cta({ economyBase: { farmland: 100000 } }, tax, {});
 }

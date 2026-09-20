@@ -9,7 +9,7 @@
     version: 1,
     features: {
       reliefGovernance: {
-        scripts: ['tm-relief-governance.js?v=20260909-channels', 'tm-relief-governance-ui.js?v=20260909-hide-register'],
+        scripts: ['tm-relief-governance.js?v=20260920-release1352', 'tm-relief-governance-ui.js?v=20260920-release1352'],
         dependsOn: [],
         platform: 'any',
         loadPolicy: 'manual-inspection-only',
@@ -17,7 +17,7 @@
         provides: ['TM.ReliefGovernance', 'TM.ReliefGovernanceUI']
       },
       browserTestHarness: {
-        scripts: ['tm-test-harness.js?v=2026042714'],
+        scripts: ['tm-test-harness.js?v=20260920-release1352'],
         dependsOn: [],
         platform: 'any',
         loadPolicy: 'query-only',
@@ -26,8 +26,8 @@
       },
       desktopUpdate: {
         scripts: [
-          'tm-update-card.js?v=20260611-upd1',
-          'tm-desktop-update.js?v=20260825-feature-loader-v2'
+          'tm-update-card.js?v=20260920-release1352',
+          'tm-desktop-update.js?v=20260920-release1352'
         ],
         dependsOn: [],
         platform: 'desktop',
@@ -38,7 +38,7 @@
         dispose: function () { return root.TMDesktopUpdate.dispose(); }
       },
       onlineUpdate: {
-        scripts: ['tm-online-update.js?v=20260825-feature-loader-v2'],
+        scripts: ['tm-online-update.js?v=20260920-release1352'],
         dependsOn: [],
         platform: 'web',
         loadPolicy: 'idle-after-load',
@@ -49,9 +49,9 @@
       },
       formalMapLabels: {
         scripts: [
-          'tm-map-label-geo.js?v=20260915-zoom-preload',
-          'tm-map-realm-layout.js?v=20260915-zoom-preload',
-          'tm-map-label-collide.js?v=20260915-zoom-preload'
+          'tm-map-label-geo.js?v=20260920-release1352',
+          'tm-map-realm-layout.js?v=20260920-release1352',
+          'tm-map-label-collide.js?v=20260920-release1352'
         ],
         dependsOn: [],
         platform: 'any',

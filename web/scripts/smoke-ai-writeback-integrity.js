@@ -379,8 +379,8 @@ async function main() {
     endturnApplySource.includes("_tmSetFactionLeaderCanonical(fObj, sc.newLeaderId || sc.newLeader") &&
     endturnApplySource.includes("_tmSetPartyLeaderCanonical(party, pc.new_leader"), 'faction coup/succession and party change leaders must use canonical living-entity sinks');
   check(endturnApplySource.includes("_tmSetPartyLeaderCanonical(newParty, sp.newLeader") &&
-    endturnApplySource.includes("_tmSetPartyLeaderCanonical(newP, pc.leader") &&
-    endturnApplySource.includes("_tmSetFactionLeaderCanonical(newF, fc.leader"), 'new/splintered parties and new factions must validate leaders before insertion');
+    endturnApplySource.includes("TM.SocialFormation.apply(GM, p1,") &&
+    endturnApplySource.includes("_tmSetFactionLeaderCanonical(newF, fc.leader"), 'new parties use the canonical SocialFormation creator; split parties and factions retain canonical leader sinks (runtime invalid-founder cases are exercised in smoke-social-descriptor-formation)');
   check(endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, ru.leaderCasualty") &&
     endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, '起义失败被剿'"), 'revolt casualty and suppression deaths must share the canonical death sink');
   check(endturnStagesSource.includes("global.applyOneDeath({ name:_sov.name") &&
@@ -390,9 +390,10 @@ async function main() {
   // D. 真跑 apply stage，确认 prompt 宣告的五个扩展字段不再被 dispatcher 丢弃。
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), 'utf8'), ctx, { filename: 'tm-endturn-apply-stages.js' });
 
+  // Repair probes retain the original unique identity; unanchored guesses have separate negative tests.
   // D0. 主回合严格预检必须在真实 GM 写入前完成；修复只重做结构化失败项且最多两次。
   ctx.GM = baseGM({ chars: [{ id: 'char-a', name: '甲臣', alive: true, loyalty: 40 }] });
-  const invalidWriteback = { shizhengji: '甲臣获赏。', char_updates: [{ characterId: 'ghost-char', updates: { loyalty: 60 } }] };
+  const invalidWriteback = { shizhengji: '甲臣获赏。', char_updates: [{ characterId: 'ghost-char', name: '甲臣', updates: { loyalty: 60 } }] };
   const beforePreflight = JSON.stringify(ctx.GM);
   const rejectedPreflight = ctx.validateAIWriteBackBatch(invalidWriteback, { source: 'smoke' });
   check(rejectedPreflight.ok === false && rejectedPreflight.failures.some((failure) => failure.code === 'character-not-found'), 'strict preflight returns a structured missing-character failure');
@@ -415,7 +416,7 @@ async function main() {
   ctx.callAI = async function ineffectiveRepair() {
     repairCalls++;
     return JSON.stringify({
-      repairs: [{ field: 'char_updates', index: 0, item: { characterId: 'still-ghost', updates: { loyalty: 60 } } }],
+      repairs: [{ field: 'char_updates', index: 0, item: { characterId: 'still-ghost', name: '甲臣', updates: { loyalty: 60 } } }],
       semanticUnchanged: true,
       narrativePatch: ''
     });
@@ -439,7 +440,7 @@ async function main() {
   }
 
   await expectRejectedRepair(
-    { char_updates: [{ characterId: 'ghost-char', updates: { loyalty: 60 } }, { characterId: 'char-a', updates: { loyalty: 45 } }] },
+    { char_updates: [{ characterId: 'ghost-char', name: '甲臣', updates: { loyalty: 60 } }, { characterId: 'char-a', updates: { loyalty: 45 } }] },
     { repairs: [{ field: 'char_updates', index: 1, item: { characterId: 'char-a', updates: { loyalty: 99 } } }], semanticUnchanged: true, narrativePatch: '' },
     'repair-target-not-allowed',
     'repair cannot target a successful index outside the current failure allowlist'
@@ -451,7 +452,7 @@ async function main() {
     'repair cannot change a numeric effect while claiming semantic equivalence'
   );
   await expectRejectedRepair(
-    { char_updates: [{ characterId: 'ghost-char', action: 'appoint', updates: { loyalty: 60 } }] },
+    { char_updates: [{ characterId: 'ghost-char', name: '甲臣', action: 'appoint', updates: { loyalty: 60 } }] },
     { repairs: [{ field: 'char_updates', index: 0, item: { characterId: 'char-a', action: 'execute', updates: { loyalty: 60 } } }], semanticUnchanged: true, narrativePatch: '' },
     'repair-changed-business-semantics',
     'repair cannot replace the requested action while claiming semantic equivalence'
@@ -480,7 +481,7 @@ async function main() {
 
   ctx.GM = baseGM({ facs: [{ id: 'fac-a', name: '甲势力' }, { id: 'fac-b', name: '乙势力' }] });
   await expectRejectedRepair(
-    { battleResult: { winnerFactionId: 'ghost-faction', loserFactionId: 'fac-b', casualties: { winner: 1, loser: 2 } } },
+    { battleResult: { winnerFactionId: 'ghost-faction', winnerFaction: '甲势力', loserFactionId: 'fac-b', casualties: { winner: 1, loser: 2 } } },
     { repairs: [{ field: 'battleResult', index: null, item: { winnerFactionId: 'fac-a', loserFactionId: 'fac-a', casualties: { winner: 1, loser: 2 } } }], semanticUnchanged: true, narrativePatch: '' },
     'repair-changed-business-semantics',
     'repair cannot alter the already valid loser while fixing only a failed winner identity'

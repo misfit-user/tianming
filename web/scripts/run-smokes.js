@@ -49,7 +49,7 @@ const TIMEOUT_MS = (parseInt(flagVal('--timeout', ''), 10) || 120) * 1000;
 // These checks have their own wall-clock contracts. Run them without unrelated
 // VM/IO-heavy smokes competing for resources; their internal concurrency, work,
 // assertions and timeouts stay unchanged. This is scheduling, never a waiver.
-const RESOURCE_ISOLATED = ['smoke-full-turn-flow.js', 'smoke-workshop-lock-recovery.js', 'smoke-production-dependencies.js', 'smoke-deploy-manifest-atomicity.js', 'smoke-perf-save-preparation.js', 'smoke-start-game-data-integrity.js'];
+const RESOURCE_ISOLATED = ['smoke-full-turn-flow.js', 'smoke-workshop-lock-recovery.js', 'smoke-production-dependencies.js', 'smoke-deploy-manifest-atomicity.js', 'smoke-perf-save-preparation.js', 'smoke-start-game-data-integrity.js', 'smoke-tang840-opening-ledgers.js'];
 
 // ---- 发现 ----
 let smokes = fs.readdirSync(SCRIPTS_DIR).filter(n => /^smoke-.*\.js$/.test(n)).sort();

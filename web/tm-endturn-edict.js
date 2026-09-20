@@ -1198,7 +1198,7 @@ function processEdictEffects(allEdictText, edictCategory) {
 
   // 保存到 GM 供 AI prompt 注入（纯信息，无机械效果）
   GM._edictMechanicalReport = '';
-  GM._edictExecutionReport = execResult.summary;
+
 
   // 制度类诏令自动识别 + 分流（货币/税种/户籍/徭役/兵制/官制 + P1）
   try {
@@ -1208,7 +1208,14 @@ function processEdictEffects(allEdictText, edictCategory) {
         GM._lastEdictClassification = edictResult;
         var classification = edictResult.classification || edictResult;
         var typeLabel = classification.typeKey ? (EdictParser.EDICT_TYPES[classification.typeKey] ? EdictParser.EDICT_TYPES[classification.typeKey].name : classification.typeKey) : '';
-        if (edictResult.pathway === 'memorial') {
+        if (edictResult.amountError) {
+          var amountMessage = edictResult.message || '货币诏令数额无法唯一确定，尚未落账；请明确总额或拆分指令。';
+          var amountReport = amountMessage + ' 原诏令仍保留供推演核实；不得将准备金、兑换比例或期限视作发行数额，不得叙述为已施行。';
+
+          execResult.summary += '\n' + amountReport;
+          if (typeof addEB === 'function') addEB('诏令待核实', amountMessage);
+          if (typeof toast === 'function') toast(amountMessage);
+        } else if (edictResult.pathway === 'memorial') {
           var drafter = edictResult.memo && edictResult.memo.drafter || '有司';
           var msg1 = '〔' + typeLabel + '〕旨意已下，' + drafter + ' 下回合具奏';
           if (typeof addEB === 'function') addEB('诏令', msg1);
@@ -1254,6 +1261,7 @@ function processEdictEffects(allEdictText, edictCategory) {
     if (typeof applyEdictTypedIncidence === 'function') applyEdictTypedIncidence(GM, allEdictText, { turn: GM.turn });
   } catch (_fE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_fE, 'edict] typed-incidence 失败') : console.error('[edict] typed-incidence 失败:', _fE); }
 
+  GM._edictExecutionReport = execResult.summary;
   return { summary: '', executionSummary: execResult.summary };
 }
 

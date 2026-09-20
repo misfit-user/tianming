@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-09-17T11:25:08.169Z",
+  "sourceSha256": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "files": [
+    {
+      "name": "index.html",
+      "sha256": "3e0a5d0f2196e627c202cef81933ef4255b14fccbc0627dfb9b85e43c62040e1"
+    },
+    {
+      "name": "tm-map-system.js",
+      "sha256": "ba2961aa90a291c88555d6f44511a19801e22f2cf0e396bf7945bb21e55405e6"
+    },
+    {
+      "name": "phase8-formal-map-dossier.js",
+      "sha256": "5fbf579cf69a945ab18318d5d8aec54db3e878318565a1201077b5582e9e067d"
+    },
+    {
+      "name": "tm-ai-change-army.js",
+      "sha256": "0cafa6b3c8a3aa1d4cc201c9800815e5283cd8fa32845f4bdfba762d1bd0ccf4"
+    },
+    {
+      "name": "tm-military.js",
+      "sha256": "872a61d286935f0d9417efe63996ad8b3da4605ede2042a86b08f8870a6071a7"
+    },
+    {
+      "name": "tm-three-systems-ext.js",
+      "sha256": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41"
+    },
+    {
+      "name": "tm-battle-turn.js",
+      "sha256": "a2c6b5c0f213b514c04246e0b2084939a50f75faf8f3c9ec1c1e0986d4e64f71"
+    },
+    {
+      "name": "tm-border-invasion.js",
+      "sha256": "f5d279a92eddd4ac9bece7b1f1f6c1fbb05798b1b0cf6269c3a1685487554ab2"
+    },
+    {
+      "name": "tm-endturn-agent-write-tools.js",
+      "sha256": "506eb56e01b634962830d3d9044ded45f54d165e1149086163fda79ebdab6405"
+    },
+    {
+      "name": "tm-endturn-apply.js",
+      "sha256": "dffd0bcd60d87b5be02435c33cd2897ab74f6459a4a2691d4221aeb4021c2388"
+    },
+    {
+      "name": "tm-game-loop-wentian-hardchange.js",
+      "sha256": "915cd43c87f359ac3e3e94d121109df69d5b383d678fc19bd0b8751ff8ca7af9"
+    },
+    {
+      "name": "tm-patches.js",
+      "sha256": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c"
+    },
+    {
+      "name": "tm-faction-action-engine.js",
+      "sha256": "f1a675ef52088bfc6d93c18b5567e0b6b4ad341a2010542a012c572e756c11cf"
+    },
+    {
+      "name": "tm-faction-npc-llm-decision.js",
+      "sha256": "01321a05a421a604c099de284dbe868fdb95e6dc9c0b52f2896a025d5937495a"
+    },
+    {
+      "name": "tm-feudal-warfare.js",
+      "sha256": "200d995b1a1a6361eac83e1ab12f68956cdbe042b49e82ad4c507cf4ab62289d"
+    },
+    {
+      "name": "tm-military-ui.js",
+      "sha256": "c2ea55a499794549631b232a70d6abae51914ef59c2096bbf30a9435076376cc"
+    },
+    {
+      "name": "tm-patches-start.js",
+      "sha256": "9042325424aa511d1c98991214de64a64b25258cde18e9f9f2ee87ae0bb7316a"
+    }
+  ]
+}

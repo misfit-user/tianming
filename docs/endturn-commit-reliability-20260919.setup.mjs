@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import cp from 'node:child_process';
+const dir='docs/endturn-commit-reliability-20260919',backup='.bak-endturn-commit-reliability-20260919';
+if(fs.existsSync(dir+'/baseline.json'))throw Error('Existing baseline must not be overwritten');
+fs.mkdirSync(dir,{recursive:true});
+const files=['web/tm-storage.js','web/tm-state-snapshot.js','web/tm-endturn-render.js','web/tm-endturn-core.js','web/tm-endturn-ai.js','web/tm-endturn-validity.js','web/tm-endturn-mode-contract.js','web/tm-endturn-pipeline-steps.js','web/tm-endturn-agent-mode.js','web/tm-endturn-response-recovery.js','web/tm-ai-infra.js','web/tm-ai-infra-retry.js','web/scripts/verify-all.js'];
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const records=files.map(file=>{const bytes=fs.readFileSync(file),dest=backup+'/'+file;fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,bytes,{flag:'wx'});return {file,sha256:sha(bytes),bytes:bytes.length};});
+fs.writeFileSync(dir+'/baseline.json',JSON.stringify({at:new Date().toISOString(),head:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),backup,files:records,status:cp.execFileSync('git',['status','--porcelain=v1'],{encoding:'utf8'})},null,2));
+const previous='docs/endturn-recovery-20260919';
+for(const name of ['patch-utils.mjs','check-diff.mjs'])fs.writeFileSync(dir+'/'+name,fs.readFileSync(previous+'/'+name,'utf8').replaceAll(previous,dir));
+console.log('Protected current baseline:',records.length,'files');

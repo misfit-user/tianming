@@ -4,10 +4,10 @@
   function instances(units,o){
     for(const key in groups)groups[key].length=0;
     const quality=o.quality||'balanced',ex=o.EX,zoom=o.cam.zoom,now=o.now,zMul=Math.max(1,Math.min(1.8,.12/zoom));let total=0;
-    function add(kind,lod,x,y,angle,scale,tint,phase,am){
-      if(total>=8000)return;const z=ex*o.heightAt(x,y),cf=Math.cos(angle-Math.PI/2),sf=Math.sin(angle-Math.PI/2);if(V&&o.frustum){if(!bounds.has(kind))bounds.set(kind,V.bounds(A.generate(kind,0)));const b=bounds.get(kind);if(!V.visible(o.frustum,x+(b.x*cf+b.z*sf)*scale,y+(b.x*sf-b.z*cf)*scale,z+b.y*scale,b.r*scale))return;}
+    function add(kind,lod,x,y,angle,scale,tint,phase,am,cf,sf){
+      if(total>=8000)return;const z=ex*o.heightAt(x,y);if(cf===undefined){cf=Math.cos(angle-Math.PI/2);sf=Math.sin(angle-Math.PI/2);}if(V&&o.frustum){if(!bounds.has(kind))bounds.set(kind,V.bounds(A.generate(kind,0)));const b=bounds.get(kind);if(!V.visible(o.frustum,x+(b.x*cf+b.z*sf)*scale,y+(b.x*sf-b.z*cf)*scale,z+b.y*scale,b.r*scale))return;}
       const key=kind+':'+lod;if(!pools.has(key))pools.set(key,[]);if(!groups[key])groups[key]=[];const pool=pools.get(key),i=groups[key].length,instance=pool[i]||(pool[i]={});
-      Object.assign(instance,{x,y,z,cf,sf,s:scale,t:tint,ph:phase,am});groups[key].push(instance);total++;
+      instance.x=x;instance.y=y;instance.z=z;instance.cf=cf;instance.sf=sf;instance.s=scale;instance.t=tint;instance.ph=phase;instance.am=am;groups[key].push(instance);total++;
     }
     // Commanders first: the global visual budget may never hide a named leader behind a massed cohort.
     const sorted=units.filter(u=>u.alive&&!(u.hidden&&u.side!=='ming')).sort((a,b)=>Number(!!b._hero)-Number(!!a._hero));
@@ -15,9 +15,10 @@
       if(total>=6200)break;const p=o.project(u.x,u.y);if(!o.frustum&&(p.x<-180||p.x>o.W+180||p.y<-180||p.y>o.H+300))continue;
       const kind=A.kindFor(u),distance=Math.hypot(u.x-o.cam.x,u.y-o.cam.y),head=o.project(u.x,u.y,84*zMul),pixels=Math.hypot(head.x-p.x,head.y-p.y),lod=o.impostors&&pixels<64?4:pixels<18?3:quality==='low'?2:zoom>.65&&distance<2200?0:zoom>.15&&distance<6500?1:2;
       const tint=u.emperor?[1.20,1.0,.58]:u.side==='ming'?[1.12,.80,.65]:[.58,.88,1.28],isMounted=['shock','heavy','horse','general'].includes(kind),scale=(isMounted?84/3.14:62/2.2)*zMul;
+      const cf=Math.cos(u.facing-Math.PI/2),sf=Math.sin(u.facing-Math.PI/2);
       const moving=u._inMelee||u.state==='rout'||(u.tx!=null&&Math.hypot(u.x-u.tx,u.y-u.ty)>12),am=u._inMelee?.9:moving?.28:0;
-      if(kind==='cannon'){const n=Math.max(1,Math.min(5,Math.round(u.soldiers/300)));for(let i=0;i<n;i++){const d=(i-(n-1)/2)*50;add(kind,lod,u.x-Math.sin(u.facing)*d,u.y+Math.cos(u.facing)*d,u.facing,38*zMul,tint,now*.005,am);}continue;}
-      const men=u._men||[];for(let i=0;i<men.length&&total<6200;i++){const m=men[i],role=kind==='general'&&i>0?(u.emperor?'guard':'heavy'):kind;add(role,lod,m.x,m.y,u.facing,scale*(kind==='general'&&i===0?1.12:1),tint,now*.0065+(m.ph||i)*1.3,am);}
+      if(kind==='cannon'){const n=Math.max(1,Math.min(5,Math.round(u.soldiers/300)));for(let i=0;i<n;i++){const d=(i-(n-1)/2)*50;add(kind,lod,u.x-Math.sin(u.facing)*d,u.y+Math.cos(u.facing)*d,u.facing,38*zMul,tint,now*.005,am,cf,sf);}continue;}
+      const men=u._men||[];for(let i=0;i<men.length&&total<6200;i++){const m=men[i],role=kind==='general'&&i>0?(u.emperor?'guard':'heavy'):kind;add(role,lod,m.x,m.y,u.facing,scale*(kind==='general'&&i===0?1.12:1),tint,now*.0065+(m.ph||i)*1.3,am,cf,sf);}
     }
     const tint=[.65,.65,.62];for(const list of [o.corpses||[],o.dying||[]])for(const c of list){const p=o.project(c.x,c.y);if(p.x<-160||p.x>o.W+160||p.y<-160||p.y>o.H+260)continue;add('dead',2,c.x,c.y,c.ff??c.a??c.ca??0,62/2.2*zMul,tint,0,0);}
     lastInstances={count:total,groups:Object.keys(groups).filter(k=>groups[k].length).length};return groups;

@@ -86,6 +86,7 @@
       finally { if (current() && ticket === serial) { controller = null; pull.disabled = false; pull.textContent = '拉取模型'; } }
     }
     var owner = { cancel:cancel, detect:detect, read: function(target) {
+      if (global.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.readWaits(tier, target);
       if (check.indeterminate) delete target.thinking; else target.thinking = check.checked;
       target.thinkingProtocol = protocol.value || 'auto';
     } };

@@ -9,7 +9,7 @@
 //       _toggleSecondaryEnabled/_testSecondaryAPI/_probeClearCache
 // ============================================================
 
-function closeSettings(){if(window.TM&&TM.APISettings)TM.APISettings.close();_$("settings-bg").classList.remove("show");}
+function closeSettings(){if(window.TM&&TM.APISettings)TM.APISettings.close();if(window.TM&&TM.CallBudgetSettings)TM.CallBudgetSettings.close();_$("settings-bg").classList.remove("show");}
 
 // ============================================================
 // 模型能力校验面板·防欺骗·M3 支持双 tier
@@ -23,9 +23,9 @@ function _renderEvidenceDetails(evidence) {
   if (evidence.profile) h += ' · ' + escHtml(String(evidence.profile));
   h += '</summary>';
   evidence.checks.forEach(function(c){
-    var color = c.ok ? 'var(--celadon-400)' : 'var(--vermillion-400)';
+    var color = c.state === 'unavailable' ? 'var(--txt-d)' : (c.ok ? 'var(--celadon-400)' : 'var(--vermillion-400)');
     h += '<div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px dashed var(--bdr);font-size:0.71rem;line-height:1.55;">';
-    h += '<span style="color:' + color + ';">' + (c.ok ? '通过' : '失败') + '</span>';
+    h += '<span style="color:' + color + ';">' + (c.state === 'unavailable' ? '未测定' : (c.ok ? '通过' : '失败')) + '</span>';
     h += ' · <b>' + escHtml(c.label || c.id || '-') + '</b>';
     h += ' · 权重' + (c.weight || 0);
     if (c.latencyMs) h += ' · ' + c.latencyMs + 'ms';
@@ -62,6 +62,7 @@ function _renderModelProbePanel(tier) {
   var self = isSec ? probe.selfReport_secondary : probe.selfReport;
   var out = isSec ? probe.outputLimit_secondary : probe.outputLimit;
   var evidence = isSec ? probe.evidence_secondary : probe.evidence;
+  if (evidence && window.TM && window.TM.MemoryAdaptive && evidence.memoryIdentity !== window.TM.MemoryAdaptive.identity(tier)) evidence = null;
 
   var _tierLbl = isSec ? '【次 API】' : '【主 API】';
   var h = '<div style="font-size:0.76rem;line-height:1.8;padding:0.4rem;background:' + (isSec?'rgba(74,111,165,0.04)':'rgba(184,154,83,0.04)') + ';border-left:3px solid ' + (isSec?'var(--purple,var(--indigo-400,#4a6fa5))':'var(--gold-d)') + ';border-radius:2px;">';
@@ -102,6 +103,15 @@ function _renderModelProbePanel(tier) {
     h += '<div style="margin-top:0.35rem;font-size:0.72rem;color:var(--txt-d);">连接快检：' + Math.round(_qc.latencyMs || 0) + 'ms · ' +
       '<span style="color:' + (_qc.echo === 'mismatch' ? 'var(--vermillion-400,#c04030)' : 'inherit') + ';">' + _qEcho + (_qc.responseModel ? '（' + escHtml(_qc.responseModel) + '）' : '') + '</span>' +
       ' · 流式' + (_qc.stream && _qc.stream.ok ? '✓' : '✕') + ' · 严格JSON' + (_qc.json && _qc.json.ok ? '✓' : '✕') + ' · usage' + (_qc.usageSeen ? '✓' : '✕') + '</div>';
+  }
+  if (window.TM && window.TM.MemoryAdaptive) {
+    var mp = window.TM.MemoryAdaptive.plan({ tier: tier });
+    var ml = { compact: '精简辅助', balanced: '均衡记忆', deep: '深度记忆' };
+    h += '<div>记忆策略：' + escHtml(ml[mp.mode]) + ' · ' + mp.memoryTokens + ' tokens · 自主检索最多 ' + mp.maxRounds + ' 轮 / ' + mp.maxToolCalls + ' 次工具 · ' + (mp.verified ? '近期实测证据' : '未验证或证据已过期') + ' · ' + escHtml({ native: '原生工具检索', json: 'JSON 计划检索', local: '本地辅助检索' }[mp.plannerMode] || '本地辅助检索') + '</div>';
+  }
+  if (!isSec && window.TM && window.TM.MemoryLongTerm && window.GM) {
+    var archiveStats = window.TM.MemoryLongTerm.stats(window.GM);
+    h += '<div style="color:var(--txt-d);">长期档案：' + archiveStats.records + '/' + archiveStats.maxRecords + ' 条 · 已有类型 ' + Object.keys(archiveStats.kinds).length + '/12 · 容量裁剪累计 ' + archiveStats.dropped + ' 条</div>';
   }
   if (evidence) h += _renderEvidenceDetails(evidence);
 
@@ -194,7 +204,7 @@ async function _probeRunOutput(tier) {
 async function _probeRunEvidence(tier) {
   tier = tier || 'primary';
   if (!_tierHasKey(tier)) { toast('请先配置 ' + (tier==='secondary'?'次要':'主') + ' API'); return; }
-  if (!confirm('证据校验会发起 6 次小型调用：基础JSON、天命结构小样、坏JSON修复、长上下文、时政记/实录、持续输出。继续？')) return;
+  if (!confirm('证据校验会发起 9 次（原 6 项 + 3 项记忆能力）小型调用：基础JSON、天命结构小样、坏JSON修复、长上下文、时政记/实录、持续输出。继续？')) return;
   toast('正在进行模型证据校验…');
   try {
     if (typeof probeModelEvidenceAudit !== 'function') { toast('证据校验函数未加载'); return; }

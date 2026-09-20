@@ -1,0 +1,27 @@
+      req.onsuccess = function(e) {
+        var openedDb = e.target.result;
+        if (owner.settled || _openOwner !== owner) { try { openedDb.close(); } catch (_) {} return; }
+        function releaseConnection() {
+          try { openedDb.close(); } catch (_) {}
+          if (_db === openedDb) { _db = null; _available = false; }
+        }
+        openedDb.onversionchange = releaseConnection;
+        openedDb.onclose = releaseConnection;
+        _db = openedDb; _available = true;
+        owner.settled = true; releasePending();
+        console.log('[SaveDB] IndexedDB就绪 (v' + DB_VERSION + ')');
+        resolveOpen(openedDb);
+      };
+      req.onerror = function(e) {
+        if (owner.settled) return;
+        var err = e.target && e.target.error || new Error('IndexedDB 打开失败');
+        console.error('[SaveDB] IndexedDB打开失败:', err);
+        failOpen(err);
+      };
+      req.onblocked = function() {
+        var error = new Error('IndexedDB 升级被其他页面阻塞'); error.code = 'SAVE_OPEN_BLOCKED';
+        failOpen(error);
+      };
+    } catch (error) { failOpen(error); }
+    return owner.promise;
+  }

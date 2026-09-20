@@ -102,6 +102,80 @@
   // ── ① 本地预扫（确定性·零 LLM）→ 工作清单 ──
   // 触发条件逐一复用现有 5 pass 的原触发（阈值来自 getCompressionParams·L2/L3 用每5/30回合 cadence）·
   // 统一成一张清单·让单次调用跨层去重。
+  function _stewardProfile(opts) {
+    return TM.MemoryAdaptive ? TM.MemoryAdaptive.plan({ tier: opts && opts.tier || 'primary' }) : { consolidationTasks: 5, consolidationOutput: 8000, sourceChars: 60000, mode: 'legacy' };
+  }
+  function _sourceStamp(value) { try { return JSON.stringify(value); } catch (_) { return ''; } }
+  function _prepareWork(GM, work, opts) {
+    var profile = _stewardProfile(opts), remaining = profile.sourceChars, selected = [];
+    work.tasks.slice(0, profile.consolidationTasks).forEach(function(task) {
+      if (task.old) {
+        var chosen = [], spent = 0;
+        for (var i = 0; i < task.old.length; i++) {
+          var cost = _sourceStamp(task.old[i]).length + 100;
+          if (spent + cost > remaining) break;
+          chosen.push(task.old[i]); spent += cost;
+        }
+        if (!chosen.length) return;
+        task.old = chosen; task.keepFrom = chosen.length;
+        task._sourceStamp = _sourceStamp(chosen); remaining -= spent;
+      } else {
+        var payload = [task.mems || [], task.shiji || [], task.l2s || []], length = _sourceStamp(payload).length;
+        if (length > remaining) return;
+        task._sourceStamp = _sourceStamp(payload); remaining -= length;
+      }
+      selected.push(task);
+    });
+    work.tasks = selected; work.profile = profile;
+    return work;
+  }
+  function _workCurrent(GM, work) {
+    if (!GM || !work || Number(work.turn) !== Number(GM.turn)) return false;
+    return (work.tasks || []).every(function(task) {
+      if (!task._sourceStamp) return true;
+      if (task.old) {
+        var source = task.layer === 'aiMemory' ? GM._aiMemory : task.layer === 'foreshadows' ? GM._foreshadows : GM.conv;
+        return _sourceStamp((source || []).slice(0, task.old.length)) === task._sourceStamp;
+      }
+      return _sourceStamp([task.mems || [], task.shiji || [], task.l2s || []]) === task._sourceStamp;
+    });
+  }
+  function _validConsolidation(work, parsed) {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+    function validText(value) {
+      if (typeof value !== 'string' || !value.trim() || value.length > 12000) return false;
+      if (TM.MemoryWriteGate && TM.MemoryWriteGate.evaluateCandidate) {
+        var check = TM.MemoryWriteGate.evaluateCandidate({ type: 'summary', authority: 'ai_summary', body: value, sourceRefs: [{ type: 'consolidation', id: 'validation-only' }] });
+        if (check.status === 'quarantined') return false;
+      }
+      return true;
+    }
+    return (work.tasks || []).every(function(task) {
+      if (task.layer === 'aiMemory') return validText(parsed.aiMemory_summary) && (!parsed.aiMemory_threads || validText(parsed.aiMemory_threads));
+      if (task.layer === 'foreshadows') return validText(parsed.foreshadows_active) && (!parsed.foreshadows_resolved || validText(parsed.foreshadows_resolved));
+      if (task.layer === 'conv') return validText(parsed.conv_summary);
+      var layer = parsed[task.layer];
+      return !!(layer && typeof layer === 'object' && !Array.isArray(layer) && validText(task.layer === 'L2' ? layer.summary : layer.theme));
+    });
+  }
+  var _stewardFlights = new WeakMap();
+  function _stewardLease(GM, tier) {
+    var p = global.P, world = global.GM, turn = GM.turn, generation = global._tmLoadGen;
+    var campaign = GM._campaignId, timeline = GM._timelineId;
+    var identity = TM.MemoryAdaptive ? TM.MemoryAdaptive.identity(tier) : '';
+    return function() { return global.P === p && (!world || global.GM === world) && GM.turn === turn && global._tmLoadGen === generation && GM._campaignId === campaign && GM._timelineId === timeline && (!TM.MemoryAdaptive || TM.MemoryAdaptive.identity(tier) === identity); };
+  }
+  function run(GM, opts) {
+    GM = GM || global.GM; opts = opts || {};
+    if (!GM) return Promise.resolve({ skipped: 'noGM' });
+    var current = _stewardLease(GM, opts.tier || 'primary'), old = _stewardFlights.get(GM);
+    if (old && old.current()) return old.promise;
+    var job = { current: current, promise: null };
+    job.promise = Promise.resolve().then(function() { return runInner(GM, Object.assign({}, opts, { leaseCurrent: current })); }).finally(function() { if (_stewardFlights.get(GM) === job) _stewardFlights.delete(GM); });
+    _stewardFlights.set(GM, job);
+    return job.promise;
+  }
+
   function scan(GM, opts) {
     opts = opts || {};
     GM = GM || global.GM;
@@ -212,6 +286,9 @@
   function applyConsolidation(GM, workList, parsed) {
     GM = GM || global.GM;
     if (!GM || !parsed) return { applied: [], deltas: [] };
+    if (!_validConsolidation(workList, parsed)) return { applied: [], deltas: [], failed: true, reason: 'invalid_consolidation' };
+    if (workList && workList.turn != null && !_workCurrent(GM, workList)) return { applied: [], deltas: [], failed: true, reason: 'source_changed' };
+    if (TM.MemoryLongTerm && TM.MemoryLongTerm.harvest) TM.MemoryLongTerm.harvest(GM);
     var turn = GM.turn || 0;
     var applied = [];
     var _sz = function (layer) {
@@ -226,7 +303,7 @@
     (workList.tasks || []).forEach(function (t) {
       try {
         if (t.layer === 'aiMemory' && parsed.aiMemory_summary) {
-          var keepMem = (GM._aiMemory || []).slice(-t.keepRecent);
+          var keepMem = (GM._aiMemory || []).slice(t.old.length);
           var lastOldTurn = (t.old[t.old.length - 1] || {}).turn || '?';
           var content = '【历史记忆压缩摘要·T1-T' + lastOldTurn + '】' + parsed.aiMemory_summary + (parsed.aiMemory_threads ? '\n【活跃线索】' + parsed.aiMemory_threads : '');
           var rec = { turn: turn, content: content, type: 'compressed', priority: 'critical' };
@@ -234,7 +311,7 @@
           GM._aiMemory = [rec].concat(keepMem);
           applied.push('aiMemory');
         } else if (t.layer === 'foreshadows' && parsed.foreshadows_active) {
-          var keepFore = (GM._foreshadows || []).slice(-t.keepRecent);
+          var keepFore = (GM._foreshadows || []).slice(t.old.length);
           var fcontent = '【伏笔压缩摘要】' + parsed.foreshadows_active + (parsed.foreshadows_resolved ? '\n【已回收】' + parsed.foreshadows_resolved : '');
           var frec = { turn: turn, content: fcontent, type: 'compressed', priority: 'high' };
           _attachMeta(frec, _provenance(GM, 'memoryCompress.foreshadows', turn, 'T' + turn, fcontent, t.old, 24));
@@ -394,7 +471,7 @@
   }
 
   // ── ④ 编排：扫→(有任务才)单次调用→写回。后台·单跳·不自主循环。 ──
-  async function run(GM, opts) {
+  async function runInner(GM, opts) {
     opts = opts || {};
     GM = GM || global.GM;
     if (!GM) return { skipped: 'noGM' };
@@ -405,10 +482,15 @@
 
     if (!P.ai || !P.ai.key) return { skipped: 'noKey', tableCompress: tableCompress };
 
-    var workList = scan(GM, opts);
+    if (opts.leaseCurrent && !opts.leaseCurrent()) return { skipped: "stale" };
+    var workList = _prepareWork(GM, scan(GM, opts), opts);
     if (!workList.tasks.length) return { skipped: 'noTasks', turn: workList.turn, tableCompress: tableCompress };
 
     var req = buildConsolidationRequest(workList, GM);
+    var outputBudget = Math.min(Number(opts.maxTok) > 0 ? Number(opts.maxTok) : workList.profile.consolidationOutput, workList.profile.consolidationOutput);
+    var estimator = TM.ContextZones && TM.ContextZones.estimateTokens;
+    var requestTokens = estimator ? estimator(req.system + req.user) : Math.ceil((req.system.length + req.user.length) * 1.3);
+    if (workList.profile.contextK && requestTokens + outputBudget + 512 > workList.profile.contextK * 1024) return { skipped: 'context_budget', inputTokens: requestTokens, outputTokens: outputBudget };
     _dbg('[MemorySteward] run T' + workList.turn + ' tasks=' + workList.tasks.map(function (t) { return t.layer; }).join(','));
 
     if (typeof global.callAIMessages !== 'function') return { skipped: 'noCaller', tasks: workList.tasks.length };
@@ -418,8 +500,9 @@
       raw = await global.callAIMessages([
         { role: 'system', content: req.system },
         { role: 'user', content: req.user }
-      ], opts.maxTok || 8000, opts.signal || null, opts.tier || 'primary', { priority: 'background', timeoutMs: opts.timeoutMs || 60000, maxRetries: 1, id: 'memory_steward' });
+      ], outputBudget, opts.signal || null, opts.tier || 'primary', { priority: 'background', timeoutMs: opts.timeoutMs || 60000, maxRetries: 1, id: 'memory_steward' });
     } catch (e) {
+      if (opts.leaseCurrent && !opts.leaseCurrent()) return { skipped: 'stale' };
       _dbg('[MemorySteward] call fail:', e && e.message);
       // 【S4】连失累加·达阈下回合 shouldHandle 回落旧 pass。【S3 可观测】失败记日志(让 owner 看得到失败连发)。
       GM._memoryStewardFailStreak = (GM._memoryStewardFailStreak || 0) + 1;
@@ -427,15 +510,18 @@
       return { failed: true, error: String(e && e.message || e), streak: GM._memoryStewardFailStreak, tasks: workList.tasks.length };
     }
 
+    if ((opts.leaseCurrent && !opts.leaseCurrent()) || (opts.signal && opts.signal.aborted)) return { skipped: 'stale_or_cancelled' };
     var parsed = null;
     try { parsed = (typeof global.extractJSON === 'function') ? global.extractJSON(raw) : JSON.parse(raw); } catch (e) {}
-    if (!parsed) {
+    if (!_validConsolidation(workList, parsed)) {
       GM._memoryStewardFailStreak = (GM._memoryStewardFailStreak || 0) + 1;
       _logRun(GM, { turn: workList.turn, failed: true, reason: 'parse', requested: workList.tasks.map(function (t) { return t.layer; }), streak: GM._memoryStewardFailStreak, ts: _now() });
       return { failed: true, error: 'parse', streak: GM._memoryStewardFailStreak, tasks: workList.tasks.length };
     }
 
+    if (!_workCurrent(GM, workList)) return { skipped: 'source_changed' };
     var res = applyConsolidation(GM, workList, parsed);
+    if (res.failed || res.applied.length !== workList.tasks.length) return { failed: true, reason: res.reason || 'incomplete_consolidation', applied: res.applied };
     GM._memoryStewardFailStreak = 0; // 成功→连失清零·恢复 steward 接管
     var entry = {
       turn: workList.turn,

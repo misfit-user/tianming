@@ -1,0 +1,134 @@
+[
+  {
+    "file": "web/index.html",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-read-tools.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-depth-tools.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-intent-plan.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-pipeline-steps.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-agent-kernel.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-mode-bridge.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-agent-mode-s2.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-agent-mode-tools.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-request-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-stream-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/lint-renderer-writeback-boundaries.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

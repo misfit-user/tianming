@@ -132,58 +132,36 @@
     return report;
   }
 
+  function compactJsonFormatting(text) {
+    if (!/^[\s]*[\[{]/.test(text)) return text;
+    try { JSON.parse(text); } catch (_) { return text; }
+    var output = '', quoted = false, escaped = false;
+    for (var i=0; i<text.length; i++) {
+      var ch=text.charAt(i);
+      if (quoted) { output+=ch; if (escaped) escaped=false; else if(ch==='\\') escaped=true; else if(ch==='"') quoted=false; }
+      else if(ch==='"') { quoted=true;output+=ch; }
+      else if(!/[\t\n\r ]/.test(ch)) output+=ch;
+    }
+    return output;
+  }
+  function compactMessageFormatting(text) {
+    // Only syntactically complete JSON: retain every prose character, literal, numeric digit and rule.
+    var whole=compactJsonFormatting(text);
+    if(whole!==text) return whole;
+    return text.replace(/(```json[^\S\r\n]*\r?\n)([\s\S]*?)(\r?\n```)/g,function(_,head,body,tail){ return head+compactJsonFormatting(body)+tail; });
+  }
   function trimUserMessage(body, options, initialReport) {
-    var userIndex = userMessageIndex(body);
-    if (userIndex < 0) {
-      var missingUser = new Error('SC1 request has no trimmable user message');
-      missingUser.code = 'mandatory_context_overflow';
-      throw missingUser;
-    }
-    var original = String(body.messages[userIndex].content || '');
-    var omission = '\n\n【上下文硬上限·已省略中段；保留玩家输入、权威状态首部与最终硬规则尾部】\n\n';
-    var suffixMarkers = ['\n\n=== sc1q 硬性要求', '\n\n=== 输出格式强约束'];
-    var mandatoryStart = -1;
-    suffixMarkers.forEach(function(marker) {
-      var index = original.indexOf(marker);
-      if (index >= 0 && (mandatoryStart < 0 || index < mandatoryStart)) mandatoryStart = index;
+    var candidate=cloneRequestBody(body), removed=0;
+    candidate.messages.forEach(function(message) {
+      if(message.role!=='user'||typeof message.content!=='string') return;
+      var original=message.content, compact=compactMessageFormatting(original);
+      removed+=original.length-compact.length;message.content=compact;
     });
-    var mandatorySuffix = mandatoryStart >= 0 ? original.slice(mandatoryStart) : '';
-    var trimmable = mandatoryStart >= 0 ? original.slice(0, mandatoryStart) : original;
-    var low = 0;
-    var high = trimmable.length;
-    var best = null;
-    var bestReport = null;
-    while (low <= high) {
-      var keep = Math.floor((low + high) / 2);
-      var head = Math.ceil(keep * 0.55);
-      var tail = keep - head;
-      var candidate = cloneRequestBody(body);
-      candidate.messages[userIndex].content = trimmable.slice(0, head)
-        + omission
-        + (tail > 0 ? trimmable.slice(trimmable.length - tail) : '')
-        + mandatorySuffix;
-      var report = measureRequest(candidate, options);
-      if (report.ok) {
-        best = candidate;
-        bestReport = report;
-        low = keep + 1;
-      } else {
-        high = keep - 1;
-      }
-    }
-    if (!best) {
-      var overflow = new Error('SC1 mandatory system/schema/final-rule context exceeds the hard request ceiling');
-      overflow.code = 'mandatory_context_overflow';
-      overflow.rawTokenEstimate = initialReport.inputTokens;
-      overflow.inputTokenLimit = initialReport.inputTokenLimit;
-      throw overflow;
-    }
-    return {
-      body:best,
-      report:bestReport,
-      omittedChars:Math.max(0, trimmable.length
-        - (best.messages[userIndex].content.length - omission.length - mandatorySuffix.length))
-    };
+    var report=measureRequest(candidate,options);
+    if(report.ok) return {body:candidate,report:report,omittedChars:0,formattingCharsRemoved:removed};
+    var overflow=new Error('SC1 完整上下文需要约 '+report.inputTokens+' tokens，可用输入为 '+report.inputTokenLimit+' tokens（另保留输出 '+report.completionTokens+'）；未截断指令或记忆。请核对端点实际容量或使用更大窗口模型。');
+    overflow.code='mandatory_context_overflow';overflow.requiredInputTokens=report.inputTokens;overflow.inputTokenLimit=report.inputTokenLimit;
+    overflow.contextTokens=report.contextTokens;overflow.completionTokens=report.completionTokens;overflow.rawTokenEstimate=initialReport.inputTokens;overflow.preservedAllContent=true;throw overflow;
   }
 
   function finalizeRequestBody(body, options) {
@@ -211,25 +189,20 @@
         inputTokenLimit:trimmed.report.inputTokenLimit,
         schemaTokens:trimmed.report.schemaTokens,
         omittedChars:trimmed.omittedChars,
-        trimmed:trimmed.omittedChars > 0,
+        trimmed:false,
+        lossless:true,
+        formattingCharsRemoved:trimmed.formattingCharsRemoved || 0,
         emergency:options.emergency === true
       }
     };
   }
 
   function createContextOverflowReducer(options) {
-    options = Object.assign({}, options || {});
+    options=Object.assign({},options||{});
     return function(body) {
-      var compact = cloneRequestBody(body);
-      if (compact.response_format && compact.response_format.type === 'json_schema') {
-        compact.response_format = { type:'json_object' };
-      }
-      var before = measureRequest(compact, options);
-      var emergencyLimit = Math.max(256, Math.floor(before.inputTokens * 0.55));
-      return finalizeRequestBody(compact, Object.assign({}, options, {
-        inputTokenLimit:emergencyLimit,
-        emergency:true
-      })).body;
+      var current=measureRequest(body,options),compact=trimUserMessage(body,options,current);
+      if(!compact.formattingCharsRemoved) { var error=new Error('服务端上下文不足，无法在保留全部内容的条件下进一步缩短请求');error.code='mandatory_context_overflow';error.preservedAllContent=true;throw error; }
+      return compact.body;
     };
   }
 
@@ -249,8 +222,8 @@
       global.TM.lastPromptTokens = global.TM.lastPromptTokens || {};
       global.TM.lastPromptTokens.sc1 = global.TM.lastPromptTokens.sc1 || {};
       global.TM.lastPromptTokens.sc1.finalRequest = diagnostics;
-      if (diagnostics && diagnostics.trimmed && typeof global.toast === 'function') {
-        global.toast('[SC1] 最终请求超预算·已在完整组装后压缩至硬上限内');
+      if (diagnostics && diagnostics.formattingCharsRemoved > 0 && typeof global.toast === 'function') {
+        global.toast('[SC1] 已精简 JSON 排版空白，指令、记忆与数值完整保留');
       }
     } catch (error) {
       if (global.TM && global.TM.errors && typeof global.TM.errors.captureSilent === 'function') {
@@ -268,3 +241,119 @@
   ns.sc1ProductionCallOptions = productionCallOptions;
   ns.recordSc1FinalDiagnostics = recordDiagnostics;
 })(typeof window !== 'undefined' ? window : globalThis);
+
+// Pure wire schemas retained without field or requirement changes.
+(function(root) {
+  var ns = root.TM.Endturn.AI.subcalls;
+function _buildSc1JsonSchema() {
+    return {
+      name: 'sc1_main',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          turn_summary: { type: 'string' },
+          shizhengji_basis: { type: 'string' },
+          shilu_text: { type: 'string' },
+          szj_title: { type: 'string' },
+          shizhengji: { type: 'string' },
+          szj_summary: { type: 'string' },
+          player_status: { type: 'string' },
+          player_inner: { type: 'string' },
+          events: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          resource_changes: { type: 'object', additionalProperties: true },
+          variable_changes: { type: 'object', additionalProperties: true },
+          char_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          character_deaths: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          character_memory_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          long_term_memory_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          edict_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          building_decisions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          dialogue_commitment_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          court_resolution_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          fiscal_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          currency_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          population_adjustments: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          central_local_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          environment_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          institution_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          personnel_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          office_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_ai_outcomes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_relation_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_relation_shift: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          party_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          army_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          armory_procurement: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          province_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          economic_advice: { type: 'string' },
+          table_updates: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          suggestions: { type: 'array', items: { type: 'string' } }
+        },
+        required: ['turn_summary']
+      }
+    };
+  }
+  ns._buildSc1JsonSchema = _buildSc1JsonSchema;
+function _buildSc1bJsonSchema() {
+    return {
+      name: 'sc1b_letters',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          cultural_works: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_letters: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_correspondence: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_interactions: { type: 'array', items: { type: 'object', additionalProperties: true } }
+        },
+        required: []
+      }
+    };
+  }
+  ns._buildSc1bJsonSchema = _buildSc1bJsonSchema;
+function _buildSc1cJsonSchema() {
+    return {
+      name: 'sc1c_factions',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          faction_events: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_ai_outcomes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_interactions_advanced: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_relation_changes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          faction_succession: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_schemes: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          hidden_moves: { type: 'array', items: { type: 'string' } },
+          scheme_actions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          fengwen_snippets: { type: 'array', items: { type: 'object', additionalProperties: true } }
+        },
+        required: []
+      }
+    };
+  }
+  ns._buildSc1cJsonSchema = _buildSc1cJsonSchema;
+function _buildSc1qJsonSchema() {
+    return {
+      name: 'sc1q_dialogue',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: true,
+        properties: {
+          dialogue_commitments: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          collective_resolutions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          npc_dialogue_intent: { type: 'array', items: { type: 'object', additionalProperties: true } },
+          required_sc1_actions: { type: 'array', items: { type: 'string' } }
+        },
+        required: []
+      }
+    };
+  }
+  ns._buildSc1qJsonSchema = _buildSc1qJsonSchema;
+})(typeof window !== "undefined" ? window : globalThis);

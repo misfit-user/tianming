@@ -1,0 +1,62 @@
+[
+  {
+    "test": "smoke-render-performance-r2.mjs",
+    "code": 0
+  },
+  {
+    "test": "smoke-raster-display-cache.mjs",
+    "code": 0
+  },
+  {
+    "test": "smoke-perf-map-render-path.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-map-viewport-collision.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-map-zoom-preload.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-battle-render-assets.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-battle-render-resolution.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-render-query-budget.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-culture-raster-performance.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-minimap-idle-render.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-battle-hud-retained.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-hover-fulltext.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-phase8-map-live-panels.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-map-realm-layout.js",
+    "code": 0
+  },
+  {
+    "test": "smoke-map-runtime-write-authority.js",
+    "code": 0
+  }
+]

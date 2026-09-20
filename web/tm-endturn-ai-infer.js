@@ -76,7 +76,7 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         shiluText: '', szjTitle: '', szjSummary: '', personnelChanges: [], hourenXishuo: '',
         suggestions: []       // R209a?added per Codex addendum
       },
-      meta: { errors: [], warnings: [], timing: {}, retries: {} }
+      meta: { errors: [], warnings: [], timing: {}, retries: {}, requireMainWriteback:true }
     };
     await TM.Endturn.AI.prompt.build(ctx);
     // re-bind locals·§2-§5 仍以原 var name 引用 (最小 diff)
@@ -134,7 +134,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         p1 = ctx.results.sc1 || null;
         p2 = ctx.results.sc2 || null;
         p1Summary = (ctx.followup && ctx.followup.p1Summary) || "";
+        if (TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
         await TM.Endturn.AI.apply.writeBack(ctx);
+        if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
         p1 = ctx.results.sc1 || p1;
         p2 = ctx.results.sc2 || p2;
         p1Summary = (ctx.followup && ctx.followup.p1Summary) || p1Summary;
@@ -152,7 +154,9 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
 
       // ═══════════════════════════════════════════════════════════
       // P7-zeta bridge: section 5 follow-up moved to tm-endturn-followup.js.
+      if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       await TM.Endturn.AI.followup.run(ctx);
+      if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       p1 = ctx.results.sc1 || p1;
       p2 = ctx.results.sc2 || p2;
       p1Summary = (ctx.followup && ctx.followup.p1Summary) || p1Summary;
@@ -187,8 +191,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
 
   GM._turnContext = {
     edicts: edicts,
-    shizhengji: (shizhengji || '').substring(0, 300),
-    zhengwen: (zhengwen || '').substring(0, 200),
+    // ★2026-09-18 类型守门：record.shizhengji 曾因上游 object 字段冒泡而变成对象，
+    //   此处 (shizhengji||'').substring 对对象调用即 TypeError → 整回合死在此行。
+    //   String() 兜一层，语义不变（字符串原样）。
+    shizhengji: String(shizhengji || '').substring(0, 300),
+    zhengwen: String(zhengwen || '').substring(0, 200),
     npcActionsThisTurn: _npcHandledNames
   };
 

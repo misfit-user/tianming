@@ -106,6 +106,24 @@ let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log
     const f=fixture();f.GM.edicts=[{turn:2,status:'promulgated',text:'敕建崇文馆。',buildingOrderRefs:[f.pr.id],buildingBindingText:'敕建崇文馆。'}];
     const batch=f.BO.collect(f.GM,f.P,{decree:'敕建崇文馆。'});assert.equal(batch.ids[0],f.pr.id);assert(f.BO.apply(f.GM,f.P,batch,{building_decisions:[f.decision()]},false)[0].ok);
   });
+  // ── 2026-09-18·双补丁叠加守卫（玩家死档「已颁行诏书的营造绑定已变化」根治）──
+  await test('promulgated ordinary decree without construction orders skips binding gate',()=>{
+    const f=fixture(),text='着户部核减今岁织造，各州县一体遵行。';
+    // 复刻 tm-hongyan-edict-ui.js:_applyPolishedEdict 对「无营造案」诏书的写入：refs=[]、binding=''
+    f.GM.edicts=[{id:'edict-2-1',turn:2,status:'promulgated',text:text,source:'polish',buildingOrderRefs:[],buildingBindingText:''}];
+    const batch=f.BO.collect(f.GM,f.P,{decree:text});
+    assert.equal(batch.ids.length,0);   // 普通诏书不该被误伤·直接放过
+  });
+  await test('promulgated decree with stale binding on non-empty refs self-heals',()=>{
+    const f=fixture();
+    // 存量档常见：refs 非空但 binding 是空（早期漏写）或失配（合并微调）→ 不该 throw
+    f.GM.edicts=[{id:'edict-2-2',turn:2,status:'promulgated',text:'敕建崇文馆。',source:'polish',buildingOrderRefs:[f.pr.id],buildingBindingText:''}];
+    const batch=f.BO.collect(f.GM,f.P,{decree:'敕建崇文馆。'});
+    assert.equal(batch.ids.length,1);
+    assert.equal(batch.ids[0],f.pr.id);
+    // binding 自愈
+    assert.equal(f.GM.edicts[0].buildingBindingText,'敕建崇文馆。');
+  });
   for(const change of ['GM','P','timeline','generation','turn'])await test('late '+change+' response cannot change the current world',()=>{
     const f=fixture();let g=f.GM,p=f.P;if(change==='GM')g=JSON.parse(JSON.stringify(g));if(change==='P')p=JSON.parse(JSON.stringify(p));
     if(change==='timeline')g._timelineId='new';if(change==='generation')f.c._tmLoadGen=1;if(change==='turn')g.turn++;

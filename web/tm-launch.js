@@ -152,12 +152,16 @@ function doEditor(){_dbg('[doEditor] 执行开始');_cleanupOverlays();_$("launc
 
 function showScnSelect(){
   var page=_$("scn-page");
+  page.dataset.launchView="select";
+  var selectionEpoch=Number(window._tmStartRequestEpoch || 0);
+  function selectionCurrent(){return selectionEpoch===Number(window._tmStartRequestEpoch || 0) && page.classList.contains("show") && page.dataset.launchView==="select";}
   var _officialLoader = window.TMOfficialScenarioLoader;
   if (_officialLoader && typeof _officialLoader.reconcile === 'function') _officialLoader.reconcile();
   if (_officialLoader && !_officialLoader.isMetadataReady()) {
     page.classList.add("show");
     page.innerHTML='<div class="scn-page-title">选 择 剧 本</div><div style="text-align:center;padding:3rem;color:var(--ink-400);">正在读取剧本目录…</div>';
-    _officialLoader.ready().then(function(){ showScnSelect(); }).catch(function(e){
+    _officialLoader.ready().then(function(){ if(selectionCurrent())showScnSelect(); }).catch(function(e){
+      if(!selectionCurrent())return;
       page.innerHTML='<button class="bt bs" onclick="backToLaunch()">返回</button><div style="text-align:center;padding:3rem;color:var(--vermillion-400);">官方剧本目录加载失败：'+escHtml(e && e.message || String(e))+'</div>';
     });
     return;
@@ -537,6 +541,7 @@ function _finalizeStartGame(sid) {
 
 function showScnManage(){
   var page=_$("scn-page");
+  page.dataset.launchView="manage";
   page.classList.add("show");
   page.innerHTML="<button class=\"bt bs\" onclick=\"backToLaunch()\" style=\"position:fixed;top:1rem;left:1rem;z-index:1000;font-family:'STKaiti','KaiTi','楷体',serif;letter-spacing:0.15em;\">\u25C1 \u8FD4 \u56DE \u542F \u5E55</button>"+
     "<div class=\"scn-page-title edit-title-purple\">\u8457 \u5377 \u00B7 \u7F16 \u8F91 \u5668</div>"+
@@ -581,7 +586,13 @@ function showScnManage(){
   });
 }
 
-function backToLaunch(){_cleanupOverlays();resetLaunchRuntimeShell();_$("scn-page").classList.remove("show");_$("scn-page").innerHTML="";_$("bar").style.display="none";_$("E").style.display="none";_$("G").style.display="none";_$("launch").style.display="flex";
+function backToLaunch(){
+  if(window.TM && TM.NativeStart && typeof TM.NativeStart.busy==='function' && TM.NativeStart.busy()){toast('新局正在提交，请稍候再返回');return false;}
+  if(typeof window._tmCancelPendingStartRequest==='function')window._tmCancelPendingStartRequest();
+  if(typeof window._tmStartOpeningCleanup==='function')window._tmStartOpeningCleanup();
+  if(window.TM && TM.NativeStart && typeof TM.NativeStart.cancel==='function')TM.NativeStart.cancel(false);
+  if(typeof window._tmClearDesktopStartPayload==='function')window._tmClearDesktopStartPayload();
+  _cleanupOverlays();resetLaunchRuntimeShell();_$("scn-page").classList.remove("show");_$("scn-page").innerHTML="";_$("bar").style.display="none";_$("E").style.display="none";_$("G").style.display="none";_$("launch").style.display="flex";
   // 还原启动页 hero：桌面端 showPanel（剧本选择/开始/模式面板）会把 .home-stage 设 display:none 并显示 #main-view；
   // 退回启动页若不撤销，则 .home-stage 一直隐藏、只剩 position:fixed 的 .home-foot 可见 → 黑屏（仅余底栏）。
   // 网页端 .home-stage 从不被 showPanel 隐藏、#main-view 恒为 none，这两步均为 no-op，故对网页零影响。

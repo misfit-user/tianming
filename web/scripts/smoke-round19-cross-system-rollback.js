@@ -373,7 +373,12 @@ async function main() {
       json_schema: { name: 'sc1', strict: true, schema: { type: 'object', properties: { turn_summary: { type: 'string' } }, required: ['turn_summary'] } }
     }
   };
-  const finalized = context.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body, { contextTokens: 8192, completionTokens: 2048 });
+  const originalBody = JSON.stringify(body);
+  assert.throws(() => context.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body, { contextTokens: 8192, completionTokens: 2048 }), error => error.code === 'mandatory_context_overflow' && error.preservedAllContent === true);
+  assert.strictEqual(JSON.stringify(body), originalBody, 'insufficient capacity never mutates the original request');
+  assert.strictEqual(sentBodies.length, 0, 'no truncated request sent on overflow');
+  const finalized = context.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body, { contextTokens: 32768, completionTokens: 2048 });
+  assert.strictEqual(finalized.body.messages[1].content, body.messages[1].content, 'all history and final rules preserved');
   await context.callAIBodyStream(finalized.body, { skipQueue: true, priority: 'critical' });
   assert.strictEqual(sentBodies.length, 1);
   assert.strictEqual(sentBodies[0].max_tokens, finalized.body.max_tokens);

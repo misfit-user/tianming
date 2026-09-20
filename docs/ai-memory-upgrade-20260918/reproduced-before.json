@@ -1,0 +1,47 @@
+[
+  {
+    "name": "explicit-zero-budget",
+    "bug": true,
+    "chars": 278,
+    "tokens": 70
+  },
+  {
+    "name": "draft-and-private-compiler-bypass",
+    "bug": true,
+    "text": "<memory-context schema-version=\"memory-context/v0\">\n  <court-records label=\"court records and rulings\">\n    <memory id=\"draft\" source=\"court_record\" turn=\"10\" authority=\"rule_validated\" authority-rank=\"80\">court resolved tax reduction</memory>\n    <memory id=\"private\" source=\"court_record\" turn=\"10\" authority=\"rule_validated\" authority-rank=\"80\">private evidence</memory>\n  </court-records>\n</memory-context>\n"
+  },
+  {
+    "name": "world-isolation",
+    "bug": true,
+    "kept": 1
+  },
+  {
+    "name": "future-evidence",
+    "bug": true,
+    "kept": 1
+  },
+  {
+    "name": "blank-safeBody-fallback",
+    "bug": true
+  },
+  {
+    "name": "partial-xml-under-budget",
+    "bug": true,
+    "budget": 40,
+    "ok": true,
+    "text": "<memory-context schema-version=\"memory-context/v0\">\n  <core-facts label=\"core facts\">\n    <memory id=\"r1\" source=\"hard_state\" turn=\"10\" auth</memory-context>\n"
+  },
+  {
+    "name": "duplicate-cross-query-budget",
+    "bug": true,
+    "ids": [
+      "r1",
+      "r1"
+    ]
+  },
+  {
+    "name": "draft-projection",
+    "status": "archived",
+    "bug": true
+  }
+]

@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import { edit } from './patch-utils.mjs';
+edit('web/tm-memory-steward.js', (s, r) => {
+  s = r(s, '  function scan(GM, opts) {', fs.readFileSync('docs/ai-memory-upgrade-r2-20260918/steward-safe.fragment.txt','utf8') + '  function scan(GM, opts) {');
+  s = r(s, '    if (!GM || !parsed) return { applied: [], deltas: [] };', "    if (!GM || !parsed) return { applied: [], deltas: [] };\n    if (!_validConsolidation(workList, parsed)) return { applied: [], deltas: [], failed: true, reason: 'invalid_consolidation' };\n    if (workList && workList.turn != null && !_workCurrent(GM, workList)) return { applied: [], deltas: [], failed: true, reason: 'source_changed' };\n    if (TM.MemoryLongTerm && TM.MemoryLongTerm.harvest) TM.MemoryLongTerm.harvest(GM);");
+  s = r(s, 'var keepMem = (GM._aiMemory || []).slice(-t.keepRecent);', 'var keepMem = (GM._aiMemory || []).slice(t.old.length);');
+  s = r(s, 'var keepFore = (GM._foreshadows || []).slice(-t.keepRecent);', 'var keepFore = (GM._foreshadows || []).slice(t.old.length);');
+  s = r(s, '  async function run(GM, opts) {', '  async function runInner(GM, opts) {');
+  s = r(s, '    var workList = scan(GM, opts);', '    if (opts.leaseCurrent && !opts.leaseCurrent()) return { skipped: "stale" };\n    var workList = _prepareWork(GM, scan(GM, opts), opts);');
+  s = r(s, '    var req = buildConsolidationRequest(workList, GM);', `    var req = buildConsolidationRequest(workList, GM);
+    var outputBudget = Math.min(Number(opts.maxTok) > 0 ? Number(opts.maxTok) : workList.profile.consolidationOutput, workList.profile.consolidationOutput);
+    var estimator = TM.ContextZones && TM.ContextZones.estimateTokens;
+    var requestTokens = estimator ? estimator(req.system + req.user) : Math.ceil((req.system.length + req.user.length) * 1.3);
+    if (workList.profile.contextK && requestTokens + outputBudget + 512 > workList.profile.contextK * 1024) return { skipped: 'context_budget', inputTokens: requestTokens, outputTokens: outputBudget };`);
+  s = r(s, '], opts.maxTok || 8000, opts.signal || null,', '], outputBudget, opts.signal || null,');
+  s = r(s, "      _dbg('[MemorySteward] call fail:', e && e.message);", "      if (opts.leaseCurrent && !opts.leaseCurrent()) return { skipped: 'stale' };\n      _dbg('[MemorySteward] call fail:', e && e.message);");
+  s = r(s, '    var parsed = null;\n    try { parsed', "    if ((opts.leaseCurrent && !opts.leaseCurrent()) || (opts.signal && opts.signal.aborted)) return { skipped: 'stale_or_cancelled' };\n    var parsed = null;\n    try { parsed");
+  s = r(s, '    if (!parsed) {', '    if (!_validConsolidation(workList, parsed)) {');
+  s = r(s, '    var res = applyConsolidation(GM, workList, parsed);', "    if (!_workCurrent(GM, workList)) return { skipped: 'source_changed' };\n    var res = applyConsolidation(GM, workList, parsed);\n    if (res.failed || res.applied.length !== workList.tasks.length) return { failed: true, reason: res.reason || 'incomplete_consolidation', applied: res.applied };");
+  return s;
+});

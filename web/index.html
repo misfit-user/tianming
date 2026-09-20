@@ -16,7 +16,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; font-src 'self' data:; connect-src 'self' https: http://127.0.0.1:* http://localhost:*; media-src 'self' data: blob: https: http:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'">
 <!-- 正在运行的包版本·与代码同包同发·footer 与在线版更新提示都读这里（发版工具自动盖戳） -->
-<meta name="tm-version" content="1.3.5.1">
+<meta name="tm-version" content="1.3.5.2">
 <title>天命 · AI历史模拟</title>
 <script>
 (function(){
@@ -60,15 +60,15 @@
   };
 })();
 </script>
-<link id="tm-main-css" rel="stylesheet" href="styles.css?v=20260811-auditfix1" data-css-base="styles.css?v=20260811-auditfix1" data-css-fallback="https://cdn.jsdelivr.net/gh/misfit-user/tianming@main/web/styles.css?v=20260811-auditfix1" onload="window.TM_CSS_LOADED&&window.TM_CSS_LOADED(this)" onerror="window.TM_CSS_RETRY&&window.TM_CSS_RETRY(this)">
-<link rel="stylesheet" href="tm-home-ui.css?v=20260723-homeui10">
-<script src="tm-home-ui.js?v=20260723-homeui10"></script>
-<link rel="stylesheet" href="tm-keju-paradigm-panel.css?v=20260524-L2">
-<script src="map-converter.js?v=20260709"></script>
-<script src="map-integration.js?v=20260709"></script>
-<script src="map-display.js?v=2026042816"></script>
-<script src="map-editor-to-game.js?v=20260916-release1350"></script>
-<script>/* cache-buster: 如发现 js 未更新，改变 v 值强制重载 */ window._TM_CACHE_V = '20260519-remote-changelog';</script>
+<link id="tm-main-css" rel="stylesheet" href="styles.css?v=20260920-release1352" data-css-base="styles.css?v=20260920-release1352" data-css-fallback="https://cdn.jsdelivr.net/gh/misfit-user/tianming@main/web/styles.css?v=20260920-release1352" onload="window.TM_CSS_LOADED&&window.TM_CSS_LOADED(this)" onerror="window.TM_CSS_RETRY&&window.TM_CSS_RETRY(this)">
+<link rel="stylesheet" href="tm-home-ui.css?v=20260920-release1352">
+<script src="tm-home-ui.js?v=20260920-release1352"></script>
+<link rel="stylesheet" href="tm-keju-paradigm-panel.css?v=20260920-release1352">
+<script src="map-converter.js?v=20260920-release1352"></script>
+<script src="map-integration.js?v=20260920-release1352"></script>
+<script src="map-display.js?v=20260920-release1352"></script>
+<script src="map-editor-to-game.js?v=20260920-release1352"></script>
+<script>/* cache-buster: 如发现 js 未更新，改变 v 值强制重载 */ window._TM_CACHE_V = '20260920-release1352';</script>
 <script>
 /* 界面字号·早期应用（2026-06-10·治玩家双端「字太小」）。档位存 localStorage（设备本地偏好·
    不进存档），设置面板「界面显示」可调。--text-* token 全是 rem → 改 html 根字号即全局生效。
@@ -256,7 +256,7 @@
   </div>
   <!-- 底部栏 -->
   <div class="home-foot">
-    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.5.1</span></div>
+    <div class="f-ver">天 命　测试版 <span id="tm-foot-ver">1.3.5.2</span></div>
     <div class="f-mid" id="home-foot-mid">春 分<span class="dot">◆</span>太 平<span class="dot">◆</span>河 清 海 晏</div>
     <div class="f-right">
       <span><kbd>↵</kbd> 开 卷</span>
@@ -506,535 +506,551 @@ document.addEventListener('mousedown', function(e){
 console.log('天命游戏脚本开始加载...');
 </script>
 
-<script src="tm-perf.js?v=20260824-round20-observability"></script>
-<script src="tm-startup-phases.js?v=20260824-round20-observability"></script>
+<script src="tm-perf.js?v=20260920-release1352"></script>
+<script src="tm-startup-phases.js?v=20260920-release1352"></script>
 
-<script src="tm-env-detect.js?v=2026042714"></script>
-<script src="tm-platform.js?v=20260823-ipc1"></script>
-<script src="tm-feature-loader.js?v=20260916-release1350"></script>
+<script src="tm-env-detect.js?v=20260920-release1352"></script>
+<script src="tm-platform.js?v=20260920-release1352"></script>
+<script src="tm-feature-loader.js?v=20260920-release1352"></script>
 <!-- 固定虚拟分辨率+整体等比缩放适配（移植 Phase 2 重做）·仅 capacitor/?fit=1·须在 platform 后尽早加载防闪 -->
-<script src="tm-fixed-fit.js?v=20260723-modern-viewport-units"></script>
-<script src="tm-debug-logger.js?v=2026052801"></script>
-<script src="tm-diagnostics-foundation.js?v=2026050401"></script>
-<script src="tm-ui-foundation.js?v=20260916-release1350"></script>
+<script src="tm-fixed-fit.js?v=20260920-release1352"></script>
+<script src="tm-debug-logger.js?v=20260920-release1352"></script>
+<script src="tm-diagnostics-foundation.js?v=20260920-release1352"></script>
+<script src="tm-ui-foundation.js?v=20260920-release1352"></script>
 <script>window.TMStartupPhases.transition('core', { boundary: 'tm-data-model' });</script>
-<script src="tm-data-model.js?v=20260709"></script>
+<script src="tm-data-model.js?v=20260920-release1352"></script>
 <!-- R135 (2026-04-25) tm-utils 拆分 → utils + ai-infra -->
-<script src="tm-utils.js?v=20260916-release1350"></script>
+<script src="tm-start-contracts.js?v=20260920-release1352"></script>
+<script src="tm-utils.js?v=20260920-release1352"></script>
 <!-- 2026-07-04 起居注单一写口(gm:qijuHistory 收口)·须在所有写手之前 -->
-<script src="tm-qiju-ledger.js?v=2026070401"></script>
-<script src="tm-prompt-composer.js?v=20260916-release1350"></script>
-<script src="tm-ai-request-options.js?v=20260912-seven-ui"></script>
-<script src="tm-start-contracts.js?v=20260916-release1350"></script>
-<script src="libs/polygon-clipping-0.15.7.min.js?v=20260916-release1350"></script>
-<script src="tm-map-workbench.js?v=20260916-release1350"></script>
-<script src="tm-map-workbench-client.js?v=20260916-release1350"></script>
-<script src="tm-start-compiler.js?v=20260916-release1350"></script>
-<script src="tm-start-world.js?v=20260916-release1350"></script>
-<script src="tm-native-fiscal-adapter.js?v=20260916-release1350"></script>
-<script src="tm-native-scope.js?v=20260916-release1350"></script>
-<script src="tm-native-fiscal-ui.js?v=20260916-release1350"></script>
-<script src="tm-start-preparation-document.js?v=20260916-release1350"></script>
-<script src="tm-start-preparation.js?v=20260916-release1350"></script>
-<script src="tm-start-commit.js?v=20260916-release1350"></script>
-<script src="tm-start-selector.js?v=20260916-release1350"></script>
-<script src="tm-ai-infra-json.js?v=20260916-release1350"></script>
-<script src="tm-ai-infra-retry.js?v=20260916-release1350"></script>
-<script src="tm-ai-infra.js?v=20260916-release1350"></script>
+<script src="tm-qiju-ledger.js?v=20260920-release1352"></script>
+<script src="tm-prompt-composer.js?v=20260920-release1352"></script>
+<script src="tm-memory-adaptive.js?v=20260920-release1352"></script>
+<script src="tm-memory-long-term.js?v=20260920-release1352"></script>
+<script src="tm-memory-hybrid.js?v=20260920-release1352"></script>
+<script src="tm-ai-request-options.js?v=20260920-release1352"></script>
+<script src="tm-api-models.js?v=20260920-release1352"></script>
+<script src="tm-call-budget-settings.js?v=20260920-release1352"></script>
+<script src="tm-api-settings.js?v=20260920-release1352"></script>
+<script src="tm-call-retry-policy.js?v=20260920-release1352"></script>
+<script src="tm-ai-infra-json.js?v=20260920-release1352"></script>
+<script src="tm-ai-infra-retry.js?v=20260920-release1352"></script>
+<script src="tm-ai-infra.js?v=20260920-release1352"></script>
 <!-- 勿动位置·第二十三拆：json → infra → model-detect 必须连续按序装载(顶层函数型保序切割) -->
-<script src="tm-ai-infra-model-detect.js?v=20260916-release1350"></script>
-<script src="tm-memory-trace.js?v=20260531-traceonly"></script>
-<script src="tm-memory-evidence-registry.js?v=20260531-evidence"></script>
-<script src="tm-memory-source-bound.js?v=20260601-sourcebound"></script>
-<script src="tm-memory-issue-governance.js?v=20260601-issuegov"></script>
-<script src="tm-context-zones.js?v=20260823-auditfix18-context"></script>
-<script src="tm-memory-envelope.js?v=20260531-envelope"></script>
-<script src="tm-memory-governance.js?v=20260531-governance"></script>
-<script src="tm-memory-writegate.js?v=20260719-memsanitize"></script>
-<script src="tm-memory-turn-inference.js?v=20260601-turn-inference"></script>
-<script src="tm-memory-turn-archive.js?v=20260601-turn-archive"></script>
-<script src="tm-memory-turn-rollup.js?v=20260601-turn-rollup"></script>
-<script src="tm-memory-turn-backfill.js?v=20260601-turn-backfill"></script>
-<script src="tm-memory-controls.js?v=20260601-controls"></script>
-<script src="tm-memory-retrieval.js?v=20260531-rerank"></script>
-<script src="tm-memory-context-compiler.js?v=20260823-auditfix18-context"></script>
-<script src="tm-memory-workshop.js?v=20260531-workshop"></script>
-<script src="tm-traits-data.js?v=20260709"></script>
-<script src="tm-chronicle-tracker.js?v=2026042714"></script>
-<script src="tm-chronicle-effects.js?v=2026042714"></script>
-<script src="tm-relations.js?v=2026042714"></script>
+<script src="tm-ai-infra-model-detect.js?v=20260920-release1352"></script>
+<script src="tm-memory-trace.js?v=20260920-release1352"></script>
+<script src="tm-memory-evidence-registry.js?v=20260920-release1352"></script>
+<script src="tm-memory-source-bound.js?v=20260920-release1352"></script>
+<script src="tm-memory-issue-governance.js?v=20260920-release1352"></script>
+<script src="tm-context-zones.js?v=20260920-release1352"></script>
+<script src="tm-memory-envelope.js?v=20260920-release1352"></script>
+<script src="tm-memory-governance.js?v=20260920-release1352"></script>
+<script src="tm-memory-writegate.js?v=20260920-release1352"></script>
+<script src="tm-memory-turn-inference.js?v=20260920-release1352"></script>
+<script src="tm-memory-turn-archive.js?v=20260920-release1352"></script>
+<script src="tm-memory-turn-rollup.js?v=20260920-release1352"></script>
+<script src="tm-memory-turn-backfill.js?v=20260920-release1352"></script>
+<script src="tm-memory-controls.js?v=20260920-release1352"></script>
+<script src="tm-memory-retrieval.js?v=20260920-release1352"></script>
+<script src="tm-memory-context-compiler.js?v=20260920-release1352"></script>
+<script src="tm-memory-workshop.js?v=20260920-release1352"></script>
+<script src="tm-traits-data.js?v=20260920-release1352"></script>
+<script src="tm-chronicle-tracker.js?v=20260920-release1352"></script>
+<script src="tm-chronicle-effects.js?v=20260920-release1352"></script>
+<script src="tm-relations.js?v=20260920-release1352"></script>
 <!-- 2026-05-01 6系统翻新 phase 0：引擎常量/Typed RelGraph/迁移框架 -->
-<script src="tm-engine-constants.js?v=2026050202"></script>
-<script src="tm-rel-graph.js?v=2026050101"></script>
-<script src="tm-migration.js?v=2026050101"></script>
-<script src="tm-influence-groups.js?v=2026050202"></script>
-<script src="tm-edict-lifecycle.js?v=20260709"></script>
+<script src="tm-engine-constants.js?v=20260920-release1352"></script>
+<script src="tm-rel-graph.js?v=20260920-release1352"></script>
+<script src="tm-migration.js?v=20260920-release1352"></script>
+<script src="tm-influence-groups.js?v=20260920-release1352"></script>
+<script src="tm-edict-lifecycle.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 Phase 4.1 时间工具：回合→干支年月日/相对时间/时辰 -->
-<script src="tm-time-utils.js?v=2026050101"></script>
-<script src="tm-world-era.js?v=20260824-auditfix19"></script>
+<script src="tm-time-utils.js?v=20260920-release1352"></script>
+<script src="tm-world-era.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 推演 AI 记忆增强：世界状态快照 helpers（须在 endturn 之前加载） -->
-<script src="tm-world-snapshot.js?v=2026043002"></script>
+<script src="tm-world-snapshot.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 12 表结构化记忆（Phase 1）·须在 endturn 之前加载 -->
-<script src="tm-memory-tables.js?v=2026050101"></script>
+<script src="tm-memory-tables.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 Phase 2.1 Swipe 快照与 timeTravel 回溯 -->
-<script src="tm-world-identity.js?v=20260820-auditfix9"></script>
-<script src="tm-state-snapshot.js?v=20260823-auditfix18-autosave"></script>
+<script src="tm-world-identity.js?v=20260920-release1352"></script>
+<script src="tm-state-snapshot.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 Phase 2.2 本地语义检索（bge-small-zh-v1.5） -->
-<script src="tm-semantic-recall.js?v=20260916-release1350"></script>
+<script src="tm-semantic-recall.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 P10.4A 召回节流门控（KokoroMemo retrieval_gate 范式） -->
-<script src="tm-recall-gate.js?v=2026050101"></script>
+<script src="tm-recall-gate.js?v=20260920-release1352"></script>
 <!-- 2026-04-30 Phase 3 12 表 UI（可视化 + 锁 + 软删除 + 皇命） -->
-<script src="tm-memory-ui.js?v=2026050101" defer></script>
+<script src="tm-memory-ui.js?v=20260920-release1352" defer></script>
 <!-- 2026-04-30 Phase 4.5 标准外部记忆适配器（XML/JSON/DSL 入口） -->
-<script src="tm-memory-adapter.js?v=2026050101"></script>
+<script src="tm-memory-adapter.js?v=20260920-release1352"></script>
 <!-- R128 (2026-04-25) tm-mechanics.js 拆分 → mechanics + mechanics-world -->
-<script src="tm-mechanics.js?v=20260916-release1350"></script>
-<script src="tm-mechanics-memory.js?v=20260916-release1350"></script>
-<script src="tm-mechanics-world.js?v=20260621-renownfix"></script>
+<script src="tm-mechanics.js?v=20260920-release1352"></script>
+<script src="tm-mechanics-memory.js?v=20260920-release1352"></script>
+<script src="tm-mechanics-world.js?v=20260920-release1352"></script>
 <!-- S2 (2026-06-18) 按需取数 agent 工具层：包现有检索 API 为 LLM 可调用工具·供 SC_RECALL agent 分支（开关 P.conf.agentRecallEnabled 默认关） -->
-<script src="tm-agent-kernel.js?v=20260916-release1350"></script>
-<script src="tm-agent-flags.js?v=20260623-liveworld"></script>
-<script src="tm-memory-agent-tools.js?v=20260618-s2"></script>
-<script src="tm-memory-steward.js?v=20260619-steward-s5"></script>
-<script src="tm-reflection-agent.js?v=20260623-metacog"></script>
-<script src="tm-edict-oversight.js?v=20260909-channels"></script>
-<script src="tm-history-advisor.js?v=20260916-release1350"></script>
-<script src="tm-change-queue.js?v=20260828-reactivecascade"></script>
+<script src="tm-agent-kernel.js?v=20260920-release1352"></script>
+<script src="tm-agent-flags.js?v=20260920-release1352"></script>
+<script src="tm-memory-agent-tools.js?v=20260920-release1352"></script>
+<script src="tm-memory-mode-bridge.js?v=20260920-release1352"></script>
+<script src="tm-memory-steward.js?v=20260920-release1352"></script>
+<script src="tm-reflection-agent.js?v=20260920-release1352"></script>
+<script src="tm-edict-oversight.js?v=20260920-release1352"></script>
+<script src="tm-history-advisor.js?v=20260920-release1352"></script>
+<script src="tm-change-queue.js?v=20260920-release1352"></script>
 <!-- R123+R124 (2026-04-25) 拆分 tm-index-world.js → indices + world + memorials + office-panel -->
-<script src="tm-indices.js?v=20260916-release1350"></script>
-<script src="tm-world.js?v=20260621-renownfix"></script>
-<script src="tm-memorials.js?v=20260719-memsanitize"></script>
-<script src="tm-wendui.js?v=20260909-rail-audience"></script>
-<script src="tm-wendui-persona-views.js?v=20260909-rail-audience"></script>
+<script src="tm-start-world.js?v=20260920-release1352"></script>
+<script src="tm-native-fiscal-adapter.js?v=20260920-release1352"></script>
+<script src="tm-native-scope.js?v=20260920-release1352"></script>
+<script src="tm-native-fiscal-ui.js?v=20260920-release1352"></script>
+<script src="tm-indices.js?v=20260920-release1352"></script>
+<script src="tm-ai-result-contract.js?v=20260920-release1352"></script>
+<script src="tm-world.js?v=20260920-release1352"></script>
+<script src="tm-memorials.js?v=20260920-release1352"></script>
+<script src="tm-wendui.js?v=20260920-release1352"></script>
+<script src="tm-wendui-persona-views.js?v=20260920-release1352"></script>
 <!-- 2026-05-21·狱中问对模式·6 动作 + AI 解析 + 频率限制 + 朝议反应 -->
-<script src="tm-wendui-prison.js?v=20260521-prison"></script>
+<script src="tm-wendui-prison.js?v=20260920-release1352"></script>
 <!-- R161 R6 (2026-05-03) tm-office-system 从 tm-hongyan-office 拆出·官制 system (~700 行) -->
-<script src="tm-office-system.js?v=20260916-release1350"></script>
-<script src="tm-region-magnate.js?v=20260618-magnate"></script>
-<script src="tm-era-language-pack.js?v=20260618-erapack"></script>
-<script src="tm-ai-narrative-guards.js?v=20260618-guards"></script>
-<script src="tm-office-fallback.js?v=20260618-officefb"></script>
-<script src="tm-office-runtime.js?v=20260916-release1350"></script>
+<script src="tm-office-system.js?v=20260920-release1352"></script>
+<script src="tm-region-magnate.js?v=20260920-release1352"></script>
+<script src="tm-era-language-pack.js?v=20260920-release1352"></script>
+<script src="tm-ai-narrative-guards.js?v=20260920-release1352"></script>
+<script src="tm-office-fallback.js?v=20260920-release1352"></script>
+<script src="tm-office-runtime.js?v=20260920-release1352"></script>
 <!-- 第十六拆(保序切割 sibling·必须紧接 tm-office-runtime.js 之后)：官员表摘要预警+中推/荐举+选任器 -->
-<script src="tm-office-runtime-summary-appoint.js?v=20260916-release1350"></script>
-<script src="tm-office-panel.js?v=20260916-release1350"></script>
+<script src="tm-office-runtime-summary-appoint.js?v=20260920-release1352"></script>
+<script src="tm-office-panel.js?v=20260920-release1352"></script>
 <!-- 官制活化（实验）：开关组 + 职权舆图（Slice①·默认关·零回归） -->
-<script src="tm-office-flags.js?v=20260620-officeact"></script>
-<script src="tm-office-powermap.js?v=20260909-character-actions"></script>
-<script src="tm-office-dutystate.js?v=20260620-officeact"></script>
-<script src="tm-office-authority.js?v=20260620-officeact"></script>
-<script src="tm-office-creation.js?v=20260913-office-create"></script>
-<script src="tm-office-reform.js?v=20260916-release1350"></script>
-<script src="tm-office-charter.js?v=20260721"></script><!-- 设衙门批一·设衙章程演绎层(拟制期AI拟正名/职掌/官职表/首任荐单/开办费·裁定准落全结构·flag officeCharterEnabled默认关) -->
-<script src="tm-office-recall-agent.js?v=20260620-officeact"></script>
+<script src="tm-office-flags.js?v=20260920-release1352"></script>
+<script src="tm-office-powermap.js?v=20260920-release1352"></script>
+<script src="tm-office-dutystate.js?v=20260920-release1352"></script>
+<script src="tm-office-authority.js?v=20260920-release1352"></script>
+<script src="tm-office-creation.js?v=20260920-release1352"></script>
+<script src="tm-office-reform.js?v=20260920-release1352"></script>
+<script src="tm-social-formation.js?v=20260921-release1352-3cb337f503b2"></script>
+<script src="tm-office-charter.js?v=20260920-release1352"></script><!-- 设衙门批一·设衙章程演绎层(拟制期AI拟正名/职掌/官职表/首任荐单/开办费·裁定准落全结构·flag officeCharterEnabled默认关) -->
+<script src="tm-office-recall-agent.js?v=20260920-release1352"></script>
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
-<script src="tm-npc-engine.js?v=2026050701"></script>
-<script src="tm-npc-action-ledger.js?v=2026051701"></script>
-<script src="tm-npc-decision.js?v=2026070401"></script>
-<script src="tm-npc-decision-ai-driven.js?v=2026070401"></script>
+<script src="tm-npc-engine.js?v=20260920-release1352"></script>
+<script src="tm-npc-action-ledger.js?v=20260920-release1352"></script>
+<script src="tm-npc-decision.js?v=20260920-release1352"></script>
+<script src="tm-npc-decision-ai-driven.js?v=20260920-release1352"></script>
 <!-- R111+R127 拆分 tm-game-engine.js → launch + player-settings + player-core + hongyan-office + game-loop -->
-<script src="tm-promotion.js?v=20260604-gongming"></script>
-<script src="tm-gongming.js?v=20260613-gongming-sys"></script>
+<script src="tm-promotion.js?v=20260920-release1352"></script>
+<script src="tm-gongming.js?v=20260920-release1352"></script>
 <script>window.TMStartupPhases.transition('world', { boundary: 'tm-launch' });</script>
-<script src="tm-launch.js?v=20260916-release1350"></script>
-<script src="tm-player-settings.js?v=20260622-wfswitches"></script>
-<script src="tm-player-core.js?v=20260916-release1350"></script>
-<script src="tm-hongyan-office.js?v=20260910-building-orders"></script>
-<script src="tm-game-ui-shell.js?v=20260910-building-orders"></script>
-<script src="tm-hongyan-edict-ui.js?v=20260910-building-orders"></script>
-<script src="tm-game-loop.js?v=20260916-release1350"></script>
-<script src="tm-game-loop-wentian-hardchange.js?v=20260916-release1350"></script>
-<script src="tm-map-system.js?v=20260709"></script>
-<script src="tm-map-locations.js?v=20260917location2"></script>
+<script src="tm-launch.js?v=20260920-release1352"></script>
+<script src="tm-player-settings.js?v=20260920-release1352"></script>
+<script src="tm-player-core.js?v=20260920-release1352"></script>
+<script src="tm-hongyan-office.js?v=20260920-release1352"></script>
+<script src="tm-game-ui-shell.js?v=20260920-release1352"></script>
+<script src="tm-hongyan-edict-ui.js?v=20260920-release1352"></script>
+<script src="tm-game-loop.js?v=20260920-release1352"></script>
+<script src="tm-game-loop-wentian-hardchange.js?v=20260920-release1352"></script>
+<script src="tm-map-system.js?v=20260920-release1352"></script>
+<script src="tm-map-locations.js?v=20260920-release1352"></script>
 <!-- R134 (2026-04-25) tm-dynamic-systems 拆分 → dynamic + save-manager + help-social -->
-<script src="tm-dynamic-systems.js?v=2026042714"></script>
-<script src="tm-save-manager.js?v=20260916-release1350"></script>
-<script src="tm-resume-point.js?v=20260705"></script><!-- 残局接演·发布 payload 构造（Wave4 slice-1·存档→resume 工坊包） -->
-<script src="tm-help-social.js?v=20260914-six-ui"></script>
+<script src="tm-dynamic-systems.js?v=20260920-release1352"></script>
+<script src="tm-save-manager.js?v=20260920-release1352"></script>
+<script src="tm-resume-point.js?v=20260920-release1352"></script><!-- 残局接演·发布 payload 构造（Wave4 slice-1·存档→resume 工坊包） -->
+<script src="tm-help-social.js?v=20260920-release1352"></script>
 <!-- R122+R130 拆分 tm-economy-military.js → economy + military + feudal -->
-<script src="tm-economy.js?v=20260707-nestflat"></script>
-<script src="tm-military.js?v=20260916-release1350"></script>
-<script src="tm-battle-contract.js?v=20260916-release1350"></script><!-- shared battle contract must follow the military writer -->
-<script src="tm-feudal.js?v=20260707-deadcode"></script>
-<script src="tm-feudal-warfare.js?v=20260707-deadcode"></script>
-<script src="tm-event-system.js?v=20260709"></script>
-<script src="tm-storage.js?v=20260820-auditfix9"></script>
-<script src="tm-endturn-helpers.js?v=20260916-release1350"></script>
-<script src="tm-border-risk.js?v=20260916-release1350"></script><!-- P1-A1a 边境风险结算·激活死字段 borderRisk·A4 消费 defenseBonus -->
-<script src="tm-border-invasion.js?v=20260721"></script><!-- 批二刀2·威胁→侵攻确定性接点·flag borderInvasionEnabled 默认OFF·高压3回合具象化入侵军 -->
-<script src="tm-coastal-raid.js?v=2026062001"></script><!-- P1-A3b 沿海袭击结算·激活死字段 coastalDefense -->
-<script src="tm-office-vacancy.js?v=2026062002"></script><!-- P1-C1 地方官缺写口·激活死字段 officeVacancy·A4 消费 officialSupply -->
-<script src="tm-custom-build-agent.js?v=20260909-building-channels"></script><!-- 自拟营建 agent·A1-A4·A5 多步(inspect/recall)+谏官对抗审·全走次要API -->
-<script src="tm-building-orders.js?v=20260910-building-orders"></script><!-- 原诏书营造案·身份绑定/核办回执·不提供独立操作入口 -->
-<script src="tm-endturn-province.js?v=20260914-six-ui"></script>
+<script src="tm-economy.js?v=20260920-release1352"></script>
+<script src="tm-military.js?v=20260920-release1352"></script>
+<script src="tm-battle-contract.js?v=20260920-release1352"></script>
+<script src="tm-feudal.js?v=20260920-release1352"></script>
+<script src="tm-feudal-warfare.js?v=20260920-release1352"></script>
+<script src="tm-event-system.js?v=20260920-release1352"></script>
+<script src="tm-storage.js?v=20260920-release1352"></script>
+<script src="tm-endturn-helpers.js?v=20260920-release1352"></script>
+<script src="tm-border-risk.js?v=20260920-release1352"></script><!-- P1-A1a 边境风险结算·激活死字段 borderRisk·A4 消费 defenseBonus -->
+<script src="tm-border-invasion.js?v=20260920-release1352"></script><!-- 批二刀2·威胁→侵攻确定性接点·flag borderInvasionEnabled 默认OFF·高压3回合具象化入侵军 -->
+<script src="tm-coastal-raid.js?v=20260920-release1352"></script><!-- P1-A3b 沿海袭击结算·激活死字段 coastalDefense -->
+<script src="tm-office-vacancy.js?v=20260920-release1352"></script><!-- P1-C1 地方官缺写口·激活死字段 officeVacancy·A4 消费 officialSupply -->
+<script src="tm-custom-build-agent.js?v=20260920-release1352"></script>
+<script src="tm-building-orders.js?v=20260920-release1352"></script><!-- 自拟营建 agent·A1-A4·A5 多步(inspect/recall)+谏官对抗审·全走次要API -->
+<script src="tm-endturn-province.js?v=20260920-release1352"></script>
 <!-- R161 R7 (2026-05-04) tm-endturn-qiaozhi 从 tm-endturn-province 拆出·侨置 (~250 行) -->
-<script src="tm-endturn-qiaozhi.js?v=2026050701"></script>
-<script src="tm-ai-apply-deaths.js?v=20260916-release1350"></script>
-<script src="tm-sidebar-ui.js?v=2026042714"></script>
-<script src="tm-renwu-ui.js?v=2026042816"></script>
-<script src="tm-shiji-qiju-ui.js?v=2026042714"></script>
-<script src="tm-court-meter.js?v=20260916-release1350"></script>
-<script src="tm-conspiracy.js?v=20260916-release1350"></script>
-<script src="tm-globalrules.js?v=20260630"></script><!-- 全局持续规则册（国是·风气）·B1·建筑/事件可立间接全局之制+配套阻力 -->
-<script src="tm-dianzhang.js?v=20260705"></script><!-- 典章/祖制建构轴·制度熬过考验著为成宪·累积塑造王朝（Wave5·地基） -->
-<script src="tm-world-digest.js?v=20260916-release1350"></script><!-- 天下牵动·因果综述·W1a·把割裂的系统反应重组成连贯因果注入推演 -->
-<script src="tm-benji.js?v=20260823-storage1"></script><!-- 帝王本纪·终局回顾式修史(鼎革R1g·每12回合一卷串行修纂·flag benjiEnabled) -->
-<script src="tm-world-reactors.js?v=20260630"></script><!-- 世界反应总线·跨系统reactor·W2a军事→势力·flag-gated默认关 -->
-<script src="tm-endturn-systems.js?v=20260916-release1350"></script>
-<script src="tm-endturn-ai-helpers.js?v=2026042714"></script>
-<script src="tm-endturn-ai-context.js?v=2026050401"></script>
-<script src="tm-history-events.js?v=20260916-release1350"></script>
-<script src="tm-tianji.js?v=2026062501"></script><!-- 史实「天机」·改命(穿越/上帝视角剧本预知正史+改命追踪)·gated tianjiEnabled默认关·跨朝代·依赖rigidHistoryEvents -->
-<script src="tm-junqing-brief.js?v=2026062501"></script><!-- 边报·天下军情(从活势力关系算敌我大势digest·开局即见每回合刷)·gated junqingBriefEnabled默认关·跨朝代 -->
-<script src="tm-xinjun-observe.js?v=2026062501"></script><!-- 新君观政·百日(即位之初百官观望/政令初行阻·相位+AI framing)·gated xinjunObserveEnabled默认关·跨朝代 -->
+<script src="tm-endturn-qiaozhi.js?v=20260920-release1352"></script>
+<script src="tm-ai-apply-deaths.js?v=20260920-release1352"></script>
+<script src="tm-sidebar-ui.js?v=20260920-release1352"></script>
+<script src="tm-renwu-ui.js?v=20260920-release1352"></script>
+<script src="tm-shiji-qiju-ui.js?v=20260920-release1352"></script>
+<script src="tm-court-meter.js?v=20260920-release1352"></script>
+<script src="tm-conspiracy.js?v=20260920-release1352"></script>
+<script src="tm-globalrules.js?v=20260920-release1352"></script><!-- 全局持续规则册（国是·风气）·B1·建筑/事件可立间接全局之制+配套阻力 -->
+<script src="tm-dianzhang.js?v=20260920-release1352"></script><!-- 典章/祖制建构轴·制度熬过考验著为成宪·累积塑造王朝（Wave5·地基） -->
+<script src="tm-world-digest.js?v=20260920-release1352"></script><!-- 天下牵动·因果综述·W1a·把割裂的系统反应重组成连贯因果注入推演 -->
+<script src="tm-benji.js?v=20260920-release1352"></script><!-- 帝王本纪·终局回顾式修史(鼎革R1g·每12回合一卷串行修纂·flag benjiEnabled) -->
+<script src="tm-world-reactors.js?v=20260920-release1352"></script><!-- 世界反应总线·跨系统reactor·W2a军事→势力·flag-gated默认关 -->
+<script src="tm-endturn-systems.js?v=20260920-release1352"></script>
+<script src="tm-endturn-ai-helpers.js?v=20260920-release1352"></script>
+<script src="tm-endturn-ai-context.js?v=20260920-release1352"></script>
+<script src="tm-history-events.js?v=20260920-release1352"></script>
+<script src="tm-tianji.js?v=20260920-release1352"></script><!-- 史实「天机」·改命(穿越/上帝视角剧本预知正史+改命追踪)·gated tianjiEnabled默认关·跨朝代·依赖rigidHistoryEvents -->
+<script src="tm-junqing-brief.js?v=20260920-release1352"></script><!-- 边报·天下军情(从活势力关系算敌我大势digest·开局即见每回合刷)·gated junqingBriefEnabled默认关·跨朝代 -->
+<script src="tm-xinjun-observe.js?v=20260920-release1352"></script><!-- 新君观政·百日(即位之初百官观望/政令初行阻·相位+AI framing)·gated xinjunObserveEnabled默认关·跨朝代 -->
 
-<script src="tm-post-turn-jobs.js?v=2026052201"></script>
-<script src="tm-arcs.js?v=20260916-release1350"></script>
-<script src="tm-memory-anchors.js?v=2026042714"></script>
-<script src="tm-chronicle-system.js?v=20260820-auditfix9"></script>
-<script src="tm-number-parser.js?v=20260824-round19"></script>
-<script src="tm-endturn-edict.js?v=20260916-release1350"></script>
+<script src="tm-post-turn-jobs.js?v=20260920-release1352"></script>
+<script src="tm-arcs.js?v=20260920-release1352"></script>
+<script src="tm-memory-anchors.js?v=20260920-release1352"></script>
+<script src="tm-chronicle-system.js?v=20260920-release1352"></script>
+<script src="tm-number-parser.js?v=20260920-release1352"></script>
+<script src="tm-endturn-edict.js?v=20260920-release1352"></script>
 <!-- R110 (2026-04-25) 拆分 tm-endturn.js → prep + ai-infer + core -->
 <!-- R138 (2026-04-25) endturn-prep 再拆·启动 AI 规划独立成 tm-ai-planning -->
-<script src="tm-ai-planning.js?v=20260916-release1350"></script>
-<script src="tm-endturn-prep.js?v=20260910-building-orders"></script>
-<script src="tm-class-engine.js?v=20260916-release1350"></script>
-<script src="tm-minxin-ledger.js?v=20260601-minxin-ledger"></script>
-<script src="tm-class-minxin-bridge.js?v=20260916-release1350"></script>
-<script src="tm-party-goals.js?v=20260531-party-goals-llm"></script>
-<script src="tm-party-class-tuning.js?v=20260601-party-class-tuning"></script>
-<script src="tm-party-class-ecology.js?v=20260601-party-class-ecology"></script>
-<script src="tm-social-political-signals.js?v=20260531-social-political-signals"></script>
-<script src="tm-player-action-signals.js?v=20260531-player-action-signals"></script>
-<script src="tm-class-character-relations.js?v=20260605-class-character-relations"></script>
-<script src="tm-minxin-pressure-actions.js?v=20260601-minxin-pressure-actions"></script>
-<script src="tm-minxin-commitment-tracker.js?v=20260909-channels"></script>
-<script src="tm-minxin-responsibility-chain.js?v=20260601-minxin-responsibility-chain"></script>
-<script src="tm-minxin-hard-links.js?v=20260916-release1350"></script>
-<script src="tm-minxin-hard-link-consumers.js?v=20260916-release1350"></script>
-<script src="tm-party-class-actors.js?v=20260601-party-class-actors"></script>
-<script src="tm-party-class-action-scheduler.js?v=20260601-party-class-action-scheduler"></script>
-<script src="tm-party-class-llm-calibrator.js?v=20260916-release1350"></script>
+<script src="tm-ai-planning.js?v=20260920-release1352"></script>
+<script src="tm-endturn-prep.js?v=20260920-release1352"></script>
+<script src="tm-class-engine.js?v=20260920-release1352"></script>
+<script src="tm-minxin-ledger.js?v=20260920-release1352"></script>
+<script src="tm-class-minxin-bridge.js?v=20260920-release1352"></script>
+<script src="tm-party-goals.js?v=20260920-release1352"></script>
+<script src="tm-party-class-tuning.js?v=20260920-release1352"></script>
+<script src="tm-party-class-ecology.js?v=20260920-release1352"></script>
+<script src="tm-social-political-signals.js?v=20260920-release1352"></script>
+<script src="tm-player-action-signals.js?v=20260920-release1352"></script>
+<script src="tm-class-character-relations.js?v=20260920-release1352"></script>
+<script src="tm-minxin-pressure-actions.js?v=20260920-release1352"></script>
+<script src="tm-minxin-commitment-tracker.js?v=20260920-release1352"></script>
+<script src="tm-minxin-responsibility-chain.js?v=20260920-release1352"></script>
+<script src="tm-minxin-hard-links.js?v=20260920-release1352"></script>
+<script src="tm-minxin-hard-link-consumers.js?v=20260920-release1352"></script>
+<script src="tm-party-class-actors.js?v=20260920-release1352"></script>
+<script src="tm-party-class-action-scheduler.js?v=20260920-release1352"></script>
+<script src="tm-party-class-llm-calibrator.js?v=20260920-release1352"></script>
 <!-- R209 (2026-05-04) Phase 7 P7-γ·§1 prompt 从 ai-infer 拆出·prompt 必先 load -->
 <!-- DA-Q2 (2026-06-21)·史记 record 提示词共享 builder·sc1 与 agent deepen_narrative 同源零 drift·须先于 ai.js load -->
-<script src="tm-endturn-record-specs.js?v=20260622-shiluwenyan"></script>
-<script src="tm-endturn-prompt.js?v=20260916-release1350"></script>
-<script src="tm-endturn-ai-sc1-budget.js?v=20260911-player-feedback"></script>
-<script src="tm-endturn-ai.js?v=20260916-release1350"></script>
-<script src="tm-endturn-apply.js?v=20260916-release1350"></script>
-<script src="tm-endturn-apply-stages.js?v=20260916-release1350"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
-<script src="tm-endturn-followup-helpers.js?v=20260706-splitsync"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
-<script src="tm-endturn-followup.js?v=20260706-splitsync"></script>
-<script src="tm-endturn-record.js?v=2026052201"></script>
-<script src="tm-endturn-ai-infer.js?v=20260911-player-feedback"></script>
-<script src="tm-endturn-core.js?v=20260916-release1350"></script>
+<script src="tm-endturn-record-specs.js?v=20260920-release1352"></script>
+<script src="tm-endturn-prompt.js?v=20260921-release1352-c8dd178dd1bf"></script>
+<script src="tm-endturn-ai-sc1-budget.js?v=20260920-release1352"></script>
+<script src="tm-endturn-ai.js?v=20260920-release1352"></script>
+<script src="tm-endturn-apply.js?v=20260920-release1352"></script>
+<script src="tm-endturn-apply-stages.js?v=20260920-release1352"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-followup-helpers.js?v=20260920-release1352"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
+<script src="tm-endturn-followup.js?v=20260920-release1352"></script>
+<script src="tm-endturn-record.js?v=20260920-release1352"></script>
+<script src="tm-endturn-ai-infer.js?v=20260920-release1352"></script>
+<script src="tm-endturn-reliability.js?v=20260920-release1352"></script>
+<script src="tm-endturn-recovery-vault.js?v=20260920-release1352"></script>
+<script src="tm-endturn-response-recovery.js?v=20260920-release1352"></script>
+<script src="tm-endturn-save-reconcile.js?v=20260920-release1352"></script>
+<script src="tm-endturn-core.js?v=20260920-release1352"></script>
 <!-- slice 1·2026-05-07·endTurn 管道执行器骨架·feature flag P.flags.useNewPipeline 触发·见 web/docs/endturn-data-flow.md -->
-<script src="tm-endturn-pipeline-types.js?v=2026050701"></script>
-<script src="tm-endturn-mode-contract.js?v=20260719-parallel1"></script>
-<script src="tm-endturn-timing-ledger.js?v=2026051801"></script>
-<script src="tm-endturn-pipeline-executor.js?v=2026050701"></script>
-<script src="tm-endturn-validity.js?v=2026051701"></script>
-<script src="tm-endturn-pipeline-steps.js?v=20260811-auditfix1"></script>
+<script src="tm-endturn-pipeline-types.js?v=20260920-release1352"></script>
+<script src="tm-endturn-mode-contract.js?v=20260920-release1352"></script>
+<script src="tm-endturn-timing-ledger.js?v=20260920-release1352"></script>
+<script src="tm-endturn-pipeline-executor.js?v=20260920-release1352"></script>
+<script src="tm-endturn-validity.js?v=20260920-release1352"></script>
+<script src="tm-endturn-pipeline-steps.js?v=20260920-release1352"></script>
 <!-- 回合推演「模式 b · agent 模式」平行引擎(开关 agentModeEnabled 默认关)·详设 docs/agent-mode-design.md -->
-<script src="tm-endturn-agent-mode.js?v=20260910-building-orders"></script>
-<script src="tm-endturn-agent-read-tools.js?v=20260719-r1349"></script>
-<script src="tm-wentian-agent.js?v=20260703-wtagent"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
-<script src="tm-endturn-agent-write-tools.js?v=20260910-building-orders"></script>
-<script src="tm-endturn-agent-depth-tools.js?v=20260719-agentparallel1"></script>
-<script src="tm-endturn-agent-intent-plan.js?v=20260719-single-committer1"></script>
-<script src="tm-endturn-shiji-compose.js?v=20260706-shijivolumes"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
-<script src="tm-endturn-render.js?v=20260823-auditfix18-autosave"></script>
+<script src="tm-endturn-agent-mode.js?v=20260920-release1352"></script>
+<script src="tm-endturn-agent-read-tools.js?v=20260920-release1352"></script>
+<script src="tm-wentian-agent.js?v=20260920-release1352"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
+<script src="tm-endturn-agent-write-tools.js?v=20260920-release1352"></script>
+<script src="tm-endturn-agent-depth-tools.js?v=20260920-release1352"></script>
+<script src="tm-endturn-agent-intent-plan.js?v=20260920-release1352"></script>
+<script src="tm-endturn-shiji-compose.js?v=20260920-release1352"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
+<script src="tm-endturn-render.js?v=20260920-release1352"></script>
 <!-- 过回合进度拍表引擎 + 电影化加载层·2026-06-10·见 web/docs/endturn-progress-precision-backlog.md·agent 拍表 2026-06-20 -->
-<script src="tm-endturn-progress.js?v=20260620-agentbeats"></script>
-<script src="tm-endturn-loading.js?v=20260620-agentbeats"></script>
-<script src="tm-theme-font.js?v=20260910-memorial-reading"></script>
-<script src="tm-api-models.js?v=20260914-six-ui"></script>
-<script src="tm-api-settings.js?v=20260914-six-ui"></script>
-<script src="tm-patches.js?v=20260916-release1350"></script>
-<script src="tm-patches-start.js?v=20260916-release1350"></script><!-- 立项拆分：剧本启动链(_tmStart*/开场仪典/startGame/doActualStart)·紧挨 patches 之后保序·勿动位置 -->
+<script src="tm-endturn-progress.js?v=20260920-release1352"></script>
+<script src="tm-endturn-loading.js?v=20260920-release1352"></script>
+<script src="tm-theme-font.js?v=20260920-release1352"></script>
+<script src="libs/polygon-clipping-0.15.7.min.js?v=20260920-release1352"></script>
+<script src="tm-map-workbench.js?v=20260920-release1352"></script>
+<script src="tm-map-workbench-client.js?v=20260920-release1352"></script>
+<script src="tm-start-compiler.js?v=20260920-release1352"></script>
+<script src="tm-start-preparation-document.js?v=20260920-release1352"></script>
+<script src="tm-start-preparation.js?v=20260920-release1352"></script>
+<script src="tm-start-commit.js?v=20260920-release1352"></script>
+<script src="tm-start-selector.js?v=20260920-release1352"></script>
+<script src="tm-patches.js?v=20260920-release1352"></script>
+<script src="tm-patches-start.js?v=20260920-release1352"></script><!-- 立项拆分：剧本启动链(_tmStart*/开场仪典/startGame/doActualStart)·紧挨 patches 之后保序·勿动位置 -->
 <!-- R17-R22: 从 tm-patches.js 抽离的子模块（加载在 patches 之后覆盖原版） -->
-<script src="tm-military-ui.js?v=2026042714"></script>
-<script src="tm-world-view.js?v=2026042714"></script>
-<script src="editor-details.js?v=2026050301" defer></script>
-<script src="tm-three-systems-ext.js?v=20260916-release1350"></script>
-<script src="tm-army-units.js?v=2026061900"></script><!-- 御驾亲征接入 Phase0·army.composition→units[] 编制地基 -->
-<script src="tm-armory.js?v=2026062000"></script><!-- 军备/武库库存·GM.guoku.armory 五类军备(甲胄/兵刃/弓弩/火器/战马)·募兵从武库支取 -->
-<script src="tm-battle-adapter.js?v=20260914-battle7"></script><!-- 御驾亲征接入 Phase1·units[]→startBattle(config) 适配器 -->
-<script src="tm-battle-embed.js?v=20260914-battle7"></script><!-- 御驾亲征接入 Phase1·iframe 嵌入战术战斗(web/battle/) -->
-<script src="tm-battle-resolve.js?v=20260914-battle7"></script><!-- 御驾亲征接入 Phase2·抽象带预测器 + 战术result→battleResult 夹带/回填 -->
-<script src="tm-battle-turn.js?v=20260914-battle7"></script><!-- 御驾亲征接入 Phase2·活线咽喉拦截+会战阶段(flag GM._yujiaQinzheng·默认OFF) -->
+<script src="tm-military-ui.js?v=20260920-release1352"></script>
+<script src="tm-world-view.js?v=20260920-release1352"></script>
+<script src="editor-details.js?v=20260920-release1352" defer></script>
+<script src="tm-three-systems-ext.js?v=20260920-release1352"></script>
+<script src="tm-army-units.js?v=20260920-release1352"></script><!-- 御驾亲征接入 Phase0·army.composition→units[] 编制地基 -->
+<script src="tm-armory.js?v=20260920-release1352"></script><!-- 军备/武库库存·GM.guoku.armory 五类军备(甲胄/兵刃/弓弩/火器/战马)·募兵从武库支取 -->
+<script src="tm-battle-adapter.js?v=20260920-release1352"></script><!-- 御驾亲征接入 Phase1·units[]→startBattle(config) 适配器 -->
+<script src="tm-battle-embed.js?v=20260920-release1352"></script><!-- 御驾亲征接入 Phase1·iframe 嵌入战术战斗(web/battle/) -->
+<script src="tm-battle-resolve.js?v=20260920-release1352"></script><!-- 御驾亲征接入 Phase2·抽象带预测器 + 战术result→battleResult 夹带/回填 -->
+<script src="tm-battle-turn.js?v=20260920-release1352"></script><!-- 御驾亲征接入 Phase2·活线咽喉拦截+会战阶段(flag GM._yujiaQinzheng·默认OFF) -->
 <!-- 2026-05-10·Phase D1·势力 paradigm utility·必须在所有 faction 模块之前 -->
-<script src="tm-faction-paradigm.js?v=2026051001"></script>
+<script src="tm-faction-paradigm.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase F1·char personality hints·让 NPC 决策按人格调权 -->
-<script src="tm-faction-personality.js?v=2026051001"></script>
+<script src="tm-faction-personality.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase F3·NPC AI 精细化开关 -->
-<script src="tm-faction-npc-settings.js?v=2026052201"></script>
+<script src="tm-faction-npc-settings.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase H1·NPC 事件 → 近事快报桥·必须在所有 npc-* 模块之前·让 generate 时能调 -->
-<script src="tm-faction-npc-news-bridge.js?v=2026051001"></script>
+<script src="tm-faction-npc-news-bridge.js?v=20260920-release1352"></script>
 <!-- 2026-05-17·NPC 势力精细化推演统一 action engine -->
-<script src="tm-faction-action-engine.js?v=20260916-release1350"></script>
+<script src="tm-faction-action-engine.js?v=20260920-release1352"></script>
 <!-- ③-S2 (2026-06-19) 势力前瞻式目标栈：带状态多步计划·供 NPC 决策连贯推进（开关 P.conf.factionGoalStackEnabled 默认关） -->
-<script src="tm-faction-goal-stack.js?v=20260619-s2"></script>
+<script src="tm-faction-goal-stack.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase F2·player 干预 NPC 内政 -->
-<script src="tm-faction-npc-intervention.js?v=2026051001"></script>
+<script src="tm-faction-npc-intervention.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase F4·NPC 内政 LLM 润色·cosmetic·依赖 npc-settings (开关) + callAI -->
-<script src="tm-faction-npc-llm-enrich.js?v=2026051001"></script>
+<script src="tm-faction-npc-llm-enrich.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase G·NPC LLM 决策接管·真改机制·替代模板 -->
-<script src="tm-faction-npc-llm-decision.js?v=20260916-release1350"></script>
-<script src="tm-faction-diplomacy.js?v=20260619-diplomacy-s1"></script>
-<script src="tm-negotiation.js?v=20260722"></script><!-- 批己·谈判多轮会话引擎·招抚/议和/势力外交共用状态机·玩家可回价续谈·flag negotiationSessionsEnabled 默认ON -->
-<script src="tm-faction-decision-tools.js?v=20260619-fdtools-s1"></script>
+<script src="tm-faction-npc-llm-decision.js?v=20260920-release1352"></script>
+<script src="tm-faction-diplomacy.js?v=20260920-release1352"></script>
+<script src="tm-negotiation.js?v=20260920-release1352"></script><!-- 批己·谈判多轮会话引擎·招抚/议和/势力外交共用状态机·玩家可回价续谈·flag negotiationSessionsEnabled 默认ON -->
+<script src="tm-faction-decision-tools.js?v=20260920-release1352"></script>
 <!-- 2026-05-10 Phase H3: in-turn NPC background LLM driver -->
-<script src="tm-faction-npc-in-turn-driver.js?v=20260623-liveworld"></script>
+<script src="tm-faction-npc-in-turn-driver.js?v=20260920-release1352"></script>
 <!-- 2026-05-17: unified faction precision LLM scheduler + dispatch ledger -->
-<script src="tm-faction-npc-dispatcher.js?v=20260531-party-class-llm"></script>
+<script src="tm-faction-npc-dispatcher.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Layer 2 势力反向索引·必须在 three-systems-ui 之前·game-loop 之后 -->
-<script src="tm-faction-index.js?v=2026051001"></script>
+<script src="tm-faction-index.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Layer 3 势力派生健康度·依赖 _facIndex·必须在 index 之后 -->
-<script src="tm-faction-derived-health.js?v=2026051001"></script>
+<script src="tm-faction-derived-health.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase B1-B3·派生经济/凝聚/综合·依赖 derived-health -->
-<script src="tm-faction-derived-economy.js?v=20260916-release1350"></script>
-<script src="tm-faction-derived-cohesion.js?v=2026051001"></script>
-<script src="tm-faction-derived-strength.js?v=2026051001"></script>
+<script src="tm-faction-derived-economy.js?v=20260920-release1352"></script>
+<script src="tm-faction-derived-cohesion.js?v=20260920-release1352"></script>
+<script src="tm-faction-derived-strength.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase C1·NPC memorial 系统·依赖 derived -->
-<script src="tm-faction-npc-memorial.js?v=2026051001"></script>
+<script src="tm-faction-npc-memorial.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase C2·NPC edict 系统·依赖 derived + memorial -->
-<script src="tm-faction-npc-edict.js?v=2026051001"></script>
+<script src="tm-faction-npc-edict.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase C3·NPC chaoyi 派系朝议·依赖 derived + memorial -->
-<script src="tm-faction-npc-chaoyi.js?v=2026051001"></script>
+<script src="tm-faction-npc-chaoyi.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase C4·NPC office 人事任免·依赖 derived + memorial -->
-<script src="tm-faction-npc-office.js?v=2026051001"></script>
+<script src="tm-faction-npc-office.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Phase C5·NPC guoku 财政周期·依赖 derivedEconomy -->
-<script src="tm-faction-npc-guoku.js?v=20260916-release1350"></script>
+<script src="tm-faction-npc-guoku.js?v=20260920-release1352"></script>
 <!-- 2026-05-10·Slice D 势力归属单一 mutator·依赖 index + derived (内部 refresh) -->
-<script src="tm-faction-membership.js?v=20260916-release1350"></script>
-<script src="tm-three-systems-ui.js?v=20260916-release1350"></script>
-<script src="tm-char-arcs.js?v=2026042714"></script>
+<script src="tm-faction-membership.js?v=20260920-release1352"></script>
+<script src="tm-three-systems-ui.js?v=20260920-release1352"></script>
+<script src="tm-char-arcs.js?v=20260920-release1352"></script>
 <!-- R112+R125+Phase3 (2026-05-03)·tm-chaoyi-keju 拆分链·朝议 4 文件 (chaoyi 入口·changchao 常朝·tinyi 廷议·yuqian 御前)·misc 已 redistribute 到 office-panel/launch/map-system -->
-<script src="tm-keju-learning-traits.js?v=2026052301"></script>
-<script src="tm-keju-tier.js?v=2026052302"></script>
-<script src="tm-keju-presets.js?v=2026052302"></script>
-<script src="tm-keju-paradigm-presets.js?v=20260523-L1"></script>
-<script src="tm-keju-paradigm.js?v=20260916-release1350"></script>
-<script src="tm-keju-reform-llm.js?v=20260719-memsanitize"></script>
-<script src="tm-keju-paradigm-panel-render.js?v=20260706-splitsync"></script><!-- 立项拆分alias首例：渲染族+常量表·须紧挨 panel 之前(alias 装载期解析)·勿动位置 -->
-<script src="tm-keju-paradigm-panel.js?v=20260706-splitsync"></script>
-<script src="tm-keju-topic-router.js?v=2026082301"></script>
-<script src="tm-keju-examiner-view.js?v=2026052304"></script>
-<script src="tm-keju-tension.js?v=2026052304"></script>
-<script src="tm-keju-corruption.js?v=2026052304"></script>
-<script src="tm-keju-question-ui.js?v=2026052304"></script>
-<script src="tm-keju-budget-ui.js?v=2026052304"></script>
-<script src="tm-keju-dianshi-events.js?v=2026052305"></script>
-<script src="tm-keju-mentor.js?v=2026052305"></script>
-<script src="tm-keju-disciple-graph.js?v=2026052306"></script>
-<script src="tm-keju-disciple-memorial.js?v=2026052306"></script>
-<script src="tm-keju-cohort-meet.js?v=2026052307"></script>
-<script src="tm-keju-yanguan-attribution.js?v=2026052308"></script>
-<script src="tm-keju-yanguan-qingyi.js?v=20260523-2200"></script>
-<script src="tm-keju-reform-memorial.js?v=20260524-l7a"></script>
-<script src="tm-keju-reform-evolution.js?v=20260525-l9"></script>
-<script src="tm-keju-reform-presets-history.js?v=20260525-l10"></script>
-<script src="tm-keju-special-exams.js?v=20260525-g1"></script>
-<script src="tm-keju-scandal.js?v=2026082301"></script>
-<script src="tm-keju-event-hooks.js?v=20260525-g2-step0"></script>
-<script src="tm-keju-enke-player-initiative.js?v=20260525-g2-step0a"></script>
-<script src="tm-keju-enke.js?v=20260528-chardelete"></script>
-<script src="tm-keju-wuju.js?v=20260916-release1350"></script>
-<script src="tm-keju-tongzi.js?v=20260526-g5"></script>
-<script src="tm-keju-school-network.js?v=20260526-h0h1"></script>
-<script src="tm-keju-reform-rollback.js?v=20260525-l11"></script>
-<script src="tm-keju-reformer-bio.js?v=20260525-l12"></script>
-<script src="tm-keju-reform-apply.js?v=20260524-l7a"></script>
-<script src="tm-keju-allocation.js?v=2026052305"></script>
-<script src="tm-keju-activation.js?v=2026052301"></script>
-<script src="tm-keju-indicators.js?v=20260811-auditfix1"></script>
-<script src="tm-keju.js?v=20260916-release1350"></script>
-<script src="tm-chaoyi.js?v=2026052202"></script>
-<script src="tm-official-scenario-seeder.js?v=20260916-release1350"></script>
-<script src="tm-electron.js?v=20260916-release1350"></script>
-<script src="tm-keju-runtime.js?v=20260916-release1350"></script>
-<script src="tm-keju-runtime-keyi.js?v=20260916-release1350"></script>
-<script src="tm-chaoyi-tinyi.js?v=2026052803"></script>
-<script src="tm-chaoyi-yuqian.js?v=2026052803"></script>
-<script src="tm-chaoyi-changchao-adapter.js?v=20260916-release1350"></script>
-<script src="tm-chaoyi-changchao.js?v=20260916-release1350"></script>
-<script src="tm-chaoyi-changchao-flows.js?v=20260916-release1350"></script>
-<script src="tm-tinyi-v3-persona.js?v=2026070401"></script>
-<script src="tm-tinyi-v3.js?v=2026070401"></script>
-<script src="tm-tinyi-v3-edict-personnel.js?v=2026070401"></script><!-- 立项拆分二切：§9草诏拟旨+§10廷推·须在 origin 与 -parties 之间保序·勿动位置 -->
-<script src="tm-tinyi-v3-parties.js?v=2026070401"></script>
-<script src="tm-char-autogen.js?v=20260916-release1350"></script>
-<script src="tm-bgm-config.js?v=2026051201"></script>
+<script src="tm-keju-learning-traits.js?v=20260920-release1352"></script>
+<script src="tm-keju-tier.js?v=20260920-release1352"></script>
+<script src="tm-keju-presets.js?v=20260920-release1352"></script>
+<script src="tm-keju-paradigm-presets.js?v=20260920-release1352"></script>
+<script src="tm-keju-paradigm.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-llm.js?v=20260920-release1352"></script>
+<script src="tm-keju-paradigm-panel-render.js?v=20260920-release1352"></script><!-- 立项拆分alias首例：渲染族+常量表·须紧挨 panel 之前(alias 装载期解析)·勿动位置 -->
+<script src="tm-keju-paradigm-panel.js?v=20260920-release1352"></script>
+<script src="tm-keju-topic-router.js?v=20260920-release1352"></script>
+<script src="tm-keju-examiner-view.js?v=20260920-release1352"></script>
+<script src="tm-keju-tension.js?v=20260920-release1352"></script>
+<script src="tm-keju-corruption.js?v=20260920-release1352"></script>
+<script src="tm-keju-question-ui.js?v=20260920-release1352"></script>
+<script src="tm-keju-budget-ui.js?v=20260920-release1352"></script>
+<script src="tm-keju-dianshi-events.js?v=20260920-release1352"></script>
+<script src="tm-keju-mentor.js?v=20260920-release1352"></script>
+<script src="tm-keju-disciple-graph.js?v=20260920-release1352"></script>
+<script src="tm-keju-disciple-memorial.js?v=20260920-release1352"></script>
+<script src="tm-keju-cohort-meet.js?v=20260920-release1352"></script>
+<script src="tm-keju-yanguan-attribution.js?v=20260920-release1352"></script>
+<script src="tm-keju-yanguan-qingyi.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-memorial.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-evolution.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-presets-history.js?v=20260920-release1352"></script>
+<script src="tm-keju-special-exams.js?v=20260920-release1352"></script>
+<script src="tm-keju-scandal.js?v=20260920-release1352"></script>
+<script src="tm-keju-event-hooks.js?v=20260920-release1352"></script>
+<script src="tm-keju-enke-player-initiative.js?v=20260920-release1352"></script>
+<script src="tm-keju-enke.js?v=20260920-release1352"></script>
+<script src="tm-keju-wuju.js?v=20260920-release1352"></script>
+<script src="tm-keju-tongzi.js?v=20260920-release1352"></script>
+<script src="tm-keju-school-network.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-rollback.js?v=20260920-release1352"></script>
+<script src="tm-keju-reformer-bio.js?v=20260920-release1352"></script>
+<script src="tm-keju-reform-apply.js?v=20260920-release1352"></script>
+<script src="tm-keju-allocation.js?v=20260920-release1352"></script>
+<script src="tm-keju-activation.js?v=20260920-release1352"></script>
+<script src="tm-keju-indicators.js?v=20260920-release1352"></script>
+<script src="tm-keju.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi.js?v=20260920-release1352"></script>
+<script src="tm-official-scenario-seeder.js?v=20260920-release1352"></script>
+<script src="tm-electron.js?v=20260920-release1352"></script>
+<script src="tm-keju-runtime.js?v=20260920-release1352"></script>
+<script src="tm-keju-runtime-keyi.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi-tinyi.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi-yuqian.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi-changchao-adapter.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi-changchao.js?v=20260920-release1352"></script>
+<script src="tm-chaoyi-changchao-flows.js?v=20260920-release1352"></script>
+<script src="tm-tinyi-v3-persona.js?v=20260920-release1352"></script>
+<script src="tm-tinyi-v3.js?v=20260920-release1352"></script>
+<script src="tm-tinyi-v3-edict-personnel.js?v=20260920-release1352"></script><!-- 立项拆分二切：§9草诏拟旨+§10廷推·须在 origin 与 -parties 之间保序·勿动位置 -->
+<script src="tm-tinyi-v3-parties.js?v=20260920-release1352"></script>
+<script src="tm-char-autogen.js?v=20260920-release1352"></script>
+<script src="tm-bgm-config.js?v=20260920-release1352"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
-<script src="tm-audio-theme.js?v=20260710-fontscale"></script>
-<!-- Save validation family: keep these adjacent and in this order. -->
-<script src="tm-save-world-validation.js?v=20260916-release1350"></script>
-<script src="tm-save-lifecycle.js?v=20260916-release1350"></script>
-<script src="tm-save-close-flush.js?v=20260825-close-drain"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
-<script src="tm-office-editor.js?v=20260911-scenario-origin"></script>
-<script src="tm-topbar-vars.js?v=20260916-release1350"></script>
+<script src="tm-audio-theme.js?v=20260920-release1352"></script>
+<script src="tm-save-world-validation.js?v=20260920-release1352"></script>
+<script src="tm-save-lifecycle.js?v=20260920-release1352"></script>
+<script src="tm-save-close-flush.js?v=20260920-release1352"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
+<script src="tm-office-editor.js?v=20260920-release1352"></script>
+<script src="tm-topbar-vars.js?v=20260920-release1352"></script>
 <!-- R137 (2026-04-25) 拆 shell-extras → shell UI + 时政面板 -->
-<script src="tm-shell-extras.js?v=20260916-release1350"></script>
-<script src="tm-houguong.js?v=20260601-hougong"></script>
-<script src="tm-shizheng-panel.js?v=20260909-hide-register"></script>
-<script src="tm-corruption-engine.js?v=20260916-release1350"></script>
-<script src="tm-corruption-cases.js?v=20260916-release1350"></script>
-<script src="tm-corruption-extras.js?v=20260916-release1350"></script>
-<script src="tm-lizhi-panel.js?v=20260916-release1350"></script>
+<script src="tm-shell-extras.js?v=20260920-release1352"></script>
+<script src="tm-houguong.js?v=20260920-release1352"></script>
+<script src="tm-shizheng-panel.js?v=20260920-release1352"></script>
+<script src="tm-corruption-engine.js?v=20260920-release1352"></script>
+<script src="tm-corruption-cases.js?v=20260920-release1352"></script>
+<script src="tm-corruption-extras.js?v=20260920-release1352"></script>
+<script src="tm-lizhi-panel.js?v=20260920-release1352"></script>
 <!-- R9 done (2026-05-04) tm-guoku-p2/p4/p5/p6 已全部 inline 入 engine·5 文件 → 1 -->
-<script src="tm-guoku-engine.js?v=20260916-release1350"></script>
-<script src="tm-guoku-panel.js?v=20260916-release1350"></script>
-<script src="tm-neitang-engine.js?v=20260916-release1350"></script>
-<script src="tm-neitang-panel.js?v=20260916-release1350"></script>
-<script src="tm-char-economy-engine.js?v=20260916-release1350"></script>
-<script src="tm-char-economy-ledger.js?v=20260916-release1350"></script>
-<script src="tm-char-historical-profiles.js?v=2026042817"></script>
+<script src="tm-guoku-engine.js?v=20260920-release1352"></script>
+<script src="tm-guoku-panel.js?v=20260920-release1352"></script>
+<script src="tm-neitang-engine.js?v=20260920-release1352"></script>
+<script src="tm-neitang-panel.js?v=20260920-release1352"></script>
+<script src="tm-char-economy-engine.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-profiles.js?v=20260920-release1352"></script>
 <!-- 历史人物 ext (Phase 2 split·原 tm-char-historical-profiles-ext.js 10298 行 → 12 wave·按时间波次·preserve 原作者结构) -->
-<script src="tm-char-historical-wave-01.js?v=20260709"></script>
-<script src="tm-char-historical-wave-02.js?v=20260709"></script>
-<script src="tm-char-historical-wave-03.js?v=20260709"></script>
-<script src="tm-char-historical-wave-04.js?v=20260709"></script>
-<script src="tm-char-historical-wave-05.js?v=20260709"></script>
-<script src="tm-char-historical-wave-06.js?v=20260709"></script>
-<script src="tm-char-historical-wave-07.js?v=20260709"></script>
-<script src="tm-char-historical-wave-08.js?v=20260709"></script>
-<script src="tm-char-historical-wave-09.js?v=20260709"></script>
-<script src="tm-char-historical-wave-10.js?v=20260709"></script>
-<script src="tm-char-historical-wave-11.js?v=20260709"></script>
-<script src="tm-char-historical-wave-12.js?v=20260709"></script>
-<script src="tm-ceming.js?v=20260916-release1350"></script>
-<script src="tm-char-economy-ui.js?v=20260916-release1350"></script>
-<script src="tm-char-full-schema.js?v=2026042714"></script>
-<script src="tm-economy-engine-currency.js?v=20260916-release1350"></script><!-- 立项拆分：§A CurrencyUnit+§B CurrencyEngine 两整IIFE·紧挨 economy-engine 之前保序·勿动位置 -->
-<script src="tm-economy-engine.js?v=20260916-release1350"></script>
-<script src="tm-central-local-engine.js?v=20260916-release1350"></script>
-<script src="tm-huji-engine.js?v=20260916-release1350"></script>
-<script src="tm-edict-parser.js?v=20260828-population-schema"></script>
-<script src="tm-huji-deep-fill.js?v=20260822-auditfix14"></script>
-<script src="tm-huji-runtime-bridge.js?v=20260916-release1350"></script>
-<script src="tm-huji-governance-loop.js?v=20260916-release1350"></script>
-<script src="tm-edict-complete.js?v=2026050701"></script>
-<script src="tm-env-recovery-fill.js?v=20260709"></script>
-<script src="tm-authority-engines.js?v=20260916-release1350"></script>
-<script src="tm-building-works.js?v=20260909-building-channels"></script><!-- A4 活字段+S6 生命周期(灾损/修缮/维护分档)+S7 营造可观测账 buildingLedger -->
-<script src="tm-talent-cohorts.js?v=20260630-talent-s1"></script><!-- 人才范式渗透引擎 S1：多瓶颈漏斗(招生/师资/吸纳/历练/制度空间)·flag talentCohortEnabled 默认关 -->
-<script src="tm-talent-bottlenecks.js?v=20260630-talent-s3b"></script><!-- S3b：瓶颈接全国 economyBase/政区/驻军(没产业=没岗位=毕业即失业) -->
-<script src="tm-talent-building-bridge.js?v=20260630-talent-s2"></script><!-- S2：建筑完工→人才范式源(费效封顶·可逆·幂等) -->
-<script src="tm-talent-backlash.js?v=20260630-talent-s5"></script><!-- S5：渗透反弹→御案时政政治事件(请罢新学/失业学潮)+临界旧式瓦解+动态room政治阻力 -->
-<script src="tm-field-pipelines.js?v=20260612"></script>
-<script src="tm-region-status.js?v=20260612"></script>
-<script src="tm-renli.js?v=20260916-release1350"></script>
-<script src="tm-reported-view.js?v=20260711"></script><!-- 奏报失真层核心引擎(S1·真值vs据奏·纯推导不落库·严格史实+开关双gate·docs/design-reported-view-2026-07.md) -->
-<script src="tm-social-foundation.js?v=20260612"></script>
-<script src="tm-authority-complete.js?v=20260916-release1350"></script>
-<script src="tm-revolt-entity.js?v=20260721"></script><!-- R2民变实体镜像·flag revoltEntityEnabled 默认OFF·爬梯level≥3具象化势力/渠帅/军队三件套 -->
-<script src="tm-revolt-inference.js?v=20260721b"></script><!-- 批三·民变演绎层(AI主导)·起号立领袖subcall+逐回合行为subcall(打/占/分合/建国/招抚谈判)·宪法闸落账·AI缺席模板兜底 -->
-<script src="tm-party-inference.js?v=20260722"></script><!-- 批乙·党派/阶层演绎层(AI主导)·forgeIdentity立身份+tickInference逐回合党派行动(联名/清议/杯葛/结盟交恶/议程转向/倒阁/煽动阶层)·宪法闸落账·flag partyInferenceEnabled默认ON·AI缺席模板兜底 -->
-<script src="tm-captive-court.js?v=20260721"></script><!-- 批七·悬朝演绎层(北狩残局朝廷侧)·君被虏朝廷AI当一等演员(观望/监国/立新君)·归銮后复辟旨即夺门谋划·随revoltEntityEnabled -->
-<script src="tm-historical-presets.js?v=20260822-auditfix14"></script>
-<script src="tm-prophecy.js?v=20260916-release1350"></script>
-<script src="tm-region-enrich.js?v=20260916-release1350"></script>
-<script src="tm-audit.js?v=2026042714"></script>
-<script src="tm-feedback-loops.js?v=20260709"></script>
-<script src="tm-event-bus.js?v=20260916-release1350"></script>
-<script src="tm-class-mobility.js?v=20260916-release1350"></script>
-<script src="tm-authority-deep.js?v=20260916-release1350"></script>
-<script src="tm-player-tools.js?v=20260916-release1350"></script>
-<script src="tm-ledger-paper.js?v=2026042714"></script>
-<script src="tm-authority-ui.js?v=20260709"></script>
-<script src="tm-ethnic-religion.js?v=2026050701"></script>
-<script src="tm-edict-thresholds.js?v=2026042714"></script>
-<script src="tm-fiscal-ui.js?v=20260916-release1350"></script>
-<script src="tm-integration-bridge.js?v=20260916-release1350"></script>
-<script src="tm-fiscal-statements.js?v=20260916-release1350"></script>
-<script src="tm-fiscal-engine.js?v=20260916-release1350"></script>
-<script src="tm-public-treasury.js?v=20260916-release1350"></script>
-<script src="tm-military-arrears.js?v=20260916-release1350"></script>
-<script src="tm-invariants.js?v=2026042714"></script>
-<script src="tm-namespaces.js?v=2026042714"></script>
-<script src="tm-state.js?v=2026042714"></script>
-<script src="tm-diff.js?v=2026042714"></script>
-<script src="tm-hooks-tracker.js?v=2026042714"></script>
-<script src="tm-diagnostics-panel.js?v=2026042714" defer></script>
-<script src="tm-checklist.js?v=2026042714" defer></script>
-<script src="tm-onboard-tools.js?v=2026042714" defer></script>
-<script src="tm-ai-schema.js?v=20260916-release1350"></script>
-<script src="tm-ai-output-validator.js?v=20260910-building-orders"></script>
-<script src="tm-data-access.js?v=2026042714"></script>
+<script src="tm-char-historical-wave-01.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-02.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-03.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-04.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-05.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-06.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-07.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-08.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-09.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-10.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-11.js?v=20260920-release1352"></script>
+<script src="tm-char-historical-wave-12.js?v=20260920-release1352"></script>
+<script src="tm-ceming.js?v=20260920-release1352"></script>
+<script src="tm-char-economy-ui.js?v=20260920-release1352"></script>
+<script src="tm-char-full-schema.js?v=20260920-release1352"></script>
+<script src="tm-economy-engine-currency.js?v=20260920-release1352"></script><!-- 立项拆分：§A CurrencyUnit+§B CurrencyEngine 两整IIFE·紧挨 economy-engine 之前保序·勿动位置 -->
+<script src="tm-economy-engine.js?v=20260920-release1352"></script>
+<script src="tm-central-local-engine.js?v=20260920-release1352"></script>
+<script src="tm-huji-engine.js?v=20260920-release1352"></script>
+<script src="tm-edict-parser.js?v=20260920-release1352"></script>
+<script src="tm-huji-deep-fill.js?v=20260920-release1352"></script>
+<script src="tm-huji-runtime-bridge.js?v=20260920-release1352"></script>
+<script src="tm-huji-governance-loop.js?v=20260920-release1352"></script>
+<script src="tm-edict-complete.js?v=20260920-release1352"></script>
+<script src="tm-env-recovery-fill.js?v=20260920-release1352"></script>
+<script src="tm-authority-engines.js?v=20260920-release1352"></script>
+<script src="tm-building-works.js?v=20260920-release1352"></script><!-- A4 活字段+S6 生命周期(灾损/修缮/维护分档)+S7 营造可观测账 buildingLedger -->
+<script src="tm-talent-cohorts.js?v=20260920-release1352"></script><!-- 人才范式渗透引擎 S1：多瓶颈漏斗(招生/师资/吸纳/历练/制度空间)·flag talentCohortEnabled 默认关 -->
+<script src="tm-talent-bottlenecks.js?v=20260920-release1352"></script><!-- S3b：瓶颈接全国 economyBase/政区/驻军(没产业=没岗位=毕业即失业) -->
+<script src="tm-talent-building-bridge.js?v=20260920-release1352"></script><!-- S2：建筑完工→人才范式源(费效封顶·可逆·幂等) -->
+<script src="tm-talent-backlash.js?v=20260920-release1352"></script><!-- S5：渗透反弹→御案时政政治事件(请罢新学/失业学潮)+临界旧式瓦解+动态room政治阻力 -->
+<script src="tm-field-pipelines.js?v=20260920-release1352"></script>
+<script src="tm-region-status.js?v=20260920-release1352"></script>
+<script src="tm-renli.js?v=20260920-release1352"></script>
+<script src="tm-reported-view.js?v=20260920-release1352"></script><!-- 奏报失真层核心引擎(S1·真值vs据奏·纯推导不落库·严格史实+开关双gate·docs/design-reported-view-2026-07.md) -->
+<script src="tm-social-foundation.js?v=20260920-release1352"></script>
+<script src="tm-authority-complete.js?v=20260920-release1352"></script>
+<script src="tm-revolt-entity.js?v=20260920-release1352"></script><!-- R2民变实体镜像·flag revoltEntityEnabled 默认OFF·爬梯level≥3具象化势力/渠帅/军队三件套 -->
+<script src="tm-revolt-inference.js?v=20260920-release1352"></script><!-- 批三·民变演绎层(AI主导)·起号立领袖subcall+逐回合行为subcall(打/占/分合/建国/招抚谈判)·宪法闸落账·AI缺席模板兜底 -->
+<script src="tm-party-inference.js?v=20260920-release1352"></script><!-- 批乙·党派/阶层演绎层(AI主导)·forgeIdentity立身份+tickInference逐回合党派行动(联名/清议/杯葛/结盟交恶/议程转向/倒阁/煽动阶层)·宪法闸落账·flag partyInferenceEnabled默认ON·AI缺席模板兜底 -->
+<script src="tm-captive-court.js?v=20260920-release1352"></script><!-- 批七·悬朝演绎层(北狩残局朝廷侧)·君被虏朝廷AI当一等演员(观望/监国/立新君)·归銮后复辟旨即夺门谋划·随revoltEntityEnabled -->
+<script src="tm-historical-presets.js?v=20260920-release1352"></script>
+<script src="tm-prophecy.js?v=20260920-release1352"></script>
+<script src="tm-region-enrich.js?v=20260920-release1352"></script>
+<script src="tm-audit.js?v=20260920-release1352"></script>
+<script src="tm-feedback-loops.js?v=20260920-release1352"></script>
+<script src="tm-event-bus.js?v=20260920-release1352"></script>
+<script src="tm-class-mobility.js?v=20260920-release1352"></script>
+<script src="tm-authority-deep.js?v=20260920-release1352"></script>
+<script src="tm-player-tools.js?v=20260920-release1352"></script>
+<script src="tm-ledger-paper.js?v=20260920-release1352"></script>
+<script src="tm-authority-ui.js?v=20260920-release1352"></script>
+<script src="tm-ethnic-religion.js?v=20260920-release1352"></script>
+<script src="tm-edict-thresholds.js?v=20260920-release1352"></script>
+<script src="tm-fiscal-ui.js?v=20260920-release1352"></script>
+<script src="tm-integration-bridge.js?v=20260920-release1352"></script>
+<script src="tm-public-treasury.js?v=20260920-release1352"></script>
+<script src="tm-military-arrears.js?v=20260920-release1352"></script>
+<script src="tm-command-authority.js?v=20260920-release1352"></script>
+<script src="tm-char-economy-ledger.js?v=20260920-release1352"></script>
+<script src="tm-fiscal-statements.js?v=20260920-release1352"></script>
+<script src="tm-fiscal-engine.js?v=20260920-release1352"></script>
+<script src="tm-tax-policy.js?v=20260920-release1352"></script>
+<script src="tm-imperial-orders.js?v=20260920-release1352"></script>
+<script src="tm-personal-memory-recall.js?v=20260920-release1352"></script>
+<script src="tm-live-context.js?v=20260920-release1352"></script>
+<script src="tm-invariants.js?v=20260920-release1352"></script>
+<script src="tm-namespaces.js?v=20260920-release1352"></script>
+<script src="tm-state.js?v=20260920-release1352"></script>
+<script src="tm-diff.js?v=20260920-release1352"></script>
+<script src="tm-hooks-tracker.js?v=20260920-release1352"></script>
+<script src="tm-diagnostics-panel.js?v=20260920-release1352" defer></script>
+<script src="tm-checklist.js?v=20260920-release1352" defer></script>
+<script src="tm-onboard-tools.js?v=20260920-release1352" defer></script>
+<script src="tm-ai-schema.js?v=20260920-release1352"></script>
+<script src="tm-ai-output-validator.js?v=20260920-release1352"></script>
+<script src="tm-data-access.js?v=20260920-release1352"></script>
 <!-- AI change 基础能力须在模块岛 bundle 之前加载：pathutils → army → narrative → generated applier。 -->
-<script src="tm-ai-change-pathutils.js?v=20260916-release1350"></script>
-<script src="tm-command-authority.js?v=20260916-release1350"></script>
-<script src="tm-ai-change-army.js?v=20260916-release1350"></script>
-<script src="tm-ai-change-narrative.js?v=20260521-slice3"></script>
+<script src="tm-ai-change-pathutils.js?v=20260920-release1352"></script>
+<script src="tm-ai-change-army.js?v=20260920-release1352"></script>
+<script src="tm-ai-change-narrative.js?v=20260920-release1352"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
-<script src="generated/tm-ai-change-applier.bundle.js?v=20260916-release1350"></script>
-<script src="tm-ai-npc-memorials.js?v=20260916-release1350"></script>
+<script src="generated/tm-ai-change-applier.bundle.js?v=20260920-release1352"></script>
+<script src="tm-ai-npc-memorials.js?v=20260920-release1352"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
-<script src="tm-var-drawers.js?v=20260916-release1350"></script>
-<script src="editor-division-deep.js?v=2026050301" defer></script>
-<script src="editor-office-deep.js?v=2026050301" defer></script>
-<script src="editor-presets.js?v=2026050301" defer></script>
+<script src="tm-var-drawers.js?v=20260920-release1352"></script>
+<script src="editor-division-deep.js?v=20260920-release1352" defer></script>
+<script src="editor-office-deep.js?v=20260920-release1352" defer></script>
+<script src="editor-presets.js?v=20260920-release1352" defer></script>
 <!-- 官方剧本：首屏只载生成的轻量 manifest；完整 24.4MiB 数据在玩家选定剧本后按需注入。 -->
-<script src="bundled-scenarios/manifest.js?v=20260916-release1350"></script>
-<script src="tm-official-scenario-loader.js?v=20260718-lazy-official"></script>
+<script src="bundled-scenarios/manifest.js?v=20260920-release1352"></script>
+<script src="tm-official-scenario-loader.js?v=20260920-release1352"></script>
 <!-- 旧 Tianqi runtime snapshot 仍可作为兼容产物生成，但在线入口不再空闲时无条件下载。
      完整官方脚本已包含同源地图与运行时数组，由 TMOfficialScenarioLoader 在选中剧本时一次性加载。 -->
 
 <!-- 浏览器测试框架仅在 ?test=1 / ?devHarness=1 时由 TM.Features 按需加载。 -->
 
 <!-- 邸报·更新公告 -->
-<script src="tm-changelog.js?v=20260519-remote-changelog"></script>
-<script src="tm-online-client.js?v=20260811-auditfix1"></script>
-<link rel="stylesheet" href="tm-online-mall.css?v=20260722-baigong-landscape">
-<script src="tm-workshop-covers.js?v=20260604-mall-s1"></script>
-<script src="tm-zip-store.js?v=20260604-zip-s2c"></script>
+<script src="tm-changelog.js?v=20260920-release1352"></script>
+<script src="tm-online-client.js?v=20260920-release1352"></script>
+<link rel="stylesheet" href="tm-online-mall.css?v=20260920-release1352">
+<script src="tm-workshop-covers.js?v=20260920-release1352"></script>
+<script src="tm-zip-store.js?v=20260920-release1352"></script>
 <script>window.TMStartupPhases.transition('optional', { boundary: 'tm-content-manager' });</script>
-<script src="tm-content-manager.js?v=20260811-auditfix1"></script>
-<script src="tm-content-manager-community.js?v=20260811-auditfix1"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
-<script src="preview/img/east-asia-basemap-data.js?v=20260514-formal-map"></script>
+<script src="tm-content-manager.js?v=20260920-release1352"></script>
+<script src="tm-content-manager-community.js?v=20260920-release1352"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
+<script src="preview/img/east-asia-basemap-data.js?v=20260920-release1352"></script>
 <!-- 勿动位置·第二十七拆：phase8-formal-bridge-styles.js 必须紧接 phase8-formal-bridge.js【之前】装载(②a alias/bucket·装载期填 TM.__p8BridgeParts→origin 顶部 alias 回绑·错序即 installStyles=undefined·installFormalShell 同步调用崩) -->
-<script src="phase8-formal-bridge-styles.js?v=20260917-prefecture-labels"></script>
-<script src="phase8-formal-bridge.js?v=20260917-prefecture-labels"></script>
+<script src="phase8-formal-bridge-styles.js?v=20260920-release1352"></script>
+<script src="phase8-formal-bridge.js?v=20260920-release1352"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
-<script src="phase8-formal-topbar.js?v=20260916-release1350"></script>
+<script src="phase8-formal-topbar.js?v=20260920-release1352"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
-<script src="phase8-formal-map.js?v=20260916-release1350"></script>
+<script src="tm-shanhe-runtime.js?v=20260920-release1352"></script>
+<script src="phase8-formal-map.js?v=20260920-release1352"></script>
 <!-- 勿动位置·第二十五拆：phase8-formal-map-dossier 必须【紧随 origin 之后】装载(②b origin-first 双向 bucket·origin 先导出 __p8MapParts→本片捕获回填) -->
-<script src="phase8-formal-map-dossier.js?v=20260916-release1350"></script>
-<script src="phase8-formal-modules.js?v=20260916-release1350"></script>
-<script src="phase8-formal-drafts.js?v=20260916-release1350"></script>
+<script src="phase8-formal-map-dossier.js?v=20260920-release1352"></script>
+<script src="phase8-formal-modules.js?v=20260920-release1352"></script>
+<script src="phase8-formal-drafts.js?v=20260920-release1352"></script>
 <!-- 勿动位置·第二十六拆：phase8-formal-drafts-message-panels.js 必须【紧随】phase8-formal-drafts.js 装载(origin-first 双向 bucket·装载于 origin 之后回填) -->
-<script src="phase8-formal-drafts-message-panels.js?v=20260916-release1350"></script>
-<script src="phase8-formal-records.js?v=20260526-split-skeleton"></script>
-<script src="tm-renwu-tuzhi.js?v=20260916-release1350"></script>
-<script src="phase8-formal-rightrail.js?v=20260916-release1350"></script>
+<script src="phase8-formal-drafts-message-panels.js?v=20260920-release1352"></script>
+<script src="phase8-formal-records.js?v=20260920-release1352"></script>
+<script src="tm-renwu-tuzhi.js?v=20260920-release1352"></script>
+<script src="phase8-formal-rightrail.js?v=20260920-release1352"></script>
 <!-- 勿动位置·第二十四拆：social 分片须紧随 origin 之后(②b origin-first 双向 bucket TM.__p8RailParts·错序=捕获 undefined 立崩)·契约见 scripts/lint-split-contracts.js -->
-<script src="phase8-formal-rightrail-social.js?v=20260916-release1350"></script>
-<script src="preview/scenario-editor-sandbox-bridge.js?v=20260910-efficiency1"></script>
+<script src="phase8-formal-rightrail-social.js?v=20260920-release1352"></script>
+<script src="preview/scenario-editor-sandbox-bridge.js?v=20260920-release1352"></script>
 <!-- 正式界面「宝相团花」悬浮设置/暂停按钮·锚 #bar-time 下方·点击=Esc·仅 GM.running 显示 -->
-<script src="tm-pause-fab.js?v=20260605-fab"></script>
+<script src="tm-pause-fab.js?v=20260920-release1352"></script>
 
 <!-- Capacitor 启动钩子（移植 Phase 3）·Capgo 热更 notifyAppReady + 在线·仅原生端·桌面/web no-op -->
-<script src="tm-capacitor-boot.js?v=20260604-ota-progress3"></script>
+<script src="tm-capacitor-boot.js?v=20260920-release1352"></script>
 
 <!-- 更新卡/桌面更新由更新中心按需加载；在线更新在 Web 首屏完成后 idle 加载。 -->
 
 <!-- 触屏手势桥（移植 Phase 2·S2.x）·长按=右键(contextmenu)·仅触屏设备挂载·鼠标零影响 -->
-<script src="tm-touch-gestures.js?v=20260603-longpress-rclick"></script>
+<script src="tm-touch-gestures.js?v=20260920-release1352"></script>
 
 <!-- 触屏 pinch 缩放 + 拖拽通用桥（舆图 / 官制树）·仅 touch 事件·桌面零影响 -->
-<script src="tm-pinch-pan.js?v=20260614-pinchpan"></script>
+<script src="tm-pinch-pan.js?v=20260920-release1352"></script>
 
 <!-- 全局「悬停显示完整文本」·委托监听 document·凡被 CSS 省略号截断(…)的元素鼠标悬停即弹完整内容·仅 hover:hover 设备装(纯触屏不装) -->
-<script src="tm-hover-fulltext.js?v=20260701-fulltip"></script>
+<script src="tm-hover-fulltext.js?v=20260920-release1352"></script>
 
 <!-- 末尾 defer 启动契约：等待此前 blocking/defer 脚本均执行后检查关键全局，缺失时显示明确故障层。 -->
 <script>window.TMStartupPhases.finish({ boundary: 'startup-contract' });</script>
-<script src="tm-startup-contract.js?v=20260823-global1" defer></script>
+<script src="tm-startup-contract.js?v=20260920-release1352" defer></script>
 
 <!-- 触屏工效层（移植 Phase 2·S2.1）·仅 @media(pointer:coarse) 生效·桌面零影响·置尾以压过御案注入样式 -->
-<link rel="stylesheet" href="tm-touch.css?v=20260603-s21-touch">
+<link rel="stylesheet" href="tm-touch.css?v=20260920-release1352">
 
 </body>
 </html>

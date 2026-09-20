@@ -80,12 +80,21 @@ async function main() {
   let attempts = 0;
   ctx.fetch = async () => { attempts++; throw new Error('network down'); };
   const retrySignal = new TrackedSignal(false);
+  const retryWaits = [], actualRetryWait = ctx._aiBudgetedRetryWait;
+  const getListeners = require('node:events').getEventListeners;
+  ctx._aiBudgetedRetryWait = async function(ms, signal, budget) {
+    const observation = { signal, before: getListeners(signal, 'abort').length };
+    retryWaits.push(observation);
+    try { return await actualRetryWait(ms, signal, budget); }
+    finally { observation.after = getListeners(signal, 'abort').length; }
+  };
   let retryError = null;
   try {
     await ctx._aiFetchWithRetryInner('https://example.invalid/v1', { max_tokens: 10 }, retrySignal, { apiKey: 'k', maxRetries: 2, timeoutMs: 5000 });
   } catch (error) { retryError = error; }
   assert(retryError && attempts === 3, 'network errors exercise every configured retry attempt');
-  assert(retrySignal.activeCount === 0 && retrySignal.addCount === 5 && retrySignal.removeCount === 5, 'three requests and two cancellable waits clean every external listener');
+  assert(retrySignal.activeCount === 0 && retrySignal.addCount === 3 && retrySignal.removeCount === 3, 'three requests clean every external abort listener');
+  assert(retryWaits.length === 2 && retryWaits.every(row => row.signal !== retrySignal && row.after === row.before), 'both cancellable retry waits clean their owned controller listeners');
 
   ctx.fetch = async (_url, options) => new Promise((_resolve, reject) => {
     options.signal.addEventListener('abort', () => reject(new Error('request aborted')), { once: true });

@@ -184,14 +184,27 @@ if(window.tianming&&window.tianming.isDesktop){
         || document.querySelector('.home-stage')       // 新版 launch hero
         || document.querySelector('.home-menu');       // 兜底
   }
+  function _tmClearDesktopStartPayload(){ window._pendingStartPayload=null; }
   function showMain(){
     var hero = _getLaunchHero(); if (hero) hero.style.display='';
     var mv = document.getElementById('main-view');
     if (mv) { mv.style.display='none'; _desktopReplaceChildren(mv); }
   }
+  function _ensureDesktopMainView(){
+    var launch=document.getElementById('launch');
+    if(!launch) throw new Error('启动页容器未加载，无法显示剧本选择');
+    var view=document.getElementById('main-view');
+    if(!view){
+      view=document.createElement('div');view.id='main-view';
+      view.style.cssText='display:none;width:100%;max-height:80vh;overflow-y:auto;';
+      launch.appendChild(view);
+    }
+    return view;
+  }
+
   function showPanel(content){
+    var mv = _ensureDesktopMainView();
     var hero = _getLaunchHero(); if (hero) hero.style.display='none';
-    var mv = document.getElementById('main-view');
     if (mv) {
       mv.style.display='block';
       _desktopReplaceChildren(mv, typeof content === 'string' ? document.createTextNode(content) : content);
@@ -280,10 +293,40 @@ if(window.tianming&&window.tianming.isDesktop){
   };
 
   // --- 剧本选择页（桌面端）---
+  function _desktopSelectionRequest(){
+    var pane=_desktopPanel('选择剧本');
+    pane.setAttribute('aria-busy','true');
+    pane.appendChild(_desktopElement('p','pnl-empty','正在读取剧本目录…'));
+    _desktopFooter(pane).appendChild(_desktopButton('返回','bt bs',showMain));
+    showPanel(pane);
+    var host=document.getElementById('main-view');
+    return {
+      current:function(){
+        var launch=document.getElementById('launch');
+        return document.getElementById('main-view')===host && pane.parentNode===host &&
+          launch && launch.style.display!=='none' && host.style.display!=='none';
+      },
+      fail:function(error){
+        if(!this.current())return;
+        var failed=_desktopPanel('剧本目录读取失败');
+        failed.appendChild(_desktopElement('p','pnl-empty',String(error && error.message || error)));
+        var footer=_desktopFooter(failed);
+        footer.appendChild(_desktopButton('重试','bt bp',function(){showScnSelect();}));
+        footer.appendChild(_desktopButton('返回','bt bs',showMain));
+        showPanel(failed);
+      }
+    };
+  }
+
   showScnSelect=async function(){
+    var request=_desktopSelectionRequest();
+    try {
     await _ensureOfficialScenarioFiles();
+    if(!request.current())return;
     var list=await window.tianming.listScenarios();
-    var files=list.success?list.files:[];
+    if(!request.current())return;
+    if(!list || !list.success || !Array.isArray(list.files))throw new Error(list && list.error || '没有收到有效的剧本目录');
+    var files=list.files;
     files=files.concat(_projectScenarioListItems(files));
     var panel=_desktopPanel('选择剧本');
     if(!files.length){
@@ -308,6 +351,7 @@ if(window.tianming&&window.tianming.isDesktop){
     }
     _desktopFooter(panel).appendChild(_desktopButton('返回', 'bt bs', showMain));
     showPanel(panel);
+    }catch(error){request.fail(error);}
   };
 
   window.desktopStartScn=async function(name){
@@ -417,8 +461,9 @@ if(window.tianming&&window.tianming.isDesktop){
     _dbg('[desktopDoStart] 准备调用 startGame，sid:', scn.id);
 
     // 关闭面板
-    var panel=document.querySelector('.pnl');
-    if(panel&&panel.parentElement){panel.parentElement.remove();}
+    // Keep the persistent launch mount; remove only the old panel contents.
+    var panel=document.getElementById('main-view');
+    if(panel){panel.style.display='none';_desktopReplaceChildren(panel);}
 
     startGame(scn.id);
   };

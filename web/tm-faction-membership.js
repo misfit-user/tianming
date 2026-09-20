@@ -421,13 +421,39 @@
         });
         var player=g.playerInfo || {}, targetKey=newId || '__unassigned_map_accounts';
         if ((player.factionId===newId || player.factionName===newName) && hierarchy.player) targetKey='player';
+        if (targetKey!=='player' && rec.map && Array.isArray(rec.map.provinceMigration)) {
+          var existingRoots=Object.keys(hierarchy).filter(function(k){var v=hierarchy[k];return k!=='player' && v && (k===newId || v.factionId===newId || v.factionName===newName);});
+          if(existingRoots.length===1)targetKey=existingRoots[0];
+        }
         if (sourceSlot && sourceSlot.rootKey!==targetKey) {
           remember(sourceSlot.parent);
           sourceSlot.parent[sourceSlot.key]=sourceSlot.parent[sourceSlot.key].filter(function(n){return n!==rec.division;});
+          var provinceMap=rec.map, retiredParent=sourceSlot.parent;
+          if(provinceMap && Array.isArray(provinceMap.provinceMigration) && sourceSlot.key==='children' && !retiredParent.children.length && provinceMap.provinceMigration.some(function(p){return p.adminId===retiredParent.id;})) {
+            var sourceBucket=hierarchy[sourceSlot.rootKey];
+            if(sourceBucket && (sourceBucket.divisions||[]).indexOf(retiredParent)>=0) {
+              remember(sourceBucket);sourceBucket.divisions=sourceBucket.divisions.filter(function(n){return n!==retiredParent;});
+              remember(g);
+              if(!g._mapRetiredProvinceContainers)g._mapRetiredProvinceContainers={}; // arch-ok territory transaction archives an empty aggregate, not an account
+              remember(g._mapRetiredProvinceContainers);
+              g._mapRetiredProvinceContainers[retiredParent.id]={node:retiredParent,rootKey:sourceSlot.rootKey};
+            }
+          }
           remember(hierarchy);
           if (!hierarchy[targetKey]) hierarchy[targetKey]={factionId:newId,divisions:[]};
           var destination=hierarchy[targetKey], targetContainer=destination.divisions && destination.divisions[0];
-          if (targetContainer && Array.isArray(targetContainer.children)) {
+          var provinceSource=rec.region && rec.region.sourceProvinceId;
+          var provinceEntry=rec.map && (rec.map.provinceMigration||[]).find(function(p){return p.id===provinceSource;});
+          if(provinceEntry) {
+            var liveContainer=(destination.divisions||[]).find(function(n){return n.id===provinceEntry.adminId;});
+            var retired=g._mapRetiredProvinceContainers && g._mapRetiredProvinceContainers[provinceEntry.adminId];
+            if(!liveContainer && retired && retired.rootKey===targetKey) {
+              remember(destination);destination.divisions=(destination.divisions||[]).concat([retired.node]);
+              remember(g._mapRetiredProvinceContainers);delete g._mapRetiredProvinceContainers[provinceEntry.adminId];liveContainer=retired.node;
+            }
+            if(liveContainer)targetContainer=liveContainer;
+          }
+          if (targetContainer && Array.isArray(targetContainer.children) && !(rec.map && rec.map.provinceMigration && targetContainer.mapAccounting)) {
             remember(targetContainer); targetContainer.children=targetContainer.children.concat([rec.division]);
           } else {
             remember(destination); destination.divisions=(destination.divisions || []).concat([rec.division]);
@@ -491,6 +517,14 @@
     var g=_gm(); if (!g) return [];
     var fac=_findFac(factionName) || _findFacById(factionName), name=fac ? fac.name : factionName;
     var table=g._provinceToFaction || {}, map=g.mapData || g.map, index=new Map(), seen=new Set(), out=[];
+    // Only province-migrated maps use authoritative cell enumeration.
+    if (map && Array.isArray(map.provinceMigration)) {
+      var counts=new Map();(map.regions||[]).forEach(function(r){counts.set(r.name,(counts.get(r.name)||0)+1);});
+      return (map.regions||[]).filter(function(r){
+        var owner=r.currentOwner || r.owner || r.factionId, f=_findFacById(owner)||_findFac(owner);
+        return (f ? f.name : owner)===name;
+      }).map(function(r){return counts.get(r.name)>1?r.id:r.name;});
+    }
     ((map && map.regions) || []).forEach(function(r) {
       if (!r) return;
       [r.id,r.name,r.adminBinding,r.mapRegionId].concat(r.accountingLeafIds || [], r.accountingLeafNames || []).filter(Boolean).forEach(function(k) {
@@ -521,6 +555,23 @@
     options=options || {};
     var g=_gm();if(!g || !Array.isArray(changes))throw new Error('易主批次格式无效');
     var plans=[],seen=new Map(),facs=Array.isArray(g.facs)?g.facs:[];
+    var migratedMap=g.mapData||g.map;
+    if(migratedMap && Array.isArray(migratedMap.provinceMigration)) {
+      var cells=migratedMap.regions||[],registry=migratedMap.circuitRegistry||[];
+      changes=changes.flatMap(function(row){
+        if(!row || typeof row!=='object' || Array.isArray(row))return [row];
+        var ref=String(row.regionRef);
+        if(cells.some(function(r){return String(r.id)===ref || r.name===ref;}))return [row];
+        var groups=migratedMap.provinceMigration.filter(function(p){
+          var circuit=registry.find(function(c){return c.sourceRegionId===p.id;});
+          return p.id===ref || p.name===ref || p.adminId===ref || circuit && (circuit.id===ref || circuit.key===ref);
+        });
+        if(groups.length>1)throw new Error('省道引用不唯一：'+ref);
+        if(!groups.length)return [row];
+        if(!groups[0].memberRegionIds.length)throw new Error('省道没有可操作地块：'+ref);
+        return groups[0].memberRegionIds.map(function(id){return Object.assign({},row,{regionRef:id});});
+      });
+    }
     changes.forEach(function(row){
       if(!row || typeof row!=='object' || Array.isArray(row))throw new Error('易主条目格式无效');
       var ref=row.regionRef;
@@ -552,6 +603,13 @@
     }
     remember(g);remember(g._provinceToFaction);facs.forEach(remember);
     remember(g.turnChanges);if(g.turnChanges)remember(g.turnChanges.map);
+    if (migratedMap && migratedMap.sourceBudgetModel==='source-partition-v1') {
+      // A batch rollback must include every container touched by its per-cell transfers.
+      remember(g.adminHierarchy);var treeSeen=new Set();
+      function rememberTree(n){if(!n || treeSeen.has(n))return;treeSeen.add(n);remember(n);['children','divisions'].forEach(function(k){if(Array.isArray(n[k])){remember(n[k]);n[k].forEach(rememberTree);}});}
+      Object.keys(g.adminHierarchy||{}).forEach(function(k){rememberTree(g.adminHierarchy[k]);});
+      remember(g._mapRetiredProvinceContainers);Object.keys(g._mapRetiredProvinceContainers||{}).forEach(function(k){rememberTree(g._mapRetiredProvinceContainers[k].node);});
+    }
     plans.forEach(function(p){
       remember(p.rec.region);remember(p.rec.division);
       Object.keys(g.provinceStats || {}).forEach(function(k){remember(g.provinceStats[k]);});

@@ -312,7 +312,10 @@
     var byProvince = population.byProvince || {};
     var wanted = String(rid == null ? '' : rid);
     var top = _envPlayerTopLevel();
-    var owner = top.find(function(node) { return _envRegionAliases(node).indexOf(wanted) >= 0; }) || null;
+    var ids = top.filter(function(node) { return node && node.id != null && String(node.id) === wanted; });
+    var named = top.filter(function(node) { return _envRegionAliases(node).indexOf(wanted) >= 0; });
+    if (ids.length > 1 || !ids.length && !byLeaf[wanted] && named.length > 1) return { ok:false, reason:'environment-region-ambiguous', rows:[], leafIds:[], mouths:0 };
+    var owner = ids.length === 1 ? ids[0] : (!byLeaf[wanted] && named.length === 1 ? named[0] : null);
     var leaves = [];
     if (owner) _collectEnvLeaves(owner, leaves);
     if (!leaves.length && byLeaf[wanted]) {
@@ -388,6 +391,7 @@
         if (!allocations[i]) continue;
         var result = global.HujiEngine.applyPopulationLoss({
           cause:String(cause || 'environment'),
+          factionScope:"player", // Never search NPC aliases for a player environmental loss.
           regionId:scope.rows[i].id,
           mouths:allocations[i]
         });
@@ -568,6 +572,7 @@
       // 级别 3: >1.5 崩溃
       var level = load < 1.2 ? 1 : load < 1.5 ? 2 : 3;
       var scope = _environmentPopulationScope(rid);
+      if (!scope.ok && scope.reason) { var ambiguous = new Error('环境人口范围无法唯一确定：' + scope.reason); ambiguous.code = scope.reason; throw ambiguous; }
       if (!scope.ok || scope.mouths <= 0) return;
       var deathRate = level === 1 ? 0.002 : level === 2 ? 0.008 : 0.02;
       var deaths = Math.min(scope.mouths, Math.max(0, Math.round(scope.mouths * deathRate * mr / 12)));

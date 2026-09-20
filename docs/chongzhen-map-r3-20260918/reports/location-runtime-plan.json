@@ -1,0 +1,6 @@
+{
+  "file": "web/tm-map-locations.js",
+  "before": "4264e8242fc449787508f68bd49acded4910183128c940fad6add874aaf921a7",
+  "after": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db",
+  "scope": "Only maps explicitly enabling exactAreaPriority; no fuzzy town match over an exact authored area"
+}

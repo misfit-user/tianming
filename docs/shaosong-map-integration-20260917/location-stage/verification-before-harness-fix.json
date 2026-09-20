@@ -1,0 +1,120 @@
+{
+  "date": "2026-09-17T11:46:16.301Z",
+  "passed": 27,
+  "failed": 1,
+  "tests": [
+    {
+      "name": "all-staged-runtime-javascript-parses",
+      "passed": true
+    },
+    {
+      "name": "original-current-place-outranks-parenthetical-future",
+      "passed": true
+    },
+    {
+      "name": "yunzhong-not-parenthetical-yanjing",
+      "passed": true
+    },
+    {
+      "name": "jin-tokyo-liaoyang-is-not-song-kaifeng",
+      "passed": true
+    },
+    {
+      "name": "ambiguous-two-city-deployment-does-not-invent-a-single-camp",
+      "passed": true
+    },
+    {
+      "name": "faction-specific-japanese-capital-alias",
+      "passed": true
+    },
+    {
+      "name": "future-biography-is-not-current-location",
+      "passed": true
+    },
+    {
+      "name": "broad-character-area-retains-candidates-without-centre-fallback",
+      "passed": true
+    },
+    {
+      "name": "changed-garrison-invalidates-old-id-in-same-turn",
+      "passed": true
+    },
+    {
+      "name": "legacy-location-only-write-invalidates-old-garrison",
+      "passed": true
+    },
+    {
+      "name": "unknown-arrival-clears-all-stale-location-ids",
+      "passed": true
+    },
+    {
+      "name": "destination-is-not-present-location",
+      "passed": true
+    },
+    {
+      "name": "character-travel-keeps-origin-and-target-separate",
+      "passed": true
+    },
+    {
+      "name": "court-followers-use-live-court-not-capital",
+      "passed": true
+    },
+    {
+      "name": "foreign-location-does-not-change-owner-or-paymaster",
+      "passed": true
+    },
+    {
+      "name": "legacy-maps-without-contract-unchanged",
+      "passed": true
+    },
+    {
+      "name": "read-path-never-mutates-live-entity",
+      "passed": true
+    },
+    {
+      "name": "native-map-markers-follow-current-text-not-stale-id",
+      "passed": true
+    },
+    {
+      "name": "native-map-marker-unknown-location-is-not-old-camp",
+      "passed": true
+    },
+    {
+      "name": "native-dossier-cache-invalidates-on-same-turn-move",
+      "passed": true
+    },
+    {
+      "name": "native-dossier-cache-invalidates-on-world-reload",
+      "passed": true
+    },
+    {
+      "name": "native-AI-location-write-synchronizes-map-ids",
+      "passed": true
+    },
+    {
+      "name": "native-AI-destination-does-not-teleport",
+      "passed": true
+    },
+    {
+      "name": "native-march-arrival-synchronizes-map-ids",
+      "passed": false,
+      "error": "tm-military.js:1706\nSettlementPipeline.register('march', '行军推进', function() {\n^\n\nReferenceError: SettlementPipeline is not defined\n    at tm-military.js:1706:1\n    at Script.runInContext (node:vm:149:12)\n    at Object.runInContext (node:vm:301:6)\n    at load (file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/test-location-adaptation.mjs:13:28)\n    at file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/test-location-adaptation.mjs:41:83\n    at test (file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/test-location-adaptation.mjs:10:41)\n    at file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/test-location-adaptation.mjs:41:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+    },
+    {
+      "name": "native-agent-character-movement-keeps-travel-distinct",
+      "passed": true
+    },
+    {
+      "name": "source-location-id-closure",
+      "passed": true
+    },
+    {
+      "name": "save-roundtrip-preserves-location-links",
+      "passed": true
+    },
+    {
+      "name": "repeated-location-sync-idempotent",
+      "passed": true
+    }
+  ]
+}

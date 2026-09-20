@@ -1,0 +1,74 @@
+[
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/index.html",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-response-recovery.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/lib-turn-response-recovery.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-turn-recovery-quality.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

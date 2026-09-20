@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import cp from 'node:child_process';
+import crypto from 'node:crypto';
+const dir='docs/storage-read-deadlines-20260919',backup='.bak-storage-read-deadlines-20260919';
+if(fs.existsSync(dir+'/baseline.json'))throw Error('Existing baseline must not be replaced');
+fs.mkdirSync(dir,{recursive:true});
+const files=['web/tm-storage.js','web/tm-state-snapshot.js','web/tm-endturn-core.js','web/tm-endturn-render.js','web/tm-endturn-ai.js','web/tm-endturn-agent-mode.js','web/tm-endturn-validity.js','web/tm-endturn-mode-contract.js','web/tm-endturn-pipeline-steps.js','web/tm-endturn-response-recovery.js','web/tm-ai-infra.js','web/tm-ai-infra-retry.js','web/scripts/verify-all.js'];
+const records=files.map(file=>{const b=fs.readFileSync(file),dest=backup+'/'+file;fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,b,{flag:'wx'});return {file,bytes:b.length,sha256:crypto.createHash('sha256').update(b).digest('hex')};});
+fs.writeFileSync(dir+'/baseline.json',JSON.stringify({at:new Date().toISOString(),head:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),status:cp.execFileSync('git',['status','--porcelain=v1'],{encoding:'utf8'}),backup,files:records},null,2));
+const previous='docs/snapshot-deadlines-20260919';
+fs.writeFileSync(dir+'/patch-utils.mjs',fs.readFileSync(previous+'/patch-utils.mjs','utf8').replaceAll(previous,dir));
+console.log('Baseline protected:',records.length,'files');

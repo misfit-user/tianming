@@ -73,7 +73,11 @@ function main() {
   const sc = JSON.parse(fs.readFileSync(scenarioPath, 'utf8'));
   assert(sc.map && Array.isArray(sc.map.regions), 'scenario.map.regions missing');
   assert(sc.mapData && Array.isArray(sc.mapData.regions), 'scenario.mapData.regions missing');
-  assert(sc.map.regions.length === 43, `expected 43 land regions, got ${sc.map.regions.length}`);
+  assert(sc.map.regions.length === 307, `expected 307 prefecture/retained regional units, got ${sc.map.regions.length}`);
+  assert(Array.isArray(sc.map.circuitRegistry) && sc.map.circuitRegistry.length === 43, '43 inherited province groups required');
+  const memberships = sc.map.circuitRegistry.flatMap(p => p.memberRegionIds || []);
+  assert(memberships.length === 307 && new Set(memberships).size === 307, 'province membership must cover each cell exactly once');
+  assert(sc.map.regions.every(r => memberships.includes(r.id)), 'province registry contains dangling cells');
   assert((sc.map.oceans || []).length === 8, `expected 8 ocean regions, got ${(sc.map.oceans || []).length}`);
 
   const factionIds = new Set((sc.factions || []).map(f => f.id).filter(Boolean));
@@ -95,46 +99,46 @@ function main() {
 
   assert(ctx.TMMapRuntime, 'TMMapRuntime missing');
   ctx.TMMapRuntime.bind(ctx.P.map);
-  assert(ctx.GM.mapData && ctx.GM.mapData.regions.length === 43, 'GM.mapData did not receive live map');
+  assert(ctx.GM.mapData && ctx.GM.mapData.regions.length === 307, 'GM.mapData did not receive live map');
   assert(ctx.P.map !== ctx.GM.mapData, 'P.map template must not alias live GM.mapData');
   assert(ctx.P.mapData !== ctx.GM.mapData, 'P.mapData template must not alias live GM.mapData');
 
   const aiContext = ctx.generateMapContextForAI(ctx.P.map, ctx.P);
-  assert(/地图总览/.test(aiContext) && /43/.test(aiContext), 'AI map context missing overview');
+  assert(/地图总览/.test(aiContext) && /307/.test(aiContext), 'AI map context missing overview');
   assert(/明朝廷/.test(aiContext) && /后金/.test(aiContext), 'AI map context missing core factions');
 
-  const target = ctx.TMMapRuntime.findRegion('ming-28');
-  assert(target && target.name.includes('辽东'), 'target region ming-28 missing');
+  const target = ctx.TMMapRuntime.findRegion('ming-28-p02');
+  assert(target && target.name === '宁远城', 'target region ming-28-p02 missing');
   const oldDevelopment = Number(target.development || 0);
   const oldTroops = Number(target.troops || 0);
   const laterJin = (sc.factions || []).find(f => f.name === '后金');
   assert(laterJin, 'Later Jin faction missing');
   ctx.applyAIMapChanges({
     map_changes: {
-      ownership_changes: [{ region_id: 'ming-28', new_owner: '后金', reason: 'smoke test transfer' }],
-      development_changes: [{ region_id: 'ming-28', delta: 7, reason: 'smoke test development' }],
-      troop_changes: [{ region_id: 'ming-28', delta: 1200, reason: 'smoke test troops' }],
+      ownership_changes: [{ region_id: 'ming-28-p02', new_owner: '后金', reason: 'smoke test transfer' }],
+      development_changes: [{ region_id: 'ming-28-p02', delta: 7, reason: 'smoke test development' }],
+      troop_changes: [{ region_id: 'ming-28-p02', delta: 1200, reason: 'smoke test troops' }],
     },
   }, ctx.P.map);
 
-  const changed = ctx.TMMapRuntime.findRegion('ming-28');
+  const changed = ctx.TMMapRuntime.findRegion('ming-28-p02');
   assert(changed.owner === laterJin.id, `owner did not change to Later Jin id: ${changed.owner}`);
   assert(changed.currentOwner === laterJin.id, 'currentOwner did not mirror owner');
   // ownerKey 取新主的稳定 key(tm-map-system.js: region.ownerKey = resolved.key)。后金 faction 的 key 现为生成 id(原语义键 fac-later-jin 已随 faction id 重生成)·改用动态 laterJin.key 而非钉死旧串。
   assert(changed.ownerKey === (laterJin.key || laterJin.id), `ownerKey did not mirror Later Jin key: ${changed.ownerKey} (expect ${laterJin.key || laterJin.id})`);
   assert(changed.development === Math.min(100, oldDevelopment + 7), `development did not change: ${changed.development}`);
   assert(changed.troops === oldTroops + 1200, `troops did not change: ${changed.troops}`);
-  const templateTarget = ctx.P.map.regions.find(r => r.id === 'ming-28');
+  const templateTarget = ctx.P.map.regions.find(r => r.id === 'ming-28-p02');
   assert(templateTarget.owner !== laterJin.id && templateTarget.development === oldDevelopment && templateTarget.troops === oldTroops,
     'live map mutation leaked back into scenario template P.map');
   assert(ctx.GM.turnChanges.map.length >= 3, 'map changes were not recorded in GM.turnChanges.map');
 
-  ctx.TMMapRuntime.updateRegion('ming-28', { data: { smokeMutableField: 1 }, prosperity: 66 }, { reason: 'smoke test data patch' });
+  ctx.TMMapRuntime.updateRegion('ming-28-p02', { data: { smokeMutableField: 1 }, prosperity: 66 }, { reason: 'smoke test data patch' });
   assert(changed.data && changed.data.smokeMutableField === 1, 'nested data patch did not apply');
   assert(changed.prosperity === 66, 'region scalar patch did not apply');
 
   const runtimeContext = ctx.TMMapRuntime.toAIContext();
-  assert(runtimeContext && runtimeContext.regions.some(r => r.id === 'ming-28' && r.owner === laterJin.id), 'runtime AI context did not see changed owner');
+  assert(runtimeContext && runtimeContext.regions.some(r => r.id === 'ming-28-p02' && r.owner === laterJin.id), 'runtime AI context did not see changed owner');
 
   console.log('[smoke-tianqi-map-runtime] pass regions=' + sc.map.regions.length +
     ' oceans=' + (sc.map.oceans || []).length +

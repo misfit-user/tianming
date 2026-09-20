@@ -1,0 +1,36 @@
+{
+  "time": "2026-09-18T07:28:13.789Z",
+  "work": "D:/tianming-assistant-work/map-deep-zoom-20260918",
+  "files": [
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "71e1d59437824827c0131dc1666a5dd51d5a0b8dbaebb74ce3ab6ca1a5a2ed36"
+    },
+    {
+      "file": "web/tm-pinch-pan.js",
+      "sha256": "dcf24bc341291d7ff4ef11367e8d427744d1ca35f0caa90bbcabfe8ec6675da3"
+    },
+    {
+      "file": "web/tm-map-label-collide.js",
+      "sha256": "04b9407a9d8af5ce1c785da392fea016133ad27b8b7e45e34eef8d1c761cb3b5"
+    },
+    {
+      "file": "web/phase8-formal-bridge-styles.js",
+      "sha256": "0ab12df844c645c9440e8dd418446fb5c5b66c452d7fe87122b46d1ced52e793"
+    }
+  ],
+  "sources": [
+    {
+      "file": "scenarios/天启七年·九月（官方）.json",
+      "sha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d"
+    },
+    {
+      "file": "scenarios/晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51"
+    },
+    {
+      "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b"
+    }
+  ]
+}

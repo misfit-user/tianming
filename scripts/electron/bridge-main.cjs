@@ -7,7 +7,7 @@ const root = process.env.TM_BRIDGE_TEST_ROOT;
 const mode = process.env.TM_BRIDGE_TEST_MODE;
 const baseline = process.env.TM_BRIDGE_TEST_BASELINE === '1';
 const visiblePerformance = mode === 'performance' || mode === 'performance-inspect' || mode === 'performance-autosave' || mode === 'performance-panels';
-const visibleWindow = mode.indexOf('native-start-') === 0 || mode === 'map-tiers' || mode === 'startup-mode' || mode === 'strategic-map' || mode === 'tactical-units' || mode === 'tactical-phase2' || mode === 'tactical-terrain' || mode === 'personal-campaign' || mode === 'startup-autosave' || mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
+const visibleWindow = mode === 'shanhe-map' || mode === 'authoring-efficiency' || mode.indexOf('native-start-') === 0 || mode === 'map-tiers' || mode === 'startup-mode' || mode === 'strategic-map' || mode === 'tactical-units' || mode === 'tactical-phase2' || mode === 'tactical-terrain' || mode === 'personal-campaign' || mode === 'startup-autosave' || mode === 'office-writeback' || mode === 'seven-ui' || mode === 'authoring-autoapply' || mode === 'player-feedback' || mode === 'workshop-hierarchy' || mode === 'authoring-continuation' || mode === 'memorial-reading' || visiblePerformance || mode === 'building-appraisal' || mode === 'edict-polish' || mode === 'edict-clarity' || mode === 'character-actions' || mode === 'rail-badges' || mode === 'relief-pilot' || mode === 'relief-inspect' || mode === 'authoring-stream' || mode === 'authoring-boundaries' || mode === 'authoring-recovery';
 process.env.NODE_PATH = path.resolve(__dirname, '../../node_modules'); require('module').Module._initPaths();
 if (mode === 'test-exports') process.env.TIANMING_TEST_EXPORTS = '1'; else delete process.env.TIANMING_TEST_EXPORTS;
 const temp = process.env.TM_BRIDGE_TEST_USERDATA || fs.mkdtempSync(path.join(os.tmpdir(), 'tm-bridge-gate-'));
@@ -41,7 +41,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
   } });
   if (key !== 'BrowserWindow') return target[key];
   return new Proxy(target.BrowserWindow, { construct(Window, args) {
-    if (visibleWindow) args[0] = { ...args[0], width: 1280, height: 800, fullscreen: false };
+    if (visibleWindow) args[0] = { ...args[0], width: 1280, height: 800, fullscreen: false, show: true, alwaysOnTop: true, webPreferences: { ...args[0].webPreferences, backgroundThrottling: false } }; // UI gates must not wait for a ready-to-show event bypassed by test navigation.
     windowOptions.push(args[0]); return Reflect.construct(Window, args);
   } });
 } });
@@ -69,13 +69,16 @@ function finish(error) {
   // This exits the disposable gate process, not the application's production quit path.
   app.exit(report.ok ? 0 : 1);
 }
-async function check(name, fn) { await fn(); results.push({ name, status: 'PASS' }); }
-setTimeout(() => finish(new Error('electron-bridge-timeout')), mode === 'native-start-live-authoring' ? 570000 : mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' || mode === 'native-start-neutral-atlas' ? 180000 : visiblePerformance ? 240000 : 75000);
+async function check(name, fn) { const started=Date.now(); console.log('BRIDGE_CASE_START '+JSON.stringify({name,at:new Date(started).toISOString()})); await profileHeavyCase(name); await fn(); results.push({ name, status: 'PASS' }); console.log('BRIDGE_CASE_PASS '+JSON.stringify({name,elapsedMs:Date.now()-started})); }
+// These correctness suites contain many bounded UI scenarios; keep each scenario wait and all explicit performance assertions unchanged.
+const multiScenarioAuthoring = ['authoring-boundaries','authoring-continuation','authoring-autoapply','authoring-efficiency'].includes(mode);
+setTimeout(() => finish(new Error('electron-bridge-timeout')), (multiScenarioAuthoring && mode === 'authoring-efficiency') || mode === 'relief-pilot' ? 600000 : multiScenarioAuthoring ? 180000 : mode === 'strategic-map' ? 600000 : mode === 'shanhe-map' ? 135000 : mode === 'native-start-live-authoring' ? 570000 : mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' || mode === 'native-start-neutral-atlas' ? 180000 : visiblePerformance ? 240000 : 75000);
 process.on('uncaughtException', finish); process.on('unhandledRejection', finish);
 process.on('exit', code => { if (finished) process.stdout.write('BRIDGE_NODE_EXIT '+JSON.stringify({mode,at:new Date().toISOString(),code})+'\n'); });
 app.on('browser-window-created', (_event, win) => {
   if (!visibleWindow) win.show = () => {};
   win.setFullScreen = () => {};
+  win.webContents.on('console-message',(_e,level,message)=>{if(/^RELIEF_DIGEST_/.test(message))fs.appendFileSync(path.join(path.dirname(process.env.TM_BRIDGE_TEST_REPORT),'digest-progress.log'),new Date().toISOString()+' '+message+'\n');if(/^RELIEF_|^STRATEGIC_/.test(message)||level>=3)console.log('BRIDGE_RENDER_DIAG '+String(message).slice(0,2200));});
   win.webContents.on('preload-error', (_event, file, error) => finish(new Error('production-preload-failed: ' + file + ': ' + error.message)));
   win.webContents.on('render-process-gone', (_event, details) => finish(new Error('render-process-gone: ' + JSON.stringify(details))));
   win.webContents.on('did-fail-load', (_event, code, description, url, mainFrame) => { if (mainFrame) finish(new Error('did-fail-load: ' + code + ' ' + description + ' ' + url)); });
@@ -148,6 +151,7 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'tactical-terrain') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check });
       else if (mode === 'tactical-phase2') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check, phase2: true });
       else if (mode === 'tactical-units') await require('./tactical-units-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'shanhe-map') await require('./shanhe-default-cases.cjs')({win,root,check});
       else if (mode === 'strategic-map') await require('./strategic-map-cases.cjs')({ win, root, temp, check, baseline });
       else if (mode === 'map-tiers') await require('./map-tier-cases.cjs')({ win, root, temp, check, baseline });
       else if (mode === 'startup-mode') await require('./startup-mode-cases.cjs')({ win, root, temp, check, baseline });
@@ -160,3 +164,12 @@ app.on('browser-window-created', (_event, win) => {
 });
 app.whenReady().then(() => session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (_details, callback) => callback({ cancel: true })));
 require(path.join(root, 'main.js'));
+
+async function profileHeavyCase(name){
+ if(process.env.TM_BRIDGE_CPU_PROFILE!=='1'||!/^relief-closing|^official authoring tasks/.test(name))return;
+ const win=nativeElectron.BrowserWindow.getAllWindows()[0],dbg=win.webContents.debugger;
+ console.log('CASE_HEAP '+JSON.stringify(await win.webContents.executeJavaScript('({limit:performance.memory.jsHeapSizeLimit,used:performance.memory.usedJSHeapSize,total:performance.memory.totalJSHeapSize})')));
+ if(!dbg.isAttached())dbg.attach('1.3');await dbg.sendCommand('Profiler.enable');await dbg.sendCommand('Profiler.start');
+ const output=path.join(path.dirname(process.env.TM_BRIDGE_TEST_REPORT),'heavy-case.cpuprofile');
+ setTimeout(async()=>{try{const r=await dbg.sendCommand('Profiler.stop');fs.writeFileSync(output,JSON.stringify(r.profile));console.log('CASE_PROFILE '+output);}catch(e){console.log('CASE_PROFILE_ERROR '+e.message);}},45000);
+}

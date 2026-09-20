@@ -159,6 +159,7 @@
     ensureGroups(ctx);
     var _applyStart = Date.now();
     var p1 = ctx.results.sc1 || null;
+    if (global.TM && TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
     var sc = ctx.prompt.sc;
     var shizhengji = ctx.record.shizhengji || "";
     var zhengwen = ctx.record.zhengwen || "";
@@ -181,6 +182,7 @@
         try {
           if (TM.BuildingOrders) ctx.apply.buildingReceipts = TM.BuildingOrders.apply(GM, P, ctx.input.buildingOrders, p1, false);
           await ns.stages._applyCore_reconcile(ctx);
+          p1 = ctx.results.sc1 || p1; // Use the detached, revalidated repair for every remaining consumer.
           if (buildingTransaction) buildingTransaction.commit();
         } catch (buildingApplyError) {
           if (buildingTransaction) buildingTransaction.rollback();
@@ -1696,153 +1698,13 @@
         };
 
         // Codex修·MED:承诺履成的 canonical 结构化后果(query降腐败/intel入情报/finance提实征率)抽为共享·commitment_update 与 dialogue_commitment_feedback 两条完成路径都调·_canonFired 防双计。
-        function _fireCommitCanon(found, foundNpc, _ckW, feedbackText) {
-          if (!found || found._canonFired) return;
-          if (found.category === 'query') {
-            var _ckFE = (typeof FiscalEngine !== 'undefined' && FiscalEngine) || (typeof window !== 'undefined' && window.FiscalEngine) || null;
-            if (_ckFE && typeof _ckFE.adjustPlayerDivisionCorruption === 'function') {
-              var _ckPFac = (typeof P !== 'undefined' && P && P.playerInfo && P.playerInfo.factionName) || '';
-              var _ckCorrDrop = Math.max(2, Math.min(5, Math.round(2 * _ckW)));
-              var _ckNDiv = _ckFE.adjustPlayerDivisionCorruption(_ckPFac, -_ckCorrDrop, 0, 100);
-              if (_ckNDiv === 0) _ckFE.adjustPlayerDivisionCorruption('', -_ckCorrDrop, 0, 100); // 势力 key 对不上→不过滤兜底
-              if (typeof addEB === 'function') addEB('问对·实绩', foundNpc + '查办履成·吏治浊度降' + _ckCorrDrop);
-            }
-          } else if (found.category === 'intel') {
-            if (!Array.isArray(GM._interceptedIntel)) GM._interceptedIntel = [];
-            GM._interceptedIntel.push({ turn: GM.turn, interceptor: foundNpc, from: '密查', to: '皇帝', content: '奉旨密查所得：' + String(found.task || '').slice(0,30) + (feedbackText ? '——' + String(feedbackText).slice(0,60) : ''), urgency: 'report' });
-            if (GM._interceptedIntel.length > 40) GM._interceptedIntel.shift();
-            if (typeof addEB === 'function') addEB('问对·实绩', foundNpc + '密查复命·情报入风闻');
-          } else if (found.category === 'finance') {
-            var _ckFE2 = (typeof FiscalEngine !== 'undefined' && FiscalEngine) || (typeof window !== 'undefined' && window.FiscalEngine) || null;
-            if (_ckFE2 && typeof _ckFE2.adjustPlayerCompliance === 'function') {
-              var _ckPFac2 = (typeof P !== 'undefined' && P && P.playerInfo && P.playerInfo.factionName) || '';
-              var _ckCompUp = Math.min(0.05, 0.02 * _ckW);
-              var _ckNC = _ckFE2.adjustPlayerCompliance(_ckPFac2, _ckCompUp, 0.1, 1);
-              if (_ckNC === 0) _ckFE2.adjustPlayerCompliance('', _ckCompUp, 0.1, 1); // 势力 key 对不上→不过滤兜底
-              if (typeof addEB === 'function') addEB('问对·实绩', foundNpc + '理财履成·实征率升' + (Math.round(_ckCompUp*1000)/10) + '%');
-            }
-          }
-          found._canonFired = true;
+        // Completion requires a task-bound receipt; no blanket finance/corruption bonuses.
+        function _fireCommitCanon(found, foundNpc) {
+          return TM && TM.ImperialOrders ? TM.ImperialOrders.verified(GM, found) : {ok:false};
         }
-
-        // ── 问对承诺进展更新 ──
-        if (p1.commitment_update && Array.isArray(p1.commitment_update) && GM._npcCommitments) {
-          var _commitmentUpdateSeen = {};
-          p1.commitment_update.forEach(function(cu) {
-            if (!cu || !cu.id) return;
-            var _cuIdKey = String(cu.id);
-            if (_commitmentUpdateSeen[_cuIdKey]) return;
-            _commitmentUpdateSeen[_cuIdKey] = true;
-            // 遍历找到对应承诺
-            var found = null, foundNpc = null;
-            Object.keys(GM._npcCommitments).forEach(function(nm) {
-              (GM._npcCommitments[nm]||[]).forEach(function(c) {
-                if (c.id === cu.id) { found = c; foundNpc = nm; }
-              });
-            });
-            if (!found) return;
-            if (found._terminalSettled && (found.status === 'completed' || found.status === 'failed' || found.status === 'obstructed')) return;
-            // 若 AI 指定了 npcName 但与实际不符，以实际为准
-            var npcActual = cu.npcName || foundNpc;
-            found.progress = Math.max(0, Math.min(100, (found.progress||0) + (parseInt(cu.progress_delta,10)||0)));
-            if (cu.status) found.status = cu.status;
-            if (cu.feedback) found.feedback = cu.feedback;
-            found.lastUpdateTurn = GM.turn;
-            // 完成/失败处理
-            var _ckW = ({dispatch:2.0,diplomacy:2.0,finance:1.8,intel:1.6,query:1.3,write:1.1,other:1.0})[found.category||'other']||1.0;
-            var _ckWill = (typeof found.willingness === 'number') ? found.willingness : 0.6;
-            if (found.status === 'completed' || found.consequenceType === 'success') {
-              found.status = 'completed';
-              found._terminalSettled = true;
-              found._terminalSettledTurn = GM.turn;
-              found._terminalSettledKind = 'completed';
-              addEB('问对·履行', foundNpc + '享息：' + found.task.slice(0,30) + '——' + (cu.feedback||'').slice(0, 40));
-              if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(foundNpc, '履命完成：' + found.task + '——' + (cu.feedback||''), '慰', Math.min(8, 4 + Math.round(_ckW)));
-              var _cch = findCharByName(foundNpc);
-              if (_cch) {
-                _cch._promiseKept = (_cch._promiseKept || 0) + 1;   // P-commit-calib·累积履约(治『恩德不累积』同源)
-                var _ckGain = Math.max(1, Math.min(8, Math.round(
-                  ((cu.consequenceType === 'partial') ? 1.5 : 3) * _ckW          // 基础×category权重
-                  + ((_ckWill < 0.4) ? 1.5 : 0)                                  // 勉强应承却办成→意外受信
-                  + Math.min(2, (_cch._promiseKept - 1) * 0.5)                   // 屡次履约累积信任(封顶+2)
-                )));
-                if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(_cch, _ckGain, '问对履命完成', { source:'wendui-task-completed' });
-                else _cch.loyalty = Math.min(100, ((typeof _cch.loyalty === 'number' && isFinite(_cch.loyalty)) ? _cch.loyalty : 50) + _ckGain);
-              }
-              // P-commit-calib·(b-稳) 硬产出承诺履成→确定性结构化后果（canonical 通道·有界·prompt 已去重防双计）·Codex修·MED:抽为 _fireCommitCanon 两条完成路径共用
-              _fireCommitCanon(found, foundNpc, _ckW, cu.feedback);
-            } else if (found.status === 'failed' || cu.consequenceType === 'abandoned') {
-              found.status = 'failed';
-              found._terminalSettled = true;
-              found._terminalSettledTurn = GM.turn;
-              found._terminalSettledKind = 'npc_duty_failed';
-              found._failReason = String(cu.failReason || '').slice(0, 12) || found._failReason || '';   // ★2026-07-01 打磨·结构化失败归因(供交办面板显「为何办砸」)
-              found._loyaltyPenaltyBlocked = true;
-              addEB('问对·失诺', foundNpc + '未履：' + found.task.slice(0,30) + '——' + (cu.feedback||'').slice(0,40));
-              if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(foundNpc, '未履命：' + found.task + '——' + (cu.feedback||''), '忧', Math.min(8, 4 + Math.round(_ckW)));
-              var _fch = findCharByName(foundNpc);
-              if (_fch) {
-                _fch._promiseBroken = (_fch._promiseBroken || 0) + 1;   // NPC 奉旨差事未闭环·只记履约信用，不视为玩家违约
-                _fch._dutyFailures = (_fch._dutyFailures || 0) + 1;
-                _fch._lastDutyFailureTurn = GM.turn;
-                _fch.stress = Math.min(100, (_fch.stress||0) + Math.min(12, Math.round(5 * _ckW)));
-              }
-            } else if (cu.feedback) {
-              addEB('问对·进展', foundNpc + '：' + (cu.feedback||'').slice(0,50));
-            }
-            // 写入起居注
-            if (GM.qijuHistory && cu.feedback) {
-              if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
-                turn: GM.turn,
-                date: typeof getTSText==='function'?getTSText(GM.turn):'',
-                content: '【问对·履命】' + foundNpc + '就「' + found.task + '」：' + cu.feedback,
-                category: '问对'
-              });
-            }
-            // 完成/失败的承诺保留在 list 但状态终结；deadline 过期未完成自动标 failed
-            if (found.status === 'pending' || found.status === 'executing' || found.status === 'delayed') {
-              var elapsed = GM.turn - found.assignedTurn;
-              if (elapsed > (found.deadline || 3) + 2 + _tmCommitGrace(foundNpc) && found.progress < 50) {
-                found.status = 'failed';
-                found._terminalSettled = true;
-                found._terminalSettledTurn = GM.turn;
-                found._terminalSettledKind = 'npc_duty_overdue';
-                found._failReason = found._failReason || '迟延无果';   // ★打磨·确定性兜底归因
-                found._loyaltyPenaltyBlocked = true;
-                addEB('\u95EE\u5BF9\u00B7\u8FC7\u671F', foundNpc + '迟迟未办：' + found.task.slice(0,30));
-              }
-            }
-          });
-        }
-
-        // P-commit-calib·静默失约兜底：NPC 奉旨差事过期(deadline+2)且进度<50 → 判未办成+记履约信用，不扣忠诚
-        if (GM._npcCommitments && typeof GM._npcCommitments === 'object') {
-          Object.keys(GM._npcCommitments).forEach(function(_swNm) {
-            (GM._npcCommitments[_swNm] || []).forEach(function(_swC) {
-              if (!_swC || _swC.status === 'completed' || _swC.status === 'failed' || _swC._terminalSettled) return;
-              if (_swC.lastUpdateTurn === GM.turn) return;
-              var _swEl = (GM.turn || 0) - (_swC.assignedTurn || GM.turn || 0);
-              if (_swEl > ((_swC.deadline || 3) + 2 + _tmCommitGrace(_swNm)) && (_swC.progress || 0) < 50) {
-                _swC.status = 'failed';
-                _swC.lastUpdateTurn = GM.turn;
-                _swC._terminalSettled = true;
-                _swC._terminalSettledTurn = GM.turn;
-                _swC._terminalSettledKind = 'npc_duty_lapsed';
-                _swC._failReason = _swC._failReason || '搁置未办';   // ★打磨·确定性兜底归因
-                _swC._loyaltyPenaltyBlocked = true;
-                if (!_swC.feedback) _swC.feedback = '迟迟未办，无声搁置';
-                var _swCh = findCharByName(_swNm);
-                if (_swCh) {
-                  var _swW = ({dispatch:2.0,diplomacy:2.0,finance:1.8,intel:1.6,query:1.3,write:1.1,other:1.0})[_swC.category||'other']||1.0;
-                  _swCh._promiseBroken = (_swCh._promiseBroken || 0) + 1;
-                  _swCh._dutyFailures = (_swCh._dutyFailures || 0) + 1;
-                  _swCh._lastDutyFailureTurn = GM.turn;
-                  _swCh.stress = Math.min(100, (_swCh.stress||0) + Math.min(10, Math.round(4 * _swW)));
-                }
-                if (typeof addEB === 'function') addEB('问对·搁置', _swNm + '搁置未办：' + String(_swC.task||'').slice(0,30));
-              }
-            });
-          });
+        if (p1.commitment_update && Array.isArray(p1.commitment_update)) {
+          if (!(TM && TM.ImperialOrders)) throw new Error('交办核验模块未加载，已停止不安全的完成写回');
+          TM.ImperialOrders.updates(GM, p1.commitment_update);
         }
 
         // #1·帝王治术 court-level 涟漪：本回合问对赏罚的集体后果（滥刑→在京群臣震恐离心·广恩→归心；有界封顶·经 canonical adjustCharacterLoyalty·prompt 已去重）
@@ -1888,138 +1750,14 @@
           }
         }
 
-        // Phase 2.5·dialogue_commitment_feedback apply (与 commitment_update 故意分离·source_conv_id 关联)
-        // SC1 输出此字段·sc1q→SC1→apply 闭环·apply 时根据 source_conv_id 找对应 commit·非命中则新建 (sc1q-only commit)
-        if (p1.dialogue_commitment_feedback && Array.isArray(p1.dialogue_commitment_feedback)) {
-          if (!GM._npcCommitments || typeof GM._npcCommitments !== 'object') GM._npcCommitments = {};
-          var _sc1qResults = (GM._turnAiResults && GM._turnAiResults.subcall1q) || {};
-          var _sc1qCommits = Array.isArray(_sc1qResults.dialogue_commitments) ? _sc1qResults.dialogue_commitments : [];
-          p1.dialogue_commitment_feedback.forEach(function(dcf) {
-            if (!dcf || !dcf.npc) return;
-            // 查匹配 sc1q commit (R-D dedup·source_conv_id 优先)
-            var srcCommit = null;
-            if (dcf.source_conv_id) {
-              srcCommit = _sc1qCommits.find(function(c) { return c && c.source_conv_id === dcf.source_conv_id; });
-            }
-            // Codex修·MED:source_conv_id 未回带时按 npc+task 相似度兜底找回 sc1q commit(取回 category 触发结构化后果·防误落 dialogue)
-            if (!srcCommit && dcf.npc) {
-              var _dcfT = String(dcf.task || '').slice(0, 12);
-              srcCommit = _sc1qCommits.find(function(c) {
-                if (!c || c.npc !== dcf.npc) return false;
-                var _ct = String(c.task || '');
-                return !_dcfT || _ct.indexOf(_dcfT) >= 0 || (_ct.slice(0, 12) && String(dcf.task || '').indexOf(_ct.slice(0, 12)) >= 0);
-              });
-            }
-            var nm = dcf.npc;
-            if (!Array.isArray(GM._npcCommitments[nm])) GM._npcCommitments[nm] = [];
-            var arr = GM._npcCommitments[nm];
-            var _curT = GM.turn || 1;
-            var taskRef = (srcCommit && srcCommit.task) || dcf.task || '';
-            // dedup·当前回合 assignedTurn 且 task 相似度视为重复
-            var dup = arr.find(function(c) {
-              if (!c || c.assignedTurn !== _curT) return false;
-              if (!c.task || !taskRef) return false;
-              return c.task.indexOf(taskRef.slice(0, 10)) >= 0 || taskRef.indexOf(c.task.slice(0, 10)) >= 0;
-            });
-            var target = dup;
-            if (!target) {
-              target = {
-                id: 'sc1q_' + _curT + '_' + nm + '_' + arr.length,
-                task: taskRef,
-                category: (srcCommit && srcCommit.category) || dcf.category || 'dialogue',   // 【Q4】用 sc1q 分类·让财赋/查办/侦查履成能触发 canonical 结构化后果(原硬编码 dialogue 恒落 other 权重·饿死结构化效应)
-                assignedTurn: _curT,
-                deadline: parseInt(srcCommit && srcCommit.deadline, 10) || 3,   // Codex修·HIGH:sc1q deadline 是字符串"3回合内"·须解析为数字·否则过期结算(:2338)串接为 NaN 永不触发+面板渲染 NaN
-
-                status: dcf.status || 'pending',
-                progress: parseInt(dcf.progressPercent, 10) || 0,
-                willingness: (srcCommit && srcCommit.willingness) || 0.5,
-                npcPromise: (srcCommit && srcCommit.required_npc_action) || '',
-                feedback: dcf.feedback || '',
-                lastUpdateTurn: _curT,
-                _sc1qSource: dcf.source_type || (srcCommit && srcCommit.source_type) || '',
-                _sc1qSourceConvId: dcf.source_conv_id || '',
-                _sc1qTarget: (srcCommit && srcCommit.required_npc_action) || '',
-                _sc1qPlayerEmphasis: (srcCommit && srcCommit.player_emphasis) || '',
-                sourceRefs: [{ type: 'dialogueCommitment', id: dcf.source_conv_id || (srcCommit && srcCommit.source_conv_id) || ('sc1q-' + _curT + '-' + nm + '-' + arr.length), authority: 'court_report', turn: _curT, role: 'commitment_source' }],
-                basisRefs: []
-              };
-              target.basisRefs = target.sourceRefs;
-              arr.push(target);
-            } else {
-              if (dcf.status) target.status = dcf.status;
-              if (dcf.feedback) target.feedback = dcf.feedback;
-              if (dcf.progressPercent != null) target.progress = Math.max(0, Math.min(100, parseInt(dcf.progressPercent, 10) || 0));
-              target.lastUpdateTurn = _curT;
-              if (!Array.isArray(target.sourceRefs) || !target.sourceRefs.length) {
-                target.sourceRefs = [{ type: 'dialogueCommitment', id: dcf.source_conv_id || (srcCommit && srcCommit.source_conv_id) || target.id, authority: 'court_report', turn: _curT, role: 'commitment_source' }];
-              }
-              if (!Array.isArray(target.basisRefs) || !target.basisRefs.length) target.basisRefs = target.sourceRefs;
-            }
-            if (target.status === 'completed') {
-              target._terminalSettled = true;
-              target._terminalSettledTurn = _curT;
-              target._terminalSettledKind = 'completed';
-              addEB('对话·履行', nm + '·' + String(taskRef).slice(0, 30) + '·' + String(dcf.feedback || '').slice(0, 40));
-              if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(nm, '对话承诺已履行·' + String(taskRef).slice(0, 40), '慰', 4);
-              // Codex修·MED:feedback 完成路径也触发 canonical 结构化后果(财赋/查办/侦查)·原先只 commitment_update 路径有→sc1q 承诺常走 feedback 完成却拿不到效应
-              _fireCommitCanon(target, nm, ({dispatch:2.0,diplomacy:2.0,finance:1.8,intel:1.6,query:1.3,write:1.1,other:1.0})[target.category||'other']||1.0, dcf.feedback);
-            } else if (target.status === 'failed' || target.status === 'obstructed') {
-              target._terminalSettled = true;
-              target._terminalSettledTurn = _curT;
-              target._terminalSettledKind = target.status === 'obstructed' ? 'npc_duty_obstructed' : 'npc_duty_failed';
-              target._loyaltyPenaltyBlocked = true;
-              addEB('对话·失诺', nm + '·' + String(taskRef).slice(0, 30) + '·' + String(dcf.feedback || '').slice(0, 40));
-              if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(nm, '对话承诺失诺·' + String(taskRef).slice(0, 40), '愧', 4);
-            }
-          });
-          _dbg('[dialogue_commitment_feedback] applied ' + p1.dialogue_commitment_feedback.length + ' feedbacks');
+        // dialogue_commitment_feedback remains distinct from commitment_update.
+        // Every sc1q source is reconciled, including sources for which SC1 emitted no feedback.
+        var _sc1qCommits = (GM._turnAiResults && GM._turnAiResults.subcall1q && GM._turnAiResults.subcall1q.dialogue_commitments) || [];
+        if (_sc1qCommits.length || (p1.dialogue_commitment_feedback || []).length) {
+          if (!(TM && TM.ImperialOrders)) throw new Error('交办核验模块未加载');
+          TM.ImperialOrders.fromDialogue(GM, _sc1qCommits, p1.dialogue_commitment_feedback || []);
+          _dbg('[dialogue_commitment_feedback] applied with source-bound verification');
         }
-
-        // 【sc1q 升级·Q1·修承诺蒸发洞】无条件把每条 sc1q dialogue_commitment reconcile 进 _npcCommitments。
-        //   原逻辑仅当 sc1 回吐 dialogue_commitment_feedback 才建 commit → sc1 漏吐则玩家听到的承诺静默蒸发、永不追责。
-        //   此处补建缺失的(pending)·不覆盖 feedback 已处理的(同回合 source_conv_id/task 相似即视为已建)·让每句承诺都进问责闭环。
-        try {
-          var _q1Commits = (GM._turnAiResults && GM._turnAiResults.subcall1q && Array.isArray(GM._turnAiResults.subcall1q.dialogue_commitments)) ? GM._turnAiResults.subcall1q.dialogue_commitments : [];
-          if (_q1Commits.length) {
-            if (!GM._npcCommitments || typeof GM._npcCommitments !== 'object') GM._npcCommitments = {};
-            var _q1T = GM.turn || 1, _q1New = 0;
-            _q1Commits.forEach(function(c) {
-              if (!c || !c.npc || !c.task) return;
-              var nm = c.npc, _task = String(c.task || '');
-              if (!Array.isArray(GM._npcCommitments[nm])) GM._npcCommitments[nm] = [];
-              var arr = GM._npcCommitments[nm];
-              var exists = arr.find(function(e) {
-                if (!e || e.assignedTurn !== _q1T) return false;
-                if (c.source_conv_id && e._sc1qSourceConvId === c.source_conv_id) return true;
-                if (e.task && _task) return e.task.indexOf(_task.slice(0, 10)) >= 0 || _task.indexOf(e.task.slice(0, 10)) >= 0;
-                return false;
-              });
-              if (exists) return;   // feedback 已建·不重复
-              arr.push({
-                id: 'sc1qAuto_' + _q1T + '_' + nm + '_' + arr.length,
-                task: _task,
-                category: c.category || 'dialogue',
-                assignedTurn: _q1T,
-                deadline: parseInt(c.deadline, 10) || 3,   // Codex修·HIGH:同 feedback 路径·sc1q deadline 字符串→数字·否则过期结算 NaN
-                status: 'pending',
-                progress: 0,
-                willingness: (typeof c.willingness === 'number') ? c.willingness : 0.5,
-                npcPromise: c.required_npc_action || '',
-                feedback: '',
-                lastUpdateTurn: _q1T,
-                _sc1qSource: c.source_type || '',
-                _sc1qSourceConvId: c.source_conv_id || '',
-                _sc1qTarget: c.required_npc_action || '',
-                _sc1qPlayerEmphasis: c.player_emphasis || '',
-                _sc1qAutoReconciled: true,
-                sourceRefs: [{ type: 'dialogueCommitment', id: c.source_conv_id || ('sc1qAuto-' + _q1T + '-' + nm + '-' + arr.length), authority: 'court_report', turn: _q1T, role: 'commitment_source' }],
-                basisRefs: []
-              });
-              _q1New++;
-            });
-            if (_q1New) _dbg('[sc1q·Q1 reconcile] 无条件补建 ' + _q1New + ' 条承诺(防 sc1 漏吐蒸发)');
-          }
-        } catch(_q1E) { _dbg('[sc1q·Q1 reconcile] fail:', _q1E); }
 
         // 【sc1q 升级·Q2·修死车道】collective_resolutions(朝议决议)原只进 prompt、从不持久化 → 朝堂决议零跟进问责。
         //   存进 GM._courtResolutions(滚动·带 turn/status)·给决议一个状态之家·可被下回合承接与追责(不像 per-NPC 承诺那样有闭环)。
@@ -2462,40 +2200,10 @@
           });
         }
 
-        // ── 党派新建 ──
-        if (p1.party_create && Array.isArray(p1.party_create)) {
-          if (!Array.isArray(GM.parties)) GM.parties = [];
-          p1.party_create.forEach(function(pc) {
-            if (!pc || !pc.name) return;
-            if (GM.parties.some(function(p){return p.name === pc.name;})) return;
-            var newP = {
-              name: pc.name,
-              ideology: pc.ideology || '',
-              leader: '',
-              head: '',
-              influence: parseInt(pc.influence, 10) || 20,
-              status: pc.status || '活跃',
-              cohesion: parseInt(pc.cohesion, 10) || 70,
-              memberCount: parseInt(pc.memberCount, 10) || 0,
-              crossFaction: !!pc.crossFaction,
-              currentAgenda: pc.currentAgenda || '',
-              socialBase: Array.isArray(pc.socialBase) ? pc.socialBase : [],
-              agenda_history: [{ turn: GM.turn, agenda: '立党', outcome: pc.reason || pc.trigger || '' }],
-              focal_disputes: [],
-              officePositions: [],
-              description: pc.reason || '',
-              _createdTurn: GM.turn
-            };
-            if (pc.leader && !_tmSetPartyLeaderCanonical(newP, pc.leader, pc.reason || pc.trigger || '党派新建', 'party_create.leader')) return;
-            GM.parties.push(newP);
-            // 党魁如是已有角色，则标记其 party
-            if (newP.leader) {
-              var _ldr = _tmExactLivingChar(newP.leader);
-              if (_ldr) _ldr.party = pc.name;
-            }
-            addEB('\u515A\u4E89', '\u3010\u65B0\u515A\u5D1B\u8D77\u3011' + pc.name + (newP.leader ? '\uFF08\u9996\uFF1A' + newP.leader + '\uFF09' : '') + (pc.trigger ? '\u2014\u2014' + pc.trigger : '') + (pc.reason ? '\uFF1A' + pc.reason : ''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u65B0\u515A\u3011' + pc.name + '\u6210\u7ACB\u3002' + (pc.reason||''), category: '\u515A\u6D3E' });
-          });
+        // ── 新群体形成：先建阶层再建党派，共用与 Agent/校准一致的写口 ──
+        if ((p1.party_create && p1.party_create.length) || (p1.class_emerge && p1.class_emerge.length)) {
+          if (!(TM && TM.SocialFormation)) throw new Error('新群体登记模块未加载，未虚报创建');
+          TM.SocialFormation.apply(GM, p1, {source:'endturn.social-formation'});
         }
 
         // ── 党派覆灭 ──
@@ -2669,53 +2377,7 @@
           });
         }
 
-        // ── 阶层兴起 ──
-        if (p1.class_emerge && Array.isArray(p1.class_emerge)) {
-          if (!Array.isArray(GM.classes)) GM.classes = [];
-          p1.class_emerge.forEach(function(ce) {
-            if (!ce || !ce.name) return;
-            if (GM.classes.some(function(c){return c.name === ce.name;})) return;
-            var newC = {
-              name: ce.name,
-              size: ce.size || '约5%',
-              mobility: ce.mobility || '中',
-              economicRole: ce.economicRole || '其他',
-              status: ce.status || '良民',
-              privileges: ce.privileges || '',
-              obligations: ce.obligations || '',
-              satisfaction: parseInt(ce.satisfaction, 10) || 50,
-              influence: parseInt(ce.influence, 10) || 15,
-              demands: ce.demands || '',
-              unrestThreshold: parseInt(ce.unrestThreshold, 10) || 30,
-              representativeNpcs: [],
-              leaders: [],
-              supportingParties: [],
-              regionalVariants: [],
-              internalFaction: [],
-              unrestLevels: { grievance: 60, petition: 70, strike: 80, revolt: 90 },
-              economicIndicators: { wealth: 40, taxBurden: 40, landHolding: 20 },
-              description: '【新兴阶层】' + (ce.origin || '') + (ce.reason ? '——' + ce.reason : ''),
-              _emergeTurn: GM.turn,
-              _origin: ce.origin,
-              descriptor: (ce.descriptor && typeof ce.descriptor === 'object') ? ce.descriptor : undefined
-            };
-            GM.classes.push(newC); if (typeof TM !== 'undefined' && TM.ClassEngine && TM.ClassEngine.ensureClassPopulationCell) TM.ClassEngine.ensureClassPopulationCell(newC, GM); if (typeof TM !== 'undefined' && TM.SocialFoundation && TM.SocialFoundation.reconcileClassDescriptor) TM.SocialFoundation.reconcileClassDescriptor(newC, GM);
-            if (newC.descriptor && newC.descriptor._needsAdjudication && typeof callAI === 'function') {
-              // ⑤·硬骨头升 secondary-LLM 裁：现生阶层带表外 novel 标签→低优先 AI 归一通用词表(fire-and-forget·失败保确定性兜底)
-              (function (_c) {
-                var _ap = '【阶层定性·归一】新兴阶层「' + _c.name + '」(治生:' + (_c.economicRole || '') + '·特权:' + String(_c.privileges || '无').slice(0, 30) + '·影响' + (_c.influence || '') + ')现有标签 fiscalStatus=' + (_c.descriptor.fiscalStatus || '') + '·unrestArchetype=' + (_c.descriptor.unrestArchetype || '') + '(或为表外原词)。请归一到通用词表后输出：stratum(上/中/下)、fiscalStatus(优免/编户/受饷/法外)、unrestArchetype(暴烈/撤离/不合作/哗变/倒戈)。只输出 JSON {"stratum":"","fiscalStatus":"","unrestArchetype":""}·勿输出其他。';
-                Promise.resolve(callAI(_ap, 300, undefined, 'secondary', { priority: 'low', timeoutMs: 40000, maxRetries: 1 })).then(function (_ar) {
-                  try {
-                    var _aj = JSON.parse(String(_ar || '').replace(/```json|```/g, '').trim());
-                    if (_aj && TM.SocialFoundation && TM.SocialFoundation.applyAdjudicatedDescriptor && TM.SocialFoundation.applyAdjudicatedDescriptor(_c, _aj) && typeof addEB === 'function') addEB('阶层', '【定性】' + _c.name + '·' + _c.descriptor.stratum + '/' + _c.descriptor.fiscalStatus + '/' + _c.descriptor.unrestArchetype);
-                  } catch (_pe) {}
-                }).catch(function () {});
-              })(newC);
-            }
-            addEB('\u9636\u5C42', '\u3010\u65B0\u9636\u5C42\u5174\u8D77\u3011' + ce.name + (ce.origin?'\u2014\u2014' + ce.origin:'') + (ce.reason?'\uFF1A' + ce.reason:''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u9636\u5C42\u5174\u66BF\u3011' + ce.name + '\u5174\u8D77\u3002' + (ce.reason||''), category: '\u9636\u5C42' });
-          });
-        }
+        // 新阶层已在新群体形成写口处理；此处继续处理消亡与关系。
 
         // ── 阶层消亡 ──
         if (p1.class_dissolve && Array.isArray(p1.class_dissolve) && GM.classes) {
@@ -2787,7 +2449,9 @@
           try { adjudicatePendingReforms(GM, { aiVerdicts: (p1 && p1.reform_verdicts) || null }); } catch (_arpE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_arpE, 'apply] reform adjudicate:') : console.warn('[apply] reform adjudicate:', _arpE); }
         }
         // 处理官制变动（AI可任命/罢免官员）
-        if (p1.office_changes && Array.isArray(p1.office_changes) && GM.officeTree) {
+        if (p1.office_changes && Array.isArray(p1.office_changes) && p1.office_changes.length) {
+          if (GM.officeTree == null && window.TM && TM.OfficeCreation && p1.office_changes.some(function(oc){return TM.OfficeCreation.isCreation(oc);})) GM.officeTree = [];
+          if (!Array.isArray(GM.officeTree)) throw new Error('官制名册结构无效');
           if (window.TM && TM.OfficeCreation) p1.office_changes = p1.office_changes.map(function (oc) { return TM.OfficeCreation.normalize(oc) || oc; });
           // 官制活化 Slice④ 拟制态捕获：adjudication 开时·reform oc 入队(拟制中)·不即落·关则原样(3340 即落·零回归)
           if (typeof officeFlagOn === 'function' && officeFlagOn('officeReformAdjudicationEnabled') && typeof enqueuePendingReform === 'function') {
@@ -4536,7 +4200,12 @@
               });
             }
             // 阶段 = sedimentation 标为完成
-            if (u.stage === 'sedimentation') entry.isCompleted = true;
+            if (u.stage === 'sedimentation') {
+              var verdict = TM && TM.ImperialOrders ? TM.ImperialOrders.guardEdict(GM,{edictId:u.edictId,status:'completed'}) : null;
+              entry.reportedCompleted = true;
+              entry.isCompleted = !verdict || verdict.status === 'completed';
+              entry.verificationStatus = verdict && verdict.completionVerified === true ? 'verified' : entry.isCompleted ? 'reported_stage' : 'pending_review';
+            }
 
             // 应用 currentEffects 到资源/阶层
             if (u.currentEffects && typeof u.currentEffects === 'object') {
@@ -5285,6 +4954,7 @@
         // 1.1: 处理诏令执行反馈——支持跨回合长期诏令的追报+连锁效应累积
         if (p1.edict_feedback && Array.isArray(p1.edict_feedback) && GM._edictTracker) {
           p1.edict_feedback.forEach(function(ef) {
+            if (TM && TM.ImperialOrders) ef = TM.ImperialOrders.guardEdict(GM, ef);
             if (!ef.content && !ef.edictId) return;
             var tracker = null;
             // Path 1: 按 edictId 精确匹配（AI 若遵循指示会填 edictId）
@@ -5309,6 +4979,8 @@
               tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
             }
             if (tracker && !tracker._reliefCaseId) {
+              // Content-only legacy feedback must pass verification after its exact tracker is resolved.
+              if (TM && TM.ImperialOrders) ef = TM.ImperialOrders.guardEdict(GM, Object.assign({}, ef, {edictId:tracker.id}));
               // 远方诏令——信使未送达前强制pending_delivery
               if (tracker._remoteTargets && tracker._letterIds && tracker._letterIds.length > 0) {
                 var _allDelivered = tracker._letterIds.every(function(lid) {

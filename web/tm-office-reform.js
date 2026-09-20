@@ -190,8 +190,15 @@
    * @returns {{applied:boolean, summary:string}}
    */
   function applyReformToTree(GM, reform, options) {
-    if (!GM || !GM.officeTree) return { applied: false, summary: '无官制' };
+    if (!GM) return {applied:false,summary:'无当前世界'};
     if (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM) && !global.TM.NativeWorld.allowed(GM, 'reform', reform.authorityFactionId || GM.startContext.playerFactionId, reform.regionId, options && options.actorCharacterId)) return {applied:false,code:'native-reform-authority-denied',summary:'当前政治授权不允许此处改制'};
+    if (GM.officeTree == null && global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
+      if (options && options.preview) return applyReformToTree(Object.assign({},GM,{officeTree:[]}),reform,options);
+      var emptyPlan = global.TM.OfficeCreation.prepare([], reform);
+      if (!emptyPlan.ok) return {applied:false,summary:emptyPlan.summary};
+      GM.officeTree = []; // arch-ok: canonical office-reform writer initializes a missing tree only after creation authorization
+    }
+    if (!Array.isArray(GM.officeTree)) return {applied:false,summary:'官制树结构无效，未覆盖旧数据'};
     if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
       var creation = global.TM.OfficeCreation, canonical = creation.normalize(reform), charter = reform._charter;
       if (charter && charter.name && !(canonical.position && !canonical.newDept) && !_treeHasName(GM.officeTree, charter.name)) {

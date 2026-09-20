@@ -518,6 +518,8 @@
       class_updates: [
         { className: 'class name from snapshot', satisfactionDelta: 0, demands: ['该阶层独有的具体诉求(中文)'], unrestDelta: { grievance: 0, petition: 0, strike: 0, revolt: 0 } }
       ],
+      party_create: [{name:'本局形成的新党名',leader:'当前人物名',members:['当前人物名'],ideology:'共同主张',reason:'本局形成依据'}],
+      class_emerge: [{name:'本局新兴阶层名',economicRole:'经济基础',origin:'从何演化',reason:'已发生的结构变化',fromClass:'',populationCount:0}],
       party_updates: [
         { party: 'party name from snapshot', currentAgenda: 'short agenda', shortGoal: 'short goal', cohesionDelta: 0 }
       ],
@@ -537,7 +539,8 @@
     };
     var system = [
       'You calibrate a historical simulation game state.',
-      'Use only faction, party, class, character, and court issue names present in the snapshot.',
+      'For updates and member/leader/origin references use existing snapshot identities. New party and class names are allowed only in party_create and class_emerge.',
+      'When sustained alliances, shared interests or economic changes have produced a new group, return its creation record with concrete evidence. Do not limit the simulation to opening groups. Do not invent one each turn; explain unmet conditions in notes. Population estimates are not new people; omit populationCount unless an existing fromClass and a real reclassification count are known.',
       'Do not create fixed permanent pairings. Infer gradual dynamic changes from current evidence.',
       'Different scenarios may have unrelated factions/classes/parties. Treat all links as runtime evidence that can emerge, cool down, or reverse.',
       'Prefer structuredPlayerSignals and playerOperations when judging the latest player action impact.',
@@ -597,6 +600,8 @@
     return {
       relation_adjustments: toArray(parsed.relation_adjustments || parsed.relationAdjustments),
       class_updates: toArray(parsed.class_updates || parsed.classUpdates),
+      party_create: toArray(parsed.party_create || parsed.partyCreate || parsed.new_parties),
+      class_emerge: toArray(parsed.class_emerge || parsed.classEmerge || parsed.new_classes),
       party_updates: toArray(parsed.party_updates || parsed.partyUpdates),
       faction_updates: toArray(parsed.faction_updates || parsed.factionUpdates),
       court_issue_updates: toArray(parsed.court_issue_updates || parsed.courtIssueUpdates),
@@ -1076,6 +1081,13 @@
     var sourceName = options.source || 'party-class-llm-calibration';
     _invalidateCourtIssueRefs();  // 批开始：外部（廷议/信号）可能已改议题集合·不能吃陈缓存
     var applied = { relations: 0, classes: 0, parties: 0, factions: 0, courtIssues: 0, issueGoalLinks: 0, classCharacterRelations: 0, goals: 0 };
+    if (result.party_create.length || result.class_emerge.length) {
+      if (TM.SocialFormation) {
+        var formed = TM.SocialFormation.apply(source, result, {source:sourceName});
+        applied.parties += formed.parties.filter(function(r){return r.ok && r.created;}).length;
+        applied.classes += formed.classes.filter(function(r){return r.ok && r.created;}).length;
+      } else throw new Error('Social formation owner unavailable');
+    }
     result.relation_adjustments.forEach(function(adj) {
       if (!TM.PartyGoals || typeof TM.PartyGoals.applyDynamicRelationAdjustment !== 'function') return;
       var edge = TM.PartyGoals.applyDynamicRelationAdjustment(source, adj, {

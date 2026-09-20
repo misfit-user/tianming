@@ -57,7 +57,12 @@ ok(kE === 'custom_key' && gmE.population.byClass.custom_key.mouths === 999, 'E·
 
 // ── 源契约：现生落地点调用 + 导出 ──
 const applySrc = fs.readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
-ok(applySrc.indexOf('ensureClassPopulationCell(newC') >= 0, '★现生落地点(class_emerge)调用 ensureClassPopulationCell(newC)');
+ok(applySrc.indexOf('TM.SocialFormation.apply(GM, p1') >= 0, '现生阶层经统一登记写口');
+const pendingClass = {name:'未核计新阶层',populationKeys:['new_pending'],_populationPending:true,size:'约5%'};
+const pendingWorld = {turn:3,population:{national:{mouths:1000},byClass:{old:{mouths:1000}}}};
+CE.ensureClassPopulationCell(pendingClass,pendingWorld);
+ok(pendingWorld.population.byClass.new_pending.mouths===0, '未核计新阶层不凭估计造人口');
+ok(Object.values(pendingWorld.population.byClass).reduce((sum,bucket)=>sum+bucket.mouths,0)===1000, '新分类登记后保持人口守恒');
 
 console.log('\n[smoke-class-emerge-population] ' + (failed ? 'FAIL' : 'PASS') + ' — ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed ? 1 : 0);

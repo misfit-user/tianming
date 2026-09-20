@@ -65,6 +65,7 @@
   ['_npcRelationEvents', '_memoryArchiveFull', '_charInteractionCount', '_charInteractionCountTurn'].forEach(function(k) {
     if (ALLOWED.deepen_relations.indexOf(k) < 0) ALLOWED.deepen_relations.push(k);
   });
+  ['_memoryWriteQueue', '_memoryDraftInbox', '_memoryQuarantine', '_memoryAccepted', '_memoryAuditEvents', '_memoryLongTerm', '_memoryRevision'].forEach(function(k) { ALLOWED.recall_consolidate.push(k); });
   function validatePatches(tool, patches) {
     var allow = ALLOWED[tool] || [];
     var problems = [];
@@ -118,6 +119,26 @@
   // 专家并行：关系走 applyNpcInteraction，NPC 心绪走 NpcMemorySystem.remember。
   var ROOT_BOUND = { deepen_npcs: 1, deepen_relations: 1 };
   function isRootBound(tool) { return !!ROOT_BOUND[tool]; }
+  function captureProposalBasis(gm) {
+    var basis = { hashes: Object.create(null), report: clone(gm._turnReport), reasks: gm._agentJsonReasks };
+    Object.keys(gm).forEach(function(k) { basis.hashes[k] = hash(gm[k]); });
+    return basis;
+  }
+  function proposalPatches(basis, after) {
+    var keys = new Set(Object.keys(basis.hashes).concat(Object.keys(after))), out = [];
+    keys.forEach(function(k) {
+      if (UNSAFE[k]) return;
+      var exists = Object.prototype.hasOwnProperty.call(after, k), afterHash = exists ? hash(after[k]) : null;
+      var beforeHash = Object.prototype.hasOwnProperty.call(basis.hashes, k) ? basis.hashes[k] : hash(undefined);
+      if (exists && afterHash === beforeHash) return;
+      var patch = { op: exists ? 'set' : 'remove', path: k, beforeHash: beforeHash, afterHash: afterHash };
+      if (exists) patch.value = clone(after[k]);
+      if (k === '_turnReport') patch.beforeValue = basis.report;
+      if (k === '_agentJsonReasks') patch.beforeValue = basis.reasks;
+      out.push(patch);
+    });
+    return out;
+  }
   async function proposeSpecialist(tool, input, ctx, handler) {
     var gm = (ctx && ctx.GM) || root.GM;
     if (!gm || typeof handler !== 'function') return { ok: false, changed: false, verified: false, text: '(specialist sandbox unavailable)' };
@@ -125,6 +146,7 @@
     try { sandboxGM = strictClone(gm); }
     catch (e) { return { ok: false, changed: false, verified: false, text: '(specialist sandbox clone failed:' + ((e && e.message) || e) + ')' }; }
     if (!sandboxGM || sandboxGM === gm) return { ok: false, changed: false, verified: false, text: '(specialist sandbox isolation failed)' };
+    var basis = captureProposalBasis(sandboxGM), generation = root._tmLoadGen, turn = gm.turn, player = root.P;
     var sandboxCtx = Object.assign({}, ctx || {}, { GM: sandboxGM });
     sandboxCtx.meta = Object.assign({}, (ctx && ctx.meta) || {}, { specialistProposalOnly: true, specialist: tool });
     var bindRoot = isRootBound(tool);
@@ -136,12 +158,14 @@
     } catch (e) {
       raw = { ok: false, text: '(specialist failed:' + ((e && e.message) || e) + ')' };
     } finally {
-      if (bindRoot) {
+      if (bindRoot && root.GM === sandboxGM) {
         if (hadRootGM) root.GM = oldRootGM; else { try { delete root.GM; } catch (_) { root.GM = oldRootGM; } }
       }
     }
     if (!raw || raw.ok === false) return Object.assign({}, raw || {}, { changed: false, verified: false, proposalDiscarded: true });
-    var patches = topPatches(gm, sandboxGM);
+    var signal = ctx && ctx.meta && ctx.meta.agentRuntime && ctx.meta.agentRuntime.signal;
+    if (root.P !== player || root._tmLoadGen !== generation || gm.turn !== turn || (hadRootGM && root.GM !== oldRootGM) || (signal && signal.aborted)) return { ok: false, changed: false, verified: false, proposalDiscarded: true, reason: "stale-or-cancelled-specialist" };
+    var patches = proposalPatches(basis, sandboxGM);
     var valid = validatePatches(tool, patches);
     if (!valid.ok) return Object.assign({}, raw, { ok: false, changed: false, verified: false, reason: valid.problems.join(','), proposalDiscarded: true });
     return Object.assign({}, raw, { changed: patches.length > 0, verified: true, specialistProposal: true, proposal: { tool: tool, patches: patches } });

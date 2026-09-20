@@ -13,7 +13,7 @@
   }
 
   function _text(v) {
-    return (v == null) ? '' : String(v).trim();
+    return typeof v === 'string' ? v.trim() : '';
   }
 
   function _isFailureText(v) {
@@ -87,6 +87,12 @@
     var shizhengji = _text(aiResult.shizhengji || record.shizhengji);
     var zhengwen = _text(aiResult.zhengwen || record.zhengwen);
     var hasSc1 = _isObject(sc1) && Object.keys(sc1).length > 0;
+    var meta = ctx.meta && ctx.meta.aiInferMeta || ctx.meta || {};
+    var appFailures = (global.GM && GM._turnAiResults && GM._turnAiResults._applyFailures) || [];
+    var errors = Array.isArray(meta.errors) ? meta.errors : [];
+    if ((Array.isArray(appFailures) && appFailures.length) || errors.some(function(e) { return e && e.id === 'sc1_apply'; }) || meta.mainWriteback && meta.mainWriteback.ok !== true) reasons.push('主写回未完成，不得以叙事代替落账');
+    if (meta.requireMainWriteback && !(meta.mainWriteback && meta.mainWriteback.ok === true)) reasons.push('缺少本回合主写回成功回执');
+    if (sc1 && (sc1._emergencyFallback || sc1._g2Fallback)) reasons.push('主推演仅有应急或片段合成结果，不是完整推演');
 
     if (!hasSc1) reasons.push('SC1 结构化数据为空');
     else if (sc1._g2Fallback) warnings.push('SC1 使用 SC1b/SC1c 降级合成结果');

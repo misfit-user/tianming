@@ -1,0 +1,15 @@
+{
+  "started": "2026-09-17T10:42:10.324Z",
+  "complete": false,
+  "officialMapApplied": true,
+  "files": [],
+  "otherScenarioSourcesUnchanged": false,
+  "error": "Error: ENOSPC: no space left on device, write\n    at Object.writeFileSync (node:fs:2413:20)\n    at Object.sync (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\sync-official-scenarios.js:193:8)\n    at file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/apply-map.mjs:36:12",
+  "appliedBeforeFailure": [
+    "web\\tm-fiscal-engine.js",
+    "web\\phase8-formal-map-dossier.js",
+    "web\\tm-faction-membership.js",
+    "web\\tm-faction-derived-economy.js",
+    "scenarios\\绍宋·建炎元年八月（官方）.json"
+  ]
+}

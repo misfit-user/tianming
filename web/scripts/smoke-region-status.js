@@ -104,6 +104,7 @@ const ctx = {
   TM: { RegionStatus: RS },
   window: undefined, console: console
 };
+ctx.global = ctx; // Preserve the real fiscal IIFE closure while testing the extracted function.
 vm.createContext(ctx);
 vm.runInContext(fiscalSrc.slice(i0, i1) + '\nthis.__cta = computeTaxAmount;', ctx);
 const landTax = { base: 'land', rate: 0.1 };

@@ -1,0 +1,24 @@
+[
+  {
+    "label": "before",
+    "scenario": "open-never-responds",
+    "deadlineTimers": 0,
+    "settledAfterDeadline": false
+  },
+  {
+    "label": "before",
+    "scenario": "blocked-open-late-success",
+    "lateConnectionClosed": 0
+  },
+  {
+    "label": "after",
+    "scenario": "open-never-responds",
+    "deadlineTimers": 1,
+    "settledAfterDeadline": true
+  },
+  {
+    "label": "after",
+    "scenario": "blocked-open-late-success",
+    "lateConnectionClosed": 1
+  }
+]

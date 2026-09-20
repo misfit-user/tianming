@@ -1,0 +1,63 @@
+{
+  "runnerSyntax": 0,
+  "targetedDiffCheck": 0,
+  "tests": [
+    {
+      "name": "smoke-render-identity-cost.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-menu-render-idle.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-raster-display-cache.mjs",
+      "code": 0
+    },
+    {
+      "name": "smoke-perf-map-render-path.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-render-resolution.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-view-scores.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-viewport-collision.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-map-zoom-preload.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-deterministic.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-embed-protocol.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-render-assets.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-editor-renderall-resilient.js",
+      "code": 0
+    },
+    {
+      "name": "smoke-battle-hud-retained.js",
+      "code": 0
+    }
+  ],
+  "checkedAt": "2026-09-19T12:04:15.365Z"
+}

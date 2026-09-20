@@ -1,0 +1,302 @@
+{
+  "scanned": 706,
+  "scope": "web source excluding vendor, generated data, tools, tests, backups, hidden paths and preview entries",
+  "files": [
+    {
+      "file": "web\\battle\\index.html",
+      "pixels": 0,
+      "frames": 5,
+      "intervals": 1,
+      "canvas": 7,
+      "textures": 2
+    },
+    {
+      "file": "web\\battle\\terrain-frame-cache.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 1
+    },
+    {
+      "file": "web\\battle\\terrain-landscape.js",
+      "pixels": 2,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 2,
+      "textures": 1
+    },
+    {
+      "file": "web\\battle\\terrain-shadows.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 2
+    },
+    {
+      "file": "web\\battle\\unit-impostors.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 1
+    },
+    {
+      "file": "web\\editor-authoring-agent-ui.js",
+      "pixels": 0,
+      "frames": 2,
+      "intervals": 2,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-display.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-bitmap-seeds.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-boundary.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 2,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-brush.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-climate.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-core.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-culture-raster.js",
+      "pixels": 2,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 2,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-hover-glow.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-impassable.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-minimap.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 1,
+      "canvas": 2,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-perf.js",
+      "pixels": 0,
+      "frames": 3,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-progress.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-rastermaps.js",
+      "pixels": 12,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 3,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-terrain.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-tooltips.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-editor-ui.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\map-recognition.js",
+      "pixels": 7,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 8,
+      "textures": 0
+    },
+    {
+      "file": "web\\phase8-formal-map.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\phase8-formal-modules.js",
+      "pixels": 0,
+      "frames": 2,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-chaoyi-tinyi.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-chaoyi-yuqian.js",
+      "pixels": 0,
+      "frames": 2,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-editor-fit.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-electron.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-fixed-fit.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-hover-fulltext.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-map-system.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 4,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-mapeditor-fit.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-renwu-ui.js",
+      "pixels": 0,
+      "frames": 1,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-start-preparation-runtime.js",
+      "pixels": 1,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-wendui.js",
+      "pixels": 0,
+      "frames": 5,
+      "intervals": 0,
+      "canvas": 0,
+      "textures": 0
+    },
+    {
+      "file": "web\\tm-world-view.js",
+      "pixels": 0,
+      "frames": 0,
+      "intervals": 0,
+      "canvas": 1,
+      "textures": 0
+    }
+  ]
+}

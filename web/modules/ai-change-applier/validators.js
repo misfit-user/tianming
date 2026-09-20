@@ -1049,6 +1049,55 @@ export function createValidators(deps) {
     return text.substring(start, end);
   }
   // 辅助·命中关键词数组中的任一项
+  // A narrative mention is not necessarily a new event in this transaction.
+  function _assertedOccurrence(text, keyword) {
+    var cursor = 0, index;
+    while ((index = text.indexOf(keyword, cursor)) >= 0) {
+      cursor = index + Math.max(1, keyword.length);
+      var left = text.slice(0, index).split(/[。！？；;\n，,]/).pop();
+      var right = text.slice(index + keyword.length).split(/[。！？；;\n，,]/)[0];
+      var nearby = left.slice(-10) + keyword + right.slice(0, 10);
+      var ordinaryWord = keyword === '聘' && /延聘|招聘|聘请|聘任|聘用|征聘|应聘|受聘/.test(nearby)
+        || keyword === '嫁' && /转嫁/.test(nearby);
+      var currentAt=-1; ['本月','本年','今年','今日','本回合','本期','如今','现在','现已'].forEach(function(k) { currentAt=Math.max(currentAt,left.lastIndexOf(k)); });
+      var timeContext=currentAt>=0?left.slice(currentAt):left;
+      var historical = /(?:上年|去年|往年|前年|前朝|昔日|当年|先前|从前|此前已|旧时|旧档|史载|回顾|追述|追忆|回忆)/.test(timeContext);
+      var prospective = /(?:明年|来年|下月|下回合|将来|未来|翌年)/.test(timeContext);
+      var tail = left.split(/(?:但是|然而|却|而今|如今)/).pop();
+      var negativeTail=tail.replace(/不但|不仅|不只|非但|不得不|不能不|未尝不|并非没有|并非未|无一不|无不/g, '');
+      var negative = /(?:尚未|并未|未曾|从未|没有|并无|无意|不曾|不再|不能|不得|不宜|勿|莫|未|不|取消|放弃|否决|暂缓)[^。；，]{0,7}$/.test(negativeTail);
+      // Past relative clauses must not suppress an explicitly current event.
+      var pastProposal = currentAt >= 0 && /(?:上年|去年|前年|先前|此前).*(?:拟定|制定|商议|计划|提出).*的/.test(left.slice(0,currentAt));
+      var plannedTail = pastProposal ? timeContext : tail;
+      var planned = /(?:商议|建议|提议|拟议|拟|计划|打算|准备|有意|希望|尚待|考虑|主张|请求|欲|若|倘若|假如)[^。；，]{0,8}$/.test(plannedTail)
+        && !/(?:已然|已经|现已|已|遂|终于)[^。；，]{0,7}$/.test(plannedTail);
+      if (!ordinaryWord && !historical && !prospective && !negative && !planned) return index;
+    }
+    return -1;
+  }
+  function _firstAssertedHit(text, keywords) {
+    for (var i = 0; i < keywords.length; i++) if (_assertedOccurrence(text, keywords[i]) >= 0) return keywords[i];
+    return null;
+  }
+  function _assertedSnippet(text, keyword, span) {
+    var at = _assertedOccurrence(text, keyword); return at < 0 ? '' : text.slice(Math.max(0, at - span), at + keyword.length + span);
+  }
+  function _verifiedCharacterEffect(G, updates, keys) {
+    return (Array.isArray(updates) ? updates : []).some(function(row) {
+      if (!row || typeof row !== 'object') return false;
+      var ref = row.characterId || row.charId || row.name;
+      var chars = Array.isArray(G.chars) ? G.chars : [];
+      var found = chars.filter(function(ch) { return ch && String(ch.id || '') === String(ref || ''); });
+      if (!found.length) found = chars.filter(function(ch) { return ch && ch.name === ref; });
+      if (found.length !== 1) return false;
+      var fields = Object.assign({}, row.changes || {}, row.updates || {}), ch = found[0];
+      return Object.keys(fields).some(function(key) {
+        if (!keys.test(key)) return false;
+        try { return JSON.stringify(ch[key]) === JSON.stringify(fields[key]) && fields[key] != null; } catch (_) { return false; }
+      });
+    });
+  }
+
   function _firstHit(text, arr) {
     for (var i = 0; i < arr.length; i++) if (text.indexOf(arr[i]) >= 0) return arr[i];
     return null;
@@ -1061,8 +1110,8 @@ export function createValidators(deps) {
   function _validateDiplomacyConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var startKw = _firstHit(narrative, ['通使','缔盟','和好','朝贡','纳款','纳贡','遣使','称臣','羁縻','抚夷','封贡']);
-    var endKw = _firstHit(narrative, ['绝交','逐使','断绝','宣战','犯界','寇边','弃约','背盟']);
+    var startKw = _firstAssertedHit(narrative, ['通使','缔盟','和好','朝贡','纳款','纳贡','遣使','称臣','羁縻','抚夷','封贡']);
+    var endKw = _firstAssertedHit(narrative, ['绝交','逐使','断绝','宣战','犯界','寇边','弃约','背盟']);
     if (!startKw && !endKw) return;
     // facs.attitude / relations 是否本回合有 update
     var fuArr = aiOutput.faction_updates || [];
@@ -1071,8 +1120,8 @@ export function createValidators(deps) {
     var hasFactionUpdate = fuArr.length > 0 || hasRelationFallback || (G.turnChanges && (G.turnChanges.factions||[]).length > 0);
     if (hasFactionUpdate) return;
     var warnings = [];
-    if (startKw) warnings.push({ kind: 'diplomacy_friendly_missing', keyword: startKw, snippet: _snippetAround(narrative, startKw, 30) });
-    if (endKw) warnings.push({ kind: 'diplomacy_hostile_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+    if (startKw) warnings.push({ kind: 'diplomacy_friendly_missing', keyword: startKw, snippet: _assertedSnippet(narrative, startKw, 30) });
+    if (endKw) warnings.push({ kind: 'diplomacy_hostile_missing', keyword: endKw, snippet: _assertedSnippet(narrative, endKw, 30) });
     if (!warnings.length) return;
     if (!G._diplomacyValidatorLog) G._diplomacyValidatorLog = [];
     G._diplomacyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
@@ -1133,14 +1182,14 @@ export function createValidators(deps) {
     // “下诏狱”中的“下诏”是司法动作，不是颁布诏令。先遮蔽这一固定词组，
     // 避免把“某人下诏狱”误判为新增 activeEdicts 缺失并回滚整笔 AI 写入。
     var edictNarrative = narrative.replace(/下诏狱/g, '下狱');
-    var promulgateKw = _firstHit(edictNarrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
-    var revokeKw = _firstHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
+    var promulgateKw = _firstAssertedHit(edictNarrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
+    var revokeKw = _firstAssertedHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
     if (!promulgateKw && !revokeKw) return;
     var existingEdicts = Array.isArray(G.activeEdicts) ? G.activeEdicts : [];
     var beforeCount = (applied && typeof applied._edictsBefore === 'number') ? applied._edictsBefore : existingEdicts.length;
     var warnings = [];
-    if (promulgateKw && existingEdicts.length <= beforeCount) warnings.push({ kind: 'edict_promulgate_missing', keyword: promulgateKw, snippet: _snippetAround(narrative, promulgateKw, 30) });
-    if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: 'edict_revoke_missing', keyword: revokeKw, snippet: _snippetAround(narrative, revokeKw, 30) });
+    if (promulgateKw && existingEdicts.length <= beforeCount) warnings.push({ kind: 'edict_promulgate_missing', keyword: promulgateKw, snippet: _assertedSnippet(narrative, promulgateKw, 30) });
+    if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: 'edict_revoke_missing', keyword: revokeKw, snippet: _assertedSnippet(narrative, revokeKw, 30) });
     if (!warnings.length) return;
     if (!G._edictEffectValidatorLog) G._edictEffectValidatorLog = [];
     G._edictEffectValidatorLog.push({ turn: G.turn||0, warnings: warnings });
@@ -1214,18 +1263,19 @@ export function createValidators(deps) {
   function _validateMarriageBirthConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var marryKw = _firstHit(narrative, ['嫁','娶','聘','纳采','纳征','成婚','结亲','缔婚','和亲','联姻','大婚']);
-    var birthKw = _firstHit(narrative, ['有娠','怀孕','身娠','诞生','分娩','降生','弄璋','弄瓦','长公主','皇子','皇女','龙胎']);
-    var deathHeirKw = _firstHit(narrative, ['夭折','早殇','薨于稚龄','婴卒','绝嗣','无嗣','断后']);
-    var succKw = _firstHit(narrative, ['即位','登基','嗣位','继统','承祧','承嗣','袭爵','袭封','袭位']);
+    var marryKw = _firstAssertedHit(narrative, ['嫁','娶','聘','纳采','纳征','成婚','结亲','缔婚','和亲','联姻','大婚']);
+    var birthKw = _firstAssertedHit(narrative, ['有娠','怀孕','身娠','诞生','分娩','降生','弄璋','弄瓦','长公主','皇子','皇女','龙胎']);
+    var deathHeirKw = _firstAssertedHit(narrative, ['夭折','早殇','薨于稚龄','婴卒','绝嗣','无嗣','断后']);
+    var succKw = _firstAssertedHit(narrative, ['即位','登基','嗣位','继统','承祧','承嗣','袭爵','袭封','袭位']);
     if (!marryKw && !birthKw && !deathHeirKw && !succKw) return;
     var charUpdates = aiOutput.char_updates || [];
     var charDeaths = aiOutput.character_deaths || [];
-    var hasUpdate = charUpdates.some(function(c){return c && c.changes && Object.keys(c.changes).some(function(k){return /spouse|wife|consort|children|heir|inherited|succeeded/i.test(k);});});
+    var hasMarriage = _verifiedCharacterEffect(G, charUpdates, /^(spouse|wife|consort|husband|spouseId)$/i);
+    var hasSuccession = _verifiedCharacterEffect(G, charUpdates, /^(heir|heirId|inherited|succeeded|succession|title)$/i);
     var warnings = [];
-    if (marryKw && !hasUpdate) warnings.push({ kind: 'marriage_missing', keyword: marryKw, snippet: _snippetAround(narrative, marryKw, 30) });
-    if (deathHeirKw && charDeaths.length === 0) warnings.push({ kind: 'heir_death_missing', keyword: deathHeirKw, snippet: _snippetAround(narrative, deathHeirKw, 30) });
-    if (succKw && !hasUpdate) warnings.push({ kind: 'succession_missing', keyword: succKw, snippet: _snippetAround(narrative, succKw, 30) });
+    if (marryKw && !hasMarriage) warnings.push({ kind: 'marriage_missing', keyword: marryKw, snippet: _assertedSnippet(narrative, marryKw, 30) });
+    if (deathHeirKw && charDeaths.length === 0) warnings.push({ kind: 'heir_death_missing', keyword: deathHeirKw, snippet: _assertedSnippet(narrative, deathHeirKw, 30) });
+    if (succKw && !hasSuccession) warnings.push({ kind: 'succession_missing', keyword: succKw, snippet: _assertedSnippet(narrative, succKw, 30) });
     if (!warnings.length) return;
     if (!G._marriageBirthValidatorLog) G._marriageBirthValidatorLog = [];
     G._marriageBirthValidatorLog.push({ turn: G.turn||0, warnings: warnings });

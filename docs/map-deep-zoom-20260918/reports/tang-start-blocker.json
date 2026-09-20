@@ -1,0 +1,71 @@
+{
+  "mode": "tang-start-diagnostic",
+  "sid": "sc-tang840-840",
+  "time": "2026-09-18T10:27:46.309Z",
+  "complete": false,
+  "checks": [
+    {
+      "name": "official-scenario-loaded",
+      "passed": true,
+      "detail": {
+        "id": "sc-tang840-840",
+        "regions": 575,
+        "circuits": 111
+      }
+    },
+    {
+      "name": "native-startup-contract",
+      "passed": false,
+      "detail": {
+        "ok": false,
+        "message": "世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败",
+        "stack": "Error: 世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\n    at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:432:11)\n    at doActualStart (file:///C:/Users/37814/Desktop/tianming/web/tm-patches-start.js?v=20260823-auditfix18-autosave:2159:3)\n    at <anonymous>:1:22\n    at <anonymous>:1:156"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "name": "page-loaded",
+      "ms": 3063
+    },
+    {
+      "name": "failure",
+      "ms": 18768,
+      "detail": "Error: native-startup-contract: {\"ok\":false,\"message\":\"世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\",\"stack\":\"Error: 世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\\n    at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:432:11)\\n    at doActualStart (file:///C:/Users/37814/Desktop/tianming/web/tm-patches-start.js?v=20260823-auditfix18-autosave:2159:3)\\n    at <anonymous>:1:22\\n    at <anonymous>:1:156\"}\n    at check (file:///D:/tianming-assistant-work/map-deep-zoom-20260918/diagnostic-tang-ui.mjs:10:94)\n    at file:///D:/tianming-assistant-work/map-deep-zoom-20260918/diagnostic-tang-ui.mjs:27:213"
+    }
+  ],
+  "source": {
+    "id": "sc-tang840-840",
+    "regions": 575,
+    "circuits": 111
+  },
+  "console": [
+    "[StartRuntimePrime] [object Object]",
+    "[StartRuntimePrime] [object Object]",
+    "[enterGame] 内帑朝代预设失败] 捕获: FiscalStatement provider missing",
+    "  Error: FiscalStatement provider missing\n      at accountStatement (file:///C:/Users/37814/Desktop/tianming/web/tm-fiscal-engine.js?v=20260828-edictledger:853:54)\n      at Object.syncAccountStatement (file:///C:/Users/37814/Desktop/tianming/web/tm-fiscal-engine.js?v=20260828-edictledger:2884:45)",
+    "[enterGame] FixedExpense.preview 失败:] 捕获: Cannot read properties of undefined (reading 'fixedSummary')",
+    "  TypeError: Cannot read properties of undefined (reading 'fixedSummary')\n      at Object.fixedPreview [as preview] (file:///C:/Users/37814/Desktop/tianming/web/tm-fiscal-engine.js?v=20260828-edictledger:2322:51)\n      at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:151:30)",
+    "[enterGame] 核心 Phase/财政桥接初始化失败] 捕获: Cannot read properties of undefined (reading 'sync')",
+    "  TypeError: Cannot read properties of undefined (reading 'sync')\n      at writeBudgetDisplay (file:///C:/Users/37814/Desktop/tianming/web/tm-fiscal-engine.js?v=20260828-edictledger:858:28)\n      at Object.applyBudgetSnapshot (file:///C:/Users/37814/Desktop/tianming/web/tm-fiscal-engine.js?v=20260828-edictledger:864:51)",
+    "[map-render-skip] shell=true stage=true visible=false"
+  ],
+  "startResult": {
+    "ok": false,
+    "message": "世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败",
+    "stack": "Error: 世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\n    at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:432:11)\n    at doActualStart (file:///C:/Users/37814/Desktop/tianming/web/tm-patches-start.js?v=20260823-auditfix18-autosave:2159:3)\n    at <anonymous>:1:22\n    at <anonymous>:1:156"
+  },
+  "failureScreenshot": {
+    "file": "failure.png",
+    "bytes": 386236,
+    "sha256": "fbfeb6d8a12cf029865f9fe2902e2315009f270dc6eba131b4c96b0693a8dca8"
+  },
+  "finalView": {
+    "scale": 1,
+    "tx": 0,
+    "ty": 0
+  },
+  "exitCode": 1,
+  "ms": 21169,
+  "error": "Error: native-startup-contract: {\"ok\":false,\"message\":\"世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\",\"stack\":\"Error: 世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\\n    at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:432:11)\\n    at doActualStart (file:///C:/Users/37814/Desktop/tianming/web/tm-patches-start.js?v=20260823-auditfix18-autosave:2159:3)\\n    at <anonymous>:1:22\\n    at <anonymous>:1:156\"}\n    at check (file:///D:/tianming-assistant-work/map-deep-zoom-20260918/diagnostic-tang-ui.mjs:10:94)\n    at file:///D:/tianming-assistant-work/map-deep-zoom-20260918/diagnostic-tang-ui.mjs:27:213"
+}

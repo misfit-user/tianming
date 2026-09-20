@@ -1,0 +1,23 @@
+{
+  "source": "scenarios/天启七年·九月（官方）.json",
+  "sourceSha256": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+  "work": "D:/tianming-assistant-work/chongzhen-map-r3-20260918",
+  "doc": "docs/chongzhen-map-r3-20260918",
+  "stage": "applied-and-native-tested",
+  "otherSources": [
+    {
+      "file": "scenarios/天启七年·九月（官方）.json",
+      "sha256": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a"
+    },
+    {
+      "file": "scenarios/晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51"
+    },
+    {
+      "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b"
+    }
+  ],
+  "currentSourceSha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "finalReport": "验收结果.json"
+}

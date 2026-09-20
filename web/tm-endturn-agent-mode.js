@@ -408,6 +408,7 @@
       '· 后果即落地:每推演出一项后果·立即用守护写工具改进存档(财政增减 / 民心民生 / 官员境遇 / 势力态度 / 触发事件)·不要只说不改。',
       '· 硬核账走专用工具:改国库总额用 adjust_treasury·增删调**收入支出流水项**(开税源/砍军费/设年例)用 adjust_fiscal_item·删数组项(部队覆灭/党派清洗/势力剪除)用 remove_field·只有事件日志 evtLog 可用 push_field 增项，人物/战争/奏疏/灾害等集合必须走领域工具。软字段(心境/民心/关系)用 set_field/adjust_field。',
       '· 治国语义工具(有引擎记账·裸改会落错或被覆盖·必须走它们):任免 appoint_official/dismiss_official · 军事 command_army(募兵/调动/改将/解散) · 外交 diplomatic_action(宣战/议和/设邦交) · 建筑 building_project(兴工/拆毁) · 行政区划 restructure_division(设府/废县/改隶/升降)。这些是你作为执政可主动施为的治国手段——按推演该动则动。',
+      '· 新群体与新机构不能被开局名册锁死：有本局形成依据时用 form_party / emerge_class；设新部门或官职用 create_office（不自动任命，仍受改制审批）。新建独立军队用 command_army(action=create)，不要给旧军改名或扩编来冒充。',
       '· 舆地变迁工具:人物移动 move_character(赴任/出征/流放/还朝改所在地) · 迁都 relocate_capital(朝廷或势力迁治所) · 地块易主 change_region_owner(攻占/割让/归附→改地块归属并使地图变色) · 地块状态 adjust_region_state(某地民心/繁荣升降·兵燹灾荒善政致) · 地块建筑 building_project(兴工/拆毁)。推演出领土/人物/都城/地方状态/营造变动时用之·勿裸改地图字段。',
       '· 【人事=玩家的事·勿越俎代庖】玩家的任命已定·**勿重做、勿替玩家任命**。仅当你推演出**世界自走**需要人事变动时(如官员阵亡/叛逃需补缺、因你推演之事而问责黜落)·才用 appoint_official/dismiss_official——那是**后果**·不是替玩家做新任命。',
       '· 【深度是命门·别让世界在你这回合变薄】每个本回合有动静的维度(财政/军事/势力/民生/人事/事件/舆地)都要用守护写/语义工具把后果真落地——覆盖脊柱、该动的别漏;热点维度(战事/财政/夺权/灾荒)多落地几笔更细的后果。',
@@ -469,8 +470,9 @@
     if (!gm) return '';
     // ④ 模型能力档 agentMemoryDepth(默认3·owner 据模型能力上调·越大读越多过往:史记/御批/编年/压缩层)——「能读多少根据模型能力来」
     var Pm = root.P || {};
-    var memDepth = Math.max(1, Math.round((Pm.conf && Pm.conf.agentMemoryDepth) || 6));
+    var memDepth = TM.MemoryModeBridge ? TM.MemoryModeBridge.memoryDepth() : Math.max(1, Math.round((Pm.conf && Pm.conf.agentMemoryDepth) || 6));
     var parts = [];
+    if (TM.MemoryModeBridge) { var shared = TM.MemoryModeBridge.dossier(gm); if (shared) parts.push(shared); }
     // ④ 多回合综合脉络(recall_consolidate 滚动整合·非逐回合罗列)·置最前=贯穿至今的主线·须续接
     try { if (gm._sagaMemory && gm._sagaMemory.text) parts.push('【多回合综合脉络 · 贯穿至今的主线(综合而非罗列·你的推演须接此主线)】\n' + _brief(gm._sagaMemory.text, 700)); } catch (e) {}
     try { var sb = gm._stateBoard; if (sb) parts.push('【上回合状态盘 · 跨回合连续性】\n' + _brief(typeof sb === 'string' ? sb : JSON.stringify(sb), 3000)); } catch (e) {}
@@ -858,11 +860,12 @@
   }
 
   // ── 主循环 ──
-  async function run(ctx) {
+  async function runInner(ctx) {
     var gm = _GM(ctx);
     var cawt = root.callAIWithTools;
     var P = root.P || {};
     var _conf = P.conf || {};
+    var recoveryFailure = null;
     // Agent 与 LLM 是平行模式：Agent 被选中后，缺依赖/失败只能在本链回滚并报错，绝不静默穿越到 LLM 主流程。
     function fail(reason, extra) {
       var out = { ok: false, fallback: false, mode: 'agent', reason: reason || 'Agent 模式失败' };
@@ -879,11 +882,12 @@
     if (TM.AgentKernel && typeof TM.AgentKernel.createRun === 'function') {
       ctx.meta.agentRuntime = TM.AgentKernel.createRun({
         meta: { mode: 'agent', turn: gm.turn || 0 },
+        enforceDeadline: true, signal: ctx.signal || ctx.meta.signal || null,
         budget: {
           maxCalls: _conf.agentModeMaxCalls || 24,
           maxTokens: _conf.agentModeTokenBudget || 52000,
           reserveCalls: _conf.agentModeReserveCalls != null ? _conf.agentModeReserveCalls : 4,
-          deadlineMs: _conf.agentModeDeadlineMs || 420000
+          deadlineMs: _aiWaitSetting(P.ai && P.ai.agentRunTimeoutMs != null ? P.ai.agentRunTimeoutMs : _conf.agentModeDeadlineMs, 'Agent 回合总时限')
         }
       });
     }
@@ -900,9 +904,13 @@
     var _turnAfterEngine = null;   // 刀E2 · engine-first 后的实测回合数(而非假设引擎必turn++·stub/异种引擎语义都稳)
     // 失败兜底：恢复 Agent 开工快照并把失败交给共同入口；不得转跑 LLM 模式。
     function bail(reason) {
+      var priorRuntime = _agentRuntime(ctx);
+      if (!recoveryFailure && priorRuntime && priorRuntime.signal.aborted && priorRuntime.signal.reason && priorRuntime.signal.reason.code) recoveryFailure = { code: priorRuntime.signal.reason.code };
+      var runtime = _agentRuntime(ctx); if (runtime && !runtime.signal.aborted) runtime.abort(reason);
+      if (root.GM && root.GM !== gm) return fail(reason, { rolledBack: false, stale: true });
       if (_intentPlan) _intentPlan.status = 'rolled-back';
       var rolledBack = snapshot ? _rollback(gm, snapshot, ctx, _extSnap) : false;
-      return fail(reason, { rolledBack: rolledBack, intentPlan: TM.Endturn.AgentIntentPlan.summarize(_intentPlan) });
+      return fail(reason, { rolledBack: rolledBack, transportFailure: recoveryFailure, intentPlan: TM.Endturn.AgentIntentPlan.summarize(_intentPlan) });
     }
 
     try {
@@ -1037,7 +1045,13 @@
           if (round === 1) return bail('Agent 调用失败(首轮):' + (e && e.message));
           break;
         }
+        if (_agentSignal(ctx) && _agentSignal(ctx).aborted) return bail('Agent 任务已取消或到达总时限');
         if (!resp) { if (round === 1) return bail('Agent 无响应(首轮)'); break; }
+        if (resp.error && !(Array.isArray(resp.toolCalls) && resp.toolCalls.length)) {
+          state.loopError = { code: resp.error.code || 'tool-call-failed', status: Number(resp.error.status) || 0 };
+          recoveryFailure = { code: state.loopError.code, status: state.loopError.status };
+          return bail('Agent 请求失败，已停止后续调用：' + state.loopError.code + (state.loopError.status ? ' / HTTP ' + state.loopError.status : ''));
+        }
         // 刀H2(CC max_tokens 动态调整对照) · 输出截断自愈:被输出上限腰斩且没调成任何工具 → 上限×2
         //   重试本轮(≤2次·infra 纯增量 truncated 字段)·置于 narrative 赋值前(截断的叙事不污染产出)
         if (resp.truncated && !(Array.isArray(resp.toolCalls) && resp.toolCalls.length) && _tokBump < 2) {
@@ -1050,11 +1064,18 @@
         if (!calls.length) break;
         var _wB = state.writeOk, _dB = Object.keys(state.depthTools || {}).length;
         var resultLines = [];
+        var memoryRoundBudget = TM.MemoryModeBridge ? TM.MemoryModeBridge.budget(TM.MemoryModeBridge.profile()) : 0;
         for (var i = 0; i < calls.length; i++) {
           var c = calls[i] || {};
           if (!c.name) continue;
           var r = await _dispatch(c.name, c.input || {}, ctx, state);
+          if (TM.MemoryModeBridge && TM.MemoryModeBridge.isRead(c.name)) {
+            var evidence = TM.MemoryModeBridge.pack(r && r.hits, { maxTokens: memoryRoundBudget, expanded: c.name === 'read_memory' });
+            memoryRoundBudget = Math.max(0, memoryRoundBudget - evidence.tokenEstimate);
+            resultLines.push(c.name + ': ' + (evidence.text || '(记忆结果未装入：无证据或本轮预算已用尽)'));
+          } else {
           resultLines.push('· ' + c.name + '(' + _brief(c.input || {}, 80) + ') ⇒ ' + String((r && r.text) || '').slice(0, 500));
+          }
           if (state.finalized) break;
         }
         roundLog.push({ round: round, text: resultLines.join('\n') });  // 滚动日志(瘦身用·下轮只带最近 N)
@@ -1223,6 +1244,7 @@
     // ── S5 状态自检 → 过则提交·崩则在 Agent 链内回滚并中止 ──
     // 刀E2 · 传语义契约:engine-first 之后任何人不得再动 gm.turn(用引擎跑完的实测值·不假设引擎必turn++);
     //   快照时有玩家角色则收尾必须还在
+    if (_agentSignal(ctx) && _agentSignal(ctx).aborted) return bail('Agent 任务已取消或到达总时限，未提交');
     var chk = _selfCheck(gm, {
       expectTurn: (engineRan && typeof _turnAfterEngine === 'number') ? _turnAfterEngine : null,
       hadPlayer: snapshot ? (Array.isArray(snapshot.chars) && snapshot.chars.some(function (c) { return c && c.isPlayer; })) : null
@@ -1275,6 +1297,11 @@
     return { ok: true, fallback: false, mode: 'agent', aiResult: aiResult };
   }
 
+  async function run(ctx) {
+    ctx = ctx || {};
+    try { return await runInner(ctx); }
+    finally { var runtime = ctx.meta && ctx.meta.agentRuntime; if (runtime && runtime.dispose) runtime.dispose(); }
+  }
   TM.Endturn.AgentMode = {
     run: run,
     _stage: 'D-depth-guarantee',

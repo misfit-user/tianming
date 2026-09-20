@@ -1,0 +1,56 @@
+{
+  "description": "Synthetic two-stage failure, 50 ms per HTTP response; control disables response reuse only. Not real API timing.",
+  "control": [
+    {
+      "calls": 4,
+      "ms": 230.814,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    },
+    {
+      "calls": 4,
+      "ms": 242.053,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    },
+    {
+      "calls": 4,
+      "ms": 234.539,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    }
+  ],
+  "recovery": [
+    {
+      "calls": 3,
+      "ms": 191.708,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    },
+    {
+      "calls": 3,
+      "ms": 183.044,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    },
+    {
+      "calls": 3,
+      "ms": 176.299,
+      "sameMain": true,
+      "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+      "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+    }
+  ],
+  "summary": {
+    "controlCalls": 4,
+    "recoveryCalls": 3,
+    "controlMedianMs": 234.539,
+    "recoveryMedianMs": 183.044,
+    "identicalFullOutputs": true
+  }
+}

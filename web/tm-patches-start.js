@@ -552,6 +552,10 @@ function _tmStartConfirmModelRequirementsBeforeLaunch(sc){
   return true;
 }
 
+function _tmCancelPendingStartRequest() {
+  window._tmStartRequestEpoch=Number(window._tmStartRequestEpoch || 0)+1;
+  return window._tmStartRequestEpoch;
+}
 function _tmStartRequestCurrent(token) {
   return token == null || (typeof window !== 'undefined' && window._tmStartRequestEpoch === token);
 }

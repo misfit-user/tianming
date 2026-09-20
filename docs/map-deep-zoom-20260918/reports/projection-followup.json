@@ -1,0 +1,13 @@
+{
+  "time": "2026-09-18T07:58:42.150Z",
+  "complete": true,
+  "reason": "Correct SVG fill-box origin and keep thin vector borders at deep zoom",
+  "files": [
+    {
+      "file": "web/phase8-formal-bridge-styles.js",
+      "before": "0ab12df844c645c9440e8dd418446fb5c5b66c452d7fe87122b46d1ced52e793",
+      "after": "c68199a5f88beb6444fcb449f87e64b20be715816987b2eb675182e1dc9f4388",
+      "backup": "before-followup-phase8-formal-bridge-styles.js"
+    }
+  ]
+}

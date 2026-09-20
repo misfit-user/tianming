@@ -109,7 +109,7 @@
 
   function safeTextOf(hit, maxLen) {
     hit = hit || {};
-    var text = hit.safeBody != null && hit.safeBody !== ''
+    var text = hit.safeBody != null
       ? hit.safeBody
       : (hit.text != null ? hit.text : (hit.event != null ? hit.event : (hit.content != null ? hit.content : hit.body)));
     text = clean(text, maxLen || 240);
@@ -187,6 +187,10 @@
     var authority = clean(hit.authority || '', 80);
     var lane = clean(hit.lane || '', 80);
     if (authority === 'rumor' || src === 'rumor') return 'warnings';
+    if (hit.memoryKind === 'unresolved_thread') return 'stateAffairs';
+    if (hit.memoryKind === 'decision_rationale') return 'courtRecords';
+    if (hit.memoryKind === 'causal_lesson' || hit.memoryKind === 'economic_pattern') return 'warnings';
+    if (hit.memoryKind === 'institutional_memory' || hit.memoryKind === 'territorial_change' || hit.memoryKind === 'correction') return 'chronology';
     if (src === 'court_record' || hit.type === 'court_resolution' || hit.factStatus === 'court_resolution' || hit.factStatus === 'court_record') return 'courtRecords';
     if (type === 'issue_resolution' || type === 'strategic_issue' || type === 'issue_update' || type === 'ongoing_affair') return 'stateAffairs';
     if (type === 'character_memory' || type === 'character_belief' || type === 'relationship_event' || type === 'court_dialogue_record') return 'characterMemory';
@@ -212,6 +216,7 @@
     out.id = clean(out.id || out.key || out.uuid || ('hit-' + index), 120) || ('hit-' + index);
     out.source = sourceOf(out);
     out.type = clean(out.type || out.kind || '', 80);
+    out._factText = safeTextOf(out, Number.MAX_SAFE_INTEGER);
     out.text = safeTextOf(out, opts && opts.perHitMaxChars || 180);
     out.turn = Number(out.turn || 0);
     out.authority = clean(out.authority || '', 80);
@@ -221,6 +226,11 @@
     out.factStatus = clean(out.factStatus || '', 80);
     out.sourceRefs = arr(out.sourceRefs);
     out.basisRefs = arr(out.basisRefs);
+    if (opts && opts.turn != null) {
+      var currentTurn = Number(opts.turn);
+      if ((out.validToTurn != null && Number(out.validToTurn) < currentTurn) || (out.expiredAtTurn != null && Number(out.expiredAtTurn) <= currentTurn)) out.temporalUse = 'historical_only';
+      if (out.validFromTurn != null && Number(out.validFromTurn) > currentTurn) out.temporalUse = 'not_yet_effective';
+    }
     out._compilerScore = normalizedScore(out, opts);
     return out;
   }
@@ -266,6 +276,12 @@
     if (hit.factStatus) attrs.push('fact-status="' + xml(hit.factStatus) + '"');
     if (hit.lane) attrs.push('lane="' + xml(hit.lane) + '"');
     if (hit.visibility) attrs.push('visibility="' + xml(hit.visibility) + '"');
+    if (hit.memoryKind) attrs.push('memory-kind="' + xml(hit.memoryKind) + '"');
+    if (hit.temporalUse) attrs.push('temporal-use="' + xml(hit.temporalUse) + '"');
+    if (hit.staleStatus) attrs.push('stale-status="' + xml(hit.staleStatus) + '"');
+    if (hit.validFromTurn != null) attrs.push('valid-from="' + xml(hit.validFromTurn) + '"');
+    if (hit.validToTurn != null) attrs.push('valid-to="' + xml(hit.validToTurn) + '"');
+    if (hit.expiredAtTurn != null) attrs.push('expired-at="' + xml(hit.expiredAtTurn) + '"');
     var sourceRefs = compactRefList(hit.sourceRefs);
     var basisRefs = compactRefList(hit.basisRefs);
     if (sourceRefs) attrs.push('source-refs="' + xml(sourceRefs) + '"');
@@ -349,16 +365,42 @@
     }, { hitCount: Array.isArray(hits) ? hits.length : 0 });
   }
 
+  function governCompilerHits(hits, opts, suppressed) {
+    var MR = root.TM && root.TM.MemoryRetrieval;
+    var policy = {};
+    Object.keys(opts).forEach(function(k) { policy[k] = opts[k]; });
+    policy.intent = opts.intent || 'historical_evidence';
+    if (MR && typeof MR.rankHitsDetailed === 'function') {
+      var ranked = MR.rankHitsDetailed(hits, policy);
+      Array.prototype.push.apply(suppressed, arr(ranked.suppressed));
+      return arr(ranked.ranked).map(function(hit) { hit._compilerScore = normalizedScore(hit, opts); return hit; }).sort(sortHits);
+    }
+    return hits.filter(function(hit) {
+      var states = [hit.status, hit.reviewStatus, hit.factStatus].join('|').toLowerCase();
+      var reason = /(^|\|)(draft|pending_review|rejected|quarantined|quarantine|deleted|deleted_tombstone|redacted)(\||$)/.test(states) ? 'unaccepted_memory' : '';
+      var audience = opts.audience || (opts.actorScope && opts.actorScope.kind) || opts.actorScope || 'system';
+      var scopes = String(hit.readScope || '').toLowerCase().split(/[\s,;|]+/);
+      var actor = String(opts.actorId || (opts.actorScope && (opts.actorScope.actorId || opts.actorScope.npcId)) || '').toLowerCase();
+      if (!reason && scopes.length && scopes[0] && ['system', 'gm', 'designer'].indexOf(audience) < 0 && scopes.indexOf('public') < 0 && scopes.indexOf(audience) < 0 && (!actor || scopes.indexOf('npc:' + actor) < 0)) reason = 'read_scope';
+      if (!reason && hit.visibility && ['public', 'court', 'internal', 'world_truth', 'player_known'].indexOf(hit.visibility) < 0) reason = 'visibility_policy_unavailable';
+      if (!reason && (hit.worldId || hit.saveId || hit.campaignId || hit.timelineId)) reason = 'identity_policy_unavailable';
+      if (!reason && opts.turn != null && opts.includeFuture !== true && (Number(hit.turn) > Number(opts.turn) || Number(hit.learnedAtTurn) > Number(opts.turn))) reason = 'future_memory';
+      if (!reason) return true;
+      suppressed.push({ id: hit.id, source: hit.source, reason: reason });
+      return false;
+    });
+  }
+
   function compileHitsInner(hits, opts) {
     opts = opts || {};
     var suppressed = arr(opts.suppressed).slice();
-    var normalizedInput = (Array.isArray(hits) ? hits : [])
+    var normalizedInput = governCompilerHits(Array.isArray(hits) ? hits : [], opts, suppressed)
       .map(function(hit, index) { return normalizeHit(hit, index, opts); })
       .filter(function(hit) { return !!hit.text; })
       .sort(sortHits);
     var normalized = [];
-    var seenStableIds = {};
-    var seenFacts = {};
+    var seenStableIds = Object.create(null);
+    var seenFacts = Object.create(null);
     normalizedInput.forEach(function(hit) {
       var status = clean(hit.factStatus || hit.status || '', 80).toLowerCase();
       if (hit.active === false || hit.expired === true || status === 'expired' || status === 'superseded' || status === 'revoked') {
@@ -366,7 +408,7 @@
         return;
       }
       var stableId = hit.id && !/^hit-\d+$/.test(hit.id) ? String(hit.id) : '';
-      var factKey = String(hit.source || '') + '|' + String(hit.text || '').replace(/\s+/g, ' ').trim();
+      var factKey = String(hit.source || '') + '|' + String(hit.readScope || hit.ownerScope || '') + '|' + String(hit._factText || hit.text || '').replace(/\s+/g, ' ').trim();
       if ((stableId && seenStableIds[stableId]) || (factKey && seenFacts[factKey])) {
         suppressed.push({ id: hit.id, source: hit.source, reason: 'duplicate_memory_fact', textPreview: clean(hit.text, 80) });
         return;
@@ -380,6 +422,14 @@
       sections[sectionFor(hit)].push(hit);
     });
 
+    // Keep a representative current fact, live order and promise before the long character roster.
+    var coreCandidates = sections.coreFacts;
+    var coreLeads = [];
+    [function(h) { return h.source === 'hard_state'; }, function(h) { return h.source === 'activeEdict' || h.source === 'imperialEdict'; }, function(h) { return h.source === 'commitment'; }, function(h) { return h.pinned === true; }].forEach(function(matches) {
+      var lead = coreCandidates.find(matches);
+      if (lead && coreLeads.indexOf(lead) < 0) coreLeads.push(lead);
+    });
+    sections.coreFacts = coreLeads.concat(coreCandidates.filter(function(h) { return coreLeads.indexOf(h) < 0; }));
     var sectionPlans = {};
     SECTION_ORDER.forEach(function(key) {
       sectionPlans[key] = buildSectionPlan(key, sections[key]);
@@ -416,10 +466,15 @@
           order: order++,
           score: sections[key].reduce(function(max, hit) { return Math.max(max, Number(hit._compilerScore || 0)); }, 0) / 1200,
           source: 'MemoryContextCompiler',
-          reason: key
+          reason: key,
+          allowTruncate: false
         };
         // S4: 载重权威 section 永不被预算裁掉(ST「mandatory memory never trimmed」)。coreFacts=hard_state/法令/承诺/裁断级世界硬事实。
-        if (key === 'coreFacts') z.mustKeep = true;
+        if (key === 'coreFacts') {
+          z.mustKeep = true;
+          var hasOtherEvidence = SECTION_ORDER.some(function(other) { return other !== 'coreFacts' && other !== 'warnings' && sections[other].length > 0; });
+          if (maxTokens >= 600 && hasOtherEvidence) z.maxTokens = Math.max(Math.floor(maxTokens * 0.65), CZ.estimateTokens(plan.textForCount(1)));
+        }
         z.compress = function(info) {
           var limit = info && info.maxTokens || 0;
           var low = 0;
@@ -427,8 +482,9 @@
           var bestCount = 0;
           while (low <= high) {
             var mid = Math.floor((low + high) / 2);
-            var cost = plan.tokenCostForCount(mid);
-            if (mid > 0 && cost <= limit) {
+            var candidate = plan.textForCount(mid);
+            var cost = info && typeof info.estimateTokens === "function" ? info.estimateTokens(candidate) : plan.tokenCostForCount(mid);
+            if (cost <= limit) {
               bestCount = mid;
               low = mid + 1;
             } else {
@@ -446,9 +502,38 @@
       suppressed = suppressed.concat(arr(packed.suppressed));
     }
 
+    if ((hasBudget && maxTokens === 0) || !normalized.length) {
+      text = '';
+      packed = { ok: true, reason: hasBudget && maxTokens === 0 ? 'budget_disabled' : 'empty_context', items: [], tokenEstimate: 0, mandatoryOverflow: [], diagnostics: { kept: [], suppressed: [] } };
+    } else if (hasBudget && !(CZ && typeof CZ.packZones === 'function')) {
+      text = '';
+      packed = { ok: false, reason: 'context_zones_unavailable', items: [], tokenEstimate: 0, mandatoryOverflow: [], diagnostics: { kept: [], suppressed: [] } };
+    }
+    if (packed && packed.ok === false) text = '';
+    var emittedIds = Object.create(null);
+    var emittedPattern = /<memory id="([^"]*)"/g;
+    var emittedMatch;
+    while ((emittedMatch = emittedPattern.exec(text))) emittedIds[emittedMatch[1]] = true;
+    var injectedHits = [];
+    var injectedSections = emptySections();
+    normalized.forEach(function(hit) {
+      if (emittedIds[xml(hit.id)]) {
+        injectedHits.push(hit);
+        injectedSections[sectionFor(hit)].push(hit);
+      } else {
+        suppressed.push({ id: hit.id, source: hit.source, reason: hasBudget && maxTokens === 0 ? 'budget_disabled' : 'memory_budget_exceeded' });
+      }
+    });
+    var diagnostics = packed ? packed.diagnostics : {};
+    diagnostics.zoneKept = arr(diagnostics.kept);
+    diagnostics.kept = injectedHits.map(function(hit) { return { id: hit.id, source: hit.source, stage: 'compiled', lane: hit.lane }; });
+    diagnostics.suppressed = suppressed.slice();
+    diagnostics.candidateCount = normalized.length;
+    diagnostics.injectedCount = injectedHits.length;
+
     var tokenEstimate = packed
       ? packed.tokenEstimate
-      : (CZ && typeof CZ.estimateTokens === 'function' ? CZ.estimateTokens(text) : 0);
+      : (CZ && typeof CZ.estimateTokens === 'function' ? CZ.estimateTokens(text) : tokenCostFromCounts(tokenCharCounts(text)));
 
     var compilationIndex = {
       renderedFragments: Object.create(null),
@@ -465,12 +550,14 @@
       schemaVersion: 'memory-context/v0',
       sections: sections,
       hits: normalized,
+      injectedSections: injectedSections,
+      injectedHits: injectedHits,
       text: text,
       zones: packed ? packed.items : [],
       suppressed: suppressed,
       mandatoryOverflow: packed ? packed.mandatoryOverflow : [],
       compilationIndex: compilationIndex,
-      diagnostics: packed ? packed.diagnostics : { kept: normalized.map(function(hit) { return { id: hit.id, source: hit.source, stage: 'compiled' }; }), suppressed: [] },
+      diagnostics: diagnostics,
       tokenEstimate: tokenEstimate,
       maxTokens: maxTokens
     };
@@ -500,7 +587,7 @@
     if (!ME || typeof ME.collect !== 'function') {
       return compileHits([], opts);
     }
-    var envelopes = ME.collect(GM || {}, { turn: opts.turn || (GM && GM.turn), sc1q: opts.sc1q });
+    var envelopes = ME.collect(GM || {}, { turn: opts.turn != null ? opts.turn : (GM && GM.turn), sc1q: opts.sc1q, audience:opts.audience, actorScope:opts.actorScope, actorId:opts.actorId, actorName:opts.actorName, query:opts.query, topic:opts.topic });
     var hits = envelopes.map(function(env, index) {
       if (MR && typeof MR.hitFromEnvelope === 'function') return MR.hitFromEnvelope(env);
       return {
@@ -527,24 +614,10 @@
     if (MR && typeof MR.turnFocusTerms === 'function' && typeof MR.applyFocusRelevance === 'function') {
       try { MR.applyFocusRelevance(hits, MR.turnFocusTerms(GM, { sc1q: opts.sc1q })); } catch (_focusE) {}
     }
-    if (MR && typeof MR.rankHitsDetailed === 'function') {
-      var ranked = MR.rankHitsDetailed(hits, {
-        GM: GM,
-        turn: opts.turn || (GM && GM.turn),
-        audience: opts.audience,
-        actorScope: opts.actorScope,
-        actorId: opts.actorId,
-        factionId: opts.factionId,
-        includeHidden: opts.includeHidden,
-        includeFuture: opts.includeFuture,
-        intent: opts.intent || 'historical_evidence',
-        requiresAuthority: opts.requiresAuthority
-      });
-      hits = ranked.ranked || hits;
-      suppressed = arr(ranked.suppressed);
-    }
     var mergedOpts = {};
     Object.keys(opts).forEach(function(k) { mergedOpts[k] = opts[k]; });
+    mergedOpts.GM = GM;
+    mergedOpts.turn = opts.turn != null ? opts.turn : (GM && GM.turn);
     mergedOpts.suppressed = arr(opts.suppressed).concat(suppressed);
     return compileHits(hits, mergedOpts);
   }

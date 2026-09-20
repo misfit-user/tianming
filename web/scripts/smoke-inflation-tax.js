@@ -27,7 +27,8 @@ function run(storeAs, pp, baseAmt){
   ctx.getGame = function(){ return {}; };
   ctx.window = (pp === null) ? {} : { CurrencyEngine: { getPurchasingPower: function(){ return pp; } } };
   ctx.P = {};
-  vm.createContext(ctx);
+  ctx.global = ctx; // Preserve the real fiscal IIFE closure while testing the extracted function.
+vm.createContext(ctx);
   vm.runInContext(fnSrc + '\nthis.calc = computeTaxAmount;', ctx);
   return ctx.calc({ corruption:0 }, { storeAs: storeAs, base:'farmland', baseFactor:1, rate:0.1, annual:false }, {});
 }

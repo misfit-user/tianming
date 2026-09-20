@@ -688,6 +688,7 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
   ctx.meta.transaction = txn;
   ctx.meta.transactionId = txn && txn.transactionId || ctx.meta.transactionId || '';
   if (ctx.meta.deferEndTurnSave) return true;
+  if (typeof TM !== 'undefined' && TM.ImperialOrders) TM.ImperialOrders.tick(GM);
   if (!ctx.meta.turnPresentation) {
     if (typeof _endTurn_finalizeRecords !== 'function' || !Array.isArray(ctx.meta.turnRenderArgs)) {
       throw new Error('回合记录最终化入口缺失');

@@ -14,29 +14,22 @@ let A = 0, F = 0;
 function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 console.log('smoke-sc1q-sc19-upgrade');
 
-// ── Q1 承诺蒸发洞:无条件 reconcile ──
-ok(/sc1q 升级·Q1/.test(ap) && /_q1Commits/.test(ap), 'Q1 apply 有无条件承诺 reconcile 块');
-ok(/subcall1q\.dialogue_commitments/.test(ap) && /_sc1qAutoReconciled: true/.test(ap), 'Q1 直接读 sc1q dialogue_commitments·补建标 _sc1qAutoReconciled(不靠 sc1 feedback)');
-(function () {
-  var commitments = {};
-  var sc1qCommits = [{ npc: '张三', task: '整饬盐政', source_conv_id: 'cv1', deadline: '3回合内' }, { npc: '李四', task: '巡边' }];
-  var T = 5;
-  sc1qCommits.forEach(function (c) {
-    if (!c || !c.npc || !c.task) return;
-    var nm = c.npc, _task = String(c.task || '');
-    if (!Array.isArray(commitments[nm])) commitments[nm] = [];
-    var arr = commitments[nm];
-    var exists = arr.find(function (e) { return e && e.assignedTurn === T && ((c.source_conv_id && e._sc1qSourceConvId === c.source_conv_id) || (e.task && (e.task.indexOf(_task.slice(0, 10)) >= 0 || _task.indexOf(e.task.slice(0, 10)) >= 0))); });
-    if (exists) return;
-    arr.push({ task: _task, status: 'pending', assignedTurn: T, deadline: parseInt(c.deadline, 10) || 3, _sc1qSourceConvId: c.source_conv_id || '', _sc1qAutoReconciled: true });
-  });
-  ok(commitments['张三'] && commitments['张三'][0].status === 'pending' && commitments['李四'], 'Q1行为 sc1 无 feedback 时·两条承诺仍都进 _npcCommitments(不蒸发)');
-  ok(commitments['张三'][0].deadline === 3 && typeof commitments['张三'][0].deadline === 'number', 'Q1行为 deadline "3回合内"→数字3(Codex修·过期结算不 NaN)');
-  var before = commitments['张三'].length;
-  sc1qCommits.forEach(function (c) { var nm = c.npc, _task = String(c.task || ''); var arr = commitments[nm]; var ex = arr.find(function (e) { return e && e.assignedTurn === T && ((c.source_conv_id && e._sc1qSourceConvId === c.source_conv_id) || (e.task && (e.task.indexOf(_task.slice(0, 10)) >= 0 || _task.indexOf(e.task.slice(0, 10)) >= 0))); }); if (ex) return; arr.push({ task: _task }); });
-  ok(commitments['张三'].length === before, 'Q1行为 重跑幂等(已建的不重复补)');
-})();
-ok(/deadline: parseInt\(c\.deadline, 10\) \|\| 3/.test(ap) && /deadline: parseInt\(srcCommit && srcCommit\.deadline, 10\) \|\| 3/.test(ap), 'Codex-HIGH Q1+feedback 两路 deadline 都 parseInt 解析(字符串→数字)');
+// Q1: execute the real source-bound owner, not a copied historical implementation.
+const vm=require('vm'), runtime={console,Date,Math,JSON,P:{time:{daysPerTurn:30}}};runtime.window=runtime;
+vm.createContext(runtime);
+['tm-tax-policy.js','tm-imperial-orders.js'].forEach(file=>vm.runInContext(fs.readFileSync(path.resolve(ROOT,file),'utf8'),runtime,{filename:file}));
+const orders=runtime.TM.ImperialOrders;
+const actualGame={turn:5,playerInfo:{factionName:'朝廷'},facs:[{id:'court',name:'朝廷'}],chars:[{id:'zhang',name:'张三',faction:'朝廷',alive:true},{id:'li',name:'李四',faction:'朝廷',alive:true}],fiscalConfig:{taxRate:0.1},_npcCommitments:{}};runtime.GM=actualGame;
+const actualSources=[{npc:'张三',task:'整饬盐政',source_conv_id:'cv1',deadline:'3回合内',category:'finance'},{npc:'李四',task:'巡边',source_conv_id:'cv2',category:'dispatch'}];
+orders.fromDialogue(actualGame,actualSources,[]);
+const actualTask=actualGame._npcCommitments['张三'][0];
+ok(ap.includes('TM.ImperialOrders.fromDialogue(GM,'),'Q1 正式写回路由到唯一承诺 owner');
+ok(actualTask&&actualGame._npcCommitments['李四'][0],'Q1 无 SC1 feedback 时两条承诺均真实入账');
+ok(actualTask.deadline===3&&typeof actualTask.deadline==='number','Q1 字符串期限归一为数值');
+ok(actualTask.actorId==='zhang'&&actualTask.sourceRefs.some(r=>r.type==='dialogueCommitment'&&r.id==='cv1'),'Q1 稳定人物与对话来源保留');
+orders.fromDialogue(actualGame,actualSources,[]);
+ok(actualGame._npcCommitments['张三'].length===1&&actualGame._npcCommitments['李四'].length===1,'Q1 重复协调不会重复立账');
+ok(actualGame._npcCommitments['李四'][0].deadline===3,'Q1 缺省期限保留三回合');
 
 // ── Q2 collective_resolutions 持久化 ──
 ok(/sc1q 升级·Q2/.test(ap) && /GM\._courtResolutions/.test(ap), 'Q2 collective_resolutions 存进 GM._courtResolutions(状态之家)');
@@ -57,15 +50,13 @@ ok(/e\.topic === String\(r\.topic\)\.slice\(0, 60\)/.test(ap), 'Codex-MED Q2 去
 ok(/sc1q 升级·Q3/.test(ai) && /getNpcCognitionSnippet/.test(ai) && /_q3Cue/.test(ai), 'Q3 sc1q prompt 注入涉事 NPC 认知快照(getNpcCognitionSnippet)');
 ok(/涉事 NPC 认知底细/.test(ai) || /\\u6d89\\u4e8b/.test(ai), 'Q3 认知块有 header(据此推断 mood/willingness)');
 
-// ── Q4 commit 加 category ──
-ok(/"category":"query\/finance\/intel\/dispatch\/diplomacy\/write\/other/.test(ai), 'Q4 sc1q schema 加 category(与 canonical _ckW 分类同一套)');
-ok(/category: \(srcCommit && srcCommit\.category\) \|\| dcf\.category \|\| 'dialogue'/.test(ap), 'Q4 apply 用 sc1q 分类(非硬编码 dialogue·让财赋/查办/侦查触发结构化后果)');
-(function () {
-  // 复刻:canonical 效果分支按 category·finance 命中提 compliance
-  function fires(category) { return category === 'query' || category === 'intel' || category === 'finance'; }
-  ok(fires((null && null) || 'finance' || 'dialogue') === true, 'Q4行为 finance commit→触发 canonical 结构化后果');
-  ok(fires('dialogue') === false, 'Q4行为 纯 dialogue 无结构化后果(原硬编码恒此→饿死)');
-})();
+// Q4: preserve category without inventing global economic rewards for a self-report.
+ok(/"category":"query\/finance\/intel\/dispatch\/diplomacy\/write\/other/.test(ai),'Q4 请求仍声明承诺分类');
+ok(actualTask.category==='finance'&&actualGame._npcCommitments['李四'][0].category==='dispatch','Q4 实际 owner 保留原承诺分类');
+const fiscalBefore=JSON.stringify(actualGame.fiscalConfig);
+orders.fromDialogue(actualGame,[],[{npc:'张三',source_conv_id:'cv1',status:'completed',feedback:'已经处理'}]);
+ok(actualTask.status==='executing'&&actualTask.verificationStatus==='pending_review','Q4 自报完成没有凭据时仍待核验');
+ok(JSON.stringify(actualGame.fiscalConfig)===fiscalBefore,'Q4 自报财政承诺不能凭空增加全国收入或执行率');
 
 // ── S1 丰化人设 seed 进 _npcCognition ──
 ok(/sc19 升级·S1/.test(fu) && /GM\._npcCognition\[ech\.name\] = Object\.assign/.test(fu), 'S1 sc19 seed _npcCognition');
@@ -89,18 +80,21 @@ ok(/keyRelations/.test(fu) && /盟友\/师承\/门生\/亲族\/政敌\/宿怨\/�
   ok(evolved.affinity === 80 && !evolved._fromSc19, 'S2行为 已演化关系(aff80/有标签)不被覆盖');
 })();
 
-// ── Codex 批次2 修复:Q4 双路结构化后果 + 兜底找回 + prompt 回带 ──
-ok(/function _fireCommitCanon/.test(ap) && /found\._canonFired/.test(ap), 'Codex-MED _fireCommitCanon 抽为共享·_canonFired 防双计');
-ok((ap.match(/_fireCommitCanon\(/g) || []).length >= 3, 'Codex-MED _fireCommitCanon 定义+commitment_update+feedback 两路都调(≥3处)');
-ok(/npc\+task 相似度兜底找回 sc1q commit/.test(ap) && /!srcCommit && dcf\.npc/.test(ap), 'Codex-MED feedback 路按 npc+task 兜底找回 category(防误落 dialogue)');
-ok(/dc\.category/.test(ai) && /dc\.source_conv_id/.test(ai) && /回带该承诺的 source_conv_id 与 category/.test(ai), 'Codex-MED SC1 prompt 回带 category/convId + 指令');
-(function () {
-  var fired = 0;
-  function fire(found) { if (found._canonFired) return; if (found.category === 'finance' || found.category === 'query' || found.category === 'intel') fired++; found._canonFired = true; }
-  var c = { category: 'finance' };
-  fire(c); fire(c);   // 两条完成路径都调
-  ok(fired === 1, 'Codex-MED行为 finance 结构化后果只触发一次(双路 _canonFired 防双计)');
-})();
+// Both completion routes share the authoritative evidence-gated task state.
+ok(ap.includes('TM.ImperialOrders.updates(GM,')&&ap.includes('TM.ImperialOrders.fromDialogue(GM,'),'两路反馈均走同一任务 owner');
+vm.runInContext(require('./lib-perf-round1').functionSource(ap,'_fireCommitCanon'),runtime);
+ok(runtime._fireCommitCanon('张三',actualTask).ok===false&&JSON.stringify(actualGame.fiscalConfig)===fiscalBefore,'兼容入口只核验凭据，不执行猜测性财政奖励');
+ok(/dc\.category/.test(ai)&&/dc\.source_conv_id/.test(ai)&&/回带该承诺的 source_conv_id 与 category/.test(ai),'SC1 继续回带来源及分类');
+const reportsBefore=(actualGame._imperialReports||[]).length;
+orders.updates(actualGame,[{id:actualTask.id,status:'completed',feedback:'已经处理'}]);
+orders.fromDialogue(actualGame,[],[{npc:'张三',task:'整饬盐政',status:'completed',feedback:'已经处理'}]);
+ok(actualTask.category==='finance'&&actualTask.verificationStatus==='pending_review','精确人物与任务匹配保留分类，不能免去验收');
+ok((actualGame._imperialReports||[]).length===reportsBefore,'两路相同反馈不重复生成复命');
+ok(JSON.stringify(actualGame.fiscalConfig)===fiscalBefore,'两路都不能凭自报完成重复影响国库或全国税率');
+orders.fromDialogue(actualGame,[],[{npc:'李四',source_conv_id:'cv1',status:'failed'}]);
+ok(actualTask.status==='executing','另一人物不得覆盖当前交办');
+orders.acceptByPlayer(actualGame,actualTask.id);
+ok(actualTask.status==='completed'&&actualTask.verificationStatus==='verified','真实玩家验收凭据仍可完成任务');
 
 // ── S3 补 sysP + 时代锚定 ──
 ok(/sc19 升级·S3/.test(fu) && /messages: \[\{ role: 'system', content: _maybeCacheSys\(sysPFor\('sc19'\)\) \}/.test(fu), 'S3 sc19 call 补系统提示 sysPFor(sc19)');

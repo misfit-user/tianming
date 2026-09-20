@@ -332,8 +332,18 @@
     name = String(name || '').trim();
     if (!name) return { ok:false, reason:'missing army name' };
 
+    var explicitCreate = /^(create|new|form|create_army|新建|组建)$/.test(String(change.action || '')) || change.create === true || change.isNewArmy === true;
+    if (explicitCreate) change = Object.assign({}, change, {action:'create'});
     var delta = _armyChangeDelta(change);
-    var army = _findArmyForAIChange(G, name);
+    // A new formation must not resolve to another army by fuzzy name or shared commander.
+    var creationMatches = explicitCreate ? G.armies.filter(function(a){ return a && (String(a.name || '').trim() === name || (change.id && a.id === change.id)); }) : [];
+    if (creationMatches.length > 1) return {ok:false,reason:'ambiguous army creation identity',name:name};
+    if (creationMatches.length === 1) {
+      var priorArmy = creationMatches[0];
+      if (String(priorArmy.name || '').trim() !== name) return {ok:false,reason:'army id already belongs to another formation',name:name};
+      return {ok:true,changed:false,created:false,duplicate:true,army:priorArmy};
+    }
+    var army = explicitCreate ? null : _findArmyForAIChange(G, name);
     var reason = change.reason || change.rationale || opts.reason || 'AI推演';
     var commanderFields = _armyCommanderField(change);
     if (commanderFields && commanderFields.conflict) {
@@ -355,7 +365,7 @@
     var created = false;
 
     // 名匹配失败但 AI 另给了主帅 → 按主帅反查那支军（防「后金军」这类含糊名漏改真军）。
-    if (!army && commanderInput) army = _findArmyForAIChange(G, commanderInput);
+    if (!explicitCreate && !army && commanderInput) army = _findArmyForAIChange(G, commanderInput);
 
     var commandTicket = null;
     var commandAuthority = global.TM && global.TM.CommandAuthority;

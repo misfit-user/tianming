@@ -685,44 +685,20 @@ function _wdDirectOrder() {
   var _ta = _$('wd-order-task'); if (_ta) _ta.focus();
 }
 function _wdDoDirectOrder() {
-  var name = GM.wenduiTarget; var ch = findCharByName(name); if (!ch) return false;
-  var _taEl = _$('wd-order-task'); var task = _taEl ? String(_taEl.value || '').trim() : '';
-  if (!task) { if (typeof toast === 'function') toast('请先写明所差何事'); return false; }
-  var _dlEl = _$('wd-order-deadline'); var deadline = _dlEl ? (parseInt(_dlEl.value, 10) || 3) : 3;
-  if (!GM._npcCommitments) GM._npcCommitments = {};
-  if (!GM._npcCommitments[name]) GM._npcCommitments[name] = [];
-  var _orderKey = task.slice(0, 30);
-  var _sameTurnOrder = GM._npcCommitments[name].find(function(c) {
-    if (!c || c.assignedTurn !== (GM.turn || 0)) return false;
-    var _oldTask = String(c.task || '');
-    return _oldTask.slice(0, 30) === _orderKey || _oldTask.indexOf(_orderKey.slice(0, 14)) >= 0 || task.indexOf(_oldTask.slice(0, 14)) >= 0;
-  });
-  if (_sameTurnOrder) {
-    _sameTurnOrder.task = task.slice(0, 60);
-    _sameTurnOrder.deadline = deadline;
-    _sameTurnOrder.status = _sameTurnOrder.status || 'pending';
-    _sameTurnOrder.lastUpdateTurn = GM.turn || 0;
-    _sameTurnOrder._source = _sameTurnOrder._source || 'direct-order';
-    _sameTurnOrder.responsibility = 'npc';
-    if (typeof toast === 'function') toast('已更新同回合面谕差遣');
-    return true;
-  }
-  var loy = (typeof ch.loyalty === 'number') ? ch.loyalty : 50;
-  var rap = (typeof ch._rapport === 'number') ? ch._rapport : 50;
-  var willingness = Math.max(0.2, Math.min(0.95, (loy + rap) / 200));
-  GM._npcCommitments[name].push({
-    id: (typeof uid === 'function' ? uid() : 'ord_' + (GM.turn || 0) + '_' + name + '_' + GM._npcCommitments[name].length),
-    task: task.slice(0, 60), category: 'other', assignedTurn: GM.turn || 0, deadline: deadline,
-    willingness: willingness, npcPromise: '面谕当面领命', conditions: '', status: 'pending', progress: 0, attempts: 0, feedback: '', _source: 'direct-order', responsibility: 'npc'
-  });
-  if (typeof _spendEnergy === 'function') _spendEnergy(2, '面谕差遣');
-  if (typeof addEB === 'function') addEB('问对·差遣', name + '领命：' + task.slice(0, 40));
-  if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText === 'function' ? getTSText(GM.turn) : '', content: '【问对·面谕】命' + name + '：' + task + '（限' + deadline + '回合）', category: '问对' });
-  if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(name, '奉旨面谕：' + task.slice(0, 30), willingness > 0.6 ? '敬' : '忧', 6, '天子');
-  if (!GM.wenduiHistory[name]) GM.wenduiHistory[name] = [];
-  GM.wenduiHistory[name].push({ role: 'system', content: '【面谕】皇帝命' + name + '：' + task + '（限' + deadline + '回合）' });
-  var chatEl = _$('wd-modal-chat');
-  if (chatEl) { var d = document.createElement('div'); d.style.cssText = 'text-align:center;font-size:0.72rem;color:var(--gold-400);padding:4px;'; d.textContent = '（面谕差遣：' + task.slice(0, 30) + '·限' + deadline + ' 回合。已入承诺追踪。）'; chatEl.appendChild(d); chatEl.scrollTop = chatEl.scrollHeight; }
+  var ch=findCharByName(GM.wenduiTarget);if(!ch)return false;
+  var el=_$('wd-order-task'),text=el?String(el.value||'').trim():'';
+  var dl=_$('wd-order-deadline'),deadline=dl?Number(dl.value):3;
+  if(!(typeof TM!=='undefined'&&TM.ImperialOrders)){if(typeof toast==='function')toast('交办核验模块未就绪');return false;}
+  var willingness=Math.max(0,Math.min(1,((Number.isFinite(ch.loyalty)?ch.loyalty:50)+(Number.isFinite(ch._rapport)?ch._rapport:50))/200));
+  var result=TM.ImperialOrders.create(GM,ch.name,text,{deadline:deadline,willingness:willingness,executeTax:true});
+  if(!result.ok){if(typeof toast==='function')toast(result.reason);return false;}
+  if(result.duplicate){if(typeof toast==='function')toast('此项交办已经登记，未重复扣精力');return true;}
+  if(typeof _spendEnergy==='function')_spendEnergy(2,'面谕差遣');
+  if(!GM.wenduiHistory)GM.wenduiHistory={};if(!Array.isArray(GM.wenduiHistory[ch.name]))GM.wenduiHistory[ch.name]=[];
+  GM.wenduiHistory[ch.name].push({role:'system',content:'【面谕】命'+ch.name+'：'+text+'（限'+result.task.deadline+'回合）',taskId:result.task.id,turn:GM.turn});
+  if(typeof addEB==='function')addEB('问对·差遣',ch.name+'领命：'+text);
+  if(TM.Qiju)TM.Qiju.recordEntry({turn:GM.turn,content:'【面谕】'+ch.name+'：'+text,category:'问对',taskId:result.task.id});
+  if(typeof toast==='function')toast(result.task.executionBlock?'已登记交办；税务执行受阻：'+result.task.executionBlock:'交办已登记；完成须核验，期限到时须复命');
   return true;
 }
 // ★2026-07-01 W4·交办追踪面板:GM._npcCommitments 数据早已结构化(进度/期限/意愿/复命/逾期兜底全齐)·但只散落进混排事件流·
@@ -752,6 +728,7 @@ function _wdCommitRow(rec, kind) {
   var left = due - _t;
   var willPct = Math.round((parseFloat(c.willingness) || 0.6) * 100);
   var barColor = kind === 'overdue' ? 'var(--red-400,#c0392b)' : kind === 'done' ? 'var(--green-400,#3a9a5c)' : kind === 'failed' ? 'var(--txt-s,#8a8578)' : 'var(--gold-500)';
+  var statusLabel = (typeof TM!=='undefined'&&TM.ImperialOrders)?TM.ImperialOrders.label(c):'';
   var dueLabel = kind === 'done' ? '已履约' : kind === 'failed' ? '已终结' : (left < 0 ? ('逾期 ' + (-left) + ' 回合') : left === 0 ? '本回合到期' : ('尚余 ' + left + ' 回合'));
   var promise = c.npcPromise ? ('<span style="color:var(--txt-s);">「' + escHtml(String(c.npcPromise).slice(0, 20)) + '」</span>') : '';
   var fb = c.feedback ? ('<div style="color:var(--txt-s);font-size:0.7rem;margin-top:2px;">复命：' + escHtml(String(c.feedback).slice(0, 64)) + '</div>') : '';
@@ -760,12 +737,13 @@ function _wdCommitRow(rec, kind) {
   return '<div style="border-left:2px solid ' + barColor + ';padding:4px 8px;margin:4px 0;background:var(--bg-3);border-radius:0 4px 4px 0;">'
     + '<div style="display:flex;justify-content:space-between;gap:6px;font-size:0.76rem;">'
     + '<span style="color:var(--gold-300);font-weight:600;">' + escHtml(nm) + '</span>'
-    + '<span style="color:' + barColor + ';font-size:0.7rem;white-space:nowrap;">' + dueLabel + '</span></div>'
+    + '<span style="color:' + barColor + ';font-size:0.7rem;white-space:nowrap;">' + (statusLabel?statusLabel+' · ':'') + dueLabel + '</span></div>'
     + '<div style="font-size:0.74rem;color:var(--color-foreground);margin:2px 0;">' + escHtml(String(c.task).slice(0, 50)) + ' ' + promise + '</div>'
     + '<div style="display:flex;align-items:center;gap:6px;">'
     + '<div style="flex:1;background:var(--bg-4);height:5px;border-radius:3px;overflow:hidden;"><div style="background:' + barColor + ';width:' + prog + '%;height:100%;"></div></div>'
     + '<span style="font-size:0.66rem;color:var(--txt-s);white-space:nowrap;">' + prog + '%·意愿' + willPct + '</span></div>'
-    + _frBadge + fb + '</div>';
+    + _frBadge + fb + (c.verificationStatus==='pending_review'?'<button class="bt bsm" data-task-id="'+escHtml(c.id)+'" onclick="tmAcceptImperialTask(this.dataset.taskId)">核验交办</button>':'')
+    + '<details><summary>交办原文与凭据</summary><div style="white-space:pre-wrap;word-break:break-word">'+escHtml(c.task)+'\n'+escHtml((c.evidenceRefs||[]).map(function(r){return r.id;}).join('、')||'尚无完成凭据')+'</div></details></div>';
 }
 function _wdShowCommitTracker() {
   var b = _wdCommitBuckets();
@@ -781,7 +759,8 @@ function _wdShowCommitTracker() {
     + section('✕ 失诺·搁置', b.failed, 'failed', 'var(--txt-s,#8a8578)', 10);
   if (!body) body = '<div style="color:var(--txt-s);font-size:0.78rem;text-align:center;padding:16px 4px;">尚无交办事项。可在问对中面谕「差遣」·或对臣工下达具体指令·所交办之事将在此追踪其进度与复命。</div>';
   var total = b.overdue.length + b.active.length;
-  var bg = document.createElement('div');
+  var existing=document.getElementById('tm-imperial-tracker');if(existing)existing.remove();
+  var bg = document.createElement('div');bg.id='tm-imperial-tracker';
   bg.style.cssText = 'position:fixed;inset:0;z-index:1300;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;';
   bg.innerHTML = '<div style="background:var(--color-surface);border:1px solid var(--gold-500);border-radius:var(--radius-lg);padding:1rem 1.2rem;max-width:440px;width:92%;max-height:80vh;display:flex;flex-direction:column;">'
     + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div style="font-size:var(--text-sm);color:var(--gold-400);">朕之交办 · 待办 ' + total + ' 件' + (b.overdue.length ? '（<span style="color:var(--red-400,#c0392b);">' + b.overdue.length + ' 件逾期</span>）' : '') + '</div>'
@@ -1209,6 +1188,10 @@ function _wdStoreEdictSuggestion(name, suggestion, meta) {
 /** NPC主动开口（奏对模式）——AI生成NPC的开场陈述 */
 // C·派生主动求见的真实议程（从承诺/赏罚/忠诚野心等真实处境推导·UI reason 与开场 prompt 共用·让求见者带具体目的来）
 function _wdDeriveAudienceAgenda(ch) {
+  if(ch&&typeof TM!=='undefined'&&TM.ImperialOrders){
+    var urgent=TM.ImperialOrders.all(GM).filter(function(x){return (x.actor?x.actor.name:x.name)===ch.name&&((x.c.lastReportId&&x.c.reportState!=='read')||x.c.overdue||Number.isFinite(x.c.dueDay)&&TM.TaxPolicy.now(GM)>=x.c.dueDay&&x.c.status!=='completed');}).sort(function(a,b){return (a.c.dueDay||0)-(b.c.dueDay||0);})[0];
+    if(urgent)return {tag:'commitment',seek:true,overdue:!!urgent.c.overdue,brief:TM.ImperialOrders.label(urgent.c)+'：'+urgent.c.task.slice(0,20),hint:TM.ImperialOrders.context(GM,ch.name)};
+  }
   if (!ch) return null;
   var nm = ch.name;
   var loy = (typeof ch.loyalty === 'number') ? ch.loyalty : 50;

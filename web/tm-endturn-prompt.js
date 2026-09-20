@@ -1458,7 +1458,7 @@
     tp += '    · 反向：冤杀忠良/自毁长城、丧师失地、藩属叛离、城下之盟受辱 → 相称地 -1~3。\n';
     tp += '    · 诛杀对象是奸党逆贼则升皇威、冤杀忠良则降——由你按其人忠奸、罪证、朝野公论判定，这是该你（AI）定的量。\n';
     tp += '    · 【勿重复记功】平定民变、对外军事胜负 系统已确定性自动结算皇威（前者经平乱、后者经 battleResult.huangweiDelta），不要再在 record_sentiment_changes 里重复给这两类，以免双计。\n\n';
-    tp += '※ 【问对承诺履行·勿重复结算】玩家问对中交办、且本回合 NPC 履行完成（commitment_update 标 completed）的「查办(query)」承诺，系统已确定性下调本势力吏治浊度（降腐）；「财赋(finance)」承诺已确定性上调本势力实征率（compliance/起运到账率）；「侦查(intel)」承诺已确定性记入情报池。对同一已履成之事，勿再在 reform_effects(anticorruption 的 corruptionDelta/complianceDelta) 或 admin_changes(corruption_delta) 重复给，以免双计。\n\n';
+    tp += '※ 【交办验收】commitment_update/dialogue_commitment_feedback 中的 completed 只是承办人自报；系统不会凭此自动增加全国实征率或降低全国腐败。请使用现有的明确地区、责任人和真实资源凭据的结构化执行动作落实工作，并如实报告成果与阻力。不能完成时应报告未完成或请展限，不得虚构已经存在的税令、文书或工程凭据。\n\n';
 
     // 朝议记录注入（让AI知道本回合谁在朝议中主张了什么——叙事必须保持一致）
     //   targetTurn == GM.turn 的记录算"影响本回合"：
@@ -3690,6 +3690,7 @@
     _mark('base');
     // ── 社会生灭周期（党派/势力/阶层的 create/dissolve） ──
     sysP += '\n【社会生灭周期——党派/势力/阶层可生可灭】';
+    if (typeof TM !== 'undefined' && TM.SocialFormation) sysP += '\n' + TM.SocialFormation.context(GM);
     sysP += '\n  党派：party_create(新崛起) / party_splinter(分裂自既有) / party_merge(合流) / party_dissolve(覆灭)';
     sysP += '\n    崛起触发：社会基础变化(新阶层兴起)、领袖聚众、诏令催化、危机凝聚';
     sysP += '\n    覆灭触发：banned(查禁)/liquidated(肃清，血洗)/faded(自然消亡)/leaderKilled(领袖被杀而散)/absorbed(被吞并)';

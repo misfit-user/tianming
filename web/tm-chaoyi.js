@@ -150,7 +150,7 @@ async function _cyInterjectRespond(playerText, opts){
       try {
         var _ciTopic = String(txt || '') + ' ' + String(opts.topic || '');
         var _ciMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_ciTopic, [nm], 10) : [nm];
-        p += _buildTemporalConstraint(ch, { mentionedNames: _ciMentioned });
+        p += _buildTemporalConstraint(ch, { mentionedNames: _ciMentioned, topic: _ciTopic });
       } catch (_ciTcE) {}
     }
     try {

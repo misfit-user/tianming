@@ -78,7 +78,7 @@ function _aiWaitSnapshot() {
 }
 
 async function _aiWithStreamScope(opts, execute) {
-  opts = opts || {};
+  opts = _aiConfiguredCallOptions(opts);
   var root = typeof window !== 'undefined' ? window : globalThis;
   var gm = typeof GM !== 'undefined' ? GM : null, player = typeof P !== 'undefined' ? P : null, generation = root._tmLoadGen;
   var identity = gm ? [gm._campaignId, gm._timelineId, gm.turn].join('|') : '';
@@ -113,12 +113,32 @@ async function _aiWithStreamScope(opts, execute) {
   finally { clearTimeout(timer); if (diag && diag.unbindRequest) diag.unbindRequest(ticket, ctrl); if (opts.signal) opts.signal.removeEventListener('abort', external); }
 }
 
+function _aiConfiguredCallOptions(opts) {
+  var policy = globalThis.TM && globalThis.TM.CallRetryPolicy;
+  return policy ? policy.options(opts) : Object.assign({}, opts || {});
+}
+async function _aiConfiguredStreamRetry(messages, maxTok, opts) {
+  var policy = globalThis.TM.CallRetryPolicy, partial = false;
+  var owned = Object.assign({}, opts, {_streamRetryOwner:true});
+  owned.retryBudget = opts.retryBudget || _aiCreateRetryBudget({maxAttempts:opts.maxRetries+3,configuredRetries:true,totalTimeoutMs:_aiTotalResponseTimeout(opts)});
+  owned.onChunk = function(text) { if(text)partial=true;if(opts.onChunk)opts.onChunk(text); };
+  for(var attempt=0;attempt<=opts.maxRetries;attempt++) {
+    if(opts.signal && opts.signal.aborted)throw _aiCancelledError(opts.signal);
+    _aiClaimRetryAttempt(owned.retryBudget);
+    try { return await _callAIMessagesStreamDirect(messages,maxTok,owned); }
+    catch(e) {
+      if(partial || attempt>=opts.maxRetries || !policy.retryable(e)) { if(e && typeof e==='object')e._aiRetryExhausted=true;throw e; }
+      await _aiBudgetedRetryWait(Number.isFinite(e.retryAfterMs) ? e.retryAfterMs : _aiRetryDelay(null,attempt),opts.signal,owned.retryBudget);
+    }
+  }
+}
+
 function _aiCreateRetryBudget(opts) {
   opts = opts || {};
   var attempts = Number(opts.maxAttempts), duration = Number(opts.totalTimeoutMs);
   if (!Number.isFinite(attempts)) attempts = 4;
   if (!Number.isFinite(duration) || duration <= 0) duration = 0;
-  return { attempts: 0, maxAttempts: Math.max(1, Math.min(10, Math.floor(attempts))), deadlineAt: duration ? Date.now() + Math.min(86400000, duration) : Infinity };
+  return { attempts: 0, maxAttempts: Math.max(1, Math.min(opts.configuredRetries === true ? 64 : 10, Math.floor(attempts))), deadlineAt: duration ? Date.now() + Math.min(86400000, duration) : Infinity };
 }
 function _aiRetryBudgetError() {
   var e = new Error('本次 AI 任务的恢复次数或总等待预算已用尽'); e.code = 'AI_RETRY_BUDGET'; e._aiRetryExhausted = true; return e;
@@ -148,11 +168,11 @@ async function _aiFetchWithRetry(url, body, signal, opts) {
   return recovery ? recovery.jsonRequest(url, body, signal, opts, execute) : execute(opts);
 }
 async function _aiFetchWithRetryUncached(url, body, signal, opts) {
-  opts = Object.assign({}, opts || {});
+  opts = _aiConfiguredCallOptions(opts);
   var retries = Number(opts.maxRetries); if (!Number.isFinite(retries)) retries = 3;
-  retries = Math.max(0, Math.min(6, Math.floor(retries))); opts.maxRetries = retries;
+  retries = Math.max(0, Math.min(opts._configuredRetries ? 20 : 6, Math.floor(retries))); opts.maxRetries = retries;
   var timeout = _aiFirstResponseTimeout(body && (body.max_completion_tokens || body.max_tokens), opts);
-  var budget = opts.retryBudget || _aiCreateRetryBudget({ maxAttempts: retries + 3, totalTimeoutMs: _aiTotalResponseTimeout(opts) });
+  var budget = opts.retryBudget || _aiCreateRetryBudget({ maxAttempts: retries + 3, configuredRetries:opts._configuredRetries === true, totalTimeoutMs: _aiTotalResponseTimeout(opts) });
   opts.retryBudget = budget;
   var ctrl = new AbortController(), timer, cancel;
   var gm = typeof GM !== 'undefined' ? GM : null, player = typeof P !== 'undefined' ? P : null;
@@ -332,7 +352,8 @@ async function _tmAIFetch(resource, options) {
 
 // Stream transport shares the timeout and cancellation owner.
 async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
-  opts = opts || {};
+  opts = _aiConfiguredCallOptions(opts);
+  if (opts._configuredRetries && !opts._streamRetryOwner) return _aiConfiguredStreamRetry(messages, maxTok, opts);
   var _finalizedBody = null;
   if (opts.finalizedBody !== undefined) {
     if (!opts.finalizedBody || typeof opts.finalizedBody !== 'object' || Array.isArray(opts.finalizedBody)) {
@@ -407,7 +428,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     if (opts._streamGuard) opts._streamGuard();
     responseWait.headers(resp.ok, resp.status);
     streamPhase = "body"; if (diag) diag.requestPhase(opts._requestTicket, "body");
-    if (!resp.ok) { var httpError = new Error('HTTP ' + resp.status); httpError.status = resp.status; throw httpError; }
+    if (!resp.ok) { var httpError = new Error('HTTP ' + resp.status); httpError.status = resp.status; httpError.retryAfterMs = _aiRetryDelay(resp, 0); throw httpError; }
     // 非流式回退（部分代理不支持stream）
     var ct = resp.headers.get('content-type') || '';
     if (ct.indexOf('application/json') >= 0) {

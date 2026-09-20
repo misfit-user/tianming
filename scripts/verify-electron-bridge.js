@@ -33,6 +33,7 @@ try {
   if (argv.includes('--tactical-phase2')) modes.splice(0, modes.length, 'tactical-phase2');
   if (argv.includes('--tactical-units')) modes.splice(0, modes.length, 'tactical-units');
   if (argv.includes('--strategic-map')) modes.splice(0, modes.length, 'strategic-map');
+  if (argv.includes('--shanhe-map')) modes.splice(0,modes.length,'shanhe-map');
   if (argv.includes('--map-tiers')) modes.splice(0, modes.length, 'map-tiers');
   if (argv.includes('--startup-mode')) modes.splice(0, modes.length, 'startup-mode');
   const runtime = require('electron');
@@ -55,7 +56,7 @@ try {
     // Full ES-driver stress is distinct from Chromium's ordinary software WebGL fallback.
     const electronArgs = argv.includes('--software-gpu') ? ['--use-gl=angle', '--use-angle=swiftshader'] : argv.includes('--software-webgl') ? ['--disable-gpu'] : [];
     const modeStartedAt = Date.now();
-    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : mode === 'native-start-neutral-atlas' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
+    const run = cp.spawnSync(runtime, [...electronArgs, path.join(__dirname, 'electron/bridge-main.cjs')], { cwd: repo, env, encoding: 'utf8', windowsHide: true, timeout: ['authoring-efficiency','relief-pilot'].includes(mode) ? 620000 : ['authoring-boundaries','authoring-continuation','authoring-autoapply','authoring-efficiency'].includes(mode) ? 195000 : mode === 'strategic-map' ? 620000 : mode === 'shanhe-map' ? 150000 : mode === 'relief-inspect' ? 1860000 : mode === 'relief-pilot' ? 210000 : mode === 'native-start-neutral-atlas' ? 210000 : 90000, maxBuffer: 8 * 1024 * 1024 });
     fs.writeFileSync(path.join(reportDir, mode + '.log'), (run.stdout || '') + (run.stderr || ''));
     const detail = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
     const ok = !run.error && !run.signal && run.status === 0 && detail && detail.complete === true && detail.ok === true && detail.mode === mode;

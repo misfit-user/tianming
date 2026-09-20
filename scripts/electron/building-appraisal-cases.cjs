@@ -67,7 +67,7 @@ module.exports = async function({ win, temp, check }) {
     await trigger('auth');
     const r = await js(`({html:document.getElementById('_bmAppraiseResult').innerHTML,disabled:document.getElementById('_bmAppraise').disabled,name:document.getElementById('_bmCustName').value,requests:__appraisalTest.requests.length})`);
     assert(r.html.includes('401') && /密钥|权限/.test(r.html)); assert(!r.html.includes('no-appraisal')); assert(!r.html.includes('准 奏 开 工'));
-    assert.equal(r.disabled, false); assert.equal(r.name, '崇文馆'); assert.equal(r.requests, 2);
+    assert.equal(r.disabled, false); assert.equal(r.name, '崇文馆'); assert.equal(r.requests, 1, '401 is terminal: do not resend unchanged credentials; explicit player retry stays available');
   });
   await check('building-failure-result-visible', resultVisible);
   fs.writeFileSync(path.join(temp, 'building-failure.png'), (await win.webContents.capturePage()).toPNG());

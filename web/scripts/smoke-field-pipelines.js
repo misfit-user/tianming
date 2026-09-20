@@ -90,6 +90,7 @@ const ctx = {
   window: undefined,
   console: console
 };
+ctx.global = ctx; // Preserve the real fiscal IIFE closure while testing the extracted function.
 vm.createContext(ctx);
 vm.runInContext(fiscalSrc.slice(i0, i1) + '\nthis.__cta = computeTaxAmount;', ctx);
 const landTax = { base: 'land', rate: 0.1 };
@@ -98,6 +99,7 @@ ok(ctx.__cta(cleanDiv, landTax, {}) === 10000, '无逃隐：田 10 万×10% = 10
 const fledDiv = { economyBase: { farmland: 100000 }, populationDetail: { mouths: 1000000, fugitives: 100000, hiddenCount: 50000 } };
 ok(ctx.__cta(fledDiv, landTax, {}) === 8700, '逃隐折减 13% → 8700（cascade 权威税路活账）');
 const noFpCtx = { safeNumber: ctx.safeNumber, _ensureEconomyBase: ctx._ensureEconomyBase, TM: undefined, window: undefined, console: console };
+noFpCtx.global = noFpCtx; // Preserve the real fiscal IIFE closure while testing the extracted function.
 vm.createContext(noFpCtx);
 vm.runInContext(fiscalSrc.slice(i0, i1) + '\nthis.__cta = computeTaxAmount;', noFpCtx);
 ok(noFpCtx.__cta(fledDiv, landTax, {}) === 10000, 'FieldPipes 缺位 → 折减 0（零依赖安全）');

@@ -13,6 +13,7 @@
 // 各 helper 读真实游戏态、返回注入 _wdBuildPrompt 的提示词片段；仅依赖 ch/name/GM，无副作用。
 // 从 _wdBuildPrompt 抽出，使巨函数瘦身、每条 grounding 规则可独立阅读/测试。
 function _wdCommitContext(ch, name) {
+  if(typeof TM!=='undefined'&&TM.ImperialOrders)return '\n【本人交办与复命凭据】'+TM.ImperialOrders.context(GM,name);
   // ① 此人手头未了的奉旨差事——复命/请罪闭环：据实回奏，勿瞎编"已办妥"
   var _commitCtx = '';
   if (GM._npcCommitments && Array.isArray(GM._npcCommitments[name])) {
@@ -389,7 +390,7 @@ function _wdBuildPrompt(ch, name) {
   if (ch._envoy) {
     p = _wdEnvoyPromptBody(ch, opinionVal);
   } else {
-    p = '\u4F60\u626E\u6F14' + eraCtx + '\u65F6\u671F\u7684' + ch.name + '(' + (ch.title || '') + ')' + ageInfo + '\u3002\n'
+    p = '\u4F60\u626E\u6F14' + eraCtx + '\u65F6\u671F\u7684' + ch.name + '(' + (ch.officialTitle || ch.officialPosition || ch.title || '') + ')' + ageInfo + '\u3002\n'
     + '【人设】特质:' + traitDesc + '，立场:' + (ch.stance || '中立')
     + (ch.personalGoal ? '，心中所求:' + ch.personalGoal.slice(0, 40) : '') + stressInfo + '\n'
     + (_isPlayerConsort ? '【夫妻关系】好感:' + opinionVal + '\n' : '【态度】对君主好感:' + opinionVal + '\n')
@@ -575,7 +576,7 @@ function _wdBuildPrompt(ch, name) {
       var _wdHist = (GM.wenduiHistory && GM.wenduiHistory[name]) || [];
       var _wdTopic = _wdHist.filter(function(h){ return h && (h.role === 'player' || h.role === 'system'); }).slice(-4).map(function(h){ return h.content || ''; }).join(' ');
       var _wdMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_wdTopic, name ? [name] : [], 10) : (name ? [name] : []);
-      p += _buildTemporalConstraint(ch, { mentionedNames: _wdMentioned });
+      p += _buildTemporalConstraint(ch, { mentionedNames: _wdMentioned, topic: _wdTopic });
     } catch(_){}
   }
   // v1·PromptComposer·注入 phase 6 字段·让 NPC 真用 aiPersonaText / recognitionState

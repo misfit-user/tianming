@@ -93,6 +93,8 @@
       "!web/test-results/**/*",
       "!web/_screenshots/**/*",
       "!web/**/*.bak*",
+      "!web/**/*.original",
+      "!web/**/*.entity-creation-whitespace-original",
       "!web/**/*.log",
       "!web/**/*.yml",
       "!web/**/_game-entry-shot.png",

@@ -19,7 +19,7 @@
     '亿': 100000000, '億': 100000000
   };
   var NUMBER_CHARS = '0-9零〇一二两三四五六七八九十百千万亿壹贰叁肆伍陆柒捌玖拾佰仟萬億';
-  var MEASURE_LABELS = '贯两文石人名丁口户兵卒骑匹斛斗';
+  var MEASURE_LABELS = '贯两文石人名丁口户兵卒骑匹斛斗张缗';
   var EXCLUDED_SUFFIXES = /^(?:年|成|州|道|号|案|届|次|章|条|诏|税率)/;
   var ACTION_CONTEXT = /(?:征兵|募兵|招募|募|调银|拨银|拨粮|下拨|移民|迁民|安置|徙民|发徭役|征发|发行|增发|拨发|调拨|赈济|给付|支给|铸造|铸钱)/;
 
@@ -120,15 +120,18 @@
       var measure = after.charAt(0);
       var hasMeasure = !!measure && MEASURE_LABELS.indexOf(measure) >= 0;
       var hasAction = ACTION_CONTEXT.test(before);
+      if (!hasMeasure && token === "伍" && /军$/.test(before)) continue;
       // “两”既是数字二，也是银两计量标签。位于完整数词末尾时按标签处理。
       if (!hasMeasure && hasAction && token.length > 1 && token.charAt(token.length - 1) === '两') {
         token = token.slice(0, -1);
         measure = '两';
         hasMeasure = true;
       }
-      if (/第$/.test(before) || EXCLUDED_SUFFIXES.test(after)) continue;
+      if (/第$/.test(before) || EXCLUDED_SUFFIXES.test(after) || (options.currencyOnly && /^(?:月|日|天|期|成|%|％|户|人|名)/.test(after))) continue;
+      if (options.currencyOnly && hasMeasure && '贯两文张缗'.indexOf(measure) < 0) continue;
       if (!hasMeasure && !hasAction) continue;
 
+      if (options.currencyOnly && /[-−负]\s*$/.test(before)) return _failure('out-of-range', {token:token});
       var parsed = parseNumber(token, { max: max });
       if (!parsed.ok) {
         return _failure(parsed.reason, { token: token, index: match.index });
@@ -144,10 +147,11 @@
 
     if (!candidates.length) return _failure('not-found');
     var bestScore = Math.max.apply(Math, candidates.map(function (item) { return item.score; }));
-    var best = candidates.filter(function (item) { return item.score === bestScore; });
+    var best = options.currencyOnly ? candidates : candidates.filter(function (item) { return item.score === bestScore; });
     var values = {};
     best.forEach(function (item) { values[String(item.value)] = true; });
-    if (Object.keys(values).length !== 1) {
+    var measures = new Set(best.map(function(item) { return item.measure; }).filter(Boolean));
+    if (Object.keys(values).length !== 1 || options.currencyOnly && measures.size > 1) {
       return _failure('ambiguous', { candidates: best });
     }
     return {
@@ -159,7 +163,42 @@
     };
   }
 
+  // Monetary quantities are bound to the action, not to every number in a long decree.
+  function extractCurrencyQuantity(text, options) {
+    options = options || {};
+    var source = String(text == null ? '' : text).replace(/(\d)[,，](?=\d{3}(?:\D|$))/g, '$1');
+    var issue = options.role === 'issue_paper';
+    var action = issue ? /发行|增发|印发|开印|印制|发放|颁行|发(?:交子|会子|宝钞|官票|纸币|纸钞)/g
+      : /流入|输入|纳银|纳入|引入|增加|增入|收入|净入|进银/g;
+    var clauses = source.split(/[，,。；;！？!?\n]/), candidates = [], preceding = '';
+    for (var i = 0; i < clauses.length; i++) {
+      var clause = clauses[i], markers = [], m;
+      action.lastIndex = 0;
+      while ((m = action.exec(clause))) markers.push({at:m.index,end:action.lastIndex});
+      var continuing = !markers.length && /^(?:\s*)(?:发行总额|总额|数额|数量|总计|共计|计为)/.test(clause) && action.test(preceding);
+      action.lastIndex = 0;
+      if (!markers.length && !continuing) { preceding = clause; continue; }
+      var at = markers.length ? markers[0].at : 0;
+      var prefix = clause.slice(0, at);
+      if (/(?:尚未|并未|没有|不得|不可|不许|不再|暂停|禁止|暂缓|取消|勿|毋|未|不)[^，；。]{0,4}$/.test(prefix)) return _failure('negated-action');
+      if (/(?:拟|计划|建议|考虑|如果|倘若|若|如需|必要时)[^，；。]{0,7}$/.test(prefix)) return _failure('uncertain-action');
+      var payload = clause.slice(markers.length ? markers[0].end : 0);
+      // Ratios, denominations, reserve balances, dates and alternative budgets cannot become issuance.
+      var stop = payload.search(/准备金|储备金|兑付|兑换|每[贯两文张]|按[每一]|其中|面额|限期|分期|分[一二三四五六七八九十\d]+期/);
+      if (stop >= 0) payload = payload.slice(0, stop);
+      if (/(?:至少|至多|最多|不超过|不少于|大约|约计|约|左右|上下|若干)/.test(payload)) return _failure('ambiguous', {role:options.role});
+      var result = extractEdictQuantity((issue ? '发行' : '调银') + payload, { max:options.max, currencyOnly:true });
+      if (result.ok) candidates.push(result);
+      else if (result.reason !== 'not-found') return result;
+      preceding = clause;
+    }
+    if (!candidates.length) return _failure('not-found');
+    if (candidates.length > 1) return _failure('ambiguous', { candidates:candidates, role:options.role });
+    return candidates[0];
+  }
+
   root.TMNumberParser = {
+    extractCurrencyQuantity: extractCurrencyQuantity,
     parseNumber: parseNumber,
     extractEdictQuantity: extractEdictQuantity
   };

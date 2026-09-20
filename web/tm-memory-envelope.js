@@ -1238,6 +1238,31 @@
     });
   }
 
+  function pushPersonalOriginalEnvelopes(out, GM, opts, turn) {
+    var lc = root.TM && root.TM.LiveContext;
+    if (!lc || !GM) return;
+    var actorScope = opts.actorScope || {}, name = opts.actorId || opts.actorName || actorScope.npcId;
+    var system = opts.audience === 'system' || actorScope.kind === 'system';
+    if (!name && !system) return;
+    var query = String(opts.query || opts.topic || '');
+    if (!query && system) query = JSON.stringify(GM.edicts || {}) + ' ' + (GM._edictTracker || []).filter(function(e){return e&&e.turn===GM.turn;}).map(function(e){return e.content;}).join(' ');
+    var chars = (GM.chars || []).filter(function(ch){return ch && (name ? ch.id===name || ch.name===name : query.indexOf(ch.name)>=0 || GM._npcCommitments && (GM._npcCommitments[ch.name]||[]).some(function(c){return c&&c.status!=='completed';}));});
+    chars.slice(0,12).forEach(function(ch){
+      lc.recall(GM,ch,query,6).forEach(function(m){
+        var id=m.id || 'npc-original-'+hashText(ch.name+':'+m.turn+':'+m.event);
+        var unverified=m.factStatus==='unverified_claim'||m.source==='reported'||m.source==='rumor';
+        var body=ch.name+'：'+(unverified?'[个人报告，尚未核实] ':'[个人历史记录] ')+String(m.event||'');
+        out.push(makeEnvelope({id:id,type:'character_memory',body:body,maxBody:1800,
+          sourceRefs:[sourceRef('npcPersonalMemory',id,m.event,{turn:m.turn})],basisRefs:m.sourceRefs||[],
+          authority:unverified?'court_report':'event_log',visibility:'npc_private:'+(ch.id||ch.name),
+          audience:[ch.id||ch.name,ch.name,'system'],ownerKind:'character',ownerId:ch.id||ch.name,
+          status:'active',turn:m.turn,entities:[ch.id||ch.name,ch.name],lane:'L6_retrieved_evidence',
+          factStatus:unverified?'unverified_claim':'personal_historical_record',confidence:unverified?.55:.8,
+          reason:'projection:personal_original',extra:{taskId:m.taskId||'',importance:m.importance||5}}));
+      });
+    });
+  }
+
   function collect(GM, opts) {
     opts = opts || {};
     var out = [];
@@ -1264,6 +1289,7 @@
     pushCharacterArcEnvelopes(out, GM, turn);
     pushAcceptedMemoryEnvelopes(out, GM, turn);
     pushCharacterStanceEnvelopes(out, GM, turn);
+    pushPersonalOriginalEnvelopes(out, GM, opts, turn);
     if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.project) out = out.concat(root.TM.MemoryLongTerm.project(GM));
     out.forEach(function(env) {
       if (!GM) return;

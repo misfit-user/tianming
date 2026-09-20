@@ -242,6 +242,7 @@ function makeEdictContext() {
 
 function loadEdictParser(ctx) {
   vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-number-parser.js'), 'utf8'), ctx, {filename:'tm-number-parser.js'});
   const file = path.join(ROOT, 'tm-edict-parser.js');
   vm.runInContext(fs.readFileSync(file, 'utf8'), ctx, { filename: file });
   assert(ctx.EdictParser && typeof ctx.EdictParser.tryExecute === 'function',

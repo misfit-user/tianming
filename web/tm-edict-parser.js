@@ -71,6 +71,19 @@
     return Number.isFinite(n) && n <= 1000000000000 ? Math.round(n) : fallback;
   }
 
+  function _currencyAmount(text, params, role) {
+    var parser = global.TMNumberParser, supplied = params && params.amount != null;
+    var parsed = parser ? (supplied ? parser.parseNumber(params.amount, {max:1000000000000}) : parser.extractCurrencyQuantity(text, {role:role,max:1000000000000})) : null;
+    if (parsed && parsed.ok) return parsed.value;
+    var error = new Error('诏令货币数额需核实：' + (parsed && parsed.reason || 'parser-unavailable'));
+    error.code = 'TM_EDICT_AMOUNT_INVALID'; error.details = Object.assign({role:role},parsed || {reason:'parser-unavailable'}); throw error;
+  }
+  function _amountIssue(error, cls) {
+    var reason = error.details && error.details.reason || 'unknown';
+    var monetary = !!(error.details && error.details.role) || !!(cls && cls.typeKey === 'currency_reform');
+    return {ok:false,handled:true,pathway:'invalid',reason:error.code,amountError:true,needsClarification:true,classification:cls,details:error.details,
+      message:(monetary ? '货币诏令尚未落账：' : '诏令数量尚待核实：') + (reason === 'ambiguous' ? (monetary ? '存在多个发行或流入数额，请明确唯一总额或拆成独立诏令。' : '存在多个可能的数量，请明确执行总量或拆成独立诏令。') : reason === 'not-found' ? '请明确发行或流入的总额，准备金、兑换比例和期限不能当作总额。' : '数额或执行意图无法安全确定（' + reason + '），请核实。')};
+  }
   function _currencyPaperNameFromText(text) {
     text = String(text || '');
     if (/交子/.test(text)) return '交子';
@@ -190,13 +203,13 @@
       action: action,
       regionId: regionId,
       presetId: _findCurrencyReformPresetId(text, params),
-      amount: params.amount || _edictAmountFromText(text, action === 'overseas_silver_flow' ? 500000 : 0),
+      amount: params.amount,
       acceptanceDelta: params.acceptanceDelta != null ? Number(params.acceptanceDelta) : 0.35
     };
   }
 
   function _executeCurrencyTextPolicy(text, params) {
-    text = String(text || '');
+    text = String(text || ''); params = params || {};
     var CE = global.CurrencyEngine || {};
     var G = global.GM || {};
     var inferredCurrency = Object.assign({}, _inferCurrencyTextPolicy(text, params), params || {});
@@ -240,11 +253,12 @@
     }
 
     if (inferredCurrency.action === 'overseas_silver_flow') {
+      var silverAmount = _currencyAmount(text, params, 'overseas_silver_flow');
       if (!G.currency) G.currency = {};
       if (!G.currency.coins) G.currency.coins = {};
       if (!G.currency.coins.silver) G.currency.coins.silver = { stock: 0, enabled: true };
       if (!G.currency.foreignFlow) G.currency.foreignFlow = {};
-      var silverAmount = Math.max(0, inferredCurrency.amount || 500000);
+
       var openResult = false;
       if (typeof CE.applyReform === 'function') {
         openResult = CE.applyReform(inferredCurrency.presetId || 'ming_open_silver_1567', params || {});
@@ -277,7 +291,7 @@
       var spec = {
         id: params.paperId || ('edict_paper_' + ((global.GM && global.GM.turn) || 0)),
         name: params.paperName || _currencyPaperNameFromText(text),
-        originalAmount: params.amount || _edictAmountFromText(text, 1000000),
+        originalAmount: _currencyAmount(text, params, 'issue_paper'),
         reserveRatio: params.reserveRatio != null ? params.reserveRatio : _edictRatioFromText(text, 0.3)
       };
       var issued = (typeof CE.issuePaper === 'function') ? CE.issuePaper(spec) : false;
@@ -942,23 +956,10 @@
       critical: ['taxType', 'rate'],
       drafter: '户部尚书',
       aiEntry: function(params) {
-        if (!global.GM.fiscalConfig) global.GM.fiscalConfig = {};
-        if (!global.GM.fiscalConfig.customTaxes) global.GM.fiscalConfig.customTaxes = [];
-        global.GM.fiscalConfig.customTaxes.push({
-          id: params.taxId || ('custom_' + (global.GM.turn || 0)),
-          name: params.taxName || '新税',
-          formulaType: params.formulaType || 'percent',
-          rate: params.rate || 0.03,
-          base: params.base || 'commerce',
-          description: params.description || ''
-        });
-        // 皇威反馈：加税 → lostVirtueRumor；减税/蠲免 → benevolence
-        if (typeof global.AuthorityComplete !== 'undefined') {
-          var rate = params.rate || 0.03;
-          if (rate > 0.05) global.AuthorityComplete.triggerHuangweiEvent('lostVirtueRumor');
-          else if (rate < 0) global.AuthorityComplete.triggerHuangweiEvent('benevolence');
-        }
-        return true;
+        var policy = global.TM && global.TM.TaxPolicy;
+        if (!policy) return { ok:false, reason:'税令执行模块未就绪，未修改税制' };
+        var outcome = policy.apply(global.GM, params && params._edictText || '', params || {}, params && params._edictContext || {});
+        return outcome && outcome.ok === true ? outcome : {ok:false,reason:outcome && outcome.reason || '未识别可执行的税务调整，未采用默认税率'};
       }
     },
     central_local_finance: {
@@ -1384,18 +1385,17 @@
   // ═══════════════════════════════════════════════════════════════════
 
   function tryExecute(text, params, ctx) {
+    var taxPolicy = global.TM && global.TM.TaxPolicy;
+    if (taxPolicy) {
+      var taxResult = taxPolicy.apply(global.GM, text, params || {}, ctx || {});
+      if (taxResult.handled) return Object.assign({}, taxResult, { pathway:taxResult.ok ? 'direct' : 'invalid', classification:{typeKey:'tax_reform',typeName:'税务调整'} });
+    }
     var cls;
     try {
       cls = classify(text, ctx);
     } catch (classificationError) {
       if (classificationError && classificationError.code === 'TM_EDICT_AMOUNT_INVALID') {
-        console.error('[edict] invalid amount', classificationError);
-        return {
-          ok: false,
-          pathway: 'invalid',
-          reason: classificationError.code,
-          details: classificationError.details || null
-        };
+        return _amountIssue(classificationError, null);
       }
       throw classificationError;
     }
@@ -1413,6 +1413,7 @@
         ? exec.ok === true : !!exec;
       if (execOk && cls.typeKey === 'huji_reform') _recordEdictPolicyAction('huji', execParams.action || cls.typeKey, exec, text);
     } catch(e) {
+      if (e && e.code === 'TM_EDICT_AMOUNT_INVALID') return _amountIssue(e, cls);
       console.error('[edict] exec', e);
       exec = false; execOk = false;
       // 金额解析失败不降级为「未识别」——玩家下的是「拨银五万」这种带明确数字的诏令，

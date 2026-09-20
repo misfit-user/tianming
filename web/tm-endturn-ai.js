@@ -196,7 +196,7 @@
       copy('faction_succession', ['factionSuccession','势力传承','势力继承']);
       copy('party_changes', ['partyChanges','党派变化']);
       copy('party_updates', ['partyUpdates','党派更新']);
-      copy('party_create', ['partyCreate','党派创建','党派新建']);
+      copy('party_create', ['partyCreate','new_parties','party_creations','党派创建','党派新建']);
       copy('party_dissolve', ['partyDissolve','党派覆灭','党派解散']);
       copy('hidden_moves', ['hiddenMoves','暗中动向','暗流','幕后动向']);
       copy('scheme_actions', ['schemeActions','阴谋行动','谋划行动']);
@@ -214,6 +214,8 @@
       // 阶层/起义
       copy('class_changes', ['classChanges','阶层变化','阶级变化']);
       copy('class_updates', ['classUpdates','阶层更新','阶级更新']);
+      copy('class_emerge', ['classEmerge','classCreate','class_create','new_classes','阶层兴起','新阶层']);
+      copy('class_dissolve', ['classDissolve','阶层消亡']);
       copy('revolt_update', ['revoltUpdate','起义更新','起义推进']);
       copy('regent_decisions', ['regentDecisions','摄政决断','辅政决断']);
       // 信息流·sc1c
@@ -398,7 +400,8 @@
       // SC1 is already finalized with its thinking settings; never alter audited bytes here.
       if (opts.id !== 'sc1' && global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, _thinkingCfg, 'openai');
       if (!opts.retryBudget && typeof _aiCreateRetryBudget === 'function') opts.retryBudget = _aiCreateRetryBudget({
-        maxAttempts: Math.min(8, 4 + (Number(opts.maxRetries) || 0) + (Number(opts.repairMaxRetries) || 0)),
+        maxAttempts: opts._configuredRetries ? 4 + 2 * (Number(opts.maxRetries) || 0) + (Number(opts.repairMaxRetries) || 0) : Math.min(8, 4 + (Number(opts.maxRetries) || 0) + (Number(opts.repairMaxRetries) || 0)),
+        configuredRetries: opts._configuredRetries === true,
         totalTimeoutMs: typeof _aiTotalResponseTimeout === "function" ? _aiTotalResponseTimeout(opts) : 0
       });
       var label = opts.label || 'endturn';
@@ -2383,7 +2386,7 @@
         // 势力关系动态变化
         "\"faction_relation_shift\":[{\"from\":\"势力A\",\"to\":\"势力B\",\"relation_delta\":-10,\"new_type\":\"敌对/联盟/交战/朝贡/通婚\",\"event\":\"变化事件\",\"reason\":\"原因\"}],"+
         // 党派新建——当局势催生新政治集团（非分裂自既有）
-        "\"party_create\":[{\"name\":\"新党派名\",\"ideology\":\"立场\",\"leader\":\"党魁(须已存在或同时在char_updates创建)\",\"influence\":20,\"socialBase\":[{\"class\":\"阶层名\",\"affinity\":0.6}],\"currentAgenda\":\"当前议程\",\"status\":\"活跃\",\"memberCount\":15,\"cohesion\":70,\"crossFaction\":false,\"trigger\":\"触发因素(诏令/事件/人物聚集)\",\"reason\":\"崛起原因\"}],"+
+        "\"party_create\":[{\"name\":\"新党派名\",\"members\":[\"在册成员名(无则空数组)\"],\"ideology\":\"立场\",\"leader\":\"党魁(须为当前在册活人)\",\"influence\":20,\"socialBase\":[{\"class\":\"阶层名\",\"affinity\":0.6}],\"currentAgenda\":\"当前议程\",\"status\":\"活跃\",\"memberCount\":15,\"cohesion\":70,\"crossFaction\":false,\"trigger\":\"触发因素(诏令/事件/人物聚集)\",\"reason\":\"崛起原因\"}],"+
         // 党派覆灭——被查禁/首领被杀/成员风流云散
         "\"party_dissolve\":[{\"name\":\"被解散党派名\",\"cause\":\"banned(查禁)/liquidated(肃清)/faded(自然消亡)/leaderKilled(领袖被杀)/absorbed(吞并他党)\",\"perpetrator\":\"主使者(可空)\",\"fatePerMember\":\"流放/下狱/归隐/转投别党\",\"reason\":\"原因\"}],"+
         // 势力新建——独立/割据/称帝/复国
@@ -2391,7 +2394,7 @@
         // 势力覆灭——被灭国/吞并/解体
         "\"faction_dissolve\":[{\"name\":\"被灭势力名\",\"cause\":\"conquered(征服)/absorbed(并入)/collapsed(内部崩解)/seceded_all(分崩离析)/replaced(被取而代之)\",\"conqueror\":\"征服者势力(conquered/absorbed时必填)\",\"territoryFate\":\"territory归属(如:并入某势力/独立成多国/设郡县)\",\"leaderFate\":\"首脑下场(降/死/逃亡)\",\"refugees\":[\"出逃核心人物\"],\"reason\":\"原因\"}],"+
         // 阶层兴起——新的社会阶层出现
-        "\"class_emerge\":[{\"name\":\"新阶层名\",\"size\":\"约5%\",\"mobility\":\"中\",\"economicRole\":\"商贸/军事/手工/治理\",\"status\":\"良民\",\"privileges\":\"\",\"obligations\":\"\",\"satisfaction\":50,\"influence\":15,\"demands\":\"诉求\",\"origin\":\"从哪演化来(如:军功地主自均田崩坏中兴起/士商自科举资格放开中兴起)\",\"unrestThreshold\":30,\"descriptor\":{\"stratum\":\"上/中/下\",\"fiscalStatus\":\"优免/编户/受饷/法外\",\"unrestArchetype\":\"暴烈/撤离/不合作/哗变\"},\"reason\":\"兴起原因\"}],"+
+        "\"class_emerge\":[{\"name\":\"新阶层名\",\"size\":\"约5%\",\"mobility\":\"中\",\"economicRole\":\"商贸/军事/手工/治理\",\"status\":\"良民\",\"privileges\":\"\",\"obligations\":\"\",\"satisfaction\":50,\"influence\":15,\"demands\":\"诉求\",\"representativeNpcs\":[],\"origin\":\"从哪演化来(如:军功地主自均田崩坏中兴起/士商自科举资格放开中兴起)\",\"unrestThreshold\":30,\"descriptor\":{\"stratum\":\"上/中/下\",\"fiscalStatus\":\"优免/编户/受饷/法外\",\"unrestArchetype\":\"暴烈/撤离/不合作/哗变\"},\"reason\":\"兴起原因\"}],"+
         // 阶层消亡——传统阶层衰落/被废除
         "\"class_dissolve\":[{\"name\":\"消亡阶层名\",\"cause\":\"abolished(法令废除)/assimilated(被吸收)/extincted(衰落消亡)/replaced(被新阶层取代)\",\"successorClass\":\"后继阶层(可空)\",\"membersFate\":\"成员去向(如:编入平民/降为贱籍/融入士绅)\",\"reason\":\"原因\"}],"+
         "\"vassal_changes\":[{\"action\":\"establish/break/change_tribute\",\"vassal\":\"\u5C01\u81E3\u52BF\u529B\u540D\",\"liege\":\"\u5B97\u4E3B\u52BF\u529B\u540D\",\"tributeRate\":0.3,\"reason\":\"\u539F\u56E0\"}],"+
@@ -2792,6 +2795,8 @@
           });
         }
       }
+      if (typeof TM !== 'undefined' && TM.LiveContext) tp1 += '\n'+TM.LiveContext.publicFacts(GM,null,JSON.stringify((ctx&&ctx.meta&&ctx.meta.edicts)||GM.edicts||{}));
+      tp1 += '\n【交办验收规则】承诺进展是承办自报。完成须有与task id绑定的实际执行凭据；单写completed不会增加全国税收或降低全国腐败。请通过已支持的结构化执行动作落实，未落实须如实报告阻力。';
       // 注入问对承诺——NPC 应按应诺去做（或按性格推诿/拖延）
       if (GM._npcCommitments && Object.keys(GM._npcCommitments).length > 0) {
         var _pendingCmt = [];
@@ -3699,6 +3704,7 @@
         try {
           var _sc1PolicyForStream = ns.getCallPolicy('sc1');
           c1 = await callAIBodyStream(_sc1Body, {
+            id:'sc1',
             priority: 'critical',
             timeoutMs: _sc1PolicyForStream.timeoutMs,
             onChunk: function(text) {
@@ -4952,6 +4958,7 @@
     compress_ai_memory:_p('low',45000,30000), compress_foreshadows:_p('low',45000,30000), compress_conversation:_p('low',45000,30000),
     history_check:_p('critical',45000,30000)
   };
+  ns.listCallPolicies = function() { return Object.keys(CALL_POLICIES).map(function(id) { return { id:id, maxRetries:CALL_POLICIES[id].maxRetries }; }); };
   ns.getCallPolicy = function(id) {
     var policy = CALL_POLICIES[id] || {}, out = {};
     Object.keys(SAFE_CALL_DEFAULT).forEach(function(k) { out[k] = SAFE_CALL_DEFAULT[k]; });
@@ -4965,6 +4972,7 @@
     ['priority', 'timeoutMs', 'maxRetries', 'repairTimeoutMs', 'repairMaxRetries', 'repairPriority'].forEach(function(k) { if (out[k] == null && policy[k] != null) out[k] = policy[k]; });
     if (out.repairPriority == null && policy.priority != null) out.repairPriority = policy.priority;
     out._callPolicy = policy;
+    if (global.TM && TM.CallRetryPolicy) out = TM.CallRetryPolicy.options(Object.assign({id:id},out));
     return out;
   }
 

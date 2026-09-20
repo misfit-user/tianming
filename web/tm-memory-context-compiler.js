@@ -587,7 +587,7 @@
     if (!ME || typeof ME.collect !== 'function') {
       return compileHits([], opts);
     }
-    var envelopes = ME.collect(GM || {}, { turn: opts.turn != null ? opts.turn : (GM && GM.turn), sc1q: opts.sc1q });
+    var envelopes = ME.collect(GM || {}, { turn: opts.turn != null ? opts.turn : (GM && GM.turn), sc1q: opts.sc1q, audience:opts.audience, actorScope:opts.actorScope, actorId:opts.actorId, actorName:opts.actorName, query:opts.query, topic:opts.topic });
     var hits = envelopes.map(function(env, index) {
       if (MR && typeof MR.hitFromEnvelope === 'function') return MR.hitFromEnvelope(env);
       return {

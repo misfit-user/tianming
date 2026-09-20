@@ -541,7 +541,7 @@ function checkPromptTokenBudget(promptText, onWarn) {
 })(typeof window !== 'undefined' ? window : this);
 
 async function _aiFetchWithRetryInner(url, body, signal, opts) {
-  opts = opts || {};
+  opts = _aiConfiguredCallOptions(opts);
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
   var timeoutMs = _aiFirstResponseTimeout(body && (body.max_completion_tokens || body.max_tokens), opts);
   // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
@@ -828,8 +828,19 @@ async function callAIWithTools(prompt, tools, opts) {
 }
 async function _callAIWithToolsUncached(prompt, tools, opts) {
   try { return await _aiWithStreamScope(Object.assign({ id: 'tool-call' }, opts || {}), async function(scoped) {
-    scoped.retryBudget = scoped.retryBudget || _aiCreateRetryBudget({ maxAttempts: 3 + (Number(scoped.maxRetries) || 0), totalTimeoutMs: _aiTotalResponseTimeout(scoped) });
-    var result = await _callAIWithToolsScoped(prompt, tools, scoped);
+    scoped.retryBudget = scoped.retryBudget || _aiCreateRetryBudget({ maxAttempts: 3 + (Number(scoped.maxRetries) || 0), configuredRetries:scoped._configuredRetries === true, totalTimeoutMs: _aiTotalResponseTimeout(scoped) });
+    var retryPolicy = globalThis.TM && globalThis.TM.CallRetryPolicy;
+    var result, retryIndex = 0;
+    if (scoped._configuredRetries) scoped._toolRetryState = { remaining:scoped.maxRetries };
+    while (true) {
+      try { result = await _callAIWithToolsScoped(prompt, tools, scoped); break; }
+      catch (failure) {
+        if (!scoped._toolRetryState || !retryPolicy || !retryPolicy.retryable(failure) || scoped._toolRetryState.remaining <= 0) throw failure;
+        scoped._toolRetryState.remaining--;
+        await _aiBudgetedRetryWait(_aiRetryDelay(null, retryIndex++), scoped.signal, scoped.retryBudget);
+        if (scoped._streamGuard) scoped._streamGuard();
+      }
+    }
     if (result && result.error && !(result.toolCalls && result.toolCalls.length)) { var e = new Error('AI tool result unavailable'); e.code = result.error.code; e.status = result.error.status; e._toolResult = result; throw e; }
     return result;
   }); }
@@ -964,7 +975,7 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
     if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
     try {
       var choiceRetried = false, transportRetries = 0;
-      var toolRetryLimit = opts.maxRetries == null ? 1 : Math.max(0, Math.min(3, Number(opts.maxRetries) || 0));
+      var toolRetryLimit = opts.maxRetries == null ? 1 : Math.max(0, Math.min(opts._configuredRetries ? 20 : 3, Number(opts.maxRetries) || 0));
       while (true) {
         if (ctrl.signal.aborted) throw _aiCancelledError(opts.signal);
         if (opts._streamGuard) opts._streamGuard();
@@ -980,7 +991,8 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
         if (!resp.ok) {
           var errT = '';
           try { errT = await Promise.race([resp.text(), toolDeadline]); } catch(_){ if (ctrl.signal.aborted) throw _aiCancelledError(opts.signal); }
-          if ((resp.status === 429 || resp.status >= 500) && transportRetries < toolRetryLimit) {
+          if ((resp.status === 429 || resp.status >= 500) && (opts._toolRetryState ? opts._toolRetryState.remaining > 0 : transportRetries < toolRetryLimit)) {
+            if (opts._toolRetryState) opts._toolRetryState.remaining--;
             await _aiBudgetedRetryWait(_aiRetryDelay(resp, transportRetries++), ctrl.signal, opts.retryBudget);
             continue;
           }
@@ -1005,6 +1017,7 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
         return parsedToolResponse;
       }
     } catch (error) {
+      if (error && error.code === "AI_REQUEST_DEADLINE") throw error;
       if (timedOut && !(opts.signal && opts.signal.aborted)) {
         var timeoutError = new Error('AI tool request timed out'); timeoutError.code = 'tool-timeout'; throw timeoutError;
       }
@@ -1022,6 +1035,8 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
       data = await _toolFetchQueued();
     }
   } catch(e) {
+    // Only pre-result transport failures return to the same configured request owner. HTTP failures have already spent its shared budget.
+    if (opts._configuredRetries && !Number(e && e.status) && globalThis.TM && TM.CallRetryPolicy && TM.CallRetryPolicy.retryable(e)) throw e;
     var failure = _toolErrorInfo(e);
     if (failure.code === 'aborted' || failure.code === 'tool-timeout' || (failure.status !== 400 && _aiErrorIsTerminal(e)) || (e && e.code === 'context_length_exceeded') || (e && e._tmNativeTransport) || failure.status === 429 || failure.status >= 500) return { text: '', toolCalls: [], error: failure };
     console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
@@ -2144,6 +2159,10 @@ function _buildTemporalConstraint(ch, opts) {
   _tcPreamble(lines, opts.clauseOnly ? 'clause' : 'full');
   lines.push('\n【★ 时空约束·AI 严格遵守 ★】');
   lines.push('当前游戏时间：' + t + '（公元 ' + y + ' 年）·第 ' + (GM.turn || 1) + ' 回合');
+
+  if (!opts.clauseOnly && typeof TM !== 'undefined' && TM.LiveContext) {
+    lines.push(TM.LiveContext.build(GM, ch, opts.topic || opts.query || ''));
+  }
 
   // clauseOnly：只给总纲条款·省 token·防大名单干扰结构化 JSON 输出（文案自洽·不引用「下列名单」）
   if (opts.clauseOnly) {

@@ -41,23 +41,6 @@
     protocol.value = cfg.thinkingProtocol || 'auto'; if (!protocol.value) protocol.value = 'auto';
     var hint = node('div'); hint.style.cssText = 'color:var(--txt-d);font-size:.76rem;line-height:1.6;margin-top:.3rem;';
     options.append(thinkingLabel, protocolLabel, protocol, hint);
-    function durationField(label, suffix, value) {
-      var wrap = node('label', label), input = node('input');
-      input.type = 'number'; input.min = '0'; input.max = '86400'; input.step = '1';
-      input.id = prefix + suffix; input.value = String(Math.round((Number(value) || 0) / 1000));
-      wrap.appendChild(input); options.appendChild(wrap); return input;
-    }
-    var queueWait = durationField('排队最大等待（秒，0 = 不设）', 'queue-wait', cfg.queueTimeoutMs);
-    var firstWait = durationField('发送后的首响应等待（秒，0 = 自动）', 'first-response-wait', cfg.firstResponseTimeoutMs);
-    var totalWait = durationField('完整响应最大等待（秒，0 = 不设强制总时限）', 'total-response-wait', cfg.totalResponseTimeoutMs);
-    var agentWait = tier === 'primary' ? durationField('Agent 回合总时限（秒，0 = 不设；调用次数限制仍保留）', 'agent-total-wait', cfg.agentRunTimeoutMs != null ? cfg.agentRunTimeoutMs : P.conf && P.conf.agentModeDeadlineMs) : null;
-    options.appendChild(node('div', '收到成功响应头后继续等待完整内容，长时间等待会提示但不自动砍掉。安卓原生接口不暴露首包：连接期限保留，完整等待按总时限设置。取消仍有效；保存后生效。'));
-    function readDuration(input) {
-      var value = Number(input.value);
-      if (!Number.isFinite(value) || value < 0 || value > 86400) throw new Error('等待时间须为 0 至 86400 秒');
-      return Math.floor(value * 1000);
-    }
-
     var controller = null, serial = 0, rows = [];
     function current() { return bg && bg.classList.contains('show') && model.isConnected && active[tier] === owner; }
     function draft() {
@@ -103,9 +86,7 @@
       finally { if (current() && ticket === serial) { controller = null; pull.disabled = false; pull.textContent = '拉取模型'; } }
     }
     var owner = { cancel:cancel, detect:detect, read: function(target) {
-      var queueMs = readDuration(queueWait), firstMs = readDuration(firstWait), totalMs = readDuration(totalWait), agentMs = agentWait ? readDuration(agentWait) : 0;
-      target.queueTimeoutMs = queueMs; target.firstResponseTimeoutMs = firstMs; target.totalResponseTimeoutMs = totalMs;
-      if (agentWait) target.agentRunTimeoutMs = agentMs;
+      if (global.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.readWaits(tier, target);
       if (check.indeterminate) delete target.thinking; else target.thinking = check.checked;
       target.thinkingProtocol = protocol.value || 'auto';
     } };

@@ -24,7 +24,7 @@ module.exports=async function({win,root,check}){
  assert.equal(files.length,1,'one official fixture per isolated runtime');
  for(const file of files){const raw=fs.readFileSync(path.join(root,'scenarios',file),'utf8'),input=JSON.parse(raw);let edited;
   await check('official authoring tasks preserve input, accepted paths and real persistence: '+input.id,async()=>{
-   await js(`(()=>{document.getElementById('tm-aa-newchat').click();const aa=TM.AuthoringAgent,app=TM_SCENARIO_EDITOR_RESET_APP;app.applyImportedScenario(${raw},'官方隔离样本');window.__official={before:JSON.stringify(app.state.scenario),draft:aa.makeDraft(app.state.scenario)};})()`);
+   await js(`(()=>{document.getElementById('tm-aa-newchat').click();const aa=TM.AuthoringAgent,app=TM_SCENARIO_EDITOR_RESET_APP;app.applyImportedScenario(JSON.parse(${JSON.stringify(raw)}),'官方隔离样本');window.__official={before:JSON.stringify(app.state.scenario),draft:aa.makeDraft(app.state.scenario)};})()`);
    const result=await js(`(async()=>{
     const aa=TM.AuthoringAgent,t=__official,d=t.draft;
     const edits=[{path:'guoku.initialMoney',value:900123},{path:'neitang.initialMoney',value:123987}];
@@ -37,15 +37,15 @@ module.exports=async function({win,root,check}){
     const r=await aa.runAuthoringLoop(d,'按验收修改财政、民心、官制并保留其余内容',{noMemoryRecall:true,conventions:'',toolPacks:false,blockingChecks:[],caller:async()=>({toolCalls:calls})});if(!r.finished)throw Error(r.stopReason);
     const diffs=aa.computeDiff(TM_SCENARIO_EDITOR_RESET_APP.state.scenario,d);if(JSON.stringify(TM_SCENARIO_EDITOR_RESET_APP.state.scenario)!==t.before)throw Error('live mutated');
     if(!aa.makeResetEditorAdapter(window).commit(d).ok)throw Error('commit rejected');const p=await TM_SCENARIO_EDITOR_RESET_APP.saveProjectSnapshot('隔离官方验收');await TM_SCENARIO_EDITOR_RESET_APP.loadProjectSnapshot(p.id);
-    const saved=TM_SCENARIO_EDITOR_RESET_APP.state.scenario;return{draft:saved,paths:diffs.map(x=>x.path),fingerprint:await TM.AgentKernel.fingerprintScenario(saved)};
+    const saved=TM_SCENARIO_EDITOR_RESET_APP.state.scenario;return{draftJson:JSON.stringify(saved),paths:diffs.map(x=>x.path),fingerprint:await TM.AgentKernel.fingerprintScenario(saved)};
    })()`);
-   edited=result.draft;assert.equal(edited.guoku.initialMoney,900123);assert.equal(edited.neitang.initialMoney,123987);assert.equal(edited.characters.length,input.characters.length);assert(result.paths.every(p=>/^(guoku|neitang|officeTree|government|variables|factions)/.test(p)));assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'scenarios',file))).digest('hex'),crypto.createHash('sha256').update(raw).digest('hex'));observations.push({kind:'official-accepted-task',id:input.id,paths:result.paths,fingerprint:result.fingerprint});
+   edited=JSON.parse(result.draftJson);assert.equal(edited.guoku.initialMoney,900123);assert.equal(edited.neitang.initialMoney,123987);assert.equal(edited.characters.length,input.characters.length);assert(result.paths.every(p=>/^(guoku|neitang|officeTree|government|variables|factions)/.test(p)));assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'scenarios',file))).digest('hex'),crypto.createHash('sha256').update(raw).digest('hex'));observations.push({kind:'official-accepted-task',id:input.id,paths:result.paths,fingerprint:result.fingerprint});
   });
   await check('actual game consumes edited fiscal initials and preserves canonical ledgers: '+input.id,async()=>{
    await js(`localStorage.removeItem('tm_api')`); // 只清本测试刚写入的合成配置，游戏开局不得继承测试key。
    await win.loadFile(path.join(root,'web/index.html'));
    const r=await js(`(async()=>{
-    if(P.ai?.key)throw Error('unexpected key');const sc=${JSON.stringify(edited)},before=JSON.stringify(sc),expected=JSON.parse(before);
+    if(P.ai?.key)throw Error('unexpected key');const sc=JSON.parse(${JSON.stringify(JSON.stringify(edited))}),before=JSON.stringify(sc),expected=JSON.parse(before);
     EconomyGapFill.buildHierarchyFromAdminDepth(expected);P.scenarios=P.scenarios.filter(s=>s.id!==sc.id);P.scenarios.push(sc);P.conf.fixedSeed='authoring-acceptance';const initial={};
     for(const [engine,key] of [[GuokuEngine,'guoku'],[NeitangEngine,'neitang']]){const old=engine.initFromDynasty;engine.initFromDynasty=function(...a){const r=old.apply(this,a),g=GM[key];initial[key]={balance:g.balance,money:g.money,stock:g.ledgers.money.stock};return r;};}
     const pin=_tmStartPinMinxinFromVars;window._tmStartPinMinxinFromVars=function(sc){const r=pin(sc),values=[];function walk(nodes){for(const n of nodes||[]){const kids=n.children||n.divisions||n.subRegions||[];if(kids.length)walk(kids);else values.push(n.minxinLocal);}}walk(P.adminHierarchy.player.divisions);initial.minxinLeaves=[...new Set(values)];return r;};

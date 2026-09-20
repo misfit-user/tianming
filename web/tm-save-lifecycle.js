@@ -622,10 +622,7 @@ function _prepareGMForSave(GM, P, options) {
   // M1-M4 新增字段
   // 清理 ephemeral post-turn 任务（Promise 不可序列化）
   if (GM._postTurnJobs) delete GM._postTurnJobs;
-  // 无上限保护：_memoryArchiveFull 保留最近 5000 条（约 100-200 回合全记忆）
-  if (GM._memoryArchiveFull && GM._memoryArchiveFull.length > 5000) {
-    GM._memoryArchiveFull = GM._memoryArchiveFull.slice(-5000);
-  }
+  // Lossless personal originals are retained; query-time actor indexing bounds recall cost.
   if (!skipMirrors._savedMemoryArchiveFull && GM._memoryArchiveFull && GM._memoryArchiveFull.length > 0) GM._savedMemoryArchiveFull = _safeClone(GM._memoryArchiveFull);
   if (!skipMirrors._savedCausalGraph && GM._causalGraph && (GM._causalGraph.nodes && GM._causalGraph.nodes.length || GM._causalGraph.edges && GM._causalGraph.edges.length)) GM._savedCausalGraph = _safeClone(GM._causalGraph);
   if (!skipMirrors._savedFactionArcs && GM._factionArcs && Object.keys(GM._factionArcs).length > 0) GM._savedFactionArcs = _safeClone(GM._factionArcs);

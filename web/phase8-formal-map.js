@@ -1837,7 +1837,7 @@
     var stage = mapStage();
     if (stage) {
       stage.classList.add('tmf-map-moving'); clearTimeout(_mapMotionTimer);
-      _mapMotionTimer = setTimeout(function(){ stage.classList.remove('tmf-map-moving'); stage.__phase8ViewportRect = null; }, 180);
+      _mapMotionTimer = setTimeout(function settleMotion(){ if (state.drag) { _mapMotionTimer = setTimeout(settleMotion, 180); return; } stage.classList.remove('tmf-map-moving'); stage.__phase8ViewportRect = null; }, 180);
     }
     if (_mapTransformRaf) return;
     _mapTransformRaf = (window.requestAnimationFrame || function(cb){ return setTimeout(cb, 16); })(function(){

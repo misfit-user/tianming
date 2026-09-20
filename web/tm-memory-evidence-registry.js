@@ -129,6 +129,7 @@
   }
 
   var DEFINITIONS = [
+    { id:'npcPersonalMemory', label:'Personal original memories', path:'GM._memoryArchiveFull', category:'structured_memory', authority:'event_log', role:'record', visibility:'mixed', lane:'L6_retrieved_evidence', promptConsumers:['SC1','SC_RECALL','MemoryEnvelope','dialogue'], memoryEnvelope:true, count:function(GM){return arr(GM&&GM._memoryArchiveFull).length;}, riskFlags:['personal_claims_are_not_world_truth'] },
     {
       id: 'chars',
       label: 'Character hard state',

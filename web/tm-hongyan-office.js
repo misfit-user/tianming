@@ -1076,6 +1076,7 @@ function _settleLettersAndTravel() {
           letterType: nl.type||'report', _npcInitiated: true,
           _replyExpected: nl.replyExpected !== false, _playerRead: false,
           _suggestion: nl.suggestion || '',
+          _taskId: nl.taskId || '', _taskReportId: nl.taskReportId || '',
           _sendMode: 'multi_courier' // NPC 默认多路驿递（更真实·享 ×0.15 截获折扣）
         };
         // NPC 来函先进入在途状态；截获判定交给到达阶段统一处理，避免刚入队即随机变成 intercepted。
@@ -1557,7 +1558,7 @@ function _generateLetterReply(letter) {
         // 扫描源：来自京城的来信(letter.content) + 往来背景 + 近期涉君诏令·回信者 ch.name 作种子恒入
         var _hyTopic = ((letter && letter.content) || '') + ' ' + (priorHistory || '') + ' ' + (recentEdictCtx || '');
         var _hyMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_hyTopic, (ch && ch.name) ? [ch.name] : [], 10) : ((ch && ch.name) ? [ch.name] : []);
-        prompt += _buildTemporalConstraint(ch, { mentionedNames: _hyMentioned });
+        prompt += _buildTemporalConstraint(ch, { mentionedNames: _hyMentioned, topic: _hyTopic });
       } catch(_){}
     }
     prompt += '\n\n收到来自京城天子的' + typeLabel + '('+cipherLabel+')：\n「' + letter.content + '」';
@@ -1781,7 +1782,8 @@ function letterDoctor() {
           reply: '', status: 'returned', urgency: nl.urgency||'normal',
           letterType: nl.type||'report', _npcInitiated: true,
           _replyExpected: nl.replyExpected !== false, _playerRead: false,
-          _suggestion: nl.suggestion || '', _sendMode: 'multi_courier',
+          _suggestion: nl.suggestion || '',
+          _taskId: nl.taskId || '', _taskReportId: nl.taskReportId || '', _sendMode: 'multi_courier',
           _doctorFlushed: true
         });
         fixed.pendingFlushed++;

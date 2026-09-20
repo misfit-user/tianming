@@ -48,7 +48,7 @@ jobs:
         run: node scripts/lint-arch-all.js
       - name: Full smoke suite
         working-directory: web
-        run: node scripts/ci-smokes.js
+        run: node scripts/ci-smokes.js --jobs 2
       - name: Audit checkout probes
         run: node web/scripts/audit-repro.cjs --repo "$GITHUB_WORKSPACE" --expect-clean
       - name: Preserve audit evidence

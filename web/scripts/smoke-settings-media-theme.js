@@ -33,6 +33,6 @@ assert(/styles\.css\?v=[^"'<\s]+/.test(index), 'index.html should bust settings 
 assert(/tm-theme-font\.js\?v=[^"'<\s]+/.test(index), 'index.html should load theme/font module (cache-busted)');  // 同上·验加载+有 ?v=·不钉死版本
 assert(/tm-patches\.js\?v=[^"'<\s]+/.test(index), 'index.html should bust settings JS cache');
 assert(/REMOTE_CHANGELOG_URL/.test(fs.readFileSync(path.join(ROOT, 'tm-changelog.js'), 'utf8')), 'remote changelog source missing');
-assert(/tm-changelog\.js\?v=20260519-remote-changelog/.test(index), 'index.html should bust changelog JS cache');
+assert(/tm-changelog\.js\?v=[A-Za-z0-9_.-]+/.test(index), 'index.html should bust changelog JS cache');
 
 console.log('[smoke-settings-media-theme] PASS settings media/theme sections present');

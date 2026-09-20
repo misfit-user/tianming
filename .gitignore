@@ -128,3 +128,23 @@ release-hot/hot-latest.json
 !web/vendor/shanhe25d/albedo.webp
 !web/vendor/shanhe25d/fallback.webp
 !web/vendor/shanhe25d/water.png
+
+# Local test profiles and duplicated snapshots stay on disk.
+docs/**/sessionData/
+docs/**/userData/
+docs/**/user-data/
+docs/**/session-data/
+docs/**/backup/
+docs/**/backup-*/
+docs/**/apply-backup/
+docs/**/apply-backup-*/
+docs/**/before-hooks/
+docs/**/native-test-*/
+docs/**/*.cpuprofile
+docs/**/*.before-*
+/_shaosong-1350.json
+/docs/shaosong-map-integration-20260917/*-stage/candidate.json
+/docs/shaosong-map-integration-20260917/*-stage/source-before.json
+/docs/shaosong-map-integration-20260917/input-r6-map/shaosong-r6.map-only.json
+docs/**/*sessionData*/
+docs/**/*userData*/

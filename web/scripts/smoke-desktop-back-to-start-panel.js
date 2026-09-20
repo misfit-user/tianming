@@ -27,6 +27,10 @@ function makeNode(tag) {
     parentNode: null,
     style: {},
     dataset: {},
+    attributes: Object.create(null),
+    setAttribute(name,value) { this.attributes[name]=String(value); },
+    getAttribute(name) { return this.attributes[name] ?? null; },
+    removeAttribute(name) { delete this.attributes[name]; },
     className: '',
     value: '',
     listeners: Object.create(null),
@@ -134,7 +138,7 @@ assert(!toasts.some((message) => message.includes('加载失败')), 'back must n
 
 ctx._pendingStartPayload = null;
 ctx.desktopBackToStartPanel();
-assert(true, 'missing payload fallback does not throw');
+assert(elements['main-view'].children[0].getAttribute('aria-busy')==='true', 'missing payload fallback opens a busy scenario-selection panel');
 assert(htmlWrites === 0, 'desktop flow never writes innerHTML');
 assert(!createdTags.includes('SCRIPT') && !createdTags.includes('IMG'), 'desktop flow does not create injected active tags');
 

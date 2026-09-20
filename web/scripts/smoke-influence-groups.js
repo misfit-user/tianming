@@ -238,7 +238,7 @@ assert(IG.classifyChar({ name: N.zhouQueen, title: N.queenTitle, gender: '\u5973
 
 const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const constantsPos = indexHtml.indexOf('tm-engine-constants.js');
-const influencePos = indexHtml.indexOf('tm-influence-groups.js?v=2026050202');
+const influencePos = indexHtml.search(/tm-influence-groups\.js\?v=[A-Za-z0-9_.-]+/);
 const inferPos = indexHtml.indexOf('tm-endturn-ai-infer.js');
 assert(influencePos >= 0, 'index.html missing tm-influence-groups.js');
 assert(constantsPos >= 0 && constantsPos < influencePos, 'influence groups must load after engine constants');

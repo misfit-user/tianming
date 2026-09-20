@@ -1,8 +1,8 @@
 {
   "type": "tianming-hot-update",
-  "version": "1.3.5.1",
+  "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-20T10:18:41.840Z",
+  "generatedAt": "2026-09-20T10:33:21.879Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,7 +2891,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "60eec989c1e9538ef64dea12eff330a02591b792bfe7acc7e7e687b4abb75fcf",
+      "sha256": "eee9fb4da0e3d5fcc36eed79cf3ab3ba60641346c5251609b8b2fded247e6417",
       "size": 73929
     },
     {
@@ -6166,7 +6166,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b18bba51acdc6464abfaa7f5fe59d406ea259f9839354e052e9264f6771828bf",
+      "sha256": "725bc3627b01c82379444233fb00c5516ed61f410486a76663451b888bf0ea6f",
       "size": 131489
     },
     {
@@ -6546,8 +6546,8 @@
     },
     {
       "path": "version.json",
-      "sha256": "61cf24fbffb207dd9e359fb0aecf1ce3b1aa4d540df4f138095be800c8120d2e",
-      "size": 123
+      "sha256": "0aba26788a700864ffc5673f593fd0a68143d8ccabd314edf0418bc8a4db3b94",
+      "size": 1894
     },
     {
       "path": "workshop-admin.html",

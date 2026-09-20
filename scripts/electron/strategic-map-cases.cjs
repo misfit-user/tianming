@@ -62,8 +62,24 @@ module.exports=async function({win,root,check,baseline}){
       const r=await js(`(async()=>{const rows=[];for(const mode of ['tax','mood','army','owner']){document.querySelector('.map-layer[data-map-mode="'+mode+'"]').click();TMPhase8FormalBridge.map.renderFormalMap();const end=Date.now()+20000;while(!document.getElementById('tmf-formal-map')){if(Date.now()>end)throw Error('layer surface not ready: '+mode);await new Promise(r=>setTimeout(r,40));}const svg=document.getElementById('tmf-formal-map');TMMapLabelCollide.resolve(document.getElementById('ming-map-layer'),TMPhase8FormalBridge._state.mapView.scale,TMPhase8FormalBridge._state.mapScale);rows.push({mode:document.getElementById('mapwrap').dataset.mapMode,regions:svg.querySelectorAll('.tmf-region').length,focus:Array.from((document.getElementById('tmf-map-labels')||svg).querySelectorAll('.tmf-faction-label')).every(g=>g.getAttribute('tabindex')==='-1'),legend:document.getElementById('tmf-map-legend')?.textContent.length>0});}return rows;})()`);assert(r.every(row=>row.regions===metrics.initial.paths&&row.legend&&row.focus),JSON.stringify(r));
     });
     win.setSize(1100,760);await frame();
+    // Native resize completes through layout, the shell and ResizeObserver.
+    // Settle only those independent inputs; the projection assertion below is unchanged.
+    await js(`(async()=>{
+      const deadline=performance.now()+5000;let previous='',stable=0;
+      while(stable<5){
+        if(performance.now()>deadline)throw Error('resize inputs did not settle');
+        await new Promise(r=>requestAnimationFrame(r));
+        const stage=document.getElementById('ming-map-layer');
+        const camera=document.querySelector('.ming-map-camera');
+        const bounds=stage?.getBoundingClientRect(),cache=stage?.__phase8CameraSize;
+        if(!bounds||!camera||!cache||cache.width!==stage.clientWidth||cache.height!==stage.clientHeight){stable=0;continue;}
+        const key=JSON.stringify([innerWidth,innerHeight,bounds.x,bounds.y,bounds.width,bounds.height,cache.width,cache.height,camera.style.transform,getComputedStyle(camera).transform,TMPhase8FormalBridge._state.mapView]);
+        stable=key===previous?stable+1:0;previous=key;
+      }
+    })()`);
+
     await check('resizing retains projection alignment and a visible selectable map',async()=>{
-      const r=await js(`(()=>{const s=document.getElementById('ming-map-layer'),map=TMPhase8FormalBridge.map.getMapData(),v=TMPhase8FormalBridge._state.mapView,b=s.getBoundingClientRect(),ratio=Math.min(b.width/map.width,b.height/map.height),p=new DOMPoint(0,0).matrixTransform(document.getElementById('tmf-map-world').getScreenCTM());return{error:Math.hypot(p.x-(b.left+(b.width-map.width*ratio)/2+v.tx*ratio),p.y-(b.top+(b.height-map.height*ratio)/2+v.ty*ratio)),width:b.width};})()`);assert(r.width>500&&r.error<1.5,JSON.stringify(r));
+      const r=await js(`(()=>{const s=document.getElementById('ming-map-layer'),map=TMPhase8FormalBridge.map.getMapData(),v=TMPhase8FormalBridge._state.mapView,b=s.getBoundingClientRect(),ratio=Math.min(b.width/map.width,b.height/map.height),p=new DOMPoint(0,0).matrixTransform(document.getElementById('tmf-map-world').getScreenCTM());return{error:Math.hypot(p.x-(b.left+(b.width-map.width*ratio)/2+v.tx*ratio),p.y-(b.top+(b.height-map.height*ratio)/2+v.ty*ratio)),width:b.width,view:v,stage:{rect:b.toJSON(),client:[s.clientWidth,s.clientHeight],cameraCache:s.__phase8CameraSize},actual:{x:p.x,y:p.y},svg:document.getElementById("tmf-formal-map").getBoundingClientRect().toJSON(),camera:{rect:document.querySelector(".ming-map-camera").getBoundingClientRect().toJSON(),style:document.querySelector(".ming-map-camera").style.cssText},mapSize:[map.width,map.height],world:document.getElementById("tmf-map-world").getAttribute("transform"),labels:document.getElementById("tmf-map-labels").getBoundingClientRect().toJSON(),zoom:document.getElementById("tmf-formal-map").dataset.zoomRendering};})()`);fs.writeFileSync(path.join(dir,"resize-diagnostic.json"),JSON.stringify(r,null,2));assert(r.width>500&&r.error<1.5,JSON.stringify(r));
     });win.setSize(1280,800);await frame();
     assert.equal(crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),hash);
   }

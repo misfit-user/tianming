@@ -137,6 +137,26 @@
     });
     by[id]=cell;
   }
+  function adjudicateDescriptor(g, c) {
+    if (!c.descriptor || !c.descriptor._needsAdjudication || typeof root.callAI !== 'function' || g !== root.GM) return;
+    var player = root.P, generation = root._tmLoadGen, turn = g.turn;
+    var identity = [g._campaignId,g._timelineId].join('|'), stamp = JSON.stringify(c.descriptor);
+    function current() { return root.GM === g && root.P === player && root._tmLoadGen === generation && g.turn === turn &&
+      [g._campaignId,g._timelineId].join('|') === identity && arr(g.classes).includes(c) && JSON.stringify(c.descriptor) === stamp; }
+    var prompt = '【阶层定性·归一】新兴阶层「' + c.name + '」(治生:' + c.economicRole + '·特权:' + String(c.privileges || '无').slice(0,30) +
+      ')现有描述符' + stamp + '。保留原词，归一通用词表。只输出 JSON：stratum(上/中/下)、fiscalStatus(优免/编户/受饷/法外)、unrestArchetype(暴烈/撤离/不合作/哗变/倒戈)。';
+    // Keep the existing one-shot secondary adjudication, but never write into another world or a rolled-back class.
+    Promise.resolve().then(function () { if (!current()) return null; return root.callAI(prompt,300,undefined,'secondary',{priority:'low',timeoutMs:40000,maxRetries:1}); })
+      .then(function (reply) {
+        if (reply == null || !current()) return;
+        var verdict = JSON.parse(String(reply).replace(/```json|```/g,'').trim());
+        if (TM.SocialFoundation && TM.SocialFoundation.applyAdjudicatedDescriptor && TM.SocialFoundation.applyAdjudicatedDescriptor(c,verdict)) {
+          g._continuityRevision = (Number(g._continuityRevision)||0) + 1;
+          if (typeof root.addEB === 'function') root.addEB('阶层','【定性】' + c.name + '·' + c.descriptor.stratum + '/' + c.descriptor.fiscalStatus);
+        }
+      }).catch(function () { /* Preserve reconciled raw descriptors; failed adjudication never invents a result. */ });
+  }
+
   function createClass(g, raw, opts) {
     raw=raw||{};opts=opts||{};var name=text(raw.name||raw.className||raw.class);
     if(!g)return {ok:false,reason:'没有当前世界'};
@@ -162,7 +182,9 @@
     if(raw.descriptor&&typeof raw.descriptor==='object')c.descriptor=JSON.parse(JSON.stringify(raw.descriptor));
     commitPopulation(plan,id,Number(g.turn)||0);g.classes=list;list.push(c);
     if(TM.SocialFoundation&&TM.SocialFoundation.reconcileClassDescriptor)try{TM.SocialFoundation.reconcileClassDescriptor(c,g);}catch(_){}
-    return emit(g,'class',c,reason,opts);
+    var result = emit(g,'class',c,reason,opts);
+    adjudicateDescriptor(g,c);
+    return result;
   }
   function normalizePayload(payload) {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload;

@@ -71,8 +71,8 @@ SF.reconcileClassDescriptor(jinshen, root);
 ok(JSON.stringify(jinshen.descriptor) === before, '幂等·再对账描述符不变');
 
 // 8. 现生契约：apply class_emerge 即对账
-const applySrc = require('fs').readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
-ok(/reconcileClassDescriptor\(newC, GM\)/.test(applySrc), '源契约·现生阶层(class_emerge)即对账描述符');
+const applySrc = require('fs').readFileSync(path.join(WEB, 'tm-social-formation.js'), 'utf8');
+ok(/reconcileClassDescriptor\(c,g\)/.test(applySrc), '源契约·现生阶层(class_emerge)即对账描述符');
 
 console.log('\n[smoke-class-descriptor-reconcile] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');
 process.exit(F ? 1 : 0);

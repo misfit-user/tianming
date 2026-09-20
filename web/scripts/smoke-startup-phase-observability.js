@@ -30,10 +30,11 @@ outputContractModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>s
 assert(scriptNames.indexOf('tm-ai-result-contract.js')<scriptNames.indexOf('tm-world.js'),'output contract precedes world context and inference consumers');
 const visualAdapters=['tm-shanhe-runtime.js'];
 const requestControls=['tm-call-retry-policy.js','tm-call-budget-settings.js'];
-const enactedOrderModules=['tm-imperial-orders.js','tm-personal-memory-recall.js','tm-live-context.js','tm-tax-policy.js'];
+const enactedOrderModules=['tm-social-formation.js','tm-imperial-orders.js','tm-personal-memory-recall.js','tm-live-context.js','tm-tax-policy.js'];
 requestControls.concat(enactedOrderModules).forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads exactly once'));
 assert(scriptNames.indexOf('tm-call-retry-policy.js')<scriptNames.indexOf('tm-ai-infra-retry.js'),'retry settings are resolved before transport');
 assert(scriptNames.indexOf('tm-call-budget-settings.js')<scriptNames.indexOf('tm-patches.js'),'budget controls precede the settings owner');
+assert(scriptNames.indexOf('tm-social-formation.js')<scriptNames.indexOf('tm-endturn-apply.js'),'canonical social formation loads before its apply consumer');
 visualAdapters.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert.strictEqual(manifest.scriptCount,417+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));

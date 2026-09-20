@@ -379,8 +379,8 @@ async function main() {
     endturnApplySource.includes("_tmSetFactionLeaderCanonical(fObj, sc.newLeaderId || sc.newLeader") &&
     endturnApplySource.includes("_tmSetPartyLeaderCanonical(party, pc.new_leader"), 'faction coup/succession and party change leaders must use canonical living-entity sinks');
   check(endturnApplySource.includes("_tmSetPartyLeaderCanonical(newParty, sp.newLeader") &&
-    endturnApplySource.includes("_tmSetPartyLeaderCanonical(newP, pc.leader") &&
-    endturnApplySource.includes("_tmSetFactionLeaderCanonical(newF, fc.leader"), 'new/splintered parties and new factions must validate leaders before insertion');
+    endturnApplySource.includes("TM.SocialFormation.apply(GM, p1,") &&
+    endturnApplySource.includes("_tmSetFactionLeaderCanonical(newF, fc.leader"), 'new parties use the canonical SocialFormation creator; split parties and factions retain canonical leader sinks (runtime invalid-founder cases are exercised in smoke-social-descriptor-formation)');
   check(endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, ru.leaderCasualty") &&
     endturnApplySource.includes("_tmApplyCanonicalDeath(r.leaderName, '起义失败被剿'"), 'revolt casualty and suppression deaths must share the canonical death sink');
   check(endturnStagesSource.includes("global.applyOneDeath({ name:_sov.name") &&

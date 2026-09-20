@@ -86,11 +86,11 @@
           '<div class="map-bg"></div><div class="map-board-corner c1"></div><div class="map-board-corner c2"></div><div class="map-board-corner c3"></div><div class="map-board-corner c4"></div>' +
           '<div class="desk-prop paperweight"></div><div class="desk-prop counter"></div><div class="desk-prop seal"></div>' +
           '<div id="ming-map-layer" class="ming-map-layer tmf-map-stage" aria-label="天下舆图"></div>' +
-          '<div class="map-zoom-tools" aria-label="舆图缩放"><button type="button" class="mz-btn" data-map-zoom="1.22" title="放大">+</button><button type="button" class="mz-btn reset" data-map-reset="1" title="复位">◎</button><button type="button" class="mz-btn" data-map-zoom="0.82" title="缩小">−</button></div>' +
+          '<div class="map-zoom-tools" aria-label="舆图缩放（最高128倍）"><output data-map-zoom-value style="font-size:12px;min-width:3em;text-align:center" aria-label="当前地图倍率">1.0×</output><button type="button" class="mz-btn" data-map-zoom="1.22" title="放大">+</button><button type="button" class="mz-btn reset" data-map-reset="1" title="复位">◎</button><button type="button" class="mz-btn" data-map-zoom="0.82" title="缩小">−</button></div>' +
           '<div class="ming-map-wash"></div>' +
           '<button type="button" class="renwu-tuzhi-entry" data-tmf-action="renwu" title="人物图志"><img class="renwu-tuzhi-img" src="' + esc(asset('renwu-tuzhi-card-ui.png')) + '" alt="人物图志"></button>' +
           '<div class="map-tools-dock open" id="map-tools-dock"><button type="button" class="map-tools-toggle" id="map-tools-toggle" data-map-tools-toggle="1" aria-expanded="true"><span>舆图工具</span><span class="map-tools-mode" id="map-tools-mode">势力</span><span class="map-tools-caret">▾</span></button><div class="map-tools-pop" id="map-tools-pop"><div class="map-layer-bar"><button class="map-layer" data-map-mode="mood">民情</button><button class="map-layer" data-map-mode="classPressure">阶层</button><button class="map-layer" data-map-mode="tax">财赋</button><button class="map-layer" data-map-mode="army">军务</button><button class="map-layer" data-map-mode="office">官守</button><button class="map-layer" data-map-mode="yizheng">役政</button><button class="map-layer on" data-map-mode="owner">势力</button></div><div class="map-nav-panel"><div class="map-search-row"><span class="map-search-label">检索</span><input id="map-search" class="map-search" list="map-region-list" autocomplete="off" placeholder="地名 / 势力 / 主官"><datalist id="map-region-list"></datalist></div><div id="map-search-results" class="map-search-results"></div></div></div></div>' +
-          '<div class="map-scale-strip" aria-label="舆图层级"><button type="button" class="map-scale" data-map-scale="realm" aria-pressed="false">天下</button><button type="button" class="map-scale" data-map-scale="region" aria-pressed="true">省道</button><button type="button" class="map-scale" data-map-scale="prefecture" aria-pressed="false">府州</button></div>' +
+          '<div class="map-scale-strip" aria-label="舆图层级"><button type="button" class="map-scale" data-map-scale="realm" aria-pressed="false">天下</button><button type="button" class="map-scale" data-map-scale="region" aria-pressed="true">省道</button><button type="button" class="map-scale" data-map-scale="prefecture" aria-pressed="false">府州</button><button type="button" class="map-scale" data-map-tier-lock="1" style="display:none" aria-pressed="false" title="锁定后，缩放不会自动改变地图层级">缩放联动</button><button type="button" class="map-scale" data-map-fit-all="1" style="display:none" title="保持当前层级并查看完整地图">全图</button></div>' +
           '<div class="map-alert-strip"><button type="button" class="map-alert hot" onclick="TMPhase8FormalBridge.openAction(\'memorial\')">待批奏疏</button><button type="button" class="map-alert" onclick="TMPhase8FormalBridge.openPanel(\'issue\')">朝议待核</button><button type="button" class="map-alert ok" onclick="TMPhase8FormalBridge.openPanel(\'finance\')">财赋入库</button></div>' +
           '<div id="tmf-map-legend" class="map-legend tmf-map-legend"></div>' +
           '<div class="map-hint" id="tmf-map-hint">滚轮缩放，拖拽移图，点击地块查看档案。</div>' +
@@ -120,6 +120,18 @@
           if (dock) dock.classList.toggle('open');
           toggle.setAttribute('aria-expanded', String(!!(dock && dock.classList.contains('open'))));
           return;
+        }
+        var lockButton = e.target && e.target.closest ? e.target.closest('[data-map-tier-lock]') : null;
+        var fitButton = e.target && e.target.closest ? e.target.closest('[data-map-fit-all]') : null;
+        if (lockButton || fitButton) {
+          var controlMap = getMapData();
+          if (!controlMap || !controlMap.hierarchyPresentation || !controlMap.hierarchyPresentation.layerControl) return;
+          e.preventDefault(); e.stopPropagation();
+          state._zoomLevelLinkOff = fitButton ? true : !state._zoomLevelLinkOff;
+          state._tierLockMapId = controlMap.id;
+          if (fitButton) resetMapView();
+          else if (!state._zoomLevelLinkOff) _syncScaleLevelFromZoom();
+          updateMapChrome(); renderFormalMapSoon(); return;
         }
         var zoom = e.target && e.target.closest ? e.target.closest('[data-map-zoom]') : null;
         if (zoom) {
@@ -155,7 +167,7 @@
           state.mapView = state.mapView || { scale: 1, tx: 0, ty: 0 };
           // 以视口中心为锚重算平移(2026-07-03)：原先只改 scale 留 tx/ty 残余→切档后画面甩向左上/漂出纸面
           var _s1 = Number(state.mapView.scale) || 1;
-          var _s2 = bandToScale(state.mapScale);
+          var _s2 = state._zoomLevelLinkOff ? _s1 : bandToScale(state.mapScale);
           var _cw = (Number(state._mapVBW) || 1200) / 2, _ch = (Number(state._mapVBH) || 720) / 2;
           state.mapView.tx = _cw - (_cw - (Number(state.mapView.tx) || 0)) * (_s2 / _s1);
           state.mapView.ty = _ch - (_ch - (Number(state.mapView.ty) || 0)) * (_s2 / _s1);
@@ -223,6 +235,7 @@
   }
 
   function getMapData(){
+    if (window.GM && GM._useAIGeo === true) return null; // Explicit geography mode must not be changed by a read-only map panel.
     if (window.TMMapRuntime && typeof TMMapRuntime.getMap === 'function') {
       try {
         var live = TMMapRuntime.getMap();
@@ -468,8 +481,21 @@
   }
 
   function regionNameKeys(r){
-    var data = Object.assign({}, (r && r.admin) || {}, (r && r.data) || {});
+    var memo = typeof _mapRenderMemo !== 'undefined' && _mapRenderMemo && _mapRenderMemo.nameKeys;
+    if (memo && memo.has(r)) return memo.get(r);
+    // Only lookup fields are needed: copying large attached ledgers per name query is costly.
+    // Preserve Object.assign's own-enumerable and explicit-undefined override semantics.
+    var admin = (r && r.admin) || {}, source = (r && r.data) || {}, data = {};
+    ['id','name','title','officialName','province','provinceName','adminName','regionName'].forEach(function(key){
+      if (Object.prototype.propertyIsEnumerable.call(source, key)) data[key] = source[key];
+      else if (Object.prototype.propertyIsEnumerable.call(admin, key)) data[key] = admin[key];
+    });
     var out = [];
+    if (r && r.sourceProvinceId && r.id !== r.sourceProvinceId && Array.isArray(r.accountingLeafIds)) {
+      [r.id,r.adminBinding,r.name,data.id,data.name].forEach(function(v){pushUniqueValue(out,v);});
+      if (memo) memo.set(r, out);
+      return out; // A province aggregate is not a fallback for its smaller child account.
+    }
     [
       r && r.id,
       r && r.name,
@@ -487,6 +513,7 @@
       data.adminName,
       data.regionName
     ].forEach(function(v){ pushUniqueValue(out, v); });
+    if (memo) memo.set(r, out);
     return out;
   }
 
@@ -634,6 +661,10 @@
       _admIdxCache.pRoot = pRoot;
       _admIdxCache.turn = turn;
       _admIdxCache.map = _buildAdminIndex(gmRoot, pRoot);
+    }
+    if (r && r.adminBinding && Array.isArray(r.accountingLeafIds)) {
+      var bound = _admIdxCache.map.get(regionKeyNorm(r.adminBinding));
+      if (bound && bound.kind === 'id') return bound.node;
     }
     // id 精确匹配优先(region.id ↔ admin node.id)·命中即返回·防同名/别名走偏
     if (idKey) {
@@ -791,11 +822,12 @@
   }
 
   function liveRegionOwner(r, liveStats, liveDivision){
-    return firstValue(
-      liveOwnerFromProvinceMap(r),
-      ownerFromRecord(liveStats || findLiveProvinceStats(r)),
-      ownerFromRecord(liveDivision || findLiveAdminDivision(r))
-    );
+    // Precedence is unchanged; do not resolve/copy fallbacks after an authoritative hit.
+    var owner = liveOwnerFromProvinceMap(r);
+    if (hasValue(owner)) return owner;
+    owner = ownerFromRecord(liveStats || findLiveProvinceStats(r));
+    if (hasValue(owner)) return owner;
+    return firstValue(ownerFromRecord(liveDivision || findLiveAdminDivision(r)));
   }
 
   // ★地方主官绑定官职持有人:剧本里 division.governor 是死字段(初始设定·任命/赴任/死亡都不更新)。
@@ -822,10 +854,14 @@
 
   function ownerKey(r){
     if (!r) return '';
+    var memo = _mapRenderMemo && _mapRenderMemo.ownerKeys;
+    if (memo && memo.has(r)) return memo.get(r);
     var liveOwner = liveRegionOwner(r);
-    if (liveOwner) return String(liveOwner);
+    if (liveOwner) { var liveKey = String(liveOwner); if (memo) memo.set(r, liveKey); return liveKey; }
     var data = Object.assign({}, r.admin || {}, r.data || {});
-    return String(r.currentOwner || r.controller || r.owner || r.currentOwnerKey || r.controllerKey || r.ownerKey || r.factionId || data.factionId || data.groupKey || '');
+    var key = String(r.currentOwner || r.controller || r.owner || r.currentOwnerKey || r.controllerKey || r.ownerKey || r.factionId || data.factionId || data.groupKey || '');
+    if (memo) memo.set(r, key);
+    return key;
   }
 
   function ownerName(r){
@@ -1236,10 +1272,22 @@
     }
   }
 
+  // One limit for buttons, wheel, pinch, focus and restored camera state.
+  function clampMapScale(value){
+    value = Number(value);
+    return Math.max(.72, Math.min(128, Number.isFinite(value) && value > 0 ? value : 1));
+  }
+  function zoomMapAt(factor, x, y){
+    if (window.TMShanheRuntime && TMShanheRuntime.zoomAt(factor, x, y, state)) return;
+    if (!Number.isFinite(factor) || factor <= 0) return;
+    var v = state.mapView || { scale: 1, tx: 0, ty: 0 }, old = clampMapScale(v.scale || 1);
+    var next = clampMapScale(old * factor);
+    v.tx = x - (x - (Number(v.tx) || 0)) * (next / old);
+    v.ty = y - (y - (Number(v.ty) || 0)) * (next / old);
+    v.scale = next; state.mapView = v;
+  }
   function zoomMap(factor){
-    var v = state.mapView || { scale: 1, tx: 0, ty: 0 };
-    v.scale = Math.max(0.72, Math.min(4.2, Number(v.scale || 1) * (factor || 1)));
-    state.mapView = v;
+    zoomMapAt(Number(factor), (Number(state._mapVBW) || 1200) / 2, (Number(state._mapVBH) || 720) / 2);
     scheduleMapTransform();
   }
 
@@ -1248,27 +1296,74 @@
     applyMapTransform();
   }
 
+  // Idempotent writes: a no-change refresh must not invalidate layout or replace controls.
+  var _mapHTMLCache = new WeakMap();
+  function mapText(node, value){
+    value = String(value);
+    if (node && node.textContent !== value) node.textContent = value;
+  }
+  function mapAttribute(node, name, value){
+    value = String(value);
+    if (node && node.getAttribute(name) !== value) node.setAttribute(name, value);
+  }
+  function mapHTML(node, html){
+    if (!node) return;
+    var cached = _mapHTMLCache.get(node), current = node.innerHTML;
+    if (cached && cached.input === html && cached.output === current) return;
+    if (current !== html) node.innerHTML = html;
+    // Browsers normalize markup; compare with the rendered form, not only the source string.
+    // Reading it also detects external edits so an unchanged input can repair the display.
+    _mapHTMLCache.set(node, { input: html, output: node.innerHTML });
+  }
+  function mapHintText(map){
+    var count = map && Array.isArray(map.regions) ? map.regions.length : 0;
+    return mapScaleNote() + ' · ' + mapModeNote() + ' · ' + count + ' 地块 · 点击地块查看档案，右键查看势力。';
+  }
+
+  // Query toolbar subtrees, not the retained SVG's tens of thousands of nodes.
+  function mapChromeQuery(selector){
+    var wrap = document.getElementById('mapwrap');
+    if (!wrap || !wrap.children) return document.querySelectorAll(selector);
+    var matches = [];
+    Array.prototype.forEach.call(wrap.children, function(child){
+      if (child.id === 'ming-map-layer' || child.id === 'tmf-map-stage') return;
+      if (child.matches && child.matches(selector)) matches.push(child);
+      if (child.querySelectorAll) Array.prototype.push.apply(matches, child.querySelectorAll(selector));
+    });
+    return matches;
+  }
+
   function updateMapChrome(){
     var wrap = document.getElementById('mapwrap');
     if (wrap) {
-      wrap.dataset.mapMode = state.mapMode || 'owner';
-      wrap.dataset.mapScale = state.mapScale || 'region';
+      mapAttribute(wrap, 'data-map-mode', state.mapMode || 'owner');
+      mapAttribute(wrap, 'data-map-scale', state.mapScale || 'region');
     }
-    document.querySelectorAll('.map-layer').forEach(function(btn){
+    mapChromeQuery('.map-layer').forEach(function(btn){
       var on = btn.dataset.mapMode === state.mapMode;
       btn.classList.toggle('on', on);
-      btn.setAttribute('aria-pressed', String(on));
+      mapAttribute(btn, 'aria-pressed', on);
     });
-    document.querySelectorAll('[data-map-scale]').forEach(function(btn){
+    mapChromeQuery('[data-map-scale]').forEach(function(btn){
       if (btn.id === 'mapwrap') return;
       var on = btn.dataset.mapScale === state.mapScale;
       btn.classList.toggle('on', on);
-      btn.setAttribute('aria-pressed', String(on));
+      mapAttribute(btn, 'aria-pressed', on);
+    });
+    var currentMap = getMapData(), controlsOn = !!(currentMap && currentMap.hierarchyPresentation && currentMap.hierarchyPresentation.layerControl);
+    if (state._tierLockMapId && (!currentMap || state._tierLockMapId !== currentMap.id)) { state._zoomLevelLinkOff = false; state._tierLockMapId = null; }
+    mapChromeQuery('[data-map-tier-lock],[data-map-fit-all]').forEach(function(btn){
+      var display = controlsOn ? '' : 'none';
+      if (btn.style.display !== display) btn.style.display = display;
+      if (btn.hasAttribute('data-map-tier-lock')) {
+        mapText(btn, state._zoomLevelLinkOff ? '层级已锁' : '缩放联动');
+        mapAttribute(btn, 'aria-pressed', !!state._zoomLevelLinkOff);
+      }
     });
     var mode = document.getElementById('map-tools-mode');
-    if (mode) mode.textContent = mapModeTitle();
+    mapText(mode, mapModeTitle());
     var hint = document.getElementById('tmf-map-hint');
-    if (hint) hint.textContent = mapScaleNote() + ' · ' + mapModeNote();
+    mapText(hint, mapHintText(currentMap));
   }
 
   function mapScaleNote(){
@@ -1385,11 +1480,12 @@
   }
   function renderFormalMap(){
     var previousMemo = _mapRenderMemo;
-    _mapRenderMemo = { factions: new Map(), live: null };
+    _mapRenderMemo = { factions: new Map(), live: null, nameKeys: new Map(), ownerKeys: new Map() };
     try {
     var shell = document.getElementById('tm-phase8-main-shell');
     var stage = mapStage();
     if (!shell || !stage || !isGameVisible()) {
+      if (window.TMShanheRuntime) TMShanheRuntime.hide();
       // 2026-05-27 diag·一次性输出·让 player 看到为何不渲染
       if (!state._mapDiagShellMissing) {
         state._mapDiagShellMissing = true;
@@ -1604,18 +1700,20 @@
             return '<span>' + esc(bd[3]) + '</span>';
           }).join('') + '</div></div>'
         : '<div class="map-legend-main"><div class="map-legend-bar"></div><div class="map-legend-scale"><span>低</span><span>中</span><span>高</span></div></div>';
-      host.innerHTML = '<div class="map-legend-title"><span class="map-legend-mode"><i class="map-legend-mark"></i><span class="map-legend-name">' + esc(mapModeTitle()) + '</span></span><span class="map-legend-sub">' + esc(mapScaleNote()) + '</span></div>' +
+      var bandsLegend = '<div class="map-legend-title"><span class="map-legend-mode"><i class="map-legend-mark"></i><span class="map-legend-name">' + esc(mapModeTitle()) + '</span></span><span class="map-legend-sub">' + esc(mapScaleNote()) + '</span></div>' +
         bandsHtml +
         '<div class="map-legend-detail"><p class="map-legend-note">' + esc(mapModeNote()) + '。地块圆牌为本视图读数，颜色随运行账目即时重绘。</p></div>';
+      mapHTML(host, bandsLegend);
       return;
     }
-    host.innerHTML = '<div class="map-legend-title"><span class="map-legend-mode"><i class="map-legend-mark"></i><span class="map-legend-name">势力版图</span></span><span class="map-legend-sub">' + esc(entries.length) + ' 方</span></div>' +
+    var ownerLegend = '<div class="map-legend-title"><span class="map-legend-mode"><i class="map-legend-mark"></i><span class="map-legend-name">势力版图</span></span><span class="map-legend-sub">' + esc(entries.length) + ' 方</span></div>' +
       '<div class="map-legend-main"><div class="map-owner-row">' + entries.slice(0, 3).map(function(e){
         return '<span class="map-owner-swatch"><i style="background:' + attr(e.color) + '"></i>' + esc(e.name) + '</span>';
       }).join('') + '</div></div>' +
       '<div class="map-legend-detail"><p class="map-legend-note">点击色块查看势力档案，右键任一地块打开所属势力。</p><div class="tmf-legend-list">' + entries.slice(0, 10).map(function(e){
         return '<button type="button" onclick="TMPhase8FormalBridge.openFactionByKey(\'' + attr(e.key) + '\')"><span style="background:' + attr(e.color) + '"></span>' + esc(e.name) + '</button>';
       }).join('') + '</div></div>';
+    mapHTML(host, ownerLegend);
   }
 
   function regionSearchText(r){
@@ -1625,7 +1723,8 @@
   function syncMapSearch(map){
     var list = document.getElementById('map-region-list');
     if (list && map && Array.isArray(map.regions)) {
-      list.innerHTML = map.regions.map(function(r){ return '<option value="' + attr(r.title || r.name || r.officialName || '') + '"></option>'; }).join('');
+      var optionsHtml = map.regions.map(function(r){ return '<option value="' + attr(r.title || r.name || r.officialName || '') + '"></option>'; }).join('');
+      mapHTML(list, optionsHtml);
     }
     var input = document.getElementById('map-search');
     if (input) renderMapSearchResults(input.value || '');
@@ -1641,9 +1740,10 @@
     var rows = !query ? [] : regions.filter(function(r){
       return regionSearchText(r).toLowerCase().indexOf(query) >= 0;
     }).slice(0, 6);
-    host.innerHTML = rows.length ? rows.map(function(r){
+    var resultsHtml = rows.length ? rows.map(function(r){
       return '<button type="button" data-region-id="' + attr(r.id || r.name || r.title || '') + '" onclick="TMPhase8FormalBridge.focusRegion(\'' + attr(r.id || r.name || r.title || '') + '\')"><b>' + esc(r.title || r.name || r.officialName || '未名地块') + '</b><span>' + esc(ownerName(r)) + '</span></button>';
     }).join('') : '<div class="tmf-map-search-empty" style="padding:8px 10px;color:#9c8b6b;font-size:12.5px">' + (query ? '无匹配地块' : '输入地名以检索') + '</div>';
+    mapHTML(host, resultsHtml);
   }
 
   function focusRegion(id, open){
@@ -1652,7 +1752,12 @@
     var map = getMapData();
     var c = actualCenter(r);
     if (map && c) {
-      state.mapView.scale = Math.max(state.mapView.scale || 1, 1.45);
+      var shape = window.TMMapRealmLayout && window.TMMapRealmLayout.region(r), box = shape && shape.bounds;
+      var stage = mapStage(), ratio = stage ? mapViewportMetrics(stage, map).ratio : 1;
+      var extent = box ? Math.max(box.maxX - box.minX, box.maxY - box.minY) : 0;
+      var target = extent > 0 && Number.isFinite(extent) ? 160 / (extent * ratio) : 1.45;
+      state.mapView = state.mapView || { scale: 1, tx: 0, ty: 0 };
+      state.mapView.scale = clampMapScale(Math.max(state.mapView.scale || 1, 1.45, target));
       state.mapView.tx = Number(map.width || 1200) * .52 - c.x * state.mapView.scale;
       state.mapView.ty = Number(map.height || 720) * .48 - c.y * state.mapView.scale;
       applyMapTransform();
@@ -1672,7 +1777,7 @@
   // 残留平移在低倍下把画面甩出纸面。单点收口在 applyMapTransform：所有路径(切档/滚轮/拖拽)同受益。
   function clampMapView(v){
     var W = Number(state._mapVBW) || 1200, H = Number(state._mapVBH) || 720;
-    var s = Number(v.scale) || 1;
+    var s = clampMapScale(v.scale); v.scale = s;
     if (s >= 1) {
       v.tx = Math.min(0, Math.max(W * (1 - s), Number(v.tx) || 0));
       v.ty = Math.min(0, Math.max(H * (1 - s), Number(v.ty) || 0));
@@ -1687,8 +1792,11 @@
     if (!world) return;
     var v = clampMapView(state.mapView || { scale: 1, tx: 0, ty: 0 });
     var stage = mapStage();
+    if (window.TMShanheRuntime && TMShanheRuntime.apply(stage, getMapData(), v, state)) return;
     var svg = world.ownerSVGElement, camera = svg && svg.parentElement;
-    if (camera && camera.classList.contains('ming-map-camera')) {
+    var directVector = v.scale > 4.2;
+    if (camera && camera.classList.contains('ming-map-camera') && !directVector) {
+      world.removeAttribute('transform');
       // Move the retained HTML/SVG surface on the compositor instead of repainting
       // every province path for each SVG-group translation. Account for meet letterboxing.
       var W = Number(state._mapVBW) || 1200, H = Number(state._mapVBH) || 720;
@@ -1698,11 +1806,21 @@
       var transform = 'translate(' + (v.tx * ratio + ox * (1 - v.scale)).toFixed(3) + 'px,' + (v.ty * ratio + oy * (1 - v.scale)).toFixed(3) + 'px) scale(' + v.scale.toFixed(4) + ')';
       if (camera.style.transform !== transform) camera.style.transform = transform;
       if (svg.dataset.tmfComposited !== '1') svg.dataset.tmfComposited = '1';
-    } else world.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
+    } else {
+      // Deep zoom stays in the clipped SVG viewport; never enlarge a screen-sized bitmap 128x.
+      if (camera && camera.classList.contains('ming-map-camera') && camera.style.transform !== 'none') camera.style.transform = 'none';
+      if (svg && svg.dataset.tmfComposited !== '0') svg.dataset.tmfComposited = '0';
+      var worldTransform = 'translate(' + v.tx.toFixed(3) + ' ' + v.ty.toFixed(3) + ') scale(' + v.scale.toFixed(6) + ')';
+      if (world.getAttribute('transform') !== worldTransform) world.setAttribute('transform', worldTransform);
+    }
+    if (svg && svg.dataset.zoomRendering !== (directVector ? 'vector' : 'compositor')) svg.dataset.zoomRendering = directVector ? 'vector' : 'compositor';
+    var zoomReadout = document.querySelector('[data-map-zoom-value]');
+    if (zoomReadout) { var zoomText = (v.scale < 10 ? v.scale.toFixed(1) : v.scale.toFixed(0)) + '×'; if (zoomReadout.textContent !== zoomText) zoomReadout.textContent = zoomText; if (zoomReadout.title !== '当前缩放 / 上限 128×') zoomReadout.title = '当前缩放 / 上限 128×'; }
     // Labels remain SVG vectors in the unscaled viewport, never enlarged compositor pixels.
     var labelWorld = document.getElementById('tmf-label-world');
-    if (labelWorld && labelWorld !== world) labelWorld.setAttribute('transform', 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')');
-    if (stage) stage.classList.toggle('zoomed', v.scale > 1.35);
+    var labelTransform = 'translate(' + v.tx.toFixed(2) + ' ' + v.ty.toFixed(2) + ') scale(' + v.scale.toFixed(4) + ')';
+    if (labelWorld && labelWorld !== world && labelWorld.getAttribute('transform') !== labelTransform) labelWorld.setAttribute('transform', labelTransform);
+    if (stage && stage.classList.contains('zoomed') !== (v.scale > 1.35)) stage.classList.toggle('zoomed', v.scale > 1.35);
     scheduleLabelLayout();      // P1·缩放/平移结束后防抖重算标签防重叠+LOD
   }
 
@@ -1762,6 +1880,7 @@
     _labelLayoutTimer = setTimeout(resolveLabelLayout, 90);
   }
   function resolveLabelLayout(){
+    if (window.TMShanheRuntime && TMShanheRuntime.layoutLabels(mapStage())) return;
     if (typeof window !== 'undefined' && window.__TM_LABEL_LEGACY) return;
     // Apply screen-size LOD after measuring the actual glyphs.
     measureRealmText(mapStage());
@@ -1775,6 +1894,7 @@
 
   function regionPathFromPoint(e){
     if (!e) return null;
+    if (window.TMShanheRuntime && TMShanheRuntime.active()) return TMShanheRuntime.pick(e);
     var direct = e.target && e.target.closest ? e.target.closest('.tmf-region,.ming-region') : null;
     if (direct) return direct;
     var stack = document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : [document.elementFromPoint(e.clientX, e.clientY)];
@@ -1981,13 +2101,9 @@
       var viewport = mapViewportMetrics(stage, map);
       var x = (e.clientX - viewport.left) / viewport.ratio;
       var y = (e.clientY - viewport.top) / viewport.ratio;
-      var old = state.mapView.scale || 1;
-      // Trackpads emit many tiny deltas: a fixed notch per event races through tiers.
+      // Trackpads emit many tiny deltas: scale by distance, not one notch per event.
       var pixels = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? (stage.__phase8CameraSize && stage.__phase8CameraSize.height || 720) : 1);
-      var next = Math.max(.85, Math.min(3.4, old * Math.exp(-Math.max(-100, Math.min(100, pixels)) * .002)));
-      state.mapView.tx = x - (x - (state.mapView.tx || 0)) * (next / old);
-      state.mapView.ty = y - (y - (state.mapView.ty || 0)) * (next / old);
-      state.mapView.scale = next;
+      zoomMapAt(Math.exp(-Math.max(-100, Math.min(100, pixels)) * .002), x, y);
       scheduleMapTransform();
     }, { passive: false });
     stage.addEventListener('pointerdown', function(e){
@@ -2011,6 +2127,7 @@
       var viewport = mapViewportMetrics(stage, map);
       var dx = (e.clientX - state.drag.x) / viewport.ratio;
       var dy = (e.clientY - state.drag.y) / viewport.ratio;
+      if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) { var shDelta = TMShanheRuntime.panDelta(dx, dy); dx = shDelta[0]; dy = shDelta[1]; }
       if (!state.drag.moved && Math.abs(dx) + Math.abs(dy) > 2) { // 只在首次越过阈值时清一次选中·非每帧
         state.drag.moved = true;
         clearMapSelection();
@@ -2040,17 +2157,14 @@
           if (!state.mapView) state.mapView = { scale: 1, tx: 0, ty: 0 };
           var viewport = mapViewportMetrics(stage, map);
           if (g.panDX || g.panDY) {
-            state.mapView.tx = (state.mapView.tx || 0) + g.panDX / viewport.ratio;
-            state.mapView.ty = (state.mapView.ty || 0) + g.panDY / viewport.ratio;
+            var shPan = window.TMShanheRuntime ? TMShanheRuntime.panDelta(g.panDX / viewport.ratio, g.panDY / viewport.ratio) : [g.panDX / viewport.ratio, g.panDY / viewport.ratio];
+            state.mapView.tx = (state.mapView.tx || 0) + shPan[0];
+            state.mapView.ty = (state.mapView.ty || 0) + shPan[1];
           }
           if (g.zoom && g.zoom !== 1) {
             var ax = (g.cx - viewport.left) / viewport.ratio;
             var ay = (g.cy - viewport.top) / viewport.ratio;
-            var old = state.mapView.scale || 1;
-            var next = Math.max(.85, Math.min(3.4, old * g.zoom));
-            state.mapView.tx = ax - (ax - (state.mapView.tx || 0)) * (next / old);
-            state.mapView.ty = ay - (ay - (state.mapView.ty || 0)) * (next / old);
-            state.mapView.scale = next;
+            zoomMapAt(Number(g.zoom), ax, ay);
           }
           scheduleMapTransform();
         },
@@ -2086,8 +2200,9 @@
       var e = _hoverEvt; if (!e) return;
       var tip = document.getElementById('tmf-map-tip');
       if (!tip) return;
-      if (state.drag || (e.buttons & 1)) { tip.classList.remove('show'); return; }
+      if (state.drag || (e.buttons & 1)) { if (window.TMShanheRuntime) TMShanheRuntime.setHovered(null); tip.classList.remove('show'); return; }
       var path = regionPathFromPoint(e);
+      if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) TMShanheRuntime.setHovered(path && (path.dataset.regionId || path.dataset.id));
       if (!path) { tip.classList.remove('show'); _hoverLastKey = null; return; }
       // 位置每帧跟随鼠标（廉价·无 innerHTML 重建）·右/下越界翻转
       var tx = e.clientX + 14, ty = e.clientY + 14;
@@ -2104,6 +2219,7 @@
       tip.innerHTML = mapTipHtml(r);
       tip.classList.add('show');
     }
+    stage.addEventListener('mouseleave', function(){ if (window.TMShanheRuntime) TMShanheRuntime.setHovered(null); });
     stage.addEventListener('mousemove', function(e){
       _hoverEvt = e;
       if (_hoverRaf) return;
@@ -2767,11 +2883,10 @@
     });
     if (buttons.length < 2) buttons.push('<button type="button" class="map-alert" onclick="TMPhase8FormalBridge.openPanel(\'issue\')">朝议待核</button>');
     buttons.push('<button type="button" class="map-alert ok" onclick="TMPhase8FormalBridge.openPanel(\'finance\')">财赋入库</button>');
-    host.innerHTML = buttons.slice(0, 3).join('');
+    mapHTML(host, buttons.slice(0, 3).join(''));
     var hint = document.getElementById('tmf-map-hint');
     if (hint) {
-      var count = map && Array.isArray(map.regions) ? map.regions.length : 0;
-      hint.textContent = mapScaleNote() + ' · ' + mapModeNote() + ' · ' + count + ' 地块 · 点击地块查看档案，右键查看势力。';
+      mapText(hint, mapHintText(map));
     }
   }
 
@@ -2831,7 +2946,7 @@
   bridge.map.__labelAnchor = labelAnchor;
   bridge.map.__requestMapLabelFeature = requestMapLabelFeature;
   // perf round7: 强制下次 renderFormalMap 重建 SVG(清 dirty 签名)·供几何变更等绕过守卫
-  bridge.map.invalidateFormalMap = function(){ try { state._lastFormalMapSig = null; _preparedMapLayers = null; } catch(_){} };
+  bridge.map.invalidateFormalMap = function(){ try { state._lastFormalMapSig = null; _preparedMapLayers = null; if (window.TMShanheRuntime) TMShanheRuntime.invalidate(); } catch(_){} };
   bridge.map.preparationStatus = function(){ var p = _preparedMapLayers; return p ? { serial: p.serial, ready: p.ready, layers: Object.keys(p.surfaces).length, mapId: mapIdentity(p.map) } : null; };
   bridge.map.invalidateMapLabelGeometryCaches = invalidateMapLabelGeometryCaches;
   bridge.map.onMapLabelFeatureReady = function(){

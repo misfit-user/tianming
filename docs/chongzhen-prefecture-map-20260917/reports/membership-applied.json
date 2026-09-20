@@ -1,0 +1,22 @@
+{
+  "started": "2026-09-17T16:37:41.500Z",
+  "complete": true,
+  "file": "web/tm-faction-membership.js",
+  "before": "f100978575281926d994d0c4dbf075ce90477a9dce1208b06fc8ca3c9e098f3c",
+  "after": "d36a40971da3025e6770e0a522893b0adb9b38610bf3358035169aaf889b736f",
+  "sources": [
+    {
+      "name": "天启七年·九月（官方）.json",
+      "sha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c"
+    },
+    {
+      "name": "晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51"
+    },
+    {
+      "name": "绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b"
+    }
+  ],
+  "writeMode": "verified-backup-in-place-for-Windows-shared-handle"
+}

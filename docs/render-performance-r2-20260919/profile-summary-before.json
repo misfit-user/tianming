@@ -1,0 +1,162 @@
+[
+  {
+    "fn": "(program) @ :0",
+    "selfMs": 3305.63
+  },
+  {
+    "fn": "regionNameKeys @ phase8-formal-map.js?v=20260706-split25:482",
+    "selfMs": 2954.72
+  },
+  {
+    "fn": " @ :1",
+    "selfMs": 358.11
+  },
+  {
+    "fn": "(garbage collector) @ :0",
+    "selfMs": 290.88
+  },
+  {
+    "fn": "renderFormalMap @ phase8-formal-map.js?v=20260706-split25:1426",
+    "selfMs": 273.9
+  },
+  {
+    "fn": "findLiveProvinceStats @ phase8-formal-map.js?v=20260706-split25:577",
+    "selfMs": 185.25
+  },
+  {
+    "fn": "querySelectorAll @ :0",
+    "selfMs": 144.73
+  },
+  {
+    "fn": "isGameVisible @ phase8-formal-bridge.js?v=20260706-split27:161",
+    "selfMs": 128.04
+  },
+  {
+    "fn": "syncMapSearch @ phase8-formal-map.js?v=20260706-split25:1665",
+    "selfMs": 66.19
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:1339",
+    "selfMs": 66.09
+  },
+  {
+    "fn": "findFaction @ phase8-formal-map.js?v=20260706-split25:953",
+    "selfMs": 57.55
+  },
+  {
+    "fn": "findLiveAdminDivision @ phase8-formal-map.js?v=20260706-split25:640",
+    "selfMs": 47.63
+  },
+  {
+    "fn": "liveOwnerFromProvinceMap @ phase8-formal-map.js?v=20260706-split25:773",
+    "selfMs": 42.75
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:915",
+    "selfMs": 34.08
+  },
+  {
+    "fn": "region @ tm-map-realm-layout.js?v=20260915-zoom-preload:120",
+    "selfMs": 32.43
+  },
+  {
+    "fn": "ownerKey @ phase8-formal-map.js?v=20260706-split25:843",
+    "selfMs": 29.13
+  },
+  {
+    "fn": "o.<computed> @ :1",
+    "selfMs": 28.27
+  },
+  {
+    "fn": "formalMapSignature @ phase8-formal-map.js?v=20260706-split25:1333",
+    "selfMs": 22.17
+  },
+  {
+    "fn": "renderLegend @ phase8-formal-map.js?v=20260706-split25:1625",
+    "selfMs": 22.14
+  },
+  {
+    "fn": "regionKeyNorm @ phase8-formal-map.js?v=20260706-split25:466",
+    "selfMs": 19.11
+  },
+  {
+    "fn": "normKey @ phase8-formal-map.js?v=20260706-split25:872",
+    "selfMs": 17.1
+  },
+  {
+    "fn": "mergeFactionData @ phase8-formal-map.js?v=20260706-split25:934",
+    "selfMs": 16.64
+  },
+  {
+    "fn": "isGameSurfaceVisible @ tm-pause-fab.js?v=20260605-fab:105",
+    "selfMs": 16.51
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:1631",
+    "selfMs": 15.21
+  },
+  {
+    "fn": "pushUniqueValue @ phase8-formal-map.js?v=20260706-split25:476",
+    "selfMs": 14.67
+  },
+  {
+    "fn": "bestLiveFaction @ phase8-formal-map.js?v=20260706-split25:910",
+    "selfMs": 12.72
+  },
+  {
+    "fn": "now @ :0",
+    "selfMs": 12.17
+  },
+  {
+    "fn": "liveRegionOwner @ phase8-formal-map.js?v=20260706-split25:813",
+    "selfMs": 11.7
+  },
+  {
+    "fn": "firstValue @ phase8-formal-map.js?v=20260706-split25:2217",
+    "selfMs": 11.3
+  },
+  {
+    "fn": "factionTokens @ phase8-formal-map.js?v=20260706-split25:876",
+    "selfMs": 10.13
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:921",
+    "selfMs": 9.92
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:1668",
+    "selfMs": 8.91
+  },
+  {
+    "fn": "canonicalOwnerKey @ phase8-formal-map.js?v=20260706-split25:861",
+    "selfMs": 7.84
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:963",
+    "selfMs": 6.4
+  },
+  {
+    "fn": "ownerName @ phase8-formal-map.js?v=20260706-split25:851",
+    "selfMs": 6.19
+  },
+  {
+    "fn": "querySelector @ :0",
+    "selfMs": 6.06
+  },
+  {
+    "fn": "regionRelief @ phase8-formal-map.js?v=20260706-split25:1042",
+    "selfMs": 6.04
+  },
+  {
+    "fn": "applyMapTransform @ phase8-formal-map.js?v=20260706-split25:1729",
+    "selfMs": 5.88
+  },
+  {
+    "fn": "regionColor @ phase8-formal-map.js?v=20260706-split25:1030",
+    "selfMs": 4.94
+  },
+  {
+    "fn": " @ phase8-formal-map.js?v=20260706-split25:918",
+    "selfMs": 4.22
+  }
+]

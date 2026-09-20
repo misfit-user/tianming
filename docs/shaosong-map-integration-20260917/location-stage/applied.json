@@ -1,0 +1,211 @@
+{
+  "started": "2026-09-17T11:50:50.229Z",
+  "complete": true,
+  "sourceBefore": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "sourceAfter": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+  "files": [
+    {
+      "relative": "web\\index.html",
+      "existed": true,
+      "before": "3e0a5d0f2196e627c202cef81933ef4255b14fccbc0627dfb9b85e43c62040e1",
+      "after": "2d18d1e81d9e43a7c5c5dd00e0265709789ed5183beee207eb16972896f6439d",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-ai-change-army.js",
+      "existed": true,
+      "before": "0cafa6b3c8a3aa1d4cc201c9800815e5283cd8fa32845f4bdfba762d1bd0ccf4",
+      "after": "3daf8d56624adea6b2b737e9a58cfbf704c203a537521c8b825956ec97fde28a",
+      "applied": true,
+      "writeMode": "hash-checked-backed-up-editor-write"
+    },
+    {
+      "relative": "web\\tm-military.js",
+      "existed": true,
+      "before": "872a61d286935f0d9417efe63996ad8b3da4605ede2042a86b08f8870a6071a7",
+      "after": "ea7c8af6afe58a69ce7482134306864ab5fcf2a6261e2ead98910db19a46ae4b",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-three-systems-ext.js",
+      "existed": true,
+      "before": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41",
+      "after": "cdc4cceb8119234df0d5abeef7d35420db35ea804f8d9ccd319c32d555184a89",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-battle-turn.js",
+      "existed": true,
+      "before": "a2c6b5c0f213b514c04246e0b2084939a50f75faf8f3c9ec1c1e0986d4e64f71",
+      "after": "25b08c38635921429e8851d78e13032eb293e0bf185a1b4c63376ea4e5b1ee8c",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-border-invasion.js",
+      "existed": true,
+      "before": "f5d279a92eddd4ac9bece7b1f1f6c1fbb05798b1b0cf6269c3a1685487554ab2",
+      "after": "74adb02448d86d9f231106edb9481de611a367579d88598dd5cae6c20ce11b01",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-faction-action-engine.js",
+      "existed": true,
+      "before": "f1a675ef52088bfc6d93c18b5567e0b6b4ad341a2010542a012c572e756c11cf",
+      "after": "45188df4fab95a40ec3d465eff8698d30130b0b79a1eaf48021fd99273c14f53",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-faction-npc-llm-decision.js",
+      "existed": true,
+      "before": "01321a05a421a604c099de284dbe868fdb95e6dc9c0b52f2896a025d5937495a",
+      "after": "c7b3abc76c76124942cac23c42e939e69c34f753868c7e76f95a59b46dbb4cca",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-feudal-warfare.js",
+      "existed": true,
+      "before": "200d995b1a1a6361eac83e1ab12f68956cdbe042b49e82ad4c507cf4ab62289d",
+      "after": "79871ff07970d318582abf3add5e4f9930b1a61f025882cec61dd6b0ef1c837d",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-military-ui.js",
+      "existed": true,
+      "before": "c2ea55a499794549631b232a70d6abae51914ef59c2096bbf30a9435076376cc",
+      "after": "8fc989b4d2415323d6932a8ab95406517a6cca170f22b9ffba9cdddd706be79b",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-endturn-agent-write-tools.js",
+      "existed": true,
+      "before": "506eb56e01b634962830d3d9044ded45f54d165e1149086163fda79ebdab6405",
+      "after": "2aa2e92d672aab08ea3e711136f99a675c7e0648eec52e3aa9d59d51a67627f8",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-endturn-apply.js",
+      "existed": true,
+      "before": "dffd0bcd60d87b5be02435c33cd2897ab74f6459a4a2691d4221aeb4021c2388",
+      "after": "8cc60ac1e5e3d6fd1113153337fa74ac618e18e7f2abc6d5309f984ec892d06a",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-game-loop-wentian-hardchange.js",
+      "existed": true,
+      "before": "915cd43c87f359ac3e3e94d121109df69d5b383d678fc19bd0b8751ff8ca7af9",
+      "after": "ac159dcda5dc023a342ac78c924944e962e25854e5f4db7ba362830459403234",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-patches.js",
+      "existed": true,
+      "before": "9b248d5f159a3535be041c9d223dbcd9d85365683edf9eae5475cf147b3db00c",
+      "after": "ed98b9aaa0c780cce85af6822b3847afc0fa0004541108618cedfa108443845e",
+      "applied": true,
+      "writeMode": "hash-checked-backed-up-editor-write"
+    },
+    {
+      "relative": "web\\tm-patches-start.js",
+      "existed": true,
+      "before": "9042325424aa511d1c98991214de64a64b25258cde18e9f9f2ee87ae0bb7316a",
+      "after": "1ed92721ea65e7a75f1c6654bb7791d7cdaedac1b0e28e7bd972c6ecb31332a3",
+      "applied": true,
+      "writeMode": "hash-checked-backed-up-editor-write"
+    },
+    {
+      "relative": "web\\tm-map-system.js",
+      "existed": true,
+      "before": "ba2961aa90a291c88555d6f44511a19801e22f2cf0e396bf7945bb21e55405e6",
+      "after": "ca115209b0cdb1ac9a3153393150c6e722c2b6fe49e2d08f7794ea3ed5d4486a",
+      "applied": true,
+      "writeMode": "hash-checked-backed-up-editor-write"
+    },
+    {
+      "relative": "web\\phase8-formal-map-dossier.js",
+      "existed": true,
+      "before": "5fbf579cf69a945ab18318d5d8aec54db3e878318565a1201077b5582e9e067d",
+      "after": "fba99eade15b9e97d0fa88378216dc58c49b67f2e77fae9fdcd9db6d5779c92f",
+      "applied": true,
+      "writeMode": "hash-checked-backed-up-editor-write"
+    },
+    {
+      "relative": "web\\tm-map-locations.js",
+      "existed": false,
+      "before": null,
+      "after": "4264e8242fc449787508f68bd49acded4910183128c940fad6add874aaf921a7",
+      "applied": true
+    },
+    {
+      "relative": "scenarios\\绍宋·建炎元年八月（官方）.json",
+      "existed": true,
+      "before": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+      "after": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+      "applied": true
+    },
+    {
+      "relative": "web\\scenarios\\shaosong-jianyan-1127.js",
+      "existed": true,
+      "before": "b4959a23cffcc03f447b0a172a5a8c6376e449a386ef16e8cd1339113258aad7",
+      "after": "91b216d20e8bd3834233335fa219a772c2f2931a502d4ca4983fb5fa3cda4e1c",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\绍宋·建炎元年八月（官方）.json",
+      "existed": true,
+      "before": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+      "after": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\晚唐·开成五年（官方）.json",
+      "existed": true,
+      "before": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51",
+      "after": "e3a2a5bc66ec49f65573e268cb56c488ff7447e592b0d5cf38968cb0332c7279",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-official-scenario-bundle.js",
+      "existed": true,
+      "before": "bcfe66bad68e09fb5c2dd12c45adec1cb820841b35131a552324666628aef717",
+      "after": "ec23fe713b1fa12c744a5fcb193c599bea31c9f9341c756f4edb3ab3437ef843",
+      "applied": true
+    },
+    {
+      "relative": "web\\preview\\official-scenarios-bundle.js",
+      "existed": true,
+      "before": "c4c0e1fc1054561c470130c8ee4399403eb5e8e6f92ff943b85da084d7929801",
+      "after": "beba97d366170441ce7b69d7a5a3c972946691ae41143d2152c70be6cbd507d9",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\manifest.json",
+      "existed": true,
+      "before": "f3675e5b25f14a644f6d63f0ab06a4a3f1e5ba8c783ea0b5254910644fbc5b8c",
+      "after": "fe55b398af7edb56fd7a0e23d1b7b1bd1ac66da97654a243a070b0a3a616de77",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\manifest.js",
+      "existed": true,
+      "before": "a0d0135ea3eff0a02ec6624230f148f4192ead73e4374a4edcd7fab43a2a37b9",
+      "after": "fdd3b4013ca2e2c92d4d15b47b79fbfde498979cd5e52e81a13d28dbe5c90305",
+      "applied": true
+    }
+  ],
+  "otherSources": [
+    {
+      "filename": "天启七年·九月（官方）.json",
+      "sha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c"
+    },
+    {
+      "filename": "晚唐·开成五年（官方）.json",
+      "sha256": "e3a2a5bc66ec49f65573e268cb56c488ff7447e592b0d5cf38968cb0332c7279"
+    }
+  ],
+  "steps": [
+    "source-and-runtime-applied",
+    "canonical-derived-parity-pass"
+  ],
+  "otherOfficialSourcesUnchanged": true,
+  "finished": "2026-09-17T11:51:35.179Z"
+}

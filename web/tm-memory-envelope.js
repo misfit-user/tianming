@@ -68,6 +68,7 @@
   }
 
   function numberOrNull(value) {
+    if (value == null || value === "" || typeof value === "boolean") return null;
     var n = Number(value);
     return isFinite(n) ? n : null;
   }
@@ -107,6 +108,8 @@
     var s = clean(status, 40).toLowerCase();
     if (!s) return fallback || 'active';
     if (s === 'active' || s === 'pending' || s === 'executing' || s === 'partial' || s === 'obstructed' || s === 'pending_delivery' || s === 'delayed') return 'active';
+    if (s === 'draft' || s === 'pending_review' || s === 'rejected') return s;
+    if (s === 'accepted') return 'active';
     if (s === 'stale' || s === 'superseded') return s;
     if (s === 'deleted' || s === 'deleted_tombstone' || s === 'redacted') return 'deleted_tombstone';
     if (s === 'quarantined' || s === 'quarantine') return 'quarantined';
@@ -134,16 +137,19 @@
       id: clean(input.id, 120) || ('mem-' + hashText(body + ':' + clean(input.type, 40))),
       schemaVersion: clean(input.schemaVersion, 40) || SCHEMA_VERSION,
       projectionVersion: Number(input.projectionVersion || PROJECTION_VERSION),
-      saveId: clean(input.saveId || input.runId || input.campaignId, 120),
-      worldId: clean(input.worldId || input.scenarioId || input.scenarioKey, 120),
+      saveId: clean(input.saveId || input.runId || input.campaignId, 128),
+      worldId: clean(input.worldId || input.scenarioId || input.scenarioKey, 128),
       ownerScope: clean(input.ownerScope || input.scope || input.owner, 120),
-      readScope: clean(input.readScope || input.visibilityScope || input.audienceScope, 120),
+      readScope: clean(Array.isArray(input.readScope) ? input.readScope.join(' ') : (input.readScope || input.visibilityScope || input.audienceScope), 120),
       writeScope: clean(input.writeScope || input.reviewScope || input.writePolicy, 120),
       type: clean(input.type || input.kind, 40) || 'episodic_event',
       body: body,
-      safeBody: safeBodyText(input.safeBody || body, input.safeBodyMax || input.maxBody || 1000),
+      safeBody: safeBodyText(input.safeBody != null ? input.safeBody : body, input.safeBodyMax || input.maxBody || 1000),
       sourceRefs: sourceRefs,
       status: normalizeStatus(input.status, input.statusFallback || 'active'),
+      reviewStatus: clean(input.reviewStatus, 40),
+      campaignId: clean(input.campaignId || input._campaignId, 128),
+      timelineId: clean(input.timelineId || input._timelineId, 128),
       authority: clean(input.authority, 40) || 'raw_narrative',
       visibility: clean(input.visibility, 80) || 'public',
       turn: Number(input.turn || 0),
@@ -1023,9 +1029,16 @@
         status: 'active',
         authority: item.authority || item.source || 'ai_extracted',
         visibility: item.visibility || 'player_known',
-        turn: item.turn || item.enqueuedAtTurn || item.acceptedAtTurn || turn,
+        turn: item.turn != null ? item.turn : (item.enqueuedAtTurn != null ? item.enqueuedAtTurn : (item.acceptedAtTurn != null ? item.acceptedAtTurn : turn)),
         saveId: item.saveId,
         worldId: item.worldId,
+        campaignId: item.campaignId,
+        timelineId: item.timelineId,
+        reviewStatus: item.reviewStatus,
+        validFromTurn: item.validFromTurn,
+        validToTurn: item.validToTurn,
+        expiredAtTurn: item.expiredAtTurn,
+        learnedAtTurn: item.learnedAtTurn,
         ownerScope: item.ownerScope,
         readScope: item.readScope,
         writeScope: item.writeScope,
@@ -1251,6 +1264,14 @@
     pushCharacterArcEnvelopes(out, GM, turn);
     pushAcceptedMemoryEnvelopes(out, GM, turn);
     pushCharacterStanceEnvelopes(out, GM, turn);
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.project) out = out.concat(root.TM.MemoryLongTerm.project(GM));
+    out.forEach(function(env) {
+      if (!GM) return;
+      if (!env.worldId) env.worldId = clean(GM.worldId || GM._worldId || GM.scenarioId || GM.scenarioKey, 128);
+      if (!env.saveId) env.saveId = clean(GM.saveId || GM._saveId || GM.runId || GM.campaignId || GM._campaignId, 128);
+      if (!env.campaignId) env.campaignId = clean(GM.campaignId || GM._campaignId, 128);
+      if (!env.timelineId) env.timelineId = clean(GM.timelineId || GM._timelineId, 128);
+    });
     return dedupe(out);
   }
 

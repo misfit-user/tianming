@@ -1,0 +1,44 @@
+[
+  {
+    "label": "before",
+    "scenario": "open-never-responds",
+    "deadlineEvents": 0,
+    "settled": false,
+    "error": ""
+  },
+  {
+    "label": "before",
+    "scenario": "record-never-responds",
+    "deadlineEvents": 0,
+    "settled": false,
+    "error": "",
+    "unchangedRecords": true
+  },
+  {
+    "label": "before",
+    "scenario": "blocked-open-late-success",
+    "lateConnectionClosed": 0,
+    "lateConnectionBecameAvailable": true
+  },
+  {
+    "label": "after",
+    "scenario": "open-never-responds",
+    "deadlineEvents": 1,
+    "settled": true,
+    "error": "SAVE_OPEN_TIMEOUT"
+  },
+  {
+    "label": "after",
+    "scenario": "record-never-responds",
+    "deadlineEvents": 1,
+    "settled": true,
+    "error": "SAVE_READ_TIMEOUT",
+    "unchangedRecords": true
+  },
+  {
+    "label": "after",
+    "scenario": "blocked-open-late-success",
+    "lateConnectionClosed": 1,
+    "lateConnectionBecameAvailable": false
+  }
+]

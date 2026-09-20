@@ -1,0 +1,693 @@
+{
+  "at": "2026-09-19T15:23:34.958Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/generated/tm-ai-change-applier.bundle.js",
+      "sha256": "fd30e6ec954cf14164469c65fdcfdbf46f947d9dda5f55c137bfa04cb81ae020",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 352131,
+      "created": false
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "458b4b113a86d329a61a99c7aa55fe59dc8e40ede738a0564eb4b95930a82550",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 71661,
+      "created": false
+    },
+    {
+      "file": "web/modules/ai-change-applier/core.js",
+      "sha256": "c143114e5a7240b0644efa11a207e37726d32a66594b4f0d4c092212726dd286",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 182407,
+      "created": false
+    },
+    {
+      "file": "web/modules/ai-change-applier/policy-format.js",
+      "sha256": "e3d7a0c756caf8326befcf76f8d05105e0aefde7828fa74358cfeabfbe7b4830",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 10654,
+      "created": true
+    },
+    {
+      "file": "web/phase8-formal-map-dossier.js",
+      "sha256": "1262f98c3b7097dcbbd4a6af2e035f4cac0a3939d105d3e1503a7d78cf84393d",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 105720,
+      "created": false
+    },
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "ea326ebf9eab60e24cf72bc2dd2958175ebb331c9d2c4f83300dbf4b193acf31",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 172120,
+      "created": false
+    },
+    {
+      "file": "web/scripts/fixtures/memory-hybrid-reference.js",
+      "sha256": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 8448,
+      "created": true
+    },
+    {
+      "file": "web/scripts/headless-smoke.js",
+      "sha256": "39a832f551534caa64959133aac00e1d281ce68c82b7a5d661b9974408c944c7",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 18717,
+      "created": false
+    },
+    {
+      "file": "web/scripts/lib-perf-round1.js",
+      "sha256": "23e5295e2cc407adfcdec89561a180f5f719adc4f29d5e0135ddf0a12948dd2d",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 9930,
+      "created": false
+    },
+    {
+      "file": "web/scripts/lib-recovery-vault-fixture.js",
+      "sha256": "fe4295d95b4a293103c603cdb038cd04eb5ac5a4e25c6dba0a71dd5b7522cc3b",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 2175,
+      "created": true
+    },
+    {
+      "file": "web/scripts/lib-save-commit-boundary.js",
+      "sha256": "8fb22037a01f958275b3b7c2691624d2a814501b02cedb071c8daf7bb718e614",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 5010,
+      "created": false
+    },
+    {
+      "file": "web/scripts/run-smokes.js",
+      "sha256": "9da339535dc007935d315b88da8f7b9e463ccfd295f358642b19499524b725de",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 11337,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-building-appraisal-compat.js",
+      "sha256": "02e45393a0c52070dd8c76e571552d10d5c9af1236fad21003c64abb56456d02",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 19388,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-endturn-baseline-helpers.js",
+      "sha256": "9a4120651089afb876171ccef52950a42412837e06646e0cd6709e0142579f56",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 2834,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-final-recovery-races.js",
+      "sha256": "54329965197df9ef98214e91347d6786edfbc1da96fa70ff30ae86b909430401",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 3725,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-final-save-reconcile.js",
+      "sha256": "65e2d8381c9a667ff5f1f92f2f7710256850c20776ffb68ce230c9fb16917376",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 6436,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-full-turn-flow.js",
+      "sha256": "913216d7b8fb414f4ee19537b97994913c972d680579a036b345c237c2716559",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 24449,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-memory-scoring-equivalence.js",
+      "sha256": "7f68949a989ecbad6ce78b5eacb61a441b7e310787d353bda374a40a579f65c4",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 1807,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-memory-turn-output-contract.js",
+      "sha256": "89e294053c665dc68b65f6ff7072287f548113678555be110b360d9c0e5d68dd",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 2284,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-perf-save-preparation.js",
+      "sha256": "9c4808f76230306b7361b3affe1655df9237eed01e46a6c3f1efa470ecb31d19",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 7283,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-phase8-map-live-panels.js",
+      "sha256": "f75aee85662de7b55e2f77d100cf700141997e40412eccfb610c0cc2451b6ba5",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 30112,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-phase8-office-standalone.js",
+      "sha256": "64a6af5b0a5545b0d8cb8129a807b99f32827395e47ca68fac8dcff2c36af27b",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 8314,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-recovery-vault.js",
+      "sha256": "79d11df680cc1e2abe6c4415d4595dd0de834c47ba9ad6ec98dc6c3f7a1a4367",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 3952,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-sc1q-sc19-upgrade.js",
+      "sha256": "1d423dcaae2b561e7f868d785db4e7e6c3913da92e260312aad386f1a487e5cb",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 12532,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-search-empty-state.js",
+      "sha256": "abd8205decbafc393f510d04d4630215ce06fcd5acdd5c209c9382335f31a21d",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 3312,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "c3c225a7ceb8705c1a70ea30987b74ef534cf2536202b9ce0db6b4d52a869e4b",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 36804,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "sha256": "d9a0b874c41865a31aa90bbf4c1fc92e9cd298de7e1991b63f622361a6db6931",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 7493,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-tang840-opening-ledgers.js",
+      "sha256": "3f78c63f8e442763a8cc66db08483de237d2bcbad4d702cdc812ddf2e54c75b1",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 5983,
+      "created": false
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "3d1100402a773110827c51fc295dc9d29eaf8730cf65b54fec91a11306b5a5aa",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 45237,
+      "created": false
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "54c4e5bc8144c7a28c992975164bda200e3764d65255aae28c3bd4668e08020d",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 369026,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "sha256": "f097b48d9ff145ad0b580e5b7173fc5cfad6ddfde4691b08fc8764aa2edb87f8",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 18246,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "129bc73d9bb753c0a98290362cc8f3b8536ae33a84fc34e54de4f52963a7a4ef",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 411065,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "76c28f13561deb637a256da78a8442bc59d685e5370aa7dd6ce36692f57cdf38",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 105821,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-recovery-vault.js",
+      "sha256": "a1e2aac215ddb735eda9bf685179d05d58224f9664f00527d6a8a1ff0b390394",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 6109,
+      "created": true
+    },
+    {
+      "file": "web/tm-endturn-render.js",
+      "sha256": "5ef619119ff792210583ba6c44596974d2407cef5375752cf6e2fe61644748d5",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 43587,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-response-recovery.js",
+      "sha256": "6461ccfe9f0bd95c31dc95360718e52f506db2b99dafdafa46a5b5f91f055baa",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 14074,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-save-reconcile.js",
+      "sha256": "bd29f9f75b92814588eba64bb3f832f4a88b8c77fc2c58d2246eaff7778c7b8e",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 4802,
+      "created": true
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "baccf9485321530f177e34e1543350f560ddbec27d0bc30bd21fe0fb12fc15f3",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 14802,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-hybrid.js",
+      "sha256": "1080e50c78faafbbf4844169a0e452ed55fc458adadc37ad1611d2e552ce2ce3",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 9531,
+      "created": false
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "a43d88c992548b50deef2fdc311927c6b361dce3747dd5ccc911aaa54c95002f",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 166751,
+      "created": false
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "d53cb244d2d833c72199b53203863f26a945166742582a2e0485f3ead3be7844",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 129103,
+      "created": false
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "03407f4cf8628ca0c735e6a001f41cdb0c4dc5a0b64e30f4674f1b98dad34576",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 84037,
+      "created": false
+    }
+  ],
+  "quality": [
+    {
+      "check": "unchanged web/tm-endturn-validity.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-mode-contract.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-agent-mode.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-ai-infer.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-prompt.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-pipeline-steps.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-endturn-pipeline-executor.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-ai-infra.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-ai-infra-retry.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-memory-envelope.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-memory-retrieval.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged web/tm-memory-context-compiler.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged main-impl.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged preload-impl.js",
+      "ok": true
+    },
+    {
+      "check": "unchanged main-turn-data-commit.js",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiPolicyText",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiPolicyAmount",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiPolicyRegion",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiPolicyRatioLabel",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiStructuredPolicyText",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiStructuredPolicyParams",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _aiStructuredPolicyExpectedType",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _buildSc1JsonSchema",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _buildSc1bJsonSchema",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _buildSc1cJsonSchema",
+      "ok": true
+    },
+    {
+      "check": "exact relocated function _buildSc1qJsonSchema",
+      "ok": true
+    },
+    {
+      "check": "unchanged function _buildSaveState",
+      "ok": true
+    },
+    {
+      "check": "unchanged function _prepareGMForSave",
+      "ok": true
+    },
+    {
+      "check": "unchanged function _tmCommitEndTurnTransaction",
+      "ok": true
+    },
+    {
+      "check": "unchanged function _tmRollbackEndTurnTransaction",
+      "ok": true
+    }
+  ],
+  "baseline": {
+    "selected": 1050,
+    "pass": 1042,
+    "fail": 8,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "full": {
+    "selected": 1058,
+    "pass": 1058,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "fullComplete": true,
+  "failures": [],
+  "commands": [
+    {
+      "name": "final-architecture",
+      "exit": 0,
+      "signal": null,
+      "ms": 48653
+    },
+    {
+      "name": "final-browser",
+      "exit": 0,
+      "signal": null,
+      "ms": 4746
+    },
+    {
+      "name": "final-full-tests",
+      "exit": 0,
+      "signal": null,
+      "ms": 939886
+    },
+    {
+      "name": "extra-smoke-battle-height-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 1995
+    },
+    {
+      "name": "extra-smoke-battle-menu-render-idle",
+      "exit": 0,
+      "signal": null,
+      "ms": 169
+    },
+    {
+      "name": "extra-smoke-battle-unit-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 2248
+    },
+    {
+      "name": "extra-smoke-raster-display-cache",
+      "exit": 0,
+      "signal": null,
+      "ms": 190
+    },
+    {
+      "name": "extra-smoke-render-identity-cost",
+      "exit": 0,
+      "signal": null,
+      "ms": 3988
+    },
+    {
+      "name": "extra-smoke-render-performance-r2",
+      "exit": 0,
+      "signal": null,
+      "ms": 1622
+    },
+    {
+      "name": "extra-smoke-ui-render-r3",
+      "exit": 0,
+      "signal": null,
+      "ms": 538
+    },
+    {
+      "name": "final-official-parity",
+      "exit": 0,
+      "signal": null,
+      "ms": 76105
+    }
+  ],
+  "changedDuringRun": [],
+  "architecture": {
+    "passed": [
+      "lint-gm-writes",
+      "lint-dep-graph",
+      "lint-global-providers",
+      "lint-feature-boundaries",
+      "lint-runtime-template-immutability",
+      "lint-renderer-writeback-boundaries",
+      "lint-renderer-module-boundaries",
+      "lint-file-size",
+      "lint-control-bytes",
+      "lint-split-contracts",
+      "lint-split-stamps",
+      "lint-smoke-family-order",
+      "ref-check"
+    ],
+    "failed": []
+  },
+  "caseResults": [
+    {
+      "name": "smoke-recovery-vault.js",
+      "pass": true,
+      "detail": "{\"pass\":7,\"fail\":0,\"total\":7}"
+    },
+    {
+      "name": "smoke-final-save-reconcile.js",
+      "pass": true,
+      "detail": "{\"pass\":10,\"fail\":0,\"total\":10}"
+    },
+    {
+      "name": "smoke-memory-scoring-equivalence.js",
+      "pass": true,
+      "detail": "{\"pass\":244,\"fail\":0,\"seed\":81731,\"mode\":\"exact JSON equality, unchanged scores and ordered evidence\"}"
+    },
+    {
+      "name": "smoke-final-recovery-races.js",
+      "pass": true,
+      "detail": "{\"pass\":6,\"fail\":0,\"total\":6}"
+    }
+  ],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "archiveRelocation": {
+    "count": 62,
+    "preserved": true,
+    "destination": ".bak-legacy-web-snapshots-20260919"
+  },
+  "installedDependency": {
+    "at": "2026-09-19T12:00:08.312Z",
+    "before": "4.3.1",
+    "after": "4.3.2",
+    "integrity": "sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==",
+    "backup": ".bak-endturn-final-closeout-20260919/node_modules/js-yaml",
+    "scriptExecution": false,
+    "manifestUnchanged": true
+  },
+  "scriptCount": 445,
+  "browser": {
+    "at": "2026-09-19T15:03:34.603Z",
+    "vaultSHA": "a1e2aac215ddb735eda9bf685179d05d58224f9664f00527d6a8a1ff0b390394",
+    "sourceSHA": "6461ccfe9f0bd95c31dc95360718e52f506db2b99dafdafa46a5b5f91f055baa",
+    "version": {
+      "protocolVersion": "1.3",
+      "product": "Edg/153.0.4234.46",
+      "revision": "@af766475e4461bf7a8f44d601c8dfc6e7db82d66",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+      "jsVersion": "15.3.12.6"
+    },
+    "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759",
+    "outcome": {
+      "ok": true,
+      "checks": [
+        "native IndexedDB commit",
+        "real page reload",
+        "full text equality",
+        "single inference",
+        "usage not duplicated",
+        "explicit clear"
+      ],
+      "calls": 1,
+      "chars": 17000
+    },
+    "error": null,
+    "profileRemoved": true,
+    "cleanupError": "EPERM, Permission denied: \\\\?\\C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759 '\\\\?\\C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759'",
+    "cleanupVerifiedAt": "2026-09-19T15:23:28.172Z"
+  },
+  "memoryBenchmark": {
+    "at": "2026-09-19T12:25:51.082Z",
+    "fixture": {
+      "seed": 96331,
+      "records": 360,
+      "queries": 8,
+      "selected": 20,
+      "warmups": 2,
+      "measuredRuns": 7
+    },
+    "results": {
+      "before": {
+        "medianMs": 14516.935,
+        "runs": [
+          14332.774000000005,
+          14464.357899999995,
+          14493.832599999998,
+          14516.935399999995,
+          14520.682100000005,
+          14671.9047,
+          14802.4179
+        ],
+        "sha256": "5d5bc53b725f6dcf0f9c18fe0a65d47846185588c49d556f294a0dec2e3cee9d",
+        "chars": 73823,
+        "sourceSha256": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e"
+      },
+      "after": {
+        "medianMs": 113.768,
+        "runs": [
+          110.63269999998738,
+          110.74659999998403,
+          112.533500000005,
+          113.76840000000084,
+          114.30939999999828,
+          115.52700000000186,
+          152.2048000000068
+        ],
+        "sha256": "5d5bc53b725f6dcf0f9c18fe0a65d47846185588c49d556f294a0dec2e3cee9d",
+        "chars": 73823,
+        "sourceSha256": "1080e50c78faafbbf4844169a0e452ed55fc458adadc37ad1611d2e552ce2ce3"
+      }
+    },
+    "exactOutput": true,
+    "description": "Local lexical and RRF/diversity scoring only; identical ordered evidence and scores, no model requests."
+  },
+  "browserSourcesMatch": true,
+  "benchmarkSourceMatches": true,
+  "ok": true
+}

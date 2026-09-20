@@ -54,8 +54,9 @@ function installNodeExtras(win) {
   };
 }
 
+const compiledScripts = new Map(); // Reuse parsed code only; every case still owns a fresh world and VM.
 let disposeGame = function() {};
-function loadGame() {
+function loadGame(selectedSid = SID) {
   // Each case owns a VM. Release its timers before the next complete game boots.
   disposeGame();
   const env = helpers.makeStubs();
@@ -67,15 +68,29 @@ function loadGame() {
   disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
   installNodeExtras(env.win);
   const sandbox = vm.createContext(env.win);
-  const scripts = helpers.parseIndexHtmlScripts();
+  const scripts = helpers.parseIndexHtmlScripts({ includeLazyScenarios: false });
   const cutoff = scripts.findIndex((src) => path.basename(src) === 'tm-test-harness.js');
   const loadScripts = cutoff >= 0 ? scripts.slice(0, cutoff) : scripts;
+  if (selectedSid !== null) {
+  // A browser lazy-loads the complete selected world, not every unrelated official scenario.
+  const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'bundled-scenarios/manifest.json'), 'utf8'));
+  const selected = catalog.entries.find(entry => entry.id === selectedSid);
+  assert(selected && selected.scriptUrl, 'selected official scenario is required');
+  const data = fs.readFileSync(path.join(ROOT, selected.scriptUrl));
+  assert(data.length === selected.bytes && require('crypto').createHash('sha256').update(data).digest('hex') === selected.sha256, 'entire selected scenario must match its pinned source');
+  if (!loadScripts.includes(selected.scriptUrl)) loadScripts.push(selected.scriptUrl);
+  }
 
   loadScripts.forEach((src) => {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
     const code = fs.readFileSync(abs, 'utf8');
-    vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 });
+    const scriptNode = sandbox.document.createElement('script');
+    scriptNode.src = new URL(src, 'http://localhost/index.html').href;
+    sandbox.document.currentScript = scriptNode;
+    let compiled = compiledScripts.get(src);
+    if (!compiled || compiled.source !== code) { compiled = { source: code, script: new vm.Script(code, { filename: src, displayErrors: true }) }; compiledScripts.set(src, compiled); }
+    try { compiled.script.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
   });
 
   vm.runInContext(`
@@ -111,14 +126,14 @@ const TIANQI_MAP_SOURCE = (function () {
     if (!fs.existsSync(p)) return null;
     const sc = JSON.parse(fs.readFileSync(p, 'utf8'));
     const hasRegions = (m) => m && Array.isArray(m.regions) && m.regions.length >= 40;
-    return { map: hasRegions(sc.map) ? sc.map : null, mapData: hasRegions(sc.mapData) ? sc.mapData : null };
+    return { mapJSON: hasRegions(sc.map) ? JSON.stringify(sc.map) : null, mapDataJSON: hasRegions(sc.mapData) ? JSON.stringify(sc.mapData) : null };
   } catch (e) { return null; }
 })();
 
 function attachTianqiMap(sandbox) {
-  if (!TIANQI_MAP_SOURCE || !TIANQI_MAP_SOURCE.map) return false;
-  sandbox.__tianqiMapJSON = JSON.stringify(TIANQI_MAP_SOURCE.map);
-  sandbox.__tianqiMapDataJSON = TIANQI_MAP_SOURCE.mapData ? JSON.stringify(TIANQI_MAP_SOURCE.mapData) : sandbox.__tianqiMapJSON;
+  if (!TIANQI_MAP_SOURCE || !TIANQI_MAP_SOURCE.mapJSON) return false;
+  sandbox.__tianqiMapJSON = TIANQI_MAP_SOURCE.mapJSON;
+  sandbox.__tianqiMapDataJSON = TIANQI_MAP_SOURCE.mapDataJSON || sandbox.__tianqiMapJSON;
   return vm.runInContext(`(function(){
     if (typeof findScenarioById !== 'function') return false;
     var sc = findScenarioById('${SID}');

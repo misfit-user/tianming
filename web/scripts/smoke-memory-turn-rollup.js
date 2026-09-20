@@ -13,6 +13,14 @@ sandbox.globalThis = sandbox;
 sandbox.validateAIWriteBackBatch = function(output) {
   return { ok: true, output: JSON.parse(JSON.stringify(output)), failures: [] };
 }; // 本 smoke 聚焦 rollup sink；严格预检本体由 smoke-ai-writeback-integrity 覆盖。
+// These tests exercise archive/rollup after successful domain application; domain rejection is tested separately.
+sandbox._archiveApplyCalls=0;
+sandbox.applyAITurnChanges = function(payload) {
+  assert.strictEqual(payload._strictValidation,true,'archive requires strict main application');
+  Object.keys(payload).forEach(key=>{if(Array.isArray(payload[key]) && key!=='npc_actions')assert.strictEqual(payload[key].length,0,'archive-only fixture has no hidden hard state operation: '+key);});
+  sandbox._archiveApplyCalls++;
+  return {ok:true,applied:{failed:[]}};
+};
 vm.createContext(sandbox);
 
 function load(file) {
@@ -203,6 +211,7 @@ assert(compiled.text.includes('payroll fraud'), 'compiled context includes chara
   };
 
   await sandbox.TM.Endturn.AI.apply.writeBack(ctx);
+  assert.strictEqual(sandbox._archiveApplyCalls,1,"archive follows exactly one required successful application");
   assert(ctx.meta.memoryArchive && ctx.meta.memoryArchive.archived === true, 'writeBack archive still runs');
   assert(ctx.meta.memoryRollup && ctx.meta.memoryRollup.issueChains === 1, 'writeBack refreshes rollup');
   assert(Array.isArray(GM2._memoryIssueChains) && GM2._memoryIssueChains.length === 1, 'rollup store persisted after writeBack');

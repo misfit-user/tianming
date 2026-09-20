@@ -1,0 +1,44 @@
+[
+  {
+    "file": "preload-impl.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-save-close-flush.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-runtime-save-consistency.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-desktop-autosave-reliability.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

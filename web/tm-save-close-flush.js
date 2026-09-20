@@ -3,13 +3,15 @@
 (function(global){
   'use strict';
 
+  function nativeWritePending(){return typeof _tmDesktopAutoSaveTransportStatus==='function'&&_tmDesktopAutoSaveTransportStatus().pending;}
   async function awaitDesktopAutoSave(reason){
     if (!_tmHasNativeFs()) return {ok:true,skipped:true,reason:'desktop-autosave-unavailable'};
     if (isWorldTransactionActive()) return {ok:false,code:'world-transaction-active',reason:'回合、读档或回滚事务仍在进行'};
     if (_autoSaveFlushTimer) { clearTimeout(_autoSaveFlushTimer); _autoSaveFlushTimer=null; }
     var result={ok:true,skipped:true,reason:'desktop-autosave-not-pending'};
     var drains=0;
-    while (_autoSaveInFlightPromise||_autoSaveInFlight||_autoSaveDeferred) {
+    while (_autoSaveInFlightPromise||_autoSaveInFlight||_autoSaveDeferred||nativeWritePending()) {
+      if(nativeWritePending()&&!_autoSaveInFlightPromise)return {ok:false,code:"desktop-autosave-unconfirmed",reason:"桌面自动存档仍有未确认的原生写入，不可当成已排空"};
       if (++drains>4) return {ok:false,code:'desktop-autosave-drain-limit',reason:'桌面自动存档镜像超过关闭前排空上限'};
       if (_autoSaveInFlightPromise) result=await _autoSaveInFlightPromise;
       else if (_autoSaveInFlight) return {ok:false,code:'desktop-autosave-untracked-in-flight',reason:'桌面自动存档存在无法等待的在途写入'};
@@ -17,7 +19,7 @@
         _autoSaveDeferred=false;
         result=await _tmRunDesktopAutoSaveTick({force:true,reason:reason||'application-close'});
       }
-      if (!(result&&result.ok===true)) {
+      if (!(result&&result.ok===true)||result.stale===true) {
         _autoSaveDeferred=true;
         return {
           ok:false,
@@ -33,7 +35,7 @@
 
   function closeSaveQueuesQuiet(){
     return !_backgroundSavePending&&!_backgroundSaveInFlight&&!_backgroundSaveTimer
-      &&!_autoSaveDeferred&&!_autoSaveFlushTimer&&!_autoSaveInFlight&&!_autoSaveInFlightPromise;
+      &&!_autoSaveDeferred&&!_autoSaveFlushTimer&&!_autoSaveInFlight&&!_autoSaveInFlightPromise&&!nativeWritePending();
   }
 
   async function flushForClose(){

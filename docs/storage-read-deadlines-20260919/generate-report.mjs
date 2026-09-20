@@ -1,0 +1,35 @@
+import fs from 'node:fs';
+const dir='docs/storage-read-deadlines-20260919',v=JSON.parse(fs.readFileSync(dir+'/verification.json','utf8'));
+if(!v.testsComplete||v.files.some(f=>!f.hashMatches||f.syntaxExit)||v.quality.some(q=>!q.ok)||!v.ownDiffClean||v.diff.exit||v.final.fail||v.newFailures.length||v.newArchitectureFailures.length)throw Error('Scoped verification is not closed');
+const count=v.newTests.reduce((n,t)=>n+JSON.parse(t.detail).pass,0);
+const text=[
+'# 天命：主存档打开与读取有界等待',
+'## 本轮结果',
+'本轮为主存档数据库的打开、单条读取、元数据列表和索引读取增加有界等待，并修正迟到连接与旧连接回调的所有权。读取超时会报错，不以空列表、空档或换后端写入冒充成功。主推演、正文、质量门槛、主存档写事务和上一轮响应恢复均未缩减。',
+'项目：`C:\\Users\\37814\\Desktop\\tianming`。设备：LAPTOP-AV4J1O7I。分支：`'+v.branch+'`。开工与结束 HEAD：`'+v.head+'`。核验：'+v.at+'。',
+'未使用真实付费 API，未读取或修改玩家真实数据库，未安装依赖、提交、推送、打包或部署。代码修改与故障模拟只在本地项目源码和隔离测试中进行。',
+'## 一、已落地改动',
+'**主库打开有期限。** 默认 15 秒；超时释放本次打开任务，迟到的成功连接关闭，已失败任务的迟到升级会尝试中止。旧连接的错误、版本变化或关闭通知不能清掉新连接。没有把数据库 schema 升级成功与主存档写入成功混为一谈。',
+'**只读工作有期限。** 单条记录、整个 store 列表和索引查询默认 30 秒。超时只尝试中止对应只读事务，不中止其他正在写入的事务，也不会返回空列表让后续逻辑继续误判。缺失旧索引的兼容读取保留，但同样受期限限制。',
+'**避免错误回退。** 新增的打开超时不会被 _ensureOpen 转为 localStorage 后端继续读写；没有 IndexedDB 的旧环境仍保留原有本地存储兼容路径。旧打开失败的 catch 不得抹掉另一次刚建立的连接。',
+'**待恢复日志先恢复。** 本地批量保存日志恢复失败时，明确停止本次保存，不再因通用异常回退而继续写入另一份状态。已经准备但尚未恢复的日志保留，没有清空原记录。',
+'**提交后失败不倒退。** 已确认提交后，旧档清理前的只读查询超时仍走既有警告路径，不把主存档改判为未提交。相反，提交前所需元数据读取失败时，不开始后面的批量写入。',
+'**诊断。** TM_SaveDB.diagnostics() 返回最多 12 条阶段、错误码和中止状态；不包含存档 ID、正文或密钥，也不允许通过返回值改写内部诊断。诊断仅保留在当前页面会话。',
+'时限是异步阶段的默认等待上限，不是整个回合总时限；系统挂起或事件循环阻塞可能推迟计时事件。超时不代表写入成功，也不代表某个无关写事务已经被中止。',
+'## 二、验证结果',
+'| 检查 | 结果 |\n|---|---|\n| 开工同范围专项 | '+v.baseline.pass+'/'+v.baseline.selected+' 通过 |\n| 最终同范围加新增测试 | '+v.final.pass+'/'+v.final.selected+' 通过 |\n| 新增内部故障场景 | '+count+' 组通过 |\n| 本轮主题扩展回归 | '+v.extended.pass+'/'+v.extended.selected+' 通过 |\n| 质量边界对照 | '+v.quality.filter(q=>q.ok).length+'/'+v.quality.length+' 通过 |\n| 本轮 '+v.files.length+' 个文件语法、最终 SHA 与差异检查 | 通过 |',
+'质量对照包括 11 个未改动运行时文件、14 个保持原样的主存档构造/写入/提交/删除/迁移函数和数据库版本常量。主存档双槽事务、完整正文与世界数据构造、推演及质量检查不因这轮优化减少。',
+];
+text.push('新增测试执行实际存储模块的公开 API，配合独立内存数据库、可控事件和时钟，不访问玩家数据库。覆盖正常全量读取、打开共享、无响应、迟到连接、旧事件、新连接恢复、元数据读失败阻断写入、无关写事务隔离、索引兼容、日志恢复失败、提交后清理读取超时和诊断上限。');
+text.push('前后复现实验确认：旧代码在打开或记录读取始终没有响应时没有期限事件；新代码在对应期限后明确报错。旧代码会接纳被阻塞打开请求的迟到成功，新代码关闭该连接。读取超时前后完整记录不变，原始记录见 reproduced.json。');
+text.push('扩展回归未通过的仍是 `'+v.extendedFailures.join('`、`')+'`，与上一批记录的失败脚本一致。启动清单仍为实际 420 个脚本、契约要求 436 个；本轮没有改入口或降低断言。不同批次按主题选取测试，不能把本次通过数解释成全仓测试数量。');
+text.push('架构检查仍失败于 `'+v.architectureFailures.join('`、`')+'`，与本轮开工失败类别相同，没有新增失败类别。未修改架构上限或豁免用例，整仓仍不是发版全绿。');
+text.push('## 三、范围与限制');
+text.push('本批限于主数据库打开与只读查询。主库 readwrite 事务本身永久不返回、压缩或外部桥接卡住、跨刷新/跨重启恢复等问题，尚未在本轮全部解决。未把结果不明确的主存档写入当作可自动重放，也没有跳过正文或推演校验来提高表面成功率。');
+text.push('正常主推演和正文生成未删减，但本轮没有真实浏览器、手机或 Electron 全流程长局验收，也未测量实际玩家成功率和正常回合整体速度。此次是关闭已复现的无限等待和错误连接接管路径，不宣称真实游戏快了若干倍。');
+text.push('## 四、文件与证据');
+text.push(v.files.map(f=>'- `'+f.file+'`').join('\n'));
+text.push('证据目录：`docs/storage-read-deadlines-20260919/`。关键文件：baseline.json、changes.json、baseline-tests.json、final-tests.json、extended-tests.json、baseline-architecture.log、final-architecture.log、reproduced.json、own-diff-check.json、verification.json。');
+text.push('开工备份：`.bak-storage-read-deadlines-20260919/`。继续写入前核对当前哈希，不重复执行已应用补丁，也不整目录还原覆盖其他窗口改动。');
+text.push('技术参考：W3C《Indexed Database API 3.0》中的打开连接、关闭连接、事务生命周期和中止事务定义。来源：`https://www.w3.org/TR/IndexedDB/`。');
+fs.writeFileSync(dir+'/README.md',text.join('\n\n')+'\n','utf8');console.log('Report written:',dir+'/README.md');

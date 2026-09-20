@@ -1,0 +1,429 @@
+{
+  "at": "2026-09-20T04:28:18.028Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/index.html",
+      "sha256": "ab4ad8b6d089c1af2a08e5672dd9aed45fce7baec55deea58f33e8b5654b45a2",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 71701
+    },
+    {
+      "file": "web/scripts/smoke-ai-abort-listener-cleanup.js",
+      "sha256": "65b5048149f5c00dca35493b1c8573689478e10c7bcf7c947f3a70b25a64372b",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 7162
+    },
+    {
+      "file": "web/scripts/smoke-ai-transport-deadlines.js",
+      "sha256": "3a4db227d9b68005ca7d64908131d2655e22d92924aa134092ddb5b1ebca10bd",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 6135
+    },
+    {
+      "file": "web/scripts/smoke-api-wait-compatibility.js",
+      "sha256": "323f93bbca7454cd4f1ad7fffb257f32d71b87425d770ddc3c4b8ee1c498ceae",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 10833
+    },
+    {
+      "file": "web/scripts/smoke-mobile-api-integration.js",
+      "sha256": "c6d8d35dbf11d748ca8b2be441b6705b4ee6363d9d2d40cfe062b9b98ebefb85",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 4854
+    },
+    {
+      "file": "web/scripts/smoke-tc-history-wave.js",
+      "sha256": "8d141615be4265ffcca16cdd7478d49756e5e37ca84253ebf2428e003cbe38b2",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 20085
+    },
+    {
+      "file": "web/scripts/smoke-turn-request-reliability.js",
+      "sha256": "509d65512489c11026875c0c1061e88f58e136df90083e08552ac5f79c8e64ed",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 7362
+    },
+    {
+      "file": "web/scripts/smoke-turn-stream-reliability.js",
+      "sha256": "7177ae56adc03e382cbf1a2e16ead8a6bab32a74b18d0a9a4d8dc7581ef16456",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 7718
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "e3425b1240cc8ca2f5cd57d617aeb3a5faa81abf66218e13082d9bebe5790f68",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 45342
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "fd15170e9307995e4039206c99947ca5ec4939ae7f28f4106bf889d6f3796d12",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 369324
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "6ee4201dd57cc786f09eed64a7a2f1af19e8b6439f3d502f4eb41a62ae044c99",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 31349
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "1eb3cbaca0ca6c1d7cfe54bdb9a112b5fda69eeac26ece35684079612740a661",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 164888
+    },
+    {
+      "file": "web/tm-api-settings.js",
+      "sha256": "1501dedcfa9c857eabab02fc249e1ce09814db2b239d45fd5adb567cad5da326",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 9903
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "sha256": "9e7ac1d4d74f73d5b33e86dec58b4e4ed4944189dde2fe31a694212bc944de7e",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 115685
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "6e0d6b304ae88f19e6a3980d339c332e63e7f9df21d3d4ba46b3d7d1f579f095",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 410972
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "689d6258f97b4adb70458074c90641471587cad391ac59a5d9df0d0779be291a",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 15459
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "sha256": "644a241f115bae183bb54d1eb6c7401ffe711c1597a8636ad75d1fb58be9f14d",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 25644
+    },
+    {
+      "file": "web/tm-utils.js",
+      "sha256": "1e6346077cd31bd52c6a194f75fab6b18d9aeb07098d96cd06e30a86ffc67eef",
+      "expectedHashMatches": true,
+      "syntax": 0,
+      "bytes": 100077
+    }
+  ],
+  "qualityChecks": [
+    {
+      "check": "web/tm-ai-infra-model-detect.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-request-options.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai-sc1-budget.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-agent-kernel.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-reliability.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_tok unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_buildFetchBody unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_buildSc1Schema unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_parseOrRepairJsonResult unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_runSubcall unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js:_runSubcallBatch unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_depthGate unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_selfCheck unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_buildSystemPrompt unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_buildTurnPrompt unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_qualityGate unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_dispatch unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_snapshot unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js:_rollback unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js:getPromptBudget unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js:estimateTokens unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js:checkPromptTokenBudget unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js:callAISmart unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-memory-agent-tools.js:_buildRecallPrompt unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-memory-agent-tools.js:_requestRecallPlan unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-memory-agent-tools.js:_normHit unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-memory-agent-tools.js:exec unchanged",
+      "ok": true
+    }
+  ],
+  "baselineSpecialist": {
+    "selected": 74,
+    "pass": 74,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "earlierExpanded": {
+    "selected": 210,
+    "pass": 210,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "full": {
+    "selected": 1059,
+    "pass": 1059,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "fullComplete": true,
+  "compatibilitySuite": {
+    "pass": true,
+    "output": "PASS 10s headers + 170s full JSON succeeds once despite the old 150s deadline\nPASS an explicit total deadline still stops body reading\nPASS first-response timeout remains active before successful headers\nPASS default shared retry budget does not expire during valid model generation\nPASS cancellation after successful headers interrupts wait without replaying\nPASS manual diagnostic cancel also never launches an automatic retry\nPASS changing a loaded world terminates indefinite body waiting before it can publish\nPASS finalized automatic-output streaming succeeds with the exact request body\nPASS stream with a silent 170-second interval is not aborted by the old outer deadline\nPASS native Agent tool response may exceed the first-response interval without changing arguments\nPASS Android buffered transport uses an unbounded read only for inference, retaining connection checks\nPASS Android explicit maximum still aborts locally, with no duplicate POST\nPASS secondary API waiting preferences remain separate from primary preferences\nPASS invalid explicit limits fail before sending and never silently choose a short deadline\nPASS real error responses are not treated as successful-header indefinite waiting\nPASS queued work gets its first-response allowance only after actual sending\nPASS an already-received auth error with stalled error text cannot trigger repeat POSTs\nPASS explicit shared tool deadline remains an actual limit on a slow response\n{\"pass\":18,\"fail\":0,\"total\":18}\n"
+  },
+  "architecture": {
+    "pass": [
+      "lint-gm-writes",
+      "lint-dep-graph",
+      "lint-global-providers",
+      "lint-feature-boundaries",
+      "lint-runtime-template-immutability",
+      "lint-renderer-writeback-boundaries",
+      "lint-renderer-module-boundaries",
+      "lint-file-size",
+      "lint-control-bytes",
+      "lint-split-contracts",
+      "lint-split-stamps",
+      "lint-smoke-family-order",
+      "ref-check"
+    ],
+    "fail": []
+  },
+  "commands": [
+    {
+      "name": "resumed-full-tests",
+      "args": [
+        "web/scripts/run-smokes.js",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2",
+        "--report",
+        "docs/api-wait-compatibility-20260920/resumed-full-tests.json"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 594746,
+      "error": null
+    },
+    {
+      "name": "resumed-architecture",
+      "args": [
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 23083,
+      "error": null
+    },
+    {
+      "name": "resumed-official-parity",
+      "args": [
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 50177,
+      "error": null
+    },
+    {
+      "name": "resumed-startup-manifest",
+      "args": [
+        "web/scripts/build-startup-phase-manifest.js",
+        "--check"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 248,
+      "error": null
+    },
+    {
+      "name": "resumed-browser",
+      "args": [
+        "docs/api-wait-compatibility-20260920/browser-proof.mjs"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 5075,
+      "error": null
+    }
+  ],
+  "runComplete": true,
+  "testedFileCount": 2053,
+  "changedDuringRun": [],
+  "changedAfterTests": [],
+  "browser": {
+    "version": {
+      "protocolVersion": "1.3",
+      "product": "Edg/153.0.4234.48",
+      "revision": "@cf31d6623d8718e7a3c3e181e55e59c1aae57a73",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+      "jsVersion": "15.3.12.7"
+    },
+    "outcome": {
+      "ok": true,
+      "checks": [
+        "真实 HTTP 延迟正文完整返回",
+        "响应晚于旧首响应期限仍成功",
+        "显式总期限仍有效",
+        "自动输出无 max_tokens 的流式入口成功",
+        "原生工具长等待保留完整参数",
+        "读取正文期间取消，不重发",
+        "设置默认不强制截断",
+        "时间设置通过原保存 owner 读取",
+        "未强制开启或关闭模型思考",
+        "主次 API 限制各自保存",
+        "完成与取消后清理等待记录"
+      ]
+    },
+    "requests": [
+      {
+        "path": "/chat",
+        "maxTokens": 16000,
+        "tool": false
+      },
+      {
+        "path": "/chat",
+        "maxTokens": 16000,
+        "tool": false
+      },
+      {
+        "path": "/tools",
+        "stream": true,
+        "tool": false
+      },
+      {
+        "path": "/tools",
+        "maxTokens": 2000,
+        "tool": true
+      },
+      {
+        "path": "/chat",
+        "maxTokens": 16000,
+        "tool": false
+      }
+    ],
+    "profileRemoved": true,
+    "sourcesMatch": true
+  },
+  "ownDeltaClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "ok": true
+}

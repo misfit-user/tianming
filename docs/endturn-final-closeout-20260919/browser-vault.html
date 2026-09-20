@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Isolated response recovery check</title><pre id="result">pending</pre>
+<script src="/tm-endturn-recovery-vault.js"></script><script src="/tm-endturn-response-recovery.js"></script>
+<script>
+(async function(){
+ const check=(condition,message)=>{if(!condition)throw Error(message);};
+ const text='完整叙事与状态依据，不作缩减。😀'.repeat(1000);
+ const body={model:'fixture',messages:[{role:'user',content:'full quality request'}],max_tokens:12000};
+ window.GM={turn:5,_campaignId:'test-native-vault',_timelineId:'test-branch',treasury:100};window.P={ai:{model:'fixture',key:'fixture-only'},conf:{}};window._tmLoadGen=0;
+ const txn={gmRef:GM,pRef:P,turn:GM.turn,loadGen:0,gm:{data:structuredClone(GM)},p:{data:structuredClone(P),descriptors:{}},committed:false,rolledBack:false};
+ const R=TM.Endturn.ResponseRecovery,V=TM.Endturn.RecoveryVault;
+ await R.begin(txn,{});
+ const replay=await R.jsonRequest('https://fixture.invalid',body,null,{},async function(opts){
+   sessionStorage.setItem('calls',String(Number(sessionStorage.getItem('calls')||0)+1));
+   opts._responseRecoveryReceipt.request=JSON.stringify(body);
+   return {choices:[{finish_reason:'stop',message:{content:text}}],usage:{total_tokens:500}};
+ });
+ check(replay.choices[0].message.content===text,'complete text');
+ if(!sessionStorage.getItem('phase')){
+   txn.rolledBack=true;await R.finish(txn,'failed',Object.assign(Error('timeout'),{code:'AI_TIMEOUT'}));
+   check(V.status().state==='stored','checkpoint persisted');sessionStorage.setItem('phase','reload');location.reload();return;
+ }
+ check(Number(sessionStorage.getItem('calls'))===1,'no second inference after real reload');check(R.status().hits===1,'persistent cache hit');check(!replay.usage,'no duplicate usage');
+ await V.clear();check((await V.load('a'.repeat(64),'none'))===null,'clear complete');
+ document.getElementById('result').textContent=JSON.stringify({ok:true,checks:['native IndexedDB commit','real page reload','full text equality','single inference','usage not duplicated','explicit clear'],calls:1,chars:text.length});
+})().catch(error=>{document.getElementById('result').textContent=JSON.stringify({ok:false,error:String(error.stack||error)});});
+</script>

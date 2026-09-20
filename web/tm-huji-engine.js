@@ -1710,6 +1710,10 @@
   function _resolvePopulationTarget(G, options, groups) {
     options = options || {};
     groups = groups || _factionLeafGroups(G);
+    if (options.factionScope === "player") {
+      groups = groups.filter(function(group) { return group.isPlayer; });
+      if (groups.length !== 1) return { ok:false, reason:"player-faction-not-unique", group:null, leaf:null };
+    }
     var explicitFaction = _hasExplicitFactionTarget(options);
     var wanted = [_normPopulationName(options.factionKey), _normPopulationName(options.factionId), _normPopulationName(options.factionName)].filter(Boolean);
     var factionGroup = null;
@@ -1740,9 +1744,10 @@
       });
       if (!matches.length) return { ok:false, reason:'region-not-found', group:factionGroup, leaf:null };
       if (matches.length > 1) {
-        var exactMatches = directRegion ? matches.filter(function(match) {
+        var idMatches = directRegion ? matches.filter(function(match) { return _normPopulationName(match.leaf.id) === directRegion; }) : [];
+        var exactMatches = idMatches.length ? idMatches : (directRegion ? matches.filter(function(match) {
           return _leafPopulationAliases(match.leaf).indexOf(directRegion) >= 0;
-        }) : [];
+        }) : []);
         if (exactMatches.length === 1) matches = exactMatches;
         else return { ok:false, reason:'region-ambiguous', group:factionGroup, leaf:null };
       }
@@ -1760,10 +1765,11 @@
     var groupLeaves = (group && group.leaves || []).filter(function(leaf) {
       return leaf && leaf.populationDetail && Number(leaf.populationDetail.mouths) > 0;
     });
-    var leaves = wantedRegion ? groupLeaves.filter(function(leaf) {
+    var exactLeaves = wantedRegion ? groupLeaves.filter(function(leaf) { return _normPopulationName(leaf.id) === wantedRegion; }) : [];
+    var leaves = exactLeaves.length ? exactLeaves : (wantedRegion ? groupLeaves.filter(function(leaf) {
       return [leaf.id, leaf.name, leaf.mapRegionId, leaf.regionId]
         .map(_normPopulationName).some(function(alias) { return alias && alias === wantedRegion; });
-    }) : groupLeaves;
+    }) : groupLeaves);
     if (!leaves.length) return { mouths:0, ding:0 };
     var totals = _leafPopulationTotals(leaves);
     var groupTotals = wantedRegion ? _leafPopulationTotals(groupLeaves) : totals;

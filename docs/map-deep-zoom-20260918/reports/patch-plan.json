@@ -1,0 +1,20 @@
+[
+  {
+    "file": "web/phase8-formal-map.js",
+    "before": "71e1d59437824827c0131dc1666a5dd51d5a0b8dbaebb74ce3ab6ca1a5a2ed36",
+    "after": "91a6523ea399b6415a5d1a2a802116c3042feb1ea4305207fbe4888baf6d61eb",
+    "lines": 2901
+  },
+  {
+    "file": "web/tm-map-label-collide.js",
+    "before": "04b9407a9d8af5ce1c785da392fea016133ad27b8b7e45e34eef8d1c761cb3b5",
+    "after": "528e002552eabe9d6d790d64fd4ca3aa7e106ce18ee6f70cfa3749e422cdd85d",
+    "lines": 147
+  },
+  {
+    "file": "web/phase8-formal-bridge-styles.js",
+    "before": "0ab12df844c645c9440e8dd418446fb5c5b66c452d7fe87122b46d1ced52e793",
+    "after": "c68199a5f88beb6444fcb449f87e64b20be715816987b2eb675182e1dc9f4388",
+    "lines": 557
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "input": "C:/Users/37814/Downloads/天命_山河境_B5_2.5D.html",
+  "inputSha256": "9f8abf8dd6e85333e7e702ece4dc1f1a223f90f2b8e1d11029d6fcf19772dbcc",
+  "files": [
+    {
+      "file": "engine.js",
+      "sha256": "2de01001cba7a6fc5dd93bf19c3efedeca77fbdc04b27fe5de2f085f7c11f1f5"
+    },
+    {
+      "file": "environment.js",
+      "sha256": "7a9f5ff7d4c2e53cdb067a43e3018b24092f411d7c8980cf114c2b3c7fe00b19"
+    },
+    {
+      "file": "height.png",
+      "sha256": "8b4fbcdbadfaa00eac936106dfcc694bf7867c9fe46d30871c1d815028c17022"
+    },
+    {
+      "file": "albedo.webp",
+      "sha256": "dc0e43f8f10fc302aeae393bddec0fa29132816d7648da863fce36466ed90609"
+    },
+    {
+      "file": "fallback.webp",
+      "sha256": "0747d717525a09972ba277ac97358f362ac0e76091059741928dfa8c5d9bd389"
+    },
+    {
+      "file": "water.png",
+      "sha256": "7c4874bdcea486d6741022646c1a6af7f8e322b6cfb2c6274fff7b40964cbe83"
+    }
+  ],
+  "note": "Approved B5 resources, no old review fixtures or review UI installed"
+}

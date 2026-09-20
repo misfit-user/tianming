@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import cp from 'node:child_process';
+const dir='docs/desktop-bridge-reliability-20260919',backup='.bak-desktop-bridge-reliability-20260919';
+if(fs.existsSync(dir+'/baseline.json'))throw Error('Baseline already exists; do not overwrite');
+fs.mkdirSync(dir,{recursive:true});
+const files=['web/tm-endturn-reliability.js','web/tm-endturn-render.js','web/tm-save-lifecycle.js','web/tm-storage.js','web/tm-endturn-core.js','web/tm-endturn-ai.js','web/tm-endturn-agent-mode.js','web/tm-endturn-validity.js','web/tm-endturn-mode-contract.js','web/tm-endturn-pipeline-steps.js','web/tm-endturn-response-recovery.js','web/tm-ai-infra.js','web/tm-ai-infra-retry.js','web/tm-state-snapshot.js','web/index.html','main-turn-data-commit.js','preload-impl.js','web/scripts/verify-all.js'];
+const records=files.map(file=>{const bytes=fs.readFileSync(file),to=backup+'/'+file;fs.mkdirSync(path.dirname(to),{recursive:true});fs.writeFileSync(to,bytes,{flag:'wx'});return {file,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length};});
+fs.writeFileSync(dir+'/baseline.json',JSON.stringify({at:new Date().toISOString(),head:cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),backup,files:records,status:cp.execFileSync('git',['status','--porcelain=v1'],{encoding:'utf8'})},null,2));
+for(const f of ['patch-utils.mjs','check-diff.mjs'])fs.writeFileSync(dir+'/'+f,fs.readFileSync('docs/storage-write-reliability-20260919/'+f,'utf8').replaceAll('docs/storage-write-reliability-20260919',dir));
+console.log('Protected current baseline:',records.length,'files');

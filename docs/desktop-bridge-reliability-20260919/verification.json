@@ -1,0 +1,275 @@
+{
+  "at": "2026-09-19T10:26:17.561Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/scripts/lib-desktop-bridge-reliability.js",
+      "sha256": "dc276426790e5f43f1ba3fb7905a57b537194320ad8fe0e26b93a19387cdf454",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/scripts/smoke-desktop-bridge-reliability.js",
+      "sha256": "754133fb0625fc979690bf43b0d9a147e61eb282dba32d763da1bf994f374bb1",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/scripts/smoke-runtime-save-consistency.js",
+      "sha256": "01e82a9bb0aa980ea2424f152999236e7ef726d4e2625786692eec0d7278b210",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/scripts/smoke-storage-atomic-batch.js",
+      "sha256": "b897380467a9a29f18826edbc16baded8b072b18f7e803bbf275af16ea260cc3",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "d2f043c65151942092e3350fbdfa3986bb9ba19a64297a7111bfeb8e1b02fcdd",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/tm-endturn-reliability.js",
+      "sha256": "cb2a2a03ad1361cdc606e2192e4ae2a3515afa0a9458224fc561e2b88ad704f3",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/tm-endturn-render.js",
+      "sha256": "f1a2ed21943d674167afa84e6ee2f8ee1d56de5468161163d6a46e1af4f7e02d",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "c03e737f255ccefaf002a1b5291d3e9ee3bf53a090b2efc8212bee10727c6b80",
+      "hashMatches": true,
+      "syntax": 0
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "3665523c70d206b68c2ecdd0f5f8e79b638746d24416b742ca83e2cc4cc83fb6",
+      "hashMatches": true,
+      "syntax": 0
+    }
+  ],
+  "qualityChecks": [
+    {
+      "name": "web/tm-endturn-core.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-agent-mode.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-response-recovery.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-ai-infra.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-ai-infra-retry.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-state-snapshot.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/index.html unchanged",
+      "ok": true
+    },
+    {
+      "name": "main-turn-data-commit.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "preload-impl.js unchanged",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-render.js:_endTurn_stateChecksum",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-render.js:_endTurn_saveSnapshot",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-render.js:_endTurn_finalizeRecords",
+      "ok": true
+    },
+    {
+      "name": "web/tm-endturn-render.js:_endTurn_render",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:_runStorageWrite",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:createCanonicalPayload",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:saveManyAtomic",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:_putSaveRecordsAtomic",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:save",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:load",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:_get",
+      "ok": true
+    },
+    {
+      "name": "web/tm-storage.js:_boundedStorageRead",
+      "ok": true
+    },
+    {
+      "name": "web/tm-save-lifecycle.js:_buildSaveState",
+      "ok": true
+    },
+    {
+      "name": "web/tm-save-lifecycle.js:_fullLoadGameApplyImpl",
+      "ok": true
+    },
+    {
+      "name": "web/tm-save-lifecycle.js:fullLoadGame",
+      "ok": true
+    },
+    {
+      "name": "web/tm-save-lifecycle.js:_autoSaveSnapshotGM",
+      "ok": true
+    }
+  ],
+  "baseline": {
+    "selected": 8,
+    "pass": 8,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "final": {
+    "selected": 9,
+    "pass": 9,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "extended": {
+    "selected": 202,
+    "pass": 201,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "complete": true,
+  "newTests": [
+    {
+      "name": "smoke-desktop-bridge-reliability.js",
+      "pass": true,
+      "detail": "{\"pass\":23,\"fail\":0,\"total\":23}"
+    }
+  ],
+  "failures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "nativeCurrent": true,
+  "native": {
+    "ok": true,
+    "checks": 12,
+    "versions": {
+      "electron": "33.4.11",
+      "chrome": "130.0.6723.191"
+    }
+  },
+  "reproduced": [
+    {
+      "label": "before",
+      "scenario": "stage-never-replies",
+      "deadlines": 0,
+      "settled": false,
+      "canonicalSlots": 0
+    },
+    {
+      "label": "before",
+      "scenario": "discard-rejected",
+      "receiptRetained": false,
+      "stagedMarkerRetained": false
+    },
+    {
+      "label": "after",
+      "scenario": "stage-never-replies",
+      "deadlines": 1,
+      "settled": true,
+      "value": false,
+      "canonicalSlots": 0
+    },
+    {
+      "label": "after",
+      "scenario": "discard-rejected",
+      "receiptRetained": true,
+      "stagedMarkerRetained": true
+    }
+  ]
+}

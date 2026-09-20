@@ -1,0 +1,41 @@
+  // Only opening and readonly work are bounded here. Write commit semantics stay unchanged.
+  var OPEN_WAIT_MS = 15000, READ_WAIT_MS = 30000;
+  var _openOwner = null, _readDiagnostics = [];
+  function _storageWaitError(code, stage) {
+    var error = new Error(stage === 'open' ? '主存档数据库打开超时；未把等待失败当成空存档' : '主存档数据库读取超时；未继续依赖该结果的写入');
+    error.name = 'TimeoutError'; error.code = code; error.stage = stage;
+    return error;
+  }
+  function _storageDiagnostic(stage, error, abortState) {
+    _readDiagnostics.push({ stage: stage, code: String(error && (error.code || error.name) || 'Error').slice(0, 80), abortState: abortState || 'not-needed', at: Date.now() });
+    if (_readDiagnostics.length > 12) _readDiagnostics.shift();
+  }
+  function _abortRead(tx) {
+    if (!tx) return 'not-started';
+    try { tx.abort(); return 'requested'; } catch (_) { return 'unconfirmed'; }
+  }
+  function _boundedStorageRead(storeName, stage, select, emptyValue) {
+    var connection = _db;
+    return new Promise(function(resolve, reject) {
+      var tx, timer, settled = false;
+      function end(error, value) {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        if (error) { _storageDiagnostic(stage, error); reject(error); } else resolve(value);
+      }
+      timer = setTimeout(function() {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        var error = _storageWaitError('SAVE_READ_TIMEOUT', stage);
+        _storageDiagnostic(stage, error, _abortRead(tx)); reject(error);
+      }, READ_WAIT_MS);
+      try {
+        tx = connection.transaction(storeName, 'readonly');
+        tx.onabort = function(e) { end(e && e.target && e.target.error || tx.error || new Error('主存档只读事务已中止')); };
+        tx.onerror = function(e) { end(e && e.target && e.target.error || tx.error || new Error('主存档只读事务失败')); };
+        var request = select(tx.objectStore(storeName));
+        request.onsuccess = function() { end(null, request.result == null ? emptyValue : request.result); };
+        request.onerror = function(e) { end(e && e.target && e.target.error || request.error || new Error('主存档读取失败')); };
+      } catch (error) { end(error); _abortRead(tx); }
+    });
+  }

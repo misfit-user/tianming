@@ -1,0 +1,26 @@
+[
+  {
+    "scenario": "天启七年·九月（官方）.json",
+    "map": "tianqi-prefecture-refined-r3",
+    "regions": 307,
+    "geometryChars": 3990278,
+    "coldMs": 92.64,
+    "warmScanMedianMs": 0.52
+  },
+  {
+    "scenario": "晚唐·开成五年（官方）.json",
+    "map": "map-sc-tang840-840",
+    "regions": 575,
+    "geometryChars": 10817207,
+    "coldMs": 183.85,
+    "warmScanMedianMs": 2.89
+  },
+  {
+    "scenario": "绍宋·建炎元年八月（官方）.json",
+    "map": "shaosong-three-tiers-r6",
+    "regions": 566,
+    "geometryChars": 24943612,
+    "coldMs": 421.46,
+    "warmScanMedianMs": 4.21
+  }
+]

@@ -1,0 +1,32 @@
+async function _aiWithStreamScope(opts, execute) {
+  opts = opts || {};
+  var root = typeof window !== 'undefined' ? window : globalThis;
+  var gm = typeof GM !== 'undefined' ? GM : null, player = typeof P !== 'undefined' ? P : null, generation = root._tmLoadGen;
+  var identity = gm ? [gm._campaignId, gm._timelineId, gm.turn].join('|') : '';
+  var cfg = typeof _getAITier === 'function' ? _getAITier(opts.tier) : player && player.ai || {};
+  var cfgKey = JSON.stringify([cfg.url, cfg.model, cfg.key]);
+  var ctrl = new AbortController(), deadlineReject, timer, external;
+  var deadline = new Promise(function(_resolve, reject) { deadlineReject = reject; }); deadline.catch(function() {});
+  var timeout = _aiComputeTimeout(12000, opts.timeoutMs);
+  function guard() {
+    if (ctrl.signal.aborted) throw ctrl.signal.reason || _aiCancelledError(opts.signal);
+    var currentCfg = typeof _getAITier === 'function' ? _getAITier(opts.tier) : player && player.ai || {};
+    if (root.GM !== gm || root.P !== player || root._tmLoadGen !== generation || (gm && identity !== [gm._campaignId, gm._timelineId, gm.turn].join('|')) || cfgKey !== JSON.stringify([currentCfg.url, currentCfg.model, currentCfg.key])) {
+      var e = new Error('流式推演对应的存档或模型配置已改变'); e.code = 'AI_STALE_WORLD'; throw e;
+    }
+  }
+  var diag = root.TM && root.TM.Endturn && root.TM.Endturn.Reliability, ticket = diag && diag.requestStart(opts.id || 'stream');
+  function abort(e) { if (!ctrl.signal.aborted) { ctrl.abort(e); deadlineReject(e); } }
+  external = function() { abort(_aiCancelledError(opts.signal)); };
+  var scoped = Object.assign({}, opts, { signal: ctrl.signal, _streamGuard: guard, _requestTicket: ticket });
+  if (opts.onChunk) scoped.onChunk = function(text) { guard(); return opts.onChunk(text); };
+  if (opts.onDone) scoped.onDone = function(text) { guard(); return opts.onDone(text); };
+  try {
+    if (opts.signal) { opts.signal.addEventListener('abort', external, { once: true }); if (opts.signal.aborted) external(); }
+    guard();
+    timer = setTimeout(function() { var e = new Error('流式 AI 任务总等待时间已到'); e.code = 'AI_REQUEST_DEADLINE'; e.name = 'TimeoutError'; abort(e); }, timeout);
+    var result = await Promise.race([Promise.resolve().then(function() { guard(); return execute(scoped); }), deadline]);
+    guard(); if (diag) diag.requestEnd(ticket, null); return result;
+  } catch (e) { abort(e); if (diag) diag.requestEnd(ticket, e); throw e; }
+  finally { clearTimeout(timer); if (opts.signal) opts.signal.removeEventListener('abort', external); }
+}

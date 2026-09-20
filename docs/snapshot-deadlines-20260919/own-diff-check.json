@@ -1,0 +1,20 @@
+[
+  {
+    "file": "web/tm-state-snapshot.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-snapshot-deadlines.js",
+    "normalizedNewLines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

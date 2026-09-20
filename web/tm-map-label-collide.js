@@ -41,14 +41,23 @@
       var fs = parseFloat(g.getAttribute('data-fs')) || 12;
       if (fs * Math.min(sx, sy) * (parseFloat(g.getAttribute('data-ink-scale')) || 1) < MIN_PX) continue;
       desired.set(g, false);
-      var lw = (parseFloat(g.getAttribute('data-lw')) || fs) * sx;
-      var lh = (parseFloat(g.getAttribute('data-lh')) || fs) * sy;
+      // Keep large-area names readable at deep zoom instead of filling the viewport.
+      var inkScale = parseFloat(g.getAttribute('data-ink-scale')) || 1;
+      var labelScale = scale > 4.2 ? Math.min(1, 48 / (fs * Math.min(sx, sy) * inkScale)) : 1;
+      var baseTransform = g.getAttribute('data-zoom-base-transform');
+      if (labelScale < 1 || baseTransform !== null) {
+        if (baseTransform === null) { baseTransform = g.getAttribute('transform') || ''; g.setAttribute('data-zoom-base-transform', baseTransform); }
+        var labelTransform = baseTransform + (labelScale < 1 ? ' scale(' + labelScale + ')' : '');
+        if (g.getAttribute('transform') !== labelTransform) g.setAttribute('transform', labelTransform);
+      }
+      var lw = (parseFloat(g.getAttribute('data-lw')) || fs) * sx * labelScale;
+      var lh = (parseFloat(g.getAttribute('data-lh')) || fs) * sy * labelScale;
       var obb = String(g.getAttribute('data-obb') || '').split(',').map(Number);
       items.push({
         g: g,
         pr: parseFloat(g.getAttribute('data-pr')) || fs,
         hw: lw / 2 + PAD, hh: lh / 2 + PAD,
-        obb: obb.length === 3 && obb.every(Number.isFinite) ? { hw: obb[0] * sx / 2 + PAD, hh: obb[1] * sy / 2 + PAD, angle: obb[2] } : null,
+        obb: obb.length === 3 && obb.every(Number.isFinite) ? { hw: obb[0] * sx * labelScale / 2 + PAD, hh: obb[1] * sy * labelScale / 2 + PAD, angle: obb[2] } : null,
         cx: (parseFloat(g.getAttribute('data-ax')) || 0) * sx,
         cy: (parseFloat(g.getAttribute('data-ay')) || 0) * sy
       });
@@ -70,6 +79,8 @@
     options = options || {};
     var cellSize = Number(options.cellSize);
     if (!isFinite(cellSize) || cellSize <= 0) cellSize = 64;
+    // Bound broad-phase memory for oversized labels without changing exact overlap checks.
+    for (var z = 0; z < items.length; z++) cellSize = Math.max(cellSize, Math.max(items[z].hw, items[z].hh) / 16);
     return perfSpan('map.labelCollision', function() {
       var out = new Array(items.length);
       var placed = [];

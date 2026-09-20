@@ -31,7 +31,7 @@ function storage(root = ROOT, options = {}) {
   }
   const c = {
     console: { log() {}, warn(...args) { work.warnings.push(String(args[0])); }, error() {} },
-    Blob, Response, CompressionStream, DecompressionStream, TextDecoder, TextEncoder: Encoder,
+    Blob, Response, ReadableStream, AbortController, CompressionStream, DecompressionStream, TextDecoder, TextEncoder: Encoder,
     crypto: webcrypto, performance, setTimeout, clearTimeout, navigator: {},
     localStorage: { get length() { return local.size; }, key: i => [...local.keys()][i],
       getItem: key => local.get(key) ?? null, setItem: (key, value) => local.set(key, String(value)), removeItem: key => local.delete(key) },

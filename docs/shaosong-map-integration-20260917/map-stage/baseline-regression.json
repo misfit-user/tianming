@@ -1,0 +1,14 @@
+[
+  {
+    "job": "smoke-start-hierarchy-immutability.js",
+    "exitCode": 1,
+    "signal": null,
+    "tail": "loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.require (node:internal/modules/cjs/loader:1556:12)\r\n    at require (node:internal/modules/helpers:152:16) {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\",\"level\":1}],\"level\":0}]}}}',\r\n  expected: '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\"}]}]}}}',\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+  },
+  {
+    "job": "smoke-native-fiscal-consumers.js",
+    "exitCode": 1,
+    "signal": null,
+    "tail": "Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:209:21\n    at async test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:95:3)\n    at async C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:203:3 {\n  code: 'native-finance-value'\n}\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n7 !== 17\n\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:210:12\n    at async test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:95:3)\n    at async C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:203:3 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 7,\n  expected: 17,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+  }
+]

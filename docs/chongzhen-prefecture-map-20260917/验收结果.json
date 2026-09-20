@@ -1,0 +1,359 @@
+{
+  "complete": true,
+  "checkedAt": "2026-09-17T16:56:25.823Z",
+  "officialMapApplied": true,
+  "releaseReady": false,
+  "sourceFile": "scenarios/天启七年·九月（官方）.json",
+  "sourceSha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "sourceBytes": 14721417,
+  "counts": {
+    "logicalRegions": 284,
+    "provinceGroups": 43,
+    "subdividedParents": 29,
+    "subdividedRegions": 270,
+    "retainedCoarseRegions": 14,
+    "originalAccounts": 382,
+    "mappedAccounts": 359,
+    "unchangedOffMapAccounts": 23,
+    "originalCharacters": 203,
+    "originalArmies": 48,
+    "events": 62
+  },
+  "checks": [
+    {
+      "name": "installed-source-equals-candidate",
+      "passed": true
+    },
+    {
+      "name": "original-story-configuration-and-events",
+      "passed": true
+    },
+    {
+      "name": "original-character-and-army-fields",
+      "passed": true
+    },
+    {
+      "name": "all-original-admin-records-preserved",
+      "passed": true,
+      "detail": {
+        "originalNodes": 429,
+        "leafAccounts": 382
+      }
+    },
+    {
+      "name": "284-cells-43-province-closure",
+      "passed": true
+    },
+    {
+      "name": "359-on-map-accounts-no-duplicates",
+      "passed": true
+    },
+    {
+      "name": "neutral-map-and-binding-delivered",
+      "passed": true
+    },
+    {
+      "name": "installed-membership-matches-tested-runtime",
+      "passed": true
+    },
+    {
+      "name": "live-page-required-services-registered",
+      "passed": true
+    },
+    {
+      "name": "installed-functions-and-geometry-passed",
+      "passed": true,
+      "detail": {
+        "native": 22,
+        "geometry": 654
+      }
+    },
+    {
+      "name": "native-game-three-panorama-and-live-actions",
+      "passed": true,
+      "detail": {
+        "pageChecks": 14,
+        "liveActionChecks": 4,
+        "elapsedMs": 47531
+      }
+    },
+    {
+      "name": "existing-nine-regressions-passed",
+      "passed": true
+    },
+    {
+      "name": "screenshots-current-and-complete",
+      "passed": true
+    }
+  ],
+  "passed": 13,
+  "failed": 0,
+  "screenshots": [
+    {
+      "tier": "realm",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/崇祯_天下级全景.png",
+      "bytes": 2399015,
+      "width": 1903,
+      "height": 1002,
+      "sha256": "111aca168ce8b367109b3c7e2ce314986567b2db21248a0f09f4a60532435c58"
+    },
+    {
+      "tier": "region",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/崇祯_省道级全景.png",
+      "bytes": 2425446,
+      "width": 1903,
+      "height": 1002,
+      "sha256": "b53e1b6ab62bb0db667bbe017ca1bce4f781f5e5cbff80508063d41cf79d81e7"
+    },
+    {
+      "tier": "prefecture",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/崇祯_府州级全景.png",
+      "bytes": 2438425,
+      "width": 1903,
+      "height": 1002,
+      "sha256": "11ad48ad6f7cbe9fd1e3ca49b20a557c1fbbcf2d42122f3c84f4133cf8817e2e"
+    }
+  ],
+  "coarseRegions": [
+    {
+      "id": "ming-16",
+      "name": "鞑靼土默特部",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming-20",
+      "name": "哈萨克",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming-21",
+      "name": "瓦刺",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming-22",
+      "name": "后金（盛京辽沈）",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-22",
+      "name": "苦兀（野人女真）",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-27",
+      "name": "北哈萨克",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-28",
+      "name": "东哈萨克",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-29",
+      "name": "后金（建州本部）",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-30",
+      "name": "科尔沁",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-31",
+      "name": "北山女真",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-34",
+      "name": "漠南诸部",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming2-35",
+      "name": "喀尔喀蒙古",
+      "reason": "inherited-outline-reference-conflict"
+    },
+    {
+      "id": "ming-31",
+      "name": "澳门（葡萄牙占）",
+      "reason": "small-city-scale"
+    },
+    {
+      "id": "ming-28",
+      "name": "辽东（明·关宁东江）",
+      "reason": "inherited-outline-reference-conflict"
+    }
+  ],
+  "sourcePopulation": 134841500,
+  "mappedPopulation": 134841500,
+  "fiscalComparison": {
+    "original": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    },
+    "candidate": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    }
+  },
+  "geometryChecks": {
+    "passed": 654,
+    "failed": 0
+  },
+  "nativeFunctionChecks": {
+    "passed": 22,
+    "failed": 0
+  },
+  "nativePage": {
+    "checks": 14,
+    "liveActions": {
+      "passed": 4,
+      "failed": 0,
+      "checks": [
+        {
+          "name": "live-one-prefecture-transfer",
+          "passed": true,
+          "detail": {
+            "name": "保定府",
+            "restored": true
+          }
+        },
+        {
+          "name": "live-whole-province-and-recapture",
+          "passed": true,
+          "detail": {
+            "cells": 11,
+            "accounts": 382,
+            "population": 134841500
+          }
+        },
+        {
+          "name": "live-batch-failure-full-rollback",
+          "passed": true
+        },
+        {
+          "name": "live-character-arrival-updates-prefecture",
+          "passed": true,
+          "detail": {
+            "current": "京师·紫禁城·乾清宫",
+            "regionId": "ming-01-p01"
+          }
+        }
+      ]
+    },
+    "world": {
+      "running": true,
+      "regions": 284,
+      "player": "朱由检",
+      "characters": 203,
+      "armies": 61
+    }
+  },
+  "regressionScripts": [
+    {
+      "name": "smoke-map-realm-layout.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-phase8-map-live-panels.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-army-march-order.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-army-march-viz.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-tianqi-official-cache-recovery.js",
+      "passed": true
+    },
+    {
+      "name": "smoke-stable-id-reference-integrity.js",
+      "passed": true
+    },
+    {
+      "name": "verify-official-scenario-parity.js",
+      "passed": true
+    }
+  ],
+  "architecture": {
+    "passed": false,
+    "exitCode": 1,
+    "summary": [
+      "[lint-arch-all] PASS  lint-gm-writes (3.2s)",
+      "[lint-arch-all] FAIL  lint-dep-graph (1.7s)",
+      "[lint-arch-all] PASS  lint-global-providers (5.5s)",
+      "[lint-arch-all] PASS  lint-feature-boundaries (0.3s)",
+      "[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)",
+      "[lint-arch-all] PASS  lint-renderer-writeback-boundaries (7.6s)",
+      "[lint-arch-all] FAIL  lint-renderer-module-boundaries (0.8s)",
+      "[lint-arch-all] FAIL  lint-file-size (0.6s)",
+      "[lint-arch-all] PASS  lint-control-bytes (0.4s)",
+      "[lint-arch-all] FAIL  lint-split-contracts (0.2s)",
+      "[lint-arch-all] PASS  lint-split-stamps (0.2s)",
+      "[lint-arch-all] PASS  lint-smoke-family-order (1.0s)",
+      "[lint-arch-all] FAIL  ref-check (2.9s)",
+      "[lint-arch-all] FAIL — 5/13 项未过"
+    ]
+  },
+  "limitations": [
+    "府州界为地理约束推定，不是1627年测绘疆界",
+    "13个原轮廓存在地名位置冲突的地域暂保留粗区，澳门因范围小保留一块",
+    "原有跨省轮廓交叠和年代政治地理未被暗中重写",
+    "截图为隔离Electron中的真实新局，使用固定全图相机，不是用户存档",
+    "联网AI、完整长局、移动端和旧存档迁移未验收",
+    "全仓架构门禁仍有5项失败，不可视为正式发布通过",
+    "本次未提交、推送、打包、发布或更改用户存档"
+  ]
+}

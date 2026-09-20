@@ -55,7 +55,11 @@ function loadGame() {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
     const code = fs.readFileSync(abs, 'utf8');
-    vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 });
+    const scriptNode = sandbox.document.createElement('script');
+    scriptNode.src = new URL(src, 'http://localhost/index.html').href;
+    sandbox.document.currentScript = scriptNode;
+    try { vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 }); }
+    finally { sandbox.document.currentScript = null; }
   });
 
   return sandbox;

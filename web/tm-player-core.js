@@ -28,6 +28,16 @@
 // ============================================================
 //  ESC暂停菜单
 // ============================================================
+// A resumable world can still exist on the title screen. Keyboard actions belong
+// to the visible game surface, not merely to that retained world's running flag.
+function _tmPlayerGameSurfaceActive(){
+  if(!GM || !GM.running)return false;
+  function visible(id){
+    var el=document.getElementById(id);if(!el || el.hidden)return false;
+    return (typeof getComputedStyle==='function'?getComputedStyle(el).display:el.style.display)!=='none';
+  }
+  return visible('G') && !visible('launch') && !visible('scn-page') && !visible('E');
+}
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){
     e.preventDefault();
@@ -38,11 +48,11 @@ document.addEventListener("keydown",function(e){
     if(_$("turn-modal").classList.contains("show")){closeTurnResult();return;}
     if(_$("settings-bg").classList.contains("show")){closeSettings();return;}
     if(_$("pause-bg").classList.contains("show")){closePause();return;}
-    if(GM.running){openPause();return;}
+    if(_tmPlayerGameSurfaceActive()){openPause();return;}
     openSettings();return;
   }
   // 4.3: 快捷键系统（仅在游戏中且无弹窗时生效）
-  if(!GM.running)return;
+  if(!_tmPlayerGameSurfaceActive())return;
   if(_$("settings-bg").classList.contains("show")||_$("pause-bg").classList.contains("show"))return;
   if(_$("turn-modal").classList.contains("show"))return;
   if(document.querySelector('.modal-bg.show'))return;
@@ -57,7 +67,7 @@ document.addEventListener("keydown",function(e){
 });
 function openPause(){
   // 回合推演中禁止暂停（防止状态竞争）
-  if (GM._endTurnBusy) return;
+  if (!_tmPlayerGameSurfaceActive() || GM._endTurnBusy) return;
   var _pi = typeof tmIcon === 'function' ? tmIcon : function(){return '';};
   _$("pause-bg").innerHTML="<div class=\"pause-menu\"><div class=\"pause-title\">\u3014 \u5929 \u547D \u3015</div><button class=\"pause-btn\" onclick=\"closePause()\">\u7EE7 \u7EED</button><button class=\"pause-btn\" onclick=\"closePause();openSaveManager()\">"+_pi('save',16)+" \u6848\u5377\u7BA1\u7406</button><button class=\"pause-btn\" onclick=\"closePause();openSettings()\">"+_pi('settings',16)+" \u8BBE \u7F6E</button><button class=\"pause-btn\" onclick=\"closePause();openShiji()\">"+_pi('history',16)+" \u53F2 \u8BB0</button><button class=\"pause-btn\" onclick=\"closePause();openAbdication()\">\u7985\u8BA9\u9000\u4F4D</button><button class=\"pause-btn\" style=\"color:var(--vermillion-400);\" onclick=\"closePause();backToLaunch()\">\u5F52\u53BB\u6765\u516E</button></div>";
   _$("pause-bg").classList.add("show");

@@ -383,21 +383,21 @@ async function endTurn(){
 }
 
 function _tmCaptureEndTurnObject(obj, runtimeKeys) {
-  var data = deepClone(obj);
-  var descriptors = {};
-  Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
-    var d = Object.getOwnPropertyDescriptor(obj, key);
-    if (!d) return;
-    // 索引是派生 Map 缓存，不属于回合事务快照；回滚后由索引模块重建。
-    if (key === '_indices') { try { delete data[key]; } catch (_) {} return; }
-    var keepRuntime = runtimeKeys && runtimeKeys.indexOf(key) >= 0;
-    if (keepRuntime || d.get || d.set || (Object.prototype.hasOwnProperty.call(d, 'value') && typeof d.value === 'function') || !Object.prototype.hasOwnProperty.call(data, key)) {
-      descriptors[key] = d;
-      try { delete data[key]; } catch (_) {}
-    }
-  });
-  return { data: data, descriptors: descriptors };
-}
+    // Preserve runtime ownership before cloning; never detach properties from the live world.
+    var values = {}, descriptors = {};
+    Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
+      var descriptor = Object.getOwnPropertyDescriptor(obj, key);
+      if (!descriptor || key === '_indices') return;
+      var runtime = runtimeKeys && runtimeKeys.indexOf(key) >= 0;
+      if (runtime || descriptor.get || descriptor.set || !descriptor.enumerable || typeof descriptor.value === 'function') {
+        descriptors[key] = descriptor;
+      } else {
+        Object.defineProperty(values, key, {value:descriptor.value, enumerable:true, configurable:true, writable:true});
+      }
+    });
+    var data = (typeof globalThis.deepClone === 'function') ? globalThis.deepClone(values) : JSON.parse(JSON.stringify(values));
+    return {data:data, descriptors:descriptors};
+  }
 
 function _tmRestoreEndTurnObject(target, snapshot) {
   if (!target || !snapshot) return;
@@ -473,7 +473,10 @@ function _tmCommitEndTurnTransaction(txn) {
   GM._endTurnCommitPending = false; // arch-ok end-turn transaction owns its commit barrier
   var pendingResult = GM._pendingCommittedTurnResult;
   try { delete GM._pendingCommittedTurnResult; } catch (_) {} // arch-ok end-turn transaction owns its staged result
-  if (pendingResult && typeof showTurnResult === 'function') showTurnResult(pendingResult.html, pendingResult.idx);
+  if (pendingResult && typeof showTurnResult === 'function') {
+    try { showTurnResult(pendingResult.html, pendingResult.idx); }
+    catch (displayError) { txn.presentationError = displayError; try { _tmReportEndTurnBoundaryError(displayError, 'committed result display'); } catch (_) {} }
+  }
   return true;
 }
 
@@ -634,6 +637,12 @@ function _tmRestoreCommittedBaselineAfterRollback(txn) {
 
 function _tmRollbackEndTurnTransaction(txn, reason) {
   if (!_tmEndTurnTransactionCurrent(txn)) return false;
+  if (txn.saveWriteUnconfirmed || reason && reason.code === "SAVE_WRITE_UNCONFIRMED") return false;
+  var receipt = txn.canonicalSaveReceipt;
+  if (receipt && receipt.state === 'committed' && receipt.transactionId === txn.transactionId && Array.isArray(receipt.slots)
+      && receipt.slots.length === 2 && ['autosave', 'slot_0'].every(function(id) { return receipt.slots.some(function(slot) {
+        return slot.id === id && slot.campaignId === txn.campaignId && slot.timelineId === txn.timelineId;
+      }); })) return false;
   var rollbackLease = { kind: 'end-turn', transactionId: txn.transactionId || '', startedAt: Date.now() };
   if (typeof window !== 'undefined') window._tmWorldRollbackActive = rollbackLease;
   var rollbackSpan = (typeof TM !== 'undefined' && TM.perf && typeof TM.perf.beginSpan === 'function')
@@ -693,14 +702,19 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     ctx.meta.endTurnSavePromise = _endTurn_saveSnapshot(ctx);
   }
   if (!ctx.meta.endTurnSavePromise) throw new Error('回合最终存档入口缺失');
+  var reliability = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.Reliability;
+  if (reliability) reliability.mark(ctx.meta.reliabilityScope, "save");
   var saved = await ctx.meta.endTurnSavePromise;
   if (saved !== true) throw new Error('回合最终存档失败，已回滚本回合');
   if (!_tmCommitEndTurnTransaction(txn)) throw new Error('回合提交时世界身份已变化');
+  var responseRecovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
+  if (responseRecovery) responseRecovery.finish(txn, 'committed');
   if (ctx.meta.canonicalWorldSnapshot && typeof _tmAdoptCommittedWorldSnapshot === 'function') {
-    var adopted = _tmAdoptCommittedWorldSnapshot(
+    var adopted = false;
+    try { adopted = _tmAdoptCommittedWorldSnapshot(
       ctx.meta.canonicalWorldSnapshot,
       ctx.meta.canonicalWorldSnapshotMeta || { turn: GM.turn, transactionId: ctx.meta.transactionId, takeOwnership: true }
-    );
+    ); } catch (adoptionError) { _tmReportEndTurnBoundaryError(adoptionError, 'desktop autosave baseline'); }
     if (adopted !== true) {
       _tmReportEndTurnBoundaryError(new Error('canonical committed snapshot adoption failed'), 'desktop autosave baseline');
     }
@@ -725,6 +739,12 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     try { if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(renderError, 'endTurn] post-commit render'); } catch (_) {}
     try { if (typeof _endTurn_showRenderFallback === 'function') _endTurn_showRenderFallback(renderError); } catch (_) {}
   }
+  var saveWarnings = ctx.meta.turnSaveWarnings || [];
+  if (saveWarnings.length) {
+    ctx.results = ctx.results || {}; ctx.results.turnSaveWarnings = saveWarnings;
+    try { if (typeof toast === 'function') toast('回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。'); } catch (_) {}
+  }
+  if (reliability) reliability.finish(ctx.meta.reliabilityScope, ctx.results && ctx.results.renderError ? "committed_display_pending" : "committed");
   return true;
 }
 
@@ -742,10 +762,15 @@ async function _endTurnCore(options){
   // 见 web/docs/endturn-data-flow.md
   var _obsCtx = null;
   var _turnTxn = null;
+  var _reliability = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.Reliability;
+  var _turnScope = null;
+  var _responseRecovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
   try{
   // 兼容新旧UI：老诏令面板按钮是btn-end，新UI右侧按钮是btn-end-turn
   var btn=_$("btn-end")||_$("btn-end-turn");
+  if (typeof TM_SaveDB !== "undefined" && typeof TM_SaveDB.assertWritable === "function") TM_SaveDB.assertWritable();
   if(GM.busy)return;
+  if (_reliability) { _turnScope = _reliability.begin(); _reliability.assertReady(P); _reliability.mark(_turnScope, "prepare"); }
   _turnTxn = _tmCaptureEndTurnTransaction();
   // 必须在后朝标记、busy/commit barrier 及校准写入之前冻结点击时世界。
   var _preCommittedState = _tmCapturePreEndTurnCommittedState(_turnTxn);
@@ -768,6 +793,7 @@ async function _endTurnCore(options){
   // 恢复点是事务的 prepare 阶段：必须先完整提交，才允许进入有副作用的推演。
   try {
     await _tmPrepareEndTurnBoundary(_turnTxn, _preCommittedState);
+    if (_responseRecovery) await _responseRecovery.begin(_turnTxn, options);
   } catch(_psE) {
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_psE, 'PreEndTurnSave outer') : console.warn('[PreEndTurnSave outer]', _psE);
     throw _psE;
@@ -786,6 +812,7 @@ async function _endTurnCore(options){
   }
   _obsCtx = TM.Endturn.Pipeline.buildCtx();
   _obsCtx.meta.transaction = _turnTxn;
+  if (_reliability) { _obsCtx.meta.reliabilityScope = _turnScope; _reliability.mark(_turnScope, "pipeline"); }
   await TM.Endturn.Pipeline.run(_obsCtx);
 
   // [slice 7b·2026-05-08] 6 phase legacy 块全删·下游只剩 pipeline 不接的 5.3+ tail
@@ -1020,8 +1047,23 @@ async function _endTurnCore(options){
   GM._endTurnBusy=false;
   _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
   } catch (error) {
+    if (_reliability) _reliability.finish(_turnScope, 'failed', error);
     console.error('endTurn error:', error);
+    if (error && error.code === 'SAVE_WRITE_UNCONFIRMED') {
+      if (_turnTxn) _turnTxn.saveWriteUnconfirmed = true;
+      if (_responseRecovery) _responseRecovery.finish(_turnTxn, 'unconfirmed', error);
+      if (!_turnTxn || GM === _turnTxn.gmRef && P === _turnTxn.pRef) {
+        GM.busy = true; // arch-ok end-turn owner freezes writes while canonical outcome is unknown
+        GM._endTurnBusy = false; // arch-ok end-turn owner ends spinner without claiming a rollback
+        var pausedButton = _$("btn-end") || _$("btn-end-turn");
+        if (pausedButton) { pausedButton.textContent = '存档待核对'; pausedButton.style.opacity = '0.6'; }
+        toast(error.message); hideLoading();
+      }
+      if (globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.SaveReconcile) globalThis.TM.Endturn.SaveReconcile.watch(_obsCtx, _turnTxn, error);
+      return; // Never re-run the turn or flush a desktop autosave over an unconfirmed write.
+    }
     if (_turnTxn) _tmRollbackEndTurnTransaction(_turnTxn, error);
+    if (_responseRecovery) await _responseRecovery.finish(_turnTxn, "failed", error);
     // 回滚会恢复点击前 GM；严格预检诊断通过既有写主重新附着，避免 core
     // 直接闯入 _unappliedChanges 子树或新建第二套失败状态。
     if (error && Array.isArray(error.writebackFailures)) {
@@ -1042,7 +1084,9 @@ async function _endTurnCore(options){
     }
     // 失败态人话化（2026-07-02）：认得出的 AI 类故障给「哪坏了+去哪修」，认不出回退原文
     var _ehuman = (typeof _tmAiErrHuman === 'function') ? _tmAiErrHuman(error) : null;
-    toast(_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message));
+    var _recoveryInfo = _responseRecovery && _responseRecovery.status();
+    var _recoveryHint = _recoveryInfo && _recoveryInfo.state === 'ready' ? '；当前页面保留了 ' + _recoveryInfo.available + ' 份完整响应，重试时严格校验后复用；本地持久候选状态见耗时诊断。' : '';
+    toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message)) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-error');

@@ -221,12 +221,14 @@ const assembledSc1Body = {
   },
   max_tokens: 2048
 };
+assert.throws(() => sc1Api.finalizeSc1RequestBody(assembledSc1Body, { contextTokens:8192, completionTokens:2048 }), e => e.code === 'mandatory_context_overflow' && e.preservedAllContent, 'do not erase complete original world facts to fit an undersized window');
+assembledSc1Body.messages[1].content = require('./lib-sc1-lossless-fixture').userMessage();
 const finalizedSc1 = sc1Api.finalizeSc1RequestBody(assembledSc1Body, {
   contextTokens: 8192,
   completionTokens: 2048
 });
 assert(finalizedSc1.diagnostics.rawInputTokens > finalizedSc1.diagnostics.finalInputTokens,
-  'the real final SC1 constructor trims after memory/actions/anomaly/final rules are appended');
+  'the final constructor compacts JSON formatting while keeping every evidence value');
 assert(finalizedSc1.diagnostics.finalInputTokens <= finalizedSc1.diagnostics.inputTokenLimit);
 assert(finalizedSc1.diagnostics.finalTotalTokens <= finalizedSc1.diagnostics.contextTokens,
   'system + final user + schema overhead + completion reserve obey the physical context ceiling');
@@ -282,8 +284,10 @@ async function testContextLengthRetry() {
   assert.strictEqual(result.choices[0].message.content, 'ok');
   assert.strictEqual(requests.length, 2, 'context length 400 gets exactly one stricter emergency retry');
   assert(JSON.stringify(requests[1]).length < JSON.stringify(requests[0]).length);
-  assert.strictEqual(requests[1].response_format.type, 'json_object',
-    'SC1 emergency retry compacts strict schema overhead as well as user context');
+  assert.strictEqual(requests[1].response_format.type, 'json_schema',
+    'SC1 retry retains strict schema instead of weakening constraints');
+  const block=require('./lib-sc1-lossless-fixture').jsonBlock;
+  assert.deepStrictEqual(JSON.parse(block(requests[1].messages[1].content)),JSON.parse(block(requests[0].messages[1].content)));
 
   let failedRequests = 0;
   ai.fetch = async () => {

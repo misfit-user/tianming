@@ -15,6 +15,7 @@
   }
 
   function numberOrNull(value) {
+    if (value == null || value === "" || typeof value === "boolean") return null;
     var n = Number(value);
     return isFinite(n) ? n : null;
   }
@@ -37,6 +38,9 @@
   function statusDenied(env, ctx) {
     var status = clean(env && env.status).toLowerCase();
     var intent = clean(ctx && ctx.intent).toLowerCase();
+    var review = clean(env && env.reviewStatus).toLowerCase();
+    if (status === 'draft' || status === 'pending_review' || review === 'pending_review') return 'pending_review';
+    if (status === 'rejected' || review === 'rejected') return 'rejected';
     if (status === 'deleted' || status === 'deleted_tombstone' || status === 'redacted') return 'deleted';
     if ((status === 'stale' || status === 'superseded') && intent !== 'historical_evidence') return 'stale_or_superseded';
     if (status === 'quarantined' || status === 'quarantine') return 'quarantined';
@@ -48,11 +52,14 @@
     ctx = ctx || {};
     var turn = numberOrNull(ctx.turn);
     if (turn == null) return '';
+    var eventTurn = numberOrNull(env.turn);
+    var learnedTurn = numberOrNull(env.learnedAtTurn);
     var intent = clean(ctx.intent).toLowerCase();
     var validFrom = numberOrNull(env.validFromTurn != null ? env.validFromTurn : env.validFrom);
     var validTo = numberOrNull(env.validToTurn != null ? env.validToTurn : env.validTo);
     var expiredAt = numberOrNull(env.expiredAtTurn != null ? env.expiredAtTurn : env.expiredAt);
     if (validFrom != null && turn < validFrom && intent !== 'historical_evidence') return 'not_yet_valid';
+    if (ctx.includeFuture !== true && ((eventTurn != null && eventTurn > turn) || (learnedTurn != null && learnedTurn > turn))) return 'future_memory';
     if (((validTo != null && turn > validTo) || (expiredAt != null && turn >= expiredAt)) && intent !== 'historical_evidence') return 'expired_validity';
     return '';
   }
@@ -76,10 +83,12 @@
     var reasons = [];
     if (visibilityDenied(env, ctx.actorScope || {})) add(reasons, 'visibility_denied', 'actor scope cannot read this memory visibility');
     var statusReason = statusDenied(env, ctx);
+    if (statusReason === 'pending_review' || statusReason === 'rejected') add(reasons, statusReason, 'unaccepted memory cannot be injected');
     if (statusReason === 'deleted') add(reasons, 'deleted', 'deleted/tombstone memory cannot be injected');
     if (statusReason === 'stale_or_superseded') add(reasons, 'stale_or_superseded', 'stale/superseded memory cannot serve as current fact');
     if (statusReason === 'quarantined') add(reasons, 'quarantined', 'quarantined memory cannot be injected');
     var temporalReason = temporalDenied(env, ctx);
+    if (temporalReason === 'future_memory') add(reasons, 'future_memory', 'memory belongs to a future turn');
     if (temporalReason === 'not_yet_valid') add(reasons, 'not_yet_valid', 'memory is not valid at the current turn');
     if (temporalReason === 'expired_validity') add(reasons, 'expired_validity', 'memory validity window has expired');
     if (isRumor(env) && clean(ctx.intent).toLowerCase() === 'current_fact') add(reasons, 'rumor_as_fact', 'rumor cannot be promoted to current fact');

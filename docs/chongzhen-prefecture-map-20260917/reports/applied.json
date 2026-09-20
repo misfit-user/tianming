@@ -1,0 +1,101 @@
+{
+  "started": "2026-09-17T15:58:06.192Z",
+  "complete": true,
+  "sourceBefore": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+  "sourceAfter": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "files": [
+    {
+      "relative": "scenarios\\天启七年·九月（官方）.json",
+      "existed": true,
+      "before": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+      "after": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+      "applied": true,
+      "writeMode": "verified-backup-in-place-windows-shared-handle"
+    },
+    {
+      "relative": "web\\data\\maps\\chongzhen-prefecture-v1\\geometry.json",
+      "existed": false,
+      "before": null,
+      "after": "da35451b7757083544d5b91fb84a768132bbc4d46e967ed4a0b0a1c53ae98e8b",
+      "applied": true
+    },
+    {
+      "relative": "web\\data\\maps\\chongzhen-prefecture-v1\\scenario-bindings.json",
+      "existed": false,
+      "before": null,
+      "after": "e6ec4f3e516f04a3d0b9dc6b43808f1f6e4c4d62461d85c71205b8f087e7cbc2",
+      "applied": true
+    },
+    {
+      "relative": "web\\scenarios\\tianqi7-1627.js",
+      "existed": true,
+      "before": "7ceb38909f87548163d95025f6530de22e2da1e851c84a3454a14cead2d40b47",
+      "after": "d19adb43ada8323e332c6c828723e6c9fda23da4eb61ddbac32a5be20022f1ad",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\天启七年·九月（官方）.json",
+      "existed": true,
+      "before": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+      "after": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+      "applied": true
+    },
+    {
+      "relative": "web\\scenarios\\shaosong-jianyan-1127.js",
+      "existed": true,
+      "before": "37fbe3b1458776d8d94ba2e152bda0b1dd59dec628f3e9256c47cb3df253a551",
+      "after": "527e4f5130cb6d8f1526650d8ce40425313f087129e2986f7efb74f2268ecd2f",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-official-scenario-bundle.js",
+      "existed": true,
+      "before": "ee851969c184b11969b6ddf2a6afca24e6fab9f47c5a01305938b8d960e38300",
+      "after": "b6b83777133df6e040dbd2af241611db56c499142504ff2fb94a53a29681caa3",
+      "applied": true
+    },
+    {
+      "relative": "web\\preview\\official-scenarios-bundle.js",
+      "existed": true,
+      "before": "c5abfd579c96273218d169feb9e65fbda5ca3148214a8100acecec396775ce9d",
+      "after": "3aa6c74632128020e18561316c9254a86a1f1f0510d6ad6ccd91d5470204579f",
+      "applied": true
+    },
+    {
+      "relative": "web\\preview\\scenario-editor-reset-data.js",
+      "existed": true,
+      "before": "0f9728b3d1aa82b6bd3bba470f1719a5b319f07e558c5449a74437800c9cdd0e",
+      "after": "fa5ba5ddd532f29ac9ab0ddf77f607905956343a3c953247b1ed4af19c9bbca0",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\manifest.json",
+      "existed": true,
+      "before": "904223b234b4f009bcc472c525cc9b02214105ea1dcd01c6e85d4714309f2ddc",
+      "after": "90418313a6bb4de3128a5a10c6ee9c4266777d0468b955d0cf7a5622cad55bea",
+      "applied": true
+    },
+    {
+      "relative": "web\\bundled-scenarios\\manifest.js",
+      "existed": true,
+      "before": "2ea7ba05e4ebf5288ce8994ac309201e67ba926336d4f9d4171fc140202d9588",
+      "after": "d4a44eb5605ef1b4532854be757e55fdec27165428f9ce092335fe8447c13d1d",
+      "applied": true
+    }
+  ],
+  "otherSources": [
+    {
+      "relative": "scenarios\\绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b"
+    },
+    {
+      "relative": "scenarios\\晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51"
+    }
+  ],
+  "steps": [
+    "canonical-map-written",
+    "official-derived-parity"
+  ],
+  "otherSourcesUnchanged": true
+}

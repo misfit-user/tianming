@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const d='docs/endturn-final-closeout-20260919',p=d+'/verify-final.mjs';let source=fs.readFileSync(p,'utf8');
+const old=String.raw`const archPass=[...archText.matchAll(/^\[lint-arch-all\] PASS\s+(\S+)/gm)].map(m=>m[1]);`;
+const next=String.raw`const archPass=[...archText.matchAll(/^\[lint-arch-all\] PASS\s+(lint-[a-z-]+|ref-check)\s+\(/gm)].map(m=>m[1]);`;
+if(source.split(old).length!==2)throw Error('Unexpected architecture parser; inspect before editing');
+if(!fs.existsSync(d+'/verify-final-before-parser-fix.mjs'))fs.copyFileSync(p,d+'/verify-final-before-parser-fix.mjs');
+source=source.replace(old,next+"\nconst requiredArchitecture = ['lint-gm-writes','lint-dep-graph','lint-global-providers','lint-feature-boundaries','lint-runtime-template-immutability','lint-renderer-writeback-boundaries','lint-renderer-module-boundaries','lint-file-size','lint-control-bytes','lint-split-contracts','lint-split-stamps','lint-smoke-family-order','ref-check'];");
+source=source.replace('archPass.length===13&&proof.ownDiffClean','archPass.length===13&&requiredArchitecture.every(name=>archPass.includes(name))&&proof.ownDiffClean');
+fs.writeFileSync(p,source,'utf8');
+console.log('Proof now counts thirteen named checks, not the additional human-readable PASS summary. Every required check remains mandatory.');

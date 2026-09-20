@@ -1,0 +1,98 @@
+{
+  "at": "2026-09-18T11:43:06.085Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "status": " M docs/chongzhen-prefecture-map-20260917/build-candidate.mjs\n M docs/chongzhen-prefecture-map-20260917/work-location.json\n M scenarios/天启七年·九月（官方）.json\n M web/bundled-scenarios/manifest.js\n M web/bundled-scenarios/manifest.json\n M web/index.html\n M web/modules/ai-change-applier/core.js\n M web/phase8-formal-bridge-styles.js\n M web/phase8-formal-map-dossier.js\n M web/phase8-formal-map.js\n M web/preview/official-scenarios-bundle.js\n M web/preview/scenario-editor-reset-data.js\n M web/scenarios/shaosong-jianyan-1127.js\n M web/scenarios/tianqi7-1627.js\n M web/scripts/smoke-building-order-writeback.js\n M web/scripts/smoke-map-viewport-collision.js\n M web/scripts/smoke-tianqi-map-runtime.js\n M web/scripts/verify-all.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-output-validator.js\n M web/tm-ai-schema.js\n M web/tm-building-orders.js\n M web/tm-context-zones.js\n M web/tm-endturn-ai.js\n M web/tm-endturn-core.js\n M web/tm-faction-membership.js\n M web/tm-map-label-collide.js\n M web/tm-map-locations.js\n M web/tm-memory-context-compiler.js\n M web/tm-memory-envelope.js\n M web/tm-memory-governance.js\n M web/tm-memory-retrieval.js\n M web/tm-memory-trace.js\n M web/tm-official-scenario-bundle.js\n M web/tm-world.js\n?? docs/ai-memory-upgrade-20260918/\n?? docs/chongzhen-map-r2-20260918/\n?? docs/chongzhen-map-r3-20260918/\n?? docs/chongzhen-prefecture-map-20260917/apply-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/apply-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/final-verification.json\n?? docs/chongzhen-prefecture-map-20260917/finalize-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-location-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-public-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/membership-extra.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/province-tests.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/register-location-service.mjs\n?? docs/chongzhen-prefecture-map-20260917/reports/\n?? docs/chongzhen-prefecture-map-20260917/retry-apply.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-final-guards.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-regressions.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs.before-final\n?? docs/chongzhen-prefecture-map-20260917/test-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/update-map-smoke.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-geometry.py\n?? docs/chongzhen-prefecture-map-20260917/verify-live-transfers.js\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs.before-panorama\n?? docs/chongzhen-prefecture-map-20260917/使用与接入说明.md\n?? docs/chongzhen-prefecture-map-20260917/使用说明.md\n?? docs/chongzhen-prefecture-map-20260917/验收结果.json\n?? docs/map-deep-zoom-20260918/\n?? docs/shaosong-map-integration-20260917/\n?? web/data/maps/chongzhen-prefecture-r2/\n?? web/data/maps/chongzhen-prefecture-r3/\n?? web/data/maps/chongzhen-prefecture-v1/\n?? web/scripts/smoke-memory-boundary-upgrade.js\n",
+  "backup": ".bak-ai-memory-upgrade-r2-20260918",
+  "files": [
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "sha256": "c03f4ccb70cf179cfa968a48cd5c2a15c00532ccc575bf787dc68f4fb3fa9351",
+      "bytes": 74285
+    },
+    {
+      "file": "web/tm-player-settings.js",
+      "sha256": "85e500a3e12871080ad9d3a0c4af3c25564462bac80795a5da49f4167815b4e9",
+      "bytes": 33312
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "sha256": "2bc79ddef6ea1136e3960f2ef8215635686cff89f00fbbf36286c3f802fa8fd9",
+      "bytes": 17982
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "sha256": "b66885ea557d11ce067952b358f6824f00a8dc6d02df62886ac58d3cb760f834",
+      "bytes": 28834
+    },
+    {
+      "file": "web/tm-memory-writegate.js",
+      "sha256": "ea6a4fcd7e29c531506f277633f5eaaf447e6dcfbc0f39392a6fcff76f387885",
+      "bytes": 34631
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "44dd7699300a364c33207b2cc9e4b64ced73b1e7c13aba272af71ad86155b123",
+      "bytes": 56384
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "1ae681f90f91be36bd8c6ed9c856faac52047a1bce70c470525f59c21c90f3a8",
+      "bytes": 27841
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "sha256": "2a2a96d1879de01184564f8e87a70052a0058f042fefe29243930f54b865adb9",
+      "bytes": 68916
+    },
+    {
+      "file": "web/tm-memory-turn-inference.js",
+      "sha256": "b789b122669f571d9f29e76eaa8fb8443b6db908c83ff0b55b85ad28618a70a6",
+      "bytes": 26382
+    },
+    {
+      "file": "web/tm-memory-turn-rollup.js",
+      "sha256": "f2b856fdbcecc2ab672271d39a5dc8f5bd01a8b32eb4883e7eb2cb517748b37f",
+      "bytes": 17257
+    },
+    {
+      "file": "web/tm-semantic-recall.js",
+      "sha256": "558eea8bceb5b9f9405e1ad2a5d0e3447544cade9f00db7d404f541470f1bc46",
+      "bytes": 44583
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "c5ed6545dc036cee1a2f1599d8977ae464aa4fc116ec95eee52a8d4df6350a72",
+      "bytes": 413346
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "sha256": "d14dd0c00cc49b232bb34d3b19ad6361b0fba2964bf64f130c161c842196168a",
+      "bytes": 11860
+    },
+    {
+      "file": "web/tm-agent-flags.js",
+      "sha256": "590143583db9b93c07166b7e2445d7b0e5aa4f7678af9fbb0c4094ead7cdff30",
+      "bytes": 7369
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "253f9d660cbcd9a4a77948c0e73a0e72ca5764ded458037aa0704a0619a6a688",
+      "bytes": 69326
+    },
+    {
+      "file": "web/editor.html",
+      "sha256": "c070f10b708052a7dc7f705d5feafc6cbdbe8abd83ce86cee2817b705f7ed551",
+      "bytes": 184852
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "ed6ac1fc10877b9cfb50f1ce28297b2c773df3dee3383316c19401b2831a2a67",
+      "bytes": 42338
+    },
+    {
+      "file": "web/scripts/smoke-model-probe-evidence.js",
+      "sha256": "77b3386968f27ece6c6540d4098f48e30fefd9409fda0b23cfd4989e196afb40",
+      "bytes": 2928
+    }
+  ]
+}

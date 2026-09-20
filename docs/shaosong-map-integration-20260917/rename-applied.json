@@ -1,0 +1,9757 @@
+{
+  "stage": "polity-labels-only",
+  "newMapApplied": false,
+  "source": "scenarios/绍宋·建炎元年八月（官方）.json",
+  "beforeSha256": "0e43d46ba32849b7df2b14da99470f059286976f06a482547fcc9057255bd1c7",
+  "afterSha256": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04",
+  "changedStringTokens": 853,
+  "nativeResolved": 224,
+  "edits": [
+    {
+      "path": [
+        "characters",
+        0,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        1,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        2,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        3,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        4,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        5,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        6,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        7,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        8,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        9,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        10,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        11,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        12,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        13,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        14,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        15,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        16,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        17,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        18,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        19,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        20,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        21,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        22,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        23,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        24,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        25,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        26,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        27,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        28,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        29,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        30,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        31,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        32,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        33,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        34,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        35,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        36,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        37,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        38,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        39,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        44,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        45,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        46,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        47,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        48,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        49,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        52,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        53,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        54,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        55,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        56,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        57,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        58,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        59,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        60,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        61,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        61,
+        "_latentFaction"
+      ],
+      "from": "金国",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        62,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        63,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        64,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        65,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        66,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        67,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        68,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        69,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        70,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        71,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        72,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        73,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        74,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        75,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        76,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        77,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        85,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        86,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        89,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        90,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        91,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        92,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        93,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        94,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        95,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        96,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        97,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        98,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        99,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        100,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        101,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        105,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        106,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        107,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        108,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        109,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        110,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        111,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        112,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        113,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        114,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        115,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        116,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        117,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        118,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        119,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        120,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        121,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        122,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        123,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        124,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        125,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        126,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        127,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        132,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        133,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        134,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        135,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        136,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        137,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        138,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        139,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        140,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        141,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        142,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        143,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        144,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        145,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        146,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        147,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        148,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        149,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        150,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        151,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        152,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        153,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        154,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        155,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        156,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        157,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        158,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        159,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        161,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        162,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        163,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        164,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        165,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        166,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        167,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        168,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        169,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        170,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        172,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        173,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        174,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        175,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        176,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        177,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        178,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        179,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        180,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        181,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        182,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        186,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        189,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        191,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        192,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        193,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        194,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        195,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        196,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        197,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        198,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        201,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        202,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        203,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        204,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        225,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        226,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        227,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        228,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        229,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        230,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "characters",
+        231,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        0,
+        "name"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        0,
+        "warState",
+        "active",
+        0,
+        "enemy"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        1,
+        "name"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        1,
+        "warState",
+        "active",
+        0,
+        "enemy"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        1,
+        "relations",
+        "宋朝廷"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        1,
+        "relations",
+        "西夏"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        2,
+        "warState",
+        "active",
+        0,
+        "enemy"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        2,
+        "relations",
+        "宋朝廷"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        2,
+        "relations",
+        "金国（大金）"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        3,
+        "warState",
+        "pending",
+        0,
+        "enemy"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        3,
+        "relations",
+        "宋朝廷"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        3,
+        "relations",
+        "金国（大金）"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        4,
+        "warState",
+        "pending",
+        0,
+        "enemy"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        4,
+        "relations",
+        "宋朝廷"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        4,
+        "relations",
+        "金国（大金）"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        5,
+        "warState",
+        "pending",
+        0,
+        "enemy"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        5,
+        "relations",
+        "宋朝廷"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        5,
+        "relations",
+        "金国（大金）"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": true
+    },
+    {
+      "path": [
+        "factions",
+        6,
+        "name"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        6,
+        "naturalAllies",
+        0
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "factions",
+        7,
+        "naturalAllies",
+        0
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        0,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        0,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        1,
+        "linkedFactions",
+        0
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        2,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        2,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        3,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        3,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        4,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        5,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        6,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        7,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        8,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        9,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        10,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        11,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        12,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        13,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        14,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        15,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        15,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        16,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        16,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        17,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        18,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        18,
+        "linkedFactions",
+        2
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        19,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        20,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        21,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        22,
+        "linkedFactions",
+        0
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        23,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        24,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        25,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        26,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        27,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        28,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        29,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        30,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        31,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        32,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        32,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        33,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        34,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        36,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        37,
+        "linkedFactions",
+        0
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        37,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        38,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        44,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        44,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        45,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        45,
+        "linkedFactions",
+        2
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        46,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        47,
+        "linkedFactions",
+        2
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        47,
+        "linkedFactions",
+        3
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        48,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        49,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        50,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        50,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        51,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        51,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        52,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        53,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        54,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        55,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        56,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        57,
+        "linkedFactions",
+        1
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "events",
+        58,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "playerInfo",
+        "factionName"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        0,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        1,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        2,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        3,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        4,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        5,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        6,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        7,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        8,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        9,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        10,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        11,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        12,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        13,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        14,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "parties",
+        15,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        0,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        1,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        2,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        3,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        4,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        5,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        6,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        7,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        8,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        9,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        10,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        11,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        12,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        13,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        14,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        15,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        16,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        17,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        18,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        19,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        20,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        21,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        22,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        23,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        24,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        25,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        26,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        27,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        28,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        29,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        30,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "classes",
+        31,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "adminHierarchy",
+        "fac_xixia",
+        "divisions",
+        0,
+        "name"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "externalForces",
+        1,
+        "name"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_song",
+        "label"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_song",
+        "short"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_song",
+        "scenarioFactionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_jin",
+        "label"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_jin",
+        "short"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_jin",
+        "scenarioFactionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_xixia",
+        "label"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_xixia",
+        "short"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "factions",
+        "fac_xixia",
+        "scenarioFactionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        5,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        5,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        5,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        5,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        9,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        9,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        9,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        9,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        10,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        10,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        10,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        10,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        12,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        12,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        12,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        12,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        13,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        13,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        13,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        13,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        14,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        14,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        14,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        14,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        15,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        15,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        15,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        15,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        47,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        47,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        47,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        47,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        47,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        48,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        48,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        48,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        48,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        49,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        49,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        49,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        49,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        50,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        50,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        50,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        50,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        51,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        51,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        51,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        51,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        63,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        63,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        63,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        63,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        66,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        66,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        66,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        66,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        68,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        68,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        68,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        68,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        72,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        72,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        72,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        72,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        73,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        75,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        75,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        75,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        75,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        76,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        76,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        76,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        76,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        76,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        77,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        77,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        77,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        77,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        78,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        78,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        78,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        78,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        80,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        80,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        80,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        80,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        84,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        84,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        84,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        84,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        94,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        94,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        94,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        94,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        95,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        95,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        95,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        95,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        96,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        96,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        96,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        96,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        97,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        97,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        97,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        97,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        98,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        98,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        98,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        98,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        99,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        99,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        99,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        99,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        100,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        100,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        100,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        100,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        101,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        101,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        101,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        101,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        108,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        108,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        108,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        108,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        110,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        110,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        110,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        110,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        146,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        147,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        149,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        149,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        149,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        149,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        150,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        150,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        150,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        150,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        150,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        152,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        152,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        152,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        152,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        153,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        153,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        153,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        153,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        153,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        155,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        155,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        155,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        155,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        156,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        156,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        156,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        156,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        157,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        157,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        157,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        157,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        157,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        158,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        158,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        158,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        158,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        159,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        159,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        159,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        159,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        160,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        160,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        160,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        160,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        161,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        161,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        161,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        161,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        162,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        162,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        162,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        162,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        163,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        163,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        163,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        163,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        164,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        164,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        164,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        164,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        165,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        165,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        165,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        165,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        166,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        166,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        166,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        166,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        167,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        167,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        167,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        167,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        167,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        168,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        168,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        168,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        168,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        169,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        169,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        169,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        169,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        178,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        178,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        178,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        178,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        179,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        179,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        179,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        179,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        180,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        180,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        180,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        180,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        181,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        181,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        181,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "map",
+        "regions",
+        181,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_song",
+        "label"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_song",
+        "short"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_song",
+        "scenarioFactionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_jin",
+        "label"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_jin",
+        "short"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_jin",
+        "scenarioFactionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_xixia",
+        "label"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_xixia",
+        "short"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "factions",
+        "fac_xixia",
+        "scenarioFactionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        5,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        5,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        5,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        5,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        9,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        9,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        9,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        9,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        10,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        10,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        10,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        10,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        12,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        12,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        12,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        12,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        13,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        13,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        13,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        13,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        14,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        14,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        14,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        14,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        15,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        15,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        15,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        15,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        47,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        47,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        47,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        47,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        47,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        48,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        48,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        48,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        48,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        49,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        49,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        49,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        49,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        50,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        50,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        50,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        50,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        51,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        51,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        51,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        51,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        63,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        63,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        63,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        63,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        66,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        66,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        66,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        66,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        68,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        68,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        68,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        68,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        72,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        72,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        72,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        72,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        73,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        75,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        75,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        75,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        75,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        76,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        76,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        76,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        76,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        76,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        77,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        77,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        77,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        77,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        78,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        78,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        78,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        78,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        80,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        80,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        80,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        80,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        84,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        84,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        84,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        84,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        94,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        94,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        94,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        94,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        95,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        95,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        95,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        95,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        96,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        96,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        96,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        96,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        97,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        97,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        97,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        97,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        98,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        98,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        98,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        98,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        99,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        99,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        99,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        99,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        100,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        100,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        100,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        100,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        101,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        101,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        101,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        101,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        108,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        108,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        108,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        108,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        110,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        110,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        110,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        110,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        146,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        147,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        149,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        149,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        149,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        149,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        150,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        150,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        150,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        150,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        150,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        152,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        152,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        152,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        152,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        153,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        153,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        153,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        153,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        153,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        155,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        155,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        155,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        155,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        156,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        156,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        156,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        156,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        157,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        157,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        157,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        157,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        157,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        158,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        158,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        158,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        158,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        159,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        159,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        159,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        159,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        160,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        160,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        160,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        160,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        161,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        161,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        161,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        161,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        162,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        162,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        162,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        162,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        163,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        163,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        163,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        163,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        164,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        164,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        164,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        164,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        165,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        165,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        165,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        165,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        166,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        166,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        166,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        166,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        167,
+        "adminBinding",
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        167,
+        "factionName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        167,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        167,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        167,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "金",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        168,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        168,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        168,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        168,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        169,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        169,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        169,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        169,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        178,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        178,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        178,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        178,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        179,
+        "factionName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        179,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        179,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        179,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        180,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        180,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        180,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        180,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        181,
+        "factionName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        181,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        181,
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "mapData",
+        "regions",
+        181,
+        "data",
+        "ownerHistory",
+        0,
+        "ownerName"
+      ],
+      "from": "宋",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        0,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        1,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        2,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        3,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        4,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        5,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        6,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        7,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        8,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        9,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        10,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        11,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        12,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        13,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        14,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        16,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        17,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        18,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        19,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        20,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        21,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        22,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        23,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        25,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        26,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        27,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        28,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        29,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        30,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        31,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        32,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        33,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        34,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        35,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        39,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        40,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        41,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        42,
+        "faction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        43,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        44,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        45,
+        "faction"
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        46,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        57,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "military",
+        "initialTroops",
+        58,
+        "faction"
+      ],
+      "from": "西夏",
+      "to": "大夏",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        0,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        0,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        1,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        2,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        2,
+        "linkedFactions",
+        2
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        3,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        4,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        4,
+        "linkedFactions",
+        3
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        5,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        5,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        6,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        7,
+        "linkedFactions",
+        0
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    },
+    {
+      "path": [
+        "currentIssues",
+        7,
+        "linkedFactions",
+        1
+      ],
+      "from": "金国（大金）",
+      "to": "大金",
+      "isKey": false
+    },
+    {
+      "path": [
+        "openingAudiences",
+        1,
+        "fromFaction"
+      ],
+      "from": "宋朝廷",
+      "to": "大宋",
+      "isKey": false
+    }
+  ],
+  "preexistingStaleArtifacts": [
+    "web\\bundled-scenarios\\晚唐·开成五年（官方）.json",
+    "web\\tm-official-scenario-bundle.js",
+    "web\\preview\\official-scenarios-bundle.js",
+    "web\\bundled-scenarios\\manifest.json",
+    "web\\bundled-scenarios\\manifest.js"
+  ],
+  "written": [
+    "scenarios\\绍宋·建炎元年八月（官方）.json",
+    "web\\scenarios\\shaosong-jianyan-1127.js",
+    "web\\bundled-scenarios\\绍宋·建炎元年八月（官方）.json",
+    "web\\bundled-scenarios\\晚唐·开成五年（官方）.json",
+    "web\\tm-official-scenario-bundle.js",
+    "web\\preview\\official-scenarios-bundle.js",
+    "web\\bundled-scenarios\\manifest.json",
+    "web\\bundled-scenarios\\manifest.js"
+  ],
+  "applied": true
+}

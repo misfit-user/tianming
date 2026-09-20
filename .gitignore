@@ -122,3 +122,9 @@ release-hot/.env.local
 !release-hot/.env.local.example
 
 release-hot/hot-latest.json
+
+# Shared 2.5D runtime textures: required by fresh Pages checkouts.
+!web/vendor/shanhe25d/height.png
+!web/vendor/shanhe25d/albedo.webp
+!web/vendor/shanhe25d/fallback.webp
+!web/vendor/shanhe25d/water.png

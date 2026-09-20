@@ -152,7 +152,7 @@ if (coreApply) {
   const coreSource = writebackParsed.source.slice(coreApply.start, coreApply.end);
   check(coreSource.indexOf('_validateAndRepairMainWriteback') >= 0
     && coreSource.indexOf('_validateAndRepairMainWriteback') < coreSource.indexOf('applyAITurnChanges'), 'strict preflight must precede the atomic applier');
-  check(/_strictValidation\s*:\s*true/.test(coreSource) && /throw\s+new Error\(['\"]AI 主写回未能原子提交/.test(coreSource), 'main writeback retains all-or-nothing rejection semantics');
+  check(/_strictValidation\s*:\s*true/.test(coreSource) && /failedWriteback = new Error/.test(coreSource) && /failedWriteback\.writebackFailures\s*=/.test(coreSource) && /throw failedWriteback/.test(coreSource), 'main writeback retains all-or-nothing rejection semantics');
   check(!/ignore(?:Failures?|Errors?)|partialCommit|continueOnError/i.test(coreSource), 'main writeback must not enable partial success');
 }
 const targetedRepair = writebackFunctions.get('_applyTargetedWritebackRepairs');
@@ -224,8 +224,10 @@ runtimeFiles.forEach((file) => {
 
 const infraParsed = parse('tm-ai-infra.js');
 const infraFunctions = functionsByName(infraParsed);
+const retryFunctions = functionsByName(parse('tm-ai-infra-retry.js'));
 ['_aiFetchWithRetryInner', '_toolFetchQueued', '_callAIMessagesStreamDirect'].forEach((name) => {
-  const fn = infraFunctions.get(name);
+  const fn = name === '_callAIMessagesStreamDirect' ? retryFunctions.get(name) : infraFunctions.get(name);
+  if (name === '_callAIMessagesStreamDirect') check(!infraFunctions.get(name), 'stream transport must have exactly one provider after relocation');
   check(!!fn, 'missing abort-cleanup guarded function ' + name);
   if (!fn) return;
   let adds = 0;

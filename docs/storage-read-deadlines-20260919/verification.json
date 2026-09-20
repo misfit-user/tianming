@@ -1,0 +1,246 @@
+{
+  "at": "2026-09-19T09:40:35.323Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/scripts/lib-storage-read-deadlines.js",
+      "sha256": "c95c85e1a690061e0d0fdc2f1fa368a38bfa03df8972760cbd284f2f4f815fa1",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "bytes": 6343
+    },
+    {
+      "file": "web/scripts/smoke-storage-read-deadlines.js",
+      "sha256": "dacd3d522d1e719e227402fdbaad8c4c2121e5488ada47af07cbf805eb4c0af1",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "bytes": 9448
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "19c1079d89248417d9be71a49543881fc0c5254e96ffb0e6b23b9b0e1dee6f74",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "bytes": 43477
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "fa1ee59bb0de3c04ae198f0e2860a6b52d70ecb5fff8c8b41938c5bb4c7de7fd",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "bytes": 81629
+    }
+  ],
+  "quality": [
+    {
+      "check": "web/tm-state-snapshot.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-core.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-render.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-response-recovery.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra-retry.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage createCanonicalPayload unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _checksumJson unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _putSaveRecord unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _putSaveRecordsAtomic unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _put unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _putManyAtomic unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _del unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _deleteSaveRecord unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _deleteMany unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage save unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage saveManyAtomic unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage clearPendingTurnDataPublishAtomic unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _migrateFromLocalStorage unchanged",
+      "ok": true
+    },
+    {
+      "check": "Storage _migrateFromOldDB unchanged",
+      "ok": true
+    },
+    {
+      "check": "DB_VERSION remains 6",
+      "ok": true
+    }
+  ],
+  "baseline": {
+    "selected": 12,
+    "pass": 12,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "final": {
+    "selected": 13,
+    "pass": 13,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "extended": {
+    "selected": 201,
+    "pass": 200,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "testsComplete": true,
+  "newTests": [
+    {
+      "name": "smoke-storage-read-deadlines.js",
+      "pass": true,
+      "detail": "{\"pass\":20,\"fail\":0,\"total\":20}"
+    }
+  ],
+  "extendedFailures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "priorExtendedFailures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "diff": {
+    "exit": 0,
+    "output": ""
+  },
+  "reproduced": [
+    {
+      "label": "before",
+      "scenario": "open-never-responds",
+      "deadlineEvents": 0,
+      "settled": false,
+      "error": ""
+    },
+    {
+      "label": "before",
+      "scenario": "record-never-responds",
+      "deadlineEvents": 0,
+      "settled": false,
+      "error": "",
+      "unchangedRecords": true
+    },
+    {
+      "label": "before",
+      "scenario": "blocked-open-late-success",
+      "lateConnectionClosed": 0,
+      "lateConnectionBecameAvailable": true
+    },
+    {
+      "label": "after",
+      "scenario": "open-never-responds",
+      "deadlineEvents": 1,
+      "settled": true,
+      "error": "SAVE_OPEN_TIMEOUT"
+    },
+    {
+      "label": "after",
+      "scenario": "record-never-responds",
+      "deadlineEvents": 1,
+      "settled": true,
+      "error": "SAVE_READ_TIMEOUT",
+      "unchangedRecords": true
+    },
+    {
+      "label": "after",
+      "scenario": "blocked-open-late-success",
+      "lateConnectionClosed": 1,
+      "lateConnectionBecameAvailable": false
+    }
+  ]
+}

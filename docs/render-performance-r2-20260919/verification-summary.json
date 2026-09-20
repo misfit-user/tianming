@@ -1,0 +1,107 @@
+{
+  "head": "5bef8008",
+  "scope": {
+    "scanned": 706,
+    "renderHits": 37
+  },
+  "installed": [
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "19009cda0532e56dc4aa832671825a1d5ee3ef71acf1b19ebafec31188e38268"
+    },
+    {
+      "file": "web/tm-renwu-ui.js",
+      "sha256": "0cea6a53ebf589ccd738b671b8b3e062c8d52bf3e52715cd68bb416c0c7a3187"
+    },
+    {
+      "file": "web/battle/index.html",
+      "sha256": "8eacc583b4e0fe0c517f5a6e33702325b76988b5e39d943992d37c0bebd497ff"
+    },
+    {
+      "file": "web/scripts/smoke-map-viewport-collision.js",
+      "sha256": "6d96828c4727c4a11e7dc29090bb0d968d284ef6eca5abcbd6844eb12721066d"
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "a77a019c0db534123cd0f06d6410eb704e3c8e247448015627b6e6f49c2abda8"
+    },
+    {
+      "file": "web/tm-map-realm-layout.js",
+      "sha256": "6a28af18d333bcecca0f7476acf15f0763ea3f12e6c3551aee69bb764d709fc6"
+    }
+  ],
+  "tests": [
+    {
+      "test": "smoke-render-performance-r2.mjs",
+      "code": 0
+    },
+    {
+      "test": "smoke-raster-display-cache.mjs",
+      "code": 0
+    },
+    {
+      "test": "smoke-perf-map-render-path.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-map-viewport-collision.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-map-zoom-preload.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-battle-render-assets.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-battle-render-resolution.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-render-query-budget.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-culture-raster-performance.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-minimap-idle-render.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-battle-hud-retained.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-hover-fulltext.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-phase8-map-live-panels.js",
+      "code": 0
+    },
+    {
+      "test": "smoke-map-realm-layout.js",
+      "code": 0
+    }
+  ],
+  "baselineTests": {
+    "passed": 6,
+    "failed": 10
+  },
+  "finalTests": {
+    "passed": 16,
+    "failed": 0
+  },
+  "syntaxFiles": [
+    "web/phase8-formal-map.js",
+    "web/tm-map-realm-layout.js",
+    "web/tm-renwu-ui.js",
+    "web/scripts/verify-all.js",
+    "web/scripts/smoke-map-viewport-collision.js"
+  ],
+  "diffCheck": 0
+}

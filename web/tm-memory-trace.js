@@ -418,7 +418,7 @@
     if (!Array.isArray(trace.compiledContexts)) trace.compiledContexts = [];
     var compiled = data.compiled && typeof data.compiled === 'object' ? data.compiled : {};
     var diagnostics = compiled.diagnostics || {};
-    var hits = Array.isArray(data.items) ? data.items : (Array.isArray(compiled.hits) ? compiled.hits : []);
+    var hits = Array.isArray(compiled.injectedHits) ? compiled.injectedHits : (Array.isArray(data.items) ? data.items : (Array.isArray(compiled.hits) ? compiled.hits : []));
     var text = data.text != null ? data.text : (compiled.text || '');
     var tokenEstimate = data.tokenEstimate != null ? Number(data.tokenEstimate) : Number(compiled.tokenEstimate || 0);
     if (!tokenEstimate) tokenEstimate = estimateTokens(text);
@@ -426,6 +426,13 @@
     suppressed = suppressed.concat(Array.isArray(compiled.suppressed) ? compiled.suppressed : []);
     suppressed = suppressed.concat(Array.isArray(diagnostics.suppressed) ? diagnostics.suppressed : []);
     suppressed = suppressed.concat(Array.isArray(data.suppressed) ? data.suppressed : []);
+    var suppressedSeen = Object.create(null);
+    suppressed = suppressed.filter(function(row) {
+      var key = [row && row.id, row && row.source, row && row.reason, row && row.by, row && (row.budgetStage || row.stage)].join('|');
+      if (suppressedSeen[key]) return false;
+      suppressedSeen[key] = true;
+      return true;
+    });
     var item = {
       id: String(data.id || 'compiled-context'),
       stage: String(data.stage || ''),
@@ -440,7 +447,9 @@
       textTokensEstimate: tokenEstimate,
       textPreview: safePreview(text, 12),
       maxTokens: data.maxTokens != null ? Number(data.maxTokens || 0) : Number(compiled.maxTokens || 0),
-      sectionCounts: sectionCounts(compiled.sections),
+      sectionCounts: sectionCounts(compiled.injectedSections || compiled.sections),
+      candidateCount: Array.isArray(compiled.hits) ? compiled.hits.length : hits.length,
+      injectedCount: hits.length,
       countsByType: countByField(hits, 'type'),
       countsBySource: countByField(hits, 'source'),
       countsByLane: countByField(hits, 'lane'),

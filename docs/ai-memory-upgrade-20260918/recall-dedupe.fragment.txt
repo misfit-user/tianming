@@ -1,0 +1,28 @@
+    var seenRecallIds = Object.create(null), seenRecallFacts = Object.create(null);
+    var recallPolicy = {};
+    Object.keys(opts).forEach(function(k) { recallPolicy[k] = opts[k]; });
+    recallPolicy.intent = opts.intent || 'historical_evidence';
+    diagnostics.duplicates = 0;
+    function duplicateAuthority(item) {
+      var h = item.hit || {}, registry = root.TM && root.TM.MemoryEvidenceRegistry;
+      var rank = h.authorityRank != null ? Number(h.authorityRank) : (registry && registry.getAuthorityRank ? registry.getAuthorityRank(h.authority) : 0);
+      return Number.isFinite(rank) ? rank : 0;
+    }
+    flat = flat.slice().sort(function(a, b) { return duplicateAuthority(b) - duplicateAuthority(a) || sortBudgetItems(a, b); }).filter(function(item) {
+      var hit = item.hit || {};
+      var reason = suppressionReason(hit, recallPolicy);
+      var scope = [hit.worldId, hit.saveId, hit.timelineId, hit.readScope, hit.ownerScope].join('|');
+      var id = hit.id || hit.key || hit.uuid;
+      var idKey = id ? scope + '|id:' + String(id) : '';
+      var factKey = scope + '|' + sourceOf(hit) + '|' + textOf(hit).replace(/\s+/g, ' ').trim();
+      if (!reason && ((idKey && seenRecallIds[idKey]) || seenRecallFacts[factKey])) reason = 'duplicate_memory_fact';
+      if (reason) {
+        var omitted = compactSuppressed(hit, reason, { budgetStage: 'dedupe', cost: item.cost });
+        suppressed.push(omitted); diagnostics.suppressed.push(omitted); diagnostics.dropped++;
+        if (reason === 'duplicate_memory_fact') diagnostics.duplicates++;
+        return false;
+      }
+      if (idKey) seenRecallIds[idKey] = true;
+      seenRecallFacts[factKey] = true;
+      return true;
+    }).sort(function(a, b) { return a.groupIndex - b.groupIndex || a.hitIndex - b.hitIndex; });

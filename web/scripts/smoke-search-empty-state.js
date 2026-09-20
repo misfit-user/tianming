@@ -13,10 +13,23 @@ console.log('smoke-search-empty-state');
 
 // ── ① 地图搜索 ──
 const mapSrc = fs.readFileSync(path.join(ROOT,'phase8-formal-map.js'),'utf8');
-ok(/host\.innerHTML = rows\.length \?/.test(mapSrc), '① 地图结果走 rows.length 三元(空不再清空 host)');
+ok(/var resultsHtml = rows\.length \?/.test(mapSrc) && mapSrc.includes('mapHTML(host, resultsHtml);'), '① 完整搜索结果交给实际保留式渲染器，空状态不丢失');
 ok(mapSrc.indexOf('无匹配地块')>=0, '① 有查询无命中→「无匹配地块」');
 ok(mapSrc.indexOf('输入地名以检索')>=0, '① 空查询→「输入地名以检索」');
 ok(/\(query \? '无匹配地块' : '输入地名以检索'\)/.test(mapSrc), '① 两态按 query 区分');
+
+// Execute the actual search renderer: both empty states remain visible, and only identical writes are skipped.
+{
+ const vm=require('vm'),{functionSource}=require('./lib-perf-round1');let value='',writes=0;
+ const host={get innerHTML(){return value;},set innerHTML(v){writes++;value=v;}};
+ const c={document:{getElementById:()=>host},getMapData:()=>({regions:Array.from({length:8},(_,i)=>({id:'r'+i,name:'河州'+i}))}),regionSearchText:r=>r.name,attr:String,esc:String,ownerName:()=> '测试政权'};
+ vm.createContext(c);vm.runInContext('var _mapHTMLCache = new WeakMap();\n'+functionSource(mapSrc,'mapHTML')+'\n'+functionSource(mapSrc,'renderMapSearchResults'),c);
+ c.renderMapSearchResults('');ok(value.includes('输入地名以检索'),'① 空查询执行后保留提示');
+ c.renderMapSearchResults('missing');ok(value.includes('无匹配地块'),'① 未命中执行后保留提示');
+ c.renderMapSearchResults('河州');ok((value.match(/<button/g)||[]).length===6,'① 命中列表仍保留六项');
+ const before=writes;c.renderMapSearchResults('河州');ok(writes===before,'① 内容一致时不重复写 DOM');
+ c.renderMapSearchResults('河州7');ok(value.includes('河州7')&&!value.includes('河州0'),'① 改变查询后实际更新结果');
+}
 
 // ── ② 人物名册筛选 ──
 const modSrc = fs.readFileSync(path.join(ROOT,'phase8-formal-modules.js'),'utf8');

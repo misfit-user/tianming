@@ -1,0 +1,38 @@
+[
+  {
+    "file": "web/phase8-formal-map.js",
+    "sha256": "19009cda0532e56dc4aa832671825a1d5ee3ef71acf1b19ebafec31188e38268",
+    "currentSha256": "3f57c121bdfa622878d9b12272114bc195b67153fcca006b3da6276306903afc",
+    "unchangedSinceInstall": false
+  },
+  {
+    "file": "web/tm-renwu-ui.js",
+    "sha256": "0cea6a53ebf589ccd738b671b8b3e062c8d52bf3e52715cd68bb416c0c7a3187",
+    "currentSha256": "0cea6a53ebf589ccd738b671b8b3e062c8d52bf3e52715cd68bb416c0c7a3187",
+    "unchangedSinceInstall": true
+  },
+  {
+    "file": "web/battle/index.html",
+    "sha256": "8eacc583b4e0fe0c517f5a6e33702325b76988b5e39d943992d37c0bebd497ff",
+    "currentSha256": "8eacc583b4e0fe0c517f5a6e33702325b76988b5e39d943992d37c0bebd497ff",
+    "unchangedSinceInstall": true
+  },
+  {
+    "file": "web/scripts/smoke-map-viewport-collision.js",
+    "sha256": "6d96828c4727c4a11e7dc29090bb0d968d284ef6eca5abcbd6844eb12721066d",
+    "currentSha256": "6d96828c4727c4a11e7dc29090bb0d968d284ef6eca5abcbd6844eb12721066d",
+    "unchangedSinceInstall": true
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "sha256": "a77a019c0db534123cd0f06d6410eb704e3c8e247448015627b6e6f49c2abda8",
+    "currentSha256": "a77a019c0db534123cd0f06d6410eb704e3c8e247448015627b6e6f49c2abda8",
+    "unchangedSinceInstall": true
+  },
+  {
+    "file": "web/tm-map-realm-layout.js",
+    "sha256": "6a28af18d333bcecca0f7476acf15f0763ea3f12e6c3551aee69bb764d709fc6",
+    "currentSha256": "6a28af18d333bcecca0f7476acf15f0763ea3f12e6c3551aee69bb764d709fc6",
+    "unchangedSinceInstall": true
+  }
+]

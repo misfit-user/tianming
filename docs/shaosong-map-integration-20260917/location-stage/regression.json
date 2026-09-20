@@ -1,0 +1,98 @@
+{
+  "started": "2026-09-17T11:54:18.379Z",
+  "complete": true,
+  "results": [
+    {
+      "job": "smoke-army-march-order.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 130,
+      "tail": "  ✓ 地图模式无路可达→拒单不造瞬移单\n  ✓ 地图模式A*成路(3领地/驿道→2回合)\n  ✓ 抵达自动接防(location/state 更新)\n  ✓ 到达单清理\n— §b · 接线契约 —\n  ✓ MarchSystem 导出 orderMarch\n  ✓ 引擎闸带设置旁路\n  ✓ 军事要务面板移防钮+目的地模态在\n  ✓ capture 段拦截(防触发整行详情 onclick)\n  ✓ UI 走引擎校验口(不绕闸)\n  ✓ 设置面板开关在(玩法机制·深化)\n\nsmoke-army-march-order PASS 24/24\n"
+    },
+    {
+      "job": "smoke-army-march-viz.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 126,
+      "tail": "smoke-army-march-viz OK — 行军可视化(抽屉 runtime 9 + 过回合静态 2 + 右栏静态 2)验证通过\n"
+    },
+    {
+      "job": "smoke-army-panel-lag-guards.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 126,
+      "tail": "smoke-army-panel-lag-guards OK\n"
+    },
+    {
+      "job": "smoke-army-recruit-cost.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 140,
+      "tail": "PASS smoke-army-recruit-cost · 27 断言\n"
+    },
+    {
+      "job": "smoke-phase8-map-live-panels.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 7077,
+      "tail": "[smoke-phase8-map-live-panels] PASS\n"
+    },
+    {
+      "job": "smoke-wentian-hardchange.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 335,
+      "tail": "[smoke-wentian-hardchange] PASS\n"
+    },
+    {
+      "job": "smoke-map-live-vitals.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 147,
+      "tail": "  PASS corruption 取 vitals 首位\n  PASS prosperity 取 vitals 首位\n  PASS 活民心覆盖 minxinLocal+minxin 双键\n  PASS vitals 挂 data 供册页直取\n  PASS regionBundle 返回带 vitals\n  PASS armyViewScore 读绑定活军\n  PASS 军务计活态兵变险+欠饷\n  PASS 无静态军压时，真实欠饷仍显示压力\n  PASS 兵变风险按活军抬高军务压力\n  PASS 缺基础军账时交战状态仍显示危急\n  PASS 缺军务账不捏造25分\n\n[smoke-map-live-vitals] PASS — 23 passed, 0 failed\n"
+    },
+    {
+      "job": "smoke-map-realm-layout.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 336,
+      "tail": "PASS 21 realm layout contracts: SVG authority and disjoint islands remain separate; evenodd enclave and lake holes exclude labels; sub-grid inlets and small holes are not missed by rectangular label sampling; relative coordinates, exponent syntax, curves and SVG arcs; territory union crosses internal provincial borders; thin north-south territory uses upright vertical text; concave shape and separated overseas territory never put label across the sea; real size rather than global ranking determines font; overlapping and repeated regions do not inflate the union font; same-count in-place vertex edits invalidate geometry and layout; duplicate IDs do not alias and immutable sources stay untouched; invalid and empty data is bounded; malformed optional geometry cannot crash a custom map; realm cancels same-owner province edges, province cancels only same-parent prefectures; T-junction edge segmentation cancels both halves without deleting the coastline; duplicate polygons with opposite winding preserve real coasts and lake holes; geometry, ownership, parent and circuit registry names are live without source mutation; missing administrative hierarchy does not merge independent provinces; plain-label presentation never generates cards, leader lines or replacement pins; unclassified legacy regions retain title overrides and tolerate an absent registry; each administrative scale has its own cached geometry-fit resolution and remains inside land\n"
+    },
+    {
+      "job": "smoke-stable-id-reference-integrity.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 114,
+      "tail": "  PASS - order-independent migration records schema version 3\n  PASS - explicit source identity remains stable across display-name changes\n  PASS - direct adminHierarchy.divisions layouts also receive stable IDs\n  PASS - invalid faction references are repaired from unique legacy names\n  PASS - invalid commanderId is repaired from the unique commander name\n  PASS - relative and office-holder IDs are repaired from unique legacy names\n  PASS - legacy child and crown-prince name references migrate to stable IDs\n  PASS - repaired stable foreign keys pass closure validation\n  PASS - unrepairable dangling commanderId is rejected before gameplay opens\n  PASS - dangling kinship IDs are rejected before gameplay opens\n  PASS - indistinguishable legacy entities are rejected before path order can become identity\n\n[smoke-stable-id-reference-integrity] 13 passed / 0 failed\n"
+    },
+    {
+      "job": "lint-arch-all.js",
+      "passed": false,
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "ms": 45849,
+      "tail": "        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-pause-fab.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-capacitor-boot.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-capacitor-boot.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-touch-gestures.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-touch-gestures.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-pinch-pan.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-pinch-pan.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-hover-fulltext.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-hover-fulltext.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-startup-contract.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-startup-contract.js\n\n[lint-arch-all] FAIL — 6/13 项未过\n"
+    }
+  ],
+  "passed": 9,
+  "failed": 1
+}

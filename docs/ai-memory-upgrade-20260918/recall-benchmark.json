@@ -1,0 +1,22 @@
+{
+  "before": {
+    "fixtureQueries": 40,
+    "candidates": 80,
+    "selected": 40,
+    "uniqueRecallFacts": 1,
+    "recallTokens": 1200,
+    "recallMedianMs": 2.037,
+    "emittedUniqueFacts": 1,
+    "compiledTokens": 65
+  },
+  "after": {
+    "fixtureQueries": 40,
+    "candidates": 80,
+    "selected": 41,
+    "uniqueRecallFacts": 41,
+    "recallTokens": 1070,
+    "recallMedianMs": 2.58,
+    "emittedUniqueFacts": 32,
+    "compiledTokens": 1172
+  }
+}

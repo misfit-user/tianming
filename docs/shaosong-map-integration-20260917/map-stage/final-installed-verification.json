@@ -1,0 +1,102 @@
+{
+  "checkedAt": "2026-09-17T11:20:54.514Z",
+  "sourceSha256": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "sourceBytes": 91172704,
+  "officialMapApplied": true,
+  "releaseReady": false,
+  "passed": 13,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "installed-source-matches-verified-candidate",
+      "passed": true
+    },
+    {
+      "name": "official-id-and-original-protagonist",
+      "passed": true
+    },
+    {
+      "name": "only-required-top-level-adaptation",
+      "passed": true
+    },
+    {
+      "name": "all-original-character-fields-preserved",
+      "passed": true
+    },
+    {
+      "name": "all-original-army-fields-preserved",
+      "passed": true
+    },
+    {
+      "name": "events-social-offices-treasuries-preserved",
+      "passed": true
+    },
+    {
+      "name": "map-mirror-and-three-tiers",
+      "passed": true
+    },
+    {
+      "name": "country-names",
+      "passed": true
+    },
+    {
+      "name": "account-identity-closure",
+      "passed": true
+    },
+    {
+      "name": "every-source-account-quantities-and-local-state",
+      "passed": true,
+      "detail": {
+        "quantityAssertions": 9646,
+        "stateAssertions": 27443
+      }
+    },
+    {
+      "name": "all-original-armies-bind-to-existing-map-id",
+      "passed": true
+    },
+    {
+      "name": "runtime-files-match-tested-snapshots",
+      "passed": true
+    },
+    {
+      "name": "installed-electron-map-tiers",
+      "passed": true,
+      "detail": {
+        "world": {
+          "running": true,
+          "sid": "sc-jianyan1-1127-shaosong",
+          "regions": 566,
+          "player": "大宋",
+          "characters": 485,
+          "armies": 103
+        },
+        "checks": 9,
+        "ms": 67639
+      }
+    }
+  ],
+  "counts": {
+    "regions": 566,
+    "circuits": 101,
+    "originalAccounts": 182,
+    "accountingFragments": 596,
+    "characters": 501,
+    "armies": 100,
+    "events": 59
+  },
+  "sourcePopulation": 111249000,
+  "mappedPopulation": 111249000,
+  "imperialAssets": {
+    "zhizao": 74,
+    "kuangchang": 47,
+    "yuyao": 70
+  },
+  "unresolvedCharacterLocations": 291,
+  "notes": [
+    "原始角色所在地文字保留；无法唯一定位者不迁往势力中心",
+    "按新地域结算的整数舍入与原粗地区可有微小差异",
+    "没有执行真实用户存档迁移、联网AI或全系统长局",
+    "全仓门禁另有既有失败及资源不足记录，未视为发布通过"
+  ]
+}

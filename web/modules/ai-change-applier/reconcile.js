@@ -81,7 +81,8 @@ export function createReconcile(deps) {
         result.failed.push({ char_update: cu.name || '', reason: 'sensitive death fields require character_deaths' });
         return;
       }
-      var ch = _strictLivingChar(G, cu.name);
+      var resolved = _tmResolveStableOrUniqueIdentity(G.chars, cu.characterId || cu.charId, cu.name);
+      var ch = resolved.entity && resolved.entity.alive !== false && !resolved.entity.dead ? resolved.entity : null;
       if (!ch) {
         result.failed.push({ char_update: cu.name || '', reason: 'death target must be an existing living character' });
         return;
@@ -1079,6 +1080,40 @@ export function createReconcile(deps) {
    * 对 detached AI 输出执行严格预检。旧 preflight 的“剔除坏项后继续”仅保留给
    * 兼容调用；主回合使用本入口，任何剔除或弱引用都转成结构化失败。
    */
+  function _validateIdentityAgreement(G, output, failures) {
+    function check(field, list, ids, names) {
+      (Array.isArray(output[field]) ? output[field] : []).forEach(function(item,index) {
+        if (!item || !Array.isArray(list)) return;
+        var anchors = ids.map(function(k) { return item[k]; }).filter(function(v) { return v != null && String(v).trim(); }).map(function(v) {
+          var matches = list.filter(function(row) { return row && String(row.id) === String(v).trim(); });
+          return matches.length === 1 ? matches[0] : null;
+        }).filter(Boolean);
+        if (!anchors.length) return;
+        var entity=anchors[0], conflict=anchors.some(function(row) { return row !== entity; });
+        names.forEach(function(k) {
+          if (item[k] == null || !String(item[k]).trim()) return;
+          var accepted = [entity.id,entity.name].concat(Array.isArray(entity.aliases)?entity.aliases:[]).map(String);
+          if (accepted.indexOf(String(item[k]).trim()) < 0) conflict=true;
+        });
+        if (conflict) failures.push({field:field,index:index,code:'conflicting-identity',target:entity.id,reason:'stable identity conflicts with another supplied identity',retryable:false});
+      });
+    }
+    ['char_updates','appointments','office_assignments','personnel_changes','character_deaths'].forEach(function(f) { check(f,G.chars,['characterId','charId'],['name','charName','character']); });
+    ['faction_updates','faction_dissolve','faction_succession'].forEach(function(f) { check(f,G.facs,['factionId','id'],['name','faction']); });
+    check('faction_succession',G.chars,['newLeaderId'],['newLeader']);
+  }
+  function _normalizeCharacterUpdateAliases(output, failures) {
+    (Array.isArray(output.char_updates) ? output.char_updates : []).forEach(function(row,index) {
+      if (!row || row.changes == null) return;
+      var a=row.changes, b=row.updates;
+      if (typeof a !== 'object' || Array.isArray(a) || b != null && (typeof b !== 'object' || Array.isArray(b))) {
+        failures.push({field:'char_updates',index:index,code:'invalid-update-shape',retryable:false,reason:'changes/updates must be objects'}); return;
+      }
+      var merged=Object.assign({}, a, b || {}), conflict=Object.keys(a).some(function(k) { return b && Object.prototype.hasOwnProperty.call(b,k) && JSON.stringify(a[k]) !== JSON.stringify(b[k]); });
+      if (conflict) failures.push({field:'char_updates',index:index,code:'conflicting-update-fields',retryable:false,reason:'changes and updates disagree'});
+      else { row.updates=merged; delete row.changes; }
+    });
+  }
   function validateAIWriteBackBatch(aiOutput, opts) {
     opts = opts || {};
     var G = global.GM;
@@ -1086,7 +1121,9 @@ export function createReconcile(deps) {
     if (!G || typeof G !== 'object' || !aiOutput || typeof aiOutput !== 'object' || Array.isArray(aiOutput)) {
       return { ok: false, output: null, failures: [{ field: '', index: null, code: 'invalid-writeback-batch', target: '', retryable: false, reason: 'GM and AI writeback must be objects' }] };
     }
+    _validateIdentityAgreement(G, aiOutput, failures);
     var detached = _tmCloneWriteback(aiOutput);
+    _normalizeCharacterUpdateAliases(detached, failures);
     var previousCollector = _tmPreflightCollector;
     var previousSideEffects = _tmPreflightSideEffects;
     var previousContext = _tmPreflightContext;
@@ -1342,21 +1379,22 @@ export function createReconcile(deps) {
 
   function _captureValidatorBaseline(G) {
     var out = {};
-    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) { out[key] = Array.isArray(G && G[key]) ? G[key].length : 0; });
+    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) { out[key] = new Set(Array.isArray(G && G[key]) ? G[key] : []); });
     return out;
   }
 
   function _collectValidatorFailures(G, baseline) {
     var failures = [];
     _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
-      var rows = Array.isArray(G && G[key]) ? G[key].slice(baseline[key] || 0) : [];
+      var known = baseline[key] instanceof Set ? baseline[key] : new Set();
+      var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) { return !known.has(row); }) : [];
       rows.forEach(function(row) {
         if (!row || Number(row.turn || 0) !== Number((G && G.turn) || 0)) return;
         var details = [];
         ['warnings','missing','skipped','errors'].forEach(function(field) {
           if (Array.isArray(row[field]) && row[field].length) details = details.concat(row[field]);
         });
-        if (details.length) failures.push({ validator: key, reason: 'consistency validation failed', details: details.slice(0, 8) });
+        if (details.length) failures.push({ validator: key, field:key, code:'consistency-unlanded', reason: 'consistency validation failed', details: details.slice(0, 8), detailCount:details.length });
       });
     });
     return failures;
@@ -1387,22 +1425,20 @@ export function createReconcile(deps) {
   }
 
   function _captureAIStateObject(obj, runtimeKeys) {
-    var data = (typeof global.deepClone === 'function') ? global.deepClone(obj) : JSON.parse(JSON.stringify(obj));
-    var descriptors = {};
+    // Preserve runtime ownership before cloning; never detach properties from the live world.
+    var values = {}, descriptors = {};
     Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
-      var d = Object.getOwnPropertyDescriptor(obj, key);
-      if (!d) return;
-      // _indices is a derived Map cache, never transaction state. Restoring its
-      // descriptor can resurrect stale object references (or JSON-cloned {}).
-      if (key === '_indices') { try { delete data[key]; } catch (_) {} return; }
-      if ((runtimeKeys && runtimeKeys.indexOf(key) >= 0) || d.get || d.set ||
-          (Object.prototype.hasOwnProperty.call(d, 'value') && typeof d.value === 'function') ||
-          !Object.prototype.hasOwnProperty.call(data, key)) {
-        descriptors[key] = d;
-        try { delete data[key]; } catch (_) {}
+      var descriptor = Object.getOwnPropertyDescriptor(obj, key);
+      if (!descriptor || key === '_indices') return;
+      var runtime = runtimeKeys && runtimeKeys.indexOf(key) >= 0;
+      if (runtime || descriptor.get || descriptor.set || !descriptor.enumerable || typeof descriptor.value === 'function') {
+        descriptors[key] = descriptor;
+      } else {
+        Object.defineProperty(values, key, {value:descriptor.value, enumerable:true, configurable:true, writable:true});
       }
     });
-    return { data: data, descriptors: descriptors };
+    var data = (typeof globalThis.deepClone === 'function') ? globalThis.deepClone(values) : JSON.parse(JSON.stringify(values));
+    return {data:data, descriptors:descriptors};
   }
 
   function _restoreAIStateObject(target, snapshot) {
@@ -1453,6 +1489,10 @@ export function createReconcile(deps) {
         };
       }
       aiOutput = strictPreflight.output;
+    }
+    if (aiOutput._strictValidation !== true && (aiOutput.char_updates || []).some(function(row) { return row && row.changes != null; })) {
+      aiOutput=_tmCloneWriteback(aiOutput); var aliases=[]; _normalizeCharacterUpdateAliases(aiOutput, aliases);
+      if (aliases.length) return {ok:false, preflightRejected:true, applied:{failed:aliases}};
     }
     var gSnapshot, pSnapshot;
     try {

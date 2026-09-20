@@ -1,0 +1,228 @@
+ M README.md
+ M docs/chongzhen-prefecture-map-20260917/build-candidate.mjs
+ M docs/chongzhen-prefecture-map-20260917/work-location.json
+ M main-impl.js
+ M package.json
+ M preload-impl.js
+ M scenarios/天启七年·九月（官方）.json
+ M web/.hot-update-manifest.json
+ M web/battle/index.html
+ M web/bundled-scenarios/manifest.js
+ M web/bundled-scenarios/manifest.json
+ M web/changelog.json
+ M web/editor.html
+ M web/generated/tm-ai-change-applier.bundle.js
+ M web/index.html
+ M web/map-editor-culture-raster.js
+ M web/map-editor-minimap.js
+ M web/map-editor-rastermaps.js
+ M web/modules/ai-change-applier/core.js
+ M web/phase8-formal-bridge-styles.js
+ M web/phase8-formal-bridge.js
+ M web/phase8-formal-map-dossier.js
+ M web/phase8-formal-map.js
+ M web/preview/official-scenarios-bundle.js
+ M web/preview/scenario-editor-reset-data.js
+ M web/scenarios/shaosong-jianyan-1127.js
+ M web/scenarios/tianqi7-1627.js
+ M web/scripts/lib-perf-round1.js
+ M web/scripts/lint-renderer-writeback-boundaries.js
+ M web/scripts/smoke-agent-mode-s2.js
+ M web/scripts/smoke-agent-mode-tools.js
+ M web/scripts/smoke-building-appraisal-compat.js
+ M web/scripts/smoke-building-order-writeback.js
+ M web/scripts/smoke-endturn-baseline-helpers.js
+ M web/scripts/smoke-endturn-performance-optimizations.js
+ M web/scripts/smoke-map-viewport-collision.js
+ M web/scripts/smoke-memory-turn-output-contract.js
+ M web/scripts/smoke-model-probe-evidence.js
+ M web/scripts/smoke-runtime-save-consistency.js
+ M web/scripts/smoke-sc1q-sc19-upgrade.js
+ M web/scripts/smoke-search-empty-state.js
+ M web/scripts/smoke-social-foundation.js
+ M web/scripts/smoke-startup-phase-observability.js
+ M web/scripts/smoke-storage-atomic-batch.js
+ M web/scripts/smoke-tianqi-map-runtime.js
+ M web/scripts/smoke-tinyi-impeachment.js
+ M web/scripts/verify-all.js
+ M web/startup-script-phases.json
+ M web/tm-agent-kernel.js
+ M web/tm-ai-infra-json.js
+ M web/tm-ai-infra-model-detect.js
+ M web/tm-ai-infra-retry.js
+ M web/tm-ai-infra.js
+ M web/tm-ai-output-validator.js
+ M web/tm-ai-schema.js
+ M web/tm-building-orders.js
+ M web/tm-char-autogen.js
+ M web/tm-class-engine.js
+ M web/tm-context-zones.js
+ M web/tm-economy-engine.js
+ M web/tm-edict-parser.js
+ M web/tm-endturn-agent-depth-tools.js
+ M web/tm-endturn-agent-intent-plan.js
+ M web/tm-endturn-agent-mode.js
+ M web/tm-endturn-agent-read-tools.js
+ M web/tm-endturn-agent-write-tools.js
+ M web/tm-endturn-ai-infer.js
+ M web/tm-endturn-ai-sc1-budget.js
+ M web/tm-endturn-ai.js
+ M web/tm-endturn-apply-stages.js
+ M web/tm-endturn-apply.js
+ M web/tm-endturn-core.js
+ M web/tm-endturn-edict.js
+ M web/tm-endturn-followup.js
+ M web/tm-endturn-helpers.js
+ M web/tm-endturn-pipeline-steps.js
+ M web/tm-endturn-prompt.js
+ M web/tm-endturn-render.js
+ M web/tm-endturn-systems.js
+ M web/tm-endturn-timing-ledger.js
+ M web/tm-faction-membership.js
+ M web/tm-faction-npc-guoku.js
+ M web/tm-feature-loader.js
+ M web/tm-fiscal-engine.js
+ M web/tm-game-loop.js
+ M web/tm-guoku-engine.js
+ M web/tm-guoku-panel.js
+ M web/tm-history-events.js
+ M web/tm-huji-runtime-bridge.js
+ M web/tm-indices.js
+ M web/tm-lizhi-panel.js
+ M web/tm-map-label-collide.js
+ M web/tm-map-locations.js
+ M web/tm-memory-agent-tools.js
+ M web/tm-memory-context-compiler.js
+ M web/tm-memory-controls.js
+ M web/tm-memory-envelope.js
+ M web/tm-memory-governance.js
+ M web/tm-memory-retrieval.js
+ M web/tm-memory-steward.js
+ M web/tm-memory-trace.js
+ M web/tm-memory-turn-inference.js
+ M web/tm-memory-turn-rollup.js
+ M web/tm-memory-writegate.js
+ M web/tm-military.js
+ M web/tm-minxin-hard-link-consumers.js
+ M web/tm-neitang-engine.js
+ M web/tm-neitang-panel.js
+ M web/tm-office-system.js
+ M web/tm-official-scenario-bundle.js
+ M web/tm-official-scenario-seeder.js
+ M web/tm-patches-start.js
+ M web/tm-player-core.js
+ M web/tm-player-settings.js
+ M web/tm-renwu-tuzhi.js
+ M web/tm-save-close-flush.js
+ M web/tm-save-lifecycle.js
+ M web/tm-save-manager.js
+ M web/tm-semantic-recall.js
+ M web/tm-start-runtime-manifest.json
+ M web/tm-state-snapshot.js
+ M web/tm-storage.js
+ M web/tm-three-systems-ui.js
+ M web/tm-topbar-vars.js
+ M web/tm-utils.js
+ M web/tm-world.js
+?? _shaosong-1350.json
+?? docs/ai-memory-upgrade-20260918/
+?? docs/ai-memory-upgrade-r2-20260918/
+?? docs/chongzhen-map-r2-20260918/
+?? docs/chongzhen-map-r3-20260918/
+?? docs/chongzhen-prefecture-map-20260917/apply-candidate.mjs
+?? docs/chongzhen-prefecture-map-20260917/apply-membership.mjs
+?? docs/chongzhen-prefecture-map-20260917/final-verification.json
+?? docs/chongzhen-prefecture-map-20260917/finalize-delivery.mjs
+?? docs/chongzhen-prefecture-map-20260917/fix-location-loader.mjs
+?? docs/chongzhen-prefecture-map-20260917/fix-public-loader.mjs
+?? docs/chongzhen-prefecture-map-20260917/membership-extra.fragment.txt
+?? docs/chongzhen-prefecture-map-20260917/province-tests.fragment.txt
+?? docs/chongzhen-prefecture-map-20260917/register-location-service.mjs
+?? docs/chongzhen-prefecture-map-20260917/reports/
+?? docs/chongzhen-prefecture-map-20260917/retry-apply.mjs
+?? docs/chongzhen-prefecture-map-20260917/run-final-guards.mjs
+?? docs/chongzhen-prefecture-map-20260917/run-native-ui.mjs
+?? docs/chongzhen-prefecture-map-20260917/run-regressions.mjs
+?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs
+?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs.before-final
+?? docs/chongzhen-prefecture-map-20260917/test-candidate.mjs
+?? docs/chongzhen-prefecture-map-20260917/update-map-smoke.mjs
+?? docs/chongzhen-prefecture-map-20260917/verify-delivery.mjs
+?? docs/chongzhen-prefecture-map-20260917/verify-geometry.py
+?? docs/chongzhen-prefecture-map-20260917/verify-live-transfers.js
+?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs
+?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs.before-panorama
+?? docs/chongzhen-prefecture-map-20260917/使用与接入说明.md
+?? docs/chongzhen-prefecture-map-20260917/使用说明.md
+?? docs/chongzhen-prefecture-map-20260917/验收结果.json
+?? docs/desktop-autosave-reliability-20260919.setup.mjs
+?? docs/desktop-autosave-reliability-20260919/
+?? docs/desktop-bridge-reliability-20260919.setup.mjs
+?? docs/desktop-bridge-reliability-20260919/
+?? docs/endturn-commit-reliability-20260919.setup.mjs
+?? docs/endturn-commit-reliability-20260919/
+?? docs/endturn-final-closeout-20260919.setup.mjs
+?? docs/endturn-final-closeout-20260919/
+?? docs/endturn-recovery-20260919.setup.mjs
+?? docs/endturn-recovery-20260919/
+?? docs/endturn-reliability-20260918/
+?? docs/map-deep-zoom-20260918/
+?? docs/render-performance-20260919/
+?? docs/render-performance-r2-20260919/
+?? docs/render-performance-session-1789818088385/
+?? docs/shaosong-map-integration-20260917/
+?? docs/snapshot-deadlines-20260919.setup.mjs
+?? docs/snapshot-deadlines-20260919/
+?? docs/storage-read-deadlines-20260919.setup.mjs
+?? docs/storage-read-deadlines-20260919/
+?? docs/storage-write-reliability-20260919.setup.mjs
+?? docs/storage-write-reliability-20260919/
+?? web/data/maps/chongzhen-prefecture-r2/
+?? web/data/maps/chongzhen-prefecture-r3/
+?? web/data/maps/chongzhen-prefecture-v1/
+?? web/modules/ai-change-applier/policy-format.js
+?? web/scripts/fixtures/memory-hybrid-reference.js
+?? web/scripts/lib-desktop-autosave-reliability.js
+?? web/scripts/lib-desktop-bridge-reliability.js
+?? web/scripts/lib-memory-upgrade-r2.js
+?? web/scripts/lib-recovery-vault-fixture.js
+?? web/scripts/lib-save-commit-boundary.js
+?? web/scripts/lib-snapshot-deadlines.js
+?? web/scripts/lib-storage-read-deadlines.js
+?? web/scripts/lib-turn-reliability.js
+?? web/scripts/lib-turn-response-recovery.js
+?? web/scripts/smoke-battle-hud-retained.js
+?? web/scripts/smoke-battle-menu-render-idle.mjs
+?? web/scripts/smoke-culture-raster-performance.js
+?? web/scripts/smoke-desktop-autosave-reliability.js
+?? web/scripts/smoke-desktop-bridge-reliability.js
+?? web/scripts/smoke-final-recovery-races.js
+?? web/scripts/smoke-final-save-reconcile.js
+?? web/scripts/smoke-memory-adaptive-upgrade.js
+?? web/scripts/smoke-memory-boundary-upgrade.js
+?? web/scripts/smoke-memory-model-detection.js
+?? web/scripts/smoke-memory-scoring-equivalence.js
+?? web/scripts/smoke-memory-vector-upgrade.js
+?? web/scripts/smoke-minimap-idle-render.js
+?? web/scripts/smoke-raster-display-cache.mjs
+?? web/scripts/smoke-recovery-vault.js
+?? web/scripts/smoke-render-identity-cost.mjs
+?? web/scripts/smoke-render-query-budget.js
+?? web/scripts/smoke-save-codec-deadlines.js
+?? web/scripts/smoke-save-commit-boundary.js
+?? web/scripts/smoke-snapshot-deadlines.js
+?? web/scripts/smoke-storage-read-deadlines.js
+?? web/scripts/smoke-storage-write-reliability.js
+?? web/scripts/smoke-turn-memory-parity.js
+?? web/scripts/smoke-turn-recovery-quality.js
+?? web/scripts/smoke-turn-request-reliability.js
+?? web/scripts/smoke-turn-response-recovery.js
+?? web/scripts/smoke-turn-stream-reliability.js
+?? web/tm-endturn-recovery-vault.js
+?? web/tm-endturn-reliability.js
+?? web/tm-endturn-response-recovery.js
+?? web/tm-endturn-save-reconcile.js
+?? web/tm-memory-adaptive.js
+?? web/tm-memory-hybrid.js
+?? web/tm-memory-long-term.js
+?? web/tm-memory-mode-bridge.js

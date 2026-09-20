@@ -1,0 +1,7 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';
+const p='docs/map-deep-zoom-20260918/verify-zoom-ui.mjs';let t=fs.readFileSync(p,'utf8');
+const a="const atMax=await box();check('button-maximum-128'";
+assert.equal(t.split(a).length,2);
+const extra=`report.projection=await js(\`(()=>{const svg=document.getElementById('tmf-formal-map'),world=document.getElementById('tmf-map-world'),camera=svg.parentElement,stage=document.getElementById('ming-map-layer'),label=document.getElementById('tmf-label-world'),r=GM.mapData.regions.find(r=>r.id==='\${targetId}'),path=document.querySelector('#tmf-formal-map .tmf-region[data-region-id="\${targetId}"]');const info=n=>({tag:n.tagName,id:n.id,cls:n.className?.baseVal||n.className,rect:n.getBoundingClientRect().toJSON(),transform:n.getAttribute('transform'),style:n.getAttribute('style'),computed:{transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin,box:getComputedStyle(n).transformBox},ctm:n.getScreenCTM?.()?.toString()});return {map:{width:GM.mapData.width,height:GM.mapData.height},state:TMPhase8FormalBridge.__p8MapParts.state.mapView,viewBox:svg.getAttribute('viewBox'),preserve:svg.getAttribute('preserveAspectRatio'),nodes:[path,world,svg,camera,stage,label].filter(Boolean).map(info),target:{center:r.center}};})()\`);mark('projection-probe',report.projection);`;
+t=t.replace(a,extra+'\n const atMax=await box();check(\'button-maximum-128\'');
+fs.writeFileSync(p,t);console.log('Projection diagnostics added to isolated test host.');

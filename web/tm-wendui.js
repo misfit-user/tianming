@@ -1395,12 +1395,7 @@ async function _wdNpcInitiateSpeak(name) {
       if (_wdInitPending == null) return;
       var txt = _wdInitPending;
       var bubble = _$('wd-init-bubble');
-      if (bubble) {
-        var visible = _wdVisibleReplyPreview(txt);
-        bubble.textContent = visible || '…';
-      }
-      var _nearBottom = (chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight) < 80;
-      if (_nearBottom) chatEl.scrollTop = chatEl.scrollHeight;
+      if (bubble) _wdPaintStreamBubble(chatEl, bubble, _wdVisibleReplyPreview(txt), false);
     };
     var reply = await callAIMessagesStream(msgs, (typeof _aiDialogueTok==='function'?_aiDialogueTok("wd", 1):800), {
       tier: (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined,  // M3·问对走次 API
@@ -2156,6 +2151,20 @@ function _wdUpdateCounter() {
 /**
  * 渲染聊天历史 + 开场白
  */
+// Avoid repeated layout/selection resets while only hidden JSON metadata is streaming.
+function _wdPaintStreamBubble(chat, bubble, visible, clearColor){
+  if (!chat || !bubble || chat.isConnected === false || bubble.isConnected === false) return false;
+  if (typeof chat.contains === 'function' && !chat.contains(bubble)) return false;
+  var next = visible || '…';
+  if (clearColor && bubble.style.color !== '') bubble.style.color = '';
+  if (bubble.textContent === next) return false;
+  // Capture the player's scroll intent before a growing reply moves the bottom.
+  var follow = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 80;
+  bubble.textContent = next;
+  if (follow) chat.scrollTop = chat.scrollHeight;
+  return true;
+}
+
 function _wdRenderHistory(name, ch) {
   var chat = _$('wd-modal-chat'); if (!chat) return;
   chat.innerHTML = '';
@@ -2442,13 +2451,7 @@ async function sendWendui(){
         _wdStreamRaf = 0;
         if (_wdStreamPending == null) return;
         var txt = _wdStreamPending;
-        if (streamBubble && streamBubble.isConnected !== false) {
-          var visible = _wdVisibleReplyPreview(txt);
-          streamBubble.textContent = visible || '\u2026';
-          streamBubble.style.color = '';
-        }
-        var _nearBottom = (chat.scrollHeight - chat.scrollTop - chat.clientHeight) < 80;
-        if (_nearBottom) chat.scrollTop = chat.scrollHeight;
+        if (streamBubble && streamBubble.isConnected !== false) _wdPaintStreamBubble(chat, streamBubble, _wdVisibleReplyPreview(txt), true);
       };
       var rawReply = await callAIMessagesStream(messages, (typeof _aiDialogueTok==='function'?_aiDialogueTok("wd", 1):800), {
         tier: (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined,  // M3·问对走次 API

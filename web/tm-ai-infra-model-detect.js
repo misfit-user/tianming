@@ -753,10 +753,12 @@ async function probeModelEvidenceAudit(opts) {
   var chatUrl = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(_tier) : _buildAIUrl();
   if (!key || !chatUrl) throw new Error('未配置可用 API');
 
+  var _memoryPolicy = typeof window !== 'undefined' && window.TM && window.TM.MemoryAdaptive;
+  var _memoryLease = _memoryPolicy ? _memoryPolicy.beginProbe(_tier) : null;
   var startedAt = Date.now();
   var report = {
     tier: _tier,
-    profile: 'tm-realistic-evidence-v2',
+    profile: 'tm-realistic-evidence-v3',
     model: _aiCfg.model || '',
     responseModel: '',
     checks: [],
@@ -770,7 +772,7 @@ async function probeModelEvidenceAudit(opts) {
 
   function _addCheck(id, label, ok, detail, extra) {
     extra = extra || {};
-    var weight = Number(extra.weight || 10);
+    var weight = Number(extra.weight == null ? 10 : extra.weight);
     var row = {
       id: id,
       label: label,
@@ -789,10 +791,11 @@ async function probeModelEvidenceAudit(opts) {
     return new Promise(function(resolve){ setTimeout(resolve, ms); });
   }
 
-  async function _chat(label, messages, maxTokens, timeoutMs) {
+  async function _chat(label, messages, maxTokens, timeoutMs, extraBody) {
     var attempt = 0;
     var lastErr = null;
     while (attempt < 2) {
+      if ((_memoryLease && !_memoryPolicy.probeCurrent(_memoryLease)) || (opts.signal && opts.signal.aborted)) throw Object.assign(new Error('probe_cancelled_or_stale'), { code: 'probe_cancelled_or_stale' });
       attempt += 1;
       var t0 = Date.now();
       try {
@@ -800,7 +803,8 @@ async function probeModelEvidenceAudit(opts) {
         var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(chatUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-          body: JSON.stringify({ model:_aiCfg.model || '', messages:messages, temperature:0, max_tokens:maxTokens || 256, stream:false }),
+          body: JSON.stringify(Object.assign({ model:_aiCfg.model || '', messages:messages, temperature:0, max_tokens:maxTokens || 256, stream:false }, extraBody || {})),
+          timeoutMs: timeoutMs || 30000,
           signal: (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(timeoutMs || 30000) : undefined
         });
         if (!resp.ok) {
@@ -841,52 +845,52 @@ async function probeModelEvidenceAudit(opts) {
     var r1 = await _chat('证据校验 1/6：基础 JSON 遵循', [
       { role:'user', content:'Return ONLY strict JSON. No markdown. Object must be exactly: {"probe":"tm-evidence-v1","sum":1213,"reverse":"gnimnait","items":[2,4,6,8],"truth":true}' }
     ], 160, 20000);
-    var j1 = _tmProbeJsonParse(r1.text);
-    var ok1 = !!(j1 && j1.probe === 'tm-evidence-v1' && j1.sum === 1213 && j1.reverse === 'gnimnait' && Array.isArray(j1.items) && j1.items.length === 4 && j1.truth === true);
+    var j1 = _memoryPolicy ? _memoryPolicy.strictJSON(r1.text) : _tmProbeJsonParse(r1.text);
+    var ok1 = !!(j1 && j1.probe === 'tm-evidence-v1' && j1.sum === 1213 && j1.reverse === 'gnimnait' && Array.isArray(j1.items) && JSON.stringify(j1.items) === "[2,4,6,8]" && j1.truth === true);
     _addCheck('json_schema', '基础严格 JSON/算术/字段', ok1, ok1 ? '字段与数值正确' : (r1.text || '').slice(0, 160), { weight:12, finishReason:r1.finishReason, latencyMs:r1.latencyMs, responseChars:r1.responseChars, attempts:r1.attempts });
-  } catch(e1) { _addCheck('json_schema', '基础严格 JSON/算术/字段', false, e1.message || e1, { weight:12 }); }
+  } catch(e1) { _addCheck('json_schema', '基础严格 JSON/算术/字段', false, e1.message || e1, { weight:0, state:'unavailable' }); }
 
   try {
     var endturnPrompt = '你正在接受《天命》回合推演结构化小样测试。Return ONLY strict JSON, no markdown. 必须返回完全可 JSON.parse 的对象：' +
       '{"probe":"tm-endturn-mini-v1","turn":"天启七年九月","variable_changes":[{"key":"huangquan","delta":-2,"reason":"赈灾诏令动用内帑"}],"character_changes":[{"name":"袁崇焕","field":"loyalty","delta":5,"reason":"升任辽东督师"}],"faction_actions":[{"faction":"后金","action":"整军","target":"辽东"}],"memory_entries":[{"owner":"袁崇焕","text":"因升任辽东督师而忠诚上升"}]}';
     var r2 = await _chat('证据校验 2/6：天命结构小样', [{ role:'user', content:endturnPrompt }], 420, 25000);
-    var j2 = _tmProbeJsonParse(r2.text);
+    var j2 = _memoryPolicy ? _memoryPolicy.strictJSON(r2.text) : _tmProbeJsonParse(r2.text);
     var ok2 = !!(j2 && j2.probe === 'tm-endturn-mini-v1' &&
       Array.isArray(j2.variable_changes) && j2.variable_changes[0] && j2.variable_changes[0].key === 'huangquan' && j2.variable_changes[0].delta === -2 &&
       Array.isArray(j2.character_changes) && j2.character_changes[0] && j2.character_changes[0].name === '袁崇焕' && j2.character_changes[0].delta === 5 &&
       Array.isArray(j2.faction_actions) && j2.faction_actions[0] && j2.faction_actions[0].faction === '后金' &&
       Array.isArray(j2.memory_entries) && j2.memory_entries[0] && /忠诚上升/.test(j2.memory_entries[0].text || ''));
     _addCheck('endturn_schema', '天命回合结构化小样', ok2, ok2 ? '结构化变更字段可用' : (r2.text || '').slice(0, 180), { weight:24, finishReason:r2.finishReason, latencyMs:r2.latencyMs, responseChars:r2.responseChars, attempts:r2.attempts });
-  } catch(e2) { _addCheck('endturn_schema', '天命回合结构化小样', false, e2.message || e2, { weight:24 }); }
+  } catch(e2) { _addCheck('endturn_schema', '天命回合结构化小样', false, e2.message || e2, { weight:0, state:'unavailable' }); }
 
   try {
     var repairPrompt = '把下面坏 JSON 修成严格 JSON。只输出 JSON，不解释，不加 markdown。坏 JSON：{probe:"tm-repair-mini-v1",edict_relations:[{edict:"命户部赈灾",result:"民心+3",},],resource_changes:[{pool:"guoku",delta:-5000,reason:"赈灾"},],note:"keep"}。输出必须保留 probe、edict_relations、resource_changes、note。';
     var r3 = await _chat('证据校验 3/6：坏 JSON 修复', [{ role:'user', content:repairPrompt }], 320, 25000);
-    var j3 = _tmProbeJsonParse(r3.text);
+    var j3 = _memoryPolicy ? _memoryPolicy.strictJSON(r3.text) : _tmProbeJsonParse(r3.text);
     var ok3 = !!(j3 && j3.probe === 'tm-repair-mini-v1' && Array.isArray(j3.edict_relations) && j3.edict_relations[0] && /赈灾/.test(j3.edict_relations[0].edict || '') && Array.isArray(j3.resource_changes) && j3.resource_changes[0] && j3.resource_changes[0].delta === -5000);
     _addCheck('repair_resilience', '坏 JSON 修复能力', ok3, ok3 ? '可修复常见结构错误' : (r3.text || '').slice(0, 180), { weight:14, finishReason:r3.finishReason, latencyMs:r3.latencyMs, responseChars:r3.responseChars, attempts:r3.attempts });
-  } catch(e3) { _addCheck('repair_resilience', '坏 JSON 修复能力', false, e3.message || e3, { weight:14 }); }
+  } catch(e3) { _addCheck('repair_resilience', '坏 JSON 修复能力', false, e3.message || e3, { weight:0, state:'unavailable' }); }
 
   try {
     var nHead = 'TMH' + Math.random().toString(36).slice(2, 8).toUpperCase();
     var nTail = 'TMT' + Math.random().toString(36).slice(2, 8).toUpperCase();
     var fillerUnit = '天命回合资料：朝臣争执、军费奏报、边镇情报、地方灾荒、人物记忆、势力活动。';
-    var filler = fillerUnit.repeat(Math.max(100, Math.floor((opts.contextChars || 10000) / fillerUnit.length)));
+    var filler = fillerUnit.repeat(Math.max(100, Math.floor(Math.min(24000, Math.max(2000, Number(opts.contextChars) || 10000)) / fillerUnit.length)));
     var contextPrompt = 'HEAD_SECRET=' + nHead + '\n旧情报：朝议主题=加税，处理方向=严征。\n' + filler + '\n最新诏令：本回合最终采用 朝议主题=赈灾，处理方向=缓征。TAIL_SECRET=' + nTail + '\nReturn ONLY JSON: {"head":"<HEAD_SECRET>","tail":"<TAIL_SECRET>","latestTopic":"赈灾","discardedTopic":"加税"}';
     var r4 = await _chat('证据校验 4/6：长上下文与新旧信息', [{ role:'user', content:contextPrompt }], 180, 35000);
-    var j4 = _tmProbeJsonParse(r4.text);
+    var j4 = _memoryPolicy ? _memoryPolicy.strictJSON(r4.text) : _tmProbeJsonParse(r4.text);
     var ok4 = !!(j4 && j4.head === nHead && j4.tail === nTail && j4.latestTopic === '赈灾' && j4.discardedTopic === '加税');
     _addCheck('context_recall', '长上下文首尾与新旧信息', ok4, ok4 ? '首尾口令与最新指令一致' : (r4.text || '').slice(0, 180), { weight:20, finishReason:r4.finishReason, latencyMs:r4.latencyMs, responseChars:r4.responseChars, payloadChars:filler.length, attempts:r4.attempts });
-  } catch(e4) { _addCheck('context_recall', '长上下文首尾与新旧信息', false, e4.message || e4, { weight:20 }); }
+  } catch(e4) { _addCheck('context_recall', '长上下文首尾与新旧信息', false, e4.message || e4, { weight:0, state:'unavailable' }); }
 
   try {
     var recordPrompt = '你正在接受《天命》时政记/实录生成小样测试。Return ONLY strict JSON, no markdown. 返回对象字段必须为 probe,title,summary,shiluText,shizhengji。probe 固定为 tm-record-mini-v1。正文必须自然提到 袁崇焕、辽东、赈灾 三个词，shiluText 至少两句，shizhengji 至少一句。';
     var r5 = await _chat('证据校验 5/6：时政记与实录样本', [{ role:'user', content:recordPrompt }], 520, 35000);
-    var j5 = _tmProbeJsonParse(r5.text);
+    var j5 = _memoryPolicy ? _memoryPolicy.strictJSON(r5.text) : _tmProbeJsonParse(r5.text);
     var bundle = j5 ? [j5.title, j5.summary, j5.shiluText, j5.shizhengji].join('\n') : '';
     var ok5 = !!(j5 && j5.probe === 'tm-record-mini-v1' && j5.title && j5.summary && /袁崇焕/.test(bundle) && /辽东/.test(bundle) && /赈灾/.test(bundle) && String(j5.shiluText || '').length >= 40 && String(j5.shizhengji || '').length >= 20);
     _addCheck('narrative_record', '时政记/实录叙事样本', ok5, ok5 ? '叙事字段与关键词完整' : (r5.text || '').slice(0, 180), { weight:18, finishReason:r5.finishReason, latencyMs:r5.latencyMs, responseChars:r5.responseChars, attempts:r5.attempts });
-  } catch(e5) { _addCheck('narrative_record', '时政记/实录叙事样本', false, e5.message || e5, { weight:18 }); }
+  } catch(e5) { _addCheck('narrative_record', '时政记/实录叙事样本', false, e5.message || e5, { weight:0, state:'unavailable' }); }
 
   try {
     var nonce = 'TML' + Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -894,11 +898,12 @@ async function probeModelEvidenceAudit(opts) {
       { role:'user', content:'Return exactly 60 lines. Each line format: TM-PROBE-001-' + nonce + ' through TM-PROBE-060-' + nonce + '. No prose, no markdown.' }
     ], 1200, 45000);
     var re = new RegExp('TM-PROBE-\\d{3}-' + nonce, 'g');
-    var matches = (r6.text.match(re) || []);
+    var matches = Array.from(new Set(r6.text.match(re) || []));
     var ok6 = matches.length >= 50 && r6.text.indexOf('TM-PROBE-050-' + nonce) >= 0;
     _addCheck('output_sustain', '持续输出可控文本', ok6, ok6 ? ('生成 ' + matches.length + '/60 行') : ('仅生成 ' + matches.length + '/60 行'), { weight:12, finishReason:r6.finishReason, usage:r6.usage || null, latencyMs:r6.latencyMs, responseChars:r6.responseChars, attempts:r6.attempts });
-  } catch(e6) { _addCheck('output_sustain', '持续输出可控文本', false, e6.message || e6, { weight:12 }); }
+  } catch(e6) { _addCheck('output_sustain', '持续输出可控文本', false, e6.message || e6, { weight:0, state:'unavailable' }); }
 
+  if (_memoryPolicy) await _memoryPolicy.runProbes(_chat, _addCheck, opts);
   var reqFam = _tmProbeFamily(_aiCfg.model || '');
   var respFam = _tmProbeFamily(report.responseModel || '');
   if (report.responseModel && reqFam && respFam && reqFam !== respFam) {
@@ -912,7 +917,8 @@ async function probeModelEvidenceAudit(opts) {
   report.passed = passed;
   report.total = report.checks.length;
   report.elapsedMs = Date.now() - startedAt;
-  report.reliability = report.score >= 90 ? 'high' : report.score >= 65 ? 'medium' : 'low';
+  report.reliability = totalWeight ? (report.score >= 90 ? 'high' : report.score >= 65 ? 'medium' : 'low') : 'unknown';
+  if (_memoryLease && !_memoryPolicy.commitEvidence(report, _memoryLease)) return report;
   if (!P.conf._probeHistory) P.conf._probeHistory = {};
   var keyName = _tier === 'secondary' ? 'evidence_secondary' : 'evidence';
   P.conf._probeHistory[keyName] = report;

@@ -1188,7 +1188,7 @@ function _tmRebindRuntimeWorld(options) {
     return _tmRunDegradableLoadStep(label, fn);
   }
 
-  if (options.map !== false) {
+  if (options.map !== false && targetGM._useAIGeo !== true) {
     run('runtime map rebind', function() {
       var liveMapSource = _tmRuntimeMapSourceForWorld(targetP, targetGM);
       if (liveMapSource && typeof bindRuntimeMapState === 'function') {
@@ -1488,13 +1488,14 @@ function _recoverPendingTurnDataPublish() {
     return Promise.resolve({ ok: false, error: new Error('分卷恢复需要更新桌面安装包') });
   }
   if (!(GM && window.tianming && typeof window.tianming.recoverTurnData === 'function')) return Promise.resolve({ ok: true, skipped: true });
+  var recoveryBridge = window.tianming;
   var targetGM = GM;
   var targetP = P;
   var targetLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
   var campaignId = String((GM && GM._campaignId) || '');
   var timelineId = String((GM && GM._timelineId) || '');
   function baseRecoveryLeaseCurrent() {
-    return GM === targetGM && P === targetP &&
+    return window.tianming === recoveryBridge && GM === targetGM && P === targetP &&
       (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === targetLoadGen) &&
       String((GM && GM._campaignId) || '') === campaignId &&
       String((GM && GM._timelineId) || '') === timelineId;
@@ -1502,6 +1503,8 @@ function _recoverPendingTurnDataPublish() {
 
   return Promise.resolve().then(async function() {
     if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷恢复需要更新桌面安装包');
+    var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+    if (!reliability || typeof reliability.callTurnBridge !== 'function') throw new Error('桌面分卷等待管理未加载');
     // v4 以前的存档把 marker 烘进两个大世界正文；仅在兼容迁移时做一次全量清理。
     if (targetGM._pendingTurnDataPublish) {
       var legacyMarker = deepClone(targetGM._pendingTurnDataPublish);
@@ -1509,7 +1512,7 @@ function _recoverPendingTurnDataPublish() {
         return baseRecoveryLeaseCurrent() && !!targetGM._pendingTurnDataPublish &&
           targetGM._pendingTurnDataPublish.transactionId === legacyMarker.transactionId;
       }
-      var legacyResult = await window.tianming.recoverTurnData(legacyMarker);
+      var legacyResult = await reliability.callTurnBridge('recoverTurnData', legacyMarker, { isCurrent: legacyLeaseCurrent });
       if (!legacyLeaseCurrent()) return;
       if (!(legacyResult && legacyResult.success === true)) throw new Error(legacyResult && legacyResult.error || '旧回合分卷恢复失败');
       if (!(typeof TM_SaveDB !== 'undefined' && typeof TM_SaveDB.clearPendingTurnDataPublishAtomic === 'function')) {
@@ -1530,8 +1533,8 @@ function _recoverPendingTurnDataPublish() {
     for (var i = 0; i < receipts.length; i++) {
       if (!baseRecoveryLeaseCurrent()) return;
       var marker = receipts[i];
-      if (!marker || String(marker.timelineId || '') !== timelineId || Number(marker.turn) > Number(targetGM.turn || 0)) continue;
-      var result = await window.tianming.recoverTurnData(marker);
+      if (!marker || String(marker.campaignId || '') !== campaignId || String(marker.timelineId || '') !== timelineId || Number(marker.turn) > Number(targetGM.turn || 0)) continue;
+      var result = await reliability.callTurnBridge('recoverTurnData', marker, { isCurrent: baseRecoveryLeaseCurrent });
       if (!baseRecoveryLeaseCurrent()) return;
       if (!(result && result.success === true)) throw new Error(result && result.error || '回合分卷恢复失败');
       var deleted = await TM_SaveDB.deleteTurnPublishReceipt(marker, { writeGuard: baseRecoveryLeaseCurrent });
@@ -2159,6 +2162,7 @@ var _autoSaveDeferStreak=0;    // C·连续 defer 次数·用于日志
 // 闲置 10 分钟累积 ~10 次峰值→堆耗尽→Render process gone 黑屏。
 // 而闲置时 GM 完全冻结·这些存档是把盘上同一份数据反复重写·纯浪费。
 // 故:真闲置 (自上次成功存档以来无输入 且 turn 未变) 时跳过·盘上副本已是最新。
+var _autoSaveCommittedRevision=0,_autoSaveLastSavedRevision=-1;
 var _autoSaveLastSavedTurn=-1; // D·上次成功存档时的 GM.turn
 var _autoSaveIdleSkipStreak=0; // D·连续闲置跳过次数·用于日志
 var _autoSaveDeferred=false;
@@ -2199,6 +2203,44 @@ function _tmReportDesktopAutoSaveBoundaryError(error, label){
     console.warn('[autoSave] ' + String(label || 'desktop autosave boundary') + ':', normalized);
   }
   return normalized;
+}
+
+var _autoSaveNativePending=null, _autoSaveTransportEvents=[];
+var _DESKTOP_AUTOSAVE_WAIT_MS=60000;
+function _tmDesktopAutoSaveWaitError(code){
+  var e=new Error(code==='DESKTOP_AUTOSAVE_UNCONFIRMED'
+    ? '桌面自动存档回执尚未确认；未重发或标记成功，请保留当前页面并核对主存档。'
+    : '桌面自动存档对应的世界或会话已变化，旧快照未发送');
+  e.code=code; return e;
+}
+function _tmDesktopAutoSaveTransportEvent(phase){
+  _autoSaveTransportEvents.push({phase:phase,at:Date.now()});
+  if(_autoSaveTransportEvents.length>12)_autoSaveTransportEvents.shift();
+}
+function _tmDesktopAutoSaveTransportStatus(){
+  return {pending:!!_autoSaveNativePending,timedOut:!!(_autoSaveNativePending&&_autoSaveNativePending.timedOut),
+    events:_autoSaveTransportEvents.map(function(e){return {phase:e.phase,at:e.at};})};
+}
+function _tmAwaitDesktopAutoSaveReply(execute){
+  if(_autoSaveNativePending)return Promise.reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+  return new Promise(function(resolve,reject){
+    var job={timedOut:false},settled=false,timer;
+    _autoSaveNativePending=job;
+    function ended(error,value){
+      clearTimeout(timer);
+      if(_autoSaveNativePending===job)_autoSaveNativePending=null;
+      if(settled){_tmDesktopAutoSaveTransportEvent(error?'late-rejection':'late-reply');return;}
+      settled=true;_tmDesktopAutoSaveTransportEvent(error?'rejected':_tmDesktopAutoSaveResultOk(value)?'acknowledged':'negative-reply');
+      if(error)reject(error);else resolve(value);
+    }
+    timer=setTimeout(function(){
+      if(settled)return;settled=true;job.timedOut=true;
+      _tmDesktopAutoSaveTransportEvent('unconfirmed');
+      reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+    },_DESKTOP_AUTOSAVE_WAIT_MS);
+    try{Promise.resolve(execute()).then(function(value){ended(null,value);},function(error){ended(error);});}
+    catch(error){ended(error);}
+  });
 }
 
 function _tmDesktopAutoSaveResultOk(result){
@@ -2609,6 +2651,7 @@ function _tmAdoptCommittedWorldSnapshot(state, meta){
   var ownedState = meta.takeOwnership === true ? state : deepClone(state);
   if (!ownedState || !ownedState.GM || !ownedState.P) return false;
   lastCommittedSnapshot = ownedState;
+  _autoSaveCommittedRevision++;
   lastCommittedTurn = identity.turn;
   lastCommittedTransactionId = identity.transactionId;
   _lastCommittedSnapshotIdentity = identity;
@@ -2674,6 +2717,7 @@ async function _tmRunDesktopAutoSaveTick(options){
     if (_autoSaveSkipCount === 5) console.warn('[autoSave] 连续 5 次被跳·上一次 IPC 尚未完成');
     return { ok: false, skipped: true, reason: 'in-flight' };
   }
+  if (_autoSaveNativePending) return { ok: false, pending: true, reason: 'native-write-unconfirmed', error: _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED') };
   if (!_tmCommittedSnapshotMatchesLive()) {
     return { ok: false, skipped: true, reason: 'no-committed-snapshot' };
   }
@@ -2688,7 +2732,7 @@ async function _tmRunDesktopAutoSaveTick(options){
   if (_autoSaveDeferStreak > 0) _autoSaveDeferStreak = 0;
   if (options.force !== true && _autoSaveLastDoneMs > 0
       && _autoSaveLastInputMs <= _autoSaveLastDoneMs
-      && lastCommittedTurn === _autoSaveLastSavedTurn) {
+      && lastCommittedTurn === _autoSaveLastSavedTurn && _autoSaveCommittedRevision === _autoSaveLastSavedRevision) {
     _autoSaveIdleSkipStreak++;
     return { ok: false, skipped: true, reason: 'idle-unchanged' };
   }
@@ -2696,6 +2740,10 @@ async function _tmRunDesktopAutoSaveTick(options){
 
   var sourceSnapshot = lastCommittedSnapshot;
   var sourceIdentity = _lastCommittedSnapshotIdentity;
+  var targetGM=GM,targetP=P,targetGeneration=window._tmLoadGen||0,bridge=window.tianming;
+  function snapshotStillCurrent(){return GM===targetGM&&P===targetP&&(window._tmLoadGen||0)===targetGeneration
+    &&window.tianming===bridge&&lastCommittedSnapshot===sourceSnapshot&&_lastCommittedSnapshotIdentity===sourceIdentity
+    &&_tmCommittedSnapshotMatchesLive();}
   var saveData = _tmCommittedSnapshotProjectEnvelope();
   if (!saveData) return { ok: false, skipped: true, reason: 'snapshot-unavailable' };
   _autoSaveInFlight = true;
@@ -2706,17 +2754,24 @@ async function _tmRunDesktopAutoSaveTick(options){
       // large object graph. No persistent cache, changed frequency or live-world
       // reads. Old shells keep their existing transport; errors never fall back
       // to a second write. The main session/queue/rename protocol is unchanged.
-      var result = typeof window.tianming.autoSaveJson === 'function'
-        ? await window.tianming.autoSaveJson(JSON.stringify(saveData))
-        : await window.tianming.autoSave(saveData);
+      var result = await _tmAwaitDesktopAutoSaveReply(function(){
+        if(!snapshotStillCurrent()||isWorldTransactionActive())throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
+        if(typeof bridge.autoSaveJson==='function'){
+          var json=JSON.stringify(saveData);
+          if(!snapshotStillCurrent()||isWorldTransactionActive())throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
+          return bridge.autoSaveJson(json);
+        }
+        return bridge.autoSave(saveData);
+      });
       if (!_tmDesktopAutoSaveResultOk(result)) throw _tmDesktopAutoSaveFailure(result);
-      if (lastCommittedSnapshot !== sourceSnapshot || _lastCommittedSnapshotIdentity !== sourceIdentity
-          || !_tmCommittedSnapshotMatchesLive()) {
+      if (!snapshotStillCurrent()) {
         console.warn('[autoSave] 已提交快照在 IPC 期间推进或跨档·本次落盘有效但不推进当前局闲置基线');
         return { ok: true, stale: true, turn: Number(saveData._saveMeta.turn) };
       }
+      if (result && result.sessionToken && String(result.sessionToken)!==String(sourceIdentity.sessionToken)) throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
       _autoSaveLastDoneMs = Date.now();
       _autoSaveLastSavedTurn = Number(saveData._saveMeta.turn);
+      _autoSaveLastSavedRevision = _autoSaveCommittedRevision;
       _autoSaveLiteTick++;
       if (_autoSaveLiteTick >= 5) {
         _autoSaveLiteTick = 0;
@@ -2790,6 +2845,7 @@ if (typeof window !== 'undefined') {
   window._tmInvalidateCommittedWorldSnapshot = _tmInvalidateCommittedWorldSnapshot;
   window._tmCaptureCommittedWorldSnapshotFromLive = _tmCaptureCommittedWorldSnapshotFromLive;
   window._tmRunDesktopAutoSaveTick = _tmRunDesktopAutoSaveTick;
+  window._tmDesktopAutoSaveTransportStatus = _tmDesktopAutoSaveTransportStatus;
   window._tmFlushDeferredDesktopAutoSave = _tmFlushDeferredDesktopAutoSave;
   window.requestBackgroundAutosave = requestBackgroundAutosave;
   window._tmDrainBackgroundAutosaves = _tmDrainBackgroundAutosaves;

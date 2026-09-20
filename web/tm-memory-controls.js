@@ -55,6 +55,7 @@
     var controls = ensure(GM);
     if (!controls) return { pruned: 0, controls: 0, edges: 0 };
     var limit = Math.max(0, Number(opts.controlsLimit || opts.limit || DEFAULT_CONTROL_LIMIT));
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.syncControls) root.TM.MemoryLongTerm.syncControls(GM);
     var keys = Object.keys(controls);
     var pruned = 0;
     if (limit && keys.length > limit) {
@@ -136,6 +137,7 @@
     var key = keyFor(ref);
     if (!controls || !key) return false;
     delete controls[key];
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.syncControls) root.TM.MemoryLongTerm.syncControls(GM, key);
     return true;
   }
 

@@ -1,0 +1,338 @@
+[
+  {
+    "file": "web/index.html",
+    "before": "e02d43db0ef6583352de2bf2ab48b463246b7252267051c82602bfbc7edf35c0",
+    "after": "ff88f0e7258317f8f9bab0ce76c0f5dc3e07cc1effbd902eac5f78d99defcfea",
+    "at": "2026-09-18T14:53:37.957Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "eb2aa028acf6cac5485bf30b76f6a636a8ae2eef7f3af00d5379242a33b86076",
+    "after": "fa67c70cfe9737a8b2df0bb8456019ec64590423f44c12a49281c99de1f64b23",
+    "at": "2026-09-18T14:53:37.980Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "fa67c70cfe9737a8b2df0bb8456019ec64590423f44c12a49281c99de1f64b23",
+    "after": "206993fad54df415bcc4150e8d5e1abdebfa8d28a552511e3f9e1a21be1f3d3d",
+    "at": "2026-09-18T14:53:38.093Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "ff88f0e7258317f8f9bab0ce76c0f5dc3e07cc1effbd902eac5f78d99defcfea",
+    "after": "4dbe7f9d938073fdd5370f0d696875b14487f4aeed19b227e6563e5434096236",
+    "at": "2026-09-18T15:00:41.428Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-read-tools.js",
+    "before": "04cf16a5f92c30efb3eab93a7923deb37a6f8590d310b0a2218019cf67d61ab5",
+    "after": "c6c2028d36372432b1307cdee4818a3b294834fb985a8726a5e981edbf75db09",
+    "at": "2026-09-18T15:00:41.453Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "before": "0c1eee9f4ecfaa9a0c55018a6da2b13d6ecd5be917faed9ecf05890005731fb4",
+    "after": "36b74a7a4239136d67f0ea642a996dd3601bc690d8c7091987bffc0d1205ae07",
+    "at": "2026-09-18T15:00:41.484Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-depth-tools.js",
+    "before": "76afe8e7ba86a4d0359015e19114b9eb10a9e88989793f3357d9438ec6922aae",
+    "after": "b23fc6e4e3ef69301ae1112f8f93dd310ce41cd787ecf47d904ebef9e3b5c076",
+    "at": "2026-09-18T15:00:41.501Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-intent-plan.js",
+    "before": "9976fba23c4316dd968ab74dec790def1d2e9d31b84b27e6fc91c1e0a1699a53",
+    "after": "a861aafaa32b16ef4b75e866ebb2a7dc46e903a238817c68208ac002578290e5",
+    "at": "2026-09-18T15:00:41.517Z"
+  },
+  {
+    "file": "web/tm-endturn-pipeline-steps.js",
+    "before": "86a405cbfbc2c7ab9db7d9f9373adb1eb6d2425278b621032a250b299caa5eb1",
+    "after": "4be7286422a8cdc8cf1134445a901e90241619719e1bf90fc8c0538e480c915d",
+    "at": "2026-09-18T15:00:41.537Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "fe49769ab7b07a0680ba83758d66e3967943810cef373ee9555f09c6481a48d5",
+    "after": "74fc3653ab63046e1342570969185d08b7d60e9517c38c4ce0a96120a4853b3b",
+    "at": "2026-09-18T15:02:50.202Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "211fd25a8e9015869182e597ac555d2044db47368b84bfbad36086ed133db311",
+    "after": "04297270f658366e13be24cf04cf75735ededd5ebc28455c8bcda8315c4cb7ce",
+    "at": "2026-09-18T15:02:50.253Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "04297270f658366e13be24cf04cf75735ededd5ebc28455c8bcda8315c4cb7ce",
+    "after": "f0f1fca4e58a420a1284852230efdf6ec68272aef129f6fe7ec38677a6ebf5b4",
+    "at": "2026-09-18T15:02:50.387Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "eb16694c9e6d01792450e658a12fa67b0b6751f98624e675972352d38b20db60",
+    "after": "abff26cb35f45f824e618624071314a55e0df266f5f6beb82250248a57c22191",
+    "at": "2026-09-18T15:02:50.450Z"
+  },
+  {
+    "file": "web/tm-agent-kernel.js",
+    "before": "6a9c9cd1d3607dd76c740fbc9619a6c075b7cf97b7e2b666cf0be35697fa4831",
+    "after": "744b69b39f8b7f76226b1ca91899d62016527fdf953fb99eed4ad5d99486e661",
+    "at": "2026-09-18T15:04:43.633Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "before": "36b74a7a4239136d67f0ea642a996dd3601bc690d8c7091987bffc0d1205ae07",
+    "after": "6300afe29b744296231811df00b568bcd5b99b2768bf4ed313828f87037fd312",
+    "at": "2026-09-18T15:04:43.658Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-intent-plan.js",
+    "before": "a861aafaa32b16ef4b75e866ebb2a7dc46e903a238817c68208ac002578290e5",
+    "after": "b90aef63706bef8b91b1bbef23e6a1b7f95580ebca8827bf497d7e4ae59c2bdf",
+    "at": "2026-09-18T15:04:43.833Z"
+  },
+  {
+    "file": "web/tm-memory-mode-bridge.js",
+    "before": "e38560db6fde1c84a57a6f5c9083789cefe1a769345c979de9df8626387e5b47",
+    "after": "3b0bfaecd3986951b4a621d496bfde03bca88a5394664883dc396b21df6d2183",
+    "at": "2026-09-18T15:18:21.492Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-intent-plan.js",
+    "before": "b90aef63706bef8b91b1bbef23e6a1b7f95580ebca8827bf497d7e4ae59c2bdf",
+    "after": "3c40ac3fe582bc932e93d3bf113022194f50c7b2892214165410d256a7921903",
+    "at": "2026-09-18T15:18:21.519Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "4dbe7f9d938073fdd5370f0d696875b14487f4aeed19b227e6563e5434096236",
+    "after": "2fbf3c52e55af7fad390675a4407aba749f55c548293a4059363e13c91e38182",
+    "at": "2026-09-18T15:18:21.545Z"
+  },
+  {
+    "file": "web/tm-memory-mode-bridge.js",
+    "before": "3b0bfaecd3986951b4a621d496bfde03bca88a5394664883dc396b21df6d2183",
+    "after": "a3507d97a639e6af42607c6c5a104ed05b87842cfd5483ec3ff571a746d8b191",
+    "at": "2026-09-18T15:18:21.612Z"
+  },
+  {
+    "file": "web/tm-agent-kernel.js",
+    "before": "744b69b39f8b7f76226b1ca91899d62016527fdf953fb99eed4ad5d99486e661",
+    "after": "f153d29c60a57916768859ad6c33ab974bbeb272ac0fd3623c088d0162ee954f",
+    "at": "2026-09-18T15:18:21.628Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "abff26cb35f45f824e618624071314a55e0df266f5f6beb82250248a57c22191",
+    "after": "180e380b7ae23b2d812ec300fff3d4e4ba44f49d8e2abd62eac630fd71412a55",
+    "at": "2026-09-18T15:18:21.670Z"
+  },
+  {
+    "file": "web/scripts/smoke-agent-mode-s2.js",
+    "before": "60d07107fc0a943eb12a4292015b249e6be15688cf2795284b55e3f6704282cd",
+    "after": "1b6d79ac94da5f9947ce93995844aa75d0cc73103e44e8df756905415b033783",
+    "at": "2026-09-18T15:18:21.687Z"
+  },
+  {
+    "file": "web/scripts/smoke-agent-mode-tools.js",
+    "before": "f4cd3fa4998f2151a9c5b118b42a07468d5ce0ac4fc4ff8b026db1ad69617b60",
+    "after": "730df18b24b39118dbe11ee71885bb12e1e9052478f2396e2e03f1e547efe96c",
+    "at": "2026-09-18T15:18:21.715Z"
+  },
+  {
+    "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+    "before": "3c6c4956b5682073d0a9d07ee98ea96f5f0a6ed9ad0234128ee8dc56bcbf7a2f",
+    "after": "1dbb7f98833aa7d5ab0a0afd6e7928af834db73eca488142a6aea2aea8d9441b",
+    "at": "2026-09-18T15:18:21.728Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "74fc3653ab63046e1342570969185d08b7d60e9517c38c4ce0a96120a4853b3b",
+    "after": "29d299d811c4d211b66b8a37b519a60efc3d81639be9c3d802557a6a5f287f4a",
+    "at": "2026-09-18T15:18:21.945Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "f0f1fca4e58a420a1284852230efdf6ec68272aef129f6fe7ec38677a6ebf5b4",
+    "after": "88581c0418b43e8c963836ddf2ca3f8082587c9d970f9c29931ba1154d26c1e4",
+    "at": "2026-09-18T15:18:21.989Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "88581c0418b43e8c963836ddf2ca3f8082587c9d970f9c29931ba1154d26c1e4",
+    "after": "403d27490bf7424a21cee7a79f94ee6f8dba21c6da407696342a527f13980b6c",
+    "at": "2026-09-18T15:19:17.878Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "403d27490bf7424a21cee7a79f94ee6f8dba21c6da407696342a527f13980b6c",
+    "after": "08e0960f6af5b17605e54ddf57f0995f6f31a6d750075fe57eb3da6e130c1ebb",
+    "at": "2026-09-18T15:21:18.422Z"
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "before": "ddc07b5325d5a806bb043036e454d27645f236d5b38db25bce922f5542252738",
+    "after": "0947a0da58b121dc97d054e8845656d6a10b4814794c9b72a0fcb43d493e68b2",
+    "at": "2026-09-18T15:21:18.439Z"
+  },
+  {
+    "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+    "before": "1dbb7f98833aa7d5ab0a0afd6e7928af834db73eca488142a6aea2aea8d9441b",
+    "after": "07ed2bc1e5caf178c88e415477af68ffc3a894234874a2158b9c1931bc3b7cb0",
+    "at": "2026-09-18T15:23:54.903Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "935067a4ec44215e714c75363dd6736eac1a5b10c92beb85ccf2132e7d299470",
+    "after": "900ee9a784af965bb3bcf136eecabb23102e97c50d5bab4a5322161efebd95e5",
+    "at": "2026-09-18T15:23:54.931Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "29d299d811c4d211b66b8a37b519a60efc3d81639be9c3d802557a6a5f287f4a",
+    "after": "3f9bfa2cb88aaeb5cffa6a1813e24bb753ecc38ba4c0da62e1a0d98d482729e3",
+    "at": "2026-09-18T15:23:55.126Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-request-reliability.js",
+    "before": "d9ec16f75c7b1f65080b89e5c71e93ee0d405b93b1e5b3cdc46374e2544d861b",
+    "after": "64d69b8bfa7a7bbf31cce6ebeea0cd2580f16c942e633e588ee268b96a42e0d4",
+    "at": "2026-09-18T15:23:55.168Z"
+  },
+  {
+    "file": "web/tm-endturn-reliability.js",
+    "before": "85aa1b18a067e64a3940ce11fb9b24a23ad82b9cb6b3fc67d0873f59da9a81c7",
+    "after": "d447aeb752e3505c029cb701249fb889f56aa9d63add1ef641a42cd97af07fc9",
+    "at": "2026-09-18T15:28:07.562Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "3f9bfa2cb88aaeb5cffa6a1813e24bb753ecc38ba4c0da62e1a0d98d482729e3",
+    "after": "a11b6b9dc674b06a86074cd9d42f5f8b8bfe9969d639aa6787e8827ed888fb6a",
+    "at": "2026-09-18T15:28:07.589Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-request-reliability.js",
+    "before": "64d69b8bfa7a7bbf31cce6ebeea0cd2580f16c942e633e588ee268b96a42e0d4",
+    "after": "96b7800704962b7a0d849efa92b2072205c839ba7c13b4a115f295157a5db701",
+    "at": "2026-09-18T15:28:07.821Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "c144584cfc961c9917d2945183b0721480157bc3e64da89784babcaed082a7c0",
+    "after": "91607408e5ab3b5709d80620e75fca6cf7add3dc937c4050493f1e071e94af02",
+    "at": "2026-09-18T15:30:12.465Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": true
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "08e0960f6af5b17605e54ddf57f0995f6f31a6d750075fe57eb3da6e130c1ebb",
+    "after": "98630d75cee2358d49c21921989aeda4def63197cb8734f41af88d01e6d20376",
+    "at": "2026-09-18T15:32:18.038Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "a11b6b9dc674b06a86074cd9d42f5f8b8bfe9969d639aa6787e8827ed888fb6a",
+    "after": "ab80a9002aee7f6ed27012181da75e39b5cf9a527c19c8e16796586a87198dec",
+    "at": "2026-09-18T15:32:18.062Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "2fbf3c52e55af7fad390675a4407aba749f55c548293a4059363e13c91e38182",
+    "after": "062cb84cbad65dbedddff080059169160b3791d67e1869fbaa2d42cea388f0b5",
+    "at": "2026-09-18T15:32:18.085Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "ab80a9002aee7f6ed27012181da75e39b5cf9a527c19c8e16796586a87198dec",
+    "after": "17ed8901ce529d342a9868d430d682f8281e3ecd7a4ac3053f14d0a6c2ec3e02",
+    "at": "2026-09-18T15:38:26.860Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "98630d75cee2358d49c21921989aeda4def63197cb8734f41af88d01e6d20376",
+    "after": "aeb4278d032c6a9683d9f6c5b766cee21decb67dcaed522f5a4ce16beea3bc31",
+    "at": "2026-09-18T15:38:26.909Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "aeb4278d032c6a9683d9f6c5b766cee21decb67dcaed522f5a4ce16beea3bc31",
+    "after": "0df769ba78835b8d89bd8ba0b695c83e150dbbe5e3a0a1ca26ecb4cb685bfe64",
+    "at": "2026-09-18T15:38:27.099Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "17ed8901ce529d342a9868d430d682f8281e3ecd7a4ac3053f14d0a6c2ec3e02",
+    "after": "987fe523dc5ddf5e80a8c42a0def68467ffd56ac9dfe13b3cb9c9c6afc0e82bf",
+    "at": "2026-09-18T15:38:27.116Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "0df769ba78835b8d89bd8ba0b695c83e150dbbe5e3a0a1ca26ecb4cb685bfe64",
+    "after": "c94d782d722a53e0f9574c376f3ddafea56281dc4746cb7e23a634516e321e24",
+    "at": "2026-09-18T15:41:03.538Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-stream-reliability.js",
+    "before": "06a66d997f5c41bb378e49dbeff787222f94fcce09d135476c0dacf8a922936a",
+    "after": "c4ac75c2a74885759f3b376f6c53391c42018cea600b7ab3f96ee62192003641",
+    "at": "2026-09-18T15:41:03.812Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-stream-reliability.js",
+    "before": "c4ac75c2a74885759f3b376f6c53391c42018cea600b7ab3f96ee62192003641",
+    "after": "68f87a059eea60217db725859f95531861885d1ca02fb5d322159f35c02cd5ab",
+    "at": "2026-09-18T15:41:03.950Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "c94d782d722a53e0f9574c376f3ddafea56281dc4746cb7e23a634516e321e24",
+    "after": "8653baaa242347541a7f88c3246958e70b1df8c7476aa84a65b5fbdd3a719f6f",
+    "at": "2026-09-18T15:44:20.276Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "before": "6300afe29b744296231811df00b568bcd5b99b2768bf4ed313828f87037fd312",
+    "after": "6b928aa2e9f8f56f85f65d3523413f9dfe8d3ad2d0c29998a579de3ef380d587",
+    "at": "2026-09-18T15:44:20.297Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-stream-reliability.js",
+    "before": "68f87a059eea60217db725859f95531861885d1ca02fb5d322159f35c02cd5ab",
+    "after": "b3e871117af0212552e545933d7602e44564ec88f1319eb41767051ce543361c",
+    "at": "2026-09-18T15:44:20.466Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "91607408e5ab3b5709d80620e75fca6cf7add3dc937c4050493f1e071e94af02",
+    "after": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+    "at": "2026-09-18T15:44:55.387Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": true
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "987fe523dc5ddf5e80a8c42a0def68467ffd56ac9dfe13b3cb9c9c6afc0e82bf",
+    "after": "3099f7bbc5a37eb58c55a8ddfead5ee3b034b54a1bfab5221ab057bb06269257",
+    "at": "2026-09-18T15:57:46.636Z"
+  },
+  {
+    "file": "web/scripts/lint-renderer-writeback-boundaries.js",
+    "before": "65596c647a38287c03197331bc04e09ed3eb7a871ee6aee29f6f529ca558a045",
+    "after": "a2c2c73187a19b3bf03136b7d98dc1f2420b34bcaf14df396106d738236aefcd",
+    "at": "2026-09-18T15:57:46.681Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+    "after": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+    "at": "2026-09-18T15:58:41.168Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": true
+  }
+]

@@ -11,13 +11,44 @@ var SaveCompression = {
   supported: typeof CompressionStream !== 'undefined',
   decompressionSupported: typeof DecompressionStream !== 'undefined',
 
+  awaitResult: function(promise, stage, cancel) {
+    var timer, settled = false;
+    return new Promise(function(resolve, reject) {
+      timer = setTimeout(function() {
+        if (settled) return; settled = true;
+        var error = new Error('存档' + ({compress:'压缩',decompress:'解压',checksum:'校验'}[stage] || '处理') + '超时，未把不完整数据当成成功');
+        error.code = stage === 'compress' ? 'SAVE_COMPRESS_TIMEOUT' : stage === 'checksum' ? 'SAVE_CHECKSUM_TIMEOUT' : 'SAVE_DECOMPRESS_TIMEOUT';
+        try { if (cancel) cancel(error); } catch (_) {}
+        reject(error);
+      }, 60000);
+      Promise.resolve(promise).then(function(value) {
+        if (settled) return; settled = true; clearTimeout(timer); resolve(value);
+      }, function(error) {
+        if (settled) return; settled = true; clearTimeout(timer); reject(error);
+      });
+    });
+  },
+  transform: function(source, transformer, stage, text) {
+    var controller = new AbortController(), reader;
+    var output = (async function() {
+      reader = source.pipeThrough(transformer, { signal: controller.signal }).getReader();
+      var chunks = [];
+      try { while (true) { if (controller.signal.aborted) throw controller.signal.reason; var part = await reader.read(); if (controller.signal.aborted) throw controller.signal.reason; if (part.done) break; chunks.push(part.value); } }
+      finally { try { reader.releaseLock(); } catch (_) {} }
+      var blob = new Blob(chunks); return text ? await blob.text() : blob;
+    })();
+    return this.awaitResult(output, stage, function(error) {
+      controller.abort(error);
+      if (reader) { try { var cancellation = reader.cancel(error); if (cancellation && cancellation.catch) cancellation.catch(function() {}); } catch (_) {} }
+    });
+  },
+
   compress: async function(jsonStr) {
     if (!this.supported) return jsonStr;
     try {
       var blob = new Blob([jsonStr]);
       var cs = new CompressionStream('gzip');
-      var stream = blob.stream().pipeThrough(cs);
-      var compressed = await new Response(stream).blob();
+      var compressed = await this.transform(blob.stream(), cs, 'compress', false);
       return compressed;
     } catch(e) { console.warn('[SaveCompression] compress failed:', e); return jsonStr; }
   },
@@ -28,7 +59,7 @@ var SaveCompression = {
     // Blob·ArrayBuffer·Uint8Array 等
     // 检查是否是 gzip 压缩（前两字节 0x1f 0x8b）
     var blob = data instanceof Blob ? data : new Blob([data]);
-    var headBuf = await blob.slice(0, 2).arrayBuffer();
+    var headBuf = await this.awaitResult(blob.slice(0, 2).arrayBuffer(), 'decompress');
     var head = new Uint8Array(headBuf);
     var isGzip = head.length >= 2 && head[0] === 0x1f && head[1] === 0x8b;
     if (isGzip) {
@@ -36,13 +67,12 @@ var SaveCompression = {
         throw new Error('当前浏览器不支持 gzip 解压，无法读取该压缩存档');
       }
       var ds = new DecompressionStream('gzip');
-      var stream = blob.stream().pipeThrough(ds);
-      return await new Response(stream).text();
+      return await this.transform(blob.stream(), ds, 'decompress', true);
     }
     // 非 gzip 的 Blob/ArrayBuffer 是 UTF-8 文本旧档。严禁 String(ArrayBuffer)
     // 产生 "[object ArrayBuffer]" 后再被当成有效内容。
-    if (typeof blob.text === 'function') return await blob.text();
-    var bytes = new Uint8Array(await blob.arrayBuffer());
+    if (typeof blob.text === 'function') return await this.awaitResult(blob.text(), 'decompress');
+    var bytes = new Uint8Array(await this.awaitResult(blob.arrayBuffer(), 'decompress'));
     if (typeof TextDecoder === 'undefined') throw new Error('当前环境缺少 UTF-8 解码器');
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   }
@@ -80,6 +110,144 @@ var TM_SaveDB = (function() {
     return fn();
   }
 
+  // Opening and readonly operations retain their own independent deadlines.
+  var OPEN_WAIT_MS = 15000, READ_WAIT_MS = 30000;
+  var _openOwner = null, _readDiagnostics = [];
+  function _storageWaitError(code, stage) {
+    var error = new Error(stage === 'open' ? '主存档数据库打开超时；未把等待失败当成空存档' : '主存档数据库读取超时；未继续依赖该结果的写入');
+    error.name = 'TimeoutError'; error.code = code; error.stage = stage;
+    return error;
+  }
+  function _storageDiagnostic(stage, error, abortState) {
+    _readDiagnostics.push({ stage: stage, code: String(error && (error.code || error.name) || 'Error').slice(0, 80), abortState: abortState || 'not-needed', at: Date.now() });
+    if (_readDiagnostics.length > 12) _readDiagnostics.shift();
+  }
+  function _abortRead(tx) {
+    if (!tx) return 'not-started';
+    try { tx.abort(); return 'requested'; } catch (_) { return 'unconfirmed'; }
+  }
+  function _boundedStorageRead(storeName, stage, select, emptyValue) {
+    var connection = _db;
+    return new Promise(function(resolve, reject) {
+      var tx, timer, settled = false;
+      function end(error, value) {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        if (error) { _storageDiagnostic(stage, error); reject(error); } else resolve(value);
+      }
+      timer = setTimeout(function() {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        var error = _storageWaitError('SAVE_READ_TIMEOUT', stage);
+        _storageDiagnostic(stage, error, _abortRead(tx)); reject(error);
+      }, READ_WAIT_MS);
+      try {
+        tx = connection.transaction(storeName, 'readonly');
+        tx.onabort = function(e) { end(e && e.target && e.target.error || tx.error || new Error('主存档只读事务已中止')); };
+        tx.onerror = function(e) { end(e && e.target && e.target.error || tx.error || new Error('主存档只读事务失败')); };
+        var request = select(tx.objectStore(storeName));
+        request.onsuccess = function() { end(null, request.result == null ? emptyValue : request.result); };
+        request.onerror = function(e) { end(e && e.target && e.target.error || request.error || new Error('主存档读取失败')); };
+      } catch (error) { end(error); _abortRead(tx); }
+    });
+  }
+
+  var WRITE_WAIT_MS = 60000, WRITE_ABORT_WAIT_MS = 5000;
+  var _writeSafety = null, _writeSequence = 0, _uncertainWrites = new Map(), _writeOutcomeListeners = new Map();
+  function _publishWriteOutcome(record, outcome) {
+    if (record.outcome !== "unconfirmed") return;
+    record.outcome = outcome;
+    var listeners = _writeOutcomeListeners.get(record.id) || [];
+    _writeOutcomeListeners.delete(record.id);
+    listeners.forEach(function(fn) { Promise.resolve().then(function() { fn(Object.assign({}, record)); }).catch(function() {}); });
+  }
+  function _unconfirmedWriteError(stage) {
+    var error = new Error('主存档写入结果尚未确认；已暂停本页继续写入，不能直接重试覆盖。请重新打开游戏并核对恢复点。');
+    error.code = 'SAVE_WRITE_UNCONFIRMED'; error.storageOutcome = 'unconfirmed'; error.stage = stage;
+    if (_writeSafety) error.storageOperationId = _writeSafety.id;
+    return error;
+  }
+  function _assertStorageWritable() {
+    if (_writeSafety) throw _unconfirmedWriteError(_writeSafety.stage);
+  }
+  function _runStorageWrite(stores, stage, writer) {
+    var connection = _db;
+    return new Promise(function(resolve, reject) {
+      var tx, timer, abortTimer, settled = false, cause = null, abortRequested = false;
+      var outcomeRecord = { id: "write-" + (++_writeSequence), stage: stage, outcome: "pending", at: Date.now() };
+      function clear() { clearTimeout(timer); clearTimeout(abortTimer); }
+      function end(error) {
+        if (settled) return;
+        settled = true; clear();
+        if (error) { try { _storageDiagnostic(stage, error, 'confirmed'); } catch (_) {} reject(error); }
+        else resolve(true);
+      }
+      function unknown() {
+        if (settled) return;
+        settled = true; clear();
+        outcomeRecord.outcome = 'unconfirmed';
+        _uncertainWrites.set(outcomeRecord.id, outcomeRecord);
+        _writeSafety = outcomeRecord;
+        var error = _unconfirmedWriteError(stage);
+        try { _storageDiagnostic(stage, error, 'unconfirmed'); } catch (_) {}
+        reject(error);
+      }
+      function abort(error) {
+        if (settled || abortRequested) return;
+        cause = error; abortRequested = true; clearTimeout(timer);
+        abortTimer = setTimeout(unknown, WRITE_ABORT_WAIT_MS);
+        try { tx.abort(); } catch (_) { /* Await the genuine terminal event, never infer a commit. */ }
+      }
+      try {
+        _assertStorageWritable();
+        tx = connection.transaction(stores, 'readwrite');
+        tx.oncomplete = function() {
+          if (settled) { if (_uncertainWrites.has(outcomeRecord.id)) _publishWriteOutcome(outcomeRecord, 'committed'); try { _storageDiagnostic(stage, { code: 'SAVE_LATE_COMMIT' }, 'late-committed'); } catch (_) {} return; }
+          end(null);
+        };
+        tx.onabort = function(e) {
+          if (settled) { if (_uncertainWrites.has(outcomeRecord.id)) _publishWriteOutcome(outcomeRecord, 'aborted'); try { _storageDiagnostic(stage, { code: 'SAVE_LATE_ABORT' }, 'late-aborted'); } catch (_) {} return; }
+          var error = cause || e && e.target && e.target.error || tx.error || new Error('主存档写事务已中止');
+          try { error.storageOutcome = 'aborted'; } catch (_) {}
+          end(error);
+        };
+        tx.onerror = function(e) { abort(e && e.target && e.target.error || tx.error || new Error('主存档写事务发生错误')); };
+        timer = setTimeout(function() {
+          var error = new Error('主存档写入等待超时，正在确认事务中止'); error.name = 'TimeoutError'; error.code = 'SAVE_WRITE_TIMEOUT';
+          abort(error);
+        }, WRITE_WAIT_MS);
+        writer(tx);
+      } catch (error) { if (tx) abort(error); else end(error); }
+    });
+  }
+
+  function _writeOutcome(id) { var row = _uncertainWrites.get(String(id)); return row ? Object.assign({}, row) : null; }
+  function _acknowledgeWriteOutcome(id) {
+    var row = _uncertainWrites.get(String(id));
+    if (!row || _uncertainWrites.size !== 1 || !['committed','aborted'].includes(row.outcome)) return false;
+    _uncertainWrites.delete(String(id)); _writeOutcomeListeners.delete(String(id));
+    _writeSafety = _uncertainWrites.size ? _uncertainWrites.values().next().value : null;
+    return !_writeSafety;
+  }
+  function _whenWriteSettled(id, fn) {
+    var row = _uncertainWrites.get(String(id)); if (!row || typeof fn !== 'function') return function() {};
+    var live = true, wrapped = function(value) { if (live) fn(value); };
+    if (row.outcome !== 'unconfirmed') Promise.resolve().then(function() { wrapped(Object.assign({}, row)); });
+    else { var list = _writeOutcomeListeners.get(String(id)) || []; list.push(wrapped); _writeOutcomeListeners.set(String(id), list); }
+    return function() { live = false; };
+  }
+  function _retryStorageQuota(error, enabled, retryCount, guard, ids, retry) {
+    if (!enabled || retryCount || !error || error.name !== 'QuotaExceededError' || error.storageOutcome !== 'aborted') throw error;
+    if (!_writeGuardAllows(guard)) return false;
+    var excluded = Object.create(null); ids.forEach(function(id) { excluded[String(id)] = true; });
+    return _dropOldestAutoSave(guard, excluded).then(function(dropped) {
+      if (!_writeGuardAllows(guard)) return false;
+      if (dropped) return retry();
+      if (typeof window.toast === 'function') window.toast('❌ 存档空间满·请手动删除旧存档后重试');
+      return false;
+    });
+  }
+
   function _utf8ByteLength(text) {
     if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(text).byteLength;
     return unescape(encodeURIComponent(text)).length;
@@ -90,7 +258,7 @@ var TM_SaveDB = (function() {
       if (typeof crypto !== 'undefined' && crypto.subtle && utf8Bytes) {
         var digestPromise = crypto.subtle.digest('SHA-256', utf8Bytes);
         utf8Bytes = null; // digest has accepted its input; do not retain it through compression.
-        var digest = await digestPromise;
+        var digest = await (typeof SaveCompression.awaitResult === 'function' ? SaveCompression.awaitResult(digestPromise, 'checksum') : digestPromise);
         return Array.prototype.map.call(new Uint8Array(digest), function(byte) {
           return byte.toString(16).padStart(2, '0');
         }).join('');
@@ -221,21 +389,38 @@ var TM_SaveDB = (function() {
   // ── 打开数据库 ──
   function open() {
     try { _recoverLocalSaveBatchJournal(); }
-    catch (journalError) { return Promise.reject(new Error('localStorage 批量存档恢复失败：' + (journalError && journalError.message || journalError))); }
+    catch (journalError) { var recoveryError = new Error('localStorage 批量存档恢复失败：' + (journalError && journalError.message || journalError)); recoveryError.code = 'SAVE_LOCAL_RECOVERY_FAILED'; return Promise.reject(recoveryError); }
     try { _migrateLocalAuxiliaryRecords(); }
     catch (migrationError) { console.warn('[SaveDB] localStorage 辅助记录迁移延后重试:', migrationError); }
     if (_db) return Promise.resolve(_db);
     if (_openPromise) return _openPromise;
 
-    _openPromise = new Promise(function(resolve, reject) {
+    var resolveOpen, rejectOpen;
+    var owner = { settled: false, failed: false, timer: null, upgrade: null };
+    owner.promise = new Promise(function(resolve, reject) { resolveOpen = resolve; rejectOpen = reject; });
+    _openOwner = owner; _openPromise = owner.promise;
+    function releasePending() {
+      clearTimeout(owner.timer);
+      if (_openOwner === owner) { _openOwner = null; _openPromise = null; }
+    }
+    function failOpen(error) {
+      if (owner.settled) return;
+      owner.failed = true; owner.settled = true;
+      releasePending();
+      _storageDiagnostic('open', error, _abortRead(owner.upgrade));
+      if (!_db) _available = false;
+      rejectOpen(error);
+    }
+    try {
       if (!window.indexedDB) {
         console.warn('[SaveDB] IndexedDB不可用，回退localStorage');
-        _available = false;
-        resolve(null);
-        return;
+        _available = false; owner.settled = true; releasePending(); resolveOpen(null); return owner.promise;
       }
+      owner.timer = setTimeout(function() { failOpen(_storageWaitError('SAVE_OPEN_TIMEOUT', 'open')); }, OPEN_WAIT_MS);
       var req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = function(e) {
+        if (owner.failed) { _abortRead(e.target.transaction); try { e.target.result.close(); } catch (_) {} return; }
+        owner.upgrade = e.target.transaction;
         var db = e.target.result;
         var saveStore;
         if (!db.objectStoreNames.contains(SAVE_STORE)) {
@@ -275,6 +460,7 @@ var TM_SaveDB = (function() {
           function migrateAuxStore(store, kind) {
             var cursorReq = store.openCursor();
             cursorReq.onsuccess = function() {
+              if (owner.failed) return;
               var cursor = cursorReq.result;
               if (!cursor) return;
               var record = cursor.value;
@@ -307,6 +493,7 @@ var TM_SaveDB = (function() {
         if (e.oldVersion > 0 && e.oldVersion < 3 && saveStore && metadataStore) {
           var cursorReq = saveStore.openCursor();
           cursorReq.onsuccess = function() {
+              if (owner.failed) return;
             var cursor = cursorReq.result;
             if (!cursor) return;
             metadataStore.put(_toSaveMetadata(cursor.value));
@@ -316,38 +503,35 @@ var TM_SaveDB = (function() {
       };
       req.onsuccess = function(e) {
         var openedDb = e.target.result;
-        openedDb.onversionchange = function() {
-          // 多标签页或未来 v4 升级时主动释放旧连接，否则新版本会长期卡在 blocked。
-          if (_db !== openedDb) return;
+        if (owner.settled || _openOwner !== owner) { try { openedDb.close(); } catch (_) {} return; }
+        function releaseConnection() {
           try { openedDb.close(); } catch (_) {}
-          _db = null;
-          _available = false;
-          _openPromise = null;
-        };
-        _db = openedDb;
-        _available = true;
-        _openPromise = null;
+          if (_db === openedDb) { _db = null; _available = false; }
+        }
+        openedDb.onversionchange = releaseConnection;
+        openedDb.onclose = releaseConnection;
+        _db = openedDb; _available = true;
+        owner.settled = true; releasePending();
         console.log('[SaveDB] IndexedDB就绪 (v' + DB_VERSION + ')');
-        resolve(_db);
+        resolveOpen(openedDb);
       };
       req.onerror = function(e) {
+        if (owner.settled) return;
         var err = e.target && e.target.error || new Error('IndexedDB 打开失败');
         console.error('[SaveDB] IndexedDB打开失败:', err);
-        _available = false;
-        _openPromise = null;
-        reject(err);
+        failOpen(err);
       };
       req.onblocked = function() {
-        _available = false;
-        _openPromise = null;
-        reject(new Error('IndexedDB 升级被其他页面阻塞'));
+        var error = new Error('IndexedDB 升级被其他页面阻塞'); error.code = 'SAVE_OPEN_BLOCKED';
+        failOpen(error);
       };
-    });
-    return _openPromise;
+    } catch (error) { failOpen(error); }
+    return owner.promise;
   }
 
   // ── R103·quota 满时自动清最老 auto 存档（type='auto'），手动存档永不删 ──
   function _writeGuardAllows(writeGuard) {
+    _assertStorageWritable();
     if (typeof writeGuard !== 'function') return true;
     try { return writeGuard() === true; }
     catch (_) { return false; }
@@ -432,43 +616,21 @@ var TM_SaveDB = (function() {
       }
       }, { records: 1 });
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction([SAVE_STORE, SAVE_META_STORE], 'readwrite');
-        var settled = false;
-        tx.objectStore(SAVE_STORE).put(record);
-        tx.objectStore(SAVE_META_STORE).put(metadata);
-        tx.oncomplete = function() { if (!settled) { settled = true; resolve(true); } };
-        function handleWriteFailure(e) {
-          if (settled) return;
-          settled = true;
-          var err = e.target && e.target.error;
-          var isQuota = err && err.name === 'QuotaExceededError';
-          if (isQuota && !_retryCount) {
-            if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-            var excluded = Object.create(null);
-            excluded[String(record.id)] = true;
-            _dropOldestAutoSave(writeGuard, excluded).then(function(dropped) {
-              if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-              if (dropped) _putSaveRecord(record, 1, writeGuard).then(resolve, reject);
-              else {
-                if (typeof window.toast === 'function') window.toast('❌ 存档空间满·请手动删除旧存档后重试');
-                resolve(false);
-              }
-            }).catch(reject);
-          } else {
-            reject(err || new Error('IndexedDB 存档写入失败'));
-          }
-        }
-        tx.onerror = handleWriteFailure;
-        tx.onabort = handleWriteFailure;
-      } catch (e) { reject(e); }
+    return _runStorageWrite([SAVE_STORE, SAVE_META_STORE], 'single-save', function(tx) {
+      tx.objectStore(SAVE_STORE).put(record);
+      tx.objectStore(SAVE_META_STORE).put(metadata);
+    }).catch(function(error) {
+      return _retryStorageQuota(error, true, _retryCount, writeGuard, [record.id], function() { return _putSaveRecord(record, 1, writeGuard); });
     });
   }
 
-  function _putSaveRecordsAtomic(records, writeGuard, _retryCount, turnPublishReceipt) {
+  function _putSaveRecordsAtomic(records, writeGuard, _retryCount, turnPublishReceipt, onCommitted) {
     records = Array.isArray(records) ? records : [];
     if (!records.length) return Promise.resolve(false);
+    function committed() {
+      try { if (typeof onCommitted === 'function') onCommitted(records); }
+      catch (error) { try { console.warn('[SaveDB] 已提交存档的通知失败:', error); } catch (_) {} }
+    }
     if (!_writeGuardAllows(writeGuard)) return Promise.resolve(false);
     if (!_available || !_db) {
       return _perfWithSpan('save.localFallback', function() {
@@ -494,7 +656,9 @@ var TM_SaveDB = (function() {
         if (turnPublishReceipt) localStorage.setItem(receiptKey, JSON.stringify(turnPublishReceipt));
         journal.phase = 'committed';
         localStorage.setItem(LOCAL_SAVE_BATCH_JOURNAL, JSON.stringify(journal));
-        localStorage.removeItem(LOCAL_SAVE_BATCH_JOURNAL);
+        committed();
+        try { localStorage.removeItem(LOCAL_SAVE_BATCH_JOURNAL); }
+        catch (cleanupError) { try { console.warn('[SaveDB] 已提交日志留待下次清理:', cleanupError); } catch (_) {} }
         return Promise.resolve(true);
       } catch (error) {
         var restored = false;
@@ -511,7 +675,7 @@ var TM_SaveDB = (function() {
           if (!_writeGuardAllows(writeGuard)) return Promise.resolve(false);
           return _dropOldestAutoSave(writeGuard, excludedLocal).then(function(dropped) {
             if (!_writeGuardAllows(writeGuard)) return false;
-            if (dropped) return _putSaveRecordsAtomic(records, writeGuard, 1, turnPublishReceipt);
+            if (dropped) return _putSaveRecordsAtomic(records, writeGuard, 1, turnPublishReceipt, onCommitted);
             if (typeof window.toast === 'function') window.toast('❌ 存档空间满·请手动删除旧存档后重试');
             return false;
           });
@@ -520,45 +684,14 @@ var TM_SaveDB = (function() {
       }
       }, { records: records.length, atomic: true });
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-        var txStores = [SAVE_STORE, SAVE_META_STORE];
-        if (turnPublishReceipt) txStores.push(TURN_PUBLISH_RECEIPT_STORE);
-        var tx = _db.transaction(txStores, 'readwrite');
-        var payloadStore = tx.objectStore(SAVE_STORE);
-        var metadataStore = tx.objectStore(SAVE_META_STORE);
-        var settled = false;
-        records.forEach(function(record) {
-          payloadStore.put(record);
-          metadataStore.put(_toSaveMetadata(record));
-        });
-        if (turnPublishReceipt) tx.objectStore(TURN_PUBLISH_RECEIPT_STORE).put(turnPublishReceipt);
-        tx.oncomplete = function() { if (!settled) { settled = true; resolve(true); } };
-        function fail(e) {
-          if (settled) return;
-          settled = true;
-          var error = e && e.target && e.target.error || tx.error || new Error('IndexedDB 批量存档事务失败');
-          if (error && error.name === 'QuotaExceededError' && !_retryCount) {
-            var excluded = Object.create(null);
-            records.forEach(function(record) { excluded[String(record.id)] = true; });
-            if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-            console.warn('[SaveDB] canonical 批量存档配额已满·整批回滚后清理旧自动档并重试');
-            _dropOldestAutoSave(writeGuard, excluded).then(function(dropped) {
-              if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-              if (dropped) _putSaveRecordsAtomic(records, writeGuard, 1, turnPublishReceipt).then(resolve, reject);
-              else {
-                if (typeof window.toast === 'function') window.toast('❌ 存档空间满·请手动删除旧存档后重试');
-                resolve(false);
-              }
-            }).catch(reject);
-            return;
-          }
-          reject(error);
-        }
-        tx.onerror = fail;
-        tx.onabort = fail;
-      } catch (error) { reject(error); }
+    var txStores = [SAVE_STORE, SAVE_META_STORE];
+    if (turnPublishReceipt) txStores.push(TURN_PUBLISH_RECEIPT_STORE);
+    return _runStorageWrite(txStores, 'canonical-save', function(tx) {
+      var payloadStore = tx.objectStore(SAVE_STORE), metadataStore = tx.objectStore(SAVE_META_STORE);
+      records.forEach(function(record) { payloadStore.put(record); metadataStore.put(_toSaveMetadata(record)); });
+      if (turnPublishReceipt) tx.objectStore(TURN_PUBLISH_RECEIPT_STORE).put(turnPublishReceipt);
+    }).then(function() { committed(); return true; }).catch(function(error) {
+      return _retryStorageQuota(error, true, _retryCount, writeGuard, records.map(function(record) { return record.id; }), function() { return _putSaveRecordsAtomic(records, writeGuard, 1, turnPublishReceipt, onCommitted); });
     });
   }
 
@@ -588,48 +721,16 @@ var TM_SaveDB = (function() {
         return Promise.reject(e);
       }
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readwrite');
-        var settled = false;
-        tx.objectStore(storeName).put(record);
-        tx.oncomplete = function() { if (!settled) { settled = true; resolve(true); } };
-        function handleWriteFailure(e) {
-          if (settled) return;
-          settled = true;
-          var err = e.target && e.target.error;
-          var isQuota = err && (err.name === 'QuotaExceededError' || err.name === 'QuotaExceededError');
-          if (isQuota && storeName === SAVE_STORE && !_retryCount) {
-            if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-            console.warn('[SaveDB] 配额已满·尝试清最老自动存档后重试');
-            var excluded = Object.create(null);
-            excluded[String(record.id)] = true;
-            _dropOldestAutoSave(writeGuard, excluded).then(function(dropped) {
-              if (!_writeGuardAllows(writeGuard)) { resolve(false); return; }
-              if (dropped) {
-                // 重试（带 flag 防止无限递归）
-                _put(storeName, record, 1, writeGuard).then(resolve, reject);
-              } else {
-                // 没 auto 可清·通知用户手动清理
-                if (typeof window.toast === 'function') {
-                  window.toast('❌ 存档空间满·请手动删除旧存档后重试');
-                }
-                resolve(false);
-              }
-            }).catch(reject);
-          } else {
-            console.error('[SaveDB] 写入失败:', err ? err.name + ':' + err.message : e);
-            reject(err || new Error('IndexedDB 写入失败'));
-          }
-        }
-        tx.onerror = handleWriteFailure;
-        tx.onabort = handleWriteFailure;
-      } catch(e) { console.error('[SaveDB] 事务失败:', e); reject(e); }
+    return _runStorageWrite(storeName, 'record-write', function(tx) {
+      tx.objectStore(storeName).put(record);
+    }).catch(function(error) {
+      return _retryStorageQuota(error, storeName === SAVE_STORE, _retryCount, writeGuard, [record.id], function() { return _put(storeName, record, 1, writeGuard); });
     });
   }
 
   // 多记录同事务提交；迁移只有在这一事务完整成功后才允许删除旧源。
   function _putManyAtomic(storeName, records) {
+    _assertStorageWritable();
     records = Array.isArray(records) ? records : [];
     if (!records.length) return Promise.resolve(0);
     if (!_available || !_db) {
@@ -658,21 +759,11 @@ var TM_SaveDB = (function() {
         return Promise.reject(e);
       }
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var txStores = storeName === SAVE_STORE ? [SAVE_STORE, SAVE_META_STORE] : storeName;
-        var tx = _db.transaction(txStores, 'readwrite');
-        var store = tx.objectStore(storeName);
-        var metadataStore = storeName === SAVE_STORE ? tx.objectStore(SAVE_META_STORE) : null;
-        records.forEach(function(record) {
-          store.put(record);
-          if (metadataStore) metadataStore.put(_toSaveMetadata(record));
-        });
-        tx.oncomplete = function() { resolve(records.length); };
-        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 批量写入失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 批量写入已中止')); };
-      } catch (e) { reject(e); }
-    });
+    var txStores = storeName === SAVE_STORE ? [SAVE_STORE, SAVE_META_STORE] : storeName;
+    return _runStorageWrite(txStores, 'migration-batch', function(tx) {
+      var store = tx.objectStore(storeName), metadataStore = storeName === SAVE_STORE ? tx.objectStore(SAVE_META_STORE) : null;
+      records.forEach(function(record) { store.put(record); if (metadataStore) metadataStore.put(_toSaveMetadata(record)); });
+    }).then(function() { return records.length; });
   }
 
   // ── 通用读取 ──
@@ -683,15 +774,7 @@ var TM_SaveDB = (function() {
         return Promise.resolve(raw ? JSON.parse(raw) : null);
       } catch(e) { return Promise.reject(e); }
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readonly');
-        var req = tx.objectStore(storeName).get(id);
-        req.onsuccess = function() { resolve(req.result || null); };
-        req.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 读取失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 读取事务已中止')); };
-      } catch(e) { reject(e); }
-    });
+    return _boundedStorageRead(storeName, 'record-read', function(store) { return store.get(id); }, null);
   }
 
   // ── 通用删除 ──
@@ -701,15 +784,7 @@ var TM_SaveDB = (function() {
       try { localStorage.removeItem('tm_idb_' + storeName + '_' + id); } catch(e) { return Promise.reject(e); }
       return Promise.resolve(true);
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readwrite');
-        tx.objectStore(storeName).delete(id);
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 删除失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 删除事务已中止')); };
-      } catch(e) { reject(e); }
-    });
+    return _runStorageWrite(storeName, 'record-delete', function(tx) { tx.objectStore(storeName).delete(id); });
   }
 
   function _deleteSaveRecord(id, writeGuard) {
@@ -731,15 +806,8 @@ var TM_SaveDB = (function() {
         return Promise.reject(e);
       }
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction([SAVE_STORE, SAVE_META_STORE], 'readwrite');
-        tx.objectStore(SAVE_STORE).delete(id);
-        tx.objectStore(SAVE_META_STORE).delete(id);
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 存档删除失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 存档删除事务已中止')); };
-      } catch (e) { reject(e); }
+    return _runStorageWrite([SAVE_STORE, SAVE_META_STORE], 'save-delete', function(tx) {
+      tx.objectStore(SAVE_STORE).delete(id); tx.objectStore(SAVE_META_STORE).delete(id);
     });
   }
 
@@ -759,54 +827,32 @@ var TM_SaveDB = (function() {
       } catch(e){ return Promise.reject(e); }
       return Promise.resolve(results);
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readonly');
-        var req = tx.objectStore(storeName).getAll();
-        req.onsuccess = function() { resolve(req.result || []); };
-        req.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 列表读取失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 列表事务已中止')); };
-      } catch(e) { reject(e); }
-    });
+    return _boundedStorageRead(storeName, 'store-list', function(store) { return store.getAll(); }, []);
   }
 
   function _listByIndex(storeName, indexName, key) {
     if (!_available || !_db) return _listAll(storeName);
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readonly');
-        var store = tx.objectStore(storeName);
-        if (!store || typeof store.index !== 'function') {
-          _listAll(storeName).then(resolve, reject);
-          return;
-        }
-        var req = store.index(indexName).getAll(key);
-        req.onsuccess = function() { resolve(req.result || []); };
-        req.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 索引读取失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 索引事务已中止')); };
-      } catch (_) {
-        _listAll(storeName).then(resolve, reject);
+    return _boundedStorageRead(storeName, 'index-list', function(store) {
+      if (typeof store.index !== 'function') return store.getAll();
+      try { return store.index(indexName).getAll(key); }
+      catch (error) {
+        if (error && error.name === 'NotFoundError') return store.getAll();
+        throw error;
       }
-    });
+    }, []);
   }
 
   function _deleteMany(storeName, records) {
+    _assertStorageWritable();
     records = Array.isArray(records) ? records.filter(function(record) { return record && record.id != null; }) : [];
     if (!records.length) return Promise.resolve(0);
     if (!_available || !_db) {
       records.forEach(function(record) { localStorage.removeItem('tm_idb_' + storeName + '_' + record.id); });
       return Promise.resolve(records.length);
     }
-    return new Promise(function(resolve, reject) {
-      try {
-        var tx = _db.transaction(storeName, 'readwrite');
-        var store = tx.objectStore(storeName);
-        records.forEach(function(record) { store.delete(record.id); });
-        tx.oncomplete = function() { resolve(records.length); };
-        tx.onerror = function(e) { reject(e.target && e.target.error || new Error('IndexedDB 辅助记录清理失败')); };
-        tx.onabort = function(e) { reject(e.target && e.target.error || tx.error || new Error('IndexedDB 辅助记录清理事务已中止')); };
-      } catch (error) { reject(error); }
-    });
+    return _runStorageWrite(storeName, 'auxiliary-delete', function(tx) {
+      var store = tx.objectStore(storeName); records.forEach(function(record) { store.delete(record.id); });
+    }).then(function() { return records.length; });
   }
 
   function _listSaveMetadata() {
@@ -840,6 +886,9 @@ var TM_SaveDB = (function() {
   function _ensureOpen() {
     if (_db) return Promise.resolve();
     return open().catch(function(error) {
+      if (error && (error.code === 'SAVE_OPEN_TIMEOUT' || error.code === 'SAVE_LOCAL_RECOVERY_FAILED')) throw error;
+      if (_db && _available) return _db;
+      if (_openPromise) return _openPromise;
       // IndexedDB 被禁用、打开失败或升级被阻塞时，公开 API 仍应兑现
       // “回退 localStorage”的契约；失败原因保留在控制台供诊断。
       console.warn('[SaveDB] IndexedDB打开不可用，回退localStorage:', error);
@@ -949,6 +998,19 @@ var TM_SaveDB = (function() {
   function saveManyAtomic(entries, options) {
     entries = Array.isArray(entries) ? entries : [];
     options = options || {};
+    var committed = false, commitObserver = typeof options.onCommitted === 'function' ? options.onCommitted : null;
+    var transactionId = String(options.transactionId || '');
+    function observedCommit(records) {
+      if (committed) return;
+      committed = true;
+      var slots = records.map(function(record) { return Object.freeze({ id: record.id, turn: record.turn, campaignId: record.campaignId, timelineId: record.timelineId }); });
+      var receipt = Object.freeze({ state: 'committed', transactionId: transactionId, slots: Object.freeze(slots) });
+      try {
+        var notification = commitObserver ? commitObserver(receipt) : null;
+        if (notification && typeof notification.then === 'function') Promise.resolve(notification).catch(function(error) { try { console.warn('[SaveDB] 异步提交通知失败:', error); } catch (_) {} });
+      }
+      catch (error) { try { console.warn('[SaveDB] 提交通知失败，主存档仍已提交:', error); } catch (_) {} }
+    }
     if (!entries.length) return Promise.resolve(false);
     function _writeStillAllowed() {
       if (typeof options.writeGuard !== 'function') return true;
@@ -1036,11 +1098,16 @@ var TM_SaveDB = (function() {
       if (!_writeStillAllowed()) return false;
       savedRecords = records;
       return _perfWithSpan('save.idbCommit', function() {
-        return _putSaveRecordsAtomic(records, _writeStillAllowed, 0, frozenTurnPublishReceipt);
+        return _putSaveRecordsAtomic(records, _writeStillAllowed, 0, frozenTurnPublishReceipt, observedCommit);
       }, { slots: records.length });
     }).then(function(saved) {
-      if (saved !== true) return saved;
-      return _gcReplacedSaveTimelines(previousMetadata, savedRecords);
+      if (saved !== true && !committed) return saved;
+      observedCommit(savedRecords);
+      return Promise.resolve(_gcReplacedSaveTimelines(previousMetadata, savedRecords)).then(function() { return true; });
+    }).catch(function(error) {
+      if (!committed) throw error;
+      try { console.warn('[SaveDB] 主存档已提交，后处理失败:', error); } catch (_) {}
+      return true;
     });
   }
 
@@ -1324,7 +1391,9 @@ var TM_SaveDB = (function() {
     var bridge = (typeof window !== 'undefined') ? window.tianming : null;
     if (!(bridge && bridge.isDesktop)) return Promise.resolve(false);
     if (typeof bridge.listSaveTimelineRefs !== 'function') return Promise.resolve(true);
-    return Promise.resolve(bridge.listSaveTimelineRefs()).then(function(result) {
+    var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+    if (!reliability || typeof reliability.callTurnBridge !== 'function') return Promise.resolve(true);
+    return reliability.callTurnBridge('listSaveTimelineRefs', null).then(function(result) {
       if (!(result && result.success === true && result.complete === true && Array.isArray(result.refs))) return true;
       return result.refs.some(function(ref) {
         return ref && String(ref.campaignId || '') === campaignId && String(ref.timelineId || '') === timelineId;
@@ -1607,6 +1676,10 @@ var TM_SaveDB = (function() {
 
   return {
     open: open,
+    assertWritable: _assertStorageWritable,
+    writeOutcome: _writeOutcome, acknowledgeWriteOutcome: _acknowledgeWriteOutcome, whenWriteSettled: _whenWriteSettled,
+    writeStatus: function() { return _writeSafety ? Object.assign({ blocked: true }, _writeSafety) : { blocked: false }; },
+    diagnostics: function() { return _readDiagnostics.map(function(row) { return Object.assign({}, row); }); },
     save: save,
     saveManyAtomic: saveManyAtomic,
     createCanonicalPayload: createCanonicalPayload,

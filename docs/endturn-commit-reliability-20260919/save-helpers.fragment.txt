@@ -1,0 +1,29 @@
+    var _snapshotTask = null;
+    function _saveWarning(stage, error) {
+      var warnings = ctx.meta.turnSaveWarnings || (ctx.meta.turnSaveWarnings = []);
+      if (!warnings.some(function(w) { return w.stage === stage; })) warnings.push({ stage: stage, code: String(error && (error.code || error.name) || 'auxiliary-failure').slice(0, 80) });
+      try { console.warn('[AutoSave] 主存档已提交，附加步骤失败：' + stage, error); } catch (_) {}
+    }
+    function _receiptMatches(receipt) {
+      return receipt && receipt.state === 'committed' && receipt.transactionId === String(ctx.meta.transactionId || '')
+        && Array.isArray(receipt.slots) && receipt.slots.length === 2
+        && ['autosave', 'slot_0'].every(function(id) { return receipt.slots.some(function(slot) {
+          return slot.id === id && slot.turn === _endturnSaveTurn && slot.campaignId === _canonicalIdentity.campaignId && slot.timelineId === _canonicalIdentity.timelineId;
+        }); });
+    }
+    function _acceptCommit(receipt) {
+      if (_canonicalCommitted || !_receiptMatches(receipt)) return;
+      _canonicalCommitted = true;
+      ctx.meta.canonicalSaveReceipt = receipt;
+      if (ctx.meta.transaction) ctx.meta.transaction.canonicalSaveReceipt = receipt;
+      ctx.meta.canonicalWorldSnapshot = _autoState;
+      ctx.meta.canonicalWorldSnapshotMeta = { turn: _endturnSaveTurn, transactionId: String(ctx.meta.transactionId || ''), takeOwnership: true };
+      if (!_endturnSaveStillCurrent()) return;
+      _snapshotTask = Promise.resolve().then(function() {
+        if (typeof StateSnapshot === 'undefined' || !StateSnapshot || typeof StateSnapshot.save !== 'function') return null;
+        return StateSnapshot.save({ canonicalState: _autoState, canonicalPayload: _canonicalPayload, campaignId: _canonicalIdentity.campaignId, timelineId: _canonicalIdentity.timelineId, turn: _endturnSaveTurn });
+      }).then(function(result) {
+        if (result && result.ok === true) return;
+        if (result !== null) _saveWarning('time-snapshot', result && result.error);
+      }, function(error) { _saveWarning('time-snapshot', error); });
+    }

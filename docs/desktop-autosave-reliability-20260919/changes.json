@@ -1,0 +1,52 @@
+[
+  {
+    "file": "preload-impl.js",
+    "before": "6ef5e227a95bd0aa3b7df9fe040b83768a28f2cd90c3ecb9c9c6cb219e8f2204",
+    "after": "0ed2825d116a95a6a5311b3bc5cbe434ba7a779345f1f29dae1566e2aaf360cf",
+    "at": "2026-09-19T10:37:30.183Z"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "before": "c03e737f255ccefaf002a1b5291d3e9ee3bf53a090b2efc8212bee10727c6b80",
+    "after": "a2d8d2b71a0d20539833b4ac0474a8ec6db9f53abee6c01e49043342d8fc5adb",
+    "at": "2026-09-19T10:37:30.371Z"
+  },
+  {
+    "file": "web/tm-save-close-flush.js",
+    "before": "4638dacc54d1b6b743542903fcbebf46d1b3dc3e5abca108818aab99a60c35f9",
+    "after": "465aebad69af11bf1c7fdf8ef9886331528cdb1a543e8dccd0b03433e6c30289",
+    "at": "2026-09-19T10:37:30.541Z"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "before": "a2d8d2b71a0d20539833b4ac0474a8ec6db9f53abee6c01e49043342d8fc5adb",
+    "after": "2104ecdabad2f81f067794265321112561dc4b2661b448090563569df8b9d60e",
+    "at": "2026-09-19T10:40:15.899Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "d2f043c65151942092e3350fbdfa3986bb9ba19a64297a7111bfeb8e1b02fcdd",
+    "after": "20958df720f3b49f35be66e8df16f23c47677ea4ee9f32443b7b9e899fa67d90",
+    "at": "2026-09-19T10:45:50.046Z"
+  },
+  {
+    "file": "web/scripts/smoke-runtime-save-consistency.js",
+    "before": "01e82a9bb0aa980ea2424f152999236e7ef726d4e2625786692eec0d7278b210",
+    "after": "50dd315ea1c3a2de54ce7863ee05511de26c32cf49a9075cf222157f7af15e84",
+    "at": "2026-09-19T10:48:18.476Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "c9610230c5cbd6499650c96cf8d8cbd9af34c0e6b78405e4ec3c3df8f86b41d9",
+    "after": "d62fe068785862b58ebe27833df1fd4bb6c353199d8c69d79b8d95fcd8f62da5",
+    "at": "2026-09-19T10:48:19.354Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": true
+  },
+  {
+    "file": "web/scripts/smoke-desktop-autosave-reliability.js",
+    "before": "a9aaec39449d6d02076fbd0ef2776b8e361b0b18318156a3d7782b93f4bb4009",
+    "after": "7065a61b5ee68ce4d321657a06e7d4ddece768a723f83b4fecba0ca6bf6ab8ca",
+    "at": "2026-09-19T10:50:31.035Z"
+  }
+]

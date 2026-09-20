@@ -22,6 +22,18 @@
     return (j && Array.isArray(j.entries)) ? j : null;
   }
 
+  function _preferLocal(local, remote) {
+    var a = local.entries[0] || {}, b = remote.entries[0] || {};
+    var av = String(a.module || '').match(/^([0-9]+(?:\.[0-9]+){2,3})/);
+    var bv = String(b.module || '').match(/^([0-9]+(?:\.[0-9]+){2,3})/);
+    if (av && bv) {
+      var aa = av[1].split('.').map(Number), bb = bv[1].split('.').map(Number);
+      for (var i = 0; i < 4; i++) if ((aa[i] || 0) !== (bb[i] || 0)) return (aa[i] || 0) > (bb[i] || 0);
+    }
+    if (a.date && b.date && a.date !== b.date) return String(a.date) > String(b.date);
+    return local.entries.length > remote.entries.length;
+  }
+
   function _load() {
     if (_changelogData) return Promise.resolve(_changelogData);
     if (_loading) return _loading;
@@ -31,11 +43,11 @@
       _fetchJson(remoteUrl + '?v=' + cacheV, { cache: 'no-store' }),
       _fetchJson('changelog.json?v=' + cacheV)
     ]).then(function(list) {
-        // 取 entries 多的那份·避免 server 端 standalone changelog.json 漏同步时玩家永远看旧
+        // 优先最新版本／日期，最后比较条数；旧服务器的长历史不能覆盖新版随包邸报。
         var remote = _validData(list[0]);
         var local = _validData(list[1]);
         if (remote && local) {
-          _changelogData = (local.entries.length > remote.entries.length) ? local : remote;
+          _changelogData = _preferLocal(local, remote) ? local : remote;
         } else {
           _changelogData = remote || local || { entries: [] };
         }

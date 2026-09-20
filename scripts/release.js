@@ -83,6 +83,8 @@ const CFG = {
   minAppVersion: String(arg('min-app-version', '') || ''),
   withInstaller: flag('with-installer'),
   noDelta: flag('no-delta'),
+  webOnly: flag('web-only'),
+  assetRoot: String(arg('asset-root', '') || ''),
   noUpload: flag('no-upload'),
   prepare: flag('prepare'),
   publish: flag('publish'),
@@ -125,6 +127,7 @@ function validateModeFacts(facts) {
 
 function gateMode() {
   const problems = validateModeFacts(CFG);
+  if (CFG.webOnly && (CFG.withInstaller || CFG.minAppVersion || CFG.noDelta)) problems.push('--web-only 不接受安装包或 OTA 专用选项');
   if (!CFG.noUpload && CFG.root !== REAL_ROOT) problems.push('prepare/正式 publish 不允许 --repo-root 指向其他仓库');
   if (problems.length) die(problems.join('；'));
 }
@@ -557,7 +560,9 @@ function refreshBaseline() {
     log('⑥ self-test 基线刷新·manifest fixture → canonical');
     return;
   }
-  const result = spawnSync(process.execPath, [P.hotBaselineSync(), '--write', '--version', CFG.version], { cwd: CFG.root, stdio: 'inherit' });
+  const baselineArgs = [P.hotBaselineSync(), '--write', '--version', CFG.version];
+  if (CFG.assetRoot) baselineArgs.push('--asset-root', path.resolve(CFG.assetRoot));
+  const result = spawnSync(process.execPath, baselineArgs, { cwd: CFG.root, stdio: 'inherit' });
   if (result.status !== 0) die('canonical 热更基线同步失败');
   log('⑥ canonical 基线刷新·production hot collector → web/.hot-update-manifest.json');
 }
@@ -1088,6 +1093,14 @@ async function prepareRelease() {
     return;
   }
   fanOutVersions(code);
+  if (CFG.webOnly) {
+    const inventory = spawnSync(process.execPath, [path.join(CFG.root, 'scripts/build-native-preparation-manifest.cjs'), '--write'], { cwd: CFG.root, stdio: 'inherit' });
+    if (inventory.status !== 0) die('原生开局资源清单刷新失败');
+    refreshBaseline();
+    gatePreparedVersion(true);
+    log('WEB_ONLY_PREPARED: canonical version/inventory only; no installers, hot or Capgo archives built. Commit via PR before publish.');
+    return;
+  }
   buildDesktop();
   refreshBaseline();
   gatePreparedVersion(true);
@@ -1103,6 +1116,17 @@ async function publishRelease() {
   gatePreparedVersion(true);
   gateChangelog();
   const live = await gateLive();
+  if (CFG.webOnly) {
+    if (CFG.dryRun) { log('WEB_ONLY_DRY_RUN: verify static runtime, publish source release and pinned Pages; no installer/OTA writes'); return; }
+    const webOnly = require('./release-web-only.js');
+    const target = webOnly.stage(CFG.root, CFG.version);
+    log('WEB_ONLY_STAGED ' + target);
+    if (CFG.noUpload) return;
+    gatePublishRepository('上传前');
+    gateGitHubOwner();
+    webOnly.publish({ root: CFG.root, version: CFG.version, head: CFG.publishHead, notes: CFG.notes });
+    return;
+  }
   if (CFG.dryRun) {
     log('（dry-run）publish 将执行·⑤桌面重建 → ⑥已提交基线复验 → ⑦安卓构建'
       + (CFG.noDelta ? '(全量)' : '(差量' + (live.capgoManifest ? '·有线上基线' : '·无基线全打') + ')')

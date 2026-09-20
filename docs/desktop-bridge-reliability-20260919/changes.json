@@ -1,0 +1,80 @@
+[
+  {
+    "file": "web/tm-endturn-reliability.js",
+    "before": "d447aeb752e3505c029cb701249fb889f56aa9d63add1ef641a42cd97af07fc9",
+    "after": "fcf76364fd83d6ae8d9fad138493be9cc9d9a4afbd246236ebbfdc3de04fc1f8",
+    "at": "2026-09-19T10:13:12.891Z"
+  },
+  {
+    "file": "web/tm-endturn-render.js",
+    "before": "a42068e84d3d96357fc89d945ddf9288eb4139b4125f469f50f6493e31358551",
+    "after": "ae5c82f1a6f8787af0409d605d1b6fff4099e449913aea7ccc585cda6ccb5892",
+    "at": "2026-09-19T10:13:13.047Z"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "before": "db13977f33abd65bd20d23ee6658f70b41ab2fbda1c7bf8ca8d70b45087f1e87",
+    "after": "fc14640dae82af764b7dacd2ca3b4814ca2ce40790450061f3a848ec50e7b09f",
+    "at": "2026-09-19T10:13:13.224Z"
+  },
+  {
+    "file": "web/tm-storage.js",
+    "before": "82605b1c1209292ae6f2be811612b89f903d2258b33ebda9038a0adcc95d1d2f",
+    "after": "3665523c70d206b68c2ecdd0f5f8e79b638746d24416b742ca83e2cc4cc83fb6",
+    "at": "2026-09-19T10:13:13.241Z"
+  },
+  {
+    "file": "web/scripts/smoke-runtime-save-consistency.js",
+    "before": "b5d1f3de6fd44e069145b142e0ec8a3226534a59b5d5a93d1f14a7dc2849043a",
+    "after": "01e82a9bb0aa980ea2424f152999236e7ef726d4e2625786692eec0d7278b210",
+    "at": "2026-09-19T10:18:41.114Z"
+  },
+  {
+    "file": "web/scripts/smoke-storage-atomic-batch.js",
+    "before": "327d369f319fe8cfbf59b14c76bce0b84b66994b3c93af65fcea7fe24e6b920a",
+    "after": "b897380467a9a29f18826edbc16baded8b072b18f7e803bbf275af16ea260cc3",
+    "at": "2026-09-19T10:18:41.124Z"
+  },
+  {
+    "file": "web/tm-endturn-reliability.js",
+    "before": "fcf76364fd83d6ae8d9fad138493be9cc9d9a4afbd246236ebbfdc3de04fc1f8",
+    "after": "04840e53338e33fc075928fb21efb0faeffe52fda9bc85051247a4142a097d8a",
+    "at": "2026-09-19T10:18:41.256Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "693c2795e650cb3ea63e930240fe5833b896e4b570e2e7bbea099888bd9718d5",
+    "after": "d2f043c65151942092e3350fbdfa3986bb9ba19a64297a7111bfeb8e1b02fcdd",
+    "at": "2026-09-19T10:23:00.502Z"
+  },
+  {
+    "file": "web/scripts/smoke-desktop-bridge-reliability.js",
+    "before": "2e9487e24f2e37f365fe487da984fa011e11164f5a5d8d064e39f10beed32da0",
+    "after": "002c384f16bf6b56b6c868d3f43220dd3b2a25ee33b0d708ab46667cbdd320b2",
+    "at": "2026-09-19T10:23:00.510Z"
+  },
+  {
+    "file": "web/tm-endturn-reliability.js",
+    "before": "04840e53338e33fc075928fb21efb0faeffe52fda9bc85051247a4142a097d8a",
+    "after": "cb2a2a03ad1361cdc606e2192e4ae2a3515afa0a9458224fc561e2b88ad704f3",
+    "at": "2026-09-19T10:25:18.737Z"
+  },
+  {
+    "file": "web/tm-endturn-render.js",
+    "before": "ae5c82f1a6f8787af0409d605d1b6fff4099e449913aea7ccc585cda6ccb5892",
+    "after": "f1a2ed21943d674167afa84e6ee2f8ee1d56de5468161163d6a46e1af4f7e02d",
+    "at": "2026-09-19T10:25:18.753Z"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "before": "fc14640dae82af764b7dacd2ca3b4814ca2ce40790450061f3a848ec50e7b09f",
+    "after": "c03e737f255ccefaf002a1b5291d3e9ee3bf53a090b2efc8212bee10727c6b80",
+    "at": "2026-09-19T10:25:18.770Z"
+  },
+  {
+    "file": "web/scripts/smoke-desktop-bridge-reliability.js",
+    "before": "002c384f16bf6b56b6c868d3f43220dd3b2a25ee33b0d708ab46667cbdd320b2",
+    "after": "754133fb0625fc979690bf43b0d9a147e61eb282dba32d763da1bf994f374bb1",
+    "at": "2026-09-19T10:25:18.780Z"
+  }
+]

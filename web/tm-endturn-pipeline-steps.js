@@ -379,6 +379,7 @@
             ctx.meta.aiModeContract = _agentContract;
             if (!_agentContract.ok) throw new _mc.ModeExecutionError('agent', 'agent-result-invalid', _agentContract.problems.join('；'), _agentContract);
           }
+          if (TM.MemoryModeBridge) TM.MemoryModeBridge.archive(typeof GM !== "undefined" ? GM : ctx.GM, _agentResult, ctx);
           ctx.results.aiResult = _agentResult;
           ctx.input._aiInferRan = true;
           ctx.input._agentModeRan = true;

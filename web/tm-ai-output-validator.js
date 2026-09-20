@@ -56,6 +56,7 @@
     scheme_actions: 'array', timeline_triggers: 'array',
     current_issues_update: 'array',
     character_memory_updates: 'array',
+    long_term_memory_updates: 'array',
     // 生灭周期
     party_create: 'array', party_splinter: 'array', party_merge: 'array', party_dissolve: 'array',
     faction_create: 'array', faction_succession: 'array', faction_dissolve: 'array',
@@ -73,6 +74,21 @@
     hidden_moves: 'array', fengwen_snippets: 'array', call_court_works: 'array',
     anyPathChanges: 'array', events: 'array', changes: 'array',
     appointments: 'array', institutions: 'array', regions: 'array', localActions: 'array',
+    // ── 2026-09-18 补全·玩家实测 AI 经常输出但 schema 没认的字段 ──
+    // 这些都是 AI 在 sc1/sc1b/sc1c 主提示中被告知可以输出的字段·schema 漏认会被误判幻觉警告刷屏
+    turn_summary: 'string',           // 回合总结（SC1 常用）
+    shizhengji_basis: 'object',       // 时政记参考依据
+    resource_changes: 'array',        // 资源调整·走 fiscal/population 类通道
+    faction_ai_outcomes: 'array',     // 势力 AI 推演结果（sc1c 主产）
+    // ── 2026-09-18 补全·SC1 主提示史记字段（prompt 已引导·schema 漏认会误判幻觉）──
+    player_status: 'string',          // 玩家角色政治/生存状态（截图实测被误报 unknown）
+    player_inner: 'string',           // 玩家角色内心独白
+    szj_title: 'string',              // 时政记副标题（sc1d 主产）
+    szj_summary: 'string',            // 时政记一句话总结（sc1d 主产）
+    zhengwen: 'string',               // 政文/史臣曰（sc1d 可选）
+    houren_xishuo: 'string',          // 后人戏说（sc2 可选）
+    basis_refs: 'array',              // sc1d 依据列表（只读追溯）
+    office_dismissals: 'array',       // 官职罢免/革职
     // 其他
     geoData: 'object', memorials: 'array', letters: 'array',
     bigyear: 'object', bigYearEvent: 'object'
@@ -89,6 +105,7 @@
     harem_events: ['type'],
     current_issues_update: ['action'],
     character_memory_updates: ['actor', 'memory', 'confidence', 'source_refs'],
+    long_term_memory_updates: ['kind', 'memory', 'confidence', 'source_refs'],
     party_changes: ['name'],
     party_relation_changes: ['party', 'target'],
     class_changes: ['name'],

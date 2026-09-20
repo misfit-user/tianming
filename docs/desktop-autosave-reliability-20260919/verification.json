@@ -1,0 +1,300 @@
+{
+  "at": "2026-09-19T10:51:31.535Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "preload-impl.js",
+      "sha256": "0ed2825d116a95a6a5311b3bc5cbe434ba7a779345f1f29dae1566e2aaf360cf",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 13114
+    },
+    {
+      "file": "web/scripts/lib-desktop-autosave-reliability.js",
+      "sha256": "76dd4fc222c28fa722c9e7dca6dbac72cd3a153df646c54b2864d234ce93c3b9",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 2882
+    },
+    {
+      "file": "web/scripts/smoke-desktop-autosave-reliability.js",
+      "sha256": "7065a61b5ee68ce4d321657a06e7d4ddece768a723f83b4fecba0ca6bf6ab8ca",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 9162
+    },
+    {
+      "file": "web/scripts/smoke-runtime-save-consistency.js",
+      "sha256": "50dd315ea1c3a2de54ce7863ee05511de26c32cf49a9075cf222157f7af15e84",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 48612
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "20958df720f3b49f35be66e8df16f23c47677ea4ee9f32443b7b9e899fa67d90",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 43919
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "d62fe068785862b58ebe27833df1fd4bb6c353199d8c69d79b8d95fcd8f62da5",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 355092
+    },
+    {
+      "file": "web/tm-save-close-flush.js",
+      "sha256": "465aebad69af11bf1c7fdf8ef9886331528cdb1a543e8dccd0b03433e6c30289",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 5883
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "2104ecdabad2f81f067794265321112561dc4b2661b448090563569df8b9d60e",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 166720
+    }
+  ],
+  "qualityChecks": [
+    {
+      "check": "main-impl.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "main-turn-data-commit.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-storage.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-state-snapshot.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-core.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-render.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-response-recovery.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra-retry.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-reliability.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/index.html unchanged",
+      "ok": true
+    },
+    {
+      "check": "_prepareGMForSave unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmSaveSnapshotSkipKeys unchanged",
+      "ok": true
+    },
+    {
+      "check": "_autoSaveSnapshotGM unchanged",
+      "ok": true
+    },
+    {
+      "check": "_buildSaveState unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmCommittedSnapshotIdentityFor unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmCommittedSnapshotProjectEnvelope unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmCommittedSnapshotMatchesLive unchanged",
+      "ok": true
+    },
+    {
+      "check": "isWorldTransactionActive unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmRotateDesktopAutoSaveSession unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmDrainBackgroundAutosaves unchanged",
+      "ok": true
+    },
+    {
+      "check": "_invokeAutoSaveJson unchanged",
+      "ok": true
+    },
+    {
+      "check": "_newSessionToken unchanged",
+      "ok": true
+    },
+    {
+      "check": "_subscribeRendererEvent unchanged",
+      "ok": true
+    },
+    {
+      "check": "Production preload exposed API keys unchanged",
+      "ok": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 8,
+    "pass": 8,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalTests": {
+    "selected": 9,
+    "pass": 9,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "extendedTests": {
+    "selected": 212,
+    "pass": 211,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "testsComplete": true,
+  "newTests": [
+    {
+      "name": "smoke-desktop-autosave-reliability.js",
+      "pass": true,
+      "detail": "{\"pass\":20,\"fail\":0,\"total\":20}"
+    }
+  ],
+  "failures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "native": {
+    "ok": true,
+    "checks": 13,
+    "electron": "33.4.11"
+  },
+  "nativeCurrent": true,
+  "nativeCleanup": [
+    {
+      "profile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\desktop-autosave-reliability-20260919\\.isolated-autosave-1789815033593",
+      "removed": true
+    }
+  ],
+  "manifest": {
+    "at": "2026-09-19T10:48:19.550Z",
+    "exit": 0,
+    "output": "[startup-phase-manifest] PASS scripts=420 deferred=9 phases={\"menu\":14,\"core\":85,\"world\":299,\"optional\":22}\n"
+  },
+  "reproduced": [
+    {
+      "label": "before",
+      "scenario": "native-never-replies",
+      "deadlines": 0,
+      "settled": false,
+      "inFlight": true,
+      "pendingNative": null
+    },
+    {
+      "label": "before",
+      "scenario": "late-old-success",
+      "keptNewSession": false
+    },
+    {
+      "label": "before",
+      "scenario": "same-turn-new-snapshot",
+      "saved": false,
+      "calls": 1
+    },
+    {
+      "label": "after",
+      "scenario": "native-never-replies",
+      "deadlines": 1,
+      "settled": true,
+      "inFlight": false,
+      "pendingNative": true
+    },
+    {
+      "label": "after",
+      "scenario": "late-old-success",
+      "keptNewSession": true
+    },
+    {
+      "label": "after",
+      "scenario": "same-turn-new-snapshot",
+      "saved": true,
+      "calls": 2
+    }
+  ]
+}

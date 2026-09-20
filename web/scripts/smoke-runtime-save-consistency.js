@@ -7,6 +7,10 @@ const vm = require('vm');
 const ROOT = path.resolve(__dirname, '..');
 let pass = 0, fail = 0;
 function ok(cond, msg) { if (cond) { pass++; console.log('  ok - ' + msg); } else { fail++; console.error('  FAIL - ' + msg); } }
+function loadTurnBridge(ctx) {
+  ctx.setTimeout = ctx.setTimeout || setTimeout; ctx.clearTimeout = ctx.clearTimeout || clearTimeout;
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-reliability.js'), 'utf8'), ctx, { filename: 'tm-endturn-reliability.js' });
+}
 function sliceFn(src, marker) {
   const a = src.indexOf(marker); if (a < 0) return '';
   let i = src.indexOf('{', a), depth = 0, j = i;
@@ -36,6 +40,7 @@ console.log('=== 1. unified save snapshot builder ===');
 const snapshotSrc = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
 const builderSrc = sliceFn(lifecycle, 'function _buildSaveState(');
 const desktopResultSrc = sliceFn(lifecycle, 'function _tmDesktopAutoSaveResultOk(');
+const desktopTickSrc = sliceFn(lifecycle, 'async function _tmRunDesktopAutoSaveTick(');
 ok(!!snapshotSrc && !!builderSrc, '_autoSaveSnapshotGM + _buildSaveState 可抽取');
 {
   const ctx = {};
@@ -76,7 +81,7 @@ ok(/_writeOk !== true[\s\S]*?throw new Error\('canonical 回合存档未原子�
   const markerAt = render.indexOf("localStorage.setItem('tm_autosave_mark'", batchAt);
   ok(markerAt > writesDoneAt && writesDoneAt > batchAt && /turn:\s*_autoMeta\.turn/.test(render.slice(markerAt, markerAt + 300)), 'tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn');
 }
-ok(/var result =[\s\S]*?await window\.tianming\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron autoSave 仅在业务成功后推进成功时钟');
+ok(/await _tmAwaitDesktopAutoSaveReply[\s\S]*?return bridge\.autoSave\(saveData\);[\s\S]*?if \(!_tmDesktopAutoSaveResultOk\(result\)\) throw[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(desktopTickSrc), '60s Electron autoSave 仅在业务成功后推进成功时钟');
 ok(/_autoSaveLastSavedTurn = Number\(saveData\._saveMeta\.turn\)/.test(lifecycle), 'Electron 闲置跳存基线锚定已写 committed snapshot turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
@@ -100,7 +105,7 @@ ok(/TM_SaveDB\.saveManyAtomic\([\s\S]*?_autoWriteOptions\)/.test(render)
 ok(/function createCanonicalPayload\(state, identity\)[\s\S]*?JSON\.stringify\(state\)[\s\S]*?SaveCompression\.compress\(json\)/.test(storage)
   && /function save\(id, gameState, meta, options\)[\s\S]*?createCanonicalPayload\(gameState[\s\S]*?if \(!_writeStillAllowed\(\)\) return Promise\.resolve\(false\)[\s\S]*?if \(!_writeStillAllowed\(\)\) return false;[\s\S]*?_putSaveRecord/.test(storage),
   'SaveDB 同步冻结 canonical payload，并在异步准备前及真正 put 前复验 writeGuard');
-ok(/var sourceSnapshot = lastCommittedSnapshot;[\s\S]*?await window\.tianming\.autoSave\(saveData\);[\s\S]*?lastCommittedSnapshot !== sourceSnapshot[\s\S]*?不推进当前局闲置基线[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(lifecycle), '60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线');
+ok(/GM===targetGM&&P===targetP[\s\S]*?lastCommittedSnapshot===sourceSnapshot[\s\S]*?await _tmAwaitDesktopAutoSaveReply[\s\S]*?if \(!snapshotStillCurrent\(\)\)[\s\S]*?return \{ ok: true, stale: true[\s\S]*?_autoSaveLastDoneMs = Date\.now\(\)/.test(desktopTickSrc), '60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线');
 ok(/let autoSaveWriteQueue = Promise\.resolve\(\);[\s\S]*?const task = autoSaveWriteQueue\.then[\s\S]*?autoSaveWriteQueue = task\.then/.test(mainImpl), '主进程串行化固定 .tmp 的所有 auto-save IPC');
 ok(/auto-save-session-rotate/.test(mainImpl) && /autoSaveSessionMatches\(requestToken\)/.test(mainImpl)
   && /writeFile[\s\S]*?autoSaveSessionMatches\(requestToken\)[\s\S]*?rename/.test(mainImpl), 'Electron canonical auto-save 在 write/rename 间按 session token 复验');
@@ -124,10 +129,10 @@ ok(/function _tmStripSaveTransportMetadata\([\s\S]*?\^__tm\(\?:Desktop\|AutoSave
   && /_tmStripSaveTransportMetadata\(_incomingP\)/.test(lifecycle)
   && /_tmStripSaveTransportMetadata\(_incomingGM\)/.test(lifecycle),
   'desktop and auto-save envelope fields are stripped before P/GM become runtime state');
-ok(/stageTurnData\([\s\S]*?result\.success === true[\s\S]*?回合分卷暂存失败/.test(render)
+ok(/callTurnBridge\('stageTurnData',[\s\S]*?result\.success === true[\s\S]*?回合分卷暂存失败/.test(render)
   && /turnPublishReceipt:\s*ctx\.meta\.stagedTurnData/.test(render)
   && /_tmCommitEndTurnTransaction[\s\S]*?await _endTurn_publishStagedTurnData/.test(core), '回合分卷先暂存·receipt 与世界同事务提交·仅在 commit 后发布');
-ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[\s\S]*?listTurnPublishReceipts\(campaignId, timelineId, 'world-committed'\)[\s\S]*?recoverTurnData\(marker\)[\s\S]*?deleteTurnPublishReceipt\(marker/.test(lifecycle),
+ok(/function _recoverPendingTurnDataPublish\(\)[\s\S]*?baseRecoveryLeaseCurrent[\s\S]*?listTurnPublishReceipts\(campaignId, timelineId, 'world-committed'\)[\s\S]*?callTurnBridge\('recoverTurnData', marker[\s\S]*?deleteTurnPublishReceipt\(marker/.test(lifecycle),
   '读档按世界身份租约补发独立 receipt，并只删除轻量事务记录');
 {
   const loadImpl = sliceFn(lifecycle, 'async function _fullLoadGameApplyImpl(');
@@ -196,7 +201,8 @@ const savePSrc = sliceFn(utils, 'function saveP(');
 const saveAndBackSrc = sliceFn(launch, 'function saveAndBack(');
 ok(!/tianming\.autoSave\(/.test(savePSrc + '\n' + saveAndBackSrc), 'saveP / 编辑器返回不再以纯 P 覆盖 Electron canonical 恢复档');
 ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifecycle)
-  && ((lifecycle + '\n' + utils + '\n' + launch + '\n' + patches + '\n' + playerSettings).match(/tianming\.autoSave\(/g) || []).length === 1,
+  && ((lifecycle + '\n' + utils + '\n' + launch + '\n' + patches + '\n' + playerSettings).match(/(?:tianming|bridge)\.autoSave\(/g) || []).length === 1
+  && (desktopTickSrc.match(/bridge\.autoSave\(/g)||[]).length===1 && /bridge=window\.tianming/.test(desktopTickSrc),
   'Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner');
 {
   const applySrc = sliceFn(patches, 'function _sApplyPrimaryApiFields(');
@@ -426,7 +432,7 @@ async function runDynamicLeaseSmokes() {
       }
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(render, ctx);
+    vm.createContext(ctx); loadTurnBridge(ctx); vm.runInContext(render, ctx);
     order.push('phase5');
     const saved = await ctx._endTurn_saveSnapshot({ meta: {} });
     ok(saved === true && order.indexOf('phase5') < order.indexOf('snapshot:after') && writes.length === 2 && writes.every(w => w[1] === 'after'), '真实 save helper 只快照 Phase5 后状态并同时写 autosave/slot_0');
@@ -458,7 +464,7 @@ async function runDynamicLeaseSmokes() {
       }
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(render, ctx);
+    vm.createContext(ctx); loadTurnBridge(ctx); vm.runInContext(render, ctx);
     const saveCtx = { meta: { transactionId: 'turn-aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee', turnPresentation: { turnData: { context: { turn: 49 } } } } };
     const saved = await ctx._endTurn_saveSnapshot(saveCtx);
     const publishedOk = await ctx._endTurn_publishStagedTurnData(saveCtx);
@@ -499,7 +505,7 @@ async function runDynamicLeaseSmokes() {
       toast() {}
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(sliceFn(lifecycle, 'function _recoverPendingTurnDataPublish('), ctx);
+    vm.createContext(ctx); loadTurnBridge(ctx); vm.runInContext(sliceFn(lifecycle, 'function _recoverPendingTurnDataPublish('), ctx);
     await ctx._recoverPendingTurnDataPublish();
     ok(recovered === 1 && deleted === 1 && !ctx.GM._pendingTurnDataPublish,
       'load recovery publishes only matching, non-future receipts and leaves other branches untouched');
@@ -533,7 +539,7 @@ async function runDynamicLeaseSmokes() {
       TM_SaveDB: { async saveManyAtomic() { throw new Error('slot_0 injected failure'); } }
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(render, ctx);
+    vm.createContext(ctx); loadTurnBridge(ctx); vm.runInContext(render, ctx);
     const saveCtx = { meta: { transactionId: 'turn-11111111-2222-4333-8444-555555555555', turnPresentation: { turnData: { context: { turn: 49 } } } } };
     const saved = await ctx._endTurn_saveSnapshot(saveCtx);
     ok(saved === false && staged === 1 && discarded === 1 && !ctx.GM._pendingTurnDataPublish,
@@ -570,7 +576,7 @@ async function runDynamicLeaseSmokes() {
       }
     };
     ctx.window.window = ctx.window;
-    vm.createContext(ctx); vm.runInContext(render, ctx);
+    vm.createContext(ctx); loadTurnBridge(ctx); vm.runInContext(render, ctx);
     const saveCtx = { meta: { transactionId: 'turn-cross-load-12345678', turnPresentation: { turnData: { context: { turn: 49 } } } } };
     const saved = await ctx._endTurn_saveSnapshot(saveCtx);
     ok(saved === false && staged === 1 && discarded === 0 && committedReceipt.transactionId === 'turn-cross-load-12345678',
@@ -584,7 +590,7 @@ async function runDynamicLeaseSmokes() {
     const db = {
       objectStoreNames: { contains: () => true },
       transaction() {
-        const tx = {};
+        const tx = { abort() { if (tx.onabort) tx.onabort({ target: tx }); } }; // Model the real terminal abort after request error.
         tx.objectStore = (storeName) => ({
           get() {
             const req = {};

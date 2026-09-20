@@ -1,0 +1,192 @@
+{
+  "started": "2026-09-19T11:43:14.296Z",
+  "complete": true,
+  "steps": [
+    {
+      "name": "page-loaded",
+      "ms": 2057
+    },
+    {
+      "name": "scenario-loaded",
+      "ms": 8843,
+      "sid": "sc-jianyan1-1127-shaosong"
+    },
+    {
+      "name": "start-returned",
+      "ms": 23720
+    },
+    {
+      "name": "map-ready",
+      "ms": 53552,
+      "running": true,
+      "paths": 566,
+      "regions": 566,
+      "preparing": 0,
+      "message": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒"
+    },
+    {
+      "name": "refresh-measured",
+      "ms": 56933,
+      "times": [
+        58.899999998509884,
+        67.39999999850988,
+        69.30000000074506,
+        64.69999999925494,
+        64.19999999925494,
+        62.900000002235174,
+        62,
+        77.89999999850988,
+        61.900000002235174,
+        59,
+        58.599999997764826,
+        54.100000001490116
+      ],
+      "profile": {
+        "calls": {
+          "getMap": 480,
+          "region": 6792
+        },
+        "ms": {
+          "getMap": 0.7000000029802322,
+          "region": 91.8999999910593
+        }
+      },
+      "stats": {
+        "geometry": 566,
+        "layouts": 0,
+        "hits": 705,
+        "rasterCells": 0,
+        "meshes": 0,
+        "meshHits": 3,
+        "cachedLayouts": 705,
+        "preparing": 0
+      },
+      "retained": true,
+      "mutationRecords": 228,
+      "childListMutations": 36,
+      "canvasCount": 0,
+      "pathCount": 1143,
+      "svgBytes": 22766949
+    },
+    {
+      "name": "complete",
+      "ms": 56936
+    }
+  ],
+  "errors": [],
+  "gpu": {
+    "2d_canvas": "disabled_software",
+    "canvas_oop_rasterization": "disabled_off",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "disabled_software",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "disabled_off",
+    "rasterization": "disabled_software",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "disabled_software",
+    "video_encode": "disabled_software",
+    "vulkan": "disabled_off",
+    "webgl": "disabled_off",
+    "webgl2": "disabled_off",
+    "webgpu": "disabled_off",
+    "webnn": "disabled_off"
+  },
+  "scenario": "绍宋·建炎元年八月（官方）.json",
+  "ready": {
+    "running": true,
+    "paths": 566,
+    "regions": 566,
+    "preparing": 0,
+    "message": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒"
+  },
+  "preparation": {
+    "profile": {
+      "calls": {
+        "getMap": 220,
+        "region": 4528,
+        "prepare": 1,
+        "boundaryMesh": 3,
+        "fit": 705
+      },
+      "ms": {
+        "getMap": 0.9000000059604645,
+        "region": 335.29999996349216,
+        "prepare": 334.69999999925494,
+        "boundaryMesh": 12.799999997019768,
+        "fit": 30.200000010430813
+      }
+    },
+    "stats": {
+      "geometry": 566,
+      "layouts": 0,
+      "hits": 705,
+      "rasterCells": 0,
+      "meshes": 0,
+      "meshHits": 3,
+      "cachedLayouts": 705,
+      "preparing": 0
+    }
+  },
+  "gpuAfterReady": {
+    "2d_canvas": "enabled",
+    "canvas_oop_rasterization": "enabled_on",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "enabled",
+    "vulkan": "disabled_off",
+    "webgl": "enabled",
+    "webgl2": "enabled",
+    "webgpu": "enabled",
+    "webnn": "disabled_off"
+  },
+  "refresh": {
+    "times": [
+      58.899999998509884,
+      67.39999999850988,
+      69.30000000074506,
+      64.69999999925494,
+      64.19999999925494,
+      62.900000002235174,
+      62,
+      77.89999999850988,
+      61.900000002235174,
+      59,
+      58.599999997764826,
+      54.100000001490116
+    ],
+    "profile": {
+      "calls": {
+        "getMap": 480,
+        "region": 6792
+      },
+      "ms": {
+        "getMap": 0.7000000029802322,
+        "region": 91.8999999910593
+      }
+    },
+    "stats": {
+      "geometry": 566,
+      "layouts": 0,
+      "hits": 705,
+      "rasterCells": 0,
+      "meshes": 0,
+      "meshHits": 3,
+      "cachedLayouts": 705,
+      "preparing": 0
+    },
+    "retained": true,
+    "mutationRecords": 228,
+    "childListMutations": 36,
+    "canvasCount": 0,
+    "pathCount": 1143,
+    "svgBytes": 22766949
+  },
+  "code": 0
+}

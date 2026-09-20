@@ -176,6 +176,63 @@
     }
   }
 
+  function _repairIdentityRows(kind) {
+    var G = global.GM || {};
+    if (kind === 'character') return Array.isArray(G.chars) ? G.chars : [];
+    if (kind === 'faction') return Array.isArray(G.facs) ? G.facs : [];
+    var rows = [], seen = new Set();
+    function visit(value) {
+      if (!value || typeof value !== 'object' || seen.has(value)) return;
+      seen.add(value);
+      if (Array.isArray(value)) { value.forEach(visit); return; }
+      if (value.id || value.name || value.title || value.position) rows.push(value);
+      ['subs','children','positions','divisions'].forEach(function(k) { visit(value[k]); });
+    }
+    if (kind === 'office') visit(G.officeTree);
+    else {
+      visit((G.mapData || G.map || {}).regions); visit(G.regions);
+      [G.regionMap, G.adminHierarchy].forEach(function(root) { if (root) Object.keys(root).forEach(function(k) { visit(root[k]); }); });
+    }
+    return rows;
+  }
+  function _repairIdentityGroups(field) {
+    var actor = ['characterId','charId','charName','character','name'];
+    if (/^(appointments|char_updates|office_assignments|personnel_changes|character_deaths)$/.test(field)) return [
+      {kind:'character',keys:actor}, {kind:'office',keys:['post','position','toPosition','officeId']}
+    ];
+    if (field === 'battleResult') return [
+      {kind:'faction',keys:['winnerFactionId','winnerFaction','winner']},
+      {kind:'faction',keys:['loserFactionId','loserFaction','loser']}
+    ];
+    if (/^faction_/.test(field)) return [
+      {kind:'faction',keys:['factionId','faction','id','name']},
+      {kind:'character',keys:['newLeaderId','newLeader']},
+      {kind:'faction',keys:['targetFactionId','targetFaction']},
+      {kind:'faction',keys:['newFactionId','newFaction','toFactionId','toFaction']}
+    ];
+    if (/^(region_updates|population_adjustments|central_local_actions|environment_actions)$/.test(field)) return [
+      {kind:'region',keys:['regionId','region_id','region','targetRegion','target','id']}
+    ];
+    return [];
+  }
+  function _bindRepairIdentity(item, group) {
+    var rows = _repairIdentityRows(group.kind), candidates = null;
+    group.keys.forEach(function(key) {
+      var value = item && item[key];
+      if (typeof value !== 'string' && typeof value !== 'number') return;
+      var ref = String(value).trim(); if (!ref) return;
+      var matches = rows.filter(function(row) { return row.id != null && String(row.id) === ref; });
+      if (!matches.length) matches = rows.filter(function(row) { return [row.name,row.title,row.position,row.officialTitle].some(function(v) { return v != null && String(v) === ref; }); });
+      if (!matches.length) return;
+      candidates = candidates === null ? matches : candidates.filter(function(row) { return matches.indexOf(row) >= 0; });
+    });
+    return candidates && candidates.length === 1 ? candidates[0] : null;
+  }
+  function _repairKeepsIdentity(field, before, after, allowed) {
+    var groups = _repairIdentityGroups(field), changed = groups.filter(function(g) { return g.keys.some(function(k) { return allowed[k] && before[k] !== after[k]; }); });
+    return changed.length > 0 && changed.every(function(group) { var bound = _bindRepairIdentity(before, group); return !!bound && _bindRepairIdentity(after, group) === bound; });
+  }
+
   function _applyTargetedWritebackRepairs(batch, response, allowlist) {
     if (!response || typeof response !== 'object' || !Array.isArray(response.repairs)) {
       return { ok:false, code:'invalid-repair-response' };
@@ -209,6 +266,7 @@
       if (!_repairPreservesSemantics(before, repair.item, permission.fields)) {
         return { ok:false, code:'repair-changed-business-semantics', field:field, index:index };
       }
+      if (!_repairKeepsIdentity(field, before, repair.item, permission.fields)) return { ok:false, code:'repair-identity-not-preserved', field:field, index:index };
       if (index !== null) next[field][index] = _cloneWritebackValue(repair.item);
       else next[field] = _cloneWritebackValue(repair.item);
       applied++;
@@ -224,13 +282,24 @@
       unavailable.code = 'writeback-preflight-unavailable';
       throw unavailable;
     }
+    var world = global.GM, player = global.P, generation = global._tmLoadGen, turn = world && world.turn;
+    var worldKey = [world && world._campaignId, world && world._timelineId].join('|');
+    function assertCurrent() {
+      if (global.GM !== world || global.P !== player || global._tmLoadGen !== generation || world.turn !== turn || worldKey !== [world._campaignId,world._timelineId].join('|') || opts.signal && opts.signal.aborted) {
+        var stale = new Error('主写回修复期间世界已改变或操作取消，旧修复已丢弃'); stale.code = 'AI_STALE_WORLD'; stale.mainWriteback = true; throw stale;
+      }
+    }
     var current = _cloneWritebackValue(batch);
     var validation = global.validateAIWriteBackBatch(current, { source:opts.source || 'endturn-full-p1' });
     var attempts = 0;
     var lastRepairFailureCode = '';
     while (!validation.ok && attempts < 2) {
       if (typeof callAI !== 'function') break;
-      var repairable = validation.failures.filter(function(failure) { return _identityFieldsForFailure(failure).length > 0; }).slice(0, 24);
+      assertCurrent();
+      var repairable = validation.failures.filter(function(failure) {
+        var keys = _identityFieldsForFailure(failure), item = Number.isInteger(failure.index) ? (current[failure.field] || [])[failure.index] : current[failure.field];
+        return item && _repairIdentityGroups(failure.field).some(function(group) { return group.keys.some(function(k) { return keys.indexOf(k) >= 0; }) && _bindRepairIdentity(item, group); });
+      }).slice(0, 24);
       var allowlist = _buildWritebackRepairAllowlist(repairable);
       if (!Object.keys(allowlist).length) break;
       attempts++;
@@ -254,8 +323,9 @@
         '可用候选：' + JSON.stringify(_collectWritebackRepairCandidates()) + '\n' +
         '原叙事节选：' + String(current.shizhengji || current.narrative || '').slice(0, 1800);
       var rawRepair = await callAI(prompt, 2200, undefined, 'secondary', {
-        priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0
+        priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0, signal:opts.signal
       });
+      assertCurrent();
       var repair = _applyTargetedWritebackRepairs(current, _parseWritebackRepair(rawRepair), allowlist);
       if (!repair.ok) {
         lastRepairFailureCode = repair.code || 'repair-rejected';
@@ -274,6 +344,7 @@
       error.lastRepairFailureCode = lastRepairFailureCode;
       throw error;
     }
+    assertCurrent();
     return { ok:true, output:validation.output, repairAttempts:attempts };
   }
   ns._validateAndRepairMainWriteback = _validateAndRepairMainWriteback;
@@ -356,6 +427,7 @@ inst._imprisonedTurn = GM.turn||0;
   // ── AP-1（自 origin writeBack sc1 写回主体逐字节迁出·if(p1) 由 dispatcher 保留·此处 recompute p1）──
   ns.stages._applyCore_reconcile = async function(ctx) {
     var p1 = ctx.results.sc1 || null;
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeOutput(p1);
         var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1' });
         p1 = _strictPreflight.output;
         ctx.results.sc1 = p1;
@@ -365,6 +437,7 @@ inst._imprisonedTurn = GM.turn||0;
         try { if (p1 && typeof global.normalizeAIWriteBackDeaths === 'function') _deathNorm1 = global.normalizeAIWriteBackDeaths(p1, { source: 'endturn-full-p1', deferDeaths: true }) || _deathNorm1; } catch(_dnE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dnE, 'endturn] normalizeAIWriteBackDeaths') : console.warn('[endturn] normalizeAIWriteBackDeaths:', _dnE); }
         // 方案融入：AI 产出的通用变化/任免/机构/区划/事件/NPC行动/关系 → 统一应用
         try {
+          if (typeof applyAITurnChanges !== 'function') { var missing = new Error('主写回应用器未加载'); missing.code = 'writeback-applier-unavailable'; throw missing; }
           if (typeof applyAITurnChanges === 'function') {
             var _applyRes1 = applyAITurnChanges({
               _strictValidation: true,
@@ -421,7 +494,9 @@ inst._imprisonedTurn = GM.turn||0;
               var _sample1 = _failed1.slice(0, 3).map(function(f){
                 return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
               }).join(' | ');
-              throw new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
+              var failedWriteback = new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
+               failedWriteback.code = 'ai-writeback-atomic-failed'; failedWriteback.mainWriteback = true;
+               failedWriteback.writebackFailures = _failed1.slice(); throw failedWriteback;
             }
           }
         } catch(_applyErr) {
@@ -1023,6 +1098,7 @@ inst._imprisonedTurn = GM.turn||0;
         ctx.meta.memoryRollup = global.TM.MemoryTurnRollup.rebuildFromArchive(GM, { turn: GM && GM.turn });
       }
 
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(_st);
     ctx.results.sc1 = p1;
     ctx.record.shizhengji = shizhengji || "";
     ctx.record.zhengwen = zhengwen || "";
@@ -1034,6 +1110,7 @@ inst._imprisonedTurn = GM.turn||0;
     ctx.record.szjSummary = szjSummary || "";
     ctx.record.personnelChanges = Array.isArray(personnelChanges) ? personnelChanges : [];
     ctx.record.hourenXishuo = hourenXishuo || "";
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     // ★存近回合时政记/实录原文·供下一回合推演承接(治"叙事与推演断裂":旧仅 chronicleAfterwords 存 2 句/200 字·丢尽情节线/未决伏笔·
     //   AI 每回合几乎接不上上回合真实叙事)·环形缓冲留最近 2 回合·限长(注入侧再按上下文预算截断)·随存档序列化。
     try {

@@ -1,0 +1,73 @@
+{
+  "at": "2026-09-18T16:17:43.068Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "backup": ".bak-endturn-recovery-20260919",
+  "files": [
+    {
+      "file": "web/index.html",
+      "sha256": "062cb84cbad65dbedddff080059169160b3791d67e1869fbaa2d42cea388f0b5",
+      "bytes": 69886
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+      "bytes": 354102
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "8653baaa242347541a7f88c3246958e70b1df8c7476aa84a65b5fbdd3a719f6f",
+      "bytes": 163117
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "3099f7bbc5a37eb58c55a8ddfead5ee3b034b54a1bfab5221ab057bb06269257",
+      "bytes": 24862
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "206993fad54df415bcc4150e8d5e1abdebfa8d28a552511e3f9e1a21be1f3d3d",
+      "bytes": 102768
+    },
+    {
+      "file": "web/tm-endturn-reliability.js",
+      "sha256": "d447aeb752e3505c029cb701249fb889f56aa9d63add1ef641a42cd97af07fc9",
+      "bytes": 6343
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "0947a0da58b121dc97d054e8845656d6a10b4814794c9b72a0fcb43d493e68b2",
+      "bytes": 12992
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "sha256": "6b928aa2e9f8f56f85f65d3523413f9dfe8d3ad2d0c29998a579de3ef380d587",
+      "bytes": 115183
+    },
+    {
+      "file": "web/tm-endturn-mode-contract.js",
+      "sha256": "1f4e081c117b49553dd6fc01d47b234c882dc165396c63cd09fb491e2eb681e7",
+      "bytes": 4790
+    },
+    {
+      "file": "web/tm-endturn-validity.js",
+      "sha256": "1e1d6905c1b7045a2873da0e2a15ae359e5f98e3313c2aa6e437aa610745fc40",
+      "bytes": 4407
+    },
+    {
+      "file": "web/tm-endturn-pipeline-steps.js",
+      "sha256": "4be7286422a8cdc8cf1134445a901e90241619719e1bf90fc8c0538e480c915d",
+      "bytes": 55949
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "180e380b7ae23b2d812ec300fff3d4e4ba44f49d8e2abd62eac630fd71412a55",
+      "bytes": 416966
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "900ee9a784af965bb3bcf136eecabb23102e97c50d5bab4a5322161efebd95e5",
+      "bytes": 42966
+    }
+  ],
+  "status": " M README.md\n M docs/chongzhen-prefecture-map-20260917/build-candidate.mjs\n M docs/chongzhen-prefecture-map-20260917/work-location.json\n M main-impl.js\n M package.json\n M scenarios/天启七年·九月（官方）.json\n M web/.hot-update-manifest.json\n M web/bundled-scenarios/manifest.js\n M web/bundled-scenarios/manifest.json\n M web/changelog.json\n M web/editor.html\n M web/index.html\n M web/modules/ai-change-applier/core.js\n M web/phase8-formal-bridge-styles.js\n M web/phase8-formal-bridge.js\n M web/phase8-formal-map-dossier.js\n M web/phase8-formal-map.js\n M web/preview/official-scenarios-bundle.js\n M web/preview/scenario-editor-reset-data.js\n M web/scenarios/shaosong-jianyan-1127.js\n M web/scenarios/tianqi7-1627.js\n M web/scripts/lint-renderer-writeback-boundaries.js\n M web/scripts/smoke-agent-mode-s2.js\n M web/scripts/smoke-agent-mode-tools.js\n M web/scripts/smoke-building-order-writeback.js\n M web/scripts/smoke-endturn-performance-optimizations.js\n M web/scripts/smoke-map-viewport-collision.js\n M web/scripts/smoke-model-probe-evidence.js\n M web/scripts/smoke-social-foundation.js\n M web/scripts/smoke-startup-phase-observability.js\n M web/scripts/smoke-tianqi-map-runtime.js\n M web/scripts/smoke-tinyi-impeachment.js\n M web/scripts/verify-all.js\n M web/startup-script-phases.json\n M web/tm-agent-kernel.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra-model-detect.js\n M web/tm-ai-infra-retry.js\n M web/tm-ai-infra.js\n M web/tm-ai-output-validator.js\n M web/tm-ai-schema.js\n M web/tm-building-orders.js\n M web/tm-char-autogen.js\n M web/tm-class-engine.js\n M web/tm-context-zones.js\n M web/tm-economy-engine.js\n M web/tm-edict-parser.js\n M web/tm-endturn-agent-depth-tools.js\n M web/tm-endturn-agent-intent-plan.js\n M web/tm-endturn-agent-mode.js\n M web/tm-endturn-agent-read-tools.js\n M web/tm-endturn-agent-write-tools.js\n M web/tm-endturn-ai-infer.js\n M web/tm-endturn-ai.js\n M web/tm-endturn-apply-stages.js\n M web/tm-endturn-apply.js\n M web/tm-endturn-core.js\n M web/tm-endturn-edict.js\n M web/tm-endturn-followup.js\n M web/tm-endturn-helpers.js\n M web/tm-endturn-pipeline-steps.js\n M web/tm-endturn-prompt.js\n M web/tm-endturn-systems.js\n M web/tm-endturn-timing-ledger.js\n M web/tm-faction-membership.js\n M web/tm-faction-npc-guoku.js\n M web/tm-feature-loader.js\n M web/tm-fiscal-engine.js\n M web/tm-game-loop.js\n M web/tm-guoku-engine.js\n M web/tm-guoku-panel.js\n M web/tm-history-events.js\n M web/tm-huji-runtime-bridge.js\n M web/tm-indices.js\n M web/tm-lizhi-panel.js\n M web/tm-map-label-collide.js\n M web/tm-map-locations.js\n M web/tm-memory-agent-tools.js\n M web/tm-memory-context-compiler.js\n M web/tm-memory-controls.js\n M web/tm-memory-envelope.js\n M web/tm-memory-governance.js\n M web/tm-memory-retrieval.js\n M web/tm-memory-steward.js\n M web/tm-memory-trace.js\n M web/tm-memory-turn-inference.js\n M web/tm-memory-turn-rollup.js\n M web/tm-memory-writegate.js\n M web/tm-military.js\n M web/tm-minxin-hard-link-consumers.js\n M web/tm-neitang-engine.js\n M web/tm-neitang-panel.js\n M web/tm-office-system.js\n M web/tm-official-scenario-bundle.js\n M web/tm-official-scenario-seeder.js\n M web/tm-patches-start.js\n M web/tm-player-core.js\n M web/tm-player-settings.js\n M web/tm-renwu-tuzhi.js\n M web/tm-save-lifecycle.js\n M web/tm-save-manager.js\n M web/tm-semantic-recall.js\n M web/tm-three-systems-ui.js\n M web/tm-topbar-vars.js\n M web/tm-utils.js\n M web/tm-world.js\n?? _shaosong-1350.json\n?? docs/ai-memory-upgrade-20260918/\n?? docs/ai-memory-upgrade-r2-20260918/\n?? docs/chongzhen-map-r2-20260918/\n?? docs/chongzhen-map-r3-20260918/\n?? docs/chongzhen-prefecture-map-20260917/apply-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/apply-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/final-verification.json\n?? docs/chongzhen-prefecture-map-20260917/finalize-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-location-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-public-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/membership-extra.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/province-tests.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/register-location-service.mjs\n?? docs/chongzhen-prefecture-map-20260917/reports/\n?? docs/chongzhen-prefecture-map-20260917/retry-apply.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-final-guards.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-regressions.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs.before-final\n?? docs/chongzhen-prefecture-map-20260917/test-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/update-map-smoke.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-geometry.py\n?? docs/chongzhen-prefecture-map-20260917/verify-live-transfers.js\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs.before-panorama\n?? docs/chongzhen-prefecture-map-20260917/使用与接入说明.md\n?? docs/chongzhen-prefecture-map-20260917/使用说明.md\n?? docs/chongzhen-prefecture-map-20260917/验收结果.json\n?? docs/endturn-recovery-20260919.setup.mjs\n?? docs/endturn-reliability-20260918/\n?? docs/map-deep-zoom-20260918/\n?? docs/shaosong-map-integration-20260917/\n?? web/data/maps/chongzhen-prefecture-r2/\n?? web/data/maps/chongzhen-prefecture-r3/\n?? web/data/maps/chongzhen-prefecture-v1/\n?? web/scripts/lib-memory-upgrade-r2.js\n?? web/scripts/lib-turn-reliability.js\n?? web/scripts/smoke-memory-adaptive-upgrade.js\n?? web/scripts/smoke-memory-boundary-upgrade.js\n?? web/scripts/smoke-memory-model-detection.js\n?? web/scripts/smoke-memory-vector-upgrade.js\n?? web/scripts/smoke-turn-memory-parity.js\n?? web/scripts/smoke-turn-request-reliability.js\n?? web/scripts/smoke-turn-stream-reliability.js\n?? web/tm-endturn-reliability.js\n?? web/tm-memory-adaptive.js\n?? web/tm-memory-hybrid.js\n?? web/tm-memory-long-term.js\n?? web/tm-memory-mode-bridge.js\n"
+}

@@ -9,7 +9,7 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const ap = fs.readFileSync(path.resolve(ROOT, 'tm-endturn-apply.js'), 'utf8');
 const fu = fs.readFileSync(path.resolve(ROOT, 'tm-endturn-followup.js'), 'utf8');
-const ai = fs.readFileSync(path.resolve(ROOT, 'tm-endturn-ai.js'), 'utf8');
+const ai = fs.readFileSync(path.resolve(ROOT, 'tm-endturn-ai.js'), 'utf8') + '\n' + fs.readFileSync(path.resolve(ROOT, 'tm-endturn-ai-sc1-budget.js'), 'utf8');
 let A = 0, F = 0;
 function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 console.log('smoke-sc1q-sc19-upgrade');

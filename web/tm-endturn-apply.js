@@ -159,6 +159,7 @@
     ensureGroups(ctx);
     var _applyStart = Date.now();
     var p1 = ctx.results.sc1 || null;
+    if (global.TM && TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
     var sc = ctx.prompt.sc;
     var shizhengji = ctx.record.shizhengji || "";
     var zhengwen = ctx.record.zhengwen || "";
@@ -181,6 +182,7 @@
         try {
           if (TM.BuildingOrders) ctx.apply.buildingReceipts = TM.BuildingOrders.apply(GM, P, ctx.input.buildingOrders, p1, false);
           await ns.stages._applyCore_reconcile(ctx);
+          p1 = ctx.results.sc1 || p1; // Use the detached, revalidated repair for every remaining consumer.
           if (buildingTransaction) buildingTransaction.commit();
         } catch (buildingApplyError) {
           if (buildingTransaction) buildingTransaction.rollback();

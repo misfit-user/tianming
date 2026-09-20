@@ -1,0 +1,203 @@
+{
+  "at": "2026-09-19T04:41:19.692Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/scripts/lib-snapshot-deadlines.js",
+      "sha256": "9d84ad781ccc488ee252bf24bce2eca562592a64454d814172e35cf97f8e6375",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 5183
+    },
+    {
+      "file": "web/scripts/smoke-snapshot-deadlines.js",
+      "sha256": "205438b28bdb50540d67a8621be6a65d793a2a980c3e89406cd59481ad3138d7",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 9606
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "f71c290388d35137220729fc13e6f186de659b350065a5ea60e9fc1325387508",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 43372
+    },
+    {
+      "file": "web/tm-state-snapshot.js",
+      "sha256": "9aee8893f73ff9db7f6177ab83f5d6518b01e4f886db5d3e0b2d230d62d62784",
+      "hashMatches": true,
+      "syntax": 0,
+      "bytes": 40791
+    }
+  ],
+  "qualityChecks": [
+    {
+      "check": "web/tm-storage.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-render.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-core.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-response-recovery.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra-retry.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "_captureFullState unchanged",
+      "ok": true
+    },
+    {
+      "check": "_saveSnapshotFrom unchanged",
+      "ok": true
+    },
+    {
+      "check": "saveSnapshot unchanged",
+      "ok": true
+    },
+    {
+      "check": "_recordId unchanged",
+      "ok": true
+    },
+    {
+      "check": "_lineageRecordFromGM unchanged",
+      "ok": true
+    },
+    {
+      "check": "_collectAccessibleSnapshotRecords unchanged",
+      "ok": true
+    },
+    {
+      "check": "_restoreFullState unchanged",
+      "ok": true
+    },
+    {
+      "check": "timeTravel unchanged",
+      "ok": true
+    },
+    {
+      "check": "DB_VERSION unchanged",
+      "ok": true
+    },
+    {
+      "check": "MAX_SNAPSHOTS unchanged",
+      "ok": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 7,
+    "pass": 7,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalTests": {
+    "selected": 8,
+    "pass": 8,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "extendedTests": {
+    "selected": 208,
+    "pass": 207,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "complete": true,
+  "newTests": [
+    {
+      "name": "smoke-snapshot-deadlines.js",
+      "pass": true,
+      "detail": "{\"pass\":19,\"fail\":0,\"total\":19}"
+    }
+  ],
+  "failures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "reproduced": [
+    {
+      "label": "before",
+      "scenario": "open-never-responds",
+      "deadlineTimers": 0,
+      "settledAfterDeadline": false
+    },
+    {
+      "label": "before",
+      "scenario": "blocked-open-late-success",
+      "lateConnectionClosed": 0
+    },
+    {
+      "label": "after",
+      "scenario": "open-never-responds",
+      "deadlineTimers": 1,
+      "settledAfterDeadline": true
+    },
+    {
+      "label": "after",
+      "scenario": "blocked-open-late-success",
+      "lateConnectionClosed": 1
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "at": "2026-09-18T10:42:32.663Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "status": " M docs/chongzhen-prefecture-map-20260917/build-candidate.mjs\n M docs/chongzhen-prefecture-map-20260917/work-location.json\n M scenarios/天启七年·九月（官方）.json\n M web/bundled-scenarios/manifest.js\n M web/bundled-scenarios/manifest.json\n M web/index.html\n M web/modules/ai-change-applier/core.js\n M web/phase8-formal-bridge-styles.js\n M web/phase8-formal-map-dossier.js\n M web/phase8-formal-map.js\n M web/preview/official-scenarios-bundle.js\n M web/preview/scenario-editor-reset-data.js\n M web/scenarios/shaosong-jianyan-1127.js\n M web/scenarios/tianqi7-1627.js\n M web/scripts/smoke-building-order-writeback.js\n M web/scripts/smoke-map-viewport-collision.js\n M web/scripts/smoke-tianqi-map-runtime.js\n M web/tm-ai-infra-json.js\n M web/tm-ai-output-validator.js\n M web/tm-ai-schema.js\n M web/tm-building-orders.js\n M web/tm-endturn-ai.js\n M web/tm-endturn-core.js\n M web/tm-faction-membership.js\n M web/tm-map-label-collide.js\n M web/tm-map-locations.js\n M web/tm-official-scenario-bundle.js\n M web/tm-world.js\n?? docs/chongzhen-map-r2-20260918/\n?? docs/chongzhen-map-r3-20260918/\n?? docs/chongzhen-prefecture-map-20260917/apply-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/apply-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/final-verification.json\n?? docs/chongzhen-prefecture-map-20260917/finalize-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-location-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-public-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/membership-extra.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/province-tests.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/register-location-service.mjs\n?? docs/chongzhen-prefecture-map-20260917/reports/\n?? docs/chongzhen-prefecture-map-20260917/retry-apply.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-final-guards.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-regressions.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs.before-final\n?? docs/chongzhen-prefecture-map-20260917/test-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/update-map-smoke.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-geometry.py\n?? docs/chongzhen-prefecture-map-20260917/verify-live-transfers.js\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs.before-panorama\n?? docs/chongzhen-prefecture-map-20260917/使用与接入说明.md\n?? docs/chongzhen-prefecture-map-20260917/使用说明.md\n?? docs/chongzhen-prefecture-map-20260917/验收结果.json\n?? docs/map-deep-zoom-20260918/\n?? docs/shaosong-map-integration-20260917/\n?? web/data/maps/chongzhen-prefecture-r2/\n?? web/data/maps/chongzhen-prefecture-r3/\n?? web/data/maps/chongzhen-prefecture-v1/\n",
+  "backup": ".bak-ai-memory-upgrade-20260918",
+  "files": [
+    {
+      "file": "web/tm-memory-adapter.js",
+      "sha256": "00ce07d6c689de20e60797fa137bace1f34e97115376c59354e93d464f8270fe",
+      "bytes": 7595
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "sha256": "2bc79ddef6ea1136e3960f2ef8215635686cff89f00fbbf36286c3f802fa8fd9",
+      "bytes": 17982
+    },
+    {
+      "file": "web/tm-memory-anchors.js",
+      "sha256": "1112a90612d6361d0acf478d0bc68b5c3ea53ce1c2d4006a297e392360f5702b",
+      "bytes": 14102
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "f6739accdc44fbca256b1cdd271c9b4a8c475098c0faaee803b2e553edaa785c",
+      "bytes": 22496
+    },
+    {
+      "file": "web/tm-memory-controls.js",
+      "sha256": "b6cad9f90500a2d91b339760f5d7a76b3806628b1f96b1bd0d9851fe841666d6",
+      "bytes": 6808
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "28ff2370b4a44faa4d63cd9eaedf222faa5cc2db5fd4dbada70ee637089c1f81",
+      "bytes": 55067
+    },
+    {
+      "file": "web/tm-memory-evidence-registry.js",
+      "sha256": "333b1b8a72d7a8499015dd76173b5fc7fe3ea4fc7dbad689c6484af0e16b424c",
+      "bytes": 18597
+    },
+    {
+      "file": "web/tm-memory-governance.js",
+      "sha256": "a9989a5f880fce4e2ba1e664bac6e52f5fcacbe7d7c7c01726748983099f91d1",
+      "bytes": 5510
+    },
+    {
+      "file": "web/tm-memory-issue-governance.js",
+      "sha256": "500323274d51d965fb93b24731218593810c454cdc5db599484e07176ffd6cff",
+      "bytes": 5712
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "sha256": "8bb7a422ff6a43d6e792622b6b26c224edf785e598c75c8ddf7ff45aeceb19d9",
+      "bytes": 62675
+    },
+    {
+      "file": "web/tm-memory-source-bound.js",
+      "sha256": "f34ff5ca4cab18e55a89847fa7b136c88296c557e4734241a2a37986dfd126c0",
+      "bytes": 8325
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "sha256": "b66885ea557d11ce067952b358f6824f00a8dc6d02df62886ac58d3cb760f834",
+      "bytes": 28834
+    },
+    {
+      "file": "web/tm-memory-tables.js",
+      "sha256": "0afd18a0f1978240494625a845312ac83845116504e992321f339bff544c9229",
+      "bytes": 50416
+    },
+    {
+      "file": "web/tm-memory-trace.js",
+      "sha256": "93b772d587c651964db9ab0d68e0b04c945f11b95798635e69603793bdb43a18",
+      "bytes": 22784
+    },
+    {
+      "file": "web/tm-memory-turn-archive.js",
+      "sha256": "c2ab83c6dfac10ec19b3e7fe0dc245fc162b8efab4c450699f9f8bfdf61d82b0",
+      "bytes": 16497
+    },
+    {
+      "file": "web/tm-memory-turn-backfill.js",
+      "sha256": "4d5faee59bd8f63378530bf8767ee230f818301abc0de5425e24158f5c76e53a",
+      "bytes": 24632
+    },
+    {
+      "file": "web/tm-memory-turn-inference.js",
+      "sha256": "b789b122669f571d9f29e76eaa8fb8443b6db908c83ff0b55b85ad28618a70a6",
+      "bytes": 26382
+    },
+    {
+      "file": "web/tm-memory-turn-rollup.js",
+      "sha256": "f2b856fdbcecc2ab672271d39a5dc8f5bd01a8b32eb4883e7eb2cb517748b37f",
+      "bytes": 17257
+    },
+    {
+      "file": "web/tm-memory-ui.js",
+      "sha256": "58e1af24917c4de709c3c91ffc213e20b0b693a2a0c91acd0930059353ea5096",
+      "bytes": 25883
+    },
+    {
+      "file": "web/tm-memory-workshop.js",
+      "sha256": "217ccdc3dbfd2f4a5e358e33e870a2464418729ae7363a2a8ea4f6eae4504d28",
+      "bytes": 58106
+    },
+    {
+      "file": "web/tm-memory-writegate.js",
+      "sha256": "ea6a4fcd7e29c531506f277633f5eaaf447e6dcfbc0f39392a6fcff76f387885",
+      "bytes": 34631
+    },
+    {
+      "file": "web/tm-context-zones.js",
+      "sha256": "bd77193f897cf96e4abfbca54a87bd3dba5e33159269cb086e9873102107612c",
+      "bytes": 15068
+    },
+    {
+      "file": "web/tm-semantic-recall.js",
+      "sha256": "558eea8bceb5b9f9405e1ad2a5d0e3447544cade9f00db7d404f541470f1bc46",
+      "bytes": 44583
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "496323ee5ee8985228a3a298b60df0539d4ab295b8111b465b0e8f5302e72260",
+      "bytes": 412807
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "sha256": "d14dd0c00cc49b232bb34d3b19ad6361b0fba2964bf64f130c161c842196168a",
+      "bytes": 11860
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "6204227c3771f79be3fa5b23905b9cc61f0b330510ae41fe8792ee64d7a01672",
+      "bytes": 42231
+    }
+  ]
+}

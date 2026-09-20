@@ -224,6 +224,7 @@ var _aiQueue = (function() {
   var inflightByPriority = { critical: 0, high: 0, normal: 0, low: 0, background: 0 };
   var lastDispatch = 0;
   var seqCounter = 0;
+  var pumpTimer = null;
   var _aiQueueHealth = {
     recent: [],
     cooldownUntil: 0,
@@ -232,6 +233,7 @@ var _aiQueue = (function() {
     failures: 0
   };
   function recordResult(ok, err) {
+    if (!ok && err && (err.code === 'AI_ABORTED' || err.code === 'AI_STALE_WORLD')) return;
     var now = Date.now();
     _aiQueueHealth.recent.push({ ok: !!ok, at: now, status: err && (err.status || err.statusCode || 0) });
     if (_aiQueueHealth.recent.length > 20) _aiQueueHealth.recent.shift();
@@ -314,11 +316,13 @@ var _aiQueue = (function() {
       var now = Date.now();
       var wait = lastDispatch + conf.minInterval - now;
       if (wait > 0) {
-        setTimeout(pump, wait + 10);
+        if (!pumpTimer) pumpTimer = setTimeout(function() { pumpTimer = null; pump(); }, wait + 10);
         return;
       }
       var item = _aiQueuePickNext(conf);
       if (!item) return;
+      if (item.cancelled) continue;
+      item.started = true; if (item.cleanupQueue) item.cleanupQueue();
       var itemPriority = _priorityOf(item);
       inflight++;
       inflightByPriority[itemPriority] = (inflightByPriority[itemPriority] || 0) + 1;
@@ -341,9 +345,24 @@ var _aiQueue = (function() {
     }
   }
   return {
-    enqueue: function(task, priority) {
+    enqueue: function(task, priority, options) {
+      options = options || {};
       return new Promise(function(resolve, reject) {
-        queue.push({ task: task, priority: priority || 'normal', resolve: resolve, reject: reject, seq: seqCounter++ });
+        var signal = options.signal, timer, item;
+        function cleanup() { clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancel); }
+        function remove(error) {
+          if (!item || item.started || item.cancelled) return;
+          item.cancelled = true; var index = queue.indexOf(item); if (index >= 0) queue.splice(index, 1);
+          cleanup(); reject(error);
+          if (!queue.length && pumpTimer) { clearTimeout(pumpTimer); pumpTimer = null; }
+        }
+        function cancel() { remove(_aiCancelledError(signal)); }
+        item = { task: task, priority: priority || 'normal', resolve: resolve, reject: reject, seq: seqCounter++, cleanupQueue: cleanup, started: false, cancelled: false };
+        if (signal && signal.aborted) { reject(_aiCancelledError(signal)); return; }
+        queue.push(item);
+        if (signal) signal.addEventListener('abort', cancel, { once: true });
+        var wait = Number(options.timeoutMs);
+        if (Number.isFinite(wait) && wait > 0) timer = setTimeout(function() { var e = new Error('AI 请求排队超时，尚未发送'); e.code = 'AI_QUEUE_TIMEOUT'; e.phase = 'queue'; remove(e); }, wait);
         pump();
       });
     },
@@ -524,7 +543,7 @@ function checkPromptTokenBudget(promptText, onWarn) {
 async function _aiFetchWithRetryInner(url, body, signal, opts) {
   opts = opts || {};
   var maxRetries = (opts.maxRetries != null) ? opts.maxRetries : 3;
-  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
+  var timeoutMs = _aiFirstResponseTimeout(body && (body.max_completion_tokens || body.max_tokens), opts);
   // M3·优先用 opts.apiKey（次 API 调用传入）·否则回退 primary
   var key = opts.apiKey || P.ai.key;
   var lastError = null;
@@ -537,20 +556,30 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       checkPromptTokenBudget(_combined);
     }
   } catch(_tkE) {}
-  for (var attempt = 0; attempt <= maxRetries; attempt++) {
+  var protocolReplay = false;
+  for (var attempt = 0; attempt <= maxRetries || protocolReplay; attempt++) {
+    protocolReplay = false;
+    if (opts._requestGuard) opts._requestGuard();
+    if (signal && signal.aborted) throw _aiCancelledError(signal);
+    if (typeof _aiClaimRetryAttempt === "function") _aiClaimRetryAttempt(opts.retryBudget);
+    var budgetLimited = !!opts.retryBudget && opts.retryBudget.deadlineAt - Date.now() <= timeoutMs;
+    if (opts.retryBudget) timeoutMs = Math.min(timeoutMs, Math.max(1, opts.retryBudget.deadlineAt - Date.now()));
+    var reliability = typeof window !== "undefined" && window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+    if (reliability) reliability.requestPhase(opts._requestTicket, "request");
     var ctrl = new AbortController();
     var timedOut = false;
     var requestPhase = 'headers', timeoutError, rejectDeadline;
     var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
-    var timeoutAborter = function() {
-      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
-      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
-      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+    var timeoutAborter = function(error) {
+      timedOut = error.name === 'TimeoutError'; timeoutError = error;
+      rejectDeadline(error); ctrl.abort(error);
     };
     var externalAborter = function() { var error = _aiCancelledError(signal); rejectDeadline(error); ctrl.abort(error); };
-    var timer = setTimeout(timeoutAborter, timeoutMs);
+    deadline.catch(function() {});
+    var responseWait = _aiStartResponseWait(opts, timeoutMs, timeoutAborter);
+    var timer = responseWait.headerTimer;
     if (signal) {
-      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
+      if (signal.aborted) { clearTimeout(timer); responseWait.dispose(); throw _aiCancelledError(signal); }
       signal.addEventListener('abort', externalAborter);
     }
     try {
@@ -558,17 +587,19 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify(body),
-        signal: ctrl.signal, timeoutMs: timeoutMs
+        signal: ctrl.signal, timeoutMs: timeoutMs, waitForCompleteResponse: true, totalResponseTimeoutMs: _aiTotalResponseTimeout(opts)
       }), deadline]);
+      responseWait.headers(resp.ok, resp.status);
       requestPhase = 'body';
+      if (reliability) reliability.requestPhase(opts._requestTicket, 'body');
       // 429 速率限制：读 Retry-After 延迟
       if (resp.status === 429 && attempt < maxRetries) {
         clearTimeout(timer);
         if (resp.body && typeof resp.body.cancel === 'function') resp.body.cancel().catch(function() {});
         var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
-        var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
+        var delay429 = _aiRetryDelay(resp, attempt);
         console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
-        await _aiWaitForRetry(delay429, signal);
+        await _aiBudgetedRetryWait(delay429, ctrl.signal, opts.retryBudget);
         continue;
       }
       if (!resp.ok) {
@@ -597,6 +628,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
               if (_reducedBody && _afterBody.length < _beforeBody.length) {
                 body = _reducedBody;
                 _contextReduced = true;
+                protocolReplay = true;
                 console.warn('[AI] context-length 400·按更严预算压缩后仅重试一次');
                 continue;
               }
@@ -611,13 +643,14 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
         //   并本会话停用缓存标记（防每回合都先撞一次 400）。仅脱一次，避免无限重试。
         if (resp.status === 400 && !_isContextLength && !_ccStripped && _stripCacheControlFromBody(body)) {
           _ccStripped = true;
+          protocolReplay = true;
           _aiCacheCtrlDisabled = true;
           console.warn('[AI] 400 且请求含 cache_control·疑代理不认·已脱字段重试并本会话停用 prompt 缓存标记');
           continue;
         }
         // 5xx 可重试；4xx（除 429）不重试
         if (resp.status >= 500 && attempt < maxRetries) {
-          await _aiWaitForRetry(1000 * Math.pow(2, attempt), signal);
+          await _aiBudgetedRetryWait(_aiRetryDelay(null, attempt), ctrl.signal, opts.retryBudget);
           continue;
         }
         throw lastError;
@@ -626,6 +659,8 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       if (timedOut) throw timeoutError;
       if (signal && signal.aborted) throw _aiCancelledError(signal);
       clearTimeout(timer);
+      if (opts._requestGuard) opts._requestGuard();
+      if (opts._responseRecoveryReceipt) opts._responseRecoveryReceipt.request = JSON.stringify(body);
       _aiLastRaw = { url: url, body: body, response: data, error: null, ts: Date.now() };
       // 记录缓存命中统计
       if (data && data.usage && typeof _recordCacheStats === 'function') _recordCacheStats(data.usage);
@@ -635,6 +670,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       if (timedOut) e = timeoutError;
       else if (signal && signal.aborted) e = _aiCancelledError(signal);
       lastError = e;
+      if (e && (e.code === "AI_ABORTED" || e.code === "AI_STALE_WORLD" || e.code === "AI_RETRY_BUDGET")) throw e;
       // Native bridge cannot cancel an already-sent POST; do not replay after its local failure.
       if (e && (e._tmNativeTransport || (timedOut && typeof _tmAINativePlatform === 'function' && _tmAINativePlatform()))) throw e;
       // 外部 signal 主动中断——不重试
@@ -655,15 +691,16 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       }
       // 网络错误 / 小请求首次超时——指数退避重试
       if (attempt < maxRetries) {
-        var delayRetry = 1000 * Math.pow(2, attempt);
+        var delayRetry = _aiRetryDelay(null, attempt);
         console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
-        await _aiWaitForRetry(delayRetry, signal);
+        await _aiBudgetedRetryWait(delayRetry, ctrl.signal, opts.retryBudget);
       } else {
         // 挂载最后的原始响应
         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
         throw e;
       }
     } finally {
+      responseWait.dispose();
       clearTimeout(timer);
       if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', externalAborter);
     }
@@ -753,7 +790,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
   if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
-  var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
+  var fetchOpts = { apiKey: key, tier: tier, firstResponseTimeoutMs: opts.firstResponseTimeoutMs, totalResponseTimeoutMs: opts.totalResponseTimeoutMs, queueTimeoutMs: opts.queueTimeoutMs, priority: opts.priority || 'normal', retryBudget: opts.retryBudget, id: opts.id };
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
@@ -784,9 +821,24 @@ async function callAI(prompt,maxTok,signal,tier,opts){
  *   - fallback: true 表示走了文本→JSON 解析路径
  */
 async function callAIWithTools(prompt, tools, opts) {
+  var recovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
+  var execute = function(next) { return _callAIWithToolsUncached(prompt, tools, next); };
+  try { return await (recovery ? recovery.toolRequest(prompt, tools, opts, execute) : execute(opts)); }
+  catch (e) { return { text: '', toolCalls: [], error: { code: e && e.code === 'AI_ABORTED' ? 'aborted' : e && e.code === 'AI_STALE_WORLD' ? 'tool-stale' : 'tool-call-failed', status: Number(e && e.status) || 0 } }; }
+}
+async function _callAIWithToolsUncached(prompt, tools, opts) {
+  try { return await _aiWithStreamScope(Object.assign({ id: 'tool-call' }, opts || {}), async function(scoped) {
+    scoped.retryBudget = scoped.retryBudget || _aiCreateRetryBudget({ maxAttempts: 3 + (Number(scoped.maxRetries) || 0), totalTimeoutMs: _aiTotalResponseTimeout(scoped) });
+    var result = await _callAIWithToolsScoped(prompt, tools, scoped);
+    if (result && result.error && !(result.toolCalls && result.toolCalls.length)) { var e = new Error('AI tool result unavailable'); e.code = result.error.code; e.status = result.error.status; e._toolResult = result; throw e; }
+    return result;
+  }); }
+  catch (e) { return e && e._toolResult || { text: '', toolCalls: [], error: { code: e && e.code === 'AI_ABORTED' ? 'aborted' : /TIMEOUT|DEADLINE/.test(e && e.code || '') ? 'tool-timeout' : e && e.code === 'AI_STALE_WORLD' ? 'tool-stale' : 'tool-call-failed', status: Number(e && e.status) || 0 } }; }
+}
+async function _callAIWithToolsScoped(prompt, tools, opts) {
   opts = opts || {};
   if (!Array.isArray(tools) || tools.length === 0) {
-    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries, retryBudget: opts.retryBudget, id: opts.id });
     return { text: _t0 || '', toolCalls: [] };
   }
   // 取 tier 配置
@@ -829,7 +881,7 @@ async function callAIWithTools(prompt, tools, opts) {
   // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
   async function _runFallback(cause) {
     try {
-      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries, retryBudget: opts.retryBudget, id: opts.id });
       var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
       return { text: String(raw||''), toolCalls: calls, fallback: true,
         error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
@@ -905,18 +957,33 @@ async function callAIWithTools(prompt, tools, opts) {
   async function _toolFetchQueued() {
     var ctrl = new AbortController();
     var timedOut = false;
-    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+    var toolReject; var toolDeadline = new Promise(function(_resolve, reject) { toolReject = reject; }); toolDeadline.catch(function() {});
+    var timer = null, responseWait = null;
     if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
-    var onExternalAbort = function() { ctrl.abort(); };
+    var onExternalAbort = function() { var e = _aiCancelledError(opts.signal); toolReject(e); ctrl.abort(e); };
     if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
     try {
-      var choiceRetried = false;
+      var choiceRetried = false, transportRetries = 0;
+      var toolRetryLimit = opts.maxRetries == null ? 1 : Math.max(0, Math.min(3, Number(opts.maxRetries) || 0));
       while (true) {
-        if (ctrl.signal.aborted) throw new Error('Aborted');
-        var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+        if (ctrl.signal.aborted) throw _aiCancelledError(opts.signal);
+        if (opts._streamGuard) opts._streamGuard();
+        _aiClaimRetryAttempt(opts.retryBudget);
+        if (responseWait) responseWait.dispose();
+        responseWait = _aiStartResponseWait(opts, _aiFirstResponseTimeout(maxTok, opts), function(e) { timedOut = e.name === 'TimeoutError'; toolReject(e); ctrl.abort(e); });
+        timer = responseWait.headerTimer;
+        var diag = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability; if (diag) diag.requestPhase(opts._requestTicket, "request");
+        var resp = await Promise.race([(typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal, timeoutMs: _aiFirstResponseTimeout(maxTok, opts), waitForCompleteResponse: true, totalResponseTimeoutMs: _aiTotalResponseTimeout(opts) }), toolDeadline]);
+        if (opts._streamGuard) opts._streamGuard();
+        responseWait.headers(resp.ok, resp.status);
+        if (diag) diag.requestPhase(opts._requestTicket, 'body');
         if (!resp.ok) {
           var errT = '';
-          try { errT = await resp.text(); } catch(_){ }
+          try { errT = await Promise.race([resp.text(), toolDeadline]); } catch(_){ if (ctrl.signal.aborted) throw _aiCancelledError(opts.signal); }
+          if ((resp.status === 429 || resp.status >= 500) && transportRetries < toolRetryLimit) {
+            await _aiBudgetedRetryWait(_aiRetryDelay(resp, transportRetries++), ctrl.signal, opts.retryBudget);
+            continue;
+          }
           var choiceUnsupported = resp.status === 400 && /thinking mode does not support (?:this )?tool_choice/i.test(errT);
           // Unknown compatible proxies can expose the same policy. One repair,
           // same timer/abort/queue slot; unrelated errors use the existing fallback.
@@ -929,10 +996,13 @@ async function callAIWithTools(prompt, tools, opts) {
           console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
           var err = new Error('HTTP ' + resp.status);
           err.status = resp.status;
+          if (_isContextLengthResponse(resp.status, errT)) err.code = 'context_length_exceeded';
           if (choiceUnsupported) err.code = 'tool-choice-unsupported';
           throw err;
         }
-        return await resp.json();
+        var parsedToolResponse = await Promise.race([resp.json(), toolDeadline]);
+        if (opts._streamGuard) opts._streamGuard();
+        return parsedToolResponse;
       }
     } catch (error) {
       if (timedOut && !(opts.signal && opts.signal.aborted)) {
@@ -940,19 +1010,20 @@ async function callAIWithTools(prompt, tools, opts) {
       }
       throw error;
     } finally {
+      if (responseWait) responseWait.dispose();
       clearTimeout(timer);
       if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
     }
   }
   try {
     if (typeof _aiQueue !== 'undefined' && _aiQueue && typeof _aiQueue.enqueue === 'function') {
-      data = await _aiQueue.enqueue(_toolFetchQueued, opts.priority || 'normal');
+      data = await _aiQueue.enqueue(_toolFetchQueued, opts.priority || 'normal', { signal: opts.signal, timeoutMs: _aiQueueWaitTimeout(opts) });
     } else {
       data = await _toolFetchQueued();
     }
   } catch(e) {
     var failure = _toolErrorInfo(e);
-    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+    if (failure.code === 'aborted' || failure.code === 'tool-timeout' || (failure.status !== 400 && _aiErrorIsTerminal(e)) || (e && e.code === 'context_length_exceeded') || (e && e._tmNativeTransport) || failure.status === 429 || failure.status >= 500) return { text: '', toolCalls: [], error: failure };
     console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
     return await _runFallback(e);
   }
@@ -1139,7 +1210,7 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
     }
   }
   var body = { model: _aiCfgM.model || (P.ai&&P.ai.model) || "gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
-  var fetchOpts2 = { apiKey: key, priority: opts.priority || 'normal' };
+  var fetchOpts2 = { apiKey: key, tier: tier, firstResponseTimeoutMs: opts.firstResponseTimeoutMs, totalResponseTimeoutMs: opts.totalResponseTimeoutMs, queueTimeoutMs: opts.queueTimeoutMs, priority: opts.priority || 'normal', retryBudget: opts.retryBudget, id: opts.id };
   if (opts.timeoutMs != null) fetchOpts2.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
@@ -1156,122 +1227,18 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
  * @param {{signal?:AbortSignal, onChunk?:function(string):void, onDone?:function(string):void}} [opts]
  * @returns {Promise<string>} 完整回复
  */
-async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
-  opts = opts || {};
-  var _finalizedBody = null;
-  if (opts.finalizedBody !== undefined) {
-    if (!opts.finalizedBody || typeof opts.finalizedBody !== 'object' || Array.isArray(opts.finalizedBody)) {
-      throw new Error('流式 finalizedBody 非法');
-    }
-    _finalizedBody = opts.finalizedBodyDetached === true
-      ? opts.finalizedBody
-      : JSON.parse(JSON.stringify(opts.finalizedBody));
-    var _exactMax = Number(_finalizedBody.max_completion_tokens != null ? _finalizedBody.max_completion_tokens : _finalizedBody.max_tokens);
-    if (!Number.isFinite(_exactMax) || _exactMax <= 0) throw new Error('流式 finalizedBody.max_tokens 非法');
-    maxTok = Math.floor(_exactMax);
-  }
-  // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
-  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback) {
-    var _oS = Object.assign({}, opts, { _noSecFallback: true });
-    try { return await _callAIMessagesStreamDirect(messages, maxTok, _oS); }
-    catch (e) {
-      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await _callAIMessagesStreamDirect(messages, maxTok, Object.assign({}, _oS, { tier: 'primary' })); }
-      throw e;
-    }
-  }
-  // M3·按 tier 取 API 配置·默认 primary·secondary 未配自动回退（带 try 兜底以防万一）
-  var _aiCfg = null;
-  try { if (typeof _getAITier === 'function') _aiCfg = _getAITier(opts.tier); } catch(_){}
-  if (!_aiCfg) _aiCfg = { key: (P.ai&&P.ai.key)||'', url: (P.ai&&P.ai.url)||'', model: (P.ai&&P.ai.model)||'gpt-4o', tier: 'primary' };
-  var key = _aiCfg.key || (P.ai && P.ai.key) || ''; if (!key) throw new Error('API未配置');
-  var url = (typeof _buildAIUrlForTier === 'function') ? _buildAIUrlForTier(opts.tier) : _buildAIUrl();
-  if (!url) throw new Error('API地址未配置');
-  var ctrl = new AbortController();
-  var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
-  if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 同 _toolFetchQueued·已置位预检(2026-07-04 审查定罪)
-  var onExternalAbort = function() { ctrl.abort(); };
-  if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
-  var _scaledTok = _finalizedBody
-    ? maxTok
-    : Math.round((maxTok || 500) * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
-  try {
-    // M4·Anthropic cache_control：原生 Anthropic API + sys 足够长 → 加 cache_control 享 90% 折扣
-    var _msgsStream = messages;
-    try {
-      var _providerS = (typeof _detectAIProvider === 'function') ? _detectAIProvider() : '';
-      var _isNativeS = (P.ai && P.ai.url && /api\.anthropic\.com/i.test(P.ai.url));
-      if (!_finalizedBody && _providerS === 'anthropic' && _isNativeS && messages && messages.length > 0) {
-        var _firstS = messages[0];
-        if (_firstS && _firstS.role === 'system' && typeof _firstS.content === 'string' && _firstS.content.length > 1500) {
-          _msgsStream = messages.slice();
-          _msgsStream[0] = { role: 'system', content: [{ type: 'text', text: _firstS.content, cache_control: { type: 'ephemeral' } }] };
-        }
-      }
-    } catch(_cE) {}
-    var _bodyCore = _finalizedBody || {
-      model: (_aiCfg && _aiCfg.model) || (P.ai && P.ai.model) || 'gpt-4o', messages: _msgsStream,
-      temperature: (opts.temperature !== undefined) ? opts.temperature : (P.ai.temp || 0.8),
-      max_tokens: _scaledTok
-    };
-    if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
-    if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
-    _bodyCore.stream = true;
-    var resp = await (typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify(_bodyCore),
-      signal: ctrl.signal
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    // 非流式回退（部分代理不支持stream）
-    var ct = resp.headers.get('content-type') || '';
-    if (ct.indexOf('application/json') >= 0) {
-      var data = await resp.json();
-      var txt = '';
-      if (data.choices && data.choices[0] && data.choices[0].message) txt = data.choices[0].message.content;
-      if (opts.onChunk) opts.onChunk(txt);
-      if (opts.onDone) opts.onDone(txt);
-      return txt;
-    }
-    // SSE 流式读取
-    var reader = resp.body.getReader();
-    var decoder = new TextDecoder();
-    var buffer = '';
-    var full = '';
-    while (true) {
-      var _r = await reader.read();
-      if (_r.done) break;
-      buffer += decoder.decode(_r.value, { stream: true });
-      var lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (var i = 0; i < lines.length; i++) {
-        var line = lines[i].trim();
-        if (!line || !line.startsWith('data:')) continue;
-        var payload = line.slice(5).trim();
-        if (payload === '[DONE]') continue;
-        try {
-          var chunk = JSON.parse(payload);
-          var delta = '';
-          // OpenAI / compatible format
-          if (chunk.choices && chunk.choices[0] && chunk.choices[0].delta) {
-            delta = chunk.choices[0].delta.content || '';
-          }
-          if (delta) {
-            full += delta;
-            if (opts.onChunk) opts.onChunk(full);
-          }
-        } catch (_e) { /* ignore malformed chunks */ }
-      }
-    }
-    if (opts.onDone) opts.onDone(full);
-    return full;
-  } finally {
-    clearTimeout(timer);
-    if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
-  }
-}
-
+// Stream transport implementation is owned by the preceding tm-ai-infra-retry.js.
 async function callAIMessagesStream(messages, maxTok, opts) {
+  var execute = function(next) { return _aiWithStreamScope(next, function(scoped) { return _callAIMessagesStreamQueued(messages, maxTok, scoped); }); };
+  var recovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
+  return recovery ? recovery.streamRequest('messages', messages, maxTok, opts, execute) : execute(opts);
+}
+async function callAIBodyStream(finalizedBody, opts) {
+  var execute = function(next) { return _aiWithStreamScope(next, function(scoped) { return _callAIBodyStreamQueued(finalizedBody, scoped); }); };
+  var recovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
+  return recovery ? recovery.streamRequest('body', finalizedBody, null, opts, execute) : execute(opts);
+}
+async function _callAIMessagesStreamQueued(messages, maxTok, opts) {
   opts = opts || {};
   if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
     return _callAIMessagesStreamDirect(messages, maxTok, opts);
@@ -1279,12 +1246,12 @@ async function callAIMessagesStream(messages, maxTok, opts) {
   var queuedOpts = Object.assign({}, opts, { skipQueue: true });
   return _aiQueue.enqueue(function() {
     return _callAIMessagesStreamDirect(messages, maxTok, queuedOpts);
-  }, opts.priority || 'normal');
+  }, opts.priority || 'normal', { signal: opts.signal, timeoutMs: _aiQueueWaitTimeout(opts) });
 }
 
 // 已经通过最终物理预算审核的请求必须原样发送。除 stream:true 外，模型、消息、
 // completion 上限、strict schema/tools 等都不得在 transport 层重新解释或放大。
-async function callAIBodyStream(finalizedBody, opts) {
+async function _callAIBodyStreamQueued(finalizedBody, opts) {
   opts = opts || {};
   if (!finalizedBody || typeof finalizedBody !== 'object' || Array.isArray(finalizedBody)) {
     throw new Error('SC1 finalized stream body 非法');
@@ -1305,7 +1272,7 @@ async function callAIBodyStream(finalizedBody, opts) {
   if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
     return run();
   }
-  return _aiQueue.enqueue(run, opts.priority || 'normal');
+  return _aiQueue.enqueue(run, opts.priority || 'normal', { signal: opts.signal, timeoutMs: _aiQueueWaitTimeout(opts) });
 }
 
 // ============================================================

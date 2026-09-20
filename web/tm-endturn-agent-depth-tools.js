@@ -240,7 +240,7 @@
     }
     // 多回合综合(2026-06·owner"长记忆能综合多回合·超窗自动压缩·持续未决=当前"):
     //   近 memDepth 回合喂"细"·更早的靠上一版 saga(已压缩)折叠进来(超窗自动压缩·照常注入)·窗口随模型能力档。
-    var _Pmd = root.P || {}; var _memDepth = Math.max(2, Math.round((_Pmd.conf && _Pmd.conf.agentMemoryDepth) || 6));
+    var _Pmd = root.P || {}; var _memDepth = TM.MemoryModeBridge ? TM.MemoryModeBridge.memoryDepth() : Math.max(2, Math.round((_Pmd.conf && _Pmd.conf.agentMemoryDepth) || 6));
     var recentArc = '';
     try {
       var cmArc = gm._consolidatedMemory;
@@ -258,6 +258,10 @@
     var sys = '你是天命的记忆与情节史官。把本回合固化为高密度记忆、状态盘、情节线索与因果链连续性·供下回合推演续接。只返回 JSON·不要解释。';
     // 时空约束·记忆/脉络固化(saga跨回合记忆骨干·杠杆最高·防把史实结局固化进memory污染全程)·clauseOnly（typeof守卫防加载序）
     if (typeof root._buildTemporalConstraint === 'function') { try { sys += '\n' + root._buildTemporalConstraint(null, { clauseOnly: true }); } catch (_) {} }
+    if (TM.MemoryModeBridge) {
+      tp += "\n\n可引用的记忆证据：\n" + TM.MemoryModeBridge.dossier(gm, { tier: "secondary" });
+      tp += "\n可选 long_term_memory_updates 数组，每条含 kind、memory、confidence、source_refs、entities。kind 使用已支持的长期记忆类型，source_refs 只能引用上面真实 ID；无依据则不写，禁止将推测写成既定事实。";
+    }
     var raw;
     try { raw = await root.callAIMessages([{ role: 'system', content: sys }, { role: 'user', content: tp }], 2000, _signal(ctx), 'secondary'); }
     catch (e) { return { ok: false, text: '(整合调用失败:' + (e && e.message) + ')' }; }
@@ -268,10 +272,13 @@
       if (text2) p = _parse(text2);
     }
     if (!p || (!p.memory && !p.state_board)) return { ok: false, text: '(整合解析失败/空·已重问一次)' };
+    if ((p.memory != null && typeof p.memory !== "string") || (p.state_board != null && (typeof p.state_board !== "object" || Array.isArray(p.state_board)))) return { ok: false, text: "(记忆整合结构无效，未写入)" };
     var did = [];
     if (p.memory) {
       if (!Array.isArray(gm._aiMemory)) gm._aiMemory = [];
-      gm._aiMemory.push({ turn: turn, text: String(p.memory), priority: 'high' });
+      var memoryRecord = { turn: turn, text: String(p.memory), priority: 'high' };
+      if (TM.MemoryModeBridge) TM.MemoryModeBridge.tagSummary(gm, memoryRecord, String(p.memory));
+      gm._aiMemory.push(memoryRecord);
       if (!Array.isArray(gm._consolidatedMemory)) gm._consolidatedMemory = [];
       // 刀F(2026-07-02)·形状调和:LLM 管线写 {consolidated,...}·此处原只写 {summary}——跨模式互读各自扑空
       //   (管线的滚动续写读 .consolidated·agent 的记忆档读 .summary)。双键并写·两边消费者都能读。
@@ -319,6 +326,7 @@
       if (gm._causalGraph.edges.length > 300) gm._causalGraph.edges = gm._causalGraph.edges.slice(-300);
       did.push('因果链');
     }
+    if (TM.MemoryModeBridge && Array.isArray(p.long_term_memory_updates)) { TM.MemoryModeBridge.enqueue(gm, p); did.push("长期记忆候选"); }
     if (!did.length) return { ok: false, text: '(整合无有效产出)' };
     if (Array.isArray(gm._turnReport)) gm._turnReport.push({ type: 'change', path: '记忆·整合', reason: '固化本回合(' + did.join('/') + ')', new: String((p.state_board && p.state_board.recent_summary) || p.memory || '').slice(0, 60), turn: turn, _agent: true, _op: 'recall_consolidate' });
     return { ok: true, text: '已固化本回合:' + did.join('、') + '(状态盘/记忆/线索供下回合续接)' };

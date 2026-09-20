@@ -1,0 +1,25 @@
+{
+  "scenario": "绍宋·建炎元年八月（官方）.json",
+  "viewport": "1600x1000 hidden isolated Electron window",
+  "regions": 566,
+  "beforeMedianMs": 76.5,
+  "intermediateMedianMs": 63.69999999925494,
+  "finalMedianMs": 69.55000000074506,
+  "beforeRangeMs": [
+    61.69999999925494,
+    106.69999999925494
+  ],
+  "finalRangeMs": [
+    49,
+    92.09999999403954
+  ],
+  "beforeMutations": 48,
+  "finalMutations": 0,
+  "beforeChildMutations": 36,
+  "finalChildMutations": 0,
+  "pathCount": 1143,
+  "svgCharacters": 22766949,
+  "retained": true,
+  "errors": [],
+  "concurrentMapChange": "Preserved externally added GM._useAIGeo read guard; this is a local-version comparison, not a fully isolated single-patch benchmark."
+}

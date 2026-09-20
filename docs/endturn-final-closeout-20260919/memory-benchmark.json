@@ -1,0 +1,45 @@
+{
+  "at": "2026-09-19T12:25:51.082Z",
+  "fixture": {
+    "seed": 96331,
+    "records": 360,
+    "queries": 8,
+    "selected": 20,
+    "warmups": 2,
+    "measuredRuns": 7
+  },
+  "results": {
+    "before": {
+      "medianMs": 14516.935,
+      "runs": [
+        14332.774000000005,
+        14464.357899999995,
+        14493.832599999998,
+        14516.935399999995,
+        14520.682100000005,
+        14671.9047,
+        14802.4179
+      ],
+      "sha256": "5d5bc53b725f6dcf0f9c18fe0a65d47846185588c49d556f294a0dec2e3cee9d",
+      "chars": 73823,
+      "sourceSha256": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e"
+    },
+    "after": {
+      "medianMs": 113.768,
+      "runs": [
+        110.63269999998738,
+        110.74659999998403,
+        112.533500000005,
+        113.76840000000084,
+        114.30939999999828,
+        115.52700000000186,
+        152.2048000000068
+      ],
+      "sha256": "5d5bc53b725f6dcf0f9c18fe0a65d47846185588c49d556f294a0dec2e3cee9d",
+      "chars": 73823,
+      "sourceSha256": "1080e50c78faafbbf4844169a0e452ed55fc458adadc37ad1611d2e552ce2ce3"
+    }
+  },
+  "exactOutput": true,
+  "description": "Local lexical and RRF/diversity scoring only; identical ordered evidence and scores, no model requests."
+}

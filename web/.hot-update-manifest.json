@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-20T17:16:11.508Z",
+  "generatedAt": "2026-09-21T03:49:32.844Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2636,8 +2636,8 @@
     },
     {
       "path": "changelog.json",
-      "sha256": "1c62f4381e296264aadf699e6818b5d8d8f960d09cdda1f6b3414b258866a654",
-      "size": 1019788
+      "sha256": "f0050912fdbcc04dc270cc34ae849bd364c6cf1fa57e3dbbc1f4e8d96f824bed",
+      "size": 1019991
     },
     {
       "path": "data/maps/chongzhen-prefecture-r2/geometry.json",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "fa5302b1ed7a4d30059b927d4e50742fa63d5cdb30103cf34dc680bc5a992050",
-      "size": 74445
+      "sha256": "761b84dda9b0a0c8ea338a0b2b37241d25bd015ca064d9b0c9c2e3cb93452d54",
+      "size": 74460
     },
     {
       "path": "INDEX.md",
@@ -6066,8 +6066,8 @@
     },
     {
       "path": "tm-renwu-tuzhi.js",
-      "sha256": "a9f77fe2da67b6f356f363a976c7ca40adc5978e9301c45fa03002b99b3b69c6",
-      "size": 168221
+      "sha256": "f736bf3449d56cb145928662b8d85ebd2367fc81addcf5c8918ddab9dce4f29f",
+      "size": 169682
     },
     {
       "path": "tm-renwu-ui.js",
@@ -6196,8 +6196,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "ad9f363bef11f88fffef033364e426de45f1c715f83e9e0dc6358db75454f388",
-      "size": 132834
+      "sha256": "d91d2c5068f325ca40c1407c7f8b6b2bed81adf516905bd76a1935f28af6f9d4",
+      "size": 132849
     },
     {
       "path": "tm-start-selector.js",
@@ -6366,8 +6366,8 @@
     },
     {
       "path": "tm-wendui.js",
-      "sha256": "78e68bcc5a273e831b7b1d477e349746da314f5ab2c4f0012bef2871475611ff",
-      "size": 184616
+      "sha256": "eda17d9665b53e5a39cfb115537f7a865b35e2ac0f994f3a3213abf05ed70fbf",
+      "size": 186460
     },
     {
       "path": "tm-wentian-agent.js",

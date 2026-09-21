@@ -301,6 +301,10 @@ function openWenduiPick(name) {
     }
   } catch(_){}
   var ch = findCharByName(name); if (!ch) return;
+  if (ch.isPlayer) { if (typeof toast === 'function') toast('不能召见自己'); return; }
+  name = ch.name;
+  var previous = document.getElementById('wd-pick-modal'); if (previous) previous.remove();
+  _wdPickedMode = 'formal';
   var hist = GM.wenduiHistory && GM.wenduiHistory[name] && GM.wenduiHistory[name].length > 0;
   var _initial = escHtml(String(name||'?').charAt(0));
   var _portraitHtml = ch.portrait ? '<img src="'+escHtml(ch.portrait)+'" loading="lazy" decoding="async">' : _initial;
@@ -308,6 +312,8 @@ function openWenduiPick(name) {
   var modal = document.createElement('div');
   modal.className = 'modal-bg show';
   modal.id = 'wd-pick-modal';
+  modal._tmAudienceLease = { world:GM, sid:GM.sid, loadGen:window._tmLoadGen, startEpoch:window._tmStartPrewarmEpoch,
+    person:ch, id:String(ch.id == null ? '' : ch.id).trim(), name:ch.name };
   modal.innerHTML = '<div class="wdp-pick-modal-inner">'
     + '<div class="wdp-pick-portrait">' + _portraitHtml + '</div>'
     + '<div class="wdp-pick-name">\u53EC \u89C1 \u00B7 ' + escHtml(name) + '</div>'
@@ -324,11 +330,12 @@ function openWenduiPick(name) {
     + '</div>'
     + '</div>'
     + '<div class="wdp-pick-actions">'
-    +   '<button class="wdp-pick-btn primary" onclick="_wdConfirmPick(\'' + name.replace(/'/g,"") + '\')">\u53EC\u3000\u89C1</button>'
+    +   '<button class="wdp-pick-btn primary" onclick="_wdConfirmPick()">召　见</button>'
     +   '<button class="wdp-pick-btn secondary" onclick="document.getElementById(\'wd-pick-modal\').remove()">\u53D6\u3000\u6D88</button>'
     + '</div>'
     + '</div>';
   document.body.appendChild(modal);
+  return modal;
 }
 
 var _wdPickedMode = 'formal';
@@ -340,8 +347,28 @@ function _wdPickMode(mode) {
 }
 
 function _wdConfirmPick(name) {
-  var m = _$('wd-pick-modal'); if (m) m.remove();
-  openWenduiModal(name, _wdPickedMode);
+  var m = _$('wd-pick-modal'); if (!m) return false;
+  var lease = m._tmAudienceLease;
+  function reject(message) { m.remove(); if (typeof toast === 'function') toast(message); return false; }
+  if (!lease || lease.world !== GM || lease.sid !== GM.sid || lease.loadGen !== window._tmLoadGen || lease.startEpoch !== window._tmStartPrewarmEpoch) {
+    return reject('当前世界已改变，请重新选择问对人物');
+  }
+  if (name && name !== lease.name) return reject('问对人物引用已变化，请重新选择');
+  var rows = Array.isArray(GM.chars) ? GM.chars : [], matches = [];
+  rows.forEach(function(c) {
+    if (c && (lease.id ? String(c.id == null ? '' : c.id).trim() === lease.id : c === lease.person) && matches.indexOf(c) < 0) matches.push(c);
+  });
+  if (matches.length !== 1) return reject('问对人物已离开当前名册或引用不唯一，请重新选择');
+  var ch = matches[0], named = [];
+  rows.forEach(function(c) { if (c && c.name === ch.name && named.indexOf(c) < 0) named.push(c); });
+  if (!ch.name || named.length !== 1) return reject('当前名册确有同名人物，暂不能发起问对');
+  var resolved = findCharByName(ch.name);
+  if (resolved !== ch && typeof buildIndices === 'function') { buildIndices(); resolved = findCharByName(ch.name); }
+  if (resolved !== ch) return reject('人物索引尚未同步，请重新选择问对人物');
+  m.remove();
+  // The existing modal retains all life, location, prison and energy checks.
+  openWenduiModal(ch.name, _wdPickedMode);
+  return true;
 }
 
 /**

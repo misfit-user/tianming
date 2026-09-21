@@ -119,6 +119,7 @@ const checks = [
   { name: 'formal-module-modal-size', file: 'smoke-formal-module-modal-size.js', estSec: 1, expectExit: 0 },
   { name: 'audio-bgm', file: 'smoke-audio-bgm.js', estSec: 1, expectExit: 0 },
   { name: 'wendui-active-audience', file: 'smoke-wendui-active-audience.js', estSec: 1, expectExit: 0 },
+  { name: 'roster-audience-reference', file: 'smoke-roster-audience-reference.mjs', estSec: 2, expectExit: 0 },
   { name: 'wendui-json-leak-guard', file: 'smoke-wendui-json-leak-guard.js', estSec: 1, expectExit: 0 },
   { name: 'yuqian-open-frequency', file: 'smoke-yuqian-open-frequency.js', estSec: 1, expectExit: 0 },
   { name: 'topbar-fiscal-consistency', file: 'smoke-topbar-fiscal-consistency.js', estSec: 1, expectExit: 0 },

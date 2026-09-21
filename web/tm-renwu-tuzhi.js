@@ -647,10 +647,10 @@ function _zhiOfficePills(p){
 function adaptChar(c){
   var isP=!!c.isPlayer||(_p().playerInfo&&_p().playerInfo.characterName===c.name);
   return {
-    _ref:c, name:c.name, zi:c.zi||c.courtesy||'', title:c.title, officialTitle:c.officialTitle, officeTitles:_zhiOfficeTitles(c), role:c.role, rosterRole:c.rosterRole, rank:_rankLabel(c),
+    _ref:c, _sourceId:String(c.id==null?'':c.id).trim(), name:c.name, zi:c.zi||c.courtesy||'', title:c.title, officialTitle:c.officialTitle, officeTitles:_zhiOfficeTitles(c), role:c.role, rosterRole:c.rosterRole, rank:_rankLabel(c),
     faction:c.faction||(isConsort(c)?'后宫':'无派系'), party:c.party, partyRank:c.partyRank,
     age:c.age, gender:c.gender||(isConsort(c)?'女':''), birthplace:c.birthplace, ethnicity:c.ethnicity, faith:c.faith, culture:c.culture, learning:c.learning, stance:c.stance, speechStyle:c.speechStyle,
-    family:c.family, familyTier:c.familyTier, isPlayer:isP, alive:c.alive!==false, deathReason:c.deathReason, deathTurn:c.deathTurn,
+    family:c.family, familyTier:c.familyTier, isPlayer:isP, alive:c.alive!==false&&c.dead!==true, deathReason:c.deathReason, deathTurn:c.deathTurn,
     appearance:c.appearance, bio:c.bio, personality:c.personality, personalGoal:c.personalGoal||c.goal,
     portrait:c.portrait,
     loyalty:num(c.loyalty,50), intelligence:effAttr(c,'intelligence'), valor:effAttr(c,'valor'), administration:effAttr(c,'administration'), management:effAttr(c,'management'), charisma:effAttr(c,'charisma'), diplomacy:effAttr(c,'diplomacy'), military:effAttr(c,'military'), benevolence:effAttr(c,'benevolence'),
@@ -681,7 +681,7 @@ function findP(name){var l=PEOPLE();for(var i=0;i<l.length;i++)if(l[i].name===na
 
 /* ===================== 状态 ===================== */
 var state={sel:null,q:'',fac:'all',role:'all',sort:'loyalty',dead:false,tab:'overview',roleStat:'all',compare:null,compare2:null,view:'liezhuan',phSort:'loyalty',dtWin:6};
-var _panelWorld=null,_officeContext=null,_vacantOfficesOnly=false;
+var _panelWorld=null,_panelScenario,_panelLoadGen,_panelStartEpoch,_officeContext=null,_vacantOfficesOnly=false;
 var _zhiRosterRenderTimer=0;
 
 /* ===================== 立绘字形 / SVG 基件 ===================== */
@@ -810,13 +810,36 @@ function livingActions(p,folio){
 }
 
 function actionPerson(name){
-  if(_g()!==_panelWorld){toast('当前世界已改变，请重新打开人物图志');return null;}
+  var g=_g();
+  if(g!==_panelWorld||g.sid!==_panelScenario||window._tmLoadGen!==_panelLoadGen||window._tmStartPrewarmEpoch!==_panelStartEpoch){
+    toast('当前世界已改变，请重新打开人物图志');return null;
+  }
   var p=findP(name||state.sel),raw=p&&p._ref;
   if(!raw){toast('未找到当前人物');return null;}
-  var matches=[],g=_g();
-  [g.chars,g.allCharacters].forEach(function(rows){(rows||[]).forEach(function(c){if(c&&c.name===p.name&&matches.indexOf(c)<0)matches.push(c);});});
-  if(matches.length!==1||matches[0]!==raw){toast('人物引用缺失或同名有歧义，暂不能代入操作');return null;}
-  return p;
+  // Resolve operations from the live roster, not its display-only summaries.
+  var roster=Array.isArray(g.chars)?g.chars:[],matches=[],id=p._sourceId;
+  roster.forEach(function(c){
+    if(c&&(id?String(c.id==null?'':c.id).trim()===id:c===raw)&&matches.indexOf(c)<0)matches.push(c);
+  });
+  if(matches.length!==1){toast('人物引用已失效或不唯一，请重新打开人物图志');return null;}
+  var current=matches[0],named=[];
+  roster.forEach(function(c){if(c&&c.name===current.name&&named.indexOf(c)<0)named.push(c);});
+  if(!current.name||named.length!==1){toast('当前名册确有同名人物，暂不能代入操作');return null;}
+  // Name-based downstream interfaces must resolve the very same current object.
+  if(typeof findCharByName==='function'){
+    var resolved=findCharByName(current.name);
+    if(resolved!==current&&typeof buildIndices==='function'){
+      buildIndices();resolved=findCharByName(current.name);
+    }
+    if(resolved!==current){toast('人物索引尚未同步，请重新打开人物图志');return null;}
+  }
+  // Refresh status, name and source after a same-ID immutable roster update.
+  var fresh=adaptChar(current),index=(_peopleCache||[]).indexOf(p);
+  if(index>=0)_peopleCache[index]=fresh;
+  if(state.sel===p.name)state.sel=fresh.name;
+  if(state.compare===p.name)state.compare=fresh.name;
+  if(state.compare2===p.name)state.compare2=fresh.name;
+  return fresh;
 }
 function officeRecommendations(p){
   var fit=window.TM&&TM.OfficeFit;
@@ -1265,7 +1288,7 @@ function renderChips(){var alive=PEOPLE().filter(function(p){return p.alive!==fa
 function renderAll(){renderChips();renderFacOptions();renderViewTabs();renderStatbar();renderRoster();renderMain();renderFolio();}
 
 function openPanel(name){
-  _panelWorld=_g();_officeContext=null;_vacantOfficesOnly=false;
+  _panelWorld=_g();_panelScenario=_panelWorld.sid;_panelLoadGen=window._tmLoadGen;_panelStartEpoch=window._tmStartPrewarmEpoch;_officeContext=null;_vacantOfficesOnly=false;
   loadPeople(true);
   buildOverlay();
   if(name&&findP(name))state.sel=name;
@@ -1359,6 +1382,7 @@ var TMZhi={
       if(kind==='wendui'||kind==='letter'||kind==='office'){
         var p=actionPerson(name);if(!p)return false;
         if(p.isPlayer||p.alive===false){toast('当前人物不能使用此入口');return false;}
+        name=p.name;
       }
       if(kind==='wendui'&&typeof openWenduiPick==='function'){openWenduiPick(name);if(!document.getElementById('wd-pick-modal'))throw new Error('audience-picker-not-mounted');closePanel();return true;}
       if(kind==='letter'){

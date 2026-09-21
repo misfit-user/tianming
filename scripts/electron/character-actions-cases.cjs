@@ -10,6 +10,8 @@ module.exports=async function({win,check}){
       {id:'a',name:'文臣甲',alive:true,age:40,health:90,location:'临安',officialTitle:'旧署主事',administration:88,intelligence:70,management:90,military:20,valor:30,charisma:50,diplomacy:40,wuchangOverride:{仁:80,义:90,礼:75,智:65,信:95}},
       {id:'b',name:'武臣乙',alive:true,age:38,health:90,location:'千里外的江陵',administration:20,intelligence:50,management:35,military:90,valor:85,loyalty:65,wuchangOverride:{仁:40,义:90,礼:50,智:80,信:75}}
     ],officeTree:[{name:'财赋署',positions:[{id:'finance',name:'财赋长官',holder:'武臣乙',rank:'正五品',powers:{taxCollect:true}}],subs:[{name:'营造署',positions:[{id:'works',name:'营造主事',headCount:3,actualCount:2,powers:{works:true}}]}]},{name:'军务署',positions:[{id:'military',name:'都尉',holder:'',powers:{militaryCommand:true}}]},{name:'旧署',positions:[{name:'旧署主事',holder:'文臣甲'}]}]};
+    // Startup summaries are display copies, not extra live people. Exercise all actions with those copies present.
+    GM.allCharacters=GM.chars.map(c=>({name:c.name,officialTitle:c.officialTitle,alive:c.alive}));
     if(typeof buildIndices==='function')buildIndices();
     TMPhase8FormalBridge._state.letterDraft={to:'旧收信人',body:'保留已有草稿 é 😀',type:'personal'};
     TMPhase8FormalBridge._state.letterMultiMode=true;

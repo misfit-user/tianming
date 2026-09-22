@@ -31,6 +31,12 @@ function verify({root,version,directory}){
   if(receipt.unsignedTest!==true){const signing=require('./lib/windows-signing.js');signing.verifyAuthenticode(path.join(directory,receipt.artifacts.find(a=>/\.exe$/i.test(a.name)).name),signing.requirePublisher());}
   return receipt;
 }
+function uploadedArtifact(assets,artifact){
+  // GitHub normalizes non-ASCII filenames. Match the uploaded bytes, not a lossy name.
+  const matches=assets.filter(a=>a.size===artifact.bytes&&a.digest==='sha256:'+artifact.sha256);
+  if(matches.length!==1)throw Error('Uploaded asset hash/size mismatch: '+artifact.name);
+  return matches[0];
+}
 function publish({root,version,head,directory,notes,receipt}){
   if(!/^[a-f0-9]{40}$/.test(head))throw Error('Missing locked main commit');
   const tag='full-'+version,repo='misfit-user/tianming',existing=tagCommit(root,tag);
@@ -44,11 +50,11 @@ function publish({root,version,head,directory,notes,receipt}){
   for(const extra of ['SHA256SUMS.txt','完整包内容对账.json','安装说明.txt'])if(fs.existsSync(path.join(directory,extra)))files.push(path.join(directory,extra));
   run('gh',['release','upload',tag,'--repo',repo,'--clobber',...files],root);
   const uploaded=JSON.parse(run('gh',['release','view',tag,'--repo',repo,'--json','assets'],root));
-  for(const a of receipt.artifacts){const remote=uploaded.assets.find(x=>x.name===a.name);if(!remote||remote.size!==a.bytes||remote.digest&&remote.digest!=='sha256:'+a.sha256)throw Error('Uploaded asset mismatch: '+a.name);}
+  for(const a of receipt.artifacts)uploadedArtifact(uploaded.assets,a);
   run('gh',['release','edit',tag,'--repo',repo,'--draft=false','--prerelease','--latest=false'],root);
   if(tagCommit(root,tag)!==head)throw Error('Published full-installer tag verification failed');
   run('gh',['workflow','run','pages.yml','--repo',repo,'--ref','main','-f','ref='+head],root);
   console.log('FULL_INSTALLERS_PUBLISHED '+tag+' '+head+'; Pages pinned to the same source; OTA unchanged');
 }
 if(require.main===module){try{const args=process.argv.slice(2),get=k=>args[args.indexOf('--'+k)+1],root=path.resolve(__dirname,'..');if(!args.includes('--record'))throw Error('Use release.js for prepare/publish; this entry only records built artifacts');const r=record({root,directory:path.resolve(get('dir')),exe:get('exe'),apk:get('apk'),unsignedTest:args.includes('--unsigned-test')});console.log('FULL_INSTALLERS_RECORDED '+r.version+' files='+r.source.webFiles);}catch(e){console.error(e.message);process.exitCode=1;}}
-module.exports={assertCompletion,fingerprint,record,verify,publish};
+module.exports={assertCompletion,fingerprint,record,verify,publish,uploadedArtifact};

@@ -3,6 +3,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const full=require('./release-full-installers.js');
 const facts={version:'1.3.5.2',current:'1.3.5.2',code:1354,mobileVersion:{version:'1.3.5.2',versionCode:1354},existingTag:''};
 full.assertCompletion(facts);
+const local={name:'天命-1.3.5.2-完整-x64.exe',bytes:123,sha256:'a'.repeat(64)},uploaded={name:'-1.3.5.2-.-x64.exe',size:123,digest:'sha256:'+'a'.repeat(64)};
+assert.equal(full.uploadedArtifact([uploaded],local),uploaded);
+for(const changed of [{size:124},{digest:'sha256:'+'b'.repeat(64)},{digest:undefined}])assert.throws(()=>full.uploadedArtifact([{...uploaded,...changed}],local),/hash\/size mismatch/);
+assert.throws(()=>full.uploadedArtifact([uploaded,{...uploaded,name:'duplicate.exe'}],local),/hash\/size mismatch/);
 for(const changed of [{version:'1.3.5.1'},{code:1353},{existingTag:'a'.repeat(40)},{mobileVersion:{version:'1.3.5.1',versionCode:1354}}])assert.throws(()=>full.assertCompletion({...facts,...changed}));
 const dir=fs.mkdtempSync(path.join(process.env.TIANMING_RELEASE_TEMP_ROOT||os.tmpdir(),'tm-full-contract-')),root=path.join(dir,'repo'),out=path.join(dir,'out');
 fs.mkdirSync(path.join(root,'scripts'),{recursive:true});fs.mkdirSync(path.join(root,'web'),{recursive:true});fs.mkdirSync(path.join(root,'mobile'),{recursive:true});fs.mkdirSync(out);

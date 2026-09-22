@@ -294,6 +294,29 @@ async function main() {
   'validator exception must be observable with validator identity and error detail');
   delete ctx._validateLivingActorConsistency;
 
+  ctx.GM = baseGM({ custom: { score: 10 } });
+  const advisory = ctx.applyAITurnChanges({
+    _strictValidation: true,
+    narrative: '边备倾颓，户部试行钞关核税，收回铸钱之权。',
+    changes: [{ path: 'custom.score', delta: 5, reason: 'actual declared change' }]
+  });
+  check(advisory.ok && ctx.GM.custom.score === 15, 'keyword-only narrative warnings must not roll back valid writes before later consumers and reconciliation run');
+  check(ctx.GM._constructionValidatorLog.length > 0 && ctx.GM._currencyValidatorLog.length > 0, 'advisory evidence remains available for narrative reconciliation');
+
+  ctx.GM = baseGM({
+    chars: [{ id:'official-a', name:'甲臣', alive:true }],
+    officeTree: [{name:'军务',positions:[{name:'辽东巡抚（丁忧）'}]}],
+    regionMap: {a:{id:'region-a',name:'甲省'}},
+    adminHierarchy: {player:{divisions:[{id:'region-a',name:'甲省'}]}}
+  });
+  const supportedRefs = ctx.validateAIWriteBackBatch({office_assignments:[{name:'甲臣',post:'辽东巡抚',action:'appoint'}],region_updates:[{name:'甲省',region:'甲省',updates:{note:'same division'}}]});
+  check(supportedRefs.ok, 'qualified office names supported by the appointment sink and duplicate mirrors of one region must pass preflight');
+  check(!ctx.validateAIWriteBackBatch({office_assignments:[{name:'甲臣',post:'宇宙舰队司令',action:'appoint'}]}).ok, 'unknown office types remain rejected');
+  check(!ctx.validateAIWriteBackBatch({office_assignments:[{name:'甲臣',post:'、 ,',action:'appoint'}]}).ok, 'punctuation-only office names are never valid composite posts');
+  ctx.GM.adminHierarchy.player.divisions.push({id:'region-b',name:'甲省'});
+  check(!ctx.validateAIWriteBackBatch({population_adjustments:[{region:'甲省',action:'recount'}]}).ok, 'two distinct regions with the same name remain ambiguous');
+  check(ctx.validateAIWriteBackBatch({population_adjustments:[{regionId:'region-a',action:'recount'}]}).ok, 'stable region ID resolves repeated mirrors without admitting a different same-name division');
+
   // C2. party leader/head 同样只走真实活人 sink，合法 ID 归一并同步镜像。
   ctx.GM = baseGM({
     chars: [

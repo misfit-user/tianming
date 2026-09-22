@@ -55,7 +55,7 @@ export function _aiStructuredPolicyText(field, item) {
     if (field === 'central_local_actions') {
       if (/fiscal_bargain|bargain|local_fiscal/.test(action)) return '\u8bcf\u4ee4\uff1a\u4e0e' + region + '\u8bae\u5730\u65b9\u8d22\u653f\u535a\u5f08\uff0c\u660e\u8d77\u8fd0\u5b58\u7559\u4e4b\u5206\uff0c\u4ee5\u6355\u6350\u9977\u800c\u5b89\u5730\u65b9\u3002';
       if (/long_term_tracking|tracking|follow_up|monitor/.test(action)) return '\u8bcf\u4ee4\uff1a\u5efa\u7acb' + region + '\u957f\u671f\u8d22\u653f\u8ffd\u8e2a\uff0c\u9010\u6708\u6838\u5bf9\u8d77\u8fd0\u3001\u5b58\u7559\u3001\u6c11\u529b\u4e0e\u5b98\u8017\u3002';
-      if (/transfer|grant|下拨|拨银|发帑|赈/.test(action)) return '诏令：下拨' + region + '银' + (amount || 50000) + '两赈济水灾。';
+      if (/transfer|grant|下拨|拨银|发帑|赈/.test(action)) return '诏令：下拨' + region + '银' + (amount || 50000) + '两，依指定用途办理。';
       if (/force|levy|强征|追征|催征/.test(action)) return '诏令：强征' + region + '地方留存' + (amount || 30000) + '两，以充军饷。';
       if (/censor|audit|监察|巡按|巡察/.test(action)) return '诏令：派监察御史巡按' + region + '，核其钱粮。';
       if (/allocation|share|分成|起运|存留|留成/.test(action)) return '诏令：调整' + region + '分成，起运' + _aiPolicyRatioLabel(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare, 0.7) + '成，存留' + _aiPolicyRatioLabel(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare, 0.3) + '成。';
@@ -109,6 +109,9 @@ export function _aiStructuredPolicyParams(field, item) {
       if (item.level != null) params.level = Number(item.level);
       if (item.acceptanceDelta != null) params.acceptanceDelta = Number(item.acceptanceDelta);
     } else if (field === 'central_local_actions') {
+      if (item.fromAccount) params.fromAccount = item.fromAccount;
+      if (item.toAccount) params.toAccount = item.toAccount;
+      if (item.durationMonths != null) params.durationMonths = Number(item.durationMonths);
       if (item.qiyunRatio != null || item.centralShare != null) params.qiyunRatio = Number(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare);
       if (item.cunliuRatio != null || item.retainedShare != null) params.cunliuRatio = Number(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare);
       if (item.retainedShare != null) params.retainedShare = Number(item.retainedShare);

@@ -25,6 +25,28 @@ function apply(c,rows,extra={}){return c.applyAITurnChanges({fiscal_adjustments:
 function leaf(c){return c.GM.adminHierarchy.player.divisions[0];}
 function run(name,fn){fn();cases++;console.log('  PASS '+name);}
 
+run('real central-local bridge resolves current division and charges the declared palace account once',()=>{
+ const c=fixture();
+ for(const file of ['tm-economy-engine.js','tm-edict-parser.js'])vm.runInContext(fs.readFileSync(path.join(web,file),'utf8'),c,{filename:file});
+ leaf(c).name='陕西布政使司';c.GM.regionMap={r:copy(leaf(c))};
+ c.GM.fiscal={regions:{r:{name:'陕西布政使司',ledgers:{money:100,grain:50,cloth:20}}}};
+ leaf(c).fiscal=c.GM.fiscal.regions.r;
+ c.FiscalEngine.addToNeitang({money:1000},'fixture');
+ const centralBefore=c.GM.guoku.money,palaceBefore=c.GM.neitang.money;
+ const result=apply(c,[],{_strictValidation:true,shilu_text:'发内帑200两赈济陕西。',central_local_actions:[{action:'transfer_to_region',region:'陕西布政使司',fromAccount:'neitang.money',amount:200,purpose:'disaster_relief',durationMonths:2}]});
+ ok(result.ok,JSON.stringify(result.applied.failed));
+ eq(c.GM.guoku.money,centralBefore,'palace transfer does not debit central account');
+ eq(c.GM.neitang.money,palaceBefore-200,'transfer and narrative validation debit exactly once');
+ eq(c.GM.transferOrders.length,1,'one real transport order');
+ eq(c.GM.transferOrders[0].toRegion,'r','runtime division ID overrides the old shaanxi alias');
+ eq(c.GM.transferOrders[0].fromAccount,'neitang.money','source account survives the entire policy bridge');
+ eq(result.applied.fiscalTransfers[0].amount,200,'fiscal validator receives the real posted transfer receipt');
+ const before=JSON.stringify(c.GM),failed=apply(c,[],{_strictValidation:true,central_local_actions:[{action:'transfer_to_region',region:'陕西布政使司',fromAccount:'neitang.money',amount:999999}]});
+ ok(!failed.ok&&failed.rolledBack,'insufficient real funds still reject the entire batch');
+ ok(failed.applied.failed.some(row=>/资金不足/.test(row.reason)),'actual transfer rejection reaches writeback diagnostics');
+ eq(JSON.stringify(c.GM),before,'failed transfer leaves world and prior receipts unchanged');
+});
+
 run('v2 actual three resources and raw period/annual category fields',()=>{
  const c=fixture(),out=[10.25,2,.125],inc=[4,3,.25],body=R.flatMap((k,i)=>[fa('out-'+k,'expense',k,out[i]),fa('in-'+k,'income',k,inc[i])]);
  ok(apply(c,body).ok,'three-resource batch commits');
@@ -86,5 +108,32 @@ run('faction-only configuration keeps 360-day year across periods and foreign re
  ok(apply(c,[fa('faction-only','income','money',1)]).ok,'faction-only source posts');eq(c.GM.guoku.accounting.daysPerYear,360,'new period retains unified year');eq(c.GM.guoku.accounting.unit.money,'贯','faction-only unit');eq(c.GM.guoku.annualIncome,36,'faction-only annual projection');
  const bcfg=copy(c.GM.facs[0].fiscalConfig);bcfg.unit={money:'文',grain:'斛',cloth:'端'};c.GM.facs.push({id:'B',name:'乙',fiscalConfig:bcfg,officeTree:[]});c.GM.adminHierarchy.B={factionId:'B',divisions:[{id:'b',name:'异国本州',publicTreasuryInit:{money:100,grain:10,cloth:5}}]};c.GM.publicTreasuryConfig.accounts.push({id:'region:b',name:'乙州库',kind:'physical',scope:'regional',factionId:'B',source:{kind:'region',id:'b'}});c.FiscalEngine.initializePublicTreasuries({game:c.GM});
  const central=c.GM.guoku.money;ok(apply(c,[fa('foreign','income','money',2,'province:b')]).ok,'formal province resolver allows foreign stable ID');const b=c.GM.adminHierarchy.B.divisions[0];eq(b.publicTreasury.money.stock,102,'foreign local stock');eq(b.fiscal.unit.money,'文','foreign statement uses foreign currency');eq(b.publicTreasury.accounting.unit.money,'文','foreign period metadata uses foreign currency');eq(b.fiscal.annualIncome,72,'foreign actual annual projection');eq(c.GM.guoku.money,central,'foreign local receipt is not player receipt');
+});
+run('environment spending waits for actual batch income and still rejects insufficient real funds',()=>{
+ for(const income of [45000,10000]){
+ const c=fixture();for(const f of ['tm-economy-engine.js','tm-edict-parser.js'])vm.runInContext(fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});
+ c.GM.regions=[{id:'r',name:'本州'}];delete c.GM.environment;c.EnvCapacityEngine.init({name:'明'});
+ const before=JSON.stringify(c.GM),result=apply(c,[fa('fund-environment','income','money',income)],{_strictValidation:true,environment_actions:[{action:'open_waste',regionId:'r'}]});
+ if(income===45000){ok(result.ok,JSON.stringify(result.applied.failed));eq(c.GM.guoku.money,6000,'only actual income minus policy cost');eq(c.GM.environment.activePolicies.length,1,'one policy');}
+ else{ok(!result.ok&&result.rolledBack,'insufficient funds reject entire batch');ok(result.applied.failed.some(x=>/帑廪不足/.test(x.reason)),'underlying rejection is visible');eq(JSON.stringify(c.GM),before,'income and environment changes both roll back');}
+ }
+});
+run('plain edicts debit their explicitly named palace or central source and survive a later AI sync',()=>{
+ for(const [label,account,other]of [['内帑','neitang','guoku'],['国库','guoku','neitang']]){
+ const c=fixture();for(const f of ['tm-number-parser.js','tm-economy-engine.js','tm-edict-parser.js'])vm.runInContext(fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});c.FiscalEngine.addToNeitang({money:1000},'fixture');
+ c.GM.fiscal={regions:{r:{name:'本州',ledgers:{money:100,grain:50,cloth:20}}}};leaf(c).fiscal=c.GM.fiscal.regions.r;
+ const before=c.GM[account].money,untouched=c.GM[other].money;
+ const r=c.EdictParser.tryExecute('诏令：从'+label+'拨银200两，赈济本州。',{},{});ok(r.ok,JSON.stringify(r));eq(c.GM[account].money,before-200,label+' pays its own funds');eq(c.GM[other].money,untouched,'other account unchanged');
+ ok(apply(c,[]).ok,'later normal AI writeback');eq(c.GM[account].money,before-200,'posted debit survives scalar-ledger reconciliation');eq(c.GM[account].balance,before-200,'balance mirror');eq(c.GM[account].ledgers.money.stock,before-200,'ledger mirror');
+ }
+});
+run('ambiguous, conflicting and unavailable funding never silently charge another account',()=>{
+ const cases=[['诏令：从内帑拨银200两，赈济本州。',{fromAccount:'guoku.money'},false],['诏令：从内帑和国库各拨银200两，赈济本州。',{},false],['诏令：不得从内帑拨银200两，赈济本州。',{},false],['诏令：计划从内帑拨银200两，赈济本州。',{},false],['诏令：从内帑拨银200两，赈济本州。',{},true],['诏令：从内帑拨银200两，赈济本州。',{},'low-palace']];
+ for(const [text,params,missing]of cases){const c=fixture();for(const f of ['tm-number-parser.js','tm-economy-engine.js','tm-edict-parser.js'])vm.runInContext(fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});c.GM.fiscal={regions:{r:{name:'本州',ledgers:{money:100,grain:50,cloth:20}}}};leaf(c).fiscal=c.GM.fiscal.regions.r;c.FiscalEngine.addToNeitang({money:1000},'fixture');if(missing===true)c.EconomyLinkage=null;if(missing==='low-palace')ok(c.FiscalEngine.trySpendFromAccount({game:c.GM,ref:'neitang',amounts:{money:1050},reason:'fixture',transactionId:'fixture-deplete'}).ok,'deplete palace only');const before=[c.GM.guoku.money,c.GM.neitang.money];const r=c.EdictParser.tryExecute(text,params,{});ok(!r.ok,'non-executable request rejected: '+text+' '+JSON.stringify(r));eq([c.GM.guoku.money,c.GM.neitang.money],before,'both sources unchanged');eq((c.GM.transferOrders||[]).length,0,'no fake transfer order');}
+});
+run('player edict report carries the real paid receipt into later inference',()=>{
+ const c=fixture();for(const f of ['tm-number-parser.js','tm-economy-engine.js','tm-edict-parser.js'])vm.runInContext(fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});c.GM.fiscal={regions:{r:{name:'本州',ledgers:{money:100,grain:50,cloth:20}}}};leaf(c).fiscal=c.GM.fiscal.regions.r;c.FiscalEngine.addToNeitang({money:1000},'fixture');c.computeExecutionPipeline=()=>({summary:'执行情境'});
+ require('./lib-player-error-regression').extracted(c,'tm-endturn-edict.js',['processEdictEffects']);const r=c.processEdictEffects('诏令：从内帑拨银200两，赈济本州。','政');eq(c.GM.neitang.money,900,'actual palace debit');ok(r.executionSummary.includes('neitang.money')&&r.executionSummary.includes('不得再次扣款')&&r.executionSummary.includes(c.GM.transferOrders[0].id),'exact receipt reaches original edict prompt context');
+ c.GM=copy(c.GM);ok(apply(c,[]).ok,'restored save still reconciles');eq(c.GM.neitang.money,900,'debit persists after serialization and sync');
 });
 console.log('[smoke-fiscal-ai-posting] PASS '+cases+' cases / '+checks+' assertions');

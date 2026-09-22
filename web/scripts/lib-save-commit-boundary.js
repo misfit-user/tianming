@@ -41,7 +41,8 @@ function storageFixture(root=ROOT){
     complete(){for(const [k,v] of staged)disk.set(k,v);events.push('commit');tx.oncomplete&&tx.oncomplete();},
     abort(){tx.error=Object.assign(Error('injected abort'),{name:'AbortError'});tx.onabort&&tx.onabort({target:tx});}};transactions.push(tx);return tx;}};
   c.window=c;vm.createContext(c);
-  loadFunctions(c,'tm-storage.js',['_publishWriteOutcome','_unconfirmedWriteError','_assertStorageWritable','_runStorageWrite','_retryStorageQuota','_putSaveRecordsAtomic','saveManyAtomic','_recoverLocalSaveBatchJournal'],root);
+  c._openFailure=null;
+  loadFunctions(c,'tm-storage.js',['_isDesktopStorage','_desktopStorageError','_publishWriteOutcome','_unconfirmedWriteError','_assertStorageWritable','_runStorageWrite','_retryStorageQuota','_putSaveRecordsAtomic','saveManyAtomic','_recoverLocalSaveBatchJournal'],root);
   const state={GM:{turn:4,_campaignId:'tmc_fixture',_timelineId:'tml_fixture_1234'},P:{}};
   const entries=['autosave','slot_0'].map(id=>({id,gameState:state,meta:{turn:4}}));
   return {c,events,disk,local,transactions,entries,save(opts={}){return c.saveManyAtomic(entries,{transactionId:'txn-fixture',...opts});}};

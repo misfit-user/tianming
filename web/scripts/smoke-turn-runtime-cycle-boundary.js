@@ -18,8 +18,12 @@ for(const native of [false,true]){
   assert(out.ok,JSON.stringify(out.applied?.failed));assert.equal(c.GM.custom.value,17);assert.equal(c.GM.memoryArchive[0].content,content);assert.equal(c.GM._postTurnJobs,f.q);assert.equal(f.job.lease.gmRef,c.GM);await Promise.resolve();f.finish();
  });
  test('main failed apply restores business state and retains queue identity; native='+native,async()=>{
-  const f=fixture(native),c=f.c;const out=c.applyAITurnChanges({_strictValidation:true,shizhengji:'甲与乙成婚。',changes:[{path:'custom.value',delta:7}]});
+  const f=fixture(native),c=f.c;const out=c.applyAITurnChanges({_strictValidation:true,changes:[{path:'custom.value',delta:7},{path:'custom.value',delta:'invalid'}]});
   assert(!out.ok&&out.rolledBack);assert.equal(c.GM.custom.value,10);assert.equal(c.GM._postTurnJobs,f.q);assert.equal(f.q.pending[0],f.job);await Promise.resolve();f.finish();
+ });
+ test('narrative-only warning preserves typed writes and the live queue for review; native='+native,async()=>{
+  const f=fixture(native),c=f.c;const out=c.applyAITurnChanges({_strictValidation:true,shizhengji:'甲与乙成婚。',changes:[{path:'custom.value',delta:7}]});
+  assert(out.ok);assert(out.applied.reviewRequired.length);assert.equal(c.GM.custom.value,17);assert.equal(c.GM._postTurnJobs,f.q);assert.equal(f.q.pending[0],f.job);await Promise.resolve();f.finish();
  });
  test('turn snapshot never detaches live queue, even non-configurable; native='+native,async()=>{
   const f=fixture(native),c=f.c;Object.defineProperty(c.GM,'_postTurnJobs',{value:f.q,enumerable:true,configurable:false,writable:false});

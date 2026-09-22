@@ -90,6 +90,26 @@ var TM_SaveDB = (function() {
   var TURN_PUBLISH_RECEIPT_STORE = 'turnPublishReceipts';
   var _db = null;
   var _available = false;
+  var _openFailure = null, _storageBannerPending = false;
+  function _isDesktopStorage(){return !!(window.tianming && window.tianming.isDesktop);}
+  function _desktopStorageError(cause){
+    var error=new Error('本机存储暂时无法读取；现有存档和配置未按空数据处理。请完全退出天命后重开，并确认磁盘空间充足。');
+    error.code='SAVE_DATABASE_UNAVAILABLE';error.causeName=cause&&cause.name||'NotReady';return error;
+  }
+  function _showStorageState(){
+    if(!_isDesktopStorage()||typeof document==='undefined')return;
+    if(!document.body){if(!_storageBannerPending&&document.addEventListener){_storageBannerPending=true;document.addEventListener('DOMContentLoaded',function(){_storageBannerPending=false;_showStorageState();},{once:true});}return;}
+    try{
+      var old=document.getElementById('tm-storage-unavailable');
+      if(!_openFailure){if(old)old.remove();return;}
+      if(old)return;
+      var box=document.createElement('section');box.id='tm-storage-unavailable';box.setAttribute('role','alert');
+      box.style.cssText='position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:2147483600;padding:1rem;background:var(--bg,#fff8e6);color:var(--txt,#302619);border:2px solid #a43;';
+      var title=document.createElement('strong');title.textContent='存储暂时不可用，已暂停保存';box.appendChild(title);
+      var detail=document.createElement('p');detail.textContent='旧存档和配置可能仍在，但当前无法读取。请完全退出其它天命进程后重开，并检查磁盘空间；当前不会以空数据覆盖旧记录。';box.appendChild(detail);
+      var retry=document.createElement('button');retry.type='button';retry.textContent='重试并重新载入';retry.onclick=function(){retry.disabled=true;open().then(function(){window.location.reload();},function(){retry.disabled=false;});};box.appendChild(retry);document.body.appendChild(box);
+    }catch(_){}
+  }
   var _openPromise = null; // 防止重复打开
   var _migrationTail = Promise.resolve(); // 两类旧源必须串行探测/占用目标 ID
   var LOCAL_SAVE_BATCH_JOURNAL = 'tm_save_batch_journal_v1';
@@ -169,6 +189,7 @@ var TM_SaveDB = (function() {
   }
   function _assertStorageWritable() {
     if (_writeSafety) throw _unconfirmedWriteError(_writeSafety.stage);
+    if (_isDesktopStorage() && (!_db || !_available || _openFailure)) throw _openFailure || _desktopStorageError();
   }
   function _runStorageWrite(stores, stage, writer) {
     var connection = _db;
@@ -388,10 +409,12 @@ var TM_SaveDB = (function() {
 
   // ── 打开数据库 ──
   function open() {
+    if (!_isDesktopStorage()) {
     try { _recoverLocalSaveBatchJournal(); }
     catch (journalError) { var recoveryError = new Error('localStorage 批量存档恢复失败：' + (journalError && journalError.message || journalError)); recoveryError.code = 'SAVE_LOCAL_RECOVERY_FAILED'; return Promise.reject(recoveryError); }
     try { _migrateLocalAuxiliaryRecords(); }
     catch (migrationError) { console.warn('[SaveDB] localStorage 辅助记录迁移延后重试:', migrationError); }
+    }
     if (_db) return Promise.resolve(_db);
     if (_openPromise) return _openPromise;
 
@@ -409,10 +432,11 @@ var TM_SaveDB = (function() {
       releasePending();
       _storageDiagnostic('open', error, _abortRead(owner.upgrade));
       if (!_db) _available = false;
-      rejectOpen(error);
+      if(_isDesktopStorage()){_openFailure=_desktopStorageError(error);_showStorageState();rejectOpen(_openFailure);}else rejectOpen(error);
     }
     try {
       if (!window.indexedDB) {
+        if(_isDesktopStorage()){failOpen(new Error('IndexedDB API unavailable'));return owner.promise;}
         console.warn('[SaveDB] IndexedDB不可用，回退localStorage');
         _available = false; owner.settled = true; releasePending(); resolveOpen(null); return owner.promise;
       }
@@ -511,6 +535,15 @@ var TM_SaveDB = (function() {
         openedDb.onversionchange = releaseConnection;
         openedDb.onclose = releaseConnection;
         _db = openedDb; _available = true;
+        if(_isDesktopStorage()){
+          try{_recoverLocalSaveBatchJournal();}
+          catch(localError){_db=null;_available=false;openedDb.close();failOpen(localError);return;}
+          try{_migrateLocalAuxiliaryRecords();}catch(migrationError){console.warn('[SaveDB] 本地辅助记录迁移延后:',migrationError&&migrationError.name);}
+        }
+        // After a failed desktop open, startup may have populated empty defaults.
+        // Reads may recover, but writes stay blocked until reload rehydrates the profile.
+        if(!_isDesktopStorage())_openFailure=null;
+        _showStorageState();
         owner.settled = true; releasePending();
         console.log('[SaveDB] IndexedDB就绪 (v' + DB_VERSION + ')');
         resolveOpen(openedDb);
@@ -886,7 +919,7 @@ var TM_SaveDB = (function() {
   function _ensureOpen() {
     if (_db) return Promise.resolve();
     return open().catch(function(error) {
-      if (error && (error.code === 'SAVE_OPEN_TIMEOUT' || error.code === 'SAVE_LOCAL_RECOVERY_FAILED')) throw error;
+      if (_isDesktopStorage() || error && (error.code === 'SAVE_OPEN_TIMEOUT' || error.code === 'SAVE_LOCAL_RECOVERY_FAILED')) throw error;
       if (_db && _available) return _db;
       if (_openPromise) return _openPromise;
       // IndexedDB 被禁用、打开失败或升级被阻塞时，公开 API 仍应兑现
@@ -1678,7 +1711,7 @@ var TM_SaveDB = (function() {
     open: open,
     assertWritable: _assertStorageWritable,
     writeOutcome: _writeOutcome, acknowledgeWriteOutcome: _acknowledgeWriteOutcome, whenWriteSettled: _whenWriteSettled,
-    writeStatus: function() { return _writeSafety ? Object.assign({ blocked: true }, _writeSafety) : { blocked: false }; },
+    writeStatus: function() { return _writeSafety ? Object.assign({ blocked: true }, _writeSafety) : _isDesktopStorage() && (!_db || !_available || _openFailure) ? {blocked:true,code:'SAVE_DATABASE_UNAVAILABLE',message:(_openFailure||_desktopStorageError()).message} : { blocked: false }; },
     diagnostics: function() { return _readDiagnostics.map(function(row) { return Object.assign({}, row); }); },
     save: save,
     saveManyAtomic: saveManyAtomic,

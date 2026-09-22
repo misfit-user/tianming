@@ -1013,6 +1013,8 @@ async function _wtSend() {
   var input = _$('wt-input');
   var content = input ? input.value.trim() : '';
   if (!content) return;
+  var _wtOwner=GM,_wtPlayer=P,_wtGeneration=window._tmLoadGen||0,_wtTurn=GM.turn;
+  function _wtStillCurrent(){return GM===_wtOwner&&P===_wtPlayer&&(window._tmLoadGen||0)===_wtGeneration&&GM.turn===_wtTurn;}
   if (input) input.value = '';
 
   if (!GM._wentianHistory) GM._wentianHistory = [];
@@ -1028,7 +1030,7 @@ async function _wtSend() {
   if (!P.ai || !P.ai.key || typeof callAI !== 'function') {
     if (!GM._playerDirectives) GM._playerDirectives = [];
     var did = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
-    GM._playerDirectives.push({ id: did, content: content, type: type, turn: GM.turn });
+    GM._playerDirectives.push({ id: did, content: content, type: _wtForceCategory==='absolute'?'rule':type, category:_wtForceCategory||'narrative', _absolute:_wtForceCategory==='absolute', _lastStatus:'pending', turn: GM.turn });
     GM._wentianHistory.push({ role: 'system', content: '\u2705 \u5DF2\u5F55\u5165\uFF08\u65E0AI\u89E3\u8BFB\u00B7\u914D\u914D key \u540E\u53EF\u542F\u7528\u89E3\u8BFB\u4E0E\u786E\u8BA4\u6D41\u7A0B\uFF09' });
     _wtRenderHistory();
     toast('\u6307\u4EE4\u5DF2\u5F55\u5165');
@@ -1059,6 +1061,7 @@ async function _wtSend() {
     if (_wtForceCategory === 'absolute') forceHint += '（天意档允许改任何 GM/P 字段；若玩家要求改数值或字段，仍必须填写 hardChange:{path,op,value}，确认后立即写入）';
     if (_wtForceCategory === 'edictSubstitute') forceHint += '（必填 edictText 和 edictChannel·将玩家意图改写为正式诏令措辞）';
   }
+  forceHint += '\n创建党派等新实体应提供 operations:[{tool:"edit_world",input:{path:"parties",operation:"append",value:{name:"党名",ideology:"宗旨"}},reason:"玩家指令依据"}]；确认后实际写入。天意不受开局实体名册限制，禁止只写计划而宣称成功。';
   ctx += forceHint;
   // agent 模式（2026-07-03·P.conf.wentianAgentMode!==false 默认开·设置→性能可关）：先查证后裁定——
   // AI 用只读工具（查字段/搜档案/细查实体）核实对象在档真名与现值再提交（治「凭指令文本猜路径→直改失败/改错人」）。
@@ -1066,6 +1069,7 @@ async function _wtSend() {
   if (typeof TM !== 'undefined' && TM.WentianAgent && typeof TM.WentianAgent.enabled === 'function' && TM.WentianAgent.enabled()) {
     try {
       var _agRes = await TM.WentianAgent.run(content, {
+        forceCategory: _wtForceCategory,
         teaching: _wtParseTeachingText(),
         ctx: ctx,
         onProgress: function (toolName) {
@@ -1074,6 +1078,7 @@ async function _wtSend() {
         }
       });
       if (_agRes && _agRes.ok && _agRes.result) {
+        if(!_wtStillCurrent())return;
         var _r = _agRes.result;
         var _thA = _$('wt-thinking'); if (_thA) _thA.remove();
         var _hcs = Array.isArray(_r.hardChanges) ? _r.hardChanges.filter(function (x) { return x && x.path; }) : [];
@@ -1085,6 +1090,9 @@ async function _wtSend() {
           structured: _r.structured || {},
           hardChange: _hcs[0] || null,
           hardChanges: _hcs.length ? _hcs : null,
+          operations: Array.isArray(_r.operations) ? _r.operations : [],
+          watch: Array.isArray(_r.watch) ? _r.watch : [],
+          _world: GM, _player: P, _loadGen: window._tmLoadGen || 0,
           edictText: _r.edictText || '',
           edictChannel: _r.edictChannel || '',
           interpretation: _r.interpretation || '',
@@ -1097,10 +1105,12 @@ async function _wtSend() {
         _wtShowPendingConfirmation();
         return;
       }
+      if(!_wtStillCurrent()||_agRes&&/^(world-changed|cancelled)$/.test(_agRes.error||''))return;
       // agent 未产出（轮尽/超时）→ 落回单发
     } catch (_agE) { try { window.TM && TM.errors && TM.errors.captureSilent(_agE, 'wentian-agent'); } catch (_) {} }
   }
 
+  if(!_wtStillCurrent())return;
   var prompt = '你是天命AI推演系统的元指令解析器。玩家刚对你说了一条指令，请：\n'
     + _wtParseTeachingText()
     + '\n【上下文】\n' + ctx
@@ -1109,6 +1119,7 @@ async function _wtSend() {
 
   try {
     var resp = await callAI(prompt, 900, null, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 【降本2026-06-19】指令解析(机械抽取)走次 API
+    if(!_wtStillCurrent())return;
     var th = _$('wt-thinking'); if (th) th.remove();
     var parsed = (typeof extractJSON === 'function') ? extractJSON(resp) : null;
     if (!parsed) parsed = { interpretation: resp || content, type: type, structured: {}, ambiguity: [], plan: '将在下回合推演时参考此条指令' };
@@ -1120,6 +1131,10 @@ async function _wtSend() {
       _forcedByPlayer: !!_wtForceCategory,
       structured: parsed.structured || {},
       hardChange: parsed.hardChange || null,
+      hardChanges: Array.isArray(parsed.hardChanges) ? parsed.hardChanges : null,
+      operations: Array.isArray(parsed.operations) ? parsed.operations : [],
+      watch: Array.isArray(parsed.watch) ? parsed.watch : [],
+      _world: GM, _player: P, _loadGen: window._tmLoadGen || 0,
       edictText: parsed.edictText || '',
       edictChannel: parsed.edictChannel || '',
       interpretation: parsed.interpretation || '',
@@ -1131,10 +1146,11 @@ async function _wtSend() {
     _wtShowPendingConfirmation();
   } catch(e) {
     var th2 = _$('wt-thinking'); if (th2) th2.remove();
+    if(!_wtStillCurrent())return;
     // AI 失败 → 仍按老办法入库
     if (!GM._playerDirectives) GM._playerDirectives = [];
     var did2 = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
-    GM._playerDirectives.push({ id: did2, content: content, type: type, turn: GM.turn });
+    GM._playerDirectives.push({ id: did2, content: content, type: _wtForceCategory==='absolute'?'rule':type, category:_wtForceCategory||'narrative', _absolute:_wtForceCategory==='absolute', _lastStatus:'pending', turn: GM.turn });
     GM._wentianHistory.push({ role: 'system', content: '\u26A0 AI \u89E3\u8BFB\u5931\u8D25\uFF0C\u5DF2\u6309\u539F\u6587\u5F55\u5165\uFF08\u7C7B\u578B\uFF1A' + type + '\uFF09' });
     _wtRenderHistory();
   }
@@ -1152,7 +1168,7 @@ function _wtParseTeachingText() {
     + '       ★【操作符】"加/增/+"→op:add · "减/扣/-"→op:add(负数) · "设为/改为/="→op:set · "翻倍/x2"→op:mul\n'
     + '       ★【单位换算】1 万两=10000·50 万两=500000·100 万石=1000000·玩家说"100 万"一律写成 1000000 数字不要保留"万"字\n'
     + '   · edictSubstitute — 等同诏令：玩家实际想下诏令的事（例："拨银赈灾"、"罢某某官"、"遣使某国"——这些本该走诏令而非问天）。\n'
-    + '       ★【问天不造新实体】问天七类直改只能改在档实体（人物/军队/阶层/党派/势力/区划/官职）的现有字段；除下方 absolute 天意类目外，不能凭空创建新实体。玩家（未以天意/绝对措辞）要求"生成/引入新人物"（下回合出个新谋士、征召某历史人物等）时→归入 edictSubstitute·把 edictText 写成征召句式（如"征召<姓名>入朝"、"诏<姓名>为<官职>"、"起复<姓名>"），玩家下诏后引擎的诏令征召管线才会真正造出此人。禁止口头答应"下回合生成新人物"而无诏令落实——须如实说明新人物只能经【诏令征召】引入。若玩家明确以"天意/绝对/必须"等词要求造物→归 absolute 类（天意档依既有语义直接生效·不受本条约束）。\n'
+    + '       ★【控制台可新建实体】明确要求直接新建人物、势力、党派、阶层、军队等时，提交 operations，使用 edit_world 或对应正式工具实际登记；缺少旧实体不构成拒绝理由。只有玩家要求拟诏或按君主诏令施行时才归 edictSubstitute。天意 absolute 可直接设定世界，不以政治阻力或旧名册限制代替执行。须查清依赖、预检并读取真实回执，不能只给一段计划。\n'
     + '   · absolute — 天意/至高意志：玩家明确以"天意"、"绝对"、"必须"、"神谕"、"不论如何"、"强制"等词修饰·或语气极强要求无条件落实（例："天意让北虏此回合覆灭"、"必须让此人变心"）——此类由世界法则直接生效·AI 无推辞空间·须在叙事中让其字面发生\n'
     + '3. 解析为结构化约束 structured:{target, action, scope, forbidden, measurable, condition}\n'
     + '4. 若 category=hardChange，或 category=absolute 且玩家要求直改字段/数值 → 必填 hardChange:{path:"GM/P 字段路径(如 guoku.money)", op:"set|add|mul", value:数字或要写入的内容}\n'
@@ -1221,6 +1237,7 @@ function _wtShowPendingConfirmation() {
     }
   }
   // edictText 预览
+  if (Array.isArray(p.operations)) p.operations.forEach(function(op){h += '<div style="padding:4px 6px;">拟落实：'+escHtml(op.reason||p.interpretation||'游戏内容修改')+'</div>';});
   if (p.category === 'edictSubstitute' && p.edictText) {
     var chLabel = {pol:'\u653F\u4E8B',mil:'\u519B\u4E8B',dip:'\u5916\u4EA4',eco:'\u7ECF\u6D4E',oth:'\u5176\u4ED6'}[p.edictChannel] || '\u653F\u4E8B';
     h += '<div style="font-size:0.68rem;color:var(--amber-400);padding:4px 6px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:3px;margin-bottom:4px;">\u8BCF\u4EE4\u8349\u7A3F\u00B7' + escHtml(chLabel) + '\uFF1A<span style="color:var(--color-foreground);">\u300C' + escHtml(p.edictText) + '\u300D</span></div>';
@@ -1261,12 +1278,16 @@ function _wtShowPendingConfirmation() {
 function _wtPromoteAbsolute() {
   if (!_wtPending) return;
   _wtPending.category = 'absolute';
+  if(!(_wtPending.operations&&_wtPending.operations.length)&&!(_wtPending.hardChanges&&_wtPending.hardChanges.length)&&!(_wtPending.hardChange&&_wtPending.hardChange.path)){
+    var input=_$('wt-input');if(input){input.value=_wtPending.raw||'';_wtForceCategory='absolute';_wtPending=null;var box=_$('wt-confirm-box');if(box)box.remove();_wtSend();return;}
+  }
   var cb = _$('wt-confirm-box'); if (cb) cb.remove();
   _wtShowPendingConfirmation();
 }
 
 function _wtConfirmPending() {
   var p = _wtPending; if (!p) return;
+  if(p._world && (p._world!==GM || p._player!==P || p._loadGen!==(window._tmLoadGen||0) || p.turn!==GM.turn)){toast('当前存档或回合已改变，请重新核对这条问天指令');return;}
   if (!GM._playerDirectives) GM._playerDirectives = [];
   if (!GM._wentianHistory) GM._wentianHistory = [];
   var did = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
@@ -1284,6 +1305,14 @@ function _wtConfirmPending() {
     }
   } catch (_wtWE) {}
   var sysMsg = '';
+  var operationReceipts = Array.isArray(p.operations) && p.operations.length && typeof TM!=='undefined' && TM.WentianAgent ? TM.WentianAgent.applyOperations(p) : [];
+  if (operationReceipts.length) {
+    dir.operations=p.operations;dir.operationReceipts=operationReceipts;
+    var operationDone=operationReceipts.filter(function(r){return r.ok;}).length;
+    dir._immediatelyApplied=operationDone>0;dir._lastStatus=operationDone===operationReceipts.length?'followed':'pending';
+    dir._lastReason='实际修改 '+operationDone+'/'+operationReceipts.length+' 项';dir._lastCheckTurn=GM.turn;
+    GM._wentianHistory.push({role:'system',content:dir._lastReason+'：'+operationReceipts.map(function(r){return (r.ok?'✓':'✗')+r.reason;}).join('；')}); // arch-ok: Wentian confirmation owner records the actual execution receipts.
+  }
 
   // 多改批量（agent 模式可提交多条 hardChanges·单条契约照旧）
   var _wtHcList = (p.hardChanges && p.hardChanges.length) ? p.hardChanges : ((p.hardChange && p.hardChange.path) ? [p.hardChange] : []);
@@ -1312,7 +1341,7 @@ function _wtConfirmPending() {
         ? ('★ 天 意 已 降 并 写 入 ' + aOkN + ' 笔：' + aDone.map(function (x) { return x.path + ' ' + (x.op || 'set') + ' ' + x.value; }).join('；') + ' [id=' + did + ']')
         : ('★ 天 意 已 入 库·直改 ' + aOkN + '/' + aDone.length + ' 笔生效：' + aDone.map(function (x) { return (x._applied ? '✓' : '✗') + x.path; }).join('；') + ' [id=' + did + ']');
     } else {
-      sysMsg = '\u2605 \u5929 \u610F \u5DF2 \u5929 \u5B9A [id=' + did + ']\u00B7\u4E16\u754C\u6CD5\u5219\u76F4\u63A5\u751F\u6548\u00B7AI \u65E0\u63A8\u8FAD';
+      sysMsg = (dir._immediatelyApplied ? '★ 天意已实际写入' : '★ 天意已登记，尚待实际执行') + ' [id=' + did + ']';
     }
     GM._playerDirectives.push(dir);
     GM._wentianHistory.push({ role: 'system', content: sysMsg });

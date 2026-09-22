@@ -1036,19 +1036,29 @@ export function createReconcile(deps) {
     if (!raw) return false;
     var nodes = [];
     _tmWalkOfficeNodes(G && G.officeTree, nodes);
+    var posts = raw.split(/[、,·\s]+/).filter(Boolean);
     return nodes.some(function(node) {
       return [node.id, node.name, node.title, node.position, node.officialTitle].some(function(value) {
         return value != null && String(value).trim() === raw;
       });
+    }) || posts.length > 0 && posts.every(function(post) {
+      // The appointment sink also supports existing local office types and
+      // qualified names; preflight must use the same contract as that sink.
+      return !!core._findOfficePos(Array.isArray(G && G.officeTree) ? G.officeTree : [], post) || core._isKnownOfficeType(G, post);
     });
   }
 
   function _tmStrictRegionRows(G) {
     var rows = [];
-    var seen = [];
+    var seen = [], identities = new Set();
     function add(row) {
       if (!row || typeof row !== 'object' || seen.indexOf(row) >= 0) return;
-      seen.push(row); rows.push(row);
+      seen.push(row);
+      // regionMap and adminHierarchy contain mirrors of the same division.
+      // Different IDs (or conflicting names for one ID) remain ambiguous.
+      var identity = row.id != null && row.name != null ? JSON.stringify([String(row.id), String(row.name)]) : null;
+      if (identity === null || !identities.has(identity)) rows.push(row);
+      if (identity !== null) identities.add(identity);
       if (Array.isArray(row.children)) row.children.forEach(add);
       if (Array.isArray(row.subs)) row.subs.forEach(add);
       if (Array.isArray(row.divisions)) row.divisions.forEach(add);
@@ -1383,18 +1393,44 @@ export function createReconcile(deps) {
     return out;
   }
 
-  function _collectValidatorFailures(G, baseline) {
+  function _isNarrativeEventScan(key) {return /^_?(war|revolt|disaster|diplomacy|keju|party|edictEffect|courtCeremony|construction|omen|marriageBirth|conspiracy|currency|religion)(ValidatorLog)?$/.test(key);}
+  function _collectNarrativeReviews(G, baseline, opts) {
+    var reviews=[];
+    _AI_VALIDATOR_LOG_KEYS.filter(function(key){return opts && opts._deferNarrativeRepairs===true || _isNarrativeEventScan(key);}).forEach(function(key){
+      var known=baseline[key] instanceof Set?baseline[key]:new Set();
+      (Array.isArray(G&&G[key])?G[key]:[]).forEach(function(row){
+        if(!row||known.has(row)||Number(row.turn||0)!==Number(G.turn||0))return;
+        var fields=opts && opts._deferNarrativeRepairs===true?['warnings','missing','skipped','errors']:['warnings'];
+        fields.forEach(function(field){(Array.isArray(row[field])?row[field]:row[field]?[row[field]]:[]).forEach(function(detail){reviews.push({validator:key,kind:'narrative-warning',field:field,detail:detail,samples:row.samples});});});
+      });
+    });return reviews;
+  }
+  function _collectValidatorFailures(G, baseline, opts) {
     var failures = [];
+    if(opts && opts._deferNarrativeRepairs===true)return failures; // Observations are adjudicated by the mandatory Agent; real failed writes remain in applied.failed.
     _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
       var known = baseline[key] instanceof Set ? baseline[key] : new Set();
       var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) { return !known.has(row); }) : [];
       rows.forEach(function(row) {
         if (!row || Number(row.turn || 0) !== Number((G && G.turn) || 0)) return;
         var details = [];
-        ['warnings','missing','skipped','errors'].forEach(function(field) {
+        // Narrative event scans are hypotheses, not proof that a state mutation failed.
+        // Keep their warnings for review. Typed commands, identity checks, actual write
+        // failures and quantified ledger discrepancies remain transaction failures.
+        var fields = ['missing','skipped','errors'];
+        var narrativeEventScan=_isNarrativeEventScan(key);
+        if (!narrativeEventScan) fields.push('warnings');
+        fields.forEach(function(field) {
           if (Array.isArray(row[field]) && row[field].length) details = details.concat(row[field]);
         });
-        if (details.length) failures.push({ validator: key, field:key, code:'consistency-unlanded', reason: 'consistency validation failed', details: details.slice(0, 8), detailCount:details.length });
+        if (details.length) {
+          var description=details.slice(0,3).map(function(detail){
+            if(!detail||typeof detail!=='object')return String(detail);
+            return String(detail.kind||detail.code||detail.reason||'未落地')+(detail.keyword?'（'+detail.keyword+'）':'')
+              +(detail.mentioned!=null?'：叙事 '+detail.mentioned+'，已记录 '+(detail.structured==null?detail.adjusted:detail.structured):'');
+          }).join('；');
+          failures.push({ validator: key, field:key, code:'consistency-unlanded', reason: '一致性校验未落地：'+description, details: details.slice(0, 8), detailCount:details.length });
+        }
       });
     });
     return failures;
@@ -1408,7 +1444,10 @@ export function createReconcile(deps) {
       var message = String(error && (error.message || error) || 'validator exception');
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
       else console.warn('[applier] ' + name + ' validator:', error);
-      if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
+      if(error.fiscalPosting!==true&&(_isNarrativeEventScan(name)||aiOutput && aiOutput._deferNarrativeRepairs===true)) {
+        if(!Array.isArray(applied.reviewRequired))applied.reviewRequired=[];
+        applied.reviewRequired.push({validator:name,kind:'validator-exception',detail:{message:message}});
+      } else if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
         if (!Array.isArray(applied.failed)) applied.failed = [];
         applied.failed.push({ validator: name, reason: 'validator exception', details: [message] });
       }
@@ -1472,6 +1511,26 @@ export function createReconcile(deps) {
    * AI 写回原子边界：所有 handler 只在可回滚草稿窗口内执行；任一显式失败、
    * validator 命中或全局形状破坏都恢复 GM/P 原状并返回 ok:false。
    */
+  // The reviewer commits synchronous canonical tools as one transaction, after parallel inference joins.
+  function runAtomicMutation(mutator) {
+    var G=global.GM, P0=global.P, gs, ps;
+    try {
+      gs=_captureAIStateObject(G, ['_postTurnJobs','_postTurnDetachedJobs','_indices']);
+      if(P0) ps=_captureAIStateObject(P0, ['scenario','_indices']);
+      var result=mutator({beforeGM:gs.data,beforeP:ps&&ps.data});
+      if(result && typeof result.then==='function') throw new Error('atomic mutation must be synchronous');
+      var failures=_validateAIResultState(G);
+      if(!result || result.ok!==true || failures.length) throw new Error(failures.map(function(f){return f.path+': '+f.reason;}).join('; ') || result && result.reason || 'review write rejected');
+      _refreshAIIndices(G,P0);
+      return result;
+    } catch(e) {
+      if(gs) _restoreAIStateObject(G,gs);
+      if(ps) _restoreAIStateObject(P0,ps);
+      _refreshAIIndices(G,P0);
+      return {ok:false,rolledBack:true,reason:String(e && e.message || e)};
+    }
+  }
+
   function applyAITurnChangesAtomic(aiOutput) {
     var G = global.GM;
     var P0 = global.P;
@@ -1560,7 +1619,9 @@ export function createReconcile(deps) {
     _hasInstantArrivalRule: _hasInstantArrivalRule,
     _captureValidatorBaseline: _captureValidatorBaseline,
     _collectValidatorFailures: _collectValidatorFailures,
+    _collectNarrativeReviews: _collectNarrativeReviews,
     _runConsistencyValidator: _runConsistencyValidator,
+    runAtomicMutation: runAtomicMutation,
     applyAITurnChangesAtomic: applyAITurnChangesAtomic,
     _syncFiscalScalars: _syncFiscalScalars,
     legacyExports: {

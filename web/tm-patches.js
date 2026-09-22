@@ -1532,19 +1532,25 @@ function _sApplyPrimaryApiFields(){
   P.ai.key=_$("s-key")?_$("s-key").value:"";P.ai.url=_$("s-url")?_$("s-url").value:"";P.ai.model=_$("s-model")?_$("s-model").value:"";var _tv=parseFloat(_$("s-temp")?_$("s-temp").value:"");P.ai.temp=isNaN(_tv)?0.8:_tv;var _mv=parseInt(_$("s-mem")?_$("s-mem").value:"");P.ai.mem=isNaN(_mv)?20:_mv;P.ai.provider=_$("s-prov")?_$("s-prov").value:"openai";
   if (window.TM && TM.APISettings) TM.APISettings.read('primary', P.ai);
 }
+function _sDeviceSettingsReady(){
+  try{if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();return true;}
+  catch(error){toast('未保存：'+error.message);return false;}
+}
 function sSaveAPI(){
+  if(!_sDeviceSettingsReady())return false;
   try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   _sApplyPrimaryApiFields();
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
   // ★2026-07-01·修「桌面端保存主 API key·关游戏再进就丢」:key 真源在 localStorage.tm_api(启动时 tm-player-core.js:257
   //   从此水合 P.ai)·桌面 autoSave 走 _tmStripAiKeyView 故意剥掉 key(不进可分享存档·安全)。原实现桌面分支只 autoSave、
   //   漏写 localStorage.tm_api → 主 key 只活内存·重启即失。改为两端都写 localStorage.tm_api(与 sSaveSecondaryAPI 同范式)·桌面再 autoSave。
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   // 统一交给 saveP：对局中只写 IDB/lite，绝不以纯 P 覆盖桌面崩溃恢复档；非对局再由 saveP 写 Electron。
   if(typeof saveP==='function') saveP();
   toast("\u2705 API\u5DF2\u4FDD\u5B58");
 }
 function sSaveAll(){
+  if(!_sDeviceSettingsReady())return false;
   try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   // 先把主/次 API 面板全部合入内存，最后一次性写 tm_api；旧实现先持久化旧 secondary，
   // 随后只改内存，导致重启恢复旧次 key。
@@ -1564,6 +1570,7 @@ function sSaveAll(){
   }
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
   if (window.TM && TM.CallBudgetSettings) { var callRetryDraft = TM.CallBudgetSettings.readConfig(); if (callRetryDraft) P.conf.aiCallRetryOverrides = callRetryDraft; } // arch-ok: existing settings-save owner commits a fully validated draft.
+  if (window.TM && TM.RecoverySettings) { var recoveryDraft=TM.RecoverySettings.read(); if(recoveryDraft) P.conf.emergencyRecovery=recoveryDraft; } // arch-ok: settings owner commits only the fully validated emergency draft.
   // AI 记忆容量设置
   P.conf.memoryAnchorKeep=parseInt(_$("s-mem-anchor")?_$("s-mem-anchor").value:"40")||40;
   P.conf.memoryArchiveKeep=parseInt(_$("s-mem-archive")?_$("s-mem-archive").value:"20")||20;
@@ -1610,7 +1617,7 @@ function sSaveAll(){
   P.conf.customStyle=_$("s-cstyle")?_$("s-cstyle").value:"";P.conf.gameMode=_$("s-mode")?_$("s-mode").value:"yanyi";P.conf.aiCallDepth=_$("s-aidepth")?_$("s-aidepth").value:"full";
   P.ai.prompt=_$("s-prompt")?_$("s-prompt").value:"";P.ai.rules=_$("s-rules")?_$("s-rules").value:"";
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   saveP(); // 持久化所有设置（含记忆容量配置）
   toast("\u2705 \u5168\u90E8\u5DF2\u4FDD\u5B58");
 }
@@ -1622,6 +1629,7 @@ function sPickModel(m,el){var inp=_$("s-model");if(inp)inp.value=m;document.quer
 
 // ══ 次要 API·M3 快模型路由 ══════════════════════════════════════
 function sSaveSecondaryAPI(){
+  if(!_sDeviceSettingsReady())return false;
   var sk=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
   var su=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
   var sm=_$("s-sec-model")?_$("s-sec-model").value.trim():"";
@@ -1630,22 +1638,24 @@ function sSaveSecondaryAPI(){
   if(sk||su||sm){
     P.ai.secondary={key:sk,url:su,model:sm,provider:sp};
     if (window.TM && TM.APISettings) TM.APISettings.read('secondary', P.ai.secondary);
-    toast("\u2705 \u6B21 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E");
+    // 保存成功提示在写后回读通过后发出。
   } else {
     delete P.ai.secondary;
-    toast("\u2705 \u5DF2\u6E05\u7A7A\u6B21 API\u00B7\u56DE\u9000\u4E3B API");
+    // 清除成功提示在写后回读通过后发出。
   }
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}  // 次 API 地址变了·刷新放行白名单
   saveP();
+  toast(sk||su||sm ? "次 API 已保存" : "已清空次 API，回退主 API");
   // 刷新面板以更新徽标和清除按钮可见性
   try{closeSettings();openSettings();}catch(_){}
 }
 
 function sClearSecondaryAPI(){
+  if(!_sDeviceSettingsReady())return false;
   if(!confirm("\u786E\u5B9A\u6E05\u9664\u6B21 API \u914D\u7F6E\uFF1F"))return;
   if(P.ai)delete P.ai.secondary;
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   saveP();
   toast("\u5DF2\u6E05\u9664\u6B21 API");
   try{closeSettings();openSettings();}catch(_){}

@@ -1,0 +1,41 @@
+{
+  "turn": 2,
+  "busy": false,
+  "commitPending": false,
+  "status": "committed",
+  "elapsedMs": 428173,
+  "saveReceipts": [
+    {
+      "id": "bridge:stageTurnData",
+      "ok": true,
+      "ms": 5747
+    },
+    {
+      "id": "bridge:listSaveTimelineRefs",
+      "ok": true,
+      "ms": 10744
+    },
+    {
+      "id": "bridge:publishTurnData",
+      "ok": true,
+      "ms": 855
+    }
+  ],
+  "mainAttempts": [
+    {
+      "attempts": 1,
+      "ok": true,
+      "ms": 52933
+    }
+  ],
+  "historyTurns": [
+    1
+  ],
+  "hooksRemoved": true,
+  "savedTurn": 2,
+  "targetedSmokes": {
+    "pass": 14,
+    "fail": 0
+  },
+  "finalEdictValidatorReplay": "PASS"
+}

@@ -148,3 +148,14 @@ docs/**/*.before-*
 /docs/shaosong-map-integration-20260917/input-r6-map/shaosong-r6.map-only.json
 docs/**/*sessionData*/
 docs/**/*userData*/
+
+# Isolated Chromium validation profiles are local-only, including hyphenated names.
+docs/**/isolated-session-data/
+docs/**/isolated-user-data/
+docs/**/native-profile/
+
+# Local map-integration diagnostics are not release sources.
+/docs/shaosong-map-integration-20260917/candidate-country-labels.json
+/docs/shaosong-map-integration-20260917/pending-country-labels.atomic.json
+/docs/shaosong-map-integration-20260917/input-r6-map/manifest.json
+/docs/shaosong-map-integration-20260917/input-r6-map/请先读我.txt

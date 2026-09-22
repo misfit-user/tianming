@@ -60,7 +60,7 @@
   function _semanticRoute(path, ctx) {
     if (!(ctx && ctx.meta && ctx.meta.enforceSemanticWrites)) return '';
     var p = String(path || '').replace(/^GM\./, '');
-    if (/^guoku($|\.)/.test(p) && root.FiscalEngine && (typeof root.FiscalEngine.spendFromGuoku === 'function' || typeof root.FiscalEngine.addToGuoku === 'function')) return 'adjust_treasury';
+    if (/^(guoku|neitang)($|\.)/.test(p) && root.FiscalEngine && (typeof root.FiscalEngine.spendFromGuoku === 'function' || typeof root.FiscalEngine.addToGuoku === 'function')) return 'adjust_treasury';
     if (/^armies($|\.)/.test(p) && typeof root.applyAIArmyChange === 'function') return 'command_army';
     if (/^(activeWars|factionRelations)($|\.)/.test(p) && (typeof root.declareWar === 'function' || typeof root.setFactionRelation === 'function')) return 'diplomatic_action';
     if (/^adminHierarchy($|\.)/.test(p)) return 'restructure_division';
@@ -121,22 +121,20 @@
   function _accStock(gm, acc, cur) { try { var a = gm && gm[acc]; if (a && typeof a === 'object') return a[cur]; return a; } catch (e) { return undefined; } }
 
   function _semTreasury(gm, input) {
-    var FE = root.FiscalEngine;
-    if (!gm) return { ok: false, reason: '无存档' };
-    if (!FE || (typeof FE.spendFromGuoku !== 'function' && typeof FE.addToGuoku !== 'function')) { _recordFail(gm, 'treasury', 'guoku', 'FiscalEngine 未加载'); return { ok: false, reason: 'FiscalEngine 未加载' }; }
-    var delta = Number(input.delta);
-    if (_numBad(delta) || delta === 0) { _recordFail(gm, 'treasury', 'guoku', '非法/零 delta'); return { ok: false, reason: '非法或零 delta' }; }
-    var cur = (input.currency === 'grain' || input.currency === 'cloth') ? input.currency : 'money';
-    var reason = input.reason || 'agent 推演';
-    var before = _accStock(gm, 'guoku', cur);
-    var amt = {}; amt[cur] = Math.abs(delta); var res;
-    try { res = (delta < 0) ? FE.spendFromGuoku(amt, reason) : FE.addToGuoku(amt, reason); }
-    catch (e) { _recordFail(gm, 'treasury', 'guoku.' + cur, 'engine 异常:' + (e && e.message)); return { ok: false, reason: 'engine 异常:' + (e && e.message) }; }
-    if (!res || res.ok === false) { _recordFail(gm, 'treasury', 'guoku.' + cur, (res && res.reason) || 'engine 拒绝'); return { ok: false, reason: (res && res.reason) || 'engine 拒绝' }; }
-    var after = _accStock(gm, 'guoku', cur);
-    _markOverride(gm, 'guoku');
-    _report(gm, { type: 'change', path: 'guoku.' + cur, old: before, new: after, reason: reason, turn: gm.turn || 0, _agent: true, _op: 'treasury' });
-    return { ok: true, path: 'guoku.' + cur, old: before, new: after };
+    var FE=root.FiscalEngine, account=input.account || 'guoku';
+    if(!gm || !FE || !['guoku','neitang'].includes(account))return {ok:false,reason:'FiscalEngine 未加载或财政账户无效'};
+    var delta=Number(input.delta), cur=input.currency || 'money';
+    if(!Number.isFinite(delta)||!delta||!['money','grain','cloth'].includes(cur))return {ok:false,reason:'非法或零 delta，或币种无效'};
+    var fn=FE[(delta<0?'spendFrom':'addTo')+(account==='neitang'?'Neitang':'Guoku')];
+    if(typeof fn!=='function')return {ok:false,reason:'财政账户入口未加载'};
+    var reason=input.reason || 'agent 推演', before=_accStock(gm,account,cur), amt={};amt[cur]=Math.abs(delta);
+    var res;try{res=fn(amt,reason);}catch(e){return {ok:false,reason:e.message};}
+    if(!res || res.ok===false)return {ok:false,reason:res && res.reason || '财政引擎拒绝'};
+    var after=_accStock(gm,account,cur);
+    if(Math.abs((after-before)-delta)>1e-7)return {ok:false,reason:'实际账变与申请金额不符'};
+    _markOverride(gm,account);
+    _report(gm,{type:'change',path:account+'.'+cur,old:before,new:after,reason:reason,turn:gm.turn||0,_agent:true,_op:'treasury'});
+    return {ok:true,path:account+'.'+cur,old:before,new:after};
   }
 
   function _semAppoint(gm, input) {
@@ -645,7 +643,7 @@
     { name: 'adjust_field', description: '对数值字段增减(在原值上 +delta)。如 path="minxin" delta=-5。用于软数值。【国库增减用 adjust_treasury·勿裸改 guoku】', parameters: { type: 'object', properties: { path: { type: 'string' }, delta: { type: 'number' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'delta'] } },
     { name: 'push_field', description: '向已声明的事件日志 evtLog 追加一项，value 必须是 {turn?,type?,text,time?} 且 text 非空。人物/战争/奏疏/灾害等集合必须用对应领域工具。', parameters: { type: 'object', properties: { path: { type: 'string', description: '当前只允许 evtLog' }, value: { type: 'object', properties: { turn: { type: 'integer', minimum: 0 }, type: { type: 'string' }, text: { type: 'string' }, time: { type: 'string' } }, required: ['text'], additionalProperties: false }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'value'] } },
     // ── 语义写工具:硬核结构化账走真引擎(裸 path 写会落错字段) ──
-    { name: 'adjust_treasury', description: '增减国库(走财政引擎·正确记账+面板同步)。delta 负=支出(赈灾/赏赐/军费)·正=入账(贡赋/赔款/互市)。currency: money(默认)/grain/cloth。**改国库必须用此·勿用 set_field/adjust_field 裸改 guoku**。', parameters: { type: 'object', properties: { delta: { type: 'number' }, currency: { type: 'string', description: 'money(默认)/grain/cloth' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['delta'] } },
+    { name: 'adjust_treasury', description: '增减国库或内帑(account=guoku/neitang，走财政引擎·正确记账+面板同步)。delta 负=支出(赈灾/赏赐/军费)·正=入账(贡赋/赔款/互市)。currency: money(默认)/grain/cloth。**改国库必须用此·勿用 set_field/adjust_field 裸改 guoku**。', parameters: { type: 'object', properties: { account: { type: 'string', enum: ['guoku','neitang'] }, delta: { type: 'number' }, currency: { type: 'string', description: 'money(默认)/grain/cloth' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['delta'] } },
     { name: 'appoint_official', description: '任命官员到某职位(走人事引擎·联动仕途/俸禄/公库/势力)。**改任职用此·勿裸改 chars**。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, position: { type: 'string', description: '官职' }, reason: { type: 'string' } }, required: ['name', 'position'] } },
     { name: 'dismiss_official', description: '罢免/去职某官员(走人事引擎·正确解绑公库/状态)。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, reason: { type: 'string' } }, required: ['name'] } },
     { name: 'remove_field', description: '删除数组中的一项(推演后果:部队覆灭/党派清洗/阶层消亡/势力剪除等)。path=数组路径(如 parties/classes/armies/facs)·用 index(下标数字) 或 match(id/名称) 指定删哪项。**禁删玩家本人/玩家势力**·确属推演结果才删。', parameters: { type: 'object', properties: { path: { type: 'string' }, index: { type: 'number', description: '要删项的下标(与 match 二选一)' }, match: { type: 'string', description: '要删项的 id/名称(与 index 二选一)' }, reason: { type: 'string' } }, required: ['path'] } },
@@ -673,13 +671,14 @@
     if (/division|region|capital/.test(name)) return 'geography';
     return 'state';
   }
+  if (TM.AgentWorldEditor) DEFS.push(TM.AgentWorldEditor.definition);
   var SPECS = DEFS.map(function (d) {
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
       risk: /remove|restructure|diplomatic|region_owner|relocate/.test(d.name) ? 'high' : 'medium',
       idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle' || ['form_party','emerge_class','create_office'].includes(d.name),
       postconditions: ['返回标准 ToolReceipt', '写入成功必须进入 _turnReport'],
-      invariants: ['玩家身份不可删除或改写', '正式账优先走领域引擎']
+      invariants: [d.name==='edit_world'?'依据玩家指令或本回合原文修改任意游戏业务数据':'玩家身份不可删除或改写', '正式账优先走领域引擎']
     });
     return s;
   });
@@ -689,7 +688,7 @@
   function _brief(v) { try { var s = typeof v === 'string' ? v : JSON.stringify(v); return s && s.length > 60 ? s.slice(0, 60) + '…' : String(s); } catch (e) { return String(v); } }
 
   // handle(name, input, ctx) → {ok, name, text, result}·async(与只读工具统一·便于 S4 循环统一 await)
-  async function handle(name, input, ctx) {
+  function handleSync(name, input, ctx) {
     input = input || {};
     var gm = _GM(ctx);
     if (name === 'adjust_treasury' && TM.BuildingOrders && TM.BuildingOrders.ownedPayment(ctx && ctx.input && ctx.input.buildingOrders, input)) {
@@ -699,6 +698,7 @@
     var r;
     var reportBefore = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     switch (name) {
+      case 'edit_world': r = TM.AgentWorldEditor ? TM.AgentWorldEditor.handle(gm,input,ctx) : {ok:false,reason:'游戏数据编辑器未加载'}; break;
       case 'set_field':    r = _guarded(gm, 'set', input.path, input.value, reason, ctx); break;
       case 'adjust_field': r = _guarded(gm, 'adjust', input.path, input.delta, reason, ctx); break;
       case 'push_field':   r = _guarded(gm, 'push', input.path, input.value, reason, ctx); break;
@@ -732,6 +732,8 @@
     return { ok: r.ok, changed: !!(r.ok && r.changed), verified: !!(r.ok && r.verified), name: name, path: r.path, text: text, result: r };
   }
 
+  async function handle(name, input, ctx) { return handleSync(name,input,ctx); }
+
   function defs() { return REGISTRY ? REGISTRY.defs() : DEFS.slice(); }
   function specs() { return REGISTRY ? REGISTRY.list() : SPECS.slice(); }
   function isToolName(name) { return Object.prototype.hasOwnProperty.call(TOOL_SET, name); }
@@ -743,6 +745,7 @@
     specs: specs,
     registry: REGISTRY,
     handle: handle,
+    handleSync: handleSync,
     isToolName: isToolName,
     guardedWrite: _guarded,          // 测试 / S4 循环可直用
     isEngineOwned: _isEngineOwned,

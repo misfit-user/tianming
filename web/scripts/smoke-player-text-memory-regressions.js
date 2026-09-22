@@ -17,13 +17,25 @@ test('all narrative fields are validated before replacing any',()=>{
 });
 function inferFixture(value){
  const c=textContext();Object.assign(c,{getTimeRatio:()=>1,showLoading(){},getTSText:()=> '本月',P:{ai:{key:'fixture-only'},conf:{}},GM:{turn:10,vars:{}}});
+ // This fixture isolates narrative normalization; real review commits are covered by recovery-review smokes.
+ c.TM.RecoveryReview={launchRoutine(ctx){c.reviewNarrative=ctx.record.shizhengji;},handoff(){c.reviewJoined=true;},cancel(){}};
  c.TM.Endturn={AI:{prompt:{build:async()=>{}},subcalls:{setupInfra(){},runMain:async(ctx,after)=>{ctx.results.sc1={shizhengji:value};ctx.record.shizhengji=value;ctx.record.zhengwen='完整评论';await after();}},apply:{writeBack:async()=>{}},followup:{run:async()=>{}},record:{finalize:ctx=>ctx.record}}};load(c,'tm-endturn-ai-infer.js');return c;
 }
 test('actual inference extracts complete narrative for downstream consumers',async()=>{
- const text='完整有效正文，不应变成对象占位符。'.repeat(60),c=inferFixture({content:text,summary:'另有提要'});const r=await c._endTurn_aiInfer({},[],null,{});assert.equal(r.shizhengji,text);assert.equal(c.GM._turnContext.shizhengji,text.substring(0,300));assert.equal(typeof r.shizhengji.substring(0,500),'string');
+ const text='完整有效正文，不应变成对象占位符。'.repeat(60),c=inferFixture({content:text,summary:'另有提要'});const r=await c._endTurn_aiInfer({},[],null,{});assert.equal(r.shizhengji,text);assert.equal(c.GM._turnContext.shizhengji,text.substring(0,300));assert.equal(typeof r.shizhengji.substring(0,500),'string');assert.equal(c.reviewNarrative,text);assert.equal(c.reviewJoined,true);
 });
 test('actual inference rejects unknown objects before finalization',async()=>{
  const c=inferFixture({unknown:'不应丢弃后装作无事'});let finalized=false;c.TM.Endturn.AI.record.finalize=()=>{finalized=true;};await assert.rejects(c._endTurn_aiInfer({},[],null,{}),e=>e.code==='ai-narrative-shape');assert(!finalized);
+});
+test('a successful main is not regenerated when its writeback or a follow-up task fails',async()=>{
+ for(const where of ['writeback','followup']){
+  const story='主推演原文已生成：本月按诏办理诸事。',c=inferFixture(story);load(c,'tm-endturn-validity.js');let callbacks=0;
+  const original=c.TM.Endturn.AI.subcalls.runMain;c.TM.Endturn.AI.subcalls.runMain=async(x,after)=>original(x,async()=>{callbacks++;try{await after();}catch(e){callbacks++;throw e;}});
+  c.TM.RecoveryReview.prepareFailedOutput=()=>{};
+  const fail=async()=>{throw Object.assign(Error('minor optional failure'),where==='writeback'?{mainWriteback:true}:{});};
+  if(where==='writeback')c.TM.Endturn.AI.apply.writeBack=fail;else c.TM.Endturn.AI.followup.run=fail;
+  const outer={meta:{}};const r=await c._endTurn_aiInfer({},[],null,{},outer);assert.equal(r.shizhengji,story);assert.equal(callbacks,1);assert(outer.meta.aiInferMeta.deferredIssues.length);
+ }
 });
 test('old narrative and object policy stances remain inspectable without mutating saves',()=>{
  const c=textContext(),N=c.TM.AIResultContract,obj={economic:'轻徭薄赋',military:['屯田','守边']},before=JSON.stringify(obj);

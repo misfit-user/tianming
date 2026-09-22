@@ -169,7 +169,7 @@ function main() {
   ok(releaseSource.includes("require('./lib/windows-signing.js')") && releaseSource.includes('verifyAuthenticode(exe, publisher)'),
     'publish 在上传 installer 前复验 Authenticode 发布者与时间戳');
   ok(releaseWorkflow.main() > 0, '两阶段 release/Pages 静态契约');
-  for (const script of ['verify-release-web-only.js', 'verify-shanhe-release.js', 'verify-changelog-release.js']) {
+  for (const script of ['verify-release-web-only.js', 'verify-release-full-installers.js', 'verify-shanhe-release.js', 'verify-changelog-release.js']) {
     const checked = spawnSync(process.execPath, [path.join(ROOT, 'scripts', script)], { cwd: ROOT, encoding: 'utf8' });
     ok(checked.status === 0, script + ': ' + String(checked.stderr || checked.stdout).slice(-800));
   }

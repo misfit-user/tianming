@@ -1786,6 +1786,9 @@ function _trDownloadTxt(txt, turn){
   if (typeof toast === 'function') toast('\u5DF2\u5BFC\u51FA');
 }
 function saveP(){
+  if(window.tianming&&window.tianming.isDesktop&&typeof TM_SaveDB==='undefined')return false;
+  try{if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();}
+  catch(storageError){console.warn('[saveP] 存储未就绪，已保留旧配置:',storageError&&storageError.message);return false;}
   // P 永不该拥有 gameState——合法附带只发生在 60s autosave 的克隆件上(save-lifecycle:1327)。
   // 存量僵尸(旧 fullLoadGame 格式A遗留·整棵旧局 GM 挂 P 随每次持久化序列化=配额爆炸+启动误恢复已弃旧局)
   // 在写入咽喉一律斩除(2026-07-04 审查定罪)
@@ -1857,6 +1860,23 @@ function _tmRehydrateAiFromDevice() {
 }
 if (typeof window !== 'undefined') { window._tmRehydrateAiFromDevice = _tmRehydrateAiFromDevice; }
 
+// saveP writes these explicit call preferences to the synchronous lite cache.
+// An older asynchronous project/autosave may restore world data, but not roll them back.
+function _tmRehydrateCallPreferences() {
+  try {
+    if (typeof P === 'undefined' || !P || typeof localStorage === 'undefined') return;
+    var text = localStorage.getItem('tm_P_lite');
+    if (!text) return;
+    var lite = JSON.parse(text), conf = lite && lite.conf;
+    if (!conf || typeof conf !== 'object' || Array.isArray(conf)) return;
+    ['aiCallRetryOverrides', 'emergencyRecovery'].forEach(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(conf, key) || !conf[key] || typeof conf[key] !== 'object' || Array.isArray(conf[key])) return;
+      if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner reapplies the latest explicit device call preferences.
+      P.conf[key] = conf[key]; // arch-ok: only the two named call-preference maps, never game state or other project settings.
+    });
+  } catch (_) { /* A damaged optional cache must not block valid project restoration. */ }
+}
+
 function _tmApplyMachinePrefsFromProject(project) {
   if (!project) return;
   if (project.ai) { P.ai = project.ai; _tmRehydrateAiFromDevice(); }
@@ -1866,6 +1886,7 @@ function _tmApplyMachinePrefsFromProject(project) {
       if (project.conf.hasOwnProperty(k)) P.conf[k] = project.conf[k];
     }
   }
+  _tmRehydrateCallPreferences();
 }
 
 // 当缓存被判为「官方剧本不完整」而整体跳过恢复时，会连用户自建剧本一起丢（安卓/网页无桌面 autoSave 兜底）。
@@ -1920,6 +1941,7 @@ function _tmMergeCustomScenariosFromProject(project) {
 }
 
 function _tmEmitPRestored(source) {
+  _tmRehydrateCallPreferences();
   try {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
     var ev;
@@ -1988,7 +2010,12 @@ function _tmEmitPRestored(source) {
   (function _tmIdbRestoreWhenReady(tries) {
     if (typeof TM_SaveDB === 'undefined') {
       if (tries < 100 && typeof setTimeout === 'function') setTimeout(function() { _tmIdbRestoreWhenReady(tries + 1); }, 100); // vm 沙箱无 timer 则放弃(沙箱本就无 IDB)
-      else if (tries >= 100) console.warn('[restoreP] TM_SaveDB 10s 未就位·IndexedDB 恢复层跳过');
+      else if (tries >= 100 && typeof document !== 'undefined' && document.readyState === 'loading' && typeof document.addEventListener === 'function') {
+        // The bounded polling window may end before large script sets finish loading.
+        // Retry once on the actual script-ready event, not with an unbounded timer.
+        document.addEventListener('DOMContentLoaded', function() { _tmIdbRestoreWhenReady(101); }, { once: true });
+      }
+      else if (tries >= 100) console.warn('[restoreP] 页面脚本已加载，但 TM_SaveDB 仍不可用·IndexedDB 恢复层跳过');
       return;
     }
     TM_SaveDB.loadProject().then(function(fullP) {
@@ -2008,6 +2035,7 @@ function _tmEmitPRestored(source) {
           if (fullP.hasOwnProperty(key) && key !== 'gameState' && key !== '_saveMeta') P[key] = fullP[key]; // 跳僵尸键·与层3同口径
         }
         _tmRehydrateAiFromDevice(); // IDB project 系剥 key 落盘·此层异步晚到曾冲掉启动时补回的 key(进游戏必重填·2026-07-11)
+        _tmRehydrateCallPreferences();
         console.log('[restoreP] 从IndexedDB恢复完整P, scenarios:', P.scenarios.length);
         // 如果已在剧本管理页，刷新显示
         if (typeof showScnManage === 'function' && document.querySelector('.scn-page.show')) {
@@ -2028,6 +2056,7 @@ function _tmEmitPRestored(source) {
           }
         }
         _tmRehydrateAiFromDevice(); // 桌面 autoSave 亦剥 key·覆盖后回灌
+        _tmRehydrateCallPreferences();
         console.log('[restoreP] 从desktop autoSave补充恢复');
         _tmEmitPRestored('desktop-autosave');
       }

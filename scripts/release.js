@@ -13,6 +13,7 @@
 //    node scripts/release.js --publish --version 1.3.4.9 --notes "本版说明"
 //  选项：
 //    --with-installer        把 E:\版本\测试版<V> 的 latest.yml/exe/blockmap 一起发（exe 同卷别名零拷贝直传）
+//    --full-installers       prepare 完善同版全量安装输入；publish 已验收 EXE/APK 与锁定源码 Pages（独立 full-* tag，不动 OTA）
 //    --min-app-version X     热更 feed 标注所需最低本体版本（触发客户端「需更新本体」流程）
 //    --no-delta              capgo 只出全量（不出差量 manifest/对象包）
 //    --no-upload             publish 的本地构建模式·允许非 main/dirty·绝不写 GitHub/服务器
@@ -84,6 +85,7 @@ const CFG = {
   withInstaller: flag('with-installer'),
   noDelta: flag('no-delta'),
   webOnly: flag('web-only'),
+  fullInstallers: flag('full-installers'),
   assetRoot: String(arg('asset-root', '') || ''),
   noUpload: flag('no-upload'),
   prepare: flag('prepare'),
@@ -128,6 +130,7 @@ function validateModeFacts(facts) {
 function gateMode() {
   const problems = validateModeFacts(CFG);
   if (CFG.webOnly && (CFG.withInstaller || CFG.minAppVersion || CFG.noDelta)) problems.push('--web-only 不接受安装包或 OTA 专用选项');
+  if (CFG.fullInstallers && (CFG.webOnly || CFG.withInstaller || CFG.minAppVersion || CFG.noDelta)) problems.push('--full-installers 不可混用网页或 OTA 专用选项');
   if (!CFG.noUpload && CFG.root !== REAL_ROOT) problems.push('prepare/正式 publish 不允许 --repo-root 指向其他仓库');
   if (problems.length) die(problems.join('；'));
 }
@@ -1083,6 +1086,19 @@ function selfTest() {
 // ── 主流程 ───────────────────────────────────────────────────────────────────
 async function prepareRelease() {
   gatePrepareRepository();
+  if (CFG.fullInstallers) {
+    const code=targetVersionCode(),pkg=readJson(P.pkg()),full=require('./release-full-installers.js');
+    const existingTag=remoteTagCommit('full-'+CFG.version);
+    if(CFG.version===pkg.build.buildVersion){full.assertCompletion({version:CFG.version,current:pkg.build.buildVersion,code,mobileVersion:readJson(P.mobileReleaseVersion()),existingTag});gatePreparedVersion(false);}
+    else {if(existingTag)die('Full-installer tag already exists');gatePrepareVersion();}
+    gateChangelog();await gateLive();
+    if(CFG.dryRun){log('FULL_INSTALLERS_DRY_RUN: refresh same prepared version inputs; no archives or uploads');return;}
+    fanOutVersions(code);syncGeneratedAndroidVersion();
+    const inventory=spawnSync(process.execPath,[path.join(CFG.root,'scripts/build-native-preparation-manifest.cjs'),'--write'],{cwd:CFG.root,stdio:'inherit'});
+    if(inventory.status!==0)die('原生开局资源清单刷新失败');
+    refreshBaseline();gateReleaseContracts();gatePreparedVersion(true);
+    log('FULL_INSTALLERS_PREPARED: build and compare complete EXE/APK before pushing the reviewed source; then publish from clean merged main.');return;
+  }
   gateReleaseContracts();
   const code = gatePrepareVersion();
   gateChangelog();
@@ -1116,6 +1132,13 @@ async function publishRelease() {
   gatePreparedVersion(true);
   gateChangelog();
   const live = await gateLive();
+  if (CFG.fullInstallers) {
+    const full=require('./release-full-installers.js'),directory=P.installerDir();
+    const receipt=full.verify({root:CFG.root,version:CFG.version,directory});
+    if(CFG.dryRun||CFG.noUpload){log('FULL_INSTALLERS_VERIFIED: exact prepared source and EXE/APK hashes; no external writes');return;}
+    gatePublishRepository('上传前');gateGitHubOwner();
+    full.publish({root:CFG.root,version:CFG.version,head:CFG.publishHead,directory,notes:CFG.notes,receipt});return;
+  }
   if (CFG.webOnly) {
     if (CFG.dryRun) { log('WEB_ONLY_DRY_RUN: verify static runtime, publish source release and pinned Pages; no installer/OTA writes'); return; }
     const webOnly = require('./release-web-only.js');

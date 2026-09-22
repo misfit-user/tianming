@@ -278,6 +278,7 @@ async function _showAvailableModels(tier) {
 
 // M3·保存次要 API 配置
 function _saveSecondaryAPI() {
+  if(typeof _sDeviceSettingsReady==='function'&&!_sDeviceSettingsReady())return false;
   var sk = (_$('s-sec-key')||{}).value || '';
   var su = (_$('s-sec-url')||{}).value || '';
   var sm = (_$('s-sec-model')||{}).value || '';
@@ -287,7 +288,7 @@ function _saveSecondaryAPI() {
   } else {
     if (P.ai) delete P.ai.secondary;
   }
-  try { localStorage.setItem('tm_api', JSON.stringify(P.ai)); } catch(_) {}
+  try { localStorage.setItem('tm_api', JSON.stringify(P.ai)); if(localStorage.getItem('tm_api')!==JSON.stringify(P.ai))throw new Error('readback'); } catch(_) {toast('API 配置未保存，请检查本机存储');return false;}
   if (typeof saveP === 'function') saveP();
   if (sk && su) toast('\u2705 \u6B21\u8981 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E');
   else toast('\u2705 \u5DF2\u6E05\u7A7A\u6B21\u8981 API\u00B7\u6240\u6709\u8C03\u7528\u56DE\u9000\u4E3B API');

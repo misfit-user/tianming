@@ -408,6 +408,7 @@
       '· 后果即落地:每推演出一项后果·立即用守护写工具改进存档(财政增减 / 民心民生 / 官员境遇 / 势力态度 / 触发事件)·不要只说不改。',
       '· 硬核账走专用工具:改国库总额用 adjust_treasury·增删调**收入支出流水项**(开税源/砍军费/设年例)用 adjust_fiscal_item·删数组项(部队覆灭/党派清洗/势力剪除)用 remove_field·只有事件日志 evtLog 可用 push_field 增项，人物/战争/奏疏/灾害等集合必须走领域工具。软字段(心境/民心/关系)用 set_field/adjust_field。',
       '· 治国语义工具(有引擎记账·裸改会落错或被覆盖·必须走它们):任免 appoint_official/dismiss_official · 军事 command_army(募兵/调动/改将/解散) · 外交 diplomatic_action(宣战/议和/设邦交) · 建筑 building_project(兴工/拆毁) · 行政区划 restructure_division(设府/废县/改隶/升降)。这些是你作为执政可主动施为的治国手段——按推演该动则动。',
+      '· 可用 edit_world 修改任意游戏业务数据，包括创建实体、自定义状态和修正旧工具覆盖不到的内容；先读真实状态，以本局依据落实并检查回执。运行事务和接口配置不属于游戏内容。',
       '· 新群体与新机构不能被开局名册锁死：有本局形成依据时用 form_party / emerge_class；设新部门或官职用 create_office（不自动任命，仍受改制审批）。新建独立军队用 command_army(action=create)，不要给旧军改名或扩编来冒充。',
       '· 舆地变迁工具:人物移动 move_character(赴任/出征/流放/还朝改所在地) · 迁都 relocate_capital(朝廷或势力迁治所) · 地块易主 change_region_owner(攻占/割让/归附→改地块归属并使地图变色) · 地块状态 adjust_region_state(某地民心/繁荣升降·兵燹灾荒善政致) · 地块建筑 building_project(兴工/拆毁)。推演出领土/人物/都城/地方状态/营造变动时用之·勿裸改地图字段。',
       '· 【人事=玩家的事·勿越俎代庖】玩家的任命已定·**勿重做、勿替玩家任命**。仅当你推演出**世界自走**需要人事变动时(如官员阵亡/叛逃需补缺、因你推演之事而问责黜落)·才用 appoint_official/dismiss_official——那是**后果**·不是替玩家做新任命。',
@@ -425,6 +426,7 @@
 
   function _buildTurnPrompt(ctx, gm) {
     var L = [];
+    if (TM.AgentWorldEditor && gm) L.push(TM.AgentWorldEditor.context(gm));
     L.push('【本回合】第 ' + ((gm && gm.turn) || '?') + ' 回合' + ((gm && gm.eraName) ? (' · ' + gm.eraName) : ''));
     var inp = (ctx && ctx.input) || {};
     var edicts = inp.edicts || [];

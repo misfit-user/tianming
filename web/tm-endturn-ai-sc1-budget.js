@@ -238,6 +238,12 @@
   ns.assertSc1MandatoryPrefix = assertMandatoryPrefix;
   ns.finalizeSc1RequestBody = finalizeRequestBody;
   ns.createSc1ContextOverflowReducer = createContextOverflowReducer;
+  ns.sc1WritebackContractHint = function() {
+    return '\n【可执行写回字段】\n'
+      + 'fiscal_adjustments 每项必须有 target（guoku、neitang 或 province:准确地区名）、kind（income/expense）、resource（money/grain/cloth）、amount（正数）、name、reason、recurring。支出用 kind:expense，不用负数；subject/source/收款人名称不能代替账库 target。央地调拨只填 central_local_actions 的 transfer_to_region，fromAccount 必须明确 guoku.money 或 neitang.money；调拨通道已扣源账户，严禁同笔再填 fiscal_adjustments。\n'
+      + 'office_assignments 的 post 只写官职名称，职责、差遣和管辖事项放 reason；不得将一整句任职命令拼成官职。已有官职按官制名册或既有职种填写，真正新置机构另用 office_changes/institution_changes 的创建字段。\n'
+      + '地区引用优先使用当前世界的稳定 regionId；没有对应变化的字段保留正确类型的空值，不自行另造字段名。\n';
+  };
   ns.sc1ProductionCallOptions = productionCallOptions;
   ns.recordSc1FinalDiagnostics = recordDiagnostics;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -17,6 +17,7 @@ export function buildAIChangeApplier(deps) {
   });
   core.bindModules({ validators: validators, reconcile: reconcile });
   core.facade.writeGuards = Object.freeze({
+    runAtomicMutation: reconcile.runAtomicMutation,
     sensitiveCharFieldSourced: validators._sensitiveCharFieldSourced
   });
   return {

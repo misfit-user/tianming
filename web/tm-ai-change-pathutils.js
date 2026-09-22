@@ -75,6 +75,7 @@
     var p = String(path || '').trim().replace(/\s+/g, '');
     p = p.replace(/\[(\d+)\]/g, '.$1');
     p = p.replace(/^(GM|gm)\./, '');
+    p = p.replace(/^factions(?=\.|$)/i, 'facs');
     p = p.replace(/^(vars|variables|var|变量|變量|七变量|七變量)\./i, '');
     var aliases = {
       '皇权': 'huangquan.index',

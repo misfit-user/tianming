@@ -1,0 +1,19 @@
+PASS mandatory review runs even with zero warnings and emergency mode off, in one model call
+PASS heuristic false positives are adjudicated without fabricating wars or payments
+PASS review planning overlaps other work and commits only at join, preserving unrelated follow-up edits
+PASS a conflicting follow-up value forces another Agent check within the same budget
+PASS failed second write rolls back the first correction and cannot claim review success
+PASS made-up evidence and uncovered diagnostics cannot be submitted
+PASS game switching discards a pending proposal
+PASS cancelling removes live review ownership and rejects late writes
+PASS main write failure can be repaired and replayed through the real atomic applier
+PASS fiscal narrative hints reach the Agent without guessing a debit from the public treasury
+PASS Agent repairs an edict with neither account debited, posting only the declared palace account
+PASS Agent can post a missed public payment through the same fiscal owner
+PASS a failed palace debit cannot switch to the wealthy public treasury or leave partial edits
+PASS production main stage starts review on an ordinary successful write even without warnings
+PASS production infer overlaps review with follow-up and exports its completed receipt before finalization
+PASS full Agent mode also receives fixed review and returns corrected player-facing text
+PASS the final commit gate requires the fixed review receipt
+PASS production main stage repairs an actual rejected write, then queues the fixed review
+{"pass":18,"fail":0,"total":18}

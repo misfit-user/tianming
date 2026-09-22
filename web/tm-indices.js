@@ -1382,7 +1382,7 @@ var WorldHelper = {
     if (registered) return registered;
     // historical-agency-v21: the common ingress also covers direct AI additions and fallbacks.
     var agency = global.TM && global.TM.HistoricalAgency;
-    if (G === global.GM && agency && agency.isPlayerDriven() && data && (data.isHistorical === true || agency.findProfile(data.name))) {
+    if (!options.authoritative && G === global.GM && agency && agency.isPlayerDriven() && data && (data.isHistorical === true || agency.findProfile(data.name))) {
       var temporal = agency.temporalEligibility(data, {year:G.year});
       if (!temporal.ok) throw new Error('史实不可现：' + temporal.reason);
     }
@@ -1420,7 +1420,7 @@ var WorldHelper = {
       if (!G._indices.charById || typeof G._indices.charById.set !== 'function') G._indices.charById = new Map();
       G._indices.charByName.set(nameKey, ch);
       G._indices.charById.set(id, ch);
-      if (global.TMZhi && typeof global.TMZhi.invalidatePeople === 'function') global.TMZhi.invalidatePeople();
+      if (!options.preview && global.TMZhi && typeof global.TMZhi.invalidatePeople === 'function') global.TMZhi.invalidatePeople();
       return ch;
     } catch (error) {
       if (pushed) {

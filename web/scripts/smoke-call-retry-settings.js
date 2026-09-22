@@ -40,7 +40,7 @@ test('production SC1 stream options carry the same policy ID as non-streaming in
  const fs=require('fs'),path=require('path'),vm=require('vm'),acorn=require('acorn'),source=fs.readFileSync(path.join(__dirname,'../tm-endturn-ai.js'),'utf8');let optionsSource='';
  function visit(n){if(!n||typeof n!=='object')return;if(n.type==='CallExpression'&&n.callee.name==='callAIBodyStream'&&n.arguments[0].name==='_sc1Body')optionsSource=source.slice(n.arguments[1].start,n.arguments[1].end);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v==='object')visit(v);}}
  visit(acorn.parse(source,{ecmaVersion:'latest'}));assert(optionsSource);
- const options=vm.runInNewContext('('+optionsSource+')',{_sc1PolicyForStream:{timeoutMs:150000},showLoading(){}});assert.equal(options.id,'sc1');
+ const options=vm.runInNewContext('('+optionsSource+')',{_sc1PolicyForStream:{timeoutMs:150000},_sc1AttemptOptions:{_normalRecoveryTicket:{id:'sc1',limit:3,attempts:0,deadlineAt:Infinity}},showLoading(){}});assert.equal(options.id,'sc1');assert.equal(options._normalRecoveryTicket.id,'sc1');assert.equal(options._normalRecoveryTicket.limit,3);
  const f=fixture({sc1:3});let calls=0;try{f.c.fetch=async()=>++calls<4?bad(502):good();const body={model:'fixture',messages:[{role:'user',content:'完整主推演'}],max_tokens:100};const value=await f.c.callAIBodyStream(body,options);assert.equal(value,'完整叙事与世界数据');assert.equal(calls,4);}finally{f.dispose();}
 });
 (async()=>{let pass=0,fail=0;for(const t of tests)try{await t.fn();pass++;console.log('PASS '+t.name);}catch(e){fail++;console.error('FAIL '+t.name+'\n'+e.stack);}console.log(JSON.stringify({pass,fail,total:tests.length}));if(fail)process.exitCode=1;})();

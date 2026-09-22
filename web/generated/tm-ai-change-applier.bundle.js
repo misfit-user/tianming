@@ -51,7 +51,7 @@
     if (field === "central_local_actions") {
       if (/fiscal_bargain|bargain|local_fiscal/.test(action)) return "诏令：与" + region + "议地方财政博弈，明起运存留之分，以捕捐饷而安地方。";
       if (/long_term_tracking|tracking|follow_up|monitor/.test(action)) return "诏令：建立" + region + "长期财政追踪，逐月核对起运、存留、民力与官耗。";
-      if (/transfer|grant|下拨|拨银|发帑|赈/.test(action)) return "诏令：下拨" + region + "银" + (amount || 5e4) + "两赈济水灾。";
+      if (/transfer|grant|下拨|拨银|发帑|赈/.test(action)) return "诏令：下拨" + region + "银" + (amount || 5e4) + "两，依指定用途办理。";
       if (/force|levy|强征|追征|催征/.test(action)) return "诏令：强征" + region + "地方留存" + (amount || 3e4) + "两，以充军饷。";
       if (/censor|audit|监察|巡按|巡察/.test(action)) return "诏令：派监察御史巡按" + region + "，核其钱粮。";
       if (/allocation|share|分成|起运|存留|留成/.test(action)) return "诏令：调整" + region + "分成，起运" + _aiPolicyRatioLabel(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare, 0.7) + "成，存留" + _aiPolicyRatioLabel(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare, 0.3) + "成。";
@@ -102,6 +102,9 @@
       if (item.level != null) params.level = Number(item.level);
       if (item.acceptanceDelta != null) params.acceptanceDelta = Number(item.acceptanceDelta);
     } else if (field === "central_local_actions") {
+      if (item.fromAccount) params.fromAccount = item.fromAccount;
+      if (item.toAccount) params.toAccount = item.toAccount;
+      if (item.durationMonths != null) params.durationMonths = Number(item.durationMonths);
       if (item.qiyunRatio != null || item.centralShare != null) params.qiyunRatio = Number(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare);
       if (item.cunliuRatio != null || item.retainedShare != null) params.cunliuRatio = Number(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare);
       if (item.retainedShare != null) params.retainedShare = Number(item.retainedShare);
@@ -1195,11 +1198,11 @@
       }
       return null;
     }
-    function _applyAIStructuredPolicyActions(aiOutput, applied) {
+    function _applyAIStructuredPolicyActions(aiOutput, applied, selectedFields) {
       var G = global.GM;
       var parser = global.EdictParser;
       if (!G || !parser || typeof parser.tryExecute !== "function") return 0;
-      var fields = ["currency_adjustments", "population_adjustments", "central_local_actions", "environment_actions", "institution_changes"];
+      var fields = selectedFields || ["currency_adjustments", "population_adjustments", "central_local_actions", "environment_actions", "institution_changes"];
       var count = 0;
       if (!Array.isArray(G._aiStructuredPolicyActions)) G._aiStructuredPolicyActions = [];
       fields.forEach(function(field) {
@@ -1240,7 +1243,7 @@
             lifecycle = _applyAIInstitutionLifecycleChange(item, params);
             if (lifecycleAttempted) ok = !!(lifecycle && lifecycle.ok);
           }
-          result = { ok, edict: edictResult, lifecycle, reason: lifecycle && lifecycle.reason || edictResult && edictResult.reason || "" };
+          result = { ok, edict: edictResult, lifecycle, reason: lifecycle && lifecycle.reason || edictResult && (edictResult.reason || edictResult.executionResult && edictResult.executionResult.reason) || "" };
           G._aiStructuredPolicyActions.push({
             turn: G.turn || 0,
             field,
@@ -1251,6 +1254,12 @@
           });
           if (ok) {
             count++;
+            var execution = edictResult && edictResult.executionResult;
+            var transfer = execution && execution.success === true && execution.order;
+            if (field === "central_local_actions" && transfer && Array.isArray(G.transferOrders) && G.transferOrders.indexOf(transfer) >= 0) {
+              if (!applied.fiscalTransfers) applied.fiscalTransfers = [];
+              applied.fiscalTransfers.push({ id: transfer.id, fromAccount: transfer.fromAccount, amount: transfer.amount });
+            }
             G._turnReport.push({ type: "aiPolicyAction", field, text, turn: G.turn || 0 });
           } else {
             applied.failed.push({ field, text, reason: result && (result.reason || result.pathway) || "execute failed" });
@@ -1628,7 +1637,7 @@
         }
       });
       if (!applied.semantic) applied.semantic = {};
-      var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied);
+      var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ["currency_adjustments", "population_adjustments", "central_local_actions", "institution_changes"]);
       if (aiPolicyActionCount > 0) applied.semantic.ai_policy_actions = aiPolicyActionCount;
       var militaryChangeCount = 0;
       if (Array.isArray(aiOutput.military_changes)) {
@@ -2240,6 +2249,8 @@
         }
       });
       if (fiscalCount > 0) applied.semantic.fiscal_adjustments = fiscalCount;
+      var environmentActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ["environment_actions"]);
+      if (environmentActionCount > 0) applied.semantic.ai_policy_actions = (applied.semantic.ai_policy_actions || 0) + environmentActionCount;
       var facCount = 0;
       (aiOutput.faction_updates || []).forEach(function(fu) {
         if (!fu || !fu.name) return;
@@ -2521,8 +2532,9 @@
       _runConsistencyValidator(applied, aiOutput, "anachronism", function() {
         if (typeof window !== "undefined" && typeof window._validateNarrativeAnachronism === "function") window._validateNarrativeAnachronism(G, aiOutput);
       });
-      var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline) : [];
+      var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline, aiOutput) : [];
       if (_validatorFailures.length) Array.prototype.push.apply(applied.failed, _validatorFailures);
+      applied.reviewRequired = (applied.reviewRequired || []).concat(_modules.reconcile._collectNarrativeReviews(G, _validatorBaseline, aiOutput));
       try {
         _processDeathEpitaphs(G, aiOutput);
       } catch (_deE) {
@@ -3299,6 +3311,8 @@
         advanceCharTravelByDays
       },
       internals: {
+        _findOfficePos,
+        _isKnownOfficeType,
         _alreadyResolvedState,
         _readFiscalStock,
         _writeFiscalStock,
@@ -4044,29 +4058,20 @@
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
       function _pn(s, mult) {
-        var cnMap = { "零": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9, "十": 10, "百": 100, "千": 1e3, "万": 1e4 };
-        var n = parseFloat(s);
-        if (isNaN(n) || n <= 0) {
-          n = 0;
-          for (var i = 0; i < s.length; i++) {
-            var ch = s.charAt(i);
-            if (cnMap[ch] != null) {
-              if (ch === "十" || ch === "百" || ch === "千" || ch === "万") n = (n || 1) * cnMap[ch];
-              else n = n * 10 + cnMap[ch];
-            }
-          }
-        }
-        if (mult === "万") n *= 1e4;
-        return n;
+        var parser = global.TMNumberParser;
+        if (!parser || typeof parser.parseNumber !== "function") throw new Error("人口数量解析器未加载");
+        var parsed = parser.parseNumber(String(s) + (mult || ""));
+        return parsed.ok ? parsed.value : NaN;
       }
-      var deathVerbs = "饿死|冻死|疫死|战死|灾亡|溺死|染瘟|疫亡|流亡|罹难|罹疫";
-      var fleeVerbs = "逃亡|逃难|流离|迁徙|迁移|流民";
+      var deathVerbs = "饿死|冻死|疫死|战死|灾亡|溺死|染瘟|疫亡|罹难|罹疫";
+      var fleeVerbs = "逃亡|逃难|流亡|流离|迁徙|迁移";
       function _scan(verbs, kind) {
-        var pat = new RegExp("(" + verbs + ")[^。；,\\s]{0,10}?([\\d一二三四五六七八九十百千万]+)\\s*(万|千)?\\s*(口|户|人|众)", "g");
+        var pat = new RegExp("(" + verbs + ")[^。！？；;，,\\s\\d零〇一二两三四五六七八九十百千万亿]{0,10}?([\\d零〇一二两三四五六七八九十百千万亿]+)\\s*(万|千)?\\s*(口|户|人|众)", "g");
         var arr = [], m;
         while ((m = pat.exec(narrative)) !== null) {
+          if (_assertedOccurrence(narrative, m[1], m.index) !== m.index) continue;
           var n = _pn(m[2], m[3] || "");
-          if (n < 100) continue;
+          if (!Number.isFinite(n) || n < 100) continue;
           arr.push({ kind, verb: m[1], num: n, raw: m[0] });
         }
         return arr;
@@ -4076,12 +4081,14 @@
       var popDelta = { death: 0, flee: 0 };
       var tc = G.turnChanges && G.turnChanges.variables || [];
       tc.forEach(function(v) {
-        if (!v || !v.name) return;
-        var d = v.delta || (v.newValue || 0) - (v.oldValue || 0);
-        if (/口|人口|mouths|总口|户籍|户口/.test(v.name)) {
+        if (!v) return;
+        var label = [v.path, v.label, v.name].filter(Boolean).join(" ");
+        var d = Number(v.delta != null ? v.delta : (v.newValue || 0) - (v.oldValue || 0));
+        if (!Number.isFinite(d)) return;
+        if (/口|人口|mouths|总口|户籍|户口/.test(label)) {
           if (d < 0) popDelta.death += Math.abs(d);
         }
-        if (/逃户|流民|fugitives/.test(v.name)) {
+        if (/逃户|流民|fugitives/.test(label)) {
           if (d > 0) popDelta.flee += d;
         }
       });
@@ -4167,12 +4174,12 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var warStartVerbs = ["起兵", "兴师", "讨伐", "征伐", "北伐", "南征", "东征", "西征", "进犯", "入寇", "犯境", "寇边", "兵临", "出兵", "开战", "起衅", "启衅", "南下", "北上"];
+      var warStartVerbs = ["起兵", "兴师", "讨伐", "征伐", "北伐", "南征", "东征", "西征", "进犯", "入寇", "犯境", "寇边", "兵临", "出兵", "开战", "起衅", "启衅", "宣战"];
       var warEndVerbs = ["议和", "和谈", "罢兵", "讲和", "纳贡", "约和", "盟约", "停战", "受降", "献降", "纳款", "奉表", "称臣"];
       var battleVerbs = ["大败", "大捷", "克复", "陷落", "失守", "收复", "破", "突围", "会战", "激战", "溃败", "全军覆没", "戍御", "解围"];
-      var startKw = _firstNarrativeHit(narrative, warStartVerbs);
-      var endKw = _firstNarrativeHit(narrative, warEndVerbs);
-      var battleKw = _firstNarrativeHit(narrative, battleVerbs);
+      var startKw = _firstAssertedHit(narrative, warStartVerbs);
+      var endKw = _firstAssertedHit(narrative, warEndVerbs);
+      var battleKw = _firstAssertedHit(narrative, battleVerbs);
       if (!startKw && !endKw && !battleKw) return;
       var warnings = [];
       var existingWars = Array.isArray(G.activeWars) ? G.activeWars : [];
@@ -4291,14 +4298,15 @@
       var end = Math.min(text.length, idx + keyword.length + span);
       return text.substring(start, end);
     }
-    function _assertedOccurrence(text, keyword) {
-      var cursor = 0, index;
+    function _assertedOccurrence(text, keyword, fromIndex) {
+      var cursor = fromIndex || 0, index;
       while ((index = text.indexOf(keyword, cursor)) >= 0) {
         cursor = index + Math.max(1, keyword.length);
         var left = text.slice(0, index).split(/[。！？；;\n，,]/).pop();
         var right = text.slice(index + keyword.length).split(/[。！？；;\n，,]/)[0];
         var nearby = left.slice(-10) + keyword + right.slice(0, 10);
         var ordinaryWord = keyword === "聘" && /延聘|招聘|聘请|聘任|聘用|征聘|应聘|受聘/.test(nearby) || keyword === "嫁" && /转嫁/.test(nearby);
+        var contextual = /^(?:之初|初|以来|之后|后第|未久)/.test(right) && /^(?:即位|登基|嗣位|继统)$/.test(keyword) || /^(?:之势|之虞|之患|的风险|的可能|趋势|之权|之责|之职|权限|职掌|事宜)/.test(right);
         var currentAt = -1;
         ["本月", "本年", "今年", "今日", "本回合", "本期", "如今", "现在", "现已"].forEach(function(k) {
           currentAt = Math.max(currentAt, left.lastIndexOf(k));
@@ -4312,7 +4320,7 @@
         var pastProposal = currentAt >= 0 && /(?:上年|去年|前年|先前|此前).*(?:拟定|制定|商议|计划|提出).*的/.test(left.slice(0, currentAt));
         var plannedTail = pastProposal ? timeContext : tail;
         var planned = /(?:商议|建议|提议|拟议|拟|计划|打算|准备|有意|希望|尚待|考虑|主张|请求|欲|若|倘若|假如)[^。；，]{0,8}$/.test(plannedTail) && !/(?:已然|已经|现已|已|遂|终于)[^。；，]{0,7}$/.test(plannedTail);
-        if (!ordinaryWord && !historical && !prospective && !negative && !planned) return index;
+        if (!ordinaryWord && !contextual && !historical && !prospective && !negative && !planned) return index;
       }
       return -1;
     }
@@ -4414,14 +4422,17 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var edictNarrative = narrative.replace(/下诏狱/g, "下狱");
+      var edictNarrative = narrative.replace(/下诏狱/g, "下狱").replace(/降旨(?=斥责|申饬|褒奖|慰勉|催促)/g, "下令");
       var promulgateKw = _firstAssertedHit(edictNarrative, ["颁诏", "降旨", "敕谕", "颁行", "颁布", "下诏", "明诏", "谕令", "制曰", "施行新政", "开行...新法", "申严"]);
       var revokeKw = _firstAssertedHit(narrative, ["废诏", "废制", "停止施行", "撤回", "撤销", "废止", "废罢", "收回成命"]);
       if (!promulgateKw && !revokeKw) return;
       var existingEdicts = Array.isArray(G.activeEdicts) ? G.activeEdicts : [];
       var beforeCount = applied && typeof applied._edictsBefore === "number" ? applied._edictsBefore : existingEdicts.length;
+      var issuedPlayerOrder = (Array.isArray(G._edictTracker) ? G._edictTracker : []).some(function(edict) {
+        return edict && Number(edict.turn) === Number(G.turn) && typeof edict.content === "string" && edict.content.trim() && ["draft", "cancelled", "canceled", "rejected"].indexOf(String(edict.status || "")) < 0;
+      });
       var warnings = [];
-      if (promulgateKw && existingEdicts.length <= beforeCount) warnings.push({ kind: "edict_promulgate_missing", keyword: promulgateKw, snippet: _assertedSnippet(narrative, promulgateKw, 30) });
+      if (promulgateKw && existingEdicts.length <= beforeCount && !issuedPlayerOrder) warnings.push({ kind: "edict_promulgate_missing", keyword: promulgateKw, snippet: _assertedSnippet(narrative, promulgateKw, 30) });
       if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: "edict_revoke_missing", keyword: revokeKw, snippet: _assertedSnippet(narrative, revokeKw, 30) });
       if (!warnings.length) return;
       if (!G._edictEffectValidatorLog) G._edictEffectValidatorLog = [];
@@ -4433,9 +4444,14 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var moveCapKw = _firstHit(narrative, ["迁都", "移都", "改都"]);
-      var titleKw = _firstHit(narrative, ["晋爵", "晋封", "加封", "进爵", "赐爵", "削爵", "夺爵", "除爵", "赠", "追赠", "追封", "谥", "赐姓", "赐婚"]);
-      var haremKw = _firstHit(narrative, ["册立", "册封", "晋为妃", "晋为贵妃", "立为皇后", "废后", "废妃", "降为", "贬为", "出宫", "选秀", "纳妃"]);
+      var moveCapKw = _firstAssertedHit(narrative, ["迁都", "移都", "改都"]);
+      var titleKw = _firstAssertedHit(narrative, ["晋爵", "晋封", "加封", "进爵", "赐爵", "削爵", "夺爵", "除爵", "赠官", "赠爵", "追赠", "追封", "谥", "赐姓", "赐婚"]);
+      var haremNarrative = narrative.split(/[。！？；;\n，,]/).filter(function(clause) {
+        return /后宫|皇后|贵妃|嫔妃|妃嫔|贵人|才人|宫女|婕妤|昭仪|废后|废妃|选秀|纳妃|为妃/.test(clause) || (Array.isArray(G.harem) ? G.harem : []).some(function(person) {
+          return person && person.name && clause.indexOf(person.name) >= 0;
+        });
+      }).join("\n");
+      var haremKw = _firstAssertedHit(haremNarrative, ["册立", "册封", "晋为妃", "晋为贵妃", "立为皇后", "废后", "废妃", "降为", "贬为", "出宫", "选秀", "纳妃"]);
       if (!moveCapKw && !titleKw && !haremKw) return;
       var charUpdates = aiOutput.char_updates || [];
       var hasCapitalMove = (G._turnReport || []).some(function(r) {
@@ -4443,13 +4459,7 @@
       }) || (aiOutput.faction_updates || []).some(function(fu) {
         return fu && fu.updates && (fu.updates.capital || fu.updates.capitalName);
       });
-      var hasRelevantUpdate = charUpdates.some(function(c) {
-        if (!c || !c.changes) return false;
-        var chKeys = Object.keys(c.changes || {});
-        return chKeys.some(function(k) {
-          return /title|posthumous|spouse|wife|consort/i.test(k);
-        });
-      });
+      var hasRelevantUpdate = _verifiedCharacterEffect(G, charUpdates, /^(title|posthumous|spouse|wife|consort|rank)$/i);
       var warnings = [];
       if (moveCapKw && !hasCapitalMove) warnings.push({ kind: "capital_move_missing", keyword: moveCapKw, snippet: _snippetAround(narrative, moveCapKw, 30) });
       if (titleKw && !hasRelevantUpdate) warnings.push({ kind: "title_change_missing", keyword: titleKw, snippet: _snippetAround(narrative, titleKw, 30) });
@@ -4578,7 +4588,7 @@
       if (!G || !aiOutput) return;
       var narrative = _getNarrativeText(aiOutput);
       if (!narrative) return;
-      var omenKw = _firstHit(narrative, ["彗见", "彗星", "星孛", "日蚀", "日食", "月蚀", "月食", "血雨", "虹贯", "虹气", "白虹", "瑞兽", "麒麟", "凤凰", "白虎", "五星连珠", "陨石", "地龙", "童谣", "谶", "妖言", "灾异", "祥瑞"]);
+      var omenKw = _firstAssertedHit(narrative, ["彗见", "彗星", "星孛", "日蚀", "日食", "月蚀", "月食", "血雨", "虹贯", "虹气", "白虹", "瑞兽", "麒麟", "凤凰", "白虎", "五星连珠", "陨石", "地龙", "童谣", "谶", "妖言", "祥瑞"]);
       if (!omenKw) return;
       var existingOmens = Array.isArray(G.omens) ? G.omens : (G.events || []).filter(function(e) {
         return e && (e.type === "omen" || e.category === "omen");
@@ -4721,7 +4731,7 @@
     }
     function _validateFiscalConsistency(G, aiOutput, applied) {
       if (!G || !aiOutput) return;
-      var narrativeText = "";
+      var narrativeText = aiOutput.narrative && !aiOutput.shizhengji ? String(aiOutput.narrative) + "\n" : "";
       if (aiOutput.shilu_text) narrativeText += String(aiOutput.shilu_text) + "\n";
       if (aiOutput.shizhengji) narrativeText += String(aiOutput.shizhengji) + "\n";
       if (Array.isArray(aiOutput.events)) {
@@ -4757,7 +4767,7 @@
         return n;
       }
       var mentioned = [];
-      var outflowVerbs = "赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费|拨付|拨给|拨入|拨内帑|拨内库|划拨|调拨|发付|发给|发支|出库|起解|起运|解送|解部|解到|报销|发还|分给|拨与|赏给|犒赏|犒军|赈济|赈灾|赈给|安抚|抚恤|抚慰|支应|支给|支用|支放|支发|支领|动支|动用|提取|提用|划支|划归|经费|靡费|开支|开销|耗用";
+      var outflowVerbs = "支银|支出|支付|支取|赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费|拨付|拨给|拨入|拨内帑|拨内库|划拨|调拨|发付|发给|发支|出库|起解|起运|解送|解部|解到|报销|发还|分给|拨与|赏给|犒赏|犒军|赈济|赈灾|赈给|安抚|抚恤|抚慰|支应|支给|支用|支放|支发|支领|动支|动用|提取|提用|划支|划归|经费|靡费|开支|开销|耗用";
       var inflowVerbs = "获得|获|收|入|进|得|得到|收到|进项|进帐|进账|收入|入账|入库|入帑|入内帑|纳入|抄获|抄到|没入|缴入|追缴|追讨|追回|罚入|查封充公|抄没入|没收入|籍没|籍家|籍没家产|抄家|抄籍|抄没|查抄|抄入|查封|充公|没官|没充|没户|入私库|入御府|入库银|起运入|解送至|划入|转入|调入|拨归|归入|纳款|捐输|报效|追比|追征|追缴|追赔|籍录|籍其家|罚银|罚没";
       var patOut = new RegExp("(" + outflowVerbs + ")[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)", "g");
       var patIn = new RegExp("(" + inflowVerbs + ")[^。；\\s,，]{0,8}?([\\d一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖]+)\\s*(万|千|百|十)?\\s*(两|石|匹|斛|贯|缗|斗)", "g");
@@ -4804,6 +4814,12 @@
         var k = fa.kind === "income" ? "income" : "expense";
         adjTotal[k][res] += Math.abs(parseFloat(fa.amount) || 0);
       });
+      (applied && applied.fiscalTransfers || []).forEach(function(receipt) {
+        var order = (G.transferOrders || []).find(function(row) {
+          return row && row.id === receipt.id;
+        });
+        if (order && order.fromAccount === receipt.fromAccount && order.amount === receipt.amount && Number.isFinite(receipt.amount) && receipt.amount > 0) adjTotal.expense.money += receipt.amount;
+      });
       if (global.TM && global.TM.BuildingOrders) {
         (aiOutput.construction_receipts || []).forEach(function(r) {
           if (r && r.committed && global.TM.BuildingOrders.verifyReceipts(G, global.P, [r], narrativeText)) {
@@ -4838,6 +4854,7 @@
       if (G._fiscalValidatorLog.length > 20) G._fiscalValidatorLog = G._fiscalValidatorLog.slice(-20);
       G._turnReport.push({ type: "fiscal_validation", warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
       console.warn("[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:", warnings);
+      if (aiOutput._deferNarrativeRepairs === true) return;
       warnings.forEach(function(w) {
         if (w.shortfall <= 0) return;
         if (!G.guoku) G.guoku = {};
@@ -5956,19 +5973,24 @@
       if (!raw) return false;
       var nodes = [];
       _tmWalkOfficeNodes(G && G.officeTree, nodes);
+      var posts = raw.split(/[、,·\s]+/).filter(Boolean);
       return nodes.some(function(node) {
         return [node.id, node.name, node.title, node.position, node.officialTitle].some(function(value) {
           return value != null && String(value).trim() === raw;
         });
+      }) || posts.length > 0 && posts.every(function(post) {
+        return !!core._findOfficePos(Array.isArray(G && G.officeTree) ? G.officeTree : [], post) || core._isKnownOfficeType(G, post);
       });
     }
     function _tmStrictRegionRows(G) {
       var rows = [];
-      var seen = [];
+      var seen = [], identities = /* @__PURE__ */ new Set();
       function add(row) {
         if (!row || typeof row !== "object" || seen.indexOf(row) >= 0) return;
         seen.push(row);
-        rows.push(row);
+        var identity = row.id != null && row.name != null ? JSON.stringify([String(row.id), String(row.name)]) : null;
+        if (identity === null || !identities.has(identity)) rows.push(row);
+        if (identity !== null) identities.add(identity);
         if (Array.isArray(row.children)) row.children.forEach(add);
         if (Array.isArray(row.subs)) row.subs.forEach(add);
         if (Array.isArray(row.divisions)) row.divisions.forEach(add);
@@ -6342,8 +6364,30 @@
       });
       return out;
     }
-    function _collectValidatorFailures(G, baseline) {
+    function _isNarrativeEventScan(key) {
+      return /^_?(war|revolt|disaster|diplomacy|keju|party|edictEffect|courtCeremony|construction|omen|marriageBirth|conspiracy|currency|religion)(ValidatorLog)?$/.test(key);
+    }
+    function _collectNarrativeReviews(G, baseline, opts) {
+      var reviews = [];
+      _AI_VALIDATOR_LOG_KEYS.filter(function(key) {
+        return opts && opts._deferNarrativeRepairs === true || _isNarrativeEventScan(key);
+      }).forEach(function(key) {
+        var known = baseline[key] instanceof Set ? baseline[key] : /* @__PURE__ */ new Set();
+        (Array.isArray(G && G[key]) ? G[key] : []).forEach(function(row) {
+          if (!row || known.has(row) || Number(row.turn || 0) !== Number(G.turn || 0)) return;
+          var fields = opts && opts._deferNarrativeRepairs === true ? ["warnings", "missing", "skipped", "errors"] : ["warnings"];
+          fields.forEach(function(field) {
+            (Array.isArray(row[field]) ? row[field] : row[field] ? [row[field]] : []).forEach(function(detail) {
+              reviews.push({ validator: key, kind: "narrative-warning", field, detail, samples: row.samples });
+            });
+          });
+        });
+      });
+      return reviews;
+    }
+    function _collectValidatorFailures(G, baseline, opts) {
       var failures = [];
+      if (opts && opts._deferNarrativeRepairs === true) return failures;
       _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
         var known = baseline[key] instanceof Set ? baseline[key] : /* @__PURE__ */ new Set();
         var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) {
@@ -6352,10 +6396,19 @@
         rows.forEach(function(row) {
           if (!row || Number(row.turn || 0) !== Number(G && G.turn || 0)) return;
           var details = [];
-          ["warnings", "missing", "skipped", "errors"].forEach(function(field) {
+          var fields = ["missing", "skipped", "errors"];
+          var narrativeEventScan = _isNarrativeEventScan(key);
+          if (!narrativeEventScan) fields.push("warnings");
+          fields.forEach(function(field) {
             if (Array.isArray(row[field]) && row[field].length) details = details.concat(row[field]);
           });
-          if (details.length) failures.push({ validator: key, field: key, code: "consistency-unlanded", reason: "consistency validation failed", details: details.slice(0, 8), detailCount: details.length });
+          if (details.length) {
+            var description = details.slice(0, 3).map(function(detail) {
+              if (!detail || typeof detail !== "object") return String(detail);
+              return String(detail.kind || detail.code || detail.reason || "未落地") + (detail.keyword ? "（" + detail.keyword + "）" : "") + (detail.mentioned != null ? "：叙事 " + detail.mentioned + "，已记录 " + (detail.structured == null ? detail.adjusted : detail.structured) : "");
+            }).join("；");
+            failures.push({ validator: key, field: key, code: "consistency-unlanded", reason: "一致性校验未落地：" + description, details: details.slice(0, 8), detailCount: details.length });
+          }
         });
       });
       return failures;
@@ -6368,7 +6421,10 @@
         var message = String(error && (error.message || error) || "validator exception");
         if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, "applier] " + name + " validator:");
         else console.warn("[applier] " + name + " validator:", error);
-        if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
+        if (error.fiscalPosting !== true && (_isNarrativeEventScan(name) || aiOutput && aiOutput._deferNarrativeRepairs === true)) {
+          if (!Array.isArray(applied.reviewRequired)) applied.reviewRequired = [];
+          applied.reviewRequired.push({ validator: name, kind: "validator-exception", detail: { message } });
+        } else if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
           if (!Array.isArray(applied.failed)) applied.failed = [];
           applied.failed.push({ validator: name, reason: "validator exception", details: [message] });
         }
@@ -6435,6 +6491,26 @@
         });
       });
       return failures;
+    }
+    function runAtomicMutation(mutator) {
+      var G = global.GM, P0 = global.P, gs, ps;
+      try {
+        gs = _captureAIStateObject(G, ["_postTurnJobs", "_postTurnDetachedJobs", "_indices"]);
+        if (P0) ps = _captureAIStateObject(P0, ["scenario", "_indices"]);
+        var result = mutator({ beforeGM: gs.data, beforeP: ps && ps.data });
+        if (result && typeof result.then === "function") throw new Error("atomic mutation must be synchronous");
+        var failures = _validateAIResultState(G);
+        if (!result || result.ok !== true || failures.length) throw new Error(failures.map(function(f) {
+          return f.path + ": " + f.reason;
+        }).join("; ") || result && result.reason || "review write rejected");
+        _refreshAIIndices(G, P0);
+        return result;
+      } catch (e) {
+        if (gs) _restoreAIStateObject(G, gs);
+        if (ps) _restoreAIStateObject(P0, ps);
+        _refreshAIIndices(G, P0);
+        return { ok: false, rolledBack: true, reason: String(e && e.message || e) };
+      }
     }
     function applyAITurnChangesAtomic(aiOutput) {
       var G = global.GM;
@@ -6524,7 +6600,9 @@
       _hasInstantArrivalRule,
       _captureValidatorBaseline,
       _collectValidatorFailures,
+      _collectNarrativeReviews,
       _runConsistencyValidator,
+      runAtomicMutation,
       applyAITurnChangesAtomic,
       _syncFiscalScalars,
       legacyExports: {
@@ -6726,6 +6804,7 @@
     });
     core.bindModules({ validators, reconcile });
     core.facade.writeGuards = Object.freeze({
+      runAtomicMutation: reconcile.runAtomicMutation,
       sensitiveCharFieldSourced: validators._sensitiveCharFieldSourced
     });
     return {

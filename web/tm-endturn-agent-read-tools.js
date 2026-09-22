@@ -51,12 +51,16 @@
   // 安全读路径:"guoku" / "GM.guoku" / "chars.0.name"·返回 {ok, value} 或 {ok:false}
   function _readPath(gm, path) {
     if (!gm || path == null) return { ok: false };
-    var p = String(path).replace(/^GM\./, '').replace(/^\$\.?/, '');
+    var p = String(path).replace(/^GM\./, '').replace(/^\$\.?/, '').replace(/\[([^\]]+)\]/g,function(_,k){return '.'+k.replace(/^['"]|['"]$/g,'');});
     var parts = p.split('.').filter(function (s) { return s !== ''; });
     if (parts.some(_unsafeSegment)) return { ok: false };
     var cur = gm;
     for (var i = 0; i < parts.length; i++) {
       if (cur == null || typeof cur !== 'object') return { ok: false };
+      if(Array.isArray(cur)&&!/^\d+$/.test(parts[i])){
+        var matched=cur.filter(function(row){return row&&(String(row.id)===parts[i]||row.name===parts[i]);});
+        if(matched.length!==1)return {ok:false};cur=matched[0];continue;
+      }
       if (!Object.prototype.hasOwnProperty.call(cur, parts[i])) return { ok: false };
       cur = cur[parts[i]];
     }
@@ -105,7 +109,7 @@
     if (gm.guoku != null) L.push('国库 ' + _dump(gm.guoku, { maxLen: 120 }));
     if (gm.neitang != null) L.push('内帑 ' + _dump(gm.neitang, { maxLen: 120 }));
     if (gm.population != null) L.push('人口 ' + _dump(gm.population, { maxLen: 120 }));
-    ['chars', 'facs', 'armies', 'activeWars', 'memorials', 'activeEdicts'].forEach(function (k) {
+    ['chars', 'facs', 'parties', 'classes', 'armies', 'activeWars', 'memorials', 'activeEdicts'].forEach(function (k) {
       var v = gm[k];
       if (Array.isArray(v)) L.push(k + ' 计 ' + v.length + ' 项');
     });
@@ -313,7 +317,7 @@
   var DEFS = [
     { name: 'get_overview', description: '速览当前局面(回合/国库/人口/各类实体数/近期大事)。开局先看它把握大局。', parameters: { type: 'object', properties: {}, required: [] } },
     { name: 'get_field', description: '读取存档任意字段(按路径·万能兜底)。路径如 "guoku"/"chars.0.name"/"facs"。要确认某个具体数值/字段时调用。', parameters: { type: 'object', properties: { path: { type: 'string', description: 'GM 下的字段路径' } }, required: ['path'] } },
-    { name: 'list_entities', description: '列出某类实体的索引(每条一行摘要)。kind: chars/factions/provinces/armies/events/memorials/edicts/wars/relations。要纵览某一类时调用。', parameters: { type: 'object', properties: { kind: { type: 'string' }, limit: { type: 'number' } }, required: ['kind'] } },
+    { name: 'list_entities', description: '列出某类实体的索引(每条一行摘要)。kind: chars/factions/parties/classes/provinces/armies/events/memorials/edicts/wars/relations/letters/qiju。要纵览某一类时调用。', parameters: { type: 'object', properties: { kind: { type: 'string' }, limit: { type: 'number' } }, required: ['kind'] } },
     { name: 'inspect_entity', description: '细查单个实体的完整记录。要深挖某人/某势力/某地详情时调用。', parameters: { type: 'object', properties: { kind: { type: 'string' }, id: { type: 'string', description: '实体 id / 名称 / 下标' } }, required: ['kind', 'id'] } },
     { name: 'search_save', description: '全局关键词检索存档(跨人物/势力/地块/事件/奏疏…)。不确定相关内容在哪时调用。', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
     { name: 'recall_history', description: '按关键词检索历史先例与永久记忆,为推演找依据(复用记忆检索②)。', parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
@@ -326,6 +330,7 @@
 
   DEFS.push({ name: 'read_memory', description: '根据记忆 ID 展开证据与来源，不得编造 ID。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 } }, required: ['ids'] } },
     { name: 'recall_related', description: '沿记忆因果、解决与矛盾关系追查一跳关联证据。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 } }, required: ['ids'] } });
+  if(TM.AgentWorldEditor)DEFS.push({name:'read_world',description:'分页读取任意游戏业务数据，path为空列出所有顶层数据；数组支持名称或ID。',parameters:{type:'object',properties:{path:{type:'string'},offset:{type:'integer'},length:{type:'integer'}}}});
   var SPECS = DEFS.map(function (d) { return Object.assign({}, d, { effect: 'read', domain: 'runtime-observe', pack: 'runtime-read', risk: 'low', idempotent: true }); });
   var REGISTRY = (TM.AgentKernel && TM.AgentKernel.createRegistry) ? TM.AgentKernel.createRegistry(SPECS) : null;
   var TOOL_SET = {};
@@ -338,6 +343,7 @@
     try {
       if (TM.MemoryModeBridge && TM.MemoryModeBridge.isRead(name)) return await TM.MemoryModeBridge.read(name, input, ctx);
       switch (name) {
+        case 'read_world': return {ok:true,name:name,text:JSON.stringify(TM.AgentWorldEditor.inspect(gm,input))};
         case 'get_overview':   return { ok: true, name: name, text: _getOverview(gm) };
         case 'get_field':      return { ok: true, name: name, text: _getField(gm, input.path) };
         case 'list_entities':  return { ok: true, name: name, text: _listEntities(gm, input.kind, input.limit) };

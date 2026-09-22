@@ -33,13 +33,14 @@ test('confirmed SSE output and normal non-finalized message streams retain all t
     assert.equal(second,first);assert.equal(calls,1);
   }finally{f.dispose();}
 });
-test('reused proposals still fail the unchanged narrative-completeness gate',async()=>{
+test('reused proposals require completed main narrative while optional prose may be deferred',async()=>{
   const f=fixture();let validations=0;try{
     load(f.c,'tm-endturn-validity.js');f.c.fetch=async()=>f.okay(f.response('{"turn_summary":"valid structured proposal"}'));
     const a=await f.begin();await f.request();f.rollback(a);await f.begin();const result=await f.request();
     const parsed=JSON.parse(result.choices[0].message.content);validations++;
     const check=f.c.TM.Endturn.Validity.validateBeforeCommit({results:{sc1:parsed,aiResult:{shizhengji:'完整时政记',zhengwen:''}}});
-    assert.equal(check.status,'failed');assert(check.reasons.includes('正文为空或为失败文本'));assert.equal(validations,1);
+    assert.equal(check.status,'degraded');assert(check.warnings.some(w=>w.includes('辅助正文未完成')));assert.equal(validations,1);
+    const missing=f.c.TM.Endturn.Validity.validateBeforeCommit({results:{sc1:parsed,aiResult:{shizhengji:'',zhengwen:''}}});assert.equal(missing.status,'failed');assert(missing.reasons.includes('时政记为空或为失败文本'));
   }finally{f.dispose();}
 });
 test('cancellation or configuration change during lookup cannot publish a stale cache hit',async()=>{

@@ -285,6 +285,7 @@
     var world = global.GM, player = global.P, generation = global._tmLoadGen, turn = world && world.turn;
     var worldKey = [world && world._campaignId, world && world._timelineId].join('|');
     function assertCurrent() {
+      if (Number.isFinite(opts.deadlineAt) && Date.now()>=opts.deadlineAt) {var expired=new Error("原调用明确总时限已到，不再启动身份修复或应急恢复");expired.code="AI_REQUEST_DEADLINE";throw expired;}
       if (global.GM !== world || global.P !== player || global._tmLoadGen !== generation || world.turn !== turn || worldKey !== [world._campaignId,world._timelineId].join('|') || opts.signal && opts.signal.aborted) {
         var stale = new Error('主写回修复期间世界已改变或操作取消，旧修复已丢弃'); stale.code = 'AI_STALE_WORLD'; stale.mainWriteback = true; throw stale;
       }
@@ -293,7 +294,9 @@
     var validation = global.validateAIWriteBackBatch(current, { source:opts.source || 'endturn-full-p1' });
     var attempts = 0;
     var lastRepairFailureCode = '';
-    while (!validation.ok && attempts < 2) {
+    var retryPolicy = global.TM && TM.CallRetryPolicy ? TM.CallRetryPolicy.options({id:opts.id||'sc1',maxRetries:2}) : {maxRetries:2};
+    var normalLimit = retryPolicy.maxRetries;
+    while (!validation.ok && attempts < normalLimit) {
       if (typeof callAI !== 'function') break;
       assertCurrent();
       var repairable = validation.failures.filter(function(failure) {
@@ -322,8 +325,8 @@
         '失败项：' + JSON.stringify(failures) + '\n' +
         '可用候选：' + JSON.stringify(_collectWritebackRepairCandidates()) + '\n' +
         '原叙事节选：' + String(current.shizhengji || current.narrative || '').slice(0, 1800);
-      var rawRepair = await callAI(prompt, 2200, undefined, 'secondary', {
-        priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0, signal:opts.signal
+      var rawRepair = await callAI(prompt, 2200, opts.signal, 'secondary', {
+        id:(opts.id||'sc1')+':identity-normal', priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0, signal:opts.signal, _turnRetriesResolved:true, _noSecFallback:true, totalResponseTimeoutMs:Number.isFinite(opts.deadlineAt)?Math.max(1,opts.deadlineAt-Date.now()):undefined
       });
       assertCurrent();
       var repair = _applyTargetedWritebackRepairs(current, _parseWritebackRepair(rawRepair), allowlist);
@@ -333,6 +336,16 @@
       }
       current = repair.output;
       validation = global.validateAIWriteBackBatch(current, { source:'endturn-writeback-repair-' + attempts });
+    }
+    if (!validation.ok && attempts >= normalLimit && global.TM && TM.RecoveryAdapters) {
+      assertCurrent();
+      var permissions = _buildWritebackRepairAllowlist(validation.failures);
+      var recovered = await TM.RecoveryAdapters.identity({id:opts.id||'sc1',batch:current,validation:validation,normalExhausted:true,normalAttempts:attempts+1,
+        error:{code:'ai-writeback-preflight-failed'},tier:global.P&&P.ai&&P.ai.secondary&&P.ai.secondary.key?'secondary':'primary',signal:opts.signal,guard:assertCurrent,deadlineAt:opts.deadlineAt,
+        repair:function(plan){return _applyTargetedWritebackRepairs(current,plan,permissions);},
+        validate:function(candidate){return global.validateAIWriteBackBatch(candidate,{source:'emergency-preflight'});}});
+      if(recovered.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(recovered.error.code))throw recovered.error;
+      assertCurrent();if (recovered.ok) { current=recovered.value; validation=global.validateAIWriteBackBatch(current,{source:'emergency-final-preflight'}); }
     }
     if (!validation.ok) {
       var error = new Error('AI 主写回预检失败；本回合未修改世界状态，可重新生成本回合');
@@ -428,7 +441,7 @@ inst._imprisonedTurn = GM.turn||0;
   ns.stages._applyCore_reconcile = async function(ctx) {
     var p1 = ctx.results.sc1 || null;
     if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeOutput(p1);
-        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1' });
+        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1', id:'sc1', deadlineAt:ctx.meta&&ctx.meta.sc1RecoveryDeadline, signal:ctx.signal || ctx.meta && ctx.meta.signal });
         p1 = _strictPreflight.output;
         ctx.results.sc1 = p1;
         // char_updates 的 alive/dead 先在原始 p1 上规范化：后续既有 applyCharacterDeaths(p1)
@@ -439,8 +452,9 @@ inst._imprisonedTurn = GM.turn||0;
         try {
           if (typeof applyAITurnChanges !== 'function') { var missing = new Error('主写回应用器未加载'); missing.code = 'writeback-applier-unavailable'; throw missing; }
           if (typeof applyAITurnChanges === 'function') {
-            var _applyRes1 = applyAITurnChanges({
+            var _mainWritebackBatch1 = {
               _strictValidation: true,
+              _deferNarrativeRepairs: !!(ctx.meta && ctx.meta.requireTurnReview),
               narrative: p1.shizhengji || '',
               changes: Array.isArray(p1.changes) ? p1.changes : [],
               appointments: Array.isArray(p1.appointments) ? p1.appointments : [],
@@ -477,7 +491,12 @@ inst._imprisonedTurn = GM.turn||0;
               // 问天 directive 合规回报
               directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : [],
               regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
-            });
+            };
+            var _applyRes1 = applyAITurnChanges(_mainWritebackBatch1);
+            if (_applyRes1 && !_applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview && TM.RecoveryReview) {
+              TM.RecoveryReview.prepareRepair(_applyRes1,_mainWritebackBatch1,p1,ctx);
+              ctx.meta.deferredMainOutput=p1;
+            }
             if (_deathNorm1.failed && _deathNorm1.failed.length) {
               _applyRes1.applied = _applyRes1.applied || {};
               _applyRes1.applied.failed = Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : [];
@@ -492,12 +511,18 @@ inst._imprisonedTurn = GM.turn||0;
               _failed1.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons1[r]=(_reasons1[r]||0)+1; });
               var _sum1 = Object.keys(_reasons1).map(function(r){ return r + '×' + _reasons1[r]; }).join('·');
               var _sample1 = _failed1.slice(0, 3).map(function(f){
-                return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+                return '[' + ((f && f.kind) || (f && f.field) || (f && f.validator) || '?') + ':' + ((f && f.target) || (f && f.ref) || (f && f.details && f.details[0] && f.details[0].keyword) || '?') + '] ' + ((f && f.reason) || '');
               }).join(' | ');
               var failedWriteback = new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
                failedWriteback.code = 'ai-writeback-atomic-failed'; failedWriteback.mainWriteback = true;
                failedWriteback.writebackFailures = _failed1.slice(); throw failedWriteback;
             }
+          }
+          if (_applyRes1 && _applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview) {
+            try {
+              if (global.TM && TM.RecoveryReview) TM.RecoveryReview.prepare(_applyRes1,p1,ctx);
+              else ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:'复核模块尚未加载'};
+            } catch(reviewError) {ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:String(reviewError.message||reviewError)};console.warn('[TurnReview] 复核准备延后，主推演继续:',reviewError.message);}
           }
         } catch(_applyErr) {
           (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr);
@@ -593,6 +618,7 @@ inst._imprisonedTurn = GM.turn||0;
               'office_assignments: ' + JSON.stringify((_rec.structuredSnapshot.office_assignments||[]).slice(0,5)) + '\n' +
               'fiscal_adjustments: ' + JSON.stringify((_rec.structuredSnapshot.fiscal_adjustments||[]).slice(0,5)) + '\n' +
               'military_changes: ' + JSON.stringify((_rec.structuredSnapshot.military_changes||[]).slice(0,5)) + '\n\n' +
+              '这些是关键词扫描线索，不是已证实错误。先查完整上下文：人物出行、机构职权、旧事、计划、传闻和否定句不表示本回合新增事件；不得仅凭词语补造战争、外交、婚姻或法令。无法确认真实发生时调用 record_no_changes。\n' +
               '请检查 narrative 中提到但未在结构化数据里体现的状态变化·只补遗漏的·不要重复已写过的。\n' +
               '使用提供的 5 个工具之一记录补录·若完全无需补录请调用 record_no_changes。\n' +
               '注意：每个工具可调用多次·按领域分别调用（人事/任命/财政/军事各自独立）。';

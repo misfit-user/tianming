@@ -495,6 +495,11 @@ function openSaveManager() {
     _renderSaveManagerUI(ov, saves, preEndturnRec);
   }).catch(function(e) {
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'openSaveManager') : console.error('[openSaveManager] 加载失败:', e);
+    if(window.tianming&&window.tianming.isDesktop){
+      ov.textContent='';var box=document.createElement('div');box.className='generic-modal scroll-panel';box.style.padding='2rem';
+      var text=document.createElement('p');text.textContent='暂时无法读取存档目录，这不代表旧存档已经删除。请完全退出天命后重开，并检查磁盘空间。';box.appendChild(text);
+      var close=document.createElement('button');close.textContent='关闭';close.onclick=closeSaveManager;box.appendChild(close);ov.appendChild(box);return;
+    }
     // 降级：从 localStorage 索引读
     var saves = SaveManager.getAllSaves();
     _renderSaveManagerUI(ov, saves, null);

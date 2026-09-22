@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-21",
+  "sourceApplied": true,
+  "sourceRoot": "C:/Users/37814/Desktop/tianming",
+  "release": false,
+  "automaticVerification": {
+    "relatedSuites": {
+      "pass": 52,
+      "fail": 0
+    },
+    "reviewCases": {
+      "pass": 18,
+      "fail": 0
+    },
+    "fiscalCases": 15,
+    "fiscalAssertions": 171,
+    "bundleReproducible": true,
+    "nativePreparationManifest": "PASS",
+    "architecture": {
+      "pass": 12,
+      "fail": 1,
+      "existingFailure": "editor.html -> TM.NativeWorld <- tm-native-fiscal-adapter.js"
+    }
+  },
+  "liveAcceptance": {
+    "status": "pending-user-reopen",
+    "reason": "User closed the game and requested acceptance after the code fix. No additional instance was launched.",
+    "latestCompletedTurnWithThisPatch": false,
+    "lastObservedFailureBeforeThisPatch": "narrative validator false positives: character travel north; authority over diplomatic payments",
+    "storageIncident": "Earlier overlapping-process IndexedDB failure was resolved by the user-authorized clean restart; it is not the latest failure."
+  },
+  "testMethod": "Production renderer applier, fiscal engine, Agent tools, infer orchestration and commit gates are executed with fixture model responses. This is not live API/end-turn acceptance.",
+  "historicalPlayerSave": "No original edict or save supplied; the exact old-save trigger cannot be confirmed.",
+  "originalEvidenceReview": {
+    "sourceApplied": true,
+    "relatedSuites": {
+      "pass": 62,
+      "fail": 0
+    },
+    "reviewCases": {
+      "pass": 29,
+      "fail": 0
+    },
+    "fullOriginals": true,
+    "lateResultsReviewed": true,
+    "actualReadback": true,
+    "agentAfterWriteVerification": true,
+    "liveAcceptance": "pending-user-reopen"
+  }
+}

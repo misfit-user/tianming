@@ -7,9 +7,11 @@ test('normal desktop save keeps all turn-data bytes and commits both full slots'
   assert.equal(f.disk.size,2);assert.equal(JSON.stringify(f.calls[0].payload.data),before);assert.equal(f.calls[0].method,'stageTurnData');
   assert.equal(f.timers.size,0);assert.equal(f.api.bridgeDiagnostics().pending,0);
 });
-test('a never-returning stage aborts pre-commit waiting without publishing or saving',async()=>{
+test('a never-returning auxiliary stage preserves complete output in both canonical saves',async()=>{
   const f=fixture();let finish;f.c.tianming.stageTurnData=()=>new Promise(resolve=>{finish=resolve;});
-  const p=watch(f.save());await tick();assert.equal(f.fire(),1);assert.equal((await p).value,false);assert.equal(f.disk.size,0);
+  const p=watch(f.save());await tick();assert.equal(f.fire(),1);assert.equal((await p).value,true);assert.equal(f.disk.size,2);
+  for(const state of f.disk.values())assert.equal(JSON.stringify(state.GM._deferredTurnData[0].data),JSON.stringify(f.ctx.meta.turnPresentation.turnData));
+  assert.equal(f.ctx.meta.turnSaveWarnings[0].code,'TURN_BRIDGE_TIMEOUT');
   assert(!f.events.includes('delete-receipt'));assert(!f.ctx.meta.stagedTurnData);finish({success:true});await tick();assert(!f.ctx.meta.stagedTurnData);
   assert.equal(f.api.bridgeDiagnostics().pending,0);
 });
@@ -109,9 +111,11 @@ test('a live cancellation ends waiting but keeps the conflicting operation locke
   const p=watch(f.api.callTurnBridge('publishTurnData',f.marker(),{signal:ctrl.signal}));await tick();ctrl.abort();assert.equal((await p).error.code,'TURN_BRIDGE_ABORTED');
   assert.equal((await watch(f.api.callTurnBridge('recoverTurnData',f.marker()))).error.code,'TURN_BRIDGE_PENDING');assert.equal(f.timers.size,0);finish({success:true});await tick();assert.equal(f.api.bridgeDiagnostics().pending,0);
 });
-test('explicit desktop rejection never masquerades as a successful stage',async()=>{
+test('explicit auxiliary rejection is reported while full original output survives canonical commit',async()=>{
   const f=fixture();f.c.tianming.stageTurnData=async()=>({success:false,error:'disk unavailable'});
-  assert.equal(await f.save(),false);assert.equal(f.disk.size,0);assert.equal(f.api.bridgeDiagnostics().pending,0);
+  assert.equal(await f.save(),true);assert.equal(f.disk.size,2);assert.equal(f.api.bridgeDiagnostics().pending,0);
+  assert.equal(f.ctx.meta.stagedTurnData,null);assert.equal(f.ctx.meta.turnSaveWarnings[0].stage,'turn-data');
+  for(const state of f.disk.values())assert.equal(JSON.stringify(state.GM._deferredTurnData[0].data),JSON.stringify(f.ctx.meta.turnPresentation.turnData));
 });
 test('protocol changes and a replaced bridge during checksum never send stale stage data',async()=>{
   const f=fixture();f.c.tianming.turnDataProtocolVersion=1;

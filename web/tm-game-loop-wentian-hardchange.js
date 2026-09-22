@@ -332,6 +332,7 @@ function _wtScheduleHardChangeRefresh(normalizedPath, oldVal, newVal) {
 }
 
 function _wtAfterHardChange(normalizedPath, oldVal, newVal) {
+  if (typeof TM!=='undefined' && TM.AgentWorldEditor) TM.AgentWorldEditor.note(GM,normalizedPath,'问天已确认的直接修改');
   // \u64A4\u9500\u5FEB\u7167\u7A97\u53E3\uFF08\u5200B\u00B7\u4EC5\u786E\u8BA4\u73B0\u573A\u6B66\u88C5\uFF09\u00B7typeof \u5B88\u536B\uFF1A\u90E8\u5206 smoke \u6309\u7A97\u53E3\u5207\u7247\u88C5\u8F7D\u672C\u6587\u4EF6\u00B7\u58F0\u660E\u53EF\u80FD\u4E0D\u5728\u5207\u7247\u5185
   try { if (typeof _wtUndoCaptureBuf !== 'undefined' && _wtUndoCaptureBuf) _wtUndoCaptureBuf.push({ path: normalizedPath, old: oldVal, nv: newVal }); } catch (_wtCapE) {}
   _wtScheduleHardChangeRefresh(normalizedPath, oldVal, newVal);
@@ -985,6 +986,13 @@ function _wtApplyHardChange(path, op, value, opts) {
     if (!_navGate.ok) return false;
   }
   // 导航到父对象
+  if (typeof TM !== 'undefined' && TM.AgentWorldEditor) {
+    var edited = TM.AgentWorldEditor.write(root, parts.join('.'), op || 'set', value, opts || {});
+    if (!edited.ok) return false;
+    if (root === GM) _wtSyncHardChangeSideEffects(parts, edited.new);
+    _wtAfterHardChange(edited.path || normalizedPath, edited.old, edited.new);
+    return true;
+  }
   var cur = root;
   for (var i = 0; i < parts.length - 1; i++) {
     var k = parts[i];

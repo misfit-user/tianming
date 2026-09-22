@@ -273,6 +273,9 @@
       };
     }
     async function _parseOrRepairJsonResult(raw, data, label, opts) {
+      return global.TM && TM.RecoveryRuntime ? TM.RecoveryRuntime.parse(raw,data,label,opts,_parseOrRepairJsonResultNormal) : _parseOrRepairJsonResultNormal(raw,data,label,opts);
+    }
+    async function _parseOrRepairJsonResultNormal(raw, data, label, opts) {
       opts = opts || {};
       var expectedKeys = opts.expectedKeys || [];
       var parsed = (typeof extractJSON === "function") ? extractJSON(raw) : null;
@@ -411,7 +414,7 @@
       try {
         if (typeof _aiFetchWithRetry === 'function') {
           data = await _aiFetchWithRetry(callUrl, body, opts.signal || null, {
-            apiKey: key,
+            apiKey: key, tier:(_thinkingCfg && _thinkingCfg.tier)||'primary',
             priority: opts.priority || 'normal',
             timeoutMs: opts.timeoutMs,
             maxRetries: opts.maxRetries,
@@ -489,7 +492,7 @@
             repairPriority: opts.repairPriority,
             repairTimeoutMs: opts.repairTimeoutMs,
             repairMaxRetries: opts.repairMaxRetries,
-            retryBudget: opts.retryBudget, signal: opts.signal, id: opts.id
+            retryBudget: opts.retryBudget, signal: opts.signal, id: opts.id, tier:opts.tier || (_thinkingCfg && _thinkingCfg.tier) || 'primary', maxRetries:opts.maxRetries
           });
           if (parsed && parsed.repaired && typeof recordAIDiagnostic === 'function') {
             recordAIDiagnostic('json_repair', { id: opts.id || '', label: label, raw_len: String(raw || '').length });
@@ -1061,6 +1064,7 @@
             + '失败原因:' + _clip(reason && (reason.message || reason), 500) + '\n'
             + '规则: 不确定就留空；不得编造死亡、大战、巨额资源变化；每个实际数值变化必须写reason；所有数组可为空。\n'
             + 'JSON字段: {"turn_summary":"","shizhengji_basis":"","events":[],"edict_feedback":[],"resource_changes":{},"char_updates":[],"fiscal_adjustments":[],"changes":[],"player_status":"","player_inner":""}';
+          prompt += ns.sc1WritebackContractHint();
           var body = { model:P.ai.model || 'gpt-4o', messages:[{role:'system', content:'Return strict JSON only. You are a conservative structured ledger rescue pass.'},{role:'user', content:prompt}], temperature:0.25, max_tokens:_tok(Math.min(_effectiveOutCap || 3500, 3500)) };
           if (_modelFamily === 'openai') body.response_format = { type:'json_object' };
           var call = await _callEndturnAI(body, { id:'sc1_rescue', label:'结构化数据救援', expectedKeys:['turn_summary','shizhengji_basis','events','resource_changes','char_updates','edict_feedback','fiscal_adjustments','changes'], priority:'critical', timeoutMs:60000, maxRetries:0, repairTimeoutMs:30000, repairMaxRetries:0, repairTokens:3000 });
@@ -1197,7 +1201,7 @@
         if (typeof _awaitPostTurnJobs === 'function') await _awaitPostTurnJobs();
         if (typeof _ensureMemoryFreshness === 'function') _ensureMemoryFreshness(GM);
         if (typeof recordMemoryDiagnostic === 'function') recordMemoryDiagnostic('turn_start', { stage: 'after_post_turn_jobs', snapshot: (typeof buildMemoryDiagnosticSnapshot === 'function' ? buildMemoryDiagnosticSnapshot(GM) : null) });
-      } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); throw _emfE; }
+      } catch(_emfE) { if(_emfE&&(_emfE.name==='AbortError'||/AI_STALE|AI_ABORTED/.test(_emfE.code||'')))throw _emfE;_dbg('[MemoryFresh] 辅助记忆待补正，继续主推演:', _emfE); }
 
       // ═══════════════════════════════════════════════════════════
       // §3 Sub-calls sc0/sc05/sc1/sc1b/sc1c（深度思考·记忆·主推演·文事·势力）
@@ -1237,7 +1241,7 @@
         _checkTruncated(data0, '局势分析');
         if (_sc0Call.raw) {
           aiThinking = _sc0Call.raw;
-          var _sc0Parsed = await _parseOrRepairJsonResult(aiThinking, data0, '局势分析', { url: url, key: P.ai.key, body: _sc0Body, expectedKeys: ['tensions', 'consequences', 'memoryQueries'], priority: 'normal' });
+          var _sc0Parsed = await _parseOrRepairJsonResult(aiThinking, data0, '局势分析', { id:'sc0', url: url, key: P.ai.key, body: _sc0Body, expectedKeys: ['tensions', 'consequences', 'memoryQueries'], priority: 'normal' });
           if (_sc0Parsed && _sc0Parsed.repaired) aiThinking = _sc0Parsed.raw;
           GM._turnAiResults.thinking = aiThinking;
           // ①-S1 读 anomaly 信号·存 GM._turnAiResults.anomaly 供后续响应（开关控制·S2 消费）
@@ -1333,7 +1337,7 @@
           if (_sc1qRf) _sc1qBody.response_format = _sc1qRf;
           var _sc1qCall = await _callEndturnAI(_sc1qBody, { id: 'sc1q', label: '对话承诺推演', priority: 'normal' });
           if (_sc1qCall && _sc1qCall.data) _checkTruncated(_sc1qCall.data, '对话承诺推演');
-          var _sc1qParse = (_sc1qCall && _sc1qCall.parse) || await _parseOrRepairJsonResult((_sc1qCall && _sc1qCall.raw) || '', _sc1qCall && _sc1qCall.data, '对话承诺推演', { url: url, key: P.ai.key, body: _sc1qBody, expectedKeys: ['dialogue_commitments', 'collective_resolutions', 'npc_dialogue_intent', 'required_sc1_actions'], priority: 'normal' });
+          var _sc1qParse = (_sc1qCall && _sc1qCall.parse) || await _parseOrRepairJsonResult((_sc1qCall && _sc1qCall.raw) || '', _sc1qCall && _sc1qCall.data, '对话承诺推演', { id:'sc1q', url: url, key: P.ai.key, body: _sc1qBody, expectedKeys: ['dialogue_commitments', 'collective_resolutions', 'npc_dialogue_intent', 'required_sc1_actions'], priority: 'normal' });
           var pq = (_sc1qParse && _sc1qParse.parsed) || null;
           if (pq) {
             ctx.results = ctx.results || {};
@@ -2511,7 +2515,7 @@
         // 专题政策动作：只记录 AI 明确推出的硬政策，applier 会经 EdictParser 复用诏令政务桥落账
         "\"currency_adjustments\":[{\"action\":\"ban_private_mint/issue_paper/abolish_paper/debase_coin\",\"paperName\":\"会子/宝钞(可选)\",\"coinType\":\"copper/silver/iron/gold(可选)\",\"amount\":1000000,\"reserveRatio\":0.3,\"reason\":\"依据\"}],"+
         "\"population_adjustments\":[{\"action\":\"purge_hidden/resettle_refugees/baojia_setup/recount\",\"region\":\"地区(可选)\",\"amount\":0,\"reason\":\"依据\"}],"+
-        "\"central_local_actions\":[{\"action\":\"transfer_to_region/force_levy/dispatch_censor/set_region_allocation\",\"region\":\"地区\",\"amount\":50000,\"qiyunRatio\":0.7,\"cunliuRatio\":0.3,\"purpose\":\"disaster_relief/military_funding/regional_support\",\"reason\":\"依据\"}],"+
+        "\"central_local_actions\":[{\"action\":\"transfer_to_region/force_levy/dispatch_censor/set_region_allocation\",\"fromAccount\":\"guoku.money/neitang.money\",\"region\":\"地区\",\"amount\":50000,\"qiyunRatio\":0.7,\"cunliuRatio\":0.3,\"purpose\":\"disaster_relief/military_funding/regional_support\",\"reason\":\"依据\"}],"+
         "\"environment_actions\":[{\"action\":\"ban_logging/dredge/reclaim/fallow/open_waste\",\"region\":\"地区\",\"policyId\":\"可选\",\"reason\":\"依据\"}],"+
         "\"institution_changes\":[{\"action\":\"create/abolish\",\"name\":\"制度或官司名\",\"rank\":5,\"duties\":\"职责\",\"reason\":\"依据\"}],"+
         // 问天 directive 合规回报（若有 directive 则必填，逐条回报）
@@ -2530,7 +2534,7 @@
         // ★ P11.2B 诏令冲突链（KokoroMemo graph.py 范式·8 边类型缩为 4 种）
         "\"edict_relations\":[{\"from\":\"诏令编码或简称(如 T15-E03 / 盐法)\",\"to\":\"另一诏令编码或简称\",\"type\":\"supersedes/contradicts/continues/elaborates\",\"reason\":\"为何这样关联(40字)\"}]" +
         "}";
-      tp1 += '\n财政字段约定：诏令执行的国库、内帑、地方库收付一律逐项填 fiscal_adjustments（target、kind、resource、amount、reason）；一次性收付 recurring:false，年例 recurring:true。currentEffects仅写非财务变量，不能另写库款余额；同一笔费用不得在两处重复申报。';
+      tp1 += '\n财政字段约定：直接收支逐项填 fiscal_adjustments（target、kind、resource、amount、reason）；央地调拨由 central_local_actions 的 transfer_to_region 单独扣款，须写 fromAccount（guoku.money/neitang.money），同笔不得再填 fiscal_adjustments。一次性收付 recurring:false，年例 recurring:true。currentEffects仅写非财务变量，不能另写库款余额。';
       // SC1 只负责结构化账本；实录/时政记交给 sc1d 专项成文，避免主推演同时承载长文本。
       try {
         tp1 = tp1.replace(/"turn_summary":"[^"]*",\s*"shilu_text":"[\s\S]*?",\s*"szj_title":"[\s\S]*?",\s*"shizhengji":"[\s\S]*?",\s*"szj_summary":"[\s\S]*?",/,
@@ -3682,6 +3686,7 @@
            + '若某段叙事字段超出长度·宁可截短不要省略 JSON 结构。';
       // FINAL RULE 的不可裁尾部；仍由下方原最终预算闸核算，不绕过上下文/输出上限。
       if (TM.BuildingOrders) tp1 += TM.BuildingOrders.prompt(GM, ctx.input.buildingOrders, false);
+      tp1 += ns.sc1WritebackContractHint();
       var _sc1Body = {model:P.ai.model||"gpt-4o",messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc1'))},{role:"user",content:tp1}],temperature:_sc1Temp,max_tokens:_tok(_sc1BaseTok)};
       // Phase 6 Q1·strict json_schema 优先 (P.ai.openaiStrict=true)·否则 json_object
       var _sc1Rf = _selectResponseFormat(_modelFamily, _buildSc1JsonSchema);
@@ -3694,6 +3699,8 @@
       _sc1Body = _sc1Finalized.body;
       var _sc1OverflowReducer = ns.createSc1ContextOverflowReducer(_sc1FinalBudgetOptions);
       ns.recordSc1FinalDiagnostics(_sc1Finalized.diagnostics);
+      var _sc1Limit = typeof _aiTotalResponseTimeout==='function' ? _aiTotalResponseTimeout({tier:'primary'}) : 0;
+      ctx.meta.sc1RecoveryDeadline = _sc1Limit>0 ? Date.now()+_sc1Limit : Infinity;
       var _streamSC1 = !!(P.ai && P.ai.stream_sc1 === true);  // Phase 0 D-1·默认关·需 P.ai.stream_sc1=true 显式开 (stream 用于进度条不打 JSON 抢救)
       var c1 = "";
       var data1 = null;
@@ -3703,8 +3710,9 @@
         // 流式直接消费已通过最终预算审核的完整 body；transport 只允许添加 stream:true。
         try {
           var _sc1PolicyForStream = ns.getCallPolicy('sc1');
+          var _sc1AttemptOptions = global.TM&&TM.RecoveryAdapters ? TM.RecoveryAdapters.beginNormal(Object.assign({id:'sc1'},_sc1PolicyForStream)) : {};
           c1 = await callAIBodyStream(_sc1Body, {
-            id:'sc1',
+            id:'sc1', _normalRecoveryTicket:_sc1AttemptOptions._normalRecoveryTicket,
             priority: 'critical',
             timeoutMs: _sc1PolicyForStream.timeoutMs,
             onChunk: function(text) {
@@ -3714,6 +3722,10 @@
             }
           });
           data1 = { choices: [{ message: { content: c1 } }] };
+          if(_sc1AttemptOptions._normalRecoveryTicket){
+            data1.choices[0].finish_reason=_sc1AttemptOptions._normalRecoveryTicket.streamComplete?'stop':'length';
+            TM.RecoveryAdapters.markResponse(data1,_sc1AttemptOptions);
+          }
           // 流式模式无 usage·不记 token
         } catch(_se) {
           var _streamCompatibility = [400,422].indexOf(Number(_se && _se.status)) >= 0 && /stream|response_format|json_schema/i.test(String(_se && _se.message || ''));
@@ -3763,7 +3775,7 @@
       p1=null; // 赋值到外层声明的p1
       try {
         if (data1) _checkTruncated(data1, '结构化数据');
-        var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['turn_summary', 'shizhengji_basis', 'events', 'resource_changes', 'char_updates', 'edict_feedback', 'fiscal_adjustments', 'changes'], priority: 'critical' });
+        var _p1Parse = (_sc1Call && _sc1Call.parse) || await _parseOrRepairJsonResult(c1, data1, '结构化数据', { id:'sc1', maxRetries:ns.getCallPolicy('sc1').maxRetries, url: url, key: P.ai.key, body: _sc1Body, expectedKeys: ['turn_summary', 'shizhengji_basis', 'events', 'resource_changes', 'char_updates', 'edict_feedback', 'fiscal_adjustments', 'changes'], priority: 'critical' });
         if (_p1Parse && _p1Parse.raw) c1 = _p1Parse.raw;
         p1 = _p1Parse ? _p1Parse.parsed : null;
       } catch(_sc1ParseErr) {
@@ -4812,6 +4824,11 @@
       // 并行等待 SC1b + SC1c + SC1d 完成（互不争用写入字段）
       try { await Promise.all([_sc1bP, _sc1cP, _sc1dP]); } catch(_sc1bcErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_sc1bcErr, 'sc1b+1c+1d parallel') : console.warn('[sc1b+1c+1d parallel]', _sc1bcErr); }
 
+      if ((!p1 || !_hasSc1StructuredResult(p1)) && global.TM && TM.RecoveryRuntime) {
+        var emergencySC1 = await TM.RecoveryRuntime.finalSC1({raw:c1,data:data1,body:_sc1Body,deadlineAt:ctx.meta.sc1RecoveryDeadline,validate:_hasSc1StructuredResult,signal:ctx.signal||ctx.meta&&ctx.meta.signal});
+        if (emergencySC1.ok) {p1=emergencySC1.value.parsed;c1=emergencySC1.value.raw;ctx.meta.emergencyReceipt=emergencySC1.receipt;GM._turnAiResults.subcall1=p1;GM._turnAiResults.subcall1_raw=c1;} // arch-ok: existing SC1 response owner publishes verified data, not world effects.
+        else if (emergencySC1.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(emergencySC1.error.code)) throw emergencySC1.error;
+      }
       // 主推演没有完整结构时，不以其他子调用片段伪造完整回合。
       if (!p1 || !_hasSc1StructuredResult(p1)) { var incomplete = new Error('主推演未形成完整结构化结果；保留响应并中止本回合'); incomplete.code = 'sc1-result-unavailable'; throw incomplete; }
       // G2·失败降级链：若 SC1 主推演 JSON 失败或空·从 SC1b/SC1c 合成最小可用 p1·避免整回合卡死

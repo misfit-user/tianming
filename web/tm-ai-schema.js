@@ -268,8 +268,8 @@
     //   这些字段 prompt 里有引导但 schema 漏认会被误判「AI 幻觉」
     // ──────────────────────────────────────────────
     turn_summary:         { type: 'string', desc: '本回合总结（SC1 主叙事压缩版）' },
-    shizhengji_basis:     { type: 'object', desc: '时政记参考依据/出处（人物·地点·事件锚点）' },
-    resource_changes:     { type: 'array', desc: '资源调整（人口/财政/物资）·应走 fiscal/population 通道·此字段仅供兼容' },
+    shizhengji_basis:     { type: 'string', desc: '时政记参考依据/出处（人物·地点·事件锚点）' },
+    resource_changes:     { type: 'object', desc: '资源调整（人口/财政/物资）·应走 fiscal/population 通道·此字段仅供兼容' },
     faction_ai_outcomes:  { type: 'array', desc: '势力 AI 推演结果（sc1c 主产字段·含内政/扩张/外交决策）' },
 
     // ──────────────────────────────────────────────

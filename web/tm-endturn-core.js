@@ -469,6 +469,7 @@ function _tmMaybeStageTurnResult(html, idx) {
 function _tmCommitEndTurnTransaction(txn) {
   if (!_tmEndTurnTransactionCurrent(txn)) return false;
   txn.committed = true;
+  if (window.TM && TM.RecoveryEdict) TM.RecoveryEdict.discard(GM);
   if (txn.captureSession) txn.captureSession.committed = true;
   GM._endTurnCommitPending = false; // arch-ok end-turn transaction owns its commit barrier
   var pendingResult = GM._pendingCommittedTurnResult;
@@ -664,6 +665,7 @@ function _tmRollbackEndTurnTransaction(txn, reason) {
       }
     }
     txn.rolledBack = true;
+    if (window.TM && TM.RecoveryEdict) TM.RecoveryEdict.discard(txn.gmRef);
     if (txn.captureSession) txn.captureSession.rolledBack = true;
     if (typeof window !== 'undefined') window._tmLoadGen = (window._tmLoadGen || 0) + 1;
     GM.busy = false; // arch-ok end-turn transaction owns rollback cleanup
@@ -690,10 +692,18 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
   if (ctx.meta.deferEndTurnSave) return true;
   if (typeof TM !== 'undefined' && TM.ImperialOrders) TM.ImperialOrders.tick(GM);
   if (!ctx.meta.turnPresentation) {
+    var completion=globalThis.TM&&TM.Endturn&&TM.Endturn.Validity;
+    if(!Array.isArray(ctx.meta.turnRenderArgs)&&completion&&completion.mainResult(ctx))ctx.meta.turnRenderArgs=completion.renderArgs(ctx);
     if (typeof _endTurn_finalizeRecords !== 'function' || !Array.isArray(ctx.meta.turnRenderArgs)) {
       throw new Error('回合记录最终化入口缺失');
     }
-    ctx.meta.turnPresentation = _endTurn_finalizeRecords.apply(null, ctx.meta.turnRenderArgs);
+    try { ctx.meta.turnPresentation = _endTurn_finalizeRecords.apply(null, ctx.meta.turnRenderArgs); }
+    catch(recordError){if(!completion||!completion.canDefer(ctx,recordError))throw recordError;completion.defer(ctx,'回合记录整理',recordError);ctx.meta.turnPresentation=completion.minimalPresentation(ctx);}
+    var historyRow=GM.shijiHistory&&GM.shijiHistory[ctx.meta.turnPresentation.shijiIndex],inferMeta=ctx.meta.aiInferMeta||{};
+    if(historyRow){
+      historyRow.deferredIssues=(ctx.meta.deferredIssues||[]).concat(inferMeta.deferredIssues||[]); // arch-ok: commit owner persists actionable failures alongside the actual generated turn.
+      if(inferMeta.deferredMainOutput)historyRow.pendingAIChanges=inferMeta.deferredMainOutput; // arch-ok: preserve uncommitted generated changes for later repair, never claim they executed.
+    }
     // presentation 已取得原始 AI/玩家活动引用；现在清临时上下文，最终存档不携带易膨胀字段。
     delete GM._turnContext;
     delete GM._turnTyrantActivities;
@@ -746,6 +756,8 @@ async function _tmFinalizeEndTurnTransaction(ctx, txn) {
     try { if (typeof toast === 'function') toast('回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。'); } catch (_) {}
   }
   if (reliability) reliability.finish(ctx.meta.reliabilityScope, ctx.results && ctx.results.renderError ? "committed_display_pending" : "committed");
+  try { if (globalThis.TM && TM.RecoveryReview) TM.RecoveryReview.afterCommit(ctx); }
+  catch(reviewError) { console.warn('[TurnReview] 后台复核未启动，已提交回合不受影响:',reviewError.message); }
   return true;
 }
 
@@ -771,6 +783,7 @@ async function _endTurnCore(options){
   var btn=_$("btn-end")||_$("btn-end-turn");
   if (typeof TM_SaveDB !== "undefined" && typeof TM_SaveDB.assertWritable === "function") TM_SaveDB.assertWritable();
   if(GM.busy)return;
+  if (globalThis.TM && TM.RecoveryReview) TM.RecoveryReview.pauseForNextTurn();
   if (_reliability) { _turnScope = _reliability.begin(); _reliability.assertReady(P); _reliability.mark(_turnScope, "prepare"); }
   _turnTxn = _tmCaptureEndTurnTransaction();
   // 必须在后朝标记、busy/commit barrier 及校准写入之前冻结点击时世界。
@@ -1048,6 +1061,16 @@ async function _endTurnCore(options){
   GM._endTurnBusy=false;
   _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
   } catch (error) {
+    var completionPolicy=globalThis.TM&&TM.Endturn&&TM.Endturn.Validity;
+    if(_obsCtx&&_turnTxn&&!_turnTxn.committed&&!_obsCtx.meta.endTurnSavePromise&&_tmEndTurnTransactionCurrent(_turnTxn)&&completionPolicy&&completionPolicy.canDefer(_obsCtx,error)){
+      completionPolicy.defer(_obsCtx,'回合收尾',error);
+      try{
+        if(Number(GM.turn)===Number(_turnTxn.turn))GM.turn=Number(_turnTxn.turn)+1; // arch-ok: completion owner advances the generated turn exactly once after an auxiliary tail failure.
+        await _tmFinalizeEndTurnTransaction(_obsCtx,_turnTxn);
+        GM.busy=false;GM._endTurnBusy=false; // arch-ok: successful canonical commit owns the completion flags.
+        _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit-with-warnings');return;
+      }catch(saveError){error=saveError;}
+    }
     if (_reliability) _reliability.finish(_turnScope, 'failed', error);
     console.error('endTurn error:', error);
     if (error && error.code === 'SAVE_WRITE_UNCONFIRMED') {

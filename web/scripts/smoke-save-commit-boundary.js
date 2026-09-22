@@ -78,9 +78,17 @@ test('synchronous put failure aborts the transaction before any partial slot com
   const f=storageFixture();let aborted=0;f.c._db={transaction:()=>({objectStore:()=>({put(){throw Error('clone failure');}}),abort(){aborted++;if(this.onabort)this.onabort({target:this});}})};
   await assert.rejects(f.save(),/clone failure/);assert.equal(aborted,1);assert.equal(f.disk.size,0);
 });
-test('mandatory post-turn work failure still prevents every save and snapshot',async()=>{
-  const f=renderFixture();f.c._awaitPostTurnJobsForSave=async()=>{throw Error('required memory missing');};
-  assert.equal(await f.save(),false);assert(!f.events.includes('commit'));assert(!f.events.includes('snapshot'));assert(!f.events.includes('capture'));
+test('failed supplementary memory does not prevent canonical save or snapshot',async()=>{
+  for(const sync of [false,true]){const f=renderFixture();f.c._awaitPostTurnJobsForSave=sync?()=>{throw Error('memory missing');}:async()=>{throw Error('memory missing');};
+  assert.equal(await f.save(),true);assert(f.events.includes('commit'));assert(f.events.includes('snapshot'));assert(f.events.includes('capture'));}
+});
+test('unresolved memory never blocks the turn and late success schedules a same-world save',async()=>{
+ const f=renderFixture();let release,saves=0;f.c._awaitPostTurnJobsForSave=()=>new Promise(r=>{release=r;});f.c.requestBackgroundAutosave=async()=>{saves++;return {ok:true};};
+ assert.equal(await f.save(),true);assert.equal(saves,0);release();await tick();assert.equal(saves,1);
+});
+test('a failed auxiliary turn-data file preserves its payload in the successful main save',async()=>{
+ const f=renderFixture();f.ctx.meta.turnPresentation={turnData:{chronicle:'完整本期正文'}};f.c._endTurn_stageTurnData=async()=>{throw Error('sidecar failed');};
+ assert.equal(await f.save(),true);assert.equal(f.disk.get('autosave').GM._deferredTurnData[0].data.chronicle,'完整本期正文');assert(f.ctx.meta.turnSaveWarnings.some(w=>w.stage==='turn-data'));
 });
 test('an empty auxiliary result is a reported warning, not silent success of that task',async()=>{
   const f=renderFixture();f.c.StateSnapshot.save=async()=>null;assert.equal(await f.save(),true);assert.equal(f.ctx.meta.turnSaveWarnings[0].stage,'time-snapshot');

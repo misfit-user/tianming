@@ -85,7 +85,7 @@ ok(/await _tmAwaitDesktopAutoSaveReply[\s\S]*?return bridge\.autoSave\(saveData\
 ok(/_autoSaveLastSavedTurn = Number\(saveData\._saveMeta\.turn\)/.test(lifecycle), 'Electron 闲置跳存基线锚定已写 committed snapshot turn');
 ok(!/window\.tianming\.autoSave\(/.test(render), '端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口');
 ok(/var _endturnSaveGM = GM;[\s\S]*?var _endturnSaveP = P;[\s\S]*?_endturnSaveLoadGen[\s\S]*?_endturnSavePreId/.test(render), '端回合 detached save 捕获 GM/P/loadGen/pre snapshotId');
-ok(/await _awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',detach:true,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台等待后先验租约·builder 在 detached snapshot 上准备');
+ok(/_awaitPostTurnJobsForSave[\s\S]*?if \(!_endturnSaveStillCurrent\(\)\) return false;[\s\S]*?_buildSaveState\(\{format:'idb',detach:true,gm:_endturnSaveGM,p:_endturnSaveP\}\)/.test(render), '后台记忆不阻塞·builder 仍先验租约并使用 detached snapshot');
 ok(/TM_SaveDB\.saveManyAtomic\([\s\S]*?_autoWriteOptions\)/.test(render)
   && /function saveManyAtomic\(entries, options\)/.test(storage), 'autosave/slot_0 共用代际租约与单一批量事务');
 {
@@ -206,6 +206,7 @@ ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifec
   'Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner');
 {
   const applySrc = sliceFn(patches, 'function _sApplyPrimaryApiFields(');
+  const readySrc = sliceFn(patches, 'function _sDeviceSettingsReady(');
   const allSrc = sliceFn(patches, 'function sSaveAll(');
   const values = {
     's-key': 'new-primary', 's-url': 'https://new-primary/v1', 's-model': 'main', 's-prov': 'openai',
@@ -216,13 +217,13 @@ ok(/setInterval\(function\(\)\{[\s\S]*?_tmRunDesktopAutoSaveTick\(\)/.test(lifec
     P: { ai: { secondary: { key: 'old-secondary' } }, conf: {} },
     _$: id => Object.prototype.hasOwnProperty.call(values, id) ? { value: values[id] } : null,
     document: { querySelectorAll: () => [] },
-    localStorage: { setItem: (k, v) => writes.push([k, JSON.parse(v)]) },
+    localStorage: { setItem: (k, v) => writes.push([k, JSON.parse(v)]), getItem: k => { const row = writes.findLast(w => w[0] === k); return row ? JSON.stringify(row[1]) : null; } },
     saveP() {}, toast() {}, tmApplyInsecureTlsConfig() {},
     console: { warn() {} }, parseInt, parseFloat, isNaN
   };
   vm.createContext(ctx);
   ctx.window = ctx; // Settings owners run in the browser; optional APISettings is absent in this legacy-save fixture.
-  vm.runInContext(applySrc + '\n' + allSrc + '\nsSaveAll();', ctx);
+  vm.runInContext(readySrc + '\n' + applySrc + '\n' + allSrc + '\nsSaveAll();', ctx);
   const apiWrites = writes.filter(w => w[0] === 'tm_api');
   ok(apiWrites.length === 1, '保存全部只原子写 tm_api 一次');
   ok(apiWrites[0][1].key === 'new-primary' && apiWrites[0][1].secondary.key === 'new-secondary', '同一次持久化包含新主 key + 新 secondary key');

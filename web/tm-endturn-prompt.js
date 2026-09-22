@@ -4187,6 +4187,7 @@
       for (var _si = 0; _si < _segsL.length; _si++) { if (_keep[_segsL[_si].name]) _out += _segsL[_si].text; }
       return _out;
     };
+    if (global.TM && TM.AgentWorldEditor) sysP += TM.AgentWorldEditor.context(GM);
     ctx.prompt.sysP = sysP;
     // R209a·tp 是 §3 sub-call prompt 的 base (ai-infer L229 tp0·L848 tp1 等使用)·必 export
     // (per Codex P7-β addendum·避 ad hoc cross-module dep)

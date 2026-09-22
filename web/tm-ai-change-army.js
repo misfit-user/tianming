@@ -261,7 +261,7 @@
     return '';
   }
 
-  function _syncArmyCommanderAliases(army, commander, oldCommander) {
+  function _syncArmyCommanderAliases(army, commander, oldCommander, world) {
     if (!army) return false;
     commander = String(commander || '').trim();
     var changed = false;
@@ -284,7 +284,7 @@
         changed = true;
       }
     });
-    var resolved = _resolveLivingCommanderName(global.GM, commander);
+    var resolved = _resolveLivingCommanderName(world || global.GM, commander);
     var nextId = resolved.ok && resolved.char ? (resolved.char.id || '') : '';
     if (army.commanderId !== nextId) { army.commanderId = nextId; changed = true; }
     return changed;
@@ -323,7 +323,7 @@
 
   function applyAIArmyChange(change, opts) {
     opts = opts || {};
-    var G = global.GM;
+    var G = opts.world || global.GM;
     if (!G || !change) return { ok:false, reason:'no game or change' };
     if (!Array.isArray(G.armies)) G.armies = [];
     if (!G._turnReport) G._turnReport = [];
@@ -412,13 +412,13 @@
         _aiCreated: true,
         _createdTurn: G.turn || 0
       };
-      if (commanderInput) _syncArmyCommanderAliases(army, commanderInput, '');
+      if (commanderInput) _syncArmyCommanderAliases(army, commanderInput, '', G);
       if (qualityInput !== null) _syncArmyQualityAliases(army, qualityInput);
       if (equipmentInput !== null) _syncArmyEquipmentAliases(army, equipmentInput);
       G.armies.push(army);
       if (factionName) {
         try {
-          if (global.TM && TM.FactionMembership && typeof TM.FactionMembership.assignArmy === 'function') {
+          if (!opts.preview && global.TM && TM.FactionMembership && typeof TM.FactionMembership.assignArmy === 'function') {
             TM.FactionMembership.assignArmy(army, factionName, { reason: reason, silent: true });
           } else {
             army.faction = factionName;
@@ -431,11 +431,11 @@
       changed = true;
       G._turnReport.push({ type:'military', armyName:name, field:'soldiers', old:0, new:delta, delta:delta, created:true, reason:reason, source:opts.source || '', turn:G.turn||0 });
       if (!opts.silentEB && typeof global.addEB === 'function') global.addEB('军事', '新建' + name + '·' + delta + '兵' + (reason ? '：' + reason : ''));
-      _chargeRecruitment(G, army, Math.max(0, delta), change, reason, opts.source); // 募兵开销·新建即扣
+      if (!opts.authoritative) _chargeRecruitment(G, army, Math.max(0, delta), change, reason, opts.source); // Simulation recruitment pays normally; explicit console state creation has no implicit spending.
     } else {
       if (commanderFields) {
         var oldCommander = _armyCurrentCommander(army);
-        var aliasesChanged = _syncArmyCommanderAliases(army, commanderInput, oldCommander);
+        var aliasesChanged = _syncArmyCommanderAliases(army, commanderInput, oldCommander, G);
         if (aliasesChanged) {
           if (oldCommander !== commanderInput && typeof opts.recordChange === 'function') {
             opts.recordChange('military', army.name || name, 'commander', oldCommander, commanderInput, reason);
@@ -580,7 +580,7 @@
     if (commandTicket && commandTicket.allowed && commandTicket.orderId) {
       commandAuthority.commit(army, commandTicket); changed = true;
     }
-    if (changed) { if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', G); _refreshMilitaryViews(G); }
+    if (changed) { if (window.TMMapLocations) window.TMMapLocations.sync(army, 'army', G); if (!opts.preview) _refreshMilitaryViews(G); }
     return { ok:true, army:army, created:created, changed:changed, pending:!!(commandTicket && commandTicket.pending), orderId:commandTicket && commandTicket.orderId, reason:commandTicket && commandTicket.reason };
   }
 

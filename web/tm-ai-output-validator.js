@@ -77,8 +77,8 @@
     // ── 2026-09-18 补全·玩家实测 AI 经常输出但 schema 没认的字段 ──
     // 这些都是 AI 在 sc1/sc1b/sc1c 主提示中被告知可以输出的字段·schema 漏认会被误判幻觉警告刷屏
     turn_summary: 'string',           // 回合总结（SC1 常用）
-    shizhengji_basis: 'object',       // 时政记参考依据
-    resource_changes: 'array',        // 资源调整·走 fiscal/population 类通道
+    shizhengji_basis: 'string',       // 时政记参考依据
+    resource_changes: 'object',        // 资源调整·走 fiscal/population 类通道
     faction_ai_outcomes: 'array',     // 势力 AI 推演结果（sc1c 主产）
     // ── 2026-09-18 补全·SC1 主提示史记字段（prompt 已引导·schema 漏认会误判幻觉）──
     player_status: 'string',          // 玩家角色政治/生存状态（截图实测被误报 unknown）
@@ -172,6 +172,8 @@
       stats.knownKeys++;
 
       var actual = _typeOf(output[key]);
+      // Current SC1 uses text/object; older responses used basis objects and resource arrays.
+      if (key === 'shizhengji_basis' && actual === 'object' || key === 'resource_changes' && actual === 'array') expected = actual;
       if (expected === 'array' && actual !== 'array') {
         errors.push('[type] `' + key + '` 应为 array，实际为 ' + actual);
         return;

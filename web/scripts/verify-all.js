@@ -189,6 +189,11 @@ const checks = [
   { name: 'sc1-lossless-capacity', file: 'smoke-sc1-lossless-capacity.js', estSec: 3, expectExit: 0 },
   { name: 'edict-currency-quantity', file: 'smoke-edict-currency-quantity.js', estSec: 3, expectExit: 0 },
   { name: 'call-retry-settings', file: 'smoke-call-retry-settings.js', estSec: 3, expectExit: 0 },
+  { name: 'emergency-recovery-boundaries', file: 'smoke-emergency-recovery-boundaries.js', estSec: 3, expectExit: 0 },
+  { name: 'recovery-settings-restore', file: 'smoke-recovery-settings-restore.js', estSec: 1, expectExit: 0 },
+  { name: 'emergency-recovery-core', file: 'smoke-emergency-recovery-core.js', estSec: 2, expectExit: 0 },
+  { name: 'emergency-recovery-integration', file: 'smoke-emergency-recovery-integration.js', estSec: 2, expectExit: 0 },
+  { name: 'emergency-recovery-evidence', file: 'smoke-emergency-recovery-evidence.js', estSec: 2, expectExit: 0 },
   { name: 'memory-manifest', file: 'smoke-memory-manifest.js', estSec: 1, expectExit: 0 },
   { name: 'memory-relation-index', file: 'smoke-memory-relation-index.js', estSec: 2, expectExit: 0 },
   { name: 'memory-compress-consumer', file: 'smoke-memory-compress-consumer.js', estSec: 1, expectExit: 0 },  // 2026-07-09·记忆 M1 压缩消费者

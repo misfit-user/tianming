@@ -190,7 +190,12 @@ function _endTurn_saveSnapshot(ctx) {
 
     try {
       if (typeof _awaitPostTurnJobsForSave === 'function') {
-        await _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);
+        Promise.resolve().then(function(){return _awaitPostTurnJobsForSave(typeof _postTurnSaveRequiredIds === 'function' ? _postTurnSaveRequiredIds() : ['sc25', 'sc25c']);}).then(function(){
+          if(_endturnSaveStillCurrent()&&typeof requestBackgroundAutosave==='function')return requestBackgroundAutosave({reason:'post-turn-memory-complete',expectedTurn:_endturnSaveTurn});
+        }).catch(function(error){
+          if(window.TM&&TM.Endturn&&TM.Endturn.Validity)TM.Endturn.Validity.defer(ctx,'后台记忆',error);
+          else console.warn('[EndturnDeferred] 后台记忆待补正:',error.message);
+        });
       }
       if (!_endturnSaveStillCurrent()) return false;
       try { if (typeof _wtRunFulfillAudit === 'function') _wtRunFulfillAudit(); } catch (_wtFaHkE) {}
@@ -233,7 +238,21 @@ function _endTurn_saveSnapshot(ctx) {
       }
       if (_captureSession) _captureSession.finalPayload = _canonicalPayload;
       ctx.meta.canonicalWorldPayload = _canonicalPayload;
-      await _endTurn_stageTurnData(ctx, _autoState, _canonicalPayload);
+      try { await _endTurn_stageTurnData(ctx, _autoState, _canonicalPayload); }
+      catch(auxiliaryError){
+        if(!_endturnSaveStillCurrent())throw auxiliaryError;
+        ctx.meta.stagedTurnData=null;
+        var deferredData={transactionId:String(ctx.meta.transactionId||''),turn:_endturnSaveTurn-1,reason:String(auxiliaryError.message||auxiliaryError)};
+        try{deferredData.data=JSON.parse(JSON.stringify(ctx.meta.turnPresentation&&ctx.meta.turnPresentation.turnData||{}));}catch(_){deferredData.dataUnavailable=true;}
+        var pending=Array.isArray(_autoState.GM._deferredTurnData)?_autoState.GM._deferredTurnData.filter(function(row){return row.transactionId!==deferredData.transactionId;}):[];
+        pending.push(deferredData);_autoState.GM._deferredTurnData=pending; // arch-ok: canonical snapshot owner retains complete auxiliary output for later repair.
+        _endturnSaveGM._deferredTurnData=pending; // arch-ok: same-world save owner retains the same pending auxiliary output in live state.
+        if(typeof TM_SaveDB.createCanonicalPayload==='function')_canonicalPayload=await TM_SaveDB.createCanonicalPayload(_autoState,_canonicalIdentity);
+        else{var deferredJson=JSON.stringify(_autoState);_canonicalPayload={identity:_canonicalIdentity,state:_autoState,json:deferredJson,compressed:deferredJson,checksum:await _endTurn_stateChecksum(_autoState)};}
+        ctx.meta.canonicalWorldPayload=_canonicalPayload;if(_captureSession)_captureSession.finalPayload=_canonicalPayload;
+        var stageWarnings=ctx.meta.turnSaveWarnings||(ctx.meta.turnSaveWarnings=[]);stageWarnings.push({stage:'turn-data',code:String(auxiliaryError.code||'auxiliary-turn-data-failed')});
+        console.warn('[EndturnDeferred] 附加分卷未完成，原文随主存档保留:',auxiliaryError.message);
+      }
       var _autoSnapMs = Date.now() - _autoT0;
       if (_autoSnapMs > 800) console.warn('[AutoSave] 端回合 snapshot 耗 '+_autoSnapMs+'ms·考虑 A-2');
       var _sc3 = typeof findScenarioById === 'function' ? findScenarioById(_endturnSaveSid) : null;
@@ -539,6 +558,7 @@ function _endTurn_finalizeRecords(shizhengji, zhengwen, playerStatus, playerInne
     // 新增字段
     shilu: shiluText, szjTitle: szjTitle, szjSummary: szjSummary,
     personnel: personnelChanges, houren: hourenXishuo,
+    suggestions: Array.isArray(suggestions) ? suggestions : [],
     sourceType: 'official_record',
     authorityLevel: 'official_record',
     confidence: 0.72,

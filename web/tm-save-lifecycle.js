@@ -1100,6 +1100,7 @@ function _restoreSavedFields(options) {
 var PREF_CONF_KEYS = [
   'verbosity', 'aiCallDepth',
   'maxOutputTokens', 'turnTokenBudget', 'modelTier', 'contextSizeK',
+  'aiCallRetryOverrides', 'emergencyRecovery',
   'memoryAnchorKeep', 'memoryArchiveKeep', 'characterArcKeep',
   'playerDecisionKeep', 'chronicleKeep', 'convKeep',
   'shiluMin', 'shiluMax', 'szjMin', 'szjMax', 'hourenMin', 'hourenMax',
@@ -2703,6 +2704,7 @@ function _tmCommittedSnapshotProjectEnvelope(){
 }
 
 async function _tmRunDesktopAutoSaveTick(options){
+  if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();
   options = options || {};
   if (!GM || !GM.running) return { ok: false, skipped: true, reason: 'not-running' };
   if (isWorldTransactionActive()) {

@@ -1,0 +1,21 @@
+[lint-arch-all] PASS  lint-gm-writes (2.9s)
+[lint-arch-all] FAIL  lint-dep-graph (4.5s)
+    [lint-dep-graph] index.html: 脚本 459 · 命名空间 238 · 悬空 7（其中跨入口 1）
+    [lint-dep-graph] editor.html: 脚本 54 · 命名空间 55 · 悬空 9（其中跨入口 7）
+    [lint-dep-graph] map-editor.html: 脚本 77 · 命名空间 2 · 悬空 2（其中跨入口 2）
+    [lint-dep-graph] 依赖清单 → dev-tools/arch-guard/deps-manifest.json（拆分/改名前先 --who 查引用面）
+    [lint-dep-graph] FAIL — editor.html 新增悬空引用 1 个（typo？还是忘了挂 <script>？）：
+      TM.NativeWorld ← tm-native-fiscal-adapter.js
+[lint-arch-all] PASS  lint-global-providers (6.3s)
+[lint-arch-all] PASS  lint-feature-boundaries (0.3s)
+[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)
+[lint-arch-all] PASS  lint-renderer-writeback-boundaries (10.4s)
+[lint-arch-all] PASS  lint-renderer-module-boundaries (0.8s)
+[lint-arch-all] PASS  lint-file-size (0.7s)
+[lint-arch-all] PASS  lint-control-bytes (0.6s)
+[lint-arch-all] PASS  lint-split-contracts (0.2s)
+[lint-arch-all] PASS  lint-split-stamps (0.2s)
+[lint-arch-all] PASS  lint-smoke-family-order (19.2s)
+[lint-arch-all] PASS  ref-check (11.7s)
+
+[lint-arch-all] FAIL — 1/13 项未过

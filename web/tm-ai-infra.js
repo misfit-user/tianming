@@ -562,6 +562,7 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
     if (opts._requestGuard) opts._requestGuard();
     if (signal && signal.aborted) throw _aiCancelledError(signal);
     if (typeof _aiClaimRetryAttempt === "function") _aiClaimRetryAttempt(opts.retryBudget);
+    if (globalThis.TM && TM.RecoveryAdapters) TM.RecoveryAdapters.claimNormal(opts);
     var budgetLimited = !!opts.retryBudget && opts.retryBudget.deadlineAt - Date.now() <= timeoutMs;
     if (opts.retryBudget) timeoutMs = Math.min(timeoutMs, Math.max(1, opts.retryBudget.deadlineAt - Date.now()));
     var reliability = typeof window !== "undefined" && window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
@@ -822,7 +823,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
  */
 async function callAIWithTools(prompt, tools, opts) {
   var recovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
-  var execute = function(next) { return _callAIWithToolsUncached(prompt, tools, next); };
+  var execute = function(next) { return globalThis.TM && TM.RecoveryRuntime ? TM.RecoveryRuntime.tools(prompt, tools, next, _callAIWithToolsUncached) : _callAIWithToolsUncached(prompt, tools, next); };
   try { return await (recovery ? recovery.toolRequest(prompt, tools, opts, execute) : execute(opts)); }
   catch (e) { return { text: '', toolCalls: [], error: { code: e && e.code === 'AI_ABORTED' ? 'aborted' : e && e.code === 'AI_STALE_WORLD' ? 'tool-stale' : 'tool-call-failed', status: Number(e && e.status) || 0 } }; }
 }
@@ -980,6 +981,7 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
         if (ctrl.signal.aborted) throw _aiCancelledError(opts.signal);
         if (opts._streamGuard) opts._streamGuard();
         _aiClaimRetryAttempt(opts.retryBudget);
+        if (globalThis.TM && TM.RecoveryAdapters) TM.RecoveryAdapters.claimNormal(opts);
         if (responseWait) responseWait.dispose();
         responseWait = _aiStartResponseWait(opts, _aiFirstResponseTimeout(maxTok, opts), function(e) { timedOut = e.name === 'TimeoutError'; toolReject(e); ctrl.abort(e); });
         timer = responseWait.headerTimer;
@@ -1045,7 +1047,7 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
   if (data && data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, (opts && opts.id) || 'callAIWithTools');
   // ─── 解析响应·三路径分支 ───
   var text = '';
-  var toolCalls = [];
+  var toolCalls = [], rawToolArguments = null;
   try {
     if (parseMode === 'anthropic') {
       if (Array.isArray(data.content)) {
@@ -1066,6 +1068,8 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
       // OpenAI 兼容
       if (data.choices && data.choices[0] && data.choices[0].message) {
         var msg = data.choices[0].message;
+        if (Array.isArray(msg.tool_calls)) rawToolArguments = msg.tool_calls.map(function(tc) { var f=tc.function||{}; return {name:f.name,arguments:f.arguments}; });
+        else if (msg.function_call) rawToolArguments = [{name:msg.function_call.name,arguments:msg.function_call.arguments}];
         if (msg.content) text = msg.content;
         if (Array.isArray(msg.tool_calls)) {
           msg.tool_calls.forEach(function(tc) {
@@ -1101,6 +1105,12 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
       || data.stop_reason === 'max_tokens'
       || (data.candidates && data.candidates[0] && data.candidates[0].finishReason === 'MAX_TOKENS'));
   } catch (_tH2E) {}
+  if (!_truncH2 && rawToolArguments && rawToolArguments.length && globalThis.TM && TM.RecoveryAdapters && !opts._emergency) {
+    var invalidArguments = rawToolArguments.some(function(row) {
+      try { var def=tools.find(function(t){return t.name===row.name;}); return !def || !TM.RecoveryAdapters.schemaOK(TM.RecoveryAdapters.strict(row.arguments),def.parameters||{}); } catch (_) { return true; }
+    });
+    if (invalidArguments) return {text:text,toolCalls:[],truncated:false,error:{code:'tool-json-invalid'},_recoveryRawTools:rawToolArguments};
+  }
   toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
   return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
 }

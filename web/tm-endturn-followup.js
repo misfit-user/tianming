@@ -2006,6 +2006,7 @@
                 hourenXishuo = _pResult.houren_xishuo || _pResult.zhengwen;
                 // Phase 5·canonical mirror·subcall2 = { zhengwen, houren_xishuo, _sc2outline, _sc27review }
                 GM._turnAiResults.subcall2 = { zhengwen: zhengwen, hourenXishuo: hourenXishuo, houren_xishuo: hourenXishuo, _sc2outline: _sc2OutlineResult, _sc27review: _sc27ReviewResult, _threeStage: true };
+                ctx.results.sc2 = GM._turnAiResults.subcall2;
                 GM._turnAiResults.subcall2_raw = _pCall.raw || '';   // ★与 legacy 对齐(诊断/agent 工具读 raw·此前 3stage 缺)
                 // 建议与编年产出(2026-07-02·与 legacy 对齐·建议不足时下游标志位块再兜底)
                 try { if (Array.isArray(_pResult.suggestions) && _pResult.suggestions.length) GM._turnAiResults.subcall2.suggestions = _pResult.suggestions.slice(0, 4); } catch(_sgP) {}
@@ -2106,6 +2107,7 @@
       p2 = _p2Parse ? _p2Parse.parsed : null;
       GM._turnAiResults.subcall2_raw = c2;
       GM._turnAiResults.subcall2 = p2;
+      ctx.results.sc2 = p2;
 
       if(p2){
         // 优先读取新字段houren_xishuo；兼容旧zhengwen字段
@@ -2130,6 +2132,7 @@
       }
       if (p2 && !p2.houren_xishuo) p2.houren_xishuo = hourenXishuo;
       GM._turnAiResults.subcall2 = p2;
+      ctx.results.sc2 = p2;
       // 【防止对话历史被后人戏说撑爆】——将过长叙事截断为摘要入conv；完整版已在shijiHistory
       // 标准策略：>1500字时只保留开头600+结尾400作为上下文线索；其余用"……(中略)……"代替
       var _convContent = zhengwen || '';
@@ -3654,11 +3657,14 @@
 
       // Start queued next-turn memory/snapshot jobs only after foreground cleanup
       // has finished, so compression cannot overwrite their late writes.
+      Object.defineProperty(ctx.followup,'startBackground',{configurable:true,value:function(){
       try { _flushQueuedPostTurnSubcalls(); } catch(_qptE) { _dbg('[PostTurn] queued subcall launch failed:', _qptE); }
 
       // S2：启动 post-turn 异步任务（L2_AI/L3_CONDENSE/REFLECT/factionArcs）
       //   不 await·让玩家看结果时后台运行·下回合开始前 _awaitPostTurnJobs 会等齐
-      try { if (typeof _launchPostTurnJobs === 'function') _launchPostTurnJobs(); } catch(_ptE) { _dbg('[PostTurn] launch failed:', _ptE); }    ctx.results.sc1 = p1 || ctx.results.sc1 || null;
+      try { if (typeof _launchPostTurnJobs === 'function') _launchPostTurnJobs(); } catch(_ptE) { _dbg('[PostTurn] launch failed:', _ptE); }
+      }}); // Read-back verification owns foreground state until review joins.
+      ctx.results.sc1 = p1 || ctx.results.sc1 || null;
     copyResultsFromTurnState(ctx, p2);
     ctx.followup.p1Summary = p1Summary || "";
     ctx.followup.npcDeep = { sc15: ctx.results.sc15, sc_memwrite: ctx.results.sc_memwrite };

@@ -822,11 +822,11 @@ export function createCore(deps) {
     return null;
   }
 
-  function _applyAIStructuredPolicyActions(aiOutput, applied) {
+  function _applyAIStructuredPolicyActions(aiOutput, applied, selectedFields) {
     var G = global.GM;
     var parser = global.EdictParser;
     if (!G || !parser || typeof parser.tryExecute !== 'function') return 0;
-    var fields = ['currency_adjustments', 'population_adjustments', 'central_local_actions', 'environment_actions', 'institution_changes'];
+    var fields = selectedFields || ['currency_adjustments', 'population_adjustments', 'central_local_actions', 'environment_actions', 'institution_changes'];
     var count = 0;
     if (!Array.isArray(G._aiStructuredPolicyActions)) G._aiStructuredPolicyActions = [];
     fields.forEach(function(field) {
@@ -867,7 +867,7 @@ export function createCore(deps) {
           lifecycle = _applyAIInstitutionLifecycleChange(item, params);
           if (lifecycleAttempted) ok = !!(lifecycle && lifecycle.ok);
         }
-        result = { ok: ok, edict: edictResult, lifecycle: lifecycle, reason: lifecycle && lifecycle.reason || edictResult && edictResult.reason || '' };
+        result = { ok: ok, edict: edictResult, lifecycle: lifecycle, reason: lifecycle && lifecycle.reason || edictResult && (edictResult.reason || edictResult.executionResult && edictResult.executionResult.reason) || '' };
         G._aiStructuredPolicyActions.push({
           turn: G.turn || 0,
           field: field,
@@ -878,6 +878,12 @@ export function createCore(deps) {
         });
         if (ok) {
           count++;
+          var execution = edictResult && edictResult.executionResult;
+          var transfer = execution && execution.success === true && execution.order;
+          if (field === 'central_local_actions' && transfer && Array.isArray(G.transferOrders) && G.transferOrders.indexOf(transfer) >= 0) {
+            if (!applied.fiscalTransfers) applied.fiscalTransfers = [];
+            applied.fiscalTransfers.push({ id:transfer.id, fromAccount:transfer.fromAccount, amount:transfer.amount });
+          }
           G._turnReport.push({ type: 'aiPolicyAction', field: field, text: text, turn: G.turn || 0 });
         } else {
           applied.failed.push({ field: field, text: text, reason: result && (result.reason || result.pathway) || 'execute failed' });
@@ -1232,7 +1238,7 @@ export function createCore(deps) {
     });
 
     if (!applied.semantic) applied.semantic = {};
-    var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied);
+    var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ['currency_adjustments','population_adjustments','central_local_actions','institution_changes']);
     if (aiPolicyActionCount > 0) applied.semantic.ai_policy_actions = aiPolicyActionCount;
 
     // 7.5. 军事变化：诏令/奏疏/问对/朝会 AI 常返回 military_changes 或 army_changes。
@@ -1885,6 +1891,9 @@ export function createCore(deps) {
       }
     });
     if (fiscalCount > 0) applied.semantic.fiscal_adjustments = fiscalCount;
+    // Fund environment policies from the actual posted balance, after this batch's income and expenses.
+    var environmentActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ['environment_actions']);
+    if (environmentActionCount > 0) applied.semantic.ai_policy_actions = (applied.semantic.ai_policy_actions || 0) + environmentActionCount;
 
     // ── 11. faction_updates ──
     var facCount = 0;
@@ -2136,12 +2145,11 @@ export function createCore(deps) {
       if (typeof window !== 'undefined' && typeof window._validateNarrativeAnachronism === 'function') window._validateNarrativeAnachronism(G, aiOutput);
     });
 
-    // validator 命中即属于结构化写回不完整。旧逻辑只 warning 后继续，并另起后台 AI
-    // 补录，导致本批先以成功状态部分提交；现改为失败清单，由外层草稿事务整体回滚。
-    // 只有完整 endTurn 主写回携带 strictValidation。独立的确定性补丁/测试调用常无完整
-    // narrative，上下文不足时不能把“缺叙事证据”误判为状态失败。
-    var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline) : [];
+    // Actual command and ledger failures reject the atomic batch. Narrative hypotheses
+    // require an emergency Agent review inside the enclosing end-turn transaction.
+    var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline, aiOutput) : [];
     if (_validatorFailures.length) Array.prototype.push.apply(applied.failed, _validatorFailures);
+    applied.reviewRequired = (applied.reviewRequired || []).concat(_modules.reconcile._collectNarrativeReviews(G, _validatorBaseline, aiOutput));
 
     // ── 15. 死亡墓志铭 & 诈死holding ──
     try { _processDeathEpitaphs(G, aiOutput); } catch(_deE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_deE, 'applier] death epitaph:') : console.warn('[applier] death epitaph:', _deE); }
@@ -2874,6 +2882,8 @@ export function createCore(deps) {
       advanceCharTravelByDays: advanceCharTravelByDays
     },
     internals: {
+      _findOfficePos: _findOfficePos,
+      _isKnownOfficeType: _isKnownOfficeType,
       _alreadyResolvedState: _alreadyResolvedState,
       _readFiscalStock: _readFiscalStock,
       _writeFiscalStock: _writeFiscalStock,

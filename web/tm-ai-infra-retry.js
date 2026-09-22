@@ -165,9 +165,10 @@ async function _aiBudgetedRetryWait(ms, signal, budget) {
 async function _aiFetchWithRetry(url, body, signal, opts) {
   var recovery = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.ResponseRecovery;
   var execute = function(next) { return _aiFetchWithRetryUncached(url, body, signal, next); };
-  return recovery ? recovery.jsonRequest(url, body, signal, opts, execute) : execute(opts);
+  return recovery && !(opts && opts._recoveryValidationRetry) ? recovery.jsonRequest(url, body, signal, opts, execute) : execute(opts);
 }
 async function _aiFetchWithRetryUncached(url, body, signal, opts) {
+  if (globalThis.TM && TM.RecoveryAdapters) opts = TM.RecoveryAdapters.beginNormal(opts);
   opts = _aiConfiguredCallOptions(opts);
   var retries = Number(opts.maxRetries); if (!Number.isFinite(retries)) retries = 3;
   retries = Math.max(0, Math.min(opts._configuredRetries ? 20 : 6, Math.floor(retries))); opts.maxRetries = retries;
@@ -197,7 +198,9 @@ async function _aiFetchWithRetryUncached(url, body, signal, opts) {
     if (remaining <= 0) throw _aiRetryBudgetError();
     if (Number.isFinite(remaining)) timer = setTimeout(function() { var e = new Error('达到明确设置的完整响应最大等待时间'); e.code = 'AI_REQUEST_DEADLINE'; e.name = 'TimeoutError'; ctrl.abort(e); }, remaining);
     var result = await _aiQueue.enqueue(function() { check(); return _aiFetchWithRetryInner(url, body, ctrl.signal, opts); }, opts.priority || 'normal', { signal: ctrl.signal, timeoutMs: _aiQueueWaitTimeout(opts) });
-    check(); if (diag) diag.requestEnd(ticket, null); return result;
+    check(); if (diag) diag.requestEnd(ticket, null);
+    if (globalThis.TM && TM.RecoveryAdapters) TM.RecoveryAdapters.markResponse(result, opts);
+    return result;
   } catch (e) { if (e && typeof e === 'object') e._aiRetryExhausted = true; if (diag) diag.requestEnd(ticket, e); throw e; }
   finally { clearTimeout(timer); if (diag && diag.unbindRequest) diag.unbindRequest(ticket, ctrl); if (signal && cancel) signal.removeEventListener('abort', cancel); }
 }
@@ -419,6 +422,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
     if (!_finalizedBody && window.TM && TM.AIOptions) _bodyCore = TM.AIOptions.apply(_bodyCore, _aiCfg, 'openai');
     _bodyCore.stream = true;
+    if (globalThis.TM && TM.RecoveryAdapters) TM.RecoveryAdapters.claimNormal(opts);
     var resp = await Promise.race([(typeof _tmAIFetch === 'function' ? _tmAIFetch : fetch)(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
@@ -434,6 +438,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     if (ct.indexOf('application/json') >= 0) {
       var data = await Promise.race([resp.json(), streamDeadline]);
       if (opts._streamGuard) opts._streamGuard();
+      if(opts._normalRecoveryTicket)opts._normalRecoveryTicket.streamComplete=!!(data.choices&&data.choices[0]&&data.choices[0].finish_reason==='stop'&&data.choices[0].message&&!data.choices[0].message.refusal);
       var txt = '';
       if (data.choices && data.choices[0] && data.choices[0].message) txt = data.choices[0].message.content;
       if (opts.onChunk) opts.onChunk(txt);
@@ -485,6 +490,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
       opts._recoveryStream.complete = recoveryComplete && !recoveryInvalid && !buffer.trim();
       opts._recoveryStream.tier = _aiCfg.tier || opts.tier || 'primary';
     }
+    if(opts._normalRecoveryTicket)opts._normalRecoveryTicket.streamComplete=recoveryComplete&&!recoveryInvalid&&!buffer.trim();
     if (opts.onDone) opts.onDone(full);
     return full;
   } finally {

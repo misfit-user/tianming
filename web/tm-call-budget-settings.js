@@ -37,6 +37,7 @@
     inputs['*'].addEventListener('input',refreshAll);search.addEventListener('input',function(){var q=search.value.trim().toLowerCase();rows.forEach(function(r){r.node.hidden=!!q&&r.text.indexOf(q)<0;});});
     var help=el('p','上表指单个请求的首次尝试加故障重试，不含独立的结构修复和一次性协议协商。主、次 API 原有等待值保留。成功响应头到达后继续等待完整正文；0 不会被改成固定总期限。Agent 每轮采用同一项设置，工具轮数限制不变；未完整收到的流式正文不拼接重发。修改后点击底部“全部保存”。');help.style.cssText='font-size:.76rem;line-height:1.6;color:var(--txt-d)';host.appendChild(help);
     state={host:host,inputs:inputs,waits:{primary:waits(host,'primary'),secondary:waits(host,'secondary')}};
+    if(TM.RecoverySettings)TM.RecoverySettings.mount(host);
   }
   function readWaits(tier,target){
     if(!state||!state.host.isConnected)return;var fields=state.waits[tier]||{},draft={};
@@ -44,6 +45,6 @@
     Object.assign(target,draft);
   }
   function readConfig(){if(!state||!state.host.isConnected)return null;var values={};Object.keys(state.inputs).forEach(function(id){values[id]=state.inputs[id].value;});return TM.CallRetryPolicy.validate(values);}
-  function validate(){readConfig();readWaits('primary',{});readWaits('secondary',{});return true;}
-  TM.CallBudgetSettings={mount:mount,validate:validate,readConfig:readConfig,readWaits:readWaits,close:function(){state=null;}};
+  function validate(){readConfig();readWaits('primary',{});readWaits('secondary',{});if(TM.RecoverySettings)TM.RecoverySettings.read();return true;}
+  TM.CallBudgetSettings={mount:mount,validate:validate,readConfig:readConfig,readWaits:readWaits,close:function(){state=null;if(TM.RecoverySettings)TM.RecoverySettings.close();}};
 })(typeof window!=='undefined'?window:globalThis);

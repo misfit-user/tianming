@@ -1,0 +1,97 @@
+[
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "before": "3424ff55b501cec692c61c8cc3241599f06e8990a9b5b2f5abf2baa140f99018",
+    "after": "99d252b701ec784ebe382e8079452e12d7ea79ea9027ee1bc92aded50fbca5ec"
+  },
+  {
+    "file": "web/modules/ai-change-applier/reconcile.js",
+    "before": "f15330248f99e9287b41e47b21268a8749d1e725c167e3d8fa1082f7ee8dc7ed",
+    "after": "cd536686039e23a224245383f4d16805fea554f26e44d8654eda6f19615c251b"
+  },
+  {
+    "file": "web/modules/ai-change-applier/validators.js",
+    "before": "9b7ebde48b0bad68cec39b6323523ea6eb28355b581b60bb26e24719289af978",
+    "after": "ff0f3880dad02373ed87cbe62e2174f8face5acdff7d6e4a476e9c93613811ab"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "a83b9563d1e1e636dc3def0a93ce1a4c332863183c4ae7538de6e2779be5d0e1",
+    "after": "bb85c9c3e853184330136aeeb919e4edfc89be5d62a64d788826683b6b319910"
+  },
+  {
+    "file": "web/tm-endturn-apply-stages.js",
+    "before": "b8352137a127866930f2611ca0afbab19b0c1e7c5dd451bbc2ce9f84bd651529",
+    "after": "2c40ca26762531f75590bf3caba2ba6f01edba1140ea59560dd31763e0772946"
+  },
+  {
+    "file": "web/tm-edict-parser.js",
+    "before": "d6e07160809008b130a1f59e2e9b40b51f326ba348a179b6aaa7c385a4f994d9",
+    "after": "a01c22c75b1d398faa9ff477626e88ce8b7d4d2475b4ae73def05fb22861edd1"
+  },
+  {
+    "file": "web/tm-endturn-edict.js",
+    "before": "9dd5981ee74dbe66a607701b9a3a7300fd2ab88a209f64f0b27c21b981691dc4",
+    "after": "c787acbd1c36a042a8967d55f091748d736679ba2f3dfce99d0f69f3e90b636b"
+  },
+  {
+    "file": "web/index.html",
+    "before": "e3678b7b96b93271bdd8a894222cb8eaa9d1e02da5ba66c4cf814e711a840ff6",
+    "after": "993191043f9cd801d8ca9491100a047521bb3b2854bb49c5b3b16a78a7d22812"
+  },
+  {
+    "file": "web/scripts/smoke-player-writeback-regressions.js",
+    "before": "0a3b9e74b0184348a5ba6b4ff5c36b92bc74ae2cd99f2814767707e2d54b2c68",
+    "after": "3f4c7e62a98794e322a75041236d5a3327dd08611778371e6e176e08d6c5e5cf"
+  },
+  {
+    "file": "web/scripts/smoke-narrative-validator-restart.js",
+    "before": "91e08cc8c3b89576bbc69b9c6f52d819a636a747c57559e1bd5c8db6289dd1dc",
+    "after": "fa9c134811c17e43fb80c9aa5cea739b35e1ad6f0756d7bc95c9cdd2ae306c3d"
+  },
+  {
+    "file": "web/scripts/smoke-fiscal-ai-posting.js",
+    "before": "589b030c91b41c18c3bc9d87ea0e6236885ae3106db936dfe559c4bd16c12922",
+    "after": "7c9f16f0eeb3be0056e8b8ebacdd73be89a687242ccf95d2f82618cc89a8cb8f"
+  },
+  {
+    "file": "web/modules/ai-change-applier/index.js",
+    "before": "fd11e5c7d7928452ca6bd09472daaf979ff703441186f1ad44c319f90a5ff138",
+    "after": "0a443558c4b53614d6a97116d2d0648723a56ef5f8b8a9ac74ac527b8df45f87"
+  },
+  {
+    "file": "web/tm-endturn-agent-write-tools.js",
+    "before": "930ca9afbcbedc3f311b46f3d3144a382c0089d69d159634540ed5d9f02f9906",
+    "after": "62ff301be82e1c3f3ab0d340b549bd003eaf1f0dcc508cd3299af70dac81d4a0"
+  },
+  {
+    "file": "web/tm-endturn-ai-infer.js",
+    "before": "f4cea417a48815554253907b61781f29f4a0d80f06022eff8a22deeb30473e68",
+    "after": "400b0253429bc35511a1b83fe978bb342d99d2b73bdb2fb0df9bb4b16b217fdd"
+  },
+  {
+    "file": "web/tm-endturn-validity.js",
+    "before": "109d64d3e6121316f89f7f7f1a03dd8e47e123240de1ec8bfac1629db4f2002e",
+    "after": "23e1aaec6d8dc67c0052c8f1b6341625cc58ce8bf2ab0f1b8af049e56fb599a0"
+  },
+  {
+    "file": "web/tm-endturn-pipeline-steps.js",
+    "before": "99e2b50dc772abaf79996829c2d57f1d56b741bb7affa3590cef5f5c9db5f44b",
+    "after": "daed29b4ae9de00454c0315f257564ca6c2f37b48689c38e569a249904acf543"
+  },
+  {
+    "file": "web/tm-emergency-recovery-settings.js",
+    "before": "9aa69282a87605fa31fafd6ec0abef1d28dd080c5a8e03c0d7b71a0f689d2c2b",
+    "after": "1ff13b04e98e6ae67e4912c199ffb63554e3c1cf48fac6cab528ed66a1e9cae0"
+  },
+  {
+    "file": "web/tm-emergency-recovery-review.js",
+    "before": null,
+    "after": "0c73f120612d84c9a66c207de9fe59bb0d05cb2cc84a7d0ad0816c35e7465670"
+  },
+  {
+    "file": "web/scripts/smoke-emergency-recovery-review.js",
+    "before": null,
+    "after": "2b3c9d09fde95aeb2b9b2175512fa3df28d90ce9b94080cf20619c84779646b3"
+  }
+]

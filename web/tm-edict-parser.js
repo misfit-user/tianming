@@ -131,7 +131,7 @@
       turn: G.turn || 0,
       kind: kind,
       action: action,
-      ok: !(result && result.ok === false),
+      ok: !(result && (result.ok === false || result.success === false)),
       text: String(text || '').slice(0, 120)
     });
     if (G._edictPolicyActions.length > 80) G._edictPolicyActions.splice(0, G._edictPolicyActions.length - 80);
@@ -497,6 +497,16 @@
     if (params.regionId) return params.regionId;
     var G = global.GM || {};
     var candidates = [];
+    var seen = new Set();
+    function visit(row) {
+      if (!row || typeof row !== 'object' || seen.has(row)) return;
+      seen.add(row);
+      if (Array.isArray(row)) { row.forEach(visit); return; }
+      if (row.id) candidates.push({ id:String(row.id), name:String(row.name || row.title || row.id) });
+      ['divisions','children','subs'].forEach(function(key) { visit(row[key]); });
+    }
+    if (G.adminHierarchy) Object.keys(G.adminHierarchy).forEach(function(key) { visit(G.adminHierarchy[key]); });
+    if (G.regionMap) Object.keys(G.regionMap).forEach(function(key) { visit(G.regionMap[key]); });
     if (G.fiscal && G.fiscal.regions) {
       Object.keys(G.fiscal.regions).forEach(function(id) {
         var rf = G.fiscal.regions[id] || {};
@@ -508,6 +518,17 @@
         if (r && r.id) candidates.push({ id: r.id, name: r.name || r.title || r.id });
       });
     }
+    var explicit = String(params.region || params.regionName || params.targetRegion || '').trim();
+    var matches = candidates.filter(function(c) { return explicit ? c.id === explicit || c.name === explicit : text.indexOf(c.id) >= 0 || text.indexOf(c.name) >= 0; });
+    if (matches.length) {
+      if (!explicit) {
+        var longest = Math.max.apply(null, matches.map(function(c) { return c.name.length; }));
+        matches = matches.filter(function(c) { return c.name.length === longest; });
+      }
+      var ids = Array.from(new Set(matches.map(function(c) { return c.id; })));
+      return ids.length === 1 ? ids[0] : null;
+    }
+    if (explicit) return null;
     var aliases = {
       '江南': 'jiangnan',
       '山西': 'shanxi',
@@ -526,7 +547,7 @@
     };
     var aliasKeys = Object.keys(aliases);
     for (var a = 0; a < aliasKeys.length; a++) {
-      if (text.indexOf(aliasKeys[a]) >= 0) return aliases[aliasKeys[a]];
+      if (text.indexOf(aliasKeys[a]) >= 0 && (!candidates.length || candidates.some(function(c) { return c.id === aliases[aliasKeys[a]]; }))) return aliases[aliasKeys[a]];
     }
     for (var i = 0; i < candidates.length; i++) {
       var c = candidates[i];
@@ -598,6 +619,20 @@
     if (!G._centralLocalPolicyActions) G._centralLocalPolicyActions = [];
   }
 
+  function _edictTransferSource(text, explicit) {
+    var bank='内帑|內帑|内库|内藏|內藏|内府|私帑|国库|國庫|帑廪|帑廩|太仓|太倉|户部库|戶部庫';
+    var patterns=[new RegExp('(?:从|從|由|自|动用|動用|动支|支用|拨用|撥用|取自|出自|以|用)\\s*('+bank+')','g'),new RegExp('('+bank+')\\s*(?:库银|庫銀|银|銀|资金|資金)?\\s*(?:支出|拨出|撥出|拨付|撥付|出资|出資|出银|出銀|拨银|撥銀|发银|發銀|给银|給銀|支付|承担|承擔|负担|負擔)','g'),new RegExp('(?:拨|撥|发|發|支)\\s*('+bank+')','g')];
+    function canonical(name){return /^(内|內|私)/.test(name)?'neitang.money':'guoku.money';}
+    var sources=new Set(),deferred=false;
+    patterns.forEach(function(rx){var m;while((m=rx.exec(text))){var left=text.slice(0,m.index).split(/[，,。；;\n]/).pop();if(/(?:不|不得|不可|勿|莫|毋|禁止|无需|计划|計劃|拟|擬|考虑|考慮)[^，,。；;]{0,5}$/.test(left)){deferred=true;continue;}sources.add(canonical(m[1]));}});
+    if(new RegExp('(?:内帑|內帑|内库|内藏|内府|私帑).{0,3}(?:和|与|與|及).{0,3}(?:国库|國庫|帑廪|太仓)|(?:国库|國庫|帑廪|太仓).{0,3}(?:和|与|與|及).{0,3}(?:内帑|內帑|内库|内藏|内府|私帑)').test(text))throw new Error('多账户拨款须分别明确各自金额，尚未扣款');
+    if(!sources.size&&deferred||/(?:如果|倘若|若[^，。；]{1,30}[，,]则|待[^，。；]{1,12}后)/.test(text))throw new Error('拨款仍有否定、计划或待决条件，尚未扣款');
+    if(sources.size>1)throw new Error('诏令包含多个资金来源，尚未扣款；请分别明确金额');
+    var named=sources.size?Array.from(sources)[0]:null;
+    if(explicit&&named&&explicit!==named)throw new Error('资金来源与诏令原文冲突，尚未扣款');
+    return named||explicit||'guoku.money';
+  }
+
   function _executeCentralLocalTextPolicy(text, params) {
     var G = global.GM;
     if (!G) return false;
@@ -608,6 +643,8 @@
     var result = null;
 
     if (action === 'transfer_to_region') {
+      try { params.fromAccount = _edictTransferSource(text, params.fromAccount); }
+      catch (sourceError) { return { ok:false, code:'edict-source-ambiguous', reason:sourceError.message }; }
       if (!params.regionId || !params.amount) return { ok: false, reason: '缺少下拨区域或金额' };
       if (global.EconomyLinkage && typeof global.EconomyLinkage.createTransferOrder === 'function') {
         result = global.EconomyLinkage.createTransferOrder({
@@ -619,17 +656,7 @@
           durationMonths: params.durationMonths || 3
         });
       } else {
-        if (!G.transferOrders) G.transferOrders = [];
-        result = { ok: true, fallback: true, orderId: 'edict_transfer_' + (G.turn || 0) };
-        G.transferOrders.push({
-          id: result.orderId,
-          fromAccount: params.fromAccount || 'guoku.money',
-          toRegion: params.regionId,
-          amount: params.amount,
-          purpose: params.purpose || 'regional_support',
-          status: 'pending',
-          createTurn: G.turn || 0
-        });
+        return { ok:false, code:'transfer-ledger-unavailable', reason:'调拨账本未加载，尚未扣款或创建调拨单' };
       }
     } else if (action === 'force_levy') {
       if (!params.regionId || !params.amount) return { ok: false, reason: '缺少强征区域或金额' };
@@ -710,7 +737,9 @@
       G._centralLocalPolicyActions.push({ turn: G.turn || 0, action: action, regionId: params.regionId, amount: params.amount || 0 });
       if (G._centralLocalPolicyActions.length > 80) G._centralLocalPolicyActions.splice(0, G._centralLocalPolicyActions.length - 80);
     }
-    return (result && (result.ok === false || result.success === false)) ? false : (result || true);
+    return (result && (result.ok === false || result.success === false))
+      ? { ok:false, reason:result.reason || result.code || '央地财政执行失败', executionResult:result }
+      : (result || true);
   }
 
   function _inferEnvironmentTextPolicy(text, params) {
@@ -767,7 +796,8 @@
     });
     if (G._envPolicyActions.length > 100) G._envPolicyActions.splice(0, G._envPolicyActions.length - 100);
     _recordEdictPolicyAction('environment', params.policyId, result, text);
-    return (result && result.ok === false) ? false : (result || true);
+    return (result && result.ok === false)
+      ? { ok:false, reason:result.reason || '环境政策执行失败', executionResult:result } : (result || true);
   }
 
   function _edictOfficeRankFromText(text, fallback) {

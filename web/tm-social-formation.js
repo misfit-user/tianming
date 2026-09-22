@@ -34,12 +34,12 @@
     while (list.some(function (x) { return x.id === id; })) id = base + '_' + n++;
     return id;
   }
-  function references(g, refs, field) {
+  function references(g, refs, field, opts) {
     var found = [], seen = new Set();
     for (var ref of arr(refs)) {
       var c = exact(g.chars, ref);
       if (!live(c)) return { error:field + '必须引用唯一在册活人：' + String(typeof ref === 'object' ? ref.id || ref.name : ref) };
-      if (c.isPlayer) return { error:'不得借群体创建替玩家改变党籍或阶层身份' };
+      if (c.isPlayer && !(opts && opts.authoritative)) return { error:'不得借群体创建替玩家改变党籍或阶层身份' };
       if (!seen.has(c)) { seen.add(c); found.push(c); }
     }
     return { chars:found };
@@ -51,8 +51,8 @@
     g.turnChanges = g.turnChanges || {}; if (!Array.isArray(g.turnChanges[key])) g.turnChanges[key] = [];
     g.turnChanges[key].push({id:entity.id,name:entity.name,changes:[{field:'新建',oldValue:'未成立',newValue:'已成立',reason:reason}]});
     g._continuityRevision = (Number(g._continuityRevision)||0) + 1;
-    try { if (TM.Indices && TM.Indices.invalidate) TM.Indices.invalidate(g, root.P); } catch (_) {}
-    try { if (root.addEB) root.addEB(kind === 'party' ? '新党形成' : '新阶层形成', entity.name + '：' + reason); } catch (_) {}
+    try { if (TM.Indices && TM.Indices.invalidate) TM.Indices.invalidate(g, opts.preview ? null : root.P); } catch (_) {}
+    try { if (!opts.preview && root.addEB) root.addEB(kind === 'party' ? '新党形成' : '新阶层形成', entity.name + '：' + reason); } catch (_) {}
     if(g===root.GM){
       try { if(TM.Qiju && TM.Qiju.recordEntry) TM.Qiju.recordEntry({turn:turn,content:'【'+(kind==='party'?'新党':'新阶层')+'形成】'+entity.name+'：'+reason,category:'社会',entityId:entity.id}); } catch (_) {}
       if(root.NpcMemorySystem && root.NpcMemorySystem.remember) arr(kind==='party'?entity.members:entity.representativeNpcs).forEach(function(n){
@@ -72,7 +72,7 @@
     var reason = text(raw.reason || raw.trigger || opts.reason);
     if (!reason) return fail(g,'party',name,'须给出本局形成依据');
     var leaderRef = raw.leaderId || raw.leader || raw.head;
-    var members = references(g, arr(raw.members || raw.memberNames).concat(leaderRef ? [leaderRef] : []), '创始成员');
+    var members = references(g, arr(raw.members || raw.memberNames).concat(leaderRef ? [leaderRef] : []), '创始成员', opts);
     if (members.error) return fail(g,'party',name,members.error);
     arr(g.chars).forEach(function(c) {
       if(live(c) && !c.isPlayer && c.party === name && !members.chars.includes(c)) members.chars.push(c);
@@ -84,7 +84,7 @@
       if (!cls) return fail(g,'party',name,'社会基础必须引用已存在的阶层');
       bases.push({class:cls.name,classId:cls.id || '',affinity:value(sb.affinity,.5,-1,1)});
     }
-    if (!members.chars.length && !bases.length) return fail(g,'party',name,'至少需要在册创始成员或可核对的社会基础');
+    if (!members.chars.length && !bases.length && !opts.authoritative) return fail(g,'party',name,'至少需要在册创始成员或可核对的社会基础');
     var id = idFor(g,'party',name,list,text(raw.id));
     if(!id) return fail(g,'party',name,'ID无效或已被占用');
     var leader = leaderRef ? exact(g.chars,leaderRef) : null;
@@ -166,7 +166,7 @@
     if(old)return {ok:true,changed:false,duplicate:true,entity:old,path:'classes/'+(old.id||name)};
     var reason=text(raw.reason||raw.origin||opts.reason);
     if(!reason)return fail(g,'class',name,'须给出本局经济或社会演化依据');
-    var reps=references(g,arr(raw.representativeNpcs||raw.members).concat(arr(raw.leaders)),'阶层代表');
+    var reps=references(g,arr(raw.representativeNpcs||raw.members).concat(arr(raw.leaders)),'阶层代表',opts);
     if(reps.error)return fail(g,'class',name,reps.error);
     var id=idFor(g,'class',name,list,text(raw.id));
     if(!id)return fail(g,'class',name,'ID无效或已被占用');

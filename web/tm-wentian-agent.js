@@ -29,7 +29,7 @@
         operations: { type:'array', description:'可实际执行的游戏修改；确认时逐项写入。天意创建党派等实体必须提交操作，不能仅写 plan。', items:{type:'object',properties:{tool:{type:'string'},input:{type:'object'},reason:{type:'string'}},required:['tool','input','reason']} },
         hardChanges: {
           type: 'array',
-          description: 'category=hardChange/absolute 时必填·可多条。path 用常见路径式(chars[人物名].loyalty / divisions[府州名].economyBase.farmland 等)。★须先用工具核实对象在档真名与现值·勿凭空猜名。',
+          description: '兼容旧式数值修改；与 operations 二选一，不能同时提交，以免同一笔修改重复执行。新实体和复杂联动优先全部放进 operations。path 用真实字段路径，先用工具核实对象与现值。',
           items: {
             type: 'object',
             properties: {
@@ -83,6 +83,7 @@
     var bad = [];
     var hcs = (result && Array.isArray(result.hardChanges)) ? result.hardChanges : [];
     var operations=Array.isArray(result.operations)?result.operations:[],writer=TM.Endturn&&TM.Endturn.AgentWriteTools;
+    if(operations.length&&hcs.length)bad.push({i:0,path:'operations',reason:'operations 与 hardChanges 不能重复提交；请将全部修改合并为一组 operations，旧式修改可转换为 edit_world'});
     operations.forEach(function(op,i){if(!writer||!op||!writer.isToolName(op.tool)||!op.input||typeof op.input!=='object'||Array.isArray(op.input)||!op.reason)bad.push({i:i,path:op&&op.tool||'',reason:'须提供实际已注册的修改工具、参数和依据'});});
     if(result.category==='absolute'&&/(成立|创建|新建|建立|设立|组建).*(党派|党|势力|军队|阶层|人物)/.test(content||'')&&!operations.length&&!hcs.length)bad.push({i:0,path:'operations',reason:'天意造物必须提交 edit_world 等实际修改操作，不能仅口头承诺'});
     for (var i = 0; i < hcs.length; i++) {

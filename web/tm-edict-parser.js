@@ -745,7 +745,8 @@
   function _inferEnvironmentTextPolicy(text, params) {
     text = String(text || '');
     params = params || {};
-    var regionId = _resolvePolicyRegionId(text, params);
+    // The opening policy clause names its subject; a later settlement destination is not a second policy target.
+    var regionId = _resolvePolicyRegionId(text.split(/[，,。；;]/)[0], params) || _resolvePolicyRegionId(text, params);
     var policyId = params.policyId || null;
     if (!policyId && /(迁民出山|环境迁民|退耕还林|移民减压|减轻环境承载|迁出山地)/.test(text)) policyId = 'migration_relief';
     if (!policyId && /(技术投入|水利技术|试新法|省水农具|新法|技术)/.test(text)) policyId = 'tech_investment';

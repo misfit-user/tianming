@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-22T00:41:03.425Z",
+  "generatedAt": "2026-09-22T01:11:20.634Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -4696,8 +4696,8 @@
     },
     {
       "path": "tm-edict-parser.js",
-      "sha256": "a01c22c75b1d398faa9ff477626e88ce8b7d4d2475b4ae73def05fb22861edd1",
-      "size": 126586
+      "sha256": "a1c6567b81b68b53225480936ce492c6598088a4372ae03a7a3878e8c62f82d0",
+      "size": 126766
     },
     {
       "path": "tm-edict-thresholds.js",
@@ -6236,7 +6236,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b3c559d3c6955923d707bd4bee71f90a9a16099c03a252f7bc735651236a0f5c",
+      "sha256": "480fc7bb30e7b695ff80e9ff9d745f5fd140f3692f0f82f391a49f1487452aa0",
       "size": 134450
     },
     {
@@ -6411,8 +6411,8 @@
     },
     {
       "path": "tm-wentian-agent.js",
-      "sha256": "fa89b36c739082888fd9331de588a70b8d1085f0ccf2272638954206583bd9aa",
-      "size": 17571
+      "sha256": "f8a2a95fe8d03025331d19f2338b0d75fd53fead1ea24bee5709282cadb6441a",
+      "size": 17792
     },
     {
       "path": "tm-workbench-artifacts.js",

@@ -2,20 +2,20 @@
 const assert=require('assert/strict');
 const {writer,baseGM,load,read,mainContext,vm,run}=require('./lib-player-error-regression');
 const tests=[];const test=(name,fn)=>tests.push({name,fn});
-test('actual SC1 application catch propagates failure and the final gate refuses narrative-only success',async()=>{
+test('actual SC1 application failure remains visible while completed main generation can commit',async()=>{
  const c=mainContext();c.p1={shizhengji:'甲已升任，但实际尚未落账。',zhengwen:'完整正文',char_updates:[]};
  c.afterSc1=async()=>{const e=Error('fixture write failure');e.code='ai-writeback-preflight-failed';e.writebackFailures=[{field:'char_updates'}];throw e;};
  const src=read('tm-endturn-ai.js'),a=src.indexOf('      if (typeof afterSc1 === "function") {'),b=src.indexOf('      }); // end Sub-call 1 _runSubcall',a);
  assert(a>=0&&b>a);await assert.rejects(vm.runInContext('(async()=>{'+src.slice(a,b)+'})()',c),e=>e.code==='ai-writeback-preflight-failed');
- load(c,'tm-endturn-validity.js');const out=c.TM.Endturn.Validity.validateBeforeCommit({results:{sc1:c.p1,aiResult:{shizhengji:'已升任',zhengwen:'完整'}}});assert.equal(out.ok,false);
+ load(c,'tm-endturn-validity.js');const out=c.TM.Endturn.Validity.validateBeforeCommit({results:{sc1:c.p1,aiResult:{shizhengji:'已升任',zhengwen:'完整'}}});assert.equal(out.ok,true);assert(out.warnings.some(w=>w.includes('尚未落账')));
 });
 test('SC1 wrapper never swallows a preflight or non-transport application failure',async()=>{
  const c=mainContext();for(const code of ['ai-writeback-preflight-failed','ai-writeback-atomic-failed','OTHER_APPLY'])await assert.rejects(c._runSubcall('sc1','主推演','lite',async()=>{const e=Error('failure');e.code=code;throw e;}),e=>e.code===code);
 });
-test('required writeback receipt and full narrative cannot be replaced by a placeholder',()=>{
+test('missing writeback receipt is deferred but missing or fabricated main generation still fails',()=>{
  const c=mainContext();load(c,'tm-endturn-validity.js');const validate=c.TM.Endturn.Validity.validateBeforeCommit;
  const ctx={results:{sc1:{turn_summary:'正常'},aiResult:{shizhengji:'完整时政',zhengwen:'完整正文'}},meta:{requireMainWriteback:true}};
- assert(!validate(ctx).ok);ctx.meta.mainWriteback={ok:true,turn:c.GM.turn};assert(validate(ctx).ok);
+ const pending=validate(ctx);assert(pending.ok);assert(pending.warnings.some(w=>w.includes('回执不完整')));ctx.meta.mainWriteback={ok:true,turn:c.GM.turn};assert(validate(ctx).ok);
  ctx.results.sc1._emergencyFallback=true;assert(!validate(ctx).ok);delete ctx.results.sc1._emergencyFallback;
  ctx.results.aiResult.shizhengji={content:'不是字符串'};assert(!validate(ctx).ok);
 });

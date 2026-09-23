@@ -2,12 +2,12 @@
   "version": 2,
   "source": "index.html",
   "generatedBy": "web/scripts/build-startup-phase-manifest.js",
-  "scriptCount": 462,
+  "scriptCount": 463,
   "phaseCounts": {
     "menu": 14,
     "core": 107,
     "world": 318,
-    "optional": 23
+    "optional": 24
   },
   "deferredChangesApproved": 9,
   "auditConclusion": "Feature Loader V2 owns 9 explicitly declared deferred scripts. The original six remain deferred; pure territory layout joins the formal map feature; relief providers load only for the issue panel or active saved cases. Eager classic scripts retain document order; adjacency is not a dependency.",
@@ -11304,8 +11304,25 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "tm-shanhe-runtime.js",
+      "script": "tm-map-circuits.js",
       "order": 445,
+      "phase": "optional",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [
+        "TM"
+      ],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "tm-shanhe-runtime.js",
+      "order": 446,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11322,21 +11339,6 @@
     },
     {
       "script": "phase8-formal-map.js",
-      "order": 446,
-      "phase": "optional",
-      "loadPolicy": "eager-ordered",
-      "platform": "any",
-      "sideEffects": "legacy-unknown",
-      "provides": [],
-      "consumes": [],
-      "dependsOn": [],
-      "mustLoadBefore": [],
-      "mustLoadAfter": [],
-      "lazySafe": false,
-      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
-    },
-    {
-      "script": "phase8-formal-map-dossier.js",
       "order": 447,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
@@ -11351,8 +11353,23 @@
       "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
     },
     {
-      "script": "phase8-formal-modules.js",
+      "script": "phase8-formal-map-dossier.js",
       "order": 448,
+      "phase": "optional",
+      "loadPolicy": "eager-ordered",
+      "platform": "any",
+      "sideEffects": "legacy-unknown",
+      "provides": [],
+      "consumes": [],
+      "dependsOn": [],
+      "mustLoadBefore": [],
+      "mustLoadAfter": [],
+      "lazySafe": false,
+      "reason": "Legacy eager script: document order remains observable, but adjacency is not represented as a dependency. Explicit split contracts remain owned by lint-split-contracts.js."
+    },
+    {
+      "script": "phase8-formal-modules.js",
+      "order": 449,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11369,7 +11386,7 @@
     },
     {
       "script": "phase8-formal-drafts.js",
-      "order": 449,
+      "order": 450,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11395,7 +11412,7 @@
     },
     {
       "script": "phase8-formal-drafts-message-panels.js",
-      "order": 450,
+      "order": 451,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11413,7 +11430,7 @@
     },
     {
       "script": "phase8-formal-records.js",
-      "order": 451,
+      "order": 452,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11428,7 +11445,7 @@
     },
     {
       "script": "tm-renwu-tuzhi.js",
-      "order": 452,
+      "order": 453,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11449,7 +11466,7 @@
     },
     {
       "script": "phase8-formal-rightrail.js",
-      "order": 453,
+      "order": 454,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11466,7 +11483,7 @@
     },
     {
       "script": "phase8-formal-rightrail-social.js",
-      "order": 454,
+      "order": 455,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11484,7 +11501,7 @@
     },
     {
       "script": "preview/scenario-editor-sandbox-bridge.js",
-      "order": 455,
+      "order": 456,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11501,7 +11518,7 @@
     },
     {
       "script": "tm-pause-fab.js",
-      "order": 456,
+      "order": 457,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11519,7 +11536,7 @@
     },
     {
       "script": "tm-capacitor-boot.js",
-      "order": 457,
+      "order": 458,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11536,7 +11553,7 @@
     },
     {
       "script": "tm-touch-gestures.js",
-      "order": 458,
+      "order": 459,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11551,7 +11568,7 @@
     },
     {
       "script": "tm-pinch-pan.js",
-      "order": 459,
+      "order": 460,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11569,7 +11586,7 @@
     },
     {
       "script": "tm-hover-fulltext.js",
-      "order": 460,
+      "order": 461,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",
@@ -11587,7 +11604,7 @@
     },
     {
       "script": "tm-startup-contract.js",
-      "order": 461,
+      "order": 462,
       "phase": "optional",
       "loadPolicy": "eager-ordered",
       "platform": "any",

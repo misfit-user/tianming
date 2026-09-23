@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-26T11:49:23.347Z",
+  "generatedAt": "2026-09-26T12:41:47.589Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2621,8 +2621,8 @@
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
-      "sha256": "51d0bb60d31b6643b02ca7887f74c23c3b74125a76fff72bf4c558d80f79991f",
-      "size": 52646452
+      "sha256": "ea42d92a111b4252b1beb7dc707f74bba9685b6363a55fc20eb1942ae600bcc0",
+      "size": 53369659
     },
     {
       "path": "bundled-scenarios/manifest.js",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "930a02a8f5448fc7bef520122235b07db390214c5d61e588770b4c1660260e17",
-      "size": 75534
+      "sha256": "f741be0e2db98609dcde0acd601e01badb1cbd0ddf13f9bd7109ec711372d39f",
+      "size": 75748
     },
     {
       "path": "INDEX.md",
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "af7da9825a4d802a255e459f5b6df0fadae8a1dc90eada815d51330a40179430",
-      "size": 379348
+      "sha256": "bf5ba2f9e374e1cf7ebb32b00b620f609fa663471d05bd501c2284bc2cb8667c",
+      "size": 379904
     },
     {
       "path": "styles.css",
@@ -5525,6 +5525,11 @@
       "size": 10043
     },
     {
+      "path": "tm-map-circuits.js",
+      "sha256": "cad4c9188064ab1135ffca6111e74c3815ccefef770c6b6895808ae468be17e6",
+      "size": 15793
+    },
+    {
       "path": "tm-map-label-collide.js",
       "sha256": "528e002552eabe9d6d790d64fd4ca3aa7e106ce18ee6f70cfa3749e422cdd85d",
       "size": 8431
@@ -6241,8 +6246,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "6aa22b7d331b52cc52b4924df002fba0cc795de4173a7a1417f598367b0458de",
-      "size": 135059
+      "sha256": "d5294777a1dfe8cde45562792c56e7bcc2e65da3a3c804c0b74b273bfb01c41c",
+      "size": 135389
     },
     {
       "path": "tm-start-selector.js",

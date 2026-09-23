@@ -1024,6 +1024,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="phase8-formal-bridge.js?v=20260922-release1352"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260922-release1352"></script>
+<!-- 省道（通志）数据层：纯函数，供地图册页取省道分组、档案与汇总；须在 phase8-formal-map-dossier.js 之前装载 -->
+<script src="tm-map-circuits.js?v=20260923-circuits"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
 <script src="tm-shanhe-runtime.js?v=20260923-shanhe-recovery"></script>
 <script src="phase8-formal-map.js?v=20260924-no-fallback-map"></script>

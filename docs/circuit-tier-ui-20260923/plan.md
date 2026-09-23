@@ -1,0 +1,101 @@
+# 省道·通志页与方志调整 · 一期施工图
+
+日期：2026-09-23。分支 `claude/circuit-tier-ui-20260923`，worktree `E:/tianming-circuit-tier-ui-20260923`，基于 main `e21a5126`。
+设计由 owner 在 09-23 共议拍板；本文只记一期（视图加诏书）怎么施工，不改引擎账、不改剧本数据。
+
+## 〇、开工前置
+
+- ~~**等** `codex/map-pointer-scale-20260922` 那批地图修缮（19 个文件）提交并合入 main，再把本分支快进到新 main。~~ 已满足：那批以 `d1c9310a` 进 main，本分支已快进。它的 CI 在 maps 组失败，修复是本分支的 `ea6ca883`（本地已提交，按规矩接电重跑晚唐开局 smoke 通过后再推）。
+- 冲突面：`phase8-formal-map.js`、`tm-shanhe-runtime.js`、`index.html`、`feature-manifest.js`、`tm-feature-loader.js`。更新后先重读这几处，再动刀。
+- **`phase8-formal-map.js` 已卡在 lint-file-size 的 3000 行线上**（守卫把末尾空行也算一行）。S3 的交互一行也加不进去，必须先拆出姊妹模块，见第四节。
+- 基线（e21a5126，本 worktree 实跑）：
+  - `lint-arch-all` 13/13；
+  - `ci-smokes` 1085 PASS / 0 FAIL / 2 WAIVED（缺美术资产的结构化豁免）；
+  - 启动阶段清单、原生准备清单、跨发布契约、官方剧本对账、热更基线的 `--check` 全部 PASS。
+  - 更新到新 main 后要重跑一遍基线。
+
+## 一、拍板要点（详见记忆 proj-tianming-circuit-tier-ui-202609）
+
+1. 点击随层级：天下级开谱牒，省道级开通志并整道描金边，府州级开方志；右键弹三项小菜单；三页都有可点的层级路径。设置里留开关，可切回「左键一律开方志」。
+2. 通志以诊断台为主：辖境一览按问题轻重排序是主体。
+3. 一期只做视图加诏书，二期让地方大员起作用，三期省道成为记账层。
+4. 方志轻调加并卷：层级路径、页脚四动作、本道排名、役政并入户口、状态收进页头，八卷压成六卷。
+
+## 二、S1 省道数据层（新文件 `web/tm-map-circuits.js`，挂 `TM.MapCircuits`）
+
+原则：纯函数，不读写 DOM，不写 GM/P；地图模块把 `regionBundle`、`modeScore` 等函数作为参数传进来，测试可在 VM 里跑。
+
+**已完成（09-24 本地提交）**，实际接口如下（与草案的函数名不同，以此为准）：
+
+- **分组与地图一致**：省道 key 一律取 `TMMapRealmLayout.administrativeGroups(map, owners)` 的 `key`（沿 `parentId` 上溯，回落 `circuitId`/`provinceId`/`circuitName`/`provinceName`）。地图上的分组键是「势力|key」，通志的实体是 key，再按归属拆成本方与他属两部分。
+- `indexCircuits(map, { layout, ownerOf })`：一次建好索引 `{ circuits, byRegion, byRegionId }`；每个省道是 `{ key, label, entry, members: [{ region, owner }] }`，`entry` 为 `map.circuitRegistry` 中的对应条目（可能没有）。
+- `circuitOf(index, region)`：取某州所属的省道。`isRealCircuit(circuit)`：有 registry 条目或不止一州才算真省道，单州孤块不开通志。
+- `partitionByOwner(circuit, viewerOwner)`：拆成 `{ own, others: [{ owner, regions }] }`。
+- `profileOf(circuit, { findAdmin })`：开局档案，只取文字，不取数字。依次按 `sourceAdminId`、key、名称找行政树节点，按名称命中的还须像省级节点（`looksProvincial`）。
+  - 天启：取主官、官职、战略价值、士绅、书院、威胁、治所。
+  - 晚唐：取 `historicalTitle`、`commandType`、`custodyNote`；官衔也可取成员地块的 `circuitTitle`；`circuitGovernor` 为空时标「未录」。
+  - 绍宋：没有路级节点，只用 registry 的 `note`。
+- `summarize(regions, { bundle, mood, office })`：户口、实征、驻军求和；民心、吏治按人口加权；缺数的州单独计数（`missing`）。每个成员的数字都走与方志同口径的 `regionBundle` 和各项评分。**绝不读省级节点自带的数字**，它们开局后就冻结了。
+- `rankProblems(regions, { score, grade, isWarn, statusOf, unrestOf })`：`PROBLEM_MODES` 六项（民情、军务、官守、财赋、役政、阶层压力）每个预警记 2 分，每个灾异状态记 1 分，民变信号 ≥60 记 1 分；按分数、再按名称排序，可复现。每州附主要原因。不调 AI。
+- 测试 `web/scripts/smoke-map-circuits.js`（12 项）：按三部剧本的形态各造一份小夹具，另有旧式地图、空输入、排序、纯函数与源码约束（不碰 GM、P、DOM、AI）。
+- 启动登记：`index.html` 在 `phase8-formal-topbar.js` 之后装载；`smoke-startup-phase-observability.js` 新增 `mapDataModules` 登记组，断言只装载一次、先于 `phase8-formal-map-dossier.js`。
+
+## 三、S2 通志页（`phase8-formal-map-dossier.js`）
+
+- 新增 `renderCircuitBook(key, clickedRegion)` 和 `openCircuitDossier(key, clickedRegion)`；`#ppop` 的 `panelKind` 取值 `'circuit'`。
+- 页头：层级路径（势力 › 省道）、名称、历史称谓、治所、归属（本方实控 x/N 州，他属列名）。有长官数据时显示长官卡（天启），只有官衔时人名写「未录」（晚唐），没有就整卡不显示（绍宋）。
+- 读数带：户口、实征、驻军、民心、吏治，与方志同口径。
+- 各卷：
+  - 辖境（核心）：按问题轻重排序，危急项标红，点一行 `data-bk-open-region` 跳该州方志；他属州单列。
+  - 方面：长官卡加属官。
+  - 形势：战略价值、边警、灾异与民变蔓延。
+  - 财计：起运/留用合计、库藏、掌藏记。
+- 页脚动作：整饬吏治、蠲免、巡按、任免。每个动作生成诏书建议，范围写明本道各州。
+- **诏书建议只保留一个写入口**：在 `phase8-formal-rightrail.js` 把 `rightAddEdictSuggestion` 导出到 bridge（它会同时记录玩家行为信号），地图模块调用这个导出，不另写 `GM._edictSuggestions.push`，免得触发 `lint-gm-writes`。
+- 他属之道沿用谱牒的「谍报有限」处理。
+- 档案 `source` 为 `admin` 不保证有 `adminId`：绍宋的麻逸是该势力唯一的顶层区划，节点没有 id，也没有档案文字，档案整体为空，页头按缺档降级。S2 不要靠 `adminId` 回查节点。
+- CSS 放在 `phase8-formal-bridge-styles.js`，沿用册页家族样式，类名前缀 `bk-circuit-`。
+
+## 四、S3 交互（`phase8-formal-map.js`，冲突面，须在新 main 上施工）
+
+- **先拆后加**：`phase8-formal-map.js` 正好 3000 行，守卫不许再长。先把点击与标签交互拆成姊妹模块（暂名 `phase8-formal-map-interact.js`），按 alias 加内联范式迁出（见 `docs/arch-guards.md`），拆分本身单独一步提交、行为不变，再在新模块里加下面的功能。动手前先查 lint-split-contracts、lint-split-stamps 对新拆模块有什么登记要求；启动登记照第六节的顺序做。
+- 左键按 `state.mapScale` 分派：`realm` 开谱牒，`region` 开通志，`prefecture` 开方志。要同时改 stage 上的 click 和 `bindRegionPathEvents` 两处。
+- 设置开关：新增一个 `P.conf` 键（名称待定），默认随层级，并配设置界面入口（家规：设 flag 必配设置开关）。
+- 右键：新做小菜单 `tmf-map-ctx`，三项为本州方志、本道通志、本国谱牒。支持键盘和 Esc；点击外部、缩放或拖动时关闭。游戏里目前没有现成的右键菜单组件。
+- 省名可点：省道级标签带上 `data-circuit-key`，比照 `activateRealm` 处理，同样要防拖动误触。
+- 整道描金边：
+  - SVG 模式：把成员当作同一组交给 `TMMapRealmLayout.boundaryMesh`，取其 `major`（外轮廓），画一条覆盖描边。
+  - 山河境模式：运行时目前只按单个 `.tmf-region.selected` 画焦点，需要扩展为可接收一组外轮廓。`tm-shanhe-runtime.js` 在 Codex 那批改动里，必须在新 main 上改。
+- 三页的层级路径统一走 `data-bk-open-faction`、`data-bk-open-circuit`、`data-bk-open-region` 三种委托。
+
+## 五、S4 方志轻调加并卷
+
+- 页头加层级路径；页脚加安民、巡按、调粮、拟诏四个动作（走同一个导出）；读数旁加本道排名，例如「民心 本道 11 州第 9」。
+- 役政并入户口：保留 `bk-hukou` 的 id，卷名改为户役志，原役政各行作为其中一节，据报与揭真逻辑原样搬入。
+- 状态收进页头：改成小签，悬停显示效果和剩余回合；容器保留 `bk-zhuangkuang` 类名，以兼容 `smoke-region-status` 的源码契约。
+- 六卷：户役、财赋、军备、职官、风物、营造。
+- 契约改写（改前改后比对断言数）：`smoke-phase8-map-live-panels.js` 第 701 行的断言项 `data-bk-jq="bk-zhuangkuang"` 改为断言页头状态签，同一行的文案断言（辽河冬灾、岁入 -12%、民心 -1/回合、永 续）原样保留。第 706 行「无状态时不挂检签」并卷后照样成立，不改。
+- 附加建议（待回桌确认）：谱牒的版图卷改按省道列出，点省道名开通志。
+
+## 六、S5 验收
+
+- 定向 smoke：
+  - 新增：`smoke-map-circuits`，以及通志和交互的 smoke；
+  - 回归：`smoke-phase8-map-live-panels`、`smoke-map-view-scores`、`smoke-map-live-vitals`、`smoke-region-status`、`smoke-region-governor-live`、`smoke-renli-reported-fog`、`smoke-reported-spread`、`smoke-renli-reported-channels`、`smoke-field-pipelines`、`smoke-building-order-writeback`、`smoke-building-payment-ledger`、`smoke-map-demographic-display`、`smoke-region-age-settlement-labels`、`smoke-player-action-signals`、`smoke-social-foundation`、`smoke-cultural-runtime-consumption`、`smoke-tang840-opening-ledgers`。
+- Electron：`scripts/electron/strategic-map-cases.cjs`、`map-label-assertions.cjs`、`seven-ui-cases.cjs`；另加通志用例。worktree 没有 Electron 本体，届时借用主库的 electron。
+- 全量：`lint-arch-all` 13/13、`ci-smokes`。
+- 新增运行时脚本后的重生成顺序（顺序错了会得到过期清单）：
+  1. 先跑 `lint-global-providers`（或整套 `lint-arch-all`），刷新全局提供者报告；启动阶段清单要从这份报告读每个脚本提供了哪些全局名。
+  2. 启动阶段清单：`node web/scripts/build-startup-phase-manifest.js`，再 `--check`。
+  3. 原生准备清单：`node scripts/build-native-preparation-manifest.cjs --write`，再 `--check`。
+  4. 热更基线最后生成：`node scripts/sync-hot-baseline.js --write --version 1.3.5.2 --asset-root D:/tianming-publish-resume-1789962006317/candidate --temp-root E:/tianming-tmp`，再 `--check`。本 worktree 没有美术资产，不带 asset-root 会丢掉资产条目。
+  5. 新脚本还要在 `smoke-startup-phase-observability.js` 里登记，它断言脚本总数等于 417 加各登记组。
+- `smoke-tang840-opening-ledgers` 有 60 秒硬时限，笔记本用电池或与别的全量门禁并跑时会超时；推送前的全量要在接电、机器空闲时跑。
+- 回桌验手感：三部剧本各走一遍，截图给 owner。
+
+## 七、边界
+
+- 数字只从叶子汇总；不改剧本数据；不新增引擎账。
+- 界面固定文案用朝代中立词，官衔等专名来自剧本数据。
+- 代码写成可读风格（owner 偏好），不模仿周边的压缩长行；不顺手重排旧代码。
+- 每片独立可验、单独提交；每片之后回桌。

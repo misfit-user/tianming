@@ -1249,6 +1249,7 @@
       ? TM.Features.ensureRecoverable('formalMapLabels', { retryLoadError: true, retryInitError: true })
       : TM.Features.ensure('formalMapLabels');
     load.catch(function(error){
+      state._lastFormalMapSig = null; renderFormalMapSoon(); // 地名模块加载失败：重画一次，兜底地图改回显示旧样式地名
       if (window.console && typeof window.console.warn === 'function') window.console.warn('[phase8-formal-map] 标签 feature 加载失败', error);
     });
   }
@@ -1544,8 +1545,8 @@
     }
     var prepared = window.TMMapRealmLayout && window.TMMapRealmLayout.prepare ? prepareMapLayers(map, _contentSig) : null;
     if (prepared && !prepared.ready) {
-      // Keep the already usable map visible while late geometry prepares its tiers.
-      if (stage.dataset.mapId === mapId && stage.querySelector('#tmf-formal-map')) {
+      // 只保留「地名模块晚到时的兜底地图」；内容已变的旧图层不保留，免得准备期间显示过期的地名与疆界
+      if (stage.dataset.mapId === mapId && stage.querySelector('.tmf-map-fallback #tmf-formal-map')) {
         applyMapTransform(); updateMapChrome(); return;
       }
       if (stage.dataset.preparingMap !== mapId) {
@@ -1575,12 +1576,14 @@
     } else {
       // Terrain must not depend on the optional label feature finishing in time.
       var surfaceHtml = buildMapSurface(map, width, height, basemap, state.mapScale);
-      var fallback = document.createElement('div');
-      fallback.innerHTML = surfaceHtml;
+      var fallback = document.createElement('div'); fallback.innerHTML = surfaceHtml;
       var parsedCamera = fallback.firstElementChild;
       // 不解析 innerHTML 的环境（如 VM 里的模拟 DOM）取不到镜头节点，退回整段写入，与改动前的行为一致。
       if (parsedCamera && typeof parsedCamera.querySelector === 'function' && parsedCamera.querySelector('.ming-map-svg')) {
-        stage.replaceChildren(splitMapLabelSurface(parsedCamera));
+        var fallbackSurface = splitMapLabelSurface(parsedCamera), labelFeature = window.TM && TM.Features && TM.Features.status ? TM.Features.status('formalMapLabels') : null;
+        // 地名模块还在加载：先只留地形与数值哨牌，贴合疆域的地名就位后整体替换，免得玩家先看到一闪而过的旧样式地名
+        if (labelFeature && labelFeature.state === 'loading') fallbackSurface.querySelectorAll('.tmf-region-texts, .tmf-faction-label-layer').forEach(function(layer){ layer.remove(); });
+        fallbackSurface.classList.add('tmf-map-fallback'); stage.replaceChildren(fallbackSurface);
       } else {
         stage.innerHTML = surfaceHtml;
       }

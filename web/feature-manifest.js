@@ -59,7 +59,7 @@
         sideEffects: 'none',
         provides: ['TMMapLabelGeo', 'TMMapRealmLayout', 'TMMapLabelCollide'],
         init: function () {
-          var map = root.TMFormalBridge && root.TMFormalBridge.map;
+          var map = root.TMPhase8FormalBridge && root.TMPhase8FormalBridge.map;
           if (map && typeof map.onMapLabelFeatureReady === 'function') map.onMapLabelFeatureReady();
         }
       }

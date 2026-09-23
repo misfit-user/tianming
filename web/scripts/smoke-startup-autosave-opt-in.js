@@ -3,19 +3,19 @@
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm'), assert = require('node:assert/strict');
 const source = fs.readFileSync(path.join(__dirname, '../tm-save-lifecycle.js'), 'utf8');
 const managerSource = fs.readFileSync(path.join(__dirname, '../tm-save-manager.js'), 'utf8');
-const startupMark = source.indexOf('// 启动时检测自动存档');
+const startupMark = source.indexOf('// 启动不读取整份桌面自动存档');
 const startup = source.slice(source.lastIndexOf('if(_tmHasNativeFs()){', startupMark), source.indexOf('// 6b.', startupMark));
-assert(startupMark > 0 && startup.includes('loadAutoSave'), 'actual native startup block found');
+assert(startupMark > 0 && !startup.includes('loadAutoSave'), 'native startup does not deserialize full backup just to detect it');
 let passed = 0, failed = 0;
 async function test(label, fn) { try { await fn(); passed++; console.log('PASS ' + label); } catch (e) { failed++; console.error('FAIL ' + label + '\n' + e.stack); } }
 function context(response) {
-  const calls = { confirm: 0, load: [], timer: [], saved: 0, closed: 0, loading: 0, notices: [] };
+  const calls = { reads: 0, confirm: 0, load: [], timer: [], saved: 0, closed: 0, loading: 0, notices: [] };
   const c = { console: { log() {}, warn() {}, error() {} }, P: { scenarios: [], ai: { key: 'fixture-local-only' } }, GM: { running: false },
     _tmHasNativeFs: () => true, setInterval: (fn, ms) => calls.timer.push({ fn, ms }),
     _tmRunDesktopAutoSaveTick: async () => { calls.saved++; }, confirm: () => { calls.confirm++; return false; },
     showLoading: () => { calls.loading = 1; }, hideLoading: () => { calls.loading = 0; }, toast: m => calls.notices.push(m),
     fullLoadGame: async (data, options) => calls.load.push({ data, options }), closeSaveManager: () => calls.closed++,
-    tianming: { loadAutoSave: async () => { if (response instanceof Error) throw response; return response; } } };
+    tianming: { loadAutoSave: async () => { calls.reads++; if (response instanceof Error) throw response; return response; } } };
   c.window = c; vm.createContext(c); return { c, calls };
 }
 const drain = () => new Promise(resolve => setImmediate(resolve));
@@ -23,11 +23,11 @@ const drain = () => new Promise(resolve => setImmediate(resolve));
   for (const turn of [1, 25]) await test('startup with T' + turn + ' stays on menu without a restore prompt or implicit load', async () => {
     const payload = { success: true, data: { gameState: { running: true, turn }, scenarios: [{ id: 'saved-world' }] } };
     const before = JSON.stringify(payload), { c, calls } = context(payload); vm.runInContext(startup, c); await drain();
-    assert.equal(calls.confirm, 0); assert.equal(calls.load.length, 0); assert.equal(c.P.scenarios.length, 0); assert.equal(JSON.stringify(payload), before);
+    assert.equal(calls.reads, 0); assert.equal(calls.confirm, 0); assert.equal(calls.load.length, 0); assert.equal(c.P.scenarios.length, 0); assert.equal(JSON.stringify(payload), before);
   });
-  await test('project-only legacy autosave is still hydrated without entering a game', async () => {
+  await test('lifecycle leaves legacy project recovery to the unified project owner', async () => {
     const { c, calls } = context({ success: true, data: { scenarios: [{ id: 'legacy-project' }], gameState: { running: false } } });
-    vm.runInContext(startup, c); await drain(); assert.equal(c.P.scenarios[0].id, 'legacy-project'); assert.equal(calls.confirm, 0); assert.equal(calls.load.length, 0);
+    vm.runInContext(startup, c); await drain(); assert.equal(c.P.scenarios.length, 0); assert.equal(calls.reads, 0); assert.equal(calls.confirm, 0); assert.equal(calls.load.length, 0);
   });
   await test('missing or unreadable autosave does not block startup', async () => {
     for (const response of [{ success: false }, new Error('fixture read failed')]) {

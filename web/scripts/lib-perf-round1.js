@@ -49,11 +49,13 @@ function storage(root = ROOT, options = {}) {
 }
 function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
   const source = read(root, 'web/phase8-formal-map.js');
-  const stage = { innerHTML: '', dataset: {}, querySelector() { return this.innerHTML.includes('tmf-formal-map') ? {} : null; } };
+  const stage = { innerHTML: '', dataset: {}, replaceChildren(surface) { this.innerHTML = surface.outerHTML; }, querySelector() { return this.innerHTML.includes('tmf-formal-map') ? {} : null; } };
   const work = { paths: 0, layouts: 0, chrome: 0, features: 0 };
   const c = {
-    console, performance, Map, state: {}, _mapRenderMemo: null, document: { getElementById: () => ({}) },
+    console, performance, Map, state: {}, _mapRenderMemo: null, document: { getElementById: () => ({}), createElement: () => ({ innerHTML: '', get firstElementChild() { return { outerHTML: this.innerHTML }; } }) },
     mapStage: () => stage, isGameVisible: () => true,
+    // Geometry harness records generated markup; native tests cover surface/label DOM moves.
+    splitMapLabelSurface: camera => camera,
     map: { id: 'fixture', regions, width: 1200, height: 720, oceans: [] },
     getMapData() { return c.map; }, requestMapLabelFeature() { work.features++; },
     mapIdentity: m => m.id, resolveBasemap: () => null, generatedBasemapLayer: () => '',

@@ -29,7 +29,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
     if (method !== 'handle') return typeof ipc[method] === 'function' ? ipc[method].bind(ipc) : ipc[method];
     return (channel, handler) => ipc.handle(channel, async (...args) => {
       const result = await handler(...args); // real trusted sender check and implementation
-      if (channel === 'load-auto-save' && mode === 'startup-autosave') controls.startupAutoSaveReads = (controls.startupAutoSaveReads || 0) + 1;
+      if (channel === 'load-auto-save' && (mode === 'startup-autosave' || mode === 'startup-project-fallback')) controls.startupAutoSaveReads = (controls.startupAutoSaveReads || 0) + 1;
       if (channel === 'save-project' && controls.saveGate) { controls.saveArrived = true; await controls.saveGate; }
       return result;
     });
@@ -42,6 +42,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
   if (key !== 'BrowserWindow') return target[key];
   return new Proxy(target.BrowserWindow, { construct(Window, args) {
     if (visibleWindow) args[0] = { ...args[0], width: 1280, height: 800, fullscreen: false, show: true, alwaysOnTop: true, webPreferences: { ...args[0].webPreferences, backgroundThrottling: false } }; // UI gates must not wait for a ready-to-show event bypassed by test navigation.
+    if (mode === 'shanhe-load' || mode === 'shanhe-pointer' || mode === 'map-core-controls' || mode === 'startup-project-fallback') args[0] = { ...args[0], width:1280, height:800, fullscreen:false, show:false, webPreferences:{...args[0].webPreferences,backgroundThrottling:false} };
     windowOptions.push(args[0]); return Reflect.construct(Window, args);
   } });
 } });
@@ -72,7 +73,7 @@ function finish(error) {
 async function check(name, fn) { const started=Date.now(); console.log('BRIDGE_CASE_START '+JSON.stringify({name,at:new Date(started).toISOString()})); await profileHeavyCase(name); await fn(); results.push({ name, status: 'PASS' }); console.log('BRIDGE_CASE_PASS '+JSON.stringify({name,elapsedMs:Date.now()-started})); }
 // These correctness suites contain many bounded UI scenarios; keep each scenario wait and all explicit performance assertions unchanged.
 const multiScenarioAuthoring = ['authoring-boundaries','authoring-continuation','authoring-autoapply','authoring-efficiency'].includes(mode);
-setTimeout(() => finish(new Error('electron-bridge-timeout')), (multiScenarioAuthoring && mode === 'authoring-efficiency') || mode === 'relief-pilot' ? 600000 : multiScenarioAuthoring ? 180000 : mode === 'strategic-map' ? 600000 : mode === 'shanhe-map' ? 135000 : mode === 'native-start-live-authoring' ? 570000 : mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' || mode === 'native-start-neutral-atlas' ? 180000 : visiblePerformance ? 240000 : 75000);
+setTimeout(() => finish(new Error('electron-bridge-timeout')), (multiScenarioAuthoring && mode === 'authoring-efficiency') || mode === 'relief-pilot' ? 600000 : multiScenarioAuthoring ? 180000 : mode === 'strategic-map' ? 600000 : mode === 'shanhe-load' ? 240000 : mode === 'map-core-controls' || mode === 'startup-project-fallback' ? 180000 : mode === 'shanhe-map' || mode === 'shanhe-pointer' ? 135000 : mode === 'native-start-live-authoring' ? 570000 : mode === 'performance-inspect' || mode === 'relief-inspect' ? 1800000 : mode === 'relief-pilot' || mode === 'native-start-neutral-atlas' ? 180000 : visiblePerformance ? 240000 : 75000);
 process.on('uncaughtException', finish); process.on('unhandledRejection', finish);
 process.on('exit', code => { if (finished) process.stdout.write('BRIDGE_NODE_EXIT '+JSON.stringify({mode,at:new Date().toISOString(),code})+'\n'); });
 app.on('browser-window-created', (_event, win) => {
@@ -151,6 +152,10 @@ app.on('browser-window-created', (_event, win) => {
       else if (mode === 'tactical-terrain') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check });
       else if (mode === 'tactical-phase2') await require('./tactical-terrain-cases.cjs')({ win, root, temp, check, phase2: true });
       else if (mode === 'tactical-units') await require('./tactical-units-cases.cjs')({ win, root, temp, check });
+      else if (mode === 'startup-project-fallback') await require('./startup-project-fallback-cases.cjs')({win,temp,controls,check});
+      else if (mode === 'map-core-controls') await require('./map-core-controls-cases.cjs')({win,root,check});
+      else if (mode === 'shanhe-load') await require('./shanhe-load-cases.cjs')({win,root,check});
+      else if (mode === 'shanhe-pointer') await require('./shanhe-pointer-cases.cjs')({win,check});
       else if (mode === 'shanhe-map') await require('./shanhe-default-cases.cjs')({win,root,check});
       else if (mode === 'strategic-map') await require('./strategic-map-cases.cjs')({ win, root, temp, check, baseline });
       else if (mode === 'map-tiers') await require('./map-tier-cases.cjs')({ win, root, temp, check, baseline });

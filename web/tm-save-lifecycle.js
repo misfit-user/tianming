@@ -2858,27 +2858,8 @@ if(_tmHasNativeFs()){
     });
   },60000);
 
-  // 启动时检测自动存档
-  (async function(){
-    try{
-      var r=await window.tianming.loadAutoSave();
-      if(r.success&&r.data){
-        var savedGame = r.data.gameState && (r.data.gameState.GM || r.data.gameState);
-        // 保留在菜单，由“读取存档 → 桌面自动存档”主动恢复；不再每次弹出系统确认框。
-        if(savedGame&&savedGame.running) return;
-        if(r.data.scenarios&&r.data.scenarios.length>0){
-          // 没有运行中的游戏但有剧本数据——静默恢复P结构
-          var data=r.data;
-          for(var key in data){
-            if(data.hasOwnProperty(key)&&key!=='gameState'&&key!=='_saveMeta'){
-              P[key]=data[key];
-            }
-          }
-          console.log('[desktop] 已从autoSave恢复P（无游戏状态），scenarios:',P.scenarios.length);
-        }
-      }
-    }catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
-  })();
+  // 启动不读取整份桌面自动存档：项目恢复由 tm-utils 统一负责。
+  // 运行局仅通过“读取存档 → 桌面自动存档”由玩家主动恢复。
 }
 
 // 6b. 浏览器端定期保存P + 页面关闭时保存

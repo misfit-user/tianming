@@ -5,7 +5,7 @@
 
   root.TM = root.TM || {};
 
-  var MANIFEST_SRC = 'feature-manifest.js?v=20260920-release1352';
+  var MANIFEST_SRC = 'feature-manifest.js?v=20260923-shanhe-recovery';
   var DEFAULT_TIMEOUT_MS = 15000;
   var definitions = Object.create(null);
   var runtime = Object.create(null);

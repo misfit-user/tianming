@@ -90,7 +90,7 @@
           '<div class="ming-map-wash"></div>' +
           '<button type="button" class="renwu-tuzhi-entry" data-tmf-action="renwu" title="人物图志"><img class="renwu-tuzhi-img" src="' + esc(asset('renwu-tuzhi-card-ui.png')) + '" alt="人物图志"></button>' +
           '<div class="map-tools-dock open" id="map-tools-dock"><button type="button" class="map-tools-toggle" id="map-tools-toggle" data-map-tools-toggle="1" aria-expanded="true"><span>舆图工具</span><span class="map-tools-mode" id="map-tools-mode">势力</span><span class="map-tools-caret">▾</span></button><div class="map-tools-pop" id="map-tools-pop"><div class="map-layer-bar"><button class="map-layer" data-map-mode="mood">民情</button><button class="map-layer" data-map-mode="classPressure">阶层</button><button class="map-layer" data-map-mode="tax">财赋</button><button class="map-layer" data-map-mode="army">军务</button><button class="map-layer" data-map-mode="office">官守</button><button class="map-layer" data-map-mode="yizheng">役政</button><button class="map-layer on" data-map-mode="owner">势力</button></div><div class="map-nav-panel"><div class="map-search-row"><span class="map-search-label">检索</span><input id="map-search" class="map-search" list="map-region-list" autocomplete="off" placeholder="地名 / 势力 / 主官"><datalist id="map-region-list"></datalist></div><div id="map-search-results" class="map-search-results"></div></div></div></div>' +
-          '<div class="map-scale-strip" aria-label="舆图层级"><button type="button" class="map-scale" data-map-scale="realm" aria-pressed="false">天下</button><button type="button" class="map-scale" data-map-scale="region" aria-pressed="true">省道</button><button type="button" class="map-scale" data-map-scale="prefecture" aria-pressed="false">府州</button><button type="button" class="map-scale" data-map-tier-lock="1" style="display:none" aria-pressed="false" title="锁定后，缩放不会自动改变地图层级">缩放联动</button><button type="button" class="map-scale" data-map-fit-all="1" style="display:none" title="保持当前层级并查看完整地图">全图</button></div>' +
+          '<div class="map-scale-strip" aria-label="舆图层级"><button type="button" class="map-scale" data-map-scale="realm" aria-pressed="false">天下</button><button type="button" class="map-scale" data-map-scale="region" aria-pressed="true">省道</button><button type="button" class="map-scale" data-map-scale="prefecture" aria-pressed="false">府州</button><button type="button" class="map-scale" data-map-tier-lock="1" aria-pressed="false" title="锁定后，缩放不会自动改变地图层级">缩放联动</button><button type="button" class="map-scale" data-map-fit-all="1" title="保持当前层级并查看完整地图">全图</button></div>' +
           '<div class="map-alert-strip"><button type="button" class="map-alert hot" onclick="TMPhase8FormalBridge.openAction(\'memorial\')">待批奏疏</button><button type="button" class="map-alert" onclick="TMPhase8FormalBridge.openPanel(\'issue\')">朝议待核</button><button type="button" class="map-alert ok" onclick="TMPhase8FormalBridge.openPanel(\'finance\')">财赋入库</button></div>' +
           '<div id="tmf-map-legend" class="map-legend tmf-map-legend"></div>' +
           '<div class="map-hint" id="tmf-map-hint">滚轮缩放，拖拽移图，点击地块查看档案。</div>' +
@@ -125,7 +125,7 @@
         var fitButton = e.target && e.target.closest ? e.target.closest('[data-map-fit-all]') : null;
         if (lockButton || fitButton) {
           var controlMap = getMapData();
-          if (!controlMap || !controlMap.hierarchyPresentation || !controlMap.hierarchyPresentation.layerControl) return;
+          if (!controlMap) return;
           e.preventDefault(); e.stopPropagation();
           state._zoomLevelLinkOff = fitButton ? true : !state._zoomLevelLinkOff;
           state._tierLockMapId = controlMap.id;
@@ -1339,7 +1339,7 @@
       mapAttribute(wrap, 'data-map-mode', state.mapMode || 'owner');
       mapAttribute(wrap, 'data-map-scale', state.mapScale || 'region');
     }
-    mapChromeQuery('.map-layer').forEach(function(btn){
+    mapChromeQuery('.map-layer[data-map-mode]').forEach(function(btn){
       var on = btn.dataset.mapMode === state.mapMode;
       btn.classList.toggle('on', on);
       mapAttribute(btn, 'aria-pressed', on);
@@ -1350,11 +1350,12 @@
       btn.classList.toggle('on', on);
       mapAttribute(btn, 'aria-pressed', on);
     });
-    var currentMap = getMapData(), controlsOn = !!(currentMap && currentMap.hierarchyPresentation && currentMap.hierarchyPresentation.layerControl);
+    var currentMap = getMapData();
     if (state._tierLockMapId && (!currentMap || state._tierLockMapId !== currentMap.id)) { state._zoomLevelLinkOff = false; state._tierLockMapId = null; }
     mapChromeQuery('[data-map-tier-lock],[data-map-fit-all]').forEach(function(btn){
-      var display = controlsOn ? '' : 'none';
-      if (btn.style.display !== display) btn.style.display = display;
+      // Core map controls are available to every scenario, including older/custom maps.
+      if (btn.style.display !== '') btn.style.display = '';
+      if (btn.disabled !== !currentMap) btn.disabled = !currentMap;
       if (btn.hasAttribute('data-map-tier-lock')) {
         mapText(btn, state._zoomLevelLinkOff ? '层级已锁' : '缩放联动');
         mapAttribute(btn, 'aria-pressed', !!state._zoomLevelLinkOff);
@@ -1543,6 +1544,10 @@
     }
     var prepared = window.TMMapRealmLayout && window.TMMapRealmLayout.prepare ? prepareMapLayers(map, _contentSig) : null;
     if (prepared && !prepared.ready) {
+      // Keep the already usable map visible while late geometry prepares its tiers.
+      if (stage.dataset.mapId === mapId && stage.querySelector('#tmf-formal-map')) {
+        applyMapTransform(); updateMapChrome(); return;
+      }
       if (stage.dataset.preparingMap !== mapId) {
         stage.dataset.preparingMap = mapId;
         stage.innerHTML = '<div class="tmf-map-loading" role="status">舆图准备中 · 正在缓存天下、省道、府州的边界与地名…</div>';
@@ -1567,7 +1572,19 @@
         prepared.measured = true;
       }
       activatePreparedMapLayer(state.mapScale || 'region');
-    } else stage.innerHTML = buildMapSurface(map, width, height, basemap, state.mapScale);
+    } else {
+      // Terrain must not depend on the optional label feature finishing in time.
+      var surfaceHtml = buildMapSurface(map, width, height, basemap, state.mapScale);
+      var fallback = document.createElement('div');
+      fallback.innerHTML = surfaceHtml;
+      var parsedCamera = fallback.firstElementChild;
+      // 不解析 innerHTML 的环境（如 VM 里的模拟 DOM）取不到镜头节点，退回整段写入，与改动前的行为一致。
+      if (parsedCamera && typeof parsedCamera.querySelector === 'function' && parsedCamera.querySelector('.ming-map-svg')) {
+        stage.replaceChildren(splitMapLabelSurface(parsedCamera));
+      } else {
+        stage.innerHTML = surfaceHtml;
+      }
+    }
     state._lastFormalMapSig = _fmSig;
     stage.dataset.width = String(width);
     stage.dataset.height = String(height);
@@ -1892,6 +1909,21 @@
 
 
 
+  // Fixed-fit normalizes fixed popovers to absolute children. Position against the
+  // actual containing block so client pixels are not scaled a second time.
+  function positionMapTip(tip, e){
+    tip.style.position = 'absolute';
+    var parent = tip.offsetParent || tip.parentElement, rect = parent.getBoundingClientRect();
+    var sx = rect.width / parent.offsetWidth, sy = rect.height / parent.offsetHeight;
+    if (!(sx > 0 && sy > 0)) return;
+    var box = tip.getBoundingClientRect(), x = e.clientX + 14, y = e.clientY + 14;
+    if (x + box.width > window.innerWidth - 8) x = e.clientX - box.width - 14;
+    if (y + box.height > window.innerHeight - 8) y = e.clientY - box.height - 14;
+    x = Math.max(8, x); y = Math.max(8, y);
+    tip.style.left = ((x - rect.left) / sx - parent.clientLeft + parent.scrollLeft) + 'px';
+    tip.style.top = ((y - rect.top) / sy - parent.clientTop + parent.scrollTop) + 'px';
+  }
+
   function regionPathFromPoint(e){
     if (!e) return null;
     if (window.TMShanheRuntime && TMShanheRuntime.active()) return TMShanheRuntime.pick(e);
@@ -2204,20 +2236,16 @@
       var path = regionPathFromPoint(e);
       if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) TMShanheRuntime.setHovered(path && (path.dataset.regionId || path.dataset.id));
       if (!path) { tip.classList.remove('show'); _hoverLastKey = null; return; }
-      // 位置每帧跟随鼠标（廉价·无 innerHTML 重建）·右/下越界翻转
-      var tx = e.clientX + 14, ty = e.clientY + 14;
-      if (tx + 270 > window.innerWidth) tx = e.clientX - 278;
-      if (ty + 190 > window.innerHeight) ty = e.clientY - 180;
-      tip.style.left = tx + 'px';
-      tip.style.top = ty + 'px';
       var rid = path.dataset.regionId || path.dataset.id;
       var key = rid + '|' + (state.mapMode || 'owner');
-      if (key === _hoverLastKey) { tip.classList.add('show'); return; } // 同省同视图·不重建 innerHTML
-      _hoverLastKey = key;
-      var r = findRegion(rid);
-      if (!r) { tip.classList.remove('show'); return; }
-      tip.innerHTML = mapTipHtml(r);
+      if (key !== _hoverLastKey) {
+        var r = findRegion(rid);
+        if (!r) { tip.classList.remove('show'); return; }
+        tip.innerHTML = mapTipHtml(r);
+        _hoverLastKey = key;
+      }
       tip.classList.add('show');
+      positionMapTip(tip, e);
     }
     stage.addEventListener('mouseleave', function(){ if (window.TMShanheRuntime) TMShanheRuntime.setHovered(null); });
     stage.addEventListener('mousemove', function(e){

@@ -85,7 +85,11 @@ assert(root.TMMapLabelGeo, 'production geometry provider loads after the map mod
 assert.strictEqual(bridge.map.__regionTrueArea(triangle), 50, 'fallback area was not permanently cached before the provider arrived');
 
 const beforeTimers = timers.length;
-bridge.map.onMapLabelFeatureReady();
+let manifest;
+root.TM.Features.registerManifest = value => { manifest = value; };
+vm.runInContext(fs.readFileSync(path.join(WEB, 'feature-manifest.js'), 'utf8'), context, { filename: 'feature-manifest.js' });
+state._lastFormalMapSig = 'already-rendered-fallback';
+manifest.features.formalMapLabels.init();
 assert.strictEqual(state._lastFormalMapSig, null, 'late provider invalidates the formal map signature');
 assert(timers.length >= beforeTimers + 2, 'late provider schedules both rerender and collision layout');
 

@@ -1955,8 +1955,9 @@ function _tmEmitPRestored(source) {
   } catch(_) {}
 }
 
-// 启动时恢复P（三层恢复：localStorage骨架 → IndexedDB完整 → 桌面端autoSave）
+// 启动恢复以 IndexedDB 项目为主；只有缺失/读取失败时才读取桌面备份。
 (function _restoreP(){
+  var desktopRestoreRequested = false;
   // 层1: localStorage 骨架（同步，秒级启动）
   try {
     // 尝试旧格式 tm_P
@@ -2015,11 +2016,14 @@ function _tmEmitPRestored(source) {
         // Retry once on the actual script-ready event, not with an unbounded timer.
         document.addEventListener('DOMContentLoaded', function() { _tmIdbRestoreWhenReady(101); }, { once: true });
       }
-      else if (tries >= 100) console.warn('[restoreP] 页面脚本已加载，但 TM_SaveDB 仍不可用·IndexedDB 恢复层跳过');
+      else if (tries >= 100) { console.warn('[restoreP] 页面脚本已加载，但 TM_SaveDB 仍不可用·尝试桌面恢复'); restoreDesktopProject(); }
       return;
     }
-    TM_SaveDB.loadProject().then(function(fullP) {
-      if (fullP && fullP.scenarios) {
+    var projectRead;
+    try { projectRead = TM_SaveDB.loadProject(); }
+    catch (error) { console.warn("[restoreP] 项目读取失败:", error && error.message); restoreDesktopProject(); return; }
+    Promise.resolve(projectRead).then(function(fullP) {
+      if (fullP && Array.isArray(fullP.scenarios)) {
         if (_tmIsIncompleteOfficialProject(fullP)) {
           _tmApplyMachinePrefsFromProject(fullP);
           // 不整体丢弃：保留刚注册的官方剧本，仅把用户自建剧本合并回来（修安卓/网页重启自建剧本消失）
@@ -2042,13 +2046,21 @@ function _tmEmitPRestored(source) {
           showScnManage();
         }
         _tmEmitPRestored('indexeddb');
-      }
-    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e); });
+      } else { restoreDesktopProject(); }
+    }).catch(function(e) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e);
+      restoreDesktopProject();
+    });
   })(0);
 
-  // 层3: 桌面端 autoSave
-  if (window.tianming && window.tianming.isDesktop) {
-    window.tianming.loadAutoSave().then(function(r) {
+  // One fallback owner: do not deserialize a full game just to refresh settings.
+  function restoreDesktopProject() {
+    if (desktopRestoreRequested || !window.tianming || !window.tianming.isDesktop || typeof window.tianming.loadAutoSave !== 'function') return;
+    if (window.GM && window.GM.running) return;
+    desktopRestoreRequested = true;
+    var projectAtStart = P, worldAtStart = window.GM;
+    Promise.resolve().then(function() { return window.tianming.loadAutoSave(); }).then(function(r) {
+      if (P !== projectAtStart || (window.GM && window.GM.running) || (worldAtStart && window.GM !== worldAtStart)) return;
       if (r && r.success && r.data && r.data.scenarios) {
         for (var key in r.data) {
           if (r.data.hasOwnProperty(key) && key !== 'gameState' && key !== '_saveMeta') {

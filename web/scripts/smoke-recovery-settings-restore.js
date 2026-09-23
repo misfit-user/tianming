@@ -30,6 +30,7 @@ test('late IndexedDB project cannot replace the latest synchronous recovery or r
 });
 test('explicitly disabled recovery and an empty retry override survive desktop autosave restoration',async()=>{
   const disabled={...selected,mode:'off'},f=fixture({emergencyRecovery:disabled,aiCallRetryOverrides:{}},true);
+  f.idb(null);await tick();
   f.desktop({...oldProject(),conf:{emergencyRecovery:selected,aiCallRetryOverrides:{sc1:15}}});await tick();equal(f.c.P.conf.emergencyRecovery,disabled);equal(f.c.P.conf.aiCallRetryOverrides,{});
 });
 test('settings saved while an old project read is pending remain authoritative',async()=>{

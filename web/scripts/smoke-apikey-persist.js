@@ -65,9 +65,8 @@ const dbody = dm ? dm[1] : '';
 assert(/localStorage\.getItem\("tm_api"\)/.test(dbody),
   '桌面启动分支回读 localStorage.tm_api(恢复主 key·修复重启丢 key 的读回半)');
 const iRead = dbody.indexOf('localStorage.getItem("tm_api")');
-const iLoad = dbody.indexOf('loadAutoSave');
-assert(iRead >= 0 && iLoad >= 0 && iRead < iLoad,
-  '桌面分支先回读 tm_api 再 loadAutoSave(剥 key 的 autoSave 不覆盖已回读的 key)');
+assert(iRead >= 0 && !/tianming\.loadAutoSave\s*\(/.test(dbody),
+  'API 启动只读设备配置，备份恢复交给统一项目恢复入口');
 // _applyAiCfg 以 || 兜底保 key：c.key 空(剥 key 的 autoSave)时回落 P.ai.key·不冲成空
 assert(/P\.ai\.key\s*=\s*c\.key\s*\|\|\s*P\.ai\.key/.test(CORE),
   '_applyAiCfg key 用 || 兜底(剥 key 的 autoSave 传 undefined 不冲掉已回读的 key)');

@@ -228,6 +228,26 @@
     });
   }
 
+  // 皇命表（MemTables.imperialEdict）的行是数组：[优先级, 皇命内容, 生效条件, 颁布回合, 隐藏]。
+  // 按对象字段读会得到空正文，玩家钉的皇命就从统一记忆块里消失了；这里统一转成对象再读。
+  function imperialEdictRecord(row) {
+    if (!row) return null;
+    if (!Array.isArray(row)) return row;
+    var body = toText(row[1]), condition = toText(row[2]);
+    var hidden = row[4] === true || row[4] === 1 || /^(true|1|是)$/i.test(String(row[4] || ''));
+    var record = {
+      id: row.id || ('imperial-edict-' + hashText(body + '|' + condition + '|' + row[3])),
+      content: body,
+      condition: condition,
+      turn: numberOrNull(row[3]),
+      importance: Number(row[0]) || 5,
+      status: row.status || 'active'
+    };
+    // 「隐藏」列为真的是天机条目，只给系统推演看；其余沿用各读取方原有的可见性默认值
+    if (hidden) { record.visibility = 'gm_only'; record.readScope = 'system'; }
+    return record;
+  }
+
   function pushEdictEnvelopes(out, GM, turn) {
     if (!GM) return;
     if (Array.isArray(GM.activeEdicts)) {
@@ -252,22 +272,26 @@
     }
 
     if (Array.isArray(GM._edictTracker)) {
+      var efficacy = root.TM && root.TM.EdictEfficacy;
       GM._edictTracker.forEach(function(e, i) {
-        if (!e || !openLike(e.status || 'pending')) return;
+        if (!e) return;
+        // 办结不等于废止：仍现行的诏令照样投影为现行法令（tm-edict-efficacy.js）
+        var inForce = !!(efficacy && efficacy.isCurrent(e, turn));
+        if (!inForce && !openLike(e.status || 'pending')) return;
         var body = [e.content, e.category, e.assignee, e.target, e.feedback, e.reason].filter(Boolean).join(' ');
         out.push(makeEnvelope({
           id: e.id || ('tracked-edict-' + i),
           type: 'active_law',
           body: body,
           sourceRefs: [sourceRef('edictTracker', e.id || ('tracked-edict-' + i), body, { turn: e.turn || turn })],
-          status: e.status || 'pending',
+          status: inForce ? 'active' : (e.status || 'pending'),
           authority: 'player_pin',
           visibility: e.visibility || 'world_truth',
           turn: Number(e.turn || turn || 0),
           entities: [e.assignee, e.target],
           lane: 'L2_active_law_commitment',
           reason: 'projection:edict_tracker',
-          extra: { category: e.category || '' }
+          extra: { category: e.category || '', efficacy: efficacy ? efficacy.stateOf(e) : '' }
         }));
       });
     }
@@ -276,8 +300,10 @@
       ? GM._memTables.imperialEdict.rows
       : [];
     rows.forEach(function(row, i) {
+      row = imperialEdictRecord(row);
       if (!row || !openLike(row.status || row.lifecycle || 'active')) return;
       var body = [row.title, row.content, row.text, row.condition, row.notes, row.assignee, row.target].filter(Boolean).join(' ');
+      if (!body) return;
       out.push(makeEnvelope({
         id: row.id || row.key || ('imperial-edict-' + i),
         type: 'active_law',
@@ -286,6 +312,7 @@
         status: row.status || row.lifecycle || 'active',
         authority: 'player_pin',
         visibility: row.visibility || 'world_truth',
+        readScope: row.readScope,
         turn: Number(row.turn || row.createdTurn || turn || 0),
         entities: [row.assignee, row.target],
         lane: 'L2_active_law_commitment',
@@ -1302,6 +1329,7 @@
   }
 
   ns.hashText = hashText;
+  ns.imperialEdictRecord = imperialEdictRecord;
   ns.sourceRef = sourceRef;
   ns.makeEnvelope = makeEnvelope;
   ns.collect = collect;

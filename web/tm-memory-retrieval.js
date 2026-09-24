@@ -615,6 +615,18 @@
     return parts.join(' ');
   }
 
+  // 办结不等于废止：诏令按效力仍现行时，照样算作现行法令（tm-edict-efficacy.js）
+  function edictInForce(GM, e) {
+    var efficacy = root.TM && root.TM.EdictEfficacy;
+    return !!(efficacy && efficacy.isCurrent(e, Number(GM && GM.turn) || 0));
+  }
+
+  // 皇命表的行是数组，与信封模块共用同一读法（tm-memory-envelope.js imperialEdictRecord）
+  function imperialRow(row) {
+    var envelope = root.TM && root.TM.MemoryEnvelope;
+    return envelope && envelope.imperialEdictRecord ? envelope.imperialEdictRecord(row) : row;
+  }
+
   function activeEdictTexts(GM) {
     var parts = [];
     if (!GM) return parts;
@@ -626,7 +638,7 @@
     }
     if (Array.isArray(GM._edictTracker)) {
       GM._edictTracker.forEach(function(e) {
-        if (!e || !isOpenStatus(e.status || 'pending')) return;
+        if (!e || !(isOpenStatus(e.status || 'pending') || edictInForce(GM, e))) return;
         parts.push([e.content, e.category, e.assignee, e.target, e.feedback, e.reason].filter(Boolean).join(' '));
       });
     }
@@ -634,6 +646,7 @@
       ? GM._memTables.imperialEdict.rows
       : [];
     rows.forEach(function(row) {
+      row = imperialRow(row);
       if (!row || !isOpenStatus(row.status || row.lifecycle || 'active')) return;
       parts.push([row.title, row.content, row.text, row.assignee, row.target, row.condition, row.notes].filter(Boolean).join(' '));
     });
@@ -934,14 +947,15 @@
 
     if (Array.isArray(GM._edictTracker)) {
       GM._edictTracker.forEach(function(e, i) {
-        if (!e || !isOpenStatus(e.status)) return;
+        var inForce = !!e && edictInForce(GM, e);
+        if (!e || !(inForce || isOpenStatus(e.status))) return;
         var text = [e.content, e.category, e.assignee, e.feedback, e.reason].filter(Boolean).join(' ');
         pushPriorityHit(out, q, {
           id: e.id || ('tracked-edict-' + i),
           source: 'activeEdict',
           turn: Number(e.turn || turn || 0),
           text: text,
-          status: e.status || 'pending',
+          status: inForce ? 'active' : (e.status || 'pending'),
           importance: 9,
           relevance: 0.92,
           affects_future: true,
@@ -954,8 +968,10 @@
       ? GM._memTables.imperialEdict.rows
       : [];
     tableRows.forEach(function(row, i) {
+      row = imperialRow(row);
       if (!row || !isOpenStatus(row.status || row.lifecycle || 'active')) return;
       var text = [row.title, row.content, row.text, row.condition, row.notes].filter(Boolean).join(' ');
+      if (!text) return;
       pushPriorityHit(out, q, {
         id: row.id || row.key || ('imperial-edict-' + i),
         source: 'imperialEdict',

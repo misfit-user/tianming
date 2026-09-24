@@ -125,6 +125,12 @@
     return clean(hit.source || (hit.char ? 'npc' : 'unknown'), 80);
   }
 
+  // 现行法令：玩家诏令、皇命表钉子条目、NPC 承诺
+  function isCurrentRule(hit) {
+    if (!hit) return false;
+    return hit.source === 'activeEdict' || hit.source === 'imperialEdict' || hit.source === 'commitment' || hit.type === 'active_law';
+  }
+
   function authorityRank(hit) {
     hit = hit || {};
     if (hit.authorityRank != null && isFinite(Number(hit.authorityRank))) return Number(hit.authorityRank);
@@ -217,7 +223,8 @@
     out.source = sourceOf(out);
     out.type = clean(out.type || out.kind || '', 80);
     out._factText = safeTextOf(out, Number.MAX_SAFE_INTEGER);
-    out.text = safeTextOf(out, opts && opts.perHitMaxChars || 180);
+    // 现行法令（诏令、皇命、承诺）是规则不是叙事，例外与期限常在条文尾部，不按单条字数截断
+    out.text = safeTextOf(out, isCurrentRule(out) ? Number.MAX_SAFE_INTEGER : (opts && opts.perHitMaxChars || 180));
     out.turn = Number(out.turn || 0);
     out.authority = clean(out.authority || '', 80);
     out.authorityRank = authorityRank(out);
@@ -429,7 +436,11 @@
       var lead = coreCandidates.find(matches);
       if (lead && coreLeads.indexOf(lead) < 0) coreLeads.push(lead);
     });
-    sections.coreFacts = coreLeads.concat(coreCandidates.filter(function(h) { return coreLeads.indexOf(h) < 0; }));
+    // 其余现行法令整体排在人物名单等事实之前：预算紧张时先保规则，不让长名单把政策挤出去
+    var remainingCore = coreCandidates.filter(function(h) { return coreLeads.indexOf(h) < 0; });
+    sections.coreFacts = coreLeads
+      .concat(remainingCore.filter(isCurrentRule))
+      .concat(remainingCore.filter(function(h) { return !isCurrentRule(h); }));
     var sectionPlans = {};
     SECTION_ORDER.forEach(function(key) {
       sectionPlans[key] = buildSectionPlan(key, sections[key]);

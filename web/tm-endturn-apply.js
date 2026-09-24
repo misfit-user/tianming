@@ -4975,12 +4975,16 @@
               });
             }
             // Path 4: 按类别匹配本回合 pending
+            var _efficacyUnsure = false;
             if (!tracker) {
               tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
+              _efficacyUnsure = !!tracker;
             }
             if (tracker && !tracker._reliefCaseId) {
               // Content-only legacy feedback must pass verification after its exact tracker is resolved.
               if (TM && TM.ImperialOrders) ef = TM.ImperialOrders.guardEdict(GM, Object.assign({}, ef, {edictId:tracker.id}));
+              // 诏令效力：常制/有期/一次性、要点与撤销（tm-edict-efficacy.js）·兜底匹配的不采纳·防判到别的诏令上
+              if (!_efficacyUnsure && TM && TM.EdictEfficacy) TM.EdictEfficacy.judge(GM, tracker, ef);
               // 远方诏令——信使未送达前强制pending_delivery
               if (tracker._remoteTargets && tracker._letterIds && tracker._letterIds.length > 0) {
                 var _allDelivered = tracker._letterIds.every(function(lid) {

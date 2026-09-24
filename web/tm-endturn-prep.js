@@ -389,13 +389,12 @@ function _endTurn_collectInput() {
       }
     }
   } catch(_candEvErr) { /* 候选事件消费失败不影响主流程 */ }
-  // 清理超过10回合的旧追踪记录
-  // 保留：本回合全部 + 未完成诏令（跨回合追踪·无年限）+ 已完成/受阻者 24 回合
-  GM._edictTracker = GM._edictTracker.filter(function(e) {
-    if (e.turn === GM.turn) return true;  // 本回合全部保留
-    if (e.status === 'executing' || e.status === 'pending' || e.status === 'partial' || e.status === 'obstructed' || e.status === 'pending_delivery') return true;
-    return GM.turn - e.turn < ((typeof turnsForMonths === 'function') ? turnsForMonths(24) : 24);  // 已完成/失败·保留两年
-  });
+  // 诏令效力（tm-edict-efficacy.js）：补齐编号、有期诏令期满转为已到期，再清理旧追踪记录。
+  // 保留：本回合全部 + 未完成诏令（跨回合追踪·无年限）+ 仍现行的诏令（办结不等于废止）+ 其余已完成/失败者两年
+  if (typeof TM !== 'undefined' && TM.EdictEfficacy) {
+    TM.EdictEfficacy.tick(GM);
+    TM.EdictEfficacy.prune(GM, (typeof turnsForMonths === 'function') ? turnsForMonths(24) : 24);
+  }
 
   // 1.15: 跨势力识别——检测诏令目标中的非玩家势力（人/势力名）
   // 若涉及，标记为外交文书·AI 须以外交方式处理（对方可接受/拒绝/敷衍/反击）

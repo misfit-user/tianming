@@ -136,7 +136,7 @@
           return tc === content || (tc.length > 12 && content.indexOf(tc.slice(0, 16)) >= 0) || (content.length > 12 && tc.indexOf(content.slice(0, 16)) >= 0);
         });
         if (dup) return;
-        gm._edictTracker.push({ id: 'agent_e' + rt + '_' + added, content: content.slice(0, 400), category: '诏令', turn: rt, status: 'pending', assignee: '', feedback: '', progressPercent: 0, _agentRegistered: true });
+        gm._edictTracker.push({ id: 'agent_e' + rt + '_' + added, content: content, category: '诏令', turn: rt, status: 'pending', assignee: '', feedback: '', progressPercent: 0, _agentRegistered: true });
         added++;
       });
       return added;
@@ -960,14 +960,17 @@
     // 切片3·跨回合一致·诏令督查:把在办活诏令+近期既定事实注入 basis(推演接续上回合不失忆/不矛盾)·开关关/无活诏令则空
     var _edictDossier = '';
     try { if (_agentEdictOversightOn(P)) { _registerPlayerEdicts(gm, ctx, resolutionTurn); _edictDossier = _activeEdictsDossier(gm) || ''; } } catch (_edE) {}
+    // 现行诏制：已颁行且仍作数的诏令（办结不等于废止）·不受督查开关限制·本回合新诏已在玩家操作里
+    var _standingEdicts = '';
+    try { if (TM.EdictEfficacy) _standingEdicts = (TM.EdictEfficacy.promptSection(gm, { excludeTurn: resolutionTurn }) + TM.EdictEfficacy.feedbackGuide(gm, { tool: 'judge_edict' })).trim(); } catch (_seE) {}
     // 切片4·冷门动作深查:扫玩家本回合举措非常规性→注入深查指引(硬核×自由命门交点)·开关默认关·寻常/失败则空
     var _anomalyN = '';
     try { if (_agentAnomalyOn(P)) { var _anRes = await _anomalyScan(ctx, gm); if (_anRes) { _anomalyN = _anomalyNudge(_anRes); gm._agentAnomaly = _anRes; } } } catch (_anE) {}
     var _timeCtx = _timeContext(gm, resolutionTurn);   // 本回合时间(纪元年月+历时+时间相关后果指引)·显要处·让 agent 推演不脱离时间
     // 基线组装抽成可重拼的份件——T1 预算护栏按份裁剪后重拼(常量基线:系统词+偏差校正+本回合时间+玩家操作+冷门深查+跨回合记忆+在办诏令+依据·不随轮数膨胀)
-    var _bParts = { sys: _buildSystemPrompt() + (TM.BuildingOrders ? TM.BuildingOrders.prompt(gm, ctx.input.buildingOrders, true) : ''), bias: _biasInject, time: _timeCtx, ops: gm._turnPlayerOps || '', anomaly: _anomalyN, mem: _memDossier, edicts: _edictDossier, basis: basis };
+    var _bParts = { sys: _buildSystemPrompt() + (TM.BuildingOrders ? TM.BuildingOrders.prompt(gm, ctx.input.buildingOrders, true) : ''), bias: _biasInject, time: _timeCtx, ops: gm._turnPlayerOps || '', anomaly: _anomalyN, mem: _memDossier, standing: _standingEdicts, edicts: _edictDossier, basis: basis };
     function _assembleBase() {
-      return _bParts.sys + (_bParts.bias ? '\n' + _bParts.bias : '') + (_bParts.time ? '\n' + _bParts.time : '') + '\n\n' + (_bParts.ops ? _bParts.ops + '\n\n' : '') + (_bParts.anomaly ? _bParts.anomaly + '\n\n' : '') + (_bParts.mem ? _bParts.mem + '\n\n' : '') + (_bParts.edicts ? _bParts.edicts + '\n\n' : '') + _bParts.basis;
+      return _bParts.sys + (_bParts.bias ? '\n' + _bParts.bias : '') + (_bParts.time ? '\n' + _bParts.time : '') + '\n\n' + (_bParts.ops ? _bParts.ops + '\n\n' : '') + (_bParts.anomaly ? _bParts.anomaly + '\n\n' : '') + (_bParts.mem ? _bParts.mem + '\n\n' : '') + (_bParts.standing ? _bParts.standing + '\n\n' : '') + (_bParts.edicts ? _bParts.edicts + '\n\n' : '') + _bParts.basis;
     }
     var baseTranscript = _assembleBase();
     var state = { finalized: false, summary: '', narrative: '', writeAttempts: 0, writeSucceeded: 0, writeFailed: 0, writeNoop: 0, writeOk: 0, toolReceipts: [], intentPlan: _intentPlan, rounds: 0, depthTools: {}, depthFailed: [], finalizeRejects: 0, engineDims: engineDims, t0: Date.now() };

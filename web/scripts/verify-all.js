@@ -82,6 +82,7 @@ const checks = [
   { name: 'imperial-continuity', file: 'smoke-imperial-continuity.mjs', estSec: 3, expectExit: 0 },
   { name: 'entity-formation', file: 'smoke-entity-formation.mjs', estSec: 3, expectExit: 0 },
   { name: 'imperial-followup', file: 'smoke-imperial-followup.mjs', estSec: 3, expectExit: 0 },
+  { name: 'edict-efficacy', file: 'smoke-edict-efficacy.js', estSec: 3, expectExit: 0 },
   { name: 'battle-height-render-r3', file: 'smoke-battle-height-render-r3.mjs', estSec: 3, expectExit: 0 },
   { name: 'battle-unit-render-r3', file: 'smoke-battle-unit-render-r3.mjs', estSec: 3, expectExit: 0 },
   { name: 'ui-render-r3', file: 'smoke-ui-render-r3.mjs', estSec: 1, expectExit: 0 },

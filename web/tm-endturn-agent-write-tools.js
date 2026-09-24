@@ -635,6 +635,19 @@
     return {ok:!!(result.applied||result.unchanged),changed:!!result.applied,reason:result.summary,path:'officeTree/'+(result.nodeId||plan.node.name)};
   }
 
+  // 诏令效力判定：与主推演 edict_feedback 里的效力字段共用 TM.EdictEfficacy.judge 这一个落账口
+  function _semJudgeEdict(gm, input) {
+    if (!TM.EdictEfficacy) return { ok: false, reason: '诏令效力模块未加载' };
+    var tracker = (gm && Array.isArray(gm._edictTracker)) ? gm._edictTracker : [];
+    var edict = tracker.find(function (e) { return e && e.id === input.edictId; });
+    if (!edict) return { ok: false, reason: '找不到诏令 ' + input.edictId + '，须用【现行诏制】或本回合诏令里的 edictId' };
+    var path = '_edictTracker.' + input.edictId + '.efficacy';
+    var changes = TM.EdictEfficacy.judge(gm, edict, input);
+    if (!changes.length) return { ok: true, changed: false, path: path };
+    _report(gm, { type: 'edict_efficacy', path: path, changes: changes, reason: input.reason || '', turn: gm.turn || 0, _agent: true, _op: 'judge_edict' });
+    return { ok: true, changed: true, path: path, new: changes };
+  }
+
   var DEFS = [
     {"name":"form_party","description":"登记本局实际形成的新党派。需要在册领袖/成员或已有阶层社会基础，以及本局形成依据。不能用push_field向parties追加。","parameters":{"type":"object","properties":{"name":{"type":"string"},"leader":{"type":"string"},"members":{"type":"array","items":{"type":"string"}},"ideology":{"type":"string"},"currentAgenda":{"type":"string"},"influence":{"type":"number"},"crossFaction":{"type":"boolean"},"socialBase":{"type":"array","items":{"type":"object","properties":{"class":{"type":"string"},"affinity":{"type":"number"}},"required":["class"]}},"reason":{"type":"string"}},"required":["name","reason"]}},
     {"name":"emerge_class","description":"登记经济与社会演化已形成的新阶层。给出经济基础和来源；人口不凭空产生，只有明确fromClass和populationCount才从旧人口账转入。","parameters":{"type":"object","properties":{"name":{"type":"string"},"economicRole":{"type":"string"},"origin":{"type":"string"},"fromClass":{"type":"string"},"populationCount":{"type":"integer","minimum":0},"populationKeys":{"type":"array","items":{"type":"string"}},"representativeNpcs":{"type":"array","items":{"type":"string"}},"demands":{"type":"string"},"size":{"type":"string"},"reason":{"type":"string"}},"required":["name","economicRole","reason"]}},
@@ -672,6 +685,19 @@
     return 'state';
   }
   if (TM.AgentWorldEditor) DEFS.push(TM.AgentWorldEditor.definition);
+  if (TM.EdictEfficacy) DEFS.push({
+    name: 'judge_edict',
+    description: '判定一道诏令的效力，与执行进度分开记（颁行办结不等于废止）。edictId 取自【现行诏制】或本回合诏令；efficacy：standing 常制（长期有效直至废止）/ term 有期 / one_off 一次性（办完即了，如拨一笔款、召见一人、任免一人）/ expired 有期诏令已到期；term 须填 until（如「三年」「十个月」「至T40」）；digest 为 60 字内要点，保留数字、适用范围、例外与期限；本回合新诏明确废止或取代旧诏时，在 revokes / supersedes 填旧诏 edictId。',
+    parameters: { type: 'object', properties: {
+      edictId: { type: 'string' },
+      efficacy: { type: 'string', enum: ['standing', 'term', 'one_off', 'expired'] },
+      until: { type: 'string' },
+      digest: { type: 'string' },
+      revokes: { type: 'array', items: { type: 'string' } },
+      supersedes: { type: 'array', items: { type: 'string' } },
+      reason: { type: 'string' }
+    }, required: ['edictId'] }
+  });
   var SPECS = DEFS.map(function (d) {
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
@@ -719,6 +745,7 @@
       case 'relocate_capital':     r = _semCapital(gm, input); break;
       case 'change_region_owner':  r = _semRegionOwner(gm, input); break;
       case 'adjust_region_state':  r = _semRegionState(gm, input); break;
+      case 'judge_edict':          r = _semJudgeEdict(gm, input); break;
       default: return { ok: false, name: name, text: '(未知写工具:' + name + ')' };
     }
     var reportAfter = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;

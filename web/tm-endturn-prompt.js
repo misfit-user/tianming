@@ -600,6 +600,8 @@
         var _matched = (GM._edictTracker||[]).filter(function(et) {
           return et.turn === GM.turn && et.category === el.cat && et.content === el.text;
         });
+        // 追踪编号：edict_feedback 带上它才能准确对号（效力判定只认精确匹配）
+        if (_matched.length && _matched[0].id) tp += '  edictId：' + _matched[0].id + '\n';
         _matched.forEach(function(et) {
           if (et._remoteTargets && et._remoteTargets.length > 0) {
             tp += '  ⚠ 此令涉及远方NPC：' + et._remoteTargets.join('、') + '——已遣信使传递，当前在途。\n';

@@ -2608,7 +2608,7 @@
           if (_domesticEdicts.length > 0) {
             tp1 += '\n\n【本回合内政诏令——每条必须在edict_feedback中逐条报告执行情况，填写assignee和feedback】\n';
             _domesticEdicts.forEach(function(e) {
-              tp1 += '  【' + e.category + '】' + e.content;
+              tp1 += '  #id=' + e.id + ' 【' + e.category + '】' + e.content;
               if (e._deliveryStatus === 'sending' && e._remoteTargets) {
                 tp1 += ' ⚠信使在途→' + e._remoteTargets.join('、') + '（远方NPC尚未收到，status应为pending_delivery）';
               }
@@ -2653,7 +2653,7 @@
             tp1 += '  ※ edict_feedback 的 status 用 executing/partial/obstructed 映射外交层级（受理/半允/拒绝）·feedback 写对方朝堂/酋长/酋使的实际回应态度\n';
             tp1 += '  ※ 连带反映到 faction_updates（relation_delta/attitude_shift 等）·必要时触发 factionsAffected/revolt_update/map_changes\n';
             _diplomaticEdicts.forEach(function(e) {
-              tp1 += '  【' + e.category + '】致' + (e._targetFactions||[]).join('·') + '：' + e.content;
+              tp1 += '  #id=' + e.id + ' 【' + e.category + '】致' + (e._targetFactions||[]).join('·') + '：' + e.content;
               if (e._targetNpcs && e._targetNpcs.length) tp1 += ' (目标人物: ' + e._targetNpcs.join('、') + ')';
               if (e._deliveryStatus === 'sending' && e._remoteTargets) {
                 tp1 += ' ⚠使节在途→' + e._remoteTargets.join('、') + '（尚未送达·status应为pending_delivery）';
@@ -2689,6 +2689,8 @@
           tp1 += '  ※ 连锁效应示例："辽饷加派"三回合后——民心持续下降·陕北流民骤增·边军哗饷已歇；"免除江南赋税"——地方士绅感恩·中央税入骤降·其他州县请援\n';
           tp1 += '  ※ 连锁效应必须同步反映到 数值变化（fiscal_adjustments/class_updates/region_updates 等）·不能只是文字\n';
         }
+        // 现行诏制：办结只是执行结束，条文仍作数的诏令须持续带给推演（tm-edict-efficacy.js）
+        if (typeof TM !== 'undefined' && TM.EdictEfficacy) tp1 += TM.EdictEfficacy.promptSection(GM, { excludeTurn: GM.turn }) + TM.EdictEfficacy.feedbackGuide(GM);
         // 往期在途诏令——信使已送达的，提醒AI该NPC现在知道了
         var _priorRemote = (GM._edictTracker||[]).filter(function(e) {
           return e.turn < GM.turn && e._letterIds && e._letterIds.length > 0;

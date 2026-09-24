@@ -38,7 +38,11 @@ assert(scriptNames.indexOf('tm-call-retry-policy.js')<scriptNames.indexOf('tm-ai
 assert(scriptNames.indexOf('tm-call-budget-settings.js')<scriptNames.indexOf('tm-patches.js'),'budget controls precede the settings owner');
 assert(scriptNames.indexOf('tm-social-formation.js')<scriptNames.indexOf('tm-endturn-apply.js'),'canonical social formation loads before its apply consumer');
 visualAdapters.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
-assert.strictEqual(manifest.scriptCount,417+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length,'retain every prior script and every explicitly registered runtime addition');
+// 诏令效力：回合准备每回合调用它的时钟与清理，须先于回合准备加载
+const edictEfficacyModules=['tm-edict-efficacy.js'];
+edictEfficacyModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+assert(scriptNames.indexOf('tm-edict-efficacy.js')<scriptNames.indexOf('tm-endturn-prep.js'),'edict efficacy loads before its turn-prep consumer');
+assert.strictEqual(manifest.scriptCount,417+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

@@ -880,7 +880,10 @@ window.desktopDoSave=async function(){
     var previous = operation._queue || Promise.resolve();
     var pending = previous.catch(function(){}).then(function(){
       if(!current()) return {success:false,stale:true};
-      return window.tianming.saveProject(name,saveData);
+      // 新外壳有文本通道：先转成字符串再过桥，免得几百 MB 的对象图逐节点复制；旧外壳照走对象通道
+      var bridge = window.tianming;
+      if (typeof bridge.saveProjectJson === 'function') return bridge.saveProjectJson(name, JSON.stringify(saveData));
+      return bridge.saveProject(name,saveData);
     });
     operation._queue = pending;
     var r=await pending;
@@ -1186,6 +1189,9 @@ function _tmRebindRuntimeWorld(options) {
     return _tmRunDegradableLoadStep(label, fn);
   }
 
+  // 存档里只存了 GM.mapData 一份时（见 _buildSaveState），先把 P.map / P.mapData 指回读入的这份地图；
+  // 随后的重绑定会把 GM.mapData 换成新克隆，P 里留下的正好是与运行地图互不共享的剧本模板
+  var restoredMapKeys = typeof _tmRestoreMapAliases === 'function' ? _tmRestoreMapAliases(targetP, targetGM) : [];
   if (options.map !== false && targetGM._useAIGeo !== true) {
     run('runtime map rebind', function() {
       var liveMapSource = _tmRuntimeMapSourceForWorld(targetP, targetGM);
@@ -1198,6 +1204,7 @@ function _tmRebindRuntimeWorld(options) {
       }
     });
   }
+  if (typeof _tmSeparateMapTemplate === 'function') _tmSeparateMapTemplate(targetP, targetGM, restoredMapKeys);
 
   if (options.integration !== false && typeof IntegrationBridge !== 'undefined' && IntegrationBridge) {
     run('integration bridge pure rebind', function() {
@@ -2588,6 +2595,36 @@ if (typeof window !== 'undefined') window._autoSaveSnapshotGM = _autoSaveSnapsho
 //   idb     -> { GM, P }（TM_SaveDB / slot / pre_endturn）
 //   project -> P 克隆本体 + gameState（桌面存档 / 浏览器导出 / Electron autosave）
 // 调用方须在需要时先 await 后台任务；prepare 默认开启，传 prepare:false 可避免同一写口重复序列化。
+// 运行时 P.map、P.mapData 通常就是 GM.mapData 这一个对象（正式地图每次读图都会把三者重新指到一起）。
+// 返回存档时可以不单独存的键。只认对象同一：内容相同但不是同一对象的（如地图编辑器另放的地图）照旧整份存。
+function _tmMapAliasesOfGM(p, gm) {
+  var map = gm && gm.mapData;
+  if (!p || !map || typeof map !== 'object' || !Array.isArray(map.regions) || !map.regions.length) return [];
+  return ['map', 'mapData'].filter(function(key) { return p[key] === map; });
+}
+
+// 读档（在运行地图重绑定之前调用）：把存档里标记过的键指回读入的 GM.mapData，返回恢复了哪些键。
+// 内容与旧存档里单独存的那两份相同（存档时三者本就是同一对象）。旧存档没有标记，不受影响。
+function _tmRestoreMapAliases(targetP, targetGM) {
+  var keys = targetP && targetP._mapAliasesOfGM;
+  if (!Array.isArray(keys)) return [];
+  delete targetP._mapAliasesOfGM;
+  if (!targetGM || !targetGM.mapData || typeof targetGM.mapData !== 'object') return [];
+  var restored = keys.filter(function(key) { return key === 'map' || key === 'mapData'; });
+  restored.forEach(function(key) { targetP[key] = targetGM.mapData; });
+  return restored;
+}
+
+// 读档（在运行地图重绑定之后调用）：读档校验要求剧本模板不与运行地图共享引用。
+// 正常重绑定已把 GM.mapData 换成新克隆，这里什么都不做；没有重绑定（如 AI 地理模式）时补一份独立副本。
+function _tmSeparateMapTemplate(targetP, targetGM, keys) {
+  var live = targetGM && targetGM.mapData;
+  var shared = (keys || []).filter(function(key) { return live && targetP[key] === live; });
+  if (!shared.length) return;
+  var template = _safeClone(live);
+  shared.forEach(function(key) { targetP[key] = template; });
+}
+
 function _buildSaveState(options){
   options = options || {};
   if (typeof TM !== 'undefined' && TM.perf && typeof TM.perf.count === 'function') {
@@ -2598,7 +2635,15 @@ function _buildSaveState(options){
   var sourceP = options.p || (typeof P !== 'undefined' ? P : {});
   if (!sourceGM) return null;
   var gmSnapshot = _autoSaveSnapshotGM(sourceGM, { detach: options.detach === true });
-  var pWorking = deepClone(sourceP || {});
+  // P.map、P.mapData 与 GM.mapData 是同一个对象时只存 GM 那一份：P 里既不克隆也不序列化这两个键，
+  // 只留标记，读档后由 _tmRestoreMapAliases 指回（绍宋一份地图 51.5MB，旧写法每次存档多克隆、多写两遍）
+  var mapAliases = typeof _tmMapAliasesOfGM === 'function' ? _tmMapAliasesOfGM(sourceP, sourceGM) : [];
+  var pSource = sourceP || {};
+  if (mapAliases.length) {
+    pSource = Object.assign({}, sourceP);
+    mapAliases.forEach(function(key) { delete pSource[key]; });
+  }
+  var pWorking = deepClone(pSource);
   if (options.prepare !== false && typeof _prepareGMForSave === 'function') {
     var prepared = _prepareGMForSave(gmSnapshot, pWorking, { omitDiscardedMirrors: true });
     if (!prepared) return null;
@@ -2609,6 +2654,7 @@ function _buildSaveState(options){
     pWorking = prepared.P;
   }
   var pSnapshot = _tmStripAiKeyInPlace(pWorking);
+  if (mapAliases.length) pSnapshot._mapAliasesOfGM = mapAliases;
   // P.gameState 只允许出现在 project 外壳的最外层；清掉旧读档遗留的嵌套僵尸再装当前快照。
   try { if (pSnapshot && pSnapshot.gameState) delete pSnapshot.gameState; } catch (_) {}
   if (options.format === 'project') {

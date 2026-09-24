@@ -86,6 +86,17 @@ function _invokeAutoSaveJson(json) {
   return _invokeAutoSave(data);
 }
 
+// 手动存档的文本通道，理由同上：大存档的对象图逐节点过 contextBridge 会卡上一分钟
+// （绍宋新局 285MB，实测手动存档 67–76 秒、GC 占 34 秒）。解析后走原有 save-project 通道，主进程无需改动。
+function _invokeSaveProjectJson(filename, json) {
+  if (typeof json !== 'string') throw new TypeError('存档 JSON 必须是文本');
+  var data;
+  try { data = JSON.parse(json); }
+  catch (_) { throw new Error('存档 JSON 无效'); }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError('存档正文必须是对象');
+  return ipcRenderer.invoke('save-project', { filename, data });
+}
+
 function _rotateAutoSaveSession(token) {
   try {
     const result = ipcRenderer.sendSync('auto-save-session-rotate', String(token || ''));
@@ -153,6 +164,9 @@ contextBridge.exposeInMainWorld('tianming', {
   // === 存档功能 ===
   saveProject: (filename, data) =>
     ipcRenderer.invoke('save-project', { filename, data }),
+
+  saveProjectJson: (filename, json) =>
+    _invokeSaveProjectJson(filename, json),
 
   loadProject: (filename) =>
     ipcRenderer.invoke('load-project', filename),

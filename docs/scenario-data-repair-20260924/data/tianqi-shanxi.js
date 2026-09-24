@@ -77,14 +77,14 @@ const BLOCKS = {
     notes: '大同府属州。'
   }),
   宁武关: block({
-    name: '宁武关', terrain: '边塞', divisionType: '关', officialPosition: '山西镇总兵官', specialResources: '屯粮·马', tags: { horseRegion: true },
+    name: '宁武关', terrain: '边塞', divisionType: '关', regionType: 'frontier_defense', officialPosition: '山西镇总兵官', specialResources: '屯粮·马', tags: { horseRegion: true },
     description: '外三关之中路，山西镇总兵驻节于此；恒山余脉与汾河源头之间关城相望，屯兵以防河套与土默特之骑。',
     commerce: 0.7, horse: 0.2, fishing: 0, corridor: 1.3, keju: 0.1,
     idx: [36, 72, 30, 30, 76, 36, 75, 58], fisc: [0.62, 0.22],
     notes: '山西镇总兵嘉靖间移驻宁武关。'
   }),
   偏关: block({
-    name: '偏关', terrain: '边塞', divisionType: '关', officialPosition: '偏头关守将', specialResources: '屯粮·马', tags: { horseRegion: true },
+    name: '偏关', terrain: '边塞', divisionType: '关', regionType: 'frontier_defense', officialPosition: '偏头关守将', specialResources: '屯粮·马', tags: { horseRegion: true },
     description: '外三关之西路，偏头关临黄河东岸，冬季敌骑可踏冰而渡，守军岁岁防冬；河曲一带地瘠民贫。',
     commerce: 0.7, horse: 0.2, fishing: 0, corridor: 1.2, keju: 0.1,
     idx: [34, 72, 28, 28, 78, 36, 75, 58], fisc: [0.62, 0.22],

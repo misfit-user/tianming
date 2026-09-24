@@ -160,7 +160,7 @@ const BLOCKS = {
   },
   'ming-01-p11': {
     name: '宣府镇', divisionType: '镇', officialPosition: '宣府巡抚', terrain: '边塞',
-    specialResources: '马市·屯田·煤铁', taxLevel: '轻', regionType: 'normal',
+    specialResources: '马市·屯田·煤铁', taxLevel: '轻', regionType: 'frontier_defense',
     tags: { hasPort: false, saltRegion: false, mineralRegion: true, horseRegion: true, fishingRegion: false, imperialDomain: false },
     description: '九边之首，宣府镇城与张家口堡相望，北御察哈尔。张家口马市互市不绝；镇兵十余万分驻诸堡，屯田军户多于民户，粮饷仰给京运，欠饷之怨时起。',
     commerce: 1.2, urban: { fang: 0.15, shi: 0.08, zhen: 0.20, cun: 0.57 }, maritime: 0, fishing: 0.2, salt: 0, mineral: 0.15, horse: 3.0,

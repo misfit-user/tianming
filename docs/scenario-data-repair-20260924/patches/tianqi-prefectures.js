@@ -378,7 +378,8 @@ function main() {
       fishingProduction: economy.fishingProduction[i], imperialFarmland: economy.imperialFarmland[i],
       imperialAssets: { zhizao: b.zhizao || 0, kuangchang: b.kuangchang || 0, yuyao: b.yuyao || 0 },
       postRelays: economy.postRelays[i], kejuQuota: economy.kejuQuota[i], roadQuality: b.roadQuality,
-      landsAnnexed: economy.landsAnnexed[i], landsReclaimed: 0, landsSurveyed: 0, disasterRecord: []
+      // 灾异按块写在数据模块（省级灾情只落到实际受灾的府州）；没写的块为空
+      landsAnnexed: economy.landsAnnexed[i], landsReclaimed: 0, landsSurveyed: 0, disasterRecord: clone(b.disasterRecord || [])
     };
     DEAD_KEYS.forEach((k) => { delete target[k]; });
   }

@@ -22,7 +22,8 @@ const PROVINCES = [
   'zhejiang', 'jiangxi', 'fujian', 'shandong',
   'huguang', 'shanxi', 'henan', 'shaanxi',
   'sichuan', 'guangdong', 'guangxi', 'yunnan', 'guizhou',
-  'liaodong', 'wusizang', 'duogan'
+  'liaodong', 'wusizang', 'duogan',
+  'houjin', 'menggu', 'dongya', 'xiyu-nanyang', 'feilingtu'
 ];
 
 function run(args) {
@@ -43,6 +44,7 @@ function main() {
     const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), moduleFile, '--report', reportFile, '--write']);
     console.log(key + '：' + last);
   });
+  console.log('省级描述：' + run([path.join(DIR, 'patches/tianqi-province-descriptions.js'), '--write']));
 }
 
 main();

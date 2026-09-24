@@ -2,7 +2,7 @@
 // 天启剧本·府州地块重写补丁（阶段一）
 //
 // 把一个省的省级总数按史料权重重新分给下辖府州地块，定性字段按数据模块逐块改写。省总数一律不动。
-// 同时改三处副本：行政树叶子（adminHierarchy.player 下）、地图地块的 data、地图地块本身的读数字段；
+// 同时改三处副本：行政树叶子（明廷在 adminHierarchy.player 下，外藩在各自势力 id 的树下）、地图地块的 data、地图地块本身的读数字段；
 // mapData 与 map 原本逐字节相同，改完后整份从 map 复制过去。
 //
 // 用法（在仓库根目录）：
@@ -116,10 +116,42 @@ function main() {
   if (JSON.stringify(scenario) + '\n' !== raw) throw new Error('剧本不是标准 JSON.stringify 输出，拒绝改写');
   if (JSON.stringify(scenario.map) !== JSON.stringify(scenario.mapData)) throw new Error('map 与 mapData 已不一致，先查清再改');
 
-  const province = scenario.adminHierarchy.player.divisions.find((d) => d.name === data.province);
-  if (!province) throw new Error('行政树里找不到 ' + data.province);
+  // 一个数据模块可以写一个省，也可以写一组省（外藩一个势力的几块辖区）
+  const modules = Array.isArray(data) ? data : [data];
+  const report = modules.map((one) => applyProvince(scenario, one)).join('\n');
+  if (reportFile) {
+    fs.mkdirSync(path.dirname(path.resolve(reportFile)), { recursive: true });
+    fs.writeFileSync(reportFile, report);
+  }
+  console.log(report.split('\n').slice(0, 24).join('\n'));
+
+  if (write) {
+    fs.writeFileSync(SCENARIO_FILE, JSON.stringify(scenario) + '\n');
+    console.log('\n已写入 ' + path.relative(REPO, SCENARIO_FILE));
+  } else {
+    console.log('\n（试算，未写入；加 --write 写入）');
+  }
+}
+
+function applyProvince(scenario, data) {
+  // 明廷各省在 player 树；外藩的省写 faction（势力名），到以势力 id 为键的那棵树里找
+  let treeKey = 'player';
+  if (data.faction) {
+    const faction = (scenario.factions || []).find((f) => f.name === data.faction);
+    if (!faction || !scenario.adminHierarchy[faction.id]) throw new Error('找不到势力 ' + data.faction + ' 的行政树');
+    treeKey = faction.id;
+  }
+  const province = scenario.adminHierarchy[treeKey].divisions.find((d) => d.name === data.province);
+  if (!province) throw new Error('行政树 ' + treeKey + ' 里找不到 ' + data.province);
   const regions = scenario.map.regions;
   const regionById = new Map(regions.map((r) => [r.id, r]));
+  // 非领土账（播州余裔、郑氏商路、陕北饥民、奢安联军）：各叶子挂在同一个不在地图上的伪地块下。
+  // 数据模块写 nonTerritorial: true，只改行政树叶子；伪地块用省节点的拷贝顶替，写进去的东西不落回剧本。
+  if (data.nonTerritorial) {
+    province.children.forEach((leaf) => {
+      if (!regionById.has(leaf.mapRegionId)) regionById.set(leaf.mapRegionId, { id: leaf.mapRegionId, data: clone(province), virtual: true });
+    });
+  }
   // 数据模块的 BLOCKS 可以按地图 id 写，也可以按省下叶子的名字写；统一换成地图 id
   const leafByName = new Map(province.children.map((leaf) => [leaf.name, leaf]));
   const normalizedBlocks = {};
@@ -131,12 +163,24 @@ function main() {
   data.BLOCKS = normalizedBlocks;
   const blockIds = Object.keys(data.BLOCKS);
   const leafByRegion = new Map();
-  province.children.forEach((leaf) => leafByRegion.set(leaf.mapRegionId, leaf));
+  // 有的外藩整省只画了一块地图（科尔沁、瓦剌、哈萨克等），省下各叶子都是这一块的分账：
+  // 这时把省节点当作核算组，数据模块只写这一块，用 accounts 列出各叶子
+  const sharedRegionIds = new Set(province.children.map((leaf) => leaf.mapRegionId));
+  const sharedRegion = province.children.length > 1 && sharedRegionIds.size === 1;
+  if (sharedRegion) {
+    const onlyId = province.children[0].mapRegionId;
+    if (blockIds.length !== 1 || blockIds[0] !== onlyId || !data.BLOCKS[onlyId].accounts) {
+      throw new Error(province.name + ' 全省只有地图 ' + onlyId + ' 一块，数据模块须只写这一块并用 accounts 列出各叶子');
+    }
+    leafByRegion.set(onlyId, province);
+  } else {
+    province.children.forEach((leaf) => leafByRegion.set(leaf.mapRegionId, leaf));
+    if (province.children.length !== blockIds.length) throw new Error('省下叶子数 ' + province.children.length + ' 与数据模块块数 ' + blockIds.length + ' 不符');
+  }
   blockIds.forEach((id) => {
     if (!regionById.has(id)) throw new Error('地图上没有 ' + id);
     if (!leafByRegion.has(id)) throw new Error('行政树叶子没有绑定 ' + id);
   });
-  if (province.children.length !== blockIds.length) throw new Error('省下叶子数 ' + province.children.length + ' 与数据模块块数 ' + blockIds.length + ' 不符');
 
   // ---- 县治落块 ----
   // 有同名地块的府州，所辖县一律归本府地块（地图边界是概化的，不让边境县把数字带到邻府）；
@@ -266,7 +310,14 @@ function main() {
   const popW = mouths;
   const minxin = shiftToMean(B.map((b) => b.minxin), popW, P.minxinLocal, 5, 95).map(Math.round);
   const corruption = shiftToMean(B.map((b) => b.corruption), popW, P.corruptionLocal, 5, 95).map(Math.round);
-  const prosperity = shiftToMean(B.map((b) => b.prosperity), popW, P.prosperity, 5, 97).map(Math.round);
+  // 个别外藩省没写繁荣，取改前各叶子（原先都是同一个数）按人口加权的均值作目标
+  function leafMean(key) {
+    const rows = province.children.filter((c) => typeof c[key] === 'number' && typeof c.population === 'number');
+    if (!rows.length) throw new Error(province.name + ' 省里和叶子上都没有 ' + key);
+    return sum(rows.map((c) => c[key] * c.population)) / sum(rows.map((c) => c.population));
+  }
+  const prosperityTarget = typeof P.prosperity === 'number' ? P.prosperity : leafMean('prosperity');
+  const prosperity = shiftToMean(B.map((b) => b.prosperity), popW, prosperityTarget, 5, 97).map(Math.round);
 
   // 地块读数层：改之前各块同值，这个原值就是人口加权均值的目标。
   // 原值必须写在数据模块的 regionMeans 里——从当前值现算的话，补丁重跑时会从已改过的值出发而漂移。
@@ -449,6 +500,8 @@ function main() {
     const weights = specs.map((spec) => spec.weight);
     const parts = specs.map(() => clone(whole));
     const paths = ACCOUNT_ADDITIVE.slice();
+    // 羁縻之地的原账里起运加留用不等于实征，留用只能单独按权重分
+    if (data.fiscalRates === 'province') paths.push('fiscalDetail.retainedBudget');
     Object.keys(whole.byAge || {}).forEach((k) => paths.push('byAge.' + k + '.count'));
     Object.keys(whole.bySettlement || {}).forEach((k) => {
       if (typeof whole.bySettlement[k] === 'object') paths.push('bySettlement.' + k + '.mouths', 'bySettlement.' + k + '.households');
@@ -460,9 +513,9 @@ function main() {
       parts.forEach((part, j) => setPath(part, path, split[j]));
     });
     parts.forEach((part, j) => {
-      // 女口、留用由同账的总数减出来，保证每本账自身相加相符
+      // 女口、留用由同账的总数减出来，保证每本账自身相加相符（羁縻之地的留用上面已单独分过）
       if (part.byGender) part.byGender.female = part.populationDetail.mouths - part.byGender.male;
-      part.fiscalDetail.retainedBudget = part.fiscalDetail.actualRevenue - part.fiscalDetail.remittedToCenter;
+      if (data.fiscalRates !== 'province') part.fiscalDetail.retainedBudget = part.fiscalDetail.actualRevenue - part.fiscalDetail.remittedToCenter;
       part.fiscal = clone(part.fiscalDetail);
       ACCOUNT_OWN_KEYS.forEach((k) => { if (specs[j][k] !== undefined) part[k] = clone(specs[j][k]); });
       // 整块的掌官只属于写明的那本账，其余各账不继承
@@ -596,19 +649,7 @@ function main() {
   });
   lines.push('', '## 每块依据', '');
   blockIds.forEach((id) => { lines.push('- ' + data.BLOCKS[id].name + '：' + data.BLOCKS[id].notes); });
-  const report = lines.join('\n') + '\n';
-  if (reportFile) {
-    fs.mkdirSync(path.dirname(path.resolve(reportFile)), { recursive: true });
-    fs.writeFileSync(reportFile, report);
-  }
-  console.log(report.split('\n').slice(0, 24).join('\n'));
-
-  if (write) {
-    fs.writeFileSync(SCENARIO_FILE, JSON.stringify(scenario) + '\n');
-    console.log('\n已写入 ' + path.relative(REPO, SCENARIO_FILE));
-  } else {
-    console.log('\n（试算，未写入；加 --write 写入）');
-  }
+  return lines.join('\n') + '\n';
 }
 
 main();

@@ -14,7 +14,13 @@ const PRESETS = {
   高原: { commerce: 0.6, urban: { fang: 0.06, shi: 0.05, zhen: 0.10, cun: 0.79 }, fishing: 0.2, yieldFactor: 0.6, roadQuality: 38, commerceCoefficient: 0.8, corridor: 0.9, gentry: 0.8 },
   沿海: { commerce: 1.3, urban: { fang: 0.08, shi: 0.08, zhen: 0.18, cun: 0.66 }, fishing: 2.5, yieldFactor: 0.95, roadQuality: 55, commerceCoefficient: 1.5, corridor: 1.0, gentry: 1.0 },
   边塞: { commerce: 0.8, urban: { fang: 0.12, shi: 0.06, zhen: 0.18, cun: 0.64 }, fishing: 0.2, yieldFactor: 0.55, roadQuality: 50, commerceCoefficient: 0.9, corridor: 1.3, gentry: 0.6 },
-  岛屿: { commerce: 1.0, urban: { fang: 0.06, shi: 0.08, zhen: 0.16, cun: 0.70 }, fishing: 3.0, yieldFactor: 0.7, roadQuality: 40, commerceCoefficient: 1.2, corridor: 0.5, gentry: 0.8 }
+  岛屿: { commerce: 1.0, urban: { fang: 0.06, shi: 0.08, zhen: 0.16, cun: 0.70 }, fishing: 3.0, yieldFactor: 0.7, roadQuality: 40, commerceCoefficient: 1.2, corridor: 0.5, gentry: 0.8 },
+  // 以下几种给外藩：草原游牧、西域荒漠绿洲、东北寒地林区
+  草原: { commerce: 0.6, urban: { fang: 0.01, shi: 0.02, zhen: 0.05, cun: 0.92 }, fishing: 0.1, yieldFactor: 0.4, roadQuality: 30, commerceCoefficient: 0.7, corridor: 0.8, gentry: 0.5 },
+  荒漠: { commerce: 0.5, urban: { fang: 0.02, shi: 0.03, zhen: 0.06, cun: 0.89 }, fishing: 0, yieldFactor: 0.2, roadQuality: 25, commerceCoefficient: 0.7, corridor: 0.7, gentry: 0.5 },
+  绿洲: { commerce: 1.2, urban: { fang: 0.10, shi: 0.10, zhen: 0.15, cun: 0.65 }, fishing: 0.1, yieldFactor: 0.9, roadQuality: 40, commerceCoefficient: 1.2, corridor: 1.2, gentry: 0.8 },
+  寒地: { commerce: 0.4, urban: { fang: 0.01, shi: 0.02, zhen: 0.04, cun: 0.93 }, fishing: 1.0, yieldFactor: 0.3, roadQuality: 20, commerceCoefficient: 0.6, corridor: 0.5, gentry: 0.4 },
+  林地: { commerce: 0.5, urban: { fang: 0.02, shi: 0.03, zhen: 0.06, cun: 0.89 }, fishing: 0.8, yieldFactor: 0.4, roadQuality: 25, commerceCoefficient: 0.6, corridor: 0.6, gentry: 0.5 }
 };
 
 const DEFAULTS = {

@@ -66,6 +66,8 @@ function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
     factionLabelLayer: () => '<g>faction</g>', sentinelLayer: () => '<g>sentinel</g>',
     applyMapTransform() {}, updateMapChrome() { work.chrome++; }, renderLegend() {}, renderMapAlerts() {}, syncMapSearch() {}, bindRegionPathEvents() {},
     scheduleLabelLayout() { work.layouts++; }, setTimeout() {}, renderFormalMapSoon() {},
+    // renderFormalMap 读这个模块变量判断地名模块是否已请求；本桩不加载地名模块，所以恒为 false
+    _labelFeatureRequested: false,
     __TM_LABEL_LEGACY: legacyLabels
   };
   c.attr = c.esc; c.window = c; vm.createContext(c);

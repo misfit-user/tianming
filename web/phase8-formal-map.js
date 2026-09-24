@@ -1249,7 +1249,7 @@
       ? TM.Features.ensureRecoverable('formalMapLabels', { retryLoadError: true, retryInitError: true })
       : TM.Features.ensure('formalMapLabels');
     load.catch(function(error){
-      state._lastFormalMapSig = null; renderFormalMapSoon(); // 地名模块加载失败：重画一次，兜底地图改回显示旧样式地名
+      state._lastFormalMapSig = null; renderFormalMapSoon(); // 地名模块加载失败：重画一次，改用旧式地图作为最后退路
       if (window.console && typeof window.console.warn === 'function') window.console.warn('[phase8-formal-map] 标签 feature 加载失败', error);
     });
   }
@@ -1544,11 +1544,10 @@
       return;
     }
     var prepared = window.TMMapRealmLayout && window.TMMapRealmLayout.prepare ? prepareMapLayers(map, _contentSig) : null;
-    if (prepared && !prepared.ready) {
-      // 只保留「地名模块晚到时的兜底地图」；内容已变的旧图层不保留，免得准备期间显示过期的地名与疆界
-      if (stage.dataset.mapId === mapId && stage.querySelector('.tmf-map-fallback #tmf-formal-map')) {
-        applyMapTransform(); updateMapChrome(); return;
-      }
+    var labelFeature = window.TM && TM.Features && TM.Features.status ? TM.Features.status('formalMapLabels') : null;
+    // 不上兜底地图：地名模块还在加载、或三层还在准备时只显示「舆图准备中」，三层就绪后整张换上
+    var labelsPending = !prepared && _labelFeatureRequested && !window.__TM_LABEL_LEGACY && !!labelFeature && ['ready', 'failed', 'disposed', 'not-applicable'].indexOf(labelFeature.state) < 0;
+    if ((prepared && !prepared.ready) || labelsPending) {
       if (stage.dataset.preparingMap !== mapId) {
         stage.dataset.preparingMap = mapId;
         stage.innerHTML = '<div class="tmf-map-loading" role="status">舆图准备中 · 正在缓存天下、省道、府州的边界与地名…</div>';
@@ -1574,19 +1573,8 @@
       }
       activatePreparedMapLayer(state.mapScale || 'region');
     } else {
-      // Terrain must not depend on the optional label feature finishing in time.
-      var surfaceHtml = buildMapSurface(map, width, height, basemap, state.mapScale);
-      var fallback = document.createElement('div'); fallback.innerHTML = surfaceHtml;
-      var parsedCamera = fallback.firstElementChild;
-      // 不解析 innerHTML 的环境（如 VM 里的模拟 DOM）取不到镜头节点，退回整段写入，与改动前的行为一致。
-      if (parsedCamera && typeof parsedCamera.querySelector === 'function' && parsedCamera.querySelector('.ming-map-svg')) {
-        var fallbackSurface = splitMapLabelSurface(parsedCamera), labelFeature = window.TM && TM.Features && TM.Features.status ? TM.Features.status('formalMapLabels') : null;
-        // 地名模块还在加载：先只留地形与数值哨牌，贴合疆域的地名就位后整体替换，免得玩家先看到一闪而过的旧样式地名
-        if (labelFeature && labelFeature.state === 'loading') fallbackSurface.querySelectorAll('.tmf-region-texts, .tmf-faction-label-layer').forEach(function(layer){ layer.remove(); });
-        fallbackSurface.classList.add('tmf-map-fallback'); stage.replaceChildren(fallbackSurface);
-      } else {
-        stage.innerHTML = surfaceHtml;
-      }
+      // 最后退路：地名模块用不了（加载失败、开了旧式标签，或没有模块加载器）时才画旧式地图
+      stage.innerHTML = buildMapSurface(map, width, height, basemap, state.mapScale);
     }
     state._lastFormalMapSig = _fmSig;
     stage.dataset.width = String(width);

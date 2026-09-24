@@ -2706,6 +2706,9 @@
   bridge.rightrail.handleRightPanelAction = handleRightPanelAction;
   bridge.rightrail.bindRightPanelActions = bindRightPanelActions;
   bridge.rightrail.pendingAudiences = rightWenduiPendingState;
+  // 通志页脚动作复用同一个诏书建议写入口（它同时记玩家行为信号），「本方」判定也与右栏一致
+  bridge.rightrail.addEdictSuggestion = rightAddEdictSuggestion;
+  bridge.rightrail.playerFactionNames = rightCollectPlayerFactionNames;
   bridge.rightrail.rightCloseArmyFlyout = rightCloseArmyFlyout;
   bridge.rightrail.rightOpenArmyFlyout = rightOpenArmyFlyout;
   bridge.rightrail.refreshArmyFlyout = typeof refreshArmyFlyout === "function" ? refreshArmyFlyout : null;

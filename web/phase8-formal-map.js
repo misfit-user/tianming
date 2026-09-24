@@ -2869,6 +2869,7 @@
       openFactionDossier(pop.dataset.factionKey || '');
       return;
     }
+    if (pop.dataset.panelKind === 'circuit') { if (__p8MapParts.openCircuitDossier) __p8MapParts.openCircuitDossier(pop.dataset.circuitKey || ''); return; } // 通志随回合刷新
     var r = findRegion(pop.dataset.regionId || '');
     if (r) openRegionDossier(r);
   }
@@ -2918,7 +2919,7 @@
   // origin 导出 kept 成员（sibling 捕获·45 项）
   __p8MapParts.firstValue = firstValue; __p8MapParts.esc = esc; __p8MapParts.ppValue = ppValue; __p8MapParts.hasDisplayValue = hasDisplayValue; __p8MapParts.hasValue = hasValue;
   __p8MapParts.plainObject = plainObject; __p8MapParts.attr = attr; __p8MapParts.ownerName = ownerName; __p8MapParts.assignKnown = assignKnown; __p8MapParts.ownerKey = ownerKey;
-  __p8MapParts.shortText = shortText; __p8MapParts.mapNum = mapNum; __p8MapParts.findLiveAdminDivision = findLiveAdminDivision; __p8MapParts.state = state; __p8MapParts.toast = toast;
+  __p8MapParts.shortText = shortText; __p8MapParts.mapNum = mapNum; __p8MapParts.findLiveAdminDivision = findLiveAdminDivision; __p8MapParts.state = state; __p8MapParts.toast = toast; __p8MapParts.canonicalOwnerKey = canonicalOwnerKey;
   __p8MapParts.findRegion = findRegion; __p8MapParts.fieldLabel = fieldLabel; __p8MapParts.regionTitle = regionTitle; __p8MapParts.gradeOf = gradeOf; __p8MapParts.getMapData = getMapData;
   __p8MapParts.pctValueIfPresent = pctValueIfPresent; __p8MapParts.compactText = compactText; __p8MapParts.factionTokens = factionTokens; __p8MapParts.fmtNum = fmtNum; __p8MapParts.firstPositive = firstPositive;
   __p8MapParts.recruitPoolValue = recruitPoolValue; __p8MapParts.rowHasDisplayValue = rowHasDisplayValue; __p8MapParts.ratio01 = ratio01; __p8MapParts.moodViewScore = moodViewScore; __p8MapParts.gradeIsWarn = gradeIsWarn;
@@ -2936,6 +2937,7 @@
   bridge.map = bridge.map || {};
   bridge.map.renderFormalMap = renderFormalMap;
   bridge.map.renderFormalMapSoon = renderFormalMapSoon;
+  bridge.map.openCircuitDossier = function(keyOrRegion, clicked){ return __p8MapParts.openCircuitDossier ? __p8MapParts.openCircuitDossier(keyOrRegion, clicked) : false; };
   bridge.map.ensureMainShell = ensureMainShell;
   bridge.map.getMapData = getMapData;
   bridge.map.findRegion = findRegion;

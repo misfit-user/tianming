@@ -597,6 +597,10 @@
         }
         var openFac = hit('[data-bk-open-faction]');
         if (openFac) { openFactionDossier(openFac.dataset.bkOpenFaction || '', null); return; }
+        var openCir = hit('[data-bk-open-circuit]');
+        if (openCir) { openCircuitDossier(openCir.dataset.bkOpenCircuit || '', findRegion(pop.dataset.regionId || '')); return; }
+        var cirAct = hit('[data-bk-circuit-act]');
+        if (cirAct) { circuitAction(pop.dataset.circuitKey || '', cirAct.dataset.bkCircuitAct || ''); return; }
         var openReg = hit('[data-bk-open-region]');
         if (openReg) {
           var rr = findRegion(openReg.dataset.bkOpenRegion || '');
@@ -649,9 +653,10 @@
     if (old) old.remove();
     var pop = document.getElementById('ppop');
     if (pop) {
-      pop.classList.remove('show', 'region-panel', 'faction-panel');
+      pop.classList.remove('show', 'region-panel', 'faction-panel', 'circuit-panel');
       pop.removeAttribute('data-region-id');
       pop.removeAttribute('data-faction-key');
+      pop.removeAttribute('data-circuit-key');
       pop.removeAttribute('data-panel-kind');
     }
     document.body.classList.remove('province-panel-open');
@@ -773,6 +778,7 @@
       '<div class="bk-kind"><span class="bk-tag">' + esc(opts.kind) + '</span>' +
         '<button type="button" class="bk-close" data-bk-fold="1" title="合册成脊">—</button>' +
         '<button type="button" class="bk-close x" data-pp-close="1" title="关闭">×</button></div>' +
+      (opts.crumbs ? '<div class="bk-crumbs">' + opts.crumbs + '</div>' : '') +
       '<div class="bk-title-row"><div class="bk-name">' + esc(opts.name) + '</div><div class="bk-name-sub">' + esc(opts.sub || '') + '</div></div>' +
       '<div class="bk-govline">' + opts.pills.filter(Boolean).join('') + '</div>' +
       (hasDisplayValue(opts.desc) ? '<p class="bk-desc" data-bk-desc="1">' + esc(ppValue(opts.desc)) + '</p>' : '') +
@@ -1026,6 +1032,11 @@
       name: regionTitle(r), sub: regionLevel(r), desc: firstValue(data.description, r && r.description),
       pills: [
         hasDisplayValue(ownerName(r)) ? '<span class="bk-pill owner" data-bk-open-faction="' + attr(oKey) + '" title="展其谱牒"><span class="dot"></span>隶 <b>' + esc(ownerName(r)) + '</b></span>' : '',
+        (function(){
+          // 所属省道：点开其通志（第三片之前，这是进通志的入口）
+          var circuit = findCircuit(r);
+          return circuit ? '<span class="bk-pill" data-bk-open-circuit="' + attr(circuit.key) + '" title="展其通志">道 <b>' + esc(circuit.label) + '</b></span>' : '';
+        })(),
         (function(){
           var op = esc(firstValue(data.officialPosition, '主官'));
           if (data.governorVacant) return '<span class="bk-pill" style="color:var(--vermillion-400,#c0563a);border-color:var(--vermillion-400,#c0563a);" title="该地治理官职出缺·待补任">' + op + ' <b>空缺·待补</b></span>';
@@ -1638,10 +1649,321 @@
     bindBkSpy(pop);
   }
 
+  // ════════ 省道通志（通志一期 S2）══════════════════════════════════
+  // 通志是诊断台：辖境按问题轻重排，全道共有的问题上提到道一级说一次。
+  // 读数一律由下辖府州实时汇总（TM.MapCircuits），口径与方志读数带相同；
+  // 省级节点自带的数字开局后就冻结了，只取它的文字档案。页脚动作只生成诏书建议，不直接改世界。
+  var CIRCUIT_BUILDING_CATEGORIES = {
+    military: '军事', economic: '经济', cultural: '文教', administrative: '政务',
+    religious: '祠祀', infrastructure: '工程', social: '民生', other: '其他'
+  };
+  var CIRCUIT_ACTIONS = ['整饬吏治', '蠲免', '巡按', '任免'];
+
+  function circuitApi(){
+    return (window.TM && TM.MapCircuits) || null;
+  }
+
+  // 与地图分组同一口径的归属 key（地图按 canonicalOwnerKey 切分省道）
+  function circuitOwnerKey(r){
+    return typeof __p.canonicalOwnerKey === 'function' ? __p.canonicalOwnerKey(r) : ownerKey(r);
+  }
+
+  // 省道分组依赖地名模块里的 TMMapRealmLayout；归属或隶属一变就重算，同一局面反复开册页时复用
+  var _circuitMemo = { map: null, sig: '', index: null };
+  function circuitIndex(){
+    var MC = circuitApi(), map = getMapData(), layout = window.TMMapRealmLayout;
+    if (!MC || !layout || !map || !Array.isArray(map.regions) || !map.regions.length) return null;
+    var sig = map.regions.map(function(r){ return circuitOwnerKey(r) + '>' + firstValue(r.parentId, r.circuitId, ''); }).join('|') +
+      '#' + JSON.stringify((map.circuitRegistry || []).map(function(e){ return e && [e.key || e.id, (e.memberRegionIds || []).length]; }));
+    if (_circuitMemo.map !== map || _circuitMemo.sig !== sig) {
+      _circuitMemo = { map: map, sig: sig, index: MC.indexCircuits(map, { layout: layout, ownerOf: circuitOwnerKey }) };
+    }
+    return _circuitMemo.index;
+  }
+
+  // 按 key 或按府州取所属省道；只认正式省道（有登记或不止一州），单州孤块不开通志
+  function findCircuit(keyOrRegion){
+    var MC = circuitApi(), index = circuitIndex();
+    if (!MC || !index) return null;
+    var circuit = typeof keyOrRegion === 'string' ? index.circuits.get(keyOrRegion) : MC.circuitOf(index, keyOrRegion);
+    return circuit && MC.isRealCircuit(circuit) ? circuit : null;
+  }
+
+  // 行政树（活树）按 id 与名称查节点，只用来取省道的文字档案
+  function circuitAdminFinder(){
+    var byId = {}, byName = {};
+    var roots = (window.GM && GM.adminHierarchy) || {};
+    function walk(node){
+      if (!node || typeof node !== 'object') return;
+      if (node.id != null && !byId[node.id]) byId[node.id] = node;
+      if (node.name && !byName[node.name]) byName[node.name] = node;
+      ['divisions', 'children', 'prefectures'].forEach(function(k){ (Array.isArray(node[k]) ? node[k] : []).forEach(walk); });
+    }
+    Object.keys(roots).forEach(function(k){ walk(roots[k]); });
+    return function(ref){ return (ref && ref.id ? byId[ref.id] : byName[ref && ref.name]) || null; };
+  }
+
+  function playerFactionNames(){
+    var rail = bridge.rightrail;
+    try { return rail && typeof rail.playerFactionNames === 'function' ? rail.playerFactionNames() : []; } catch (_) { return []; }
+  }
+
+  // 以谁的眼光看这一道：本道有玩家的州就以玩家为本方，否则以点开的那一州（或第一州）的归属为本方
+  function circuitViewer(circuit, clickedRegion){
+    var names = playerFactionNames();
+    var isPlayer = function(owner){
+      var f = findFaction(owner, '');
+      return names.indexOf(String(owner)) >= 0 || !!(f && names.indexOf(String(f.name)) >= 0);
+    };
+    var mine = circuit.members.filter(function(m){ return isPlayer(m.owner); })[0];
+    if (mine) return { owner: mine.owner, player: true };
+    var anchor = (clickedRegion && circuit.members.filter(function(m){ return m.region === clickedRegion; })[0]) || circuit.members[0];
+    return { owner: anchor ? anchor.owner : '', player: false };
+  }
+
+  // 一州的建筑：与方志营造志同源（活区划上的 buildings，加旧版按地名登记的兼容账），同名同类只算一座
+  function circuitRegionBuildings(r){
+    var live = findLiveAdminDivision(r), seen = {}, out = [];
+    var divName = firstValue(live && live.name, r && r.name, '');
+    function add(bld){
+      if (!bld) return;
+      var k = String(bld.territory || bld._territory || divName) + '|' + String(bld.type || bld.name || '');
+      if (seen[k]) return;
+      seen[k] = true;
+      out.push(bld);
+    }
+    if (live && Array.isArray(live.buildings)) live.buildings.forEach(add);
+    if (typeof getTerritoryBuildingsCompat === 'function' && hasDisplayValue(divName)) {
+      try { getTerritoryBuildingsCompat(String(divName)).forEach(add); } catch (_) {}
+    }
+    return out;
+  }
+
+  function circuitBuildingCategory(bld){
+    var bw = window.TM && TM.BuildingWorks;
+    var typeDef = bw && typeof bw.typeDefFor === 'function' ? bw.typeDefFor(bld && bld.name, window.P || {}) : null;
+    return (typeDef && typeDef.category) || '';
+  }
+
+  function circuitCapitalRegion(circuit, profile){
+    var name = profile && profile.capital;
+    var byName = name ? circuit.members.filter(function(m){ return regionTitle(m.region) === name || m.region.name === name; })[0] : null;
+    return byName ? byName.region : null;
+  }
+
+  function circuitRegionLink(r, label){
+    return '<button type="button" class="bk-circuit-link" data-bk-open-region="' + attr(r.id || r.name || '') + '" title="开其方志">' + esc(label || regionTitle(r)) + '</button>';
+  }
+
+  // 卷一 辖境：共性上提后的诊断表；他属之州单列在表下
+  function circuitXiajing(MC, own, others){
+    var ranked = MC.rankProblems(own, {
+      score: modeScore, grade: gradeOf, isWarn: gradeIsWarn,
+      statusOf: function(r){ var b = regionBundle(r); return (b.liveDivision && b.liveDivision.statusEffects) || []; },
+      unrestOf: function(r){ var b = regionBundle(r), d = b.data || {}; return firstValue(d.unrest, b.liveDivision && b.liveDivision.unrest, ''); }
+    });
+    var lifted = MC.liftCommonProblems(ranked, {
+      populationOf: function(r){ var b = regionBundle(r); return firstValue((b.data || {}).population, b.pop && b.pop.mouths, ''); }
+    });
+    var common = lifted.common.length
+      ? '<div class="bk-circuit-common">全道共性（' + lifted.common[0].count + '/' + own.length + ' 州）：<b>' +
+        esc(lifted.common.map(function(c){ return c.label + (c.mark ? ' ' + c.mark : ''); }).join(' · ')) + '</b>。下列各州只标独有的问题。</div>'
+      : '';
+    var rows = lifted.rows.map(function(row){
+      var r = row.region, b = regionBundle(r), d = b.data || {};
+      var moodS = moodViewScore(r, b), offS = officeViewScore(r, b);
+      var moodG = gradeOf('mood', moodS) || {}, offG = gradeOf('office', offS) || {};
+      return '<tr class="' + (row.score > 0 ? 'warn' : '') + '">' +
+        '<td class="nm">' + circuitRegionLink(r) + '</td>' +
+        '<td class="num">' + esc(ppValue(firstValue(d.population, b.pop && b.pop.mouths, '—'))) + '</td>' +
+        '<td class="num">' + esc(ppValue(firstValue(b.fiscal && b.fiscal.actualRevenue, '—'))) + '</td>' +
+        '<td class="num">' + esc(ppValue(firstValue(d.garrison, b.army && b.army.troops, r.troops, '—'))) + '</td>' +
+        '<td class="num">' + esc(hasDisplayValue(moodS) ? moodS : '—') + (moodG.mark ? '<i>' + esc(moodG.mark) + '</i>' : '') + '</td>' +
+        '<td class="num">' + esc(hasDisplayValue(offS) ? offS : '—') + (offG.mark ? '<i>' + esc(offG.mark) + '</i>' : '') + '</td>' +
+        '<td class="why">' + (row.reasons.length ? esc(row.reasons.join('；')) : '<span class="dim">—</span>') + '</td>' +
+      '</tr>';
+    }).join('');
+    var table = rows
+      ? '<div class="bk-circuit-table"><table><thead><tr><th>府州</th><th class="num">户口</th><th class="num">实征</th><th class="num">驻军</th><th class="num">民心</th><th class="num">吏治</th><th>主因</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      : '';
+    var otherLines = others.map(function(g){
+      var name = firstValue(g.regions[0] && ownerName(g.regions[0]), g.owner);
+      return '<div class="bk-circuit-other">隶 <b>' + esc(name) + '</b>：' + g.regions.map(function(r){ return circuitRegionLink(r); }).join('、') + '</div>';
+    }).join('');
+    return common + table + otherLines;
+  }
+
+  // 叙述文字与拼好的读数直接转义显示：bkRow 走 ppValue，会把含势力名的整句换成势力名
+  // （「后金破宣府大同塞入塞；……」只剩「后金」）
+  function circuitTextRow(k, v, tone){
+    if (!hasDisplayValue(v)) return '';
+    var s = String(v);
+    return '<div class="bk-lr"><span class="bk-k">' + esc(k) + '</span><span class="bk-v ' + (tone || '') + (s.length > 14 ? ' wrap' : '') + '">' + esc(s) + '</span></div>';
+  }
+
+  // 卷二 形势：战略、边警、灾异蔓延；士绅与书院
+  function circuitXingshi(profile, own){
+    var disasters = own.filter(function(r){
+      var b = regionBundle(r);
+      return ((b.liveDivision && b.liveDivision.statusEffects) || []).some(function(e){ return e && e.kind === 'disaster'; });
+    });
+    return bkLan([
+      circuitTextRow('战略', profile.strategicValue),
+      circuitTextRow('边警', profile.threats.join('；'), profile.threats.length ? 'zhu' : ''),
+      circuitTextRow('灾异', disasters.length ? disasters.map(function(r){ return regionTitle(r); }).join('、') : '本回合各州无灾异', disasters.length ? 'zhu' : ''),
+      circuitTextRow('士绅', profile.gentry.join('、')),
+      circuitTextRow('书院', profile.academies.join('、'))
+    ], true);
+  }
+
+  // 卷三 财计：实征与合规、起运留用、各州公帑合计、掌藏记
+  function circuitCaiji(sum, profile){
+    var moneyUnit = (window.P && P.fiscalConfig && P.fiscalConfig.unit && P.fiscalConfig.unit.money) || '两';
+    return bkLan([
+      circuitTextRow('实征', ppValue(sum.actualRevenue) + (sum.compliance != null ? '　合规 ' + Math.round(sum.compliance * 100) + '%' : '')),
+      circuitTextRow('起运 / 留用', ppValue(sum.remittedToCenter) + ' / ' + ppValue(sum.retainedBudget)),
+      circuitTextRow('公帑', '银 ' + ppValue(sum.treasury.money) + ' ' + moneyUnit + ' · 粮 ' + ppValue(sum.treasury.grain) + '（各州库藏合计）'),
+      circuitTextRow('掌藏记', profile.custodyNote)
+    ], true) + bkBar('起运与留用', [['起运', sum.remittedToCenter, 'var(--gold-600)'], ['留用', sum.retainedBudget, 'rgba(var(--gold-550-rgb),.45)']], '本道一期只汇总展示，不单独记账');
+  }
+
+  // 卷四 营造：本道全部建筑，只作集成展示；首府的建筑单独标出
+  function circuitYingzao(MC, own, capital){
+    var types = window.P && P.buildingSystem && (P.buildingSystem.buildingTypes || P.buildingSystem.types);
+    var sum = MC.summarizeBuildings(own, { buildingsOf: circuitRegionBuildings, categoryOf: circuitBuildingCategory });
+    if (!sum.total) {
+      return '<p class="bk-ye-empty">' + (Array.isArray(types) && types.length ? '本道各州尚无在册工役。' : '本剧本未设营造。') + '</p>';
+    }
+    var cats = Object.keys(sum.byCategory).map(function(k){ return (CIRCUIT_BUILDING_CATEGORIES[k] || k) + ' ' + sum.byCategory[k]; }).join(' · ');
+    var st = sum.byStatus;
+    var head = bkLan([
+      circuitTextRow('在册', sum.total + ' 座：完好 ' + st.intact + '、在建 ' + st.building + '、失修 ' + st.neglected + '、半损 ' + st.damaged, (st.neglected || st.damaged) ? 'zhu' : ''),
+      circuitTextRow('类别', cats)
+    ], true);
+    var groups = sum.byRegion.map(function(g){
+      var names = g.buildings.map(function(bld){
+        var tag = bld.status === 'building' ? '（在建）' : bld.status === 'neglected' ? '（失修）' : bld.status === 'damaged' ? '（半损）' : '';
+        return esc(bld.name) + (bld.level > 1 ? ' ' + esc(bld.level) + '级' : '') + tag;
+      }).join('、');
+      return '<div class="bk-circuit-yz">' + circuitRegionLink(g.region) + (g.region === capital ? '<em>首府</em>' : '') + '<span>' + names + '</span></div>';
+    }).join('');
+    return head + groups;
+  }
+
+  function circuitOfficialCard(profile, own, sum){
+    if (!hasDisplayValue(profile.officialPosition) && !hasDisplayValue(profile.title)) return '';
+    var role = firstValue(profile.officialPosition, profile.title, '长官');
+    var who = hasDisplayValue(profile.governor) ? profile.governor : '未录';
+    var subs = own.every(function(r){ var d = regionBundle(r).data || {}; return !!d.governorUnrecorded; }) ? '下辖各州主官均未载姓名' : '下辖各州主官见各州方志';
+    return '<div class="bk-circuit-official"><span class="role">' + esc(role) + '</span><b>' + esc(who) + '</b>' +
+      '<span class="line">统辖本道 ' + sum.count + ' 府州；' + subs + '</span></div>';
+  }
+
+  function renderCircuitBook(circuit, clickedRegion){
+    var MC = circuitApi();
+    var viewer = circuitViewer(circuit, clickedRegion);
+    var split = MC.partitionByOwner(circuit, viewer.owner);
+    var own = split.own;
+    var profile = MC.profileOf(circuit, { findAdmin: circuitAdminFinder() });
+    var sum = MC.summarize(own, { bundle: regionBundle, mood: moodViewScore, office: officeViewScore });
+    var capital = circuitCapitalRegion(circuit, profile);
+    var ownerLabel = firstValue(own[0] && ownerName(own[0]), viewer.owner, '');
+    var moodG = gradeOf('mood', sum.mood), offG = gradeOf('office', sum.office);
+
+    var head = bkHead({
+      seal: '御览', round: false, kind: '通 志',
+      crumbs: (hasDisplayValue(ownerLabel) ? '<button type="button" data-bk-open-faction="' + attr(viewer.owner) + '">' + esc(ownerLabel) + '</button><span>›</span>' : '') + '<b>' + esc(circuit.label) + '</b>',
+      name: circuit.label,
+      sub: '省道 · 辖 ' + circuit.members.length + ' 府州' + (hasDisplayValue(profile.capital) ? ' · 治所 ' + profile.capital : ''),
+      desc: firstValue(profile.description, profile.note, ''),
+      pills: [
+        hasDisplayValue(ownerLabel) ? '<span class="bk-pill owner" data-bk-open-faction="' + attr(viewer.owner) + '" title="展其谱牒"><span class="dot"></span>隶 <b>' + esc(ownerLabel) + '</b></span>' : '',
+        '<span class="bk-pill">实控 <b>' + own.length + '/' + circuit.members.length + '</b> 州</span>',
+        capital ? '<span class="bk-pill" data-bk-open-region="' + attr(capital.id || capital.name || '') + '" title="开治所方志">治所 <b>' + esc(regionTitle(capital)) + '</b></span>' : '',
+        viewer.player ? '' : '<span class="bk-pill hostile">他方所辖</span>'
+      ]
+    });
+    var stats = bkStats([
+      bkStat('户口', sum.population, sum.ding ? '丁 ' + ppValue(sum.ding) : '', false, ''),
+      bkStat('实征', sum.actualRevenue, '起运 ' + ppValue(sum.remittedToCenter), false, ''),
+      bkStat('驻军', sum.troops, sum.garrisoned + ' 州有驻', false, ''),
+      bkStat('民心', sum.mood == null ? '' : sum.mood, (moodG || {}).mark || '', gradeIsWarn('mood', moodG), ''),
+      bkStat('吏治', sum.office == null ? '' : sum.office, (offG || {}).mark || '', gradeIsWarn('office', offG), '')
+    ]);
+    var juans = [
+      ['bk-circuit-xiajing', '一', '辖境', '按问题轻重 · 点州开方志', '境', own.length ? circuitXiajing(MC, own, split.others) : ''],
+      ['bk-circuit-xingshi', '二', '形势', '战略边警 · 士绅书院', '势', circuitXingshi(profile, own)],
+      ['bk-circuit-caiji', '三', '财计', '实征起运 · 公帑', '财', own.length ? circuitCaiji(sum, profile) : ''],
+      ['bk-circuit-yingzao', '四', '营造', '本道建筑 · 只作汇览', '营', own.length ? circuitYingzao(MC, own, capital) : '']
+    ];
+    var live = juans.filter(function(j){ return !!j[5]; });
+    var acts = viewer.player
+      ? CIRCUIT_ACTIONS.map(function(act){ return '<button type="button" class="bk-act zhu" data-bk-circuit-act="' + attr(act) + '">' + esc(act.split('').join(' ')) + '</button>'; }).join('')
+      : '';
+    var foot = '<div class="bk-foot">' + acts +
+      (!viewer.player && hasDisplayValue(ownerLabel) ? '<button type="button" class="bk-act" data-bk-open-faction="' + attr(viewer.owner) + '">展 势 力 谱</button>' : '') +
+      '</div>';
+    return bkSpine(circuit.label + ' · 通志') +
+      '<div class="bk-inner">' + head + stats +
+      '<div class="bk-scroll">' + circuitOfficialCard(profile, own, sum) +
+        live.map(function(j){ return bkJuan(j[0], j[1], j[2], j[3], j[5]); }).join('') +
+      '</div>' + foot + '</div>' +
+      bkJianqian(live.map(function(j){ return [j[0], j[4]]; })) +
+      '<div class="bk-straddle"><i>验讫</i></div>';
+  }
+
+  // 打开通志：key 可以是省道 key，也可以直接给一个府州（开它所属的省道）
+  function openCircuitDossier(keyOrRegion, clickedRegion){
+    var circuit = findCircuit(keyOrRegion);
+    if (!circuit) {
+      if (typeof toast === 'function') toast(circuitApi() && window.TMMapRealmLayout ? '此地未隶正式省道' : '舆图分组尚未就绪');
+      return false;
+    }
+    var region = clickedRegion || (typeof keyOrRegion === 'object' ? keyOrRegion : null);
+    var pop = ensureMapPpop();
+    pop.dataset.panelKind = 'circuit';
+    pop.dataset.circuitKey = circuit.key;
+    pop.removeAttribute('data-region-id');
+    pop.removeAttribute('data-faction-key');
+    pop.className = 'tmf-map-ppop tmf-book circuit-panel show';
+    pop.innerHTML = renderCircuitBook(circuit, region);
+    document.body.classList.add('province-panel-open');
+    bindBkSpy(pop);
+    return true;
+  }
+
+  // 页脚动作：写进诏书建议库（与右栏同一个写入口），范围写明本道各州；下诏后才生效
+  function circuitActionText(act, circuit, profile, names){
+    var head = firstValue(profile.officialPosition, '本道长官') + (hasDisplayValue(profile.governor) ? profile.governor : '');
+    var scope = '（本道 ' + names.length + ' 府州：' + names.join('、') + '）';
+    if (act === '整饬吏治') return '命' + head + '整饬' + circuit.label + '吏治，考核属吏、劾罢贪墨，限期具奏' + scope + '。';
+    if (act === '蠲免') return '议蠲' + circuit.label + '各州部分钱粮赋役以苏民困，额数与期限由户部会议具奏' + scope + '。';
+    if (act === '巡按') return '遣御史巡按' + circuit.label + '，察吏治、问民瘼、核钱粮，据实以闻' + scope + '。';
+    return '议' + circuit.label + '长官任免：召' + head + '述职，由吏部会推人选具奏。';
+  }
+  function circuitAction(key, act){
+    var circuit = findCircuit(key), MC = circuitApi();
+    if (!circuit || CIRCUIT_ACTIONS.indexOf(act) < 0) return false;
+    var viewer = circuitViewer(circuit, null);
+    if (!viewer.player) return false;
+    var own = MC.partitionByOwner(circuit, viewer.owner).own;
+    var profile = MC.profileOf(circuit, { findAdmin: circuitAdminFinder() });
+    var names = own.map(function(r){ return regionTitle(r); });
+    var rail = bridge.rightrail;
+    var ok = !!(rail && typeof rail.addEdictSuggestion === 'function' &&
+      rail.addEdictSuggestion('行政区划', circuit.label, '通志·' + act, circuitActionText(act, circuit, profile, names)));
+    if (typeof toast === 'function') toast(ok ? '已录入诏令建议库：' + circuit.label + act : '诏令建议库未就绪');
+    return ok;
+  }
+
   // ── 回填 origin forward shim 目标（5 函数）──
   __p.regionBundle = regionBundle;
   __p.openRegionDossier = openRegionDossier;
   __p.openFactionDossier = openFactionDossier;
   __p.closeMapDossier = closeMapDossier;
   __p.factionOwnsRegion = factionOwnsRegion;
+  // 通志（S2）：地图模块的册页刷新与 bridge.map 经这里调用
+  __p.openCircuitDossier = openCircuitDossier;
+  __p.circuitAction = circuitAction;
+  __p.findCircuit = findCircuit;
 })();

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-26T12:41:47.589Z",
+  "generatedAt": "2026-09-26T12:45:02.877Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "f741be0e2db98609dcde0acd601e01badb1cbd0ddf13f9bd7109ec711372d39f",
-      "size": 75748
+      "sha256": "55440f3518ff78afef0d29fdb1bf87124173adcb063e2c20dfafe04a70b51ab0",
+      "size": 75750
     },
     {
       "path": "INDEX.md",
@@ -3361,8 +3361,8 @@
     },
     {
       "path": "phase8-formal-bridge-styles.js",
-      "sha256": "7837a57bc9a2c60dcb0d4c76f767ed62d6ffb11d89b1fa12583487f3ead29de8",
-      "size": 309559
+      "sha256": "57e74ac19c18c441db544bf6c2c2cb4eff8151fc59d662f5101eee5beab1377e",
+      "size": 313229
     },
     {
       "path": "phase8-formal-bridge.js",
@@ -3381,13 +3381,13 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "3bdfb64557d89ee186baeeea950fbeaecc7928d88ec86523314e8db0dc60ce34",
-      "size": 106311
+      "sha256": "3acec88e95a68de8ec7245f0fdbfe37e281fb9cb3d86ec7e0a0ed546d36143b3",
+      "size": 126931
     },
     {
       "path": "phase8-formal-map.js",
-      "sha256": "32d687609f4b2badc1e117dbfb3d5442b659390d8129c60efd16a348d6fb23ba",
-      "size": 174143
+      "sha256": "2677a634306649eafe0bcecb321e873bd631099b93b6e6ded5393fae0cbc6d88",
+      "size": 174550
     },
     {
       "path": "phase8-formal-modules.js",
@@ -3406,8 +3406,8 @@
     },
     {
       "path": "phase8-formal-rightrail.js",
-      "sha256": "244524b809168c284df12dfe6278dfa1f3244ef1391a0a7a630c087cba22ec5e",
-      "size": 152302
+      "sha256": "7b9712627fe404b8caa43e250f21cde6907383d394e8c425acb450b1269460d2",
+      "size": 152574
     },
     {
       "path": "phase8-formal-topbar.js",
@@ -5526,8 +5526,8 @@
     },
     {
       "path": "tm-map-circuits.js",
-      "sha256": "cad4c9188064ab1135ffca6111e74c3815ccefef770c6b6895808ae468be17e6",
-      "size": 15793
+      "sha256": "a716b8886fa889d276145c0a4a21d9c13b8e13d2805f25d479689412dad051f8",
+      "size": 21974
     },
     {
       "path": "tm-map-label-collide.js",
@@ -6246,8 +6246,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "d5294777a1dfe8cde45562792c56e7bcc2e65da3a3c804c0b74b273bfb01c41c",
-      "size": 135389
+      "sha256": "8999b3bb1c0c00bdc8cb66c9ba94832304bb82f2c577447d956cd820ecb9d7ef",
+      "size": 135391
     },
     {
       "path": "tm-start-selector.js",

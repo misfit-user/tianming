@@ -201,6 +201,7 @@
 
     return {
       title: text(node && node.historicalTitle) || text(entry.title) || firstMemberText(regions, 'circuitTitle'),
+      description: text(node && node.description),
       commandType: text(entry.commandType) || text(node && node.commandType),
       governor: text(node && node.governor) || firstMemberText(regions, 'circuitGovernor'),
       officialPosition: text(node && node.officialPosition),
@@ -228,16 +229,22 @@
     var sum = {
       count: 0,
       population: 0,
+      ding: 0,
       actualRevenue: 0,
+      claimedRevenue: 0,
       remittedToCenter: 0,
       retainedBudget: 0,
+      compliance: null,
       troops: 0,
+      garrisoned: 0,
+      treasury: { money: 0, grain: 0 },
       mood: null,
       office: null,
       missing: { population: 0, revenue: 0, troops: 0 }
     };
     var weightedMood = 0, moodWeight = 0;
     var weightedOffice = 0, officeWeight = 0;
+    var weightedCompliance = 0, complianceWeightSum = 0;
 
     list(regions).forEach(function (region) {
       var bundle = (hooks && typeof hooks.bundle === 'function' ? hooks.bundle(region) : null) || {};
@@ -250,9 +257,20 @@
       var population = toNumber(data.population);
       if (population === null) population = toNumber(pop.mouths);
       if (population === null) sum.missing.population += 1; else sum.population += population;
+      var ding = toNumber(pop.ding);
+      if (ding !== null) sum.ding += ding;
 
       var revenue = toNumber(fiscal.actualRevenue);
       if (revenue === null) sum.missing.revenue += 1; else sum.actualRevenue += revenue;
+      var claimed = toNumber(fiscal.claimedRevenue);
+      if (claimed !== null && revenue !== null) sum.claimedRevenue += claimed;
+      // 合规与方志同口径：取各州财赋的 compliance，按名义应征加权（没有应征数的州按权重 1）
+      var compliance = toNumber(fiscal.compliance);
+      if (compliance !== null) {
+        var complianceWeight = claimed !== null && claimed > 0 ? claimed : 1;
+        weightedCompliance += compliance * complianceWeight;
+        complianceWeightSum += complianceWeight;
+      }
       var remitted = toNumber(fiscal.remittedToCenter);
       if (remitted !== null) sum.remittedToCenter += remitted;
       var retained = toNumber(fiscal.retainedBudget);
@@ -262,6 +280,14 @@
       if (troops === null) troops = toNumber(army.troops);
       if (troops === null) troops = toNumber(region && region.troops);
       if (troops === null) sum.missing.troops += 1; else sum.troops += troops;
+      if (troops !== null && troops > 0) sum.garrisoned += 1;
+
+      // 公帑：各州地方库藏（叶子记账），与方志财赋志同源
+      var treasury = (bundle.liveDivision && bundle.liveDivision.publicTreasury) || data.publicTreasury || null;
+      var money = toNumber(treasury && treasury.money && treasury.money.stock);
+      if (money !== null) sum.treasury.money += money;
+      var grain = toNumber(treasury && treasury.grain && treasury.grain.stock);
+      if (grain !== null) sum.treasury.grain += grain;
 
       // 民心、吏治按人口加权；没有人口数的州按权重 1 计，免得被整个忽略
       var weight = population && population > 0 ? population : 1;
@@ -273,6 +299,7 @@
 
     if (moodWeight > 0) sum.mood = Math.round(weightedMood / moodWeight);
     if (officeWeight > 0) sum.office = Math.round(weightedOffice / officeWeight);
+    if (complianceWeightSum > 0) sum.compliance = weightedCompliance / complianceWeightSum;
     return sum;
   }
 
@@ -295,13 +322,13 @@
    * @param {{ score: function, grade: function, isWarn: function, statusOf: function, unrestOf: function }} hooks
    *   score(region, mode) → 该项评分；grade(mode, score) → 档位对象（含 mark）；isWarn(mode, grade) → 是否预警档；
    *   statusOf(region) → 状态数组（可选）；unrestOf(region) → 民变或不稳数值（可选）
-   * @returns {{ region: object, score: number, reasons: string[] }[]}
+   * @returns {{ region: object, score: number, reasons: string[], issues: object[] }[]}
+   *   issues 与 reasons 一一对应，是结构化的同一批问题：{ key, weight, text }，key 相同即同一种问题（供 liftCommonProblems 比对）
    */
   function rankProblems(regions, hooks) {
     hooks = hooks || {};
     var rows = list(regions).map(function (region) {
-      var score = 0;
-      var reasons = [];
+      var issues = [];
       PROBLEM_MODES.forEach(function (item) {
         if (typeof hooks.score !== 'function') return;
         var value = hooks.score(region, item.mode);
@@ -309,27 +336,28 @@
         var grade = typeof hooks.grade === 'function' ? hooks.grade(item.mode, value) : null;
         var warn = typeof hooks.isWarn === 'function' ? !!hooks.isWarn(item.mode, grade) : false;
         if (warn) {
-          score += 2;
           var mark = grade && grade.mark ? String(grade.mark) : '';
-          reasons.push(item.label + ' ' + Math.round(Number(value)) + (mark ? ' ' + mark : ''));
+          // 同一评分落在同一档位，才算同一种问题；数值差几分不影响归并
+          issues.push({ key: 'mode:' + item.mode + ':' + mark, label: item.label, mark: mark, weight: 2,
+            text: item.label + ' ' + Math.round(Number(value)) + (mark ? ' ' + mark : '') });
         }
       });
 
       var statuses = typeof hooks.statusOf === 'function' ? list(hooks.statusOf(region)) : [];
       statuses.forEach(function (effect) {
         if (effect && effect.kind === 'disaster') {
-          score += 1;
-          reasons.push(text(effect.name) || '灾异');
+          var name = text(effect.name) || '灾异';
+          issues.push({ key: 'disaster:' + name, label: name, mark: '', weight: 1, text: name });
         }
       });
 
       var unrest = typeof hooks.unrestOf === 'function' ? toNumber(hooks.unrestOf(region)) : null;
       if (unrest !== null && unrest >= 60) {
-        score += 1;
-        reasons.push('不稳 ' + Math.round(unrest));
+        issues.push({ key: 'unrest', label: '不稳', mark: '', weight: 1, text: '不稳 ' + Math.round(unrest) });
       }
 
-      return { region: region, score: score, reasons: reasons };
+      var score = issues.reduce(function (total, issue) { return total + issue.weight; }, 0);
+      return { region: region, score: score, reasons: issues.map(function (issue) { return issue.text; }), issues: issues };
     });
 
     rows.sort(function (a, b) {
@@ -341,6 +369,83 @@
     return rows;
   }
 
+  function nameOf(region) {
+    return text(region && (region.name || region.title));
+  }
+
+  /**
+   * 共性上提：全道每个州都有、且落在同一档位的问题，提到道一级说一次；各州只留独有的问题，并据此重排。
+   * 独有问题同分时按人口多少排（大州在前），再按名称，保证顺序稳定。不足两州时不归并。
+   * @param {object[]} ranked rankProblems 的结果
+   * @param {{ populationOf: function }} options populationOf(region) → 人口（可缺）
+   * @returns {{ common: { key: string, label: string, mark: string, count: number }[], rows: object[] }}
+   */
+  function liftCommonProblems(ranked, options) {
+    var rows = list(ranked);
+    var populationOf = options && typeof options.populationOf === 'function' ? options.populationOf : function () { return null; };
+    var common = [];
+    if (rows.length >= 2) {
+      list(rows[0].issues).forEach(function (issue) {
+        var everywhere = rows.every(function (row) {
+          return list(row.issues).some(function (other) { return other.key === issue.key; });
+        });
+        var seen = common.some(function (item) { return item.key === issue.key; });
+        if (everywhere && !seen) common.push({ key: issue.key, label: issue.label, mark: issue.mark, count: rows.length });
+      });
+    }
+    var commonKeys = common.map(function (item) { return item.key; });
+
+    var lifted = rows.map(function (row) {
+      var own = list(row.issues).filter(function (issue) { return commonKeys.indexOf(issue.key) < 0; });
+      return {
+        region: row.region,
+        score: own.reduce(function (total, issue) { return total + issue.weight; }, 0),
+        reasons: own.map(function (issue) { return issue.text; }),
+        issues: own
+      };
+    });
+    lifted.sort(function (a, b) {
+      if (b.score !== a.score) return b.score - a.score;
+      var ap = toNumber(populationOf(a.region)) || 0;
+      var bp = toNumber(populationOf(b.region)) || 0;
+      if (bp !== ap) return bp - ap;
+      var an = nameOf(a.region), bn = nameOf(b.region);
+      return an < bn ? -1 : (an > bn ? 1 : 0);
+    });
+    return { common: common, rows: lifted };
+  }
+
+  // ── 营造汇总 ────────────────────────────────────────────
+
+  /**
+   * 汇总下辖各州的建筑：只作展示，不改任何账。
+   * @param {object[]} regions 参与汇总的府州
+   * @param {{ buildingsOf: function, categoryOf: function }} hooks
+   *   buildingsOf(region) → 该州建筑数组（与方志营造志同源）；categoryOf(building) → 类别（取剧本建筑类型表）
+   * @returns {{ total: number, byStatus: object, byCategory: object, byRegion: { region: object, buildings: object[] }[] }}
+   */
+  function summarizeBuildings(regions, hooks) {
+    var result = { total: 0, byStatus: { intact: 0, building: 0, neglected: 0, damaged: 0 }, byCategory: {}, byRegion: [] };
+    list(regions).forEach(function (region) {
+      var items = list(hooks && typeof hooks.buildingsOf === 'function' ? hooks.buildingsOf(region) : []).filter(Boolean);
+      if (!items.length) return;
+      items.forEach(function (building) {
+        result.total += 1;
+        var status = building.status === 'building' || building.status === 'neglected' || building.status === 'damaged' ? building.status : 'intact';
+        result.byStatus[status] += 1;
+        var category = text(hooks && typeof hooks.categoryOf === 'function' ? hooks.categoryOf(building) : '') || 'other';
+        result.byCategory[category] = (result.byCategory[category] || 0) + 1;
+      });
+      result.byRegion.push({ region: region, buildings: items });
+    });
+    result.byRegion.sort(function (a, b) {
+      if (b.buildings.length !== a.buildings.length) return b.buildings.length - a.buildings.length;
+      var an = nameOf(a.region), bn = nameOf(b.region);
+      return an < bn ? -1 : (an > bn ? 1 : 0);
+    });
+    return result;
+  }
+
   return {
     version: 1,
     indexCircuits: indexCircuits,
@@ -350,6 +455,8 @@
     profileOf: profileOf,
     summarize: summarize,
     rankProblems: rankProblems,
+    liftCommonProblems: liftCommonProblems,
+    summarizeBuildings: summarizeBuildings,
     PROBLEM_MODES: PROBLEM_MODES.map(function (item) { return item.mode; })
   };
 });

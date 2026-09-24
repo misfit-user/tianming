@@ -42,6 +42,17 @@
 
 ## 三、S2 通志页（`phase8-formal-map-dossier.js`）
 
+**已完成（09-24，本地提交，待回桌看手感）**。与下面草案不同之处，以此为准：
+- 样稿回桌后 owner 拍板：五项读数够；卷为辖境、形势、财计，另加**营造**（本道全部建筑，只作集成展示，标出首府的建筑）；共性上提做；名称定「通志」。没有单独的「方面」卷，长官卡放在各卷之上。
+- 数据层补了：`profileOf` 的 `description`；`summarize` 的丁口、名义应征、合规（与方志同口径：各州 `fiscal.compliance` 按应征加权，不是实征/应征）、有驻军州数、公帑（各州 `publicTreasury` 合计）；`rankProblems` 返回结构化 `issues`；新增 `liftCommonProblems`、`summarizeBuildings`。
+- 归属一律用 `canonicalOwnerKey`（与地图分组同口径）：天启的土司地块归属写成势力 id，其余写成势力名，逐字比较会把本方州误列他属。
+- 「本方」判定复用右栏的 `rightCollectPlayerFactionNames`（导出为 `bridge.rightrail.playerFactionNames`）；他方省道标「他方所辖」、不给动作（草案里说的谱牒「谍报有限」其实不存在）。
+- 叙述文字（战略、边警、士绅、书院等）直接转义显示，不走 `ppValue`：它会把含势力名的整句换成势力名。方志里同类字段可能有同样问题，未改，另记。
+- 册页比方志宽（`#ppop.tmf-book.circuit-panel` 560px），放得下七列辖境表。
+- 进通志的入口（第三片之前）：方志页头的「道 某某」签；另有 `bridge.map.openCircuitDossier(省道 key 或府州)`。
+- 测试：`smoke-map-circuits`（14 项）、`smoke-map-circuit-book`（VM 实开天启，7 项）；真机 `verify-electron-bridge.js --circuit-book`（逐卷截图，含真点击、刷新、关闭、跳方志）。VM 的模拟 DOM 对所有 id 返回同一节点、classList 不生效，这类行为只能在真机用例里验。
+
+原草案：
 - 新增 `renderCircuitBook(key, clickedRegion)` 和 `openCircuitDossier(key, clickedRegion)`；`#ppop` 的 `panelKind` 取值 `'circuit'`。
 - 页头：层级路径（势力 › 省道）、名称、历史称谓、治所、归属（本方实控 x/N 州，他属列名）。有长官数据时显示长官卡（天启），只有官衔时人名写「未录」（晚唐），没有就整卡不显示（绍宋）。
 - 读数带：户口、实征、驻军、民心、吏治，与方志同口径。
@@ -92,6 +103,18 @@
   5. 新脚本还要在 `smoke-startup-phase-observability.js` 里登记，它断言脚本总数等于 417 加各登记组。
 - `smoke-tang840-opening-ledgers` 有 60 秒硬时限，笔记本用电池或与别的全量门禁并跑时会超时；推送前的全量要在接电、机器空闲时跑。
 - 回桌验手感：三部剧本各走一遍，截图给 owner。
+
+## 六之二、S6 改隶（owner 09-24 新增，一期末尾）
+
+- **先修写口**：回合末 AI 的区划改制事务 `tm-endturn-agent-write-tools.js` 的 `_semDivision` 已能改隶，但只改 `adminHierarchy`，不同步地图地块的 `parentId`/`circuitId` 和 `map.circuitRegistry` 的 `memberRegionIds`，AI 改隶后地图与通志仍按旧省道分组。改成三处同步、带快照、失败整体回滚；玩家与 AI 走这同一个写口。
+- 规则：只许在本方省道之间改；首府暂不许改出（二期能更易首府后再放开）；不相邻允许，但提示将成飞地。
+- 入口：通志页脚「调整辖区」、方志页脚「改隶」，都只生成诏书建议；下诏后由推演核定，再经写口落地；奏疏、朝会里大臣提议改隶也走同一写口。
+- 地图：按势力着色，同势力内改隶不变色，变的是省道边界与省名位置；`formalMapSignature` 已含 parentId/circuitId 与 circuitRegistry，数据一致即自动重画，不需另写刷新。
+- 测试：写口三处一致与回滚；诏书建议范围；地图签名随改隶变化；三部剧本（绍宋没有路级节点，只改登记与地块）。
+
+二期、三期新增（owner 09-24 定）：
+- 二期「更易首府」：首府即长官驻地，长官的作用从首府出发（如应对边警）；首府失守则寄治别州、效能打折。
+- 三期「省道级建筑」：贡院（乡试）、布政司署、省仓一类，与省库一起做；需要建筑类型表新增省道级（编辑器、引擎、剧本三面齐改，绍宋目前没有建筑类型）。
 
 ## 七、边界
 

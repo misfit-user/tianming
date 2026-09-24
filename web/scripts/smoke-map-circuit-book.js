@@ -1,0 +1,161 @@
+#!/usr/bin/env node
+// smoke-map-circuit-book.js — 通志册页（省道一级）在真实开局上的行为测试
+//
+// 在 VM 里完整开一局天启，打开北直隶的通志，核对：读数与数据层对下辖府州的实时汇总一致；
+// 辖境表列全本方各州并做共性上提；页脚动作经右栏同一个写入口写诏书建议；他方省道不给动作；方志页头有进通志的入口。
+'use strict';
+
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const WEB = path.resolve(__dirname, '..');
+const helperFile = path.join(__dirname, 'smoke-start-game-data-integrity.js');
+const helperText = fs.readFileSync(helperFile, 'utf8').replace(/^#![^\n]*\n/, '');
+const helperEnd = helperText.indexOf('(async function main()');
+if (helperEnd < 0) throw new Error('helper boundary missing');
+const helpers = new Function('require', 'process', '__dirname', '__filename', 'module', 'exports',
+  helperText.slice(0, helperEnd) + '\nreturn { loadGame };')(require, process, __dirname, helperFile, { exports: {} }, {});
+
+const SID = 'sc-tianqi7-1627';
+const c = helpers.loadGame(SID);
+vm.runInContext(`P.ai.key='';P.ai.url='';P.ai.model='';doActualStart(${JSON.stringify(SID)})`, c, { timeout: 180000 });
+
+const checks = [];
+function check(name, fn) {
+  fn();
+  checks.push(name);
+}
+
+setTimeout(() => {
+  try {
+    // 浏览器里省道分组来自按需加载的地名模块；VM 不跑按需加载，这里直接装入它的布局脚本
+    vm.runInContext(fs.readFileSync(path.join(WEB, 'tm-map-realm-layout.js'), 'utf8'), c, { filename: 'tm-map-realm-layout.js' });
+    const run = (code) => vm.runInContext(code, c, { timeout: 60000 });
+
+    run(`
+      var __parts = TMPhase8FormalBridge.__p8MapParts;
+      var __map = GM.mapData;
+      var __shuntian = __map.regions.filter(function(r){ return /顺天/.test(r.name || ''); })[0];
+      var __circuit = __parts.findCircuit(__shuntian);
+      var __book = function(){ return document.getElementById('ppop'); };
+    `);
+
+    check('北直隶通志能从府州打开，页头有层级路径、长官与治所', () => {
+      const d = JSON.parse(run(`(function(){
+        var ok = TMPhase8FormalBridge.map.openCircuitDossier(__shuntian);
+        var pop = __book();
+        return JSON.stringify({ ok: ok, kind: pop.dataset.panelKind, key: pop.dataset.circuitKey, cls: pop.className, html: pop.innerHTML, circuitKey: __circuit && __circuit.key });
+      })()`));
+      assert.equal(d.ok, true);
+      assert.equal(d.kind, 'circuit');
+      assert.equal(d.key, d.circuitKey);
+      assert.match(d.cls, /circuit-panel/);
+      assert.ok(d.html.includes('通 志'), '册页种类是通志');
+      assert.ok(d.html.includes('bk-crumbs') && d.html.includes('北直隶'), '页头有层级路径');
+      assert.ok(d.html.includes('顺天巡抚') && d.html.includes('刘诏'), '长官卡取自省道档案');
+      assert.ok(d.html.includes('治所 <b>顺天府</b>'), '治所可点开其方志');
+    });
+
+    check('五项读数等于数据层对下辖府州的实时汇总', () => {
+      const d = JSON.parse(run(`(function(){
+        var MC = TM.MapCircuits, own = MC.partitionByOwner(__circuit, __parts.canonicalOwnerKey(__shuntian)).own;
+        var sum = MC.summarize(own, { bundle: __parts.regionBundle, mood: __parts.moodViewScore, office: __parts.officeViewScore });
+        var stats = Array.prototype.slice.call(document.getElementById('ppop').innerHTML.match(/<div class="bk-stat[^"]*"[^>]*><span class="k">[^<]*<\\/span><span class="v">[^<]*<\\/span>/g) || []);
+        return JSON.stringify({ count: own.length, sum: sum, stats: stats,
+          expected: [__parts.ppValue(sum.population), __parts.ppValue(sum.actualRevenue), __parts.ppValue(sum.troops), String(sum.mood), String(sum.office)] });
+      })()`));
+      assert.equal(d.count, 11, '北直隶本方 11 州');
+      assert.equal(d.sum.missing.population, 0);
+      assert.equal(d.stats.length, 5, '读数带五项');
+      const values = d.stats.map((s) => s.replace(/.*<span class="v">([^<]*)<\/span>$/, '$1'));
+      assert.deepEqual(values, d.expected, '读数带逐项等于汇总值');
+    });
+
+    check('辖境表列全本方各州，全道共有的问题上提到道一级', () => {
+      const html = run(`__book().innerHTML`);
+      const table = html.slice(html.indexOf('bk-circuit-table'), html.indexOf('</table>'));
+      const rows = table.match(/<tr class="[^"]*"><td class="nm">/g) || [];
+      assert.equal(rows.length, 11, '11 州各占一行');
+      assert.ok(html.includes('bk-circuit-common') && html.includes('全道共性（11/11 州）'), '开局各州同档的民心、吏治等问题上提');
+      assert.ok((table.match(/data-bk-open-region="/g) || []).length >= 11, '每一州都能点开方志');
+      assert.ok(html.includes('bk-circuit-xingshi') && html.includes('后金破宣府大同塞入塞；宣府镇守将叛变；京营兵变'), '形势卷完整列出边警，叙述文字不被换成势力名');
+      // 合规与方志同口径：各州 fiscal.compliance 按应征加权，在 VM 里独立再算一遍
+      const expected = JSON.parse(run(`(function(){
+        var MC = TM.MapCircuits, own = MC.partitionByOwner(__circuit, __parts.canonicalOwnerKey(__shuntian)).own, w = 0, t = 0;
+        own.forEach(function(r){ var f = __parts.regionBundle(r).fiscal || {}; var k = Number(f.claimedRevenue) > 0 ? Number(f.claimedRevenue) : 1; if (f.compliance != null) { t += Number(f.compliance) * k; w += k; } });
+        return JSON.stringify(Math.round(t / w * 100));
+      })()`));
+      assert.ok(html.includes('bk-circuit-caiji') && html.includes('合规 ' + expected + '%'), '财计卷的合规 ' + expected + '% 与方志同口径');
+      assert.ok(html.includes('bk-circuit-yingzao'), '营造卷在册（开局无工役时写明）');
+    });
+
+    check('页脚动作经右栏同一个写入口写诏书建议，范围写明本道各州', () => {
+      // 先数按钮再动作：VM 的模拟 DOM 对所有 id 返回同一个节点，诏书建议栏重画会覆盖册页内容（真浏览器里是两个节点）
+      const d = JSON.parse(run(`(function(){
+        TMPhase8FormalBridge.map.openCircuitDossier(__shuntian);
+        var buttons = (__book().innerHTML.match(/data-bk-circuit-act="/g) || []).length;
+        var before = (GM._edictSuggestions || []).length;
+        var ok = __parts.circuitAction(__circuit.key, '巡按');
+        var list = GM._edictSuggestions || [];
+        return JSON.stringify({ ok: ok, added: list.length - before, last: list[list.length - 1] || null, buttons: buttons });
+      })()`));
+      assert.equal(d.buttons, 4, '整饬吏治、蠲免、巡按、任免');
+      assert.equal(d.ok, true);
+      assert.equal(d.added, 1);
+      assert.equal(d.last.source, '行政区划');
+      assert.equal(d.last.from, '北直隶');
+      assert.equal(d.last.topic, '通志·巡按');
+      assert.ok(d.last.content.includes('顺天府') && d.last.content.includes('11 府州'), '文案写明范围');
+      assert.equal(d.last.used, false, '只进建议库，不直接生效');
+      assert.equal(run(`__parts.circuitAction(__circuit.key, '抄家')`), false, '不认识的动作不写');
+    });
+
+    check('他方省道只看不动：标「他方所辖」，不给诏书动作', () => {
+      const d = JSON.parse(run(`(function(){
+        var MC = TM.MapCircuits, names = TMPhase8FormalBridge.rightrail.playerFactionNames();
+        var foreign = null;
+        __map.regions.some(function(r){
+          var c = __parts.findCircuit(r);
+          var mine = function(m){ var f = __parts.findFaction(m.owner, ''); return names.indexOf(String(m.owner)) >= 0 || !!(f && names.indexOf(String(f.name)) >= 0); };
+          if (c && !c.members.some(mine)) { foreign = { circuit: c, region: r }; return true; }
+          return false;
+        });
+        if (!foreign) return JSON.stringify({ found: false });
+        TMPhase8FormalBridge.map.openCircuitDossier(foreign.region);
+        var html = __book().innerHTML;
+        return JSON.stringify({ found: true, label: foreign.circuit.label, hostile: html.includes('他方所辖'),
+          acts: (html.match(/data-bk-circuit-act="/g) || []).length, write: __parts.circuitAction(foreign.circuit.key, '巡按') });
+      })()`));
+      assert.equal(d.found, true, '天启开局有不含玩家州的省道');
+      assert.equal(d.hostile, true, d.label + ' 标他方所辖');
+      assert.equal(d.acts, 0);
+      assert.equal(d.write, false, '他方省道的动作即便被调用也不写诏书');
+    });
+
+    check('方志页头有进通志的入口', () => {
+      const html = run(`(function(){ __parts.openRegionDossier(__shuntian); return __book().innerHTML; })()`);
+      assert.ok(html.includes('data-bk-open-circuit="' + run('__circuit.key') + '"'), '「道 北直隶」签可点');
+      assert.ok(html.includes('道 <b>北直隶</b>'));
+    });
+
+    // VM 的模拟节点不实现 classList 与属性增删，关闭与刷新只能查源码；真浏览器里的行为由第五片的 Electron 验收覆盖
+    check('源码约束：关闭册页清掉通志标记，回合刷新会重画通志', () => {
+      const map = fs.readFileSync(path.join(WEB, 'phase8-formal-map.js'), 'utf8');
+      const refresh = map.slice(map.indexOf('function refreshMapPpop'), map.indexOf('function refreshMapFromRuntime'));
+      assert.match(refresh, /panelKind === 'circuit'[^\n]*openCircuitDossier\(pop\.dataset\.circuitKey/, '回合刷新时按省道 key 重画通志');
+      const dossier = fs.readFileSync(path.join(WEB, 'phase8-formal-map-dossier.js'), 'utf8');
+      const close = dossier.slice(dossier.indexOf('function closeMapDossier'), dossier.indexOf('function closeMapDossier') + 700);
+      assert.match(close, /classList\.remove\([^)]*'circuit-panel'/, '关闭时去掉 circuit-panel');
+      assert.match(close, /removeAttribute\('data-circuit-key'\)/, '关闭时清掉省道 key');
+    });
+
+    console.log('[smoke-map-circuit-book] ' + checks.length + ' 组检查全部通过');
+    checks.forEach((name) => console.log('  ok · ' + name));
+    process.exit(0);
+  } catch (error) {
+    console.error('[smoke-map-circuit-book] FAIL', error && error.stack || error);
+    process.exit(1);
+  }
+}, 300);

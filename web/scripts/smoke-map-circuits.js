@@ -60,6 +60,7 @@ const tianqiAdmin = [
     officialPosition: '顺天巡抚', governor: '刘诏',
     population: 8200000, minxinLocal: 46,                   // 冻结的开局数字，汇总时绝不能读
     strategicValue: '首善之区', threats: ['后金入塞'], leadingGentry: ['保定李氏'], academies: ['首善书院'],
+    description: '畿辅重地，拱卫京师。',
     capitalChildId: 'div_pref_01',
     prefectures: [{ id: 'div_pref_01', name: '顺天府' }, { id: 'div_pref_02', name: '保定府' }]
   }
@@ -100,14 +101,22 @@ check('天启：档案经 sourceAdminId 取到巡抚与治所', () => {
   assert.deepEqual(profile.threats, ['后金入塞']);
   assert.deepEqual(profile.gentry, ['保定李氏']);
   assert.deepEqual(profile.academies, ['首善书院']);
+  assert.equal(profile.description, '畿辅重地，拱卫京师。', '通志页头的描述取自省道节点的文字');
 });
 
 check('天启：汇总只读府州实时数，不读省级节点冻结的户口与民心', () => {
   const index = circuits.indexCircuits(tianqiMap, { layout: layout, ownerOf: ownerOf });
   const own = circuits.partitionByOwner(index.circuits.get('cz-province-ming-01'), 'ming').own;
   const live = {
-    '顺天府': { data: { population: 3000000, garrison: 40000 }, fiscal: { actualRevenue: 90000, remittedToCenter: 60000, retainedBudget: 30000 } },
-    '保定府': { data: { population: 2000000 }, fiscal: { actualRevenue: 50000 }, army: { troops: 12000 } }
+    '顺天府': {
+      data: { population: 3000000, garrison: 40000 }, pop: { ding: 800000 },
+      fiscal: { actualRevenue: 90000, claimedRevenue: 100000, remittedToCenter: 60000, retainedBudget: 30000, compliance: 0.8 },
+      liveDivision: { publicTreasury: { money: { stock: 1200 }, grain: { stock: 500 } } }
+    },
+    '保定府': {
+      data: { population: 2000000, publicTreasury: { money: { stock: 800 } } }, pop: { ding: 500000 },
+      fiscal: { actualRevenue: 50000, claimedRevenue: 300000, compliance: 0.4 }, army: { troops: 12000 }
+    }
   };
   const moods = { '顺天府': 60, '保定府': 40 };
   const offices = { '顺天府': 70, '保定府': 20 };
@@ -124,6 +133,11 @@ check('天启：汇总只读府州实时数，不读省级节点冻结的户口�
   assert.equal(sum.troops, 52000);
   assert.equal(sum.mood, 52, '民心按人口加权：(60×300万 + 40×200万) / 500万');
   assert.equal(sum.office, 50, '吏治按人口加权：(70×300万 + 20×200万) / 500万');
+  assert.equal(sum.ding, 1300000);
+  assert.equal(sum.claimedRevenue, 400000);
+  assert.equal(sum.compliance, 0.5, '合规与方志同口径：各州 compliance 按应征加权（0.8×10万 + 0.4×30万）/ 40万，不是实征 / 应征');
+  assert.equal(sum.garrisoned, 2, '两州都有驻军');
+  assert.deepEqual(sum.treasury, { money: 2000, grain: 500 }, '公帑取各州地方库藏，活区划优先、其次地块数据');
 });
 
 // ── 晚唐式 ─────────────────────────────────────────────
@@ -225,6 +239,47 @@ check('问题排序按固定规则、可复现，并给出原因', () => {
   assert.deepEqual(first[1].reasons, ['旱蝗', '不稳 72'], '只有灾异计分，祥瑞不算问题');
   const again = circuits.rankProblems(rs.slice().reverse(), hooks);
   assert.deepEqual(again.map((row) => row.region.name), first.map((row) => row.region.name), '输入顺序不影响结果');
+  assert.deepEqual(first[0].issues.map((issue) => issue.key), ['mode:mood:危', 'mode:office:蠹'], '结构化问题与原因一一对应');
+});
+
+check('共性上提：全道同档的问题提到道一级，各州只留独有问题，同分按人口排', () => {
+  // 天启开局的样子：四州民心同为「忧」、吏治同为「蠹」，只有乙州另有灾异
+  const rs = [region('a', '甲州', 'A'), region('b', '乙州', 'A'), region('c', '丙州', 'A'), region('d', '丁州', 'A')];
+  const pops = { '甲州': 50, '乙州': 10, '丙州': 90, '丁州': 70 };
+  const hooks = {
+    score: (r, mode) => ({ mood: 40 + (r.name === '丙州' ? 1 : 0), office: 97 })[mode] ?? '',
+    grade: (mode) => ({ mark: mode === 'mood' ? '忧' : '蠹' }),
+    isWarn: () => true,
+    statusOf: (r) => (r.name === '乙州' ? [{ kind: 'disaster', name: '蝗灾' }] : [])
+  };
+  const ranked = circuits.rankProblems(rs, hooks);
+  assert.deepEqual(ranked.map((row) => row.score), [5, 4, 4, 4], '不上提时四州几乎同分，排不出轻重');
+  const lifted = circuits.liftCommonProblems(ranked, { populationOf: (r) => pops[r.name] });
+  assert.deepEqual(lifted.common.map((item) => item.label + ' ' + item.mark), ['民心 忧', '吏治 蠹'], '数值差一分、档位相同，仍算同一种问题');
+  assert.equal(lifted.common[0].count, 4);
+  assert.deepEqual(lifted.rows.map((row) => row.region.name), ['乙州', '丙州', '丁州', '甲州'], '独有问题在前，其余按人口多少');
+  assert.deepEqual(lifted.rows[0].reasons, ['蝗灾']);
+  assert.deepEqual(lifted.rows[1].reasons, []);
+  const single = circuits.liftCommonProblems(ranked.slice(0, 1), {});
+  assert.deepEqual(single.common, [], '只有一州时不归并');
+  assert.deepEqual(single.rows[0].reasons, ranked[0].reasons);
+  assert.deepEqual(circuits.liftCommonProblems(null, {}), { common: [], rows: [] });
+});
+
+check('营造汇总：按状态、类别、州计数，只展示不改账', () => {
+  const rs = [region('a', '甲州', 'A'), region('b', '乙州', 'A'), region('c', '丙州', 'A')];
+  const builds = {
+    '甲州': [{ name: '卫所', status: 'completed' }, { name: '书院', status: 'building' }],
+    '乙州': [{ name: '卫所', status: 'damaged' }, { name: '贡院' }, { name: '驿站', status: 'neglected' }],
+    '丙州': []
+  };
+  const categories = { '卫所': 'military', '书院': 'cultural', '贡院': 'cultural' };
+  const sum = circuits.summarizeBuildings(rs, { buildingsOf: (r) => builds[r.name], categoryOf: (b) => categories[b.name] });
+  assert.equal(sum.total, 5);
+  assert.deepEqual(sum.byStatus, { intact: 2, building: 1, neglected: 1, damaged: 1 }, '未标状态与已竣工都算完好');
+  assert.deepEqual(sum.byCategory, { military: 2, cultural: 2, other: 1 }, '类型表查不到的归「其他」');
+  assert.deepEqual(sum.byRegion.map((row) => row.region.name), ['乙州', '甲州'], '按座数排，没有建筑的州不列');
+  assert.equal(circuits.summarizeBuildings(null, {}).total, 0);
 });
 
 // ── 纯函数与源码约束 ───────────────────────────────────
@@ -236,7 +291,9 @@ check('不改输入：跑完全部接口后地图与节点原样', () => {
   circuits.partitionByOwner(bzl, 'ming');
   circuits.profileOf(bzl, { findAdmin: adminFinder(tianqiAdmin) });
   circuits.summarize(bzl.members.map((m) => m.region), { bundle: () => ({}) });
-  circuits.rankProblems(bzl.members.map((m) => m.region), {});
+  const ranked = circuits.rankProblems(bzl.members.map((m) => m.region), {});
+  circuits.liftCommonProblems(ranked, { populationOf: () => 1 });
+  circuits.summarizeBuildings(bzl.members.map((m) => m.region), { buildingsOf: () => [], categoryOf: () => '' });
   assert.equal(JSON.stringify([tianqiMap, tianqiAdmin, tangMap, tangAdmin, songMap]), before);
 });
 

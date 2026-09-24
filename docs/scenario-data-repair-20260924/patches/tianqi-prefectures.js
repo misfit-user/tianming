@@ -223,24 +223,31 @@ function main() {
   const ageCounts = {};
   ageKeys.forEach((k) => { ageCounts[k] = splitInteger(P.byAge[k].count, mouths); });
 
-  // 坊市镇村：行和=各块人口，列和=省里各类人口，按城镇先验比例做迭代比例拟合
+  // 坊市镇村：行和=各块人口，列和=省里各类人口，按城镇先验比例做迭代比例拟合。
+  // 省里写的是比例而不是人数（朵甘的寺院庄园、牧帐、山谷村寨）时不拟合，各块照抄省里的比例。
   const settleKeys = P.bySettlement ? Object.keys(P.bySettlement) : [];
-  let matrix = B.map((b, i) => settleKeys.map((k) => mouths[i] * (b.urban[k] || 0.01)));
-  for (let round = 0; round < 60; round++) {
-    matrix = matrix.map((row, i) => { const s = sum(row); return row.map((x) => (x * mouths[i]) / s); });
-    settleKeys.forEach((k, j) => {
-      const s = sum(matrix.map((row) => row[j]));
-      const target = P.bySettlement[k].mouths;
-      matrix.forEach((row) => { row[j] = (row[j] * target) / s; });
+  const settleIsRatio = settleKeys.length > 0 && settleKeys.every((k) => typeof P.bySettlement[k] === 'number');
+  let settlement = null;
+  if (settleIsRatio) {
+    settlement = B.map(() => clone(P.bySettlement));
+  } else if (settleKeys.length) {
+    let matrix = B.map((b, i) => settleKeys.map((k) => mouths[i] * (b.urban[k] || 0.01)));
+    for (let round = 0; round < 60; round++) {
+      matrix = matrix.map((row, i) => { const s = sum(row); return row.map((x) => (x * mouths[i]) / s); });
+      settleKeys.forEach((k, j) => {
+        const s = sum(matrix.map((row) => row[j]));
+        const target = P.bySettlement[k].mouths;
+        matrix.forEach((row) => { row[j] = (row[j] * target) / s; });
+      });
+    }
+    settlement = B.map((b, i) => {
+      const rowInt = splitInteger(mouths[i], matrix[i]);
+      const perHousehold = mouths[i] / households[i];
+      const out = {};
+      settleKeys.forEach((k, j) => { out[k] = { mouths: rowInt[j], households: Math.round(rowInt[j] / perHousehold) }; });
+      return out;
     });
   }
-  const settlement = !settleKeys.length ? null : B.map((b, i) => {
-    const rowInt = splitInteger(mouths[i], matrix[i]);
-    const perHousehold = mouths[i] / households[i];
-    const out = {};
-    settleKeys.forEach((k, j) => { out[k] = { mouths: rowInt[j], households: Math.round(rowInt[j] / perHousehold) }; });
-    return out;
-  });
 
   const yieldLand = blockIds.map((id, i) => W[id].land * B[i].yieldFactor);
   const cc = P.carryingCapacity || null;
@@ -280,19 +287,33 @@ function main() {
   const commerceWeight = mouths.map((m, i) => m * B[i].commerce);
   const commerceShare = commerceWeight.map((c) => c / sum(commerceWeight));
   const claimed = splitInteger(fd.claimedRevenue, grainShare.map((g, i) => 0.75 * g + 0.25 * commerceShare[i]));
-  let skim = B.map((b) => b.skimmingRate);
-  for (let round = 0; round < 40; round++) {
-    const actualSum = sum(claimed.map((c, i) => c * (1 - skim[i])));
-    const gap = (actualSum - fd.actualRevenue) / fd.claimedRevenue;
-    if (Math.abs(gap) < 1e-7) break;
-    skim = skim.map((s) => clamp(s + gap, 0.02, 0.6));
+  let actual;
+  let compliance;
+  let skimRounded;
+  if (data.fiscalRates === 'province') {
+    // 羁縻之地（乌思藏、朵甘）剧本记的实征与征到比例、截留率并不按「应征×(1−截留率)」相扣，
+    // 各块沿用省里的两项比率（与改前各叶子相同），实征按应征比例分
+    actual = splitInteger(fd.actualRevenue, claimed);
+    compliance = B.map(() => fd.compliance);
+    skimRounded = B.map(() => fd.skimmingRate);
+  } else {
+    let skim = B.map((b) => b.skimmingRate);
+    for (let round = 0; round < 40; round++) {
+      const actualSum = sum(claimed.map((c, i) => c * (1 - skim[i])));
+      const gap = (actualSum - fd.actualRevenue) / fd.claimedRevenue;
+      if (Math.abs(gap) < 1e-7) break;
+      skim = skim.map((s) => clamp(s + gap, 0.02, 0.6));
+    }
+    actual = splitInteger(fd.actualRevenue, claimed.map((c, i) => c * (1 - skim[i])));
+    compliance = shiftToMean(B.map((b) => b.compliance * 100), claimed, fd.compliance * 100, 30, 98).map((x) => Math.round(x) / 100);
+    skimRounded = claimed.map((c, i) => Math.round((1 - actual[i] / c) * 1000) / 1000);
   }
-  const actual = splitInteger(fd.actualRevenue, claimed.map((c, i) => c * (1 - skim[i])));
   const remitRatio = fd.remittedToCenter / fd.actualRevenue;
   const remitted = splitInteger(fd.remittedToCenter, actual.map((a) => a * remitRatio));
-  const retained = actual.map((a, i) => a - remitted[i]);
-  const compliance = shiftToMean(B.map((b) => b.compliance * 100), claimed, fd.compliance * 100, 30, 98).map((x) => Math.round(x) / 100);
-  const skimRounded = claimed.map((c, i) => Math.round((1 - actual[i] / c) * 1000) / 1000);
+  // 朵甘剧本里起运加留用不等于实征（原账如此），羁縻之地留用也按实征比例单独分，省总数才守得住
+  const retained = data.fiscalRates === 'province'
+    ? splitInteger(fd.retainedBudget, actual)
+    : actual.map((a, i) => a - remitted[i]);
 
   const pt = P.publicTreasuryInit || null;
   const treasury = !pt ? null : {
@@ -313,7 +334,10 @@ function main() {
     imperialFarmland: splitInteger(Number(eb.imperialFarmland) || 0, B.map((b) => b.imperial)),
     postRelays: splitInteger(Number(eb.postRelays) || 0, blockIds.map((id, i) => W[id].counties * B[i].corridor)),
     kejuQuota: splitInteger(Number(eb.kejuQuota) || 0, B.map((b) => b.keju)),
-    landsAnnexed: splitInteger(Number(eb.landsAnnexed) || 0, col('land').map((l, i) => l * B[i].gentry))
+    landsAnnexed: splitInteger(Number(eb.landsAnnexed) || 0, col('land').map((l, i) => l * B[i].gentry)),
+    // 垦荒、清丈的累计亩数多数省份为 0；有数的（朵甘）按田亩权重分
+    landsReclaimed: splitInteger(Number(eb.landsReclaimed) || 0, col('land')),
+    landsSurveyed: splitInteger(Number(eb.landsSurveyed) || 0, col('land'))
   };
   if (eb) ['mineralProduction', 'horseProduction'].forEach((k) => {
     if (eb[k] > 0 && sum(economy[k]) !== eb[k]) throw new Error(k + ' 省里有数，但数据模块没给任何地块权重');
@@ -332,7 +356,8 @@ function main() {
   const fiscalWeight = claimed.map((c) => c / fd.claimedRevenue);
 
   // ---- 写入 ----
-  const before = blockIds.map((id) => clone(leafByRegion.get(id)));
+  // 核算组节点本身不存数据，「前」取地图上这块的汇总数据
+  const before = blockIds.map((id, i) => clone(B[i].accounts ? regionById.get(id).data : leafByRegion.get(id)));
   const beforeRegion = blockIds.map((id) => clone(regionById.get(id)));
   const DEAD_KEYS = ['_codexGenerated', 'sourceMapRegionId'];
 
@@ -379,14 +404,82 @@ function main() {
       imperialAssets: { zhizao: b.zhizao || 0, kuangchang: b.kuangchang || 0, yuyao: b.yuyao || 0 },
       postRelays: economy.postRelays[i], kejuQuota: economy.kejuQuota[i], roadQuality: b.roadQuality,
       // 灾异按块写在数据模块（省级灾情只落到实际受灾的府州）；没写的块为空
-      landsAnnexed: economy.landsAnnexed[i], landsReclaimed: 0, landsSurveyed: 0, disasterRecord: clone(b.disasterRecord || [])
+      landsAnnexed: economy.landsAnnexed[i], landsReclaimed: economy.landsReclaimed[i], landsSurveyed: economy.landsSurveyed[i],
+      disasterRecord: clone(b.disasterRecord || [])
     };
+    // 掌官姓名考得出、且在人物表里的才写（宪法：考不出不写，界面显示「任官未详」）
+    if (b.governor) target.governor = b.governor;
     DEAD_KEYS.forEach((k) => { delete target[k]; });
+  }
+
+  // 地域核算组（如「皮岛·原账分项」）：一块地图分成几本账，组节点只有 id、名字与子账，本身不存数据。
+  // 先按整块算出一份，再按数据模块 accounts 里的权重拆给各账：人口、钱粮、田亩这类可加的数按权重分，
+  // 比例与读数照抄整块；各账自己的描述、地形、官称等写在 accounts 里。
+  const ACCOUNT_ADDITIVE = [
+    'population', 'populationDetail.mouths', 'populationDetail.fugitives', 'populationDetail.hiddenCount',
+    'populationDetail.households', 'populationDetail.ding', 'byGender.male',
+    'baojia.baoCount', 'baojia.jiaCount', 'baojia.paiCount',
+    'carryingCapacity.arable', 'carryingCapacity.water', 'carryingCapacity.historicalCap',
+    'fiscalDetail.claimedRevenue', 'fiscalDetail.actualRevenue', 'fiscalDetail.remittedToCenter',
+    'publicTreasuryInit.money', 'publicTreasuryInit.grain', 'publicTreasuryInit.cloth',
+    'economyBase.farmland', 'economyBase.commerceVolume', 'economyBase.maritimeTradeVolume',
+    'economyBase.saltProduction', 'economyBase.mineralProduction', 'economyBase.horseProduction',
+    'economyBase.fishingProduction', 'economyBase.imperialFarmland', 'economyBase.postRelays',
+    'economyBase.kejuQuota', 'economyBase.landsAnnexed', 'economyBase.landsReclaimed', 'economyBase.landsSurveyed'
+  ];
+  const ACCOUNT_OWN_KEYS = ['divisionType', 'officialPosition', 'description', 'terrain', 'specialResources', 'regionType', 'governor'];
+  function getPath(obj, path) { return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); }
+  function setPath(obj, path, value) {
+    const keys = path.split('.');
+    const last = keys.pop();
+    keys.reduce((o, k) => o[k], obj)[last] = value;
+  }
+
+  function fillAccounts(group, i) {
+    const specs = B[i].accounts;
+    const children = group.children || [];
+    if (children.length !== specs.length) throw new Error(group.name + ' 有 ' + children.length + ' 本账，数据模块写了 ' + specs.length + ' 本');
+    const nodes = specs.map((spec) => {
+      const node = children.find((c) => c.name === spec.name);
+      if (!node) throw new Error(group.name + ' 下没有账目 ' + spec.name);
+      return node;
+    });
+    const whole = {};
+    fillDivision(whole, i);
+    const weights = specs.map((spec) => spec.weight);
+    const parts = specs.map(() => clone(whole));
+    const paths = ACCOUNT_ADDITIVE.slice();
+    Object.keys(whole.byAge || {}).forEach((k) => paths.push('byAge.' + k + '.count'));
+    Object.keys(whole.bySettlement || {}).forEach((k) => {
+      if (typeof whole.bySettlement[k] === 'object') paths.push('bySettlement.' + k + '.mouths', 'bySettlement.' + k + '.households');
+    });
+    paths.forEach((path) => {
+      const total = getPath(whole, path);
+      if (typeof total !== 'number') return;
+      const split = splitInteger(total, weights);
+      parts.forEach((part, j) => setPath(part, path, split[j]));
+    });
+    parts.forEach((part, j) => {
+      // 女口、留用由同账的总数减出来，保证每本账自身相加相符
+      if (part.byGender) part.byGender.female = part.populationDetail.mouths - part.byGender.male;
+      part.fiscalDetail.retainedBudget = part.fiscalDetail.actualRevenue - part.fiscalDetail.remittedToCenter;
+      part.fiscal = clone(part.fiscalDetail);
+      ACCOUNT_OWN_KEYS.forEach((k) => { if (specs[j][k] !== undefined) part[k] = clone(specs[j][k]); });
+      // 整块的掌官只属于写明的那本账，其余各账不继承
+      if (specs[j].governor === undefined && whole.governor !== undefined) {
+        delete part.governor;
+        if (nodes[j].governor === whole.governor) delete nodes[j].governor;
+      }
+      if (specs[j].tags) part.tags = Object.assign({}, whole.tags, specs[j].tags);
+      Object.assign(nodes[j], part);
+      DEAD_KEYS.forEach((k) => { delete nodes[j][k]; });
+    });
   }
 
   blockIds.forEach((id, i) => {
     const leaf = leafByRegion.get(id);
-    fillDivision(leaf, i);
+    if (B[i].accounts) fillAccounts(leaf, i);
+    else fillDivision(leaf, i);
     const region = regionById.get(id);
     fillDivision(region.data, i);
     region.data.legacyFiscalWeight = fiscalWeight[i];
@@ -399,20 +492,21 @@ function main() {
   });
 
   // 省节点：下辖名录摘要与描述同步
+  // 存数据的节点：普通块是叶子本身，核算组是组下各账
+  const leaves = [].concat(...blockIds.map((id, i) => (B[i].accounts ? leafByRegion.get(id).children : [leafByRegion.get(id)])));
   if (Array.isArray(P.prefectures)) {
     P.prefectures.forEach((row) => {
-      const i = blockIds.findIndex((id) => leafByRegion.get(id).id === row.id);
-      if (i < 0) return;
-      row.divisionType = B[i].divisionType;
-      row.officialPosition = B[i].officialPosition;
-      row.description = B[i].description;
+      const node = leaves.find((l) => l.id === row.id);
+      if (!node) return;
+      row.divisionType = node.divisionType;
+      row.officialPosition = node.officialPosition;
+      row.description = node.description;
     });
   }
   if (data.provinceDescription) P.description = data.provinceDescription;
   scenario.mapData = clone(scenario.map);
 
   // ---- 自检：省总数守恒 ----
-  const leaves = blockIds.map((id) => leafByRegion.get(id));
   const checks = [
     ['人口', pd.mouths, sum(leaves.map((l) => l.population))],
     ['户', pd.households, sum(leaves.map((l) => l.populationDetail.households))],
@@ -449,21 +543,35 @@ function main() {
   lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   blockIds.forEach((id, i) => {
     const o = before[i];
-    const n = leafByRegion.get(id);
+    const n = B[i].accounts ? regionById.get(id).data : leafByRegion.get(id);
     const f = (a, b) => (a === b ? String(b) : a + ' → ' + b);
+    const oe = o.economyBase || {};
+    const ne = n.economyBase || {};
     lines.push('| ' + [
-      n.name,
+      leafByRegion.get(id).name,
       f(o.population, n.population),
       f(o.populationDetail.households, n.populationDetail.households),
       f(o.fiscalDetail.claimedRevenue, n.fiscalDetail.claimedRevenue),
-      f(o.economyBase.farmland, n.economyBase.farmland),
-      f(o.economyBase.commerceVolume, n.economyBase.commerceVolume),
+      f(oe.farmland, ne.farmland),
+      f(oe.commerceVolume, ne.commerceVolume),
       f(o.minxinLocal, n.minxinLocal),
       f(o.corruptionLocal, n.corruptionLocal),
       f(o.prosperity, n.prosperity),
       f(o.terrain, n.terrain),
       f(o.specialResources, n.specialResources)
     ].join(' | ') + ' |');
+  });
+  blockIds.forEach((id, i) => {
+    if (!B[i].accounts) return;
+    const group = leafByRegion.get(id);
+    lines.push('', '### ' + group.name + '：各账拆分', '');
+    lines.push('| 账目 | 权重 | 人口 | 应征 | 耕地（亩） | 地形 | 官称 |');
+    lines.push('| --- | --- | --- | --- | --- | --- | --- |');
+    B[i].accounts.forEach((spec) => {
+      const node = group.children.find((c) => c.name === spec.name);
+      lines.push('| ' + [node.name, spec.weight, node.population, node.fiscalDetail.claimedRevenue,
+        (node.economyBase || {}).farmland, node.terrain, node.officialPosition].join(' | ') + ' |');
+    });
   });
   lines.push('', '## 县治落块', '');
   lines.push('| 地块 | 所含县（按历史府州） | 人口权重 | 税粮权重 | 田亩权重 |');

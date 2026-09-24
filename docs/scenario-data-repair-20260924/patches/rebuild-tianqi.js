@@ -21,7 +21,8 @@ const PROVINCES = [
   'nanzhili', 'beizhili',
   'zhejiang', 'jiangxi', 'fujian', 'shandong',
   'huguang', 'shanxi', 'henan', 'shaanxi',
-  'sichuan', 'guangdong', 'guangxi', 'yunnan', 'guizhou'
+  'sichuan', 'guangdong', 'guangxi', 'yunnan', 'guizhou',
+  'liaodong', 'wusizang', 'duogan'
 ];
 
 function run(args) {

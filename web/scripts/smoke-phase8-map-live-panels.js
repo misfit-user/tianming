@@ -536,6 +536,12 @@ assert(factionHtml.includes(LIAODONG), 'faction panel did not include live-owned
 assert(factionHtml.includes('9000') || factionHtml.includes('9,000'), 'faction panel aggregate did not use live population');
 assert(factionHtml.includes('777'), 'faction panel aggregate did not use live revenue');
 assert(factionHtml.includes(String(LIVE_ARMY_TOTAL)) || factionHtml.includes('2,468'), 'faction panel did not use live army index troop count');
+// 描述、威胁等长文里提到势力名，不能被整段换成势力名；势力键本身仍译成势力名
+const mapParts = sandbox.TMPhase8FormalBridge.__p8MapParts;
+const proseWithFaction = '北御' + LIVE_HOUJIN_LABEL + '，张家口马市互市不绝。';
+assert(mapParts.ppValue(proseWithFaction) === proseWithFaction, 'prose mentioning a faction collapsed into the faction name: ' + mapParts.ppValue(proseWithFaction));
+assert(mapParts.ppValue(LIVE_HOUJIN_LABEL + '破宣府大同塞入塞') === LIVE_HOUJIN_LABEL + '破宣府大同塞入塞', 'short threat text mentioning a faction collapsed into the faction name');
+assert(mapParts.ppValue('houjin') === LIVE_HOUJIN_LABEL, 'faction key should still render as its label, got ' + mapParts.ppValue('houjin'));
 assertAll(factionTab('overview'), [LIVE_HOUJIN_LABEL, LIVE_LEADER, 'LIVE leader title field 934', 'LIVE faction type field 935', 'LIVE government field 936', 'LIVE capital field 937', LIVE_FACTION_GOAL, 'LIVE ideology field 939', 'LIVE faction culture field 940', 'LIVE opening problems field 942'], 'faction overview tab');
 assertAll(factionTab('territory'), [LIAODONG, '9000', 'LIVE territory field 943', 'LIVE faction resource field 944', LIVE_THREAT, LIVE_TRADE], 'faction territory tab');
 assertAll(factionTab('military'), [String(LIVE_ARMY_TOTAL), 'LIVE military breakdown field 945', 'LIVE war state field 946', 'LIVE mobilization field 947', 'LIVE strategic priorities field 948', 'LIVE decision hints field 949', 'LIVE taboo moves field 950', LIVE_THREAT], 'faction military tab');

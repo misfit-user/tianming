@@ -2604,9 +2604,9 @@
     if (valueMap[lower]) return valueMap[lower];
     var label = fieldLabel(s);
     if (label && label !== s) return label;
-    var faction = null;
-    try { faction = findFaction(s); } catch (_) { faction = null; }
-    if (faction) return faction.label || faction.name || faction.shortName || faction.id || s;
+    var faction = null;   // 只把与势力 id、势力名完全相同的短串换成势力名；描述、威胁等长文提到势力名时不能整段被替换
+    try { faction = (s.length <= 32 && !/[，。；、,.;:：\s]/.test(s)) ? findFaction(s) : null; } catch (_) { faction = null; }
+    if (faction && [faction.name, faction.label, faction.shortName, faction.scenarioFactionId, faction.scenarioFactionName, faction.mapFactionId, faction.runtimeFactionId].some(function(x){ return normKey(x) === normKey(s); })) return faction.label || faction.name || faction.shortName || faction.id || s;
     if (/^[a-z][a-z0-9_-]*$/i.test(s)) return '已记录';
     return s;
   }

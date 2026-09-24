@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-24T11:36:18.020Z",
+  "generatedAt": "2026-09-24T11:38:17.008Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -3386,8 +3386,8 @@
     },
     {
       "path": "phase8-formal-map.js",
-      "sha256": "773be92ac944d1a7a4eebd4e97bbef574a94735f378d139eca1cefe3f3302842",
-      "size": 174626
+      "sha256": "59b20635ab66b9b964d4ae3b17f832f4ae3a295d584dc744b5b864bd4ca12de8",
+      "size": 175039
     },
     {
       "path": "phase8-formal-modules.js",
@@ -6241,7 +6241,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "c7fb1b1386781eebd59e8a6f3c7cf04829c3571cda781b2420d3a6e10b073b90",
+      "sha256": "24ace07a4764450e7ba3d6ffe392869c1ffb41c3b00ab01e59967a1519291e3f",
       "size": 134628
     },
     {

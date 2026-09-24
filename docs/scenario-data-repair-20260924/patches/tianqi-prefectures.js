@@ -118,9 +118,18 @@ function main() {
 
   const province = scenario.adminHierarchy.player.divisions.find((d) => d.name === data.province);
   if (!province) throw new Error('行政树里找不到 ' + data.province);
-  const blockIds = Object.keys(data.BLOCKS);
   const regions = scenario.map.regions;
   const regionById = new Map(regions.map((r) => [r.id, r]));
+  // 数据模块的 BLOCKS 可以按地图 id 写，也可以按省下叶子的名字写；统一换成地图 id
+  const leafByName = new Map(province.children.map((leaf) => [leaf.name, leaf]));
+  const normalizedBlocks = {};
+  Object.entries(data.BLOCKS).forEach(([key, b]) => {
+    const id = regionById.has(key) ? key : (leafByName.has(key) ? leafByName.get(key).mapRegionId : null);
+    if (!id) throw new Error('数据模块的地块对不上地图或省下叶子：' + key);
+    normalizedBlocks[id] = b;
+  });
+  data.BLOCKS = normalizedBlocks;
+  const blockIds = Object.keys(data.BLOCKS);
   const leafByRegion = new Map();
   province.children.forEach((leaf) => leafByRegion.set(leaf.mapRegionId, leaf));
   blockIds.forEach((id) => {
@@ -207,14 +216,15 @@ function main() {
   const fugitives = splitInteger(pd.fugitives, mouths.map((m, i) => m * B[i].flee));
   const hidden = splitInteger(pd.hiddenCount, mouths.map((m, i) => m * B[i].hide));
 
-  const male = splitInteger(P.byGender.male, mouths);
-  const female = mouths.map((m, i) => m - male[i]);
-  const ageKeys = Object.keys(P.byAge);
+  // 省里缺哪一项结构（个别都司、宣慰司没有），这一项就不分，叶子保留原值
+  const male = P.byGender ? splitInteger(P.byGender.male, mouths) : null;
+  const female = male ? mouths.map((m, i) => m - male[i]) : null;
+  const ageKeys = P.byAge ? Object.keys(P.byAge) : [];
   const ageCounts = {};
   ageKeys.forEach((k) => { ageCounts[k] = splitInteger(P.byAge[k].count, mouths); });
 
   // 坊市镇村：行和=各块人口，列和=省里各类人口，按城镇先验比例做迭代比例拟合
-  const settleKeys = Object.keys(P.bySettlement);
+  const settleKeys = P.bySettlement ? Object.keys(P.bySettlement) : [];
   let matrix = B.map((b, i) => settleKeys.map((k) => mouths[i] * (b.urban[k] || 0.01)));
   for (let round = 0; round < 60; round++) {
     matrix = matrix.map((row, i) => { const s = sum(row); return row.map((x) => (x * mouths[i]) / s); });
@@ -224,7 +234,7 @@ function main() {
       matrix.forEach((row) => { row[j] = (row[j] * target) / s; });
     });
   }
-  const settlement = B.map((b, i) => {
+  const settlement = !settleKeys.length ? null : B.map((b, i) => {
     const rowInt = splitInteger(mouths[i], matrix[i]);
     const perHousehold = mouths[i] / households[i];
     const out = {};
@@ -233,12 +243,12 @@ function main() {
   });
 
   const yieldLand = blockIds.map((id, i) => W[id].land * B[i].yieldFactor);
-  const cc = P.carryingCapacity;
-  const arable = splitInteger(cc.arable, yieldLand);
-  const water = splitInteger(cc.water, yieldLand);
-  const historicalCap = splitInteger(cc.historicalCap, yieldLand);
+  const cc = P.carryingCapacity || null;
+  const arable = cc ? splitInteger(cc.arable, yieldLand) : null;
+  const water = cc ? splitInteger(cc.water, yieldLand) : null;
+  const historicalCap = cc ? splitInteger(cc.historicalCap, yieldLand) : null;
   const capShare = yieldLand.map((x) => x / sum(yieldLand));
-  const load = mouths.map((m, i) => clamp(cc.currentLoad * (m / pd.mouths) / capShare[i], 0.5, 1.2));
+  const load = cc ? mouths.map((m, i) => clamp(cc.currentLoad * (m / pd.mouths) / capShare[i], 0.5, 1.2)) : null;
   function regimeOf(l) {
     if (l < 0.55) return 'abundant';
     if (l < 0.75) return 'sustainable';
@@ -284,37 +294,37 @@ function main() {
   const compliance = shiftToMean(B.map((b) => b.compliance * 100), claimed, fd.compliance * 100, 30, 98).map((x) => Math.round(x) / 100);
   const skimRounded = claimed.map((c, i) => Math.round((1 - actual[i] / c) * 1000) / 1000);
 
-  const pt = P.publicTreasuryInit;
-  const treasury = {
+  const pt = P.publicTreasuryInit || null;
+  const treasury = !pt ? null : {
     money: splitInteger(pt.money, retained),
     grain: splitInteger(pt.grain, col('grain')),
     cloth: splitInteger(pt.cloth, mouths.map((m, i) => m * B[i].textile))
   };
 
-  const eb = P.economyBase;
-  const economy = {
-    farmland: splitInteger(eb.farmland, col('land')),
-    commerceVolume: splitInteger(eb.commerceVolume, commerceWeight),
-    maritimeTradeVolume: splitInteger(eb.maritimeTradeVolume, B.map((b) => b.maritime)),
-    saltProduction: splitInteger(eb.saltProduction, B.map((b) => b.salt)),
-    mineralProduction: splitInteger(eb.mineralProduction, B.map((b) => b.mineral || 0)),
-    horseProduction: splitInteger(eb.horseProduction, B.map((b) => b.horse || 0)),
-    fishingProduction: splitInteger(eb.fishingProduction, B.map((b) => b.fishing)),
-    imperialFarmland: splitInteger(eb.imperialFarmland, B.map((b) => b.imperial)),
-    postRelays: splitInteger(eb.postRelays, blockIds.map((id, i) => W[id].counties * B[i].corridor)),
-    kejuQuota: splitInteger(eb.kejuQuota, B.map((b) => b.keju)),
-    landsAnnexed: splitInteger(eb.landsAnnexed, col('land').map((l, i) => l * B[i].gentry))
+  const eb = P.economyBase || null;
+  const economy = !eb ? null : {
+    farmland: splitInteger(Number(eb.farmland) || 0, col('land')),
+    commerceVolume: splitInteger(Number(eb.commerceVolume) || 0, commerceWeight),
+    maritimeTradeVolume: splitInteger(Number(eb.maritimeTradeVolume) || 0, B.map((b) => b.maritime)),
+    saltProduction: splitInteger(Number(eb.saltProduction) || 0, B.map((b) => b.salt)),
+    mineralProduction: splitInteger(Number(eb.mineralProduction) || 0, B.map((b) => b.mineral || 0)),
+    horseProduction: splitInteger(Number(eb.horseProduction) || 0, B.map((b) => b.horse || 0)),
+    fishingProduction: splitInteger(Number(eb.fishingProduction) || 0, B.map((b) => b.fishing)),
+    imperialFarmland: splitInteger(Number(eb.imperialFarmland) || 0, B.map((b) => b.imperial)),
+    postRelays: splitInteger(Number(eb.postRelays) || 0, blockIds.map((id, i) => W[id].counties * B[i].corridor)),
+    kejuQuota: splitInteger(Number(eb.kejuQuota) || 0, B.map((b) => b.keju)),
+    landsAnnexed: splitInteger(Number(eb.landsAnnexed) || 0, col('land').map((l, i) => l * B[i].gentry))
   };
-  ['mineralProduction', 'horseProduction'].forEach((k) => {
+  if (eb) ['mineralProduction', 'horseProduction'].forEach((k) => {
     if (eb[k] > 0 && sum(economy[k]) !== eb[k]) throw new Error(k + ' 省里有数，但数据模块没给任何地块权重');
   });
-  ['zhizao', 'kuangchang', 'yuyao'].forEach((k) => {
+  if (eb) ['zhizao', 'kuangchang', 'yuyao'].forEach((k) => {
     const want = Number(eb.imperialAssets && eb.imperialAssets[k]) || 0;
     const got = sum(B.map((b) => b[k] || 0));
     if (got !== want) throw new Error('官府资产 ' + k + ' 各块合计 ' + got + '，省里是 ' + want);
   });
-  const baojiaAccuracy = B.map((b) => Math.round(clamp(P.baojia.registerAccuracy - 0.1 * (b.hide - 1), 0.4, 0.85) * 100) / 100);
-  const baojia = {
+  const baojiaAccuracy = P.baojia ? B.map((b) => Math.round(clamp(P.baojia.registerAccuracy - 0.1 * (b.hide - 1), 0.4, 0.85) * 100) / 100) : null;
+  const baojia = !P.baojia ? null : {
     baoCount: splitInteger(P.baojia.baoCount, households),
     jiaCount: splitInteger(P.baojia.jiaCount, households),
     paiCount: splitInteger(P.baojia.paiCount, households)
@@ -337,15 +347,17 @@ function main() {
     target.taxLevel = b.taxLevel;
     target.prosperity = prosperity[i];
     target.tags = clone(b.tags);
-    target.bySettlement = settlement[i];
+    if (settlement) target.bySettlement = settlement[i];
     target.populationDetail = { mouths: mouths[i], fugitives: fugitives[i], hiddenCount: hidden[i], households: households[i], ding: ding[i] };
     target.population = mouths[i];
-    target.byGender = { male: male[i], female: female[i], sexRatio: P.byGender.sexRatio };
-    const age = {};
-    ageKeys.forEach((k) => { age[k] = { count: ageCounts[k][i], ratio: P.byAge[k].ratio }; });
-    target.byAge = age;
-    target.baojia = { baoCount: baojia.baoCount[i], jiaCount: baojia.jiaCount[i], paiCount: baojia.paiCount[i], registerAccuracy: baojiaAccuracy[i] };
-    target.carryingCapacity = {
+    if (male) target.byGender = { male: male[i], female: female[i], sexRatio: P.byGender.sexRatio };
+    if (ageKeys.length) {
+      const age = {};
+      ageKeys.forEach((k) => { age[k] = { count: ageCounts[k][i], ratio: P.byAge[k].ratio }; });
+      target.byAge = age;
+    }
+    if (baojia) target.baojia = { baoCount: baojia.baoCount[i], jiaCount: baojia.jiaCount[i], paiCount: baojia.paiCount[i], registerAccuracy: baojiaAccuracy[i] };
+    if (cc) target.carryingCapacity = {
       arable: arable[i], water: water[i], climate: cc.climate, historicalCap: historicalCap[i],
       currentLoad: Math.round(load[i] * 100) / 100, carryingRegime: regimeOf(load[i])
     };
@@ -358,8 +370,8 @@ function main() {
       compliance: compliance[i], skimmingRate: skimRounded[i], autonomyLevel: fd.autonomyLevel
     };
     target.fiscal = clone(target.fiscalDetail);
-    target.publicTreasuryInit = { money: treasury.money[i], grain: treasury.grain[i], cloth: treasury.cloth[i] };
-    target.economyBase = {
+    if (treasury) target.publicTreasuryInit = { money: treasury.money[i], grain: treasury.grain[i], cloth: treasury.cloth[i] };
+    if (economy) target.economyBase = {
       farmland: economy.farmland[i], commerceCoefficient: b.commerceCoefficient, commerceVolume: economy.commerceVolume[i],
       maritimeTradeVolume: economy.maritimeTradeVolume[i], saltProduction: economy.saltProduction[i],
       mineralProduction: economy.mineralProduction[i], horseProduction: economy.horseProduction[i],
@@ -409,18 +421,20 @@ function main() {
     ['应征', fd.claimedRevenue, sum(leaves.map((l) => l.fiscalDetail.claimedRevenue))],
     ['实征', fd.actualRevenue, sum(leaves.map((l) => l.fiscalDetail.actualRevenue))],
     ['起运', fd.remittedToCenter, sum(leaves.map((l) => l.fiscalDetail.remittedToCenter))],
-    ['留用', fd.retainedBudget, sum(leaves.map((l) => l.fiscalDetail.retainedBudget))],
-    ['库钱', pt.money, sum(leaves.map((l) => l.publicTreasuryInit.money))],
-    ['库粮', pt.grain, sum(leaves.map((l) => l.publicTreasuryInit.grain))],
-    ['库帛', pt.cloth, sum(leaves.map((l) => l.publicTreasuryInit.cloth))],
-    ['耕地', eb.farmland, sum(leaves.map((l) => l.economyBase.farmland))],
-    ['商贸', eb.commerceVolume, sum(leaves.map((l) => l.economyBase.commerceVolume))],
-    ['盐产', eb.saltProduction, sum(leaves.map((l) => l.economyBase.saltProduction))],
-    ['驿站', eb.postRelays, sum(leaves.map((l) => l.economyBase.postRelays))],
-    ['解额', eb.kejuQuota, sum(leaves.map((l) => l.economyBase.kejuQuota))],
-    ['承载·可耕', cc.arable, sum(leaves.map((l) => l.carryingCapacity.arable))],
-    ['分账权重', 1, Math.round(sum(fiscalWeight) * 1e9) / 1e9]
+    ['留用', fd.retainedBudget, sum(leaves.map((l) => l.fiscalDetail.retainedBudget))]
   ];
+  if (pt) {
+    checks.push(['库钱', pt.money, sum(leaves.map((l) => l.publicTreasuryInit.money))]);
+    checks.push(['库粮', pt.grain, sum(leaves.map((l) => l.publicTreasuryInit.grain))]);
+    checks.push(['库帛', pt.cloth, sum(leaves.map((l) => l.publicTreasuryInit.cloth))]);
+  }
+  if (eb) {
+    [['耕地', 'farmland'], ['商贸', 'commerceVolume'], ['盐产', 'saltProduction'], ['驿站', 'postRelays'], ['解额', 'kejuQuota']].forEach(([label, k]) => {
+      checks.push([label, Number(eb[k]) || 0, sum(leaves.map((l) => l.economyBase[k]))]);
+    });
+  }
+  if (cc) checks.push(['承载·可耕', cc.arable, sum(leaves.map((l) => l.carryingCapacity.arable))]);
+  checks.push(['分账权重', 1, Math.round(sum(fiscalWeight) * 1e9) / 1e9]);
   const broken = checks.filter(([, want, got]) => want !== got);
   if (broken.length) throw new Error('省总数不守恒：' + broken.map((c) => c.join(' ')).join('；'));
 

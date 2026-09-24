@@ -8,6 +8,8 @@ module.exports=async function({win,check}){
   assert(d.diag.active&&d.diag.enabled,JSON.stringify(d.diag));assert.equal(d.diag.clarityVersion,'C1');assert.equal(d.diag.regions,d.regions);assert.equal(d.diag.stats.referenceOnly,false);
  });
  await js(`(async()=>{await new Promise(r=>setTimeout(r,650));TM_Changelog.markRead();TM_Changelog.close();for(const b of document.querySelectorAll('#tm-firstturn-guide button,#tm-nokey-banner button'))if(['开始临朝','知道了'].includes(b.textContent))b.click();document.getElementById('map-tools-dock')?.classList.remove('open');})()`);
+ // 地形与山河境可以先贴在兜底地图上显示，这时三层地图仍在后台准备，地图不接滚轮；要等三层真正换下兜底地图再测
+ await js(`(async()=>{const end=Date.now()+60000;while(!(TMPhase8FormalBridge.map.preparationStatus()?.ready&&!document.querySelector('#ming-map-layer > .tmf-map-fallback'))){if(Date.now()>end)throw Error('prepared map layers did not replace the fallback map');await new Promise(r=>setTimeout(r,100));}})()`);
  const alignment=`(()=>{const stage=document.getElementById('ming-map-layer'),rect=stage.getBoundingClientRect();const a=[...stage.querySelectorAll('#tmf-map-labels [data-ax]')].filter(n=>getComputedStyle(n).display!=='none').map(n=>{const q=TMShanheRuntime.projectGame([+n.dataset.ax,+n.dataset.ay]),m=n.getScreenCTM();return {error:Math.hypot(m.e-rect.left-q[0],m.f-rect.top-q[1]),duration:getComputedStyle(n).transitionDuration};});return {count:a.length,max:Math.max(0,...a.map(x=>x.error)),animated:a.some(x=>x.duration!=='0s')};})()`;
  const state=await js(`JSON.parse(JSON.stringify(TMPhase8FormalBridge._state.mapView))`);
  await check('default C1 labels stay on the same terrain frame through real wheel input',async()=>{

@@ -74,6 +74,16 @@ try {
   assert(realDiff.some((row) => row.path === '中文地图.json') &&
     realDiff.every((row) => !/^".*"$/.test(row.path)), '真实 Git diff 不产生 quoted-path 伪路径');
 
+  // 台账丢失时的第二道判断：历史上提交过的旧版可以推进，从未提交过的手写内容才算稿子
+  const mapFile = path.join(TMP, '中文地图.json');
+  fs.writeFileSync(mapFile, 'one');
+  assert(parser.isCommittedVersion('HEAD', '中文地图.json', mapFile, TMP) === true, '历史提交里的旧版认作干净旧版');
+  fs.writeFileSync(mapFile, 'one-changed');
+  assert(parser.isCommittedVersion('HEAD', '中文地图.json', mapFile, TMP) === true, '与目标相同的内容同样认作已提交');
+  fs.writeFileSync(mapFile, 'one-changed-by-hand');
+  assert(parser.isCommittedVersion('HEAD', '中文地图.json', mapFile, TMP) === false, '从未提交过的手写内容仍是真人稿子');
+  assert(parser.isCommittedVersion('HEAD', '不存在.json', path.join(TMP, '不存在.json'), TMP) === false, '文件不存在时不误判');
+
   const source = fs.readFileSync(path.join(ROOT, 'scripts', 'dev-sync-latest.js'), 'utf8');
   assert(/status'\s*,\s*'--porcelain=v1'\s*,\s*'-z'/.test(source) && /'--name-status'\s*,\s*'-z'/.test(source), '生产同步调用固定使用 NUL 分隔');
   assert(!/line\.split\(['"]\\t['"]\)|replace\(\/\^"\|"\$/.test(source), '生产同步不再手拆 tab 或剥 Git 引号');

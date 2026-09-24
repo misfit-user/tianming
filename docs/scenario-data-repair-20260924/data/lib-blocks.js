@@ -49,10 +49,12 @@ function block(fields) {
   return out;
 }
 
-// 没有分府户口的省份：人口 = 领州县数 × 密度（每县万口的相对数）+ 军籍估数；税粮 = 民口 × 田赋轻重 + 军籍一成；
-// 田亩 = 领州县数 × 地形系数（或直接给 landOverride）
+// 没有分府户口的省份：人口 = 领州县数 × 密度 × 每县口数 + 军籍估数；税粮 = 民口 × 田赋轻重 + 军籍一成；
+// 田亩 = 领州县数 × 地形系数（或直接给 landOverride）。
+// 每县口数 perCounty 默认 1 万（纯相对权重）；省里有驻军估数时必须给实数（约为「省总人口 − 驻军」÷ 加权县数），
+// 否则归一时驻军会被一并放大。
 function unit(u) {
-  const civil = u.countyCount * u.density * 10000;
+  const civil = u.countyCount * u.density * (u.perCounty || 10000);
   const military = u.militaryMouths || 0;
   const pop = civil + military;
   return Object.assign({}, u, {

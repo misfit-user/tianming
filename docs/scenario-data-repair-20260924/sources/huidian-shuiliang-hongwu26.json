@@ -1,0 +1,270 @@
+{
+ "source": "《大明会典》卷24 洪武二十六年实徵夏税秋粮总数；维基学院「明朝各地税粮列表」整理（2026-09-24 取）",
+ "unit": "米麦：石；绢：疋",
+ "rows": [
+  {
+   "name": "全国",
+   "summerGrain": 4712900,
+   "summerSilk": 288487,
+   "autumnGrain": 24729450,
+   "totalGrain": 29442350,
+   "totalSilk": 288546
+  },
+  {
+   "name": "浙江",
+   "summerGrain": 85520,
+   "summerSilk": 139140,
+   "autumnGrain": 2667207,
+   "totalGrain": 2752727,
+   "totalSilk": 139199
+  },
+  {
+   "name": "北平",
+   "summerGrain": 353280,
+   "summerSilk": 32962,
+   "autumnGrain": 817240,
+   "totalGrain": 1170520,
+   "totalSilk": 32962
+  },
+  {
+   "name": "江西",
+   "summerGrain": 79050,
+   "summerSilk": 15477,
+   "autumnGrain": 2585256,
+   "totalGrain": 2664306,
+   "totalSilk": 15477
+  },
+  {
+   "name": "湖广",
+   "summerGrain": 138766,
+   "summerSilk": 26478,
+   "autumnGrain": 2323670,
+   "totalGrain": 2462436,
+   "totalSilk": 26478
+  },
+  {
+   "name": "福建",
+   "summerGrain": 665,
+   "summerSilk": 273,
+   "autumnGrain": 977420,
+   "totalGrain": 978085,
+   "totalSilk": 273
+  },
+  {
+   "name": "山东",
+   "summerGrain": 773297,
+   "summerSilk": 23932,
+   "autumnGrain": 1805620,
+   "totalGrain": 2578917,
+   "totalSilk": 23932
+  },
+  {
+   "name": "山西",
+   "summerGrain": 707367,
+   "summerSilk": 0,
+   "autumnGrain": 2093570,
+   "totalGrain": 2800937,
+   "totalSilk": 0
+  },
+  {
+   "name": "河南",
+   "summerGrain": 556059,
+   "summerSilk": 17226,
+   "autumnGrain": 1642850,
+   "totalGrain": 2198909,
+   "totalSilk": 17226
+  },
+  {
+   "name": "陕西",
+   "summerGrain": 676986,
+   "summerSilk": 0,
+   "autumnGrain": 1236178,
+   "totalGrain": 1913164,
+   "totalSilk": 0
+  },
+  {
+   "name": "四川",
+   "summerGrain": 325550,
+   "summerSilk": 0,
+   "autumnGrain": 741278,
+   "totalGrain": 1066828,
+   "totalSilk": 0
+  },
+  {
+   "name": "广东",
+   "summerGrain": 5320,
+   "summerSilk": 0,
+   "autumnGrain": 1044078,
+   "totalGrain": 1049398,
+   "totalSilk": 0
+  },
+  {
+   "name": "广西",
+   "summerGrain": 1869,
+   "summerSilk": 0,
+   "autumnGrain": 492355,
+   "totalGrain": 494224,
+   "totalSilk": 0
+  },
+  {
+   "name": "云南",
+   "summerGrain": 18730,
+   "summerSilk": 0,
+   "autumnGrain": 58349,
+   "totalGrain": 77079,
+   "totalSilk": 0
+  },
+  {
+   "name": "直隶合计",
+   "summerGrain": 990441,
+   "summerSilk": 32999,
+   "autumnGrain": 6243779,
+   "totalGrain": 7234220,
+   "totalSilk": 32999
+  },
+  {
+   "name": "应天府",
+   "summerGrain": 11260,
+   "summerSilk": 1406,
+   "autumnGrain": 320616,
+   "totalGrain": 331876,
+   "totalSilk": 1406
+  },
+  {
+   "name": "苏州府",
+   "summerGrain": 63500,
+   "summerSilk": 14157,
+   "autumnGrain": 2746990,
+   "totalGrain": 2810490,
+   "totalSilk": 14157
+  },
+  {
+   "name": "松江府",
+   "summerGrain": 107496,
+   "summerSilk": 666,
+   "autumnGrain": 1112400,
+   "totalGrain": 1219896,
+   "totalSilk": 666
+  },
+  {
+   "name": "常州府",
+   "summerGrain": 119320,
+   "summerSilk": 1394,
+   "autumnGrain": 533515,
+   "totalGrain": 652835,
+   "totalSilk": 1394
+  },
+  {
+   "name": "镇江府",
+   "summerGrain": 80896,
+   "summerSilk": 357,
+   "autumnGrain": 243150,
+   "totalGrain": 324046,
+   "totalSilk": 357
+  },
+  {
+   "name": "庐州府",
+   "summerGrain": 15830,
+   "summerSilk": 0,
+   "autumnGrain": 75360,
+   "totalGrain": 91190,
+   "totalSilk": 0
+  },
+  {
+   "name": "凤阳府",
+   "summerGrain": 93315,
+   "summerSilk": 1447,
+   "autumnGrain": 137160,
+   "totalGrain": 230475,
+   "totalSilk": 1447
+  },
+  {
+   "name": "淮安府",
+   "summerGrain": 201220,
+   "summerSilk": 0,
+   "autumnGrain": 153490,
+   "totalGrain": 354710,
+   "totalSilk": 0
+  },
+  {
+   "name": "扬州府",
+   "summerGrain": 57710,
+   "summerSilk": 0,
+   "autumnGrain": 240096,
+   "totalGrain": 297806,
+   "totalSilk": 0
+  },
+  {
+   "name": "徽州府",
+   "summerGrain": 48750,
+   "summerSilk": 9718,
+   "autumnGrain": 116654,
+   "totalGrain": 165404,
+   "totalSilk": 9718
+  },
+  {
+   "name": "宁国府",
+   "summerGrain": 62610,
+   "summerSilk": 311,
+   "autumnGrain": 182050,
+   "totalGrain": 244660,
+   "totalSilk": 311
+  },
+  {
+   "name": "池州府",
+   "summerGrain": 17016,
+   "summerSilk": 27,
+   "autumnGrain": 111945,
+   "totalGrain": 128961,
+   "totalSilk": 27
+  },
+  {
+   "name": "太平府",
+   "summerGrain": 21390,
+   "summerSilk": 217,
+   "autumnGrain": 46290,
+   "totalGrain": 67680,
+   "totalSilk": 217
+  },
+  {
+   "name": "安庆府",
+   "summerGrain": 19478,
+   "summerSilk": 0,
+   "autumnGrain": 112158,
+   "totalGrain": 131636,
+   "totalSilk": 0
+  },
+  {
+   "name": "广德州",
+   "summerGrain": 6070,
+   "summerSilk": 157,
+   "autumnGrain": 24500,
+   "totalGrain": 30570,
+   "totalSilk": 157
+  },
+  {
+   "name": "徐州",
+   "summerGrain": 62300,
+   "summerSilk": 3142,
+   "autumnGrain": 79340,
+   "totalGrain": 141640,
+   "totalSilk": 3142
+  },
+  {
+   "name": "滁州",
+   "summerGrain": 1405,
+   "summerSilk": 0,
+   "autumnGrain": 4106,
+   "totalGrain": 5511,
+   "totalSilk": 0
+  },
+  {
+   "name": "和州",
+   "summerGrain": 875,
+   "summerSilk": 0,
+   "autumnGrain": 3959,
+   "totalGrain": 4834,
+   "totalSilk": 0
+  }
+ ]
+}

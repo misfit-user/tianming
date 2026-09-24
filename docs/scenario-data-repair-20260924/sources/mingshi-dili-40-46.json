@@ -1,0 +1,1736 @@
+{
+ "source": "《明史·地理志》卷40—46，维基文库原文（action=raw，2026-09-24 取），parse-mingshi-dili.js 解析",
+ "note": "hongwu26/hongzhi4/wanli6 为册籍户口（户/口）；仅两直隶有分府数字。zhou/xian 为领州数、领县数。部分府因原文格式不同未解析到。",
+ "rows": [
+  {
+   "volume": 40,
+   "name": "順天府",
+   "zhou": 5,
+   "xian": 22,
+   "wanli6": {
+    "households": 101134,
+    "mouths": 706861
+   }
+  },
+  {
+   "volume": 40,
+   "name": "昌平州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 40,
+   "name": "保定府",
+   "zhou": 3,
+   "xian": 17,
+   "wanli6": {
+    "households": 45713,
+    "mouths": 525083
+   }
+  },
+  {
+   "volume": 40,
+   "name": "易州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "河間府",
+   "zhou": 2,
+   "xian": 16,
+   "wanli6": {
+    "households": 45024,
+    "mouths": 419152
+   }
+  },
+  {
+   "volume": 40,
+   "name": "真定府",
+   "zhou": 5,
+   "xian": 27,
+   "wanli6": {
+    "households": 74738,
+    "mouths": 1093531
+   }
+  },
+  {
+   "volume": 40,
+   "name": "定州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "順德府",
+   "zhou": 0,
+   "xian": 9,
+   "wanli6": {
+    "households": 27633,
+    "mouths": 281957
+   }
+  },
+  {
+   "volume": 40,
+   "name": "廣平府",
+   "zhou": 0,
+   "xian": 9,
+   "wanli6": {
+    "households": 31420,
+    "mouths": 264898
+   }
+  },
+  {
+   "volume": 40,
+   "name": "大名府",
+   "zhou": 1,
+   "xian": 10,
+   "wanli6": {
+    "households": 71180,
+    "mouths": 692058
+   }
+  },
+  {
+   "volume": 40,
+   "name": "永平府",
+   "zhou": 1,
+   "xian": 5,
+   "wanli6": {
+    "households": 25094,
+    "mouths": 255646
+   }
+  },
+  {
+   "volume": 40,
+   "name": "延慶州",
+   "zhou": 0,
+   "xian": 1,
+   "wanli6": {
+    "households": 2755,
+    "mouths": 19267
+   }
+  },
+  {
+   "volume": 40,
+   "name": "保安州",
+   "wanli6": {
+    "households": 772,
+    "mouths": 6445
+   }
+  },
+  {
+   "volume": 40,
+   "name": "應天府",
+   "zhou": 0,
+   "xian": 8,
+   "hongwu26": {
+    "households": 163915,
+    "mouths": 1193620
+   },
+   "hongzhi4": {
+    "households": 144368,
+    "mouths": 711003
+   },
+   "wanli6": {
+    "households": 143597,
+    "mouths": 790513
+   }
+  },
+  {
+   "volume": 40,
+   "name": "鳳陽府",
+   "zhou": 5,
+   "xian": 13,
+   "hongwu26": {
+    "households": 79107,
+    "mouths": 427303
+   },
+   "hongzhi4": {
+    "households": 95010,
+    "mouths": 931108
+   },
+   "wanli6": {
+    "households": 111070,
+    "mouths": 1202349
+   }
+  },
+  {
+   "volume": 40,
+   "name": "壽州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "泗州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "宿州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "潁州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "淮安府",
+   "zhou": 2,
+   "xian": 9,
+   "hongwu26": {
+    "households": 80689,
+    "mouths": 632541
+   },
+   "hongzhi4": {
+    "households": 27978,
+    "mouths": 237527
+   },
+   "wanli6": {
+    "households": 109205,
+    "mouths": 906033
+   }
+  },
+  {
+   "volume": 40,
+   "name": "邳州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "揚州府",
+   "zhou": 3,
+   "xian": 7,
+   "hongwu26": {
+    "households": 123097,
+    "mouths": 736165
+   },
+   "hongzhi4": {
+    "households": 104104,
+    "mouths": 656547
+   },
+   "wanli6": {
+    "households": 147216,
+    "mouths": 817856
+   }
+  },
+  {
+   "volume": 40,
+   "name": "高郵州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "泰州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "通州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "蘇州府",
+   "zhou": 1,
+   "xian": 7,
+   "hongwu26": {
+    "households": 491514,
+    "mouths": 2355030
+   },
+   "hongzhi4": {
+    "households": 535409,
+    "mouths": 2048097
+   },
+   "wanli6": {
+    "households": 600755,
+    "mouths": 2011985
+   }
+  },
+  {
+   "volume": 40,
+   "name": "太倉州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "松江府",
+   "zhou": 0,
+   "xian": 3,
+   "hongwu26": {
+    "households": 249950,
+    "mouths": 1219937
+   },
+   "hongzhi4": {
+    "households": 200520,
+    "mouths": 627313
+   },
+   "wanli6": {
+    "households": 218359,
+    "mouths": 484414
+   }
+  },
+  {
+   "volume": 40,
+   "name": "常州府",
+   "zhou": 0,
+   "xian": 5,
+   "hongwu26": {
+    "households": 152164,
+    "mouths": 775513
+   },
+   "hongzhi4": {
+    "households": 50131,
+    "mouths": 228363
+   },
+   "wanli6": {
+    "households": 254460,
+    "mouths": 1002779
+   }
+  },
+  {
+   "volume": 40,
+   "name": "鎮江府",
+   "zhou": 0,
+   "xian": 3,
+   "hongwu26": {
+    "households": 87364,
+    "mouths": 522383
+   },
+   "hongzhi4": {
+    "households": 68344,
+    "mouths": 171508
+   },
+   "wanli6": {
+    "households": 69039,
+    "mouths": 165589
+   }
+  },
+  {
+   "volume": 40,
+   "name": "廬州府",
+   "zhou": 2,
+   "xian": 6,
+   "hongwu26": {
+    "households": 48720,
+    "mouths": 367200
+   },
+   "hongzhi4": {
+    "households": 36548,
+    "mouths": 486549
+   },
+   "wanli6": {
+    "households": 47373,
+    "mouths": 622698
+   }
+  },
+  {
+   "volume": 40,
+   "name": "無爲州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 40,
+   "name": "六安州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 40,
+   "name": "安慶府",
+   "zhou": 0,
+   "xian": 6,
+   "hongwu26": {
+    "households": 55573,
+    "mouths": 422804
+   },
+   "hongzhi4": {
+    "households": 46050,
+    "mouths": 616089
+   },
+   "wanli6": {
+    "households": 46609,
+    "mouths": 543476
+   }
+  },
+  {
+   "volume": 40,
+   "name": "太平府",
+   "zhou": 0,
+   "xian": 3,
+   "hongwu26": {
+    "households": 39290,
+    "mouths": 259937
+   },
+   "hongzhi4": {
+    "households": 29466,
+    "mouths": 173699
+   },
+   "wanli6": {
+    "households": 33262,
+    "mouths": 176085
+   }
+  },
+  {
+   "volume": 40,
+   "name": "池州府",
+   "zhou": 0,
+   "xian": 6,
+   "hongwu26": {
+    "households": 35826,
+    "mouths": 198574
+   },
+   "hongzhi4": {
+    "households": 14091,
+    "mouths": 69478
+   },
+   "wanli6": {
+    "households": 18377,
+    "mouths": 84851
+   }
+  },
+  {
+   "volume": 40,
+   "name": "寧國府",
+   "zhou": 0,
+   "xian": 6,
+   "hongwu26": {
+    "households": 99732,
+    "mouths": 532259
+   },
+   "hongzhi4": {
+    "households": 60364,
+    "mouths": 371543
+   },
+   "wanli6": {
+    "households": 52148,
+    "mouths": 387019
+   }
+  },
+  {
+   "volume": 40,
+   "name": "徽州府",
+   "zhou": 0,
+   "xian": 6,
+   "hongwu26": {
+    "households": 125548,
+    "mouths": 592364
+   },
+   "hongzhi4": {
+    "households": 7251,
+    "mouths": 65861
+   },
+   "wanli6": {
+    "households": 118943,
+    "mouths": 566948
+   }
+  },
+  {
+   "volume": 40,
+   "name": "徐州",
+   "zhou": 0,
+   "xian": 4,
+   "hongwu26": {
+    "households": 22683,
+    "mouths": 180821
+   },
+   "hongzhi4": {
+    "households": 34886,
+    "mouths": 354311
+   },
+   "wanli6": {
+    "households": 37841,
+    "mouths": 345766
+   }
+  },
+  {
+   "volume": 40,
+   "name": "滁州",
+   "zhou": 0,
+   "xian": 2,
+   "hongwu26": {
+    "households": 3944,
+    "mouths": 24797
+   },
+   "hongzhi4": {
+    "households": 4840,
+    "mouths": 49712
+   },
+   "wanli6": {
+    "households": 6717,
+    "mouths": 67277
+   }
+  },
+  {
+   "volume": 40,
+   "name": "和州",
+   "zhou": 0,
+   "xian": 1,
+   "hongwu26": {
+    "households": 9531,
+    "mouths": 66711
+   },
+   "hongzhi4": {
+    "households": 7450,
+    "mouths": 67016
+   },
+   "wanli6": {
+    "households": 8800,
+    "mouths": 104960
+   }
+  },
+  {
+   "volume": 40,
+   "name": "廣德州",
+   "zhou": 0,
+   "xian": 1,
+   "hongwu26": {
+    "households": 44267,
+    "mouths": 247979
+   },
+   "hongzhi4": {
+    "households": 45043,
+    "mouths": 127795
+   },
+   "wanli6": {
+    "households": 45296,
+    "mouths": 221053
+   }
+  },
+  {
+   "volume": 41,
+   "name": "濟南府",
+   "zhou": 4,
+   "xian": 26
+  },
+  {
+   "volume": 41,
+   "name": "泰安州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "德州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "武定州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 41,
+   "name": "濱州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "兗州府",
+   "zhou": 4,
+   "xian": 23
+  },
+  {
+   "volume": 41,
+   "name": "濟寧州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "東平州",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 41,
+   "name": "沂州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "東昌府",
+   "zhou": 3,
+   "xian": 15
+  },
+  {
+   "volume": 41,
+   "name": "臨清州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "高唐州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "濮州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "青州府",
+   "zhou": 1,
+   "xian": 13
+  },
+  {
+   "volume": 41,
+   "name": "莒州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "萊州府",
+   "zhou": 2,
+   "xian": 5
+  },
+  {
+   "volume": 41,
+   "name": "平度州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "膠州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "登州府",
+   "zhou": 1,
+   "xian": 7
+  },
+  {
+   "volume": 41,
+   "name": "寧海州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 41,
+   "name": "太原府",
+   "zhou": 5,
+   "xian": 20
+  },
+  {
+   "volume": 41,
+   "name": "忻州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 41,
+   "name": "代州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "岢嵐州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "平陽府",
+   "zhou": 6,
+   "xian": 28
+  },
+  {
+   "volume": 41,
+   "name": "蒲州",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 41,
+   "name": "解州",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 41,
+   "name": "絳州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "隰州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "汾州府",
+   "zhou": 1,
+   "xian": 7
+  },
+  {
+   "volume": 41,
+   "name": "永寧州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 41,
+   "name": "潞安府",
+   "zhou": 0,
+   "xian": 8
+  },
+  {
+   "volume": 41,
+   "name": "大同府",
+   "zhou": 4,
+   "xian": 7
+  },
+  {
+   "volume": 41,
+   "name": "應州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 41,
+   "name": "朔州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 41,
+   "name": "蔚州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 41,
+   "name": "澤州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 41,
+   "name": "沁州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 41,
+   "name": "遼州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 42,
+   "name": "開封府",
+   "zhou": 4,
+   "xian": 30
+  },
+  {
+   "volume": 42,
+   "name": "陳州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "許州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "禹州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "鄭州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "河南府",
+   "zhou": 1,
+   "xian": 13
+  },
+  {
+   "volume": 42,
+   "name": "陝州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 42,
+   "name": "歸德府",
+   "zhou": 1,
+   "xian": 8
+  },
+  {
+   "volume": 42,
+   "name": "睢州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 42,
+   "name": "汝寧府",
+   "zhou": 2,
+   "xian": 12
+  },
+  {
+   "volume": 42,
+   "name": "信陽州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "光州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "南陽府",
+   "zhou": 2,
+   "xian": 11
+  },
+  {
+   "volume": 42,
+   "name": "鄧州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 42,
+   "name": "裕州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 42,
+   "name": "懷慶府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 42,
+   "name": "衛輝府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 42,
+   "name": "彰德府",
+   "zhou": 1,
+   "xian": 6
+  },
+  {
+   "volume": 42,
+   "name": "磁州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 42,
+   "name": "汝州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "西安府",
+   "zhou": 6,
+   "xian": 31
+  },
+  {
+   "volume": 42,
+   "name": "商州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "邠州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 42,
+   "name": "鳳翔府",
+   "zhou": 1,
+   "xian": 7
+  },
+  {
+   "volume": 42,
+   "name": "漢中府",
+   "zhou": 1,
+   "xian": 8
+  },
+  {
+   "volume": 42,
+   "name": "寧羌州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "延安府",
+   "zhou": 3,
+   "xian": 16
+  },
+  {
+   "volume": 42,
+   "name": "綏德州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "葭州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 42,
+   "name": "慶陽府",
+   "zhou": 1,
+   "xian": 4
+  },
+  {
+   "volume": 42,
+   "name": "平涼府",
+   "zhou": 3,
+   "xian": 7
+  },
+  {
+   "volume": 42,
+   "name": "涇州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "靜寧州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "鞏昌府",
+   "zhou": 3,
+   "xian": 14
+  },
+  {
+   "volume": 42,
+   "name": "秦州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 42,
+   "name": "階州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "徽州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "臨洮府",
+   "zhou": 2,
+   "xian": 3
+  },
+  {
+   "volume": 42,
+   "name": "蘭州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 42,
+   "name": "興安州",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 43,
+   "name": "成都府",
+   "zhou": 6,
+   "xian": 25
+  },
+  {
+   "volume": 43,
+   "name": "簡州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "崇慶州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "綿州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "茂州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "威州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "保寧府",
+   "zhou": 2,
+   "xian": 8
+  },
+  {
+   "volume": 43,
+   "name": "劍州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "巴州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "順慶府",
+   "zhou": 2,
+   "xian": 8
+  },
+  {
+   "volume": 43,
+   "name": "蓬州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "廣安州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 43,
+   "name": "夔州府",
+   "zhou": 1,
+   "xian": 12
+  },
+  {
+   "volume": 43,
+   "name": "達州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "重慶府",
+   "zhou": 3,
+   "xian": 17
+  },
+  {
+   "volume": 43,
+   "name": "遵義軍民府",
+   "zhou": 1,
+   "xian": 4
+  },
+  {
+   "volume": 43,
+   "name": "真安州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "敘州府",
+   "zhou": 1,
+   "xian": 9
+  },
+  {
+   "volume": 43,
+   "name": "高州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "龍安府",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 43,
+   "name": "馬湖府",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 43,
+   "name": "潼川州",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 43,
+   "name": "眉州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 43,
+   "name": "邛州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 43,
+   "name": "嘉定州",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 43,
+   "name": "瀘州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 43,
+   "name": "雅州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 43,
+   "name": "瑞州府",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 43,
+   "name": "九江府",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 43,
+   "name": "南唐府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 43,
+   "name": "饒州府",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 43,
+   "name": "廣信府",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 43,
+   "name": "建昌府",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 43,
+   "name": "撫州府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 43,
+   "name": "吉安府",
+   "zhou": 0,
+   "xian": 9
+  },
+  {
+   "volume": 43,
+   "name": "臨江府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 43,
+   "name": "袁州府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 43,
+   "name": "贛州府",
+   "zhou": 0,
+   "xian": 12
+  },
+  {
+   "volume": 43,
+   "name": "南安府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 44,
+   "name": "武昌府",
+   "zhou": 1,
+   "xian": 9
+  },
+  {
+   "volume": 44,
+   "name": "興國州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 44,
+   "name": "漢陽府",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 44,
+   "name": "黃州府",
+   "zhou": 1,
+   "xian": 8
+  },
+  {
+   "volume": 44,
+   "name": "蘄州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 44,
+   "name": "承天府",
+   "zhou": 2,
+   "xian": 5
+  },
+  {
+   "volume": 44,
+   "name": "荊門州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 44,
+   "name": "沔陽州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 44,
+   "name": "德安府",
+   "zhou": 1,
+   "xian": 5
+  },
+  {
+   "volume": 44,
+   "name": "隨州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 44,
+   "name": "岳州府",
+   "zhou": 1,
+   "xian": 7
+  },
+  {
+   "volume": 44,
+   "name": "澧州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 44,
+   "name": "荊州府",
+   "zhou": 2,
+   "xian": 11
+  },
+  {
+   "volume": 44,
+   "name": "夷陵州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 44,
+   "name": "歸州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 44,
+   "name": "襄陽府",
+   "zhou": 1,
+   "xian": 6
+  },
+  {
+   "volume": 44,
+   "name": "長沙府",
+   "zhou": 1,
+   "xian": 11
+  },
+  {
+   "volume": 44,
+   "name": "常德府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 44,
+   "name": "衡州府",
+   "zhou": 1,
+   "xian": 9
+  },
+  {
+   "volume": 44,
+   "name": "桂陽州",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 44,
+   "name": "永州府",
+   "zhou": 1,
+   "xian": 7
+  },
+  {
+   "volume": 44,
+   "name": "道州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 44,
+   "name": "寶慶府",
+   "zhou": 1,
+   "xian": 4
+  },
+  {
+   "volume": 44,
+   "name": "武岡州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 44,
+   "name": "辰州府",
+   "zhou": 1,
+   "xian": 6
+  },
+  {
+   "volume": 44,
+   "name": "沅州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 44,
+   "name": "郴州",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 44,
+   "name": "靖州",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 44,
+   "name": "杭州府",
+   "zhou": 0,
+   "xian": 9
+  },
+  {
+   "volume": 44,
+   "name": "嚴州府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 44,
+   "name": "嘉興府",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 44,
+   "name": "湖州府",
+   "zhou": 1,
+   "xian": 6
+  },
+  {
+   "volume": 44,
+   "name": "安吉州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 44,
+   "name": "紹興府",
+   "zhou": 0,
+   "xian": 8
+  },
+  {
+   "volume": 44,
+   "name": "寧波府",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 44,
+   "name": "台州府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 44,
+   "name": "金華府",
+   "zhou": 0,
+   "xian": 8
+  },
+  {
+   "volume": 44,
+   "name": "衢州府",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 44,
+   "name": "處州府",
+   "zhou": 0,
+   "xian": 10
+  },
+  {
+   "volume": 44,
+   "name": "溫州府",
+   "zhou": 0,
+   "xian": 5
+  },
+  {
+   "volume": 45,
+   "name": "福州府",
+   "zhou": 0,
+   "xian": 9
+  },
+  {
+   "volume": 45,
+   "name": "興化府",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "建寧府",
+   "zhou": 0,
+   "xian": 8
+  },
+  {
+   "volume": 45,
+   "name": "延平府",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 45,
+   "name": "汀州府",
+   "zhou": 0,
+   "xian": 8
+  },
+  {
+   "volume": 45,
+   "name": "邵武府",
+   "zhou": 0,
+   "xian": 4
+  },
+  {
+   "volume": 45,
+   "name": "泉州府",
+   "zhou": 0,
+   "xian": 7
+  },
+  {
+   "volume": 45,
+   "name": "漳州府",
+   "zhou": 0,
+   "xian": 10
+  },
+  {
+   "volume": 45,
+   "name": "福寧州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "連州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "肇慶府",
+   "zhou": 1,
+   "xian": 11
+  },
+  {
+   "volume": 45,
+   "name": "德慶州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "韶州府",
+   "zhou": 0,
+   "xian": 6
+  },
+  {
+   "volume": 45,
+   "name": "南雄府",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "惠州府",
+   "zhou": 1,
+   "xian": 10
+  },
+  {
+   "volume": 45,
+   "name": "連平州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "潮州府",
+   "zhou": 0,
+   "xian": 11
+  },
+  {
+   "volume": 45,
+   "name": "高州府",
+   "zhou": 1,
+   "xian": 5
+  },
+  {
+   "volume": 45,
+   "name": "化州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "雷州府",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 45,
+   "name": "廉州府",
+   "zhou": 1,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "欽州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 45,
+   "name": "瓊州府",
+   "zhou": 3,
+   "xian": 10
+  },
+  {
+   "volume": 45,
+   "name": "儋州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 45,
+   "name": "萬州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 45,
+   "name": "崖州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 45,
+   "name": "羅定州",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 45,
+   "name": "江州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "雲南府",
+   "zhou": 4,
+   "xian": 9
+  },
+  {
+   "volume": 46,
+   "name": "曲靖府",
+   "zhou": 4,
+   "xian": 2
+  },
+  {
+   "volume": 46,
+   "name": "臨安府",
+   "zhou": 6,
+   "xian": 5
+  },
+  {
+   "volume": 46,
+   "name": "澂江府",
+   "zhou": 2,
+   "xian": 3
+  },
+  {
+   "volume": 46,
+   "name": "楚雄府",
+   "zhou": 2,
+   "xian": 5
+  },
+  {
+   "volume": 46,
+   "name": "姚安軍民府",
+   "zhou": 1,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "武定府",
+   "zhou": 2,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "大理府",
+   "zhou": 4,
+   "xian": 3
+  },
+  {
+   "volume": 46,
+   "name": "趙州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "永昌軍民府",
+   "zhou": 1,
+   "xian": 2
+  },
+  {
+   "volume": 46,
+   "name": "貴陽軍民府",
+   "zhou": 3,
+   "xian": 2
+  },
+  {
+   "volume": 46,
+   "name": "都勻府",
+   "zhou": 2,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "獨山州",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "黎平府",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "思南府",
+   "zhou": 0,
+   "xian": 3
+  },
+  {
+   "volume": 46,
+   "name": "鎮遠府",
+   "zhou": 0,
+   "xian": 2
+  },
+  {
+   "volume": 46,
+   "name": "銅仁府",
+   "zhou": 0,
+   "xian": 1
+  },
+  {
+   "volume": 46,
+   "name": "石阡府",
+   "zhou": 0,
+   "xian": 1
+  }
+ ]
+}

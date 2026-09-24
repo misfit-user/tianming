@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-24T12:44:34.963Z",
+  "generatedAt": "2026-09-24T10:25:47.819Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2616,8 +2616,8 @@
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
-      "size": 16278574
+      "sha256": "a8dd76c39f24270580e4bd18c959a498b45e7e3d771ca999740d2577649270c9",
+      "size": 16281767
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
@@ -2626,12 +2626,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "e9967c2cc4d494728985057d763eb0dce1527f634ca1c1667432780cd3e90948",
+      "sha256": "cf0b1610adb393973e24035cd9925a5f0120490f78795dde573175736b5c27d2",
       "size": 6007
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "1d0ed4ca203d7407fda1a8ca456f5f989693c782f53e3d426807ead98eff6de4",
+      "sha256": "dcc751008050d6e4c8b54612bbbd81addb69f7f37243155f0c3fc14159d5fe87",
       "size": 6386
     },
     {
@@ -2891,7 +2891,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "845144d4fa2f5e863822e860070e479b3f014b8ace18c9143bf5d2b03c638bda",
+      "sha256": "952d750bdc93a95094ff183c74f3f8e62b90dc151610e877677e45a9906b2f21",
       "size": 75106
     },
     {
@@ -3386,8 +3386,8 @@
     },
     {
       "path": "phase8-formal-map.js",
-      "sha256": "ff5c3270a9edfd867cd1bf37def1bbd95eaffe08c9743d92a1b299b789707a5c",
-      "size": 173730
+      "sha256": "773be92ac944d1a7a4eebd4e97bbef574a94735f378d139eca1cefe3f3302842",
+      "size": 174626
     },
     {
       "path": "phase8-formal-modules.js",
@@ -3896,8 +3896,8 @@
     },
     {
       "path": "preview/official-scenarios-bundle.js",
-      "sha256": "67177a1f762630c71c6a2e8e654caa7e2b8db10ec5782f03bf9e54df2c52d3d5",
-      "size": 101801608
+      "sha256": "a33105a4e0325ab47fddbb9d273122a605b365a4abf4b10dfa4d5c41c11d5fb4",
+      "size": 101804274
     },
     {
       "path": "preview/opening-redesign-preview.html",
@@ -3991,8 +3991,8 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "8fd942902267a4de4a189c85293e55252496aae80dd60db54c7f1dea2fef4b95",
-      "size": 16295669
+      "sha256": "1a281d65f98cd8c76ddda085304919296c2cd55783451018fa6ca39a3dd0f189",
+      "size": 16298862
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
@@ -4106,8 +4106,8 @@
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "36992ee77622b5b917a75322c1aa82f19c59b53bce2849c2cc9ec66eb5f45ab0",
-      "size": 9914085
+      "sha256": "69107382e753597f7ee963d20ac3382bac74e343b23688309cb083f598c0db7d",
+      "size": 9916751
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "e121d0aeb156787fe4eae2dbec29464aa846ac09647df92b0265ebe2498eb9a9",
-      "size": 379298
+      "sha256": "6d1c32487bf838d6e4de41f47447ab1697e3a7af802d2677e6c75c1f8d517d8b",
+      "size": 379203
     },
     {
       "path": "styles.css",
@@ -5901,8 +5901,8 @@
     },
     {
       "path": "tm-official-scenario-bundle.js",
-      "sha256": "689eef26ab08d2c7bb13f2cf1cb0ba4b834718f72a0d38ee18e78c1c40ce5cae",
-      "size": 101801937
+      "sha256": "6ba30c1c9ed9bfce1e984cbbdc863282ec56d729272c626c3e709880f39babd7",
+      "size": 101804603
     },
     {
       "path": "tm-official-scenario-loader.js",
@@ -6146,8 +6146,8 @@
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "9d1c5667bb30cb1c758183acd063e7d3fb08dc81ebe18c459e95d141f9aead29",
-      "size": 169193
+      "sha256": "fed48c1ab62c8749c6e5b571acba07f23bf49b7b806cbe4b842da34743647463",
+      "size": 165959
     },
     {
       "path": "tm-save-manager.js",
@@ -6156,8 +6156,8 @@
     },
     {
       "path": "tm-save-world-validation.js",
-      "sha256": "f4bda4cd928a699a895197c932c7de2165732eb77644760629fab840504efff1",
-      "size": 11208
+      "sha256": "1720d8d5775fa7b93adafc1212f02d21d275d098d51a14c2556dedaf744249ce",
+      "size": 8482
     },
     {
       "path": "tm-semantic-recall.js",
@@ -6241,8 +6241,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "018b74e6fb5859e4209bc56675bf258c2c0cf349e3b174abaf2ee8987c4f6d75",
-      "size": 134629
+      "sha256": "286f366228ec595996ab1c86edff4aabe8b4c8d9c656f7e2c72f93ec3bbeb792",
+      "size": 134628
     },
     {
       "path": "tm-start-selector.js",

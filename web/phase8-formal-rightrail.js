@@ -1255,6 +1255,11 @@
     return '';   // 无人
   }
 
+  function rightAdminGovernorText(x){
+    if (x.governor) return x.governor;
+    return x.governorUnrecorded ? '任官未详' : '空缺·待补';
+  }
+
   function rightAdminFromDivision(d, faction){
     d = d || {};
     var popObj = (d.population && typeof d.population === 'object') ? d.population : null;
@@ -1264,6 +1269,8 @@
       level: rightAdminLevelLabel(d.level || d.adminLevel || d.regionType || d.type || ''),
       faction: rightFactionDisplay(faction || d.dejureOwner || d.owner || d.factionName || d.faction || ''),
       governor: rightAdminLiveGovernor(d),
+      // 剧本从未记下任官者（没有 governor 字段）显示「任官未详」；写了却为空才是出缺（与方志、执行率管线同口径）
+      governorUnrecorded: !Object.prototype.hasOwnProperty.call(d, 'governor') && !(d.chief || d.holder || d.official),
       position: d.officialPosition || d.office || d.position || '',
       pop: (popObj && (popObj.mouths || popObj.population)) || d.population || detail.mouths || d.pop || 0,
       households: (popObj && popObj.households) || d.households || detail.households || 0,
@@ -1317,7 +1324,7 @@
       var hot = rightAdminNum(x.minxin, 60) < 45 || rightAdminNum(x.corruption, 0) > 55;
       return '<section class="tmrp-card tmrp-admin-card ' + (hot ? 'hot' : '') + '" style="--admin-c:' + ['#c9a84c','#70b097','#8e6aa8','#c95340','#5e8fb3'][i % 5] + '">' +
         '<div class="tmrp-admin-title"><b>' + esc(x.name) + '</b><small>' + esc(x.level) + '<br>' + esc(x.faction || '未录') + '</small></div>' +
-        '<div class="tmrp-mini-grid"><div><span>主官</span><b>' + esc(x.governor || '空缺·待补') + '</b></div><div><span>官职</span><b>' + esc(x.position || '未录') + '</b></div><div><span>人口</span><b>' + esc(rightAdminWan(x.pop)) + '</b></div><div><span>户数</span><b>' + esc(rightAdminWan(x.households)) + '</b></div></div>' +
+        '<div class="tmrp-mini-grid"><div><span>主官</span><b>' + esc(rightAdminGovernorText(x)) + '</b></div><div><span>官职</span><b>' + esc(x.position || '未录') + '</b></div><div><span>人口</span><b>' + esc(rightAdminWan(x.pop)) + '</b></div><div><span>户数</span><b>' + esc(rightAdminWan(x.households)) + '</b></div></div>' +
         rightArmyBar('民心', rightAdminNum(x.minxin, 50)) + rightArmyBar('繁荣', rightAdminNum(x.prosperity, 50)) + rightArmyBar('腐败', rightAdminNum(x.corruption, 0)) +
         rightArmyRows([['地形', x.terrain], ['特产', x.resources], ['税负', x.tax], ['下辖', Array.isArray(x.children) ? x.children.length + ' 处' : '未录']]) +
         '<div class="tmrp-action-row"><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="安民" data-name="' + attr(x.name) + '">安民</button><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="巡按" data-name="' + attr(x.name) + '">巡按</button><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="调粮" data-name="' + attr(x.name) + '">调粮</button><button type="button" class="tmrp-btn primary" data-right-action="admin-edict" data-kind="拟诏" data-name="' + attr(x.name) + '">拟诏</button></div>' +
@@ -1347,7 +1354,7 @@
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(items.length) + '</b><span>行政区</span></div><div class="tmrp-stat"><b>' + esc(rightAdminWan(totalPop)) + '</b><span>总人口</span></div><div class="tmrp-stat"><b>' + esc(crisis.length) + '</b><span>危机</span></div></div>' +
       '<section class="tmrp-card"><div class="tmrp-card-title"><span>各方据地</span><small>据有州县的诸方</small></div>' +
       (factions.length ? '<div class="tmrp-chip-list">' + factions.slice(0, 8).map(function(f){ return '<span class="tmrp-pill">' + esc(f) + '</span>'; }).join('') + (factions.length > 8 ? '<span class="tmrp-pill">…</span>' : '') + '</div>' : '<div class="tmrp-meta">疆域归属未录。</div>') + '</section>' +
-      (crisis.length ? '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>区划预警</span><small>民心低 / 腐败高</small></div>' + crisis.slice(0, 4).map(function(x){ return '<div class="tmrp-step"><b>' + esc(x.name) + '</b> 民心 ' + esc(Math.round(rightAdminNum(x.minxin, 0))) + ' · 腐败 ' + esc(Math.round(rightAdminNum(x.corruption, 0))) + ' · ' + esc(x.governor || '空缺·待补') + '</div>'; }).join('') + '</section>' : '') +
+      (crisis.length ? '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>区划预警</span><small>民心低 / 腐败高</small></div>' + crisis.slice(0, 4).map(function(x){ return '<div class="tmrp-step"><b>' + esc(x.name) + '</b> 民心 ' + esc(Math.round(rightAdminNum(x.minxin, 0))) + ' · 腐败 ' + esc(Math.round(rightAdminNum(x.corruption, 0))) + ' · ' + esc(rightAdminGovernorText(x)) + '</div>'; }).join('') + '</section>' : '') +
       (items.length ? '<div class="tmrp-scroll tall" data-admin-list-token="' + attr(listToken) + '">' + rightAdminCardsHtml(syncItems) + (deferredList ? '<div class="tmrp-meta">余下政区正在载入...</div>' : '') + '</div>' : '<section class="tmrp-card empty"><div class="tmrp-empty">天下州县尚未录入舆图。</div></section>') +
       '</div>';
   }

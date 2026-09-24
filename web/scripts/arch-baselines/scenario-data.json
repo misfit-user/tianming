@@ -1,0 +1,59 @@
+{
+  "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
+  "updatedAt": "2026-09-24T09:34:22.409Z",
+  "scenarios": {
+    "tianqi7": {
+      "ref.entity.id": 2,
+      "ref.entity.sid": 2,
+      "ref.admin.treeFactionId": 13,
+      "ref.admin.treeKey": 22,
+      "ref.admin.nonTerritoryLeaf": 23,
+      "text.meta": 384,
+      "text.templated": 328,
+      "leaf.copiedFromParent": 368,
+      "num.farmlandUnit": 17,
+      "leaf.equalSplit": 312,
+      "ref.char.party": 10,
+      "ref.char.class": 97,
+      "ref.char.factionId": 55,
+      "ref.faction.capital": 16,
+      "ref.faction.leader": 11,
+      "ref.army.commander": 8,
+      "ref.party.leader": 4,
+      "ref.relation.char": 14,
+      "field.dead": 4874
+    },
+    "shaosong": {
+      "ref.char.duplicateId": 16,
+      "text.meta": 596,
+      "text.templated": 454,
+      "num.farmlandUnit": 595,
+      "fmt.percentString": 2980,
+      "fmt.carryingCapacity": 596,
+      "ref.char.class": 82,
+      "ref.char.party": 49,
+      "ref.char.faction": 17,
+      "ref.faction.capital": 33,
+      "ref.faction.leader": 27,
+      "ref.faction.leaderForeign": 3,
+      "ref.army.commander": 23,
+      "ref.army.faction": 5,
+      "ref.entity.id": 400,
+      "ref.entity.sid": 400,
+      "ref.party.leader": 34,
+      "ref.relation.faction": 1,
+      "field.dead": 10720
+    },
+    "tang840": {
+      "ref.region.duplicateName": 3,
+      "fmt.circuitSchema": 111,
+      "text.templated": 19,
+      "fmt.population": 575,
+      "fmt.terrainEnglish": 575,
+      "leaf.equalSplit": 207,
+      "ref.faction.capital": 28,
+      "ref.army.commander": 1,
+      "field.dead": 70423
+    }
+  }
+}

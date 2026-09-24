@@ -36,7 +36,9 @@ function makeGov(liveMap, chars){
   ok(gov({}) === '', '① 无官职无主官→空');
 }
 ok(/governor: rightAdminLiveGovernor\(d\)/.test(rail), '① rightAdminFromDivision.governor 走活绑定真源');
-ok(/x\.governor \|\| '空缺.待补'/.test(rail), '① 主官卡空值显「空缺·待补」');
+ok(/function rightAdminGovernorText\(x\)\{[\s\S]*?x\.governorUnrecorded \? '任官未详' : '空缺.待补'/.test(rail)
+  && /esc\(rightAdminGovernorText\(x\)\)/.test(rail),
+  '① 主官卡空值：剧本没写 governor 显「任官未详」，写了却为空显「空缺·待补」');
 
 // ── ② 问对名单无 24 cap·渐进水合 ────────────────────────────────
 ok(!/waiting\.slice\(0, 24\)/.test(rail) && !/away\.slice\(0, 24\)/.test(rail), '② 候旨/远方名单去除 slice(0,24) 静默截断');

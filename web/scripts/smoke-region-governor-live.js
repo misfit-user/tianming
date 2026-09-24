@@ -42,6 +42,11 @@ ok(/_liveGov\s*=\s*_officePos\s*\?\s*liveRegionGovernor\(_officePos\)/.test(src)
 ok(/data\.governorVacant\s*=\s*true/.test(src) && /_sc\.alive === false \|\| _sc\.dead === true/.test(src), '⑧ 静态主官已殁→governorVacant(死字段降级)');
 ok(/data\.governorVacant\) return '<span class="bk-pill"[\s\S]*?vermillion-400[\s\S]*?空缺·待补/.test(src), '⑨ pill 空缺·待补红标');
 ok(/bkRow\('主官', data\.governorVacant \? '空缺·待补'/.test(src), '⑩ bkRow 主官 空缺态');
+// 剧本从未记下任官者（没有 governor 字段）≠ 出缺：与执行率管线同口径，显「任官未详」
+ok(/hasOwnProperty\.call\(liveDivision, 'governor'\)\) data\.governorVacant = true;\s*else data\.governorUnrecorded = true;/.test(src),
+  '⑪ 有官职无人：写了 governor 却为空才出缺，没写 governor 记为任官未详');
+ok(/data\.governorUnrecorded\) return '<span class="bk-pill"[^>]*>' \+ op \+ ' <b>任官未详<\/b>/.test(src)
+  && /data\.governorUnrecorded \? '任官未详'/.test(src), '⑫ pill 与 bkRow 显「任官未详」且不用红标');
 
 console.log('\nsmoke-region-governor-live ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F === 0 ? 0 : 1);

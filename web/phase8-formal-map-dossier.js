@@ -250,7 +250,12 @@
       var _sg = firstValue(data.governor, data.official);
       var _sc = (hasValue(_sg) && typeof findCharByName === 'function') ? findCharByName(_sg) : null;
       if (_sc && (_sc.alive === false || _sc.dead === true)) { data.governor = ''; data.official = ''; data.governorVacant = true; }   // 静态主官已殁→出缺(死字段曾显死人)
-      else if (!hasValue(_sg) && hasValue(_officePos)) { data.governorVacant = true; }                                                  // 有治理官职却无人→出缺
+      else if (!hasValue(_sg) && hasValue(_officePos)) {
+        // 与执行率管线（tm-field-pipelines）同一口径：区划上写了 governor 却为空才算出缺；
+        // 剧本从未记下任官者（没有 governor 字段）显示「任官未详」，不当出缺。
+        if (liveDivision && Object.prototype.hasOwnProperty.call(liveDivision, 'governor')) data.governorVacant = true;
+        else data.governorUnrecorded = true;
+      }
       else if (_sc) { data.governorChar = _sc.name; }                                                                                   // 静态主官在世(官职串格式异)→兜底保留+可取属性
     }
     if (window.GM && window.GM.publicTreasuryConfig && data.governorVacant && _officePos) {
@@ -1024,6 +1029,7 @@
         (function(){
           var op = esc(firstValue(data.officialPosition, '主官'));
           if (data.governorVacant) return '<span class="bk-pill" style="color:var(--vermillion-400,#c0563a);border-color:var(--vermillion-400,#c0563a);" title="该地治理官职出缺·待补任">' + op + ' <b>空缺·待补</b></span>';
+          if (data.governorUnrecorded) return '<span class="bk-pill" title="官署照常供职，掌官姓名未载">' + op + ' <b>任官未详</b></span>';
           var gn = firstValue(data.governor, data.official);
           if (!hasDisplayValue(gn)) return '';
           var gc = (data.governorChar && typeof findCharByName === 'function') ? findCharByName(data.governorChar) : null;
@@ -1122,7 +1128,7 @@
       bkRow('战略价值', data.strategicValue)
     ], true);
     var zhiguan = bkLan([
-      bkRow('主官', data.governorVacant ? '空缺·待补' : firstValue(data.governor, data.official), data.governorVacant ? 'zhu' : ''),
+      bkRow('主官', data.governorVacant ? '空缺·待补' : (data.governorUnrecorded ? '任官未详' : firstValue(data.governor, data.official)), data.governorVacant ? 'zhu' : ''),
       bkRow('官职', data.officialPosition),
       bkRow('官缺', firstValue(data.officeVacancy, data.vacancy), null, 'vacancy'),
       bkRow('贪腐', corr, 'zhu', 'corr'),

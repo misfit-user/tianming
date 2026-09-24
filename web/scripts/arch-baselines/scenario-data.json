@@ -1,12 +1,10 @@
 {
   "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
-  "updatedAt": "2026-09-24T10:26:38.766Z",
+  "updatedAt": "2026-09-24T10:31:22.120Z",
   "scenarios": {
     "tianqi7": {
       "ref.entity.id": 2,
       "ref.entity.sid": 2,
-      "ref.admin.treeFactionId": 13,
-      "ref.admin.treeKey": 22,
       "ref.admin.nonTerritoryLeaf": 23,
       "text.meta": 370,
       "text.templated": 315,
@@ -15,7 +13,6 @@
       "leaf.equalSplit": 300,
       "ref.char.party": 10,
       "ref.char.class": 97,
-      "ref.char.factionId": 55,
       "ref.faction.capital": 16,
       "ref.faction.leader": 11,
       "ref.army.commander": 8,

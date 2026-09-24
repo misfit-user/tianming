@@ -614,11 +614,12 @@ function promptContextExpansionTest() {
   var sc = JSON.parse(fs.readFileSync(path.join(SCN_DIR, '天启七年·九月（官方）.json'), 'utf8'));
   loadGM(ctx, sc);
 
-  if (ctx.GM.adminHierarchy && ctx.GM.adminHierarchy.laterJin && ctx.GM.adminHierarchy.laterJin.divisions && ctx.GM.adminHierarchy.laterJin.divisions[0]) {
-    ctx.GM.adminHierarchy.laterJin.divisions[0].name = '辽沈建州八旗辖区·运行时改名';
-    ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail = ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail || {};
-    ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail.mouths = 777777;
-  }
+  // 后金的行政树按树上声明的势力名找（键名是势力 id，不写死）；找不到就直接失败，免得下面的改名悄悄跳过
+  var laterJinTree = Object.values(ctx.GM.adminHierarchy || {}).find(function(t){ return t && t.factionName === '后金'; });
+  assert(laterJinTree && laterJinTree.divisions && laterJinTree.divisions[0], 'official Tianqi scenario should carry a Later Jin admin tree');
+  laterJinTree.divisions[0].name = '辽沈建州八旗辖区·运行时改名';
+  laterJinTree.divisions[0].populationDetail = laterJinTree.divisions[0].populationDetail || {};
+  laterJinTree.divisions[0].populationDetail.mouths = 777777;
 
   var hj = ctx.GM.facs.find(function(f){ return f.name === '后金'; });
   var amin = ctx.GM._facIndex['后金'].chars.find(function(c){ return c.name === '阿敏'; });

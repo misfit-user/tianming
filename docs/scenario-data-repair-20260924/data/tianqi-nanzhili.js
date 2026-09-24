@@ -250,4 +250,7 @@ const BLOCKS = {
 // 省节点描述：原文漏了徽州府，又把直隶州徐州算作府，顺手订正
 const provinceDescription = '留都应天府所在，财赋半天下。下辖应天、凤阳、淮安、扬州、苏州、松江、常州、镇江、庐州、安庆、太平、池州、宁国、徽州十四府，与徐、滁、和、广德四直隶州。苏松赋甲天下。';
 
-module.exports = { province: '南直隶', UNITS, BLOCKS, provinceDescription };
+// 地块读数层（发展、不稳、税压、军压、官风险）改之前 14 块同值，以此为人口加权均值的目标
+const regionMeans = { development: 88, unrest: 61, taxPressure: 55, armyPressure: 35, officeRisk: 54 };
+
+module.exports = { province: '南直隶', UNITS, BLOCKS, provinceDescription, regionMeans };

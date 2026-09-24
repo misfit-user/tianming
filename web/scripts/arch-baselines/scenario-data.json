@@ -1,16 +1,16 @@
 {
   "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
-  "updatedAt": "2026-09-24T10:31:22.120Z",
+  "updatedAt": "2026-09-24T11:36:21.783Z",
   "scenarios": {
     "tianqi7": {
       "ref.entity.id": 2,
       "ref.entity.sid": 2,
       "ref.admin.nonTerritoryLeaf": 23,
-      "text.meta": 370,
-      "text.templated": 315,
-      "leaf.copiedFromParent": 354,
+      "text.meta": 359,
+      "text.templated": 307,
+      "leaf.copiedFromParent": 343,
       "num.farmlandUnit": 17,
-      "leaf.equalSplit": 300,
+      "leaf.equalSplit": 293,
       "ref.char.party": 10,
       "ref.char.class": 97,
       "ref.faction.capital": 16,
@@ -18,7 +18,7 @@
       "ref.army.commander": 8,
       "ref.party.leader": 4,
       "ref.relation.char": 14,
-      "field.dead": 4818
+      "field.dead": 4774
     },
     "shaosong": {
       "ref.char.duplicateId": 16,

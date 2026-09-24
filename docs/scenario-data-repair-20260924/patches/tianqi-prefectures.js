@@ -137,14 +137,30 @@ function main() {
   const blockRings = blockIds.map((id) => ({ id, rings: parsePath(regionById.get(id).path || regionById.get(id).d) }));
   const blockCenter = new Map(blockIds.map((id) => [id, regionById.get(id).center || regionById.get(id).centroid]));
   const blockByUnitName = new Map(blockIds.map((id) => [data.BLOCKS[id].name, id]));
+  // 数据模块可以用地块 id 或地块名指定某府州归哪块
+  function resolveBlock(ref) {
+    if (data.BLOCKS[ref]) return ref;
+    if (blockByUnitName.has(ref)) return blockByUnitName.get(ref);
+    throw new Error('数据模块指定的地块不存在：' + ref);
+  }
   const assignments = [];
   data.UNITS.forEach((unit) => {
     const growth = unit.wanliMouths ? Math.sqrt(unit.wanliMouths / unit.mouths) : 1;
     unit.growth = growth;
-    const n = unit.counties.length;
-    const homeBlock = blockByUnitName.get(unit.name);
-    unit.counties.forEach(([county, lon, lat]) => {
-      const pt = projection.project(lon, lat);
+    // 四项权重：数据模块直接给出（没有分府户口的省份），或由洪武户口、税粮、田亩与增长系数算出
+    const weights = unit.weights || {
+      pop: unit.mouths * growth,
+      households: unit.households * growth,
+      grain: unit.grain,
+      land: unit.land
+    };
+    unit.weightsUsed = weights;
+    const homeBlock = unit.block ? resolveBlock(unit.block) : blockByUnitName.get(unit.name);
+    const counties = unit.counties && unit.counties.length ? unit.counties : [[unit.name, null, null]];
+    if (!homeBlock && counties.some(([, lon]) => lon == null)) throw new Error(unit.name + ' 没有同名地块，也没有县治坐标');
+    const n = counties.length;
+    counties.forEach(([county, lon, lat]) => {
+      const pt = homeBlock ? null : projection.project(lon, lat);
       let hit = homeBlock ? { id: homeBlock } : blockRings.find((b) => b.rings.some((ring) => pointInRing(pt, ring)));
       let method = homeBlock ? '归本府地块' : '县治落在块内';
       if (!hit) {
@@ -160,10 +176,12 @@ function main() {
       }
       assignments.push({
         unit: unit.name, county, block: hit.id, method,
-        pop: (unit.mouths / n) * growth,
-        households: (unit.households / n) * growth,
-        grain: unit.grain / n,
-        land: unit.land / n
+        pop: weights.pop / n,
+        households: weights.households / n,
+        grain: weights.grain / n,
+        land: weights.land / n,
+        // 驿站按所辖县数加权：数据模块给了 countyCount（没有县治坐标的省份）就按它，否则每县计一
+        countyShare: unit.countyCount != null ? unit.countyCount / n : 1
       });
     });
   });
@@ -173,7 +191,7 @@ function main() {
   blockIds.forEach((id) => { W[id] = { pop: 0, households: 0, grain: 0, land: 0, counties: 0 }; });
   assignments.forEach((a) => {
     const w = W[a.block];
-    w.pop += a.pop; w.households += a.households; w.grain += a.grain; w.land += a.land; w.counties += 1;
+    w.pop += a.pop; w.households += a.households; w.grain += a.grain; w.land += a.land; w.counties += a.countyShare;
   });
   blockIds.forEach((id) => { if (!W[id].counties) throw new Error(data.BLOCKS[id].name + ' 没有落到任何县，检查坐标'); });
 
@@ -233,12 +251,17 @@ function main() {
   const corruption = shiftToMean(B.map((b) => b.corruption), popW, P.corruptionLocal, 5, 95).map(Math.round);
   const prosperity = shiftToMean(B.map((b) => b.prosperity), popW, P.prosperity, 5, 97).map(Math.round);
 
-  // 地块读数层：原来 14 块同值，就用原值当均值目标
-  const firstRegion = regionById.get(blockIds[0]);
+  // 地块读数层：改之前各块同值，这个原值就是人口加权均值的目标。
+  // 原值必须写在数据模块的 regionMeans 里——从当前值现算的话，补丁重跑时会从已改过的值出发而漂移。
+  const REGION_KEYS = ['development', 'unrest', 'taxPressure', 'armyPressure', 'officeRisk'];
+  if (!data.regionMeans) {
+    const seen = {};
+    REGION_KEYS.forEach((k) => { seen[k] = [...new Set(blockIds.map((id) => regionById.get(id)[k]))]; });
+    throw new Error('数据模块缺 regionMeans。改之前各块的原值：' + JSON.stringify(seen));
+  }
   const regionTargets = {};
-  ['development', 'unrest', 'taxPressure', 'armyPressure', 'officeRisk'].forEach((k) => {
-    const original = sum(blockIds.map((id) => Number(regionById.get(id)[k]) || 0)) / blockIds.length;
-    regionTargets[k] = shiftToMean(B.map((b) => b[k]), popW, original, 5, 99).map(Math.round);
+  REGION_KEYS.forEach((k) => {
+    regionTargets[k] = shiftToMean(B.map((b) => b[k]), popW, data.regionMeans[k], 5, 99).map(Math.round);
   });
 
   // 钱粮：应征按「税粮七成五、商贸二成五」，截留率平移到省实征总数，征到比例拉回省均值
@@ -274,15 +297,22 @@ function main() {
     commerceVolume: splitInteger(eb.commerceVolume, commerceWeight),
     maritimeTradeVolume: splitInteger(eb.maritimeTradeVolume, B.map((b) => b.maritime)),
     saltProduction: splitInteger(eb.saltProduction, B.map((b) => b.salt)),
-    mineralProduction: splitInteger(eb.mineralProduction, B.map(() => 1)),
-    horseProduction: splitInteger(eb.horseProduction, B.map(() => 1)),
+    mineralProduction: splitInteger(eb.mineralProduction, B.map((b) => b.mineral || 0)),
+    horseProduction: splitInteger(eb.horseProduction, B.map((b) => b.horse || 0)),
     fishingProduction: splitInteger(eb.fishingProduction, B.map((b) => b.fishing)),
     imperialFarmland: splitInteger(eb.imperialFarmland, B.map((b) => b.imperial)),
     postRelays: splitInteger(eb.postRelays, blockIds.map((id, i) => W[id].counties * B[i].corridor)),
     kejuQuota: splitInteger(eb.kejuQuota, B.map((b) => b.keju)),
     landsAnnexed: splitInteger(eb.landsAnnexed, col('land').map((l, i) => l * B[i].gentry))
   };
-  if (sum(B.map((b) => b.zhizao)) !== eb.imperialAssets.zhizao) throw new Error('织造数与省总数不符');
+  ['mineralProduction', 'horseProduction'].forEach((k) => {
+    if (eb[k] > 0 && sum(economy[k]) !== eb[k]) throw new Error(k + ' 省里有数，但数据模块没给任何地块权重');
+  });
+  ['zhizao', 'kuangchang', 'yuyao'].forEach((k) => {
+    const want = Number(eb.imperialAssets && eb.imperialAssets[k]) || 0;
+    const got = sum(B.map((b) => b[k] || 0));
+    if (got !== want) throw new Error('官府资产 ' + k + ' 各块合计 ' + got + '，省里是 ' + want);
+  });
   const baojiaAccuracy = B.map((b) => Math.round(clamp(P.baojia.registerAccuracy - 0.1 * (b.hide - 1), 0.4, 0.85) * 100) / 100);
   const baojia = {
     baoCount: splitInteger(P.baojia.baoCount, households),
@@ -334,7 +364,7 @@ function main() {
       maritimeTradeVolume: economy.maritimeTradeVolume[i], saltProduction: economy.saltProduction[i],
       mineralProduction: economy.mineralProduction[i], horseProduction: economy.horseProduction[i],
       fishingProduction: economy.fishingProduction[i], imperialFarmland: economy.imperialFarmland[i],
-      imperialAssets: { zhizao: b.zhizao, kuangchang: 0, yuyao: 0 },
+      imperialAssets: { zhizao: b.zhizao || 0, kuangchang: b.kuangchang || 0, yuyao: b.yuyao || 0 },
       postRelays: economy.postRelays[i], kejuQuota: economy.kejuQuota[i], roadQuality: b.roadQuality,
       landsAnnexed: economy.landsAnnexed[i], landsReclaimed: 0, landsSurveyed: 0, disasterRecord: []
     };
@@ -432,8 +462,15 @@ function main() {
       ' | ' + Math.round(w.pop) + ' | ' + Math.round(w.grain) + ' | ' + Math.round(w.land) + ' |');
   });
   lines.push('', '＊县治落在本省各块之外（地图边界为概化），归入最近的本省地块。', '');
-  lines.push('## 增长调整', '');
-  data.UNITS.forEach((u) => { lines.push('- ' + u.name + '：' + u.growthRule + '，系数 ' + u.growth.toFixed(3) + (u.wanliMouths ? '（万历册口 ' + u.wanliMouths + ' / 洪武册口 ' + u.mouths + '）' : '') + '；田亩来源 ' + u.landSource + ' ' + u.land); });
+  lines.push('## 各府州权重来源', '');
+  data.UNITS.forEach((u) => {
+    if (u.weights) {
+      const w = u.weights;
+      lines.push('- ' + u.name + '：人口 ' + Math.round(w.pop) + '、税粮 ' + Math.round(w.grain) + '、田亩 ' + Math.round(w.land) + '。' + (u.basis || ''));
+    } else {
+      lines.push('- ' + u.name + '：' + u.growthRule + '，系数 ' + u.growth.toFixed(3) + (u.wanliMouths ? '（万历册口 ' + u.wanliMouths + ' / 洪武册口 ' + u.mouths + '）' : '') + '；田亩来源 ' + u.landSource + ' ' + u.land);
+    }
+  });
   lines.push('', '## 每块依据', '');
   blockIds.forEach((id) => { lines.push('- ' + data.BLOCKS[id].name + '：' + data.BLOCKS[id].notes); });
   const report = lines.join('\n') + '\n';

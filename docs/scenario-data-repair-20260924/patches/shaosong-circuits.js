@@ -111,7 +111,15 @@ function main() {
   }
   const kingdom = tree.divisions[0];
   // 原账的地域核算组（同一地块拆成几笔）先并成一块，见 shaosong-common.js 的 mergeAccountingGroup
+  const mergedGroups = kingdom.children.filter((c) => c.type === '地域核算组');
   kingdom.children = flatLeaves(kingdom);
+  // 地图上的账目溯源随之改指合并后的一块（与普通地块同口径：accountingLeafIds 指地块自身，源账 id 仍留在 accountingSourceIds）
+  mergedGroups.forEach((g) => {
+    const region = scenario.map.regions.find((r) => r.id === g.mapRegionId);
+    if (!region) throw new Error('核算组 ' + g.name + ' 绑定的地块不在地图上');
+    region.accountingLeafIds = [g.id];
+    region.accountingLeafNames = [g.name];
+  });
   const leaves = kingdom.children;
   // 玩家树按国号找势力；外藩树的键就是势力 id（国号节点名可能与势力名不同，如河北义军树顶叫「两河忠义寨」）
   const faction = treeKey === 'player'

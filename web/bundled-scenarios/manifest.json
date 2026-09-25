@@ -40,13 +40,13 @@
       "hasMap": true,
       "counts": {
         "characters": 501,
-        "factions": 38,
+        "factions": 39,
         "regions": 566
       },
-      "bytes": 50972319,
-      "sha256": "3fbc2e887e156e61d5a84eb763f9eb9a4ec6622b3983b0f49d62b6458600db28",
-      "sourceBytes": 91195339,
-      "sourceSha256": "339266af360d0fffe955a22bd6b6988c0122ac5dd378949bd9f423ea2140d6e2"
+      "bytes": 50827009,
+      "sha256": "5bc3b9e4f4785705f5da7abbd1327a551abe678f14d2a3009e3a303e04f6fdee",
+      "sourceBytes": 90934706,
+      "sourceSha256": "32693e8baef7da48a91f5e35c910b3ef75613eed14fbf9629399403422c8295d"
     },
     {
       "key": "tang840",

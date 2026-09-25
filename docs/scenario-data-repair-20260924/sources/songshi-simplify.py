@@ -44,7 +44,8 @@ def main(path):
         if 'counties' in r:
             r['countiesS'] = [simplify(c) for c in r['counties']]
         if 'tribute' in r:
-            r['tributeS'] = [simplify(c) for c in r['tribute']]
+            # 土贡是物名不是地名，「乾」照常转为「干」（乾漆→干漆）
+            r['tributeS'] = [cc.convert(c.translate(VARIANTS)) for c in r['tribute']]
     with open(path, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(rows, f, ensure_ascii=False, indent=1)
         f.write('\n')

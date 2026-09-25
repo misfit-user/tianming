@@ -28,6 +28,8 @@ function main() {
   console.log('字段清理：' + run([path.join(DIR, 'patches/tang-fields.js'), '--report', path.join(DIR, 'reports/tang-fields.md'), '--write']));
   // 第二刀：唐廷与河朔、昭义四镇道内各州按天宝户重分户口与随人口走的账，开局账按财政引擎重算
   console.log('户口重建：' + run([path.join(DIR, 'patches/tang-households.js'), '--report', path.join(DIR, 'reports/tang-households.md'), '--write']));
+  // 第三刀：府州官守、治所与土贡物产，仪州改回开成年间的辽州
+  console.log('官守物产：' + run([path.join(DIR, 'patches/tang-offices.js'), '--report', path.join(DIR, 'reports/tang-offices.md'), '--write']));
 }
 
 main();

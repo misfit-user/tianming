@@ -30,6 +30,8 @@ function main() {
   console.log('户口重建：' + run([path.join(DIR, 'patches/tang-households.js'), '--report', path.join(DIR, 'reports/tang-households.md'), '--write']));
   // 第三刀：府州官守、治所与土贡物产，仪州改回开成年间的辽州
   console.log('官守物产：' + run([path.join(DIR, 'patches/tang-offices.js'), '--report', path.join(DIR, 'reports/tang-offices.md'), '--write']));
+  // 第四刀之一：人物字段去伪（删抄件与制作用语，personalGoals 改为引擎对象）
+  console.log('人物字段：' + run([path.join(DIR, 'patches/tang-people-fields.js'), '--report', path.join(DIR, 'reports/tang-people-fields.md'), '--write']));
 }
 
 main();

@@ -84,6 +84,10 @@ function main() {
       '--report', path.join(DIR, 'reports', 'shaosong-' + key + '.md'), '--write']);
     console.log(key + '：' + last);
   });
+  // 人物：id 去重（找回共用 id 而在开局被去重丢掉的人物）
+  console.log('人物 id 去重：' + run([path.join(DIR, 'patches/shaosong-characters.js'), '--report', path.join(DIR, 'reports/shaosong-characters.md'), '--write']));
+  // 人物、势力、党派、阶层、军队之间的引用理顺
+  console.log('引用理顺：' + run([path.join(DIR, 'patches/shaosong-references.js'), '--report', path.join(DIR, 'reports/shaosong-references.md'), '--write']));
 }
 
 main();

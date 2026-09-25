@@ -32,6 +32,24 @@ function loadHelpers() {
     'P.scenarios.push(__source); P.ai.key=""; P.ai.url=""; P.ai.model="";', context);
   vm.runInContext('doActualStart(' + JSON.stringify(sid) + ')', context, { timeout: 600000 });
   await new Promise((resolve) => setTimeout(resolve, 2500));
+  // --inspect 名,名：打印这几块计税前的各项输入（贪腐、征到比例、截留、环境负载、逃隐户折减、地块状态乘子、税策系数）
+  const inspectIndex = process.argv.indexOf('--inspect');
+  if (inspectIndex > 0) {
+    context.__inspect = process.argv[inspectIndex + 1].split(',');
+    console.log(vm.runInContext(`(function(){
+      var out = [];
+      function walk(a){ (a||[]).forEach(function(d){ if ((d.children||[]).length) walk(d.children); else if (__inspect.indexOf(d.name) >= 0) out.push(d); }); }
+      Object.keys(GM.adminHierarchy||{}).forEach(function(k){ walk(GM.adminHierarchy[k].divisions); });
+      return JSON.stringify(out.map(function(d){
+        var fp = TM.FieldPipes && TM.FieldPipes.fleeTaxPenalty ? TM.FieldPipes.fleeTaxPenalty(d) : null;
+        var rs = TM.RegionStatus && TM.RegionStatus.econMult ? TM.RegionStatus.econMult(d) : null;
+        var tp = TM.TaxPolicy && TM.TaxPolicy.effectiveTax ? TM.TaxPolicy.effectiveTax(GM, d, { id: 'yanke', rate: 1, base: 'consumption', annual: true }, {}).rate : null;
+        return { name: d.name, mouths: d.populationDetail && d.populationDetail.mouths, corruption: d.corruption, corruptionLocal: d.corruptionLocal,
+          fiscal: d.fiscal && { compliance: d.fiscal.compliance, skimmingRate: d.fiscal.skimmingRate }, env: d.environment && d.environment.currentLoad,
+          regionType: d.regionType, warZone: d._warZone, revolt: d._revoltActive, disaster: d._disasterEconomyReduce, flee: fp, statusMult: rs, taxPolicyRate: tp, taxLevel: d.taxLevel };
+      }), null, 1);
+    })()`, context));
+  }
   const result = vm.runInContext(`(function(){
     var before = { money: GM.guoku && GM.guoku.money, grain: GM.guoku && GM.guoku.grain, cloth: GM.guoku && GM.guoku.cloth };
     var r = CascadeTax.collect({ force: true, turnDays: 360 });

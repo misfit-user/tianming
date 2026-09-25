@@ -151,7 +151,9 @@ function main() {
   const actual = splitInteger(N.actual, claimed.map((c, i) => c * compliance[i]));
   const remitted = splitInteger(N.remitted, actual);
   const retained = actual.map((a, i) => a - remitted[i]);
-  const autonomy = groups.map((g) => Math.round(weightedMean(g, (r) => r.leaf.fiscalDetail.autonomy) * 100) / 100);
+  // 财政自主：引擎计税乘 (1 − autonomyLevel × 0.8)。原账只写了运行时不读的 autonomy（0.55），autonomyLevel 缺省时
+  // 引擎取 0.3（tm-fiscal-engine _ensureRegionFiscal），原版实际按 0.3 运行、税目表也按此调定；显式写 0.3，运行时与原版一致
+  const autonomy = groups.map(() => 0.3);
 
   const money = splitInteger(N.money, retained);
   const grain = splitInteger(N.grain, W.twoTax);

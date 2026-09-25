@@ -59,6 +59,7 @@ const LEAF_SPECS = {
   宁海县: { countyOf: '登州', counties: ['牟平', '文登'], note: '金人后置宁海州，宋时为登州牟平、文登二县' },
   // 京西
   巩县: { countyOf: '河南府', counties: ['巩'] },
+  光化军: { households: 6000, basis: '《宋史·地理志》光化军无户数，志载「縣一，乾德。望」，按望县折户' },
   汜水县: { countyOf: '孟州', counties: ['汜水'] },
   // 淮南
   鹿邑县: { countyOf: '亳州', counties: ['鹿邑'] },

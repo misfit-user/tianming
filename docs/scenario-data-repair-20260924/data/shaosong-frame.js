@@ -2,8 +2,11 @@
 // 路的名单与下辖地块取自地图 circuitRegistry；各块的户数、商税、田亩、两税权重见 shaosong-sources.js。
 // 用法见 patches/shaosong-circuits.js。
 //
-// 路长官：以建炎元年实际统辖全路的官为准。帅司辖全路的写安抚使（陕西、广南等边路为经略安抚使），
-// 两浙帅司分东西、潼川府路帅司只辖泸南沿边，这两路写转运使。人物表里有其人才写 governor。
+// 路长官：以建炎元年八月实际统辖全路的官为准，逐路核《宋史·地理志》治所条：
+//   志载此前已设帅府、安抚司的写安抚使（京东东西、永兴军、淮南东、江南东、荆湖南），陕西四路与广南两路写经略安抚使；
+//   建炎二年以后才设帅司（荆湖北、淮南西、利州、夔州、福建、成都府）或志无载（京西南北、江南西），以及两浙（帅司分东西）、
+//   潼川府（帅司只辖泸南沿边），写转运使——转运司各路皆有。京畿写东京留守，河北西路写招抚使，麟府写兵马钤辖。
+// 人物表里有其人才写 governor。
 // flee、hide：逃户、隐户相对全国的倍数（靖康以来兵祸、溪峒不入版籍）；textile：布帛相对倍数。
 // trade：商贸折减。商税权重出自熙宁十年以前的岁额，不反映靖康兵祸。《文献通考·征榷考一》：建炎元年诏「京城久閉，
 // 道路方通，有販貨上京者，與免稅」，又诏「應殘破州縣合用竹木磚瓦並免收稅」——东京商旅断绝、贩货入京免税，京畿折至 0.3；
@@ -36,7 +39,7 @@ const CIRCUITS = [
     flee: 1.5, hide: 1.0, textile: 1.2, trade: 0.8
   },
   {
-    name: '京西北路', officialPosition: '京西北路安抚使', capital: '河南府',
+    name: '京西北路', officialPosition: '京西北路转运使', capital: '河南府',
     terrain: '平原', specialResources: '牡丹·瓷·粮', taxLevel: '中',
     description: '西京河南府与许、汝、蔡、陈、颍、郑、陕、虢诸州，旧为畿辅。宋室祖陵在巩县，洛阳宫阙尚存。河东失守后，金兵可自河阳渡河直逼西京。',
     strategicValue: '西京与祖陵所在，东连汴京，西通关陕。',
@@ -44,7 +47,7 @@ const CIRCUITS = [
     flee: 1.5, hide: 1.0, textile: 1.0, trade: 0.7
   },
   {
-    name: '京西南路', officialPosition: '京西南路安抚使', capital: '襄阳府',
+    name: '京西南路', officialPosition: '京西南路转运使', capital: '襄阳府',
     terrain: '丘陵', specialResources: '粮·麻·漆', taxLevel: '中',
     description: '襄、邓、唐、随、郢、均、房诸州与信阳、光化二军，汉水中游。襄阳为荆湖门户，朝中李纲一派主张车驾西幸南阳，以邓州为行在。',
     strategicValue: '上可援关陕，下可屏荆湖，是中原退守的第二道门户。',
@@ -52,7 +55,7 @@ const CIRCUITS = [
     flee: 1.2, hide: 1.0, textile: 1.0
   },
   {
-    name: '永兴军路', officialPosition: '永兴军路经略安抚使', capital: '京兆府',
+    name: '永兴军路', officialPosition: '永兴军路安抚使', capital: '京兆府',
     terrain: '河谷', specialResources: '粮·麻·马', taxLevel: '中',
     description: '京兆府与同、华、耀、商、金诸州，关中腹地，八百里秦川。去冬西军精锐东调勤王，关中兵力空虚，金人已有窥陕之意。',
     strategicValue: '关中形胜，据之可东出潼关，亦可南屏巴蜀。',
@@ -68,7 +71,7 @@ const CIRCUITS = [
     flee: 1.2, hide: 1.0, textile: 1.0
   },
   {
-    name: '淮南西路', officialPosition: '淮南西路安抚使', capital: '庐州',
+    name: '淮南西路', officialPosition: '淮南西路转运使', capital: '庐州',
     terrain: '丘陵', specialResources: '茶·粮·麻', taxLevel: '中',
     description: '寿、庐、濠、和、舒、蕲、黄、光诸州与六安、无为二军，淮水之南、大江之北，巢湖居中。蕲、黄、舒、光诸州山场产茶。',
     strategicValue: '江北屏障，守淮方能保江。',
@@ -84,7 +87,7 @@ const CIRCUITS = [
     flee: 1.0, hide: 1.0, textile: 1.2
   },
   {
-    name: '江南西路', officialPosition: '江南西路安抚使', capital: '洪州',
+    name: '江南西路', officialPosition: '江南西路转运使', capital: '洪州',
     terrain: '丘陵', specialResources: '稻米·茶·纸·瓷', taxLevel: '中',
     description: '洪、吉、抚、袁、虔、江、筠诸州及兴国、临江、建昌、南安四军，赣江贯通南北，稻米岁运东南。虔州山深，私盐贩与盗寇出没。',
     strategicValue: '江西粮仓，东南漕米大宗所出。',
@@ -100,7 +103,7 @@ const CIRCUITS = [
     flee: 1.1, hide: 1.1, textile: 1.6
   },
   {
-    name: '荆湖北路', officialPosition: '荆湖北路安抚使', capital: '江陵府',
+    name: '荆湖北路', officialPosition: '荆湖北路转运使', capital: '江陵府',
     terrain: '水乡', specialResources: '稻米·鱼·茶', taxLevel: '中',
     description: '江陵、鄂、岳、澧、鼎、峡、归、复诸州与德安府、荆门、汉阳二军，并辰、沅、靖三州溪峒之地。江汉交汇，鄂州为长江水运要冲，洞庭湖区渔米丰饶。',
     strategicValue: '上游形胜，江陵、鄂州控扼长江中游。',
@@ -116,7 +119,7 @@ const CIRCUITS = [
     flee: 1.0, hide: 1.1, textile: 0.8
   },
   {
-    name: '福建路', officialPosition: '福建路安抚使', capital: '福州',
+    name: '福建路', officialPosition: '福建路转运使', capital: '福州',
     terrain: '山地', specialResources: '茶·荔枝·瓷·海贸', taxLevel: '中',
     description: '福、建、泉、漳、汀、南剑诸州与邵武、兴化二军，山多田少，人稠地狭，民多出海为商。泉州市舶为东南巨港，建州北苑贡茶天下第一。',
     strategicValue: '海贸与科第之乡，山海屏障东南。',
@@ -133,14 +136,14 @@ const CIRCUITS = [
   },
   {
     name: '广南西路', officialPosition: '广南西路经略安抚使', capital: '桂州',
-    terrain: '山地', specialResources: '香药·银·盐·马', taxLevel: '轻',
-    description: '桂、邕、容、宜、融诸州与海南琼州及昌化、万安、吉阳三军，溪峒杂居。邕州横山寨市马于大理，控扼交趾。地瘠民贫，赋入不足自给。',
-    strategicValue: '西南藩篱，市马之地。',
+    terrain: '山地', specialResources: '银·盐·香药·珠', taxLevel: '轻',
+    description: '桂、邕、容、宜、融诸州与海南琼州及昌化、万安、吉阳三军，溪峒杂居。桂州灵渠沟通湘漓，邕州控扼左右江溪峒，南接交趾。地瘠民贫，赋入不足自给。',
+    strategicValue: '西南藩篱，控扼交趾与溪峒。',
     threats: ['溪峒蛮夷', '交趾', '瘴疠'],
     flee: 1.0, hide: 1.3, textile: 0.6
   },
   {
-    name: '成都府路', officialPosition: '成都府路安抚使', capital: '成都府',
+    name: '成都府路', officialPosition: '成都府路转运使', capital: '成都府',
     terrain: '盆地', specialResources: '蜀锦·茶·井盐·交子', taxLevel: '重',
     description: '成都平原沃野千里，都江堰灌溉之利，蜀锦、茶、井盐甚盛；交子始于此地。四川行铁钱，自成一财政区，茶马司以蜀茶易西蕃之马。',
     strategicValue: '天府之国，若中原不守，蜀为退守与供饷之地。',
@@ -156,7 +159,7 @@ const CIRCUITS = [
     flee: 1.0, hide: 1.1, textile: 1.1
   },
   {
-    name: '夔州路', officialPosition: '夔州路安抚使', capital: '夔州',
+    name: '夔州路', officialPosition: '夔州路转运使', capital: '夔州',
     terrain: '山地', specialResources: '井盐·丹砂·茶', taxLevel: '轻',
     description: '三峡与川东诸州，夔州扼长江峡口，大宁监、云安军产盐。施、黔、珍、播、思诸州多溪峒蛮夷，羁縻而已。',
     strategicValue: '长江入蜀门户。',
@@ -164,7 +167,7 @@ const CIRCUITS = [
     flee: 1.0, hide: 1.3, textile: 0.8
   },
   {
-    name: '利州路', officialPosition: '利州路安抚使', capital: '兴元府',
+    name: '利州路', officialPosition: '利州路转运使', capital: '兴元府',
     terrain: '山地', specialResources: '茶·漆·马', taxLevel: '中',
     description: '兴元府与利、洋、阆、剑、巴、蓬、文、兴、政诸州，秦岭、大巴山之间，金牛道、米仓道所经，蜀道咽喉。',
     strategicValue: '控扼入蜀诸道，关陕与巴蜀的枢纽。',
@@ -181,7 +184,7 @@ const CIRCUITS = [
   },
   {
     name: '三泉直隶', officialPosition: '知三泉县', capital: '三泉县',
-    terrain: '山地', specialResources: '漕运·茶', taxLevel: '中',
+    terrain: '山地', specialResources: '金牛道转输', taxLevel: '中',
     description: '三泉县直隶朝廷，不属诸路，嘉陵江上游，金牛道所经，为入蜀漕运转输之地。',
     strategicValue: '入蜀转输要地。',
     threats: [],
@@ -213,7 +216,7 @@ const CIRCUITS = [
   },
   {
     name: '熙河兰湟路', officialPosition: '熙河兰湟路经略安抚使', capital: '熙州',
-    terrain: '高原', specialResources: '马·青盐', taxLevel: '轻',
+    terrain: '高原', specialResources: '马·青盐·畜产', taxLevel: '轻',
     description: '熙、河、兰、巩、岷、洮、廓、湟诸州与积石军，熙宁以来开边所得，蕃汉杂处，产马，羌部叛服不常。',
     strategicValue: '断西夏右臂，市马之源。',
     threats: ['西夏', '吐蕃诸部叛服'],

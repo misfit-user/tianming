@@ -17,7 +17,7 @@ const SCENARIO_REL = 'scenarios/绍宋·建炎元年八月（官方）.json';
 const BASE_COMMIT = '5b243f02';
 
 // 各路数据模块，按落刀顺序
-const CIRCUITS = ['liangzhe'];
+const CIRCUITS = ['liangzhe', 'jingji', 'jingdong', 'jingxi', 'huainan', 'jiangnan', 'jinghu-fujian', 'guangnan-dong', 'guangnan-xi', 'chuan-west', 'chuan-east', 'xibei'];
 
 function run(args) {
   const out = execFileSync(process.execPath, args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });

@@ -20,6 +20,7 @@ const SCENARIO_FILE = path.join(REPO, 'scenarios', '绍宋·建炎元年八月�
 const DATA = path.join(__dirname, '..', 'data');
 const lib = require(path.join(DATA, 'shaosong-sources.js'));
 const { CIRCUITS, PORTS } = require(path.join(DATA, 'shaosong-frame.js'));
+const { TAX_SCHEDULE } = require(path.join(DATA, 'shaosong-common.js'));
 
 function sum(values) { return values.reduce((a, b) => a + b, 0); }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -112,10 +113,8 @@ function main() {
     claimed: T((l) => l.fiscalDetail.claimedRevenue), actual: T((l) => l.fiscalDetail.actualRevenue),
     remitted: T((l) => l.fiscalDetail.remittedToCenter), retained: T((l) => l.fiscalDetail.retainedBudget),
     money: T((l) => l.publicTreasuryInit.money), grain: T((l) => l.publicTreasuryInit.grain), cloth: T((l) => l.publicTreasuryInit.cloth),
-    commerce: T((l) => l.economyBase.commerceVolume), maritime: T((l) => l.economyBase.maritimeTradeVolume),
-    postRelays: T((l) => l.economyBase.postRelays), kejuQuota: T((l) => l.economyBase.kejuQuota),
-    twoTaxPart: T((l) => l.fiscalDetail['两税'] || 0), commercePart: T((l) => l.fiscalDetail['商税'] || 0),
-    otherPart: T((l) => l.fiscalDetail['盐茶酒课'] || 0)
+    commerce: T((l) => l.economyBase.commerceVolume),
+    postRelays: T((l) => l.economyBase.postRelays), kejuQuota: T((l) => l.economyBase.kejuQuota)
   };
   // 原账商贸、海贸等带小数（如 584853.626979），全国合计取整后守恒
   const roundedFrom = {};
@@ -124,9 +123,6 @@ function main() {
   });
   if (N.mouths !== T((l) => l.population)) throw new Error('改前 population 与 populationDetail.mouths 合计不符');
   if (N.remitted + N.retained !== N.actual) throw new Error('改前起运加留用不等于实征');
-  // 应征的构成：原账两税、商税、盐茶酒课三项的全国占比
-  const partTotal = N.twoTaxPart + N.commercePart + N.otherPart;
-  const MIX = { twoTax: N.twoTaxPart / partTotal, commerce: N.commercePart / partTotal, other: N.otherPart / partTotal };
 
   // ---- 分路 ----
   const defs = CIRCUITS.filter((d) => rows.some((r) => r.circuit === d.name));
@@ -144,10 +140,10 @@ function main() {
   const fugitives = splitInteger(N.fugitives, mouths.map((m, i) => m * defs[i].flee));
   const hidden = splitInteger(N.hiddenCount, mouths.map((m, i) => m * defs[i].hide));
 
-  const twoTaxShare = share(W.twoTax);
-  const commerceShare = share(W.commerce);
-  const householdShare = share(W.households);
-  const claimed = splitInteger(N.claimed, defs.map((d, i) => MIX.twoTax * twoTaxShare[i] + MIX.commerce * commerceShare[i] + MIX.other * householdShare[i]));
+  // 应征按剧本税目表：各路每年应纳的钱 = 耕地×率 + 口数×率 + 商贸额×率（见 shaosong-common.js 的 TAX_SCHEDULE）
+  const farmland = W.land.map(Math.round);
+  const commerceVolume = splitInteger(N.commerce, W.commerce);
+  const claimed = splitInteger(N.claimed, defs.map((d, i) => TAX_SCHEDULE.land * farmland[i] + TAX_SCHEDULE.mouths * mouths[i] + TAX_SCHEDULE.commerce * commerceVolume[i]));
   // 原账口径：实征 = 应征 × 征到比例（截留率另记）。两个率都是运行时每回合真读的（tm-fiscal-engine：
   // 实收 = 应纳 × 征到比例，再扣截留），各路取改前各块的人口加权均值，不从实征反推
   const compliance = groups.map((g) => Math.round(weightedMean(g, (r) => r.leaf.fiscalDetail.compliance) * 100) / 100);
@@ -160,11 +156,9 @@ function main() {
   const money = splitInteger(N.money, retained);
   const grain = splitInteger(N.grain, W.twoTax);
   const cloth = splitInteger(N.cloth, mouths.map((m, i) => m * defs[i].textile));
-  const commerceVolume = splitInteger(N.commerce, W.commerce);
-  const maritime = splitInteger(N.maritime, W.port);
+  // 海贸原值不入任何税目（绍宋市舶按商贸额征），开局即被引擎按港口口数 × 0.02 覆盖；路里先记 0，由各路细分时按引擎算法落块
   const postRelays = splitInteger(N.postRelays, W.counties);
   const kejuQuota = splitInteger(N.kejuQuota, W.households);
-  const farmland = W.land.map(Math.round);
 
   // ---- 写路节点 ----
   const provinces = defs.map((d, i) => {
@@ -240,7 +234,7 @@ function main() {
       economyBase: {
         farmland: farmland[i],
         commerceCoefficient: Math.round(weightedMean(g, (r) => r.leaf.economyBase.commerceCoefficient) * 100) / 100,
-        commerceVolume: commerceVolume[i], maritimeTradeVolume: maritime[i],
+        commerceVolume: commerceVolume[i], maritimeTradeVolume: 0,
         saltProduction: 0, mineralProduction: 0, horseProduction: 0, fishingProduction: 0, imperialFarmland: 0,
         // 官营织造、矿场、御窑原账乱挂（威州有织造、东京无绫锦院），作废；各路细分时逐块按史料重写
         imperialAssets: { zhizao: 0, kuangchang: 0, yuyao: 0 },
@@ -264,7 +258,7 @@ function main() {
     ['实征', N.actual, P((p) => p.fiscalDetail.actualRevenue)], ['起运', N.remitted, P((p) => p.fiscalDetail.remittedToCenter)],
     ['留用', N.retained, P((p) => p.fiscalDetail.retainedBudget)], ['库钱', N.money, P((p) => p.publicTreasuryInit.money)],
     ['库粮', N.grain, P((p) => p.publicTreasuryInit.grain)], ['库帛', N.cloth, P((p) => p.publicTreasuryInit.cloth)],
-    ['商贸', N.commerce, P((p) => p.economyBase.commerceVolume)], ['海贸', N.maritime, P((p) => p.economyBase.maritimeTradeVolume)],
+    ['商贸', N.commerce, P((p) => p.economyBase.commerceVolume)],
     ['驿站', N.postRelays, P((p) => p.economyBase.postRelays)], ['解额', N.kejuQuota, P((p) => p.economyBase.kejuQuota)],
     ['地块数', leaves.length, P((p) => p.children.length)]
   ];
@@ -284,12 +278,12 @@ function main() {
   if (Object.keys(roundedFrom).length) {
     lines.push('原账带小数、全国合计取整后守恒的项：' + Object.entries(roundedFrom).map(([k, v]) => k + ' ' + v + ' → ' + N[k]).join('；') + '。', '');
   }
-  lines.push('应征构成（原账全国）：两税 ' + (MIX.twoTax * 100).toFixed(1) + '%、商税 ' + (MIX.commerce * 100).toFixed(1) + '%、盐茶酒课 ' + (MIX.other * 100).toFixed(1) + '%，分路时分别按两税、商税、户数权重。', '');
+  lines.push('应征按剧本税目表分：各路每年应纳的钱 = 耕地 × ' + TAX_SCHEDULE.land + ' + 口数 × ' + TAX_SCHEDULE.mouths + ' + 商贸额 × ' + TAX_SCHEDULE.commerce + '，开局所见与第一回合引擎实征成比例。海贸原值 ' + Math.round(T((l) => l.economyBase.maritimeTradeVolume)) + ' 不入任何税目、开局即被引擎覆盖，不守恒，由各路按港口口数 × 0.02 写。', '');
   const { rates, southernMedian } = lib.yuanfengRates();
   lines.push('田亩：宋廷各块按元丰各路每户登记田亩汇总，合计 ' + Math.round(sum(farmland) / 1e4) + ' 万亩（改前合计 ' + T((l) => l.economyBase.farmland).toFixed(2) + '，量纲错）。梓州、利州、夔州、广南西路登记失真，每户按南方八路中位数 ' + southernMedian.toFixed(1) + ' 亩 × 0.6 估。', '');
   const disrupted = defs.map((d, i) => [d, i]).filter(([d]) => d.trade && d.trade !== 1);
   if (disrupted.length) {
-    lines.push('战区商贸折减（估，熙宁商税额不反映靖康兵祸）：' + disrupted.map(([d]) => d.name + ' × ' + d.trade).join('、') + '。', '');
+    lines.push('战区商贸折减（熙宁商税额不反映靖康兵祸；京畿依建炎元年「販貨上京者與免稅」诏，其余依「殘破州縣」诏按兵祸轻重估）：' + disrupted.map(([d]) => d.name + ' × ' + d.trade).join('、') + '。', '');
   }
   lines.push('两税：元丰见催额钱粮帛草混计，每户两税封顶在十九路中位数 ' + lib.yuanfengRates().taxMedian.toFixed(2) + ' 的两倍；' +
     Object.entries(lib.yuanfengRates().rates).filter(([, r]) => r.taxCapped).map(([k, r]) => k + ' ' + r.registerTaxPerHousehold.toFixed(2) + ' → ' + r.taxPerHousehold.toFixed(2)).join('、') + '。', '');

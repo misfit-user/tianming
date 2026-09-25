@@ -13,8 +13,10 @@
 //   leafIdentity：给叶子补 level、capital、parentDivisionId、dejureOwner、mappedRegions，mapAccounting 归一
 //   dropKeys：叶子与地块 data 上要删的旧字段
 //   regionKeys / regionKeyFrom：地块读数层用哪些键、各键从数据块的哪个字段取
-//   productionRule: 'engine'：盐矿马渔与皇庄田按引擎首回合算法落块（tm-fiscal-engine P1-B2、B3a），省里合计随之改写
-//   fiscalMix：应征的构成（两税、商贸、户数三项权重），UNITS 的 weights.commerce 给出商贸权重
+//   productionRule: 'engine'：盐矿马渔、海贸与皇庄田按引擎算法落块（tm-fiscal-engine P1-B2、B3a），省里合计随之改写；
+//     官营织造、矿场、御窑只记数据块写明的，省里合计取各块之和
+//   taxSchedule：应征按剧本税目表分（耕地、口数、商贸额三项的每年应纳率），UNITS 的 weights.commerce 给出商贸权重
+//   fiscalRates: 'compliance'：实征 = 应征 × 征到比例，截留率另记（绍宋原账口径）
 'use strict';
 
 const fs = require('fs');
@@ -356,11 +358,20 @@ function applyProvince(scenario, data) {
   const fd = P.fiscalDetail;
   const grainShare = col('grain').map((g) => g / sum(col('grain')));
   // 商贸权重：数据模块给了逐块商贸史料（绍宋：熙宁商税岁额）就用它，否则按人口乘地形商贸强度
-  const commerceWeight = data.fiscalMix ? col('commerce') : mouths.map((m, i) => m * B[i].commerce);
+  const commerceWeight = data.taxSchedule ? col('commerce') : mouths.map((m, i) => m * B[i].commerce);
   const commerceShare = commerceWeight.map((c) => c / sum(commerceWeight));
-  const householdShare = households.map((h) => h / sum(households));
-  const mix = data.fiscalMix || { grain: 0.75, commerce: 0.25, households: 0 };
-  const claimed = splitInteger(fd.claimedRevenue, grainShare.map((g, i) => mix.grain * g + mix.commerce * commerceShare[i] + mix.households * householdShare[i]));
+  let claimedWeights;
+  if (data.taxSchedule) {
+    // 绍宋：按剧本税目表，各块应征 ∝ 每年应纳的钱 = 耕地×率 + 口数×率 + 商贸额×率；
+    // 耕地、商贸额用下文分块时同一组权重先分出来，开局所见与第一回合引擎实征成比例
+    const ts = data.taxSchedule;
+    const landSplit = splitInteger(Number(P.economyBase.farmland) || 0, col('land'));
+    const commerceSplit = splitInteger(Number(P.economyBase.commerceVolume) || 0, commerceWeight);
+    claimedWeights = mouths.map((m, i) => ts.land * landSplit[i] + ts.mouths * m + ts.commerce * commerceSplit[i]);
+  } else {
+    claimedWeights = grainShare.map((g, i) => 0.75 * g + 0.25 * commerceShare[i]);
+  }
+  const claimed = splitInteger(fd.claimedRevenue, claimedWeights);
   let actual;
   let compliance;
   let skimRounded;
@@ -419,11 +430,12 @@ function applyProvince(scenario, data) {
     landsReclaimed: splitInteger(Number(eb.landsReclaimed) || 0, col('land')),
     landsSurveyed: splitInteger(Number(eb.landsSurveyed) || 0, col('land'))
   };
-  // 绍宋：盐矿马渔的原值是小数碎屑，改按引擎首回合的算法落块（tm-fiscal-engine P1-B2：产区口数 × 系数；
-  // B3a：皇庄田 = 耕地 × 5%），开局所见与第一回合一致；省里合计改写为各块之和
+  // 绍宋：盐矿马渔的原值是小数碎屑，海贸原值不入任何税目、开局即被引擎覆盖，都改按引擎的算法落块
+  // （tm-fiscal-engine P1-B2：产区口数 × 系数；B3a：皇庄田 = 耕地 × 5%），开局所见与运行时一致；省里合计改写为各块之和
   if (eb && data.productionRule === 'engine') {
     const RATES = [['saltProduction', 'saltRegion', 0.5], ['mineralProduction', 'mineralRegion', 0.1],
-      ['horseProduction', 'horseRegion', 0.001], ['fishingProduction', 'fishingRegion', 0.05]];
+      ['horseProduction', 'horseRegion', 0.001], ['fishingProduction', 'fishingRegion', 0.05],
+      ['maritimeTradeVolume', 'hasPort', 0.02]];
     RATES.forEach(([k, tag, rate]) => {
       economy[k] = mouths.map((m, i) => (B[i].tags && B[i].tags[tag] ? Math.round(m * rate) : 0));
       eb[k] = sum(economy[k]);

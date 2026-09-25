@@ -301,7 +301,8 @@ function applyProvince(scenario, data) {
       settleKeys.forEach((k, j) => {
         const s = sum(matrix.map((row) => row[j]));
         const target = P.bySettlement[k].mouths;
-        matrix.forEach((row) => { row[j] = (row[j] * target) / s; });
+        // 省里某类为零（如河北义军原账无「镇」）：该列一轮后全零，此后不再按列缩放，免得 0/0
+        if (s > 0) matrix.forEach((row) => { row[j] = (row[j] * target) / s; });
       });
     }
     settlement = B.map((b, i) => {

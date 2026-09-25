@@ -68,4 +68,74 @@ function circuitModule(circuit, fields) {
   }, fields);
 }
 
-module.exports = { SCENARIO, DROP_KEYS, REGION_KEYS, TAX_SCHEDULE, unitsFor, songBlock, circuitModule };
+// 原账「地域核算组」：同一地块在原账上拆成几笔核算项（如「高昌·西州核算项」与「高昌·高昌核算项」本是一地，
+// 「疏勒·据史德核算项」是并进疏勒地块的旧账），名目是拼账留下的，不是行政区划。并成一块：
+// 可加的数相加，比例与读数按口数加权，其余字段取口数最多的一笔；id、名字、绑定地块用组节点的。
+const GROUP_SUM = [
+  'population', 'populationDetail.mouths', 'populationDetail.households', 'populationDetail.ding',
+  'populationDetail.fugitives', 'populationDetail.hiddenCount',
+  'fiscalDetail.claimedRevenue', 'fiscalDetail.actualRevenue', 'fiscalDetail.remittedToCenter', 'fiscalDetail.retainedBudget',
+  'publicTreasuryInit.money', 'publicTreasuryInit.grain', 'publicTreasuryInit.cloth',
+  'economyBase.farmland', 'economyBase.commerceVolume', 'economyBase.maritimeTradeVolume',
+  'economyBase.postRelays', 'economyBase.kejuQuota', 'carryingCapacity'
+];
+// [路径, 小数位]
+const GROUP_MEAN = [
+  ['prosperity', 0], ['minxinLocal', 0], ['corruptionLocal', 0], ['taxBurden', 0], ['unrest', 0],
+  ['fiscalDetail.compliance', 2], ['fiscalDetail.skimmingRate', 3], ['economyBase.roadQuality', 0], ['economyBase.commerceCoefficient', 2]
+];
+const GROUP_MIX = ['byAge', 'byGender', 'byEthnicity', 'byFaith', 'bySettlement'];
+
+function getPath(obj, p) { return p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); }
+function setPath(obj, p, value) {
+  const keys = p.split('.');
+  const last = keys.pop();
+  const parent = keys.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  if (parent != null) parent[last] = value;
+}
+function toRatio(v) {
+  if (typeof v === 'number') return v;
+  const m = String(v).match(/^\s*(-?\d+(?:\.\d+)?)\s*%\s*$/);
+  if (!m) throw new Error('认不出的百分比：' + v);
+  return Number(m[1]) / 100;
+}
+
+function mergeAccountingGroup(group) {
+  const kids = group.children || [];
+  if (!kids.length || kids.some((k) => k.mapRegionId !== group.mapRegionId || (k.children || []).length)) {
+    throw new Error(group.name + ' 不是同一地块的核算组，不能合并');
+  }
+  const pop = kids.reduce((a, k) => a + k.population, 0);
+  const base = kids.reduce((a, k) => (k.population > a.population ? k : a));
+  const out = JSON.parse(JSON.stringify(base));
+  out.id = group.id;
+  out.name = group.name;
+  out.mapRegionId = group.mapRegionId;
+  if (group.mapAccounting) out.mapAccounting = { schema: group.mapAccounting.schema, logicalRegionId: group.mapRegionId, weight: 1 };
+  GROUP_SUM.forEach((p) => {
+    const vals = kids.map((k) => getPath(k, p));
+    if (vals.every((v) => typeof v === 'number')) setPath(out, p, Math.round(vals.reduce((a, v) => a + v, 0) * 1e6) / 1e6);
+  });
+  GROUP_MEAN.forEach(([p, digits]) => {
+    const vals = kids.map((k) => getPath(k, p));
+    if (!vals.every((v) => typeof v === 'number')) return;
+    const f = Math.pow(10, digits);
+    setPath(out, p, Math.round(kids.reduce((a, k, i) => a + vals[i] * k.population, 0) / pop * f) / f);
+  });
+  GROUP_MIX.forEach((key) => {
+    if (!kids.every((k) => k[key] && typeof k[key] === 'object')) return;
+    const acc = {};
+    kids.forEach((k) => Object.entries(k[key]).forEach(([n, v]) => { acc[n] = (acc[n] || 0) + toRatio(v) * k.population; }));
+    const total = Object.values(acc).reduce((a, v) => a + v, 0);
+    out[key] = {};
+    Object.entries(acc).forEach(([n, v]) => { out[key][n] = Math.round((v / total) * 1000) / 1000; });
+  });
+  return out;
+}
+
+// 国号节点下的叶子：核算组并成一块，其余原样
+function flatLeaves(kingdom) {
+  return kingdom.children.map((c) => (c.type === '地域核算组' ? mergeAccountingGroup(c) : c));
+}
+
+module.exports = { SCENARIO, DROP_KEYS, REGION_KEYS, TAX_SCHEDULE, unitsFor, songBlock, circuitModule, mergeAccountingGroup, flatLeaves };

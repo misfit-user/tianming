@@ -242,6 +242,7 @@ module.exports = {
   settlementKeys: { 村寨: '乡', 牧落: '乡', 猛安谋克屯寨: '乡' },
   PORTS: {},
   weights,
+  commercePerHousehold,
   TAIHE_TO_CHONGNING,
   NORTH
 };

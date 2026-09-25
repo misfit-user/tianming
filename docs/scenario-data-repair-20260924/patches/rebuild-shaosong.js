@@ -19,9 +19,11 @@ const BASE_COMMIT = '5b243f02';
 // 各路数据模块，按落刀顺序
 const CIRCUITS = ['liangzhe', 'jingji', 'jingdong', 'jingxi', 'huainan', 'jiangnan', 'jinghu-fujian', 'guangnan-dong', 'guangnan-xi', 'chuan-west', 'chuan-east', 'xibei'];
 
-// 外藩：先用各自的框架数据补路一级，再跑逐块数据模块
+// 外藩：先用各自的框架数据补路一级，再跑逐块数据模块（框架与逐块数据可在同一文件）
 const FOREIGN = [
-  { key: 'jin', frame: 'shaosong-jin-frame.js' }
+  { key: 'jin', frame: 'shaosong-jin-frame.js' },
+  { key: 'hebei-yijun', frame: 'shaosong-hebei-yijun.js' },
+  { key: 'xixia', frame: 'shaosong-xixia.js' }
 ];
 
 function run(args) {

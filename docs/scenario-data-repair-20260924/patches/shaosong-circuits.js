@@ -20,7 +20,7 @@ const REPO = path.resolve(__dirname, '../../..');
 const SCENARIO_FILE = path.join(REPO, 'scenarios', '绍宋·建炎元年八月（官方）.json');
 const DATA = path.join(__dirname, '..', 'data');
 const lib = require(path.join(DATA, 'shaosong-sources.js'));
-const { TAX_SCHEDULE } = require(path.join(DATA, 'shaosong-common.js'));
+const { TAX_SCHEDULE, flatLeaves } = require(path.join(DATA, 'shaosong-common.js'));
 
 function sum(values) { return values.reduce((a, b) => a + b, 0); }
 function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -107,6 +107,8 @@ function main() {
     throw new Error(treeKey + ' 树已不是「国号节点 + 叶子」的原样，这个补丁只能在原版上跑（用 rebuild-shaosong.js 从原版重建）');
   }
   const kingdom = tree.divisions[0];
+  // 原账的地域核算组（同一地块拆成几笔）先并成一块，见 shaosong-common.js 的 mergeAccountingGroup
+  kingdom.children = flatLeaves(kingdom);
   const leaves = kingdom.children;
   // 玩家树按国号找势力；外藩树的键就是势力 id（国号节点名可能与势力名不同，如河北义军树顶叫「两河忠义寨」）
   const faction = treeKey === 'player'
@@ -153,6 +155,12 @@ function main() {
     if (!Number.isInteger(N[k])) { roundedFrom[k] = N[k]; N[k] = Math.round(N[k]); }
   });
   if (N.mouths !== T((l) => l.population)) throw new Error('改前 population 与 populationDetail.mouths 合计不符');
+  // 外藩多无户口可考，框架数据的户数是相对权重（relativeHouseholds）：田亩、两税按「每户 × 率」算，
+  // 先把户数权重折成绝对户数（合计 = 改前全国户数）再乘
+  if (frame.relativeHouseholds) {
+    const k = N.households / sum(rows.map((r) => r.households));
+    rows.forEach((r) => { r.land *= k; r.twoTax *= k; });
+  }
   if (N.remitted + N.retained !== N.actual) throw new Error('改前起运加留用不等于实征');
 
   // ---- 分路 ----
@@ -225,7 +233,7 @@ function main() {
     // 外藩原账的聚落名目各异（村寨、牧落、猛安谋克屯寨……），框架数据的 settlementKeys 把它们并入城、镇、乡
     const settle = mixRatios(g, (r) => foldSettlement(r.leaf.bySettlement, frame.settlementKeys));
     // 城内再分坊（居住坊郭）与市（市肆行铺）：原账只分城、镇、乡，城内按六四分
-    const settleCounts = splitInteger(m, [settle['城'] * 0.6, settle['城'] * 0.4, settle['镇'], settle['乡']]);
+    const settleCounts = splitInteger(m, [(settle['城'] || 0) * 0.6, (settle['城'] || 0) * 0.4, settle['镇'] || 0, settle['乡'] || 0]);
     const oldPop = sum(g.map((r) => r.population));
     const oldCap = sum(g.map((r) => Number(r.leaf.carryingCapacity) || 0));
     const load = Math.round(clamp(oldPop / oldCap, 0.4, 1.3) * 100) / 100;

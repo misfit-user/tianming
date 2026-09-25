@@ -12,7 +12,7 @@ const DIR = path.join(REPO, 'docs/scenario-data-repair-20260924');
 const sources = require(path.join(DIR, 'data/shaosong-sources.js'));
 const SCENARIO_REL = 'scenarios/绍宋·建炎元年八月（官方）.json';
 // 外藩树用各自框架数据的权重函数
-const FRAMES = { fac_jin: 'shaosong-jin-frame.js', fac_hebei_yijun: 'shaosong-jin-frame.js' };
+const FRAMES = { fac_jin: 'shaosong-jin-frame.js', fac_hebei_yijun: 'shaosong-jin-frame.js', fac_xixia: 'shaosong-xixia.js' };
 function frameWeights(name, circuit) {
   const f = FRAMES[process.argv[4] || 'player'];
   if (f) return require(path.join(DIR, 'data', f)).weights(name, circuit);
@@ -27,7 +27,8 @@ const treeKey = process.argv[4] || 'player';
 const base = JSON.parse(baseFile ? fs.readFileSync(baseFile, 'utf8')
   : execFileSync('git', ['show', '5b243f02:' + SCENARIO_REL], { cwd: REPO, maxBuffer: 512 * 1024 * 1024 }).toString('utf8'));
 const regions = new Map(base.map.regions.map((r) => [r.id, r]));
-const leaves = base.adminHierarchy[treeKey].divisions[0].children.filter((l) => regions.get(l.mapRegionId).circuitName === circuit);
+const { flatLeaves } = require(path.join(DIR, 'data/shaosong-common.js'));
+const leaves = flatLeaves(base.adminHierarchy[treeKey].divisions[0]).filter((l) => regions.get(l.mapRegionId).circuitName === circuit);
 if (!leaves.length) { console.error('原版里没有路 ' + circuit); process.exit(2); }
 
 const KEYS = ['development', 'unrest', 'taxBurden', 'armyPressure'];

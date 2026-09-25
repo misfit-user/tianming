@@ -7,23 +7,33 @@
 :root{
   /* 墨色阶梯 (Ink Scale) */
   --ink-50:#f8f3e8;--ink-100:#ede5d0;--ink-200:#d4c9b0;--ink-300:#9d917d;--ink-400:#6b5d4f;--ink-500:#3a3530;--ink-600:#2a2520;--ink-700:#1c1914;--ink-800:#12100e;--ink-900:#0a0908;
-  /* 金色 */
-  --gold-300:#d4be7a;--gold-400:#b89a53;--gold-500:#8a6d2b;--gold-600:#6b5010;
+  /* 美术宪法（docs/art-constitution.md）色板：金、朱、青瓷、漆、纸，改值先改宪法。
+     第1刀起按默认主题「素纸」的实值写：此前金 400/500、朱 300/400/500、青瓷 400 写的是 v2 老值，
+     「素纸」每次启动都在运行时改掉（tm-theme-font.js），屏幕上从没出现过表里的值 */
+  /* 金色（亮→暗） */
+  --gold-200:#f0d597;--gold-300:#d4be7a;--gold-400:#c9a85f;--gold-450:#c9a045;--gold-500:#b89a53;--gold-550:#a8833a;--gold-600:#6b5010;
   /* 朱砂 */
-  --vermillion-300:#d4706a;--vermillion-400:#c04030;--vermillion-500:#8b2e25;
-  /* 青瓷 */
-  --celadon-300:#a3d4c7;--celadon-400:#7eb8a7;--celadon-500:#5a8f7f;
+  --vermillion-300:#d15c47;--vermillion-400:#b84738;--vermillion-450:#a83228;--vermillion-500:#8f3428;--vermillion-600:#7a2018;
+  /* 青瓷（350 是原 400 的 v2 值，即「素纸」的 --color-info） */
+  --celadon-300:#a3d4c7;--celadon-350:#7eb8a7;--celadon-400:#6a9a7f;--celadon-500:#5a8f7f;
   /* 靛青 */
   --indigo-400:#4a6fa5;--indigo-500:#3a5580;
   /* 语义原色 */
   --green-400:#7a9e6d;--red-400:#a84535;--amber-400:#c9a84c;
-  /* 美术宪法 v1（2026-09-25·docs/art-constitution.md）补的色：值取自御案现用最多的写法，改值先改宪法 */
   /* 漆·御案木漆面（深→浅） */
   --lacquer-0:#0a0806;--lacquer-1:#1a1410;--lacquer-2:#241e18;--lacquer-3:#3d342a;
   /* 纸·文书纸面（绢→纸边）与纸上的墨 */
-  --paper-50:#fffdf3;--paper-100:#f6efda;--paper-200:#ece1c6;--paper-300:#dcc99c;--paper-ink-900:#241d15;--paper-ink-600:#6e583a;
-  /* 补档：金·亮 / 金（现默认主题主色）/ 金·沉，朱·亮 / 印泥 / 朱·深，漆上主字 */
-  --gold-200:#f0d597;--gold-350:#c9a85f;--gold-450:#a8833a;--vermillion-350:#d15c47;--vermillion-450:#a83228;--vermillion-600:#7a2018;--ink-75:#f4eadd;
+  --paper-50:#fffdf3;--paper-100:#f6efda;--paper-200:#ece1c6;--paper-300:#dcc99c;--paper-ink-600:#6e583a;--paper-ink-900:#241d15;
+  /* 漆上主字（墨阶 --ink-50…900 在右栏抽屉里被整段反相重定义，御案样式不直接引用墨阶） */
+  --ink-75:#f4eadd;
+  /* 色板的 RGB 三元组：半透明写 rgba(var(--gold-400-rgb),.5)；主题改色时两者一起改（smoke-design-token-palette 核对） */
+  --gold-200-rgb:240,213,151;--gold-300-rgb:212,190,122;--gold-400-rgb:201,168,95;--gold-450-rgb:201,160,69;--gold-500-rgb:184,154,83;--gold-550-rgb:168,131,58;--gold-600-rgb:107,80,16;
+  --vermillion-300-rgb:209,92,71;--vermillion-400-rgb:184,71,56;--vermillion-450-rgb:168,50,40;--vermillion-500-rgb:143,52,40;--vermillion-600-rgb:122,32,24;
+  --celadon-300-rgb:163,212,199;--celadon-350-rgb:126,184,167;--celadon-400-rgb:106,154,127;--celadon-500-rgb:90,143,127;
+  --indigo-400-rgb:74,111,165;--indigo-500-rgb:58,85,128;--green-400-rgb:122,158,109;--red-400-rgb:168,69,53;--amber-400-rgb:201,168,76;
+  --lacquer-0-rgb:10,8,6;--lacquer-1-rgb:26,20,16;--lacquer-2-rgb:36,30,24;--lacquer-3-rgb:61,52,42;
+  --paper-50-rgb:255,253,243;--paper-100-rgb:246,239,218;--paper-200-rgb:236,225,198;--paper-300-rgb:220,201,156;--paper-ink-600-rgb:110,88,58;--paper-ink-900-rgb:36,29,21;
+  --ink-75-rgb:244,234,221;
   /* 间距 (4px grid) */
   --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
   /* 字号 (中文优化) */
@@ -60,7 +70,7 @@
   --color-border:var(--ink-500);--color-border-subtle:var(--ink-600);--color-border-emphasis:var(--gold-500);
   --color-primary:var(--gold-400);--color-primary-hover:var(--gold-300);--color-primary-foreground:var(--ink-900);
   --color-accent:var(--vermillion-400);--color-accent-subtle:rgba(192,64,48,0.12);
-  --color-info:var(--celadon-400);--color-info-subtle:rgba(126,184,167,0.12);
+  --color-info:var(--celadon-350);--color-info-subtle:rgba(126,184,167,0.12);
   --color-success:var(--green-400);--color-destructive:var(--red-400);--color-warning:var(--amber-400);
   --color-ring:var(--gold-500);--color-hover-overlay:rgba(184,154,83,0.04);
   /* 向后兼容旧变量名 */
@@ -145,9 +155,11 @@
   --bg-0:#000000;--bg-1:#0a0a0a;--bg-2:#1a1a1a;--bg-3:#2a2a2a;--bg-4:#3a3a3a;
   --gold:#ffff00;--gold-l:#ffff66;--gold-d:#cccc00;
   --gold-300:#ffff66;--gold-400:#ffff00;--gold-500:#cccc00;--gold-600:#999900;
+  --gold-300-rgb:255,255,102;--gold-400-rgb:255,255,0;--gold-500-rgb:204,204,0;--gold-600-rgb:153,153,0;
   --txt:#ffffff;--txt-s:#e0e0e0;--txt-d:#bbbbbb;--bdr:#ffffff;
   --red:#ff4444;--green:#44ff44;--blue:#4444ff;--purple:#ff44ff;
   --celadon-400:#44ff44;--vermillion-400:#ff4444;--indigo-400:#8888ff;--amber-400:#ffaa00;
+  --celadon-400-rgb:68,255,68;--vermillion-400-rgb:255,68,68;--indigo-400-rgb:136,136,255;--amber-400-rgb:255,170,0;
   --ink-300:#cccccc;--ink-400:#aaaaaa;--ink-600:#888888;--ink-800:#666666;
   --shadow-sm:none;--shadow-md:none;--shadow-lg:none;--shadow-gold:none;
 }

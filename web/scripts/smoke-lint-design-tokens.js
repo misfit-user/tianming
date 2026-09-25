@@ -2,16 +2,14 @@
 // smoke-lint-design-tokens.js — 美术宪法守卫自测
 // 1. 计数口径：写死颜色、写死字号该计的计；令牌定义、var()、注释、design-ok 行不计
 // 2. 棘轮判定：超基线或新文件带写死值即报，持平与下降不报
-// 3. styles.css 的令牌表里有宪法 v1 定下的色板，值与宪法一致
-// 4. 基线账本自洽：合计等于逐文件之和
+// 3. 基线账本自洽：合计等于逐文件之和
+// （色板本身的值与三元组由 smoke-design-token-palette.js 核对）
 'use strict';
 
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { MARKER, countText, compareToBaseline } = require(path.join(__dirname, 'lint-design-tokens.js'));
-
-const WEB = path.resolve(__dirname, '..');
 
 function count(text, kind) {
   const { colors, fontSizes } = countText(text, kind);
@@ -47,21 +45,7 @@ assert.strictEqual(compareToBaseline(base, { 'a.js': { colors: 4, fontSizes: 2 }
 assert.strictEqual(compareToBaseline(base, { 'a.js': { colors: 4, fontSizes: 3 } }).length, 2, '颜色、字号都超各报 1 条');
 assert.strictEqual(compareToBaseline(base, { 'new.js': { colors: 1, fontSizes: 0 } }).length, 1, '新文件带写死颜色即报');
 
-// ---- 3. 宪法色板在 styles.css 的令牌表里 ----
-const css = fs.readFileSync(path.join(WEB, 'styles.css'), 'utf8').replace(/\s+/g, '');
-const PALETTE = {
-  '--lacquer-0': '#0a0806', '--lacquer-1': '#1a1410', '--lacquer-2': '#241e18', '--lacquer-3': '#3d342a',
-  '--paper-50': '#fffdf3', '--paper-100': '#f6efda', '--paper-200': '#ece1c6', '--paper-300': '#dcc99c',
-  '--paper-ink-900': '#241d15', '--paper-ink-600': '#6e583a',
-  '--gold-200': '#f0d597', '--gold-350': '#c9a85f', '--gold-450': '#a8833a',
-  '--vermillion-350': '#d15c47', '--vermillion-450': '#a83228', '--vermillion-600': '#7a2018',
-  '--ink-75': '#f4eadd'
-};
-Object.entries(PALETTE).forEach(([name, value]) => {
-  assert.ok(css.includes(`${name}:${value};`), `styles.css 缺令牌 ${name}:${value}`);
-});
-
-// ---- 4. 基线账本自洽 ----
+// ---- 3. 基线账本自洽 ----
 const baseline = JSON.parse(fs.readFileSync(path.join(__dirname, 'arch-baselines', 'design-tokens.json'), 'utf8'));
 const sum = Object.values(baseline.files).reduce(
   (acc, c) => ({ colors: acc.colors + c.colors, fontSizes: acc.fontSizes + c.fontSizes }),
@@ -69,4 +53,4 @@ const sum = Object.values(baseline.files).reduce(
 assert.deepStrictEqual(sum, baseline.totals, '基线合计应等于逐文件之和');
 assert.strictEqual(baseline.config && baseline.config.marker, MARKER, '基线记录的豁免标记应与守卫一致');
 
-console.log(`[smoke-lint-design-tokens] PASS 计数口径 ${CASES.length} 例、棘轮判定 5 例、宪法色板 ${Object.keys(PALETTE).length} 个令牌、基线合计自洽`);
+console.log(`[smoke-lint-design-tokens] PASS 计数口径 ${CASES.length} 例、棘轮判定 5 例、基线合计自洽`);

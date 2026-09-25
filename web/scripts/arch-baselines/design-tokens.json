@@ -2,9 +2,9 @@
   "config": {
     "marker": "design-ok"
   },
-  "updatedAt": "2026-09-25T15:04:14.841Z",
+  "updatedAt": "2026-09-25T16:50:10.518Z",
   "totals": {
-    "colors": 12564,
+    "colors": 12200,
     "fontSizes": 5511
   },
   "files": {
@@ -41,7 +41,7 @@
       "fontSizes": 18
     },
     "phase8-formal-bridge-styles.js": {
-      "colors": 2136,
+      "colors": 1774,
       "fontSizes": 395
     },
     "phase8-formal-bridge.js": {
@@ -133,7 +133,7 @@
       "fontSizes": 6
     },
     "tm-chaoyi-changchao.css": {
-      "colors": 139,
+      "colors": 137,
       "fontSizes": 65
     },
     "tm-chaoyi-changchao.js": {

@@ -159,6 +159,15 @@
     return h;
   }
 
+  // 色板令牌连同 RGB 三元组一起改：半透明写法 rgba(var(--gold-400-rgb),.5) 才跟得上主题
+  function hexTriplet(hex) {
+    var h = String(hex).replace('#', '');
+    return [0, 2, 4].map(function(i){ return parseInt(h.slice(i, i + 2), 16); }).join(',');
+  }
+  function paletteVar(name, hex) {
+    return '--' + name + ':' + hex + ';--' + name + '-rgb:' + hexTriplet(hex) + ';';
+  }
+
   function applyTheme(name, el, silent) {
     var theme = THEME_MAP[name] || THEME_MAP[DEFAULT_THEME];
     var pal = theme.pal;
@@ -170,13 +179,13 @@
       + '--color-accent:' + pal.accent + ';'
       + '--color-info:' + pal.info + ';'
       + '--color-warning:' + pal.warn + ';'
-      + '--gold-400:' + pal.gold2 + ';'
-      + '--gold-500:' + pal.gold1 + ';'
-      + '--gold-300:' + pal.gold3 + ';'
-      + '--vermillion-400:' + pal.verm2 + ';'
-      + '--vermillion-500:' + pal.verm1 + ';'
-      + '--vermillion-300:' + pal.verm3 + ';'
-      + '--celadon-400:' + pal.cela + ';'
+      + paletteVar('gold-400', pal.gold2)
+      + paletteVar('gold-500', pal.gold1)
+      + paletteVar('gold-300', pal.gold3)
+      + paletteVar('vermillion-400', pal.verm2)
+      + paletteVar('vermillion-500', pal.verm1)
+      + paletteVar('vermillion-300', pal.verm3)
+      + paletteVar('celadon-400', pal.cela)
       + '--bg-2:' + pal.bg + ';'
       + '--bg-3:' + pal.surface + ';'
       + '}';

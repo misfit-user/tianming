@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 天启剧本·府州地块重写补丁（阶段一）
+// 府州地块重写补丁（阶段一天启起用，阶段二绍宋沿用）
 //
 // 把一个省的省级总数按史料权重重新分给下辖府州地块，定性字段按数据模块逐块改写。省总数一律不动。
 // 同时改三处副本：行政树叶子（明廷在 adminHierarchy.player 下，外藩在各自势力 id 的树下）、地图地块的 data、地图地块本身的读数字段；
@@ -7,14 +7,22 @@
 //
 // 用法（在仓库根目录）：
 //   node docs/scenario-data-repair-20260924/patches/tianqi-prefectures.js <数据模块> [--write] [--report <文件>]
-//   不带 --write 只算不写，报告照出。
+//   不带 --write 只算不写，报告照出。数据模块写 scenario（剧本文件名）时改那一部，默认天启。
+//
+// 绍宋的数据模块另用几个开关（天启不写，行为不变）：
+//   leafIdentity：给叶子补 level、capital、parentDivisionId、dejureOwner、mappedRegions，mapAccounting 归一
+//   dropKeys：叶子与地块 data 上要删的旧字段
+//   regionKeys / regionKeyFrom：地块读数层用哪些键、各键从数据块的哪个字段取
+//   productionRule: 'engine'：盐矿马渔与皇庄田按引擎首回合算法落块（tm-fiscal-engine P1-B2、B3a），省里合计随之改写
+//   fiscalMix：应征的构成（两税、商贸、户数三项权重），UNITS 的 weights.commerce 给出商贸权重
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 
 const REPO = path.resolve(__dirname, '../../..');
-const SCENARIO_FILE = path.join(REPO, 'scenarios', '天启七年·九月（官方）.json');
+const DEFAULT_SCENARIO = '天启七年·九月（官方）.json';
+let SCENARIO_FILE = path.join(REPO, 'scenarios', DEFAULT_SCENARIO);
 
 // ---------------------------------------------------------------------------
 // 小工具
@@ -110,6 +118,8 @@ function main() {
   const reportIndex = args.indexOf('--report');
   const reportFile = reportIndex >= 0 ? args[reportIndex + 1] : null;
   const data = require(path.resolve(modulePath));
+  const scenarioName = (Array.isArray(data) ? data[0] : data).scenario;
+  if (scenarioName) SCENARIO_FILE = path.join(REPO, 'scenarios', scenarioName);
 
   const raw = fs.readFileSync(SCENARIO_FILE, 'utf8');
   const scenario = JSON.parse(raw);
@@ -185,8 +195,15 @@ function applyProvince(scenario, data) {
   // ---- 县治落块 ----
   // 有同名地块的府州，所辖县一律归本府地块（地图边界是概化的，不让边境县把数字带到邻府）；
   // 地图上没有自己地块的府州（如庐州、滁州），按县治坐标落到所在地块。
-  const projection = fitProjection(scenario.map.geographicReferences || []);
-  if (projection.maxErr > 0.5) throw new Error('经纬投影拟合误差过大：' + projection.maxErr);
+  // 投影只在有府州要按县治坐标落块时才拟合（绍宋地图没有经纬参照点，各府州都有同名地块）
+  let projectionCache = null;
+  const projectionOf = () => {
+    if (!projectionCache) {
+      projectionCache = fitProjection(scenario.map.geographicReferences || []);
+      if (projectionCache.maxErr > 0.5) throw new Error('经纬投影拟合误差过大：' + projectionCache.maxErr);
+    }
+    return projectionCache;
+  };
   const blockRings = blockIds.map((id) => ({ id, rings: parsePath(regionById.get(id).path || regionById.get(id).d) }));
   const blockCenter = new Map(blockIds.map((id) => [id, regionById.get(id).center || regionById.get(id).centroid]));
   const blockByUnitName = new Map(blockIds.map((id) => [data.BLOCKS[id].name, id]));
@@ -213,7 +230,7 @@ function applyProvince(scenario, data) {
     if (!homeBlock && counties.some(([, lon]) => lon == null)) throw new Error(unit.name + ' 没有同名地块，也没有县治坐标');
     const n = counties.length;
     counties.forEach(([county, lon, lat]) => {
-      const pt = homeBlock ? null : projection.project(lon, lat);
+      const pt = homeBlock ? null : projectionOf().project(lon, lat);
       let hit = homeBlock ? { id: homeBlock } : blockRings.find((b) => b.rings.some((ring) => pointInRing(pt, ring)));
       let method = homeBlock ? '归本府地块' : '县治落在块内';
       if (!hit) {
@@ -233,6 +250,7 @@ function applyProvince(scenario, data) {
         households: weights.households / n,
         grain: weights.grain / n,
         land: weights.land / n,
+        commerce: weights.commerce != null ? weights.commerce / n : 0,
         // 驿站按所辖县数加权：数据模块给了 countyCount（没有县治坐标的省份）就按它，否则每县计一
         countyShare: unit.countyCount != null ? unit.countyCount / n : 1
       });
@@ -241,10 +259,10 @@ function applyProvince(scenario, data) {
 
   // ---- 地块权重 ----
   const W = {};
-  blockIds.forEach((id) => { W[id] = { pop: 0, households: 0, grain: 0, land: 0, counties: 0 }; });
+  blockIds.forEach((id) => { W[id] = { pop: 0, households: 0, grain: 0, land: 0, commerce: 0, counties: 0 }; });
   assignments.forEach((a) => {
     const w = W[a.block];
-    w.pop += a.pop; w.households += a.households; w.grain += a.grain; w.land += a.land; w.counties += a.countyShare;
+    w.pop += a.pop; w.households += a.households; w.grain += a.grain; w.land += a.land; w.commerce += a.commerce; w.counties += a.countyShare;
   });
   blockIds.forEach((id) => { if (!W[id].counties) throw new Error(data.BLOCKS[id].name + ' 没有落到任何县，检查坐标'); });
 
@@ -321,7 +339,9 @@ function applyProvince(scenario, data) {
 
   // 地块读数层：改之前各块同值，这个原值就是人口加权均值的目标。
   // 原值必须写在数据模块的 regionMeans 里——从当前值现算的话，补丁重跑时会从已改过的值出发而漂移。
-  const REGION_KEYS = ['development', 'unrest', 'taxPressure', 'armyPressure', 'officeRisk'];
+  const REGION_KEYS = data.regionKeys || ['development', 'unrest', 'taxPressure', 'armyPressure', 'officeRisk'];
+  // 地块读数键 → 数据块字段（绍宋地块的税压叫 taxBurden，数据块统一写 taxPressure）
+  const blockKeyOf = (k) => (data.regionKeyFrom && data.regionKeyFrom[k]) || k;
   if (!data.regionMeans) {
     const seen = {};
     REGION_KEYS.forEach((k) => { seen[k] = [...new Set(blockIds.map((id) => regionById.get(id)[k]))]; });
@@ -329,19 +349,28 @@ function applyProvince(scenario, data) {
   }
   const regionTargets = {};
   REGION_KEYS.forEach((k) => {
-    regionTargets[k] = shiftToMean(B.map((b) => b[k]), popW, data.regionMeans[k], 5, 99).map(Math.round);
+    regionTargets[k] = shiftToMean(B.map((b) => b[blockKeyOf(k)]), popW, data.regionMeans[k], 5, 99).map(Math.round);
   });
 
   // 钱粮：应征按「税粮七成五、商贸二成五」，截留率平移到省实征总数，征到比例拉回省均值
   const fd = P.fiscalDetail;
   const grainShare = col('grain').map((g) => g / sum(col('grain')));
-  const commerceWeight = mouths.map((m, i) => m * B[i].commerce);
+  // 商贸权重：数据模块给了逐块商贸史料（绍宋：熙宁商税岁额）就用它，否则按人口乘地形商贸强度
+  const commerceWeight = data.fiscalMix ? col('commerce') : mouths.map((m, i) => m * B[i].commerce);
   const commerceShare = commerceWeight.map((c) => c / sum(commerceWeight));
-  const claimed = splitInteger(fd.claimedRevenue, grainShare.map((g, i) => 0.75 * g + 0.25 * commerceShare[i]));
+  const householdShare = households.map((h) => h / sum(households));
+  const mix = data.fiscalMix || { grain: 0.75, commerce: 0.25, households: 0 };
+  const claimed = splitInteger(fd.claimedRevenue, grainShare.map((g, i) => mix.grain * g + mix.commerce * commerceShare[i] + mix.households * householdShare[i]));
   let actual;
   let compliance;
   let skimRounded;
-  if (data.fiscalRates === 'province') {
+  if (data.fiscalRates === 'compliance') {
+    // 绍宋原账口径：实征 = 应征 × 征到比例，截留率另记（两个率运行时每回合真读，不从实征反推）。
+    // 两个率各块按数据块的相对高低平移回省均值，实征按「应征 × 征到比例」分
+    compliance = shiftToMean(B.map((b) => b.compliance * 100), claimed, fd.compliance * 100, 30, 98).map((x) => Math.round(x) / 100);
+    skimRounded = shiftToMean(B.map((b) => b.skimmingRate * 1000), claimed, fd.skimmingRate * 1000, 5, 400).map((x) => Math.round(x) / 1000);
+    actual = splitInteger(fd.actualRevenue, claimed.map((c, i) => c * compliance[i]));
+  } else if (data.fiscalRates === 'province') {
     // 羁縻之地（乌思藏、朵甘）剧本记的实征与征到比例、截留率并不按「应征×(1−截留率)」相扣，
     // 各块沿用省里的两项比率（与改前各叶子相同），实征按应征比例分
     actual = splitInteger(fd.actualRevenue, claimed);
@@ -390,6 +419,21 @@ function applyProvince(scenario, data) {
     landsReclaimed: splitInteger(Number(eb.landsReclaimed) || 0, col('land')),
     landsSurveyed: splitInteger(Number(eb.landsSurveyed) || 0, col('land'))
   };
+  // 绍宋：盐矿马渔的原值是小数碎屑，改按引擎首回合的算法落块（tm-fiscal-engine P1-B2：产区口数 × 系数；
+  // B3a：皇庄田 = 耕地 × 5%），开局所见与第一回合一致；省里合计改写为各块之和
+  if (eb && data.productionRule === 'engine') {
+    const RATES = [['saltProduction', 'saltRegion', 0.5], ['mineralProduction', 'mineralRegion', 0.1],
+      ['horseProduction', 'horseRegion', 0.001], ['fishingProduction', 'fishingRegion', 0.05]];
+    RATES.forEach(([k, tag, rate]) => {
+      economy[k] = mouths.map((m, i) => (B[i].tags && B[i].tags[tag] ? Math.round(m * rate) : 0));
+      eb[k] = sum(economy[k]);
+    });
+    economy.imperialFarmland = economy.farmland.map((f, i) => (B[i].tags && B[i].tags.imperialDomain ? Math.round(f * 0.05) : 0));
+    eb.imperialFarmland = sum(economy.imperialFarmland);
+    // 官营织造、矿场、御窑：原账随手乱挂（威州有织造、东京无绫锦院），作废重写，只记有史可据的块，省里合计取各块之和
+    eb.imperialAssets = {};
+    ['zhizao', 'kuangchang', 'yuyao'].forEach((k) => { eb.imperialAssets[k] = sum(B.map((b) => b[k] || 0)); });
+  }
   if (eb) ['mineralProduction', 'horseProduction'].forEach((k) => {
     if (eb[k] > 0 && sum(economy[k]) !== eb[k]) throw new Error(k + ' 省里有数，但数据模块没给任何地块权重');
   });
@@ -460,7 +504,35 @@ function applyProvince(scenario, data) {
     };
     // 掌官姓名考得出、且在人物表里的才写（宪法：考不出不写，界面显示「任官未详」）
     if (b.governor) target.governor = b.governor;
+    if (data.leafIdentity) fillIdentity(target, i);
     DEAD_KEYS.forEach((k) => { delete target[k]; });
+    (data.dropKeys || []).forEach((k) => { delete target[k]; });
+  }
+
+  // 绍宋：叶子原本没有层级、治所、上级、法理归属；族群与信仰是「"90%"」字符串，改成 0～1 的数；
+  // mapAccounting 只留引擎读的四项（schema 供归属整块转移，源账名等是死字段）
+  function toRatios(table) {
+    const out = {};
+    Object.entries(table || {}).forEach(([k, v]) => {
+      const m = String(v).match(/^\s*(-?\d+(?:\.\d+)?)\s*%\s*$/);
+      out[k] = typeof v === 'number' ? v : (m ? Math.round(Number(m[1]) * 10) / 1000 : v);
+    });
+    return out;
+  }
+  function fillIdentity(target, i) {
+    const leaf = leafByRegion.get(blockIds[i]);
+    target.level = 'prefecture';
+    target.capital = P.capitalChildId === leaf.id;
+    target.parentDivisionId = P.id;
+    target.dejureOwner = P.dejureOwner;
+    target.mappedRegions = [blockIds[i]];
+    if (target.baojia === null) delete target.baojia;
+    const b = B[i];
+    target.byEthnicity = b.byEthnicity ? clone(b.byEthnicity) : toRatios(target.byEthnicity);
+    target.byFaith = b.byFaith ? clone(b.byFaith) : toRatios(target.byFaith);
+    if (target.mapAccounting) {
+      target.mapAccounting = { schema: target.mapAccounting.schema, sourceAccountId: leaf.id, logicalRegionId: blockIds[i], weight: 1 };
+    }
   }
 
   // 地域核算组（如「皮岛·原账分项」）：一块地图分成几本账，组节点只有 id、名字与子账，本身不存数据。
@@ -536,12 +608,16 @@ function applyProvince(scenario, data) {
     const region = regionById.get(id);
     fillDivision(region.data, i);
     region.data.legacyFiscalWeight = fiscalWeight[i];
-    region.terrain = B[i].terrain;
-    region.resources = B[i].specialResources.split('·');
+    // 绍宋地图的地块地形是制图图例的英文键（map.terrains），不改；中文地形只写在叶子与 data 上
+    if (data.regionCartography !== 'keep') {
+      region.terrain = B[i].terrain;
+      region.resources = B[i].specialResources.split('·');
+    }
     region.population = mouths[i];
     region.prosperity = prosperity[i];
     region.mood = minxin[i];
-    ['development', 'unrest', 'taxPressure', 'armyPressure', 'officeRisk'].forEach((k) => { region[k] = regionTargets[k][i]; });
+    REGION_KEYS.forEach((k) => { region[k] = regionTargets[k][i]; });
+    if (data.leafIdentity && region.populationDetail) region.populationDetail = clone(leaf.populationDetail || region.data.populationDetail);
   });
 
   // 省节点：下辖名录摘要与描述同步
@@ -577,7 +653,7 @@ function applyProvince(scenario, data) {
     checks.push(['库帛', pt.cloth, sum(leaves.map((l) => l.publicTreasuryInit.cloth))]);
   }
   if (eb) {
-    [['耕地', 'farmland'], ['商贸', 'commerceVolume'], ['盐产', 'saltProduction'], ['驿站', 'postRelays'], ['解额', 'kejuQuota']].forEach(([label, k]) => {
+    [['耕地', 'farmland'], ['商贸', 'commerceVolume'], ['海贸', 'maritimeTradeVolume'], ['盐产', 'saltProduction'], ['驿站', 'postRelays'], ['解额', 'kejuQuota']].forEach(([label, k]) => {
       checks.push([label, Number(eb[k]) || 0, sum(leaves.map((l) => l.economyBase[k]))]);
     });
   }
@@ -590,7 +666,7 @@ function applyProvince(scenario, data) {
   const lines = [];
   lines.push('# ' + data.province + ' 府州重写报告', '');
   lines.push('省总数守恒自检：' + checks.map(([k]) => k).join('、') + ' 全部与省级原值相等。', '');
-  lines.push('经纬投影拟合误差 ' + projection.maxErr.toFixed(3) + ' 像素。', '');
+  if ((scenario.map.geographicReferences || []).length) lines.push('经纬投影拟合误差 ' + projectionOf().maxErr.toFixed(3) + ' 像素。', '');
   lines.push('## 逐块对照（前 → 后）', '');
   lines.push('| 地块 | 人口 | 户 | 应征 | 耕地（亩） | 商贸 | 民心 | 吏治 | 繁荣 | 地形 | 特产 |');
   lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');

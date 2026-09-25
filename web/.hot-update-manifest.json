@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-24T15:56:53.671Z",
+  "generatedAt": "2026-09-25T00:37:54.639Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2611,8 +2611,8 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
-      "size": 91429459
+      "sha256": "bd36f6cf81d09dcefc310b8326ea11bac21acd44fa9982a598414755686c2ca0",
+      "size": 91478305
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
@@ -2626,12 +2626,12 @@
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "e13b3197f2ac69789c76a407078d2c102e74b4c868ef9bdb3f49311be84011e7",
+      "sha256": "cfc6559355b9cc8a58d7f3964b02860b6eab3e78d93958c3b5a436691b14e802",
       "size": 6007
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "a62cd4a9af9dfe4c5c324893747de80ac33577bcaacc26edf049b385eea55e00",
+      "sha256": "66946e610cfdcf5776cae8351dfc5aebb0bb6a4f58f5bae95f4b5274451ca7a3",
       "size": 6386
     },
     {
@@ -3896,8 +3896,8 @@
     },
     {
       "path": "preview/official-scenarios-bundle.js",
-      "sha256": "e3cb6d5905a6bb99466923b0ecedd23b52a90428dd21b939cd3de2aad3795f8d",
-      "size": 101829568
+      "sha256": "850a3321fcc270e813f20a9af2914b7afd515f8d3fb56544482255be0e6bc21d",
+      "size": 101890220
     },
     {
       "path": "preview/opening-redesign-preview.html",
@@ -4096,8 +4096,8 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "527e4f5130cb6d8f1526650d8ce40425313f087129e2986f7efb74f2268ecd2f",
-      "size": 51114105
+      "sha256": "42a54c0c4eb94199735b4149324c9d349c3789ad47273331d6d6d720e893d5b7",
+      "size": 51174757
     },
     {
       "path": "scenarios/tang840-840.js",
@@ -5901,8 +5901,8 @@
     },
     {
       "path": "tm-official-scenario-bundle.js",
-      "sha256": "fac1000b05bcd888fe3c740a85ad9a2f031eb44f57da89f1e76ff20d77daedb8",
-      "size": 101829897
+      "sha256": "3a059da92c603d3aeeb09e0dcd9257240040fb3583eb65744d06df28513ccf2f",
+      "size": 101890549
     },
     {
       "path": "tm-official-scenario-loader.js",
@@ -6241,7 +6241,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "38fd95f7e759e1b5162c2e3290e2798ee03689334cafa57888184acc0fd6f2ae",
+      "sha256": "010affefc532acf8e05aea4529d9f7e562ab280fe68c5c838b1a8d746808cb1f",
       "size": 134629
     },
     {

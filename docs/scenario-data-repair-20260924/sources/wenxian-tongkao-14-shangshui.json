@@ -1,0 +1,2179 @@
+[
+ {
+  "name": "東京",
+  "bracket": "四十萬貫以上",
+  "quota": 450000,
+  "offices": null,
+  "nameS": "东京"
+ },
+ {
+  "name": "成都",
+  "bracket": "四十萬貫以上",
+  "quota": 450000,
+  "offices": 21,
+  "nameS": "成都"
+ },
+ {
+  "name": "興元",
+  "bracket": "四十萬貫以上",
+  "quota": 450000,
+  "offices": 3,
+  "nameS": "兴元"
+ },
+ {
+  "name": "蜀",
+  "bracket": "二十萬貫以上",
+  "quota": 300000,
+  "offices": 9,
+  "nameS": "蜀"
+ },
+ {
+  "name": "彭",
+  "bracket": "二十萬貫以上",
+  "quota": 300000,
+  "offices": 8,
+  "nameS": "彭"
+ },
+ {
+  "name": "永康",
+  "bracket": "二十萬貫以上",
+  "quota": 300000,
+  "offices": 5,
+  "nameS": "永康"
+ },
+ {
+  "name": "梓",
+  "bracket": "二十萬貫以上",
+  "quota": 300000,
+  "offices": 2,
+  "nameS": "梓"
+ },
+ {
+  "name": "遂",
+  "bracket": "二十萬貫以上",
+  "quota": 300000,
+  "offices": 2,
+  "nameS": "遂"
+ },
+ {
+  "name": "開封",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 23,
+  "nameS": "开封"
+ },
+ {
+  "name": "壽",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 8,
+  "nameS": "寿"
+ },
+ {
+  "name": "杭",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 12,
+  "nameS": "杭"
+ },
+ {
+  "name": "眉",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 2,
+  "nameS": "眉"
+ },
+ {
+  "name": "綿",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 2,
+  "nameS": "绵"
+ },
+ {
+  "name": "漢",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 2,
+  "nameS": "汉"
+ },
+ {
+  "name": "嘉",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 8,
+  "nameS": "嘉"
+ },
+ {
+  "name": "邛",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 19,
+  "nameS": "邛"
+ },
+ {
+  "name": "簡",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 4,
+  "nameS": "简"
+ },
+ {
+  "name": "果",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 1,
+  "nameS": "果"
+ },
+ {
+  "name": "戎",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 3,
+  "nameS": "戎"
+ },
+ {
+  "name": "瀘",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 6,
+  "nameS": "泸"
+ },
+ {
+  "name": "合",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 1,
+  "nameS": "合"
+ },
+ {
+  "name": "懷安",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 3,
+  "nameS": "怀安"
+ },
+ {
+  "name": "利",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 3,
+  "nameS": "利"
+ },
+ {
+  "name": "閬",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 1,
+  "nameS": "阆"
+ },
+ {
+  "name": "劍",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 7,
+  "nameS": "剑"
+ },
+ {
+  "name": "三泉縣",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 2,
+  "nameS": "三泉县"
+ },
+ {
+  "name": "夔",
+  "bracket": "十萬貫以上",
+  "quota": 150000,
+  "offices": 2,
+  "nameS": "夔"
+ },
+ {
+  "name": "西京",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 26,
+  "nameS": "西京"
+ },
+ {
+  "name": "北京",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 14,
+  "nameS": "北京"
+ },
+ {
+  "name": "徐",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 7,
+  "nameS": "徐"
+ },
+ {
+  "name": "鄆",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 12,
+  "nameS": "郓"
+ },
+ {
+  "name": "邳",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 3,
+  "nameS": "邳"
+ },
+ {
+  "name": "潁",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 11,
+  "nameS": "颍"
+ },
+ {
+  "name": "滄",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 22,
+  "nameS": "沧"
+ },
+ {
+  "name": "博",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 14,
+  "nameS": "博"
+ },
+ {
+  "name": "棣",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 11,
+  "nameS": "棣"
+ },
+ {
+  "name": "秦",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 6,
+  "nameS": "秦"
+ },
+ {
+  "name": "德",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 13,
+  "nameS": "德"
+ },
+ {
+  "name": "京兆",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 12,
+  "nameS": "京兆"
+ },
+ {
+  "name": "楚",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 8,
+  "nameS": "楚"
+ },
+ {
+  "name": "真",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 5,
+  "nameS": "真"
+ },
+ {
+  "name": "廬",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 6,
+  "nameS": "庐"
+ },
+ {
+  "name": "成",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 5,
+  "nameS": "成"
+ },
+ {
+  "name": "揚",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 7,
+  "nameS": "扬"
+ },
+ {
+  "name": "蘄",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 8,
+  "nameS": "蕲"
+ },
+ {
+  "name": "無為",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 8,
+  "nameS": "无为"
+ },
+ {
+  "name": "資",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 1,
+  "nameS": "资"
+ },
+ {
+  "name": "高郵",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 8,
+  "nameS": "高邮"
+ },
+ {
+  "name": "蘇",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 5,
+  "nameS": "苏"
+ },
+ {
+  "name": "普",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 1,
+  "nameS": "普"
+ },
+ {
+  "name": "昌",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 38,
+  "nameS": "昌"
+ },
+ {
+  "name": "洋",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 8,
+  "nameS": "洋"
+ },
+ {
+  "name": "興",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 2,
+  "nameS": "兴"
+ },
+ {
+  "name": "大寧監",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 1,
+  "nameS": "大宁监"
+ },
+ {
+  "name": "達",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 1,
+  "nameS": "达"
+ },
+ {
+  "name": "施",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 5,
+  "nameS": "施"
+ },
+ {
+  "name": "涪",
+  "bracket": "五萬貫以上",
+  "quota": 75000,
+  "offices": 6,
+  "nameS": "涪"
+ },
+ {
+  "name": "南京",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "南京"
+ },
+ {
+  "name": "青",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 10,
+  "nameS": "青"
+ },
+ {
+  "name": "齊",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 10,
+  "nameS": "齐"
+ },
+ {
+  "name": "沂",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 5,
+  "nameS": "沂"
+ },
+ {
+  "name": "兗",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "兖"
+ },
+ {
+  "name": "淮陽",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 2,
+  "nameS": "淮阳"
+ },
+ {
+  "name": "濟",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "济"
+ },
+ {
+  "name": "單",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 5,
+  "nameS": "单"
+ },
+ {
+  "name": "濮",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 8,
+  "nameS": "濮"
+ },
+ {
+  "name": "襄",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 8,
+  "nameS": "襄"
+ },
+ {
+  "name": "鄧",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "邓"
+ },
+ {
+  "name": "許",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 10,
+  "nameS": "许"
+ },
+ {
+  "name": "蔡",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 16,
+  "nameS": "蔡"
+ },
+ {
+  "name": "陳",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "陈"
+ },
+ {
+  "name": "滑",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 1,
+  "nameS": "滑"
+ },
+ {
+  "name": "澶",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 10,
+  "nameS": "澶"
+ },
+ {
+  "name": "瀛",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "瀛"
+ },
+ {
+  "name": "濱",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "滨"
+ },
+ {
+  "name": "思",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "思"
+ },
+ {
+  "name": "鳳",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 4,
+  "nameS": "凤"
+ },
+ {
+  "name": "永靜軍",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "永静军"
+ },
+ {
+  "name": "真定",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 15,
+  "nameS": "真定"
+ },
+ {
+  "name": "河中",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 11,
+  "nameS": "河中"
+ },
+ {
+  "name": "陝",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "陕"
+ },
+ {
+  "name": "並",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "并"
+ },
+ {
+  "name": "延",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 16,
+  "nameS": "延"
+ },
+ {
+  "name": "鳳翔",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 15,
+  "nameS": "凤翔"
+ },
+ {
+  "name": "亳",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 11,
+  "nameS": "亳"
+ },
+ {
+  "name": "舒",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 19,
+  "nameS": "舒"
+ },
+ {
+  "name": "宿",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "宿"
+ },
+ {
+  "name": "光",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "光"
+ },
+ {
+  "name": "黃",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 9,
+  "nameS": "黄"
+ },
+ {
+  "name": "湖",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 10,
+  "nameS": "湖"
+ },
+ {
+  "name": "婺",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 8,
+  "nameS": "婺"
+ },
+ {
+  "name": "秀",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "秀"
+ },
+ {
+  "name": "信",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 8,
+  "nameS": "信"
+ },
+ {
+  "name": "洪",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 11,
+  "nameS": "洪"
+ },
+ {
+  "name": "吉",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "吉"
+ },
+ {
+  "name": "潭",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "潭"
+ },
+ {
+  "name": "榮",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 1,
+  "nameS": "荣"
+ },
+ {
+  "name": "雅",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 11,
+  "nameS": "雅"
+ },
+ {
+  "name": "廣安",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 3,
+  "nameS": "广安"
+ },
+ {
+  "name": "富順監",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 1,
+  "nameS": "富顺监"
+ },
+ {
+  "name": "巴",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 5,
+  "nameS": "巴"
+ },
+ {
+  "name": "蓬",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 1,
+  "nameS": "蓬"
+ },
+ {
+  "name": "雲安",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 2,
+  "nameS": "云安"
+ },
+ {
+  "name": "福",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 12,
+  "nameS": "福"
+ },
+ {
+  "name": "黔",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 7,
+  "nameS": "黔"
+ },
+ {
+  "name": "忠",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 2,
+  "nameS": "忠"
+ },
+ {
+  "name": "萬",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 6,
+  "nameS": "万"
+ },
+ {
+  "name": "渝",
+  "bracket": "五萬貫以下",
+  "quota": 40000,
+  "offices": 3,
+  "nameS": "渝"
+ },
+ {
+  "name": "密",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "密"
+ },
+ {
+  "name": "登",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "登"
+ },
+ {
+  "name": "萊",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "莱"
+ },
+ {
+  "name": "濰",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 3,
+  "nameS": "潍"
+ },
+ {
+  "name": "曹",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "曹"
+ },
+ {
+  "name": "淄",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "淄"
+ },
+ {
+  "name": "郢",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "郢"
+ },
+ {
+  "name": "唐",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "唐"
+ },
+ {
+  "name": "孟",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "孟"
+ },
+ {
+  "name": "汝",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 10,
+  "nameS": "汝"
+ },
+ {
+  "name": "鄭",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "郑"
+ },
+ {
+  "name": "冀",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "冀"
+ },
+ {
+  "name": "雄",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "雄"
+ },
+ {
+  "name": "相",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "相"
+ },
+ {
+  "name": "邢",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "邢"
+ },
+ {
+  "name": "定",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 17,
+  "nameS": "定"
+ },
+ {
+  "name": "懷",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "怀"
+ },
+ {
+  "name": "衛",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "卫"
+ },
+ {
+  "name": "洺",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "洺"
+ },
+ {
+  "name": "深",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "深"
+ },
+ {
+  "name": "磁",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "磁"
+ },
+ {
+  "name": "趙",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "赵"
+ },
+ {
+  "name": "保",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "保"
+ },
+ {
+  "name": "永寧",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "永宁"
+ },
+ {
+  "name": "華",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "华"
+ },
+ {
+  "name": "通利",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 3,
+  "nameS": "通利"
+ },
+ {
+  "name": "同",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "同"
+ },
+ {
+  "name": "耀",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "耀"
+ },
+ {
+  "name": "邠",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "邠"
+ },
+ {
+  "name": "解",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "解"
+ },
+ {
+  "name": "慶",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "庆"
+ },
+ {
+  "name": "商",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "商"
+ },
+ {
+  "name": "寧",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "宁"
+ },
+ {
+  "name": "環",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "环"
+ },
+ {
+  "name": "澤",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "泽"
+ },
+ {
+  "name": "隴",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "陇"
+ },
+ {
+  "name": "渭",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 18,
+  "nameS": "渭"
+ },
+ {
+  "name": "階",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "阶"
+ },
+ {
+  "name": "德順",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "德顺"
+ },
+ {
+  "name": "乾",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "干"
+ },
+ {
+  "name": "通遠",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "通远"
+ },
+ {
+  "name": "潞",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "潞"
+ },
+ {
+  "name": "晉",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "晋"
+ },
+ {
+  "name": "絳",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "绛"
+ },
+ {
+  "name": "汾",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "汾"
+ },
+ {
+  "name": "海",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "海"
+ },
+ {
+  "name": "泰",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "泰"
+ },
+ {
+  "name": "泗",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "泗"
+ },
+ {
+  "name": "滁",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "滁"
+ },
+ {
+  "name": "和",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "和"
+ },
+ {
+  "name": "濠",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 4,
+  "nameS": "濠"
+ },
+ {
+  "name": "漣水",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "涟水"
+ },
+ {
+  "name": "越",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "越"
+ },
+ {
+  "name": "潤",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "润"
+ },
+ {
+  "name": "明",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "明"
+ },
+ {
+  "name": "常",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "常"
+ },
+ {
+  "name": "溫",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "温"
+ },
+ {
+  "name": "臺",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "台"
+ },
+ {
+  "name": "處",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "处"
+ },
+ {
+  "name": "衢",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "衢"
+ },
+ {
+  "name": "睦",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "睦"
+ },
+ {
+  "name": "江寧",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "江宁"
+ },
+ {
+  "name": "宣",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "宣"
+ },
+ {
+  "name": "歙",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "歙"
+ },
+ {
+  "name": "江",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "江"
+ },
+ {
+  "name": "池",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "池"
+ },
+ {
+  "name": "饒",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "饶"
+ },
+ {
+  "name": "太平",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "太平"
+ },
+ {
+  "name": "南康",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "南康"
+ },
+ {
+  "name": "虔",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "虔"
+ },
+ {
+  "name": "廣德",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "广德"
+ },
+ {
+  "name": "袁",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "袁"
+ },
+ {
+  "name": "興國",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "兴国"
+ },
+ {
+  "name": "臨江",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "临江"
+ },
+ {
+  "name": "衡",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "衡"
+ },
+ {
+  "name": "江陵",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 14,
+  "nameS": "江陵"
+ },
+ {
+  "name": "鄂",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "鄂"
+ },
+ {
+  "name": "安",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "安"
+ },
+ {
+  "name": "嶽",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "岳"
+ },
+ {
+  "name": "黎",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "黎"
+ },
+ {
+  "name": "漢陽",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 3,
+  "nameS": "汉阳"
+ },
+ {
+  "name": "荊門",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "荆门"
+ },
+ {
+  "name": "文",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 6,
+  "nameS": "文"
+ },
+ {
+  "name": "龍",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 2,
+  "nameS": "龙"
+ },
+ {
+  "name": "集",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "集"
+ },
+ {
+  "name": "璧",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "璧"
+ },
+ {
+  "name": "南劍",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 11,
+  "nameS": "南剑"
+ },
+ {
+  "name": "開",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 1,
+  "nameS": "开"
+ },
+ {
+  "name": "建",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 7,
+  "nameS": "建"
+ },
+ {
+  "name": "泉",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 9,
+  "nameS": "泉"
+ },
+ {
+  "name": "汀",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 8,
+  "nameS": "汀"
+ },
+ {
+  "name": "漳",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 10,
+  "nameS": "漳"
+ },
+ {
+  "name": "廣",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 14,
+  "nameS": "广"
+ },
+ {
+  "name": "昌化",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 3,
+  "nameS": "昌化"
+ },
+ {
+  "name": "潮",
+  "bracket": "三萬貫以下",
+  "quota": 20000,
+  "offices": 5,
+  "nameS": "潮"
+ },
+ {
+  "name": "隨",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "随"
+ },
+ {
+  "name": "金",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 17,
+  "nameS": "金"
+ },
+ {
+  "name": "均",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "均"
+ },
+ {
+  "name": "信陽",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 2,
+  "nameS": "信阳"
+ },
+ {
+  "name": "莫",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "莫"
+ },
+ {
+  "name": "霸",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "霸"
+ },
+ {
+  "name": "乾寧",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 1,
+  "nameS": "干宁"
+ },
+ {
+  "name": "信安",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 1,
+  "nameS": "信安"
+ },
+ {
+  "name": "鄜",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 5,
+  "nameS": "鄜"
+ },
+ {
+  "name": "虢",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "虢"
+ },
+ {
+  "name": "坊",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "坊"
+ },
+ {
+  "name": "岷",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "岷"
+ },
+ {
+  "name": "原",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 6,
+  "nameS": "原"
+ },
+ {
+  "name": "儀",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "仪"
+ },
+ {
+  "name": "府",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 2,
+  "nameS": "府"
+ },
+ {
+  "name": "代",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 19,
+  "nameS": "代"
+ },
+ {
+  "name": "隰",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 9,
+  "nameS": "隰"
+ },
+ {
+  "name": "忻",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 1,
+  "nameS": "忻"
+ },
+ {
+  "name": "石",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 6,
+  "nameS": "石"
+ },
+ {
+  "name": "遼",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 5,
+  "nameS": "辽"
+ },
+ {
+  "name": "威勝",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 5,
+  "nameS": "威胜"
+ },
+ {
+  "name": "平定",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "平定"
+ },
+ {
+  "name": "南安",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "南安"
+ },
+ {
+  "name": "建昌",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 2,
+  "nameS": "建昌"
+ },
+ {
+  "name": "通",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 2,
+  "nameS": "通"
+ },
+ {
+  "name": "桂陽",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 2,
+  "nameS": "桂阳"
+ },
+ {
+  "name": "鼎",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "鼎"
+ },
+ {
+  "name": "澧",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "澧"
+ },
+ {
+  "name": "陵井監",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 4,
+  "nameS": "陵井监"
+ },
+ {
+  "name": "峽",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 5,
+  "nameS": "峡"
+ },
+ {
+  "name": "梁山",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 1,
+  "nameS": "梁山"
+ },
+ {
+  "name": "邵武",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 3,
+  "nameS": "邵武"
+ },
+ {
+  "name": "康",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 16,
+  "nameS": "康"
+ },
+ {
+  "name": "南雄",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 6,
+  "nameS": "南雄"
+ },
+ {
+  "name": "英",
+  "bracket": "一萬貫以下",
+  "quota": 7500,
+  "offices": 8,
+  "nameS": "英"
+ },
+ {
+  "name": "廣濟",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "广济"
+ },
+ {
+  "name": "房",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "房"
+ },
+ {
+  "name": "保安",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "保安"
+ },
+ {
+  "name": "安肅",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "安肃"
+ },
+ {
+  "name": "丹",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "丹"
+ },
+ {
+  "name": "廣信",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "广信"
+ },
+ {
+  "name": "順安",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "顺安"
+ },
+ {
+  "name": "保安",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 30,
+  "nameS": "保安"
+ },
+ {
+  "name": "鎮戎",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 6,
+  "nameS": "镇戎"
+ },
+ {
+  "name": "熙",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "熙"
+ },
+ {
+  "name": "慶成",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "庆成"
+ },
+ {
+  "name": "鄜",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "鄜"
+ },
+ {
+  "name": "憲",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "宪"
+ },
+ {
+  "name": "嵐",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "岚"
+ },
+ {
+  "name": "慈",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "慈"
+ },
+ {
+  "name": "寧化",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "宁化"
+ },
+ {
+  "name": "火山",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "火山"
+ },
+ {
+  "name": "岢嵐",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "岢岚"
+ },
+ {
+  "name": "保德",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "保德"
+ },
+ {
+  "name": "撫",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "抚"
+ },
+ {
+  "name": "大通監",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "大通监"
+ },
+ {
+  "name": "江陰",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "江阴"
+ },
+ {
+  "name": "筠",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "筠"
+ },
+ {
+  "name": "永",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "永"
+ },
+ {
+  "name": "郴",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "郴"
+ },
+ {
+  "name": "邵",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "邵"
+ },
+ {
+  "name": "全",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "全"
+ },
+ {
+  "name": "歸",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "归"
+ },
+ {
+  "name": "辰",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "辰"
+ },
+ {
+  "name": "沅",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "沅"
+ },
+ {
+  "name": "復",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "复"
+ },
+ {
+  "name": "茂",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "茂"
+ },
+ {
+  "name": "南平",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "南平"
+ },
+ {
+  "name": "興化",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 8,
+  "nameS": "兴化"
+ },
+ {
+  "name": "循",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "循"
+ },
+ {
+  "name": "韶",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "韶"
+ },
+ {
+  "name": "連",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "连"
+ },
+ {
+  "name": "賀",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 21,
+  "nameS": "贺"
+ },
+ {
+  "name": "封",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "封"
+ },
+ {
+  "name": "端",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "端"
+ },
+ {
+  "name": "新",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "新"
+ },
+ {
+  "name": "南恩",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "南恩"
+ },
+ {
+  "name": "惠",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "惠"
+ },
+ {
+  "name": "梅",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "梅"
+ },
+ {
+  "name": "春",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 9,
+  "nameS": "春"
+ },
+ {
+  "name": "桂",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 14,
+  "nameS": "桂"
+ },
+ {
+  "name": "容",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 5,
+  "nameS": "容"
+ },
+ {
+  "name": "邕",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "邕"
+ },
+ {
+  "name": "象",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 7,
+  "nameS": "象"
+ },
+ {
+  "name": "融",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "融"
+ },
+ {
+  "name": "昭",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 12,
+  "nameS": "昭"
+ },
+ {
+  "name": "梧",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "梧"
+ },
+ {
+  "name": "藤",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "藤"
+ },
+ {
+  "name": "龔",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "龚"
+ },
+ {
+  "name": "潯",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "浔"
+ },
+ {
+  "name": "貴",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 11,
+  "nameS": "贵"
+ },
+ {
+  "name": "柳",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 9,
+  "nameS": "柳"
+ },
+ {
+  "name": "宜",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 5,
+  "nameS": "宜"
+ },
+ {
+  "name": "賓",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 4,
+  "nameS": "宾"
+ },
+ {
+  "name": "橫",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 3,
+  "nameS": "横"
+ },
+ {
+  "name": "化",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 5,
+  "nameS": "化"
+ },
+ {
+  "name": "高",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 6,
+  "nameS": "高"
+ },
+ {
+  "name": "雷",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "雷"
+ },
+ {
+  "name": "白",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "白"
+ },
+ {
+  "name": "欽",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "钦"
+ },
+ {
+  "name": "鬱林",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "郁林"
+ },
+ {
+  "name": "萬安",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "万安"
+ },
+ {
+  "name": "珠崖",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "珠崖"
+ },
+ {
+  "name": "廉",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 5,
+  "nameS": "廉"
+ },
+ {
+  "name": "瓊",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "琼"
+ },
+ {
+  "name": "蒙",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "蒙"
+ },
+ {
+  "name": "竇",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 2,
+  "nameS": "窦"
+ },
+ {
+  "name": "南儀",
+  "bracket": "五千貫以下",
+  "quota": 3000,
+  "offices": 1,
+  "nameS": "南仪"
+ }
+]

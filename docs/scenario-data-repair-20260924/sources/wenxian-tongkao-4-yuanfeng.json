@@ -1,0 +1,153 @@
+[
+ {
+  "name": "開封府界",
+  "landMu": 11333167,
+  "officialLandMu": 51664,
+  "twoTaxQuota": 4055087,
+  "summerTax": 998924,
+  "autumnTax": 3056163
+ },
+ {
+  "name": "京東路",
+  "landMu": 25828460,
+  "officialLandMu": 890901,
+  "twoTaxQuota": 3000901,
+  "summerTax": 1555880,
+  "autumnTax": 1445021
+ },
+ {
+  "name": "京西路",
+  "landMu": 20562638,
+  "officialLandMu": 720888,
+  "twoTaxQuota": 4063870,
+  "summerTax": 1440932,
+  "autumnTax": 2622938
+ },
+ {
+  "name": "河北路",
+  "landMu": 26956008,
+  "officialLandMu": 950648,
+  "twoTaxQuota": 9152000,
+  "summerTax": 1393983,
+  "autumnTax": 7758107
+ },
+ {
+  "name": "陜府西路",
+  "landMu": 44529838,
+  "officialLandMu": 180522,
+  "twoTaxQuota": 5805114,
+  "summerTax": 1110105,
+  "autumnTax": 4695009
+ },
+ {
+  "name": "河東路",
+  "landMu": 10226730,
+  "officialLandMu": 943930,
+  "twoTaxQuota": 2372187,
+  "summerTax": 403395,
+  "autumnTax": 1968792
+ },
+ {
+  "name": "淮南路",
+  "landMu": 96868420,
+  "officialLandMu": 488713,
+  "twoTaxQuota": 4223784,
+  "summerTax": 2558249,
+  "autumnTax": 1665535
+ },
+ {
+  "name": "兩浙路",
+  "landMu": 36247756,
+  "officialLandMu": 96442,
+  "twoTaxQuota": 4799122,
+  "summerTax": 2790767,
+  "autumnTax": 2008355
+ },
+ {
+  "name": "江南東路",
+  "landMu": 42160447,
+  "officialLandMu": 784431,
+  "twoTaxQuota": 3963169,
+  "summerTax": 2004947,
+  "autumnTax": 1958222
+ },
+ {
+  "name": "江南西路",
+  "landMu": 45046689,
+  "officialLandMu": 176457,
+  "twoTaxQuota": 2220625,
+  "summerTax": 748728,
+  "autumnTax": 1471937
+ },
+ {
+  "name": "荊湖南路",
+  "landMu": 32426796,
+  "officialLandMu": 777259,
+  "twoTaxQuota": 1816612,
+  "summerTax": 448364,
+  "autumnTax": 1368248
+ },
+ {
+  "name": "荊湖北路",
+  "landMu": 25898129,
+  "officialLandMu": 90378,
+  "twoTaxQuota": 1756078,
+  "summerTax": 515207,
+  "autumnTax": 1368248
+ },
+ {
+  "name": "福建路",
+  "landMu": 11091453,
+  "officialLandMu": 537,
+  "twoTaxQuota": 1010650,
+  "summerTax": 186292,
+  "autumnTax": 844358
+ },
+ {
+  "name": "成都路",
+  "landMu": 21606258,
+  "officialLandMu": 6519,
+  "twoTaxQuota": 926732,
+  "summerTax": 75800,
+  "autumnTax": 850932
+ },
+ {
+  "name": "梓州路",
+  "landNote": "田為山崖",
+  "twoTaxQuota": 834187,
+  "summerTax": 238983,
+  "autumnTax": 593204
+ },
+ {
+  "name": "利州路",
+  "landMu": 1178105,
+  "officialLandMu": 109984,
+  "twoTaxQuota": 665306,
+  "summerTax": 186724,
+  "autumnTax": 478582
+ },
+ {
+  "name": "夔州路",
+  "landMu": 224497,
+  "officialLandMu": 223,
+  "twoTaxQuota": 141182,
+  "summerTax": 74209,
+  "autumnTax": 66873
+ },
+ {
+  "name": "廣南東路",
+  "landMu": 3118518,
+  "officialLandMu": 27072,
+  "twoTaxQuota": 765715,
+  "summerTax": 135764,
+  "autumnTax": 629951
+ },
+ {
+  "name": "廣南西路",
+  "landMu": 12452,
+  "officialLandMu": 42728,
+  "twoTaxQuota": 438618,
+  "summerTax": 95342,
+  "autumnTax": 343276
+ }
+]

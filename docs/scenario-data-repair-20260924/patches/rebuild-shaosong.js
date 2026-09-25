@@ -46,7 +46,15 @@ const FOREIGN = [
   { key: 'mongol', frame: 'shaosong-steppe.js#3', module: 'shaosong-steppe.js#3' },
   { key: 'tatar', frame: 'shaosong-steppe.js#4', module: 'shaosong-steppe.js#4' },
   { key: 'qongirat', frame: 'shaosong-steppe.js#5', module: 'shaosong-steppe.js#5' },
-  { key: 'ongud', frame: 'shaosong-steppe.js#6', module: 'shaosong-steppe.js#6' }
+  { key: 'ongud', frame: 'shaosong-steppe.js#6', module: 'shaosong-steppe.js#6' },
+  { key: 'daiviet', frame: 'shaosong-sea.js#0', module: 'shaosong-sea.js#0' },
+  { key: 'pagan', frame: 'shaosong-sea.js#1', module: 'shaosong-sea.js#1' },
+  { key: 'luzon', frame: 'shaosong-sea.js#2', module: 'shaosong-sea.js#2' },
+  { key: 'liuqiu', frame: 'shaosong-sea.js#3', module: 'shaosong-sea.js#3' },
+  { key: 'mai', frame: 'shaosong-sea.js#4', module: 'shaosong-sea.js#4' },
+  { key: 'visayas', frame: 'shaosong-sea.js#5', module: 'shaosong-sea.js#5' },
+  { key: 'butuan', frame: 'shaosong-sea.js#6', module: 'shaosong-sea.js#6' },
+  { key: 'beihai', frame: 'shaosong-sea.js#7', module: 'shaosong-sea.js#7' }
 ];
 
 function run(args) {

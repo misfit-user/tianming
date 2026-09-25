@@ -5,7 +5,9 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { cnToNumber } = require(path.join(__dirname, 'parse-mingshi-dili.js'));
+const { cnToNumber: cnToNumberRaw } = require(path.join(__dirname, 'parse-mingshi-dili.js'));
+// 「戶萬五百一十」这类开头省去「一」的写法：萬前补一
+const cnToNumber = (text) => cnToNumberRaw(/^[萬万]/.test(text) ? '一' + text : text);
 
 const NUM = '[〇零一二兩两三四五六七八九十百千萬万億亿]+';
 

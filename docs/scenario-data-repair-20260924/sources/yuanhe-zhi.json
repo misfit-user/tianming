@@ -1,0 +1,2082 @@
+[
+ {
+  "volume": "01",
+  "fangzhen": "",
+  "name": "京兆府",
+  "kaiyuan": 362909,
+  "yuanhe": 241202,
+  "nameS": "京兆府"
+ },
+ {
+  "volume": "01",
+  "fangzhen": "",
+  "name": "縣",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "县"
+ },
+ {
+  "volume": "02",
+  "fangzhen": "",
+  "name": "京兆下",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "京兆下"
+ },
+ {
+  "volume": "02",
+  "fangzhen": "",
+  "name": "華州",
+  "kaiyuan": 30787,
+  "yuanhe": 1437,
+  "nameS": "华州"
+ },
+ {
+  "volume": "02",
+  "fangzhen": "",
+  "name": "同州",
+  "kaiyuan": 56509,
+  "yuanhe": 4861,
+  "nameS": "同州"
+ },
+ {
+  "volume": "02",
+  "fangzhen": "",
+  "name": "鳳翔府",
+  "kaiyuan": 44533,
+  "yuanhe": 7580,
+  "nameS": "凤翔府"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "涇州",
+  "kaiyuan": 15952,
+  "yuanhe": 1990,
+  "nameS": "泾州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "原州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "原州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "邠州",
+  "kaiyuan": 19461,
+  "yuanhe": 2670,
+  "nameS": "邠州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "寧州",
+  "kaiyuan": 30226,
+  "yuanhe": 1107,
+  "nameS": "宁州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "慶州",
+  "kaiyuan": 17981,
+  "yuanhe": null,
+  "nameS": "庆州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "鄜州",
+  "kaiyuan": 30185,
+  "yuanhe": 750,
+  "nameS": "鄜州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "坊州",
+  "kaiyuan": 15715,
+  "yuanhe": 1842,
+  "nameS": "坊州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "丹州",
+  "kaiyuan": 12422,
+  "yuanhe": 816,
+  "nameS": "丹州"
+ },
+ {
+  "volume": "03",
+  "fangzhen": "",
+  "name": "延州",
+  "kaiyuan": 16345,
+  "yuanhe": 938,
+  "nameS": "延州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "靈州",
+  "kaiyuan": 9606,
+  "yuanhe": null,
+  "nameS": "灵州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "會州",
+  "kaiyuan": 3540,
+  "yuanhe": null,
+  "nameS": "会州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "鹽州",
+  "kaiyuan": 3025,
+  "yuanhe": null,
+  "nameS": "盐州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "夏州",
+  "kaiyuan": 6132,
+  "yuanhe": 3100,
+  "nameS": "夏州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "綏州",
+  "kaiyuan": 8715,
+  "yuanhe": 840,
+  "nameS": "绥州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "銀州",
+  "kaiyuan": 6120,
+  "yuanhe": null,
+  "nameS": "银州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "宥州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "宥州"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "單于大都護府",
+  "kaiyuan": 4095,
+  "yuanhe": null,
+  "nameS": "单于大都护府"
+ },
+ {
+  "volume": "04",
+  "fangzhen": "",
+  "name": "豐州",
+  "kaiyuan": 1900,
+  "yuanhe": null,
+  "nameS": "丰州"
+ },
+ {
+  "volume": "05",
+  "fangzhen": "",
+  "name": "河南府",
+  "kaiyuan": 127440,
+  "yuanhe": 18799,
+  "nameS": "河南府"
+ },
+ {
+  "volume": "05",
+  "fangzhen": "",
+  "name": "縣",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "县"
+ },
+ {
+  "volume": "06",
+  "fangzhen": "陝虢觀察使",
+  "name": "陝州",
+  "kaiyuan": 47322,
+  "yuanhe": 8720,
+  "nameS": "陕州"
+ },
+ {
+  "volume": "06",
+  "fangzhen": "陝虢觀察使",
+  "name": "虢州",
+  "kaiyuan": 17742,
+  "yuanhe": 5236,
+  "nameS": "虢州"
+ },
+ {
+  "volume": "06",
+  "fangzhen": "陝虢觀察使",
+  "name": "汝州",
+  "kaiyuan": 26052,
+  "yuanhe": 13079,
+  "nameS": "汝州"
+ },
+ {
+  "volume": "07",
+  "fangzhen": "汴宋節度使",
+  "name": "汴州",
+  "kaiyuan": 82190,
+  "yuanhe": 8218,
+  "nameS": "汴州"
+ },
+ {
+  "volume": "07",
+  "fangzhen": "汴宋節度使",
+  "name": "宋州",
+  "kaiyuan": 103000,
+  "yuanhe": 5200,
+  "nameS": "宋州"
+ },
+ {
+  "volume": "07",
+  "fangzhen": "汴宋節度使",
+  "name": "亳州",
+  "kaiyuan": 70732,
+  "yuanhe": 6502,
+  "nameS": "亳州"
+ },
+ {
+  "volume": "07",
+  "fangzhen": "汴宋節度使",
+  "name": "潁州",
+  "kaiyuan": 28179,
+  "yuanhe": 11529,
+  "nameS": "颍州"
+ },
+ {
+  "volume": "08",
+  "fangzhen": "",
+  "name": "滑州",
+  "kaiyuan": 53627,
+  "yuanhe": 8056,
+  "nameS": "滑州"
+ },
+ {
+  "volume": "08",
+  "fangzhen": "",
+  "name": "鄭州",
+  "kaiyuan": 64619,
+  "yuanhe": 13944,
+  "nameS": "郑州"
+ },
+ {
+  "volume": "08",
+  "fangzhen": "",
+  "name": "許州",
+  "kaiyuan": 59717,
+  "yuanhe": 5291,
+  "nameS": "许州"
+ },
+ {
+  "volume": "08",
+  "fangzhen": "",
+  "name": "陳州",
+  "kaiyuan": 52692,
+  "yuanhe": 4038,
+  "nameS": "陈州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "徐州",
+  "kaiyuan": 49702,
+  "yuanhe": 3858,
+  "nameS": "徐州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "宿州",
+  "kaiyuan": null,
+  "yuanhe": 8676,
+  "nameS": "宿州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "泗州",
+  "kaiyuan": 30350,
+  "yuanhe": 4015,
+  "nameS": "泗州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "濠州",
+  "kaiyuan": 20552,
+  "yuanhe": 20702,
+  "nameS": "濠州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "蔡州",
+  "kaiyuan": 51210,
+  "yuanhe": 10263,
+  "nameS": "蔡州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "申州",
+  "kaiyuan": 21020,
+  "yuanhe": 614,
+  "nameS": "申州"
+ },
+ {
+  "volume": "09",
+  "fangzhen": "",
+  "name": "光州",
+  "kaiyuan": 29695,
+  "yuanhe": 1990,
+  "nameS": "光州"
+ },
+ {
+  "volume": "10",
+  "fangzhen": "淄青節度使",
+  "name": "鄆州",
+  "kaiyuan": 33389,
+  "yuanhe": null,
+  "nameS": "郓州"
+ },
+ {
+  "volume": "10",
+  "fangzhen": "淄青節度使",
+  "name": "兗州",
+  "kaiyuan": 67397,
+  "yuanhe": null,
+  "nameS": "兖州"
+ },
+ {
+  "volume": "10",
+  "fangzhen": "淄青節度使",
+  "name": "青州",
+  "kaiyuan": 55131,
+  "yuanhe": null,
+  "nameS": "青州"
+ },
+ {
+  "volume": "10",
+  "fangzhen": "淄青節度使",
+  "name": "齊州",
+  "kaiyuan": 49157,
+  "yuanhe": null,
+  "nameS": "齐州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "曹州",
+  "kaiyuan": 73161,
+  "yuanhe": null,
+  "nameS": "曹州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "濮州",
+  "kaiyuan": 46921,
+  "yuanhe": null,
+  "nameS": "濮州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "密州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "密州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "海州",
+  "kaiyuan": 23728,
+  "yuanhe": null,
+  "nameS": "海州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "沂州",
+  "kaiyuan": 27400,
+  "yuanhe": null,
+  "nameS": "沂州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "萊州",
+  "kaiyuan": 23105,
+  "yuanhe": null,
+  "nameS": "莱州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "淄州",
+  "kaiyuan": 37404,
+  "yuanhe": null,
+  "nameS": "淄州"
+ },
+ {
+  "volume": "11",
+  "fangzhen": "淄青節度使",
+  "name": "登州",
+  "kaiyuan": 28533,
+  "yuanhe": null,
+  "nameS": "登州"
+ },
+ {
+  "volume": "12",
+  "fangzhen": "河中節度使",
+  "name": "河中府",
+  "kaiyuan": 70207,
+  "yuanhe": 19600,
+  "nameS": "河中府"
+ },
+ {
+  "volume": "12",
+  "fangzhen": "河中節度使",
+  "name": "絳州",
+  "kaiyuan": 81988,
+  "yuanhe": 11271,
+  "nameS": "绛州"
+ },
+ {
+  "volume": "12",
+  "fangzhen": "河中節度使",
+  "name": "晉州",
+  "kaiyuan": 60853,
+  "yuanhe": 6567,
+  "nameS": "晋州"
+ },
+ {
+  "volume": "12",
+  "fangzhen": "河中節度使",
+  "name": "慈州",
+  "kaiyuan": 11275,
+  "yuanhe": 1877,
+  "nameS": "慈州"
+ },
+ {
+  "volume": "12",
+  "fangzhen": "河中節度使",
+  "name": "隰州",
+  "kaiyuan": 18583,
+  "yuanhe": 23349,
+  "nameS": "隰州"
+ },
+ {
+  "volume": "13",
+  "fangzhen": "河東節度使",
+  "name": "太原府",
+  "kaiyuan": 126840,
+  "yuanhe": 124000,
+  "nameS": "太原府"
+ },
+ {
+  "volume": "13",
+  "fangzhen": "河東節度使",
+  "name": "汾州",
+  "kaiyuan": 53076,
+  "yuanhe": 8304,
+  "nameS": "汾州"
+ },
+ {
+  "volume": "13",
+  "fangzhen": "河東節度使",
+  "name": "沁州",
+  "kaiyuan": 6580,
+  "yuanhe": 2220,
+  "nameS": "沁州"
+ },
+ {
+  "volume": "13",
+  "fangzhen": "河東節度使",
+  "name": "儀州",
+  "kaiyuan": 7975,
+  "yuanhe": 1651,
+  "nameS": "仪州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "嵐州",
+  "kaiyuan": 10726,
+  "yuanhe": 6382,
+  "nameS": "岚州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "石州",
+  "kaiyuan": 9262,
+  "yuanhe": 5020,
+  "nameS": "石州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "忻州",
+  "kaiyuan": 14338,
+  "yuanhe": 4204,
+  "nameS": "忻州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "代州",
+  "kaiyuan": 15077,
+  "yuanhe": 2120,
+  "nameS": "代州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "蔚州",
+  "kaiyuan": 4887,
+  "yuanhe": 1563,
+  "nameS": "蔚州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "朔州",
+  "kaiyuan": 6020,
+  "yuanhe": null,
+  "nameS": "朔州"
+ },
+ {
+  "volume": "14",
+  "fangzhen": "河東節度使",
+  "name": "雲州",
+  "kaiyuan": 3169,
+  "yuanhe": null,
+  "nameS": "云州"
+ },
+ {
+  "volume": "15",
+  "fangzhen": "澤潞節度使",
+  "name": "潞州",
+  "kaiyuan": 6,
+  "yuanhe": 17800,
+  "nameS": "潞州"
+ },
+ {
+  "volume": "15",
+  "fangzhen": "澤潞節度使",
+  "name": "澤州",
+  "kaiyuan": 22235,
+  "yuanhe": 3527,
+  "nameS": "泽州"
+ },
+ {
+  "volume": "15",
+  "fangzhen": "澤潞節度使",
+  "name": "邢州",
+  "kaiyuan": 58820,
+  "yuanhe": 3693,
+  "nameS": "邢州"
+ },
+ {
+  "volume": "15",
+  "fangzhen": "澤潞節度使",
+  "name": "洺州",
+  "kaiyuan": 77150,
+  "yuanhe": null,
+  "nameS": "洺州"
+ },
+ {
+  "volume": "15",
+  "fangzhen": "澤潞節度使",
+  "name": "礠州",
+  "kaiyuan": null,
+  "yuanhe": 1040,
+  "nameS": "礠州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "懷州",
+  "kaiyuan": 43175,
+  "yuanhe": 8741,
+  "nameS": "怀州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "魏州",
+  "kaiyuan": 117575,
+  "yuanhe": 6920,
+  "nameS": "魏州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "相州",
+  "kaiyuan": 78000,
+  "yuanhe": 39000,
+  "nameS": "相州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "博州",
+  "kaiyuan": 37470,
+  "yuanhe": 2430,
+  "nameS": "博州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "衛州",
+  "kaiyuan": 30666,
+  "yuanhe": 2777,
+  "nameS": "卫州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "貝州",
+  "kaiyuan": 84400,
+  "yuanhe": 20102,
+  "nameS": "贝州"
+ },
+ {
+  "volume": "16",
+  "fangzhen": "",
+  "name": "澶州",
+  "kaiyuan": null,
+  "yuanhe": 3269,
+  "nameS": "澶州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "恒州",
+  "kaiyuan": 42694,
+  "yuanhe": 17580,
+  "nameS": "恒州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "冀州",
+  "kaiyuan": 94120,
+  "yuanhe": 8967,
+  "nameS": "冀州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "深州",
+  "kaiyuan": 42215,
+  "yuanhe": 14097,
+  "nameS": "深州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "趙州",
+  "kaiyuan": 51430,
+  "yuanhe": 8177,
+  "nameS": "赵州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "德州",
+  "kaiyuan": 61770,
+  "yuanhe": 9356,
+  "nameS": "德州"
+ },
+ {
+  "volume": "17",
+  "fangzhen": "恒冀節度使",
+  "name": "棣州",
+  "kaiyuan": 25545,
+  "yuanhe": 5447,
+  "nameS": "棣州"
+ },
+ {
+  "volume": "18",
+  "fangzhen": "",
+  "name": "定州",
+  "kaiyuan": 65460,
+  "yuanhe": 26832,
+  "nameS": "定州"
+ },
+ {
+  "volume": "18",
+  "fangzhen": "",
+  "name": "易州",
+  "kaiyuan": 37227,
+  "yuanhe": 569,
+  "nameS": "易州"
+ },
+ {
+  "volume": "18",
+  "fangzhen": "",
+  "name": "滄州",
+  "kaiyuan": 98157,
+  "yuanhe": 9514,
+  "nameS": "沧州"
+ },
+ {
+  "volume": "18",
+  "fangzhen": "",
+  "name": "景州",
+  "kaiyuan": null,
+  "yuanhe": 2025,
+  "nameS": "景州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "襄州",
+  "kaiyuan": 36357,
+  "yuanhe": 107107,
+  "nameS": "襄州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "鄧州",
+  "kaiyuan": 38611,
+  "yuanhe": 14104,
+  "nameS": "邓州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "復州",
+  "kaiyuan": 5232,
+  "yuanhe": 7690,
+  "nameS": "复州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "郢州",
+  "kaiyuan": 5699,
+  "yuanhe": 11009,
+  "nameS": "郢州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "唐州",
+  "kaiyuan": 21597,
+  "yuanhe": 40740,
+  "nameS": "唐州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "隨州",
+  "kaiyuan": 13216,
+  "yuanhe": 12716,
+  "nameS": "随州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "均州",
+  "kaiyuan": 9859,
+  "yuanhe": 8182,
+  "nameS": "均州"
+ },
+ {
+  "volume": "21",
+  "fangzhen": "襄陽節度使",
+  "name": "房州",
+  "kaiyuan": 14432,
+  "yuanhe": 4431,
+  "nameS": "房州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "興元府",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "兴元府"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "洋州",
+  "kaiyuan": 18889,
+  "yuanhe": 2896,
+  "nameS": "洋州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "利州",
+  "kaiyuan": 11881,
+  "yuanhe": 2444,
+  "nameS": "利州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "鳳州",
+  "kaiyuan": 3849,
+  "yuanhe": 1358,
+  "nameS": "凤州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "興州",
+  "kaiyuan": 2045,
+  "yuanhe": 954,
+  "nameS": "兴州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "成州",
+  "kaiyuan": 4905,
+  "yuanhe": null,
+  "nameS": "成州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "文州",
+  "kaiyuan": 1769,
+  "yuanhe": 218,
+  "nameS": "文州"
+ },
+ {
+  "volume": "22",
+  "fangzhen": "",
+  "name": "扶州",
+  "kaiyuan": 2195,
+  "yuanhe": null,
+  "nameS": "扶州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "潤州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "润州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "常州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "常州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "蘇州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "苏州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "杭州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "杭州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "湖州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "湖州"
+ },
+ {
+  "volume": "25",
+  "fangzhen": "浙西觀察使",
+  "name": "睦州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "睦州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "越州",
+  "kaiyuan": null,
+  "yuanhe": 20685,
+  "nameS": "越州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "婺州",
+  "kaiyuan": 99409,
+  "yuanhe": 48036,
+  "nameS": "婺州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "衢州",
+  "kaiyuan": 62288,
+  "yuanhe": 17426,
+  "nameS": "衢州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "處州",
+  "kaiyuan": 33278,
+  "yuanhe": 19726,
+  "nameS": "处州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "溫州",
+  "kaiyuan": 37554,
+  "yuanhe": 8414,
+  "nameS": "温州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "台州",
+  "kaiyuan": 50000,
+  "yuanhe": null,
+  "nameS": "台州"
+ },
+ {
+  "volume": "26",
+  "fangzhen": "浙東觀察使",
+  "name": "明州",
+  "kaiyuan": null,
+  "yuanhe": 4083,
+  "nameS": "明州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "鄂州",
+  "kaiyuan": 19190,
+  "yuanhe": 38618,
+  "nameS": "鄂州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "沔州",
+  "kaiyuan": 5286,
+  "yuanhe": 2262,
+  "nameS": "沔州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "安州",
+  "kaiyuan": 22222,
+  "yuanhe": 9819,
+  "nameS": "安州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "黃州",
+  "kaiyuan": 13073,
+  "yuanhe": 5054,
+  "nameS": "黄州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "蘄州",
+  "kaiyuan": 26809,
+  "yuanhe": 16462,
+  "nameS": "蕲州"
+ },
+ {
+  "volume": "27",
+  "fangzhen": "鄂岳觀察使",
+  "name": "岳州",
+  "kaiyuan": 9165,
+  "yuanhe": 1535,
+  "nameS": "岳州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "洪州",
+  "kaiyuan": 55405,
+  "yuanhe": 91129,
+  "nameS": "洪州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "饒州",
+  "kaiyuan": 14062,
+  "yuanhe": 46116,
+  "nameS": "饶州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "虔州",
+  "kaiyuan": 32837,
+  "yuanhe": 26260,
+  "nameS": "虔州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "吉州",
+  "kaiyuan": 34481,
+  "yuanhe": 41025,
+  "nameS": "吉州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "江州",
+  "kaiyuan": 21865,
+  "yuanhe": 17945,
+  "nameS": "江州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "袁州",
+  "kaiyuan": 22335,
+  "yuanhe": 17226,
+  "nameS": "袁州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "信州",
+  "kaiyuan": null,
+  "yuanhe": 28711,
+  "nameS": "信州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "撫州",
+  "kaiyuan": 24988,
+  "yuanhe": 24767,
+  "nameS": "抚州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "宣州",
+  "kaiyuan": 87231,
+  "yuanhe": 57350,
+  "nameS": "宣州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "歙州",
+  "kaiyuan": 31961,
+  "yuanhe": 16754,
+  "nameS": "歙州"
+ },
+ {
+  "volume": "28",
+  "fangzhen": "",
+  "name": "池州",
+  "kaiyuan": null,
+  "yuanhe": 17591,
+  "nameS": "池州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "潭州",
+  "kaiyuan": 21800,
+  "yuanhe": 15444,
+  "nameS": "潭州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "衡州",
+  "kaiyuan": 13513,
+  "yuanhe": 18047,
+  "nameS": "衡州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "郴州",
+  "kaiyuan": 32176,
+  "yuanhe": 16437,
+  "nameS": "郴州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "永州",
+  "kaiyuan": 27590,
+  "yuanhe": 894,
+  "nameS": "永州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "連州",
+  "kaiyuan": 10880,
+  "yuanhe": 5270,
+  "nameS": "连州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "道州",
+  "kaiyuan": 27440,
+  "yuanhe": 18338,
+  "nameS": "道州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "邵州",
+  "kaiyuan": 12320,
+  "yuanhe": 10800,
+  "nameS": "邵州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "福州",
+  "kaiyuan": 31067,
+  "yuanhe": 19455,
+  "nameS": "福州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "建州",
+  "kaiyuan": 20800,
+  "yuanhe": 15480,
+  "nameS": "建州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "泉州",
+  "kaiyuan": 50754,
+  "yuanhe": 35571,
+  "nameS": "泉州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "漳州",
+  "kaiyuan": 1690,
+  "yuanhe": 1343,
+  "nameS": "漳州"
+ },
+ {
+  "volume": "29",
+  "fangzhen": "",
+  "name": "汀州",
+  "kaiyuan": null,
+  "yuanhe": 2618,
+  "nameS": "汀州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "黔州",
+  "kaiyuan": 3963,
+  "yuanhe": 1212,
+  "nameS": "黔州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "涪州",
+  "kaiyuan": 6909,
+  "yuanhe": 305,
+  "nameS": "涪州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "夷州",
+  "kaiyuan": 1487,
+  "yuanhe": null,
+  "nameS": "夷州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "思州",
+  "kaiyuan": 3442,
+  "yuanhe": 429,
+  "nameS": "思州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "費州",
+  "kaiyuan": 200,
+  "yuanhe": null,
+  "nameS": "费州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "南州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "南州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "珍州",
+  "kaiyuan": 2600,
+  "yuanhe": null,
+  "nameS": "珍州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "溱州",
+  "kaiyuan": 892,
+  "yuanhe": null,
+  "nameS": "溱州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "播州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "播州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "辰州",
+  "kaiyuan": 5320,
+  "yuanhe": 1229,
+  "nameS": "辰州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "錦州",
+  "kaiyuan": 3103,
+  "yuanhe": null,
+  "nameS": "锦州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "敘州",
+  "kaiyuan": 4940,
+  "yuanhe": null,
+  "nameS": "叙州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "溪州",
+  "kaiyuan": 477,
+  "yuanhe": 889,
+  "nameS": "溪州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "旋州",
+  "kaiyuan": 3476,
+  "yuanhe": 1845,
+  "nameS": "旋州"
+ },
+ {
+  "volume": "30",
+  "fangzhen": "黔州觀察使",
+  "name": "獎州",
+  "kaiyuan": 1740,
+  "yuanhe": 349,
+  "nameS": "奖州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "成都府",
+  "kaiyuan": 137046,
+  "yuanhe": 46010,
+  "nameS": "成都府"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "彭州",
+  "kaiyuan": 50120,
+  "yuanhe": 9887,
+  "nameS": "彭州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "蜀州",
+  "kaiyuan": 50026,
+  "yuanhe": 14508,
+  "nameS": "蜀州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "漢州",
+  "kaiyuan": 42500,
+  "yuanhe": 2113,
+  "nameS": "汉州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "邛州",
+  "kaiyuan": 13052,
+  "yuanhe": 25176,
+  "nameS": "邛州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "簡州",
+  "kaiyuan": 20223,
+  "yuanhe": 2522,
+  "nameS": "简州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "資州",
+  "kaiyuan": 18522,
+  "yuanhe": 2499,
+  "nameS": "资州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "嘉州",
+  "kaiyuan": 22912,
+  "yuanhe": 1975,
+  "nameS": "嘉州"
+ },
+ {
+  "volume": "31",
+  "fangzhen": "西川節度使",
+  "name": "戎州",
+  "kaiyuan": 6787,
+  "yuanhe": 1293,
+  "nameS": "戎州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "雅州",
+  "kaiyuan": 6589,
+  "yuanhe": 1452,
+  "nameS": "雅州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "眉州",
+  "kaiyuan": 42836,
+  "yuanhe": 5804,
+  "nameS": "眉州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "鬆州",
+  "kaiyuan": 720,
+  "yuanhe": null,
+  "nameS": "松州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "茂州",
+  "kaiyuan": 2540,
+  "yuanhe": 690,
+  "nameS": "茂州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "翼州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "翼州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "維州",
+  "kaiyuan": 765,
+  "yuanhe": null,
+  "nameS": "维州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "當州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "当州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "悉州",
+  "kaiyuan": 855,
+  "yuanhe": null,
+  "nameS": "悉州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "靜州",
+  "kaiyuan": 672,
+  "yuanhe": null,
+  "nameS": "静州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "柘州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "柘州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "恭州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "恭州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "真州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "真州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "黎州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "黎州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "巂州",
+  "kaiyuan": 38035,
+  "yuanhe": 16580,
+  "nameS": "巂州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "姚州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "姚州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "協州",
+  "kaiyuan": 329,
+  "yuanhe": null,
+  "nameS": "协州"
+ },
+ {
+  "volume": "32",
+  "fangzhen": "西川節度使",
+  "name": "曲州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "曲州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "梓州",
+  "kaiyuan": 15478,
+  "yuanhe": 6985,
+  "nameS": "梓州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "劍州",
+  "kaiyuan": 13976,
+  "yuanhe": 2902,
+  "nameS": "剑州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "綿州",
+  "kaiyuan": 51480,
+  "yuanhe": 7148,
+  "nameS": "绵州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "遂州",
+  "kaiyuan": 37377,
+  "yuanhe": 3846,
+  "nameS": "遂州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "渝州",
+  "kaiyuan": 5962,
+  "yuanhe": 834,
+  "nameS": "渝州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "合州",
+  "kaiyuan": 20067,
+  "yuanhe": 2892,
+  "nameS": "合州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "普州",
+  "kaiyuan": 32608,
+  "yuanhe": 1652,
+  "nameS": "普州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "榮州",
+  "kaiyuan": 4807,
+  "yuanhe": 881,
+  "nameS": "荣州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "陵州",
+  "kaiyuan": 17955,
+  "yuanhe": 1985,
+  "nameS": "陵州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "滬州",
+  "kaiyuan": 16807,
+  "yuanhe": 1969,
+  "nameS": "沪州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "龍州",
+  "kaiyuan": 917,
+  "yuanhe": 325,
+  "nameS": "龙州"
+ },
+ {
+  "volume": "33",
+  "fangzhen": "東川節度使",
+  "name": "昌州",
+  "kaiyuan": null,
+  "yuanhe": 1109,
+  "nameS": "昌州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "廣州",
+  "kaiyuan": 64250,
+  "yuanhe": 74099,
+  "nameS": "广州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "循州",
+  "kaiyuan": 9525,
+  "yuanhe": 2089,
+  "nameS": "循州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "潮州",
+  "kaiyuan": 9337,
+  "yuanhe": 1955,
+  "nameS": "潮州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "端州",
+  "kaiyuan": 8142,
+  "yuanhe": null,
+  "nameS": "端州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "康州",
+  "kaiyuan": 13152,
+  "yuanhe": null,
+  "nameS": "康州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "封州",
+  "kaiyuan": 5653,
+  "yuanhe": 811,
+  "nameS": "封州"
+ },
+ {
+  "volume": "34",
+  "fangzhen": "嶺南節度使",
+  "name": "韶州",
+  "kaiyuan": 20764,
+  "yuanhe": 9664,
+  "nameS": "韶州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "桂州",
+  "kaiyuan": 36265,
+  "yuanhe": 8650,
+  "nameS": "桂州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "梧州",
+  "kaiyuan": 2209,
+  "yuanhe": 1871,
+  "nameS": "梧州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "賀州",
+  "kaiyuan": 2537,
+  "yuanhe": 449,
+  "nameS": "贺州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "昭州",
+  "kaiyuan": 7003,
+  "yuanhe": 1578,
+  "nameS": "昭州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "象州",
+  "kaiyuan": 3290,
+  "yuanhe": 233,
+  "nameS": "象州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "柳州",
+  "kaiyuan": 1314,
+  "yuanhe": 1287,
+  "nameS": "柳州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "嚴州",
+  "kaiyuan": 1660,
+  "yuanhe": 116,
+  "nameS": "严州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "融州",
+  "kaiyuan": 1707,
+  "yuanhe": 242,
+  "nameS": "融州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "龔州",
+  "kaiyuan": 2420,
+  "yuanhe": 276,
+  "nameS": "龚州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "富州",
+  "kaiyuan": 1311,
+  "yuanhe": 243,
+  "nameS": "富州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "蒙州",
+  "kaiyuan": 1637,
+  "yuanhe": 272,
+  "nameS": "蒙州"
+ },
+ {
+  "volume": "37",
+  "fangzhen": "桂管經略使",
+  "name": "思唐州",
+  "kaiyuan": null,
+  "yuanhe": 61,
+  "nameS": "思唐州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "邕州",
+  "kaiyuan": 1624,
+  "yuanhe": null,
+  "nameS": "邕州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "貴州",
+  "kaiyuan": 3629,
+  "yuanhe": null,
+  "nameS": "贵州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "賓州",
+  "kaiyuan": 1895,
+  "yuanhe": null,
+  "nameS": "宾州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "澄州",
+  "kaiyuan": 2165,
+  "yuanhe": null,
+  "nameS": "澄州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "橫州",
+  "kaiyuan": 1378,
+  "yuanhe": null,
+  "nameS": "横州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "欽州",
+  "kaiyuan": 2280,
+  "yuanhe": null,
+  "nameS": "钦州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "潯州",
+  "kaiyuan": 1716,
+  "yuanhe": null,
+  "nameS": "浔州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "巒州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "峦州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "安南",
+  "kaiyuan": 25694,
+  "yuanhe": 27135,
+  "nameS": "安南"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "愛州",
+  "kaiyuan": 14056,
+  "yuanhe": 5379,
+  "nameS": "爱州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "驩州",
+  "kaiyuan": 6649,
+  "yuanhe": 3842,
+  "nameS": "驩州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "峰州",
+  "kaiyuan": 3561,
+  "yuanhe": 1482,
+  "nameS": "峰州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "陸州",
+  "kaiyuan": 1934,
+  "yuanhe": 231,
+  "nameS": "陆州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "演州",
+  "kaiyuan": null,
+  "yuanhe": 1450,
+  "nameS": "演州"
+ },
+ {
+  "volume": "38",
+  "fangzhen": "",
+  "name": "附貢州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "附贡州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "秦州",
+  "kaiyuan": 25007,
+  "yuanhe": null,
+  "nameS": "秦州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "渭州",
+  "kaiyuan": 5232,
+  "yuanhe": null,
+  "nameS": "渭州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "武州",
+  "kaiyuan": 3453,
+  "yuanhe": null,
+  "nameS": "武州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "蘭州",
+  "kaiyuan": 4000,
+  "yuanhe": null,
+  "nameS": "兰州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "河州",
+  "kaiyuan": 5283,
+  "yuanhe": null,
+  "nameS": "河州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "鄯州",
+  "kaiyuan": 6446,
+  "yuanhe": null,
+  "nameS": "鄯州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "廓州",
+  "kaiyuan": 3964,
+  "yuanhe": null,
+  "nameS": "廓州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "岷州",
+  "kaiyuan": 3950,
+  "yuanhe": null,
+  "nameS": "岷州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "洮州",
+  "kaiyuan": 3784,
+  "yuanhe": null,
+  "nameS": "洮州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "疊州",
+  "kaiyuan": 1277,
+  "yuanhe": null,
+  "nameS": "叠州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "芳州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "芳州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "宕州",
+  "kaiyuan": 1659,
+  "yuanhe": null,
+  "nameS": "宕州"
+ },
+ {
+  "volume": "39",
+  "fangzhen": "",
+  "name": "臨州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "临州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "涼州",
+  "kaiyuan": 26165,
+  "yuanhe": null,
+  "nameS": "凉州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "甘州",
+  "kaiyuan": 5040,
+  "yuanhe": null,
+  "nameS": "甘州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "肅州",
+  "kaiyuan": 2253,
+  "yuanhe": null,
+  "nameS": "肃州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "沙州",
+  "kaiyuan": 6466,
+  "yuanhe": null,
+  "nameS": "沙州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "瓜州",
+  "kaiyuan": null,
+  "yuanhe": null,
+  "nameS": "瓜州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "伊州",
+  "kaiyuan": 1729,
+  "yuanhe": null,
+  "nameS": "伊州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "西州",
+  "kaiyuan": 11647,
+  "yuanhe": null,
+  "nameS": "西州"
+ },
+ {
+  "volume": "40",
+  "fangzhen": "",
+  "name": "庭州",
+  "kaiyuan": 2676,
+  "yuanhe": null,
+  "nameS": "庭州"
+ }
+]

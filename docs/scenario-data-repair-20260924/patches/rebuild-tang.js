@@ -26,6 +26,8 @@ function main() {
   console.log('已写回原版（' + BASE_COMMIT + '）');
   // 第一刀：死字段清理、格式归一、道长官官称
   console.log('字段清理：' + run([path.join(DIR, 'patches/tang-fields.js'), '--report', path.join(DIR, 'reports/tang-fields.md'), '--write']));
+  // 第二刀：唐廷与河朔、昭义四镇道内各州按天宝户重分户口与随人口走的账，开局账按财政引擎重算
+  console.log('户口重建：' + run([path.join(DIR, 'patches/tang-households.js'), '--report', path.join(DIR, 'reports/tang-households.md'), '--write']));
 }
 
 main();

@@ -1,0 +1,580 @@
+{
+  "config": {
+    "marker": "design-ok"
+  },
+  "updatedAt": "2026-09-25T15:04:14.841Z",
+  "totals": {
+    "colors": 12564,
+    "fontSizes": 5511
+  },
+  "files": {
+    "editor-details.js": {
+      "colors": 1,
+      "fontSizes": 14
+    },
+    "editor-division-deep.js": {
+      "colors": 192,
+      "fontSizes": 69
+    },
+    "editor-office-deep.js": {
+      "colors": 6,
+      "fontSizes": 21
+    },
+    "editor-presets.js": {
+      "colors": 13,
+      "fontSizes": 7
+    },
+    "map-converter.js": {
+      "colors": 3,
+      "fontSizes": 0
+    },
+    "map-display.js": {
+      "colors": 32,
+      "fontSizes": 7
+    },
+    "map-editor-to-game.js": {
+      "colors": 6,
+      "fontSizes": 0
+    },
+    "modules/ai-change-applier/core.js": {
+      "colors": 0,
+      "fontSizes": 18
+    },
+    "phase8-formal-bridge-styles.js": {
+      "colors": 2136,
+      "fontSizes": 395
+    },
+    "phase8-formal-bridge.js": {
+      "colors": 495,
+      "fontSizes": 88
+    },
+    "phase8-formal-drafts-message-panels.js": {
+      "colors": 420,
+      "fontSizes": 162
+    },
+    "phase8-formal-drafts.js": {
+      "colors": 800,
+      "fontSizes": 175
+    },
+    "phase8-formal-map-dossier.js": {
+      "colors": 12,
+      "fontSizes": 6
+    },
+    "phase8-formal-map.js": {
+      "colors": 52,
+      "fontSizes": 2
+    },
+    "phase8-formal-modules.js": {
+      "colors": 7,
+      "fontSizes": 1
+    },
+    "phase8-formal-records.js": {
+      "colors": 234,
+      "fontSizes": 104
+    },
+    "phase8-formal-rightrail.js": {
+      "colors": 10,
+      "fontSizes": 5
+    },
+    "phase8-formal-topbar.js": {
+      "colors": 6,
+      "fontSizes": 0
+    },
+    "styles.css": {
+      "colors": 3998,
+      "fontSizes": 1487
+    },
+    "tm-ai-infra.js": {
+      "colors": 25,
+      "fontSizes": 17
+    },
+    "tm-ai-planning.js": {
+      "colors": 0,
+      "fontSizes": 8
+    },
+    "tm-api-settings.js": {
+      "colors": 0,
+      "fontSizes": 2
+    },
+    "tm-audio-theme.js": {
+      "colors": 2,
+      "fontSizes": 11
+    },
+    "tm-authority-ui.js": {
+      "colors": 12,
+      "fontSizes": 50
+    },
+    "tm-battle-embed.js": {
+      "colors": 6,
+      "fontSizes": 0
+    },
+    "tm-battle-turn.js": {
+      "colors": 45,
+      "fontSizes": 12
+    },
+    "tm-benji.js": {
+      "colors": 0,
+      "fontSizes": 4
+    },
+    "tm-call-budget-settings.js": {
+      "colors": 0,
+      "fontSizes": 4
+    },
+    "tm-capacitor-boot.js": {
+      "colors": 55,
+      "fontSizes": 6
+    },
+    "tm-ceming.js": {
+      "colors": 61,
+      "fontSizes": 24
+    },
+    "tm-chaoyi-changchao-flows.js": {
+      "colors": 0,
+      "fontSizes": 6
+    },
+    "tm-chaoyi-changchao.css": {
+      "colors": 139,
+      "fontSizes": 65
+    },
+    "tm-chaoyi-changchao.js": {
+      "colors": 0,
+      "fontSizes": 7
+    },
+    "tm-chaoyi-tinyi.js": {
+      "colors": 3,
+      "fontSizes": 14
+    },
+    "tm-chaoyi-yuqian.js": {
+      "colors": 2,
+      "fontSizes": 16
+    },
+    "tm-chaoyi.js": {
+      "colors": 0,
+      "fontSizes": 13
+    },
+    "tm-char-autogen.js": {
+      "colors": 0,
+      "fontSizes": 4
+    },
+    "tm-char-economy-ui.js": {
+      "colors": 30,
+      "fontSizes": 56
+    },
+    "tm-checklist.js": {
+      "colors": 9,
+      "fontSizes": 0
+    },
+    "tm-chronicle-system.js": {
+      "colors": 3,
+      "fontSizes": 0
+    },
+    "tm-content-manager-community.js": {
+      "colors": 32,
+      "fontSizes": 15
+    },
+    "tm-content-manager.js": {
+      "colors": 305,
+      "fontSizes": 84
+    },
+    "tm-corruption-extras.js": {
+      "colors": 5,
+      "fontSizes": 6
+    },
+    "tm-court-meter.js": {
+      "colors": 4,
+      "fontSizes": 4
+    },
+    "tm-data-model.js": {
+      "colors": 1,
+      "fontSizes": 0
+    },
+    "tm-diagnostics-foundation.js": {
+      "colors": 42,
+      "fontSizes": 13
+    },
+    "tm-diagnostics-panel.js": {
+      "colors": 95,
+      "fontSizes": 32
+    },
+    "tm-diff.js": {
+      "colors": 4,
+      "fontSizes": 0
+    },
+    "tm-dynamic-systems.js": {
+      "colors": 0,
+      "fontSizes": 12
+    },
+    "tm-edict-complete.js": {
+      "colors": 4,
+      "fontSizes": 22
+    },
+    "tm-edict-parser.js": {
+      "colors": 1,
+      "fontSizes": 7
+    },
+    "tm-edict-thresholds.js": {
+      "colors": 4,
+      "fontSizes": 16
+    },
+    "tm-electron.js": {
+      "colors": 20,
+      "fontSizes": 7
+    },
+    "tm-emergency-recovery-settings.js": {
+      "colors": 7,
+      "fontSizes": 0
+    },
+    "tm-endturn-core.js": {
+      "colors": 2,
+      "fontSizes": 5
+    },
+    "tm-endturn-helpers.js": {
+      "colors": 14,
+      "fontSizes": 29
+    },
+    "tm-endturn-loading.js": {
+      "colors": 53,
+      "fontSizes": 9
+    },
+    "tm-endturn-province.js": {
+      "colors": 91,
+      "fontSizes": 96
+    },
+    "tm-endturn-qiaozhi.js": {
+      "colors": 0,
+      "fontSizes": 6
+    },
+    "tm-endturn-render.js": {
+      "colors": 1,
+      "fontSizes": 0
+    },
+    "tm-endturn-shiji-compose.js": {
+      "colors": 21,
+      "fontSizes": 0
+    },
+    "tm-endturn-timing-ledger.js": {
+      "colors": 19,
+      "fontSizes": 3
+    },
+    "tm-faction-membership.js": {
+      "colors": 1,
+      "fontSizes": 0
+    },
+    "tm-feedback-loops.js": {
+      "colors": 1,
+      "fontSizes": 7
+    },
+    "tm-fiscal-ui.js": {
+      "colors": 3,
+      "fontSizes": 16
+    },
+    "tm-fixed-fit.js": {
+      "colors": 7,
+      "fontSizes": 0
+    },
+    "tm-game-loop-wentian-hardchange.js": {
+      "colors": 1,
+      "fontSizes": 0
+    },
+    "tm-game-loop.js": {
+      "colors": 62,
+      "fontSizes": 57
+    },
+    "tm-game-ui-shell.js": {
+      "colors": 12,
+      "fontSizes": 28
+    },
+    "tm-guoku-panel.js": {
+      "colors": 2,
+      "fontSizes": 38
+    },
+    "tm-help-social.js": {
+      "colors": 23,
+      "fontSizes": 13
+    },
+    "tm-history-events.js": {
+      "colors": 0,
+      "fontSizes": 6
+    },
+    "tm-home-ui.css": {
+      "colors": 66,
+      "fontSizes": 5
+    },
+    "tm-hongyan-edict-ui.js": {
+      "colors": 18,
+      "fontSizes": 7
+    },
+    "tm-hongyan-office.js": {
+      "colors": 0,
+      "fontSizes": 5
+    },
+    "tm-hooks-tracker.js": {
+      "colors": 1,
+      "fontSizes": 0
+    },
+    "tm-houguong.js": {
+      "colors": 73,
+      "fontSizes": 10
+    },
+    "tm-hover-fulltext.js": {
+      "colors": 4,
+      "fontSizes": 1
+    },
+    "tm-keju-activation.js": {
+      "colors": 0,
+      "fontSizes": 6
+    },
+    "tm-keju-budget-ui.js": {
+      "colors": 0,
+      "fontSizes": 5
+    },
+    "tm-keju-paradigm-panel-render.js": {
+      "colors": 0,
+      "fontSizes": 1
+    },
+    "tm-keju-paradigm-panel.css": {
+      "colors": 173,
+      "fontSizes": 57
+    },
+    "tm-keju-question-ui.js": {
+      "colors": 1,
+      "fontSizes": 5
+    },
+    "tm-keju-runtime-keyi.js": {
+      "colors": 15,
+      "fontSizes": 43
+    },
+    "tm-keju-runtime.js": {
+      "colors": 10,
+      "fontSizes": 51
+    },
+    "tm-keju.js": {
+      "colors": 19,
+      "fontSizes": 30
+    },
+    "tm-launch.js": {
+      "colors": 19,
+      "fontSizes": 19
+    },
+    "tm-lizhi-panel.js": {
+      "colors": 17,
+      "fontSizes": 34
+    },
+    "tm-map-system.js": {
+      "colors": 71,
+      "fontSizes": 8
+    },
+    "tm-mechanics-world.js": {
+      "colors": 0,
+      "fontSizes": 4
+    },
+    "tm-mechanics.js": {
+      "colors": 1,
+      "fontSizes": 2
+    },
+    "tm-memorials.js": {
+      "colors": 5,
+      "fontSizes": 0
+    },
+    "tm-memory-ui.js": {
+      "colors": 56,
+      "fontSizes": 11
+    },
+    "tm-memory-workshop.js": {
+      "colors": 31,
+      "fontSizes": 3
+    },
+    "tm-military-ui.js": {
+      "colors": 3,
+      "fontSizes": 3
+    },
+    "tm-military.js": {
+      "colors": 0,
+      "fontSizes": 25
+    },
+    "tm-native-fiscal-ui.js": {
+      "colors": 8,
+      "fontSizes": 1
+    },
+    "tm-neitang-panel.js": {
+      "colors": 1,
+      "fontSizes": 7
+    },
+    "tm-office-charter.js": {
+      "colors": 9,
+      "fontSizes": 6
+    },
+    "tm-office-editor.js": {
+      "colors": 45,
+      "fontSizes": 62
+    },
+    "tm-office-panel.js": {
+      "colors": 48,
+      "fontSizes": 74
+    },
+    "tm-office-runtime-summary-appoint.js": {
+      "colors": 14,
+      "fontSizes": 27
+    },
+    "tm-office-runtime.js": {
+      "colors": 36,
+      "fontSizes": 10
+    },
+    "tm-onboard-tools.js": {
+      "colors": 15,
+      "fontSizes": 1
+    },
+    "tm-online-mall.css": {
+      "colors": 479,
+      "fontSizes": 186
+    },
+    "tm-patches.js": {
+      "colors": 54,
+      "fontSizes": 161
+    },
+    "tm-pause-fab.js": {
+      "colors": 23,
+      "fontSizes": 0
+    },
+    "tm-perf.js": {
+      "colors": 30,
+      "fontSizes": 7
+    },
+    "tm-player-core.js": {
+      "colors": 156,
+      "fontSizes": 153
+    },
+    "tm-player-settings.js": {
+      "colors": 11,
+      "fontSizes": 17
+    },
+    "tm-player-tools.js": {
+      "colors": 10,
+      "fontSizes": 46
+    },
+    "tm-prophecy.js": {
+      "colors": 4,
+      "fontSizes": 7
+    },
+    "tm-renwu-tuzhi.js": {
+      "colors": 372,
+      "fontSizes": 163
+    },
+    "tm-renwu-ui.js": {
+      "colors": 25,
+      "fontSizes": 77
+    },
+    "tm-reported-view.js": {
+      "colors": 2,
+      "fontSizes": 1
+    },
+    "tm-revolt-inference.js": {
+      "colors": 5,
+      "fontSizes": 0
+    },
+    "tm-save-lifecycle.js": {
+      "colors": 3,
+      "fontSizes": 4
+    },
+    "tm-save-manager.js": {
+      "colors": 3,
+      "fontSizes": 6
+    },
+    "tm-shanhe-runtime.js": {
+      "colors": 9,
+      "fontSizes": 2
+    },
+    "tm-shell-extras.js": {
+      "colors": 95,
+      "fontSizes": 5
+    },
+    "tm-shiji-qiju-ui.js": {
+      "colors": 1,
+      "fontSizes": 2
+    },
+    "tm-shizheng-panel.js": {
+      "colors": 148,
+      "fontSizes": 63
+    },
+    "tm-sidebar-ui.js": {
+      "colors": 29,
+      "fontSizes": 113
+    },
+    "tm-start-selector.js": {
+      "colors": 29,
+      "fontSizes": 2
+    },
+    "tm-startup-contract.js": {
+      "colors": 2,
+      "fontSizes": 0
+    },
+    "tm-storage.js": {
+      "colors": 3,
+      "fontSizes": 0
+    },
+    "tm-theme-font.js": {
+      "colors": 81,
+      "fontSizes": 0
+    },
+    "tm-three-systems-ui.js": {
+      "colors": 106,
+      "fontSizes": 93
+    },
+    "tm-tinyi-v3-edict-personnel.js": {
+      "colors": 20,
+      "fontSizes": 6
+    },
+    "tm-tinyi-v3-persona.js": {
+      "colors": 5,
+      "fontSizes": 1
+    },
+    "tm-tinyi-v3.css": {
+      "colors": 207,
+      "fontSizes": 78
+    },
+    "tm-tinyi-v3.js": {
+      "colors": 81,
+      "fontSizes": 24
+    },
+    "tm-topbar-vars.js": {
+      "colors": 6,
+      "fontSizes": 149
+    },
+    "tm-traits-data.js": {
+      "colors": 9,
+      "fontSizes": 0
+    },
+    "tm-ui-foundation.js": {
+      "colors": 17,
+      "fontSizes": 6
+    },
+    "tm-utils.js": {
+      "colors": 1,
+      "fontSizes": 2
+    },
+    "tm-var-drawers.js": {
+      "colors": 46,
+      "fontSizes": 136
+    },
+    "tm-wendui-persona-views.js": {
+      "colors": 0,
+      "fontSizes": 1
+    },
+    "tm-wendui-prison.js": {
+      "colors": 35,
+      "fontSizes": 7
+    },
+    "tm-wendui.js": {
+      "colors": 19,
+      "fontSizes": 49
+    },
+    "tm-workshop-covers.js": {
+      "colors": 16,
+      "fontSizes": 0
+    },
+    "tm-world-view.js": {
+      "colors": 11,
+      "fontSizes": 10
+    }
+  }
+}

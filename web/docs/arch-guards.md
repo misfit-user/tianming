@@ -166,6 +166,17 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 断言照样全绿，但作为装载序防腐测试不可信（Codex 复审第十八拆曾抓 15 处）。
 豁免基线 `smoke-family-order.json`（棘轮·当前=空）。
 
+### ⑨ 设计令牌 `lint-design-tokens.js`（2026-09-25·美术宪法第0刀）
+[美术宪法](art-constitution.md) 规定颜色和字号只从 `styles.css` 的令牌表里取。本守卫按文件统计**写死的颜色**
+（`#rgb`/`#rrggbb` 等十六进制与直接写数字的 `rgb()/rgba()/hsl()/hsla()`）和**写死的字号**（`font-size: 12px`、
+`fontSize = '12px'`），基线只许降不许升，新文件从 0 起算。第0刀基线：写死颜色 12564、写死字号 5511，分布在 142 个文件。
+
+- 文件集：index.html 挂载的运行时 JS（与其他守卫同源）+ index.html 链接的样式表 + 运行时 JS 按文件名动态加载的样式表（如常朝）。
+- 不计：令牌定义本身（`--名字: 值`）、`var()` 引用、注释、带 `design-ok` 标记的行（确经裁定的例外，如图标插画设色）。
+- 超基线 FAIL，处置：改用令牌；确属例外 → 该行加 `design-ok`；还了账或拆分挪了代码 → `--update` 重写基线（拆分收尾的基线连落从三连变四连）。
+- `--top 15` 看欠账大户，`--list <文件>` 逐行看某个文件里被计入的写法（收令牌时用）。
+- 阴性测试过：样式表新增一条写死颜色和字号即红，同一行加 `design-ok` 即放行。
+
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动
 **串行重跑一次**，过了标 `flaky`（汇总/报告单列，不静默掩盖；反复上榜的去查真因）。
@@ -173,5 +184,5 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 
 ## 基线文件（要进 git）
 
-`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order}.json` —— 棘轮的账本，删了守卫就瞎。
+`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens}.json` —— 棘轮的账本，删了守卫就瞎。
 `dev-tools/arch-guard/` 下是生成物（依赖清单/smoke报告），不进安装包，可随时重生成。

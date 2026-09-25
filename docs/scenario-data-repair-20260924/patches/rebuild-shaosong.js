@@ -23,7 +23,8 @@ const CIRCUITS = ['liangzhe', 'jingji', 'jingdong', 'jingxi', 'huainan', 'jiangn
 const FOREIGN = [
   { key: 'jin', frame: 'shaosong-jin-frame.js' },
   { key: 'hebei-yijun', frame: 'shaosong-hebei-yijun.js' },
-  { key: 'xixia', frame: 'shaosong-xixia.js' }
+  { key: 'xixia', frame: 'shaosong-xixia.js' },
+  { key: 'goryeo', frame: 'shaosong-goryeo.js' }
 ];
 
 function run(args) {

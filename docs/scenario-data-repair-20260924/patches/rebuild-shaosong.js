@@ -39,7 +39,14 @@ const FOREIGN = [
   { key: 'kham', frame: 'shaosong-tibet-west.js#2', module: 'shaosong-tibet-west.js#2' },
   { key: 'karakhan-east', frame: 'shaosong-tibet-west.js#3', module: 'shaosong-tibet-west.js#3' },
   { key: 'karakhan-west', frame: 'shaosong-tibet-west.js#4', module: 'shaosong-tibet-west.js#4' },
-  { key: 'qocho', frame: 'shaosong-tibet-west.js#5', module: 'shaosong-tibet-west.js#5' }
+  { key: 'qocho', frame: 'shaosong-tibet-west.js#5', module: 'shaosong-tibet-west.js#5' },
+  { key: 'naiman', frame: 'shaosong-steppe.js#0', module: 'shaosong-steppe.js#0' },
+  { key: 'kereit', frame: 'shaosong-steppe.js#1', module: 'shaosong-steppe.js#1' },
+  { key: 'merkit', frame: 'shaosong-steppe.js#2', module: 'shaosong-steppe.js#2' },
+  { key: 'mongol', frame: 'shaosong-steppe.js#3', module: 'shaosong-steppe.js#3' },
+  { key: 'tatar', frame: 'shaosong-steppe.js#4', module: 'shaosong-steppe.js#4' },
+  { key: 'qongirat', frame: 'shaosong-steppe.js#5', module: 'shaosong-steppe.js#5' },
+  { key: 'ongud', frame: 'shaosong-steppe.js#6', module: 'shaosong-steppe.js#6' }
 ];
 
 function run(args) {

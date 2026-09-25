@@ -20,7 +20,11 @@ TYPOS = {'觌焉陵': '鄢陵', '里安府': '瑞安府'}
 
 def simplify(text):
     text = TYPOS.get(text, text)
-    return cc.convert(text.translate(VARIANTS))
+    out = cc.convert(text.translate(VARIANTS))
+    # 地名里的「乾」（乾州、乾宁、乾德）不是「幹／乾燥」，opencc 会误转成「干」，按原位还原
+    if len(out) == len(text):
+        out = ''.join('乾' if a == '乾' else b for a, b in zip(text, out))
+    return out
 
 
 def main(path):

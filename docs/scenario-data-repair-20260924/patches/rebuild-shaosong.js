@@ -19,6 +19,11 @@ const BASE_COMMIT = '5b243f02';
 // 各路数据模块，按落刀顺序
 const CIRCUITS = ['liangzhe', 'jingji', 'jingdong', 'jingxi', 'huainan', 'jiangnan', 'jinghu-fujian', 'guangnan-dong', 'guangnan-xi', 'chuan-west', 'chuan-east', 'xibei'];
 
+// 外藩：先用各自的框架数据补路一级，再跑逐块数据模块
+const FOREIGN = [
+  { key: 'jin', frame: 'shaosong-jin-frame.js' }
+];
+
 function run(args) {
   const out = execFileSync(process.execPath, args, { cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   const lines = out.trim().split('\n');
@@ -35,6 +40,14 @@ function main() {
     const moduleFile = path.join(DIR, 'data', 'shaosong-' + key + '.js');
     const reportFile = path.join(DIR, 'reports', 'shaosong-' + key + '.md');
     const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), moduleFile, '--report', reportFile, '--write']);
+    console.log(key + '：' + last);
+  });
+  FOREIGN.forEach(({ key, frame }) => {
+    const circuits = run([path.join(DIR, 'patches/shaosong-circuits.js'), path.join(DIR, 'data', frame),
+      '--report', path.join(DIR, 'reports', 'shaosong-' + key + '-circuits.md'), '--write']);
+    console.log(key + ' 补路一级：' + circuits);
+    const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), path.join(DIR, 'data', 'shaosong-' + key + '.js'),
+      '--report', path.join(DIR, 'reports', 'shaosong-' + key + '.md'), '--write']);
     console.log(key + '：' + last);
   });
 }

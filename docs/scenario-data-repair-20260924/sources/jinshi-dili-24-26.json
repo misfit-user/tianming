@@ -1,0 +1,2212 @@
+[
+ {
+  "name": "上京路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 6,
+  "firstParagraph": "上京路，即海古之地，金之舊土也，國言「金」曰「按出虎」，按出虎水源於此，故名金源，建國之號蓋取諸此。國初稱為內地，天眷元年號上京。海陵貞元元年遷都于燕，削上京之號，止稱會寧府，稱為國中者以違制論。大定十三年七月，後為上京。其山有長白、青嶺、馬紀嶺、完都魯，水有按出虎水、混同江、來流河、宋瓦江、鴨子河。府一，領節鎮四，防禦一，縣六，鎮一。舊有會平州，天會二年築，契丹之周特城也，後廢。其宮室有乾元殿，天會三年建，天眷元年更名皇極殿。慶元宮，天會十三年建，殿曰辰居，門曰景暉，天眷二年安太祖以下禦容，為原廟。朝殿，天眷元年建，殿曰敷德，門曰延光，寢殿曰宵衣，書殿曰稽古。又有時德宮、明德殿，熙宗嘗享太宗",
+  "nameS": "上京路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "會寧府",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 31270,
+  "countyCount": 3,
+  "firstParagraph": "會寧府，下。初為會寧州，太宗以建都，升為府。天眷元年，置上京留守司，以留守帶本府尹，兼本路兵馬都總管。後置上京曷懶等路提刑司。戶三萬一千二百七十。舊歲貢秦王魚，大定十二年罷之，又貢豬二萬，二十五年罷之。東至胡裏改六百三十里，西到肇州五百五十里，北至蒲與路七百里，東南至恤品路一千六百里，至曷賴路一千八百里縣三：",
+  "nameS": "会宁府",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "肇州",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 5375,
+  "countyCount": 1,
+  "firstParagraph": "肇州，下，防禦使。舊出河店也。天會八年，以太祖兵勝遼，肇基王績於此，遂建為州。天眷元年十月，置防禦使，隸會寧府。海陵時，嘗為濟州支郡。承安三年，複以為太祖神武隆興之地，升為節鎮，軍名武興。五年，置漕運司，以提舉兼州事。後廢軍。貞祐二年複升為武興軍節鎮，置招討司，以使兼州事。戶五千三百七十五。縣一：",
+  "nameS": "肇州",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "隆州",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 10180,
+  "countyCount": 1,
+  "firstParagraph": "隆州，下，利涉軍節度使。古扶餘之地，遼太祖時，有黃龍見，遂名黃龍府。天眷三年，改為濟州，以太祖來攻城時大軍徑涉，不假舟楫之祥也，置利涉軍。天德三年置上京路都轉運司，四年，改為濟州轉運司。大定二十九年嫌與山東路濟州同，更今名。貞祐初，升為隆安府，戶一萬一百八十。縣一：",
+  "nameS": "隆州",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "信州",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 7359,
+  "countyCount": 1,
+  "firstParagraph": "信州，下，彰信軍刺史。本渤海懷遠軍，遼開泰七年建，取諸路漢民置。戶七千三百五十九。縣一：",
+  "nameS": "信州",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "蒲與路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "蒲與路，國初置萬戶，海陵例罷萬戶，乃改置節度使。承安三年，設節度副使。南至上京六百七十里，東南至胡裏改一千四百里，北至北邊界火魯火疃謀克三千里。",
+  "nameS": "蒲与路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "合懶路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "合懶路，置總管府。貞元元年，改總管為尹，仍兼兵馬都總管。承安三年，設兵馬副總管。舊貢海蔥，大定二十七年罷之。有移鹿古水。西至上京一千八百里，東南至高麗界五百里。",
+  "nameS": "合懒路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "恤品路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 2000,
+  "countyCount": null,
+  "firstParagraph": "恤品路，節度使。遼時，為率賓府，置刺史。本率賓故地，太宗天會二年，以耶懶路都孛堇所居地瘠，遂遷於此。以海陵例罷萬戶，置節度使，因名速頻路節度使。世宗大定十一年，以耶懶、速頻相去千里，既居速頻，然不可忘本，遂命名古土門親管猛安曰押懶猛安。承安三年，設節度副使。西北至上京一千五百七十里，東北至胡裏改一千一百，西南至合懶一千二百，北至邊界斡可阿憐千戶二千里。「耶懶」又書作「押懶」。",
+  "nameS": "恤品路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "曷蘇館路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "曷蘇館路，置節度使。天會七年，徙治寧州，嘗置都統司，明昌四年廢。有化成關，國言曰曷撒罕關。",
+  "nameS": "曷苏馆路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "胡裏改路",
+  "circuit": "上京路",
+  "volume": "24",
+  "households": 1500,
+  "countyCount": null,
+  "firstParagraph": "胡裏改路，國初置萬戶，海陵例罷萬戶，乃改置節度使。承安三年，置節度副使。西至上京六百三十里，北至邊界合裏賓忒千戶一千五百里。",
+  "nameS": "胡里改路",
+  "circuitS": "上京路"
+ },
+ {
+  "name": "咸平路",
+  "circuit": "咸平路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 10,
+  "firstParagraph": "咸平路，府一，領刺郡一，縣十。",
+  "nameS": "咸平路",
+  "circuitS": "咸平路"
+ },
+ {
+  "name": "咸平府",
+  "circuit": "咸平路",
+  "volume": "24",
+  "households": 56404,
+  "countyCount": 8,
+  "firstParagraph": "咸平府，下，總管府，安東軍節度使，本高麗銅山縣地，遼為咸州，國初為咸州路，置都統司。天德二年八月，升為咸平府，後為總管府。置遼東路轉運司、東京咸平路提刑司。戶五萬六千四百四。縣八：",
+  "nameS": "咸平府",
+  "circuitS": "咸平路"
+ },
+ {
+  "name": "韓州",
+  "circuit": "咸平路",
+  "volume": "24",
+  "households": 15412,
+  "countyCount": 2,
+  "firstParagraph": "韓州，下，刺史。遼置東平軍，本渤海鄚頡府。戶一萬五千四百一十二。舊有營。縣二：",
+  "nameS": "韩州",
+  "circuitS": "咸平路"
+ },
+ {
+  "name": "東京路",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 17,
+  "firstParagraph": "東京路，府一，領節鎮一，刺郡四，縣十七，鎮五。皇統四年二月，立東京新宮，寢殿曰保寧，宴殿曰嘉惠，前後正門曰天華、曰乾貞。七月，建宗廟，有孝甯宮。七年，建禦容殿。",
+  "nameS": "东京路",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "遼陽府",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 40604,
+  "countyCount": 4,
+  "firstParagraph": "遼陽府，中。東京留守司。本渤海遼陽故城，遼完葺之，郡名東平。天顯三年，升為南京，府曰遼陽。十三年，更為東京。太宗天會十年，改南京路平州軍帥司為東南路都統司之時，嘗治於此，以鎮高麗。後置兵馬都部署司，天德二年，改為本路都總管府，後更置留守司。產白兔、師姑布、鼠毫、白鼠皮、人參、白附子。戶四萬六百四。縣四、鎮一：",
+  "nameS": "辽阳府",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "澄州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 11935,
+  "countyCount": 2,
+  "firstParagraph": "澄州，南海軍刺史，下。本遼海州，天德三年改州名。戶一萬一千九百三十五。縣二。鎮一：",
+  "nameS": "澄州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "沈州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 36892,
+  "countyCount": 5,
+  "firstParagraph": "沈州，昭德軍刺史，中。本遼定理府地，遼太宗時軍曰興遼，後為昭德軍，置節度。明昌四年改為刺史，與通、貴德、澄三州皆隸東京。戶三萬六千八百九十二。縣五：",
+  "nameS": "沈州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "章義遼舊廣州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "章義遼舊廣州，皇統三年降為縣來屬。有遼河、東梁河、遼河大口。",
+  "nameS": "章义辽旧广州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "貴德州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 20896,
+  "countyCount": 2,
+  "firstParagraph": "貴德州，刺史，下。遼貴德州寧遠軍，國初廢軍，降為刺郡。戶二萬八百九十六。縣二：",
+  "nameS": "贵德州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "蓋州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 18456,
+  "countyCount": 4,
+  "firstParagraph": "蓋州，奉國軍節度使，下。本高麗蓋葛牟城，遼辰州。明昌四年，罷曷蘇館，建辰州遼海軍節度使。六年，以與「陳」同音，更取蓋葛牟為名。戶一萬八千四百五十六。縣四、鎮二：",
+  "nameS": "盖州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "複州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": 13950,
+  "countyCount": 2,
+  "firstParagraph": "複州，下，刺史。遼懷還軍節度，明昌四年降為刺史。舊貢鹿筋，大定八年罷之。戶一萬三千九百五十。縣二、鎮一：",
+  "nameS": "复州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "來遠州",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "來遠州，下。舊來遠城，本遼熟女直地，大定二十二年升為軍，後升為州。",
+  "nameS": "来远州",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "婆速府路",
+  "circuit": "東京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "婆速府路，國初置統軍司，天德二處置總管府，貞元元年與曷懶路總管並為尹，兼本路兵馬都總管。此路皆猛安戶。",
+  "nameS": "婆速府路",
+  "circuitS": "东京路"
+ },
+ {
+  "name": "北京路",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 42,
+  "firstParagraph": "北京路，府四，領節鎮七，刺郡三，縣四十二，鎮七，寨一。",
+  "nameS": "北京路",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "大定府",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 64047,
+  "countyCount": 11,
+  "firstParagraph": "大定府，中，北京留守司，遼中京。統和二十五年建為中京，國初因稱之。海陵貞元元年更為北京，置留守司、都轉運司、警巡院。產紘鼠、螺杯、茱萸梳、玳瑁鞍、酥乳餅、五味子。戶六萬四千四十七。縣十一、鎮二：",
+  "nameS": "大定府",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "利州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 21296,
+  "countyCount": 2,
+  "firstParagraph": "利州，下，刺史。遼統和十六年置。戶二萬一千二百九十六。縣二、鎮一、寨一：",
+  "nameS": "利州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "義州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 30233,
+  "countyCount": 3,
+  "firstParagraph": "義州，下，崇義軍節使。遼宜州，天德三年更州名。戶三萬二百三十三。縣三、鎮一：",
+  "nameS": "义州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "錦州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 39123,
+  "countyCount": 3,
+  "firstParagraph": "錦州，下，臨海軍節度使。舊隸興中府，後來屬。戶三萬九千一百二十三。縣三：",
+  "nameS": "锦州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "瑞州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 19953,
+  "countyCount": 3,
+  "firstParagraph": "瑞州，下，歸德軍節使。本來州，天德三年更為宗州，泰和六年以避睿宗諱，謂本唐瑞州地，故更今名。戶一萬九千九百五十三。縣三、鎮一：",
+  "nameS": "瑞州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "廣寧府",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 43161,
+  "countyCount": 3,
+  "firstParagraph": "廣寧府，散，下，鎮甯軍節度使。本遼顯州奉先軍，漢望平縣地，天輔七年升為府，因軍名置節度。天會八年改軍名鎮寧。天德二年隸咸平，後廢軍隸東京。泰和元年七月來屬。戶四萬三千一百六十一。縣三、舊有奉玄縣，天會八年改為鐘秀縣。鎮六、寨四。鎮二歡城、遼西。",
+  "nameS": "广宁府",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "懿州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 42351,
+  "countyCount": 2,
+  "firstParagraph": "懿州，下，甯昌軍節度使。遼嘗更軍名慶懿，又為廣順，複更今名。金因之，先隸咸平府，泰和末來屬。戶四萬二千三百五十一。縣二：大定六年罷川州，以宜民、同昌二縣來屬。承安二年複以二縣隸川州。泰和四年罷川州，以宜民隸興中，同昌隸義州。",
+  "nameS": "懿州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "興中府",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 40927,
+  "countyCount": 4,
+  "firstParagraph": "興中府，散，下。本唐營州城，遼太祖遷漢民以實之，曰霸州彰武軍，重熙十一年升為府，更今名，金因之。戶四萬九百二十七。縣四、鎮三：",
+  "nameS": "兴中府",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "建州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 11439,
+  "countyCount": 1,
+  "firstParagraph": "建州，下，保靖軍刺史。遼初名軍曰武寧，後更，金因之。戶一萬一千四百三十九。縣一：",
+  "nameS": "建州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "全州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 9319,
+  "countyCount": 1,
+  "firstParagraph": "全州，下，盤安軍節度使。承安二年置，改胡設務為靜封縣，黑河鋪為盧川縣，撥北京三韓縣烈虎等五猛安以隸焉。貞祐二年四月嘗僑置於平州。戶九千三百一十九。縣一：",
+  "nameS": "全州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "臨潢府",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 67907,
+  "countyCount": 5,
+  "firstParagraph": "臨潢府，下，總管府。地名西樓，遼為上京。國初因稱之，天眷元年改為北京。天德二年改北京為臨潢府路，以北京路都轉運司為臨潢府路轉運司，天德三年罷。貞元元年以大定府為北京後，但置北京臨潢路提刑司。大定後罷路，併入大定府路。貞祐二年四月嘗僑置於平州。有天平山、好水川，行宮地也，大定二十五年命名。有撒裏乃地。熙宗皇帝統九年嘗避暑於此。有陷泉，國言曰落孛魯。有合嫋追古思阿不漠合沙地。戶六萬七千九百七。縣五、堡三十七：大定間二十四，後增。",
+  "nameS": "临潢府",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "慶州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 2007,
+  "countyCount": 1,
+  "firstParagraph": "慶州，下，玄甯軍刺史。境內有遼祖州，天會八年改為奉州，皇統三年廢，遼太祖祖陵在焉。境內有遼懷州，舊置奉陵軍，天會八年更為奉德軍，皇統三年廢，遼太宗、穆宗懷陵在焉。北山有這聖宗、興宗、道宗慶陵。城中有遼行宮，比他州為富庶，遼時刺此郡者非耶律、蕭氏不與，遼國寶貨多聚藏於此。北至界二十里，南至盧川二百二十，西至桓州九百，東至臨潢一百六十。戶二千七。縣一：舊有孝安縣，天會八年改為慶民縣，皇統三年廢。",
+  "nameS": "庆州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "興州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 15970,
+  "countyCount": 2,
+  "firstParagraph": "興州，甯朔軍節度使。本遼北安州興化軍，皇統三年降軍置興化縣，承安五年升為興州，置節度，軍名寧朔，改利民寨為利民縣，撥梅堅河徒門必罕、甯江、速馬剌三猛安隸焉。貞祐二年四月僑置於密雲縣。戶一萬五千九百七十。縣二：又有利民縣，承安五年以利民寨升，泰和四年廢。",
+  "nameS": "兴州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "泰州",
+  "circuit": "北京路",
+  "volume": "24",
+  "households": 3504,
+  "countyCount": 1,
+  "firstParagraph": "泰州，德昌軍節度使。遼時本契丹二十部族牧地，海陵正隆間，置德昌軍，隸上京，大定二十五年罷之。承安三年複置於長春縣，以舊泰州為金安縣，隸焉。北至邊四百里，南至懿州八百里，不至肇州三百五十里。戶三千五百四。縣一、舊有金安縣，承安三年置，尋廢。堡十九：",
+  "nameS": "泰州",
+  "circuitS": "北京路"
+ },
+ {
+  "name": "西京路",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 39,
+  "firstParagraph": "西京路，府二，領節鎮七，刺郡八，縣三十九，鎮九。大定五年建宮室，名其殿曰保安，其門南曰奉天，東曰宣仁，西曰阜成。天會三年建太祖原廟。",
+  "nameS": "西京路",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "大同府",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 98444,
+  "countyCount": 7,
+  "firstParagraph": "大同府，中，西京留守司。晉雲州大同軍節度，遼重熙十三年，升為西京，府名大同，金因之。皇統元年，以燕京路隸尚書省，西京及山后諸部族隸元帥府。舊置兵馬都部署司，天德二年，改置本路都總管府，後更置留守司。置轉運司及中都西京路提刑司。貢瑪瑙環子、瑪瑙數珠。產白駝、安息香、松明、松脂、黃連、百藥煎、芥子煎、鹽、撈鹽、石綠、綠礬、鐵、甘草、枸杞、碾玉砂、地蕈。戶九萬八千四百四十四。縣七、鎮三：",
+  "nameS": "大同府",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "豐州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 22683,
+  "countyCount": 1,
+  "firstParagraph": "豐州，下，天德軍節度使。遼嘗更軍名應天，尋複，金因之。皇統九年升為天德總管府，置西南路招討司，以天德尹兼領之。大定元年降為天德軍節度使，兼豐州管內觀察使，以元管部族直撒、軍馬公事，並隸西南路詔討司產不灰木、地蕈。戶二萬二千六百八十三。縣一、鎮一：",
+  "nameS": "丰州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "弘州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 22002,
+  "countyCount": 2,
+  "firstParagraph": "弘州，下，刺史。遼名軍曰博寧，本襄陰村，統和中建。國初置保寧軍，後廢軍。產瑪瑙。戶二萬二千二。縣二、鎮二：",
+  "nameS": "弘州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "淨州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 5938,
+  "countyCount": 1,
+  "firstParagraph": "淨州，下，刺史。大定十八年以天山縣升，為豐州支郡，刺史兼權譏察。北至界八十里戶五千九百三十八。縣一：",
+  "nameS": "净州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "桓州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 578,
+  "countyCount": 1,
+  "firstParagraph": "桓州，下，威遠軍節度使。軍兵隸西北路招討司。明昌七年改置刺史。北至舊界一里半。戶五百七十八。縣一：曷裏滸東川，更名金蓮川，世宗曰：「蓮者連也，取其金枝玉葉相連之義。」景明宮，避暑宮也，在涼陘，有殿、揚武殿，皆大定二十年命名。有查沙，有白濼，國言曰勺赤勒。",
+  "nameS": "桓州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "撫州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 11380,
+  "countyCount": 4,
+  "firstParagraph": "撫州，下，鎮甯軍節度使。遼秦國大長公主建為州，章宗昌三年複置刺史，為桓州支郡，治柔遠。明昌四年置司候司。承安二年升為節鎮，軍名鎮寧，撥西北路招討司所管梅堅必剌、王敦必剌、拿憐術花速、宋葛斜忒渾四猛安以隸之。戶一萬一千三百八十。縣四：有旺國崖，大定八年五月更名靜寧山。有麻達葛山，大定二十九年更名胡土白山。有冰井。",
+  "nameS": "抚州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "德興府",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 80868,
+  "countyCount": 6,
+  "firstParagraph": "德興府，晉新州，遼奉聖州武定軍節度，國初因之。大安元年升為府，名德興。戶八萬八百六十八。縣六、有漫天堝，泰和二年更名拂雲，平惡崖，更名壘翠岩。鎮一：",
+  "nameS": "德兴府",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "昌州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 1241,
+  "countyCount": 1,
+  "firstParagraph": "昌州，天輔七年降為建昌縣，隸桓州。明昌七年以狗濼複置，隸撫州，後來屬。戶一千二百四十一。縣一：",
+  "nameS": "昌州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "宣德州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 32147,
+  "countyCount": 2,
+  "firstParagraph": "宣德州，下，刺史。遼改晉武州為歸化州雄川武軍，大定七年更為宣化州，八年複更為宣德。戶三萬二千一百四十七。縣二：",
+  "nameS": "宣德州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "朔州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 44892,
+  "countyCount": 2,
+  "firstParagraph": "朔州，中，順義軍節度使。貞祐三年七月，嘗割朔州廣武縣隸代州。產鐵、荊三棱、枸杞。戶四萬四千八百九十二。縣二：",
+  "nameS": "朔州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "武州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 13851,
+  "countyCount": 1,
+  "firstParagraph": "武州，邊，下，刺史。大定前仍置宣威軍。戶一萬三千八百五十一。縣一：",
+  "nameS": "武州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "應州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 32977,
+  "countyCount": 3,
+  "firstParagraph": "應州，下，彰國軍節度使。戶三萬二千九百七十七。縣三：",
+  "nameS": "应州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "蔚州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 56674,
+  "countyCount": 5,
+  "firstParagraph": "蔚州，下，忠順軍節度使。遼嘗更為武安軍，尋複。貢地蕈。戶五萬六千六百七十四。縣五：",
+  "nameS": "蔚州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "雲內州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 24868,
+  "countyCount": 2,
+  "firstParagraph": "雲內州，下，開遠軍節度使。天會七年徙奚第一、第三部來戍。產青鑌鐵。戶二萬四千八百六十八。縣二、鎮一：",
+  "nameS": "云内州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "甯邊州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 6072,
+  "countyCount": 1,
+  "firstParagraph": "甯邊州，下，刺史。國初置鎮西軍，貞祐三年隸嵐州，四年二月升為防禦。戶六千七十二。縣一：",
+  "nameS": "宁边州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "東勝州",
+  "circuit": "西京路",
+  "volume": "24",
+  "households": 3531,
+  "countyCount": 1,
+  "firstParagraph": "東勝州，下，邊，刺史。國初置武興軍，有古東勝城。戶三千五百三十一。縣一、鎮一：",
+  "nameS": "东胜州",
+  "circuitS": "西京路"
+ },
+ {
+  "name": "中都路",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": null,
+  "countyCount": 49,
+  "firstParagraph": "中都路，遼會同元年為南京，開泰元年號燕京。海陵貞元元年定都，以燕乃列國之名，不當為京師號，遂改為中都。府一，領節鎮三，刺郡九，縣四十九。天德三年，始圖上燕城宮室制度，三月，命張浩等增廣燕城。城門十三，東曰施仁、曰宣曜、曰陽春，南曰影風、曰豐宜、曰端禮，西曰麗澤、曰顥華、曰彰義，北曰會城、曰通玄、曰崇智、曰光泰。浩等取真定府潭園材木，營建宮室及涼位十六。應天門十一楹，左右有樓，門內有左、右翔龍門，及日華、月華門，前殿曰大安，左、右掖門，內殿東廊曰敷得門。大安殿之東北為東宮，正北列三門，中曰粹英，為壽康宮，母后所居也，西曰會通門，門北曰承明門，又北曰昭慶門。東曰集禧門，尚書省在其外，其東西門左、右",
+  "nameS": "中都路",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "大興府",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 225592,
+  "countyCount": 10,
+  "firstParagraph": "大興府，上。晉幽州，遼會同元年升為南京，府曰幽都，仍號盧龍軍，開泰元年更為永安析津府。天會七年析河北為東、西路時屬河北東路，貞元元年更今名。戶二十二萬五千五百九十二。大定四年十月，命都門外夾道重行植柳各百里。產金銀銅鐵。藥產滑石、半夏、蒼術、代赭石、白龍骨、薄荷、五味子、白牽牛。縣十、鎮一：",
+  "nameS": "大兴府",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "通州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 35099,
+  "countyCount": 2,
+  "firstParagraph": "通州，下，刺史。天德三年升潞縣置，以三河隸焉。興定二年五月升為防禦。戶三萬五千九十九。縣二：",
+  "nameS": "通州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "薊州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 69015,
+  "countyCount": 5,
+  "firstParagraph": "薊州，中，刺史。遼置上武軍。戶六萬九千一十五。產粟。縣五、舊又有永濟縣，大定二十七年以永濟務置，未詳何年廢。又有黎豁縣，廢置皆未詳。鎮二：",
+  "nameS": "蓟州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "易州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 41005,
+  "countyCount": 2,
+  "firstParagraph": "易州，下，刺史。遼置高陽軍。戶四萬一千五右七十七。縣二：",
+  "nameS": "易州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "涿州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 114912,
+  "countyCount": 5,
+  "firstParagraph": "涿州，中，刺史。遼為永泰軍。貢羅。戶一十一萬四千九百一十二。縣五、鎮一：",
+  "nameS": "涿州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "順州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 32433,
+  "countyCount": 2,
+  "firstParagraph": "順州，下，刺史。遼置歸化軍。戶三萬二千四百三十三。縣二：",
+  "nameS": "顺州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "平州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 41748,
+  "countyCount": 5,
+  "firstParagraph": "平州，中，興平節度使。遼為遼興軍。天輔七年以燕西地與宋，遂以平州為南京，以錢帛司為三司，天會四年複平州，嘗置軍帥司。天會十年徙軍帥司治遼陽府，後置轉運司。貞元元年以轉運司並隸中都路。貞祐二年四月置東面經略司，八月罷。貢櫻桃、綾。戶四萬一千七百四十八。縣五、鎮一：",
+  "nameS": "平州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "灤州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 69806,
+  "countyCount": 4,
+  "firstParagraph": "灤州，中，刺史。本黃落故城，遼為永安軍，天輔七年因置節度使。戶六萬九千八百六。縣四、有松亭關，國名斜烈只。鎮二：",
+  "nameS": "滦州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "雄州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 20411,
+  "countyCount": 3,
+  "firstParagraph": "雄州，中。宋名易陽郡。天會七年置永定軍節度使。隸河北東路，貞元二年來屬。戶二萬四百一十一。縣三：",
+  "nameS": "雄州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "保定宋保定軍",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "保定宋保定軍，後廢為縣。",
+  "nameS": "保定宋保定军",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "霸州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 41276,
+  "countyCount": 4,
+  "firstParagraph": "霸州，下，刺史。遼益津郡。隸河北東路，貞元二年來屬。戶四萬一千二百七十六。縣四：",
+  "nameS": "霸州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "保州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 93021,
+  "countyCount": 2,
+  "firstParagraph": "保州，中，順天軍節度使。宋舊軍事，天會七年置順天軍節度使，隸河北東路，貞元二年來屬。海陵賜名清苑郡。戶九萬三千二十一。縣二：",
+  "nameS": "保州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "安州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 30532,
+  "countyCount": 3,
+  "firstParagraph": "安州，下，刺史。宋順安軍治高陽，天會七年升為安州，隸河北東路，後置高陽軍。大定二十八年徙治葛城，因升葛城為縣，用倚郭。泰和四年改混泥城為渥城縣，來屬，八年移州治於渥城，以葛城為屬縣。戶三萬五百三十二。縣三：",
+  "nameS": "安州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "遂州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 11174,
+  "countyCount": 1,
+  "firstParagraph": "遂州，下，刺史。宋廣信軍，天會七年改為遂州，隸河北東路，貞元二年來隸，號龍山郡。泰和四年廢為遂城縣，隸保州，貞祐二年複置州。戶一萬一千一百七十四。縣一：",
+  "nameS": "遂州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "安肅州",
+  "circuit": "中都路",
+  "volume": "24",
+  "households": 12980,
+  "countyCount": 1,
+  "firstParagraph": "安肅州，下，刺史。宋安肅軍，天會七年升為徐州，軍如舊，隸河北東路，貞元二年來屬。天德三年改為安肅州，軍名徐郡軍。大定後降為刺郡，廢軍。戶一萬二千九百八十。縣一：",
+  "nameS": "安肃州",
+  "circuitS": "中都路"
+ },
+ {
+  "name": "南京路",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": 105,
+  "firstParagraph": "南京路，國初曰汴京，貞元元年更號南京。府三，領節鎮三，防禦八，刺史郡八，縣一百五。都城門十四，曰開陽，曰宣仁，曰安利，曰平化。曰通遠，曰宜照，曰利川，曰崇德，曰迎秋，曰廣澤，曰順義，曰迎朔，曰順常，曰廣智。宮城門，南外門曰南薰，南薰北新城門曰豐宜，橋曰龍津橋，北門曰丹鳳，其門三。丹鳳北曰舟橋，橋少北曰文武樓，遵禦路而北橫街也。東曰太廟，西曰郊社，正北曰承天門，其門五，雙闕前引，東曰登聞檢院，西曰登聞鼓院。檢院東曰左掖門，門南曰待漏院。鼓院西曰右掖門，門南曰都堂。直承天門北曰大慶門，門東曰日精門，又東曰左升平門。大慶門西曰月華門，又西曰右升平門。正殿曰大慶殿，前有龍墀，又南有丹墀，又南曰沙墀，東",
+  "nameS": "南京路",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "開封府",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 235890,
+  "countyCount": 15,
+  "firstParagraph": "開封府，上。留守司留守帶本府尹，兼本路兵馬都總管。天德二年罷行台尚書省，置轉運司、提刑司。天德二年置統軍司。有藥市四，榷場。產蜜蠟、香茶、心紅、硃紅、地龍、黃柏。天德四年，戶二十三萬五千八百九十。泰和末，戶百七十四萬六千二百一十。縣十五、鎮十五：",
+  "nameS": "开封府",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "睢州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 46360,
+  "countyCount": 3,
+  "firstParagraph": "睢州，下，刺史。宋拱州保慶軍，國初猶稱拱州，天德三年更。戶四萬六千三百六十。縣三、鎮一：",
+  "nameS": "睢州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "歸德府",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 76189,
+  "countyCount": 6,
+  "firstParagraph": "歸德府，散，中，宣武軍。故宋州，宋南京應天府河南郡歸德軍，國初置宣武軍。戶七萬六千百八十九。縣六、鎮四：",
+  "nameS": "归德府",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "楚丘國初隸曹州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "楚丘國初隸曹州，海陵後來屬，興定元年以限河不便，改隸單州。有景山、京岡。",
+  "nameS": "楚丘国初隶曹州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "單州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 65545,
+  "countyCount": 4,
+  "firstParagraph": "單州，中，刺史。宋碭郡，貞祐四年二月升為防禦，興定五年二月置招撫司，以安集河北遺黎。戶六萬五千五百四十五。縣四：",
+  "nameS": "单州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "壽州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 8677,
+  "countyCount": 2,
+  "firstParagraph": "壽州，下，刺史。宋隸壽春府，貞元元年來屬，泰和六年六月升為防禦。戶八千六百七十七。縣二、鎮一：",
+  "nameS": "寿州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "蒙城宋隸亳州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "蒙城宋隸亳州，國初來屬。有狼山、渦水。鎮一蒙館。",
+  "nameS": "蒙城宋隶亳州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "陝州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 41010,
+  "countyCount": 4,
+  "firstParagraph": "陝州，下、防禦。宋陝郡保平軍節度，皇統二年降為防禦，貞祐二年七月升為節鎮。戶四萬一千一十。縣四、鎮七：",
+  "nameS": "陕州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "鄧州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 24989,
+  "countyCount": 3,
+  "firstParagraph": "鄧州，武勝軍節度使。宋南陽郡，嘗置榷場。戶二萬四千九百八十九。縣三、鎮六：",
+  "nameS": "邓州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "唐州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 11031,
+  "countyCount": 4,
+  "firstParagraph": "唐州，中，刺史。宋准安郡，嘗置榷場。戶一萬一千三十一。縣四、鎮四：",
+  "nameS": "唐州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "裕州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 8300,
+  "countyCount": 3,
+  "firstParagraph": "裕州，本方城縣，泰和八年正月升置，以方城縣為倚郭，割汝州葉縣、許州舞是隸焉。戶八千三百。縣三、鎮四：",
+  "nameS": "裕州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "葉隸汝州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "葉隸汝州，泰和八年來屬。有方城山、石塘河、澧水。鎮一臨墳。",
+  "nameS": "叶隶汝州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "舞陽本隸許州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "舞陽本隸許州，泰和八年來屬。有伏牛山、馬鞍山、舞水、汝水、渫水、𣹑水。鎮二吳城、北舞。",
+  "nameS": "舞阳本隶许州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "河南府",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 55635,
+  "countyCount": 9,
+  "firstParagraph": "河南府，散、中。宋西京河南雒陽郡。初置德昌軍，興定元年八月升為中京，府曰金昌。戶五萬五千六百三十五。縣九、《正隆郡志》有壽安縣，紀錄皆無。鎮四：",
+  "nameS": "河南府",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "嵩州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 26649,
+  "countyCount": 4,
+  "firstParagraph": "嵩州，中，刺史。舊名順州，天德三年更。戶二萬六千六百四十九。縣四、鎮四：",
+  "nameS": "嵩州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "永甯宋隸河南府",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "永甯宋隸河南府，正隆六年以前寄治於府，後即鎮為縣。有三肴山、熊耳山、嶕嶢山、天柱山、黃河、杜陽水。鎮一府店。",
+  "nameS": "永宁宋隶河南府",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "汝州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 35254,
+  "countyCount": 4,
+  "firstParagraph": "汝州，上，刺史。宋臨汝郡陸海軍度使，國初為刺郡，貞祐三年八月升為防禦。戶三萬五千二百五十四。縣四、鎮三：",
+  "nameS": "汝州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "許州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 45587,
+  "countyCount": 5,
+  "firstParagraph": "許州，下，昌武軍節度使。宋潁昌府許昌郡忠武軍。戶四萬五千五百八十七。縣五、鎮七：",
+  "nameS": "许州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "襄城本隸汝州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "襄城本隸汝州，泰和七年來屬。鎮一潁橋。",
+  "nameS": "襄城本隶汝州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "鈞州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 18510,
+  "countyCount": 2,
+  "firstParagraph": "鈞州，中，刺史。舊陽翟縣，偽齊升為潁順軍。大定二十二升為州，仍名潁順，二十四年更今名。戶一萬八千五百一十。縣二、鎮一：",
+  "nameS": "钧州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "亳州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 60535,
+  "countyCount": 6,
+  "firstParagraph": "亳州，上，防禦使。宋譙郡集慶軍，隸揚州。貞祐三年升為節鎮，軍名集慶。戶六萬五百三十五。縣六、鎮五：舊有福寧、馬頭二鎮。",
+  "nameS": "亳州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "陳州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 26145,
+  "countyCount": 5,
+  "firstParagraph": "陳州，下，防禦使。宋淮甯府淮陽郡鎮安軍。戶二萬六千一百四十五。縣五、鎮二：",
+  "nameS": "陈州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "蔡州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 36093,
+  "countyCount": 6,
+  "firstParagraph": "蔡州，中，防禦使。宋汝南郡淮康軍，泰和八年升為節度，軍曰鎮南，嘗置榷場。戶三萬六千九十三。縣六、鎮二：",
+  "nameS": "蔡州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "息州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 9685,
+  "countyCount": 4,
+  "firstParagraph": "息州，本新息縣，泰和八年升為息州，以新息為倚郭，割真陽、褎信、新蔡隸焉，為蔡州支郡。戶九千六百八十五。縣四、鎮一：",
+  "nameS": "息州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "真陽本隸蔡州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "真陽本隸蔡州，泰和八年來屬。有淮水、汝水、石塘陂。",
+  "nameS": "真阳本隶蔡州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "褎信本隸蔡州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "褎信本隸蔡州，泰和八年來屬。有汝水、葛陂。",
+  "nameS": "褎信本隶蔡州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "新蔡本隸蔡州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "新蔡本隸蔡州，泰和八年來屬。有汝水。",
+  "nameS": "新蔡本隶蔡州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "鄭州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 45657,
+  "countyCount": 7,
+  "firstParagraph": "鄭州，中，防禦，宋滎陽郡奉寧軍節度。戶四萬五千六百五十七。縣七、鎮三：",
+  "nameS": "郑州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "潁州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 16714,
+  "countyCount": 4,
+  "firstParagraph": "潁州，下，防禦。宋順昌府汝陰郡。嘗置榷場，正隆四年罷榷場。戶一萬六千七百一十四。縣四、鎮十一：舊有萬善鎮，後廢。",
+  "nameS": "颍州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "宿州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 55058,
+  "countyCount": 4,
+  "firstParagraph": "宿州，中，防禦。宋符離郡保靜軍節度，隸揚州。國初隸山東西路，大定六年來屬。貞祐三年升為節鎮，軍曰保靜。戶五萬五千五十八。縣四、鎮八：舊有荊山鎮。",
+  "nameS": "宿州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "泗州",
+  "circuit": "南京路",
+  "volume": "25",
+  "households": 8092,
+  "countyCount": 4,
+  "firstParagraph": "泗州，中，防禦使。宋臨淮郡。正隆四年正月罷鳳翔府、唐、鄧、潁、蔡、鞏、洮等州並膠西縣諸榷場，但置榷場於泗州。先隸山東西路，大定六年來屬。戶八千九十二。縣四、鎮六：",
+  "nameS": "泗州",
+  "circuitS": "南京路"
+ },
+ {
+  "name": "河間府",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 31691,
+  "countyCount": 2,
+  "firstParagraph": "河間府，中，總管府，瀛海軍。宋河間郡瀛海軍。天會七年置總管府，正隆間升為次府，置瀛州瀛海軍節度使兼總管，置轉運司。後複置總管府，河北東西大名等路提刑司產無縫綿、滄鹽、藺席、馬藺花、香附子、錢蝦蟹、乾魚。戶三萬一千六百九十一。縣二、鎮三：",
+  "nameS": "河间府",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "蠡州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 29797,
+  "countyCount": 1,
+  "firstParagraph": "蠡州，下，刺史。宋永甯軍，國初因之，天會七年升為寧州博野郡軍，天德三年更為蠡州。戶二萬九千七百九十七。縣一、鎮一：",
+  "nameS": "蠡州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "莫州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 22933,
+  "countyCount": 1,
+  "firstParagraph": "莫州，下，刺史。宋文安郡軍防禦，治任丘。貞祐二年五月降為鄚亭縣。戶二萬二千九百三十三。縣一、鎮一：",
+  "nameS": "莫州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "獻州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 50632,
+  "countyCount": 2,
+  "firstParagraph": "獻州，下，刺史。本樂壽縣，天會七年升為壽州，天德三年更今名。戶五萬六百三十二。縣二、鎮十：",
+  "nameS": "献州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "冀州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 3670,
+  "countyCount": 5,
+  "firstParagraph": "冀州，上。宋信都郡，天會七年仍舊置安武軍節度。戶三千六百七十。縣五、鎮三：",
+  "nameS": "冀州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "深州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 56340,
+  "countyCount": 5,
+  "firstParagraph": "深州，上刺史。宋饒陽郡防禦，因初為刺郡。戶五萬六千三百四十。縣五、鎮一：",
+  "nameS": "深州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "清州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 47875,
+  "countyCount": 3,
+  "firstParagraph": "清州，中。宋乾甯郡軍，國初因置軍，天會七年以守邊置防禦。戶四萬七千八百七十五。縣三、鎮一：",
+  "nameS": "清州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "興濟本隸滄州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "興濟本隸滄州，大定六年來屬。",
+  "nameS": "兴济本隶沧州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "滄州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 104774,
+  "countyCount": 5,
+  "firstParagraph": "滄州，上，橫海軍節度。宋景城郡。貞元二年來屬。戶一十萬四千七百七十四。縣五、鎮十一：",
+  "nameS": "沧州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "景州",
+  "circuit": "河北東路",
+  "volume": "25",
+  "households": 65828,
+  "countyCount": 6,
+  "firstParagraph": "景州，上，刺史。宋永靜軍同下州，治東光。國初升為景州，貞元二年來屬。大安間更為觀州，避章廟諱也。戶六萬五千八百二十八。縣六、鎮四：",
+  "nameS": "景州",
+  "circuitS": "河北东路"
+ },
+ {
+  "name": "真定府",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 137137,
+  "countyCount": 9,
+  "firstParagraph": "真定府，上，總管府，成德軍。宋常山郡鎮州成德軍節度，正隆間依舊次府，置本路兵馬都總管府、轉運司。產瓷器、銅、鐵。有丹粉場、烏梨。藥則有茴香、零陵香、禦米殼、天南星、皁角、木瓜、芎、井泉石。戶一十三萬七千一百三十七。縣九、鎮三：",
+  "nameS": "真定府",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "威州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 8310,
+  "countyCount": 1,
+  "firstParagraph": "威州，下，刺史。天會七年以井陘縣升，置陘山郡軍，後為刺郡。戶八千三百一十。縣一：",
+  "nameS": "威州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "沃州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 38185,
+  "countyCount": 7,
+  "firstParagraph": "沃州，上，刺史。宋徽宗升為慶源府趙郡慶源軍，治平棘。天會七年改為趙州，天德三年更為沃州，蓋取水沃火之義，軍曰趙郡軍。後廢軍。戶三萬八千一百八十五。縣七、鎮一：",
+  "nameS": "沃州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "邢州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 80292,
+  "countyCount": 8,
+  "firstParagraph": "邢州，上，安國軍節度。宋信德府钜鹿郡安國軍節度，天會七年降為邢州，仍置安國軍節度。產玄精石。戶八萬二百九十二。縣八、鎮四：",
+  "nameS": "邢州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "洺州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 73070,
+  "countyCount": 9,
+  "firstParagraph": "洺州，上，防禦，廣平郡。治永年。天會七年以守邊置防禦使。戶七萬三千七十。縣九、鎮四：",
+  "nameS": "洺州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "彰德府",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 77276,
+  "countyCount": 5,
+  "firstParagraph": "彰德府，散，下。宋相州鄴郡彰德軍節度，治安陽。天會七年仍置彰軍節度，明昌三年升為府，以軍為名。戶七萬七千二百七十六。縣五、鎮五。",
+  "nameS": "彰德府",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "磁州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 63417,
+  "countyCount": 3,
+  "firstParagraph": "磁州，中，刺史。宋滏陽郡，國初置滏陽郡軍。戶六萬三千四百一十七。縣三、鎮八：",
+  "nameS": "磁州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "祁州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 23382,
+  "countyCount": 3,
+  "firstParagraph": "祁州，中，刺史。宋蒲陰郡，國初置蒲陰郡軍。戶二萬三千三百八十二。縣三：",
+  "nameS": "祁州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "浚州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 29319,
+  "countyCount": 2,
+  "firstParagraph": "浚州，中，防禦。宋大邳郡通利軍，又改平川軍。天會七年以邊境置防禦使。皇統八年，嫌與宗峻音同。更為通州，天德三年複。戶二萬九千三百一十九。縣二、鎮二：",
+  "nameS": "浚州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "衛州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 90112,
+  "countyCount": 4,
+  "firstParagraph": "衛州，下，河平軍節度。守汲郡，天會七年因宋置防禦使，明昌三年升為河平軍節度，治汲縣、以滑州為支郡。大定二十六年八月以避河患，徙於共城。二十八年復舊治。貞祐二年七月城宜村，三年五月徙治於宜村新城，以胙城為倚郭。正大八年以石甃其城。戶九萬一百一十二。縣四、鎮二",
+  "nameS": "卫州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "滑州",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": 22570,
+  "countyCount": 2,
+  "firstParagraph": "滑州，下，刺史。宋靈河郡武成軍。本南京屬郡，大定六年割隸大名府。戶二萬二千五百七十。縣二、鎮二：",
+  "nameS": "滑州",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "內黃本隸大名府",
+  "circuit": "河北西路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "內黃本隸大名府，大定六年來屬。",
+  "nameS": "内黄本隶大名府",
+  "circuitS": "河北西路"
+ },
+ {
+  "name": "山東東路",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": null,
+  "countyCount": 53,
+  "firstParagraph": "山東東路，宋為京東東路，治益都。府二，領節鎮二，防禦二，刺郡七，縣五十三，鎮八十三。",
+  "nameS": "山东东路",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "益都府",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 118718,
+  "countyCount": 7,
+  "firstParagraph": "益都府，上，總管府，宋鎮海軍，國初仍舊置軍，置南青州節度使，後升為總管府，置轉運司。大定八年置山東東西路統軍司。產石器、玉石、沙魚皮、天南星、半夏、澤瀉、紫草。戶一十一萬八千七百一十八。縣七、鎮七：",
+  "nameS": "益都府",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "濰州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 30989,
+  "countyCount": 3,
+  "firstParagraph": "濰州，中，刺史。戶三萬九百八十九。縣三、鎮一：",
+  "nameS": "潍州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "濱州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 118589,
+  "countyCount": 4,
+  "firstParagraph": "濱州，中，刺史。宋軍事。戶一十一萬八千五百八十九。縣四、鎮十：",
+  "nameS": "滨州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "沂州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 24035,
+  "countyCount": 2,
+  "firstParagraph": "沂州，上，防禦。宋琅邪郡。戶二萬四千三十五。縣二、鎮三：",
+  "nameS": "沂州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "密州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 11082,
+  "countyCount": 4,
+  "firstParagraph": "密州，宋為密州高密郡安化節度。戶一萬一千八十二。縣四、鎮七：",
+  "nameS": "密州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "海州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 30691,
+  "countyCount": 5,
+  "firstParagraph": "海州，中，刺史。戶三萬六百九十一。縣五、鎮四：",
+  "nameS": "海州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "漣水本漣水軍",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "漣水本漣水軍，皇統二年降為縣來屬。鎮二太平、金城。",
+  "nameS": "涟水本涟水军",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "莒州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 43240,
+  "countyCount": 3,
+  "firstParagraph": "莒州，中，刺史。本城陽軍，大定二十二年升為城陽州，二十四年更今名。戶四萬三千二百四十。縣三、鎮三：",
+  "nameS": "莒州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "棣州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 82303,
+  "countyCount": 3,
+  "firstParagraph": "棣州，上，防禦。宋安樂郡。戶八萬二千三百三。縣三、鎮九：",
+  "nameS": "棣州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "濟南府",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 308469,
+  "countyCount": 7,
+  "firstParagraph": "濟南府，散，上。宋齊州濟南郡。初置興德軍節度使，後置尹，置山東東西路提刑司。戶三十萬八千四百六十九。縣七、鎮二十九：",
+  "nameS": "济南府",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "淄州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 128622,
+  "countyCount": 4,
+  "firstParagraph": "淄州，中，刺史。宋淄川郡軍。戶一十二萬八千六百二十二。縣四、鎮六：",
+  "nameS": "淄州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "萊州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 86615,
+  "countyCount": 5,
+  "firstParagraph": "萊州，上，定海軍節度。宋軍萊郡。戶八萬六千六百一十五。縣五、鎮一：",
+  "nameS": "莱州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "登州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 55913,
+  "countyCount": 4,
+  "firstParagraph": "登州，中，刺史。宋東牟郡。戶五萬五千九百一十三。縣四、鎮二：",
+  "nameS": "登州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "甯海州",
+  "circuit": "山東東路",
+  "volume": "25",
+  "households": 61933,
+  "countyCount": 2,
+  "firstParagraph": "甯海州，刺史。本甯海軍，大定二十二年升為州。戶六萬一千九百三十三。縣二、鎮二：",
+  "nameS": "宁海州",
+  "circuitS": "山东东路"
+ },
+ {
+  "name": "山東西路",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "山東西路，府一，領節鎮二，防禦二，刺郡五。",
+  "nameS": "山东西路",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "東平府",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 108046,
+  "countyCount": 6,
+  "firstParagraph": "東平府，上，天平軍節度。宋東平郡，舊鄆州，後以府尹兼總管，置轉運司。產天麻、全蠍、阿膠、薄荷、防風、絲、綿、綾、錦、絹。戶一十萬八千四十六。縣六、鎮十九：",
+  "nameS": "东平府",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "濟州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 40484,
+  "countyCount": 4,
+  "firstParagraph": "濟州，中刺史。宋濟陽郡。舊治钜野，天德二年徙治任城縣，分钜野之民隸嘉祥、鄆城、金鄉三縣。戶四萬四百八十四。縣四、鎮二：",
+  "nameS": "济州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "徐州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 44689,
+  "countyCount": 3,
+  "firstParagraph": "徐州，下，武甯軍節度使。宋彭城郡，貞祐三年九月改隸河南路。戶四萬四千六百八十九。縣三、鎮五：",
+  "nameS": "徐州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "邳州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 27232,
+  "countyCount": 3,
+  "firstParagraph": "邳州，中，刺史。宋淮陽軍，貞祐三年九月改隸河南路。戶二萬七千二百三十二。縣三：",
+  "nameS": "邳州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "滕州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 49009,
+  "countyCount": 3,
+  "firstParagraph": "滕州，上，刺史。本宋滕陽軍，大定二十二年升為滕陽州，二十四年更今名。貞祐三年九月為兗州支郡。戶四萬九千九。縣三、鎮一：",
+  "nameS": "滕州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "博州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 88046,
+  "countyCount": 5,
+  "firstParagraph": "博州，上防禦。宋博平郡。戶八萬八千四十六。縣五、鎮十一：",
+  "nameS": "博州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "兗州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 50099,
+  "countyCount": 4,
+  "firstParagraph": "兗州，中，泰軍節度使。宋襲慶府魯郡。舊名泰寧軍，大定十九年更。戶五萬九十九。縣四：",
+  "nameS": "兖州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "泰安州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 31435,
+  "countyCount": 3,
+  "firstParagraph": "泰安州，上，刺史。本泰安軍，大定二十二年升。戶三萬一千四百三十五。縣三、鎮二：",
+  "nameS": "泰安州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "德州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 15053,
+  "countyCount": 3,
+  "firstParagraph": "德州，上，防禦。宋平原郡軍。戶一萬五千五十三。縣三、鎮七：",
+  "nameS": "德州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "曹州",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": 12677,
+  "countyCount": 3,
+  "firstParagraph": "曹州，中，刺史。宋興仁府濟陰郡彰信軍。本隸南京，泰和八年來屬。大定八年城為河所沒，遷州治于古乘氏縣。戶一萬二千六百七十七。縣三、鎮一：",
+  "nameS": "曹州",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "定陶本宋廣濟軍",
+  "circuit": "山東西路",
+  "volume": "25",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "定陶本宋廣濟軍，熙寧間廢為定陶縣。城中有梁王台。有髣山、獨孤山。",
+  "nameS": "定陶本宋广济军",
+  "circuitS": "山东西路"
+ },
+ {
+  "name": "大名府路",
+  "circuit": "大名府路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 20,
+  "firstParagraph": "大名府路，宋北京魏郡。府一，領刺郡三，縣二十，鎮二十二。貞祐二年十月置行尚書省。",
+  "nameS": "大名府路",
+  "circuitS": "大名府路"
+ },
+ {
+  "name": "大名府",
+  "circuit": "大名府路",
+  "volume": "26",
+  "households": 308511,
+  "countyCount": 10,
+  "firstParagraph": "大名府，上，天雄軍。舊為散府，先置統軍司，天德二年罷，以其所轄民戶分隸旁近總管府。正隆二年升為總管府，附近十二猛安皆隸焉，兼漕河事。產皺、穀、絹、梨肉、櫻桃、煎木耳、硝。戶三十萬八千五百一十一。縣十、鎮十三：舊有柳林、侯固二鎮。",
+  "nameS": "大名府",
+  "circuitS": "大名府路"
+ },
+ {
+  "name": "恩州",
+  "circuit": "大名府路",
+  "volume": "26",
+  "households": 99119,
+  "countyCount": 4,
+  "firstParagraph": "恩州，中，刺史。宋清河郡軍事，治清河，今治曆亭。戶九萬九千一百一十九。縣四、鎮六：",
+  "nameS": "恩州",
+  "circuitS": "大名府路"
+ },
+ {
+  "name": "濮州",
+  "circuit": "大名府路",
+  "volume": "26",
+  "households": 52948,
+  "countyCount": 2,
+  "firstParagraph": "濮州，下，刺史。宋濮陽郡。戶五萬二千九百四十八。縣二、鎮三：",
+  "nameS": "濮州",
+  "circuitS": "大名府路"
+ },
+ {
+  "name": "開州",
+  "circuit": "大名府路",
+  "volume": "26",
+  "households": 33836,
+  "countyCount": 4,
+  "firstParagraph": "開州，中，刺史。宋開德府澶淵郡鎮寧軍節度，降為澶州，皇統四年複更今名。戶三萬三千八百三十六。縣四、鎮一：",
+  "nameS": "开州",
+  "circuitS": "大名府路"
+ },
+ {
+  "name": "太原府",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 165862,
+  "countyCount": 11,
+  "firstParagraph": "太原府，上，武勇軍。宋太原郡河東軍節度，國初依舊為次府，複名并州太原郡河東軍總管府，置轉運司。有造墨場，煉銀洞、瑪瑙石。藥產松脂、白膠香、五靈脂。大黃、白玉石。戶一十六萬五千八百六十二。縣十一、鎮八：",
+  "nameS": "太原府",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "盂興定中升為州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": null,
+  "countyCount": null,
+  "firstParagraph": "盂興定中升為州，聽絳州元帥府節制，置刺史，尋複。有白馬山、原仇山、滹沱水。",
+  "nameS": "盂兴定中升为州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "忻州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 32341,
+  "countyCount": 2,
+  "firstParagraph": "忻州，下，刺史。舊定襄郡軍。戶三萬二千三百四十一。縣二、鎮四：",
+  "nameS": "忻州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "平定州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 18296,
+  "countyCount": 2,
+  "firstParagraph": "平定州，中，刺史。本宋平定軍，大定二年升為州。興定二年為防禦，十一月複降為刺郡。戶一萬八千二百九十六。縣二、鎮三：",
+  "nameS": "平定州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "汾州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 87127,
+  "countyCount": 5,
+  "firstParagraph": "汾州，上。宋西河郡軍事，天會六年置汾陽軍節度使，後又置河東、南、北路提刑司。戶八萬七千一百二十七。縣五、鎮二：",
+  "nameS": "汾州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "石州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 36528,
+  "countyCount": 6,
+  "firstParagraph": "石州，上，刺史。舊昌化軍。興定五年複隸晉陽，從郭振之請也。戶三萬六千五百二十八。縣六、鎮四：",
+  "nameS": "石州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "葭州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 8864,
+  "countyCount": null,
+  "firstParagraph": "葭州，下，刺史。本晉寧軍，貞元元年隸汾州，大定二十二年升為晉寧州，二十四年更今名。在黃河西，興定二年五月以河東殘破，改隸延安府。戶八千八百六十四。寨八、堡九：神泉寨、永祚堡、烏龍寨、康定堡、寧河寨、寧河堡、太和寨、神木寨、通津堡、彌川寨、護川堡、強川堡、清川堡、通秦寨、通秦堡、晉安堡、吳堡寨。已上皆在黃河西，臨西夏界。",
+  "nameS": "葭州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "代州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 57690,
+  "countyCount": 5,
+  "firstParagraph": "代州，中。宋雁門郡防禦，天會六年置震武軍節度使。貞祐二年四月僑置西經略司，八月罷。戶五萬七千六百九十。縣五、鎮十三：",
+  "nameS": "代州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "庾州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 7592,
+  "countyCount": 1,
+  "firstParagraph": "庾州，下。中宋舊火山軍，大定二十二年升為火山州，後更今名。興定二年九月改隸嵐州，四年以殘破徙治于黃河灘許父寨。戶七千五百九十二。縣一、鎮一：",
+  "nameS": "庾州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "寧化州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 6100,
+  "countyCount": 1,
+  "firstParagraph": "寧化州，下，刺史。本寧化軍，大定二十二年升為州。戶六千一百。縣一、鎮一",
+  "nameS": "宁化州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "嵐州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 17557,
+  "countyCount": 3,
+  "firstParagraph": "嵐州，下，宋舊樓煩郡軍事，天會六年置鎮西節度使。戶一萬七千五百五十七。縣三、鎮四：",
+  "nameS": "岚州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "岢嵐州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 5851,
+  "countyCount": 1,
+  "firstParagraph": "岢嵐州，下，刺史。本宋岢嵐軍，大定二十二年為州，貞祐三年九月升為防禦，四年正月升為節鎮，五月複防禦。戶五千八百五十一。縣一、堡一：",
+  "nameS": "岢岚州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "保德州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 3191,
+  "countyCount": 1,
+  "firstParagraph": "保德州，下，刺史。本宋保德軍，大定二十二年升為州，元光元年六月升為防禦。戶三千一百九十一。縣一：",
+  "nameS": "保德州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "管州",
+  "circuit": "河東北路",
+  "volume": "26",
+  "households": 5881,
+  "countyCount": 1,
+  "firstParagraph": "管州，下，刺史。本宋憲州靜樂郡，天德三年更。興定三年升為防禦。戶五千八百八十一。縣一：",
+  "nameS": "管州",
+  "circuitS": "河东北路"
+ },
+ {
+  "name": "河東南路",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 68,
+  "firstParagraph": "河東南路，府二，領節鎮三，防禦一，刺郡六，縣六十八，鎮二十九，關六。",
+  "nameS": "河东南路",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "平陽府",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 136936,
+  "countyCount": 10,
+  "firstParagraph": "平陽府，上。宋平陽郡建雄軍節度。本晉州，初為次府，置建雄軍節度使。天會六年升總管府。置轉運司。興定二年十二月以殘破降為散府。有書籍。產解鹽、隰州綠、卷子布、龍門椒、紫團參、甘草、蒼術。戶一十三萬六千九百三十六。縣十、鎮一：",
+  "nameS": "平阳府",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "隰州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 25445,
+  "countyCount": 6,
+  "firstParagraph": "隰州，上，刺史。宋大寧郡。團練。舊大寧郡軍刺史，天會六年改為南隰州，以與北京隰州重也，天德三年去「南」字。戶二萬五千四百四十五。縣六、關四：",
+  "nameS": "隰州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "吉州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 13324,
+  "countyCount": 2,
+  "firstParagraph": "吉州，下，刺史。宋置團練。舊名慈州，天德三年改為耿州，置文成郡軍，明昌元年更名吉。戶一萬三千三百二十四。縣二：",
+  "nameS": "吉州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "河中府",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 106539,
+  "countyCount": 7,
+  "firstParagraph": "河中府，散，上。宋河東郡。舊置護國軍節度使，天會六年降為蒲州，置防禦使。天德元年升為河中府，仍舊護國軍節度使。大定五年置陝西元帥府。戶十萬六千五百三十九。縣七、鎮四：",
+  "nameS": "河中府",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "絳州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 131510,
+  "countyCount": 7,
+  "firstParagraph": "絳州，上。宋置絳郡防禦。天會六年絳陽軍節度使。興定二年十二月升為晉安府，總管河東南路兵馬，三年三月置河東南路轉運司。戶一十三萬一千五百一十。縣七、鎮五、關一：",
+  "nameS": "绛州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "解州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 71232,
+  "countyCount": 6,
+  "firstParagraph": "解州，上，刺史。宋慶成軍防禦，國初置解梁郡軍，後廢為刺郡。貞祐三年複升為節鎮，軍名寶昌。興定四年徙治平陸縣。戶七萬一千二百三十二。縣六、鎮四：",
+  "nameS": "解州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "澤州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 50009,
+  "countyCount": 6,
+  "firstParagraph": "澤州，上，刺史。宋高平郡。天會六年以北京澤州同，加「南」字。天德三年複去「南」字。貞祐四年隸潞州昭義軍，後又改隸孟州。元光二年升為節鎮，軍曰忠昌。戶五萬九升四百一十六。縣六、鎮二：",
+  "nameS": "泽州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "潞州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 9232,
+  "countyCount": 8,
+  "firstParagraph": "潞州，上。宋隆德府上黨郡昭德軍節度使。天會六年，節度使兼潞南沁觀察處置使。戶七九千二百三十二。縣八、鎮四：",
+  "nameS": "潞州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "遼州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 15850,
+  "countyCount": 4,
+  "firstParagraph": "遼州，中，刺史。宋本樂平郡刺史，天會六年以與東京遼州同，加「南」字，天德三年複去「南」字。戶一萬五千八百五十。縣四、鎮一、關一：",
+  "nameS": "辽州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "沁州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 18059,
+  "countyCount": 4,
+  "firstParagraph": "沁州，中，刺史錦山郡。宋威勝軍，天會六年升為州。元光二年升為節鎮，軍曰義勝。戶一萬八千五十九。縣四、鎮一：",
+  "nameS": "沁州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "懷州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 86756,
+  "countyCount": 4,
+  "firstParagraph": "懷州，上，宋河內郡防禦，天會六年以與臨潢府懷州同、加「南」字，仍舊置沁南軍節度使，天德三年去「南」字。皇統三年閏四月置黃沁河堤都大管勾司。大定五年置行元帥府。興定五年置招撫司。戶八萬六千七百五十六。縣四、鎮六：",
+  "nameS": "怀州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "孟州",
+  "circuit": "河東南路",
+  "volume": "26",
+  "households": 41649,
+  "countyCount": 4,
+  "firstParagraph": "孟州，上。宋濟源郡節度，天會六年降河陽府為孟州，置防禦，守盟津。宣宗朝置經略司。戶四萬一千六百四十九。縣四、鎮二：",
+  "nameS": "孟州",
+  "circuitS": "河东南路"
+ },
+ {
+  "name": "京兆府路",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 36,
+  "firstParagraph": "京兆府路，宋為永興軍路。皇統二年省並陝西六路為四，曰京兆，曰慶原，曰熙秦，曰鄜延。府一，領節鎮一，防禦一，刺郡四，縣三十六、鎮三十七。",
+  "nameS": "京兆府路",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "京兆府",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 98177,
+  "countyCount": 12,
+  "firstParagraph": "京兆府，上。宋京兆郡永興軍節度使。皇統二年置總管府，天德二置陝西路統軍司、陝西東路轉運司。產白芷、麻黃、白蒺藜、茴香、細辛。戶九萬八千一百七十七。縣十二、鎮十：舊又有中橋、臨涇二鎮，後廢。",
+  "nameS": "京兆府",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "商州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 3999,
+  "countyCount": 2,
+  "firstParagraph": "商州，下，刺史。宋上洛郡軍事。貞祐四年升為防禦，尋隸陝州，興定二年正月複來屬，元光二年五月改隸河南路。戶三千九百九十九。縣二、鎮一：舊又有西市、黃川、青雲三鎮，後廢。",
+  "nameS": "商州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "虢州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 10022,
+  "countyCount": 3,
+  "firstParagraph": "虢州，下，刺史。宋虢郡軍事。貞祐二年割為陝州支郡，以備潼關。戶一萬二十二。縣三、鎮五：",
+  "nameS": "虢州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "乾州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 26856,
+  "countyCount": 4,
+  "firstParagraph": "乾州，中，刺史。宋嘗改為醴州，天德三年複。戶二萬六千八百五十六。縣四、鎮三：",
+  "nameS": "乾州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "同州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 35561,
+  "countyCount": 6,
+  "firstParagraph": "同州，中，宋馮翊郡定國節度，治馮翊。後改安國軍節度使。舊貢圓筋繭耳羊，大定十一年罷之。戶三萬五千五百六十一。縣六、鎮九：",
+  "nameS": "同州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "耀州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 50211,
+  "countyCount": 4,
+  "firstParagraph": "耀州，上，刺史。宋華原郡感德軍節度，皇統二年降為軍事，後為刺史州。戶五萬二百一十一。縣四、鎮二：",
+  "nameS": "耀州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "華州",
+  "circuit": "京兆府路",
+  "volume": "26",
+  "households": 53800,
+  "countyCount": 5,
+  "firstParagraph": "華州，中。宋華陰郡鎮潼軍節度，治鄭，國初因之，後置節度使，皇統二年降為防禦使。貞祐三年八月升為節鎮，軍曰金安，以商州為支郡。戶五萬三千八百。縣五、鎮六：",
+  "nameS": "华州",
+  "circuitS": "京兆府路"
+ },
+ {
+  "name": "鳳翔路",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 33,
+  "firstParagraph": "鳳翔路，宋秦鳳路，治秦州。府二、領防禦二，刺郡二，縣三十三，城一，堡四，寨十四，鎮十五。",
+  "nameS": "凤翔路",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "鳳翔府",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 63303,
+  "countyCount": 9,
+  "firstParagraph": "鳳翔府，中。宋扶風郡鳳翔軍節度。皇統二年升為府，軍名天興，大定十九年更軍名為鳳翔。大定二十七年升總管府。產芎藭、獨活、燈草、無心草、升麻、秦艽、骨碎補、羌活。戶六萬三千三百三。縣九、鎮四：舊有橫水、驛店、崔模、麻務，長清五鎮，後廢。",
+  "nameS": "凤翔府",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "德順州",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 35449,
+  "countyCount": 6,
+  "firstParagraph": "德順州，上，刺史。宋德順軍，國初隸熙秦路，皇統二年升為州，大定二十七年來屬。貞祐四年四月升為防禦，十月升為節鎮，軍曰隴安。戶三萬五千四百四十九。縣六、寨四、堡一：舊有上接鎮、通安寨、王家城、牧龍城、同家堡、後廢。",
+  "nameS": "德顺州",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "平涼府",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 31033,
+  "countyCount": 5,
+  "firstParagraph": "平涼府，散，中。宋渭州隴西郡平涼軍節度。舊為軍，後置陝西西路轉運司、陝西東、西路提刑司。大定二十六年來屬。戶三萬一千三十三。縣五、鎮五、寨一：",
+  "nameS": "平凉府",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "鎮戎州",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 10447,
+  "countyCount": 2,
+  "firstParagraph": "鎮戎州，下，刺史。本鎮戎軍，大定二十二年為州，二十七年來屬。戶一萬四百四十七。縣二、堡三、寨八：",
+  "nameS": "镇戎州",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "秦州",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 40448,
+  "countyCount": 8,
+  "firstParagraph": "秦州，下。宋天水郡雄武軍節度，後置秦鳳路。國初置節度，皇統二年置防禦使，隸熙秦路，大定二十七年來屬，元光二年四月升為節鎮，軍曰鎮遠，後罷，貞祐三年複置。戶四萬四百四十八。縣八、城一、寨三、鎮二：舊有甘穀城、甘泉城、結藏城、定西寨、西顧堡，後廢。",
+  "nameS": "秦州",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "隴州",
+  "circuit": "鳳翔路",
+  "volume": "26",
+  "households": 16442,
+  "countyCount": 3,
+  "firstParagraph": "隴州，下，宋汧陽郡，防禦。海陵時隸熙秦路，大定二十七年來屬。戶一萬六千四百四十二。縣三、鎮五：",
+  "nameS": "陇州",
+  "circuitS": "凤翔路"
+ },
+ {
+  "name": "鄜延路",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 16,
+  "firstParagraph": "鄜延路，府一，領節鎮一，刺郡四，縣十六，鎮五，城二，堡四，寨十八，關二。",
+  "nameS": "鄜延路",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "延安府",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 80000,
+  "countyCount": 7,
+  "firstParagraph": "延安府，下。宋延安郡彰武軍節度使，皇統二年置彰武軍總管府。戶八萬中九百九十四。縣七、寨四、堡一、鎮一。",
+  "nameS": "延安府",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "丹州",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 13078,
+  "countyCount": 1,
+  "firstParagraph": "丹州，中，刺史。宋咸甯郡軍事，國初因之。戶一萬三千七十八。縣一、鎮一、關一：",
+  "nameS": "丹州",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "保安州",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 7340,
+  "countyCount": 1,
+  "firstParagraph": "保安州，下，刺史。宋保安軍，大定二十二年升為州。戶七千三百四十。縣一、寨三、鎮二、堡一、城一：",
+  "nameS": "保安州",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "綏德州",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 12720,
+  "countyCount": 1,
+  "firstParagraph": "綏德州，下，刺史。唐綏州，宋綏德軍，大定二十二年升為州。戶一萬二千七百二十。縣一、寨十、城一、堡一、關一",
+  "nameS": "绥德州",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "鄜州",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 62931,
+  "countyCount": 4,
+  "firstParagraph": "鄜州，下。宋洛交郡康定軍節度，國初因之，置保大軍節度使。戶六萬二千九百三十一。縣四、鎮一：",
+  "nameS": "鄜州",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "坊州",
+  "circuit": "鄜延路",
+  "volume": "26",
+  "households": 20746,
+  "countyCount": 2,
+  "firstParagraph": "坊州，中，刺史。宋中部郡軍事。戶二萬七百四十六。縣二、鎮一：",
+  "nameS": "坊州",
+  "circuitS": "鄜延路"
+ },
+ {
+  "name": "慶原路",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 18,
+  "firstParagraph": "慶原路，舊作陝西西路。府一，領節鎮二，刺郡三，縣十八，鎮二十三，城二，堡四，寨二十二，邊將營八。",
+  "nameS": "庆原路",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "慶陽府",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 46171,
+  "countyCount": 3,
+  "firstParagraph": "慶陽府，中。宋安化郡慶陽軍節度。本慶州軍事，國初改安國軍，後置定安軍節度使兼總管，皇統二年置總管府。戶四萬六千一百七十一。縣三、城二、堡一、寨三、鎮七：",
+  "nameS": "庆阳府",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "環州",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 9504,
+  "countyCount": 1,
+  "firstParagraph": "環州，上，刺史。宋軍事，國初因之，大定間升為刺郡。戶九千五百四。縣一、堡三、寨六、鎮三：",
+  "nameS": "环州",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "甯州",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 34757,
+  "countyCount": 4,
+  "firstParagraph": "甯州，中，刺史。宋彭原郡興寧軍節度，國初因之，皇統二年降為軍，仍加「西」字，天德二年去「西」字，為刺郡。戶三萬四千七百五十七。縣四、鎮五：",
+  "nameS": "宁州",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "邠州",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 47291,
+  "countyCount": 5,
+  "firstParagraph": "邠州，中。宋新平郡靜難軍節度使，國初因之。戶四萬七千二百九十一。縣五、鎮三、寨一：",
+  "nameS": "邠州",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "原州",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 17800,
+  "countyCount": 2,
+  "firstParagraph": "原州，上，刺史。宋平涼郡軍事，大定二十七年為涇州支郡，後複軍事。戶一萬七千八百。縣二、鎮三、寨五：",
+  "nameS": "原州",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "涇州",
+  "circuit": "慶原路",
+  "volume": "26",
+  "households": 26290,
+  "countyCount": 4,
+  "firstParagraph": "涇州，中，彰化軍節度使。本治涇川，元光二年徙治長武。戶二萬六千二百九十。縣四、寨一、鎮二：",
+  "nameS": "泾州",
+  "circuitS": "庆原路"
+ },
+ {
+  "name": "臨洮路",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": null,
+  "countyCount": 13,
+  "firstParagraph": "臨洮路，皇統二年改熙州為臨洮府，置熙秦路總管府，大定二十七年更今名。府一，領節鎮一，防禦一，刺郡四，縣一十三，鎮六，城六，堡十二，寨九，關二。",
+  "nameS": "临洮路",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "臨洮府",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 10009,
+  "countyCount": 3,
+  "firstParagraph": "臨洮府，中。宋舊熙州臨洮郡鎮洮軍節度，後更為德順軍，皇統二年置總管府。產甘草、庵珣子、大黃。戶一萬九升七百二十一。縣三、鎮一、城一、堡四：",
+  "nameS": "临洮府",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "積石州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 5185,
+  "countyCount": 1,
+  "firstParagraph": "積石州，下，刺史。本宋積石這溪哥城，大定二十二年為州，戶五千一百八十五。縣一、城三、堡三：",
+  "nameS": "积石州",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "洮州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 11337,
+  "countyCount": null,
+  "firstParagraph": "洮州，下。宋嘗置團練。刺史。舊軍事。臨宋界，至西生羌界八十里。戶一萬一千三百三十七。堡二：通祐，臨宋界，無民戶，置軍守。鐵城，臨宋界，無民戶，置軍守。",
+  "nameS": "洮州",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "蘭州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 11360,
+  "countyCount": null,
+  "firstParagraph": "蘭州，上，刺史。宋金城郡軍事。戶一萬一千三百六十、鎮三、城二、堡三、關一：",
+  "nameS": "兰州",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "鞏州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 36301,
+  "countyCount": 5,
+  "firstParagraph": "鞏州，下，節度。宋通遠軍，皇統二年升軍事為通遠軍節度使。戶三萬六千三百一。縣五、寨四、鎮一：",
+  "nameS": "巩州",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "會州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 8918,
+  "countyCount": 1,
+  "firstParagraph": "會州，上，刺史。宋前舊名汝遮。戶八千九百一十八。縣一、舊有會川城。寨二關一：",
+  "nameS": "会州",
+  "circuitS": "临洮路"
+ },
+ {
+  "name": "河州",
+  "circuit": "臨洮路",
+  "volume": "26",
+  "households": 14942,
+  "countyCount": 2,
+  "firstParagraph": "河州，下，防禦，宋安鄉郡軍事。至都西千七百一十里。皇統二年升軍事為防禦，貞祐四年十月升為節鎮，軍曰平西。戶一萬四千九百四十二。縣二、城一、寨三、鎮一：",
+  "nameS": "河州",
+  "circuitS": "临洮路"
+ }
+]

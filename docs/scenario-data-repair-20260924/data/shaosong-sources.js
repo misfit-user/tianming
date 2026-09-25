@@ -35,7 +35,7 @@ const IRON_CASH_CIRCUITS = ['成都府路', '潼川府路', '利州路', '夔州
 const IRON_CASH_RATE = 0.1;
 
 // 剧本地块名 → 九域志州名（元丰时的名字，和建炎元年不同的）
-const YUANFENG_NAMES = { 寿春府: '寿州' };
+const YUANFENG_NAMES = { 寿春府: '寿州', 中山府: '定州' };
 
 // ---------------------------------------------------------------------------
 // 地块取数特例。没列的地块按同名《宋史》条目取崇宁户。
@@ -189,9 +189,9 @@ function partsOf(spec) {
 // 一项切分在上级里占多少：九域志有乡数按乡数，否则按《宋史》县等
 function partShare(part, grades) {
   const table = xiangOf(part.from);
-  if (table) {
-    const missing = part.counties.filter((c) => table[c] == null);
-    if (missing.length) throw new Error('九域志 ' + part.from + ' 下没有县 ' + missing.join('、'));
+  // 九域志没有此州乡数，或所切的县元丰时已省为镇（如赞皇熙宁五年并入高邑），退回按《宋史》县等切
+  const complete = table && part.counties.every((c) => table[c] != null);
+  if (complete) {
     const whole = Object.values(table).reduce((a, n) => a + n, 0);
     const got = part.counties.reduce((a, c) => a + table[c], 0);
     return { share: got / whole, how: '九域志乡数 ' + got + '/' + whole };

@@ -9,7 +9,8 @@
 // 3. 路的比例与读数（征到比例、截留率、自治度、民心、吏治、繁荣、人口结构、承载负荷）取改前各块按人口加权的均值。
 // 叶子在这一步不动，由各路数据模块逐路重写（patches/tianqi-prefectures.js --scenario 绍宋）。
 //
-// 用法（在仓库根目录）：node docs/scenario-data-repair-20260924/patches/shaosong-circuits.js [--write] [--report <文件>]
+// 用法（在仓库根目录）：node docs/scenario-data-repair-20260924/patches/shaosong-circuits.js [框架数据] [--write] [--report <文件>]
+//   框架数据默认 data/shaosong-frame.js（宋廷）；外藩写 treeKey（势力 id）、idPrefix、CIRCUITS 与逐块权重函数 weights。
 'use strict';
 
 const fs = require('fs');
@@ -19,7 +20,6 @@ const REPO = path.resolve(__dirname, '../../..');
 const SCENARIO_FILE = path.join(REPO, 'scenarios', '绍宋·建炎元年八月（官方）.json');
 const DATA = path.join(__dirname, '..', 'data');
 const lib = require(path.join(DATA, 'shaosong-sources.js'));
-const { CIRCUITS, PORTS } = require(path.join(DATA, 'shaosong-frame.js'));
 const { TAX_SCHEDULE } = require(path.join(DATA, 'shaosong-common.js'));
 
 function sum(values) { return values.reduce((a, b) => a + b, 0); }
@@ -45,6 +45,17 @@ function pct(v) {
   return Number(m[1]) / 100;
 }
 
+// 聚落比例表按对照并键（值仍是原账的百分比串或小数）；没给对照原样返回
+function foldSettlement(table, keys) {
+  if (!keys || !table) return table;
+  const out = {};
+  Object.entries(table).forEach(([k, v]) => {
+    const to = keys[k] || k;
+    out[to] = (out[to] || 0) + pct(v);
+  });
+  return out;
+}
+
 // 按人口加权的均值
 function weightedMean(rows, get) {
   const w = sum(rows.map((r) => r.population));
@@ -63,25 +74,46 @@ function mixRatios(rows, get) {
   return out;
 }
 
+// 宋廷各块的默认权重（data/shaosong-sources.js）
+function songWeights(name, circuit) {
+  const hh = lib.householdWeight(name);
+  const comm = lib.commerceWeight(name, circuit);
+  const lt = lib.landAndTaxWeight(name, circuit);
+  return {
+    households: hh.households, commerce: comm.value, land: lt.land, twoTax: lt.twoTax, counties: lib.countyCountOf(name),
+    householdBasis: hh.basis, commerceBasis: comm.basis
+  };
+}
+
 function main() {
   const args = process.argv.slice(2);
   const write = args.includes('--write');
   const reportIndex = args.indexOf('--report');
   const reportFile = reportIndex >= 0 ? args[reportIndex + 1] : null;
+  const framePath = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--report');
+  const frame = require(framePath ? path.resolve(framePath) : path.join(DATA, 'shaosong-frame.js'));
+  const { CIRCUITS } = frame;
+  const PORTS = frame.PORTS || {};
+  const treeKey = frame.treeKey || 'player';
+  const idPrefix = frame.idPrefix || 'div_ss_';
 
   const raw = fs.readFileSync(SCENARIO_FILE, 'utf8');
   const scenario = JSON.parse(raw);
   if (JSON.stringify(scenario) + '\n' !== raw) throw new Error('剧本不是标准 JSON.stringify 输出，拒绝改写');
   if (JSON.stringify(scenario.map) !== JSON.stringify(scenario.mapData)) throw new Error('map 与 mapData 已不一致，先查清再改');
 
-  const tree = scenario.adminHierarchy.player;
-  if (tree.divisions.length !== 1 || tree.divisions[0].type !== 'kingdom') {
-    throw new Error('大宋树已不是「国号节点 + 叶子」的原样，这个补丁只能在原版上跑（用 rebuild-shaosong.js 从原版重建）');
+  const tree = scenario.adminHierarchy[treeKey];
+  if (!tree || tree.divisions.length !== 1 || tree.divisions[0].type !== 'kingdom') {
+    throw new Error(treeKey + ' 树已不是「国号节点 + 叶子」的原样，这个补丁只能在原版上跑（用 rebuild-shaosong.js 从原版重建）');
   }
   const kingdom = tree.divisions[0];
   const leaves = kingdom.children;
-  const faction = scenario.factions.find((f) => f.name === kingdom.name);
-  if (!faction) throw new Error('势力表里没有 ' + kingdom.name);
+  // 玩家树按国号找势力；外藩树的键就是势力 id（国号节点名可能与势力名不同，如河北义军树顶叫「两河忠义寨」）
+  const faction = treeKey === 'player'
+    ? scenario.factions.find((f) => f.name === kingdom.name)
+    : scenario.factions.find((f) => f.id === treeKey);
+  if (!faction) throw new Error('势力表里没有 ' + (treeKey === 'player' ? kingdom.name : treeKey));
+  if (leaves.some((l) => (l.children || []).length)) throw new Error(treeKey + ' 树有三级，须先在框架数据里写明拆法');
 
   const regionById = new Map(scenario.map.regions.map((r) => [r.id, r]));
   const registryByName = new Map(scenario.map.circuitRegistry.map((c) => [c.name, c]));
@@ -91,13 +123,12 @@ function main() {
     const region = regionById.get(leaf.mapRegionId);
     if (!region) throw new Error(leaf.name + ' 绑定的地块 ' + leaf.mapRegionId + ' 不在地图上');
     const circuit = region.circuitName;
-    const hh = lib.householdWeight(leaf.name);
-    const comm = lib.commerceWeight(leaf.name, circuit);
-    const lt = lib.landAndTaxWeight(leaf.name, circuit);
+    const w = frame.weights ? frame.weights(leaf.name, circuit) : songWeights(leaf.name, circuit);
     return {
       leaf, region, circuit,
-      households: hh.households, commerce: comm.value, land: lt.land, twoTax: lt.twoTax,
-      counties: lib.countyCountOf(leaf.name), port: PORTS[leaf.name] || 0,
+      households: w.households, commerce: w.commerce, land: w.land, twoTax: w.twoTax,
+      counties: w.counties, port: PORTS[leaf.name] || 0,
+      householdBasis: w.householdBasis, commerceBasis: w.commerceBasis,
       population: leaf.population
     };
   });
@@ -129,6 +160,21 @@ function main() {
   const groups = defs.map((d) => rows.filter((r) => r.circuit === d.name));
   const G = (get) => groups.map((g) => sum(g.map(get)));
   const W = { households: G((r) => r.households), commerce: G((r) => r.commerce), land: G((r) => r.land), twoTax: G((r) => r.twoTax), counties: G((r) => r.counties), port: G((r) => r.port) };
+  // 框架数据写 keepOriginalTotals 的路：史料不能反映开局年代（如《金史》泰和户在猛安谋克南迁之后），
+  // 这些路保留原账人口合计占比，路内各块权重整体缩放，其余路按史料权重分剩下的份额
+  const keep = frame.keepOriginalTotals || [];
+  if (keep.length) {
+    const oldPop = groups.map((g) => sum(g.map((r) => r.population)));
+    const target = defs.map((d, i) => (keep.includes(d.name) ? oldPop[i] / N.mouths : null));
+    const keptShare = sum(target.filter((t) => t != null));
+    const freeWeight = sum(W.households.filter((w, i) => target[i] == null));
+    defs.forEach((d, i) => {
+      if (target[i] == null) return;
+      const factor = (target[i] * freeWeight) / ((1 - keptShare) * W.households[i]);
+      groups[i].forEach((r) => { r.households *= factor; r.land *= factor; r.twoTax *= factor; r.commerce *= factor; });
+      ['households', 'commerce', 'land', 'twoTax'].forEach((k) => { W[k][i] *= factor; });
+    });
+  }
   // 战区商贸折减（shaosong-frame.js 的 trade）
   W.commerceRaw = W.commerce.slice();
   W.commerce = W.commerce.map((c, i) => c * (defs[i].trade || 1));
@@ -176,7 +222,8 @@ function main() {
     const ageCounts = splitInteger(m, [ageRatios.young, ageRatios.ding, ageRatios.old]);
     const maleRatio = mixRatios(g, (r) => r.leaf.byGender)['男'];
     const male = Math.round(m * maleRatio);
-    const settle = mixRatios(g, (r) => r.leaf.bySettlement);
+    // 外藩原账的聚落名目各异（村寨、牧落、猛安谋克屯寨……），框架数据的 settlementKeys 把它们并入城、镇、乡
+    const settle = mixRatios(g, (r) => foldSettlement(r.leaf.bySettlement, frame.settlementKeys));
     // 城内再分坊（居住坊郭）与市（市肆行铺）：原账只分城、镇、乡，城内按六四分
     const settleCounts = splitInteger(m, [settle['城'] * 0.6, settle['城'] * 0.4, settle['镇'], settle['乡']]);
     const oldPop = sum(g.map((r) => r.population));
@@ -194,7 +241,7 @@ function main() {
       imperialDomain: d.name === '京畿路'
     };
     const node = {
-      id: 'div_ss_' + registry.id.replace(/^ss-circuit-/, ''),
+      id: idPrefix + registry.id.replace(/^ss-circuit-/, ''),
       name: d.name,
       level: 'province',
       officialPosition: d.officialPosition
@@ -271,24 +318,28 @@ function main() {
   tree.factionName = faction.name;
   tree.divisions = provinces;
   // 键序与天启一致：factionId、factionName、divisions
-  scenario.adminHierarchy.player = { factionId: tree.factionId, factionName: tree.factionName, divisions: tree.divisions };
+  scenario.adminHierarchy[treeKey] = { factionId: tree.factionId, factionName: tree.factionName, divisions: tree.divisions };
 
   // ---- 报告 ----
   const lines = [];
-  lines.push('# 绍宋·宋廷补路一级报告', '');
-  lines.push('大宋行政树去掉「大宋」国号节点，' + leaves.length + ' 块分到 ' + provinces.length + ' 路下。全国合计守恒自检：' + checks.map(([k]) => k).join('、') + ' 全部与改前相等。', '');
+  lines.push('# ' + (frame.reportTitle || '绍宋·宋廷补路一级报告'), '');
+  lines.push((frame.treeLabel || '大宋行政树去掉「大宋」国号节点，')  + leaves.length + ' 块分到 ' + provinces.length + ' 路下。全国合计守恒自检：' + checks.map(([k]) => k).join('、') + ' 全部与改前相等。', '');
   if (Object.keys(roundedFrom).length) {
     lines.push('原账带小数、全国合计取整后守恒的项：' + Object.entries(roundedFrom).map(([k, v]) => k + ' ' + v + ' → ' + N[k]).join('；') + '。', '');
   }
-  lines.push('应征按剧本税目表分：各路每年应纳的钱 = 耕地 × ' + TAX_SCHEDULE.land + ' + 口数 × ' + TAX_SCHEDULE.mouths + ' + 商贸额 × ' + TAX_SCHEDULE.commerce + '，开局所见与第一回合引擎实征成比例。海贸原值 ' + Math.round(T((l) => l.economyBase.maritimeTradeVolume)) + ' 不入任何税目、开局即被引擎覆盖，不守恒，由各路按港口口数 × 0.02 写。', '');
-  const { rates, southernMedian } = lib.yuanfengRates();
-  lines.push('田亩：宋廷各块按元丰各路每户登记田亩汇总，合计 ' + Math.round(sum(farmland) / 1e4) + ' 万亩（改前合计 ' + T((l) => l.economyBase.farmland).toFixed(2) + '，量纲错）。梓州、利州、夔州、广南西路登记失真，每户按南方八路中位数 ' + southernMedian.toFixed(1) + ' 亩 × 0.6 估。', '');
-  const disrupted = defs.map((d, i) => [d, i]).filter(([d]) => d.trade && d.trade !== 1);
-  if (disrupted.length) {
-    lines.push('战区商贸折减（熙宁商税额不反映靖康兵祸；京畿依建炎元年「販貨上京者與免稅」诏，其余依「殘破州縣」诏按兵祸轻重估）：' + disrupted.map(([d]) => d.name + ' × ' + d.trade).join('、') + '。', '');
+  if (treeKey === 'player') {
+    lines.push('应征按剧本税目表分：各路每年应纳的钱 = 耕地 × ' + TAX_SCHEDULE.land + ' + 口数 × ' + TAX_SCHEDULE.mouths + ' + 商贸额 × ' + TAX_SCHEDULE.commerce + '，开局所见与第一回合引擎实征成比例。海贸原值 ' + Math.round(T((l) => l.economyBase.maritimeTradeVolume)) + ' 不入任何税目、开局即被引擎覆盖，不守恒，由各路按港口口数 × 0.02 写。', '');
+    const { rates, southernMedian } = lib.yuanfengRates();
+    lines.push('田亩：宋廷各块按元丰各路每户登记田亩汇总，合计 ' + Math.round(sum(farmland) / 1e4) + ' 万亩（改前合计 ' + T((l) => l.economyBase.farmland).toFixed(2) + '，量纲错）。梓州、利州、夔州、广南西路登记失真，每户按南方八路中位数 ' + southernMedian.toFixed(1) + ' 亩 × 0.6 估。', '');
+    const disrupted = defs.map((d, i) => [d, i]).filter(([d]) => d.trade && d.trade !== 1);
+    if (disrupted.length) {
+      lines.push('战区商贸折减（熙宁商税额不反映靖康兵祸；京畿依建炎元年「販貨上京者與免稅」诏，其余依「殘破州縣」诏按兵祸轻重估）：' + disrupted.map(([d]) => d.name + ' × ' + d.trade).join('、') + '。', '');
+    }
+    lines.push('两税：元丰见催额钱粮帛草混计，每户两税封顶在十九路中位数 ' + lib.yuanfengRates().taxMedian.toFixed(2) + ' 的两倍；' +
+      Object.entries(lib.yuanfengRates().rates).filter(([, r]) => r.taxCapped).map(([k, r]) => k + ' ' + r.registerTaxPerHousehold.toFixed(2) + ' → ' + r.taxPerHousehold.toFixed(2)).join('、') + '。', '');
+  } else {
+    (frame.reportNotes || []).forEach((line) => lines.push(line, ''));
   }
-  lines.push('两税：元丰见催额钱粮帛草混计，每户两税封顶在十九路中位数 ' + lib.yuanfengRates().taxMedian.toFixed(2) + ' 的两倍；' +
-    Object.entries(lib.yuanfengRates().rates).filter(([, r]) => r.taxCapped).map(([k, r]) => k + ' ' + r.registerTaxPerHousehold.toFixed(2) + ' → ' + r.taxPerHousehold.toFixed(2)).join('、') + '。', '');
   lines.push('## 各路（改前为原各块按新路归组之和）', '');
   lines.push('| 路 | 块 | 口 | 户 | 应征 | 实征 | 商贸 | 田亩（亩） | 民心 | 吏治 | 繁荣 | 长官 |');
   lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
@@ -307,18 +358,20 @@ function main() {
       p.officialPosition + (p.governor ? '（' + p.governor + '）' : '')
     ].join(' | ') + ' |');
   });
-  lines.push('', '## 元丰各路每户田亩与两税', '');
-  lines.push('| 元丰路 | 崇宁户（志中合计） | 登记田亩（亩） | 每户田亩 | 每户两税 |');
-  lines.push('| --- | --- | --- | --- | --- |');
-  Object.entries(rates).forEach(([k, r]) => {
-    lines.push('| ' + [k, Math.round(r.households), r.landMu == null ? '（原书：田为山崖，难计顷亩）' : r.landMu, r.landPerHousehold.toFixed(1) + (r.landEstimated ? '（估）' : ''), r.taxPerHousehold.toFixed(2)].join(' | ') + ' |');
-  });
+  if (treeKey === 'player') {
+    lines.push('', '## 元丰各路每户田亩与两税', '');
+    lines.push('| 元丰路 | 崇宁户（志中合计） | 登记田亩（亩） | 每户田亩 | 每户两税 |');
+    lines.push('| --- | --- | --- | --- | --- |');
+    Object.entries(lib.yuanfengRates().rates).forEach(([k, r]) => {
+      lines.push('| ' + [k, Math.round(r.households), r.landMu == null ? '（原书：田为山崖，难计顷亩）' : r.landMu, r.landPerHousehold.toFixed(1) + (r.landEstimated ? '（估）' : ''), r.taxPerHousehold.toFixed(2)].join(' | ') + ' |');
+    });
+  }
   lines.push('', '## 各块权重', '');
   lines.push('| 路 | 地块 | 崇宁户权重 | 商税权重（贯） | 田亩权重（亩） | 户数依据 | 商税依据 |');
   lines.push('| --- | --- | --- | --- | --- | --- | --- |');
   rows.forEach((r) => {
     lines.push('| ' + [r.circuit, r.leaf.name, Math.round(r.households), Math.round(r.commerce), Math.round(r.land),
-      lib.householdWeight(r.leaf.name).basis, lib.commerceWeight(r.leaf.name, r.circuit).basis].join(' | ') + ' |');
+      r.householdBasis, r.commerceBasis].join(' | ') + ' |');
   });
   const report = lines.join('\n') + '\n';
   if (reportFile) {

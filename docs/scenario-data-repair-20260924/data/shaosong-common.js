@@ -64,7 +64,7 @@ function circuitModule(circuit, fields) {
     productionRule: 'engine',
     taxSchedule: TAX_SCHEDULE,
     fiscalRates: 'compliance',
-    UNITS: unitsFor(circuit, Object.keys(fields.BLOCKS))
+    UNITS: fields.UNITS || unitsFor(circuit, Object.keys(fields.BLOCKS))
   }, fields);
 }
 

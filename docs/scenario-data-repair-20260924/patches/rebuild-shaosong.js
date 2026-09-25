@@ -33,7 +33,13 @@ const FOREIGN = [
   { key: 'wumeng', frame: 'shaosong-southwest.js#4', module: 'shaosong-southwest.js#4' },
   { key: 'jinchi', frame: 'shaosong-southwest.js#5', module: 'shaosong-southwest.js#5' },
   { key: 'luodian', frame: 'shaosong-southwest.js#6', module: 'shaosong-southwest.js#6' },
-  { key: 'ziqi', frame: 'shaosong-southwest.js#7', module: 'shaosong-southwest.js#7' }
+  { key: 'ziqi', frame: 'shaosong-southwest.js#7', module: 'shaosong-southwest.js#7' },
+  { key: 'tubo', frame: 'shaosong-tibet-west.js#0', module: 'shaosong-tibet-west.js#0' },
+  { key: 'guge', frame: 'shaosong-tibet-west.js#1', module: 'shaosong-tibet-west.js#1' },
+  { key: 'kham', frame: 'shaosong-tibet-west.js#2', module: 'shaosong-tibet-west.js#2' },
+  { key: 'karakhan-east', frame: 'shaosong-tibet-west.js#3', module: 'shaosong-tibet-west.js#3' },
+  { key: 'karakhan-west', frame: 'shaosong-tibet-west.js#4', module: 'shaosong-tibet-west.js#4' },
+  { key: 'qocho', frame: 'shaosong-tibet-west.js#5', module: 'shaosong-tibet-west.js#5' }
 ];
 
 function run(args) {

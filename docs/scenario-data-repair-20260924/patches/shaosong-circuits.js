@@ -91,7 +91,10 @@ function main() {
   const reportIndex = args.indexOf('--report');
   const reportFile = reportIndex >= 0 ? args[reportIndex + 1] : null;
   const framePath = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--report');
-  const frame = require(framePath ? path.resolve(framePath) : path.join(DATA, 'shaosong-frame.js'));
+  // 「文件#序号」：一个文件写几棵外藩树（导出 { trees: [...] }），取其中一棵
+  const [frameFile, treeIndex] = (framePath || path.join(DATA, 'shaosong-frame.js')).split('#');
+  const frameModule = require(path.resolve(frameFile));
+  const frame = treeIndex != null ? frameModule.trees[Number(treeIndex)] : frameModule;
   const { CIRCUITS } = frame;
   const PORTS = frame.PORTS || {};
   const treeKey = frame.treeKey || 'player';

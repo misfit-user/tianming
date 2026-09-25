@@ -1,0 +1,879 @@
+{
+ "baseCommit": "5b243f02",
+ "trees": {
+  "fac_hebei_yijun": {
+   "磁州": {
+    "households": 8076,
+    "mouths": 40381
+   },
+   "相州": {
+    "households": 7807,
+    "mouths": 39034
+   },
+   "五马山寨": {
+    "households": 3891,
+    "mouths": 19454
+   },
+   "赞皇县": {
+    "households": 7826,
+    "mouths": 39131
+   }
+  },
+  "fac_xixia": {
+   "兴庆府": {
+    "households": 11103,
+    "mouths": 55514
+   },
+   "西平府": {
+    "households": 9548,
+    "mouths": 47743
+   },
+   "怀州夏境": {
+    "households": 2476,
+    "mouths": 12383
+   },
+   "静州": {
+    "households": 2812,
+    "mouths": 14059
+   },
+   "夏州": {
+    "households": 38000,
+    "mouths": 190000
+   },
+   "宥州": {
+    "households": 9292,
+    "mouths": 46461
+   },
+   "盐州": {
+    "households": 19987,
+    "mouths": 99933
+   },
+   "韦州": {
+    "households": 12721,
+    "mouths": 63606
+   },
+   "鸣沙县": {
+    "households": 39349,
+    "mouths": 196743
+   },
+   "西凉府": {
+    "households": 52000,
+    "mouths": 260000
+   },
+   "甘州": {
+    "households": 31736,
+    "mouths": 158679
+   },
+   "肃州": {
+    "households": 53000,
+    "mouths": 265000
+   },
+   "瓜州": {
+    "households": 36000,
+    "mouths": 180000
+   },
+   "沙州": {
+    "households": 32000,
+    "mouths": 160000
+   },
+   "黑水城": {
+    "households": 40264,
+    "mouths": 201321
+   },
+   "兀剌海": {
+    "households": 16712,
+    "mouths": 83558
+   },
+   "贺兰山西麓": {
+    "households": 14000,
+    "mouths": 70000
+   }
+  },
+  "fac_dali": {
+   "大理": {
+    "households": 19390,
+    "mouths": 96951
+   },
+   "鄯阐府": {
+    "households": 61150,
+    "mouths": 305749
+   },
+   "永昌府": {
+    "households": 107001,
+    "mouths": 535004
+   },
+   "威楚府": {
+    "households": 79534,
+    "mouths": 397671
+   },
+   "弄栋府": {
+    "households": 51910,
+    "mouths": 259547
+   },
+   "统矢府": {
+    "households": 47477,
+    "mouths": 237386
+   },
+   "会川府": {
+    "households": 112632,
+    "mouths": 563161
+   },
+   "秀山郡": {
+    "households": 32906,
+    "mouths": 164531
+   }
+  },
+  "fac_tubo": {
+   "逻些": {
+    "households": 44000,
+    "mouths": 220000
+   },
+   "雅隆": {
+    "households": 7677,
+    "mouths": 38383
+   },
+   "年楚河谷": {
+    "households": 5117,
+    "mouths": 25585
+   },
+   "拉堆": {
+    "households": 17883,
+    "mouths": 89415
+   },
+   "当雄": {
+    "households": 2386,
+    "mouths": 11930
+   },
+   "那曲": {
+    "households": 21614,
+    "mouths": 108070
+   },
+   "工布": {
+    "households": 18323,
+    "mouths": 91617
+   },
+   "柴达木": {
+    "households": 15400,
+    "mouths": 77000
+   },
+   "宗喀西境": {
+    "households": 27000,
+    "mouths": 135000
+   }
+  },
+  "fac_guge": {
+   "扎不让": {
+    "households": 10516,
+    "mouths": 52581
+   },
+   "托林": {
+    "households": 1723,
+    "mouths": 8617
+   },
+   "普兰": {
+    "households": 7759,
+    "mouths": 38795
+   },
+   "芒域": {
+    "households": 6402,
+    "mouths": 32007
+   }
+  },
+  "fac_kham": {
+   "昌都": {
+    "households": 20800,
+    "mouths": 104000
+   },
+   "类乌齐": {
+    "households": 17600,
+    "mouths": 88000
+   },
+   "囊谦": {
+    "households": 21200,
+    "mouths": 106000
+   },
+   "玉树": {
+    "households": 23600,
+    "mouths": 118000
+   },
+   "理塘": {
+    "households": 56400,
+    "mouths": 282000
+   },
+   "巴塘": {
+    "households": 15600,
+    "mouths": 78000
+   },
+   "打箭炉地域": {
+    "households": 42000,
+    "mouths": 210000
+   },
+   "松州": {
+    "households": 17600,
+    "mouths": 88000
+   },
+   "德钦河谷": {
+    "households": 19200,
+    "mouths": 96000
+   }
+  },
+  "fac_karakhan_east": {
+   "疏勒": {
+    "households": 47200,
+    "mouths": 236000
+   },
+   "莎车": {
+    "households": 35200,
+    "mouths": 176000
+   },
+   "于阗": {
+    "households": 41200,
+    "mouths": 206000
+   },
+   "姑墨": {
+    "households": 36400,
+    "mouths": 182000
+   },
+   "龟兹": {
+    "households": 49200,
+    "mouths": 246000
+   },
+   "八剌沙衮": {
+    "households": 31200,
+    "mouths": 156000
+   },
+   "怛罗斯": {
+    "households": 17600,
+    "mouths": 88000
+   },
+   "阿图什": {
+    "households": 10400,
+    "mouths": 52000
+   },
+   "且末": {
+    "households": 11200,
+    "mouths": 56000
+   },
+   "尼雅绿洲": {
+    "households": 12400,
+    "mouths": 62000
+   }
+  },
+  "fac_karakhan_west": {
+   "撒马尔罕": {
+    "households": 9679,
+    "mouths": 48394
+   },
+   "石国": {
+    "households": 10044,
+    "mouths": 50221
+   },
+   "费尔干纳": {
+    "households": 13877,
+    "mouths": 69385
+   }
+  },
+  "fac_qocho": {
+   "高昌": {
+    "households": 83600,
+    "mouths": 418000
+   },
+   "交河": {
+    "households": 22400,
+    "mouths": 112000
+   },
+   "北庭": {
+    "households": 36800,
+    "mouths": 184000
+   },
+   "伊州": {
+    "households": 24800,
+    "mouths": 124000
+   },
+   "焉耆": {
+    "households": 21600,
+    "mouths": 108000
+   },
+   "轮台": {
+    "households": 9200,
+    "mouths": 46000
+   },
+   "蒲昌海北口": {
+    "households": 15600,
+    "mouths": 78000
+   }
+  },
+  "fac_caoyuan": {
+   "额尔齐斯上游": {
+    "households": 9551,
+    "mouths": 47756
+   },
+   "阿尔泰东麓": {
+    "households": 9449,
+    "mouths": 47244
+   },
+   "杭爱西麓": {
+    "households": 5200,
+    "mouths": 26000
+   }
+  },
+  "fac_kereit": {
+   "土兀剌河": {
+    "households": 12400,
+    "mouths": 62000
+   },
+   "鄂尔浑河": {
+    "households": 7200,
+    "mouths": 36000
+   },
+   "杭爱东麓": {
+    "households": 11200,
+    "mouths": 56000
+   }
+  },
+  "fac_merkit": {
+   "色楞格河": {
+    "households": 7004,
+    "mouths": 35021
+   },
+   "鄂尔浑下游": {
+    "households": 6996,
+    "mouths": 34979
+   }
+  },
+  "fac_mongol": {
+   "斡难河": {
+    "households": 11000,
+    "mouths": 55000
+   },
+   "怯绿连河": {
+    "households": 11600,
+    "mouths": 58000
+   },
+   "肯特山": {
+    "households": 22000,
+    "mouths": 110000
+   }
+  },
+  "fac_tatar": {
+   "捕鱼儿海子": {
+    "households": 13600,
+    "mouths": 68000
+   },
+   "答兰捏木儿": {
+    "households": 9200,
+    "mouths": 46000
+   },
+   "克鲁伦下游": {
+    "households": 15400,
+    "mouths": 77000
+   }
+  },
+  "fac_qongirat": {
+   "额尔古纳南岸": {
+    "households": 10400,
+    "mouths": 52000
+   },
+   "兴安岭北麓": {
+    "households": 11600,
+    "mouths": 58000
+   }
+  },
+  "fac_ongud": {
+   "阴山西部": {
+    "households": 6621,
+    "mouths": 33107
+   },
+   "阴山东部": {
+    "households": 4379,
+    "mouths": 21893
+   }
+  },
+  "fac_goryeo": {
+   "开京": {
+    "households": 26419,
+    "mouths": 132094
+   },
+   "西京": {
+    "households": 78953,
+    "mouths": 394765
+   },
+   "南京汉阳": {
+    "households": 8314,
+    "mouths": 41568
+   },
+   "庆州高丽": {
+    "households": 45706,
+    "mouths": 228532
+   },
+   "全州高丽": {
+    "households": 61652,
+    "mouths": 308262
+   },
+   "尚州": {
+    "households": 47087,
+    "mouths": 235436
+   },
+   "广州高丽": {
+    "households": 29889,
+    "mouths": 149445
+   },
+   "安边": {
+    "households": 48933,
+    "mouths": 244663
+   },
+   "西北界": {
+    "households": 122400,
+    "mouths": 612000
+   },
+   "东界": {
+    "households": 129047,
+    "mouths": 645235
+   },
+   "耽罗": {
+    "households": 17600,
+    "mouths": 88000
+   }
+  },
+  "fac_daiviet": {
+   "升龙": {
+    "households": 36000,
+    "mouths": 180000
+   },
+   "海东": {
+    "households": 40000,
+    "mouths": 200000
+   },
+   "富良": {
+    "households": 42000,
+    "mouths": 210000
+   },
+   "谅州": {
+    "households": 16000,
+    "mouths": 80000
+   },
+   "广源州": {
+    "households": 18000,
+    "mouths": 90000
+   },
+   "峰州": {
+    "households": 28000,
+    "mouths": 140000
+   },
+   "长安府": {
+    "households": 90000,
+    "mouths": 450000
+   },
+   "清化": {
+    "households": 50000,
+    "mouths": 250000
+   },
+   "乂安": {
+    "households": 34000,
+    "mouths": 170000
+   }
+  },
+  "fac_pagan": {
+   "蒲甘": {
+    "households": 210000,
+    "mouths": 1050000
+   },
+   "卑谬": {
+    "households": 13919,
+    "mouths": 69596
+   },
+   "实皆": {
+    "households": 36000,
+    "mouths": 180000
+   },
+   "勃固": {
+    "households": 57873,
+    "mouths": 289366
+   },
+   "萨尔温河口": {
+    "households": 32127,
+    "mouths": 160634
+   },
+   "若开山地": {
+    "households": 12081,
+    "mouths": 60404
+   }
+  },
+  "fac_xinan_tribes": {
+   "石城郡": {
+    "households": 46000,
+    "mouths": 230000
+   },
+   "嶍峨": {
+    "households": 24400,
+    "mouths": 122000
+   },
+   "特磨道": {
+    "households": 30400,
+    "mouths": 152000
+   },
+   "步头": {
+    "households": 48000,
+    "mouths": 240000
+   },
+   "银生": {
+    "households": 44400,
+    "mouths": 222000
+   }
+  },
+  "fac_jianchang": {
+   "建昌府": {
+    "households": 50800,
+    "mouths": 254000
+   },
+   "邛部": {
+    "households": 32600,
+    "mouths": 163000
+   }
+  },
+  "fac_nw_yunnan": {
+   "磨些部": {
+    "households": 30018,
+    "mouths": 150091
+   },
+   "剑川": {
+    "households": 124800,
+    "mouths": 624000
+   },
+   "丽水上游": {
+    "households": 32382,
+    "mouths": 161909
+   }
+  },
+  "fac_wumeng": {
+   "乌蒙": {
+    "households": 100000,
+    "mouths": 500000
+   },
+   "乌撒": {
+    "households": 70000,
+    "mouths": 350000
+   },
+   "罗婺": {
+    "households": 49200,
+    "mouths": 246000
+   }
+  },
+  "fac_jinchi": {
+   "金齿诸部": {
+    "households": 129697,
+    "mouths": 648487
+   },
+   "寻传": {
+    "households": 23250,
+    "mouths": 116248
+   },
+   "高黎贡山口": {
+    "households": 14653,
+    "mouths": 73265
+   }
+  },
+  "fac_japan": {
+   "山城国": {
+    "households": 53913,
+    "mouths": 269563
+   },
+   "大和国": {
+    "households": 170929,
+    "mouths": 854645
+   },
+   "摄津国": {
+    "households": 95158,
+    "mouths": 475792
+   },
+   "近江国": {
+    "households": 5127,
+    "mouths": 25634
+   },
+   "伊势国": {
+    "households": 18321,
+    "mouths": 91605
+   },
+   "尾张国": {
+    "households": 40625,
+    "mouths": 203124
+   },
+   "三河国": {
+    "households": 29894,
+    "mouths": 149469
+   },
+   "骏河国": {
+    "households": 29751,
+    "mouths": 148755
+   },
+   "武藏国": {
+    "households": 39629,
+    "mouths": 198145
+   },
+   "相模国": {
+    "households": 26423,
+    "mouths": 132118
+   },
+   "下总国": {
+    "households": 45357,
+    "mouths": 226784
+   },
+   "上野国": {
+    "households": 19182,
+    "mouths": 95909
+   },
+   "陆奥国": {
+    "households": 68972,
+    "mouths": 344858
+   },
+   "出羽国": {
+    "households": 31934,
+    "mouths": 159673
+   },
+   "越前国": {
+    "households": 13600,
+    "mouths": 68002
+   },
+   "加贺国": {
+    "households": 32980,
+    "mouths": 164900
+   },
+   "越后国": {
+    "households": 56695,
+    "mouths": 283472
+   },
+   "信浓国": {
+    "households": 26785,
+    "mouths": 133926
+   },
+   "若狭国": {
+    "households": 5787,
+    "mouths": 28934
+   },
+   "丹波国": {
+    "households": 11548,
+    "mouths": 57740
+   },
+   "但马国": {
+    "households": 9614,
+    "mouths": 48070
+   },
+   "因幡国": {
+    "households": 12113,
+    "mouths": 60565
+   },
+   "出云国": {
+    "households": 23752,
+    "mouths": 118758
+   },
+   "播磨国": {
+    "households": 11079,
+    "mouths": 55396
+   },
+   "备前国": {
+    "households": 19792,
+    "mouths": 98961
+   },
+   "安艺国": {
+    "households": 26715,
+    "mouths": 133574
+   },
+   "周防国": {
+    "households": 12409,
+    "mouths": 62043
+   },
+   "长门国": {
+    "households": 11728,
+    "mouths": 58643
+   },
+   "纪伊国": {
+    "households": 21152,
+    "mouths": 105763
+   },
+   "阿波国": {
+    "households": 12579,
+    "mouths": 62896
+   },
+   "赞岐国": {
+    "households": 11010,
+    "mouths": 55049
+   },
+   "伊予国": {
+    "households": 22402,
+    "mouths": 112008
+   },
+   "土佐国": {
+    "households": 24598,
+    "mouths": 122990
+   },
+   "筑前国": {
+    "households": 9400,
+    "mouths": 47002
+   },
+   "筑后国": {
+    "households": 11158,
+    "mouths": 55792
+   },
+   "肥前国": {
+    "households": 25401,
+    "mouths": 127005
+   },
+   "肥后国": {
+    "households": 23628,
+    "mouths": 118141
+   },
+   "丰前国": {
+    "households": 12442,
+    "mouths": 62208
+   },
+   "丰后国": {
+    "households": 22928,
+    "mouths": 114638
+   },
+   "日向国": {
+    "households": 32421,
+    "mouths": 162107
+   },
+   "萨摩国": {
+    "households": 23698,
+    "mouths": 118489
+   },
+   "大隅国": {
+    "households": 18900,
+    "mouths": 94498
+   },
+   "对马国": {
+    "households": 3389,
+    "mouths": 16946
+   },
+   "壹岐国": {
+    "households": 635,
+    "mouths": 3174
+   },
+   "淡路国": {
+    "households": 2259,
+    "mouths": 11294
+   },
+   "佐渡国": {
+    "households": 2938,
+    "mouths": 14692
+   },
+   "隐岐国": {
+    "households": 1250,
+    "mouths": 6250
+   }
+  },
+  "fac_nanhai": {
+   "吕宋北港": {
+    "households": 5032,
+    "mouths": 25162
+   },
+   "卡加延河谷": {
+    "households": 10550,
+    "mouths": 52747
+   },
+   "吕宋中原": {
+    "households": 7890,
+    "mouths": 39449
+   },
+   "马尼拉湾诸聚落": {
+    "households": 4928,
+    "mouths": 24642
+   }
+  },
+  "fac_liuqiu": {
+   "流求北部": {
+    "households": 7285,
+    "mouths": 36425
+   },
+   "流求中部": {
+    "households": 11473,
+    "mouths": 57363
+   },
+   "流求南部": {
+    "households": 4842,
+    "mouths": 24212
+   }
+  },
+  "fac_mai": {
+   "麻逸": {
+    "households": 12800,
+    "mouths": 64000
+   }
+  },
+  "fac_visayas": {
+   "班乃诸邦": {
+    "households": 5474,
+    "mouths": 27369
+   },
+   "宿务诸邦": {
+    "households": 6174,
+    "mouths": 30869
+   },
+   "雷伊泰诸邦": {
+    "households": 6752,
+    "mouths": 33762
+   }
+  },
+  "fac_butuan": {
+   "蒲端": {
+    "households": 14800,
+    "mouths": 74000
+   }
+  },
+  "fac_beihai": {
+   "虾夷渡岛": {
+    "households": 1302,
+    "mouths": 6510
+   },
+   "石狩诸聚落": {
+    "households": 4880,
+    "mouths": 24402
+   },
+   "日高诸聚落": {
+    "households": 2218,
+    "mouths": 11088
+   },
+   "鄂霍次克沿岸": {
+    "households": 5600,
+    "mouths": 28000
+   },
+   "骨嵬诸聚落": {
+    "households": 3600,
+    "mouths": 18000
+   },
+   "黑水下游诸部": {
+    "households": 9464,
+    "mouths": 47322
+   },
+   "黑水中游诸部": {
+    "households": 6136,
+    "mouths": 30678
+   },
+   "黑水入海口": {
+    "households": 4800,
+    "mouths": 24000
+   }
+  },
+  "fac_luodian": {
+   "罗殿": {
+    "households": 17669,
+    "mouths": 88344
+   },
+   "普里": {
+    "households": 15931,
+    "mouths": 79656
+   }
+  },
+  "fac_ziqi": {
+   "自杞": {
+    "households": 33318,
+    "mouths": 166591
+   },
+   "弥鹿": {
+    "households": 23882,
+    "mouths": 119409
+   }
+  }
+ }
+}

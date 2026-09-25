@@ -119,7 +119,10 @@ function main() {
   const write = args.includes('--write');
   const reportIndex = args.indexOf('--report');
   const reportFile = reportIndex >= 0 ? args[reportIndex + 1] : null;
-  const data = require(path.resolve(modulePath));
+  // 「文件#序号」：一个文件写几棵外藩树（导出 { trees: [...] }），取其中一棵
+  const [moduleFile, treeIndex] = modulePath.split('#');
+  const loaded = require(path.resolve(moduleFile));
+  const data = treeIndex != null ? loaded.trees[Number(treeIndex)] : loaded;
   const scenarioName = (Array.isArray(data) ? data[0] : data).scenario;
   if (scenarioName) SCENARIO_FILE = path.join(REPO, 'scenarios', scenarioName);
 

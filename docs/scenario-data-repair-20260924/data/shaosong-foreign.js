@@ -28,8 +28,21 @@ const SETTLEMENT_KEYS = {
   寺院庄园: '乡', 寺社庄园: '乡', 佛寺庄园: '乡'
 };
 
+// 无户口史料可考的块写 households: 'original'，按原账户数（sources/shaosong-original-foreign-leaves.json）
+const ORIGINAL = require('../sources/shaosong-original-foreign-leaves.json');
+
 function foreignTree(spec) {
-  const { treeKey, idPrefix, faction, circuits, leaves } = spec;
+  const { treeKey, idPrefix, faction, circuits } = spec;
+  const leaves = {};
+  Object.entries(spec.leaves).forEach(([name, leaf]) => {
+    if (leaf.households !== 'original') { leaves[name] = leaf; return; }
+    const o = (ORIGINAL.trees[treeKey] || {})[name];
+    if (!o) throw new Error(treeKey + ' 原账里没有 ' + name);
+    leaves[name] = Object.assign({}, leaf, {
+      households: o.households,
+      basis: (leaf.basis ? leaf.basis + '；' : '') + '无户口史料可考，按原账户数 ' + o.households + ' 分'
+    });
+  });
   const hedong = src.yuanfengRates().rates['河東路'];
   const perHouseholdCommerce = jinFrame.commercePerHousehold();
 

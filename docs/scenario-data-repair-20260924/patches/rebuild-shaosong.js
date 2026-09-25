@@ -25,7 +25,15 @@ const FOREIGN = [
   { key: 'hebei-yijun', frame: 'shaosong-hebei-yijun.js' },
   { key: 'xixia', frame: 'shaosong-xixia.js' },
   { key: 'goryeo', frame: 'shaosong-goryeo.js' },
-  { key: 'japan', frame: 'shaosong-japan.js' }
+  { key: 'japan', frame: 'shaosong-japan.js' },
+  { key: 'dali', frame: 'shaosong-southwest.js#0', module: 'shaosong-southwest.js#0' },
+  { key: 'xinan', frame: 'shaosong-southwest.js#1', module: 'shaosong-southwest.js#1' },
+  { key: 'jianchang', frame: 'shaosong-southwest.js#2', module: 'shaosong-southwest.js#2' },
+  { key: 'nw-yunnan', frame: 'shaosong-southwest.js#3', module: 'shaosong-southwest.js#3' },
+  { key: 'wumeng', frame: 'shaosong-southwest.js#4', module: 'shaosong-southwest.js#4' },
+  { key: 'jinchi', frame: 'shaosong-southwest.js#5', module: 'shaosong-southwest.js#5' },
+  { key: 'luodian', frame: 'shaosong-southwest.js#6', module: 'shaosong-southwest.js#6' },
+  { key: 'ziqi', frame: 'shaosong-southwest.js#7', module: 'shaosong-southwest.js#7' }
 ];
 
 function run(args) {
@@ -46,11 +54,12 @@ function main() {
     const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), moduleFile, '--report', reportFile, '--write']);
     console.log(key + '：' + last);
   });
-  FOREIGN.forEach(({ key, frame }) => {
+  FOREIGN.forEach(({ key, frame, module: moduleName }) => {
     const circuits = run([path.join(DIR, 'patches/shaosong-circuits.js'), path.join(DIR, 'data', frame),
       '--report', path.join(DIR, 'reports', 'shaosong-' + key + '-circuits.md'), '--write']);
     console.log(key + ' 补路一级：' + circuits);
-    const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), path.join(DIR, 'data', 'shaosong-' + key + '.js'),
+    // 逐块模块默认是 shaosong-<key>.js；框架与逐块同文件的写 module（可带 #序号）
+    const last = run([path.join(DIR, 'patches/tianqi-prefectures.js'), path.join(DIR, 'data', moduleName || 'shaosong-' + key + '.js'),
       '--report', path.join(DIR, 'reports', 'shaosong-' + key + '.md'), '--write']);
     console.log(key + '：' + last);
   });

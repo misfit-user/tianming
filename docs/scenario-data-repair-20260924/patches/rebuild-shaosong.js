@@ -24,7 +24,8 @@ const FOREIGN = [
   { key: 'jin', frame: 'shaosong-jin-frame.js' },
   { key: 'hebei-yijun', frame: 'shaosong-hebei-yijun.js' },
   { key: 'xixia', frame: 'shaosong-xixia.js' },
-  { key: 'goryeo', frame: 'shaosong-goryeo.js' }
+  { key: 'goryeo', frame: 'shaosong-goryeo.js' },
+  { key: 'japan', frame: 'shaosong-japan.js' }
 ];
 
 function run(args) {

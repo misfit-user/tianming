@@ -129,7 +129,7 @@ function main() {
     return {
       leaf, region, circuit,
       households: w.households, commerce: w.commerce, land: w.land, twoTax: w.twoTax,
-      counties: w.counties, port: PORTS[leaf.name] || 0,
+      counties: w.counties, port: PORTS[leaf.name] || 0, landAbsolute: !!w.landAbsolute,
       householdBasis: w.householdBasis, commerceBasis: w.commerceBasis,
       population: leaf.population
     };
@@ -159,7 +159,8 @@ function main() {
   // 先把户数权重折成绝对户数（合计 = 改前全国户数）再乘
   if (frame.relativeHouseholds) {
     const k = N.households / sum(rows.map((r) => r.households));
-    rows.forEach((r) => { r.land *= k; r.twoTax *= k; });
+    // 田亩有实数的块（如日本按《和名抄》田积）不折
+    rows.forEach((r) => { if (!r.landAbsolute) { r.land *= k; r.twoTax *= k; } });
   }
   if (N.remitted + N.retained !== N.actual) throw new Error('改前起运加留用不等于实征');
 
@@ -231,7 +232,8 @@ function main() {
     const maleRatio = mixRatios(g, (r) => r.leaf.byGender)['男'];
     const male = Math.round(m * maleRatio);
     // 外藩原账的聚落名目各异（村寨、牧落、猛安谋克屯寨……），框架数据的 settlementKeys 把它们并入城、镇、乡
-    const settle = mixRatios(g, (r) => foldSettlement(r.leaf.bySettlement, frame.settlementKeys));
+    // 框架数据可给该路城、镇、乡比例（如日本畿内要容下平安京），否则取原账各块按口数加权
+    const settle = d.settlement || mixRatios(g, (r) => foldSettlement(r.leaf.bySettlement, frame.settlementKeys));
     // 城内再分坊（居住坊郭）与市（市肆行铺）：原账只分城、镇、乡，城内按六四分
     const settleCounts = splitInteger(m, [(settle['城'] || 0) * 0.6, (settle['城'] || 0) * 0.4, settle['镇'] || 0, settle['乡'] || 0]);
     const oldPop = sum(g.map((r) => r.population));

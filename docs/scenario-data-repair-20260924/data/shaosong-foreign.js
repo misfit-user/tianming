@@ -40,14 +40,18 @@ function foreignTree(spec) {
     if (!eco) throw new Error(name + ' 的经济类型不认识：' + leaf.economy);
     const hh = leaf.households;
     const factor = leaf.commerceFactor || 1;
+    // 田亩有史料实数的（leaf.land，单位宋亩）直接用，两税按河东路每亩两税折
+    const absolute = leaf.land != null;
     return {
       households: hh,
-      land: hh * hedong.landPerHousehold * eco.land,
-      twoTax: hh * hedong.taxPerHousehold * eco.land,
+      land: absolute ? leaf.land : hh * hedong.landPerHousehold * eco.land,
+      twoTax: absolute ? leaf.land * hedong.taxPerHousehold / hedong.landPerHousehold : hh * hedong.taxPerHousehold * eco.land,
+      landAbsolute: absolute,
       commerce: hh * perHouseholdCommerce * eco.commerce * factor,
       counties: leaf.counties || 1,
       householdBasis: leaf.basis,
-      commerceBasis: '无商税额可考，按户数估（' + eco.label + (factor !== 1 ? '，商道都会 × ' + factor : '') + '）；田亩按元丰河东路每户田亩 × ' + eco.land
+      commerceBasis: '无商税额可考，按户数估（' + eco.label + (factor !== 1 ? '，商道都会 × ' + factor : '') + '）；' +
+        (absolute ? '田亩用' + (leaf.landBasis || '史料实数') : '田亩按元丰河东路每户田亩 × ' + eco.land)
     };
   }
 

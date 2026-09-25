@@ -1,6 +1,6 @@
 {
   "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
-  "updatedAt": "2026-09-25T12:18:18.691Z",
+  "updatedAt": "2026-09-25T13:37:07.355Z",
   "scenarios": {
     "tianqi7": {
       "ref.entity.id": 2,
@@ -14,22 +14,18 @@
       "ref.army.commander": 8,
       "ref.party.leader": 4,
       "ref.relation.char": 14,
-      "field.dead": 3475
+      "field.dead": 3463
     },
     "shaosong": {
       "ref.faction.leaderForeign": 3,
-      "field.dead": 8368
+      "field.dead": 8330
     },
     "tang840": {
       "ref.region.duplicateName": 3,
-      "fmt.circuitSchema": 111,
       "text.templated": 19,
-      "fmt.population": 575,
-      "fmt.terrainEnglish": 575,
       "leaf.equalSplit": 207,
       "ref.faction.capital": 28,
-      "ref.army.commander": 1,
-      "field.dead": 70423
+      "ref.army.commander": 1
     }
   }
 }

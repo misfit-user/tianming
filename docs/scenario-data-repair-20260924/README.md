@@ -21,13 +21,13 @@
 | 零 | 区划数据宪法；`lint-scenario-data` 棘轮守卫；方志与右栏把「剧本未记任官者」显示为「任官未详」，不再满屏红字出缺 | 已推 main（`19498894`） |
 | 一 | 天启：行政树键名与 factionId 对齐势力表；府州按史料重分人口、田亩、税额；地形、物产、标签、描述逐府写；外藩叶子修随机人口与量纲 | 已推 main（`5b243f02`）：势力引用对齐；明廷两直隶、十三布政司与乌思藏、辽东、朵甘；外藩 21 势力（含四家非领土账）；省级描述统一重写 |
 | 二 | 绍宋：重建数字；格式归一；重写描述；补路一级与官职；修人物 id 重复找回 16 人；理顺势力、党派、阶层引用 | 基本完成：宋廷 28 路 277 块与全部 34 棵外藩树（大金、西夏、高丽、日本等）按史料重写，人物 id 去重找回 16 人，势力、党派、阶层、军队引用理顺（同志令「全听你的，最好符合史实」）；人物时代错误逐人改正（宗望、南仙已殁，秦桧在金营，张邦昌等在贬所，任得敬归宋，二十余人官职所在按建炎元年八月改正），见 [绍宋方案](绍宋方案.md) |
-| 三 | 晚唐：删死字段；格式归一；修挂错的人、补缺位长官；清理批量虚构人物 | 未开始 |
+| 三 | 晚唐：删死字段；格式归一；修挂错的人、补缺位长官；清理批量虚构人物 | 进行中：第一刀字段清理与格式归一已做（死字段 70423→0，真源 60.7M→51.5M 字符，道长官官称入正规字段；税目表按名字引用的字段改判为活），见 [晚唐方案](晚唐方案.md) |
 
 ## 工作方式
 
 - 真源是单行大 JSON，git diff 看不了。每一刀用可重跑的补丁脚本（放在本目录 `patches/`）改真源，同时生成字段级变更清单；派生物用 `node web/scripts/sync-official-scenarios.js` 重生成。
 - 天启可从原版整体重建：`node patches/rebuild-tianqi.js` 写回修复前的原版真源，再按顺序重跑势力引用补丁与各省数据模块，报告里「前」一栏始终是原版数值。改了数据模块或补丁引擎后用它重建，结果应与逐刀提交逐字节一致，只多出有意的改动。
-- 绍宋同样可从原版整体重建：`node patches/rebuild-shaosong.js` 写回原版（`5b243f02`），先跑补路一级（`shaosong-circuits.js`），再按顺序跑各路数据模块（沿用 `tianqi-prefectures.js`，模块写 `scenario` 即改绍宋）；外藩先用各自框架数据（如 `data/shaosong-jin-frame.js`；一个文件写几棵树时用「文件#序号」）跑 `shaosong-circuits.js` 补路一级，再跑逐块模块；最后跑人物 id 去重（`shaosong-characters.js`）、引用理顺（`shaosong-references.js`）与人物时代错误改正（`shaosong-people.js`）。逐块史料权重集中在 `data/shaosong-sources.js`。
+- 绍宋同样可从原版整体重建：`node patches/rebuild-shaosong.js` 写回原版（`5b243f02`），先跑补路一级（`shaosong-circuits.js`），再按顺序跑各路数据模块（沿用 `tianqi-prefectures.js`，模块写 `scenario` 即改绍宋）；外藩先用各自框架数据（如 `data/shaosong-jin-frame.js`；一个文件写几棵树时用「文件#序号」）跑 `shaosong-circuits.js` 补路一级，再跑逐块模块；最后跑人物 id 去重（`shaosong-characters.js`）、引用理顺（`shaosong-references.js`）与人物时代错误改正（`shaosong-people.js`）。晚唐同样可重建：`node patches/rebuild-tang.js` 写回原版（`ffb2db25`）后按刀次重跑。逐块史料权重集中在 `data/shaosong-sources.js`。
 - 每刀收尾：`lint-scenario-data --update` 收紧基线；按主题回归读剧本的 smoke；推送前全量 smoke、原生准备清单与热更基线重生成（热更基线须带 `--asset-root` 与 `--temp-root`）。
 - 验证工具（本目录 `tools/`，默认读本仓库）：
   - `node tools/dossier-dump.js <sid> <输出目录> 地块名,地块名`：VM 里真开局，导出方志上玩家实际看到的文字。

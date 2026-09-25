@@ -97,7 +97,8 @@ const RULES = {
 
 // ---------------------------------------------------------------------------
 // 运行时语料：web 顶层脚本、battle、modules、preview 下的手写模块（不含 _ 开头的一次性改写脚本），
-// 不含测试脚本、生成的剧本包和第三方库。死字段判定只看字段名在语料里出没出现，宁宽勿严。
+// 不含测试脚本、生成的剧本包和第三方库。死字段判定只看字段名在语料里出没出现，宁宽勿严；
+// 字段名若在剧本数据里以字符串值出现（数据按名字引用），也算活字段。
 // ---------------------------------------------------------------------------
 const CORPUS_DIRS = ['', 'battle', 'modules/ai-change-applier', 'preview'];
 const CORPUS_EXCLUDE = new Set([
@@ -149,7 +150,26 @@ function num(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-function collectDeadFields(scenario, corpus) {
+// 剧本数据里以字符串值出现的标识符。有的字段由数据按名字引用（如税目表 taxList[].base 写
+// "seaSaltFiscalAssessment"，引擎按这个名字去读府州 economyBase），代码里不出现字段名也是活的。
+function collectReferencedNames(scenario) {
+  const names = new Set();
+  (function walk(node, depth) {
+    if (depth > 16) return;
+    if (typeof node === 'string') { if (IDENT_RE.test(node)) names.add(node); return; }
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach((item) => walk(item, depth + 1)); return; }
+    for (const key of Object.keys(node)) {
+      if (GEOMETRY_KEYS.has(key) || (depth === 0 && key === 'mapData')) continue;
+      walk(node[key], depth + 1);
+    }
+  })(scenario, 0);
+  return names;
+}
+
+function collectDeadFields(scenario, runtimeCorpus) {
+  const referenced = collectReferencedNames(scenario);
+  const corpus = { has: (key) => runtimeCorpus.has(key) || referenced.has(key) };
   const dead = new Map();
   (function walk(node, pathLabel, parentKey, depth) {
     if (depth > 16 || !node || typeof node !== 'object') return;

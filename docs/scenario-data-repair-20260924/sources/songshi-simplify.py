@@ -1,4 +1,4 @@
-# 给宋代史料解析结果补简体地名，供与绍宋剧本的简体地名比对：
+# 给宋代、唐代史料解析结果补简体地名，供与剧本的简体地名比对（《新唐书·地理志》另补土贡 tributeS）：
 #   《宋史·地理志》songshi-dili-*.json：nameS、circuitS、subCircuitS、countiesS
 #   《文献通考》商税表、《元丰九域志》等只有 name 的表：nameS（九域志另补 circuitS）
 # 用法：python songshi-simplify.py <json>...（原地改写）。依赖 opencc（pip install opencc）。
@@ -43,6 +43,8 @@ def main(path):
                 r[key + 'S'] = simplify(r[key])
         if 'counties' in r:
             r['countiesS'] = [simplify(c) for c in r['counties']]
+        if 'tribute' in r:
+            r['tributeS'] = [simplify(c) for c in r['tribute']]
     with open(path, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(rows, f, ensure_ascii=False, indent=1)
         f.write('\n')

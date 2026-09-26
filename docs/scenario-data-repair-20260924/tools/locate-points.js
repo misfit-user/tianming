@@ -1,5 +1,6 @@
-// 把经纬度落到绍宋地图的地块上：给出每个点所在的地块名（地图投影见 map.projection，等距圆柱）。
+// 把经纬度落到剧本地图的地块上：给出每个点所在的地块名（地图投影见 map.projection，等距圆柱）。
 // 外藩没有户数，只能按史志所列郡县计权时，用它判断各郡县治所落在哪一块。
+// 绍宋地图的投影分写 scaleX、scaleY，晚唐地图只写一个 scale，两种都认。
 // 用法：node tools/locate-points.js <剧本 json> <点表 json>     点表：[[名, 纬度, 经度], ...]
 // 也可在数据模块里 require：locate(scenario, points) → [{ name, lat, lon, region, owner }]
 'use strict';
@@ -23,9 +24,11 @@ function inGeometry(x, y, geometry) {
 function locate(scenario, points) {
   const proj = scenario.map.projection;
   const [lonMin, , , latMax] = proj.bbox;
+  const scaleX = proj.scaleX || proj.scale;
+  const scaleY = proj.scaleY || proj.scale;
   return points.map(([name, lat, lon]) => {
-    const x = (lon - lonMin) * proj.scaleX + proj.offset[0];
-    const y = (latMax - lat) * proj.scaleY + proj.offset[1];
+    const x = (lon - lonMin) * scaleX + proj.offset[0];
+    const y = (latMax - lat) * scaleY + proj.offset[1];
     const hit = scenario.map.regions.find((r) => r.geometry && inGeometry(x, y, r.geometry));
     return { name, lat, lon, region: hit ? hit.name : null, owner: hit ? hit.owner : null };
   });

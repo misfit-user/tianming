@@ -1,6 +1,6 @@
 {
   "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
-  "updatedAt": "2026-09-26T07:25:30.622Z",
+  "updatedAt": "2026-09-26T09:59:17.002Z",
   "scenarios": {
     "tianqi7": {
       "ref.entity.id": 2,
@@ -21,10 +21,8 @@
       "field.dead": 8330
     },
     "tang840": {
-      "ref.region.duplicateName": 3,
-      "text.templated": 19,
-      "leaf.equalSplit": 124,
-      "ref.faction.capital": 28,
+      "text.templated": 16,
+      "leaf.equalSplit": 112,
       "ref.army.commander": 1
     }
   }

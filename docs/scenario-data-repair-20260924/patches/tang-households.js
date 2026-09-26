@@ -18,67 +18,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 
 const REPO = path.resolve(__dirname, '../../..');
 const DIR = path.join(REPO, 'docs/scenario-data-repair-20260924');
 const SCENARIO_FILE = path.join(REPO, 'scenarios', '晚唐·开成五年（官方）.json');
 const { TANG_TREES: TREES, NO_YUANHE_TREES, leavesOf, resolveSources, yuanheFor } = require(path.join(DIR, 'data/tang-sources.js'));
+const { ECON_FIELDS, assertLedgersAreEnginePreview, ledgerIndex, redistributeGroup, refreshLedgers } = require(path.join(DIR, 'patches/tang-redistribute.js'));
 
-// 随人口走的户口账字段（mouthsPerDing 是比率，不在内）
-const POP_FIELDS = ['mouths', 'households', 'ding', 'registeredMouths', 'registeredHouseholds', 'taxableMouths', 'taxableHouseholds',
-  'hiddenCount', 'hidden', 'fugitives', 'registeredDing', 'hiddenDing', 'fledDing', 'baselineExemptDing', 'exemptDing', 'registeredLand'];
-// 课额（盐、茶、酒、商税、舶货、坑冶）是按州定的旧额，不随人口走；只重分经济底数
-const ECON_FIELDS = ['farmland', 'taxableLand', 'commerceVolume'];
 const ECON_FIELDS_HEBEI = ECON_FIELDS.concat(['saltOutput']); // 河朔四镇的盐课是境内销盐，按人头
-const INT_ECON = new Set(['farmland', 'taxableLand', 'commerceVolume']);
-const MONEY_KEYS = ['claimedRevenue', 'actualRevenue', 'collectedRevenue', 'remittedToCenter', 'retainedBudget', 'skimmed', 'lostInTransit'];
-
-// 按份额分整数，保持合计不变（最大余数法）
-function apportion(total, shares) {
-  const sum = shares.reduce((a, b) => a + b, 0);
-  if (!sum) return shares.map(() => 0);
-  const exact = shares.map((s) => (total * s) / sum);
-  const out = exact.map(Math.floor);
-  let rest = total - out.reduce((a, b) => a + b, 0);
-  exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rest > 0) { out[i] += 1; rest -= 1; } });
-  return out;
-}
-
-// 一组量按「原值 × 倍数」重分并归一到原合计
-function redistribute(values, factors, integer) {
-  const total = values.reduce((a, b) => a + b, 0);
-  const raw = values.map((v, i) => v * factors[i]);
-  if (integer) return apportion(Math.round(total), raw);
-  const sum = raw.reduce((a, b) => a + b, 0);
-  return sum ? raw.map((r) => (total * r) / sum) : values.slice();
-}
-
-// ---------- 财政引擎（与 smoke-tang840-fiscal-detail 同样的开局构造） ----------
-function fiscalPreview(scenario) {
-  const copy = (x) => JSON.parse(JSON.stringify(x));
-  const s = scenario;
-  const g = {
-    sid: s.id, turn: 1, turnDays: 10, playerInfo: copy(s.playerInfo), facs: copy(s.factions), chars: copy(s.characters),
-    officeTree: copy(s.officeTree), adminHierarchy: copy(s.adminHierarchy), armies: copy(s.military.initialTroops),
-    fiscalConfig: copy(s.fiscalConfig), guoku: { money: s.guoku.initialMoney, grain: s.guoku.initialGrain, cloth: s.guoku.initialCloth },
-    neitang: { money: s.neitang.initialMoney, grain: s.neitang.initialGrain, cloth: s.neitang.initialCloth }, publicTreasuryConfig: copy(s.publicTreasuryConfig)
-  };
-  const c = { GM: g, P: { time: copy(s.time), playerInfo: copy(s.playerInfo), fiscalConfig: copy(s.fiscalConfig) }, console: { log() {}, warn() {}, error() {} },
-    Math, JSON, Date, setTimeout() {}, clearTimeout() {}, _getDaysPerTurn: () => 10, findScenarioById: () => s };
-  c.window = c; c.globalThis = c; vm.createContext(c);
-  ['tm-field-pipelines.js', 'tm-public-treasury.js', 'tm-char-economy-ledger.js', 'tm-fiscal-statements.js', 'tm-fiscal-engine.js']
-    .forEach((file) => vm.runInContext(fs.readFileSync(path.join(REPO, 'web', file), 'utf8'), c, { filename: file }));
-  c.FiscalEngine.initializePublicTreasuries({ game: g, scenario: s });
-  const byRegion = new Map();
-  const factionIds = { player: '唐朝廷' };
-  TREES.forEach((key) => {
-    const budget = c.CascadeTax.previewBudget({ game: g, faction: factionIds[key] || key, turnDays: 360 });
-    if (!budget) throw new Error(key + ' 没有财政预算');
-    budget.regions.forEach((r) => byRegion.set(r.id, r.resources));
-  });
-  return byRegion;
-}
 
 function main() {
   const args = process.argv.slice(2);
@@ -91,28 +38,10 @@ function main() {
   if (JSON.stringify(scenario) + '\n' !== raw) throw new Error('剧本不是标准 JSON.stringify 输出，拒绝改写');
 
   // 先核对：原账开局账就是引擎按年预算
-  const before = fiscalPreview(scenario);
-  TREES.forEach((key) => leavesOf(scenario.adminHierarchy[key].divisions, []).forEach((l) => {
-    const r = before.get(l.id);
-    if (!r || JSON.stringify(r) !== JSON.stringify(l.fiscalDetail.resources)) throw new Error(l.name + ' 的开局账不是引擎按年预算，不能按引擎重算');
-  }));
+  assertLedgersAreEnginePreview(scenario, TREES);
 
-  const cities = new Map(scenario.cities.map((c) => [c.regionId, c]));
-  const byRegionPop = (scenario.populationConfig && scenario.populationConfig.initial && scenario.populationConfig.initial.byRegion) || {};
   const configs = [scenario.fiscalConfig].concat(scenario.factions.filter((f) => f.fiscalConfig && TREES.concat(['唐朝廷']).includes(f.id)).map((f) => f.fiscalConfig));
-  const expenseItems = (id) => {
-    const rows = [];
-    configs.forEach((cfg) => {
-      const fe = cfg.fixedExpense || {};
-      // 只取本州的地方开支（local-州-…）；酒坊工本随酒课旧额，中枢各项即使写了所在州也不动
-      (fe.recurringExpenses || []).forEach((x) => {
-        if (String(x.id).startsWith('local-' + id + '-') || x.id === 'local-' + id) rows.push({ kind: 'local', item: x });
-
-      });
-      (fe.administrativeStaff || []).forEach((x) => { if (x.regionId === id) rows.push({ kind: 'staff', item: x }); });
-    });
-    return rows;
-  };
+  const index = ledgerIndex(scenario, configs);
 
   const tables = [];
   let equalBefore = 0;
@@ -163,55 +92,7 @@ function main() {
       rows.forEach((r) => { hhCount[r.hh] = (hhCount[r.hh] || 0) + 1; });
       equalBefore += Object.values(hhCount).filter((n) => n >= 3).reduce((a, n) => a + n, 0);
 
-      // 户口账
-      POP_FIELDS.forEach((k) => {
-        if (!rows.some((r) => typeof r.leaf.populationDetail[k] === 'number')) return;
-        const next = redistribute(rows.map((r) => r.leaf.populationDetail[k] || 0), factors, true);
-        rows.forEach((r, i) => { if (typeof r.leaf.populationDetail[k] === 'number') r.leaf.populationDetail[k] = next[i]; });
-      });
-      rows.forEach((r) => {
-        const p = r.leaf.populationDetail;
-        r.leaf.population = p.mouths;
-        const mirror = byRegionPop[r.leaf.id];
-        if (mirror) Object.keys(mirror).forEach((k) => { if (k in p) mirror[k] = p[k]; });
-      });
-      // 经济与府库
-      (hebei ? ECON_FIELDS_HEBEI : ECON_FIELDS).forEach((k) => {
-        if (!rows.some((r) => typeof r.leaf.economyBase[k] === 'number')) return;
-        const next = redistribute(rows.map((r) => r.leaf.economyBase[k] || 0), factors, INT_ECON.has(k));
-        rows.forEach((r, i) => { if (typeof r.leaf.economyBase[k] === 'number') r.leaf.economyBase[k] = next[i]; });
-      });
-      ['money', 'grain', 'cloth'].forEach((k) => {
-        const next = redistribute(rows.map((r) => (r.leaf.publicTreasuryInit || {})[k] || 0), factors, true);
-        rows.forEach((r, i) => { if (r.leaf.publicTreasuryInit && k in r.leaf.publicTreasuryInit) r.leaf.publicTreasuryInit[k] = next[i]; });
-      });
-      const cityRows = rows.map((r) => cities.get(r.leaf.mapRegionId));
-      if (cityRows.every(Boolean)) {
-        const next = redistribute(cityRows.map((c) => c.population || 0), factors, true);
-        cityRows.forEach((c, i) => { c.population = next[i]; });
-      }
-      // 地方开支：水利驿路仓储随人口，吏员人数随人口
-      const items = rows.map((r) => expenseItems(r.leaf.id));
-      ['local'].forEach((kind) => {
-        const byId = {};
-        items.forEach((list, i) => list.filter((x) => x.kind === kind).forEach((x) => {
-          const key = x.item.id.replace(rows[i].leaf.id, '#');
-          (byId[key] = byId[key] || []).push({ i, item: x.item });
-        }));
-        Object.values(byId).forEach((group) => {
-          ['money', 'grain', 'cloth'].forEach((res) => {
-            const vals = group.map((g) => (g.item.monthly || {})[res] || 0);
-            const next = redistribute(vals, group.map((g) => factors[g.i]), false);
-            group.forEach((g, j) => { if (g.item.monthly && res in g.item.monthly) g.item.monthly[res] = next[j]; });
-          });
-        });
-      });
-      const staff = [];
-      items.forEach((list, i) => list.filter((x) => x.kind === 'staff').forEach((x) => staff.push({ i, item: x.item })));
-      if (staff.length) {
-        const next = redistribute(staff.map((s) => s.item.count || 0), staff.map((s) => factors[s.i]), true);
-        staff.forEach((s, j) => { s.item.count = next[j]; });
-      }
+      redistributeGroup(rows.map((r) => r.leaf), factors, index, hebei ? ECON_FIELDS_HEBEI : ECON_FIELDS);
 
       tables.push('### ' + circuit.name + '\n\n| 州 | 依据 | 元和户（参考） | 原户 | 新户 |\n| --- | --- | --- | --- | --- |\n' +
         rows.map((r) => '| ' + r.leaf.name + ' | ' + r.basis + ' | ' + ((r.yh && r.yh.yuanhe) || '') + ' | ' + r.hh + ' | ' + r.leaf.populationDetail.households + ' |').join('\n'));
@@ -221,22 +102,8 @@ function main() {
   const tang = scenario.factions.find((f) => f.id === '唐朝廷');
   if (JSON.stringify(tang.fiscalConfig) !== JSON.stringify(scenario.fiscalConfig)) throw new Error('唐廷两份 fiscalConfig 改后不一致');
 
-  // 用引擎按年预算重算开局账
-  const after = fiscalPreview(scenario);
-  TREES.forEach((key) => leavesOf(scenario.adminHierarchy[key].divisions, []).forEach((l) => {
-    const r = after.get(l.id);
-    l.fiscalDetail.resources = JSON.parse(JSON.stringify(r));
-    MONEY_KEYS.forEach((k) => { l.fiscalDetail[k] = r.money[k]; });
-  }));
-
-  // 地块 data 与 mapData
-  const byMap = new Map(scenario.map.regions.map((r) => [r.id, r]));
-  TREES.forEach((key) => leavesOf(scenario.adminHierarchy[key].divisions, []).forEach((l) => {
-    const data = JSON.parse(JSON.stringify(l));
-    delete data.treasuryBinding;
-    byMap.get(l.mapRegionId).data = data;
-  }));
-  scenario.mapData = JSON.parse(JSON.stringify(scenario.map));
+  // 用引擎按年预算重算开局账，府州写回地块 data 与 mapData
+  refreshLedgers(scenario, TREES);
 
   const report = ['# 晚唐·户口重建报告', '',
     '唐廷与河朔、昭义四镇各道合计不变，道内各州按《新唐书·地理志》天宝户定权重重分（天宝后置州用《元和郡县图志》开元、元和户按本道比例折算，或按县数估）；《元和郡县图志》元和户列作参考。原账同一道下三个以上州户数相同的有 ' + equalBefore + ' 州次。',

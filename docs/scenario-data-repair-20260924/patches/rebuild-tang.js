@@ -41,6 +41,8 @@ function main() {
   console.log('批量代表：' + run([path.join(DIR, 'patches/tang-local-reps.js'), '--report', path.join(DIR, 'reports/tang-local-reps.md'), '--write']));
   // 第五刀：各道属州按元和志与开成间任命改正（郢州、连州、龚州改挂，丹州并回鄜坊，同州、华州各立一道）
   console.log('各道属州：' + run([path.join(DIR, 'patches/tang-membership.js'), '--report', path.join(DIR, 'reports/tang-membership.md'), '--write']));
+  // 第六刀之一：外藩名目与归属（拼盘势力按史实拆散归属，势力、道、地块改用史名，都城指到地块，役属关系）
+  console.log('外藩名目：' + run([path.join(DIR, 'patches/tang-foreign-names.js'), '--report', path.join(DIR, 'reports/tang-foreign-names.md'), '--write']));
 }
 
 main();

@@ -57,6 +57,31 @@
   ];
   var THEME_MAP = THEMES.reduce(function(m, t){ m[t.key] = t; return m; }, {});
 
+  // 各主题 pal 之外的整套色阶（漆、漆上字，金朱青的其余各档），按上面的锚点照「素纸」的深浅关系推出；
+  // 素纸就是 styles.css 令牌表的默认值，不用列。改了锚点跑 node scripts/derive-theme-palette.js --write，别手改
+  // <derive-theme-palette>
+  var THEME_TOKENS = {
+    ink: ''
+      + '--gold-100:#f5ebd1;--gold-200:#e1d4b0;--gold-450:#907b56;--gold-550:#61503a;--gold-600:#403321;'
+      + '--vermillion-450:#6a473c;--vermillion-600:#4b322a;'
+      + '--celadon-300:#b4b9c9;--celadon-350:#8b93a5;--celadon-500:#5e6676;'
+      + '--lacquer-0:#0a0b0f;--lacquer-1:#1a1921;--lacquer-2:#222430;--lacquer-3:#3a3a47;--lacquer-4:#554c50;'
+      + '--ink-50:#ebdfc1;--ink-75:#d9c9a9;--ink-100:#d2c59e;--ink-150:#c6b67d;--ink-200:#bcad84;--ink-250:#a49365;--ink-350:#89774d;',
+    vermillion: ''
+      + '--gold-100:#ffefb9;--gold-200:#ffde95;--gold-450:#c9a045;--gold-550:#a8833a;--gold-600:#6b5010;'
+      + '--vermillion-450:#a83228;--vermillion-600:#7a2018;'
+      + '--celadon-300:#c7bc9c;--celadon-350:#a59772;--celadon-500:#786b4a;'
+      + '--lacquer-0:#0d0504;--lacquer-1:#1e0e0c;--lacquer-2:#281714;--lacquer-3:#422c26;--lacquer-4:#5c3f2f;'
+      + '--ink-50:#fff0e4;--ink-75:#fce6d8;--ink-100:#f5e1cb;--ink-150:#e7cfa7;--ink-200:#dac6ac;--ink-250:#bea786;--ink-350:#9e8867;',
+    celadon: ''
+      + '--gold-100:#fdf0d5;--gold-200:#f0dfbb;--gold-450:#a69646;--gold-550:#7b7d4a;--gold-600:#4c4e24;'
+      + '--vermillion-450:#8e5e4b;--vermillion-600:#644135;'
+      + '--celadon-300:#a3d4c7;--celadon-350:#7eb8a7;--celadon-500:#5a8f7f;'
+      + '--lacquer-0:#040a08;--lacquer-1:#101714;--lacquer-2:#15201e;--lacquer-3:#2c3633;--lacquer-4:#464a3b;'
+      + '--ink-50:#ebf8ea;--ink-75:#e8f0e0;--ink-100:#e1ebd3;--ink-150:#d6d8ae;--ink-200:#caceb3;--ink-250:#b1ae8c;--ink-350:#948d6c;'
+  };
+  // </derive-theme-palette>
+
   var SIZE_LABELS = { xs:'\u6781\u5c0f', sm:'\u5c0f', md:'\u4e2d', lg:'\u5927', xl:'\u7279\u5927' };
   var SIZE_SCALES = { xs:0.78, sm:0.88, md:1.0, lg:1.14, xl:1.30 };
   var SIZE_BASE = { xs:0.95, sm:1.05, base:1.18, md:1.28, lg:1.42, xl:1.60, xl2:1.90, xl3:2.45 };
@@ -167,6 +192,9 @@
   function paletteVar(name, hex) {
     return '--' + name + ':' + hex + ';--' + name + '-rgb:' + hexTriplet(hex) + ';';
   }
+  function themeTokens(key) {
+    return String(THEME_TOKENS[key] || '').replace(/--([\w-]+):(#[0-9a-fA-F]{6});/g, function(_, name, hex){ return paletteVar(name, hex); });
+  }
 
   function applyTheme(name, el, silent) {
     var theme = THEME_MAP[name] || THEME_MAP[DEFAULT_THEME];
@@ -186,6 +214,7 @@
       + paletteVar('vermillion-500', pal.verm1)
       + paletteVar('vermillion-300', pal.verm3)
       + paletteVar('celadon-400', pal.cela)
+      + themeTokens(theme.key)
       + '--bg-2:' + pal.bg + ';'
       + '--bg-3:' + pal.surface + ';'
       + '}';

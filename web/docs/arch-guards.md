@@ -182,7 +182,12 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
   色板自己的定义。只能跑纯样式文本（`.css`、`phase8-formal-bridge-styles.js` 这类整份是样式字符串的注入族），
   画布、SVG 属性不认 `var()`。工具自测 `smoke-codemod-design-tokens.js`。
 - 色板真值由 `smoke-design-token-palette.js` 看守：色板令牌互不重值、每个都有一致的 `-rgb` 三元组；
-  四套主题改色板时连三元组一起改，默认主题「素纸」的值与令牌表逐位相等；常朝样式不许再写 `:root`/`body`。
+  四套主题改色板时连三元组一起改，默认主题「素纸」的值与令牌表逐位相等，其余三套把语义色与纸以外的
+  29 个色板令牌全改到（1c 起）；常朝样式不许再写 `:root`/`body`。
+- 主题色阶（1c）：`tm-theme-font.js` 每套主题只定锚点（底、面、字，金朱各三档，青一档），其余 22 档由
+  `derive-theme-palette.js` 照「素纸」的深浅关系推出，写在同文件的 `THEME_TOKENS` 里（写成 `--名字:值`，
+  按令牌定义不计入本守卫）。改了锚点跑 `node scripts/derive-theme-palette.js --write`；
+  `smoke-derive-theme-palette.js` 核对源码与锚点一致、深浅次序照素纸、阴影不带色偏。
 
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动

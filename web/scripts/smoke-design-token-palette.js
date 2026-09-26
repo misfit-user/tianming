@@ -2,7 +2,8 @@
 // smoke-design-token-palette.js — 美术宪法第1刀：令牌表只有一份真值
 // 1. styles.css 第一层的色板令牌值互不相同，每个都有 -rgb 三元组且与十六进制一致
 // 2. 四套主题（tm-theme-font.js）改到的色板令牌都同时改了 -rgb；「素纸」（默认）改的值与令牌表逐位相等，
-//    即默认主题不再偷偷改令牌表（第1刀之前 --gold-400 表里写 #b89a53、运行时却是 #c9a85f）
+//    即默认主题不再偷偷改令牌表（第1刀之前 --gold-400 表里写 #b89a53、运行时却是 #c9a85f）；
+//    其余三套把语义色与纸以外的 29 个色板令牌全改到（第1刀 1c 之前只改 7 个，切主题时漆面和字不动）
 // 3. 旧兜底（tm-shell-extras.js）与高对比主题块改色板令牌时也带着 -rgb
 // 4. 常朝样式只作用在常朝舞台里：不许再写 :root 和 body（第1刀之前一进常朝就改了全局令牌与正文字体）
 // 5. 御案主样式引用的 -rgb 三元组都有定义；不引用会在抽屉里反相的墨阶 --ink-300…900
@@ -53,10 +54,15 @@ function overrides(css) {
   return out;
 }
 const THEME_KEYS = ['plain', 'ink', 'vermillion', 'celadon'];
+const THEMED = PALETTE.filter((name) => !/^(?:amber|indigo|green|red|paper)-/.test(name));
 THEME_KEYS.forEach((key) => {
   const set = overrides(themeCss(key));
   const touched = PALETTE.filter((name) => name in set);
-  assert.ok(touched.length >= 7, `主题 ${key} 应改到金、朱、青瓷七个色板令牌，实为 ${touched.length}`);
+  if (key === 'plain') {
+    assert.ok(touched.length >= 7, `默认主题应改到金、朱、青瓷七个色板令牌，实为 ${touched.length}`);
+  } else {
+    assert.deepStrictEqual(touched, THEMED, `主题 ${key} 应改到语义色与纸以外的全部 ${THEMED.length} 个色板令牌`);
+  }
   touched.forEach((name) => {
     assert.strictEqual(set[`${name}-rgb`], triplet(set[name]), `主题 ${key} 改了 --${name} 却没同步 --${name}-rgb`);
     if (key === 'plain') {
@@ -90,4 +96,4 @@ const rgbRefs = new Set([...formal.matchAll(/var\(--([\w-]+)-rgb\)/g)].map((m) =
 rgbRefs.forEach((name) => assert.ok(decl[`${name}-rgb`], `御案主样式引用了未定义的 --${name}-rgb`));
 assert.ok(!/var\(--ink-[3-9]00(?:-rgb)?\)/.test(formal), '御案主样式不该引用墨阶 --ink-300…900（右栏抽屉里整段反相）');
 
-console.log(`[smoke-design-token-palette] PASS 色板 ${PALETTE.length} 个令牌与三元组一致、四套主题同步、常朝不外溢、御案引用 ${rgbRefs.size} 种三元组均有定义`);
+console.log(`[smoke-design-token-palette] PASS 色板 ${PALETTE.length} 个令牌与三元组一致、三套主题各改 ${THEMED.length} 个且默认主题与令牌表一致、常朝不外溢、御案引用 ${rgbRefs.size} 种三元组均有定义`);

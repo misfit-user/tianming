@@ -47,6 +47,8 @@ function main() {
   console.log('外藩人物：' + run([path.join(DIR, 'patches/tang-foreign-people.js'), '--report', path.join(DIR, 'reports/tang-foreign-people.md'), '--write']));
   // 第六刀之三：外藩补入史实人物（回鹘、吐蕃、南诏、黠戛斯、日本、新罗诸人与开成四年末入朝的来使，黠戛斯等写上首领）
   console.log('外藩补人：' + run([path.join(DIR, 'patches/tang-foreign-newpeople.js'), '--report', path.join(DIR, 'reports/tang-foreign-newpeople.md'), '--write']));
+  // 第六刀之四：外藩人口重分（每家合计不动；日本按和名抄乡数、新罗按郡县数、渤海按领州数、吐蕃河陇取天宝口，其余按面积与地形估）
+  console.log('外藩人口：' + run([path.join(DIR, 'patches/tang-foreign-population.js'), '--report', path.join(DIR, 'reports/tang-foreign-population.md'), '--write']));
 }
 
 main();

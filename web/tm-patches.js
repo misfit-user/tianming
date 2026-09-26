@@ -548,6 +548,19 @@ window._tmSetFullscreen = function(want, btn){
 // 启动时按上次偏好应用窗口模式（默认全屏不动）。Electron 须重建出含 setFullScreen 的 preload 才生效。
 try { setTimeout(function(){ try { if (localStorage.getItem('tm.fullscreen') === '0' && window.tianming && typeof window.tianming.setFullScreen === 'function') window.tianming.setFullScreen(false); } catch(_){} }, 1200); } catch(_){}
 
+// 舆图点击（通志一期 S3·设置·界面显示）：左键随层级开谱牒 / 通志 / 方志，或照旧一律开方志。
+// 存 P.conf.mapClickFollowTier（随设置存档），没设过就是随层级；右键小菜单不受这个开关影响。
+// 写入走设置的通用开关 _togglePConf（tm-player-settings.js，负责存档与提示）。
+window._tmSetMapClickTier = function(want, btn){
+  if (typeof _togglePConf !== 'function') return;
+  _togglePConf('mapClickFollowTier', !!want);
+  if (btn && btn.parentElement) {
+    var sib = btn.parentElement.children;
+    for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
+    btn.classList.remove('bs'); btn.classList.add('bp');
+  }
+};
+
 // ── 服务商预设（2026-07-10·13 家 OpenAI 兼容 + 自定义）─────────────────
 // 选中只自动填地址（2026-07-11 owner 拍板：Model_ID 玩家自填·示例仅作文字提示·model 字段只供提示文案引用）。
 // 请求格式无须在此区分——
@@ -641,6 +654,12 @@ openSettings=function(){
       var pillFs = function(want, label){ var on = (_fsPref === (want ? '1' : '0')); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetFullscreen(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
       h += '<div style="font-size:0.78rem;color:var(--txt-d);margin:0.6rem 0 0.4rem;">显示模式·全屏沉浸或窗口化·只影响本设备</div>' +
         '<div style="display:flex;gap:0.3rem;">' + pillFs(true, '全屏') + pillFs(false, '窗口') + '</div>';
+      // 舆图点击（通志一期 S3）：左键随层级开册页，或照旧一律开方志；存 P.conf，随设置存档
+      // 说明行字号与本节其他说明行一样取 0.78rem（随根字号走）；写成 calc 以免给写死字号的棘轮加账，UI 重做时换令牌
+      var _tierOn = !(P.conf && P.conf.mapClickFollowTier === false);
+      var pillTier = function(want, label){ var on = (_tierOn === want); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetMapClickTier(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
+      h += '<div style="font-size:calc(0.78 * 1rem);color:var(--txt-d);margin:0.6rem 0 0.4rem;">舆图点击·左键随地图层级开册页（天下开谱牒、省道开通志、府州开方志），或照旧一律开方志；右键总有三级小菜单</div>' +
+        '<div style="display:flex;gap:0.3rem;">' + pillTier(true, '随层级') + pillTier(false, '一律方志') + '</div>';
       return h + '</div>';
     })()+
     // 御驾亲征·战术战斗(接入 Phase2·开关 GM._yujiaQinzheng·本局存档生效)+他方战事旁观(O12·GM._yujiaObserve)

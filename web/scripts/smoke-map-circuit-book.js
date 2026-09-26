@@ -140,6 +140,50 @@ setTimeout(() => {
       assert.ok(html.includes('道 <b>北直隶</b>'));
     });
 
+    // 第三片：左键随层级开册页，设置可切回「一律开方志」，点省名恒按省道级
+    check('左键随层级：天下开谱牒、省道开通志、府州开方志；设置可切回一律方志', () => {
+      const d = JSON.parse(run(`(function(){
+        var st = __parts.state, keep = st.mapScale, conf = P.conf || (P.conf = {}), keepConf = conf.mapClickFollowTier, out = {};
+        function kindAt(tier, region, pick){ st.mapScale = tier; __parts.openTierDossier(region, pick); return __book().dataset.panelKind; }
+        out.realm = kindAt('realm', __shuntian);
+        out.region = kindAt('region', __shuntian);
+        out.prefecture = kindAt('prefecture', __shuntian);
+        st.mapScale = 'region';
+        out.tipRegion = __parts.mapTipHtml(__shuntian);
+        conf.mapClickFollowTier = false;
+        out.regionOff = kindAt('region', __shuntian);
+        out.labelOff = kindAt('region', __shuntian, 'region');
+        out.tipOff = __parts.mapTipHtml(__shuntian);
+        if (keepConf === undefined) delete conf.mapClickFollowTier; else conf.mapClickFollowTier = keepConf;
+        // 不属正式省道的孤块在省道级照旧开方志
+        var lone = __map.regions.filter(function(r){ return !__parts.findCircuit(r) && __parts.ownerKey(r); })[0];
+        out.lone = lone ? kindAt('region', lone) : 'none';
+        st.mapScale = keep;
+        return JSON.stringify(out);
+      })()`));
+      assert.equal(d.realm, 'faction', '天下级开势力谱牒');
+      assert.equal(d.region, 'circuit', '省道级开通志');
+      assert.equal(d.prefecture, 'region', '府州级开方志');
+      assert.ok(d.tipRegion.includes('左键 开通志') && d.tipRegion.includes('右键 选册页'), '签注页脚写明省道级左键开通志');
+      assert.equal(d.regionOff, 'region', '设置切回后，省道级左键也开方志');
+      assert.equal(d.labelOff, 'circuit', '点省名恒开通志，不受设置影响');
+      assert.ok(d.tipOff.includes('左键 翻方志'), '设置切回后签注页脚随之改');
+      // 天启开局有归属的地块都在正式省道里，没有孤块时这一条不适用
+      if (d.lone !== 'none') assert.equal(d.lone, 'region', '不属正式省道的孤块在省道级照旧开方志');
+    });
+
+    check('整道外沿轮廓：成员之间的共享边相消，只剩外沿', () => {
+      const d = JSON.parse(run(`(function(){
+        var G = TMMapRealmLayout;
+        var outline = G.boundaryMesh(__circuit.members.map(function(m){ return { region: m.region, owner: 'circuit', group: 'circuit' }; }), 'circuit-outline');
+        var apart = G.boundaryMesh(__circuit.members.map(function(m, i){ return { region: m.region, owner: 'circuit', group: 'g' + i }; }), 'circuit-apart');
+        return JSON.stringify({ d: outline.major.length, hidden: outline.hidden, edges: outline.majorCount + outline.minorCount, apartEdges: apart.majorCount + apart.minorCount });
+      })()`));
+      assert.ok(d.d > 0, '外沿轮廓非空');
+      assert.ok(d.hidden > 0, '州与州之间的共享边被消去');
+      assert.ok(d.edges < d.apartEdges, '外沿边数少于各州分开描时的边数');
+    });
+
     // VM 的模拟节点不实现 classList 与属性增删，关闭与刷新只能查源码；真浏览器里的行为由第五片的 Electron 验收覆盖
     check('源码约束：关闭册页清掉通志标记，回合刷新会重画通志', () => {
       const map = fs.readFileSync(path.join(WEB, 'phase8-formal-map.js'), 'utf8');

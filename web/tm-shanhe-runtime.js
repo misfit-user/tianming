@@ -68,18 +68,30 @@ let hoveredId=null,selectedId=null,focusDirty=true,focusRaf=0;
 function drawFocusSoon(){if(focusRaf||!active())return;focusRaf=requestAnimationFrame(()=>{focusRaf=0;if(!active()||!current)return;uploadFocus(renderer);renderer.render();});}
 function setHovered(id){id=id==null?null:String(id);if(id===hoveredId)return;hoveredId=id;focusDirty=true;drawFocusSoon();}
 function setSelected(id){id=id==null?null:String(id);if(id===selectedId)return;selectedId=id;focusDirty=true;drawFocusSoon();}
+// 通志一期 S3：通志开着时整道描金边。d 是地图坐标下的外沿轮廓（TMMapRealmLayout.boundaryMesh 的 major），null 清除；
+// 按当前投影换到世界坐标后缓存，投影换了再换一次。
+let selectedOutline=null,selectedOutlineWorld=null,selectedOutlineProfile=null,outlineRevision=0;
+function setSelectedOutline(d){d=d||null;if(d===selectedOutline)return;selectedOutline=d;selectedOutlineWorld=null;outlineRevision++;focusDirty=true;drawFocusSoon();}
+function outlineWorld(){
+ if(!selectedOutline||!current||!current.p)return null;
+ if(!selectedOutlineWorld||selectedOutlineProfile!==current.p){selectedOutlineWorld=new Path2D();selectedOutlineWorld.addPath(new Path2D(selectedOutline),current.p.world);selectedOutlineProfile=current.p;}
+ return selectedOutlineWorld;
+}
 function uploadFocus(r){
  if(!r.gl||r.lost||!r.bounds||!r.nativeCartography)return;
  if(r.nativeFocusOwner!==r.overlayTexture){r.nativeFocusCanvas=document.createElement('canvas');r.nativeFocusCanvas.width=r.nativeFocusCanvas.height=1;r.nativeFocusTexture=r._texture(r.nativeFocusCanvas);r.nativeFocusOwner=r.overlayTexture;focusDirty=true;}
- const key=JSON.stringify([r.bounds,r.width,r.height,r.dpr,r.options.quality,r.view.span,hoveredId,selectedId,r.nativeCartography.svg.dataset.focusRevision||'']);
+ const key=JSON.stringify([r.bounds,r.width,r.height,r.dpr,r.options.quality,r.view.span,hoveredId,selectedId,outlineRevision,r.nativeCartography.svg.dataset.focusRevision||'']);
  if(!focusDirty&&key===r.nativeFocusKey)return;
  const b=r.bounds,w=b[2]-b[0],h=b[3]-b[1],[nx,ny]=r.rasterSize(),c=r.nativeFocusCanvas;
  c.width=nx;c.height=ny;const ctx=c.getContext('2d');ctx.setTransform(nx/w,0,0,ny/h,-b[0]*nx/w,-b[1]*ny/h);ctx.lineJoin='round';ctx.lineCap='round';
  const unit=r.view.span*20/r.width;
- for(const [id,isSelected]of [[hoveredId,false],[selectedId,true]]){if(id==null||(!isSelected&&id===selectedId))continue;const item=r.nativeCartography.items.find(it=>it.id===id);if(!item)continue;
-  ctx.fillStyle=isSelected?'rgba(255,220,125,.14)':'rgba(255,246,205,.07)';ctx.fill(item.world,'evenodd');
-  ctx.lineWidth=(isSelected?5.2:3.2)*unit;ctx.strokeStyle='rgba(39,29,19,.82)';ctx.stroke(item.world);
-  ctx.lineWidth=(isSelected?2.7:1.6)*unit;ctx.strokeStyle=isSelected?'#ffe3a0':'#fff2d0';ctx.stroke(item.world);
+ // 整道外沿与单州选中同一画法，只描不填
+ const marks=[[hoveredId,false,null],[selectedId,true,null]],outline=outlineWorld();if(outline)marks.push([null,true,outline]);
+ for(const [id,isSelected,path]of marks){
+  const item=path||id==null||(!isSelected&&id===selectedId)?null:r.nativeCartography.items.find(it=>it.id===id),shape=path||(item&&item.world);if(!shape)continue;
+  if(item){ctx.fillStyle=isSelected?'rgba(255,220,125,.14)':'rgba(255,246,205,.07)';ctx.fill(shape,'evenodd');}
+  ctx.lineWidth=(isSelected?5.2:3.2)*unit;ctx.strokeStyle='rgba(39,29,19,.82)';ctx.stroke(shape);
+  ctx.lineWidth=(isSelected?2.7:1.6)*unit;ctx.strokeStyle=isSelected?'#ffe3a0':'#fff2d0';ctx.stroke(shape);
  }
  const g=r.gl;g.activeTexture(g.TEXTURE5);g.bindTexture(g.TEXTURE_2D,r.nativeFocusTexture);g.texImage2D(g.TEXTURE_2D,0,g.RGBA,g.RGBA,g.UNSIGNED_BYTE,c);
  r.focusUploads=(r.focusUploads||0)+1;r.nativeFocusKey=key;focusDirty=false;
@@ -150,13 +162,13 @@ function pick(event){if(!active())return null;const screen=clientToScreen(event)
 function panDelta(dx,dy){if(!active())return [dx,dy];const p=current.p,sx=p.sx,cos=Math.cos(TILT*DEG);return [(p.forward[0]*dx-p.forward[2]*dy/cos)/sx,(p.forward[1]*dx-p.forward[3]*dy/cos)/sx];}
 function zoomAt(factor,x,y,state){if(!active()||!Number.isFinite(factor)||factor<=0)return false;const {size,map,p}=current,v=state.mapView||{scale:1,tx:0,ty:0},s=clamp(v.scale*factor,.72,128);const point=[size.ox+x*size.ratio,size.oy+y*size.ratio],g=renderer.unprojectScreen(point),q=geoWorld(g),span=clamp(size.w/(size.ratio*s*p.sx),.1,300),gain=72*renderer.options.relief*clamp(span/30,.30,1.30),pix=size.w/(span*20),t=TILT*DEG;
  const c=worldGeo([q[0]-(point[0]-size.w/2)/pix,q[1]-((point[1]-size.h/2)/pix+renderer.surfaceHeight(q)*gain*Math.sin(t))/Math.cos(t)]),cg=apply(p.forward,c);v.scale=s;v.tx=map.width/2-cg[0]*s;v.ty=map.height/2-cg[1]*s;state.mapView=v;return true;}
-function diagnostics(){return {version:'B5-native-2',clarityVersion:'C1',sourceInfo:{entry:location.href,webVersion:document.querySelector('meta[name="tm-version"]')?.content,background:'B5-approved-no-B6',scenarioId:root.GM?.sid,mapId:current?.map.id,mapRevision:current?.map.authoringRevision||current?.map.version||null,readFrom:'current-runtime-map'},selection:{selectedId,hoveredId,focusUploads:renderer?.focusUploads||0},enabled,active:active(),loading,retryCount,bootPending,lastError,frame,mapId:current?.map.id,regions:current?.map.regions.length,coordinateChecks:current?.p.checks,coordinateMaxError:current?.p.maxError,relocatedCenterMetadata:{count:current?.p.centerOffsets,maxMapPixels:current?.p.markerMaxOffset},mode:renderer?.mode,view:renderer?.view,stats:renderer?.stats,visibleLabels:current?.visibleLabels,errors:errors.slice(),samples:timings.slice(),metricNote:'updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS',source:'current-game-map-no-frozen-review-fixtures',height:'artistic-not-simulation-input'};}
+function diagnostics(){return {version:'B5-native-2',clarityVersion:'C1',sourceInfo:{entry:location.href,webVersion:document.querySelector('meta[name="tm-version"]')?.content,background:'B5-approved-no-B6',scenarioId:root.GM?.sid,mapId:current?.map.id,mapRevision:current?.map.authoringRevision||current?.map.version||null,readFrom:'current-runtime-map'},selection:{selectedId,hoveredId,focusUploads:renderer?.focusUploads||0,outlineLength:selectedOutline?selectedOutline.length:0},enabled,active:active(),loading,retryCount,bootPending,lastError,frame,mapId:current?.map.id,regions:current?.map.regions.length,coordinateChecks:current?.p.checks,coordinateMaxError:current?.p.maxError,relocatedCenterMetadata:{count:current?.p.centerOffsets,maxMapPixels:current?.p.markerMaxOffset},mode:renderer?.mode,view:renderer?.view,stats:renderer?.stats,visibleLabels:current?.visibleLabels,errors:errors.slice(),samples:timings.slice(),metricNote:'updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS',source:'current-game-map-no-frozen-review-fixtures',height:'artistic-not-simulation-input'};}
 function exportDiagnostics(){const blob=new Blob([JSON.stringify(diagnostics(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='天命-山河境-运行诊断.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function hide(){suspended=true;cancelRetry();hoveredId=null;restore();dirty=true;updateButton();}
 function invalidate(map){cancelRetry();retryCount=0;lastError=null;restore();if(map)profiles.delete(map);else if(current?.map)profiles.delete(current.map);records=new WeakMap();labelRecords=new WeakMap();current=null;if(renderer)renderer.nativeCartography=null;dirty=true;labelStamp='';}
 const css=document.createElement('style');css.textContent='.tmf-shanhe-active .ming-map-camera{visibility:hidden!important;pointer-events:none!important}.tmf-shanhe-active .tmf-prepared-map-surface{position:absolute;inset:0;isolation:isolate}.tmf-shanhe-canvas{position:absolute;left:0;top:0;z-index:0;pointer-events:none!important}.tmf-shanhe-active .tmf-map-label-overlay{z-index:2;background:transparent!important;pointer-events:none}.tmf-shanhe-active .tmf-realm-fit[aria-hidden="false"]{pointer-events:visiblePainted}.tm-shanhe-setting{display:flex;gap:5px;flex-wrap:wrap;padding:6px}.tm-shanhe-setting button{font-size:12px}';document.head.appendChild(css);
 css.textContent+="body.tm-phase8-formal .tmf-shanhe-active #tmf-map-labels,body.tm-phase8-formal .tmf-shanhe-active #tmf-map-labels *{transition:none!important;animation:none!important;transform-origin:0 0!important;}body.tm-phase8-formal .tmf-shanhe-active #tmf-map-labels .tmf-realm-fit{pointer-events:visiblePainted!important;}";
-root.TMShanheRuntime={apply:applyFrame,active,pick,panDelta,zoomAt,layoutLabels,setEnabled,diagnostics,exportDiagnostics,hide,invalidate,projection,screenToGame,setHovered,setSelected,projectGame(p){return active()?renderer.projectGeo(apply(current.p.back,p)):null;}};
+root.TMShanheRuntime={apply:applyFrame,active,pick,panDelta,zoomAt,layoutLabels,setEnabled,diagnostics,exportDiagnostics,hide,invalidate,projection,screenToGame,setHovered,setSelected,setSelectedOutline,projectGame(p){return active()?renderer.projectGeo(apply(current.p.back,p)):null;}};
 root.addEventListener('pagehide',()=>{++loadEpoch;suspended=true;cancelRetry();dropRenderer();bootPending=false;lastError=null;retryCount=0;lastMap=null;loading='idle';});
 root.addEventListener('pageshow',event=>{if(event.persisted){suspended=false;dirty=true;refresh();}});
 })(window);

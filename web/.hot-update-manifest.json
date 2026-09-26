@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-26T12:45:02.877Z",
+  "generatedAt": "2026-09-26T12:50:34.293Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "55440f3518ff78afef0d29fdb1bf87124173adcb063e2c20dfafe04a70b51ab0",
-      "size": 75750
+      "sha256": "87eb70f7131ff84efbfbab954997f08167fcf45c0660bfaa055ea2dd49571159",
+      "size": 75726
     },
     {
       "path": "INDEX.md",
@@ -3361,8 +3361,8 @@
     },
     {
       "path": "phase8-formal-bridge-styles.js",
-      "sha256": "57e74ac19c18c441db544bf6c2c2cb4eff8151fc59d662f5101eee5beab1377e",
-      "size": 313229
+      "sha256": "2b4b90a6aa0d97e672d9892b66d31249ac42ce4559677d948bf6be374578edb5",
+      "size": 315159
     },
     {
       "path": "phase8-formal-bridge.js",
@@ -3381,13 +3381,13 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "3acec88e95a68de8ec7245f0fdbfe37e281fb9cb3d86ec7e0a0ed546d36143b3",
-      "size": 126931
+      "sha256": "8880a9c0bbea85ada9de9dc82f58607a401e4780905e019e0ff19ac2c4173f7e",
+      "size": 145498
     },
     {
       "path": "phase8-formal-map.js",
-      "sha256": "2677a634306649eafe0bcecb321e873bd631099b93b6e6ded5393fae0cbc6d88",
-      "size": 174550
+      "sha256": "3765fd9afa564fc376b0cc068e18cae861862c990fde1d9b8fdb7521d36bdf94",
+      "size": 167378
     },
     {
       "path": "phase8-formal-modules.js",
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "bf5ba2f9e374e1cf7ebb32b00b620f609fa663471d05bd501c2284bc2cb8667c",
-      "size": 379904
+      "sha256": "c35a3e5ec6efa667b0eeb806fe493bb11f4373b963e2909154beb00123bdb3c2",
+      "size": 379934
     },
     {
       "path": "styles.css",
@@ -5981,8 +5981,8 @@
     },
     {
       "path": "tm-patches.js",
-      "sha256": "09af71a920022a1538260b25a23eba037ee97fb43336d136e476b8cf2e88810c",
-      "size": 193610
+      "sha256": "1c80201d21b264810236b6cb5e1338cb77314728a46aa4c7e0e5f8253b2be9a5",
+      "size": 195333
     },
     {
       "path": "tm-pause-fab.js",
@@ -6021,8 +6021,8 @@
     },
     {
       "path": "tm-player-settings.js",
-      "sha256": "e369dce7d8db17dfd90df1bc7fb0b7fb9bab0a3aa653ff5a74a886c41b1044ed",
-      "size": 34894
+      "sha256": "966b2a4b6943850630a2ba7a9ed33f1a13be5788254244a2194272dc42fe0114",
+      "size": 35041
     },
     {
       "path": "tm-player-tools.js",
@@ -6176,8 +6176,8 @@
     },
     {
       "path": "tm-shanhe-runtime.js",
-      "sha256": "e825f3f57a168ac261e3c738208f7993572b806e4426acfa73d9d5aa578309e4",
-      "size": 26157
+      "sha256": "5c2fac7664ee222459eab6a19331d6b0469c691d53e082fb8a474c4582157510",
+      "size": 27248
     },
     {
       "path": "tm-shell-extras.js",
@@ -6246,8 +6246,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "8999b3bb1c0c00bdc8cb66c9ba94832304bb82f2c577447d956cd820ecb9d7ef",
-      "size": 135391
+      "sha256": "321c999d42083d51f6f5a477903aa11215fa9ef38ef72486abda5123bed4b092",
+      "size": 135367
     },
     {
       "path": "tm-start-selector.js",

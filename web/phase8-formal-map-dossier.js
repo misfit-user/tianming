@@ -660,6 +660,7 @@
       pop.removeAttribute('data-panel-kind');
     }
     document.body.classList.remove('province-panel-open');
+    syncCircuitOutline();
   }
 
   // ════════ 方志/谱牒册页（2026-06-12 重构）════════════════════════════
@@ -1269,12 +1270,14 @@
     pop.dataset.panelKind = 'region';
     pop.dataset.regionId = id;
     pop.removeAttribute('data-faction-key');
+    pop.removeAttribute('data-circuit-key');
     pop.className = 'tmf-map-ppop tmf-book region-panel show';
     pop.innerHTML = renderRegionBook(r);
     document.body.classList.add('province-panel-open');
     markSelectedRegion(id);
     bindBkSpy(pop);
     bkScrollToTab(pop, state.mapPanelTab);
+    syncCircuitOutline();
   }
 
   function sumFactionValues(regions, pick){
@@ -1643,10 +1646,12 @@
     pop.dataset.panelKind = 'faction';
     pop.dataset.factionKey = key;
     pop.removeAttribute('data-region-id');
+    pop.removeAttribute('data-circuit-key');
     pop.className = 'tmf-map-ppop tmf-book faction-panel show';
     pop.innerHTML = renderFactionBook(f, key, r);
     document.body.classList.add('province-panel-open');
     bindBkSpy(pop);
+    syncCircuitOutline();
   }
 
   // ════════ 省道通志（通志一期 S2）══════════════════════════════════
@@ -1929,6 +1934,9 @@
     pop.innerHTML = renderCircuitBook(circuit, region);
     document.body.classList.add('province-panel-open');
     bindBkSpy(pop);
+    // 整道描金边代替单州选中
+    markSelectedRegion(null);
+    syncCircuitOutline();
     return true;
   }
 
@@ -1956,6 +1964,305 @@
     return ok;
   }
 
+  // ════════ 地图交互（通志一期 S3）：点击随层级、右键小菜单、整道描金边、地图签注 ════════
+  // 点地块开哪一册在这里定；地图模块只把点到的地块交过来（origin forward shim：openTierDossier、openMapContextMenu、mapTipHtml）。
+  var GRADE_BANDS = __p.GRADE_BANDS, mapReported = __p.mapReported;
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  // ── 点击随层级 ──
+  // 左键：天下级开势力谱牒，省道级开通志，府州级开方志；省道级点到不属正式省道的孤块，照旧开方志。
+  // 设置「舆图点击」可切回旧习惯「左键一律开方志」，存在 P.conf.mapClickFollowTier（没设过就是随层级）。
+  function mapClickFollowsTier(){
+    var conf = window.P && window.P.conf;
+    return !(conf && conf.mapClickFollowTier === false);
+  }
+  function clickTier(){
+    return mapClickFollowsTier() ? state.mapScale : 'prefecture';
+  }
+  // tier 可以显式给（点省名时一律按省道级），不给就取当前层级
+  function openTierDossier(r, tier){
+    if (!r) return false;
+    tier = tier || clickTier();
+    if (tier === 'realm' && ownerKey(r)) return openFactionDossier(ownerKey(r), r);
+    if (tier === 'region' && findCircuit(r)) return openCircuitDossier(r, r);
+    return openRegionDossier(r);
+  }
+
+  // ── 右键小菜单：本州方志、本道通志、本国谱牒 ──
+  // 挂在舆图外框上（与签注同一容器），不进地图舞台，免得菜单上的点击又被当成点地块。
+  // 键盘：打开即聚焦第一项，上下键移动，回车或空格选中，Esc 关闭并还焦点，Tab 关闭；
+  // 点菜单外、滚轮、窗口缩放或失焦都关闭。
+  var _mapCtx = null;
+  function mapContextItems(r){
+    var items = [{ act: 'region', label: '本州方志', name: regionTitle(r) }];
+    var circuit = findCircuit(r);
+    if (circuit) items.push({ act: 'circuit', label: '本道通志', name: circuit.label });
+    if (ownerKey(r)) items.push({ act: 'faction', label: '本国谱牒', name: ownerName(r) || ownerKey(r) });
+    return items;
+  }
+  function closeMapContextMenu(restoreFocus){
+    var ctx = _mapCtx;
+    if (!ctx) return;
+    _mapCtx = null;
+    document.removeEventListener('pointerdown', ctx.onOutside, true);
+    document.removeEventListener('wheel', ctx.onOutside, true);
+    window.removeEventListener('resize', ctx.onDismiss);
+    window.removeEventListener('blur', ctx.onDismiss);
+    if (ctx.menu.parentNode) ctx.menu.parentNode.removeChild(ctx.menu);
+    if (restoreFocus && ctx.focus && ctx.focus.isConnected && typeof ctx.focus.focus === 'function') {
+      try { ctx.focus.focus({ preventScroll: true }); } catch (_) {}
+    }
+  }
+  function runMapContextItem(act, r){
+    closeMapContextMenu(false);
+    if (act === 'region') return openRegionDossier(r);
+    if (act === 'circuit') return openCircuitDossier(r, r);
+    if (act === 'faction') return openFactionDossier(ownerKey(r), r);
+    return false;
+  }
+  function openMapContextMenu(r, e){
+    closeMapContextMenu(false);
+    if (!r) return null;
+    var tip = document.getElementById('tmf-map-tip');
+    var host = (tip && tip.parentElement) || document.body;
+    if (tip) tip.classList.remove('show');
+    // 菜单开着时签注停更，山河境的悬停高亮落在右键点中的这一州上
+    if (window.TMShanheRuntime && typeof TMShanheRuntime.setHovered === 'function') TMShanheRuntime.setHovered(String(r.id || r.name || ''));
+    var menu = document.createElement('div');
+    menu.id = 'tmf-map-ctx';
+    menu.className = 'tmf-map-ctx';
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', regionTitle(r) + ' · 册页');
+    menu.innerHTML = '<div class="ctx-title">' + esc(regionTitle(r)) + '</div>' +
+      mapContextItems(r).map(function(it){
+        return '<button type="button" role="menuitem" data-map-ctx="' + attr(it.act) + '"><b>' + esc(it.label) + '</b><span>' + esc(it.name || '') + '</span></button>';
+      }).join('');
+    host.appendChild(menu);
+    // 与签注同一套定位：正式界面整体缩放，按容器实际比例换算指针坐标
+    if (e && typeof __p.positionMapTip === 'function') __p.positionMapTip(menu, e);
+    var buttons = Array.prototype.slice.call(menu.querySelectorAll('[data-map-ctx]'));
+    var ctx = { menu: menu, focus: document.activeElement };
+    ctx.onOutside = function(ev){ if (!menu.contains(ev.target)) closeMapContextMenu(false); };
+    ctx.onDismiss = function(){ closeMapContextMenu(false); };
+    // 菜单上的指针与滚轮事件不往外传：外框上挂着拖图与缩放
+    ['pointerdown', 'mousedown', 'wheel', 'dblclick'].forEach(function(type){
+      menu.addEventListener(type, function(ev){ ev.stopPropagation(); });
+    });
+    menu.addEventListener('contextmenu', function(ev){ ev.preventDefault(); ev.stopPropagation(); });
+    menu.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      var btn = ev.target && ev.target.closest ? ev.target.closest('[data-map-ctx]') : null;
+      if (btn) runMapContextItem(btn.getAttribute('data-map-ctx'), r);
+    });
+    menu.addEventListener('keydown', function(ev){
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        closeMapContextMenu(true);
+      } else if (ev.key === 'Tab') {
+        closeMapContextMenu(false);
+      } else if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        var i = buttons.indexOf(document.activeElement), step = ev.key === 'ArrowDown' ? 1 : -1;
+        buttons[(i + step + buttons.length) % buttons.length].focus();
+      }
+    });
+    document.addEventListener('pointerdown', ctx.onOutside, true);
+    document.addEventListener('wheel', ctx.onOutside, true);
+    window.addEventListener('resize', ctx.onDismiss);
+    window.addEventListener('blur', ctx.onDismiss);
+    _mapCtx = ctx;
+    if (buttons[0]) {
+      try { buttons[0].focus({ preventScroll: true }); } catch (_) { buttons[0].focus(); }
+    }
+    return menu;
+  }
+
+  // ── 整道描金边 ──
+  // 通志开着时，给本道所有州（不分归属）的外沿描一道金边。外轮廓取 TMMapRealmLayout.boundaryMesh：
+  // 成员放进同一组，州与州之间的共享边正反相消，只剩外沿（飞地、海岛各成一圈）。
+  // SVG 图上画一条覆盖描边；山河境由其焦点层照同一条轮廓画。改隶后成员变了，按成员重算。
+  var _circuitOutline = { sig: '', d: '', node: null };
+  function circuitOutlineFor(circuit){
+    var G = window.TMMapRealmLayout;
+    if (!circuit || !G || typeof G.boundaryMesh !== 'function') return '';
+    var sig = circuit.key + '|' + circuit.members.map(function(m){ return m.region.id || m.region.name; }).join(',');
+    if (sig !== _circuitOutline.sig) {
+      var items = circuit.members.map(function(m){ return { region: m.region, owner: 'circuit', group: 'circuit' }; });
+      var mesh = G.boundaryMesh(items, 'circuit-outline');
+      _circuitOutline.sig = sig;
+      _circuitOutline.d = (mesh && mesh.major) || '';
+    }
+    return _circuitOutline.d;
+  }
+  function openCircuitKey(){
+    var pop = document.getElementById('ppop');
+    if (!pop || !pop.classList.contains('show') || pop.dataset.panelKind !== 'circuit') return '';
+    return pop.dataset.circuitKey || '';
+  }
+  // 开册页、关册页、换层、重画之后都调一次；幂等
+  function syncCircuitOutline(){
+    var key = openCircuitKey(), circuit = key ? findCircuit(key) : null;
+    var d = circuit ? circuitOutlineFor(circuit) : '';
+    var stage = typeof __p.mapStage === 'function' ? __p.mapStage() : null;
+    var world = d && stage ? stage.querySelector('#tmf-formal-map #tmf-map-world') : null;
+    var node = _circuitOutline.node;
+    // 预备层换下来的那张图不在文档里，查不到，所以记住挂上去的节点直接摘
+    if (node && (node.parentNode !== world || node.getAttribute('data-circuit-key') !== key || node.getAttribute('data-outline') !== _circuitOutline.sig)) {
+      if (node.parentNode) node.parentNode.removeChild(node);
+      node = _circuitOutline.node = null;
+    }
+    if (world && !node) {
+      // 属性先写好再挂上：山河境盯着这张图的属性变化，挂上之后再改 d 会让它整张重采
+      node = document.createElementNS(SVG_NS, 'g');
+      node.setAttribute('class', 'tmf-circuit-outline');
+      node.setAttribute('pointer-events', 'none');
+      node.setAttribute('data-circuit-key', key);
+      node.setAttribute('data-outline', _circuitOutline.sig);
+      ['halo', 'line'].forEach(function(cls){
+        var path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('class', cls);
+        path.setAttribute('d', d);
+        node.appendChild(path);
+      });
+      world.insertBefore(node, world.querySelector('.tmf-map-grain'));
+      _circuitOutline.node = node;
+    }
+    if (window.TMShanheRuntime && typeof TMShanheRuntime.setSelectedOutline === 'function') TMShanheRuntime.setSelectedOutline(d || null);
+  }
+
+  // ── 地图签注（自 phase8-formal-map.js 迁入，正文未改；页脚改为按层级写明左键开哪一册）──
+  function mapTipFoot(r){
+    var tier = clickTier();
+    var left = tier === 'realm' && ownerKey(r) ? '左键 展谱牒' : (tier === 'region' && findCircuit(r) ? '左键 开通志' : '左键 翻方志');
+    return '<div class="tip-foot"><em>' + left + '</em><em>右键 选册页</em></div>';
+  }
+  // 签注内容（2026-06-11）：hover 小笺按视图给核心读数 + 判语
+  function _tipRow(k, v, tone){
+    if (!hasDisplayValue(v)) return '';
+    return '<div class="tip-row"><span class="tip-k">' + esc(k) + '</span><span class="tip-v ' + (tone || '') + '">' + esc(ppValue(v)) + '</span></div>';
+  }
+  // 「机动兵力」兜底——地块无逐块驻军实体、但所属势力有军力时，显势力机动军力，免得游牧/无常驻势力图上显 0/空。
+  // 跨朝代通用：游牧（部落/游牧）显「机动兵力」，其余有军力无驻军的抽象/海外势力显「势力军力」。地块归地块、势力归势力，驻军栏本身不动。
+  function _mobileForceRow(r, b){
+    if (!r) return '';
+    var data = (b && b.data) || {};
+    var localGarrison = firstValue(data.garrison, b && b.army && b.army.troops, r && r.troops);
+    if (Number(localGarrison) > 0) return '';   // 本地有真驻军(>0)才让位；0/空=无常驻实体，游牧仍显机动兵力（察哈尔 troops 显式为 0）
+    var f = findFaction(ownerKey(r), r.factionName || r.ownerName);
+    var ms = f && Number(firstValue(f.militaryStrength, f.military));
+    if (!f || !isFinite(ms) || ms <= 0) return '';
+    var nomad = /部落|游牧|游猎/.test(String(f.type || '') + String((f.traits || []).join('')));
+    return _tipRow(nomad ? '机动兵力' : '势力军力', ms);
+  }
+  function mapTipVerdict(mode, r, b, score){
+    var data = b.data || {};
+    var n = Number(score);
+    if (mode === 'mood') {
+      var fug = hasDisplayValue(b.pop.fugitives) ? '，逃户 ' + ppValue(b.pop.fugitives) : '';
+      if (!isFinite(n)) return ['民情无册可稽。', ''];
+      if (n < 35) return ['民心 ' + n + '——已成干柴' + fug + '，一火即燃。', 'wei'];
+      if (n < 50) return ['民心 ' + n + '——民力已竭' + fug + '，有生变之虞。', 'wei'];
+      if (n < 65) return ['民心 ' + n + '——尚可支吾，不宜再加赋扰役。', ''];
+      return ['民心 ' + n + '——黎庶安业，可为根本之地。', 'an'];
+    }
+    if (mode === 'army') {
+      var note = firstValue(data.armyPressure, data.borderRisk, data.warRisk, data.threats);
+      var noteTxt = hasDisplayValue(note) ? '（' + ppValue(note) + '）' : '';
+      if (n >= 80) return ['边警之地' + noteTxt + '——宜厚饷固防，不可抽兵。', 'wei'];
+      if (n >= 60) return ['有警之地' + noteTxt + '——守备勿弛。', 'wei'];
+      if (n >= 40) return ['守备之地' + noteTxt + '。', ''];
+      return ['腹里安靖——可酌减冗兵以纾饷。', 'an'];
+    }
+    if (mode === 'office') {
+      var vac = Number(firstValue(data.officeVacancy, data.vacancy));
+      var vacTxt = isFinite(vac) && vac > 0 ? '，官缺 ' + vac + ' 员' : '';
+      if (n >= 80) return ['吏治已蠹' + vacTxt + '——非大狱不能清。', 'wei'];
+      if (n >= 60) return ['吏治浑浊' + vacTxt + '——赋税多漏，政令多阻。', 'wei'];
+      if (n >= 40) return ['吏治平平' + vacTxt + '——犹可整饬。', ''];
+      return ['吏治清明——可为他省式范。', 'an'];
+    }
+    if (mode === 'tax') {
+      if (score === '' || score === null || !isFinite(n)) return ['此地免科或未设税制——不入岁入之算。', ''];
+      var skim = ratio01(b.fiscal.skimmingRate);
+      var skimTxt = skim !== null && skim > 0 ? '，截留 ' + Math.round(skim * 100) + '%' : '';
+      if (n < 50) return ['实征不及应征之半' + skimTxt + '——欠征之地。', 'wei'];
+      if (n < 70) return ['足额率 ' + n + '%' + skimTxt + '——征解有漏。', ''];
+      if (n < 85) return ['足额率 ' + n + '%' + skimTxt + '——大体可观。', ''];
+      return ['足额率 ' + n + '%——足额上仓之地。', 'an'];
+    }
+    if (mode === 'classPressure') {
+      var cp = classPressureForRegion(r);
+      if (cp.count <= 0 && !(Number(cp.score) > 0)) return ['阶层账本于此地无近压。', 'an'];
+      return ['阶层压力 ' + ppValue(cp.score) + (cp.classNames.length ? '——牵动 ' + cp.classNames.join('、') : '') + '。', Number(cp.score) >= 50 ? 'wei' : ''];
+    }
+    if (mode === 'yizheng') {
+      if (!isFinite(n)) return ['役政无册可稽（未行人力之政）。', ''];
+      if (n >= 55) return ['役负 ' + n + '——苛役之地，丁多逃隐，田将抛荒。', 'wei'];
+      if (n >= 35) return ['役负 ' + n + '——徭役偏重，宜蠲减或募役折银。', 'wei'];
+      if (n >= 20) return ['役负 ' + n + '——尚在可支之间。', ''];
+      return ['役负 ' + n + '——轻徭薄赋，民得安耕。', 'an'];
+    }
+    return ['', ''];
+  }
+  function mapTipHtml(r){
+    var b = regionBundle(r);
+    var data = b.data || {};
+    var mode = (state.mapMode && state.mapMode !== 'owner' && GRADE_BANDS[state.mapMode]) ? state.mapMode : 'owner';
+    var rows = '';
+    if (mode === 'owner') {
+      rows = _tipRow('归属', ownerName(r)) +
+        _tipRow('主官', firstValue(data.governor, data.official)) +
+        _tipRow('驻军', firstValue(data.garrison, b.army.troops, r && r.troops)) +
+        _mobileForceRow(r, b) +
+        _tipRow('民心', mapReported('minxin', r, firstValue(data.minxinLocal, r && r.mood), 'good'));
+      return '<b>' + esc(regionTitle(r)) + '</b><span class="tip-owner">' + esc(ownerName(r) || '') + '</span>' +
+        '<div class="tip-body">' + rows + '</div>' +
+        mapTipFoot(r);
+    }
+    var score = modeScore(r, mode);
+    var grade = gradeOf(mode, score);
+    var verdict = mapTipVerdict(mode, r, b, score);
+    if (mode === 'mood') {
+      rows = _tipRow('民心', score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
+        _tipRow('逃户', b.pop.fugitives, 'zhu') +
+        _tipRow('灾异', firstValue(data.recentDisasters, (data.economyBase || {}).disasterRecord)) +
+        _tipRow('不稳', data.unrest);
+    } else if (mode === 'army') {
+      rows = _tipRow('军压', grade ? grade.mark + ' · ' + ppValue(score) : score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
+        _tipRow('驻军', firstValue(data.garrison, b.army.troops, r && r.troops)) +
+        _mobileForceRow(r, b) +
+        _tipRow('城防', firstValue(data.fortification, b.army.fortification)) +
+        _tipRow('边警', firstValue(data.borderRisk, data.warRisk, data.threats), 'zhu');
+    } else if (mode === 'office') {
+      rows = _tipRow('贪腐', firstValue(data.corruptionLocal, data.corruption), gradeIsWarn(mode, grade) ? 'zhu' : '') +
+        _tipRow('主官', firstValue(data.governor, data.official)) +
+        _tipRow('官缺', firstValue(data.officeVacancy, data.vacancy)) +
+        _tipRow('执行', firstValue(data.policyExecution, data.execution));
+    } else if (mode === 'tax') {
+      rows = _tipRow('应征', b.fiscal.claimedRevenue) +
+        _tipRow('实征', b.fiscal.actualRevenue) +
+        _tipRow('合规', hasDisplayValue(b.fiscal.compliance) ? pctValue(b.fiscal.compliance) : '') +
+        _tipRow('截留', hasDisplayValue(b.fiscal.skimmingRate) ? pctValue(b.fiscal.skimmingRate) : '', 'zhu');
+    } else if (mode === 'classPressure') {
+      var cp = classPressureForRegion(r);
+      rows = _tipRow('压力', cp.score, Number(cp.score) >= 50 ? 'zhu' : '') +
+        _tipRow('牵动', cp.classNames.join('、')) +
+        _tipRow('近因', cp.reason);
+    } else if (mode === 'yizheng') {
+      var GMv = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
+      var rgv = (GMv && GMv.renli && GMv.renli.byRegion) ? (window.TM && TM.Renli && TM.Renli.forMapRegion ? TM.Renli.forMapRegion(GMv,r) : GMv.renli.byRegion[(r && (r.id || r.regionId || r.name)) || '']) : null;
+      rows = _tipRow('役负', grade ? grade.mark + ' · ' + (isFinite(Number(score)) ? Number(score) + '%' : '—') : score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
+        _tipRow('抛荒', rgv && hasDisplayValue(rgv.fallowLand) && Number(rgv.fallowLand) > 0 ? ppValue(rgv.fallowLand) + ' 亩' : '') +
+        _tipRow('逃户', b.pop.fugitives, 'zhu') +
+        _tipRow('地力', rgv && hasDisplayValue(rgv.soil) ? ppValue(rgv.soil) : '');
+    }
+    return '<b>' + esc(regionTitle(r)) + '</b><span class="tip-owner">' + esc(ownerName(r) || '') + '</span>' +
+      '<div class="tip-body">' + rows + '</div>' +
+      (verdict[0] ? '<div class="tip-verdict ' + verdict[1] + '">' + esc(verdict[0]) + '</div>' : '') +
+      mapTipFoot(r);
+  }
+
   // ── 回填 origin forward shim 目标（5 函数）──
   __p.regionBundle = regionBundle;
   __p.openRegionDossier = openRegionDossier;
@@ -1966,4 +2273,10 @@
   __p.openCircuitDossier = openCircuitDossier;
   __p.circuitAction = circuitAction;
   __p.findCircuit = findCircuit;
+  // 地图交互（S3）：点击随层级、右键小菜单、整道描金边、签注
+  __p.openTierDossier = openTierDossier;
+  __p.openMapContextMenu = openMapContextMenu;
+  __p.closeMapContextMenu = closeMapContextMenu;
+  __p.syncCircuitOutline = syncCircuitOutline;
+  __p.mapTipHtml = mapTipHtml;
 })();

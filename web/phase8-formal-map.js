@@ -1172,8 +1172,10 @@
     var glyphs = fit.vertical ? Array.from(text).map(function(ch, i){
       return '<text class="main" x="0" y="' + attr((i - (Array.from(text).length - 1) / 2) * fs * 1.12) + '">' + esc(ch) + '</text>';
     }).join('') : '<text class="main" x="0" y="0" textLength="' + attr(fit.textWidth) + '" lengthAdjust="spacing">' + esc(text) + '</text>';
-    var extra = meta.factionKey ? ' role="button" tabindex="' + (hidden ? '-1' : '0') + '" data-faction-key="' + attr(meta.factionKey) + '"' : ' data-region-id="' + attr(meta.regionId) + '" data-region-index="' + attr(meta.regionIndex) + '" data-label-group="' + attr(meta.group) + '"';
-    return '<g class="tmf-territory-fit ' + (meta.factionKey ? 'tmf-faction-label tmf-realm-fit' : 'tmf-region-label ming-label') + (hidden ? ' tmf-collide-hidden' : '') + '"' + extra + ' aria-hidden="' + hidden + '" aria-label="' + attr(name) + '" data-label-tier="' + attr(meta.tier) + '" data-full-name="' + attr(name) + '" data-fs="' + attr(fs) + '" data-lw="' + attr(fit.lw) + '" data-lh="' + attr(fit.lh) + '" data-obb="' + attr([fit.width, fit.height, angle].join(',')) + '" data-ink-width="' + attr(fit.width - fs * .2) + '" data-ink-height="' + attr(fit.height - fs * .2) + '" data-ax="' + attr(fit.x) + '" data-ay="' + attr(fit.y) + '" data-pr="' + attr(meta.priority || fs) + '" style="--realm-label-size:' + attr(fs) + 'px" transform="translate(' + attr(fit.x) + ' ' + attr(fit.y) + ') rotate(' + attr(angle) + ')"><title>' + esc(name) + '</title><g class="tmf-realm-ink">' + glyphs + '</g></g>';
+    // 省道级的省名与势力名一样作按钮（通志一期 S3）：可点、可 Tab 聚焦、回车开通志
+    var circuitLabel = !meta.factionKey && meta.tier === 'region', button = ' role="button" tabindex="' + (hidden ? '-1' : '0') + '"';
+    var extra = meta.factionKey ? button + ' data-faction-key="' + attr(meta.factionKey) + '"' : (circuitLabel ? button : '') + ' data-region-id="' + attr(meta.regionId) + '" data-region-index="' + attr(meta.regionIndex) + '" data-label-group="' + attr(meta.group) + '"';
+    return '<g class="tmf-territory-fit ' + (meta.factionKey ? 'tmf-faction-label tmf-realm-fit' : 'tmf-region-label ming-label' + (circuitLabel ? ' tmf-circuit-fit' : '')) + (hidden ? ' tmf-collide-hidden' : '') + '"' + extra + ' aria-hidden="' + hidden + '" aria-label="' + attr(name) + '" data-label-tier="' + attr(meta.tier) + '" data-full-name="' + attr(name) + '" data-fs="' + attr(fs) + '" data-lw="' + attr(fit.lw) + '" data-lh="' + attr(fit.lh) + '" data-obb="' + attr([fit.width, fit.height, angle].join(',')) + '" data-ink-width="' + attr(fit.width - fs * .2) + '" data-ink-height="' + attr(fit.height - fs * .2) + '" data-ax="' + attr(fit.x) + '" data-ay="' + attr(fit.y) + '" data-pr="' + attr(meta.priority || fs) + '" style="--realm-label-size:' + attr(fs) + 'px" transform="translate(' + attr(fit.x) + ' ' + attr(fit.y) + ') rotate(' + attr(angle) + ')"><title>' + esc(name) + '</title><g class="tmf-realm-ink">' + glyphs + '</g></g>';
   }
 
   function administrativeLabelGroups(map, adminGroups, tier){
@@ -1935,142 +1937,17 @@
         if (state.dragSuppressClick) return;
         e.stopPropagation();
         var r = findRegion(el.dataset.regionId || el.dataset.id);
-        if (r) openRegionDossier(r);
+        if (r) openTierDossier(r);
       });
       el.addEventListener('contextmenu', function(e){
         e.preventDefault();
         e.stopPropagation();
         var r = findRegion(el.dataset.regionId || el.dataset.id);
-        if (r) openFactionDossier(ownerKey(r), r);
+        if (r) openMapContextMenu(r, e);
       });
     });
-    if (!regions.length) return;
-  }
-
-  // ── 签注内容（2026-06-11）：hover 小笺按视图给核心读数 + 判语 ──────────
-  function _tipRow(k, v, tone){
-    if (!hasDisplayValue(v)) return '';
-    return '<div class="tip-row"><span class="tip-k">' + esc(k) + '</span><span class="tip-v ' + (tone || '') + '">' + esc(ppValue(v)) + '</span></div>';
-  }
-  // 「机动兵力」兜底——地块无逐块驻军实体、但所属势力有军力时，显势力机动军力，免得游牧/无常驻势力图上显 0/空。
-  // 跨朝代通用：游牧（部落/游牧）显「机动兵力」，其余有军力无驻军的抽象/海外势力显「势力军力」。地块归地块、势力归势力，驻军栏本身不动。
-  function _mobileForceRow(r, b){
-    if (!r) return '';
-    var data = (b && b.data) || {};
-    var localGarrison = firstValue(data.garrison, b && b.army && b.army.troops, r && r.troops);
-    if (Number(localGarrison) > 0) return '';   // 本地有真驻军(>0)才让位；0/空=无常驻实体，游牧仍显机动兵力（察哈尔 troops 显式为 0）
-    var f = findFaction(ownerKey(r), r.factionName || r.ownerName);
-    var ms = f && Number(firstValue(f.militaryStrength, f.military));
-    if (!f || !isFinite(ms) || ms <= 0) return '';
-    var nomad = /部落|游牧|游猎/.test(String(f.type || '') + String((f.traits || []).join('')));
-    return _tipRow(nomad ? '机动兵力' : '势力军力', ms);
-  }
-  function mapTipVerdict(mode, r, b, score){
-    var data = b.data || {};
-    var n = Number(score);
-    if (mode === 'mood') {
-      var fug = hasDisplayValue(b.pop.fugitives) ? '，逃户 ' + ppValue(b.pop.fugitives) : '';
-      if (!isFinite(n)) return ['民情无册可稽。', ''];
-      if (n < 35) return ['民心 ' + n + '——已成干柴' + fug + '，一火即燃。', 'wei'];
-      if (n < 50) return ['民心 ' + n + '——民力已竭' + fug + '，有生变之虞。', 'wei'];
-      if (n < 65) return ['民心 ' + n + '——尚可支吾，不宜再加赋扰役。', ''];
-      return ['民心 ' + n + '——黎庶安业，可为根本之地。', 'an'];
-    }
-    if (mode === 'army') {
-      var note = firstValue(data.armyPressure, data.borderRisk, data.warRisk, data.threats);
-      var noteTxt = hasDisplayValue(note) ? '（' + ppValue(note) + '）' : '';
-      if (n >= 80) return ['边警之地' + noteTxt + '——宜厚饷固防，不可抽兵。', 'wei'];
-      if (n >= 60) return ['有警之地' + noteTxt + '——守备勿弛。', 'wei'];
-      if (n >= 40) return ['守备之地' + noteTxt + '。', ''];
-      return ['腹里安靖——可酌减冗兵以纾饷。', 'an'];
-    }
-    if (mode === 'office') {
-      var vac = Number(firstValue(data.officeVacancy, data.vacancy));
-      var vacTxt = isFinite(vac) && vac > 0 ? '，官缺 ' + vac + ' 员' : '';
-      if (n >= 80) return ['吏治已蠹' + vacTxt + '——非大狱不能清。', 'wei'];
-      if (n >= 60) return ['吏治浑浊' + vacTxt + '——赋税多漏，政令多阻。', 'wei'];
-      if (n >= 40) return ['吏治平平' + vacTxt + '——犹可整饬。', ''];
-      return ['吏治清明——可为他省式范。', 'an'];
-    }
-    if (mode === 'tax') {
-      if (score === '' || score === null || !isFinite(n)) return ['此地免科或未设税制——不入岁入之算。', ''];
-      var skim = ratio01(b.fiscal.skimmingRate);
-      var skimTxt = skim !== null && skim > 0 ? '，截留 ' + Math.round(skim * 100) + '%' : '';
-      if (n < 50) return ['实征不及应征之半' + skimTxt + '——欠征之地。', 'wei'];
-      if (n < 70) return ['足额率 ' + n + '%' + skimTxt + '——征解有漏。', ''];
-      if (n < 85) return ['足额率 ' + n + '%' + skimTxt + '——大体可观。', ''];
-      return ['足额率 ' + n + '%——足额上仓之地。', 'an'];
-    }
-    if (mode === 'classPressure') {
-      var cp = classPressureForRegion(r);
-      if (cp.count <= 0 && !(Number(cp.score) > 0)) return ['阶层账本于此地无近压。', 'an'];
-      return ['阶层压力 ' + ppValue(cp.score) + (cp.classNames.length ? '——牵动 ' + cp.classNames.join('、') : '') + '。', Number(cp.score) >= 50 ? 'wei' : ''];
-    }
-    if (mode === 'yizheng') {
-      if (!isFinite(n)) return ['役政无册可稽（未行人力之政）。', ''];
-      if (n >= 55) return ['役负 ' + n + '——苛役之地，丁多逃隐，田将抛荒。', 'wei'];
-      if (n >= 35) return ['役负 ' + n + '——徭役偏重，宜蠲减或募役折银。', 'wei'];
-      if (n >= 20) return ['役负 ' + n + '——尚在可支之间。', ''];
-      return ['役负 ' + n + '——轻徭薄赋，民得安耕。', 'an'];
-    }
-    return ['', ''];
-  }
-  function mapTipHtml(r){
-    var b = regionBundle(r);
-    var data = b.data || {};
-    var mode = (state.mapMode && state.mapMode !== 'owner' && GRADE_BANDS[state.mapMode]) ? state.mapMode : 'owner';
-    var rows = '';
-    if (mode === 'owner') {
-      rows = _tipRow('归属', ownerName(r)) +
-        _tipRow('主官', firstValue(data.governor, data.official)) +
-        _tipRow('驻军', firstValue(data.garrison, b.army.troops, r && r.troops)) +
-        _mobileForceRow(r, b) +
-        _tipRow('民心', mapReported('minxin', r, firstValue(data.minxinLocal, r && r.mood), 'good'));
-      return '<b>' + esc(regionTitle(r)) + '</b><span class="tip-owner">' + esc(ownerName(r) || '') + '</span>' +
-        '<div class="tip-body">' + rows + '</div>' +
-        '<div class="tip-foot"><em>左键 翻方志</em><em>右键 展势力</em></div>';
-    }
-    var score = modeScore(r, mode);
-    var grade = gradeOf(mode, score);
-    var verdict = mapTipVerdict(mode, r, b, score);
-    if (mode === 'mood') {
-      rows = _tipRow('民心', score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
-        _tipRow('逃户', b.pop.fugitives, 'zhu') +
-        _tipRow('灾异', firstValue(data.recentDisasters, (data.economyBase || {}).disasterRecord)) +
-        _tipRow('不稳', data.unrest);
-    } else if (mode === 'army') {
-      rows = _tipRow('军压', grade ? grade.mark + ' · ' + ppValue(score) : score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
-        _tipRow('驻军', firstValue(data.garrison, b.army.troops, r && r.troops)) +
-        _mobileForceRow(r, b) +
-        _tipRow('城防', firstValue(data.fortification, b.army.fortification)) +
-        _tipRow('边警', firstValue(data.borderRisk, data.warRisk, data.threats), 'zhu');
-    } else if (mode === 'office') {
-      rows = _tipRow('贪腐', firstValue(data.corruptionLocal, data.corruption), gradeIsWarn(mode, grade) ? 'zhu' : '') +
-        _tipRow('主官', firstValue(data.governor, data.official)) +
-        _tipRow('官缺', firstValue(data.officeVacancy, data.vacancy)) +
-        _tipRow('执行', firstValue(data.policyExecution, data.execution));
-    } else if (mode === 'tax') {
-      rows = _tipRow('应征', b.fiscal.claimedRevenue) +
-        _tipRow('实征', b.fiscal.actualRevenue) +
-        _tipRow('合规', hasDisplayValue(b.fiscal.compliance) ? pctValue(b.fiscal.compliance) : '') +
-        _tipRow('截留', hasDisplayValue(b.fiscal.skimmingRate) ? pctValue(b.fiscal.skimmingRate) : '', 'zhu');
-    } else if (mode === 'classPressure') {
-      var cp = classPressureForRegion(r);
-      rows = _tipRow('压力', cp.score, Number(cp.score) >= 50 ? 'zhu' : '') +
-        _tipRow('牵动', cp.classNames.join('、')) +
-        _tipRow('近因', cp.reason);
-    } else if (mode === 'yizheng') {
-      var GMv = (typeof GM !== 'undefined' && GM) ? GM : ((typeof window !== 'undefined' && window.GM) ? window.GM : null);
-      var rgv = (GMv && GMv.renli && GMv.renli.byRegion) ? (window.TM && TM.Renli && TM.Renli.forMapRegion ? TM.Renli.forMapRegion(GMv,r) : GMv.renli.byRegion[(r && (r.id || r.regionId || r.name)) || '']) : null;
-      rows = _tipRow('役负', grade ? grade.mark + ' · ' + (isFinite(Number(score)) ? Number(score) + '%' : '—') : score, gradeIsWarn(mode, grade) ? 'zhu' : '') +
-        _tipRow('抛荒', rgv && hasDisplayValue(rgv.fallowLand) && Number(rgv.fallowLand) > 0 ? ppValue(rgv.fallowLand) + ' 亩' : '') +
-        _tipRow('逃户', b.pop.fugitives, 'zhu') +
-        _tipRow('地力', rgv && hasDisplayValue(rgv.soil) ? ppValue(rgv.soil) : '');
-    }
-    return '<b>' + esc(regionTitle(r)) + '</b><span class="tip-owner">' + esc(ownerName(r) || '') + '</span>' +
-      '<div class="tip-body">' + rows + '</div>' +
-      (verdict[0] ? '<div class="tip-verdict ' + verdict[1] + '">' + esc(verdict[0]) + '</div>' : '') +
-      '<div class="tip-foot"><em>左键 翻方志</em><em>右键 展势力</em></div>';
+    // 通志开着时，换层或重画之后把整道描金边补回当前这张图（regions 为空时也要清掉旧轮廓）
+    if (__p8MapParts.syncCircuitOutline) __p8MapParts.syncCircuitOutline();
   }
 
   function installMapInteraction(){
@@ -2105,14 +1982,17 @@
     }
     stage.addEventListener('selectstart', preventMapSelection, { passive: false });
     stage.addEventListener('dragstart', preventMapSelection, { passive: false });
-    var pressedRealm = null;
+    // 可点的地名：天下级的势力名开谱牒，省道级的省名开通志（通志一期 S3）
+    var pressedRealm = null, CLICKABLE_LABELS = '.tmf-realm-fit[data-faction-key],.tmf-circuit-fit[data-region-id]';
     function activateRealm(e){
       // Pointer capture retargets the release/click to the stage; remember the
       // original country hit, but never activate it after an actual drag.
-      var label = e.target && e.target.closest && e.target.closest('.tmf-realm-fit[data-faction-key]');
+      var label = e.target && e.target.closest && e.target.closest(CLICKABLE_LABELS);
       if (e.type === 'click') { label = label || pressedRealm; pressedRealm = null; }
       if (!label || !label.isConnected || state.dragSuppressClick || (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ')) return;
-      e.preventDefault(); e.stopImmediatePropagation(); bridge.openFactionByKey(label.dataset.factionKey);
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (label.dataset.factionKey) bridge.openFactionByKey(label.dataset.factionKey);
+      else openTierDossier(findRegion(label.dataset.regionId), 'region');
     }
     stage.addEventListener('click', activateRealm);
     stage.addEventListener('keydown', activateRealm);
@@ -2133,7 +2013,7 @@
       if (e.button !== 0) return;
       if (e.pointerType === 'touch') return; // 触屏 pan/缩放交给 attachPinchPan(touch 事件)·避免 pointer+touch 双重平移
       stage.__phase8ViewportRect = null;
-      pressedRealm = e.target && e.target.closest && e.target.closest('.tmf-realm-fit[data-faction-key]');
+      pressedRealm = e.target && e.target.closest && e.target.closest(CLICKABLE_LABELS);
       if (e.cancelable) e.preventDefault();
       clearMapSelection();
       state.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, tx: state.mapView.tx || 0, ty: state.mapView.ty || 0, moved: false };
@@ -2205,14 +2085,14 @@
       var path = regionPathFromPoint(e);
       if (!path) return;
       var r = findRegion(path.dataset.regionId || path.dataset.id);
-      if (r) openRegionDossier(r);
+      if (r) openTierDossier(r);
     });
     stage.addEventListener('contextmenu', function(e){
       var path = regionPathFromPoint(e);
       if (!path) return;
       e.preventDefault();
       var r = findRegion(path.dataset.regionId || path.dataset.id);
-      if (r) openFactionDossier(ownerKey(r), r);
+      if (r) openMapContextMenu(r, e);
     });
     // 性能·hover tooltip 改 rAF 节流 + 同省早退·避免每次 mousemove 都查找+重建 innerHTML+reflow
     // 2026-06-11: 内容升级为「签注」——按当前视图给 3-4 行核心读数 + 一句判语（数字翻成人话）。
@@ -2224,11 +2104,12 @@
       var tip = document.getElementById('tmf-map-tip');
       if (!tip) return;
       if (state.drag || (e.buttons & 1)) { if (window.TMShanheRuntime) TMShanheRuntime.setHovered(null); tip.classList.remove('show'); return; }
+      if (document.getElementById('tmf-map-ctx')) { tip.classList.remove('show'); return; }   // 右键小菜单开着时签注让位
       var path = regionPathFromPoint(e);
       if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) TMShanheRuntime.setHovered(path && (path.dataset.regionId || path.dataset.id));
       if (!path) { tip.classList.remove('show'); _hoverLastKey = null; return; }
       var rid = path.dataset.regionId || path.dataset.id;
-      var key = rid + '|' + (state.mapMode || 'owner');
+      var key = rid + '|' + (state.mapMode || 'owner') + '|' + state.mapScale;   // 签注页脚随层级变
       if (key !== _hoverLastKey) {
         var r = findRegion(rid);
         if (!r) { tip.classList.remove('show'); return; }
@@ -2926,7 +2807,12 @@
   __p8MapParts.cssEscape = cssEscape; __p8MapParts.regionNameKeys = regionNameKeys; __p8MapParts.findLiveProvinceStats = findLiveProvinceStats; __p8MapParts.liveRegionVitals = liveRegionVitals; __p8MapParts.liveRegionOwner = liveRegionOwner;
   __p8MapParts.liveRegionGovernor = liveRegionGovernor; __p8MapParts.findFaction = findFaction; __p8MapParts.classPressureForRegion = classPressureForRegion; __p8MapParts.MAP_MODE_META = MAP_MODE_META; __p8MapParts.pctValue = pctValue;
   __p8MapParts.regionLevel = regionLevel; __p8MapParts.officeViewScore = officeViewScore; __p8MapParts._reportedPop = _reportedPop; __p8MapParts.modeScore = modeScore; __p8MapParts.ppTagNames = ppTagNames;
+  // 通志一期 S3：签注迁入 sibling 后要用的成员，以及右键小菜单、整道描金边要用的成员
+  __p8MapParts.GRADE_BANDS = GRADE_BANDS; __p8MapParts.mapReported = mapReported; __p8MapParts.positionMapTip = positionMapTip; __p8MapParts.mapStage = mapStage;
   // origin forward shim（sibling 回填后调用期解析·arguments 全透传）
+  function mapTipHtml(){ return __p8MapParts.mapTipHtml.apply(this, arguments); }
+  function openTierDossier(){ return __p8MapParts.openTierDossier.apply(this, arguments); }
+  function openMapContextMenu(){ return __p8MapParts.openMapContextMenu.apply(this, arguments); }
   function regionBundle(){ return __p8MapParts.regionBundle.apply(this, arguments); }
   function openRegionDossier(){ return __p8MapParts.openRegionDossier.apply(this, arguments); }
   function openFactionDossier(){ return __p8MapParts.openFactionDossier.apply(this, arguments); }

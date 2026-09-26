@@ -69,6 +69,17 @@
 
 ## 四、S3 交互（`phase8-formal-map.js`，冲突面，须在新 main 上施工）
 
+**已完成（09-26，本地提交；owner 09-26 令 S3~S6 全做完后统一推）**。与下面草案不同之处，以此为准：
+- **不另拆新模块**：读地图模块的测试有 29 个，新拆一个文件要改一串 VM 加载器。改为把签注（`_tipRow`、`_mobileForceRow`、`mapTipVerdict`、`mapTipHtml`，125 行，正文未改）迁进已有的姊妹模块 `phase8-formal-map-dossier.js`，新交互也写在那里；地图模块只留 forward shim（`openTierDossier`、`openMapContextMenu`、`mapTipHtml`），另导出 `GRADE_BANDS`、`mapReported`、`positionMapTip`、`mapStage`。地图模块 2989 → 2875 行。`smoke-reported-spread` 的签注契约改读 dossier。
+- 左键：`openTierDossier(r, tier)`，天下级开谱牒、省道级开通志（不属正式省道的孤块照旧开方志）、府州级开方志；stage 的 click 与 `bindRegionPathEvents` 两处都走它。
+- 设置开关：`P.conf.mapClickFollowTier`（没设过即随层级），入口在设置「界面显示」的「舆图点击：随层级 / 一律方志」，写入走 `_togglePConf`（`lint-gm-writes` 不许 tm-patches 直写 P）。右键菜单不受开关影响；点省名恒开通志。
+- 右键小菜单 `#tmf-map-ctx`：挂在舆图外框（与签注同一容器，不进 stage，免得菜单上的点击被当成点地块），与签注同一套缩放定位；打开即聚焦第一项，上下键移动，回车选中，Esc 关闭并还焦点，Tab、点菜单外、滚轮、窗口缩放或失焦都关闭；菜单开着时签注停更，山河境悬停高亮落在右键点中的州上。
+- 省名可点：省道级地名 `.tmf-circuit-fit` 与势力名一样作 `role=button`（碰撞模块照样管它的 tabindex），`activateRealm` 同一处理，防拖动误触沿用 `pressedRealm`。
+- 整道描金边：`boundaryMesh(本道成员同组, 'circuit-outline').major`，按成员签名缓存；SVG 图上挂 `<g class="tmf-circuit-outline">`（属性先写好再挂，免得山河境的属性监听整张重采），换层、重画后由 `bindRegionPathEvents` 调 `syncCircuitOutline` 补回；山河境新增 `setSelectedOutline(d)`，焦点层与单州选中同一画法（复用原有两种描边色，不新增写死颜色），诊断的 `selection.outlineLength` 可查。
+- 签注页脚按层级写明左键开哪一册；悬停缓存键加上层级。
+- 测试：`smoke-map-circuit-book` 加 2 组（随层级与设置、外沿轮廓）；Electron `--circuit-book` 加 9 条原生输入用例（三级真点击、右键菜单与键盘、Esc 与滚轮关闭、省名、设置开关、SVG 模式描金边），时限内 300 秒、外 315 秒；CI maps 组加 `--circuit-book` 一步。
+
+原草案：
 - **先拆后加**：`phase8-formal-map.js` 正好 3000 行，守卫不许再长。先把点击与标签交互拆成姊妹模块（暂名 `phase8-formal-map-interact.js`），按 alias 加内联范式迁出（见 `docs/arch-guards.md`），拆分本身单独一步提交、行为不变，再在新模块里加下面的功能。动手前先查 lint-split-contracts、lint-split-stamps 对新拆模块有什么登记要求；启动登记照第六节的顺序做。
 - 左键按 `state.mapScale` 分派：`realm` 开谱牒，`region` 开通志，`prefecture` 开方志。要同时改 stage 上的 click 和 `bindRegionPathEvents` 两处。
 - 设置开关：新增一个 `P.conf` 键（名称待定），默认随层级，并配设置界面入口（家规：设 flag 必配设置开关）。

@@ -1,6 +1,8 @@
 'use strict';
 // 通志册页真机用例（通志一期 S2）：真实窗口里从府州方志进北直隶通志，逐卷截图，
 // 并核对 VM 模拟 DOM 测不到的行为：真点击、册页宽度、动作后册页不被覆盖、回合刷新重画、关闭清标记、点州跳方志。
+// 第三片起另核：左键随层级（天下谱牒、省道通志、府州方志）、右键小菜单与键盘、整道描金边（山河境与 SVG 两种画法）、
+// 可点的省名、设置里的「舆图点击」开关。
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 
 module.exports = async function ({ win, check }) {
@@ -105,5 +107,191 @@ module.exports = async function ({ win, check }) {
     assert.doesNotMatch(d.cls, /circuit-panel|\bshow\b/);
     assert.equal(d.key, null);
     assert.equal(d.kind, null);
+  });
+
+  // ── 第三片：点击随层级、右键小菜单、整道描金边、可点的省名、设置开关（全用原生鼠标键盘事件）──
+  const send = (type, extra) => win.webContents.sendInputEvent(Object.assign({ type }, extra));
+  const click = async (pt, button = 'left') => {
+    send('mouseMove', { x: pt.x, y: pt.y });
+    send('mouseDown', { x: pt.x, y: pt.y, button, clickCount: 1 });
+    send('mouseUp', { x: pt.x, y: pt.y, button, clickCount: 1 });
+    await frame();
+  };
+  // 原生按钮靠字符事件响应回车：真键盘三件事都会发，模拟时也要补上 char
+  const key = async (keyCode) => {
+    send('keyDown', { keyCode });
+    if (keyCode === 'Enter') send('char', { keyCode: '\r' });
+    send('keyUp', { keyCode });
+    await frame();
+  };
+  // 把视图对准顺天府、切到指定层级，再找一个真能点中顺天府（且上面没压着地名、按钮）的屏幕点。
+  // 天下级顺天府只剩一小块，中心又压着势力名，改为点中与顺天府同属一国的任一州（谱牒按国开，结果相同）
+  const aimAt = (tier) => js(`(async()=>{
+    var bridge = TMPhase8FormalBridge, r = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0], id = String(r.id || r.name);
+    var owner = bridge.map.ownerKey(r), sameRealm = ${JSON.stringify(tier)} === 'realm';
+    bridge.map.closeMapDossier();
+    bridge.map.focusRegion(id, false);
+    document.querySelector('.map-scale[data-map-scale="${tier}"]').click();
+    await new Promise(res => setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(res)), 400));
+    var stage = document.getElementById('ming-map-layer'), b = stage.getBoundingClientRect();
+    var shanhe = !!(window.TMShanheRuntime && TMShanheRuntime.active());
+    function hitId(x, y){
+      var top = document.elementFromPoint(x, y);
+      if (!top || !stage.contains(top) || (top.closest && top.closest('.tmf-realm-fit,.tmf-circuit-fit,button'))) return null;
+      var path = shanhe ? TMShanheRuntime.pick({ clientX: x, clientY: y }) : top.closest && top.closest('.tmf-region');
+      var hit = path && (path.dataset.regionId || path.dataset.id);
+      if (!hit) return null;
+      if (hit === id) return hit;
+      return sameRealm && bridge.map.ownerKey(bridge.map.findRegion(hit)) === owner ? hit : null;
+    }
+    var cx = b.left + b.width * .52, cy = b.top + b.height * .48;
+    for (var rad = 0; rad < 360; rad += 6) {
+      for (var a = 0; a < 24; a++) {
+        var x = Math.round(cx + Math.cos(a / 24 * 2 * Math.PI) * rad), y = Math.round(cy + Math.sin(a / 24 * 2 * Math.PI) * rad);
+        var hit = hitId(x, y);
+        if (hit) return { x: x, y: y, tier: bridge._state.mapScale, shanhe: shanhe, id: hit };
+        if (rad === 0) break;
+      }
+    }
+    throw Error('no hit-testable point inside 顺天府 at tier ${tier}');
+  })()`);
+  const bookState = () => js(`(()=>{
+    var pop = document.getElementById('ppop'), line = document.querySelector('#ming-map-layer #tmf-formal-map .tmf-circuit-outline path.line');
+    var diag = window.TMShanheRuntime ? TMShanheRuntime.diagnostics().selection : null;
+    return { kind: pop && pop.classList.contains('show') ? pop.dataset.panelKind : null, circuitKey: pop && pop.dataset.circuitKey, region: pop && pop.dataset.regionId,
+      title: ((pop && pop.querySelector('.bk-name')) || {}).textContent, svgOutline: line ? line.getAttribute('d').length : 0,
+      shanheOutline: diag ? diag.outlineLength : 0, menu: !!document.getElementById('tmf-map-ctx') };
+  })()`);
+  const shuntianOwner = () => js(`TMPhase8FormalBridge.map.ownerName(GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0])`);
+
+  await check('省道级真点击顺天府开北直隶通志，整道描金边（山河境焦点层与 SVG 图各收到外沿轮廓）', async () => {
+    const pt = await aimAt('region');
+    assert.equal(pt.tier, 'region');
+    await click(pt);
+    const s = await bookState();
+    assert.equal(s.kind, 'circuit', JSON.stringify({ pt, s }));
+    assert.equal(s.title, '北直隶');
+    assert(s.svgOutline > 0, 'SVG 图上挂了整道外沿');
+    if (pt.shanhe) assert.equal(s.shanheOutline, s.svgOutline, '山河境焦点层收到同一条外沿');
+    await shot('circuit-outline-region.png');
+  });
+
+  await check('府州级真点击开方志，整道描金边随之撤掉', async () => {
+    const pt = await aimAt('prefecture');
+    await click(pt);
+    const s = await bookState();
+    assert.equal(s.kind, 'region', JSON.stringify({ pt, s }));
+    assert.equal(s.region, pt.id);
+    assert.equal(s.svgOutline, 0);
+    assert.equal(s.shanheOutline, 0);
+  });
+
+  await check('天下级真点击开势力谱牒', async () => {
+    const pt = await aimAt('realm');
+    await click(pt);
+    const s = await bookState();
+    assert.equal(s.kind, 'faction', JSON.stringify({ pt, s }));
+  });
+
+  await check('右键小菜单：三项齐全、焦点在第一项，下键加回车选「本道通志」', async () => {
+    const pt = await aimAt('prefecture');
+    await click(pt, 'right');
+    const m = await js(`(()=>{
+      var menu = document.getElementById('tmf-map-ctx');
+      if (!menu) return { menu: false };
+      return { menu: true, items: Array.prototype.map.call(menu.querySelectorAll('[data-map-ctx]'), function(b){ return b.textContent; }),
+        focused: document.activeElement && document.activeElement.getAttribute('data-map-ctx'), tip: document.getElementById('tmf-map-tip').classList.contains('show') };
+    })()`);
+    assert.equal(m.menu, true, '右键弹出小菜单');
+    assert.deepEqual(m.items, ['本州方志顺天府', '本道通志北直隶', '本国谱牒' + (await shuntianOwner())]);
+    assert.equal(m.focused, 'region', '打开即聚焦第一项');
+    assert.equal(m.tip, false, '签注让位');
+    await shot('circuit-context-menu.png');
+    await key('Down');
+    assert.equal(await js(`document.activeElement && document.activeElement.getAttribute('data-map-ctx')`), 'circuit');
+    await key('Enter');
+    const s = await bookState();
+    assert.equal(s.kind, 'circuit');
+    assert.equal(s.title, '北直隶');
+    assert.equal(s.menu, false, '选中后菜单关闭');
+  });
+
+  await check('小菜单按 Esc 关闭，滚轮也关闭', async () => {
+    const pt = await aimAt('prefecture');
+    await click(pt, 'right');
+    assert.equal((await bookState()).menu, true);
+    await key('Escape');
+    assert.equal((await bookState()).menu, false, 'Esc 关闭');
+    await click(pt, 'right');
+    assert.equal((await bookState()).menu, true);
+    send('mouseWheel', { x: pt.x, y: pt.y, deltaX: 0, deltaY: -40, canScroll: true });
+    await frame();
+    assert.equal((await bookState()).menu, false, '滚轮关闭');
+  });
+
+  await check('省道级的省名「北直隶」真点击开通志', async () => {
+    await aimAt('region');
+    const target = await js(`(()=>{
+      for (const g of document.querySelectorAll('.tmf-circuit-fit:not(.tmf-collide-hidden)')) {
+        if (g.dataset.fullName !== '北直隶') continue;
+        const b = g.getBoundingClientRect();
+        for (let i = 1; i < 5; i++) for (let j = 1; j < 5; j++) {
+          const x = Math.round(b.x + b.width * i / 5), y = Math.round(b.y + b.height * j / 5);
+          if (document.elementFromPoint(x, y)?.closest('.tmf-circuit-fit') === g) return { x, y, role: g.getAttribute('role') };
+        }
+      }
+      return null;
+    })()`);
+    assert(target, '北直隶省名可见且可点中');
+    assert.equal(target.role, 'button');
+    await click(target);
+    const s = await bookState();
+    assert.equal(s.kind, 'circuit');
+    assert.equal(s.title, '北直隶');
+  });
+
+  await check('设置「舆图点击」切到一律方志后省道级左键开方志，切回随层级', async () => {
+    const pick = (want) => js(`(async()=>{
+      openSettings();
+      await new Promise(res => setTimeout(res, 300));
+      var btn = Array.prototype.find.call(document.querySelectorAll('button'), function(b){ return (b.getAttribute('onclick') || '').indexOf('_tmSetMapClickTier(${want}') === 0; });
+      if (!btn) { closeSettings(); return { found: false }; }
+      btn.click();
+      var on = btn.classList.contains('bp');
+      closeSettings();
+      return { found: true, on: on, conf: P.conf.mapClickFollowTier };
+    })()`);
+    const off = await pick(false);
+    assert.equal(off.found, true, '设置里有舆图点击开关');
+    assert.equal(off.on, true);
+    assert.equal(off.conf, false);
+    await click(await aimAt('region'));
+    assert.equal((await bookState()).kind, 'region', '一律方志：省道级左键也开方志');
+    const on = await pick(true);
+    assert.equal(on.conf, true);
+    await click(await aimAt('region'));
+    assert.equal((await bookState()).kind, 'circuit', '切回随层级');
+  });
+
+  await check('关掉山河境用 SVG 图时，整道描金边画在图上且可见', async () => {
+    await js(`(async()=>{
+      if (window.TMShanheRuntime) TMShanheRuntime.setEnabled(false);
+      TMPhase8FormalBridge.map.invalidateFormalMap();
+      TMPhase8FormalBridge.map.renderFormalMap();
+      const end = Date.now() + 60000;
+      while (!TMPhase8FormalBridge.map.preparationStatus()?.ready) { if (Date.now() > end) throw Error('layers not ready'); await new Promise(r => setTimeout(r, 100)); }
+    })()`);
+    const pt = await aimAt('region');
+    assert.equal(pt.shanhe, false);
+    await click(pt);
+    const v = await js(`(()=>{
+      var line = document.querySelector('#ming-map-layer #tmf-formal-map .tmf-circuit-outline path.line'), b = line && line.getBoundingClientRect();
+      return { kind: document.getElementById('ppop').dataset.panelKind, has: !!line, display: line ? getComputedStyle(line.parentNode).display : '', w: b ? b.width : 0, h: b ? b.height : 0 };
+    })()`);
+    assert.equal(v.kind, 'circuit');
+    assert.equal(v.has, true);
+    assert.notEqual(v.display, 'none');
+    assert(v.w > 20 && v.h > 20, '外沿轮廓有实际大小：' + JSON.stringify(v));
+    await shot('circuit-outline-svg.png');
   });
 };

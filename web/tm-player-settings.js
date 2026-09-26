@@ -344,7 +344,8 @@ function _togglePConf(confKey, on) {
     cognitionFeedbackEnabled: { on: '已启用认知反馈·知遇/贬谪落到忠诚数值', off: '已关闭·忠诚不因升降迁谪自动漂移' },
     useNewKejuScandal: { on: '已启用科场弊案·科举可能爆舞弊/科场案', off: '已关闭科场弊案链' },
     revoltRejectionEscalation: { on: '已启用义军拒抚真备战·拒抚后须经真镇压才能消亡', off: '已关闭·回到旧行为（拒抚无后续·义军可能静默消散）' },
-    rigidHistEventsOff: { on: '已关闭注定史实事件·演义模式下史实人物的注定命运（如史实死亡）不再自动触发', off: '已恢复注定史实事件·演义模式下史实注定命运照常触发（轻度/严格史实模式一向照旧）' }
+    rigidHistEventsOff: { on: '已关闭注定史实事件·演义模式下史实人物的注定命运（如史实死亡）不再自动触发', off: '已恢复注定史实事件·演义模式下史实注定命运照常触发（轻度/严格史实模式一向照旧）' },
+    mapClickFollowTier: { on: '舆图左键随层级：天下开谱牒、省道开通志、府州开方志', off: '舆图左键一律开方志' }
   };
   var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
   if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));

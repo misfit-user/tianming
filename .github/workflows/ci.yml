@@ -167,6 +167,9 @@ jobs:
           node scripts/verify-electron-bridge.js --strategic-map
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           node scripts/verify-electron-bridge.js --strategic-map --scenario sc-jianyan1-1127-shaosong
+      - name: Circuit book, click by map tier, context menu and circuit outline
+        if: matrix.group == 'maps'
+        run: node scripts/verify-electron-bridge.js --circuit-book
       - name: Default C1 terrain, live labels, native picking and original-map fallback
         if: matrix.group == 'maps'
         run: |

@@ -24,7 +24,8 @@ const memorials = fs.readFileSync(path.join(ROOT, 'tm-memorials.js'), 'utf8');
 ok(/function mapReported\(/.test(map) && /RV\.active/.test(map.match(/function mapReported\([\s\S]{0,400}/)[0]), 'S3b① 舆图 mapReported 接引擎·inactive直通');
 ok(/base = mapReported\('minxin', r, base, 'good'\)/.test(map), 'S3b② mood热力 base民心据奏good(民变/战区扣分不失真)');
 ok(/corr = mapReported\('corruption', r, corr, 'bad'\)/.test(map), 'S3b③ office热力 浊度据奏bad(瞒减显清明)');
-ok(/_tipRow\('民心', mapReported\('minxin', r,/.test(map), 'S3b④ 势力tip民心行同键包裹(与热力不穿帮)');
+// 签注（tip）在通志一期 S3 迁入 phase8-formal-map-dossier.js
+ok(/_tipRow\('民心', mapReported\('minxin', r,/.test(dossier), 'S3b④ 势力tip民心行同键包裹(与热力不穿帮)');
 // ── S3b 纲纪 ──
 ok(/function rightSocSatReported\(/.test(social) && /'class\.' \+ rightSocialName\(c\)/.test(social), 'S3b⑤ 阶层满意度据奏·键=class.+阶层名');
 ok((social.match(/rightSocSatReported\(c, rightSocNum\(/g) || []).length >= 3, 'S3b⑥ head/detail/均值三处全走同一helper');

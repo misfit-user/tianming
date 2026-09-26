@@ -5962,6 +5962,7 @@
         "_settingsThemeApply",
         "_tmSetFitResolution",
         "_tmSetFullscreen",
+        "_tmSetMapClickTier",
         "_tmSetUiFontScale",
         "_tmSyncUiPx",
         "_tmUiFontScaleDefault",

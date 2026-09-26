@@ -1,0 +1,3735 @@
+{
+  "_meta": {
+    "scenario": "晚唐·开成五年（开局 840-02-20，唐开成五年正月十四日辛卯＝日本承和七年正月十四＝新罗文圣王二年正月）",
+    "generatedAt": "2026-09-26T13:29:14.969Z",
+    "input": "E:/tianming-tmp/tang/refs/stats-foreign-input.json",
+    "rules": "1. 基线三选一：CIVIL（文官、朝臣、使臣）、MILITARY（军将、部落武人）、RULER（君主、上皇、太子、可汗、王），取值见输入 baselines；每人 baselineWhy 写明理由。\n2. 加减档位只用 ±5/±10/±15/±20，每条附逐字原文 quote、出处 source 与原文文件 file；同一项可有多条，合计后加到基线上；无依据的项保持基线。\n3. 能力类（intelligence/valor/military/administration/management/charisma/diplomacy）可用一生事迹，开局后事迹在 why 中注明“开局后事迹”；品性类（loyalty/ambition/benevolence/integrity）与五常只用开局前行事或本传概括性评语，开局后具体事件只入 notes。\n4. 身份事实可作依据（出使→辞令+5~10；掌兵征战→军事+5~10；文学书法著称→智力或魅力+5），须有原文证明其人确有其事；日本公卿现任近卫大将/兵卫督等宫卫武职按“掌兵”只取+5。\n5. 年龄规则：age<20 或 ≥70 者武勇、军事各−10（本批仅恒贞亲王14岁触发），记在 ageAdjustment，不混入 adjustments。\n6. 终值夹在 10–95。\n7. 健康：开局后一年内死亡者（藤原常嗣、淳和上皇、藤原三守、掘罗勿）在 notes 标出；有开局前病况原文者给 healthSuggestion（仅常嗣），无者注明“无开局前病况记载”。\n8. 五常：仅重做 wuchang 等于默认 {仁60,义68,礼72,智74,信70} 的22人，以默认为基线按开局前行迹/本传评语加减；其余人 wuchang 为 null（不重做），如发现与史料明显相违在 notes 指出。\n9. 原文文件均在 E:/tianming-tmp/tang/research/raw/；本刀新存4卷：日本後紀_卷第十三.wiki、日本後紀_卷第十八.wiki、日本三代實錄_卷第十三.wiki、入唐求法巡禮行記_卷一.wiki（均取自 zh.wikisource action=raw）。\n10. 无汉文史料者（迦摩缕波、环王）用英文维基二手记述，confidence 标 L。",
+    "verification": "通过（2026-09-26T13:29:15.428Z，node verify-stats-foreign.js）：160/160 条引文均在所注文件中逐字找到（忽略空白、[[链接]]与<ref>标记，不做繁简转换）；44/44 人 stats 与“基线+Σ加减+年龄规则、夹10–95”重算一致；22/22 人五常与“默认值+Σ加减”重算一致；档位均在±5/10/15/20。",
+    "verificationDetail": {
+      "checkedAt": "2026-09-26T13:29:15.428Z",
+      "script": "E:/tianming-tmp/tang/refs/verify-stats-foreign.js",
+      "passed": true,
+      "people": 44,
+      "quotes": {
+        "total": 160,
+        "found": 160,
+        "normalization": "去空白、去[[链接]]标记、去<ref>标记；不做繁简转换"
+      },
+      "stats": {
+        "recomputed": 44,
+        "matched": 44,
+        "rule": "基线+Σ加减+年龄规则（age<20或≥70：武勇、军事各−10），夹10–95"
+      },
+      "wuchang": {
+        "redone": 22,
+        "matched": 22,
+        "rule": "默认{仁60,义68,礼72,智74,信70}+Σ加减"
+      },
+      "withAdjustments": 39,
+      "baselineOnly": [
+        "赤心",
+        "结都那",
+        "綝氏",
+        "婆那摩罗跋摩",
+        "毗建多跋摩三世"
+      ],
+      "errors": []
+    }
+  },
+  "people": [
+    {
+      "id": "char-v17-89daada97a33",
+      "name": "藤原良房",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 35,
+      "baseline": "CIVIL",
+      "baselineWhy": "开局时为权中纳言兼左兵卫督、陆奥出羽按察使，属太政官朝臣，按文官基线；兵卫督一职另按“掌兵”酌加军事。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 38,
+        "administration": 82,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "开局后事迹：贞观八年八月敕太政大臣摄行天下之政，为人臣摄政之始（同卷廿二日条“太政大臣從一位藤原朝臣良房抗表言”可证太政大臣即良房）；身份事实足证其总揽政务之能。",
+          "source": "《日本三代實錄》卷十三·貞觀八年八月",
+          "file": "E:/tianming-tmp/tang/research/raw/日本三代實錄_卷第十三.wiki",
+          "quote": "十九日辛夘。勅太政大臣。攝行天下之政。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "身份事实：开局时兼左兵卫督，统左兵卫府宫卫之兵，按“掌兵”取最低一档。",
+          "source": "《續日本後紀》卷八·承和六年",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第八.wiki",
+          "quote": "權中納言從三位兼行左兵衛督陸奧出羽按察使藤原朝臣良房召内記。賜大唐勅書。令以藏之。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "續日本後紀卷一至十三、十六、十七、二十",
+        "日本文德天皇實錄卷一、四、六（另查维基文库卷九，未存档）",
+        "日本三代實錄卷十三、廿二、卌六"
+      ],
+      "notes": "良房薨传（三代实录卷廿二贞观十四年九月二日条）现存本仅“〈云々〉”，无为人评语；品性四项无开局前可据行事，保持基线。开局后：承和九年承和之变后升大纳言（续日本后纪卷十二）、天安元年太政大臣、贞观八年摄政——品性项一律不计。剧本bio称“女儿明子又入仁明内廷”与史不合：入仁明后宫、生道康亲王（文德）者为良房之妹顺子，见《文德实录》卷一“文德天皇，諱道康。仁明天皇長子也。母藤原氏，順子。贈太政大臣-正一位-冬嗣之女也”；明子（良房女）后为文德女御，开局时尚幼，未入仁明后宫。现五常义54、信57低于默认值，查无开局前史料支持，疑受其后承和之变评价影响，建议复核。"
+    },
+    {
+      "id": "char-v17-0f04c4cb6390",
+      "name": "藤原绪嗣",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 65,
+      "baseline": "CIVIL",
+      "baselineWhy": "左大臣，历朝太政官首脑，按文官基线。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 42,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 82,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 61,
+        "integrity": 67
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "薨传评语：通晓政术，卧治王室，国之利害知无不奏。",
+          "source": "《續日本後紀》卷十三·承和十年七月庚戌（藤原緒嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "緒嗣朝臣。曉達政術。臥治王室。國之利害。知無不奏。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 10,
+          "why": "开局前（延暦二十四年）德政相论，力主停罢征夷与造都两役以安百姓，恤民之心可据。",
+          "source": "《日本後紀》卷十三·延暦二十四年十二月（德政相論）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本後紀_卷第十三.wiki",
+          "quote": "于時緒嗣議云。方今天下所苦。軍事與造作也。停此兩事。百姓安之。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "德政之议为桓武所从，“有識聞之。莫不感歎”，见识过人。",
+          "source": "《日本後紀》卷十三·延暦二十四年十二月（德政相論）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本後紀_卷第十三.wiki",
+          "quote": "帝善緒嗣議。即從停廢。有識聞之。莫不感歎。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": -5,
+          "why": "薨传明言其听讼偏信先言者、不容后说，“有茲偏執”，判断力有短。",
+          "source": "《續日本後紀》卷十三·承和十年七月庚戌（藤原緒嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "但有兩人説一事。其一人先所談是漫語也。一人後所・乃眞實也。而・信先談。不容後説。有茲偏執。爲人所刺。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前（天长二年）拜右大臣即返上封户千户。",
+          "source": "《續日本後紀》卷十三·承和十年七月庚戌（藤原緒嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "天長二年拜右大臣。返上封千戸。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前（大同元年）返上先帝所赐别勅封二百户。",
+          "source": "《日本後紀》卷十三·大同元年四月",
+          "file": "E:/tianming-tmp/tang/research/raw/日本後紀_卷第十三.wiki",
+          "quote": "參議從四位上兼行右衛士督但馬守藤原朝臣緒嗣。正五位下行侍從左兵衛佐藤原朝臣嗣業等。返上先帝所賜別勅封二百戸。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "赠位诏概括其一生：自仁明幼年即辅翼王室，志节刚贞（本传性评语，非后事）。",
+          "source": "《續日本後紀》卷十三·承和十年七月庚戌（贈從一位詔）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "况乎自朕幼郁。比翊王室。志同鷹隼。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -10,
+          "why": "开局前自弘仁以来辞职表已逾十上，屡求致仕，不恋权位。",
+          "source": "《續日本後紀》卷十三·承和十年七月庚戌（藤原緒嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "弘仁以降。辞職之表。已過十上。三朝優詔不許之。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷八、九、十三",
+        "日本後紀卷十三、廿一、廿二"
+      ],
+      "notes": "健康：承和十年正月表称“臣數年臥疾。不自支持”，弘仁二年表亦称“病患染躬。久積日月”（日本后纪卷廿一）；薨于承和十年七月（开局后三年余），不在一年内，未给建议值，如需可酌减health。开局后：承和七年八月两度上表辞职不许（卷九）。现五常智84，薨传另有“有茲偏執”之评，可酌减。"
+    },
+    {
+      "id": "char-v17-5ebe3a5e81a3",
+      "name": "源常",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 27,
+      "baseline": "CIVIL",
+      "baselineWhy": "大纳言兼左近卫大将，属太政官朝臣，按文官基线；近卫大将一职另按“掌兵”酌加军事。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 38,
+        "administration": 82,
+        "management": 70,
+        "charisma": 72,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 67
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "charisma",
+          "delta": 10,
+          "why": "薨传评语：容仪闲雅，言论和顺。",
+          "source": "《日本文德天皇實錄》卷六·齊衡元年（源常薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第六.wiki",
+          "quote": "大臣，容儀閑雅，言論和順。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "薨传评语：恶谗佞而不亲。",
+          "source": "《日本文德天皇實錄》卷六·齊衡元年（源常薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第六.wiki",
+          "quote": "讒佞之徒，惡而不親。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "薨传评语：推引才能之士，时人以为真丞相之器（开局后亦历右大臣、左大臣）。",
+          "source": "《日本文德天皇實錄》卷六·齊衡元年（源常薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第六.wiki",
+          "quote": "時人以為，誠是丞相之器也。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "身份事实：承和四年起兼左近卫大将（开局后三日即奉勅阅视六卫府射），按“掌兵”取最低一档。",
+          "source": "《日本文德天皇實錄》卷六·齊衡元年（源常薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第六.wiki",
+          "quote": "承和四年六月，兼為左近衛大將。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷七、八、九、十二",
+        "日本文德天皇實錄卷六"
+      ],
+      "notes": "年龄27，不触发年龄规则。现五常评语称“缺个体德行原文”不确：文德实录卷六薨传有“操行深沈”“讒佞之徒，惡而不親”等评语，可据以复核义、礼（现值义67略低于默认）。开局后：承和七年八月升右大臣兼皇太子傅（卷九），承和十一年转左大臣。"
+    },
+    {
+      "id": "char-v17-f37cd97a9c39",
+      "name": "藤原三守",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 54,
+      "baseline": "CIVIL",
+      "baselineWhy": "右大臣兼皇太子傅，按文官基线。",
+      "stats": {
+        "loyalty": 68,
+        "ambition": 47,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "薨传：早入大学，受习五经。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "三守早入大學。受習五經。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "薨传评语：性温恭而明于决断。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "立性温恭。兼明决斷。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "薨传：招引诗人，接杯促席，善交游。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "招引詩人。接杯促席。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "薨传：途遇学徒必下马而过，以此著称，谦恭待人（本传评语）。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "參朝之次。有一兩學徒。遇諸塗。必下馬而過之。以此當時著稱。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 10,
+          "why": "开局前（弘仁十四年）嵯峨让位后即辞官随侍嵯峨院，以藩邸旧臣效忠。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "天皇禪國之後。辞退侍于嵯峨院。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -5,
+          "why": "同上：主动辞退现职以随侍退位之君，不恋官位。",
+          "source": "《續日本後紀》卷九·承和七年七月庚辰（藤原三守薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "天皇禪國之後。辞退侍于嵯峨院。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷三、五、七、八、九"
+      ],
+      "notes": "开局后一年内即死：承和七年七月七日（庚辰）薨于右大臣任，距开局约五个月；卷七、卷八、卷九开局前条目均无其病况记载（承和七年六月尚与绪嗣联名上奏），按规则注明“无开局前病况记载”，不给建议值。"
+    },
+    {
+      "id": "char-v17-fc4850f23bad",
+      "name": "藤原常嗣",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 43,
+      "baseline": "CIVIL",
+      "baselineWhy": "参议左大弁、遣唐持节大使，属文官兼使臣，按文官基线。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 70,
+        "benevolence": 51,
+        "integrity": 52
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "薨传：少游大学，涉猎史汉，谙诵文选，好属文，兼能隶书。",
+          "source": "《續日本後紀》卷九·承和七年四月（藤原常嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "少遊大學。渉獵史漢。諳誦文選。又好属文。兼能隷書。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "薨传评语：立性明干。",
+          "source": "《續日本後紀》卷九·承和七年四月（藤原常嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "立性明幹。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "薨传评语：威仪可称。",
+          "source": "《續日本後紀》卷九·承和七年四月（藤原常嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "威儀可稱。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 10,
+          "why": "出使：承和五年奉使持节入唐，六年归国；父子相继膺专对之选。",
+          "source": "《續日本後紀》卷九·承和七年四月（藤原常嗣薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "五年夏六月奉修聘持節使入巨唐。六年八月至自大唐。近代父子相襲。預專對之選。唯一門而已。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前（承和三年）首次渡海漂回，勅符褒其“忠貞之操”，冒险不辞劳。",
+          "source": "《續日本後紀》卷五·承和三年（勅符遣唐使）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第五.wiki",
+          "quote": "使等忠貞之操。不敢告勞。蒙冒險難。廻渉蒼海。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -5,
+          "why": "开局前（承和五年）漂回后由大使上奏改卜船次，以副使之第二舶改作己乘第一舶，小野篁斥为“以己福利，代他害損”（文德实录卷四）。",
+          "source": "《續日本後紀》卷七·承和五年十二月（小野篁配流條）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第七.wiki",
+          "quote": "一漂廻後。大使上奏。更復卜定。換其次第。第二舶改爲第一。大使駕之。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": {
+        "value": 45,
+        "why": "开局后约两个月（承和七年四月二十三日）即薨。开局前一年在唐时，圆仁闻“大使以下惣臥病。辛苦無極。病後漸可”，同卷又记使团官人“從在京之日。沈病辛苦”；归国后又遭母丧，开局时尚在丧中（二月二十一日方敕起视事）。病后初愈兼居丧劳毁，建议由现值下调至45左右。",
+        "quote": "又聞大使以下惣臥病。辛苦無極。病後漸可。",
+        "file": "E:/tianming-tmp/tang/research/raw/入唐求法巡禮行記_卷一.wiki"
+      },
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷三至九",
+        "入唐求法巡禮行記卷一、二",
+        "日本文德天皇實錄卷四（篁傳述改船次事）"
+      ],
+      "notes": "开局后一年内即死：承和七年四月薨，已给健康建议值。开局时服母丧，二月戊辰“有勅。起視事”（卷九）。现五常义75偏高：开局前改卜船次、以险舶转付副使一事，可酌减义。"
+    },
+    {
+      "id": "char-v17-ee9d0da0aa08",
+      "name": "嵯峨上皇",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 53,
+      "baseline": "RULER",
+      "baselineWhy": "太上天皇，按君主基线。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 57,
+        "intelligence": 85,
+        "valor": 57,
+        "military": 69,
+        "administration": 72,
+        "management": 68,
+        "charisma": 85,
+        "diplomacy": 67,
+        "benevolence": 64,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 10,
+          "why": "即位前纪：幼聪好读书，博览经史，善属文，妙草隶。",
+          "source": "《日本後紀》卷十八逸文·嵯峨天皇即位前紀",
+          "file": "E:/tianming-tmp/tang/research/raw/日本後紀_卷第十八.wiki",
+          "quote": "幼聡、好読書。及長、博覧経史、善属文、妙草隷。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 10,
+          "why": "即位前纪：神气岳立，有人君之量。",
+          "source": "《日本後紀》卷十八逸文·嵯峨天皇即位前紀",
+          "file": "E:/tianming-tmp/tang/research/raw/日本後紀_卷第十八.wiki",
+          "quote": "神気岳立、有人君之量。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -10,
+          "why": "开局前（弘仁十四年）自愿让位于淳和；遗诏自述以万机委贤、素心爱林泉，欲无位无号（本性自述）。",
+          "source": "《續日本後紀》卷十二·承和九年七月（嵯峨太上天皇遺詔）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十二.wiki",
+          "quote": "故以萬機之務。委於賢明。一林之風。素心所愛。思欲無位無號詣山水而逍遥。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "日本後紀卷十七、十八、廿一、廿二",
+        "續日本後紀卷一、四、八、九、十二"
+      ],
+      "notes": "健康：遗诏自称“余年弱冠。寒痾嬰身。服石變熱”，承和二年、承和六年八月皆有“不豫”记载；崩于承和九年七月（开局后约两年五个月），不在一年内，未给建议值，如需可酌减health。君主基线武勇57、军事69偏高：弘仁二年征夷虽由其下诏督责（日本后纪卷廿一“国之安危。在此一擧。將軍勉之”），但未见亲自统兵，查无可据减分原文，保持基线，建议复核（若改取文官基线的武勇25、军事33，则与仁明天皇锚点武勇18、军事16量级相近）。开局后：其崩后随即发生承和之变。"
+    },
+    {
+      "id": "char-v17-98dd683de2e0",
+      "name": "淳和上皇",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 53,
+      "baseline": "RULER",
+      "baselineWhy": "太上天皇，按君主基线。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 52,
+        "intelligence": 80,
+        "valor": 57,
+        "military": 69,
+        "administration": 82,
+        "management": 68,
+        "charisma": 75,
+        "diplomacy": 67,
+        "benevolence": 69,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "仁明颁令义解诏称其在位时“事勤遠圖。慮存長策”。",
+          "source": "《續日本後紀》卷三·承和元年十二月（頒行令義解詔）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第三.wiki",
+          "quote": "事勤遠圖。慮存長策。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "在位时主持撰定令义解，疑义亲断，裁为十卷，为法制建树。",
+          "source": "《續日本後紀》卷三·承和元年十二月（頒行令義解詔）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第三.wiki",
+          "quote": "迄于滯疑。祇禀聖斷。咸加辨析。已盡會通。裁爲十卷。名令義解。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -10,
+          "why": "开局前（天长十年二月）于淳和院让位于皇太子（仁明）。",
+          "source": "《續日本後紀》卷一（天長十年）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第一.wiki",
+          "quote": "天長十年春二月戊午朔乙酉。皇帝於淳和院讓位于皇太子。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -5,
+          "why": "开局前（天长十年三月）以恒贞年幼辞立其为太子。",
+          "source": "《續日本後紀》卷一（天長十年）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第一.wiki",
+          "quote": "天皇縁後太上天皇辞立太子奉答表曰。臣某言。伏覽詔旨曰。恒貞年實蒙幼。器非夙惠。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "顾命自述“素不尚華餝”，不欲扰耗人物（遗命在开局后，所述为素来本性）。",
+          "source": "《續日本後紀》卷九·承和七年五月辛巳（後太上天皇顧命）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "予素不尚華餝。况擾耗人物乎。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "續日本後紀卷一、三、六、七、八、九",
+        "日本後紀卷卅一、卷四十逸文（维基文库，未存档）"
+      ],
+      "notes": "开局后一年内即死：承和七年五月八日（癸未）崩于淳和院，距开局约三个半月；病况仅见开局后五月五日“停五日節。以後太上天皇不豫也”，卷七、卷八及卷九开局前条目查无其病况记载，按规则注明“无开局前病况记载”，不给建议值。君主基线武勇57、军事69偏高（查无统兵事迹亦无可据减分原文），建议复核（若改取文官基线的武勇25、军事33，则与仁明天皇锚点武勇18、军事16量级相近）。"
+    },
+    {
+      "id": "char-v17-b2df2bf6ef65",
+      "name": "恒贞亲王",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 14,
+      "baseline": "RULER",
+      "baselineWhy": "日本皇太子，按君主基线（规则：太子取君主基线）。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 67,
+        "intelligence": 80,
+        "valor": 47,
+        "military": 59,
+        "administration": 72,
+        "management": 68,
+        "charisma": 85,
+        "diplomacy": 67,
+        "benevolence": 69,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局前（承和五年）元服诏称其“風標岐嶷”（幼而颖异）。",
+          "source": "《續日本後紀》卷七·承和五年十一月（皇太子元服詔）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第七.wiki",
+          "quote": "皇太子恒貞。風標岐嶷。元禀温潤。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "薨传评语：性宽雅（本传为人评语，非后事）。",
+          "source": "《日本三代實錄》卷四十六·元慶八年（恒貞親王薨傳，含《日本紀略》補文）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本三代實錄_卷第卌六.wiki",
+          "quote": "親王、性寛雅、美風姿。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 10,
+          "why": "开局前（承和五年）紫宸殿加元服，“麗容厳備、挙止閑麗”；薨传亦称“美風姿”。",
+          "source": "《日本三代實錄》卷四十六·元慶八年（恒貞親王薨傳，含《日本紀略》補文）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本三代實錄_卷第卌六.wiki",
+          "quote": "天顔咫尺、麗容厳備、降殿拝舞、挙止閑麗。"
+        }
+      ],
+      "ageAdjustment": {
+        "valor": -10,
+        "military": -10,
+        "why": "age 14<20，按年龄规则武勇、军事各减10。"
+      },
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "續日本後紀卷一、七、十二",
+        "日本三代實錄卷四十六"
+      ],
+      "notes": "年龄14，按规则武勇、军事各减10。君主基线的政务72、辞令67等对十四岁储君偏高，年龄规则只调武勇军事，未另改，建议复核；其武勇47、军事59亦远高于仁明天皇锚点（18、16），若改取文官基线再减年龄则为15、23。现五常智62低于默认，与承和五年元服诏“風標岐嶷”不合，建议上调。开局后：承和九年七月承和之变被废（卷十二），后出家为僧——不计。"
+    },
+    {
+      "id": "char-v17-38348fb43faa",
+      "name": "橘逸势",
+      "group": "外藩原有模板值",
+      "faction": "日本",
+      "age": 58,
+      "baseline": "CIVIL",
+      "baselineWhy": "从五位下文官、入唐留学生出身，按文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 62,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "入唐留学，唐中文人呼为“橘秀才”。",
+          "source": "《日本文德天皇實錄》卷一·嘉祥三年（橘逸勢傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第一.wiki",
+          "quote": "唐中文人，呼為橘秀才。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "以书艺著称，宫门榜题出其手。",
+          "source": "《日本文德天皇實錄》卷一·嘉祥三年（橘逸勢傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第一.wiki",
+          "quote": "尤妙隸書，宮門榜題，手跡見在。"
+        },
+        {
+          "attr": "administration",
+          "delta": -10,
+          "why": "本传评语：为性放诞，不拘细节，不宜案牍常务。",
+          "source": "《日本文德天皇實錄》卷一·嘉祥三年（橘逸勢傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第一.wiki",
+          "quote": "為性放誕，不拘細節。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "續日本後紀卷九、十二",
+        "日本文德天皇實錄卷一",
+        "新唐書卷二百二十（東夷傳）"
+      ],
+      "notes": "健康：本传称其“以年老羸病，靜居不仕”，开局前已羸病；卒于承和九年八月配流途中（开局后约两年半），不在一年内，未给建议值，如需可下调health。剧本age 58无原文依据（生年不详）。开局后：承和七年四月任但马权守；承和九年连坐伴健岑谋反，配流伊豆，途中卒——品性项不计。"
+    },
+    {
+      "id": "char-v17-658ac4c711de",
+      "name": "张保皐",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 49,
+      "baseline": "MILITARY",
+      "baselineWhy": "清海镇大使、感义军使、镇海将军，统卒万人，按军将基线。",
+      "stats": {
+        "loyalty": 65,
+        "ambition": 52,
+        "intelligence": 71,
+        "valor": 73,
+        "military": 82,
+        "administration": 60,
+        "management": 79,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "valor",
+          "delta": 15,
+          "why": "与郑年同在唐为武宁军小将，“騎而用槍，無能敵者”。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "二人如唐，為武寧軍小將，騎而用槍，無能敵者。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局前自请镇清海以绝掠卖新罗人之路，识见海防要害。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "後，保皐還國，謁大王曰：「遍中國，以吾人為奴婢，願得鎭淸海，使賊不得掠人西去。」"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "领卒万人镇清海，此后海上无鬻新罗人者。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "大王與保皐萬人，此後，海上無鬻鄕人者。"
+        },
+        {
+          "attr": "management",
+          "delta": 10,
+          "why": "开局前（开成四年六月）遣“大唐賣物使”入唐，经营海上贸易。",
+          "source": "圓仁《入唐求法巡禮行記》卷二·開成四年六月",
+          "file": "E:/tianming-tmp/tang/research/raw/入唐求法巡禮行記_卷二.wiki",
+          "quote": "夜頭張實高遣大唐賣物使崔兵馬司。來。寺問慰。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "于唐文登县赤山创建法花院，置庄田岁得米五百石。",
+          "source": "圓仁《入唐求法巡禮行記》卷二·開成四年六月",
+          "file": "E:/tianming-tmp/tang/research/raw/入唐求法巡禮行記_卷二.wiki",
+          "quote": "山裏有寺。名赤山法花院。本張寶高初所建也。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹：承和七年十二月遣使日本大宰府献方物（以“人臣無境外之交”被却），有跨国通使之举。",
+          "source": "《續日本後紀》卷九·承和七年十二月己巳",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第九.wiki",
+          "quote": "大宰府言。藩外新羅臣張寳高。遣使献方物。即從鎭西追却焉。爲人臣無境外之交也。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前（838年）应祐徵（神武王，今王之父）报仇之请，“見義不爲無勇……唯命是從”。",
+          "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+          "quote": "弓福曰：「古人有言：『見義不爲無勇，吾雖庸劣，唯命是從。』」"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四",
+        "杜牧《張保皋鄭年傳》",
+        "續日本後紀卷九、十、十一",
+        "入唐求法巡禮行記卷一、二"
+      ],
+      "notes": "开局后：文圣王七年欲纳其女为次妃被群臣阻，八年“怨王不納女，據鎭叛”，为阎长所杀（三国史记卷十一）；续日本后纪卷十一则据新罗来使称其承和八年十一月死——品性项不计，死年不在开局后一年内。剧本age 49无原文依据。"
+    },
+    {
+      "id": "char-v17-9ea88d4c5613",
+      "name": "郑年",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 39,
+      "baseline": "MILITARY",
+      "baselineWhy": "清海军将，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 78,
+        "military": 82,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "valor",
+          "delta": 15,
+          "why": "与张保皐在唐为武宁军小将，“騎而用槍，無能敵者”。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "二人如唐，為武寧軍小將，騎而用槍，無能敵者。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "善斗，能没海底行五十里不噎，勇壮胜于保皐。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "皆善鬪戰，年復能沒海底，行五十里不噎，角其勇壯，保皐差不及也"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局前受保皐所分兵入国平乱立王（杜牧说），新罗本纪亦记其为金阳六将之一。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "年入國，誅叛者立王，王召保皐為相，以年代守淸海。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四",
+        "杜牧《張保皋鄭年傳》"
+      ],
+      "notes": "“年入國，誅叛者立王……以年代守淸海”出杜牧，三国史记注“此與新羅傳記頗異”而两存之。剧本age 39与张保皐49相差十岁，合杜牧“保臯年三十，年少十歲”，但两人生年皆无原文。"
+    },
+    {
+      "id": "char-v17-580900899030",
+      "name": "金阳",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 31,
+      "baseline": "MILITARY",
+      "baselineWhy": "“皆以世家為將相”，历武州都督，开成三年号平东将军统军夺位；开局所任苏判兼仓部令为追录军功所授，按军将基线。",
+      "stats": {
+        "loyalty": 70,
+        "ambition": 52,
+        "intelligence": 71,
+        "valor": 68,
+        "military": 82,
+        "administration": 70,
+        "management": 64,
+        "charisma": 69,
+        "diplomacy": 50,
+        "benevolence": 62,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "loyalty",
+          "delta": 10,
+          "why": "开局前（836年）均贞没于乱兵，金阳号泣誓天，潜藏以待报仇，终奉均贞之子祐徵即位。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽號泣旻天，誓心白日，潛藏山野，以俟時來。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "本传评语：生而英杰。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽生而英傑。"
+        },
+        {
+          "attr": "valor",
+          "delta": 10,
+          "why": "开局前（836年）陈兵宫门拒悌隆之党，引弓射杀十数人。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽陳兵宮門，以拒之曰：「新君在此，爾等何敢兇逆如此。」遂引弓射殺十數人。"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局前（839年正月）统军至大丘，大破王军，生擒斩获莫之能计。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "四年正月十九日，軍至大丘，王以兵迎拒，逆擊之，王軍敗北，生擒斬獲，莫之能計。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "历固城郡太守、中原大尹、武州都督，所临有政誉。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "俄轉武州都督，所臨有政譽。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "赦裴萱伯后，众人感悦归心。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "衆聞之曰：「萱伯如此，其他何憂。」無不感悅。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前（839年）入王城即令士女百姓各安其居，人民安堵。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "衣冠士女百姓，宜各安居，勿妄動。」遂復王城，人民案堵。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前（839年）赦射伤己腿之裴萱伯，称其“義士”而不校。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "犬各吠非其主，爾以其主射我，義士也，我勿校，爾安無恐。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "三國史記卷十、十一、四十四"
+      ],
+      "notes": "年龄31。开局后：文圣王九年（847）为侍中，唐授检校卫尉卿；大中十一年薨。"
+    },
+    {
+      "id": "char-v17-eef66c3f8da1",
+      "name": "金昕",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 36,
+      "baseline": "CIVIL",
+      "baselineWhy": "历宿卫使唐、南原太守、康州大都督、伊飡兼相国，主要为文职与使臣，按文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 37,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 28,
+        "administration": 72,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 70,
+        "benevolence": 51,
+        "integrity": 62
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "本传：幼而聪悟，好学问。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "昕幼而聰悟，好學問。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "本传：精神朗秀，器宇深沉，因而被荐使唐。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "或薦昕太宗之裔，精神朗秀，器宇深沈，可以當選。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 10,
+          "why": "出使：入唐宿卫岁余，唐授金紫光禄大夫试太常卿，归国以“不辱命”擢用。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "遂令入朝宿衛。歲餘請還，皇帝詔授金紫光祿大夫試太常卿。及歸，國王以不辱命"
+        },
+        {
+          "attr": "military",
+          "delta": -5,
+          "why": "开局前（839年闰正月）领军十万御清海兵于大丘而败绩。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "開成己未閏正月，為大將軍，領軍十萬，禦淸海兵於大丘，敗績。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -15,
+          "why": "开局前败后自责，不复仕宦，入小白山葛衣蔬食。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "自以敗軍，又不能死綏，不復仕宦。入小白山，葛衣蔬食，與浮圖遊。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "同上：以败军不能死绥自愧而弃官，知耻守节。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "自以敗軍，又不能死綏，不復仕宦。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "三國史記卷十、十一、四十四",
+        "唐會要卷九十五（据foreign-east.json已核引文）"
+      ],
+      "notes": "现五常智65低于默认，与本传“幼而聰悟，好學問”不合，建议复核。大中三年“感疾終於山齋”，不在开局后一年内。"
+    },
+    {
+      "id": "char-v17-72e3f77e4e2f",
+      "name": "裴萱伯",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 39,
+      "baseline": "MILITARY",
+      "baselineWhy": "悌隆（僖康王）旧将，按军将基线。",
+      "stats": {
+        "loyalty": 70,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 63,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "开局前（836年）攻宫时射中金阳股。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "悌隆下裴萱伯，射陽中股。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 10,
+          "why": "金阳称其“以其主射我，義士也”，为主效力之本性评语。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽召萱伯曰：「犬各吠非其主，爾以其主射我，義士也，我勿校，爾安無恐。」"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四"
+      ],
+      "notes": "剧本age 39无原文依据；获赦后官职未见记载。"
+    },
+    {
+      "id": "char-v17-907bfa0d1793",
+      "name": "义琮",
+      "group": "外藩原有模板值",
+      "faction": "新罗",
+      "age": 43,
+      "baseline": "CIVIL",
+      "baselineWhy": "王子，开局当月拜侍中（执事部长官），按文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 70,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 50,
+        "intelligence": 55,
+        "valor": 40,
+        "military": 35,
+        "administration": 45,
+        "management": 50,
+        "charisma": 50,
+        "diplomacy": 45,
+        "benevolence": 50,
+        "integrity": 50
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 10,
+          "why": "出使：兴德王十一年以王子入唐谢恩兼宿卫，开成二年四月放还。",
+          "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+          "quote": "遣王子金義琮如唐，謝恩兼宿衛。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一",
+        "唐會要卷九十五（据foreign-east.json已核引文）"
+      ],
+      "notes": "文圣王五年正月“侍中義琮病免”（843，开局后近三年），不在一年内，未给健康建议。剧本age 43无原文依据。"
+    },
+    {
+      "id": "char-fdda1218dec7",
+      "name": "掘罗勿",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相而“將兵在外”，为统兵之相，按军将基线。",
+      "stats": {
+        "loyalty": 40,
+        "ambition": 67,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 50,
+        "ambition": 62,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "loyalty",
+          "delta": -20,
+          "why": "开局前（开成四年）以马三百赂沙陀借兵攻本国可汗，可汗兵败自杀。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "相掘羅勿將兵在外，以馬三百賂沙陀朱邪赤心，借其兵共攻可汗。可汗兵敗，自殺，國人立馺特勒爲可汗。"
+        },
+        {
+          "attr": "ambition",
+          "delta": 15,
+          "why": "开局前擁兵在外，杀可汗另立新汗，专擅国政。",
+          "source": "《舊唐書》卷一百九十五·回紇傳",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷195.wiki",
+          "quote": "又有回鶻相掘羅勿者，擁兵在外，怨誅柴草、安允合，又殺薩特勒可汗"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前以马三百贿沙陀朱邪赤心、借兵成事，善于借外力。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "以馬三百賂沙陀朱邪赤心，借其兵共攻可汗。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "資治通鑑卷二百四十六",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局后一年内即死：开成五年秋黠戛斯破回鹘牙帐，“殺馺及掘羅勿”（通鉴卷246），属战死而非病亡；无开局前病况记载，不给建议值。"
+    },
+    {
+      "id": "char-3917aa6b1c70",
+      "name": "赤心",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相、特勒多为自领部众的部落首领，史载“各帥其眾”，回鹘亦“遣相國將兵”（《資治通鑑》卷246），按部落武人取军将基线；赤心开局后“帥其眾”抵天德、部众七千帐。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见开成五年牙帐破后为相、会昌二年被嗢没斯诱杀；“桀黠難知”系对手说辞且在开局后。查过：通鉴卷245、246，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "資治通鑑卷二百四十五、二百四十六",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局前行迹无载，各项保持基线。开局后：开成五年牙帐破后随嗢没斯等抵天德塞下；会昌二年嗢没斯以其“桀黠難知”“謀犯塞”诱杀之（通鉴卷246；新唐书作“奸桀”）——系对手说辞且属后事，未计入。与沙陀朱邪赤心同名，非一人。"
+    },
+    {
+      "id": "char-4854c0a53db5",
+      "name": "馺职",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相、特勒多为自领部众的部落首领，史载“各帥其眾”，回鹘亦“遣相國將兵”（《資治通鑑》卷246），按部落武人取军将基线；馺职开局后拥十五部西奔。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 69,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "开局后事迹：牙帐破后拥外甥厖特勒及十五部西奔葛逻禄，能聚众。",
+          "source": "《舊唐書》卷一百九十五·回紇傳",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷195.wiki",
+          "quote": "有回鶻相馺職者，擁外甥龐特勒及男鹿並遏粉等兄弟五人、一十五部西奔葛邏祿"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见开成五年牙帐破后拥厖特勒等十五部西奔葛逻禄，属开局后。查过：通鉴卷246，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "資治通鑑卷二百四十六",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局前行迹无载。开局时为相属据开成五年记载推定。"
+    },
+    {
+      "id": "char-9e660779ea0b",
+      "name": "厖",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 35,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相、特勒多为自领部众的部落首领，史载“各帥其眾”，回鹘亦“遣相國將兵”（《資治通鑑》卷246），按部落武人取军将基线；厖特勒为王族，开局后率部西奔。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 69,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "开局后事迹：回鹘残众渐归之，自称可汗，居甘州，有碛西诸城。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "遺帳伏山林間，狙盜諸蕃自給，稍歸厖特勒。是時，特勒已自稱可汗，居甘州，有磧西諸城。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见牙帐破后随舅馺职西奔、后自称可汗居甘州，均属开局后。查过：通鉴卷246、248，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "資治通鑑卷二百四十六、二百四十八",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局前行迹无载。通鉴卷248称其“種落微弱，時入獻見”。须与会昌二年降幽州之“特勒厖俱遮”（新唐书）/“龐俱遮”（旧唐书）区分。"
+    },
+    {
+      "id": "char-dd255d50ea2b",
+      "name": "那颉啜",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 35,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相、特勒多为自领部众的部落首领，史载“各帥其眾”，回鹘亦“遣相國將兵”（《資治通鑑》卷246），按部落武人取军将基线；那颉啜开局后“帥其眾”并收赤心部七千帐。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 67,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：会昌二年战胜而尽占赤心所部七千帐（旧唐书；通鉴只言“收赤心之眾”）。",
+          "source": "《舊唐書》卷一百九十五·回紇傳",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷195.wiki",
+          "quote": "那頡戰勝，全占赤心下七千帳"
+        },
+        {
+          "attr": "military",
+          "delta": -10,
+          "why": "开局后事迹：随即南窥幽州，为张仲至三万兵大破，七千帐尽被收降，身走为乌介所杀，属全军覆没。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "盧龍節度使張仲武遣其弟仲至將兵三萬迎擊，大破之，斬首捕虜不可勝計，悉收降其七千帳，分配諸道。那頡啜走，烏介可汗獲而殺之。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见开成五年率众抵天德、会昌二年收赤心部东走被破，均属开局后。查过：通鉴卷246，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "資治通鑑卷二百四十六",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局前行迹无载。会昌二年收赤心之众东走、窥幽州属后事，品性不计。"
+    },
+    {
+      "id": "char-f9591fbcf15f",
+      "name": "乌希",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 35,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘宰相、特勒多为自领部众的部落首领，史载“各帥其眾”，回鹘亦“遣相國將兵”（《資治通鑑》卷246），按部落武人取军将基线；开局时仅为特勒，不能提前按可汗取君主基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 69,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "开局后事迹：会昌元年牙帐十三姓（部）共奉为乌介可汗。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "於是，可汗牙部十三姓奉烏介特勒為可汗，南保錯子山。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：攻云州，河东节度使刘沔与战败绩。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "而可汗已攻雲州，劉沔與戰，敗績。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：会昌二年八月突入大同川，驱掠牛马数万，转斗至云州城门，刺史闭城自守。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "可汗帥眾過杷頭烽南，突入大同川，驅掠河東雜虜牛馬數萬，轉斗至雲州城門。刺史張獻節閉城自守"
+        },
+        {
+          "attr": "military",
+          "delta": -10,
+          "why": "开局后事迹：会昌三年为石雄夜袭所破，追至杀胡山，被创而走，公主被迎还、部众数万降，属决定性失败。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "烏介方薄振武，雄馳入，夜穴壘出鏖兵，烏介驚，引去，雄追北至殺胡山，烏介被創走。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见会昌元年被十三部立为乌介可汗及其后劫公主、寇边等事，均属开局后。查过：通鉴卷246、247，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "資治通鑑卷二百四十六、二百四十七",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "开局前行迹无载，品性保持基线。开局后：劫太和公主、借城要挟、剽掠边州、终为黑车子所杀（旧唐书作为回鹘相逸隐啜所逼杀）——品性不计。"
+    },
+    {
+      "id": "char-6c8e4605c932",
+      "name": "句录莫贺",
+      "group": "外藩新补",
+      "faction": "回鹘",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "回鹘别将（将军），按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 82,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局后事迹：引黠戛斯十万骑破回鹘，杀可汗及掘罗勿，焚牙帐。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "回鶻別將句録莫賀引黠戛斯十萬騎攻回鶻，大破之，殺馺及掘羅勿，焚其牙帳蕩盡，回鶻諸部逃散。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹：投黠戛斯并说动其出兵十万。",
+          "source": "《舊唐書》卷一百九十五·回紇傳",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷195.wiki",
+          "quote": "有將軍句錄末賀恨掘羅勿，走引黠戛斯領十萬騎破回鶻城"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见其恨掘罗勿而引黠戛斯破回鹘，叛投时间不详，按开局后处理；“恨”仅为缘由叙述，不作德性依据。查过：通鉴卷246，旧唐书卷195，新唐书卷217下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "資治通鑑卷二百四十六",
+        "舊唐書卷一百九十五",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "何时投黠戛斯不详；其叛投与引兵灭国均属开局后，忠诚、品性不因此改数。旧唐书所记“恨掘羅勿”仅为缘由叙述，未作品性依据。"
+    },
+    {
+      "id": "char-4a447bb9516d",
+      "name": "阿热",
+      "group": "外藩新补",
+      "faction": "黠戛斯",
+      "age": 55,
+      "baseline": "RULER",
+      "baselineWhy": "黠戛斯可汗，按君主基线。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 82,
+        "intelligence": 75,
+        "valor": 57,
+        "military": 84,
+        "administration": 72,
+        "management": 68,
+        "charisma": 75,
+        "diplomacy": 77,
+        "benevolence": 64,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 60,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 78,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "ambition",
+          "delta": 10,
+          "why": "开局前乘回鹘稍衰即自称可汗。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "回鶻稍衰，阿熱即自稱可汗。"
+        },
+        {
+          "attr": "ambition",
+          "delta": 5,
+          "why": "开局前恃胜詈回鹘，扬言必取其金帐。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "阿熱恃勝，乃肆詈曰：「爾運盡矣！我將收爾金帳，於爾帳前馳我馬，植我旗，爾能抗，亟來，即不能，當疾去。」"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局前与回鹘连兵二十余年，回鹘相国将兵屡为所败。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "回鶻遣相國將兵擊之，連兵二十餘年，數爲黠戛斯所敗"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：亲自将兵焚回鹘牙帐及可汗金帐。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "阿熱身自將，焚其牙及公主所廬金帳者，回鶻可汗常坐也。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹：以同宗李陵之后自居，遣使卫送太和公主还唐。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "阿熱以公主唐貴女，遣使者衛送公主還朝"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹：使者被杀后再遣注吾合素上书，三岁达京师，武宗大悦。",
+          "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+          "quote": "會昌中，阿熱以使者見殺，無以通於朝，復遣註吾合素上書言狀。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 67,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前可据者只有与回鹘相攻二十年间恃胜肆詈、扬言取其金帐一事，礼略减；遣使送太和公主还唐、以李陵之后自居等皆在开局后，未计入，其余保持默认。",
+        "adjustments": [
+          {
+            "attr": "礼",
+            "delta": -5,
+            "why": "开局前恃胜肆詈回鹘、扬言“收爾金帳……植我旗”，骄慢失礼。",
+            "source": "《新唐書》卷二百一十七下·回鶻傳下（附黠戛斯）",
+            "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷217下.wiki",
+            "quote": "阿熱恃勝，乃肆詈曰：「爾運盡矣！我將收爾金帳，於爾帳前馳我馬，植我旗，爾能抗，亟來，即不能，當疾去。」"
+          }
+        ]
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "資治通鑑卷二百四十六、二百四十七",
+        "新唐書卷二百一十七下"
+      ],
+      "notes": "“阿热”为君长称号兼姓，本名不详；剧本age 55无原文依据。"
+    },
+    {
+      "id": "char-8d3ccc61f50e",
+      "name": "尚婢婢",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "吐蕃鄯州节度使，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 42,
+        "intelligence": 76,
+        "valor": 63,
+        "military": 82,
+        "administration": 60,
+        "management": 64,
+        "charisma": 69,
+        "diplomacy": 55,
+        "benevolence": 62,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 44,
+        "intelligence": 70,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 58,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "ambition",
+          "delta": -10,
+          "why": "本传评语：好读书，不乐仕进（彝泰赞普强起之）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "婢婢好讀書，不樂仕進，國人敬之。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "本传：略通书记。",
+          "source": "《新唐書》卷二百一十六下·吐蕃傳下",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷216下.wiki",
+          "quote": "世為吐蕃貴相，寬厚，略通書記，不喜仕，贊普強官之。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "本传评语：有谋略（开局后以厚币卑辞骄敌、伏兵大破恐热可证）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "婢婢寬厚沉勇，有謀略，訓練士卒多精勇。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "本传评语：沉勇。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "婢婢寬厚沉勇，有謀略，訓練士卒多精勇。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "本传评语：训练士卒多精勇（开局前已镇鄯州）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "婢婢寬厚沉勇，有謀略，訓練士卒多精勇。"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局后事迹：会昌三年遣将于河州南设伏，恐热大败，伏尸五十里；次年围恐热于东谷、余众皆降，大中元年、二年其将厖结藏、拓跋怀光又两破恐热军（通鉴卷247、248）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "伏兵發，斷其歸路，夾擊之。會大風飛沙，溪谷皆溢，恐熱大敗，伏屍五十里，溺死者不可勝數，恐熱單騎遁歸。"
+        },
+        {
+          "attr": "military",
+          "delta": -5,
+          "why": "开局后事迹：大中三年所遣将磨离罴子败死，粮乏弃鄯州就水草于甘州西（前一年诸将违令轻进亦败）。",
+          "source": "《資治通鑑》卷二百四十九·大中三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷249.wiki",
+          "quote": "羆子逆戰，敗死。婢婢糧乏，留拓跋懷光守鄯州，帥部落三千餘人就水草於甘州西。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 10,
+          "why": "本传评语：宽厚（新唐书、通鉴两见）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "婢婢寬厚沉勇，有謀略，訓練士卒多精勇。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "开局后事迹：恐热部将恶其残忍，降于婢婢。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "吐蕃論恐熱之將岌藏豐贊惡恐熱殘忍，降於尚婢婢。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹：传檄河湟数恐热之罪，从恐热者稍稍引去。",
+          "source": "《資治通鑑》卷二百四十八",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷248.wiki",
+          "quote": "婢婢傳檄河、湟，數恐熱殘虐之罪，曰：「汝輩本唐人，吐蕃無主，則相與歸唐，毋為恐熱所獵如狐兔也！」於是諸部從恐熱者稍稍引去。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六至二百四十九",
+        "舊唐書卷一百九十六下"
+      ],
+      "notes": "通鉴卷247称其“年四十餘，彝泰贊普強起之，使鎮鄯州”，彝泰卒于开成三年，可证开局时已在鄯州任上（旧推定可升为有据）。开局后：与论恐热相攻多年，大中三年粮尽弃鄯州——品性不计。现五常仁64，“寬厚”两见，可再上调。"
+    },
+    {
+      "id": "char-75a137c7fbdf",
+      "name": "论恐热",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "吐蕃别将、落门川讨击使，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 71,
+        "valor": 58,
+        "military": 67,
+        "administration": 60,
+        "management": 64,
+        "charisma": 59,
+        "diplomacy": 55,
+        "benevolence": 42,
+        "integrity": 46
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "benevolence",
+          "delta": -10,
+          "why": "本传性评语：性悍忍。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "洛門川討擊使論恐熱，性悍忍，多詐謀"
+        },
+        {
+          "attr": "integrity",
+          "delta": -10,
+          "why": "本传性评语：谲诡善幻（通鉴亦称“多詐謀”）。",
+          "source": "《新唐書》卷二百一十六下·吐蕃傳下",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷216下.wiki",
+          "quote": "別將尚恐熱為落門川討擊使，姓末，名農力，「熱」猶中國號「郎」也，譎詭善幻"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "多诈谋，善以机变取胜。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "洛門川討擊使論恐熱，性悍忍，多詐謀"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 10,
+          "why": "开局后事迹：隔洮水说苏毗等部，诸部疑而不战、先降。",
+          "source": "《新唐書》卷二百一十六下·吐蕃傳下",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷216下.wiki",
+          "quote": "恐熱謂蘇毗等曰：「宰相兄弟殺贊普，天神使我舉義兵誅不道，爾屬乃助逆背國耶？」蘇毗等疑而不戰"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": -5,
+          "why": "开局后事迹：大中四年入朝，气色骄倨、语言荒诞，所求不许。",
+          "source": "《資治通鑑》卷二百四十九·大中三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷249.wiki",
+          "quote": "恐熱氣色驕倨，語言荒誕，求為河渭節度使。上不許"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：会昌二年击国相尚思罗于薄寒山，思罗弃辎重西奔。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "恐熱擊之，思羅棄輜重西奔松州。"
+        },
+        {
+          "attr": "military",
+          "delta": -10,
+          "why": "开局后事迹：此后屡为尚婢婢所败——会昌三年河州之南伏尸五十里、单骑遁归，四年退保东谷余众皆降，大中元年又大败（通鉴卷247、248）。",
+          "source": "《資治通鑑》卷二百四十七·會昌三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "伏兵發，斷其歸路，夾擊之。會大風飛沙，溪谷皆溢，恐熱大敗，伏屍五十里，溺死者不可勝數，恐熱單騎遁歸。"
+        },
+        {
+          "attr": "charisma",
+          "delta": -5,
+          "why": "开局后事迹：残虐，所部多叛。",
+          "source": "《資治通鑑》卷二百四十九·大中三年至四年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷249.wiki",
+          "quote": "吐蕃論恐熱殘虐，所部多叛。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 50,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 60
+        },
+        "confidence": {
+          "仁": "M",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "M"
+        },
+        "note": "通鉴“性悍忍，多詐謀”、新唐书“譎詭善幻”为概括本性之评语，仁、信各减；会昌二年起兵称义、通鉴评“實謀篡國”及其后残虐诸事均属开局后，未计入义、礼，保持默认。",
+        "adjustments": [
+          {
+            "attr": "仁",
+            "delta": -10,
+            "why": "本传性评语：性悍忍。",
+            "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+            "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+            "quote": "洛門川討擊使論恐熱，性悍忍，多詐謀"
+          },
+          {
+            "attr": "信",
+            "delta": -10,
+            "why": "本传性评语：譎詭善幻、多詐謀。",
+            "source": "《新唐書》卷二百一十六下·吐蕃傳下",
+            "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷216下.wiki",
+            "quote": "別將尚恐熱為落門川討擊使，姓末，名農力，「熱」猶中國號「郎」也，譎詭善幻"
+          }
+        ]
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六至二百五十",
+        "舊唐書卷一百九十六下"
+      ],
+      "notes": "开局时任落门川讨击使系据会昌二年记载推定。开局后：会昌二年起兵自称国相（通鉴评“雖名義兵，實謀篡國”），大中年间大掠河西、“以槊貫嬰兒為戲”，咸通七年被杀——均属后事，忠诚、野心不因此改数。"
+    },
+    {
+      "id": "char-f79bdfa7a2a6",
+      "name": "结都那",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 55,
+      "baseline": "CIVIL",
+      "baselineWhy": "吐蕃大相（首相），居逻些朝中，按文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：唯一可据的行事是会昌二年见乞离胡不拜、恸哭而出被杀，属开局后，未计入（若计后事则义可大加）。查过：新唐书卷216下，通鉴卷246。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六"
+      ],
+      "notes": "开局前行迹无载，各项保持基线。开局后：会昌二年见乞离胡不拜，言“老夫無權，不得正其亂以報先贊普之德，有死而已”，拔刀剺面恸哭而出，被杀灭族（通鉴卷246）——属后事，未计入；若允许计后事，忠诚、义可大幅上调。开局时在任属推定。"
+    },
+    {
+      "id": "char-b1b866f36d88",
+      "name": "尚思罗",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "名为国相，但史料所见唯屯兵薄寒山、合苏毗吐谷浑羊同兵八万保洮水之军事行动，职任实为统兵之相，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 62,
+        "administration": 60,
+        "management": 64,
+        "charisma": 59,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "military",
+          "delta": -10,
+          "why": "开局后事迹：会昌二年屯薄寒山为恐热所击，弃辎重西奔松州。",
+          "source": "《資治通鑑》卷二百四十六·開成四年至會昌二年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "至渭州，遇國相尚思羅屯薄寒山，恐熱擊之，思羅棄輜重西奔松州。"
+        },
+        {
+          "attr": "charisma",
+          "delta": -5,
+          "why": "开局后事迹：所合八万诸部闻恐热之言疑而不战，先降，思罗被擒缢杀。",
+          "source": "《新唐書》卷二百一十六下·吐蕃傳下",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷216下.wiki",
+          "quote": "蘇毗等疑而不戰，恐熱麾輕騎涉河，諸部先降，並其眾至十餘萬，禽思羅縊殺之。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见会昌二年屯薄寒山、保洮水、兵败被杀，属开局后；恐热所称“宰相兄弟殺贊普”系敌方宣传。查过：新唐书卷216下，通鉴卷246。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六"
+      ],
+      "notes": "开局前行迹无载，开局时在任属推定。恐热指其“宰相兄弟殺贊普”系敌方宣传，未计入。"
+    },
+    {
+      "id": "char-56fb829ea519",
+      "name": "綝氏",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 30,
+      "baseline": "CIVIL",
+      "baselineWhy": "赞普之妃，属宫廷人物，非君主亦非军将，按文官基线；“妃共治其國”在开局后。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史籍只见会昌二年立兄子乞离胡、与佞相共制国事，属开局后。查过：新唐书卷216下，通鉴卷246、248。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六、二百四十八"
+      ],
+      "notes": "开局前行迹无载，各项保持基线。开局后：会昌二年达磨死，立其兄尚延力子乞离胡，“妃共治其國”；通鉴作“絲林氏”，称佞相与妃共制国事，老臣不得预政——属后事，未计入。"
+    },
+    {
+      "id": "char-de4051041654",
+      "name": "论夷加羌",
+      "group": "外藩新补",
+      "faction": "吐蕃",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "吐蕃东北道元帅，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 54,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前（开成二年十一月）遣使持信物、木夹致书天德军，与唐边镇通使。",
+          "source": "《冊府元龜》卷九百八十·外臣部·通好（開成二年）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜 (四庫全書本)_卷0980.wiki",
+          "quote": "二年十一月天徳奏吐蕃東北道元帥論夷加羌使信物乃木夾到本道以其書信上聞"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见开成二年遣使持木夹致书天德军一事，属边帅通使公务，不足以定个人德性；此外查无开局前行迹。查过：册府元龟卷980，新唐书卷216下，通鉴卷246。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "冊府元龜卷九百八十",
+        "新唐書卷二百一十六下",
+        "資治通鑑卷二百四十六"
+      ],
+      "notes": "开局时是否仍在任不详。"
+    },
+    {
+      "id": "char-1a04a23a7c8b",
+      "name": "王嵯巅",
+      "group": "外藩新补",
+      "faction": "南诏",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "原弄栋节度，大和三年亲统南诏大军入蜀，按军将基线。",
+      "stats": {
+        "loyalty": 45,
+        "ambition": 67,
+        "intelligence": 71,
+        "valor": 63,
+        "military": 82,
+        "administration": 65,
+        "management": 74,
+        "charisma": 64,
+        "diplomacy": 60,
+        "benevolence": 42,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 54,
+        "ambition": 62,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 80,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "loyalty",
+          "delta": -15,
+          "why": "开局前（元和十一年）杀南诏王劝龙晟而立其弟；因劝龙晟“淫肆不道，上下怨疾”，且此后二十余年仍奉蒙氏，取−15而非−20。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "十一年，為弄棟節度王嵯巔所殺，立其弟勸利。"
+        },
+        {
+          "attr": "ambition",
+          "delta": 15,
+          "why": "弑君另立，受封“大容”（兄），权倾南诏。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "勸利德嵯巔，賜氏蒙，封「大容」，蠻謂兄為「容」。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局前（大和三年）谋大举入寇，趁西川不备。",
+          "source": "《資治通鑑》卷二百四十四·大和三年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷244.wiki",
+          "quote": "南詔自嵯顛謀大舉入寇，邊州屢以告，元穎不之信。嵯顛兵至，邊城一無備御。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "开局前（大和三年）撤军时亲自殿后。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "救兵逐，嵯巔身自殿"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "开局前（大和三年）悉众陷邛、戎、巂三州，入成都外郭。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "嵯巔乃悉眾掩邛、戎、巂三州，陷之。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前入成都止西郛十日，慰赉居人，市不扰肆，治军约束有方。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "入成都，止西郛十日，慰賚居人，市不擾肆。"
+        },
+        {
+          "attr": "management",
+          "delta": 10,
+          "why": "掠工技南归，南诏自是工文织，与中国相埒。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "南詔自是工文織，與中國埒。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前覆书东川郭钊，归咎杜元颖，修好而退。",
+          "source": "《資治通鑑》卷二百四十四·大和三年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷244.wiki",
+          "quote": "郭釗兵寡弱不能戰，以書責嵯顛。嵯顛覆書曰：「杜元穎侵擾我，故興兵報之耳。」與釗修好而退。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前遣使上表归罪杜元颖，唐再贬元颖、召还诸道兵。",
+          "source": "《資治通鑑》卷二百四十四·大和三年",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷244.wiki",
+          "quote": "嵯顛遣使上表，稱：「蠻比修職貢，豈敢犯邊，正以杜元穎不恤軍士，怨苦元穎，競為鄉導，祈我此行以誅虐帥。誅之不遂，無以慰蜀士之心，願陛下誅之。」"
+        },
+        {
+          "attr": "benevolence",
+          "delta": -10,
+          "why": "开局前（大和三年）掠子女工技数万南归，蜀人惧而自杀者不可胜计。",
+          "source": "《新唐書》卷二百二十二中·南蠻傳中（南詔下）",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷222中.wiki",
+          "quote": "將還，乃掠子女、工技數萬引而南，人懼自殺者不勝計。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "新唐書卷二百二十二中",
+        "資治通鑑卷二百四十四",
+        "蠻書"
+      ],
+      "notes": "开局时确切官职不详（剧本作“大容”）。现五常仁60未计大和三年掠蜀子女工技数万、“赴水死者十三”之事，建议酌减仁。"
+    },
+    {
+      "id": "char-35f15d11693d",
+      "name": "藤原爱发",
+      "group": "外藩新补",
+      "faction": "日本",
+      "age": 52,
+      "baseline": "CIVIL",
+      "baselineWhy": "中纳言兼民部卿，按文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 82,
+        "management": 75,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 76,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 55,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "薨传：大同中为文章生，屡献应诏之诗。",
+          "source": "《續日本後紀》卷十三·承和十年九月（藤原愛發薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "大同年中爲文章生。屡献應詔之詩。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "薨传评语：为人和柔，不妄发忿。",
+          "source": "《續日本後紀》卷十三·承和十年九月（藤原愛發薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "爲人和柔。不妄發忿。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "薨传评语：在于政途，许为通熟。",
+          "source": "《續日本後紀》卷十三·承和十年九月（藤原愛發薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "在於政塗。許爲通熟。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：历大藏卿，天长九年起兼民部卿，掌财赋户籍。",
+          "source": "《續日本後紀》卷十三·承和十年九月（藤原愛發薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "十一月授從三位。拜中納言。兼民部卿。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷一、三、五、八、九、十二、十三"
+      ],
+      "notes": "开局后：承和七年八月升大纳言（卷九）；承和九年连逮伴健岑谋反事出京外，承和十年薨于山城别墅——忠诚不因此改数。"
+    },
+    {
+      "id": "char-657a0495624e",
+      "name": "藤原吉野",
+      "group": "外藩新补",
+      "faction": "日本",
+      "age": 53,
+      "baseline": "CIVIL",
+      "baselineWhy": "中纳言，按文官基线。",
+      "stats": {
+        "loyalty": 68,
+        "ambition": 42,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 82,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 61,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 78,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 55,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "薨传：少年游学，不耻下问，见贤思齐，手不释卷。",
+          "source": "《續日本後紀》卷十六·承和十三年八月（藤原吉野薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十六.wiki",
+          "quote": "見賢思齊。手不釋卷。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 10,
+          "why": "薨传评语：性宽大，能容众；教诲子弟尤为柔和。",
+          "source": "《續日本後紀》卷十六·承和十三年八月（藤原吉野薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十六.wiki",
+          "quote": "性寛大。能容衆。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "开局前任骏河守，强济诸事，所部肃清。",
+          "source": "《續日本後紀》卷十六·承和十三年八月（藤原吉野薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十六.wiki",
+          "quote": "除駿河守。強濟諸事。所部肅清。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 10,
+          "why": "薨传评语：忠孝之道，与为多焉。",
+          "source": "《續日本後紀》卷十六·承和十三年八月（藤原吉野薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十六.wiki",
+          "quote": "忠孝之道。與爲多焉。"
+        },
+        {
+          "attr": "ambition",
+          "delta": -10,
+          "why": "开局前（天长十年后）辞脱宿卫之职，追随退位的淳和上皇。",
+          "source": "《續日本後紀》卷十六·承和十三年八月（藤原吉野薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十六.wiki",
+          "quote": "厥後辞脱宿衛之職。追從後太上天皇。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷一、三、五、七、八、九、十二、十六"
+      ],
+      "notes": "开局后：承和七年五月淳和崩后“朞年之内。絶而不宦”；承和九年缘坐伴健岑事左贬大宰员外帅——品性不计。"
+    },
+    {
+      "id": "char-bc075ae97b78",
+      "name": "橘氏公",
+      "group": "外藩新补",
+      "faction": "日本",
+      "age": 56,
+      "baseline": "CIVIL",
+      "baselineWhy": "中纳言，按文官基线；右近卫大将一职另按“掌兵”酌加军事。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 38,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "身份事实：天长十年起为右近卫大将，统近卫府宫卫之兵，按“掌兵”取最低一档。",
+          "source": "《續日本後紀》卷十七·承和十四年（橘氏公薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十七.wiki",
+          "quote": "天長十年授從三位。爲右近衛大將。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前史料只有历官与承和六年上表请辞大将（例行辞让）；薨传仅言“以太后弟。歴此顯要焉”，无品行评语，查无开局前可据行迹。查过：续日本后纪卷一至三、七至十一、十七，文德实录卷一、四。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "續日本後紀卷一、二、三、七、八、九、十、十一、十七",
+        "日本文德天皇實錄卷一、四"
+      ],
+      "notes": "薨传只记历官，并言“以太后弟。歴此顯要焉”——以外戚致显要，无能力、品性评语，未据以减分。承和六年、七年两度上表请辞大将，属例行辞让，未计。开局后：承和十二年任右大臣后“移病居第。不視世事”（卷十七）。"
+    },
+    {
+      "id": "char-74bc398dcba0",
+      "name": "文室秋津",
+      "group": "外藩新补",
+      "faction": "日本",
+      "age": 52,
+      "baseline": "CIVIL",
+      "baselineWhy": "参议兼春宫大夫、右卫门督，历左右大弁，按文官基线；武艺另据卒传加分。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 40,
+        "military": 43,
+        "administration": 72,
+        "management": 70,
+        "charisma": 57,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 67
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 37,
+        "military": 41,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 61
+      },
+      "adjustments": [
+        {
+          "attr": "valor",
+          "delta": 15,
+          "why": "卒传评语：亦论武艺，足称骁将。",
+          "source": "《續日本後紀》卷十三·承和十年三月（文室秋津卒傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "亦論武藝。足稱驍將。"
+        },
+        {
+          "attr": "military",
+          "delta": 10,
+          "why": "同上，兼历左兵卫权佐、左右近卫中将、右卫门督等宫卫武职。",
+          "source": "《續日本後紀》卷十三·承和十年三月（文室秋津卒傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "亦論武藝。足稱驍將。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "卒传评语：任右卫门督监察非违，最为得人。",
+          "source": "《續日本後紀》卷十三·承和十年三月（文室秋津卒傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "監察非違。最是其人也。"
+        },
+        {
+          "attr": "charisma",
+          "delta": -5,
+          "why": "卒传评语：酒席似非丈夫，每饮三四杯必醉泣。",
+          "source": "《續日本後紀》卷十三·承和十年三月（文室秋津卒傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十三.wiki",
+          "quote": "但在飮酒席。似非丈夫。毎至酒三四坏。必有醉泣之癖故也。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷一、三、四、五、八、九、十二、十三"
+      ],
+      "notes": "开局后：承和九年连坐伴健岑谋反事左降出云员外守，卒于配所——品性不计。"
+    },
+    {
+      "id": "char-2953a81b9243",
+      "name": "小野篁",
+      "group": "外藩新补",
+      "faction": "日本",
+      "age": 37,
+      "baseline": "CIVIL",
+      "baselineWhy": "文章生出身，历弹正、内记、式部、东宫学士等文职，按文官基线。",
+      "stats": {
+        "loyalty": 48,
+        "ambition": 52,
+        "intelligence": 89,
+        "valor": 35,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 67
+      },
+      "currentStats": {
+        "loyalty": 52,
+        "ambition": 52,
+        "intelligence": 82,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 63
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 15,
+          "why": "薨传评语：当时文章，天下无双。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "凡當時文章，天下無雙。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "以书法著称：草隶之工比于二王，后生皆以为师。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "草隸之工，古二王之倫。後生習之者，皆為師摸。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "少随父在陆奥，便于据鞍，嵯峨叹其几为弓马之士。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "篁隨父客遊，便於據鞍。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "薨传：身长六尺二寸。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "篁身長六尺二寸"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局后事迹：承和十三年善恺诉讼，所执私曲律义为诸儒覆议认可。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "篁朝臣所執，誠為允愜。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": -10,
+          "why": "开局前（承和五年）称病不遂遣唐国命，以捍诏除名配流。",
+          "source": "《續日本後紀》卷七·承和五年十二月（小野篁配流條）",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第七.wiki",
+          "quote": "小野篁。内含綸旨。出使外境。空稱病故。不遂國命。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "开局前抗论改船次“以己福利，代他害損”，执论确乎，不复驾舶。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "執論確乎，不復駕舶。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "薨传评语：公俸所当，皆施亲友。",
+          "source": "《日本文德天皇實錄》卷四·仁壽二年十二月（小野篁薨傳）",
+          "file": "E:/tianming-tmp/tang/research/raw/日本文德天皇實錄_卷第四.wiki",
+          "quote": "公俸所當，皆施親友。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": null,
+      "healthSuggestion": null,
+      "confidence": "H",
+      "searched": [
+        "續日本後紀卷一、三至七、九、十、十二、十六、十七",
+        "日本文德天皇實錄卷一、四"
+      ],
+      "notes": "开局时为流人（配流隐岐）；开局后承和七年二月十四日召还（卷九），八年闰九月叙本位。续日本后纪卷七又记其“作西道謠。以刺遣唐之役也……嵯峨太上天皇覽之。大怒”，已并入忠诚−10，不重复扣分。"
+    },
+    {
+      "id": "char-4b5a089f4479",
+      "name": "礼徵",
+      "group": "外藩新补",
+      "faction": "新罗",
+      "age": 55,
+      "baseline": "CIVIL",
+      "baselineWhy": "上大等（百官之首），按文官基线。",
+      "stats": {
+        "loyalty": 68,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 38,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前（836年）与金阳、祐徵奉均贞为王，以族兵宿卫积板宫。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽與均貞之子阿飡祐徵、均貞妹壻禮徵，奉均貞為王，入積板宮，以族兵宿衛。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前（837年）与良顺亡投清海镇之祐徵。",
+          "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+          "quote": "六月，均貞妹壻阿飡禮徴，與阿飡良順，亡投於祐徴。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局前以族兵宿卫宫城（掌兵）。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "陽與均貞之子阿飡祐徵、均貞妹壻禮徵，奉均貞為王，入積板宮，以族兵宿衛。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 78,
+          "礼": 77,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "M",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前三见行迹：836年随金阳奉均贞为王、以族兵宿卫，837年亡投清海之祐徵，839年清宫禁备礼迎神武王即位，义、礼有据上调；仁、智、信无开局前可据行迹，保持默认。",
+        "adjustments": [
+          {
+            "attr": "义",
+            "delta": 5,
+            "why": "开局前奉均贞为王、以族兵宿卫。",
+            "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+            "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+            "quote": "陽與均貞之子阿飡祐徵、均貞妹壻禮徵，奉均貞為王，入積板宮，以族兵宿衛。"
+          },
+          {
+            "attr": "义",
+            "delta": 5,
+            "why": "开局前均贞遇害后亡投祐徵，不改所从。",
+            "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+            "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+            "quote": "六月，均貞妹壻阿飡禮徴，與阿飡良順，亡投於祐徴。"
+          },
+          {
+            "attr": "礼",
+            "delta": 5,
+            "why": "开局前（839年）清宫禁、备礼迎神武王即位。",
+            "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+            "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+            "quote": "禮徴等既淸宮禁，備禮迎之，即位。"
+          }
+        ]
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四"
+      ],
+      "notes": "文圣王十一年（849）春正月“上大等禮徵卒”（卷十一）。"
+    },
+    {
+      "id": "char-cce33a6aa109",
+      "name": "良顺",
+      "group": "外藩新补",
+      "faction": "新罗",
+      "age": 55,
+      "baseline": "CIVIL",
+      "baselineWhy": "伊飡，王廷文职，按文官基线。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前（837年）与礼徵亡投清海镇之祐徵。",
+          "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+          "quote": "六月，均貞妹壻阿飡禮徴，與阿飡良順，亡投於祐徴。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 73,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "M",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见837年随礼徵亡投清海镇祐徵一事，义略加；其余查无开局前行迹，保持默认。文圣王九年伏诛之叛属开局后，未计入。",
+        "adjustments": [
+          {
+            "attr": "义",
+            "delta": 5,
+            "why": "开局前亡投祐徵，随其复仇之举。",
+            "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+            "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+            "quote": "六月，均貞妹壻阿飡禮徴，與阿飡良順，亡投於祐徴。"
+          }
+        ]
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四"
+      ],
+      "notes": "开局后：文圣王五年为侍中，六年退；九年（847）夏“伊飡良順波珍飡興宗等叛，伏誅”（卷十一）——属后事，忠诚、义不因此改数。"
+    },
+    {
+      "id": "char-078c34b98e57",
+      "name": "阎长",
+      "group": "外藩新补",
+      "faction": "新罗",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "武珍州军将，按军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 71,
+        "valor": 73,
+        "military": 82,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 68,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "valor",
+          "delta": 10,
+          "why": "开局前祐徵所遣“驍勇”六将之一。",
+          "source": "《三國史記》卷四十四·列傳（金陽、張保皐鄭年）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷44.wiki",
+          "quote": "祐徵又遣驍勇閻長、張弁、鄭年、駱金、張建榮、李順行六將統兵"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "史称武州人阎长以勇壮闻于时（身份性描述）。",
+          "source": "《三國史記》卷十一·新羅本紀（文聖王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷11.wiki",
+          "quote": "武州人閻長者，以勇壯聞於時"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局前（838年十二月）随平东将军金阳统军至武州铁冶县。",
+          "source": "《三國史記》卷十·新羅本紀（興德王至神武王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷10.wiki",
+          "quote": "冬十二月，金陽爲平東將軍，與閻長、張弁、鄭年、駱金、張建榮、李順行統軍"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后事迹：张宝高死后其副将李昌珍欲叛，武珍州列贺阎丈（通说即阎长）兴兵讨平。",
+          "source": "《續日本後紀》卷十一·承和九年正月",
+          "file": "E:/tianming-tmp/tang/research/raw/續日本後紀_卷第十一.wiki",
+          "quote": "張寳高死。其副將李昌珍等欲叛亂。武珍州列賀閻丈興兵討平。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局后事迹：佯叛投清海，乘醉斩张保皐，召其众说降。",
+          "source": "《三國史記》卷十一·新羅本紀（文聖王）",
+          "file": "E:/tianming-tmp/tang/research/raw/三國史記_卷11.wiki",
+          "quote": "閻長佯叛國，投淸海。弓福愛壯士，無所猜疑，引爲上客，與之飮極歡。及其醉，奪弓福劒斬訖，召其衆說之，伏不敢動。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见随金阳统兵出征，“勇壯”属勇力不计五常；佯叛刺杀张保皐（涉信、义）在开局后，未计入。查过：三国史记卷十、十一、四十四，续日本后纪卷十一。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "M",
+      "searched": [
+        "三國史記卷十、十一、四十四",
+        "續日本後紀卷十、十一"
+      ],
+      "notes": "“閻丈”即“閻長”为学界通说比定，非原文明示。开局后刺杀张保皐（佯叛、乘醉斩之）只作能力依据，品性不计。"
+    },
+    {
+      "id": "char-ccceb751d2ba",
+      "name": "大延广",
+      "group": "外藩新补",
+      "faction": "渤海",
+      "age": 35,
+      "baseline": "CIVIL",
+      "baselineWhy": "渤海王子，史籍只见其率使入唐朝贡，按使臣取文官基线。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 65,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "出使：开成四年十二月戊辰以王子入唐朝贡。",
+          "source": "《冊府元龜》卷九百七十二·外臣部·朝貢五（開成四年）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜 (四庫全書本)_卷0972.wiki",
+          "quote": "十二月戊辰渤海王子大延廣契丹首領薩葛奚大首領温訥骨室韋大都督秩䖝等朝貢"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见开成四年十二月入唐朝贡一事，属奉使公务，不足以定个人德性；此外查无开局前行迹。查过：册府元龟卷972，唐会要卷96，新唐书卷219，旧唐书卷199下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "冊府元龜卷九百七十二",
+        "唐會要卷九十六",
+        "新唐書卷二百一十九",
+        "舊唐書卷一百九十九下"
+      ],
+      "notes": "开局时是否仍在长安不可考；剧本age 35无原文依据。"
+    },
+    {
+      "id": "char-00d4f2853a0b",
+      "name": "萨葛",
+      "group": "外藩新补",
+      "faction": "契丹诸部",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "契丹大首领（部落酋帅），史籍只见其率众入唐朝贡，非君长，按部落武人取军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "出使：开成四年十二月率众入唐朝贡（唐会要作“大首領薛葛等三十人”）。",
+          "source": "《冊府元龜》卷九百七十二·外臣部·朝貢五（開成四年）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜 (四庫全書本)_卷0972.wiki",
+          "quote": "十二月戊辰渤海王子大延廣契丹首領薩葛奚大首領温訥骨室韋大都督秩䖝等朝貢"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见开成四年十二月率众入唐朝贡，属奉使公务，不足以定个人德性；此外查无开局前行迹。查过：册府元龟卷972，唐会要卷96，新唐书卷219。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "冊府元龜卷九百七十二",
+        "唐會要卷九十六",
+        "新唐書卷二百一十九",
+        "遼史卷六十三"
+      ],
+      "notes": "新唐书卷二百一十九有“咸通九年，其王突董蘇使大都督薩葛入朝”，是否同一人不可考，未计入。"
+    },
+    {
+      "id": "char-4d98a2d02ed1",
+      "name": "温讷骨",
+      "group": "外藩新补",
+      "faction": "奚诸部",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "奚大首领（部落酋帅），史籍只见其入唐朝贡，按部落武人取军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "出使：开成四年十二月入唐朝贡。",
+          "source": "《冊府元龜》卷九百七十二·外臣部·朝貢五（開成四年）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜 (四庫全書本)_卷0972.wiki",
+          "quote": "十二月戊辰渤海王子大延廣契丹首領薩葛奚大首領温訥骨室韋大都督秩䖝等朝貢"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见开成四年十二月入唐朝贡，属奉使公务，不足以定个人德性；此外查无开局前行迹。查过：册府元龟卷972，唐会要卷96，新唐书卷219。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "冊府元龜卷九百七十二",
+        "唐會要卷九十六",
+        "新唐書卷二百一十九"
+      ],
+      "notes": "开局前后皆无其他记载。"
+    },
+    {
+      "id": "char-49a534a5840b",
+      "name": "秩虫",
+      "group": "外藩新补",
+      "faction": "室韦诸部",
+      "age": 55,
+      "baseline": "MILITARY",
+      "baselineWhy": "唐授室韦大都督，室韦“無君長”，诸部大酋各摄其部，按部落武人取军将基线。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "currentStats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "出使：开成四年十二月率三十人入唐朝贡。",
+          "source": "《唐會要》卷九十六（契丹、室韋）",
+          "file": "E:/tianming-tmp/tang/research/raw/唐會要_卷096.wiki",
+          "quote": "其年十二月，室韋大都督祑虫等三十人來朝貢。"
+        }
+      ],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开局前仅见开成四年十二月率三十人入唐朝贡，属奉使公务，不足以定个人德性；此外查无开局前行迹。查过：唐会要卷96，册府元龟卷972，新唐书卷219。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "唐會要卷九十六",
+        "冊府元龜卷九百七十二",
+        "新唐書卷二百一十九"
+      ],
+      "notes": "《唐会要》作“祑虫”，《册府元龟》作“秩䖝”。"
+    },
+    {
+      "id": "char-11fa7c9141cf",
+      "name": "婆那摩罗跋摩",
+      "group": "外藩新补",
+      "faction": "迦摩缕波",
+      "age": 55,
+      "baseline": "RULER",
+      "baselineWhy": "迦摩缕波王，按君主基线。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 67,
+        "intelligence": 75,
+        "valor": 57,
+        "military": 69,
+        "administration": 72,
+        "management": 68,
+        "charisma": 75,
+        "diplomacy": 67,
+        "benevolence": 64,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：无汉文史料，二手铭文研究只给在位年代与铜板名目，所记重建神庙年份不明。查过：英文维基Mlechchha dynasty、Kamarupa、Kamarupa inscriptions、Cultural development of Kamarupa（均二手）。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "英文维基 Mlechchha dynasty（二手，原文库）",
+        "英文维基 Kamarupa（二手，原文库）",
+        "英文维基 Kamarupa inscriptions、Cultural development of Kamarupa（二手，在线查阅，未存档）"
+      ],
+      "notes": "无汉文史料。二手记述仅知其约832–855年在位，颁提斯浦尔（Tezpur）、帕尔巴提亚、卡利亚博尔铜板，提斯浦尔铜板“primarily chronicles Vanamala”；另有二手称其重建Hāṭaka-Śūlin神庙、铜板颂词称其摧破诸王之军并拓境至海——前者年份不明，后者属颂体套语且出处非学术，均未据以加减，各项保持基线。"
+    },
+    {
+      "id": "char-72a8870c4756",
+      "name": "毗建多跋摩三世",
+      "group": "外藩新补",
+      "faction": "环王",
+      "age": 55,
+      "baseline": "RULER",
+      "baselineWhy": "环王（占婆）王，按君主基线。",
+      "stats": {
+        "loyalty": 62,
+        "ambition": 67,
+        "intelligence": 75,
+        "valor": 57,
+        "military": 69,
+        "administration": 72,
+        "management": 68,
+        "charisma": 75,
+        "diplomacy": 67,
+        "benevolence": 64,
+        "integrity": 53
+      },
+      "currentStats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "ageAdjustment": null,
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：无汉文史料，二手碑铭研究只给在位年代，所见向湿婆庙施田年份不明，不能确认在开局前。查过：英文维基Vikrantavarman III、Champa（二手），新唐书卷222下。",
+        "adjustments": []
+      },
+      "healthSuggestion": null,
+      "confidence": "L",
+      "searched": [
+        "英文维基 Vikrantavarman III（二手，原文库）",
+        "英文维基 Champa（二手，原文库）",
+        "新唐書卷二百二十二下（環王）"
+      ],
+      "notes": "无汉文史料可据其个人。二手记述：813年受父诃梨跋摩一世之命为宾童龙（Pāṇḍuraṅga）之主，817年即位；铭文“typically very short. Nothing more is known about him”，仅见向湿婆庙施田（年份不明）——未据以加减，各项保持基线。新唐书所记元和初张舟击环王事在其父时。"
+    }
+  ]
+}

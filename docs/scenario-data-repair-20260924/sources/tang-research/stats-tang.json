@@ -1,0 +1,2209 @@
+{
+  "_meta": {
+    "task": "唐廷新补 32 人（开成五年正月在任节帅、府尹等）才具 11 项与五常逐人核定",
+    "openingDate": "唐开成五年正月十四日辛卯（840-02-20）",
+    "generatedAt": "2026-09-26T13:30:17.395Z",
+    "rules": "基线：CIVIL＝原剧本唐廷史实文臣中位数（文官）；MILITARY＝军将中位数（行伍、禁军/神策/诸卫武职出身或以战功任节帅者）；RULER 本批未用。每人 baselineWhy 写明理由。\n加减：只在有史料依据时加减，档位 ±5/±10/±15/±20（本批实用 ±5、±10）；每处附逐字原文 quote、出处 source 与原文库文件 file；无依据的项保持基线，不为「显得不同」改数。\n能力类（intelligence、valor、military、administration、management、charisma、diplomacy）可用一生事迹，含开局后，用到开局后事迹的在 why 中注明「开局后事迹」或「开局后评语」。\n品性类（loyalty、ambition、benevolence、integrity）与五常只凭开局前行事，或本传/墓志（含本传所引赠官诏）概括为人的评语；开局后的具体事件只写入 notes，不改数。会昌三年宰相对张贾「性刚负气」之评属开局后且非本传，只用于辞令（能力类），不用于五常。\n身份事实口径：进士 intelligence +5；进士外另中宏辞/制科再 +5（明经不另加）；出使藩镇、外蕃或任鸿胪卿等掌外交之职 diplomacy +5（例行宣慰、赏设不计）；户部侍郎/判度支/盐铁/榷盐使/太府卿少卿/司农卿少卿等掌财赋长官一任 +5、两任以上或本传称长期 +10（少府监属营造，不计）；随父征伐知名等以战功起家 military +5。若本传另有直接反证（如王彦威「货泉之柄素非所长」），以直接评语为准，不再叠加身份加分。\n制书褒语：只采对具体政绩或任用理由的陈述（如「在官无败事，罢秩有去思」「管榷条制，动皆得宜」「莅事惟精，推其才理」）；泛泛的形容套语（如封敖制「倜傥负丈夫之气」）不据以改数。笔记志怪（酉阳杂俎、宣室志、玉泉子）不据以改数，只入 notes。\n同名不能认定为同一人的记载（唐弘实鸩刘济、宝历判官郑复、贞元水部员外郎刘约、太和四年卒的张贾等）一律只入 notes。\n年龄规则：输入 age <20 或 ≥70 者 valor、military 各 −10；本批 32 人年龄均在 39—64，未触发（每人 ageRule 字段注明）。\n终值 stats＝基线＋各项 delta＋年龄规则，夹在 10—95。\n五常：只重做 wuchang 等于默认 {仁60,义68,礼72,智74,信70} 或与默认合计相差不超过 2 分的 18 人（萧俶、卢贞、李翊、郑复、张沼、冯审、胡沐、唐弘实、敬昕、李执方、温德彝、魏仲卿、李昌言、苻澈、韩威、韦长、李彦佐、张贾）；以默认为基线，按同一证据规则加减，逐项给 confidence（H/M/L），note 不少于 20 字；查无行迹者保留默认、confidence 为 L，note 写明查过何书。其余 14 人五常已有个性化评语（与默认相差 4 分以上），wuchang 置 null 不重做。\nquote 引自原文库时保留原文字形（繁体、异体、原书讹字如「乙太府卿」「硃儔」照录），可用「……」连接同一文件中先后出现的片段；所引 north.json 条目为已核研究引文（白居易刘约制）。",
+    "verification": "校验时间 2026-09-26T13:30:17.651Z，脚本 E:/tianming-tmp/tang/refs/verify-stats-tang.js（node）。\n一、引文：共 104 条（才具与五常合计），在所注 file 中找到 104 条。比对前忽略空白（含全角空格、换行）、维基链接标记 [[…|…]]、<ref> 标记、-{ }- 字形转换标记与 ''' 粗体标记；繁简不转换；「……」按省略处理，前后片段须依次出现。\n二、数值：32 人逐项重算 基线＋delta＋年龄规则（<20 或 ≥70 者 valor、military 各 −10，本批无人触发）并夹 10–95，一致 32 人；delta 均限 ±5/±10/±15/±20。\n三、五常：按输入 wuchang 与默认合计差 ≤2 判定需重做 18 人，scores＝默认＋delta、confidence 齐全、note ≥20 字者 18 人；其余人 wuchang 为 null。\n结论：全部通过。",
+    "reproduce": "node E:/tianming-tmp/tang/refs/build-stats-tang.js && node E:/tianming-tmp/tang/refs/verify-stats-tang.js（build 会把 verification 重置为 PENDING，须随后跑 verify 写回校验结果）",
+    "sourcesAdded": [
+      "本次新取维基文库原始 wikitext 存入原文库：冊府元龜_卷0578.wiki、舊唐書_卷124.wiki、新唐書_卷111.wiki、新唐書_卷091.wiki、白氏長慶集_卷051.wiki、白氏文集_卷036.wiki、同州舉蕭諫議自代狀.wiki、崔琯可職方郎中侍御史知雜制.wiki、前右羽林將軍李彥佐服闋重除本官兼御史中丞知軍事制.wiki、薦前漢州刺史薛元賞狀.wiki、謝獎諭表.wiki、奏吐蕃交馬事宜狀.wiki、唐故平盧軍節度巡官隴西李府君墓誌銘.wiki"
+    ],
+    "summary": {
+      "withAdjustments": "23 人：高锴、萧俶、李款、归融、冯审、唐弘实、崔琯、高铢、姚合、李执方、狄兼谟、魏仲卿、苻澈、王茂元、陈君奕、刘约、韦长、李彦佐、张贾、裴弘泰、王彦威、薛元赏、卢载",
+      "baselineOnly": "9 人（才具全为基线）：卢贞、李翊、郑复、张沼、胡沐、敬昕、温德彝、李昌言、韩威",
+      "wuchangRedone": "18 人，其中有据加减 5 人（萧俶、郑复、魏仲卿、韦长、张贾），其余保留默认、confidence L",
+      "baselines": "CIVIL 22 人，MILITARY 10 人，RULER 0 人"
+    }
+  },
+  "people": [
+    {
+      "id": "char-eb4d917d249c",
+      "name": "高锴",
+      "baseline": "CIVIL",
+      "baselineWhy": "元和九年进士、宏辞科出身，历吏部员外郎、谏议大夫、中书舍人、礼部侍郎，纯文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 84,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（元和九年）。",
+          "source": "《旧唐书》卷一六八·高釴传附弟锴",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "鍇，元和九年登進士第，升宏辭科，累遷吏部員外。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士之外又中宏辞科（「连中进士、宏辞科」），加一档。",
+          "source": "《新唐书》卷一七七·高釴传附弟锴",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷177.wiki",
+          "quote": "鍇，字弱金，連中進士、宏辭科"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "三年掌贡举，宰相郑覃当廷称其「励精选士」，本传亦称所擢「颇得实才」，属选士理事之能。",
+          "source": "《旧唐书》卷一六八·高釴传附弟锴",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "鄭覃曰：「陛下改詩賦格調，以正頹俗，然高鍇亦能勵精選士，仰副聖旨。」"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "本传评语：兄弟三人「皆以检静自立」，属概括为人的评语。",
+          "source": "《旧唐书》卷一六八·高釴传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "與弟銖、鍇皆以檢靜自立"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：知贡举抑豪华、擢孤进，时人至今称之（太和三年审定别头进士亦「人以为公」）。",
+          "source": "《旧唐书》卷一六八·高釴传附弟锴",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "然鍇選擢雖多，頗得實才，抑豪華，擢孤進，至今稱之。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -5,
+          "why": "开局前行事：裴思谦持神策中尉仇士良书入贡院，高锴「不得已」接纳其请托。",
+          "source": "《唐摭言》卷九",
+          "file": "E:/tianming-tmp/tang/research/raw/唐摭言_卷九.wiki",
+          "quote": "趨至鍇下白鍇曰：「軍容有狀，薦裴思謙秀才。」鍇不得已，遂接之。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「高鍇」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一六八（高釴传附锴）",
+        "《新唐书》卷一七七（高釴传附锴）",
+        "《唐摭言》卷九",
+        "《全唐诗》卷五三九（李商隐小传）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "旧纪开成四年七月「以刑部侍郎高锴为河南尹」应是其兄高铢之误（已核研究 south/court 结论）。本传称出为鄂岳后「卒」，卒年不详，可能在开成五年前后。李商隐为其开成二年门生。年龄规则：输入年龄 46，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-90a691a38ce7",
+      "name": "萧俶",
+      "baseline": "CIVIL",
+      "baselineWhy": "宰相萧俛之弟，以荫授官，历河南少尹、谏议大夫、楚州刺史，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前同僚评语：太和九年刘禹锡举以自代，称其在缙绅间「号为端士」。",
+          "source": "刘禹锡《同州举萧谏议自代状》（《全唐文》卷六〇三）",
+          "file": "E:/tianming-tmp/tang/research/raw/同州舉蕭諫議自代狀.wiki",
+          "quote": "伏以前件官生於貴族，伏膺儒門。搢紳之間，號為端士。"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 77,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "刘禹锡太和九年举以自代，称其「伏膺儒门」「号为端士」，礼略加；其余开局前只见任官次第与为兄萧俛宣赐诏书一事，无可据以定仁、义、智、信的行迹，保留默认。查过两唐书萧俛传、文宗纪、刘禹锡状、杜牧李戡墓志等。",
+        "adjustments": [
+          {
+            "attr": "礼",
+            "delta": 5,
+            "why": "开局前同僚评语：缙绅间「号为端士」。",
+            "source": "刘禹锡《同州举萧谏议自代状》（《全唐文》卷六〇三）",
+            "file": "E:/tianming-tmp/tang/research/raw/同州舉蕭諫議自代狀.wiki",
+            "quote": "搢紳之間，號為端士。"
+          }
+        ]
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「蕭俶」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一七二（萧俛传附俶）、卷一七六（李让夷传）",
+        "《新唐书》卷一八一、卷二〇五",
+        "刘禹锡《同州举萧谏议自代状》",
+        "杜牧《唐故平卢军节度巡官陇西李府君墓志铭》",
+        "《太平广记》卷二七〇",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "杜牧撰李戡墓志载萧俶任谏议大夫时曾向萧洪举荐困居洛中的李戡（开局前），是助人还是替萧洪罗致人才难以断定，未据以改数。开局后：大中初「坐在华州时断狱不法」降太子宾客分司（不能判定属能力还是操守，只记不改）；大中中任兖海节度使时奏请旌表郑神佐女（只记不改）。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-a494122c6a4b",
+      "name": "卢贞",
+      "baseline": "CIVIL",
+      "baselineWhy": "历度支员外郎、太常少卿（充诸道黜陟使）、大理卿，文臣仕途，能诗。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无可据以定五常的开局前行迹：开局前只见按视修东都宫阙、充诸道黜陟使、任大理卿等任命，以及与白居易、刘禹锡唱和诗，均不涉仁义礼智信。原「礼74」依据唱和诗，不足为据，退回默认。查过通鉴卷二四三、册府卷一六二、全唐诗卷四六三、文宗纪等。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「盧貞」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《资治通鉴》卷二四三",
+        "《册府元龟》卷一六二（四库本）",
+        "《全唐诗》卷四六三（卢贞小传与唱和诗）",
+        "《容斋四笔》卷八",
+        "《新唐书》卷一一九、卷一九五",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局前行事只有任命与唱和，才具与五常均保持基线。开局后：会昌中为河南尹、岭南节度使，曾令吏沉罟收葬投水殉母的王博武并表其墓为「孝子墓」（《新唐书》卷一九五），河南尹任上刻白居易《醉吟先生传》立墓侧——品性类后事只记不改。同名者多：《唐会要》卷八七所列刘晏旧部「卢贞」为贞元前人，《太平寰宇记》载「开元二年汝州刺史卢贞立碑」年代不合，均不作认定。年龄规则：输入年龄 61，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-9b08b089249a",
+      "name": "李款",
+      "baseline": "CIVIL",
+      "baselineWhy": "长庆初进士，历侍御史、仓部员外郎、谏议大夫、刺史，文臣仕途。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 67,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 67
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（长庆初）。",
+          "source": "《新唐书》卷一一八·李中敏传附李款",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷118.wiki",
+          "quote": "長慶初第進士，爲侍御史。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前行事：弹郑注被留中后仍连章论列，「旬日之间，章数十上」。",
+          "source": "《资治通鉴》卷二四四·太和七年九月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷244.wiki",
+          "quote": "請付法司。」旬日之間，章數十上。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "开局前行事：郑注依倚王守澄权势熏灼时伏阁弹之，郑注用事后被逐，不避祸。",
+          "source": "《旧唐书》卷一七一·李中敏传附李款",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷171.wiki",
+          "quote": "款伏閣彈註云：「內通敕使，外結朝官，兩地往來，卜射財貨。」文宗不之省。及註用事，款亦被逐。"
+        },
+        {
+          "attr": "administration",
+          "delta": -5,
+          "why": "开局前事迹：任郑州刺史时属县中牟私置坛场度僧一百六十人，以失察罚一季俸（开成三年六月，册府牧守部谴让同载，名作「李[缺字]」）。",
+          "source": "《册府元龟》帝王部·明罚第二",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0109.wiki",
+          "quote": "六月詔曰：鄭州中牟縣私置壇場度僧一百六十人並仰勒歸俗色役其刺史李款罰一季俸料"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「李款」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一六九（郑注传）、卷一七一（李中敏传附款）",
+        "《新唐书》卷一一八（李中敏传附款）",
+        "《资治通鉴》卷二四四、二四五",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "旧纪开成四年九月「苏州刺史李颖为江西观察使」即李款。郑注太和九年四月受太仆卿时举李款自代（通鉴卷二四五），系郑注作态，时人哂之，未据以改数。郑州刺史一任不见于两唐书本传，册府两处记载（明罚作李款、谴让作缺字），置信度 M。开局后终澶王傅，无可据事迹。年龄规则：输入年龄 39，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-ccd637bf92c3",
+      "name": "李翊",
+      "baseline": "CIVIL",
+      "baselineWhy": "由给事中历御史中丞、湖南观察使，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史书只见太和九年十一月由给事中为御史中丞、开成元年四月以中丞与百司长官同受诫问本司事、开成二年六月出为湖南观察使三条，均无可据以定五常的行事。查过文宗纪、册府帝王部诫励、维基文库全文检索等。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「李翊」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「給事中李翊」「觀察使李翊」",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《册府元龟》帝王部·诫励第三（开成元年四月条）",
+        "《资治通鉴》卷二四三至二四八",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "只见三条任官与受诫问记载，才具与五常保持基线。韩愈《答李翊书》的收信人是贞元间进士李翊，不能确定是同一人，不采（已核研究同此判断）。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-bd607a63ba79",
+      "name": "归融",
+      "baseline": "CIVIL",
+      "baselineWhy": "归崇敬之孙，元和中进士，历翰林学士、中书舍人、户部侍郎、御史中丞、京兆尹、吏部侍郎，文臣仕途。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 84,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 75,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第。",
+          "source": "《旧唐书》卷一四九·归崇敬传附孙融",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷149.wiki",
+          "quote": "融，進士擢第"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局后事迹（能力类可用）：会昌后儒臣少，朝廷礼典多依其议；开局前文宗亦以其为学家，问字音字义（同卷）。",
+          "source": "《新唐书》卷一六四·归崇敬传附孙融",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷164.wiki",
+          "quote": "會昌後，儒臣少，朝廷禮典多本融議。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：太和九年转户部侍郎，掌财赋长官一任。",
+          "source": "《旧唐书》卷一四九·归崇敬传附孙融",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷149.wiki",
+          "quote": "九年，轉戶部侍郎。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前行事：劾湖南观察使卢周仁违敕进羡余，以「中外财赋皆陛下府库」维护朝廷财权。",
+          "source": "《旧唐书》卷一四九·归崇敬传附孙融",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷149.wiki",
+          "quote": "融奏曰：「天下一家，何非君土？中外財賦，皆陛下府庫也。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：同一劾奏虑「生人受弊」，请以所进钱还湖南「代贫下租税」。",
+          "source": "《旧唐书》卷一四九·归崇敬传附孙融",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷149.wiki",
+          "quote": "臣恐天下放效，以羨餘為名，因緣刻剝，生人受弊。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：任中丞时劾依倚郑注、谒王守澄的巧宦王式，出之为江陵少尹。",
+          "source": "《旧唐书》卷一六四·王播传附王起子式",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷164.wiki",
+          "quote": "依倚鄭註，謁王守澄，為中丞歸融所劾，出為江陵少尹。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「歸融」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一四九（归崇敬传附融）、卷一六四（王式传）",
+        "《新唐书》卷一六四（归崇敬传附融）、卷一六七",
+        "《唐会要》卷二九",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "与李固言素不相悦、受杨嗣复提携（本传）。开局后徙东川、历兵部尚书，会昌后朝廷礼典多本其议；北梦琐言载皮日休谒之不见而作《夹龟赋》讥其「不出头」（大中间，只记不改）。年龄规则：输入年龄 47，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1239346ee3cb",
+      "name": "郑复",
+      "baseline": "CIVIL",
+      "baselineWhy": "开成四年由京兆尹出为剑南东川节度使，史见官职皆属文臣系统。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 67,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "开成四年六月任京兆尹时摄祭郊外、连宿两夜不辞御史台，经中丞高元裕举旧制请罚，礼略减；其余只见监护裴度丧事等任命，无可据以定仁、义、智、信的行迹。查过文宗纪、裴度传、册府牧守部谴让、唐会要卷二四等。",
+        "adjustments": [
+          {
+            "attr": "礼",
+            "delta": -5,
+            "why": "开局前行事：摄祭在郊外信宿不辞台，违旧制被罚。",
+            "source": "《册府元龟》牧守部·谴让（卷六九九）",
+            "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+            "quote": "鄭復為京兆尹開成四年六月敕罰復攝祭在郊外信宿不辭臺丞御史中丞高元裕舉舊事以請故也。"
+          }
+        ]
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「鄭復」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「鄭復」+东川／京兆",
+        "《旧唐书》卷一七〇（裴度传）、卷一六三（崔元略传）",
+        "《新唐书》卷一七三",
+        "《唐会要》卷二四",
+        "《酉阳杂俎》卷四",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "才具无可据事迹，保持基线。开局后：会昌元年六月敕「东道节度使郑复虽称有疾，擅离本道」（《唐会要》卷二四，只记不改）。同名待考：宝历二年京兆府判官郑复随崔元略修东渭桥时「虚长物价，擡估给用」计赃二万余贯（《旧唐书》卷一六三），段成式所记「大理丞郑复」（《酉阳杂俎》卷四），均不能断定为同一人，未据以改数。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-b623ecee2419",
+      "name": "张沼",
+      "baseline": "CIVIL",
+      "baselineWhy": "由少府监出为黔中观察使，史见官职属文臣系统。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史书只见开成三年十月由少府监出为黔中观察使一条任命。查过文宗纪（通行本与四库本）、维基文库全文检索（命中多为安史之乱时巨野尉张沼等同名者）。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「張沼」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「張沼」+黔中",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四三至二四八",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "只有一条任命。任少府监属百工营造而非财赋，按本批口径不作「掌财赋」加分，才具保持基线。天宝末起兵讨安禄山的巨野尉张沼为另一人。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-abecc0f38e0c",
+      "name": "冯审",
+      "baseline": "CIVIL",
+      "baselineWhy": "贞元十二年进士，累辟使府，历监察御史、兵部郎中、谏议大夫，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（贞元十二年）。",
+          "source": "《旧唐书》卷一六八·冯宿传附从弟审",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "審，貞元十二年登進士第，累辟使府。"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：本传开局前只有任官次第；请琢去孔子庙堂碑「大周」伪号是大中间任国子祭酒时事，属后事不计入开局。查过两唐书冯宿传、文宗纪、宣宗纪、唐会要卷三五与卷六六、淳熙三山志等。",
+        "adjustments": []
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「馮審」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一六八（冯宿传附审）、卷十八下",
+        "《新唐书》卷一七七（冯宿传附审）",
+        "《唐会要》卷三五、卷六六",
+        "《淳熙三山志》卷一、卷二三",
+        "冯审《谢奖谕表》（《全唐文》卷六三三）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "年龄 64 按输入取值，未触发年龄规则；但其贞元十二年（796）已登进士，若按常例二十余岁及第推算，开局时或已近七十，年龄本身拿不准。《谢奖谕表》系其在岭外任上受诏奖谕后的谢表，奖谕事由与年月不明（可能在开局后），未据以改数。旧纪误作「冯定」。年龄规则：输入年龄 64，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-cde182b3c522",
+      "name": "胡沐",
+      "baseline": "MILITARY",
+      "baselineWhy": "由左神策将军出为容管经略使，属禁军武臣系统。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史书只见太和九年十一月乙巳由左神策将军出为容管经略使一条任命。查过文宗纪（通行本与四库本）、维基文库全文检索（「胡沐」全库仅 6 条命中）。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「胡沐」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「胡沐」+容管",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四三至二四八",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "只有一条任命，才具与五常保持基线。另：任命日为太和九年十一月乙巳（初四），在甘露之变（同月壬戌，二十一日）之前，bio 说「甘露事变后」有误，建议改。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-153d35e048eb",
+      "name": "唐弘实",
+      "baseline": "MILITARY",
+      "baselineWhy": "太和七年以右金吾卫将军（新传作左骁卫将军）充册回纥使，属禁卫武臣系统。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 69,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "身份事实：太和七年持节出使回纥，册立彰信可汗。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "以右金吾衛將軍唐弘實使回紇，冊九姓回紇愛登裏羅汨沒施合句錄毗伽彰信可汗。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "开局前事迹：开成四年十二月奏请当管上供两税见钱每年附广州纲送纳，朝廷改令岭南西道代为受领回易轻货附纲送省。只此一件理财实务，依据偏弱。",
+          "source": "《册府元龟》邦计部·赋税第二（卷四八八）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0438.wiki",
+          "quote": "四年十二月邕管經略使唐弘實奏當管上供兩稅錢一千四百七十三貫文其見錢請每年附廣州綱送納"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无可据以定五常的开局前行迹：出使册回纥、奏上供附纲都是职事，不涉仁义礼智信；原「礼74」依据出使一事，不足为据，退回默认。查过文宗纪、新唐书回鹘传、册府邦计部等。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「唐弘實」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷二一七下（回鹘传）、卷二一二（刘济传）",
+        "《旧唐书》卷一四三（刘济传）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "《旧唐书》卷一四三、《新唐书》卷二一二载元和五年刘总使「亲吏唐弘实」鸩杀其父刘济；刘总归朝后部属多入禁卫，与太和间金吾将军唐弘实或为一人，但无直接证据，不作认定，未据以改数（若可证同一人，仁、义、信都应大减）。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-09252e4fa61c",
+      "name": "敬昕",
+      "baseline": "CIVIL",
+      "baselineWhy": "由中书舍人出为江西观察使，入为京兆尹，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：两唐书无传，开局前只见中书舍人出为江西观察使、入为京兆尹两条任命及太和中出守婺州的志怪小说材料，无可据以定五常的行事。查过文宗纪、通鉴、宣室志、永乐大典所引统记等。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「敬昕」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「敬昕」+江西",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四三至二四八",
+        "《太平广记》卷三九四（引宣室志）",
+        "封敖《批敬昕谢上表》（题名）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "才具无可据事迹，保持基线。开局后：开成五年八月与李珏罢山陵使同日贬郴州司马（《资治通鉴》卷二四六，事由未载，或与文宗梓宫陷泥有关，不能断定）；会昌三年由河南尹为河阳节度，「王宰将行营以扞敌，昕供馈饷而已」（通鉴卷二四七）——系李德裕安排分工，不足以证理财之能，未改数。弟敬晦。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-df6a6dbb83d0",
+      "name": "崔琯",
+      "baseline": "CIVIL",
+      "baselineWhy": "贞元十八年进士、制策登科，历尚书郎、给事中、京兆尹、荆南节度、吏部侍郎、尚书左丞，文臣仕途。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 84,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 65,
+        "benevolence": 51,
+        "integrity": 72
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（贞元十八年）。",
+          "source": "《旧唐书》卷一七七·崔琯传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷177.wiki",
+          "quote": "長曰琯，貞元十八年進士擢第。"
+        },
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士之外又中贤良方正制科，「皆高第」，加一档。",
+          "source": "《新唐书》卷一八二·崔珙传附兄琯",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷182.wiki",
+          "quote": "舉進士、賢良方正，皆高第。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "身份事实：太和初持节宣慰卢龙（幽州），称旨。",
+          "source": "《旧唐书》卷一七七·崔琯传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷177.wiki",
+          "quote": "太和初，累遷給事中，宣慰幽州稱旨。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "开局前事迹：兴元兵乱杀李绛后奉命往抚，三军寂然从命，可见威望。",
+          "source": "《旧唐书》卷一七七·崔琯传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷177.wiki",
+          "quote": "俄而興元兵亂，殺李絳，命琯平亂褒中，三軍寂然從命。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前制书：御史中丞李德裕以其「莅事惟精」「推其才理」奏补侍御史知杂，属任用理由的具体评语。",
+          "source": "白居易《崔琯可职方郎中侍御史知杂制》（《全唐文》卷六六三）",
+          "file": "E:/tianming-tmp/tang/research/raw/崔琯可職方郎中侍御史知雜制.wiki",
+          "quote": "崔琯守文無害，蒞事惟精，在郎署中，推其才理"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "开局前行事：宋申锡被诬，宰相大臣无人敢言，独与王正雅连疏请出狱付外廷，天下重其贤。",
+          "source": "《资治通鉴》卷二四四·太和五年三月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷244.wiki",
+          "quote": "自宰相大臣無敢顯言其冤者，獨京兆尹崔琯、大理卿王正雅連上疏請出內獄付外廷核實"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "本传评语：「行方介」。",
+          "source": "《新唐书》卷一八二·崔珙传附兄琯",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷182.wiki",
+          "quote": "琯行方介，有器蘊"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "本传所载赠官诏评语：「有子政之精忠」。",
+          "source": "《旧唐书》卷一七七·崔琯传（引会昌五年赠左仆射诏）",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷177.wiki",
+          "quote": "誠明履正，粹密鄰幾，有子政之精忠，得公綽之不欲。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "H",
+      "searched": [
+        "维基文库全文检索「崔琯」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一七七（崔珙传附琯）、卷一六七（宋申锡案）",
+        "《新唐书》卷一八二（崔珙传附琯）、卷一五二",
+        "白居易《崔琯可职方郎中侍御史知杂制》",
+        "《资治通鉴》卷二四四",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "新传称其「以吏部尚书召，辞疾不拜」，年月不详（在东都留守任后），不能判定是否在开局前，未据以改野心。赠诏又称「历践名藩，皆留遗爱」，含会昌山南西道任内，属后事汇总，未据以改仁厚。输入年龄 58，按贞元十八年登第推算或偏小，未触发年龄规则。年龄规则：输入年龄 58，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1d09b3c30916",
+      "name": "高铢",
+      "baseline": "CIVIL",
+      "baselineWhy": "元和六年进士，历监察御史、吏部郎中、给事中、浙东观察使、刑部侍郎，文臣仕途。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 75,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 72
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（元和六年）。",
+          "source": "《旧唐书》卷一六八·高釴传附弟铢",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "銖，元和六年登進士第。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "开局前行事：太和八年率谏官伏阁论李仲言（李训）「素行纤邪」；次年训、注窃权，恶其不附己，出为浙东。",
+          "source": "《旧唐书》卷一六八·高釴传附弟铢",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "銖率諫官伏閣論曰：「仲言素行纖邪，若聽用，必亂國經。」"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "本传评语：兄弟三人「皆以检静自立」。",
+          "source": "《旧唐书》卷一六八·高釴传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "與弟銖、鍇皆以檢靜自立"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前行事：郑注奸谋外露时犯难论诤，冀上省悟。",
+          "source": "《旧唐书》卷一六八·高釴传附弟铢",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷168.wiki",
+          "quote": "銖等犯難論諍，冀上省悟。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "开局后事迹（能力类可用）：大中初以礼部尚书判户部，掌财赋一任。",
+          "source": "《新唐书》卷一七七·高釴传附弟铢",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷177.wiki",
+          "quote": "大中初，遷禮部尚書判戶部，徙太常卿。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「高銖」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一六八（高釴传附铢）",
+        "《新唐书》卷一七七（高釴传附铢）、卷一一四",
+        "《唐会要》卷六五、卷六八",
+        "《东观奏记》下卷",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局后：开成五年四月河南尹任上乘肩舆与知台御史卢罕街衢相逢「无所避」，台府喧竞（《唐会要》卷六八）；大中间为太常卿，决罚礼生被博士李悫抗辩，叹「吾老不能退，乃为小儿所辱」——均属品性类后事，只记不改。会昌四年奉命宣慰泽潞，属例行宣慰，未作辞令外交加分。年龄规则：输入年龄 50，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-48a7a883d938",
+      "name": "姚合",
+      "baseline": "CIVIL",
+      "baselineWhy": "姚崇曾孙，元和中进士，历武功尉、监察御史、给事中，文臣仕途，以诗名。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 67,
+        "diplomacy": 60,
+        "benevolence": 61,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第（元和中）。",
+          "source": "《新唐书》卷一二四·姚崇传附曾孙合",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷124.wiki",
+          "quote": "合，元和中進士及第，調武功尉，善詩，世號姚武功者。"
+        },
+        {
+          "attr": "charisma",
+          "delta": 5,
+          "why": "身份事实：以诗名世，时称「姚武功」，声望在士林。",
+          "source": "《新唐书》卷一二四·姚崇传附曾孙合",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷124.wiki",
+          "quote": "善詩，世號姚武功者。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：美原主簿朱俦覆按牛羊使夺田案，徇私以田归使，姚合劾发其私。",
+          "source": "《新唐书》卷一二四·姚崇传附曾孙合",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷124.wiki",
+          "quote": "詔美原主簿硃儔覆按，猥以田歸使，合劾發其私，以地還民。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：同一案中「以地还民」，为奉先、冯翊二县百姓复田。",
+          "source": "《新唐书》卷一二四·姚崇传附曾孙合",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷124.wiki",
+          "quote": "奉先、馮翊二縣民訴牛羊使奪其田"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：开成四年代孙简为陕虢观察使，谕因「活狱」忤前任而将被罢的弘农尉李商隐还官。",
+          "source": "《新唐书》卷二〇三·文艺传下·李商隐",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷203.wiki",
+          "quote": "以活獄忤觀察使孫簡，將罷去，會姚合代簡，諭使還官。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「姚合」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷一二四（姚崇传附合）、卷二〇三（李商隐传）",
+        "《旧唐书》卷十七下",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "旧唐书无传。生卒年各家不一（二手），输入年龄 58 未触发年龄规则。陕虢任上政绩史无明文。年龄规则：输入年龄 58，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1160b59f553c",
+      "name": "李执方",
+      "baseline": "MILITARY",
+      "baselineWhy": "宗室，由左金吾卫将军于河阳军乱逐帅后出镇河阳，属禁卫武臣系统。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 65,
+        "management": 69,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前事迹：开成四年六月奏请管内有才县令不因一考即替，无过者留至三考，以全考绩黜陟之义，朝廷从之。",
+          "source": "《册府元龟》铨选部·考课第二",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0578.wiki",
+          "quote": "開成四年六月河陽節度使李執方奏管內縣令有才經一考已替者失考績黜陟之義請無犯者留至三考從之。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "开局后事迹（能力类可用）：开成三年至大中六年间，与薛元赏、卢弘正、马植、敬晦先后执掌盐铁转运，掌财赋一任。",
+          "source": "《册府元龟》邦计部·总序",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0438.wiki",
+          "quote": "薛元賞李執方盧洪正馬植敬晦五人於九年之中相踵理之"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无可据以定五常的开局前行迹：开局前只见河阳授节与奏县令留任三考一事（属政务，不涉仁义礼智信）；封敖制书「道茂宗枝…倜傥负丈夫之气」是会昌中褒语，属后事且系套语，不据。查过文宗纪、通鉴卷二四五、新唐书何进滔传、册府铨选部等。",
+        "adjustments": []
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「李執方」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四五",
+        "《新唐书》卷二一〇（何进滔传）",
+        "《旧唐书》卷一八一（何进滔传）、卷四九（食货志）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "封敖《授李执方陈许节度使卢宏宣易定节度使制》（据 north.json 引文）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "封敖制书「武有成筭，文多据经，卬卬其姿，倜傥负丈夫之气」为会昌中授陈许制的套语，未据以加军事、魅力。开局后开成五年末奉诏谕何重顺入朝不从（新唐书卷二一〇），未据以减辞令。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-51aacf22a7cc",
+      "name": "狄兼谟",
+      "baseline": "CIVIL",
+      "baselineWhy": "狄仁杰族曾孙，进士及第，历襄阳推官、左拾遗、郑苏等州刺史、给事中、御史中丞、刑兵部侍郎，文臣仕途。",
+      "stats": {
+        "loyalty": 63,
+        "ambition": 52,
+        "intelligence": 79,
+        "valor": 25,
+        "military": 33,
+        "administration": 82,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 72
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "身份事实：进士及第。",
+          "source": "《旧唐书》卷八九·狄仁杰传附族曾孙兼谟",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷89.wiki",
+          "quote": "兼謨，登進士第。"
+        },
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "开局前政绩：历郑州刺史「以治行称」，新传又称改苏州「以治最，擢给事中」。",
+          "source": "《旧唐书》卷八九·狄仁杰传附族曾孙兼谟",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷89.wiki",
+          "quote": "長慶、太和中，歴鄭州刺史，以治行稱，入爲給事中。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：刺州遇旱饥，发粟赈济，民不流徙。",
+          "source": "《新唐书》卷一一五·狄仁杰传附族孙兼谟",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷115.wiki",
+          "quote": "歳旱饑，發粟賑濟，民人不流徙。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 10,
+          "why": "开局前行事：度支左藏库赃罪文宗以赦前不理，封还敕书；又劾江西观察使吴士矩擅加军赏。",
+          "source": "《旧唐书》卷八九·狄仁杰传附族曾孙兼谟",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷89.wiki",
+          "quote": "開成初，度支左藏庫妄破漬汙縑帛等贓罪，文宗以事在赦前不理。兼謨封還敕書"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "本传评语：「言行刚正」（新传作「刚正有祖风」）。",
+          "source": "《旧唐书》卷八九·狄仁杰传附族曾孙兼谟",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷89.wiki",
+          "quote": "言行剛正，使府知名。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": 5,
+          "why": "开局前行事：开成三年文宗欲废太子，御史中丞狄兼谟上前雪涕以谏。",
+          "source": "《旧唐书》卷一七五·庄恪太子传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷175.wiki",
+          "quote": "御史中丞狄兼謨上前雪涕以諫，詞理懇切。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "H",
+      "searched": [
+        "维基文库全文检索「狄兼謨」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷八九（狄仁杰传附兼谟）、卷一七五（庄恪太子传）、卷一五八",
+        "《新唐书》卷一一五（狄仁杰传附兼谟）、卷一五九（吴士矩）",
+        "《吴郡志》卷十一（检索片段）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四三至二四八",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局后历尚书左丞、益王傅、天平节度，以秘书监归洛，终东都留守；会昌五年与白居易九老会（年未七十不及列）。输入年龄 62 未触发年龄规则。年龄规则：输入年龄 62，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1d3bed0016f2",
+      "name": "温德彝",
+      "baseline": "MILITARY",
+      "baselineWhy": "太和四年以「河中将」随温造平兴元兵乱（新唐书温造传，字作「温德彜」），后为天德军使，行伍出身。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：开局前只见太和四年以河中将随温造赴兴元一条（杀乱卒由温造主持），不足以定五常；开成五年十月奏回鹘溃兵逼西城是开局后事。查过新唐书温造传、通鉴卷二四六及胡注考异、维基文库全文检索（仅 5 条命中）。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「溫德彝」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷九一（温造传，作「温德彜」）",
+        "《旧唐书》卷一六五（温造传，未载其名）",
+        "《资治通鉴》卷二四六及胡三省注引《后唐献祖纪年录》",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "才具与五常保持基线。新唐书温造传「河中将温德彜」与天德军使温德彝相隔十年、字形异写，推定为同一人（只用于选基线）。胡注考异引《后唐献祖纪年录》称开成四年「天德军使温德彝请帝（朱邪赤心）为援」，司马光存疑，未据以改辞令。开局日是否已在任仍属推定。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-bea19e071c59",
+      "name": "魏仲卿",
+      "baseline": "MILITARY",
+      "baselineWhy": "甘露之变时为右神策副使，开成元年以神策大将军出镇朔方，属神策武臣。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 42,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "benevolence",
+          "delta": -10,
+          "why": "开局前行事：甘露之变中奉仇士良命与刘泰伦各率禁兵五百露刃出阁门，「逢人辄杀」，诸司吏卒及商民死者千余人。",
+          "source": "《资治通鉴》卷二四五·太和九年十一月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷245.wiki",
+          "quote": "士良等命左、右神策副使劉泰倫、魏仲卿等各帥禁兵五百人，露刃出閣門討賊。王涯等將會食，吏白：「有兵自內出，逢人輒殺！」"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 50,
+          "义": 63,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "M",
+          "义": "M",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "甘露之变中奉仇士良命率禁兵露刃出阁门，逢人辄杀，屠戮朝官吏卒商民，仁大减、义减；其余开局前只见出镇朔方一条任命，礼智信保留默认。查过通鉴卷二四五、文宗纪、维基文库全文检索。",
+        "adjustments": [
+          {
+            "attr": "仁",
+            "delta": -10,
+            "why": "开局前行事：率禁兵逢人辄杀。",
+            "source": "《资治通鉴》卷二四五·太和九年十一月",
+            "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷245.wiki",
+            "quote": "露刃出閣門討賊。王涯等將會食，吏白：「有兵自內出，逢人輒殺！」"
+          },
+          {
+            "attr": "义",
+            "delta": -5,
+            "why": "开局前行事：受宦官之命屠戮宰相以下朝官。",
+            "source": "《资治通鉴》卷二四五·太和九年十一月",
+            "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷245.wiki",
+            "quote": "士良等命左、右神策副使劉泰倫、魏仲卿等各帥禁兵五百人"
+          }
+        ]
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「魏仲卿」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《资治通鉴》卷二四五",
+        "《新唐书》卷一七九（李训传，作「陈君奕」）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "通鉴记率兵者为刘泰伦、魏仲卿，新唐书李训传记为刘泰伦、陈君奕，两书所记副使不同，或二人皆在其中。朔方任上事迹未见，开局日是否仍在灵盐属推定（已核研究同此判断）。甘露之变中与宦官同进退，未据以改忠诚（朝廷此时即由仇士良等拥立武宗）。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-06a3eee7ef2b",
+      "name": "李昌言",
+      "baseline": "MILITARY",
+      "baselineWhy": "由左金吾卫将军出为夏绥节度，又以右羽林统军出为鄜坊节度，属禁卫武臣系统。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史书只见太和六年十月由左金吾卫将军出为夏绥银宥节度、开成四年四月由右羽林统军出为鄜坊节度两条任命。查过文宗纪、维基文库全文检索（命中多为唐末凤翔李昌言及宋元同名者）。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「李昌言」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「李昌言」+夏州",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四三至二四八",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "只有两条任命，才具与五常保持基线。唐末中和年间凤翔节度使李昌言（《旧唐书》卷一七八郑畋传）相距四十余年，为另一人。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-583b00e6c127",
+      "name": "苻澈",
+      "baseline": "MILITARY",
+      "baselineWhy": "由长武城使（京西北防秋戍将）擢为邠宁节度使，行伍出身。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 65,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "邠宁任上以「能政」闻（白敏中为其副使；此评可能延至开局后，能力类可用）。",
+          "source": "《新唐书》卷一一九·白居易传附白敏中",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷119.wiki",
+          "quote": "為符澈邠寧副使，澈卒以能政聞。"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无可据以定五常的开局前行迹：开局前只见由长武城使擢邠宁节度、以白敏中为副使，「能政」属政务之评，不涉仁义礼智信。查过文宗纪、新唐书白敏中传与韦博传、通鉴卷二四六、李德裕论边备诸状。",
+        "adjustments": []
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「苻澈」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库全文检索「符澈」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《新唐书》卷一一九（白敏中传）、卷一七七（韦博传）",
+        "《资治通鉴》卷二四六",
+        "李德裕《条疏太原以北边备事宜状》《请令苻澈与幽州大将书》（检索片段）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局后：回鹘入寇后移河东节度，会昌二年二月修把头烽旧戍以备回鹘，李德裕状称其「候缮已毕，把头烽内并未添兵镇守，事同虚设」，褒贬相抵，未改军事；同年三月以疾由刘沔代。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-7a96fa5c2613",
+      "name": "王茂元",
+      "baseline": "MILITARY",
+      "baselineWhy": "将门子（父王栖曜），元和中为右神策将军，由右金吾卫将军出镇岭南、泾原，属武臣系统；虽少好学、以试校书郎起家，李德裕称其「将家」。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 71,
+        "valor": 58,
+        "military": 72,
+        "administration": 70,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 55,
+        "benevolence": 52,
+        "integrity": 46
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 5,
+          "why": "开局前事迹：少好学，德宗时上书自荐，擢试校书郎。",
+          "source": "《新唐书》卷一七〇·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷170.wiki",
+          "quote": "子茂元，少好學。德宗時上書自薦，擢試校書郎，改太子贊善大夫。"
+        },
+        {
+          "attr": "valor",
+          "delta": 5,
+          "why": "本传评语：「幼有勇略，从父征伐知名」。",
+          "source": "《旧唐书》卷一五二·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷152.wiki",
+          "quote": "茂元，幼有勇略，從父征伐知名。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "身份事实：随父征伐起家知名。",
+          "source": "《旧唐书》卷一五二·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷152.wiki",
+          "quote": "從父征伐知名。"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局前事迹：元和十年东都淄青留邸兵谋乱，围兵无敢先进，茂元斩一人以徇，众乃进。",
+          "source": "《新唐书》卷一七〇·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷170.wiki",
+          "quote": "淄青留邸卒謀亂，元膺率兵圍之，士無敢先者，茂元取一人斬之，眾乃進，賊遂出奔。"
+        },
+        {
+          "attr": "military",
+          "delta": -10,
+          "why": "开局后事迹（能力类可用）：会昌三年讨刘稹，科斗店兵败、万善被围，李德裕等奏其「习吏事而非将才」，改以王宰为行营攻讨使。",
+          "source": "《资治通鉴》卷二四七·会昌三年八月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "茂元習吏事而非將才"
+        },
+        {
+          "attr": "valor",
+          "delta": -5,
+          "why": "开局后事迹（能力类可用）：万善城将陷，茂元困急欲帅众弃城走，经都虞候孟章遮马谏止。",
+          "source": "《资治通鉴》卷二四七·会昌三年八月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "時義成軍適至，茂元困急，欲帥眾棄城走。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前政绩：岭南节度任上招怀蛮落，「颇立政能」。",
+          "source": "《旧唐书》卷一五二·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷152.wiki",
+          "quote": "在安南招懷蠻落，頗立政能。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局后评语（能力类可用）：李德裕等称其「习吏事」（另状作「久习吏事」）。",
+          "source": "《资治通鉴》卷二四七·会昌三年八月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "李德裕等奏：「茂元習吏事而非將才"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前事迹：累迁岭南节度使，「蛮落安之」。",
+          "source": "《新唐书》卷一七〇·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷170.wiki",
+          "quote": "累遷嶺南節度使，蠻落安之。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -10,
+          "why": "开局前行事：岭南任上积聚家财巨万，甘露之变后又罄家财赂两军以免祸。",
+          "source": "《旧唐书》卷一五二·王栖曜传附子茂元",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷152.wiki",
+          "quote": "南中多異貨，茂元積聚家財鉅萬計。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「王茂元」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一五二（王栖曜传附茂元）、卷一二四（李师道传）、卷一九〇下（李商隐传）",
+        "《新唐书》卷一七〇（王栖曜传附茂元）、卷一七九、卷二〇三",
+        "《资治通鉴》卷二四七",
+        "王茂元《奏吐蕃交马事宜状》（《全唐文》卷六八四）",
+        "李德裕《赠王茂元司徒制》《请授王宰兼行营诸军攻讨使状》（检索片段）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "泾原任上所上《奏吐蕃交马事宜状》自述修器械、增筑故城、穿浚新堑，属本人自陈，未据以加军事。李德裕赠司徒制称其「晚为边将，颇振军声」系追赠褒语，与同时状奏「深入攻讨，非其所长」相左，从状奏。开局后会昌三年九月卒于河阳。李商隐为其婿。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-aa44d6e75381",
+      "name": "陈君奕",
+      "baseline": "MILITARY",
+      "baselineWhy": "甘露之变时为神策副使，以左神策大将军出镇凤翔，属神策武臣。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 72,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 45,
+        "benevolence": 42,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "benevolence",
+          "delta": -10,
+          "why": "开局前行事：甘露之变中与刘泰伦率卫士五百挺兵而出，「所值辄杀」。",
+          "source": "《新唐书》卷一七九·李训传",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷179.wiki",
+          "quote": "會士良遣神策副使劉泰倫、陳君奕等率衛士五百挺兵出，所值輒殺。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": -5,
+          "why": "开局前事迹：开成元年九月，吐蕃使论屈热等不依贺正、贺冬、继好三事而来，本应留使奏听朝旨，君奕不遵旧制，罚俸两月。",
+          "source": "《册府元龟》牧守部·谴让（卷六九九）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+          "quote": "陳君奕為鳳翔節度使文宗開成元年九月己卯詔罰君奕兩月俸以舊制西藩非賀正賀冬繼好使臣不至論屈熱等不由三事而來節度使宜留之奏聽朝旨君奕不遵舊制故有是罰。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「陳君奕」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷一七九（李训传）",
+        "《资治通鉴》卷二四五",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "通鉴卷二四五记率兵者为刘泰伦、魏仲卿，与新唐书不同。开局日是否仍在凤翔属推定。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1b0e1b232a58",
+      "name": "韩威",
+      "baseline": "CIVIL",
+      "baselineWhy": "历棣州刺史、安南都护、蔡州刺史、义武节度使，无行伍或战功记载，按文臣起点。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无开局前行迹：史书只见太和八年棣州刺史为安南都护、开成三年蔡州刺史为义武节度两条任命，开成四年十二月受诏料理故易定观察判官李士季丧事，均属职事，不涉仁义礼智信。查过文宗纪、通鉴卷二四六、册府帝王部旌表、维基文库全文检索。",
+        "adjustments": []
+      },
+      "confidence": "L",
+      "searched": [
+        "维基文库全文检索「韓威」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "维基文库检索「韓威」+义武／蔡州",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《资治通鉴》卷二四六",
+        "《册府元龟》帝王部·旌表第四",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "才具与五常保持基线；出身不明，按文臣起点，若日后查得武职出身应改 MILITARY。太和八年十二月除安南都护后约一月，纪文又以「前棣州刺史田早」为安南都护，韩威恐未赴任或纪文有误。贞观间伊州刺史、松州都督韩威为另一人。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-520672923626",
+      "name": "刘约",
+      "baseline": "CIVIL",
+      "baselineWhy": "卢龙节度使刘济之子，以父兄恩荫入仕，历齐、棣、德州刺史，按文臣起点（未见行伍或战功）。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 56,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前制书：授棣州刺史制称其前任齐州「在官无败事，罢秩有去思」，属任用理由的具体评语（引文据已核研究）。",
+          "source": "白居易《刘约授棣州刺史制》（据 north.json 引）",
+          "file": "E:/tianming-scenario-repair-e/docs/scenario-data-repair-20260924/sources/tang-research/north.json",
+          "quote": "嘉約之謹厚，累遷至齊州刺史，在官無敗事，罷秩有去思。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前制书评语：「嘉约之谨厚」。",
+          "source": "白居易《刘约授棣州刺史制》（据 north.json 引）",
+          "file": "E:/tianming-scenario-repair-e/docs/scenario-data-repair-20260924/sources/tang-research/north.json",
+          "quote": "嘉約之謹厚"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：开成中奏王稷遗孤叔泰五岁遇乱为郡人匿养得活，送京师，文宗悯之授官奉祀。",
+          "source": "《新唐书》卷一七〇·王锷传附子稷",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷170.wiki",
+          "quote": "開成中，滄州節度使劉約奏稷子叔泰生五歲，值全略亂，為郡人匿養，得不死。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「劉約」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷一七〇（王锷传）、卷一八二（李珏传）、卷二一〇（何进滔传）",
+        "《旧唐书》卷一八一",
+        "《资治通鉴》卷二四六",
+        "白居易制书（据 north.json 引文与维基文库检索片段）",
+        "《全唐文》卷七六〇（刘约小传）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局后：武宗新听政时献白鹰，李珏请却之（新唐书卷一八二，品性类后事只记不改）；奉诏谕何重顺入朝不从；后徙宣武暴卒，家僮五百几乱。同名待考：贞元间水部员外郎刘约（《唐国史补》）、长庆间司门员外郎刘约（白居易制「端静廉雅」）与刘济之子恐非一人，未采；全唐文小传把「官水部员外郎」与沧州、天平、宣武并叙，疑有混同。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-8d675016b30a",
+      "name": "韦长",
+      "baseline": "CIVIL",
+      "baselineWhy": "柳公绰所辟士人，历太府卿、京兆尹、荆南节度、河南尹，文臣仕途。",
+      "stats": {
+        "loyalty": 53,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 75,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 57
+      },
+      "adjustments": [
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：太和七年由太府卿迁京兆尹，掌财赋长官一任。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "乙太府卿韋長為京兆尹。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前事迹：太和末任京兆尹，奏京师奸豪所聚，犯者不宜概免鞭背，册府列入「抑豪强」。",
+          "source": "《册府元龟》牧守部·抑豪强",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+          "quote": "韋長文宗太和末為京兆尹奏準敕天下州府所犯罪除情狀巨蠹者其他過誤及尋常公事違犯不得鞭背者伏以京師浩穰奸豪所聚終日懲罰蚳犯猶多小有寬容即難禁戢"
+        },
+        {
+          "attr": "loyalty",
+          "delta": -5,
+          "why": "开局前行事：荆南任上监军吕令琮从人毁骂江陵县令，韦长不上奏而申状诉于枢密使，魏谟劾其「公事都不奏闻，私情擅为逾越」。",
+          "source": "《旧唐书》卷一七六·魏谟传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷176.wiki",
+          "quote": "韋長任膺廉使，體合精詳，公事都不奏聞，私情擅為逾越。"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 73,
+          "礼": 67,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "M",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "京兆尹任上奏请奸豪不免鞭背，册府列入「抑豪强」，义略加；荆南任上遇监军从人毁骂县令，不上闻而私诉枢密使，魏谟劾其「私情擅为逾越」，礼略减；仁、智、信查无开局前行迹，保留默认。",
+        "adjustments": [
+          {
+            "attr": "义",
+            "delta": 5,
+            "why": "开局前行事：请对京师奸豪不宽鞭背，抑强横。",
+            "source": "《册府元龟》牧守部·抑豪强",
+            "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+            "quote": "伏以京師浩穰奸豪所聚終日懲罰蚳犯猶多小有寬容即難禁戢"
+          },
+          {
+            "attr": "礼",
+            "delta": -5,
+            "why": "开局前行事：公事不上奏而申状枢密使，逾越旧制。",
+            "source": "《旧唐书》卷一七六·魏谟传",
+            "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷176.wiki",
+            "quote": "觀察使韋長申狀與樞密使訴之"
+          }
+        ]
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「韋長」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一七六（魏谟传）、卷一六五（柳公绰传）",
+        "《新唐书》卷一六三（柳公绰传）",
+        "《全唐文》卷七三二（韦长小传）、卷七二（简计陵寝诏，检索片段）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "全唐文小传称「长庆时官京兆尹」，与纪文太和七年不合，从纪文。柳公绰临终召「故吏韦长」托言于宰相，可见受知，未据以改数。册府帝王部明罚开成二年六月「荆南观察使韦尝」奏教坊乐人事，名字不合，未采。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1b4493a80c31",
+      "name": "李彦佐",
+      "baseline": "MILITARY",
+      "baselineWhy": "长庆间为右羽林将军，服阕重除本官兼御史中丞「行上将军之事」，制称其「能训勇力之士」，属禁军武臣；后久镇义昌。",
+      "stats": {
+        "loyalty": 60,
+        "ambition": 52,
+        "intelligence": 66,
+        "valor": 58,
+        "military": 67,
+        "administration": 60,
+        "management": 64,
+        "charisma": 64,
+        "diplomacy": 50,
+        "benevolence": 52,
+        "integrity": 56
+      },
+      "adjustments": [
+        {
+          "attr": "military",
+          "delta": -5,
+          "why": "开局后事迹（能力类可用）：会昌三年为晋绛行营招讨使，发徐州行甚缓，又请休兵、请益兵，李德裕劾其逗遛顾望，旋以石雄代之。",
+          "source": "《资治通鉴》卷二四七·会昌三年七月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷247.wiki",
+          "quote": "晉絳行營節度使李彥佐自發徐州，行甚緩，又請休兵於絳州，兼請益兵。"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 72,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "L",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "查无可据的开局前行迹：开局前只见久镇义昌、移镇天平的任命；《酉阳杂俎》所记太和九年渡河失诏、祝河伯而冰开得诏事属志怪笔记，不据。查过文宗纪、通鉴卷二四六、白居易制书、酉阳杂俎卷九、宋高僧传卷二六等。",
+        "adjustments": []
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「李彥佐」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "白居易《前右羽林将军李彦佐服阕重除本官兼御史中丞知军事制》",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《旧唐书》卷十八上·武宗纪、卷十八下·宣宗纪",
+        "《资治通鉴》卷二四六、二四七",
+        "《新唐书》卷八、卷一七一（石雄传）、卷一七七（卢简求传）",
+        "《旧唐书》卷一六一、一六三",
+        "《酉阳杂俎》卷九（检索片段）",
+        "《宋高僧传》卷二六（检索片段）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "逗遛一事「殊无讨贼之意」属意志层面，品性类后事只记不改；此处只按用兵迟缓减军事一档。开局后：会昌五年为朔方节度使时于龙兴寺为僧人建白草院（宋高僧传），大中间以太子太保分司、后授鄜坊节度——只记不改。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-c8133cd00c74",
+      "name": "张贾",
+      "baseline": "CIVIL",
+      "baselineWhy": "历鸿胪卿、衢州刺史、太府卿、兖海观察使，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 38,
+        "administration": 77,
+        "management": 75,
+        "charisma": 62,
+        "diplomacy": 65,
+        "benevolence": 51,
+        "integrity": 52
+      },
+      "adjustments": [
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：开成二年由太府卿出为兖海观察使，掌财赋长官一任。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "甲申，乙太府卿張賈為兗海觀察使。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "身份事实：文宗朝曾任鸿胪卿（掌蕃客朝会），由鸿胪卿出为衢州刺史。",
+          "source": "《旧唐书》卷十七下·文宗纪论",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "中書用鴻臚卿張賈為衢州刺史"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局后事迹（能力类可用）：会昌元年以鸿胪卿充巡边使，察回鹘情伪，并奉诏安抚嗢没斯。",
+          "source": "《资治通鉴》卷二四六·会昌元年八月",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷246.wiki",
+          "quote": "時詔以鴻臚卿張賈爲巡邊使，使察回鶻情偽，未還。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": -5,
+          "why": "开局后宰相评语（能力类可用）：性刚负气，恐不能安和，故河北宣谕改命李回。",
+          "source": "《旧唐书》卷十八上·武宗纪·会昌三年七月",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷18上.wiki",
+          "quote": "然性剛負氣，慮不安和，不如且命李回。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局后宰相评语（能力类可用）：「干济有才」。",
+          "source": "《旧唐书》卷十八上·武宗纪·会昌三年七月",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷18上.wiki",
+          "quote": "張賈幹濟有才"
+        },
+        {
+          "attr": "military",
+          "delta": 5,
+          "why": "开局后宰相评语（能力类可用）：「甚谙军中体势」。",
+          "source": "《旧唐书》卷十八上·武宗纪·会昌三年七月",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷18上.wiki",
+          "quote": "甚諳軍中體勢"
+        },
+        {
+          "attr": "integrity",
+          "delta": -5,
+          "why": "开局前行事：好博戏，由鸿胪卿出守衢州辞日，文宗面讽「岂有好之而无妨」，内外悚息。",
+          "source": "《旧唐书》卷十七下·文宗纪论",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "賈好博，朝辭日，帝謂之曰：「聞卿善長行。」對曰：「政事之餘，聊與賓客為戲，非有所妨。」帝曰：「豈有好之而無妨也！」"
+        }
+      ],
+      "wuchang": {
+        "scores": {
+          "仁": 60,
+          "义": 68,
+          "礼": 67,
+          "智": 74,
+          "信": 70
+        },
+        "confidence": {
+          "仁": "L",
+          "义": "L",
+          "礼": "M",
+          "智": "L",
+          "信": "L"
+        },
+        "note": "好博戏，文宗当面讥讽而犹自辩「非有所妨」，礼略减；会昌三年宰相评其「性刚负气」系开局后之语且非本传，只记不改；其余查无开局前行迹，保留默认。",
+        "adjustments": [
+          {
+            "attr": "礼",
+            "delta": -5,
+            "why": "开局前行事：好博，受文宗面讽仍自辩。",
+            "source": "《旧唐书》卷十七下·文宗纪论",
+            "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+            "quote": "對曰：「政事之餘，聊與賓客為戲，非有所妨。」帝曰：「豈有好之而無妨也！」"
+          }
+        ]
+      },
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「張賈」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《旧唐书》卷十八上·武宗纪、卷十八下·宣宗纪",
+        "《资治通鉴》卷二四六",
+        "《太平御览》卷二五五（检索片段）",
+        "李德裕《赐回鹘嗢没斯等诏》等（《全唐文》卷六九八、七〇一、七〇四，检索片段）",
+        "《册府元龟》卷一七二（四库本，据 north.json）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "同名需分：太和四年「兵部尚书致仕张贾卒」者为贞元、元和间韩愈友人张贾（张弘靖从侄，曾任华州刺史），其诗赋、韦夏卿所辟等记载均属此人；north.json 所引长庆四年「太子宾客张贾为右散骑常侍」恐亦属前者，未采。开局后会昌中曾受命与京兆诸县令商量减放秋税（《雨灾减放税钱德音》，身份待核），未采。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-637383efcc4f",
+      "name": "裴弘泰",
+      "baseline": "CIVIL",
+      "baselineWhy": "起家使府从事，历度支河北榷盐使、权知贝州刺史、太府少卿知左藏库出纳、太府卿、黔中观察使等，文臣兼财赋官。",
+      "stats": {
+        "loyalty": 53,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 80,
+        "charisma": 62,
+        "diplomacy": 65,
+        "benevolence": 51,
+        "integrity": 47
+      },
+      "adjustments": [
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "开局前制书：以「干蛊之才」领河北盐务，「管榷条制，动皆得宜」，属对其榷盐实绩的具体评语。",
+          "source": "白居易《河北榷盐使裴弘泰可权知贝州刺史依前榷盐使制》（《白氏长庆集》卷五一）",
+          "file": "E:/tianming-tmp/tang/research/raw/白氏長慶集_卷051.wiki",
+          "quote": "某官裴弘泰：以干蠱之才，領鹽鹵之務，管榷條制，動皆得宜。觀其所能，若有余地"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：先后任度支河北榷盐使、太府少卿知左藏库出纳、太府卿，长期掌财赋。",
+          "source": "《旧唐书》卷十七上·文宗纪上",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17上.wiki",
+          "quote": "乙太府卿裴弘泰為黔中經略使、觀察使。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前制书：兼抚贝州时「当军兴之时，法行政立」。",
+          "source": "白居易《裴弘泰可太府少卿知左藏库出纳制》（《白氏文集》卷三六）",
+          "file": "E:/tianming-tmp/tang/research/raw/白氏文集_卷036.wiki",
+          "quote": "弘泰頃分𣙜務兼撫郡民當軍興之時法行政立"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "开局前事迹：为郑滑薛平从事，奉使魏博说田弘正同意开黎阳古河道分水，事成。",
+          "source": "《新唐书》卷一一一·薛平传",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷111.wiki",
+          "quote": "因命其佐裴弘泰往請魏博節度使田弘正，弘正許之。"
+        },
+        {
+          "attr": "loyalty",
+          "delta": -5,
+          "why": "开局前行事：太和五年新除桂管观察使，淹程不进，为宪司所纠，贬饶州刺史。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "貶新除桂管觀察使裴弘泰為饒州刺史，以除鎮淹程不進，為憲司所糾故也。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -5,
+          "why": "开局前行事：任郑滑节度使时因妖星见奏请为国设三千僧斋，册府列入牧守部「邪佞」。",
+          "source": "《册府元龟》牧守部·邪佞",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+          "quote": "裴弘泰文宗時為鄭滑節度使奏緣妖星見為國設三千僧齋。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -5,
+          "why": "开局前行事：开成四年十一月为贺庆成节（文宗诞节）擅放当州累囚，诏称「虽曰竭诚，且为干禁」，罚俸。",
+          "source": "《册府元龟》牧守部·谴让（卷六九九）",
+          "file": "E:/tianming-tmp/tang/research/raw/冊府元龜_卷0650.wiki",
+          "quote": "弘泰以慶成令節擅放累囚雖曰：竭誠。且為幹禁恐開後例須示薄懲宜罰一月俸料。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「裴弘泰」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《新唐书》卷一一一（薛平传）",
+        "白居易制书二道（《白氏长庆集》卷五一、《白氏文集》卷三六）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "《太平广记》卷二三三（检索片段）、《玉泉子》（检索片段）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "擅放累囚一事，册府帝王部明罚作「罚一季俸料」，牧守部谴让作「罚一月俸料」，两处不同。《玉泉子》《太平广记》卷二三三载其在裴均襄阳宴上尽饮席间酒器、「合座壮之」，属笔记轶事，未据以加魅力。维基百科称其后任凤翔、邠宁（二手未核）。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-fe7373960a70",
+      "name": "王彦威",
+      "baseline": "CIVIL",
+      "baselineWhy": "儒家子，以太常散吏、检讨官起家（新传称举明经甲科），历太常博士、谏议大夫、平卢节度、户部侍郎判度支，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 62,
+        "intelligence": 84,
+        "valor": 25,
+        "military": 33,
+        "administration": 77,
+        "management": 60,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 46,
+        "integrity": 52
+      },
+      "adjustments": [
+        {
+          "attr": "intelligence",
+          "delta": 10,
+          "why": "本传评语与著述：尤通三礼，编《元和新礼》三十卷由是知名，「宿儒硕学皆让之」，又纂《唐典》。明经甲科不另加分。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "彥威通悉典故，宿儒碩學皆讓之。"
+        },
+        {
+          "attr": "administration",
+          "delta": 5,
+          "why": "开局前政绩：太和五年充十二州勘定两税使，「朝法振举，人不以为烦」；本传亦称其「勤吏事」。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "乃命彥威充十二州勘定兩稅使。朝法振舉，人不以為煩。"
+        },
+        {
+          "attr": "management",
+          "delta": -10,
+          "why": "本传评语：虽历司农卿、判度支，「货泉之柄，素非所长」；判度支时边军上诉衣赐不时且朽故，被左授卫尉卿。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "彥威儒學雖優，亦勤吏事，然貨泉之柄，素非所長"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": 5,
+          "why": "身份事实：奉使宣慰魏博，特赐金紫。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "尋使魏博宣慰，特賜金紫。"
+        },
+        {
+          "attr": "diplomacy",
+          "delta": -5,
+          "why": "本传评语：性刚讦，自恃有余，诣中书面论「语讦气盛」。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "性既剛訐，自恃有余。"
+        },
+        {
+          "attr": "ambition",
+          "delta": 10,
+          "why": "开局前行事与本传评语：既掌利权，「心希大用」，物议鄙其躁妄，史臣称其「欲为巧宦」。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "彥威既掌利權，心希大用。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：为太常博士时每议礼事守正不阿附，君子称之。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "每議禮事，守正不阿附，君子稱之。"
+        },
+        {
+          "attr": "integrity",
+          "delta": -10,
+          "why": "开局前行事：判度支时大结私恩，内官请托无不如意，又复修王播旧事贡奉羡余。",
+          "source": "《旧唐书》卷一五七·王彦威传",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷157.wiki",
+          "quote": "至是，彥威大結私恩，凡內官請托，無不如意，物議鄙其躁妄。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": -5,
+          "why": "开局前行事：上官兴醉杀人后自首免父，京兆尹等请减死，彦威坚持「杀人者死」，以论狱「太徼讦」左授河中少尹。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "以諫議大夫王彥威為河中少尹，以其論上官興獄太徼訐故也。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "H",
+      "searched": [
+        "维基文库全文检索「王彥威」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷一五七（本传）、卷一五六（于頔传）",
+        "《新唐书》卷一六四（本传）、卷五八（艺文志）",
+        "《唐会要》卷一五",
+        "王彦威《进供军图奏》《令王彦威定郓曹等州税务诏》（检索片段）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "本传所载《度支占额图》《供军图》系判度支时所进，与「货泉之柄素非所长」及边军衣赐不时的结果并存，按本传总评取减。开局后会昌中入为兵部侍郎、历宣武等镇，卒谥靖——只记不改。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-efa9fdc6e1e4",
+      "name": "薛元赏",
+      "baseline": "CIVIL",
+      "baselineWhy": "历大理丞、华原令、司农少卿、汉州刺史、司农卿、京兆尹，新唐书列入循吏传，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 82,
+        "management": 80,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "administration",
+          "delta": 10,
+          "why": "本传评语（循吏传）：「长吏事，能推言时弊，件白之」。",
+          "source": "《新唐书》卷一九七·循吏传·薛元赏",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷197.wiki",
+          "quote": "元賞長吏事，能推言時弊，件白之。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "开局前政绩：太和初任汉州刺史，于凋瘵之后招附流庸九千余家、开辟田业五百余顷，公用有余（张次宗荐状，自称「任当廉察，备睹政能」）。",
+          "source": "张次宗《荐前汉州刺史薛元赏状》（《全唐文》卷七六〇）",
+          "file": "E:/tianming-tmp/tang/research/raw/薦前漢州刺史薛元賞狀.wiki",
+          "quote": "流庸自占者過九千家，田業開辟者逾五百頃。"
+        },
+        {
+          "attr": "management",
+          "delta": 5,
+          "why": "身份事实：太和初司农少卿、太和九年司农卿（掌仓储），开局后又判盐铁转运使，长期掌财赋。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "以司農卿薛元賞權知京兆。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": 5,
+          "why": "开局前行事：开成二年镇武宁，罢泗口猥税，人以为便。",
+          "source": "《新唐书》卷一九七·循吏传·薛元赏",
+          "file": "E:/tianming-tmp/tang/research/raw/新唐書_卷197.wiki",
+          "quote": "出為武寧節度使，罷泗口猥稅，人以為便。"
+        },
+        {
+          "attr": "benevolence",
+          "delta": -5,
+          "why": "开局前行事：权知京兆时擒拿对宰相无礼的神策军将，不顾仇士良召唤径行杖杀。",
+          "source": "《资治通鉴》卷二四五·太和九年十二月条",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷245.wiki",
+          "quote": "元賞曰：「屬有公事，行當繼至。」遂杖殺之。"
+        },
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：面责宰相李石纵容禁军无礼，不畏神策中尉仇士良。",
+          "source": "《资治通鉴》卷二四五·太和九年十二月条",
+          "file": "E:/tianming-tmp/tang/research/raw/資治通鑑_卷245.wiki",
+          "quote": "元賞趨入，責石曰：「相公輔佐天子，紀綱四海。今近不能制一軍將，使無禮如此，何以鎮服四夷！」"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "H",
+      "searched": [
+        "维基文库全文检索「薛元賞」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《新唐书》卷一九七（循吏传本传）、卷一七九",
+        "《旧唐书》卷十七下、卷一七一（张仲方传）、卷十八上",
+        "《资治通鉴》卷二四五、二四八",
+        "张次宗《荐前汉州刺史薛元赏状》",
+        "白居易《薛元赏可华原县令制》（检索片段）",
+        "《唐会要》卷八四（检索片段）",
+        "《册府元龟》维基文库「卷0109/0438/0578/0650」四页（实含帝王部明罚·诫励·旌表、邦计部总序·赋税、铨选部考课、牧守部谴让·邪佞·抑豪强等卷）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "开局后：会昌中再尹京兆，到府三日收恶少杖死三十余人（新传）；会昌末以工部尚书判盐铁转运使，宣宗初以李德裕党贬忠州刺史；大中间终昭义节度——品性类后事只记不改。维州之议上书极言可抚（开局前），属政见，未据以加军事。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    },
+    {
+      "id": "char-1b9a0a3a8851",
+      "name": "卢载",
+      "baseline": "CIVIL",
+      "baselineWhy": "起家天平军巡官，历给事中、尚书左丞，文臣仕途。",
+      "stats": {
+        "loyalty": 58,
+        "ambition": 52,
+        "intelligence": 74,
+        "valor": 25,
+        "military": 33,
+        "administration": 72,
+        "management": 70,
+        "charisma": 62,
+        "diplomacy": 60,
+        "benevolence": 51,
+        "integrity": 62
+      },
+      "adjustments": [
+        {
+          "attr": "integrity",
+          "delta": 5,
+          "why": "开局前行事：开成元年五月任给事中，以郭承嘏公正守道、屡有封驳，封还外放其为华州的诏书。",
+          "source": "《旧唐书》卷十七下·文宗纪下",
+          "file": "E:/tianming-tmp/tang/research/raw/舊唐書_卷17下.wiki",
+          "quote": "給事中盧載以承嘏公正守道，屢有封駁，不宜置之外郡，乃封還詔書。"
+        }
+      ],
+      "wuchang": null,
+      "confidence": "M",
+      "searched": [
+        "维基文库全文检索「盧載」（MediaWiki 搜索 API，2026-09-26，逐条过目前 100 条命中）",
+        "《旧唐书》卷十七上、卷十七下·文宗纪（含四库本卷十七下对勘）",
+        "《旧唐书》卷一六五（郭承嘏传）",
+        "《新唐书》卷一三七（郭承嘏传，检索片段）",
+        "白居易《杨景复可检校膳部员外郎……六人同制》（题名）",
+        "已核研究 tang-research/north.json、south.json、court.json、bio-audit.json"
+      ],
+      "notes": "《元德秀诔》作者卢载为开元、天宝间人，另有宋人卢载，均为同名者。开局日是否仍在同州属推定。年龄规则：输入年龄 55，不在 <20 或 ≥70 范围，未调整。"
+    }
+  ]
+}

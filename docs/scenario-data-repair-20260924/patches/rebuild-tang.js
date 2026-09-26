@@ -49,6 +49,12 @@ function main() {
   console.log('外藩补人：' + run([path.join(DIR, 'patches/tang-foreign-newpeople.js'), '--report', path.join(DIR, 'reports/tang-foreign-newpeople.md'), '--write']));
   // 第六刀之四：外藩人口重分（每家合计不动；日本按和名抄乡数、新罗按郡县数、渤海按领州数、吐蕃河陇取天宝口，其余按面积与地形估）
   console.log('外藩人口：' + run([path.join(DIR, 'patches/tang-foreign-population.js'), '--report', path.join(DIR, 'reports/tang-foreign-population.md'), '--write']));
+  // 第七刀之一：引用与关系（统兵官按别名认人、人名异写统一、势力关系按开局时的实际关系逐条改写并补入原缺的几条）
+  console.log('引用关系：' + run([path.join(DIR, 'patches/tang-references.js'), '--report', path.join(DIR, 'reports/tang-references.md'), '--write']));
+  // 第七刀之二：外藩各道描述（同一势力内四块改挂，照抄势力总述与改道说明的道逐道重写）
+  console.log('各道描述：' + run([path.join(DIR, 'patches/tang-circuit-texts.js'), '--report', path.join(DIR, 'reports/tang-circuit-texts.md'), '--write']));
+  // 第七刀之三：人物才具与五常（模板值与套用中位数的人逐人按史料重定）
+  console.log('才具五常：' + run([path.join(DIR, 'patches/tang-abilities.js'), '--report', path.join(DIR, 'reports/tang-abilities.md'), '--write']));
 }
 
 main();

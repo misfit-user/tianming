@@ -1,6 +1,6 @@
 {
   "note": "官方剧本数据棘轮基线：每部剧本每条规则的问题数，只许减不许增。规则见 lint-scenario-data.js 头注。",
-  "updatedAt": "2026-09-26T05:48:18.186Z",
+  "updatedAt": "2026-09-26T06:30:59.450Z",
   "scenarios": {
     "tianqi7": {
       "ref.entity.id": 2,

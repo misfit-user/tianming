@@ -1497,7 +1497,7 @@
       ]
     },
     "char-b9f08ed4b554": {
-      "name": "李回",
+      "name": "李躔",
       "kind": "historical-inference",
       "initialScores": {
         "仁": 60,
@@ -9145,6 +9145,739 @@
         "信": "F"
       },
       "note": "逐人阅读已写性格与目标后评定；不是按职业、族属、性别或姓名随机生成。性格：爽朗，能把不同来客都照顾周到；讨钱时不动怒，话也不留空隙。 目标：收回客账，修整客舍，让女儿学会接待与算价，而非轻信每一个漂洋过海的人。",
+      "sources": []
+    },
+    "char-eb4d917d249c": {
+      "name": "高锴",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 72,
+        "礼": 76,
+        "智": 78,
+        "信": 68
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "M",
+        "智": "M",
+        "信": "L"
+      },
+      "note": "掌贡举「抑豪华，擢孤进」，义、礼、智略高；裴思谦一榜屈从仇士良请托，信不加。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷168",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷168"
+        },
+        {
+          "book": "《新唐书》卷177",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷177"
+        }
+      ]
+    },
+    "char-90a691a38ce7": {
+      "name": "萧俶",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "本传只见任官次第，无可据的行迹，按唐廷文臣略低一档的保守起点。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷172",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷172"
+        }
+      ]
+    },
+    "char-a494122c6a4b": {
+      "name": "卢贞",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 74,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任官与唱和诗，按保守起点，礼略加。",
+      "sources": []
+    },
+    "char-9b08b089249a": {
+      "name": "李款",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 76,
+        "礼": 72,
+        "智": 74,
+        "信": 74
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "郑注权盛时伏阁弹劾，义与信加；其余无可据的行迹。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷171",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷171"
+        },
+        {
+          "book": "《新唐书》卷118",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷118"
+        }
+      ]
+    },
+    "char-ccd637bf92c3": {
+      "name": "李翊",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见两条任命，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-bd607a63ba79": {
+      "name": "归融",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 74,
+        "礼": 78,
+        "智": 74,
+        "信": 72
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "M",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "劾卢周仁进羡余，以「中外财赋皆陛下府库」为言，义、礼加；其余按保守起点。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷149",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷149"
+        },
+        {
+          "book": "《新唐书》卷164",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷164"
+        }
+      ]
+    },
+    "char-1239346ee3cb": {
+      "name": "郑复",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任命与监护裴度丧事，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-b623ecee2419": {
+      "name": "张沼",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史书只见一条任命，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-abecc0f38e0c": {
+      "name": "冯审",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "本传只见任官次第，按唐廷文臣略低一档的保守起点。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷168",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷168"
+        },
+        {
+          "book": "《新唐书》卷177",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷177"
+        }
+      ]
+    },
+    "char-cde182b3c522": {
+      "name": "胡沐",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史书只见一条任命，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-153d35e048eb": {
+      "name": "唐弘实",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 74,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "曾充册回纥使，奏上供附纲，礼略加；无本传，其余按保守起点。",
+      "sources": []
+    },
+    "char-09252e4fa61c": {
+      "name": "敬昕",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见两条任命，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-df6a6dbb83d0": {
+      "name": "崔琯",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 76,
+        "礼": 76,
+        "智": 74,
+        "信": 74
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "M",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "宋申锡案固请出狱付外，平兴元兵乱而三军从命，义、礼、信加；新传称其「行方介，有器蕴」。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷177",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷177"
+        },
+        {
+          "book": "《新唐书》卷182",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷182"
+        }
+      ]
+    },
+    "char-1d09b3c30916": {
+      "name": "高铢",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 74,
+        "礼": 74,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "伏阁论李训素行纤邪，不附训、注，义加；兄弟「皆以检静自立」，礼略加。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷168",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷168"
+        }
+      ]
+    },
+    "char-48a7a883d938": {
+      "name": "姚合",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 66,
+        "义": 74,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "M",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "劾朱俦以地还民，留用平反狱囚的李商隐，仁、义加。",
+      "sources": [
+        {
+          "book": "《新唐书》卷124",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷124"
+        }
+      ]
+    },
+    "char-1160b59f553c": {
+      "name": "李执方",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任命与后来的制书褒语，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-51aacf22a7cc": {
+      "name": "狄兼谟",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 78,
+        "礼": 76,
+        "智": 74,
+        "信": 76
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "H",
+        "礼": "M",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "封还敕书、劾吴士矩、垂涕谏废太子，义、信、礼加。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷89",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷89"
+        },
+        {
+          "book": "《新唐书》卷115",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷115"
+        }
+      ]
+    },
+    "char-1d3bed0016f2": {
+      "name": "温德彝",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史书只见他以天德军使奏报回鹘动静，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-bea19e071c59": {
+      "name": "魏仲卿",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史书只见一条任命，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-06a3eee7ef2b": {
+      "name": "李昌言",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见两条任命，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-583b00e6c127": {
+      "name": "苻澈",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任命，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-7a96fa5c2613": {
+      "name": "王茂元",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 64,
+        "礼": 72,
+        "智": 74,
+        "信": 66
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "岭南任上积财巨万，甘露后以家财赂两军自保，义、信减。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷152",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷152"
+        },
+        {
+          "book": "《新唐书》卷170",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷170"
+        }
+      ]
+    },
+    "char-aa44d6e75381": {
+      "name": "陈君奕",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 52,
+        "义": 62,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "M",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "甘露之变中随仇士良所遣率卫士挺兵而出、所值辄杀，仁、义减；其余无可据的行迹，按保守起点。",
+      "sources": [
+        {
+          "book": "《新唐书》卷179",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷179"
+        }
+      ]
+    },
+    "char-1b0e1b232a58": {
+      "name": "韩威",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任命，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-520672923626": {
+      "name": "刘约",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 76,
+        "智": 74,
+        "信": 74
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "M",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "白居易所撰制书称其谨厚、在官无败事、罢秩有去思，礼、信略加；其余按保守起点。",
+      "sources": []
+    },
+    "char-8d675016b30a": {
+      "name": "韦长",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任官次第，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-1b4493a80c31": {
+      "name": "李彦佐",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，开局前只见移镇记载，按唐廷军将略低一档的保守起点。",
+      "sources": []
+    },
+    "char-c8133cd00c74": {
+      "name": "张贾",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "无本传，只见任命与好博一事，按唐廷文臣略低一档的保守起点。",
+      "sources": []
+    },
+    "char-637383efcc4f": {
+      "name": "裴弘泰",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 66
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "赴任迟缓被纠、擅放累囚被罚，信略减；其余按保守起点。",
+      "sources": []
+    },
+    "char-fe7373960a70": {
+      "name": "王彦威",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 64,
+        "礼": 82,
+        "智": 74,
+        "信": 66
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "H",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "编《元和新礼》、议礼守正，礼加；判度支时曲从内官请托，义、信减。",
+      "sources": [
+        {
+          "book": "《旧唐书》卷157",
+          "url": "https://zh.wikisource.org/wiki/舊唐書/卷157"
+        }
+      ]
+    },
+    "char-efa9fdc6e1e4": {
+      "name": "薛元赏",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 74,
+        "礼": 72,
+        "智": 78,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "M",
+        "信": "L"
+      },
+      "note": "罢泗口猥税，长吏事、能推言时弊，义、智加。",
+      "sources": [
+        {
+          "book": "《新唐书》卷197",
+          "url": "https://zh.wikisource.org/wiki/新唐書/卷197"
+        }
+      ]
+    },
+    "char-1b9a0a3a8851": {
+      "name": "卢载",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 74,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "封还外放郭承嘏的诏书，义加；其余按保守起点。",
       "sources": []
     }
   }

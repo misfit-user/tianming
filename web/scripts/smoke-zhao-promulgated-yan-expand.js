@@ -41,7 +41,8 @@ assert(/formalIncomingLetters\(getLetters\(\)\)/.test(handler), '须从来函列
 
 // 阅览卡 CSS:大尺寸舒适·非一小块(治「太小了」)
 assert(/\.tm-letter-read-card\{[^}]*width:min\(680px/.test(src), '阅览卡须宽 680px(不再窄列挤成一小块)');
-assert(/\.tm-letter-read-card \.lr-body\{[^}]*font-size:16px/.test(src), '正文须 16px 舒适字号');
+// 美术宪法第2刀起御案字号写成 calc(N * var(--tm-px, 1px))（跟着界面字号开关缩放，默认档仍是 16px）
+assert(/\.tm-letter-read-card \.lr-body\{[^}]*font-size:(?:16px|calc\(16 \* var\(--tm-px, 1px\)\))/.test(src), '正文须 16px 舒适字号');
 assert(/\.tm-letter-read-card \.lr-body\{[^}]*line-height:2\.05/.test(src), '正文须行高 2.05 舒适');
 assert(/\.tm-letter-read-card \.lr-body\{[^}]*overflow-y:auto/.test(src), '正文长则卡内滚动(max-height:86vh)');
 // 右侧来函预览仍夹 2 行(列表紧凑·只展阅时弹大浮层)

@@ -5773,6 +5773,7 @@
         "_tmApplySize",
         "_tmApplyTheme",
         "_tmApplyTitleFont",
+        "_tmApplyUiScale",
         "_tmRenderThemeFontControls"
       ],
       "consumes": [],
@@ -5962,6 +5963,7 @@
         "_tmSetFitResolution",
         "_tmSetFullscreen",
         "_tmSetUiFontScale",
+        "_tmSyncUiPx",
         "_tmUiFontScaleDefault",
         "_togglePConf",
         "renderScnTab",

@@ -134,10 +134,75 @@ setTimeout(() => {
       assert.equal(d.write, false, '他方省道的动作即便被调用也不写诏书');
     });
 
-    check('方志页头有进通志的入口', () => {
+    // 第四片起，方志页头的「道」签换成层级路径（势力 › 省道 › 本州）
+    check('方志页头有层级路径，可点进势力谱牒与本道通志', () => {
       const html = run(`(function(){ __parts.openRegionDossier(__shuntian); return __book().innerHTML; })()`);
-      assert.ok(html.includes('data-bk-open-circuit="' + run('__circuit.key') + '"'), '「道 北直隶」签可点');
-      assert.ok(html.includes('道 <b>北直隶</b>'));
+      const crumbs = html.slice(html.indexOf('bk-crumbs'), html.indexOf('bk-title-row'));
+      assert.ok(crumbs.includes('data-bk-open-faction="'), '势力可点');
+      assert.ok(crumbs.includes('data-bk-open-circuit="' + run('__circuit.key') + '"') && crumbs.includes('>北直隶</button>'), '省道可点');
+      assert.ok(crumbs.includes('<b>顺天府</b>'), '末级是本州');
+      assert.ok(!html.includes('道 <b>北直隶</b>'), '旧的「道」签已由层级路径取代');
+    });
+
+    // 第四片：方志轻调加并卷
+    check('方志八卷并六卷：役政并入户役志，状态收进页头', () => {
+      const d = JSON.parse(run(`(function(){
+        __parts.openRegionDossier(__shuntian);
+        var html = __book().innerHTML;
+        return JSON.stringify({ juans: (html.match(/<section class="bk-juan" id="[^"]+"/g) || []).map(function(s){ return s.replace(/.*id="([^"]+)"/, '$1'); }),
+          titles: (html.match(/<span class="bk-jseal">[^<]*<\\/span><b>[^<]*<\\/b>/g) || []).map(function(s){ return s.replace(/<[^>]+>/g, ''); }),
+          jq: (html.match(/data-bk-jq="[^"]+"/g) || []).length, yizheng: html.indexOf('id="bk-yizheng"') >= 0, huyi: html.indexOf('户役志') >= 0 });
+      })()`));
+      assert.ok(d.juans.every((id) => ['bk-hukou', 'bk-caifu', 'bk-junbei', 'bk-zhiguan', 'bk-fengwu', 'bk-yingzao'].includes(id)), '只剩六卷：' + d.juans.join(','));
+      assert.ok(!d.juans.includes('bk-yizheng') && !d.juans.includes('bk-zhuangkuang'), '役政、状态不再单成一卷');
+      assert.equal(d.jq, d.juans.length, '检签与卷一一对应');
+      assert.equal(d.huyi, true, '户口卷改名户役志');
+      assert.ok(d.titles[0].startsWith('一户役志'), '户役志居首：' + d.titles.join(' '));
+      // 天启开局已行役政的州，役政一节并在户役志里（保留 bk-yizheng 锚点）；未行役政的州没有这一节
+      const seeded = run(`(function(){ var ld = __parts.findLiveAdminDivision(__shuntian); return !!(ld && ld.renliSeed); })()`);
+      assert.equal(d.yizheng, seeded, '役政一节随役政种子');
+    });
+
+    check('读数带下有本道排名，页脚四个诏书动作只写建议库', () => {
+      const d = JSON.parse(run(`(function(){
+        __parts.openRegionDossier(__shuntian);
+        var html = __book().innerHTML;
+        var rank = html.slice(html.indexOf('bk-rankline'), html.indexOf('bk-scroll'));
+        var buttons = (html.match(/data-bk-region-act="[^"]+"/g) || []).map(function(s){ return s.replace(/.*="([^"]+)"/, '$1'); });
+        var before = (GM._edictSuggestions || []).length;
+        var ok = __parts.regionAction(String(__shuntian.id || __shuntian.name), '调粮');
+        var list = GM._edictSuggestions || [], last = list[list.length - 1] || null;
+        var bad = __parts.regionAction(String(__shuntian.id || __shuntian.name), '抄家');
+        return JSON.stringify({ rank: rank, buttons: buttons, ok: ok, added: list.length - before, last: last, bad: bad });
+      })()`));
+      assert.ok(d.rank.includes('>北直隶</button>') && d.rank.includes('本方 11 州中'), '排名写明本道本方州数');
+      for (const k of ['户口', '实征', '民心', '吏治']) assert.match(d.rank, new RegExp(k + ' 第 \\d+'), k + '有名次');
+      assert.deepEqual(d.buttons, ['安民', '巡按', '调粮', '拟诏']);
+      assert.equal(d.ok, true);
+      assert.equal(d.added, 1);
+      assert.equal(d.last.source, '行政区划');
+      assert.equal(d.last.from, '顺天府');
+      assert.equal(d.last.topic, '方志·调粮');
+      assert.ok(d.last.content.includes('顺天府'), '文案写明本州');
+      assert.equal(d.last.used, false, '只进建议库，不直接生效');
+      assert.equal(d.bad, false, '不认识的动作不写');
+    });
+
+    check('他方州县的方志不给诏书动作', () => {
+      const d = JSON.parse(run(`(function(){
+        var names = TMPhase8FormalBridge.rightrail.playerFactionNames();
+        var foreign = __map.regions.filter(function(r){
+          var f = __parts.findFaction(__parts.ownerKey(r), '');
+          return __parts.ownerKey(r) && names.indexOf(String(__parts.ownerKey(r))) < 0 && !(f && names.indexOf(String(f.name)) >= 0);
+        })[0];
+        if (!foreign) return JSON.stringify({ found: false });
+        __parts.openRegionDossier(foreign);
+        var html = __book().innerHTML;
+        return JSON.stringify({ found: true, acts: (html.match(/data-bk-region-act="/g) || []).length, write: __parts.regionAction(String(foreign.id || foreign.name), '安民') });
+      })()`));
+      assert.equal(d.found, true);
+      assert.equal(d.acts, 0);
+      assert.equal(d.write, false);
     });
 
     // 第三片：左键随层级开册页，设置可切回「一律开方志」，点省名恒按省道级

@@ -696,7 +696,7 @@ sandbox.TMPhase8FormalBridge.openRegionById('region-liaodong');
 const zeroGuardHtml = ppopHtml();
 assert(zeroGuardHtml.includes('1234'), 'zero live soldiers must not clobber static garrison');
 
-// ── 状态卷（2026-06-12）：statusEffects → 「状态」卷卡片 + 检签「况」 ──
+// ── 状态（2026-06-12）：statusEffects → 方志页头状态小签（通志一期 S4 起不再单成一卷、不挂检签「况」）──
 sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [
   { id: 'zt1', kind: 'disaster', name: '辽河冬灾', desc: '大雪封道', econPct: -0.12, minxinPerTurn: -1, startTurn: 1, expiresTurn: 99, source: 'ai' },
   { id: 'zt2', kind: 'building', name: '「驿道」之利', econPct: 0.02, minxinPerTurn: 0, startTurn: 1, expiresTurn: null, source: 'building:驿道' }
@@ -704,7 +704,8 @@ sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [
 sandbox.GM.turn += 1;
 sandbox.TMPhase8FormalBridge.openRegionById('region-liaodong');
 const statusHtml = ppopHtml();
-assertAll(statusHtml, ['bk-zhuangkuang', '辽河冬灾', '「驿道」之利', '岁入 -12%', '民心 -1/回合', '永 续', 'data-bk-jq="bk-zhuangkuang"'], 'region status juan');
+assertAll(statusHtml, ['bk-zhuangkuang', '辽河冬灾', '「驿道」之利', '岁入 -12%', '民心 -1/回合', '永 续', 'bk-zt-tags'], 'region status tags');
+assertNone(statusHtml, ['data-bk-jq="bk-zhuangkuang"'], 'status lives in the head, not a juan with its own jianqian');
 // 空状态不挂签
 sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [];
 sandbox.GM.turn += 1;

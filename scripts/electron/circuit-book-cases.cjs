@@ -20,13 +20,51 @@ module.exports = async function ({ win, check }) {
   await js(`(async()=>{const end=Date.now()+60000;while(!(TMPhase8FormalBridge.map.preparationStatus()?.ready&&window.TMMapRealmLayout)){if(Date.now()>end)throw Error('prepared map layers not ready');await new Promise(r=>setTimeout(r,100));}})()`);
   const book = `document.getElementById('ppop')`;
 
-  await check('从顺天府方志页头的「道」签真点击进入北直隶通志', async () => {
+  // 第四片：方志轻调加并卷
+  await check('方志：页头层级路径与本道排名，页脚四个诏书动作与地方账本分两行，只剩六卷（截图）', async () => {
+    const d = await js(`(async()=>{
+      var parts = TMPhase8FormalBridge.__p8MapParts, r = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0];
+      parts.openRegionDossier(r);
+      await new Promise(res => setTimeout(res, 150));
+      var pop = ${book}, rank = pop.querySelector('.bk-rankline'), acts = pop.querySelectorAll('.bk-foot-acts [data-bk-region-act]'), more = pop.querySelector('.bk-foot-more');
+      return { crumbs: (pop.querySelector('.bk-crumbs') || {}).textContent, rank: rank ? rank.textContent : '', rankH: rank ? rank.offsetHeight : 0,
+        acts: Array.prototype.map.call(acts, function(b){ return b.dataset.bkRegionAct; }), twoRows: !!(acts[0] && more && more.getBoundingClientRect().top > acts[0].getBoundingClientRect().bottom - 1),
+        juans: Array.prototype.map.call(pop.querySelectorAll('.bk-scroll > .bk-juan'), function(s){ return s.id; }), jq: pop.querySelectorAll('.bk-jq').length };
+    })()`);
+    assert.match(d.crumbs, /明朝廷›北直隶›顺天府/);
+    assert(d.rankH > 0 && /本方 11 州中/.test(d.rank), '排名一行可见：' + d.rank);
+    assert.deepEqual(d.acts, ['安民', '巡按', '调粮', '拟诏']);
+    assert.equal(d.twoRows, true, '四个动作一行，地方账本另起一行');
+    assert(d.juans.length <= 6 && d.juans[0] === 'bk-hukou' && !d.juans.includes('bk-yizheng') && !d.juans.includes('bk-zhuangkuang'), d.juans.join(','));
+    assert.equal(d.jq, d.juans.length, '检签与卷一一对应');
+    await shot('region-book-top.png');
+    const hasYizheng = await js(`(()=>{ var el = ${book}.querySelector('#bk-yizheng'); if (!el) return false; el.scrollIntoView({ block: 'start' }); return true; })()`);
+    if (hasYizheng) await shot('region-book-huyi.png');
+  });
+
+  await check('方志页脚「安民」真点击写进诏书建议库，册页不被覆盖', async () => {
+    const d = await js(`(async()=>{
+      var before = (GM._edictSuggestions || []).length;
+      ${book}.querySelector('[data-bk-region-act="安民"]').click();
+      await new Promise(res => setTimeout(res, 150));
+      var list = GM._edictSuggestions || [], last = list[list.length - 1] || {};
+      return { added: list.length - before, topic: last.topic, from: last.from, used: last.used, kind: ${book}.dataset.panelKind, acts: ${book}.querySelectorAll('[data-bk-region-act]').length };
+    })()`);
+    assert.equal(d.added, 1);
+    assert.equal(d.topic, '方志·安民');
+    assert.equal(d.from, '顺天府');
+    assert.equal(d.used, false);
+    assert.equal(d.kind, 'region');
+    assert.equal(d.acts, 4);
+  });
+
+  await check('从顺天府方志页头的层级路径真点击进入北直隶通志', async () => {
     const d = await js(`(async()=>{
       var parts = TMPhase8FormalBridge.__p8MapParts, r = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0];
       parts.openRegionDossier(r);
       await new Promise(res => setTimeout(res, 100));
       var regionWidth = ${book}.offsetWidth;
-      var pill = ${book}.querySelector('[data-bk-open-circuit]');
+      var pill = ${book}.querySelector('.bk-crumbs [data-bk-open-circuit]');
       if (!pill) return { pill: false };
       pill.click();
       await new Promise(res => setTimeout(res, 150));
@@ -35,7 +73,7 @@ module.exports = async function ({ win, check }) {
       return { pill: true, kind: pop.dataset.panelKind, cls: pop.className, width: pop.offsetWidth, regionWidth: regionWidth, rows: pop.querySelectorAll('.bk-circuit-table tbody tr').length,
         common: !!pop.querySelector('.bk-circuit-common'), acts: pop.querySelectorAll('[data-bk-circuit-act]').length, title: (pop.querySelector('.bk-name') || {}).textContent };
     })()`);
-    assert.equal(d.pill, true, '方志页头有「道 北直隶」签');
+    assert.equal(d.pill, true, '方志页头层级路径里有北直隶');
     assert.equal(d.kind, 'circuit');
     assert.match(d.cls, /circuit-panel/);
     assert.equal(d.title, '北直隶');

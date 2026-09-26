@@ -232,13 +232,25 @@ function removeCharacters(scenario, wuchang, chars, bump) {
   const relBefore = scenario.relations.length;
   scenario.relations = scenario.relations.filter((r) => !hit(r.fromId) && !hit(r.toId) && !hit(r.from) && !hit(r.to));
   bump('顶层关系删去', relBefore - scenario.relations.length);
+  // 军队说明写统兵官多用简名（「山峒·木肩」写作木肩，「朴玄植」写作玄植），全名与简名都改称守将
+  const shortNames = (name) => {
+    const out = [name];
+    if (name.includes('·')) out.push(name.split('·').pop());
+    else if (name.length === 3) out.push(name.slice(1));
+    else if (name.length === 4) out.push(name.slice(2));
+    return out.filter((x) => x.length >= 2);
+  };
   scenario.military.initialTroops.forEach((t) => {
     if (hit(t.commanderId) || hit(t.commander)) {
       const old = t.commander;
       t.commander = '';
       t.commanderId = '';
       bump('军队统兵官空缺');
-      if (old && t.description && t.description.includes(old)) { t.description = t.description.split(old).join('守将'); bump('军队说明人名改称'); }
+      if (old && t.description) {
+        const before = t.description;
+        shortNames(old).forEach((n) => { t.description = t.description.split(n).join('守将'); });
+        if (t.description !== before) bump('军队说明人名改称');
+      }
     }
     if (Array.isArray(t.payrollRecipients)) {
       const kept = t.payrollRecipients.filter((p) => !hit(p.characterId));

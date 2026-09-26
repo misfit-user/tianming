@@ -41,9 +41,11 @@ if (fs.existsSync(scenarioFile)) {
   ctx.P = { engineConstants: scenario.engineConstants };
   const before = JSON.stringify({ chars: scenario.characters, officeTree: scenario.officeTree });
   assert.strictEqual(label(scenario.characters.find(c => c.name === '卢钧')), '正三品');
-  ['董景远','山峒·木叶','山峒·盐芽','秦浜主'].forEach(name => {
+  // 无唐官的人（沙州士族、僧人、回鹘特勒）品级是默认值，不能被套上默认官品；原用的批量代表已随剧本修复删去，人不在就报错，免得校验悄悄失效
+  ['张议潮','洪辩','嗢没斯'].forEach(name => {
     const ch = scenario.characters.find(c => c.name === name);
-    if (ch) assert.strictEqual(label(ch), '', name + '不能被套上默认官品');
+    assert(ch, name + ' 应在晚唐剧本里');
+    assert.strictEqual(label(ch), '', name + '不能被套上默认官品');
   });
   scenario.characters.forEach(label);
   assert.strictEqual(JSON.stringify({ chars: scenario.characters, officeTree: scenario.officeTree }), before, '显示不修改人物数值或官制');

@@ -12,8 +12,8 @@ for(const f of ['tm-field-pipelines.js','tm-fiscal-statements.js','tm-fiscal-eng
 timed('initializeAccountsMs',()=>ok(c.FiscalEngine.initializePublicTreasuries({game:G,scenario:sc}).ok,'real scenario public stores initialize'));
 timed('reference47BudgetsMs',()=>{for(const f of G.facs){const b=c.CascadeTax.previewBudget({game:G,faction:f.id,turnDays:30});assert(b);budgets.push({faction:f.id,budget:b});for(const item of b.expenses.items){if(item.characterId){expected[item.characterId]??={money:0,grain:0,cloth:0};for(const k of RES)expected[item.characterId][k]+=item.amounts[k];}for(const r of item.payrollRecipients||[]){expected[r.characterId]??={money:0,grain:0,cloth:0};for(const k of RES){const total=item.armyPeriodCost?.[k]||0;expected[r.characterId][k]+=total>0?(r.monthlyPay?.[k]||0)*item.amounts[k]/total:0;}}}}});
 counts.expenseItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.length,0);counts.localItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.filter(i=>i.funding==='local').length,0);
-// 人物门槛 250：剧本修复删去 192 个批量地方代表后，晚唐官方剧本实有 274 人
-ok(counts.characters>=250&&counts.factions>=40&&counts.leaves>=500&&counts.localItems>=500,'fixture covers actual late Tang scale');
+// 人物门槛 100：剧本修复删去唐廷与外藩全部批量地方代表（按模板起名的虚构人物）后，晚唐官方剧本只剩史实人物 113 人
+ok(counts.characters>=100&&counts.factions>=40&&counts.leaves>=500&&counts.localItems>=500,'fixture covers actual late Tang scale');
 let previews=0,lists=0,regionIndexBuilds=0;const originalPreview=c.CascadeTax.previewBudget,originalList=c.TM.PublicTreasury.listAccountViews,originalRefs=c.TM.PublicTreasury.getRegionAccountRefs;
 c.CascadeTax.previewBudget=()=>{previews++;throw Error('Payroll cannot preview national budgets');};
 const before=JSON.stringify(G);
@@ -23,7 +23,8 @@ ok(JSON.stringify(G)===before,'salary lookup is read-only');ok(previews===0,'all
 c.TM.PublicTreasury.listAccountViews=()=>{lists++;throw Error('Expense settlement cannot enumerate account views per item');};c.TM.PublicTreasury.getRegionAccountRefs=o=>{regionIndexBuilds++;return originalRefs(o);};
 timed('allFactionExpenseSettlementMs',()=>{for(const b of budgets)ok(c.FixedExpense.collect({game:G,faction:b.faction,turnDays:30,budget:b.budget}).ok,'actual resource expense settlement '+b.faction);});
 ok(lists===0,'expense settlement renders zero account lists');ok(regionIndexBuilds===counts.factions,'one current region-ref index per faction settlement');
-counts.receipts=G._salaryPaymentReceipts?.length||0;ok(counts.receipts>100,'large fixture includes real paid receipts');
+// 实付收据门槛 50：删去全部批量地方代表后领俸的人少了，晚唐官方剧本实得 72 张
+counts.receipts=G._salaryPaymentReceipts?.length||0;ok(counts.receipts>50,'large fixture includes real paid receipts');
 timed('allCharacterReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconEngine.settleSalaryReceipts(ch);});ok(previews===0,'all person receipt settlement previews zero budgets');
 const afterReceipts=G._salaryPaymentReceipts.map(r=>r.id).join('|');timed('repeatReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconEngine.settleSalaryReceipts(ch);});ok(G._salaryPaymentReceipts.map(r=>r.id).join('|')===afterReceipts,'receipt settlement never adds a second public payment');
 c.CascadeTax.previewBudget=originalPreview;c.TM.PublicTreasury.listAccountViews=originalList;c.TM.PublicTreasury.getRegionAccountRefs=originalRefs;

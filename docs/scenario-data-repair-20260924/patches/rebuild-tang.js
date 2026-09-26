@@ -43,6 +43,8 @@ function main() {
   console.log('各道属州：' + run([path.join(DIR, 'patches/tang-membership.js'), '--report', path.join(DIR, 'reports/tang-membership.md'), '--write']));
   // 第六刀之一：外藩名目与归属（拼盘势力按史实拆散归属，势力、道、地块改用史名，都城指到地块，役属关系）
   console.log('外藩名目：' + run([path.join(DIR, 'patches/tang-foreign-names.js'), '--report', path.join(DIR, 'reports/tang-foreign-names.md'), '--write']));
+  // 第六刀之二：外藩人物（删去其余批量地方代表，史实人物改正年龄、官衔、文化与名字写法）
+  console.log('外藩人物：' + run([path.join(DIR, 'patches/tang-foreign-people.js'), '--report', path.join(DIR, 'reports/tang-foreign-people.md'), '--write']));
 }
 
 main();

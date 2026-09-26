@@ -2,8 +2,9 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),vm=require('vm');
 const root=path.resolve(__dirname,'../..'),keys=['仁','义','礼','智','信'];
 // 人物数随剧本修复变动：人物一刀补开局在任的节帅、观察使与府尹 32 人（均为史实人物），
-// 删去唐廷与河朔、昭义四镇的批量地方代表 192 人（均为虚构）；外藩撤销五家拼盘势力，随之删去其批量代表 15 人（均为虚构）
-const PEOPLE=259,HISTORICAL=113;
+// 删去唐廷与河朔、昭义四镇的批量地方代表 192 人（均为虚构）；外藩撤销五家拼盘势力，随之删去其批量代表 15 人，
+// 再删去外藩其余批量代表 146 人（均为虚构），只剩史实人物
+const PEOPLE=113,HISTORICAL=113;
 const scenario=JSON.parse(fs.readFileSync(path.join(root,'scenarios/晚唐·开成五年（官方）.json'),'utf8'));
 const archive=JSON.parse(fs.readFileSync(path.join(root,'web/assets/reference/tang840-wuchang.json'),'utf8'));
 const ui=fs.readFileSync(path.join(root,'web/tm-renwu-tuzhi.js'),'utf8');

@@ -515,4 +515,5 @@ const BESPOKE_PORTRAITS = new Set([
   '陈君奕', '韩威', '刘约', '韦长', '李彦佐', '张贾', '裴弘泰', '王彦威', '薛元赏', '卢载'
 ]);
 
-module.exports = { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES, BESPOKE_PORTRAITS };
+// 外藩补人（data/tang-foreign-newpeople.js）沿用同一套基线与加减办法
+module.exports = { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES, BESPOKE_PORTRAITS, CIVIL, MILITARY, stats, wuchang };

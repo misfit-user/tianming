@@ -45,6 +45,8 @@ function main() {
   console.log('外藩名目：' + run([path.join(DIR, 'patches/tang-foreign-names.js'), '--report', path.join(DIR, 'reports/tang-foreign-names.md'), '--write']));
   // 第六刀之二：外藩人物（删去其余批量地方代表，史实人物改正年龄、官衔、文化与名字写法）
   console.log('外藩人物：' + run([path.join(DIR, 'patches/tang-foreign-people.js'), '--report', path.join(DIR, 'reports/tang-foreign-people.md'), '--write']));
+  // 第六刀之三：外藩补入史实人物（回鹘、吐蕃、南诏、黠戛斯、日本、新罗诸人与开成四年末入朝的来使，黠戛斯等写上首领）
+  console.log('外藩补人：' + run([path.join(DIR, 'patches/tang-foreign-newpeople.js'), '--report', path.join(DIR, 'reports/tang-foreign-newpeople.md'), '--write']));
 }
 
 main();

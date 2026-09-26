@@ -2819,6 +2819,586 @@
       },
       "note": "封还外放郭承嘏的诏书，义加；其余按保守起点。",
       "sources": []
+    },
+    "char-fdda1218dec7": {
+      "name": "掘罗勿",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 60,
+        "礼": 72,
+        "智": 74,
+        "信": 62
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "M"
+      },
+      "note": "借沙陀兵攻杀本国可汗、另立新汗，义、信减；其余按保守起点。",
+      "sources": []
+    },
+    "char-3917aa6b1c70": {
+      "name": "赤心",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其为相，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-4854c0a53db5": {
+      "name": "馺职",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其为相、拥外甥厖特勒，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-9e660779ea0b": {
+      "name": "厖",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其身份，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-dd255d50ea2b": {
+      "name": "那颉啜",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其身份，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-f9591fbcf15f": {
+      "name": "乌希",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其身份，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-6c8e4605c932": {
+      "name": "句录莫贺",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其为别将、恨掘罗勿，开局前无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-4a447bb9516d": {
+      "name": "阿热",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其自称可汗、与回鹘相攻不解，无可据的品行，按保守起点。",
+      "sources": []
+    },
+    "char-8d3ccc61f50e": {
+      "name": "尚婢婢",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 64,
+        "义": 68,
+        "礼": 72,
+        "智": 76,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "M",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "本传称其宽厚、略通书记、不喜仕，仁略加，智微加；其余按保守起点。",
+      "sources": []
+    },
+    "char-75a137c7fbdf": {
+      "name": "论恐热",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "开局前只见官职，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-f79bdfa7a2a6": {
+      "name": "结都那",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "开局前只见官职，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-b1b866f36d88": {
+      "name": "尚思罗",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "开局前只见官职，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-56fb829ea519": {
+      "name": "綝氏",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "开局前只见其为赞普之妃，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-de4051041654": {
+      "name": "论夷加羌",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "只见其致书天德一事，无可据的品行，按保守起点。",
+      "sources": []
+    },
+    "char-1a04a23a7c8b": {
+      "name": "王嵯巅",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 62,
+        "礼": 72,
+        "智": 78,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "M",
+        "信": "L"
+      },
+      "note": "弑君立弟，义减；入成都能约束部众、市不扰肆，又掠工技以兴织造，智略加。",
+      "sources": []
+    },
+    "char-35f15d11693d": {
+      "name": "藤原爱发",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 64,
+        "义": 68,
+        "礼": 74,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "M",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "薨传称其为人和柔、不妄发忿，仁略加；其余按保守起点。",
+      "sources": []
+    },
+    "char-657a0495624e": {
+      "name": "藤原吉野",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 64,
+        "义": 68,
+        "礼": 76,
+        "智": 76,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "M",
+        "义": "L",
+        "礼": "M",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "薨传称其性宽大、能容众、事亲至孝，仁、礼略加，好学智微加。",
+      "sources": []
+    },
+    "char-bc075ae97b78": {
+      "name": "橘氏公",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "薨传只记历官，以外戚致显要，无可据的品行，按保守起点。",
+      "sources": []
+    },
+    "char-74bc398dcba0": {
+      "name": "文室秋津",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 72,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "卒传称其监察非违最是其人、足称骁将，义略加；酒后醉泣之癖不计入五常。",
+      "sources": []
+    },
+    "char-2953a81b9243": {
+      "name": "小野篁",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 74,
+        "礼": 68,
+        "智": 80,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "M",
+        "礼": "M",
+        "智": "M",
+        "信": "L"
+      },
+      "note": "抗论船次、不肯以己福利代他害损，义加；文章天下无双，智加；捍诏被除名，礼减。",
+      "sources": []
+    },
+    "char-4b5a089f4479": {
+      "name": "礼徵",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其拜上大等，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-cce33a6aa109": {
+      "name": "良顺",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其授伊飡，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-078c34b98e57": {
+      "name": "阎长",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍称其以勇壮闻，勇力不计入五常，按保守起点。",
+      "sources": []
+    },
+    "char-ccceb751d2ba": {
+      "name": "大延广",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其入唐朝贡，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-00d4f2853a0b": {
+      "name": "萨葛",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其入唐朝贡，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-4d98a2d02ed1": {
+      "name": "温讷骨",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其入唐朝贡，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-49a534a5840b": {
+      "name": "秩虫",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "史籍只见其入唐朝贡，无可据的行迹，按保守起点。",
+      "sources": []
+    },
+    "char-11fa7c9141cf": {
+      "name": "婆那摩罗跋摩",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "只有铭文研究的二手记载，无可据的品行，按保守起点。",
+      "sources": []
+    },
+    "char-72a8870c4756": {
+      "name": "毗建多跋摩三世",
+      "kind": "historical-inference",
+      "initialScores": {
+        "仁": 60,
+        "义": 68,
+        "礼": 72,
+        "智": 74,
+        "信": 70
+      },
+      "confidence": {
+        "仁": "L",
+        "义": "L",
+        "礼": "L",
+        "智": "L",
+        "信": "L"
+      },
+      "note": "只有碑铭研究的二手记载，无可据的品行，按保守起点。",
+      "sources": []
     }
   }
 }

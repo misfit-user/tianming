@@ -62,14 +62,14 @@
       "active": true,
       "hasMap": true,
       "counts": {
-        "characters": 113,
+        "characters": 142,
         "factions": 42,
         "regions": 575
       },
-      "bytes": 31323077,
-      "sha256": "e32364c8c9dc2d01455f8dfecade524032ae07b8a6f7bebbd30450f5f791e792",
-      "sourceBytes": 52542492,
-      "sourceSha256": "ae1566cbe92f01da2db362d8d6cbed35d413dc9ee031e43700fc953d76ef0d87"
+      "bytes": 31439602,
+      "sha256": "0e61b77b0a4496460d9dc477610266f9be2f94341a561783e9ecd2642552189a",
+      "sourceBytes": 52640641,
+      "sourceSha256": "3a57a97c4b3045afe7f9b6097f87796ce936ce8bf87ec89cd0a175794263143c"
     }
   ]
 }

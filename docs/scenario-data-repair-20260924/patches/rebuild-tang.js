@@ -39,6 +39,8 @@ function main() {
   console.log('人物改正：' + run([path.join(DIR, 'patches/tang-people.js'), '--report', path.join(DIR, 'reports/tang-people.md'), '--write']));
   // 第四刀之三：删去唐廷与河朔、昭义四镇的批量地方代表，神策军交还两中尉，驻治所的军队归本道长官
   console.log('批量代表：' + run([path.join(DIR, 'patches/tang-local-reps.js'), '--report', path.join(DIR, 'reports/tang-local-reps.md'), '--write']));
+  // 第五刀：各道属州按元和志与开成间任命改正（郢州、连州、龚州改挂，丹州并回鄜坊，同州、华州各立一道）
+  console.log('各道属州：' + run([path.join(DIR, 'patches/tang-membership.js'), '--report', path.join(DIR, 'reports/tang-membership.md'), '--write']));
 }
 
 main();

@@ -289,6 +289,7 @@ module.exports = async function ({ win, check }) {
   });
 
   await check('设置「舆图点击」切到一律方志后省道级左键开方志，切回随层级', async () => {
+    const tipFoot = () => js(`(document.querySelector('#tmf-map-tip.show .tip-foot') || {}).textContent || ''`);
     const pick = (want) => js(`(async()=>{
       openSettings();
       await new Promise(res => setTimeout(res, 300));
@@ -296,19 +297,26 @@ module.exports = async function ({ win, check }) {
       if (!btn) { closeSettings(); return { found: false }; }
       btn.click();
       var on = btn.classList.contains('bp');
+      // 说明行字号与本节邻行（显示模式）一致
+      var fsBtn = Array.prototype.find.call(document.querySelectorAll('button'), function(b){ return (b.getAttribute('onclick') || '').indexOf('_tmSetFullscreen(') === 0; });
+      var size = function(b){ var lab = b && b.parentElement && b.parentElement.previousElementSibling; return lab ? getComputedStyle(lab).fontSize : ''; };
+      var sizes = [size(btn), size(fsBtn)];
       closeSettings();
-      return { found: true, on: on, conf: P.conf.mapClickFollowTier };
+      return { found: true, on: on, conf: P.conf.mapClickFollowTier, sizes: sizes };
     })()`);
     const off = await pick(false);
     assert.equal(off.found, true, '设置里有舆图点击开关');
     assert.equal(off.on, true);
     assert.equal(off.conf, false);
+    assert.ok(off.sizes[0] && off.sizes[0] === off.sizes[1], '说明行字号与邻行一致：' + off.sizes.join(' / '));
     await click(await aimAt('region'));
     assert.equal((await bookState()).kind, 'region', '一律方志：省道级左键也开方志');
+    assert.match(await tipFoot(), /左键 翻方志/, '签注页脚跟着开关改说法');
     const on = await pick(true);
     assert.equal(on.conf, true);
     await click(await aimAt('region'));
     assert.equal((await bookState()).kind, 'circuit', '切回随层级');
+    assert.match(await tipFoot(), /左键 开通志/, '停在同一州，签注页脚也随开关切回');
   });
 
   await check('关掉山河境用 SVG 图时，整道描金边画在图上且可见', async () => {

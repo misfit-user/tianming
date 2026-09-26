@@ -2109,7 +2109,9 @@
       if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) TMShanheRuntime.setHovered(path && (path.dataset.regionId || path.dataset.id));
       if (!path) { tip.classList.remove('show'); _hoverLastKey = null; return; }
       var rid = path.dataset.regionId || path.dataset.id;
-      var key = rid + '|' + (state.mapMode || 'owner') + '|' + state.mapScale;   // 签注页脚随层级变
+      // 签注页脚随左键层级变：地图层级与设置里的「舆图点击」开关都算进去，切换后停在同一州也会重画
+      var tier = __p8MapParts.clickTier ? __p8MapParts.clickTier() : state.mapScale;
+      var key = rid + '|' + (state.mapMode || 'owner') + '|' + state.mapScale + '|' + tier;
       if (key !== _hoverLastKey) {
         var r = findRegion(rid);
         if (!r) { tip.classList.remove('show'); return; }

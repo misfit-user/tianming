@@ -2454,6 +2454,7 @@
   __p.closeMapContextMenu = closeMapContextMenu;
   __p.syncCircuitOutline = syncCircuitOutline;
   __p.mapTipHtml = mapTipHtml;
+  __p.clickTier = clickTier;   // 地图签注按它判断页脚要不要重画（设置里切换左键层级后即时跟上）
   // 方志轻调（S4）：页脚诏书动作
   __p.regionAction = regionAction;
   // 改隶（S6）：入口只生成诏书建议

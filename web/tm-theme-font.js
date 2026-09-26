@@ -153,7 +153,6 @@
     opts = opts || {};
     var context = opts.context || 'settings';
     var savedTheme = readStore('tm.theme', DEFAULT_THEME);
-    var savedSize = readStore('tm.fontSize', DEFAULT_SIZE);
     var savedBody = readStore('tm.fontBody', DEFAULT_BODY);
     var savedTitle = readStore('tm.fontTitle', DEFAULT_TITLE);
     var scoped = loadScopeSizes();
@@ -163,25 +162,53 @@
       h += '<div class="gs-panel-hdr"><div class="gs-panel-title">\u754c\u9762\u4e3b\u9898</div><span class="gs-panel-cnt">\u7ec6\u8c03</span></div>';
     } else {
       h += '<div class="settings-section tm-settings-theme"><h4>\u4e3b\u9898\u5b57\u53f7</h4>';
-      h += '<div class="tm-settings-sub">\u7edf\u4e00\u63a7\u5236\u65b0 UI \u7684\u4e3b\u9898\u3001\u5185\u7f6e\u5b57\u4f53\u3001\u5168\u5c40\u5b57\u53f7\uff0c\u5e76\u53ef\u6309\u5177\u4f53\u754c\u9762\u5355\u72ec\u8c03\u5b57\u53f7\u3002</div>';
+      h += '<div class="tm-settings-sub">\u4e3b\u9898\u4e0e\u5185\u7f6e\u5b57\u4f53\u5728\u8fd9\u91cc\u9009\uff1b\u5b57\u53f7\u53ea\u6709\u4e00\u4e2a\u5f00\u5173\uff0c\u5728\u300c\u754c\u9762\u663e\u793a \u00b7 \u754c\u9762\u5b57\u53f7\u300d\u91cc\u8c03\uff0c\u5fa1\u6848\u8ddf\u7740\u4e00\u8d77\u7f29\u653e\u3002\u5404\u754c\u9762\u5355\u72ec\u5fae\u8c03\u6536\u5728\u4e0b\u9762\u7684\u300c\u9ad8\u7ea7\u300d\u91cc\u3002</div>';
     }
     h += '<div class="tm-theme-block"><div class="tm-theme-block-title">\u4e3b\u9898</div>' + themeCards(savedTheme, '_tmApplyTheme') + '</div>';
-    h += '<div class="gs-font-row tm-font-global-row"><span class="lbl">\u5168\u5c40</span>' +
-      sizeButtonRow(savedSize, function(k){ return "_tmApplySize('" + q(k) + "', this)"; }, 'tm-global-size-buttons') +
-      '</div>';
+    // \u5b57\u53f7\u53ea\u6709\u4e00\u4e2a\u5f00\u5173\uff08\u7f8e\u672f\u5baa\u6cd5\u7b2c2\u5200\uff09\uff1a\u62bd\u5c49\u91cc\u653e\u4e00\u6392\u6309\u94ae\uff0c\u4e0e\u8bbe\u7f6e\u300c\u754c\u9762\u663e\u793a\u300d\u7684\u754c\u9762\u5b57\u53f7\u662f\u540c\u4e00\u4e2a\u6863\u4f4d
+    if (compact) h += '<div class="gs-font-row tm-font-global-row"><span class="lbl">\u5b57\u53f7</span>' + uiScaleButtons() + '</div>';
     h += '<div class="gs-font-row"><span class="lbl">\u6b63\u6587</span>' + fontSelect('body', savedBody) + '</div>';
     h += '<div class="gs-font-row"><span class="lbl">\u6807\u9898</span>' + fontSelect('title', savedTitle) + '</div>';
-    h += '<div class="tm-scope-size-head"><span>\u5206\u533a\u5b57\u53f7</span><em>\u6309\u65b0 UI \u5b9e\u9645\u6a21\u5757\u5355\u72ec\u8c03\u8282</em></div>';
+    h += '<div class="gs-font-row"><span class="lbl">\u594f\u758f</span>' + memorialInkControl() + '</div>';
+    h += '<details class="tm-scope-size-advanced"><summary>\u9ad8\u7ea7 \u00b7 \u5206\u533a\u5b57\u53f7</summary>';
+    h += '<div class="tm-scope-size-head"><span>\u5206\u533a\u5b57\u53f7</span><em>\u5355\u72ec\u653e\u5927\u7f29\u5c0f\u67d0\u4e2a\u754c\u9762\uff1b\u9009\u4e86\u300c\u4e2d\u300d\u4ee5\u5916\u7684\u6863\uff0c\u8be5\u533a\u6587\u5b57\u7edf\u4e00\u6210\u4e09\u6863\u5b57\u53f7</em></div>';
     h += '<div class="tm-scope-size-grid">';
     SCOPES.forEach(function(s) {
       var cur = scoped[s.key] || 'md';
       h += '<div class="tm-scope-size-card" data-scope="' + esc(s.key) + '"><div class="tm-scope-size-meta"><b>' + esc(s.label) + '</b><em>' + esc(s.desc) + '</em></div>' +
-        sizeButtonRow(cur, function(k){ return "_tmApplyScopeSize('" + q(s.key) + "','" + q(k) + "', this)"; }, 'tm-scope-size-buttons') +
-        (s.key === 'memorial' ? memorialInkControl() : '') + '</div>';
+        sizeButtonRow(cur, function(k){ return "_tmApplyScopeSize('" + q(s.key) + "','" + q(k) + "', this)"; }, 'tm-scope-size-buttons') + '</div>';
     });
-    h += '</div>';
+    h += '</div></details>';
     if (!compact) h += '</div>';
     return h;
+  }
+
+  // \u754c\u9762\u5b57\u53f7\u7684\u56db\u6863\uff08\u4e0e tm-patches.js \u8bbe\u7f6e\u9875\u300c\u754c\u9762\u663e\u793a\u300d\u7684\u56db\u4e2a\u6309\u94ae\u540c\u503c\uff09\uff1b\u6309\u94ae\u8c03 _tmSetUiFontScale \u5199\u540c\u4e00\u4e2a\u6863\u4f4d
+  var UI_SCALES = [[0.9, '\u5c0f'], [1, '\u6807\u51c6'], [1.2, '\u5927'], [1.35, '\u7279\u5927']];
+  function currentUiScale() {
+    var v = parseFloat(readStore('tm.uiFontScale', ''));
+    if (v >= 0.8 && v <= 1.6) return v;
+    return typeof window._tmUiFontScaleDefault === 'function' ? window._tmUiFontScaleDefault() : 1.2;
+  }
+  function uiScaleButtons() {
+    var current = currentUiScale();
+    return '<div class="gs-font-sizes tm-global-size-buttons">' + UI_SCALES.map(function(p) {
+      return '<button type="button" class="gs-sz-btn' + (Math.abs(p[0] - current) < 0.01 ? ' active' : '') + '" onclick="_tmApplyUiScale(' + p[0] + ', this)">' + p[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  function applyUiScale(v, el) {
+    if (typeof window._tmSetUiFontScale === 'function') window._tmSetUiFontScale(v);
+    setActiveSize(el);
+    toastMsg('\u5b57\u53f7 \u00b7 ' + UI_SCALES.filter(function(p){ return p[0] === v; }).map(function(p){ return p[1]; })[0]);
+  }
+  // \u65e7\u300c\u5168\u5c40\u5b57\u53f7\u300d\u5e76\u8fdb\u754c\u9762\u5b57\u53f7\uff08\u7f8e\u672f\u5baa\u6cd5\u7b2c2\u5200\uff09\uff1a\u5b58\u8fc7\u975e\u300c\u4e2d\u300d\u7684\u6863\uff0c\u5c31\u6309\u500d\u6570\u6298\u8fdb\u754c\u9762\u5b57\u53f7\u4e00\u6b21\uff0c\u4e4b\u540e\u5168\u5c40\u6863\u56fa\u5b9a\u4e3a\u300c\u4e2d\u300d
+  function foldLegacyGlobalSize() {
+    var legacy = readStore('tm.fontSize', DEFAULT_SIZE);
+    if (legacy === DEFAULT_SIZE || !SIZE_SCALES[legacy] || typeof window._tmSetUiFontScale !== 'function') return legacy;
+    var next = Math.round(Math.min(1.6, Math.max(0.8, currentUiScale() * SIZE_SCALES[legacy])) * 100) / 100;
+    window._tmSetUiFontScale(next);
+    writeStore('tm.fontSize', DEFAULT_SIZE);
+    return DEFAULT_SIZE;
   }
 
   // 色板令牌连同 RGB 三元组一起改：半透明写法 rgba(var(--gold-400-rgb),.5) 才跟得上主题
@@ -318,7 +345,7 @@
   }
   function restore() {
     var theme = readStore('tm.theme', DEFAULT_THEME);
-    var size = readStore('tm.fontSize', DEFAULT_SIZE);
+    var size = foldLegacyGlobalSize();
     var body = readStore('tm.fontBody', DEFAULT_BODY);
     var title = readStore('tm.fontTitle', DEFAULT_TITLE);
     applyTheme(theme, null, true);
@@ -361,6 +388,7 @@
   window._tmRenderThemeFontControls = renderControls;
   window._tmApplyTheme = applyTheme;
   window._tmApplySize = applyGlobalSize;
+  window._tmApplyUiScale = applyUiScale;
   window._tmApplyScopeSize = applyScopeSize;
   window._tmApplyMemorialInk = applyMemorialInk;
   window._tmApplyBodyFont = applyBodyFont;

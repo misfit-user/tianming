@@ -5,6 +5,7 @@
 // 3. 容差并档：色差 × 不透明度不超过容差才并；半透明的比实色更容易并
 // 4. 字色不并进底色令牌：color 属性离纸色再近也不落到 --paper-*，background 照常可以
 // 5. 只表状态的语义色（警 amber、讯 indigo 等）不作并档去向，逐位相等的照换
+// 6. 字号模式（第2刀）：font-size 与 font 简写里的像素字号换成 calc(N * var(--tm-px, 1px))，别的不动
 'use strict';
 
 const assert = require('assert');
@@ -61,4 +62,15 @@ assert.strictEqual(sem('.a{border-color:#cdaa50}', 5), '.a{border-color:#cdaa50}
 assert.strictEqual(sem('.a{border-color:rgba(205,170,80,.5)}', 5), '.a{border-color:rgba(var(--gold-400-rgb),.5)}', '半透明折算后在容差内，就并进金色而不是警色');
 assert.strictEqual(sem('.a{color:#c9a84c}', 0), '.a{color:var(--amber-400)}', '语义色逐位相等照换');
 
-console.log('[smoke-codemod-design-tokens] PASS 逐位相等 4 例、不许动 4 例、容差并档 5 例、字色不并底色 4 例、语义色 3 例');
+// ---- 6. 字号跟着字号开关走（第2刀，--font-px）----
+const px = (text) => cm.rewriteFontSizes(text).text;
+assert.strictEqual(px('.a{font-size:13px}'), '.a{font-size:calc(13 * var(--tm-px, 1px))}', 'font-size 的像素换成 --tm-px');
+assert.strictEqual(px('.a{font:700 12px/1 var(--font-serif)}'), '.a{font:700 calc(12 * var(--tm-px, 1px))/1 var(--font-serif)}', 'font 简写里的字号也换，字重行高不动');
+assert.strictEqual(px('.a{font:11.5px/1.45 serif}'), '.a{font:calc(11.5 * var(--tm-px, 1px))/1.45 serif}', '带小数的字号照换');
+['.a{font-size:1.2rem}', '.a{font-size:var(--text-sm)}', '.a{line-height:18px;letter-spacing:2px}', "el.style.fontSize = '12px'", "ctx.font = '12px serif'"].forEach((text) => {
+  assert.strictEqual(px(text), text, `不该动：${text}`);
+});
+const fontFile = cm.rewriteFile("var a = '.a{font-size:12px}'; // design-ok\n// '.b{font-size:12px}'\nvar c = '.c{font-size:12px}';", 'js', PAL, { fontPx: true }).text;
+assert.strictEqual(fontFile, "var a = '.a{font-size:12px}'; // design-ok\n// '.b{font-size:12px}'\nvar c = '.c{font-size:calc(12 * var(--tm-px, 1px))}';", '字号模式同样跳过 design-ok 行与注释行');
+
+console.log('[smoke-codemod-design-tokens] PASS 逐位相等 4 例、不许动 4 例、容差并档 5 例、字色不并底色 4 例、语义色 3 例、字号 9 例');

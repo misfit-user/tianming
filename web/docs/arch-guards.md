@@ -181,6 +181,10 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
   并进最近的令牌，字色只落到字阶和金朱青，只表状态的语义色（警、讯）不作并档去向。跳过 `url()`、注释、
   色板自己的定义。只能跑纯样式文本（`.css`、`phase8-formal-bridge-styles.js` 这类整份是样式字符串的注入族），
   画布、SVG 属性不认 `var()`。工具自测 `smoke-codemod-design-tokens.js`。
+- 字号（第2刀）：`codemod-design-tokens.js --font-px` 把 `font-size:13px` 与 `font:700 13px/1` 里的像素字号改成
+  `calc(13 * var(--tm-px, 1px))`，只认 `font-size:` 与 `font:` 两种写法（画布的 `ctx.font =`、JS 的 `fontSize =` 不动）。
+  `--tm-px` 由界面字号开关写（选档 ÷ 出厂档，没选档不写），御案五个样式文件已全换，写死字号 5511 → 4588。
+  `smoke-ui-fontscale-adaptive.js` A6 核对开关算法、五个文件不再写死像素字号、旧全局字号的折算。
 - 色板真值由 `smoke-design-token-palette.js` 看守：色板令牌互不重值、每个都有一致的 `-rgb` 三元组；
   四套主题改色板时连三元组一起改，默认主题「素纸」的值与令牌表逐位相等，其余三套把语义色与纸以外的
   29 个色板令牌全改到（1c 起）；常朝样式不许再写 `:root`/`body`。

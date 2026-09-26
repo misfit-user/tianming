@@ -80,22 +80,24 @@
    ②防双重放大——显式选了「渲染分辨率」固定舞台且舞台整体放大（stg>1）时字号默认 ÷舞台放大率折算
      （夹 0.9~1.6·取两位小数）：舞台缩放已把界面字图一起拉大，再叠字号档字会顶出面板；舞台缩小
      （APK 手机 stg<1）不折算，维持 ①的基础档。stg 按屏幕算（此时窗口未全屏·innerWidth 不可信）。
-   自适应取值与 tm-patches.js _tmUiFontScaleDefault 一字不差（那处是高亮 fallback·两处须同步改）。 */
+   自适应取值与 tm-patches.js _tmUiFontScaleDefault 一字不差（那处是高亮 fallback·两处须同步改）。
+   ③御案样式的字号写成 calc(N * var(--tm-px, 1px))（美术宪法第2刀）：显式选了档时按「选档 ÷ 出厂档」
+     写 --tm-px，御案跟着一起缩放；没选过档时不写，回落 1px，画面与从前一样（tm-patches.js _tmSyncUiPx 同算法）。 */
 (function(){
   try {
-    var s = parseFloat(localStorage.getItem('tm.uiFontScale'));
-    if (!s || s < 0.8 || s > 1.6) {
-      var w = 0, sh = 0; try { w = (window.screen && window.screen.availWidth) || window.innerWidth || 0; sh = (window.screen && window.screen.availHeight) || window.innerHeight || 0; } catch(_) {}
-      s = (w >= 3400) ? 1.6 : (w >= 2400) ? 1.35 : 1.2;
-      try {
-        var res = localStorage.getItem('tm.fitResolution'), m = res && /^(\d{3,4})x(\d{3,4})$/.exec(res);
-        if (m && w > 0 && sh > 0) {
-          var stg = Math.min(w / (+m[1]), sh / (+m[2]));
-          if (stg > 1) s = Math.round(Math.min(1.6, Math.max(0.9, s / stg)) * 100) / 100;
-        }
-      } catch(_) {}
-    }
+    var w = 0, sh = 0; try { w = (window.screen && window.screen.availWidth) || window.innerWidth || 0; sh = (window.screen && window.screen.availHeight) || window.innerHeight || 0; } catch(_) {}
+    var s = (w >= 3400) ? 1.6 : (w >= 2400) ? 1.35 : 1.2;
+    try {
+      var res = localStorage.getItem('tm.fitResolution'), m = res && /^(\d{3,4})x(\d{3,4})$/.exec(res);
+      if (m && w > 0 && sh > 0) {
+        var stg = Math.min(w / (+m[1]), sh / (+m[2]));
+        if (stg > 1) s = Math.round(Math.min(1.6, Math.max(0.9, s / stg)) * 100) / 100;
+      }
+    } catch(_) {}
+    var auto = s, picked = parseFloat(localStorage.getItem('tm.uiFontScale'));
+    if (picked && picked >= 0.8 && picked <= 1.6) s = picked;
     if (s !== 1) document.documentElement.style.fontSize = (16 * s) + 'px';
+    if (s !== auto) document.documentElement.style.setProperty('--tm-px', (Math.round(s / auto * 10000) / 10000) + 'px');
   } catch (_) {}
 })();
 </script>

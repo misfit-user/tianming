@@ -2,10 +2,10 @@
   "config": {
     "marker": "design-ok"
   },
-  "updatedAt": "2026-09-26T07:44:11.532Z",
+  "updatedAt": "2026-09-26T09:45:54.617Z",
   "totals": {
     "colors": 10803,
-    "fontSizes": 5511
+    "fontSizes": 4588
   },
   "files": {
     "editor-details.js": {
@@ -42,19 +42,19 @@
     },
     "phase8-formal-bridge-styles.js": {
       "colors": 377,
-      "fontSizes": 395
+      "fontSizes": 0
     },
     "phase8-formal-bridge.js": {
       "colors": 495,
-      "fontSizes": 88
+      "fontSizes": 0
     },
     "phase8-formal-drafts-message-panels.js": {
       "colors": 420,
-      "fontSizes": 162
+      "fontSizes": 0
     },
     "phase8-formal-drafts.js": {
       "colors": 800,
-      "fontSizes": 175
+      "fontSizes": 1
     },
     "phase8-formal-map-dossier.js": {
       "colors": 12,
@@ -70,7 +70,7 @@
     },
     "phase8-formal-records.js": {
       "colors": 234,
-      "fontSizes": 104
+      "fontSizes": 0
     },
     "phase8-formal-rightrail.js": {
       "colors": 10,

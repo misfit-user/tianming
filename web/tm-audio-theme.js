@@ -888,6 +888,7 @@ function adjustFontSize(delta) {
   // 2026-07-10 字号双轨合一：统一写 tm.uiFontScale（设置面板·index.html 早期应用同款键）·
   // 并删旧键 tianming_font_size——旧键会在 startGame:after 回滚根字号，致「设置里调字号无用」
   try { localStorage.setItem('tm.uiFontScale', String(newSize / 16)); localStorage.removeItem('tianming_font_size'); } catch(_){}
+  if (typeof _tmSyncUiPx === 'function') _tmSyncUiPx();
   AudioSystem.playSfx('click');
 }
 
@@ -913,6 +914,7 @@ GameHooks.on('startGame:after', function() {
       if (!localStorage.getItem('tm.uiFontScale')) {
         localStorage.setItem('tm.uiFontScale', String(legacyFs / 16));
         document.documentElement.style.fontSize = legacyFs + 'px';
+        if (typeof _tmSyncUiPx === 'function') _tmSyncUiPx();
       }
       localStorage.removeItem('tianming_font_size');
     }

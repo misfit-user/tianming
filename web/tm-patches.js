@@ -470,10 +470,23 @@ function _tmUiFontScaleDefault(){
   } catch(_) {}
   return s;
 }
+// 御案样式的字号写成 calc(N * var(--tm-px, 1px))（美术宪法第2刀）：显式选了档时 --tm-px = 选档 ÷ 出厂档，
+// 御案跟着界面字号一起缩放；没选过档或选的正好是出厂档时不写，回落 1px，画面与从前一样。
+// 与 index.html early-apply ③同算法；换显示器出厂档会变，所以窗口变化时也重算。
+function _tmSyncUiPx(){
+  try {
+    var v = parseFloat(localStorage.getItem('tm.uiFontScale'));
+    var auto = _tmUiFontScaleDefault();
+    var rootStyle = document.documentElement.style;
+    if (!v || v < 0.8 || v > 1.6 || v === auto) rootStyle.removeProperty('--tm-px');
+    else rootStyle.setProperty('--tm-px', (Math.round(v / auto * 10000) / 10000) + 'px');
+  } catch(_) {}
+}
 window._tmSetUiFontScale = function(v, btn){
   // 顺手清旧键 tianming_font_size（tm-audio-theme.js 旧 A+/A- 面板遗留）——它曾在开局时把根字号改回旧值
   try { localStorage.setItem('tm.uiFontScale', String(v)); localStorage.removeItem('tianming_font_size'); } catch(_){}
   try { document.documentElement.style.fontSize = (v === 1 ? '' : (16 * v) + 'px'); } catch(_){}
+  _tmSyncUiPx();
   if (btn && btn.parentElement) {
     var sib = btn.parentElement.children;
     for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
@@ -493,6 +506,11 @@ try {
         document.documentElement.style.fontSize = (s === 1 ? '' : (16 * s) + 'px');
       } catch(_) {}
     }, 300);
+  });
+  var _tmUiPxT = null;
+  window.addEventListener('resize', function(){
+    if (_tmUiPxT) clearTimeout(_tmUiPxT);
+    _tmUiPxT = setTimeout(_tmSyncUiPx, 300);
   });
 } catch(_) {}
 // 渲染分辨率（fit 虚拟舞台·tm-fixed-fit.js 读同 key）：'auto'=桌面自适应窗口（不开 fit）·

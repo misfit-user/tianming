@@ -23,6 +23,7 @@
 //   node scripts/codemod-design-tokens.js <文件...> --write            # 写回
 //   node scripts/codemod-design-tokens.js <文件...> --tolerance 5      # 连同色差不超过 5 的一起并
 //   node scripts/codemod-design-tokens.js <文件...> --report out.json  # 逐个写法的去向与色差
+//   node scripts/codemod-design-tokens.js <文件...> --font-px --write  # 第2刀：字号改成 calc(N * var(--tm-px, 1px))，跟着字号开关走
 //
 // .css 文件整份处理；.js 文件逐行处理（跳过注释行），只能拿来跑「整份都是样式字符串」的注入族，
 // 如 phase8-formal-bridge-styles.js。夹着画布 fillStyle、SVG 属性或颜色运算的脚本不能跑：
@@ -179,8 +180,24 @@ function rewrite(text, palette, options = {}) {
   return { text: out, hits };
 }
 
-/** 逐行处理：跳过注释行和 design-ok 行；样式表先把块注释整段保护起来 */
+// 字号改成跟着字号开关走的像素（第2刀）：font-size:13px、font:700 13px/1 里的 13px → calc(13 * var(--tm-px, 1px))。
+// --tm-px 由界面字号开关写在根上；没显式选档时不写，回落 1px，画面不变
+const FONT_SIZE_PX_RE = /(font-size\s*:\s*)(\d+(?:\.\d+)?)px\b/gi;
+const FONT_SHORTHAND_PX_RE = /(\bfont\s*:\s*(?:(?:\d{3}|bold|normal|italic|oblique)\s+)*)(\d+(?:\.\d+)?)px(?=\s*\/|\s)/gi;
+
+function rewriteFontSizes(text) {
+  const hits = [];
+  const swap = (whole, head, num) => {
+    const to = `${head}calc(${num} * var(--tm-px, 1px))`;
+    hits.push({ from: whole, to });
+    return to;
+  };
+  return { text: text.replace(FONT_SIZE_PX_RE, swap).replace(FONT_SHORTHAND_PX_RE, swap), hits };
+}
+
+/** 逐行处理：跳过注释行和 design-ok 行；样式表先把块注释整段保护起来。options.fontPx 时只换字号 */
 function rewriteFile(fileText, kind, palette, options = {}) {
+  const rewriteLine = options.fontPx ? (line) => rewriteFontSizes(line) : (line) => rewrite(line, palette, options);
   const allHits = [];
   if (kind === 'css') {
     const parts = fileText.split(/(\/\*[\s\S]*?\*\/)/);
@@ -188,7 +205,7 @@ function rewriteFile(fileText, kind, palette, options = {}) {
       if (part.startsWith('/*')) return part;
       return part.split(/(\r?\n)/).map((line) => {
         if (/\r?\n/.test(line) || line.indexOf(MARKER) !== -1) return line;
-        const r = rewrite(line, palette, options);
+        const r = rewriteLine(line);
         allHits.push(...r.hits);
         return r.text;
       }).join('');
@@ -198,7 +215,7 @@ function rewriteFile(fileText, kind, palette, options = {}) {
   const rebuilt = fileText.split(/(\r?\n)/).map((line) => {
     if (/\r?\n/.test(line) || line.indexOf(MARKER) !== -1) return line;
     if (/^\s*(\/\/|\/\*|\*)/.test(line)) return line;
-    const r = rewrite(line, palette, options);
+    const r = rewriteLine(line);
     allHits.push(...r.hits);
     return r.text;
   }).join('');
@@ -219,13 +236,19 @@ function main() {
     process.exit(1);
   }
   const palette = loadPalette(fs.readFileSync(path.join(WEB, 'styles.css'), 'utf8'));
+  const fontPx = args.includes('--font-px');
   const report = {};
   files.forEach((rel) => {
     const abs = path.resolve(WEB, rel);
     const before = fs.readFileSync(abs, 'utf8');
     const kind = abs.endsWith('.css') ? 'css' : 'js';
-    const { text, hits } = rewriteFile(before, kind, palette, { tolerance, keepNeutral: args.includes('--keep-neutral') });
+    const { text, hits } = rewriteFile(before, kind, palette, { tolerance, keepNeutral: args.includes('--keep-neutral'), fontPx });
     report[rel] = hits;
+    if (fontPx) {
+      console.log(`${rel}: 字号换 ${hits.length} 处`);
+      if (WRITE && text !== before) fs.writeFileSync(abs, text);
+      return;
+    }
     const byToken = {};
     hits.forEach((h) => {
       const token = /--([\w-]+?)(?:-rgb)?\)/.exec(h.to)[1];
@@ -239,4 +262,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { PALETTE, loadPalette, rewrite, rewriteFile, hexToRgb, toLab, deltaE, nearest, propertyAt };
+module.exports = { PALETTE, loadPalette, rewrite, rewriteFile, rewriteFontSizes, hexToRgb, toLab, deltaE, nearest, propertyAt };

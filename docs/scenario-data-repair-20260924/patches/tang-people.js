@@ -25,7 +25,7 @@ const SCENARIO_FILE = path.join(REPO, 'scenarios', '晚唐·开成五年（官�
 const WUCHANG_FILE = path.join(REPO, 'web/assets/reference/tang840-wuchang.json');
 const LOCATIONS_JS = path.join(REPO, 'web', 'tm-map-locations.js');
 const { TANG_TREES, leavesOf } = require(path.join(DIR, 'data/tang-sources.js'));
-const { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES } = require(path.join(DIR, 'data/tang-people-new.js'));
+const { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES, BESPOKE_PORTRAITS } = require(path.join(DIR, 'data/tang-people-new.js'));
 
 // ---------- 工具 ----------
 
@@ -667,7 +667,8 @@ function stableId(prefix, text) {
   return prefix + crypto.createHash('sha1').update('sc-tang840-840:' + text).digest('hex').slice(0, 12);
 }
 
-function genericPortrait(spec, index) {
+function portraitOf(spec, index, id) {
+  if (BESPOKE_PORTRAITS.has(spec.name)) return 'assets/portraits/tang840/bespoke/' + id + '.png';
   if (spec.military) return 'assets/portraits/tang840/generic/tang_military_mature_0' + (index % 2 + 1) + '.png';
   if (spec.age >= 55) return 'assets/portraits/tang840/generic/tang_civil_old_01.png';
   return 'assets/portraits/tang840/generic/tang_civil_young_0' + (index % 2 + 1) + '.png';
@@ -700,7 +701,7 @@ function buildCharacter(spec, index, scenario) {
     administration: s.administration, management: s.management, charisma: s.charisma, diplomacy: s.diplomacy,
     benevolence: s.benevolence, integrity: s.integrity, speechStyle: '', description: spec.description,
     aiPersonaText: '', health: healthByAge(spec.age), stress: 40, traitIds: [], partyIds: [],
-    portrait: genericPortrait(spec, index), background: spec.background, personalGoals: [], occupation: full,
+    portrait: portraitOf(spec, index, id), background: spec.background, personalGoals: [], occupation: full,
     rosterRole: spec.military ? 'mili' : 'civil', works: [],
     economyConfig: {
       accounting: { schema: 'tm-character-economy/2' }, incomeStreams: [],
@@ -828,6 +829,9 @@ function main() {
     addRelations(scenario, c, spec.relations);
     if (spec.post !== null) assignPost(scenario, spec.post || spec.official, c, spec.postRename);
     newRows.push('| ' + c.name + ' | ' + c.title + ' | ' + c.location + ' | ' + c.age + '（' + spec.ageBasis + '） | ' + spec.sources.length + ' 条 |');
+  });
+  BESPOKE_PORTRAITS.forEach((name) => {
+    if (!NEW_PEOPLE.some((spec) => spec.name === name)) throw new Error('专属立绘名单里的「' + name + '」不在新补人物中');
   });
   const governorRows = assignGovernors(scenario, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES);
   // 政治立场：原账是志向的抄件，人物字段去伪一刀已清空，这里按史料写

@@ -507,4 +507,12 @@ const LEAF_GOVERNORS = { '河南府·洛阳': '高铢', 同州: '卢载', 华州
 // 道官称的改正：河阳开成间称「河阳三城怀州节度」（会昌三年置孟州后才称河阳节度、怀孟观察）
 const CIRCUIT_TITLES = { 河阳: '河阳三城怀州节度使' };
 
-module.exports = { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES };
+// 有专属立绘的新补人物。立绘按 sources/tang-portraits-brief.md 生成，文件名是人物 id，
+// 放在 web/assets/portraits/tang840/bespoke/（未跟踪资产，随发版全量包走）；不在此列的仍用通用立绘
+const BESPOKE_PORTRAITS = new Set([
+  '高锴', '萧俶', '卢贞', '李款', '李翊', '归融', '郑复', '张沼', '冯审', '胡沐', '唐弘实',
+  '敬昕', '崔琯', '高铢', '姚合', '李执方', '狄兼谟', '温德彝', '魏仲卿', '李昌言', '苻澈', '王茂元',
+  '陈君奕', '韩威', '刘约', '韦长', '李彦佐', '张贾', '裴弘泰', '王彦威', '薛元赏', '卢载'
+]);
+
+module.exports = { NEW_PEOPLE, GOVERNORS, LEAF_GOVERNORS, CIRCUIT_TITLES, BESPOKE_PORTRAITS };

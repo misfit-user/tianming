@@ -157,7 +157,7 @@ function main() {
   if (leftIds.length || leftNames.length) throw new Error('仍有残留：' + leftIds.slice(0, 5).join('、') + ' ' + leftNames.slice(0, 5).join('、'));
 
   const report = ['# 晚唐·删去批量地方代表报告', '',
-    '唐廷与河朔、昭义四镇的批量地方代表 ' + reps.length + ' 人删去，剩 ' + scenario.characters.length + ' 人。引用逐项收拾如下。', '',
+    '唐廷与河朔、昭义四镇的批量地方代表 ' + reps.length + ' 人删去，全剧本剩 ' + scenario.characters.length + ' 人。引用逐项收拾如下。', '',
     '| 处理 | 处数 |', '| --- | --- |', ...Object.keys(counts).map((k) => '| ' + k + ' | ' + counts[k] + ' |'), '',
     '## 军队统兵官', '', '神策军归两中尉；驻道治所的军队归本道长官（京畿除外），驻同州、华州的归本州防御使；其余空缺，不另编人名。', '',
     '| 军队 | 驻地 | 原统兵官 | 现统兵官 |', '| --- | --- | --- | --- |', ...troopRows, '',

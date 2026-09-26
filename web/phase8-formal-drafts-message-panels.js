@@ -43,11 +43,15 @@
     css = css.replace(/font-size:\s*(\d+(?:\.\d+)?)px/g, function(_match, size){
       return 'font-size:calc(' + size + 'px * var(--tm-memorial-font-scale,1))';
     });
+    // 美术宪法第2刀起字号写成 calc(N * var(--tm-px, 1px))（跟着界面字号开关），同样乘上奏疏的阅读倍数
+    css = css.replace(/font-size:calc\((\d+(?:\.\d+)?) \* var\(--tm-px, 1px\)\)/g, function(_match, size){
+      return 'font-size:calc(' + size + ' * var(--tm-px, 1px) * var(--tm-memorial-font-scale,1))';
+    });
     return css + [
       'body.tm-phase8-formal .zou-yuan{--tm-memorial-font-scale:calc(var(--tm-font-global-scale,1) * var(--tm-size-memorial,1));--ink:var(--tm-memorial-ink,#241d15);--ink-soft:var(--tm-memorial-ink-soft,#493b2a);--ink-faint:var(--tm-memorial-ink-muted,#62523c);}',
       'body.tm-phase8-formal .zou-yuan .aside .card{background:#f7f0df;}',
       'body.tm-phase8-formal .zou-yuan .aside .piaoni{color:var(--ink-soft)!important;background:rgba(255,253,245,.86);}',
-      'body.tm-phase8-formal .zou-yuan .aside :is(.hd-note,.who-info span,.chain-row p,.imp-pending){font-size:calc(13px * var(--tm-memorial-font-scale,1));}',
+      'body.tm-phase8-formal .zou-yuan .aside :is(.hd-note,.who-info span,.chain-row p,.imp-pending){font-size:calc(13 * var(--tm-px, 1px) * var(--tm-memorial-font-scale,1));}',
       'body.tm-phase8-formal .zou-yuan .read,body.tm-phase8-formal .zou-yuan .zouben{min-width:0;}',
       'body.tm-phase8-formal .zou-yuan .zouben{overflow-y:auto;scrollbar-width:thin;}',
       'body.tm-phase8-formal .zou-yuan .ben-body{min-height:120px;}',

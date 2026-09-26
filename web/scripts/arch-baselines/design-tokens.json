@@ -2,9 +2,9 @@
   "config": {
     "marker": "design-ok"
   },
-  "updatedAt": "2026-09-25T16:50:10.518Z",
+  "updatedAt": "2026-09-26T07:44:11.532Z",
   "totals": {
-    "colors": 12200,
+    "colors": 10803,
     "fontSizes": 5511
   },
   "files": {
@@ -41,7 +41,7 @@
       "fontSizes": 18
     },
     "phase8-formal-bridge-styles.js": {
-      "colors": 1774,
+      "colors": 377,
       "fontSizes": 395
     },
     "phase8-formal-bridge.js": {

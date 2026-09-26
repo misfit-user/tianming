@@ -10,8 +10,8 @@
   /* 美术宪法（docs/art-constitution.md）色板：金、朱、青瓷、漆、纸，改值先改宪法。
      第1刀起按默认主题「素纸」的实值写：此前金 400/500、朱 300/400/500、青瓷 400 写的是 v2 老值，
      「素纸」每次启动都在运行时改掉（tm-theme-font.js），屏幕上从没出现过表里的值 */
-  /* 金色（亮→暗） */
-  --gold-200:#f0d597;--gold-300:#d4be7a;--gold-400:#c9a85f;--gold-450:#c9a045;--gold-500:#b89a53;--gold-550:#a8833a;--gold-600:#6b5010;
+  /* 金色（亮→暗）；100 是光晕高光，200 是深底上的金字（1b 定为御案金字最常用的 #f0d98c） */
+  --gold-100:#ffeeb4;--gold-200:#f0d98c;--gold-300:#d4be7a;--gold-400:#c9a85f;--gold-450:#c9a045;--gold-500:#b89a53;--gold-550:#a8833a;--gold-600:#6b5010;
   /* 朱砂 */
   --vermillion-300:#d15c47;--vermillion-400:#b84738;--vermillion-450:#a83228;--vermillion-500:#8f3428;--vermillion-600:#7a2018;
   /* 青瓷（350 是原 400 的 v2 值，即「素纸」的 --color-info） */
@@ -21,19 +21,20 @@
   /* 语义原色 */
   --green-400:#7a9e6d;--red-400:#a84535;--amber-400:#c9a84c;
   /* 漆·御案木漆面（深→浅） */
-  --lacquer-0:#0a0806;--lacquer-1:#1a1410;--lacquer-2:#241e18;--lacquer-3:#3d342a;
+  --lacquer-0:#0a0806;--lacquer-1:#1a1410;--lacquer-2:#241e18;--lacquer-3:#3d342a;--lacquer-4:#564732;
   /* 纸·文书纸面（绢→纸边）与纸上的墨 */
   --paper-50:#fffdf3;--paper-100:#f6efda;--paper-200:#ece1c6;--paper-300:#dcc99c;--paper-ink-600:#6e583a;--paper-ink-900:#241d15;
-  /* 漆上主字（墨阶 --ink-50…900 在右栏抽屉里被整段反相重定义，御案样式不直接引用墨阶） */
-  --ink-75:#f4eadd;
+  /* 漆上字阶（亮→淡）：75 主字、150 次要、250 注释、350 占位。v2 的 50/100/200 在抽屉里不反相，也可用；
+     300 起的墨阶在右栏抽屉（.gs-drawer）里被整段反相重定义，御案样式不引用 */
+  --ink-75:#f4eadd;--ink-150:#e0d3ab;--ink-250:#b9aa8a;--ink-350:#9a8a6a;
   /* 色板的 RGB 三元组：半透明写 rgba(var(--gold-400-rgb),.5)；主题改色时两者一起改（smoke-design-token-palette 核对） */
-  --gold-200-rgb:240,213,151;--gold-300-rgb:212,190,122;--gold-400-rgb:201,168,95;--gold-450-rgb:201,160,69;--gold-500-rgb:184,154,83;--gold-550-rgb:168,131,58;--gold-600-rgb:107,80,16;
+  --gold-100-rgb:255,238,180;--gold-200-rgb:240,217,140;--gold-300-rgb:212,190,122;--gold-400-rgb:201,168,95;--gold-450-rgb:201,160,69;--gold-500-rgb:184,154,83;--gold-550-rgb:168,131,58;--gold-600-rgb:107,80,16;
   --vermillion-300-rgb:209,92,71;--vermillion-400-rgb:184,71,56;--vermillion-450-rgb:168,50,40;--vermillion-500-rgb:143,52,40;--vermillion-600-rgb:122,32,24;
   --celadon-300-rgb:163,212,199;--celadon-350-rgb:126,184,167;--celadon-400-rgb:106,154,127;--celadon-500-rgb:90,143,127;
   --indigo-400-rgb:74,111,165;--indigo-500-rgb:58,85,128;--green-400-rgb:122,158,109;--red-400-rgb:168,69,53;--amber-400-rgb:201,168,76;
-  --lacquer-0-rgb:10,8,6;--lacquer-1-rgb:26,20,16;--lacquer-2-rgb:36,30,24;--lacquer-3-rgb:61,52,42;
+  --lacquer-0-rgb:10,8,6;--lacquer-1-rgb:26,20,16;--lacquer-2-rgb:36,30,24;--lacquer-3-rgb:61,52,42;--lacquer-4-rgb:86,71,50;
   --paper-50-rgb:255,253,243;--paper-100-rgb:246,239,218;--paper-200-rgb:236,225,198;--paper-300-rgb:220,201,156;--paper-ink-600-rgb:110,88,58;--paper-ink-900-rgb:36,29,21;
-  --ink-75-rgb:244,234,221;
+  --ink-50-rgb:248,243,232;--ink-75-rgb:244,234,221;--ink-100-rgb:237,229,208;--ink-150-rgb:224,211,171;--ink-200-rgb:212,201,176;--ink-250-rgb:185,170,138;--ink-350-rgb:154,138,106;
   /* 间距 (4px grid) */
   --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
   /* 字号 (中文优化) */

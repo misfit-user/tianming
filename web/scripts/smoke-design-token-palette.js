@@ -5,7 +5,8 @@
 //    即默认主题不再偷偷改令牌表（第1刀之前 --gold-400 表里写 #b89a53、运行时却是 #c9a85f）
 // 3. 旧兜底（tm-shell-extras.js）与高对比主题块改色板令牌时也带着 -rgb
 // 4. 常朝样式只作用在常朝舞台里：不许再写 :root 和 body（第1刀之前一进常朝就改了全局令牌与正文字体）
-// 5. 御案主样式引用的 -rgb 三元组都有定义；不引用会在抽屉里反相的墨阶 --ink-50…900
+// 5. 御案主样式引用的 -rgb 三元组都有定义；不引用会在抽屉里反相的墨阶 --ink-300…900
+//    （50/75/100/150/200/250/350 在抽屉里不反相，第1刀 1b 起作漆上字阶用）
 'use strict';
 
 const assert = require('assert');
@@ -87,6 +88,6 @@ assert.ok(/\.cy-stage\s*\{[^}]*--gold-400\s*:/.test(changchao), '常朝自己的
 const formal = read('phase8-formal-bridge-styles.js');
 const rgbRefs = new Set([...formal.matchAll(/var\(--([\w-]+)-rgb\)/g)].map((m) => m[1]));
 rgbRefs.forEach((name) => assert.ok(decl[`${name}-rgb`], `御案主样式引用了未定义的 --${name}-rgb`));
-assert.ok(!/var\(--ink-(?:50|[1-9]00)\b/.test(formal), '御案主样式不该引用墨阶 --ink-50…900（抽屉里整段反相）');
+assert.ok(!/var\(--ink-[3-9]00(?:-rgb)?\)/.test(formal), '御案主样式不该引用墨阶 --ink-300…900（右栏抽屉里整段反相）');
 
 console.log(`[smoke-design-token-palette] PASS 色板 ${PALETTE.length} 个令牌与三元组一致、四套主题同步、常朝不外溢、御案引用 ${rgbRefs.size} 种三元组均有定义`);

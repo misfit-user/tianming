@@ -12,7 +12,8 @@ for(const f of ['tm-field-pipelines.js','tm-fiscal-statements.js','tm-fiscal-eng
 timed('initializeAccountsMs',()=>ok(c.FiscalEngine.initializePublicTreasuries({game:G,scenario:sc}).ok,'real scenario public stores initialize'));
 timed('reference47BudgetsMs',()=>{for(const f of G.facs){const b=c.CascadeTax.previewBudget({game:G,faction:f.id,turnDays:30});assert(b);budgets.push({faction:f.id,budget:b});for(const item of b.expenses.items){if(item.characterId){expected[item.characterId]??={money:0,grain:0,cloth:0};for(const k of RES)expected[item.characterId][k]+=item.amounts[k];}for(const r of item.payrollRecipients||[]){expected[r.characterId]??={money:0,grain:0,cloth:0};for(const k of RES){const total=item.armyPeriodCost?.[k]||0;expected[r.characterId][k]+=total>0?(r.monthlyPay?.[k]||0)*item.amounts[k]/total:0;}}}}});
 counts.expenseItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.length,0);counts.localItems=budgets.reduce((n,r)=>n+r.budget.expenses.items.filter(i=>i.funding==='local').length,0);
-ok(counts.characters>=400&&counts.factions>=40&&counts.leaves>=500&&counts.localItems>=500,'fixture covers actual late Tang scale');
+// 人物门槛 250：剧本修复删去 192 个批量地方代表后，晚唐官方剧本实有 274 人
+ok(counts.characters>=250&&counts.factions>=40&&counts.leaves>=500&&counts.localItems>=500,'fixture covers actual late Tang scale');
 let previews=0,lists=0,regionIndexBuilds=0;const originalPreview=c.CascadeTax.previewBudget,originalList=c.TM.PublicTreasury.listAccountViews,originalRefs=c.TM.PublicTreasury.getRegionAccountRefs;
 c.CascadeTax.previewBudget=()=>{previews++;throw Error('Payroll cannot preview national budgets');};
 const before=JSON.stringify(G);
@@ -27,5 +28,5 @@ timed('allCharacterReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconE
 const afterReceipts=G._salaryPaymentReceipts.map(r=>r.id).join('|');timed('repeatReceiptSettlementMs',()=>{for(const ch of G.chars)c.CharEconEngine.settleSalaryReceipts(ch);});ok(G._salaryPaymentReceipts.map(r=>r.id).join('|')===afterReceipts,'receipt settlement never adds a second public payment');
 c.CascadeTax.previewBudget=originalPreview;c.TM.PublicTreasury.listAccountViews=originalList;c.TM.PublicTreasury.getRegionAccountRefs=originalRefs;
 // Coarse wall-clock guards catch accidental combinatorial work; operation counts above are the deterministic contract.
-ok(timings.allCharacterDueMs<30000,'434-person due lookup stays bounded');ok(timings.allFactionExpenseSettlementMs<60000,'all faction expense settlement stays bounded');ok(timings.allCharacterReceiptSettlementMs<15000,'receipt delivery stays bounded');
+ok(timings.allCharacterDueMs<30000,'every-person due lookup stays bounded');ok(timings.allFactionExpenseSettlementMs<60000,'all faction expense settlement stays bounded');ok(timings.allCharacterReceiptSettlementMs<15000,'receipt delivery stays bounded');
 console.log('[smoke-public-treasury-scale] PASS '+checks+' assertions '+JSON.stringify({counts,timings,previews,accountViewLists:lists,regionIndexBuilds}));

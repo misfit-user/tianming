@@ -37,6 +37,8 @@ function main() {
   console.log('人物字段：' + run([path.join(DIR, 'patches/tang-people-fields.js'), '--report', path.join(DIR, 'reports/tang-people-fields.md'), '--write']));
   // 第四刀之二：史实人物逐人改正，补开局在任的节帅、观察使与府尹
   console.log('人物改正：' + run([path.join(DIR, 'patches/tang-people.js'), '--report', path.join(DIR, 'reports/tang-people.md'), '--write']));
+  // 第四刀之三：删去唐廷与河朔、昭义四镇的批量地方代表，神策军交还两中尉，驻治所的军队归本道长官
+  console.log('批量代表：' + run([path.join(DIR, 'patches/tang-local-reps.js'), '--report', path.join(DIR, 'reports/tang-local-reps.md'), '--write']));
 }
 
 main();

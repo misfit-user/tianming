@@ -53,8 +53,18 @@ function main() {
   console.log('引用关系：' + run([path.join(DIR, 'patches/tang-references.js'), '--report', path.join(DIR, 'reports/tang-references.md'), '--write']));
   // 第七刀之二：外藩各道描述（同一势力内四块改挂，照抄势力总述与改道说明的道逐道重写）
   console.log('各道描述：' + run([path.join(DIR, 'patches/tang-circuit-texts.js'), '--report', path.join(DIR, 'reports/tang-circuit-texts.md'), '--write']));
+  // 第九刀：年龄无考的人物按任官年代、亲属等推估开局年龄（须在才具一刀之前：才具按年龄做少、老的折减）
+  console.log('人物年龄：' + run([path.join(DIR, 'patches/tang-ages.js'), '--report', path.join(DIR, 'reports/tang-ages.md'), '--write']));
   // 第七刀之三：人物才具与五常（模板值与套用中位数的人逐人按史料重定）
   console.log('才具五常：' + run([path.join(DIR, 'patches/tang-abilities.js'), '--report', path.join(DIR, 'reports/tang-abilities.md'), '--write']));
+  // 第八刀：外藩阶层处境（专属某地的行只留在该地，改挂来的通用模板与地貌不合的换成已有的合适一套）
+  console.log('阶层处境：' + run([path.join(DIR, 'patches/tang-social.js'), '--report', path.join(DIR, 'reports/tang-social.md'), '--write']));
+  // 第十一刀：人物家产（套写的家产与家用按身份分层取锚点中位数，有开局前涉财行迹的乘倍数）
+  console.log('人物家产：' + run([path.join(DIR, 'patches/tang-wealth.js'), '--report', path.join(DIR, 'reports/tang-wealth.md'), '--write']));
+  // 第十刀：死条目与抄件（环境承载只留引擎按 id 取得到的玩家各道，兵制 effects 由照抄 description 改为结构字段简述）
+  console.log('死条目抄件：' + run([path.join(DIR, 'patches/tang-cleanup.js'), '--report', path.join(DIR, 'reports/tang-cleanup.md'), '--write']));
+  // 第十二刀：官俸（同类独低、副职与正职同俸的两处改正，会动财政平衡的建议只写进报告）
+  console.log('官俸：' + run([path.join(DIR, 'patches/tang-pay.js'), '--report', path.join(DIR, 'reports/tang-pay.md'), '--write']));
 }
 
 main();

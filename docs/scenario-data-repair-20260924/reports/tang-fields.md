@@ -1,6 +1,6 @@
 # 晚唐·字段清理与格式归一报告
 
-真源由 60.7MB 减为 51.5MB；删去 map.adminHierarchy（运行时不读的整份行政树拷贝）与 139 个死字段名共 37835 处（按删一次计；map 删后整份复制为 mapData）。原账信息另存 `sources/tang-original-leaves.json`。
+真源由 60.7MB 减为 51.5MB；删去 map.adminHierarchy（运行时不读的整份行政树拷贝）与 137 个死字段名共 37767 处（按删一次计；map 删后整份复制为 mapData）。原账信息另存 `sources/tang-original-leaves.json`。
 
 ## 格式
 
@@ -115,7 +115,6 @@
 | sourceLocalityIds | 80 |
 | geometryRepairNotes | 80 |
 | fundingNote | 74 |
-| historicalTitle | 49 |
 | budgetScope | 48 |
 | isIndependent | 47 |
 | diplomaticStyle | 47 |
@@ -131,7 +130,6 @@
 | representativeIds | 24 |
 | geographicNameStatus | 24 |
 | transportContext | 20 |
-| capitalId | 19 |
 | assessmentBasis | 18 |
 | modelBasis | 17 |
 | originalAddressee | 13 |

@@ -131,11 +131,12 @@ function main() {
     cls.regionalVariants = (cls.regionalVariants || []).filter((v) => v.regionId !== dan.id);
     droppedVariants += before - cls.regionalVariants.length;
   });
-  // 鄜坊各州地块的「丹州另防御」注记去掉
+  // 鄜坊各州地块与道名号里的「丹州另防御」注记去掉
   circuit('鄜坊').children.forEach((leaf) => {
     const region = regionOf(leaf);
     region.office = String(region.office).replace('（丹州另防御）', '');
   });
+  if (typeof circuit('鄜坊').historicalTitle === 'string') circuit('鄜坊').historicalTitle = circuit('鄜坊').historicalTitle.replace('（丹州另防御）', '');
 
   // ---- 3. 同州、华州各立一道 ----
   const splitRows = [];
@@ -152,6 +153,8 @@ function main() {
       fiscalDetail: { autonomyLevel: leaf.fiscalDetail.autonomyLevel },
       officialPosition: spec.officialPosition, capitalChildId: leaf.id, children: []
     };
+    // 道的历史名号（通志页读）：他道有的，新道也写上
+    if (typeof parent.historicalTitle === 'string') node.historicalTitle = spec.office;
     tree.divisions.splice(tree.divisions.indexOf(parent) + 1, 0, node);
     const parentReg = registry(parent);
     scenario.map.circuitRegistry.splice(scenario.map.circuitRegistry.indexOf(parentReg) + 1, 0, { key: id, name: spec.name, faction: parentReg.faction, memberRegionIds: [] });

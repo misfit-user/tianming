@@ -213,7 +213,12 @@ function main() {
   delete scenario.map.adminHierarchy;
   delete scenario.mapData;
 
+  // 通志数据层（tm-map-circuits.js，本刀之后才有）读省道登记与道节点的 commandType，缺道节点值时还拿地块上的
+  // circuitTitle、circuitGovernor 作后备。晚唐这三个字段的值是原作的制作用语（登记里的「剧本地理行政编组」、
+  // 地块上的「地理观察编组·河陇」之类）与各州重复写的道长官旧名，留着会在通志页顶替道的名号与长官，仍按死字段删去；
+  // 道长官已由第 2 步写到道节点 governor 上。道节点的 historicalTitle（如「河东节度」）是正经名号，照代码在读保留。
   const corpus = loadCorpusTokens();
+  ['commandType', 'circuitTitle', 'circuitGovernor'].forEach((key) => corpus.delete(key));
   const removed = deleteDeadFields(scenario, corpus);
 
   // 5. 地块 data 按清理后的府州重新生成；mapData 与 map 一致

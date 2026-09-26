@@ -77,7 +77,7 @@
 - 省名可点：省道级地名 `.tmf-circuit-fit` 与势力名一样作 `role=button`（碰撞模块照样管它的 tabindex），`activateRealm` 同一处理，防拖动误触沿用 `pressedRealm`。
 - 整道描金边：`boundaryMesh(本道成员同组, 'circuit-outline').major`，按成员签名缓存；SVG 图上挂 `<g class="tmf-circuit-outline">`（属性先写好再挂，免得山河境的属性监听整张重采），换层、重画后由 `bindRegionPathEvents` 调 `syncCircuitOutline` 补回；山河境新增 `setSelectedOutline(d)`，焦点层与单州选中同一画法（复用原有两种描边色，不新增写死颜色），诊断的 `selection.outlineLength` 可查。
 - 签注页脚按层级写明左键开哪一册；悬停缓存键加上层级。
-- 测试：`smoke-map-circuit-book` 加 2 组（随层级与设置、外沿轮廓）；Electron `--circuit-book` 加 9 条原生输入用例（三级真点击、右键菜单与键盘、Esc 与滚轮关闭、省名、设置开关、SVG 模式描金边），时限内 300 秒、外 315 秒；CI maps 组加 `--circuit-book` 一步。
+- 测试：`smoke-map-circuit-book` 加 2 组（随层级与设置、外沿轮廓）；Electron `--circuit-book` 加 8 条原生输入用例（三级真点击、右键菜单与键盘、Esc 与滚轮关闭、省名、设置开关、SVG 模式描金边），时限内 300 秒、外 315 秒；CI maps 组加 `--circuit-book` 一步。
 
 原草案：
 - **先拆后加**：`phase8-formal-map.js` 正好 3000 行，守卫不许再长。先把点击与标签交互拆成姊妹模块（暂名 `phase8-formal-map-interact.js`），按 alias 加内联范式迁出（见 `docs/arch-guards.md`），拆分本身单独一步提交、行为不变，再在新模块里加下面的功能。动手前先查 lint-split-contracts、lint-split-stamps 对新拆模块有什么登记要求；启动登记照第六节的顺序做。
@@ -131,6 +131,15 @@
 - 入口：通志页脚「调整辖区」、方志页脚「改隶」，都只生成诏书建议；下诏后由推演核定，再经写口落地；奏疏、朝会里大臣提议改隶也走同一写口。
 - 地图：按势力着色，同势力内改隶不变色，变的是省道边界与省名位置；`formalMapSignature` 已含 parentId/circuitId 与 circuitRegistry，数据一致即自动重画，不需另写刷新。
 - 测试：写口三处一致与回滚；诏书建议范围；地图签名随改隶变化；三部剧本（绍宋没有路级节点，只改登记与地块）。
+
+**已完成（09-26，本地提交）**，实际做法：
+- 写口是新模块 `web/tm-division-reassign.js`（`TM.DivisionReassign`：`plan`、`apply`、`targetsFor`、`movable`、`circuitOfRegion`），UMD 挂法同 `tm-map-circuits.js`（`var TM = root.TM || (root.TM = {})` 的写法会被 lint-global-providers 当成又一个改写 TM 的文件）。三处：行政树（P 与 GM 两份都改，共用节点时不重复挪）、地块字段（`parentId` 恒写，`circuitId`、`circuitName`、`circuitTitle` 原来有才写，经 `TMMapRuntime.updateRegion` 记地图变更账）、登记 `memberRegionIds`。三处逐步记撤回动作，验收不过即逆序撤回，不整棵树替换（免得节点换成副本）。
+- 省道节点的找法：天启按登记的 `sourceAdminId`，晚唐按 key，绍宋路节点 id 与登记 key 不同，按名称在该州所在势力树里找；首府按省道节点 `capitalChildId`，找不到节点时取行政树里这州的上级。**绍宋如今已有路一级节点**（剧本修复后），施工图原稿说「没有路级节点」已过时。
+- 地图上隶于省道的州一律当省道改隶看，目标认不出就拒绝并列出本方省道名，免得退回只改行政树。
+- 回合末写工具 `restructure_division` 在 `fields.parentId` 指向省道时交给写口，写口成功之后不再有会失败的步骤；工具说明补上省道改隶的填法与规则。
+- 入口：方志页脚「改隶」（与地方账本同一行），列接壤的本方省道，不接壤的收在「另有 N 道不接壤（改隶将成飞地）」里；首府只给说明。通志页脚「调整辖区」列本道各州接壤的前三道与邻道可划入之州。选定即经 `addEdictSuggestion` 写建议库（topic「改隶·目标道」，正文写明原隶与飞地、隔断提示），不改世界。
+- 地图：改隶后签名变，三层重新准备（期间「舆图准备中」），省道之间的界线画在次级线（`tmf-border-minor`）里，随之重画；通志与描金边按新成员取。
+- 测试：新增 `smoke-division-reassign`（三部剧本各 4 组：三处一致且地图分组归新道、首府与他方拒绝、飞地提示与目标写错、失败全撤回；另有双树与写工具 2 组，共 14 组）；`smoke-map-circuit-book` 加 2 组（入口只写建议、写工具落地后通志随之改）；Electron 加 3 条（方志改隶面板与写建议、通志调整辖区面板、落地后省道界线重画且新道通志收入此州）。
 
 二期、三期新增（owner 09-24 定）：
 - 二期「更易首府」：首府即长官驻地，长官的作用从首府出发（如应对边警）；首府失守则寄治别州、效能打折。

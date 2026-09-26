@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-26T12:53:13.533Z",
+  "generatedAt": "2026-09-26T12:55:33.333Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "96f5b096c3bc4063dd88e24af31a3e538a4ade25a6fbe269da740d078c72204d",
-      "size": 75734
+      "sha256": "c6ddd77ad818a40dc28fcf4f0dafff5e7415e0a3d2f92fb2973c8233c0c4ae1c",
+      "size": 75960
     },
     {
       "path": "INDEX.md",
@@ -3361,8 +3361,8 @@
     },
     {
       "path": "phase8-formal-bridge-styles.js",
-      "sha256": "3d611c86ce641c5fa518ee467518231976a39b2ef6c0a9c086e5f0312126ebd4",
-      "size": 317578
+      "sha256": "5999e9bdb1e67e271bea1ab6e0ce3563fe00beafcc83503a3df433e867066286",
+      "size": 320049
     },
     {
       "path": "phase8-formal-bridge.js",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "0bc312550a108c1c85267044524609e993e9327267a8ef79bd58f4dc7e49410f",
-      "size": 150529
+      "sha256": "cc74983ee45485fc4245b131397d586b345fe613d2c82b0416085fe00ca455f2",
+      "size": 158242
     },
     {
       "path": "phase8-formal-map.js",
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "c35a3e5ec6efa667b0eeb806fe493bb11f4373b963e2909154beb00123bdb3c2",
-      "size": 379934
+      "sha256": "61850a1d9b34a442e6dfb05b8215f1c177b0dc51e4775ed01936790ed31e2d71",
+      "size": 380495
     },
     {
       "path": "styles.css",
@@ -4660,6 +4660,11 @@
       "size": 6803
     },
     {
+      "path": "tm-division-reassign.js",
+      "sha256": "91b07395024ac058493240d2c9d45e8319448c7c93584c51eb91b720d601b482",
+      "size": 17770
+    },
+    {
       "path": "tm-dynamic-systems.js",
       "sha256": "085e0c12bf85f697f8ade6009681622ec0946442c10cc855ab2153baf4eb42bc",
       "size": 37471
@@ -4776,8 +4781,8 @@
     },
     {
       "path": "tm-endturn-agent-write-tools.js",
-      "sha256": "4285ef7ddc223cfe582e6062e839005a79aad9ca9c9ebe6620e78cb0d8a7657c",
-      "size": 69638
+      "sha256": "16ce15fb38d6ac126fe7287249f70c551bd10d801596b8423c38715f649c37cc",
+      "size": 71065
     },
     {
       "path": "tm-endturn-ai-context.js",
@@ -6246,8 +6251,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "3c4f883ea2f8c9aefb173d4581d428928b6199fde1d811a3b525998815a6d28d",
-      "size": 135375
+      "sha256": "85bd075a7d15953af5bd1fe65a7898dd2d5f4a3dd356a6ccb7ab423790cba67a",
+      "size": 135722
     },
     {
       "path": "tm-start-selector.js",

@@ -603,6 +603,19 @@
         if (cirAct) { circuitAction(pop.dataset.circuitKey || '', cirAct.dataset.bkCircuitAct || ''); return; }
         var regAct = hit('[data-bk-region-act]');
         if (regAct) { regionAction(pop.dataset.regionId || '', regAct.dataset.bkRegionAct || ''); return; }
+        // 改隶（S6）：开合候选面板；选定一道即录入诏书建议并收起
+        var rsOpen = hit('[data-bk-reassign-open]');
+        if (rsOpen) {
+          if (rsOpen.dataset.bkReassignOpen === 'circuit') toggleReassignPanel(pop, circuitReassignPanel(findCircuit(pop.dataset.circuitKey || '')));
+          else toggleReassignPanel(pop, regionReassignPanel(findRegion(pop.dataset.regionId || '')));
+          return;
+        }
+        var rsTo = hit('[data-bk-reassign-to]');
+        if (rsTo) {
+          if (reassignSuggest(rsTo.dataset.bkReassignRegion || '', rsTo.dataset.bkReassignTo || '')) toggleReassignPanel(pop, '');
+          return;
+        }
+        if (hit('[data-bk-reassign-close]')) { toggleReassignPanel(pop, ''); return; }
         var openReg = hit('[data-bk-open-region]');
         if (openReg) {
           var rr = findRegion(openReg.dataset.bkOpenRegion || '');
@@ -1102,6 +1115,91 @@
     return ok;
   }
 
+  // ── 改隶（通志一期 S6）：方志「改隶」、通志「调整辖区」只生成诏书建议 ──
+  // 候选与校验都取改隶写口 TM.DivisionReassign（本方省道之间、首府暂不改出、不接壤标飞地）；
+  // 下诏后由推演核定，经回合末写工具 restructure_division 调同一写口三处同步落地。
+  function reassignApi(){
+    return (window.TM && TM.DivisionReassign) || null;
+  }
+  function reassignSuggest(regionId, targetKey){
+    var DR = reassignApi(), r = findRegion(regionId);
+    if (!DR || !r || !isPlayerRegion(r)) return false;
+    var p = DR.plan(r, targetKey, {});
+    if (!p.ok) { if (typeof toast === 'function') toast(p.reason || '不能改隶'); return false; }
+    var area = regionTitle(r), rail = bridge.rightrail;
+    var body = '改隶' + area + '于' + p.to.label + '（原隶' + p.from.label + '）' +
+      (p.warnings.length ? '；按：' + p.warnings.join('；') : '') + '。着所司会议具奏，行政、钱粮、刑名一并交割。';
+    var ok = !!(rail && typeof rail.addEdictSuggestion === 'function' && rail.addEdictSuggestion('行政区划', area, '改隶·' + p.to.label, body));
+    if (typeof toast === 'function') toast(ok ? '已录入诏令建议库：改隶' + area + '于' + p.to.label : '诏令建议库未就绪');
+    return ok;
+  }
+  // 一州的候选省道按钮；limit 给了就只列接壤的前几道（通志逐州一行用），不给就列接壤的全部
+  function reassignButton(id, t){
+    return '<button type="button" data-bk-reassign-region="' + attr(id) + '" data-bk-reassign-to="' + attr(t.key) + '">' + esc(t.label) + (t.adjacent ? '' : '<em>飞地</em>') + '</button>';
+  }
+  function reassignTargetButtons(r, limit){
+    var DR = reassignApi(), id = String(r.id || r.name || '');
+    var near = (DR ? DR.targetsFor(r, {}) : []).filter(function(t){ return t.adjacent; });
+    var shown = limit ? near.slice(0, limit) : near;
+    return shown.map(function(t){ return reassignButton(id, t); }).join('') +
+      (limit && near.length > shown.length ? '<small>另有 ' + (near.length - shown.length) + ' 道接壤</small>' : '');
+  }
+  // 方志「改隶」：接壤的本方省道直接列出；不接壤的收在「另有 N 道」里，展开才见（改隶将成飞地）
+  function regionReassignPanel(r){
+    var DR = reassignApi();
+    if (!DR) return '';
+    var m = DR.movable(r, {});
+    var head = '<div class="rs-t">改隶 <b>' + esc(regionTitle(r)) + '</b><small>' + (m.from ? '今隶 ' + esc(m.from.label) + ' · ' : '') + '选定后录入诏书建议</small>' +
+      '<button type="button" class="rs-x" data-bk-reassign-close="1" title="收起">×</button></div>';
+    if (!m.ok) return head + '<div class="rs-note">' + esc(m.reason) + '</div>';
+    var id = String(r.id || r.name || '');
+    var far = DR.targetsFor(r, {}).filter(function(t){ return !t.adjacent; });
+    var near = reassignTargetButtons(r, 0);
+    if (!near && !far.length) return head + '<div class="rs-note">本方没有别的省道可改隶</div>';
+    return head + (near ? '<div class="rs-list">' + near + '</div>' : '<div class="rs-note">本方没有接壤的别道</div>') +
+      (far.length ? '<details class="rs-far"><summary>另有 ' + far.length + ' 道不接壤（改隶将成飞地）</summary><div class="rs-list">' +
+        far.map(function(t){ return reassignButton(id, t); }).join('') + '</div></details>' : '');
+  }
+  // 通志「调整辖区」：本道各州可改出到哪（只列接壤的前三道），邻道本方之州可划进来
+  function circuitReassignPanel(circuit){
+    var DR = reassignApi(), MC = circuitApi();
+    if (!DR || !MC || !circuit) return '';
+    var own = MC.partitionByOwner(circuit, circuitViewer(circuit, null).owner).own;
+    var ownIds = own.map(function(r){ return String(r.id || r.name || ''); });
+    var head = '<div class="rs-t">调整辖区 <b>' + esc(circuit.label) + '</b><small>选定后录入诏书建议 · 首府暂不改出</small>' +
+      '<button type="button" class="rs-x" data-bk-reassign-close="1" title="收起">×</button></div>';
+    var outRows = own.map(function(r){
+      if (!DR.movable(r, {}).ok) return '';
+      var buttons = reassignTargetButtons(r, 3);
+      return buttons ? '<div class="rs-row"><span class="rs-nm">' + esc(regionTitle(r)) + '</span>' + buttons + '</div>' : '';
+    }).filter(Boolean);
+    // 划入：与本道接壤、同属本方、隶于别道且不是别道首府的州
+    var seen = {}, inRows = [];
+    own.forEach(function(r){
+      (Array.isArray(r.neighbors) ? r.neighbors : []).forEach(function(nb){
+        var x = findRegion(nb), xid = x ? String(x.id || x.name || '') : '';
+        if (!x || seen[xid] || ownIds.indexOf(xid) >= 0 || circuitOwnerKey(x) !== circuitOwnerKey(r)) return;
+        seen[xid] = true;
+        var m = DR.movable(x, {});
+        if (!m.ok || !m.from || m.from.key === circuit.key) return;
+        inRows.push('<div class="rs-row"><span class="rs-nm">' + esc(regionTitle(x)) + '<small>今隶 ' + esc(m.from.label) + '</small></span>' +
+          '<button type="button" data-bk-reassign-region="' + attr(xid) + '" data-bk-reassign-to="' + attr(circuit.key) + '">划入本道</button></div>');
+      });
+    });
+    return head +
+      (outRows.length ? '<div class="rs-sec">划出本道</div>' + outRows.join('') : '<div class="rs-note">本道各州没有接壤的本方别道可改隶</div>') +
+      (inRows.length ? '<div class="rs-sec">划入本道</div>' + inRows.join('') : '');
+  }
+  // 候选面板挂在册页页脚上方的插槽里，再点一次收起；html 为空即收起
+  function toggleReassignPanel(pop, html){
+    var slot = pop && pop.querySelector('.bk-reassign-slot');
+    if (!slot) return false;
+    var open = !!slot.innerHTML;
+    if (!html) { slot.innerHTML = ''; return false; }
+    slot.innerHTML = open ? '' : '<div class="bk-reassign">' + html + '</div>';
+    return !open;
+  }
+
   function renderRegionBook(r){
     var b = regionBundle(r);
     var data = b.data || {};
@@ -1267,9 +1365,12 @@
     var regionActs = isPlayerRegion(r) ? REGION_ACTIONS.map(function(act){
       return '<button type="button" class="bk-act zhu" data-bk-region-act="' + attr(act) + '">' + esc(act.split('').join(' ')) + '</button>';
     }).join('') : '';
-    var foot = (regionActs || ledgerBtn) ? '<div class="bk-foot' + (regionActs ? ' bk-foot-region' : '') + '">' +
+    // 改隶（S6）：本方州县在地方账本旁给「改隶」，点开候选省道
+    var reassignBtn = regionActs && reassignApi() ? '<button type="button" class="bk-act" data-bk-reassign-open="region">改 隶</button>' : '';
+    var moreBtns = ledgerBtn + reassignBtn;
+    var foot = (regionActs || moreBtns) ? '<div class="bk-foot' + (regionActs ? ' bk-foot-region' : '') + '">' +
       (regionActs ? '<div class="bk-foot-acts">' + regionActs + '</div>' : '') +
-      (regionActs && ledgerBtn ? '<div class="bk-foot-more">' + ledgerBtn + '</div>' : ledgerBtn) +
+      (regionActs && moreBtns ? '<div class="bk-foot-more">' + moreBtns + '</div>' : moreBtns) +
       '</div>' : '<div class="bk-foot"></div>';
     // 卷与检签同源：空卷不渲染、签也不挂（不留点了不动的死签）
     // 役政志（人力/徭役/农政层·R7-c）——仅已行役政（已种子）地域渲染·未种子不挂此卷
@@ -1329,7 +1430,7 @@
       '<div class="bk-inner">' + head + stats +
       '<div class="bk-scroll">' +
         live.map(function(j){ return bkJuan(j[0], j[1], j[2], j[3], j[5]); }).join('') +
-      '</div>' + foot + '</div>' +
+      '</div><div class="bk-reassign-slot"></div>' + foot + '</div>' +
       bkJianqian(live.map(function(j){ return [j[0], j[4]]; })) +
       '<div class="bk-straddle"><i>验讫</i></div>';
   }
@@ -1976,14 +2077,17 @@
     var acts = viewer.player
       ? CIRCUIT_ACTIONS.map(function(act){ return '<button type="button" class="bk-act zhu" data-bk-circuit-act="' + attr(act) + '">' + esc(act.split('').join(' ')) + '</button>'; }).join('')
       : '';
-    var foot = '<div class="bk-foot">' + acts +
+    // 调整辖区（S6）：本方省道在四个动作下另起一行，点开本道各州的改隶候选与邻道可划入之州
+    var reassignBtn = viewer.player && reassignApi() ? '<div class="bk-foot-more"><button type="button" class="bk-act" data-bk-reassign-open="circuit">调 整 辖 区</button></div>' : '';
+    var foot = '<div class="bk-foot' + (reassignBtn ? ' bk-foot-region' : '') + '">' +
+      (reassignBtn ? '<div class="bk-foot-acts">' + acts + '</div>' + reassignBtn : acts) +
       (!viewer.player && hasDisplayValue(ownerLabel) ? '<button type="button" class="bk-act" data-bk-open-faction="' + attr(viewer.owner) + '">展 势 力 谱</button>' : '') +
       '</div>';
     return bkSpine(circuit.label + ' · 通志') +
       '<div class="bk-inner">' + head + stats +
       '<div class="bk-scroll">' + circuitOfficialCard(profile, own, sum) +
         live.map(function(j){ return bkJuan(j[0], j[1], j[2], j[3], j[5]); }).join('') +
-      '</div>' + foot + '</div>' +
+      '</div><div class="bk-reassign-slot"></div>' + foot + '</div>' +
       bkJianqian(live.map(function(j){ return [j[0], j[4]]; })) +
       '<div class="bk-straddle"><i>验讫</i></div>';
   }
@@ -2352,4 +2456,8 @@
   __p.mapTipHtml = mapTipHtml;
   // 方志轻调（S4）：页脚诏书动作
   __p.regionAction = regionAction;
+  // 改隶（S6）：入口只生成诏书建议
+  __p.reassignSuggest = reassignSuggest;
+  __p.regionReassignPanel = regionReassignPanel;
+  __p.circuitReassignPanel = circuitReassignPanel;
 })();

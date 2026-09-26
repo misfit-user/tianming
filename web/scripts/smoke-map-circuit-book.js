@@ -260,6 +260,59 @@ setTimeout(() => {
       assert.match(close, /removeAttribute\('data-circuit-key'\)/, '关闭时清掉省道 key');
     });
 
+    // 第六片：改隶。入口只生成诏书建议；落地经回合末写工具，三处同步后通志与地图分组随之改
+    check('改隶入口：方志「改隶」列候选、首府只给说明，通志「调整辖区」列划出划入，选定只写建议库', () => {
+      const d = JSON.parse(run(`(function(){
+        var DR = TM.DivisionReassign, own = TM.MapCircuits.partitionByOwner(__circuit, __parts.canonicalOwnerKey(__shuntian)).own;
+        var mover = own.filter(function(r){ return r !== __shuntian && DR.movable(r, {}).ok && DR.targetsFor(r, {}).some(function(t){ return t.adjacent; }); })[0];
+        var target = mover && DR.targetsFor(mover, {}).filter(function(t){ return t.adjacent; })[0];
+        __parts.openRegionDossier(mover);
+        var foot = __book().innerHTML;
+        var before = (GM._edictSuggestions || []).length;
+        var ok = __parts.reassignSuggest(String(mover.id), target.key);
+        var list = GM._edictSuggestions || [], last = list[list.length - 1] || null;
+        return JSON.stringify({ mover: mover && mover.name, target: target, footHasBtn: foot.indexOf('data-bk-reassign-open="region"') >= 0, slot: foot.indexOf('bk-reassign-slot') >= 0,
+          capitalPanel: __parts.regionReassignPanel(__shuntian), moverPanel: __parts.regionReassignPanel(mover), circuitPanel: __parts.circuitReassignPanel(__circuit),
+          ok: ok, added: list.length - before, last: last, parent: String(mover.parentId) });
+      })()`));
+      assert.ok(d.mover && d.target, '北直隶有可改出的州与接壤的本方别道');
+      assert.equal(d.footHasBtn, true, '方志页脚有「改隶」');
+      assert.equal(d.slot, true, '候选面板插槽在页脚上方');
+      assert.ok(d.capitalPanel.includes('首府') && !d.capitalPanel.includes('data-bk-reassign-to'), '首府只给说明，不给候选');
+      assert.ok(d.moverPanel.includes('data-bk-reassign-to="' + d.target.key + '"'), '非首府之州列出候选省道');
+      assert.ok(d.circuitPanel.includes('划出本道') && !d.circuitPanel.includes('data-bk-reassign-region="' + run('String(__shuntian.id)') + '"'), '通志「调整辖区」列划出，首府不在其中');
+      assert.equal(d.ok, true);
+      assert.equal(d.added, 1);
+      assert.equal(d.last.source, '行政区划');
+      assert.equal(d.last.from, d.mover);
+      assert.equal(d.last.topic, '改隶·' + d.target.label);
+      assert.ok(d.last.content.includes('改隶' + d.mover + '于' + d.target.label) && d.last.content.includes('原隶北直隶'), d.last.content);
+      assert.equal(d.last.used, false, '只进建议库');
+      assert.equal(d.parent, run('__circuit.key'), '录入建议不改世界');
+    });
+
+    check('改隶落地：回合末写工具经同一写口三处同步，通志与地图分组随之改', () => {
+      const d = JSON.parse(run(`(function(){
+        var DR = TM.DivisionReassign, WT = TM.Endturn.AgentWriteTools;
+        var own = TM.MapCircuits.partitionByOwner(__circuit, __parts.canonicalOwnerKey(__shuntian)).own;
+        var mover = own.filter(function(r){ return r !== __shuntian && DR.movable(r, {}).ok && DR.targetsFor(r, {}).some(function(t){ return t.adjacent; }); })[0];
+        var target = DR.targetsFor(mover, {}).filter(function(t){ return t.adjacent; })[0];
+        var toName = (GM.mapData.circuitRegistry.filter(function(e){ return (e.key || e.id) === target.key; })[0] || {}).name;
+        var res = WT.handleSync('restructure_division', { action: 'modify', region: mover.name, fields: { parentId: toName }, reason: '奉旨改隶' }, { GM: GM });
+        var after = __parts.findCircuit(mover), bei = __parts.findCircuit(__shuntian);
+        return JSON.stringify({ ok: res.ok, text: res.text, adapter: res.result && res.result.adapter, mover: mover.name, target: target,
+          newKey: after && after.key, beiCount: TM.MapCircuits.partitionByOwner(bei, __parts.canonicalOwnerKey(__shuntian)).own.length,
+          inReg: GM.mapData.circuitRegistry.filter(function(e){ return (e.key || e.id) === target.key; })[0].memberRegionIds.indexOf(mover.id) >= 0,
+          sameMap: GM.mapData === P.map });
+      })()`));
+      assert.equal(d.ok, true, d.text);
+      assert.equal(d.adapter, 'TM.DivisionReassign');
+      assert.equal(d.newKey, d.target.key, '通志按新省道取成员');
+      assert.equal(d.beiCount, 10, '北直隶本方剩 10 州');
+      assert.equal(d.inReg, true, '新道登记收入此州');
+      assert.equal(d.sameMap, true, '改的是运行时唯一那份地图');
+    });
+
     console.log('[smoke-map-circuit-book] ' + checks.length + ' 组检查全部通过');
     checks.forEach((name) => console.log('  ok · ' + name));
     process.exit(0);

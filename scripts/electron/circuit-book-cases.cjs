@@ -332,4 +332,94 @@ module.exports = async function ({ win, check }) {
     assert(v.w > 20 && v.h > 20, '外沿轮廓有实际大小：' + JSON.stringify(v));
     await shot('circuit-outline-svg.png');
   });
+
+  // ── 第六片：改隶。入口只写诏书建议；落地经回合末写工具，三处同步后地图按新省道重画 ──
+  const pickMover = `(function(){
+    var DR = TM.DivisionReassign, parts = TMPhase8FormalBridge.__p8MapParts;
+    var cap = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0], circuit = parts.findCircuit(cap);
+    var own = TM.MapCircuits.partitionByOwner(circuit, parts.canonicalOwnerKey(cap)).own;
+    var mover = own.filter(function(r){ return r !== cap && DR.movable(r, {}).ok && DR.targetsFor(r, {}).some(function(t){ return t.adjacent; }); })[0];
+    return { mover: mover, target: DR.targetsFor(mover, {}).filter(function(t){ return t.adjacent; })[0], circuit: circuit };
+  })()`;
+
+  await check('方志「改隶」真点击列出候选省道，选定一道写进诏书建议并收起（截图）', async () => {
+    const d = await js(`(async()=>{
+      var pk = ${pickMover};
+      TMPhase8FormalBridge.map.openRegionDossier(pk.mover);
+      await new Promise(res => setTimeout(res, 120));
+      ${book}.querySelector('[data-bk-reassign-open="region"]').click();
+      await new Promise(res => setTimeout(res, 120));
+      var panel = ${book}.querySelector('.bk-reassign'), btn = panel && panel.querySelector('[data-bk-reassign-to="' + pk.target.key + '"]');
+      return { panel: !!panel, h: panel ? panel.offsetHeight : 0, buttons: panel ? panel.querySelectorAll('[data-bk-reassign-to]').length : 0, has: !!btn, mover: pk.mover.name, target: pk.target.label };
+    })()`);
+    assert.equal(d.panel, true, '候选面板打开');
+    assert(d.h > 30 && d.buttons > 0 && d.has, JSON.stringify(d));
+    await shot('reassign-region-panel.png');
+    const s = await js(`(async()=>{
+      var pk = ${pickMover}, before = (GM._edictSuggestions || []).length;
+      ${book}.querySelector('[data-bk-reassign-to="' + pk.target.key + '"]').click();
+      await new Promise(res => setTimeout(res, 120));
+      var list = GM._edictSuggestions || [], last = list[list.length - 1] || {};
+      return { added: list.length - before, topic: last.topic, used: last.used, closed: !${book}.querySelector('.bk-reassign'), parent: String(pk.mover.parentId), circuitKey: pk.circuit.key };
+    })()`);
+    assert.equal(s.added, 1);
+    assert.equal(s.topic, '改隶·' + d.target);
+    assert.equal(s.used, false);
+    assert.equal(s.closed, true, '选定后面板收起');
+    assert.equal(s.parent, s.circuitKey, '只进建议库，不改世界');
+  });
+
+  await check('通志「调整辖区」真点击列出划出与划入（截图）', async () => {
+    const d = await js(`(async()=>{
+      var pk = ${pickMover};
+      TMPhase8FormalBridge.map.openCircuitDossier(pk.circuit.key);
+      await new Promise(res => setTimeout(res, 120));
+      var btn = ${book}.querySelector('[data-bk-reassign-open="circuit"]');
+      if (!btn) return { btn: false };
+      btn.click();
+      await new Promise(res => setTimeout(res, 120));
+      var panel = ${book}.querySelector('.bk-reassign');
+      return { btn: true, panel: !!panel, text: panel ? panel.textContent : '', rows: panel ? panel.querySelectorAll('.rs-row').length : 0 };
+    })()`);
+    assert.equal(d.btn, true, '通志页脚有「调整辖区」');
+    assert.equal(d.panel, true);
+    assert(/划出本道/.test(d.text) && d.rows > 0, d.text.slice(0, 200));
+    await shot('reassign-circuit-panel.png');
+  });
+
+  await check('改隶落地后地图按新省道重画：省道边界变了，新道通志收入此州且描金边随之扩', async () => {
+    const d = await js(`(async()=>{
+      var pk = ${pickMover}, WT = TM.Endturn.AgentWriteTools, map = TMPhase8FormalBridge.map;
+      TMPhase8FormalBridge.map.closeMapDossier();
+      map.focusRegion(String(pk.mover.id), false);
+      document.querySelector('.map-scale[data-map-scale="region"]').click();
+      await new Promise(res => setTimeout(res, 500));
+      // 同一势力内省道与省道之间的界线画在次级线里（主线只画势力之间与外沿）
+      var border = function(){ var p = document.querySelector('#ming-map-layer #tmf-formal-map .tmf-tier-boundaries .tmf-border-minor'); return p ? p.getAttribute('d') : ''; };
+      var beforeBorder = border();
+      map.openCircuitDossier(pk.target.key);
+      await new Promise(res => setTimeout(res, 150));
+      var beforeRows = ${book}.querySelectorAll('.bk-circuit-table tbody tr').length;
+      var beforeOutline = (document.querySelector('.tmf-circuit-outline path.line') || { getAttribute: function(){ return ''; } }).getAttribute('d').length;
+      var toName = (GM.mapData.circuitRegistry.filter(function(e){ return (e.key || e.id) === pk.target.key; })[0] || {}).name;
+      var res = WT.handleSync('restructure_division', { action: 'modify', region: pk.mover.name, fields: { parentId: toName }, reason: '奉旨改隶' }, { GM: GM });
+      window.dispatchEvent(new Event('tm-state-updated'));
+      // 省道分组变了，三层地图要重新准备（期间显示「舆图准备中」、边界暂空），等准备好、边界重新画出来再比
+      var end = Date.now() + 60000;
+      while ((!(map.preparationStatus() || {}).ready || !border() || border() === beforeBorder) && Date.now() < end) await new Promise(r => setTimeout(r, 150));
+      await new Promise(res => setTimeout(res, 300));
+      var rows = Array.prototype.map.call(${book}.querySelectorAll('.bk-circuit-table .bk-circuit-link'), function(a){ return a.textContent; });
+      var outline = (document.querySelector('.tmf-circuit-outline path.line') || { getAttribute: function(){ return ''; } }).getAttribute('d').length;
+      return { ok: res.ok, text: res.text, kind: ${book}.dataset.panelKind, key: ${book}.dataset.circuitKey, target: pk.target.key, mover: pk.mover.name,
+        borderChanged: border() !== beforeBorder && !!border(), beforeRows: beforeRows, rows: rows, beforeOutline: beforeOutline, outline: outline,
+        diag: { prep: map.preparationStatus && map.preparationStatus(), loading: !!document.querySelector('.tmf-map-loading'), parent: String(pk.mover.parentId), scale: TMPhase8FormalBridge._state.mapScale, borderLen: [beforeBorder.length, border().length], sig: String(TMPhase8FormalBridge._state._lastFormalMapSig || '').slice(-60) } };
+    })()`);
+    assert.equal(d.ok, true, d.text);
+    assert.equal(d.kind, 'circuit');
+    assert.equal(d.key, d.target, '通志仍停在新道');
+    assert.equal(d.borderChanged, true, '省道级边界按新分组重画：' + JSON.stringify(d.diag));
+    assert.ok(d.rows.includes(d.mover) && d.rows.length === d.beforeRows + 1, '新道通志收入此州：' + d.rows.join('、'));
+    assert.notEqual(d.outline, d.beforeOutline, '描金边按新成员重算');
+    await shot('reassign-after.png');
+  });
 };

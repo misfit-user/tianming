@@ -756,7 +756,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-agent-mode.js?v=20260922-release1352"></script>
 <script src="tm-endturn-agent-read-tools.js?v=20260922-release1352"></script>
 <script src="tm-wentian-agent.js?v=20260922-release1352"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
-<script src="tm-endturn-agent-write-tools.js?v=20260922-release1352"></script>
+<script src="tm-endturn-agent-write-tools.js?v=20260926-reassign"></script>
 <script src="tm-endturn-agent-depth-tools.js?v=20260922-release1352"></script>
 <script src="tm-endturn-agent-intent-plan.js?v=20260922-release1352"></script>
 <script src="tm-endturn-shiji-compose.js?v=20260922-release1352"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
@@ -1020,17 +1020,19 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-content-manager-community.js?v=20260922-release1352"></script><!-- 第二十拆·community须紧随origin(origin装载期导出bucket→community捕获·错序即崩)·勿动位置 -->
 <script src="preview/img/east-asia-basemap-data.js?v=20260922-release1352"></script>
 <!-- 勿动位置·第二十七拆：phase8-formal-bridge-styles.js 必须紧接 phase8-formal-bridge.js【之前】装载(②a alias/bucket·装载期填 TM.__p8BridgeParts→origin 顶部 alias 回绑·错序即 installStyles=undefined·installFormalShell 同步调用崩) -->
-<script src="phase8-formal-bridge-styles.js?v=20260926-region-book"></script>
-<script src="phase8-formal-bridge.js?v=20260926-region-book"></script>
+<script src="phase8-formal-bridge-styles.js?v=20260926-reassign"></script>
+<script src="phase8-formal-bridge.js?v=20260926-reassign"></script>
 <!-- phase8-formal·按 surface family 拆 6 module·主 bridge 必先 load·skeleton + alias 块·body 0 改动·2026-05-26 -->
 <script src="phase8-formal-topbar.js?v=20260922-release1352"></script>
 <!-- 省道（通志）数据层：纯函数，供地图册页取省道分组、档案与汇总；须在 phase8-formal-map-dossier.js 之前装载 -->
 <script src="tm-map-circuits.js?v=20260924-circuit-book"></script>
+<!-- 改隶写口（通志一期 S6）：府州在本方省道之间改隶，行政树、地图地块、省道登记三处同步；玩家诏书与 AI 推演同一写口 -->
+<script src="tm-division-reassign.js?v=20260926-reassign"></script>
 <!-- 地图标签几何/碰撞由正式地图首次渲染时通过 TM.Features 加载；地图可先用安全 fallback。 -->
 <script src="tm-shanhe-runtime.js?v=20260926-map-tiers"></script>
-<script src="phase8-formal-map.js?v=20260926-region-book"></script>
+<script src="phase8-formal-map.js?v=20260926-reassign"></script>
 <!-- 勿动位置·第二十五拆：phase8-formal-map-dossier 必须【紧随 origin 之后】装载(②b origin-first 双向 bucket·origin 先导出 __p8MapParts→本片捕获回填) -->
-<script src="phase8-formal-map-dossier.js?v=20260926-region-book"></script>
+<script src="phase8-formal-map-dossier.js?v=20260926-reassign"></script>
 <script src="phase8-formal-modules.js?v=20260922-release1352"></script>
 <script src="phase8-formal-drafts.js?v=20260922-release1352"></script>
 <!-- 勿动位置·第二十六拆：phase8-formal-drafts-message-panels.js 必须【紧随】phase8-formal-drafts.js 装载(origin-first 双向 bucket·装载于 origin 之后回填) -->

@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-27T09:41:19.218Z",
+  "generatedAt": "2026-09-27T12:33:49.611Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,8 +2891,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "791f8ea40d34c9ea3e1152719e8ef55acbf88b4830a012dad0972875b94269ab",
-      "size": 75960
+      "sha256": "78ffabc58af9908718a98b4241329b0719cbd92c73ce5765d82c394911d4700a",
+      "size": 75948
     },
     {
       "path": "INDEX.md",
@@ -3361,8 +3361,8 @@
     },
     {
       "path": "phase8-formal-bridge-styles.js",
-      "sha256": "5999e9bdb1e67e271bea1ab6e0ce3563fe00beafcc83503a3df433e867066286",
-      "size": 320049
+      "sha256": "b512f14e0f6cdc46c072bd681b6f65eb30d20d6d3efcc695e242a252c623eb0e",
+      "size": 321176
     },
     {
       "path": "phase8-formal-bridge.js",
@@ -3381,8 +3381,8 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "61002a8dcb92e4ef16268328bb56781cbef925eddd6ebe5127fcde81e0643aed",
-      "size": 158370
+      "sha256": "4efede5df7210ed7de243fe6c8af223f355f789d7043590d2abb379737889afc",
+      "size": 161333
     },
     {
       "path": "phase8-formal-map.js",
@@ -6251,8 +6251,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "004afe0f07d65fc0237a2872969c4c9047b2009d6c84b45a9d1114d67a8eef26",
-      "size": 135722
+      "sha256": "b578b6a22eb117f5d686d8f98dda3ec88daf8cb8731ea1f51209fc7bc8f33295",
+      "size": 135710
     },
     {
       "path": "tm-start-selector.js",

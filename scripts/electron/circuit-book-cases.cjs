@@ -231,6 +231,45 @@ module.exports = async function ({ win, check }) {
     assert.equal(s.kind, 'faction', JSON.stringify({ pt, s }));
   });
 
+  await check('谱牒版图卷按省道分组，点省名开通志（截图）', async () => {
+    const d = await js(`(async()=>{
+      var parts = TMPhase8FormalBridge.__p8MapParts, names = TMPhase8FormalBridge.rightrail.playerFactionNames();
+      var r = GM.mapData.regions.find(function(r){ var f = parts.findFaction(parts.ownerKey(r), ''); return names.includes(String(parts.ownerKey(r))) || !!(f && names.includes(String(f.name))); });
+      if (!r) return { player: false };
+      parts.openFactionDossier(parts.canonicalOwnerKey(r), r);
+      await new Promise(res => setTimeout(res, 150));
+      var section = ${book}.querySelector('#bk-bantu'), group = section && section.querySelector('.bk-bantu-dao[data-bk-bantu-circuit]');
+      if (!group) return { player: true, group: false };
+      var closed = !group.open;
+      section.scrollIntoView({ block: 'start' });
+      group.querySelector('summary').click();
+      await new Promise(res => setTimeout(res, 150));
+      return { player: true, group: true, kind: ${book}.dataset.panelKind, closed: closed, open: group.open,
+        count: section.querySelectorAll('.bk-bantu-dao').length, signs: group.querySelectorAll('.bk-qian').length, key: group.dataset.bkBantuCircuit };
+    })()`);
+    assert.equal(d.player, true);
+    assert.equal(d.group, true);
+    assert.equal(d.kind, 'faction');
+    assert.equal(d.closed, true, '第一组默认收起');
+    assert.equal(d.open, true, '展开第一组');
+    assert(d.count > 1 && d.signs > 0, JSON.stringify(d));
+    await shot('faction-bantu.png');
+    const target = await js(`(()=>{
+      var group = ${book}.querySelector('#bk-bantu .bk-bantu-dao[data-bk-bantu-circuit]'), btn = group.querySelector('[data-bk-open-circuit]');
+      window.__bantuClickProbe = group;
+      var b = btn.getBoundingClientRect(), x = Math.round(b.x + b.width / 2), y = Math.round(b.y + b.height / 2);
+      return { x: x, y: y, hit: document.elementFromPoint(x, y)?.closest('[data-bk-open-circuit]') === btn, key: btn.dataset.bkOpenCircuit };
+    })()`);
+    assert.equal(target.hit, true, '第一组省名在可见区域且可点');
+    assert.equal(target.key, d.key);
+    await click(target);
+    const state = await bookState();
+    assert.equal(state.kind, 'circuit');
+    assert.equal(state.circuitKey, d.key);
+    const stillOpen = await js(`(()=>{ var open = window.__bantuClickProbe.open; delete window.__bantuClickProbe; return open; })()`);
+    assert.equal(stillOpen, true, '点省名只开通志，不触发 details 收起');
+  });
+
   await check('右键小菜单：三项齐全、焦点在第一项，下键加回车选「本道通志」', async () => {
     const pt = await aimAt('prefecture');
     await click(pt, 'right');

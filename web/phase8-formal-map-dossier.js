@@ -1660,6 +1660,56 @@
     var thHtml = thLines ? '<div class="bk-lan one"><div class="bk-lr"><span class="bk-k">冒犯阈值</span><span class="bk-v wrap zhu">' + esc(thLines).replace(/\n/g, '<br>') + '</span></div></div>' : '';
     return (html ? '<div class="bk-bang-list">' + html + '</div>' : '') + extra + thHtml;
   }
+  // 谱牒版图卷按正式省道收拢；成员限于本势力已有地块，汇总与通志共用叶子读数。
+  function factionBantuHtml(p, key){
+    var MC = circuitApi(), index = circuitIndex(), groups = [], seen = Object.create(null), none = [];
+    var regions = p.regions, allowed = new Set(regions);
+    key = p.f.stableOwnerKey || p.f.mapFactionId || p.f.id || key;
+
+    // 州签沿用原写法，未设省道的势力也由这里原样平铺。
+    function links(rows){
+      return rows.length ? '<div class="bk-qian-links">' + rows.map(function(rg){
+        return '<button type="button" class="bk-qian" data-bk-open-region="' + attr(rg.id || rg.name || rg.title || '') + '">' + esc(regionTitle(rg)) + '</button>';
+      }).join('') + '</div>' : '';
+    }
+
+    // 缺读数时整项省略；民心、吏治的评语与警色复用地图等级。
+    function value(label, value, mode){
+      if (!hasDisplayValue(value)) return '';
+      var grade = mode ? gradeOf(mode, value) : null;
+      return '<span class="bd-v">' + esc(label + ' ' + ppValue(value)) +
+        (mode ? '<em class="' + attr(gradeIsWarn(mode, grade) ? 'warn' : '') + '">' + esc((grade && grade.mark) || '') + '</em>' : '') + '</span>';
+    }
+
+    regions.forEach(function(rg){
+      var circuit = findCircuit(rg, index);
+      if (!circuit) { none.push(rg); return; }
+      if (seen[circuit.key]) return;
+      seen[circuit.key] = true;
+      var own = MC.partitionByOwner(circuit, key).own.filter(function(r){ return allowed.has(r); });
+      if (!own.length) return;
+      groups.push({ circuit: circuit, regions: own, sum: MC.summarize(own, { bundle: regionBundle, mood: moodViewScore, office: officeViewScore }) });
+    });
+    if (!groups.length) return links(regions);
+
+    groups.sort(function(a, b){
+      return b.sum.population - a.sum.population || String(a.circuit.label).localeCompare(String(b.circuit.label), 'zh-CN');
+    });
+    var html = '<div class="bk-bantu-sum">' + esc('省道 ' + groups.length + ' 个' + (none.length ? ' · 未设省道 ' + none.length + ' 块' : '')) + '</div>';
+    groups.forEach(function(group){
+      var circuit = group.circuit, sum = group.sum;
+      html += '<details class="bk-bantu-dao" data-bk-bantu-circuit="' + attr(circuit.key) + '"><summary>' +
+        '<span class="bd-nm"><button type="button" class="bk-circuit-link" data-bk-open-circuit="' + attr(circuit.key) + '" title="展其通志">' + esc(circuit.label) + '</button></span>' +
+        '<span class="bd-n">' + esc(group.regions.length + '/' + circuit.members.length + ' 州') + '</span>' +
+        value('户口', sum.population) + value('民心', sum.mood, 'mood') + value('吏治', sum.office, 'office') +
+        '</summary>' + links(group.regions) + '</details>';
+    });
+    if (none.length) {
+      html += '<details class="bk-bantu-dao bk-bantu-none"><summary><span class="bd-nm">' + esc('未设省道') +
+        '</span><span class="bd-n">' + esc(none.length + ' 块') + '</span></summary>' + links(none) + '</details>';
+    }
+    return html;
+  }
   function renderFactionBook(f, key, r){
     var p = factionProfile(f, key, r);
     var name = firstValue(f.label, f.name, f.scenarioFactionName, r && ownerName(r), key, '未名势力');
@@ -1706,9 +1756,7 @@
       bkScoreChips('凝聚', f.cohesion, 50) || bkRow('凝聚', f.cohesion),
       bkRow('开局问题', f.openingProblems)
     ], true);
-    var bantu = (p.regions.length ? '<div class="bk-qian-links">' + p.regions.map(function(rg){
-      return '<button type="button" class="bk-qian" data-bk-open-region="' + attr(rg.id || rg.name || rg.title || '') + '">' + esc(regionTitle(rg)) + '</button>';
-    }).join('') + '</div>' : '') + bkLan([
+    var bantu = factionBantuHtml(p, key) + bkLan([
       bkRow('剧本领土', f.territory),
       bkRow('资源', firstValue(f.resources, f.mainResources, p.resources.length ? p.resources.join('、') : '')),
       bkRow('威胁 / 商路', p.threats.length ? p.threats.join('、') : '')
@@ -1859,8 +1907,10 @@
   }
 
   // 按 key 或按府州取所属省道；只认正式省道（有登记或不止一州），单州孤块不开通志
-  function findCircuit(keyOrRegion){
-    var MC = circuitApi(), index = circuitIndex();
+  // 同一册页批量查州时复用本次索引，避免每州都重算全图归属签名；单次调用仍按原逻辑刷新。
+  function findCircuit(keyOrRegion, index){
+    var MC = circuitApi();
+    index = index || circuitIndex();
     if (!MC || !index) return null;
     var circuit = typeof keyOrRegion === 'string' ? index.circuits.get(keyOrRegion) : MC.circuitOf(index, keyOrRegion);
     return circuit && MC.isRealCircuit(circuit) ? circuit : null;

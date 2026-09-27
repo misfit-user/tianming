@@ -2117,13 +2117,35 @@
     return head + groups;
   }
 
-  function circuitOfficialCard(profile, own, sum){
+  // 通志长官卡优先读取现任绑定；旧装载环境缺模块时保留原档案写法。
+  function circuitOfficialCard(profile, own, sum, circuit, viewer){
+    var governance = window.TM && TM.CircuitGovernance;
+    var gov = governance && typeof governance.governorOf === 'function' ? governance.governorOf(GM, circuit, viewer.owner) : null;
+    var subs = own.every(function(r){ var d = regionBundle(r).data || {}; return !!d.governorUnrecorded; }) ? '下辖各州主官均未载姓名' : '下辖各州主官见各州方志';
+    if (gov) {
+      // 缺职位时的官衔也取本方节点，避免旧档案查找命中别方同名路。
+      var division = window.TM && TM.DivisionReassign;
+      var admin = division && typeof division.circuitAdminNode === 'function' ? division.circuitAdminNode(GM, circuit.key, viewer.owner) : null;
+      var role = gov.status === 'note' ? gov.note : firstValue(gov.position && gov.position.name, admin ? admin.officialPosition : profile.officialPosition, '长官');
+      var who = gov.status === 'note' ? (gov.noteDetail || gov.note) : gov.status === 'vacant' ? '出缺' : gov.status === 'unbound' ? '未设主官' : gov.holderName;
+      var details = '';
+      if (gov.status === 'serving' || gov.status === 'travelling') {
+        var band = { high: '称职', mid: '平平', low: '失职' }[gov.band];
+        var seat = gov.seatRegionId && ((getMapData() || {}).regions || []).filter(function(r){ return String(r.id) === gov.seatRegionId; })[0];
+        details = '<span class="bk-gov"><span class="gv">能力 <b>' + esc(Math.round(gov.ability)) + '</b></span>' +
+          (band ? '<span class="gv">履职 <b>' + esc(band) + '</b></span>' : '') +
+          '<span class="' + attr('gv' + (gov.status === 'travelling' ? ' warn' : '')) + '">' + esc(gov.status === 'travelling' ? '赴任 · 余 ' + gov.travelDaysLeft + ' 日' : '在任') + '</span>' +
+          (seat ? '<span class="gv">驻 <b>' + esc(regionTitle(seat)) + '</b></span>' : '') + '</span>';
+      }
+      var line = gov.status === 'note' ? '本道无单一主官，不计长官之效' : '统辖本道 ' + sum.count + ' 府州；' + subs;
+      return '<div class="bk-circuit-official"><span class="role">' + esc(role) + '</span><b>' + esc(who) + '</b>' + details +
+        '<span class="line">' + esc(line) + '</span></div>';
+    }
     if (!hasDisplayValue(profile.officialPosition) && !hasDisplayValue(profile.title)) return '';
     var role = firstValue(profile.officialPosition, profile.title, '长官');
     var who = hasDisplayValue(profile.governor) ? profile.governor : '未录';
-    var subs = own.every(function(r){ var d = regionBundle(r).data || {}; return !!d.governorUnrecorded; }) ? '下辖各州主官均未载姓名' : '下辖各州主官见各州方志';
     return '<div class="bk-circuit-official"><span class="role">' + esc(role) + '</span><b>' + esc(who) + '</b>' +
-      '<span class="line">统辖本道 ' + sum.count + ' 府州；' + subs + '</span></div>';
+      '<span class="line">统辖本道 ' + esc(sum.count) + ' 府州；' + esc(subs) + '</span></div>';
   }
 
   function renderCircuitBook(circuit, clickedRegion){
@@ -2178,7 +2200,7 @@
       '</div>';
     return bkSpine(circuit.label + ' · 通志') +
       '<div class="bk-inner">' + head + stats +
-      '<div class="bk-scroll">' + circuitOfficialCard(profile, own, sum) +
+      '<div class="bk-scroll">' + circuitOfficialCard(profile, own, sum, circuit, viewer) +
         live.map(function(j){ return bkJuan(j[0], j[1], j[2], j[3], j[5]); }).join('') +
       '</div><div class="bk-reassign-slot"></div>' + foot + '</div>' +
       bkJianqian(live.map(function(j){ return [j[0], j[4]]; })) +

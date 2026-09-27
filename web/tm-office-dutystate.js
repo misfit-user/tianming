@@ -63,6 +63,18 @@
     return dv * 0.6 + _wuchangScore(ch) * 0.4;
   }
 
+  // 只读职位的能力与履职档位；复用既有承载力和默认阈值，不初始化履职态。
+  function officeDutyView(GM, position) {
+    var ch = position && position.holder && ((GM && GM.chars) || []).find(function (c) { return c && c.name === position.holder; });
+    var ds = position && position._dutyState;
+    var fulfillment = ds && typeof ds.fulfillment === 'number' ? ds.fulfillment : null;
+    return {
+      capacity: ch ? _capacity(ch, _powersOf(position)) : null,
+      fulfillment: fulfillment,
+      band: fulfillment === null ? null : fulfillment < DEFAULT_FORCE.lowBand ? 'low' : fulfillment > DEFAULT_FORCE.highBand ? 'high' : 'mid'
+    };
+  }
+
   /**
    * 每回合 tick：更新各主官/掌权官职 _dutyState，返回本回合应施加的对称域效果。
    * @param {object} GM 需 GM.officeTree / GM.chars / GM.turn
@@ -142,7 +154,8 @@
     return { holder: act.name, dept: hit.dept, pos: hit.p.name, delta: delta, fulfillment: Math.round(ds.fulfillment) };
   }
 
+  global.officeDutyView = officeDutyView;
   global.tickOfficeDutyState = tickOfficeDutyState;
   global.applyNpcActionToDuty = applyNpcActionToDuty;
-  if (typeof module !== 'undefined' && module.exports) module.exports = { tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { officeDutyView: officeDutyView, tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

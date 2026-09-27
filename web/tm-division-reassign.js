@@ -143,6 +143,31 @@
     return byName;
   }
 
+  // 只读 GM 行政树：先限定势力，再复用既有省道查找，避免同名路串到别方。
+  function circuitAdminNode(gm, circuitKey, ownerKey) {
+    var ah = gm && gm.adminHierarchy, map = gm && gm.mapData, owner = text(ownerKey);
+    var entry = resolveCircuit(map, circuitKey);
+    if (!ah || !entry || !owner) return null;
+    var top = null;
+    Object.keys(ah).some(function (key) {
+      var node = ah[key];
+      if (!node || typeof node !== 'object') return false;
+      if ([key, node.factionId, node.factionName, node.id, node.name].map(text).indexOf(owner) < 0) return false;
+      top = node;
+      return true;
+    });
+    // 旧树根缺少势力标识时，沿本方成员州找到所属势力树根。
+    if (!top) membersOf(map, entry).some(function (region) {
+      if (ownerOf(region) !== owner) return false;
+      var hit = findAdmin(ah, regionAdminTest(region)) || findAdmin(ah, regionAdminByName(region));
+      top = hit && hit.root;
+      return !!top;
+    });
+    if (!top) return null;
+    var hit = circuitAdmin({ owner: top }, entry, top);
+    return hit && isCircuitLevel(hit.node) ? hit.node : null;
+  }
+
   // 首府：省道节点的 capitalChildId 对的是州节点 id（天启）或地块 id（晚唐、绍宋）。
   // 省道节点先按登记找，找不到就取行政树里这州的上级（绍宋的路节点 id 与登记 key 不同）
   function isCapital(gm, entry, r) {
@@ -313,6 +338,7 @@
   return {
     plan: plan,
     apply: apply,
+    circuitAdminNode: circuitAdminNode,
     targetsFor: targetsFor,
     movable: movable,
     circuitOfRegion: function (regionRef, opts) {

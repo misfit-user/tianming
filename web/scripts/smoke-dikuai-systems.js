@@ -83,7 +83,7 @@ var bridge = read('tm-integration-bridge.js');
 var huji = read('tm-huji-engine.js');
 ok(/function _walkAdminLeaves\(nodes, out, seen\)/.test(huji)
   && /function _factionLeafGroups\(G\)/.test(huji)
-  && /_walkAdminLeaves\(roots, leaves, \[\]\)/.test(huji), '人口权威按 faction 递归取得行政区叶子');
+  && /_walkAdminLeaves\(roots, leaves, (?:\[\]|new Set\(\))\)/.test(huji), '人口权威按 faction 递归取得行政区叶子');   // 判重集合 09-27 由数组改为 Set
 ok(/function _syncLeafPopulationMirrors\(leaf, detail\)/.test(huji)
   && /leaf\.population\.mouths = detail\.mouths/.test(huji), 'Huji 同步 population 与 populationDetail 双账');
 ok(/leafMouthsPerHousehold = Number\(pd\.households\) > 0 \? mouths \/ Number\(pd\.households\)/.test(huji)

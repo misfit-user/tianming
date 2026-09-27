@@ -87,12 +87,13 @@
 
   // Pure view: public registration and economic residents are separate measures.
   // No setter, normalization, hidden-person inference, or national write occurs here.
+  // leafGroups 只供同一次同步渲染复用，调用方不得改写。
   function getPopulationView(options) {
     options = options || {};
     var G = options.root || global.GM || {};
     var v2 = isPopulationLedgerV2(G, options.scenario);
     var rows = [], matched = true;
-    var groups = _factionLeafGroups(G);
+    var groups = Array.isArray(options.leafGroups) ? options.leafGroups : _factionLeafGroups(G);
     var region = options.region;
     var faction = options.factionId != null ? options.factionId : options.faction;
     function addNode(node) {
@@ -1065,8 +1066,8 @@
   function _walkAdminLeaves(nodes, out, seen) {
     (Array.isArray(nodes) ? nodes : []).forEach(function(node) {
       if (!node || typeof node !== 'object') return;
-      if (seen && seen.indexOf(node) >= 0) return;
-      if (seen) seen.push(node);
+      if (seen && seen.has(node)) return;
+      if (seen) seen.add(node);
       var childGroups = [node.children, node.divisions, node.subdivisions, node.subs]
         .filter(function(children, index, all) {
           return Array.isArray(children) && children.length && all.indexOf(children) === index;
@@ -1160,7 +1161,7 @@
       var roots = Array.isArray(branch) ? branch : (branch && branch.divisions);
       if (!Array.isArray(roots)) return;
       var leaves = [];
-      _walkAdminLeaves(roots, leaves, []);
+      _walkAdminLeaves(roots, leaves, new Set());
       if (!leaves.length && key !== playerKey) return;
       var faction = _factionForAdminBranch(G, key, branch || {});
       groups.push({
@@ -2895,6 +2896,7 @@
     init: init,
     isPopulationLedgerV2: isPopulationLedgerV2,
     getPopulationView: getPopulationView,
+    factionLeafGroups: _factionLeafGroups,
     applyRegistrationStatusChange: applyRegistrationStatusChange,
     tick: tick,
     applyPopulationLoss: applyPopulationLoss,

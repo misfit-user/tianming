@@ -61,16 +61,19 @@ module.exports = async function ({ win, check }) {
   await check('从顺天府方志页头的层级路径真点击进入北直隶通志', async () => {
     const d = await js(`(async()=>{
       var parts = TMPhase8FormalBridge.__p8MapParts, r = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0];
+      // 册页宽度有 0.38 秒过渡：量宽前等宽度连续两帧不变（开册快了之后，只等 100~150ms 会量到过渡中途）
+      var settledWidth = async function(el){ var last = -1, end = Date.now() + 1500; while (Date.now() < end) { await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res))); if (el.offsetWidth === last) return last; last = el.offsetWidth; } return el.offsetWidth; };
       parts.openRegionDossier(r);
       await new Promise(res => setTimeout(res, 100));
-      var regionWidth = ${book}.offsetWidth;
+      var regionWidth = await settledWidth(${book});
       var pill = ${book}.querySelector('.bk-crumbs [data-bk-open-circuit]');
       if (!pill) return { pill: false };
       pill.click();
       await new Promise(res => setTimeout(res, 150));
       var pop = ${book};
       // 正式界面整体按窗口缩放，量布局宽度 offsetWidth，不量缩放后的屏幕像素
-      return { pill: true, kind: pop.dataset.panelKind, cls: pop.className, width: pop.offsetWidth, regionWidth: regionWidth, rows: pop.querySelectorAll('.bk-circuit-table tbody tr').length,
+      var circuitWidth = await settledWidth(pop);
+      return { pill: true, kind: pop.dataset.panelKind, cls: pop.className, width: circuitWidth, regionWidth: regionWidth, rows: pop.querySelectorAll('.bk-circuit-table tbody tr').length,
         common: !!pop.querySelector('.bk-circuit-common'), acts: pop.querySelectorAll('[data-bk-circuit-act]').length, title: (pop.querySelector('.bk-name') || {}).textContent };
     })()`);
     assert.equal(d.pill, true, '方志页头层级路径里有北直隶');

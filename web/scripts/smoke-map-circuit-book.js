@@ -98,6 +98,137 @@ setTimeout(async () => {
       var __book = function(){ return document.getElementById('ppop'); };
     `);
 
+    check('开册批次内外：明朝廷全部地块的装配值与户籍视图逐块全等', () => {
+      const d = JSON.parse(run(`(function(){
+        var f = __parts.findFaction('明朝廷', '');
+        var regions = __map.regions.filter(function(r){ return __parts.factionOwnsRegion(r, '明朝廷', f); });
+        function populationOptions(r){ return { root: GM, region: __parts.findLiveAdminDivision(r) || r.id, factionId: __parts.ownerKey(r) }; }
+        var outside = regions.map(function(r){ return {
+          id: r.id, bundle: JSON.stringify(__parts.regionBundle(r)), population: JSON.stringify(HujiEngine.getPopulationView(populationOptions(r)))
+        }; });
+        var reused = true;
+        var inside = __parts.withRenderBatch(function(){
+          var groups = HujiEngine.factionLeafGroups(GM);
+          return regions.map(function(r){
+            var bundle = __parts.regionBundle(r), options = populationOptions(r);
+            reused = reused && bundle === __parts.regionBundle(r);
+            options.leafGroups = groups;
+            return { id: r.id, bundle: JSON.stringify(bundle), population: JSON.stringify(HujiEngine.getPopulationView(options)) };
+          });
+        });
+        return JSON.stringify({ outside: outside, inside: inside, reused: reused });
+      })()`));
+      assert.ok(d.outside.length > 0, '确有明朝廷地块，逐块对比不空跑');
+      assert.equal(d.inside.length, d.outside.length);
+      d.outside.forEach((row, i) => {
+        assert.equal(d.inside[i].id, row.id);
+        assert.equal(d.inside[i].bundle, row.bundle, row.id + ' regionBundle 的 JSON.stringify 全等');
+        assert.equal(d.inside[i].population, row.population, row.id + ' 同 region、同 factionId 的人口视图全等');
+      });
+      assert.equal(d.reused, true, '同批次按地块对象身份复用装配值');
+      console.log('[render-batch] 明朝廷逐块全等 regions=' + d.outside.length);
+    });
+
+    check('跨次开册不吃旧数：同回合改现行户口，谱牒读数随之变化并可恢复', () => {
+      const d = JSON.parse(run(`(function(){
+        // 天启沿用旧户口口径，现行省账的数值 population 覆盖 populationDetail.mouths。
+        // findLiveProvinceStats 返回浅副本，须改 GM 中同键的原记录，验完恢复。
+        var stats = __parts.findLiveProvinceStats(__shuntian), current = GM.provinceStats[stats._provinceKey];
+        var keep = current.population, delta = 1000000, out = { field: 'GM.provinceStats[' + stats._provinceKey + '].population', delta: delta };
+        if (typeof keep !== 'number' || !isFinite(keep)) throw new Error('顺天府现行户口字段缺失');
+        function readBook(){
+          __parts.openFactionDossier('明朝廷', null);
+          var value = __book().innerHTML.split('<span class="k">户口</span><span class="v">')[1];
+          if (!value) throw new Error('谱牒户口读数缺失');
+          return value.split('<')[0];
+        }
+        try {
+          out.before = readBook();
+          out.regionBefore = Number(__parts.regionBundle(__shuntian).data.population);
+          current.population = keep + delta;
+          out.after = readBook();
+          out.regionAfter = Number(__parts.regionBundle(__shuntian).data.population);
+        } finally {
+          current.population = keep;
+        }
+        out.restored = readBook();
+        out.regionRestored = Number(__parts.regionBundle(__shuntian).data.population);
+        return JSON.stringify(out);
+      })()`));
+      assert.equal(d.regionAfter - d.regionBefore, d.delta, '现行户口变化进入下一次开册');
+      assert.notEqual(d.after, d.before, '谱牒户口读数同步变化');
+      assert.equal(d.restored, d.before, '恢复户口后谱牒读数复原');
+      assert.equal(d.regionRestored, d.regionBefore);
+      console.log('[render-batch] 户口字段=' + d.field + ' 谱牒=' + d.before + ' -> ' + d.after + ' -> ' + d.restored);
+    });
+
+    check('批次不外泄：三类册页、嵌套与异常结束后均恢复现算和军队签名检查', () => {
+      const d = JSON.parse(run(`(function(){
+        var originalView = HujiEngine.getPopulationView, originalGroups = HujiEngine.factionLeafGroups;
+        var locations = TMMapLocations, originalRead = locations.read;
+        var reads = 0, groupCalls = 0, views = [], out = { after: [] };
+        HujiEngine.getPopulationView = function(options){
+          views.push({ supplied: Object.prototype.hasOwnProperty.call(options, 'leafGroups'), groups: options.leafGroups });
+          return originalView.apply(this, arguments);
+        };
+        HujiEngine.factionLeafGroups = function(){ groupCalls += 1; return originalGroups.apply(this, arguments); };
+        locations.read = function(entity, kind){ if (kind === 'army') reads += 1; return originalRead.apply(this, arguments); };
+        function outside(label){
+          reads = 0; views = [];
+          var first = __parts.regionBundle(__shuntian), second = __parts.regionBundle(__shuntian);
+          out.after.push({ label: label, distinct: first !== second, reads: reads, views: views.length,
+            supplied: views.some(function(v){ return v.supplied; }) });
+        }
+        try {
+          out.strict = locations.enabled(__map);
+          out.armies = GM.armies.length;
+          __parts.openRegionDossier(__shuntian); outside('方志');
+          __parts.openFactionDossier('明朝廷', null); outside('谱牒');
+          __parts.openCircuitDossier(__circuit.key, __shuntian); outside('通志');
+          // 前面的开册已暖好旧军队缓存；命中旧签名时也必须将它放进本批次。
+          reads = 0; views = []; groupCalls = 0;
+          var firstBatch;
+          __parts.withRenderBatch(function(){
+            firstBatch = __parts.regionBundle(__shuntian);
+            out.nested = __parts.withRenderBatch(function(){ return __parts.regionBundle(__shuntian); }) === firstBatch;
+            var other = __circuit.members.map(function(m){ return m.region; }).filter(function(r){ return r !== __shuntian; })[0];
+            __parts.regionBundle(other);
+            // 同 id 的另一个对象不能误命中对象身份缓存。
+            out.identity = __parts.regionBundle(Object.assign({}, __shuntian)) !== firstBatch;
+          });
+          out.batch = { reads: reads, groupCalls: groupCalls, views: views.length,
+            shared: views.every(function(v){ return v.supplied && Array.isArray(v.groups) && v.groups === views[0].groups; }) };
+          out.nextFresh = __parts.withRenderBatch(function(){ return __parts.regionBundle(__shuntian); }) !== firstBatch;
+          outside('显式批次');
+          var marker = new Error('批次清理探针');
+          try { __parts.withRenderBatch(function(){ __parts.regionBundle(__shuntian); throw marker; }); }
+          catch (error) { out.rethrown = error === marker; }
+          outside('异常批次');
+        } finally {
+          HujiEngine.getPopulationView = originalView;
+          HujiEngine.factionLeafGroups = originalGroups;
+          locations.read = originalRead;
+        }
+        return JSON.stringify(out);
+      })()`));
+      assert.equal(d.strict, true, '真实天启启用军队地名解析');
+      assert.ok(d.armies > 0, '有军队，签名检查不空跑');
+      for (const row of d.after) {
+        assert.equal(row.distinct, true, row.label + '结束后两次装配互不复用');
+        assert.equal(row.views, 2, row.label + '结束后两次均重取户籍视图');
+        assert.equal(row.supplied, false, row.label + '结束后不再传 leafGroups');
+        assert.equal(row.reads, d.armies * 2, row.label + '结束后仍每次重算全图军队签名');
+      }
+      assert.equal(d.nested, true, '嵌套批次复用外层缓存');
+      assert.equal(d.identity, true, '按对象身份缓存，不按 id 缓存');
+      assert.equal(d.batch.reads, d.armies, '旧军队缓存命中后，本批次只算一次签名');
+      assert.equal(d.batch.groupCalls, 1, '本批次只走一次户籍叶子分组');
+      assert.equal(d.batch.views, 3, '三个不同地块对象各装配一次');
+      assert.equal(d.batch.shared, true, '批次内传同一份叶子分组');
+      assert.equal(d.nextFresh, true, '下一批次重新装配');
+      assert.equal(d.rethrown, true, '异常原样抛出且清理批次');
+    });
+
     check('北直隶通志能从府州打开，页头有层级路径、长官与治所', () => {
       const d = JSON.parse(run(`(function(){
         var ok = TMPhase8FormalBridge.map.openCircuitDossier(__shuntian);

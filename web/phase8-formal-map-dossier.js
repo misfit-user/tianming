@@ -25,11 +25,27 @@
   var regionLevel = __p.regionLevel, officeViewScore = __p.officeViewScore, _reportedPop = __p._reportedPop, modeScore = __p.modeScore, ppTagNames = __p.ppTagNames;
 
   // ══════ §A 军队↔地块对账 + regionBundle 数据装配层（orig 2235-2675·body 0 改动）══════
+  // 开册渲染批次：一次开册里，同一块地的 regionBundle、全图军队索引、户籍叶子分组只算一次。
+  // 批次只存在于 withRenderBatch 的同步调用之内，结束即丢；批次外的调用照旧每次现算。
+  var renderBatch = null;
+  function withRenderBatch(fn){
+    if (renderBatch) return fn();
+    renderBatch = { bundles: new Map(), armyIndex: null, leafGroups: null };
+    try { return fn(); } finally { renderBatch = null; }
+  }
+  function batchLeafGroups(){
+    if (!renderBatch) return null;
+    if (renderBatch.leafGroups === null && typeof HujiEngine !== 'undefined' && typeof HujiEngine.factionLeafGroups === 'function') {
+      renderBatch.leafGroups = HujiEngine.factionLeafGroups(typeof GM !== 'undefined' ? GM : {});
+    }
+    return renderBatch.leafGroups;
+  }
   // ── 军队↔地块对账层（2026-06-12）：GM.armies 与地块驻军此前两本账（驻地是城名·区划字段全空）。
   //    驻地名 token 拆分 → 两遍匹配（先全等后包含·区划子树名册爬根）→ 按地块聚合活军。
   //    剧本可在 region.data.aliases / division.aliases 扩别名（朝代地名不硬编进引擎）。──
   var _armyRegionCache = { sig: '', byRegion: {}, unboundCount: 0, unbound: [] };
   function armyRegionIndex(){
+    if (renderBatch && renderBatch.armyIndex) return renderBatch.armyIndex;
     var gm = window.GM || {};
     var armies = Array.isArray(gm.armies) ? gm.armies : [];
     var map = getMapData() || {};
@@ -40,7 +56,10 @@
     var sig = (gm.turn || 0) + ':' + armies.length + ':' +
       armies.reduce(function(a, x){ return a + (Number(x && x.soldiers) || 0); }, 0) + ':' + regions.length;
     sig += ':' + JSON.stringify(armies.map(function(a, i) { return a && [a.id,a.garrison,a.location,a.regionId,a.garrisonRegionId,a.regionHint,a.soldiers,a.size,a.strength,a.faction,a.factionId,a.destroyed,a.disbanded,liveLocations && liveLocations[i] && liveLocations[i].regionId]; }));
-    if (_armyRegionCache.sig === sig && _armyRegionCache.world === gm && _armyRegionCache.map === map) return _armyRegionCache;
+    if (_armyRegionCache.sig === sig && _armyRegionCache.world === gm && _armyRegionCache.map === map) {
+      if (renderBatch) renderBatch.armyIndex = _armyRegionCache;
+      return _armyRegionCache;
+    }
     // 聚落层名册（2026-06-12）：localityLayer 自带 regionId↔城名（宁远城/锦州城/皮岛/山海关…），
     // 是城名驻地的通用解（朝代地名仍归剧本数据·引擎只读结构）。
     var locByRegion = {};
@@ -142,6 +161,7 @@
       addTo(rid, a, soldiers);
     });
     _armyRegionCache = { sig: sig, world: gm, map: map, byRegion: byRegion, unboundCount: unbound.length, unbound: unbound };
+    if (renderBatch) renderBatch.armyIndex = _armyRegionCache;
     return _armyRegionCache;
   }
   function regionArmies(r){
@@ -190,6 +210,11 @@
   }
 
   function regionBundle(r){
+    if (!renderBatch || !r || typeof r !== 'object') return computeRegionBundle(r);
+    if (!renderBatch.bundles.has(r)) renderBatch.bundles.set(r, computeRegionBundle(r));
+    return renderBatch.bundles.get(r);
+  }
+  function computeRegionBundle(r){
     var base = Object.assign({}, (r && r.admin) || {}, (r && r.data) || {});
     var liveDivision = findLiveAdminDivision(r);
     var liveStats = findLiveProvinceStats(r);
@@ -527,7 +552,9 @@
     }
     var popView = null;
     if (typeof HujiEngine !== 'undefined' && HujiEngine.getPopulationView) {
-      popView = HujiEngine.getPopulationView({root:typeof GM !== 'undefined' ? GM : {}, region:liveDivision || (r && r.id), factionId:ownerKey(r)});
+      var populationOptions = {root:typeof GM !== 'undefined' ? GM : {}, region:liveDivision || (r && r.id), factionId:ownerKey(r)};
+      if (renderBatch) populationOptions.leafGroups = batchLeafGroups();
+      popView = HujiEngine.getPopulationView(populationOptions);
       if (popView.displayBasis === 'registered') {
         pop = Object.assign({},pop,{mouths:popView.mouths,households:popView.households,ding:popView.ding,actualMouths:popView.actualMouths,taxableMouths:popView.taxableMouths,taxableHouseholds:popView.taxableHouseholds});
         data.population = pop.mouths;
@@ -1201,6 +1228,9 @@
   }
 
   function renderRegionBook(r){
+    return withRenderBatch(function(){ return renderRegionBookNow(r); });
+  }
+  function renderRegionBookNow(r){
     var b = regionBundle(r);
     var data = b.data || {};
     var econ = data.economyBase || {};
@@ -1434,7 +1464,11 @@
       bkJianqian(live.map(function(j){ return [j[0], j[4]]; })) +
       '<div class="bk-straddle"><i>验讫</i></div>';
   }
+  // 开册入口整段放进同一个渲染批次：开册前的归属扫描与后面的渲染共用同一批地块读数
   function openRegionDossier(r){
+    return withRenderBatch(function(){ return openRegionDossierNow(r); });
+  }
+  function openRegionDossierNow(r){
     if (!r) return;
     var id = String(r.id || r.name || r.title || '');
     state.mapPanelTab = MAP_MODE_META[state.mapPanelTab] ? state.mapPanelTab : 'overview';
@@ -1711,6 +1745,9 @@
     return html;
   }
   function renderFactionBook(f, key, r){
+    return withRenderBatch(function(){ return renderFactionBookNow(f, key, r); });
+  }
+  function renderFactionBookNow(f, key, r){
     var p = factionProfile(f, key, r);
     var name = firstValue(f.label, f.name, f.scenarioFactionName, r && ownerName(r), key, '未名势力');
     var attitudeObj = f.attitude && typeof f.attitude === 'object' ? f.attitude : null;
@@ -1858,6 +1895,9 @@
       '<div class="bk-straddle"><i>验讫</i></div>';
   }
   function openFactionDossier(key, region){
+    return withRenderBatch(function(){ return openFactionDossierNow(key, region); });
+  }
+  function openFactionDossierNow(key, region){
     var map = getMapData() || {};
     var f = findFaction(key, region && (region.factionName || region.ownerName)) || {};
     var r = region || factionControlledRegions(key, f)[0] || ((map.regions || []).find(function(x){ return ownerKey(x) === key; }) || null);
@@ -2087,6 +2127,9 @@
   }
 
   function renderCircuitBook(circuit, clickedRegion){
+    return withRenderBatch(function(){ return renderCircuitBookNow(circuit, clickedRegion); });
+  }
+  function renderCircuitBookNow(circuit, clickedRegion){
     var MC = circuitApi();
     var viewer = circuitViewer(circuit, clickedRegion);
     var split = MC.partitionByOwner(circuit, viewer.owner);
@@ -2144,6 +2187,9 @@
 
   // 打开通志：key 可以是省道 key，也可以直接给一个府州（开它所属的省道）
   function openCircuitDossier(keyOrRegion, clickedRegion){
+    return withRenderBatch(function(){ return openCircuitDossierNow(keyOrRegion, clickedRegion); });
+  }
+  function openCircuitDossierNow(keyOrRegion, clickedRegion){
     var circuit = findCircuit(keyOrRegion);
     if (!circuit) {
       if (typeof toast === 'function') toast(circuitApi() && window.TMMapRealmLayout ? '此地未隶正式省道' : '舆图分组尚未就绪');
@@ -2490,6 +2536,7 @@
 
   // ── 回填 origin forward shim 目标（5 函数）──
   __p.regionBundle = regionBundle;
+  __p.withRenderBatch = withRenderBatch;
   __p.openRegionDossier = openRegionDossier;
   __p.openFactionDossier = openFactionDossier;
   __p.closeMapDossier = closeMapDossier;

@@ -149,3 +149,7 @@ web/tm-three-systems-ui.js whitespace=blank-at-eol,blank-at-eof,space-before-tab
 "docs/scenario-data-repair-20260924/sources/p1b2/raw/東西洋考_卷七.wiki" -whitespace
 web/scripts/verify-all.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 web/tm-fiscal-engine.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/README.md whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/scope.md whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/verification.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/conflict-resolutions.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

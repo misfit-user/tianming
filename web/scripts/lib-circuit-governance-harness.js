@@ -15,8 +15,11 @@ async function boot(sid) {
   assert(end >= 0, '开局 helper 边界存在');
   const helpers = new Function('require', 'process', '__dirname', '__filename', 'module', 'exports',
     source.slice(0, end) + '\nreturn { loadGame };')(require, process, __dirname, helperFile, { exports: {} }, {});
+  const begin = Date.now();
   const context = helpers.loadGame(sid);
+  console.log('[boot] scripts=' + ((Date.now() - begin) / 1000).toFixed(3) + 's');
   vm.runInContext(`P.ai.key='';P.ai.url='';P.ai.model='';doActualStart(${JSON.stringify(sid)})`, context, { timeout: 120000 });
+  console.log('[boot] start=' + ((Date.now() - begin) / 1000).toFixed(3) + 's');
   await new Promise(resolve => setTimeout(resolve, 300));
   vm.runInContext(fs.readFileSync(path.join(WEB, 'tm-map-realm-layout.js'), 'utf8'), context, { filename: 'tm-map-realm-layout.js' });
   const gm = context.GM, parts = context.TMPhase8FormalBridge.__p8MapParts, MC = context.TM.MapCircuits;
@@ -51,6 +54,34 @@ function snapshot(gm) {
 function assertReadOnly(world) {
   const { gm, api, division, circuits, owner, context } = world;
   const before = snapshot(gm);
+  gm.mapData.regions.forEach(region => assert.equal(api.isPlayerRegion(gm, region), partsPlayer(region), '全图本方判定：' + region.name));
+  // 通志公开的判定须逐块一致，若数据口径不符则立即失败。
+  function partsPlayer(region) { return world.parts.isPlayerRegion(region); }
+  const dataCircuits = api.playerCircuits(gm);
+  assert.deepEqual(Array.from(dataCircuits, row => row.key).sort(), Array.from(circuits, row => row.key).sort());
+  dataCircuits.forEach(circuit => {
+    const member = circuit.members.find(row => api.isPlayerRegion(gm, row.region));
+    const ownerKey = division.ownerKeyOf(member.region);
+    const mapCircuit = circuits.find(row => row.key === circuit.key);
+    assert.equal(JSON.stringify(api.governorOf(gm, circuit, ownerKey)), JSON.stringify(api.governorOf(gm, mapCircuit, owner)), '数据层与通志长官全等：' + circuit.label);
+  });
+  api.governorPositions(gm);
+  const routes = context.TM.MapRouteDays;
+  if (routes) {
+    const examples = [];
+    dataCircuits.forEach(circuit => {
+      if (examples.length === 3) return;
+      const own = circuit.members.map(row => row.region).filter(region => api.isPlayerRegion(gm, region));
+      const view = api.governorOf(gm, circuit, division.ownerKeyOf(own[0]));
+      const seat = gm.mapData.regions.find(region => String(region.id) === view.seatRegionId);
+      if (!seat || own.length < 3) return;
+      const trips = own.map(region => ({ name: region.name, ...routes.daysBetween(gm.mapData, seat, region) }));
+      const farthest = trips.slice().sort((a, b) => b.days - a.days)[0];
+      examples.push({ circuit: circuit.label, seat: seat.name, farthest: farthest.name, days: farthest.days, estimated: trips.filter(row => row.estimated).length, regions: own.length });
+    });
+    assert.equal(examples.length, 3, '三道驻地路程样例齐全');
+    console.log('[circuit-routes] ' + JSON.stringify(examples));
+  }
   const batch = api.listGovernors(gm, circuits, owner);
   circuits.forEach((circuit, i) => {
     const node = division.circuitAdminNode(gm, circuit.key, owner);

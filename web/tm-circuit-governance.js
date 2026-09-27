@@ -119,7 +119,7 @@
     var ch = view.holderName && ((gm && gm.chars) || []).filter(function (c) { return c && c.name === view.holderName; })[0];
     var duty = typeof root.officeDutyView === 'function' ? root.officeDutyView(gm, position) : null;
     if (duty) { view.fulfillment = duty.fulfillment; view.band = duty.band; }
-    if (!ch) { view.status = 'vacant'; return view; }
+    if (!ch || ch.alive === false || ch.dead === true) { view.status = 'vacant'; return view; }
     view.status = ch._travelTo && ch._travelRemainingDays > 0 ? 'travelling' : 'serving';
     view.travelDaysLeft = view.status === 'travelling' ? Number(ch._travelRemainingDays) : null;
     view.ability = duty ? duty.capacity : null;
@@ -137,5 +137,43 @@
     return (circuits || []).map(function (circuit) { return governorView(gm, circuit, ownerKey, index); });
   }
 
-  return { resolveGovernorPosition: resolveGovernorPosition, governorOf: governorOf, listGovernors: listGovernors };
+  // 本方名称只取玩家配置，与现有通志的势力名称源一致。
+  function playerFactionName(gm) {
+    return (root.P && root.P.playerInfo && root.P.playerInfo.factionName) || '';
+  }
+
+  // 先解析势力 id，再兼容按名称记归属的地图；只读既有势力登记。
+  function isPlayerRegion(gm, region) {
+    if (!region) return false;
+    var owner = region.currentOwner || region.owner || region.factionId;
+    var membership = root.TM && root.TM.FactionMembership;
+    var faction = membership && typeof membership.findFacById === 'function' ? membership.findFacById(owner) : null;
+    if (!faction) faction = ((gm && gm.facs) || []).find(function (fac) { return fac.name === owner; });
+    return (faction ? faction.name : owner) === playerFactionName(gm);
+  }
+
+  // 直接用地图登记组装省道，保留完整成员与 entry，供驻地和长官读口复用。
+  function playerCircuits(gm) {
+    var map = gm && gm.mapData || {}, regions = map.regions || [];
+    return (map.circuitRegistry || []).map(function (entry) {
+      var ids = new Set((entry.memberRegionIds || []).map(text));
+      return { key: text(entry.key || entry.id), label: entry.name, entry: entry,
+        members: regions.filter(function (region) { return ids.has(text(region.id)); }).map(function (region) { return { region: region }; }) };
+    }).filter(function (circuit) { return circuit.members.some(function (member) { return isPlayerRegion(gm, member.region); }); });
+  }
+
+  // 全国履职结算每次调用前取一次集合，职位身份直接复用运行态对象。
+  function governorPositions(gm) {
+    var positions = new Set(), division = root.TM && root.TM.DivisionReassign, index = officeIndex(gm);
+    if (!division) return positions;
+    playerCircuits(gm).forEach(function (circuit) {
+      var member = circuit.members.find(function (item) { return isPlayerRegion(gm, item.region); });
+      var node = division.circuitAdminNode(gm, circuit.key, division.ownerKeyOf(member.region));
+      var binding = resolveIndexed(index, node);
+      if (binding) positions.add(binding.position);
+    });
+    return positions;
+  }
+
+  return { playerFactionName: playerFactionName, isPlayerRegion: isPlayerRegion, playerCircuits: playerCircuits, governorPositions: governorPositions, resolveGovernorPosition: resolveGovernorPosition, governorOf: governorOf, listGovernors: listGovernors };
 });

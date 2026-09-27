@@ -75,6 +75,44 @@
     };
   }
 
+  // 已推进或赴任冻结时只读当前履职，未初始化的职位仍按原起点五十返回。
+  function _currentPosition(p, F) {
+    var ds = p && p._dutyState;
+    var value = ds && typeof ds.fulfillment === 'number' ? ds.fulfillment : 50;
+    return { prev: value, next: value, band: value < F.lowBand ? 'low' : value > F.highBand ? 'high' : 'mid', ticked: false };
+  }
+
+  // 原单职位推进段原样抽取，域效果继续由全国或省道调用方分别计算。
+  function _advancePosition(GM, p, F, turn, pwKeys) {
+    var ds = p._dutyState || (p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
+    if (ds.lastTurn === turn) return _currentPosition(p, F); // 本回合已 tick·防重复施加
+
+    var ch = _holderChar(GM, p);
+    var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
+    var delta;
+    if (!ch) {
+      delta = -F.vacancyDecay;                     // 出缺·快衰
+    } else {
+      delta = (_capacity(ch, pwKeys) - prev) * F.driftRate;  // 在任·漂向承载力
+    }
+    var next = _clamp(prev + delta, 0, 100);
+    ds.fulfillment = next;
+    ds.trend = next > prev + 0.5 ? 'rising' : next < prev - 0.5 ? 'falling' : 'stable';
+    ds.lastTurn = turn;
+
+    // 域效果（带 × power·仅 v1 已接杠杆）
+    var band = next < F.lowBand ? 'low' : next > F.highBand ? 'high' : 'mid';
+    return { prev: prev, next: next, band: band, ticked: true };
+  }
+
+  // 单职位不作主官、掌权过滤；赴任冻结时连履职态的初始化也不写。
+  function tickDutyPosition(GM, position, opts) {
+    opts = opts || {};
+    var F = opts.force || DEFAULT_FORCE;
+    if (!GM || !position || opts.frozen === true) return _currentPosition(position, F);
+    return _advancePosition(GM, position, F, GM.turn != null ? GM.turn : 0, _powersOf(position));
+  }
+
   /**
    * 每回合 tick：更新各主官/掌权官职 _dutyState，返回本回合应施加的对称域效果。
    * @param {object} GM 需 GM.officeTree / GM.chars / GM.turn
@@ -89,26 +127,12 @@
     var turn = (GM.turn != null) ? GM.turn : 0;
 
     _walk(GM.officeTree, function (p, deptName) {
+      if (typeof opts.skip === 'function' && opts.skip(p)) return;
       var pwKeys = _powersOf(p);
       if (!pwKeys.length && !_isHead(p)) return;     // 同舆图过滤：只主官/掌权
-      var ds = p._dutyState || (p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
-      if (ds.lastTurn === turn) return;              // 本回合已 tick·防重复施加
-
-      var ch = _holderChar(GM, p);
-      var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
-      var delta;
-      if (!ch) {
-        delta = -F.vacancyDecay;                     // 出缺·快衰
-      } else {
-        delta = (_capacity(ch, pwKeys) - prev) * F.driftRate;  // 在任·漂向承载力
-      }
-      var next = _clamp(prev + delta, 0, 100);
-      ds.fulfillment = next;
-      ds.trend = next > prev + 0.5 ? 'rising' : next < prev - 0.5 ? 'falling' : 'stable';
-      ds.lastTurn = turn;
-
-      // 域效果（带 × power·仅 v1 已接杠杆）
-      var band = next < F.lowBand ? 'low' : next > F.highBand ? 'high' : 'mid';
+      var advanced = _advancePosition(GM, p, F, turn, pwKeys);
+      if (!advanced.ticked) return;
+      var next = advanced.next, band = advanced.band;
       if (band === 'mid') return;
       var did = {};   // 每杠杆每官最多记一次（防 supervise+impeach 同署双扣腐败）
       pwKeys.forEach(function (k) {
@@ -155,7 +179,8 @@
   }
 
   global.officeDutyView = officeDutyView;
+  global.tickDutyPosition = tickDutyPosition;
   global.tickOfficeDutyState = tickOfficeDutyState;
   global.applyNpcActionToDuty = applyNpcActionToDuty;
-  if (typeof module !== 'undefined' && module.exports) module.exports = { officeDutyView: officeDutyView, tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { tickDutyPosition: tickDutyPosition, officeDutyView: officeDutyView, tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

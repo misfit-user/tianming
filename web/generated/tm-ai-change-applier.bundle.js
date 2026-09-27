@@ -5280,7 +5280,14 @@
     function _applyOfficeDutyTick(G) {
       if (typeof officeFlagOn !== "function" || !officeFlagOn("officeDutyStateEnabled")) return;
       if (typeof tickOfficeDutyState !== "function") return;
-      var agg = tickOfficeDutyState(G);
+      var opts = {}, effects = global.TM && global.TM.CircuitGovernorEffects;
+      if (effects && effects.enabled() && global.TM.CircuitGovernance) {
+        var governors = global.TM.CircuitGovernance.governorPositions(G);
+        opts.skip = function(p) {
+          return governors.has(p);
+        };
+      }
+      var agg = tickOfficeDutyState(G, opts);
       if (!agg || !agg.compliance && !agg.corruption) return;
       var FE = typeof window !== "undefined" && window.FiscalEngine || typeof global !== "undefined" && global.FiscalEngine || null;
       var _P = typeof window !== "undefined" && window.P || typeof global !== "undefined" && global.P || null;

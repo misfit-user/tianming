@@ -190,7 +190,9 @@ setTimeout(async () => {
       assert.match(d.cls, /circuit-panel/);
       assert.ok(d.html.includes('通 志'), '册页种类是通志');
       assert.ok(d.html.includes('bk-crumbs') && d.html.includes('北直隶'), '页头有层级路径');
-      assert.ok(d.html.includes('顺天巡抚') && d.html.includes('刘诏'), '长官卡取自省道档案');
+      // 长官姓名随剧本数据（数据线补主官后北直隶现任会变），按本方省道节点上的官衔与姓名核
+      const head = JSON.parse(run('JSON.stringify((function(){ var n = TM.DivisionReassign.circuitAdminNode(GM, __circuit.key, TM.DivisionReassign.ownerKeyOf(__shuntian)); return { post: n.officialPosition, who: n.governor }; })())'));
+      assert.ok(head.post && head.who && d.html.includes(head.post) && d.html.includes(head.who), '长官卡取自本方省道档案');
       assert.ok(d.html.includes('治所 <b>顺天府</b>'), '治所可点开其方志');
     });
 

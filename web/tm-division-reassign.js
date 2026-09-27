@@ -339,6 +339,7 @@
     plan: plan,
     apply: apply,
     circuitAdminNode: circuitAdminNode,
+    ownerKeyOf: ownerOf,
     targetsFor: targetsFor,
     movable: movable,
     circuitOfRegion: function (regionRef, opts) {

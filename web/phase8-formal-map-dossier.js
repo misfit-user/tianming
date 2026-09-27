@@ -1230,6 +1230,36 @@
   function renderRegionBook(r){
     return withRenderBatch(function(){ return renderRegionBookNow(r); });
   }
+  // 修正量统一保留一位小数，负值使用减号，零值保留正号。
+  function governorSigned(value, percent){
+    return (value >= 0 ? '+' : '−') + Math.abs(value * (percent ? 100 : 1)).toFixed(1) + (percent ? '%' : '');
+  }
+
+  // 方志上官签只读现任与本道账本，州主官仍由原有小签显示。
+  function regionSuperiorPill(r, bundle){
+    var governance = window.TM && TM.CircuitGovernance, effects = window.TM && TM.CircuitGovernorEffects;
+    var division = window.TM && TM.DivisionReassign, circuit = findCircuit(r);
+    if (!governance || !division || !circuit || !governance.isPlayerRegion(GM, r)) return '';
+    var gov = governance.governorOf(GM, circuit, division.ownerKeyOf(r));
+    if (['serving', 'vacant', 'travelling'].indexOf(gov.status) < 0) return '';
+    var ledger = GM.circuitGovernance, row = ledger && ledger.byCircuit[circuit.key];
+    var status = gov.status === 'travelling' ? 'travelling' : row && row.status === 'seatLost' ? 'seatLost' : gov.status;
+    var ids = [r.adminBinding].concat(r.accountingLeafIds || [], [r.id, bundle.liveDivision && bundle.liveDivision.id]);
+    var leaf = null;
+    ids.some(function(id){ var hit = ledger && ledger.byLeaf[id]; if (hit && hit.circuitKey === circuit.key) { leaf = hit; return true; } return false; });
+    var who = gov.status === 'vacant' ? '出缺' : (gov.holderName || '出缺');
+    var role = gov.position.name, tail = '', title = [role + ' ' + who, '本道 ' + circuit.label];
+    if (effects && !effects.enabled()) tail = ' · 长官之效已关';
+    else if (status === 'travelling') tail = ' · 赴任中';
+    else if (status === 'seatLost') tail = ' · 首府失守';
+    else if (leaf) {
+      tail = ' · 距驻地 ' + leaf.days + ' 日' + (leaf.estimated ? '（估程）' : '') + ' · 执行 ' + governorSigned(leaf.exec, true);
+      title.push('距驻地 ' + leaf.days + ' 日', '本州执行率修正 ' + governorSigned(leaf.exec, true));
+      if (row && Number.isFinite(row.corrMonthly) && Number.isFinite(leaf.R)) title.push('腐败每月 ' + governorSigned(row.corrMonthly * leaf.R, false));
+    }
+    return '<span class="bk-pill sup" title="' + attr(title.join(' · ')) + '">上官 <b>' + esc(role + ' ' + who) + '</b><small>' + esc(tail) + '</small></span>';
+  }
+
   function renderRegionBookNow(r){
     var b = regionBundle(r);
     var data = b.data || {};
@@ -1266,6 +1296,7 @@
           var adm = (gc && hasDisplayValue(gc.administration)) ? ' <span style="opacity:.65;font-size:0.92em;">政' + esc(gc.administration) + '</span>' : '';
           return '<span class="bk-pill" title="' + op + ' · 当任主官">' + op + ' <b>' + esc(gn) + '</b>' + adm + '</span>';
         })(),
+        regionSuperiorPill(r, b),
         hasDisplayValue(firstValue(data.terrain, r && r.terrain)) ? '<span class="bk-pill">' + esc(bkTerrainText(firstValue(data.terrain, r && r.terrain))) + '</span>' : '',
         hasDisplayValue(data.taxLevel) ? '<span class="bk-pill">税 <b>' + esc(data.taxLevel) + '</b></span>' : ''
       ]
@@ -2124,6 +2155,19 @@
     return head + groups;
   }
 
+  // 通志只呈现本道最近一次结算；赴任、失守与关闭分别显示指定文案。
+  function circuitGovernorEffect(gov, circuit){
+    if (gov.status === 'note' || gov.status === 'unbound') return '';
+    var effects = window.TM && TM.CircuitGovernorEffects;
+    var row = GM.circuitGovernance && GM.circuitGovernance.byCircuit[circuit.key], text;
+    if (effects && !effects.enabled()) text = '设置中已关闭';
+    else if (gov.status === 'travelling') text = '赴任未到，暂无长官之效';
+    else if (row && row.status === 'seatLost') text = '首府不在本方，暂无长官之效';
+    else if (!row) text = '下一回合起生效';
+    else text = '执行率 均 ' + governorSigned(row.execAvg || 0, true) + ' · 吏治 每月 ' + governorSigned(row.corrMonthly || 0, false) + '（近驻地，远者递减）';
+    return '<span class="bk-gov-eff">本道之效 <b>' + esc(text) + '</b></span>';
+  }
+
   // 通志长官卡优先读取现任绑定；旧装载环境缺模块时保留原档案写法。
   function circuitOfficialCard(profile, own, sum, circuit, viewer){
     var governance = window.TM && TM.CircuitGovernance;
@@ -2145,7 +2189,7 @@
           (seat ? '<span class="gv">驻 <b>' + esc(regionTitle(seat)) + '</b></span>' : '') + '</span>';
       }
       var line = gov.status === 'note' ? '本道无单一主官，不计长官之效' : '统辖本道 ' + sum.count + ' 府州；' + subs;
-      return '<div class="bk-circuit-official"><span class="role">' + esc(role) + '</span><b>' + esc(who) + '</b>' + details +
+      return '<div class="bk-circuit-official"><span class="role">' + esc(role) + '</span><b>' + esc(who) + '</b>' + details + circuitGovernorEffect(gov, circuit) +
         '<span class="line">' + esc(line) + '</span></div>';
     }
     if (!hasDisplayValue(profile.officialPosition) && !hasDisplayValue(profile.title)) return '';
@@ -2583,6 +2627,7 @@
   __p.clickTier = clickTier;   // 地图签注按它判断页脚要不要重画（设置里切换左键层级后即时跟上）
   // 方志轻调（S4）：页脚诏书动作
   __p.regionAction = regionAction;
+  __p.isPlayerRegion = isPlayerRegion;
   // 改隶（S6）：入口只生成诏书建议
   __p.reassignSuggest = reassignSuggest;
   __p.regionReassignPanel = regionReassignPanel;

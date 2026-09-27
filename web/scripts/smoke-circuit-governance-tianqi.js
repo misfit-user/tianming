@@ -14,19 +14,25 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
   const position = binding.position, character = gm.chars.find(ch => ch.name === position.holder);
   const before = snapshot(gm);
 
-  check('北直隶按名绑定刘诏，显式路径优先，错误路径回落', () => {
+  // 数据线补 governorOffice 之前按官衔兜底绑到刘诏；补上之后按显式路径绑到数据写明的现任。两种状态都要成立。
+  const authored = !!node.governorOffice;
+  check('北直隶绑定：未补数据按官衔兜底，补了按显式路径；错误路径回落兜底', () => {
     const initial = api.governorOf(gm, circuit, owner);
-    assert.equal(initial.position.name, '顺天巡抚(北直隶)');
-    assert.equal(initial.holderName, '刘诏');
     assert.equal(initial.status, 'serving');
-    assert.equal(initial.source, 'name');
-    withFields(node, { governorOffice: '地方督抚/顺天巡抚(北直隶)' }, () => {
+    assert.equal(initial.source, authored ? 'governorOffice' : 'name');
+    if (!authored) { assert.equal(initial.position.name, '顺天巡抚(北直隶)'); assert.equal(initial.holderName, '刘诏'); }
+    assert.equal(initial.holderName, position.holder);
+    assert(gm.chars.some(ch => ch.name === initial.holderName && ch.alive !== false), '现任在人物表里且在世');
+    withFields(node, { governorOffice: binding.dept + '/' + position.name }, () => {
       const explicit = api.governorOf(gm, circuit, owner);
       assert.equal(explicit.source, 'governorOffice');
-      assert.equal(JSON.stringify({ ...explicit, source: 'name' }), JSON.stringify(initial));
+      assert.equal(JSON.stringify({ ...explicit, source: initial.source }), JSON.stringify(initial));
     });
     withFields(node, { governorOffice: '不存在的部门/不存在的职位' }, () => {
-      assert.equal(JSON.stringify(api.governorOf(gm, circuit, owner)), JSON.stringify(initial), '错误路径继续按名兜底');
+      const fallback = api.governorOf(gm, circuit, owner);
+      assert.notEqual(fallback.source, 'governorOffice', '错误路径不算显式绑定');
+      if (!authored) assert.equal(JSON.stringify(fallback), JSON.stringify(initial), '错误路径继续按名兜底');
+      else if (fallback.position) assert.equal(fallback.holderName, initial.holderName, '兜底找到的仍是同一位现任');
     });
   });
 
@@ -66,6 +72,13 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
     });
   });
 
+  check('亡故人物按出缺读取，不再显示能力', () => {
+    [{ alive: false }, { dead: true }].forEach(fields => withFields(character, fields, () => {
+      const view = api.governorOf(gm, circuit, owner);
+      assert.equal(view.status, 'vacant'); assert.equal(view.ability, null);
+    }));
+  });
+
   check('分镇优先，说明转义，不显示能力与履职栏', () => {
     withFields(node, { governanceNote: '分镇', governanceDetail: '<各镇>&分治' }, () => {
       const view = api.governorOf(gm, circuit, owner), card = officialCard(world, circuit);
@@ -92,12 +105,13 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
     const view = api.governorOf(gm, circuit, owner), duty = context.officeDutyView(gm, position);
     assert.equal(view.ability, duty.capacity);
     const card = officialCard(world, circuit);
-    assert(card.startsWith('<div class="bk-circuit-official"><span class="role">顺天巡抚(北直隶)</span><b>刘诏</b><span class="bk-gov">'));
+    assert(card.startsWith('<div class="bk-circuit-official"><span class="role">' + view.position.name + '</span><b>' + view.holderName + '</b><span class="bk-gov">'));
     assert(card.includes('<span class="gv">能力 <b>' + Math.round(duty.capacity) + '</b></span>'));
     assert(card.includes('<span class="gv">在任</span>'));
     assert(card.includes('<span class="gv">驻 <b>顺天府</b></span>'));
     assert(card.includes('<span class="line">统辖本道 11 府州；下辖各州主官'));
-    assert(!card.includes('本道之效'));
+    assert(card.includes('本道之效'));
+    assert(card.includes('下一回合起生效'));
     for (const [fulfillment, band, label] of [[34, 'low', '失职'], [35, 'mid', '平平'], [70, 'mid', '平平'], [71, 'high', '称职']]) {
       withFields(position, { _dutyState: { fulfillment } }, () => {
         const current = api.governorOf(gm, circuit, owner);
@@ -111,7 +125,7 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
       assert(!officialCard(world, circuit).includes('履职 <b>'));
     });
     withFields(context.TM, { CircuitGovernance: undefined }, () => {
-      assert(officialCard(world, circuit).includes('刘诏'), '缺模块退回原档案');
+      assert(officialCard(world, circuit).includes(node.governor), '缺模块退回原档案');
     });
   });
 

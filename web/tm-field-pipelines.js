@@ -70,6 +70,13 @@
       rate -= lag;
       parts.push('驿路阻滞 −' + Math.round(lag * 100) + '%（驿站 ' + (isFinite(post) ? post : '—') + ' · 道路 ' + (isFinite(road) ? road : '—') + '）');
     }
+    // 省道履职单列上官修正，不覆写地方原有执行率底数。
+    var effects = typeof window !== 'undefined' && window.TM && window.TM.CircuitGovernorEffects;
+    var governor = typeof GM !== 'undefined' && GM && GM.circuitGovernance && GM.circuitGovernance.byLeaf[div.id];
+    if (effects && effects.enabled() && governor && Number.isFinite(governor.exec)) {
+      rate += governor.exec;
+      parts.push('上官修正 ' + (governor.exec >= 0 ? '+' : '−') + Math.abs(governor.exec * 100).toFixed(1) + '%（' + (governor.holder || '出缺') + '·距驻地 ' + governor.days + ' 日' + (governor.estimated ? '·估程' : '') + '）');
+    }
     rate = clamp(rate, 0.3, 1);
     return { rate: round2(rate), parts: parts };
   }

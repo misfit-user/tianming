@@ -19,7 +19,9 @@ function ok(c, m) { if (c) pass++; else { fail++; console.log('  ✗ FAIL: ' + m
 // ════════ 一·②③④ 接线源契约（flag 门控 + 真被调用·非仅定义）════════
 const applierSrc = fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/core.js'), 'utf8') + '\n' +
   fs.readFileSync(path.join(ROOT, 'modules/ai-change-applier/reconcile.js'), 'utf8');
-ok(/officeFlagOn\('officeDutyStateEnabled'\)[\s\S]{0,200}tickOfficeDutyState\(G\)/.test(applierSrc), '②_applyOfficeDutyTick flag门控调 tickOfficeDutyState');
+// 省道剔除新增 opts，按函数前半段核接线，不再假定门控到调用只有二百字符。
+const dutyTickSrc = applierSrc.slice(applierSrc.indexOf('function _applyOfficeDutyTick(G)'), applierSrc.indexOf('    if (!agg ||'));
+ok(/officeFlagOn\('officeDutyStateEnabled'\)/.test(dutyTickSrc) && /tickOfficeDutyState\(G, opts\)/.test(dutyTickSrc), '②_applyOfficeDutyTick flag门控调 tickOfficeDutyState');
 ok(/try \{ _applyOfficeDutyTick\(G\); \}/.test(applierSrc), '②_applyOfficeDutyTick 每回合被调用(非仅定义)');
 ok(/adjustPlayerCompliance\(pFac, agg\.compliance/.test(applierSrc) && /adjustPlayerDivisionCorruption\(pFac, agg\.corruption/.test(applierSrc), '②delta 真施加到 FE 实征率/腐败');
 ok(/amount = _applyTaxAuthorityGate\(G, fa, amount\)/.test(applierSrc), '③_applyTaxAuthorityGate 真接税入循环(applier:1645)');

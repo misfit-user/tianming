@@ -561,6 +561,31 @@ window._tmSetMapClickTier = function(want, btn){
   }
 };
 
+// 省道履职开关沿用通用设置写口与同组按钮高亮。
+window._tmSetCircuitGovernor = function(want, btn){
+  if (typeof _togglePConf !== 'function') return;
+  _togglePConf('circuitGovernorEffects', !!want);
+  if (btn && btn.parentElement) {
+    var sib = btn.parentElement.children;
+    for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
+    btn.classList.remove('bs'); btn.classList.add('bp');
+  }
+};
+
+// 力度只接收三档，存档和提示沿用现有并发设置的写法。
+window._tmSetCircuitGovernorStrength = function(v, btn){
+  if (['light', 'normal', 'strong'].indexOf(v) < 0 || typeof P === 'undefined' || !P) return;
+  if (!P.conf) P.conf = {}; // arch-ok 设置面板 setter 惯例初始化·同 _setAiSubcallConcurrency
+  P.conf.circuitGovernorStrength = v; // arch-ok 玩家设置项写入·只收三档·同档既有 setter 范式
+  if (typeof saveP === 'function') saveP();
+  if (typeof toast === 'function') toast('✅ 省道长官力度设为 ' + ({ light: '轻', normal: '中', strong: '强' })[v]);
+  if (btn && btn.parentElement) {
+    var sib = btn.parentElement.children;
+    for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
+    btn.classList.remove('bs'); btn.classList.add('bp');
+  }
+};
+
 // ── 服务商预设（2026-07-10·13 家 OpenAI 兼容 + 自定义）─────────────────
 // 选中只自动填地址（2026-07-11 owner 拍板：Model_ID 玩家自填·示例仅作文字提示·model 字段只供提示文案引用）。
 // 请求格式无须在此区分——
@@ -660,6 +685,17 @@ openSettings=function(){
       var pillTier = function(want, label){ var on = (_tierOn === want); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetMapClickTier(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
       h += '<div style="font-size:calc(0.78 * 1rem);color:var(--txt-d);margin:0.6rem 0 0.4rem;">舆图点击·左键随地图层级开册页（天下开谱牒、省道开通志、府州开方志），或照旧一律开方志；右键总有三级小菜单</div>' +
         '<div style="display:flex;gap:0.3rem;">' + pillTier(true, '随层级') + pillTier(false, '一律方志') + '</div>';
+      var _governorOn = !(P.conf && P.conf.circuitGovernorEffects === false);
+      // 开关按钮沿用本节 pill 的类名、间距与选中状态。
+      var pillGovernor = function(want, label){ var on = (_governorOn === want); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetCircuitGovernor(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
+      h += '<div style="font-size:calc(0.78 * 1rem);color:var(--txt-d);margin:0.6rem 0 0.4rem;">省道长官履职·各道主官的称职与失职只作用本道，离驻地越远越弱；关掉则不计长官之效</div>' +
+        '<div style="display:flex;gap:0.3rem;">' + pillGovernor(true, '开启') + pillGovernor(false, '关闭') + '</div>';
+      var _governorStrength = P.conf && P.conf.circuitGovernorStrength;
+      if (['light', 'normal', 'strong'].indexOf(_governorStrength) < 0) _governorStrength = 'normal';
+      // 力度按钮只展示约定三档，未知旧值默认中档。
+      var pillGovernorStrength = function(v, label){ var on = (_governorStrength === v); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetCircuitGovernorStrength(\'' + v + '\',this)" style="flex:1;">' + label + '</button>'; };
+      h += '<div style="font-size:calc(0.78 * 1rem);color:var(--txt-d);margin:0.6rem 0 0.4rem;">省道长官力度·执行率每月至多 ±1.5% / ±3% / ±6%，腐败每月至多 ±0.4 / ±0.8 / ±1.6</div>' +
+        '<div style="display:flex;gap:0.3rem;">' + pillGovernorStrength('light', '轻') + pillGovernorStrength('normal', '中') + pillGovernorStrength('strong', '强') + '</div>';
       return h + '</div>';
     })()+
     // 御驾亲征·战术战斗(接入 Phase2·开关 GM._yujiaQinzheng·本局存档生效)+他方战事旁观(O12·GM._yujiaObserve)

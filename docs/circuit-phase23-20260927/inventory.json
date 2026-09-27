@@ -1,0 +1,5937 @@
+[
+  {
+    "file": "天启七年·九月（官方）.json",
+    "id": "sc-tianqi7-1627",
+    "registry": 43,
+    "scopeRows": 43,
+    "playerCircuits": 18,
+    "playerNamed": 18,
+    "playerChars": 4,
+    "playerOfficeCandidates": 4,
+    "playerCapital": 18,
+    "allNamed": 43,
+    "allChars": 10,
+    "buildingTypes": 29,
+    "builtNodes": 0,
+    "builtNonLeaves": 0,
+    "builtInstances": 0,
+    "rows": [
+      {
+        "key": "cz-province-ming-01",
+        "name": "北直隶",
+        "faction": "player",
+        "adminId": "div_mp3yvbbor3fzw",
+        "governor": "刘诏",
+        "characterId": "char_mp3yvbcakzprq",
+        "title": "顺天巡抚",
+        "capital": "div_pref_ming_01_01",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "顺天巡抚(北直隶)",
+            "holder": "刘诏",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 11,
+        "opening": {
+          "money": 400000,
+          "grain": 800000,
+          "cloth": 60000
+        },
+        "childrenOpening": {
+          "money": 400000,
+          "grain": 800000,
+          "cloth": 60000
+        }
+      },
+      {
+        "key": "cz-province-ming-02",
+        "name": "南直隶",
+        "faction": "player",
+        "adminId": "div_mp3yvbbohzikt",
+        "governor": "毛一鹭",
+        "characterId": "char_mp3yvbcagyzwy",
+        "title": "应天巡抚",
+        "capital": "div_pref_ming_02_01",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "应天巡抚(南直隶)",
+            "holder": "毛一鹭",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 14,
+        "opening": {
+          "money": 800000,
+          "grain": 1500000,
+          "cloth": 200000
+        },
+        "childrenOpening": {
+          "money": 800000,
+          "grain": 1500000,
+          "cloth": 200000
+        }
+      },
+      {
+        "key": "cz-province-ming-03",
+        "name": "浙江",
+        "faction": "player",
+        "adminId": "div_mp3yvbbosdju4",
+        "governor": "潘汝桢",
+        "characterId": "char_mp3yvbcajhgdt",
+        "title": "浙江巡抚",
+        "capital": "div_pref_ming_03_01",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "浙江巡抚",
+            "holder": "潘汝桢",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 11,
+        "opening": {
+          "money": 500000,
+          "grain": 900000,
+          "cloth": 180000
+        },
+        "childrenOpening": {
+          "money": 500000,
+          "grain": 900000,
+          "cloth": 180000
+        }
+      },
+      {
+        "key": "cz-province-ming-04",
+        "name": "福建",
+        "faction": "player",
+        "adminId": "div_mp3yvbbp0ky3x",
+        "governor": "朱一冯",
+        "characterId": null,
+        "title": "福建巡抚",
+        "capital": "div_pref_ming_04_01",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 180000,
+          "grain": 340000,
+          "cloth": 45000
+        },
+        "childrenOpening": {
+          "money": 180000,
+          "grain": 340000,
+          "cloth": 45000
+        }
+      },
+      {
+        "key": "cz-province-ming-06",
+        "name": "广西",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpevmoc",
+        "governor": "毛堪",
+        "characterId": null,
+        "title": "广西巡抚",
+        "capital": "div_pref_ming_06_01",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 60000,
+          "grain": 160000,
+          "cloth": 18000
+        },
+        "childrenOpening": {
+          "money": 60000,
+          "grain": 160000,
+          "cloth": 18000
+        }
+      },
+      {
+        "key": "cz-province-ming-07",
+        "name": "江西",
+        "faction": "player",
+        "adminId": "div_mp3yvbbp4bi0t",
+        "governor": "谢元珧",
+        "characterId": null,
+        "title": "江西巡抚",
+        "capital": "div_pref_ming_07_01",
+        "officeCandidates": [],
+        "leafCount": 13,
+        "opening": {
+          "money": 260000,
+          "grain": 620000,
+          "cloth": 90000
+        },
+        "childrenOpening": {
+          "money": 260000,
+          "grain": 620000,
+          "cloth": 90000
+        }
+      },
+      {
+        "key": "cz-province-ming-08",
+        "name": "湖广",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpk06jz",
+        "governor": "钱希言",
+        "characterId": null,
+        "title": "湖广巡抚",
+        "capital": "div_pref_ming_08_01",
+        "officeCandidates": [],
+        "leafCount": 15,
+        "opening": {
+          "money": 200000,
+          "grain": 720000,
+          "cloth": 65000
+        },
+        "childrenOpening": {
+          "money": 200000,
+          "grain": 720000,
+          "cloth": 65000
+        }
+      },
+      {
+        "key": "cz-province-ming-09",
+        "name": "河南",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpg4464",
+        "governor": "郭增光",
+        "characterId": null,
+        "title": "河南巡抚",
+        "capital": "div_pref_ming_09_01",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 180000,
+          "grain": 520000,
+          "cloth": 55000
+        },
+        "childrenOpening": {
+          "money": 180000,
+          "grain": 520000,
+          "cloth": 55000
+        }
+      },
+      {
+        "key": "cz-province-ming-10",
+        "name": "山西",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpgkntv",
+        "governor": "牟志夔",
+        "characterId": null,
+        "title": "山西巡抚",
+        "capital": "div_pref_ming_10_01",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 220000,
+          "grain": 480000,
+          "cloth": 40000
+        },
+        "childrenOpening": {
+          "money": 220000,
+          "grain": 480000,
+          "cloth": 40000
+        }
+      },
+      {
+        "key": "cz-province-ming-11",
+        "name": "陕西",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpoo72u",
+        "governor": "胡廷宴",
+        "characterId": "char_mp3yvbcadfxg9",
+        "title": "陕西巡抚",
+        "capital": "div_pref_ming_11_01",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "陕西巡抚",
+            "holder": "胡廷宴",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 15,
+        "opening": {
+          "money": 25000,
+          "grain": 35000,
+          "cloth": 4000
+        },
+        "childrenOpening": {
+          "money": 25000,
+          "grain": 35000,
+          "cloth": 4000
+        }
+      },
+      {
+        "key": "cz-province-ming-12",
+        "name": "四川",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpqnzc3",
+        "governor": "尹同皋",
+        "characterId": null,
+        "title": "四川巡抚",
+        "capital": "div_pref_ming_12_01",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 120000,
+          "grain": 380000,
+          "cloth": 50000
+        },
+        "childrenOpening": {
+          "money": 120000,
+          "grain": 380000,
+          "cloth": 50000
+        }
+      },
+      {
+        "key": "cz-province-ming-13",
+        "name": "贵州",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpg4f5s",
+        "governor": "王瑊",
+        "characterId": null,
+        "title": "贵州巡抚",
+        "capital": "div_pref_ming_13_01",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 30000,
+          "grain": 80000,
+          "cloth": 8000
+        },
+        "childrenOpening": {
+          "money": 30000,
+          "grain": 80000,
+          "cloth": 8000
+        }
+      },
+      {
+        "key": "cz-province-ming-14",
+        "name": "云南",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpyqoqt",
+        "governor": "闵洪学",
+        "characterId": null,
+        "title": "云南巡抚",
+        "capital": "div_pref_ming_14_01",
+        "officeCandidates": [],
+        "leafCount": 13,
+        "opening": {
+          "money": 50000,
+          "grain": 140000,
+          "cloth": 15000
+        },
+        "childrenOpening": {
+          "money": 50000,
+          "grain": 140000,
+          "cloth": 15000
+        }
+      },
+      {
+        "key": "cz-province-ming-15",
+        "name": "朵甘思宣慰司",
+        "faction": "player",
+        "adminId": "supp-dokham",
+        "governor": "诸招讨、万户、土官袭替",
+        "characterId": null,
+        "title": "朵甘行都指挥使司 / 宣慰司土官体系",
+        "capital": "div_pref_ming_15_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 148588,
+          "grain": 418000,
+          "cloth": 11400
+        },
+        "childrenOpening": {
+          "money": 148588,
+          "grain": 418000,
+          "cloth": 11400
+        }
+      },
+      {
+        "key": "cz-province-ming-16",
+        "name": "鞑靼土默特部",
+        "faction": "fac-tumed",
+        "adminId": "supp-tumed",
+        "governor": "卜失兔汗",
+        "characterId": "char_supp_boshugtu_tumed",
+        "title": "部盟汗帐",
+        "capital": "div_pref_ming_16_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 112367,
+          "grain": 65000,
+          "cloth": 7800
+        },
+        "childrenOpening": {
+          "money": 112367,
+          "grain": 65000,
+          "cloth": 7800
+        }
+      },
+      {
+        "key": "cz-province-ming-17",
+        "name": "乌思藏宣慰司",
+        "faction": "player",
+        "adminId": "div_mp3yvbbrj19ga",
+        "governor": "(五世达赖未立·此时洛桑嘉措幼)",
+        "characterId": null,
+        "title": "灌顶国师",
+        "capital": "div_pref_ming_17_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 5000,
+          "grain": 10000,
+          "cloth": 1000
+        },
+        "childrenOpening": {
+          "money": 5000,
+          "grain": 10000,
+          "cloth": 1000
+        }
+      },
+      {
+        "key": "cz-province-ming-18",
+        "name": "叶尔羌",
+        "faction": "fac-yarkand",
+        "adminId": "supp-yarkand",
+        "governor": "阿布达勒拉提甫汗",
+        "characterId": "char_supp_abd_latif_yarkand",
+        "title": "叶尔羌汗廷",
+        "capital": "div_pref_ming_18_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 755227,
+          "grain": 836000,
+          "cloth": 22800
+        },
+        "childrenOpening": {
+          "money": 755227,
+          "grain": 836000,
+          "cloth": 22800
+        }
+      },
+      {
+        "key": "cz-province-ming-19",
+        "name": "吐鲁番",
+        "faction": "fac-turpan",
+        "adminId": "supp-turpan",
+        "governor": "察合台系地方伯克",
+        "characterId": null,
+        "title": "地方伯克",
+        "capital": "div_pref_ming_19_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 187961,
+          "grain": 148500,
+          "cloth": 4050
+        },
+        "childrenOpening": {
+          "money": 187961,
+          "grain": 148500,
+          "cloth": 4050
+        }
+      },
+      {
+        "key": "cz-province-ming-20",
+        "name": "哈萨克",
+        "faction": "fac-kazakh",
+        "adminId": "supp-kazakh-core",
+        "governor": "也昔木汗",
+        "characterId": "char_supp_esim_kazakh",
+        "title": "汗国诸玉兹",
+        "capital": "div_pref_ming_20_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 272891,
+          "grain": 170000,
+          "cloth": 20400
+        },
+        "childrenOpening": {
+          "money": 272891,
+          "grain": 170000,
+          "cloth": 20400
+        }
+      },
+      {
+        "key": "cz-province-ming-21",
+        "name": "瓦刺",
+        "faction": "fac-oirat",
+        "adminId": "supp-oirat",
+        "governor": "和硕特、准噶尔、杜尔伯特诸台吉",
+        "characterId": null,
+        "title": "卫拉特诸台吉",
+        "capital": "div_pref_ming_21_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 187278,
+          "grain": 130000,
+          "cloth": 15600
+        },
+        "childrenOpening": {
+          "money": 187278,
+          "grain": 130000,
+          "cloth": 15600
+        }
+      },
+      {
+        "key": "cz-province-ming-22",
+        "name": "后金（盛京辽沈）",
+        "faction": "fac_mp9rsc3f4r9co",
+        "adminId": "div_laterjin_shengjing_liaoshen",
+        "governor": "皇太极亲辖·两黄旗驻防",
+        "characterId": null,
+        "title": "盛京留守贝勒",
+        "capital": "div_pref_ming_22_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 290000,
+          "grain": 860000,
+          "cloth": 66000
+        },
+        "childrenOpening": {
+          "money": 290000,
+          "grain": 860000,
+          "cloth": 66000
+        }
+      },
+      {
+        "key": "cz-province-ming2-22",
+        "name": "苦兀（野人女真）",
+        "faction": "fac-wild-jurchen",
+        "adminId": "supp-kuwu-jurchen",
+        "governor": "苦兀诸酋",
+        "characterId": null,
+        "title": "岛屿部落",
+        "capital": "div_pref_ming2_22_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 12039,
+          "grain": 11250,
+          "cloth": 1350
+        },
+        "childrenOpening": {
+          "money": 12039,
+          "grain": 11250,
+          "cloth": 1350
+        }
+      },
+      {
+        "key": "cz-province-ming-26",
+        "name": "山东",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpu04s4",
+        "governor": "李精白",
+        "characterId": null,
+        "title": "山东巡抚",
+        "capital": "div_pref_ming_26_01",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 240000,
+          "grain": 580000,
+          "cloth": 70000
+        },
+        "childrenOpening": {
+          "money": 240000,
+          "grain": 580000,
+          "cloth": 70000
+        }
+      },
+      {
+        "key": "cz-province-ming2-24",
+        "name": "北海道",
+        "faction": "fac-matsumae-ainu",
+        "adminId": "supp-ezo",
+        "governor": "松前氏与阿伊努诸酋",
+        "characterId": null,
+        "title": "松前藩商权 / 阿伊努诸部",
+        "capital": "div_pref_ming2_24_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 19397,
+          "grain": 71500,
+          "cloth": 1950
+        },
+        "childrenOpening": {
+          "money": 19397,
+          "grain": 71500,
+          "cloth": 1950
+        }
+      },
+      {
+        "key": "cz-province-ming2-25",
+        "name": "九州",
+        "faction": "fac-tokugawa-japan",
+        "adminId": "supp-kyushu",
+        "governor": "岛津、细川、有马等诸藩",
+        "characterId": null,
+        "title": "九州诸藩",
+        "capital": "div_pref_ming2_25_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 3435978,
+          "grain": 3410000,
+          "cloth": 93000
+        },
+        "childrenOpening": {
+          "money": 3435978,
+          "grain": 3410000,
+          "cloth": 93000
+        }
+      },
+      {
+        "key": "cz-province-ming2-26",
+        "name": "四国",
+        "faction": "fac-tokugawa-japan",
+        "adminId": "supp-shikoku",
+        "governor": "蜂须贺、山内等诸藩",
+        "characterId": null,
+        "title": "四国诸藩",
+        "capital": "div_pref_ming2_26_01",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 1003275,
+          "grain": 1155000,
+          "cloth": 31500
+        },
+        "childrenOpening": {
+          "money": 1003275,
+          "grain": 1155000,
+          "cloth": 31500
+        }
+      },
+      {
+        "key": "cz-province-ming2-27",
+        "name": "北哈萨克",
+        "faction": "fac-kazakh",
+        "adminId": "supp-kazakh-north",
+        "governor": "哈萨克诸苏丹",
+        "characterId": null,
+        "title": "北部玉兹牧地",
+        "capital": "div_pref_ming2_27_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 146941,
+          "grain": 105000,
+          "cloth": 12600
+        },
+        "childrenOpening": {
+          "money": 146941,
+          "grain": 105000,
+          "cloth": 12600
+        }
+      },
+      {
+        "key": "cz-province-ming2-28",
+        "name": "东哈萨克",
+        "faction": "fac-kazakh",
+        "adminId": "supp-kazakh-east",
+        "governor": "哈萨克诸苏丹",
+        "characterId": null,
+        "title": "东部玉兹牧地",
+        "capital": "div_pref_ming2_28_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 118541,
+          "grain": 90000,
+          "cloth": 10800
+        },
+        "childrenOpening": {
+          "money": 118541,
+          "grain": 90000,
+          "cloth": 10800
+        }
+      },
+      {
+        "key": "cz-province-ming2-29",
+        "name": "后金（建州本部）",
+        "faction": "fac_mp9rsc3f4r9co",
+        "adminId": "div_laterjin_jianzhou_core",
+        "governor": "建州宗室诸贝勒",
+        "characterId": null,
+        "title": "建州诸贝勒分辖",
+        "capital": "div_pref_ming2_29_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 160000,
+          "grain": 430000,
+          "cloth": 32000
+        },
+        "childrenOpening": {
+          "money": 160000,
+          "grain": 430000,
+          "cloth": 32000
+        }
+      },
+      {
+        "key": "cz-province-ming2-30",
+        "name": "科尔沁",
+        "faction": "fac_mp9rsc3fjy38l",
+        "adminId": "div_mp3yvbbtr8e87",
+        "governor": "奥巴台吉",
+        "characterId": "char_tq1627_nonming_oba_khorchin",
+        "title": "科尔沁部帐",
+        "capital": "div_pref_ming2_30_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 47000,
+          "grain": 41000,
+          "cloth": 15000
+        },
+        "childrenOpening": {
+          "money": 47000,
+          "grain": 41000,
+          "cloth": 15000
+        }
+      },
+      {
+        "key": "cz-province-ming2-31",
+        "name": "北山女真",
+        "faction": "fac-wild-jurchen",
+        "adminId": "supp-north-jurchen",
+        "governor": "北山诸酋",
+        "characterId": null,
+        "title": "山林部落",
+        "capital": "div_pref_ming2_31_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 32413,
+          "grain": 26250,
+          "cloth": 3150
+        },
+        "childrenOpening": {
+          "money": 32413,
+          "grain": 26250,
+          "cloth": 3150
+        }
+      },
+      {
+        "key": "cz-province-ming2-32",
+        "name": "北吕宋",
+        "faction": "fac_mp9rsc3itegih",
+        "adminId": "div_mp3yvbbu3b8ta",
+        "governor": "Juan Niño de Tabora",
+        "characterId": null,
+        "title": "菲律宾总督府",
+        "capital": "div_pref_ming2_32_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 251000,
+          "grain": 252000,
+          "cloth": 28500
+        },
+        "childrenOpening": {
+          "money": 251000,
+          "grain": 252000,
+          "cloth": 28500
+        }
+      },
+      {
+        "key": "cz-province-ming2-33",
+        "name": "交趾",
+        "faction": "fac-dai-viet",
+        "adminId": "supp-dai-viet",
+        "governor": "黎神宗、郑梉、阮福源",
+        "characterId": null,
+        "title": "后黎皇统 / 郑主阮主分权",
+        "capital": "div_pref_ming2_33_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 4968600,
+          "grain": 5720000,
+          "cloth": 156000
+        },
+        "childrenOpening": {
+          "money": 4968600,
+          "grain": 5720000,
+          "cloth": 156000
+        }
+      },
+      {
+        "key": "cz-province-ming2-34",
+        "name": "漠南诸部",
+        "faction": "fac_mp9rsc3fex7fo",
+        "adminId": "supp-southern-mongols",
+        "governor": "林丹汗影响下诸部",
+        "characterId": null,
+        "title": "漠南诸部盟",
+        "capital": "div_pref_ming2_34_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 125641,
+          "grain": 82500,
+          "cloth": 9900
+        },
+        "childrenOpening": {
+          "money": 125641,
+          "grain": 82500,
+          "cloth": 9900
+        }
+      },
+      {
+        "key": "cz-province-ming2-35",
+        "name": "喀尔喀蒙古",
+        "faction": "fac-khalkha",
+        "adminId": "supp-khalkha",
+        "governor": "三汗诸部",
+        "characterId": null,
+        "title": "喀尔喀三汗诸部",
+        "capital": "div_pref_ming2_35_01",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 143443,
+          "grain": 102500,
+          "cloth": 12300
+        },
+        "childrenOpening": {
+          "money": 143443,
+          "grain": 102500,
+          "cloth": 12300
+        }
+      },
+      {
+        "key": "cz-province-ming2-36",
+        "name": "察哈尔",
+        "faction": "fac_mp9rsc3fex7fo",
+        "adminId": "div_mp3yvbbtectcn",
+        "governor": "林丹汗",
+        "characterId": "char_mp3yvbcaxom24",
+        "title": "察哈尔大汗本营",
+        "capital": "div_pref_ming2_36_01",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 48000,
+          "grain": 88000,
+          "cloth": 26000
+        },
+        "childrenOpening": {
+          "money": 48000,
+          "grain": 88000,
+          "cloth": 26000
+        }
+      },
+      {
+        "key": "cz-province-ming-31",
+        "name": "澳门（葡萄牙占）",
+        "faction": "fac_mp9rsc3ilucz2",
+        "adminId": "div_mp3yvbbu01j0k",
+        "governor": "Dom Filipe Lobo da Silveira",
+        "characterId": null,
+        "title": "澳门议事会与总督辖区",
+        "capital": "div_pref_ming_31_01",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 105000,
+          "grain": 16000,
+          "cloth": 6000
+        },
+        "childrenOpening": {
+          "money": 105000,
+          "grain": 16000,
+          "cloth": 6000
+        }
+      },
+      {
+        "key": "cz-province-ming2-38",
+        "name": "本州",
+        "faction": "fac-tokugawa-japan",
+        "adminId": "supp-honshu",
+        "governor": "德川家光",
+        "characterId": "char_supp_tokugawa_iemitsu",
+        "title": "江户幕府与诸藩",
+        "capital": "div_pref_ming2_38_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 21441420,
+          "grain": 18150000,
+          "cloth": 495000
+        },
+        "childrenOpening": {
+          "money": 21441420,
+          "grain": 18150000,
+          "cloth": 495000
+        }
+      },
+      {
+        "key": "cz-province-ming-05",
+        "name": "广东",
+        "faction": "player",
+        "adminId": "div_mp3yvbbpttcsp",
+        "governor": "李待问",
+        "characterId": null,
+        "title": "广东巡抚",
+        "capital": "div_pref_ming_05_01",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 240000,
+          "grain": 280000,
+          "cloth": 60000
+        },
+        "childrenOpening": {
+          "money": 240000,
+          "grain": 280000,
+          "cloth": 60000
+        }
+      },
+      {
+        "key": "cz-province-ming-27",
+        "name": "后金（辽东占领区）",
+        "faction": "fac_mp9rsc3f4r9co",
+        "adminId": "div_laterjin_liaodong_occupied",
+        "governor": "阿敏、莽古尔泰旧部与汉军章京分辖",
+        "characterId": null,
+        "title": "辽东驻防贝勒",
+        "capital": "div_pref_ming_27_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 190000,
+          "grain": 520000,
+          "cloth": 42000
+        },
+        "childrenOpening": {
+          "money": 190000,
+          "grain": 520000,
+          "cloth": 42000
+        }
+      },
+      {
+        "key": "cz-province-ming-28",
+        "name": "辽东（明·关宁东江）",
+        "faction": "player",
+        "adminId": "div_ming_guanning_dongjiang",
+        "governor": "关宁诸将与毛文龙分镇",
+        "characterId": null,
+        "title": "辽东巡抚/关宁总兵/东江总兵",
+        "capital": "div_pref_ming_28_01",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 150000,
+          "grain": 300000,
+          "cloth": 20000
+        },
+        "childrenOpening": {
+          "money": 150000,
+          "grain": 300000,
+          "cloth": 20000
+        }
+      },
+      {
+        "key": "cz-province-ming-29",
+        "name": "朝鲜",
+        "faction": "fac_mp9rsc3f60u3b",
+        "adminId": "div_mp3yvbbud392m",
+        "governor": "仁祖·李倧",
+        "characterId": null,
+        "title": "朝鲜国王辖境",
+        "capital": "div_pref_ming_29_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 93000,
+          "grain": 730000,
+          "cloth": 39500
+        },
+        "childrenOpening": {
+          "money": 93000,
+          "grain": 730000,
+          "cloth": 39500
+        }
+      },
+      {
+        "key": "cz-province-ming-30",
+        "name": "台湾",
+        "faction": "fac_mp9rsc3ish4kg",
+        "adminId": "div_mp3yvbbuz6wrv",
+        "governor": "Gerard Frederikszoon de With",
+        "characterId": null,
+        "title": "VOC 大员长官辖区",
+        "capital": "div_pref_ming_30_01",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 207000,
+          "grain": 48000,
+          "cloth": 10000
+        },
+        "childrenOpening": {
+          "money": 207000,
+          "grain": 48000,
+          "cloth": 10000
+        }
+      }
+    ]
+  },
+  {
+    "file": "晚唐·开成五年（官方）.json",
+    "id": "sc-tang840-840",
+    "registry": 107,
+    "scopeRows": 107,
+    "playerCircuits": 45,
+    "playerNamed": 42,
+    "playerChars": 42,
+    "playerOfficeCandidates": 45,
+    "playerCapital": 45,
+    "allNamed": 46,
+    "allChars": 46,
+    "buildingTypes": 16,
+    "builtNodes": 0,
+    "builtNonLeaves": 0,
+    "builtInstances": 0,
+    "rows": [
+      {
+        "key": "circuit-fcbb6db903e5",
+        "name": "京畿",
+        "faction": "player",
+        "adminId": "circuit-fcbb6db903e5",
+        "governor": "敬昕",
+        "characterId": "char-09252e4fa61c",
+        "title": "京兆尹",
+        "capital": "京兆府·长安",
+        "officeCandidates": [
+          {
+            "id": "office-da6256132f6d",
+            "name": "京兆尹",
+            "holder": "敬昕",
+            "faction": "player"
+          },
+          {
+            "id": "office-d7eda0359592",
+            "name": "京兆少尹",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 52025,
+          "grain": 202155,
+          "cloth": 36153
+        }
+      },
+      {
+        "key": "circuit-73c65d904e95",
+        "name": "华州防御",
+        "faction": "player",
+        "adminId": "circuit-73c65d904e95",
+        "governor": "陈夷行",
+        "characterId": "char-efc4b7c189fa",
+        "title": "镇国军防御使",
+        "capital": "华州",
+        "officeCandidates": [
+          {
+            "id": "office-fb04643807e2",
+            "name": "华州刺史",
+            "holder": "陈夷行",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3717,
+          "grain": 18056,
+          "cloth": 3136
+        }
+      },
+      {
+        "key": "circuit-e00116cb986e",
+        "name": "河中",
+        "faction": "player",
+        "adminId": "circuit-e00116cb986e",
+        "governor": "",
+        "characterId": null,
+        "title": "河中节度使",
+        "capital": "河中府",
+        "officeCandidates": [
+          {
+            "id": "office-43a6e9e38b0c",
+            "name": "河中节度使",
+            "holder": "郑肃",
+            "faction": "player"
+          },
+          {
+            "id": "office-03b33789725e",
+            "name": "河中节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 143366,
+          "grain": 106296,
+          "cloth": 20872
+        }
+      },
+      {
+        "key": "circuit-c3ce2a358e6d",
+        "name": "同州防御",
+        "faction": "player",
+        "adminId": "circuit-c3ce2a358e6d",
+        "governor": "卢载",
+        "characterId": "char-1b9a0a3a8851",
+        "title": "同州防御使",
+        "capital": "同州",
+        "officeCandidates": [
+          {
+            "id": "office-905043b2b822",
+            "name": "同州防御使",
+            "holder": "卢载",
+            "faction": "player"
+          },
+          {
+            "id": "office-b4b4a1813def",
+            "name": "同州防御判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 12606,
+          "grain": 25841,
+          "cloth": 5030
+        }
+      },
+      {
+        "key": "circuit-6efad25adc25",
+        "name": "金商",
+        "faction": "player",
+        "adminId": "circuit-6efad25adc25",
+        "governor": "",
+        "characterId": null,
+        "title": "金商都防御使",
+        "capital": "金州",
+        "officeCandidates": [
+          {
+            "id": "office-e58619739d7e",
+            "name": "金商都防御使",
+            "holder": "",
+            "faction": "player"
+          },
+          {
+            "id": "office-49bcb5d4f264",
+            "name": "金商防御判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 7806,
+          "grain": 15338,
+          "cloth": 4995
+        }
+      },
+      {
+        "key": "circuit-0e5aec7cd61a",
+        "name": "东都",
+        "faction": "player",
+        "adminId": "circuit-0e5aec7cd61a",
+        "governor": "崔琯",
+        "characterId": "char-df6a6dbb83d0",
+        "title": "东都留守",
+        "capital": "河南府·洛阳",
+        "officeCandidates": [
+          {
+            "id": "office-16a7c5873444",
+            "name": "东都留守",
+            "holder": "崔琯",
+            "faction": "player"
+          },
+          {
+            "id": "office-eb8082283be7",
+            "name": "东都留守判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 29038,
+          "grain": 84134,
+          "cloth": 18625
+        }
+      },
+      {
+        "key": "circuit-472ceb5133c8",
+        "name": "陕虢",
+        "faction": "player",
+        "adminId": "circuit-472ceb5133c8",
+        "governor": "姚合",
+        "characterId": "char-48a7a883d938",
+        "title": "陕虢观察使",
+        "capital": "陕州",
+        "officeCandidates": [
+          {
+            "id": "office-3f29bb5e895b",
+            "name": "陕虢观察使",
+            "holder": "姚合",
+            "faction": "player"
+          },
+          {
+            "id": "office-f328b60b73b1",
+            "name": "陕虢观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 15592,
+          "grain": 46780,
+          "cloth": 9232
+        }
+      },
+      {
+        "key": "circuit-855efb7188a4",
+        "name": "河阳",
+        "faction": "player",
+        "adminId": "circuit-855efb7188a4",
+        "governor": "李执方",
+        "characterId": "char-1160b59f553c",
+        "title": "河阳三城怀州节度使",
+        "capital": "河阳三城",
+        "officeCandidates": [
+          {
+            "id": "office-38bc232007ae",
+            "name": "河阳三城怀州节度使",
+            "holder": "李执方",
+            "faction": "player"
+          },
+          {
+            "id": "office-1948c77d39d5",
+            "name": "河阳判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 22056,
+          "grain": 61374,
+          "cloth": 11500
+        }
+      },
+      {
+        "key": "circuit-9d221cb47716",
+        "name": "河东",
+        "faction": "player",
+        "adminId": "circuit-9d221cb47716",
+        "governor": "狄兼谟",
+        "characterId": "char-51aacf22a7cc",
+        "title": "河东节度使",
+        "capital": "太原府",
+        "officeCandidates": [
+          {
+            "id": "office-ae02b4a39062",
+            "name": "河东节度使",
+            "holder": "狄兼谟",
+            "faction": "player"
+          },
+          {
+            "id": "office-17782f18cf42",
+            "name": "河东节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 11,
+        "opening": null,
+        "childrenOpening": {
+          "money": 83352,
+          "grain": 225023,
+          "cloth": 40872
+        }
+      },
+      {
+        "key": "circuit-7b56570b0017",
+        "name": "振武",
+        "faction": "player",
+        "adminId": "circuit-7b56570b0017",
+        "governor": "刘沔",
+        "characterId": "char-ad2ce35dd501",
+        "title": "振武节度使",
+        "capital": "单于都护府",
+        "officeCandidates": [
+          {
+            "id": "office-c35c84c82ca1",
+            "name": "振武节度使",
+            "holder": "刘沔",
+            "faction": "player"
+          },
+          {
+            "id": "office-8a120f3cd87e",
+            "name": "振武节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 4766,
+          "grain": 8541,
+          "cloth": 2215
+        }
+      },
+      {
+        "key": "circuit-6a6a3f34f7aa",
+        "name": "天德",
+        "faction": "player",
+        "adminId": "circuit-6a6a3f34f7aa",
+        "governor": "温德彝",
+        "characterId": "char-1d3bed0016f2",
+        "title": "天德军防御使",
+        "capital": "天德军",
+        "officeCandidates": [
+          {
+            "id": "office-7a81820776d4",
+            "name": "天德军防御使",
+            "holder": "温德彝",
+            "faction": "player"
+          },
+          {
+            "id": "office-58ebd00e8404",
+            "name": "天德军判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2562,
+          "grain": 4846,
+          "cloth": 1210
+        }
+      },
+      {
+        "key": "circuit-493d9b5d13f8",
+        "name": "灵盐",
+        "faction": "player",
+        "adminId": "circuit-493d9b5d13f8",
+        "governor": "魏仲卿",
+        "characterId": "char-bea19e071c59",
+        "title": "朔方节度使",
+        "capital": "灵州",
+        "officeCandidates": [
+          {
+            "id": "office-7f42b112e381",
+            "name": "朔方节度使",
+            "holder": "魏仲卿",
+            "faction": "player"
+          },
+          {
+            "id": "office-8d9b00b9451c",
+            "name": "朔方节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 16268,
+          "grain": 12847,
+          "cloth": 3238
+        }
+      },
+      {
+        "key": "circuit-28b4c7d75b79",
+        "name": "夏绥银",
+        "faction": "player",
+        "adminId": "circuit-28b4c7d75b79",
+        "governor": "",
+        "characterId": null,
+        "title": "夏绥银节度使",
+        "capital": "夏州",
+        "officeCandidates": [
+          {
+            "id": "office-2be50f4967bc",
+            "name": "夏绥银宥节度使",
+            "holder": "",
+            "faction": "player"
+          },
+          {
+            "id": "office-32e3b3b6aaf4",
+            "name": "夏绥银宥节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 6908,
+          "grain": 14532,
+          "cloth": 3839
+        }
+      },
+      {
+        "key": "circuit-074bed2f1ea6",
+        "name": "鄜坊",
+        "faction": "player",
+        "adminId": "circuit-074bed2f1ea6",
+        "governor": "李昌言",
+        "characterId": "char-06a3eee7ef2b",
+        "title": "鄜坊节度使",
+        "capital": "鄜州",
+        "officeCandidates": [
+          {
+            "id": "office-d92517c45545",
+            "name": "鄜坊节度使",
+            "holder": "李昌言",
+            "faction": "player"
+          },
+          {
+            "id": "office-7ad9875dd7a5",
+            "name": "鄜坊节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 19299,
+          "grain": 49879,
+          "cloth": 9984
+        }
+      },
+      {
+        "key": "circuit-5ba46e32fccb",
+        "name": "邠宁",
+        "faction": "player",
+        "adminId": "circuit-5ba46e32fccb",
+        "governor": "苻澈",
+        "characterId": "char-583b00e6c127",
+        "title": "邠宁节度使",
+        "capital": "邠州",
+        "officeCandidates": [
+          {
+            "id": "office-70ecbe889eea",
+            "name": "邠宁节度使",
+            "holder": "苻澈",
+            "faction": "player"
+          },
+          {
+            "id": "office-1d6cf25137e3",
+            "name": "邠宁节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 16491,
+          "grain": 42000,
+          "cloth": 8028
+        }
+      },
+      {
+        "key": "circuit-8cd0350528f2",
+        "name": "泾原",
+        "faction": "player",
+        "adminId": "circuit-8cd0350528f2",
+        "governor": "王茂元",
+        "characterId": "char-7a96fa5c2613",
+        "title": "泾原节度使",
+        "capital": "泾州",
+        "officeCandidates": [
+          {
+            "id": "office-db523e56995f",
+            "name": "泾原节度使",
+            "holder": "王茂元",
+            "faction": "player"
+          },
+          {
+            "id": "office-e1dad4b8b961",
+            "name": "泾原节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 8875,
+          "grain": 19752,
+          "cloth": 4666
+        }
+      },
+      {
+        "key": "circuit-0145a6fa4671",
+        "name": "凤翔",
+        "faction": "player",
+        "adminId": "circuit-0145a6fa4671",
+        "governor": "陈君奕",
+        "characterId": "char-aa44d6e75381",
+        "title": "凤翔节度使",
+        "capital": "凤翔府",
+        "officeCandidates": [
+          {
+            "id": "office-b24b8d2ba45c",
+            "name": "凤翔节度使",
+            "holder": "陈君奕",
+            "faction": "player"
+          },
+          {
+            "id": "office-1c1318953d96",
+            "name": "凤翔节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 31769,
+          "grain": 83223,
+          "cloth": 16336
+        }
+      },
+      {
+        "key": "circuit-109f413f0a02",
+        "name": "义武",
+        "faction": "player",
+        "adminId": "circuit-109f413f0a02",
+        "governor": "韩威",
+        "characterId": "char-1b0e1b232a58",
+        "title": "义武军节度使",
+        "capital": "定州",
+        "officeCandidates": [
+          {
+            "id": "office-a2acfaf512a4",
+            "name": "义武军节度使",
+            "holder": "韩威",
+            "faction": "player"
+          },
+          {
+            "id": "office-d8e63881143e",
+            "name": "义武军节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 31550,
+          "grain": 89410,
+          "cloth": 15938
+        }
+      },
+      {
+        "key": "circuit-ec9d22a78a77",
+        "name": "义昌",
+        "faction": "player",
+        "adminId": "circuit-ec9d22a78a77",
+        "governor": "刘约",
+        "characterId": "char-520672923626",
+        "title": "义昌军节度使",
+        "capital": "沧州",
+        "officeCandidates": [
+          {
+            "id": "office-6d39d2d76cfd",
+            "name": "义昌军节度使",
+            "holder": "刘约",
+            "faction": "player"
+          },
+          {
+            "id": "office-373e7e17f7b1",
+            "name": "义昌节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 78467,
+          "grain": 120010,
+          "cloth": 21882
+        }
+      },
+      {
+        "key": "circuit-e38a346e2c14",
+        "name": "平卢",
+        "faction": "player",
+        "adminId": "circuit-e38a346e2c14",
+        "governor": "韦长",
+        "characterId": "char-8d675016b30a",
+        "title": "平卢节度使",
+        "capital": "青州",
+        "officeCandidates": [
+          {
+            "id": "office-7e77a80b9ac1",
+            "name": "平卢淄青节度使",
+            "holder": "韦长",
+            "faction": "player"
+          },
+          {
+            "id": "office-9f8c54c9a311",
+            "name": "平卢淄青节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 146188,
+          "grain": 185164,
+          "cloth": 35322
+        }
+      },
+      {
+        "key": "circuit-a25f7afbdeab",
+        "name": "天平",
+        "faction": "player",
+        "adminId": "circuit-a25f7afbdeab",
+        "governor": "李彦佐",
+        "characterId": "char-1b4493a80c31",
+        "title": "天平军节度使",
+        "capital": "郓州",
+        "officeCandidates": [
+          {
+            "id": "office-b02b0d8a6917",
+            "name": "天平军节度使",
+            "holder": "李彦佐",
+            "faction": "player"
+          },
+          {
+            "id": "office-3d9d50b670dc",
+            "name": "天平节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 50049,
+          "grain": 150576,
+          "cloth": 26694
+        }
+      },
+      {
+        "key": "circuit-6e4f1fe8c634",
+        "name": "兖海",
+        "faction": "player",
+        "adminId": "circuit-6e4f1fe8c634",
+        "governor": "张贾",
+        "characterId": "char-c8133cd00c74",
+        "title": "兖海观察使",
+        "capital": "兖州",
+        "officeCandidates": [
+          {
+            "id": "office-312e8d380f4a",
+            "name": "兖海观察使",
+            "holder": "张贾",
+            "faction": "player"
+          },
+          {
+            "id": "office-f03a1044a341",
+            "name": "兖海观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 117563,
+          "grain": 161361,
+          "cloth": 31108
+        }
+      },
+      {
+        "key": "circuit-717c4305c5af",
+        "name": "宣武",
+        "faction": "player",
+        "adminId": "circuit-717c4305c5af",
+        "governor": "李绅",
+        "characterId": "char-dd7e7eab9343",
+        "title": "宣武节度使",
+        "capital": "汴州",
+        "officeCandidates": [
+          {
+            "id": "office-29d1f8b5927f",
+            "name": "宣武军节度使",
+            "holder": "李绅",
+            "faction": "player"
+          },
+          {
+            "id": "office-0e3b834e9586",
+            "name": "宣武节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 60465,
+          "grain": 160914,
+          "cloth": 31665
+        }
+      },
+      {
+        "key": "circuit-1e3461fb47fe",
+        "name": "义成",
+        "faction": "player",
+        "adminId": "circuit-1e3461fb47fe",
+        "governor": "裴弘泰",
+        "characterId": "char-637383efcc4f",
+        "title": "义成军节度使",
+        "capital": "滑州",
+        "officeCandidates": [
+          {
+            "id": "office-7688d10ac1c5",
+            "name": "义成军节度使",
+            "holder": "裴弘泰",
+            "faction": "player"
+          },
+          {
+            "id": "office-5fde36f378f8",
+            "name": "义成节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 49104,
+          "grain": 139527,
+          "cloth": 26154
+        }
+      },
+      {
+        "key": "circuit-b3383286d154",
+        "name": "忠武",
+        "faction": "player",
+        "adminId": "circuit-b3383286d154",
+        "governor": "王彦威",
+        "characterId": "char-fe7373960a70",
+        "title": "忠武军节度使",
+        "capital": "许州",
+        "officeCandidates": [
+          {
+            "id": "office-c64794204605",
+            "name": "忠武军节度使",
+            "holder": "王彦威",
+            "faction": "player"
+          },
+          {
+            "id": "office-1a311455dabd",
+            "name": "忠武节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 50355,
+          "grain": 141552,
+          "cloth": 26241
+        }
+      },
+      {
+        "key": "circuit-404bcc73e13c",
+        "name": "武宁",
+        "faction": "player",
+        "adminId": "circuit-404bcc73e13c",
+        "governor": "薛元赏",
+        "characterId": "char-efa9fdc6e1e4",
+        "title": "武宁军节度使",
+        "capital": "徐州",
+        "officeCandidates": [
+          {
+            "id": "office-2647666b6682",
+            "name": "武宁军节度使",
+            "holder": "薛元赏",
+            "faction": "player"
+          },
+          {
+            "id": "office-8db3fbadb5ae",
+            "name": "武宁节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 57451,
+          "grain": 142552,
+          "cloth": 28539
+        }
+      },
+      {
+        "key": "circuit-214f2de00ef9",
+        "name": "淮南",
+        "faction": "player",
+        "adminId": "circuit-214f2de00ef9",
+        "governor": "李德裕",
+        "characterId": "char-ca29d914f13a",
+        "title": "淮南节度使",
+        "capital": "扬州",
+        "officeCandidates": [
+          {
+            "id": "office-7773d3bfb4a2",
+            "name": "淮南节度使",
+            "holder": "李德裕",
+            "faction": "player"
+          },
+          {
+            "id": "office-0a6ea3d57eae",
+            "name": "淮南节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 190443,
+          "grain": 233188,
+          "cloth": 58465
+        }
+      },
+      {
+        "key": "circuit-050164ec911f",
+        "name": "鄂岳",
+        "faction": "player",
+        "adminId": "circuit-050164ec911f",
+        "governor": "高锴",
+        "characterId": "char-eb4d917d249c",
+        "title": "鄂岳观察使",
+        "capital": "鄂州",
+        "officeCandidates": [
+          {
+            "id": "office-2ce2cbd1b5fe",
+            "name": "鄂岳观察使",
+            "holder": "高锴",
+            "faction": "player"
+          },
+          {
+            "id": "office-4946d6f60e41",
+            "name": "鄂岳观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 42961,
+          "grain": 89901,
+          "cloth": 24927
+        }
+      },
+      {
+        "key": "circuit-97031fea1260",
+        "name": "浙西",
+        "faction": "player",
+        "adminId": "circuit-97031fea1260",
+        "governor": "卢商",
+        "characterId": "char-577efad05ac0",
+        "title": "浙西观察使",
+        "capital": "润州",
+        "officeCandidates": [
+          {
+            "id": "office-8acf63f0e028",
+            "name": "浙西观察使",
+            "holder": "卢商",
+            "faction": "player"
+          },
+          {
+            "id": "office-873c4830438b",
+            "name": "浙西观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 99541,
+          "grain": 233505,
+          "cloth": 53251
+        }
+      },
+      {
+        "key": "circuit-ee17dba1d328",
+        "name": "浙东",
+        "faction": "player",
+        "adminId": "circuit-ee17dba1d328",
+        "governor": "萧俶",
+        "characterId": "char-90a691a38ce7",
+        "title": "浙东观察使",
+        "capital": "越州",
+        "officeCandidates": [
+          {
+            "id": "office-64a2e2cd4b76",
+            "name": "浙东观察使",
+            "holder": "萧俶",
+            "faction": "player"
+          },
+          {
+            "id": "office-c699b9c22e0d",
+            "name": "浙东观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 7,
+        "opening": null,
+        "childrenOpening": {
+          "money": 136529,
+          "grain": 123219,
+          "cloth": 31329
+        }
+      },
+      {
+        "key": "circuit-d927658a70b9",
+        "name": "宣歙",
+        "faction": "player",
+        "adminId": "circuit-d927658a70b9",
+        "governor": "崔龟从",
+        "characterId": "char-984049d9c161",
+        "title": "宣歙观察使",
+        "capital": "宣州",
+        "officeCandidates": [
+          {
+            "id": "office-488d85dffd2b",
+            "name": "宣歙观察使",
+            "holder": "崔龟从",
+            "faction": "player"
+          },
+          {
+            "id": "office-dbbc30c64740",
+            "name": "宣歙观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 32566,
+          "grain": 76873,
+          "cloth": 19044
+        }
+      },
+      {
+        "key": "circuit-7b14a21bfa3f",
+        "name": "福建",
+        "faction": "player",
+        "adminId": "circuit-7b14a21bfa3f",
+        "governor": "卢贞",
+        "characterId": "char-a494122c6a4b",
+        "title": "福建观察使",
+        "capital": "福州",
+        "officeCandidates": [
+          {
+            "id": "office-a247fc0015e1",
+            "name": "福建观察使",
+            "holder": "卢贞",
+            "faction": "player"
+          },
+          {
+            "id": "office-a9a33e1b976d",
+            "name": "福建观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 53624,
+          "grain": 50369,
+          "cloth": 15414
+        }
+      },
+      {
+        "key": "circuit-0882a98a00d2",
+        "name": "江西",
+        "faction": "player",
+        "adminId": "circuit-0882a98a00d2",
+        "governor": "李款",
+        "characterId": "char-9b08b089249a",
+        "title": "江西观察使",
+        "capital": "洪州",
+        "officeCandidates": [
+          {
+            "id": "office-86e149f4c791",
+            "name": "江南西道观察使",
+            "holder": "李款",
+            "faction": "player"
+          },
+          {
+            "id": "office-b523f0367197",
+            "name": "江南西道观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 69919,
+          "grain": 179276,
+          "cloth": 41858
+        }
+      },
+      {
+        "key": "circuit-08f480473cbd",
+        "name": "湖南",
+        "faction": "player",
+        "adminId": "circuit-08f480473cbd",
+        "governor": "李翊",
+        "characterId": "char-ccd637bf92c3",
+        "title": "湖南观察使",
+        "capital": "潭州",
+        "officeCandidates": [
+          {
+            "id": "office-ed39564175f9",
+            "name": "湖南观察使",
+            "holder": "李翊",
+            "faction": "player"
+          },
+          {
+            "id": "office-16ec325a70ac",
+            "name": "湖南观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 7,
+        "opening": null,
+        "childrenOpening": {
+          "money": 49423,
+          "grain": 101525,
+          "cloth": 27811
+        }
+      },
+      {
+        "key": "circuit-f14dccddb8d4",
+        "name": "荆南",
+        "faction": "player",
+        "adminId": "circuit-f14dccddb8d4",
+        "governor": "李石",
+        "characterId": "char-a4b634810ee8",
+        "title": "荆南节度使",
+        "capital": "江陵府",
+        "officeCandidates": [
+          {
+            "id": "office-17d0097a408e",
+            "name": "荆南节度使",
+            "holder": "李石",
+            "faction": "player"
+          },
+          {
+            "id": "office-873606e835b9",
+            "name": "荆南节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 45465,
+          "grain": 94526,
+          "cloth": 25822
+        }
+      },
+      {
+        "key": "circuit-1bf9f95c2b9f",
+        "name": "山南东道",
+        "faction": "player",
+        "adminId": "circuit-1bf9f95c2b9f",
+        "governor": "牛僧孺",
+        "characterId": "char-ddce57d3a48e",
+        "title": "山南东道节度使",
+        "capital": "襄州",
+        "officeCandidates": [
+          {
+            "id": "office-b6013ac20556",
+            "name": "山南东道节度使",
+            "holder": "牛僧孺",
+            "faction": "player"
+          },
+          {
+            "id": "office-4f83bc0b1434",
+            "name": "山南东道节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 47736,
+          "grain": 114397,
+          "cloth": 25175
+        }
+      },
+      {
+        "key": "circuit-9920e4240b5c",
+        "name": "山南西道",
+        "faction": "player",
+        "adminId": "circuit-9920e4240b5c",
+        "governor": "归融",
+        "characterId": "char-bd607a63ba79",
+        "title": "山南西道节度使",
+        "capital": "兴元府",
+        "officeCandidates": [
+          {
+            "id": "office-030ae206ece6",
+            "name": "山南西道节度使",
+            "holder": "归融",
+            "faction": "player"
+          },
+          {
+            "id": "office-84a74aab568d",
+            "name": "山南西道节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 15,
+        "opening": null,
+        "childrenOpening": {
+          "money": 53132,
+          "grain": 112579,
+          "cloth": 29093
+        }
+      },
+      {
+        "key": "circuit-e9c11698735b",
+        "name": "剑南西川",
+        "faction": "player",
+        "adminId": "circuit-e9c11698735b",
+        "governor": "李固言",
+        "characterId": "char-f289fdad7d0e",
+        "title": "剑南西川节度使",
+        "capital": "成都府",
+        "officeCandidates": [
+          {
+            "id": "office-bd83625f1519",
+            "name": "剑南西川节度使",
+            "holder": "李固言",
+            "faction": "player"
+          },
+          {
+            "id": "office-0ec3f1251c71",
+            "name": "剑南西川节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 14,
+        "opening": null,
+        "childrenOpening": {
+          "money": 156507,
+          "grain": 233675,
+          "cloth": 52338
+        }
+      },
+      {
+        "key": "circuit-89e9df1066fe",
+        "name": "剑南东川",
+        "faction": "player",
+        "adminId": "circuit-89e9df1066fe",
+        "governor": "郑复",
+        "characterId": "char-1239346ee3cb",
+        "title": "剑南东川节度使",
+        "capital": "梓州",
+        "officeCandidates": [
+          {
+            "id": "office-fe60552637ce",
+            "name": "剑南东川节度使",
+            "holder": "郑复",
+            "faction": "player"
+          },
+          {
+            "id": "office-4ba7216a4837",
+            "name": "剑南东川节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 12,
+        "opening": null,
+        "childrenOpening": {
+          "money": 113866,
+          "grain": 203687,
+          "cloth": 42199
+        }
+      },
+      {
+        "key": "circuit-a8a3f460b7fa",
+        "name": "黔中",
+        "faction": "player",
+        "adminId": "circuit-a8a3f460b7fa",
+        "governor": "张沼",
+        "characterId": "char-b623ecee2419",
+        "title": "黔中观察使",
+        "capital": "黔州",
+        "officeCandidates": [
+          {
+            "id": "office-c7364542b2cb",
+            "name": "黔中观察使",
+            "holder": "张沼",
+            "faction": "player"
+          },
+          {
+            "id": "office-63cd73a755c5",
+            "name": "黔中观察判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 15,
+        "opening": null,
+        "childrenOpening": {
+          "money": 7346,
+          "grain": 8356,
+          "cloth": 5425
+        }
+      },
+      {
+        "key": "circuit-53b2ca5109e8",
+        "name": "岭南",
+        "faction": "player",
+        "adminId": "circuit-53b2ca5109e8",
+        "governor": "卢钧",
+        "characterId": "char-e6445e2e0cd8",
+        "title": "岭南节度使",
+        "capital": "广州",
+        "officeCandidates": [
+          {
+            "id": "office-338249c6ae25",
+            "name": "岭南节度使",
+            "holder": "卢钧",
+            "faction": "player"
+          },
+          {
+            "id": "office-fbcc799f2b3e",
+            "name": "岭南节度判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 21,
+        "opening": null,
+        "childrenOpening": {
+          "money": 76634,
+          "grain": 70260,
+          "cloth": 19487
+        }
+      },
+      {
+        "key": "circuit-adc7157939ae",
+        "name": "桂管",
+        "faction": "player",
+        "adminId": "circuit-adc7157939ae",
+        "governor": "冯审",
+        "characterId": "char-abecc0f38e0c",
+        "title": "桂管观察使",
+        "capital": "桂州",
+        "officeCandidates": [
+          {
+            "id": "office-8b238422b503",
+            "name": "桂管观察使",
+            "holder": "冯审",
+            "faction": "player"
+          },
+          {
+            "id": "office-f8036f32e6f3",
+            "name": "桂管经略判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 12851,
+          "grain": 22250,
+          "cloth": 6048
+        }
+      },
+      {
+        "key": "circuit-a539c36cd2c3",
+        "name": "容管",
+        "faction": "player",
+        "adminId": "circuit-a539c36cd2c3",
+        "governor": "胡沐",
+        "characterId": "char-cde182b3c522",
+        "title": "容管经略使",
+        "capital": "容州",
+        "officeCandidates": [
+          {
+            "id": "office-a08d26ef9a17",
+            "name": "容管经略使",
+            "holder": "胡沐",
+            "faction": "player"
+          },
+          {
+            "id": "office-621ee9a8b2a3",
+            "name": "容管经略判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 6769,
+          "grain": 11097,
+          "cloth": 3268
+        }
+      },
+      {
+        "key": "circuit-b0922201b667",
+        "name": "邕管",
+        "faction": "player",
+        "adminId": "circuit-b0922201b667",
+        "governor": "唐弘实",
+        "characterId": "char-153d35e048eb",
+        "title": "邕管经略使",
+        "capital": "邕州",
+        "officeCandidates": [
+          {
+            "id": "office-a33659c04d3e",
+            "name": "邕管经略使",
+            "holder": "唐弘实",
+            "faction": "player"
+          },
+          {
+            "id": "office-39b2115c1ac2",
+            "name": "邕管经略判官",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 16593,
+          "grain": 11587,
+          "cloth": 3872
+        }
+      },
+      {
+        "key": "circuit-97a50d999831",
+        "name": "安南",
+        "faction": "player",
+        "adminId": "circuit-97a50d999831",
+        "governor": "马植",
+        "characterId": "char-cc286b8e50dd",
+        "title": "安南都护",
+        "capital": "交州",
+        "officeCandidates": [
+          {
+            "id": "office-9d034387b065",
+            "name": "安南都护",
+            "holder": "马植",
+            "faction": "player"
+          },
+          {
+            "id": "office-57516abf6d29",
+            "name": "安南副都护",
+            "holder": "",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 19490,
+          "grain": 28209,
+          "cloth": 8694
+        }
+      },
+      {
+        "key": "circuit-bbbd6820e2db",
+        "name": "琼崖山洞",
+        "faction": "海南诸峒",
+        "adminId": "circuit-bbbd6820e2db",
+        "governor": "",
+        "characterId": null,
+        "title": "海南山峒",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 440,
+          "grain": 4480,
+          "cloth": 875
+        }
+      },
+      {
+        "key": "circuit-9f81793098fe",
+        "name": "魏博",
+        "faction": "唐·魏博镇",
+        "adminId": "circuit-9f81793098fe",
+        "governor": "何进滔",
+        "characterId": "char-eee274437a62",
+        "title": "魏博节度使",
+        "capital": "魏州",
+        "officeCandidates": [
+          {
+            "id": "office-4fbc37fa0e19",
+            "name": "魏博节度使",
+            "holder": "何进滔",
+            "faction": "唐·魏博镇"
+          },
+          {
+            "id": "office-v14-43fab1c7a95d",
+            "name": "军府书吏",
+            "holder": "",
+            "faction": "唐·魏博镇"
+          },
+          {
+            "id": "office-v14-3a265bf1fe12",
+            "name": "魏博营将",
+            "holder": "",
+            "faction": "唐·魏博镇"
+          }
+        ],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 107167,
+          "grain": 155128,
+          "cloth": 22427
+        }
+      },
+      {
+        "key": "circuit-e44653cad28d",
+        "name": "成德",
+        "faction": "唐·成德镇",
+        "adminId": "circuit-e44653cad28d",
+        "governor": "王元逵",
+        "characterId": "char-257d1272a490",
+        "title": "成德节度使",
+        "capital": "镇州",
+        "officeCandidates": [
+          {
+            "id": "office-8dcc116fbe63",
+            "name": "成德节度使",
+            "holder": "王元逵",
+            "faction": "唐·成德镇"
+          },
+          {
+            "id": "office-v14-6bd063acc8af",
+            "name": "军府书吏",
+            "holder": "",
+            "faction": "唐·成德镇"
+          },
+          {
+            "id": "office-v14-c7c5ae6bda8b",
+            "name": "成德营将",
+            "holder": "",
+            "faction": "唐·成德镇"
+          }
+        ],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 78942,
+          "grain": 106324,
+          "cloth": 16257
+        }
+      },
+      {
+        "key": "circuit-c9098c852df5",
+        "name": "卢龙",
+        "faction": "唐·卢龙镇",
+        "adminId": "circuit-c9098c852df5",
+        "governor": "史元忠",
+        "characterId": "char-d6aac031740b",
+        "title": "卢龙节度使",
+        "capital": "幽州",
+        "officeCandidates": [
+          {
+            "id": "office-e6522913b731",
+            "name": "卢龙节度使",
+            "holder": "史元忠",
+            "faction": "唐·卢龙镇"
+          },
+          {
+            "id": "office-v14-1c3aa6669e39",
+            "name": "牙府书吏",
+            "holder": "",
+            "faction": "唐·卢龙镇"
+          },
+          {
+            "id": "office-v14-797954872239",
+            "name": "边军将",
+            "holder": "",
+            "faction": "唐·卢龙镇"
+          }
+        ],
+        "leafCount": 9,
+        "opening": null,
+        "childrenOpening": {
+          "money": 103702,
+          "grain": 140691,
+          "cloth": 22546
+        }
+      },
+      {
+        "key": "circuit-a6bc21892703",
+        "name": "昭义",
+        "faction": "唐·昭义镇",
+        "adminId": "circuit-a6bc21892703",
+        "governor": "刘从谏",
+        "characterId": "char-0d2c834ecefd",
+        "title": "昭义节度使",
+        "capital": "潞州",
+        "officeCandidates": [
+          {
+            "id": "office-7f0aa80414b6",
+            "name": "昭义节度使",
+            "holder": "刘从谏",
+            "faction": "唐·昭义镇"
+          },
+          {
+            "id": "office-v14-fdeb473e96ca",
+            "name": "军府书吏",
+            "holder": "",
+            "faction": "唐·昭义镇"
+          },
+          {
+            "id": "office-v14-44b1a412ca14",
+            "name": "昭义校尉",
+            "holder": "",
+            "faction": "唐·昭义镇"
+          }
+        ],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 74688,
+          "grain": 98646,
+          "cloth": 18381
+        }
+      },
+      {
+        "key": "v19-jp-circuit-0",
+        "name": "畿内",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-0",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2551,
+          "grain": 48134,
+          "cloth": 2561
+        }
+      },
+      {
+        "key": "v19-jp-circuit-1",
+        "name": "东海道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-1",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 15,
+        "opening": null,
+        "childrenOpening": {
+          "money": 5510,
+          "grain": 127123,
+          "cloth": 6798
+        }
+      },
+      {
+        "key": "v19-jp-circuit-2",
+        "name": "东山道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-2",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3878,
+          "grain": 89613,
+          "cloth": 4966
+        }
+      },
+      {
+        "key": "v19-jp-circuit-3",
+        "name": "北陆道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-3",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1276,
+          "grain": 29441,
+          "cloth": 1552
+        }
+      },
+      {
+        "key": "v19-jp-circuit-4",
+        "name": "山阴道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-4",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2148,
+          "grain": 49538,
+          "cloth": 2614
+        }
+      },
+      {
+        "key": "v19-jp-circuit-5",
+        "name": "山阳道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-5",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2764,
+          "grain": 63747,
+          "cloth": 3362
+        }
+      },
+      {
+        "key": "v19-jp-circuit-6",
+        "name": "南海道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-6",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1796,
+          "grain": 41475,
+          "cloth": 2188
+        }
+      },
+      {
+        "key": "v19-jp-circuit-7",
+        "name": "西海道",
+        "faction": "日本",
+        "adminId": "v19-jp-circuit-7",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 13,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3135,
+          "grain": 64871,
+          "cloth": 3446
+        }
+      },
+      {
+        "key": "c10-tamna",
+        "name": "耽罗",
+        "faction": "耽罗",
+        "adminId": "c10-tamna",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 319,
+          "grain": 2544,
+          "cloth": 224
+        }
+      },
+      {
+        "key": "c10-north-honshu",
+        "name": "蝦夷诸村",
+        "faction": "蝦夷",
+        "adminId": "c10-north-honshu",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 273,
+          "grain": 4909,
+          "cloth": 421
+        }
+      },
+      {
+        "key": "c10-hokkaido",
+        "name": "渡嶋",
+        "faction": "渡嶋蝦夷",
+        "adminId": "c10-hokkaido",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": null,
+        "childrenOpening": {
+          "money": 125,
+          "grain": 1214,
+          "cloth": 243
+        }
+      },
+      {
+        "key": "c10-taiwan",
+        "name": "台湾",
+        "faction": "台湾诸部",
+        "adminId": "c10-taiwan",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 370,
+          "grain": 9529,
+          "cloth": 631
+        }
+      },
+      {
+        "key": "c10-luzon",
+        "name": "吕宋北部",
+        "faction": "吕宋诸部",
+        "adminId": "c10-luzon",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 344,
+          "grain": 3226,
+          "cloth": 201
+        }
+      },
+      {
+        "key": "c13-5067d75a92",
+        "name": "吕宋中南部",
+        "faction": "吕宋诸部",
+        "adminId": "c13-5067d75a92",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 895,
+          "grain": 8419,
+          "cloth": 497
+        }
+      },
+      {
+        "key": "c10-silla",
+        "name": "王京与九州",
+        "faction": "新罗",
+        "adminId": "c10-silla",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": null,
+        "childrenOpening": {
+          "money": 32060,
+          "grain": 346351,
+          "cloth": 25825
+        }
+      },
+      {
+        "key": "c10-balhae",
+        "name": "五京诸府",
+        "faction": "渤海",
+        "adminId": "c10-balhae",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 15,
+        "opening": null,
+        "childrenOpening": {
+          "money": 26407,
+          "grain": 291528,
+          "cloth": 22271
+        }
+      },
+      {
+        "key": "c10-heishui",
+        "name": "黑水十六落",
+        "faction": "黑水靺鞨诸部",
+        "adminId": "c10-heishui",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 876,
+          "grain": 8473,
+          "cloth": 911
+        }
+      },
+      {
+        "key": "c13-d1bfa9a0ab",
+        "name": "黑水以北诸部",
+        "faction": "黑水靺鞨诸部",
+        "adminId": "c13-d1bfa9a0ab",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 722,
+          "grain": 7057,
+          "cloth": 1303
+        }
+      },
+      {
+        "key": "c10-shiwei",
+        "name": "室韦诸部",
+        "faction": "室韦诸部",
+        "adminId": "c10-shiwei",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1405,
+          "grain": 12670,
+          "cloth": 1956
+        }
+      },
+      {
+        "key": "c13-f63ccb4078",
+        "name": "室建河诸部",
+        "faction": "室韦诸部",
+        "adminId": "c13-f63ccb4078",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 595,
+          "grain": 5570,
+          "cloth": 1295
+        }
+      },
+      {
+        "key": "c10-xi",
+        "name": "饶乐五部",
+        "faction": "奚诸部",
+        "adminId": "c10-xi",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2016,
+          "grain": 14850,
+          "cloth": 2100
+        }
+      },
+      {
+        "key": "c10-khitan",
+        "name": "松漠八部",
+        "faction": "契丹诸部",
+        "adminId": "c10-khitan",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3456,
+          "grain": 21449,
+          "cloth": 4200
+        }
+      },
+      {
+        "key": "v19-tibet-geography-0",
+        "name": "伍如与约如",
+        "faction": "吐蕃",
+        "adminId": "v19-tibet-geography-0",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 8266,
+          "grain": 87189,
+          "cloth": 7986
+        }
+      },
+      {
+        "key": "v19-tibet-geography-1",
+        "name": "叶如、如拉与羊同",
+        "faction": "吐蕃",
+        "adminId": "v19-tibet-geography-1",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": null,
+        "childrenOpening": {
+          "money": 5497,
+          "grain": 79490,
+          "cloth": 7227
+        }
+      },
+      {
+        "key": "v19-tibet-geography-2",
+        "name": "孙波如、南如与青海",
+        "faction": "吐蕃",
+        "adminId": "v19-tibet-geography-2",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 8420,
+          "grain": 97723,
+          "cloth": 6548
+        }
+      },
+      {
+        "key": "v19-tibet-geography-3",
+        "name": "东道节度",
+        "faction": "吐蕃",
+        "adminId": "v19-tibet-geography-3",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": null,
+        "childrenOpening": {
+          "money": 4222,
+          "grain": 48448,
+          "cloth": 2641
+        }
+      },
+      {
+        "key": "v19-tibet-geography-4",
+        "name": "河西与西域南道",
+        "faction": "吐蕃",
+        "adminId": "v19-tibet-geography-4",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 15,
+        "opening": null,
+        "childrenOpening": {
+          "money": 5490,
+          "grain": 57202,
+          "cloth": 4254
+        }
+      },
+      {
+        "key": "c10-uyghur",
+        "name": "乌德鞬山",
+        "faction": "回鹘",
+        "adminId": "c10-uyghur",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 8587,
+          "grain": 36482,
+          "cloth": 19356
+        }
+      },
+      {
+        "key": "c13-24e53439db",
+        "name": "北庭",
+        "faction": "回鹘",
+        "adminId": "c13-24e53439db",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1670,
+          "grain": 7691,
+          "cloth": 4329
+        }
+      },
+      {
+        "key": "circuit-968ac52c2b14",
+        "name": "金山诸部",
+        "faction": "回鹘",
+        "adminId": "circuit-968ac52c2b14",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1211,
+          "grain": 11204,
+          "cloth": 1951
+        }
+      },
+      {
+        "key": "c13-5672e495d2",
+        "name": "仙娥河",
+        "faction": "回鹘",
+        "adminId": "c13-5672e495d2",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2081,
+          "grain": 9407,
+          "cloth": 5535
+        }
+      },
+      {
+        "key": "c10-kamarupa",
+        "name": "迦摩缕波",
+        "faction": "迦摩缕波",
+        "adminId": "c10-kamarupa",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 10500,
+          "grain": 91004,
+          "cloth": 5056
+        }
+      },
+      {
+        "key": "c10-himalaya-east",
+        "name": "东喜马拉雅诸部",
+        "faction": "东喜马拉雅诸部",
+        "adminId": "c10-himalaya-east",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1000,
+          "grain": 12160,
+          "cloth": 2274
+        }
+      },
+      {
+        "key": "c10-pyu",
+        "name": "骠国",
+        "faction": "骠国",
+        "adminId": "c10-pyu",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 16958,
+          "grain": 136661,
+          "cloth": 10501
+        }
+      },
+      {
+        "key": "c10-arakan",
+        "name": "骠国以西山地",
+        "faction": "西部山地诸部",
+        "adminId": "c10-arakan",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1048,
+          "grain": 13321,
+          "cloth": 1750
+        }
+      },
+      {
+        "key": "c10-lower-irrawaddy",
+        "name": "弥臣",
+        "faction": "下缅甸河谷诸聚落",
+        "adminId": "c10-lower-irrawaddy",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3055,
+          "grain": 31223,
+          "cloth": 1767
+        }
+      },
+      {
+        "key": "c13-ce173156da",
+        "name": "孟人诸港",
+        "faction": "下缅甸河谷诸聚落",
+        "adminId": "c13-ce173156da",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 4945,
+          "grain": 43027,
+          "cloth": 2433
+        }
+      },
+      {
+        "key": "c10-salween",
+        "name": "茫蛮诸部",
+        "faction": "茫蛮诸部",
+        "adminId": "c10-salween",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1900,
+          "grain": 20000,
+          "cloth": 1613
+        }
+      },
+      {
+        "key": "c10-nanzhao",
+        "name": "十睑",
+        "faction": "南诏",
+        "adminId": "c10-nanzhao",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 5654,
+          "grain": 43167,
+          "cloth": 6243
+        }
+      },
+      {
+        "key": "circuit-55884df8b1ea",
+        "name": "诸节度都督",
+        "faction": "南诏",
+        "adminId": "circuit-55884df8b1ea",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 12,
+        "opening": null,
+        "childrenOpening": {
+          "money": 7987,
+          "grain": 61762,
+          "cloth": 9187
+        }
+      },
+      {
+        "key": "c10-champa-frontier",
+        "name": "环王北境",
+        "faction": "环王",
+        "adminId": "c10-champa-frontier",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3630,
+          "grain": 18007,
+          "cloth": 1374
+        }
+      },
+      {
+        "key": "c13-ddf9eee255",
+        "name": "环王",
+        "faction": "环王",
+        "adminId": "c13-ddf9eee255",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 17585,
+          "grain": 87263,
+          "cloth": 6659
+        }
+      },
+      {
+        "key": "c10-mekong",
+        "name": "文单与湄公河诸部",
+        "faction": "湄公河上游诸部",
+        "adminId": "c10-mekong",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 2085,
+          "grain": 25419,
+          "cloth": 2103
+        }
+      },
+      {
+        "key": "c13-60083cfb22",
+        "name": "哈里奔猜",
+        "faction": "湄公河上游诸部",
+        "adminId": "c13-60083cfb22",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 702,
+          "grain": 8584,
+          "cloth": 697
+        }
+      },
+      {
+        "key": "c10-unresolved-east",
+        "name": "牂牁",
+        "faction": "牂牁诸蛮",
+        "adminId": "c10-unresolved-east",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 267,
+          "grain": 2200,
+          "cloth": 214
+        }
+      },
+      {
+        "key": "c13-9c5782caba",
+        "name": "坚昆",
+        "faction": "黠戛斯",
+        "adminId": "c13-9c5782caba",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 3216,
+          "grain": 16231,
+          "cloth": 4592
+        }
+      },
+      {
+        "key": "c13-4ce8e9ece7",
+        "name": "安西四镇故地",
+        "faction": "安西绿洲诸城",
+        "adminId": "c13-4ce8e9ece7",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 17598,
+          "grain": 85248,
+          "cloth": 10500
+        }
+      },
+      {
+        "key": "c13-d6567db0df",
+        "name": "十姓可汗故地",
+        "faction": "葛逻禄诸部",
+        "adminId": "c13-d6567db0df",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": null,
+        "childrenOpening": {
+          "money": 6048,
+          "grain": 23100,
+          "cloth": 4900
+        }
+      },
+      {
+        "key": "c13-fe85bd0ac9",
+        "name": "葱岭",
+        "faction": "葱岭诸谷",
+        "adminId": "c13-fe85bd0ac9",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 1700,
+          "grain": 6720,
+          "cloth": 2450
+        }
+      },
+      {
+        "key": "c13-9653ce8f33",
+        "name": "迦湿弥罗",
+        "faction": "迦湿弥罗",
+        "adminId": "c13-9653ce8f33",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": null,
+        "childrenOpening": {
+          "money": 14435,
+          "grain": 98273,
+          "cloth": 6579
+        }
+      },
+      {
+        "key": "c13-91d65b7651",
+        "name": "泥婆罗",
+        "faction": "泥婆罗",
+        "adminId": "c13-91d65b7651",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": null,
+        "childrenOpening": {
+          "money": 6624,
+          "grain": 40569,
+          "cloth": 2457
+        }
+      },
+      {
+        "key": "c13-daeb9c855f",
+        "name": "小海诸部",
+        "faction": "骨利干诸部",
+        "adminId": "c13-daeb9c855f",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 699,
+          "grain": 5439,
+          "cloth": 1926
+        }
+      },
+      {
+        "key": "c13-0b6d7d240f",
+        "name": "真腊",
+        "faction": "真腊",
+        "adminId": "c13-0b6d7d240f",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 10364,
+          "grain": 139930,
+          "cloth": 7751
+        }
+      },
+      {
+        "key": "c13-3d0e9e601e",
+        "name": "堕和罗",
+        "faction": "堕和罗",
+        "adminId": "c13-3d0e9e601e",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": null,
+        "childrenOpening": {
+          "money": 20799,
+          "grain": 132000,
+          "cloth": 9801
+        }
+      },
+      {
+        "key": "c13-6b43c743b1",
+        "name": "南海半岛",
+        "faction": "南海半岛诸港",
+        "adminId": "c13-6b43c743b1",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": null,
+        "childrenOpening": {
+          "money": 41601,
+          "grain": 35752,
+          "cloth": 7699
+        }
+      },
+      {
+        "key": "div-v15-2edd3af41daf",
+        "name": "曲女城与恒河诸地",
+        "faction": "瞿折罗·波罗底诃罗",
+        "adminId": "div-v15-2edd3af41daf",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": null,
+        "childrenOpening": {
+          "money": 232132,
+          "grain": 1045423,
+          "cloth": 46766
+        }
+      },
+      {
+        "key": "div-v15-f643ad59b709",
+        "name": "摩揭陀与东部诸地",
+        "faction": "波罗王朝",
+        "adminId": "div-v15-f643ad59b709",
+        "governor": "",
+        "characterId": null,
+        "title": "",
+        "capital": "",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": null,
+        "childrenOpening": {
+          "money": 150575,
+          "grain": 1076924,
+          "cloth": 48450
+        }
+      }
+    ]
+  },
+  {
+    "file": "绍宋·建炎元年八月（官方）.json",
+    "id": "sc-jianyan1-1127-shaosong",
+    "registry": 101,
+    "scopeRows": 104,
+    "playerCircuits": 28,
+    "playerNamed": 3,
+    "playerChars": 3,
+    "playerOfficeCandidates": 3,
+    "playerCapital": 28,
+    "allNamed": 4,
+    "allChars": 4,
+    "buildingTypes": 0,
+    "builtNodes": 0,
+    "builtNonLeaves": 0,
+    "builtInstances": 0,
+    "rows": [
+      {
+        "key": "ss-circuit-e15bbc8644e3",
+        "name": "京畿路",
+        "faction": "player",
+        "adminId": "div_ss_e15bbc8644e3",
+        "governor": "宗泽",
+        "characterId": "char_jianyan1_13",
+        "title": "东京留守",
+        "capital": "ssr-0001",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "东京留守兼开封尹",
+            "holder": "宗泽",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 6,
+        "opening": {
+          "money": 1052048,
+          "grain": 494430,
+          "cloth": 34918
+        },
+        "childrenOpening": {
+          "money": 1052048,
+          "grain": 494430,
+          "cloth": 34918
+        }
+      },
+      {
+        "key": "ss-circuit-461adb50ff30",
+        "name": "京东西路",
+        "faction": "player",
+        "adminId": "div_ss_461adb50ff30",
+        "governor": "",
+        "characterId": null,
+        "title": "京东西路安抚使",
+        "capital": "ssr-0007",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 1784001,
+          "grain": 573519,
+          "cloth": 92238
+        },
+        "childrenOpening": {
+          "money": 1784001,
+          "grain": 573519,
+          "cloth": 92238
+        }
+      },
+      {
+        "key": "ss-circuit-4bb800f0edbe",
+        "name": "京东东路",
+        "faction": "player",
+        "adminId": "div_ss_4bb800f0edbe",
+        "governor": "",
+        "characterId": null,
+        "title": "京东东路安抚使",
+        "capital": "ssr-0019",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 1285903,
+          "grain": 744409,
+          "cloth": 126173
+        },
+        "childrenOpening": {
+          "money": 1285903,
+          "grain": 744409,
+          "cloth": 126173
+        }
+      },
+      {
+        "key": "ss-circuit-790a15370d02",
+        "name": "京西北路",
+        "faction": "player",
+        "adminId": "div_ss_790a15370d02",
+        "governor": "",
+        "characterId": null,
+        "title": "京西北路转运使",
+        "capital": "ssr-0026",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 1679664,
+          "grain": 984667,
+          "cloth": 78084
+        },
+        "childrenOpening": {
+          "money": 1679664,
+          "grain": 984667,
+          "cloth": 78084
+        }
+      },
+      {
+        "key": "ss-circuit-bd013d7d7de2",
+        "name": "京西南路",
+        "faction": "player",
+        "adminId": "div_ss_bd013d7d7de2",
+        "governor": "",
+        "characterId": null,
+        "title": "京西南路转运使",
+        "capital": "ssr-0039",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 1067976,
+          "grain": 811972,
+          "cloth": 63712
+        },
+        "childrenOpening": {
+          "money": 1067976,
+          "grain": 811972,
+          "cloth": 63712
+        }
+      },
+      {
+        "key": "ss-circuit-3426f7d6ea70",
+        "name": "永兴军路",
+        "faction": "player",
+        "adminId": "div_ss_3426f7d6ea70",
+        "governor": "",
+        "characterId": null,
+        "title": "永兴军路安抚使",
+        "capital": "ssr-0236",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 1154376,
+          "grain": 975372,
+          "cloth": 66314
+        },
+        "childrenOpening": {
+          "money": 1154376,
+          "grain": 975372,
+          "cloth": 66314
+        }
+      },
+      {
+        "key": "ss-circuit-efe9eeb8c902",
+        "name": "淮南东路",
+        "faction": "player",
+        "adminId": "div_ss_efe9eeb8c902",
+        "governor": "",
+        "characterId": null,
+        "title": "淮南东路安抚使",
+        "capital": "ssr-0057",
+        "officeCandidates": [],
+        "leafCount": 14,
+        "opening": {
+          "money": 3039679,
+          "grain": 917061,
+          "cloth": 94322
+        },
+        "childrenOpening": {
+          "money": 3039679,
+          "grain": 917061,
+          "cloth": 94322
+        }
+      },
+      {
+        "key": "ss-circuit-2d2e4aac0b36",
+        "name": "淮南西路",
+        "faction": "player",
+        "adminId": "div_ss_2d2e4aac0b36",
+        "governor": "",
+        "characterId": null,
+        "title": "淮南西路转运使",
+        "capital": "ssr-0063",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 3315844,
+          "grain": 980101,
+          "cloth": 90726
+        },
+        "childrenOpening": {
+          "money": 3315844,
+          "grain": 980101,
+          "cloth": 90726
+        }
+      },
+      {
+        "key": "ss-circuit-e09dfe01cd2c",
+        "name": "江南东路",
+        "faction": "player",
+        "adminId": "div_ss_e09dfe01cd2c",
+        "governor": "",
+        "characterId": null,
+        "title": "江南东路安抚使",
+        "capital": "ssr-0072",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 1916800,
+          "grain": 1795649,
+          "cloth": 172470
+        },
+        "childrenOpening": {
+          "money": 1916800,
+          "grain": 1795649,
+          "cloth": 172470
+        }
+      },
+      {
+        "key": "ss-circuit-ae275acfc704",
+        "name": "江南西路",
+        "faction": "player",
+        "adminId": "div_ss_ae275acfc704",
+        "governor": "",
+        "characterId": null,
+        "title": "江南西路转运使",
+        "capital": "ssr-0081",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 2249709,
+          "grain": 1006130,
+          "cloth": 212750
+        },
+        "childrenOpening": {
+          "money": 2249709,
+          "grain": 1006130,
+          "cloth": 212750
+        }
+      },
+      {
+        "key": "ss-circuit-90bec1753763",
+        "name": "两浙路",
+        "faction": "player",
+        "adminId": "div_ss_90bec1753763",
+        "governor": "",
+        "characterId": null,
+        "title": "两浙转运使",
+        "capital": "ssr-0092",
+        "officeCandidates": [],
+        "leafCount": 16,
+        "opening": {
+          "money": 3994854,
+          "grain": 2173966,
+          "cloth": 448719
+        },
+        "childrenOpening": {
+          "money": 3994854,
+          "grain": 2173966,
+          "cloth": 448719
+        }
+      },
+      {
+        "key": "ss-circuit-c035e61cb806",
+        "name": "荆湖北路",
+        "faction": "player",
+        "adminId": "div_ss_c035e61cb806",
+        "governor": "",
+        "characterId": null,
+        "title": "荆湖北路转运使",
+        "capital": "ssr-0108",
+        "officeCandidates": [],
+        "leafCount": 14,
+        "opening": {
+          "money": 1347829,
+          "grain": 792360,
+          "cloth": 76926
+        },
+        "childrenOpening": {
+          "money": 1347829,
+          "grain": 792360,
+          "cloth": 76926
+        }
+      },
+      {
+        "key": "ss-circuit-5bb300355425",
+        "name": "荆湖南路",
+        "faction": "player",
+        "adminId": "div_ss_5bb300355425",
+        "governor": "",
+        "characterId": null,
+        "title": "荆湖南路安抚使",
+        "capital": "ssr-0122",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 1180353,
+          "grain": 817584,
+          "cloth": 108190
+        },
+        "childrenOpening": {
+          "money": 1180353,
+          "grain": 817584,
+          "cloth": 108190
+        }
+      },
+      {
+        "key": "ss-circuit-983349928199",
+        "name": "福建路",
+        "faction": "player",
+        "adminId": "div_ss_983349928199",
+        "governor": "",
+        "characterId": null,
+        "title": "福建路转运使",
+        "capital": "ssr-0132",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 1379573,
+          "grain": 457909,
+          "cloth": 120613
+        },
+        "childrenOpening": {
+          "money": 1379573,
+          "grain": 457909,
+          "cloth": 120613
+        }
+      },
+      {
+        "key": "ss-circuit-a6fd2ffe8c7e",
+        "name": "广南东路",
+        "faction": "player",
+        "adminId": "div_ss_a6fd2ffe8c7e",
+        "governor": "",
+        "characterId": null,
+        "title": "广南东路经略安抚使",
+        "capital": "ssr-0141",
+        "officeCandidates": [],
+        "leafCount": 14,
+        "opening": {
+          "money": 745968,
+          "grain": 323197,
+          "cloth": 46640
+        },
+        "childrenOpening": {
+          "money": 745968,
+          "grain": 323197,
+          "cloth": 46640
+        }
+      },
+      {
+        "key": "ss-circuit-34c36723a461",
+        "name": "广南西路",
+        "faction": "player",
+        "adminId": "div_ss_34c36723a461",
+        "governor": "",
+        "characterId": null,
+        "title": "广南西路经略安抚使",
+        "capital": "ssr-0155",
+        "officeCandidates": [],
+        "leafCount": 27,
+        "opening": {
+          "money": 677558,
+          "grain": 221071,
+          "cloth": 23936
+        },
+        "childrenOpening": {
+          "money": 677558,
+          "grain": 221071,
+          "cloth": 23936
+        }
+      },
+      {
+        "key": "ss-circuit-4aad9569a7c9",
+        "name": "成都府路",
+        "faction": "player",
+        "adminId": "div_ss_4aad9569a7c9",
+        "governor": "",
+        "characterId": null,
+        "title": "成都府路转运使",
+        "capital": "ssr-0182",
+        "officeCandidates": [],
+        "leafCount": 16,
+        "opening": {
+          "money": 1836244,
+          "grain": 419887,
+          "cloth": 204798
+        },
+        "childrenOpening": {
+          "money": 1836244,
+          "grain": 419887,
+          "cloth": 204798
+        }
+      },
+      {
+        "key": "ss-circuit-097b3ab61827",
+        "name": "潼川府路",
+        "faction": "player",
+        "adminId": "div_ss_097b3ab61827",
+        "governor": "",
+        "characterId": null,
+        "title": "潼川府路转运使",
+        "capital": "ssr-0194",
+        "officeCandidates": [],
+        "leafCount": 15,
+        "opening": {
+          "money": 1231022,
+          "grain": 381320,
+          "cloth": 88547
+        },
+        "childrenOpening": {
+          "money": 1231022,
+          "grain": 381320,
+          "cloth": 88547
+        }
+      },
+      {
+        "key": "ss-circuit-8b62646aa40c",
+        "name": "夔州路",
+        "faction": "player",
+        "adminId": "div_ss_8b62646aa40c",
+        "governor": "",
+        "characterId": null,
+        "title": "夔州路转运使",
+        "capital": "ssr-0209",
+        "officeCandidates": [],
+        "leafCount": 16,
+        "opening": {
+          "money": 543972,
+          "grain": 67138,
+          "cloth": 30905
+        },
+        "childrenOpening": {
+          "money": 543972,
+          "grain": 67138,
+          "cloth": 30905
+        }
+      },
+      {
+        "key": "ss-circuit-d2a89e66588a",
+        "name": "利州路",
+        "faction": "player",
+        "adminId": "div_ss_d2a89e66588a",
+        "governor": "",
+        "characterId": null,
+        "title": "利州路转运使",
+        "capital": "ssr-0222",
+        "officeCandidates": [],
+        "leafCount": 10,
+        "opening": {
+          "money": 785830,
+          "grain": 270808,
+          "cloth": 37030
+        },
+        "childrenOpening": {
+          "money": 785830,
+          "grain": 270808,
+          "cloth": 37030
+        }
+      },
+      {
+        "key": "ss-circuit-383068df97eb",
+        "name": "秦凤路",
+        "faction": "player",
+        "adminId": "div_ss_383068df97eb",
+        "governor": "",
+        "characterId": null,
+        "title": "秦凤路经略安抚使",
+        "capital": "ssr-0241",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 1494388,
+          "grain": 484639,
+          "cloth": 29007
+        },
+        "childrenOpening": {
+          "money": 1494388,
+          "grain": 484639,
+          "cloth": 29007
+        }
+      },
+      {
+        "key": "ss-circuit-62f22151b8ab",
+        "name": "三泉直隶",
+        "faction": "player",
+        "adminId": "div_ss_62f22151b8ab",
+        "governor": "",
+        "characterId": null,
+        "title": "知三泉县",
+        "capital": "ssr-0235",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 81857,
+          "grain": 5678,
+          "cloth": 690
+        },
+        "childrenOpening": {
+          "money": 81857,
+          "grain": 5678,
+          "cloth": 690
+        }
+      },
+      {
+        "key": "ss-circuit-c8ee00c88194",
+        "name": "泾原路",
+        "faction": "player",
+        "adminId": "div_ss_c8ee00c88194",
+        "governor": "",
+        "characterId": null,
+        "title": "泾原路经略安抚使",
+        "capital": "ssr-0242",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 199249,
+          "grain": 129587,
+          "cloth": 6648
+        },
+        "childrenOpening": {
+          "money": 199249,
+          "grain": 129587,
+          "cloth": 6648
+        }
+      },
+      {
+        "key": "ss-circuit-564e48e76e57",
+        "name": "环庆路",
+        "faction": "player",
+        "adminId": "div_ss_564e48e76e57",
+        "governor": "",
+        "characterId": null,
+        "title": "环庆路经略安抚使",
+        "capital": "ssr-0246",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "环庆路经略安抚使",
+            "holder": "赵哲",
+            "faction": "fac_xijun"
+          }
+        ],
+        "leafCount": 4,
+        "opening": {
+          "money": 444428,
+          "grain": 224888,
+          "cloth": 11537
+        },
+        "childrenOpening": {
+          "money": 444428,
+          "grain": 224888,
+          "cloth": 11537
+        }
+      },
+      {
+        "key": "ss-circuit-b50745e66c46",
+        "name": "鄜延路",
+        "faction": "player",
+        "adminId": "div_ss_b50745e66c46",
+        "governor": "",
+        "characterId": null,
+        "title": "鄜延路经略安抚使",
+        "capital": "ssr-0252",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 372197,
+          "grain": 176783,
+          "cloth": 9069
+        },
+        "childrenOpening": {
+          "money": 372197,
+          "grain": 176783,
+          "cloth": 9069
+        }
+      },
+      {
+        "key": "ss-circuit-afd24c201baf",
+        "name": "熙河兰湟路",
+        "faction": "player",
+        "adminId": "div_ss_afd24c201baf",
+        "governor": "",
+        "characterId": null,
+        "title": "熙河兰湟路经略安抚使",
+        "capital": "ssr-0259",
+        "officeCandidates": [],
+        "leafCount": 9,
+        "opening": {
+          "money": 274770,
+          "grain": 102627,
+          "cloth": 4388
+        },
+        "childrenOpening": {
+          "money": 274770,
+          "grain": 102627,
+          "cloth": 4388
+        }
+      },
+      {
+        "key": "ss-circuit-733c7e0a7ef2",
+        "name": "河东路",
+        "faction": "player",
+        "adminId": "div_ss_733c7e0a7ef2",
+        "governor": "折可求",
+        "characterId": "char_ss_108",
+        "title": "麟府路兵马钤辖",
+        "capital": "ssr-0257",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 35205,
+          "grain": 8310,
+          "cloth": 346
+        },
+        "childrenOpening": {
+          "money": 35205,
+          "grain": 8310,
+          "cloth": 346
+        }
+      },
+      {
+        "key": "ss-circuit-733c7e0a7ef2",
+        "name": "河东路",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_733c7e0a7ef2",
+        "governor": "",
+        "characterId": null,
+        "title": "河东路兵马都总管",
+        "capital": "ssr-0267",
+        "officeCandidates": [],
+        "leafCount": 19,
+        "opening": {
+          "money": 449200,
+          "grain": 686563,
+          "cloth": 124511
+        },
+        "childrenOpening": {
+          "money": 449200,
+          "grain": 686563,
+          "cloth": 124511
+        }
+      },
+      {
+        "key": "ss-circuit-67f9ed1ad59d",
+        "name": "河北东路",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_67f9ed1ad59d",
+        "governor": "",
+        "characterId": null,
+        "title": "河北东路兵马都总管",
+        "capital": "ssr-0290",
+        "officeCandidates": [],
+        "leafCount": 17,
+        "opening": {
+          "money": 521396,
+          "grain": 767307,
+          "cloth": 176178
+        },
+        "childrenOpening": {
+          "money": 521396,
+          "grain": 767307,
+          "cloth": 176178
+        }
+      },
+      {
+        "key": "ss-circuit-4b0d957f66c3",
+        "name": "河北西路",
+        "faction": "player",
+        "adminId": "div_ss_4b0d957f66c3",
+        "governor": "张所",
+        "characterId": "char_jianyan1_14",
+        "title": "河北西路招抚使",
+        "capital": "ssr-0317",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "河北招抚使",
+            "holder": "张所",
+            "faction": "player"
+          }
+        ],
+        "leafCount": 4,
+        "opening": {
+          "money": 144732,
+          "grain": 133738,
+          "cloth": 11334
+        },
+        "childrenOpening": {
+          "money": 144732,
+          "grain": 133738,
+          "cloth": 11334
+        }
+      },
+      {
+        "key": "ss-circuit-4b0d957f66c3",
+        "name": "河北西路",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_4b0d957f66c3",
+        "governor": "",
+        "characterId": null,
+        "title": "河北西路兵马都总管",
+        "capital": "ssr-0303",
+        "officeCandidates": [],
+        "leafCount": 13,
+        "opening": {
+          "money": 266568,
+          "grain": 452496,
+          "cloth": 103895
+        },
+        "childrenOpening": {
+          "money": 266568,
+          "grain": 452496,
+          "cloth": 103895
+        }
+      },
+      {
+        "key": "ss-circuit-4b0d957f66c3",
+        "name": "河北西路",
+        "faction": "fac_hebei_yijun",
+        "adminId": "div_ss_hbyj_4b0d957f66c3",
+        "governor": "",
+        "characterId": null,
+        "title": "忠义寨首领",
+        "capital": "ssr-0321",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 6830,
+          "grain": 19320,
+          "cloth": 4830
+        },
+        "childrenOpening": {
+          "money": 6830,
+          "grain": 19320,
+          "cloth": 4830
+        }
+      },
+      {
+        "key": "ss-circuit-4f45150b3281",
+        "name": "燕山地区",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_4f45150b3281",
+        "governor": "时立爱",
+        "characterId": "char_ss_126",
+        "title": "燕京留守",
+        "capital": "ssr-0324",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "枢密副使·同知 (汉地佐贰)",
+            "holder": "时立爱",
+            "faction": "fac_jin"
+          }
+        ],
+        "leafCount": 8,
+        "opening": {
+          "money": 288420,
+          "grain": 452298,
+          "cloth": 86542
+        },
+        "childrenOpening": {
+          "money": 288420,
+          "grain": 452298,
+          "cloth": 86542
+        }
+      },
+      {
+        "key": "ss-circuit-15ea35a2c6c7",
+        "name": "云中地区",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_15ea35a2c6c7",
+        "governor": "",
+        "characterId": null,
+        "title": "西京兵马都部署",
+        "capital": "ssr-0332",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 188742,
+          "grain": 254084,
+          "cloth": 40157
+        },
+        "childrenOpening": {
+          "money": 188742,
+          "grain": 254084,
+          "cloth": 40157
+        }
+      },
+      {
+        "key": "ss-circuit-57ed1e4a9322",
+        "name": "辽东地区",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_57ed1e4a9322",
+        "governor": "",
+        "characterId": null,
+        "title": "东京兵马都部署",
+        "capital": "ssr-0340",
+        "officeCandidates": [],
+        "leafCount": 8,
+        "opening": {
+          "money": 164953,
+          "grain": 218842,
+          "cloth": 39528
+        },
+        "childrenOpening": {
+          "money": 164953,
+          "grain": 218842,
+          "cloth": 39528
+        }
+      },
+      {
+        "key": "ss-circuit-9080ba613c12",
+        "name": "女真本部",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_9080ba613c12",
+        "governor": "",
+        "characterId": null,
+        "title": "会宁府尹",
+        "capital": "ssr-0348",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 51682,
+          "grain": 32970,
+          "cloth": 7444
+        },
+        "childrenOpening": {
+          "money": 51682,
+          "grain": 32970,
+          "cloth": 7444
+        }
+      },
+      {
+        "key": "ss-circuit-b4162b830fa9",
+        "name": "临潢地区",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_b4162b830fa9",
+        "governor": "",
+        "characterId": null,
+        "title": "临潢府尹",
+        "capital": "ssr-0354",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 55049,
+          "grain": 38580,
+          "cloth": 8711
+        },
+        "childrenOpening": {
+          "money": 55049,
+          "grain": 38580,
+          "cloth": 8711
+        }
+      },
+      {
+        "key": "ss-circuit-7039155c7821",
+        "name": "大定地区",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_7039155c7821",
+        "governor": "",
+        "characterId": null,
+        "title": "大定府尹",
+        "capital": "ssr-0355",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 42921,
+          "grain": 56942,
+          "cloth": 7714
+        },
+        "childrenOpening": {
+          "money": 42921,
+          "grain": 56942,
+          "cloth": 7714
+        }
+      },
+      {
+        "key": "ss-circuit-c6c243385a56",
+        "name": "长春—泰州",
+        "faction": "fac_jin",
+        "adminId": "div_ss_jin_c6c243385a56",
+        "governor": "",
+        "characterId": null,
+        "title": "长春州节度使",
+        "capital": "ssr-0358",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 15077,
+          "grain": 10718,
+          "cloth": 2420
+        },
+        "childrenOpening": {
+          "money": 15077,
+          "grain": 10718,
+          "cloth": 2420
+        }
+      },
+      {
+        "key": "ss-circuit-5d5ff6441458",
+        "name": "兴灵地区",
+        "faction": "fac_xixia",
+        "adminId": "div_ss_xx_5d5ff6441458",
+        "governor": "",
+        "characterId": null,
+        "title": "兴庆府尹",
+        "capital": "ssr-0362",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 355340,
+          "grain": 164751,
+          "cloth": 44721
+        },
+        "childrenOpening": {
+          "money": 355340,
+          "grain": 164751,
+          "cloth": 44721
+        }
+      },
+      {
+        "key": "ss-circuit-22122ef7a56f",
+        "name": "夏宥盐州",
+        "faction": "fac_xixia",
+        "adminId": "div_ss_xx_22122ef7a56f",
+        "governor": "",
+        "characterId": null,
+        "title": "左厢宥州路统军",
+        "capital": "ssr-0366",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 118403,
+          "grain": 44939,
+          "cloth": 12900
+        },
+        "childrenOpening": {
+          "money": 118403,
+          "grain": 44939,
+          "cloth": 12900
+        }
+      },
+      {
+        "key": "ss-circuit-656b66dd9879",
+        "name": "河西走廊",
+        "faction": "fac_xixia",
+        "adminId": "div_ss_xx_656b66dd9879",
+        "governor": "",
+        "characterId": null,
+        "title": "右厢甘州路统军",
+        "capital": "ssr-0371",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 56567,
+          "grain": 25996,
+          "cloth": 6020
+        },
+        "childrenOpening": {
+          "money": 56567,
+          "grain": 25996,
+          "cloth": 6020
+        }
+      },
+      {
+        "key": "ss-circuit-0f0ac1617958",
+        "name": "黑水—贺兰",
+        "faction": "fac_xixia",
+        "adminId": "div_ss_xx_0f0ac1617958",
+        "governor": "",
+        "characterId": null,
+        "title": "黑水镇燕监军使",
+        "capital": "ssr-0376",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 105034,
+          "grain": 34914,
+          "cloth": 10034
+        },
+        "childrenOpening": {
+          "money": 105034,
+          "grain": 34914,
+          "cloth": 10034
+        }
+      },
+      {
+        "key": "ss-circuit-519efef8848d",
+        "name": "洱海—永昌",
+        "faction": "fac_dali",
+        "adminId": "div_ss_dl_519efef8848d",
+        "governor": "",
+        "characterId": null,
+        "title": "清平官",
+        "capital": "ssr-0379",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 241969,
+          "grain": 139425,
+          "cloth": 33849
+        },
+        "childrenOpening": {
+          "money": 241969,
+          "grain": 139425,
+          "cloth": 33849
+        }
+      },
+      {
+        "key": "ss-circuit-3906f010b1f8",
+        "name": "鄯阐—威楚",
+        "faction": "fac_dali",
+        "adminId": "div_ss_dl_3906f010b1f8",
+        "governor": "",
+        "characterId": null,
+        "title": "善阐侯",
+        "capital": "ssr-0380",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 274052,
+          "grain": 159701,
+          "cloth": 32955
+        },
+        "childrenOpening": {
+          "money": 274052,
+          "grain": 159701,
+          "cloth": 32955
+        }
+      },
+      {
+        "key": "ss-circuit-d56324df14c8",
+        "name": "会川—统矢",
+        "faction": "fac_dali",
+        "adminId": "div_ss_dl_d56324df14c8",
+        "governor": "",
+        "characterId": null,
+        "title": "会川府主",
+        "capital": "ssr-0385",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 186285,
+          "grain": 110474,
+          "cloth": 22796
+        },
+        "childrenOpening": {
+          "money": 186285,
+          "grain": 110474,
+          "cloth": 22796
+        }
+      },
+      {
+        "key": "ss-circuit-711c74ff4720",
+        "name": "建昌",
+        "faction": "fac_jianchang",
+        "adminId": "div_ss_jc_711c74ff4720",
+        "governor": "",
+        "characterId": null,
+        "title": "建昌府主",
+        "capital": "ssr-0387",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 52150,
+          "grain": 37530,
+          "cloth": 14595
+        },
+        "childrenOpening": {
+          "money": 52150,
+          "grain": 37530,
+          "cloth": 14595
+        }
+      },
+      {
+        "key": "ss-circuit-d03dac854b36",
+        "name": "滇西北",
+        "faction": "fac_nw_yunnan",
+        "adminId": "div_ss_dxb_d03dac854b36",
+        "governor": "",
+        "characterId": null,
+        "title": "磨些大酋",
+        "capital": "ssr-0389",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 124704,
+          "grain": 84240,
+          "cloth": 32760
+        },
+        "childrenOpening": {
+          "money": 124704,
+          "grain": 84240,
+          "cloth": 32760
+        }
+      },
+      {
+        "key": "ss-circuit-86854f768b7e",
+        "name": "乌蒙乌撒",
+        "faction": "fac_wumeng",
+        "adminId": "div_ss_wm_86854f768b7e",
+        "governor": "",
+        "characterId": null,
+        "title": "乌蒙大酋",
+        "capital": "ssr-0392",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 133291,
+          "grain": 98640,
+          "cloth": 38360
+        },
+        "childrenOpening": {
+          "money": 133291,
+          "grain": 98640,
+          "cloth": 38360
+        }
+      },
+      {
+        "key": "ss-circuit-bdd6cd3932aa",
+        "name": "金齿",
+        "faction": "fac_jinchi",
+        "adminId": "div_ss_jcz_bdd6cd3932aa",
+        "governor": "",
+        "characterId": null,
+        "title": "金齿大首领",
+        "capital": "ssr-0395",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 98651,
+          "grain": 75420,
+          "cloth": 29330
+        },
+        "childrenOpening": {
+          "money": 98651,
+          "grain": 75420,
+          "cloth": 29330
+        }
+      },
+      {
+        "key": "ss-circuit-bbd3dab6896d",
+        "name": "滇中南",
+        "faction": "fac_xinan_tribes",
+        "adminId": "div_ss_dzn_bbd3dab6896d",
+        "governor": "",
+        "characterId": null,
+        "title": "滇中南乌蛮大酋",
+        "capital": "ssr-0398",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 114618,
+          "grain": 86940,
+          "cloth": 33810
+        },
+        "childrenOpening": {
+          "money": 114618,
+          "grain": 86940,
+          "cloth": 33810
+        }
+      },
+      {
+        "key": "ss-circuit-8ab554e1d116",
+        "name": "罗殿",
+        "faction": "fac_luodian",
+        "adminId": "div_ss_ld_8ab554e1d116",
+        "governor": "",
+        "characterId": null,
+        "title": "罗殿王",
+        "capital": "ssr-0403",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 18542,
+          "grain": 15120,
+          "cloth": 5880
+        },
+        "childrenOpening": {
+          "money": 18542,
+          "grain": 15120,
+          "cloth": 5880
+        }
+      },
+      {
+        "key": "ss-circuit-bf52f138537e",
+        "name": "自杞",
+        "faction": "fac_ziqi",
+        "adminId": "div_ss_zq_bf52f138537e",
+        "governor": "",
+        "characterId": null,
+        "title": "自杞国主",
+        "capital": "ssr-0405",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 36319,
+          "grain": 25740,
+          "cloth": 10010
+        },
+        "childrenOpening": {
+          "money": 36319,
+          "grain": 25740,
+          "cloth": 10010
+        }
+      },
+      {
+        "key": "ss-circuit-e5ecd31587d1",
+        "name": "升龙平原",
+        "faction": "fac_daiviet",
+        "adminId": "div_ss_dy_e5ecd31587d1",
+        "governor": "",
+        "characterId": null,
+        "title": "升龙京尹",
+        "capital": "ssr-0407",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 436057,
+          "grain": 351246,
+          "cloth": 41300
+        },
+        "childrenOpening": {
+          "money": 436057,
+          "grain": 351246,
+          "cloth": 41300
+        }
+      },
+      {
+        "key": "ss-circuit-9c1f2f69a2be",
+        "name": "大越北部",
+        "faction": "fac_daiviet",
+        "adminId": "div_ss_dy_9c1f2f69a2be",
+        "governor": "",
+        "characterId": null,
+        "title": "谅州知州",
+        "capital": "ssr-0410",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 54465,
+          "grain": 39113,
+          "cloth": 5950
+        },
+        "childrenOpening": {
+          "money": 54465,
+          "grain": 39113,
+          "cloth": 5950
+        }
+      },
+      {
+        "key": "ss-circuit-fdd3bcd08e73",
+        "name": "清化—乂安",
+        "faction": "fac_daiviet",
+        "adminId": "div_ss_dy_fdd3bcd08e73",
+        "governor": "",
+        "characterId": null,
+        "title": "清化府守",
+        "capital": "ssr-0414",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 152974,
+          "grain": 128841,
+          "cloth": 14700
+        },
+        "childrenOpening": {
+          "money": 152974,
+          "grain": 128841,
+          "cloth": 14700
+        }
+      },
+      {
+        "key": "ss-circuit-b4dcc8b90f82",
+        "name": "蒲甘河谷",
+        "faction": "fac_pagan",
+        "adminId": "div_ss_pg_b4dcc8b90f82",
+        "governor": "",
+        "characterId": null,
+        "title": "蒲甘城主",
+        "capital": "ssr-0416",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 313526,
+          "grain": 256893,
+          "cloth": 45486
+        },
+        "childrenOpening": {
+          "money": 313526,
+          "grain": 256893,
+          "cloth": 45486
+        }
+      },
+      {
+        "key": "ss-circuit-061d244fe3be",
+        "name": "孟地沿海",
+        "faction": "fac_pagan",
+        "adminId": "div_ss_pg_061d244fe3be",
+        "governor": "",
+        "characterId": null,
+        "title": "蒲甘属部·直通孟人首领",
+        "capital": "ssr-0420",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 106165,
+          "grain": 88952,
+          "cloth": 15750
+        },
+        "childrenOpening": {
+          "money": 106165,
+          "grain": 88952,
+          "cloth": 15750
+        }
+      },
+      {
+        "key": "ss-circuit-9e7e98f0cb94",
+        "name": "若开山地",
+        "faction": "fac_pagan",
+        "adminId": "div_ss_pg_9e7e98f0cb94",
+        "governor": "",
+        "characterId": null,
+        "title": "若开王",
+        "capital": "ssr-0421",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 10165,
+          "grain": 8955,
+          "cloth": 2114
+        },
+        "childrenOpening": {
+          "money": 10165,
+          "grain": 8955,
+          "cloth": 2114
+        }
+      },
+      {
+        "key": "ss-circuit-e2eb61dfd856",
+        "name": "昌都河谷",
+        "faction": "fac_kham",
+        "adminId": "div_ss_dk_e2eb61dfd856",
+        "governor": "",
+        "characterId": null,
+        "title": "朵甘思大酋",
+        "capital": "ssr-0422",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 39674,
+          "grain": 20191,
+          "cloth": 10080
+        },
+        "childrenOpening": {
+          "money": 39674,
+          "grain": 20191,
+          "cloth": 10080
+        }
+      },
+      {
+        "key": "ss-circuit-a9b330c19d9f",
+        "name": "玉树—囊谦",
+        "faction": "fac_kham",
+        "adminId": "div_ss_dk_a9b330c19d9f",
+        "governor": "",
+        "characterId": null,
+        "title": "玉树边部土酋",
+        "capital": "ssr-0425",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 23324,
+          "grain": 10469,
+          "cloth": 7840
+        },
+        "childrenOpening": {
+          "money": 23324,
+          "grain": 10469,
+          "cloth": 7840
+        }
+      },
+      {
+        "key": "ss-circuit-6690e2430055",
+        "name": "川西诸谷",
+        "faction": "fac_kham",
+        "adminId": "div_ss_dk_6690e2430055",
+        "governor": "",
+        "characterId": null,
+        "title": "甘孜土酋",
+        "capital": "ssr-0426",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 84050,
+          "grain": 39540,
+          "cloth": 23030
+        },
+        "childrenOpening": {
+          "money": 84050,
+          "grain": 39540,
+          "cloth": 23030
+        }
+      },
+      {
+        "key": "ss-circuit-f7a64e2ad339",
+        "name": "卫地",
+        "faction": "fac_tubo",
+        "adminId": "div_ss_wz_f7a64e2ad339",
+        "governor": "",
+        "characterId": null,
+        "title": "逻些诸部首领",
+        "capital": "ssr-0431",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 37723,
+          "grain": 31416,
+          "cloth": 12668
+        },
+        "childrenOpening": {
+          "money": 37723,
+          "grain": 31416,
+          "cloth": 12668
+        }
+      },
+      {
+        "key": "ss-circuit-05f2f3ef839d",
+        "name": "藏地",
+        "faction": "fac_tubo",
+        "adminId": "div_ss_wz_05f2f3ef839d",
+        "governor": "",
+        "characterId": null,
+        "title": "后藏豪族",
+        "capital": "ssr-0433",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 11221,
+          "grain": 8739,
+          "cloth": 4025
+        },
+        "childrenOpening": {
+          "money": 11221,
+          "grain": 8739,
+          "cloth": 4025
+        }
+      },
+      {
+        "key": "ss-circuit-2ed4efd12939",
+        "name": "藏北地区",
+        "faction": "fac_tubo",
+        "adminId": "div_ss_wz_2ed4efd12939",
+        "governor": "",
+        "characterId": null,
+        "title": "藏北牧部首领",
+        "capital": "ssr-0436",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 9333,
+          "grain": 5097,
+          "cloth": 3782
+        },
+        "childrenOpening": {
+          "money": 9333,
+          "grain": 5097,
+          "cloth": 3782
+        }
+      },
+      {
+        "key": "ss-circuit-8bb9f2ac83e3",
+        "name": "宗喀—柴达木",
+        "faction": "fac_tubo",
+        "adminId": "div_ss_wz_8bb9f2ac83e3",
+        "governor": "",
+        "characterId": null,
+        "title": "宗喀诸部首领",
+        "capital": "ssr-0439",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 18304,
+          "grain": 9998,
+          "cloth": 7420
+        },
+        "childrenOpening": {
+          "money": 18304,
+          "grain": 9998,
+          "cloth": 7420
+        }
+      },
+      {
+        "key": "ss-circuit-b4608024ef96",
+        "name": "古格",
+        "faction": "fac_guge",
+        "adminId": "div_ss_gg_b4608024ef96",
+        "governor": "",
+        "characterId": null,
+        "title": "古格·赞普",
+        "capital": "ssr-0440",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 11335,
+          "grain": 7920,
+          "cloth": 4620
+        },
+        "childrenOpening": {
+          "money": 11335,
+          "grain": 7920,
+          "cloth": 4620
+        }
+      },
+      {
+        "key": "ss-circuit-4e0189099a78",
+        "name": "高昌—伊州",
+        "faction": "fac_qocho",
+        "adminId": "div_ss_gc_4e0189099a78",
+        "governor": "",
+        "characterId": null,
+        "title": "高昌回鹘·亦都护",
+        "capital": "ssr-0444",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 294801,
+          "grain": 90187,
+          "cloth": 28635
+        },
+        "childrenOpening": {
+          "money": 294801,
+          "grain": 90187,
+          "cloth": 28635
+        }
+      },
+      {
+        "key": "ss-circuit-e7a2c3fdbcd6",
+        "name": "北庭地区",
+        "faction": "fac_qocho",
+        "adminId": "div_ss_gc_e7a2c3fdbcd6",
+        "governor": "",
+        "characterId": null,
+        "title": "高昌回鹘·王子",
+        "capital": "ssr-0446",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 55944,
+          "grain": 18800,
+          "cloth": 4799
+        },
+        "childrenOpening": {
+          "money": 55944,
+          "grain": 18800,
+          "cloth": 4799
+        }
+      },
+      {
+        "key": "ss-circuit-be30dac08e0c",
+        "name": "焉耆—轮台",
+        "faction": "fac_qocho",
+        "adminId": "div_ss_gc_be30dac08e0c",
+        "governor": "",
+        "characterId": null,
+        "title": "高昌回鹘·焉耆守将",
+        "capital": "ssr-0448",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 55667,
+          "grain": 19413,
+          "cloth": 4016
+        },
+        "childrenOpening": {
+          "money": 55667,
+          "grain": 19413,
+          "cloth": 4016
+        }
+      },
+      {
+        "key": "ss-circuit-5449832be26d",
+        "name": "疏勒地区",
+        "faction": "fac_karakhan_east",
+        "adminId": "div_ss_ekh_5449832be26d",
+        "governor": "",
+        "characterId": null,
+        "title": "东喀喇汗·特勤",
+        "capital": "ssr-0451",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 168265,
+          "grain": 59360,
+          "cloth": 16471
+        },
+        "childrenOpening": {
+          "money": 168265,
+          "grain": 59360,
+          "cloth": 16471
+        }
+      },
+      {
+        "key": "ss-circuit-932fd89304bf",
+        "name": "于阗—且末",
+        "faction": "fac_karakhan_east",
+        "adminId": "div_ss_ekh_932fd89304bf",
+        "governor": "",
+        "characterId": null,
+        "title": "东喀喇汗·埃米尔",
+        "capital": "ssr-0453",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 107908,
+          "grain": 37675,
+          "cloth": 12939
+        },
+        "childrenOpening": {
+          "money": 107908,
+          "grain": 37675,
+          "cloth": 12939
+        }
+      },
+      {
+        "key": "ss-circuit-3fc3f6d00d4c",
+        "name": "龟兹—姑墨",
+        "faction": "fac_karakhan_east",
+        "adminId": "div_ss_ekh_3fc3f6d00d4c",
+        "governor": "",
+        "characterId": null,
+        "title": "龟兹伯克",
+        "capital": "ssr-0455",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 151999,
+          "grain": 54754,
+          "cloth": 15194
+        },
+        "childrenOpening": {
+          "money": 151999,
+          "grain": 54754,
+          "cloth": 15194
+        }
+      },
+      {
+        "key": "ss-circuit-5a61174eef2e",
+        "name": "七河地区",
+        "faction": "fac_karakhan_east",
+        "adminId": "div_ss_ekh_5a61174eef2e",
+        "governor": "",
+        "characterId": null,
+        "title": "东喀喇汗·桃花石阿尔斯兰汗",
+        "capital": "ssr-0456",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 71168,
+          "grain": 23411,
+          "cloth": 6496
+        },
+        "childrenOpening": {
+          "money": 71168,
+          "grain": 23411,
+          "cloth": 6496
+        }
+      },
+      {
+        "key": "ss-circuit-32b47199dd3b",
+        "name": "西喀喇汗",
+        "faction": "fac_karakhan_west",
+        "adminId": "div_ss_wkh_32b47199dd3b",
+        "governor": "",
+        "characterId": null,
+        "title": "西喀喇汗国·阿尔斯兰汗",
+        "capital": "ssr-0461",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 65163,
+          "grain": 20160,
+          "cloth": 5880
+        },
+        "childrenOpening": {
+          "money": 65163,
+          "grain": 20160,
+          "cloth": 5880
+        }
+      },
+      {
+        "key": "ss-circuit-daf891cb3efc",
+        "name": "乃蛮",
+        "faction": "fac_caoyuan",
+        "adminId": "div_ss_nm_daf891cb3efc",
+        "governor": "",
+        "characterId": null,
+        "title": "乃蛮大汗",
+        "capital": "ssr-0465",
+        "officeCandidates": [
+          {
+            "id": null,
+            "name": "乃蛮大汗",
+            "holder": "亦难赤·必勒格汗",
+            "faction": "fac_caoyuan"
+          }
+        ],
+        "leafCount": 3,
+        "opening": {
+          "money": 11078,
+          "grain": 3025,
+          "cloth": 4235
+        },
+        "childrenOpening": {
+          "money": 11078,
+          "grain": 3025,
+          "cloth": 4235
+        }
+      },
+      {
+        "key": "ss-circuit-516dd97eee68",
+        "name": "克烈",
+        "faction": "fac_kereit",
+        "adminId": "div_ss_kl_516dd97eee68",
+        "governor": "",
+        "characterId": null,
+        "title": "克烈·不亦鲁黑汗",
+        "capital": "ssr-0467",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 15990,
+          "grain": 3850,
+          "cloth": 5390
+        },
+        "childrenOpening": {
+          "money": 15990,
+          "grain": 3850,
+          "cloth": 5390
+        }
+      },
+      {
+        "key": "ss-circuit-b5780fb090fa",
+        "name": "蔑儿乞",
+        "faction": "fac_merkit",
+        "adminId": "div_ss_mk_b5780fb090fa",
+        "governor": "",
+        "characterId": null,
+        "title": "蔑儿乞·别乞",
+        "capital": "ssr-0470",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 6894,
+          "grain": 1750,
+          "cloth": 2450
+        },
+        "childrenOpening": {
+          "money": 6894,
+          "grain": 1750,
+          "cloth": 2450
+        }
+      },
+      {
+        "key": "ss-circuit-32813a822c89",
+        "name": "蒙兀",
+        "faction": "fac_mongol",
+        "adminId": "div_ss_mg_32813a822c89",
+        "governor": "",
+        "characterId": null,
+        "title": "蒙兀·合不勒汗",
+        "capital": "ssr-0472",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 23234,
+          "grain": 5575,
+          "cloth": 7805
+        },
+        "childrenOpening": {
+          "money": 23234,
+          "grain": 5575,
+          "cloth": 7805
+        }
+      },
+      {
+        "key": "ss-circuit-cd36f5cb5a85",
+        "name": "塔塔儿",
+        "faction": "fac_tatar",
+        "adminId": "div_ss_tt_cd36f5cb5a85",
+        "governor": "",
+        "characterId": null,
+        "title": "塔塔儿·诸部盟主",
+        "capital": "ssr-0475",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 20312,
+          "grain": 4775,
+          "cloth": 6685
+        },
+        "childrenOpening": {
+          "money": 20312,
+          "grain": 4775,
+          "cloth": 6685
+        }
+      },
+      {
+        "key": "ss-circuit-fa8913c62e89",
+        "name": "弘吉剌",
+        "faction": "fac_qongirat",
+        "adminId": "div_ss_hj_fa8913c62e89",
+        "governor": "",
+        "characterId": null,
+        "title": "弘吉剌部·诸部大那颜",
+        "capital": "ssr-0478",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 10454,
+          "grain": 2750,
+          "cloth": 3850
+        },
+        "childrenOpening": {
+          "money": 10454,
+          "grain": 2750,
+          "cloth": 3850
+        }
+      },
+      {
+        "key": "ss-circuit-188cafc0bb4d",
+        "name": "阴山",
+        "faction": "fac_ongud",
+        "adminId": "div_ss_ys_188cafc0bb4d",
+        "governor": "",
+        "characterId": null,
+        "title": "汪古西部那颜",
+        "capital": "ssr-0480",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 3960,
+          "grain": 1375,
+          "cloth": 1925
+        },
+        "childrenOpening": {
+          "money": 3960,
+          "grain": 1375,
+          "cloth": 1925
+        }
+      },
+      {
+        "key": "ss-circuit-622950f42470",
+        "name": "开京畿内",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_622950f42470",
+        "governor": "",
+        "characterId": null,
+        "title": "知开城府事",
+        "capital": "ssr-0482",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 89897,
+          "grain": 50092,
+          "cloth": 8217
+        },
+        "childrenOpening": {
+          "money": 89897,
+          "grain": 50092,
+          "cloth": 8217
+        }
+      },
+      {
+        "key": "ss-circuit-9be06966b5e3",
+        "name": "西京与西北界",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_9be06966b5e3",
+        "governor": "",
+        "characterId": null,
+        "title": "西京留守官",
+        "capital": "ssr-0483",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 103537,
+          "grain": 74123,
+          "cloth": 10838
+        },
+        "childrenOpening": {
+          "money": 103537,
+          "grain": 74123,
+          "cloth": 10838
+        }
+      },
+      {
+        "key": "ss-circuit-21ef58e56331",
+        "name": "汉阳—广州",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_21ef58e56331",
+        "governor": "",
+        "characterId": null,
+        "title": "南京留守官",
+        "capital": "ssr-0484",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 126140,
+          "grain": 92062,
+          "cloth": 15102
+        },
+        "childrenOpening": {
+          "money": 126140,
+          "grain": 92062,
+          "cloth": 15102
+        }
+      },
+      {
+        "key": "ss-circuit-890a2b21a29d",
+        "name": "庆尚地区",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_890a2b21a29d",
+        "governor": "",
+        "characterId": null,
+        "title": "庆尚晋州道按察使",
+        "capital": "ssr-0485",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 267118,
+          "grain": 194954,
+          "cloth": 31980
+        },
+        "childrenOpening": {
+          "money": 267118,
+          "grain": 194954,
+          "cloth": 31980
+        }
+      },
+      {
+        "key": "ss-circuit-c7c233336b68",
+        "name": "全罗与耽罗",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_c7c233336b68",
+        "governor": "",
+        "characterId": null,
+        "title": "全罗道按察使",
+        "capital": "ssr-0486",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 262256,
+          "grain": 191231,
+          "cloth": 31536
+        },
+        "childrenOpening": {
+          "money": 262256,
+          "grain": 191231,
+          "cloth": 31536
+        }
+      },
+      {
+        "key": "ss-circuit-3435697f0af4",
+        "name": "高丽东界",
+        "faction": "fac_goryeo",
+        "adminId": "div_ss_gr_3435697f0af4",
+        "governor": "",
+        "characterId": null,
+        "title": "东界兵马使",
+        "capital": "ssr-0489",
+        "officeCandidates": [],
+        "leafCount": 2,
+        "opening": {
+          "money": 103428,
+          "grain": 75138,
+          "cloth": 10127
+        },
+        "childrenOpening": {
+          "money": 103428,
+          "grain": 75138,
+          "cloth": 10127
+        }
+      },
+      {
+        "key": "ss-circuit-cf377953abc7",
+        "name": "畿内",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_cf377953abc7",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0493",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 128048,
+          "grain": 79890,
+          "cloth": 17254
+        },
+        "childrenOpening": {
+          "money": 128048,
+          "grain": 79890,
+          "cloth": 17254
+        }
+      },
+      {
+        "key": "ss-circuit-a4c32093808c",
+        "name": "东山道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_a4c32093808c",
+        "governor": "",
+        "characterId": null,
+        "title": "陆奥出羽按察使",
+        "capital": "ssr-0505",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 270229,
+          "grain": 273189,
+          "cloth": 47032
+        },
+        "childrenOpening": {
+          "money": 270229,
+          "grain": 273189,
+          "cloth": 47032
+        }
+      },
+      {
+        "key": "ss-circuit-ccb85dcb3f91",
+        "name": "东海道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_ccb85dcb3f91",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0497",
+        "officeCandidates": [],
+        "leafCount": 7,
+        "opening": {
+          "money": 362101,
+          "grain": 335419,
+          "cloth": 57745
+        },
+        "childrenOpening": {
+          "money": 362101,
+          "grain": 335419,
+          "cloth": 57745
+        }
+      },
+      {
+        "key": "ss-circuit-3968683d9c2f",
+        "name": "北陆道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_3968683d9c2f",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0507",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 124437,
+          "grain": 116436,
+          "cloth": 20045
+        },
+        "childrenOpening": {
+          "money": 124437,
+          "grain": 116436,
+          "cloth": 20045
+        }
+      },
+      {
+        "key": "ss-circuit-d35e87690b9a",
+        "name": "山阴道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_d35e87690b9a",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0515",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 83964,
+          "grain": 77951,
+          "cloth": 13420
+        },
+        "childrenOpening": {
+          "money": 83964,
+          "grain": 77951,
+          "cloth": 13420
+        }
+      },
+      {
+        "key": "ss-circuit-40e42ff5082d",
+        "name": "山阳道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_40e42ff5082d",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0516",
+        "officeCandidates": [],
+        "leafCount": 5,
+        "opening": {
+          "money": 132478,
+          "grain": 122716,
+          "cloth": 21127
+        },
+        "childrenOpening": {
+          "money": 132478,
+          "grain": 122716,
+          "cloth": 21127
+        }
+      },
+      {
+        "key": "ss-circuit-e37001deb9eb",
+        "name": "南海道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_e37001deb9eb",
+        "governor": "",
+        "characterId": null,
+        "title": "诸国受领",
+        "capital": "ssr-0523",
+        "officeCandidates": [],
+        "leafCount": 6,
+        "opening": {
+          "money": 80885,
+          "grain": 74924,
+          "cloth": 12899
+        },
+        "childrenOpening": {
+          "money": 80885,
+          "grain": 74924,
+          "cloth": 12899
+        }
+      },
+      {
+        "key": "ss-circuit-acbd9c22e3ae",
+        "name": "西海道",
+        "faction": "fac_japan",
+        "adminId": "div_ss_jp_acbd9c22e3ae",
+        "governor": "",
+        "characterId": null,
+        "title": "大宰大弐",
+        "capital": "ssr-0526",
+        "officeCandidates": [],
+        "leafCount": 11,
+        "opening": {
+          "money": 173007,
+          "grain": 151475,
+          "cloth": 26078
+        },
+        "childrenOpening": {
+          "money": 173007,
+          "grain": 151475,
+          "cloth": 26078
+        }
+      },
+      {
+        "key": "ss-circuit-2cf23404194d",
+        "name": "虾夷诸地",
+        "faction": "fac_beihai",
+        "adminId": "div_ss_bh_2cf23404194d",
+        "governor": "",
+        "characterId": null,
+        "title": "虾夷诸聚落酋长",
+        "capital": "ssr-0541",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 6516,
+          "grain": 4900,
+          "cloth": 2450
+        },
+        "childrenOpening": {
+          "money": 6516,
+          "grain": 4900,
+          "cloth": 2450
+        }
+      },
+      {
+        "key": "ss-circuit-259daa820c45",
+        "name": "骨嵬诸地",
+        "faction": "fac_beihai",
+        "adminId": "div_ss_bh_259daa820c45",
+        "governor": "",
+        "characterId": null,
+        "title": "北海诸部·骨嵬岛首领",
+        "capital": "ssr-0544",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 1676,
+          "grain": 1260,
+          "cloth": 630
+        },
+        "childrenOpening": {
+          "money": 1676,
+          "grain": 1260,
+          "cloth": 630
+        }
+      },
+      {
+        "key": "ss-circuit-e0be6a7db789",
+        "name": "黑水诸部",
+        "faction": "fac_beihai",
+        "adminId": "div_ss_bh_e0be6a7db789",
+        "governor": "",
+        "characterId": null,
+        "title": "北海诸部·众部共推之长",
+        "capital": "ssr-0545",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 9493,
+          "grain": 7140,
+          "cloth": 3570
+        },
+        "childrenOpening": {
+          "money": 9493,
+          "grain": 7140,
+          "cloth": 3570
+        }
+      },
+      {
+        "key": "ss-circuit-4f73a0fb79bc",
+        "name": "流求",
+        "faction": "fac_liuqiu",
+        "adminId": "div_ss_lq_4f73a0fb79bc",
+        "governor": "",
+        "characterId": null,
+        "title": "流求·大社头目",
+        "capital": "ssr-0549",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 12901,
+          "grain": 8260,
+          "cloth": 4130
+        },
+        "childrenOpening": {
+          "money": 12901,
+          "grain": 8260,
+          "cloth": 4130
+        }
+      },
+      {
+        "key": "ss-circuit-28f88bdf265a",
+        "name": "吕宋",
+        "faction": "fac_nanhai",
+        "adminId": "div_ss_lz_28f88bdf265a",
+        "governor": "",
+        "characterId": null,
+        "title": "吕宋大邦拉者",
+        "capital": "ssr-0553",
+        "officeCandidates": [],
+        "leafCount": 4,
+        "opening": {
+          "money": 13035,
+          "grain": 9940,
+          "cloth": 4970
+        },
+        "childrenOpening": {
+          "money": 13035,
+          "grain": 9940,
+          "cloth": 4970
+        }
+      },
+      {
+        "key": "ss-circuit-3242fb39327b",
+        "name": "麻逸",
+        "faction": "fac_mai",
+        "adminId": "div_ss_my_3242fb39327b",
+        "governor": "",
+        "characterId": null,
+        "title": "麻逸·拉贾",
+        "capital": "ssr-0555",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 6201,
+          "grain": 4480,
+          "cloth": 2240
+        },
+        "childrenOpening": {
+          "money": 6201,
+          "grain": 4480,
+          "cloth": 2240
+        }
+      },
+      {
+        "key": "ss-circuit-1f79bca9661b",
+        "name": "米沙鄢",
+        "faction": "fac_visayas",
+        "adminId": "div_ss_ms_1f79bca9661b",
+        "governor": "",
+        "characterId": null,
+        "title": "宿务大邦·拉者",
+        "capital": "ssr-0557",
+        "officeCandidates": [],
+        "leafCount": 3,
+        "opening": {
+          "money": 8459,
+          "grain": 6440,
+          "cloth": 3220
+        },
+        "childrenOpening": {
+          "money": 8459,
+          "grain": 6440,
+          "cloth": 3220
+        }
+      },
+      {
+        "key": "ss-circuit-e082c608de1c",
+        "name": "蒲端",
+        "faction": "fac_butuan",
+        "adminId": "div_ss_pd_e082c608de1c",
+        "governor": "",
+        "characterId": null,
+        "title": "蒲端国主·拉惹",
+        "capital": "ssr-0559",
+        "officeCandidates": [],
+        "leafCount": 1,
+        "opening": {
+          "money": 7323,
+          "grain": 5180,
+          "cloth": 2590
+        },
+        "childrenOpening": {
+          "money": 7323,
+          "grain": 5180,
+          "cloth": 2590
+        }
+      }
+    ]
+  }
+]

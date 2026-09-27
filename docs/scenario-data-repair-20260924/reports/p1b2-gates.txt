@@ -1,0 +1,702 @@
+COMMAND rebuild-twice {"label":"rebuild-twice","args":["docs/scenario-data-repair-20260924/tools/verify-p1b2-rebuild.js"],"cwd":".","exitCode":0,"signal":null,"seconds":1301.548}
+START tianqi rebuild 1
+PASS tianqi rebuild 1 {"round":1,"bytes":16378405,"md5":"16642aaef21be8f67afc7de36b2549b3","sha256":"0451bb99f584b5ed63058050888b43926a1d5468100736b27c22ee15c018736c"}
+START tianqi rebuild 2
+PASS tianqi rebuild 2 {"round":2,"bytes":16378405,"md5":"16642aaef21be8f67afc7de36b2549b3","sha256":"0451bb99f584b5ed63058050888b43926a1d5468100736b27c22ee15c018736c"}
+START shaosong rebuild 1
+PASS shaosong rebuild 1 {"round":1,"bytes":91006403,"md5":"debb83594113245ffbe948a1841b30de","sha256":"e0e652c9a747341a4ab9ab72cec8c794795a45ed05c14054edf528a3daf01212"}
+START shaosong rebuild 2
+PASS shaosong rebuild 2 {"round":2,"bytes":91006403,"md5":"debb83594113245ffbe948a1841b30de","sha256":"e0e652c9a747341a4ab9ab72cec8c794795a45ed05c14054edf528a3daf01212"}
+START tang rebuild 1
+PASS tang rebuild 1 {"round":1,"bytes":52570460,"md5":"d3a3cb62613f159bf4322390d370d2b0","sha256":"ead06279408029ba0b43c898b7f5f1601f7b976317415a1ef5fb532dbc00bb57"}
+START tang rebuild 2
+PASS tang rebuild 2 {"round":2,"bytes":52570460,"md5":"d3a3cb62613f159bf4322390d370d2b0","sha256":"ead06279408029ba0b43c898b7f5f1601f7b976317415a1ef5fb532dbc00bb57"}
+PASS all three scenarios rebuilt twice, byte hashes equal
+
+COMMAND scenario-scope {"label":"scenario-scope","args":["--max-old-space-size=8000","docs/scenario-data-repair-20260924/tools/verify-p1b2-scope.js"],"cwd":".","exitCode":0,"signal":null,"seconds":19.808}
+天启七年·九月（官方）.json: changes=2526 unexpected=0
+绍宋·建炎元年八月（官方）.json: changes=3459 unexpected=0
+晚唐·开成五年（官方）.json: changes=1636 unexpected=0
+PASS changes confined to production fields and resource tags
+
+COMMAND production-authored {"label":"production-authored","args":["web/scripts/smoke-production-authored.js"],"cwd":".","exitCode":0,"signal":null,"seconds":0.104}
+PASS production authored: six fields, high/low/zero, growth/decline, construction, save roundtrip and legacy migration
+
+COMMAND production-b2 {"label":"production-b2","args":["web/scripts/smoke-production-b2.js"],"cwd":".","exitCode":0,"signal":null,"seconds":0.1}
+[B2] 盐区(人口2M)盐=1000000/矿=200000 · 建矿场+人口涨矿=170000(自然120000+加成50000) · 港马渔: 海贸=20000/马=1000/渔=50000
+  [T2] 盐矿随人口浮动(2M×0.5/0.1)：OK
+  [T3] 建矿场加成保留(增量捕获170000)：OK
+  [T4] 非产区不浮动(0)：OK
+  [T5] 海贸/马/渔浮动：OK
+
+=== ALL PASS ===
+
+COMMAND commerce-float {"label":"commerce-float","args":["web/scripts/smoke-commerce-float.js"],"cwd":".","exitCode":0,"signal":null,"seconds":0.1}
+[B1] 初值=50000 · 随人口(2M)=100000 · 繁荣100=100000/繁荣50=50000 · 建市舶+人口涨=90000(自然60000+加成30000) · 灾异下=50000
+  [T2] 开关开人口涨→商贸涨：OK
+  [T3] 重算精确(2M×0.05×1=100000)：OK
+  [T4] 繁荣涨→商贸涨(coef)：OK
+  [T5] 建筑加成保留(增量捕获·60000+30000)：OK
+  [T6] 灾异正交(率不改存储重算)：OK
+
+=== ALL PASS ===
+
+COMMAND probe-before-tang {"label":"probe-before-tang","args":["--max-old-space-size=8000","docs/scenario-data-repair-20260924/tools/p1b2-probe.js","tang","docs/scenario-data-repair-20260924/reports/p1b2-before-tang.json","--baseline","c9ad8e6f"],"cwd":".","exitCode":0,"signal":null,"seconds":82.438}
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] 初始化失败: TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档
+PASS tang: 12 taxes; docs/scenario-data-repair-20260924/reports/p1b2-before-tang.json
+
+COMMAND probe-after-tianqi {"label":"probe-after-tianqi","args":["--max-old-space-size=8000","docs/scenario-data-repair-20260924/tools/p1b2-probe.js","tianqi","docs/scenario-data-repair-20260924/reports/p1b2-after-tianqi.json"],"cwd":".","exitCode":0,"signal":null,"seconds":11.833}
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb
+[err] [SaveDB] 初始化失败: Error: stub·no-idb
+PASS tianqi: 11 taxes; docs/scenario-data-repair-20260924/reports/p1b2-after-tianqi.json
+
+COMMAND probe-after-shaosong {"label":"probe-after-shaosong","args":["--max-old-space-size=8000","docs/scenario-data-repair-20260924/tools/p1b2-probe.js","shaosong","docs/scenario-data-repair-20260924/reports/p1b2-after-shaosong.json"],"cwd":".","exitCode":0,"signal":null,"seconds":22.018}
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] 初始化失败: TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档
+PASS shaosong: 13 taxes; docs/scenario-data-repair-20260924/reports/p1b2-after-shaosong.json
+
+COMMAND probe-after-tang {"label":"probe-after-tang","args":["--max-old-space-size=8000","docs/scenario-data-repair-20260924/tools/p1b2-probe.js","tang","docs/scenario-data-repair-20260924/reports/p1b2-after-tang.json"],"cwd":".","exitCode":0,"signal":null,"seconds":104.781}
+[err] 播放背景音乐失败: ReferenceError: Audio is not defined
+[err] [SaveDB] 初始化失败: TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档
+PASS tang: 12 taxes; docs/scenario-data-repair-20260924/reports/p1b2-after-tang.json
+
+COMMAND sync-official {"label":"sync-official","args":["web/scripts/sync-official-scenarios.js"],"cwd":".","exitCode":0,"signal":null,"seconds":27.843}
+[official-sync] wrote web\scenarios\tianqi7-1627.js
+[official-sync] wrote web\bundled-scenarios\天启七年·九月（官方）.json
+[official-sync] wrote web\scenarios\shaosong-jianyan-1127.js
+[official-sync] wrote web\bundled-scenarios\绍宋·建炎元年八月（官方）.json
+[official-sync] wrote web\scenarios\tang840-840.js
+[official-sync] wrote web\bundled-scenarios\晚唐·开成五年（官方）.json
+[official-sync] wrote web\tm-official-scenario-bundle.js
+[official-sync] wrote web\preview\official-scenarios-bundle.js
+[official-sync] wrote web\preview\scenario-editor-reset-data.js
+[official-sync] wrote web\bundled-scenarios\manifest.json
+[official-sync] wrote web\bundled-scenarios\manifest.js
+[official-sync] sync PASS · sources=3 artifacts=11
+
+COMMAND scenario-lint-update {"label":"scenario-lint-update","args":["scripts/lint-scenario-data.js","--update"],"cwd":"./web","exitCode":0,"signal":null,"seconds":5.384}
+[lint-scenario-data] 运行时语料 615 个脚本
+
+[lint-scenario-data] 天启七年·九月（官方）：3621 处
+  field.dead                     3420  （基线 3420）  游戏与编辑器脚本一处都不读的字段（按出现次数计）
+  num.farmlandUnit                 14  （基线 14）  耕地量纲错误（小于 100 亩）
+  ref.admin.nonTerritoryLeaf       23  （基线 23）  行政叶子挂在上级区划而非地块上（非领土账）
+  ref.army.commander                8  （基线 8）  统兵官不在人物表
+  ref.char.class                   97  （基线 97）  人物所属阶层不在阶层表
+  ref.char.party                   10  （基线 10）  人物所属党派不在党派表
+  ref.entity.id                     2  （基线 2）  实体缺 id
+  ref.entity.sid                    2  （基线 2）  实体缺 sid
+  ref.faction.capital              16  （基线 16）  势力都城不是地图上的地块名
+  ref.faction.leader               11  （基线 11）  势力首领不在人物表
+  ref.party.leader                  4  （基线 4）  党魁不在人物表
+  ref.relation.char                14  （基线 14）  人物关系的一端不在人物表
+
+[lint-scenario-data] 绍宋·建炎元年八月（官方）：8333 处
+  field.dead                     8330  （基线 8330）  游戏与编辑器脚本一处都不读的字段（按出现次数计）
+  ref.faction.leaderForeign         3  （基线 3）  势力首领属于另一势力
+
+[lint-scenario-data] 晚唐·开成五年（官方）：3 处
+  leaf.equalSplit                   3  （基线 3）  同一上级下三个以上府州人口相同（按系数平分的痕迹）
+
+[lint-scenario-data] 基线已更新 → scripts/arch-baselines/scenario-data.json
+
+COMMAND native-manifest {"label":"native-manifest","args":["scripts/build-native-preparation-manifest.cjs","--write"],"cwd":".","exitCode":0,"signal":null,"seconds":0.439}
+WROTE web/tm-start-runtime-manifest.json 135722 bytes
+
+COMMAND hot-baseline {"label":"hot-baseline","args":["scripts/sync-hot-baseline.js","--write","--version","1.3.5.2","--asset-root","D:/tianming-publish-resume-1789962006317/candidate","--temp-root","E:/tianming-tmp/codex-p1b2"],"cwd":".","exitCode":0,"signal":null,"seconds":49.054}
+[hot-baseline] asset-root overlay files=536 bytes=1286189465
+WROTE E:\tianming-codex-p1b2\web\.hot-update-manifest.json files=1328 version=1.3.5.2 fixed=13
+
+COMMAND scenario-parity {"label":"scenario-parity","args":["web/scripts/verify-official-scenario-parity.js"],"cwd":".","exitCode":0,"signal":null,"seconds":69.921}
+[official-sync] parity PASS · sources=3 artifacts=11
+  ok·seeder/preview/reset artifacts registered
+  ok·tianqi7 builtin embeds the complete lossless root expression
+  ok·tianqi7 builtin remains reviewable compact output
+  ok·tianqi7 seeder includes lossless root expression
+  ok·tianqi7 editor preview includes lossless root expression
+  ok·editor reset embeds the complete Tianqi root JSON (embedded=15565488/7694be0a6d166ec036dfb28e84afd0bed47b33c7ca797341274d970d23b28465, root=15565488/7694be0a6d166ec036dfb28e84afd0bed47b33c7ca797341274d970d23b28465, differingKeys=)
+  ok·tianqi7 bundled JSON is byte-identical to root JSON
+  ok·shaosong builtin embeds the complete lossless root expression
+  ok·shaosong builtin remains reviewable compact output
+  ok·shaosong seeder includes lossless root expression
+  ok·shaosong editor preview includes lossless root expression
+  ok·shaosong bundled JSON is byte-identical to root JSON
+  ok·tang840 builtin embeds the complete lossless root expression
+  ok·tang840 builtin remains reviewable compact output
+  ok·tang840 seeder includes lossless root expression
+  ok·tang840 editor preview includes lossless root expression
+  ok·tang840 bundled JSON is byte-identical to root JSON
+  ok·manifest.js equals manifest.json
+  ok·tianqi7 metadata exists
+  ok·tianqi7 metadata script sha256 is correct
+  ok·tianqi7 metadata script bytes is correct
+  ok·tianqi7 metadata source sha256 is correct
+  ok·tianqi7 metadata source bytes is correct
+  ok·tianqi7 metadata loader path is correct
+  ok·tianqi7 metadata counts are correct
+  ok·shaosong metadata exists
+  ok·shaosong metadata script sha256 is correct
+  ok·shaosong metadata script bytes is correct
+  ok·shaosong metadata source sha256 is correct
+  ok·shaosong metadata source bytes is correct
+  ok·shaosong metadata loader path is correct
+  ok·shaosong metadata counts are correct
+  ok·tang840 metadata exists
+  ok·tang840 metadata script sha256 is correct
+  ok·tang840 metadata script bytes is correct
+  ok·tang840 metadata source sha256 is correct
+  ok·tang840 metadata source bytes is correct
+  ok·tang840 metadata loader path is correct
+  ok·tang840 metadata counts are correct
+  ok·seeder all executed values and object isolation verified
+  ok·preview all executed values and object isolation verified
+PASS assertions=41
+
+COMMAND release-contract {"label":"release-contract","args":["scripts/verify-release-contract.js"],"cwd":".","exitCode":0,"signal":null,"seconds":5.031}
+  ok·release-excludes schema
+  ok·canonical 热更基线是发布树 required file
+  ok·release-excludes 无重复
+  ok·安全排除项 _archive
+  ok·安全排除项 backups
+  ok·安全排除项 _screenshots
+  ok·安全排除项 test-results
+  ok·安全排除项 _codex_tmp
+  ok·安全排除项 dev-tools
+  ok·安全排除项 docs
+  ok·安全排除项 scripts
+  ok·安全排除项 tools
+  ok·安全排除项 godot
+  ok·安全排除项 .git
+  ok·安全排除项 node_modules
+  ok·安全排除项 .playwright-cli
+  ok·安全排除项 .cache
+  ok·安全排除项 .tmp
+  ok·安全排除项 tmp
+  ok·安全排除项 dist
+  ok·安全排除项 build
+  ok·安全排除项 release
+  ok·安全排除项 coverage
+  ok·安全排除项 .hot-update-staging
+  ok·安全排除项 _pw-scratch
+  ok·安全排除项 generated_images
+  ok·安全排除项 .vscode
+  ok·安全排除项 .bak-
+  ok·安全排除项 _codex
+  ok·安全排除项 .git-defunct-
+  ok·安全排除项 _yan_harness.html
+  ok·安全排除项 _preview_map.json
+  ok·安全排除项 _shaosong_map_for_edit.json
+  ok·安全排除项 **/*.bak*
+  ok·安全排除项 **/*.original
+  ok·安全排除项 **/*.entity-creation-whitespace-original
+  ok·安全排除项 **/*.log
+  ok·安全排除项 **/*.yml
+  ok·安全排除项 **/*.save.json
+  ok·安全排除项 **/_game-entry-shot.png
+  ok·安全排除项 **/_ingame*.png
+  ok·安全排除项 .claude/**
+  ok·安全排除项 output/**
+  ok·安全排除项 _audit_deadhandlers.py
+  ok·安全排除项 analyze_globals.py
+  ok·安全排除项 detect_globals.js
+  ok·安全排除项 scan_globals.js
+  ok·安全排除项 final_scan.sh
+  ok·安全排除项 scan.sh
+  ok·安全排除项 start-server.bat
+  ok·安全排除项 tm-tools.d.ts
+  ok·安全排除项 types.d.ts
+  ok·安全排除项 maps/**
+  ok·安全排除项 data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+  ok·安全排除项 preview-launch*.html
+  ok·安全排除项 preview-launch-assets/**
+  ok·安全排除项 assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+  ok·安全排除项 preview/shots/**
+  ok·安全排除项 preview/**/*verify*.png
+  ok·安全排除项 preview/home-ui-concepts/**
+  ok·安全排除项 preview/workshop-ui-concepts/**
+  ok·web 运行时引用/required files 未被误排：
+  ok·web 源体积/文件数在闸内：
+  ok·发布树保留 preview 运行时与 preview/img（目录探针不可误杀整树）
+  ok·发布树排除根目录游戏截图
+  ok·发布树排除根目录开发脚本与类型声明
+  ok·发布树排除审计脚本、旧启幕稿、无引用预览数据与失配 GIF
+  ok·发布树明确排除本机开发产物:.claude/launch.json
+  ok·发布树明确排除本机开发产物:output/playwright/shot.png
+  ok·发布树明确排除本机开发产物:maps/asia-map.png
+  ok·发布树明确排除本机开发产物:preview-launch-assets/hero-bg.png
+  ok·发布树不误杀运行资产:preview/img/topbar-imperial-rail.png
+  ok·发布树不误杀运行资产:battle/assets/models/unit_lod.glb
+  ok·发布树不误杀运行资产:vendor/models/Xenova/bge-small-zh-v1.5/onnx/model_quantized.onnx
+  ok·package-lock 根版本两处与 package.json 同版
+  ok·tracked mobile canonical version 与 buildVersion 同版
+  ok·electron-builder 消费 dir:_archive
+  ok·electron-builder 消费 dir:backups
+  ok·electron-builder 消费 dir:_screenshots
+  ok·electron-builder 消费 dir:test-results
+  ok·electron-builder 消费 dir:_codex_tmp
+  ok·electron-builder 消费 dir:dev-tools
+  ok·electron-builder 消费 dir:docs
+  ok·electron-builder 消费 dir:scripts
+  ok·electron-builder 消费 dir:tools
+  ok·electron-builder 消费 dir:godot
+  ok·electron-builder 消费 dir:.git
+  ok·electron-builder 消费 dir:node_modules
+  ok·electron-builder 消费 dir:.playwright-cli
+  ok·electron-builder 消费 dir:.cache
+  ok·electron-builder 消费 dir:.tmp
+  ok·electron-builder 消费 dir:tmp
+  ok·electron-builder 消费 dir:dist
+  ok·electron-builder 消费 dir:build
+  ok·electron-builder 消费 dir:release
+  ok·electron-builder 消费 dir:coverage
+  ok·electron-builder 消费 dir:.hot-update-staging
+  ok·electron-builder 消费 dir:_pw-scratch
+  ok·electron-builder 消费 dir:generated_images
+  ok·electron-builder 消费 dir:.vscode
+  ok·electron-builder 消费 prefix file:.bak-
+  ok·electron-builder 消费 prefix dir:.bak-
+  ok·electron-builder 消费 prefix file:_codex
+  ok·electron-builder 消费 prefix dir:_codex
+  ok·electron-builder 消费 prefix file:.git-defunct-
+  ok·electron-builder 消费 prefix dir:.git-defunct-
+  ok·electron-builder 消费 glob:_yan_harness.html
+  ok·electron-builder 消费 glob:_preview_map.json
+  ok·electron-builder 消费 glob:_shaosong_map_for_edit.json
+  ok·electron-builder 消费 glob:**/*.bak*
+  ok·electron-builder 消费 glob:**/*.original
+  ok·electron-builder 消费 glob:**/*.entity-creation-whitespace-original
+  ok·electron-builder 消费 glob:**/*.log
+  ok·electron-builder 消费 glob:**/*.yml
+  ok·electron-builder 消费 glob:**/*.save.json
+  ok·electron-builder 消费 glob:**/_game-entry-shot.png
+  ok·electron-builder 消费 glob:**/_ingame*.png
+  ok·electron-builder 消费 glob:.claude/**
+  ok·electron-builder 消费 glob:output/**
+  ok·electron-builder 消费 glob:_audit_deadhandlers.py
+  ok·electron-builder 消费 glob:analyze_globals.py
+  ok·electron-builder 消费 glob:detect_globals.js
+  ok·electron-builder 消费 glob:scan_globals.js
+  ok·electron-builder 消费 glob:final_scan.sh
+  ok·electron-builder 消费 glob:scan.sh
+  ok·electron-builder 消费 glob:start-server.bat
+  ok·electron-builder 消费 glob:tm-tools.d.ts
+  ok·electron-builder 消费 glob:types.d.ts
+  ok·electron-builder 消费 glob:maps/**
+  ok·electron-builder 消费 glob:data/maps/tianqi-ming2/tianqi-ming2.preview-data.js
+  ok·electron-builder 消费 glob:preview-launch*.html
+  ok·electron-builder 消费 glob:preview-launch-assets/**
+  ok·electron-builder 消费 glob:assets/ui/home/home-menu-imperial-study-v1-ambient.gif
+  ok·electron-builder 消费 glob:preview/shots/**
+  ok·electron-builder 消费 glob:preview/**/*verify*.png
+  ok·electron-builder 消费 glob:preview/home-ui-concepts/**
+  ok·electron-builder 消费 glob:preview/workshop-ui-concepts/**
+  ok·electron-builder 消费 previewMockup 例外
+  ok·installer 固定携带热更新发布者公钥
+  ok·installer 携带回合分卷两阶段提交模块
+  ok·热更新固定公钥类型为 Ed25519
+  ok·三平台构建统一走受检 build-electron wrapper
+  ok·Windows builder 强制签名、编辑签名与更新发布者验证
+  ok·Windows 构建缺发布者/证书时 fail-closed
+  ok·Windows 保留仓主输出目录并锁定发布者/证书身份
+  ok·mac 使用平台本地可移植输出目录
+  ok·linux 使用平台本地可移植输出目录
+  ok·所有官方 JSON 均登记进统一生成器
+  ok·electron installer 包含官方剧本 天启七年·九月（官方）.json
+  ok·electron installer 包含官方剧本 晚唐·开成五年（官方）.json
+  ok·electron installer 包含官方剧本 绍宋·建炎元年八月（官方）.json
+  ok·hot builder 消费共享 release-tree
+  ok·hot builder 收集战斗模型与本地语义模型扩展名
+  ok·新扩展名自动携带旧壳阻断所需 minAppVersion
+  ok·内容 OTA 构建器不再收集 main/preload 主进程代码
+  ok·热更新 manifest/feed 强制 Ed25519 发布者签名
+  ok·桌面壳层放行 collector 会发出的运行资产扩展名
+  ok·本地模型完整性探针包含 ONNX 主体，拒绝半包误判
+  ok·Capgo/APK 消费共享 release-tree
+  ok·Capgo/APK staging 先生成官方剧本派生物
+  ok·Capacitor 只读取派生 www
+  ok·npm sync 强制 stage→cap sync→native hash verify
+  ok·open/run 不可绕过 sync gate
+  ok·native 仅容忍 Capacitor 两个注入文件
+  ok·native extra allowlist 仅放两项，其余仍 fail-closed
+  ok·派生目录已 ignore
+  ok·web canonical 热更基线未被 ignore
+  ok·canonical 热更基线存在且与 buildVersion 同版
+  ok·canonical 热更基线不含 main/preload 可执行桥
+  ok·canonical 基线自带首页、正式 UI、战斗模型与语义模型运行资产
+  ok·canonical 基线不夹带开发产物、旧设计稿与无引用大文件
+  ok·canonical 基线逐路径/hash/size 对齐当前 production hot tree：PASS canonical hot baseline files=792 version=1.3.5.2（容忍 536 条本 checkout 缺席的未跟踪资产条目）
+  ok·installer 携带受限制作制品导出模块
+  ok·staging 拒绝清空 web 源码子目录
+  ok·staging 拒绝清空已有普通目录
+  ok·staging 仅放行已知 mobile/www 派生目录
+  ok·publish 在上传 installer 前复验 Authenticode 发布者与时间戳
+  ok·release.js 显式 prepare/publish 两阶段
+  ok·prepare 要求 clean 短命分支与新版本
+  ok·只有 prepare 盖戳并刷新 tracked 基线
+  ok·prepare 无任何发布外写
+  ok·publish 构建前/上传前双重仓库闸
+  ok·publish 只消费已盖戳版本并复验基线
+  ok·publish 不修改 tracked 版本/基线
+  ok·最终仓库闸先于 GitHub 上传
+  ok·--no-upload 硬关闭 release 与 autodeploy 外写
+  ok·release tag 锁定已验证 main HEAD
+  ok·publish 拒绝 dirty/非 main/未同步
+  ok·prepare/publish 只信官方 origin
+  ok·prepare 基线写入复用 production manifest collector
+  ok·正式外写前验证 gh 当前账号为仓库 owner
+  ok·prepare 拒绝 main 与陈旧分支
+  ok·offline 不能绕过正式发布线上闸
+  ok·版本扇出采用只读规划、全量验证和原子应用三阶段
+  ok·版本文件与备份均经同目录 fsync+rename 原子提交
+  ok·版本扇出深层失败抛错并逆序恢复原字节，不以 process.exit 绕过回滚
+  ok·Pages 无 release/tag 触发（改 workflow_dispatch/main）
+  ok·publish 以仓主身份自触发 Pages（workflow_dispatch·ref=main）
+  ok·Pages 门禁·workflow_dispatch:
+  ok·Pages 门禁·fetch-depth: 0
+  ok·Pages 门禁·npm ci --ignore-scripts
+  ok·Pages 门禁·github.actor == github.repository_owner
+  ok·Pages 门禁·git merge-base --is-ancestor HEAD origin/main
+  ok·Pages 门禁·node web/scripts/sync-official-scenarios.js
+  ok·Pages 门禁·git diff --exit-code
+  ok·Pages 门禁·node web/scripts/verify-official-scenario-parity.js
+  ok·Pages 门禁·node scripts/verify-release-contract.js
+  ok·Pages 门禁·node web/scripts/verify-hot-builder-gates.js
+  ok·Pages 门禁·node scripts/lint-arch-all.js
+  ok·Pages 门禁·node scripts/ci-smokes.js
+  ok·Pages 门禁·node scripts/stage-web-release.js
+  ok·Pages 门禁·node scripts/verify-pages-artifact.js
+  ok·Pages 门禁·actions/deploy-pages@v4
+  ok·Pages 完整门禁严格先于部署
+  ok·deploy 只 checkout dispatch 指定的 ref（默认 main）
+  ok·CONTRIBUTING 记录两阶段发版
+  ok·CLAUDE 协作约定记录两阶段发版
+PASS assertions=40
+  ok·两阶段 release/Pages 静态契约
+  ok·verify-release-web-only.js: PASS web-only source release: locked tag, owner gates, pinned Pages, no OTA or archive commands
+
+  ok·verify-release-full-installers.js: PASS full-installer completion: prepared version/code, immutable full tag, runtime/shell fingerprint and both archive hashes
+
+  ok·verify-shanhe-release.js: PASS shanhe formal release: default entry, unchanged interaction contract, C1 resources and licenses (10 files)
+
+  ok·verify-changelog-release.js: PASS changelog release selection: 5 cases
+
+PASS assertions=182 files=801 bytes=552187034
+
+COMMAND hot-builder-gates {"label":"hot-builder-gates","args":["web/scripts/verify-hot-builder-gates.js"],"cwd":".","exitCode":0,"signal":null,"seconds":3.677}
+  ok·A·健康树全量构建通过（exit 0）
+  ok·A·feed 版本正确
+  ok·A·清单含 index.html
+  ok·A·清单含 a.js
+  ok·A·清单含 b.js
+  ok·A·清单含 styles.css
+  ok·A·清单含 changelog.json
+  ok·A·清单含 version.json
+  ok·A·清单含 bundled-scenarios/合成（官方）.json
+  ok·A·草案/自用剧本不进入热更
+  ok·A2·GLB 运行资产可进入热更
+  ok·A2·GLB 自动要求 1.3.4.10 壳层
+  ok·A2·低于 ONNX 壳层能力的同版热更被 GATE-7 拒绝
+  ok·A2·1.3.4.12 可发布 ONNX 运行资产
+  ok·A2·ONNX 自动要求 1.3.4.12 壳层
+  ok·B·GATE-0 拦 --files 部分包
+  ok·B·危险旗标放行（调试用）
+  ok·C·GATE-2 拦 index 引用缺失（1.3.3.4 病灶类）
+  ok·D·GATE-2 拦必含文件缺失
+  ok·E·首次构建通过
+  ok·E·GATE-3 拦相同版本重发
+  ok·E·GATE-3 拦更低版本
+  ok·E·更高版本放行
+  ok·F·GATE-5 拦 version.json 戳不一致
+  ok·F·--skip-stamp-check 放行（调试用）
+  ok·F·GATE-5 拦 meta 缺失
+  ok·G·GATE-4 zip↔manifest 对账在构建路径上
+PASS assertions=27
+
+COMMAND arch-final {"label":"arch-final","args":["scripts/lint-arch-all.js"],"cwd":"./web","exitCode":0,"signal":null,"seconds":47.462}
+[lint-arch-all] PASS  lint-gm-writes (2.9s)
+[lint-arch-all] PASS  lint-dep-graph (1.0s)
+[lint-arch-all] PASS  lint-global-providers (8.1s)
+[lint-arch-all] PASS  lint-feature-boundaries (0.3s)
+[lint-arch-all] PASS  lint-runtime-template-immutability (0.3s)
+[lint-arch-all] PASS  lint-renderer-writeback-boundaries (18.7s)
+[lint-arch-all] PASS  lint-renderer-module-boundaries (0.6s)
+[lint-arch-all] PASS  lint-file-size (0.5s)
+[lint-arch-all] PASS  lint-control-bytes (0.4s)
+[lint-arch-all] PASS  lint-split-contracts (0.2s)
+[lint-arch-all] PASS  lint-split-stamps (0.2s)
+[lint-arch-all] PASS  lint-smoke-family-order (1.6s)
+[lint-arch-all] PASS  lint-scenario-data (9.0s)
+[lint-arch-all] PASS  lint-design-tokens (1.1s)
+[lint-arch-all] PASS  ref-check (2.5s)
+
+[lint-arch-all] PASS — 架构守卫全绿
+
+COMMAND deploy-atomicity {"label":"deploy-atomicity","args":["scripts/smoke-deploy-manifest-atomicity.js"],"cwd":"./web","exitCode":0,"signal":null,"seconds":13.353}
+  ok·合法 manifest 部署成功
+  ok·对象按已验证 sha256 寻址
+  ok·落盘对象内容 hash 正确
+  ok·内容与 manifest 后才发布 feed
+  ok·成功部署不残留共享或唯一临时文件
+  ok·sha 路径载荷 在写盘前拒绝
+  ok·sha 路径载荷 不发布 feed
+  ok·非 hex sha 在写盘前拒绝
+  ok·非 hex sha 不发布 feed
+  ok·63 位 sha 在写盘前拒绝
+  ok·63 位 sha 不发布 feed
+  ok·65 位 sha 在写盘前拒绝
+  ok·65 位 sha 不发布 feed
+  ok·越界 path 在写盘前拒绝
+  ok·越界 path 不发布 feed
+  ok·重复 manifest path 在写盘前拒绝
+  ok·重复 manifest path 不发布 feed
+  ok·ZIP size 不符 在写盘前拒绝
+  ok·ZIP size 不符 不发布 feed
+  ok·实际 entry hash 不符时拒绝
+  ok·中途失败时 live feed 字节不变
+  ok·内容失败时版本 manifest 不发布
+  ok·内容失败清理唯一临时文件
+  ok·已有正确对象也不能遮蔽 ZIP 内损坏 entry
+  ok·幂等重跑内容损坏时 feed 仍不变
+  ok·300MB 流式测试制品生成
+  ok·300MB 条目 dry-run 完整校验成功并报告峰值
+  ok·300MB 条目 Python traced peak < 48MiB（实际 5MiB）
+  ok·Capgo 对象包部署成功
+  ok·同名损坏 Capgo 对象不会被错误跳过
+  ok·损坏 Capgo 对象被原子重写为正确内容
+  ok·Capgo 对象落盘内容完整
+  ok·Capgo 对象完成后才发布 latest feed
+  ok·Capgo 成功部署不残留临时文件
+  ok·Capgo 对象包重复 hash 在任何对象写入前拒绝
+  ok·Capgo 重复对象失败不改变 live feed
+  ok·Capgo 重复对象失败清理临时文件
+  ok·Capgo 对象名实不符时拒绝
+  ok·Capgo hash 失败不改变 live feed
+  ok·Capgo hash 失败不残留临时文件
+  ok·300MB Capgo 流式测试制品生成
+  ok·300MB Capgo 对象 dry-run 完整校验成功并报告峰值
+  ok·300MB Capgo 对象 Python traced peak < 48MiB（实际 5MiB）
+  ok·Capgo 大对象 dry-run 不残留临时文件
+  ok·两个并发部署进程均完成
+  ok·并发进程通过部署互斥锁串行化
+  ok·并发后 300MB 对象完整
+  ok·并发后对象 hash 正确
+  ok·并发后 live feed 有效
+  ok·并发部署不残留临时文件
+PASS assertions=50
+
+COMMAND full-turn-isolated {"label":"full-turn-isolated","args":["scripts/smoke-full-turn-flow.js"],"cwd":"./web","exitCode":0,"signal":null,"seconds":70.633}
+[full-turn-flow] PASS
+{
+  "turn": 2,
+  "busy": false,
+  "endTurnBusy": false,
+  "chars": 203,
+  "factions": 22,
+  "memorials": 17,
+  "approvedMemorials": 1,
+  "letters": 10,
+  "qijuHistory": 71,
+  "shijiHistory": 1,
+  "lastShijiTurn": 1,
+  "courtMeter": {
+    "thisTurnCount": 1,
+    "missedStreak": 0,
+    "diligentStreak": 0,
+    "lastCourtTurn": 2,
+    "byTurn": {
+      "1": 1,
+      "2": 1
+    }
+  },
+  "courtRecords": [
+    {
+      "turn": 1,
+      "targetTurn": 1,
+      "phase": "in-turn",
+      "topic": "早朝·辽饷与边备"
+    },
+    {
+      "turn": 1,
+      "targetTurn": 2,
+      "phase": "post-turn",
+      "topic": "朔朝·次月边饷部署"
+    }
+  ],
+  "pendingShiji": {
+    "aiReady": false,
+    "courtDone": true,
+    "hasPayload": false
+  },
+  "pipeline": [
+    {
+      "step": "prep",
+      "ok": true,
+      "ms": 2840,
+      "error": ""
+    },
+    {
+      "step": "plan-prefetch",
+      "ok": true,
+      "ms": 0,
+      "error": ""
+    },
+    {
+      "step": "ai",
+      "ok": true,
+      "ms": 7,
+      "error": ""
+    },
+    {
+      "step": "post-ai-edict",
+      "ok": true,
+      "ms": 1586,
+      "error": ""
+    },
+    {
+      "step": "systems",
+      "ok": true,
+      "ms": 16654,
+      "error": ""
+    },
+    {
+      "step": "render-and-finalize",
+      "ok": true,
+      "ms": 426,
+      "error": ""
+    },
+    {
+      "step": "prepare-commit-barrier",
+      "ok": true,
+      "ms": 1,
+      "error": ""
+    }
+  ],
+  "aiCalls": [
+    {
+      "turn": 1,
+      "edictCategories": [
+        "political",
+        "military",
+        "diplomatic",
+        "economic",
+        "other"
+      ],
+      "xingluLength": 31,
+      "memorials": 17,
+      "currentCourtDecisions": 1,
+      "currentCourtRecords": 1,
+      "nextCourtRecords": 1
+    }
+  ],
+  "turnResults": [
+    {
+      "idx": 0,
+      "len": 50329,
+      "head": "<div class=\"sjc-frame\"><nav class=\"sjc-spine\" role=\"tablist\"><button type=\"button\" role=\"tab\" aria-selected=\"true\" aria-"
+    }
+  ],
+  "playerActionSummary": {
+    "turn": 1,
+    "minister": "袁崇焕",
+    "memorials": 14,
+    "letters": 10,
+    "courtRecords": 1
+  },
+  "postTurnCourtSummary": {
+    "turn": 1,
+    "targetTurn": 2,
+    "courtRecords": 2
+  },
+  "loadingTail": [
+    {
+      "turn": 2,
+      "msg": "检查历史事件",
+      "pct": 93.4
+    },
+    {
+      "turn": 2,
+      "msg": "检查职位与寿数",
+      "pct": 93.7
+    },
+    {
+      "turn": 2,
+      "msg": "处理监听队列",
+      "pct": 94
+    },
+    {
+      "turn": 2,
+      "msg": "清理回合缓存",
+      "pct": 94.3
+    },
+    {
+      "turn": 2,
+      "msg": "回合阶段 6/7 · 生成史记弹窗",
+      "pct": 78
+    },
+    {
+      "turn": 2,
+      "msg": "hide",
+      "pct": 0
+    },
+    {
+      "turn": 2,
+      "msg": "回合阶段 7/7 · prepare-commit-barrier",
+      "pct": 90
+    },
+    {
+      "turn": 2,
+      "msg": "hide",
+      "pct": 0
+    }
+  ],
+  "toasts": [
+    "第1回合",
+    "❌ 存档数据库初始化失败：stub·no-idb",
+    "诏令需细化：征何税（商/盐/茶/市舶）？",
+    "鸿雁：1 封新来函已抵达",
+    "回合已完整保存；附加快照或存档后处理发生错误，详情见控制台。请勿为此重新推演本回合。"
+  ],
+  "errors": [
+    "播放背景音乐失败: ReferenceError: Audio is not defined",
+    "[SaveDB] IndexedDB打开失败: Error: stub·no-idb",
+    "[SaveDB] 初始化失败: Error: stub·no-idb",
+    "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+    "播放音效失败: TypeError: (window.AudioContext || window.webkitAudioContext) is not a constructor",
+    "[SaveDB] IndexedDB打开失败: Error: stub·no-idb"
+  ],
+  "warns": [
+    "  Error: [perf] authority.tick 超阈值: 523.00ms > 400ms\n      at _defaultThresholdHandler (tm-perf.js:225:9)\n      at _checkThreshold (tm-perf.js:217:7)",
+    "[endTurn systems] slow stage: 系统结算总耗时 16642ms ",
+    "[cc3·agenda] AI 返回不可用·走 fallback",
+    "[AutoSave] 端回合 snapshot 耗 17254ms·考虑 A-2",
+    "[SaveDB] IndexedDB打开不可用，回退localStorage: Error: stub·no-idb",
+    "[TM.Features] [object Object]",
+    "[TM.Features] [object Object]",
+    "[AutoSave] 主存档已提交，附加步骤失败：time-snapshot Error: stub·no-idb"
+  ],
+  "writeTurnData": 0,
+  "autoSave": 0
+}
+
+COMMAND save-perf-isolated {"label":"save-perf-isolated","args":["scripts/smoke-perf-save-preparation.js"],"cwd":"./web","exitCode":0,"signal":null,"seconds":241.938}
+PASS 绍宋·建炎元年八月（官方）.json long=false: actual normalizers/serializers idb + project equal legacy preparation
+PASS 绍宋·建炎元年八月（官方）.json long=false: discarded mirrors never cloned on canonical path
+PASS 绍宋·建炎元年八月（官方）.json long=false: actual restore preserves canonical and legacy mirrors
+{"passed":3,"failed":0}
+PASS 绍宋·建炎元年八月（官方）.json long=true: actual normalizers/serializers idb + project equal legacy preparation
+PASS 绍宋·建炎元年八月（官方）.json long=true: discarded mirrors never cloned on canonical path
+PASS 绍宋·建炎元年八月（官方）.json long=true: actual restore preserves canonical and legacy mirrors
+{"passed":3,"failed":0}
+PASS 天启七年·九月（官方）.json long=false: actual normalizers/serializers idb + project equal legacy preparation
+PASS 天启七年·九月（官方）.json long=false: discarded mirrors never cloned on canonical path
+PASS 天启七年·九月（官方）.json long=false: actual restore preserves canonical and legacy mirrors
+{"passed":3,"failed":0}
+PASS 天启七年·九月（官方）.json long=true: actual normalizers/serializers idb + project equal legacy preparation
+PASS 天启七年·九月（官方）.json long=true: discarded mirrors never cloned on canonical path
+PASS 天启七年·九月（官方）.json long=true: actual restore preserves canonical and legacy mirrors
+{"passed":3,"failed":0}
+PASS normalization failure rejects without changing live; subsequent valid world recovers
+{"passed":1,"failed":0}
+{"passed":13,"failed":0,"isolatedCases":5}

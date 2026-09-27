@@ -63,12 +63,16 @@ function main() {
   console.log('人物家产：' + run([path.join(DIR, 'patches/tang-wealth.js'), '--report', path.join(DIR, 'reports/tang-wealth.md'), '--write']));
   // 第十刀：死条目与抄件（环境承载只留引擎按 id 取得到的玩家各道，兵制 effects 由照抄 description 改为结构字段简述）
   console.log('死条目抄件：' + run([path.join(DIR, 'patches/tang-cleanup.js'), '--report', path.join(DIR, 'reports/tang-cleanup.md'), '--write']));
-  // 第十二刀：官俸（同类独低、副职与正职同俸的两处改正，会动财政平衡的建议只写进报告）
+  // 第十二刀：官俸军饷（两处离谱官俸；诸节度使按会昌三百贯、神策优给、骑军马料）
   console.log('官俸：' + run([path.join(DIR, 'patches/tang-pay.js'), '--report', path.join(DIR, 'reports/tang-pay.md'), '--write']));
   // 第十三刀：京官料钱按会昌整组重定，缺会昌明文取贞元，未考明与地方使职保留
   console.log('京官料钱：' + run([path.join(DIR, 'patches/tang-capital-pay.js'), '--report', path.join(DIR, 'reports/tang-capital-pay.md'), '--write']));
   // 第十四刀：唐廷与河朔四镇的府州承载力、道级合计及环境和财政前后对账
   console.log('承载力：' + run([path.join(DIR, 'patches/tang-carrying.js'), '--report', path.join(DIR, 'reports/tang-carrying.md'), '--write']));
+  // 第十五刀：海岸错位碎片归还在地州块、真实主体提为主面，邻接与道路同步；三部地图只读排查。
+  console.log('地图错位：' + run([path.join(DIR, 'patches/tang-map.js'), '--report', path.join(DIR, 'reports/tang-map.md'), '--write']));
+  // P1-B2：产量有史据的按史料规整（坑冶按岁课反推模型产值），引擎首回合起保留剧本产量
+  console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'tang', '--report', path.join(DIR, 'reports/p1b2-tang.md'), '--write']));
 }
 
 main();

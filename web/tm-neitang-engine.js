@@ -121,7 +121,7 @@
     if (v > 0) return v;
     return safe((GM.neitang || {}).huangzhuangAcres, 100000);
   }
-  // 全国皇产汇总（zhizao/kuangchang/yuyao）·遍历 adminHierarchy 累加
+  // 全国皇产汇总（zhizao/kuangchang/yuyao）·只计叶子，父级可存下属合计
   function _imperialAssetsTotal() {
     var ret = { zhizao: 0, kuangchang: 0, yuyao: 0 };
     if (!GM.adminHierarchy) return ret;
@@ -131,10 +131,12 @@
         if (!Array.isArray(divs)) return;
         divs.forEach(function(d) {
           if (!d) return;
-          var ia = (d.economyBase && d.economyBase.imperialAssets) || {};
-          ret.zhizao += (ia.zhizao || 0);
-          ret.kuangchang += (ia.kuangchang || 0);
-          ret.yuyao += (ia.yuyao || 0);
+          if (!(d.children && d.children.length) && !(d.divisions && d.divisions.length)) {
+            var ia = (d.economyBase && d.economyBase.imperialAssets) || {};
+            ret.zhizao += (ia.zhizao || 0);
+            ret.kuangchang += (ia.kuangchang || 0);
+            ret.yuyao += (ia.yuyao || 0);
+          }
           if (d.children) walk(d.children);
           if (d.divisions) walk(d.divisions);
         });

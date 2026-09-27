@@ -1,0 +1,718 @@
+{
+  "head": "c9ad8e6f7c4055005ed95c0c2f8d7c131708f3e6",
+  "branch": "codex/p1b2-production",
+  "commands": [
+    {
+      "label": "rebuild-twice",
+      "args": [
+        "docs/scenario-data-repair-20260924/tools/verify-p1b2-rebuild.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 1301.548
+    },
+    {
+      "label": "scenario-scope",
+      "args": [
+        "--max-old-space-size=8000",
+        "docs/scenario-data-repair-20260924/tools/verify-p1b2-scope.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 19.808
+    },
+    {
+      "label": "production-authored",
+      "args": [
+        "web/scripts/smoke-production-authored.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 0.104
+    },
+    {
+      "label": "production-b2",
+      "args": [
+        "web/scripts/smoke-production-b2.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 0.1
+    },
+    {
+      "label": "commerce-float",
+      "args": [
+        "web/scripts/smoke-commerce-float.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 0.1
+    },
+    {
+      "label": "probe-before-tang",
+      "args": [
+        "--max-old-space-size=8000",
+        "docs/scenario-data-repair-20260924/tools/p1b2-probe.js",
+        "tang",
+        "docs/scenario-data-repair-20260924/reports/p1b2-before-tang.json",
+        "--baseline",
+        "c9ad8e6f"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 82.438
+    },
+    {
+      "label": "probe-after-tianqi",
+      "args": [
+        "--max-old-space-size=8000",
+        "docs/scenario-data-repair-20260924/tools/p1b2-probe.js",
+        "tianqi",
+        "docs/scenario-data-repair-20260924/reports/p1b2-after-tianqi.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 11.833
+    },
+    {
+      "label": "probe-after-shaosong",
+      "args": [
+        "--max-old-space-size=8000",
+        "docs/scenario-data-repair-20260924/tools/p1b2-probe.js",
+        "shaosong",
+        "docs/scenario-data-repair-20260924/reports/p1b2-after-shaosong.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 22.018
+    },
+    {
+      "label": "probe-after-tang",
+      "args": [
+        "--max-old-space-size=8000",
+        "docs/scenario-data-repair-20260924/tools/p1b2-probe.js",
+        "tang",
+        "docs/scenario-data-repair-20260924/reports/p1b2-after-tang.json"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 104.781
+    },
+    {
+      "label": "sync-official",
+      "args": [
+        "web/scripts/sync-official-scenarios.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 27.843
+    },
+    {
+      "label": "scenario-lint-update",
+      "args": [
+        "scripts/lint-scenario-data.js",
+        "--update"
+      ],
+      "cwd": "./web",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 5.384
+    },
+    {
+      "label": "native-manifest",
+      "args": [
+        "scripts/build-native-preparation-manifest.cjs",
+        "--write"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 0.439
+    },
+    {
+      "label": "hot-baseline",
+      "args": [
+        "scripts/sync-hot-baseline.js",
+        "--write",
+        "--version",
+        "1.3.5.2",
+        "--asset-root",
+        "D:/tianming-publish-resume-1789962006317/candidate",
+        "--temp-root",
+        "E:/tianming-tmp/codex-p1b2"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 49.054
+    },
+    {
+      "label": "scenario-parity",
+      "args": [
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 69.921
+    },
+    {
+      "label": "release-contract",
+      "args": [
+        "scripts/verify-release-contract.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 5.031
+    },
+    {
+      "label": "hot-builder-gates",
+      "args": [
+        "web/scripts/verify-hot-builder-gates.js"
+      ],
+      "cwd": ".",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 3.677
+    },
+    {
+      "label": "arch-final",
+      "args": [
+        "scripts/lint-arch-all.js"
+      ],
+      "cwd": "./web",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 47.462
+    },
+    {
+      "label": "deploy-atomicity",
+      "args": [
+        "scripts/smoke-deploy-manifest-atomicity.js"
+      ],
+      "cwd": "./web",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 13.353
+    },
+    {
+      "label": "full-turn-isolated",
+      "args": [
+        "scripts/smoke-full-turn-flow.js"
+      ],
+      "cwd": "./web",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 70.633
+    },
+    {
+      "label": "save-perf-isolated",
+      "args": [
+        "scripts/smoke-perf-save-preparation.js"
+      ],
+      "cwd": "./web",
+      "exitCode": 0,
+      "signal": null,
+      "seconds": 241.938
+    }
+  ],
+  "smoke": {
+    "command": {
+      "label": "full-smoke",
+      "args": [
+        "scripts/ci-smokes.js",
+        "--jobs",
+        "1"
+      ],
+      "cwd": "./web",
+      "exitCode": 1,
+      "signal": null,
+      "seconds": 1235.347
+    },
+    "summary": {
+      "selected": 1104,
+      "pass": 1101,
+      "fail": 1,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "failures": [
+      {
+        "name": "smoke-production-dependencies.js",
+        "exit": 1,
+        "reason": "用户明确允许忽略的 ENOBUFS 环境问题"
+      }
+    ],
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ],
+    "report": "p1b2-smoke-report.json",
+    "reportSha256": "0036b3b4113f6da034e33d53ed2d895fa28f5c0e86e8aa8741c8e2bb8af12475",
+    "acceptedUnderUserException": true,
+    "environment": {
+      "TEMP": "E:/tianming-tmp/codex-p1b2/smoke",
+      "TMP": "E:/tianming-tmp/codex-p1b2/smoke",
+      "temporaryPythonInChildPath": true
+    }
+  },
+  "initialSmoke": {
+    "summary": {
+      "selected": 1104,
+      "pass": 1100,
+      "fail": 2,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "report": "p1b2-smoke-initial.json",
+    "failures": [
+      "smoke-deploy-manifest-atomicity.js",
+      "smoke-production-dependencies.js"
+    ],
+    "explanation": "首次全量除已知ENOBUFS外，部署原子性因环境无python而失败；仅在指定临时目录补充官方便携Python后，该用例50条断言通过，再重跑完整1104项。"
+  },
+  "intermediateSmoke": {
+    "summary": {
+      "selected": 1104,
+      "pass": 1099,
+      "fail": 3,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "report": "p1b2-smoke-intermediate.json",
+    "failures": [
+      "smoke-full-turn-flow.js",
+      "smoke-perf-save-preparation.js",
+      "smoke-production-dependencies.js"
+    ],
+    "explanation": "第二次全量开局VM达到10秒限制、存档压力用例最后一组达到290秒总时限；保留失败证据，未改代码、断言、夹具或时限，单独复跑后再次执行完整全量。"
+  },
+  "temporaryPython": {
+    "url": "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip",
+    "release": "https://www.python.org/downloads/release/python-31210/",
+    "bytes": 11133606,
+    "md5": "fe8ef205f2e9c3ba44d0cf9954e1abd3",
+    "sha256": "4acbed6dd1c744b0376e3b1cf57ce906f9dc9e95e68824584c8099a63025a3c3",
+    "version": "3.12.10",
+    "scope": "仅当前测试子进程PATH；无全局安装或配置改动；随任务临时目录删除"
+  },
+  "frozenInputsVerified": 16,
+  "quotedPassagesVerified": 32,
+  "authoredOpeningFieldsVerified": 3340,
+  "authoredRetention": [
+    {
+      "compared": 1152,
+      "mismatches": []
+    },
+    {
+      "compared": 1662,
+      "mismatches": []
+    },
+    {
+      "compared": 526,
+      "mismatches": []
+    }
+  ],
+  "rebuildReceipt": "p1b2-rebuild.json",
+  "scopeReceipt": "p1b2-scope.json",
+  "comparison": "p1b2-comparison.md",
+  "gateLogs": "p1b2-gates.txt",
+  "notes": [
+    "最后一次全量：1104项、jobs=1、TEMP/TMP在指定目录；原始失败不改写为PASS。",
+    "candidate仅用于只读补资产；hot-baseline命令进程内加入该路径safe.directory并关闭可选写锁，未写Git全局配置。",
+    "早期架构检查碰到重建中的临时数据；最后完整数据上的15/15已全过。"
+  ],
+  "cleanup": {
+    "temporaryRoot": "E:/tianming-tmp/codex-p1b2",
+    "smokeEvidenceDirectories": [
+      "web/dev-tools/arch-guard/ci-Xbxpam",
+      "web/dev-tools/arch-guard/ci-HL5QRc",
+      "web/dev-tools/arch-guard/ci-l0VQgA"
+    ],
+    "pending": false,
+    "removed": true,
+    "removedFiles": 141,
+    "removedBytes": 42195975,
+    "unlinkedReparseEntries": 0,
+    "remainingTargets": [],
+    "freeGiB": 4.73
+  },
+  "workspace": {
+    "branch": "codex/p1b2-production",
+    "head": "c9ad8e6f7c4055005ed95c0c2f8d7c131708f3e6",
+    "trackedModified": 19,
+    "untracked": 59,
+    "staged": 0,
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "files": [
+      {
+        "status": " M",
+        "path": "docs/scenario-data-repair-20260924/README.md"
+      },
+      {
+        "status": " M",
+        "path": "docs/scenario-data-repair-20260924/patches/rebuild-shaosong.js"
+      },
+      {
+        "status": " M",
+        "path": "docs/scenario-data-repair-20260924/patches/rebuild-tang.js"
+      },
+      {
+        "status": " M",
+        "path": "docs/scenario-data-repair-20260924/patches/rebuild-tianqi.js"
+      },
+      {
+        "status": " M",
+        "path": "scenarios/天启七年·九月（官方）.json"
+      },
+      {
+        "status": " M",
+        "path": "scenarios/晚唐·开成五年（官方）.json"
+      },
+      {
+        "status": " M",
+        "path": "scenarios/绍宋·建炎元年八月（官方）.json"
+      },
+      {
+        "status": " M",
+        "path": "web/.hot-update-manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "web/bundled-scenarios/manifest.js"
+      },
+      {
+        "status": " M",
+        "path": "web/bundled-scenarios/manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "web/preview/official-scenarios-bundle.js"
+      },
+      {
+        "status": " M",
+        "path": "web/preview/scenario-editor-reset-data.js"
+      },
+      {
+        "status": " M",
+        "path": "web/scenarios/shaosong-jianyan-1127.js"
+      },
+      {
+        "status": " M",
+        "path": "web/scenarios/tang840-840.js"
+      },
+      {
+        "status": " M",
+        "path": "web/scenarios/tianqi7-1627.js"
+      },
+      {
+        "status": " M",
+        "path": "web/scripts/arch-baselines/scenario-data.json"
+      },
+      {
+        "status": " M",
+        "path": "web/tm-fiscal-engine.js"
+      },
+      {
+        "status": " M",
+        "path": "web/tm-official-scenario-bundle.js"
+      },
+      {
+        "status": " M",
+        "path": "web/tm-start-runtime-manifest.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/P1-B2说明.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/data/p1b2-sources.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/data/shaosong-production.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/data/tang-production.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/data/tianqi-production.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/patches/p1b2-production.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-after-shaosong.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-after-tang.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-after-tianqi.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-before-shaosong.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-before-tang.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-before-tianqi.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-comparison.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-frozen-inputs.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-gates.txt"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-rebuild.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-scope.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-shaosong.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-smoke-initial.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-smoke-intermediate.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-smoke-report.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-tang.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-tianqi.md"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/reports/p1b2-verification.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/唐會要_卷066.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/唐會要_卷066.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/唐會要_卷088.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/唐會要_卷088.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷181.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷181.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷182.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷182.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷183.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷183.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷184.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷184.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷185.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷185.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷186.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/宋史_卷186.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/新唐書_卷054.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/新唐書_卷054.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷77.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷77.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷80.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷80.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷81.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷81.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷82.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/明史_卷82.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/東西洋考_卷七.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/東西洋考_卷七.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/記纂淵海 (四庫全書本)_卷034.json"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/sources/p1b2/raw/記纂淵海 (四庫全書本)_卷034.wiki"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/tools/p1b2-comparison.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/tools/p1b2-probe.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/tools/verify-p1b2-rebuild.js"
+      },
+      {
+        "status": "??",
+        "path": "docs/scenario-data-repair-20260924/tools/verify-p1b2-scope.js"
+      },
+      {
+        "status": "??",
+        "path": "web/scripts/smoke-production-authored.js"
+      }
+    ]
+  }
+}

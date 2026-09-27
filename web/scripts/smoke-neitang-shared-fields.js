@@ -74,4 +74,22 @@ ok(captions.every(x=>JSON.stringify(x)===JSON.stringify(captions[0])),'all three
  const prompt=fs.readFileSync(path.join(ROOT,'tm-endturn-prompt.js'),'utf8'),a=prompt.indexOf('    // 财政上下文与库藏面板'),b=prompt.indexOf("    if (typeof MarchSystem",a);ok(a>=0&&b>a,'formal fiscal prompt block exists');c._mechResults=[];vm.runInContext(prompt.slice(a,b),c);ok(c._mechResults[0].includes(JSON.stringify(expected)),'formal prompt consumes shared context');
  const sc1b=fs.readFileSync(path.join(ROOT,'tm-endturn-ai.js'),'utf8'),x=sc1b.indexOf('            if ((_v.guoku || _v.neitang)'),y=sc1b.indexOf('            // 本回合税收级联摘要',x);ok(x>=0&&y>x,'SC1b fiscal block exists');c._v={guoku:{},neitang:{}};c.tp1='';vm.runInContext(sc1b.slice(x,y),c);ok(c.tp1.includes(JSON.stringify(expected))&&!c.tp1.includes('万两'),'SC1b same fields without silver-unit assumption');
 }
+{
+  const {c}=legacyFixture({id:'leaf-legacy',dynasty:'自定义',dynastyPhaseHint:'peak',gameSettings:{daysPerTurn:30},playerInfo:{factionName:'本朝'}});
+  const leaf={name:'产地府',economyBase:{imperialFarmland:1000,imperialAssets:{zhizao:1,kuangchang:2,yuyao:3}}};
+  const parent={name:'合计省',economyBase:clone(leaf.economyBase),children:[leaf]};
+  c.GM.adminHierarchy={player:{divisions:[parent]}};
+  near(c.NeitangEngine.Sources.huangchan(),270000,'imperial assets counted once at leaves despite parent subtotal');
+  near(c.NeitangEngine.Sources.huangzhuang(),500,'imperial farmland uses leaf-only CascadeTax aggregate');
+  parent.economyBase.imperialAssets={zhizao:99,kuangchang:99,yuyao:99};
+  near(c.NeitangEngine.Sources.huangchan(),270000,'stale saved parent asset subtotal cannot create income');
+  parent.divisions=parent.children;delete parent.children;
+  near(c.NeitangEngine.Sources.huangchan(),270000,'legacy divisions child array still produces leaf income');
+  c.GM.adminHierarchy.player.divisions=[leaf,{name:'空下级省',children:[],economyBase:{imperialFarmland:200,imperialAssets:{zhizao:1,kuangchang:0,yuyao:0}}}];
+  near(c.NeitangEngine.Sources.huangchan(),350000,'single-level custom provinces with absent or empty children remain productive');
+  near(c.NeitangEngine.Sources.huangzhuang(),600,'single-level imperial farmland remains counted');
+  c.GM.adminHierarchy={};c.GM.neitang.huangchanMonthly=1234;c.GM.neitang.huangzhuangAcres=4321;
+  near(c.NeitangEngine.Sources.huangchan(),14808,'legacy missing administrative data preserves monthly asset fallback');
+  near(c.NeitangEngine.Sources.huangzhuang(),2160.5,'legacy missing administrative data preserves acreage fallback');
+}
 console.log('[smoke-neitang-shared-fields] PASS '+checks+' assertions');

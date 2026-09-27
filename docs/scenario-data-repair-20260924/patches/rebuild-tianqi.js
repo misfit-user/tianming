@@ -47,6 +47,8 @@ function main() {
   console.log('省级描述：' + run([path.join(DIR, 'patches/tianqi-province-descriptions.js'), '--write']));
   // 人物个人目标改为引擎要的对象（原账有 118 人写成字符串）
   console.log('个人目标：' + run([path.join(DIR, 'patches/tianqi-goals.js'), '--write']));
+  // P1-B2：有史据的产量量纲（最后一步，避免改动前序各省补丁）
+  console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'tianqi', '--report', path.join(DIR, 'reports/p1b2-tianqi.md'), '--write']));
 }
 
 main();

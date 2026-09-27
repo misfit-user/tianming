@@ -1245,6 +1245,25 @@
     return eb;
   }
 
+  // B2/B3a 共用：首回合以剧本量为自然基础，之后按同一口径随人口/田亩浮动；建筑增量沿用 B1 的差额捕获。
+  function settleProductionBase(eb, key, driver, fallbackRate) {
+    var lastKey = '_' + key + 'NaturalLast', rateKey = '_' + key + 'NaturalRate';
+    var driverKey = '_' + key + 'NaturalDriverLast';
+    var current = Math.max(0, safeNumber(eb[key], 0));
+    var hasLast = typeof eb[lastKey] === 'number' && isFinite(eb[lastKey]);
+    driver = Math.max(0, safeNumber(driver, 0));
+    if (typeof eb[rateKey] !== 'number' || !isFinite(eb[rateKey])) {
+      // 旧存档已有 NaturalLast：沿用旧人口系数，不把已建增量重认成自然产量。
+      // 新开局连显式 0、低于兜底公式的量也保留；不能用 max(剧本值, 人口公式)。
+      eb[rateKey] = hasLast ? fallbackRate : (driver > 0 ? current / driver : fallbackRate);
+    }
+    var natural = hasLast ? (driver === eb[driverKey] ? eb[lastKey] : Math.round(driver * Math.max(0, eb[rateKey]))) : current;
+    var built = hasLast ? Math.max(0, current - eb[lastKey]) : 0;
+    eb[key] = natural + built;
+    eb[lastKey] = natural;
+    eb[driverKey] = driver;
+  }
+
   function _settleLandFlow(div, ctx) {
     if (!div) return null;
     var eb = _ensureEconomyBase(div);
@@ -1319,15 +1338,11 @@
     for (var _pi = 0; _pi < _prodFields.length; _pi++) {
       var _pk = _prodFields[_pi][0], _prate = _prodFields[_pi][1];
       if (_prate <= 0) continue;                                   // 非产区·不浮动(保持 0/剧本值)
-      var _pNatural = Math.round(_mouthsB1 * _prate);
-      var _pLastKey = '_' + _pk + 'NaturalLast';
-      var _pBuilt = (typeof eb[_pLastKey] === 'number') ? Math.max(0, safeNumber(eb[_pk], 0) - eb[_pLastKey]) : 0;
-      eb[_pk] = _pNatural + _pBuilt;
-      eb[_pLastKey] = _pNatural;
+      settleProductionBase(eb, _pk, _mouthsB1, _prate);
     }
 
     // P1-B3a·皇庄田 imperialFarmland 随 farmland 同步(farmland 已活·皇庄田跟着浮动·imperialDomain 才有)
-    if (div.tags.imperialDomain) eb.imperialFarmland = Math.round(eb.farmland * 0.05);
+    if (div.tags.imperialDomain) settleProductionBase(eb, 'imperialFarmland', eb.farmland, 0.05);
 
     div._thisTurnLandFlow = {
       annexed: annexLoss,
@@ -2010,7 +2025,7 @@
       var reduce = safeNumber(div._disasterEconomyReduce && div._disasterEconomyReduce[field], 0);
       if (reduce > 0) value *= Math.max(0, 1 - reduce);
       total += value;
-    }, { faction: opts.faction || null, leafOnly: false });
+    }, { faction: opts.faction || null, leafOnly: true }); // 父级 economyBase 可存下属合计，产量只计叶子。
     return total;
   }
 

@@ -80,7 +80,23 @@ ok(AR.regionMaterialOutput({}).铁 === 0, '⑧ 空区划→0(不崩)');
 const GM5 = {}; const regions = [region, { economyBase: { mineralProduction: 400000, farmland: 2000000 }, tags: {} }];
 const tot = AR.collectMaterials(GM5, regions);
 ok(AR.matStock(GM5, '铁') === out['铁'] + Math.round(400000 * 0.0015) && tot['铁'] > 0, '⑧ collectMaterials 汇集各区划铁产入库');
-ok(AR.collectMaterials({ adminHierarchy: { 明: { divisions: [{ economyBase: { mineralProduction: 1000000 }, children: [{ economyBase: { mineralProduction: 500000 } }] }] } } }).铁 === Math.round(1000000 * 0.0015) + Math.round(500000 * 0.0015), '⑧ adminHierarchy 树遍历(含 children)');
+const parentRegion = { name: '汇总省', economyBase: { mineralProduction: 1400000, horseProduction: 600, farmland: 7000000 }, children: regions };
+const treeGM = { adminHierarchy: { player: { divisions: [parentRegion] } } };
+const sameMaterials = (a, b) => AR.MAT_KEYS.every(k => a[k] === b[k]);
+ok(sameMaterials(AR.collectMaterials(treeGM), tot), '⑧ 父节点存下属合计时，四类原料只计叶子一次');
+ok(AR.playerRegions(treeGM).length === 2 && !AR.playerRegions(treeGM).includes(parentRegion), '⑧ playerRegions 只返回玩家产量叶子');
+ok(sameMaterials(AR.collectMaterials({}, [parentRegion, ...regions]), tot), '⑧ 显式 regions 混入父节点和同一子节点时不重计');
+ok(sameMaterials(AR.collectMaterials({}, [{ economyBase: parentRegion.economyBase, children: [parentRegion] }]), tot), '⑧ 三级树只计最末级叶子，父级无论存什么数都不入账');
+ok(sameMaterials(AR.collectMaterials({ regions: [parentRegion] }), tot), '⑧ 旧存档 GM.regions 存根节点时递归到叶子');
+ok(sameMaterials(AR.collectMaterials({ regions: [parentRegion, ...regions] }), tot), '⑧ 旧存档 GM.regions 已展开时同一叶子只计一次');
+const provinceOnly = [
+  { name: '无下级省', level: '省', economyBase: region.economyBase },
+  { name: '空下级省', level: '省', children: [], econ: region.economyBase }
+];
+const flatGM = { adminHierarchy: { player: { divisions: provinceOnly } } };
+ok(sameMaterials(AR.collectMaterials(flatGM), { 铁: 3000, 硝石: 600, 皮革: 62, 木: 200 }), '⑧ 无 children 或 children 为空的省级节点照常计入，兼容 econ');
+ok(AR.playerRegions(flatGM).length === 2, '⑧ 单层自定义剧本省级节点就是叶子');
+ok(Object.keys(AR.collectMaterials(treeGM, [])).length === 0, '⑧ 显式空 regions 不回退整棵树');
 
 /* ⑨ seedFromScenario 优先级:剧本显式 > 按军队派生 > 平默认 */
 const savedTAU = global.window.TMArmyUnits; global.window.TMArmyUnits = undefined;   // 走 a.units 回退
@@ -127,6 +143,24 @@ ok(AR.stock(GMq, '兵刃') === Math.round(4000 * 0.25), '⑪ 原料不足→按�
 const GMh = { guoku: {}, regions: [{ economyBase: { horseProduction: 1000000 } }] };
 const reph = AR.runArmoryProduction(GMh, { buildings: [], efficiency: 1 });
 ok(reph.produced['战马'] === Math.round(1000000 * 0.004) && AR.stock(GMh, '战马') === 4000, '⑪ 战马走马政(Σ horseProduction×0.004=4000)');
+ok(AR.runArmoryProduction(treeGM, { buildings: [], efficiency: 1 }).produced['战马'] === 2, '⑪ 父节点有马政合计时只取叶子 600×0.004，整组最后取整');
+ok(AR.runArmoryProduction({}, { regions: [parentRegion, ...regions], buildings: [], efficiency: 1 }).produced['战马'] === 2, '⑪ 显式传入父子混合列表，马政不重复');
+ok(AR.runArmoryProduction({ regions: [parentRegion] }, { buildings: [], efficiency: 1 }).produced['战马'] === 2, '⑪ 旧存档 GM.regions 根节点马政取叶子');
+ok(AR.runArmoryProduction(flatGM, { buildings: [], efficiency: 1 }).produced['战马'] === 5, '⑪ 单层省级与 econ 旧字段马政照常计入');
+const namedGM = { playerFaction: '本朝', adminHierarchy: { 本朝: { divisions: [parentRegion] }, 邻国: { divisions: [{ economyBase: { mineralProduction: 9000000, horseProduction: 9000000 } }] } } };
+ok(AR.playerRegions(namedGM).length === 2, '⑪ 势力名分支只取本方叶子');
+const playerTurn = AR.runTurn(namedGM, { buildings: [], efficiency: 1 });
+ok(playerTurn.produced['战马'] === 2 && sameMaterials(AR.matAllStock(namedGM), tot), '⑪ 整回合原料及马政均不计邻国或父级合计');
+const unknownKeyGM = { adminHierarchy: { 旧键: { divisions: [parentRegion] } } };
+ok(AR.playerRegions(unknownKeyGM).length === 2, '⑪ 无玩家键的旧存档保持原回退范围，但只收叶子');
+const buildingGM = { adminHierarchy: { player: { divisions: [{
+  economyBase: parentRegion.economyBase, children: regions,
+  buildings: [{ name: '省级军器局', level: 1, status: 'completed' }]
+}] } } };
+AR.matAdd(buildingGM, { 铁: 2200, 木: 500 }, 'seed');
+const parentWorks = AR.runArmoryProduction(buildingGM, { efficiency: 1, noSilver: true });
+ok(parentWorks.works === 1 && parentWorks.produced['兵刃'] === 2000 && parentWorks.produced['甲胄'] === 800, '⑪ 父级军工建筑仍收集并生产，不受产量叶子筛选影响');
+ok(parentWorks.produced['战马'] === 2 && AR.matStock(buildingGM, '铁') === 0, '⑪ 保留父级建筑耗料，同时排除父级马政');
 /* runTurn 整回合:地块产原料→军工生产·rollTurn 翻转 */
 const GMt = { guoku: {}, regions: [{ economyBase: { mineralProduction: 10000000, horseProduction: 500000 } }] };
 const rept = AR.runTurn(GMt, {});

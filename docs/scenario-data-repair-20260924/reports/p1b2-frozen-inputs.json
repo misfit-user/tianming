@@ -1,0 +1,82 @@
+[
+  {
+    "path": "scenarios/天启七年·九月（官方）.json",
+    "bytes": 16378405,
+    "sha256": "0451bb99f584b5ed63058050888b43926a1d5468100736b27c22ee15c018736c"
+  },
+  {
+    "path": "scenarios/晚唐·开成五年（官方）.json",
+    "bytes": 52570460,
+    "sha256": "ead06279408029ba0b43c898b7f5f1601f7b976317415a1ef5fb532dbc00bb57"
+  },
+  {
+    "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+    "bytes": 91006403,
+    "sha256": "e0e652c9a747341a4ab9ab72cec8c794795a45ed05c14054edf528a3daf01212"
+  },
+  {
+    "path": "web/.hot-update-manifest.json",
+    "bytes": 223828,
+    "sha256": "a66a0cf24d9a1c5c34546e67fe567435b013c3bc18d3239f739cb5d5c58d888b"
+  },
+  {
+    "path": "web/bundled-scenarios/manifest.js",
+    "bytes": 6007,
+    "sha256": "139c1ff1b44d44ce5479b754496a222ce1e92d9c071f47504f002d500e59d0c8"
+  },
+  {
+    "path": "web/bundled-scenarios/manifest.json",
+    "bytes": 6386,
+    "sha256": "82dd1b8e2ef2bd978eadc2e289459e83eff73cd16d094b363fd28fa4f18f434d"
+  },
+  {
+    "path": "web/preview/official-scenarios-bundle.js",
+    "bytes": 92187995,
+    "sha256": "02e24016adc03fb6b9f1728583b7db636674bced050bdbe5c313c8f823d55041"
+  },
+  {
+    "path": "web/preview/scenario-editor-reset-data.js",
+    "bytes": 16395483,
+    "sha256": "89af4378a41ad63771fd5abdf3d80e16d60e97ecdedb829aee3a58772e1c69a9"
+  },
+  {
+    "path": "web/scenarios/shaosong-jianyan-1127.js",
+    "bytes": 50860424,
+    "sha256": "7a34fd5c7f30940e9cd66499f93215555dbdc789093f56221cbed1492a0c1bca"
+  },
+  {
+    "path": "web/scenarios/tang840-840.js",
+    "bytes": 31345032,
+    "sha256": "5f113afa94b49a709e22f912830f23bbd99df749586647a6e4c62d6abb743d33"
+  },
+  {
+    "path": "web/scenarios/tianqi7-1627.js",
+    "bytes": 9984292,
+    "sha256": "f8ad3c4172b112781137db3930b28f2d853d75bcfb9b7e75449667aeb36e1c0e"
+  },
+  {
+    "path": "web/scripts/arch-baselines/scenario-data.json",
+    "bytes": 738,
+    "sha256": "0223b176262653afb7e71016664e4f22b787e38fb510cb43ce14293e2f0cfaed"
+  },
+  {
+    "path": "web/scripts/smoke-production-authored.js",
+    "bytes": 3192,
+    "sha256": "3db6c8a32d9b364847a30337b4dbe071d933cd91c7bdebc42cfc52b3e9af15af"
+  },
+  {
+    "path": "web/tm-fiscal-engine.js",
+    "bytes": 160072,
+    "sha256": "27652c1117a5cd45d81bd50c491ec2066a64d8bdd6ce5cea485513ae505e96e9"
+  },
+  {
+    "path": "web/tm-official-scenario-bundle.js",
+    "bytes": 92188324,
+    "sha256": "c5a305ed04042b028a3fa1d258bd5e09a870988ed29785b364a9ad4c61a9d83f"
+  },
+  {
+    "path": "web/tm-start-runtime-manifest.json",
+    "bytes": 135722,
+    "sha256": "703e0a6ae3613c3f3712e9fd81f17940e14d3619dbfc3d0fbbcba3def7b00f16"
+  }
+]

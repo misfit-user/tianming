@@ -1,0 +1,196 @@
+{
+  "scenario": "sc-tianqi7-1627",
+  "sourceRef": "working-tree",
+  "method": "doActualStart + CascadeTax.collect(force,360 days); fiscal-only; legacy year=365, ledger/2 year=360; excludes AI, demographic evolution and spending",
+  "unit": {
+    "money": "两",
+    "grain": "石",
+    "cloth": "匹"
+  },
+  "sourceProduction": {
+    "sums": {
+      "saltProduction": 513979250,
+      "saltOutput": 0,
+      "mineralProduction": 11200000,
+      "horseProduction": 61700,
+      "fishingProduction": 4960000,
+      "maritimeTradeVolume": 14876000,
+      "imperialFarmland": 13950000
+    },
+    "missing": {
+      "saltProduction": 6,
+      "saltOutput": 198,
+      "mineralProduction": 6,
+      "horseProduction": 6,
+      "fishingProduction": 6,
+      "maritimeTradeVolume": 6,
+      "imperialFarmland": 6
+    }
+  },
+  "openingProduction": {
+    "sums": {
+      "saltProduction": 513979250,
+      "saltOutput": 0,
+      "mineralProduction": 11200000,
+      "horseProduction": 61700,
+      "fishingProduction": 4960000,
+      "maritimeTradeVolume": 14876000,
+      "imperialFarmland": 13950000
+    },
+    "missing": {
+      "saltProduction": 0,
+      "saltOutput": 198,
+      "mineralProduction": 0,
+      "horseProduction": 0,
+      "fishingProduction": 0,
+      "maritimeTradeVolume": 0,
+      "imperialFarmland": 0
+    }
+  },
+  "authoredRetention": {
+    "compared": 1152,
+    "mismatches": []
+  },
+  "settledProduction": {
+    "sums": {
+      "saltProduction": 513979250,
+      "saltOutput": 0,
+      "mineralProduction": 11200000,
+      "horseProduction": 61700,
+      "fishingProduction": 4960000,
+      "maritimeTradeVolume": 14876000,
+      "imperialFarmland": 13894998
+    },
+    "missing": {
+      "saltProduction": 0,
+      "saltOutput": 198,
+      "mineralProduction": 0,
+      "horseProduction": 0,
+      "fishingProduction": 0,
+      "maritimeTradeVolume": 0,
+      "imperialFarmland": 0
+    }
+  },
+  "taxes": {
+    "land_grain": {
+      "name": "田赋（粮）",
+      "base": "arableLand",
+      "resource": "grain",
+      "nominal": 21710453.6209,
+      "central": 4717231,
+      "local": 5085791,
+      "skimmed": 2079005,
+      "transit": 832454
+    },
+    "land_silver": {
+      "name": "田赋折银",
+      "base": "arableLand",
+      "resource": "money",
+      "nominal": 6680128.4147,
+      "central": 1693365,
+      "local": 1173650,
+      "skimmed": 746305,
+      "transit": 298828
+    },
+    "head_tax": {
+      "name": "丁税",
+      "base": "ding",
+      "resource": "money",
+      "nominal": 7290325.4795,
+      "central": 2035608,
+      "local": 827728,
+      "skimmed": 916078,
+      "transit": 359229
+    },
+    "corvee_cloth": {
+      "name": "庸役折布",
+      "base": "ding",
+      "resource": "cloth",
+      "nominal": 3645162.7397,
+      "central": 636129,
+      "local": 1034707,
+      "skimmed": 286272,
+      "transit": 112255
+    },
+    "commerce": {
+      "name": "商税",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 3733157.589,
+      "central": 665725,
+      "local": 1090282,
+      "skimmed": 307028,
+      "transit": 117478
+    },
+    "salt_iron": {
+      "name": "盐铁专卖",
+      "base": "consumption",
+      "resource": "money",
+      "nominal": 18647013.6986,
+      "central": 5870526,
+      "local": 1060748,
+      "skimmed": 2640182,
+      "transit": 1035985
+    },
+    "liaoxiang": {
+      "name": "辽饷加派",
+      "base": "arableLand",
+      "resource": "money",
+      "nominal": 5010088.6948,
+      "central": 1814317,
+      "local": 0,
+      "skimmed": 799614,
+      "transit": 320169
+    },
+    "chama": {
+      "name": "茶马司",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 118356.1644,
+      "central": 28981,
+      "local": 20197,
+      "skimmed": 13035,
+      "transit": 5114
+    },
+    "chaoguan": {
+      "name": "钞关过货税",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 591780.8219,
+      "central": 144902,
+      "local": 101002,
+      "skimmed": 65172,
+      "transit": 25570
+    },
+    "guanshui": {
+      "name": "海关（月港）",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 39452.0548,
+      "central": 9657,
+      "local": 6746,
+      "skimmed": 4344,
+      "transit": 1704
+    },
+    "junhu": {
+      "name": "军户屯田",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 345205.4795,
+      "central": 84523,
+      "local": 58920,
+      "skimmed": 38010,
+      "transit": 14919
+    }
+  },
+  "central": {
+    "money": 12347604,
+    "grain": 4717231,
+    "cloth": 636129
+  },
+  "local": {
+    "money": 4339273,
+    "grain": 5085791,
+    "cloth": 1034707
+  }
+}

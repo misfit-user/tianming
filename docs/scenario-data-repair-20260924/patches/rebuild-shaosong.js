@@ -90,6 +90,8 @@ function main() {
   console.log('引用理顺：' + run([path.join(DIR, 'patches/shaosong-references.js'), '--report', path.join(DIR, 'reports/shaosong-references.md'), '--write']));
   // 人物时代错误：生死、所在、官职按建炎元年八月改正（宗磐重出一条删去，人物 501→500）
   console.log('人物时代错误：' + run([path.join(DIR, 'patches/shaosong-people.js'), '--report', path.join(DIR, 'reports/shaosong-people.md'), '--write']));
+  // P1-B2：有史据的产量量纲（最后一步）
+  console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'shaosong', '--report', path.join(DIR, 'reports/p1b2-shaosong.md'), '--write']));
 }
 
 main();

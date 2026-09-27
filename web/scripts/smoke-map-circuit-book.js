@@ -28,58 +28,7 @@ function check(name, fn) {
   checks.push(name);
 }
 
-// 从真实开局读取势力叶子集合及各省道汇总，和实际谱牒版图 HTML 对账。
-function bantuSnapshot(run, key) {
-  const snapshot = JSON.parse(run(`(function(){
-    var parts = TMPhase8FormalBridge.__p8MapParts, MC = TM.MapCircuits, key = ${JSON.stringify(key)};
-    var f = parts.findFaction(key, '') || {};
-    var owner = f.stableOwnerKey || f.mapFactionId || f.id || key;
-    var regions = GM.mapData.regions.filter(function(r){ return parts.factionOwnsRegion(r, key, f); });
-    var index = MC.indexCircuits(GM.mapData, { layout: TMMapRealmLayout, ownerOf: parts.canonicalOwnerKey });
-    var groups = [], none = regions.filter(function(r){ return !MC.isRealCircuit(MC.circuitOf(index, r)); });
-    index.circuits.forEach(function(circuit){
-      if (!MC.isRealCircuit(circuit)) return;
-      var own = MC.partitionByOwner(circuit, owner).own.filter(function(r){ return regions.indexOf(r) >= 0; });
-      if (!own.length) return;
-      var sum = MC.summarize(own, { bundle: parts.regionBundle, mood: parts.moodViewScore, office: parts.officeViewScore });
-      var mood = parts.gradeOf('mood', sum.mood), office = parts.gradeOf('office', sum.office);
-      groups.push({ key: circuit.key, label: circuit.label, count: own.length, total: circuit.members.length,
-        ids: own.map(function(r){ return String(r.id || r.name || r.title || ''); }), population: sum.population,
-        values: [parts.hasDisplayValue(sum.population) ? '户口 ' + parts.ppValue(sum.population) : null,
-          parts.hasDisplayValue(sum.mood) ? '民心 ' + parts.ppValue(sum.mood) + '<em class="' + (parts.gradeIsWarn('mood', mood) ? 'warn' : '') + '">' + (mood && mood.mark || '') + '</em>' : null,
-          parts.hasDisplayValue(sum.office) ? '吏治 ' + parts.ppValue(sum.office) + '<em class="' + (parts.gradeIsWarn('office', office) ? 'warn' : '') + '">' + (office && office.mark || '') + '</em>' : null].filter(function(v){ return v !== null; }) });
-    });
-    return JSON.stringify({ key: key, name: f.label || f.name, groups: groups,
-      ids: regions.map(function(r){ return String(r.id || r.name || r.title || ''); }), none: none.map(function(r){ return String(r.id || r.name || r.title || ''); }) });
-  })()`));
-  // 参考数据与实际开册分开执行，避免把两次计算叠在同一个 VM 同步时限里。
-  const started = Date.now();
-  snapshot.html = run(`(function(){ TMPhase8FormalBridge.__p8MapParts.openFactionDossier(${JSON.stringify(key)}, null); return document.getElementById('ppop').innerHTML; })()`);
-  console.log('[bantu] ' + snapshot.name + ' groups=' + snapshot.groups.length + ' signs=' + snapshot.ids.length + ' unassigned=' + snapshot.none.length + ' renderMs=' + (Date.now() - started));
-  return snapshot;
-}
-
-// VM 不解析 innerHTML，沿用本文件的标记提取法，只读取版图卷中的签与省道行。
-function bantuMarkup(snapshot) {
-  const section = snapshot.html.match(/<section class="bk-juan" id="bk-bantu">([\s\S]*?)<\/section>/);
-  assert(section, '谱牒含版图卷');
-  const html = section[1];
-  const groups = [...html.matchAll(/<details class="bk-bantu-dao\b[^"]*"([^>]*)>([\s\S]*?)<\/details>/g)].map((m) => ({
-    key: (m[1].match(/data-bk-bantu-circuit="([^"]+)"/) || [])[1] || null,
-    attrs: m[1], html: m[2], ids: [...m[2].matchAll(/class="bk-qian" data-bk-open-region="([^"]*)"/g)].map((a) => a[1])
-  }));
-  return { html, groups, ids: [...html.matchAll(/class="bk-qian" data-bk-open-region="([^"]*)"/g)].map((m) => m[1]) };
-}
-
-// 按真实势力集合断言组数与签数守恒，重复签不能被集合去重掩盖。
-function assertBantuConservation(snapshot, parsed) {
-  assert(snapshot.groups.length > 0, snapshot.name + ' 有正式省道');
-  assert.equal(parsed.groups.length, snapshot.groups.length + (snapshot.none.length ? 1 : 0), '正式省道组数加未设省道组');
-  assert.equal(parsed.ids.length, snapshot.ids.length, '版图签数等于 factionProfile 同口径地块数');
-  assert.equal(new Set(parsed.ids).size, parsed.ids.length, '没有重复地块');
-  assert.deepEqual([...parsed.ids].sort(), [...snapshot.ids].sort(), '没有漏签或引入本势力之外的地块');
-  assert.equal(parsed.groups.reduce((n, g) => n + g.ids.length, 0), snapshot.ids.length, '全部州签都在分组内');
-}
+const { bantuSnapshot, bantuMarkup, assertBantuConservation } = require('./lib-map-circuit-bantu.js');
 
 setTimeout(async () => {
   try {
@@ -303,8 +252,10 @@ setTimeout(async () => {
       const d = JSON.parse(run(`(function(){
         var MC = TM.MapCircuits, names = TMPhase8FormalBridge.rightrail.playerFactionNames();
         var foreign = null;
+        // 全图逐州查省道时先建一次索引，免得每州都重算全图归属签名
+        var index = MC.indexCircuits(__map, { layout: TMMapRealmLayout, ownerOf: __parts.canonicalOwnerKey });
         __map.regions.some(function(r){
-          var c = __parts.findCircuit(r);
+          var c = __parts.findCircuit(r, index);
           var mine = function(m){ var f = __parts.findFaction(m.owner, ''); return names.indexOf(String(m.owner)) >= 0 || !!(f && names.indexOf(String(f.name)) >= 0); };
           if (c && !c.members.some(mine)) { foreign = { circuit: c, region: r }; return true; }
           return false;
@@ -466,7 +417,8 @@ setTimeout(async () => {
         out.tipOff = __parts.mapTipHtml(__shuntian);
         if (keepConf === undefined) delete conf.mapClickFollowTier; else conf.mapClickFollowTier = keepConf;
         // 不属正式省道的孤块在省道级照旧开方志
-        var lone = __map.regions.filter(function(r){ return !__parts.findCircuit(r) && __parts.ownerKey(r); })[0];
+        var index = TM.MapCircuits.indexCircuits(__map, { layout: TMMapRealmLayout, ownerOf: __parts.canonicalOwnerKey });
+        var lone = __map.regions.filter(function(r){ return !__parts.findCircuit(r, index) && __parts.ownerKey(r); })[0];
         out.lone = lone ? kindAt('region', lone) : 'none';
         st.mapScale = keep;
         return JSON.stringify(out);
@@ -558,17 +510,7 @@ setTimeout(async () => {
       assert.equal(d.sameMap, true, '改的是运行时唯一那份地图');
     });
 
-    // 再用独立的绍宋真实开局验证跨朝代分组；loadGame 会清掉上一局的计时器。
-    const songSid = 'sc-jianyan1-1127-shaosong';
-    const song = helpers.loadGame(songSid);
-    vm.runInContext(`P.ai.key='';P.ai.url='';P.ai.model='';doActualStart(${JSON.stringify(songSid)})`, song, { timeout: 180000 });
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    vm.runInContext(fs.readFileSync(path.join(WEB, 'tm-map-realm-layout.js'), 'utf8'), song, { filename: 'tm-map-realm-layout.js' });
-    check('绍宋大宋版图：正式省道组数与州签集合守恒', () => {
-      const snapshot = bantuSnapshot((code) => vm.runInContext(code, song, { timeout: 60000 }), '大宋');
-      assertBantuConservation(snapshot, bantuMarkup(snapshot));
-    });
-
+    // 绍宋大宋的版图守恒拆到 smoke-map-circuit-book-shaosong.js：一个文件只开一局，免得全量测试里超 120 秒
     console.log('[smoke-map-circuit-book] ' + checks.length + ' 组检查全部通过');
     checks.forEach((name) => console.log('  ok · ' + name));
     process.exit(0);

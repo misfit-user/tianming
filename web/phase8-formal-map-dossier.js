@@ -1938,10 +1938,17 @@
   function circuitIndex(){
     var MC = circuitApi(), map = getMapData(), layout = window.TMMapRealmLayout;
     if (!MC || !layout || !map || !Array.isArray(map.regions) || !map.regions.length) return null;
-    var sig = map.regions.map(function(r){ return circuitOwnerKey(r) + '>' + firstValue(r.parentId, r.circuitId, ''); }).join('|') +
+    // 规范归属 key 只取决于（原归属, 势力名）：全图几百州只对应几十个势力，本次取索引内按这对值记住，不逐州重查势力表
+    var ownerMemo = new Map();
+    function ownerOf(r){
+      var memoKey = ownerKey(r) + '\u0001' + String((r && (r.factionName || r.ownerName)) || '');
+      if (!ownerMemo.has(memoKey)) ownerMemo.set(memoKey, circuitOwnerKey(r));
+      return ownerMemo.get(memoKey);
+    }
+    var sig = map.regions.map(function(r){ return ownerOf(r) + '>' + firstValue(r.parentId, r.circuitId, ''); }).join('|') +
       '#' + JSON.stringify((map.circuitRegistry || []).map(function(e){ return e && [e.key || e.id, (e.memberRegionIds || []).length]; }));
     if (_circuitMemo.map !== map || _circuitMemo.sig !== sig) {
-      _circuitMemo = { map: map, sig: sig, index: MC.indexCircuits(map, { layout: layout, ownerOf: circuitOwnerKey }) };
+      _circuitMemo = { map: map, sig: sig, index: MC.indexCircuits(map, { layout: layout, ownerOf: ownerOf }) };
     }
     return _circuitMemo.index;
   }

@@ -1,0 +1,2046 @@
+[
+ {
+  "name": "李瀍",
+  "office840": {
+   "actual": [
+    "皇帝（正月初四柩前即位，正月十四受册于正殿）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 814,
+  "birthDate": "元和九年六月十二日",
+  "age840": 25,
+  "deathYear": 846,
+  "zi": null,
+  "nativePlace": "生于长安东宫；穆宗第五子，母韦氏（宣懿皇后）",
+  "stance": "北司拥立之新君",
+  "evidence": [
+   {
+    "claim": "元和九年六月十二日生，长庆元年封颍王，本名瀍",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "武宗至道昭肅孝皇帝諱炎，穆宗第五子，母曰宣懿皇后韋氏。元和九年六月十二日生於東宮。長慶元年三月，封潁王，本名瀍。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "正月初四文宗崩、遗诏柩前即位；正月十四受册",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "四日，文宗崩，宣遺詔：皇太弟宜於柩前即皇帝位，宰相楊嗣復攝冢宰。十四日，受冊于正殿，時年二十七。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "由仇士良、鱼弘志矫诏立为皇太弟",
+    "source": "資治通鑑·卷246",
+    "quote": "李玨曰：「太子位已定，豈得中變！」士良、弘志遂矯詔立瀍爲太弟。是日，士良、弘志將兵詣十六宅，迎穎王至少陽院，百官謁見于思賢殿。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "会昌六年崩，年三十三",
+    "source": "新唐書·卷8·武宗紀",
+    "quote": "甲子，皇帝崩于大明宮，年三十三。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7008"
+   }
+  ],
+  "discrepancies": [],
+  "confidence": "H",
+  "notes": "旧纪「時年二十七」为虚岁。受册前正月初二至初四为皇太弟；此前为颍王、开府仪同三司、检校吏部尚书（旧纪：「開成中加開府儀同三司、檢校吏部尚書」）。"
+ },
+ {
+  "name": "李怡",
+  "office840": {
+   "actual": [
+    "光王（亲王，长庆元年封）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安（十六宅）",
+  "alive840": true,
+  "birthYear": 810,
+  "birthDate": "元和五年六月二十二日",
+  "age840": 29,
+  "deathYear": 859,
+  "zi": null,
+  "nativePlace": "生于大明宫；宪宗第十三子，母郑氏（孝明皇后）",
+  "stance": "韬晦宗室·「光叔」",
+  "evidence": [
+   {
+    "claim": "元和五年六月二十二日生，长庆元年封光王",
+    "source": "舊唐書·卷18下·宣宗紀",
+    "quote": "宣宗聖武獻文孝皇帝諱忱，憲宗第十三子，母曰孝明皇后鄭氏。元和五年六月二十二日，生於大明宮。長慶元年三月，封光王，名怡。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8B"
+   },
+   {
+    "claim": "太和、会昌间韬晦，居十六宅，被称「光叔」",
+    "source": "舊唐書·卷18下·宣宗紀",
+    "quote": "歷太和、會昌朝，愈事韜晦，群居游處，未嘗有言。文宗、武宗幸十六宅宴集，強誘其言，以為戲劇，謂之「光叔」。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8B"
+   },
+   {
+    "claim": "大中十三年八月崩，圣寿五十",
+    "source": "舊唐書·卷18下·宣宗紀",
+    "quote": "八月七日，宣遺詔立鄆王為皇太子，勾當軍國事。是日，崩于大明宮，聖壽五十。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8B"
+   }
+  ],
+  "discrepancies": [],
+  "confidence": "H",
+  "notes": "即位后改名忱。"
+ },
+ {
+  "name": "王才人",
+  "office840": {
+   "actual": [
+    "颍王（武宗）潜邸侍人；即位后进号才人（旧纪作三月「宫人王氏」为妃，二书不一）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安（禁中）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 846,
+  "zi": null,
+  "nativePlace": "邯郸（「失其世」）",
+  "stance": "武宗潜邸宠姬",
+  "evidence": [
+   {
+    "claim": "邯郸人，十三岁入宫，穆宗以赐颍王；武宗即位时助画，进号才人",
+    "source": "新唐書·卷77·后妃下·武宗王賢妃",
+    "quote": "武宗賢妃王氏，邯鄲人，失其世。年十三，善歌舞，得入宮中。穆宗以賜潁王。性機悟。開成末，王嗣帝位，妃陰為助畫，故進號才人，遂有寵。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7077"
+   },
+   {
+    "claim": "旧纪：开成五年三月宫人刘氏、王氏并为妃",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "三月，詔宮人劉氏、王氏並為妃。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "旧唐书无传",
+    "source": "舊唐書·卷52·后妃下",
+    "quote": "武宗王賢妃。事闕",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B752"
+   },
+   {
+    "claim": "武宗崩时自经殉葬（会昌六年）",
+    "source": "新唐書·卷77·后妃下·武宗王賢妃",
+    "quote": "及大漸，才人悉取所常貯散遺宮中，審帝已崩，即自經幄下。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7077"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄24岁与史料矛盾：她十三岁入宫后由穆宗（820–824在位）赐予颍王，按虚岁最晚生于812年，开局时至少27周岁；确切生年不详",
+   "「才人」名号：新传称武宗即位后才进号才人，旧纪又称三月「宫人王氏」为妃；开局当日（即位受册日）她的名号处于过渡中"
+  ],
+  "confidence": "M",
+  "notes": "生年不详，故 age840 填 null；可在27岁以上取值。"
+ },
+ {
+  "name": "郭太皇太后",
+  "office840": {
+   "actual": [
+    "太皇太后（宪宗懿安皇后，敬宗即位起尊为太皇太后）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安（兴庆宫）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 848,
+  "zi": null,
+  "nativePlace": null,
+  "stance": "五朝太母·不预外政",
+  "evidence": [
+   {
+    "claim": "郭子仪孙、郭暧与昇平公主之女",
+    "source": "新唐書·卷77·后妃下·憲宗懿安郭皇后",
+    "quote": "憲宗懿安皇后郭氏，汾陽王子儀之孫。父曖，尚昇平公主，實生後。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7077"
+   },
+   {
+    "claim": "贞元十一年生穆宗；敬宗即位尊为太皇太后；居兴庆宫",
+    "source": "舊唐書·卷52·后妃下",
+    "quote": "貞元十一年，生穆宗皇帝。……太后居興慶宮……敬宗即位，尊為太皇太后。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B752"
+   },
+   {
+    "claim": "文宗朝居兴庆宫，号太皇太后",
+    "source": "舊唐書·卷17下·文宗紀·史臣曰",
+    "quote": "時憲宗郭后居興慶宮，曰太皇太后",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "拒绝称制，不预外事",
+    "source": "新唐書·卷77·后妃下",
+    "quote": "帝崩，中人有為後謀稱制者，後怒曰：「吾效武氏邪？今太子雖幼，尚可選重德為輔，吾何與外事哉？」",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7077"
+   },
+   {
+    "claim": "大中二年六月崩",
+    "source": "舊唐書·卷18下·宣宗紀",
+    "quote": "六月己丑，太皇太后郭氏崩，諡懿安，憲宗妃，穆宗之母也。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8B"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄60岁无史料可据（两唐书没有她的生年和享年）；只能从贞元十一年（795）生穆宗推知她当时已成年"
+  ],
+  "confidence": "M",
+  "notes": "籍贯/郡望：两唐书本传只写「汾阳王子仪之孙」，未另记籍贯，故 nativePlace 填 null。"
+ },
+ {
+  "name": "杨嗣复",
+  "office840": {
+   "actual": [
+    "门下侍郎",
+    "同中书门下平章事"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "金紫光禄大夫（散官）",
+    "弘农县伯"
+   ],
+   "commissions": [
+    "摄冢宰（文宗崩后，自正月初四起）"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 783,
+  "birthDate": null,
+  "age840": 56,
+  "deathYear": 848,
+  "zi": "继之",
+  "nativePlace": "弘农杨氏（父杨於陵弘农人）",
+  "stance": "牛党·文宗首相",
+  "evidence": [
+   {
+    "claim": "开成四年十一月为门下侍郎",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "十一月壬午，嗣復為門下侍郎，鄲為中書侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "文宗崩，以杨嗣复摄冢宰",
+    "source": "資治通鑑·卷246",
+    "quote": "辛巳，上崩於太和殿。以楊嗣復攝塚宰。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "字继之；与牛僧孺、李宗闵同为权德舆门生、进退相同",
+    "source": "舊唐書·卷176·楊嗣復傳",
+    "quote": "楊嗣復，字繼之，僕射於陵子也。……嗣復與牛僧孺、李宗閔皆權德輿貢舉門生，情義相得，進退取舍，多與之同。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "开成三年进阶金紫、封弘农伯；罢郑覃后进门下侍郎",
+    "source": "舊唐書·卷176·楊嗣復傳",
+    "quote": "三年正月，與同列李玨並以本官同平章事，領使如故，進階金紫，弘農伯，食邑七百戶。……自是，政歸嗣復，進加門下侍郎。明年正月，文宗崩。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "开成三年七月已罢盐铁使",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "七月戊辰，嗣復罷鹽鐵使。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "大中二年卒，年六十六（→生783）",
+    "source": "舊唐書·卷176·楊嗣復傳",
+    "quote": "大中二年，自潮陽還，至岳州病，一日而卒，時年六十六。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "父杨於陵为弘农人",
+    "source": "舊唐書·卷164·楊於陵傳",
+    "quote": "楊於陵，字達夫，弘農人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7164"
+   }
+  ],
+  "discrepancies": [
+   "剧本family写「郡望另核」：可定为弘农杨氏（父於陵弘农人，本人封弘农伯）",
+   "剧本未记「摄冢宰」这一临时使职"
+  ],
+  "confidence": "H",
+  "notes": "开成五年二月癸丑才兼吏部尚书（新表），五月己卯罢相，八月外放湖南观察使。生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "李珏",
+  "office840": {
+   "actual": [
+    "中书侍郎",
+    "同中书门下平章事"
+   ],
+   "concurrent": [
+    "监修国史"
+   ],
+   "honorary": [
+    "正议大夫（散官）",
+    "赞皇县男"
+   ],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 785,
+  "birthDate": null,
+  "age840": 54,
+  "deathYear": 853,
+  "zi": "待价",
+  "nativePlace": "赵郡李氏（「其先出赵郡，客居淮阴」）",
+  "stance": "牛党·拥陈王宰相",
+  "evidence": [
+   {
+    "claim": "开成三年九月为中书侍郎（此后到开局没有变动）",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "九月己巳，夷行為門下侍郎，玨、嗣復為中書侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "开成五年五月始为门下侍郎（开局后）",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "五月己卯，玨為門下侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "监修国史",
+    "source": "新唐書·卷174·楊嗣復傳",
+    "quote": "久之，帝又問：「延英政事，孰當記之？」玨監修國史，對曰：「臣之職也。」",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7174"
+   },
+   {
+    "claim": "字待价，赵郡人；进阶正议大夫；封赞皇男",
+    "source": "舊唐書·卷173·李玨傳",
+    "quote": "李玨，字待價，趙郡人。……玨自朝議郎進階正議大夫……尋封贊皇男，食邑三百戶。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "主张维持陈王为太子",
+    "source": "資治通鑑·卷246",
+    "quote": "李玨曰：「太子位已定，豈得中變！」",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "大中七年卒",
+    "source": "舊唐書·卷173·李玨傳",
+    "quote": "大中七年卒，贈司空。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "卒年六十九（→生785）",
+    "source": "新唐書·卷182·李玨傳",
+    "quote": "卒，年六十九，贈司空，謚曰貞穆。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7182"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄56岁不符：按大中七年（853）卒、年69推算生于785年，开局时54岁（若生日早于正月十四则55岁）",
+   "剧本未记兼职「监修国史」"
+  ],
+  "confidence": "H",
+  "notes": "生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "崔郸",
+  "office840": {
+   "actual": [
+    "中书侍郎",
+    "同中书门下平章事"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "银青光禄大夫（散官）"
+   ],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": null,
+  "nativePlace": "清河武城崔氏（崔邠、崔郾之弟）",
+  "stance": "中立·与李德裕素善",
+  "evidence": [
+   {
+    "claim": "开成四年七月甲辰以太常卿同平章事，十一月为中书侍郎",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "七月甲辰，太常卿崔鄲同中書門下平章事。……十一月壬午，嗣復為門下侍郎，鄲為中書侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "通鉴同系开成四年七月",
+    "source": "資治通鑑·卷246",
+    "quote": "甲辰，以太常卿崔鄲同中書門下平章事。鄲，郾之弟也。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "本传：四年入为太常卿，七月同平章事，寻加中书侍郎；与德裕兄弟素善",
+    "source": "舊唐書·卷155·崔鄲傳",
+    "quote": "開成二年，出為宣州刺史，兼御史中丞、宣歙觀察使。四年，入為太常卿。七月，以本官同中書門下平章事，尋加中書侍郎、銀青光祿大夫。會昌初，李德裕用事，與鄲弟兄素善。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7155"
+   },
+   {
+    "claim": "兄崔邠为清河武城人",
+    "source": "舊唐書·卷155·崔邠傳",
+    "quote": "崔邠，字處仁，清河武城人。……弟鄯、郾、鄲等六人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7155"
+   },
+   {
+    "claim": "【异说】旧纪把他拜相系于开成五年二月（误）",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "太常卿崔鄲、戶部尚書判度支崔珙並本官同中書門下平章事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄50岁无史料可据（两唐书本传没有卒年和享年）"
+  ],
+  "confidence": "H",
+  "notes": "旧纪系年有误，以新表、通鉴为准。"
+ },
+ {
+  "name": "崔珙",
+  "office840": {
+   "actual": [
+    "刑部尚书"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "诸道盐铁转运使"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": null,
+  "nativePlace": "博陵安平崔氏",
+  "stance": "与李德裕亲厚",
+  "evidence": [
+   {
+    "claim": "开成五年五月以刑部尚书兼盐铁转运使拜相",
+    "source": "資治通鑑·卷246",
+    "quote": "夏，五月，己卯，門下侍郎、同平章事楊嗣復罷爲吏部尚書，以刑部尚書崔珙同平章事兼鹽鐵轉運使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "新表同",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "諸道鹽鐵轉運使、刑部尚書崔珙同中書門下平章事。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "开成末累进刑部尚书、诸道盐铁转运使",
+    "source": "新唐書·卷182·崔珙傳",
+    "quote": "開成末，累進刑部尚書、諸道鹽鐵轉運使。俄同中書門下平章事，仍領鹽鐵",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7182"
+   },
+   {
+    "claim": "开成四年姚勖事时，崔珙已是盐铁使",
+    "source": "舊唐書·卷168·韋溫傳",
+    "quote": "鹽鐵判官姚勖知河陰院，嘗雪冤獄。鹽鐵使崔珙奏加酬獎",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   },
+   {
+    "claim": "博陵安平人；与李德裕亲厚",
+    "source": "舊唐書·卷177·崔珙傳",
+    "quote": "崔珙，博陵安平人。……會昌初，李德裕用事，與珙親厚",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   },
+   {
+    "claim": "【异说】旧纪作「户部尚书判度支」",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "太常卿崔鄲、戶部尚書判度支崔珙並本官同中書門下平章事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄50岁无史料可据",
+   "剧本officialTitle只写刑部尚书、盐铁转运使写在称谓里：盐铁转运使是使职，应单列"
+  ],
+  "confidence": "M",
+  "notes": "旧纪称「户部尚书判度支」，当时判度支是户部尚书杜悰，旧纪疑误。旧传把他任盐铁使系于会昌初，与通鉴、新表不合。开成二年他做过京兆尹。"
+ },
+ {
+  "name": "郑覃",
+  "office840": {
+   "actual": [
+    "尚书左仆射（守）"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "荥阳郡公"
+   ],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 842,
+  "zi": null,
+  "nativePlace": "荥阳郑氏（故相郑珣瑜之子，封荥阳郡公）",
+  "stance": "李党·经学宿相",
+  "evidence": [
+   {
+    "claim": "开成四年五月罢相，守左仆射",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "丙申，鄭覃、陳夷行罷知政事，覃守左僕射，夷行為吏部侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "新表同作左仆射",
+    "source": "新唐書·卷63·宰相表下",
+    "quote": "五月丙申，覃罷為尚書左僕射，夷行罷為吏部侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7063"
+   },
+   {
+    "claim": "【异说】通鉴作右仆射",
+    "source": "資治通鑑·卷246",
+    "quote": "丙申，門下侍郎、同平章事鄭覃罷爲右僕射",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "武宗初李德裕欲援为相，以足疾辞；会昌二年致仕卒",
+    "source": "舊唐書·卷173·鄭覃傳",
+    "quote": "四年五月，罷相，守左僕射。武宗即位，李德裕用事，欲援為宰相。固以足疾不任朝謁。會昌二年，守司徒致仕，卒。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "与李德裕相善、为李宗闵所薄",
+    "source": "舊唐書·卷173·鄭覃傳",
+    "quote": "宗閔以覃與李德裕相善，薄之。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "郑珣瑜之子，封荥阳郡公",
+    "source": "舊唐書·卷173·鄭覃傳",
+    "quote": "鄭覃，故相珣瑜之子。……明日以本官同平章事，封滎陽郡公",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "会昌二年五月卒（旧纪作太子太师致仕）",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "太子太師致仕鄭覃卒。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄64岁无史料可据（两唐书没有享年）"
+  ],
+  "confidence": "H",
+  "notes": "左仆射从旧纪、旧传、新表、新传；通鉴作右仆射，列为异说。"
+ },
+ {
+  "name": "陈夷行",
+  "office840": {
+   "actual": [
+    "华州刺史"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "检校礼部尚书"
+   ],
+   "commissions": [
+    "镇国军潼关防御使"
+   ]
+  },
+  "location840": "华州",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "周道",
+  "nativePlace": "颍川陈氏（「其先江左诸陈也，世客颍川」）",
+  "stance": "李党·郑覃同道",
+  "evidence": [
+   {
+    "claim": "开成四年九月辛丑出为华州镇国军防御使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "辛丑，以吏部侍郎陳夷行為華州鎮國軍防禦使",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "检校礼部尚书、华州刺史；武宗即位后七月召还",
+    "source": "舊唐書·卷173·陳夷行傳",
+    "quote": "四年九月，檢校禮部尚書，出為華州刺史。五年，武宗即位，李德裕秉政。七月自華召入，復為中書侍郎、平章事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "字周道，颍川人",
+    "source": "舊唐書·卷173·陳夷行傳",
+    "quote": "陳夷行，字周道，潁川人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "素善郑覃，协力排抑朋党",
+    "source": "新唐書·卷181·陳夷行傳",
+    "quote": "又素善覃，陰助其力，以排折朋黨。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7181"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄50岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": "回朝时间：旧纪、旧传作开成五年七月（中书侍郎）；新表作会昌元年三月以御史大夫为门下侍郎。都在开局之后。"
+ },
+ {
+  "name": "裴夷直",
+  "office840": {
+   "actual": [
+    "谏议大夫"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": null,
+  "nativePlace": "河东裴氏",
+  "stance": "牛党·杨嗣复所擢",
+  "evidence": [
+   {
+    "claim": "正月以谏议大夫身份上言丧期太远",
+    "source": "資治通鑑·卷246",
+    "quote": "諫議大夫裴夷直上言期日太遠，不聽。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "武宗即位时两省联署漏名，出为杭州刺史",
+    "source": "資治通鑑·卷246",
+    "quote": "故事，新天子即位，兩省官同署名。上之即位也，諫議大夫裴夷直漏名，由是出爲杭州刺史。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "【异说】旧纪称其为御史中丞，坐刘、薛党出杭州",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "御史中丞裴夷直為杭州刺史：皆坐弘逸、季稜黨也。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "为李宗闵、杨嗣复所擢",
+    "source": "新唐書·卷177·李景讓傳",
+    "quote": "所善蘇滌、裴夷直皆為李宗閔、楊嗣復所擢",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   },
+   {
+    "claim": "郡望河东",
+    "source": "新唐書·卷164·王質傳",
+    "quote": "奏署幕府者，若河東裴夷直、天水趙皙、隴西李行方、梁國劉蕡，皆一時選云。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7164"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄44岁无史料可据（两唐书不见本传）"
+  ],
+  "confidence": "H",
+  "notes": "他在开局事件中是重要人物：正月裴夷直谏阻滥杀先帝近臣。已取的新旧唐书各卷里都没有他的本传。"
+ },
+ {
+  "name": "李宗闵",
+  "office840": {
+   "actual": [
+    "太子宾客·分司东都"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "河南府·洛阳",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "损之",
+  "nativePlace": "宗室（郑王元懿之后）",
+  "stance": "牛党魁首",
+  "evidence": [
+   {
+    "claim": "开成四年十二月乙卯由杭州刺史改太子宾客分司东都",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "乙卯，以杭州刺史李宗閔為太子賓客，分司東都。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "杨嗣复正谋引其复相，文宗崩而未果",
+    "source": "舊唐書·卷176·李宗閔傳",
+    "quote": "四年冬，遷太子賓客，分司東都。時鄭覃、陳夷行罷相，嗣復方再拔用宗閔知政事，俄而文宗崩。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "字损之，宗室郑王元懿之后",
+    "source": "舊唐書·卷176·李宗閔傳",
+    "quote": "李宗閔，字損之，宗室鄭王元懿之後。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "会昌三年贬封州，再贬郴州司马，卒于贬所",
+    "source": "舊唐書·卷176·李宗閔傳",
+    "quote": "德裕以宗閔素與劉從諫厚，上黨近東都，宗閔分司非便，出為封州刺史。又發其舊事，貶郴州司馬，卒於貶所。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄60岁无史料可据（贞元二十一年进士，与牛僧孺同年；生卒年都不详）"
+  ],
+  "confidence": "H",
+  "notes": ""
+ },
+ {
+  "name": "杜悰",
+  "office840": {
+   "actual": [
+    "户部尚书"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "驸马都尉（尚岐阳公主，公主已薨）",
+    "银青光禄大夫（尚主时所加，其后散官未详）"
+   ],
+   "commissions": [
+    "判度支"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 794,
+  "birthDate": null,
+  "age840": 45,
+  "deathYear": 873,
+  "zi": "永裕",
+  "nativePlace": "京兆杜氏（杜佑之孙，杜式方之子）",
+  "stance": "驸马·杨李荐用理财",
+  "evidence": [
+   {
+    "claim": "开成四年四月杨嗣复、李珏请除判度支杜悰户部尚书",
+    "source": "資治通鑑·卷246",
+    "quote": "夏，四月，戊辰，上稱判度支杜悰之才，楊嗣復、李玨因請除悰戸部尚書",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "会昌元年仍称户部尚书",
+    "source": "資治通鑑·卷246",
+    "quote": "戸部尚書杜悰奔馬見李德裕曰：「天子年少，新即位，茲事不宜手滑！」",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "开成初工部尚书判度支，后改户部尚书兼判度支",
+    "source": "舊唐書·卷147·杜悰傳",
+    "quote": "開成初，入為工部尚書、判度支。……三年，改戶部尚書，兼判戶部度支事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7147"
+   },
+   {
+    "claim": "字永裕；卒年八十",
+    "source": "新唐書·卷166·杜悰傳",
+    "quote": "悰，字永裕……悰不意其死，駭愕得疾卒，年八十，贈太師。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   },
+   {
+    "claim": "秦匡谋事在咸通十四年（873）",
+    "source": "資治通鑑·卷252",
+    "quote": "黔中經略使秦匡謀兵少不敵，棄城奔荊南。荊南節度使杜悰囚而奏之。六月，乙未，敕斬匡謀",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7252"
+   },
+   {
+    "claim": "尚岐阳公主，加驸马都尉",
+    "source": "舊唐書·卷147·杜悰傳",
+    "quote": "尋尚岐陽公主，加銀青光祿大夫、殿中少監、駙馬都尉。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7147"
+   }
+  ],
+  "discrepancies": [
+   "剧本zi为空：应为「永裕」（新唐书）",
+   "剧本称谓「户部尚书·判户部度支事」照抄旧传措辞，实指户部尚书本官兼判度支（使职），宜拆开写"
+  ],
+  "confidence": "H",
+  "notes": "旧传把改户部尚书系于开成三年，通鉴系于四年四月，不影响开局状态。生年794由咸通十四年（873）卒、年80推得。会昌初出任淮南节度使。生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "李让夷",
+  "office840": {
+   "actual": [
+    "中书舍人"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "达心",
+  "nativePlace": "陇西李氏",
+  "stance": "李党·郑覃所荐",
+  "evidence": [
+   {
+    "claim": "开成二年拜中书舍人，因郑覃举荐而为杨、李所恶，终文宗世不迁",
+    "source": "舊唐書·卷176·李讓夷傳",
+    "quote": "二年，拜中書舍人。以鄭覃此言，深為李玨、楊嗣復所惡，終文宗世，官不達。及德裕秉政，驟加拔擢",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "新传同",
+    "source": "新唐書·卷181·李讓夷傳",
+    "quote": "乃決用讓夷，進中書舍人。既而李玨、楊嗣復以覃之薦，終帝世不得遷。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7181"
+   },
+   {
+    "claim": "字达心，陇西人",
+    "source": "舊唐書·卷176·李讓夷傳",
+    "quote": "李讓夷，字達心，隴西人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄45岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": ""
+ },
+ {
+  "name": "崔龟从",
+  "office840": {
+   "actual": [
+    "宣州刺史（例兼）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "宣歙观察使"
+   ]
+  },
+  "location840": "宣州",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "玄告",
+  "nativePlace": "清河崔氏",
+  "stance": null,
+  "evidence": [
+   {
+    "claim": "开成四年三月以户部侍郎出为宣歙观察使，代崔郸",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "以戶部侍郎崔龜從為宣歙觀察使，代崔鄲；以鄲為太常卿。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "本传只记到开成四年权判吏部尚书铨事，漏记出镇宣歙",
+    "source": "舊唐書·卷176·崔龜從傳",
+    "quote": "開成初，出為華州刺史。三年三月，人為戶部侍郎，判本司事。四年，權判吏部尚書銓事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "字玄告，清河人",
+    "source": "舊唐書·卷176·崔龜從傳",
+    "quote": "崔龜從，字玄告，清河人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   }
+  ],
+  "discrepancies": [
+   "剧本官职「户部侍郎·判本司事·权判吏部尚书铨事」、所在地「京兆府·长安」都已过时：开成四年三月他已出为宣歙观察使，开局时在宣州",
+   "剧本年龄45岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": "剧本照录了旧传的「四年权判吏部尚书铨事」，但旧纪明载他三月外放。观察使例兼治州刺史，这是惯例推断，原文没有写。"
+ },
+ {
+  "name": "魏谟",
+  "office840": {
+   "actual": [
+    "谏议大夫"
+   ],
+   "concurrent": [
+    "起居舍人（兼）",
+    "判弘文馆事"
+   ],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 793,
+  "birthDate": null,
+  "age840": 46,
+  "deathYear": 858,
+  "zi": "申之",
+  "nativePlace": "钜鹿魏氏（魏徵五代孙）",
+  "stance": "牛党·杨李所引",
+  "evidence": [
+   {
+    "claim": "开成四年拜谏议大夫，仍兼起居舍人、判弘文馆事",
+    "source": "舊唐書·卷176·魏謩傳",
+    "quote": "四年，拜諫議大夫，仍兼起居舍人，判弘文館事。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "开成四年十月拒绝文宗观起居注",
+    "source": "資治通鑑·卷246",
+    "quote": "冬，十月，乙卯，上就起居舍人魏謨取記注觀之，謨不可",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "为李固言、李珏、杨嗣复所引；武宗即位后坐杨、李党出为汾州刺史",
+    "source": "舊唐書·卷176·魏謩傳",
+    "quote": "初立朝，為李固言、李玨、楊嗣復所引，數年之內，至諫議大夫。武宗即位，李德裕用事，謩坐楊、李之黨，出為汾州刺史。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "字申之，钜鹿人，魏徵五代孙",
+    "source": "舊唐書·卷176·魏謩傳",
+    "quote": "魏謩，字申之，鉅鹿人。五代祖文貞公徵，貞觀朝名相。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "大中十二年十二月卒，年六十六（→生793）",
+    "source": "舊唐書·卷176·魏謩傳",
+    "quote": "十二年十二月卒，時年六十六，贈司徒。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   }
+  ],
+  "discrepancies": [
+   "名字写法：原文作「魏謩」或「魏謨」，剧本作「魏谟」，是同一人"
+  ],
+  "confidence": "H",
+  "notes": "生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "周墀",
+  "office840": {
+   "actual": [
+    "中书舍人"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "翰林学士"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "德升",
+  "nativePlace": "汝南周氏",
+  "stance": "文宗近臣·宗闵旧属",
+  "evidence": [
+   {
+    "claim": "开成四年十月正拜中书舍人，翰林学士如故；武宗即位出为华州刺史",
+    "source": "舊唐書·卷176·周墀傳",
+    "quote": "四年十月，正拜中書舍人，內職如故。武宗即位，出為華州刺史、鎮國軍潼關防禦等使",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "开成四年十一月为当直学士，文宗对他说「受制于家奴」",
+    "source": "資治通鑑·卷246",
+    "quote": "乙亥，上疾少間，坐思政殿，召當直學士周墀，賜之酒",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "字德升，汝南人",
+    "source": "舊唐書·卷176·周墀傳",
+    "quote": "周墀，字德升，汝南人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "曾为李宗闵所礼，任其山南行军司马；卒年五十九（卒年不详）",
+    "source": "新唐書·卷182·周墀傳",
+    "quote": "李宗閔鎮山南，表行軍司馬……獨墀雖嘗為宗閔所禮，不能以罪誣也。……卒，年五十九，贈司徒。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7182"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄47岁无原始史料可据：新传只记享年59，卒年未见（二手说约793–851）"
+  ],
+  "confidence": "H",
+  "notes": ""
+ },
+ {
+  "name": "裴休",
+  "office840": {
+   "actual": [],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安（推测）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "公美",
+  "nativePlace": "河内（孟州）济源裴氏",
+  "stance": null,
+  "evidence": [
+   {
+    "claim": "太和中入为监察御史、右补阙、史馆修撰；会昌中以尚书郎出典数郡",
+    "source": "舊唐書·卷177·裴休傳",
+    "quote": "太和初，歷諸籓辟召，入為監察御史、右補闕、史館修撰。會昌中，自尚書郎歷典數郡。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   },
+   {
+    "claim": "大和六年七月以右补阙充史馆修撰",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "甲午，以諫議大夫王彥威、戶部郎中楊漢公、祠部員外郎蘇滌、右補闕裴休並充史館修撰。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "字公美，孟州济源人；卒年七十四",
+    "source": "新唐書·卷182·裴休傳",
+    "quote": "裴休，字公美，孟州濟源人。……卒，年七十四，贈太尉。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7182"
+   }
+  ],
+  "discrepancies": [
+   "剧本泛称「文臣」：开局时的具体官职，两唐书本传和已取的纪、表、通鉴都没有记载，只能推知大约是尚书省郎官（「自尚书郎」），仍在长安",
+   "剧本family写「支系与郡望另核」：旧传作「河内济源」，新传作「孟州济源」，父裴肃曾任浙东观察使",
+   "剧本年龄49岁无原始史料可据（新传只有享年74，卒年不详）"
+  ],
+  "confidence": "L",
+  "notes": "会昌二年他在洪州（钟陵）任江西观察使（据二手资料，他本人的《传心法要序》有「会昌二年，予廉于钟陵」，本次未取原文）。"
+ },
+ {
+  "name": "卢商",
+  "office840": {
+   "actual": [
+    "润州刺史"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "浙西团练观察使"
+   ]
+  },
+  "location840": "润州",
+  "alive840": true,
+  "birthYear": 789,
+  "birthDate": null,
+  "age840": 50,
+  "deathYear": 859,
+  "zi": "为臣",
+  "nativePlace": "范阳卢氏",
+  "stance": null,
+  "evidence": [
+   {
+    "claim": "开成二年五月由苏州刺史擢浙西观察使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "辛未，詔以前淮南節度使牛僧孺為檢校司空、東都留守，以蘇州刺史盧商為浙西觀察使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "迁润州刺史、浙西团练观察使，后入为刑部侍郎、京兆尹（会昌间）",
+    "source": "舊唐書·卷176·盧商傳",
+    "quote": "遷潤州刺史、浙西團練觀察使。入為刑部侍郎，轉京兆尹。三年，朝廷用兵上黨",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "字为臣，范阳人",
+    "source": "舊唐書·卷176·盧商傳",
+    "quote": "盧商，字為臣，范陽人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "大中十三年八月卒，年七十一（→生789）",
+    "source": "舊唐書·卷176·盧商傳",
+    "quote": "大中十三年，以疾求代，徵拜戶部尚書。其年八月，卒於漢陰驛，時年七十一。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄69岁错误：按大中十三年（859）卒、年71推算生于789年，开局时50岁",
+   "剧本所在地「京兆府·长安」错误：开局时他应在润州任浙西观察使（开成二年到任，已取史料里没有他离任的记载）",
+   "剧本泛称「资深文臣」：应为润州刺史·浙西团练观察使"
+  ],
+  "confidence": "M",
+  "notes": "离任浙西的确切时间在已取原文里没有；中文维基《镇海军节度使》列表写他837–841年在任（二手），与此相合。生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "白居易",
+  "office840": {
+   "actual": [
+    "太子少傅·分司东都"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "冯翊县开国侯"
+   ],
+   "commissions": []
+  },
+  "location840": "河南府·洛阳（履道里）",
+  "alive840": true,
+  "birthYear": 772,
+  "birthDate": null,
+  "age840": 67,
+  "deathYear": 846,
+  "zi": "乐天",
+  "nativePlace": "太原白氏，下邽人",
+  "stance": "不附两党·分司闲退",
+  "evidence": [
+   {
+    "claim": "大和九年以新授同州刺史改太子少傅分司",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "乙未，以新受同州刺史白居易為太子少傅分司",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "授太子少傅、进封冯翊县侯；开成四年冬得风痹",
+    "source": "舊唐書·卷166·白居易傳",
+    "quote": "開成元年，除同州刺史，辭疾不拜。尋授太子少傅，進封馮翊縣開國侯。四年冬，得風病，伏枕者累月",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   },
+   {
+    "claim": "会昌初以刑部尚书致仕；会昌六年卒，年七十五（→生772）",
+    "source": "新唐書·卷119·白居易傳",
+    "quote": "開成初，起為同州刺史，不拜，改太子少傅，進馮翊縣侯。會昌初，以刑部尚書致仕。六年，卒，年七十五",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7119"
+   },
+   {
+    "claim": "字乐天，太原人，迁籍下邽",
+    "source": "舊唐書·卷166·白居易傳",
+    "quote": "白居易，字樂天，太原人。……至溫徙於下邽，今為下邽人焉。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   },
+   {
+    "claim": "不依附李宗闵",
+    "source": "新唐書·卷119·白居易傳",
+    "quote": "當宗閔時，權勢震赫，終不附離為進取計，完節自高。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7119"
+   },
+   {
+    "claim": "【异说】旧传作大中元年卒、年七十六",
+    "source": "舊唐書·卷166·白居易傳",
+    "quote": "大中元年卒，時年七十六，贈尚書右僕射。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   }
+  ],
+  "discrepancies": [],
+  "confidence": "H",
+  "notes": "生日「大历七年正月二十日」出自李商隐撰墓碑（二手，未取原文）；按此生日在正月十四之后，开局时67周岁，与剧本一致。开局时他风痹初愈。"
+ },
+ {
+  "name": "刘禹锡",
+  "office840": {
+   "actual": [
+    "太子宾客·分司东都"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "河南府·洛阳",
+  "alive840": true,
+  "birthYear": 772,
+  "birthDate": null,
+  "age840": 67,
+  "deathYear": 842,
+  "zi": "梦得",
+  "nativePlace": "自称中山刘氏，旧传称彭城人",
+  "stance": "永贞旧人·分司闲居",
+  "evidence": [
+   {
+    "claim": "大和九年由汝州刺史改同州刺史",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "以汝州刺史劉禹錫為同州刺史。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "由同州改太子宾客分司；会昌时才加检校礼部尚书",
+    "source": "新唐書·卷168·劉禹錫傳",
+    "quote": "徙汝、同二州。遷太子賓客，復分司。……會昌時，加檢校禮部尚書。卒，年七十二",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   },
+   {
+    "claim": "会昌二年七月卒，年七十一（→生772）；彭城人",
+    "source": "舊唐書·卷160·劉禹錫傳",
+    "quote": "劉禹錫，字夢得，彭城人。……會昌二年七月卒，時年七十一，贈戶部尚書。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7160"
+   },
+   {
+    "claim": "王叔文党人",
+    "source": "舊唐書·卷160·劉禹錫傳",
+    "quote": "禹錫尤為叔文知獎，以宰相器待之。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7160"
+   }
+  ],
+  "discrepancies": [
+   "剧本family写「本传记彭城郡望」：新传作「自言系出中山」，两书不同"
+  ],
+  "confidence": "H",
+  "notes": "生年：旧传作享年71→772，新传作享年72→771。检校礼部尚书是会昌年间所加，开局时没有。生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "杜牧",
+  "office840": {
+   "actual": [
+    "左补阙"
+   ],
+   "concurrent": [
+    "史馆修撰"
+   ],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 803,
+  "birthDate": null,
+  "age840": 36,
+  "deathYear": 852,
+  "zi": "牧之",
+  "nativePlace": "京兆杜氏（杜佑孙，杜从郁子）",
+  "stance": "牛僧孺旧幕·杜悰从弟",
+  "evidence": [
+   {
+    "claim": "由宣州团练判官、殿中侍御史内供奉迁左补阙、史馆修撰，后转膳部、比部员外郎",
+    "source": "舊唐書·卷147·杜牧傳",
+    "quote": "授宣州團練判官、殿中侍御史、內供奉。遷左補闕、史館修撰，轉膳部、比部員外郎，並兼史職。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7147"
+   },
+   {
+    "claim": "字牧之；曾为牛僧孺淮南掌书记",
+    "source": "新唐書·卷166·杜牧傳",
+    "quote": "牧，字牧之……又為牛僧孺淮南節度府掌書記。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   },
+   {
+    "claim": "享年五十",
+    "source": "舊唐書·卷147·杜牧傳",
+    "quote": "其年，以疾終於安仁裏，年五十。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7147"
+   },
+   {
+    "claim": "从兄杜悰",
+    "source": "舊唐書·卷147·杜牧傳",
+    "quote": "牧從兄悰隆盛於時，牧居下位，心常不樂。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7147"
+   }
+  ],
+  "discrepancies": [],
+  "confidence": "M",
+  "notes": "两唐书没有记他任左补阙的年月。开成三年冬自宣州入京、开成五年间转膳部员外郎，都据二手年谱（缪钺《杜牧年谱》）。生803、卒852也是学界通说：两唐书只有享年50，卒年大中六年出自二手。"
+ },
+ {
+  "name": "李商隐",
+  "office840": {
+   "actual": [
+    "弘农县尉（虢州弘农县）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "虢州",
+  "alive840": true,
+  "birthYear": 813,
+  "birthDate": null,
+  "age840": 26,
+  "deathYear": null,
+  "zi": "义山",
+  "nativePlace": "怀州河内",
+  "stance": "令狐楚门生",
+  "evidence": [
+   {
+    "claim": "开成二年进士，调弘农尉；以活狱忤孙简将罢，姚合代简后令其还官",
+    "source": "新唐書·卷203·文藝下·李商隱傳",
+    "quote": "開成二年，髙鍇知貢舉，令狐綯雅善鍇，□譽甚力（□为维基文库原缺字），故擢進士第。調弘農尉，以活獄忤觀察使孫簡，將罷去，會姚合代簡，諭使還官。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7203"
+   },
+   {
+    "claim": "姚合开成四年八月任陕虢观察使（李商隐复官必在此后）",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "八月庚戌朔，以給事中姚合為陝虢觀察使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "释褐秘书省校书郎，调补弘农尉（维基文库此卷原文为简体）",
+    "source": "舊唐書·卷190下·文苑下·李商隱傳",
+    "quote": "开成二年，方登进士第，释褐秘书省校书郎，调补弘农尉。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7190%E4%B8%8B"
+   },
+   {
+    "claim": "字义山，怀州河内人",
+    "source": "舊唐書·卷190下·文苑下·李商隱傳",
+    "quote": "李商隐，字义山，怀州河内人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7190%E4%B8%8B"
+   }
+  ],
+  "discrepancies": [
+   "剧本官职泛称「文士」、所在地「京兆府·长安」均不符：开局时他应在虢州任弘农尉（开成四年八月姚合接任后复官）",
+   "剧本年龄27岁：两唐书没有他的生年；学界通说生于813年（元和八年），开局时26岁（若生日早于正月十四则27岁）"
+  ],
+  "confidence": "M",
+  "notes": "生年813是二手通说（张采田《玉溪生年谱会笺》等，据其自述推定），两唐书无载。辞弘农尉的确切时间，二手年谱多系于开成五年。卒年（约大中末）两唐书没有具体年份，填 null。"
+ },
+ {
+  "name": "李翱",
+  "office840": {
+   "actual": [],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": null,
+  "alive840": false,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 836,
+  "zi": "习之",
+  "nativePlace": "陇西李氏（凉武昭王之后）",
+  "stance": null,
+  "evidence": [
+   {
+    "claim": "大和九年八月以户部侍郎出为山南东道节度使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "八月甲戌朔，以戶部侍郎李翱檢校禮部尚書，充山南東道節度使，代王起",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "开成元年七月殷侑已接任山南东道节度使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "辛卯，刑部尚書殷侑檢校右僕射，充山南東道節度使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "新传：历山南东道节度使，卒（卒于任上）",
+    "source": "新唐書·卷177·李翺傳",
+    "quote": "後歷遷桂管湖南觀察使、山南東道節度使，卒。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   },
+   {
+    "claim": "【异说】旧传作「会昌中卒于镇」，与旧纪殷侑接任的记载矛盾",
+    "source": "舊唐書·卷160·李翺傳",
+    "quote": "七月，檢校戶部尚書、襄州刺史，充山南東道節度使。會昌中，卒於鎮，謚曰文。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7160"
+   },
+   {
+    "claim": "字习之，凉武昭王之后",
+    "source": "舊唐書·卷160·李翺傳",
+    "quote": "李翺，字習之，涼武昭王之後。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7160"
+   }
+  ],
+  "discrepancies": [
+   "开局时李翱已经去世：他死在山南东道节度使任上，而开成元年（836）七月殷侑已接任，所以大约卒于开成元年，剧本把他写成在世、在长安的「文臣·学者」是错误的，应删除或改为已故",
+   "剧本年龄67岁（按生于772年推算）只是二手说法，两唐书没有他的生年"
+  ],
+  "confidence": "M",
+  "notes": "卒年836是推定：新传说卒于山南东道任上，旧纪开成元年七月已由殷侑接任。旧传「会昌中卒」不可信（会昌元年起山南东道已是牛僧孺、卢钧）。二手通说他生于772年，本次未采用。"
+ },
+ {
+  "name": "仇士良",
+  "office840": {
+   "actual": [
+    "左骁卫上将军（本卫上将军，环卫官）",
+    "知内侍省事"
+   ],
+   "concurrent": [],
+   "honorary": [
+    "骠骑大将军（武散官）"
+   ],
+   "commissions": [
+    "左神策军护军中尉",
+    "左街功德使"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": 781,
+  "birthDate": null,
+  "age840": 58,
+  "deathYear": 843,
+  "zi": "匡美",
+  "nativePlace": "循州兴宁（碑作「海丰兴宁」）",
+  "stance": "北司·左军中尉·拥立",
+  "evidence": [
+   {
+    "claim": "大和九年五月拜左神策军中尉兼左街功德使；甘露之变后加特进、本卫上将军，寻迁骠骑大将军",
+    "source": "全唐文·卷790·鄭薰〈內侍省監楚國公仇士良神道碑〉",
+    "quote": "九年五月拜左神策軍中尉兼左街功德使，將軍知省事如故。……優詔加特進本衛上將軍，中尉知省事如故。……尋遷驃騎大將軍。",
+    "url": "https://zh.wikisource.org/wiki/%E5%85%A7%E4%BE%8D%E7%9C%81%E7%9B%A3%E6%A5%9A%E5%9C%8B%E5%85%AC%E4%BB%87%E5%A3%AB%E8%89%AF%E7%A5%9E%E9%81%93%E7%A2%91"
+   },
+   {
+    "claim": "开府仪同三司、左卫上将军、楚国公都是开成五年即位后才加的",
+    "source": "全唐文·卷790·仇士良神道碑",
+    "quote": "開成五年加開府儀同三司左衛上將軍，封楚國公，食邑三千戶。",
+    "url": "https://zh.wikisource.org/wiki/%E5%85%A7%E4%BE%8D%E7%9C%81%E7%9B%A3%E6%A5%9A%E5%9C%8B%E5%85%AC%E4%BB%87%E5%A3%AB%E8%89%AF%E7%A5%9E%E9%81%93%E7%A2%91"
+   },
+   {
+    "claim": "会昌三年六月二十三日薨，享年六十三（→生781）",
+    "source": "全唐文·卷790·仇士良神道碑",
+    "quote": "其年六月二十三日，薨於廣化裏之私第，享年六十有三。",
+    "url": "https://zh.wikisource.org/wiki/%E5%85%A7%E4%BE%8D%E7%9C%81%E7%9B%A3%E6%A5%9A%E5%9C%8B%E5%85%AC%E4%BB%87%E5%A3%AB%E8%89%AF%E7%A5%9E%E9%81%93%E7%A2%91"
+   },
+   {
+    "claim": "字匡美，循州兴宁人；为左神策军中尉",
+    "source": "新唐書·卷207·宦者上·仇士良傳",
+    "quote": "仇士良，字匡美，循州興寧人。……故擢左神策軍中尉兼左街功德使",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7207"
+   },
+   {
+    "claim": "与鱼弘志矫诏改立",
+    "source": "資治通鑑·卷246",
+    "quote": "中尉仇士良、魚弘志以太子之立，功不在己，乃言太子幼，且有疾，更議所立。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "【异说】旧纪二月条左右军互倒",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "以開府、右軍中尉仇士良封楚國公，左軍中尉魚弘志為韓國公",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄59岁：神道碑写会昌三年卒、享年63，推得生于781年，开局时58岁（若生日早于正月十四则59岁）",
+   "剧本zi为空：应为「匡美」"
+  ],
+  "confidence": "H",
+  "notes": "旧纪二月条把仇、鱼的左右军写反，碑、新传、通鉴、旧纪会昌三年条都作仇士良为左军。生日不详时按「生日在正月十四之后」计周岁（开局日为正月十四，一年中绝大多数日子在其后）；若生日在正月十四前则再加1。生年由享年倒推时按虚岁：生年=卒年-享年+1。"
+ },
+ {
+  "name": "鱼弘志",
+  "office840": {
+   "actual": [
+    "右卫上将军（环卫官）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "右神策军护军中尉"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": null,
+  "nativePlace": null,
+  "stance": "北司·右军中尉·拥立",
+  "evidence": [
+   {
+    "claim": "甘露之变时已任右神策军中尉；事后加右卫上将军兼中尉",
+    "source": "新唐書·卷207·宦者上·仇士良傳",
+    "quote": "與右神策軍中尉魚弘誌、大盈庫使宋守義挾帝還宮。……事平，加特進、右驍衞大將軍，弘誌右衞上將軍兼中尉",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7207"
+   },
+   {
+    "claim": "武宗立后封韩国公（开局后）",
+    "source": "新唐書·卷207·宦者上·仇士良傳",
+    "quote": "士良遷驃騎大將軍，封楚國公，弘誌韓國公，實封戸三百。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7207"
+   },
+   {
+    "claim": "与仇士良共同矫诏立颍王",
+    "source": "資治通鑑·卷246",
+    "quote": "士良、弘志遂矯詔立瀍爲太弟。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄50岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": "名字原文或作「鱼弘誌」。"
+ },
+ {
+  "name": "刘弘逸",
+  "office840": {
+   "actual": [],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "知枢密（枢密使）"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 840,
+  "zi": null,
+  "nativePlace": null,
+  "stance": "枢密·文宗亲信·附杨嗣复",
+  "evidence": [
+   {
+    "claim": "知枢密，奉密旨欲以皇太子监国",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "五年正月二日，文宗暴疾，宰相李玨、知樞密劉弘逸奉密旨，以皇太子監國。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "通鉴同",
+    "source": "資治通鑑·卷246",
+    "quote": "時上疾甚，命知樞密劉弘逸、薛季陵引楊嗣復、李玨至禁中，欲奉太子監國。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "开成五年八月十七日葬文宗之日伏诛",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "知樞密劉弘逸、薛季稜率禁軍護靈駕至陵所……是日弘逸、季稜伏誅。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "武宗说杨嗣复、刘弘逸志在立安王",
+    "source": "舊唐書·卷176·楊嗣復傳",
+    "quote": "李玨、季稜志在扶冊陳王，嗣復、弘逸志在樹立安王。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "【异说】通鉴系赐死于会昌元年三月",
+    "source": "資治通鑑·卷246",
+    "quote": "乙未，賜弘逸、季陵死，遣中使就潭、桂州誅嗣復及玨。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄48岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": "死年：旧纪作840年八月，通鉴作841年三月。"
+ },
+ {
+  "name": "薛季棱",
+  "office840": {
+   "actual": [],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "知枢密（枢密使）"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 840,
+  "zi": null,
+  "nativePlace": null,
+  "stance": "枢密·附李珏·扶陈王",
+  "evidence": [
+   {
+    "claim": "与刘弘逸同知枢密",
+    "source": "資治通鑑·卷246",
+    "quote": "時上疾甚，命知樞密劉弘逸、薛季陵引楊嗣復、李玨至禁中，欲奉太子監國。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "武宗说李珏、薛季棱志在扶立陈王",
+    "source": "舊唐書·卷176·楊嗣復傳",
+    "quote": "李玨、季稜志在扶冊陳王，嗣復、弘逸志在樹立安王。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7176"
+   },
+   {
+    "claim": "开成五年八月伏诛",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "是日弘逸、季稜伏誅。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   }
+  ],
+  "discrepancies": [
+   "剧本年龄47岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": "名字写法：新唐书作「薛季棱」，旧唐书作「薛季稜」，通鉴作「薛季陵」。死年异说同刘弘逸。"
+ },
+ {
+  "name": "赵归真",
+  "office840": {
+   "actual": [
+    "道士（无官）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": null,
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": 846,
+  "zi": null,
+  "nativePlace": null,
+  "stance": "道士·武宗潜邸旧识",
+  "evidence": [
+   {
+    "claim": "宝历二年十二月文宗即位时被流放岭南",
+    "source": "舊唐書·卷17上·文宗紀",
+    "quote": "甲辰，僧惟真、齊賢、正簡，道士趙歸真，並配流嶺南",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8A"
+   },
+   {
+    "claim": "开成五年秋才召入禁中（开局后）",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "是秋，召道士趙歸真等八十一人入禁中，於三殿修金籙道場。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "武宗在藩时已认识他",
+    "source": "舊唐書·卷18上·武宗紀",
+    "quote": "帝曰：「我爾時已識此道人，不知名歸真，只呼趙鍊師。在敬宗時亦無甚過。」",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B718%E4%B8%8A"
+   },
+   {
+    "claim": "会昌六年宣宗即位后杖杀",
+    "source": "資治通鑑·卷248",
+    "quote": "杖殺道士趙歸真等數人，流羅浮山人軒轅集於嶺南。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7248"
+   }
+  ],
+  "discrepancies": [
+   "剧本所在地「京兆府·长安」无据：宝历二年他被流放岭南，开成五年秋才奉召入禁中，开局时的行踪史料没有记载",
+   "剧本年龄45岁无史料可据"
+  ],
+  "confidence": "M",
+  "notes": "开局时是否已离开岭南不详，location840 填 null。"
+ },
+ {
+  "name": "白敏中",
+  "office840": {
+   "actual": [
+    "殿中侍御史（推定）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "邠宁节度副使（推定）"
+   ]
+  },
+  "location840": "邠州（推定）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "用晦",
+  "nativePlace": "太原白氏，下邽（白居易从父弟）",
+  "stance": null,
+  "evidence": [
+   {
+    "claim": "改殿中侍御史，为符澈邠宁副使；后以高元裕荐为侍御史，再转左司员外郎",
+    "source": "新唐書·卷119·白敏中傳",
+    "quote": "遷右拾遺，改殿中侍御史，為符澈邠寧副使，澈卒以能政聞。御史中丞高元裕薦為侍御史，再轉左司員外郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7119"
+   },
+   {
+    "claim": "符澈开成四年六月始任邠宁节度使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "六月辛亥朔，以長武城使苻澈為邠寧節度。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "会昌二年九月以左司员外郎充翰林学士",
+    "source": "資治通鑑·卷246",
+    "quote": "其從父弟左司員外郎敏中，辭學不減居易，且有器識。甲辰，以敏中爲翰林學士。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "【异说】旧传：会昌初为殿中侍御史分司东都，寻除户部员外郎",
+    "source": "舊唐書·卷166·白敏中傳",
+    "quote": "會昌初，為殿中侍御史，分司東都。尋除戶部員外郎，還京。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   },
+   {
+    "claim": "字用晦，居易从父弟",
+    "source": "舊唐書·卷166·白敏中傳",
+    "quote": "敏中，字用晦，居易從父弟也。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7166"
+   }
+  ],
+  "discrepancies": [
+   "剧本泛称「文臣」、所在地「京兆府·长安」可疑：按新传，开成四年六月以后他以殿中侍御史任邠宁节度副使（符澈幕），开局时多半在邠州；旧传说法不同，所以只能算推定",
+   "剧本年龄47岁无原始史料可据（二手说生于792年）"
+  ],
+  "confidence": "L",
+  "notes": "开局时尚未显达，到会昌二年才由李德裕推荐入翰林，所以 stance 填 null。"
+ },
+ {
+  "name": "李回",
+  "office840": {
+   "actual": [
+    "中书舍人"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "昭回（开局时；改名后字昭度）",
+  "nativePlace": "宗室（旧传：郇王祎之后；新传：新兴王德良六世孙）",
+  "stance": "李党·德裕所知",
+  "evidence": [
+   {
+    "claim": "开成初以库部郎中知制诰，拜中书舍人；武宗即位后拜工部侍郎",
+    "source": "舊唐書·卷173·李回傳",
+    "quote": "開成初，以庫部郎中知制誥，拜中書舍人，賜金紫服。武宗即位，拜工部侍郎",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "本名躔，避武宗讳改名",
+    "source": "舊唐書·卷173·李回傳",
+    "quote": "李回，字昭度，宗室郇王祎之後。父如仙。回本名躔，以避武宗廟諱。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   },
+   {
+    "claim": "本名躔，字昭回；新兴王德良六世孙",
+    "source": "新唐書·卷131·宗室宰相·李回傳",
+    "quote": "李回，字昭度，新興王德良六世孫，本名躔，字昭回，避武宗諱改焉。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7131"
+   },
+   {
+    "claim": "为李德裕所知",
+    "source": "舊唐書·卷173·李回傳",
+    "quote": "尤為宰相李德裕所知。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7173"
+   }
+  ],
+  "discrepancies": [
+   "开局当天（武宗受册日）他还叫李躔、字昭回；避武宗讳改名李回、字昭度是之后的事",
+   "剧本family写「郇王祎后裔」（旧传），新传作「新兴王德良六世孙」，两说并存",
+   "剧本年龄44岁无史料可据"
+  ],
+  "confidence": "H",
+  "notes": ""
+ },
+ {
+  "name": "崔铉",
+  "office840": {
+   "actual": [
+    "荆南节度掌书记（幕职）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "江陵府",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "台硕",
+  "nativePlace": "博陵崔氏（崔元略之子）",
+  "stance": "李石幕宾·后与德裕不叶",
+  "evidence": [
+   {
+    "claim": "历荆南、西蜀掌书记，会昌初才入朝为左拾遗",
+    "source": "舊唐書·卷163·崔鉉傳",
+    "quote": "鉉，字台碩，登進士第。三辟諸侯府，荊南、西蜀掌書記。會昌初，入為左拾遺",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7163"
+   },
+   {
+    "claim": "从李石于荆南；入朝三年就做了宰相，那时李石还在江陵",
+    "source": "新唐書·卷160·崔鉉傳",
+    "quote": "從李石荊南為賓佐，入拜司勛員外郎、翰林學士……鉉入朝，凡三歲至宰相，而石猶在江陵。……與李德裕不叶",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7160"
+   },
+   {
+    "claim": "李石开成三年正月出镇荆南",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "丙子，以中書侍郎、同中書門下平章事李石為荊南節度使",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "父崔元略为博陵人",
+    "source": "舊唐書·卷163·崔元略傳",
+    "quote": "崔元略，博陵人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7163"
+   }
+  ],
+  "discrepancies": [
+   "剧本泛称「文臣」、所在地「京兆府·长安」不符：开局时他是李石荆南幕府的宾佐（掌书记），在江陵府，会昌初才入朝",
+   "剧本年龄38岁无史料可据"
+  ],
+  "confidence": "M",
+  "notes": "他会昌三年拜相，新传说入朝三年，由此推知约会昌元年入朝，开局时仍在荆南。"
+ },
+ {
+  "name": "李景让",
+  "office840": {
+   "actual": [
+    "礼部侍郎"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "知贡举（开成五年春闱）"
+   ]
+  },
+  "location840": "京兆府·长安",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "后己",
+  "nativePlace": "太原文水李氏（李憕之后）",
+  "stance": "友牛党人·会昌见抑",
+  "evidence": [
+   {
+    "claim": "开成四年入为礼部侍郎，五年主持贡举",
+    "source": "舊唐書·卷187下·忠義下·李景讓傳",
+    "quote": "二年十月，出為華州刺史、潼關防禦、鎮國軍使。四年，入為禮部侍郎。五年，選貢士李蔚，後至宰相；楊知退為尚書。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7187%E4%B8%8B"
+   },
+   {
+    "claim": "旧纪：开成三年十月由中书舍人出为华州防御使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "癸巳，以中書舍人李景讓為華州防禦使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "字后己；所善苏涤、裴夷直为宗闵、嗣复所擢，所以会昌时受压制不得升迁",
+    "source": "新唐書·卷177·李景讓傳",
+    "quote": "李景讓，字後己，贈太尉憕孫也。……所善蘇滌、裴夷直皆為李宗閔、楊嗣復所擢，故景讓在會昌時，抑厭不遷。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   },
+   {
+    "claim": "旧传：他是李憕曾孙（李憕—李彭—李宏—李景让）",
+    "source": "舊唐書·卷187下·忠義下",
+    "quote": "彭，以一子官累歷州縣令長。子宏，仕官愈卑。生三子：景讓、景莊、景溫",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7187%E4%B8%8B"
+   },
+   {
+    "claim": "李憕太原文水人",
+    "source": "舊唐書·卷187下·李憕傳",
+    "quote": "李憕，太原文水人。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7187%E4%B8%8B"
+   }
+  ],
+  "discrepancies": [
+   "剧本泛称「文臣」：开局时他是礼部侍郎，正在主持开成五年进士科",
+   "剧本family写「李憕之孙」，照的是新传；旧传世系是曾孙，两书不同",
+   "剧本年龄49岁无史料可据（新传只有享年72，卒年不详）"
+  ],
+  "confidence": "H",
+  "notes": ""
+ },
+ {
+  "name": "韦温",
+  "office840": {
+   "actual": [
+    "尚书右丞（开成四年在任；开局时可能已出为陕虢观察使，月份不详）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": []
+  },
+  "location840": "京兆府·长安（或已赴陕州）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "弘育",
+  "nativePlace": "京兆韦氏（韦绶之子）",
+  "stance": "坚正中立·与杨李交好",
+  "evidence": [
+   {
+    "claim": "开成四年任右丞，驳回姚勖入省",
+    "source": "資治通鑑·卷246",
+    "quote": "命權知職方員外郎，右丞韋溫不聽",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "文宗素来看重他，出为陕虢观察使；武宗立后擢吏部侍郎",
+    "source": "新唐書·卷169·韋溫傳",
+    "quote": "帝素重溫，出為陜虢觀察使。民當輸租而麥未熟……武宗立，擢吏部侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7169"
+   },
+   {
+    "claim": "旧传同；德裕称他「坚正中立」；他与李珏、杨嗣复交往",
+    "source": "舊唐書·卷168·韋溫傳",
+    "quote": "上素重溫，亦不奪其操，出為陜虢觀察使。武宗即位，李德裕用事，召拜吏部侍郎……德裕曰：「此人堅正中立，君子也。」……溫在朝時，與李玨、楊嗣復周旋。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   },
+   {
+    "claim": "姚合开成四年八月任陕虢观察使，所以韦温出镇陕虢只能在此后",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "八月庚戌朔，以給事中姚合為陝虢觀察使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "字弘育，京兆人；卒年五十八",
+    "source": "新唐書·卷169·韋溫傳",
+    "quote": "溫，字弘育。……卒，年五十八，贈工部尚書，謚曰孝。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7169"
+   }
+  ],
+  "discrepancies": [
+   "剧本zi为空：应为「弘育」；family为空：应为京兆韦氏（父韦绶，叔父韦贯之）",
+   "剧本「尚书右丞」可能过时：两唐书都说他在文宗朝已出为陕虢观察使，但姚合开成四年八月才到陕虢，韦温接任大约在开成四年末到五年初，开局当天是否已改任，现有史料无法确定",
+   "剧本年龄49岁无史料可据（享年58，卒年不详）"
+  ],
+  "confidence": "L",
+  "notes": "中文维基《陕虢节度使》列表写韦温840–843年在任（二手）。"
+ },
+ {
+  "name": "姚勖",
+  "office840": {
+   "actual": [
+    "检校礼部郎中（检校官，本身不是实职）"
+   ],
+   "concurrent": [],
+   "honorary": [],
+   "commissions": [
+    "盐铁推官（知河阴院）"
+   ]
+  },
+  "location840": "河南府·河阴（推定，盐铁河阴院）",
+  "alive840": true,
+  "birthYear": null,
+  "birthDate": null,
+  "age840": null,
+  "deathYear": null,
+  "zi": "斯勤",
+  "nativePlace": "陕州硖石姚氏（姚崇之后）",
+  "stance": "李德裕厚善",
+  "evidence": [
+   {
+    "claim": "开成四年因能审疑狱得到奖拔，被韦温驳回后改检校礼部郎中，仍任盐铁推官",
+    "source": "資治通鑑·卷246",
+    "quote": "上以鹽鐵推官、檢校禮部員外郎姚勖能鞫疑獄，命權知職方員外郎……上乃以勖檢校禮部郎中，依前鹽鐵推官。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   },
+   {
+    "claim": "以盐铁判官身份掌河阴院",
+    "source": "舊唐書·卷168·韋溫傳",
+    "quote": "鹽鐵判官姚勖知河陰院，嘗雪冤獄。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   },
+   {
+    "claim": "字斯勤，长庆初进士；与李德裕厚善",
+    "source": "新唐書·卷124·姚崇傳附姚勖",
+    "quote": "勖字斯勤。長慶初擢進士第，數為使府表辟，進監察御史，佐鹽鐵使務。……為宰相李德裕厚善。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7124"
+   },
+   {
+    "claim": "新传作姚崇曾孙",
+    "source": "新唐書·卷124·姚崇傳",
+    "quote": "曾孫合、勖。",
+    "url": "https://zh.wikisource.org/wiki/%E6%96%B0%E5%94%90%E6%9B%B8/%E5%8D%B7124"
+   }
+  ],
+  "discrepancies": [
+   "剧本所在地「京兆府·长安」可疑：他以盐铁推官（判官）知河阴院，开局时多半在河阴（河南府）",
+   "剧本zi为空：应为「斯勤」",
+   "剧本年龄36岁存疑：他长庆初（821年前后）已进士及第，按剧本年龄当时只有十七八岁，偏小；确切生年不详"
+  ],
+  "confidence": "M",
+  "notes": "世系：新传说是姚崇曾孙，旧唐书韦温传里杨嗣复说是「梁公元崇之孙」，两说不一。检校礼部郎中是检校官，放在 actual 里并特意注明。"
+ },
+ {
+  "post": "京兆尹",
+  "holder": "敬昕",
+  "since": "开成四年九月丙午（二十八日）",
+  "evidence": [
+   {
+    "claim": "开成四年九月由前江西观察使任京兆尹",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "甲辰，以京兆尹鄭復為劍南東川節度使。丙午，以前江西觀察使敬昕為京兆尹。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "开成五年八月仍在任，被贬郴州司马",
+    "source": "資治通鑑·卷246",
+    "quote": "貶京兆尹敬昕爲郴州司馬。",
+    "url": "https://zh.wikisource.org/wiki/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91/%E5%8D%B7246"
+   }
+  ],
+  "notes": "任命时间是开成四年九月，不是十二月。前任是郑复。"
+ },
+ {
+  "post": "河南尹",
+  "holder": "高铢（旧纪作高锴，疑为高铢之误）",
+  "since": "开成四年七月壬寅",
+  "evidence": [
+   {
+    "claim": "高铢传：开成三年加检校左散骑常侍，随即入为刑部侍郎；四年七月出为河南尹",
+    "source": "舊唐書·卷168·高釴傳附高銖",
+    "quote": "開成三年，就加檢校左散騎常侍，尋入為刑部侍郎。四年七月，出為河南尹。會昌末，為吏部侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   },
+   {
+    "claim": "旧纪同日条作「高锴」",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "壬寅，以河南尹韋長為平盧軍節度使，以刑部侍郎高鍇為河南尹。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "高锴开成三年五月已出为鄂岳观察使",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "癸未，以吏部侍郎高鍇為鄂嶽觀察使，代高重；以重為兵部侍郎。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "高锴传：出为鄂岳观察使后卒于任",
+    "source": "舊唐書·卷168·高釴傳附高鍇",
+    "quote": "其年九月，出為鄂州刺史、御史大夫、鄂嶽觀察使，卒。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7168"
+   }
+  ],
+  "notes": "旧纪与旧传不合。高锴开成三年已外放鄂岳并卒于任；高铢的履历（浙东→刑部侍郎→开成四年七月河南尹）正好对得上，所以取高铢，置信度M。开局前没有见到换人的记载。"
+ },
+ {
+  "post": "东都留守",
+  "holder": "崔琯",
+  "since": "开成三年十月乙酉朔",
+  "evidence": [
+   {
+    "claim": "开成三年十月由尚书左丞检校户部尚书，充东都留守（接替入朝的牛僧孺）",
+    "source": "舊唐書·卷17下·文宗紀",
+    "quote": "冬十月乙酉朔，以尚書左丞崔琯檢校戶部尚書，充東都留守。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B717%E4%B8%8B"
+   },
+   {
+    "claim": "任东都留守兼东畿汝都防御使，会昌中迁山南西道节度使",
+    "source": "舊唐書·卷177·崔珙傳附崔琯",
+    "quote": "三年，檢校戶部尚書，判東都尚書省事、東都留守、東畿汝都防禦等使。會昌中，遷銀青光祿大夫、檢校吏部尚書、興元尹，充山南西道節度使。",
+    "url": "https://zh.wikisource.org/wiki/%E8%88%8A%E5%94%90%E6%9B%B8/%E5%8D%B7177"
+   }
+  ],
+  "notes": "崔琯是崔珙的同母兄，所带检校官为检校户部尚书。开成三年十月到会昌年间，史料中不见其他人任东都留守，置信度M。新传说他曾「以吏部尚书召，辞疾不拜」，时间不详。"
+ }
+]

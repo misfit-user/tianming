@@ -1,0 +1,96 @@
+{
+  "before": {
+    "complete": true,
+    "stats": {
+      "n": 12,
+      "min": 337.79999999701977,
+      "median": 376.1000000014901,
+      "max": 826.6999999992549
+    },
+    "mutations": 264,
+    "childList": 72,
+    "retained": true,
+    "regions": 566,
+    "gpu": {
+      "2d_canvas": "enabled",
+      "canvas_oop_rasterization": "enabled_on",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "vulkan": "disabled_off",
+      "webgl": "enabled",
+      "webgl2": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "after-identity-1": {
+    "complete": true,
+    "stats": {
+      "n": 12,
+      "min": 31.699999999254942,
+      "median": 43.65000000037253,
+      "max": 68.09999999776483
+    },
+    "mutations": 228,
+    "childList": 36,
+    "retained": true,
+    "regions": 566,
+    "gpu": {
+      "2d_canvas": "enabled",
+      "canvas_oop_rasterization": "enabled_on",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "vulkan": "disabled_off",
+      "webgl": "enabled",
+      "webgl2": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "after-final-1": {
+    "complete": true,
+    "stats": {
+      "n": 12,
+      "min": 64,
+      "median": 71.94999999925494,
+      "max": 128.60000000149012
+    },
+    "mutations": 48,
+    "childList": 36,
+    "retained": true,
+    "regions": 566,
+    "gpu": {
+      "2d_canvas": "enabled",
+      "canvas_oop_rasterization": "enabled_on",
+      "direct_rendering_display_compositor": "disabled_off_ok",
+      "gpu_compositing": "enabled",
+      "multiple_raster_threads": "enabled_on",
+      "opengl": "enabled_on",
+      "rasterization": "enabled",
+      "raw_draw": "disabled_off_ok",
+      "skia_graphite": "disabled_off",
+      "video_decode": "enabled",
+      "video_encode": "enabled",
+      "vulkan": "disabled_off",
+      "webgl": "enabled",
+      "webgl2": "enabled",
+      "webgpu": "enabled",
+      "webnn": "disabled_off"
+    }
+  },
+  "finalReduction": 0.8086944961473813
+}

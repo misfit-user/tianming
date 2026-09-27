@@ -32,3 +32,13 @@ npm run verify:native    # Android 原生 public 是否与当前 web/ 完全一�
 - Capgo 仍由仓主通过统一发版流程触发；合并到 `main` 不等于发布。
 
 平台差异由 `web/tm-platform.js` 的 Capacitor 后端处理。存档优先沿用 IndexedDB；原生 HTTP、文件系统和资产 URL 只用于 WebView 无法覆盖的能力。
+
+## 手机端导出位置
+
+Android 存档和剧本导出通过本仓的 `@tianming/capacitor-file-export` 插件打开系统“保存到”窗口，由玩家选择文件夹和文件名。插件真源在 `mobile/plugins/tianming-file-export/`，`npm install` 后由正常 `npm run sync` 自动注册，无须修改 ignored 的 `MainActivity`，也不申请全盘存储权限。
+
+这项能力需要含该插件的新 APK；仅发 Capgo 热更无法给旧 APK 增加原生插件。旧壳应提示更新安装包；导出取消、保存失败均不能提示成功。未调用此插件的桌面导出行为不变。
+
+原生 API：`Capacitor.Plugins.TianmingFileExport.saveFile({ fileName, data, mimeType: 'application/json' })`。`data` 是 UTF-8 文本，成功返回 `{ saved: true, cancelled: false, fileName, uri }`，取消返回 `{ saved: false, cancelled: true }`，其他失败 reject。`uri` 是系统文档 URI，不能当作普通文件路径显示。文件名以系统文档提供方最终返回的名称为准。
+
+大存档在工作线程先写私有临时文件，再流式写到玩家选择的目标。等待选择期间从 Capacitor 调用状态移除大文本，避免 Android 保存 Activity 状态时超过 Bundle 大小限制；同一时刻只允许一个导出窗口。正常完成或取消会清理临时文件。

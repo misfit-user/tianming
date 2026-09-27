@@ -1,0 +1,121 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "cafbc165-6655-453b-8f96-0de66fbbf547",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "expected": [
+    "smoke-mobile-file-export.js",
+    "smoke-mobile-scenario-export.js",
+    "smoke-pause-fab-reposition.js",
+    "smoke-production-dependencies.js",
+    "smoke-startup-phase-observability.js",
+    "smoke-tang840-opening-ledgers.js"
+  ],
+  "generatedAt": "2026-09-25T05:43:36.918Z",
+  "args": [
+    "--all",
+    "--no-retry",
+    "--jobs",
+    "2",
+    "--grep",
+    "mobile-file-export",
+    "--grep",
+    "mobile-scenario-export",
+    "--grep",
+    "pause-fab-reposition",
+    "--grep",
+    "startup-phase-observability",
+    "--grep",
+    "production-dependencies",
+    "--grep",
+    "tang840-opening-ledgers",
+    "--report",
+    "C:/Users/37814/.codex/worktrees/mobile-export-fab-20260925/tianming/docs/mobile-export-fab-20260925/final-targeted-report.json"
+  ],
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": [
+      "smoke-production-dependencies.js",
+      "smoke-tang840-opening-ledgers.js"
+    ]
+  },
+  "summary": {
+    "selected": 6,
+    "pass": 6,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [],
+  "results": [
+    {
+      "name": "smoke-mobile-file-export.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 644,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS native picker receives exact Unicode JSON; no browser download\nPASS cancel and provider failure never fall back or report success, retry works\nPASS concurrent exports use one picker and unlock after cancellation\nPASS old APK gets an upgrade explanation, never a hidden Blob download\nPASS web download preserves bytes, cleans anchor and revokes object URL\nPASS slot export retains portable envelope and redaction; success waits for native save\nPASS slot export handles decompression, cancellation and rejected picker\nPASS legacy editor uses adapted scenario and reports cancellation/failure\nPASS in-game save export keeps its format; desktop still opens its existing save panel\nPASS all three pages load the helper before export consumers\n10 PASS / 0 FAIL\n"
+    },
+    {
+      "name": "smoke-mobile-scenario-export.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 483,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS mobile scenario export: native success/cancel/failure, unchanged desktop/browser, snapshot/bulk/project entry points\n"
+    },
+    {
+      "name": "smoke-pause-fab-reposition.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 384,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-pause-fab-reposition] PASS: scaled drag bounds, persistence, viewport recovery, desktop reset and actual touch bridge\n"
+    },
+    {
+      "name": "smoke-production-dependencies.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 5216,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS empty mappings consume the YAML merge budget\nPASS actual updater rejects excessive empty-source merges with its default budget\nPASS ordinary Chinese update metadata, hashes and signed-file URL resolution are preserved\nPASS small legitimate YAML merges and invalid YAML retain their behavior\nPASS production closure contains neither adm-zip nor a vulnerable YAML version\nPASS production-dependencies 5/5\n"
+    },
+    {
+      "name": "smoke-startup-phase-observability.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 973,
+      "timedOut": false,
+      "waivers": [],
+      "output": "smoke-startup-phase-observability ok scripts=463\n"
+    },
+    {
+      "name": "smoke-tang840-opening-ledgers.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 88431,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[native-selected] {\"selected\":29,\"accounting\":{\"schema\":\"tm-fiscal-ledger/2\",\"daysPerYear\":360,\"daysPerMonth\":30,\"budgetScope\":\"central-and-regional\"}}\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] 初始化失败: TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档\n[v23-public-private] PASS 7266 assertions\n[native-opening] PASS {\"elapsedMs\":61834,\"population\":{\"actualMouths\":41800000,\"actualHouseholds\":8133915,\"actualDing\":11077001,\"hiddenCount\":3390773,\"fugitives\":581653,\"registeredMouths\":22131750,\"registeredHouseholds\":4311926,\"registeredDing\":5864910,\"taxableMouths\":16960407,\"taxableHouseholds\":3303566,\"hiddenDing\":898556,\"fledDing\":154157,\"baselineExemptDing\":553846,\"schema\":\"tm-population-ledger/2\",\"displayBasis\":\"registered\",\"mouths\":22131750,\"households\":4311926,\"ding\":5864910,\"known\":true,\"complete\":true,\"regionCount\":249},\"opening\":{\"memorials\":10,\"issues\":12,\"letters\":9},\"huangquan\":26,\"huangwei\":34,\"minxin\":47.83639980861244,\"corruption\":60.15644229665072}\n"
+    }
+  ],
+  "skipped": []
+}

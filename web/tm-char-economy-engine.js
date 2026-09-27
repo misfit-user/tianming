@@ -1217,17 +1217,20 @@
   }
 
   function tickVirtueMerit(ch, mr) {
+    if (!(mr > 0)) return;
     var r = ch.resources;
     var TP = (typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this)).TMPromotion;
+    var achievement = Math.max(0, num(ch._recentAchievements));
+    var decay = Math.pow(0.6, mr);
     // 状态闸：在押/流放/逃亡/守丧/革职待罪 → 功名冻结（不在位尽职则不攒资历）。近期功绩仍消退。
     if (ch._imprisoned || ch.imprisoned || ch._exiled || ch.exiled || ch._fled || ch._missing || ch._mourning) {
-      if (ch._recentAchievements) ch._recentAchievements = Math.max(0, ch._recentAchievements * 0.6);
+      if (achievement) ch._recentAchievements = achievement * decay;
       return;
     }
     // 每月微积累（在职底 + 近期功绩 + 八维能臣度）
     var base = 0;
     if (ch.officialTitle) base += 0.3;                                  // 在职底(庸臣也有基本积累)
-    if (ch._recentAchievements) base += ch._recentAchievements * 0.5;   // 近期功绩（由 addAchievement 喂·下方衰减·激活原死字段）
+    if (achievement) base += achievement * (1-decay) / (-Math.log(0.6)*mr) * 0.5; // 对经过时间积分，拆分回合不重复领取整月缓冲
     // 八维能臣度驱动(能者多得·拉大能力差距)·#3 功名与廉洁解耦
     var _cap = TP ? TP.capability(ch, (typeof getEffectiveAttr === 'function' ? getEffectiveAttr : null)) : 50;
     base += Math.max(0, (_cap - 45) / 100 * 1.0);                       // 能力加成只加不减·斜率大(能臣远多于庸臣)
@@ -1242,7 +1245,7 @@
     var _capT = TP ? TP.EARN.perTurnCapBase * mr : 1e9;                 // 单回合封顶(随回合长 mr 缩放)
     if (_gain > _capT) _gain = _capT;
     r.virtueMerit = (r.virtueMerit || 0) + _gain;
-    if (ch._recentAchievements) ch._recentAchievements = Math.max(0, ch._recentAchievements * 0.6); // 近期功绩衰减·避免永久驱动
+    if (achievement) ch._recentAchievements = achievement * decay; // 按游戏内月份衰减
     updateVirtueStage(ch);
   }
 
@@ -1697,7 +1700,8 @@
   }
 
   function tick(context) {
-    var mr = (context && context._monthRatio) || getMonthRatio();
+    var mr = context && context._monthRatio != null ? num(context._monthRatio) : context && context.monthRatio != null ? num(context.monthRatio) : getMonthRatio();
+    if (!(mr > 0)) return;
     if (context) context._charEconMonthRatio = mr;
 
     var chars = GM.chars || [];
@@ -1864,11 +1868,23 @@
   }
 
   // 近期功绩缓冲：政绩事件累加（驱动 tickVirtueMerit 持续小涨数回合·tick 衰减）·激活原死字段 _recentAchievements·不直接改 merit（由 tick 体现·防双计）
-  function addAchievement(ch, amount, reason) {
+  function addAchievement(ch, amount, reason, evidence) {
     if (!ch || !(amount > 0)) return;
+    evidence=evidence || {};
+    var world=global.GM || {}, hs=global.TM && global.TM.OfficeHolderState;
+    var eventId=String(evidence.eventId || evidence.actionId || evidence.operationId || evidence.id || ('legacy:'+JSON.stringify([world.turn,ch.id || ch.name,reason,amount])));
+    if(!Array.isArray(ch._achievementEvidence)) ch._achievementEvidence=[];
+    if(ch._achievementEvidence.some(function(e){return e.eventId===eventId;})) return false;
+    if(evidence.outcome && evidence.outcome!=='success' && evidence.outcome!=='completed') return false;
+    var assignment=hs && hs.select(world,ch,evidence);
+    var receipt={kind:'achievement',eventId:eventId,characterId:ch.id,turn:world.turn,reason:reason || '近期功绩',outcome:'success',amount:amount};
+    if(assignment) {receipt.positionId=assignment.positionId;receipt.appointmentId=assignment.appointmentId;}
     ensureCharResources(ch);
     ch._recentAchievements = Math.min(40, (ch._recentAchievements || 0) + amount); // 缓冲上限防滚雪球
     recordMeritChange(ch, 0, reason || '近期功绩', 'achievement');
+    ch._achievementEvidence.push(receipt);
+    if(ch._meritLog && ch._meritLog.length) Object.assign(ch._meritLog[ch._meritLog.length-1],receipt);
+    return true;
   }
 
   // 贤能变更（功名直接升降·记近账）

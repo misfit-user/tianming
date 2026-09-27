@@ -1,0 +1,36 @@
+{
+  "version": "1.3.5.3",
+  "versionCode": 1355,
+  "semver": "1.3.503",
+  "updatedAt": "2026-09-27T07:50:32.105Z",
+  "before": {
+    "package.json": "68d24733725d74a0843d38ef4e7aa798117a70815a006ff4a3c8dbd4ecf8a62c",
+    "package-lock.json": "e87bb99278a4adba858e636f405048a5f7caf19e14bd24de57fddd74fe1a037b",
+    "mobile/release-version.json": "a2b545187cf95ec0d389d3a202bf5ca249de225a1b2aa5ab828a8b1cd4de7a25",
+    "mobile/android/app/build.gradle": "c19537684916d0fbd49205234b873332c27e815d67a98f716418df8a9b9837ba",
+    "web/version.json": "9c392ccc769ebe3d0b45215d546d19df4af7a8e442548b1120d6e3be0ddc5ba2",
+    "web/index.html": "0d3a1c4c880693257dc35e0d3c43938de4e1743b11e432f5e2b4432f4865605c",
+    "web/changelog.json": "77278eaf675cefd24e01f05f4ba3aab0c4af20711d5b9f5b36c3daa18d037735",
+    "README.md": "42f32d724de141e36abb7173ffc31443d0c6b328b3758443e7a73e8beb17fecf",
+    "web/tm-start-runtime-manifest.json": "c6426637cb05737317aaa2bd9aa662811960ce4d8e90813de2fafbce778de9b1",
+    "web/.hot-update-manifest.json": "3e7a00b3725b2b03dfd4293a03a8d95c883dc0a2d7e1a43ae33bdf9f36936289"
+  },
+  "after": {
+    "package.json": "a5330eb6489181fbdc631e38d782c6e16e2c69ee226d2593cecb09a405b1c861",
+    "package-lock.json": "2b2ddcd79cde53c96d04a29028519330a046bd101fde0cf35f6b6e1978040157",
+    "mobile/release-version.json": "0dd19b519b4937ea51fb3086e7c0605753a701e145fec7a0547238292e58f724",
+    "mobile/android/app/build.gradle": "9fedcd1ff1549ff24febcaff37a61371532760d873c59534493666595dd159a3",
+    "web/version.json": "abcf3b6c0034e1d31a0e6453dae6a7567fe39cf68bbeedc99359bfc4abee663a",
+    "web/index.html": "7677ce26515a4db5094b2e9cd01c235637e267bb00680011ec505a2c2b03dd7d",
+    "web/changelog.json": "50293bb976040b8702db65a58bd7a4a23d032449a045c40f40e2d4f89654c913",
+    "README.md": "965a85244a60274de5401226066d1b7c71749b5d53f6d703d644d23bf6067c8d",
+    "web/tm-start-runtime-manifest.json": "f52b2fe46ae8af78e5e68697e2a9d3b7e812110ff8d49832fc1c94b1e3966e53",
+    "web/.hot-update-manifest.json": "608e1a7f1ff4f5401410bf086f5a059babb98e3f834f4ac6ed993e63ba82e1ae"
+  },
+  "indexBefore": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "indexAfter": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "indexUnchanged": true,
+  "releaseScriptSha256": "4c0e6bd887605f7e6a1dab62414fb2fe32c8c69e2e102f727d0c6c4505c04620",
+  "mode": "local-metadata-only",
+  "published": false
+}

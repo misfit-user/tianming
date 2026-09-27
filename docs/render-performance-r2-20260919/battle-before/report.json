@@ -1,0 +1,6 @@
+{
+  "complete": false,
+  "errors": [],
+  "sourceSha256": "24200c706640af47c7d12dbbea3616d02f215e6e0a03b24d196dc0bf016fc8fd",
+  "error": "Error: An object could not be cloned.\n    at IpcRendererInternal.send (node:electron/js2c/sandbox_bundle:2:121908)\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121486)"
+}

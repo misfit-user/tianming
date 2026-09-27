@@ -1,0 +1,34 @@
+[
+  {
+    "name": "native-manifest",
+    "command": "node scripts/build-native-preparation-manifest.cjs --check",
+    "exitCode": 0,
+    "signal": null,
+    "elapsedSeconds": 0.742,
+    "log": "native-manifest.log"
+  },
+  {
+    "name": "native-preparation",
+    "command": "node web/scripts/smoke-native-start-preparation.js",
+    "exitCode": 0,
+    "signal": null,
+    "elapsedSeconds": 2.172,
+    "log": "native-preparation.log"
+  },
+  {
+    "name": "release-contract",
+    "command": "node scripts/verify-release-contract.js",
+    "exitCode": 0,
+    "signal": null,
+    "elapsedSeconds": 8.614,
+    "log": "release-contract.log"
+  },
+  {
+    "name": "hot-baseline",
+    "command": "node scripts/sync-hot-baseline.js --check --version 1.3.5.2",
+    "exitCode": 0,
+    "signal": null,
+    "elapsedSeconds": 7.42,
+    "log": "hot-baseline.log"
+  }
+]

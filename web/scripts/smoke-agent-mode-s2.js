@@ -14,7 +14,7 @@ const assert = makeAssert(passed);
 require(path.join(ROOT, 'tm-endturn-agent-read-tools.js'));
 const RT = globalThis.TM && globalThis.TM.Endturn && globalThis.TM.Endturn.AgentReadTools;
 assert(RT && typeof RT.handle === 'function', 'AgentReadTools.handle 已导出');
-assert(RT.defs().length === 10, '10 个只读工具(原6 + 高阶聚合3 + get_relations 关系网)');
+assert(RT.defs().length === 12 && RT.isToolName('read_memory') && RT.isToolName('recall_related'), '12 个只读工具：原十项保留，增加证据展开与关联追查');
 assert(RT.isToolName('get_field') && RT.isToolName('search_save') && RT.isToolName('get_dossier') && RT.isToolName('get_relations') && !RT.isToolName('set_field'), 'isToolName 认只读工具(含高阶)·拒写工具');
 
 // 造一份代表性 mock GM

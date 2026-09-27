@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-09-17T16:52:20.846Z",
+  "complete": true,
+  "results": [
+    {
+      "name": "lint-arch-all.js",
+      "passed": false,
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "elapsedMs": 40673
+    },
+    {
+      "name": "verify-official-scenario-parity.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "elapsedMs": 79616
+    }
+  ]
+}

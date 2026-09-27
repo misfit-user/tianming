@@ -858,6 +858,12 @@
     return priorBase;
   }
 
+  function unifiedFiscal(root, options) {
+    if(global.CascadeTax&&typeof global.CascadeTax.isUnified==='function')return global.CascadeTax.isUnified(root,'player');
+    var sc=getScenario(root,options)||{},p=root.playerInfo||(global.P||{}).playerInfo||{},fac=(root.facs||[]).find(function(f){return f&&(f.id===p.factionId||f.name===p.factionName||f.isPlayer);});
+    var cfg=Object.assign({},(global.P||{}).fiscalConfig,sc.fiscalConfig,root.fiscalConfig,fac&&fac.fiscalConfig);
+    return !!(cfg.accounting&&cfg.accounting.schema==='tm-fiscal-ledger/2');
+  }
   function applyFiscalHardEffect(root, hukou, options) {
     root.guoku = root.guoku && typeof root.guoku === 'object' ? root.guoku : {};
     root.fiscal = root.fiscal && typeof root.fiscal === 'object' ? root.fiscal : {};
@@ -868,18 +874,17 @@
     var scenario = getScenario(root,options) || {};
     var playerFac = (root.facs || []).find(function(f) { return f && (f.isPlayer || String(f.id) === String(root.playerFactionId || '')); });
     var fiscalConfig = (playerFac && playerFac.fiscalConfig) || root.fiscalConfig || scenario.fiscalConfig || {};
-    var explicitTax = fiscalConfig.accounting && fiscalConfig.accounting.schema === 'tm-fiscal-ledger/2' &&
-      (fiscalConfig.taxes || []).some(function(tax) { return tax && (tax.registrationAdjusted === true || /^(taxableMouths|taxableHouseholds|registeredDing)$/.test(tax.base)); });
+    var explicitTax = unifiedFiscal(root, options); // Per-tax CascadeTax already consumes registered bases or its one legacy-base flee adjustment.
     var collectionMultiplier = explicitTax ? 1 : round2(clamp(taxBaseRatio - hiddenPressure * 0.08 - fugitivePressure * 0.18, 0.22, 1));
     var monthlyBase = baseIncomeValue(root, 'monthlyIncome', root.guoku.monthlyIncome || root.guoku.turnIncome || root.fiscal.expectedRevenue || 0);
     var turnBase = baseIncomeValue(root, 'turnIncome', root.guoku.turnIncome || root.guoku.monthlyIncome || root.fiscal.expectedRevenue || 0);
     var monthly = round(monthlyBase * collectionMultiplier);
     var turnIncome = round(turnBase * collectionMultiplier);
-    root.guoku.monthlyIncome = monthly;
-    root.guoku.turnIncome = turnIncome;
-    root.guoku.plannedMonthlyIncome = monthlyBase;
-    root.guoku.plannedTurnIncome = turnBase;
-    root.guoku.actualTaxRate = Math.min(number(root.guoku.actualTaxRate, 1) || 1, collectionMultiplier);
+    if (!explicitTax) {
+      root.guoku.monthlyIncome = monthly;root.guoku.turnIncome = turnIncome;
+      root.guoku.plannedMonthlyIncome = monthlyBase;root.guoku.plannedTurnIncome = turnBase;
+      root.guoku.actualTaxRate = Math.min(number(root.guoku.actualTaxRate, 1) || 1, collectionMultiplier);
+    }
     root.fiscal.effectiveRevenue = turnIncome;
     root.fiscal.hujiCollectionMultiplier = collectionMultiplier;
     var effect = {
@@ -1190,6 +1195,7 @@
   function enforceAfterFiscalTick(root, options) {
     root = pickRoot(root);
     options = options || {};
+    if(unifiedFiscal(root,options))return {ok:true,skipped:'per-tax-ledger-already-applied',adjustment:0};
     var hard = ensureHardEffectStore(root);
     var fiscal = hard.fiscal || (root.guoku && root.guoku.hujiHardEffects) || (root.fiscal && root.fiscal.hujiHardEffects) || null;
     if (!fiscal || !fiscal.collectionMultiplier) return { ok: false, reason: 'no-fiscal-hard-effect' };

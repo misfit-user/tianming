@@ -1,0 +1,428 @@
+{
+  "at": "2026-09-18T14:48:09.438Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "status": " M README.md\n M docs/chongzhen-prefecture-map-20260917/build-candidate.mjs\n M docs/chongzhen-prefecture-map-20260917/work-location.json\n M main-impl.js\n M package.json\n M scenarios/天启七年·九月（官方）.json\n M web/.hot-update-manifest.json\n M web/bundled-scenarios/manifest.js\n M web/bundled-scenarios/manifest.json\n M web/changelog.json\n M web/editor.html\n M web/index.html\n M web/modules/ai-change-applier/core.js\n M web/phase8-formal-bridge-styles.js\n M web/phase8-formal-bridge.js\n M web/phase8-formal-map-dossier.js\n M web/phase8-formal-map.js\n M web/preview/official-scenarios-bundle.js\n M web/preview/scenario-editor-reset-data.js\n M web/scenarios/shaosong-jianyan-1127.js\n M web/scenarios/tianqi7-1627.js\n M web/scripts/smoke-building-order-writeback.js\n M web/scripts/smoke-map-viewport-collision.js\n M web/scripts/smoke-model-probe-evidence.js\n M web/scripts/smoke-social-foundation.js\n M web/scripts/smoke-startup-phase-observability.js\n M web/scripts/smoke-tianqi-map-runtime.js\n M web/scripts/smoke-tinyi-impeachment.js\n M web/scripts/verify-all.js\n M web/startup-script-phases.json\n M web/tm-ai-infra-json.js\n M web/tm-ai-infra-model-detect.js\n M web/tm-ai-infra.js\n M web/tm-ai-output-validator.js\n M web/tm-ai-schema.js\n M web/tm-building-orders.js\n M web/tm-char-autogen.js\n M web/tm-class-engine.js\n M web/tm-context-zones.js\n M web/tm-economy-engine.js\n M web/tm-edict-parser.js\n M web/tm-endturn-agent-write-tools.js\n M web/tm-endturn-ai-infer.js\n M web/tm-endturn-ai.js\n M web/tm-endturn-apply-stages.js\n M web/tm-endturn-apply.js\n M web/tm-endturn-core.js\n M web/tm-endturn-edict.js\n M web/tm-endturn-followup.js\n M web/tm-endturn-helpers.js\n M web/tm-endturn-prompt.js\n M web/tm-endturn-systems.js\n M web/tm-faction-membership.js\n M web/tm-faction-npc-guoku.js\n M web/tm-feature-loader.js\n M web/tm-fiscal-engine.js\n M web/tm-game-loop.js\n M web/tm-guoku-engine.js\n M web/tm-guoku-panel.js\n M web/tm-history-events.js\n M web/tm-huji-runtime-bridge.js\n M web/tm-indices.js\n M web/tm-lizhi-panel.js\n M web/tm-map-label-collide.js\n M web/tm-map-locations.js\n M web/tm-memory-agent-tools.js\n M web/tm-memory-context-compiler.js\n M web/tm-memory-controls.js\n M web/tm-memory-envelope.js\n M web/tm-memory-governance.js\n M web/tm-memory-retrieval.js\n M web/tm-memory-steward.js\n M web/tm-memory-trace.js\n M web/tm-memory-turn-inference.js\n M web/tm-memory-turn-rollup.js\n M web/tm-memory-writegate.js\n M web/tm-military.js\n M web/tm-minxin-hard-link-consumers.js\n M web/tm-neitang-engine.js\n M web/tm-neitang-panel.js\n M web/tm-office-system.js\n M web/tm-official-scenario-bundle.js\n M web/tm-official-scenario-seeder.js\n M web/tm-patches-start.js\n M web/tm-player-core.js\n M web/tm-player-settings.js\n M web/tm-renwu-tuzhi.js\n M web/tm-save-lifecycle.js\n M web/tm-save-manager.js\n M web/tm-semantic-recall.js\n M web/tm-three-systems-ui.js\n M web/tm-topbar-vars.js\n M web/tm-utils.js\n M web/tm-world.js\n?? _shaosong-1350.json\n?? docs/ai-memory-upgrade-20260918/\n?? docs/ai-memory-upgrade-r2-20260918/\n?? docs/chongzhen-map-r2-20260918/\n?? docs/chongzhen-map-r3-20260918/\n?? docs/chongzhen-prefecture-map-20260917/apply-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/apply-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/final-verification.json\n?? docs/chongzhen-prefecture-map-20260917/finalize-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-location-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/fix-public-loader.mjs\n?? docs/chongzhen-prefecture-map-20260917/membership-extra.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/province-tests.fragment.txt\n?? docs/chongzhen-prefecture-map-20260917/register-location-service.mjs\n?? docs/chongzhen-prefecture-map-20260917/reports/\n?? docs/chongzhen-prefecture-map-20260917/retry-apply.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-final-guards.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/run-regressions.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs\n?? docs/chongzhen-prefecture-map-20260917/stage-membership.mjs.before-final\n?? docs/chongzhen-prefecture-map-20260917/test-candidate.mjs\n?? docs/chongzhen-prefecture-map-20260917/update-map-smoke.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-delivery.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-geometry.py\n?? docs/chongzhen-prefecture-map-20260917/verify-live-transfers.js\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs\n?? docs/chongzhen-prefecture-map-20260917/verify-native-ui.mjs.before-panorama\n?? docs/chongzhen-prefecture-map-20260917/使用与接入说明.md\n?? docs/chongzhen-prefecture-map-20260917/使用说明.md\n?? docs/chongzhen-prefecture-map-20260917/验收结果.json\n?? docs/endturn-reliability-20260918/\n?? docs/map-deep-zoom-20260918/\n?? docs/shaosong-map-integration-20260917/\n?? web/data/maps/chongzhen-prefecture-r2/\n?? web/data/maps/chongzhen-prefecture-r3/\n?? web/data/maps/chongzhen-prefecture-v1/\n?? web/scripts/lib-memory-upgrade-r2.js\n?? web/scripts/smoke-memory-adaptive-upgrade.js\n?? web/scripts/smoke-memory-boundary-upgrade.js\n?? web/scripts/smoke-memory-model-detection.js\n?? web/scripts/smoke-memory-vector-upgrade.js\n?? web/tm-memory-adaptive.js\n?? web/tm-memory-hybrid.js\n?? web/tm-memory-long-term.js\n",
+  "backup": ".bak-endturn-reliability-20260918",
+  "files": [
+    {
+      "file": "web/tm-agent-flags.js",
+      "bytes": 7369,
+      "sha256": "590143583db9b93c07166b7e2445d7b0e5aa4f7678af9fbb0c4094ead7cdff30"
+    },
+    {
+      "file": "web/tm-agent-kernel.js",
+      "bytes": 10306,
+      "sha256": "6a9c9cd1d3607dd76c740fbc9619a6c075b7cf97b7e2b666cf0be35697fa4831"
+    },
+    {
+      "file": "web/tm-ai-infra-json.js",
+      "bytes": 14539,
+      "sha256": "f45b34d2fc0ee8682f15e567cd21ca5dc705505ed8735535242702434645c671"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "bytes": 75403,
+      "sha256": "800ce02cf730729918394a3bb2db4a96db5e48ec41c42eadfcec57a31842aa3c"
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "bytes": 10171,
+      "sha256": "fe49769ab7b07a0680ba83758d66e3967943810cef373ee9555f09c6481a48d5"
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "bytes": 163056,
+      "sha256": "211fd25a8e9015869182e597ac555d2044db47368b84bfbad36086ed133db311"
+    },
+    {
+      "file": "web/tm-battle-contract.js",
+      "bytes": 13431,
+      "sha256": "9e2445f9b1a918d4048774ba3c4659a5eaaa62fb7bba2ab65bcf21ef0daf0dfe"
+    },
+    {
+      "file": "web/tm-endturn-agent-depth-tools.js",
+      "bytes": 74930,
+      "sha256": "76afe8e7ba86a4d0359015e19114b9eb10a9e88989793f3357d9438ec6922aae"
+    },
+    {
+      "file": "web/tm-endturn-agent-intent-plan.js",
+      "bytes": 11365,
+      "sha256": "9976fba23c4316dd968ab74dec790def1d2e9d31b84b27e6fc91c1e0a1699a53"
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "bytes": 113330,
+      "sha256": "0c1eee9f4ecfaa9a0c55018a6da2b13d6ecd5be917faed9ecf05890005731fb4"
+    },
+    {
+      "file": "web/tm-endturn-agent-read-tools.js",
+      "bytes": 27058,
+      "sha256": "04cf16a5f92c30efb3eab93a7923deb37a6f8590d310b0a2218019cf67d61ab5"
+    },
+    {
+      "file": "web/tm-endturn-agent-write-tools.js",
+      "bytes": 62650,
+      "sha256": "9c613f0c300b55e2c565a915e093373a377f069cac1087bd6768294ba1152a53"
+    },
+    {
+      "file": "web/tm-endturn-ai-context.js",
+      "bytes": 21999,
+      "sha256": "c92d0a4d2a0440b67e5fe5be2669d24d059b09a4a0144292b92d5bed9a06ca82"
+    },
+    {
+      "file": "web/tm-endturn-ai-helpers.js",
+      "bytes": 27289,
+      "sha256": "c484b32e7eb39b6a0261a84f78497b0ac0fc93ce8434441881d58a6921b66022"
+    },
+    {
+      "file": "web/tm-endturn-ai-infer.js",
+      "bytes": 15738,
+      "sha256": "4b17c279519d8793efa892938b8e16ca40710fa27f00d1c7496e5f185f365205"
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "bytes": 11860,
+      "sha256": "d14dd0c00cc49b232bb34d3b19ad6361b0fba2964bf64f130c161c842196168a"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "bytes": 416317,
+      "sha256": "eb16694c9e6d01792450e658a12fa67b0b6751f98624e675972352d38b20db60"
+    },
+    {
+      "file": "web/tm-endturn-apply-stages.js",
+      "bytes": 88289,
+      "sha256": "92deeafda2e2f3dd58c95e9875df828a0a8065945feaf8a0325823b3f540a332"
+    },
+    {
+      "file": "web/tm-endturn-apply.js",
+      "bytes": 374752,
+      "sha256": "ed2f3dfe419547b14a78d30b5d8f70aa7812c66949108cd567b8016b4c71d1ba"
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "bytes": 102013,
+      "sha256": "eb2aa028acf6cac5485bf30b76f6a636a8ae2eef7f3af00d5379242a33b86076"
+    },
+    {
+      "file": "web/tm-endturn-edict.js",
+      "bytes": 86513,
+      "sha256": "debc839461d6898a8ed85839a423269c0e31717a64a1f4de40268f705f8ae866"
+    },
+    {
+      "file": "web/tm-endturn-followup-helpers.js",
+      "bytes": 27244,
+      "sha256": "b05dbbb3b1028a181eece551844f01232ec88d9e751d9c63e990926dc7209396"
+    },
+    {
+      "file": "web/tm-endturn-followup.js",
+      "bytes": 294734,
+      "sha256": "58f538791053ee00a22b65ad95e829e60756b14c72a134c2a781f69d92a6ba7d"
+    },
+    {
+      "file": "web/tm-endturn-helpers.js",
+      "bytes": 151641,
+      "sha256": "90a8a6b8da7a1b4c4decc2c195a77f7158ffb382d4545a109fda443069275471"
+    },
+    {
+      "file": "web/tm-endturn-loading.js",
+      "bytes": 40459,
+      "sha256": "1f3a85b8c7d56343e31b9d02ec214859dd622c66564651ea7a02fb45634827bc"
+    },
+    {
+      "file": "web/tm-endturn-mode-contract.js",
+      "bytes": 4790,
+      "sha256": "1f4e081c117b49553dd6fc01d47b234c882dc165396c63cd09fb491e2eb681e7"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-executor.js",
+      "bytes": 6203,
+      "sha256": "4608f79b285f233198d2fd36af13b8f7ffea29706c1c62e9f8d9234669f4bba6"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-steps.js",
+      "bytes": 55825,
+      "sha256": "86a405cbfbc2c7ab9db7d9f9373adb1eb6d2425278b621032a250b299caa5eb1"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-types.js",
+      "bytes": 3715,
+      "sha256": "c99504738da515041516a41fccafeb9be5afe4eae03cc62669974ae2d3dd6454"
+    },
+    {
+      "file": "web/tm-endturn-prep.js",
+      "bytes": 39367,
+      "sha256": "b177cf51d447362af45853250c0b75c1ffc8b39f32ee597f72ef4d33fc32b739"
+    },
+    {
+      "file": "web/tm-endturn-progress.js",
+      "bytes": 11366,
+      "sha256": "750011513e049004447d0f8d27b4b025e1d2dd9120528676fcd4919882b146ee"
+    },
+    {
+      "file": "web/tm-endturn-prompt.js",
+      "bytes": 365628,
+      "sha256": "2a921fca5b3954d6c06ad62e97f665625777fd49e8db2c5989e81c2ffd5dd67c"
+    },
+    {
+      "file": "web/tm-endturn-province.js",
+      "bytes": 120105,
+      "sha256": "4295a59fa0b0749937eb09804f15d12097da2bdb263ac419610d5c30f3eae24c"
+    },
+    {
+      "file": "web/tm-endturn-qiaozhi.js",
+      "bytes": 13008,
+      "sha256": "09fbd37050d0a3c1e0df3a71de2f0bb92c2b5dccdf703ac6a4f8478ac3b5e786"
+    },
+    {
+      "file": "web/tm-endturn-record-specs.js",
+      "bytes": 10629,
+      "sha256": "6d92adb869cdd91c1d16bf730564e7be68fb85f7f130f1a915884f9b8cd0eec2"
+    },
+    {
+      "file": "web/tm-endturn-record.js",
+      "bytes": 5004,
+      "sha256": "1ce633f6173946b64545531bc3986d0ce66c63f3738f8f28d9de3293d92c3e60"
+    },
+    {
+      "file": "web/tm-endturn-render.js",
+      "bytes": 38410,
+      "sha256": "46fe24bc5fc730777ded2dbf43ae3eb08cadf5c3eddfcdb40feb60dd9f077e07"
+    },
+    {
+      "file": "web/tm-endturn-shiji-compose.js",
+      "bytes": 109965,
+      "sha256": "00b11da00e6c6bfd317202fdc55b3cc8043a1dbf0ff04b98a89047348ba47049"
+    },
+    {
+      "file": "web/tm-endturn-systems.js",
+      "bytes": 40197,
+      "sha256": "a8331ce5f3e61d86d9b4f0d92c5fc447cbd233daa6c5f8d94729af9cb0c53290"
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "bytes": 11652,
+      "sha256": "ddc07b5325d5a806bb043036e454d27645f236d5b38db25bce922f5542252738"
+    },
+    {
+      "file": "web/tm-endturn-validity.js",
+      "bytes": 4407,
+      "sha256": "1e1d6905c1b7045a2873da0e2a15ae359e5f98e3313c2aa6e437aa610745fc40"
+    },
+    {
+      "file": "web/tm-memory-adapter.js",
+      "bytes": 7595,
+      "sha256": "00ce07d6c689de20e60797fa137bace1f34e97115376c59354e93d464f8270fe"
+    },
+    {
+      "file": "web/tm-memory-adaptive.js",
+      "bytes": 11681,
+      "sha256": "b5b8b40857a2e4ccf02e108ac95e78d12a067e28c98714bb5eb2dc4a9fd514ca"
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "bytes": 25587,
+      "sha256": "e0927b8125fab1453bdce3800a687634f85ea34cef20bdd8ee66842a17fb5cdc"
+    },
+    {
+      "file": "web/tm-memory-anchors.js",
+      "bytes": 14102,
+      "sha256": "1112a90612d6361d0acf478d0bc68b5c3ea53ce1c2d4006a297e392360f5702b"
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "bytes": 28319,
+      "sha256": "1a7c0d53d5e13a0439cbf9f1c3ee0739f33520575cb4b6fd2a0d4afe6ccd9a8b"
+    },
+    {
+      "file": "web/tm-memory-controls.js",
+      "bytes": 7037,
+      "sha256": "86765bf34b6b36782c3a739fdaabb124bc32a512097b07596001761219527ac7"
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "bytes": 56504,
+      "sha256": "9967b71198f7606bb1163b2d8659b61dc07a19e56f0149ef7e52cc8ef65c0f21"
+    },
+    {
+      "file": "web/tm-memory-evidence-registry.js",
+      "bytes": 18597,
+      "sha256": "333b1b8a72d7a8499015dd76173b5fc7fe3ea4fc7dbad689c6484af0e16b424c"
+    },
+    {
+      "file": "web/tm-memory-governance.js",
+      "bytes": 6348,
+      "sha256": "a749a578d118e3ec91d1fe1eaff773f10ff68c3ca87f70c20a60ea06da919697"
+    },
+    {
+      "file": "web/tm-memory-hybrid.js",
+      "bytes": 8448,
+      "sha256": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e"
+    },
+    {
+      "file": "web/tm-memory-issue-governance.js",
+      "bytes": 5712,
+      "sha256": "500323274d51d965fb93b24731218593810c454cdc5db599484e07176ffd6cff"
+    },
+    {
+      "file": "web/tm-memory-long-term.js",
+      "bytes": 11732,
+      "sha256": "295ee128b5c3c6482c27da9d5e59f1a823a9685b0c9a12c41cf51e5b65beffe4"
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "bytes": 69765,
+      "sha256": "83cf6b5435d28b7a5b7e947afcae25beea0a9d7e4dfc54e2cf0b7e8ab9ce8f49"
+    },
+    {
+      "file": "web/tm-memory-source-bound.js",
+      "bytes": 8325,
+      "sha256": "f34ff5ca4cab18e55a89847fa7b136c88296c557e4734241a2a37986dfd126c0"
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "bytes": 34665,
+      "sha256": "2304261e654457b04e78cf076588762084e3121226ea9d511a2236e1e888ea47"
+    },
+    {
+      "file": "web/tm-memory-tables.js",
+      "bytes": 50416,
+      "sha256": "0afd18a0f1978240494625a845312ac83845116504e992321f339bff544c9229"
+    },
+    {
+      "file": "web/tm-memory-trace.js",
+      "bytes": 23339,
+      "sha256": "8650d23379473cd440c1656f8eb01d6e69a964d9ca0c1abcab67acc21a663ca4"
+    },
+    {
+      "file": "web/tm-memory-turn-archive.js",
+      "bytes": 16497,
+      "sha256": "c2ab83c6dfac10ec19b3e7fe0dc245fc162b8efab4c450699f9f8bfdf61d82b0"
+    },
+    {
+      "file": "web/tm-memory-turn-backfill.js",
+      "bytes": 24632,
+      "sha256": "4d5faee59bd8f63378530bf8767ee230f818301abc0de5425e24158f5c76e53a"
+    },
+    {
+      "file": "web/tm-memory-turn-inference.js",
+      "bytes": 26572,
+      "sha256": "7dbbedc8e6a1f272bcfdfd140785e770c7f578d59d2b7daa1755564906f47572"
+    },
+    {
+      "file": "web/tm-memory-turn-rollup.js",
+      "bytes": 17377,
+      "sha256": "39edbcc66be68f163c74588fc4b68eab50bcca3b12fef1a9ea8fe1eaed657b0a"
+    },
+    {
+      "file": "web/tm-memory-ui.js",
+      "bytes": 25883,
+      "sha256": "58e1af24917c4de709c3c91ffc213e20b0b693a2a0c91acd0930059353ea5096"
+    },
+    {
+      "file": "web/tm-memory-workshop.js",
+      "bytes": 58106,
+      "sha256": "217ccdc3dbfd2f4a5e358e33e870a2464418729ae7363a2a8ea4f6eae4504d28"
+    },
+    {
+      "file": "web/tm-memory-writegate.js",
+      "bytes": 34942,
+      "sha256": "faa6a112b34a264b066945e51982fe6517bd0b388afbbe849a176ad3a24844e8"
+    },
+    {
+      "file": "web/tm-post-turn-jobs.js",
+      "bytes": 34279,
+      "sha256": "359b3a778d5d25a3e29c8e391c721e1bbf39f01deb3e3a675ea7dfa5fbc7c89d"
+    },
+    {
+      "file": "web/tm-save-close-flush.js",
+      "bytes": 5483,
+      "sha256": "4638dacc54d1b6b743542903fcbebf46d1b3dc3e5abca108818aab99a60c35f9"
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "bytes": 163021,
+      "sha256": "db13977f33abd65bd20d23ee6658f70b41ab2fbda1c7bf8ca8d70b45087f1e87"
+    },
+    {
+      "file": "web/tm-save-manager.js",
+      "bytes": 51491,
+      "sha256": "ec94bf4c0908133ccfeebea6d2ef3aae66e7e6ae9ca4b511c1c71e556298ba36"
+    },
+    {
+      "file": "web/tm-save-world-validation.js",
+      "bytes": 8482,
+      "sha256": "1720d8d5775fa7b93adafc1212f02d21d275d098d51a14c2556dedaf744249ce"
+    },
+    {
+      "file": "web/tm-start-commit.js",
+      "bytes": 6255,
+      "sha256": "fe2fb7ef0db6fadfdfae1f0d18c9e933924c88fb4dbde8917574a37f31423a2b"
+    },
+    {
+      "file": "web/tm-start-compiler.js",
+      "bytes": 18557,
+      "sha256": "1702b2fde934e8f54d2f03821e9afc25829dae4712b138b898d52cf445d86fe0"
+    },
+    {
+      "file": "web/tm-start-contracts.js",
+      "bytes": 24253,
+      "sha256": "f00379d0581e2d8ab866952fd0e20ef833621f3f3899e1b5a68890531adbd3e9"
+    },
+    {
+      "file": "web/tm-start-preparation-document.js",
+      "bytes": 7564,
+      "sha256": "a7c2a76482a53ef0f26050c5a5be73f67b7187bc50476894bcd51c09cf5be7e6"
+    },
+    {
+      "file": "web/tm-start-preparation-runtime.js",
+      "bytes": 11579,
+      "sha256": "6c4302049f18fbeeacbb70fd369c077d2c09adac7d84ef7de8e02253d3aa2d64"
+    },
+    {
+      "file": "web/tm-start-preparation.js",
+      "bytes": 17390,
+      "sha256": "5aaf57338d21676818b3186c4ad17543f659c1b7672c3d7089cfdc56da5eea06"
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "bytes": 128230,
+      "sha256": "a573242550b3c0f9f70ae51823694f3704a64a4929993e5531f19c5e145ef43d"
+    },
+    {
+      "file": "web/tm-start-selector.js",
+      "bytes": 16273,
+      "sha256": "1658721e70f0d85e14420e7a220f648f2aad68f937c3ebe1f6e1af32ee3c00ab"
+    },
+    {
+      "file": "web/tm-start-world.js",
+      "bytes": 23944,
+      "sha256": "67f63f73d1ac471bb19a019034b7689be04e01c006611374edf001590cf4edc1"
+    },
+    {
+      "file": "web/tm-startup-contract.js",
+      "bytes": 3897,
+      "sha256": "a3c87446e6b7e2b7f2bb2d5a6fbcdab2786d8c5282212ce45bf1130a70d2920f"
+    },
+    {
+      "file": "web/tm-startup-phases.js",
+      "bytes": 1367,
+      "sha256": "b314846b6d0c95eab403f450d9c23e6352edc24ed138a53da9c7ae500e434846"
+    },
+    {
+      "file": "web/index.html",
+      "bytes": 69526,
+      "sha256": "e02d43db0ef6583352de2bf2ab48b463246b7252267051c82602bfbc7edf35c0"
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "bytes": 42653,
+      "sha256": "935067a4ec44215e714c75363dd6736eac1a5b10c92beb85ccf2132e7d299470"
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "bytes": 6965,
+      "sha256": "401304504682a1cfab5626f1b1273d37f9dd7ee65cf08714bcb397783b91d274"
+    }
+  ]
+}

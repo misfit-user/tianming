@@ -406,6 +406,7 @@
         }
       });
     }
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.harvest) result.longTerm = root.TM.MemoryLongTerm.harvest(GM);
     return result;
   }
 

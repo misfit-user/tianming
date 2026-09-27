@@ -9,7 +9,7 @@
     { filename: '绍宋·建炎元年八月（官方）' },
     { filename: '晚唐·开成五年（官方）' }
   ];
-  var BUNDLE_URL = 'tm-official-scenario-bundle.js?v=20260913-tang840-official';
+  var BUNDLE_URL = 'tm-official-scenario-bundle.js?v=20260916-release1350';
   var ensurePromise = null;
   var bundlePromise = null;
 

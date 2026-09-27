@@ -57,6 +57,31 @@
   ];
   var THEME_MAP = THEMES.reduce(function(m, t){ m[t.key] = t; return m; }, {});
 
+  // 各主题 pal 之外的整套色阶（漆、漆上字，金朱青的其余各档），按上面的锚点照「素纸」的深浅关系推出；
+  // 素纸就是 styles.css 令牌表的默认值，不用列。改了锚点跑 node scripts/derive-theme-palette.js --write，别手改
+  // <derive-theme-palette>
+  var THEME_TOKENS = {
+    ink: ''
+      + '--gold-100:#f5ebd1;--gold-200:#e1d4b0;--gold-450:#907b56;--gold-550:#61503a;--gold-600:#403321;'
+      + '--vermillion-450:#6a473c;--vermillion-600:#4b322a;'
+      + '--celadon-300:#b4b9c9;--celadon-350:#8b93a5;--celadon-500:#5e6676;'
+      + '--lacquer-0:#0a0b0f;--lacquer-1:#1a1921;--lacquer-2:#222430;--lacquer-3:#3a3a47;--lacquer-4:#554c50;'
+      + '--ink-50:#ebdfc1;--ink-75:#d9c9a9;--ink-100:#d2c59e;--ink-150:#c6b67d;--ink-200:#bcad84;--ink-250:#a49365;--ink-350:#89774d;',
+    vermillion: ''
+      + '--gold-100:#ffefb9;--gold-200:#ffde95;--gold-450:#c9a045;--gold-550:#a8833a;--gold-600:#6b5010;'
+      + '--vermillion-450:#a83228;--vermillion-600:#7a2018;'
+      + '--celadon-300:#c7bc9c;--celadon-350:#a59772;--celadon-500:#786b4a;'
+      + '--lacquer-0:#0d0504;--lacquer-1:#1e0e0c;--lacquer-2:#281714;--lacquer-3:#422c26;--lacquer-4:#5c3f2f;'
+      + '--ink-50:#fff0e4;--ink-75:#fce6d8;--ink-100:#f5e1cb;--ink-150:#e7cfa7;--ink-200:#dac6ac;--ink-250:#bea786;--ink-350:#9e8867;',
+    celadon: ''
+      + '--gold-100:#fdf0d5;--gold-200:#f0dfbb;--gold-450:#a69646;--gold-550:#7b7d4a;--gold-600:#4c4e24;'
+      + '--vermillion-450:#8e5e4b;--vermillion-600:#644135;'
+      + '--celadon-300:#a3d4c7;--celadon-350:#7eb8a7;--celadon-500:#5a8f7f;'
+      + '--lacquer-0:#040a08;--lacquer-1:#101714;--lacquer-2:#15201e;--lacquer-3:#2c3633;--lacquer-4:#464a3b;'
+      + '--ink-50:#ebf8ea;--ink-75:#e8f0e0;--ink-100:#e1ebd3;--ink-150:#d6d8ae;--ink-200:#caceb3;--ink-250:#b1ae8c;--ink-350:#948d6c;'
+  };
+  // </derive-theme-palette>
+
   var SIZE_LABELS = { xs:'\u6781\u5c0f', sm:'\u5c0f', md:'\u4e2d', lg:'\u5927', xl:'\u7279\u5927' };
   var SIZE_SCALES = { xs:0.78, sm:0.88, md:1.0, lg:1.14, xl:1.30 };
   var SIZE_BASE = { xs:0.95, sm:1.05, base:1.18, md:1.28, lg:1.42, xl:1.60, xl2:1.90, xl3:2.45 };
@@ -128,7 +153,6 @@
     opts = opts || {};
     var context = opts.context || 'settings';
     var savedTheme = readStore('tm.theme', DEFAULT_THEME);
-    var savedSize = readStore('tm.fontSize', DEFAULT_SIZE);
     var savedBody = readStore('tm.fontBody', DEFAULT_BODY);
     var savedTitle = readStore('tm.fontTitle', DEFAULT_TITLE);
     var scoped = loadScopeSizes();
@@ -138,25 +162,65 @@
       h += '<div class="gs-panel-hdr"><div class="gs-panel-title">\u754c\u9762\u4e3b\u9898</div><span class="gs-panel-cnt">\u7ec6\u8c03</span></div>';
     } else {
       h += '<div class="settings-section tm-settings-theme"><h4>\u4e3b\u9898\u5b57\u53f7</h4>';
-      h += '<div class="tm-settings-sub">\u7edf\u4e00\u63a7\u5236\u65b0 UI \u7684\u4e3b\u9898\u3001\u5185\u7f6e\u5b57\u4f53\u3001\u5168\u5c40\u5b57\u53f7\uff0c\u5e76\u53ef\u6309\u5177\u4f53\u754c\u9762\u5355\u72ec\u8c03\u5b57\u53f7\u3002</div>';
+      h += '<div class="tm-settings-sub">\u4e3b\u9898\u4e0e\u5185\u7f6e\u5b57\u4f53\u5728\u8fd9\u91cc\u9009\uff1b\u5b57\u53f7\u53ea\u6709\u4e00\u4e2a\u5f00\u5173\uff0c\u5728\u300c\u754c\u9762\u663e\u793a \u00b7 \u754c\u9762\u5b57\u53f7\u300d\u91cc\u8c03\uff0c\u5fa1\u6848\u8ddf\u7740\u4e00\u8d77\u7f29\u653e\u3002\u5404\u754c\u9762\u5355\u72ec\u5fae\u8c03\u6536\u5728\u4e0b\u9762\u7684\u300c\u9ad8\u7ea7\u300d\u91cc\u3002</div>';
     }
     h += '<div class="tm-theme-block"><div class="tm-theme-block-title">\u4e3b\u9898</div>' + themeCards(savedTheme, '_tmApplyTheme') + '</div>';
-    h += '<div class="gs-font-row tm-font-global-row"><span class="lbl">\u5168\u5c40</span>' +
-      sizeButtonRow(savedSize, function(k){ return "_tmApplySize('" + q(k) + "', this)"; }, 'tm-global-size-buttons') +
-      '</div>';
+    // \u5b57\u53f7\u53ea\u6709\u4e00\u4e2a\u5f00\u5173\uff08\u7f8e\u672f\u5baa\u6cd5\u7b2c2\u5200\uff09\uff1a\u62bd\u5c49\u91cc\u653e\u4e00\u6392\u6309\u94ae\uff0c\u4e0e\u8bbe\u7f6e\u300c\u754c\u9762\u663e\u793a\u300d\u7684\u754c\u9762\u5b57\u53f7\u662f\u540c\u4e00\u4e2a\u6863\u4f4d
+    if (compact) h += '<div class="gs-font-row tm-font-global-row"><span class="lbl">\u5b57\u53f7</span>' + uiScaleButtons() + '</div>';
     h += '<div class="gs-font-row"><span class="lbl">\u6b63\u6587</span>' + fontSelect('body', savedBody) + '</div>';
     h += '<div class="gs-font-row"><span class="lbl">\u6807\u9898</span>' + fontSelect('title', savedTitle) + '</div>';
-    h += '<div class="tm-scope-size-head"><span>\u5206\u533a\u5b57\u53f7</span><em>\u6309\u65b0 UI \u5b9e\u9645\u6a21\u5757\u5355\u72ec\u8c03\u8282</em></div>';
+    h += '<div class="gs-font-row"><span class="lbl">\u594f\u758f</span>' + memorialInkControl() + '</div>';
+    h += '<details class="tm-scope-size-advanced"><summary>\u9ad8\u7ea7 \u00b7 \u5206\u533a\u5b57\u53f7</summary>';
+    h += '<div class="tm-scope-size-head"><span>\u5206\u533a\u5b57\u53f7</span><em>\u5355\u72ec\u653e\u5927\u7f29\u5c0f\u67d0\u4e2a\u754c\u9762\uff1b\u9009\u4e86\u300c\u4e2d\u300d\u4ee5\u5916\u7684\u6863\uff0c\u8be5\u533a\u6587\u5b57\u7edf\u4e00\u6210\u4e09\u6863\u5b57\u53f7</em></div>';
     h += '<div class="tm-scope-size-grid">';
     SCOPES.forEach(function(s) {
       var cur = scoped[s.key] || 'md';
       h += '<div class="tm-scope-size-card" data-scope="' + esc(s.key) + '"><div class="tm-scope-size-meta"><b>' + esc(s.label) + '</b><em>' + esc(s.desc) + '</em></div>' +
-        sizeButtonRow(cur, function(k){ return "_tmApplyScopeSize('" + q(s.key) + "','" + q(k) + "', this)"; }, 'tm-scope-size-buttons') +
-        (s.key === 'memorial' ? memorialInkControl() : '') + '</div>';
+        sizeButtonRow(cur, function(k){ return "_tmApplyScopeSize('" + q(s.key) + "','" + q(k) + "', this)"; }, 'tm-scope-size-buttons') + '</div>';
     });
-    h += '</div>';
+    h += '</div></details>';
     if (!compact) h += '</div>';
     return h;
+  }
+
+  // \u754c\u9762\u5b57\u53f7\u7684\u56db\u6863\uff08\u4e0e tm-patches.js \u8bbe\u7f6e\u9875\u300c\u754c\u9762\u663e\u793a\u300d\u7684\u56db\u4e2a\u6309\u94ae\u540c\u503c\uff09\uff1b\u6309\u94ae\u8c03 _tmSetUiFontScale \u5199\u540c\u4e00\u4e2a\u6863\u4f4d
+  var UI_SCALES = [[0.9, '\u5c0f'], [1, '\u6807\u51c6'], [1.2, '\u5927'], [1.35, '\u7279\u5927']];
+  function currentUiScale() {
+    var v = parseFloat(readStore('tm.uiFontScale', ''));
+    if (v >= 0.8 && v <= 1.6) return v;
+    return typeof window._tmUiFontScaleDefault === 'function' ? window._tmUiFontScaleDefault() : 1.2;
+  }
+  function uiScaleButtons() {
+    var current = currentUiScale();
+    return '<div class="gs-font-sizes tm-global-size-buttons">' + UI_SCALES.map(function(p) {
+      return '<button type="button" class="gs-sz-btn' + (Math.abs(p[0] - current) < 0.01 ? ' active' : '') + '" onclick="_tmApplyUiScale(' + p[0] + ', this)">' + p[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  function applyUiScale(v, el) {
+    if (typeof window._tmSetUiFontScale === 'function') window._tmSetUiFontScale(v);
+    setActiveSize(el);
+    toastMsg('\u5b57\u53f7 \u00b7 ' + UI_SCALES.filter(function(p){ return p[0] === v; }).map(function(p){ return p[1]; })[0]);
+  }
+  // \u65e7\u300c\u5168\u5c40\u5b57\u53f7\u300d\u5e76\u8fdb\u754c\u9762\u5b57\u53f7\uff08\u7f8e\u672f\u5baa\u6cd5\u7b2c2\u5200\uff09\uff1a\u5b58\u8fc7\u975e\u300c\u4e2d\u300d\u7684\u6863\uff0c\u5c31\u6309\u500d\u6570\u6298\u8fdb\u754c\u9762\u5b57\u53f7\u4e00\u6b21\uff0c\u4e4b\u540e\u5168\u5c40\u6863\u56fa\u5b9a\u4e3a\u300c\u4e2d\u300d
+  function foldLegacyGlobalSize() {
+    var legacy = readStore('tm.fontSize', DEFAULT_SIZE);
+    if (legacy === DEFAULT_SIZE || !SIZE_SCALES[legacy] || typeof window._tmSetUiFontScale !== 'function') return legacy;
+    var next = Math.round(Math.min(1.6, Math.max(0.8, currentUiScale() * SIZE_SCALES[legacy])) * 100) / 100;
+    window._tmSetUiFontScale(next);
+    writeStore('tm.fontSize', DEFAULT_SIZE);
+    return DEFAULT_SIZE;
+  }
+
+  // 色板令牌连同 RGB 三元组一起改：半透明写法 rgba(var(--gold-400-rgb),.5) 才跟得上主题
+  function hexTriplet(hex) {
+    var h = String(hex).replace('#', '');
+    return [0, 2, 4].map(function(i){ return parseInt(h.slice(i, i + 2), 16); }).join(',');
+  }
+  function paletteVar(name, hex) {
+    return '--' + name + ':' + hex + ';--' + name + '-rgb:' + hexTriplet(hex) + ';';
+  }
+  function themeTokens(key) {
+    return String(THEME_TOKENS[key] || '').replace(/--([\w-]+):(#[0-9a-fA-F]{6});/g, function(_, name, hex){ return paletteVar(name, hex); });
   }
 
   function applyTheme(name, el, silent) {
@@ -170,13 +234,14 @@
       + '--color-accent:' + pal.accent + ';'
       + '--color-info:' + pal.info + ';'
       + '--color-warning:' + pal.warn + ';'
-      + '--gold-400:' + pal.gold2 + ';'
-      + '--gold-500:' + pal.gold1 + ';'
-      + '--gold-300:' + pal.gold3 + ';'
-      + '--vermillion-400:' + pal.verm2 + ';'
-      + '--vermillion-500:' + pal.verm1 + ';'
-      + '--vermillion-300:' + pal.verm3 + ';'
-      + '--celadon-400:' + pal.cela + ';'
+      + paletteVar('gold-400', pal.gold2)
+      + paletteVar('gold-500', pal.gold1)
+      + paletteVar('gold-300', pal.gold3)
+      + paletteVar('vermillion-400', pal.verm2)
+      + paletteVar('vermillion-500', pal.verm1)
+      + paletteVar('vermillion-300', pal.verm3)
+      + paletteVar('celadon-400', pal.cela)
+      + themeTokens(theme.key)
       + '--bg-2:' + pal.bg + ';'
       + '--bg-3:' + pal.surface + ';'
       + '}';
@@ -280,7 +345,7 @@
   }
   function restore() {
     var theme = readStore('tm.theme', DEFAULT_THEME);
-    var size = readStore('tm.fontSize', DEFAULT_SIZE);
+    var size = foldLegacyGlobalSize();
     var body = readStore('tm.fontBody', DEFAULT_BODY);
     var title = readStore('tm.fontTitle', DEFAULT_TITLE);
     applyTheme(theme, null, true);
@@ -323,6 +388,7 @@
   window._tmRenderThemeFontControls = renderControls;
   window._tmApplyTheme = applyTheme;
   window._tmApplySize = applyGlobalSize;
+  window._tmApplyUiScale = applyUiScale;
   window._tmApplyScopeSize = applyScopeSize;
   window._tmApplyMemorialInk = applyMemorialInk;
   window._tmApplyBodyFont = applyBodyFont;

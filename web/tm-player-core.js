@@ -28,6 +28,16 @@
 // ============================================================
 //  ESC暂停菜单
 // ============================================================
+// A resumable world can still exist on the title screen. Keyboard actions belong
+// to the visible game surface, not merely to that retained world's running flag.
+function _tmPlayerGameSurfaceActive(){
+  if(!GM || !GM.running)return false;
+  function visible(id){
+    var el=document.getElementById(id);if(!el || el.hidden)return false;
+    return (typeof getComputedStyle==='function'?getComputedStyle(el).display:el.style.display)!=='none';
+  }
+  return visible('G') && !visible('launch') && !visible('scn-page') && !visible('E');
+}
 document.addEventListener("keydown",function(e){
   if(e.key==="Escape"){
     e.preventDefault();
@@ -38,11 +48,11 @@ document.addEventListener("keydown",function(e){
     if(_$("turn-modal").classList.contains("show")){closeTurnResult();return;}
     if(_$("settings-bg").classList.contains("show")){closeSettings();return;}
     if(_$("pause-bg").classList.contains("show")){closePause();return;}
-    if(GM.running){openPause();return;}
+    if(_tmPlayerGameSurfaceActive()){openPause();return;}
     openSettings();return;
   }
   // 4.3: 快捷键系统（仅在游戏中且无弹窗时生效）
-  if(!GM.running)return;
+  if(!_tmPlayerGameSurfaceActive())return;
   if(_$("settings-bg").classList.contains("show")||_$("pause-bg").classList.contains("show"))return;
   if(_$("turn-modal").classList.contains("show"))return;
   if(document.querySelector('.modal-bg.show'))return;
@@ -57,7 +67,7 @@ document.addEventListener("keydown",function(e){
 });
 function openPause(){
   // 回合推演中禁止暂停（防止状态竞争）
-  if (GM._endTurnBusy) return;
+  if (!_tmPlayerGameSurfaceActive() || GM._endTurnBusy) return;
   var _pi = typeof tmIcon === 'function' ? tmIcon : function(){return '';};
   _$("pause-bg").innerHTML="<div class=\"pause-menu\"><div class=\"pause-title\">\u3014 \u5929 \u547D \u3015</div><button class=\"pause-btn\" onclick=\"closePause()\">\u7EE7 \u7EED</button><button class=\"pause-btn\" onclick=\"closePause();openSaveManager()\">"+_pi('save',16)+" \u6848\u5377\u7BA1\u7406</button><button class=\"pause-btn\" onclick=\"closePause();openSettings()\">"+_pi('settings',16)+" \u8BBE \u7F6E</button><button class=\"pause-btn\" onclick=\"closePause();openShiji()\">"+_pi('history',16)+" \u53F2 \u8BB0</button><button class=\"pause-btn\" onclick=\"closePause();openAbdication()\">\u7985\u8BA9\u9000\u4F4D</button><button class=\"pause-btn\" style=\"color:var(--vermillion-400);\" onclick=\"closePause();backToLaunch()\">\u5F52\u53BB\u6765\u516E</button></div>";
   _$("pause-bg").classList.add("show");
@@ -271,15 +281,9 @@ function _shijiDownload(txt){
     if (c.rules != null) P.ai.rules = c.rules;
   }
   if(window.tianming&&window.tianming.isDesktop){
-    // ★2026-07-03·修「桌面(Electron)重启后主 API key 丢·其余 API 设置尚在」:
-    //   autoSave 经 _tmStripAiKeyView 故意剥掉 key(不进可分享存档·安全)·key 真源在设备本地
-    //   localStorage.tm_api(sSaveAPI 保存时写入)。原桌面分支只读被剥 key 的 autoSave 后即 return·
-    //   从不回落 tm_api·故 key 只活内存、重启即失。此处先从 tm_api 补回 key(与浏览器路径、
-    //   tm-save-lifecycle _preservedAi 同范式)·随后 autoSave 再覆盖 url/model 等(_applyAiCfg 以 || 回落·key 不被空值冲掉)。
+    // Key 真源在设备 tm_api；项目恢复由 tm-utils 统一负责并回灌设备配置。
+    // 不再为 API 字段额外反序列化整份桌面自动存档。
     try{var _tmApiRaw=localStorage.getItem("tm_api");if(_tmApiRaw){_applyAiCfg(JSON.parse(_tmApiRaw));}}catch(_e){ console.warn("[catch] tm_api 回落主 key:", _e.message||_e); }
-    window.tianming.loadAutoSave().then(function(res){
-      if(res&&res.success&&res.data&&res.data.ai) _applyAiCfg(res.data.ai);
-    }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'catch] async:') : console.warn('[catch] async:', e); });
     return;
   }
   try{var s=localStorage.getItem("tm_api");if(s){_applyAiCfg(JSON.parse(s));}}

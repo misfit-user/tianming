@@ -76,7 +76,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         shiluText: '', szjTitle: '', szjSummary: '', personnelChanges: [], hourenXishuo: '',
         suggestions: []       // R209a?added per Codex addendum
       },
-      meta: { errors: [], warnings: [], timing: {}, retries: {} }
+      signal: externalCtx && (externalCtx.signal || externalCtx.meta && externalCtx.meta.signal),
+      meta: { errors: [], warnings: [], timing: {}, retries: {}, requireMainWriteback:true, requireTurnReview:true, transaction: externalCtx && externalCtx.meta && externalCtx.meta.transaction }
     };
     await TM.Endturn.AI.prompt.build(ctx);
     // re-bind locals·§2-§5 仍以原 var name 引用 (最小 diff)
@@ -134,7 +135,18 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         p1 = ctx.results.sc1 || null;
         p2 = ctx.results.sc2 || null;
         p1Summary = (ctx.followup && ctx.followup.p1Summary) || "";
-        await TM.Endturn.AI.apply.writeBack(ctx);
+        if (TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
+        try{await TM.Endturn.AI.apply.writeBack(ctx);}
+        catch(writeError){
+          var partialEdictEffects=TM.EdictEffects?TM.EdictEffects.fail(GM,ctx):[];
+          if (TM.EdictOutcomes) TM.EdictOutcomes.receive(GM,ctx.results.sc1||{edict_feedback:[]},ctx.input.edicts||{},GM.turn,partialEdictEffects);
+          var mainCompletion=TM.Endturn.Validity;
+          if(!mainCompletion||!mainCompletion.recoverMain(ctx,writeError,'主推演变更待补正'))throw writeError;
+          if(TM.RecoveryReview)TM.RecoveryReview.prepareFailedOutput(ctx,writeError);
+        }
+        // Start from the complete main writeback, before independent follow-up inference.
+        if (TM.RecoveryReview) TM.RecoveryReview.launchRoutine(ctx);
+        if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
         p1 = ctx.results.sc1 || p1;
         p2 = ctx.results.sc2 || p2;
         p1Summary = (ctx.followup && ctx.followup.p1Summary) || p1Summary;
@@ -152,7 +164,12 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
 
       // ═══════════════════════════════════════════════════════════
       // P7-zeta bridge: section 5 follow-up moved to tm-endturn-followup.js.
+      if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       await TM.Endturn.AI.followup.run(ctx);
+      // Review continues after the canonical turn commit; it never gates a successful inference.
+      if (TM.RecoveryReview) TM.RecoveryReview.handoff(ctx);
+      if (ctx.followup && ctx.followup.startBackground) ctx.followup.startBackground();
+      if (TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
       p1 = ctx.results.sc1 || p1;
       p2 = ctx.results.sc2 || p2;
       p1Summary = (ctx.followup && ctx.followup.p1Summary) || p1Summary;
@@ -167,8 +184,20 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
       personnelChanges = Array.isArray(ctx.record.personnelChanges) ? ctx.record.personnelChanges : [];
       hourenXishuo = ctx.record.hourenXishuo || "";
     }
-    // 已逃出子调用恢复边界的错误必须交回 core 回滚，不能伪装成叙事继续提交。
-    catch(err){throw err;}
+    catch(err){
+      var completion=TM.Endturn&&TM.Endturn.Validity;
+      if(!completion||!completion.recoverMain(ctx,err,'ai-followup-or-writeback')){if(TM.RecoveryReview)TM.RecoveryReview.cancel(ctx);throw err;}
+      p1=ctx.results.sc1||p1;shizhengji=ctx.record.shizhengji;zhengwen=ctx.record.zhengwen;
+      playerStatus=typeof ctx.record.playerStatus==='string'?ctx.record.playerStatus:'';
+      playerInner=typeof ctx.record.playerInner==='string'?ctx.record.playerInner:'';
+      turnSummary=typeof ctx.record.turnSummary==='string'?ctx.record.turnSummary:'';
+      shiluText=typeof ctx.record.shiluText==='string'?ctx.record.shiluText:'';
+      szjTitle=typeof ctx.record.szjTitle==='string'?ctx.record.szjTitle:'';
+      szjSummary=typeof ctx.record.szjSummary==='string'?ctx.record.szjSummary:'';
+      personnelChanges=Array.isArray(ctx.record.personnelChanges)?ctx.record.personnelChanges:[];
+      hourenXishuo=typeof ctx.record.hourenXishuo==='string'?ctx.record.hourenXishuo:'';
+      if(TM.RecoveryReview){TM.RecoveryReview.launchRoutine(ctx);TM.RecoveryReview.handoff(ctx);}
+    }
   }else{
     Object.keys(GM.vars).forEach(function(n){GM.vars[n].value=clamp(GM.vars[n].value+Math.floor(random()*7)-3,GM.vars[n].min,GM.vars[n].max);});
     shizhengji="\u56FD\u5BB6\u53D8\u5316\u4E2D";zhengwen="\u65F6\u5149\u6D41\u901D";playerStatus="\u5982\u5E38";
@@ -187,8 +216,11 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
 
   GM._turnContext = {
     edicts: edicts,
-    shizhengji: (shizhengji || '').substring(0, 300),
-    zhengwen: (zhengwen || '').substring(0, 200),
+    // ★2026-09-18 类型守门：record.shizhengji 曾因上游 object 字段冒泡而变成对象，
+    //   此处 (shizhengji||'').substring 对对象调用即 TypeError → 整回合死在此行。
+    //   String() 兜一层，语义不变（字符串原样）。
+    shizhengji: String(shizhengji || '').substring(0, 300),
+    zhengwen: String(zhengwen || '').substring(0, 200),
     npcActionsThisTurn: _npcHandledNames
   };
 

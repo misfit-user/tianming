@@ -1,0 +1,125 @@
+{
+  "at": "2026-09-18T11:30:40.432Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "files": [
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "44dd7699300a364c33207b2cc9e4b64ced73b1e7c13aba272af71ad86155b123",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-governance.js",
+      "sha256": "a749a578d118e3ec91d1fe1eaff773f10ff68c3ca87f70c20a60ea06da919697",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "sha256": "2a2a96d1879de01184564f8e87a70052a0058f042fefe29243930f54b865adb9",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-context-zones.js",
+      "sha256": "f7a5d97bb4fc8f0173d8317762c90478eea67b378323aaca5e5d0a7d32d97ffc",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "1ae681f90f91be36bd8c6ed9c856faac52047a1bce70c470525f59c21c90f3a8",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-trace.js",
+      "sha256": "8650d23379473cd440c1656f8eb01d6e69a964d9ca0c1abcab67acc21a663ca4",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "c5ed6545dc036cee1a2f1599d8977ae464aa4fc116ec95eee52a8d4df6350a72",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "ed6ac1fc10877b9cfb50f1ce28297b2c773df3dee3383316c19401b2831a2a67",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": true,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-memory-boundary-upgrade.js",
+      "sha256": "2023e458c760a09be2e456d49c8f0de233cd95d2fb5876645790f86ff92d7d18",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "originalChinesePreserved": null,
+      "created": true
+    }
+  ],
+  "scopedDiffCheck": {
+    "exit": 0,
+    "output": ""
+  },
+  "fullScanSummary": {
+    "selected": 1035,
+    "pass": 1013,
+    "fail": 22,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalMemorySummary": {
+    "selected": 105,
+    "pass": 105,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "archBefore": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "lint-split-contracts",
+    "ref-check"
+  ],
+  "archAfter": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "lint-split-contracts",
+    "ref-check"
+  ],
+  "newlyFailingArchChecks": []
+}

@@ -1,0 +1,188 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "2866b977-6ece-4dd4-a37f-f5ea075ade3c",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "expected": [
+    "smoke-faction-npc-llm-decision.js",
+    "smoke-office-reform-add-overlap.js",
+    "smoke-official-bundle-parity.js",
+    "smoke-public-treasury-scale.js",
+    "smoke-startup-phase-observability.js",
+    "smoke-tang840-authority-autonomy.js",
+    "smoke-tang840-wuchang.js",
+    "smoke-workshop-ranks.js"
+  ],
+  "generatedAt": "2026-09-27T10:28:49.088Z",
+  "args": [
+    "--grep",
+    "faction-npc-llm-decision",
+    "--grep",
+    "office-reform-add-overlap",
+    "--grep",
+    "public-treasury-scale",
+    "--grep",
+    "startup-phase-observability",
+    "--grep",
+    "tang840-authority-autonomy",
+    "--grep",
+    "tang840-wuchang",
+    "--grep",
+    "workshop-ranks",
+    "--grep",
+    "official-bundle-parity",
+    "--jobs",
+    "2",
+    "--no-retry",
+    "--report",
+    "docs/office-duty-fixes-20260927/failure-triage.json"
+  ],
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": []
+  },
+  "summary": {
+    "selected": 8,
+    "pass": 1,
+    "fail": 7,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [
+    {
+      "sig": "TypeError: Cannot read properties of undefined (reading 'powersTaken')",
+      "names": [
+        "smoke-office-reform-add-overlap.js"
+      ]
+    },
+    {
+      "sig": "at fail (<path>)",
+      "names": [
+        "smoke-faction-npc-llm-decision.js"
+      ]
+    },
+    {
+      "sig": "AssertionError [ERR_ASSERTION]: fixture covers actual late Tang scale",
+      "names": [
+        "smoke-public-treasury-scale.js"
+      ]
+    },
+    {
+      "sig": "at checkExecSyncError (node:child_process:#:#)",
+      "names": [
+        "smoke-startup-phase-observability.js"
+      ]
+    },
+    {
+      "sig": "AssertionError [ERR_ASSERTION]: # circuits in actual central-local view: # / #",
+      "names": [
+        "smoke-tang840-authority-autonomy.js"
+      ]
+    },
+    {
+      "sig": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+      "names": [
+        "smoke-tang840-wuchang.js"
+      ]
+    },
+    {
+      "sig": "AssertionError [ERR_ASSERTION]: Electron seeder must be byte-identical to the unified root-JSON artifact",
+      "names": [
+        "smoke-official-bundle-parity.js"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "smoke-faction-npc-llm-decision.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 736,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-faction-npc-llm-decision] unit tests pass·9 assertions\n[action-schema] normalization and office sync assertions pass\n[native-actions] expanded military/diplomacy/province assertions pass\n[native-actions] office/fiscal assertions pass\n[action-engine] strategic actions and priority scoring assertions pass\n[action-engine-v2] preflight, strategy memory, news, scoring assertions pass\n[faction-ai-diagnostics] snapshot assertions pass\n[local-template-ledger] shared ledger assertions pass\n[player-isPlayer-guard] assertions pass\n[llm-retry-concurrency] assertions pass\n[smoke-faction-npc-llm-decision] fail: prompt should include runtime admin hierarchy, not stale opening land\n    at fail (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:12:28)\n    at assert (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:13:41)\n    at promptContextExpansionTest (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:717:3)\n    at main (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:858:3)\n"
+    },
+    {
+      "name": "smoke-office-reform-add-overlap.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 237,
+      "timedOut": false,
+      "waivers": [],
+      "output": "① 夺征税之权·户部具名抵抗(都察院无涉)\n  FAIL 抵抗=基础5+尚书9+主事6=20 (实得5)\n  FAIL 具名=旧掌征税者二人·都御史无涉\nC:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-office-reform-add-overlap.js:71\r\nassert(rA.affected[0].powersTaken && rA.affected[0].powersTaken.indexOf('taxCollect') >= 0, '记明所夺何权');\r\n                      ^\r\n\r\nTypeError: Cannot read properties of undefined (reading 'powersTaken')\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-office-reform-add-overlap.js:71:23)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-official-bundle-parity.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 12200,
+      "timedOut": false,
+      "waivers": [],
+      "output": "node:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: Electron seeder must be byte-identical to the unified root-JSON artifact\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-official-bundle-parity.js:17:10)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-official-bundle-parity.js:35:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-public-treasury-scale.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 3512,
+      "timedOut": false,
+      "waivers": [],
+      "output": "node:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: fixture covers actual late Tang scale\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-public-treasury-scale.js:6:21)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-public-treasury-scale.js:15:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-startup-phase-observability.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 300,
+      "timedOut": false,
+      "waivers": [],
+      "output": "node:child_process:964\r\n    throw err;\r\n    ^\r\n\r\nError: Command failed: C:\\Program Files\\nodejs\\node.exe C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\build-startup-phase-manifest.js --check\r\n[startup-phase-manifest] stale: startup-script-phases.json\r\n\r\n    at genericNodeError (node:internal/errors:985:15)\r\n    at wrappedFn (node:internal/errors:539:14)\r\n    at checkExecSyncError (node:child_process:925:11)\r\n    at execFileSync (node:child_process:961:15)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-phase-observability.js:11:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {\r\n  status: 1,\r\n  signal: null,\r\n  output: [\r\n    null,\r\n    Buffer(0) [Uint8Array] [],\r\n    Buffer(59) [Uint8Array] [\r\n       91, 115, 116,  97, 114, 116, 117, 112,  45, 112,\r\n      104,  97, 115, 101,  45, 109,  97, 110, 105, 102,\r\n      101, 115, 116,  93,  32, 115, 116,  97, 108, 101,\r\n       58,  32, 115, 116,  97, 114, 116, 117, 112,  45,\r\n      115,  99, 114, 105, 112, 116,  45, 112, 104,  97,\r\n      115, 101, 115,  46, 106, 115, 111, 110,  10\r\n    ]\r\n  ],\r\n  pid: 21424,\r\n  stdout: Buffer(0) [Uint8Array] [],\r\n  stderr: Buffer(59) [Uint8Array] [\r\n     91, 115, 116,  97, 114, 116, 117, 112,  45, 112,\r\n    104,  97, 115, 101,  45, 109,  97, 110, 105, 102,\r\n    101, 115, 116,  93,  32, 115, 116,  97, 108, 101,\r\n     58,  32, 115, 116,  97, 114, 116, 117, 112,  45,\r\n    115,  99, 114, 105, 112, 116,  45, 112, 104,  97,\r\n    115, 101, 115,  46, 106, 115, 111, 110,  10\r\n  ]\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-tang840-authority-autonomy.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 582,
+      "timedOut": false,
+      "waivers": [],
+      "output": "node:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: 44 circuits in actual central-local view: 45 / 44\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:5:31)\r\n    at eq (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:5:66)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:18:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-tang840-wuchang.js",
+      "pass": false,
+      "flaky": false,
+      "suspect": false,
+      "exit": 1,
+      "ms": 577,
+      "timedOut": false,
+      "waivers": [],
+      "output": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n\r\n142 !== 434\r\n\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-wuchang.js:10:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 142,\r\n  expected: 434,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-workshop-ranks.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 145,
+      "timedOut": false,
+      "waivers": [],
+      "output": "smoke-workshop-ranks\n  ✓ ① 下载榜非空（默认榜有数据）\n  ✓ ① 下载榜含真实下载量 56\n  ✓ ① 下载榜按 downloads 降序（56>20>3）\n  ✓ ② 口碑榜无有效评分→空态\n  ✓ ② 口碑空态为邀约文案（不假零不占位）\n  ✓ ② 无评分的包不混入口碑榜\n  ✓ ③ 推荐榜按真实 endorsements 出列表（甲卷 ✦1）\n  ✓ ③ 无 endorsements 的包不入推荐榜\n  ✓ ④ 无指标的丁卷被排除出全部三榜（缺字段不补位）\n  ✓ 突变: 删下载榜 hasMetric 守卫后无指标包(丁卷)混入下载榜（证守卫有效·据此变红）\n  ✓ 收尾: 真源下载榜 hasMetric 守卫原样（未被突变污染）\n  ✓ 收尾: 口碑邀约文案在真源\n\nsmoke-workshop-ranks PASS 12/12\n"
+    }
+  ],
+  "skipped": []
+}

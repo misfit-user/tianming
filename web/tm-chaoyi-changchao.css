@@ -1,6 +1,9 @@
 /* tm-chaoyi-v3.css · 从 preview-changchao.html 抽出 · 与 v2 朝议 modal CSS 隔离 */
 
-:root {
+/* 常朝自己的色板与正文字体只挂在常朝舞台上（2026-09-26·美术宪法第1刀）。
+   原先写在 :root 和 body 上：本表一进常朝就动态载入且退朝不卸，全局的墨阶、金朱、正文字体与字号
+   从此都被换成常朝这一套（墨阶还是反相的），主界面一旦改用令牌就会跟着变色。 */
+.cy-stage {
   --bg-1: #0a0907;
   --bg-2: #16110c;
   --bg-paper: #221c15;
@@ -51,15 +54,14 @@
   --type-joint_petition: var(--gold-300);
   --type-personal_plea: var(--plum-400);
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 0;
-  background: radial-gradient(ellipse at top, #1a1510 0%, #0f0d0a 70%), var(--bg-1);
+.cy-stage, .cy-stage * { box-sizing: border-box; }
+/* 预览页的 body 规则：页面底色与外边距只属于预览页，这里只留舞台里要继承的正文字色、字号、行高。
+   字体不设：游戏里 body 的字体由设置里的正文字体（tm-theme-font.js 带 !important）决定，
+   原先常朝里的正文就是从 body 继承这一种，这里照旧继承 */
+.cy-stage {
   color: var(--ink-700);
-  font-family: var(--font-song);
   font-size: 14px;
   line-height: 1.7;
-  min-height: 100vh;
 }
 
 /* ═══ 顶部预览说明条 ═══ */

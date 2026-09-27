@@ -1,0 +1,65 @@
+{
+  "at": "2026-09-20T04:28:13.465Z",
+  "complete": true,
+  "results": [
+    {
+      "name": "resumed-full-tests",
+      "args": [
+        "web/scripts/run-smokes.js",
+        "--all",
+        "--no-retry",
+        "--jobs",
+        "2",
+        "--report",
+        "docs/api-wait-compatibility-20260920/resumed-full-tests.json"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 594746,
+      "error": null
+    },
+    {
+      "name": "resumed-architecture",
+      "args": [
+        "web/scripts/lint-arch-all.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 23083,
+      "error": null
+    },
+    {
+      "name": "resumed-official-parity",
+      "args": [
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 50177,
+      "error": null
+    },
+    {
+      "name": "resumed-startup-manifest",
+      "args": [
+        "web/scripts/build-startup-phase-manifest.js",
+        "--check"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 248,
+      "error": null
+    },
+    {
+      "name": "resumed-browser",
+      "args": [
+        "docs/api-wait-compatibility-20260920/browser-proof.mjs"
+      ],
+      "exit": 0,
+      "signal": null,
+      "ms": 5075,
+      "error": null
+    }
+  ],
+  "sourceCount": 2053,
+  "changedDuringRun": []
+}

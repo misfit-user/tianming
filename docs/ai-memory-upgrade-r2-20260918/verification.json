@@ -1,0 +1,534 @@
+{
+  "at": "2026-09-18T12:45:50.219Z",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/index.html",
+      "bytes": 69526,
+      "sha256": "e02d43db0ef6583352de2bf2ab48b463246b7252267051c82602bfbc7edf35c0",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/index.html"
+    },
+    {
+      "file": "web/scripts/lib-memory-upgrade-r2.js",
+      "bytes": 4747,
+      "sha256": "d85cff8b54b56f8929b7ea0f1bf8d6e1728a533ae25aa1fc798358fe3e232166",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/lib-memory-upgrade-r2.js"
+    },
+    {
+      "file": "web/scripts/smoke-memory-adaptive-upgrade.js",
+      "bytes": 16867,
+      "sha256": "f867e38fcaaa1bbfdb64b38dcc70908a2e4b3b8e2568f9d5ec2be6f8bcf30b30",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/smoke-memory-adaptive-upgrade.js"
+    },
+    {
+      "file": "web/scripts/smoke-memory-model-detection.js",
+      "bytes": 5391,
+      "sha256": "fdae33e7cb67e3e0b5236d6186d46b6056c452329f23f6f4ed2b41095ba328f2",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/smoke-memory-model-detection.js"
+    },
+    {
+      "file": "web/scripts/smoke-memory-vector-upgrade.js",
+      "bytes": 5513,
+      "sha256": "6bea7dd740a4dcabacd681f30643c8da3edb4ffdd093de98490c227e599305b2",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/smoke-memory-vector-upgrade.js"
+    },
+    {
+      "file": "web/scripts/smoke-model-probe-evidence.js",
+      "bytes": 2928,
+      "sha256": "90befcd72b04da9d153f851d775c756106787f2c45c3ba3b3b424609a168c310",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/smoke-model-probe-evidence.js"
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "bytes": 42653,
+      "sha256": "935067a4ec44215e714c75363dd6736eac1a5b10c92beb85ccf2132e7d299470",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/scripts/verify-all.js"
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "bytes": 350803,
+      "sha256": "c144584cfc961c9917d2945183b0721480157bc3e64da89784babcaed082a7c0",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/startup-script-phases.json"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "bytes": 75403,
+      "sha256": "800ce02cf730729918394a3bb2db4a96db5e48ec41c42eadfcec57a31842aa3c",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-ai-infra-model-detect.js"
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "bytes": 11212,
+      "sha256": "75e19e72780bd6e7e2ca4e982c3a437ace7aff93a77d6e18a89adf9c1dca4c59",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-ai-output-validator.js"
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "bytes": 50217,
+      "sha256": "b05395956ee36f56470ace52fbaf7383db9ba74b145db49dc4c5e6d5ef8f21cb",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-ai-schema.js"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "bytes": 414885,
+      "sha256": "e8b06ed59ee1afd3ffff493db401c339aa9e909fa93bbfa8dab0e894595a660b",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-endturn-ai.js"
+    },
+    {
+      "file": "web/tm-memory-adaptive.js",
+      "bytes": 11681,
+      "sha256": "b5b8b40857a2e4ccf02e108ac95e78d12a067e28c98714bb5eb2dc4a9fd514ca",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-adaptive.js"
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "bytes": 25587,
+      "sha256": "e0927b8125fab1453bdce3800a687634f85ea34cef20bdd8ee66842a17fb5cdc",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-agent-tools.js"
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "bytes": 28319,
+      "sha256": "1a7c0d53d5e13a0439cbf9f1c3ee0739f33520575cb4b6fd2a0d4afe6ccd9a8b",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-context-compiler.js"
+    },
+    {
+      "file": "web/tm-memory-controls.js",
+      "bytes": 7037,
+      "sha256": "86765bf34b6b36782c3a739fdaabb124bc32a512097b07596001761219527ac7",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-controls.js"
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "bytes": 56504,
+      "sha256": "9967b71198f7606bb1163b2d8659b61dc07a19e56f0149ef7e52cc8ef65c0f21",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-envelope.js"
+    },
+    {
+      "file": "web/tm-memory-hybrid.js",
+      "bytes": 8448,
+      "sha256": "ff83dd4173e98f22ff2a09a333e4ffc25f71f9a86e16395bc39b37e367116f4e",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-hybrid.js"
+    },
+    {
+      "file": "web/tm-memory-long-term.js",
+      "bytes": 11732,
+      "sha256": "295ee128b5c3c6482c27da9d5e59f1a823a9685b0c9a12c41cf51e5b65beffe4",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": true,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-long-term.js"
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "bytes": 69765,
+      "sha256": "83cf6b5435d28b7a5b7e947afcae25beea0a9d7e4dfc54e2cf0b7e8ab9ce8f49",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-retrieval.js"
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "bytes": 34665,
+      "sha256": "2304261e654457b04e78cf076588762084e3121226ea9d511a2236e1e888ea47",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-steward.js"
+    },
+    {
+      "file": "web/tm-memory-turn-inference.js",
+      "bytes": 26572,
+      "sha256": "7dbbedc8e6a1f272bcfdfd140785e770c7f578d59d2b7daa1755564906f47572",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-turn-inference.js"
+    },
+    {
+      "file": "web/tm-memory-turn-rollup.js",
+      "bytes": 17377,
+      "sha256": "39edbcc66be68f163c74588fc4b68eab50bcca3b12fef1a9ea8fe1eaed657b0a",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-turn-rollup.js"
+    },
+    {
+      "file": "web/tm-memory-writegate.js",
+      "bytes": 34942,
+      "sha256": "faa6a112b34a264b066945e51982fe6517bd0b388afbbe849a176ad3a24844e8",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-memory-writegate.js"
+    },
+    {
+      "file": "web/tm-player-settings.js",
+      "bytes": 34589,
+      "sha256": "f229b0cd256dbfcd045e929733d8b639c5e08597af71114f192a869ffe05571e",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-player-settings.js"
+    },
+    {
+      "file": "web/tm-semantic-recall.js",
+      "bytes": 49828,
+      "sha256": "ef15a574eb6ecdcd1ed05d00d217797ca3f42203849581c99776c6222d427e71",
+      "expectedHashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "created": false,
+      "backup": ".bak-ai-memory-upgrade-r2-20260918/web/tm-semantic-recall.js"
+    }
+  ],
+  "scopedDiffCheck": {
+    "exit": 2,
+    "output": "web/tm-ai-output-validator.js:52: trailing whitespace.\n+    vassal_changes: 'array', title_changes: 'array', building_changes: 'array', building_decisions: 'array',\r\nweb/tm-ai-output-validator.js:68: trailing whitespace.\n+    fiscal_adjustments: 'array', tax_reforms: 'array', region_updates: 'array', project_updates: 'array',\r\nweb/tm-ai-output-validator.js:77: trailing whitespace.\n+    // ── 2026-09-18 补全·玩家实测 AI 经常输出但 schema 没认的字段 ──\r\nweb/tm-ai-output-validator.js:78: trailing whitespace.\n+    // 这些都是 AI 在 sc1/sc1b/sc1c 主提示中被告知可以输出的字段·schema 漏认会被误判幻觉警告刷屏\r\nweb/tm-ai-output-validator.js:79: trailing whitespace.\n+    turn_summary: 'string',           // 回合总结（SC1 常用）\r\nweb/tm-ai-output-validator.js:80: trailing whitespace.\n+    shizhengji_basis: 'object',       // 时政记参考依据\r\nweb/tm-ai-output-validator.js:81: trailing whitespace.\n+    resource_changes: 'array',        // 资源调整·走 fiscal/population 类通道\r\nweb/tm-ai-output-validator.js:82: trailing whitespace.\n+    faction_ai_outcomes: 'array',     // 势力 AI 推演结果（sc1c 主产）\r\nweb/tm-ai-output-validator.js:93: trailing whitespace.\n+    character_deaths: ['name'],\r\nweb/tm-ai-schema.js:70: trailing whitespace.\n+    character_deaths: {\r\nweb/tm-ai-schema.js:71: trailing whitespace.\n+      type: 'array',\r\nweb/tm-ai-schema.js:72: trailing whitespace.\n+      desc: '让真实在册角色死亡（唯一存亡写口；含玩家→继统裁决或游戏结束）。附characterId稳定ID；同名人物不得仅凭name推断目标',\r\nweb/tm-ai-schema.js:73: trailing whitespace.\n+      requiredSubFields: ['name'],\r\nweb/tm-ai-schema.js:76: trailing whitespace.\n+    char_updates: {\r\nweb/tm-ai-schema.js:77: trailing whitespace.\n+      type: 'array',\r\nweb/tm-ai-schema.js:78: trailing whitespace.\n+      desc: '角色属性增量（忠诚/智力/野心/loyalty 等；禁止 alive/dead/死亡元数据）',\r\nweb/tm-ai-schema.js:157: trailing whitespace.\n+    building_changes: { type: 'array', desc: '建筑变动（build/custom_build/upgrade/destroy，需 territory+type；custom_build 须给 effectsStructured 白名单结构化效果·费效为度）' },\r\nweb/tm-ai-schema.js:158: trailing whitespace.\n+    building_decisions: { type: 'array', desc: '原诏书营造案逐案裁定：requestId + decision(approve/defer/reject) + reason；引用核议或给 costActual/timeActual/effectsStructured，不另扣同笔造价' },\r\nweb/tm-ai-schema.js:231: trailing whitespace.\n+    fiscal_adjustments: { type: 'array', desc: '财政调整（income/expense，会写 guoku）', consumedBy: ['applier:1136', 'applier:1444'] },\r\nweb/tm-ai-schema.js:232: trailing whitespace.\n+    tax_reforms: { type: 'array', desc: '税制结构改革（rate/add/remove）', consumedBy: ['endturn-apply-stages', 'ai-change-applier'] },\r\nweb/tm-ai-schema.js:253: trailing whitespace.\n+    changes:            { type: 'array', desc: '通用变化列表（旧格式；delta 必须为有限 number，敏感语义路径拒绝）', consumedBy: ['ai-change-applier'] },\r\nweb/tm-ai-schema.js:258: trailing whitespace.\n+    anyPathChanges:     { type: 'array', desc: '运行态 GM 守护路径变更（set/delta/merge/delete；push 仅限已声明集合 evtLog，armies 转军队领域入口；拒绝 P.*、内部/原型/死亡/任职/首领/统帅路径）', consumedBy: ['endturn-apply-stages', 'ai-change-applier'] },\r\nweb/tm-ai-schema.js:266: trailing whitespace.\n+    // 2026-09-18 补登·玩家实测 AI 高频输出但 schema 漏认的字段\r\nweb/tm-ai-schema.js:267: trailing whitespace.\n+    //   玩家截图 [unknown] 警告刷屏：`turn_summary`/`shizhengji_basis`/`resource_changes`/`faction_ai_outcomes`\r\nweb/tm-ai-schema.js:268: trailing whitespace.\n+    //   这些字段 prompt 里有引导但 schema 漏认会被误判「AI 幻觉」\r\nweb/tm-ai-schema.js:269: trailing whitespace.\n+    // ──────────────────────────────────────────────\r\nweb/tm-ai-schema.js:270: trailing whitespace.\n+    turn_summary:         { type: 'string', desc: '本回合总结（SC1 主叙事压缩版）' },\r\nweb/tm-ai-schema.js:271: trailing whitespace.\n+    shizhengji_basis:     { type: 'object', desc: '时政记参考依据/出处（人物·地点·事件锚点）' },\r\nweb/tm-ai-schema.js:272: trailing whitespace.\n+    resource_changes:     { type: 'array', desc: '资源调整（人口/财政/物资）·应走 fiscal/population 通道·此字段仅供兼容' },\r\nweb/tm-ai-schema.js:273: trailing whitespace.\n+    faction_ai_outcomes:  { type: 'array', desc: '势力 AI 推演结果（sc1c 主产字段·含内政/扩张/外交决策）' },\r\nweb/tm-ai-schema.js:274: trailing whitespace.\n+\r\nweb/tm-ai-schema.js:275: trailing whitespace.\n+    // ──────────────────────────────────────────────\r\n"
+  },
+  "ownDeltaClean": true,
+  "inheritedWhitespaceWarnings": [
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 52,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 68,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 77,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 78,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 79,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 80,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 81,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 82,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "line": 93,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 70,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 71,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 72,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 73,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 76,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 77,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 78,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 157,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 158,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 231,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 232,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 253,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 258,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 266,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 267,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 268,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 269,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 270,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 271,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 272,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 273,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 274,
+      "existedInBackup": true
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "line": 275,
+      "existedInBackup": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 120,
+    "pass": 120,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "specialist": {
+    "selected": 123,
+    "pass": 123,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "specialistComplete": true,
+  "extended": {
+    "selected": 108,
+    "pass": 103,
+    "fail": 5,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "extendedComplete": true,
+  "extendedFailures": [
+    {
+      "name": "smoke-agent-mode-geo.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 428,
+      "output": "ReferenceError: window is not defined\n    at _semMoveChar (C:\\Users\\37814\\Desktop\\tianming\\web\\tm-endturn-agent-write-tools.js:541:5)\n    at Object.handle (C:\\Users\\37814\\Desktop\\tianming\\web\\tm-endturn-agent-write-tools.js:688:40)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-agent-mode-geo.js:30:21\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-agent-mode-geo.js:101:3)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n"
+    },
+    {
+      "name": "smoke-perf-save-preparation.js",
+      "exit": -1,
+      "timedOut": true,
+      "ms": 300882,
+      "output": "PASS 绍宋·建炎元年八月（官方）.json long=false: actual normalizers/serializers idb + project equal legacy preparation\nPASS 绍宋·建炎元年八月（官方）.json long=false: discarded mirrors never cloned on canonical path\n"
+    },
+    {
+      "name": "smoke-runtime-save-consistency.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 657,
+      "output": "ecovery publishes only matching, non-future receipts and leaves other branches untouched\n  ok - receipt recovery failure is explicit and leaves the durable receipt available for a transactional retry\n[AutoSave] post-turn save failed: Error: slot_0 injected failure\n    at Object.saveManyAtomic (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-runtime-save-consistency.js:533:51)\n    at evalmachine.<anonymous>:204:38\n    at async runDynamicLeaseSmokes (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-runtime-save-consistency.js:538:19)\n  ok - canonical batch failure discards desktop staging and leaves no formal publish marker\n[AutoSave] post-turn save failed: Error: canonical 回合存档完成时世界身份已变化\n    at evalmachine.<anonymous>:210:46\n    at async runDynamicLeaseSmokes (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-runtime-save-consistency.js:575:19)\n  ok - a post-commit load switch preserves staging and its durable receipt for the original campaign\n[SaveDB] IndexedDB就绪 (v6)\n  ok - stale quota recovery neither deletes an older autosave nor retries put\n  ok - stale pre_endturn completion fails closed and cannot overwrite the newer record or marker\n  ok - first wrapped request atomically adopts its token when sidecar is absent\n  ok - full-load/new-game synchronously invalidates an in-flight session\n  ok - invalidated old IPC cannot rename over canonical auto-save\n  ok - current session writes and reloads the canonical envelope\n\n[smoke-runtime-save-consistency] 80 passed / 1 failed\n"
+    },
+    {
+      "name": "smoke-startup-autosave-opt-in.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 408,
+      "output": "tities whose names overlap heuristic stopwords\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   'authored'\n- ]\n\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:63:12\n    at test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:10:46)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:54:9\nFAIL manual recovery errors leave the load manager open and never claim success\nTypeError: c.desktopLoadAutoSave is not a function\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:73:28\n    at test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:10:46)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:66:9\nFAIL the manual UI asks only after a click and waits for explicit consent before loading\nTypeError: c.loadDesktopAutoSave is not a function\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:80:59\n    at test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:10:46)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-autosave-opt-in.js:76:9\nPASS project-only legacy autosave is still hydrated without entering a game\nPASS missing or unreadable autosave does not block startup\nPASS native periodic autosave remains enabled at 60 seconds\nstartup autosave: 3 PASS / 6 FAIL\n"
+    },
+    {
+      "name": "smoke-startup-phase-observability.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 716,
+      "output": "\n    at wrappedFn (node:internal/errors:539:14)\r\n    at checkExecSyncError (node:child_process:925:11)\r\n    at execFileSync (node:child_process:961:15)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-phase-observability.js:11:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19) {\r\n  status: 1,\r\n  signal: null,\r\n  output: [\r\n    null,\r\n    Buffer(0) [Uint8Array] [],\r\n    Buffer(59) [Uint8Array] [\r\n       91, 115, 116,  97, 114, 116, 117, 112,  45, 112,\r\n      104,  97, 115, 101,  45, 109,  97, 110, 105, 102,\r\n      101, 115, 116,  93,  32, 115, 116,  97, 108, 101,\r\n       58,  32, 115, 116,  97, 114, 116, 117, 112,  45,\r\n      115,  99, 114, 105, 112, 116,  45, 112, 104,  97,\r\n      115, 101, 115,  46, 106, 115, 111, 110,  10\r\n    ]\r\n  ],\r\n  pid: 22924,\r\n  stdout: Buffer(0) [Uint8Array] [],\r\n  stderr: Buffer(59) [Uint8Array] [\r\n     91, 115, 116,  97, 114, 116, 117, 112,  45, 112,\r\n    104,  97, 115, 101,  45, 109,  97, 110, 105, 102,\r\n    101, 115, 116,  93,  32, 115, 116,  97, 108, 101,\r\n     58,  32, 115, 116,  97, 114, 116, 117, 112,  45,\r\n    115,  99, 114, 105, 112, 116,  45, 112, 104,  97,\r\n    115, 101, 115,  46, 106, 115, 111, 110,  10\r\n  ]\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    }
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "lint-split-contracts",
+    "ref-check"
+  ],
+  "previousRoundArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "lint-split-contracts",
+    "ref-check"
+  ],
+  "newArchitectureFailureCategories": [],
+  "architectureComplete": true,
+  "startupRetest": {
+    "at": "2026-09-18T12:45:38.192Z",
+    "results": [
+      {
+        "name": "generatedManifest",
+        "exit": 0,
+        "signal": null,
+        "output": "[startup-phase-manifest] PASS scripts=414 deferred=9 phases={\"menu\":14,\"core\":83,\"world\":295,\"optional\":22}\n"
+      },
+      {
+        "name": "startupContract",
+        "exit": 1,
+        "signal": null,
+        "output": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: the retained 415 scripts plus the shared battle contract form the complete eager set\r\n\r\n414 !== 416\r\n\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-phase-observability.js:24:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 414,\r\n  expected: 416,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+      }
+    ]
+  }
+}

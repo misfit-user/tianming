@@ -682,6 +682,7 @@
   }
   function budgetRevenue(G, fac, cfg, turnDays, divisions) {
     var totals = { central:resourceZero(), localRetain:resourceZero(), nominal:resourceZero(), grossCollected:resourceZero(), skimmed:resourceZero(), lostTransit:resourceZero(), divisionCount:divisions.length, contribByCategory:{}, sourcesByResource:{money:{},grain:{},cloth:{}} };
+    totals.collection={money:global.FiscalStatement.collectionZero(),grain:global.FiscalStatement.collectionZero(),cloth:global.FiscalStatement.collectionZero()};
     var rows = [], taxes = normalizeTaxListForCascade(G, cfg), parents={};
     walkAdminDivisions(G,function(n,parent){if(parent)parents[n.id||n.name]=parent;},{leafOnly:true});
     var ctx = { game:G, fiscalConfig:cfg, accountingV2:true, turnDays:turnDays, turnFracOfYear:turnDays/360,
@@ -694,18 +695,22 @@
         G.activeDisasters.forEach(function(d){if(d&&_divMatchesDisasterRegion(div,parents[node.id||node.name],d.region)){var fields=_disasterReduceFields(d.category||d.type,d.severity);reduction.farmland=Math.max(reduction.farmland,fields.farmland);reduction.commerceVolume=Math.max(reduction.commerceVolume,fields.commerceVolume);}});
         div._disasterEconomyReduce=reduction;
       }
-      var rec = { id:node.id || node.name, name:node.name || node.id, resources:{}, taxes:[] };
+      var rec = { id:node.id || node.name, name:node.name || node.id, resources:{}, taxes:[], collection:{money:global.FiscalStatement.collectionZero(),grain:global.FiscalStatement.collectionZero(),cloth:global.FiscalStatement.collectionZero()} };
       ['money','grain','cloth'].forEach(function(k) { rec.resources[k] = { claimedRevenue:0, actualRevenue:0, collectedRevenue:0, remittedToCenter:0, retainedBudget:0, skimmed:0, lostInTransit:0 }; });
       taxes.forEach(function(original) {
-        var tax = budgetTaxOverride(div, original), kind = tax.storeAs || 'money';
+        var tax = budgetTaxOverride(div, original);
+        if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax(G, div, tax, ctx);
+        var kind = tax.storeAs || 'money';
         if(tax.annual==null)tax.annual=true;
         if (tax.enabled === false || !rec.resources[kind]) return;
         var base = taxBase(div, tax), yf = tax.annual === false ? 1 : ctx.turnFracOfYear;
         var adjust = cfg.annualFuyi && Number(cfg.annualFuyi.taxRateAdjust);
         var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
         var nominal = fiscalRound(Math.max(0, base * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0) * yf * fuyi));
-        var collected = fiscalRound(computeTaxAmount(div, tax, ctx) * Math.max(0, Math.min(1, safeNumber(div.fiscal.compliance, 1))));
+        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*Math.max(0,Math.min(1,safeNumber(div.fiscal.compliance,1))));
         var split = unifiedSplit(div, tax, collected, ctx), r = rec.resources[kind];
+        var collection=global.FiscalStatement.collectionTax({nominal:nominal,eligible:eligible,collected:collected,skimmed:split.skimmed,config:Object.assign({},cfg.collection,div.fiscal.collection,tax.collection)});
+        global.FiscalStatement.addCollection(rec.collection[kind],collection);global.FiscalStatement.addCollection(totals.collection[kind],collection);
         r.claimedRevenue = fiscalRound(r.claimedRevenue + nominal);
         r.collectedRevenue = fiscalRound(r.collectedRevenue + collected);
         r.actualRevenue = fiscalRound(r.actualRevenue + split.toCentral + split.cunliu);
@@ -721,7 +726,7 @@
           if (!totals.contribByCategory[tag]) totals.contribByCategory[tag] = {};
           totals.contribByCategory[tag][rec.name] = fiscalRound(safeNumber(totals.contribByCategory[tag][rec.name], 0) + split.toCentral);
         }
-        rec.taxes.push({ id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind, base:tax.base, baseValue:base, nominal:nominal, collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit });
+        rec.taxes.push({ id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind, base:tax.base, baseValue:base, nominal:nominal, collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit, collection:collection });
       });
       rows.push(rec);
     });
@@ -735,18 +740,32 @@
     ['money','grain','cloth'].forEach(function(k){var field='monthly'+k.charAt(0).toUpperCase()+k.slice(1)+'PayPerSoldier';pay[k]=n*Math.max(0,safeNumber(army[field],basePay[k]));});
     return resourceAdd(pay,army.monthlyUpkeep||{});
   }
-  function fundingRegionIds(opts) {
+  // One budget reads one administrative tree. Keep duplicate IDs/names and their
+  // traversal order, but do not walk the full world again for every local expense.
+  function fundingNodeIndex(G) {
+    var index = { ids:new Map(), names:new Map() };
+    walkAdminDivisions(G,function(n){
+      [[index.ids,n.id],[index.names,n.name]].forEach(function(pair){
+        var rows=pair[0].get(pair[1]);
+        if(!rows){rows=[];pair[0].set(pair[1],rows);}
+        rows.push(n);
+      });
+    },{leafOnly:false});
+    return index;
+  }
+  function fundingRegionIds(opts, nodeIndex) {
     opts=opts||{};var G=getGame(opts.game),fac=budgetFaction(G,opts.faction),divs=opts.divisions||ownedBudgetDivisions(G,fac),key=String(opts.regionId||''),selected={};
     if(!key)return [];
     if(key===fac.id||key===fac.name)return divs.map(function(n){return n.id||n.name;});
     function gather(node){var groups=childArrays(node);if(groups.some(function(a){return a.length;}))groups.forEach(function(a){a.forEach(gather);});else if(node)selected[node.id||node.name]=true;}
     var exact=[],names=[];
-    walkAdminDivisions(G,function(n){if(n.id===key)exact.push(n);else if(n.name===key)names.push(n);},{leafOnly:false});
+    if(nodeIndex){exact=nodeIndex.ids.get(key)||[];names=nodeIndex.names.get(key)||[];}
+    else walkAdminDivisions(G,function(n){if(n.id===key)exact.push(n);else if(n.name===key)names.push(n);},{leafOnly:false});
     (exact.length?exact:names).forEach(gather);
     return divs.filter(function(n){return selected[n.id||n.name];}).map(function(n){return n.id||n.name;});
   }
   function budgetExpenses(G, fac, cfg, days, divisions, revenueRows) {
-    var fixed = cfg.fixedExpense || {}, ratio = days/30, fundingIndex=Object.create(null), revenueIndex=Object.create(null);
+    var fixed = cfg.fixedExpense || {}, ratio = days/30, fundingIndex=Object.create(null), fundingNodes=null, revenueIndex=Object.create(null);
     (revenueRows||[]).forEach(function(row){if(!Object.prototype.hasOwnProperty.call(revenueIndex,String(row.id)))revenueIndex[String(row.id)]=row;});
     var out = { central:resourceZero(), local:resourceZero(), internal:resourceZero(), total:resourceZero(), salary:resourceZero(), army:resourceZero(), administration:resourceZero(), recurring:resourceZero(), transfers:resourceZero(), transferIn:resourceZero(), items:[], warnings:[] };
     function put(name, monthly, funding, regionId, category, count, meta) {
@@ -757,7 +776,7 @@
       if(meta&&meta.destination){resourceAdd(out.transfers,amounts);resourceAdd(out.transferIn,amounts);}else resourceAdd(out.total, amounts);
       function item(extra){return Object.assign({name:name,amounts:amounts,funding:funding,regionId:regionId||'',category:category},meta||{},extra||{});}
       if(funding==='local'){
-        var cacheKey=String(regionId||''),ids=fundingIndex[cacheKey]||(fundingIndex[cacheKey]=fundingRegionIds({game:G,faction:fac.id,regionId:regionId,divisions:divisions})),shares={};
+        var cacheKey=String(regionId||''),ids=fundingIndex[cacheKey]||(fundingIndex[cacheKey]=fundingRegionIds({game:G,faction:fac.id,regionId:regionId,divisions:divisions},fundingNodes||(fundingNodes=fundingNodeIndex(G)))),shares={};
         if(!ids.length){out.warnings.push('地方支出未找到承付区域：'+name+' / '+String(regionId||''));out.items.push(item());return;}
         ids.forEach(function(id){shares[id]=resourceZero();});
         ['money','grain','cloth'].forEach(function(k){
@@ -813,7 +832,7 @@
     var days=Math.max(0.001, safeNumber(opts.turnDays, getTurnDays(opts, G))), divs=ownedBudgetDivisions(G, fac);
     var rev=budgetRevenue(G,fac,cfg,days,divs), exp=budgetExpenses(G,fac,cfg,days,divs,rev.regions), annual={};
     var yearRevenue=days===360?rev:budgetRevenue(G,fac,cfg,360,divs),yearExpense=days===360?exp:budgetExpenses(G,fac,cfg,360,divs,yearRevenue.regions);
-    ['central','localRetain','nominal','grossCollected','skimmed','lostTransit'].forEach(function(k) { annual[k]=clone(yearRevenue.totals[k]); });
+    ['central','localRetain','nominal','grossCollected','skimmed','lostTransit','collection'].forEach(function(k) { annual[k]=clone(yearRevenue.totals[k]); });
     annual.expenses={}; ['central','local','internal','total','salary','army','administration','recurring','transfers','transferIn'].forEach(function(k) { annual.expenses[k]=clone(yearExpense[k]); });
     return { schema:'tm-fiscal-ledger/2', factionId:fac.id || fac.name, factionName:fac.name || fac.id,
       period:{turn:G.turn||0,turnKey:String(G.sid||'')+':'+String(G.turn||0),days:days,daysPerMonth:30,daysPerYear:360,unit:clone(cfg.unit || {money:'贯',grain:'石',cloth:'匹'})},
@@ -868,6 +887,7 @@
   function writeRegionBudget(node, row, budget, receive) {
     _ensureRegionFiscal(node); var f=node.fiscal;
     f.resources=clone(row.resources);f.period=clone(budget.period);f.annualResources={};
+    if(receive)f.taxCollection={period:clone(budget.period),resources:clone(row.collection)};
     ['money','grain','cloth'].forEach(function(k) {
       f.annualResources[k]={};Object.keys(row.resources[k]).forEach(function(field){f.annualResources[k][field]=fiscalRound(row.resources[k][field]*360/budget.period.days);});
       if(!receive)return;
@@ -895,6 +915,7 @@
       var sourceFlows=global.FiscalStatement.budgetFlows(budget,'central');
       ['money','grain','cloth'].forEach(function(k){account.ledgers[k].sourceDetails=clone(sourceFlows[k].sourceDetails);});
       syncAccountScalars(account,account.ledgers);writeBudgetDisplay(account,budget,true);
+      account.taxCollection={period:clone(budget.period),totals:clone(budget.totals),regions:budget.regions.map(function(r){return {id:r.id,name:r.name,resources:clone(r.resources),collection:clone(r.collection)};})};
       account._sourceContributors=clone(budget.totals.contribByCategory);
       marker._lastCascadeTaxTurn=turn;
       if(fac.id===player.id){G._lastCascadeTurn=turn;G._lastCascadeSummary=budget.totals;} // arch-ok fiscal settlement owns its idempotence and summary
@@ -951,8 +972,8 @@
       var received=collectUnifiedRevenue(opts);if(!received.ok)return null;
       var expense=collectUnifiedExpense(Object.assign({},opts,{budget:received.budget}));
       var account=fac.treasury,kinds=['money','grain','cloth'],resources={},crisis=false;
-      kinds.forEach(function(k){var led=account.ledgers[k],debt=safeNumber(led.deficit,0),repayment=Math.min(Math.max(0,safeNumber(led.stock,0)),debt);
-        if(repayment>0){deductFromLedger(led,repayment,'偿付旧欠');led.deficit=fiscalRound(debt-repayment);global.FiscalStatement.repayDeficits(led,repayment);account[k]=led.stock;}
+      kinds.forEach(function(k){var led=account.ledgers[k],debt=safeNumber(led.deficit,0),manual=Object.keys(led.deficitDetails||{}).reduce(function(n,c){return n+(led.deficitDetails[c]||[]).filter(function(r){return r.manualSettlement===true;}).reduce(function(s,r){return s+safeNumber(r.amount,0);},0);},0),repayment=Math.min(Math.max(0,safeNumber(led.stock,0)),Math.max(0,debt-manual));
+        if(repayment>0){deductFromLedger(led,repayment,'偿付旧欠');led.deficit=fiscalRound(debt-repayment);global.FiscalStatement.repayDeficits(led,repayment,{excludeManual:true});account[k]=led.stock;}
         debt=safeNumber(led.deficit,0);crisis=crisis||debt>0;
         resources[k]={income:received.budget.totals.central[k],expense:received.budget.expenses.central[k],before:safeNumber(before[k],0),after:account[k],net:fiscalRound(received.budget.totals.central[k]-received.budget.expenses.central[k]),debtRepaid:repayment,debtAfter:debt};});
       syncAccountScalars(account,account.ledgers);
@@ -1238,6 +1259,25 @@
     return eb;
   }
 
+  // B2/B3a 共用：首回合以剧本量为自然基础，之后按同一口径随人口/田亩浮动；建筑增量沿用 B1 的差额捕获。
+  function settleProductionBase(eb, key, driver, fallbackRate) {
+    var lastKey = '_' + key + 'NaturalLast', rateKey = '_' + key + 'NaturalRate';
+    var driverKey = '_' + key + 'NaturalDriverLast';
+    var current = Math.max(0, safeNumber(eb[key], 0));
+    var hasLast = typeof eb[lastKey] === 'number' && isFinite(eb[lastKey]);
+    driver = Math.max(0, safeNumber(driver, 0));
+    if (typeof eb[rateKey] !== 'number' || !isFinite(eb[rateKey])) {
+      // 旧存档已有 NaturalLast：沿用旧人口系数，不把已建增量重认成自然产量。
+      // 新开局连显式 0、低于兜底公式的量也保留；不能用 max(剧本值, 人口公式)。
+      eb[rateKey] = hasLast ? fallbackRate : (driver > 0 ? current / driver : fallbackRate);
+    }
+    var natural = hasLast ? (driver === eb[driverKey] ? eb[lastKey] : Math.round(driver * Math.max(0, eb[rateKey]))) : current;
+    var built = hasLast ? Math.max(0, current - eb[lastKey]) : 0;
+    eb[key] = natural + built;
+    eb[lastKey] = natural;
+    eb[driverKey] = driver;
+  }
+
   function _settleLandFlow(div, ctx) {
     if (!div) return null;
     var eb = _ensureEconomyBase(div);
@@ -1312,15 +1352,11 @@
     for (var _pi = 0; _pi < _prodFields.length; _pi++) {
       var _pk = _prodFields[_pi][0], _prate = _prodFields[_pi][1];
       if (_prate <= 0) continue;                                   // 非产区·不浮动(保持 0/剧本值)
-      var _pNatural = Math.round(_mouthsB1 * _prate);
-      var _pLastKey = '_' + _pk + 'NaturalLast';
-      var _pBuilt = (typeof eb[_pLastKey] === 'number') ? Math.max(0, safeNumber(eb[_pk], 0) - eb[_pLastKey]) : 0;
-      eb[_pk] = _pNatural + _pBuilt;
-      eb[_pLastKey] = _pNatural;
+      settleProductionBase(eb, _pk, _mouthsB1, _prate);
     }
 
     // P1-B3a·皇庄田 imperialFarmland 随 farmland 同步(farmland 已活·皇庄田跟着浮动·imperialDomain 才有)
-    if (div.tags.imperialDomain) eb.imperialFarmland = Math.round(eb.farmland * 0.05);
+    if (div.tags.imperialDomain) settleProductionBase(eb, 'imperialFarmland', eb.farmland, 0.05);
 
     div._thisTurnLandFlow = {
       annexed: annexLoss,
@@ -1448,6 +1484,7 @@
   }
 
   function computeTaxAmount(div, tax, ctx) {
+    if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax((ctx && ctx.game) || getGame(), div, tax, ctx);
     var base = taxBase(div, tax);
     if (base <= 0) return 0;
     var amount = base * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0);
@@ -1681,7 +1718,8 @@
       ? safeNumber(div.fiscalDetail && div.fiscalDetail.remittedToCenter, safeNumber(div.fiscal && div.fiscal.remittedToCenter, 0))
       : 0;
     if (_staticRemitAnnual > 0) {
-      var _staticExpect = Math.max(0, Math.round(_staticRemitAnnual * safeNumber(ctx && ctx.turnFracOfYear, 0)));
+      var _staticTaxFactor = global.TM && global.TM.TaxPolicy ? global.TM.TaxPolicy.staticFactor(G, div, ctx) : 1;
+      var _staticExpect = Math.max(0, Math.round(_staticRemitAnnual * safeNumber(ctx && ctx.turnFracOfYear, 0) * _staticTaxFactor));
       if (_staticExpect > 0 && remitMoney < _staticExpect * 0.5) {
         var _srTopUp = _staticExpect - remitMoney;
         if (_srTopUp > 0) {
@@ -1855,6 +1893,7 @@
 
   function cascadeCollect(opts) {
     var G = getGame(opts && opts.game);
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return global.TM.NativeFiscal.tick(G, opts, 'public');
     if (G && unifiedAccounting(G, opts && opts.faction)) return collectUnifiedRevenue(opts);
     if (!G || !G.adminHierarchy) return { ok: false, reason: 'no adminHierarchy' };
     // 回合幂等(2026-07-04 审查定罪)：征税埋在 sc1 体内·推演失败重试整段重跑=同回合双征。
@@ -1881,6 +1920,7 @@
     var turnDays = getTurnDays(opts, G);
     var turnFrac = Math.max(0.01, Math.min(1, turnDays / 365));
     var ctx = {
+      game:G, fiscalConfig:fc,
       centralLocalRules: fc.centralLocalRules || DEFAULT_ALLOCATION,
       logisticsLoss: fc.logisticsLoss != null ? safeNumber(fc.logisticsLoss, DEFAULT_LOGISTICS_LOSS) : DEFAULT_LOGISTICS_LOSS,
       turnDays: turnDays,
@@ -1999,7 +2039,7 @@
       var reduce = safeNumber(div._disasterEconomyReduce && div._disasterEconomyReduce[field], 0);
       if (reduce > 0) value *= Math.max(0, 1 - reduce);
       total += value;
-    }, { faction: opts.faction || null, leafOnly: false });
+    }, { faction: opts.faction || null, leafOnly: true }); // 父级 economyBase 可存下属合计，产量只计叶子。
     return total;
   }
 
@@ -2040,15 +2080,29 @@
 
   // P-VWF·2026-05-29·确定性升本势力各 division 的 compliance（cascade 真读·splitCascadeAmount qiyunNet=qiyunGross×compliance）
   // 复用 walkAdminDivisions 正确遍历·delta 由对账层给（AI 力度 或 粗保底）·此处只夹安全护栏·返回生效 division 数
-  function adjustPlayerCompliance(faction, delta, clampMin, clampMax) {
+  function _officeScopeFilter(scope) {
+    if (!scope || (!scope.regionId && !scope.regionName)) return function() { return true; };
+    var matches = [], allowed = [];
+    walkAdminDivisions(getGame(), function(div) {
+      if (scope.regionId ? String(div.id) === String(scope.regionId) : div.name === scope.regionName) matches.push(div);
+    });
+    // A broken ID or an ambiguous place name never widens the operation to the realm.
+    if (matches.length === 1) (function add(div) {
+      if (allowed.indexOf(div) >= 0) return;
+      allowed.push(div); childArrays(div).forEach(function(children) { children.forEach(add); });
+    })(matches[0]);
+    return function(div) { return allowed.indexOf(div) >= 0; };
+  }
+  function adjustPlayerCompliance(faction, delta, clampMin, clampMax, scope) {
     var d = Number(delta) || 0;
     if (!d) return 0;
     var lo = typeof clampMin === 'number' ? clampMin : 0.1;
     var hi = typeof clampMax === 'number' ? clampMax : 1;
+    var inScope = _officeScopeFilter(scope);
     var n = 0;
     walkAdminDivisions(getGame(), function(div, parent, fac) {
       if (faction && fac && fac !== faction) return;
-      if (div && div.fiscal && typeof div.fiscal.compliance === 'number') {
+      if (div && inScope(div) && div.fiscal && typeof div.fiscal.compliance === 'number') {
         div.fiscal.compliance = Math.max(lo, Math.min(hi, div.fiscal.compliance + d));
         n++;
       }
@@ -2058,15 +2112,16 @@
 
   // P-DZ·2026-05-29·确定性降本势力各 division 的 corruption（cascade corrPenalty 真读·computeTaxAmount → 中央实收；且 aggregateRegionsToVariables 把它聚合成 subDepts.provincial.true → 实征率面板）
   // delta 由对账层给（AI 力度 或 粗保底·负值=降浊度）·此处只夹安全护栏·返回生效 division 数
-  function adjustPlayerDivisionCorruption(faction, delta, clampMin, clampMax) {
+  function adjustPlayerDivisionCorruption(faction, delta, clampMin, clampMax, scope) {
     var d = Number(delta) || 0;
     if (!d) return 0;
     var lo = typeof clampMin === 'number' ? clampMin : 0;
     var hi = typeof clampMax === 'number' ? clampMax : 100;
+    var inScope = _officeScopeFilter(scope);
     var n = 0;
     walkAdminDivisions(getGame(), function(div, parent, fac) {
       if (faction && fac && fac !== faction) return;
-      if (div && typeof div.corruption === 'number') {
+      if (div && inScope(div) && typeof div.corruption === 'number') {
         div.corruption = Math.max(lo, Math.min(hi, div.corruption + d));
         n++;
       }
@@ -2127,6 +2182,7 @@
 
   function calcSalary(ctx) {
     var G = getGame(ctx&&ctx.game);
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) { var nq = global.TM.NativeFiscal.quote(G, ctx); return { total:nq.salary, byDept:nq._salaryByDept }; }
     if(unifiedAccounting(G,ctx&&ctx.faction)){
       var b=previewBudget(ctx),s=global.FiscalStatement.fixedSummary(b),byDept={};
       b.expenses.items.filter(function(r){return r.funding==='central'&&(r.category==='salary'||r.category==='administration');}).forEach(function(r){byDept[r.name]=safeNumber(byDept[r.name],0)+r.amounts.money;});
@@ -2197,6 +2253,7 @@
 
   function calcRoyalStipend(ctx) {
     var G = getGame();
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return {total:{money:0,grain:0,cloth:0},members:0,arrears:0,native:true};
     var fc = getFiscalConfig(G);
     var rcp = (fc.neicangRules && fc.neicangRules.royalClanPressure)
       || (G && G.neitang && G.neitang.neicangRules && G.neitang.neicangRules.royalClanPressure)
@@ -2235,6 +2292,7 @@
 
   function calcArmyPay(ctx) {
     var G = getGame();
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) { var nq = global.TM.NativeFiscal.quote(G, ctx); return { total:nq.army, byArmy:nq._armyByArmy }; }
     var cfg = getSalaryConfig(G);
     var turnDays = getTurnDays(ctx, G);
     // 演义旋钮（P-FUV·军饷半）：军饷按难度松绑·比宗禄轻（军饷是国防核心·连着欠饷/哗变机制）。标准/硬核/默认满压·只叙事 0.7。可调。
@@ -2291,6 +2349,7 @@
 
   function calcImperialExpense(ctx) {
     var G = getGame();
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return {total:{money:0,grain:0,cloth:0},royalCount:0,scale:0,native:true};
     var cfg = getSalaryConfig(G);
     var base = {};
     copyFields(base, DEFAULT_IMPERIAL_MONTHLY);
@@ -2317,6 +2376,8 @@
   }
 
   function fixedPreview(ctx) {
+    var ng = getGame(ctx && ctx.game);
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(ng)) return global.TM.NativeFiscal.quote(ng, ctx);
     if (unifiedAccounting(getGame(ctx && ctx.game), ctx && ctx.faction)) {
       var b=previewBudget(ctx),e=b.expenses;
       return Object.assign(global.FiscalStatement.fixedSummary(b),{budget:b});
@@ -2344,6 +2405,7 @@
 
   function fixedCollect(ctx) {
     var G = getGame(ctx && ctx.game);
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return global.TM.NativeFiscal.collect(G, ctx);
     if (G && unifiedAccounting(G, ctx && ctx.faction)) return collectUnifiedExpense(ctx);
     if (!G) return { ok: false, reason: 'no GM' };
     // 回合幂等(同 cascadeCollect)：重试不双扣俸饷·成功旗标 _lastFixedExpenseTurn 在尾部既有
@@ -2464,69 +2526,6 @@
   }
 
   // 固定支出入口：先验证全部资源和余额，再一次性落账。资金不足时不发生“有多少扣多少”。
-  // Cash-relief uses the same ledger owners, with a detached preparation and a
-  // synchronous joint publisher supplied by its case owner. No debit precedes
-  // case/receipt publication, and no partial spend is implicit.
-  function reliefBalance(spec) {
-    spec = spec || {};
-    var G = getGame(spec.gameRef), source = spec.source;
-    if (!G || ['guoku', 'neitang', 'local'].indexOf(source) < 0) return { ok: false, code: 'relief-source-invalid' };
-    var account = source === 'local' ? G.fiscal && G.fiscal.regions && G.fiscal.regions[spec.regionId] : G[source];
-    if (!account) return { ok: false, code: 'relief-account-missing', reason: '该账户尚无可核验账本，未发生扣款。' };
-    var stock = source === 'local' ? account.ledgers && account.ledgers.money
-      : account.ledgers && account.ledgers.money ? account.ledgers.money.stock : (account.money != null ? account.money : account.balance);
-    if (typeof stock !== 'number' || !Number.isFinite(stock) || stock < 0) return { ok: false, code: 'relief-account-invalid' };
-    if (source !== 'local' && ((account.money != null && account.money !== stock) || (account.balance != null && account.balance !== stock))) {
-      return { ok: false, code: 'relief-account-diverged', reason: '账户镜像与账本不一致，需先对账。' };
-    }
-    return { ok: true, available: stock };
-  }
-
-  function commitReliefPayment(spec, commit) {
-    spec = spec || {};
-    var balance = reliefBalance(spec), amount = spec.amount;
-    if (!balance.ok) return balance;
-    if (typeof commit !== 'function' || typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) return { ok: false, code: 'relief-payment-invalid' };
-    if (!spec.credit && amount > balance.available + 1e-9) return { ok: false, code: 'relief-insufficient-funds', available: balance.available };
-    var G = getGame(spec.gameRef), target, next, tag = spec.tag || '赈务';
-    try {
-      if (spec.source === 'local') {
-        target = G.fiscal.regions[spec.regionId]; next = clone(target);
-        next.ledgers.money = Math.max(0, balance.available + (spec.credit ? amount : -amount));
-        var audit = _ensureRegionTransferAudit(next);
-        var direction = spec.credit ? 'thisTurnIn' : 'thisTurnOut', bucket = spec.credit ? 'sources' : 'sinks';
-        audit[direction] = safeNumber(audit[direction], 0) + amount;
-        audit[bucket][tag] = safeNumber(audit[bucket][tag], 0) + amount;
-        audit.history.push({ turn: G.turn || 0, direction: spec.credit ? 'relief-refund' : 'relief-funded', amount: amount, tag: tag });
-        if (audit.history.length > 60) audit.history.splice(0, audit.history.length - 60);
-      } else {
-        target = G[spec.source]; next = clone(target);
-        var work = {}; work[spec.source] = next;
-        var ledgers = spec.source === 'guoku' ? ensureGuoku(work) : ensureNeitang(work);
-        if (spec.credit) {
-          ledgers.money.stock += amount;
-          ledgers.money.thisTurnIn = safeNumber(ledgers.money.thisTurnIn, 0) + amount;
-          ledgers.money.sources = ledgers.money.sources || {};
-          ledgers.money.sources[tag + '·退回'] = safeNumber(ledgers.money.sources[tag + '·退回'], 0) + amount;
-        } else {
-          // Binary residue below a cent must not create a positive insolvency
-          // deficit when an exact cent-sized installment exhausts this account.
-          var deducted = deductFromLedger(ledgers.money, Math.min(amount, ledgers.money.stock), tag);
-          if (!deducted || Math.abs(deducted.deducted - amount) > 1e-9 || deducted.deficit > 1e-9) throw new Error('relief-payment-not-full');
-        }
-        syncAccountScalars(next, ledgers);
-      }
-      var edits = Object.keys(next).map(function(key) { return { target: target, key: key, value: next[key] }; });
-      var receipt = { source: spec.source, regionId: spec.regionId, amount: amount, direction: spec.credit ? 'refund' : 'fund',
-        turn: G.turn || 0, before: balance.available, after: spec.source === 'local' ? next.ledgers.money : next.money, tag: tag };
-      var result = commit(edits, receipt);
-      if (!result || result.ok !== true || typeof result.then === 'function') throw new Error('relief-joint-commit-invalid');
-      return result;
-    } catch (error) {
-      return { ok: false, code: 'relief-payment-transaction-failed', reason: String(error && error.message || error) };
-    }
-  }
-
   function trySpendFromGuoku(spec) {
     spec = spec || {};
     var G = getGame(spec.gameRef);
@@ -2833,6 +2832,8 @@
   }
 
   var api = {
+    taxPolicyCatalog: function(G){ return normalizeTaxListForCascade(getGame(G), getFiscalConfig(G)); },
+    assessTax: computeTaxAmount,
     VERSION: 1,
     DEFAULT_TAXES: DEFAULT_TAXES,
     DEFAULT_ALLOCATION: DEFAULT_ALLOCATION,
@@ -2853,8 +2854,6 @@
     triggerPlayerSurvey: triggerPlayerSurvey,
     spendFromGuoku: spendFromGuoku,
     trySpendFromGuoku: trySpendFromGuoku,
-    reliefBalance: reliefBalance,
-    commitReliefPayment: commitReliefPayment,
     addToGuoku: addToGuoku,
     tryAddToGuoku: tryAddToGuoku,
     transferRegionToGuokuAtomic: transferRegionToGuokuAtomic,
@@ -2872,6 +2871,9 @@
     getCharacterPublicAccounts:function(o){return publicTreasuryCall('getCharacterPublicAccounts',o);},
     transferAccountResources:function(o){return publicTreasuryCall('transfer',o);},
     trySpendFromAccount:function(o){return publicTreasuryCall('spend',o);},
+    recordLiability:function(o){return publicTreasuryCall('recordLiability',o);},
+    repayLiability:function(o){return publicTreasuryCall('repayLiability',o);},
+    getLiabilities:function(o){return publicTreasuryCall('getLiabilities',o);},
     officeTreasuryAssignmentChanged:function(o){return publicTreasuryCall('officeAssignmentChanged',o);},
     // S1·俸禄认人单测钩子
     calcSalary: calcSalary,
@@ -2879,7 +2881,9 @@
     readFiscalContext:function(o){
       var G=getGame(o&&o.game),g=accountStatement({game:G,account:G.guoku,scope:'central'},false),n=accountStatement({game:G,account:G.neitang,scope:'internal',budget:g.budget},false),S=global.FiscalStatement;
       var service=global.TM&&global.TM.PublicTreasury,known=!service||!service.isDeclared(G)||!!service.getFactionAccountRef({game:G,factionId:budgetFaction(G,'player').id,kind:'internal'});
-      return {guoku:S?S.contextAccount(g):g.account,neitang:known?(S?S.contextAccount(n):n.account):{known:false}};
+      var out={guoku:S?S.contextAccount(g):g.account,neitang:known?(S?S.contextAccount(n):n.account):{known:false}};
+      if(g.budget&&S){var recorded=G.guoku&&G.guoku.taxCollection,source=recorded||{period:g.budget.period,totals:g.budget.totals};out.guoku.taxCollection={flowBasis:recorded?'actual':'forecast',period:clone(source.period),governmentScope:'central-and-regional',resources:{}};['money','grain','cloth'].forEach(function(k){out.guoku.taxCollection.resources[k]=S.taxThree(source.totals,k);});}
+      return out;
     },
     syncAccountStatement:function(o){return accountStatement(o,true);},
     _salaryActualBodies: _salaryActualBodies

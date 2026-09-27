@@ -100,7 +100,7 @@ assert(go.breach === true && go.capitalFallen === true, 'breach/capitalFallen �
 console.log('⑥ 静态契约：authority-complete 旧轨字节保留+新轨路由');
 var authSrc = fs.readFileSync(path.join(ROOT, 'tm-authority-complete.js'), 'utf8');
 assert(/type:\s*'dynasty_change',\s*revolt:\s*r\.id,\s*turn:\s*ctx\.turn/.test(authSrc), '旧轨 _gameOver 块仍在(flag OFF 字节级旧行为)');
-assert(/!\(global\.P && global\.P\.conf && global\.P\.conf\.revoltEntityEnabled === false\)/.test(authSrc) && /_breachMarch\s*=\s*\{\s*started:\s*ctx\.turn\s*\}/.test(authSrc), '新轨:实体化 gate 为完整 !(…revoltEntityEnabled === false) 默认 ON 形(反向变异——退回 ===true 或丢 !( 前缀——必红) 改挂 _breachMarch(镜像层接力)');
+assert(!/revoltEntityEnabled/.test(authSrc) && /_breachMarch\s*=\s*\{\s*started:\s*ctx\.turn\s*\}/.test(authSrc), '正式实体化路径不读旧开关，破京仍保留进军反应窗');
 assert(/改朝换代！天命已移/.test(authSrc), '旧轨终局起居注文案未动');
 
 console.log('');

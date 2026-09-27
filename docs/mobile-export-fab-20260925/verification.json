@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-09-25T05:42:50.538Z",
+  "scope": "mobile JSON export destination and pause FAB reset",
+  "fullSweep": {
+    "executed": 1095,
+    "passed": 1090,
+    "waived": 2,
+    "failed": [
+      {
+        "name": "smoke-production-dependencies.js",
+        "exit": 1,
+        "ms": 11895
+      },
+      {
+        "name": "smoke-startup-phase-observability.js",
+        "exit": 1,
+        "ms": 744
+      },
+      {
+        "name": "smoke-tang840-opening-ledgers.js",
+        "exit": 1,
+        "ms": 62981
+      }
+    ],
+    "result": "FAIL on first sweep; retain original evidence, targeted follow-up is recorded separately"
+  },
+  "focused": "mobile export and pause FAB tests PASS in isolated and original workspace",
+  "architecture": {
+    "passed": 13,
+    "failed": 0
+  },
+  "officialScenarioParity": {
+    "assertions": 41,
+    "passed": true
+  },
+  "browser": {
+    "checks": 9,
+    "passed": true,
+    "physicalDevice": false
+  },
+  "native": {
+    "verifiedAt": "2026-09-25T05:33:03.713Z",
+    "fixture": "E:/tianming-tmp/native-export-20260925",
+    "nativeCompile": "PASS: Gradle compileDebugJavaWithJavac, initial 15 executed, final 15 up-to-date",
+    "nativeRegistration": "PASS: actual npm local file package and Capacitor add Android automatic native class registration",
+    "directJavac": "PASS: SDK34 + Capacitor6.2.1 compiled classes + 60 AndroidX jars, source17 target17 UTF-8",
+    "chineseClassLiteral": "PASS: compiled class contains exact UTF-8 Chinese error message",
+    "deviceVerification": false,
+    "apkBuilt": false,
+    "originalNativeProjectModified": false,
+    "sharedNodeModulesModified": false
+  },
+  "releaseGates": {
+    "passed": false,
+    "reason": "12 changed/new source or inventory entries do not match existing hot baseline; no version or baseline was changed"
+  },
+  "applied": {
+    "files": 25,
+    "readbackMatched": true,
+    "scopedReversePatchCheck": true,
+    "stagedIndexUntouched": true
+  },
+  "published": false,
+  "apkBuilt": false,
+  "followUp": {
+    "workspace": "C:/Users/37814/Desktop/tianming",
+    "executed": 6,
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "results": [
+      {
+        "name": "smoke-mobile-file-export.js",
+        "pass": true,
+        "ms": 644
+      },
+      {
+        "name": "smoke-mobile-scenario-export.js",
+        "pass": true,
+        "ms": 483
+      },
+      {
+        "name": "smoke-pause-fab-reposition.js",
+        "pass": true,
+        "ms": 384
+      },
+      {
+        "name": "smoke-production-dependencies.js",
+        "pass": true,
+        "ms": 5216
+      },
+      {
+        "name": "smoke-startup-phase-observability.js",
+        "pass": true,
+        "ms": 973
+      },
+      {
+        "name": "smoke-tang840-opening-ledgers.js",
+        "pass": true,
+        "ms": 88431
+      }
+    ],
+    "note": "New startup module registration corrected; original-workspace dependency closure and Tang opening tests passed with original deadlines. First full sweep remains recorded as FAIL; no second full sweep is claimed."
+  }
+}

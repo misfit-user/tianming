@@ -1,0 +1,6 @@
+{
+  "file": "web/scripts/smoke-tianqi-map-runtime.js",
+  "before": "086ae289015344b09066140b1641ae89a0547cba23b68cf24f567a96b4ea0614",
+  "after": "92da246563f52d73675f758475444c7d7dc8bf202be35e55890adac7effe5014",
+  "reason": "The old Guanning region is now a province group; test the actual Ningyuan leaf. No assertions removed."
+}

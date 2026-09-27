@@ -1,0 +1,61 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+const root=path.resolve(process.argv[2]||'.'), work=path.join(root,'docs/shaosong-map-integration-20260917/map-stage');
+const read=n=>JSON.parse(fs.readFileSync(path.join(work,n),'utf8'));
+const old=read('source-before.json'), next=read('candidate.json'), report=read('migration-report.json'), checks=[];
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex'), clone=x=>structuredClone(x);
+function test(name,fn){try{const detail=fn();checks.push({name,passed:true,detail});console.log('PASS '+name);}catch(e){checks.push({name,passed:false,error:e.stack});console.error('FAIL '+name+' '+e.message);}}
+function flat(tree){const out=[];function walk(n){if(n.children?.length)n.children.forEach(walk);else if(n.populationDetail)out.push(n);}Object.values(tree).forEach(v=>(v.divisions||[]).forEach(walk));return out;}
+const leaves=flat(next.adminHierarchy), originalLeaves=flat(old.adminHierarchy);
+const leanMap=s=>({ ...s.map,basemap:undefined,regions:s.map.regions.map(r=>Object.fromEntries(Object.entries(r).filter(([k])=>!['geometry','path','coords','points','polygon','holes','extraPolygons','extraPolygonHoles'].includes(k)))) });
+function context(s,patched=true){const G={sid:s.id,turn:1,running:true,adminHierarchy:clone(s.adminHierarchy),facs:clone(s.factions),chars:clone(s.characters),armies:clone(s.military.initialTroops),playerInfo:clone(s.playerInfo),mapData:clone(leanMap(s)),provinceStats:{},_provinceToFaction:{},fiscalConfig:clone(s.fiscalConfig),officeTree:clone(s.officeTree),guoku:{money:10000000,balance:10000000,grain:10000000,cloth:1000000},turnChanges:{variables:[],map:[]}};
+ G.mapData.regions.forEach(r=>G._provinceToFaction[r.name]=s.factions.find(f=>f.id===(r.currentOwner||r.owner))?.name||r.factionName||'');
+ const ctx={GM:G,P:{conf:{},playerInfo:clone(s.playerInfo),fiscalConfig:clone(s.fiscalConfig)},console:{log(){},info(){},warn(){},error(){}},setTimeout,clearTimeout,structuredClone,TextEncoder,TextDecoder};ctx.window=ctx;ctx.global=ctx;ctx.globalThis=ctx;
+ ctx.findScenarioById=id=>id===s.id?s:null;ctx.deepClone=clone;vm.createContext(ctx);
+ for(const f of ['tm-fiscal-engine.js','tm-faction-membership.js','tm-faction-derived-economy.js','tm-map-realm-layout.js']){const staged=path.join(work,'runtime-after',f),file=patched&&fs.existsSync(staged)?staged:path.join(root,'web',f);vm.runInContext(fs.readFileSync(file,'utf8'),ctx,{filename:f});}
+ return ctx;}
+let ctx;
+test('final-candidate-hash',()=>assert.equal(hash(fs.readFileSync(path.join(work,'candidate.json'))),report.candidateSha256));
+test('566-logical-cells-101-circuits',()=>{assert.equal(next.map.regions.length,566);assert.equal(next.map.circuitRegistry.length,101);});
+test('source-182-accounts-represented',()=>assert.equal(new Set(leaves.map(n=>n.mapAccounting.sourceAccountId)).size,182));
+test('501-characters-100-armies-59-events',()=>{assert.equal(next.characters.length,501);assert.equal(next.military.initialTroops.length,100);assert.deepEqual(next.events,old.events);});
+test('original-social-and-central-ledgers-unchanged',()=>{for(const k of ['classes','parties','relations','guoku','neitang','officeTree','playerInfo'])assert.deepEqual(next[k],old[k],k);});
+test('imperial-assets-preserved',()=>{for(const k of ['zhizao','kuangchang','yuyao'])assert.equal(leaves.reduce((s,n)=>s+(n.economyBase.imperialAssets[k]||0),0),originalLeaves.reduce((s,n)=>s+(n.economyBase.imperialAssets[k]||0),0),k);});
+test('original-local-state-not-national-average',()=>{for(const n of leaves){const src=originalLeaves.find(x=>(x.id||x.mapRegionId)===n.mapAccounting.sourceAccountId);for(const k of ['byAge','byGender','byEthnicity','byFaith','bySettlement','minxinLocal','corruptionLocal','unrest','prosperity','tags'])assert.deepEqual(n[k],src[k],k);}});
+test('map-mirrors-and-account-identity',()=>{assert.deepEqual(next.map,next.mapData);const byId=new Map(leaves.map(n=>[n.id,n]));for(const r of next.map.regions){assert.ok(r.accountingLeafIds.length);for(const id of r.accountingLeafIds)assert.equal(byId.get(id)?.mapRegionId,r.id);}});
+test('all-original-armies-have-geographic-bindings',()=>{const ids=new Set(next.map.regions.map(r=>r.id));for(let i=0;i<100;i++){assert.ok(ids.has(next.military.initialTroops[i].garrisonRegionId));for(const k of Object.keys(old.military.initialTroops[i]))assert.deepEqual(next.military.initialTroops[i][k],old.military.initialTroops[i][k]);}});
+test('native-modules-load',()=>{ctx=context(next);return {fiscal:!!ctx.CascadeTax,membership:!!ctx.TM.FactionMembership,layout:Object.keys(ctx.TM.MapRealmLayout||{})};});
+test('source-count-tax-weights',()=>{for(const f of next.factions){const originalCount=originalLeaves.filter(n=>{const oldRegion=old.map.regions.find(r=>r.id===n.mapRegionId);return oldRegion?.factionId===f.id;}).length;const weight=next.map.regions.filter(r=>r.factionId===f.id).reduce((s,r)=>s+r.data.legacyFiscalWeight,0);assert.ok(Math.abs(weight-originalCount)<1e-8,f.id);}});
+let fiscalComparison;
+test('native-cascade-source-and-candidate',()=>{
+ const a=context(old,false),b=context(next);const x=a.CascadeTax.collect({game:a.GM,turnDays:10}),y=b.CascadeTax.collect({game:b.GM,turnDays:10});
+ fiscalComparison={original:x,candidate:y};assert.ok(x&&y);return fiscalComparison;
+});
+test('single-cell-transfer-does-not-transfer-siblings',()=>{const c=context(next),g=c.GM,r=g.mapData.regions.find(r=>r.name==='开封府');const oldOwners=new Map(g.mapData.regions.map(x=>[x.id,x.owner]));
+ assert.equal(c.TM.FactionMembership.assignProvince(r.id,'大金',{targetFactionId:'fac_jin',silent:true}),true);
+ assert.equal(r.currentOwner,'fac_jin');for(const x of g.mapData.regions)if(x.id!==r.id)assert.equal(x.owner,oldOwners.get(x.id));
+ const nodes=flat(g.adminHierarchy);for(const id of r.accountingLeafIds)assert.equal(nodes.find(n=>n.id===id).factionId,'fac_jin');
+ assert.ok(!flat({player:g.adminHierarchy.player}).some(n=>r.accountingLeafIds.includes(n.id)));
+ assert.equal(c.TM.FactionMembership.getProvinces('大金').length,g.mapData.regions.filter(x=>x.currentOwner==='fac_jin').length);
+});
+test('merged-account-transfer-preserves-every-source-part',()=>{const c=context(next),g=c.GM,r=g.mapData.regions.find(x=>x.accountingLeafIds.length>1);const initial=flat(g.adminHierarchy),sum=initial.reduce((s,n)=>s+n.populationDetail.mouths,0);
+ assert.equal(c.TM.FactionMembership.assignProvince(r.id,'大宋',{targetFactionId:'fac_song',silent:true}),true);
+ const after=flat(g.adminHierarchy);assert.equal(after.length,initial.length);assert.equal(after.reduce((s,n)=>s+n.populationDetail.mouths,0),sum);
+ for(const id of r.accountingLeafIds)assert.equal(after.find(n=>n.id===id).factionId,'fac_song');
+ assert.equal(c.TM.FactionMembership.getProvinces('大宋').length,g.mapData.regions.filter(x=>x.currentOwner==='fac_song').length);
+});
+test('transfer-failure-rolls-back-ledgers-and-geometry-owner',()=>{const c=context(next),g=c.GM,r=g.mapData.regions.find(x=>x.accountingLeafIds.length>1),f=g.facs.find(x=>x.id==='fac_song');
+ const before=JSON.stringify({admin:g.adminHierarchy,map:g.mapData,table:g._provinceToFaction});const color=Object.getOwnPropertyDescriptor(f,'color');Object.defineProperty(f,'color',{configurable:true,get(){throw Error('injected-color-failure');}});
+ assert.throws(()=>c.TM.FactionMembership.assignProvince(r.id,'大宋',{targetFactionId:'fac_song',silent:true}),/injected-color-failure/);
+ if(color)Object.defineProperty(f,'color',color);else delete f.color;
+ assert.equal(JSON.stringify({admin:g.adminHierarchy,map:g.mapData,table:g._provinceToFaction}),before);
+});
+test('serialized-runtime-retains-cell-and-account-links',()=>{const c=context(next),g=JSON.parse(JSON.stringify(c.GM));assert.equal(g.mapData.regions.length,566);assert.equal(flat(g.adminHierarchy).length,596);const ids=new Set(flat(g.adminHierarchy).map(n=>n.id));g.mapData.regions.forEach(r=>r.accountingLeafIds.forEach(id=>assert.ok(ids.has(id))));});
+test('requested-country-labels-retain-ids',()=>{for(const [id,name]of Object.entries({fac_song:'大宋',fac_jin:'大金',fac_xixia:'大夏'}))assert.equal(next.factions.find(f=>f.id===id).name,name);});
+const result={candidateSha256:report.candidateSha256,sourceSha256:report.sourceSha256,passed:checks.filter(x=>x.passed).length,failed:checks.filter(x=>!x.passed).length,checks,fiscalComparison};
+fs.writeFileSync(path.join(work,'native-verification.json'),JSON.stringify(result,null,2));
+console.log(JSON.stringify({passed:result.passed,failed:result.failed,fiscalComparison},null,2));
+if(result.failed)process.exitCode=1;

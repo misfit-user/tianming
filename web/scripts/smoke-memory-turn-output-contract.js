@@ -32,6 +32,7 @@ assert(endturnSource.includes('character_memory_updates'), 'SC1 prompt should de
 assert(endturnSource.includes('memory_type'), 'SC1 prompt should require memory_type');
 assert(endturnSource.includes('source_refs'), 'SC1 prompt should require source_refs');
 assert(endturnSource.includes('confidence'), 'SC1 prompt should require confidence');
-assert(endturnSource.includes('character_memory_updates: { type:') || endturnSource.includes('character_memory_updates: {'), 'strict SC1 json schema should include character_memory_updates');
+const strictSchemaSource = fs.readFileSync(path.join(ROOT, 'tm-endturn-ai-sc1-budget.js'), 'utf8');
+assert(strictSchemaSource.includes('character_memory_updates: { type:') && endturnSource.includes('var _buildSc1JsonSchema = ns._buildSc1JsonSchema;'), 'unchanged strict memory schema has one provider and remains wired into SC1');
 
 console.log('smoke-memory-turn-output-contract ok');

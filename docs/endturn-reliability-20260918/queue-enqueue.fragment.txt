@@ -1,0 +1,21 @@
+    enqueue: function(task, priority, options) {
+      options = options || {};
+      return new Promise(function(resolve, reject) {
+        var signal = options.signal, timer, item;
+        function cleanup() { clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancel); }
+        function remove(error) {
+          if (!item || item.started || item.cancelled) return;
+          item.cancelled = true; var index = queue.indexOf(item); if (index >= 0) queue.splice(index, 1);
+          cleanup(); reject(error);
+          if (!queue.length && pumpTimer) { clearTimeout(pumpTimer); pumpTimer = null; }
+        }
+        function cancel() { remove(_aiCancelledError(signal)); }
+        item = { task: task, priority: priority || 'normal', resolve: resolve, reject: reject, seq: seqCounter++, cleanupQueue: cleanup, started: false, cancelled: false };
+        if (signal && signal.aborted) { reject(_aiCancelledError(signal)); return; }
+        queue.push(item);
+        if (signal) signal.addEventListener('abort', cancel, { once: true });
+        var wait = Number(options.timeoutMs);
+        if (Number.isFinite(wait) && wait > 0) timer = setTimeout(function() { var e = new Error('AI 请求排队超时，尚未发送'); e.code = 'AI_QUEUE_TIMEOUT'; e.phase = 'queue'; remove(e); }, wait);
+        pump();
+      });
+    },

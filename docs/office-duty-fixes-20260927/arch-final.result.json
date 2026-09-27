@@ -1,0 +1,11 @@
+{
+  "name": "arch-final",
+  "args": [
+    "web/scripts/lint-arch-all.js"
+  ],
+  "started": "2026-09-27T10:35:28.818Z",
+  "finished": "2026-09-27T10:35:55.396Z",
+  "code": 1,
+  "signal": null,
+  "log": "C:\\Users\\37814\\Desktop\\tianming\\docs\\office-duty-fixes-20260927\\arch-final.log"
+}

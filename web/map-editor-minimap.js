@@ -20,6 +20,7 @@
   var _scale = 1;
   var _dragging = false;
   var _enabled = true;
+  var _baseCanvas = null, _baseDirty = true, _baseMap = null, _baseDivisions = null, _baseCount = -1, _viewKey = '', _baseLayoutKey = '';
 
   function init(){
     if (_canvas) return _canvas;
@@ -63,6 +64,7 @@
       e.stopPropagation();
       _enabled = !_enabled;
       _canvas.style.display = _enabled ? 'block' : 'none';
+      if (_enabled) schedule();
       hdr.querySelector('.me-mm-toggle').textContent = _enabled ? '−' : '+';
       try { localStorage.setItem('me.minimap', _enabled ? '1' : '0'); } catch(e){}
     });
@@ -97,7 +99,7 @@
     // viewport 跟随 camera·定时检 (camera 变没 event)
     // 注·必须 full render·否则 renderViewport 8% gold 叠 12 fps 累积成纯黄
     setInterval(function(){
-      if (_enabled) render();
+      if (_enabled) refreshViewport();
     }, 100);
 
     // 窗口 resize·minimap 不动·但 viewport 动
@@ -162,6 +164,7 @@
 
   var _renderQueued = false;
   function schedule(){
+    _baseDirty = true;
     if (!_enabled) return;
     if (_renderQueued) return;
     _renderQueued = true;
@@ -172,11 +175,8 @@
     });
   }
 
-  function render(){
-    if (!_ctx || !_canvas) return;
-    var ctx = _ctx;
+  function paintBase(ctx){
     var cw = _canvas.width, ch = _canvas.height;
-
     // 底
     ctx.fillStyle = '#0a0805';
     ctx.fillRect(0, 0, cw, ch);
@@ -223,7 +223,27 @@
       ctx.fill();
     });
 
-    renderViewport();
+  }
+  // Public render remains a force-refresh for callers editing geometry in place.
+  function render(){ _baseDirty = true; refreshViewport(); }
+  function refreshViewport(){
+    if (!_ctx || !_canvas || !_enabled || document.hidden || _canvas.isConnected === false) return;
+    if (_canvas.getClientRects && !_canvas.getClientRects().length) return;
+    var editor = ME.EDITOR, map = editor.map, main = editor.canvas, camera = editor.camera || {};
+    if (_baseMap !== map || _baseDivisions !== map.divisions || _baseCount !== map.divisions.length) _baseDirty = true;
+    var layoutKey = [map.bitmapWidth,map.bitmapHeight,_canvas.width,_canvas.height].join('|');
+    if (_baseLayoutKey !== layoutKey) _baseDirty = true;
+    var key = [camera.x,camera.y,camera.zoom,main && main.width,main && main.height,layoutKey].join('|');
+    if (!_baseDirty && key === _viewKey) return;
+    if (_baseDirty || !_baseCanvas){
+      recalcBounds();
+      if (!_baseCanvas) _baseCanvas = document.createElement('canvas');
+      _baseCanvas.width = _canvas.width; _baseCanvas.height = _canvas.height;
+      paintBase(_baseCanvas.getContext('2d'));
+      _baseMap = map; _baseDivisions = map.divisions; _baseCount = map.divisions.length; _baseLayoutKey = layoutKey; _baseDirty = false;
+    }
+    // Restore opaque base before the translucent viewport; never accumulate gold paint.
+    _ctx.drawImage(_baseCanvas, 0, 0); renderViewport(); _viewKey = key;
   }
 
   function renderViewport(){
@@ -289,6 +309,7 @@
     setEnabled: function(b){
       _enabled = b;
       if (_canvas) _canvas.style.display = b ? 'block' : 'none';
+      if (b) schedule();
     }
   };
 

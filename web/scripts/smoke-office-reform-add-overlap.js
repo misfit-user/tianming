@@ -53,6 +53,7 @@ function freshSandbox() {
   };
   sb.P = { conf: {} };
   vm.createContext(sb);
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-office-holder-state.js'), 'utf8'), sb, { filename: 'tm-office-holder-state.js' });
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-office-reform.js'), 'utf8'), sb, { filename: 'tm-office-reform.js' });
   return sb;
 }

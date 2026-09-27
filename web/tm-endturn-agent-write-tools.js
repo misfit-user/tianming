@@ -60,7 +60,7 @@
   function _semanticRoute(path, ctx) {
     if (!(ctx && ctx.meta && ctx.meta.enforceSemanticWrites)) return '';
     var p = String(path || '').replace(/^GM\./, '');
-    if (/^guoku($|\.)/.test(p) && root.FiscalEngine && (typeof root.FiscalEngine.spendFromGuoku === 'function' || typeof root.FiscalEngine.addToGuoku === 'function')) return 'adjust_treasury';
+    if (/^(guoku|neitang)($|\.)/.test(p) && root.FiscalEngine && (typeof root.FiscalEngine.spendFromGuoku === 'function' || typeof root.FiscalEngine.addToGuoku === 'function')) return 'adjust_treasury';
     if (/^armies($|\.)/.test(p) && typeof root.applyAIArmyChange === 'function') return 'command_army';
     if (/^(activeWars|factionRelations)($|\.)/.test(p) && (typeof root.declareWar === 'function' || typeof root.setFactionRelation === 'function')) return 'diplomatic_action';
     if (/^adminHierarchy($|\.)/.test(p)) return 'restructure_division';
@@ -99,9 +99,10 @@
     // ③ 引用完整性 + 真写(委托 PathUtils·复用现成)
     var res;
     try {
-      if (op === 'push') res = PU.applyPathPush(gm, path, payload);
-      else if (op === 'adjust') res = PU.applyPathDelta(gm, path, payload, reason);
-      else res = PU.applyPathSet(gm, path, payload, reason);
+      if (op !== 'push' && TM.EdictEffects) res=TM.EdictEffects.applyNumeric(gm,path,payload,op==='adjust'?'delta':'set',reason);
+      if (!res && op === 'push') res = PU.applyPathPush(gm, path, payload);
+      else if (!res && op === 'adjust') res = PU.applyPathDelta(gm, path, payload, reason);
+      else if (!res) res = PU.applyPathSet(gm, path, payload, reason);
     } catch (e) { _recordFail(gm, op, path, 'apply 异常:' + (e && e.message)); return { ok: false, reason: 'apply 异常:' + (e && e.message) }; }
     if (!res || !res.ok) { _recordFail(gm, op, path, (res && res.reason) || 'apply 失败'); return { ok: false, reason: (res && res.reason) || 'apply 失败' }; }
     // 真正没有变化时返回成功但不冒充落地；进展记账只认 changed=true。
@@ -121,22 +122,20 @@
   function _accStock(gm, acc, cur) { try { var a = gm && gm[acc]; if (a && typeof a === 'object') return a[cur]; return a; } catch (e) { return undefined; } }
 
   function _semTreasury(gm, input) {
-    var FE = root.FiscalEngine;
-    if (!gm) return { ok: false, reason: '无存档' };
-    if (!FE || (typeof FE.spendFromGuoku !== 'function' && typeof FE.addToGuoku !== 'function')) { _recordFail(gm, 'treasury', 'guoku', 'FiscalEngine 未加载'); return { ok: false, reason: 'FiscalEngine 未加载' }; }
-    var delta = Number(input.delta);
-    if (_numBad(delta) || delta === 0) { _recordFail(gm, 'treasury', 'guoku', '非法/零 delta'); return { ok: false, reason: '非法或零 delta' }; }
-    var cur = (input.currency === 'grain' || input.currency === 'cloth') ? input.currency : 'money';
-    var reason = input.reason || 'agent 推演';
-    var before = _accStock(gm, 'guoku', cur);
-    var amt = {}; amt[cur] = Math.abs(delta); var res;
-    try { res = (delta < 0) ? FE.spendFromGuoku(amt, reason) : FE.addToGuoku(amt, reason); }
-    catch (e) { _recordFail(gm, 'treasury', 'guoku.' + cur, 'engine 异常:' + (e && e.message)); return { ok: false, reason: 'engine 异常:' + (e && e.message) }; }
-    if (!res || res.ok === false) { _recordFail(gm, 'treasury', 'guoku.' + cur, (res && res.reason) || 'engine 拒绝'); return { ok: false, reason: (res && res.reason) || 'engine 拒绝' }; }
-    var after = _accStock(gm, 'guoku', cur);
-    _markOverride(gm, 'guoku');
-    _report(gm, { type: 'change', path: 'guoku.' + cur, old: before, new: after, reason: reason, turn: gm.turn || 0, _agent: true, _op: 'treasury' });
-    return { ok: true, path: 'guoku.' + cur, old: before, new: after };
+    var FE=root.FiscalEngine, account=input.account || 'guoku';
+    if(!gm || !FE || !['guoku','neitang'].includes(account))return {ok:false,reason:'FiscalEngine 未加载或财政账户无效'};
+    var delta=Number(input.delta), cur=input.currency || 'money';
+    if(!Number.isFinite(delta)||!delta||!['money','grain','cloth'].includes(cur))return {ok:false,reason:'非法或零 delta，或币种无效'};
+    var fn=FE[(delta<0?'spendFrom':'addTo')+(account==='neitang'?'Neitang':'Guoku')];
+    if(typeof fn!=='function')return {ok:false,reason:'财政账户入口未加载'};
+    var reason=input.reason || 'agent 推演', before=_accStock(gm,account,cur), amt={};amt[cur]=Math.abs(delta);
+    var res;try{res=fn(amt,reason);}catch(e){return {ok:false,reason:e.message};}
+    if(!res || res.ok===false)return {ok:false,reason:res && res.reason || '财政引擎拒绝'};
+    var after=_accStock(gm,account,cur);
+    if(Math.abs((after-before)-delta)>1e-7)return {ok:false,reason:'实际账变与申请金额不符'};
+    _markOverride(gm,account);
+    _report(gm,{type:'change',path:account+'.'+cur,old:before,new:after,reason:reason,turn:gm.turn||0,_agent:true,_op:'treasury'});
+    return {ok:true,path:account+'.'+cur,old:before,new:after};
   }
 
   function _semAppoint(gm, input) {
@@ -456,8 +455,16 @@
         var duplicate = _walkDivInRoot(hit.sourceRoot, fields.name, hit.source);
         if (duplicate && duplicate.div !== hit.div) return { ok: false, reason: '区划名已存在:' + fields.name };
       }
+      // 府州改隶到别的省道（通志一期 S6）：地图地块与省道登记要跟着改，交给改隶写口三处同步；
+      // 写口不认可（非本方省道、首府改出等）就一处都不改。县改隶到别的府等其余情形照旧只改行政树。
+      var DR = root.TM && root.TM.DivisionReassign, reassign = null;
+      if (fields.parentId !== undefined && DR) {
+        var planned = DR.plan(region, fields.parentId, { gm: gm });
+        if (planned.applies && !planned.ok) return { ok: false, reason: '改隶不可行:' + planned.reason };
+        if (planned.applies) reassign = planned;
+      }
       var dest = null;
-      if (fields.parentId !== undefined) {
+      if (fields.parentId !== undefined && !reassign) {
         if (!hit.parentArr) return { ok: false, reason: '根区划不可改隶' };
         dest = _walkDivInRoot(hit.sourceRoot, fields.parentId, hit.source);
         if (!dest) return { ok: false, reason: '改隶上级不存在:' + fields.parentId };
@@ -481,13 +488,17 @@
         var verifiedHit = _walkDivInRoot(hit.sourceRoot, finalName, hit.source);
         if (!verifiedHit || verifiedHit.div !== hit.div) throw new Error('postcondition:目标区划不可达');
         if (dest && (_childrenOf(dest.div, false) || []).indexOf(hit.div) < 0) throw new Error('postcondition:改隶未落地');
+        // 省道改隶放在最后：写口自己失败会先撤回三处，这里再撤回上面的字段改动；它成功之后不再有会失败的步骤
+        var moved = reassign ? DR.apply(region, fields.parentId, { gm: gm, reason: input.reason }) : null;
+        if (moved && !moved.ok) throw new Error(moved.reason);
+        if (moved) changed.push('改隶=' + moved.from.label + '→' + moved.to.label + (moved.enclave ? '(成飞地)' : ''));
       } catch (e) {
         _restoreTree(hit.sourceRoot, snap);
         return { ok: false, reason: '区划事务回滚:' + ((e && e.message) || e) };
       }
       if (!changed.length) return { ok: true, changed: false, verified: true, region: region };
       _report(gm, { type: 'change', path: 'div(' + region + ')', new: changed.join(' '), reason: (input.reason || '') + '·区划改制', turn: gm.turn || 0, _agent: true, _op: 'division_modify' });
-      return { ok: true, region: hit.div.name || region, adapter: 'adminHierarchy.transaction' };
+      return { ok: true, region: hit.div.name || region, adapter: moved ? 'TM.DivisionReassign' : 'adminHierarchy.transaction', warnings: moved ? moved.warnings : undefined };
     }
     if (/remove|废|裁|撤/.test(action)) {
       if (!region) return { ok: false, reason: '缺 region' };
@@ -538,7 +549,7 @@
     loc = String(loc).slice(0, 60);
     if (input.traveling) { ch._travelTo = loc; }                 // 在途:现居不变·正往 loc
     else { ch.location = loc; ch._travelTo = ''; }
-    if (window.TMMapLocations) window.TMMapLocations.sync(ch, 'character', gm);               // 已抵:现居 loc
+    if (root.TMMapLocations) root.TMMapLocations.sync(ch, 'character', gm);               // 已抵:现居 loc
     ch._changed = true;
     _report(gm, { type: 'change', path: 'chars/' + nm + '/location', old: old, new: (input.traveling ? ('(正往)' + loc) : loc), reason: (input.reason || '') + (input.traveling ? '·启程' : '·移驻'), turn: gm.turn || 0, _agent: true, _op: 'move_character' });
     return { ok: true, path: 'chars/' + nm + '/location', old: old, new: loc };
@@ -614,12 +625,51 @@
   }
 
   // ── 通用守护写工具(3) + 语义写工具(4·硬核账走引擎) + 删除(1) ──
+  function _semSocial(gm, input, kind) {
+    if (!gm || !TM.SocialFormation) return {ok:false,reason:'新群体登记模块未加载'};
+    var out = kind === 'party' ? TM.SocialFormation.createParty(gm,input,{source:'agent.form_party'}) : TM.SocialFormation.createClass(gm,input,{source:'agent.emerge_class'});
+    if (out.ok && out.changed) _report(gm,{type:kind+'_create',path:out.path,new:out.entity.name,reason:input.reason,turn:gm.turn||0,_agent:true,_op:kind==='party'?'form_party':'emerge_class'});
+    return out;
+  }
+  function _semOfficeCreate(gm,input) {
+    if (!gm || !TM.OfficeCreation || typeof root.applyReformToTree !== 'function') return {ok:false,reason:'官制创建入口未加载'};
+    var change = TM.OfficeCreation.normalize(input);
+    if (!change) return {ok:false,reason:'action须为create_department或create_position'};
+    var plan = TM.OfficeCreation.prepare(gm.officeTree || [],change);
+    if (!plan.ok) return {ok:false,reason:plan.summary};
+    if (plan.unchanged) return {ok:true,changed:false,path:'officeTree/'+(plan.node.id||plan.node.name)};
+    if (typeof root.officeFlagOn === 'function' && root.officeFlagOn('officeReformAdjudicationEnabled') && typeof root.enqueuePendingReform === 'function') {
+      var queued=root.enqueuePendingReform(gm,change);
+      if (queued) _report(gm,{type:'office_creation_pending',path:'officeTree/'+plan.node.name,reason:input.reason||'设署设职待议',turn:gm.turn||0,_agent:true,_op:'create_office'});
+      return {ok:true,changed:!!queued,deferred:true,verified:false,path:'officeTree/'+plan.node.name,summary:'设署设职方案已进入既有审批流程，尚未开设或任命'};
+    }
+    var result=root.applyReformToTree(gm,change);
+    if (result.applied) _report(gm,{type:'office_create',path:'officeTree/'+(result.nodeId||plan.node.name),reason:input.reason||result.summary,turn:gm.turn||0,_agent:true,_op:'create_office'});
+    return {ok:!!(result.applied||result.unchanged),changed:!!result.applied,reason:result.summary,path:'officeTree/'+(result.nodeId||plan.node.name)};
+  }
+
+  // 诏令效力判定：与主推演 edict_feedback 里的效力字段共用 TM.EdictEfficacy.judge 这一个落账口
+  function _semJudgeEdict(gm, input) {
+    if (!TM.EdictEfficacy) return { ok: false, reason: '诏令效力模块未加载' };
+    var tracker = (gm && Array.isArray(gm._edictTracker)) ? gm._edictTracker : [];
+    var edict = tracker.find(function (e) { return e && e.id === input.edictId; });
+    if (!edict) return { ok: false, reason: '找不到诏令 ' + input.edictId + '，须用【现行诏制】或本回合诏令里的 edictId' };
+    var path = '_edictTracker.' + input.edictId + '.efficacy';
+    var changes = TM.EdictEfficacy.judge(gm, edict, input);
+    if (!changes.length) return { ok: true, changed: false, path: path };
+    _report(gm, { type: 'edict_efficacy', path: path, changes: changes, reason: input.reason || '', turn: gm.turn || 0, _agent: true, _op: 'judge_edict' });
+    return { ok: true, changed: true, path: path, new: changes };
+  }
+
   var DEFS = [
+    {"name":"form_party","description":"登记本局实际形成的新党派。需要在册领袖/成员或已有阶层社会基础，以及本局形成依据。不能用push_field向parties追加。","parameters":{"type":"object","properties":{"name":{"type":"string"},"leader":{"type":"string"},"members":{"type":"array","items":{"type":"string"}},"ideology":{"type":"string"},"currentAgenda":{"type":"string"},"influence":{"type":"number"},"crossFaction":{"type":"boolean"},"socialBase":{"type":"array","items":{"type":"object","properties":{"class":{"type":"string"},"affinity":{"type":"number"}},"required":["class"]}},"reason":{"type":"string"}},"required":["name","reason"]}},
+    {"name":"emerge_class","description":"登记经济与社会演化已形成的新阶层。给出经济基础和来源；人口不凭空产生，只有明确fromClass和populationCount才从旧人口账转入。","parameters":{"type":"object","properties":{"name":{"type":"string"},"economicRole":{"type":"string"},"origin":{"type":"string"},"fromClass":{"type":"string"},"populationCount":{"type":"integer","minimum":0},"populationKeys":{"type":"array","items":{"type":"string"}},"representativeNpcs":{"type":"array","items":{"type":"string"}},"demands":{"type":"string"},"size":{"type":"string"},"reason":{"type":"string"}},"required":["name","economicRole","reason"]}},
+    {"name":"create_office","description":"设立新部门或在已有部门增设新官职，走正式官制创建/审批，不自动任命。action=create_department/create_position；dept部门名，position官职名，parentDept可指定上级。","parameters":{"type":"object","properties":{"action":{"type":"string","enum":["create_department","create_position"]},"dept":{"type":"string"},"position":{"type":"string"},"parentDept":{"type":"string"},"rank":{"type":"string"},"establishedCount":{"type":"integer","minimum":1},"positions":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"rank":{"type":"string"},"establishedCount":{"type":"integer"},"duties":{"type":"string"}},"required":["name"]}},"reason":{"type":"string"}},"required":["action","dept","reason"]}},
     { name: 'set_field', description: '设置存档任意字段为新值(路径化)。如 path="chars.0.mood" value="忧"。用于剧情/心境/关系等软字段。【勿用于国库/任职等硬核结构化账·那些用 adjust_treasury/appoint_official】', parameters: { type: 'object', properties: { path: { type: 'string' }, value: { description: '新值·任意类型(数/串/对象/数组)' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'value'] } },
     { name: 'adjust_field', description: '对数值字段增减(在原值上 +delta)。如 path="minxin" delta=-5。用于软数值。【国库增减用 adjust_treasury·勿裸改 guoku】', parameters: { type: 'object', properties: { path: { type: 'string' }, delta: { type: 'number' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'delta'] } },
     { name: 'push_field', description: '向已声明的事件日志 evtLog 追加一项，value 必须是 {turn?,type?,text,time?} 且 text 非空。人物/战争/奏疏/灾害等集合必须用对应领域工具。', parameters: { type: 'object', properties: { path: { type: 'string', description: '当前只允许 evtLog' }, value: { type: 'object', properties: { turn: { type: 'integer', minimum: 0 }, type: { type: 'string' }, text: { type: 'string' }, time: { type: 'string' } }, required: ['text'], additionalProperties: false }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['path', 'value'] } },
     // ── 语义写工具:硬核结构化账走真引擎(裸 path 写会落错字段) ──
-    { name: 'adjust_treasury', description: '增减国库(走财政引擎·正确记账+面板同步)。delta 负=支出(赈灾/赏赐/军费)·正=入账(贡赋/赔款/互市)。currency: money(默认)/grain/cloth。**改国库必须用此·勿用 set_field/adjust_field 裸改 guoku**。', parameters: { type: 'object', properties: { delta: { type: 'number' }, currency: { type: 'string', description: 'money(默认)/grain/cloth' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['delta'] } },
+    { name: 'adjust_treasury', description: '增减国库或内帑(account=guoku/neitang，走财政引擎·正确记账+面板同步)。delta 负=支出(赈灾/赏赐/军费)·正=入账(贡赋/赔款/互市)。currency: money(默认)/grain/cloth。**改国库必须用此·勿用 set_field/adjust_field 裸改 guoku**。', parameters: { type: 'object', properties: { account: { type: 'string', enum: ['guoku','neitang'] }, delta: { type: 'number' }, currency: { type: 'string', description: 'money(默认)/grain/cloth' }, reason: { type: 'string', description: '推演依据·会进回合报告' } }, required: ['delta'] } },
     { name: 'appoint_official', description: '任命官员到某职位(走人事引擎·联动仕途/俸禄/公库/势力)。**改任职用此·勿裸改 chars**。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, position: { type: 'string', description: '官职' }, reason: { type: 'string' } }, required: ['name', 'position'] } },
     { name: 'dismiss_official', description: '罢免/去职某官员(走人事引擎·正确解绑公库/状态)。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, reason: { type: 'string' } }, required: ['name'] } },
     { name: 'remove_field', description: '删除数组中的一项(推演后果:部队覆灭/党派清洗/阶层消亡/势力剪除等)。path=数组路径(如 parties/classes/armies/facs)·用 index(下标数字) 或 match(id/名称) 指定删哪项。**禁删玩家本人/玩家势力**·确属推演结果才删。', parameters: { type: 'object', properties: { path: { type: 'string' }, index: { type: 'number', description: '要删项的下标(与 match 二选一)' }, match: { type: 'string', description: '要删项的 id/名称(与 index 二选一)' }, reason: { type: 'string' } }, required: ['path'] } },
@@ -630,7 +680,7 @@
     { name: 'diplomatic_action', description: '外交战和(走外交引擎·勿裸改activeWars/stance):action=declare_war宣战(attacker/defender·可casusBelli)/make_peace议和(warId 或 attacker+defender定位)/set_relation设邦交(from/to + value绝对值或delta增减或type关系)。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'declare_war/make_peace/set_relation' }, attacker: { type: 'string' }, defender: { type: 'string' }, casusBelli: { type: 'string' }, warId: { type: 'string' }, from: { type: 'string' }, to: { type: 'string' }, value: { type: 'number' }, delta: { type: 'number' }, type: { type: 'string' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── ④ 建筑工程 ① 行政区划改制 ──
     { name: 'building_project', description: '原诏书营造案必须带 requestId、decision(approve/defer/reject)、reason，原案费用/工期/效果可引用，不另扣同笔国库。非营造案的世界自走工程仍用action=start/demolish + region地块名 + name工程名 + turns工期 + cost耗费。', parameters: { type: 'object', properties: { requestId: { type: 'string' }, decision: { type: 'string', enum: ['approve','defer','reject'] }, action: { type: 'string', description: 'start/demolish' }, region: { type: 'string', description: '地块名' }, name: { type: 'string', description: '工程名' }, turns: { type: 'number' }, cost: { type: 'number' }, level: { type: 'number' }, category: { type: 'string' }, description: { type: 'string' }, judgedEffects: { type: 'string' }, effectsStructured: { type: 'object' }, reason: { type: 'string' } }, anyOf: [{required:['requestId']},{required:['region']}] } },
-    { name: 'restructure_division', description: '行政区划事务(设府/废县/真实改隶/升降):action=modify(fields:name/regionType/level/governor/改隶用parentId)/add(需parent)/remove。根区划不可废/改隶；含下级或建筑的区划默认不可废，明确级联时 force=true。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'modify/add/remove' }, region: { type: 'string' }, fields: { type: 'object', description: 'name/regionType/level/governor/parentId' }, parent: { type: 'string', description: 'add 上级地块名' }, name: { type: 'string', description: 'add 新区划名' }, regionType: { type: 'string' }, level: { type: 'number' }, force: { type: 'boolean', description: 'remove 时明确允许级联废除非空区划' }, reason: { type: 'string' } }, required: ['action'] } },
+    { name: 'restructure_division', description: '行政区划事务(设府/废县/真实改隶/升降):action=modify(fields:name/regionType/level/governor/改隶用parentId)/add(需parent)/remove。根区划不可废/改隶；含下级或建筑的区划默认不可废，明确级联时 force=true。府州改隶别的省道(道/路/布政司)：region 填府州名、fields.parentId 填目标省道名，会同步行政树、地图省道与省道登记；只许本势力省道之间改，首府暂不可改出，不接壤也可改(成飞地)。', parameters: { type: 'object', properties: { action: { type: 'string', description: 'modify/add/remove' }, region: { type: 'string' }, fields: { type: 'object', description: 'name/regionType/level/governor/parentId' }, parent: { type: 'string', description: 'add 上级地块名' }, name: { type: 'string', description: 'add 新区划名' }, regionType: { type: 'string' }, level: { type: 'number' }, force: { type: 'boolean', description: 'remove 时明确允许级联废除非空区划' }, reason: { type: 'string' } }, required: ['action'] } },
     // ── 舆地变迁:人物所在地 / 迁都 / 地块易主变色 ──
     { name: 'move_character', description: '更改人物所在地(移驻/赴任/在途)。name 人物名·location 目的地名·traveling=true 则记"正往(在途未到)"、false(默认)记"现居(已抵)"。用于人物因任职/出征/流放/还朝而移动。', parameters: { type: 'object', properties: { name: { type: 'string', description: '人物名' }, location: { type: 'string', description: '目的地(地名)' }, traveling: { type: 'boolean', description: 'true=在途未到/false=已抵(默认)' }, reason: { type: 'string' } }, required: ['name', 'location'] } },
     { name: 'relocate_capital', description: '迁都。capital 新都名。不带 faction=朝廷迁都(写 GM.capital + _capitalHistory);带 faction=某势力迁都(写 fac.capital)。用于推演出迁都/陪都/势力易治所之事。', parameters: { type: 'object', properties: { capital: { type: 'string', description: '新都名' }, faction: { type: 'string', description: '可选·某势力名(缺=朝廷)' }, reason: { type: 'string' } }, required: ['capital'] } },
@@ -641,18 +691,35 @@
     if (/treasury|fiscal/.test(name)) return 'fiscal';
     if (/army|battle/.test(name)) return 'military';
     if (/diplomatic|region_owner/.test(name)) return 'diplomacy';
-    if (/official|character/.test(name)) return 'personnel';
+    if (/official|character|office/.test(name)) return 'personnel';
+    if (/party|class/.test(name)) return 'social';
     if (/building/.test(name)) return 'building';
     if (/division|region|capital/.test(name)) return 'geography';
     return 'state';
   }
+  if (TM.AgentWorldEditor) DEFS.push(TM.AgentWorldEditor.definition);
+  if (TM.EdictEfficacy) DEFS.push({
+    name: 'judge_edict',
+    description: '判定一道诏令的效力，与执行进度分开记（颁行办结不等于废止）。edictId 取自【现行诏制】或本回合诏令；efficacy：standing 常制（长期有效直至废止）/ term 有期 / one_off 一次性（办完即了，如拨一笔款、召见一人、任免一人）/ expired 有期诏令已到期；term 须填 until（如「三年」「十个月」「至T40」）；digest 为 60 字内要点，保留数字、适用范围、例外与期限；本回合新诏明确废止或取代旧诏时，在 revokes / supersedes 填旧诏 edictId。',
+    parameters: { type: 'object', properties: {
+      edictId: { type: 'string' },
+      efficacy: { type: 'string', enum: ['standing', 'term', 'one_off', 'expired'] },
+      until: { type: 'string' },
+      digest: { type: 'string' },
+      revokes: { type: 'array', items: { type: 'string' } },
+      supersedes: { type: 'array', items: { type: 'string' } },
+      reason: { type: 'string' }
+    }, required: ['edictId'] }
+  });
+  DEFS.push({name:'report_edict',description:'逐道回报诏令执行；数值操作先使用领域工具实际落账并带 edictId/effectId，本工具只关联执行记录与反馈，不再次改数值。',parameters:{type:'object',properties:{edictId:{type:'string'},status:{type:'string'},assignee:{type:'string'},feedback:{type:'string'},nextStep:{type:'string'},progressPercent:{type:'number'},clauses:{type:'array',items:{type:'object'}}},required:['edictId','status','feedback']}});
+  DEFS.forEach(function(d){d.parameters.properties.edictId=d.parameters.properties.edictId||{type:'string',description:'若因诏令执行，填原诏令编号'};d.parameters.properties.effectId={type:'string',description:'本回合同一效果的稳定编号，重试沿用'};});
   var SPECS = DEFS.map(function (d) {
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
       risk: /remove|restructure|diplomatic|region_owner|relocate/.test(d.name) ? 'high' : 'medium',
-      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle',
+      idempotent: d.name === 'set_field' || d.name === 'adjust_region_state' || d.name === 'resolve_battle' || ['form_party','emerge_class','create_office'].includes(d.name),
       postconditions: ['返回标准 ToolReceipt', '写入成功必须进入 _turnReport'],
-      invariants: ['玩家身份不可删除或改写', '正式账优先走领域引擎']
+      invariants: [d.name==='edit_world'?'依据玩家指令或本回合原文修改任意游戏业务数据':'玩家身份不可删除或改写', '正式账优先走领域引擎']
     });
     return s;
   });
@@ -662,16 +729,21 @@
   function _brief(v) { try { var s = typeof v === 'string' ? v : JSON.stringify(v); return s && s.length > 60 ? s.slice(0, 60) + '…' : String(s); } catch (e) { return String(v); } }
 
   // handle(name, input, ctx) → {ok, name, text, result}·async(与只读工具统一·便于 S4 循环统一 await)
-  async function handle(name, input, ctx) {
+  function handleSync(name, input, ctx) {
     input = input || {};
     var gm = _GM(ctx);
     if (name === 'adjust_treasury' && TM.BuildingOrders && TM.BuildingOrders.ownedPayment(ctx && ctx.input && ctx.input.buildingOrders, input)) {
       return { ok: false, changed: false, name: name, text: '营造案造价由 building_project 唯一落账，禁止重复扣款' };
     }
     var reason = input.reason || 'agent 推演';
+    var resolutionTurn=ctx && ctx.input && ctx.input.resolutionTurn != null ? ctx.input.resolutionTurn : gm.turn;
+    var edictToken=name==='report_edict'?null:TM.EdictOutcomes&&TM.EdictOutcomes.toolStart(gm,name,input,resolutionTurn);
+    if(edictToken && edictToken.blocked)return {ok:false,changed:false,name:name,text:edictToken.reason};
+    if(edictToken && edictToken.duplicate)return {ok:true,changed:false,verified:true,name:name,text:'该诏令效果已结算',result:edictToken.receipt};
     var r;
     var reportBefore = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     switch (name) {
+      case 'edit_world': r = TM.AgentWorldEditor ? TM.AgentWorldEditor.handle(gm,input,ctx) : {ok:false,reason:'游戏数据编辑器未加载'}; break;
       case 'set_field':    r = _guarded(gm, 'set', input.path, input.value, reason, ctx); break;
       case 'adjust_field': r = _guarded(gm, 'adjust', input.path, input.delta, reason, ctx); break;
       case 'push_field':   r = _guarded(gm, 'push', input.path, input.value, reason, ctx); break;
@@ -680,6 +752,9 @@
       case 'dismiss_official': r = _semDismiss(gm, input); break;
       case 'remove_field':     r = _semRemove(gm, input); break;
       case 'adjust_fiscal_item': r = _semFiscalItem(gm, input); break;
+      case 'form_party': r = _semSocial(gm,input,'party'); break;
+      case 'emerge_class': r = _semSocial(gm,input,'class'); break;
+      case 'create_office': r = _semOfficeCreate(gm,input); break;
       case 'command_army':       r = _semArmy(gm, input); break;
       case 'resolve_battle':     r = _semBattle(gm, input); break;
       case 'diplomatic_action':  r = _semDiplomacy(gm, input); break;
@@ -689,18 +764,23 @@
       case 'relocate_capital':     r = _semCapital(gm, input); break;
       case 'change_region_owner':  r = _semRegionOwner(gm, input); break;
       case 'adjust_region_state':  r = _semRegionState(gm, input); break;
+      case 'judge_edict':          r = _semJudgeEdict(gm, input); break;
+      case 'report_edict':         r = TM.EdictOutcomes ? TM.EdictOutcomes.agentReport(gm,input,resolutionTurn) : {ok:false,reason:'诏令回报模块未加载'}; break;
       default: return { ok: false, name: name, text: '(未知写工具:' + name + ')' };
     }
+    if (TM.EdictOutcomes) TM.EdictOutcomes.toolFinish(gm,edictToken,name,input,r);
     var reportAfter = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     if (r && r.ok && r.changed == null) r.changed = reportAfter > reportBefore;
     if (r && r.ok && r.verified == null) r.verified = true;
-    var text = r.deferred ? '✓ 战斗已登记，待玩家亲征或委任后结算；尚未扣兵/占领，不得重复写同场后果。' : r.ok
+    var text = r.deferred ? (r.summary || '✓ 战斗已登记，待玩家亲征或委任后结算；尚未扣兵/占领，不得重复写同场后果。') : r.ok
       ? (r.changed === false
         ? '○ 无需改 ' + (r.path || input.path || r.target || r.region || name) + '（当前值已满足·不计为落地）'
         : '✓ 已改 ' + (r.path || input.path || r.target || r.region || name) + (r.old !== undefined ? ' :' + _brief(r.old) + '→' + _brief(r.new) : (r.new !== undefined ? ' =' + _brief(r.new) : '')) + '(已落地·入回合报告)')
       : '✗ ' + name + ' 未落地:' + r.reason + ' —— 据此修正参数后重试(或改用更合适的工具)';
     return { ok: r.ok, changed: !!(r.ok && r.changed), verified: !!(r.ok && r.verified), name: name, path: r.path, text: text, result: r };
   }
+
+  async function handle(name, input, ctx) { return handleSync(name,input,ctx); }
 
   function defs() { return REGISTRY ? REGISTRY.defs() : DEFS.slice(); }
   function specs() { return REGISTRY ? REGISTRY.list() : SPECS.slice(); }
@@ -713,6 +793,7 @@
     specs: specs,
     registry: REGISTRY,
     handle: handle,
+    handleSync: handleSync,
     isToolName: isToolName,
     guardedWrite: _guarded,          // 测试 / S4 循环可直用
     isEngineOwned: _isEngineOwned,

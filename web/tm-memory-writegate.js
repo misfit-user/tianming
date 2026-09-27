@@ -56,6 +56,7 @@
     candidate = candidate || {};
     var extra = item.extra && typeof item.extra === 'object' && !Array.isArray(item.extra) ? item.extra : {};
     item.extra = extra;
+    ["memoryKind", "campaignId", "timelineId", "validFromTurn", "validToTurn", "expiredAtTurn", "learnedAtTurn"].forEach(function(k) { if (candidate[k] != null) item[k] = candidate[k]; });
     if (candidate.factKey || candidate.stableKey || extra.factKey || extra.stableKey) {
       item.factKey = clean(candidate.factKey || candidate.stableKey || extra.factKey || extra.stableKey, 180);
       item.extra.factKey = item.factKey;
@@ -236,6 +237,7 @@
     pruned += capList(GM._memoryWriteQueue, caps.writeQueue || DEFAULT_CAPS.writeQueue);
     pruned += capList(GM._memoryDraftInbox, caps.draftInbox || DEFAULT_CAPS.draftInbox);
     pruned += capList(GM._memoryQuarantine, caps.quarantine || DEFAULT_CAPS.quarantine);
+    if (root.TM.MemoryLongTerm && root.TM.MemoryLongTerm.capture) root.TM.MemoryLongTerm.capture(GM, GM._memoryAccepted);
     pruned += capAcceptedProtected(GM, GM._memoryAccepted, caps.accepted || DEFAULT_CAPS.accepted);
     pruned += capList(GM._memoryAuditEvents, caps.auditEvents || DEFAULT_CAPS.auditEvents);
     return {

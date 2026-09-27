@@ -328,15 +328,17 @@
     var _MS = global.MilitarySystems || (global.TM && global.TM.MilitarySystems);
     if (a && _MS && typeof _MS.settleArmyArrears === 'function') {
       var r = _MS.settleArmyArrears(a, {});
-      var c = (r && r.cost) || { money:0, grain:0, cloth:0 };
-      _pushEdict('谕：户部拨银 '+(c.money||0)+' 两'+(c.grain?'·粮 '+c.grain+' 石':'')+'·发 '+aname+' 积欠 '+_arrears+' 月军饷·安定军心。', '发饷');
-      _toast(r && r.monthsCleared > 0
-        ? ('已发饷·清欠 '+r.monthsCleared+' 月·耗银 '+(c.money||0)+(r.shortfall>0 ? '（国库不足·欠 '+Math.round(r.shortfall)+'）' : ''))
-        : '无欠饷可补');
+      if (!r || !r.ok) { _toast('补饷未能交割：'+(r&&r.reason||'账簿未齐')); return; }
+      if (r.duplicate) { _toast('此笔补饷已交割，不重复支取'); return; }
+      var paid=r.paid||{},ded=r.deducted||{},left=r.remainingAmounts||{};
+      ['money','grain','cloth'].forEach(function(k){if(paid[k]==null)paid[k]=ded[k]&&ded[k].deducted||0;});
+      var unit=(global.GM&&GM.guoku&&GM.guoku.unit&&GM.guoku.unit.money)||'钱';
+      var paidText='钱 '+paid.money+' '+unit+'·粮 '+paid.grain+' 石·帛 '+paid.cloth+' 匹';
+      if(paid.money||paid.grain||paid.cloth)_pushEdict('补饷交割：'+aname+'已实付'+paidText+'。尚欠钱 '+(left.money||0)+'、粮 '+(left.grain||0)+'、帛 '+(left.cloth||0)+'，原承付库续记待筹。', '发饷');
+      _toast((paid.money||paid.grain||paid.cloth?'已付'+paidText:'本次未能支给')+(r.remaining>0?'；尚有 '+r.remaining+' 月未清，钱 '+(left.money||0)+'、粮 '+(left.grain||0)+'、帛 '+(left.cloth||0):'；旧饷已清'));
     } else {
       _pushEdict('谕：户部速拨银两·发 '+aname+' 积欠军饷·安定军心。', '发饷');
-      if (a) { a.payArrearsMonths = 0; a.mutinyRisk = Math.max(0, (a.mutinyRisk||0) - 30); }
-      _toast('饷已清·兵变险大减');
+      _toast('补饷诏已记，待库司完成实际交割');
     }
   }
   // 活人将才候选(同势力优先·按武略降序·剔现任·只列在世)→易将下拉
@@ -699,7 +701,7 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.5rem;margin-bottom:0.8rem;font-size:0.74rem;">';
-    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>精细化开关</b><br>' + esc(settings.enabled != null ? settings.enabled : (settings.npcAiPrecision != null ? settings.npcAiPrecision : 'unknown')) + '</div>';
+    html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>势力决策</b><br>' + esc(settings.enabled != null ? settings.enabled : (settings.npcAiPrecision != null ? settings.npcAiPrecision : 'unknown')) + '</div>';
     html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>并发/上限</b><br>' + esc(settings.concurrency || settings.npcAiPrecisionConcurrency || '?') + ' / ' + esc(settings.maxPerTurn || settings.npcAiPrecisionMaxPerTurn || '?') + '</div>';
     html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>本轮 run</b><br>' + esc(run ? (run.status || run.state || 'running') : '未记录') + '</div>';
     html += '<div style="background:var(--bg-2);padding:0.45rem;border-radius:4px;"><b>调度/动作</b><br>' + esc(dispatch && dispatch.jobs ? dispatch.jobs.length : 0) + ' job / ' + esc(ledger.length) + ' 条</div>';

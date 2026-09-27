@@ -1,0 +1,330 @@
+{
+  "at": "2026-09-18T15:59:24.133Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "files": [
+    {
+      "file": "web/index.html",
+      "sha256": "062cb84cbad65dbedddff080059169160b3791d67e1869fbaa2d42cea388f0b5",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 69886,
+      "lines": 1023,
+      "created": false
+    },
+    {
+      "file": "web/scripts/lib-turn-reliability.js",
+      "sha256": "c5620c1a70cff9ed62ee37fe433383bd4c05f5713bfa153381eedc464095e73d",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 2067,
+      "lines": 26,
+      "created": true
+    },
+    {
+      "file": "web/scripts/lint-renderer-writeback-boundaries.js",
+      "sha256": "a2c2c73187a19b3bf03136b7d98dc1f2420b34bcaf14df396106d738236aefcd",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 18437,
+      "lines": 304,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-agent-mode-s2.js",
+      "sha256": "1b6d79ac94da5f9947ce93995844aa75d0cc73103e44e8df756905415b033783",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 6687,
+      "lines": 116,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-agent-mode-tools.js",
+      "sha256": "730df18b24b39118dbe11ee71885bb12e1e9052478f2396e2e03f1e547efe96c",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 7475,
+      "lines": 92,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+      "sha256": "07ed2bc1e5caf178c88e415477af68ffc3a894234874a2158b9c1931bc3b7cb0",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 14530,
+      "lines": 145,
+      "created": false
+    },
+    {
+      "file": "web/scripts/smoke-turn-memory-parity.js",
+      "sha256": "50d3556e9b9d482437c95861bd66cbd32e81545f9d2fef105700fb1d35796a51",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 7821,
+      "lines": 82,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-turn-request-reliability.js",
+      "sha256": "96b7800704962b7a0d849efa92b2072205c839ba7c13b4a115f295157a5db701",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 7341,
+      "lines": 107,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-turn-stream-reliability.js",
+      "sha256": "b3e871117af0212552e545933d7602e44564ec88f1319eb41767051ce543361c",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 7662,
+      "lines": 95,
+      "created": true
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "900ee9a784af965bb3bcf136eecabb23102e97c50d5bab4a5322161efebd95e5",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 42966,
+      "lines": 458,
+      "created": false
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 354102,
+      "lines": 10921,
+      "created": false
+    },
+    {
+      "file": "web/tm-agent-kernel.js",
+      "sha256": "f153d29c60a57916768859ad6c33ab974bbeb272ac0fd3623c088d0162ee954f",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 11291,
+      "lines": 220,
+      "created": false
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "3099f7bbc5a37eb58c55a8ddfead5ee3b034b54a1bfab5221ab057bb06269257",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 24862,
+      "lines": 379,
+      "created": false
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "8653baaa242347541a7f88c3246958e70b1df8c7476aa84a65b5fbdd3a719f6f",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 163117,
+      "lines": 2936,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-agent-depth-tools.js",
+      "sha256": "b23fc6e4e3ef69301ae1112f8f93dd310ce41cd787ecf47d904ebef9e3b5c076",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 75909,
+      "lines": 723,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-agent-intent-plan.js",
+      "sha256": "3c40ac3fe582bc932e93d3bf113022194f50c7b2892214165410d256a7921903",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 13139,
+      "lines": 195,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "sha256": "6b928aa2e9f8f56f85f65d3523413f9dfe8d3ad2d0c29998a579de3ef380d587",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 115183,
+      "lines": 1335,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-agent-read-tools.js",
+      "sha256": "c6c2028d36372432b1307cdee4818a3b294834fb985a8726a5e981edbf75db09",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 27672,
+      "lines": 373,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "180e380b7ae23b2d812ec300fff3d4e4ba44f49d8e2abd62eac630fd71412a55",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 416966,
+      "lines": 5069,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "206993fad54df415bcc4150e8d5e1abdebfa8d28a552511e3f9e1a21be1f3d3d",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 102768,
+      "lines": 1902,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-pipeline-steps.js",
+      "sha256": "4be7286422a8cdc8cf1134445a901e90241619719e1bf90fc8c0538e480c915d",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 55949,
+      "lines": 914,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-reliability.js",
+      "sha256": "d447aeb752e3505c029cb701249fb889f56aa9d63add1ef641a42cd97af07fc9",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 6343,
+      "lines": 95,
+      "created": true
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "0947a0da58b121dc97d054e8845656d6a10b4814794c9b72a0fcb43d493e68b2",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 12992,
+      "lines": 315,
+      "created": false
+    },
+    {
+      "file": "web/tm-memory-mode-bridge.js",
+      "sha256": "a3507d97a639e6af42607c6c5a104ed05b87842cfd5483ec3ff571a746d8b191",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "syntaxError": "",
+      "bytes": 6043,
+      "lines": 84,
+      "created": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 202,
+    "pass": 201,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalTests": {
+    "selected": 209,
+    "pass": 208,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "testsComplete": true,
+  "newTests": [
+    {
+      "name": "smoke-turn-memory-parity.js",
+      "pass": true,
+      "detail": "{\"pass\":10,\"fail\":0,\"total\":10}"
+    },
+    {
+      "name": "smoke-turn-request-reliability.js",
+      "pass": true,
+      "detail": "{\"pass\":13,\"fail\":0,\"total\":13}"
+    },
+    {
+      "name": "smoke-turn-stream-reliability.js",
+      "pass": true,
+      "detail": "{\"pass\":11,\"fail\":0,\"total\":11}"
+    }
+  ],
+  "previousFailures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "failures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "lint-split-contracts",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "workingTreeDiffCheck": {
+    "exit": 0,
+    "output": ""
+  },
+  "manifest": {
+    "at": "2026-09-18T15:58:41.545Z",
+    "exit": 0,
+    "output": "[startup-phase-manifest] PASS scripts=419 deferred=9 phases={\"menu\":14,\"core\":85,\"world\":298,\"optional\":22}\n"
+  },
+  "benchmark": {
+    "description": "Controlled synthetic failures; first request holds the queue for 120 ms. Not real API or overall turn latency.",
+    "results": {
+      "before": {
+        "failedTaskHttpAttempts": 3,
+        "queuedCancellationMs": 126.518,
+        "cancellationFixtureHttpRequests": 1
+      },
+      "after": {
+        "failedTaskHttpAttempts": 1,
+        "queuedCancellationMs": 0.679,
+        "cancellationFixtureHttpRequests": 1
+      }
+    }
+  }
+}

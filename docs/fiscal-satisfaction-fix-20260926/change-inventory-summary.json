@@ -1,0 +1,31 @@
+{
+  "count": 25,
+  "conflicts": [],
+  "files": [
+    "web/tm-minxin-hard-link-consumers.js",
+    "web/tm-fiscal-statements.js",
+    "web/tm-guoku-panel.js",
+    "web/phase8-formal-rightrail.js",
+    "web/tm-class-engine.js",
+    "web/tm-party-class-llm-calibrator.js",
+    "web/tm-social-political-signals.js",
+    "web/tm-party-class-ecology.js",
+    "web/tm-patches-start.js",
+    "web/tm-renli.js",
+    "web/tm-topbar-vars.js",
+    "web/scripts/smoke-class-satisfaction-guard.js",
+    "web/scripts/smoke-social-satisfaction-recovery.js",
+    "web/scripts/smoke-fiscal-actual-display.js",
+    "web/scripts/smoke-guoku-shared-display.js",
+    "web/scripts/smoke-topbar-fiscal-consistency.js",
+    "web/scripts/smoke-class-pressure-scope.js",
+    "web/scripts/smoke-opening-renli-prime.js",
+    "web/scripts/verify-all.js",
+    "web/scripts/lib-ai-priority-routing.js",
+    "web/scripts/smoke-rightrail-datasource.js",
+    "web/scripts/smoke-endturn-performance-optimizations.js",
+    "web/index.html",
+    "web/tm-start-runtime-manifest.json",
+    "web/.hot-update-manifest.json"
+  ]
+}

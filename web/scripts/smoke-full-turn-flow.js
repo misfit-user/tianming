@@ -102,15 +102,27 @@ function loadGame() {
   };
   installNodeExtras(env.win, flow);
   const sandbox = vm.createContext(env.win);
-  const scripts = helpers.parseIndexHtmlScripts();
+  const scripts = helpers.parseIndexHtmlScripts({ includeLazyScenarios: false });
   const cutoff = scripts.findIndex((src) => path.basename(src) === 'tm-test-harness.js');
   const loadScripts = cutoff >= 0 ? scripts.slice(0, cutoff) : scripts;
+  // Match the production lazy-loading path: load the entire selected scenario, not two unrelated worlds.
+  const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'bundled-scenarios/manifest.json'), 'utf8'));
+  const selected = catalog.entries.find(entry => entry.id === SID);
+  assert(selected && selected.scriptUrl, 'full selected scenario must be present in the canonical catalog');
+  assert(selected.counts.characters >= 100 && selected.counts.factions >= 10, 'selected fixture must retain its complete official population');
+  const selectedBytes = fs.readFileSync(path.join(ROOT, selected.scriptUrl));
+  assert(selectedBytes.length === selected.bytes, 'the complete official script byte count must match the catalog');
+  assert(require('crypto').createHash('sha256').update(selectedBytes).digest('hex') === selected.sha256, 'the complete official script hash must match; no reduced fixture');
+  if (!loadScripts.includes(selected.scriptUrl)) loadScripts.push(selected.scriptUrl);
 
   loadScripts.forEach((src) => {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
     const code = fs.readFileSync(abs, 'utf8');
-    vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 });
+    const scriptNode = sandbox.document.createElement('script');
+    scriptNode.src = new URL(src, 'http://localhost/index.html').href;
+    sandbox.document.currentScript = scriptNode;
+    try { vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
   });
 
   vm.runInContext(`
@@ -193,7 +205,9 @@ function installInputNodes(sandbox) {
       document.getElementById = function(id) { return nodes[id] || prevGet(id); };
       window.__flow.inputNodeIds = Object.keys(nodes);
     })();
-  `, sandbox, { timeout: 10000 });
+  // 完整官方剧本会在此同步初始化 200+ 人物、22 派系以及回合反馈模块；
+  // 并发门禁下脚本编译/首轮索引可能超过 10 秒，但不应改变后续断言或回合逻辑。
+  `, sandbox, { timeout: 30000 });
 }
 
 function installMockAi(sandbox) {

@@ -702,7 +702,12 @@ function buildAIContext(deepMode) {
         if (p.ideology) pInfo += '，主张:' + String(p.ideology).slice(0, 20);
         if (p.currentAgenda) pInfo += '\n    当前议程:' + String(p.currentAgenda).slice(0, 30);
         if (p.rivalParty) pInfo += ' 对立:' + p.rivalParty;
-        if (p.policyStance && p.policyStance.length) pInfo += ' 立场:[' + p.policyStance.slice(0, 4).join(',') + ']';
+        // 政策立场：容忍 string / array / 其他类型，防止 AI 或旧档写入非数组时 slice 崩
+        // 玩家报错 `p.policyStance.slice(...).join is not a function`（string.slice 返回 string·没有 join）
+        if (p.policyStance) {
+          var _ps = window.TM && TM.AIResultContract ? TM.AIResultContract.policyTags(p.policyStance) : (Array.isArray(p.policyStance) ? p.policyStance : (typeof p.policyStance === 'string' ? [p.policyStance] : []));
+          if (_ps.length) pInfo += ' 立场:[' + _ps.slice(0, 4).join(',') + ']';
+        }
         if (p.base) pInfo += '\n    基本盘:' + String(p.base).slice(0, 20);
         // 党派成员名单
         if (GM.chars) {

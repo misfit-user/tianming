@@ -74,6 +74,17 @@ function assertSafeTempTarget(tempRoot, target) {
   return resolved;
 }
 
+function copyReleaseInputs(sourceWeb, targetWeb, config) {
+  const tree = releaseTree.walkTree(sourceWeb, config);
+  fs.mkdirSync(targetWeb, { recursive: true });
+  for (const item of tree.kept) {
+    const dest = path.join(targetWeb, item.rel.replace(/\//g, path.sep));
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(item.abs, dest, fs.constants.COPYFILE_EXCL);
+  }
+  return { files: tree.kept.length, excluded: tree.excluded.length };
+}
+
 function generate(root, version, assetRoot, tempRoot) {
   const tmpBase = path.resolve(tempRoot || os.tmpdir());
   fs.mkdirSync(tmpBase, { recursive: true });
@@ -83,7 +94,7 @@ function generate(root, version, assetRoot, tempRoot) {
     let webRoot = path.join(root, 'web');
     if (assetRoot && path.resolve(assetRoot) !== path.resolve(root)) {
       const overlayWeb = path.join(tmp, 'web-overlay');
-      fs.cpSync(webRoot, overlayWeb, { recursive: true, force: false, errorOnExist: false });
+      copyReleaseInputs(webRoot, overlayWeb, releaseTree.loadConfig(root).config);
       const supplement = supplementUntrackedAssets(root, path.resolve(assetRoot), overlayWeb);
       webRoot = overlayWeb;
       console.log('[hot-baseline] asset-root overlay files=' + supplement.copiedFiles + ' bytes=' + supplement.copiedBytes);
@@ -174,4 +185,4 @@ if (require.main === module) {
   catch (err) { console.error('FAIL ' + (err && err.stack || err)); process.exit(1); }
 }
 
-module.exports = { comparable, manifestProblems, supplementUntrackedAssets, assertSafeTempTarget, generate, main };
+module.exports = { comparable, manifestProblems, supplementUntrackedAssets, assertSafeTempTarget, copyReleaseInputs, generate, main };

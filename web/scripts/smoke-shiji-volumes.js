@@ -77,6 +77,7 @@ const fullGM = {
     { type: 'tinyi_review', turn: 11, outcome: 'fulfilled', histLabel: '廷议·清丈田亩', venueType: '廷议', edictContent: '清丈北直隶田亩', proposerParty: '东林', delayTurns: 3 }
   ],
   _edictEfficacyReport: {
+    turn: 11,
     skipped: false, total: 1, overallEfficacy: 72,
     efficacyByDimension: { military: 80, fiscal: 60 },
     reports: [{ status: 'partial', executionLevel: 60, content: '整饬蓟辽边备', evidence: '兵部覆奏', outcomeShortTerm: '边备稍振', nextAdvice: '续拨军饷' }],

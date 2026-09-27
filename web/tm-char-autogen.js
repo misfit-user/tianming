@@ -347,6 +347,7 @@
       }
     }
     GM._generatingChars[name] = true;
+    var _generationOwner = GM;
 
     if (!P.ai || !P.ai.key) {
       delete GM._generatingChars[name];
@@ -823,6 +824,12 @@
         return newChar;
       } catch(e) {
         lastErr = e;
+        if (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(e)) {
+          if (e && (e.name === 'AbortError' || /^AI_(?:ABORTED|STALE_WORLD|REQUEST_DEADLINE|RETRY_BUDGET|QUEUE_TIMEOUT)$/.test(e.code || ''))) {
+            delete _generationOwner._generatingChars[name]; throw e; // arch-ok: generation owner releases its transient lock; the newly loaded world is untouched.
+          }
+          break;
+        }
         console.warn('[\u89D2\u8272\u81EA\u751F\u6210] \u7B2C' + attempt + '\u6B21\u5931\u8D25', e.message || e);
         if (/\u53F2\u5B9E\u4E0D\u53EF\u73B0/.test(e.message || '')) {
           delete GM._generatingChars[name];
@@ -1804,6 +1811,13 @@
     var removed = { chars: [], pending: [] };
     var G = (typeof global !== 'undefined' && global.GM) || (typeof window !== 'undefined' && window.GM);
     if (!G) return removed;
+    // 词表用于清理误抓文本，不能覆盖当前剧本明确声明的人物身份（如“安邦彦”）。
+    var project = global.P || {};
+    var scenario = Array.isArray(project.scenarios) ? project.scenarios.find(function(s) { return s && s.id === G.sid; }) : null;
+    var authored = _tmCharListFromContainer(scenario && scenario.characters).concat(_tmCharListFromContainer(scenario && scenario.chars));
+    authored = authored.concat(_tmCharListFromContainer(project.chars).filter(function(c) { return c && c.sid && c.sid === G.sid; }));
+    var authoredKeys = new Set();
+    authored.forEach(function(c) { if (c && c.id && typeof c.name === 'string') authoredKeys.add(JSON.stringify([String(c.id), c.name.trim()])); });
     function _isBad(name) {
       if (!name) return false;
       if (NAME_BLACKLIST[name]) return true;
@@ -1813,6 +1827,7 @@
     if (Array.isArray(G.chars)) {
       G.chars = G.chars.filter(function(c) {
         if (c && c.isPlayer) return true;
+        if (c && c.id && typeof c.name === 'string' && authoredKeys.has(JSON.stringify([String(c.id), c.name.trim()]))) return true;
         if (c && _isBad(c.name)) { removed.chars.push(c.name); return false; }
         return true;
       });

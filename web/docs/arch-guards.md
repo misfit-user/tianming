@@ -166,6 +166,33 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 断言照样全绿，但作为装载序防腐测试不可信（Codex 复审第十八拆曾抓 15 处）。
 豁免基线 `smoke-family-order.json`（棘轮·当前=空）。
 
+### ⑨ 设计令牌 `lint-design-tokens.js`（2026-09-25·美术宪法第0刀）
+[美术宪法](art-constitution.md) 规定颜色和字号只从 `styles.css` 的令牌表里取。本守卫按文件统计**写死的颜色**
+（`#rgb`/`#rrggbb` 等十六进制与直接写数字的 `rgb()/rgba()/hsl()/hsla()`）和**写死的字号**（`font-size: 12px`、
+`fontSize = '12px'`），基线只许降不许升，新文件从 0 起算。第0刀基线：写死颜色 12564、写死字号 5511，分布在 142 个文件。
+
+- 文件集：index.html 挂载的运行时 JS（与其他守卫同源）+ index.html 链接的样式表 + 运行时 JS 按文件名动态加载的样式表（如常朝）。
+- 不计：令牌定义本身（`--名字: 值`）、`var()` 引用、注释、带 `design-ok` 标记的行（确经裁定的例外，如图标插画设色）。
+- 超基线 FAIL，处置：改用令牌；确属例外 → 该行加 `design-ok`；还了账或拆分挪了代码 → `--update` 重写基线（拆分收尾的基线连落从三连变四连）。
+- `--top 15` 看欠账大户，`--list <文件>` 逐行看某个文件里被计入的写法（收令牌时用）。
+- 阴性测试过：样式表新增一条写死颜色和字号即红，同一行加 `design-ok` 即放行。
+- 还账工具 `codemod-design-tokens.js`（第1刀）：默认只把与色板令牌**逐位相等**的颜色换成令牌，半透明写成
+  `rgba(var(--gold-400-rgb),.5)`，画面不变；`--tolerance N`（1b 起）把「色差 × 不透明度」不超过 N 的近似写法
+  并进最近的令牌，字色只落到字阶和金朱青，只表状态的语义色（警、讯）不作并档去向。跳过 `url()`、注释、
+  色板自己的定义。只能跑纯样式文本（`.css`、`phase8-formal-bridge-styles.js` 这类整份是样式字符串的注入族），
+  画布、SVG 属性不认 `var()`。工具自测 `smoke-codemod-design-tokens.js`。
+- 字号（第2刀）：`codemod-design-tokens.js --font-px` 把 `font-size:13px` 与 `font:700 13px/1` 里的像素字号改成
+  `calc(13 * var(--tm-px, 1px))`，只认 `font-size:` 与 `font:` 两种写法（画布的 `ctx.font =`、JS 的 `fontSize =` 不动）。
+  `--tm-px` 由界面字号开关写（选档 ÷ 出厂档，没选档不写），御案五个样式文件已全换，写死字号 5511 → 4588。
+  `smoke-ui-fontscale-adaptive.js` A6 核对开关算法、五个文件不再写死像素字号、旧全局字号的折算。
+- 色板真值由 `smoke-design-token-palette.js` 看守：色板令牌互不重值、每个都有一致的 `-rgb` 三元组；
+  四套主题改色板时连三元组一起改，默认主题「素纸」的值与令牌表逐位相等，其余三套把语义色与纸以外的
+  29 个色板令牌全改到（1c 起）；常朝样式不许再写 `:root`/`body`。
+- 主题色阶（1c）：`tm-theme-font.js` 每套主题只定锚点（底、面、字，金朱各三档，青一档），其余 22 档由
+  `derive-theme-palette.js` 照「素纸」的深浅关系推出，写在同文件的 `THEME_TOKENS` 里（写成 `--名字:值`，
+  按令牌定义不计入本守卫）。改了锚点跑 `node scripts/derive-theme-palette.js --write`；
+  `smoke-derive-theme-palette.js` 核对源码与锚点一致、深浅次序照素纸、阴影不带色偏。
+
 ### runner 附注：flake 自愈（2026-07-06）
 `run-smokes.js` 全量并行下 DOM-stub/AI 超时类假阳性反复出现——失败 ≤15 个时自动
 **串行重跑一次**，过了标 `flaky`（汇总/报告单列，不静默掩盖；反复上榜的去查真因）。
@@ -173,5 +200,5 @@ scripts/ 下任何脚本以字符串提及同一拆分家族 ≥2 个成员时�
 
 ## 基线文件（要进 git）
 
-`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order}.json` —— 棘轮的账本，删了守卫就瞎。
+`scripts/arch-baselines/{gm-writes,dep-dangling,file-size,smoke-skip,split-stamps,smoke-family-order,design-tokens}.json` —— 棘轮的账本，删了守卫就瞎。
 `dev-tools/arch-guard/` 下是生成物（依赖清单/smoke报告），不进安装包，可随时重生成。

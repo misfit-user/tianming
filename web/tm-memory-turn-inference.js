@@ -523,7 +523,7 @@
     var accepted = 0;
     arr(items).forEach(function(item) {
       if (!item || item.status !== 'draft' || !item.id) return;
-      if (item.type !== 'character_memory') return;
+      if (item.type !== 'character_memory' && !(item.extra && item.extra.sourceBound === true && item.extra.literalEvidence === true)) return;
       var extra = item.extra || {};
       if (extra.private === true) return;
       var readScope = clean(item.readScope, 120);
@@ -607,7 +607,8 @@
       .concat(chronicleCandidates(GM, aiResult || {}, opts))
       .concat(issueCandidates(GM, aiResult || {}, opts))
       .concat(characterMemoryCandidates(GM, aiResult || {}, opts))
-      .concat(forgetCandidates(GM, aiResult || {}, opts));
+      .concat(forgetCandidates(GM, aiResult || {}, opts))
+      .concat(root.TM.MemoryLongTerm ? root.TM.MemoryLongTerm.candidates(GM, aiResult || {}) : []);
   }
 
   ns.characterMemoryCandidates = characterMemoryCandidates;

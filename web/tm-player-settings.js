@@ -9,7 +9,7 @@
 //       _toggleSecondaryEnabled/_testSecondaryAPI/_probeClearCache
 // ============================================================
 
-function closeSettings(){if(window.TM&&TM.APISettings)TM.APISettings.close();_$("settings-bg").classList.remove("show");}
+function closeSettings(){if(window.TM&&TM.APISettings)TM.APISettings.close();if(window.TM&&TM.CallBudgetSettings)TM.CallBudgetSettings.close();_$("settings-bg").classList.remove("show");}
 
 // ============================================================
 // 模型能力校验面板·防欺骗·M3 支持双 tier
@@ -23,9 +23,9 @@ function _renderEvidenceDetails(evidence) {
   if (evidence.profile) h += ' · ' + escHtml(String(evidence.profile));
   h += '</summary>';
   evidence.checks.forEach(function(c){
-    var color = c.ok ? 'var(--celadon-400)' : 'var(--vermillion-400)';
+    var color = c.state === 'unavailable' ? 'var(--txt-d)' : (c.ok ? 'var(--celadon-400)' : 'var(--vermillion-400)');
     h += '<div style="margin-top:0.35rem;padding-top:0.35rem;border-top:1px dashed var(--bdr);font-size:0.71rem;line-height:1.55;">';
-    h += '<span style="color:' + color + ';">' + (c.ok ? '通过' : '失败') + '</span>';
+    h += '<span style="color:' + color + ';">' + (c.state === 'unavailable' ? '未测定' : (c.ok ? '通过' : '失败')) + '</span>';
     h += ' · <b>' + escHtml(c.label || c.id || '-') + '</b>';
     h += ' · 权重' + (c.weight || 0);
     if (c.latencyMs) h += ' · ' + c.latencyMs + 'ms';
@@ -62,6 +62,7 @@ function _renderModelProbePanel(tier) {
   var self = isSec ? probe.selfReport_secondary : probe.selfReport;
   var out = isSec ? probe.outputLimit_secondary : probe.outputLimit;
   var evidence = isSec ? probe.evidence_secondary : probe.evidence;
+  if (evidence && window.TM && window.TM.MemoryAdaptive && evidence.memoryIdentity !== window.TM.MemoryAdaptive.identity(tier)) evidence = null;
 
   var _tierLbl = isSec ? '【次 API】' : '【主 API】';
   var h = '<div style="font-size:0.76rem;line-height:1.8;padding:0.4rem;background:' + (isSec?'rgba(74,111,165,0.04)':'rgba(184,154,83,0.04)') + ';border-left:3px solid ' + (isSec?'var(--purple,var(--indigo-400,#4a6fa5))':'var(--gold-d)') + ';border-radius:2px;">';
@@ -102,6 +103,15 @@ function _renderModelProbePanel(tier) {
     h += '<div style="margin-top:0.35rem;font-size:0.72rem;color:var(--txt-d);">连接快检：' + Math.round(_qc.latencyMs || 0) + 'ms · ' +
       '<span style="color:' + (_qc.echo === 'mismatch' ? 'var(--vermillion-400,#c04030)' : 'inherit') + ';">' + _qEcho + (_qc.responseModel ? '（' + escHtml(_qc.responseModel) + '）' : '') + '</span>' +
       ' · 流式' + (_qc.stream && _qc.stream.ok ? '✓' : '✕') + ' · 严格JSON' + (_qc.json && _qc.json.ok ? '✓' : '✕') + ' · usage' + (_qc.usageSeen ? '✓' : '✕') + '</div>';
+  }
+  if (window.TM && window.TM.MemoryAdaptive) {
+    var mp = window.TM.MemoryAdaptive.plan({ tier: tier });
+    var ml = { compact: '精简辅助', balanced: '均衡记忆', deep: '深度记忆' };
+    h += '<div>记忆策略：' + escHtml(ml[mp.mode]) + ' · ' + mp.memoryTokens + ' tokens · 自主检索最多 ' + mp.maxRounds + ' 轮 / ' + mp.maxToolCalls + ' 次工具 · ' + (mp.verified ? '近期实测证据' : '未验证或证据已过期') + ' · ' + escHtml({ native: '原生工具检索', json: 'JSON 计划检索', local: '本地辅助检索' }[mp.plannerMode] || '本地辅助检索') + '</div>';
+  }
+  if (!isSec && window.TM && window.TM.MemoryLongTerm && window.GM) {
+    var archiveStats = window.TM.MemoryLongTerm.stats(window.GM);
+    h += '<div style="color:var(--txt-d);">长期档案：' + archiveStats.records + '/' + archiveStats.maxRecords + ' 条 · 已有类型 ' + Object.keys(archiveStats.kinds).length + '/12 · 容量裁剪累计 ' + archiveStats.dropped + ' 条</div>';
   }
   if (evidence) h += _renderEvidenceDetails(evidence);
 
@@ -194,7 +204,7 @@ async function _probeRunOutput(tier) {
 async function _probeRunEvidence(tier) {
   tier = tier || 'primary';
   if (!_tierHasKey(tier)) { toast('请先配置 ' + (tier==='secondary'?'次要':'主') + ' API'); return; }
-  if (!confirm('证据校验会发起 6 次小型调用：基础JSON、天命结构小样、坏JSON修复、长上下文、时政记/实录、持续输出。继续？')) return;
+  if (!confirm('证据校验会发起 9 次（原 6 项 + 3 项记忆能力）小型调用：基础JSON、天命结构小样、坏JSON修复、长上下文、时政记/实录、持续输出。继续？')) return;
   toast('正在进行模型证据校验…');
   try {
     if (typeof probeModelEvidenceAudit !== 'function') { toast('证据校验函数未加载'); return; }
@@ -268,6 +278,7 @@ async function _showAvailableModels(tier) {
 
 // M3·保存次要 API 配置
 function _saveSecondaryAPI() {
+  if(typeof _sDeviceSettingsReady==='function'&&!_sDeviceSettingsReady())return false;
   var sk = (_$('s-sec-key')||{}).value || '';
   var su = (_$('s-sec-url')||{}).value || '';
   var sm = (_$('s-sec-model')||{}).value || '';
@@ -277,7 +288,7 @@ function _saveSecondaryAPI() {
   } else {
     if (P.ai) delete P.ai.secondary;
   }
-  try { localStorage.setItem('tm_api', JSON.stringify(P.ai)); } catch(_) {}
+  try { localStorage.setItem('tm_api', JSON.stringify(P.ai)); if(localStorage.getItem('tm_api')!==JSON.stringify(P.ai))throw new Error('readback'); } catch(_) {toast('API 配置未保存，请检查本机存储');return false;}
   if (typeof saveP === 'function') saveP();
   if (sk && su) toast('\u2705 \u6B21\u8981 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E');
   else toast('\u2705 \u5DF2\u6E05\u7A7A\u6B21\u8981 API\u00B7\u6240\u6709\u8C03\u7528\u56DE\u9000\u4E3B API');
@@ -296,23 +307,12 @@ function _toggleSecondaryEnabled(on) {
 }
 // P15: 通用 P.conf 字段开关·切换 boolean 值并保存
 function _togglePConf(confKey, on) {
+  if (["factionLivingWorldDefault","agentLiveWorldEnabled","factionAgentEnabled","factionGoalStackEnabled","revoltEntityEnabled","useTinyiV3","deterministicCasualties","partyClassLlmEnabled","npcAiPrecision"].indexOf(confKey) >= 0) return false; // 旧调用不能关闭已转正的玩法。
   if (!P.conf) P.conf = {};
-  if (confKey === 'npcAiPrecision') {
-    if (window.TM && TM.FactionNpcSettings && typeof TM.FactionNpcSettings.setEnabled === 'function') {
-      TM.FactionNpcSettings.setEnabled(!!on);
-    } else {
-      P.conf.npcAiPrecision = !!on;
-      if (on) P.conf.npcAiPrecisionMode = 'eager';
-      else if (window.TM && TM.FactionNpcInTurnDriver && typeof TM.FactionNpcInTurnDriver.cancelInTurnTimers === 'function') {
-        TM.FactionNpcInTurnDriver.cancelInTurnTimers();
-      }
-    }
-  } else {
-    P.conf[confKey] = !!on;
-  }
+  P.conf[confKey] = !!on;
   if (typeof saveP === 'function') saveP();
   // 个体活世界组件切换后·即时同步「活世界演绎·总纲」勾选态(幂等·仅读状态设 checkbox·不递归)
-  if (confKey === 'revoltEntityEnabled' || confKey === 'borderInvasionEnabled' || confKey === 'worldReactorBattleEnabled') {
+  if (confKey === 'borderInvasionEnabled' || confKey === 'worldReactorBattleEnabled') {
     try { if (typeof _tmSyncLivingWorldMaster === 'function') _tmSyncLivingWorldMaster(); } catch (_e) {}
   }
   var labels = {
@@ -322,18 +322,18 @@ function _togglePConf(confKey, on) {
     semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' },
     agentUpgradesEnabled: { on: '已启用全部 agent 升级（实验）·6 项 AI agent 化全开', off: '已关闭全部 agent 升级·各 agent 回落写死路径（单独开关仍生效）' },
     eventUnificationEnabled: { on: '已启用事件系统统一（S1 骨架·当前无可见效果·仅验证不破坏现状）', off: '已关闭事件系统统一·事件总线 drain 不跑' },
-    officeActivationEnabled: { on: '已启用官制活化（实验）·5 刀全开：职权舆图/履职度/权限门/改制裁定/按需细查', off: '已关闭官制活化·官制回落写死路径（各刀独立开关仍生效）' },
+    officeActivationEnabled: { on: '已启用官制活化·职权、履职、权限、改制、章程、旧衙迁移与按需细查', off: '已关闭官制活化总闸·各项独立设置仍生效' },
     agentAdaptiveDeepen: { on: '已启用自适应深化·收尾只深化本回合有动静的维度（省调用·去填充·地板维度始终深化）', off: '已关闭自适应深化·每维度都深化（深度纯粹优先·更耗调用）' },
     talentCohortEnabled: { on: '已启用人才范式渗透（实验）·新式学校→多瓶颈漏斗→渐渗+双向阻力·兴造弹窗见「人才与风气」', off: '已关闭人才范式渗透·学校不再注入人才引擎（零回归）' },
     worldReactorBattleEnabled: { on: '已启用兵败牵动天下·战败方确定性折损实力', off: '已关闭·战败只走 AI 裁量·不自动折损实力' },
-    revoltEntityEnabled: { on: '已启用民变实体化·民变闹大交 AI 演绎(起旗号/立渠帅/攻守招抚)', off: '已关闭·民变维持原五级抽象台账' },
     partyInferenceEnabled: { on: '已启用党争演绎·党派自主行动(立身份·联名/清议/杯葛/结盟/倒阁/煽动阶层交 AI 演绎)', off: '已关闭·党派退回纯数值信号(内部动态照旧演化·不再逐回合自主行动)' },
     borderInvasionEnabled: { on: '已启用边患真入侵·持续高压时敌对势力真出兵', off: '已关闭·边患仅停留在数值与文案' },
     populationBottomUpEnabled: { on: '已启用人口自下而上·按叶级政区分别核算', off: '已关闭·走全局粗粒度人口增长' },
     cognitionFeedbackEnabled: { on: '已启用认知反馈·知遇/贬谪落到忠诚数值', off: '已关闭·忠诚不因升降迁谪自动漂移' },
     useNewKejuScandal: { on: '已启用科场弊案·科举可能爆舞弊/科场案', off: '已关闭科场弊案链' },
     revoltRejectionEscalation: { on: '已启用义军拒抚真备战·拒抚后须经真镇压才能消亡', off: '已关闭·回到旧行为（拒抚无后续·义军可能静默消散）' },
-    rigidHistEventsOff: { on: '已关闭注定史实事件·演义模式下史实人物的注定命运（如史实死亡）不再自动触发', off: '已恢复注定史实事件·演义模式下史实注定命运照常触发（轻度/严格史实模式一向照旧）' }
+    rigidHistEventsOff: { on: '已关闭注定史实事件·演义模式下史实人物的注定命运（如史实死亡）不再自动触发', off: '已恢复注定史实事件·演义模式下史实注定命运照常触发（轻度/严格史实模式一向照旧）' },
+    mapClickFollowTier: { on: '舆图左键随层级：天下开谱牒、省道开通志、府州开方志', off: '舆图左键一律开方志' }
   };
   var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
   if (typeof toast === 'function') toast('✅ ' + (on ? l.on : l.off));
@@ -344,7 +344,6 @@ function _togglePConf(confKey, on) {
 function _tmToggleLivingWorldMaster(on) {
   on = !!on;
   if (!P.conf) P.conf = {};   // arch-ok: 设置面板 setter 惯例初始化(同 _setAiSubcallConcurrency)
-  P.conf.revoltEntityEnabled = on;        // arch-ok: 活世界总纲·设置面板 setter(同 _togglePConf 范式·玩家设置项)
   P.conf.borderInvasionEnabled = on;      // arch-ok: 同上
   P.conf.worldReactorBattleEnabled = on;  // arch-ok: 同上
   try {
@@ -353,8 +352,8 @@ function _tmToggleLivingWorldMaster(on) {
   } catch (_e) {}
   if (typeof saveP === 'function') saveP();
   if (typeof toast === 'function') toast(on
-    ? '✅ 活世界演绎·总纲已开启（民变实体化 / 边患真入侵 / 兵败牵动天下 / 势力活世界 四项全开）'
-    : '✅ 活世界演绎·总纲已关闭（四项全关·回到纯数值与文案）');
+    ? '✅ 活世界演绎·总纲已开启（边患真入侵 / 兵败牵动天下）'
+    : '✅ 活世界演绎·总纲已关闭（仅关闭边患真入侵 / 兵败牵动天下）');
   try { closeSettings(); openSettings(); } catch (_) {}
 }
 if (typeof window !== 'undefined') { try { window._tmToggleLivingWorldMaster = _tmToggleLivingWorldMaster; } catch (_e) {} }
@@ -366,10 +365,10 @@ function _tmSyncLivingWorldMaster() {
     var el = document.getElementById('s-livingworld-master');
     if (!el) return;
     var c = (typeof P !== 'undefined' && P && P.conf) ? P.conf : {};
-    var re = !(c.revoltEntityEnabled === false);
+    var re = true;
     var bi = !(c.borderInvasionEnabled === false);
     var wr = !(c.worldReactorBattleEnabled === false);
-    var flw = (typeof GM !== 'undefined' && GM && typeof GM._factionLivingWorld === 'boolean') ? (GM._factionLivingWorld !== false) : !(c.factionLivingWorldDefault === false);
+    var flw = true;
     el.checked = !!(re && bi && wr && flw);
   } catch (_e) {}
 }

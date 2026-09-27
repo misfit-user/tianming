@@ -21,8 +21,9 @@
     costFactor: 0.12, costCap: 8
   };
 
+  var HS = (global.TM && global.TM.OfficeHolderState) || (typeof require === 'function' ? require('./tm-office-holder-state.js') : null);
   function _fn(n) { return (typeof global[n] === 'function') ? global[n] : null; }
-  function _holderChar(GM, name) { if (!name) return null; var f = _fn('findCharByName'); if (f) return f(name); return (GM.chars || []).find(function (c) { return c && c.name === name; }) || null; }
+  function _holderChar(GM, p) { return HS ? HS.read(GM,p).primary : null; }
   function _rankLvl(p) { var g = _fn('getRankLevel'); return g ? g(p.rank) : 99; }
   function _countPowers(p) { var n = 0, pw = p && p.powers; if (pw) POWER_KEYS.forEach(function (k) { if (pw[k]) n++; }); return n; }
 
@@ -40,11 +41,11 @@
   function _affectedHolders(GM, reform, kind) {
     var out = [];
     if (!GM || !GM.officeTree) return out;
-    function collectAll(nd) { (nd.positions || []).forEach(function (p) { if (p.holder) out.push({ dept: nd.name, p: p }); }); (nd.subs || []).forEach(collectAll); }
+    function collectAll(nd) { (nd.positions || []).forEach(function (p) { if (HS && HS.read(GM,p).occupied) out.push({ dept: nd.name, p: p }); }); (nd.subs || []).forEach(collectAll); }
     (function walk(ns) {
       (ns || []).forEach(function (n) {
         if ((kind === 'abolishDept' || kind === 'merge') && n.name === reform.dept) collectAll(n);
-        else if (kind === 'abolishPos' && n.name === reform.dept) (n.positions || []).forEach(function (p) { if (p.name === reform.position && p.holder) out.push({ dept: n.name, p: p }); });
+        else if (kind === 'abolishPos' && n.name === reform.dept) (n.positions || []).forEach(function (p) { if (p.name === reform.position && HS && HS.read(GM,p).occupied) out.push({ dept: n.name, p: p }); });
         if (n.subs) walk(n.subs);
       });
     })(GM.officeTree);
@@ -84,10 +85,10 @@
         (function walkOv(ns) {
           (ns || []).forEach(function (n) {
             (n.positions || []).forEach(function (p) {
-              if (!p || !p.holder || !p.powers) return;
+              if (!p || !p.powers || !HS || !HS.read(GM,p).occupied) return;
               var taken = newKeys.filter(function (k) { return p.powers[k]; });
               if (!taken.length) return;
-              var ch = _holderChar(GM, p.holder), w = 0;
+              var ch = _holderChar(GM, p), w = 0;
               var lvl = _rankLvl(p); if (lvl <= 3) w += F.headHigh; else if (lvl <= 6) w += F.headMid;
               w += taken.length * F.perPower;
               var loy = ch && ch.loyalty;
@@ -96,7 +97,7 @@
               w = Math.round(w * F.addOverlapMul);
               if (w <= 0) return;
               overlapSum += w;
-              affected.push({ dept: n.name, pos: p.name, holder: p.holder, weight: w, powersTaken: taken });
+              affected.push({ dept: n.name, pos: p.name, holder: HS.read(GM,p).label, weight: w, powersTaken: taken });
             });
             if (n.subs) walkOv(n.subs);
           });
@@ -107,7 +108,7 @@
     if (kind === 'abolishPos' || kind === 'abolishDept' || kind === 'merge') {
       var mul = (kind === 'merge') ? F.mergeMul : 1;
       _affectedHolders(GM, reform, kind).forEach(function (it) {
-        var p = it.p, ch = _holderChar(GM, p.holder), w = 0;
+        var p = it.p, ch = _holderChar(GM, p), w = 0;
         var lvl = _rankLvl(p); if (lvl <= 3) w += F.headHigh; else if (lvl <= 6) w += F.headMid;
         w += _countPowers(p) * F.perPower;
         var loy = ch && ch.loyalty;
@@ -115,7 +116,7 @@
         else if (loy != null && loy > F.loyalAbove) w -= F.loyalSub;
         w = Math.round(w * mul);
         resistance += w;
-        affected.push({ dept: it.dept, pos: p.name, holder: p.holder, weight: w });
+        affected.push({ dept: it.dept, pos: p.name, holder: HS.read(GM,p).label, weight: w });
       });
     }
     // 典章·祖制副作用（Wave5 双刃·副作用侧·王朝越僵）：典章越厚→朝野守成·改制普遍阻力↑（count-based·封顶+20）。
@@ -190,8 +191,15 @@
    * @returns {{applied:boolean, summary:string}}
    */
   function applyReformToTree(GM, reform, options) {
-    if (!GM || !GM.officeTree) return { applied: false, summary: '无官制' };
+    if (!GM) return {applied:false,summary:'无当前世界'};
     if (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM) && !global.TM.NativeWorld.allowed(GM, 'reform', reform.authorityFactionId || GM.startContext.playerFactionId, reform.regionId, options && options.actorCharacterId)) return {applied:false,code:'native-reform-authority-denied',summary:'当前政治授权不允许此处改制'};
+    if (GM.officeTree == null && global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
+      if (options && options.preview) return applyReformToTree(Object.assign({},GM,{officeTree:[]}),reform,options);
+      var emptyPlan = global.TM.OfficeCreation.prepare([], reform);
+      if (!emptyPlan.ok) return {applied:false,summary:emptyPlan.summary};
+      GM.officeTree = []; // arch-ok: canonical office-reform writer initializes a missing tree only after creation authorization
+    }
+    if (!Array.isArray(GM.officeTree)) return {applied:false,summary:'官制树结构无效，未覆盖旧数据'};
     if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) {
       var creation = global.TM.OfficeCreation, canonical = creation.normalize(reform), charter = reform._charter;
       if (charter && charter.name && !(canonical.position && !canonical.newDept) && !_treeHasName(GM.officeTree, charter.name)) {

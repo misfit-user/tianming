@@ -1,0 +1,93 @@
+{
+  "status": "local-fiscal-fix-applied; full-suite acceptance not green",
+  "targetedSmokeScripts": 49,
+  "fiscalRegression": {
+    "pass": true,
+    "output": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n[smoke-shiji-fiscal-ledger] PASS 54 assertions\n"
+  },
+  "fullSuite": {
+    "selected": 1108,
+    "pass": 1107,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "fullSuiteFailures": [
+    {
+      "name": "smoke-tang840-opening-ledgers.js",
+      "error": "Error: Script execution timed out after 60000ms"
+    }
+  ],
+  "standaloneOpeningRecheck": {
+    "command": "node web/scripts/smoke-tang840-opening-ledgers.js",
+    "exitCode": 0,
+    "assertions": 7266,
+    "elapsedMs": 42677,
+    "priorFailure": "Script execution timed out after 60000ms during full suite",
+    "concurrentSuiteObserved": "E:/tianming-codex-tang-data/web/scripts/run-smokes.js"
+  },
+  "otherGates": [
+    {
+      "name": "architecture",
+      "exitCode": 0
+    },
+    {
+      "name": "official-parity",
+      "exitCode": 0
+    },
+    {
+      "name": "release-contract",
+      "exitCode": 0
+    },
+    {
+      "name": "hot-baseline",
+      "exitCode": 0
+    },
+    {
+      "name": "renderer-bundle",
+      "exitCode": 0
+    },
+    {
+      "name": "native-manifest",
+      "exitCode": 0
+    },
+    {
+      "name": "native-preparation",
+      "exitCode": 0
+    },
+    {
+      "name": "release-contract",
+      "exitCode": 0
+    },
+    {
+      "name": "hot-baseline",
+      "exitCode": 0
+    }
+  ],
+  "files": [
+    {
+      "file": "web/tm-endturn-shiji-compose.js",
+      "sha256": "29668e39b5562a400a960cd28e51efe89f1332ce28201045a2a09f581b4ad0b6",
+      "matchesInstalled": true
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "ecdd168dbc1fe66b5674a1109a83efe82248ed8aec35dec05124cee0dea9047a",
+      "matchesInstalled": true
+    },
+    {
+      "file": "web/scripts/smoke-shiji-fiscal-ledger.js",
+      "sha256": "4e555170b0e46e2b8183d3c349fc64712100739835ed93ee9a609382be68692f",
+      "matchesInstalled": true
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "c115fc0e964d8d95c47b49849106a1f9c70060faeb2ffd984055f5dace71f861",
+      "matchesInstalled": true
+    }
+  ],
+  "indexUnchanged": true,
+  "published": false
+}

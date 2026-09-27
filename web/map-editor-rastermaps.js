@@ -39,6 +39,28 @@
 
   // 以 non-enumerable 定义运行时字段·使 JSON.stringify(map) 不把运行时缓存写进存档
   // (修复·terrainMap/heightMap 的 _data 等被 exportJSON/exportGamePMap/scenario/localStorage 误存·存档膨胀 ~32x)
+  // Display validity is independent from the unsaved-data flag. Never clear _dirty here.
+  var displayCaches = new WeakMap();
+  function displayCache(L){
+    var data = getData(L), cache = displayCaches.get(L);
+    if (!cache || cache.version !== L._version || cache.data !== data ||
+        cache.source !== L._canvas || cache.width !== L.width || cache.height !== L.height){
+      cache = { version: L._version, data: data, source: L._canvas,
+        width: L.width, height: L.height, colored: null, heat: null, palette: '' };
+      displayCaches.set(L, cache);
+    }
+    return cache;
+  }
+  function terrainColorSignature(palette){
+    // Only byte-addressable colors affect pixels; unrelated/cyclic metadata does not.
+    var colors = [];
+    for (var i = 1; i < 256; i++){
+      var entry = palette[i], color = entry && entry.color;
+      if (color) colors.push(i + ':' + color[0] + ',' + color[1] + ',' + color[2]);
+    }
+    return colors.join(';');
+  }
+
   function defineRuntimeField(L, key, val){
     Object.defineProperty(L, key, { value: val, writable: true, enumerable: false, configurable: true });
   }
@@ -199,6 +221,7 @@
   }
 
   function rebuildCanvas(L){
+    displayCaches.delete(L); // Public callers may have changed _data in place.
     var imd = L._ctx.createImageData(L.width, L.height);
     var data = getData(L);
     for (var i = 0; i < data.length; i++){
@@ -286,7 +309,8 @@
   }
 
   function ensureColoredTerrainCanvas(L){
-    if (L._coloredCanvas && !L._dirty) return L._coloredCanvas;
+    var cache = displayCache(L), palette = terrainColorSignature(L.palette || TERRAIN_PALETTE);
+    if (cache.colored && cache.colored === L._coloredCanvas && cache.palette === palette) return cache.colored;
     var c = document.createElement('canvas');
     c.width = L.width; c.height = L.height;
     var ctx = c.getContext('2d');
@@ -304,11 +328,13 @@
     }
     ctx.putImageData(imd, 0, 0);
     L._coloredCanvas = c;
+    cache.colored = c; cache.palette = palette;
     return c;
   }
 
   function ensureHeatmapCanvas(L){
-    if (L._heatCanvas && !L._dirty) return L._heatCanvas;
+    var cache = displayCache(L);
+    if (cache.heat && cache.heat === L._heatCanvas) return cache.heat;
     var c = document.createElement('canvas');
     c.width = L.width; c.height = L.height;
     var ctx = c.getContext('2d');
@@ -331,6 +357,7 @@
     }
     ctx.putImageData(imd, 0, 0);
     L._heatCanvas = c;
+    cache.heat = c;
     return c;
   }
 

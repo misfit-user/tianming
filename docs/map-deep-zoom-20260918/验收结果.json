@@ -1,0 +1,266 @@
+{
+  "verifiedAt": "2026-09-18T10:33:46.080Z",
+  "applied": true,
+  "releaseReady": false,
+  "sourceScope": "shared native map presentation only",
+  "sources": [
+    {
+      "file": "scenarios/天启七年·九月（官方）.json",
+      "sha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+      "unchanged": true
+    },
+    {
+      "file": "scenarios/晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51",
+      "unchanged": true
+    },
+    {
+      "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+      "unchanged": true
+    }
+  ],
+  "files": [
+    {
+      "file": "web/phase8-formal-map.js",
+      "before": "71e1d59437824827c0131dc1666a5dd51d5a0b8dbaebb74ce3ab6ca1a5a2ed36",
+      "after": "91a6523ea399b6415a5d1a2a802116c3042feb1ea4305207fbe4888baf6d61eb",
+      "lines": 2901
+    },
+    {
+      "file": "web/tm-map-label-collide.js",
+      "before": "04b9407a9d8af5ce1c785da392fea016133ad27b8b7e45e34eef8d1c761cb3b5",
+      "after": "528e002552eabe9d6d790d64fd4ca3aa7e106ce18ee6f70cfa3749e422cdd85d",
+      "lines": 147
+    },
+    {
+      "file": "web/phase8-formal-bridge-styles.js",
+      "before": "0ab12df844c645c9440e8dd418446fb5c5b66c452d7fe87122b46d1ced52e793",
+      "after": "c68199a5f88beb6444fcb449f87e64b20be715816987b2eb675182e1dc9f4388",
+      "lines": 557
+    }
+  ],
+  "testFixture": {
+    "file": "web/scripts/smoke-map-viewport-collision.js",
+    "before": "091d420a8b8a50dcd057edd6cb83374442ed96b8a8a5ed2183abad3a77f7a3ae",
+    "after": "74186351389234f5108f74aaa362a08445b301d58753523ff141150a874df39e",
+    "originalAssertionsRetained": true
+  },
+  "zoom": {
+    "minimum": 0.72,
+    "maximum": 128,
+    "previousWheelAndPinchMax": 3.4,
+    "previousButtonMax": 4.2,
+    "linearGainOverOldButton": 30.476190476190474,
+    "rendering": "vector viewport above 4.2; reusable compositor below",
+    "focus": "small target adaptive; never edits geometry"
+  },
+  "pixelComparison": {
+    "sameScenario": true,
+    "targetId": "ming-28-p08",
+    "before": {
+      "scale": 4.2,
+      "width": 4.329687595367432,
+      "height": 1.458105444908142
+    },
+    "after": {
+      "scale": 128,
+      "width": 131.95693969726562,
+      "height": 44.43938064575195
+    },
+    "unit": "browser CSS pixels in identical test viewport"
+  },
+  "additionalScenarioCheck": {
+    "scenarioId": "sc-tang840-840",
+    "passed": false,
+    "stage": "before-map-world-start",
+    "error": {
+      "ok": false,
+      "message": "世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败",
+      "stack": "Error: 世界初始化失败：内帑朝代预设失败、核心 Phase/财政桥接初始化失败\n    at enterGame (file:///C:/Users/37814/Desktop/tianming/web/tm-game-loop.js?v=20260706-splitsync:432:11)\n    at doActualStart (file:///C:/Users/37814/Desktop/tianming/web/tm-patches-start.js?v=20260823-auditfix18-autosave:2159:3)\n    at <anonymous>:1:22\n    at <anonymous>:1:156"
+    },
+    "report": "reports/tang-start-blocker.json"
+  },
+  "tests": {
+    "mapAdaptation": {
+      "passed": 31,
+      "failed": 0
+    },
+    "unit": {
+      "passed": 13,
+      "failed": 0
+    },
+    "nativePages": [
+      {
+        "scenarioId": "sc-tianqi7-1627",
+        "regions": 307,
+        "passed": 12,
+        "failed": 0,
+        "elapsedMs": 141783
+      },
+      {
+        "scenarioId": "sc-jianyan1-1127-shaosong",
+        "regions": 566,
+        "passed": 8,
+        "failed": 0,
+        "elapsedMs": 95513
+      }
+    ],
+    "regressions": [
+      {
+        "name": "smoke-map-zoom-preload.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 649
+      },
+      {
+        "name": "smoke-pinch-pan-gestures.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 166
+      },
+      {
+        "name": "smoke-map-viewport-collision.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 2038
+      },
+      {
+        "name": "smoke-map-label-spatial-index.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 274
+      },
+      {
+        "name": "smoke-map-label-feature-late-binding.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 209
+      },
+      {
+        "name": "smoke-map-realm-layout.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 363
+      },
+      {
+        "name": "smoke-map-live-vitals.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 136
+      },
+      {
+        "name": "smoke-phase8-map-live-panels.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 8155
+      },
+      {
+        "name": "smoke-tianqi-map-runtime.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 894
+      },
+      {
+        "name": "lint-arch-all.js",
+        "passed": false,
+        "status": 1,
+        "signal": null,
+        "error": null,
+        "ms": 99013
+      },
+      {
+        "name": "verify-official-scenario-parity.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 58666
+      }
+    ]
+  },
+  "architecture": {
+    "passed": false,
+    "beforeFailures": [
+      "[lint-arch-all] FAIL  lint-dep-graph",
+      "[lint-arch-all] FAIL  lint-renderer-module-boundaries",
+      "[lint-arch-all] FAIL  lint-file-size",
+      "[lint-arch-all] FAIL  lint-split-contracts",
+      "[lint-arch-all] FAIL  ref-check",
+      "[lint-arch-all] FAIL — 5/13 项未过"
+    ],
+    "afterFailures": [
+      "[lint-arch-all] FAIL  lint-dep-graph",
+      "[lint-arch-all] FAIL  lint-renderer-module-boundaries",
+      "[lint-arch-all] FAIL  lint-file-size",
+      "[lint-arch-all] FAIL  lint-split-contracts",
+      "[lint-arch-all] FAIL  ref-check",
+      "[lint-arch-all] FAIL — 5/13 项未过"
+    ],
+    "sameFailingGroups": true
+  },
+  "screenshots": [
+    {
+      "file": "docs/map-deep-zoom-20260918/screenshots/皮岛_原4.2倍上限.png",
+      "sha256": "4d0e4096453b8c9a1cd636506ebf3b6203361d59970cabf6cda8407d61b0dff8",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/map-deep-zoom-20260918/screenshots/皮岛_新128倍.png",
+      "sha256": "dae7636c1bf5d5e25c43550d2147ff71a590b1b9bc64ad50d89d167923ba9deb",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/map-deep-zoom-20260918/screenshots/皮岛_128倍实际点击.png",
+      "sha256": "8b5424b573bb80282ec72e674927c60f5852568e30c31f7ba5a303c3cd3f1588",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/map-deep-zoom-20260918/screenshots/深度缩放后复位全图.png",
+      "sha256": "cc02f032ed2dd395e9b7f62b012d3912f87e88ca43291ea26984433e5847f146",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/map-deep-zoom-20260918/screenshots/绍宋_小岛自动聚焦.png",
+      "sha256": "bf3c7a9ae7f2404471a1566b9e78753f61c47ccce40dedd372e5db82efdb2bb6",
+      "width": 1903,
+      "height": 1002
+    }
+  ],
+  "limits": [
+    "Desktop Electron verified. Two-finger input emulated through browser debugging protocol; no physical phone performance certification.",
+    "No story, map polygon, faction, army, character, finance, game-save or release version writes.",
+    "Full repository architecture guard is not green; no commit, push, build or release.",
+    "Earlier projection and native-input test failures are retained in the work directory. Cross-scenario generated-test syntax error was corrected before successful reruns.",
+    "Zoom exposes existing geometry; it does not manufacture historical map detail or repair coarse borders."
+  ],
+  "diffCheck": {
+    "rawExit": 2,
+    "crlfPreservingExit": 0,
+    "perCommandOnly": true,
+    "persistentGitConfigChanged": false,
+    "explanation": "Original and edited stylesheet both retain CRLF. Default whitespace mode reports the existing carriage return on the edited line."
+  }
+}

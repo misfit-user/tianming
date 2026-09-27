@@ -1344,15 +1344,10 @@
   function exportScript() {
     var _scForExport = (typeof SchemaAdapter !== 'undefined') ? SchemaAdapter.exportScenario(scriptData) : scriptData;
     var json = JSON.stringify(_scForExport, null, 2);
-    var blob = new Blob(
-      [json], {type: 'application/json'}
-    );
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    var name = scriptData.name || 'tianming_script';
-    a.download = name + '.json';
-    a.click();
-    showToast('剧本已导出');
+    return TM.fileExport.saveJson(json, (scriptData.name || 'tianming_script') + '.json').then(function(result) {
+      if (result.mode === 'canceled') { showToast('已取消导出'); return; }
+      showToast(result.mode === 'native' ? ('剧本已保存到所选位置 · ' + result.fileName) : '剧本已导出');
+    }).catch(function(error) { showToast('导出失败: ' + (error.message || error)); });
   }
 
   function importScript() {

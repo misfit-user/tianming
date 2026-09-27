@@ -14,8 +14,8 @@ const assert = makeAssert(passed);
 const saveSrc = fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 
 // ─── Migration framework ───
-assert(/SAVE_SCHEMA_VERSION\s*=\s*'1\.3\.0-ai-upgrade'/.test(saveSrc),
-  'SAVE_SCHEMA_VERSION 常量·1.3.0-ai-upgrade');
+assert(/SAVE_SCHEMA_VERSION\s*=\s*'1\.3\.5-gameplay-core'/.test(saveSrc),
+  'SAVE_SCHEMA_VERSION 常量·1.3.5-gameplay-core');
 assert(/_MIGRATIONS\s*=\s*\[/.test(saveSrc),
   '_MIGRATIONS array·迁移规则');
 assert(/function\s+runMigrations\s*\(\s*P\s*,\s*GM\s*\)/.test(saveSrc),

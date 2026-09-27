@@ -52,6 +52,17 @@ function mk(opts) {
   return ctx;
 }
 
+// 原生数据可能只有势力 ID，玩家不一定在 chars 中带 isPlayer。
+{
+  const c = mk(); c.GM.chars = []; c.GM.startContext = { playerFactionId: 'fac-ming' };
+  c.GM.facs = [{id:'fac-ming',name:'明'},{id:'fac-enemy',name:'建虏'}];
+  c.GM.armies[1].factionId = 'fac-enemy';
+  ok(c.MarchSystem.orderMarch('a2','保定府').ok === false, '无 isPlayer 人物时也拒绝指挥外国军队');
+  ok(c.MarchSystem.orderMarch('a1','保定府').ok === true, '本国名称与原生势力 ID 可相互匹配');
+  const missing = mk(); missing.GM.chars = [];
+  ok(missing.MarchSystem.orderMarch('a1','保定府').ok === false, '身份缺失时不能默认获得指挥权');
+}
+
 /* ── §a 引擎行为 ─────────────────────────────────────────────── */
 console.log('— §a · orderMarch 引擎行为 —');
 (function () {
@@ -59,10 +70,16 @@ console.log('— §a · orderMarch 引擎行为 —');
   var c1 = mk();
   ok(c1.MarchSystem._getConfig().enabled === true, 'P.conf.marchSystemEnabled=true 即开(设置开关旁路)');
   var c2 = mk({ confOn: false });
-  ok(c2.MarchSystem._getConfig().enabled === false, '双关=默认关(零回归)');
+  ok(c2.MarchSystem._getConfig().enabled === false, '显式关闭仍可退出行军机制');
   ok(c2.MarchSystem.orderMarch('京营', '保定府').ok === false, '闸关拒单');
   var c3 = mk({ confOn: false, battleConfig: { marchConfig: { enabled: true } } });
-  ok(c3.MarchSystem._getConfig().enabled === true, '剧本 battleConfig.marchConfig.enabled 原路仍通');
+  ok(c3.MarchSystem._getConfig().enabled === false, '玩家显式关闭优先于剧本开启');
+  delete c3.P.conf.marchSystemEnabled;
+  ok(c3.MarchSystem._getConfig().enabled === true, '未设置时采用剧本开启');
+  c3.P.battleConfig.marchConfig.enabled = false;
+  ok(c3.MarchSystem._getConfig().enabled === false, '未设置时保留剧本禁用');
+  delete c3.P.battleConfig.marchConfig.enabled;
+  ok(c3.MarchSystem._getConfig().enabled === true, '无设置及剧本限制时默认开启');
 
   // 无图估算下单
   var c4 = mk();

@@ -5,10 +5,9 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const retry = fs.readFileSync(path.join(__dirname, '..', 'tm-ai-infra-retry.js'), 'utf8');
-const SRC = path.join(__dirname, '..', 'tm-ai-infra.js');
-// 第二十三拆：getCompressionParams 等迁 tm-ai-infra-model-detect.js·vm 须载全家族(origin 先·契约随人走)以忠实真实装载序
-const code = retry + '\n' + fs.readFileSync(SRC, 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '..', 'tm-ai-infra-model-detect.js'), 'utf8');
+// Load the production policy and complete transport family in canonical order.
+const code = ['tm-call-retry-policy.js', 'tm-ai-infra-json.js', 'tm-ai-infra-retry.js', 'tm-ai-infra.js', 'tm-ai-infra-model-detect.js']
+  .map(file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')).join('\n');
 
 // ─── 真实 tier 解析（从 tm-utils.js 原样复制，确保测试忠实）───
 function _getAITier(tier) {
@@ -110,6 +109,7 @@ function ok(name, cond, extra) { if (cond) { pass++; console.log('  ✓ ' + name
   ok('返回 primary 内容', r1 === 'PRIMARY_OK', r1);
   ok('确实先打了 secondary(8765)', fetchLog.some(u => u.indexOf('8765') >= 0));
   ok('确实回退打了 primary', fetchLog.some(u => u.indexOf('api-jp.example') >= 0));
+  ok('默认一次重试含主API回退，总共仅两次发送', fetchLog.length === 2);
 
   // ── 测试2：secondary 返回 HTTP 500 → 不回退（rethrow），不打 primary ──
   console.log('[2] callAI secondary HTTP 500 → 不回退（rethrow）');

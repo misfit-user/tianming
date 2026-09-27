@@ -1,0 +1,151 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "4c8ae15f-69ac-4f5c-ac19-57caf6eeea32",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "expected": [
+    "smoke-desktop-autosave-committed-world.js",
+    "smoke-desktop-back-to-start-panel.js",
+    "smoke-desktop-bridge-reliability.js",
+    "smoke-desktop-save-async-load.js",
+    "smoke-online-desktop-token-boundary.js",
+    "smoke-runtime-save-consistency.js",
+    "smoke-save-commit-boundary.js",
+    "smoke-storage-atomic-batch.js",
+    "smoke-turn-data-commit.js"
+  ],
+  "generatedAt": "2026-09-19T10:25:25.355Z",
+  "args": [
+    "--grep",
+    "turn-data",
+    "--grep",
+    "desktop",
+    "--grep",
+    "runtime-save",
+    "--grep",
+    "save-commit",
+    "--grep",
+    "storage-atomic",
+    "--jobs",
+    "2",
+    "--no-retry",
+    "--report",
+    "docs/desktop-bridge-reliability-20260919/final-tests.json"
+  ],
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": []
+  },
+  "summary": {
+    "selected": 9,
+    "pass": 9,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [],
+  "results": [
+    {
+      "name": "smoke-desktop-autosave-committed-world.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 172,
+      "timedOut": false,
+      "waivers": [],
+      "output": "  PASS - 桌面存档生命周期安装关闭前 flush 回调\n  PASS - 统一世界事务判定函数可用\n  PASS - 已提交快照排除带 gmRef 环的运行时任务队列\n  PASS - 生产 prepare 顺序先提交点击时 pre_endturn、后执行校准\n  PASS - 过回合事务中 timer 只 deferred、不写盘\n  PASS - 真实回合事务回滚恢复半结算前 GM/P\n  PASS - 回滚后 deferred 自动档写入一次\n  PASS - 桌面自动档等于过回合前已提交世界\n  PASS - 回滚纵深保护重新提升恢复世界而非校准世界\n  PASS - canonical commit 后自动档推进到新回合\n  PASS - 已提交快照不引用调用方随后修改的对象\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - hydration/rollback/time-travel 活跃时均不写盘\n  PASS - 连续 timer 不会写入三个不同结算阶段\n  PASS - 连续 deferred 最终只补写同一已提交快照一次\n  PASS - IPC 在途锁阻止重叠自动档\n  PASS - 新会话不会复用旧战役已提交快照\n  PASS - 新世界稳定边界能够建立自己的 committed snapshot\n  PASS - 新世界只写入本战役已提交快照\n  PASS - 摘要与月度纪事保存请求合并为一个 canonical 双槽事务\n  PASS - 双槽共享同一 canonical payload 且保存后台完成后的最新状态\n  PASS - 后台 canonical 提交后推进 committed snapshot\n  PASS - 切档后的旧后台结果不会写入新世界\n  PASS - 后台保存失败只做有限重试并最终原子成功\n  PASS - 后台保存拒绝与 lease 不一致的回合身份\n  PASS - 关闭握手会等待桌面自动档 IPC 而非仅等待 canonical 双槽\n  PASS - 桌面镜像在途时新摘要仍进入独立 canonical 保存队列\n  PASS - 首次镜像完成后关闭握手继续等待新 canonical 对应的第二个桌面镜像\n  PASS - 立即退出握手会实际 drain 后台保存而非只提示\n  PASS - 关闭握手把最新后台摘要同步到桌面恢复镜像\n  PASS - 关闭握手成功后 canonical 与桌面镜像都不存在待保存或在途任务\n  PASS - 世界事务活跃时关闭握手明确拒绝退出\n  PASS - 后台摘要和月度纪事都请求正式串行保存队列\n  PASS - 月度纪事关闭时在任何 AI 调用前退出\n[smoke-desktop-autosave-committed-world] pass=35\n"
+    },
+    {
+      "name": "smoke-desktop-back-to-start-panel.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 145,
+      "timedOut": false,
+      "waivers": [],
+      "output": "smoke-desktop-back-to-start-panel OK: 13 assertions\n"
+    },
+    {
+      "name": "smoke-desktop-bridge-reliability.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 965,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS normal desktop save keeps all turn-data bytes and commits both full slots\nPASS a never-returning stage aborts pre-commit waiting without publishing or saving\nPASS unanswered publish retains the durable receipt and cannot be blindly resent\nPASS timeout does not permit discard to overtake an in-flight stage of the same transaction\nPASS discard rejection preserves staged marker and receipt instead of deleting in finally\nPASS confirmed discard clears only its receipt after the desktop acknowledgement\nPASS a committed world receipt forbids discarding its pending bundle\nPASS stage validates the world on both sides of the asynchronous checksum boundary\nPASS late successful publication after a load cannot clear a receipt for the old world\nPASS load-time recovery failure remains blocking and retains the full receipt\nPASS normal and legacy recovery clear receipts only after confirmed publication\nPASS foreign campaign and future receipts are not sent during current-world recovery\nPASS unanswered timeline reference lookup conservatively retains auxiliary data\nPASS a late rejection is observed but cannot reject the already settled caller again\nPASS cancellation before sending does not start disk work\nPASS changing bridge instance invalidates even a successful outstanding result\nPASS the actual finalizer keeps complete presentation when post-commit publish times out\nPASS unknown bridge operations are refused and outstanding work has a fixed cap\nPASS diagnostics stay bounded and contain no save names, payloads or transaction identifiers\nPASS a foreign success receipt cannot release pending publication evidence\nPASS a live cancellation ends waiting but keeps the conflicting operation locked\nPASS explicit desktop rejection never masquerades as a successful stage\nPASS protocol changes and a replaced bridge during checksum never send stale stage data\n{\"pass\":23,\"fail\":0,\"total\":23}\n"
+    },
+    {
+      "name": "smoke-desktop-save-async-load.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 281,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-desktop-save-async-load]\n  PASS - large desktop JSON is parsed correctly by the worker path\n  PASS - main event loop remains responsive while the large JSON is parsed\n  PASS - worker parse failures reject instead of returning partial data\n  PASS - project loading uses the off-main-thread JSON reader\n  PASS - desktop auto-save loading uses the off-main-thread JSON reader\n  PASS - the packaged Electron app includes the JSON worker module\n\n[smoke-desktop-save-async-load] 6 passed / 0 failed\n"
+    },
+    {
+      "name": "smoke-online-desktop-token-boundary.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 112,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-online-desktop-token-boundary] PASS assertions=6\n"
+    },
+    {
+      "name": "smoke-runtime-save-consistency.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 254,
+      "timedOut": false,
+      "waivers": [],
+      "output": "=== 1. unified save snapshot builder ===\n  ok - _autoSaveSnapshotGM + _buildSaveState 可抽取\n  ok - Electron autoSave 显式区分业务成功与 resolve({success:false})\n  ok - IDB 外壳保持 {GM,P}\n  ok - project 外壳保持 P+gameState\n  ok - 两种外壳均剥离主/次 API key\n  ok - 两种外壳复用 selective GM snapshot\n  ok - 浏览器导出走统一纯 builder\n  ok - 桌面手动存档走统一纯 builder\n  ok - pre_endturn 从点击时事务引用走统一 detached builder\n  ok - 残局发布以 detached 模式复用统一 builder\n  ok - 生产存档写口无裸 deepClone(GM)\n  ok - 端回合不再重复调用 SaveManager.autoSave 覆盖 slot_0\n  ok - canonical batch failure preserves the pre_endturn recovery marker\n  ok - slot index is published only after the canonical batch commits\n  ok - tm_autosave_mark 仅在原子双槽提交后写入并锚定快照 turn\n  ok - 60s Electron autoSave 仅在业务成功后推进成功时钟\n  ok - Electron 闲置跳存基线锚定已写 committed snapshot turn\n  ok - 端回合删除重复 Electron autoSave·崩溃恢复档只留 60s 写口\n  ok - 端回合 detached save 捕获 GM/P/loadGen/pre snapshotId\n  ok - 后台等待后先验租约·builder 在 detached snapshot 上准备\n  ok - autosave/slot_0 共用代际租约与单一批量事务\n  ok - _endTurn_render 只渲染·不再在 Phase5 前启动存档\n  ok - normal 路径在 Phase5/J1 后只声明提交屏障\n  ok - deferred 路径在 Phase5/openers 后复用共享提交屏障\n  ok - deferred 路径显式阻止 core 提前落库\n  ok - normal/deferred 两条路径复用同一幂等存档 promise\n  ok - normal 提交屏障严格等待最终存档后才 commit\n  ok - SaveDB 同步冻结 canonical payload，并在异步准备前及真正 put 前复验 writeGuard\n  ok - 60s Electron IPC 跨档或快照推进后不推进当前局闲置跳存基线\n  ok - 主进程串行化固定 .tmp 的所有 auto-save IPC\n  ok - Electron canonical auto-save 在 write/rename 间按 session token 复验\n  ok - preload + 读档 + 新局共同切换 auto-save session\n  ok - receipt recovery failure aborts before the loaded world can fork its timeline\n  ok - state-mutating load migrations propagate into the load transaction instead of failing open\n  ok - integration bridge is aggregation-only; Huji and CorruptionEngine own simulation time\n  ok - desktop and auto-save envelope fields are stripped before P/GM become runtime state\n  ok - 回合分卷先暂存·receipt 与世界同事务提交·仅在 commit 后发布\n  ok - 读档按世界身份租约补发独立 receipt，并只删除轻量事务记录\n  ok - 读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法\n  ok - hydration 期间 busy 阻止过回合，所有主要手动保存入口也等待同一屏障\n  ok - 正常分卷发布不再解压、重压并重写两个 canonical 世界\n  ok - 财政、问对和地图派生状态在事务内最终化\n  ok - commit 后 UI 渲染跳过所有已知状态准备入口\n=== 2. pre_endturn two-phase + strict validator ===\n  ok - marker pending -> committed 两阶段\n  ok - snapshotId 同时进入 marker/state/IDB record\n  ok - pre_endturn 写事务绑定 GM/P/loadGen/turn/sid/snapshotId lease\n  ok - SaveDB 在异步 open/gzip 前同步固化 snapshot JSON\n  ok - 启动恢复要求 marker 严格校验\n  ok - 校验/读取失败保留 autosave 安全回退\n  ok - 完全匹配 committed 三方可恢复\n  ok - marker snapshotId 错配拒绝\n  ok - record turn 错配拒绝\n  ok - pending marker 拒绝\n=== 3. sSaveAll atomic API persistence ===\n  ok - sSaveAll 不再提前调用 sSaveAPI 写旧 secondary\n  ok - API 单项保存不再以纯 P 覆盖对局中的桌面恢复档\n  ok - 主 API 单项保存统一 tm_api + saveP\n  ok - 次 API 单项保存统一 tm_api + saveP\n  ok - saveP / 编辑器返回不再以纯 P 覆盖 Electron canonical 恢复档\n  ok - Electron autoSave 生产写口只剩消费 committed snapshot 的 60s runner\n  ok - 保存全部只原子写 tm_api 一次\n  ok - 同一次持久化包含新主 key + 新 secondary key\n=== 4. dynamic write lease regressions ===\n  ok - 保存/玩法共享的 load barrier 在 hydration 完成前保持未决\n  ok - hydration 完成后 load barrier 才放行等待中的操作\n  ok - 读档—保存循环不推进玩法，Huji 单次推进且 IntegrationBridge 不再重复结算\n  ok - storage envelope metadata never enters validated runtime P/GM\n  ok - loaded-world invariant gate rejects duplicate stable character IDs before UI opens\n  ok - critical migration partial write rolls back P/GM/session and rebinds every runtime singleton to the old world\n  ok - 读档回滚自身失败时 barrier 保持 rejected，半恢复世界不能被手动保存入口放行\n  ok - 重叠读档被同步拒绝且不能替换第一条仍在进行的完成屏障\n  ok - 真实 save helper 只快照 Phase5 后状态并同时写 autosave/slot_0\n  ok - desktop receipt commits with canonical worlds and publish cleanup never mutates the world payload\n  ok - load recovery publishes only matching, non-future receipts and leaves other branches untouched\n  ok - receipt recovery failure is explicit and leaves the durable receipt available for a transactional retry\n[AutoSave] post-turn save failed: Error: slot_0 injected failure\n    at Object.saveManyAtomic (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-runtime-save-consistency.js:537:51)\n    at evalmachine.<anonymous>:250:38\n    at async runDynamicLeaseSmokes (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-runtime-save-consistency.js:542:19)\n  ok - canonical batch failure discards desktop staging and leaves no formal publish marker\n  ok - a post-commit load switch preserves staging and its durable receipt for the original campaign\n[SaveDB] IndexedDB就绪 (v6)\n  ok - stale quota recovery neither deletes an older autosave nor retries put\n  ok - stale pre_endturn completion fails closed and cannot overwrite the newer record or marker\n  ok - first wrapped request atomically adopts its token when sidecar is absent\n  ok - full-load/new-game synchronously invalidates an in-flight session\n  ok - invalidated old IPC cannot rename over canonical auto-save\n  ok - current session writes and reloads the canonical envelope\n\n[smoke-runtime-save-consistency] 81 passed / 0 failed\n"
+    },
+    {
+      "name": "smoke-save-commit-boundary.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 436,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS commit receipt is delivered once, only after both slots commit\nPASS commit observation precedes cleanup but save still waits for cleanup completion\nPASS cleanup errors cannot change a confirmed commit into failure\nPASS observer exceptions do not undo or reject committed data\nPASS aborted writes never notify success or create committed slots\nPASS local committed journal cleanup failure preserves new slots and a committed marker\nPASS partial local write failure restores the original slots without a commit receipt\nPASS auxiliary snapshot rejection does not roll back a committed full world\nPASS auxiliary false result is reported without changing the durable world result\nPASS failed primary write never starts the auxiliary snapshot\nPASS snapshot and cleanup overlap only after durable commit and are both awaited\nPASS a world switch during snapshot cannot publish old-world save markers\nPASS legacy boolean SaveDB success retains the full snapshot path\nPASS mismatched callback receipt cannot start snapshot or bypass a failed primary save\nPASS a staged display failure cannot interrupt retirement of the world transaction\nPASS failure of instrumentation after commit does not erase the observed commit\nPASS an async observer rejection is handled without rejecting the successful write\nPASS synchronous put failure aborts the transaction before any partial slot commit\nPASS mandatory post-turn work failure still prevents every save and snapshot\nPASS an empty auxiliary result is a reported warning, not silent success of that task\nPASS actual finalizer keeps committed world and full presentation when auxiliary snapshot fails\nPASS a matching durable receipt blocks rollback but a foreign receipt does not\n{\"pass\":22,\"fail\":0,\"total\":22}\n"
+    },
+    {
+      "name": "smoke-storage-atomic-batch.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 1414,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-storage-atomic-batch] PASS assertions=33\n"
+    },
+    {
+      "name": "smoke-turn-data-commit.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 306,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-turn-data-commit] PASS assertions=11\n"
+    }
+  ],
+  "skipped": []
+}

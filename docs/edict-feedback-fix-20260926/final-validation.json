@@ -1,0 +1,22 @@
+{
+  "validatedAt": "2026-09-26",
+  "workspace": "C:/Users/37814/Desktop/tianming",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "scope": "local-source-only",
+  "ciSmokes": { "runId": "a9e9d6f5-4379-4048-b955-fdf5ca1f5663", "report": "web/dev-tools/arch-guard/ci-zcAPEn/smoke-report.json", "pass": 1107, "fail": 0, "skip": 0, "waived": 0 },
+  "targeted": {
+    "edictOutcomesAssertions": 62,
+    "edictDataWritebackAssertions": 53,
+    "edictNarrativeLinkAssertions": 19,
+    "agentModeS8Assertions": 43,
+    "shijiVolumeAssertions": 49,
+    "startupScriptsChecked": 465
+  },
+  "architecture": "PASS",
+  "officialScenarioParity": "PASS",
+  "releaseContractAssertions": 182,
+  "hotBaseline": { "version": "1.3.5.2", "files": 1361, "status": "PASS" },
+  "realModelCalls": false,
+  "published": false,
+  "pushed": false
+}

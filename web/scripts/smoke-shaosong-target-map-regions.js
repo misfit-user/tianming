@@ -428,7 +428,8 @@ else {
   assert(official.map.id === 'shaosong-three-tiers-r6', 'unexpected official map revision');
   assert(official.map.regions.length === 566, 'R6 must retain all 566 regions');
   assert(JSON.stringify(official.map) === JSON.stringify(official.mapData), 'canonical map mirrors differ');
-  assert(official.characters.length === 501 && official.military.initialTroops.length === 100, 'original character/army roster lost');
+  // 500：原 501 人中「完颜蒲鲁虎」即完颜宗磐（本名蒲鲁虎），剧本数据修复时去重删去一条
+  assert(official.characters.length === 500 && official.military.initialTroops.length === 100, 'original character/army roster lost');
   const regions = new Set(official.map.regions.map(r => r.id));
   assert(regions.size === 566, 'duplicate region ID');
   const accounts = new Set();

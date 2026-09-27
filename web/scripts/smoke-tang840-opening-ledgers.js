@@ -4,7 +4,8 @@ const W=path.resolve(__dirname,'../..'),D=process.env.TM_ACCEPTANCE_REPORT_DIR||
 const text=fs.readFileSync(file,'utf8').replace(/^#![^\n]*\n/,'');const end=text.indexOf('(async function main()');if(end<0)throw Error('Helper boundary missing');
 const h=new Function('require','process','__dirname','__filename','module','exports',text.slice(0,end)+'\nreturn {loadGame,countState};')(require,process,dir,file,{exports:{}},{});
 fs.mkdirSync(path.join(D,'reports'),{recursive:true});
-const c=h.loadGame(),sc=JSON.parse(fs.readFileSync(path.join(W,'scenarios/晚唐·开成五年（官方）.json'),'utf8'));c.__source=sc;
+// This native-import test installs the entire canonical JSON below; do not retain a redundant JS copy.
+const c=h.loadGame(null),sc=JSON.parse(fs.readFileSync(path.join(W,'scenarios/晚唐·开成五年（官方）.json'),'utf8'));c.__source=sc;
 vm.runInContext(`P.scenarios=(P.scenarios||[]).filter(function(s){return s.id!==__source.id;});P.scenarios.push(__source); P.ai.key='';P.ai.url='';P.ai.model='';`,c);
 console.log('[native-selected]',vm.runInContext("JSON.stringify({selected:findScenarioById('sc-tang840-840')._version,accounting:findScenarioById('sc-tang840-840').fiscalConfig.accounting})",c));
 const started=Date.now();vm.runInContext(`doActualStart('sc-tang840-840')`,c,{timeout:60000});

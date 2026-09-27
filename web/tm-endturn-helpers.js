@@ -191,24 +191,21 @@ function runAnnualReview() {
 
     // 多维评分
     var postReq = _getPostRequirement(char);
-    var postAbility = char[postReq.key] || char.intelligence || 50;
-    var virtue = char.virtue || char.benevolence || 50;
-    var loyalty = char.loyalty || 50;
-    var admin = char.administration || 50;
+    function value(v, fallback) { return v != null && v !== '' && isFinite(Number(v)) ? Number(v) : fallback; }
+    var postAbility = value(char[postReq.key], value(char.intelligence, 50));
+    var virtue = value(char.virtue, value(char.benevolence, 50));
+    var loyalty = value(char.loyalty, 50);
+    var admin = value(char.administration, 50);
 
     // 五常加权（仁义礼智信各影响不同方面）
     var wuchang = char.wuchang || {};
-    var wuchangAvg = ((wuchang.ren||50) + (wuchang.yi||50) + (wuchang.li||50) + (wuchang.zhi||50) + (wuchang.xin||50)) / 5;
+    var wuchangAvg = ['ren','yi','li','zhi','xin'].reduce(function(sum,k) { return sum+value(wuchang[k],50); },0) / 5;
 
     // 综合评分：职务匹配度×0.25 + 忠诚×0.2 + 品德×0.2 + 行政×0.15 + 五常×0.1 + 任期表现×0.1
-    var tenureBonus = 0;
-    if (char._memory && char._memory.length > 0) {
-      var goodDeeds = char._memory.filter(function(m){ return m.importance >= 7; }).length;
-      tenureBonus = Math.min(20, goodDeeds * 3);
-    }
+    var tenureBonus = typeof TM !== 'undefined' && TM.OfficeActionEvidence ? TM.OfficeActionEvidence.tenureAchievements(GM,char) : 0;
     var score = postAbility * 0.25 + loyalty * 0.2 + virtue * 0.2 + admin * 0.15 + wuchangAvg * 0.1 + tenureBonus * 0.1;
 
-    var entry = { name: char.name, score: Math.round(score), postType: postReq.type, rank: char.rankLevel || 9 };
+    var entry = { name: char.name, characterId:char.id, score: Math.round(score), postType: postReq.type, rank: value(char.rankLevel,9) };
 
     if (score >= 75) results.excellent.push(entry);
     else if (score >= 45) results.adequate.push(entry);
@@ -237,7 +234,7 @@ function runAnnualReview() {
 
     // 优等效果
     results.excellent.forEach(function(r) {
-      var c = findCharByName(r.name);
+      var c = typeof TM !== 'undefined' && TM.OfficeHolderState ? TM.OfficeHolderState.identity(GM,r.characterId,r.name).char : findCharByName(r.name);
       if (c) {
         if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(c, 5, '\u8003\u8BFE\u4F18\u7B49(' + r.score + '\u5206)', { source:'official-evaluation-excellent' });
         else c.loyalty = Math.min(100, ((typeof c.loyalty === 'number' && isFinite(c.loyalty)) ? c.loyalty : 50) + 5);
@@ -260,7 +257,7 @@ function runAnnualReview() {
     });
     // 劣等效果
     results.poor.forEach(function(r) {
-      var c = findCharByName(r.name);
+      var c = typeof TM !== 'undefined' && TM.OfficeHolderState ? TM.OfficeHolderState.identity(GM,r.characterId,r.name).char : findCharByName(r.name);
       if (c) {
         if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(c, -5, '\u8003\u8BFE\u52A3\u7B49(' + r.score + '\u5206)', { source:'official-evaluation-poor' });
         else c.loyalty = Math.max(0, ((typeof c.loyalty === 'number' && isFinite(c.loyalty)) ? c.loyalty : 50) - 5);
@@ -357,6 +354,7 @@ function designateHeir(charName, heirName) {
 //   部落联盟：successionLaw:'seniority'
 //   五代军阀：successionLaw:'elective'
 function resolveHeir(deadChar) {
+  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) return deadChar ? TM.NativeWorld.resolveHeir(GM, deadChar) : null;
   if (!deadChar) return null;
   // 继承法：优先读角色自身，再读其势力的默认继承法
   var law = deadChar.successionLaw || '';
@@ -470,6 +468,7 @@ function resolveHeir(deadChar) {
 //   resolveHeir 演进时最坏退化为 fallback(在非命门下=多拦·保守方向)。
 function _heirBasisOf(deadChar, heir) {
   if (!deadChar || !heir) return 'none';
+  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) return deadChar.designatedHeirId===heir.id?'designated':(TM.NativeWorld.resolveHeir(GM,deadChar)===heir?'law':'fallback');
   if (deadChar.designatedHeirId && (heir.name === deadChar.designatedHeirId || heir.id === deadChar.designatedHeirId)) return 'designated';
   var _refs = [].concat(deadChar.childrenIds || [], deadChar.children || []);
   if (_refs.some(function(ref) { var key = ref && typeof ref === 'object' ? (ref.id || ref.characterId || ref.name) : ref; return key === heir.name || key === heir.id; })) return 'blood';
@@ -485,6 +484,7 @@ function _heirBasisOf(deadChar, heir) {
 }
 function adjudicatePlayerDeath(ch, cause, opts) {
   opts = opts || {};
+  var nativeSuccession=typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM);
   if (!ch) return { outcome: 'noop' };
   try {
     var heir = (typeof resolveHeir === 'function') ? resolveHeir(ch) : null;
@@ -509,16 +509,16 @@ function adjudicatePlayerDeath(ch, cause, opts) {
         GM._playerDeathKind = opts.kind || ''; // arch-ok 同上
         return { outcome: 'gameover', successionError: transfer.reason || 'transaction-failed' };
       }
-      if (typeof addEB === 'function') { try { addEB('继承', ch.name + '驾崩，' + heir.name + '继位'); } catch (_) {} }
+      if (typeof addEB === 'function') { try { addEB('继承', ch.name + (nativeSuccession?'去世，':'驾崩，') + heir.name + '继位'); } catch (_) {} }
       if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.addMemory) {
         try {
-          NpcMemorySystem.addMemory(heir.name, '先帝驾崩，继承大统', 10, 'career');
+          NpcMemorySystem.addMemory(nativeSuccession?heir.id:heir.name, nativeSuccession?'前任元首去世，依法继任':'先帝驾崩，继承大统', 10, 'career');
           (GM.chars || []).forEach(function (c2) {
-            if (c2 && c2.alive !== false && !c2.isPlayer) NpcMemorySystem.addMemory(c2.name, '先帝' + ch.name + '驾崩，新君' + heir.name + '继位', 8, 'political');
+            if (c2 && c2.alive !== false && !c2.isPlayer) NpcMemorySystem.addMemory(nativeSuccession?c2.id:c2.name, nativeSuccession?(ch.name+'去世，'+heir.name+'依法继任'):('先帝' + ch.name + '驾崩，新君' + heir.name + '继位'), 8, 'political');
           });
         } catch (_) {}
       }
-      if (typeof GameEventBus !== 'undefined' && GameEventBus.emit) { try { GameEventBus.emit('succession', { from: ch.name, to: heir.name, reason: cause }); } catch (_) {} }
+      if (typeof GameEventBus !== 'undefined' && GameEventBus.emit) { try { GameEventBus.emit('succession', { from: ch.name, fromId:ch.id, to: heir.name, toId:heir.id, reason: cause }); } catch (_) {} }
       return { outcome: 'succession', heir: heir.name };
     }
     GM._playerDead = true; // arch-ok: 玩家死亡信号唯一裁决口(R1a·2026-07-07)
@@ -2015,6 +2015,7 @@ function _renderIssueCard(issue) {
 // 玩家点击议题选项·应用 effect + 标记 resolved + 写编年
 async function _chooseIssueOption(issueId, choiceIdx) {
   if (!GM.currentIssues) return;
+  var choiceWorld=GM,choiceProject=P,choiceTurn=GM.turn,choiceLoadGen=typeof window!=='undefined'?(window._tmLoadGen||0):0;
   var issue = GM.currentIssues.find(function(i) { return i.id === issueId; });
   if (!issue || !Array.isArray(issue.choices)) return;
   _tmNormIssueChoices(issue);   // label→text·consequence→desc 兼容归一(否则 AI 裁定/民心归因/chosenText 拿到空文本)
@@ -2024,6 +2025,15 @@ async function _chooseIssueOption(issueId, choiceIdx) {
     return TM.ScenarioEffects.resolveIssue(issue, choiceIdx);
   }
   if (issue.status === 'resolved' || issue._resolving) return; // AI 裁定 await 窗口(数秒)连点曾双裁定双落账(2026-07-04 审查定罪)
+  var choiceEvent=null,choiceRecord=null,choiceClaim=null;
+  if(typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM)&&(issue.sourceHistoryEventId||issue.sourceEventId)){
+    choiceEvent=issue.sourceHistoryEventId?(GM.rigidHistoryEvents||[]).find(function(e){return e.id===issue.sourceHistoryEventId;}):TM.NativeWorld.resolveEvent(GM,{eventId:issue.sourceEventId});
+    choiceRecord=issue.sourceHistoryEventId?(GM.triggeredHistoryEvents||{})[issue.sourceHistoryEventId]:choiceEvent;
+    if(!choiceEvent||!choiceRecord||!TM.NativeWorld.eventChoiceAllowed(GM,choiceEvent))return{ok:false,code:'native-event-choice-denied'};
+    if(choiceRecord.branchApplied){issue.status='resolved';issue.chosenOption=choiceRecord.branchApplied.index;return{ok:true,noChange:true};}
+    choiceClaim=TM.NativeWorld.claimEvent(GM,choiceEvent.id);if(!choiceClaim)return{ok:false,code:'native-event-choice-busy'};
+  }
+  try {
   issue._resolving = true;
   // 命门(v0.2·事件并入御案时政):开关开 → AI 据当前国势裁即时硬核连锁后果(applyAITurnChanges);固定 effect 降兜底。
   //   edictTracker 长期追踪不变(见下)。开关关 = 原固定 effect 查表(零回归)。
@@ -2034,6 +2044,7 @@ async function _chooseIssueOption(issueId, choiceIdx) {
     catch (e) { try { console.warn('[要务·裁定] AI 失败·回落固定 effect:', (e && e.message) || e); } catch(_){} }
   }
   // 应用 effect（兜底:AI 未裁定时·原固定查表）
+  if (GM!==choiceWorld||P!==choiceProject||GM.turn!==choiceTurn||(typeof window!=='undefined'?(window._tmLoadGen||0):0)!==choiceLoadGen) { delete issue._resolving; return {ok:false,code:'issue-world-changed'}; }
   if (!_adj && ch.effect && typeof ch.effect === 'object') {
     Object.keys(ch.effect).forEach(function(k) {
       var v = ch.effect[k];
@@ -2069,7 +2080,9 @@ async function _chooseIssueOption(issueId, choiceIdx) {
     });
   }
   // 标记解决
+  if(choiceRecord)choiceRecord.branchApplied={index:choiceIdx,turn:GM.turn};
   issue.status = 'resolved';
+  delete issue._resolving;
   issue.resolvedTurn = GM.turn || 1;
   issue.resolvedDate = GM._gameDate || '';
   issue.chosenOption = choiceIdx;
@@ -2097,7 +2110,8 @@ async function _chooseIssueOption(issueId, choiceIdx) {
     var _m = document.querySelector('.modal-bg');
     if (_m) _m.remove();
   } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-endturn-helpers');}catch(_){}}
-  setTimeout(function(){ if (typeof openQuarterlyAgenda === 'function') openQuarterlyAgenda(); }, 100);
+  setTimeout(function(){ if (GM===choiceWorld&&P===choiceProject&&GM.turn===choiceTurn&&(typeof window!=='undefined'?(window._tmLoadGen||0):0)===choiceLoadGen&&typeof openQuarterlyAgenda === 'function') openQuarterlyAgenda(); }, 100);
+  } finally {delete issue._resolving;if(choiceClaim)TM.NativeWorld.releaseEvent(choiceWorld,choiceClaim);}
 }
 if (typeof window !== 'undefined') window._chooseIssueOption = _chooseIssueOption;
 
@@ -2126,6 +2140,7 @@ function _issueCoreStateSnapshot() {
 
 // 要务决断 → AI 据局面裁即时硬核后果 → applyAITurnChanges 落地 + 叙事进事件簿。返回是否成功裁定。
 async function _adjudicateIssueOutcomeViaAI(issue, ch) {
+  var adjudicationWorld=GM,adjudicationProject=P,adjudicationTurn=GM.turn,adjudicationGen=typeof window!=='undefined'?(window._tmLoadGen||0):0;
   var L = [];
   L.push('你是历史推演的后果裁定者。御前一桩时局要务,君主已作出决断,请裁定这个决断引发的【硬核可信的即时连锁后果】。');
   L.push('');
@@ -2160,6 +2175,7 @@ async function _adjudicateIssueOutcomeViaAI(issue, ch) {
     }
   };
   var resp = await callAIWithTools(L.join('\n'), [tool], { tier: 'secondary', maxTok: 900, id: 'issue:adjudicate' });
+  if (GM!==adjudicationWorld||P!==adjudicationProject||GM.turn!==adjudicationTurn||(typeof window!=='undefined'?(window._tmLoadGen||0):0)!==adjudicationGen) { var staleIssue=new Error('要务裁定所属世界已变化，旧结果未应用');staleIssue.code='issue-world-changed';throw staleIssue; }
   var call = resp && resp.toolCalls && resp.toolCalls[0];
   var out = (call && call.input) || null;
   if (!out && resp && resp.text) { try { out = JSON.parse(resp.text); } catch (_) { out = null; } }

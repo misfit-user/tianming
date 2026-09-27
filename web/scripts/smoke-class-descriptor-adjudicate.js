@@ -50,9 +50,10 @@ SF.reconcileClassDescriptor(hard, root);
 ok(!hard.descriptor._needsAdjudication, '★已裁过→再 reconcile 不重裁(_adjudicated 守卫·防反复调 AI)');
 
 // 6. 源契约：apply 层 secondary AI 调用接通
-const applySrc = fs.readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
-ok(/_needsAdjudication && typeof callAI === 'function'/.test(applySrc), '源契约·apply class_emerge 对硬骨头触发 secondary AI');
-ok(/'secondary', \{ priority: 'low'/.test(applySrc) && /applyAdjudicatedDescriptor\(_c, _aj\)/.test(applySrc), '源契约·走 secondary 低优先 callAI + applyAdjudicatedDescriptor 落地');
+const applySrc = fs.readFileSync(path.join(WEB, 'tm-social-formation.js'), 'utf8');
+ok(fs.readFileSync(path.join(WEB,'tm-endturn-apply.js'),'utf8').includes('TM.SocialFormation.apply(GM, p1'),'主回合接入统一创建器');
+ok(/_needsAdjudication.*typeof root\.callAI/.test(applySrc), '源契约·apply class_emerge 对硬骨头触发 secondary AI');
+ok(/'secondary',\{priority:'low'/.test(applySrc) && /applyAdjudicatedDescriptor\(c,verdict\)/.test(applySrc), '源契约·走 secondary 低优先 callAI + applyAdjudicatedDescriptor 落地');
 ok(/applyAdjudicatedDescriptor:/.test(fs.readFileSync(path.join(WEB, 'tm-social-foundation.js'), 'utf8')), '源契约·foundation 导出 applyAdjudicatedDescriptor');
 
 console.log('\n[smoke-class-descriptor-adjudicate] ' + (F ? 'FAIL' : 'PASS') + ' — ' + A + ' 通过 / ' + F + ' 失败');

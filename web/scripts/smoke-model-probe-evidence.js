@@ -41,7 +41,7 @@ assert(settings.includes('async function _probeRunEvidence'), '_probeRunEvidence
 assert(settings.includes('仅参考') || settings.includes('\\u4EC5\\u53C2\\u8003'), 'self-report trust warning missing');
 assert(settings.includes('var evidence = isSec ? probe.evidence_secondary : probe.evidence;'), 'evidence panel read missing');
 assert(settings.includes('_renderEvidenceDetails'), 'evidence detail renderer missing');
-assert(settings.includes('6 次'), 'evidence call count prompt not updated');
+assert(settings.includes('9 次'), 'evidence call count prompt not updated');
 assert(settings.includes('_refreshBothProbePanels();'), 'both-tier refresh helper not used');
 
 console.log('[smoke-model-probe-evidence] pass assertions=25');

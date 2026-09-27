@@ -1,0 +1,6 @@
+{
+  "file": "web/scripts/smoke-map-viewport-collision.js",
+  "before": "091d420a8b8a50dcd057edd6cb83374442ed96b8a8a5ed2183abad3a77f7a3ae",
+  "after": "74186351389234f5108f74aaa362a08445b301d58753523ff141150a874df39e",
+  "originalAssertionsRetained": true
+}

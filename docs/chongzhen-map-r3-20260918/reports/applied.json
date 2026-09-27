@@ -1,0 +1,83 @@
+{
+  "started": "2026-09-18T05:58:51.050Z",
+  "complete": true,
+  "sourceBefore": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+  "sourceAfter": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "files": [
+    {
+      "file": "web\\tm-map-locations.js",
+      "before": "4264e8242fc449787508f68bd49acded4910183128c940fad6add874aaf921a7",
+      "after": "d31d241d8ce3e1df99481f7f6ece280f88dfeadcafe1bbea9be7f2283d1db7db",
+      "applied": true
+    },
+    {
+      "file": "scenarios\\天启七年·九月（官方）.json",
+      "before": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+      "after": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+      "applied": true
+    },
+    {
+      "file": "web\\data\\maps\\chongzhen-prefecture-r3\\geometry.json",
+      "before": null,
+      "after": "7d95ba22d1393e095d5afc349864417a2195a0ce7a969dd390074d79e54ddf81",
+      "applied": true
+    },
+    {
+      "file": "web\\data\\maps\\chongzhen-prefecture-r3\\scenario-bindings.json",
+      "before": null,
+      "after": "d5af50805e61784655e50270b3ede43c4dd1973a033d03fd5d4cee95f8deed76",
+      "applied": true
+    },
+    {
+      "file": "web\\scripts\\smoke-tianqi-map-runtime.js",
+      "before": "d3d81dd4c2832f1372af436cfed33ad998d804ad18e5adc490c861d849ccd018",
+      "after": "086ae289015344b09066140b1641ae89a0547cba23b68cf24f567a96b4ea0614",
+      "applied": true
+    },
+    {
+      "file": "web\\scenarios\\tianqi7-1627.js",
+      "before": "7f61e72a381961b28adf2772b988abf9b0e12738002c28c738c3aeb89ea345e2",
+      "after": "36992ee77622b5b917a75322c1aa82f19c59b53bce2849c2cc9ec66eb5f45ab0",
+      "applied": true
+    },
+    {
+      "file": "web\\bundled-scenarios\\天启七年·九月（官方）.json",
+      "before": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+      "after": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+      "applied": true
+    },
+    {
+      "file": "web\\tm-official-scenario-bundle.js",
+      "before": "43adffec148d58613e02d46f5583d8fb683a041eb53aa4f28fd0616bab1fdfb4",
+      "after": "689eef26ab08d2c7bb13f2cf1cb0ba4b834718f72a0d38ee18e78c1c40ce5cae",
+      "applied": true
+    },
+    {
+      "file": "web\\preview\\official-scenarios-bundle.js",
+      "before": "b648914ca6e428f762845af0f6d08e031f20bd9f8fcea1b96bc4e620bb03f862",
+      "after": "67177a1f762630c71c6a2e8e654caa7e2b8db10ec5782f03bf9e54df2c52d3d5",
+      "applied": true
+    },
+    {
+      "file": "web\\preview\\scenario-editor-reset-data.js",
+      "before": "74f1725a416813f7cc19091406dd5eb965891a8f2ea9df0d245e18d62dddb4cb",
+      "after": "8fd942902267a4de4a189c85293e55252496aae80dd60db54c7f1dea2fef4b95",
+      "applied": true
+    },
+    {
+      "file": "web\\bundled-scenarios\\manifest.json",
+      "before": "3e528ee799eb9ef408d917b75876b796f98348f8675c4fbeb33006d8827a77b5",
+      "after": "1d0ed4ca203d7407fda1a8ca456f5f989693c782f53e3d426807ead98eff6de4",
+      "applied": true
+    },
+    {
+      "file": "web\\bundled-scenarios\\manifest.js",
+      "before": "0fe9c76188fda4645fa4790402c4c420ae9261be839e6bb40e548daec2c99518",
+      "after": "e9967c2cc4d494728985057d763eb0dce1527f634ca1c1667432780cd3e90948",
+      "applied": true
+    }
+  ],
+  "steps": [
+    "official-derived-parity"
+  ]
+}

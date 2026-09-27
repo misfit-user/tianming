@@ -1,0 +1,158 @@
+[
+  {
+    "file": "web/index.html",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-writegate.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-turn-inference.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-turn-rollup.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-output-validator.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-ai-infra-model-detect.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-player-settings.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-model-probe-evidence.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-agent-tools.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-semantic-recall.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-steward.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-hybrid.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-adaptive.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-memory-adaptive-upgrade.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-long-term.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/tm-memory-controls.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-memory-model-detection.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/lib-memory-upgrade-r2.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/scripts/smoke-memory-vector-upgrade.js",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "correctedNewlines": 0,
+    "exit": 1,
+    "output": ""
+  }
+]

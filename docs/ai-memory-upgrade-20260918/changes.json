@@ -1,0 +1,182 @@
+[
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "28ff2370b4a44faa4d63cd9eaedf222faa5cc2db5fd4dbada70ee637089c1f81",
+    "after": "a0574096f98ad63c23b7d76a132908fdec650d6b5034f992313e9d3fe2f47769",
+    "at": "2026-09-18T10:51:55.762Z"
+  },
+  {
+    "file": "web/tm-memory-governance.js",
+    "before": "a9989a5f880fce4e2ba1e664bac6e52f5fcacbe7d7c7c01726748983099f91d1",
+    "after": "e19a2616367e3f15420b3e144822ae2be1ce623ab9767bd7662cc9e38b8ab767",
+    "at": "2026-09-18T10:51:55.787Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "8bb7a422ff6a43d6e792622b6b26c224edf785e598c75c8ddf7ff45aeceb19d9",
+    "after": "78b8d5ed3604d345464b3423267da40911d4155720337531096160f9241feba0",
+    "at": "2026-09-18T10:51:55.811Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "78b8d5ed3604d345464b3423267da40911d4155720337531096160f9241feba0",
+    "after": "1a96db1aedb6e257e8f437f4bdf1ffdc1cde923fd9e9d8dac4ad616a5fb4a09e",
+    "at": "2026-09-18T10:53:34.098Z"
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "a0574096f98ad63c23b7d76a132908fdec650d6b5034f992313e9d3fe2f47769",
+    "after": "3c9410ad34d1f7c14526ca15b5bab483271719800865cd24cb1b3346303cfaf4",
+    "at": "2026-09-18T10:53:34.118Z"
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "3c9410ad34d1f7c14526ca15b5bab483271719800865cd24cb1b3346303cfaf4",
+    "after": "61f16acca7ea332bc5082a510118fb826f7199593fcecf5adaa53e377fa15b4a",
+    "at": "2026-09-18T10:53:34.224Z"
+  },
+  {
+    "file": "web/tm-memory-governance.js",
+    "before": "e19a2616367e3f15420b3e144822ae2be1ce623ab9767bd7662cc9e38b8ab767",
+    "after": "3e80310814885459d80f189975af5253d207571dade5ca96f145befa3c5700cd",
+    "at": "2026-09-18T10:53:34.235Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "1a96db1aedb6e257e8f437f4bdf1ffdc1cde923fd9e9d8dac4ad616a5fb4a09e",
+    "after": "3ce431e9b060b639b3e85b089ad7862085e0db756fd71472b6ae10c8723a75c3",
+    "at": "2026-09-18T10:57:11.373Z"
+  },
+  {
+    "file": "web/tm-memory-governance.js",
+    "before": "3e80310814885459d80f189975af5253d207571dade5ca96f145befa3c5700cd",
+    "after": "a749a578d118e3ec91d1fe1eaff773f10ff68c3ca87f70c20a60ea06da919697",
+    "at": "2026-09-18T10:57:11.399Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "3ce431e9b060b639b3e85b089ad7862085e0db756fd71472b6ae10c8723a75c3",
+    "after": "70d401a4e8cc59ef3d4c46a01a730a12bb0c3c0f22f67645abd72cc2ebbe51e4",
+    "at": "2026-09-18T10:59:55.761Z"
+  },
+  {
+    "file": "web/tm-context-zones.js",
+    "before": "bd77193f897cf96e4abfbca54a87bd3dba5e33159269cb086e9873102107612c",
+    "after": "f7a5d97bb4fc8f0173d8317762c90478eea67b378323aaca5e5d0a7d32d97ffc",
+    "at": "2026-09-18T10:59:55.793Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "f6739accdc44fbca256b1cdd271c9b4a8c475098c0faaee803b2e553edaa785c",
+    "after": "f299ff26888aca4c7b72e568485cad5487ff02904a73d7ae75c1aade2ee05b88",
+    "at": "2026-09-18T10:59:56.043Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "f299ff26888aca4c7b72e568485cad5487ff02904a73d7ae75c1aade2ee05b88",
+    "after": "3776061e8dfdd7210c647c69901547040b1ef01fbde8c476363d782a0507b840",
+    "at": "2026-09-18T10:59:56.304Z"
+  },
+  {
+    "file": "web/tm-memory-trace.js",
+    "before": "93b772d587c651964db9ab0d68e0b04c945f11b95798635e69603793bdb43a18",
+    "after": "790aeddadadc061b9170bd58f84a86afc711aa2454bcacdc8b16af55d6a7b6f7",
+    "at": "2026-09-18T10:59:56.325Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "70d401a4e8cc59ef3d4c46a01a730a12bb0c3c0f22f67645abd72cc2ebbe51e4",
+    "after": "1ae505da3ee3ac1e4bd614a7775ac8d25e598060c80fe8fd0701ac29037443e9",
+    "at": "2026-09-18T11:02:33.091Z"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "before": "496323ee5ee8985228a3a298b60df0539d4ab295b8111b465b0e8f5302e72260",
+    "after": "c5ed6545dc036cee1a2f1599d8977ae464aa4fc116ec95eee52a8d4df6350a72",
+    "at": "2026-09-18T11:02:33.132Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "1ae505da3ee3ac1e4bd614a7775ac8d25e598060c80fe8fd0701ac29037443e9",
+    "after": "b4913c8068c46223335db5822d6a42ac5c492d712181d155fb777e4313958b4f",
+    "at": "2026-09-18T11:02:33.384Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "3776061e8dfdd7210c647c69901547040b1ef01fbde8c476363d782a0507b840",
+    "after": "369e7d876ac17bce726985e5f05d513b3ff37d656d54432122c06fb9d34c5d19",
+    "at": "2026-09-18T11:07:06.985Z"
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "61f16acca7ea332bc5082a510118fb826f7199593fcecf5adaa53e377fa15b4a",
+    "after": "d4e900e9fd9389207b48701ab54bc6f698579521e0594ec5c4fa2226c60772b4",
+    "at": "2026-09-18T11:07:07.015Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "369e7d876ac17bce726985e5f05d513b3ff37d656d54432122c06fb9d34c5d19",
+    "after": "3f2673fd3158db73d59e941e84502837a8fafd3b4f017109b6a39bea01bed616",
+    "at": "2026-09-18T11:07:07.080Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "6204227c3771f79be3fa5b23905b9cc61f0b330510ae41fe8792ee64d7a01672",
+    "after": "8f556f946ff510da13600ef06f1b8e969fb1d2ca6c31574d2f031aeb1215333e",
+    "at": "2026-09-18T11:07:07.412Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "b4913c8068c46223335db5822d6a42ac5c492d712181d155fb777e4313958b4f",
+    "after": "78657dd53e5a71a8b80d8d95dfcbb9d773cf2b448ded611ea6fe5caabede91f3",
+    "at": "2026-09-18T11:26:58.713Z"
+  },
+  {
+    "file": "web/tm-memory-trace.js",
+    "before": "790aeddadadc061b9170bd58f84a86afc711aa2454bcacdc8b16af55d6a7b6f7",
+    "after": "8650d23379473cd440c1656f8eb01d6e69a964d9ca0c1abcab67acc21a663ca4",
+    "at": "2026-09-18T11:26:58.739Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "8f556f946ff510da13600ef06f1b8e969fb1d2ca6c31574d2f031aeb1215333e",
+    "after": "ed6ac1fc10877b9cfb50f1ce28297b2c773df3dee3383316c19401b2831a2a67",
+    "at": "2026-09-18T11:26:58.756Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-boundary-upgrade.js",
+    "before": "e46ae0ff172223483fc22ad99a25334aae87ea5ea493a81bef70c3cecfe31b37",
+    "after": "86aff314efe8df4e6d7b1a9e9c6efde5c0724795027e63c06e08e19f60ff51fa",
+    "at": "2026-09-18T11:26:58.785Z"
+  },
+  {
+    "file": "web/tm-memory-context-compiler.js",
+    "before": "3f2673fd3158db73d59e941e84502837a8fafd3b4f017109b6a39bea01bed616",
+    "after": "1ae681f90f91be36bd8c6ed9c856faac52047a1bce70c470525f59c21c90f3a8",
+    "at": "2026-09-18T11:26:58.800Z"
+  },
+  {
+    "file": "web/tm-memory-envelope.js",
+    "before": "d4e900e9fd9389207b48701ab54bc6f698579521e0594ec5c4fa2226c60772b4",
+    "after": "44dd7699300a364c33207b2cc9e4b64ced73b1e7c13aba272af71ad86155b123",
+    "at": "2026-09-18T11:26:58.825Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-boundary-upgrade.js",
+    "before": "86aff314efe8df4e6d7b1a9e9c6efde5c0724795027e63c06e08e19f60ff51fa",
+    "after": "b675aaf22739227666d29b64b2fb182c1ca583ad2e1ae91a38def10f9de0081e",
+    "at": "2026-09-18T11:26:58.846Z"
+  },
+  {
+    "file": "web/tm-memory-retrieval.js",
+    "before": "78657dd53e5a71a8b80d8d95dfcbb9d773cf2b448ded611ea6fe5caabede91f3",
+    "after": "2a2a96d1879de01184564f8e87a70052a0058f042fefe29243930f54b865adb9",
+    "at": "2026-09-18T11:26:58.860Z"
+  },
+  {
+    "file": "web/scripts/smoke-memory-boundary-upgrade.js",
+    "before": "b675aaf22739227666d29b64b2fb182c1ca583ad2e1ae91a38def10f9de0081e",
+    "after": "2023e458c760a09be2e456d49c8f0de233cd95d2fb5876645790f86ff92d7d18",
+    "at": "2026-09-18T11:26:58.899Z"
+  }
+]

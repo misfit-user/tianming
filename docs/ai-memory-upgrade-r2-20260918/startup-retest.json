@@ -1,0 +1,17 @@
+{
+  "at": "2026-09-18T12:45:38.192Z",
+  "results": [
+    {
+      "name": "generatedManifest",
+      "exit": 0,
+      "signal": null,
+      "output": "[startup-phase-manifest] PASS scripts=414 deferred=9 phases={\"menu\":14,\"core\":83,\"world\":295,\"optional\":22}\n"
+    },
+    {
+      "name": "startupContract",
+      "exit": 1,
+      "signal": null,
+      "output": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: the retained 415 scripts plus the shared battle contract form the complete eager set\r\n\r\n414 !== 416\r\n\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-startup-phase-observability.js:24:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 414,\r\n  expected: 416,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "sourceSha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+  "candidateSha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "passed": 22,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "unchanged-official-story-and-config",
+      "passed": true
+    },
+    {
+      "name": "203-original-characters-unaltered",
+      "passed": true
+    },
+    {
+      "name": "48-original-armies-unaltered",
+      "passed": true
+    },
+    {
+      "name": "all-original-admin-quantities-and-states-preserved",
+      "passed": true,
+      "detail": {
+        "originalNodes": 429,
+        "leaves": 382
+      }
+    },
+    {
+      "name": "three-tier-registry-closure",
+      "passed": true
+    },
+    {
+      "name": "accounting-unique-and-complete",
+      "passed": true
+    },
+    {
+      "name": "source-province-tax-weights-not-new-cell-count",
+      "passed": true
+    },
+    {
+      "name": "symmetric-neighbors-no-dangling-references",
+      "passed": true
+    },
+    {
+      "name": "native-cascade-income-matches-original",
+      "passed": true,
+      "detail": {
+        "original": {
+          "central": {
+            "money": 445109,
+            "grain": 87638,
+            "cloth": 0
+          },
+          "localRetain": {
+            "money": 149380,
+            "grain": 61416,
+            "cloth": 0
+          },
+          "skimmed": {
+            "money": 204212,
+            "grain": 40161,
+            "cloth": 0
+          },
+          "lostTransit": {
+            "money": 78564,
+            "grain": 15461,
+            "cloth": 0
+          },
+          "divisionCount": 191
+        },
+        "candidate": {
+          "central": {
+            "money": 445109,
+            "grain": 87638,
+            "cloth": 0
+          },
+          "localRetain": {
+            "money": 149380,
+            "grain": 61416,
+            "cloth": 0
+          },
+          "skimmed": {
+            "money": 204212,
+            "grain": 40161,
+            "cloth": 0
+          },
+          "lostTransit": {
+            "money": 78564,
+            "grain": 15461,
+            "cloth": 0
+          },
+          "divisionCount": 191
+        }
+      }
+    },
+    {
+      "name": "native-prefecture-transfer-does-not-transfer-whole-province",
+      "passed": true
+    },
+    {
+      "name": "merged-synonym-accounts-transfer-together",
+      "passed": true
+    },
+    {
+      "name": "runtime-tier-groups-inherit-43-source-outlines",
+      "passed": true,
+      "detail": {
+        "groups": 43
+      }
+    },
+    {
+      "name": "native-map-path-and-sea-edge",
+      "passed": true
+    },
+    {
+      "name": "player-palace-binds-to-shuntian-not-entire-north-zhili",
+      "passed": true
+    },
+    {
+      "name": "runtime-location-updates-after-a-move",
+      "passed": true
+    },
+    {
+      "name": "map-roundtrip-and-account-identity",
+      "passed": true
+    },
+    {
+      "name": "sparse-legacy-capital-index-does-not-hide-countries",
+      "passed": true
+    },
+    {
+      "name": "whole-province-command-expands-to-exact-members",
+      "passed": true
+    },
+    {
+      "name": "empty-province-aggregate-is-not-counted-as-new-population",
+      "passed": true
+    },
+    {
+      "name": "recapture-restores-province-folder-without-duplicating-accounts",
+      "passed": true
+    },
+    {
+      "name": "province-batch-failure-rolls-back-all-accounts",
+      "passed": true
+    },
+    {
+      "name": "conflicting-province-and-prefecture-requests-are-rejected",
+      "passed": true
+    }
+  ],
+  "fiscal": {
+    "original": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    },
+    "candidate": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    }
+  }
+}

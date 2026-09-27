@@ -266,7 +266,7 @@
   // Only an explicitly typed base and taxAuthorityFactionId may feed a region-tax account.
   function taxReceipts(g, d) {
     var result = [],
-      ids = new Set();
+      ids = new Set(), policyContext = {game:g, turnDays:d};
     var map = g.mapData || g.map;
     arr(map && map.regions).forEach(function (r) {
       var declared = own(r, 'taxBaseResource') || own(r, 'taxBaseUnit');
@@ -291,6 +291,7 @@
         fail('native-tax-account', '税权方须明确配置该资源的唯一地块税收账户：' + r.id);
       var a = rows[0],
         terms = taxTerms(a);
+      if (root.TM && root.TM.TaxPolicy) terms.rate = root.TM.TaxPolicy.effectiveTax(g, r, {id:a.id,name:a.name||a.id,base:a.flowModel.taxBase||'',rate:terms.rate}, policyContext).rate;
       if (a.unit !== r.taxBaseUnit) fail('native-tax-unit', '税基与税收账户单位不一致：' + r.id);
       result.push({
         category: 'region-tax',

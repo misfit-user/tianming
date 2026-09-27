@@ -1,0 +1,85 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "name": "smoke-map-realm-layout.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 579
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 145
+    },
+    {
+      "name": "smoke-phase8-map-live-panels.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 9998
+    },
+    {
+      "name": "smoke-army-march-order.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 160
+    },
+    {
+      "name": "smoke-army-march-viz.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 164
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 1310
+    },
+    {
+      "name": "smoke-tianqi-official-cache-recovery.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 2456
+    },
+    {
+      "name": "smoke-stable-id-reference-integrity.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 190
+    },
+    {
+      "name": "lint-arch-all.js",
+      "passed": false,
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "ms": 35601
+    },
+    {
+      "name": "verify-official-scenario-parity.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 81371
+    }
+  ]
+}

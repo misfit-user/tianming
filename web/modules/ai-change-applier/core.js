@@ -1,3 +1,4 @@
+import { _aiPolicyText, _aiPolicyAmount, _aiPolicyRegion, _aiPolicyRatioLabel, _aiStructuredPolicyText, _aiStructuredPolicyParams, _aiStructuredPolicyExpectedType } from './policy-format.js';
 // @ts-check
 /// <reference path="../../types.d.ts" />
 // Behavior-preserving core migrated from the former origin classic script.
@@ -475,8 +476,11 @@ export function createCore(deps) {
 
   function onDismissal(charName, reason, aiOutput) {
     var G = global.GM;
-    var ch = _findChar(charName);
+    var identity = typeof global._offResolveCharacterIdentity === 'function' ? global._offResolveCharacterIdentity(charName, G) : null;
+    if (identity && !identity.ok && identity.reason !== 'character-stable-id-missing') return { ok:false, reason:identity.reason };
+    var ch = identity && identity.ok ? identity.char : _findChar(charName);
     if (!ch) return { ok: false, reason: '未找到 ' + charName };
+    charName = ch.name;
     // 重复抄家(reason 含抄/查抄且此人已被抄)·跳过移交/追亏·免二次进账(与下方抄家三标记守卫一致)
     var _wgD = _modules.validators; if (_wgD && _wgD._gateDeathRoutingSource && _wgD._gateDeathRoutingSource(G, ch, String(reason || ''), aiOutput)) return { ok: false, reason: 'no-source-bare-death(write-gate·返工issue4·死亡管线收口)' };     var _repeatConfisc = /抄|籍没|没官|查抄/.test(String(reason || '')) && (ch._confiscated || ch.confiscated || ch._confiscatedTurn != null);
     var binding = ch.resources && ch.resources.publicTreasury && ch.resources.publicTreasury.binding;
@@ -599,8 +603,11 @@ export function createCore(deps) {
         }
       } catch(_confE) { try { window.TM&&TM.errors&&TM.errors.captureSilent&&TM.errors.captureSilent(_confE,'confiscate'); } catch(__){} }
     }
-    // ★ 清 officeTree 里所有此人 holder + actualHolders
-    (function _clearAll(nodes){
+    // Stable-ID office owner clears all seats, mirrors and treasury heads together.
+    if (ch.id && typeof global._offVacateByCharId === 'function') {
+      var vacated = global._offVacateByCharId(ch.id, reason || '免职', G.officeTree, { world:G, leaveVacancy:true });
+      if (!vacated.ok) return { ok:false, reason:vacated.reason };
+    } else (function _clearAll(nodes){
       (nodes||[]).forEach(function(n){
         if (!n) return;
         if (Array.isArray(n.positions)) n.positions.forEach(function(p){
@@ -639,6 +646,7 @@ export function createCore(deps) {
     })(G.officeTree || []);
     ch.officialTitle = null;
     ch.position = '';
+    if (ch.currentPosition && typeof ch.currentPosition === 'object') ch.currentPosition.title = '';
     ch.title = ''; // 同步描述性 title·否则免职后廷议等 `officialTitle||title` 回退仍显示原官职
     ch.officialTitles = [];
     ch.concurrentTitles = [];
@@ -741,144 +749,19 @@ export function createCore(deps) {
     return { ok: true };
   }
 
-  function _aiPolicyText(v) {
-    return String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
-  }
 
-  function _aiPolicyAmount(v, fallback) {
-    var n = Number(v);
-    return Number.isFinite(n) ? Math.max(0, Math.round(n)) : (fallback || 0);
-  }
 
-  function _aiPolicyRegion(item) {
-    item = item || {};
-    return _aiPolicyText(item.regionName || item.region || item.target || item.regionId || item.province || '天下');
-  }
 
-  function _aiPolicyRatioLabel(value, fallback) {
-    var n = Number(value);
-    if (!Number.isFinite(n)) n = fallback;
-    if (!Number.isFinite(n)) n = 0.3;
-    if (n <= 1) n = n * 10;
-    n = Math.max(0, Math.min(10, Math.round(n)));
-    return ['零','一','二','三','四','五','六','七','八','九','十'][n] || String(n);
-  }
 
-  function _aiStructuredPolicyText(field, item) {
-    item = item || {};
-    var explicit = _aiPolicyText(item.text || item.edictText || item.draftText || item.content || item.body);
-    if (explicit) return explicit;
-    var action = _aiPolicyText(item.action || item.type || item.kind || item.policyId).toLowerCase();
-    var region = _aiPolicyRegion(item);
-    var amount = _aiPolicyAmount(item.amount || item.money || item.silver, 0);
 
-    if (field === 'currency_adjustments') {
-      if (/full_currency_reform|currency_reform|silver_standard|coinage_reform/.test(action)) return '\u8bcf\u4ee4\uff1a\u63a8\u884c\u5b8c\u6574\u5e01\u5236\u6539\u9769\uff0c\u6821\u6b63\u94f6\u94b1\u6bd4\u4ef7\uff0c\u8d4b\u5f79\u6298\u94f6\uff0c\u4ee5\u5929\u4e0b\u4e00\u94b1\u6cd5\u3002';
-      if (/regional_acceptance|paper_acceptance|acceptance/.test(action)) return '\u8bcf\u4ee4\uff1a\u4ee4' + region + '\u5148\u884c\u627f\u7528' + (item.paperName || item.name || '\u5b9d\u949e') + '\uff0c\u8bbe\u5151\u6362\u5b98\u5c40\uff0c\u7a33\u5176\u6c11\u95f4\u63a5\u53d7\u3002';
-      if (/overseas_silver_flow|maritime_silver|silver_flow|overseas/.test(action)) return '\u8bcf\u4ee4\uff1a\u5f00\u6d77\u901a\u5546\uff0c\u5f15\u6d77\u5916\u94f6\u6d41\u5165' + region + '\uff0c\u5e76\u8bbe\u94f6\u4f30\u4ee5\u5e73\u5e02\u4ef7\u3002';
-      if (/ban|private|mint|私铸|私钱|禁/.test(action)) return '诏令：严禁民间私铸，整饬钱法，搜检私钱作坊。';
-      if (/issue|paper|发行|发钞|发/.test(action)) return '诏令：发行' + (item.paperName || item.name || '纸币') + (amount || 1000000) + '贯，准备金' + _aiPolicyRatioLabel(item.reserveRatio, 0.3) + '成。';
-      if (/abolish|retire|废|罢|停/.test(action)) return '诏令：废止' + (item.paperName || item.name || '宝钞') + '，收回旧钞。';
-      if (/debase|贬|减铸|轻钱/.test(action)) return '诏令：减铸' + (item.coinName || item.coinType || '铜钱') + _aiPolicyRatioLabel(item.level, 0.1) + '成，以纾军用。';
-      return '';
-    }
 
-    if (field === 'population_adjustments') {
-      if (/start_large_corvee|large_corvee|corvee|yaoyi/.test(action)) return '\u8bcf\u4ee4\uff1a\u5f81\u53d1\u5927\u5fad\u5f79' + (amount || 30000) + '\u4eba\uff0c\u6309\u6237\u7c4d\u6d3e\u5dee\uff0c\u4ee5\u4fee\u6cb3\u6e20\u57ce\u9632\u3002';
-      if (/conscription|recruit|levy_soldier|zhaomu/.test(action)) return '\u8bcf\u4ee4\uff1a\u4e8e' + region + '\u5f81\u5175' + (amount || 10000) + '\u540d\uff0c\u6309' + (item.system || item.enable || '\u52df\u5175') + '\u5236\u8865\u5165\u519b\u7c4d\u3002';
-      if (/migration_settlement|migrate|migration|settlement|relocate/.test(action)) return '\u8bcf\u4ee4\uff1a\u8fc1\u5f99\u5b89\u7f6e\u6d41\u6c11' + (amount || 5000) + '\u6237\uff0c\u62e8\u7530\u7ed9\u7cae\uff0c\u4ee4\u5165\u7c4d\u5b89\u4e1a\u3002';
-      if (/hidden|purge|清查|隐户|漏籍/.test(action)) return '诏令：清查隐户，重编入黄籍。';
-      if (/resettle|refugee|fugitive|招抚|逃户|流民/.test(action)) return '诏令：招抚逃户流民，令复业入籍。';
-      if (/baojia|保甲|里甲/.test(action)) return '诏令：全国编设保甲，十户一牌。';
-      if (/recount|register|huangce|黄册|重造|编审/.test(action)) return '诏令：重造黄册，清厘天下户籍。';
-      return '';
-    }
 
-    if (field === 'central_local_actions') {
-      if (/fiscal_bargain|bargain|local_fiscal/.test(action)) return '\u8bcf\u4ee4\uff1a\u4e0e' + region + '\u8bae\u5730\u65b9\u8d22\u653f\u535a\u5f08\uff0c\u660e\u8d77\u8fd0\u5b58\u7559\u4e4b\u5206\uff0c\u4ee5\u6355\u6350\u9977\u800c\u5b89\u5730\u65b9\u3002';
-      if (/long_term_tracking|tracking|follow_up|monitor/.test(action)) return '\u8bcf\u4ee4\uff1a\u5efa\u7acb' + region + '\u957f\u671f\u8d22\u653f\u8ffd\u8e2a\uff0c\u9010\u6708\u6838\u5bf9\u8d77\u8fd0\u3001\u5b58\u7559\u3001\u6c11\u529b\u4e0e\u5b98\u8017\u3002';
-      if (/transfer|grant|下拨|拨银|发帑|赈/.test(action)) return '诏令：下拨' + region + '银' + (amount || 50000) + '两赈济水灾。';
-      if (/force|levy|强征|追征|催征/.test(action)) return '诏令：强征' + region + '地方留存' + (amount || 30000) + '两，以充军饷。';
-      if (/censor|audit|监察|巡按|巡察/.test(action)) return '诏令：派监察御史巡按' + region + '，核其钱粮。';
-      if (/allocation|share|分成|起运|存留|留成/.test(action)) return '诏令：调整' + region + '分成，起运' + _aiPolicyRatioLabel(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare, 0.7) + '成，存留' + _aiPolicyRatioLabel(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare, 0.3) + '成。';
-      return '';
-    }
 
-    if (field === 'environment_actions') {
-      if (/migration_relief|migration|relocate|carry_capacity/.test(action)) return '\u8bcf\u4ee4\uff1a\u4ee4' + region + '\u8fc1\u6c11\u51fa\u5c71\uff0c\u9000\u8015\u8fd8\u6797\uff0c\u51cf\u8f7b\u5c71\u5730\u627f\u8f7d\u3002';
-      if (/tech_investment|technology|water_tech|investment/.test(action)) return '\u8bcf\u4ee4\uff1a\u4e8e' + region + '\u6295\u5165\u6c34\u5229\u6280\u672f\u4e0e\u7701\u6c34\u519c\u5177\uff0c\u8bd5\u884c\u65b0\u6cd5\u4ee5\u590d\u7530\u529b\u3002';
-      if (/disaster_recovery|recovery|restore|post_disaster/.test(action)) return '\u8bcf\u4ee4\uff1a\u884c' + region + '\u707e\u540e\u6062\u590d\u94fe\uff0c\u4fee\u5824\u3001\u6e05\u6de4\u3001\u590d\u8015\uff0c\u4e09\u5e74\u8003\u5176\u6210\u3002';
-      if (/ban|logging|jin_hu|禁伐|禁樵/.test(action)) return '诏令：禁伐' + region + '山林，严禁樵采。';
-      if (/dredge|water|shui|疏浚|水利|治水/.test(action)) return '诏令：疏浚' + region + '河道，兴修水利。';
-      if (/reclaim|relief|tun|复耕|屯田|赈灾/.test(action)) return '诏令：赈灾复耕，屯田养地。';
-      if (/fallow|rest|休耕|限垦|养地/.test(action)) return '诏令：限垦休耕，以养地力。';
-      if (/open|waste|开荒|垦荒|垦殖/.test(action)) return '诏令：开荒' + region + '荒田，以增农亩。';
-      return '';
-    }
 
-    if (field === 'institution_changes') {
-      if (/abolish|remove|retire|废|罢|裁|撤|裁撤|废止/.test(action)) {
-        var oldName = _aiPolicyText(item.officeName || item.name || item.institutionName || item.id || '旧司');
-        return '诏令：裁撤' + oldName + '机构，归并职掌，罢其冗员。';
-      }
-      if (/create|add|register|office|设|立|置|创|新/.test(action)) {
-        var name = _aiPolicyText(item.officeName || item.name || item.institutionName || '新司');
-        return '诏令：设' + name + '，品级' + (item.rank || 5) + '，掌' + (item.duties || item.description || '专理新政') + '。';
-      }
-      return '';
-    }
-    return '';
-  }
 
-  function _aiStructuredPolicyParams(field, item) {
-    item = item || {};
-    var params = {};
-    var action = _aiPolicyText(item.action || item.type || item.kind || item.policyId);
-    if (action) params.action = action;
-    if (item.regionId) params.regionId = item.regionId;
-    if (item.region) params.region = item.region;
-    if (item.sourceRegionId) params.sourceRegionId = item.sourceRegionId;
-    if (item.targetRegionId) params.targetRegionId = item.targetRegionId;
-    if (item.presetId || item.preset) params.presetId = item.presetId || item.preset;
-    if (item.system || item.enable) params.system = item.system || item.enable;
-    if (item.horizonTurns != null) params.horizonTurns = Number(item.horizonTurns);
-    if (item.amount != null || item.money != null || item.silver != null) params.amount = _aiPolicyAmount(item.amount || item.money || item.silver, 0);
-    if (field === 'currency_adjustments') {
-      if (item.paperId) params.paperId = item.paperId;
-      if (item.paperName || item.name) params.paperName = item.paperName || item.name;
-      if (item.reserveRatio != null) params.reserveRatio = Number(item.reserveRatio);
-      if (item.coinType) params.coinType = item.coinType;
-      if (item.level != null) params.level = Number(item.level);
-      if (item.acceptanceDelta != null) params.acceptanceDelta = Number(item.acceptanceDelta);
-    } else if (field === 'central_local_actions') {
-      if (item.qiyunRatio != null || item.centralShare != null) params.qiyunRatio = Number(item.qiyunRatio != null ? item.qiyunRatio : item.centralShare);
-      if (item.cunliuRatio != null || item.retainedShare != null) params.cunliuRatio = Number(item.cunliuRatio != null ? item.cunliuRatio : item.retainedShare);
-      if (item.retainedShare != null) params.retainedShare = Number(item.retainedShare);
-      if (item.purpose) params.purpose = item.purpose;
-      if (item.cost != null) params.cost = _aiPolicyAmount(item.cost, 0);
-    } else if (field === 'environment_actions') {
-      if (item.policyId) params.policyId = item.policyId;
-    } else if (field === 'institution_changes') {
-      params.officeName = item.officeName || item.name || item.institutionName || '';
-      params.rank = item.rank || 5;
-      params.duties = item.duties || item.description || '';
-      if (item.region) params.region = item.region;
-      if (item.staffSize != null) params.staffSize = _aiPolicyAmount(item.staffSize, 20);
-      if (item.annualBudget != null) params.annualBudget = _aiPolicyAmount(item.annualBudget, 50000);
-      if (item.fundingSource) params.fundingSource = item.fundingSource;
-    }
-    return params;
-  }
 
-  function _aiStructuredPolicyExpectedType(field) {
-    return {
-      currency_adjustments: 'currency_reform',
-      population_adjustments: 'huji_reform',
-      central_local_actions: 'central_local_finance',
-      environment_actions: 'environment_policy',
-      institution_changes: 'office_reform'
-    }[field] || '';
-  }
+
+
 
   function _aiInstitutionLifecycleAction(item) {
     var action = _aiPolicyText(item && (item.action || item.type || item.kind || '')).toLowerCase();
@@ -946,11 +829,11 @@ export function createCore(deps) {
     return null;
   }
 
-  function _applyAIStructuredPolicyActions(aiOutput, applied) {
+  function _applyAIStructuredPolicyActions(aiOutput, applied, selectedFields) {
     var G = global.GM;
     var parser = global.EdictParser;
     if (!G || !parser || typeof parser.tryExecute !== 'function') return 0;
-    var fields = ['currency_adjustments', 'population_adjustments', 'central_local_actions', 'environment_actions', 'institution_changes'];
+    var fields = selectedFields || ['currency_adjustments', 'population_adjustments', 'central_local_actions', 'environment_actions', 'institution_changes'];
     var count = 0;
     if (!Array.isArray(G._aiStructuredPolicyActions)) G._aiStructuredPolicyActions = [];
     fields.forEach(function(field) {
@@ -991,7 +874,7 @@ export function createCore(deps) {
           lifecycle = _applyAIInstitutionLifecycleChange(item, params);
           if (lifecycleAttempted) ok = !!(lifecycle && lifecycle.ok);
         }
-        result = { ok: ok, edict: edictResult, lifecycle: lifecycle, reason: lifecycle && lifecycle.reason || edictResult && edictResult.reason || '' };
+        result = { ok: ok, edict: edictResult, lifecycle: lifecycle, reason: lifecycle && lifecycle.reason || edictResult && (edictResult.reason || edictResult.executionResult && edictResult.executionResult.reason) || '' };
         G._aiStructuredPolicyActions.push({
           turn: G.turn || 0,
           field: field,
@@ -1002,6 +885,12 @@ export function createCore(deps) {
         });
         if (ok) {
           count++;
+          var execution = edictResult && edictResult.executionResult;
+          var transfer = execution && execution.success === true && execution.order;
+          if (field === 'central_local_actions' && transfer && Array.isArray(G.transferOrders) && G.transferOrders.indexOf(transfer) >= 0) {
+            if (!applied.fiscalTransfers) applied.fiscalTransfers = [];
+            applied.fiscalTransfers.push({ id:transfer.id, fromAccount:transfer.fromAccount, amount:transfer.amount });
+          }
           G._turnReport.push({ type: 'aiPolicyAction', field: field, text: text, turn: G.turn || 0 });
         } else {
           applied.failed.push({ field: field, text: text, reason: result && (result.reason || result.pathway) || 'execute failed' });
@@ -1356,7 +1245,7 @@ export function createCore(deps) {
     });
 
     if (!applied.semantic) applied.semantic = {};
-    var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied);
+    var aiPolicyActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ['currency_adjustments','population_adjustments','central_local_actions','institution_changes']);
     if (aiPolicyActionCount > 0) applied.semantic.ai_policy_actions = aiPolicyActionCount;
 
     // 7.5. 军事变化：诏令/奏疏/问对/朝会 AI 常返回 military_changes 或 army_changes。
@@ -1401,11 +1290,38 @@ export function createCore(deps) {
     // schema: [{ name, updates:{...任意字段...}, careerEvent:{title,date,summary,...}, travelTo:{toLocation,estimatedDays,reason} }]
     var charUpdCount = 0;
     (aiOutput.char_updates || []).forEach(function(cu) {
-      if (!cu || !cu.name) return;
-      var ch = _findEntity(G, 'char', cu.name);
+      if (!cu) return;
+      var stableRef=String(cu.characterId || cu.charId || '').trim(), ref=stableRef || String(cu.name || '').trim();
+      var candidates=(G.chars || []).filter(function(row) { return row && row.id != null && String(row.id).trim() === ref; });
+      if (!stableRef && !candidates.length) candidates=(G.chars || []).filter(function(row) { return row && row.name === ref; });
+      var ch=candidates.length === 1 ? candidates[0] : null;
+      if (ch && stableRef && cu.name && [String(ch.id),ch.name].concat(ch.aliases || []).indexOf(String(cu.name)) < 0) ch=null;
       if (!ch) { applied.failed.push({char_update: cu, reason: 'char not found'}); return; }
       // updates：任意字段
-      if (cu.updates) charUpdCount += _mergeUpdatesToEntity(ch, cu.updates, 'char_update', ch.name, cu.reason || '', applied.failed, aiOutput);   // 刀C·C3·透传 aiOutput 供敏感字段来源判据(结构化互证)
+      if (cu.updates) {
+        // ★ 2026-09-18·officialTitle semantic reroute（修 char_updates.updates.officialTitle 全数 blocked）
+        // 病灶：prompt 教 AI 在 updates 里写 officialTitle 表升迁调动，但 pathutils BLOCKED_PATHS 把
+        //   chars.*.officialTitle 列为禁区（任职须走语义 sink），_mergeUpdatesToEntity 全数退回
+        //   "blocked update path: chars.0.officialTitle"——AI 每次想调动人事都失败。
+        // 正确姿势：抽出来走 _offAddCharOfficeTitle 语义通道（同 office_assignments 落账路径），
+        //   官职树/赶路人/镜像一条龙同步；position/post/title 留在原 updates 由 merge 消费。
+        if (cu.updates.officialTitle && typeof global._offAddCharOfficeTitle === 'function') {
+          var _newTitle = String(cu.updates.officialTitle || '').trim();
+          delete cu.updates.officialTitle;   // 从合并集合中剔除·走专属 sink 而非 generic merge
+          try {
+            var _offRes = global._offAddCharOfficeTitle(ch, _newTitle, { concurrent: false });
+            if (Array.isArray(_offRes) && _offRes.indexOf(_newTitle) >= 0) {
+              if (typeof global.addEB === 'function') global.addEB('任免', ch.name + ' 就任「' + _newTitle + '」（char_updates 路由）');
+              charUpdCount++;
+            } else {
+              applied.failed.push({ char_update: cu, reason: 'officialTitle sink no-op: ' + _newTitle });
+            }
+          } catch(_offAddE) {
+            applied.failed.push({ char_update: cu, reason: 'officialTitle sink failed: ' + ((_offAddE && _offAddE.message) || _offAddE) });
+          }
+        }
+        charUpdCount += _mergeUpdatesToEntity(ch, cu.updates, 'char_update', ch.name, cu.reason || '', applied.failed, aiOutput);   // 刀C·C3·透传 aiOutput 供敏感字段来源判据(结构化互证)
+      }
       // careerEvent：仕途条目追加
       if (cu.careerEvent) {
         if (!Array.isArray(ch.careerHistory)) ch.careerHistory = [];
@@ -1569,8 +1485,9 @@ export function createCore(deps) {
     (aiOutput.personnel_changes || []).forEach(function(pc){
       if (!pc || !pc.name) return;
       if (handledNames[pc.name]) return;
-      var changeText = String(pc.change || '').trim();
+      var changeText = String(pc.change || pc.desc || '').trim();
       if (!changeText) return;
+      if (/^(?:留任|原职留任|原职照旧|暂不|尚未|未予|不予|拟|建议)/.test(changeText)) return;
       // 动作识别
       var action = null, post = '', reason = pc.reason || changeText;
       var isConcurrentPersonnel = (typeof global._offIsConcurrentAppointment === 'function')
@@ -1578,16 +1495,16 @@ export function createCore(deps) {
         : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(changeText);
       // 免/罢/贬/黜/斩/诛/免职/罢官/致仕
       // \u4E0B\u72F1/\u5165\u72F1/\u7CFB\u72F1/\u6349\u62FF/\u902E\u6355 -> imprison
-      if (/\u4E0B\u72F1|\u5165\u72F1|\u7CFB\u72F1|\u6349\u62FF|\u902E\u6355|\u6293\u6355|\u7F09\u62FF/.test(changeText)) {
+      if (_tmReasonIsImprison(changeText)) {
         action = 'dismiss'; reason = changeText;
       // \u62C4\u5BB6/\u62C4\u6CA1/\u7C4D\u6CA1/\u67E5\u62C4/\u6CA1\u5B98 -> confiscate
-      } else if (/\u62C4\u5BB6|\u62C4\u6CA1|\u7C4D\u6CA1|\u67E5\u62C4|\u6CA1\u5B98/.test(changeText)) {
+      } else if (/抄家|抄没|籍没|查抄|没官/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
       // \u6D41\u653E/\u53D1\u914D/\u620D\u8FB9 -> exile
       } else if (/\u6D41\u653E|\u53D1\u914D|\u620D\u8FB9/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
-      } else if (/(\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
-        action = 'dismiss';
+      } else if (/(革职|革除|撤职|褫职|削职|夺职|解职|\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
+        action = 'dismiss'; reason = changeText + (pc.reason ? '；' + pc.reason : '');
       } else if (/(\u65A9|\u8BDB|\u66B4\u6BD9|\u8D50\u6B7B|\u6B3B|\u8BDB\u6740|\u8BDB\u4E5D\u65CF|\u62C4\u5BB6)/.test(changeText)) {
         action = 'dismiss'; reason = 'execute';
       } else {
@@ -1597,7 +1514,7 @@ export function createCore(deps) {
         if ((m = changeText.match(/(?:\u547D|\u4EE4|\u62DC|\u6388|\u6412|\u8FC1|\u8F6C|\u8FC1\u8F6C|\u8FDB|\u5347|\u4E3A|\u4EFB)\s*([^\s，,。.；;]+)/))) {
           post = m[1].replace(/^(\u4E3A|\u4EFB)/, '');
         }
-        if (!post && pc.former && changeText.indexOf(pc.former) < 0) {
+        if (!post && pc.former && changeText.indexOf(pc.former) < 0 && (_findOfficePos(G.officeTree, changeText) || _isKnownOfficeType(G, changeText))) {
           // 若 former 有职，change 里是新职
           post = changeText.replace(/^(?:\u4ECE|\u81EA)?.*(?:\u8FC1|\u6539|\u8F6C)\s*/, '').replace(/[\s，,。.；;].*$/, '');
         }
@@ -1607,7 +1524,7 @@ export function createCore(deps) {
       if (action === 'dismiss') { var _c2b = _modules.validators; if (_c2b && _c2b._gateJudicialPersonnelChange && _c2b._gateJudicialPersonnelChange(G, aiOutput, pc, changeText, applied)) return; }   // 刀C·C2·司法类人事无源判据(逻辑在 validators·alias 内联·免堆巨石)
       var r = null;
       if (action === 'appoint' && post) r = onAppointment(pc.name, post, { concurrent: isConcurrentPersonnel, reason: reason });
-      else if (action === 'dismiss') r = onDismissal(pc.name, reason, aiOutput);
+      else if (action === 'dismiss') r = onDismissal(pc.characterId || pc.charId || pc.name, reason, aiOutput);
       if (r && r.ok) {
         personnelFromPcCount++;
         handledNames[pc.name] = true;
@@ -1757,7 +1674,6 @@ export function createCore(deps) {
       if (action !== 'add' && action !== 'update' && action !== 'stop' && action !== 'remove') action = 'add';
       var amount = Math.abs(parseFloat(fa.amount) || 0);
       if (action === 'add' && amount <= 0) return;
-      amount = _applyTaxAuthorityGate(G, fa, amount);   // 官制活化 Slice③ 权限门：税类 income 按掌征税权者执行力打折
       var resource = (fa.resource === 'grain' || fa.resource === 'cloth') ? fa.resource : 'money';
       // ★ 裁减语义守卫(2026-07-12·居平内帑案)：「裁减/节省用度」类旨意是降常例支出率的节流令·不是帑银调拨——
       //   本 schema 只有 income/expense 两个库存动词·LLM 只能错映射成「支出 N 两」(内帑侧被真扣)或
@@ -1900,6 +1816,9 @@ export function createCore(deps) {
           applied.semantic.fiscal_adjustments_replayed = (applied.semantic.fiscal_adjustments_replayed || 0) + 1;
           return;
         }
+        // Domain side effects share the fiscal operation receipt: replay must not charge corruption twice.
+        amount = _applyTaxAuthorityGate(G, fa, amount);
+        entry.amount = amount;
         target[containerKey].push(entry);
         fiscalCount++;
         // ★ 刀②·转账对嫌疑留痕：两笔照落·不动银·仅按对告警一次(供 playtest 核是否单边节流/增支误记成两库搬家)
@@ -1953,6 +1872,7 @@ export function createCore(deps) {
         entry.applied = actualApplied;
         entry.shortfall = shortfall;
         entry.executionStatus = executionStatus;
+        if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G,fa,{ok:true,old:typeof cur==='number'?cur:undefined,new:immediateTarget?_readFiscalStock(fiscalStockTarget||immediateTarget,resource):undefined,shortfall:shortfall,executionStatus:executionStatus},fa.target+'.'+resource);
         // turnReport：记 actual + shortfall + status（渲染器区别对待）
         G._turnReport.push({ type:'fiscal_adj', action: action, target: fa.target, kind: fa.kind, resource: resource, name: entry.name, amount: actualApplied, requested: amount, annualAmount: entry.recurring ? amount : 0, recurring: !!entry.recurring, coercedOneTime: !!entry._coercedOneTime, transferPairSuspect: !!fa._transferPairSuspect, shortfall: shortfall, executionStatus: executionStatus, reason: entry.reason, turn: G.turn||0 });
         // 亏欠单独登记——供下回合 AI 推演、史记、风闻录事参考
@@ -1982,6 +1902,9 @@ export function createCore(deps) {
       }
     });
     if (fiscalCount > 0) applied.semantic.fiscal_adjustments = fiscalCount;
+    // Fund environment policies from the actual posted balance, after this batch's income and expenses.
+    var environmentActionCount = _applyAIStructuredPolicyActions(aiOutput, applied, ['environment_actions']);
+    if (environmentActionCount > 0) applied.semantic.ai_policy_actions = (applied.semantic.ai_policy_actions || 0) + environmentActionCount;
 
     // ── 11. faction_updates ──
     var facCount = 0;
@@ -2143,6 +2066,7 @@ export function createCore(deps) {
       } else {
         result = { ok:false, reason:'unsupported op: ' + anyOp };
       }
+      if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G,apc,result);
       if (result && result.ok) {
         anyPathCount++;
         G._turnReport.push({ type:'anyPath', path: result.path || apc.path, op: apc.op||'set', old: result.old, new: result.new, reason: apc.reason, turn: G.turn||0 });
@@ -2233,12 +2157,11 @@ export function createCore(deps) {
       if (typeof window !== 'undefined' && typeof window._validateNarrativeAnachronism === 'function') window._validateNarrativeAnachronism(G, aiOutput);
     });
 
-    // validator 命中即属于结构化写回不完整。旧逻辑只 warning 后继续，并另起后台 AI
-    // 补录，导致本批先以成功状态部分提交；现改为失败清单，由外层草稿事务整体回滚。
-    // 只有完整 endTurn 主写回携带 strictValidation。独立的确定性补丁/测试调用常无完整
-    // narrative，上下文不足时不能把“缺叙事证据”误判为状态失败。
-    var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline) : [];
+    // Actual command and ledger failures reject the atomic batch. Narrative hypotheses
+    // require an emergency Agent review inside the enclosing end-turn transaction.
+    var _validatorFailures = aiOutput._strictValidation === true ? _collectValidatorFailures(G, _validatorBaseline, aiOutput) : [];
     if (_validatorFailures.length) Array.prototype.push.apply(applied.failed, _validatorFailures);
+    applied.reviewRequired = (applied.reviewRequired || []).concat(_modules.reconcile._collectNarrativeReviews(G, _validatorBaseline, aiOutput));
 
     // ── 15. 死亡墓志铭 & 诈死holding ──
     try { _processDeathEpitaphs(G, aiOutput); } catch(_deE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_deE, 'applier] death epitaph:') : console.warn('[applier] death epitaph:', _deE); }
@@ -2971,6 +2894,8 @@ export function createCore(deps) {
       advanceCharTravelByDays: advanceCharTravelByDays
     },
     internals: {
+      _findOfficePos: _findOfficePos,
+      _isKnownOfficeType: _isKnownOfficeType,
       _alreadyResolvedState: _alreadyResolvedState,
       _readFiscalStock: _readFiscalStock,
       _writeFiscalStock: _writeFiscalStock,

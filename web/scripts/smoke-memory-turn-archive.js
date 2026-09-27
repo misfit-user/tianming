@@ -13,6 +13,14 @@ sandbox.globalThis = sandbox;
 sandbox.validateAIWriteBackBatch = function(output) {
   return { ok: true, output: JSON.parse(JSON.stringify(output)), failures: [] };
 }; // 本 smoke 聚焦 archive sink；严格预检本体由 smoke-ai-writeback-integrity 覆盖。
+// These tests exercise archive/rollup after successful domain application; domain rejection is tested separately.
+sandbox._archiveApplyCalls=0;
+sandbox.applyAITurnChanges = function(payload) {
+  assert.strictEqual(payload._strictValidation,true,'archive requires strict main application');
+  Object.keys(payload).forEach(key=>{if(Array.isArray(payload[key]) && key!=='npc_actions')assert.strictEqual(payload[key].length,0,'archive-only fixture has no hidden hard state operation: '+key);});
+  sandbox._archiveApplyCalls++;
+  return {ok:true,applied:{failed:[]}};
+};
 vm.createContext(sandbox);
 
 function load(file) {
@@ -163,6 +171,7 @@ load('tm-endturn-apply-stages.js'); // apply解构S2·stages紧随origin(writeBa
   };
 
   await sandbox.TM.Endturn.AI.apply.writeBack(ctx);
+  assert.strictEqual(sandbox._archiveApplyCalls,1,"archive follows exactly one required successful application");
   assert(ctx.meta.memoryArchive && ctx.meta.memoryArchive.archived === true, 'writeBack should report memory archive result');
   assert(Array.isArray(GM2._turnMemoryArchive) && GM2._turnMemoryArchive.length === 1, 'writeBack should persist turn archive');
   assert(Array.isArray(GM2._memoryDraftInbox) && GM2._memoryDraftInbox.length === 3, 'SC1 summary, issue update, and character memory route to Draft');

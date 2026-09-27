@@ -1,0 +1,39 @@
+[
+  {
+    "label": "before",
+    "scenario": "snapshot-reject",
+    "returned": false,
+    "canonicalSlots": 2,
+    "publishedMarker": false,
+    "warnings": []
+  },
+  {
+    "label": "before",
+    "scenario": "snapshot-switch",
+    "returned": true,
+    "canonicalSlots": 2,
+    "publishedMarker": true,
+    "warnings": []
+  },
+  {
+    "label": "after",
+    "scenario": "snapshot-reject",
+    "returned": true,
+    "canonicalSlots": 2,
+    "publishedMarker": true,
+    "warnings": [
+      {
+        "stage": "time-snapshot",
+        "code": "Error"
+      }
+    ]
+  },
+  {
+    "label": "after",
+    "scenario": "snapshot-switch",
+    "returned": false,
+    "canonicalSlots": 2,
+    "publishedMarker": false,
+    "warnings": []
+  }
+]

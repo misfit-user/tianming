@@ -1,0 +1,58 @@
+function _aiCreateRetryBudget(opts) {
+  opts = opts || {};
+  var attempts = Number(opts.maxAttempts), duration = Number(opts.totalTimeoutMs);
+  if (!Number.isFinite(attempts)) attempts = 4;
+  if (!Number.isFinite(duration) || duration <= 0) duration = 180000;
+  return { attempts: 0, maxAttempts: Math.max(1, Math.min(10, Math.floor(attempts))), deadlineAt: Date.now() + Math.min(900000, duration) };
+}
+function _aiRetryBudgetError() {
+  var e = new Error('本次 AI 任务的恢复次数或总等待预算已用尽'); e.code = 'AI_RETRY_BUDGET'; e._aiRetryExhausted = true; return e;
+}
+function _aiClaimRetryAttempt(budget) {
+  if (!budget) return;
+  if (Date.now() >= budget.deadlineAt || budget.attempts >= budget.maxAttempts) throw _aiRetryBudgetError();
+  budget.attempts++;
+}
+function _aiRetryDelay(response, attempt) {
+  var value = response && response.headers && response.headers.get('Retry-After'), now = Date.now();
+  if (value != null && String(value).trim()) {
+    var seconds = Number(value), date = Date.parse(value);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds * 1000);
+    if (Number.isFinite(date)) return Math.max(0, date - now);
+  }
+  var upper = Math.min(30000, 1000 * Math.pow(2, Math.max(0, attempt)));
+  return Math.floor(upper * (0.5 + Math.random() * 0.5));
+}
+async function _aiBudgetedRetryWait(ms, signal, budget) {
+  if (budget && (Date.now() + ms >= budget.deadlineAt || budget.attempts >= budget.maxAttempts)) throw _aiRetryBudgetError();
+  return _aiWaitForRetry(ms, signal);
+}
+async function _aiFetchWithRetry(url, body, signal, opts) {
+  opts = Object.assign({}, opts || {});
+  var retries = Number(opts.maxRetries); if (!Number.isFinite(retries)) retries = 3;
+  retries = Math.max(0, Math.min(6, Math.floor(retries))); opts.maxRetries = retries;
+  var timeout = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
+  var budget = opts.retryBudget || _aiCreateRetryBudget({ maxAttempts: retries + 3, totalTimeoutMs: timeout * (retries + 1) + 30000 });
+  opts.retryBudget = budget;
+  var ctrl = new AbortController(), timer, cancel;
+  var gm = typeof GM !== 'undefined' ? GM : null, player = typeof P !== 'undefined' ? P : null;
+  var root = typeof window !== 'undefined' ? window : globalThis, generation = root._tmLoadGen;
+  var identity = gm ? [gm._campaignId, gm._timelineId, gm.turn].join('|') : '';
+  function current() { return (typeof GM === 'undefined' ? null : GM) === gm && (typeof P === 'undefined' ? null : P) === player && root._tmLoadGen === generation && (!gm || identity === [gm._campaignId, gm._timelineId, gm.turn].join('|')); }
+  function check() {
+    if (ctrl.signal.aborted) throw ctrl.signal.reason || _aiCancelledError(signal);
+    if (!current()) { var e = new Error('读取期间存档已改变，旧请求结果已丢弃'); e.code = 'AI_STALE_WORLD'; throw e; }
+  }
+  var diag = root.TM && root.TM.Endturn && root.TM.Endturn.Reliability, ticket = diag && diag.requestStart(opts.id);
+  opts._requestTicket = ticket;
+  try {
+    cancel = function() { ctrl.abort(signal.reason || _aiCancelledError(signal)); };
+    if (signal) { signal.addEventListener('abort', cancel, { once: true }); if (signal.aborted) cancel(); }
+    var remaining = budget.deadlineAt - Date.now();
+    if (remaining <= 0) throw _aiRetryBudgetError();
+    timer = setTimeout(function() { var e = new Error('AI 任务总等待时间已到'); e.code = 'AI_REQUEST_DEADLINE'; e.name = 'TimeoutError'; ctrl.abort(e); }, remaining);
+    var result = await _aiQueue.enqueue(function() { check(); return _aiFetchWithRetryInner(url, body, ctrl.signal, opts); }, opts.priority || 'normal', { signal: ctrl.signal, timeoutMs: Math.min(timeout, remaining) });
+    check(); if (diag) diag.requestEnd(ticket, null); return result;
+  } catch (e) { if (e && typeof e === 'object') e._aiRetryExhausted = true; if (diag) diag.requestEnd(ticket, e); throw e; }
+  finally { clearTimeout(timer); if (signal && cancel) signal.removeEventListener('abort', cancel); }
+}

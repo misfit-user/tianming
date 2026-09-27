@@ -3,11 +3,8 @@
 /*
  * tm-faction-npc-settings.js — NPC 决策系统设置 (Phase F3·2026-05-10)
  *
- * 一个开关·决定 NPC 内政是否走 LLM 精细化:
- *   P.conf.npcAiPrecision = true  → A+B+C (LLM enrich + personality + player 干预)
- *   P.conf.npcAiPrecision = false → B+C (本地 personality + player 干预·默认)
- *
- * 默认 false (性能优先·LLM 调用是 cost)·user 可在设置打开。
+ * NPC 真决策已纳入正式玩法；缺少 API 配置时使用本地人格与模板。
+ * 调用频率、并发、预算和文字润色仍分别配置。
  *
  * NPC 模块 (memorial/edict/chaoyi/office/guoku) 在 generate 时:
  *   if (TM.FactionNpcSettings.isAiPrecisionEnabled()) → 走 LLM enrich path
@@ -18,11 +15,11 @@
 
   // 默认配置
   var DEFAULTS = {
-    npcAiPrecision: true,              // 主开关
+    npcAiPrecision: true,              // 兼容旧状态读口，固定启用
     npcAiPrecisionMaxPerTurn: 2,       // 限流·过回合时最多 LLM call 次数；重活交给回合后后台队列
     npcAiPrecisionPriority: 'overall', // F0 2026-05-22·历史字段·无消费者 (ranking 走 FactionActionEngine.scoreFactionCandidate)·保留避免破坏存档迁移
     npcAiCosmeticEnrich: true,         // separate text-polish switch: cosmetic only
-    npcAiPrecisionMode: 'eager',       // master switch ON means endturn batch + in-turn extra LLM can both run
+    npcAiPrecisionMode: 'eager',       // 默认回合批次与回合间补充决策均可运行
     npcAiPrecisionConcurrency: 2,
     npcAiPrecisionRetryAttempts: 2,
     npcAiPrecisionTimeoutMs: 30000,
@@ -47,7 +44,7 @@
     var conf = P.conf;
     _migrateCadence(conf);
     return {
-      npcAiPrecision: typeof conf.npcAiPrecision === 'boolean' ? conf.npcAiPrecision : DEFAULTS.npcAiPrecision,
+      npcAiPrecision: true, // 真决策已转正；旧存档的 false 不再禁用。
       npcAiPrecisionMaxPerTurn: typeof conf.npcAiPrecisionMaxPerTurn === 'number' ? conf.npcAiPrecisionMaxPerTurn : DEFAULTS.npcAiPrecisionMaxPerTurn,
       npcAiPrecisionPriority: conf.npcAiPrecisionPriority || DEFAULTS.npcAiPrecisionPriority,
       npcAiCosmeticEnrich: typeof conf.npcAiCosmeticEnrich === 'boolean' ? conf.npcAiCosmeticEnrich : DEFAULTS.npcAiCosmeticEnrich,
@@ -66,8 +63,7 @@
 
   function isAiPrecisionEnabled() {
     var c = _getConf();
-    if (!c.npcAiPrecision) return false;
-    // 还要 check P.ai.key 已配·没 key 即便开了也 noop
+    // API 未配置时不发起模型调用。
     if (!global.P || !global.P.ai || !global.P.ai.key) return false;
     return true;
   }
@@ -87,20 +83,8 @@
     return Math.max(1, Math.min(4, _getConf().npcAiPrecisionConcurrency));
   }
 
-  function setEnabled(on) {
-    if (!global.P) return false;
-    if (!global.P.conf) global.P.conf = {};
-    _migrateCadence(global.P.conf);
-    global.P.conf.npcAiPrecision = !!on;
-    if (on) {
-      global.P.conf.npcAiPrecisionMode = 'eager';
-    } else if (global.TM && global.TM.FactionNpcInTurnDriver && typeof global.TM.FactionNpcInTurnDriver.cancelInTurnTimers === 'function') {
-      global.TM.FactionNpcInTurnDriver.cancelInTurnTimers();
-    }
-    // 设置写必随存(2026-07-04 p:conf 收口)·不存则重启蒸发（「设置不持久」bug族）
-    try { if (typeof global.saveP === 'function') global.saveP(); } catch (_e) {}
-    return true;
-  }
+  // 兼容旧设置入口，正式决策只受 API 可用性和调用预算约束。
+  function setEnabled() { return true; }
 
   function setCosmeticEnrichEnabled(on) {
     if (!global.P) return false;
@@ -125,7 +109,7 @@
       retryAttempts: c.npcAiPrecisionRetryAttempts,
       timeoutMs: c.npcAiPrecisionTimeoutMs,
       maxTokens: c.npcAiPrecisionMaxTokens,
-      reason: !c.npcAiPrecision ? 'switch off' : (!hasKey ? 'no API key' : 'enabled')
+      reason: !hasKey ? 'no API key' : 'enabled'
     };
   }
 

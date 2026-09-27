@@ -82,4 +82,23 @@ c=fixture();G=c.GM;F=c.FiscalEngine;const authoredConfig=copy(G.publicTreasuryCo
 G.chars.push({id:'royal-style',name:'宗王',faction:'唐',officialTitle:'光王',alive:true},{id:'poet-style',name:'诗客',faction:'唐',officialTitle:'山林诗人',alive:true});
 let titlesBefore=G.chars.slice(-2).map(x=>x.officialTitle).join('|');c._offSyncHoldersFromChars({importSeats:false});ok(!G.officeTree.some(d=>d._offDynamic),'early start cannot turn unmatched royal/literary identities into public offices');ok(G.chars.slice(-2).map(x=>x.officialTitle).join('|')===titlesBefore,'non-office personal titles remain intact');ok(JSON.stringify(c.P)===sourceBefore,'early declaration read never writes source project or indexes');
 const created={id:'new-office',name:'新设校书官',rank:'正七品',headCount:1,holderId:'b',holder:'李乙',monthlyPay:{money:7,grain:1,cloth:0}};G.officeTree[0].positions.push(created);G.chars[1].officialTitle='新设校书官';c._offMigratePosition(created);c._offSyncHoldersFromChars({importSeats:false});ok(G.officeTree.some(d=>(d.positions||[]).some(p=>p.id==='new-office')),'explicitly created office survives title synchronization');ok(created.treasuryBinding.role==='none'&&!created.publicTreasury,'new real post defaults to no independent cash box');
+// Initialization resolves the current tree once, including account bindings in
+// office positions. A later call must see replacement nodes with the same ID.
+c=fixture();G=c.GM;F=c.FiscalEngine;
+let openingRoots=G.adminHierarchy.player.divisions,openingWalks=0;
+Object.defineProperty(G.adminHierarchy.player,'divisions',{configurable:true,get(){openingWalks++;return openingRoots;}});
+const openingLeaves=Array.from({length:40},(_,i)=>({id:'open-'+i,name:'库州'+i,factionId:'唐',publicTreasuryInit:{money:1,grain:0,cloth:0}}));
+openingRoots.push(...openingLeaves);
+for(const n of openingLeaves){G.publicTreasuryConfig.accounts.push({id:'regional:'+n.id,kind:'physical',factionId:'唐',source:{kind:'region',id:n.id}});G.officeTree[0].positions.push({id:'post-'+n.id,treasuryBinding:{accountRef:'regional:'+n.id,role:'oversight'}});}
+ok(F.initializePublicTreasuries({game:G}).ok,'all forty real stores and their custody bindings initialize');
+ok(openingWalks<8,'initialization does not traverse the administrative tree once per account or binding: '+openingWalks);
+ok(openingLeaves.every(n=>n.publicTreasury.money.stock===1),'each leaf receives its own opening balance');
+const replacedOpeningLeaf=openingLeaves[0],replacementOpeningLeaf={id:replacedOpeningLeaf.id,name:replacedOpeningLeaf.name,factionId:'唐',publicTreasuryInit:{money:7,grain:0,cloth:0}};
+openingRoots[openingRoots.indexOf(replacedOpeningLeaf)]=replacementOpeningLeaf;
+ok(F.initializePublicTreasuries({game:G}).ok,'same-turn replacement node initializes on a fresh lookup');
+near(replacementOpeningLeaf.publicTreasury.money.stock,7,'new node retains its declared balance');
+near(replacedOpeningLeaf.publicTreasury.money.stock,1,'detached old node is not changed');
+openingRoots.push({id:123,name:'数字标识',publicTreasuryInit:{money:9,grain:0,cloth:0}});
+G.publicTreasuryConfig.accounts.push({id:'typed-missing',kind:'physical',source:{kind:'region',id:'123'}});
+ok(!F.initializePublicTreasuries({game:G}).ok,'indexed lookup preserves strict ID matching instead of coercing a different ID');
 console.log('[smoke-public-treasury-custody] PASS '+checks+' assertions');

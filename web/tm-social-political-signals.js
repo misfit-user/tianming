@@ -1095,6 +1095,44 @@
     }).filter(Boolean);
   }
 
+  // Numerical pressure follows identity and exposure, never mutable demands or background prose.
+  // These bilingual roles also support custom scenarios through population keys and explicit tags.
+  function classIdentityText(cls) {
+    return [classNameOf(cls), cls && cls.className, cls && cls.economicRole, cls && cls.role,
+      cls && cls.status, cls && cls.populationKeys, cls && cls.tags, cls && cls.labels,
+      cls && cls.descriptor && cls.descriptor.economicBase].map(textOf).join(' ').replace(/[_-]/g, ' ').toLowerCase();
+  }
+
+  function classInPlayerScope(root, cls) {
+    var owner = cls.factionId || cls.faction;
+    if (!owner) return true;
+    var start = root.startContext || {}, player = global.P && global.P.playerInfo || {};
+    var branch = root.adminHierarchy && root.adminHierarchy.player || {};
+    var aliases = ['player', root.playerFactionId, root.playerFaction, start.playerFactionId,
+      player.factionId, player.faction, player.factionName, branch.id, branch.factionId, branch.name];
+    toArray(root.facs || root.factions).forEach(function(f) { if (f && f.isPlayer) aliases.push(f.id, f.name); });
+    return aliases.filter(Boolean).map(normalizeName).indexOf(normalizeName(owner)) >= 0;
+  }
+
+  function inferScopedClassImpacts(root, kind, buildImpact) {
+    return getClasses(root).map(function(cls) {
+      if (!cls || cls.active === false || !classInPlayerScope(root, cls)) return null;
+      var text = classIdentityText(cls), matches = false;
+      if (kind === 'military') {
+        if (/\b(retired|inactive|disbanded|civilian)\b|退役|退伍|解甲|遣散/.test(String(cls.status || '').toLowerCase())) return null;
+        matches = /\b(military|soldiers?|army|armies|garrison|guards?|mercenary|mercenaries|navy|marines?|troops?)\b|军户|军人|军队|兵户|士兵|戍卒|战士|卫士|武人|军士|军籍|军事|武装|士卒|水师/.test(text);
+      }
+      if (kind === 'local') matches = /\b(peasants?|farmers?|rural|commoners?|tenants?|refugees?|workers?|artisans?|merchants?|craftsmen|laborers?|labourers?|households?)\b|农|佃户|佃民|流民|平民|庶民|百姓|居民|工匠|商人|商户|商贾|市民|农业|手工|生产|流通|商贸/.test(text)
+        || !!(cls.descriptor && cls.descriptor.stratum === '下');
+      if (kind === 'corruption') matches = /\b(corruption|scholars?|literati|gentry|officials?|office|bureaucrats?|merchants?|guilds?|artisans?|craftsmen)\b|士大夫|士绅|缙绅|文官|官僚|官员|学者|商人|商户|商贾|工匠|商贸|手工/.test(text);
+      if (!matches) return null;
+      var impact = buildImpact(cls);
+      if (!impact) return null;
+      impact.name = classNameOf(cls);
+      return impact;
+    }).filter(Boolean);
+  }
+
   function partySearchText(party) {
     return [
       partyNameOf(party),
@@ -1274,53 +1312,69 @@
     return clamp(0.65 + ((45 - value) / 45) * 0.35, 0, 1);
   }
 
-  function readLocalRevoltRisk(root) {
+  function readLocalRevoltPressure(root) {
     var local = root && root.local || {};
-    var vals = [
-      local.revoltRisk,
-      local.rebellionRisk,
-      local.unrestRisk,
-      root && root.revoltRisk,
-      root && root.rebellionRisk
-    ];
-    toArray(root && (root.provinces || root.regions || root.divisions)).forEach(function(r) {
-      if (!r || typeof r !== 'object') return;
-      vals.push(r.revoltRisk, r.rebellionRisk, r.unrestRisk);
-      var minxin = Number(r.minxinLocal != null ? r.minxinLocal : r.minxin);
-      var minxinRisk = localMinxinRevoltSeverity(minxin);
-      if (minxinRisk != null) vals.push(minxinRisk);
-    });
-    try {
-      var leaves = [];
-      var bridge = global.IntegrationBridge || (global.window && global.window.IntegrationBridge);
-      if (bridge && typeof bridge.getLeafDivisions === 'function' && root && root.adminHierarchy) {
-        leaves = bridge.getLeafDivisions(root.adminHierarchy, 'player') || [];
-      } else {
-        function walk(nodes) {
-          toArray(nodes).forEach(function(node) {
-            if (!node || typeof node !== 'object') return;
-            var kids = toArray(node.children || node.divisions || node.subs);
-            if (!kids.length) leaves.push(node);
-            else walk(kids);
-          });
-        }
-        var ah = root && root.adminHierarchy;
-        if (ah && typeof ah === 'object') {
-          if (Array.isArray(ah.divisions)) walk(ah.divisions);
-          else Object.keys(ah).forEach(function(k) {
-            var fac = ah[k];
-            walk(fac && (fac.divisions || fac.children || fac.subs));
-          });
-        }
+    var direct = readMaxFinite([local.revoltRisk, local.rebellionRisk, local.unrestRisk, root && root.revoltRisk, root && root.rebellionRisk]);
+    if (direct != null && direct > 1) direct /= 100;
+    var leaves = [], bridge = global.IntegrationBridge;
+    var ah = root && root.adminHierarchy;
+    if (ah && bridge && typeof bridge.getLeafDivisions === 'function') {
+      try { leaves = bridge.getLeafDivisions(ah, 'player') || []; } catch (_) {}
+    }
+    if (!leaves.length && ah) {
+      function walk(nodes) {
+        toArray(nodes).forEach(function(node) {
+          if (!node || typeof node !== 'object') return;
+          var kids = toArray(node.children || node.divisions || node.subs);
+          if (kids.length) walk(kids); else leaves.push(node);
+        });
       }
-      leaves.forEach(function(leaf) {
-        var minxin = Number(leaf && (leaf.minxin != null ? leaf.minxin : leaf.minxinLocal));
-        var minxinRisk = localMinxinRevoltSeverity(minxin);
-        if (minxinRisk != null) vals.push(minxinRisk);
-        vals.push(leaf && leaf.revoltRisk, leaf && leaf.rebellionRisk, leaf && leaf.unrestRisk);
+      var player = ah.player || ah[root.playerFactionId] || ah[root.playerFaction];
+      if (Array.isArray(ah.divisions)) walk(ah.divisions);
+      else if (player) walk(player.divisions || player.children || player.subs);
+    }
+    if (!leaves.length && !ah) leaves = toArray(root && (root.provinces || root.regions || root.divisions));
+    var threshold = tuneNumber(root, 'socialSignals.thresholds.localRevoltRisk', 0.65);
+    var total = 0, affected = 0, peak = direct, rows = [];
+    leaves.forEach(function(leaf) {
+      if (!leaf || typeof leaf !== 'object') return;
+      var risk = readMaxFinite([leaf.revoltRisk, leaf.rebellionRisk, leaf.unrestRisk]);
+      if (risk != null && risk > 1) risk /= 100;
+      var rawMinxin = leaf.minxin != null ? leaf.minxin : leaf.minxinLocal;
+      var moodRisk = rawMinxin == null ? null : localMinxinRevoltSeverity(rawMinxin);
+      if (moodRisk != null) risk = Math.max(risk || 0, moodRisk);
+      var pop = leaf.populationDetail || leaf.population || {};
+      var weight = Number(pop.actualMouths != null ? pop.actualMouths : pop.mouths != null ? pop.mouths : typeof leaf.population === 'number' ? leaf.population : 1);
+      if (!isFinite(weight) || weight <= 0) weight = 1;
+      total += weight;
+      var exposed = risk != null && risk >= threshold;
+      if (exposed) affected += weight;
+      if (risk != null) peak = Math.max(peak || 0, risk);
+      rows.push({ leaf: leaf, weight: weight, exposed: exposed });
+    });
+    return { risk: peak, share: direct != null && direct >= threshold ? 1 : total ? affected / total : 0, rows: rows, national: direct != null && direct >= threshold };
+  }
+
+  function localClassExposure(root, cls, pressure) {
+    if (pressure.national) return 1;
+    var resolver = TM.ClassMinxinBridge;
+    var descriptors = toArray(cls.regionalVariants);
+    if (cls.regionId || cls.region) descriptors = [cls];
+    if (!descriptors.length || !resolver || typeof resolver.resolveRegions !== 'function') return pressure.share;
+    var selected = [];
+    descriptors.forEach(function(d) {
+      resolver.resolveRegions(root, d, cls.factionId || cls.faction || 'player').forEach(function(entry) {
+        if (selected.indexOf(entry.leaf) < 0) selected.push(entry.leaf);
       });
-    } catch (_adminMinxinE) {}
-    return readMaxFinite(vals);
+    });
+    if (!selected.length) return cls.regionId || cls.region ? 0 : pressure.share;
+    var total = 0, affected = 0;
+    pressure.rows.forEach(function(row) {
+      if (selected.indexOf(row.leaf) < 0) return;
+      total += row.weight;
+      if (row.exposed) affected += row.weight;
+    });
+    return total ? affected / total : 0;
   }
 
   function linkedIssueForTokens(root, tokens) {
@@ -1569,11 +1623,12 @@
     if (isFinite(corruption) && corruption >= corruptionThreshold) {
       var cSeverity = clamp((corruption - 60) / 40, 0, 1);
       emit('corruption-high', {
+        classImpactsAuthoritative: true,
         tags: ['corruption', 'office', 'merchant', 'scholar'],
         intensity: cSeverity,
         confidence: 0.78,
         reason: 'Runtime corruption index is high and is affecting organized social groups.',
-        affectedClasses: inferClassImpacts(root, ['corruption', 'official', 'office', 'scholar', 'gentry', 'merchant', 'guild', 'law', '\u8d2a', '\u5b98', '\u58eb', '\u5546'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'corruption', function() {
           return {
             satisfactionDelta: -Math.max(2, Math.round(2 + cSeverity * 5)),
             unrestDelta: { grievance: -Math.round(2 + cSeverity * 4) },
@@ -1721,12 +1776,13 @@
     if (isFinite(arrears) && arrears >= arrearsThreshold) {
       var mSeverity = clamp((arrears - 0.45) / 0.55, 0, 1);
       emit('military-wage-arrears', {
+        classImpactsAuthoritative: true,
         sourceSystem: 'military',
         tags: ['military', 'wage', 'arrears', 'mutiny', 'soldier'],
         intensity: mSeverity,
         confidence: 0.86,
         reason: 'Runtime military data indicates unpaid wages or mutiny pressure.',
-        affectedClasses: inferClassImpacts(root, ['military', 'soldier', 'wage', 'arrears', 'mutiny', 'garrison', '\u519b\u9977', '\u6b20\u9977', '\u54d7\u53d8', '\u5175'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'military', function() {
           return {
             satisfactionDelta: -Math.max(3, Math.round(3 + mSeverity * 7)),
             influenceDelta: Math.max(1, Math.round(mSeverity * 3)),
@@ -1738,22 +1794,26 @@
       });
     }
 
-    var revoltRisk = readLocalRevoltRisk(root);
+    var revoltPressure = readLocalRevoltPressure(root);
+    var revoltRisk = revoltPressure.risk;
     var revoltRiskThreshold = tuneNumber(root, 'socialSignals.thresholds.localRevoltRisk', 0.65);
     var revoltRiskBase = tuneNumber(root, 'socialSignals.severityBases.localRevoltRisk', 0.6);
     if (isFinite(revoltRisk) && revoltRisk >= revoltRiskThreshold) {
       var rSeverity = clamp((revoltRisk - revoltRiskBase) / Math.max(0.01, 1 - revoltRiskBase), 0, 1);
       emit('local-revolt-risk', {
+        classImpactsAuthoritative: true,
         sourceSystem: 'local',
         tags: ['local', 'revolt', 'rebellion', 'unrest', 'peasant'],
         intensity: rSeverity,
         confidence: 0.84,
         reason: 'Runtime local data indicates rising revolt or rebellion risk.',
-        affectedClasses: inferClassImpacts(root, ['local', 'revolt', 'rebellion', 'uprising', 'unrest', 'peasant', 'commoner', 'rural', '\u5730\u65b9', '\u6c11\u53d8', '\u8d77\u4e49', '\u6c11'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'local', function(cls) {
+          var exposure = localClassExposure(root, cls, revoltPressure);
+          if (exposure <= 0) return null;
           return {
-            satisfactionDelta: -Math.max(3, Math.round(3 + rSeverity * 6)),
-            influenceDelta: Math.max(1, Math.round(rSeverity * 3)),
-            unrestDelta: { grievance: -Math.round(3 + rSeverity * 5), revolt: -Math.round(3 + rSeverity * 6) },
+            satisfactionDelta: -round2(Math.max(3, Math.round(3 + rSeverity * 6)) * exposure),
+            influenceDelta: round2(Math.max(1, Math.round(rSeverity * 3)) * exposure),
+            unrestDelta: { grievance: -round2(Math.round(3 + rSeverity * 5) * exposure), revolt: -round2(Math.round(3 + rSeverity * 6) * exposure) },
             demand: 'relieve local exactions before revolt spreads',
             reason: 'local revolt risk'
           };
@@ -1900,10 +1960,11 @@
       var milStress = has(/arrear|mutiny|unpaid|complain|欠饷|哗变|强征|怨/);
       var milSign = milRelief && !milStress ? 1 : (milStress ? -1 : 0);   // \u4e2d\u6027\u21920
       emit('turn-result-military-arrears', {
+        classImpactsAuthoritative: true,
         sourceSystem: 'turn-result',
         tags: ['turn-result', 'military', 'wage', 'arrears', 'soldier'],
         intensity: milSign > 0 ? 0.42 : 0.7,
-        affectedClasses: inferClassImpacts(root, ['military', 'soldier', 'wage', 'arrears', 'garrison', '\u519b', '\u5175', '\u9977', '\u6b20\u9977'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'military', function() {
           return {
             satisfactionDelta: milSign > 0 ? 3 : (milSign < 0 ? -5 : 0),
             influenceDelta: milSign < 0 ? 1 : (milSign > 0 ? -1 : 0),
@@ -1951,10 +2012,11 @@
     if (has(/corruption|bribe|fraud|embezzle|贪|腐|贿|舞弊|侵吞/)) {
       var clean = positive(/clean|punish|audit|investigate|肃贪|惩贪|清查|审计|问责/);
       emit('turn-result-corruption-pressure', {
+        classImpactsAuthoritative: true,
         sourceSystem: 'turn-result',
         tags: ['turn-result', 'corruption', 'office', 'merchant', 'scholar'],
         intensity: clean ? 0.42 : 0.62,
-        affectedClasses: inferClassImpacts(root, ['corruption', 'office', 'merchant', 'scholar', '\u8d2a', '\u8150', '\u5b98', '\u5546', '\u58eb'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'corruption', function() {
           return {
             satisfactionDelta: clean ? 2 : -3,
             unrestDelta: { grievance: clean ? 1 : -2 },
@@ -1966,15 +2028,19 @@
     }
 
     if (has(/revolt|rebellion|uprising|unrest|riot|famine|refugee|民变|起义|骚乱|流民|饥/)) {
+      var resultLocalPressure = readLocalRevoltPressure(root);
       emit('turn-result-local-unrest', {
+        classImpactsAuthoritative: true,
         sourceSystem: 'turn-result',
         tags: ['turn-result', 'local', 'revolt', 'unrest', 'peasant'],
         intensity: 0.72,
-        affectedClasses: inferClassImpacts(root, ['local', 'revolt', 'unrest', 'peasant', 'commoner', 'rural', '\u5730\u65b9', '\u6c11\u53d8', '\u6c11'], function() {
+        affectedClasses: inferScopedClassImpacts(root, 'local', function(cls) {
+          var exposure = localClassExposure(root, cls, resultLocalPressure);
+          if (exposure <= 0) return null;
           return {
-            satisfactionDelta: -5,
-            influenceDelta: 1,
-            unrestDelta: { grievance: -4, revolt: -4 },
+            satisfactionDelta: -round2(5 * exposure),
+            influenceDelta: round2(exposure),
+            unrestDelta: { grievance: -round2(4 * exposure), revolt: -round2(4 * exposure) },
             demand: 'relieve local exactions before unrest spreads',
             reason: 'AI turn result local unrest'
           };

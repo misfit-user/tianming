@@ -1,0 +1,271 @@
+{
+  "at": "2026-09-18T16:58:01.838Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/index.html",
+      "sha256": "1850162d9e44be87e3812170fc154fdcef41fa4ec3a827697df7e2c7ca824fb3",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 69970
+    },
+    {
+      "file": "web/scripts/lib-turn-response-recovery.js",
+      "sha256": "3f5988ba2f91dafc6bee0464b5230871a62530c75ea80abefd93c388015981f7",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": true,
+      "bytes": 2087
+    },
+    {
+      "file": "web/scripts/smoke-turn-recovery-quality.js",
+      "sha256": "b3fec352a9cb70b0b211cdccd0fc2b547e032609b57b980837e36d84df825d77",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": true,
+      "bytes": 9779
+    },
+    {
+      "file": "web/scripts/smoke-turn-response-recovery.js",
+      "sha256": "dfda4dda3754684f2f9bbab7eeb7adecf7c28dc07a0fb575fc310f7ff8e763ca",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": true,
+      "bytes": 10127
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "2e7328394d9bc003e5c4569aa4cea0795599fa280d1169d7a1232107a3eda548",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 43174
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "c9610230c5cbd6499650c96cf8d8cbd9af34c0e6b78405e4ec3c3df8f86b41d9",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 354741
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "ebf339ed171be7a15dcfea1cf1f3a75bc4a223e2929089ceeb663cab9bb403b3",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 26266
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "4877932406ef7370f785e06f54971a3fc31ec88cd8bdcb233f72af9c76b2f6cc",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 164271
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "sha256": "d7691bf0ea9e5b83c64ca0ed44cc955bac744252fdcb26c82664500d0c142769",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 115588
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "af0ec4bd789efb45ee11d5d6848f4354acc07d36d5b423dd9bf594f2038c9321",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 103508
+    },
+    {
+      "file": "web/tm-endturn-response-recovery.js",
+      "sha256": "97031ea842e8fc398d00aaab1fde18164b0b3162266207272f722b78d694ae0f",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": true,
+      "bytes": 12829
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "sha256": "91fde5fce8c5949eb6c7cc462558ad3a5e8cba7ed7881296647efa1ff25f5b13",
+      "hashMatches": true,
+      "syntax": 0,
+      "created": false,
+      "bytes": 13641
+    }
+  ],
+  "qualityChecks": [
+    {
+      "check": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "Agent _depthGate unchanged",
+      "ok": true
+    },
+    {
+      "check": "Agent _selfCheck unchanged",
+      "ok": true
+    },
+    {
+      "check": "Agent _buildSystemPrompt unchanged",
+      "ok": true
+    },
+    {
+      "check": "Agent _buildTurnPrompt unchanged",
+      "ok": true
+    },
+    {
+      "check": "Transport _aiWithStreamScope unchanged",
+      "ok": true
+    },
+    {
+      "check": "Transport _aiComputeTimeout unchanged",
+      "ok": true
+    },
+    {
+      "check": "Transport _aiErrorIsTerminal unchanged",
+      "ok": true
+    },
+    {
+      "check": "Uncached request policy unchanged",
+      "ok": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 200,
+    "pass": 199,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalTests": {
+    "selected": 202,
+    "pass": 201,
+    "fail": 1,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "testsComplete": true,
+  "newTests": [
+    {
+      "name": "smoke-turn-recovery-quality.js",
+      "pass": true,
+      "detail": "{\"pass\":10,\"fail\":0,\"total\":10}"
+    },
+    {
+      "name": "smoke-turn-response-recovery.js",
+      "pass": true,
+      "detail": "{\"pass\":18,\"fail\":0,\"total\":18}"
+    }
+  ],
+  "previousFailures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "failures": [
+    "smoke-startup-phase-observability.js"
+  ],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "manifest": {
+    "at": "2026-09-18T16:57:02.463Z",
+    "exit": 0,
+    "output": "[startup-phase-manifest] PASS scripts=420 deferred=9 phases={\"menu\":14,\"core\":85,\"world\":299,\"optional\":22}\n"
+  },
+  "benchmark": {
+    "description": "Synthetic two-stage failure, 50 ms per HTTP response; control disables response reuse only. Not real API timing.",
+    "control": [
+      {
+        "calls": 4,
+        "ms": 230.814,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      },
+      {
+        "calls": 4,
+        "ms": 242.053,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      },
+      {
+        "calls": 4,
+        "ms": 234.539,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      }
+    ],
+    "recovery": [
+      {
+        "calls": 3,
+        "ms": 191.708,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      },
+      {
+        "calls": 3,
+        "ms": 183.044,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      },
+      {
+        "calls": 3,
+        "ms": 176.299,
+        "sameMain": true,
+        "mainHash": "715f7919bd55eebe5c20e470b0b8c198bd66330dfefd11527bbdc05d3d39d6f2",
+        "narrativeHash": "a04347128e10468aba757a87fe7d0b2a1b97f2fdca06402e597e8c558b1acc04"
+      }
+    ],
+    "summary": {
+      "controlCalls": 4,
+      "recoveryCalls": 3,
+      "controlMedianMs": 234.539,
+      "recoveryMedianMs": 183.044,
+      "identicalFullOutputs": true
+    }
+  }
+}

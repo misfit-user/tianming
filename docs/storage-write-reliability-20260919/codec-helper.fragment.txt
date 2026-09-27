@@ -1,0 +1,31 @@
+  awaitResult: function(promise, stage, cancel) {
+    var timer, settled = false;
+    return new Promise(function(resolve, reject) {
+      timer = setTimeout(function() {
+        if (settled) return; settled = true;
+        var error = new Error('存档' + stage + '超时，未把不完整数据当成成功');
+        error.code = stage === 'compress' ? 'SAVE_COMPRESS_TIMEOUT' : stage === 'checksum' ? 'SAVE_CHECKSUM_TIMEOUT' : 'SAVE_DECOMPRESS_TIMEOUT';
+        try { if (cancel) cancel(error); } catch (_) {}
+        reject(error);
+      }, 60000);
+      Promise.resolve(promise).then(function(value) {
+        if (settled) return; settled = true; clearTimeout(timer); resolve(value);
+      }, function(error) {
+        if (settled) return; settled = true; clearTimeout(timer); reject(error);
+      });
+    });
+  },
+  transform: function(source, transformer, stage, text) {
+    var controller = new AbortController(), reader;
+    var output = (async function() {
+      reader = source.pipeThrough(transformer, { signal: controller.signal }).getReader();
+      var chunks = [];
+      try { while (true) { var part = await reader.read(); if (part.done) break; chunks.push(part.value); } }
+      finally { try { reader.releaseLock(); } catch (_) {} }
+      var blob = new Blob(chunks); return text ? await blob.text() : blob;
+    })();
+    return this.awaitResult(output, stage, function(error) {
+      controller.abort(error);
+      if (reader) { try { var cancellation = reader.cancel(error); if (cancellation && cancellation.catch) cancellation.catch(function() {}); } catch (_) {} }
+    });
+  },

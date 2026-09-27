@@ -1,0 +1,14 @@
+one("        if ((player.factionId===newId || player.factionName===newName) && hierarchy.player) targetKey='player';",`        if ((player.factionId===newId || player.factionName===newName) && hierarchy.player) targetKey='player';
+        if (targetKey!=='player' && rec.map && Array.isArray(rec.map.provinceMigration)) {
+          var existingRoots=Object.keys(hierarchy).filter(function(k){var v=hierarchy[k];return k!=='player' && v && (k===newId || v.factionId===newId || v.factionName===newName);});
+          if(existingRoots.length===1)targetKey=existingRoots[0];
+        }`);
+one("          if (targetContainer && Array.isArray(targetContainer.children)) {",`          if (targetContainer && Array.isArray(targetContainer.children) && !(rec.map && rec.map.provinceMigration && targetContainer.mapAccounting)) {`);
+one("    remember(g.turnChanges);if(g.turnChanges)remember(g.turnChanges.map);",`    remember(g.turnChanges);if(g.turnChanges)remember(g.turnChanges.map);
+    if (migratedMap && migratedMap.sourceBudgetModel==='source-partition-v1') {
+      // A batch rollback must include every container touched by its per-cell transfers.
+      remember(g.adminHierarchy);var treeSeen=new Set();
+      function rememberTree(n){if(!n || treeSeen.has(n))return;treeSeen.add(n);remember(n);['children','divisions'].forEach(function(k){if(Array.isArray(n[k])){remember(n[k]);n[k].forEach(rememberTree);}});}
+      Object.keys(g.adminHierarchy||{}).forEach(function(k){rememberTree(g.adminHierarchy[k]);});
+      remember(g._mapRetiredProvinceContainers);Object.keys(g._mapRetiredProvinceContainers||{}).forEach(function(k){rememberTree(g._mapRetiredProvinceContainers[k].node);});
+    }`);

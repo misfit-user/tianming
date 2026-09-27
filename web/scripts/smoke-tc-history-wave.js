@@ -226,6 +226,9 @@ behaviorPromises.push((function () {
   const sb = baseSandbox({ showLoading: () => {} });
   sb.callAIWithTools = function (transcript) { captured.push(String(transcript || '')); return Promise.resolve({ text: '', toolCalls: [] }); };
   sb.callAIMessages = function () { return Promise.resolve('{"actions":[]}'); };   // 循环后脚手架/深化兜底(不影响本断言)
+  // Load the same wait-setting validator used by the real startup path; do not stub away runtime checks.
+  const waitSettingSource = require('./lib-perf-round1').functionSource(R('tm-ai-infra-retry.js'), '_aiWaitSetting');
+  vm.runInContext(waitSettingSource, sb, { filename: 'real-ai-wait-setting' });
   vm.runInContext(agentKernel, sb, { filename: 'agent-kernel' });         // TM.AgentKernel(预算/回执底座)真加载
   vm.runInContext(agentIntentPlan, sb, { filename: 'agent-intent-plan' }); // TM.Endturn.AgentIntentPlan(唯一提交器)真加载
   vm.runInContext(agent, sb, { filename: 'agent-mode' });

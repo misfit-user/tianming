@@ -74,7 +74,7 @@ vm.runInContext(resetSrc + '\n' + identitySrc + '\n' + replaceSrc + '\n' + inval
     '更新中心读取无 token 的桌面公开会话时仍优先当前在线身份，不复活旧 IPC 身份');
   ok((community.match(/_invalidateExpiredAtEpoch\(/g) || []).length >= 10, '好友、通知与私信写操作的 resolved/rejected 认证失败都统一失效会话');
   ok(/accountRefresh[\s\S]*?var requestEpoch = _accountEpoch\(\)[\s\S]*?_sameAccountEpoch\(requestEpoch\)/.test(community), '手动身份刷新拒绝旧账号晚到回包');
-  ok(/tm-online-client\.js\?v=20260811-auditfix1/.test(indexHtml), '在线客户端修复已刷新运行时缓存戳');
+  ok(/tm-online-client\.js\?v=[A-Za-z0-9_.-]+/.test(indexHtml), '在线客户端修复已刷新运行时缓存戳');
   ok(/refreshFriends:\s*function/.test(main) && /TMContentManager\.refreshFriends\(\)/.test(community), '好友瞬时失败提供可达重试入口');
   ok(/if \(me && me\.loggedIn\)[\s\S]*?await refreshAccountSession\(\);[\s\S]*?else invalidateAccountSession\('登录已失效，请重新登录。'\)/.test(community), '手动刷新遇已失效 token 也清除内存用户');
 

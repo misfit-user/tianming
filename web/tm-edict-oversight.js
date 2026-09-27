@@ -116,10 +116,10 @@
   }
 
   // ── 写回：更新 _edictTracker 每道活诏(跨回合) + _edictEfficacyReport(兼容形状) + 历史 + provenance ──
-  function applyOversight(GM, active, parsed) {
+  function applyOversight(GM, active, parsed, options) {
     GM = GM || global.GM;
     if (!GM || !parsed) return { applied: false };
-    var turn = GM.turn || 0;
+    var turn = options && options.resolutionTurn != null ? options.resolutionTurn : GM.turn || 0;
     var byOid = {}; active.forEach(function (a) { byOid[a.oid] = a; });
     var updated = 0, sabotaged = 0;
     var accepted = new Set();
@@ -130,6 +130,8 @@
       var entry = GM._edictTracker && GM._edictTracker[a._idx]; if (!entry) return;
       if (accepted.has(r.oid) || !deliveryReady(GM,entry) || (a._entry && (entry !== a._entry || a._sourceState !== JSON.stringify([entry.content,entry.status,entry.assignee,entry.letterId])))) return;
       accepted.add(r.oid);
+      // Preserve the primary settlement receipt; oversight is a supplementary assessment.
+      if (!(TM.EdictOutcomes && Array.isArray(entry.outcomes) && entry.outcomes.some(function(x){return x.turn===turn;}))) {
       // 更新跨回合生命周期(真评估·替时间猜)
       if (typeof r.executionLevel === 'number') entry.progressPercent = Math.max(0, Math.min(100, r.executionLevel));
       if (r.status) entry.status = String(r.status);
@@ -137,6 +139,7 @@
       if (r.nextAdvice) entry._nextAdvice = String(r.nextAdvice).slice(0,400);
       if (r.chainEffect) { if (!Array.isArray(entry._chainEffects)) entry._chainEffects = []; entry._chainEffects.push({ turn: turn, effect: String(r.chainEffect).slice(0, 100), by: r.sabotageBy || '' }); if (entry._chainEffects.length > 12) entry._chainEffects = entry._chainEffects.slice(-12); }
       if ((entry.progressPercent || 0) >= 100 && !DONE_STATUS[String(entry.status).toLowerCase()]) entry.status = 'executed';
+      }
       if (r.sabotageBy && (r.status === 'stalled' || r.status === 'sabotaged')) sabotaged++;
       updated++;
     });
@@ -150,7 +153,8 @@
       topPriority: parsed.topPriority || '', sabotagedCount: sabotaged, _crossTurn: true, generatedAt: _now()
     };
     _attachMeta(rep, _provenance(GM, 'edictOversight', turn, parsed.strategicInsight || parsed.topPriority || '', active.map(function (a) { return { sourceType: '_edictTracker', turn: a.issuedTurn, content: a.content }; })));
-    GM._edictEfficacyReport = rep;
+    if (TM.EdictOutcomes && global.GM===GM) TM.EdictOutcomes.publishAudit(TM.EdictOutcomes.auditLease(GM,turn),rep);
+    else GM._edictEfficacyReport = rep;
     if (!GM._edictEfficacyHistory) GM._edictEfficacyHistory = [];
     GM._edictEfficacyHistory.push({ turn: turn, overallEfficacy: rep.overallEfficacy, efficacyByDimension: rep.efficacyByDimension, sabotagedCount: sabotaged });
     if (GM._edictEfficacyHistory.length > 20) GM._edictEfficacyHistory = GM._edictEfficacyHistory.slice(-20);
@@ -207,7 +211,7 @@
       return { failed: true, error: 'parse', streak: GM._edictOversightFailStreak };
     }
     GM._edictOversightFailStreak = 0;
-    var res = applyOversight(GM, active, parsed);
+    var res = applyOversight(GM, active, parsed, opts);
     var entry = { turn: req.turn, active: active.length, updated: res.updated, sabotaged: res.sabotaged, overallEfficacy: GM._edictEfficacyReport.overallEfficacy, provenance: !!(TM.MemorySourceBound && TM.MemorySourceBound.buildSummaryMetadata), calls: 1, ts: _now() };
     _logRun(GM, entry);
     _dbg('[EdictOversight] updated=' + res.updated + ' sabotaged=' + res.sabotaged + ' eff=' + GM._edictEfficacyReport.overallEfficacy);

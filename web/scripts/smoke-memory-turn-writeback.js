@@ -13,6 +13,13 @@ sandbox.globalThis = sandbox;
 sandbox.validateAIWriteBackBatch = function(output) {
   return { ok: true, output: JSON.parse(JSON.stringify(output)), failures: [] };
 }; // 本 smoke 聚焦 memory sink；严格预检本体由 smoke-ai-writeback-integrity 覆盖。
+sandbox._memoryOnlyApplyCount = 0;
+sandbox.applyAITurnChanges = function(payload) {
+  assert(payload._strictValidation === true, 'memory-only writeback retains strict application');
+  Object.keys(payload).forEach(key => { if (Array.isArray(payload[key])) assert(payload[key].length === 0, 'isolated fixture must not accept hard mutations: ' + key); });
+  sandbox._memoryOnlyApplyCount++;
+  return {ok:true, applied:{failed:[]}};
+};
 vm.createContext(sandbox);
 
 [
@@ -89,6 +96,7 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-endturn-apply-stages.js'), '
 
   sandbox.applyCharacterDeaths = function() {};
   await sandbox.TM.Endturn.AI.apply.writeBack(ctx);
+  assert.strictEqual(sandbox._memoryOnlyApplyCount, 1, "required no-op transaction is invoked exactly once");
   assert(Array.isArray(GM2._memoryDraftInbox), 'endturn writeBack should create draft inbox');
   assert(GM2._memoryDraftInbox.some((item) => item.type === 'turn_inference_summary'), 'endturn writeBack drafts SC1 summary memory');
   // Trusted endturn (autoAcceptTrusted lane) auto-accepts ONLY low-risk PUBLIC character memory.

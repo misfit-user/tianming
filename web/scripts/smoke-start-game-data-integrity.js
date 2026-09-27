@@ -54,8 +54,9 @@ function installNodeExtras(win) {
   };
 }
 
+const compiledScripts = new Map(); // Reuse parsed code only; every case still owns a fresh world and VM.
 let disposeGame = function() {};
-function loadGame() {
+function loadGame(selectedSid = SID) {
   // Each case owns a VM. Release its timers before the next complete game boots.
   disposeGame();
   const env = helpers.makeStubs();
@@ -67,15 +68,29 @@ function loadGame() {
   disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
   installNodeExtras(env.win);
   const sandbox = vm.createContext(env.win);
-  const scripts = helpers.parseIndexHtmlScripts();
+  const scripts = helpers.parseIndexHtmlScripts({ includeLazyScenarios: false });
   const cutoff = scripts.findIndex((src) => path.basename(src) === 'tm-test-harness.js');
   const loadScripts = cutoff >= 0 ? scripts.slice(0, cutoff) : scripts;
+  if (selectedSid !== null) {
+  // A browser lazy-loads the complete selected world, not every unrelated official scenario.
+  const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'bundled-scenarios/manifest.json'), 'utf8'));
+  const selected = catalog.entries.find(entry => entry.id === selectedSid);
+  assert(selected && selected.scriptUrl, 'selected official scenario is required');
+  const data = fs.readFileSync(path.join(ROOT, selected.scriptUrl));
+  assert(data.length === selected.bytes && require('crypto').createHash('sha256').update(data).digest('hex') === selected.sha256, 'entire selected scenario must match its pinned source');
+  if (!loadScripts.includes(selected.scriptUrl)) loadScripts.push(selected.scriptUrl);
+  }
 
   loadScripts.forEach((src) => {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
     const code = fs.readFileSync(abs, 'utf8');
-    vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 });
+    const scriptNode = sandbox.document.createElement('script');
+    scriptNode.src = new URL(src, 'http://localhost/index.html').href;
+    sandbox.document.currentScript = scriptNode;
+    let compiled = compiledScripts.get(src);
+    if (!compiled || compiled.source !== code) { compiled = { source: code, script: new vm.Script(code, { filename: src, displayErrors: true }) }; compiledScripts.set(src, compiled); }
+    try { compiled.script.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
   });
 
   vm.runInContext(`
@@ -111,14 +126,14 @@ const TIANQI_MAP_SOURCE = (function () {
     if (!fs.existsSync(p)) return null;
     const sc = JSON.parse(fs.readFileSync(p, 'utf8'));
     const hasRegions = (m) => m && Array.isArray(m.regions) && m.regions.length >= 40;
-    return { map: hasRegions(sc.map) ? sc.map : null, mapData: hasRegions(sc.mapData) ? sc.mapData : null };
+    return { mapJSON: hasRegions(sc.map) ? JSON.stringify(sc.map) : null, mapDataJSON: hasRegions(sc.mapData) ? JSON.stringify(sc.mapData) : null };
   } catch (e) { return null; }
 })();
 
 function attachTianqiMap(sandbox) {
-  if (!TIANQI_MAP_SOURCE || !TIANQI_MAP_SOURCE.map) return false;
-  sandbox.__tianqiMapJSON = JSON.stringify(TIANQI_MAP_SOURCE.map);
-  sandbox.__tianqiMapDataJSON = TIANQI_MAP_SOURCE.mapData ? JSON.stringify(TIANQI_MAP_SOURCE.mapData) : sandbox.__tianqiMapJSON;
+  if (!TIANQI_MAP_SOURCE || !TIANQI_MAP_SOURCE.mapJSON) return false;
+  sandbox.__tianqiMapJSON = TIANQI_MAP_SOURCE.mapJSON;
+  sandbox.__tianqiMapDataJSON = TIANQI_MAP_SOURCE.mapDataJSON || sandbox.__tianqiMapJSON;
   return vm.runInContext(`(function(){
     if (typeof findScenarioById !== 'function') return false;
     var sc = findScenarioById('${SID}');
@@ -554,9 +569,18 @@ async function runMemorialInteractionGuardCase() {
     sc.memorials = [];
     window.__guardedMemorialGenerateCalls = 0;
     window.__resolveGuardedCandidates = null;
+    window.__guardedStartSession = null;
+    // The normal opening hook runs before the prewarm memorial fingerprint is captured.
+    // Keep this a system memorial (no _sid), so late AI generation is still eligible before interaction.
+    GameHooks.on('startGame:after', function(){
+      GM.memorials.push({ id: 'guard-system-opening', turn: GM.turn, from: 'System Reporter',
+        title: 'Opening system report', content: 'Known opening facts awaiting review.',
+        type: 'report', category: '政务', status: 'pending', read: false });
+    }, 1000);
     generateMemorials = function(){ window.__guardedMemorialGenerateCalls += 1; };
     renderMemorials = function(){};
-    aiPlanFirstTurnEvents = function(){
+    aiPlanFirstTurnEvents = function(opts){
+      window.__guardedStartSession = opts && opts.session;
       return new Promise(function(resolve){
         window.__resolveGuardedCandidates = function(){
           GM._candidateEvents = [{ id: 'late-opening-smoke', type: 'memorial', presenter: 'Tester', payload: 'Late opening event' }];
@@ -572,7 +596,14 @@ async function runMemorialInteractionGuardCase() {
   for (let i = 0; i < 10 && typeof sandbox.__resolveGuardedCandidates !== 'function'; i++) await delay(20);
   assert(typeof sandbox.__resolveGuardedCandidates === 'function', 'guarded candidate planner did not start');
   assert(sandbox.GM.memorials.length > 0, 'interaction guard needs the opening system memorial set');
-  sandbox.GM.memorials[0].content = String(sandbox.GM.memorials[0].content || '') + ' [player body edit]';
+  const initialCount = sandbox.GM.memorials.length;
+  const memorial = sandbox.GM.memorials.find(row => row && row.id === 'guard-system-opening');
+  const session = sandbox.__guardedStartSession;
+  assert(memorial && !memorial._sid, 'fixture must be a system opening report, not a preset memorial');
+  assert(session && !session.hasPresetMemorials, 'preset memorials must not bypass the interaction guard');
+  assert(session.initialMemorialFingerprint === sandbox._tmStartMemorialFingerprint(sandbox.GM.memorials), 'system memorial must exist before the exact prewarm baseline is captured');
+  memorial.content = String(memorial.content || '') + ' [player body edit]';
+  assert(sandbox.GM.memorials.length === initialCount, 'body-only fixture must not change memorial count');
   sandbox.__resolveGuardedCandidates();
   await delay(80);
   assert(sandbox.__guardedMemorialGenerateCalls === 0, 'late candidates overwrote memorials after a body-only edit');

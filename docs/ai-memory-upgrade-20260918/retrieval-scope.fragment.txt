@@ -1,0 +1,23 @@
+  function memoryBoundaryReason(hit, opts) {
+    hit = hit || {};
+    opts = opts || {};
+    var gm = opts.GM || {};
+    var states = [hit.status, hit.reviewStatus, hit.factStatus].map(function(s) { return String(s || '').toLowerCase(); });
+    if (states.indexOf('draft') >= 0 || states.indexOf('pending_review') >= 0) return 'pending_review';
+    if (states.indexOf('rejected') >= 0) return 'rejected';
+    if (states.indexOf('quarantine') >= 0 || states.indexOf('quarantined') >= 0) return 'quarantined';
+    if (states.indexOf('deleted') >= 0 || states.indexOf('deleted_tombstone') >= 0 || states.indexOf('redacted') >= 0) return 'deleted';
+    if (hit.active === false) return 'inactive';
+    if (hit.safeBody != null && !String(hit.safeBody).trim()) return 'empty_safe_body';
+    var bindings = [
+      ['worldId', opts.worldId || gm.worldId || gm._worldId || gm.scenarioId || gm.scenarioKey],
+      ['saveId', opts.saveId || gm.saveId || gm._saveId || gm.runId || gm.campaignId || gm._campaignId],
+      ['campaignId', opts.campaignId || gm.campaignId || gm._campaignId],
+      ['timelineId', opts.timelineId || gm.timelineId || gm._timelineId]
+    ];
+    for (var i = 0; i < bindings.length; i++) {
+      var field = bindings[i][0], expected = bindings[i][1];
+      if (expected != null && expected !== '' && hit[field] != null && hit[field] !== '' && String(hit[field]) !== String(expected)) return 'world_scope';
+    }
+    return '';
+  }

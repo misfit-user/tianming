@@ -4,7 +4,7 @@
 //  owner 重批(2026-07-21)落地：「实体化≠模板化——身份与行为必须 AI 演绎·确定性只配兜底账本」。
 //  owner 三拍板：①起号立领袖=专门轻量 subcall ②建国时机交 AI（宪法只记账）③确定性层降级保双轨。
 //
-//  两个 subcall（皆随 revoltEntityEnabled·AI 缺席时镜像层模板兜底=双轨）：
+//  两个 subcall（正式民变演绎·AI 缺席时镜像层模板兜底=双轨）：
 //  A. forgeIdentity(具象化时一次)：AI 起真旗号·立有名有姓的渠帅（优先从在档不满人物揭竿）·
 //     定纲领/stance/agenda——民变从此是「人」不是模板棋子。
 //  B. tickInference(每回合一次·post-turn job)：各股民变作为一等演员由 AI 决断——打哪/占哪/
@@ -36,8 +36,7 @@
     try { return typeof global.callAI === 'function'; } catch (_) { return false; }
   }
   function enabled() {
-    try { return !(global.P && global.P.conf && global.P.conf.revoltEntityEnabled === false); }
-    catch (_) { return false; }
+    return true; // 民变实体及其后果属于正式玩法。
   }
   function _fuzzyDiv(G, name) {
     try {

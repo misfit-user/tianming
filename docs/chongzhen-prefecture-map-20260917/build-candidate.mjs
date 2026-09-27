@@ -55,12 +55,13 @@ for(const [a,b,label]of [['雷州府','琼州府','琼州海峡'],['登州府','
 }
 function alias(text,name,factionId){const r=byName.get(name);if(r)aliases.push({text,regionId:r.id,...(factionId?{factionId}:{}),source:'original-gazetteer-correspondence'});}
 for(const r of rows)for(const id of r.accountingLeafIds)alias(leaves.get(id).name,r.name);
-for(const r of rows){const n=r.name;if(/[府州城]$/.test(n)&&n.length>=3&&!byName.has(n.slice(0,-1)))alias(n.slice(0,-1),n);}
+for(const r of rows){for(const id of r.accountingLeafIds){const n=leaves.get(id).name;if(/[府州城镇卫]$/.test(n)&&n.length>=3&&!byName.has(n.slice(0,-1)))alias(n.slice(0,-1),r.name);}}
 for(const text of ['京师','北京','紫禁城','乾清宫','坤宁宫','慈宁宫','京城','司礼监'])alias(text,'顺天府',ming.id);
-for(const [text,name]of [['南京','应天府'],['登莱','登州府'],['榆林','榆林镇'],['延绥','榆林镇'],['大员城','大员'],['汉城','京畿道'],['平壤','平安道'],['江户城','江户'],['大阪','大坂']])alias(text,name);
+for(const [text,name]of [['蓟州','顺天府'],['通州','顺天府'],['天津三卫','河间府'],['固原','平凉府'],['山海卫','辽东（明·关宁东江）'],['南京','应天府'],['登莱','登州府'],['榆林','榆林镇'],['延绥','榆林镇'],['大员城','大员'],['汉城','京畿道'],['平壤','平安道'],['江户城','江户'],['大阪','大坂']])alias(text,name);
 newmap.locationBindingContract={schema:'source-text-location-v2',revision:1,courtFactionId:ming.id,courtCharacterId:emperor.id,courtStartRegionId:byName.get('顺天府').id,policy:'原文保留，现居与目的地分离；粗区不是精确城址。'};
 newmap.locationAliases=aliases;
 newmap.locationAreas=registry.flatMap(p=>[p.name,parents.get(p.sourceRegionId)?.name,p.sourceRegionId].filter(Boolean).map(text=>({text,regionIds:p.memberRegionIds,precision:'province'})));
+for(const [text,pid]of [['福建沿海','ming-04'],['广东沿海','ming-05'],['台海','ming-30'],['辽东','ming-28']]){const p=registry.find(r=>r.sourceRegionId===pid);newmap.locationAreas.push({text,regionIds:p.memberRegionIds,precision:'area'});}
 newmap.authoringRevision='chongzhen-prefecture-v1';newmap.enabled=true;
 out.map=newmap;out.mapData=clone(newmap);
 const lean={...newmap,regions:rows.map(r=>({id:r.id,name:r.name,aliases:r.aliases,owner:r.owner,factionId:r.factionId})),basemap:null};

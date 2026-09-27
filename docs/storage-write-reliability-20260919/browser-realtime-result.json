@@ -1,0 +1,59 @@
+{
+  "at": "2026-09-19T09:59:11.310Z",
+  "sourceSHA": "82605b1c1209292ae6f2be811612b89f903d2258b33ebda9038a0adcc95d1d2f",
+  "version": {
+    "protocolVersion": "1.3",
+    "product": "Edg/153.0.4234.46",
+    "revision": "@af766475e4461bf7a8f44d601c8dfc6e7db82d66",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+    "jsVersion": "15.3.12.6"
+  },
+  "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\storage-write-reliability-20260919\\.edge-realtime-1789811950364",
+  "outcome": {
+    "ok": true,
+    "results": [
+      {
+        "name": "native gzip available",
+        "pass": true
+      },
+      {
+        "name": "native gzip exact roundtrip",
+        "pass": true
+      },
+      {
+        "name": "native canonical commit",
+        "pass": true
+      },
+      {
+        "name": "one commit receipt",
+        "pass": true
+      },
+      {
+        "name": "complete autosave",
+        "pass": true
+      },
+      {
+        "name": "complete slot_0",
+        "pass": true
+      },
+      {
+        "name": "native abort confirmed",
+        "pass": true
+      },
+      {
+        "name": "no partial autosave advance",
+        "pass": true
+      },
+      {
+        "name": "no partial slot advance",
+        "pass": true
+      },
+      {
+        "name": "confirmed abort leaves writing enabled",
+        "pass": true
+      }
+    ],
+    "source": "actual Edge IndexedDB and CompressionStream; isolated profile"
+  },
+  "error": null
+}

@@ -49,7 +49,11 @@ function loadGame() {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
     const code = fs.readFileSync(abs, 'utf8');
-    vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 });
+    const scriptNode = sandbox.document.createElement('script');
+    scriptNode.src = new URL(src, 'http://localhost/index.html').href;
+    sandbox.document.currentScript = scriptNode;
+    try { vm.runInContext(code, sandbox, { filename: src, displayErrors: true, timeout: 10000 }); }
+    finally { sandbox.document.currentScript = null; }
   });
 
   return sandbox;
@@ -532,6 +536,12 @@ assert(factionHtml.includes(LIAODONG), 'faction panel did not include live-owned
 assert(factionHtml.includes('9000') || factionHtml.includes('9,000'), 'faction panel aggregate did not use live population');
 assert(factionHtml.includes('777'), 'faction panel aggregate did not use live revenue');
 assert(factionHtml.includes(String(LIVE_ARMY_TOTAL)) || factionHtml.includes('2,468'), 'faction panel did not use live army index troop count');
+// 描述、威胁等长文里提到势力名，不能被整段换成势力名；势力键本身仍译成势力名
+const mapParts = sandbox.TMPhase8FormalBridge.__p8MapParts;
+const proseWithFaction = '北御' + LIVE_HOUJIN_LABEL + '，张家口马市互市不绝。';
+assert(mapParts.ppValue(proseWithFaction) === proseWithFaction, 'prose mentioning a faction collapsed into the faction name: ' + mapParts.ppValue(proseWithFaction));
+assert(mapParts.ppValue(LIVE_HOUJIN_LABEL + '破宣府大同塞入塞') === LIVE_HOUJIN_LABEL + '破宣府大同塞入塞', 'short threat text mentioning a faction collapsed into the faction name');
+assert(mapParts.ppValue('houjin') === LIVE_HOUJIN_LABEL, 'faction key should still render as its label, got ' + mapParts.ppValue('houjin'));
 assertAll(factionTab('overview'), [LIVE_HOUJIN_LABEL, LIVE_LEADER, 'LIVE leader title field 934', 'LIVE faction type field 935', 'LIVE government field 936', 'LIVE capital field 937', LIVE_FACTION_GOAL, 'LIVE ideology field 939', 'LIVE faction culture field 940', 'LIVE opening problems field 942'], 'faction overview tab');
 assertAll(factionTab('territory'), [LIAODONG, '9000', 'LIVE territory field 943', 'LIVE faction resource field 944', LIVE_THREAT, LIVE_TRADE], 'faction territory tab');
 assertAll(factionTab('military'), [String(LIVE_ARMY_TOTAL), 'LIVE military breakdown field 945', 'LIVE war state field 946', 'LIVE mobilization field 947', 'LIVE strategic priorities field 948', 'LIVE decision hints field 949', 'LIVE taboo moves field 950', LIVE_THREAT], 'faction military tab');
@@ -686,7 +696,7 @@ sandbox.TMPhase8FormalBridge.openRegionById('region-liaodong');
 const zeroGuardHtml = ppopHtml();
 assert(zeroGuardHtml.includes('1234'), 'zero live soldiers must not clobber static garrison');
 
-// ── 状态卷（2026-06-12）：statusEffects → 「状态」卷卡片 + 检签「况」 ──
+// ── 状态（2026-06-12）：statusEffects → 方志页头状态小签（通志一期 S4 起不再单成一卷、不挂检签「况」）──
 sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [
   { id: 'zt1', kind: 'disaster', name: '辽河冬灾', desc: '大雪封道', econPct: -0.12, minxinPerTurn: -1, startTurn: 1, expiresTurn: 99, source: 'ai' },
   { id: 'zt2', kind: 'building', name: '「驿道」之利', econPct: 0.02, minxinPerTurn: 0, startTurn: 1, expiresTurn: null, source: 'building:驿道' }
@@ -694,7 +704,8 @@ sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [
 sandbox.GM.turn += 1;
 sandbox.TMPhase8FormalBridge.openRegionById('region-liaodong');
 const statusHtml = ppopHtml();
-assertAll(statusHtml, ['bk-zhuangkuang', '辽河冬灾', '「驿道」之利', '岁入 -12%', '民心 -1/回合', '永 续', 'data-bk-jq="bk-zhuangkuang"'], 'region status juan');
+assertAll(statusHtml, ['bk-zhuangkuang', '辽河冬灾', '「驿道」之利', '岁入 -12%', '民心 -1/回合', '永 续', 'bk-zt-tags'], 'region status tags');
+assertNone(statusHtml, ['data-bk-jq="bk-zhuangkuang"'], 'status lives in the head, not a juan with its own jianqian');
 // 空状态不挂签
 sandbox.GM.adminHierarchy.player.divisions[0].statusEffects = [];
 sandbox.GM.turn += 1;

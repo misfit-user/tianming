@@ -10072,6 +10072,15 @@
     if (!Array.isArray(value)) throw new Error('Bulk export requires an array field: ' + key);
     var pack = { format: 'tianming-scenario-editor-bulk-field', version: 1, exportedAt: new Date().toISOString(), field: key, count: value.length, rows: clone(value) };
     if (!options || options.download !== false) {
+      if (global.TM && global.TM.fileExport && global.TM.fileExport.isNative()) {
+        performExportDownload(pack, 'tianming-bulk-' + key + '.json').then(function(result) {
+          if (result.mode === 'canceled') { setStatus('批量字段导出已取消', 'warn'); return; }
+          setStatus('已导出批量字段到：' + (result.path || result.fileName || key + '.json'), 'good');
+        }).catch(function(err) {
+          setStatus('批量字段导出失败：' + (err && err.message || err), 'error');
+        });
+        return pack;
+      }
       var blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json;charset=utf-8' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
@@ -20958,11 +20967,16 @@
   }
 
   // 导出统一口（2026-07-10 玩家反馈「导出无法选文件夹」）：桌面 Electron 走原生「另存为」对话框
-  // （可自选目录；file:// 页的 blob 锚点下载在部分环境静默失败）；无 IPC（web/安卓）回退浏览器下载。
+  // （可自选目录）；安卓走系统文件选择器，普通网页保留浏览器下载。
   // → Promise<{mode:'native'|'download'|'canceled', path?}>
   function performExportDownload(scenario, filename) {
     var name = filename || EXPORT_NAME;
     var wt = (typeof window !== 'undefined') ? window.tianming : null;
+    if (global.TM && global.TM.fileExport && global.TM.fileExport.isNative()) {
+      return Promise.resolve().then(function () {
+        return global.TM.fileExport.saveJson(JSON.stringify(scenario, null, 2), name);
+      });
+    }
     var native = (wt && typeof wt.dialogExport === 'function')
       ? Promise.resolve().then(function () { return wt.dialogExport(scenario, { filename: name }); }).catch(function () { return null; })
       : Promise.resolve(null);
@@ -20999,7 +21013,9 @@
     var warnSuffix = report.warnings.length ? '（' + report.warnings.length + ' 项警告）' : '';
     performExportDownload(state.scenario, EXPORT_NAME).then(function(r) {
       if (r.mode === 'canceled') { setStatus('导出已取消', 'warn'); return; }
-      setStatus(r.mode === 'native' ? ('已导出到：' + r.path + warnSuffix) : ('已导出 JSON：' + EXPORT_NAME + warnSuffix), report.warnings.length ? 'warn' : 'good');
+      setStatus(r.mode === 'native' ? ('已导出到：' + (r.path || r.fileName || EXPORT_NAME) + warnSuffix) : ('已导出 JSON：' + EXPORT_NAME + warnSuffix), report.warnings.length ? 'warn' : 'good');
+    }).catch(function(err) {
+      setStatus('剧本导出失败：' + (err && err.message || err), 'error');
     });
     return clone(state.scenario);
   }
@@ -21015,7 +21031,9 @@
     state.pendingExport = null;
     performExportDownload(pendingScenario, pendingName).then(function(r) {
       if (r.mode === 'canceled') { setStatus('强制导出已取消', 'warn'); return; }
-      setStatus('已强制导出' + (r.mode === 'native' ? '到：' + r.path : '') + '（跳过 ' + report.errors.length + ' 项校验错误）。', 'warn');
+      setStatus('已强制导出' + (r.mode === 'native' ? '到：' + (r.path || r.fileName || pendingName) : '') + '（跳过 ' + report.errors.length + ' 项校验错误）。', 'warn');
+    }).catch(function(err) {
+      setStatus('强制导出失败：' + (err && err.message || err), 'error');
     });
     return null;
   }
@@ -21120,10 +21138,15 @@
       return null;
     }
     var pack = { format: 'tianming-scenario-editor-reset-package', version: 1, exportedAt: new Date().toISOString(), meta: { id: snapshot.id, name: snapshot.name, scenarioName: snapshot.scenarioName, source: snapshot.source, stats: snapshot.stats }, releaseNotes: buildReleaseNotes(), fieldNotes: clone(snapshot.fieldNotes || state.fieldNotes || {}), scenario: clone(snapshot.scenario) };
-    var r = await performExportDownload(pack, 'tianming-scenario-package-' + snapshot.id + '.json');
-    if (r.mode === 'canceled') { setStatus('案卷包导出已取消', 'warn'); return null; }
-    setStatus(r.mode === 'native' ? ('已导出案卷包到：' + r.path) : ('已导出案卷包：' + snapshot.name), 'good');
-    return pack;
+    try {
+      var r = await performExportDownload(pack, 'tianming-scenario-package-' + snapshot.id + '.json');
+      if (r.mode === 'canceled') { setStatus('案卷包导出已取消', 'warn'); return null; }
+      setStatus(r.mode === 'native' ? ('已导出案卷包到：' + (r.path || r.fileName || snapshot.name)) : ('已导出案卷包：' + snapshot.name), 'good');
+      return pack;
+    } catch (err) {
+      setStatus('案卷包导出失败：' + (err && err.message || err), 'error');
+      return null;
+    }
   }
 
   function normalizeProjectPackage(payload, fileName) {

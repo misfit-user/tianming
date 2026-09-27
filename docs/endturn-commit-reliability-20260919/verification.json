@@ -1,0 +1,317 @@
+{
+  "at": "2026-09-19T04:18:31.146Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "baselineHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "branch": "codex/audit-20260905",
+  "files": [
+    {
+      "file": "web/scripts/lib-save-commit-boundary.js",
+      "sha256": "ec27af462a41628ccbb63e285d9ef41d2f06a010f8832340b040ab1e5bc8cebb",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": true
+    },
+    {
+      "file": "web/scripts/smoke-save-commit-boundary.js",
+      "sha256": "d0cab8de10b9db139eea66f48e88b75591745be3978e427c7e60e9fd9f628c4e",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": true
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "2dd26f2b8dd97a3d8cead00814ceaf17f16f99bd6a098469bcb9d0b16a869308",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-core.js",
+      "sha256": "218a62b021ff95b3f2d2a42fd3fbf4f40f0690cab3f1272536ac095a3dc875ad",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": false
+    },
+    {
+      "file": "web/tm-endturn-render.js",
+      "sha256": "ff340af0727bc9f945582f6ec376d1956f10e7b113b72beaaa5a9364e9ec6efa",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": false
+    },
+    {
+      "file": "web/tm-storage.js",
+      "sha256": "9f94e50750100d7526ffb6466420f5230674a25fbc9ec3b4ea704893a07bb58b",
+      "hashMatches": true,
+      "syntaxExit": 0,
+      "created": false
+    }
+  ],
+  "qualityChecks": [
+    {
+      "check": "web/tm-state-snapshot.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-ai.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-validity.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-mode-contract.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-pipeline-steps.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-agent-mode.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-endturn-response-recovery.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "web/tm-ai-infra-retry.js unchanged",
+      "ok": true
+    },
+    {
+      "check": "createCanonicalPayload unchanged",
+      "ok": true
+    },
+    {
+      "check": "_endTurn_stageTurnData unchanged",
+      "ok": true
+    },
+    {
+      "check": "_endTurn_publishStagedTurnData unchanged",
+      "ok": true
+    },
+    {
+      "check": "_endTurn_render unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmCaptureEndTurnTransaction unchanged",
+      "ok": true
+    },
+    {
+      "check": "_tmPrepareEndTurnBoundary unchanged",
+      "ok": true
+    }
+  ],
+  "baselineTests": {
+    "selected": 199,
+    "pass": 199,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "finalTests": {
+    "selected": 200,
+    "pass": 200,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "testsComplete": true,
+  "newTests": [
+    {
+      "name": "smoke-save-commit-boundary.js",
+      "pass": true,
+      "detail": "{\"pass\":22,\"fail\":0,\"total\":22}"
+    }
+  ],
+  "failures": [],
+  "newFailures": [],
+  "baselineArchitectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "architectureFailures": [
+    "lint-dep-graph",
+    "lint-renderer-module-boundaries",
+    "lint-file-size",
+    "ref-check"
+  ],
+  "newArchitectureFailures": [],
+  "ownDiffClean": true,
+  "scopedDiff": {
+    "exit": 0,
+    "output": ""
+  },
+  "benchmark": {
+    "description": "Synthetic healthy save tail; cleanup and auxiliary snapshot each wait 50 ms. No real API, live save or overall-turn speed measurement.",
+    "before": [
+      {
+        "ok": true,
+        "ms": 105.923,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "cleanup-done",
+          "snapshot-start",
+          "snapshot-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      },
+      {
+        "ok": true,
+        "ms": 120.897,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "cleanup-done",
+          "snapshot-start",
+          "snapshot-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      },
+      {
+        "ok": true,
+        "ms": 118.154,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "cleanup-done",
+          "snapshot-start",
+          "snapshot-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      }
+    ],
+    "after": [
+      {
+        "ok": true,
+        "ms": 60.09,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "snapshot-start",
+          "snapshot-done",
+          "cleanup-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      },
+      {
+        "ok": true,
+        "ms": 56.377,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "snapshot-start",
+          "snapshot-done",
+          "cleanup-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      },
+      {
+        "ok": true,
+        "ms": 61.518,
+        "events": [
+          "capture",
+          "stage",
+          "commit",
+          "cleanup",
+          "snapshot-start",
+          "snapshot-done",
+          "cleanup-done",
+          "clear-marker",
+          "index"
+        ],
+        "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+        "sameState": true
+      }
+    ],
+    "summary": {
+      "beforeMedianMs": 118.154,
+      "afterMedianMs": 60.09,
+      "fullStateUnchanged": true
+    }
+  },
+  "reproduced": [
+    {
+      "label": "before",
+      "scenario": "snapshot-reject",
+      "returned": false,
+      "canonicalSlots": 2,
+      "publishedMarker": false,
+      "warnings": []
+    },
+    {
+      "label": "before",
+      "scenario": "snapshot-switch",
+      "returned": true,
+      "canonicalSlots": 2,
+      "publishedMarker": true,
+      "warnings": []
+    },
+    {
+      "label": "after",
+      "scenario": "snapshot-reject",
+      "returned": true,
+      "canonicalSlots": 2,
+      "publishedMarker": true,
+      "warnings": [
+        {
+          "stage": "time-snapshot",
+          "code": "Error"
+        }
+      ]
+    },
+    {
+      "label": "after",
+      "scenario": "snapshot-switch",
+      "returned": false,
+      "canonicalSlots": 2,
+      "publishedMarker": false,
+      "warnings": []
+    }
+  ]
+}

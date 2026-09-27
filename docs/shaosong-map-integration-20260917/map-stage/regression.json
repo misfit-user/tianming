@@ -1,0 +1,61 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "job": "smoke-map-live-vitals.js",
+      "passed": true,
+      "exitCode": 0,
+      "signal": null,
+      "ms": 244,
+      "tail": "  PASS 源码可抽出 liveRegionVitals\n  PASS 人口加权民心 = 25（大府 20×900万 主导）got 25\n  PASS 人口加权吏治 = 76 got 76\n  PASS 人口加权繁荣 = 33 got 33\n  PASS 叶计数 2\n  PASS 嵌套子树只聚叶 (10+50)/2=30\n  PASS 叶无 minxin → null（让位静态）\n  PASS 单叶直读 minxin=42\n  PASS 民变取叶最坏 55\n  PASS 同回合命中缓存（同引用）\n  PASS regionBundle 调 liveRegionVitals\n  PASS minxin 取 vitals 首位（压过省节点死值）\n  PASS corruption 取 vitals 首位\n  PASS prosperity 取 vitals 首位\n  PASS 活民心覆盖 minxinLocal+minxin 双键\n  PASS vitals 挂 data 供册页直取\n  PASS regionBundle 返回带 vitals\n  PASS armyViewScore 读绑定活军\n  PASS 军务计活态兵变险+欠饷\n  PASS 无静态军压时，真实欠饷仍显示压力\n  PASS 兵变风险按活军抬高军务压力\n  PASS 缺基础军账时交战状态仍显示危急\n  PASS 缺军务账不捏造25分\n\n[smoke-map-live-vitals] PASS — 23 passed, 0 failed\n"
+    },
+    {
+      "job": "smoke-map-realm-layout.js",
+      "passed": true,
+      "exitCode": 0,
+      "signal": null,
+      "ms": 592,
+      "tail": "PASS 21 realm layout contracts: SVG authority and disjoint islands remain separate; evenodd enclave and lake holes exclude labels; sub-grid inlets and small holes are not missed by rectangular label sampling; relative coordinates, exponent syntax, curves and SVG arcs; territory union crosses internal provincial borders; thin north-south territory uses upright vertical text; concave shape and separated overseas territory never put label across the sea; real size rather than global ranking determines font; overlapping and repeated regions do not inflate the union font; same-count in-place vertex edits invalidate geometry and layout; duplicate IDs do not alias and immutable sources stay untouched; invalid and empty data is bounded; malformed optional geometry cannot crash a custom map; realm cancels same-owner province edges, province cancels only same-parent prefectures; T-junction edge segmentation cancels both halves without deleting the coastline; duplicate polygons with opposite winding preserve real coasts and lake holes; geometry, ownership, parent and circuit registry names are live without source mutation; missing administrative hierarchy does not merge independent provinces; plain-label presentation never generates cards, leader lines or replacement pins; unclassified legacy regions retain title overrides and tolerate an absent registry; each administrative scale has its own cached geometry-fit resolution and remains inside land\n"
+    },
+    {
+      "job": "smoke-ledger-consistency.js",
+      "passed": true,
+      "exitCode": 0,
+      "signal": null,
+      "ms": 230,
+      "tail": "  PASS INV1 财政三位一体·入账后（balance=120000 money=120000 stock=120000）\n  PASS INV1 财政三位一体·支出后（balance=70000 money=70000 stock=70000）\n  PASS ① 账目算数正确（100000+20000-50000=70000·实=70000）\n  PASS INV1 财政三位一体·亏空扣账后（balance=0 money=0 stock=0）\n  PASS ① 亏空不打负余额·落0（实=0）\n  PASS ① 亏空入 deficit 账（=929999·破产链可读）\n  PASS ① 欠账按 sink 记名（超额支出_欠）\n  PASS ② 走闸负项生效（51 → 45）\n  PASS INV2 民心缓存≡叶子聚合·负项后（45 ≈ 45）\n  PASS ② 三次重聚合后效果仍在·不蒸发（45 ≈ 45）\n  PASS ② delta 真落在三省叶子上\n  PASS ③ 同源累计封顶于 _default ±20（实=-20）\n  PASS INV2 民心缓存≡叶子聚合·灌注封顶后（31 ≈ 31）\n  PASS ③ 另源不受此源封顶牵连·仍可推动\n  PASS ④ 直写缓存被聚合冲掉=死路实证（守卫红线的机理背书）\n  PASS ⑤ 探测持久化存在且 guarded（无 saveP 沙箱安全）\n\n[smoke-ledger-consistency] PASS — 16 passed, 0 failed\n"
+    },
+    {
+      "job": "smoke-start-hierarchy-immutability.js",
+      "passed": false,
+      "exitCode": 1,
+      "signal": null,
+      "ms": 210,
+      "tail": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n+ actual - expected\r\n\r\n+ '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\",\"level\":1}],\"level\":0}]}}}'\r\n- '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\"}]}]}}}'\r\n\r\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-start-hierarchy-immutability.js:29:10\r\n    at test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-start-hierarchy-immutability.js:13:3)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-start-hierarchy-immutability.js:23:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\",\"level\":1}],\"level\":0}]}}}',\r\n  expected: '{\"id\":\"one\",\"adminHierarchy\":{\"player\":{\"divisions\":[{\"id\":\"root\",\"children\":[{\"id\":\"child\",\"parentId\":\"root\"}]}]}}}',\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "job": "smoke-native-fiscal-consumers.js",
+      "passed": false,
+      "exitCode": 1,
+      "signal": null,
+      "ms": 464,
+      "tail": "l (tm-native-fiscal-adapter.js:16:13)\n    at number (tm-native-fiscal-adapter.js:21:64)\n    at Object.money (tm-native-fiscal-adapter.js:93:13)\n    at Object.balance (tm-native-fiscal-adapter.js:106:19)\n    at monthlySettle (tm-guoku-engine.js:799:17)\n    at Object.tick (tm-guoku-engine.js:2369:11)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:208:21\n    at async test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:95:3)\n    at async C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:203:3 {\n  code: 'native-finance-value'\n}\n[guoku] monthlySettle: Error: money 须为非负有限数\n    at fail (tm-native-fiscal-adapter.js:16:13)\n    at number (tm-native-fiscal-adapter.js:21:64)\n    at Object.money (tm-native-fiscal-adapter.js:93:13)\n    at Object.balance (tm-native-fiscal-adapter.js:106:19)\n    at monthlySettle (tm-guoku-engine.js:799:17)\n    at Object.tick (tm-guoku-engine.js:2369:11)\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:209:21\n    at async test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:95:3)\n    at async C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:203:3 {\n  code: 'native-finance-value'\n}\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n7 !== 17\n\n    at C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:210:12\n    at async test (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:95:3)\n    at async C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-native-fiscal-consumers.js:203:3 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 7,\n  expected: 17,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+    },
+    {
+      "job": "smoke-stable-id-reference-integrity.js",
+      "passed": true,
+      "exitCode": 0,
+      "signal": null,
+      "ms": 205,
+      "tail": "[smoke-stable-id-reference-integrity]\n  PASS - legacy character IDs remain stable when array order changes\n  PASS - legacy region IDs are based on semantic identity rather than array position\n  PASS - order-independent migration records schema version 3\n  PASS - explicit source identity remains stable across display-name changes\n  PASS - direct adminHierarchy.divisions layouts also receive stable IDs\n  PASS - invalid faction references are repaired from unique legacy names\n  PASS - invalid commanderId is repaired from the unique commander name\n  PASS - relative and office-holder IDs are repaired from unique legacy names\n  PASS - legacy child and crown-prince name references migrate to stable IDs\n  PASS - repaired stable foreign keys pass closure validation\n  PASS - unrepairable dangling commanderId is rejected before gameplay opens\n  PASS - dangling kinship IDs are rejected before gameplay opens\n  PASS - indistinguishable legacy entities are rejected before path order can become identity\n\n[smoke-stable-id-reference-integrity] 13 passed / 0 failed\n"
+    },
+    {
+      "job": "lint-arch-all.js",
+      "passed": false,
+      "exitCode": 1,
+      "signal": null,
+      "ms": 66572,
+      "tail": "ASS  lint-split-stamps (0.2s)\n[lint-arch-all] PASS  lint-smoke-family-order (1.0s)\n[lint-arch-all] FAIL  ref-check (4.5s)\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\phase8-formal-rightrail-social.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"preview/scenario-editor-sandbox-bridge.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\preview\\scenario-editor-sandbox-bridge.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-pause-fab.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-pause-fab.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-capacitor-boot.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-capacitor-boot.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-touch-gestures.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-touch-gestures.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-pinch-pan.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-pinch-pan.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-hover-fulltext.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-hover-fulltext.js\n      ✗ backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html [script] → \"tm-startup-contract.js\"\n        解析为不存在的路径: backups\\scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-startup-contract.js\n\n[lint-arch-all] FAIL — 6/13 项未过\n"
+    }
+  ]
+}

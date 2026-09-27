@@ -16,6 +16,8 @@ const src = readSource();
 const schemaSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-schema.js'), 'utf8');
 const validatorSrc = fs.readFileSync(path.join(ROOT, 'tm-ai-output-validator.js'), 'utf8');
 const applySrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-apply.js'), 'utf8');
+const orderSrc = fs.readFileSync(path.join(ROOT, 'tm-imperial-orders.js'), 'utf8');
+assert(applySrc.includes('TM.ImperialOrders.fromDialogue(GM,'), 'apply delegates dialogue feedback to the source-bound order owner');
 
 // ─── Slice A·schema + validator + registry ───
 assert(/dialogue_commitment_feedback:\s*\{\s*type:\s*'array'/.test(schemaSrc),
@@ -60,9 +62,9 @@ assert(/sc1q 硬性要求/.test(src),
 // ─── Slice D·apply 闭环 + dedup ───
 assert(/p1\.dialogue_commitment_feedback/.test(applySrc),
   'Slice D·apply 消费 dialogue_commitment_feedback');
-assert(/_sc1qSourceConvId/.test(applySrc),
+assert(/_sc1qSourceConvId/.test(orderSrc),
   'Slice D·sc1q 专属前缀字段 _sc1qSourceConvId');
-assert(/_sc1qSource\b/.test(applySrc) && /_sc1qTarget\b/.test(applySrc) && /_sc1qPlayerEmphasis/.test(applySrc),
+assert(/_sc1qSource\b/.test(orderSrc) && /_sc1qTarget\b/.test(orderSrc) && /_sc1qPlayerEmphasis/.test(orderSrc),
   'Slice D·全 4 个 _sc1q* 前缀字段·避免与 wendui 冲突');
 assert(/dialogue_commitment_feedback\] applied/.test(applySrc),
   'Slice D·apply 日志·便于调试');
@@ -74,7 +76,7 @@ assert(/GM\._sc1qMissedLastTurn/.test(src),
   'Slice E·GM._sc1qMissedLastTurn 记下回合优先');
 
 // ─── B 分离·dialogue_commitment_feedback 与 commitment_update 独立 ───
-assert(/与 commitment_update 故意分离/.test(applySrc),
+assert(applySrc.includes('TM.ImperialOrders.updates(GM, p1.commitment_update)') && applySrc.includes('TM.ImperialOrders.fromDialogue(GM,'),
   '保留独立·dialogue_commitment_feedback 与 commitment_update 不混 (user 选 B)');
 
 console.log('[smoke-sc1q-dialogue-commitment] pass assertions=' + passed.value);

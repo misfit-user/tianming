@@ -1,0 +1,851 @@
+{
+  "started": "2026-09-19T12:56:12.533Z",
+  "checks": [
+    {
+      "name": "current-map-sc-tianqi7-1627",
+      "passed": true,
+      "detail": {
+        "version": "B5-native-1",
+        "enabled": true,
+        "active": true,
+        "frame": 1,
+        "mapId": "tianqi-prefecture-refined-r3",
+        "regions": 307,
+        "coordinateChecks": 224,
+        "coordinateMaxError": 4.687428401686771e-13,
+        "mode": "webgl2-heightfield",
+        "view": {
+          "center": [
+            105.73545463699948,
+            35.38617439610396
+          ],
+          "span": 130.07415668789542,
+          "tilt": 42,
+          "bearing": 0
+        },
+        "stats": {
+          "mode": "webgl2-heightfield",
+          "frames": 1,
+          "drawCalls": 2,
+          "triangles": 347876,
+          "submitMs": 1.2000000029802322,
+          "lod": "simplified",
+          "acceptedSettlements": 0,
+          "skippedVisibleAnchors": 26,
+          "trees": 0,
+          "fieldPatches": 0,
+          "fieldRejects": 0,
+          "biomeCounts": {
+            "north": 0,
+            "wet": 0,
+            "dry": 0
+          },
+          "relocatedArtAnchors": 145,
+          "referenceOnly": false,
+          "heightStatus": "artistic-heightfield-not-DEM",
+          "overlayGeneration": 0,
+          "gridRevision": 1,
+          "work": {
+            "gridBuilds": 1,
+            "coastBuilds": 1,
+            "riverBuilds": 1,
+            "instanceBuilds": 1,
+            "overlayUploads": 1
+          },
+          "season": "summer"
+        },
+        "visibleLabels": 14,
+        "errors": [],
+        "samples": [
+          {
+            "frame": 1,
+            "updateMs": 2022.1000000014901,
+            "submitMs": 1.2000000029802322,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 1
+            }
+          }
+        ],
+        "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+        "source": "current-game-map-no-frozen-review-fixtures",
+        "height": "artistic-not-simulation-input"
+      }
+    },
+    {
+      "name": "tier-sc-tianqi7-1627-realm",
+      "passed": true,
+      "detail": {
+        "frame": 1,
+        "view": {
+          "center": [
+            105.73545463699948,
+            35.38617439610396
+          ],
+          "span": 130.07415668789542,
+          "tilt": 42,
+          "bearing": 0
+        }
+      }
+    },
+    {
+      "name": "tier-sc-tianqi7-1627-region",
+      "passed": true,
+      "detail": {
+        "frame": 3,
+        "labels": 33,
+        "view": {
+          "center": [
+            105.73545463699948,
+            35.38617439610396
+          ],
+          "span": 130.07415668789542,
+          "tilt": 42,
+          "bearing": 0
+        }
+      }
+    },
+    {
+      "name": "tier-sc-tianqi7-1627-prefecture",
+      "passed": true,
+      "detail": {
+        "frame": 5,
+        "labels": 116,
+        "view": {
+          "center": [
+            105.73545463699948,
+            35.38617439610396
+          ],
+          "span": 130.07415668789542,
+          "tilt": 42,
+          "bearing": 0
+        }
+      }
+    },
+    {
+      "name": "native-pick-sc-tianqi7-1627",
+      "passed": true,
+      "detail": {
+        "hit": {
+          "id": "ming-01-p01",
+          "name": "顺天府",
+          "center": [
+            726.2484273041943,
+            306.4465645419958
+          ]
+        },
+        "probe": {
+          "q": [
+            675.9333375822793,
+            294.2710901998851
+          ],
+          "id": "ming-01-p01",
+          "back": [
+            726.2484273041943,
+            306.4465645419959
+          ],
+          "box": {
+            "left": 100.1500015258789,
+            "top": 114.3125,
+            "width": 1311.2000732421875,
+            "height": 613.4249877929688
+          }
+        }
+      }
+    },
+    {
+      "name": "original-dossier-sc-tianqi7-1627",
+      "passed": true,
+      "detail": {
+        "kind": "region",
+        "id": "ming-01-p01",
+        "show": true
+      }
+    },
+    {
+      "name": "wheel-anchor-sc-tianqi7-1627",
+      "passed": true,
+      "detail": {
+        "error": 0.06744694922355195
+      }
+    },
+    {
+      "name": "large-drag-sc-tianqi7-1627",
+      "passed": true,
+      "detail": {
+        "frames": 9,
+        "work": {
+          "gridBuilds": 4,
+          "coastBuilds": 4,
+          "riverBuilds": 4,
+          "instanceBuilds": 4,
+          "overlayUploads": 6
+        }
+      }
+    },
+    {
+      "name": "native-fallback-sc-tianqi7-1627",
+      "passed": true
+    },
+    {
+      "name": "reenable-sc-tianqi7-1627",
+      "passed": true
+    }
+  ],
+  "steps": [
+    {
+      "name": "loaded-sc-tianqi7-1627",
+      "time": "2026-09-19T12:56:15.319Z"
+    },
+    {
+      "name": "started-sc-tianqi7-1627",
+      "time": "2026-09-19T12:56:20.088Z"
+    },
+    {
+      "name": "active-sc-tianqi7-1627",
+      "time": "2026-09-19T12:56:37.717Z",
+      "detail": {
+        "regions": 307,
+        "frame": 1
+      }
+    },
+    {
+      "name": "verified-sc-tianqi7-1627",
+      "time": "2026-09-19T12:56:48.927Z"
+    }
+  ],
+  "errors": [],
+  "scenarios": [
+    {
+      "id": "sc-tianqi7-1627",
+      "initial": {
+        "version": "B5-native-1",
+        "enabled": true,
+        "active": true,
+        "frame": 1,
+        "mapId": "tianqi-prefecture-refined-r3",
+        "regions": 307,
+        "coordinateChecks": 224,
+        "coordinateMaxError": 4.687428401686771e-13,
+        "mode": "webgl2-heightfield",
+        "view": {
+          "center": [
+            105.73545463699948,
+            35.38617439610396
+          ],
+          "span": 130.07415668789542,
+          "tilt": 42,
+          "bearing": 0
+        },
+        "stats": {
+          "mode": "webgl2-heightfield",
+          "frames": 1,
+          "drawCalls": 2,
+          "triangles": 347876,
+          "submitMs": 1.2000000029802322,
+          "lod": "simplified",
+          "acceptedSettlements": 0,
+          "skippedVisibleAnchors": 26,
+          "trees": 0,
+          "fieldPatches": 0,
+          "fieldRejects": 0,
+          "biomeCounts": {
+            "north": 0,
+            "wet": 0,
+            "dry": 0
+          },
+          "relocatedArtAnchors": 145,
+          "referenceOnly": false,
+          "heightStatus": "artistic-heightfield-not-DEM",
+          "overlayGeneration": 0,
+          "gridRevision": 1,
+          "work": {
+            "gridBuilds": 1,
+            "coastBuilds": 1,
+            "riverBuilds": 1,
+            "instanceBuilds": 1,
+            "overlayUploads": 1
+          },
+          "season": "summer"
+        },
+        "visibleLabels": 14,
+        "errors": [],
+        "samples": [
+          {
+            "frame": 1,
+            "updateMs": 2022.1000000014901,
+            "submitMs": 1.2000000029802322,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 1
+            }
+          }
+        ],
+        "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+        "source": "current-game-map-no-frozen-review-fixtures",
+        "height": "artistic-not-simulation-input"
+      },
+      "tiers": [
+        {
+          "tier": "realm",
+          "diagnostics": {
+            "version": "B5-native-1",
+            "enabled": true,
+            "active": true,
+            "frame": 1,
+            "mapId": "tianqi-prefecture-refined-r3",
+            "regions": 307,
+            "coordinateChecks": 224,
+            "coordinateMaxError": 4.687428401686771e-13,
+            "mode": "webgl2-heightfield",
+            "view": {
+              "center": [
+                105.73545463699948,
+                35.38617439610396
+              ],
+              "span": 130.07415668789542,
+              "tilt": 42,
+              "bearing": 0
+            },
+            "stats": {
+              "mode": "webgl2-heightfield",
+              "frames": 1,
+              "drawCalls": 2,
+              "triangles": 347876,
+              "submitMs": 1.2000000029802322,
+              "lod": "simplified",
+              "acceptedSettlements": 0,
+              "skippedVisibleAnchors": 26,
+              "trees": 0,
+              "fieldPatches": 0,
+              "fieldRejects": 0,
+              "biomeCounts": {
+                "north": 0,
+                "wet": 0,
+                "dry": 0
+              },
+              "relocatedArtAnchors": 145,
+              "referenceOnly": false,
+              "heightStatus": "artistic-heightfield-not-DEM",
+              "overlayGeneration": 0,
+              "gridRevision": 1,
+              "work": {
+                "gridBuilds": 1,
+                "coastBuilds": 1,
+                "riverBuilds": 1,
+                "instanceBuilds": 1,
+                "overlayUploads": 1
+              },
+              "season": "summer"
+            },
+            "errors": [],
+            "samples": [
+              {
+                "frame": 1,
+                "updateMs": 2022.1000000014901,
+                "submitMs": 1.2000000029802322,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 1
+                }
+              }
+            ],
+            "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+            "source": "current-game-map-no-frozen-review-fixtures",
+            "height": "artistic-not-simulation-input"
+          }
+        },
+        {
+          "tier": "region",
+          "diagnostics": {
+            "version": "B5-native-1",
+            "enabled": true,
+            "active": true,
+            "frame": 3,
+            "mapId": "tianqi-prefecture-refined-r3",
+            "regions": 307,
+            "coordinateChecks": 224,
+            "coordinateMaxError": 4.687428401686771e-13,
+            "mode": "webgl2-heightfield",
+            "view": {
+              "center": [
+                105.73545463699948,
+                35.38617439610396
+              ],
+              "span": 130.07415668789542,
+              "tilt": 42,
+              "bearing": 0
+            },
+            "stats": {
+              "mode": "webgl2-heightfield",
+              "frames": 3,
+              "drawCalls": 2,
+              "triangles": 347876,
+              "submitMs": 0.5,
+              "lod": "simplified",
+              "acceptedSettlements": 0,
+              "skippedVisibleAnchors": 26,
+              "trees": 0,
+              "fieldPatches": 0,
+              "fieldRejects": 0,
+              "biomeCounts": {
+                "north": 0,
+                "wet": 0,
+                "dry": 0
+              },
+              "relocatedArtAnchors": 145,
+              "referenceOnly": false,
+              "heightStatus": "artistic-heightfield-not-DEM",
+              "overlayGeneration": 0,
+              "gridRevision": 1,
+              "work": {
+                "gridBuilds": 1,
+                "coastBuilds": 1,
+                "riverBuilds": 1,
+                "instanceBuilds": 1,
+                "overlayUploads": 2
+              },
+              "season": "summer"
+            },
+            "visibleLabels": 33,
+            "errors": [],
+            "samples": [
+              {
+                "frame": 1,
+                "updateMs": 2022.1000000014901,
+                "submitMs": 1.2000000029802322,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 1
+                }
+              },
+              {
+                "frame": 2,
+                "updateMs": 4.5,
+                "submitMs": 0.5,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 1
+                }
+              },
+              {
+                "frame": 3,
+                "updateMs": 8.600000001490116,
+                "submitMs": 0.5,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 2
+                }
+              }
+            ],
+            "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+            "source": "current-game-map-no-frozen-review-fixtures",
+            "height": "artistic-not-simulation-input"
+          }
+        },
+        {
+          "tier": "prefecture",
+          "diagnostics": {
+            "version": "B5-native-1",
+            "enabled": true,
+            "active": true,
+            "frame": 5,
+            "mapId": "tianqi-prefecture-refined-r3",
+            "regions": 307,
+            "coordinateChecks": 224,
+            "coordinateMaxError": 4.687428401686771e-13,
+            "mode": "webgl2-heightfield",
+            "view": {
+              "center": [
+                105.73545463699948,
+                35.38617439610396
+              ],
+              "span": 130.07415668789542,
+              "tilt": 42,
+              "bearing": 0
+            },
+            "stats": {
+              "mode": "webgl2-heightfield",
+              "frames": 5,
+              "drawCalls": 2,
+              "triangles": 347876,
+              "submitMs": 0.29999999701976776,
+              "lod": "simplified",
+              "acceptedSettlements": 0,
+              "skippedVisibleAnchors": 26,
+              "trees": 0,
+              "fieldPatches": 0,
+              "fieldRejects": 0,
+              "biomeCounts": {
+                "north": 0,
+                "wet": 0,
+                "dry": 0
+              },
+              "relocatedArtAnchors": 145,
+              "referenceOnly": false,
+              "heightStatus": "artistic-heightfield-not-DEM",
+              "overlayGeneration": 0,
+              "gridRevision": 1,
+              "work": {
+                "gridBuilds": 1,
+                "coastBuilds": 1,
+                "riverBuilds": 1,
+                "instanceBuilds": 1,
+                "overlayUploads": 3
+              },
+              "season": "summer"
+            },
+            "visibleLabels": 116,
+            "errors": [],
+            "samples": [
+              {
+                "frame": 1,
+                "updateMs": 2022.1000000014901,
+                "submitMs": 1.2000000029802322,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 1
+                }
+              },
+              {
+                "frame": 2,
+                "updateMs": 4.5,
+                "submitMs": 0.5,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 1
+                }
+              },
+              {
+                "frame": 3,
+                "updateMs": 8.600000001490116,
+                "submitMs": 0.5,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 2
+                }
+              },
+              {
+                "frame": 4,
+                "updateMs": 2,
+                "submitMs": 0.29999999701976776,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 2
+                }
+              },
+              {
+                "frame": 5,
+                "updateMs": 19.69999999552965,
+                "submitMs": 0.29999999701976776,
+                "triangles": 347876,
+                "drawCalls": 2,
+                "gridRevision": 1,
+                "work": {
+                  "gridBuilds": 1,
+                  "coastBuilds": 1,
+                  "riverBuilds": 1,
+                  "instanceBuilds": 1,
+                  "overlayUploads": 3
+                }
+              }
+            ],
+            "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+            "source": "current-game-map-no-frozen-review-fixtures",
+            "height": "artistic-not-simulation-input"
+          }
+        }
+      ],
+      "pick": {
+        "q": [
+          675.9333375822793,
+          294.2710901998851
+        ],
+        "id": "ming-01-p01",
+        "back": [
+          726.2484273041943,
+          306.4465645419959
+        ],
+        "box": {
+          "left": 100.1500015258789,
+          "top": 114.3125,
+          "width": 1311.2000732421875,
+          "height": 613.4249877929688
+        }
+      },
+      "afterDrag": {
+        "version": "B5-native-1",
+        "enabled": true,
+        "active": true,
+        "frame": 9,
+        "mapId": "tianqi-prefecture-refined-r3",
+        "regions": 307,
+        "coordinateChecks": 224,
+        "coordinateMaxError": 4.687428401686771e-13,
+        "mode": "webgl2-heightfield",
+        "view": {
+          "center": [
+            111.77514706211744,
+            40.693755319448385
+          ],
+          "span": 19.668975333243353,
+          "tilt": 42,
+          "bearing": 0
+        },
+        "stats": {
+          "mode": "webgl2-heightfield",
+          "frames": 9,
+          "drawCalls": 26,
+          "triangles": 924944,
+          "submitMs": 0.29999999701976776,
+          "lod": "simplified",
+          "acceptedSettlements": 143,
+          "skippedVisibleAnchors": 26,
+          "trees": 3200,
+          "fieldPatches": 8807,
+          "fieldRejects": 4102,
+          "biomeCounts": {
+            "north": 100,
+            "wet": 36,
+            "dry": 7
+          },
+          "relocatedArtAnchors": 145,
+          "referenceOnly": false,
+          "heightStatus": "artistic-heightfield-not-DEM",
+          "overlayGeneration": 0,
+          "gridRevision": 4,
+          "work": {
+            "gridBuilds": 4,
+            "coastBuilds": 4,
+            "riverBuilds": 4,
+            "instanceBuilds": 4,
+            "overlayUploads": 6
+          },
+          "season": "summer"
+        },
+        "errors": [],
+        "samples": [
+          {
+            "frame": 1,
+            "updateMs": 2022.1000000014901,
+            "submitMs": 1.2000000029802322,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 1
+            }
+          },
+          {
+            "frame": 2,
+            "updateMs": 4.5,
+            "submitMs": 0.5,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 1
+            }
+          },
+          {
+            "frame": 3,
+            "updateMs": 8.600000001490116,
+            "submitMs": 0.5,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 2
+            }
+          },
+          {
+            "frame": 4,
+            "updateMs": 2,
+            "submitMs": 0.29999999701976776,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 2
+            }
+          },
+          {
+            "frame": 5,
+            "updateMs": 19.69999999552965,
+            "submitMs": 0.29999999701976776,
+            "triangles": 347876,
+            "drawCalls": 2,
+            "gridRevision": 1,
+            "work": {
+              "gridBuilds": 1,
+              "coastBuilds": 1,
+              "riverBuilds": 1,
+              "instanceBuilds": 1,
+              "overlayUploads": 3
+            }
+          },
+          {
+            "frame": 6,
+            "updateMs": 577,
+            "submitMs": 1.7000000029802322,
+            "triangles": 873392,
+            "drawCalls": 26,
+            "gridRevision": 2,
+            "work": {
+              "gridBuilds": 2,
+              "coastBuilds": 2,
+              "riverBuilds": 2,
+              "instanceBuilds": 2,
+              "overlayUploads": 4
+            }
+          },
+          {
+            "frame": 7,
+            "updateMs": 766.8000000044703,
+            "submitMs": 0.29999999701976776,
+            "triangles": 923540,
+            "drawCalls": 26,
+            "gridRevision": 3,
+            "work": {
+              "gridBuilds": 3,
+              "coastBuilds": 3,
+              "riverBuilds": 3,
+              "instanceBuilds": 3,
+              "overlayUploads": 5
+            }
+          },
+          {
+            "frame": 8,
+            "updateMs": 8.399999998509884,
+            "submitMs": 0.3999999985098839,
+            "triangles": 923540,
+            "drawCalls": 26,
+            "gridRevision": 3,
+            "work": {
+              "gridBuilds": 3,
+              "coastBuilds": 3,
+              "riverBuilds": 3,
+              "instanceBuilds": 3,
+              "overlayUploads": 5
+            }
+          },
+          {
+            "frame": 9,
+            "updateMs": 362.8999999985099,
+            "submitMs": 0.29999999701976776,
+            "triangles": 924944,
+            "drawCalls": 26,
+            "gridRevision": 4,
+            "work": {
+              "gridBuilds": 4,
+              "coastBuilds": 4,
+              "riverBuilds": 4,
+              "instanceBuilds": 4,
+              "overlayUploads": 6
+            }
+          }
+        ],
+        "metricNote": "updateMs includes CPU configure/render/label submission; not GPU completion or guaranteed FPS",
+        "source": "current-game-map-no-frozen-review-fixtures",
+        "height": "artistic-not-simulation-input"
+      }
+    }
+  ],
+  "complete": false,
+  "gpuFeatureStatus": {
+    "2d_canvas": "disabled_software",
+    "canvas_oop_rasterization": "disabled_off",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "disabled_software",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "disabled_off",
+    "rasterization": "disabled_software",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "disabled_software",
+    "video_encode": "disabled_software",
+    "vulkan": "disabled_off",
+    "webgl": "disabled_off",
+    "webgl2": "disabled_off",
+    "webgpu": "disabled_off",
+    "webnn": "disabled_off"
+  },
+  "failure": "Error: ERR_FAILED (-2) loading 'file:///C:\\Users\\37814\\Desktop\\tianming\\web\\index.html'\n    at rejectAndCleanup (node:electron/js2c/browser_init:2:80969)\n    at finishListener (node:electron/js2c/browser_init:2:81131)\n    at WebContents.stopLoadingListener (node:electron/js2c/browser_init:2:81518)\n    at WebContents.emit (node:events:530:35)",
+  "exitCode": 1
+}

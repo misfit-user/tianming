@@ -1,0 +1,53 @@
+[
+  {
+    "scenario": "天启七年·九月（官方）.json",
+    "rounds": [
+      {
+        "round": 1,
+        "bytes": 16378405,
+        "md5": "16642aaef21be8f67afc7de36b2549b3",
+        "sha256": "0451bb99f584b5ed63058050888b43926a1d5468100736b27c22ee15c018736c"
+      },
+      {
+        "round": 2,
+        "bytes": 16378405,
+        "md5": "16642aaef21be8f67afc7de36b2549b3",
+        "sha256": "0451bb99f584b5ed63058050888b43926a1d5468100736b27c22ee15c018736c"
+      }
+    ]
+  },
+  {
+    "scenario": "绍宋·建炎元年八月（官方）.json",
+    "rounds": [
+      {
+        "round": 1,
+        "bytes": 91006403,
+        "md5": "debb83594113245ffbe948a1841b30de",
+        "sha256": "e0e652c9a747341a4ab9ab72cec8c794795a45ed05c14054edf528a3daf01212"
+      },
+      {
+        "round": 2,
+        "bytes": 91006403,
+        "md5": "debb83594113245ffbe948a1841b30de",
+        "sha256": "e0e652c9a747341a4ab9ab72cec8c794795a45ed05c14054edf528a3daf01212"
+      }
+    ]
+  },
+  {
+    "scenario": "晚唐·开成五年（官方）.json",
+    "rounds": [
+      {
+        "round": 1,
+        "bytes": 52570460,
+        "md5": "d3a3cb62613f159bf4322390d370d2b0",
+        "sha256": "ead06279408029ba0b43c898b7f5f1601f7b976317415a1ef5fb532dbc00bb57"
+      },
+      {
+        "round": 2,
+        "bytes": 52570460,
+        "md5": "d3a3cb62613f159bf4322390d370d2b0",
+        "sha256": "ead06279408029ba0b43c898b7f5f1601f7b976317415a1ef5fb532dbc00bb57"
+      }
+    ]
+  }
+]

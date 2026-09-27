@@ -1,0 +1,58 @@
+  // An invoke timeout ends local waiting, never cancels a main-process disk operation.
+  var bridgeFlights = new WeakMap(), bridgeEvents = [], bridgePending = 0;
+  var BRIDGE_WAIT_MS = 60000, BRIDGE_MAX_PENDING = 32;
+  function bridgeError(code, message, uncertain) {
+    var e = error(code, message); e.outcome = uncertain ? 'unconfirmed' : 'not-sent'; return e;
+  }
+  function bridgeRecord(method, state, e, started) {
+    bridgeEvents.push({ method: method, state: state, code: String(e && e.code || '').slice(0, 80), ms: Date.now() - started, at: Date.now() });
+    if (bridgeEvents.length > 12) bridgeEvents.shift();
+  }
+  function callTurnBridge(method, payload, opts) {
+    opts = opts || {};
+    return new Promise(function(resolve, reject) {
+      var bridge = root.tianming;
+      var allowed = ['stageTurnData','publishTurnData','recoverTurnData','discardTurnData','listSaveTimelineRefs'];
+      if (allowed.indexOf(method) < 0 || !bridge || typeof bridge[method] !== 'function') {
+        reject(bridgeError('TURN_BRIDGE_UNAVAILABLE', '桌面分卷接口未就绪', false)); return;
+      }
+      var key;
+      if (method === 'listSaveTimelineRefs') key = 'timeline-refs';
+      else {
+        if (!payload || !['campaignId','timelineId','transactionId'].every(function(k) { return typeof payload[k] === 'string' && payload[k].length > 0 && payload[k].length <= 160; })) {
+          reject(bridgeError('TURN_BRIDGE_IDENTITY', '分卷事务身份缺失，未发送桌面写入', false)); return;
+        }
+        key = JSON.stringify([payload.campaignId, payload.timelineId, payload.transactionId]);
+      }
+      var table = bridgeFlights.get(bridge);
+      if (!table) { table = new Map(); bridgeFlights.set(bridge, table); }
+      if (table.has(key)) { reject(bridgeError('TURN_BRIDGE_PENDING', '同一分卷事务仍等待桌面回执，未重复发送', true)); return; }
+      if (bridgePending >= BRIDGE_MAX_PENDING) { reject(bridgeError('TURN_BRIDGE_BUSY', '桌面未确认请求过多，请核对后重新打开游戏', true)); return; }
+      var signal = opts.signal, protocol = bridge.turnDataProtocolVersion, token = {}, started = Date.now(), timer, done = false, ticket;
+      function current() { return root.tianming === bridge && bridge.turnDataProtocolVersion === protocol && (!opts.isCurrent || opts.isCurrent() === true); }
+      function cleanup() { clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancelled); }
+      function stop(e) {
+        if (done) return; done = true; cleanup(); bridgeRecord(method, 'waiting-ended', e, started);
+        requestEnd(ticket, e); reject(e);
+      }
+      function cancelled() { stop(bridgeError('TURN_BRIDGE_ABORTED', '已停止等待桌面分卷回执；未宣称远端操作已取消', true)); }
+      function settle(e, value) {
+        if (table.get(key) === token) { table.delete(key); bridgePending--; }
+        if (done) { bridgeRecord(method, e ? 'late-rejection' : 'late-response', null, started); return; }
+        try { if (!current()) e = bridgeError('TURN_BRIDGE_STALE', '分卷回执对应的世界或桌面连接已改变', true); } catch (guardError) { e = guardError; }
+        done = true; cleanup(); bridgeRecord(method, e ? 'failed' : 'responded', e, started); requestEnd(ticket, e);
+        if (e) reject(e); else resolve(value);
+      }
+      try {
+        if (signal && signal.aborted) { reject(bridgeError('TURN_BRIDGE_ABORTED', '操作已取消，未发送桌面请求', false)); return; }
+        if (!current()) { reject(bridgeError('TURN_BRIDGE_STALE', '世界已改变，未发送旧分卷请求', false)); return; }
+        table.set(key, token); bridgePending++;
+        ticket = requestStart('bridge:' + method); requestPhase(ticket, 'request');
+        timer = setTimeout(function() { stop(bridgeError('TURN_BRIDGE_TIMEOUT', '桌面分卷等待超时；远端结果未确认，恢复凭据保持不变', true)); }, BRIDGE_WAIT_MS);
+        if (signal) signal.addEventListener('abort', cancelled, { once: true });
+        var response = method === 'listSaveTimelineRefs' ? bridge[method]() : bridge[method](payload);
+        Promise.resolve(response).then(function(value) { settle(null, value); }, function(e) { settle(e); });
+      } catch (e) { settle(e); }
+    });
+  }
+  function bridgeDiagnostics() { return { pending: bridgePending, limit: BRIDGE_MAX_PENDING, waitMs: BRIDGE_WAIT_MS, events: JSON.parse(JSON.stringify(bridgeEvents)) }; }

@@ -1,0 +1,39 @@
+{
+  "source": "scenarios/天启七年·九月（官方）.json",
+  "sourceSha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "work": "D:/tianming-assistant-work/chongzhen-map-r2-20260918",
+  "doc": "docs/chongzhen-map-r2-20260918",
+  "files": [
+    {
+      "file": "web/index.html",
+      "sha256": "253f9d660cbcd9a4a77948c0e73a0e72ca5764ded458037aa0704a0619a6a688"
+    },
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "bd674326938c870ad6c32edd6d04c06a02e9557dc32cde59b102646e0784bb5d"
+    },
+    {
+      "file": "web/tm-map-locations.js",
+      "sha256": "4264e8242fc449787508f68bd49acded4910183128c940fad6add874aaf921a7"
+    },
+    {
+      "file": "web/tm-faction-membership.js",
+      "sha256": "d36a40971da3025e6770e0a522893b0adb9b38610bf3358035169aaf889b736f"
+    }
+  ],
+  "officialSources": [
+    {
+      "file": "scenarios/天启七年·九月（官方）.json",
+      "sha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c"
+    },
+    {
+      "file": "scenarios/晚唐·开成五年（官方）.json",
+      "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51"
+    },
+    {
+      "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b"
+    }
+  ],
+  "state": "authoring-not-applied"
+}

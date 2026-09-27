@@ -81,7 +81,8 @@ export function createReconcile(deps) {
         result.failed.push({ char_update: cu.name || '', reason: 'sensitive death fields require character_deaths' });
         return;
       }
-      var ch = _strictLivingChar(G, cu.name);
+      var resolved = _tmResolveStableOrUniqueIdentity(G.chars, cu.characterId || cu.charId, cu.name);
+      var ch = resolved.entity && resolved.entity.alive !== false && !resolved.entity.dead ? resolved.entity : null;
       if (!ch) {
         result.failed.push({ char_update: cu.name || '', reason: 'death target must be an existing living character' });
         return;
@@ -365,19 +366,32 @@ export function createReconcile(deps) {
   function _applyOfficeDutyTick(G) {
     if (typeof officeFlagOn !== 'function' || !officeFlagOn('officeDutyStateEnabled')) return;
     if (typeof tickOfficeDutyState !== 'function') return;
-    var agg = tickOfficeDutyState(G);
-    if (!agg || (!agg.compliance && !agg.corruption)) return;
+    var days = typeof global._getDaysPerTurn === 'function' ? global._getDaysPerTurn() : (G.daysPerTurn != null ? G.daysPerTurn : 30);
+    var agg = tickOfficeDutyState(G, { days: days });
+    if (!agg || (!agg.compliance && !agg.corruption && !(agg.details || []).length)) return;
     var FE = (typeof window !== 'undefined' && window.FiscalEngine) || (typeof global !== 'undefined' && global.FiscalEngine) || null;
     var _P = (typeof window !== 'undefined' && window.P) || (typeof global !== 'undefined' && global.P) || null;
     var pFac = (_P && _P.playerInfo && _P.playerInfo.factionName) || '';
     if (!FE) return;
-    if (agg.compliance && FE.adjustPlayerCompliance) {
-      var nc = FE.adjustPlayerCompliance(pFac, agg.compliance, 0.1, 1);
-      if (nc === 0) FE.adjustPlayerCompliance('', agg.compliance, 0.1, 1);   // 势力 key 对不上→不过滤兜底·保生效
+    var unscoped = agg.details && agg.details.length ? {compliance:0,corruption:0} : {compliance:agg.compliance,corruption:agg.corruption};
+    (agg.details || []).forEach(function(d) { if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta; });
+    // Retain the region of each duty. Only realm-wide roles use the legacy aggregate.
+    (agg.details || []).filter(function(d) { return d.regionId || d.regionName; }).forEach(function(d) {
+      var scope = { regionId:d.regionId, regionName:d.regionName };
+      var apply = d.lever === 'compliance' ? FE.adjustPlayerCompliance : FE.adjustPlayerDivisionCorruption;
+      var lo = d.lever === 'compliance' ? 0.1 : 0, hi = d.lever === 'compliance' ? 1 : 100;
+      if (typeof apply === 'function') {
+        var count = apply(d.faction || pFac, d.delta, lo, hi, scope);
+        if (count === 0 && !d.faction) apply('', d.delta, lo, hi, scope);
+      }
+    });
+    if (unscoped.compliance && FE.adjustPlayerCompliance) {
+      var nc = FE.adjustPlayerCompliance(pFac, unscoped.compliance, 0.1, 1);
+      if (nc === 0) FE.adjustPlayerCompliance('', unscoped.compliance, 0.1, 1);   // 势力 key 对不上→不过滤兜底·保生效
     }
-    if (agg.corruption && FE.adjustPlayerDivisionCorruption) {
-      var nk = FE.adjustPlayerDivisionCorruption(pFac, agg.corruption, 0, 100);
-      if (nk === 0) FE.adjustPlayerDivisionCorruption('', agg.corruption, 0, 100);
+    if (unscoped.corruption && FE.adjustPlayerDivisionCorruption) {
+      var nk = FE.adjustPlayerDivisionCorruption(pFac, unscoped.corruption, 0, 100);
+      if (nk === 0) FE.adjustPlayerDivisionCorruption('', unscoped.corruption, 0, 100);
     }
     try {
       if (typeof global.addEB === 'function' && agg.details && agg.details.length) {
@@ -1035,19 +1049,29 @@ export function createReconcile(deps) {
     if (!raw) return false;
     var nodes = [];
     _tmWalkOfficeNodes(G && G.officeTree, nodes);
+    var posts = raw.split(/[、,·\s]+/).filter(Boolean);
     return nodes.some(function(node) {
       return [node.id, node.name, node.title, node.position, node.officialTitle].some(function(value) {
         return value != null && String(value).trim() === raw;
       });
+    }) || posts.length > 0 && posts.every(function(post) {
+      // The appointment sink also supports existing local office types and
+      // qualified names; preflight must use the same contract as that sink.
+      return !!core._findOfficePos(Array.isArray(G && G.officeTree) ? G.officeTree : [], post) || core._isKnownOfficeType(G, post);
     });
   }
 
   function _tmStrictRegionRows(G) {
     var rows = [];
-    var seen = [];
+    var seen = [], identities = new Set();
     function add(row) {
       if (!row || typeof row !== 'object' || seen.indexOf(row) >= 0) return;
-      seen.push(row); rows.push(row);
+      seen.push(row);
+      // regionMap and adminHierarchy contain mirrors of the same division.
+      // Different IDs (or conflicting names for one ID) remain ambiguous.
+      var identity = row.id != null && row.name != null ? JSON.stringify([String(row.id), String(row.name)]) : null;
+      if (identity === null || !identities.has(identity)) rows.push(row);
+      if (identity !== null) identities.add(identity);
       if (Array.isArray(row.children)) row.children.forEach(add);
       if (Array.isArray(row.subs)) row.subs.forEach(add);
       if (Array.isArray(row.divisions)) row.divisions.forEach(add);
@@ -1079,6 +1103,40 @@ export function createReconcile(deps) {
    * 对 detached AI 输出执行严格预检。旧 preflight 的“剔除坏项后继续”仅保留给
    * 兼容调用；主回合使用本入口，任何剔除或弱引用都转成结构化失败。
    */
+  function _validateIdentityAgreement(G, output, failures) {
+    function check(field, list, ids, names) {
+      (Array.isArray(output[field]) ? output[field] : []).forEach(function(item,index) {
+        if (!item || !Array.isArray(list)) return;
+        var anchors = ids.map(function(k) { return item[k]; }).filter(function(v) { return v != null && String(v).trim(); }).map(function(v) {
+          var matches = list.filter(function(row) { return row && String(row.id) === String(v).trim(); });
+          return matches.length === 1 ? matches[0] : null;
+        }).filter(Boolean);
+        if (!anchors.length) return;
+        var entity=anchors[0], conflict=anchors.some(function(row) { return row !== entity; });
+        names.forEach(function(k) {
+          if (item[k] == null || !String(item[k]).trim()) return;
+          var accepted = [entity.id,entity.name].concat(Array.isArray(entity.aliases)?entity.aliases:[]).map(String);
+          if (accepted.indexOf(String(item[k]).trim()) < 0) conflict=true;
+        });
+        if (conflict) failures.push({field:field,index:index,code:'conflicting-identity',target:entity.id,reason:'stable identity conflicts with another supplied identity',retryable:false});
+      });
+    }
+    ['char_updates','appointments','office_assignments','personnel_changes','character_deaths'].forEach(function(f) { check(f,G.chars,['characterId','charId'],['name','charName','character']); });
+    ['faction_updates','faction_dissolve','faction_succession'].forEach(function(f) { check(f,G.facs,['factionId','id'],['name','faction']); });
+    check('faction_succession',G.chars,['newLeaderId'],['newLeader']);
+  }
+  function _normalizeCharacterUpdateAliases(output, failures) {
+    (Array.isArray(output.char_updates) ? output.char_updates : []).forEach(function(row,index) {
+      if (!row || row.changes == null) return;
+      var a=row.changes, b=row.updates;
+      if (typeof a !== 'object' || Array.isArray(a) || b != null && (typeof b !== 'object' || Array.isArray(b))) {
+        failures.push({field:'char_updates',index:index,code:'invalid-update-shape',retryable:false,reason:'changes/updates must be objects'}); return;
+      }
+      var merged=Object.assign({}, a, b || {}), conflict=Object.keys(a).some(function(k) { return b && Object.prototype.hasOwnProperty.call(b,k) && JSON.stringify(a[k]) !== JSON.stringify(b[k]); });
+      if (conflict) failures.push({field:'char_updates',index:index,code:'conflicting-update-fields',retryable:false,reason:'changes and updates disagree'});
+      else { row.updates=merged; delete row.changes; }
+    });
+  }
   function validateAIWriteBackBatch(aiOutput, opts) {
     opts = opts || {};
     var G = global.GM;
@@ -1086,7 +1144,9 @@ export function createReconcile(deps) {
     if (!G || typeof G !== 'object' || !aiOutput || typeof aiOutput !== 'object' || Array.isArray(aiOutput)) {
       return { ok: false, output: null, failures: [{ field: '', index: null, code: 'invalid-writeback-batch', target: '', retryable: false, reason: 'GM and AI writeback must be objects' }] };
     }
+    _validateIdentityAgreement(G, aiOutput, failures);
     var detached = _tmCloneWriteback(aiOutput);
+    _normalizeCharacterUpdateAliases(detached, failures);
     var previousCollector = _tmPreflightCollector;
     var previousSideEffects = _tmPreflightSideEffects;
     var previousContext = _tmPreflightContext;
@@ -1342,21 +1402,48 @@ export function createReconcile(deps) {
 
   function _captureValidatorBaseline(G) {
     var out = {};
-    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) { out[key] = Array.isArray(G && G[key]) ? G[key].length : 0; });
+    _AI_VALIDATOR_LOG_KEYS.forEach(function(key) { out[key] = new Set(Array.isArray(G && G[key]) ? G[key] : []); });
     return out;
   }
 
-  function _collectValidatorFailures(G, baseline) {
+  function _isNarrativeEventScan(key) {return /^_?(war|revolt|disaster|diplomacy|keju|party|edictEffect|courtCeremony|construction|omen|marriageBirth|conspiracy|currency|religion)(ValidatorLog)?$/.test(key);}
+  function _collectNarrativeReviews(G, baseline, opts) {
+    var reviews=[];
+    _AI_VALIDATOR_LOG_KEYS.filter(function(key){return opts && opts._deferNarrativeRepairs===true || _isNarrativeEventScan(key);}).forEach(function(key){
+      var known=baseline[key] instanceof Set?baseline[key]:new Set();
+      (Array.isArray(G&&G[key])?G[key]:[]).forEach(function(row){
+        if(!row||known.has(row)||Number(row.turn||0)!==Number(G.turn||0))return;
+        var fields=opts && opts._deferNarrativeRepairs===true?['warnings','missing','skipped','errors']:['warnings'];
+        fields.forEach(function(field){(Array.isArray(row[field])?row[field]:row[field]?[row[field]]:[]).forEach(function(detail){reviews.push({validator:key,kind:'narrative-warning',field:field,detail:detail,samples:row.samples});});});
+      });
+    });return reviews;
+  }
+  function _collectValidatorFailures(G, baseline, opts) {
     var failures = [];
+    if(opts && opts._deferNarrativeRepairs===true)return failures; // Observations are adjudicated by the mandatory Agent; real failed writes remain in applied.failed.
     _AI_VALIDATOR_LOG_KEYS.forEach(function(key) {
-      var rows = Array.isArray(G && G[key]) ? G[key].slice(baseline[key] || 0) : [];
+      var known = baseline[key] instanceof Set ? baseline[key] : new Set();
+      var rows = Array.isArray(G && G[key]) ? G[key].filter(function(row) { return !known.has(row); }) : [];
       rows.forEach(function(row) {
         if (!row || Number(row.turn || 0) !== Number((G && G.turn) || 0)) return;
         var details = [];
-        ['warnings','missing','skipped','errors'].forEach(function(field) {
+        // Narrative event scans are hypotheses, not proof that a state mutation failed.
+        // Keep their warnings for review. Typed commands, identity checks, actual write
+        // failures and quantified ledger discrepancies remain transaction failures.
+        var fields = ['missing','skipped','errors'];
+        var narrativeEventScan=_isNarrativeEventScan(key);
+        if (!narrativeEventScan) fields.push('warnings');
+        fields.forEach(function(field) {
           if (Array.isArray(row[field]) && row[field].length) details = details.concat(row[field]);
         });
-        if (details.length) failures.push({ validator: key, reason: 'consistency validation failed', details: details.slice(0, 8) });
+        if (details.length) {
+          var description=details.slice(0,3).map(function(detail){
+            if(!detail||typeof detail!=='object')return String(detail);
+            return String(detail.kind||detail.code||detail.reason||'未落地')+(detail.keyword?'（'+detail.keyword+'）':'')
+              +(detail.mentioned!=null?'：叙事 '+detail.mentioned+'，已记录 '+(detail.structured==null?detail.adjusted:detail.structured):'');
+          }).join('；');
+          failures.push({ validator: key, field:key, code:'consistency-unlanded', reason: '一致性校验未落地：'+description, details: details.slice(0, 8), detailCount:details.length });
+        }
       });
     });
     return failures;
@@ -1370,7 +1457,10 @@ export function createReconcile(deps) {
       var message = String(error && (error.message || error) || 'validator exception');
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(error, 'applier] ' + name + ' validator:');
       else console.warn('[applier] ' + name + ' validator:', error);
-      if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
+      if(error.fiscalPosting!==true&&(_isNarrativeEventScan(name)||aiOutput && aiOutput._deferNarrativeRepairs===true)) {
+        if(!Array.isArray(applied.reviewRequired))applied.reviewRequired=[];
+        applied.reviewRequired.push({validator:name,kind:'validator-exception',detail:{message:message}});
+      } else if (error.fiscalPosting === true || aiOutput && aiOutput._strictValidation === true) {
         if (!Array.isArray(applied.failed)) applied.failed = [];
         applied.failed.push({ validator: name, reason: 'validator exception', details: [message] });
       }
@@ -1387,22 +1477,20 @@ export function createReconcile(deps) {
   }
 
   function _captureAIStateObject(obj, runtimeKeys) {
-    var data = (typeof global.deepClone === 'function') ? global.deepClone(obj) : JSON.parse(JSON.stringify(obj));
-    var descriptors = {};
+    // Preserve runtime ownership before cloning; never detach properties from the live world.
+    var values = {}, descriptors = {};
     Object.getOwnPropertyNames(obj || {}).forEach(function(key) {
-      var d = Object.getOwnPropertyDescriptor(obj, key);
-      if (!d) return;
-      // _indices is a derived Map cache, never transaction state. Restoring its
-      // descriptor can resurrect stale object references (or JSON-cloned {}).
-      if (key === '_indices') { try { delete data[key]; } catch (_) {} return; }
-      if ((runtimeKeys && runtimeKeys.indexOf(key) >= 0) || d.get || d.set ||
-          (Object.prototype.hasOwnProperty.call(d, 'value') && typeof d.value === 'function') ||
-          !Object.prototype.hasOwnProperty.call(data, key)) {
-        descriptors[key] = d;
-        try { delete data[key]; } catch (_) {}
+      var descriptor = Object.getOwnPropertyDescriptor(obj, key);
+      if (!descriptor || key === '_indices') return;
+      var runtime = runtimeKeys && runtimeKeys.indexOf(key) >= 0;
+      if (runtime || descriptor.get || descriptor.set || !descriptor.enumerable || typeof descriptor.value === 'function') {
+        descriptors[key] = descriptor;
+      } else {
+        Object.defineProperty(values, key, {value:descriptor.value, enumerable:true, configurable:true, writable:true});
       }
     });
-    return { data: data, descriptors: descriptors };
+    var data = (typeof globalThis.deepClone === 'function') ? globalThis.deepClone(values) : JSON.parse(JSON.stringify(values));
+    return {data:data, descriptors:descriptors};
   }
 
   function _restoreAIStateObject(target, snapshot) {
@@ -1436,6 +1524,26 @@ export function createReconcile(deps) {
    * AI 写回原子边界：所有 handler 只在可回滚草稿窗口内执行；任一显式失败、
    * validator 命中或全局形状破坏都恢复 GM/P 原状并返回 ok:false。
    */
+  // The reviewer commits synchronous canonical tools as one transaction, after parallel inference joins.
+  function runAtomicMutation(mutator) {
+    var G=global.GM, P0=global.P, gs, ps;
+    try {
+      gs=_captureAIStateObject(G, ['_postTurnJobs','_postTurnDetachedJobs','_indices']);
+      if(P0) ps=_captureAIStateObject(P0, ['scenario','_indices']);
+      var result=mutator({beforeGM:gs.data,beforeP:ps&&ps.data});
+      if(result && typeof result.then==='function') throw new Error('atomic mutation must be synchronous');
+      var failures=_validateAIResultState(G);
+      if(!result || result.ok!==true || failures.length) throw new Error(failures.map(function(f){return f.path+': '+f.reason;}).join('; ') || result && result.reason || 'review write rejected');
+      _refreshAIIndices(G,P0);
+      return result;
+    } catch(e) {
+      if(gs) _restoreAIStateObject(G,gs);
+      if(ps) _restoreAIStateObject(P0,ps);
+      _refreshAIIndices(G,P0);
+      return {ok:false,rolledBack:true,reason:String(e && e.message || e)};
+    }
+  }
+
   function applyAITurnChangesAtomic(aiOutput) {
     var G = global.GM;
     var P0 = global.P;
@@ -1453,6 +1561,10 @@ export function createReconcile(deps) {
         };
       }
       aiOutput = strictPreflight.output;
+    }
+    if (aiOutput._strictValidation !== true && (aiOutput.char_updates || []).some(function(row) { return row && row.changes != null; })) {
+      aiOutput=_tmCloneWriteback(aiOutput); var aliases=[]; _normalizeCharacterUpdateAliases(aiOutput, aliases);
+      if (aliases.length) return {ok:false, preflightRejected:true, applied:{failed:aliases}};
     }
     var gSnapshot, pSnapshot;
     try {
@@ -1520,7 +1632,9 @@ export function createReconcile(deps) {
     _hasInstantArrivalRule: _hasInstantArrivalRule,
     _captureValidatorBaseline: _captureValidatorBaseline,
     _collectValidatorFailures: _collectValidatorFailures,
+    _collectNarrativeReviews: _collectNarrativeReviews,
     _runConsistencyValidator: _runConsistencyValidator,
+    runAtomicMutation: runAtomicMutation,
     applyAITurnChangesAtomic: applyAITurnChangesAtomic,
     _syncFiscalScalars: _syncFiscalScalars,
     legacyExports: {

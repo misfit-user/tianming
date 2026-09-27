@@ -210,10 +210,65 @@
   //  初始化
   // ═══════════════════════════════════════════════════════════════════
 
+  function _fiscalShapeError(id, field) {
+    var e = new Error('地方财政账本无法安全迁移：' + id + '.' + field);
+    e.code = 'central-local-ledger-invalid'; e.fiscalPosting = true; throw e;
+  }
+  function _normalizeFiscalRows(G) {
+    if (!G || !G.fiscal || !G.fiscal.regions) return;
+    var planned = [];
+    Object.keys(G.fiscal.regions).forEach(function(id) {
+      var row = G.fiscal.regions[id];
+      if (!row || typeof row !== 'object' || Array.isArray(row)) return _fiscalShapeError(id, 'record');
+      var defaults = makeRegionFiscal(id), patch = {}, ledger = row.ledgers;
+      if (ledger != null && (typeof ledger !== 'object' || Array.isArray(ledger))) return _fiscalShapeError(id, 'ledgers');
+      ledger = ledger || {};
+      var next = Object.assign({}, ledger), legacy = {};
+      ['money','grain','cloth'].forEach(function(key) {
+        var value = ledger[key];
+        if (value == null) {
+          var aliases = [row[key], key === 'money' ? row.balance : undefined].filter(function(v) { return v != null; });
+          if (aliases.length > 1 && Number(aliases[0]) !== Number(aliases[1])) return _fiscalShapeError(id, key + '-conflict');
+          value = aliases.length ? aliases[0] : 0;
+        }
+        if (value && typeof value === 'object' && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value,'stock')) { legacy[key] = value; value = value.stock; }
+        if ((typeof value !== 'number' && typeof value !== 'string') || value === '' || !Number.isFinite(Number(value))) return _fiscalShapeError(id, key);
+        next[key] = Number(value);
+      });
+      patch.ledgers = next;
+      if (Object.keys(legacy).length) patch._centralLocalLegacyLedgers = Object.assign({}, row._centralLocalLegacyLedgers || {}, legacy);
+      ['allocation','expenditures','annualReport'].forEach(function(key) {
+        if (row[key] != null && (typeof row[key] !== 'object' || Array.isArray(row[key]))) return _fiscalShapeError(id, key);
+        patch[key] = Object.assign({}, defaults[key], row[key] || {});
+      });
+      Object.keys(defaults.annualReport).forEach(function(key) {
+        var value = patch.annualReport[key];
+        if ((typeof value !== 'number' && typeof value !== 'string') || value === '' || !Number.isFinite(Number(value))) return _fiscalShapeError(id, 'annualReport.' + key);
+        patch.annualReport[key] = Number(value);
+      });
+      Object.keys(defaults.expenditures).forEach(function(key) { if (!Array.isArray(patch.expenditures[key])) return _fiscalShapeError(id, 'expenditures.' + key); });
+      ['compliance','skimmingRate','overstatement','autonomyLevel'].forEach(function(key) {
+        var value = row[key] == null ? defaults[key] : row[key];
+        if ((typeof value !== 'number' && typeof value !== 'string') || !Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 1) return _fiscalShapeError(id, key);
+        patch[key] = Number(value);
+      });
+      if (row.history != null && !Array.isArray(row.history)) return _fiscalShapeError(id, 'history');
+      if (row.history == null) patch.history = [];
+      if (row.regionId == null) patch.regionId = id;
+      planned.push({ row:row, patch:patch });
+    });
+    // Plan all migrations before publishing any: an invalid region cannot partially rewrite siblings.
+    planned.forEach(function(p) { Object.keys(p.patch).forEach(function(k) {
+      if (['ledgers','annualReport','allocation','expenditures'].indexOf(k) >= 0 && p.row[k]) Object.assign(p.row[k], p.patch[k]);
+      else p.row[k] = p.patch[k];
+    }); });
+  }
+
   function init(sc) {
     var G = global.GM;
     if (!G) return;
     if (!G.fiscal) G.fiscal = {};
+    _normalizeFiscalRows(G);
     if (G.fiscal._centralLocalInited) {
       // 补全老存档缺失字段
       if (!G.fiscal.regions) G.fiscal.regions = {};
@@ -296,6 +351,7 @@
   function splitTax(regionId, taxType, amount) {
     var G = global.GM;
     if (!G || !G.fiscal || !G.fiscal.regions) return null;
+    _normalizeFiscalRows(G);
     var rf = G.fiscal.regions[regionId];
     if (!rf) return null;
 
@@ -345,6 +401,7 @@
   function generateLocalActions(ctx) {
     var G = global.GM;
     if (!G || !G.fiscal || !G.fiscal.regions) return [];
+    _normalizeFiscalRows(G);
     var actions = [];
     Object.keys(G.fiscal.regions).forEach(function(rid) {
       var rf = G.fiscal.regions[rid];
@@ -410,6 +467,7 @@
   function executeLocalActions(localActionsList) {
     var G = global.GM;
     if (!G || !G.fiscal || !G.fiscal.regions) return;
+    _normalizeFiscalRows(G);
     localActionsList.forEach(function(la) {
       var rf = G.fiscal.regions[la.regionId];
       if (!rf) return;
@@ -723,6 +781,7 @@
       var sc = (typeof global.findScenarioById === 'function') ? global.findScenarioById(G.sid) : null;
       init(sc);
     }
+    _normalizeFiscalRows(G);
     var mr = (typeof ctx.monthRatio === 'number') ? ctx.monthRatio : 1;
     try { _updateCompliance(ctx, mr); } catch(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'CentralLocal] compliance:') : console.error('[CentralLocal] compliance:', e); }
     try {
@@ -804,6 +863,7 @@
     init: init,
     tick: tick,
     splitTax: splitTax,
+    normalizeRegions: function() { return _normalizeFiscalRows(global.GM); },
     generateLocalActions: generateLocalActions,
     executeLocalActions: executeLocalActions,
     dispatchCensor: dispatchCensor,

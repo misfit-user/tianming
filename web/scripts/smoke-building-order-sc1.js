@@ -19,9 +19,9 @@ function fixture(){
 }
 let pass=0,fail=0;async function test(name,fn){try{await fn();pass++;console.log('PASS '+name);}catch(e){fail++;console.error('FAIL '+name+' '+e.stack);}}
 (async()=>{
-  await test('actual final-rule injection survives hard context trimming and includes stable request metadata',()=>{
+  await test('actual final-rule injection survives a fitting budget without silently discarding history',()=>{
     const f=fixture(),c=f.c;vm.runInContext(injection,c);const body={model:'controlled',messages:[{role:'system',content:'世界真值'},{role:'user',content:c.tp1}],max_tokens:1200};
-    const r=c.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body,{contextTokens:8192,completionTokens:1200});assert(r.body.messages[1].content.includes(f.pr.id));assert(r.body.messages[1].content.includes('building_decisions'));assert(r.body.messages[1].content.length<c.tp1.length);assert(Number.isFinite(r.diagnostics.finalTotalTokens)&&r.diagnostics.finalTotalTokens<=8192);
+    const original=JSON.stringify(body);assert.throws(()=>c.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body,{contextTokens:8192,completionTokens:1200}),e=>e.code==='mandatory_context_overflow'&&e.preservedAllContent===true);assert.equal(JSON.stringify(body),original);const r=c.TM.Endturn.AI.subcalls.finalizeSc1RequestBody(body,{contextTokens:131072,completionTokens:1200});assert(r.body.messages[1].content.includes(f.pr.id));assert(r.body.messages[1].content.includes('building_decisions'));assert.equal(r.body.messages[1].content,c.tp1);assert.equal(r.diagnostics.omittedChars,0);assert(Number.isFinite(r.diagnostics.finalTotalTokens)&&r.diagnostics.finalTotalTokens<=131072);
   });
   await test('no registered orders add no new prompt or request',async()=>{
     const f=fixture();f.c.ctx.input.buildingOrders.ids=[];const before=f.c.tp1;vm.runInContext(injection,f.c);assert.equal(f.c.tp1,before);let calls=0;f.c._callEndturnAI=async()=>{calls++;};await f.run();assert.equal(calls,0);

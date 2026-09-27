@@ -121,7 +121,7 @@
     if (v > 0) return v;
     return safe((GM.neitang || {}).huangzhuangAcres, 100000);
   }
-  // 全国皇产汇总（zhizao/kuangchang/yuyao）·遍历 adminHierarchy 累加
+  // 全国皇产汇总（zhizao/kuangchang/yuyao）·只计叶子，父级可存下属合计
   function _imperialAssetsTotal() {
     var ret = { zhizao: 0, kuangchang: 0, yuyao: 0 };
     if (!GM.adminHierarchy) return ret;
@@ -131,10 +131,12 @@
         if (!Array.isArray(divs)) return;
         divs.forEach(function(d) {
           if (!d) return;
-          var ia = (d.economyBase && d.economyBase.imperialAssets) || {};
-          ret.zhizao += (ia.zhizao || 0);
-          ret.kuangchang += (ia.kuangchang || 0);
-          ret.yuyao += (ia.yuyao || 0);
+          if (!(d.children && d.children.length) && !(d.divisions && d.divisions.length)) {
+            var ia = (d.economyBase && d.economyBase.imperialAssets) || {};
+            ret.zhizao += (ia.zhizao || 0);
+            ret.kuangchang += (ia.kuangchang || 0);
+            ret.yuyao += (ia.yuyao || 0);
+          }
           if (d.children) walk(d.children);
           if (d.divisions) walk(d.divisions);
         });
@@ -406,6 +408,7 @@
   }
 
   function monthlySettle(mr) {
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.tick(GM, {turnDays:(mr == null ? getMonthRatio() : mr)*30}, 'private');
     mr = mr || getMonthRatio();
     ensureNeitangModel();
     var n = GM.neitang;
@@ -705,6 +708,7 @@
     // 帑廪→内帑 转运
     transferFromGuoku: function(amount, options) {
       if (!Number.isFinite(amount) || amount <= 0) return {success:false, reason:'请填写大于零的调拨数目'};
+      if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.transfer(GM, 'public', 'private', amount);
       if (explicitFiscalActive()) return transferCurrentAccounts('in',amount,options);
       ensureNeitangModel();
       amount = amount || 100000;
@@ -721,6 +725,7 @@
     // 内帑→帑廪 接济
     rescueGuoku: function(amount, options) {
       if (!Number.isFinite(amount) || amount <= 0) return {success:false, reason:'请填写大于零的调拨数目'};
+      if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.transfer(GM, 'private', 'public', amount);
       if (explicitFiscalActive()) return transferCurrentAccounts('out',amount,options);
       ensureNeitangModel();
       amount = amount || 100000;
@@ -741,6 +746,7 @@
 
     // 启用特别税
     enableSpecialTax: function(type, monthly) {
+      if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.actionSupport(GM);
       if (explicitFiscalActive()) return {success:false, reason:'另征钱物须先具定税源、征额与承办官，请由诏令议行'};
       ensureNeitangModel();
       type = type || '矿税';
@@ -988,6 +994,7 @@
   // ═════════════════════════════════════════════════════════════
 
   function tick(context) {
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.tick(GM, context, 'private');
     ensureNeitangModel();
     var mr = (context && context._monthRatio) || getMonthRatio();
 

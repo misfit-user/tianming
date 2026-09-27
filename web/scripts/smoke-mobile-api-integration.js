@@ -10,11 +10,11 @@ function mainRequest(f,options={}){return f.c._aiFetchWithRetryInner('https://pr
 test('real nonstream inference uses native HTTP and parses its object response',async()=>{
  const f=fixture();loadMain(f);const data=await mainRequest(f);
  assert.equal(data.choices[0].message.content,'OK');assert.equal(f.sent.length,1);assert.equal(f.browser.length,0);
- assert.equal(JSON.parse(f.sent[0].data).messages[0].content,'完整的游戏上下文');assert.equal(f.sent[0].readTimeout,100);
+ assert.equal(JSON.parse(f.sent[0].data).messages[0].content,'完整的游戏上下文');assert.equal(f.sent[0].readTimeout,0);assert(f.sent[0].connectTimeout>0);
 });
 test('real inference does not send duplicate native POST after timeout',async()=>{
  const f=fixture({reply:()=>new Promise(()=>{})});loadMain(f);
- await assert.rejects(mainRequest(f,{timeoutMs:15,maxRetries:3}),e=>e.code==='AI_TIMEOUT');assert.equal(f.sent.length,1);assert.equal(f.timers.size,0);
+ await assert.rejects(mainRequest(f,{timeoutMs:15,totalResponseTimeoutMs:15,maxRetries:3}),e=>e.code==='AI_TIMEOUT'||e.code==='AI_REQUEST_DEADLINE');assert.equal(f.sent.length,1);assert.equal(f.timers.size,0);
 });
 test('real inference does not retry native certificate failures',async()=>{
  const f=fixture({reply:async()=>{throw Error('SSLHandshakeException');}});loadMain(f);

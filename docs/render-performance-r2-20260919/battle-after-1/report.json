@@ -1,0 +1,67 @@
+{
+  "complete": true,
+  "errors": [],
+  "sourceSha256": "8cfc8c3e526dcece4365e22a6de29983ea0ba3f601c5db02a1011d1161fa0b10",
+  "menu": {
+    "counts": {
+      "draw": 0,
+      "step": 0
+    },
+    "ms": 1202,
+    "phase": "compose",
+    "paused": true,
+    "title": "",
+    "renderer": false
+  },
+  "visibleBattle": {
+    "counts": {
+      "draw": 1,
+      "step": 0
+    },
+    "ms": 12161.39999999851,
+    "phase": "deploy",
+    "paused": true,
+    "title": "none",
+    "renderer": true
+  },
+  "manualDraw": {
+    "times": [
+      104.30000000074506,
+      53.19999999925494,
+      43.899999998509884,
+      42.400000002235174,
+      39.69999999925494,
+      39.70000000298023
+    ],
+    "units": 111
+  },
+  "returnedMenu": {
+    "counts": {
+      "draw": 0,
+      "step": 0
+    },
+    "ms": 1217.5,
+    "phase": "compose",
+    "paused": true,
+    "title": "flex",
+    "renderer": true
+  },
+  "gpu": {
+    "2d_canvas": "enabled",
+    "canvas_oop_rasterization": "enabled_on",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "enabled",
+    "vulkan": "disabled_off",
+    "webgl": "enabled",
+    "webgl2": "enabled",
+    "webgpu": "enabled",
+    "webnn": "disabled_off"
+  }
+}

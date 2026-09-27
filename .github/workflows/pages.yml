@@ -61,7 +61,7 @@ jobs:
         run: node scripts/lint-arch-all.js
       - name: Full smoke suite
         working-directory: web
-        run: node scripts/ci-smokes.js
+        run: node scripts/ci-smokes.js --jobs 2
       - uses: actions/configure-pages@v5
       - name: Stage Pages runtime tree
         run: node scripts/stage-web-release.js --target "${{ runner.temp }}/tianming-pages" --label pages-production

@@ -1,0 +1,20 @@
+// Exercise the installed page with fresh isolated Electron data; no user session or network.
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+const root=path.resolve(process.argv[2]||'.'),work=path.resolve(process.argv[3]);
+const doc=path.join(root,'docs/chongzhen-map-r3-20260918'),tag='native-ui-r3-pointer18';
+let script=fs.readFileSync(path.join(doc,'verify-native-ui.mjs'),'utf8');
+const needle=' report.liveTransfers=await js(';
+assert.equal(script.split(needle).length,2,'Unexpected test host');
+script=script.replace(needle,fs.readFileSync(path.join(doc,'pointer-check.fragment.mjs'),'utf8')+'\n'+needle);
+const runner=path.join(work,'verify-pointer-generated.mjs');fs.writeFileSync(runner,script);
+const dir=path.join(work,tag);fs.mkdirSync(dir,{recursive:true});
+const out=fs.openSync(path.join(dir,'stdout.log'),'w'),err=fs.openSync(path.join(dir,'stderr.log'),'w');
+const env={...process.env,CHONGZHEN_REPO:root,CHONGZHEN_WORK:work,CHONGZHEN_UI_TAG:tag};delete env.ELECTRON_RUN_AS_NODE;
+console.log('Starting isolated real-pointer verification');
+const r=spawnSync(path.join(root,'node_modules/electron/dist/electron.exe'),[runner],{cwd:root,env,stdio:['ignore',out,err],timeout:210000,windowsHide:true});
+fs.closeSync(out);fs.closeSync(err);const result={status:r.status,signal:r.signal,error:r.error?.message||null};
+fs.writeFileSync(path.join(dir,'process-result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+process.exitCode=r.status===0&&!r.error?0:1;

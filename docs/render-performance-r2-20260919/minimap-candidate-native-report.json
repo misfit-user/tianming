@@ -1,0 +1,112 @@
+{
+  "variants": {
+    "before": {
+      "images": {
+        "initial": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+        "idle": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+        "pan": "c810630027a6b38f9ec2b0d67574eb9e41e2c29528321afea36d1d6698a6352b",
+        "selection": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+        "mutation": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+        "resize": "819186708f228a8b82490325c9614c61e24ce23e4d7a649694e36d25eb582e3a",
+        "mapReplacement": "33ec27e5e14e1cafe08d6bac5dc9fe4f2d23af910ba40e1a2d011f3415912464",
+        "foldedMutation": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c",
+        "repeatedForce": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c"
+      },
+      "idle": {
+        "counts": {
+          "fillRect": 122,
+          "lineTo": 55022,
+          "fill": 18300
+        },
+        "ms": 100.09999999776483
+      },
+      "pan": {
+        "counts": {
+          "fillRect": 60,
+          "lineTo": 27060,
+          "fill": 9000
+        },
+        "ms": 34.69999999925494
+      },
+      "hidden": {}
+    },
+    "candidate": {
+      "images": {
+        "initial": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+        "idle": "9a95ef83115ec11e7f10e20cdcc7e582d793fb50b1c3c65e6221cea46b04f4dc",
+        "pan": "c810630027a6b38f9ec2b0d67574eb9e41e2c29528321afea36d1d6698a6352b",
+        "selection": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+        "mutation": "3ba60b8a2f4836c72dcac46d82650dfbbb6baffe4dceaa50d0acb3160a644362",
+        "resize": "819186708f228a8b82490325c9614c61e24ce23e4d7a649694e36d25eb582e3a",
+        "mapReplacement": "33ec27e5e14e1cafe08d6bac5dc9fe4f2d23af910ba40e1a2d011f3415912464",
+        "foldedMutation": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c",
+        "repeatedForce": "f16c91056054b937b5ff0228c5ab8ced6694fe34d9001034d9c4cef8c6258b4c"
+      },
+      "idle": {
+        "counts": {},
+        "ms": 0.6999999992549419
+      },
+      "pan": {
+        "counts": {
+          "drawImage": 30,
+          "fillRect": 30,
+          "lineTo": 60
+        },
+        "ms": 0.5
+      },
+      "hidden": {}
+    }
+  },
+  "checks": [
+    {
+      "name": "pixel-identical-initial",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-idle",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-pan",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-selection",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-mutation",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-resize",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-mapReplacement",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-foldedMutation",
+      "passed": true
+    },
+    {
+      "name": "pixel-identical-repeatedForce",
+      "passed": true
+    },
+    {
+      "name": "idle-zero-draws",
+      "passed": true
+    },
+    {
+      "name": "pan-reuses-geometric-base",
+      "passed": true
+    },
+    {
+      "name": "folded-zero-draws",
+      "passed": true
+    }
+  ],
+  "complete": true,
+  "passed": true
+}

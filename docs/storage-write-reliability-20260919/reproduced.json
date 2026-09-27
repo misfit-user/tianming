@@ -1,0 +1,20 @@
+[
+  {
+    "label": "before",
+    "scenario": "write-no-terminal-event",
+    "deadlineEvents": 0,
+    "settledAfterDeadline": false,
+    "outcome": "pending",
+    "notified": 0,
+    "partialSlotWritten": false
+  },
+  {
+    "label": "after",
+    "scenario": "write-no-terminal-event",
+    "deadlineEvents": 1,
+    "settledAfterDeadline": true,
+    "outcome": "SAVE_WRITE_TIMEOUT",
+    "notified": 0,
+    "partialSlotWritten": false
+  }
+]

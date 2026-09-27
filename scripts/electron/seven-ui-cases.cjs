@@ -55,9 +55,11 @@ module.exports=async function({win,check}){
   await test('the actual Tianqi Yingtian fiscal detail shows its recorded households through the full detail entry',async()=>{
     const sc=JSON.parse(fs.readFileSync(path.join(__dirname,'../../scenarios/天启七年·九月（官方）.json'),'utf8'));
     const nodes=[];function walk(a){for(const d of a||[]){nodes.push(d);walk(d.children);walk(d.divisions);}}walk(sc.adminHierarchy.player.divisions);
-    const div=nodes.find(d=>d.id==='div_pref_ming_02_01');assert(div&&div.populationDetail.households===290164);
+    // 期望值取自剧本当前的在编户口（剧本数据会修订），户数须与按口数估的户数可区分，才验得出界面读的是记录值
+    const div=nodes.find(d=>d.id==='div_pref_ming_02_01'),pd=div&&div.populationDetail,wan=n=>Math.round(n/1e4)+'万';
+    assert(pd&&Number.isInteger(pd.households)&&pd.households>0&&pd.mouths===div.population&&wan(pd.households)!==wan(pd.mouths/5));
     const r=await js(`(()=>{const old=GM.adminHierarchy,div=${JSON.stringify(div)};try{GM.adminHierarchy={player:{divisions:[div]}};const before=JSON.stringify(div.populationDetail);openDivisionDetail(div.id);const card=document.querySelector('#tm-div-detail-root .tm-div-qs');return{text:card?.textContent,value:card?.querySelector('.tm-div-qs-val').textContent,sub:card?.querySelector('.tm-div-qs-sub').textContent,unchanged:before===JSON.stringify(div.populationDetail)};}finally{GM.adminHierarchy=old;}})()`);
-    assert.equal(r.value,'151万');assert.equal(r.sub,'29万户');assert(r.unchanged);
+    assert.equal(r.value,wan(pd.mouths));assert.equal(r.sub,wan(pd.households)+'户');assert(r.unchanged);
     await visible('#tm-div-detail-root');await screen('seven-population');await js(`closeGenericModal()`);
   });
   await test('help switches content in place without moving or rebuilding the scrolled topic list',async()=>{

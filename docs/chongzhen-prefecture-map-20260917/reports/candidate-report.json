@@ -1,0 +1,2675 @@
+{
+  "sourceSha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+  "candidateSha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "bytes": 14721417,
+  "regions": 284,
+  "provinces": 43,
+  "accounts": 382,
+  "mappedAccounts": 359,
+  "unmappedAccounts": [
+    {
+      "id": "div_pref_div_mp3yvbbucgxfr_01",
+      "name": "海龙屯故地"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbucgxfr_02",
+      "name": "娄山关"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbucgxfr_03",
+      "name": "遵义旧治"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbucgxfr_04",
+      "name": "草塘寨"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbucgxfr_05",
+      "name": "真安州旧地"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_01",
+      "name": "厦门"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_02",
+      "name": "金门"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_03",
+      "name": "澎湖"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_04",
+      "name": "月港"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_05",
+      "name": "海澄"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbuomlca_06",
+      "name": "安平海道"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_01",
+      "name": "米脂"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_02",
+      "name": "延安"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_03",
+      "name": "绥德"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_04",
+      "name": "清涧"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_05",
+      "name": "安塞"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbu0vhct_06",
+      "name": "府谷"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_01",
+      "name": "永宁宣抚司"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_02",
+      "name": "水西四十八目"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_03",
+      "name": "乌撒"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_04",
+      "name": "赤水"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_05",
+      "name": "毕节"
+    },
+    {
+      "id": "div_pref_div_mp3yvbbusohkn_06",
+      "name": "叙永山道"
+    }
+  ],
+  "locStats": {
+    "characters": {
+      "resolved": 140,
+      "area": 9,
+      "unresolved": 45,
+      "ambiguous": 9
+    },
+    "armies": {
+      "resolved": 40,
+      "unresolved": 2,
+      "area": 5,
+      "ambiguous": 1
+    }
+  },
+  "locations": [
+    {
+      "kind": "character",
+      "name": "朱由检",
+      "text": "京师·紫禁城·乾清宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "周皇后",
+      "text": "京师·紫禁城·坤宁宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "张懿安",
+      "text": "京师·紫禁城·慈宁宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "袁贵妃",
+      "text": "京师·紫禁城·东六宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李选侍",
+      "text": "京师·紫禁城·哕鸾宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "魏忠贤",
+      "text": "京师·紫禁城·司礼监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "客氏",
+      "text": "京师·出宫暂居私第",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "崔呈秀",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "田尔耕",
+      "text": "京师·锦衣卫·北镇抚司",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "许显纯",
+      "text": "京师·北镇抚司诏狱",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "黄立极",
+      "text": "京师·文渊阁",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "施凤来",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "冯铨",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阎鸣泰",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王体乾",
+      "text": "京师·紫禁城·司礼监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "张瑞图",
+      "text": "京师·文渊阁",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李国普",
+      "text": "京师·文渊阁",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "周应秋",
+      "text": "京师·吏部",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "来宗道",
+      "text": "京师·礼部",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "薛贞",
+      "text": "京师·刑部",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "薛凤翔",
+      "text": "京师·工部",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李养正",
+      "text": "京师·都察院",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杨所修",
+      "text": "京师·通政司",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "涂文辅",
+      "text": "京师·紫禁城·御马监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李永贞",
+      "text": "京师·紫禁城·东厂",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "毛一鹭",
+      "text": "南京",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "潘汝桢",
+      "text": "杭州",
+      "status": "resolved",
+      "regionId": "ming-03-p01",
+      "candidates": [
+        "ming-03-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "刘诏",
+      "text": "顺天府",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "武之望",
+      "text": "陕西·固原(三边总督驻地)",
+      "status": "resolved",
+      "regionId": "ming-11-p05",
+      "candidates": [
+        "ming-11-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "胡廷宴",
+      "text": "西安",
+      "status": "resolved",
+      "regionId": "ming-11-p01",
+      "candidates": [
+        "ming-11-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杨鹤",
+      "text": "湖广·武陵(候起·暂居家中)",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-08-p01",
+        "ming-08-p02",
+        "ming-08-p03",
+        "ming-08-p04",
+        "ming-08-p05",
+        "ming-08-p06",
+        "ming-08-p07",
+        "ming-08-p08",
+        "ming-08-p09",
+        "ming-08-p10",
+        "ming-08-p11",
+        "ming-08-p12",
+        "ming-08-p13",
+        "ming-08-p14",
+        "ming-08-p15"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "林尧俞",
+      "text": "京师·国子监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "朱梅",
+      "text": "蓟州·三屯营",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "侯世禄",
+      "text": "宣府",
+      "status": "resolved",
+      "regionId": "ming-01-p11",
+      "candidates": [
+        "ming-01-p11"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "渠家祯",
+      "text": "大同",
+      "status": "resolved",
+      "regionId": "ming-10-p06",
+      "candidates": [
+        "ming-10-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杜文焕",
+      "text": "延绥·榆林",
+      "status": "resolved",
+      "regionId": "ming-11-p15",
+      "candidates": [
+        "ming-11-p15"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "韩爌",
+      "text": "山西蒲州",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "钱龙锡",
+      "text": "南直隶华亭",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "成基命",
+      "text": "河南大名",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming-01-p05",
+        "ming-09-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "刘鸿训",
+      "text": "山东长山",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "李标",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郭允厚",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "毕自严",
+      "text": "南京",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王在晋",
+      "text": "南京",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "徐光启",
+      "text": "上海",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "温体仁",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "周延儒",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "袁崇焕",
+      "text": "广东东莞",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "孙承宗",
+      "text": "保定高阳",
+      "status": "resolved",
+      "regionId": "ming-01-p02",
+      "candidates": [
+        "ming-01-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "毛文龙",
+      "text": "皮岛",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "曹文诏",
+      "text": "山西大同军中",
+      "status": "resolved",
+      "regionId": "ming-10-p06",
+      "candidates": [
+        "ming-10-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "曹变蛟",
+      "text": "山西大同军中",
+      "status": "resolved",
+      "regionId": "ming-10-p06",
+      "candidates": [
+        "ming-10-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "满桂",
+      "text": "宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "赵率教",
+      "text": "山海关",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "祖大寿",
+      "text": "宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "洪承畴",
+      "text": "西安",
+      "status": "resolved",
+      "regionId": "ming-11-p01",
+      "candidates": [
+        "ming-11-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "卢象升",
+      "text": "大名府",
+      "status": "resolved",
+      "regionId": "ming-01-p05",
+      "candidates": [
+        "ming-01-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "孙传庭",
+      "text": "山西代州·闲居老家",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "孙元化",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王承恩",
+      "text": "京师·紫禁城·乾清宫",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "曹化淳",
+      "text": "南京·内守备(贬居)",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "方正化",
+      "text": "京师·紫禁城·司礼监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "皇太极",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "代善",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "多尔衮",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阿敏",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "范文程",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "莽古尔泰",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "济尔哈朗",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阿济格",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "多铎",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "佟养性",
+      "text": "沈阳·汉人工匠营",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李永芳",
+      "text": "沈阳·汉军营",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "林丹汗",
+      "text": "归化城",
+      "status": "resolved",
+      "regionId": "ming-16",
+      "candidates": [
+        "ming-16"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "仁祖李倧",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郑芝龙",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王嘉胤",
+      "text": "陕西府谷",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "高迎祥",
+      "text": "陕西安塞",
+      "status": "resolved",
+      "regionId": "ming-11-p01",
+      "candidates": [
+        "ming-11-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李自成",
+      "text": "陕西米脂·银川驿(学界或作甘州驿)",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "张献忠",
+      "text": "陕西延安府·延绥镇军营",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming-11-p02",
+        "ming-11-p15"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "秦良玉",
+      "text": "四川石柱宣抚司(本地·时届勤王调度)",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "郑成功",
+      "text": "日本·平户(外祖家)",
+      "status": "resolved",
+      "regionId": "ming2-25-p05",
+      "candidates": [
+        "ming2-25-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李定国",
+      "text": "陕西·榆林",
+      "status": "resolved",
+      "regionId": "ming-11-p15",
+      "candidates": [
+        "ming-11-p15"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "顾炎武",
+      "text": "南直隶·昆山",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-02-p01",
+        "ming-02-p02",
+        "ming-02-p03",
+        "ming-02-p04",
+        "ming-02-p05",
+        "ming-02-p06",
+        "ming-02-p07",
+        "ming-02-p08",
+        "ming-02-p09",
+        "ming-02-p10",
+        "ming-02-p11",
+        "ming-02-p12",
+        "ming-02-p13",
+        "ming-02-p14"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "黄宗羲",
+      "text": "浙江·余姚",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-03-p01",
+        "ming-03-p02",
+        "ming-03-p03",
+        "ming-03-p04",
+        "ming-03-p05",
+        "ming-03-p06",
+        "ming-03-p07",
+        "ming-03-p08",
+        "ming-03-p09",
+        "ming-03-p10",
+        "ming-03-p11"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王夫之",
+      "text": "湖广·衡州府衡阳",
+      "status": "resolved",
+      "regionId": "ming-08-p06",
+      "candidates": [
+        "ming-08-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "史可法",
+      "text": "京师·国子监",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "张溥",
+      "text": "南直隶·苏州府太仓",
+      "status": "resolved",
+      "regionId": "ming-02-p02",
+      "candidates": [
+        "ming-02-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "陈子龙",
+      "text": "南直隶·松江府华亭",
+      "status": "resolved",
+      "regionId": "ming-02-p03",
+      "candidates": [
+        "ming-02-p03"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "侯恂",
+      "text": "河南·商丘(告归)",
+      "status": "resolved",
+      "regionId": "ming-09-p06",
+      "candidates": [
+        "ming-09-p06"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "黄道周",
+      "text": "福建·漳州府漳浦(在翰林)",
+      "status": "resolved",
+      "regionId": "ming-04-p04",
+      "candidates": [
+        "ming-04-p04"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "刘宗周",
+      "text": "京师·顺天府",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "倪元璐",
+      "text": "京师·翰林院",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "朱燮元",
+      "text": "四川·成都(军中)",
+      "status": "resolved",
+      "regionId": "ming-12-p01",
+      "candidates": [
+        "ming-12-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "毛羽健",
+      "text": "京师·刑科",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "马士英",
+      "text": "浙江·杭州",
+      "status": "resolved",
+      "regionId": "ming-03-p01",
+      "candidates": [
+        "ming-03-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杨嗣昌",
+      "text": "南京·户部",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阮大铖",
+      "text": "京师·光禄寺",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "钱谦益",
+      "text": "南直隶·苏州府常熟",
+      "status": "resolved",
+      "regionId": "ming-02-p02",
+      "candidates": [
+        "ming-02-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "查继佐",
+      "text": "浙江·杭州府海宁",
+      "status": "resolved",
+      "regionId": "ming-03-p01",
+      "candidates": [
+        "ming-03-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "方以智",
+      "text": "南直隶·安庆府桐城",
+      "status": "resolved",
+      "regionId": "ming-02-p09",
+      "candidates": [
+        "ming-02-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "孙可望",
+      "text": "陕西·延安",
+      "status": "resolved",
+      "regionId": "ming-11-p02",
+      "candidates": [
+        "ming-11-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "吴三桂",
+      "text": "辽东·宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "张煌言",
+      "text": "浙江·宁波府鄞县",
+      "status": "resolved",
+      "regionId": "ming-03-p05",
+      "candidates": [
+        "ming-03-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "陈新甲",
+      "text": "辽东·宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "熊文灿",
+      "text": "福建·福州",
+      "status": "resolved",
+      "regionId": "ming-04-p01",
+      "candidates": [
+        "ming-04-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "卜失兔汗",
+      "text": "归化城",
+      "status": "resolved",
+      "regionId": "ming-16",
+      "candidates": [
+        "ming-16"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阿布达勒拉提甫汗",
+      "text": "叶尔羌城",
+      "status": "resolved",
+      "regionId": "ming-18-p01",
+      "candidates": [
+        "ming-18-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "吐鲁番伯克",
+      "text": "吐鲁番绿洲",
+      "status": "resolved",
+      "regionId": "ming-19-p01",
+      "candidates": [
+        "ming-19-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "也昔木汗",
+      "text": "游牧汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "拜巴噶斯台吉",
+      "text": "天山北路诸营",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "黑龙江部酋",
+      "text": "黑龙江林海",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "松前公广",
+      "text": "松前馆",
+      "status": "resolved",
+      "regionId": "ming2-24-p01",
+      "candidates": [
+        "ming2-24-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "虾夷诸酋",
+      "text": "虾夷地沿海聚落",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "德川家光",
+      "text": "江户城",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "德川秀忠",
+      "text": "江户城",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "黎神宗",
+      "text": "升龙",
+      "status": "resolved",
+      "regionId": "ming2-33-p01",
+      "candidates": [
+        "ming2-33-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郑梉",
+      "text": "升龙",
+      "status": "resolved",
+      "regionId": "ming2-33-p01",
+      "candidates": [
+        "ming2-33-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阮福源",
+      "text": "顺化",
+      "status": "resolved",
+      "regionId": "ming2-33-p04",
+      "candidates": [
+        "ming2-33-p04"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "却图汗",
+      "text": "漠北汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "土谢图汗衮布",
+      "text": "喀尔喀汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "豪格",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "宁完我",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "鲍承先",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "囊囊太后",
+      "text": "察哈尔汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "苏泰太后",
+      "text": "察哈尔汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "额哲",
+      "text": "察哈尔汗帐",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "奥巴台吉",
+      "text": "科尔沁部帐",
+      "status": "resolved",
+      "regionId": "ming2-30",
+      "candidates": [
+        "ming2-30"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "寨桑台吉",
+      "text": "科尔沁部帐",
+      "status": "resolved",
+      "regionId": "ming2-30",
+      "candidates": [
+        "ming2-30"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "哲哲",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "布木布泰",
+      "text": "沈阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "海兰珠",
+      "text": "科尔沁部帐",
+      "status": "resolved",
+      "regionId": "ming2-30",
+      "candidates": [
+        "ming2-30"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "吴克善",
+      "text": "科尔沁部帐",
+      "status": "resolved",
+      "regionId": "ming2-30",
+      "candidates": [
+        "ming2-30"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "金瑬",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李贵",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "崔鸣吉",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "金尚宪",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "林庆业",
+      "text": "平安道",
+      "status": "resolved",
+      "regionId": "ming-29-p03",
+      "candidates": [
+        "ming-29-p03"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "昭显世子",
+      "text": "汉城",
+      "status": "resolved",
+      "regionId": "ming-29-p01",
+      "candidates": [
+        "ming-29-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杨朝栋",
+      "text": "遵义府边地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "播州杨氏族老",
+      "text": "播州山寨",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "海龙囤旧卒",
+      "text": "遵义山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "郑芝虎",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郑鸿逵",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郑芝豹",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "李魁奇",
+      "text": "闽粤海面",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "许心素",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "田川松",
+      "text": "日本平户",
+      "status": "resolved",
+      "regionId": "ming2-25-p05",
+      "candidates": [
+        "ming2-25-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "王自用",
+      "text": "陕北",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "罗汝才",
+      "text": "陕北",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "马守应",
+      "text": "陕北",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "贺一龙",
+      "text": "陕北",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "贺锦",
+      "text": "陕北",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "刘宗敏",
+      "text": "陕西",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-11-p01",
+        "ming-11-p02",
+        "ming-11-p03",
+        "ming-11-p04",
+        "ming-11-p05",
+        "ming-11-p06",
+        "ming-11-p07",
+        "ming-11-p08",
+        "ming-11-p09",
+        "ming-11-p10",
+        "ming-11-p11",
+        "ming-11-p12",
+        "ming-11-p13",
+        "ming-11-p14",
+        "ming-11-p15"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "斐理伯·罗保",
+      "text": "澳门",
+      "status": "resolved",
+      "regionId": "ming-31",
+      "candidates": [
+        "ming-31"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "马士加路也",
+      "text": "澳门/印度航线",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming-31"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "罗儒望",
+      "text": "澳门",
+      "status": "resolved",
+      "regionId": "ming-31",
+      "candidates": [
+        "ming-31"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阳玛诺",
+      "text": "中国内地/澳门往来",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "曾德昭",
+      "text": "中国内地/澳门往来",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "包加禄",
+      "text": "澳门炮厂",
+      "status": "resolved",
+      "regionId": "ming-31",
+      "candidates": [
+        "ming-31"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "杰拉德·德威特",
+      "text": "大员热兰遮城",
+      "status": "resolved",
+      "regionId": "ming-30-p01",
+      "candidates": [
+        "ming-30-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "彼得·纳茨",
+      "text": "大员/日本航线",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming-30-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "汉斯·普特曼斯",
+      "text": "巴达维亚/台海航线",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "雷约兹",
+      "text": "巴达维亚/台海记忆",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "雅克·斯佩克斯",
+      "text": "日本平户/长崎航线",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming2-25-p04",
+        "ming2-25-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "胡安·尼尼奥·德塔沃拉",
+      "text": "马尼拉",
+      "status": "resolved",
+      "regionId": "ming2-32-p01",
+      "candidates": [
+        "ming2-32-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "迭戈·阿杜亚特",
+      "text": "马尼拉",
+      "status": "resolved",
+      "regionId": "ming2-32-p01",
+      "candidates": [
+        "ming2-32-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "埃尔南多·德洛斯里奥斯",
+      "text": "马尼拉/墨西哥航线",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming2-32-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "胡安·塞雷索·德萨拉曼卡",
+      "text": "马尼拉",
+      "status": "resolved",
+      "regionId": "ming2-32-p01",
+      "candidates": [
+        "ming2-32-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "奢崇明",
+      "text": "川黔山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "安邦彦",
+      "text": "水西山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "安位",
+      "text": "水西山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "奢崇辉",
+      "text": "川黔山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "樊龙",
+      "text": "川黔山地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "宋万化",
+      "text": "贵州水东旧地·墓葬记忆",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "俄木布洪台吉",
+      "text": "土默特牧地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "素囊台吉",
+      "text": "土默特/鄂尔多斯边地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "阿布达拉苏丹",
+      "text": "叶尔羌/喀什噶尔",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming-18-p01",
+        "ming-18-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "喀什噶尔伯克",
+      "text": "喀什噶尔",
+      "status": "resolved",
+      "regionId": "ming-18-p02",
+      "candidates": [
+        "ming-18-p02"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "穆罕默德伯克",
+      "text": "吐鲁番",
+      "status": "resolved",
+      "regionId": "ming-19-p01",
+      "candidates": [
+        "ming-19-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "火州阿訇",
+      "text": "吐鲁番清真寺",
+      "status": "resolved",
+      "regionId": "ming-19-p01",
+      "candidates": [
+        "ming-19-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "图尔逊穆罕默德汗",
+      "text": "塔什干",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "江格尔苏丹",
+      "text": "哈萨克汗帐",
+      "status": "resolved",
+      "regionId": "ming-20",
+      "candidates": [
+        "ming-20"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "顾实汗",
+      "text": "瓦刺牧地",
+      "status": "resolved",
+      "regionId": "ming-21",
+      "candidates": [
+        "ming-21"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "哈喇忽剌",
+      "text": "瓦刺牧地",
+      "status": "resolved",
+      "regionId": "ming-21",
+      "candidates": [
+        "ming-21"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "额尔德尼巴图尔",
+      "text": "瓦刺牧地",
+      "status": "resolved",
+      "regionId": "ming-21",
+      "candidates": [
+        "ming-21"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "虎尔哈部酋",
+      "text": "黑龙江中上游",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "瓦尔喀部头目",
+      "text": "乌苏里江山林",
+      "status": "resolved",
+      "regionId": "ming2-31",
+      "candidates": [
+        "ming2-31"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "松前泰广",
+      "text": "松前城",
+      "status": "resolved",
+      "regionId": "ming2-24-p01",
+      "candidates": [
+        "ming2-24-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "沙牟奢允",
+      "text": "虾夷地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "土井利胜",
+      "text": "江户",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "酒井忠世",
+      "text": "江户",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "松平信纲",
+      "text": "江户",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "柳生宗矩",
+      "text": "江户",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "天海",
+      "text": "江户/日光",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "春日局",
+      "text": "江户城",
+      "status": "resolved",
+      "regionId": "ming2-38-p01",
+      "candidates": [
+        "ming2-38-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阮福澜",
+      "text": "顺化/广南",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming2-33-p04",
+        "ming2-33-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "陶维慈",
+      "text": "广南",
+      "status": "resolved",
+      "regionId": "ming2-33-p05",
+      "candidates": [
+        "ming2-33-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "阮有镒",
+      "text": "广南前线",
+      "status": "resolved",
+      "regionId": "ming2-33-p05",
+      "candidates": [
+        "ming2-33-p05"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "郑柞",
+      "text": "升龙",
+      "status": "resolved",
+      "regionId": "ming2-33-p01",
+      "candidates": [
+        "ming2-33-p01"
+      ]
+    },
+    {
+      "kind": "character",
+      "name": "车臣汗硕垒",
+      "text": "喀尔喀东部",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "素巴第",
+      "text": "喀尔喀西部",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "character",
+      "name": "宋嗣殷",
+      "text": "贵州水东旧地",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "army",
+      "name": "京营·五军营",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "京营·三千营",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "京营·神机营",
+      "text": "京师",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "关宁军主力",
+      "text": "宁远-锦州",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "宁远卫·满桂部",
+      "text": "宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "宁远副总兵·祖氏家丁",
+      "text": "宁远",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "山海关军",
+      "text": "山海关",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "东江镇军",
+      "text": "皮岛",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "东江水师",
+      "text": "皮岛",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "蓟州镇军",
+      "text": "蓟州",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "宣府镇军",
+      "text": "宣府",
+      "status": "resolved",
+      "regionId": "ming-01-p11",
+      "candidates": [
+        "ming-01-p11"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "大同镇军",
+      "text": "大同",
+      "status": "resolved",
+      "regionId": "ming-10-p06",
+      "candidates": [
+        "ming-10-p06"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "山西镇军",
+      "text": "太原",
+      "status": "resolved",
+      "regionId": "ming-10-p01",
+      "candidates": [
+        "ming-10-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "延绥镇军",
+      "text": "榆林",
+      "status": "resolved",
+      "regionId": "ming-11-p15",
+      "candidates": [
+        "ming-11-p15"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "宁夏镇军",
+      "text": "宁夏",
+      "status": "resolved",
+      "regionId": "ming-11-p14",
+      "candidates": [
+        "ming-11-p14"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "甘肃镇军",
+      "text": "甘州",
+      "status": "resolved",
+      "regionId": "ming-11-p12",
+      "candidates": [
+        "ming-11-p12"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "固原镇军",
+      "text": "固原",
+      "status": "resolved",
+      "regionId": "ming-11-p05",
+      "candidates": [
+        "ming-11-p05"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "四川白杆兵",
+      "text": "四川石柱·征援陕西",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "army",
+      "name": "广西狼兵",
+      "text": "广西·援四川",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-06-p01",
+        "ming-06-p02",
+        "ming-06-p03",
+        "ming-06-p04",
+        "ming-06-p05",
+        "ming-06-p06",
+        "ming-06-p07",
+        "ming-06-p08",
+        "ming-06-p09",
+        "ming-06-p10",
+        "ming-06-p11"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "福建水师",
+      "text": "福建沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "广东水师",
+      "text": "广东沿海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-05-p01",
+        "ming-05-p02",
+        "ming-05-p03",
+        "ming-05-p04",
+        "ming-05-p05",
+        "ming-05-p06",
+        "ming-05-p07",
+        "ming-05-p08",
+        "ming-05-p09",
+        "ming-05-p10"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "郑芝龙所部(将归附)",
+      "text": "福建沿海·台海",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-04-p01",
+        "ming-04-p02",
+        "ming-04-p03",
+        "ming-04-p04",
+        "ming-04-p05",
+        "ming-04-p06",
+        "ming-04-p07",
+        "ming-04-p08",
+        "ming-04-p09",
+        "ming-30-p01",
+        "ming-30-p02",
+        "ming-30-p03",
+        "ming-30-p04",
+        "ming-30-p05",
+        "ming-30-p06",
+        "ming-30-p07",
+        "ming-30-p08"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "辽东土官·女真归附部",
+      "text": "辽东·辽西诸卫",
+      "status": "area",
+      "regionId": null,
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·两黄旗(汗亲领)",
+      "text": "沈阳·盛京",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·两红旗(代善领)",
+      "text": "辽阳·沈阳以南",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·两白旗(多尔衮兄弟·摄)",
+      "text": "沈阳·铁岭",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·两蓝旗(莽古尔泰·阿敏领)",
+      "text": "辽阳·凤凰城",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·蒙古归附军",
+      "text": "科尔沁·沈阳",
+      "status": "ambiguous",
+      "regionId": null,
+      "candidates": [
+        "ming2-30",
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "后金·汉军(八旗汉军雏形)",
+      "text": "沈阳·辽阳",
+      "status": "resolved",
+      "regionId": "ming-22",
+      "candidates": [
+        "ming-22"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "全国卫所军·总览",
+      "text": "全国 329 卫+358 千户所",
+      "status": "unresolved",
+      "regionId": null,
+      "candidates": []
+    },
+    {
+      "kind": "army",
+      "name": "通州卫(北直)",
+      "text": "北直·通州",
+      "status": "resolved",
+      "regionId": "ming-01-p01",
+      "candidates": [
+        "ming-01-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "天津卫(北直)",
+      "text": "北直·天津三卫",
+      "status": "resolved",
+      "regionId": "ming-01-p03",
+      "candidates": [
+        "ming-01-p03"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "山海卫(北直)",
+      "text": "北直·山海卫",
+      "status": "resolved",
+      "regionId": "ming-28",
+      "candidates": [
+        "ming-28"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "登州卫(山东)",
+      "text": "山东·登州",
+      "status": "resolved",
+      "regionId": "ming-26-p06",
+      "candidates": [
+        "ming-26-p06"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "太原卫(山西)",
+      "text": "山西·太原",
+      "status": "resolved",
+      "regionId": "ming-10-p01",
+      "candidates": [
+        "ming-10-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "西安卫(陕西)",
+      "text": "陕西·西安",
+      "status": "resolved",
+      "regionId": "ming-11-p01",
+      "candidates": [
+        "ming-11-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "南京京营外备",
+      "text": "南直·南京",
+      "status": "resolved",
+      "regionId": "ming-02-p01",
+      "candidates": [
+        "ming-02-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "苏州卫(南直)",
+      "text": "南直·苏州",
+      "status": "resolved",
+      "regionId": "ming-02-p02",
+      "candidates": [
+        "ming-02-p02"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "杭州卫(浙江)",
+      "text": "浙江·杭州",
+      "status": "resolved",
+      "regionId": "ming-03-p01",
+      "candidates": [
+        "ming-03-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "宁波卫(浙江)",
+      "text": "浙江·宁波",
+      "status": "resolved",
+      "regionId": "ming-03-p05",
+      "candidates": [
+        "ming-03-p05"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "福州卫(福建)",
+      "text": "福建·福州",
+      "status": "resolved",
+      "regionId": "ming-04-p01",
+      "candidates": [
+        "ming-04-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "泉州卫(福建)",
+      "text": "福建·泉州",
+      "status": "resolved",
+      "regionId": "ming-04-p03",
+      "candidates": [
+        "ming-04-p03"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "武昌卫(湖广)",
+      "text": "湖广·武昌",
+      "status": "resolved",
+      "regionId": "ming-08-p01",
+      "candidates": [
+        "ming-08-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "成都卫(四川)",
+      "text": "四川·成都",
+      "status": "resolved",
+      "regionId": "ming-12-p01",
+      "candidates": [
+        "ming-12-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "广州卫(广东)",
+      "text": "广东·广州",
+      "status": "resolved",
+      "regionId": "ming-05-p01",
+      "candidates": [
+        "ming-05-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "桂林卫(广西)",
+      "text": "广西·桂林",
+      "status": "resolved",
+      "regionId": "ming-06-p01",
+      "candidates": [
+        "ming-06-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "云南卫(云南)",
+      "text": "云南·昆明",
+      "status": "resolved",
+      "regionId": "ming-14-p01",
+      "candidates": [
+        "ming-14-p01"
+      ]
+    },
+    {
+      "kind": "army",
+      "name": "贵阳卫(贵州)",
+      "text": "贵州·贵阳",
+      "status": "resolved",
+      "regionId": "ming-13-p01",
+      "candidates": [
+        "ming-13-p01"
+      ]
+    }
+  ]
+}

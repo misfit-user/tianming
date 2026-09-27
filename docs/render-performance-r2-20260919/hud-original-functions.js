@@ -1,0 +1,43 @@
+function updateHUD(){const _pM=armyPower("ming"),_pJ=armyPower("jin"),_tot=_pM+_pJ||1,_shM=Math.round(_pM/_tot*100),_shJ=100-_shM,_kM=liveTroops("ming"),_kJ=liveTroops("jin");
+  $("mfMing").style.width=_shM+"%";$("mfJin").style.width=_shJ+"%";$("mlMing").textContent=`${sideCN("ming")} ${armyMorale("ming")}气·${fmtK(_kM)}`;$("mlJin").textContent=`${sideCN("jin")} ${armyMorale("jin")}气·${fmtK(_kJ)}`;
+  {const _mb=document.querySelector(".mbar.ming"),_jb=document.querySelector(".mbar.jin"),_lM=Math.max(0,(start0.ming||0)-_kM),_lJ=Math.max(0,(start0.jin||0)-_kJ);
+   if(_mb){_mb.classList.toggle("lead",_shM>=_shJ);_mb.title=`形势·我军战力 ${_shM}%　现存 ${_kM}　折损 ${_lM}`;}if(_jb){_jb.classList.toggle("lead",_shJ>_shM);_jb.title=`形势·敌军战力 ${_shJ}%　现存 ${_kJ}　折损 ${_lJ}`;}}$("clock").textContent=state.over?"已决":state.phase==="compose"?"编组":state.phase==="deploy"?"布阵":state.paused?"暂停":"鏖战";$("pausebadge").style.display=((state.phase==="deploy"||state.paused)&&!state.over&&state.phase!=="compose")?"block":"none";$("pausebadge").textContent=state.phase==="deploy"?"⏸ 布阵 · 拖拽摆位，按 ▶ 开战":"⏸ 暂停";const cl=$("clkL");if(cl)cl.textContent=(state.over||state.phase==="deploy")?"":Math.floor(state.time/60)+":"+("0"+Math.floor(state.time%60)).slice(-2);const ib=document.querySelector('[data-cmd="inspire"]');if(ib){const ic=ctrlSel().reduce((m,u)=>Math.max(m,u._inspireCd||0),0);ib.textContent=ic>0?"鼓舞"+Math.ceil(ic):"鼓舞";ib.style.opacity=ic>0?"0.5":"1";ib.style.setProperty("--cd",clamp(ic/24,0,1));ib.classList.toggle("cooling",ic>0);}const ab=document.querySelector('[data-cmd="archery"]');if(ab){const ac=ctrlSel().filter(u=>u.type==="bow"||u.type==="art").reduce((m,u)=>Math.max(m,u._archeryCd||0),0);ab.textContent=ac>0?"火箭"+Math.ceil(ac):"火箭";ab.style.opacity=ac>0?"0.5":"1";ab.style.setProperty("--cd",clamp(ac/18,0,1));ab.classList.toggle("cooling",ac>0);}const db=document.querySelector('[data-cmd="duel"]');if(db)db.style.opacity=ctrlSel().some(u=>eligibleDuel(u)&&foes(u.side).some(x=>eligibleDuel(x)&&dist(x,u)<CFG.engage+30))?"1":"0.4";
+  const s2=ctrlSel();
+  const wb=document.querySelector('[data-cmd="wall"]');if(wb){const c=s2.filter(u=>u.type==="step").reduce((m,u)=>Math.max(m,u._wallCd||0),0);wb.textContent=c>0?"枪墙"+Math.ceil(c):"枪墙";wb.style.opacity=!s2.some(u=>u.type==="step")?"0.4":c>0?"0.5":"1";wb.style.setProperty("--cd",clamp(c/22,0,1));wb.classList.toggle("cooling",c>0);}
+  const vb=document.querySelector('[data-cmd="vigor"]');if(vb){const c=s2.filter(u=>u.type==="cav").reduce((m,u)=>Math.max(m,u._vigorCd||0),0);vb.textContent=c>0?"养锐"+Math.ceil(c):"养锐";vb.style.opacity=!s2.some(u=>u.type==="cav")?"0.4":c>0?"0.5":"1";vb.style.setProperty("--cd",clamp(c/24,0,1));vb.classList.toggle("cooling",c>0);}
+  const eb=document.querySelector('[data-cmd="ambush"]');if(eb)eb.style.opacity=s2.some(u=>inForest(u.x,u.y)&&u.type!=="art"&&!u.emperor&&!u.hidden)?"1":"0.4";
+  const fw=document.querySelector('[data-cmd="firewill"]');if(fw){const r=s2.filter(u=>u.type==="bow"||u.type==="art");fw.style.opacity=r.length?"1":"0.4";const hold=r.length&&r.every(u=>u._holdFire);fw.textContent=hold?"止射":"自由射";fw.classList.toggle("on",hold);}
+  const pb=document.querySelector('[data-cmd="prio"]');if(pb){const r=s2.filter(u=>u.type==="bow"||u.type==="art");pb.style.opacity=r.length?"1":"0.4";pb.textContent="择敌·"+({near:"近",weak:"弱",shoot:"远",lord:"将"}[(r[0]&&r[0]._prio)||"near"]);}
+  const sqb=document.querySelector('[data-cmd="square"]');if(sqb){const r=s2.filter(u=>u.type==="step"||u.type==="guard");sqb.style.opacity=r.length?"1":"0.4";sqb.classList.toggle("on",!!r.length&&r.every(u=>u.stance==="square"));}
+  const lob=document.querySelector('[data-cmd="loose"]');if(lob){const r=s2.filter(u=>u.type!=="art"&&u.type!=="cav");lob.style.opacity=r.length?"1":"0.4";lob.classList.toggle("on",!!r.length&&r.every(u=>u.stance==="loose"));}
+  const skb=document.querySelector('[data-cmd="skill"]');if(skb){if(s2.length){const u=s2[0],cd=Math.max(0,Math.ceil(u._skillCd||0));skb.textContent=cd>0?SKILL[skillFor(u)].cn+cd:SKILL[skillFor(u)].cn;skb.style.opacity=s2.some(x=>skillReady(x))?"1":"0.5";skb.style.setProperty("--cd",clamp((u._skillCd||0)/SKILL[skillFor(u)].cd,0,1));skb.classList.toggle("cooling",(u._skillCd||0)>0);}else{skb.textContent="战法";skb.style.opacity="0.4";skb.classList.remove("cooling");}}
+  {const ds=document.querySelector('#detail .dskill');if(ds&&ds.style){const du=[...sel].map(byId).filter(x=>x&&x.alive&&x.side==="ming");if(du.length===1){const u=du[0],cd=u._skillCd||0,tot=SKILL[skillFor(u)].cd||1;ds.style.setProperty("--cd",clamp(cd/tot,0,1));ds.classList.toggle("cooling",cd>0);ds.classList.toggle("ready",cd<=0);}}}   // ★详情战法环每帧刷
+  const rb=$("reinf");if(rb){const nx=(state.reinf||[]).filter(r=>!r.done).sort((a,b)=>a.t-b.t)[0];if(nx&&state.phase==="battle"&&!state.over){const lf=Math.max(0,Math.ceil(nx.t-state.time));rb.style.display="block";rb.innerHTML=(nx.side==="ming"?"<b style='color:#e6a690'>我军援军</b> 自南将至 ":`<b style='color:#9ec3e0'>${sideCN("jin")}援军</b> 自北将至 `)+Math.floor(lf/60)+":"+("0"+lf%60).slice(-2);}else rb.style.display="none";}
+  const ob=$("objbar"),objs=(MAP&&MAP._objs)||[];if(ob){if(objs.length&&state.phase==="battle"&&!state.over){
+    if(objs.length===1){const oo=objs[0],so=state.obj||{ming:0,jin:0,owner:null},oc=so.owner==="ming"?"#e0a060":so.owner==="jin"?"#9ec3e0":"#c3b08a";ob.innerHTML=`<span style="color:#e6a690">${sideCN("ming")} ${so.ming||0}</span> ◢ <b style="color:${oc}">${oo.name}·${so.owner?sideCN(so.owner):"争夺"}</b> ◣ <span style="color:#9ec3e0">${so.jin||0} ${sideCN("jin")}</span>`;}   // 单要地(原样)
+    else{let cm=0,cj=0;if(state.objs)for(const s of state.objs){if(s.owner==="ming")cm++;else if(s.owner==="jin")cj++;}   // 多要地:控制数+要地列表
+      const parts=objs.map((oo,k)=>{const so=(state.objs&&state.objs[k])||{},oc=so.owner==="ming"?"#e0a060":so.owner==="jin"?"#9ec3e0":"#c3b08a";return `<b style="color:${oc}">${oo.name}·${so.owner?sideCN(so.owner):"争"}</b>`;});
+      ob.innerHTML=`<span style="color:#e6a690">${sideCN("ming")}据${cm}</span> ◢ ${parts.join(" ")} ◣ <span style="color:#9ec3e0">据${cj} ${sideCN("jin")}</span>`;}
+    ob.style.display="block";}else ob.style.display="none";}updateCmdVisibility(s2);syncRoster();}
+function paintRoster(){const arr=state._rcards;if(!arr)return;
+  for(const c of arr){const u=c.u;if(!u||!u.alive){if(c.el.style.display!=="none")c.el.style.display="none";continue;}
+    c.el.classList.toggle("sel",sel.has(u.id));c.el.classList.toggle("rout",u.state==="rout");c.el.classList.toggle("balk",!!u._balk);
+    const hr=clamp(u.soldiers/(u.soldiers0||1),0,1);c.h.style.width=(hr*100).toFixed(1)+"%";c.h.style.background=hr>0.6?"#5a9a40":hr>0.3?"#caa23c":"#c0392b";
+    c.m.style.background=u.mor>50?"#5a9a40":u.mor>CFG.shakenAt?"#caa23c":"#c0392b";
+    if(c.t.textContent!=String(u.soldiers))c.t.textContent=u.soldiers;
+    c.el.classList.toggle("melee",!!u._inMelee&&u.state!=="rout");c.el.classList.toggle("shaken",u.state==="shaken"&&!u._inMelee);
+    if(c.x){const tier=(u.vet||0)>=66?3:(u.vet||0)>=45?2:(u.vet||0)>=28?1:0,chev="▲▲▲".slice(0,tier);if(c.x.textContent!==chev)c.x.textContent=chev;}
+    if(c.am){const ar=clamp((u.ammo||0)/(u.type==="art"?14:22),0,1);c.am.style.width=(ar*100).toFixed(0)+"%";c.am.style.background=ar>0?"#9a8a5a":"#7a2a22";}}}
+function updateCmdVisibility(arr){
+  const has=t=>arr.some(u=>u.type===t),sel1=arr.length>0,hasRanged=arr.some(u=>u.type==="bow"||u.type==="art"),hasNonArt=arr.some(u=>u.type!=="art");
+  const vis={charge:sel1,hold:sel1,retreat:sel1,halt:sel1,all:true,
+    wall:has("step"),square:has("step")||has("guard"),loose:arr.some(u=>u.type!=="art"&&u.type!=="cav"),wide:hasNonArt,column:hasNonArt,
+    skill:sel1,inspire:sel1,duel:arr.some(u=>eligibleDuel(u)&&foes(u.side).some(x=>eligibleDuel(x)&&dist(x,u)<CFG.engage+30)),
+    archery:hasRanged,vigor:has("cav"),ambush:arr.some(u=>inForest(u.x,u.y)&&u.type!=="art"&&!u.emperor&&!u.hidden),
+    firewill:hasRanged,prio:hasRanged};
+  const btns=document.querySelector(".btns");if(!btns)return;
+  btns.querySelectorAll(".cbtn[data-cmd]").forEach(b=>{const v=vis[b.dataset.cmd];b.style.display=(v===undefined||v)?"":"none";});
+  const groups=[...btns.querySelectorAll(".bgrp")];
+  groups.forEach(g=>{const any=[...g.querySelectorAll(".cbtn")].some(b=>b.style.display!=="none");g.style.display=any?"":"none";g.style.borderRight="";});
+  const vg=groups.filter(g=>g.style.display!=="none");if(vg.length)vg[vg.length-1].style.borderRight="none";   // 末个可见组去尾分隔线
+}

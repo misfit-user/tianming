@@ -1,0 +1,186 @@
+[
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "3099f7bbc5a37eb58c55a8ddfead5ee3b034b54a1bfab5221ab057bb06269257",
+    "after": "1e4ec31c9fcdc04370df99ae6e2896f6db49eed5470bd9126a3d41605aa18598",
+    "at": "2026-09-18T16:27:18.594Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "8653baaa242347541a7f88c3246958e70b1df8c7476aa84a65b5fbdd3a719f6f",
+    "after": "2d44e4602e6278d8584b6c2beec3534b3d7d898f9a0a3174f47e17b26401885a",
+    "at": "2026-09-18T16:27:18.632Z"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "before": "1e4ec31c9fcdc04370df99ae6e2896f6db49eed5470bd9126a3d41605aa18598",
+    "after": "ebf339ed171be7a15dcfea1cf1f3a75bc4a223e2929089ceeb663cab9bb403b3",
+    "at": "2026-09-18T16:27:18.871Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "333df8e0ba93fdc7b5a1eefabc4b9481eff0459c1805f32203bb29e48b079dc3",
+    "after": "05b62555c1854de1fa794c7a511d0e755ebd4d4fe1a687943c332baddde44353",
+    "at": "2026-09-18T16:27:18.902Z"
+  },
+  {
+    "file": "web/index.html",
+    "before": "062cb84cbad65dbedddff080059169160b3791d67e1869fbaa2d42cea388f0b5",
+    "after": "1850162d9e44be87e3812170fc154fdcef41fa4ec3a827697df7e2c7ca824fb3",
+    "at": "2026-09-18T16:27:19.147Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "206993fad54df415bcc4150e8d5e1abdebfa8d28a552511e3f9e1a21be1f3d3d",
+    "after": "6f9226d7b6fd8e905dd9fdda04cef2c0ae4cb06e88ad604c7e15d8933e9c56c2",
+    "at": "2026-09-18T16:27:19.182Z"
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "before": "6b928aa2e9f8f56f85f65d3523413f9dfe8d3ad2d0c29998a579de3ef380d587",
+    "after": "d7691bf0ea9e5b83c64ca0ed44cc955bac744252fdcb26c82664500d0c142769",
+    "at": "2026-09-18T16:27:19.207Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "05b62555c1854de1fa794c7a511d0e755ebd4d4fe1a687943c332baddde44353",
+    "after": "3ca1d8a8e488dd275f9ef0810a887d2ac31fd5e6133dfa9d91a68d1d7c849cfe",
+    "at": "2026-09-18T16:27:19.222Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "3ca1d8a8e488dd275f9ef0810a887d2ac31fd5e6133dfa9d91a68d1d7c849cfe",
+    "after": "9468518bee693fc6c53efb3c9995f10fffa8e1dcbda1d1ed587ecd729f55539c",
+    "at": "2026-09-18T16:32:42.779Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "9468518bee693fc6c53efb3c9995f10fffa8e1dcbda1d1ed587ecd729f55539c",
+    "after": "791f4816a89e943cee7eab099194819569307b89d481ed0281a48ce56720c80f",
+    "at": "2026-09-18T16:32:42.957Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "791f4816a89e943cee7eab099194819569307b89d481ed0281a48ce56720c80f",
+    "after": "2fd1591224ca7baab5c2f69299e0fd16e6719542f5bbd866d23980c68a7d452b",
+    "at": "2026-09-18T16:32:43.196Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-response-recovery.js",
+    "before": "f03f8f068b85efcc59789a8eabee3672274690c94fd7b328e36715af13c06bcd",
+    "after": "83f18edb2c5ed20651f5c80ce654332033190a9b42a072696f883fbe41f47909",
+    "at": "2026-09-18T16:36:31.910Z"
+  },
+  {
+    "file": "web/scripts/lib-turn-response-recovery.js",
+    "before": "1ef69483f0732b311e5ef204c5b11529c3f9a0de8dfca6039bacd7eb64221eaf",
+    "after": "3f5988ba2f91dafc6bee0464b5230871a62530c75ea80abefd93c388015981f7",
+    "at": "2026-09-18T16:36:31.971Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "2fd1591224ca7baab5c2f69299e0fd16e6719542f5bbd866d23980c68a7d452b",
+    "after": "1cdcbba0cc8c001b1453fe0457b6f55f1ac2f2b3c61bb45f9c4916c99ddd7b26",
+    "at": "2026-09-18T16:42:14.668Z"
+  },
+  {
+    "file": "web/tm-endturn-core.js",
+    "before": "6f9226d7b6fd8e905dd9fdda04cef2c0ae4cb06e88ad604c7e15d8933e9c56c2",
+    "after": "af0ec4bd789efb45ee11d5d6848f4354acc07d36d5b423dd9bf594f2038c9321",
+    "at": "2026-09-18T16:42:14.693Z"
+  },
+  {
+    "file": "web/tm-endturn-timing-ledger.js",
+    "before": "0947a0da58b121dc97d054e8845656d6a10b4814794c9b72a0fcb43d493e68b2",
+    "after": "91fde5fce8c5949eb6c7cc462558ad3a5e8cba7ed7881296647efa1ff25f5b13",
+    "at": "2026-09-18T16:42:14.708Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "1cdcbba0cc8c001b1453fe0457b6f55f1ac2f2b3c61bb45f9c4916c99ddd7b26",
+    "after": "5bcd6c84ac6f70164032591f9513c6faabd9ee2ea9bb08d7b82eebf2d04667a1",
+    "at": "2026-09-18T16:42:14.927Z"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "before": "2d44e4602e6278d8584b6c2beec3534b3d7d898f9a0a3174f47e17b26401885a",
+    "after": "4877932406ef7370f785e06f54971a3fc31ec88cd8bdcb233f72af9c76b2f6cc",
+    "at": "2026-09-18T16:42:14.953Z"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "before": "900ee9a784af965bb3bcf136eecabb23102e97c50d5bab4a5322161efebd95e5",
+    "after": "2e7328394d9bc003e5c4569aa4cea0795599fa280d1169d7a1232107a3eda548",
+    "at": "2026-09-18T16:42:14.969Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-recovery-quality.js",
+    "before": "b4c17f0718998aad649d60a4cd75b605a8232473631e419a8614c8ef89081070",
+    "after": "17f767479a71ead91ab195f0ede136a2da250055914fe79c1e11b0eea5f89566",
+    "at": "2026-09-18T16:42:14.980Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "5bcd6c84ac6f70164032591f9513c6faabd9ee2ea9bb08d7b82eebf2d04667a1",
+    "after": "8706f4ba17dedd30d476a0289c801a061af946ae09a9cde3e1382eea0b147518",
+    "at": "2026-09-18T16:42:15.167Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "8706f4ba17dedd30d476a0289c801a061af946ae09a9cde3e1382eea0b147518",
+    "after": "c12d8bada3f48256bfede4dc23ce96ced52038246a41abcbdd88d20134e44e32",
+    "at": "2026-09-18T16:44:50.680Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-response-recovery.js",
+    "before": "83f18edb2c5ed20651f5c80ce654332033190a9b42a072696f883fbe41f47909",
+    "after": "ec24a7f0dfd44ec5b667935a22ddd4b57ec0e3c68e3eed30dc663a6171e94c59",
+    "at": "2026-09-18T16:44:50.693Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "c12d8bada3f48256bfede4dc23ce96ced52038246a41abcbdd88d20134e44e32",
+    "after": "914ba8e61c0ee072858cb62382b69c458eb1cd8b4404ccd95f081b824abe7ce9",
+    "at": "2026-09-18T16:53:42.480Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-recovery-quality.js",
+    "before": "17f767479a71ead91ab195f0ede136a2da250055914fe79c1e11b0eea5f89566",
+    "after": "b3fec352a9cb70b0b211cdccd0fc2b547e032609b57b980837e36d84df825d77",
+    "at": "2026-09-18T16:53:42.496Z"
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "914ba8e61c0ee072858cb62382b69c458eb1cd8b4404ccd95f081b824abe7ce9",
+    "after": "6d997f648962b83319afd0c528660ffb052d9ecbd1c008ff0b5abc45a5941dc6",
+    "at": "2026-09-18T16:53:42.665Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "555531ef9f822b3f0eb0c37ca9a80a2392f9da23e86865bfc6e28a0cbbc246dc",
+    "after": "c9610230c5cbd6499650c96cf8d8cbd9af34c0e6b78405e4ec3c3df8f86b41d9",
+    "at": "2026-09-18T16:54:49.414Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": false
+  },
+  {
+    "file": "web/tm-endturn-response-recovery.js",
+    "before": "6d997f648962b83319afd0c528660ffb052d9ecbd1c008ff0b5abc45a5941dc6",
+    "after": "97031ea842e8fc398d00aaab1fde18164b0b3162266207272f722b78d694ae0f",
+    "at": "2026-09-18T16:56:57.734Z"
+  },
+  {
+    "file": "web/scripts/smoke-turn-response-recovery.js",
+    "before": "ec24a7f0dfd44ec5b667935a22ddd4b57ec0e3c68e3eed30dc663a6171e94c59",
+    "after": "dfda4dda3754684f2f9bbab7eeb7adecf7c28dc07a0fb575fc310f7ff8e763ca",
+    "at": "2026-09-18T16:56:57.758Z"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "c9610230c5cbd6499650c96cf8d8cbd9af34c0e6b78405e4ec3c3df8f86b41d9",
+    "after": "c9610230c5cbd6499650c96cf8d8cbd9af34c0e6b78405e4ec3c3df8f86b41d9",
+    "at": "2026-09-18T16:57:02.164Z",
+    "generator": "web/scripts/build-startup-phase-manifest.js",
+    "lateCaptured": false
+  }
+]

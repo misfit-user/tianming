@@ -197,6 +197,18 @@ export function createValidators(deps) {
       var nm = ch.name;
       var allNames = _wgCachedAllNames(G);   // 记忆化·按回合(issue5)
       var _hit = function(t) { return _textMentionsName(t, nm, allNames); };
+      // Only real player submissions in this turn may authorize a judicial write.
+      var turn = Number(G.turn || 0);
+      if ((G.edicts || []).some(function(e) { return e && e.turn === turn && e.status === 'promulgated' && _hit(e.text); })) return true;
+      var submitted = (G._edictTracker || []).some(function(e) {
+        if (!e || (e.turn !== turn && e.lastSubmittedTurn !== turn) || /^(cancelled|failed|pending_delivery)$/.test(e.status || '')) return false;
+        if ((e._letterIds || []).some(function(id) {
+          var letter = (G.letters || []).find(function(l) { return l && l.id === id; });
+          return !letter || ['delivered','returned','replying'].indexOf(letter.status) < 0;
+        })) return false;
+        return _hit(e.content);
+      });
+      if (submitted) return true;
       var mems = (G && Array.isArray(G.memorials)) ? G.memorials : [];
       for (var i = 0; i < mems.length; i++) {
         var m = mems[i]; if (!m) continue;
@@ -222,7 +234,7 @@ export function createValidators(deps) {
     if (!G || !pc || !pc.name) return false;
     // ★返工issue4(2026-07-19)：并入裸/自然死词表(暴毙/病故/薨/自尽/伏诛/卒…)——personnel 解析器(applier:1614)把这些映射进死亡管线·
     //   C2 旧司法词表漏之→personnel『魏忠贤暴毙』零提示落死。与 onDismissal:554 死亡面对齐·统一过同款来源判据。
-    var judicial = /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ''));
+    var judicial = (typeof global._tmReasonIsImprison === 'function' && global._tmReasonIsImprison(changeText)) || /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ''));
     if (!judicial) return false;
     var ch = (typeof _findEntity === 'function') ? _findEntity(G, 'char', pc.name) : (Array.isArray(G.chars) ? G.chars.filter(function(c){ return c && c.name === pc.name; })[0] : null);
     if (!ch) return false;   // 查无此人·实体存在性另由既有 onDismissal 兜底·此闸只管来源
@@ -759,30 +771,21 @@ export function createValidators(deps) {
     if (!narrative) return;
 
     function _pn(s, mult) {
-      var cnMap = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,'百':100,'千':1000,'万':10000};
-      var n = parseFloat(s);
-      if (isNaN(n) || n <= 0) {
-        n = 0;
-        for (var i = 0; i < s.length; i++) {
-          var ch = s.charAt(i);
-          if (cnMap[ch] != null) {
-            if (ch === '十' || ch === '百' || ch === '千' || ch === '万') n = (n || 1) * cnMap[ch];
-            else n = n * 10 + cnMap[ch];
-          }
-        }
-      }
-      if (mult === '万') n *= 10000;
-      return n;
+      var parser=global.TMNumberParser;
+      if(!parser||typeof parser.parseNumber!=='function')throw new Error('人口数量解析器未加载');
+      var parsed=parser.parseNumber(String(s)+(mult||''));
+      return parsed.ok?parsed.value:NaN;
     }
 
-    var deathVerbs = '饿死|冻死|疫死|战死|灾亡|溺死|染瘟|疫亡|流亡|罹难|罹疫';
-    var fleeVerbs = '逃亡|逃难|流离|迁徙|迁移|流民';
+    var deathVerbs = '饿死|冻死|疫死|战死|灾亡|溺死|染瘟|疫亡|罹难|罹疫';
+    var fleeVerbs = '逃亡|逃难|流亡|流离|迁徙|迁移';
     function _scan(verbs, kind) {
-      var pat = new RegExp('(' + verbs + ')[^。；,\\s]{0,10}?([\\d一二三四五六七八九十百千万]+)\\s*(万|千)?\\s*(口|户|人|众)', 'g');
+      var pat = new RegExp('(' + verbs + ')[^。！？；;，,\\s\\d零〇一二两三四五六七八九十百千万亿]{0,10}?([\\d零〇一二两三四五六七八九十百千万亿]+)\\s*(万|千)?\\s*(口|户|人|众)', 'g');
       var arr = [], m;
       while ((m = pat.exec(narrative)) !== null) {
+        if(_assertedOccurrence(narrative,m[1],m.index)!==m.index)continue;
         var n = _pn(m[2], m[3] || '');
-        if (n < 100) continue;
+        if (!Number.isFinite(n) || n < 100) continue;
         arr.push({ kind: kind, verb: m[1], num: n, raw: m[0] });
       }
       return arr;
@@ -794,12 +797,14 @@ export function createValidators(deps) {
     var popDelta = { death: 0, flee: 0 };
     var tc = (G.turnChanges && G.turnChanges.variables) || [];
     tc.forEach(function(v) {
-      if (!v || !v.name) return;
-      var d = (v.delta || (v.newValue||0) - (v.oldValue||0));
-      if (/口|人口|mouths|总口|户籍|户口/.test(v.name)) {
+      if (!v) return;
+      var label=[v.path,v.label,v.name].filter(Boolean).join(' ');
+      var d = Number(v.delta != null ? v.delta : (v.newValue||0) - (v.oldValue||0));
+      if (!Number.isFinite(d)) return;
+      if (/口|人口|mouths|总口|户籍|户口/.test(label)) {
         if (d < 0) popDelta.death += Math.abs(d);
       }
-      if (/逃户|流民|fugitives/.test(v.name)) {
+      if (/逃户|流民|fugitives/.test(label)) {
         if (d > 0) popDelta.flee += d;
       }
     });
@@ -900,15 +905,15 @@ export function createValidators(deps) {
     if (!narrative) return;
 
     // 开战/扩战动词
-    var warStartVerbs = ['起兵','兴师','讨伐','征伐','北伐','南征','东征','西征','进犯','入寇','犯境','寇边','兵临','出兵','开战','起衅','启衅','南下','北上'];
+    var warStartVerbs = ['起兵','兴师','讨伐','征伐','北伐','南征','东征','西征','进犯','入寇','犯境','寇边','兵临','出兵','开战','起衅','启衅','宣战'];
     // 议和/结束动词
     var warEndVerbs = ['议和','和谈','罢兵','讲和','纳贡','约和','盟约','停战','受降','献降','纳款','奉表','称臣'];
     // 战役结果动词
     var battleVerbs = ['大败','大捷','克复','陷落','失守','收复','破','突围','会战','激战','溃败','全军覆没','戍御','解围'];
 
-    var startKw = _firstNarrativeHit(narrative, warStartVerbs);
-    var endKw = _firstNarrativeHit(narrative, warEndVerbs);
-    var battleKw = _firstNarrativeHit(narrative, battleVerbs);
+    var startKw = _firstAssertedHit(narrative, warStartVerbs);
+    var endKw = _firstAssertedHit(narrative, warEndVerbs);
+    var battleKw = _firstAssertedHit(narrative, battleVerbs);
     if (!startKw && !endKw && !battleKw) return;
 
     var warnings = [];
@@ -1049,6 +1054,58 @@ export function createValidators(deps) {
     return text.substring(start, end);
   }
   // 辅助·命中关键词数组中的任一项
+  // A narrative mention is not necessarily a new event in this transaction.
+  function _assertedOccurrence(text, keyword, fromIndex) {
+    var cursor = fromIndex || 0, index;
+    while ((index = text.indexOf(keyword, cursor)) >= 0) {
+      cursor = index + Math.max(1, keyword.length);
+      var left = text.slice(0, index).split(/[。！？；;\n，,]/).pop();
+      var right = text.slice(index + keyword.length).split(/[。！？；;\n，,]/)[0];
+      var nearby = left.slice(-10) + keyword + right.slice(0, 10);
+      var ordinaryWord = keyword === '聘' && /延聘|招聘|聘请|聘任|聘用|征聘|应聘|受聘/.test(nearby)
+        || keyword === '嫁' && /转嫁/.test(nearby);
+      // A period qualifier or a risk describes context, not a new event.
+      var contextual = /^(?:之初|初|以来|之后|后第|未久)/.test(right) && /^(?:即位|登基|嗣位|继统)$/.test(keyword)
+        || /^(?:之势|之虞|之患|的风险|的可能|趋势|之权|之责|之职|权限|职掌|事宜)/.test(right);
+      var currentAt=-1; ['本月','本年','今年','今日','本回合','本期','如今','现在','现已'].forEach(function(k) { currentAt=Math.max(currentAt,left.lastIndexOf(k)); });
+      var timeContext=currentAt>=0?left.slice(currentAt):left;
+      var historical = /(?:上年|去年|往年|前年|前朝|昔日|当年|先前|从前|此前已|旧时|旧档|史载|回顾|追述|追忆|回忆)/.test(timeContext);
+      var prospective = /(?:明年|来年|下月|下回合|将来|未来|翌年)/.test(timeContext);
+      var tail = left.split(/(?:但是|然而|却|而今|如今)/).pop();
+      var negativeTail=tail.replace(/不但|不仅|不只|非但|不得不|不能不|未尝不|并非没有|并非未|无一不|无不/g, '');
+      var negative = /(?:尚未|并未|未曾|从未|没有|并无|无意|不曾|不再|不能|不得|不宜|勿|莫|未|不|取消|放弃|否决|暂缓)[^。；，]{0,7}$/.test(negativeTail);
+      // Past relative clauses must not suppress an explicitly current event.
+      var pastProposal = currentAt >= 0 && /(?:上年|去年|前年|先前|此前).*(?:拟定|制定|商议|计划|提出).*的/.test(left.slice(0,currentAt));
+      var plannedTail = pastProposal ? timeContext : tail;
+      var planned = /(?:商议|建议|提议|拟议|拟|计划|打算|准备|有意|希望|尚待|考虑|主张|请求|欲|若|倘若|假如)[^。；，]{0,8}$/.test(plannedTail)
+        && !/(?:已然|已经|现已|已|遂|终于)[^。；，]{0,7}$/.test(plannedTail);
+      if (!ordinaryWord && !contextual && !historical && !prospective && !negative && !planned) return index;
+    }
+    return -1;
+  }
+  function _firstAssertedHit(text, keywords) {
+    for (var i = 0; i < keywords.length; i++) if (_assertedOccurrence(text, keywords[i]) >= 0) return keywords[i];
+    return null;
+  }
+  function _assertedSnippet(text, keyword, span) {
+    var at = _assertedOccurrence(text, keyword); return at < 0 ? '' : text.slice(Math.max(0, at - span), at + keyword.length + span);
+  }
+  function _verifiedCharacterEffect(G, updates, keys) {
+    return (Array.isArray(updates) ? updates : []).some(function(row) {
+      if (!row || typeof row !== 'object') return false;
+      var ref = row.characterId || row.charId || row.name;
+      var chars = Array.isArray(G.chars) ? G.chars : [];
+      var found = chars.filter(function(ch) { return ch && String(ch.id || '') === String(ref || ''); });
+      if (!found.length) found = chars.filter(function(ch) { return ch && ch.name === ref; });
+      if (found.length !== 1) return false;
+      var fields = Object.assign({}, row.changes || {}, row.updates || {}), ch = found[0];
+      return Object.keys(fields).some(function(key) {
+        if (!keys.test(key)) return false;
+        try { return JSON.stringify(ch[key]) === JSON.stringify(fields[key]) && fields[key] != null; } catch (_) { return false; }
+      });
+    });
+  }
+
   function _firstHit(text, arr) {
     for (var i = 0; i < arr.length; i++) if (text.indexOf(arr[i]) >= 0) return arr[i];
     return null;
@@ -1061,8 +1118,8 @@ export function createValidators(deps) {
   function _validateDiplomacyConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var startKw = _firstHit(narrative, ['通使','缔盟','和好','朝贡','纳款','纳贡','遣使','称臣','羁縻','抚夷','封贡']);
-    var endKw = _firstHit(narrative, ['绝交','逐使','断绝','宣战','犯界','寇边','弃约','背盟']);
+    var startKw = _firstAssertedHit(narrative, ['通使','缔盟','和好','朝贡','纳款','纳贡','遣使','称臣','羁縻','抚夷','封贡']);
+    var endKw = _firstAssertedHit(narrative, ['绝交','逐使','断绝','宣战','犯界','寇边','弃约','背盟']);
     if (!startKw && !endKw) return;
     // facs.attitude / relations 是否本回合有 update
     var fuArr = aiOutput.faction_updates || [];
@@ -1071,8 +1128,8 @@ export function createValidators(deps) {
     var hasFactionUpdate = fuArr.length > 0 || hasRelationFallback || (G.turnChanges && (G.turnChanges.factions||[]).length > 0);
     if (hasFactionUpdate) return;
     var warnings = [];
-    if (startKw) warnings.push({ kind: 'diplomacy_friendly_missing', keyword: startKw, snippet: _snippetAround(narrative, startKw, 30) });
-    if (endKw) warnings.push({ kind: 'diplomacy_hostile_missing', keyword: endKw, snippet: _snippetAround(narrative, endKw, 30) });
+    if (startKw) warnings.push({ kind: 'diplomacy_friendly_missing', keyword: startKw, snippet: _assertedSnippet(narrative, startKw, 30) });
+    if (endKw) warnings.push({ kind: 'diplomacy_hostile_missing', keyword: endKw, snippet: _assertedSnippet(narrative, endKw, 30) });
     if (!warnings.length) return;
     if (!G._diplomacyValidatorLog) G._diplomacyValidatorLog = [];
     G._diplomacyValidatorLog.push({ turn: G.turn||0, warnings: warnings });
@@ -1132,15 +1189,24 @@ export function createValidators(deps) {
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
     // “下诏狱”中的“下诏”是司法动作，不是颁布诏令。先遮蔽这一固定词组，
     // 避免把“某人下诏狱”误判为新增 activeEdicts 缺失并回滚整笔 AI 写入。
-    var edictNarrative = narrative.replace(/下诏狱/g, '下狱');
-    var promulgateKw = _firstHit(edictNarrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
-    var revokeKw = _firstHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
+    // A rebuke or reminder executes an existing command; it does not create a
+    // standing law in activeEdicts. Explicit promulgation of a new law still
+    // goes through the same strict consistency check below.
+    var edictNarrative = narrative.replace(/下诏狱/g, '下狱').replace(/降旨(?=斥责|申饬|褒奖|慰勉|催促)/g, '下令');
+    var promulgateKw = _firstAssertedHit(edictNarrative, ['颁诏','降旨','敕谕','颁行','颁布','下诏','明诏','谕令','制曰','施行新政','开行...新法','申严']);
+    var revokeKw = _firstAssertedHit(narrative, ['废诏','废制','停止施行','撤回','撤销','废止','废罢','收回成命']);
     if (!promulgateKw && !revokeKw) return;
     var existingEdicts = Array.isArray(G.activeEdicts) ? G.activeEdicts : [];
     var beforeCount = (applied && typeof applied._edictsBefore === 'number') ? applied._edictsBefore : existingEdicts.length;
+    // activeEdicts is the standing-policy list; issued player orders live in
+    // _edictTracker. Their narration must not require a second shadow policy.
+    var issuedPlayerOrder = (Array.isArray(G._edictTracker) ? G._edictTracker : []).some(function(edict) {
+      return edict && Number(edict.turn) === Number(G.turn) && typeof edict.content === 'string' && edict.content.trim()
+        && ['draft','cancelled','canceled','rejected'].indexOf(String(edict.status || '')) < 0;
+    });
     var warnings = [];
-    if (promulgateKw && existingEdicts.length <= beforeCount) warnings.push({ kind: 'edict_promulgate_missing', keyword: promulgateKw, snippet: _snippetAround(narrative, promulgateKw, 30) });
-    if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: 'edict_revoke_missing', keyword: revokeKw, snippet: _snippetAround(narrative, revokeKw, 30) });
+    if (promulgateKw && existingEdicts.length <= beforeCount && !issuedPlayerOrder) warnings.push({ kind: 'edict_promulgate_missing', keyword: promulgateKw, snippet: _assertedSnippet(narrative, promulgateKw, 30) });
+    if (revokeKw && existingEdicts.length >= beforeCount) warnings.push({ kind: 'edict_revoke_missing', keyword: revokeKw, snippet: _assertedSnippet(narrative, revokeKw, 30) });
     if (!warnings.length) return;
     if (!G._edictEffectValidatorLog) G._edictEffectValidatorLog = [];
     G._edictEffectValidatorLog.push({ turn: G.turn||0, warnings: warnings });
@@ -1155,19 +1221,19 @@ export function createValidators(deps) {
   function _validateCourtCeremonyConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var moveCapKw = _firstHit(narrative, ['迁都','移都','改都']);
-    var titleKw = _firstHit(narrative, ['晋爵','晋封','加封','进爵','赐爵','削爵','夺爵','除爵','赠','追赠','追封','谥','赐姓','赐婚']);
-    var haremKw = _firstHit(narrative, ['册立','册封','晋为妃','晋为贵妃','立为皇后','废后','废妃','降为','贬为','出宫','选秀','纳妃']);
+    var moveCapKw = _firstAssertedHit(narrative, ['迁都','移都','改都']);
+    var titleKw = _firstAssertedHit(narrative, ['晋爵','晋封','加封','进爵','赐爵','削爵','夺爵','除爵','赠官','赠爵','追赠','追封','谥','赐姓','赐婚']);
+    // A minister's demotion or departure from court is not a harem change.
+    var haremNarrative=narrative.split(/[。！？；;\n，,]/).filter(function(clause){
+      return /后宫|皇后|贵妃|嫔妃|妃嫔|贵人|才人|宫女|婕妤|昭仪|废后|废妃|选秀|纳妃|为妃/.test(clause)
+        || (Array.isArray(G.harem)?G.harem:[]).some(function(person){return person&&person.name&&clause.indexOf(person.name)>=0;});
+    }).join('\n');
+    var haremKw = _firstAssertedHit(haremNarrative, ['册立','册封','晋为妃','晋为贵妃','立为皇后','废后','废妃','降为','贬为','出宫','选秀','纳妃']);
     if (!moveCapKw && !titleKw && !haremKw) return;
     var charUpdates = aiOutput.char_updates || [];
     var hasCapitalMove = (G._turnReport || []).some(function(r){ return r && r.turn === (G.turn || 0) && r.type === 'faction_update' && r.field === 'capital'; }) ||
       (aiOutput.faction_updates || []).some(function(fu){ return fu && fu.updates && (fu.updates.capital || fu.updates.capitalName); });
-    // 简单粗略：char_updates 中是否含 title/posthumous/spouse 修改
-    var hasRelevantUpdate = charUpdates.some(function(c){
-      if (!c || !c.changes) return false;
-      var chKeys = Object.keys(c.changes||{});
-      return chKeys.some(function(k){return /title|posthumous|spouse|wife|consort/i.test(k);});
-    });
+    var hasRelevantUpdate = _verifiedCharacterEffect(G,charUpdates,/^(title|posthumous|spouse|wife|consort|rank)$/i);
     var warnings = [];
     if (moveCapKw && !hasCapitalMove) warnings.push({ kind: 'capital_move_missing', keyword: moveCapKw, snippet: _snippetAround(narrative, moveCapKw, 30) });
     if (titleKw && !hasRelevantUpdate) warnings.push({ kind: 'title_change_missing', keyword: titleKw, snippet: _snippetAround(narrative, titleKw, 30) });
@@ -1214,18 +1280,19 @@ export function createValidators(deps) {
   function _validateMarriageBirthConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var marryKw = _firstHit(narrative, ['嫁','娶','聘','纳采','纳征','成婚','结亲','缔婚','和亲','联姻','大婚']);
-    var birthKw = _firstHit(narrative, ['有娠','怀孕','身娠','诞生','分娩','降生','弄璋','弄瓦','长公主','皇子','皇女','龙胎']);
-    var deathHeirKw = _firstHit(narrative, ['夭折','早殇','薨于稚龄','婴卒','绝嗣','无嗣','断后']);
-    var succKw = _firstHit(narrative, ['即位','登基','嗣位','继统','承祧','承嗣','袭爵','袭封','袭位']);
+    var marryKw = _firstAssertedHit(narrative, ['嫁','娶','聘','纳采','纳征','成婚','结亲','缔婚','和亲','联姻','大婚']);
+    var birthKw = _firstAssertedHit(narrative, ['有娠','怀孕','身娠','诞生','分娩','降生','弄璋','弄瓦','长公主','皇子','皇女','龙胎']);
+    var deathHeirKw = _firstAssertedHit(narrative, ['夭折','早殇','薨于稚龄','婴卒','绝嗣','无嗣','断后']);
+    var succKw = _firstAssertedHit(narrative, ['即位','登基','嗣位','继统','承祧','承嗣','袭爵','袭封','袭位']);
     if (!marryKw && !birthKw && !deathHeirKw && !succKw) return;
     var charUpdates = aiOutput.char_updates || [];
     var charDeaths = aiOutput.character_deaths || [];
-    var hasUpdate = charUpdates.some(function(c){return c && c.changes && Object.keys(c.changes).some(function(k){return /spouse|wife|consort|children|heir|inherited|succeeded/i.test(k);});});
+    var hasMarriage = _verifiedCharacterEffect(G, charUpdates, /^(spouse|wife|consort|husband|spouseId)$/i);
+    var hasSuccession = _verifiedCharacterEffect(G, charUpdates, /^(heir|heirId|inherited|succeeded|succession|title)$/i);
     var warnings = [];
-    if (marryKw && !hasUpdate) warnings.push({ kind: 'marriage_missing', keyword: marryKw, snippet: _snippetAround(narrative, marryKw, 30) });
-    if (deathHeirKw && charDeaths.length === 0) warnings.push({ kind: 'heir_death_missing', keyword: deathHeirKw, snippet: _snippetAround(narrative, deathHeirKw, 30) });
-    if (succKw && !hasUpdate) warnings.push({ kind: 'succession_missing', keyword: succKw, snippet: _snippetAround(narrative, succKw, 30) });
+    if (marryKw && !hasMarriage) warnings.push({ kind: 'marriage_missing', keyword: marryKw, snippet: _assertedSnippet(narrative, marryKw, 30) });
+    if (deathHeirKw && charDeaths.length === 0) warnings.push({ kind: 'heir_death_missing', keyword: deathHeirKw, snippet: _assertedSnippet(narrative, deathHeirKw, 30) });
+    if (succKw && !hasSuccession) warnings.push({ kind: 'succession_missing', keyword: succKw, snippet: _assertedSnippet(narrative, succKw, 30) });
     if (!warnings.length) return;
     if (!G._marriageBirthValidatorLog) G._marriageBirthValidatorLog = [];
     G._marriageBirthValidatorLog.push({ turn: G.turn||0, warnings: warnings });
@@ -1311,7 +1378,7 @@ export function createValidators(deps) {
   function _validateOmenConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
     var narrative = _getNarrativeText(aiOutput); if (!narrative) return;
-    var omenKw = _firstHit(narrative, ['彗见','彗星','星孛','日蚀','日食','月蚀','月食','血雨','虹贯','虹气','白虹','瑞兽','麒麟','凤凰','白虎','五星连珠','陨石','地龙','童谣','谶','妖言','灾异','祥瑞']);
+    var omenKw = _firstAssertedHit(narrative, ['彗见','彗星','星孛','日蚀','日食','月蚀','月食','血雨','虹贯','虹气','白虹','瑞兽','麒麟','凤凰','白虎','五星连珠','陨石','地龙','童谣','谶','妖言','祥瑞']);
     if (!omenKw) return;
     var existingOmens = Array.isArray(G.omens) ? G.omens : (G.events||[]).filter(function(e){return e && (e.type==='omen'||e.category==='omen');});
     var beforeCount = (applied && typeof applied._omensBefore === 'number') ? applied._omensBefore : existingOmens.length;
@@ -1385,7 +1452,7 @@ export function createValidators(deps) {
 
   function _validateFiscalConsistency(G, aiOutput, applied) {
     if (!G || !aiOutput) return;
-    var narrativeText = '';
+    var narrativeText = aiOutput.narrative && !aiOutput.shizhengji ? String(aiOutput.narrative) + '\n' : '';
     if (aiOutput.shilu_text) narrativeText += String(aiOutput.shilu_text) + '\n';
     if (aiOutput.shizhengji) narrativeText += String(aiOutput.shizhengji) + '\n';
     if (Array.isArray(aiOutput.events)) {
@@ -1427,7 +1494,7 @@ export function createValidators(deps) {
     // ★ 双向匹配：支出动词(outflow) + 收入动词(inflow)·分别标记 kind
     // 之前正则只识别支出动词·导致 AI 叙述『获得三百万两白银』时校验器抓不到·数值不对账
     // 2026-04 扩充：补『籍没/抄没/查抄/划拨/支给/支应/赏银/赈银/拨款/专款』等诏令式动词
-    var outflowVerbs = '赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费' +
+    var outflowVerbs = '支银|支出|支付|支取|赐|赏|发|拨|赈|征|没收|缴获|贡|赔|罚没|献|输|筹|济|捐|赠|颁|犒|赠送|耗费|花费|花|靡费|费' +
       '|拨付|拨给|拨入|拨内帑|拨内库|划拨|调拨|发付|发给|发支|出库|起解|起运|解送|解部|解到|报销|发还|分给|拨与|赏给|犒赏|犒军|赈济|赈灾|赈给|安抚|抚恤|抚慰' +
       '|支应|支给|支用|支放|支发|支领|动支|动用|提取|提用|划支|划归|经费|靡费|开支|开销|耗用';
     var inflowVerbs = '获得|获|收|入|进|得|得到|收到|进项|进帐|进账|收入|入账|入库|入帑|入内帑|纳入|抄获|抄到|没入|缴入|追缴|追讨|追回|罚入|查封充公|抄没入|没收入' +
@@ -1488,6 +1555,11 @@ export function createValidators(deps) {
       var k = (fa.kind === 'income') ? 'income' : 'expense';
       adjTotal[k][res] += Math.abs(parseFloat(fa.amount) || 0);
     });
+    // 央地调拨由专用写口扣付；只计入本次应用的真实订单回执，避免再次补扣。
+    (applied && applied.fiscalTransfers || []).forEach(function(receipt) {
+      var order = (G.transferOrders || []).find(function(row) { return row && row.id === receipt.id; });
+      if (order && order.fromAccount === receipt.fromAccount && order.amount === receipt.amount && Number.isFinite(receipt.amount) && receipt.amount > 0) adjTotal.expense.money += receipt.amount;
+    });
     // 营造专用写口已经扣付；这里只核验真实回执，绝不再次以 fiscal_adjustments 扣款。
     if (global.TM && global.TM.BuildingOrders) {
       (aiOutput.construction_receipts || []).forEach(function(r) {
@@ -1526,6 +1598,9 @@ export function createValidators(deps) {
 
     G._turnReport.push({ type: 'fiscal_validation', warnings: warnings, samples: mentioned.slice(0, 5), turn: G.turn || 0 });
     console.warn('[FiscalValidator] 叙事金额与 fiscal_adjustments 不符:', warnings);
+
+    // The fixed Agent verifies source accounts and actual receipts before any compensation.
+    if (aiOutput._deferNarrativeRepairs === true) return;
 
     // 自动补录·分 income/expense 两边·按 kind 真正补录
     warnings.forEach(function(w){

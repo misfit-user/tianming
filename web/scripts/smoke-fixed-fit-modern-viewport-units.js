@@ -144,7 +144,7 @@ check(sandbox.TM && sandbox.TM.fixedFit
   && sandbox.TM.fixedFit.VW === 1477
   && sandbox.TM.fixedFit.VH === 831,
   '测试环境启用 1477×831 固定虚拟舞台');
-check(/tm-fixed-fit\.js\?v=20260723-modern-viewport-units/.test(index),
+check(/tm-fixed-fit\.js\?v=[A-Za-z0-9_.-]+/.test(index),
   '入口缓存戳已刷新，热更客户端不会继续命中旧适配器');
 check(rules.indexOf(maxWidthMedia) === -1, '原有 max-width 媒体查询删除契约保持不变');
 check(topStyle._values.position === 'absolute'

@@ -1,0 +1,597 @@
+{
+  "schema": "fiscal-investigation/1",
+  "scope": "Offline canonical Tianqi startup and direct production fiscal consumers. No model calls, no player save. Fiscal consumer sequence isolates the fault; it does not run a complete AI game turn.",
+  "inputSha256": {
+    "scenarios/天启七年·九月（官方）.json": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+    "web/phase8-formal-rightrail.js": "5a6d9f141cd8fc946bbfc43de620d2d84c1c7e15166ac60e2fbc8e7721d7dde5",
+    "web/tm-minxin-hard-links.js": "6289a9b5f3bd9ac8ea1bfa00af9879e1d18ba7a9246acbbd7923452e628dca25",
+    "web/tm-minxin-hard-link-consumers.js": "6d325dc71f88f0659fd7c173478f11e484a5d8ba9cf360c4e5f66abf8c30dc66",
+    "web/tm-guoku-engine.js": "837e1b6fd17155bc490f7538b53bfad48e99c78a808998821c46ef390deccf04",
+    "web/tm-fiscal-engine.js": "f95a3eb3f6143fa9d90465c24e4dde37ccc02d2831a3d7db788bd54ff814d08f"
+  },
+  "assertions": 10,
+  "stages": [
+    {
+      "label": "opening",
+      "turn": 1,
+      "stock": 133370.2465753426,
+      "ledgerStock": 133370.2465753426,
+      "scalar": {
+        "turnIncome": 425836,
+        "monthlyIncome": 425836,
+        "annualIncome": 5181005,
+        "turnExpense": 1248866,
+        "monthlyExpense": 1248866
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1142465.7534246575,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 425836,
+        "expense": 1248866,
+        "forecast": false
+      },
+      "rail": {
+        "income": "42.6万",
+        "expense": "124.9万",
+        "net": "-82.3万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "cascade-1",
+      "turn": 1,
+      "stock": 133370.2465753426,
+      "ledgerStock": 133370.2465753426,
+      "scalar": {
+        "turnIncome": 425836,
+        "monthlyIncome": 425836,
+        "annualIncome": 5181005,
+        "turnExpense": 1248866,
+        "monthlyExpense": 1248866
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1142465.7534246575,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 425836,
+        "expense": 1248866,
+        "forecast": false
+      },
+      "rail": {
+        "income": "42.6万",
+        "expense": "124.9万",
+        "net": "-82.3万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "fixed-1",
+      "turn": 1,
+      "stock": 133370.2465753426,
+      "ledgerStock": 133370.2465753426,
+      "scalar": {
+        "turnIncome": 425836,
+        "monthlyIncome": 425836,
+        "annualIncome": 5181005,
+        "turnExpense": 1248866,
+        "monthlyExpense": 1248866
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1142465.7534246575,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 425836,
+        "expense": 1248866,
+        "forecast": false
+      },
+      "rail": {
+        "income": "42.6万",
+        "expense": "124.9万",
+        "net": "-82.3万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "settled-1",
+      "turn": 2,
+      "stock": 26370.1848266483,
+      "ledgerStock": 26370.1848266483,
+      "scalar": {
+        "turnIncome": 425836,
+        "monthlyIncome": 425836,
+        "annualIncome": 5110032,
+        "turnExpense": 1249466,
+        "monthlyExpense": 1249466
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1249465.815173352,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 425836,
+        "expense": 1249466,
+        "forecast": false
+      },
+      "rail": {
+        "income": "42.6万",
+        "expense": "124.9万",
+        "net": "-82.4万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "hard-links-1",
+      "turn": 2,
+      "stock": 26370.1848266483,
+      "ledgerStock": 26370.1848266483,
+      "scalar": {
+        "turnIncome": 425836,
+        "monthlyIncome": 425836,
+        "annualIncome": 5110032,
+        "turnExpense": 1249466,
+        "monthlyExpense": 1249466
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1249465.815173352,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 425836,
+        "expense": 1249466,
+        "forecast": false
+      },
+      "rail": {
+        "income": "42.6万",
+        "expense": "124.9万",
+        "net": "-82.4万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "hard-link-consumers-1",
+      "turn": 2,
+      "stock": 26370.1848266483,
+      "ledgerStock": 26370.1848266483,
+      "scalar": {
+        "turnIncome": 49598642,
+        "monthlyIncome": 49598642,
+        "annualIncome": 5110032,
+        "turnExpense": 1249466,
+        "monthlyExpense": 1249466
+      },
+      "ledger": {
+        "thisTurnIn": 425836,
+        "thisTurnOut": 1249465.815173352,
+        "sumSources": 425836
+      },
+      "display": {
+        "income": 49598642,
+        "expense": 1249466,
+        "forecast": false
+      },
+      "rail": {
+        "income": "4959.9万",
+        "expense": "124.9万",
+        "net": "4834.9万"
+      },
+      "lastCascade": {
+        "money": 425836,
+        "grain": 83958,
+        "cloth": 0
+      },
+      "lastCascadeTurn": 1
+    },
+    {
+      "label": "cascade-2",
+      "turn": 2,
+      "stock": 1048551.1848266483,
+      "ledgerStock": 1048551.1848266483,
+      "scalar": {
+        "turnIncome": 1022181,
+        "monthlyIncome": 1022181,
+        "annualIncome": 12436536,
+        "turnExpense": 1249466,
+        "monthlyExpense": 1249466
+      },
+      "ledger": {
+        "thisTurnIn": 1022181,
+        "thisTurnOut": 0,
+        "sumSources": 1022181
+      },
+      "display": {
+        "income": 1022181,
+        "expense": 1249466,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "124.9万",
+        "net": "-22.7万"
+      },
+      "lastCascade": {
+        "money": 1022181,
+        "grain": 389537,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 2
+    },
+    {
+      "label": "fixed-2",
+      "turn": 2,
+      "stock": 0,
+      "ledgerStock": 0,
+      "scalar": {
+        "turnIncome": 1022181,
+        "monthlyIncome": 1022181,
+        "annualIncome": 12436536,
+        "turnExpense": 1248866,
+        "monthlyExpense": 1248866
+      },
+      "ledger": {
+        "thisTurnIn": 1022181,
+        "thisTurnOut": 1048551.1848266483,
+        "sumSources": 1022181
+      },
+      "display": {
+        "income": 1022181,
+        "expense": 1248866,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "124.9万",
+        "net": "-22.7万"
+      },
+      "lastCascade": {
+        "money": 1022181,
+        "grain": 389537,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 2
+    },
+    {
+      "label": "settled-2",
+      "turn": 3,
+      "stock": -129084.9767486943,
+      "ledgerStock": -129084.9767486943,
+      "scalar": {
+        "turnIncome": 1022181,
+        "monthlyIncome": 1022181,
+        "annualIncome": 12266172,
+        "turnExpense": 1177636,
+        "monthlyExpense": 1177636
+      },
+      "ledger": {
+        "thisTurnIn": 1022181,
+        "thisTurnOut": 1177636.1615753425,
+        "sumSources": 1022181
+      },
+      "display": {
+        "income": 1022181,
+        "expense": 1177636,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "117.8万",
+        "net": "-15.5万"
+      },
+      "lastCascade": {
+        "money": 1022181,
+        "grain": 389537,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 2
+    },
+    {
+      "label": "hard-links-2",
+      "turn": 3,
+      "stock": -129084.9767486943,
+      "ledgerStock": -129084.9767486943,
+      "scalar": {
+        "turnIncome": 1022181,
+        "monthlyIncome": 1022181,
+        "annualIncome": 12266172,
+        "turnExpense": 1177636,
+        "monthlyExpense": 1177636
+      },
+      "ledger": {
+        "thisTurnIn": 1022181,
+        "thisTurnOut": 1177636.1615753425,
+        "sumSources": 1022181
+      },
+      "display": {
+        "income": 1022181,
+        "expense": 1177636,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "117.8万",
+        "net": "-15.5万"
+      },
+      "lastCascade": {
+        "money": 1022181,
+        "grain": 389537,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 2
+    },
+    {
+      "label": "hard-link-consumers-2",
+      "turn": 3,
+      "stock": -129084.9767486943,
+      "ledgerStock": -129084.9767486943,
+      "scalar": {
+        "turnIncome": 40365184,
+        "monthlyIncome": 40365184,
+        "annualIncome": 12266172,
+        "turnExpense": 1177636,
+        "monthlyExpense": 1177636
+      },
+      "ledger": {
+        "thisTurnIn": 1022181,
+        "thisTurnOut": 1177636.1615753425,
+        "sumSources": 1022181
+      },
+      "display": {
+        "income": 40365184,
+        "expense": 1177636,
+        "forecast": false
+      },
+      "rail": {
+        "income": "4036.5万",
+        "expense": "117.8万",
+        "net": "3918.8万"
+      },
+      "lastCascade": {
+        "money": 1022181,
+        "grain": 389537,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 2
+    },
+    {
+      "label": "cascade-3",
+      "turn": 3,
+      "stock": 892978.0232513057,
+      "ledgerStock": 892978.0232513057,
+      "scalar": {
+        "turnIncome": 1022063,
+        "monthlyIncome": 1022063,
+        "annualIncome": 12435100,
+        "turnExpense": 1177636,
+        "monthlyExpense": 1177636
+      },
+      "ledger": {
+        "thisTurnIn": 1022063,
+        "thisTurnOut": 0,
+        "sumSources": 1022063
+      },
+      "display": {
+        "income": 1022063,
+        "expense": 1177636,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "117.8万",
+        "net": "-15.6万"
+      },
+      "lastCascade": {
+        "money": 1022063,
+        "grain": 389402,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 3
+    },
+    {
+      "label": "fixed-3",
+      "turn": 3,
+      "stock": 0,
+      "ledgerStock": 0,
+      "scalar": {
+        "turnIncome": 1022063,
+        "monthlyIncome": 1022063,
+        "annualIncome": 12435100,
+        "turnExpense": 1248866,
+        "monthlyExpense": 1248866
+      },
+      "ledger": {
+        "thisTurnIn": 1022063,
+        "thisTurnOut": 892978.0232513056,
+        "sumSources": 1022063
+      },
+      "display": {
+        "income": 1022063,
+        "expense": 1248866,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "124.9万",
+        "net": "-22.7万"
+      },
+      "lastCascade": {
+        "money": 1022063,
+        "grain": 389402,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 3
+    },
+    {
+      "label": "settled-3",
+      "turn": 4,
+      "stock": -129077.4007486943,
+      "ledgerStock": -129077.4007486943,
+      "scalar": {
+        "turnIncome": 1022063,
+        "monthlyIncome": 1022063,
+        "annualIncome": 12264756,
+        "turnExpense": 1022055,
+        "monthlyExpense": 1022055
+      },
+      "ledger": {
+        "thisTurnIn": 1022063,
+        "thisTurnOut": 1022055.4239999999,
+        "sumSources": 1022063
+      },
+      "display": {
+        "income": 1022063,
+        "expense": 1022055,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "102.2万",
+        "net": "8"
+      },
+      "lastCascade": {
+        "money": 1022063,
+        "grain": 389402,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 3
+    },
+    {
+      "label": "hard-links-3",
+      "turn": 4,
+      "stock": -129077.4007486943,
+      "ledgerStock": -129077.4007486943,
+      "scalar": {
+        "turnIncome": 1022063,
+        "monthlyIncome": 1022063,
+        "annualIncome": 12264756,
+        "turnExpense": 1022055,
+        "monthlyExpense": 1022055
+      },
+      "ledger": {
+        "thisTurnIn": 1022063,
+        "thisTurnOut": 1022055.4239999999,
+        "sumSources": 1022063
+      },
+      "display": {
+        "income": 1022063,
+        "expense": 1022055,
+        "forecast": false
+      },
+      "rail": {
+        "income": "102.2万",
+        "expense": "102.2万",
+        "net": "8"
+      },
+      "lastCascade": {
+        "money": 1022063,
+        "grain": 389402,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 3
+    },
+    {
+      "label": "hard-link-consumers-3",
+      "turn": 4,
+      "stock": -129077.4007486943,
+      "ledgerStock": -129077.4007486943,
+      "scalar": {
+        "turnIncome": 31512378,
+        "monthlyIncome": 31512378,
+        "annualIncome": 12264756,
+        "turnExpense": 1022055,
+        "monthlyExpense": 1022055
+      },
+      "ledger": {
+        "thisTurnIn": 1022063,
+        "thisTurnOut": 1022055.4239999999,
+        "sumSources": 1022063
+      },
+      "display": {
+        "income": 31512378,
+        "expense": 1022055,
+        "forecast": false
+      },
+      "rail": {
+        "income": "3151.2万",
+        "expense": "102.2万",
+        "net": "3049万"
+      },
+      "lastCascade": {
+        "money": 1022063,
+        "grain": 389402,
+        "cloth": 52631
+      },
+      "lastCascadeTurn": 3
+    }
+  ],
+  "opening": {
+    "version": "v48-2026.05.18-tianqi-cao-class-population",
+    "days": 30,
+    "guoku": {
+      "armory": {
+        "甲胄": 320000,
+        "兵刃": 480000,
+        "弓弩": 150000,
+        "火器": 90000,
+        "战马": 110000
+      },
+      "materials": {
+        "铁": 600000,
+        "硝石": 90000,
+        "皮革": 140000,
+        "木": 220000
+      },
+      "initialMoney": 850000,
+      "initialGrain": 13000000,
+      "initialCloth": 500000,
+      "monthlyIncomeEstimate": {
+        "money": 1380000,
+        "grain": 340000,
+        "cloth": 0
+      },
+      "monthlyExpenseEstimate": {
+        "money": 1500000,
+        "grain": 380000,
+        "cloth": 8000
+      },
+      "deficitNote": "月赤字约 12 万两+4 万石粮。辽饷岁需 500 万由田赋每亩 9 厘加派（已计入 customTaxes.liaoxiang）。三大征耗尽张居正八百万积",
+      "quotaMoney": 8000000,
+      "quotaGrain": 26000000,
+      "quotaCloth": 500000,
+      "historicalContext": "《明史·食货志》: 天启末太仓银库存银约 80-120 万两（张居正积八百万已尽于三大征，另加派辽饷济之）；京通十三仓储粮 1100-1500 万石（供京师九边一年用度）；内外二库藏布 50-80 万匹（折俸+赐赉用）",
+      "source": "户部主管+十三清吏司分掌；太仓银库存通州；京通十三仓储粮；内外二库藏布"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "path": "web/scripts/smoke-start-game-data-integrity.js",
+  "before": "c3c225a7ceb8705c1a70ea30987b74ef534cf2536202b9ce0db6b4d52a869e4b",
+  "after": "6bee240b3d0510af3a30076999d5f283f578f8241fada48a7e97bbd640c552ec",
+  "indexBefore": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "indexAfter": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "at": "2026-09-26T06:34:54.969Z"
+}

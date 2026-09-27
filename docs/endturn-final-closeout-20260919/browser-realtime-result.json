@@ -1,0 +1,30 @@
+{
+  "at": "2026-09-19T15:03:34.603Z",
+  "vaultSHA": "a1e2aac215ddb735eda9bf685179d05d58224f9664f00527d6a8a1ff0b390394",
+  "sourceSHA": "6461ccfe9f0bd95c31dc95360718e52f506db2b99dafdafa46a5b5f91f055baa",
+  "version": {
+    "protocolVersion": "1.3",
+    "product": "Edg/153.0.4234.46",
+    "revision": "@af766475e4461bf7a8f44d601c8dfc6e7db82d66",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36 Edg/153.0.0.0",
+    "jsVersion": "15.3.12.6"
+  },
+  "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759",
+  "outcome": {
+    "ok": true,
+    "checks": [
+      "native IndexedDB commit",
+      "real page reload",
+      "full text equality",
+      "single inference",
+      "usage not duplicated",
+      "explicit clear"
+    ],
+    "calls": 1,
+    "chars": 17000
+  },
+  "error": null,
+  "profileRemoved": true,
+  "cleanupError": "EPERM, Permission denied: \\\\?\\C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759 '\\\\?\\C:\\Users\\37814\\Desktop\\tianming\\docs\\endturn-final-closeout-20260919\\.edge-realtime-1789830212759'",
+  "cleanupVerifiedAt": "2026-09-19T15:23:28.172Z"
+}

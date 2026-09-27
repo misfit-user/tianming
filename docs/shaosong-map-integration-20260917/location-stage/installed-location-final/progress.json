@@ -1,0 +1,337 @@
+{
+  "started": "2026-09-17T11:52:38.690Z",
+  "complete": false,
+  "checks": [
+    {
+      "name": "official-loader",
+      "passed": true,
+      "detail": {
+        "regions": 566,
+        "circuits": 101,
+        "polities": [
+          {
+            "id": "fac_song",
+            "name": "大宋"
+          },
+          {
+            "id": "fac_jin",
+            "name": "大金"
+          },
+          {
+            "id": "fac_xixia",
+            "name": "大夏"
+          }
+        ]
+      }
+    },
+    {
+      "name": "native-world",
+      "passed": true,
+      "detail": {
+        "running": true,
+        "sid": "sc-jianyan1-1127-shaosong",
+        "regions": 566,
+        "player": "大宋",
+        "characters": 485,
+        "armies": 103
+      }
+    },
+    {
+      "name": "live-location-integration",
+      "passed": true,
+      "detail": {
+        "passed": 9,
+        "failed": 0,
+        "checks": [
+          {
+            "name": "location-service-loaded",
+            "passed": true,
+            "detail": {
+              "schema": "source-text-location-v2"
+            }
+          },
+          {
+            "name": "ruler-at-original-bozhou-start",
+            "passed": true,
+            "detail": {
+              "name": "赵构",
+              "location": "亳州·明道宫·九龙井侧",
+              "regionId": "ssr-0048"
+            }
+          },
+          {
+            "name": "jin-liaoyang-army-in-liaoyang",
+            "passed": true,
+            "detail": {
+              "name": "金·东京辽阳镇兵",
+              "garrison": "东京辽阳",
+              "regionId": "ssr-0340"
+            }
+          },
+          {
+            "name": "multi-city-navy-not-falsely-single-camp",
+            "passed": true,
+            "detail": {
+              "garrison": "镇江·建康",
+              "status": "ambiguous",
+              "candidates": [
+                "ssr-0094",
+                "ssr-0072"
+              ]
+            }
+          },
+          {
+            "name": "real-initial-army-available",
+            "passed": true
+          },
+          {
+            "name": "live-destination-not-teleport",
+            "passed": true,
+            "detail": {
+              "from": "ssr-0048",
+              "current": "ssr-0048",
+              "destination": "ssr-0049"
+            }
+          },
+          {
+            "name": "native-arrival-updates-three-location-ids",
+            "passed": true,
+            "detail": {
+              "current": "ssr-0049",
+              "garrison": "ssr-0049",
+              "map": "ssr-0049",
+              "text": "鹿邑县"
+            }
+          },
+          {
+            "name": "arrival-does-not-change-soldiers-or-faction",
+            "passed": true,
+            "detail": {
+              "soldiers": 12000,
+              "faction": "大宋"
+            }
+          },
+          {
+            "name": "native-marker-at-arrival",
+            "passed": true,
+            "detail": {
+              "node": "ssr-0049"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "tier-realm",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "realm",
+        "stageText": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒诸部\n金\n齿\n诸\n部\n西喀喇汗国\n乃蛮部\n克烈部\n蒙\n兀\n诸\n部\n塔\n塔\n儿\n联\n盟\n流\n求\n诸\n部\n米\n沙\n鄢\n诸\n邦"
+      }
+    },
+    {
+      "name": "capture-realm",
+      "passed": true,
+      "bytes": 2520378,
+      "sha256": "587dbc01f130244cee96803ce53e21f4092555f7c673a90393739714295b3f7b"
+    },
+    {
+      "name": "tier-region",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "region",
+        "stageText": "京\n畿\n路\n京东西路\n京东东路\n京西北路\n京西南路\n永\n兴\n军\n路\n淮南东路\n淮南西路\n江南东路\n江\n南\n西\n路\n两浙路\n荆\n湖\n北\n路\n荆\n湖\n南\n路\n福\n建\n路\n广南东路\n广\n南\n西\n路\n成\n都\n府\n路\n潼\n川\n府\n路\n夔\n州\n路\n利州路\n秦\n凤\n路\n三泉直隶\n泾原路\n环庆路\n鄜延路\n熙河兰湟路\n河\n东\n路\n河\n东"
+      }
+    },
+    {
+      "name": "capture-region",
+      "passed": true,
+      "bytes": 2524706,
+      "sha256": "5cb74e606ba2a82409131c2d1750ca8cdacdac4ccfafab96dfb89e2860614ef2"
+    },
+    {
+      "name": "tier-prefecture",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "prefecture",
+        "stageText": "开封府\n陈留县\n杞县\n尉氏县\n酸枣县\n封丘县\n应天府\n拱州\n兴仁府\n单州\n济州\n东\n平\n府\n徐州\n滕县\n袭庆府\n沂州\n密州\n濮州\n青\n州\n淄\n州\n济\n南\n府\n莱州\n登州\n宁海县\n潍州\n河\n南\n府\n郑\n州\n巩\n县\n汜\n水\n县\n颍\n昌\n府\n汝州\n淮\n宁\n府\n蔡州\n顺昌府\n陕州\n虢州\n邓州\n唐州\n襄阳府\n随州\n郢\n州\n均州\n"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "name": "page-loaded",
+      "elapsedMs": 2519
+    },
+    {
+      "name": "official-loaded",
+      "elapsedMs": 7260,
+      "regions": 566,
+      "circuits": 101,
+      "polities": [
+        {
+          "id": "fac_song",
+          "name": "大宋"
+        },
+        {
+          "id": "fac_jin",
+          "name": "大金"
+        },
+        {
+          "id": "fac_xixia",
+          "name": "大夏"
+        }
+      ]
+    },
+    {
+      "name": "native-start-returned",
+      "elapsedMs": 19188
+    },
+    {
+      "name": "world-running",
+      "elapsedMs": 24204,
+      "running": true,
+      "sid": "sc-jianyan1-1127-shaosong",
+      "regions": 566,
+      "player": "大宋",
+      "characters": 485,
+      "armies": 103
+    },
+    {
+      "name": "waiting-map",
+      "elapsedMs": 24205
+    },
+    {
+      "name": "map-ready",
+      "elapsedMs": 49010
+    },
+    {
+      "name": "location-behaviour-verified",
+      "elapsedMs": 49772,
+      "passed": 9
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 51439,
+      "tier": "realm",
+      "paths": 566,
+      "svg": true,
+      "scale": "realm",
+      "stageText": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒诸部\n金\n齿\n诸\n部\n西喀喇汗国\n乃蛮部\n克烈部\n蒙\n兀\n诸\n部\n塔\n塔\n儿\n联\n盟\n流\n求\n诸\n部\n米\n沙\n鄢\n诸\n邦"
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 54118,
+      "tier": "region",
+      "paths": 566,
+      "svg": true,
+      "scale": "region",
+      "stageText": "京\n畿\n路\n京东西路\n京东东路\n京西北路\n京西南路\n永\n兴\n军\n路\n淮南东路\n淮南西路\n江南东路\n江\n南\n西\n路\n两浙路\n荆\n湖\n北\n路\n荆\n湖\n南\n路\n福\n建\n路\n广南东路\n广\n南\n西\n路\n成\n都\n府\n路\n潼\n川\n府\n路\n夔\n州\n路\n利州路\n秦\n凤\n路\n三泉直隶\n泾原路\n环庆路\n鄜延路\n熙河兰湟路\n河\n东\n路\n河\n东"
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 56945,
+      "tier": "prefecture",
+      "paths": 566,
+      "svg": true,
+      "scale": "prefecture",
+      "stageText": "开封府\n陈留县\n杞县\n尉氏县\n酸枣县\n封丘县\n应天府\n拱州\n兴仁府\n单州\n济州\n东\n平\n府\n徐州\n滕县\n袭庆府\n沂州\n密州\n濮州\n青\n州\n淄\n州\n济\n南\n府\n莱州\n登州\n宁海县\n潍州\n河\n南\n府\n郑\n州\n巩\n县\n汜\n水\n县\n颍\n昌\n府\n汝州\n淮\n宁\n府\n蔡州\n顺昌府\n陕州\n虢州\n邓州\n唐州\n襄阳府\n随州\n郢\n州\n均州\n"
+    }
+  ],
+  "sourceSha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+  "world": {
+    "running": true,
+    "sid": "sc-jianyan1-1127-shaosong",
+    "regions": 566,
+    "player": "大宋",
+    "characters": 485,
+    "armies": 103
+  },
+  "locations": {
+    "passed": 9,
+    "failed": 0,
+    "checks": [
+      {
+        "name": "location-service-loaded",
+        "passed": true,
+        "detail": {
+          "schema": "source-text-location-v2"
+        }
+      },
+      {
+        "name": "ruler-at-original-bozhou-start",
+        "passed": true,
+        "detail": {
+          "name": "赵构",
+          "location": "亳州·明道宫·九龙井侧",
+          "regionId": "ssr-0048"
+        }
+      },
+      {
+        "name": "jin-liaoyang-army-in-liaoyang",
+        "passed": true,
+        "detail": {
+          "name": "金·东京辽阳镇兵",
+          "garrison": "东京辽阳",
+          "regionId": "ssr-0340"
+        }
+      },
+      {
+        "name": "multi-city-navy-not-falsely-single-camp",
+        "passed": true,
+        "detail": {
+          "garrison": "镇江·建康",
+          "status": "ambiguous",
+          "candidates": [
+            "ssr-0094",
+            "ssr-0072"
+          ]
+        }
+      },
+      {
+        "name": "real-initial-army-available",
+        "passed": true
+      },
+      {
+        "name": "live-destination-not-teleport",
+        "passed": true,
+        "detail": {
+          "from": "ssr-0048",
+          "current": "ssr-0048",
+          "destination": "ssr-0049"
+        }
+      },
+      {
+        "name": "native-arrival-updates-three-location-ids",
+        "passed": true,
+        "detail": {
+          "current": "ssr-0049",
+          "garrison": "ssr-0049",
+          "map": "ssr-0049",
+          "text": "鹿邑县"
+        }
+      },
+      {
+        "name": "arrival-does-not-change-soldiers-or-faction",
+        "passed": true,
+        "detail": {
+          "soldiers": 12000,
+          "faction": "大宋"
+        }
+      },
+      {
+        "name": "native-marker-at-arrival",
+        "passed": true,
+        "detail": {
+          "node": "ssr-0049"
+        }
+      }
+    ]
+  }
+}

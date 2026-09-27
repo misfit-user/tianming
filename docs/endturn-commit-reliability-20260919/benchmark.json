@@ -1,0 +1,120 @@
+{
+  "description": "Synthetic healthy save tail; cleanup and auxiliary snapshot each wait 50 ms. No real API, live save or overall-turn speed measurement.",
+  "before": [
+    {
+      "ok": true,
+      "ms": 105.923,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "cleanup-done",
+        "snapshot-start",
+        "snapshot-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    },
+    {
+      "ok": true,
+      "ms": 120.897,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "cleanup-done",
+        "snapshot-start",
+        "snapshot-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    },
+    {
+      "ok": true,
+      "ms": 118.154,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "cleanup-done",
+        "snapshot-start",
+        "snapshot-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    }
+  ],
+  "after": [
+    {
+      "ok": true,
+      "ms": 60.09,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "snapshot-start",
+        "snapshot-done",
+        "cleanup-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    },
+    {
+      "ok": true,
+      "ms": 56.377,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "snapshot-start",
+        "snapshot-done",
+        "cleanup-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    },
+    {
+      "ok": true,
+      "ms": 61.518,
+      "events": [
+        "capture",
+        "stage",
+        "commit",
+        "cleanup",
+        "snapshot-start",
+        "snapshot-done",
+        "cleanup-done",
+        "clear-marker",
+        "index"
+      ],
+      "canonicalHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "snapshotHash": "210ab9ba7ff284594d22bf6f52139699ee9d31d8d74fcd5437d2fdb34ee99571",
+      "sameState": true
+    }
+  ],
+  "summary": {
+    "beforeMedianMs": 118.154,
+    "afterMedianMs": 60.09,
+    "fullStateUnchanged": true
+  }
+}

@@ -1,0 +1,36 @@
+<!doctype html><meta charset="utf-8"><title>Isolated autosave verification</title>
+<script>
+window.GM={running:true,turn:8,sid:'synthetic',saveName:'独立测试档',_campaignId:'campaign-synthetic',_timelineId:'timeline-synthetic',fullNarrative:'完整中文正文与长期记忆。😀'.repeat(600)};
+window.P={conf:{quality:'full'},scenarios:[]};window._tmLoadGen=1;
+window.deepClone=v=>JSON.parse(JSON.stringify(v));window._tmLiteSafeConf=deepClone;
+window.findScenarioById=()=>({name:'Synthetic'});window._tmHasNativeFs=()=>true;
+const realTimeout=window.setTimeout.bind(window),realClear=window.clearTimeout.bind(window),deadlines=new Map();let fakeTimer=-1;
+window.setTimeout=(fn,ms)=>{if(ms===60000){const id=fakeTimer--;deadlines.set(id,fn);return id;}return realTimeout(fn,ms);};
+window.clearTimeout=id=>{if(deadlines.has(id))deadlines.delete(id);else realClear(id);};
+window.expire=()=>{for(const [id,fn]of [...deadlines]){deadlines.delete(id);fn();}};
+</script><script src="native-renderer-copy.js"></script><script src="../../web/tm-save-close-flush.js"></script><script>
+(async()=>{const results=[],api=window.tianming,ctl=window.autosaveFixture.control;function check(name,value){results.push({name,pass:!!value});if(!value)throw Error(name);}
+const wait=()=>new Promise(r=>realTimeout(r,10));async function held(){for(let i=0;i<100;i++){if((await ctl('status')).held)return;await wait();}throw Error('Expected held acknowledgement');}
+function adopt(){_tmAdoptCommittedWorldSnapshot({GM,P},{transactionId:'native-'+GM.turn});}
+try{
+  api.rotateAutoSaveSession('native-autosave-session-0001');adopt();const complete=GM.fullNarrative;
+  check('production preload and committed snapshot save succeed',(await _tmRunDesktopAutoSaveTick({force:true})).ok);
+  let disk=await ctl('disk');check('real disk stores the complete narrative',disk.data.gameState.fullNarrative===complete);
+  check('disk envelope is bound to the requested session',disk.sessionToken===api.getAutoSaveSessionToken());
+  await ctl('arm');const old=api.autoSaveJson(JSON.stringify(_tmCommittedSnapshotProjectEnvelope()));await held();
+  api.rotateAutoSaveSession('native-autosave-session-0002');await ctl('release');await old;
+  check('late old native acknowledgement cannot roll back production preload session',api.getAutoSaveSessionToken()==='native-autosave-session-0002');
+  const stale=await api.loadAutoSave();check('unchanged main process rejects old disk envelope after rotation',stale.success===false&&stale.stale===true);
+  GM={...GM,_timelineId:'timeline-new'};_tmLoadGen++;adopt();check('new world saves after acknowledged old work',(await _tmRunDesktopAutoSaveTick({force:true})).ok);
+  await ctl('arm');const before=_autoSaveLastDoneMs,pending=_tmRunDesktopAutoSaveTick({force:true});await held();expire();
+  const out=await pending;check('real IPC timeout is unknown rather than saved',out.ok===false&&out.error.code==='DESKTOP_AUTOSAVE_UNCONFIRMED');
+  const calls=(await ctl('status')).calls;check('unconfirmed write blocks another invocation',(await _tmRunDesktopAutoSaveTick({force:true})).ok===false&&(await ctl('status')).calls===calls);
+  check('close flush does not accept unconfirmed writes',(await _tmAwaitDesktopAutoSaveForClose()).ok===false);
+  await ctl('release');await wait();check('late reply releases native lock without advancing current success clock',!_tmDesktopAutoSaveTransportStatus().pending&&_autoSaveLastDoneMs===before);
+  GM.fullNarrative+='同回合新记忆';adopt();check('same-turn newly committed memory is mirrored',(await _tmRunDesktopAutoSaveTick()).ok===true);
+  disk=await ctl('disk');check('final disk file includes all original and appended content',disk.data.gameState.fullNarrative===complete+'同回合新记忆');
+  check('all renderer deadline timers are cleared',deadlines.size===0);
+  await ctl('done',{ok:true,results,method:'Production preload; actual main autosave handler/helpers; native IPC and filesystem; isolated synthetic world; manually triggered timeout only.'});
+}catch(error){await ctl('done',{ok:false,results,error:error.stack||String(error)});}
+})();
+</script>

@@ -38,7 +38,7 @@ function _renderOfficeSummary() {
     nodes.forEach(function(n) {
       (n.positions||[]).forEach(function(p) {
         if (p.holder) {
-          var _fc = findCharByName(p.holder);
+          var _fc = _offOccupancy(p).primary;
           var _k = _fc && (_fc.party || _fc.faction);
           if (_k && _k !== '\u671D\u5EF7') {
             if (!factionMap[_k]) factionMap[_k] = 0;
@@ -127,10 +127,10 @@ function _renderOfficeSummary() {
     (function _scan(nodes){
       nodes.forEach(function(n){
         (n.positions||[]).forEach(function(p){
-          if (!p.holder) return;
+          if (!_offOccupancy(p).occupied) return;
           var _rl = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 99;
           if (_rl > 3) return;
-          var _pc = findCharByName(p.holder);
+          var _pc = _offOccupancy(p).primary;
           if (!_pc) return;
           var _pkey = _pc.party || _pc.faction;
           var _samePartyCnt = _pkey ? (factionMap[_pkey]||0) : 0;
@@ -160,7 +160,7 @@ function _renderOfficeSummary() {
       (function _vscan(nodes){
         nodes.forEach(function(n){
           (n.positions||[]).forEach(function(p){
-            if (!p.holder && _vacNames.length < 5) _vacNames.push(escHtml(n.name||'') + '\u00B7' + escHtml(p.name||''));
+            if (_offOccupancy(p).vacancyCount > 0 && _vacNames.length < 5) _vacNames.push(escHtml(n.name||'') + '\u00B7' + escHtml(p.name||''));
           });
           if (n.subs) _vscan(n.subs);
         });
@@ -206,7 +206,7 @@ function _offOpenZhongtui() {
     nodes.forEach(function(n, i) {
       var basePath = prefix.concat([i]);
       (n.positions || []).forEach(function(p, pi) {
-        if (!p.holder) {
+        if (!_offOccupancy(p).occupied) {
           var rl = (typeof getRankLevel === 'function') ? getRankLevel(p.rank) : 99;
           vacancies.push({
             pathArr: basePath.concat(['p', pi]),

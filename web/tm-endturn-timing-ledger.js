@@ -267,7 +267,43 @@
   function openDiagnostics() {
     var summary = buildSummary();
     if (typeof openGenericModal === 'function') {
-      openGenericModal('回合耗时诊断', renderSummaryHtml(summary));
+      var reliability = root.TM && root.TM.Endturn && root.TM.Endturn.Reliability;
+      var attempts = reliability && reliability.snapshot ? reliability.snapshot() : [];
+      var extra = '';
+      if (attempts.length) {
+        var last = attempts[attempts.length - 1];
+        var labels = { dependency: '启动依赖', cancelled: '玩家取消', world_changed: '存档或配置改变', timeout: '等待超时', authentication: '鉴权', rate_limit: '供应商限流', provider: '供应商故障', context_budget: '上下文或恢复预算', output_format: '输出格式', persistence: '保存', world_validation: '世界校验', mobile_transport: '手机联网', runtime: '运行时' };
+        extra = '<details open><summary>最近过回合尝试（回滚后仍可查看）</summary><div>模式：' + _esc(last.mode) + ' · 状态：' + _esc(last.status) + ' · 耗时：' + _esc(_fmtMs(last.ms)) + '</div>';
+        if (last.failure) extra += '<div>失败类别：' + _esc(labels[last.failure.category] || last.failure.category) + ' · ' + _esc(last.failure.code) + '</div>';
+        extra += '<pre style="white-space:pre-wrap;max-height:260px;overflow:auto">' + _esc(JSON.stringify(last.requests || [], null, 2)) + '</pre><small>仅保存本次页面会话的安全元数据；刷新后清除。</small></details>';
+      }
+      var recovery = root.TM && root.TM.Endturn && root.TM.Endturn.ResponseRecovery;
+      if (recovery) {
+        var rs = recovery.status();
+        extra += '<section><h4>完整响应恢复</h4><div>本次复用 ' + (Number(rs.hits) || 0) + ' 份；待匹配候选 ' + (Number(rs.available) || 0) + ' 份。</div>';
+        extra += '<p>只复用输入一致的完整响应；原有解析、质量校验和结算仍执行。刷新后仅严格匹配的本地候选可复用，不跨不同世界或分支。</p>';
+        extra += '<button class="bt bs" onclick="TM.Endturn.ResponseRecovery.clear();TM.Endturn.Timing.openDiagnostics()">放弃本次复用，重新生成</button></section>';
+      }
+      var vault = root.TM && root.TM.Endturn && root.TM.Endturn.RecoveryVault;
+      if (vault) {
+        var vs = vault.status();
+        extra += '<section><h4>本地恢复候选</h4><div>状态：' + _esc(vs.state) + '；保留完整响应，不保存 API 密钥或请求正文。默认最多 30 分钟，容量不足不影响正常推演。</div>';
+        extra += '<button class="bt bs" onclick="TM.Endturn.RecoveryVault.setEnabled(!TM.Endturn.RecoveryVault.enabled());TM.Endturn.Timing.openDiagnostics()">' + (vault.enabled() ? '关闭并清除本地候选' : '启用本地候选') + '</button></section>';
+      }
+      var reconcile = root.TM && root.TM.Endturn && root.TM.Endturn.SaveReconcile;
+      if (reconcile && reconcile.status().state !== 'idle') {
+        var sr = reconcile.status();
+        extra += '<section><h4>主存档结果核对</h4><div>' + _esc(sr.state) + (sr.error ? '：' + _esc(sr.error) : '') + '</div><button class="bt bs" onclick="TM.Endturn.SaveReconcile.check().then(function(){TM.Endturn.Timing.openDiagnostics()})">核对并完成原回合</button></section>';
+      }
+      if (typeof root._aiWaitSnapshot === 'function') {
+        var waiting = root._aiWaitSnapshot();
+        if (waiting.length) {
+          extra += '<section><h4>正在等待完整响应</h4>';
+          waiting.forEach(function(w) { extra += '<div>' + _esc(w.phase === 'body' ? '已收到响应头，等待完整内容' : w.phase === 'native-buffered' ? '等待原生接口返回完整结果，首包不可见' : '尚未收到成功响应头') + ' · ' + Math.round(w.elapsedMs / 1000) + ' 秒</div>'; });
+          extra += '<button class="bt bs" onclick="_aiCancelPendingWaits()">取消正在等待的 AI 请求</button></section>';
+        }
+      }
+      openGenericModal('回合耗时诊断', renderSummaryHtml(summary) + extra);
     } else {
       try { console.log('[EndturnTimingDiagnostics]', summary); } catch(_) {}
       try { if (typeof toast === 'function') toast('回合耗时诊断已输出到控制台'); } catch(_) {}

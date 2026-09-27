@@ -147,6 +147,7 @@
   function generateNpcFiscalCycles() {
     if (typeof global.GM === 'undefined') return null;
     var GM = global.GM;
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(GM)) return global.TM.NativeFiscal.npc(GM, {turnDays:_daysPerTurn()});
     if (!Array.isArray(GM.facs)) return null;
     var turn = _safeNum(GM.turn) || 1;
     var playerFacNames = _resolvePlayerFactionNames();

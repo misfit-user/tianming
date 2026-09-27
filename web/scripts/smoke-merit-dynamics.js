@@ -16,13 +16,13 @@ function ok(c, m) { if (c) { passed += 1; console.log('  PASS', m); } else { fai
 ok(/if \(ch\._imprisoned \|\| ch\.imprisoned \|\| ch\._exiled[\s\S]*?return;/.test(SRC), 'tick 状态闸：在押/流放/逃/守丧 → 功名冻结 return');
 ok(/dutyMul = 0\.4/.test(SRC) && /\(ch\.stress \|\| 0\) >= 75/.test(SRC), '怠政（重压≥75/重病≤25）挣取 ×0.4');
 ok(/ch\._retired\) dutyMul = Math\.min\(dutyMul, 0\.5\)/.test(SRC), '致仕减半（退而不攒资历）');
-ok(/ch\._recentAchievements = Math\.max\(0, ch\._recentAchievements \* 0\.6\)/.test(SRC), '近期功绩衰减 ×0.6（避免永久驱动）');
-ok(/ch\._recentAchievements \* 0\.5/.test(SRC), '_recentAchievements 进挣取 base（激活原死字段）');
+ok(/Math\.pow\(0\.6, mr\)/.test(SRC) && /ch\._recentAchievements = achievement \* decay/.test(SRC), '近期功绩按经过月份指数衰减（拆分回合等价）');
+ok(/achievement \* \(1-decay\) \/ \(-Math\.log\(0\.6\)\*mr\) \* 0\.5/.test(SRC), '近期功绩以时间积分进入挣取 base');
 
 // ── 源码契约：近账引擎 ──
 ok(/function recordMeritChange\(ch, delta, reason, kind\)/.test(SRC), '有 recordMeritChange');
 ok(/_meritLedger/.test(SRC) && /ch\._meritLog/.test(SRC), '近账落 G._meritLedger + ch._meritLog');
-ok(/function addAchievement\(ch, amount, reason\)/.test(SRC) && /_recentAchievements = Math\.min\(40/.test(SRC), 'addAchievement 喂 _recentAchievements（上限40 防滚雪球）');
+ok(/function addAchievement\(ch, amount, reason, evidence\)/.test(SRC) && /_recentAchievements = Math\.min\(40/.test(SRC), 'addAchievement 喂 _recentAchievements（上限40 防滚雪球）');
 ok(/recordMeritChange\(ch, delta, reason\);/.test(SRC), 'adjustVirtueMerit 调 recordMeritChange 记账');
 ok(/addAchievement: addAchievement/.test(SRC) && /recordMeritChange: recordMeritChange/.test(SRC), '导出 addAchievement + recordMeritChange');
 

@@ -1,0 +1,11 @@
+{
+  "work": "D:\\tianming-assistant-work\\map-deep-zoom-20260918",
+  "state": "applied-verified",
+  "report": "验收结果.json",
+  "runtimeFiles": [
+    "web/phase8-formal-map.js",
+    "web/tm-map-label-collide.js",
+    "web/phase8-formal-bridge-styles.js"
+  ],
+  "scenarioDataUnchanged": true
+}

@@ -1,0 +1,90 @@
+{
+  "complete": true,
+  "errors": [],
+  "started": "2026-09-19T12:27:24.025Z",
+  "start": {
+    "ok": true,
+    "map": "浑河·萨尔浒",
+    "units": 111,
+    "reinfWaves": 2
+  },
+  "ready": {
+    "ready": true,
+    "unitsReady": true,
+    "raster": {
+      "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x0000A7A8) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "software": false,
+      "antialias": true,
+      "samples": 4
+    },
+    "resolution": {
+      "width": 1266,
+      "height": 738,
+      "scale": 1,
+      "mode": "auto",
+      "software": false
+    },
+    "phase": "deploy",
+    "units": 111
+  },
+  "gpu": {
+    "2d_canvas": "enabled",
+    "canvas_oop_rasterization": "enabled_on",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "enabled",
+    "vulkan": "disabled_off",
+    "webgl": "enabled",
+    "webgl2": "enabled",
+    "webgpu": "enabled",
+    "webnn": "disabled_off"
+  },
+  "draw": {
+    "counts": {
+      "drawArrays": 12,
+      "drawElements": 24,
+      "texSubImage2D": 12
+    },
+    "times": [
+      44.29999999701977,
+      42.20000000298023,
+      35.899999998509884,
+      32.399999998509884,
+      35.30000000074506,
+      28.100000001490116,
+      31.300000000745058,
+      30.299999997019768,
+      26.700000002980232,
+      29.099999997764826,
+      27.699999999254942,
+      30.300000000745058
+    ],
+    "error": 0,
+    "simulationUnchanged": true,
+    "projection": [
+      -1.3412253856658936,
+      0,
+      0,
+      0,
+      0,
+      -1.2991302013397217,
+      -0.82627934217453,
+      -0.8253356218338013,
+      0,
+      1.8989332914352417,
+      -0.5652881264686584,
+      -0.5646424889564514,
+      79668.7890625,
+      47133.39453125,
+      42710.8828125,
+      42742.0546875
+    ]
+  },
+  "code": 0
+}

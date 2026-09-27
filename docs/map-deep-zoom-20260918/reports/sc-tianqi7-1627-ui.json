@@ -1,0 +1,646 @@
+{
+  "mode": "reconnected-final",
+  "sid": "sc-tianqi7-1627",
+  "time": "2026-09-18T10:13:00.011Z",
+  "complete": true,
+  "checks": [
+    {
+      "name": "official-scenario-loaded",
+      "passed": true,
+      "detail": {
+        "id": "sc-tianqi7-1627",
+        "regions": 307,
+        "circuits": 43
+      }
+    },
+    {
+      "name": "small-target-autofocus",
+      "passed": true,
+      "detail": {
+        "x": 704.5247192382812,
+        "y": 383.8573913574219,
+        "width": 131.95693969726562,
+        "height": 44.43938064575195,
+        "inside": true,
+        "scale": 128,
+        "mode": "vector"
+      }
+    },
+    {
+      "name": "button-maximum-128",
+      "passed": true,
+      "detail": {
+        "x": 704.5247192382812,
+        "y": 383.8573913574219,
+        "width": 131.95693969726562,
+        "height": 44.43938064575195,
+        "inside": true,
+        "scale": 128,
+        "mode": "vector"
+      }
+    },
+    {
+      "name": "deep-zoom-remains-vector",
+      "passed": true,
+      "detail": {
+        "x": 704.5247192382812,
+        "y": 383.8573913574219,
+        "width": 131.95693969726562,
+        "height": 44.43938064575195,
+        "inside": true,
+        "scale": 128,
+        "mode": "vector"
+      }
+    },
+    {
+      "name": "island-is-visible",
+      "passed": true,
+      "detail": {
+        "x": 704.5247192382812,
+        "y": 383.8573913574219,
+        "width": 131.95693969726562,
+        "height": 44.43938064575195,
+        "inside": true,
+        "scale": 128,
+        "mode": "vector"
+      }
+    },
+    {
+      "name": "real-click-selects-small-target",
+      "passed": true,
+      "detail": {
+        "id": "ming-28-p08",
+        "text": "御览\n方 志\n—\n×\n皮岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛。\n\n户口\n17万\n"
+      }
+    },
+    {
+      "name": "wheel-from-128-does-not-snap-to-old-cap",
+      "passed": true,
+      "detail": {
+        "before": {
+          "scale": 128,
+          "tx": -104838.990995998,
+          "ty": -39423.04232325653
+        },
+        "after": {
+          "scale": 118.15889233748938,
+          "tx": -96730.62875328264,
+          "ty": -36365.461827931176
+        }
+      }
+    },
+    {
+      "name": "real-wheel-reaches-same-cap",
+      "passed": true,
+      "detail": {
+        "scale": 128,
+        "tx": -79218.55409983026,
+        "ty": -43927.49812320063
+      }
+    },
+    {
+      "name": "emulated-two-finger-pinch-reaches-128",
+      "passed": true,
+      "detail": {
+        "scale": 128,
+        "tx": -79218.55409983027,
+        "ty": -43927.49812320061
+      }
+    },
+    {
+      "name": "deep-pan-stays-finite-and-moves",
+      "passed": true,
+      "detail": {
+        "before": {
+          "scale": 128,
+          "tx": -104838.990995998,
+          "ty": -39423.04232325653
+        },
+        "after": {
+          "scale": 128,
+          "tx": -104733.35460802961,
+          "ty": -39370.224129272334
+        }
+      }
+    },
+    {
+      "name": "zoom-out-reaches-shared-minimum",
+      "passed": true,
+      "detail": {
+        "scale": 0.72,
+        "tx": 7.499880329833218,
+        "ty": 136.5174892728431
+      }
+    },
+    {
+      "name": "reset-restores-whole-map-and-renderer",
+      "passed": true,
+      "detail": {
+        "view": {
+          "scale": 1,
+          "tx": 0,
+          "ty": 0
+        },
+        "rendering": "compositor",
+        "paths": 307
+      }
+    }
+  ],
+  "steps": [
+    {
+      "name": "page-loaded",
+      "ms": 20363
+    },
+    {
+      "name": "native-start",
+      "ms": 23449
+    },
+    {
+      "name": "map-ready",
+      "ms": 30878
+    },
+    {
+      "name": "projection-probe",
+      "ms": 36117,
+      "detail": {
+        "map": {
+          "width": 1200,
+          "height": 720
+        },
+        "state": {
+          "scale": 128,
+          "tx": -104838.990995998,
+          "ty": -39423.04232325653
+        },
+        "viewBox": "0 0 1200 720",
+        "preserve": null,
+        "nodes": [
+          {
+            "tag": "path",
+            "id": "",
+            "cls": "tmf-region ming-region selected",
+            "rect": {
+              "x": 704.5247192382812,
+              "y": 383.8573913574219,
+              "width": 131.95693969726562,
+              "height": 44.43938064575195,
+              "top": 383.8573913574219,
+              "right": 836.4816589355469,
+              "bottom": 428.2967720031738,
+              "left": 704.5247192382812
+            },
+            "transform": null,
+            "style": null,
+            "computed": {
+              "transform": "none",
+              "origin": "0px 0px",
+              "box": "view-box"
+            },
+            "ctm": "[object SVGMatrix]"
+          },
+          {
+            "tag": "g",
+            "id": "tmf-map-world",
+            "cls": "tmf-map-world ming-map-world",
+            "rect": {
+              "x": -104986.953125,
+              "y": -45763.60546875,
+              "width": 162685.75,
+              "height": 103099.0234375,
+              "top": -45763.60546875,
+              "right": 57698.796875,
+              "bottom": 57335.41796875,
+              "left": -104986.953125
+            },
+            "transform": "translate(-104838.991 -39423.042) scale(128.000000)",
+            "style": null,
+            "computed": {
+              "transform": "matrix(128, 0, 0, 128, -104839, -39423)",
+              "origin": "0px 0px",
+              "box": "view-box"
+            },
+            "ctm": "[object SVGMatrix]"
+          },
+          {
+            "tag": "svg",
+            "id": "tmf-formal-map",
+            "cls": "ming-map-svg tmf-tier-mesh",
+            "rect": {
+              "x": 100.1500015258789,
+              "y": 114.3125,
+              "width": 1311.2000732421875,
+              "height": 613.4249877929688,
+              "top": 114.3125,
+              "right": 1411.3500747680664,
+              "bottom": 727.7374877929688,
+              "left": 100.1500015258789
+            },
+            "transform": null,
+            "style": null,
+            "computed": {
+              "transform": "none",
+              "origin": "655.6px 306.712px",
+              "box": "view-box"
+            },
+            "ctm": "[object SVGMatrix]"
+          },
+          {
+            "tag": "DIV",
+            "id": "",
+            "cls": "ming-map-camera",
+            "rect": {
+              "x": 100.1500015258789,
+              "y": 114.3125,
+              "width": 1311.2000732421875,
+              "height": 613.4249877929688,
+              "top": 114.3125,
+              "right": 1411.3500747680664,
+              "bottom": 727.7374877929688,
+              "left": 100.1500015258789
+            },
+            "transform": null,
+            "style": "transform: none;",
+            "computed": {
+              "transform": "none",
+              "origin": "0px 0px",
+              "box": "view-box"
+            }
+          },
+          {
+            "tag": "DIV",
+            "id": "ming-map-layer",
+            "cls": "ming-map-layer tmf-map-stage zoomed",
+            "rect": {
+              "x": 100.1500015258789,
+              "y": 114.3125,
+              "width": 1311.2000732421875,
+              "height": 613.4249877929688,
+              "top": 114.3125,
+              "right": 1411.3500747680664,
+              "bottom": 727.7374877929688,
+              "left": 100.1500015258789
+            },
+            "transform": null,
+            "style": null,
+            "computed": {
+              "transform": "matrix(1, 0, 0, 1, 0, 0)",
+              "origin": "655.6px 306.712px",
+              "box": "view-box"
+            }
+          },
+          {
+            "tag": "g",
+            "id": "tmf-label-world",
+            "cls": {},
+            "rect": {
+              "x": -73694.34375,
+              "y": -20196.408203125,
+              "width": 100088.2578125,
+              "height": 54431.64453125,
+              "top": -20196.408203125,
+              "right": 26393.9140625,
+              "bottom": 34235.236328125,
+              "left": -73694.34375
+            },
+            "transform": "translate(-104838.99 -39423.04) scale(128.0000)",
+            "style": null,
+            "computed": {
+              "transform": "matrix(128, 0, 0, 128, -104839, -39423)",
+              "origin": "0px 0px",
+              "box": "view-box"
+            },
+            "ctm": "[object SVGMatrix]"
+          }
+        ],
+        "target": {
+          "center": [
+            823.9296171562344,
+            310.69251815044163
+          ]
+        }
+      }
+    },
+    {
+      "name": "wheel-and-click-tested",
+      "ms": 68118
+    }
+  ],
+  "source": {
+    "id": "sc-tianqi7-1627",
+    "regions": 307,
+    "circuits": 43
+  },
+  "targetId": "ming-28-p08",
+  "autofocus": {
+    "x": 704.5247192382812,
+    "y": 383.8573913574219,
+    "width": 131.95693969726562,
+    "height": 44.43938064575195,
+    "inside": true,
+    "scale": 128,
+    "mode": "vector"
+  },
+  "focusScreenshot": {
+    "file": "small-target-autofocus.png",
+    "bytes": 1991196,
+    "sha256": "61204f760052da8433e5b196589421fec1b04b1425a31135d648dfb3021bef84"
+  },
+  "projection": {
+    "map": {
+      "width": 1200,
+      "height": 720
+    },
+    "state": {
+      "scale": 128,
+      "tx": -104838.990995998,
+      "ty": -39423.04232325653
+    },
+    "viewBox": "0 0 1200 720",
+    "preserve": null,
+    "nodes": [
+      {
+        "tag": "path",
+        "id": "",
+        "cls": "tmf-region ming-region selected",
+        "rect": {
+          "x": 704.5247192382812,
+          "y": 383.8573913574219,
+          "width": 131.95693969726562,
+          "height": 44.43938064575195,
+          "top": 383.8573913574219,
+          "right": 836.4816589355469,
+          "bottom": 428.2967720031738,
+          "left": 704.5247192382812
+        },
+        "transform": null,
+        "style": null,
+        "computed": {
+          "transform": "none",
+          "origin": "0px 0px",
+          "box": "view-box"
+        },
+        "ctm": "[object SVGMatrix]"
+      },
+      {
+        "tag": "g",
+        "id": "tmf-map-world",
+        "cls": "tmf-map-world ming-map-world",
+        "rect": {
+          "x": -104986.953125,
+          "y": -45763.60546875,
+          "width": 162685.75,
+          "height": 103099.0234375,
+          "top": -45763.60546875,
+          "right": 57698.796875,
+          "bottom": 57335.41796875,
+          "left": -104986.953125
+        },
+        "transform": "translate(-104838.991 -39423.042) scale(128.000000)",
+        "style": null,
+        "computed": {
+          "transform": "matrix(128, 0, 0, 128, -104839, -39423)",
+          "origin": "0px 0px",
+          "box": "view-box"
+        },
+        "ctm": "[object SVGMatrix]"
+      },
+      {
+        "tag": "svg",
+        "id": "tmf-formal-map",
+        "cls": "ming-map-svg tmf-tier-mesh",
+        "rect": {
+          "x": 100.1500015258789,
+          "y": 114.3125,
+          "width": 1311.2000732421875,
+          "height": 613.4249877929688,
+          "top": 114.3125,
+          "right": 1411.3500747680664,
+          "bottom": 727.7374877929688,
+          "left": 100.1500015258789
+        },
+        "transform": null,
+        "style": null,
+        "computed": {
+          "transform": "none",
+          "origin": "655.6px 306.712px",
+          "box": "view-box"
+        },
+        "ctm": "[object SVGMatrix]"
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "cls": "ming-map-camera",
+        "rect": {
+          "x": 100.1500015258789,
+          "y": 114.3125,
+          "width": 1311.2000732421875,
+          "height": 613.4249877929688,
+          "top": 114.3125,
+          "right": 1411.3500747680664,
+          "bottom": 727.7374877929688,
+          "left": 100.1500015258789
+        },
+        "transform": null,
+        "style": "transform: none;",
+        "computed": {
+          "transform": "none",
+          "origin": "0px 0px",
+          "box": "view-box"
+        }
+      },
+      {
+        "tag": "DIV",
+        "id": "ming-map-layer",
+        "cls": "ming-map-layer tmf-map-stage zoomed",
+        "rect": {
+          "x": 100.1500015258789,
+          "y": 114.3125,
+          "width": 1311.2000732421875,
+          "height": 613.4249877929688,
+          "top": 114.3125,
+          "right": 1411.3500747680664,
+          "bottom": 727.7374877929688,
+          "left": 100.1500015258789
+        },
+        "transform": null,
+        "style": null,
+        "computed": {
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "origin": "655.6px 306.712px",
+          "box": "view-box"
+        }
+      },
+      {
+        "tag": "g",
+        "id": "tmf-label-world",
+        "cls": {},
+        "rect": {
+          "x": -73694.34375,
+          "y": -20196.408203125,
+          "width": 100088.2578125,
+          "height": 54431.64453125,
+          "top": -20196.408203125,
+          "right": 26393.9140625,
+          "bottom": 34235.236328125,
+          "left": -73694.34375
+        },
+        "transform": "translate(-104838.99 -39423.04) scale(128.0000)",
+        "style": null,
+        "computed": {
+          "transform": "matrix(128, 0, 0, 128, -104839, -39423)",
+          "origin": "0px 0px",
+          "box": "view-box"
+        },
+        "ctm": "[object SVGMatrix]"
+      }
+    ],
+    "target": {
+      "center": [
+        823.9296171562344,
+        310.69251815044163
+      ]
+    }
+  },
+  "maximum": {
+    "x": 704.5247192382812,
+    "y": 383.8573913574219,
+    "width": 131.95693969726562,
+    "height": 44.43938064575195,
+    "inside": true,
+    "scale": 128,
+    "mode": "vector"
+  },
+  "maximumScreenshot": {
+    "file": "new-maximum-128.png",
+    "bytes": 1992218,
+    "sha256": "dae7636c1bf5d5e25c43550d2147ff71a590b1b9bc64ad50d89d167923ba9deb"
+  },
+  "clickScreenshot": {
+    "file": "small-target-clicked.png",
+    "bytes": 1864940,
+    "sha256": "8b5424b573bb80282ec72e674927c60f5852568e30c31f7ba5a303c3cd3f1588"
+  },
+  "wheelInput": [
+    {
+      "deltaY": 40,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    },
+    {
+      "deltaY": -100,
+      "trusted": true
+    }
+  ],
+  "touch": {
+    "emulated": true,
+    "deviceHardwareTested": false,
+    "view": {
+      "scale": 128,
+      "tx": -79218.55409983027,
+      "ty": -43927.49812320061
+    }
+  },
+  "resetScreenshot": {
+    "file": "whole-map-after-deep-zoom.png",
+    "bytes": 2370971,
+    "sha256": "cc02f032ed2dd395e9b7f62b012d3912f87e88ca43291ea26984433e5847f146"
+  },
+  "exitCode": 0,
+  "ms": 141783
+}

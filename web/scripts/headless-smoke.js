@@ -229,6 +229,7 @@ function makeStubs() {
     // 定时器（Node 的搬过来）
     setTimeout, clearTimeout, setInterval, clearInterval, setImmediate, clearImmediate,
     queueMicrotask,
+    structuredClone, // Use the native clone available in the real browser; no JSON-only test slowdown.
     // 存储/网络 stub
     indexedDB: idb,
     fetch: () => Promise.reject(new Error('stub·no-fetch')),
@@ -240,7 +241,8 @@ function makeStubs() {
     FileReader: class { readAsText(){} readAsArrayBuffer(){} },
     File: StubBlob,
     // URL
-    URL: { createObjectURL: () => 'blob:stub', revokeObjectURL: () => {} },
+    URL: Object.assign(class extends URL {}, { createObjectURL: () => 'blob:stub', revokeObjectURL: () => {} }),
+    URLSearchParams,
     // event listener 在 window 上
     addEventListener(ev, fn) { (listeners['_w_' + ev] = listeners['_w_' + ev] || []).push(fn); },
     removeEventListener(ev, fn) {

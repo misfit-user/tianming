@@ -1,0 +1,284 @@
+{
+  "mode": "Headless Chromium with mobile viewport and touch emulation; not a physical device",
+  "sourceRoot": "C:/Users/37814/.codex/worktrees/mobile-export-fab-20260925/tianming/web",
+  "sourceSha256": {
+    "tm-fixed-fit.js": "bb5a1e75c5115a7b413b7ee47ca82318b6718fb2217779b82e2f565ffbc7da45",
+    "tm-pause-fab.js": "3903579fad1703f4ad615b04c1a24c0ecb36a77ab179b155c6b5995ce7cfdeea",
+    "tm-touch-gestures.js": "cf18ab8cb6cb7fe01dafe3c3b90d91b9bc70e1d9a79c2eba06d750ed0aa0c81d"
+  },
+  "checks": [
+    {
+      "label": "initial landscape scaled anchor",
+      "pass": true,
+      "rect": {
+        "left": 137.88809204101562,
+        "top": 30.974727630615234,
+        "right": 160.4151611328125,
+        "bottom": 53.50180435180664,
+        "width": 22.527069091796875,
+        "height": 22.527076721191406
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "134px",
+        "top": "66px"
+      },
+      "saved": null,
+      "pauseOpens": 0
+    },
+    {
+      "label": "real pointer drag bottom right",
+      "pass": true,
+      "rect": {
+        "left": 743.7725219726562,
+        "top": 365.5956726074219,
+        "right": 766.2996215820312,
+        "bottom": 388.12274169921875,
+        "width": 22.527099609375,
+        "height": 22.527069091796875
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "1425px",
+        "top": "779px"
+      },
+      "saved": "{\"fx\":0.9647935003385241,\"fy\":0.937424789410349}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "reload preserves visible dragged position",
+      "pass": true,
+      "rect": {
+        "left": 743.7725219726562,
+        "top": 365.5956726074219,
+        "right": 766.2996215820312,
+        "bottom": 388.12274169921875,
+        "width": 22.527099609375,
+        "height": 22.527069091796875
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "1425px",
+        "top": "779px"
+      },
+      "saved": "{\"fx\":0.9647935003385241,\"fy\":0.937424789410349}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "right click reset",
+      "pass": true,
+      "rect": {
+        "left": 137.88809204101562,
+        "top": 30.974727630615234,
+        "right": 160.4151611328125,
+        "bottom": 53.50180435180664,
+        "width": 22.527069091796875,
+        "height": 22.527076721191406
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "134px",
+        "top": "66px"
+      },
+      "saved": null,
+      "pauseOpens": 0
+    },
+    {
+      "label": "legacy offscreen storage repaired",
+      "pass": true,
+      "rect": {
+        "left": 743.7725219726562,
+        "top": 1.8772562742233276,
+        "right": 766.2996215820312,
+        "bottom": 24.4043310880661,
+        "width": 22.527099609375,
+        "height": 22.527074813842773
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "1425px",
+        "top": "4px"
+      },
+      "saved": "{\"fx\":0.9647935003385241,\"fy\":0.0048134777376654635}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "real pointer drag top left outside viewport",
+      "pass": true,
+      "rect": {
+        "left": 76.87725830078125,
+        "top": 1.8772562742233276,
+        "right": 99.40432739257812,
+        "bottom": 24.4043310880661,
+        "width": 22.527069091796875,
+        "height": 22.527074813842773
+      },
+      "body": {
+        "left": 75,
+        "top": 0,
+        "right": 768.1768798828125,
+        "bottom": 390
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 844,
+        "bottom": 390
+      },
+      "style": {
+        "left": "4px",
+        "top": "4px"
+      },
+      "saved": "{\"fx\":0.002708192281651997,\"fy\":0.0048134777376654635}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "portrait resize and fixed-fit transform",
+      "pass": true,
+      "rect": {
+        "left": 1.0561950206756592,
+        "top": 313.0561828613281,
+        "right": 13.73053526878357,
+        "bottom": 325.73052978515625,
+        "width": 12.67434024810791,
+        "height": 12.674346923828125
+      },
+      "body": {
+        "left": 0,
+        "top": 312,
+        "right": 390,
+        "bottom": 531.4244995117188
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844
+      },
+      "style": {
+        "left": "4px",
+        "top": "4px"
+      },
+      "saved": "{\"fx\":0.002708192281651997,\"fy\":0.0048134777376654635}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "portrait drag clamps to visible stage",
+      "pass": true,
+      "rect": {
+        "left": 376.26947021484375,
+        "top": 517.6939697265625,
+        "right": 388.9438171386719,
+        "bottom": 530.3682861328125,
+        "width": 12.674346923828125,
+        "height": 12.67431640625
+      },
+      "body": {
+        "left": 0,
+        "top": 312,
+        "right": 390,
+        "bottom": 531.4244995117188
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844
+      },
+      "style": {
+        "left": "1425px",
+        "top": "779px"
+      },
+      "saved": "{\"fx\":0.9647935003385241,\"fy\":0.937424789410349}",
+      "pauseOpens": 0
+    },
+    {
+      "label": "real emulated touch long press reset",
+      "pass": true,
+      "rect": {
+        "left": 35.38253402709961,
+        "top": 329.4272155761719,
+        "right": 48.0568733215332,
+        "bottom": 342.1015625,
+        "width": 12.674339294433594,
+        "height": 12.674346923828125
+      },
+      "body": {
+        "left": 0,
+        "top": 312,
+        "right": 390,
+        "bottom": 531.4244995117188
+      },
+      "viewport": {
+        "left": 0,
+        "top": 0,
+        "right": 390,
+        "bottom": 844
+      },
+      "style": {
+        "left": "134px",
+        "top": "66px"
+      },
+      "saved": null,
+      "pauseOpens": 0
+    }
+  ],
+  "browserVersion": "149.0.7827.55",
+  "status": "PASS",
+  "runtimeErrors": []
+}

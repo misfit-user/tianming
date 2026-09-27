@@ -335,6 +335,9 @@
       modelReady: STATE.modelReady,
       modelLoading: STATE.modelLoading,
       indexSize: STATE.index.length,
+      memoryVectorCount: STATE.index.filter(function(row) { return row.source === "memory"; }).length,
+      queryCacheSize: _queryVectors ? _queryVectors.size : 0,
+      memoryPending: STATE.memoryPending || 0,
       lastIndexedTurn: STATE.lastIndexedTurn,
       error: STATE.error,
       loadSource: STATE.loadSource,
@@ -400,6 +403,8 @@
       STATE.loadGeneration = loadGeneration;
       STATE.sessionToken = sessionToken;
       STATE.index = [];
+      if (_queryVectors) _queryVectors.clear();
+      STATE.memoryPending = 0;
       STATE.existingIds = new Set();
       STATE.cursors = Object.create(null);
       STATE.lastIndexedTurn = 0;
@@ -526,9 +531,9 @@
   }
 
   function _cosineSim(a, b) {
-    if (!a || !b || a.length !== b.length) return 0;
+    if (!a || !b || !a.length || a.length !== b.length) return -Infinity;
     var dot = 0;
-    for (var i = 0; i < a.length; i++) dot += a[i] * b[i];
+    for (var i = 0; i < a.length; i++) { if (!Number.isFinite(a[i]) || !Number.isFinite(b[i])) return -Infinity; dot += a[i] * b[i]; }
     // 已归一化·dot 即 cosine
     return dot;
   }
@@ -563,6 +568,36 @@
       }
     });
     return dimension;
+  }
+
+  function _memoryVectorRows(gm) {
+    var hybrid = global.TM && global.TM.MemoryHybrid;
+    if (!hybrid || !hybrid.collect) return null;
+    var rows = [], hits = hybrid.collect(gm);
+    hits.forEach(function(hit) {
+      if (hit.source === 'hard_state' || !hit.id || rows.length >= 8192) return;
+      var value = String(hit.safeBody != null ? hit.safeBody : hit.text || '').slice(0, 1600);
+      for (var at = 0; at < value.length && rows.length < 8192; at += 300) {
+        var chunk = value.slice(at, at + 360);
+        var sourceId = String(hit.id) + ':c' + at + ':' + _stableFingerprint(chunk);
+        rows.push({ source: 'memory', sourceId: sourceId, memoryId: String(hit.id), turn: Number(hit.turn) || 0, text: chunk, excerptOffset: at });
+        if (at + 360 >= value.length) break;
+      }
+    });
+    return rows;
+  }
+  var _queryVectors = new Map();
+  async function _queryVector(text, lease) {
+    text = String(text || '').slice(0, 512);
+    var key = lease.worldKey + '|' + text, cached = _queryVectors.get(key);
+    if (cached) { _queryVectors.delete(key); _queryVectors.set(key, cached); _perfCount('semantic.queryCacheHits', 1); return cached; }
+    var promise = _embed(text).then(function(vec) {
+      if (!_isLeaseCurrent(lease) || !Array.isArray(vec) || !vec.length || !vec.every(function(n) { return typeof n === 'number' && Number.isFinite(n); })) throw new Error('invalid or stale query embedding');
+      return vec;
+    });
+    _queryVectors.set(key, promise);
+    while (_queryVectors.size > 32) _queryVectors.delete(_queryVectors.keys().next().value);
+    try { return await promise; } catch (error) { if (_queryVectors.get(key) === promise) _queryVectors.delete(key); throw error; }
   }
 
   async function _buildIndexForLease(opts, identity, lease) {
@@ -676,6 +711,14 @@
       });
     }, { world: identity.key });
 
+    var memoryRows = _memoryVectorRows(gm), removeIds = [], memoryKeys = new Set(), pendingMemory = 0;
+    var memoryBatchLimit = Number(opts.memoryBatchLimit);
+    memoryBatchLimit = Number.isSafeInteger(memoryBatchLimit) && memoryBatchLimit >= 16 ? Math.min(2048, memoryBatchLimit) : 256;
+    if (memoryRows) {
+      memoryRows.forEach(function(row) { memoryKeys.add(row.sourceId); if (!STATE.existingIds.has('memory|' + row.sourceId)) { if (pendingMemory < memoryBatchLimit) pending.push(row); pendingMemory++; } });
+      STATE.index.forEach(function(item) { if (item.source === 'memory' && !memoryKeys.has(item.sourceId)) removeIds.push(item.id); });
+      if (removeIds.length) cursorChanged = true;
+    }
     _assertLeaseCurrent(lease, 'scan');
     _perfCount('semantic.newRows', pending.length);
     if (!pending.length && !cursorChanged) {
@@ -696,6 +739,8 @@
         addedItems.push({
           id: identity.campaignId + ':' + identity.timelineId + ':' + pendingItem.source + ':' + pendingItem.sourceId,
           sourceId: pendingItem.sourceId,
+          memoryId: pendingItem.memoryId || "",
+          excerptOffset: pendingItem.excerptOffset || 0,
           campaignId: identity.campaignId,
           timelineId: identity.timelineId,
           modelVersion: identity.modelVersion,
@@ -710,25 +755,32 @@
     var staged = {
       cursors: nextCursors,
       newItems: addedItems,
-      count: STATE.index.length + addedItems.length,
+      count: STATE.index.length + addedItems.length - removeIds.length,
+      removeIds: removeIds,
       lastIndexedTurn: (pending.length || cursorChanged) ? turn : STATE.lastIndexedTurn
     };
     await _persistStagedIndex(identity, staged, lease);
     _assertLeaseCurrent(lease, 'persist-complete');
+    if (removeIds.length) {
+      var removals = new Set(removeIds); STATE.index = STATE.index.filter(function(item) { if (!removals.has(item.id)) return true; STATE.existingIds.delete(item.source + '|' + (item.sourceId || item.id)); return false; });
+    }
     addedItems.forEach(function(item) {
       STATE.index.push(item);
       STATE.existingIds.add(item.source + '|' + (item.sourceId || item.id));
     });
     STATE.cursors = nextCursors;
     STATE.lastIndexedTurn = staged.lastIndexedTurn;
-    return { ok: true, added: addedItems.length, total: STATE.index.length, visited: sourceRowsVisited };
+    STATE.memoryPending = Math.max(0, pendingMemory - memoryBatchLimit);
+    return { ok: true, added: addedItems.length, total: STATE.index.length, visited: sourceRowsVisited, memoryPending: STATE.memoryPending };
   }
 
   async function buildIndex(opts) {
     opts = opts || {};
     _perfCount('semantic.idbClearCount', 0);
     if (!STATE.enabled) return { ok: false, reason: 'disabled' };
+    var requestWorld = typeof GM !== 'undefined' ? GM : null, requestGeneration = _loadGeneration(), requestIdentity = _worldIdentity(requestWorld).key;
     if (!await ensureModel()) return { ok: false, reason: 'model not ready: ' + STATE.error };
+    if (requestWorld !== (typeof GM !== 'undefined' ? GM : null) || requestGeneration !== _loadGeneration() || requestIdentity !== _worldIdentity(requestWorld).key) return { ok: false, reason: 'semantic_world_changed' };
     if (typeof GM === 'undefined' || !GM) return { ok: false, reason: 'no GM' };
     var identity = _ensureWorldState();
     if (!identity.campaignId || !identity.timelineId) return { ok: false, reason: 'world identity unavailable' };
@@ -748,12 +800,20 @@
     if (!query) return [];
     var identity = _ensureWorldState();
     var lease = _captureWorldLease(identity);
-    var qVec = await _embed(query);
-    if (!qVec || !_isLeaseCurrent(lease)) return [];
+    if (opts.GM && opts.GM !== lease.gmRef) return [];
+    var searchTurn = lease.gmRef && lease.gmRef.turn;
+    var qVec = await _queryVector(query, lease);
+    if (!qVec || !_isLeaseCurrent(lease) || (lease.gmRef && lease.gmRef.turn !== searchTurn) || (opts.signal && opts.signal.aborted)) return [];
     var topK = Number(opts.topK);
     if (!Number.isSafeInteger(topK) || topK <= 0 || topK > 100) topK = 6;
     var threshold = opts.threshold != null ? Number(opts.threshold) : STATE.threshold;
     if (!Number.isFinite(threshold)) threshold = STATE.threshold;
+    var freshMemory = null, hybrid = global.TM && global.TM.MemoryHybrid;
+    if (hybrid) {
+      freshMemory = Object.create(null);
+      hybrid.collect(lease.gmRef, opts).forEach(function(hit) { freshMemory[hit.id] = hit; });
+    }
+    var heapLimit = freshMemory ? Math.min(400, topK * 4) : topK;
     function worse(left, right) {
       return left.sim < right.sim || (left.sim === right.sim && left.order > right.order);
     }
@@ -783,18 +843,27 @@
       var heap = [];
       for (var i = 0; i < STATE.index.length; i++) {
         var item = STATE.index[i];
+        if (freshMemory) {
+          var latest = freshMemory[item.memoryId];
+          if (item.source !== 'memory' || !latest) continue;
+          var currentText = String(latest.safeBody != null ? latest.safeBody : latest.text || '').slice(item.excerptOffset || 0, (item.excerptOffset || 0) + 360);
+          if (currentText !== item.text) continue;
+        }
         var sim = _cosineSim(qVec, item.vec);
         _perfCount('semantic.vectorComparisons', 1);
-        if (sim < threshold) continue;
+        if (!Number.isFinite(sim) || sim < threshold) continue;
         var entry = { item: item, sim: sim, order: i };
-        if (heap.length < topK) heapPush(heap, entry);
+        if (heap.length < heapLimit) heapPush(heap, entry);
         else if (worse(heap[0], entry)) heapReplaceWorst(heap, entry);
       }
       return heap.sort(function(a, b) { return (b.sim - a.sim) || (a.order - b.order); });
     }, { candidates: STATE.index.length, topK: topK });
-    return scored.map(function(s) {
+    var seenMemory = new Set();
+    return scored.filter(function(row) { var id = row.item.memoryId || row.item.id; if (seenMemory.has(id)) return false; seenMemory.add(id); return true; }).slice(0, topK).map(function(s) {
+      if (freshMemory && freshMemory[s.item.memoryId]) return Object.assign({}, freshMemory[s.item.memoryId], { memoryId: s.item.memoryId, sim: Math.round(s.sim * 10000) / 10000, vectorSource: 'memory', matchedOffset: s.item.excerptOffset || 0 });
       return {
         source: 'vector',
+        campaignId: identity.campaignId, timelineId: identity.timelineId,
         sub: s.item.source,
         id: s.item.sourceId || s.item.id,
         turn: s.item.turn,
@@ -898,6 +967,7 @@
           cursors: _cloneCursors(staged.cursors)
         };
         try {
+          (staged.removeIds || []).forEach(function(id) { s.delete(id); _perfCount('semantic.idbDeleteCount', 1); });
           s.put(meta);
           _perfCount('semantic.idbPutCount', 1);
           newItems.forEach(function(item) {

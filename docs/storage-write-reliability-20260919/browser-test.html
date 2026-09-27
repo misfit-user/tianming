@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>Isolated SaveDB verification</title><pre id="result">pending</pre>
+<script src="browser-storage-copy.js"></script>
+<script>
+(async()=>{
+  const results=[];const check=(name,ok)=>{if(!ok)throw Error(name);results.push({name,pass:true});};
+  try{
+    await TM_SaveDB.open();
+    const state={GM:{turn:7,_campaignId:'tmc_browser_fixture',_timelineId:'tml_browser_fixture_1234',fullText:'完整推演正文🙂、人物动机和长期记忆。'.repeat(1000)},P:{conf:{quality:'full'}}};
+    const text=JSON.stringify(state),compressed=await SaveCompression.compress(text);
+    check('native gzip available',compressed instanceof Blob);
+    check('native gzip exact roundtrip',await SaveCompression.decompress(compressed)===text);
+    const entries=['autosave','slot_0'].map(id=>({id,gameState:state,meta:{turn:7}}));
+    let receipts=0;check('native canonical commit',await TM_SaveDB.saveManyAtomic(entries,{transactionId:'native-fixture',onCommitted(){receipts++;}})===true);
+    check('one commit receipt',receipts===1);
+    check('complete autosave',JSON.stringify((await TM_SaveDB.load('autosave')).gameState)===text);
+    check('complete slot_0',JSON.stringify((await TM_SaveDB.load('slot_0')).gameState)===text);
+    const next=JSON.parse(text);next.GM.turn=8;const put=IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put=function(value,...rest){if(this.name==='saveMetadata'&&value.id==='slot_0')throw new DOMException('Injected second-store failure','DataCloneError');return put.call(this,value,...rest);};
+    let aborted=false;try{await TM_SaveDB.saveManyAtomic(['autosave','slot_0'].map(id=>({id,gameState:next,meta:{turn:8}})));}catch(error){aborted=error.storageOutcome==='aborted';}finally{IDBObjectStore.prototype.put=put;}
+    check('native abort confirmed',aborted);
+    check('no partial autosave advance',JSON.stringify((await TM_SaveDB.load('autosave')).gameState)===text);
+    check('no partial slot advance',JSON.stringify((await TM_SaveDB.load('slot_0')).gameState)===text);
+    check('confirmed abort leaves writing enabled',TM_SaveDB.writeStatus().blocked===false);
+    document.getElementById('result').textContent=JSON.stringify({ok:true,results,source:'actual Edge IndexedDB and CompressionStream; isolated profile'});
+  }catch(error){document.getElementById('result').textContent=JSON.stringify({ok:false,results,error:String(error.stack||error)});}
+})();
+</script>

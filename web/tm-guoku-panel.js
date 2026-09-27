@@ -8,6 +8,7 @@
 
 // 数字格式化
 function _guokuFmt(v) {
+  if(v===null||v==='待核')return '待核';
   v = Math.round(v || 0);
   if (Math.abs(v) >= 1e8) return (v/1e8).toFixed(2) + '亿';
   if (Math.abs(v) >= 10000) return (v/10000).toFixed(2).replace(/\.?0+$/, '') + '万';
@@ -26,6 +27,7 @@ function _guokuTabJump(label, tabId) {
 
 // 开启面板
 function openGuokuPanel() {
+  if (window.TM && TM.NativeFiscalUI && TM.NativeFiscalUI.open('public')) return;
   var ov = document.getElementById('guoku-drawer-ov');
   if (!ov) {
     ov = document.createElement('div');
@@ -61,6 +63,7 @@ function openGuokuPanel() {
 }
 
 function closeGuokuPanel() {
+  if (window.TM && TM.NativeFiscalUI) TM.NativeFiscalUI.close();
   var ov = document.getElementById('guoku-drawer-ov');
   if (ov) ov.classList.remove('open');
 }
@@ -75,6 +78,12 @@ function _guokuSetFlowPeriod(period) {
 function renderGuokuPanel() {
   var body = document.getElementById('guoku-body');
   var subt = document.getElementById('guoku-subtitle');
+  if (!body) return;
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) {
+    body.innerHTML = TM.NativeFiscalUI.render(GM, 'public');
+    if (subt) subt.textContent = '本局明确公共账户 · 不混入其他政体的账目';
+    return;
+  }
   return _guokuRenderPanelBody(body, subt, GM.guoku || {});
 }
 
@@ -88,8 +97,8 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
   var flowLabel = flowPeriod === 'year' ? (display.forecast ? '岁计' : '折年') : flowPeriod === 'month' ? (display.forecast ? '月均' : '折月') : display.periodStatus==='previous'?'上期':'本期';
   var flowAmount = function(value) { return _guokuFmt(value * flowScale); };
   var annualFlowAmount = function(value) { return flowAmount(value * turnDays / yearDays); };
-  var subtLbl = periodLbl + '入 ' + _guokuFmt(g.turnIncome != null ? g.turnIncome : g.monthlyIncome || 0) +
-                ' / ' + periodLbl + '支 ' + _guokuFmt(g.turnExpense != null ? g.turnExpense : g.monthlyExpense || 0);
+  var subtLbl = periodLbl + '入 ' + _guokuFmt(g.turnIncome === null ? '待核' : g.turnIncome != null ? g.turnIncome : g.monthlyIncome || 0) +
+                ' / ' + periodLbl + '支 ' + _guokuFmt(g.turnExpense === null ? '待核' : g.turnExpense != null ? g.turnExpense : g.monthlyExpense || 0);
   if (g.bankruptcy && g.bankruptcy.active) subtLbl = '⚠ 破产 · ' + subtLbl;
   if (display.forecast) subtLbl = '预计 · ' + subtLbl;
   if (display.periodStatus==='previous') subtLbl='上期交割 · '+subtLbl;
@@ -149,7 +158,7 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
     tagsHtml += '<span class="tr-pill bad">⚠ 暴君虚账 ' + _guokuFmt(bubble) + '</span>';
   }
 
-  var deltaVal = g.lastDelta || 0;
+  var deltaVal = g.lastDelta === null ? '待核' : g.lastDelta || 0;
   // ★ 中央年入 vs 全国官收·岁入与回合收入只统计中央上解部分·官府实收 = 中央 + 地方留存
   var _cas = display.summary || ((typeof GM !== 'undefined') ? GM._lastCascadeSummary : null);
   var _turnDaysForFrac = g.turnDays || turnDays || 30;
@@ -170,7 +179,7 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
   html +=         '<span><b>粮</b>' + _guokuFmt(stockGrain) + '<span class="mu">' + U.grain + '</span></span>';
   html +=         '<span><b>布</b>' + _guokuFmt(stockCloth) + '<span class="mu">' + U.cloth + '</span></span>';
   html +=         '<span><b>' + (display.forecast ? '预计增减' : '本回合') + '</b>' + (deltaVal >= 0 ? '+' : '') + _guokuFmt(deltaVal) + '</span>';
-  html +=         '<span title="仅中央上解部分（不含地方留存）·下方三数中的『官府实收』=中央+地方留存"><b>中央年入</b>' + _guokuFmt(_gkReported('fiscal.annualIncome', g.annualIncome || 0, 'good').shown) + '</span>';
+  html +=         '<span title="仅中央上解部分（不含地方留存）·下方三数中的『官府实收』=中央+地方留存"><b>中央年入</b>' + _guokuFmt(_gkReported('fiscal.annualIncome', g.annualIncome === null ? '待核' : g.annualIncome || 0, 'good').shown) + '</span>';
   if (_rvM.distorted && typeof TM !== 'undefined' && TM.ReportedView) html += TM.ReportedView.badge(_rvM);
   if (_govActualAnnual > 0) {
     html +=       '<span title="官府实收年化·中央上解 + 地方留存·与下方三数面板的『官府实收』同源"><b>全国官收(年)</b>' + _guokuFmt(_govActualAnnual) + '</span>';
@@ -187,14 +196,14 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
   html +=   '<div class="tr-section-head"><span class="tr-section-name">回合速察</span><span class="tr-section-badge">钱·中央实入·下方三数为全国口径</span></div>';
   html +=   '<div class="tr-quickstats">';
   // 回合入(中央)·与下方三数『官府实收』有别·此处只算上解中央部分
-  var turnIn = _gkReported('fiscal.turnIncome', g.turnIncome != null ? g.turnIncome : g.monthlyIncome || 0, 'good').shown;
+  var turnIn = _gkReported('fiscal.turnIncome', g.turnIncome === null ? '待核' : g.turnIncome != null ? g.turnIncome : g.monthlyIncome || 0, 'good').shown;
   var _localRetainTurn = (_cas && _cas.localRetain) ? Math.round(_cas.localRetain.money || 0) : 0;
   var _qsInSub = _localRetainTurn > 0
     ? (U.money + ' · 地留 ' + _guokuFmt(_localRetainTurn))
     : U.money;
   html +=     '<div class="tr-qs" title="仅中央上解·若需全国官收看下方三数面板"><div class="tr-qs-label">中央' + periodLbl + '入</div><div class="tr-qs-val up">' + _guokuFmt(turnIn) + '</div><div class="tr-qs-sub">' + _qsInSub + '</div></div>';
   // 回合支
-  var turnOut = _gkReported('fiscal.turnExpense', g.turnExpense != null ? g.turnExpense : g.monthlyExpense || 0, 'bad').shown;
+  var turnOut = _gkReported('fiscal.turnExpense', g.turnExpense === null ? '待核' : g.turnExpense != null ? g.turnExpense : g.monthlyExpense || 0, 'bad').shown;
   html +=     '<div class="tr-qs"><div class="tr-qs-label">' + periodLbl + '支</div><div class="tr-qs-val down">' + _guokuFmt(turnOut) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
   // 增减
   var deltaCls = deltaVal >= 0 ? 'up' : 'down';
@@ -241,9 +250,9 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
   ];
   _3meta.forEach(function(m) {
     var led = (display.stockLedgers || ledgers)[m.key] || { stock:0 };
-    var ti = display.explicit ? (led.thisTurnIn || 0) : (led.thisTurnIn || 0) || (led.lastTurnIn || 0);
-    var to = display.explicit ? (led.thisTurnOut || 0) : (led.thisTurnOut || 0) || (led.lastTurnOut || 0);
-    var net = ti - to;
+    var ti = led.thisTurnIn===null ? null : typeof led.thisTurnIn==='number' ? led.thisTurnIn : (led.lastTurnIn || 0);
+    var to = led.thisTurnOut===null ? null : typeof led.thisTurnOut==='number' ? led.thisTurnOut : (led.lastTurnOut || 0);
+    var net = ti===null||to===null?null:ti-to;
     var netCls = net >= 0 ? 'delta-up' : 'delta-down';
     var lowWarn = (m.key === 'grain' && (led.stock || 0) < 1000) ||
                   (m.key === 'money' && (led.stock || 0) < (g.annualIncome || 1) * 0.05);
@@ -252,7 +261,7 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
     html +=   '<div class="tr-led-stock">' + _guokuFmt(led.stock || 0) + '</div>';
     html +=   '<div class="tr-led-unit">' + m.unit + '</div>';
     if (ti || to) {
-      html += '<div class="tr-led-flow"><span>入 ' + _guokuFmt(ti) + '</span><span class="' + netCls + '">Δ' + (net >= 0 ? '+' : '') + _guokuFmt(net) + '</span></div>';
+      html += '<div class="tr-led-flow"><span>入 ' + _guokuFmt(ti) + '</span><span class="' + netCls + '">Δ' + (net !== null && net >= 0 ? '+' : '') + _guokuFmt(net) + '</span></div>';
     }
     if (lowWarn) html += '<div class="tr-led-warn">⚠ 见底</div>';
     html += '</div>';
@@ -266,7 +275,8 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
   if (typeof renderTaxThreeNumberBlock === 'function' && (display.budget || _hasCascade || g.monthlyIncome > 0)) {
     html += '<section class="tr-section">';
     html +=   '<div class="tr-section-head"><span class="tr-section-name">税赋三数</span><span class="tr-section-badge">名义 / 官收 / 民缴 · ' + (turnDays === 30 ? '月入' : '回合') + '</span></div>';
-    html +=   renderTaxThreeNumberBlock(g.monthlyIncome || 0, { label:'正赋钱粮 · ' + (display.taxForecast ? '预计 · ' : '') + (turnDays === 30 ? '月入' : '回合'), unit:U.money, data:display.taxThree });
+    if(display.taxThreeByResource){['money','grain','cloth'].forEach(function(k){html+=renderTaxThreeNumberBlock(0,{label:({money:'钱税',grain:'粮税',cloth:'帛税'})[k]+' · '+(display.taxForecast?'预计 · ':'')+(turnDays===30?'月入':'本期'),unit:U[k],data:display.taxThreeByResource[k]});});}
+    else html += renderTaxThreeNumberBlock(g.monthlyIncome || 0, { label:'正赋钱粮 · ' + (display.taxForecast ? '预计 · ' : '') + (turnDays === 30 ? '月入' : '回合'), unit:U.money, data:display.taxThree });
     html += '</section>';
   }
 
@@ -398,7 +408,7 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
     }
   }
   // 自定义税种
-  var customTaxes = g._customTaxStats || {};
+  var customTaxes = display.forecast ? g._customTaxStats || {} : {};
   var customKeys = Object.keys(customTaxes).filter(function(key){return !_kindMeta.some(function(k){return ledgers[k.key]&&ledgers[k.key].sources&&ledgers[k.key].sources[key];});});
   var customPeriodAmount = function(ct){return typeof ct.turnAmount==='number'?ct.turnAmount:(ct.amount||0)*turnDays/yearDays;};
   if (customKeys.length > 0) {
@@ -725,8 +735,22 @@ function _guokuRenderPanelBody(body, subt, rawAccount) {
     html += '</section>';
   }
 
+  html += _guokuPendingDebtHtml(display);
   html += _guokuRenderStoreDetails(display);
   body.innerHTML = html;
+}
+
+function _guokuPendingDebtHtml(display) {
+  if(!display.explicit)return '';var S=typeof FiscalEngine!=='undefined'?FiscalEngine:null,G=typeof GM!=='undefined'?GM:{},units=display.unit||{},stores=display.stores||[],refs=stores.map(function(s){return s.id;}),account=display.account||{},ledgers=display.stockLedgers||account.ledgers||{};
+  var principal=S&&S.getFactionAccountRef?S.getFactionAccountRef({game:G,factionId:display.budget.factionId,kind:'central'}):'guoku';if(principal&&refs.indexOf(principal)<0)refs.push(principal);
+  var all=S&&S.getLiabilities?S.getLiabilities({game:G}):null,items=all&&all.items||[],html='<section class="tr-section"><div class="tr-section-head"><span class="tr-section-name">已欠待付</span><span class="tr-section-badge">中央各库 · 未作本期已支</span></div>';
+  ['money','grain','cloth'].forEach(function(k){
+    var aggregate=display.consolidated&&display.consolidated.resources&&display.consolidated.resources[k],owed=aggregate&&aggregate.deficit!=null?aggregate.deficit:Number((ledgers[k]||{}).deficit)||0,rows=[];
+    items.forEach(function(item){var amount=(item.allocations||[]).filter(function(a){return refs.indexOf(a.ref)>=0;}).reduce(function(n,a){return n+(Number(a.amounts&&a.amounts[k])||0);},0);if(amount>0)rows.push({name:item.name||item.id,amount:amount,manual:item.manualSettlement});});
+    if(!all||!all.known)Object.keys((ledgers[k]||{}).deficitDetails||{}).forEach(function(c){((ledgers[k]||{}).deficitDetails[c]||[]).forEach(function(r){if(r.amount>0)rows.push({name:r.name||r.id,amount:r.amount,manual:r.manualSettlement});});});
+    var listed=rows.reduce(function(n,r){return n+r.amount;},0);if(owed-listed>.0001)rows.push({name:'未具分目',amount:owed-listed});
+    html+='<div style="margin:8px 0;"><b>'+_escHtml(({money:'欠钱',grain:'欠粮',cloth:'欠帛'})[k])+' '+_guokuFmt(owed)+' '+_escHtml(units[k]||'')+'</b>'+rows.map(function(r){return '<div style="font-size:0.73rem;padding:3px 0;">'+_escHtml(r.name)+' · '+_guokuFmt(r.amount)+' '+_escHtml(units[k]||'')+(r.manual?' · 待议支给':'')+'</div>';}).join('')+'</div>';
+  });return html+'</section>';
 }
 
 function _guokuFlowDetails(rows,format,unit,notes) {
@@ -740,7 +764,13 @@ function _guokuReadDisplayModel(world, account) {
   var tax = typeof CascadeTax !== 'undefined' ? CascadeTax : null;
   var explicit = !!(tax && tax.isUnified && tax.isUnified(world, 'player'));
   var model = { account: account, explicit: explicit, forecast: false, budget: null };
-  if (!explicit || !tax.previewBudget) return model;
+  if (!explicit || !tax.previewBudget) {
+    if(typeof FiscalStatement!=='undefined'){
+      var legacy=FiscalStatement.read({game:world,account:account,scope:'central'});
+      model.account=legacy.account;model.forecast=legacy.forecast;model.periodStatus=legacy.periodStatus;model.unit=legacy.unit;
+    }
+    return model;
+  }
   var clone = function(value) { return JSON.parse(JSON.stringify(value)); };
   var num = function(value) { return typeof value === 'number' && isFinite(value) ? value : 0; };
   var turn=world.turn||0,original=account.ledgers||{},statement=FiscalEngine.readAccountStatement({game:world,account:account,scope:'central'});
@@ -758,7 +788,7 @@ function _guokuReadDisplayModel(world, account) {
   model.taxNames=taxNames;model.taxNotes=taxNotes;model.expenseLabels=expenseLabels;model.summary=totals;
   model.compliance=nominal>0?gross/nominal:null;model.centralShare=received>0?num(totals.central.money)/received:null;
   model.taxForecast=!collected;
-  model.taxThree=FiscalStatement.taxThree(totals);
+  model.taxThree=FiscalStatement.taxThree(totals);model.taxThreeByResource={};['money','grain','cloth'].forEach(function(k){model.taxThreeByResource[k]=FiscalStatement.taxThree(totals,k);});
   var regionIndex={};(function walk(nodes){(nodes||[]).forEach(function(n){regionIndex[n.id]=n;walk(n.children||n.divisions);});})((world.adminHierarchy&&world.adminHierarchy.player&&world.adminHierarchy.player.divisions)||[]);
   view.byRegion={};(budget.regions||[]).forEach(function(r){var node=regionIndex[r.id],led=node&&node.publicTreasury&&node.publicTreasury.money;if(led)view.byRegion[r.id]={name:r.name,stock:led.stock,lastIn:num(led.thisTurnIn),lastOut:num(led.thisTurnOut)};});
   if (typeof FiscalEngine !== 'undefined' && FiscalEngine.listAccountViews) {model.stores=FiscalEngine.listAccountViews({game:world,factionId:budget.factionId,scope:'central'}).accounts;if(FiscalEngine.getConsolidatedView)model.consolidated=FiscalEngine.getConsolidatedView({game:world,factionId:budget.factionId,scope:'central'});}

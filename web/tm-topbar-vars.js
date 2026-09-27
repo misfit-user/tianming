@@ -117,6 +117,11 @@ function _barReported(key, val, dir, domain) {
 function _renderGuoku() {
   var g = GM.guoku || {};
   var prevG = GM._prevGuoku || null;
+  // 收支采用真实流水报表；旧存档中的估算标量不应覆盖已交割金额。
+  var fiscalView = typeof FiscalStatement !== 'undefined' ? FiscalStatement.read({ game:GM, account:g, scope:'central' }) : null;
+  var flows = fiscalView ? fiscalView.account : g;
+  var periodIncome = fiscalView && !fiscalView.forecast && flows.turnIncome === null ? null : (flows.turnIncome != null ? flows.turnIncome : (flows.monthlyIncome || 0));
+  var periodExpense = fiscalView && !fiscalView.forecast && flows.turnExpense === null ? null : (flows.turnExpense != null ? flows.turnExpense : (flows.monthlyExpense || 0));
   // 据奏口径(拍板①一律据奏当默认·库藏/岁入报多=账面好看·岁支报少=显节用)·未开失真层=原真值直通
   var _rvM = _barReported('guoku.money', _barAccountStock(g, 'money'), 'good');
   var _rvG = _barReported('guoku.grain', _barAccountStock(g, 'grain'), 'good');
@@ -126,12 +131,13 @@ function _renderGuoku() {
   var cloth = _rvC.shown;
   var _rvAny = _rvM.distorted || _rvG.distorted || _rvC.distorted;
   var phase = money < -(g.annualIncome || 1) * 0.5 ? 'bankrupt' : '';
-  var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
-  var turnDays = g.turnDays || 30;
-  var incomeLabel = turnDays === 30 ? '月入' : '回合入';
-  var expenseLabel = turnDays === 30 ? '月支' : '回合支';
+  var U = (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM)) ? (g.unit || {}) : ((typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' });
+  var turnDays = flows.turnDays || 30;
+  var flowPrefix = fiscalView && fiscalView.forecast ? '预计' : fiscalView && fiscalView.periodStatus === 'previous' ? '上期' : '';
+  var incomeLabel = flowPrefix + (turnDays === 30 ? '月入' : '回合入');
+  var expenseLabel = flowPrefix + (turnDays === 30 ? '月支' : '回合支');
   // 三账本回预估变化
-  var moneyDelta = _barAccountDelta(g, prevG, 'money', (g.turnIncome || g.monthlyIncome || 0) - (g.turnExpense || g.monthlyExpense || 0));
+  var moneyDelta = _barAccountDelta(g, prevG, 'money', periodIncome === null || periodExpense === null ? null : periodIncome - periodExpense);
   var grainDelta = _barAccountDelta(g, prevG, 'grain', (g.turnGrainIncome || 0) - (g.turnGrainExpense || 0));
   var clothDelta = _barAccountDelta(g, prevG, 'cloth', (g.turnClothIncome || 0) - (g.turnClothExpense || 0));
   // 状态药丸
@@ -173,9 +179,9 @@ function _renderGuoku() {
         { name:'布', val:_barFmtNum(cloth), unit:U.cloth, color:'amber' }
       ],
       flows: [
-        { label:incomeLabel, val:_barFmtNum(_barReported('fiscal.turnIncome', g.turnIncome || g.monthlyIncome || 0, 'good').shown), unit:U.money, trend:moneyTrend },
-        { label:expenseLabel, val:_barFmtNum(_barReported('fiscal.turnExpense', g.turnExpense || g.monthlyExpense || 0, 'bad').shown), unit:U.money, neg:true },
-        { label:'年入',     val:_barFmtNum(_barReported('fiscal.annualIncome', g.annualIncome || 0, 'good').shown), unit:U.money }
+        { label:incomeLabel, val:periodIncome === null ? '待核' : _barFmtNum(_barReported('fiscal.turnIncome', periodIncome, 'good').shown), unit:U.money, trend:moneyTrend },
+        { label:expenseLabel, val:periodExpense === null ? '待核' : _barFmtNum(_barReported('fiscal.turnExpense', periodExpense, 'bad').shown), unit:U.money, neg:true },
+        { label:'年入',     val:flows.annualIncome === null ? '待核' : _barFmtNum(_barReported('fiscal.annualIncome', flows.annualIncome || 0, 'good').shown), unit:U.money }
       ],
       alerts: alertHints,
       note: '点击查看帑廪详情 →'
@@ -189,7 +195,7 @@ function _renderNeitang() {
   var money = _barAccountStock(n, 'money');
   var grain = _barAccountStock(n, 'grain');
   var cloth = _barAccountStock(n, 'cloth');
-  var U = (typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' };
+  var U = (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM)) ? (n.unit || {}) : ((typeof CurrencyUnit !== 'undefined') ? CurrencyUnit.getUnit() : { money:'两', grain:'石', cloth:'匹' });
   var turnDays = (GM.guoku && GM.guoku.turnDays) || n.turnDays || 30;
   var incomeLabel = turnDays === 30 ? '月入' : '回合入';
   var expenseLabel = turnDays === 30 ? '月支' : '回合支';
@@ -1036,6 +1042,7 @@ function _openVarPanelWithSubsystems(title, varKey) {
 
 // ── 帑廪：包含货币+央地+借贷 ──
 function _renderGuokuFullPanel() {
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) return TM.NativeFiscalUI.render(GM, 'public');
   var g = GM.guoku || {}; var h = '';
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">帑廪账本</div>';
   h += '<table style="width:100%;font-size:0.8rem;"><tr><td>现余</td><td>' + _barFmtNum(g.money||g.balance||0) + ' 两</td>';
@@ -1073,6 +1080,7 @@ function _renderGuokuFullPanel() {
   return h;
 }
 function _renderNeitangFullPanel() {
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) return TM.NativeFiscalUI.render(GM, 'private');
   var n = GM.neitang || {}; var h = '';
   h += '<div style="font-size:0.82rem;color:var(--gold-400);margin-bottom:0.3rem;">内帑账本</div>';
   h += '<table style="width:100%;font-size:0.8rem;"><tr><td>现余</td><td>' + _barFmtNum(n.money||n.balance||0) + '</td>';

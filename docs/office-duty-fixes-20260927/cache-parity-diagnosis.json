@@ -1,0 +1,9 @@
+{
+  "equal": false,
+  "differingTopLevelKeys": [
+    "adminHierarchy",
+    "characters",
+    "map",
+    "mapData"
+  ]
+}

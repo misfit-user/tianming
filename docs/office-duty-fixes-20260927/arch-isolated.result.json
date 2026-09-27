@@ -1,0 +1,11 @@
+{
+  "name": "arch-isolated",
+  "args": [
+    "web/scripts/lint-arch-all.js"
+  ],
+  "started": "2026-09-27T10:42:11.783Z",
+  "finished": "2026-09-27T10:42:34.371Z",
+  "code": 0,
+  "signal": null,
+  "log": "C:\\Users\\37814\\Desktop\\tianming\\docs\\office-duty-fixes-20260927\\arch-isolated.log"
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "file": "web/tm-emergency-recovery-review.js",
+    "before": "0c73f120612d84c9a66c207de9fe59bb0d05cb2cc84a7d0ad0816c35e7465670",
+    "after": "5d0ba1e0a023320fc143cfc242201cf105293b134007775c7eaf865c2fb62b8a"
+  },
+  {
+    "file": "web/tm-endturn-ai-infer.js",
+    "before": "400b0253429bc35511a1b83fe978bb342d99d2b73bdb2fb0df9bb4b16b217fdd",
+    "after": "2628656c45b2bc0b536acdbde36fc71de065f087840da2f678ae93eaa18777b2"
+  },
+  {
+    "file": "web/tm-endturn-followup.js",
+    "before": "51010f106ac138145b61e4dc37bedcab84bef3c9bd9764d2b4b61c28b029a0f0",
+    "after": "cec329b567952a766e6b489bef40f3c8db00fcf9ea159a5b0a7279b2edb8700a"
+  },
+  {
+    "file": "web/tm-endturn-validity.js",
+    "before": "23e1aaec6d8dc67c0052c8f1b6341625cc58ce8bf2ab0f1b8af049e56fb599a0",
+    "after": "dfda696371b255b7f84cfad0406fe94889ae068e380c61fa49bc15a3898cc040"
+  },
+  {
+    "file": "web/scripts/smoke-emergency-recovery-review.js",
+    "before": "2b3c9d09fde95aeb2b9b2175512fa3df28d90ce9b94080cf20619c84779646b3",
+    "after": "e9f6e0da4a668d7b9e4c02fffa54a18725428da48e387e58fe1b52569e373d4c"
+  },
+  {
+    "file": "web/modules/ai-change-applier/reconcile.js",
+    "before": "cd536686039e23a224245383f4d16805fea554f26e44d8654eda6f19615c251b",
+    "after": "d8270c8d559a9f41858d36c9a286f96a7f61aa7bf659b8cad6bc6429f8fae5a7"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "bb85c9c3e853184330136aeeb919e4edfc89be5d62a64d788826683b6b319910",
+    "after": "342fa737a346be00cad1d3f9c31a73d0ee346922c6dc9e7ccce0372abb76e450"
+  }
+]

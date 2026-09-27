@@ -1,0 +1,254 @@
+{
+  "source": "web/backups",
+  "destination": ".bak-legacy-web-snapshots-20260919",
+  "files": [
+    {
+      "file": "2026-05-07-slice6.5-deferred-steps\\tm-endturn-core.js",
+      "sha256": "5cf6fb9f17d029a4b9a4e056b98be537ac57395ad05520755445dfe2738bf589"
+    },
+    {
+      "file": "2026-05-07-slice6.5-deferred-steps\\tm-endturn-pipeline-executor.js",
+      "sha256": "422f8c67777bdaa3e6c38d26275364b1535677eebd027e8a735eeb12e472c9f4"
+    },
+    {
+      "file": "2026-05-07-slice6.5-deferred-steps\\tm-endturn-pipeline-steps.js",
+      "sha256": "c92022dd1263f1f03408a7b5b3adb015b4d20b53e15b1c35c01a17065061ed79"
+    },
+    {
+      "file": "2026-05-07-slice6.5-deferred-steps\\tm-endturn-pipeline-types.js",
+      "sha256": "c99504738da515041516a41fccafeb9be5afe4eae03cc62669974ae2d3dd6454"
+    },
+    {
+      "file": "2026-05-08-slice7a-default-flip\\smoke-endturn-narrative.js",
+      "sha256": "90226e0db67e212126b9f5e8fb8ba480c36b0d8909ab1b684784b53bc0f1b5b9"
+    },
+    {
+      "file": "2026-05-08-slice7a-default-flip\\smoke-endturn-public-contract.js",
+      "sha256": "10c6b6edf288d0cc87641a0e803044cffb24b0ab91dfbf1b93826326cff26767"
+    },
+    {
+      "file": "2026-05-08-slice7a-default-flip\\smoke-endturn-section-boundary.js",
+      "sha256": "3d19d99e825bc0d6d37c1bb06cd3827f0750f5ac812dbdb2b2ce5e4f5b56bcae"
+    },
+    {
+      "file": "2026-05-08-slice7a-default-flip\\tm-endturn-core.js",
+      "sha256": "37c95ed6555e6c160757553b89d953dff2be00af8d31e7bd356795135637e131"
+    },
+    {
+      "file": "2026-05-08-slice7b-prep-mirror\\tm-endturn-core.js",
+      "sha256": "62d9168ae3f10df438fc722df5edd21426890c0afbe7abcbf9bb5b2758c98902"
+    },
+    {
+      "file": "2026-05-08-slice7b-prep-mirror\\tm-endturn-pipeline-steps.js",
+      "sha256": "4b64a9459a8bed23b3207cdfa8627d9d83db5a19218cb2ecc29e61426be8e2b8"
+    },
+    {
+      "file": "2026-05-08-slice7c-flag-cleanup\\smoke-pipeline-diff.js",
+      "sha256": "0f92a104bdda45374aa6c0a4bb47e41755270c9c3d43151a5aee53e217ec65bc"
+    },
+    {
+      "file": "2026-05-08-slice7c-flag-cleanup\\tm-endturn-core.js",
+      "sha256": "ca85d977549ffd8c49c8be29288ea80620f7734a9a17ec30d157bd25406a3ce1"
+    },
+    {
+      "file": "2026-05-08-topbar-redesign\\phase8-b-shell-preview.html",
+      "sha256": "f53db90c82ae87356f173bf89ad736312b8e65f0b35cfbcae9ede71a6a66018e"
+    },
+    {
+      "file": "2026-05-08-topbar-redesign\\preview-shell.html",
+      "sha256": "4bfc314ee0ee21d0b1729a6dd36dff2292d5c26125d2f2b7054ad815fd233a97"
+    },
+    {
+      "file": "2026-05-08-topbar-redesign\\styles.css",
+      "sha256": "59c0c24ee615e79dcf231a863813b1e2d96c803fe896e8eadcf4e39bdb7d1b72"
+    },
+    {
+      "file": "2026-05-08-topbar-redesign\\tm-topbar-vars.js",
+      "sha256": "bff3ed86180351c872ba9f91737aa96587a4f9f1cb731af99fa22c074f47405e"
+    },
+    {
+      "file": "2026-05-21-ai-change-split\\tm-ai-change-applier.js.post-slice2",
+      "sha256": "a554b42759e9d98f6baa4296223aaa823b184d5424131522ab5d21ec7f870988"
+    },
+    {
+      "file": "2026-05-21-ai-change-split\\tm-ai-change-applier.js.pre-split",
+      "sha256": "7a8172861a1828d0eb51f2684bf9d53106028d3f685b21584e70f3979bd0016a"
+    },
+    {
+      "file": "2026-05-26-phase8-formal-split\\bridge.pre-split.js",
+      "sha256": "9298dcbf88af0ff38023cb9aaaafd930e3fcbb9f6afb4abf2d473def702937d9"
+    },
+    {
+      "file": "2026-05-27-gc-legacy-hide-fix\\bridge.post-rail-icons.js",
+      "sha256": "e8182f8873e0ebe432a589975905bee7b56b43809ba2f133ec5852bba9f1bfd5"
+    },
+    {
+      "file": "2026-05-27-rail-icons-svg\\bridge.pre-rail-icons.js",
+      "sha256": "8184bac5416f4025ea48f8cfbe56b532a9ce458a35d1ffe444742f8a9711a2fa"
+    },
+    {
+      "file": "2026-06-02-1A-sysblocks\\tm-endturn-ai.js.bak",
+      "sha256": "5e8ea7d5c50f494b3ff6f5217d14120ebc2672945a1b49f72b85ab0868333a9e"
+    },
+    {
+      "file": "2026-06-02-1A-sysblocks\\tm-endturn-followup.js.bak",
+      "sha256": "25588024723034a55be094f2dcc7b052cedb64adf73be7d408e3f668dfea80b5"
+    },
+    {
+      "file": "2026-06-02-1A-sysblocks\\tm-endturn-prompt.js.20260603-with-log",
+      "sha256": "3da8f0df92b530421e0602118250d229431e08b72eff4305fcb3b23417c6374b"
+    },
+    {
+      "file": "2026-06-02-1A-sysblocks\\tm-endturn-prompt.js.bak",
+      "sha256": "46694e2694223d7b54bce2965d1ba454fc49ddc8e848c4f861cc3975fa265e6e"
+    },
+    {
+      "file": "2026-06-02-5fixes\\tm-ai-change-applier.js.bak",
+      "sha256": "850a1e200ebeabeced945d5c3fb50b5bb2254b78e807ec667db26cc1791a11a7"
+    },
+    {
+      "file": "2026-06-02-5fixes\\tm-ai-change-narrative.js.bak",
+      "sha256": "290d4c4bd9cf6579579223e5efa92501c9c6700f9d5af25b75c5d66fe356e7d1"
+    },
+    {
+      "file": "2026-06-02-5fixes\\tm-endturn-prep.js.bak",
+      "sha256": "5d4c20b3f069e43b16415fb40a3ecdde3ca1975d254d179b6801b7c92eb9d897"
+    },
+    {
+      "file": "20260704\\tm-chaoyi-changchao.js.pre-split",
+      "sha256": "ee9327418e2af5fa998bb841f428a02d9ae6b5432180ec62e88cabba2424f020"
+    },
+    {
+      "file": "20260704\\tm-economy-engine.js.pre-split",
+      "sha256": "e3766b05bf272f9a3f26db6d6369082cc5fea3ea510c395bc536237ffdf73812"
+    },
+    {
+      "file": "20260704\\tm-keju-paradigm-panel.js.pre-split",
+      "sha256": "ca44f480fa208a568fd2f52bef6423c939bca894f02802dbb2fadff24efb3119"
+    },
+    {
+      "file": "20260704\\tm-keju-runtime.js.pre-split",
+      "sha256": "45e0343f97357c66afa944cf1ec964f3727748e916cd97c611ed744cb8321e3f"
+    },
+    {
+      "file": "20260704\\tm-npc-decision.js.pre-split",
+      "sha256": "3e0ac2b826e851516c8d69fadd188fddf83161f0786277528c3127539445aaa6"
+    },
+    {
+      "file": "20260704\\tm-patches.js.pre-split",
+      "sha256": "ae866e44dc884aabfe913ae692a2dc271cb38b11e1b2f69b47e537ab1f4762d0"
+    },
+    {
+      "file": "20260704\\tm-tinyi-v3.js.pre-split",
+      "sha256": "9f123baab8b7fa177e16aebe1f354379fa4f104bb6297328fa068a57b62e2568"
+    },
+    {
+      "file": "20260704\\tm-tinyi-v3.js.pre-split2",
+      "sha256": "c2a62a9eb1df36e7a49be6fbe7db778d7c44deec5936d053b2d72bbfc5112675"
+    },
+    {
+      "file": "20260704\\tm-wendui.js.pre-split",
+      "sha256": "94c9097db9e082cd4ac8d3a118ccb343efe316076cf99f8dad7877edf3b4c5ec"
+    },
+    {
+      "file": "20260706\\editor-authoring-agent-ui.js.pre-split",
+      "sha256": "01e3628d1d8587e9f293f698d11a5ddd67a94a4606e3aa0ddfa8ca5b14fea3b6"
+    },
+    {
+      "file": "20260706\\editor-authoring-agent.js.pre-split",
+      "sha256": "3b0b50de9b1154e5559425bd1e5eb68f183cb9e18372470748defed2da4e53f5"
+    },
+    {
+      "file": "20260706\\tm-ai-infra.js.pre-split",
+      "sha256": "4024faeb245903d46942701f61ce12355f1e2465ea96f853563693d36de957f2"
+    },
+    {
+      "file": "20260706\\tm-content-manager.js.pre-split",
+      "sha256": "75fc55852f8dfc3c715cb3abc158600fd88c7d61b27849bc2848255db23d7ba6"
+    },
+    {
+      "file": "20260706\\tm-corruption-engine.js.pre-split",
+      "sha256": "b79f566f2f88b17b94b41b491273d30921cf57a16df1da9bd803bedf43afe392"
+    },
+    {
+      "file": "20260706\\tm-endturn-followup.js.pre-split",
+      "sha256": "2b532ba4fceb2524f3335708b3dad1a03132e4f4647f6d42e8b91bc621ea0042"
+    },
+    {
+      "file": "20260706\\tm-feudal.js.pre-split",
+      "sha256": "77d47169ab22b4c5bc670d0236e9c5424b49fc9c2c90a959aedb941e47076498"
+    },
+    {
+      "file": "20260706\\tm-game-loop.js.pre-split",
+      "sha256": "691f25f2e560141c9ef8ace9936dd728c5bf1d8f3afc1e41e24aabf4ba91562f"
+    },
+    {
+      "file": "20260706\\tm-hongyan-office.js.pre-split",
+      "sha256": "6eabcd40f23a70b89fab07ae3d791f54c3f13c4dd64761e4c93ce1ef6df76eaa"
+    },
+    {
+      "file": "20260706\\tm-mechanics.js.pre-split",
+      "sha256": "1c27346476d7dd269f89dc014ca5ce401e44387d9eee7fd7066e5f7a049d6661"
+    },
+    {
+      "file": "20260706\\tm-office-runtime.js.pre-split",
+      "sha256": "ef07cec2516b870b6c05862c1c81153a78bc8efbdc7807561082ecd512d1d09d"
+    },
+    {
+      "file": "guoshi-response-33c992db-35e7-4875-8b0a-f570c9ab2587\\editor-authoring-agent-provider.js",
+      "sha256": "3cbe7f91af4b60ca942fc66f84d311ee5529df17c68d36a30af6ef3d7b35f256"
+    },
+    {
+      "file": "guoshi-response-33c992db-35e7-4875-8b0a-f570c9ab2587\\editor-authoring-agent-ui.js",
+      "sha256": "cc2edd6936afbab007a654d86b8b08caee255b91e52484893127f155199adf53"
+    },
+    {
+      "file": "guoshi-response-33c992db-35e7-4875-8b0a-f570c9ab2587\\editor-authoring-agent.js",
+      "sha256": "5ae2cf3ce2268bec7ea25b42d2e04d8006e88c290b7d8a0c3816c3fc154fab4e"
+    },
+    {
+      "file": "guoshi-response-33c992db-35e7-4875-8b0a-f570c9ab2587\\editor.html",
+      "sha256": "a4c656d87561b0f171f533df0a6778e3079de0a3965fef0977843e3913dcda4f"
+    },
+    {
+      "file": "guoshi-response-33c992db-35e7-4875-8b0a-f570c9ab2587\\scenario-editor-reset-preview.html",
+      "sha256": "e675733cdf34fcbf4d05e7a20c4cc883c34bbb0917cce915b35340a542244e46"
+    },
+    {
+      "file": "guoshi-wire-fix-08d47a29-67eb-4ea8-83d6-61c5787b1b29\\editor-authoring-agent-provider.js",
+      "sha256": "f736e87b161e1881762d0ba6b458e88ff3e62b852b043976db928d8507f8e6db"
+    },
+    {
+      "file": "guoshi-wire-fix-08d47a29-67eb-4ea8-83d6-61c5787b1b29\\editor-authoring-agent.js",
+      "sha256": "3c8bba91ee932e08ee0fdc67d823306d3efd97ae9d9bf4bbdaa51eef3cee4c3a"
+    },
+    {
+      "file": "guoshi-wire-observe-971511dc-0a46-4a81-a343-7a1c8a8a223d\\editor-authoring-agent-provider.js",
+      "sha256": "0ba376869abe437a5b1449dfcb57c8501b420d8828e77fc49bcdb1163527e387"
+    },
+    {
+      "file": "hierarchy-fix-9d114b32-636e-4fe3-be4a-e40d4cfb966f\\editor-authoring-agent.js",
+      "sha256": "e026c4b6e1f7c554d009b7244e636363cfec579535fe3904b345715046b54597"
+    },
+    {
+      "file": "hierarchy-fix-9d114b32-636e-4fe3-be4a-e40d4cfb966f\\editor.html",
+      "sha256": "dfef7311d47b95276034891536f74a5aa6b43d1f9fdd5e099637718a8cdd648f"
+    },
+    {
+      "file": "hierarchy-fix-9d114b32-636e-4fe3-be4a-e40d4cfb966f\\scenario-editor-reset-app.js",
+      "sha256": "5e8f4e70b180dd8e8ca3c6b7124324d2cea5b06b3f454a67c1e99ed558e3c268"
+    },
+    {
+      "file": "hierarchy-fix-9d114b32-636e-4fe3-be4a-e40d4cfb966f\\scenario-editor-reset-preview.html",
+      "sha256": "46c3852b169f077fc4605f45859c808d6fd4c6da9c263534c22dbd120a50d7f4"
+    },
+    {
+      "file": "scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\index.html",
+      "sha256": "7e21394d9d3d5fcf83cf9f6116fbd4eda2f375fd4a3d0dd76ffdaa2d6023a600"
+    },
+    {
+      "file": "scenario-origin-b8e7f640-ab37-4621-9b72-de90e20d3918\\tm-office-editor.js",
+      "sha256": "cdf0af7deb4e461199d84f68be2f3b31cdc61a21558083fa611254bb8918423b"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "started": "2026-09-17T11:14:16.553Z",
+  "complete": false,
+  "checks": [
+    {
+      "name": "official-loader",
+      "passed": true,
+      "detail": {
+        "regions": 566,
+        "circuits": 101,
+        "polities": [
+          {
+            "id": "fac_song",
+            "name": "大宋"
+          },
+          {
+            "id": "fac_jin",
+            "name": "大金"
+          },
+          {
+            "id": "fac_xixia",
+            "name": "大夏"
+          }
+        ]
+      }
+    },
+    {
+      "name": "native-world",
+      "passed": true,
+      "detail": {
+        "running": true,
+        "sid": "sc-jianyan1-1127-shaosong",
+        "regions": 566,
+        "player": "大宋",
+        "characters": 485,
+        "armies": 103
+      }
+    },
+    {
+      "name": "tier-realm",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "realm",
+        "stageText": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒诸部\n金\n齿\n诸\n部\n西喀喇汗国\n乃蛮部\n克烈部\n蒙\n兀\n诸\n部\n塔\n塔\n儿\n联\n盟\n流\n求\n诸\n部\n米\n沙\n鄢\n诸\n邦"
+      }
+    },
+    {
+      "name": "capture-realm",
+      "passed": true,
+      "bytes": 1409500,
+      "sha256": "1d92fc4ae2f0e4a49ce61e3230358e3ceaf753b3071fb0a91dce24e0e59550cf"
+    },
+    {
+      "name": "tier-region",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "region",
+        "stageText": "京\n畿\n路\n京东西路\n京东东路\n京西北路\n京西南路\n永\n兴\n军\n路\n淮南东路\n淮南西路\n江南东路\n江\n南\n西\n路\n两浙路\n荆\n湖\n北\n路\n荆\n湖\n南\n路\n福\n建\n路\n广南东路\n广\n南\n西\n路\n成\n都\n府\n路\n潼\n川\n府\n路\n夔\n州\n路\n利州路\n秦\n凤\n路\n三泉直隶\n泾原路\n环庆路\n鄜延路\n熙河兰湟路\n河\n东\n路\n河\n东"
+      }
+    },
+    {
+      "name": "capture-region",
+      "passed": true,
+      "bytes": 1354412,
+      "sha256": "9856745254ca5090faad447ad0162bbd1cf727ff547fc331bd08cf6cbbc49604"
+    },
+    {
+      "name": "tier-prefecture",
+      "passed": true,
+      "detail": {
+        "paths": 566,
+        "svg": true,
+        "scale": "prefecture",
+        "stageText": "开封府\n陈留县\n杞县\n尉氏县\n酸枣县\n封丘县\n应天府\n拱州\n兴仁府\n单州\n济州\n东\n平\n府\n徐州\n滕县\n袭庆府\n沂州\n密州\n濮州\n青\n州\n淄\n州\n济\n南\n府\n莱州\n登州\n宁海县\n潍州\n河\n南\n府\n郑\n州\n巩\n县\n汜\n水\n县\n颍\n昌\n府\n汝州\n淮\n宁\n府\n蔡州\n顺昌府\n陕州\n虢州\n邓州\n唐州\n襄阳府\n随州\n郢\n州\n均州\n"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "name": "page-loaded",
+      "elapsedMs": 2568
+    },
+    {
+      "name": "official-loaded",
+      "elapsedMs": 8414,
+      "regions": 566,
+      "circuits": 101,
+      "polities": [
+        {
+          "id": "fac_song",
+          "name": "大宋"
+        },
+        {
+          "id": "fac_jin",
+          "name": "大金"
+        },
+        {
+          "id": "fac_xixia",
+          "name": "大夏"
+        }
+      ]
+    },
+    {
+      "name": "native-start-returned",
+      "elapsedMs": 22392
+    },
+    {
+      "name": "world-running",
+      "elapsedMs": 27325,
+      "running": true,
+      "sid": "sc-jianyan1-1127-shaosong",
+      "regions": 566,
+      "player": "大宋",
+      "characters": 485,
+      "armies": 103
+    },
+    {
+      "name": "waiting-map",
+      "elapsedMs": 27326
+    },
+    {
+      "name": "map-ready",
+      "elapsedMs": 58519
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 60447,
+      "tier": "realm",
+      "paths": 566,
+      "svg": true,
+      "scale": "realm",
+      "stageText": "大宋\n大金\n日\n本\n大夏\n高丽\n东喀喇汗国\n大\n越\n李\n朝\n多康诸部\n卫藏诸部\n大理国\n北海诸部\n高昌回鹘\n蒲\n甘\n王\n朝\n滇中南诸部\n河北义军\n古格王国\n吕\n宋\n诸\n邦\n滇\n西\n北\n诸\n部\n乌蒙乌撒诸部\n金\n齿\n诸\n部\n西喀喇汗国\n乃蛮部\n克烈部\n蒙\n兀\n诸\n部\n塔\n塔\n儿\n联\n盟\n流\n求\n诸\n部\n米\n沙\n鄢\n诸\n邦"
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 62894,
+      "tier": "region",
+      "paths": 566,
+      "svg": true,
+      "scale": "region",
+      "stageText": "京\n畿\n路\n京东西路\n京东东路\n京西北路\n京西南路\n永\n兴\n军\n路\n淮南东路\n淮南西路\n江南东路\n江\n南\n西\n路\n两浙路\n荆\n湖\n北\n路\n荆\n湖\n南\n路\n福\n建\n路\n广南东路\n广\n南\n西\n路\n成\n都\n府\n路\n潼\n川\n府\n路\n夔\n州\n路\n利州路\n秦\n凤\n路\n三泉直隶\n泾原路\n环庆路\n鄜延路\n熙河兰湟路\n河\n东\n路\n河\n东"
+    },
+    {
+      "name": "tier-ready",
+      "elapsedMs": 65619,
+      "tier": "prefecture",
+      "paths": 566,
+      "svg": true,
+      "scale": "prefecture",
+      "stageText": "开封府\n陈留县\n杞县\n尉氏县\n酸枣县\n封丘县\n应天府\n拱州\n兴仁府\n单州\n济州\n东\n平\n府\n徐州\n滕县\n袭庆府\n沂州\n密州\n濮州\n青\n州\n淄\n州\n济\n南\n府\n莱州\n登州\n宁海县\n潍州\n河\n南\n府\n郑\n州\n巩\n县\n汜\n水\n县\n颍\n昌\n府\n汝州\n淮\n宁\n府\n蔡州\n顺昌府\n陕州\n虢州\n邓州\n唐州\n襄阳府\n随州\n郢\n州\n均州\n"
+    }
+  ],
+  "sourceSha256": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "world": {
+    "running": true,
+    "sid": "sc-jianyan1-1127-shaosong",
+    "regions": 566,
+    "player": "大宋",
+    "characters": 485,
+    "armies": 103
+  }
+}

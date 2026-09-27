@@ -14,7 +14,7 @@ console.log('smoke-battle-terrain-clamp');
 const mil = fs.readFileSync(path.join(ROOT,'tm-military.js'),'utf8');
 
 // ── 源契约 ──
-ok(/deterministicCasualties === false/.test(mil), '① 确定性战果闸保留(deterministicCasualties·默认 ON·===false 才关)');
+ok(!/conf\.deterministicCasualties|battleConfig\.deterministicCasualties/.test(mil), '① 正式伤亡核算不读旧关闭配置');
 ok(/_hasTerrainFactor = \(_toNum\(br\.fortLevel, 0\) > 0\)/.test(mil), '② 地形/城防因子判定(fortLevel>0 或非平原)');
 ok(/season: br\.season/.test(mil), '③ resolve() 现传 season(季节参与战力)');
 ok(/_detDefenderHeld = \(_det\.verdict === '败北'\)/.test(mil), '④ 引擎判「败北」=守方守住');

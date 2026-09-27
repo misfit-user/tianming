@@ -80,6 +80,22 @@ function isAncestor(a, b) {
   try { childProcess.execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd: ROOT, stdio: 'ignore' }); return true; }
   catch (_e) { return false; }
 }
+// 台账对不上时的第二道判断：文件内容若等于目标历史上某次提交里的同一文件，就是旧的干净版本
+// （例如台账丢失前本脚本写进去的旧版），可以推进；历史里从未出现过的内容才算真人未提交的稿子。
+// 只查该文件最近 400 次改动，足够覆盖实际场景。台账曾因写坏变成 0 字节，导致上一版把旧版一律当稿子冻住。
+function isCommittedVersion(target, relPath, absPath, cwd) {
+  try {
+    var run = function (args) {
+      return childProcess.execFileSync('git', args, { cwd: cwd || ROOT, encoding: 'utf8', maxBuffer: MAXBUF, stdio: ['ignore', 'pipe', 'ignore'] });
+    };
+    var blobId = run(['hash-object', '--', absPath]).trim();
+    var raw = run(['log', '--no-abbrev', '--raw', '--pretty=format:', '-n', '400', target, '--', relPath]);
+    return raw.split('\n').some(function (line) {
+      var m = line.match(/^:\d+ \d+ ([0-9a-f]{40}) ([0-9a-f]{40})/);
+      return !!m && (m[1] === blobId || m[2] === blobId);
+    });
+  } catch (_e) { return false; }
+}
 function commitDate(ref) {
   try { return parseInt(git(['show', '-s', '--format=%ct', ref]).trim(), 10) || 0; } catch (_e) { return 0; }
 }
@@ -143,8 +159,8 @@ function main() {
     if (cur && cur.equals(blob.stdout)) { same++; state.files[p] = targetSha; return; }   // 已是目标·记台账(手动同步过的也收编)
     if (dirty[p] && cur) {
       var curSha = sha(cur);
-      if (state.files[p] !== curSha) { skippedWip.push(p); return; }   // 真人 WIP·保
-      // 台账对上=上次自动同步所写·继续推进
+      // 台账对上=上次自动同步所写；台账对不上但内容是历史上某次提交的旧版=旧的干净版本；两者都继续推进
+      if (state.files[p] !== curSha && !isCommittedVersion(target, p, abs)) { skippedWip.push(p); return; }   // 真人 WIP·保
       if (!DRY) fs.writeFileSync(abs, blob.stdout);
       state.files[p] = targetSha; advanced++; return;
     }
@@ -168,7 +184,8 @@ function main() {
 
 module.exports = {
   parseStatusZ: parseStatusZ,
-  parseNameStatusZ: parseNameStatusZ
+  parseNameStatusZ: parseNameStatusZ,
+  isCommittedVersion: isCommittedVersion
 };
 
 if (require.main === module) {

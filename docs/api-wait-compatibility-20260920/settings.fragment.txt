@@ -1,0 +1,15 @@
+    function durationField(label, suffix, value) {
+      var wrap = node('label', label), input = node('input');
+      input.type = 'number'; input.min = '0'; input.max = '86400'; input.step = '1';
+      input.id = prefix + suffix; input.value = String(Math.round((Number(value) || 0) / 1000));
+      wrap.appendChild(input); options.appendChild(wrap); return input;
+    }
+    var firstWait = durationField('首响应等待（秒，0 = 自动）', 'first-response-wait', cfg.firstResponseTimeoutMs);
+    var totalWait = durationField('完整响应最大等待（秒，0 = 不设强制总时限）', 'total-response-wait', cfg.totalResponseTimeoutMs);
+    var agentWait = tier === 'primary' ? durationField('Agent 回合总时限（秒，0 = 不设；调用次数限制仍保留）', 'agent-total-wait', cfg.agentRunTimeoutMs != null ? cfg.agentRunTimeoutMs : P.conf && P.conf.agentModeDeadlineMs) : null;
+    options.appendChild(node('div', '收到成功响应头后继续等待完整内容，长时间等待会提示但不自动砍掉。安卓原生接口不暴露首包：连接期限保留，完整等待按总时限设置。取消仍有效；保存后生效。'));
+    function readDuration(input) {
+      var value = Number(input.value);
+      if (!Number.isFinite(value) || value < 0 || value > 86400) throw new Error('等待时间须为 0 至 86400 秒');
+      return Math.floor(value * 1000);
+    }

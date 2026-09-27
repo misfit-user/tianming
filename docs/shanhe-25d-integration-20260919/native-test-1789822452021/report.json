@@ -1,0 +1,33 @@
+{
+  "started": "2026-09-19T12:54:12.024Z",
+  "checks": [],
+  "steps": [
+    {
+      "name": "loaded-sc-tang840-840",
+      "time": "2026-09-19T12:54:18.197Z"
+    }
+  ],
+  "errors": [],
+  "scenarios": [],
+  "complete": false,
+  "gpuFeatureStatus": {
+    "2d_canvas": "disabled_software",
+    "canvas_oop_rasterization": "disabled_off",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "disabled_software",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "disabled_off",
+    "rasterization": "disabled_software",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "video_decode": "disabled_software",
+    "video_encode": "disabled_software",
+    "vulkan": "disabled_off",
+    "webgl": "disabled_off",
+    "webgl2": "disabled_off",
+    "webgpu": "disabled_off",
+    "webnn": "disabled_off"
+  },
+  "failure": "{\"reason\":\"oom\",\"exitCode\":-536870904}",
+  "exitCode": 1
+}

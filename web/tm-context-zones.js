@@ -85,7 +85,7 @@
       atomic: zone.atomic === true,
       // A zone cap is a hard boundary, not implicit permission to cut arbitrary markup/text.
       // Mandatory zones may truncate as the final fit step; optional zones must opt in or be suppressed.
-      allowTruncate: zone.allowTruncate === true || zone.mustKeep === true,
+      allowTruncate: zone.allowTruncate === true || (zone.allowTruncate !== false && zone.mustKeep === true),
       active: zone.active !== false,
       expired: zone.expired === true,
       source: clean(zone.source || '', 80),

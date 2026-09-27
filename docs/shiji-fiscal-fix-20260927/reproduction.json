@@ -1,0 +1,5 @@
+{
+  "fixture": "ten-day ledger: actual income 300, paid expense 400; stale scalars 17463000 and 2606000",
+  "before": "岁入 1746.3万两 / 岁出 260.6万两 · 结余 1485.7万两",
+  "after": "本期收入 300两 / 本期支出 400两 · 亏空 100两 · 10日"
+}

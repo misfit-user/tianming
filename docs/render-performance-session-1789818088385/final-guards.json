@@ -1,0 +1,47 @@
+[
+  {
+    "name": "render-query-budget",
+    "file": "smoke-render-query-budget.js",
+    "code": 0,
+    "summary": [
+      "PASS owner precedence and sentinel values remain unchanged",
+      "{\"passed\":4,\"failed\":0}"
+    ]
+  },
+  {
+    "name": "culture-raster-performance",
+    "file": "smoke-culture-raster-performance.js",
+    "code": 0,
+    "summary": [
+      "PASS spatial index avoids full-region traversal for ordinary grid queries",
+      "{\"passed\":5,\"failed\":0}"
+    ]
+  },
+  {
+    "name": "minimap-idle-render",
+    "file": "smoke-minimap-idle-render.js",
+    "code": 0,
+    "summary": [
+      "PASS public render still honors in-place geometry edits",
+      "{\"passed\":6,\"failed\":0}"
+    ]
+  },
+  {
+    "name": "battle-hud-retained",
+    "file": "smoke-battle-hud-retained.js",
+    "code": 0,
+    "summary": [
+      "PASS null text keeps the native empty-text result",
+      "{\"passed\":6,\"failed\":0}"
+    ]
+  },
+  {
+    "name": "raster-display-cache",
+    "file": "smoke-raster-display-cache.mjs",
+    "code": 0,
+    "summary": [
+      "PASS all 256 terrain and height values preserve pixel output",
+      "{\"passed\":13,\"failed\":0}"
+    ]
+  }
+]

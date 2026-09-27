@@ -47,6 +47,7 @@ function _newSessionToken() {
 }
 
 let _autoSaveSessionToken = '';
+let _autoSaveSessionRevision = 0;
 try {
   const current = ipcRenderer.sendSync('auto-save-session-current');
   if (current && current.success && current.token) _autoSaveSessionToken = String(current.token);
@@ -56,12 +57,17 @@ try {
 if (!_autoSaveSessionToken) _autoSaveSessionToken = _newSessionToken();
 
 function _invokeAutoSave(data) {
+  const requestToken = _autoSaveSessionToken, requestRevision = _autoSaveSessionRevision;
   return ipcRenderer.invoke('auto-save', {
     __tmAutoSaveEnvelope: 1,
-    sessionToken: _autoSaveSessionToken,
+    sessionToken: requestToken,
     data: data
   }).then(function(result) {
-    if (result && result.sessionToken) _autoSaveSessionToken = String(result.sessionToken);
+    // Only the current request may confirm its existing session; late replies never rotate it.
+    if (requestRevision === _autoSaveSessionRevision && requestToken === _autoSaveSessionToken
+        && result && result.success === true && result.sessionToken && String(result.sessionToken) !== requestToken) {
+      return Object.assign({}, result, { success: false, stale: true, error: '自动存档成功回执的会话不匹配，未采用该回执' });
+    }
     return result;
   });
 }
@@ -80,10 +86,21 @@ function _invokeAutoSaveJson(json) {
   return _invokeAutoSave(data);
 }
 
+// 手动存档的文本通道，理由同上：大存档的对象图逐节点过 contextBridge 会卡上一分钟
+// （绍宋新局 285MB，实测手动存档 67–76 秒、GC 占 34 秒）。解析后走原有 save-project 通道，主进程无需改动。
+function _invokeSaveProjectJson(filename, json) {
+  if (typeof json !== 'string') throw new TypeError('存档 JSON 必须是文本');
+  var data;
+  try { data = JSON.parse(json); }
+  catch (_) { throw new Error('存档 JSON 无效'); }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new TypeError('存档正文必须是对象');
+  return ipcRenderer.invoke('save-project', { filename, data });
+}
+
 function _rotateAutoSaveSession(token) {
   try {
     const result = ipcRenderer.sendSync('auto-save-session-rotate', String(token || ''));
-    if (result && result.success && result.token) _autoSaveSessionToken = String(result.token);
+    if (result && result.success && result.token) { _autoSaveSessionRevision++; _autoSaveSessionToken = String(result.token); }
     return result || { success: false, error: '主进程未返回 session 结果' };
   } catch (e) {
     return { success: false, error: e && e.message || String(e) };
@@ -147,6 +164,9 @@ contextBridge.exposeInMainWorld('tianming', {
   // === 存档功能 ===
   saveProject: (filename, data) =>
     ipcRenderer.invoke('save-project', { filename, data }),
+
+  saveProjectJson: (filename, json) =>
+    _invokeSaveProjectJson(filename, json),
 
   loadProject: (filename) =>
     ipcRenderer.invoke('load-project', filename),

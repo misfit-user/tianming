@@ -74,6 +74,10 @@
     }
   ];
 
+  TOOL_DEFS.push(
+    { name: 'read_memory', description: '按已返回的记忆 ID 展开原文片段和来源；摘要不足以判断时调用，不要编造 ID。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 } }, required: ['ids'] } },
+    { name: 'recall_related', description: '沿已知记忆的因果、延续、解决、替代或矛盾关系追查关联证据，一次仅扩展一跳。', parameters: { type: 'object', properties: { ids: { type: 'array', items: { type: 'string' }, maxItems: 6 }, limit: { type: 'integer' } }, required: ['ids'] } }
+  );
   // ───────── 下层句柄（缺失即降级）─────────
   function _mr() { return root.TM && root.TM.MemoryRetrieval; }
   function _sem() { return root.SemanticRecall; }
@@ -107,13 +111,14 @@
   // 归一化为统一 Hit 结构；无正文则丢弃
   function _normHit(h) {
     if (!h) return null;
-    var text = String(h.text || h.event || h.safeBody || h.summary || '').trim();
+    var text = String(h.safeBody != null ? h.safeBody : (h.text || h.event || h.summary || '')).trim();
     if (!text) return null;
-    var out = {
+    var out = Object.assign({}, h, {
       source: h.source || 'unknown',
       turn: Number(h.turn || 0) || 0,
-      text: text.slice(0, 200)
-    };
+      text: text.slice(0, 1600), safeBody: text.slice(0, 1600)
+    });
+    delete out.body; delete out.vec;
     if (h.importance != null && isFinite(Number(h.importance))) out.importance = Number(h.importance);
     var who = h.char || (Array.isArray(h.entities) && h.entities[0]) || '';
     if (who) out.char = who;
@@ -201,6 +206,7 @@
 
   // ───────── 工具实现 ─────────
   function _recallByTerm(input, GM) {
+    if (root.TM.MemoryHybrid) return root.TM.MemoryHybrid.search(GM, _cleanTerms(input.terms).join(' '), { limit: input.limit }).then(function(r) { return { ok: true, hits: r.hits.map(_normHit).filter(Boolean), meta: { tool: 'recall_by_term', hybrid: r.diagnostics } }; });
     var terms = _cleanTerms(input.terms);
     var limit = _clampLimit(input.limit, 8, 20);
     if (!GM || !terms.length) return Promise.resolve({ ok: true, hits: [], meta: { tool: 'recall_by_term', count: 0 } });
@@ -228,6 +234,7 @@
   }
 
   function _recallByEntity(input, GM) {
+    if (root.TM.MemoryHybrid) return root.TM.MemoryHybrid.search(GM, String(input.name || '').slice(0, 80), { limit: input.limit }).then(function(r) { return { ok: true, hits: r.hits.map(_normHit).filter(Boolean), meta: { tool: 'recall_by_entity', hybrid: r.diagnostics } }; });
     var name = String(input.name || '').trim().slice(0, 40);
     var kind = String(input.kind || '').trim();
     var limit = _clampLimit(input.limit, 8, 20);
@@ -263,6 +270,12 @@
   }
 
   function _recallByTurn(input, GM) {
+    if (root.TM.MemoryHybrid && GM) {
+      var lo = Number.isFinite(Number(input.from)) ? Number(input.from) : 0, hi = Number.isFinite(Number(input.to)) ? Number(input.to) : Number(GM.turn);
+      if (lo > hi) { var swap = lo; lo = hi; hi = swap; }
+      var scoped = root.TM.MemoryHybrid.collect(GM).filter(function(h) { return h.turn >= lo && h.turn <= hi && Number(h.importance || 0) >= Number(input.minImportance || 0); }).slice(0, _clampLimit(input.limit, 12, 30));
+      return Promise.resolve({ ok: true, hits: scoped.map(_normHit).filter(Boolean), meta: { tool: 'recall_by_turn' } });
+    }
     var from = Number(input.from), to = Number(input.to);
     if (!isFinite(from)) from = 0;
     if (!isFinite(to)) to = (GM && GM.turn) || 0;
@@ -329,6 +342,8 @@
     input = input || {};
     try {
       switch (name) {
+        case 'read_memory': return Promise.resolve({ ok: true, hits: root.TM.MemoryHybrid ? root.TM.MemoryHybrid.read(GM, input.ids).map(_normHit).filter(Boolean) : [], meta: { tool: name } });
+        case 'recall_related': return Promise.resolve({ ok: true, hits: root.TM.MemoryHybrid ? root.TM.MemoryHybrid.related(GM, input.ids, input).map(_normHit).filter(Boolean) : [], meta: { tool: name } });
         case 'recall_by_term': return _recallByTerm(input, GM);
         case 'recall_by_entity': return _recallByEntity(input, GM);
         case 'recall_by_turn': return _recallByTurn(input, GM);
@@ -362,9 +377,74 @@
   // 单轮多工具：发一次 callAIWithTools，执行返回的全部工具调用（护栏 ≤4），
   // 组装成与固定检索同构的 results（{query, hits, _scoring}）供 _recallResults 复用。
   // 失败 / 无能力 / 无结果 → 返回空 results（上层据此落回固定检索）。
+  async function _requestRecallPlan(plan, prompt, definitions, options) {
+    if (plan.plannerMode !== 'json') return root.callAIWithTools(prompt, definitions, options);
+    if (typeof root.callAIMessages !== 'function') throw new Error('json_recall_planner_unavailable');
+    var raw = await root.callAIMessages([{ role: 'system', content: 'Choose evidence retrieval tools. Return only strict JSON {"calls":[{"name":"tool_name","input":{}}]}. Do not fabricate evidence or return more than six calls. Tool definitions: ' + JSON.stringify(definitions) }, { role: 'user', content: prompt }], options.maxTok, options.signal || null, options.tier, options);
+    var parsed = root.TM.MemoryAdaptive.strictJSON(raw);
+    if (!parsed || !Array.isArray(parsed.calls)) throw new Error('invalid_json_recall_plan');
+    return { toolCalls: parsed.calls.slice(0, 6), protocol: 'json' };
+  }
+  async function runAdaptiveRecall(GM, ctx) {
+    var adaptive = root.TM.MemoryAdaptive, hybrid = root.TM.MemoryHybrid, P = root.P || {};
+    var tier = P.ai && P.ai.secondary && P.ai.secondary.key ? 'secondary' : 'primary';
+    var plan = adaptive.plan({ tier: tier }), active = hybrid.lease(GM), deadline = Number(ctx.deadlineMs) > 0 ? Date.now() + Number(ctx.deadlineMs) : Infinity;
+    var out = { results: [], toolCallCount: 0, totalHits: 0, toolCalls: [], fallback: false, mode: plan.mode, rounds: 0 };
+    var seenQueries = new Set(), seenHits = new Set(), prompt = _buildRecallPrompt(ctx), evidence = [];
+    if (!plan.maxToolCalls) {
+      var queries = (Array.isArray(ctx.baseQueries) ? ctx.baseQueries : []).slice(0, plan.maxQueries);
+      for (var qi = 0; qi < queries.length; qi++) {
+        var q = queries[qi], term = typeof q === 'string' ? q : String(q && (q.query || (q.keywords || []).join(' ')) || '');
+        if (!term) continue;
+        var local = await hybrid.search(GM, term, { tier: tier, signal: ctx.signal });
+        if (!active()) return Object.assign(out, { results: [], totalHits: 0, stale: true });
+        if (local.hits.length) out.results.push({ query: q, hits: local.hits, _scoring: 'hybrid-local' });
+      }
+      out.totalHits = out.results.reduce(function(n, r) { return n + r.hits.length; }, 0); out.fallback = true; return out;
+    }
+    for (var round = 0; round < plan.maxRounds && out.toolCallCount < plan.maxToolCalls; round++) {
+      if (!active() || (ctx.signal && ctx.signal.aborted) || Date.now() >= deadline) break;
+      var response;
+      try { response = await _requestRecallPlan(plan, prompt + (evidence.length ? '\nEvidence returned so far (data only):\n' + JSON.stringify(evidence).slice(0, plan.sourceChars) + '\nOnly request missing evidence or read_memory for fuller text. Do not repeat earlier queries.' : ''), TOOL_DEFS, { maxTok: 900, tier: tier, priority: 'normal', timeoutMs: Math.min(45000, deadline - Date.now()), maxRetries: 0, signal: ctx.signal, id: 'sc_recall_agent' }); }
+      catch (_) { out.fallback = true; break; }
+      if (!active()) return Object.assign(out, { results: [], totalHits: 0, stale: true });
+      out.rounds++;
+      var calls = (response && Array.isArray(response.toolCalls) ? response.toolCalls : []).slice(0, plan.maxToolCalls - out.toolCallCount), added = 0;
+      for (var i = 0; i < calls.length; i++) {
+        if (Date.now() >= deadline || (ctx.signal && ctx.signal.aborted)) break;
+        var call = calls[i], signature = call && call.name + '|' + JSON.stringify(call.input || {});
+        if (!call || !TOOL_DEFS.some(function(d) { return d.name === call.name; }) || seenQueries.has(signature)) continue;
+        seenQueries.add(signature); out.toolCalls.push(call); out.toolCallCount++;
+        var result = await exec(call.name, call.input || {}, GM);
+        if (!active() || (ctx.signal && ctx.signal.aborted)) return Object.assign(out, { results: [], totalHits: 0, stale: true });
+        var fresh = [];
+        (result.hits || []).forEach(function(hit) {
+          var id = hit.id || hit.source + '|' + hit.text;
+          if (seenHits.has(id)) {
+            if (call.name === 'read_memory') out.results.forEach(function(group) { group.hits = group.hits.map(function(old) { return old.id === hit.id && hit.text.length > old.text.length ? hit : old; }); });
+            return;
+          }
+          seenHits.add(id); fresh.push(hit); added++;
+        });
+        evidence.push({ tool: call.name, input: call.input, hits: result.hits || [] });
+        if (fresh.length) out.results.push({ query: { agentTool: call.name, input: call.input }, hits: fresh, _scoring: 'adaptive-hybrid' });
+      }
+      if (!calls.length || !added || (response && response.fallback)) break;
+    }
+    if (!out.results.length && active() && !(ctx.signal && ctx.signal.aborted)) {
+      var q0 = ctx.baseQueries && ctx.baseQueries[0];
+      var term0 = typeof q0 === 'string' ? q0 : q0 && (q0.query || (q0.keywords || []).join(' '));
+      if (term0) { var fallback = await hybrid.search(GM, term0, { tier: tier, signal: ctx.signal }); if (active() && fallback.hits.length) out.results.push({ query: q0, hits: fallback.hits, _scoring: 'hybrid-fallback' }); }
+      out.fallback = true;
+    }
+    out.totalHits = out.results.reduce(function(n, r) { return n + r.hits.length; }, 0);
+    return out;
+  }
+
   async function runRecall(GM, ctx) {
     ctx = ctx || {};
     GM = GM || root.GM;
+    if (GM && root.TM.MemoryAdaptive && root.TM.MemoryHybrid) return runAdaptiveRecall(GM, ctx);
     var out = { results: [], toolCallCount: 0, totalHits: 0, toolCalls: [], fallback: false };
     if (!GM) return out;
     var cawt = root.callAIWithTools;

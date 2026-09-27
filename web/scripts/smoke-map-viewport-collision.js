@@ -3,13 +3,24 @@ const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('nod
 const {functionSource}=require('./lib-perf-round1'),C=require('../tm-map-label-collide.js'),src=fs.readFileSync(path.join(__dirname,'../phase8-formal-map.js'),'utf8');
 let passed=0;
 for(const [w,h,W,H] of [[1280,800,1200,720],[1600,900,1920,1200],[600,1000,1920,1200],[900,400,100,100]])for(const scale of [.85,1,1.7,3.4]){
-  const camera={clientWidth:w,clientHeight:h,classList:{contains:()=>true},style:{}},svg={parentElement:camera,dataset:{}},world={ownerSVGElement:svg},state={_mapVBW:W,_mapVBH:H,mapView:{scale,tx:-W*.23,ty:-H*.3}},stage={classList:{toggle(){}},getBoundingClientRect:()=>({left:12,top:30,width:w,height:h})};
-  const ctx=vm.createContext({Math,Number,state,document:{getElementById:()=>world},mapStage:()=>stage,_syncScaleLevelFromZoom(){},scheduleLabelLayout(){}});
-  vm.runInContext(['clampMapView','applyMapTransform','mapViewportMetrics'].map(n=>functionSource(src,n)).join('\n'),ctx);ctx.applyMapTransform();
+  const camera={clientWidth:w,clientHeight:h,classList:{contains:()=>true},style:{}},svg={parentElement:camera,dataset:{}},world={ownerSVGElement:svg,removeAttribute(){},setAttribute(){}},state={_mapVBW:W,_mapVBH:H,mapView:{scale,tx:-W*.23,ty:-H*.3}},stage={classList:{contains:()=>false,toggle(){}},getBoundingClientRect:()=>({left:12,top:30,width:w,height:h})};
+  const ctx=vm.createContext({window:{},Math,Number,state,document:{getElementById:()=>world,querySelector:()=>null},mapStage:()=>stage,_syncScaleLevelFromZoom(){},scheduleLabelLayout(){}});
+  vm.runInContext(['clampMapScale','clampMapView','applyMapTransform','mapViewportMetrics'].map(n=>functionSource(src,n)).join('\n'),ctx);ctx.applyMapTransform();
   const v=state.mapView,m=camera.style.transform.match(/translate\(([-\d.]+)px,([-\d.]+)px\) scale\(([-\d.]+)\)/).slice(1).map(Number),s=Math.min(w/W,h/H),ox=(w-W*s)/2,oy=(h-H*s)/2;
   for(const [x,y] of [[0,0],[W/2,H/2],[W,H]]){assert(Math.abs((ox+x*s)*m[2]+m[0]-(ox+(x*v.scale+v.tx)*s))<.001);assert(Math.abs((oy+y*s)*m[2]+m[1]-(oy+(y*v.scale+v.ty)*s))<.001);}
   const p=ctx.mapViewportMetrics(stage,{width:W,height:H});assert.equal(p.ratio,s);assert.equal(p.left,12+ox);assert.equal(p.top,30+oy);assert.equal(svg.dataset.tmfComposited,'1');passed++;
 }
+for(const [w,h,W,H] of [[1280,800,1200,720],[600,1000,1920,1200]])for(const scale of [8,32,128]){
+ const attrs={},camera={clientWidth:w,clientHeight:h,classList:{contains:()=>true},style:{}},svg={parentElement:camera,dataset:{}},world={ownerSVGElement:svg,writes:0,getAttribute(k){return attrs[k]??null;},setAttribute(k,v){attrs[k]=v;this.writes++;},removeAttribute(k){delete attrs[k];}};
+ const state={_mapVBW:W,_mapVBH:H,mapView:{scale,tx:-W*scale*.45,ty:-H*scale*.4}},stage={classList:{contains:()=>false,toggle(){}},getBoundingClientRect:()=>({left:12,top:30,width:w,height:h})};
+ const ctx=vm.createContext({window:{},state,document:{getElementById:()=>world,querySelector:()=>null},mapStage:()=>stage,_syncScaleLevelFromZoom(){},scheduleLabelLayout(){}});
+ vm.runInContext(['clampMapScale','clampMapView','applyMapTransform','mapViewportMetrics'].map(n=>functionSource(src,n)).join('\n'),ctx);ctx.applyMapTransform();
+ const v=state.mapView,m=attrs.transform.match(/translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+)\)/).slice(1).map(Number),ratio=Math.min(w/W,h/H);
+ assert.equal(camera.style.transform,'none');assert.equal(svg.dataset.tmfComposited,'0');assert.equal(svg.dataset.zoomRendering,'vector');
+ const writesBefore=world.writes;ctx.applyMapTransform();assert.equal(world.writes,writesBefore,'unchanged deep zoom must not rewrite the SVG transform');
+ for(const [x,y] of [[0,0],[W/2,H/2],[W,H]]){assert(Math.abs((x*m[2]+m[0])*ratio-(x*v.scale+v.tx)*ratio)<.001);assert(Math.abs((y*m[2]+m[1])*ratio-(y*v.scale+v.ty)*ratio)<.001);}passed++;
+}
+assert(fs.readFileSync(path.join(__dirname,'../phase8-formal-bridge-styles.js'),'utf8').includes('.tmf-map-world{transform-box:view-box;transform-origin:0 0;}'),'SVG transforms must use the viewBox, not geography-dependent fill bounds');passed++;
 function node(values){const a={role:'button',...values},classes=new Set();return{writes:0,getAttribute:k=>a[k]??null,setAttribute(k,v){a[k]=v;this.writes++;},classList:{contains:c=>classes.has(c),toggle(c,on){if(on)classes.add(c);else classes.delete(c);}}};}
 const one=node({'data-fs':'12','data-lw':'30','data-lh':'12','data-ax':'20','data-ay':'20'}),two=node({'data-fs':'12','data-lw':'30','data-lh':'12','data-ax':'24','data-ay':'20'}),small=node({'data-fs':'4','data-lw':'4','data-lh':'4','data-ax':'100','data-ay':'20'}),regional=node({'data-fs':'14','data-lw':'24','data-lh':'14','data-ax':'30','data-ay':'30'});
 const nodes=[one,two,small,regional],svg={getAttribute:k=>k==='data-tmf-composited'?'1':null,getScreenCTM:()=>({a:1,b:0,c:0,d:1}),querySelectorAll:s=>s.includes(',')?nodes:s==='.tmf-faction-label'?nodes.slice(0,3):[regional]},stage={querySelector:()=>svg};

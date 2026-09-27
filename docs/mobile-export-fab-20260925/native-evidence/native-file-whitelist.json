@@ -1,0 +1,38 @@
+[
+  {
+    "file": "mobile/README.md",
+    "sha256": "f3ee84a59ba258ada47aace9ea5b917f396ac0be17cee980372fe724cbb12496"
+  },
+  {
+    "file": "mobile/package.json",
+    "sha256": "a55216751956d2740b1bfad63eec4b03cb704e80998e6b0e0128d0abf7163fc0"
+  },
+  {
+    "file": "mobile/package-lock.json",
+    "sha256": "e0f03ff76b130807d4e1321fc57b85f5612bb3b85a1fabd102b1f0e9b5b3310f"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/package.json",
+    "sha256": "dba4caf455ead34818cbba0e5770f23778874a54d5046dfbd0ae70cfba875a96"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/index.js",
+    "sha256": "013a95694f0416300c23caaedd472fd54c9795731056bec7fccda45fa9e1199c"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/index.d.ts",
+    "sha256": "bc1ef585dabd920f63da86d85d9b7159762c40a36601e60f313be098d830223b"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/native/build.gradle",
+    "sha256": "41e24d48ac38daae0e5e7caed5e70b0b14376d990be5c627e31c2536ee0cbe99"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/native/src/main/AndroidManifest.xml",
+    "sha256": "c8fe08b06e479efc7e3d00476fffe693a3e943e2b874b3c6a1ba5156fc180751"
+  },
+  {
+    "file": "mobile/plugins/tianming-file-export/native/src/main/java/com/tianming/plugins/fileexport/TianmingFileExportPlugin.java",
+    "sha256": "49395ca81382479c6df1efb31e70f5fcbe587864b44c6c7f06f1d5581a58cf3b"
+  }
+]

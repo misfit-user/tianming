@@ -1,0 +1,64 @@
+{
+  "at": "2026-09-19T10:25:22.253Z",
+  "versions": {
+    "electron": "33.4.11",
+    "chrome": "130.0.6723.191"
+  },
+  "sourceSHA": "cb2a2a03ad1361cdc606e2192e4ae2a3515afa0a9458224fc561e2b88ad704f3",
+  "mainSHA": "3f172665981e6205398bfba0ea9f33442ca2eff287311260607e9370daf9a62f",
+  "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\desktop-bridge-reliability-20260919\\.isolated-electron-1789813521555",
+  "outcome": {
+    "ok": true,
+    "results": [
+      {
+        "name": "native stage does not publish before commit",
+        "pass": true
+      },
+      {
+        "name": "native publish keeps complete context",
+        "pass": true
+      },
+      {
+        "name": "native publish keeps complete narrative",
+        "pass": true
+      },
+      {
+        "name": "native recovery is idempotent",
+        "pass": true
+      },
+      {
+        "name": "main process can finish while acknowledgement is pending",
+        "pass": true
+      },
+      {
+        "name": "renderer reports unknown timeout instead of success",
+        "pass": true
+      },
+      {
+        "name": "no duplicate invoke before first result arrives",
+        "pass": true
+      },
+      {
+        "name": "late native reply only releases its operation lock",
+        "pass": true
+      },
+      {
+        "name": "confirmed retry recovers the original complete files",
+        "pass": true
+      },
+      {
+        "name": "late stage never publishes an uncommitted world",
+        "pass": true
+      },
+      {
+        "name": "explicit discard after acknowledgement never creates a formal turn",
+        "pass": true
+      },
+      {
+        "name": "all native test calls clear renderer timers",
+        "pass": true
+      }
+    ],
+    "method": "actual Electron invoke and unchanged disk committer; synthetic files; only timeout events controlled"
+  }
+}

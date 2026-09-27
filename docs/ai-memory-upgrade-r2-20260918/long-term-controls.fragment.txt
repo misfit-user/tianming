@@ -1,0 +1,23 @@
+  function syncControls(gm, clearedKey) {
+    var store = gm && gm._memoryLongTerm, retrieval = root.TM.MemoryRetrieval;
+    if (!store || !retrieval || !list(store.records).length) return 0;
+    var changed = 0;
+    var rows = store.records.map(function(record) {
+      var probe = Object.assign({}, record); delete probe.durableControl;
+      var control = retrieval.memoryControlForHit(probe, { GM: gm, ignoreDurable: true });
+      var previous = record.durableControl;
+      if (!control && !(previous && previous.key === clearedKey)) return record;
+      var compact = control ? { key: text(control.key, 180) } : null;
+      if (control) ['hidden','archived','markedFalse','pinned','resident','supersededBy','cooldownUntilTurn'].forEach(function(k) { if (control[k] != null) compact[k] = control[k]; });
+      if (JSON.stringify(previous || null) === JSON.stringify(compact)) return record;
+      var out = Object.assign({}, record); if (compact) out.durableControl = compact; else delete out.durableControl;
+      changed++; return out;
+    });
+    if (changed) {
+      var chars = rows.reduce(function(n, row) { return n + JSON.stringify(row).length; }, 0), removed = 0;
+      while (chars > MAX_CHARS && rows.length) { var old = rows.shift(); chars -= JSON.stringify(old).length; removed++; }
+      gm._memoryLongTerm = Object.assign({}, store, { records: rows, chars: chars, revision: (store.revision || 0) + 1, droppedTotal: (store.droppedTotal || 0) + removed }); // arch-ok MemoryLongTerm owns durable control snapshots
+      if (retrieval.bumpRevision) retrieval.bumpRevision(gm);
+    }
+    return changed;
+  }

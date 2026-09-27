@@ -925,7 +925,7 @@ function computeTaxThreeNumber(nominalParam) {
 function renderTaxThreeNumberBlock(nominal, opts) {
   opts = opts || {};
   var f = opts.data || computeTaxThreeNumber(nominal);
-  var gapLabels = opts.gapLabels || {clerk:'州县吏胥',official:'各级私分',power:'豪强抵偿',transit:'在途损耗'};
+  var gapLabels = opts.gapLabels || {clerk:'州县吏胥',official:'各级私分',power:f.collectionDeclared?'豪强截留':'豪强抵偿',transit:'在途损耗',unallocated:'未分计'};
   var gapText = function(key) { return String(gapLabels[key] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
   var label = opts.label || '正赋钱粮';
   var unit = opts.unit || '两';
@@ -966,8 +966,14 @@ function renderTaxThreeNumberBlock(nominal, opts) {
     html += '<span>' + gapText('official') + '</span><span style="text-align:right;">' + fmt(f.gaps.official) + '</span><span>' + Math.round(f.gaps.official/f.totalLoss*100) + '%</span>';
     html += '<span>' + gapText('power') + '</span><span style="text-align:right;">' + fmt(f.gaps.power) + '</span><span>' + Math.round(f.gaps.power/f.totalLoss*100) + '%</span>';
     html += '<span>' + gapText('transit') + '</span><span style="text-align:right;">' + fmt(f.gaps.transit || 0) + '</span><span>' + Math.round((f.gaps.transit || 0)/f.totalLoss*100) + '%</span>';
+    if(f.collectionDeclared)html+='<span>'+gapText('unallocated')+'</span><span style="text-align:right;">'+fmt(f.gaps.unallocated||0)+'</span><span>'+Math.round((f.gaps.unallocated||0)/f.totalLoss*100)+'%</span>';
     html += '</div>';
     html += '</div>';
+  }
+
+  if(f.governmentScope==='central-and-regional'){
+    html+='<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--txt-d);">官收合计中央上供与地方留用。民间额外实缴 '+fmt(f.extraCollected||0)+' '+unit+'。</div>';
+    var nc=f.notCollected;if(nc)html+='<div style="margin-top:0.3rem;font-size:0.72rem;color:var(--txt-d);">尚未征到：豪强抗纳 '+fmt(nc.resistance||0)+'，其余欠征 '+fmt(nc.other||0)+' '+unit+'；另有核减及征前损折 '+fmt(nc.assessmentReduction||0)+' '+unit+'。未缴之数不列入截留差额。</div>';
   }
 
   // 视觉化水槽（条形图）

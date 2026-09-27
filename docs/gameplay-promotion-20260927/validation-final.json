@@ -1,0 +1,36 @@
+{
+  "version": "1.3.5.3",
+  "results": [
+    {
+      "name": "official-parity",
+      "exit": 0
+    },
+    {
+      "name": "release-contract",
+      "exit": 0
+    },
+    {
+      "name": "native-manifest",
+      "exit": 0
+    },
+    {
+      "name": "hot-baseline",
+      "exit": 0
+    }
+  ],
+  "drift": [],
+  "indexUnchanged": true,
+  "installedFiles": 50,
+  "verifiedAt": "2026-09-27T09:43:15.634Z",
+  "ci": {
+    "pass": 1112,
+    "fail": 0,
+    "skip": 0,
+    "waived": 0,
+    "report": "C:\\Users\\37814\\Desktop\\tianming\\web\\dev-tools\\arch-guard\\ci-Nz2rhb\\smoke-report.json",
+    "log": "C:\\Users\\37814\\Desktop\\tianming\\docs\\gameplay-promotion-20260927\\ci-smokes-green.log"
+  },
+  "architecture": "PASS: arch-final.log",
+  "realApiCalls": false,
+  "publishedByThisTask": false
+}

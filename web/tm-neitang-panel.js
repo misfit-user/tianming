@@ -24,6 +24,7 @@ function _neitangTabJump(label, tabId) {
 }
 
 function openNeitangPanel() {
+  if (window.TM && TM.NativeFiscalUI && TM.NativeFiscalUI.open('private')) return;
   var ov = document.getElementById('neitang-drawer-ov');
   if (!ov) {
     ov = document.createElement('div');
@@ -48,6 +49,7 @@ function openNeitangPanel() {
 }
 
 function closeNeitangPanel() {
+  if (window.TM && TM.NativeFiscalUI) TM.NativeFiscalUI.close();
   var ov = document.getElementById('neitang-drawer-ov');
   if (ov) ov.classList.remove('open');
 }
@@ -55,6 +57,11 @@ function closeNeitangPanel() {
 function renderNeitangPanel() {
   var body = document.getElementById('neitang-body'), subt = document.getElementById('neitang-subtitle');
   if (!body) return;
+  if (window.TM && TM.NativeFiscal && TM.NativeFiscal.enabled(GM) && TM.NativeFiscalUI) {
+    body.innerHTML = TM.NativeFiscalUI.render(GM, 'private');
+    if (subt) subt.textContent = GM.neitang && GM.neitang.enabled ? '本局明确私人账户' : '本开局未启用私库';
+    return;
+  }
   var n = GM.neitang || {}, F = typeof FiscalEngine !== 'undefined' ? FiscalEngine : {};
   var context = typeof NeitangEngine !== 'undefined' && NeitangEngine.getAccountContext ? NeitangEngine.getAccountContext() : null;
   if (context && (!context.internalRef || (context.view && !context.view.known))) {
@@ -99,7 +106,7 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
     statePillHtml = '<span class="tr-pill warn">紧</span>';
   } else if ((n.monthlyExpense || 0) > 0) {
     var months = stockMoney / Math.max(1, n.monthlyExpense);
-    statePillHtml = '<span class="tr-pill ok">充裕 · 可济 ' + Math.round(months) + ' 月</span>';
+    statePillHtml = '<span class="tr-pill ok">钱储约支 ' + Math.round(months) + ' 月</span>';
   } else {
     statePillHtml = '<span class="tr-pill muted">用度待核</span>';
   }
@@ -111,7 +118,7 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
     var ic = GM.corruption.subDepts.imperial.true;
     if (ic > 30) {
       var leakPct = Math.round(ic / 100 * 0.5 * 100);
-      tagsHtml += '<span class="tr-pill bad">⚠ 内廷侵吞 ' + leakPct + '%</span>';
+      tagsHtml += statement.budget ? '<span class="tr-pill bad">内廷吏弊偏重</span>' : '<span class="tr-pill bad">⚠ 内廷侵吞 ' + leakPct + '%</span>';
     }
   }
   if (n._royalClan) {
@@ -128,6 +135,7 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
 
   if (books.stocks) statePillHtml += '<span class="tr-pill gold">宫中诸库合计</span>';
   var deltaVal = n.lastDelta != null ? n.lastDelta : 0;
+  var netLabel = statement.periodStatus === 'previous' ? '上期结余' : statement.forecast ? '本期预计结余' : '本期结余';
   html += '<div class="tr-hero imperial">';
   html +=   '<div class="tr-hero-row">';
   html +=     '<div class="tr-hero-glyph imperial">内</div>';
@@ -140,7 +148,7 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
   html +=       '<div class="tr-hero-mini">';
   html +=         '<span><b>粮</b>' + _neitangFmt(stockGrain) + '<span class="mu">' + U.grain + '</span></span>';
   html +=         '<span><b>布</b>' + _neitangFmt(stockCloth) + '<span class="mu">' + U.cloth + '</span></span>';
-  html +=         '<span><b>' + (statement.periodStatus === 'previous' ? '上期' : '本回合') + '</b>' + (deltaVal >= 0 ? '+' : '') + _neitangFmt(deltaVal) + '</span>';
+  html +=         '<span><b>' + netLabel + '</b>' + (deltaVal >= 0 ? '+' : '') + _neitangFmt(deltaVal) + '</span>';
   html +=         '<span><b>' + periodLbl + '入</b>' + _neitangFmt((n.turnIncome != null ? n.turnIncome : n.monthlyIncome != null ? n.monthlyIncome * turnDays / 30 : null)) + '</span>';
   html +=       '</div>';
   if (tagsHtml) html += '<div class="tr-hero-tags">' + tagsHtml + '</div>';
@@ -149,6 +157,12 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
   html += '</div>';
 
   html += books.html;
+  var outstanding = ['money','grain','cloth'].filter(function(k){return Number((ledgers[k]||{}).deficit)>0;});
+  if(outstanding.length){
+    html += '<section class="tr-section"><div class="tr-section-head"><span class="tr-section-name">已欠待给</span><span class="tr-section-badge">尚未支出</span></div>';
+    outstanding.forEach(function(k){var led=ledgers[k];html+='<div class="tr-flow-tops"><b>'+(k==='money'?'钱':k==='grain'?'粮':'帛')+'</b><span>'+_neitangExact(led.deficit)+' '+_escHtml(U[k])+'</span></div>';Object.keys(led.deficitDetails||{}).forEach(function(tag){(led.deficitDetails[tag]||[]).filter(function(r){return r.amount>0;}).forEach(function(r){html+='<div class="tr-flow-tops"><span>'+_escHtml(r.name||'未署名欠款')+'</span><span>'+_neitangExact(r.amount)+' '+_escHtml(U[k])+'</span></div>';});});});
+    html += '</section>';
+  }
 
   // ─── 历史预设备注（保留） ───
   if (n._presetName && n._presetHistorical) {
@@ -172,13 +186,13 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
   html +=     '<div class="tr-qs"><div class="tr-qs-label">' + periodLbl + '支</div><div class="tr-qs-val">' + _neitangFmt(turnOut) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
   // 增减
   var deltaCls2 = deltaVal > 0 ? 'up' : deltaVal < 0 ? 'down' : '';
-  html +=     '<div class="tr-qs"><div class="tr-qs-label">' + (statement.periodStatus === 'previous' ? '上期增减' : '回合增减') + '</div><div class="tr-qs-val ' + deltaCls2 + '">' + (deltaVal >= 0 ? '+' : '') + _neitangFmt(deltaVal) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
+  html +=     '<div class="tr-qs"><div class="tr-qs-label">' + netLabel + '</div><div class="tr-qs-val ' + deltaCls2 + '">' + (deltaVal >= 0 ? '+' : '') + _neitangFmt(deltaVal) + '</div><div class="tr-qs-sub">' + U.money + '</div></div>';
   // 内廷侵吞
   if (GM.corruption && GM.corruption.subDepts && GM.corruption.subDepts.imperial) {
     var ic2 = GM.corruption.subDepts.imperial.true || 0;
     var leakP = Math.round(ic2 / 100 * 0.5 * 100);
     var leakCls = leakP > 30 ? 'down' : leakP > 15 ? 'warn' : '';
-    html +=   '<div class="tr-qs"><div class="tr-qs-label">内廷侵吞</div><div class="tr-qs-val ' + leakCls + '">' + leakP + '%</div><div class="tr-qs-sub">腐败 ' + Math.round(ic2) + '</div></div>';
+    html += statement.budget ? '<div class="tr-qs"><div class="tr-qs-label">内廷吏弊</div><div class="tr-qs-val ' + leakCls + '">' + Math.round(ic2) + '</div><div class="tr-qs-sub">吏治察核 · 百分制</div></div>' : '<div class="tr-qs"><div class="tr-qs-label">内廷侵吞</div><div class="tr-qs-val ' + leakCls + '">' + leakP + '%</div><div class="tr-qs-sub">腐败 ' + Math.round(ic2) + '</div></div>';
   } else {
     html +=   '<div class="tr-qs"><div class="tr-qs-label">内廷侵吞</div><div class="tr-qs-val">—</div><div class="tr-qs-sub">未测</div></div>';
   }
@@ -217,14 +231,15 @@ function _neitangRenderPanelBody(body, subt, n, statement, context) {
     var led = ledgers[m.key] || {};
     var ti = led.thisTurnIn != null ? led.thisTurnIn : led.lastTurnIn;
     var to = led.thisTurnOut != null ? led.thisTurnOut : led.lastTurnOut;
-    var net = ti - to;
+    var net = (Number(ti) || 0) - (Number(to) || 0);
     var netCls = net >= 0 ? 'delta-up' : 'delta-down';
     html += '<div class="tr-led ' + m.cls + '">';
     html +=   '<div class="tr-led-name">' + m.name + '</div>';
     html +=   '<div class="tr-led-stock">' + _neitangFmt(led.stock) + '</div>';
     html +=   '<div class="tr-led-unit">' + m.unit + '</div>';
     if (ti != null || to != null) {
-      html += '<div class="tr-led-flow"><span>' + (statement.forecast ? '预计入 ' : '实入 ') + _neitangFmt(ti) + '</span><span class="' + netCls + '">Δ' + (net >= 0 ? '+' : '') + _neitangFmt(net) + '</span></div>';
+      html += '<div class="tr-led-flow"><span>' + (statement.forecast ? '预计入 ' : '实入 ') + _neitangFmt(ti) + '</span><span>' + (statement.forecast ? '预计支 ' : '实支 ') + _neitangFmt(to) + '</span></div>';
+      html += '<div class="tr-led-flow"><span>' + netLabel + '</span><span class="' + netCls + '">' + (net >= 0 ? '+' : '') + _neitangFmt(net) + '</span></div>';
     }
     html += '</div>';
   });

@@ -477,7 +477,9 @@ function _edictRestoreState(target, snapshot) {
     }
     return target;
   }
+  var preserveRuntime = target === (typeof GM !== 'undefined' ? GM : null) || target === (typeof P !== 'undefined' ? P : null);
   Object.keys(target || {}).forEach(function(key) {
+    if (preserveRuntime && (key === '_postTurnJobs' || key === '_postTurnDetachedJobs' || key === '_turnAiResults')) return;
     if (!Object.prototype.hasOwnProperty.call(snapshot || {}, key)) delete target[key];
   });
   Object.keys(snapshot || {}).forEach(function(key) {
@@ -1180,6 +1182,15 @@ function computeExecutionPipeline(edictText, edictCategory) {
 // 天命核心理念：诏令效果完全由AI根据剧本背景+官制+角色判断
 // 此函数只收集执行环境信息注入AI prompt，帮助AI做出更好的判断
 // ============================================================
+function _recordEdictRecoveryResults(receipts) {
+  (receipts || []).forEach(function(row) {
+    if (!row.ok || !row.applied) return;
+    var message='应急数量核验：'+row.role+'，数额 '+row.amount+'，已取得该项真实执行回执；不得重复执行，不代表其他附带命令全部完成。';
+    GM._edictExecutionReport=(GM._edictExecutionReport||'')+'\n'+message; // arch-ok: original edict report owner records the verified narrow action.
+    if (GM._lastEdictClassification) GM._lastEdictClassification=Object.assign({},GM._lastEdictClassification,{ok:true,amountError:false,needsClarification:false,recovery:row,message:message}); // arch-ok: original classification owner records its recovery result.
+    if (typeof addEB==='function') addEB('诏令应急恢复',message);
+  });
+}
 function processEdictEffects(allEdictText, edictCategory) {
   if (!allEdictText || !allEdictText.trim()) return { summary: '', executionSummary: '' };
 
@@ -1196,7 +1207,7 @@ function processEdictEffects(allEdictText, edictCategory) {
 
   // 保存到 GM 供 AI prompt 注入（纯信息，无机械效果）
   GM._edictMechanicalReport = '';
-  GM._edictExecutionReport = execResult.summary;
+
 
   // 制度类诏令自动识别 + 分流（货币/税种/户籍/徭役/兵制/官制 + P1）
   try {
@@ -1204,8 +1215,17 @@ function processEdictEffects(allEdictText, edictCategory) {
       var edictResult = EdictParser.tryExecute(allEdictText, {}, { category: edictCategory });
       if (edictResult && edictResult.pathway) {
         GM._lastEdictClassification = edictResult;
-        var typeLabel = edictResult.typeKey ? (EdictParser.EDICT_TYPES[edictResult.typeKey] ? EdictParser.EDICT_TYPES[edictResult.typeKey].name : edictResult.typeKey) : '';
-        if (edictResult.pathway === 'memorial') {
+        var classification = edictResult.classification || edictResult;
+        var typeLabel = classification.typeKey ? (EdictParser.EDICT_TYPES[classification.typeKey] ? EdictParser.EDICT_TYPES[classification.typeKey].name : classification.typeKey) : '';
+        if (edictResult.amountError) {
+          if (window.TM && TM.RecoveryEdict) TM.RecoveryEdict.register(allEdictText, edictResult);
+          var amountMessage = edictResult.message || '货币诏令数额无法唯一确定，尚未落账；请明确总额或拆分指令。';
+          var amountReport = amountMessage + ' 原诏令仍保留供推演核实；不得将准备金、兑换比例或期限视作发行数额，不得叙述为已施行。';
+
+          execResult.summary += '\n' + amountReport;
+          if (typeof addEB === 'function') addEB('诏令待核实', amountMessage);
+          if (typeof toast === 'function') toast(amountMessage);
+        } else if (edictResult.pathway === 'memorial') {
           var drafter = edictResult.memo && edictResult.memo.drafter || '有司';
           var msg1 = '〔' + typeLabel + '〕旨意已下，' + drafter + ' 下回合具奏';
           if (typeof addEB === 'function') addEB('诏令', msg1);
@@ -1214,7 +1234,21 @@ function processEdictEffects(allEdictText, edictCategory) {
           var q = (edictResult.clarification && edictResult.clarification.questions && edictResult.clarification.questions[0]) || '圣意具体如何？';
           if (typeof addEB === 'function') addEB('诏令', '侍臣问疑：' + q);
           if (typeof toast === 'function') toast('诏令需细化：' + q);
+        } else if (edictResult.ok && edictResult.executionResult && edictResult.executionResult.pending) {
+          if (typeof addEB === 'function') addEB('诏令', '〔' + typeLabel + '〕已入拟制，待廷议裁定；尚未正式设立');
+          if (typeof toast === 'function') toast('官制之议待廷议裁定');
+        } else if (!edictResult.ok && classification.typeKey === 'office_reform' && edictResult.executionResult && edictResult.executionResult.reason) {
+          if (typeof addEB === 'function') addEB('官制未施行', edictResult.executionResult.reason);
+          if (typeof toast === 'function') toast('官制未施行：' + edictResult.executionResult.reason);
+        } else if (!edictResult.ok && edictResult.executionResult && edictResult.executionResult.reason) {
+          var notExecuted='诏令尚未施行：'+edictResult.executionResult.reason+'。不得将未扣款或未落地的事项叙述为已经完成。';
+          execResult.summary += '\n'+notExecuted;
+          if (typeof addEB === 'function') addEB('诏令待核实',notExecuted);
         } else if (edictResult.ok && edictResult.pathway === 'direct') {
+          var paidOrder=edictResult.executionResult&&edictResult.executionResult.order;
+          if(paidOrder&&edictResult.executionResult.success===true&&Array.isArray(GM.transferOrders)&&GM.transferOrders.indexOf(paidOrder)>=0){
+            execResult.summary += '\n【已落账调拨回执】'+JSON.stringify({id:paidOrder.id,fromAccount:paidOrder.fromAccount,toRegion:paidOrder.toRegion,amount:paidOrder.amount})+'；这笔款项已由指定账库扣除，后续推演不得再次扣款或改扣另一账库。';
+          }
           var msg2 = '〔' + typeLabel + '〕已直断施行' + (edictResult.isP1 ? '（P1 特殊）' : '');
           if (typeof addEB === 'function') addEB('诏令', msg2);
           if (typeof toast === 'function') toast('诏令已施行：' + typeLabel);
@@ -1245,6 +1279,7 @@ function processEdictEffects(allEdictText, edictCategory) {
     if (typeof applyEdictTypedIncidence === 'function') applyEdictTypedIncidence(GM, allEdictText, { turn: GM.turn });
   } catch (_fE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_fE, 'edict] typed-incidence 失败') : console.error('[edict] typed-incidence 失败:', _fE); }
 
+  GM._edictExecutionReport = execResult.summary;
   return { summary: '', executionSummary: execResult.summary };
 }
 

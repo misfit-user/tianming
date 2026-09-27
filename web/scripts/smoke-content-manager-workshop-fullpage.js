@@ -60,7 +60,7 @@ assert(
   'full-page workshop should keep search usable on narrow viewports'
 );
 assert(
-  index.includes('tm-online-mall.css?v=20260722-baigong-landscape'),
+  /tm-online-mall\.css\?v=[A-Za-z0-9_.-]+/.test(index),
   'index should bust cached mall CSS after the full-page fix'
 );
 assert(

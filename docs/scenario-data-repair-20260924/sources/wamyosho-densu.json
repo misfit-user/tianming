@@ -1,0 +1,478 @@
+[
+ {
+  "name": "山城国",
+  "seat": null,
+  "districts": 8,
+  "fieldCho": 8961,
+  "source": "巻5・国郡部第12・畿内郡第60"
+ },
+ {
+  "name": "大和国",
+  "seat": "高市郡",
+  "districts": 15,
+  "fieldCho": 17905,
+  "source": "巻5・国郡部第12・畿内郡第60"
+ },
+ {
+  "name": "河内国",
+  "seat": "志紀郡",
+  "districts": 14,
+  "fieldCho": 11338,
+  "source": "巻5・国郡部第12・畿内郡第60"
+ },
+ {
+  "name": "和泉国",
+  "seat": "和泉郡",
+  "districts": 3,
+  "fieldCho": 4569,
+  "source": "巻5・国郡部第12・畿内郡第60"
+ },
+ {
+  "name": "摂津国",
+  "seat": null,
+  "districts": 13,
+  "fieldCho": 12525,
+  "source": "巻5・国郡部第12・畿内郡第60"
+ },
+ {
+  "name": "伊賀国",
+  "seat": "阿拝郡",
+  "districts": 4,
+  "fieldCho": 4051,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "伊勢国",
+  "seat": "鈴鹿郡",
+  "districts": 13,
+  "fieldCho": 18130,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "志摩国",
+  "seat": "英虞郡",
+  "districts": 2,
+  "fieldCho": 124,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "尾張国",
+  "seat": "中島郡",
+  "districts": 8,
+  "fieldCho": 6820,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "参河国",
+  "seat": "宝飯郡",
+  "districts": 8,
+  "fieldCho": 6820,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "遠江国",
+  "seat": "豊田郡",
+  "districts": 13,
+  "fieldCho": 13611,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "駿河国",
+  "seat": "安部郡",
+  "districts": 7,
+  "fieldCho": 9063,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "伊豆国",
+  "seat": "田方郡",
+  "districts": 3,
+  "fieldCho": 2110,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "甲斐国",
+  "seat": "八代郡",
+  "districts": 4,
+  "fieldCho": 12249,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "相模国",
+  "seat": "大住郡",
+  "districts": 8,
+  "fieldCho": 11236,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "武蔵国",
+  "seat": "多磨郡",
+  "districts": 21,
+  "fieldCho": 35574,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "安房国",
+  "seat": "平群郡",
+  "districts": 4,
+  "fieldCho": 4335,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "上総国",
+  "seat": "市原郡",
+  "districts": 11,
+  "fieldCho": 22846,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "下総国",
+  "seat": "葛餝郡",
+  "districts": 11,
+  "fieldCho": 26432,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "常陸国",
+  "seat": "茨城郡",
+  "districts": 11,
+  "fieldCho": 40092,
+  "source": "巻5・国郡部第12・東海郡第61"
+ },
+ {
+  "name": "近江国",
+  "seat": "栗本郡",
+  "districts": 12,
+  "fieldCho": 33402,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "美濃国",
+  "seat": "不破郡",
+  "districts": 18,
+  "fieldCho": 14823,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "飛驒国",
+  "seat": "大野郡",
+  "districts": 3,
+  "fieldCho": 6615,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "信濃国",
+  "seat": "筑摩郡",
+  "districts": 10,
+  "fieldCho": 30908,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "上野国",
+  "seat": "群馬郡",
+  "districts": 14,
+  "fieldCho": 30937,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "下野国",
+  "seat": "都賀郡",
+  "districts": 9,
+  "fieldCho": 20155,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "陸奥国",
+  "seat": "宮城郡",
+  "districts": 36,
+  "fieldCho": 51440,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "出羽国",
+  "seat": "平鹿郡",
+  "districts": 11,
+  "fieldCho": 26109,
+  "source": "巻5・国郡部第12・東山郡第62"
+ },
+ {
+  "name": "若狭国",
+  "seat": "遠敷郡",
+  "districts": 3,
+  "fieldCho": 3077,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "越前国",
+  "seat": "丹生郡",
+  "districts": 6,
+  "fieldCho": 12066,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "加賀国",
+  "seat": "能美郡",
+  "districts": 4,
+  "fieldCho": 13766,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "能登国",
+  "seat": "能登郡",
+  "districts": 4,
+  "fieldCho": 8205,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "越中国",
+  "seat": "射水郡",
+  "districts": 4,
+  "fieldCho": 17909,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "越後国",
+  "seat": "頸城郡",
+  "districts": 7,
+  "fieldCho": 14997,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "佐渡国",
+  "seat": "雑太郡",
+  "districts": 3,
+  "fieldCho": 3960,
+  "source": "巻5・国郡部第12・北陸郡第63"
+ },
+ {
+  "name": "丹波国",
+  "seat": "桑田郡",
+  "districts": 6,
+  "fieldCho": 10666,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "丹後国",
+  "seat": "加佐郡",
+  "districts": 5,
+  "fieldCho": 4756,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "但馬国",
+  "seat": "気多郡",
+  "districts": 8,
+  "fieldCho": 7555,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "因幡国",
+  "seat": "法美郡",
+  "districts": 7,
+  "fieldCho": 7914,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "伯耆国",
+  "seat": "久米郡",
+  "districts": 6,
+  "fieldCho": 8161,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "出雲国",
+  "seat": "意宇郡",
+  "districts": 10,
+  "fieldCho": 9435,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "石見国",
+  "seat": "那賀郡",
+  "districts": 6,
+  "fieldCho": 4884,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "隠岐国",
+  "seat": "周吉郡",
+  "districts": 4,
+  "fieldCho": 585,
+  "source": "巻5・国郡部第12・山陰郡第64"
+ },
+ {
+  "name": "播磨国",
+  "seat": "餝磨郡",
+  "districts": 12,
+  "fieldCho": 21414,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "美作国",
+  "seat": "苫東郡",
+  "districts": 7,
+  "fieldCho": 11021,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "備前国",
+  "seat": "御野郡",
+  "districts": 8,
+  "fieldCho": 13185,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "備中国",
+  "seat": "賀夜郡",
+  "districts": 9,
+  "fieldCho": 10227,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "備後国",
+  "seat": "葦田郡",
+  "districts": 14,
+  "fieldCho": 9301,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "安芸国",
+  "seat": "安芸郡",
+  "districts": 8,
+  "fieldCho": 7357,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "周防国",
+  "seat": "佐波郡",
+  "districts": 6,
+  "fieldCho": 7834,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "長門国",
+  "seat": "豊浦郡",
+  "districts": 5,
+  "fieldCho": 4603,
+  "source": "巻5・国郡部第12・山陽郡第65"
+ },
+ {
+  "name": "紀伊国",
+  "seat": "名草郡",
+  "districts": 7,
+  "fieldCho": 7198,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "淡路国",
+  "seat": "三原郡",
+  "districts": 2,
+  "fieldCho": 2650,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "阿波国",
+  "seat": "名東郡",
+  "districts": 9,
+  "fieldCho": 3414,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "讚岐国",
+  "seat": "阿野郡",
+  "districts": 11,
+  "fieldCho": 18647,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "伊予国",
+  "seat": "越智郡",
+  "districts": 14,
+  "fieldCho": 13501,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "土佐国",
+  "seat": "長岡郡",
+  "districts": 7,
+  "fieldCho": 6451,
+  "source": "巻5・国郡部第12・南海郡第66"
+ },
+ {
+  "name": "筑前国",
+  "seat": "御笠郡",
+  "districts": 15,
+  "fieldCho": 18500,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "筑後国",
+  "seat": "御井郡",
+  "districts": 10,
+  "fieldCho": 12800,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "肥前国",
+  "seat": null,
+  "districts": 11,
+  "fieldCho": 13900,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "肥後国",
+  "seat": null,
+  "districts": 14,
+  "fieldCho": 23500,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "豊前国",
+  "seat": "京都郡",
+  "districts": 8,
+  "fieldCho": 13200,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "豊後国",
+  "seat": "大分郡",
+  "districts": 8,
+  "fieldCho": 7500,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "日向国",
+  "seat": null,
+  "districts": 5,
+  "fieldCho": 4800,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "大隅国",
+  "seat": null,
+  "districts": 8,
+  "fieldCho": 4800,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "薩摩国",
+  "seat": null,
+  "districts": 13,
+  "fieldCho": 4800,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "壱岐島",
+  "seat": null,
+  "districts": 2,
+  "fieldCho": 620,
+  "source": "巻5・国郡部第12・西海郡第67"
+ },
+ {
+  "name": "対馬島",
+  "seat": null,
+  "districts": 2,
+  "fieldCho": 428,
+  "source": "巻5・国郡部第12・西海郡第67"
+ }
+]

@@ -1,0 +1,92 @@
+{
+  "at": "2026-09-19T16:48:04.927Z",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "backup": "D:/tianming-task-artifacts-20260919/api-wait-backup-20260920",
+  "files": [
+    {
+      "file": "web/tm-ai-infra.js",
+      "bytes": 164271,
+      "sha256": "4877932406ef7370f785e06f54971a3fc31ec88cd8bdcb233f72af9c76b2f6cc"
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "bytes": 26266,
+      "sha256": "ebf339ed171be7a15dcfea1cf1f3a75bc4a223e2929089ceeb663cab9bb403b3"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "bytes": 75403,
+      "sha256": "800ce02cf730729918394a3bb2db4a96db5e48ec41c42eadfcec57a31842aa3c"
+    },
+    {
+      "file": "web/tm-ai-request-options.js",
+      "bytes": 5713,
+      "sha256": "885eba9e935fb4ed0bbf07aefb03632c7a86768602e673de500ae2360c8785d0"
+    },
+    {
+      "file": "web/tm-api-settings.js",
+      "bytes": 8025,
+      "sha256": "bd939256cd0c4ebffd0f5f3dc788ae8bf7ba78de42b76ddf96487c79316a87dd"
+    },
+    {
+      "file": "web/tm-utils.js",
+      "bytes": 99763,
+      "sha256": "85cb2335804a24320751feb5f30efd82a52033acd8aa2fbb27a153da461afeca"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "bytes": 411065,
+      "sha256": "129bc73d9bb753c0a98290362cc8f3b8536ae33a84fc34e54de4f52963a7a4ef"
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "bytes": 18246,
+      "sha256": "f097b48d9ff145ad0b580e5b7173fc5cfad6ddfde4691b08fc8764aa2edb87f8"
+    },
+    {
+      "file": "web/tm-endturn-agent-mode.js",
+      "bytes": 115588,
+      "sha256": "d7691bf0ea9e5b83c64ca0ed44cc955bac744252fdcb26c82664500d0c142769"
+    },
+    {
+      "file": "web/tm-agent-kernel.js",
+      "bytes": 11291,
+      "sha256": "f153d29c60a57916768859ad6c33ab974bbeb272ac0fd3623c088d0162ee954f"
+    },
+    {
+      "file": "web/tm-memory-agent-tools.js",
+      "bytes": 25587,
+      "sha256": "e0927b8125fab1453bdce3800a687634f85ea34cef20bdd8ee66842a17fb5cdc"
+    },
+    {
+      "file": "web/tm-endturn-reliability.js",
+      "bytes": 11723,
+      "sha256": "cb2a2a03ad1361cdc606e2192e4ae2a3515afa0a9458224fc561e2b88ad704f3"
+    },
+    {
+      "file": "web/tm-endturn-timing-ledger.js",
+      "bytes": 14802,
+      "sha256": "baccf9485321530f177e34e1543350f560ddbec27d0bc30bd21fe0fb12fc15f3"
+    },
+    {
+      "file": "web/tm-endturn-validity.js",
+      "bytes": 4407,
+      "sha256": "1e1d6905c1b7045a2873da0e2a15ae359e5f98e3313c2aa6e437aa610745fc40"
+    },
+    {
+      "file": "web/tm-endturn-mode-contract.js",
+      "bytes": 4790,
+      "sha256": "1f4e081c117b49553dd6fc01d47b234c882dc165396c63cd09fb491e2eb681e7"
+    },
+    {
+      "file": "web/tm-endturn-pipeline-steps.js",
+      "bytes": 55949,
+      "sha256": "4be7286422a8cdc8cf1134445a901e90241619719e1bf90fc8c0538e480c915d"
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "bytes": 45237,
+      "sha256": "3d1100402a773110827c51fc295dc9d29eaf8730cf65b54fec91a11306b5a5aa"
+    }
+  ]
+}

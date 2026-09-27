@@ -1,0 +1,12 @@
+[
+  {
+    "file": "scenarios/天启七年·九月（官方）.json",
+    "initial": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+    "current": "ca8e948690d15ad6d9f00ca241a6b78e9b00e55b364a4e351a1b68b9b3c53d72"
+  },
+  {
+    "file": "scenarios/晚唐·开成五年（官方）.json",
+    "initial": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51",
+    "current": "51d0bb60d31b6643b02ca7887f74c23c3b74125a76fff72bf4c558d80f79991f"
+  }
+]

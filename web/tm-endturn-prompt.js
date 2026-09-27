@@ -600,6 +600,8 @@
         var _matched = (GM._edictTracker||[]).filter(function(et) {
           return et.turn === GM.turn && et.category === el.cat && et.content === el.text;
         });
+        // 追踪编号：edict_feedback 带上它才能准确对号（效力判定只认精确匹配）
+        if (_matched.length && _matched[0].id) tp += '  edictId：' + _matched[0].id + '\n';
         _matched.forEach(function(et) {
           if (et._remoteTargets && et._remoteTargets.length > 0) {
             tp += '  ⚠ 此令涉及远方NPC：' + et._remoteTargets.join('、') + '——已遣信使传递，当前在途。\n';
@@ -610,6 +612,7 @@
       });
       tp += '\n▶ 共 ' + _edictSeq + ' 道诏令须逐条落实：edict_feedback 数组长度 == ' + _edictSeq + '·缺一不可。\n\n';
     }
+    if (TM.EdictOutcomes) tp += TM.EdictOutcomes.inputPrompt(GM, edicts, GM.turn);
     if(xinglu){
       tp+="\u3010\u4E3B\u89D2\u884C\u6B62\u3011\uFF08\u73A9\u5BB6\u89D2\u8272\u672C\u56DE\u5408\u7684\u4E2A\u4EBA\u884C\u52A8\uFF0C\u4E0E\u8BCF\u4E66\u4E92\u8865\u2014\u2014\u8BCF\u4E66\u662F\u5143\u9996\u53D1\u53F7\u65BD\u4EE4\uFF0C\u884C\u6B62\u662F\u89D2\u8272\u4E2A\u4EBA\u7684\u4E3E\u52A8\uFF09\n"+xinglu+"\n";
     }
@@ -1458,7 +1461,7 @@
     tp += '    · 反向：冤杀忠良/自毁长城、丧师失地、藩属叛离、城下之盟受辱 → 相称地 -1~3。\n';
     tp += '    · 诛杀对象是奸党逆贼则升皇威、冤杀忠良则降——由你按其人忠奸、罪证、朝野公论判定，这是该你（AI）定的量。\n';
     tp += '    · 【勿重复记功】平定民变、对外军事胜负 系统已确定性自动结算皇威（前者经平乱、后者经 battleResult.huangweiDelta），不要再在 record_sentiment_changes 里重复给这两类，以免双计。\n\n';
-    tp += '※ 【问对承诺履行·勿重复结算】玩家问对中交办、且本回合 NPC 履行完成（commitment_update 标 completed）的「查办(query)」承诺，系统已确定性下调本势力吏治浊度（降腐）；「财赋(finance)」承诺已确定性上调本势力实征率（compliance/起运到账率）；「侦查(intel)」承诺已确定性记入情报池。对同一已履成之事，勿再在 reform_effects(anticorruption 的 corruptionDelta/complianceDelta) 或 admin_changes(corruption_delta) 重复给，以免双计。\n\n';
+    tp += '※ 【交办验收】commitment_update/dialogue_commitment_feedback 中的 completed 只是承办人自报；系统不会凭此自动增加全国实征率或降低全国腐败。请使用现有的明确地区、责任人和真实资源凭据的结构化执行动作落实工作，并如实报告成果与阻力。不能完成时应报告未完成或请展限，不得虚构已经存在的税令、文书或工程凭据。\n\n';
 
     // 朝议记录注入（让AI知道本回合谁在朝议中主张了什么——叙事必须保持一致）
     //   targetTurn == GM.turn 的记录算"影响本回合"：
@@ -3690,6 +3693,7 @@
     _mark('base');
     // ── 社会生灭周期（党派/势力/阶层的 create/dissolve） ──
     sysP += '\n【社会生灭周期——党派/势力/阶层可生可灭】';
+    if (typeof TM !== 'undefined' && TM.SocialFormation) sysP += '\n' + TM.SocialFormation.context(GM);
     sysP += '\n  党派：party_create(新崛起) / party_splinter(分裂自既有) / party_merge(合流) / party_dissolve(覆灭)';
     sysP += '\n    崛起触发：社会基础变化(新阶层兴起)、领袖聚众、诏令催化、危机凝聚';
     sysP += '\n    覆灭触发：banned(查禁)/liquidated(肃清，血洗)/faded(自然消亡)/leaderKilled(领袖被杀而散)/absorbed(被吞并)';
@@ -3722,6 +3726,8 @@
     sysP += '\n    玩家诏令中提及"增设某某""裁撤某某""将某某更名为某某""拆分某某为某某"→必须在office_changes中输出对应reform动作';
     sysP += '\n    增设新官职→reform + reformDetail:"增设" + dept:所属部门 + position:新官职名';
     sysP += '\n    增设新部门→reform + reformDetail:"增设" + dept:新部门名';
+    sysP += '\n    新部门附带官职表→positions:[{name:"官职名",rank:"品级",count:编制数}]；不得为部门硬填position，任命另用appoint且安排在创建之后。';
+    sysP += '\n    新设下属部门→dept:实际父部门名 + newDept:新部门名；父部门同名时给deptId或完整deptPath。已落地结构不重复创建，未获准不得宣称已设立。';
     sysP += '\n    裁撤→reform + reformDetail:"裁撤" + dept:被裁部门名';
     sysP += '\n    改名→reform + reformDetail:"改名" + dept:旧名 + newDept:新名';
     sysP += '\n    拆分→reform + reformDetail:"拆分" + dept:原部门名 + splitInto:[{name,positions:[]},...]';
@@ -4184,6 +4190,7 @@
       for (var _si = 0; _si < _segsL.length; _si++) { if (_keep[_segsL[_si].name]) _out += _segsL[_si].text; }
       return _out;
     };
+    if (global.TM && TM.AgentWorldEditor) sysP += TM.AgentWorldEditor.context(GM);
     ctx.prompt.sysP = sysP;
     // R209a·tp 是 §3 sub-call prompt 的 base (ai-infer L229 tp0·L848 tp1 等使用)·必 export
     // (per Codex P7-β addendum·避 ad hoc cross-module dep)

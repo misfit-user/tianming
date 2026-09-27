@@ -13,7 +13,8 @@ console.log('smoke-reported-view');
 
 // ── gate 双条件 ──
 ok(RV.active(global.P) === true, '① 严格史实+开关开 → active');
-ok(RV.active({ conf: { gameMode: 'strict_hist' } }) === false, '① 开关未开 → inactive(默认关·家规)');
+ok(RV.active({ conf: { gameMode: 'strict_hist' } }) === true, '① 严格史实默认开启');
+ok(RV.active({ conf: { gameMode: 'strict_hist', reportedViewEnabled: false } }) === false, '① 显式关闭仍直通真值');
 ok(RV.active({ conf: { gameMode: 'yanyi', reportedViewEnabled: true } }) === false, '① 非严格史实 → inactive(演义照旧)');
 const rOff = RV.value('fiscal', 'guoku', 1000, { P: { conf: {} } });
 ok(rOff.shown === 1000 && !rOff.distorted && rOff.basis === 'inactive', '① inactive → 直通真值');

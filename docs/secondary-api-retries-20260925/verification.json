@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-25T06:36:53.449Z",
+  "setting": "P.conf.aiSecondaryRetryCount",
+  "defaultExtraRetries": 1,
+  "range": [
+    0,
+    20
+  ],
+  "regression": {
+    "scripts": 37,
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "waived": 0
+  },
+  "architecture": {
+    "checks": 13,
+    "passed": 13,
+    "failed": 0
+  },
+  "legacySecondaryFallback": {
+    "assertions": 14,
+    "passed": 14
+  },
+  "originalWorkspace": {
+    "uiAssertions": 5,
+    "restoreAssertions": 27,
+    "startupManifest": "PASS",
+    "nativeManifest": "PASS",
+    "sourceReadback": "PASS",
+    "reversePatchCheck": "PASS"
+  },
+  "fullSuiteRun": false,
+  "realApiCalls": false,
+  "releaseBaselineModified": false,
+  "versionModified": false,
+  "published": false,
+  "stagedIndexModified": false
+}

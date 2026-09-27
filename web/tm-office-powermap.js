@@ -35,13 +35,11 @@
   var ATTR_LABEL = { intelligence: '智', valor: '勇', military: '军', administration: '政', management: '管', charisma: '魅', diplomacy: '交', benevolence: '仁' };
   var EIGHT_TALENTS = ['intelligence', 'valor', 'military', 'administration', 'management', 'charisma', 'diplomacy', 'benevolence'];
   var TALENT_FLOOR = 40;   // 才显示阈值（域才豁免）
+  var HS = (global.TM && global.TM.OfficeHolderState) || (typeof require === 'function' ? require('./tm-office-holder-state.js') : null);
 
   function _fn(name) { return (typeof global[name] === 'function') ? global[name] : null; }
   function _holderChar(GM, p) {
-    if (!p || !p.holder) return null;
-    var find = _fn('findCharByName');
-    if (find) return find(p.holder);
-    return (GM.chars || []).find(function (c) { return c && c.name === p.holder; }) || null;
+    return HS ? HS.read(GM,p).primary : null;
   }
   function _powersOf(p) {
     var out = [], pw = p && p.powers;
@@ -91,10 +89,10 @@
   // 单官一行：· 兵部·尚书 王某(军45 政40 德72) 权[调兵·执行] 履职71
   function _fmtPos(GM, deptName, p) {
     var ch = _holderChar(GM, p), pwKeys = _powersOf(p);
-    var domainKey = DOMAIN_ATTR[pwKeys[0]] || 'administration';
+    var domainKey = pwKeys.length === 1 ? (DOMAIN_ATTR[pwKeys[0]] || 'administration') : null;
     var who, duty = '';
     if (!ch) {
-      who = '出缺';
+      who = HS ? HS.read(GM,p).label : '在岗资料待核';
     } else {
       var dexing = ' 德' + Math.round(_wuchangScore(ch));
       who = (ch.name || '') + '(' + _topTalents(ch, domainKey, 3, TALENT_FLOOR) + dexing + ')';
@@ -102,7 +100,8 @@
       if (ds && typeof ds.fulfillment === 'number') {
         duty = (ds.fulfillment < 35 ? '失职' : '履职') + ds.fulfillment + (ds.trend === 'falling' ? '↓' : ds.trend === 'rising' ? '↑' : '');
       } else {
-        var dv = (ch[domainKey] != null) ? ch[domainKey] : 50;
+        var attrs=pwKeys.length ? pwKeys.map(function(k){return DOMAIN_ATTR[k] || 'administration';}) : ['administration'];
+        var dv=attrs.reduce(function(sum,k){return sum+HS.number(ch[k],50);},0)/attrs.length;
         var est = dv * 0.6 + _wuchangScore(ch) * 0.4;
         duty = '料理' + (est >= 70 ? '称职' : est >= 45 ? '勉强' : '堪虞');
       }
@@ -111,9 +110,9 @@
     return ('· ' + deptName + '·' + (p.name || '') + ' ' + who + (pwStr ? ' ' + pwStr : '') + (duty ? ' ' + duty : '')).replace(/\s+$/, '');
   }
 
-  function _score(p, pwKeys) {
+  function _score(GM, p, pwKeys) {
     var s = pwKeys.length * 2;
-    if (!p.holder) s += 5;
+    if (HS && !HS.read(GM,p).occupied) s += 5;
     if (p._dutyState && p._dutyState.fulfillment < 35) s += 4;
     if (_rankLvl(p) <= 3) s += 3;
     return s;
@@ -134,7 +133,7 @@
    */
   function buildOfficePowerMap(GM, opts) {
     opts = opts || {};
-    var cap = opts.cap || 12;
+    var cap = opts.cap == null ? 12 : Math.max(0,HS.number(opts.cap,12));
     var relText = (opts.relevanceText || '') + '';
     if (!GM || !GM.officeTree || !GM.officeTree.length) return '';
 
@@ -148,11 +147,11 @@
     var overview = topOrder.map(function (n) {
       var list = byTop[n], vac = 0, head = null, headLvl = 9999;
       list.forEach(function (it) {
-        if (!it.p.holder) vac++;
+        if (HS) vac+=HS.read(GM,it.p).vacancyCount;
         var lvl = _rankLvl(it.p);
         if (lvl < headLvl) { headLvl = lvl; head = it.p; }
       });
-      var st = vac === 0 ? '健全' : (head && !head.holder ? '瘫(主官缺)' : '弱(' + vac + '缺)');
+      var st = vac === 0 ? '健全' : (head && HS && !HS.read(GM,head).occupied ? '瘫(主官缺)' : '弱(' + vac + '缺)');
       return n + '·' + st;
     }).join(' ┊ ');
 
@@ -161,7 +160,7 @@
       byTop[n].forEach(function (it) {
         var pwKeys = _powersOf(it.p);
         if (!pwKeys.length && !_isHead(it.p)) return;
-        var sc = _score(it.p, pwKeys);
+        var sc = _score(GM, it.p, pwKeys);
         if (relText) {
           var hit = (it.deptName && relText.indexOf(it.deptName) >= 0)
             || (it.p.name && it.p.name.length >= 2 && relText.indexOf(it.p.name) >= 0)
@@ -179,18 +178,18 @@
   }
 
   // ── 官制 agent 化·按需取数：queryOfficeDetail（query_office 工具本体 / office-recall 子调用用·query-aware·返 duties 职责描述激活惰性字段）──
-  function _matchOffice(query, deptName, p) {
+  function _matchOffice(GM, query, deptName, p) {
     if (!query) return true;
     var q = String(query), pwKeys = _powersOf(p);
     if (deptName && deptName.indexOf(q) >= 0) return true;
     if (p.name && p.name.indexOf(q) >= 0) return true;
-    if (p.holder && p.holder.indexOf(q) >= 0) return true;
+    if (HS && HS.read(GM,p).holders.some(function(h){return h.name && h.name.indexOf(q)>=0;})) return true;
     if (pwKeys.some(function (k) { return (POWER_LABEL[k] && POWER_LABEL[k].indexOf(q) >= 0) || k.indexOf(q) >= 0; })) return true;
     return false;
   }
   function _fmtOfficeDetail(GM, deptName, p) {
-    var ch = _holderChar(GM, p), pwKeys = _powersOf(p), domainKey = DOMAIN_ATTR[pwKeys[0]] || 'administration', who;
-    if (!ch) who = '出缺';
+    var ch = _holderChar(GM, p), pwKeys = _powersOf(p), domainKey = pwKeys.length===1 ? (DOMAIN_ATTR[pwKeys[0]] || 'administration') : null, who;
+    if (!ch) who = HS ? HS.read(GM,p).label : '在岗资料待核';
     else {
       var ds = p._dutyState, lv = (ds && typeof ds.fulfillment === 'number') ? ('·履职' + Math.round(ds.fulfillment)) : '';
       who = (ch.name || '') + '(' + _topTalents(ch, domainKey, 3, 0) + ' 德' + Math.round(_wuchangScore(ch)) + lv + ')';
@@ -207,12 +206,12 @@
    */
   function queryOfficeDetail(GM, query, opts) {
     opts = opts || {};
-    var cap = opts.cap || 15;
+    var cap = opts.cap == null ? 15 : Math.max(0,HS.number(opts.cap,15));
     if (!GM || !GM.officeTree || !GM.officeTree.length) return '（官制未配置）';
     var rows = [];
     _walk(GM.officeTree, '', function (p, deptName) {
       if (!_powersOf(p).length && !_isHead(p)) return;          // 只查掌权/主官·同舆图口径
-      if (!_matchOffice(query, deptName, p)) return;
+      if (!_matchOffice(GM, query, deptName, p)) return;
       rows.push(_fmtOfficeDetail(GM, deptName, p));
     });
     if (!rows.length) return '〔官署详查·"' + (query || '') + '"〕未匹配掌权要职（试官署名/官职/在任者/权力如"征税""调兵"）。';

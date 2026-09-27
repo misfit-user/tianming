@@ -389,13 +389,12 @@ function _endTurn_collectInput() {
       }
     }
   } catch(_candEvErr) { /* 候选事件消费失败不影响主流程 */ }
-  // 清理超过10回合的旧追踪记录
-  // 保留：本回合全部 + 未完成诏令（跨回合追踪·无年限）+ 已完成/受阻者 24 回合
-  GM._edictTracker = GM._edictTracker.filter(function(e) {
-    if (e.turn === GM.turn) return true;  // 本回合全部保留
-    if (e.status === 'executing' || e.status === 'pending' || e.status === 'partial' || e.status === 'obstructed' || e.status === 'pending_delivery') return true;
-    return GM.turn - e.turn < ((typeof turnsForMonths === 'function') ? turnsForMonths(24) : 24);  // 已完成/失败·保留两年
-  });
+  // 诏令效力（tm-edict-efficacy.js）：补齐编号、有期诏令期满转为已到期，再清理旧追踪记录。
+  // 保留：本回合全部 + 未完成诏令（跨回合追踪·无年限）+ 仍现行的诏令（办结不等于废止）+ 其余已完成/失败者两年
+  if (typeof TM !== 'undefined' && TM.EdictEfficacy) {
+    TM.EdictEfficacy.tick(GM);
+    TM.EdictEfficacy.prune(GM, (typeof turnsForMonths === 'function') ? turnsForMonths(24) : 24);
+  }
 
   // 1.15: 跨势力识别——检测诏令目标中的非玩家势力（人/势力名）
   // 若涉及，标记为外交文书·AI 须以外交方式处理（对方可接受/拒绝/敷衍/反击）
@@ -512,6 +511,7 @@ function _endTurn_collectInput() {
       if (typeof recordPlayerDecision === 'function') recordPlayerDecision('edict', '颁行诏书:' + _decreeText.substring(0, 80));
     }
   }
+  if (typeof TM !== 'undefined' && TM.EdictOutcomes) TM.EdictOutcomes.collect(GM, edicts, GM.turn);
   if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
   resetTurnChanges();
   // 注意：不在此处清空 _couplingReport/_edictExecutionReport/_buildingOutputReport/_npcIntents/_healthAlerts/_decisionAlerts
@@ -526,7 +526,7 @@ function _endTurn_collectInput() {
   }
 
   // 从诏令文本中提取结构化操作（记录供AI推演参考，由AI决定执行效果）
-  var allEdictText = [edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other, edicts.decree].join(' ');
+  var allEdictText = [edicts.political, edicts.military, edicts.diplomatic, edicts.economic, edicts.other, edicts.decree].join('\n');
 
   // 2.2→2.3: 收集执行管线信息注入AI prompt（不做机械效果，效果完全由AI判断）
   if (typeof processEdictEffects === 'function' && allEdictText.trim()) {
@@ -691,6 +691,7 @@ function _endTurn_collectInput() {
 
   if (window.TM && TM.BuildingOrders) input.buildingOrders = TM.BuildingOrders.collect(GM, P, edicts);
   else if (Object.keys(edicts).some(function(k) { return String(edicts[k] || '').indexOf('〔营造案 build-') >= 0; }) || (GM.edicts || []).some(function(e) { return e && e.turn === GM.turn && e.status === 'promulgated' && e.buildingOrderRefs && e.buildingOrderRefs.length; })) throw new Error('营造案核办模块未加载，已停止提交，请重新加载游戏');
+  if (window.TM && TM.ImperialOrders) TM.ImperialOrders.tick(GM);
   return input;
 }
 

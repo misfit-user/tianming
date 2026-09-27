@@ -1,0 +1,122 @@
+[
+  {
+    "file": "web/tm-minxin-hard-link-consumers.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-fiscal-statements.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/phase8-formal-rightrail.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-class-engine.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-party-class-llm-calibrator.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-social-political-signals.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-party-class-ecology.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-patches-start.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-renli.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/tm-topbar-vars.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-class-satisfaction-guard.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-social-satisfaction-recovery.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-fiscal-actual-display.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-guoku-shared-display.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-topbar-fiscal-consistency.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-class-pressure-scope.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/smoke-opening-renli-prime.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  },
+  {
+    "file": "web/index.html",
+    "exit": 1,
+    "out": "",
+    "pass": true
+  }
+]

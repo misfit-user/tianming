@@ -76,7 +76,7 @@ function checkHistoryEvents() {
       //   ②演义也照旧硬弹：与"由玩家改写历史"调性冲突→演义按结构化条件触发·可全关；轻度/严格史实维持现状。
       //   ③写好的 trigger 从不生效：字符串 trigger 被当注记→改用通用结构化条件(triggerCondAll/requiresDead)求值。
       // (0) 注定之死已由玩家以别法了结(如提前处决)→记为已了结·不重复弹/不重复级联
-      if (event.deathTarget && _rigidDeathTargetAlreadyDead(event.deathTarget)) {
+      if ((event.deathTargetId||event.deathTarget) && _rigidDeathTargetAlreadyDead(event.deathTargetId||event.deathTarget)) {
         GM.triggeredHistoryEvents[event.id] = { turn: GM.turn, resolved: 'already-dead' }; // arch-ok 本文件自有触发记录表·同 line 85 既有写口
         return;
       }
@@ -92,6 +92,10 @@ function checkHistoryEvents() {
 
       // (2) 结构化"史实注定死亡"：当场置死 + 全级联(复用 applyOneDeath)·不再等下游叙事扫描兜底
       _applyRigidHistoryDeath(event);
+      if (typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM)) {
+        if(!TM.NativeWorld.eventVisible(GM,event))return;
+        if(!TM.NativeWorld.eventChoiceAllowed(GM,event)){if(typeof addEB==='function')addEB('史事',event.name||event.title||'世界事件');return;}
+      }
 
       // 显示事件选择界面（v0.2·事件并入御案时政:开关开 → 收编进 currentIssues·关 → 原独立事件框·零回归）
       if (typeof _eventAdjudicationOn === 'function' && _eventAdjudicationOn() && typeof _pushHistoryEventToIssues === 'function') {
@@ -190,6 +194,7 @@ function _rigidResolvePath(path) {
 /** 按名找角色(复用运行时全局·模糊+精确·测试环境缺省时回落 GM.chars 线性查) */
 function _rigidFindChar(name) {
   if (!name) return null;
+  if(typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM))return TM.NativeWorld.resolveCharacter(GM,name);
   if (typeof _fuzzyFindChar === 'function') { var c = _fuzzyFindChar(name); if (c) return c; }
   if (typeof findCharByName === 'function') { var c2 = findCharByName(name); if (c2) return c2; }
   var arr = (typeof GM !== 'undefined' && Array.isArray(GM.chars)) ? GM.chars : [];
@@ -198,14 +203,14 @@ function _rigidFindChar(name) {
 
 /** 结构化史实死亡：deathTarget 当场置死 + 全级联(复用 applyOneDeath)·治"死亡靠下游叙事扫描·晚一回合/漏词永不死" */
 function _applyRigidHistoryDeath(event) {
-  if (!event || !event.deathTarget) return;
+  if (!event || (!event.deathTarget&&!event.deathTargetId)) return;
   var reason = event.deathReason || event.name || '史实注定'; // 史实注定
   try {
     if (typeof applyOneDeath === 'function') {
-      applyOneDeath({ name: event.deathTarget, reason: reason });
+      applyOneDeath({ name: event.deathTarget, characterId:event.deathTargetId, reason: reason });
     } else {
       // 极端回落(applyOneDeath 缺位)：至少置死·免"注定死者仍活蹦乱跳"的尸政
-      var c = _rigidFindChar(event.deathTarget);
+      var c = _rigidFindChar(event.deathTargetId||event.deathTarget);
       if (c && c.alive !== false) { c.alive = false; c.dead = true; c.deathReason = reason; c.deathTurn = (typeof GM !== 'undefined' && GM.turn) || 0; }
     }
   } catch (e) {
@@ -267,7 +272,7 @@ if (typeof window !== 'undefined') { window._tcAppendDivergence = _tcAppendDiver
  * branch{name,description,impact} → choice{text,desc,effect,aiHint}·effect=impact(固定·_chooseIssueOption 兜底)·开关开则 AI 据局面裁
  */
 function _historyEventToIssue(event) {
-  return {
+  var issue = {
     id: 'hist_' + (event.id || 'x'),
     _scenarioEventId: event.runtimePolicy === 'tm-scenario-decision/1' ? event.id : '',
     _scenarioSid: (typeof GM !== 'undefined' && GM.sid) || '',
@@ -282,6 +287,8 @@ function _historyEventToIssue(event) {
       return { text: b.name || '应对', desc: b.description || '', effect: b.impact || null, aiHint: b.aiHint || '' };
     })
   };
+  if(typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM))issue.sourceHistoryEventId=event.id;
+  return issue;
 }
 function _pushHistoryEventToIssues(event) {
   try {
@@ -363,6 +370,13 @@ function applyEventBranch(eventId, branchIdx) {
   }
 
   var branch = event.branches[branchIdx];
+  var nativeEvent=typeof TM!=='undefined'&&TM.NativeWorld&&TM.NativeWorld.enabled(GM),eventRecord=nativeEvent&&GM.triggeredHistoryEvents&&GM.triggeredHistoryEvents[eventId],claim=null;
+  if(nativeEvent){
+    if(!eventRecord||!TM.NativeWorld.eventChoiceAllowed(GM,event))return{ok:false,code:'native-event-choice-denied'};
+    if(eventRecord.branchApplied)return{ok:true,noChange:true};
+    claim=TM.NativeWorld.claimEvent(GM,eventId);if(!claim)return{ok:false,code:'native-event-choice-busy'};
+  }
+  try {
 
   var _scenarioOutcome = null;
   if (event.runtimePolicy === 'tm-scenario-decision/1') {
@@ -372,6 +386,10 @@ function applyEventBranch(eventId, branchIdx) {
     if (_scenarioOutcome.duplicate) return _scenarioOutcome;
   }
   // 应用影响
+  if(nativeEvent){
+    if(typeof branch.effect==='function')throw new Error('原生资料事件不执行嵌入脚本');
+    Object.keys(branch.impact||{}).forEach(function(k){if(['__proto__','prototype','constructor'].indexOf(k)>=0||typeof branch.impact[k]!=='number'||!Number.isFinite(branch.impact[k]))throw new Error('原生事件影响字段无效：'+k);});
+  }
   if (branch.impact && !_scenarioOutcome) {
     Object.keys(branch.impact).forEach(function(key) {
       var val = branch.impact[key];
@@ -396,6 +414,7 @@ function applyEventBranch(eventId, branchIdx) {
       console.error('Event branch effect error:', e);
     }
   }
+  if(nativeEvent)eventRecord.branchApplied={index:branchIdx,turn:GM.turn};
 
   // 记录到编年
   if (GM.biannianItems) {
@@ -423,6 +442,7 @@ function applyEventBranch(eventId, branchIdx) {
   toast('✅ ' + branch.name);
   closeModal();
   return _scenarioOutcome || undefined;
+  } finally {if(nativeEvent)TM.NativeWorld.releaseEvent(GM,claim);}
 }
 
 // ============================================================

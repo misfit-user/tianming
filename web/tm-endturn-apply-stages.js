@@ -176,6 +176,63 @@
     }
   }
 
+  function _repairIdentityRows(kind) {
+    var G = global.GM || {};
+    if (kind === 'character') return Array.isArray(G.chars) ? G.chars : [];
+    if (kind === 'faction') return Array.isArray(G.facs) ? G.facs : [];
+    var rows = [], seen = new Set();
+    function visit(value) {
+      if (!value || typeof value !== 'object' || seen.has(value)) return;
+      seen.add(value);
+      if (Array.isArray(value)) { value.forEach(visit); return; }
+      if (value.id || value.name || value.title || value.position) rows.push(value);
+      ['subs','children','positions','divisions'].forEach(function(k) { visit(value[k]); });
+    }
+    if (kind === 'office') visit(G.officeTree);
+    else {
+      visit((G.mapData || G.map || {}).regions); visit(G.regions);
+      [G.regionMap, G.adminHierarchy].forEach(function(root) { if (root) Object.keys(root).forEach(function(k) { visit(root[k]); }); });
+    }
+    return rows;
+  }
+  function _repairIdentityGroups(field) {
+    var actor = ['characterId','charId','charName','character','name'];
+    if (/^(appointments|char_updates|office_assignments|personnel_changes|character_deaths)$/.test(field)) return [
+      {kind:'character',keys:actor}, {kind:'office',keys:['post','position','toPosition','officeId']}
+    ];
+    if (field === 'battleResult') return [
+      {kind:'faction',keys:['winnerFactionId','winnerFaction','winner']},
+      {kind:'faction',keys:['loserFactionId','loserFaction','loser']}
+    ];
+    if (/^faction_/.test(field)) return [
+      {kind:'faction',keys:['factionId','faction','id','name']},
+      {kind:'character',keys:['newLeaderId','newLeader']},
+      {kind:'faction',keys:['targetFactionId','targetFaction']},
+      {kind:'faction',keys:['newFactionId','newFaction','toFactionId','toFaction']}
+    ];
+    if (/^(region_updates|population_adjustments|central_local_actions|environment_actions)$/.test(field)) return [
+      {kind:'region',keys:['regionId','region_id','region','targetRegion','target','id']}
+    ];
+    return [];
+  }
+  function _bindRepairIdentity(item, group) {
+    var rows = _repairIdentityRows(group.kind), candidates = null;
+    group.keys.forEach(function(key) {
+      var value = item && item[key];
+      if (typeof value !== 'string' && typeof value !== 'number') return;
+      var ref = String(value).trim(); if (!ref) return;
+      var matches = rows.filter(function(row) { return row.id != null && String(row.id) === ref; });
+      if (!matches.length) matches = rows.filter(function(row) { return [row.name,row.title,row.position,row.officialTitle].some(function(v) { return v != null && String(v) === ref; }); });
+      if (!matches.length) return;
+      candidates = candidates === null ? matches : candidates.filter(function(row) { return matches.indexOf(row) >= 0; });
+    });
+    return candidates && candidates.length === 1 ? candidates[0] : null;
+  }
+  function _repairKeepsIdentity(field, before, after, allowed) {
+    var groups = _repairIdentityGroups(field), changed = groups.filter(function(g) { return g.keys.some(function(k) { return allowed[k] && before[k] !== after[k]; }); });
+    return changed.length > 0 && changed.every(function(group) { var bound = _bindRepairIdentity(before, group); return !!bound && _bindRepairIdentity(after, group) === bound; });
+  }
+
   function _applyTargetedWritebackRepairs(batch, response, allowlist) {
     if (!response || typeof response !== 'object' || !Array.isArray(response.repairs)) {
       return { ok:false, code:'invalid-repair-response' };
@@ -209,6 +266,7 @@
       if (!_repairPreservesSemantics(before, repair.item, permission.fields)) {
         return { ok:false, code:'repair-changed-business-semantics', field:field, index:index };
       }
+      if (!_repairKeepsIdentity(field, before, repair.item, permission.fields)) return { ok:false, code:'repair-identity-not-preserved', field:field, index:index };
       if (index !== null) next[field][index] = _cloneWritebackValue(repair.item);
       else next[field] = _cloneWritebackValue(repair.item);
       applied++;
@@ -224,13 +282,27 @@
       unavailable.code = 'writeback-preflight-unavailable';
       throw unavailable;
     }
+    var world = global.GM, player = global.P, generation = global._tmLoadGen, turn = world && world.turn;
+    var worldKey = [world && world._campaignId, world && world._timelineId].join('|');
+    function assertCurrent() {
+      if (Number.isFinite(opts.deadlineAt) && Date.now()>=opts.deadlineAt) {var expired=new Error("原调用明确总时限已到，不再启动身份修复或应急恢复");expired.code="AI_REQUEST_DEADLINE";throw expired;}
+      if (global.GM !== world || global.P !== player || global._tmLoadGen !== generation || world.turn !== turn || worldKey !== [world._campaignId,world._timelineId].join('|') || opts.signal && opts.signal.aborted) {
+        var stale = new Error('主写回修复期间世界已改变或操作取消，旧修复已丢弃'); stale.code = 'AI_STALE_WORLD'; stale.mainWriteback = true; throw stale;
+      }
+    }
     var current = _cloneWritebackValue(batch);
     var validation = global.validateAIWriteBackBatch(current, { source:opts.source || 'endturn-full-p1' });
     var attempts = 0;
     var lastRepairFailureCode = '';
-    while (!validation.ok && attempts < 2) {
+    var retryPolicy = global.TM && TM.CallRetryPolicy ? TM.CallRetryPolicy.options({id:opts.id||'sc1',maxRetries:2}) : {maxRetries:2};
+    var normalLimit = retryPolicy.maxRetries;
+    while (!validation.ok && attempts < normalLimit) {
       if (typeof callAI !== 'function') break;
-      var repairable = validation.failures.filter(function(failure) { return _identityFieldsForFailure(failure).length > 0; }).slice(0, 24);
+      assertCurrent();
+      var repairable = validation.failures.filter(function(failure) {
+        var keys = _identityFieldsForFailure(failure), item = Number.isInteger(failure.index) ? (current[failure.field] || [])[failure.index] : current[failure.field];
+        return item && _repairIdentityGroups(failure.field).some(function(group) { return group.keys.some(function(k) { return keys.indexOf(k) >= 0; }) && _bindRepairIdentity(item, group); });
+      }).slice(0, 24);
       var allowlist = _buildWritebackRepairAllowlist(repairable);
       if (!Object.keys(allowlist).length) break;
       attempts++;
@@ -253,9 +325,10 @@
         '失败项：' + JSON.stringify(failures) + '\n' +
         '可用候选：' + JSON.stringify(_collectWritebackRepairCandidates()) + '\n' +
         '原叙事节选：' + String(current.shizhengji || current.narrative || '').slice(0, 1800);
-      var rawRepair = await callAI(prompt, 2200, undefined, 'secondary', {
-        priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0
+      var rawRepair = await callAI(prompt, 2200, opts.signal, 'secondary', {
+        id:(opts.id||'sc1')+':identity-normal', priority:'critical', timeoutMs:50000, maxRetries:0, temperature:0, signal:opts.signal, _turnRetriesResolved:true, _noSecFallback:true, totalResponseTimeoutMs:Number.isFinite(opts.deadlineAt)?Math.max(1,opts.deadlineAt-Date.now()):undefined
       });
+      assertCurrent();
       var repair = _applyTargetedWritebackRepairs(current, _parseWritebackRepair(rawRepair), allowlist);
       if (!repair.ok) {
         lastRepairFailureCode = repair.code || 'repair-rejected';
@@ -263,6 +336,16 @@
       }
       current = repair.output;
       validation = global.validateAIWriteBackBatch(current, { source:'endturn-writeback-repair-' + attempts });
+    }
+    if (!validation.ok && attempts >= normalLimit && global.TM && TM.RecoveryAdapters) {
+      assertCurrent();
+      var permissions = _buildWritebackRepairAllowlist(validation.failures);
+      var recovered = await TM.RecoveryAdapters.identity({id:opts.id||'sc1',batch:current,validation:validation,normalExhausted:true,normalAttempts:attempts+1,
+        error:{code:'ai-writeback-preflight-failed'},tier:global.P&&P.ai&&P.ai.secondary&&P.ai.secondary.key?'secondary':'primary',signal:opts.signal,guard:assertCurrent,deadlineAt:opts.deadlineAt,
+        repair:function(plan){return _applyTargetedWritebackRepairs(current,plan,permissions);},
+        validate:function(candidate){return global.validateAIWriteBackBatch(candidate,{source:'emergency-preflight'});}});
+      if(recovered.error && /^(AI_ABORTED|AI_STALE_WORLD|AI_REQUEST_DEADLINE|RECOVERY_DECLINED)$/.test(recovered.error.code))throw recovered.error;
+      assertCurrent();if (recovered.ok) { current=recovered.value; validation=global.validateAIWriteBackBatch(current,{source:'emergency-final-preflight'}); }
     }
     if (!validation.ok) {
       var error = new Error('AI 主写回预检失败；本回合未修改世界状态，可重新生成本回合');
@@ -274,6 +357,7 @@
       error.lastRepairFailureCode = lastRepairFailureCode;
       throw error;
     }
+    assertCurrent();
     return { ok:true, output:validation.output, repairAttempts:attempts };
   }
   ns._validateAndRepairMainWriteback = _validateAndRepairMainWriteback;
@@ -356,7 +440,8 @@ inst._imprisonedTurn = GM.turn||0;
   // ── AP-1（自 origin writeBack sc1 写回主体逐字节迁出·if(p1) 由 dispatcher 保留·此处 recompute p1）──
   ns.stages._applyCore_reconcile = async function(ctx) {
     var p1 = ctx.results.sc1 || null;
-        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1' });
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeOutput(p1);
+        var _strictPreflight = await _validateAndRepairMainWriteback(p1, { source:'endturn-full-p1', id:'sc1', deadlineAt:ctx.meta&&ctx.meta.sc1RecoveryDeadline, signal:ctx.signal || ctx.meta && ctx.meta.signal });
         p1 = _strictPreflight.output;
         ctx.results.sc1 = p1;
         // char_updates 的 alive/dead 先在原始 p1 上规范化：后续既有 applyCharacterDeaths(p1)
@@ -365,9 +450,11 @@ inst._imprisonedTurn = GM.turn||0;
         try { if (p1 && typeof global.normalizeAIWriteBackDeaths === 'function') _deathNorm1 = global.normalizeAIWriteBackDeaths(p1, { source: 'endturn-full-p1', deferDeaths: true }) || _deathNorm1; } catch(_dnE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_dnE, 'endturn] normalizeAIWriteBackDeaths') : console.warn('[endturn] normalizeAIWriteBackDeaths:', _dnE); }
         // 方案融入：AI 产出的通用变化/任免/机构/区划/事件/NPC行动/关系 → 统一应用
         try {
+          if (typeof applyAITurnChanges !== 'function') { var missing = new Error('主写回应用器未加载'); missing.code = 'writeback-applier-unavailable'; throw missing; }
           if (typeof applyAITurnChanges === 'function') {
-            var _applyRes1 = applyAITurnChanges({
+            var _mainWritebackBatch1 = {
               _strictValidation: true,
+              _deferNarrativeRepairs: !!(ctx.meta && ctx.meta.requireTurnReview),
               narrative: p1.shizhengji || '',
               changes: Array.isArray(p1.changes) ? p1.changes : [],
               appointments: Array.isArray(p1.appointments) ? p1.appointments : [],
@@ -404,7 +491,12 @@ inst._imprisonedTurn = GM.turn||0;
               // 问天 directive 合规回报
               directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : [],
               regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
-            });
+            };
+            var _applyRes1 = applyAITurnChanges(_mainWritebackBatch1);
+            if (_applyRes1 && !_applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview && TM.RecoveryReview) {
+              TM.RecoveryReview.prepareRepair(_applyRes1,_mainWritebackBatch1,p1,ctx);
+              ctx.meta.deferredMainOutput=p1;
+            }
             if (_deathNorm1.failed && _deathNorm1.failed.length) {
               _applyRes1.applied = _applyRes1.applied || {};
               _applyRes1.applied.failed = Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : [];
@@ -419,10 +511,18 @@ inst._imprisonedTurn = GM.turn||0;
               _failed1.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons1[r]=(_reasons1[r]||0)+1; });
               var _sum1 = Object.keys(_reasons1).map(function(r){ return r + '×' + _reasons1[r]; }).join('·');
               var _sample1 = _failed1.slice(0, 3).map(function(f){
-                return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+                return '[' + ((f && f.kind) || (f && f.field) || (f && f.validator) || '?') + ':' + ((f && f.target) || (f && f.ref) || (f && f.details && f.details[0] && f.details[0].keyword) || '?') + '] ' + ((f && f.reason) || '');
               }).join(' | ');
-              throw new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
+              var failedWriteback = new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
+               failedWriteback.code = 'ai-writeback-atomic-failed'; failedWriteback.mainWriteback = true;
+               failedWriteback.writebackFailures = _failed1.slice(); throw failedWriteback;
             }
+          }
+          if (_applyRes1 && _applyRes1.ok && ctx.meta && ctx.meta.requireTurnReview) {
+            try {
+              if (global.TM && TM.RecoveryReview) TM.RecoveryReview.prepare(_applyRes1,p1,ctx);
+              else ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:'复核模块尚未加载'};
+            } catch(reviewError) {ctx.meta.emergencyReview={status:'pending',nonBlocking:true,reason:String(reviewError.message||reviewError)};console.warn('[TurnReview] 复核准备延后，主推演继续:',reviewError.message);}
           }
         } catch(_applyErr) {
           (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_applyErr, 'endturn] applyAITurnChanges:') : console.warn('[endturn] applyAITurnChanges:', _applyErr);
@@ -518,6 +618,7 @@ inst._imprisonedTurn = GM.turn||0;
               'office_assignments: ' + JSON.stringify((_rec.structuredSnapshot.office_assignments||[]).slice(0,5)) + '\n' +
               'fiscal_adjustments: ' + JSON.stringify((_rec.structuredSnapshot.fiscal_adjustments||[]).slice(0,5)) + '\n' +
               'military_changes: ' + JSON.stringify((_rec.structuredSnapshot.military_changes||[]).slice(0,5)) + '\n\n' +
+              '这些是关键词扫描线索，不是已证实错误。先查完整上下文：人物出行、机构职权、旧事、计划、传闻和否定句不表示本回合新增事件；不得仅凭词语补造战争、外交、婚姻或法令。无法确认真实发生时调用 record_no_changes。\n' +
               '请检查 narrative 中提到但未在结构化数据里体现的状态变化·只补遗漏的·不要重复已写过的。\n' +
               '使用提供的 5 个工具之一记录补录·若完全无需补录请调用 record_no_changes。\n' +
               '注意：每个工具可调用多次·按领域分别调用（人事/任命/财政/军事各自独立）。';
@@ -969,6 +1070,15 @@ inst._imprisonedTurn = GM.turn||0;
 
   // ── AP-6（自 origin writeBack 尾部逐字节迁出·幻觉防火墙后验+记忆入账+record 组装+return ctx）──
   //   writeBack 局部变量经状态包 _st 传入·顶部解构回同名 var 保业务体逐字节一致。
+  ns.stages.refreshNarrative = function(ctx,p1) {
+    ['shizhengji','zhengwen'].forEach(function(k){if(p1[k])ctx.record[k]=p1[k];});
+    ctx.record.shiluText=p1.shilu_text||ctx.record.shiluText;
+    ctx.record.szjTitle=p1.szj_title||ctx.record.szjTitle;
+    ctx.record.szjSummary=p1.szj_summary||ctx.record.szjSummary;
+    var latest=(GM._recentNarrative||[]).find(function(r){return r.turn===GM.turn;});
+    if(latest){latest.shizhengji=String(ctx.record.shizhengji||'').slice(0,2600);latest.shilu=String(ctx.record.shiluText||'').slice(0,1300);latest.summary=String(ctx.record.szjSummary||'').slice(0,200);}
+  };
+
   ns.stages._applyPostValidateAssemble = function(ctx, _st) {
     var p1 = _st.p1;
     var shizhengji = _st.shizhengji, zhengwen = _st.zhengwen, playerStatus = _st.playerStatus, playerInner = _st.playerInner, turnSummary = _st.turnSummary, shiluText = _st.shiluText, szjTitle = _st.szjTitle, szjSummary = _st.szjSummary, personnelChanges = _st.personnelChanges, hourenXishuo = _st.hourenXishuo;
@@ -996,6 +1106,11 @@ inst._imprisonedTurn = GM.turn||0;
         var _aliveSet = {};
         (GM.chars || []).forEach(function(c) { if (c.alive !== false) _aliveSet[c.name] = true; });
         p1.npc_actions.forEach(function(act) {
+          if (global.TM && global.TM.OfficeHolderState && (act.characterId != null || act.actorId != null)) {
+            var stableActor = global.TM.OfficeHolderState.identity(GM, act.characterId != null ? act.characterId : act.actorId, '').char;
+            if (!stableActor || stableActor.alive === false || stableActor.dead) { act._hallucinated = true; return; }
+            act.name = stableActor.name; return;
+          }
           if (act.name && !_aliveSet[act.name]) {
             // 尝试模糊匹配
             var _fuzzy = (typeof _fuzzyFindChar === 'function') ? _fuzzyFindChar(act.name) : null;
@@ -1023,6 +1138,7 @@ inst._imprisonedTurn = GM.turn||0;
         ctx.meta.memoryRollup = global.TM.MemoryTurnRollup.rebuildFromArchive(GM, { turn: GM && GM.turn });
       }
 
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(_st);
     ctx.results.sc1 = p1;
     ctx.record.shizhengji = shizhengji || "";
     ctx.record.zhengwen = zhengwen || "";
@@ -1034,6 +1150,7 @@ inst._imprisonedTurn = GM.turn||0;
     ctx.record.szjSummary = szjSummary || "";
     ctx.record.personnelChanges = Array.isArray(personnelChanges) ? personnelChanges : [];
     ctx.record.hourenXishuo = hourenXishuo || "";
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     // ★存近回合时政记/实录原文·供下一回合推演承接(治"叙事与推演断裂":旧仅 chronicleAfterwords 存 2 句/200 字·丢尽情节线/未决伏笔·
     //   AI 每回合几乎接不上上回合真实叙事)·环形缓冲留最近 2 回合·限长(注入侧再按上下文预算截断)·随存档序列化。
     try {

@@ -312,8 +312,9 @@
   var groupKeys = [];
 
   function courtBlocked() {
-    return typeof GM !== 'undefined' && GM && GM._isPostTurnCourt
-      && (!GM._pendingShijiModal || GM._pendingShijiModal.courtDone === false);
+    // toggle(name, undefined) 会反转类名；未开朝会时必须返回 false，不能把缺省字段传给 220ms 哨兵。
+    return !!(typeof GM !== 'undefined' && GM && GM._isPostTurnCourt
+      && (!GM._pendingShijiModal || GM._pendingShijiModal.courtDone === false));
   }
 
   function shuffle(n) {
@@ -571,6 +572,7 @@
     window.clearTimeout(finishTimer);
     window.clearTimeout(titleTimer);
     root.classList.remove('is-finishing', 'is-swapping', 'is-sealed', 'is-title-swap');
+    root.classList.toggle('is-court-hidden', courtBlocked());
     root.style.opacity = '';
     swapping = false;
     pendingScene = -1;
@@ -599,6 +601,7 @@
   // 上屏（带入场动画）：start 的首屏、朝会结束的延迟上屏、暂避后的复出共用
   function reveal() {
     if (root.classList.contains('show')) return;
+    root.classList.toggle('is-court-hidden', courtBlocked());
     els.inner.style.animation = 'none';
     void els.inner.offsetWidth;
     els.inner.style.animation = '';

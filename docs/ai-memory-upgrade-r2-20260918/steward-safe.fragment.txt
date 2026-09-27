@@ -1,0 +1,73 @@
+  function _stewardProfile(opts) {
+    return TM.MemoryAdaptive ? TM.MemoryAdaptive.plan({ tier: opts && opts.tier || 'primary' }) : { consolidationTasks: 5, consolidationOutput: 8000, sourceChars: 60000, mode: 'legacy' };
+  }
+  function _sourceStamp(value) { try { return JSON.stringify(value); } catch (_) { return ''; } }
+  function _prepareWork(GM, work, opts) {
+    var profile = _stewardProfile(opts), remaining = profile.sourceChars, selected = [];
+    work.tasks.slice(0, profile.consolidationTasks).forEach(function(task) {
+      if (task.old) {
+        var chosen = [], spent = 0;
+        for (var i = 0; i < task.old.length; i++) {
+          var cost = _sourceStamp(task.old[i]).length + 100;
+          if (spent + cost > remaining) break;
+          chosen.push(task.old[i]); spent += cost;
+        }
+        if (!chosen.length) return;
+        task.old = chosen; task.keepFrom = chosen.length;
+        task._sourceStamp = _sourceStamp(chosen); remaining -= spent;
+      } else {
+        var payload = [task.mems || [], task.shiji || [], task.l2s || []], length = _sourceStamp(payload).length;
+        if (length > remaining) return;
+        task._sourceStamp = _sourceStamp(payload); remaining -= length;
+      }
+      selected.push(task);
+    });
+    work.tasks = selected; work.profile = profile;
+    return work;
+  }
+  function _workCurrent(GM, work) {
+    if (!GM || !work || Number(work.turn) !== Number(GM.turn)) return false;
+    return (work.tasks || []).every(function(task) {
+      if (!task._sourceStamp) return true;
+      if (task.old) {
+        var source = task.layer === 'aiMemory' ? GM._aiMemory : task.layer === 'foreshadows' ? GM._foreshadows : GM.conv;
+        return _sourceStamp((source || []).slice(0, task.old.length)) === task._sourceStamp;
+      }
+      return _sourceStamp([task.mems || [], task.shiji || [], task.l2s || []]) === task._sourceStamp;
+    });
+  }
+  function _validConsolidation(work, parsed) {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+    function validText(value) {
+      if (typeof value !== 'string' || !value.trim() || value.length > 12000) return false;
+      if (TM.MemoryWriteGate && TM.MemoryWriteGate.evaluateCandidate) {
+        var check = TM.MemoryWriteGate.evaluateCandidate({ type: 'summary', authority: 'ai_summary', body: value, sourceRefs: [{ type: 'consolidation', id: 'validation-only' }] });
+        if (check.status === 'quarantined') return false;
+      }
+      return true;
+    }
+    return (work.tasks || []).every(function(task) {
+      if (task.layer === 'aiMemory') return validText(parsed.aiMemory_summary) && (!parsed.aiMemory_threads || validText(parsed.aiMemory_threads));
+      if (task.layer === 'foreshadows') return validText(parsed.foreshadows_active) && (!parsed.foreshadows_resolved || validText(parsed.foreshadows_resolved));
+      if (task.layer === 'conv') return validText(parsed.conv_summary);
+      var layer = parsed[task.layer];
+      return !!(layer && typeof layer === 'object' && !Array.isArray(layer) && validText(task.layer === 'L2' ? layer.summary : layer.theme));
+    });
+  }
+  var _stewardFlights = new WeakMap();
+  function _stewardLease(GM, tier) {
+    var p = global.P, world = global.GM, turn = GM.turn, generation = global._tmLoadGen;
+    var campaign = GM._campaignId, timeline = GM._timelineId;
+    var identity = TM.MemoryAdaptive ? TM.MemoryAdaptive.identity(tier) : '';
+    return function() { return global.P === p && (!world || global.GM === world) && GM.turn === turn && global._tmLoadGen === generation && GM._campaignId === campaign && GM._timelineId === timeline && (!TM.MemoryAdaptive || TM.MemoryAdaptive.identity(tier) === identity); };
+  }
+  function run(GM, opts) {
+    GM = GM || global.GM; opts = opts || {};
+    if (!GM) return Promise.resolve({ skipped: 'noGM' });
+    var current = _stewardLease(GM, opts.tier || 'primary'), old = _stewardFlights.get(GM);
+    if (old && old.current()) return old.promise;
+    var job = { current: current, promise: null };
+    job.promise = Promise.resolve().then(function() { return runInner(GM, Object.assign({}, opts, { leaseCurrent: current })); }).finally(function() { if (_stewardFlights.get(GM) === job) _stewardFlights.delete(GM); });
+    _stewardFlights.set(GM, job);
+    return job.promise;
+  }

@@ -83,7 +83,8 @@ async function run() {
   {
     const ctx = makeCtx({ withTmApi: true, liteAi: { url: 'https://lite.example/v1' }, desktop: true });
     vm.runInContext(SRC, ctx, { filename: 'tm-utils.js' });
-    await tick(); await tick();
+    ctx.__getIdbResolve()(null);await tick(); await tick();
+    assert(ctx.P.scenarios[0].id === 'sc-x', '主项目缺失时确实完成桌面项目恢复');
     assert(ctx.P.ai.key === DEVICE_KEY, '层3 桌面 autoSave(无key) 覆盖后 key 存活', 'got=' + JSON.stringify(ctx.P.ai.key));
   }
   // T3 旧格式 tm_P(剥key) 整树覆盖 → key 存活

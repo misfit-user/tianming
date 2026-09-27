@@ -807,7 +807,7 @@ async function _ty2_genOneSpeech(name, roundNum, prevSpeeches) {
     try {
       var _tyTopicText = ((CY._ty2 && CY._ty2.topic) || '') + ' ' + ((CY._ty2 && CY._ty2.topicCustom) || '');
       var _tyMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_tyTopicText, [name], 10) : [name];
-      prompt += _buildTemporalConstraint(ch, { mentionedNames: _tyMentioned });
+      prompt += _buildTemporalConstraint(ch, { mentionedNames: _tyMentioned, topic: _tyTopicText });
     } catch (_tcTyE) {}
   }
   var _tyDiv = addCYBubble(name, '\u2026', false);

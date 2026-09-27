@@ -1,0 +1,66 @@
+[
+  {
+    "path": "web/tm-emergency-recovery-adapters.js",
+    "sha256": "2ddf8c97c4995702cfad4c3ac5258259d6ba26ac42a5a7d30fe73f709b96902e"
+  },
+  {
+    "path": "web/tm-ai-schema.js",
+    "sha256": "68e75c739145fc7603d9068676e0582728352661741c226165184eeebcebe1b8"
+  },
+  {
+    "path": "web/tm-ai-output-validator.js",
+    "sha256": "15cd21916b1b2817a4f6dd87296c0bbbbef4d2a81dacdfecf46c090fde00d25f"
+  },
+  {
+    "path": "web/tm-endturn-ai.js",
+    "sha256": "08da4f614c98eae96aa043a791345fd64a3ee645a70617e1ccea7068c3ec89e1"
+  },
+  {
+    "path": "web/tm-endturn-ai-sc1-budget.js",
+    "sha256": "806c53b058a09e9b24767a8131059f9e6b6b1a15dd6402ef3149a6d5120475a2"
+  },
+  {
+    "path": "web/tm-edict-parser.js",
+    "sha256": "61865b8e94770518ced9f19dceba7ae616f9eff0321b590c92e56af3cb8af03a"
+  },
+  {
+    "path": "web/modules/ai-change-applier/core.js",
+    "sha256": "b6aa8936cb298b1350eeb969b6890ea7d7fe17fd92ada244aa780d97da41436b"
+  },
+  {
+    "path": "web/modules/ai-change-applier/reconcile.js",
+    "sha256": "a598623841b5b5c5652a968741dc0361f5f29c976ad58c5456b3b0119603527b"
+  },
+  {
+    "path": "web/modules/ai-change-applier/validators.js",
+    "sha256": "0da6607534fa1987644854455086e21e77dabcc088d462b63a81acca53fa3983"
+  },
+  {
+    "path": "web/modules/ai-change-applier/policy-format.js",
+    "sha256": "ea38a454c9ab0ae2c81f74aa60a457f774448850897c5d988a8393e16cde4e0e"
+  },
+  {
+    "path": "web/generated/tm-ai-change-applier.bundle.js",
+    "sha256": "f3af6b05f2d18e4b12f0d29d02cdb00cb8875431ff2aa5c47568ea72b23797b0"
+  },
+  {
+    "path": "web/scripts/smoke-emergency-recovery-boundaries.js",
+    "sha256": "9f2762ce78de31d18667f64a48580d3bb542ce8c688f600b70a2362650d8a551"
+  },
+  {
+    "path": "web/scripts/smoke-ai-writeback-integrity.js",
+    "sha256": "62f7454c7f4d20bee81d7f23346abb782072530d0103545206002b82721fc8eb"
+  },
+  {
+    "path": "web/scripts/smoke-fiscal-ai-posting.js",
+    "sha256": "b0f0108a9109ae318e6efbf5bc45f906b71930b10a0b1b3ed6a6dfbc26ea2df8"
+  },
+  {
+    "path": "web/scripts/smoke-player-writeback-regressions.js",
+    "sha256": "0a3b9e74b0184348a5ba6b4ff5c36b92bc74ae2cd99f2814767707e2d54b2c68"
+  },
+  {
+    "path": "web/tm-start-runtime-manifest.json",
+    "sha256": "357507ac1e4b03efa3a1df5dc9e0ee87c6f05e55c31b975f426286039b645d9e"
+  }
+]

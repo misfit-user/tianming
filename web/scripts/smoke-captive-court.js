@@ -107,7 +107,7 @@ var sb6 = freshSandbox();
 sb6.P.conf.revoltEntityEnabled = false;
 sb6.GM.chars[0]._captured = true;
 sb6.GM.turn = 99; sb6.TM.CaptiveCourt.tick(sb6.GM);
-assert(!sb6.GM._rivalEmperor && !sb6.GM.chars[0]._capturedSince, 'flag 关 → 零行为');
+assert(!sb6.GM._rivalEmperor && sb6.GM.chars[0]._capturedSince === 99, '旧关闭值不阻断悬朝链，仍先记录被俘反应窗');
 var sb7 = freshSandbox();
 sb7.TM.CaptiveCourt.tick(sb7.GM);
 assert(!sb7.GM._courtInferTurn && !sb7.GM._rivalEmperor, '君安在位 → 本层不插手');

@@ -167,7 +167,7 @@
   function matRollTurn(GM) { var M = ensureMaterials(GM); if (!M) return; MAT_KEYS.forEach(function (k) { var l = M[k]; l.lastTurnIn = num(l.thisTurnIn, 0); l.lastTurnOut = num(l.thisTurnOut, 0); l.thisTurnIn = 0; l.thisTurnOut = 0; }); }
 
   /* 一区划 → 原料产出(挂地块 economyBase + tags·矿区产铁硝·牧区产皮·农林产木·试玩调·后可升为显式 economyBase 字段) */
-  /* 系数标定到「全国每回合数万」级(与装备需求同量级·才有稀缺·锚:全国矿产~2600万两/马政~110万匹/田~11.6亿亩·均试玩调) */
+  /* 系数沿用试玩标定；下列全国数值是旧全树口径的锚点(矿产~2600万两/马政~110万匹/田~11.6亿亩)，现按叶子汇总，不据此补回父级产量或调整系数。 */
   function regionMaterialOutput(region) {
     if (!region) return {};
     var eb = region.economyBase || region.econ || {};
@@ -180,6 +180,18 @@
     };
   }
   function _walkDiv(d, out) { if (!d) return; out.push(d); if (Array.isArray(d.children)) d.children.forEach(function (c) { _walkDiv(c, out); }); }
+  /* 产量只读叶子；兼容根节点列表/已展开列表，并按对象去重。建筑仍走全树。 */
+  function _productionRegions(regions) {
+    var out = [], seen = new Set();
+    function visit(r) {
+      if (!r || seen.has(r)) return;
+      seen.add(r);
+      if (r.children && r.children.length) r.children.forEach(visit);
+      else out.push(r);
+    }
+    (regions || []).forEach(visit);
+    return out;
+  }
   function _allRegions(GM) {
     var out = [];
     try {
@@ -190,7 +202,7 @@
   }
   /* 汇集区划原料产出 → 入原料库(每回合·regions 不传则取全部·Slice4 传玩家辖区) */
   function collectMaterials(GM, regions) {
-    var rs = regions || _allRegions(GM), total = {};
+    var rs = _productionRegions(regions || _allRegions(GM)), total = {};
     (rs || []).forEach(function (r) { var o = regionMaterialOutput(r); for (var k in o) if (o.hasOwnProperty(k)) total[k] = num(total[k], 0) + o[k]; });
     matAdd(GM, total, '矿冶');
     return total;
@@ -266,7 +278,7 @@
     [/弓弩|弓箭|箭矢|弦/, { produce: { 弓弩: 1200 }, consume: { 木: 800, 皮革: 400, 铁: 300 }, label: '弓弩 1200/级·耗木皮铁' }],
     [/甲胄|铠甲|盔甲|甲坊|皮甲/, { produce: { 甲胄: 1500 }, consume: { 铁: 1200, 皮革: 600 }, label: '甲胄 1500/级·耗铁皮' }],
     [/军器|兵仗|铁工|冶铁|锻造|械|刀枪|兵器/, { produce: { 兵刃: 2000, 甲胄: 800 }, consume: { 铁: 2200, 木: 500 }, label: '兵刃2000甲胄800/级·耗铁木' }]
-    /* 战马不在此·走马政(各省 horseProduction)·马场/牧场建筑经现有 DEFAULT_FX 提 horseProduction 间接增产战马 */
+    /* 战马不在此·走马政(叶子区划 horseProduction)·马场/牧场建筑经现有 DEFAULT_FX 提 horseProduction 间接增产战马 */
   ];
   /* 一座建筑 → 每回合军工产能 profile(null=非军工建筑)·AI核定优先·否则关键词 */
   function buildingArmoryProfile(b) {
@@ -294,7 +306,7 @@
     for (var k in want) if (want.hasOwnProperty(k) && want[k] > 0) { any = true; var r = num(have[k], 0) / want[k]; if (r < ratio) ratio = r; }
     return any ? Math.max(0, Math.min(1, ratio)) : 1;
   }
-  /* 玩家势力名 + 玩家辖区(原料/产能只算玩家territory·非传则取玩家辖区·兜底全区划) */
+  /* 玩家势力名 + 玩家产量叶子(原料/马政只算玩家territory·非传则取玩家辖区·兜底全区划叶子) */
   function playerFactionOf(GM) {
     var P = (typeof window !== 'undefined' && window.P) || (typeof global !== 'undefined' && global.P) || null;
     return (P && P.playerInfo && P.playerInfo.factionName) || (GM && GM.playerFaction) || null;
@@ -305,10 +317,10 @@
       var keys = ['player']; if (pf) keys.push(pf);   // 玩家辖区常以 'player' key·或 faction 名
       for (var i = 0; i < keys.length; i++) {
         var node = GM.adminHierarchy[keys[i]];
-        if (node && Array.isArray(node.divisions) && node.divisions.length) { var out = []; node.divisions.forEach(function (d) { _walkDiv(d, out); }); if (out.length) return out; }
+        if (node && Array.isArray(node.divisions) && node.divisions.length) { var out = _productionRegions(node.divisions); if (out.length) return out; }
       }
     }
-    return _allRegions(GM);   // 兜底:key 不匹配→全区划(不回归)
+    return _productionRegions(_allRegions(GM));   // 兜底:key 不匹配→全区划叶子(保留旧存档范围)
   }
   /* 军工效率 = 工部主官效率 ×(1−腐败截留)·无主官 0.9 基线·腐败最多削 40% */
   function _armoryEfficiency(GM) {
@@ -326,13 +338,13 @@
   }
   var _ARMORY_SILVER = { 甲胄: 0.4, 兵刃: 0.15, 弓弩: 0.25, 火器: 0.8 };   // 工料匠饷·银/件(战马走马政不计此)
 
-  /* 每回合军工生产:在役军工建筑按 profile×level 耗原料产军备(原料不足按比例减产)+ 战马走马政(Σ各省 horseProduction)。
+  /* 每回合军工生产:在役军工建筑按 profile×level 耗原料产军备(原料不足按比例减产)+ 战马走马政(Σ叶子区划 horseProduction)。
    * opts.efficiency 未传则按 工部主官×腐败 计·opts.regions 未传取玩家辖区·军工经费(银)从国库扣(不继记欠·材料才是硬约束)。 */
   function runArmoryProduction(GM, opts) {
     opts = opts || {}; ensure(GM); ensureMaterials(GM);
     var report = { works: 0, produced: {}, consumed: {} };
     var eff = opts.efficiency != null ? num(opts.efficiency, 1) : _armoryEfficiency(GM);
-    var regions = opts.regions || playerRegions(GM);
+    var regions = _productionRegions(opts.regions || playerRegions(GM));
     var buildings = opts.buildings || _allBuildings(GM);
     buildings.forEach(function (b) {
       if (!b || (b.status && b.status !== 'completed')) return;
@@ -351,7 +363,7 @@
       for (var c2 in rc) report.consumed[c2] = num(report.consumed[c2], 0) + rc[c2];
       for (var p2 in rp) report.produced[p2] = num(report.produced[p2], 0) + rp[p2];
     });
-    /* 战马走马政:Σ玩家辖区 horseProduction(匹/年)×折率 → 战马入库(马场建筑经 horseProduction 间接增产) */
+    /* 战马走马政:Σ玩家辖区叶子 horseProduction(匹/年)×折率 → 战马入库(马场建筑经 horseProduction 间接增产) */
     var horseTotal = 0;
     regions.forEach(function (r) { horseTotal += num((r && (r.economyBase || r.econ) || {}).horseProduction, 0); });
     var horseOut = Math.round(horseTotal * num(opts.horseRate, 0.004) * eff);

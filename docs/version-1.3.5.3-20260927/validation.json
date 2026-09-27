@@ -1,0 +1,20 @@
+{
+  "version": "1.3.5.3",
+  "versionCode": 1355,
+  "semver": "1.3.503",
+  "completedAt": "2026-09-27T08:03:26.345Z",
+  "fullSmokes": {
+    "pass": 1112,
+    "fail": 0,
+    "skip": 0,
+    "runId": "47b8cc8b-a847-4b44-8678-4bcd42ed4d15"
+  },
+  "architecture": "PASS",
+  "officialParityAssertions": 41,
+  "releaseContractAssertions": 182,
+  "versionFanoutAssertions": 48,
+  "baselineFiles": 1361,
+  "assetFiles": 527,
+  "indexUnchanged": true,
+  "published": false
+}

@@ -272,7 +272,7 @@ function actionEngineStrategicActionsTest() {
   assert(Array.isArray(fac.npcIntrigueActions) && fac.npcIntrigueActions.length === 1, 'intrigue trajectory should be recorded');
   assert(Array.isArray(fac.npcRebellionPolicies) && fac.npcRebellionPolicies.length === 1, 'rebellion trajectory should be recorded');
   assert(target._rebellionPressure >= 2, 'rebellion policy should pressure target faction');
-  assert(fac.aiStrategy && Array.isArray(fac.aiStrategy.goals) && fac.aiStrategy.goals.length > 0, 'engine should maintain long-term strategy memory');
+  assert(fac.aiStrategy && Array.isArray(fac.aiStrategy.goals) && fac.aiStrategy.recentActionLabels.length > 0, 'engine should maintain long-term strategy memory');
 
   var weakButUrgent = ctx.TM.FactionActionEngine.scoreFactionCandidate(fac, { turn: 11, playerFactionNames: ['玩家朝廷'] });
   var strongQuiet = ctx.TM.FactionActionEngine.scoreFactionCandidate(target, { turn: 11, playerFactionNames: ['玩家朝廷'] });
@@ -363,7 +363,7 @@ function actionEnginePreflightStrategyNewsTest() {
   assert(fac.aiStrategy && fac.aiStrategy.version >= 2, 'strategy memory should be upgraded to v2');
   assert(Array.isArray(fac.aiStrategy.objectives) && fac.aiStrategy.objectives.length > 0, 'strategy memory should track objectives');
   assert(Array.isArray(fac.aiStrategy.threats) && fac.aiStrategy.threats.indexOf('SouthCamp') >= 0, 'strategy memory should track hostile targets');
-  assert(Array.isArray(fac.aiStrategy.claims) && fac.aiStrategy.claims.indexOf('Frontier') >= 0, 'strategy memory should track province claims');
+  assert(Array.isArray(fac.aiStrategy.claims) && fac.aiStrategy.claims.indexOf('Frontier') < 0, 'completed province claim should be pruned after ownership transfers');
   assert(fac.aiStrategy.lastDecision && fac.aiStrategy.lastDecision.turn === 12, 'strategy memory should store last decision summary');
   assert(ctx.GM.qijuHistory.some(function(x){ return String(x.content).indexOf('FrontArmy') >= 0; }), 'military action should enter qiju news');
   assert(ctx.GM.qijuHistory.some(function(x){ return String(x.content).indexOf('SouthCamp') >= 0 && String(x.category).indexOf('间') >= 0; }), 'intrigue action should enter qiju news');
@@ -614,11 +614,12 @@ function promptContextExpansionTest() {
   var sc = JSON.parse(fs.readFileSync(path.join(SCN_DIR, '天启七年·九月（官方）.json'), 'utf8'));
   loadGM(ctx, sc);
 
-  if (ctx.GM.adminHierarchy && ctx.GM.adminHierarchy.laterJin && ctx.GM.adminHierarchy.laterJin.divisions && ctx.GM.adminHierarchy.laterJin.divisions[0]) {
-    ctx.GM.adminHierarchy.laterJin.divisions[0].name = '辽沈建州八旗辖区·运行时改名';
-    ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail = ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail || {};
-    ctx.GM.adminHierarchy.laterJin.divisions[0].populationDetail.mouths = 777777;
-  }
+  // 后金的行政树按树上声明的势力名找（键名是势力 id，不写死）；找不到就直接失败，免得下面的改名悄悄跳过
+  var laterJinTree = Object.values(ctx.GM.adminHierarchy || {}).find(function(t){ return t && t.factionName === '后金'; });
+  assert(laterJinTree && laterJinTree.divisions && laterJinTree.divisions[0], 'official Tianqi scenario should carry a Later Jin admin tree');
+  laterJinTree.divisions[0].name = '辽沈建州八旗辖区·运行时改名';
+  laterJinTree.divisions[0].populationDetail = laterJinTree.divisions[0].populationDetail || {};
+  laterJinTree.divisions[0].populationDetail.mouths = 777777;
 
   var hj = ctx.GM.facs.find(function(f){ return f.name === '后金'; });
   var amin = ctx.GM._facIndex['后金'].chars.find(function(c){ return c.name === '阿敏'; });

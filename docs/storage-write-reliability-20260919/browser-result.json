@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-19T09:57:58.778Z",
+  "sourceSHA": "82605b1c1209292ae6f2be811612b89f903d2258b33ebda9038a0adcc95d1d2f",
+  "exit": 0,
+  "error": null,
+  "isolatedProfile": "C:\\Users\\37814\\Desktop\\tianming\\docs\\storage-write-reliability-20260919\\.isolated-edge-1789811875664",
+  "outcome": {
+    "ok": false,
+    "results": [],
+    "error": "TimeoutError: 主存档数据库打开超时；未把等待失败当成空存档\n    at _storageWaitError (file:///C:/Users/37814/Desktop/tianming/docs/storage-write-reliability-20260919/browser-storage-copy.js:117:17)\n    at file:///C:/Users/37814/Desktop/tianming/docs/storage-write-reliability-20260919/browser-storage-copy.js:393:54"
+  }
+}

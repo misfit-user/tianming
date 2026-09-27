@@ -74,4 +74,23 @@ ok(/div\._disasterEconomyReduce\)\s*\{[\s\S]{0,160}disasterPenalty \+=/.test(src
 ok(/applyDisasterEconomyReduction\(G\);[^\n]*per-division 征税前|applyDisasterEconomyReduction\(G\);/.test(src), '⑧ cascadeCollect 开头调 applyDisasterEconomyReduction');
 ok(/applyDisasterEconomyReduction: applyDisasterEconomyReduction/.test(src), '⑧ 已导出');
 
+// ── 全国产量只汇总叶子；父级可持同一份合计，灾减和筛选仍在叶子执行 ──
+const leafA = { name: '甲府', tags: { mineralRegion: true }, economyBase: { farmland: 100000, mineralProduction: 3000 }, _disasterEconomyReduce: { farmland: 0.2 } };
+const leafB = { name: '乙府', children: [], economyBase: { farmland: 200000, mineralProduction: 1000 } };
+const parent = { name: '合计省', tags: { mineralRegion: true }, economyBase: { farmland: 300000, mineralProduction: 4000 }, children: [leafA, leafB] };
+ctx.GM = { adminHierarchy: {
+  player: { divisions: [parent, { name: '单层省', economyBase: { farmland: 50000, mineralProduction: 0 } }] },
+  neighbor: { divisions: [{ name: '邻省', economyBase: { farmland: 90000, mineralProduction: 7000 } }] }
+} };
+ok(CT.sumEconomyBase('farmland') === 420000, '⑨ 全国叶子田亩只计一次，保留无下级省份与其他势力范围');
+ok(CT.sumEconomyBase('farmland', { faction: 'player' }) === 330000, '⑨ 指定玩家分支仍过滤邻国，且叶子灾减仍生效');
+ok(CT.sumEconomyBase('mineralProduction', { faction: 'player', requireTag: 'mineralRegion' }) === 3000, '⑨ requireTag 在叶子判定，不能把父级合计重新带入');
+ok(CT.sumEconomyBase('farmland', { faction: 'missing' }) === 0, '⑨ 不存在的势力不回退为全国');
+parent.economyBase.farmland = 9999999;
+ok(CT.sumEconomyBase('farmland', { faction: 'player' }) === 330000, '⑨ 旧存档父级合计陈旧也不影响实际产量');
+delete leafA._disasterEconomyReduce;
+ok(CT.sumEconomyBase('farmland', { faction: 'player' }) === 350000, '⑨ 灾退恢复叶子全额，不恢复父级重复量');
+parent.divisions = parent.children; delete parent.children;
+ok(CT.sumEconomyBase('farmland', { faction: 'player' }) === 350000, '⑨ 兼容旧树以 divisions 存下级');
+
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

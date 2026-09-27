@@ -28,6 +28,41 @@
     return fn();
   }
 
+  var _openOwner = null;
+  var SNAPSHOT_OPEN_MS = 15000, SNAPSHOT_OPERATION_MS = 30000;
+  var _snapshotIssues = [];
+  function _snapshotIssue(stage, code, extra) {
+    var row = Object.assign({ stage: stage, code: code, at: Date.now() }, extra || {});
+    _snapshotIssues.push(row); if (_snapshotIssues.length > 12) _snapshotIssues.shift();
+    return row;
+  }
+  function _snapshotError(stage, code) {
+    var labels = { open: '打开数据库', write: '写入快照', keys: '读取快照索引', list: '读取时间线', 'lineage-read': '读取时间线谱系', 'lineage-write': '保存时间线谱系', read: '读取快照', cleanup: '清理旧快照', delete: '删除快照' };
+    var message = code === 'SNAPSHOT_BLOCKED' ? '快照数据库升级被其他窗口阻塞' : '时间快照操作等待超时：' + (labels[stage] || stage);
+    var e = new Error(message);
+    e.name = code === 'SNAPSHOT_TIMEOUT' ? 'TimeoutError' : 'Error'; e.code = code; e.stage = stage;
+    return e;
+  }
+  function _closeSnapshotConnection(db) {
+    if (_openOwner && _openOwner.db === db) { _openOwner = null; _dbPromise = null; }
+    try { if (db) db.close(); } catch (_) {}
+  }
+  function _snapshotOperation(stage, transaction, work) {
+    return new Promise(function(resolve, reject) {
+      var settled = false, timer;
+      function abort() { try { var tx = transaction(); if (tx) { tx.abort(); return true; } } catch (_) {} return false; }
+      function done(value) { if (settled) return; settled = true; clearTimeout(timer); resolve(value); }
+      function fail(e) { if (settled) return; settled = true; clearTimeout(timer); abort(); reject(e); }
+      timer = setTimeout(function() {
+        if (settled) return; settled = true;
+        var stopped = abort(), tx = transaction(); _closeSnapshotConnection(tx && tx.db);
+        var e = _snapshotError(stage, 'SNAPSHOT_TIMEOUT'); e.abortRequested = stopped;
+        _snapshotIssue(stage, e.code, { abortRequested: stopped, outcome: 'unconfirmed' }); reject(e);
+      }, SNAPSHOT_OPERATION_MS);
+      try { work(done, fail, function() { return !settled; }); } catch (e) { fail(e); }
+    });
+  }
+
   function _legacyTimelineId(campaignId) {
     try {
       if (typeof global._tmLegacyTimelineId === 'function') return global._tmLegacyTimelineId(campaignId);
@@ -122,10 +157,25 @@
 
   function _openDB() {
     if (_dbPromise) return _dbPromise;
-    _dbPromise = new Promise(function(resolve, reject) {
-      if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB 不可用'));
-      var req = indexedDB.open(DB_NAME, DB_VERSION);
+    var owner = { db: null }, pending;
+    _openOwner = owner;
+    pending = new Promise(function(resolve, reject) {
+      var settled = false, upgradeTx = null;
+      function rejectOpen(error) {
+        if (settled) return; settled = true; clearTimeout(timer);
+        if (_openOwner === owner) { _openOwner = null; _dbPromise = null; }
+        try { if (upgradeTx) upgradeTx.abort(); } catch (_) {}
+        reject(error);
+      }
+      var timer = setTimeout(function() {
+        _snapshotIssue('open', 'SNAPSHOT_TIMEOUT'); rejectOpen(_snapshotError('open', 'SNAPSHOT_TIMEOUT'));
+      }, SNAPSHOT_OPEN_MS);
+      if (typeof indexedDB === 'undefined') { rejectOpen(new Error('IndexedDB 不可用')); return; }
+      var req;
+      try { req = indexedDB.open(DB_NAME, DB_VERSION); } catch (e) { rejectOpen(e); return; }
       req.onupgradeneeded = function(e) {
+        upgradeTx = e.target.transaction;
+        if (settled || _openOwner !== owner) { try { upgradeTx.abort(); } catch (_) {} return; }
         var db = e.target.result;
         var lineageStore;
         if (!db.objectStoreNames.contains(LINEAGE_STORE)) {
@@ -174,6 +224,7 @@
           if (e.oldVersion > 0 && e.oldVersion < 5) {
             var cursorReq = existingStore.openCursor();
             cursorReq.onsuccess = function() {
+              if (_openOwner !== owner) return;
               var cursor = cursorReq.result;
               if (!cursor) return;
               var record = cursor.value;
@@ -204,13 +255,20 @@
       };
       req.onsuccess = function(e) {
         var db = e.target.result;
-        db.onversionchange = function() { try { db.close(); } catch (_) {} _dbPromise = null; };
+        if (settled || _openOwner !== owner) { try { db.close(); } catch (_) {} return; }
+        settled = true; clearTimeout(timer); owner.db = db;
+        db.onversionchange = function() { _closeSnapshotConnection(db); };
+        db.onclose = function() { if (_openOwner === owner) { _openOwner = null; _dbPromise = null; } };
         resolve(db);
       };
-      req.onerror = function(e) { _dbPromise = null; reject(e.target.error || new Error('快照数据库打开失败')); };
-      req.onblocked = function() { _dbPromise = null; reject(new Error('快照数据库升级被其他窗口阻塞')); };
+      req.onerror = function(e) { rejectOpen(e.target.error || new Error('快照数据库打开失败')); };
+      req.onblocked = function() { _snapshotIssue('open', 'SNAPSHOT_BLOCKED'); rejectOpen(_snapshotError('open', 'SNAPSHOT_BLOCKED')); };
     });
-    return _dbPromise;
+    _dbPromise = pending;
+    pending.catch(function() { if (_openOwner === owner) { _openOwner = null; _dbPromise = null; } });
+    // A synchronous open error may have already relinquished this owner.
+    if (_openOwner !== owner) _dbPromise = null;
+    return pending;
   }
 
   function _captureFullState(gm, p) {
@@ -229,8 +287,8 @@
 
   function _putRecord(record) {
     return _perfWithSpan('snapshot.write', function() { return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('write', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction([STORE, LINEAGE_STORE], 'readwrite');
           tx.objectStore(STORE).put(record);
@@ -251,8 +309,8 @@
     // so reports distinguish it from an uninstrumented path.
     _perfCount('snapshot.lruValueReads', 0);
     return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('keys', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction(STORE, 'readonly');
           var index = tx.objectStore(STORE).index('campaignTimeline');
@@ -269,6 +327,7 @@
             var range = typeof IDBKeyRange !== 'undefined' ? IDBKeyRange.only([campaignId, timelineId]) : [campaignId, timelineId];
             var cursorReq = index.openKeyCursor(range);
             cursorReq.onsuccess = function() {
+              if (!alive()) return;
               var cursor = cursorReq.result;
               if (!cursor) {
                 _perfCount('snapshot.lruKeyReads', keys.length);
@@ -290,8 +349,8 @@
 
   function _getTimelineRecords(campaignId, timelineId) {
     return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('list', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction(STORE, 'readonly');
           var req = tx.objectStore(STORE).index('campaignTimeline').getAll([campaignId, timelineId]);
@@ -305,8 +364,8 @@
 
   function _getLineageRecord(campaignId, timelineId) {
     return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('lineage-read', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction(LINEAGE_STORE, 'readonly');
           var req = tx.objectStore(LINEAGE_STORE).get(_lineageId(campaignId, timelineId));
@@ -321,8 +380,8 @@
   function _getExactRecord(campaignId, timelineId, turn) {
     var id = _recordId(campaignId, timelineId, turn);
     return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('read', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction(STORE, 'readonly');
           var req = tx.objectStore(STORE).get(id);
@@ -342,8 +401,8 @@
     var record = _lineageRecordFromGM(gm, campaignId, timelineId);
     if (!record) return Promise.reject(new Error('时间线谱系结构非法'));
     return _openDB().then(function(db) {
-      return new Promise(function(resolve, reject) {
-        var tx;
+      var tx;
+      return _snapshotOperation('lineage-write', function() { return tx; }, function(resolve, reject, alive) {
         try {
           tx = db.transaction(LINEAGE_STORE, 'readwrite');
           tx.objectStore(LINEAGE_STORE).put(record);
@@ -423,8 +482,8 @@
       var remove = keys.slice(0, Math.max(0, keys.length - max));
       if (!remove.length) return;
       return _openDB().then(function(db) {
-        return new Promise(function(resolve, reject) {
-          var tx;
+        var tx;
+        return _snapshotOperation('cleanup', function() { return tx; }, function(resolve, reject, alive) {
           try {
             tx = db.transaction(STORE, 'readwrite');
             var store = tx.objectStore(STORE);
@@ -546,8 +605,8 @@
           });
         }
         return _openDB().then(function(db) {
-        return new Promise(function(resolve, reject) {
-          var tx;
+        var tx;
+        return _snapshotOperation('delete', function() { return tx; }, function(resolve, reject, alive) {
           try {
             tx = db.transaction(STORE, 'readwrite');
             tx.objectStore(STORE).delete(id);
@@ -744,7 +803,8 @@
     delete: deleteSnapshot,
     timeTravel: timeTravel,
     recordTimeline: recordTimeline,
-    newCampaignId: _newCampaignId
+    newCampaignId: _newCampaignId,
+    diagnostics: function() { return { openTimeoutMs: SNAPSHOT_OPEN_MS, operationTimeoutMs: SNAPSHOT_OPERATION_MS, issues: _snapshotIssues.map(function(r) { return Object.assign({}, r); }) }; }
   };
   Object.defineProperty(global, '_timeTravel', { value: timeTravel, writable: false, configurable: true });
 })(typeof window !== 'undefined' ? window : this);

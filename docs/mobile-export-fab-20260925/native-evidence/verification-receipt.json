@@ -1,0 +1,12 @@
+{
+  "verifiedAt": "2026-09-25T05:33:03.713Z",
+  "fixture": "E:/tianming-tmp/native-export-20260925",
+  "nativeCompile": "PASS: Gradle compileDebugJavaWithJavac, initial 15 executed, final 15 up-to-date",
+  "nativeRegistration": "PASS: actual npm local file package and Capacitor add Android automatic native class registration",
+  "directJavac": "PASS: SDK34 + Capacitor6.2.1 compiled classes + 60 AndroidX jars, source17 target17 UTF-8",
+  "chineseClassLiteral": "PASS: compiled class contains exact UTF-8 Chinese error message",
+  "deviceVerification": false,
+  "apkBuilt": false,
+  "originalNativeProjectModified": false,
+  "sharedNodeModulesModified": false
+}

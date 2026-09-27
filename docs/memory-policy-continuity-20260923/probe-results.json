@@ -1,0 +1,501 @@
+{
+  "scope": "synthetic current-code probes; no paid model calls, no player save access",
+  "cases": [
+    {
+      "name": "single-standing-policy-50-turn-control",
+      "kept": 50,
+      "total": 50,
+      "turns": [
+        {
+          "turn": 1,
+          "injected": true
+        },
+        {
+          "turn": 2,
+          "injected": true
+        },
+        {
+          "turn": 3,
+          "injected": true
+        },
+        {
+          "turn": 4,
+          "injected": true
+        },
+        {
+          "turn": 5,
+          "injected": true
+        },
+        {
+          "turn": 6,
+          "injected": true
+        },
+        {
+          "turn": 7,
+          "injected": true
+        },
+        {
+          "turn": 8,
+          "injected": true
+        },
+        {
+          "turn": 9,
+          "injected": true
+        },
+        {
+          "turn": 10,
+          "injected": true
+        },
+        {
+          "turn": 11,
+          "injected": true
+        },
+        {
+          "turn": 12,
+          "injected": true
+        },
+        {
+          "turn": 13,
+          "injected": true
+        },
+        {
+          "turn": 14,
+          "injected": true
+        },
+        {
+          "turn": 15,
+          "injected": true
+        },
+        {
+          "turn": 16,
+          "injected": true
+        },
+        {
+          "turn": 17,
+          "injected": true
+        },
+        {
+          "turn": 18,
+          "injected": true
+        },
+        {
+          "turn": 19,
+          "injected": true
+        },
+        {
+          "turn": 20,
+          "injected": true
+        },
+        {
+          "turn": 21,
+          "injected": true
+        },
+        {
+          "turn": 22,
+          "injected": true
+        },
+        {
+          "turn": 23,
+          "injected": true
+        },
+        {
+          "turn": 24,
+          "injected": true
+        },
+        {
+          "turn": 25,
+          "injected": true
+        },
+        {
+          "turn": 26,
+          "injected": true
+        },
+        {
+          "turn": 27,
+          "injected": true
+        },
+        {
+          "turn": 28,
+          "injected": true
+        },
+        {
+          "turn": 29,
+          "injected": true
+        },
+        {
+          "turn": 30,
+          "injected": true
+        },
+        {
+          "turn": 31,
+          "injected": true
+        },
+        {
+          "turn": 32,
+          "injected": true
+        },
+        {
+          "turn": 33,
+          "injected": true
+        },
+        {
+          "turn": 34,
+          "injected": true
+        },
+        {
+          "turn": 35,
+          "injected": true
+        },
+        {
+          "turn": 36,
+          "injected": true
+        },
+        {
+          "turn": 37,
+          "injected": true
+        },
+        {
+          "turn": 38,
+          "injected": true
+        },
+        {
+          "turn": 39,
+          "injected": true
+        },
+        {
+          "turn": 40,
+          "injected": true
+        },
+        {
+          "turn": 41,
+          "injected": true
+        },
+        {
+          "turn": 42,
+          "injected": true
+        },
+        {
+          "turn": 43,
+          "injected": true
+        },
+        {
+          "turn": 44,
+          "injected": true
+        },
+        {
+          "turn": 45,
+          "injected": true
+        },
+        {
+          "turn": 46,
+          "injected": true
+        },
+        {
+          "turn": 47,
+          "injected": true
+        },
+        {
+          "turn": 48,
+          "injected": true
+        },
+        {
+          "turn": 49,
+          "injected": true
+        },
+        {
+          "turn": 50,
+          "injected": true
+        }
+      ]
+    },
+    {
+      "name": "actual-adaptive-policy-coverage",
+      "mode": "balanced",
+      "budget": 3000,
+      "perHitChars": 240,
+      "activePolicies": 24,
+      "policiesIncluded": [
+        "policy-01"
+      ]
+    },
+    {
+      "name": "standing-policy-budget-competition",
+      "characters": 100,
+      "activePolicies": 24,
+      "budgets": [
+        {
+          "budget": 600,
+          "ok": true,
+          "tokenEstimate": 573,
+          "policiesIncluded": [
+            "policy-01"
+          ],
+          "charactersIncluded": 8,
+          "suppressedReasons": [
+            "memory_budget_exceeded"
+          ]
+        },
+        {
+          "budget": 1200,
+          "ok": true,
+          "tokenEstimate": 1196,
+          "policiesIncluded": [
+            "policy-01"
+          ],
+          "charactersIncluded": 19,
+          "suppressedReasons": [
+            "memory_budget_exceeded"
+          ]
+        },
+        {
+          "budget": 1800,
+          "ok": true,
+          "tokenEstimate": 1763,
+          "policiesIncluded": [
+            "policy-01"
+          ],
+          "charactersIncluded": 29,
+          "suppressedReasons": [
+            "memory_budget_exceeded"
+          ]
+        },
+        {
+          "budget": 3000,
+          "ok": true,
+          "tokenEstimate": 2953,
+          "policiesIncluded": [
+            "policy-01"
+          ],
+          "charactersIncluded": 50,
+          "suppressedReasons": [
+            "memory_budget_exceeded"
+          ]
+        },
+        {
+          "budget": 6000,
+          "ok": true,
+          "tokenEstimate": 5967,
+          "policiesIncluded": [
+            "policy-01",
+            "policy-02",
+            "policy-03"
+          ],
+          "charactersIncluded": 100,
+          "suppressedReasons": [
+            "memory_budget_exceeded"
+          ]
+        },
+        {
+          "budget": 12000,
+          "ok": true,
+          "tokenEstimate": 7854,
+          "policiesIncluded": [
+            "policy-01",
+            "policy-02",
+            "policy-03",
+            "policy-04",
+            "policy-05",
+            "policy-06",
+            "policy-07",
+            "policy-08",
+            "policy-09",
+            "policy-10",
+            "policy-11",
+            "policy-12",
+            "policy-13",
+            "policy-14",
+            "policy-15",
+            "policy-16",
+            "policy-17",
+            "policy-18",
+            "policy-19",
+            "policy-20",
+            "policy-21",
+            "policy-22",
+            "policy-23",
+            "policy-24"
+          ],
+          "charactersIncluded": 100,
+          "suppressedReasons": []
+        }
+      ]
+    },
+    {
+      "name": "policy-exceptions-cut-before-budget",
+      "sourceChars": 291,
+      "tests": [
+        {
+          "perHitChars": 140,
+          "ok": true,
+          "policyIncluded": true,
+          "exceptionIncluded": false,
+          "durationIncluded": false,
+          "tokens": 187
+        },
+        {
+          "perHitChars": 180,
+          "ok": true,
+          "policyIncluded": true,
+          "exceptionIncluded": false,
+          "durationIncluded": false,
+          "tokens": 216
+        },
+        {
+          "perHitChars": 240,
+          "ok": true,
+          "policyIncluded": true,
+          "exceptionIncluded": false,
+          "durationIncluded": false,
+          "tokens": 259
+        },
+        {
+          "perHitChars": 420,
+          "ok": true,
+          "policyIncluded": true,
+          "exceptionIncluded": true,
+          "durationIncluded": true,
+          "tokens": 299
+        },
+        {
+          "perHitChars": 800,
+          "ok": true,
+          "policyIncluded": true,
+          "exceptionIncluded": true,
+          "durationIncluded": true,
+          "tokens": 299
+        }
+      ]
+    },
+    {
+      "name": "completed-order-without-standing-policy-state",
+      "executingIncluded": true,
+      "completedTrackerIncluded": false,
+      "longTermRecordsAfterHarvest": 0,
+      "standingPolicyIncluded": true,
+      "note": "Conditional entry-state reproduction; does not claim every production policy is registered only in the tracker."
+    },
+    {
+      "name": "actual-history-and-compression-windows",
+      "models": [
+        {
+          "contextK": 8,
+          "fullReadTurns": 2,
+          "briefReadTurns": 6,
+          "memInjectCount": 3,
+          "compressAt": 12,
+          "keepRecent": 5
+        },
+        {
+          "contextK": 16,
+          "fullReadTurns": 3,
+          "briefReadTurns": 6,
+          "memInjectCount": 8,
+          "compressAt": 30,
+          "keepRecent": 10
+        },
+        {
+          "contextK": 32,
+          "fullReadTurns": 5,
+          "briefReadTurns": 12,
+          "memInjectCount": 15,
+          "compressAt": 60,
+          "keepRecent": 20
+        },
+        {
+          "contextK": 64,
+          "fullReadTurns": 8,
+          "briefReadTurns": 18,
+          "memInjectCount": 23,
+          "compressAt": 90,
+          "keepRecent": 30
+        },
+        {
+          "contextK": 128,
+          "fullReadTurns": 10,
+          "briefReadTurns": 24,
+          "memInjectCount": 30,
+          "compressAt": 120,
+          "keepRecent": 40
+        },
+        {
+          "contextK": 256,
+          "fullReadTurns": 13,
+          "briefReadTurns": 25,
+          "memInjectCount": 38,
+          "compressAt": 150,
+          "keepRecent": 50
+        }
+      ]
+    },
+    {
+      "name": "steward-input-evidence-cut",
+      "sourceChars": 318,
+      "sourceContainsCondition": true,
+      "compressorReceivesCondition": false,
+      "note": "Actual production request builder, no synthetic model response needed."
+    },
+    {
+      "name": "well-formed-summary-with-missing-policy-is-accepted",
+      "applied": [
+        "aiMemory"
+      ],
+      "summaryKeepsPolicy": false,
+      "originalInLongTerm": false,
+      "note": "Synthetic omission response tests coverage validation, not actual model behavior."
+    },
+    {
+      "name": "actual-imperial-table-row-shape-mismatch",
+      "writeOk": true,
+      "rowIsArray": true,
+      "rowCount": 1,
+      "projectedBodies": [
+        ""
+      ],
+      "compiledIncludesPolicy": false,
+      "legacyTableInjectionIncludesPolicy": true,
+      "note": "This proves the two input routes differ, not that every final request lacks the legacy table route."
+    }
+  ],
+  "sources": [
+    {
+      "file": "web/tm-memory-tables.js",
+      "sha256": "0afd18a0f1978240494625a845312ac83845116504e992321f339bff544c9229"
+    },
+    {
+      "file": "web/tm-memory-adaptive.js",
+      "sha256": "b5b8b40857a2e4ccf02e108ac95e78d12a067e28c98714bb5eb2dc4a9fd514ca"
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "ba8776abb20e8f13b8c049951a4d3d32b5655f4be5ba3750960d8e1ea1ab1696"
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "e4857b454b93555e6e42a5e6fcae9fa638efa80d5abed943e9e2cd41173a502a"
+    },
+    {
+      "file": "web/tm-memory-long-term.js",
+      "sha256": "295ee128b5c3c6482c27da9d5e59f1a823a9685b0c9a12c41cf51e5b65beffe4"
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "sha256": "2304261e654457b04e78cf076588762084e3121226ea9d511a2236e1e888ea47"
+    },
+    {
+      "file": "web/tm-ai-infra-model-detect.js",
+      "sha256": "e90bb58dc6a37fca00b338c501881bfc66f7ac30b04901a3cefdb6348ccb54ec"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "2ea7ae4f363d290996dcadcd9b5e018b328de0cd37880d90a7cc05406eee3c7a"
+    },
+    {
+      "file": "web/tm-endturn-followup.js",
+      "sha256": "a71c3a151d3d32eab5385f5c617effd157e94d6db3cae8a1658fe0dc1ca3d50c"
+    },
+    {
+      "file": "web/tm-memory-mode-bridge.js",
+      "sha256": "a3507d97a639e6af42607c6c5a104ed05b87842cfd5483ec3ff571a746d8b191"
+    }
+  ]
+}

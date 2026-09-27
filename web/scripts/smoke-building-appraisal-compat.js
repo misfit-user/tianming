@@ -99,7 +99,7 @@ async function main() {
   await check('failed fallback preserves HTTP status and does not repeat appraisal rounds', async () => {
     const h = harness({ serve: () => http(401, 'Unauthorized') }); const r = await h.run();
     assert.equal(r.ok, false); assert(r.error && r.error.status === 401, 'preserve failure status');
-    assert.equal(h.requests.length, 2, 'one tool attempt plus one bounded fallback, not three whole rounds');
+    assert.equal(h.requests.length, 1, 'authentication rejection must not resend credentials through another fallback or appraisal round');
     assert(!JSON.stringify(r).includes('test-secondary-only'));
   });
   await check('UI shows actionable failed-request message, restores button and keeps proposal', async () => {

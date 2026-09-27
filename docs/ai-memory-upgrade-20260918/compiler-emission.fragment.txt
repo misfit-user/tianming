@@ -1,0 +1,28 @@
+    if ((hasBudget && maxTokens === 0) || !normalized.length) {
+      text = '';
+      packed = { ok: true, reason: hasBudget && maxTokens === 0 ? 'budget_disabled' : 'empty_context', items: [], tokenEstimate: 0, mandatoryOverflow: [], diagnostics: { kept: [], suppressed: [] } };
+    } else if (hasBudget && !(CZ && typeof CZ.packZones === 'function')) {
+      text = '';
+      packed = { ok: false, reason: 'context_zones_unavailable', items: [], tokenEstimate: 0, mandatoryOverflow: [], diagnostics: { kept: [], suppressed: [] } };
+    }
+    if (packed && packed.ok === false) text = '';
+    var emittedIds = Object.create(null);
+    var emittedPattern = /<memory id="([^"]*)"/g;
+    var emittedMatch;
+    while ((emittedMatch = emittedPattern.exec(text))) emittedIds[emittedMatch[1]] = true;
+    var injectedHits = [];
+    var injectedSections = emptySections();
+    normalized.forEach(function(hit) {
+      if (emittedIds[xml(hit.id)]) {
+        injectedHits.push(hit);
+        injectedSections[sectionFor(hit)].push(hit);
+      } else {
+        suppressed.push({ id: hit.id, source: hit.source, reason: hasBudget && maxTokens === 0 ? 'budget_disabled' : 'memory_budget_exceeded' });
+      }
+    });
+    var diagnostics = packed ? packed.diagnostics : {};
+    diagnostics.zoneKept = arr(diagnostics.kept);
+    diagnostics.kept = injectedHits.map(function(hit) { return { id: hit.id, source: hit.source, stage: 'compiled', lane: hit.lane }; });
+    diagnostics.suppressed = suppressed.slice();
+    diagnostics.candidateCount = normalized.length;
+    diagnostics.injectedCount = injectedHits.length;

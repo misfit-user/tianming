@@ -93,16 +93,11 @@ function _tmAwaitLoadBarrier() {
 }
 
 // 确保 GM 所有字段存在默认值（存档前/读档后统一调用）
-// F2 势力活世界总闸·翻默认 ON 迁移 + 启动竞态自愈的【单一真源】规则(normalizer 与 tm:p-restored 自愈两处同调·避免逻辑分叉·Codex 二轮 B)。
-//   带用户意图戳(_factionLivingWorldSetByUser) → 尊重存档值(仅异常值兜底 ON)；
-//   无戳(含旧档旧 normalizer 写死的自动 false·或启动时完整 P 迟到、镜像尚未到) → 取跨局默认镜像 P.conf.factionLivingWorldDefault(是 boolean 才认)否则翻默认 ON。
+// 势力世界已纳入正式玩法；旧存档的禁用值与用户意图戳统一迁移。
 function _tmReconcileFactionLivingWorld(gm, p) {
   if (!gm) return;
-  if (gm._factionLivingWorldSetByUser) {
-    if (typeof gm._factionLivingWorld !== 'boolean') gm._factionLivingWorld = true;   // 带戳·尊重存档值(仅异常值兜底 ON)
-    return;
-  }
-  gm._factionLivingWorld = (p && p.conf && typeof p.conf.factionLivingWorldDefault === 'boolean') ? p.conf.factionLivingWorldDefault : true;   // 无戳→取跨局镜像·否则翻默认 ON
+  gm._factionLivingWorld = true;
+  delete gm._factionLivingWorldSetByUser;
 }
 
 function _tmNormalizeCoreWorldCollections(gm) {
@@ -165,13 +160,11 @@ function _tmNormalizeCoreWorldCollections(gm) {
   return { ok: true, diagnostics: diagnostics };
 }
 if (typeof window !== 'undefined') window._tmNormalizeCoreWorldCollections = _tmNormalizeCoreWorldCollections;
-// 启动竞态自愈：桌面端每 5 次自动存档曾把 lite 覆写成无 conf(现已在 saveP/autoSave 两处补 conf)——历史 lite 仍可能无镜像。
-//   完整 P 异步恢复晚到时 tm-utils 派 tm:p-restored·此处按同一真源用刚恢复的 P.conf.factionLivingWorldDefault 重算 GM._factionLivingWorld·
-//   消除「无戳 + 启动时 GM=true 而迟到镜像=false」的永久矛盾(用户显式关闭被翻 ON)。用户本会话显式设过(带戳)则不动。
+// 完整设置晚于世界恢复时，仍统一采用正式势力世界，不恢复退役关闭值。
 try {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('tm:p-restored', function () {
-      try { if (typeof GM !== 'undefined' && GM && !GM._factionLivingWorldSetByUser) _tmReconcileFactionLivingWorld(GM, (typeof P !== 'undefined') ? P : null); } catch (_e) {}
+      try { if (typeof GM !== 'undefined' && GM) _tmReconcileFactionLivingWorld(GM, (typeof P !== 'undefined') ? P : null); } catch (_e) {}
     });
   }
 } catch (_e) {}
@@ -298,8 +291,20 @@ function _ensureGMDefaults(GM, P) {
 // §6.5 R3·真 Migration Framework (2026-05-22)
 // 版本号 + deprecation pipeline + 日志·让存档/conf 升级有迹可循
 // ════════════════════════════════════════════════════════════════════════
-var SAVE_SCHEMA_VERSION = '1.3.0-ai-upgrade';
+var SAVE_SCHEMA_VERSION = '1.3.5-gameplay-core';
 var _MIGRATIONS = [
+  { from: '*', to: '1.3.5-gameplay-core', desc: '正式玩法旧设置退役', migrate: function(Pref, GMref) {
+    var retired = ['factionLivingWorldDefault', 'agentLiveWorldEnabled', 'factionAgentEnabled', 'factionGoalStackEnabled', 'revoltEntityEnabled', 'useTinyiV3', 'deterministicCasualties', 'partyClassLlmEnabled', 'npcAiPrecision'];
+    var removed = [];
+    ['conf', 'ai'].forEach(function(namespace) {
+      var bag = Pref && Pref[namespace];
+      if (!bag) return;
+      retired.forEach(function(key) { if (Object.prototype.hasOwnProperty.call(bag, key)) { delete bag[key]; removed.push(namespace + '.' + key); } });
+    });
+    if (Pref && Pref.battleConfig) delete Pref.battleConfig.deterministicCasualties;
+    if (GMref) _tmReconcileFactionLivingWorld(GMref, Pref);
+    return removed;
+  } },
   // 每条·{ from: '1.2.0', to: '1.3.0-ai-upgrade', migrate: function(P, GM) {...}, desc: '...' }
   { from: '*', to: '1.3.0-ai-upgrade', desc: 'Phase 0-7.5·rename consolidationEnabled→memorySynthesisEnabled', migrate: function(Pref, GMref) {
     if (Pref && Pref.conf && typeof Pref.conf.consolidationEnabled === 'boolean' && typeof Pref.conf.memorySynthesisEnabled !== 'boolean') {
@@ -390,7 +395,6 @@ function _ensurePDefaults(P, GM) {
   }
   // §6.5 R3·调 migration framework·版本检查 + rule apply + log
   runMigrations(P, GM);
-  if (typeof P.conf.npcAiPrecision !== 'boolean') P.conf.npcAiPrecision = true;
   if (typeof P.conf.npcAiCosmeticEnrich !== 'boolean') P.conf.npcAiCosmeticEnrich = true;
   if (!P.conf.npcAiPrecisionMode) P.conf.npcAiPrecisionMode = 'eager';
   if (typeof P.conf.npcAiPrecisionMaxPerTurn !== 'number') P.conf.npcAiPrecisionMaxPerTurn = 2;
@@ -622,10 +626,7 @@ function _prepareGMForSave(GM, P, options) {
   // M1-M4 新增字段
   // 清理 ephemeral post-turn 任务（Promise 不可序列化）
   if (GM._postTurnJobs) delete GM._postTurnJobs;
-  // 无上限保护：_memoryArchiveFull 保留最近 5000 条（约 100-200 回合全记忆）
-  if (GM._memoryArchiveFull && GM._memoryArchiveFull.length > 5000) {
-    GM._memoryArchiveFull = GM._memoryArchiveFull.slice(-5000);
-  }
+  // Lossless personal originals are retained; query-time actor indexing bounds recall cost.
   if (!skipMirrors._savedMemoryArchiveFull && GM._memoryArchiveFull && GM._memoryArchiveFull.length > 0) GM._savedMemoryArchiveFull = _safeClone(GM._memoryArchiveFull);
   if (!skipMirrors._savedCausalGraph && GM._causalGraph && (GM._causalGraph.nodes && GM._causalGraph.nodes.length || GM._causalGraph.edges && GM._causalGraph.edges.length)) GM._savedCausalGraph = _safeClone(GM._causalGraph);
   if (!skipMirrors._savedFactionArcs && GM._factionArcs && Object.keys(GM._factionArcs).length > 0) GM._savedFactionArcs = _safeClone(GM._factionArcs);
@@ -826,6 +827,11 @@ function _tmShowDesktopLoadFallback(files) {
   }
   var actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:0.8rem;margin-top:1rem';
+  actions.appendChild(_tmDesktopSaveButton('桌面自动存档', '', function() {
+    if (typeof loadDesktopAutoSave === 'function') loadDesktopAutoSave();
+    else window.desktopLoadSave({ desktopAutoSave: true });
+  }));
+  actions.lastChild.className = 'btn';
   actions.appendChild(_tmDesktopSaveButton('从文件导入', '', function() { importSaveFile(); }));
   actions.lastChild.className = 'btn';
   actions.appendChild(_tmDesktopSaveButton('返回', '', function() { showMain(); }));
@@ -853,9 +859,11 @@ doSaveGame=async function(){
     var name="T"+GM.turn+"_"+(sc2?sc2.name:"save")+"_"+new Date().toISOString().slice(0,10);
     var saveData2=_buildSaveState({format:'project'});
     saveData2._saveMeta={name:name,turn:GM.turn,time:getTSText(GM.turn),scenario:sc2?sc2.name:"",date:new Date().toISOString(),version:P.meta.v};
-    var blob=new Blob([JSON.stringify(saveData2)],{type:"application/json"});// 紧凑写(存档非配置·再导入走 JSON.parse·缩进约占体积一半)
-    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name+".json";a.click();
-    toast("\u2705 \u5DF2\u5BFC\u51FA: "+name+".json");
+    try {
+      var result = await TM.fileExport.saveJson(JSON.stringify(saveData2), name+".json");
+      if (result.mode === "canceled") { toast("已取消导出"); return; }
+      toast(result.mode === "native" ? ("✅ 存档已保存到所选位置 · " + result.fileName) : ("✅ 已导出: " + name+".json"));
+    } catch (error) { toast("❌ 导出失败: " + (error.message || error)); }
   }
 };
 
@@ -878,7 +886,10 @@ window.desktopDoSave=async function(){
     var previous = operation._queue || Promise.resolve();
     var pending = previous.catch(function(){}).then(function(){
       if(!current()) return {success:false,stale:true};
-      return window.tianming.saveProject(name,saveData);
+      // 新外壳有文本通道：先转成字符串再过桥，免得几百 MB 的对象图逐节点复制；旧外壳照走对象通道
+      var bridge = window.tianming;
+      if (typeof bridge.saveProjectJson === 'function') return bridge.saveProjectJson(name, JSON.stringify(saveData));
+      return bridge.saveProject(name,saveData);
     });
     operation._queue = pending;
     var r=await pending;
@@ -1098,6 +1109,7 @@ function _restoreSavedFields(options) {
 var PREF_CONF_KEYS = [
   'verbosity', 'aiCallDepth',
   'maxOutputTokens', 'turnTokenBudget', 'modelTier', 'contextSizeK',
+  'aiCallRetryOverrides', 'aiSecondaryRetryCount', 'emergencyRecovery',
   'memoryAnchorKeep', 'memoryArchiveKeep', 'characterArcKeep',
   'playerDecisionKeep', 'chronicleKeep', 'convKeep',
   'shiluMin', 'shiluMax', 'szjMin', 'szjMax', 'hourenMin', 'hourenMax',
@@ -1106,7 +1118,7 @@ var PREF_CONF_KEYS = [
   'chronicleMin', 'chronicleMax', 'commentMin', 'commentMax',
   'qijuLookback', 'shijiLookback', 'autoSaveTurns', 'summaryRule',
   'dialogueRecallTurns', 'costAlertThreshold', 'strictSchemaEnabled', 'memorySynthesisEnabled',
-  'npcAiPrecision', 'npcAiCosmeticEnrich', 'npcAiPrecisionMode', 'npcAiPrecisionMaxPerTurn', 'npcInTurnMaxPerTurn',
+  'npcAiCosmeticEnrich', 'npcAiPrecisionMode', 'npcAiPrecisionMaxPerTurn', 'npcInTurnMaxPerTurn',
   'insecureTlsRelay'
 ];
 
@@ -1183,7 +1195,10 @@ function _tmRebindRuntimeWorld(options) {
     return _tmRunDegradableLoadStep(label, fn);
   }
 
-  if (options.map !== false) {
+  // 存档里只存了 GM.mapData 一份时（见 _buildSaveState），先把 P.map / P.mapData 指回读入的这份地图；
+  // 随后的重绑定会把 GM.mapData 换成新克隆，P 里留下的正好是与运行地图互不共享的剧本模板
+  var restoredMapKeys = typeof _tmRestoreMapAliases === 'function' ? _tmRestoreMapAliases(targetP, targetGM) : [];
+  if (options.map !== false && targetGM._useAIGeo !== true) {
     run('runtime map rebind', function() {
       var liveMapSource = _tmRuntimeMapSourceForWorld(targetP, targetGM);
       if (liveMapSource && typeof bindRuntimeMapState === 'function') {
@@ -1195,6 +1210,7 @@ function _tmRebindRuntimeWorld(options) {
       }
     });
   }
+  if (typeof _tmSeparateMapTemplate === 'function') _tmSeparateMapTemplate(targetP, targetGM, restoredMapKeys);
 
   if (options.integration !== false && typeof IntegrationBridge !== 'undefined' && IntegrationBridge) {
     run('integration bridge pure rebind', function() {
@@ -1476,160 +1492,21 @@ function _tmMigrateCoreStableIds(targetGM) {
   return result;
 }
 
-function _tmValidateUniqueStableIds(label, list) {
-  if (!Array.isArray(list)) return;
-  var seen = Object.create(null);
-  list.forEach(function(item, index) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error(label + ' 第 ' + index + ' 项不是合法对象');
-    if (_tmStableIdMissing(item.id)) throw new Error(label + ' 缺少稳定 id（索引 ' + index + '）');
-    var raw = item.id;
-    if (typeof raw !== 'string' && !(typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 0)) {
-      throw new Error(label + ' id 类型非法（索引 ' + index + '）');
-    }
-    var id = String(raw).trim();
-    if (!id || id.length > 256 || /[\u0000-\u001f\u007f]/.test(id)) throw new Error(label + ' id 格式非法（索引 ' + index + '）');
-    if (seen[id] !== undefined) throw new Error(label + ' 存在重复 id: ' + id + '（索引 ' + seen[id] + ' / ' + index + '）');
-    seen[id] = index;
-  });
-}
-
-function _tmValidateStableForeignKeys(targetGM) {
-  var factionIds = _tmEntityIdSet(targetGM.facs);
-  var charIds = _tmEntityIdSet(targetGM.chars);
-  function requireExisting(label, value, set) {
-    if (_tmStableIdMissing(value)) return;
-    var key = String(value).trim();
-    if (!set[key]) throw new Error(label + ' 指向不存在的稳定 id: ' + key);
-  }
-  (targetGM.chars || []).forEach(function(ch, index) {
-    if (!ch) return;
-    requireExisting('人物[' + index + '].factionId', ch.factionId, factionIds);
-    ['fatherId', 'motherId', 'spouseId', 'mentorId', 'designatedHeirId'].forEach(function(field) {
-      requireExisting('人物[' + index + '].' + field, ch[field], charIds);
-    });
-    ['childrenIds', 'studentIds', 'studentsIds', 'relativeIds'].forEach(function(field) {
-      (Array.isArray(ch[field]) ? ch[field] : []).forEach(function(id, refIndex) {
-        requireExisting('人物[' + index + '].' + field + '[' + refIndex + ']', id, charIds);
-      });
-    });
-    (Array.isArray(ch.familyMembers) ? ch.familyMembers : []).forEach(function(member, memberIndex) {
-      if (!member || typeof member !== 'object') return;
-      requireExisting('人物[' + index + '].familyMembers[' + memberIndex + '].characterId', member.characterId, charIds);
-      requireExisting('人物[' + index + '].familyMembers[' + memberIndex + '].personId', member.personId, charIds);
-    });
-  });
-  if (targetGM.harem && typeof targetGM.harem === 'object') {
-    requireExisting('后宫.crownPrinceId', targetGM.harem.crownPrinceId, charIds);
-  }
-  (targetGM.facs || []).forEach(function(faction, index) {
-    if (!faction) return;
-    requireExisting('势力[' + index + '].leaderId', faction.leaderId, charIds);
-    requireExisting('势力[' + index + '].coLeaderId', faction.coLeaderId, charIds);
-    requireExisting('势力[' + index + '].heirId', faction.heirId, charIds);
-    (Array.isArray(faction.memberIds) ? faction.memberIds : []).forEach(function(id, memberIndex) {
-      requireExisting('势力[' + index + '].memberIds[' + memberIndex + ']', id, charIds);
-    });
-  });
-  (targetGM.armies || []).forEach(function(army, index) {
-    if (!army) return;
-    requireExisting('军队[' + index + '].commanderId', army.commanderId, charIds);
-    requireExisting('军队[' + index + '].factionId', army.factionId, factionIds);
-  });
-  var regions = targetGM.mapData && targetGM.mapData.regions;
-  (Array.isArray(regions) ? regions : []).forEach(function(region, index) {
-    if (!region) return;
-    requireExisting('地图地区[' + index + '].factionId', region.factionId, factionIds);
-    requireExisting('地图地区[' + index + '].governorId', region.governorId, charIds);
-  });
-  _tmCollectAdminDivisionEntries(targetGM).forEach(function(entry, index) {
-    if (entry && entry.item) requireExisting('行政区划[' + index + '].governorId', entry.item.governorId, charIds);
-  });
-  (function walkOffices(nodes, path) {
-    (Array.isArray(nodes) ? nodes : []).forEach(function(node, nodeIndex) {
-      var nodePath = path + '[' + nodeIndex + ']';
-      (Array.isArray(node && node.positions) ? node.positions : []).forEach(function(position, positionIndex) {
-        if (!position) return;
-        var positionPath = nodePath + '.positions[' + positionIndex + ']';
-        requireExisting(positionPath + '.holderId', position.holderId, charIds);
-        (Array.isArray(position.actualHolders) ? position.actualHolders : []).forEach(function(holder, holderIndex) {
-          if (!holder || typeof holder !== 'object') return;
-          requireExisting(positionPath + '.actualHolders[' + holderIndex + '].characterId', holder.characterId, charIds);
-          requireExisting(positionPath + '.actualHolders[' + holderIndex + '].personId', holder.personId, charIds);
-          requireExisting(positionPath + '.actualHolders[' + holderIndex + '].holderId', holder.holderId, charIds);
-        });
-      });
-      var subs = Array.isArray(node && node.subs) ? node.subs : [];
-      var children = Array.isArray(node && node.children) && node.children !== subs ? node.children : [];
-      walkOffices(subs, nodePath + '.subs');
-      walkOffices(children, nodePath + '.children');
-    });
-  })(targetGM.officeTree, 'officeTree');
-}
-
-function _tmValidateFiniteWorldNumbers(root, label) {
-  var stack = [{ value: root, path: label }];
-  var seen = typeof WeakSet === 'function' ? new WeakSet() : null;
-  while (stack.length) {
-    var current = stack.pop();
-    var value = current.value;
-    if (typeof value === 'number') {
-      if (!Number.isFinite(value)) throw new Error('存档数值非法: ' + current.path);
-      continue;
-    }
-    if (!value || typeof value !== 'object') continue;
-    if (seen) {
-      if (seen.has(value)) continue;
-      seen.add(value);
-    }
-    // Map/Set/Blob 等运行时派生容器不属于 JSON 世界正文；其内部由各自重建器负责。
-    var keys = Object.keys(value);
-    for (var i = 0; i < keys.length; i++) {
-      stack.push({ value: value[keys[i]], path: current.path + '.' + keys[i] });
-    }
-  }
-}
-
-function _tmValidateLoadedWorld(targetP, targetGM) {
-  if (!targetP || typeof targetP !== 'object' || Array.isArray(targetP)) throw new Error('存档 P 不是合法对象');
-  if (!targetGM || typeof targetGM !== 'object' || Array.isArray(targetGM)) throw new Error('存档 GM 不是合法对象');
-  var turn = Number(targetGM.turn);
-  if (!Number.isSafeInteger(turn) || turn < 0) throw new Error('存档回合号非法');
-  if (!String(targetGM._campaignId || '')) throw new Error('存档缺少 campaignId');
-  if (!_tmEnsureTimelineIdentity(targetGM)) throw new Error('存档缺少 timelineId');
-  [['chars', targetGM.chars], ['facs', targetGM.facs], ['armies', targetGM.armies], ['officeTree', targetGM.officeTree]].forEach(function(pair) {
-    if (pair[1] != null && !Array.isArray(pair[1])) throw new Error('存档字段 ' + pair[0] + ' 必须为数组');
-  });
-  if (targetGM.mapData != null) {
-    if (typeof targetGM.mapData !== 'object' || Array.isArray(targetGM.mapData)) throw new Error('运行地图结构非法');
-    if (targetGM.mapData.regions != null && !Array.isArray(targetGM.mapData.regions)) throw new Error('运行地图地区必须为数组');
-    if (targetP.map === targetGM.mapData || targetP.mapData === targetGM.mapData) throw new Error('运行地图与剧本模板仍共享引用');
-  }
-  if (targetGM._chronicleSysState != null && (typeof targetGM._chronicleSysState !== 'object' || Array.isArray(targetGM._chronicleSysState))) {
-    throw new Error('编年状态结构非法');
-  }
-  _tmValidateUniqueStableIds('人物', targetGM.chars);
-  _tmValidateUniqueStableIds('势力', targetGM.facs);
-  _tmValidateUniqueStableIds('军队', targetGM.armies);
-  _tmValidateUniqueStableIds('地图地区', targetGM.mapData && targetGM.mapData.regions);
-  _tmValidateUniqueStableIds('行政区划', _tmCollectAdminDivisionEntries(targetGM).map(function(entry) { return entry.item; }));
-  _tmValidateStableForeignKeys(targetGM);
-  _tmValidateFiniteWorldNumbers(targetP, 'P');
-  _tmValidateFiniteWorldNumbers(targetGM, 'GM');
-  return true;
-}
+// World validation lives in the adjacent tm-save-world-validation.js.
 
 function _recoverPendingTurnDataPublish() {
   if (GM && window.tianming && window.tianming.isDesktop && (window.tianming.turnDataProtocolVersion !== 2 || typeof window.tianming.recoverTurnData !== 'function')) {
     return Promise.resolve({ ok: false, error: new Error('分卷恢复需要更新桌面安装包') });
   }
   if (!(GM && window.tianming && typeof window.tianming.recoverTurnData === 'function')) return Promise.resolve({ ok: true, skipped: true });
+  var recoveryBridge = window.tianming;
   var targetGM = GM;
   var targetP = P;
   var targetLoadGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
   var campaignId = String((GM && GM._campaignId) || '');
   var timelineId = String((GM && GM._timelineId) || '');
   function baseRecoveryLeaseCurrent() {
-    return GM === targetGM && P === targetP &&
+    return window.tianming === recoveryBridge && GM === targetGM && P === targetP &&
       (((typeof window !== 'undefined' && window._tmLoadGen) || 0) === targetLoadGen) &&
       String((GM && GM._campaignId) || '') === campaignId &&
       String((GM && GM._timelineId) || '') === timelineId;
@@ -1637,6 +1514,8 @@ function _recoverPendingTurnDataPublish() {
 
   return Promise.resolve().then(async function() {
     if (window.tianming.turnDataProtocolVersion !== 2) throw new Error('分卷恢复需要更新桌面安装包');
+    var reliability = window.TM && window.TM.Endturn && window.TM.Endturn.Reliability;
+    if (!reliability || typeof reliability.callTurnBridge !== 'function') throw new Error('桌面分卷等待管理未加载');
     // v4 以前的存档把 marker 烘进两个大世界正文；仅在兼容迁移时做一次全量清理。
     if (targetGM._pendingTurnDataPublish) {
       var legacyMarker = deepClone(targetGM._pendingTurnDataPublish);
@@ -1644,7 +1523,7 @@ function _recoverPendingTurnDataPublish() {
         return baseRecoveryLeaseCurrent() && !!targetGM._pendingTurnDataPublish &&
           targetGM._pendingTurnDataPublish.transactionId === legacyMarker.transactionId;
       }
-      var legacyResult = await window.tianming.recoverTurnData(legacyMarker);
+      var legacyResult = await reliability.callTurnBridge('recoverTurnData', legacyMarker, { isCurrent: legacyLeaseCurrent });
       if (!legacyLeaseCurrent()) return;
       if (!(legacyResult && legacyResult.success === true)) throw new Error(legacyResult && legacyResult.error || '旧回合分卷恢复失败');
       if (!(typeof TM_SaveDB !== 'undefined' && typeof TM_SaveDB.clearPendingTurnDataPublishAtomic === 'function')) {
@@ -1665,8 +1544,8 @@ function _recoverPendingTurnDataPublish() {
     for (var i = 0; i < receipts.length; i++) {
       if (!baseRecoveryLeaseCurrent()) return;
       var marker = receipts[i];
-      if (!marker || String(marker.timelineId || '') !== timelineId || Number(marker.turn) > Number(targetGM.turn || 0)) continue;
-      var result = await window.tianming.recoverTurnData(marker);
+      if (!marker || String(marker.campaignId || '') !== campaignId || String(marker.timelineId || '') !== timelineId || Number(marker.turn) > Number(targetGM.turn || 0)) continue;
+      var result = await reliability.callTurnBridge('recoverTurnData', marker, { isCurrent: baseRecoveryLeaseCurrent });
       if (!baseRecoveryLeaseCurrent()) return;
       if (!(result && result.success === true)) throw new Error(result && result.error || '回合分卷恢复失败');
       var deleted = await TM_SaveDB.deleteTurnPublishReceipt(marker, { writeGuard: baseRecoveryLeaseCurrent });
@@ -1795,6 +1674,10 @@ async function _fullLoadGameImpl(data, loadOptions){
   if (typeof window !== 'undefined') window._tmActiveLoadTransaction = _loadTxn;
   try {
     await _fullLoadGameApplyImpl(data, loadOptions, _loadTxn);
+    if (loadOptions && typeof loadOptions.beforeCommit === 'function') {
+      await loadOptions.beforeCommit({ GM: GM, P: P, transaction: _loadTxn });
+    }
+    if (loadOptions && loadOptions.nativeStart && GM) { GM.busy = false; GM._loadHydrationPending = false; } // arch-ok: existing load commit owner opens the new world only after canonical commit
     if (typeof window !== 'undefined' && window._tmActiveLoadTransaction === _loadTxn) {
       window._tmActiveLoadTransaction = null;
     }
@@ -1871,6 +1754,10 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
   // Capture provenance before defaults can turn an absent collection into an empty array.
   var _culturalRestore = _tmCulturalRestoreOptions(_incomingP, _incomingGM);
   if (_incomingP && _incomingP.gameState) delete _incomingP.gameState;
+  if (window.TM && TM.NativeWorld && TM.NativeWorld.enabled(_incomingGM)) {
+    await TM.NativeWorld.validateSnapshot(_incomingGM);
+    TM.NativeWorld.rebind(_incomingGM);
+  }
   _tmStripSaveTransportMetadata(_incomingP);
   _tmStripSaveTransportMetadata(_incomingGM);
   // 迁移和默认值先在尚未发布的 incoming 对象上完成；失败时 live P/GM 保持原局，
@@ -1965,7 +1852,7 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
     if (typeof _offMigrateTree === 'function' && GM.officeTree) _offMigrateTree(GM.officeTree);
     // 单一真相源:读档时去重人物+从树回填officialTitle+派生任职者(治双源漂移/布衣/重复人物)
     _tmRunCriticalLoadStep('office holder synchronization', function() {
-      if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({ importSeats: true, dedupChars: true, force: true });
+      if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({ importSeats: true, dedupChars: !GM.startContext, force: true });
     });
     // 官制officialTitle同步——确保ch.officialTitle与GM.officeTree一致
     if (GM.officeTree && GM.chars) {
@@ -1978,7 +1865,7 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
             }
             if (!_names.length && p.holder) _names = [p.holder];
             _names.forEach(function(_nm, _idx) {
-              var _sch = GM.chars.find(function(c){ return c.name === _nm; });
+              var _sch = GM.chars.find(function(c){ return GM.startContext ? c.id === p.holderId : c.name === _nm; });
               if (!_sch) return;
               if (typeof _offAddCharOfficeTitle === 'function') _offAddCharOfficeTitle(_sch, p.name, { concurrent: _idx > 0 || !!_sch.officialTitle });
               else if (!_sch.officialTitle) _sch.officialTitle = p.name;
@@ -2160,8 +2047,8 @@ async function _fullLoadGameApplyImpl(data, loadOptions, _loadTxn){
       });
       _assertLoadLeaseCurrent();
     }
-    GM._loadHydrationPending = false;
-    GM.busy = false;
+    GM._loadHydrationPending = !!loadOptions.nativeStart;
+    GM.busy = !!loadOptions.nativeStart;
 
     // hydration 完成前保持加载遮罩与旧界面隔离；此处才真正开放新世界 UI。
     _$("launch").style.display="none";
@@ -2237,14 +2124,21 @@ if(_tmHasNativeFs()){
   window.desktopLoadSave=async function(name){
     showLoading("\u8BFB\u53D6\u5B58\u6863...",30);
     try{
-      var r=await window.tianming.loadProject(name);
+      var isAuto = !!(name && name.desktopAutoSave === true);
+      var r=isAuto ? await window.tianming.loadAutoSave() : await window.tianming.loadProject(name);
       if(r.success&&r.data){
+        var savedGame = r.data.gameState && (r.data.gameState.GM || r.data.gameState);
+        if (isAuto && (!savedGame || !savedGame.running)) { hideLoading(); toast('暂无可恢复的桌面自动存档'); return false; }
         showLoading("\u6062\u590D...",70);
-        try { await fullLoadGame(r.data, { source: 'desktop-save' }); }
-        catch (_lpE) { console.error('[loadProject] 恢复失败', _lpE); toast('恢复失败: ' + (_lpE.message||_lpE)); }
+        try {
+          await fullLoadGame(r.data, { source: isAuto ? 'desktop-autosave-manual' : 'desktop-save', autoSaveSessionToken: isAuto ? (r.sessionToken || '') : '' });
+          if (isAuto && typeof closeSaveManager === 'function') closeSaveManager();
+          return true;
+        }
+        catch (_lpE) { console.error('[loadProject] 恢复失败', _lpE); toast('恢复失败: ' + (_lpE.message||_lpE)); return false; }
         finally { hideLoading(); }
-      }else{hideLoading();toast("\u52A0\u8F7D\u5931\u8D25");}
-    }catch(e){hideLoading();toast("\u5931\u8D25: "+e.message);}
+      }else{hideLoading();toast(isAuto ? '暂无可恢复的桌面自动存档' : "\u52A0\u8F7D\u5931\u8D25");return false;}
+    }catch(e){hideLoading();toast("\u5931\u8D25: "+e.message);return false;}
   };
 
   window.desktopDeleteSave=async function(ref){
@@ -2279,6 +2173,7 @@ var _autoSaveDeferStreak=0;    // C·连续 defer 次数·用于日志
 // 闲置 10 分钟累积 ~10 次峰值→堆耗尽→Render process gone 黑屏。
 // 而闲置时 GM 完全冻结·这些存档是把盘上同一份数据反复重写·纯浪费。
 // 故:真闲置 (自上次成功存档以来无输入 且 turn 未变) 时跳过·盘上副本已是最新。
+var _autoSaveCommittedRevision=0,_autoSaveLastSavedRevision=-1;
 var _autoSaveLastSavedTurn=-1; // D·上次成功存档时的 GM.turn
 var _autoSaveIdleSkipStreak=0; // D·连续闲置跳过次数·用于日志
 var _autoSaveDeferred=false;
@@ -2319,6 +2214,44 @@ function _tmReportDesktopAutoSaveBoundaryError(error, label){
     console.warn('[autoSave] ' + String(label || 'desktop autosave boundary') + ':', normalized);
   }
   return normalized;
+}
+
+var _autoSaveNativePending=null, _autoSaveTransportEvents=[];
+var _DESKTOP_AUTOSAVE_WAIT_MS=60000;
+function _tmDesktopAutoSaveWaitError(code){
+  var e=new Error(code==='DESKTOP_AUTOSAVE_UNCONFIRMED'
+    ? '桌面自动存档回执尚未确认；未重发或标记成功，请保留当前页面并核对主存档。'
+    : '桌面自动存档对应的世界或会话已变化，旧快照未发送');
+  e.code=code; return e;
+}
+function _tmDesktopAutoSaveTransportEvent(phase){
+  _autoSaveTransportEvents.push({phase:phase,at:Date.now()});
+  if(_autoSaveTransportEvents.length>12)_autoSaveTransportEvents.shift();
+}
+function _tmDesktopAutoSaveTransportStatus(){
+  return {pending:!!_autoSaveNativePending,timedOut:!!(_autoSaveNativePending&&_autoSaveNativePending.timedOut),
+    events:_autoSaveTransportEvents.map(function(e){return {phase:e.phase,at:e.at};})};
+}
+function _tmAwaitDesktopAutoSaveReply(execute){
+  if(_autoSaveNativePending)return Promise.reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+  return new Promise(function(resolve,reject){
+    var job={timedOut:false},settled=false,timer;
+    _autoSaveNativePending=job;
+    function ended(error,value){
+      clearTimeout(timer);
+      if(_autoSaveNativePending===job)_autoSaveNativePending=null;
+      if(settled){_tmDesktopAutoSaveTransportEvent(error?'late-rejection':'late-reply');return;}
+      settled=true;_tmDesktopAutoSaveTransportEvent(error?'rejected':_tmDesktopAutoSaveResultOk(value)?'acknowledged':'negative-reply');
+      if(error)reject(error);else resolve(value);
+    }
+    timer=setTimeout(function(){
+      if(settled)return;settled=true;job.timedOut=true;
+      _tmDesktopAutoSaveTransportEvent('unconfirmed');
+      reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+    },_DESKTOP_AUTOSAVE_WAIT_MS);
+    try{Promise.resolve(execute()).then(function(value){ended(null,value);},function(error){ended(error);});}
+    catch(error){ended(error);}
+  });
 }
 
 function _tmDesktopAutoSaveResultOk(result){
@@ -2668,6 +2601,36 @@ if (typeof window !== 'undefined') window._autoSaveSnapshotGM = _autoSaveSnapsho
 //   idb     -> { GM, P }（TM_SaveDB / slot / pre_endturn）
 //   project -> P 克隆本体 + gameState（桌面存档 / 浏览器导出 / Electron autosave）
 // 调用方须在需要时先 await 后台任务；prepare 默认开启，传 prepare:false 可避免同一写口重复序列化。
+// 运行时 P.map、P.mapData 通常就是 GM.mapData 这一个对象（正式地图每次读图都会把三者重新指到一起）。
+// 返回存档时可以不单独存的键。只认对象同一：内容相同但不是同一对象的（如地图编辑器另放的地图）照旧整份存。
+function _tmMapAliasesOfGM(p, gm) {
+  var map = gm && gm.mapData;
+  if (!p || !map || typeof map !== 'object' || !Array.isArray(map.regions) || !map.regions.length) return [];
+  return ['map', 'mapData'].filter(function(key) { return p[key] === map; });
+}
+
+// 读档（在运行地图重绑定之前调用）：把存档里标记过的键指回读入的 GM.mapData，返回恢复了哪些键。
+// 内容与旧存档里单独存的那两份相同（存档时三者本就是同一对象）。旧存档没有标记，不受影响。
+function _tmRestoreMapAliases(targetP, targetGM) {
+  var keys = targetP && targetP._mapAliasesOfGM;
+  if (!Array.isArray(keys)) return [];
+  delete targetP._mapAliasesOfGM;
+  if (!targetGM || !targetGM.mapData || typeof targetGM.mapData !== 'object') return [];
+  var restored = keys.filter(function(key) { return key === 'map' || key === 'mapData'; });
+  restored.forEach(function(key) { targetP[key] = targetGM.mapData; });
+  return restored;
+}
+
+// 读档（在运行地图重绑定之后调用）：读档校验要求剧本模板不与运行地图共享引用。
+// 正常重绑定已把 GM.mapData 换成新克隆，这里什么都不做；没有重绑定（如 AI 地理模式）时补一份独立副本。
+function _tmSeparateMapTemplate(targetP, targetGM, keys) {
+  var live = targetGM && targetGM.mapData;
+  var shared = (keys || []).filter(function(key) { return live && targetP[key] === live; });
+  if (!shared.length) return;
+  var template = _safeClone(live);
+  shared.forEach(function(key) { targetP[key] = template; });
+}
+
 function _buildSaveState(options){
   options = options || {};
   if (typeof TM !== 'undefined' && TM.perf && typeof TM.perf.count === 'function') {
@@ -2678,7 +2641,15 @@ function _buildSaveState(options){
   var sourceP = options.p || (typeof P !== 'undefined' ? P : {});
   if (!sourceGM) return null;
   var gmSnapshot = _autoSaveSnapshotGM(sourceGM, { detach: options.detach === true });
-  var pWorking = deepClone(sourceP || {});
+  // P.map、P.mapData 与 GM.mapData 是同一个对象时只存 GM 那一份：P 里既不克隆也不序列化这两个键，
+  // 只留标记，读档后由 _tmRestoreMapAliases 指回（绍宋一份地图 51.5MB，旧写法每次存档多克隆、多写两遍）
+  var mapAliases = typeof _tmMapAliasesOfGM === 'function' ? _tmMapAliasesOfGM(sourceP, sourceGM) : [];
+  var pSource = sourceP || {};
+  if (mapAliases.length) {
+    pSource = Object.assign({}, sourceP);
+    mapAliases.forEach(function(key) { delete pSource[key]; });
+  }
+  var pWorking = deepClone(pSource);
   if (options.prepare !== false && typeof _prepareGMForSave === 'function') {
     var prepared = _prepareGMForSave(gmSnapshot, pWorking, { omitDiscardedMirrors: true });
     if (!prepared) return null;
@@ -2689,6 +2660,7 @@ function _buildSaveState(options){
     pWorking = prepared.P;
   }
   var pSnapshot = _tmStripAiKeyInPlace(pWorking);
+  if (mapAliases.length) pSnapshot._mapAliasesOfGM = mapAliases;
   // P.gameState 只允许出现在 project 外壳的最外层；清掉旧读档遗留的嵌套僵尸再装当前快照。
   try { if (pSnapshot && pSnapshot.gameState) delete pSnapshot.gameState; } catch (_) {}
   if (options.format === 'project') {
@@ -2729,6 +2701,7 @@ function _tmAdoptCommittedWorldSnapshot(state, meta){
   var ownedState = meta.takeOwnership === true ? state : deepClone(state);
   if (!ownedState || !ownedState.GM || !ownedState.P) return false;
   lastCommittedSnapshot = ownedState;
+  _autoSaveCommittedRevision++;
   lastCommittedTurn = identity.turn;
   lastCommittedTransactionId = identity.transactionId;
   _lastCommittedSnapshotIdentity = identity;
@@ -2783,6 +2756,7 @@ function _tmCommittedSnapshotProjectEnvelope(){
 }
 
 async function _tmRunDesktopAutoSaveTick(options){
+  if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();
   options = options || {};
   if (!GM || !GM.running) return { ok: false, skipped: true, reason: 'not-running' };
   if (isWorldTransactionActive()) {
@@ -2794,6 +2768,7 @@ async function _tmRunDesktopAutoSaveTick(options){
     if (_autoSaveSkipCount === 5) console.warn('[autoSave] 连续 5 次被跳·上一次 IPC 尚未完成');
     return { ok: false, skipped: true, reason: 'in-flight' };
   }
+  if (_autoSaveNativePending) return { ok: false, pending: true, reason: 'native-write-unconfirmed', error: _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED') };
   if (!_tmCommittedSnapshotMatchesLive()) {
     return { ok: false, skipped: true, reason: 'no-committed-snapshot' };
   }
@@ -2808,7 +2783,7 @@ async function _tmRunDesktopAutoSaveTick(options){
   if (_autoSaveDeferStreak > 0) _autoSaveDeferStreak = 0;
   if (options.force !== true && _autoSaveLastDoneMs > 0
       && _autoSaveLastInputMs <= _autoSaveLastDoneMs
-      && lastCommittedTurn === _autoSaveLastSavedTurn) {
+      && lastCommittedTurn === _autoSaveLastSavedTurn && _autoSaveCommittedRevision === _autoSaveLastSavedRevision) {
     _autoSaveIdleSkipStreak++;
     return { ok: false, skipped: true, reason: 'idle-unchanged' };
   }
@@ -2816,6 +2791,10 @@ async function _tmRunDesktopAutoSaveTick(options){
 
   var sourceSnapshot = lastCommittedSnapshot;
   var sourceIdentity = _lastCommittedSnapshotIdentity;
+  var targetGM=GM,targetP=P,targetGeneration=window._tmLoadGen||0,bridge=window.tianming;
+  function snapshotStillCurrent(){return GM===targetGM&&P===targetP&&(window._tmLoadGen||0)===targetGeneration
+    &&window.tianming===bridge&&lastCommittedSnapshot===sourceSnapshot&&_lastCommittedSnapshotIdentity===sourceIdentity
+    &&_tmCommittedSnapshotMatchesLive();}
   var saveData = _tmCommittedSnapshotProjectEnvelope();
   if (!saveData) return { ok: false, skipped: true, reason: 'snapshot-unavailable' };
   _autoSaveInFlight = true;
@@ -2826,17 +2805,24 @@ async function _tmRunDesktopAutoSaveTick(options){
       // large object graph. No persistent cache, changed frequency or live-world
       // reads. Old shells keep their existing transport; errors never fall back
       // to a second write. The main session/queue/rename protocol is unchanged.
-      var result = typeof window.tianming.autoSaveJson === 'function'
-        ? await window.tianming.autoSaveJson(JSON.stringify(saveData))
-        : await window.tianming.autoSave(saveData);
+      var result = await _tmAwaitDesktopAutoSaveReply(function(){
+        if(!snapshotStillCurrent()||isWorldTransactionActive())throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
+        if(typeof bridge.autoSaveJson==='function'){
+          var json=JSON.stringify(saveData);
+          if(!snapshotStillCurrent()||isWorldTransactionActive())throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
+          return bridge.autoSaveJson(json);
+        }
+        return bridge.autoSave(saveData);
+      });
       if (!_tmDesktopAutoSaveResultOk(result)) throw _tmDesktopAutoSaveFailure(result);
-      if (lastCommittedSnapshot !== sourceSnapshot || _lastCommittedSnapshotIdentity !== sourceIdentity
-          || !_tmCommittedSnapshotMatchesLive()) {
+      if (!snapshotStillCurrent()) {
         console.warn('[autoSave] 已提交快照在 IPC 期间推进或跨档·本次落盘有效但不推进当前局闲置基线');
         return { ok: true, stale: true, turn: Number(saveData._saveMeta.turn) };
       }
+      if (result && result.sessionToken && String(result.sessionToken)!==String(sourceIdentity.sessionToken)) throw _tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_STALE');
       _autoSaveLastDoneMs = Date.now();
       _autoSaveLastSavedTurn = Number(saveData._saveMeta.turn);
+      _autoSaveLastSavedRevision = _autoSaveCommittedRevision;
       _autoSaveLiteTick++;
       if (_autoSaveLiteTick >= 5) {
         _autoSaveLiteTick = 0;
@@ -2910,6 +2896,7 @@ if (typeof window !== 'undefined') {
   window._tmInvalidateCommittedWorldSnapshot = _tmInvalidateCommittedWorldSnapshot;
   window._tmCaptureCommittedWorldSnapshotFromLive = _tmCaptureCommittedWorldSnapshotFromLive;
   window._tmRunDesktopAutoSaveTick = _tmRunDesktopAutoSaveTick;
+  window._tmDesktopAutoSaveTransportStatus = _tmDesktopAutoSaveTransportStatus;
   window._tmFlushDeferredDesktopAutoSave = _tmFlushDeferredDesktopAutoSave;
   window.requestBackgroundAutosave = requestBackgroundAutosave;
   window._tmDrainBackgroundAutosaves = _tmDrainBackgroundAutosaves;
@@ -2923,32 +2910,8 @@ if(_tmHasNativeFs()){
     });
   },60000);
 
-  // 启动时检测自动存档
-  (async function(){
-    try{
-      var r=await window.tianming.loadAutoSave();
-      if(r.success&&r.data){
-        if(r.data.gameState&&r.data.gameState.running){
-          // 有运行中的游戏——提示恢复
-          if(confirm("\u68C0\u6D4B\u5230\u81EA\u52A8\u5B58\u6863 (T"+(r.data.gameState.turn||1)+")\uFF0C\u662F\u5426\u6062\u590D\uFF1F")){
-            showLoading("\u6062\u590D...",50);
-            try { await fullLoadGame(r.data, { autoSaveSessionToken: r.sessionToken || '', source: 'desktop-autosave' }); }
-            catch (_restE) { console.error('[autoRestore] 恢复失败', _restE); toast('恢复失败: ' + (_restE.message||_restE)); }
-            finally { hideLoading(); }
-          }
-        } else if(r.data.scenarios&&r.data.scenarios.length>0){
-          // 没有运行中的游戏但有剧本数据——静默恢复P结构
-          var data=r.data;
-          for(var key in data){
-            if(data.hasOwnProperty(key)&&key!=='gameState'&&key!=='_saveMeta'){
-              P[key]=data[key];
-            }
-          }
-          console.log('[desktop] 已从autoSave恢复P（无游戏状态），scenarios:',P.scenarios.length);
-        }
-      }
-    }catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
-  })();
+  // 启动不读取整份桌面自动存档：项目恢复由 tm-utils 统一负责。
+  // 运行局仅通过“读取存档 → 桌面自动存档”由玩家主动恢复。
 }
 
 // 6b. 浏览器端定期保存P + 页面关闭时保存

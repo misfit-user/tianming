@@ -165,9 +165,20 @@ function robustParseJSON(raw) {
     }
     if (end > start) {
       var substr = cleaned.substring(start, end + 1);
-      // 两个并列 JSON 对象/数组没有唯一语义；禁止旧贪婪逻辑把它们拼成一块，
-      // 也禁止静默只取第一个后继续落账。
+      // 两个并列 JSON 对象/数组没有唯一语义；禁止旧贪婪逻辑把它们拼成一块。
+      // 但「主 JSON 完整 + 尾巴残留可解析片段」是 max_tokens 截断后的常见现象——
+      //   模型写到一半被掐，下一段又开始新对象。把这种情况当歧义退回 null 会丢主 JSON，
+      //   跟玩家截图 SC1 报错「ambiguous multiple top-level JSON values」+ 主写回失败的链条吻合。
+      // 修法：主 JSON 优先；只当「主 JSON 自身不可解析」或「尾巴比主 JSON 更大（说明主的可能只是残片）」时
+      //   才视作真歧义退回 null。
       if (_hasAmbiguousSecondJson(cleaned, end + 1)) {
+        var _mainParsed = null;
+        try { _mainParsed = JSON.parse(substr); } catch(_mainE) {}
+        if (_mainParsed && typeof _mainParsed === 'object') {
+          // 主 JSON 可解 → 尾巴是模型多嘴·静默丢弃（仍留 console.warn 方便诊断）
+          console.warn('[robustParseJSON] 主 JSON 已可解·丢弃尾随可解析片段（疑似截断后多嘴）');
+          return _mainParsed;
+        }
         console.warn('[robustParseJSON] ambiguous multiple top-level JSON values');
         return null;
       }

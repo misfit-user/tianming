@@ -1,0 +1,29 @@
+{
+  "file": "web/phase8-formal-map.js",
+  "before": "3411b533619953c99b89c9b393674f6bbd68b99f6c97ff7944ae7a359a846072",
+  "after": "71e1d59437824827c0131dc1666a5dd51d5a0b8dbaebb74ce3ab6ca1a5a2ed36",
+  "complete": true,
+  "checks": [
+    {
+      "name": "every-map-cell-resolves-its-exact-admin-account",
+      "passed": true
+    },
+    {
+      "name": "jinzhou-population-is-leaf-not-whole-theater",
+      "passed": true
+    },
+    {
+      "name": "parent-only-province-stats-are-not-child-vitals",
+      "passed": true
+    },
+    {
+      "name": "exact-child-stats-still-win",
+      "passed": true
+    },
+    {
+      "name": "readers-do-not-write-live-accounts",
+      "passed": true
+    }
+  ],
+  "sourceScenarioUnchanged": true
+}

@@ -1,0 +1,212 @@
+{
+  "verifiedAt": "2026-09-18T06:59:31.632Z",
+  "officialMapApplied": true,
+  "releaseReady": false,
+  "source": "scenarios/天启七年·九月（官方）.json",
+  "sourceSha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "beforeR2Sha256": "93e91be094d5fe9e927afd2bcd019a0c562477f54cc12978e9bc31659573fb6a",
+  "counts": {
+    "regions": 307,
+    "provinceGroups": 43,
+    "characters": 203,
+    "initialArmies": 48,
+    "events": 62,
+    "originalAccounts": 382,
+    "mappedAccounts": 359
+  },
+  "coarse": [
+    "鞑靼土默特部",
+    "哈萨克",
+    "瓦刺",
+    "苦兀（野人女真）",
+    "北哈萨克",
+    "东哈萨克",
+    "科尔沁",
+    "北山女真",
+    "喀尔喀蒙古",
+    "澳门（葡萄牙占）"
+  ],
+  "otherOfficialSourcesUnchanged": true,
+  "checks": {
+    "geometry": {
+      "passed": 950,
+      "failed": 0
+    },
+    "native": {
+      "passed": 31,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 25,
+      "failed": 0,
+      "includesRealPointerChecks": true
+    },
+    "dossierReader": {
+      "passed": 5,
+      "failed": 0
+    },
+    "regressionScripts": [
+      {
+        "name": "smoke-map-realm-layout.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 579
+      },
+      {
+        "name": "smoke-map-live-vitals.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 145
+      },
+      {
+        "name": "smoke-phase8-map-live-panels.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 9998
+      },
+      {
+        "name": "smoke-army-march-order.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 160
+      },
+      {
+        "name": "smoke-army-march-viz.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 164
+      },
+      {
+        "name": "smoke-tianqi-map-runtime.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 1310
+      },
+      {
+        "name": "smoke-tianqi-official-cache-recovery.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 2456
+      },
+      {
+        "name": "smoke-stable-id-reference-integrity.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 190
+      },
+      {
+        "name": "lint-arch-all.js",
+        "passed": false,
+        "status": 1,
+        "signal": null,
+        "error": null,
+        "ms": 35601
+      },
+      {
+        "name": "verify-official-scenario-parity.js",
+        "passed": true,
+        "status": 0,
+        "signal": null,
+        "error": null,
+        "ms": 81371
+      }
+    ],
+    "pointer": {
+      "passed": 3,
+      "failed": 0,
+      "regions": [
+        "锦州城",
+        "觉华岛",
+        "皮岛"
+      ],
+      "note": "Subset of browser checks; not additional test totals"
+    }
+  },
+  "architecturePassed": false,
+  "locationCoverage": {
+    "characters": {
+      "resolved": 149,
+      "unresolved": 39,
+      "ambiguous": 9,
+      "area": 6
+    },
+    "armies": {
+      "resolved": 37,
+      "ambiguous": 4,
+      "unresolved": 3,
+      "area": 4
+    }
+  },
+  "screenshots": [
+    {
+      "file": "docs/chongzhen-map-r3-20260918/screenshots/天下全景.png",
+      "sha256": "235366d4179b6181e9b183609174005f24a1a9188cdfbaca94a00bb6c5a7dfbc",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/chongzhen-map-r3-20260918/screenshots/省道全景.png",
+      "sha256": "18296474bbb53a998edc00f292b02705968cf343e610d62603c78fb3007f9324",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/chongzhen-map-r3-20260918/screenshots/府州全景.png",
+      "sha256": "c42740b7cd9e8d3f88f38aa85e33cda7544d75cfa940602164581c2403153c4c",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/chongzhen-map-r3-20260918/screenshots/关宁防线方志.png",
+      "sha256": "0efd2ae107d8637af8d2f92c1339bb126af1c129fe04ad5aa2c00383008e8fb4",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "file": "docs/chongzhen-map-r3-20260918/screenshots/皮岛与东江方志.png",
+      "sha256": "70a0b0a2d4ce3eab0f5ea9e2498e934ffb2e1e6eb75b924a278e1b3c0d844756",
+      "width": 1903,
+      "height": 1002
+    }
+  ],
+  "assets": [
+    {
+      "file": "web/data/maps/chongzhen-prefecture-r3/geometry.json",
+      "sha256": "7d95ba22d1393e095d5afc349864417a2195a0ce7a969dd390074d79e54ddf81"
+    },
+    {
+      "file": "web/data/maps/chongzhen-prefecture-r3/scenario-bindings.json",
+      "sha256": "d5af50805e61784655e50270b3ede43c4dd1973a033d03fd5d4cee95f8deed76"
+    }
+  ],
+  "limits": [
+    "10个既有粗区未强行细分；西北与东北旧疆界仍需进一步考证",
+    "关宁走廊属于概化战区边界；岛岸是现代物理参照而不是1627测绘",
+    "原始地方账户保留，不将东江大陆记账分项解释为实际控制整片大陆",
+    "全仓架构门禁未全绿；未完成联网AI长局、真实用户存档迁移及手机验收",
+    "未提交、推送、打包或发布"
+  ],
+  "writeRecovery": "First ENOSPC attempt fully recovered to verified R2 baseline; guarded staged-copy retry completed. See failed-space-attempt/recovery.json.",
+  "lastContinuation": {
+    "time": "2026-09-18T06:59:31.632Z",
+    "sourceUnchanged": true,
+    "scope": "Finish interrupted R3; rerun installed tests and real pointer input; refresh screenshots and evidence; no new polity or financial changes",
+    "pointerReport": "reports/native-pointer-recheck18.json"
+  }
+}

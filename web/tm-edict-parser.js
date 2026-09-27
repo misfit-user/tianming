@@ -71,6 +71,19 @@
     return Number.isFinite(n) && n <= 1000000000000 ? Math.round(n) : fallback;
   }
 
+  function _currencyAmount(text, params, role) {
+    var parser = global.TMNumberParser, supplied = params && params.amount != null;
+    var parsed = parser ? (supplied ? parser.parseNumber(params.amount, {max:1000000000000}) : parser.extractCurrencyQuantity(text, {role:role,max:1000000000000})) : null;
+    if (parsed && parsed.ok) return parsed.value;
+    var error = new Error('诏令货币数额需核实：' + (parsed && parsed.reason || 'parser-unavailable'));
+    error.code = 'TM_EDICT_AMOUNT_INVALID'; error.details = Object.assign({role:role},parsed || {reason:'parser-unavailable'}); throw error;
+  }
+  function _amountIssue(error, cls) {
+    var reason = error.details && error.details.reason || 'unknown';
+    var monetary = !!(error.details && error.details.role) || !!(cls && cls.typeKey === 'currency_reform');
+    return {ok:false,handled:true,pathway:'invalid',reason:error.code,amountError:true,needsClarification:true,classification:cls,details:error.details,
+      message:(monetary ? '货币诏令尚未落账：' : '诏令数量尚待核实：') + (reason === 'ambiguous' ? (monetary ? '存在多个发行或流入数额，请明确唯一总额或拆成独立诏令。' : '存在多个可能的数量，请明确执行总量或拆成独立诏令。') : reason === 'not-found' ? '请明确发行或流入的总额，准备金、兑换比例和期限不能当作总额。' : '数额或执行意图无法安全确定（' + reason + '），请核实。')};
+  }
   function _currencyPaperNameFromText(text) {
     text = String(text || '');
     if (/交子/.test(text)) return '交子';
@@ -118,7 +131,7 @@
       turn: G.turn || 0,
       kind: kind,
       action: action,
-      ok: !(result && result.ok === false),
+      ok: !(result && (result.ok === false || result.success === false)),
       text: String(text || '').slice(0, 120)
     });
     if (G._edictPolicyActions.length > 80) G._edictPolicyActions.splice(0, G._edictPolicyActions.length - 80);
@@ -190,13 +203,13 @@
       action: action,
       regionId: regionId,
       presetId: _findCurrencyReformPresetId(text, params),
-      amount: params.amount || _edictAmountFromText(text, action === 'overseas_silver_flow' ? 500000 : 0),
+      amount: params.amount,
       acceptanceDelta: params.acceptanceDelta != null ? Number(params.acceptanceDelta) : 0.35
     };
   }
 
   function _executeCurrencyTextPolicy(text, params) {
-    text = String(text || '');
+    text = String(text || ''); params = params || {};
     var CE = global.CurrencyEngine || {};
     var G = global.GM || {};
     var inferredCurrency = Object.assign({}, _inferCurrencyTextPolicy(text, params), params || {});
@@ -240,11 +253,12 @@
     }
 
     if (inferredCurrency.action === 'overseas_silver_flow') {
+      var silverAmount = _currencyAmount(text, params, 'overseas_silver_flow');
       if (!G.currency) G.currency = {};
       if (!G.currency.coins) G.currency.coins = {};
       if (!G.currency.coins.silver) G.currency.coins.silver = { stock: 0, enabled: true };
       if (!G.currency.foreignFlow) G.currency.foreignFlow = {};
-      var silverAmount = Math.max(0, inferredCurrency.amount || 500000);
+
       var openResult = false;
       if (typeof CE.applyReform === 'function') {
         openResult = CE.applyReform(inferredCurrency.presetId || 'ming_open_silver_1567', params || {});
@@ -277,7 +291,7 @@
       var spec = {
         id: params.paperId || ('edict_paper_' + ((global.GM && global.GM.turn) || 0)),
         name: params.paperName || _currencyPaperNameFromText(text),
-        originalAmount: params.amount || _edictAmountFromText(text, 1000000),
+        originalAmount: _currencyAmount(text, params, 'issue_paper'),
         reserveRatio: params.reserveRatio != null ? params.reserveRatio : _edictRatioFromText(text, 0.3)
       };
       var issued = (typeof CE.issuePaper === 'function') ? CE.issuePaper(spec) : false;
@@ -483,6 +497,16 @@
     if (params.regionId) return params.regionId;
     var G = global.GM || {};
     var candidates = [];
+    var seen = new Set();
+    function visit(row) {
+      if (!row || typeof row !== 'object' || seen.has(row)) return;
+      seen.add(row);
+      if (Array.isArray(row)) { row.forEach(visit); return; }
+      if (row.id) candidates.push({ id:String(row.id), name:String(row.name || row.title || row.id) });
+      ['divisions','children','subs'].forEach(function(key) { visit(row[key]); });
+    }
+    if (G.adminHierarchy) Object.keys(G.adminHierarchy).forEach(function(key) { visit(G.adminHierarchy[key]); });
+    if (G.regionMap) Object.keys(G.regionMap).forEach(function(key) { visit(G.regionMap[key]); });
     if (G.fiscal && G.fiscal.regions) {
       Object.keys(G.fiscal.regions).forEach(function(id) {
         var rf = G.fiscal.regions[id] || {};
@@ -494,6 +518,17 @@
         if (r && r.id) candidates.push({ id: r.id, name: r.name || r.title || r.id });
       });
     }
+    var explicit = String(params.region || params.regionName || params.targetRegion || '').trim();
+    var matches = candidates.filter(function(c) { return explicit ? c.id === explicit || c.name === explicit : text.indexOf(c.id) >= 0 || text.indexOf(c.name) >= 0; });
+    if (matches.length) {
+      if (!explicit) {
+        var longest = Math.max.apply(null, matches.map(function(c) { return c.name.length; }));
+        matches = matches.filter(function(c) { return c.name.length === longest; });
+      }
+      var ids = Array.from(new Set(matches.map(function(c) { return c.id; })));
+      return ids.length === 1 ? ids[0] : null;
+    }
+    if (explicit) return null;
     var aliases = {
       '江南': 'jiangnan',
       '山西': 'shanxi',
@@ -512,7 +547,7 @@
     };
     var aliasKeys = Object.keys(aliases);
     for (var a = 0; a < aliasKeys.length; a++) {
-      if (text.indexOf(aliasKeys[a]) >= 0) return aliases[aliasKeys[a]];
+      if (text.indexOf(aliasKeys[a]) >= 0 && (!candidates.length || candidates.some(function(c) { return c.id === aliases[aliasKeys[a]]; }))) return aliases[aliasKeys[a]];
     }
     for (var i = 0; i < candidates.length; i++) {
       var c = candidates[i];
@@ -584,6 +619,20 @@
     if (!G._centralLocalPolicyActions) G._centralLocalPolicyActions = [];
   }
 
+  function _edictTransferSource(text, explicit) {
+    var bank='内帑|內帑|内库|内藏|內藏|内府|私帑|国库|國庫|帑廪|帑廩|太仓|太倉|户部库|戶部庫';
+    var patterns=[new RegExp('(?:从|從|由|自|动用|動用|动支|支用|拨用|撥用|取自|出自|以|用)\\s*('+bank+')','g'),new RegExp('('+bank+')\\s*(?:库银|庫銀|银|銀|资金|資金)?\\s*(?:支出|拨出|撥出|拨付|撥付|出资|出資|出银|出銀|拨银|撥銀|发银|發銀|给银|給銀|支付|承担|承擔|负担|負擔)','g'),new RegExp('(?:拨|撥|发|發|支)\\s*('+bank+')','g')];
+    function canonical(name){return /^(内|內|私)/.test(name)?'neitang.money':'guoku.money';}
+    var sources=new Set(),deferred=false;
+    patterns.forEach(function(rx){var m;while((m=rx.exec(text))){var left=text.slice(0,m.index).split(/[，,。；;\n]/).pop();if(/(?:不|不得|不可|勿|莫|毋|禁止|无需|计划|計劃|拟|擬|考虑|考慮)[^，,。；;]{0,5}$/.test(left)){deferred=true;continue;}sources.add(canonical(m[1]));}});
+    if(new RegExp('(?:内帑|內帑|内库|内藏|内府|私帑).{0,3}(?:和|与|與|及).{0,3}(?:国库|國庫|帑廪|太仓)|(?:国库|國庫|帑廪|太仓).{0,3}(?:和|与|與|及).{0,3}(?:内帑|內帑|内库|内藏|内府|私帑)').test(text))throw new Error('多账户拨款须分别明确各自金额，尚未扣款');
+    if(!sources.size&&deferred||/(?:如果|倘若|若[^，。；]{1,30}[，,]则|待[^，。；]{1,12}后)/.test(text))throw new Error('拨款仍有否定、计划或待决条件，尚未扣款');
+    if(sources.size>1)throw new Error('诏令包含多个资金来源，尚未扣款；请分别明确金额');
+    var named=sources.size?Array.from(sources)[0]:null;
+    if(explicit&&named&&explicit!==named)throw new Error('资金来源与诏令原文冲突，尚未扣款');
+    return named||explicit||'guoku.money';
+  }
+
   function _executeCentralLocalTextPolicy(text, params) {
     var G = global.GM;
     if (!G) return false;
@@ -594,6 +643,8 @@
     var result = null;
 
     if (action === 'transfer_to_region') {
+      try { params.fromAccount = _edictTransferSource(text, params.fromAccount); }
+      catch (sourceError) { return { ok:false, code:'edict-source-ambiguous', reason:sourceError.message }; }
       if (!params.regionId || !params.amount) return { ok: false, reason: '缺少下拨区域或金额' };
       if (global.EconomyLinkage && typeof global.EconomyLinkage.createTransferOrder === 'function') {
         result = global.EconomyLinkage.createTransferOrder({
@@ -605,17 +656,7 @@
           durationMonths: params.durationMonths || 3
         });
       } else {
-        if (!G.transferOrders) G.transferOrders = [];
-        result = { ok: true, fallback: true, orderId: 'edict_transfer_' + (G.turn || 0) };
-        G.transferOrders.push({
-          id: result.orderId,
-          fromAccount: params.fromAccount || 'guoku.money',
-          toRegion: params.regionId,
-          amount: params.amount,
-          purpose: params.purpose || 'regional_support',
-          status: 'pending',
-          createTurn: G.turn || 0
-        });
+        return { ok:false, code:'transfer-ledger-unavailable', reason:'调拨账本未加载，尚未扣款或创建调拨单' };
       }
     } else if (action === 'force_levy') {
       if (!params.regionId || !params.amount) return { ok: false, reason: '缺少强征区域或金额' };
@@ -696,13 +737,16 @@
       G._centralLocalPolicyActions.push({ turn: G.turn || 0, action: action, regionId: params.regionId, amount: params.amount || 0 });
       if (G._centralLocalPolicyActions.length > 80) G._centralLocalPolicyActions.splice(0, G._centralLocalPolicyActions.length - 80);
     }
-    return (result && (result.ok === false || result.success === false)) ? false : (result || true);
+    return (result && (result.ok === false || result.success === false))
+      ? { ok:false, reason:result.reason || result.code || '央地财政执行失败', executionResult:result }
+      : (result || true);
   }
 
   function _inferEnvironmentTextPolicy(text, params) {
     text = String(text || '');
     params = params || {};
-    var regionId = _resolvePolicyRegionId(text, params);
+    // The opening policy clause names its subject; a later settlement destination is not a second policy target.
+    var regionId = _resolvePolicyRegionId(text.split(/[，,。；;]/)[0], params) || _resolvePolicyRegionId(text, params);
     var policyId = params.policyId || null;
     if (!policyId && /(迁民出山|环境迁民|退耕还林|移民减压|减轻环境承载|迁出山地)/.test(text)) policyId = 'migration_relief';
     if (!policyId && /(技术投入|水利技术|试新法|省水农具|新法|技术)/.test(text)) policyId = 'tech_investment';
@@ -753,7 +797,8 @@
     });
     if (G._envPolicyActions.length > 100) G._envPolicyActions.splice(0, G._envPolicyActions.length - 100);
     _recordEdictPolicyAction('environment', params.policyId, result, text);
-    return (result && result.ok === false) ? false : (result || true);
+    return (result && result.ok === false)
+      ? { ok:false, reason:result.reason || '环境政策执行失败', executionResult:result } : (result || true);
   }
 
   function _edictOfficeRankFromText(text, fallback) {
@@ -942,23 +987,10 @@
       critical: ['taxType', 'rate'],
       drafter: '户部尚书',
       aiEntry: function(params) {
-        if (!global.GM.fiscalConfig) global.GM.fiscalConfig = {};
-        if (!global.GM.fiscalConfig.customTaxes) global.GM.fiscalConfig.customTaxes = [];
-        global.GM.fiscalConfig.customTaxes.push({
-          id: params.taxId || ('custom_' + (global.GM.turn || 0)),
-          name: params.taxName || '新税',
-          formulaType: params.formulaType || 'percent',
-          rate: params.rate || 0.03,
-          base: params.base || 'commerce',
-          description: params.description || ''
-        });
-        // 皇威反馈：加税 → lostVirtueRumor；减税/蠲免 → benevolence
-        if (typeof global.AuthorityComplete !== 'undefined') {
-          var rate = params.rate || 0.03;
-          if (rate > 0.05) global.AuthorityComplete.triggerHuangweiEvent('lostVirtueRumor');
-          else if (rate < 0) global.AuthorityComplete.triggerHuangweiEvent('benevolence');
-        }
-        return true;
+        var policy = global.TM && global.TM.TaxPolicy;
+        if (!policy) return { ok:false, reason:'税令执行模块未就绪，未修改税制' };
+        var outcome = policy.apply(global.GM, params && params._edictText || '', params || {}, params && params._edictContext || {});
+        return outcome && outcome.ok === true ? outcome : {ok:false,reason:outcome && outcome.reason || '未识别可执行的税务调整，未采用默认税率'};
       }
     },
     central_local_finance: {
@@ -1384,34 +1416,17 @@
   // ═══════════════════════════════════════════════════════════════════
 
   function tryExecute(text, params, ctx) {
+    var taxPolicy = global.TM && global.TM.TaxPolicy;
+    if (taxPolicy) {
+      var taxResult = taxPolicy.apply(global.GM, text, params || {}, ctx || {});
+      if (taxResult.handled) return Object.assign({}, taxResult, { pathway:taxResult.ok ? 'direct' : 'invalid', classification:{typeKey:'tax_reform',typeName:'税务调整'} });
+    }
     var cls;
     try {
       cls = classify(text, ctx);
     } catch (classificationError) {
       if (classificationError && classificationError.code === 'TM_EDICT_AMOUNT_INVALID') {
-        // 金额歧义静默——玩家数字写法有歧义不该刷红 console/error panel。
-        // 挂到 window.TM.lastEdictAmountError 供诊断面板/调试读取，返回 pathway:'invalid'
-        // 走转奏疏/问对让玩家改写法，不卡 endTurn。
-        try {
-          if (typeof window !== 'undefined' && window.TM) {
-            window.TM.lastEdictAmountError = {
-              stage: 'classify',
-              reason: (classificationError.details && classificationError.details.reason) || 'unknown',
-              token: (classificationError.details && classificationError.details.token) || '',
-              candidates: (classificationError.details && classificationError.details.details && classificationError.details.details.candidates) || null,
-              edictText: String(text || '').slice(0, 200),
-              at: Date.now()
-            };
-          }
-        } catch(_diagE) {}
-        return {
-          ok: false,
-          pathway: 'invalid',
-          reason: classificationError.code,
-          details: classificationError.details || null,
-          amountError: true,
-          stage: 'classify'
-        };
+        return _amountIssue(classificationError, null);
       }
       throw classificationError;
     }
@@ -1429,36 +1444,23 @@
         ? exec.ok === true : !!exec;
       if (execOk && cls.typeKey === 'huji_reform') _recordEdictPolicyAction('huji', execParams.action || cls.typeKey, exec, text);
     } catch(e) {
-      // 金额解析失败先取静默通道——不刷 console.error、不进 error 面板、不吓玩家。
-      // 玩家下的是「拨银五万」这类数额有歧义的诏令，跟「语焉不详需揣摩」完全是两回事，
-      // 该走转奏疏/问对让玩家改写法，而不是把整条 endTurn 卡死报红。
-      // 数额仍存 lastEdictAmountError 供诊断面板/调试读取，不打 console。
+      if (e && e.code === 'TM_EDICT_AMOUNT_INVALID') return _amountIssue(e, cls);
+      console.error('[edict] exec', e);
+      exec = false; execOk = false;
+      // 金额解析失败不降级为「未识别」——玩家下的是「拨银五万」这种带明确数字的诏令，
+      // 跟「语焉不详需揣摩」完全是两回事。把 reason 显式带回去让 UI 能区分：
+      // · ambiguous / not-found → 走转奏疏/问对，让玩家改数字写法
+      // · out-of-range / invalid-character → 玩家看到「数额超限/语法怪」也好对症下药
       if (e && e.code === 'TM_EDICT_AMOUNT_INVALID') {
-        try {
-          if (typeof window !== 'undefined' && window.TM) {
-            window.TM.lastEdictAmountError = {
-              stage: 'execute',
-              reason: (e.details && e.details.reason) || 'unknown',
-              token: (e.details && e.details.token) || '',
-              candidates: (e.details && e.details.details && e.details.details.candidates) || null,
-              edictText: String(text || '').slice(0, 200),
-              at: Date.now()
-            };
-          }
-        } catch(_diagE) {}
         return {
           ok: false,
           pathway: 'invalid',
           reason: e.code,
           details: e.details || null,
           classification: cls,
-          amountError: true,
-          stage: 'execute'
+          amountError: true
         };
       }
-      // 其他未知异常仍走原 console.error 通道
-      console.error('[edict] exec', e);
-      exec = false; execOk = false;
     }
     return { ok: execOk, pathway: 'direct', classification: cls, executionResult: exec };
   }

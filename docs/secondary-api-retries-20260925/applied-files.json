@@ -1,0 +1,121 @@
+{
+  "target": "C:/Users/37814/Desktop/tianming",
+  "backup": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-secondary-api-retries-20260925-original",
+  "files": [
+    {
+      "file": "web/tm-call-retry-policy.js",
+      "sha256": "6b4121d0fc5eb23a78d2aae664bc8ee015730baecc668bca5918d35587f63913",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "72fdaded96fac3306c91f0e8b9ce99adcb3f5506dda1328b55ee762c2e3a3914",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "bd9ded7556c229353d30827d07942e8d02746a32a642935c669be8594e888cb4",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "7ff553a38a12af8004a42dd7497cb78d0ddb070935416043e965df48ca0d737f",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-endturn-followup.js",
+      "sha256": "91a7df167849cc65580da0b67f1f886fe5dd9e839f413f99c377f6fad62993bc",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-call-budget-settings.js",
+      "sha256": "b7692be7ccbad67bebb14370d0780ddd987d0d5436362b6c9f1e4ad303e399af",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-patches.js",
+      "sha256": "1294ecf53eb9d301b2044bab1e91dca51c23559263782a13f8106b1a5b596645",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "58bd4920d33f19667d8e23394600197336d38aeea180c38e6f0b464808d93f7b",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-utils.js",
+      "sha256": "d6c85b23a096f75c5540ac54e5661bf40d1e880a3911e9e63ca7b8fe82d6f6f6",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-chaoyi-changchao-adapter.js",
+      "sha256": "6845eb83e090f1a0c7e4f387a80a7443a608396888a064507f38f57246677492",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-shizheng-panel.js",
+      "sha256": "825bab32a66bf4723cb294b157f7e35af08bb952e74f168eb212688e8c374186",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-faction-npc-llm-decision.js",
+      "sha256": "f70a249dff988b48d4b032de7cca1669d2c2c30634b77277d90d18154bd5bc8b",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-char-autogen.js",
+      "sha256": "ad6bfd2c7da15dadb4aa11ded7e93a2dd1f06d3ba894be3b2462d5bd4a6acf46",
+      "newFile": false
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "92bc7e7ec49a82788bbd8a0fdfb3ea2679912f18de49e014db3578df9e27f196",
+      "newFile": false
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "cfa5cb61b7e3e02d3da8fd58d63899b4c07fe619d88998fa360d02f1c553ecc1",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "53069a765b56c46b23dbd25332061a0d0080ded829bea6ded6e6e988fadc1b1c",
+      "newFile": false
+    },
+    {
+      "file": "web/scripts/smoke-recovery-settings-restore.js",
+      "sha256": "4bbf049a464de8f1a894d9ec50043f6f59e11a383db5608c1abf99de054a1709",
+      "newFile": false
+    },
+    {
+      "file": "web/scripts/verify-secondary-fallback.js",
+      "sha256": "728f5125b15f813f00a40ac16052d7b64feedeb03389320e052b7182dd35e1e5",
+      "newFile": false
+    },
+    {
+      "file": "web/scripts/smoke-secondary-api-retries.js",
+      "sha256": "fcc6898a047729f511e94bc6c85dfc2782fb289f20e2da5ee8c151c9a1e255e9",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-secondary-retry-routing.js",
+      "sha256": "4cb7fefbe50984b3993e2e58aef643d14743ec746593d8861c547b78b06043e9",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-secondary-retry-settings-ui.js",
+      "sha256": "e8c23b63a2f60bc3a6831421d7fbf292bb1f6b84c4b2f5cc72640ea22ab0cd64",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-secondary-changchao-retries.js",
+      "sha256": "cf462f2ed8add0ca0fd178e8916b1320378ea55cbaa3a5b9b1748cbaf0e0bf18",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-secondary-task-retries.js",
+      "sha256": "2b1ee8e6a642e1839612a6f6050a9b820597aede42edb6aca439330a31f36cb7",
+      "newFile": true
+    }
+  ]
+}

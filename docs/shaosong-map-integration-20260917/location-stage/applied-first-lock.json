@@ -1,0 +1,44 @@
+{
+  "started": "2026-09-17T11:49:10.468Z",
+  "complete": false,
+  "sourceBefore": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "sourceAfter": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+  "files": [
+    {
+      "relative": "web\\index.html",
+      "existed": true,
+      "before": "3e0a5d0f2196e627c202cef81933ef4255b14fccbc0627dfb9b85e43c62040e1",
+      "after": "2d18d1e81d9e43a7c5c5dd00e0265709789ed5183beee207eb16972896f6439d",
+      "applied": true
+    },
+    {
+      "relative": "web\\tm-ai-change-army.js",
+      "existed": true,
+      "before": "0cafa6b3c8a3aa1d4cc201c9800815e5283cd8fa32845f4bdfba762d1bd0ccf4",
+      "after": "3daf8d56624adea6b2b737e9a58cfbf704c203a537521c8b825956ec97fde28a",
+      "applied": false
+    }
+  ],
+  "otherSources": [
+    {
+      "filename": "天启七年·九月（官方）.json",
+      "sha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c"
+    },
+    {
+      "filename": "晚唐·开成五年（官方）.json",
+      "sha256": "e3a2a5bc66ec49f65573e268cb56c488ff7447e592b0d5cf38968cb0332c7279"
+    }
+  ],
+  "steps": [],
+  "error": "Error: EPERM: operation not permitted, rename 'C:\\Users\\37814\\Desktop\\tianming\\web\\tm-ai-change-army.js.shaosong-location.tmp' -> 'C:\\Users\\37814\\Desktop\\tianming\\web\\tm-ai-change-army.js'\n    at Object.renameSync (node:fs:1012:11)\n    at atomic (file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/apply-location-adaptation.mjs:24:290)\n    at replace (file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/apply-location-adaptation.mjs:27:112)\n    at file:///D:/tianming-assistant-work/shaosong-map-integration-20260917/apply-location-adaptation.mjs:29:162",
+  "rollback": [
+    {
+      "file": "web\\tm-ai-change-army.js",
+      "status": "unchanged"
+    },
+    {
+      "file": "web\\index.html",
+      "status": "restored"
+    }
+  ]
+}

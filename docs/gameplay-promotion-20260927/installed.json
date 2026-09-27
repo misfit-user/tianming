@@ -1,0 +1,321 @@
+{
+  "source": "C:\\Users\\37814\\Desktop\\tianming",
+  "candidate": "C:\\Users\\37814\\.codex\\worktrees\\shiji-fiscal\\tianming",
+  "indexUnchanged": true,
+  "files": [
+    {
+      "path": "web/tm-reported-view.js",
+      "before": "f0246a882cff11283584352eb7e66dfd4ca19b2c59a9f21b46486f43af908b43",
+      "after": "8e9bbf8b8d0022961acfa0b4abd609ce32b5db26217a008ecf283c3d9edb7918",
+      "bytes": 5849
+    },
+    {
+      "path": "web/tm-keju-scandal.js",
+      "before": "42092355c5640502bc37382b5642406a5f2a5215ce619ffbdadc6709f0512bcc",
+      "after": "2a0e30df1f4f6774d236b756ad834c9f75c18e9f446e578f619b8dd7a49fef1f",
+      "bytes": 25542
+    },
+    {
+      "path": "web/tm-conspiracy.js",
+      "before": "d2701341c3419cc80981106fcbab2e9b0a28fa35afd4f4fc1bc74853668b06c2",
+      "after": "6eb9b65784463aabb094f29c7d39a0414277f3332f651ab532db83f950af6184",
+      "bytes": 47908
+    },
+    {
+      "path": "web/tm-agent-flags.js",
+      "before": "590143583db9b93c07166b7e2445d7b0e5aa4f7678af9fbb0c4094ead7cdff30",
+      "after": "fc437eff5afc7cc4218f79c3f574321d677fa5cdabb5b64ec5cdffdab63380c7",
+      "bytes": 3979
+    },
+    {
+      "path": "web/tm-faction-action-engine.js",
+      "before": "45188df4fab95a40ec3d465eff8698d30130b0b79a1eaf48021fd99273c14f53",
+      "after": "7516a0cf014bb560a4cf8df09abaa2c2485da488ced8997593159b9b7ae0ba1c",
+      "bytes": 94623
+    },
+    {
+      "path": "web/tm-revolt-entity.js",
+      "before": "5181c12948f057fff912d02c780f4e7fef101262b314d4e44483a45e8fb137ef",
+      "after": "de9cf807b558f968ef54c51a220f66e064051fca6e833ab6b1cdfe54ea020e68",
+      "bytes": 18552
+    },
+    {
+      "path": "web/tm-revolt-inference.js",
+      "before": "655e2baf6d68f26e0c152cf4dbbb37b76b2ed0e5c66d02a953fdb2dd7220fc8a",
+      "after": "3f7b65fcd0f7c0dabd6019be339011420797674c04b2657bdf0a92c11799b674",
+      "bytes": 32351
+    },
+    {
+      "path": "web/tm-captive-court.js",
+      "before": "53f25b6bb75a7271627af5261ec9e0f75ac077619d6bde97be4e4ed94f65ce9a",
+      "after": "9031b8a67eab5f7304589fd5fb6df4d120158d3567c61b368590c23d72a96958",
+      "bytes": 13243
+    },
+    {
+      "path": "web/tm-authority-complete.js",
+      "before": "2b80c496df3ba97ae176d543aa74658afa2f0fd2b01eecb3089fec2a2d230dc5",
+      "after": "e4f06d8b96b3630790eb0345abddc267549047376dacef08cb27c550f887deff",
+      "bytes": 87558
+    },
+    {
+      "path": "web/tm-tinyi-v3.js",
+      "before": "0f8d110a134ee71961e71e3b03a2ebf1b4e36f026ac46859938a83221b1e2b33",
+      "after": "6bd445b65f86655932461d1be43284a91a57db4b84f3bff71a94c3fda992311d",
+      "bytes": 150761
+    },
+    {
+      "path": "web/tm-military.js",
+      "before": "e6cea9c89f2966779370edc13081878a0548c1b087a18d4325bf7808c7e50835",
+      "after": "fafba799d59da7ce02aa6c207d60e9346b1e7b2a567080f339a7a5e94a183566",
+      "bytes": 142140
+    },
+    {
+      "path": "web/tm-party-class-llm-calibrator.js",
+      "before": "2dec2e3ba8157fd8294ee586663c608659e45805ea03fee4af96645ba089e7a8",
+      "after": "5e59915878b05187f20123e7c1797626f7ae51823b00e782a72ee09b1b91e669",
+      "bytes": 81149
+    },
+    {
+      "path": "web/tm-faction-npc-dispatcher.js",
+      "before": "d8b087d0d5138c58cf228f547b170df19f0b5bc70930d8b8690625f86e780cd4",
+      "after": "13a4ff44f0b12b48f3a0f369b2958556e2b247ec520cfee013d37d99bd3ddb9b",
+      "bytes": 13077
+    },
+    {
+      "path": "web/tm-faction-npc-settings.js",
+      "before": "42ec0dd084392217f14568dd24b2108d66f8e6777bd06d615eb7ca9db1cedf16",
+      "after": "7574f4dfeaba9ee1987687f3425a4e1986d4620b2daca887976ce52556118e73",
+      "bytes": 5899
+    },
+    {
+      "path": "web/tm-endturn-agent-mode.js",
+      "before": "e9f2b9a0f9877a26ed80d8d06c743cd9db622ab3cb6d31a3a1400dbc4440d13b",
+      "after": "0d8e0c9238edb2b2d907554b655cdea4a8c46709027c184cf7ed30fe78ba57e2",
+      "bytes": 117292
+    },
+    {
+      "path": "web/tm-save-lifecycle.js",
+      "before": "58bd4920d33f19667d8e23394600197336d38aeea180c38e6f0b464808d93f7b",
+      "after": "92cf20b4139f664428ea1973d61c9df14148d897375f0cfb3adbf4dc0f80c582",
+      "bytes": 165656
+    },
+    {
+      "path": "web/tm-guoku-engine.js",
+      "before": "837e1b6fd17155bc490f7538b53bfad48e99c78a808998821c46ef390deccf04",
+      "after": "238849c440c3962de29e4e58d8917e969e1f1e6ce65ee2e9858ddb1d58f8ea81",
+      "bytes": 147046
+    },
+    {
+      "path": "web/tm-office-flags.js",
+      "before": "7e11573471ff09ced006145a749c7fca3a6244116e60b9a0128202d0f6128f09",
+      "after": "9e1dc304c61538586896e8be783827755821b92698d58efdfefff4703a88d4a6",
+      "bytes": 3358
+    },
+    {
+      "path": "web/tm-data-model.js",
+      "before": "07f45e27fb60069bf6b53421ba4469c213cf581ce2b14b431325564e0d2f8f0b",
+      "after": "4f5ce09fa066142152eedf101ac3cea61bd93b67314b0a0d92cc04b2024769d2",
+      "bytes": 59940
+    },
+    {
+      "path": "web/tm-patches.js",
+      "before": "1294ecf53eb9d301b2044bab1e91dca51c23559263782a13f8106b1a5b596645",
+      "after": "fa5d2c2e0f2422d24f6d27b7a853774c444b5bf356cce30465f33c155bbfb18e",
+      "bytes": 182066
+    },
+    {
+      "path": "web/tm-player-settings.js",
+      "before": "e369dce7d8db17dfd90df1bc7fb0b7fb9bab0a3aa653ff5a74a886c41b1044ed",
+      "after": "c3fab2df940a574fd0118ed7032e1fbc1a7301383da3bb63a8ed55bbfec6a1fd",
+      "bytes": 34075
+    },
+    {
+      "path": "web/scripts/smoke-agency-watch.js",
+      "before": "54f9b47d3e5e4b5089a888fc85afc5b4ab01cc688fe814bc18e01ca8e71c5aee",
+      "after": "2bf1814c15d2e201fd88a0b6c48a542ee7f46538d9b7a2d97de9f2d42c82167e",
+      "bytes": 4840
+    },
+    {
+      "path": "web/scripts/smoke-army-march-order.js",
+      "before": "968edb03dd0b0c3c27b13f53f76563792d3cfed30ec4d7c0758d0afeb83c0e16",
+      "after": "8f635548cdd958e3ae0f3171bf9654db3ced165e1e1e9e3252290f31c0121b38",
+      "bytes": 7420
+    },
+    {
+      "path": "web/scripts/smoke-disaster-genesis.js",
+      "before": "ac27db41e784cd2e485203ee80571a9db3d628be1df36a6c043b6644e1b8af05",
+      "after": "cc3d36b7a75b49689c00c66898a1ae208711fe1798e624b139377b18a1bb4a3f",
+      "bytes": 10077
+    },
+    {
+      "path": "web/scripts/smoke-reported-view.js",
+      "before": "417c72da67d2a0424f3b4760d3ca723ad6d7dba9a85807ff338a17267b940c88",
+      "after": "8a7ea9e4cd5b662097f533cc9a5403db618e10dc5f01a284f1cfdefc55b08c28",
+      "bytes": 4262
+    },
+    {
+      "path": "web/scripts/smoke-edict-office-tree-writeback.js",
+      "before": "92a1c7e4bc66db905a6aecccd296327e5452bf484a89c8b9f13e1806b291df75",
+      "after": "6ef1e01b001dcc4e6f2243a344fca48111c88d66b9458384d3685fcc5dadc7f1",
+      "bytes": 15183
+    },
+    {
+      "path": "web/scripts/smoke-office-powermap.js",
+      "before": "515100d3dee2ce7fd2462b11ca94d4875fdce536b2ddcee43d83c479e084b68c",
+      "after": "5de4a8f3de06d87e1d22d0185ee6ce27fff8a259922ffa5b62029f2711518031",
+      "bytes": 8312
+    },
+    {
+      "path": "web/scripts/smoke-s2-office-powermap.js",
+      "before": "98c9495cee2d35e58c0d88b136d35ff34a84be3267fb5b3c36dcb489664bb122",
+      "after": "8653320e9821fcd5a0c42ac02c378d2531f46712872d56dd32572cf9083fd0ea",
+      "bytes": 6413
+    },
+    {
+      "path": "web/scripts/smoke-s2c-office-digest-wiring.js",
+      "before": "360ce3871c729df407b8ebbf855435b119a29f3875c482e4de7e19f727876e98",
+      "after": "a4b6150ad70cc9669bb672001c43b58a775495483969fc6908435aabe7cbe584",
+      "bytes": 5267
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-in-turn-driver.js",
+      "before": "1450e9ff6f31e8b436d551ae422ba4c0d66603ac8f15f754c268b43caac51063",
+      "after": "5965d9e19e3ce9c99518d1ff5fcbdd225cc671e997c694676d9f58fe930449a9",
+      "bytes": 10076
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-llm-decision.js",
+      "before": "17033c4e138118fe6b3df5d5b1a2043c8ef8e56d85b38f139a4310fe815c78b8",
+      "after": "f8446e790ba5748d3d3436257d0e3f2a852832d1c1123f11b51b6f5890081efa",
+      "bytes": 54461
+    },
+    {
+      "path": "web/scripts/smoke-battle-deterministic.js",
+      "before": "9c00ea48c34185a87c125accdb8f1d26ea4a7ebe077d0065824163cd1cda7288",
+      "after": "bf0ebaf5a950344edb0ff285d4145ddb5567a6d8fdba771b4ae7acf423daf011",
+      "bytes": 6599
+    },
+    {
+      "path": "web/scripts/smoke-revolt-entity.js",
+      "before": "2fe9c5f87aebeb7d76b391c296a91f1ade177d1e318a1d8f49f185e3be79ab39",
+      "after": "16c47dcdece31e8a67d2aab2e173a8bdf4f3dc71e8eb56a32d79a5facca6bab7",
+      "bytes": 7655
+    },
+    {
+      "path": "web/scripts/smoke-revolt-breach.js",
+      "before": "59951a733028267c2d18d680af69ce02782a04c5038f6bd950d92f987f6e34da",
+      "after": "0a7410bcb7a90f8e319445a04ac63dea26002a485fb96b972ea70c402d509ae5",
+      "bytes": 6598
+    },
+    {
+      "path": "web/scripts/smoke-faction-living-world.js",
+      "before": "745f3cb052467360bb8b6a2a00aa9c11bd7c13a1c254505fa2d11f5cfd5c38b6",
+      "after": "2102b7322b57b7e793cfd2452b96d59b94f748371042557e7ad9b68db6e5a28a",
+      "bytes": 37593
+    },
+    {
+      "path": "web/tm-faction-npc-llm-decision.js",
+      "before": "f70a249dff988b48d4b032de7cca1669d2c2c30634b77277d90d18154bd5bc8b",
+      "after": "1a8834a07993ae4583dbe37455384cc9efed439ede94894fed6fb139cb70aadc",
+      "bytes": 169973
+    },
+    {
+      "path": "web/tm-faction-npc-in-turn-driver.js",
+      "before": "50b9f43ad1dae6048676ec5dfaa019043c0960889873e97014b5e4205aa4f090",
+      "after": "f6d4fcb9ee0bc501ba1f4a8acb4af278d49a5988556381d5aaf31884eb8f1887",
+      "bytes": 16060
+    },
+    {
+      "path": "web/tm-three-systems-ui.js",
+      "before": "5264f8457942468662af8e63a260bd2b7798c908f2dc568dfacdacac9c005c0f",
+      "after": "be9837240d9d9479ade190b085ac6c66e7148100cc80dfa834a51acd640f1066",
+      "bytes": 94120
+    },
+    {
+      "path": "web/tm-help-social.js",
+      "before": "fcd8123bdeae62b8ac7bc9d324251e998217b8c47b7c63a1d0ecb668f8e64577",
+      "after": "b21974cdc85c1008f95ca7f3d10842335a5dd2d05807b35b3e7239e101350610",
+      "bytes": 65155
+    },
+    {
+      "path": "web/scripts/smoke-agent-mode-liveworld.js",
+      "before": "45fc43b54fb023cb1350d6f86c69d101fae103f10784432ee42b165fa57f2fc5",
+      "after": "21e301f9994d0be097ca7a7db3c740073b23a19a43c6eaae01f57ce325e3d7a8",
+      "bytes": 4519
+    },
+    {
+      "path": "web/index.html",
+      "before": "b03f15d1152135fe46cba5bdee0508caec4cfed2a55d0946c6b7c7ceba47d2cf",
+      "after": "0d3a1c4c880693257dc35e0d3c43938de4e1743b11e432f5e2b4432f4865605c",
+      "bytes": 75268
+    },
+    {
+      "path": "web/editor.html",
+      "before": "714b9c8ca52b94a2fada0ff79844731230ebc2066338363ba64c972f795d7100",
+      "after": "908a2a33d605c99f1895805274073589aeb3a126316eeadbec239d8bea06cb37",
+      "bytes": 185511
+    },
+    {
+      "path": "web/scripts/smoke-gameplay-promotion.js",
+      "before": null,
+      "after": "56035d2310a36053c12955f9a2cf65f5f384bae0756deb4c8e4ae6dff2a177be",
+      "bytes": 9828
+    },
+    {
+      "path": "web/scripts/smoke-gameplay-default-audit.js",
+      "before": null,
+      "after": "9669bbaf69e2f1d77f64d8b2ce82b7bee069008aae1b489073d8d095debf9bcb",
+      "bytes": 3805
+    },
+    {
+      "path": "web/scripts/smoke-battle-terrain-clamp.js",
+      "before": "0872766f5032b24dd83569d05eb94ba49806a6430412cbc5518a095be297fef2",
+      "after": "a952b34507a23036f459d306693f176233d33e0cf16427dea360752e010f3295",
+      "bytes": 2542
+    },
+    {
+      "path": "web/scripts/smoke-captive-court.js",
+      "before": "fbab73135b23f0cc8b97c16449999570046c5452632593f8e41dd802c37da48f",
+      "after": "da0602176850a0701167565a5616f0a5fd153f5a8972557568cb8edcea3fcd14",
+      "bytes": 7153
+    },
+    {
+      "path": "web/scripts/smoke-faction-build.js",
+      "before": "2fe0effa98e3852cbd981e42baf38cabdc9f5dd0ba0d173fdb5f79c77155eadb",
+      "after": "91395fd7ca179395928695285d8c84ee2ce70fb1e2173a35d6e35a46f13136cb",
+      "bytes": 9107
+    },
+    {
+      "path": "web/scripts/smoke-livingworld-quicktest.js",
+      "before": "62931acdc54dc5212ab9ab2c078eb06b1c3885d24bce2811a3008f0371eeb13e",
+      "after": "d18c9e9addc0bff90fd820af7a0d76cffbbcfcfc6e21ab34781b463ac9113037",
+      "bytes": 17006
+    },
+    {
+      "path": "web/scripts/smoke-old-save-compat.js",
+      "before": "ac6ad6701c6529a83ca06751e3764dcf4779d3a4afe5692b2b6267d906fb9451",
+      "after": "2dfec2ed1ab4fab9f99b07daf226d04d5bc8ac14903d85ecda4e522f40084756",
+      "bytes": 2167
+    },
+    {
+      "path": "web/scripts/smoke-perf-save-preparation.js",
+      "before": "9c4808f76230306b7361b3affe1655df9237eed01e46a6c3f1efa470ecb31d19",
+      "after": "e4cdd4f076e6d52856796b13e43f8f1ee193fe6e81382ae2cbb2d72e80e32728",
+      "bytes": 7288
+    }
+  ],
+  "amendments": [
+    {
+      "path": "web/tm-patches.js",
+      "before": "51103e7178ba03271bba34aa855f1df7ccd8fd0b455841125a3dabd2c932cf51",
+      "after": "fa5d2c2e0f2422d24f6d27b7a853774c444b5bf356cce30465f33c155bbfb18e",
+      "reason": "office master refreshes dependent controls"
+    },
+    {
+      "path": "web/scripts/smoke-gameplay-promotion.js",
+      "before": "c512dff2ca765062def19c8e526069abcb8cdea3c0f35e94f6705f68fa229fc9",
+      "after": "56035d2310a36053c12955f9a2cf65f5f384bae0756deb4c8e4ae6dff2a177be",
+      "reason": "office master refreshes dependent controls"
+    }
+  ]
+}

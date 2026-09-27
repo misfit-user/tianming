@@ -1562,7 +1562,7 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
     }
   } catch (_) {}
 
-  let p = '你是 ' + name + '·身份「' + officialTitle + '」·派系「' + (ch.faction || gmCh && gmCh.faction || '中立') + '」·品级 ' + (ch.rank || '?') + '。\n';
+  let p = '你是 ' + name + '·身份「' + officialTitle + '」·派系「' + (gmCh && (gmCh.factionId || gmCh.faction) || ch.faction || '中立') + '」·品级 ' + (gmCh && gmCh.rankLevel != null ? gmCh.rankLevel : (ch.rank || '?')) + '。\n';
   if (personality) p += '性格：' + personality + '\n';
   const stats = [];
   if (loyalty != null) stats.push('忠诚 ' + loyalty);
@@ -1654,7 +1654,7 @@ function buildNpcPrompt(name, item, playerText, stance, intent, isMentioned) {
       // 扫描源：早朝正议题(item.title/detail) + 陛下方才所言(playerText)·发言人 name 作种子恒入
       var _ccTopic = ((item && item.title) || '') + ' ' + ((item && (item.detail || item.content)) || '') + ' ' + (playerText || '');
       var _ccMentioned = (typeof _tcScanMentionedNames === 'function') ? _tcScanMentionedNames(_ccTopic, name ? [name] : [], 10) : (name ? [name] : []);
-      p += _buildTemporalConstraint(gmCh, { mentionedNames: _ccMentioned });
+      p += _buildTemporalConstraint(gmCh, { mentionedNames: _ccMentioned, topic: _ccTopic });
     } catch (_) {}
   }
 

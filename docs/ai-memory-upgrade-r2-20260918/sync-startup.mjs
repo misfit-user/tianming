@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import cp from 'node:child_process';
+import crypto from 'node:crypto';
+import path from 'node:path';
+const dir = 'docs/ai-memory-upgrade-r2-20260918', file = 'web/startup-script-phases.json';
+const baseline = JSON.parse(fs.readFileSync(dir + '/baseline.json','utf8'));
+const log = JSON.parse(fs.readFileSync(dir + '/changes.json','utf8'));
+const sha = b => crypto.createHash('sha256').update(b).digest('hex');
+const before = fs.readFileSync(file), indexBefore = sha(fs.readFileSync('web/index.html'));
+const last = log.filter(r=>r.file===file).at(-1); if(last && last.after!==sha(before)) throw Error('Concurrent generated manifest edit');
+const backup = baseline.backup + '/' + file; fs.mkdirSync(path.dirname(backup),{recursive:true}); if(!fs.existsSync(backup))fs.writeFileSync(backup,before,{flag:'wx'});
+cp.execFileSync(process.execPath,['web/scripts/build-startup-phase-manifest.js'],{stdio:'inherit'});
+if(indexBefore!==sha(fs.readFileSync('web/index.html')))throw Error('Index changed while generating startup manifest');
+const after = fs.readFileSync(file);
+log.push({file,before:sha(before),after:sha(after),at:new Date().toISOString(),generatedBy:'web/scripts/build-startup-phase-manifest.js'});
+fs.writeFileSync(dir + '/changes.json',JSON.stringify(log,null,2));
+cp.execFileSync(process.execPath,['web/scripts/smoke-startup-phase-observability.js'],{stdio:'inherit'});

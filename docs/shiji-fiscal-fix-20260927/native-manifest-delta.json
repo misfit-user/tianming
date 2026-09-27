@@ -1,0 +1,11 @@
+{
+  "changedScripts": [
+    "tm-endturn-shiji-compose.js"
+  ],
+  "changedFields": [
+    "indexHash",
+    "scripts",
+    "totalResourceBytes",
+    "runtimeHash"
+  ]
+}

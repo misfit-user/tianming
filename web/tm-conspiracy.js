@@ -547,7 +547,7 @@
       if (bridge && typeof bridge.spawnUprisingCandidates === 'function') bridge.spawnUprisingCandidates(G, { turn: G.turn || 0, source: 'conspiracy_' + plot.ringleader });
     } catch (_) {}
     try {
-      var _r2On = !(global.P && global.P.conf && global.P.conf.revoltEntityEnabled === false);
+      var _r2On = true; // 正式民变实体路径，不再读取旧的禁用设置。
       if (_r2On && G.minxin) {
         if (!Array.isArray(G.minxin.revolts)) G.minxin.revolts = [];
         var region = (lead && lead.location) || '畿辅';
@@ -735,7 +735,9 @@
     try {
       var P = global.P || {};
       var ai = P.ai || {}, conf = P.conf || {};
-      return !!(ai.agencyWatchEnabled || conf.agencyWatchEnabled);
+      if (typeof conf.agencyWatchEnabled === 'boolean') return conf.agencyWatchEnabled;
+      if (typeof ai.agencyWatchEnabled === 'boolean') return ai.agencyWatchEnabled;
+      return true;
     } catch (e) { return false; }
   }
   function _agencyWatch(G) {
@@ -761,7 +763,6 @@
     //   措辞留白(渐炽/将发)不给真值——密探只报行迹·真相要玩家自己穷治。
     activePlots(G).forEach(function (p) {
       if (!p || !p._knownToPlayer || p._agencyReported) return;
-      p._agencyReported = true;
       if (!Array.isArray(G.currentIssues)) return;
       var vague = p.momentum >= 70 ? '事似将发·不可不察' : (p.momentum >= 35 ? '其谋渐炽' : '尚在酝酿');
       G.currentIssues.push({
@@ -770,6 +771,7 @@
         description: '密探侦得：' + p.ringleader + ((p.conspirators && p.conspirators.length) ? ' 与 ' + p.conspirators.length + ' 人过从诡秘' : ' 近来行迹诡秘') + '，' + vague + '。若欲穷治，可下诏命有司查办其人。',
         category: '朝局', status: 'pending', raisedTurn: G.turn || 0, _info: true, _spyReport: true
       });
+      p._agencyReported = true;
     });
     // ─── S3·暗流风闻(2026-07-06·方向五谍报线收官) ───
     //   常侦不止侦阴谋——推演暗流(sc15 hidden_moves·followup 落 GM._recentHiddenMoves 缓冲)亦入密探耳目。

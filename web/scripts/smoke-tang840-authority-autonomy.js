@@ -3,6 +3,8 @@
 const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
 const WEB=path.resolve(__dirname,'..'),s=JSON.parse(fs.readFileSync(path.join(WEB,'../scenarios/晚唐·开成五年（官方）.json'),'utf8'));
 let checks=0;const ok=(v,m)=>{assert(v,m);checks++;},eq=(a,b,m)=>ok(a===b,m+': '+a+' / '+b);
+// 唐廷道数：剧本修复按开成间制度并丹州入鄜坊、同州华州各立一道，44→45
+const CIRCUITS=45;
 const clone=v=>JSON.parse(JSON.stringify(v));
 function slim(d){const ret={};for(const k of ['id','name','level','regionType','population','populationDetail','fiscalDetail','minxin','corruption'])if(d[k]!==undefined)ret[k]=clone(d[k]);if(d.children)ret.children=d.children.map(slim);return ret;}
 function world(){
@@ -15,7 +17,7 @@ ok(s._version>=28,'new authority calibration installed');eq(s.authorityConfig.in
 const c=world();c.IntegrationBridge.init();c.AuthorityEngines.init();c.CentralLocalEngine.init(s);
 eq(c.AuthorityEngines.getHuangquanValue(),26,'real authority owner initializes declared control');eq(c.AuthorityEngines.getHuangweiValue(),34,'real authority owner initializes declared prestige');
 for(const kind of ['huangquan','huangwei'])for(const [key,value] of Object.entries(s.authorityConfig.initial[kind+'SubDims']))eq(c.GM[kind].subDims[key].value,value,'independent authority dimension '+kind+'/'+key);
-eq(Object.keys(c.GM.fiscal.regions).length,44,'44 circuits in actual central-local view');
+eq(Object.keys(c.GM.fiscal.regions).length,CIRCUITS,CIRCUITS+' circuits in actual central-local view');
 for(const d of s.adminHierarchy.player.divisions){const live=c.GM.fiscal.regions[d.id];eq(live.autonomyLevel,d.fiscalDetail.autonomyLevel,'circuit seed reaches actual fiscal view '+d.name);ok(live.autonomyLevel>=.24&&live.autonomyLevel<=.85,'circuit range '+d.name);}
 const byName=Object.fromEntries(s.adminHierarchy.player.divisions.map(d=>[d.name,d]));
 ok(byName['武宁'].fiscalDetail.autonomyLevel>byName['忠武'].fiscalDetail.autonomyLevel,'restive Wuning differs from loyalist Zhongwu');
@@ -24,7 +26,7 @@ ok(byName['淮南'].fiscalDetail.autonomyLevel<byName['河东'].fiscalDetail.aut
 ok(byName['京畿'].fiscalDetail.autonomyLevel<byName['浙西'].fiscalDetail.autonomyLevel,'capital jurisdiction remains relatively direct');
 for(const d of s.adminHierarchy.player.divisions)for(const leaf of d.children){eq(leaf.fiscalDetail.autonomyLevel,s.map.regions.find(r=>r.id===leaf.id).data.fiscalDetail.autonomyLevel,'map and administrative seed agree '+leaf.id);}
 for(const key of ['map','mapData'])if(s[key]?.adminHierarchy?.player)for(const d of s[key].adminHierarchy.player.divisions)eq(d.fiscalDetail.autonomyLevel,byName[d.name].fiscalDetail.autonomyLevel,'embedded hierarchy seed '+key+'/'+d.name);
-const report=c.CentralLocalEngine.getComplianceReport();eq(report.length,44,'common compliance report retains all circuits');const context=c.CentralLocalEngine.getAIContext();ok(context.includes('/自治'),'AI receives autonomy as well as compliance');ok(!context.includes('undefined')&&!context.includes('NaN'),'AI central-local context remains valid: '+context);
+const report=c.CentralLocalEngine.getComplianceReport();eq(report.length,CIRCUITS,'common compliance report retains all circuits');const context=c.CentralLocalEngine.getAIContext();ok(context.includes('/自治'),'AI receives autonomy as well as compliance');ok(!context.includes('undefined')&&!context.includes('NaN'),'AI central-local context remains valid: '+context);
 eq(c.GM.fiscal._currentPreset,'tang_liushi','opening central-local preset follows declared late-Tang system');
 // Game state evolves independently of the opening seed; reading or reinitializing cannot reset it.
 const chosen=byName['武宁'].id;c.GM.fiscal.regions[chosen].autonomyLevel=.43;c.IntegrationBridge.init();eq(c.GM.fiscal.regions[chosen].autonomyLevel,.43,'existing live autonomy survives initialization');

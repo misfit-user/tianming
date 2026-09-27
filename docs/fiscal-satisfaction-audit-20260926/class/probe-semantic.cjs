@@ -1,0 +1,17 @@
+'use strict';
+const fs=require('fs'),path=require('path'),vm=require('vm');
+const root=path.resolve(__dirname,'../../..');
+const scenario=JSON.parse(fs.readFileSync(path.join(root,'scenarios/天启七年·九月（官方）.json'),'utf8'));
+const c={console,Math,JSON,Date,RegExp,Error,Array,Object,String,Number,Boolean,parseInt,parseFloat,isFinite,isNaN};c.window=c;c.globalThis=c;vm.createContext(c);
+for(const f of ['tm-engine-constants.js','tm-class-engine.js','tm-social-political-signals.js','tm-party-class-ecology.js'])vm.runInContext(fs.readFileSync(path.join(root,'web',f),'utf8'),c,{filename:f});
+const g={turn:1,classes:JSON.parse(JSON.stringify(scenario.classes)),parties:[],military:{arrearsRatio:0.6}};c.GM=g;
+const militaryTokens=['military','soldier','wage','arrears','mutiny','garrison','军饷','欠饷','哗变','兵'];
+const localTokens=['local','revolt','rebellion','uprising','unrest','peasant','commoner','rural','地方','民变','起义','民'];
+const E=c.TM.PartyClassEcology;
+const profiles=E.build(g).classProfiles;
+const withEcology=c.TM.SocialPoliticalSignals.scanRuntimePressures(g,{turn:1,source:'semantic-with-ecology'});
+c.TM.PartyClassEcology=null;
+const withoutEcology=c.TM.SocialPoliticalSignals.scanRuntimePressures(g,{turn:1,source:'semantic-without-ecology'});
+const out={militaryTokens,militaryCategories:E.categoriesForTokens(militaryTokens),localTokens,localCategories:E.categoriesForTokens(localTokens),classes:g.classes.map(cls=>({name:cls.name,militaryScore:E.scoreClass(g,cls,militaryTokens),localScore:E.scoreClass(g,cls,localTokens),profile:profiles[cls.name]})),withEcology:withEcology.signals.map(s=>({kind:s.kind,classes:s.affectedClasses})),withoutEcology:withoutEcology.signals.map(s=>({kind:s.kind,classes:s.affectedClasses}))};
+fs.writeFileSync(path.join(__dirname,'semantic-results.json'),JSON.stringify(out,null,2));
+console.log(JSON.stringify({militaryCategories:out.militaryCategories,localCategories:out.localCategories,classes:out.classes.map(x=>[x.name,x.militaryScore,x.localScore]),withEcology:out.withEcology.map(x=>({kind:x.kind,classes:x.classes.map(y=>y.name)})),withoutEcology:out.withoutEcology.map(x=>({kind:x.kind,classes:x.classes.map(y=>y.name)}))}));

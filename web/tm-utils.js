@@ -1522,6 +1522,7 @@ function _tmIsAtPlayerLocation(ch) {
 
 /** 模糊查找角色（精确→去空格标点→前2字唯一→别名→null） */
 function _fuzzyFindChar(name) {
+  if (typeof TM !== 'undefined' && TM.StartContracts && typeof GM !== 'undefined' && GM.startContext) return TM.StartContracts.resolveCharacter(GM,name);
   if (!name || !GM.chars) return null;
   var n = String(name).trim();
   try {
@@ -1785,6 +1786,9 @@ function _trDownloadTxt(txt, turn){
   if (typeof toast === 'function') toast('\u5DF2\u5BFC\u51FA');
 }
 function saveP(){
+  if(window.tianming&&window.tianming.isDesktop&&typeof TM_SaveDB==='undefined')return false;
+  try{if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();}
+  catch(storageError){console.warn('[saveP] 存储未就绪，已保留旧配置:',storageError&&storageError.message);return false;}
   // P 永不该拥有 gameState——合法附带只发生在 60s autosave 的克隆件上(save-lifecycle:1327)。
   // 存量僵尸(旧 fullLoadGame 格式A遗留·整棵旧局 GM 挂 P 随每次持久化序列化=配额爆炸+启动误恢复已弃旧局)
   // 在写入咽喉一律斩除(2026-07-04 审查定罪)
@@ -1856,6 +1860,28 @@ function _tmRehydrateAiFromDevice() {
 }
 if (typeof window !== 'undefined') { window._tmRehydrateAiFromDevice = _tmRehydrateAiFromDevice; }
 
+// saveP writes these explicit call preferences to the synchronous lite cache.
+// An older asynchronous project/autosave may restore world data, but not roll them back.
+function _tmRehydrateCallPreferences() {
+  try {
+    if (typeof P === 'undefined' || !P || typeof localStorage === 'undefined') return;
+    var text = localStorage.getItem('tm_P_lite');
+    if (!text) return;
+    var lite = JSON.parse(text), conf = lite && lite.conf;
+    if (!conf || typeof conf !== 'object' || Array.isArray(conf)) return;
+    ['aiCallRetryOverrides', 'emergencyRecovery'].forEach(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(conf, key) || !conf[key] || typeof conf[key] !== 'object' || Array.isArray(conf[key])) return;
+      if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner reapplies the latest explicit device call preferences.
+      P.conf[key] = conf[key]; // arch-ok: only the two named call-preference maps, never game state or other project settings.
+    });
+    var secondaryRetries = conf.aiSecondaryRetryCount;
+    if (Object.prototype.hasOwnProperty.call(conf, 'aiSecondaryRetryCount') && Number.isInteger(secondaryRetries) && secondaryRetries >= 0 && secondaryRetries <= 20) {
+      if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner initializes call preferences.
+      P.conf.aiSecondaryRetryCount = secondaryRetries; // arch-ok: restore the latest validated device preference, including explicit zero.
+    }
+  } catch (_) { /* A damaged optional cache must not block valid project restoration. */ }
+}
+
 function _tmApplyMachinePrefsFromProject(project) {
   if (!project) return;
   if (project.ai) { P.ai = project.ai; _tmRehydrateAiFromDevice(); }
@@ -1865,6 +1891,7 @@ function _tmApplyMachinePrefsFromProject(project) {
       if (project.conf.hasOwnProperty(k)) P.conf[k] = project.conf[k];
     }
   }
+  _tmRehydrateCallPreferences();
 }
 
 // 当缓存被判为「官方剧本不完整」而整体跳过恢复时，会连用户自建剧本一起丢（安卓/网页无桌面 autoSave 兜底）。
@@ -1919,6 +1946,7 @@ function _tmMergeCustomScenariosFromProject(project) {
 }
 
 function _tmEmitPRestored(source) {
+  _tmRehydrateCallPreferences();
   try {
     if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
     var ev;
@@ -1932,8 +1960,9 @@ function _tmEmitPRestored(source) {
   } catch(_) {}
 }
 
-// 启动时恢复P（三层恢复：localStorage骨架 → IndexedDB完整 → 桌面端autoSave）
+// 启动恢复以 IndexedDB 项目为主；只有缺失/读取失败时才读取桌面备份。
 (function _restoreP(){
+  var desktopRestoreRequested = false;
   // 层1: localStorage 骨架（同步，秒级启动）
   try {
     // 尝试旧格式 tm_P
@@ -1987,11 +2016,19 @@ function _tmEmitPRestored(source) {
   (function _tmIdbRestoreWhenReady(tries) {
     if (typeof TM_SaveDB === 'undefined') {
       if (tries < 100 && typeof setTimeout === 'function') setTimeout(function() { _tmIdbRestoreWhenReady(tries + 1); }, 100); // vm 沙箱无 timer 则放弃(沙箱本就无 IDB)
-      else if (tries >= 100) console.warn('[restoreP] TM_SaveDB 10s 未就位·IndexedDB 恢复层跳过');
+      else if (tries >= 100 && typeof document !== 'undefined' && document.readyState === 'loading' && typeof document.addEventListener === 'function') {
+        // The bounded polling window may end before large script sets finish loading.
+        // Retry once on the actual script-ready event, not with an unbounded timer.
+        document.addEventListener('DOMContentLoaded', function() { _tmIdbRestoreWhenReady(101); }, { once: true });
+      }
+      else if (tries >= 100) { console.warn('[restoreP] 页面脚本已加载，但 TM_SaveDB 仍不可用·尝试桌面恢复'); restoreDesktopProject(); }
       return;
     }
-    TM_SaveDB.loadProject().then(function(fullP) {
-      if (fullP && fullP.scenarios) {
+    var projectRead;
+    try { projectRead = TM_SaveDB.loadProject(); }
+    catch (error) { console.warn("[restoreP] 项目读取失败:", error && error.message); restoreDesktopProject(); return; }
+    Promise.resolve(projectRead).then(function(fullP) {
+      if (fullP && Array.isArray(fullP.scenarios)) {
         if (_tmIsIncompleteOfficialProject(fullP)) {
           _tmApplyMachinePrefsFromProject(fullP);
           // 不整体丢弃：保留刚注册的官方剧本，仅把用户自建剧本合并回来（修安卓/网页重启自建剧本消失）
@@ -2007,19 +2044,28 @@ function _tmEmitPRestored(source) {
           if (fullP.hasOwnProperty(key) && key !== 'gameState' && key !== '_saveMeta') P[key] = fullP[key]; // 跳僵尸键·与层3同口径
         }
         _tmRehydrateAiFromDevice(); // IDB project 系剥 key 落盘·此层异步晚到曾冲掉启动时补回的 key(进游戏必重填·2026-07-11)
+        _tmRehydrateCallPreferences();
         console.log('[restoreP] 从IndexedDB恢复完整P, scenarios:', P.scenarios.length);
         // 如果已在剧本管理页，刷新显示
         if (typeof showScnManage === 'function' && document.querySelector('.scn-page.show')) {
           showScnManage();
         }
         _tmEmitPRestored('indexeddb');
-      }
-    }).catch(function(e) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e); });
+      } else { restoreDesktopProject(); }
+    }).catch(function(e) {
+      (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'restoreP] IndexedDB恢复失败:') : console.warn('[restoreP] IndexedDB恢复失败:', e);
+      restoreDesktopProject();
+    });
   })(0);
 
-  // 层3: 桌面端 autoSave
-  if (window.tianming && window.tianming.isDesktop) {
-    window.tianming.loadAutoSave().then(function(r) {
+  // One fallback owner: do not deserialize a full game just to refresh settings.
+  function restoreDesktopProject() {
+    if (desktopRestoreRequested || !window.tianming || !window.tianming.isDesktop || typeof window.tianming.loadAutoSave !== 'function') return;
+    if (window.GM && window.GM.running) return;
+    desktopRestoreRequested = true;
+    var projectAtStart = P, worldAtStart = window.GM;
+    Promise.resolve().then(function() { return window.tianming.loadAutoSave(); }).then(function(r) {
+      if (P !== projectAtStart || (window.GM && window.GM.running) || (worldAtStart && window.GM !== worldAtStart)) return;
       if (r && r.success && r.data && r.data.scenarios) {
         for (var key in r.data) {
           if (r.data.hasOwnProperty(key) && key !== 'gameState' && key !== '_saveMeta') {
@@ -2027,6 +2073,7 @@ function _tmEmitPRestored(source) {
           }
         }
         _tmRehydrateAiFromDevice(); // 桌面 autoSave 亦剥 key·覆盖后回灌
+        _tmRehydrateCallPreferences();
         console.log('[restoreP] 从desktop autoSave补充恢复');
         _tmEmitPRestored('desktop-autosave');
       }
@@ -2062,6 +2109,7 @@ function _getAITier(tier) {
       model: _s.model || P.ai.model || 'gpt-4o-mini',
       thinking: _s.thinking,
       thinkingProtocol: _s.thinkingProtocol,
+      queueTimeoutMs: _s.queueTimeoutMs, firstResponseTimeoutMs: _s.firstResponseTimeoutMs, totalResponseTimeoutMs: _s.totalResponseTimeoutMs,
       tier: 'secondary'
     };
   }
@@ -2071,6 +2119,7 @@ function _getAITier(tier) {
     model: (P.ai && P.ai.model) || 'gpt-4o',
     thinking: P.ai && P.ai.thinking,
     thinkingProtocol: P.ai && P.ai.thinkingProtocol,
+    queueTimeoutMs: P.ai && P.ai.queueTimeoutMs, firstResponseTimeoutMs: P.ai && P.ai.firstResponseTimeoutMs, totalResponseTimeoutMs: P.ai && P.ai.totalResponseTimeoutMs,
     tier: 'primary'
   };
 }

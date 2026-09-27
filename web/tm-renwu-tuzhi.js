@@ -559,7 +559,7 @@ function _zhiLoadReference(p){
   }).catch(function(err){item.error='史料参考文件读取失败：'+String(err&&err.message||err);}).then(function(){
     item.loading=false;
     var current=findP(state.sel);
-    if(state.tab==='sources'&&current&&_zhiReferenceKey(current._ref)===key)renderMain();
+    if(state.tab==='sources'&&current&&(_zhiReferenceKey(current._ref)===key||_zhiWuchangReferenceKey(current._ref)===key))renderMain();
   });
 }
 function _zhiSourceParagraph(text){return '<div class="prose" style="white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0;font-size:14px;line-height:1.95;color:var(--ink-soft)">'+esc(String(text||''))+'</div>';}
@@ -587,12 +587,38 @@ function tabSources(p){
   html+='</section><section class="sec full"><div class="sec-t">已 录 资 料 <small>未证内容保持未知，不由立绘或数值反推</small></div>';
   [['表字',c.zi],['家族',c.family],['父',c.father],['母',c.mother],['生年',c.birthYear],['生辰记载',c.birthTime],['籍贯／出生地',c.birthplace],['学业',c.learning],['外貌依据',c.appearance],['爱好',c.hobbies],['技能说明',Array.isArray(c.skills)?c.skills.join('、'):c.skills]].forEach(function(row){if(row[1]!=null&&row[1]!=='')html+='<div class="row"><span class="k">'+esc(row[0])+'</span><span class="v" style="overflow-wrap:anywhere">'+esc(String(row[1]))+'</span></div>';});
   (c.familyMembers||[]).forEach(function(m){if(m&&m.name)html+=_zhiSourceParagraph((m.relation||'亲属')+'：'+m.name+(m.note?'；'+m.note:''));});
-  return html+'</section>';
+  return html+'</section>'+_zhiWuchangAssessment(c);
 }
 function _zhiHonoraryPills(p){
   var a=p&&p._ref&&p._ref.honoraryTitles,seen=Object.create(null);
   if(!Array.isArray(a))return '';
   return a.filter(function(x){if(typeof x!=='string'||!x.trim()||seen[x])return false;seen[x]=true;return true;}).map(function(t){return '<span class="dh-pill" data-zhi-honorary title="加衔或身份称号；不据此占有中央实职或重复计俸">衔 '+esc(t)+'</span>';}).join('');
+}
+
+function _zhiWuchangCarrier(c){
+  var a=c&&c.wuchangAssessment;
+  if(!a||a.version!==1||typeof a.reference!=='string')return null;
+  return {sid:c.sid,historicalSourceRef:a.reference};
+}
+function _zhiWuchangReferenceKey(c){return _zhiReferenceKey(_zhiWuchangCarrier(c));}
+function _zhiWuchangAssessment(c){
+  var key=_zhiWuchangReferenceKey(c),a=c&&c.wuchangAssessment;
+  if(!key)return '';
+  var item=_zhiReferenceCache[key],data=item&&item.data;
+  var entry=data&&data.scenarioId===c.sid&&data.characters[a.key||c.id];
+  var html='<section class="sec full" data-zhi-wuchang-assessment><div class="sec-t">五 常 评 定 依 据</div>';
+  html+=_zhiSourceParagraph('这里记录剧本开局的编者评定，不是古籍中的数字或对古人的测量。当前五常以人物面板为准；本局行为可以改变其后表现。');
+  if(entry){
+    var labels={H:'证据较直接',M:'有解释空间',L:'证据有限／人设估值',F:'虚构设定'};
+    ['仁','义','礼','智','信'].forEach(function(k){
+      html+='<div class="row"><span class="k">'+k+'</span><span class="v">开局 '+esc(String(entry.initialScores[k]))+' · '+esc(labels[entry.confidence[k]]||'未注明')+'</span></div>';
+    });
+    html+=_zhiSourceParagraph(entry.note);
+    (entry.sources||[]).forEach(function(s){html+=_zhiSourceParagraph(s.book)+_zhiSourceLink(s.url);});
+  }else if(item&&item.loading)html+=_zhiSourceParagraph('正在读取逐人评定依据……');
+  else if(item&&item.error)html+=_zhiSourceParagraph(item.error+' 人物的五常数值仍然保留。');
+  else html+=_zhiSourceParagraph('尚未读取到本人的评定条目。');
+  return html+'</section>';
 }
 
 function _zhiOfficeTitles(c){
@@ -621,10 +647,10 @@ function _zhiOfficePills(p){
 function adaptChar(c){
   var isP=!!c.isPlayer||(_p().playerInfo&&_p().playerInfo.characterName===c.name);
   return {
-    _ref:c, name:c.name, zi:c.zi||c.courtesy||'', title:c.title, officialTitle:c.officialTitle, officeTitles:_zhiOfficeTitles(c), role:c.role, rosterRole:c.rosterRole, rank:_rankLabel(c),
+    _ref:c, _sourceId:String(c.id==null?'':c.id).trim(), name:c.name, zi:c.zi||c.courtesy||'', title:c.title, officialTitle:c.officialTitle, officeTitles:_zhiOfficeTitles(c), role:c.role, rosterRole:c.rosterRole, rank:_rankLabel(c),
     faction:c.faction||(isConsort(c)?'后宫':'无派系'), party:c.party, partyRank:c.partyRank,
     age:c.age, gender:c.gender||(isConsort(c)?'女':''), birthplace:c.birthplace, ethnicity:c.ethnicity, faith:c.faith, culture:c.culture, learning:c.learning, stance:c.stance, speechStyle:c.speechStyle,
-    family:c.family, familyTier:c.familyTier, isPlayer:isP, alive:c.alive!==false, deathReason:c.deathReason, deathTurn:c.deathTurn,
+    family:c.family, familyTier:c.familyTier, isPlayer:isP, alive:c.alive!==false&&c.dead!==true, deathReason:c.deathReason, deathTurn:c.deathTurn,
     appearance:c.appearance, bio:c.bio, personality:c.personality, personalGoal:c.personalGoal||c.goal,
     portrait:c.portrait,
     loyalty:num(c.loyalty,50), intelligence:effAttr(c,'intelligence'), valor:effAttr(c,'valor'), administration:effAttr(c,'administration'), management:effAttr(c,'management'), charisma:effAttr(c,'charisma'), diplomacy:effAttr(c,'diplomacy'), military:effAttr(c,'military'), benevolence:effAttr(c,'benevolence'),
@@ -655,7 +681,7 @@ function findP(name){var l=PEOPLE();for(var i=0;i<l.length;i++)if(l[i].name===na
 
 /* ===================== 状态 ===================== */
 var state={sel:null,q:'',fac:'all',role:'all',sort:'loyalty',dead:false,tab:'overview',roleStat:'all',compare:null,compare2:null,view:'liezhuan',phSort:'loyalty',dtWin:6};
-var _panelWorld=null,_officeContext=null,_vacantOfficesOnly=false;
+var _panelWorld=null,_panelScenario,_panelLoadGen,_panelStartEpoch,_officeContext=null,_vacantOfficesOnly=false;
 var _zhiRosterRenderTimer=0;
 
 /* ===================== 立绘字形 / SVG 基件 ===================== */
@@ -784,13 +810,36 @@ function livingActions(p,folio){
 }
 
 function actionPerson(name){
-  if(_g()!==_panelWorld){toast('当前世界已改变，请重新打开人物图志');return null;}
+  var g=_g();
+  if(g!==_panelWorld||g.sid!==_panelScenario||window._tmLoadGen!==_panelLoadGen||window._tmStartPrewarmEpoch!==_panelStartEpoch){
+    toast('当前世界已改变，请重新打开人物图志');return null;
+  }
   var p=findP(name||state.sel),raw=p&&p._ref;
   if(!raw){toast('未找到当前人物');return null;}
-  var matches=[],g=_g();
-  [g.chars,g.allCharacters].forEach(function(rows){(rows||[]).forEach(function(c){if(c&&c.name===p.name&&matches.indexOf(c)<0)matches.push(c);});});
-  if(matches.length!==1||matches[0]!==raw){toast('人物引用缺失或同名有歧义，暂不能代入操作');return null;}
-  return p;
+  // Resolve operations from the live roster, not its display-only summaries.
+  var roster=Array.isArray(g.chars)?g.chars:[],matches=[],id=p._sourceId;
+  roster.forEach(function(c){
+    if(c&&(id?String(c.id==null?'':c.id).trim()===id:c===raw)&&matches.indexOf(c)<0)matches.push(c);
+  });
+  if(matches.length!==1){toast('人物引用已失效或不唯一，请重新打开人物图志');return null;}
+  var current=matches[0],named=[];
+  roster.forEach(function(c){if(c&&c.name===current.name&&named.indexOf(c)<0)named.push(c);});
+  if(!current.name||named.length!==1){toast('当前名册确有同名人物，暂不能代入操作');return null;}
+  // Name-based downstream interfaces must resolve the very same current object.
+  if(typeof findCharByName==='function'){
+    var resolved=findCharByName(current.name);
+    if(resolved!==current&&typeof buildIndices==='function'){
+      buildIndices();resolved=findCharByName(current.name);
+    }
+    if(resolved!==current){toast('人物索引尚未同步，请重新打开人物图志');return null;}
+  }
+  // Refresh status, name and source after a same-ID immutable roster update.
+  var fresh=adaptChar(current),index=(_peopleCache||[]).indexOf(p);
+  if(index>=0)_peopleCache[index]=fresh;
+  if(state.sel===p.name)state.sel=fresh.name;
+  if(state.compare===p.name)state.compare=fresh.name;
+  if(state.compare2===p.name)state.compare2=fresh.name;
+  return fresh;
 }
 function officeRecommendations(p){
   var fit=window.TM&&TM.OfficeFit;
@@ -1176,7 +1225,7 @@ function renderMain(){
   if(state.compare){renderCompare();return;}
   var p=findP(state.sel)||PEOPLE()[0];if(!p){ms.innerHTML='<div class="stub" style="margin-top:60px">尚无人物数据。</div>';return;}
   state.sel=p.name;
-  if(state.tab==='sources')_zhiLoadReference(p);
+  if(state.tab==='sources'){_zhiLoadReference(p);var carrier=_zhiWuchangCarrier(p._ref);if(carrier)_zhiLoadReference({_ref:carrier});}
   var tabs=p.alive!==false&&!p.isPlayer?TABS.concat([['office','任官参考']]):TABS;
   var tabsHtml='<div class="tabs">'+tabs.map(function(t){return '<button class="tab'+(state.tab===t[0]?' active':'')+'" onclick="TMZhi.switchTab(\''+t[0]+'\')">'+t[1]+'</button>';}).join('')+'</div>';
   ms.innerHTML=dossierHead(p)+verdict(p)+zhubiBlock(p)+tabsHtml+'<div class="detail">'+renderTab(p)+'</div>';
@@ -1202,6 +1251,7 @@ function renderFolio(){
   html+='<div class="fcard"><div class="ft">朝 堂 研 判</div><div style="padding:8px 10px;border-radius:6px;background:rgba(168,50,40,0.06);border-left:3px solid var(--cinnabar);margin-bottom:9px"><strong style="display:block;font-size:12px;color:var(--cinnabar-d)">'+vd[0]+'</strong><span style="font-size:11.5px;color:var(--ink-soft)">'+vd[1]+'</span></div><div class="risk-grid">'+[['忠诚',p.loyalty],['野心',p.ambition],['压力',p.stress],['康健',p.health],['名望',p.mingwang],['功名',p.gongming]].map(function(r){return '<div class="risk"><span>'+r[0]+'</span><b>'+(r[1]==null?'—':Math.round(r[1]))+'</b></div>';}).join('')+'</div></div>';
   html+='<div class="fcard"><div class="ft">关 系 焦 点</div>'+(rels.length?'<div class="relnet">'+rels.map(function(r){var cls=r.strength>=25?'good':r.strength<=-25?'bad':'neu';return '<div class="relrow" onclick="TMZhi.selectP(\''+esc(r.name).replace(/'/g,"\\'")+'\')"><span class="nm">'+esc(r.name)+'</span><span class="lbl '+cls+'">'+esc(r.label)+'</span><span class="sc">'+relScoreText(r.strength)+'</span></div>';}).join('')+'</div>':'<div class="fnote">暂无显性关系。</div>')+'</div>';
   html+='<div class="fcard"><div class="ft">五 常 速 览</div><div style="display:flex;gap:14px;justify-content:center;padding:4px 0 14px">'+['仁','义','礼','智','信'].map(function(k){var v=(p.wuchang||{})[k],lv=v==null?'mid':v>=60?'hi':v>=30?'mid':'lo';return '<span class="wcdot '+lv+'">'+k+'<small>'+(v==null?'?':Math.round(v))+'</small></span>';}).join('')+'</div></div>';
+  if(p._ref&&p._ref.wuchangAssessment)html+='<div style="padding:8px 10px;font-size:12px;color:var(--ink-faint)">五常为游戏化评定，依据与证据强弱见「史料与校勘」。</div>';
   fo.innerHTML=html;
 }
 
@@ -1238,7 +1288,7 @@ function renderChips(){var alive=PEOPLE().filter(function(p){return p.alive!==fa
 function renderAll(){renderChips();renderFacOptions();renderViewTabs();renderStatbar();renderRoster();renderMain();renderFolio();}
 
 function openPanel(name){
-  _panelWorld=_g();_officeContext=null;_vacantOfficesOnly=false;
+  _panelWorld=_g();_panelScenario=_panelWorld.sid;_panelLoadGen=window._tmLoadGen;_panelStartEpoch=window._tmStartPrewarmEpoch;_officeContext=null;_vacantOfficesOnly=false;
   loadPeople(true);
   buildOverlay();
   if(name&&findP(name))state.sel=name;
@@ -1332,6 +1382,7 @@ var TMZhi={
       if(kind==='wendui'||kind==='letter'||kind==='office'){
         var p=actionPerson(name);if(!p)return false;
         if(p.isPlayer||p.alive===false){toast('当前人物不能使用此入口');return false;}
+        name=p.name;
       }
       if(kind==='wendui'&&typeof openWenduiPick==='function'){openWenduiPick(name);if(!document.getElementById('wd-pick-modal'))throw new Error('audience-picker-not-mounted');closePanel();return true;}
       if(kind==='letter'){

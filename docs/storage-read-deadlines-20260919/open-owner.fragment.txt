@@ -1,0 +1,22 @@
+    var resolveOpen, rejectOpen;
+    var owner = { settled: false, failed: false, timer: null, upgrade: null };
+    owner.promise = new Promise(function(resolve, reject) { resolveOpen = resolve; rejectOpen = reject; });
+    _openOwner = owner; _openPromise = owner.promise;
+    function releasePending() {
+      clearTimeout(owner.timer);
+      if (_openOwner === owner) { _openOwner = null; _openPromise = null; }
+    }
+    function failOpen(error) {
+      if (owner.settled) return;
+      owner.failed = true; owner.settled = true;
+      releasePending();
+      _storageDiagnostic('open', error, _abortRead(owner.upgrade));
+      if (!_db) _available = false;
+      rejectOpen(error);
+    }
+    try {
+      if (!window.indexedDB) {
+        console.warn('[SaveDB] IndexedDB不可用，回退localStorage');
+        _available = false; owner.settled = true; releasePending(); resolveOpen(null); return owner.promise;
+      }
+      owner.timer = setTimeout(function() { failOpen(_storageWaitError('SAVE_OPEN_TIMEOUT', 'open')); }, OPEN_WAIT_MS);

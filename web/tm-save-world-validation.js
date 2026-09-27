@@ -100,25 +100,80 @@ function _tmValidateStableForeignKeys(targetGM) {
   })(targetGM.officeTree, 'officeTree');
 }
 
+// 深度优先遍历整个世界，检查每个数字都是有限值。遍历顺序与报错路径都与旧版一致。
+// 绍宋一份存档约有 1430 万个数字、320 万个数组（其中 316 万个是坐标对这类只装标量的小数组）。
+// 旧写法把每个值连同拼好的路径入栈，并把几百万个小数组登记进 WeakSet；渲染进程内存本就吃紧，
+// 频繁 GC 每次都要重扫这张弱引用表，读档时单这一个函数就占 165 秒。现在：
+//   · 标量和只装标量的数组（坐标对之类）当场查完，不入栈、不登记去重（重复出现只是多验一遍，结果相同）；
+//   · 去重用普通 Set：只在本次遍历里用，用完即弃，不需要弱引用；
+//   · 栈用三个平行数组，路径只在发现非法数字时沿父节点回溯拼出。
+// 顺序说明：旧版把子项按键序入栈、从末尾弹出，所以展开一个节点时从最后一个子项往前处理；
+// 碰到第一个还要继续展开的子项，就把它和它前面的子项按原顺序入栈，交还主循环。
+// 数组上的非下标属性不是 JSON 世界正文（序列化本就不带），就地检查只看下标。
 function _tmValidateFiniteWorldNumbers(root, label) {
-  var stack = [{ value: root, path: label }];
-  var seen = typeof WeakSet === 'function' ? new WeakSet() : null;
-  while (stack.length) {
-    var current = stack.pop();
-    var value = current.value;
+  var stackValues = [root], stackParents = [-1], stackKeys = [label];
+  var nodeParents = [], nodeKeys = [];   // 已展开节点的父节点与键，仅用于出错时回溯路径
+  var seen = typeof Set === 'function' ? new Set() : null;
+  function pathOf(parent, key) {
+    var parts = [key];
+    for (var p = parent; p !== -1; p = nodeParents[p]) parts.push(nodeKeys[p]);
+    return parts.reverse().join('.');
+  }
+  function fail(parent, key) {
+    throw new Error('存档数值非法: ' + pathOf(parent, key));
+  }
+  function isScalarArray(list) {
+    for (var j = 0; j < list.length; j++) {
+      if (list[j] !== null && typeof list[j] === 'object') return false;
+    }
+    return true;
+  }
+  function checkScalarArray(list, parent, key) {
+    for (var j = list.length - 1; j >= 0; j--) {
+      if (typeof list[j] === 'number' && !Number.isFinite(list[j])) {
+        nodeParents.push(parent);
+        nodeKeys.push(key);
+        fail(nodeParents.length - 1, String(j));
+      }
+    }
+  }
+  while (stackValues.length) {
+    var value = stackValues.pop(), parent = stackParents.pop(), key = stackKeys.pop();
     if (typeof value === 'number') {
-      if (!Number.isFinite(value)) throw new Error('存档数值非法: ' + current.path);
+      if (!Number.isFinite(value)) fail(parent, key);
       continue;
     }
     if (!value || typeof value !== 'object') continue;
+    if (Array.isArray(value) && isScalarArray(value)) {
+      checkScalarArray(value, parent, key);
+      continue;
+    }
     if (seen) {
       if (seen.has(value)) continue;
       seen.add(value);
     }
+    var node = nodeParents.length;
+    nodeParents.push(parent);
+    nodeKeys.push(key);
     // Map/Set/Blob 等运行时派生容器不属于 JSON 世界正文；其内部由各自重建器负责。
     var keys = Object.keys(value);
-    for (var i = 0; i < keys.length; i++) {
-      stack.push({ value: value[keys[i]], path: current.path + '.' + keys[i] });
+    for (var i = keys.length - 1; i >= 0; i--) {
+      var child = value[keys[i]];
+      if (typeof child === 'number') {
+        if (!Number.isFinite(child)) fail(node, keys[i]);
+        continue;
+      }
+      if (!child || typeof child !== 'object') continue;
+      if (Array.isArray(child) && isScalarArray(child)) {
+        checkScalarArray(child, node, keys[i]);
+        continue;
+      }
+      for (var k = 0; k <= i; k++) {
+        stackValues.push(value[keys[k]]);
+        stackParents.push(node);
+        stackKeys.push(keys[k]);
+      }
+      break;
     }
   }
 }

@@ -1,0 +1,15 @@
+{
+  "description": "Controlled synthetic failures; first request holds the queue for 120 ms. Not real API or overall turn latency.",
+  "results": {
+    "before": {
+      "failedTaskHttpAttempts": 3,
+      "queuedCancellationMs": 126.518,
+      "cancellationFixtureHttpRequests": 1
+    },
+    "after": {
+      "failedTaskHttpAttempts": 1,
+      "queuedCancellationMs": 0.679,
+      "cancellationFixtureHttpRequests": 1
+    }
+  }
+}

@@ -68,7 +68,7 @@ ok(JSON.stringify(captions[0])===JSON.stringify(captions[1])&&JSON.stringify(cap
  c._guokuSetFlowPeriod('year');let html=elements['guoku-body'].innerHTML;
  ok(html.includes('>独立旧税细目</span>')&&html.includes('>3650</span>'),'legacy custom tax uses real turn amount, not annual amount multiplied again');
  delete c.GM.guoku._customTaxStats.unique.turnAmount;c._guokuSetFlowPeriod('month');html=elements['guoku-body'].innerHTML;
- ok(html.includes('折月 300'),'legacy custom tax with only annual data is prorated once');
+ ok(html.includes('月均 300'),'unsettled legacy custom tax forecast with only annual data is prorated once');
  c.GM.guoku.ledgers.money.sources={unique:100};c.GM.guoku.ledgers.money.thisTurnIn=100;c.renderGuokuPanel();
  ok(!elements['guoku-body'].innerHTML.includes('其他税入细目'),'same custom tax is not repeated below the primary source list');
 }

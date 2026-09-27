@@ -97,6 +97,9 @@ async function main() {
     tools: [{ type: 'function', function: { name: 'ledger', parameters: { type: 'object' } } }],
     tool_choice: 'auto'
   };
+  assert.throws(() => api.finalizeSc1RequestBody(body, { contextTokens:8192, completionTokens:2048 }), e => e.code === 'mandatory_context_overflow' && e.preservedAllContent);
+  body.messages[1].content = require('./lib-sc1-lossless-fixture').userMessage();
+  perfCounters['sc1.finalBodyCloneCount'] = 0;
   const finalized = api.finalizeSc1RequestBody(body, { contextTokens: 8192, completionTokens: 2048 });
   assert.strictEqual(perfCounters['sc1.finalBodyCloneCount'], 1,
     'final budgeter should own one detached finalized-body clone');
@@ -139,7 +142,7 @@ async function main() {
   const reducer = api.createSc1ContextOverflowReducer({ contextTokens: 8192, completionTokens: 2048 });
   const fallback = await runtime._aiFetchWithRetryInner(
     'https://example.invalid/v1',
-    finalized.body,
+    body,
     null,
     { apiKey: 'test-key', maxRetries: 4, contextOverflowReducer: reducer }
   );
@@ -147,7 +150,7 @@ async function main() {
   assert.strictEqual(sent.length, 3,
     'stream failure is followed by one original fallback and exactly one emergency-reduced retry');
   assert(JSON.stringify(sent[2]).length < JSON.stringify(sent[1]).length,
-    'the single emergency retry uses a smaller request');
+    'the one permitted retry only removes JSON formatting whitespace');
 
   sent.length = 0;
   runtime.fetch = async (_url, options) => {

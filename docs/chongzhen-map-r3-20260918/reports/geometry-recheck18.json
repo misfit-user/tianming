@@ -1,0 +1,5429 @@
+{
+  "candidateSha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "passed": 950,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "ming-01-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.162814039233468e-08
+      }
+    },
+    {
+      "name": "ming-01-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8636908739937113e-08
+      }
+    },
+    {
+      "name": "ming-01-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7885734068477343e-08
+      }
+    },
+    {
+      "name": "ming-01-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.176854672058037e-08
+      }
+    },
+    {
+      "name": "ming-01-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.1186254352265614e-08
+      }
+    },
+    {
+      "name": "ming-01-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0354132490398331e-07
+      }
+    },
+    {
+      "name": "ming-01-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6127908330937654e-07
+      }
+    },
+    {
+      "name": "ming-01-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.0810938811033497e-07
+      }
+    },
+    {
+      "name": "ming-01-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.957815725344784e-08
+      }
+    },
+    {
+      "name": "ming-01-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.946778500618072e-08
+      }
+    },
+    {
+      "name": "ming-01-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-01-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.937325712905753e-09
+      }
+    },
+    {
+      "name": "ming-02-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.206897613217141e-12
+      }
+    },
+    {
+      "name": "ming-02-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.929531276055389e-08
+      }
+    },
+    {
+      "name": "ming-02-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.9380496815988315e-08
+      }
+    },
+    {
+      "name": "ming-02-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.436469611612475e-08
+      }
+    },
+    {
+      "name": "ming-02-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7609174070176513e-08
+      }
+    },
+    {
+      "name": "ming-02-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.556580613692023e-08
+      }
+    },
+    {
+      "name": "ming-02-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.811204020871484e-09
+      }
+    },
+    {
+      "name": "ming-02-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.013285036269543e-08
+      }
+    },
+    {
+      "name": "ming-02-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.199527969074335e-08
+      }
+    },
+    {
+      "name": "ming-02-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7832024412159716e-08
+      }
+    },
+    {
+      "name": "ming-02-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8881777928159723e-08
+      }
+    },
+    {
+      "name": "ming-02-p12-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p12-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p12-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.416447560211938e-12
+      }
+    },
+    {
+      "name": "ming-02-p13-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p13-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p13-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.4997218800286695e-12
+      }
+    },
+    {
+      "name": "ming-02-p14-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p14-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-02-p14-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6793578608921884e-08
+      }
+    },
+    {
+      "name": "ming-03-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.146512176860702e-08
+      }
+    },
+    {
+      "name": "ming-03-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9950843643050298e-08
+      }
+    },
+    {
+      "name": "ming-03-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.513187576644337e-08
+      }
+    },
+    {
+      "name": "ming-03-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.399487863682684e-08
+      }
+    },
+    {
+      "name": "ming-03-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.085357072573708e-08
+      }
+    },
+    {
+      "name": "ming-03-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.942150282434193e-08
+      }
+    },
+    {
+      "name": "ming-03-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.483335038241468e-12
+      }
+    },
+    {
+      "name": "ming-03-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.9475721445822444e-09
+      }
+    },
+    {
+      "name": "ming-03-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8969084814554256e-09
+      }
+    },
+    {
+      "name": "ming-03-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.2385611087937175e-08
+      }
+    },
+    {
+      "name": "ming-03-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-03-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.899021726088639e-08
+      }
+    },
+    {
+      "name": "ming-04-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.6825868312172966e-08
+      }
+    },
+    {
+      "name": "ming-04-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.529846648179317e-09
+      }
+    },
+    {
+      "name": "ming-04-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.2204229011258257e-08
+      }
+    },
+    {
+      "name": "ming-04-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.184903323934262e-08
+      }
+    },
+    {
+      "name": "ming-04-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.1298749313434233e-12
+      }
+    },
+    {
+      "name": "ming-04-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.578711473248695e-08
+      }
+    },
+    {
+      "name": "ming-04-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.906317197984882e-08
+      }
+    },
+    {
+      "name": "ming-04-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8260547705988758e-08
+      }
+    },
+    {
+      "name": "ming-04-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-04-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.715965524888868e-08
+      }
+    },
+    {
+      "name": "ming-06-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7496953340555063e-12
+      }
+    },
+    {
+      "name": "ming-06-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.716495479962106e-12
+      }
+    },
+    {
+      "name": "ming-06-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.8735236191438e-12
+      }
+    },
+    {
+      "name": "ming-06-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4090683864946884e-08
+      }
+    },
+    {
+      "name": "ming-06-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.031930477624833e-08
+      }
+    },
+    {
+      "name": "ming-06-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6232641871880204e-08
+      }
+    },
+    {
+      "name": "ming-06-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.5882252040411638e-08
+      }
+    },
+    {
+      "name": "ming-06-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.682038783948718e-08
+      }
+    },
+    {
+      "name": "ming-06-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.3070102498085923e-12
+      }
+    },
+    {
+      "name": "ming-06-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7186610899129505e-08
+      }
+    },
+    {
+      "name": "ming-06-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-06-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.817441770747899e-08
+      }
+    },
+    {
+      "name": "ming-07-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.967349533748844e-09
+      }
+    },
+    {
+      "name": "ming-07-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.575177391809087e-12
+      }
+    },
+    {
+      "name": "ming-07-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3738307584852418e-12
+      }
+    },
+    {
+      "name": "ming-07-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4776146829868663e-12
+      }
+    },
+    {
+      "name": "ming-07-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6668086236958472e-12
+      }
+    },
+    {
+      "name": "ming-07-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.265669541935999e-12
+      }
+    },
+    {
+      "name": "ming-07-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3480467472011827e-08
+      }
+    },
+    {
+      "name": "ming-07-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.556441310258388e-09
+      }
+    },
+    {
+      "name": "ming-07-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.65297613492733e-09
+      }
+    },
+    {
+      "name": "ming-07-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.2091949554586683e-08
+      }
+    },
+    {
+      "name": "ming-07-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8971530272026542e-08
+      }
+    },
+    {
+      "name": "ming-07-p12-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p12-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p12-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.275520473221864e-08
+      }
+    },
+    {
+      "name": "ming-07-p13-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p13-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-07-p13-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.2681108908668115e-08
+      }
+    },
+    {
+      "name": "ming-08-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.615605774163427e-12
+      }
+    },
+    {
+      "name": "ming-08-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.971484057229262e-09
+      }
+    },
+    {
+      "name": "ming-08-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.9448157912411494e-09
+      }
+    },
+    {
+      "name": "ming-08-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.500235101682998e-08
+      }
+    },
+    {
+      "name": "ming-08-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.105412359480729e-08
+      }
+    },
+    {
+      "name": "ming-08-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.2157185876960996e-09
+      }
+    },
+    {
+      "name": "ming-08-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.807983336385514e-09
+      }
+    },
+    {
+      "name": "ming-08-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.81785565968732e-12
+      }
+    },
+    {
+      "name": "ming-08-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.884641379872768e-12
+      }
+    },
+    {
+      "name": "ming-08-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0165831544430949e-08
+      }
+    },
+    {
+      "name": "ming-08-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3983338868091429e-08
+      }
+    },
+    {
+      "name": "ming-08-p12-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p12-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p12-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.2446721295102787e-08
+      }
+    },
+    {
+      "name": "ming-08-p13-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p13-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p13-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.5277594721727455e-08
+      }
+    },
+    {
+      "name": "ming-08-p14-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p14-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p14-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.3974756286517975e-12
+      }
+    },
+    {
+      "name": "ming-08-p15-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p15-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-08-p15-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.450069788592981e-09
+      }
+    },
+    {
+      "name": "ming-09-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.08153734235385e-08
+      }
+    },
+    {
+      "name": "ming-09-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.4077245048711684e-08
+      }
+    },
+    {
+      "name": "ming-09-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.65321772762148e-09
+      }
+    },
+    {
+      "name": "ming-09-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.953817058795337e-08
+      }
+    },
+    {
+      "name": "ming-09-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.697114767485898e-09
+      }
+    },
+    {
+      "name": "ming-09-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0779274278575821e-07
+      }
+    },
+    {
+      "name": "ming-09-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6228351839343304e-09
+      }
+    },
+    {
+      "name": "ming-09-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.5436938246115102e-08
+      }
+    },
+    {
+      "name": "ming-09-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0866426647382342e-12
+      }
+    },
+    {
+      "name": "ming-09-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.389136467704226e-08
+      }
+    },
+    {
+      "name": "ming-09-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-09-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.878883873368815e-13
+      }
+    },
+    {
+      "name": "ming-10-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.686660870375662e-08
+      }
+    },
+    {
+      "name": "ming-10-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.996775426431104e-08
+      }
+    },
+    {
+      "name": "ming-10-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7495775656441704e-08
+      }
+    },
+    {
+      "name": "ming-10-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.733048026675006e-12
+      }
+    },
+    {
+      "name": "ming-10-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.365623084729903e-13
+      }
+    },
+    {
+      "name": "ming-10-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.135733384326146e-08
+      }
+    },
+    {
+      "name": "ming-10-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1100490218991673e-07
+      }
+    },
+    {
+      "name": "ming-10-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3103146709678158e-12
+      }
+    },
+    {
+      "name": "ming-10-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-10-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6339778499980559e-07
+      }
+    },
+    {
+      "name": "ming-11-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.2341367982899834e-08
+      }
+    },
+    {
+      "name": "ming-11-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.822623820558556e-08
+      }
+    },
+    {
+      "name": "ming-11-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.2644647543346826e-12
+      }
+    },
+    {
+      "name": "ming-11-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.243289036161119e-08
+      }
+    },
+    {
+      "name": "ming-11-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9614991785279456e-09
+      }
+    },
+    {
+      "name": "ming-11-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.76413098353987e-08
+      }
+    },
+    {
+      "name": "ming-11-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.853984947014595e-08
+      }
+    },
+    {
+      "name": "ming-11-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.180737868860737e-08
+      }
+    },
+    {
+      "name": "ming-11-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.425234959864337e-07
+      }
+    },
+    {
+      "name": "ming-11-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.708920717702085e-07
+      }
+    },
+    {
+      "name": "ming-11-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.380291278758175e-08
+      }
+    },
+    {
+      "name": "ming-11-p12-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p12-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p12-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.210223204142417e-08
+      }
+    },
+    {
+      "name": "ming-11-p13-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p13-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p13-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7334004419661266e-08
+      }
+    },
+    {
+      "name": "ming-11-p14-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p14-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p14-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7204108345446452e-12
+      }
+    },
+    {
+      "name": "ming-11-p15-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p15-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-11-p15-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.580196480007914e-10
+      }
+    },
+    {
+      "name": "ming-12-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.426669934266803e-08
+      }
+    },
+    {
+      "name": "ming-12-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.221408451664054e-08
+      }
+    },
+    {
+      "name": "ming-12-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.5390490821940894e-12
+      }
+    },
+    {
+      "name": "ming-12-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.769156207212529e-08
+      }
+    },
+    {
+      "name": "ming-12-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.038092311862938e-09
+      }
+    },
+    {
+      "name": "ming-12-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6808801009940717e-09
+      }
+    },
+    {
+      "name": "ming-12-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.1439459971014104e-09
+      }
+    },
+    {
+      "name": "ming-12-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.574701852803941e-12
+      }
+    },
+    {
+      "name": "ming-12-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.172722577103411e-09
+      }
+    },
+    {
+      "name": "ming-12-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.437690100143156e-09
+      }
+    },
+    {
+      "name": "ming-12-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-12-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.126533800376762e-13
+      }
+    },
+    {
+      "name": "ming-13-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.33508329429757e-09
+      }
+    },
+    {
+      "name": "ming-13-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0311821021195332e-12
+      }
+    },
+    {
+      "name": "ming-13-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.348944595402373e-08
+      }
+    },
+    {
+      "name": "ming-13-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.72421113164958e-08
+      }
+    },
+    {
+      "name": "ming-13-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.032009151808888e-09
+      }
+    },
+    {
+      "name": "ming-13-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.889027955380318e-09
+      }
+    },
+    {
+      "name": "ming-13-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9289850563525803e-08
+      }
+    },
+    {
+      "name": "ming-13-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.68547333812712e-08
+      }
+    },
+    {
+      "name": "ming-13-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.142866782795961e-09
+      }
+    },
+    {
+      "name": "ming-13-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.687011237810251e-08
+      }
+    },
+    {
+      "name": "ming-13-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-13-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.172260760684552e-12
+      }
+    },
+    {
+      "name": "ming-14-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6964519100544765e-08
+      }
+    },
+    {
+      "name": "ming-14-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1566338006481015e-07
+      }
+    },
+    {
+      "name": "ming-14-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.1363727747502024e-08
+      }
+    },
+    {
+      "name": "ming-14-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7863295733177045e-12
+      }
+    },
+    {
+      "name": "ming-14-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.0004003432150415e-08
+      }
+    },
+    {
+      "name": "ming-14-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.096115566472442e-12
+      }
+    },
+    {
+      "name": "ming-14-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.1855200288411995e-12
+      }
+    },
+    {
+      "name": "ming-14-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.8669564867957714e-08
+      }
+    },
+    {
+      "name": "ming-14-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.1480345104288095e-08
+      }
+    },
+    {
+      "name": "ming-14-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8241546487317697e-12
+      }
+    },
+    {
+      "name": "ming-14-p11-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p11-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p11-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.0826170215831514e-08
+      }
+    },
+    {
+      "name": "ming-14-p12-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p12-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p12-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.71690814784823e-09
+      }
+    },
+    {
+      "name": "ming-14-p13-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p13-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-14-p13-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9911279936171642e-08
+      }
+    },
+    {
+      "name": "ming-15-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0633802898820276e-07
+      }
+    },
+    {
+      "name": "ming-15-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.8855429805665688e-08
+      }
+    },
+    {
+      "name": "ming-15-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.8188680627512387e-08
+      }
+    },
+    {
+      "name": "ming-15-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.373363708315801e-08
+      }
+    },
+    {
+      "name": "ming-15-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.2140669301185998e-08
+      }
+    },
+    {
+      "name": "ming-15-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.4479957373424456e-09
+      }
+    },
+    {
+      "name": "ming-15-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-15-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3773811186412719e-08
+      }
+    },
+    {
+      "name": "ming-16-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-16-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-16-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming-17-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.4606002677484917e-09
+      }
+    },
+    {
+      "name": "ming-17-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.5214751600842926e-12
+      }
+    },
+    {
+      "name": "ming-17-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.5636063624114095e-08
+      }
+    },
+    {
+      "name": "ming-17-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.299708298676588e-07
+      }
+    },
+    {
+      "name": "ming-17-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.626178442715511e-09
+      }
+    },
+    {
+      "name": "ming-17-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-17-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.4565549666057202e-09
+      }
+    },
+    {
+      "name": "ming-18-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.681897518467348e-08
+      }
+    },
+    {
+      "name": "ming-18-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0836583420334617e-07
+      }
+    },
+    {
+      "name": "ming-18-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7374656110663542e-08
+      }
+    },
+    {
+      "name": "ming-18-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3702389095067867e-08
+      }
+    },
+    {
+      "name": "ming-18-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.530195843911321e-07
+      }
+    },
+    {
+      "name": "ming-18-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.211348863105307e-08
+      }
+    },
+    {
+      "name": "ming-18-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-18-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.829116675259982e-08
+      }
+    },
+    {
+      "name": "ming-19-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6950051196610144e-08
+      }
+    },
+    {
+      "name": "ming-19-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.618939019490637e-08
+      }
+    },
+    {
+      "name": "ming-19-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.733362767581609e-09
+      }
+    },
+    {
+      "name": "ming-19-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.400223711266658e-08
+      }
+    },
+    {
+      "name": "ming-19-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.5939890321707348e-07
+      }
+    },
+    {
+      "name": "ming-19-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-19-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.5413695431228002e-09
+      }
+    },
+    {
+      "name": "ming-20-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-20-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-20-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming-21-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-21-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-21-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming-22-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6205170079348968e-08
+      }
+    },
+    {
+      "name": "ming-22-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0895079513860756e-08
+      }
+    },
+    {
+      "name": "ming-22-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.76210437938927e-09
+      }
+    },
+    {
+      "name": "ming-22-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3546957528950312e-08
+      }
+    },
+    {
+      "name": "ming-22-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.402442181997856e-09
+      }
+    },
+    {
+      "name": "ming-22-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.772181175681981e-08
+      }
+    },
+    {
+      "name": "ming-22-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.441069458179247e-08
+      }
+    },
+    {
+      "name": "ming-22-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-22-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.6079656800555958e-12
+      }
+    },
+    {
+      "name": "ming2-22-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-22-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-22-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming-26-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.613372511422629e-09
+      }
+    },
+    {
+      "name": "ming-26-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.6935210183770866e-08
+      }
+    },
+    {
+      "name": "ming-26-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9707355341489025e-08
+      }
+    },
+    {
+      "name": "ming-26-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.147209342198346e-09
+      }
+    },
+    {
+      "name": "ming-26-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.8617316265685975e-08
+      }
+    },
+    {
+      "name": "ming-26-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.780906842749082e-09
+      }
+    },
+    {
+      "name": "ming-26-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.2821482833575507e-08
+      }
+    },
+    {
+      "name": "ming-26-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.5062157583051983e-12
+      }
+    },
+    {
+      "name": "ming-26-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.087887452789246e-08
+      }
+    },
+    {
+      "name": "ming-26-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-26-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6982988996332546e-08
+      }
+    },
+    {
+      "name": "ming2-24-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.1963831895423884e-08
+      }
+    },
+    {
+      "name": "ming2-24-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.027123244933819e-13
+      }
+    },
+    {
+      "name": "ming2-24-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1489589077431716e-07
+      }
+    },
+    {
+      "name": "ming2-24-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7975121880166795e-08
+      }
+    },
+    {
+      "name": "ming2-24-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0761619091551862e-08
+      }
+    },
+    {
+      "name": "ming2-24-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.9996807192090895e-08
+      }
+    },
+    {
+      "name": "ming2-24-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.5310291188023932e-07
+      }
+    },
+    {
+      "name": "ming2-24-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-24-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.8503720952005587e-08
+      }
+    },
+    {
+      "name": "ming2-25-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4837920855830006e-08
+      }
+    },
+    {
+      "name": "ming2-25-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.9459167503687384e-08
+      }
+    },
+    {
+      "name": "ming2-25-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.667557127773597e-08
+      }
+    },
+    {
+      "name": "ming2-25-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.837157184830996e-09
+      }
+    },
+    {
+      "name": "ming2-25-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.2891913694469842e-07
+      }
+    },
+    {
+      "name": "ming2-25-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.177006050383934e-13
+      }
+    },
+    {
+      "name": "ming2-25-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-25-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.4709271420595487e-08
+      }
+    },
+    {
+      "name": "ming2-26-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.235891917995725e-08
+      }
+    },
+    {
+      "name": "ming2-26-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3877423243910352e-08
+      }
+    },
+    {
+      "name": "ming2-26-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1579339516259942e-08
+      }
+    },
+    {
+      "name": "ming2-26-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-26-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.8998535699496806e-08
+      }
+    },
+    {
+      "name": "ming2-27-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-27-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-27-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-28-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-28-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-28-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-29-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.347074961413863e-08
+      }
+    },
+    {
+      "name": "ming2-29-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.290347329902013e-08
+      }
+    },
+    {
+      "name": "ming2-29-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.9267856821173332e-12
+      }
+    },
+    {
+      "name": "ming2-29-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.5335755259495e-08
+      }
+    },
+    {
+      "name": "ming2-29-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.5480697800357873e-09
+      }
+    },
+    {
+      "name": "ming2-29-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-29-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.237656602416387e-08
+      }
+    },
+    {
+      "name": "ming2-30-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-30-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-30-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-31-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-31-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-31-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-32-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1523049240901083e-08
+      }
+    },
+    {
+      "name": "ming2-32-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9037671640389164e-08
+      }
+    },
+    {
+      "name": "ming2-32-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0524434778412504e-08
+      }
+    },
+    {
+      "name": "ming2-32-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.9690798336464495e-08
+      }
+    },
+    {
+      "name": "ming2-32-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.104235099114663e-09
+      }
+    },
+    {
+      "name": "ming2-32-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.9969304244225902e-08
+      }
+    },
+    {
+      "name": "ming2-32-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-32-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.1198624350055596e-08
+      }
+    },
+    {
+      "name": "ming2-33-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.231898238347921e-08
+      }
+    },
+    {
+      "name": "ming2-33-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.814312224436398e-07
+      }
+    },
+    {
+      "name": "ming2-33-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7131994109923708e-07
+      }
+    },
+    {
+      "name": "ming2-33-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.2234435680119287e-07
+      }
+    },
+    {
+      "name": "ming2-33-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.081734513451282e-07
+      }
+    },
+    {
+      "name": "ming2-33-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.878329484165751e-08
+      }
+    },
+    {
+      "name": "ming2-33-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-33-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.920884552914299e-08
+      }
+    },
+    {
+      "name": "ming2-34-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.933678057769634e-13
+      }
+    },
+    {
+      "name": "ming2-34-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0477693028790205e-07
+      }
+    },
+    {
+      "name": "ming2-34-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.026969751112463e-08
+      }
+    },
+    {
+      "name": "ming2-34-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6968813724572203e-07
+      }
+    },
+    {
+      "name": "ming2-34-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-34-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.869395152113865e-13
+      }
+    },
+    {
+      "name": "ming2-35-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-35-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-35-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-36-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4961771822999032e-07
+      }
+    },
+    {
+      "name": "ming2-36-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.542915922430082e-07
+      }
+    },
+    {
+      "name": "ming2-36-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.883990005364043e-09
+      }
+    },
+    {
+      "name": "ming2-36-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.9725439307059324e-08
+      }
+    },
+    {
+      "name": "ming2-36-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.755622402703065e-08
+      }
+    },
+    {
+      "name": "ming-31-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-31-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-31-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming2-38-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.551412378790686e-07
+      }
+    },
+    {
+      "name": "ming2-38-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.645270857131564e-08
+      }
+    },
+    {
+      "name": "ming2-38-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.568742870701538e-08
+      }
+    },
+    {
+      "name": "ming2-38-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.841117905476624e-08
+      }
+    },
+    {
+      "name": "ming2-38-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.2667870983359406e-08
+      }
+    },
+    {
+      "name": "ming2-38-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.157706368506741e-08
+      }
+    },
+    {
+      "name": "ming2-38-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.3793629653594764e-07
+      }
+    },
+    {
+      "name": "ming2-38-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-38-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.860119245613721e-08
+      }
+    },
+    {
+      "name": "ming-05-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.261927208159645e-09
+      }
+    },
+    {
+      "name": "ming-05-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.1752824996924314e-08
+      }
+    },
+    {
+      "name": "ming-05-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.154575399163614e-09
+      }
+    },
+    {
+      "name": "ming-05-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 7.2281611273492326e-09
+      }
+    },
+    {
+      "name": "ming-05-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.076522369634154e-08
+      }
+    },
+    {
+      "name": "ming-05-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.496824749574112e-08
+      }
+    },
+    {
+      "name": "ming-05-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.903855744896792e-08
+      }
+    },
+    {
+      "name": "ming-05-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.7596635181464158e-08
+      }
+    },
+    {
+      "name": "ming-05-p09-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p09-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p09-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.6772183157599094e-08
+      }
+    },
+    {
+      "name": "ming-05-p10-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p10-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-05-p10-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "ming-27-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.8182911801302442e-08
+      }
+    },
+    {
+      "name": "ming-27-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.0401173773601729e-07
+      }
+    },
+    {
+      "name": "ming-27-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.855125418813375e-08
+      }
+    },
+    {
+      "name": "ming-27-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.5459002277217374e-08
+      }
+    },
+    {
+      "name": "ming-27-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4328180709207661e-12
+      }
+    },
+    {
+      "name": "ming-27-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.496474247700221e-09
+      }
+    },
+    {
+      "name": "ming-27-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.263536911265942e-08
+      }
+    },
+    {
+      "name": "ming-27-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-27-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.476819482421244e-07
+      }
+    },
+    {
+      "name": "ming-28-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.81292467056185e-08
+      }
+    },
+    {
+      "name": "ming-28-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.0954487756970693e-08
+      }
+    },
+    {
+      "name": "ming-28-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 9.563344943359118e-08
+      }
+    },
+    {
+      "name": "ming-28-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.894185441873474e-08
+      }
+    },
+    {
+      "name": "ming-28-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.7222596379777213e-08
+      }
+    },
+    {
+      "name": "ming-28-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.9126799222522003e-08
+      }
+    },
+    {
+      "name": "ming-28-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.9192418565731015e-08
+      }
+    },
+    {
+      "name": "ming-28-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.832136654810156e-08
+      }
+    },
+    {
+      "name": "ming-29-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.503263371091734e-08
+      }
+    },
+    {
+      "name": "ming-29-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.139344246870905e-09
+      }
+    },
+    {
+      "name": "ming-29-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.811695121608012e-08
+      }
+    },
+    {
+      "name": "ming-29-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 3.169422244871015e-08
+      }
+    },
+    {
+      "name": "ming-29-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 8.93068850934725e-08
+      }
+    },
+    {
+      "name": "ming-29-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 5.830241837578374e-08
+      }
+    },
+    {
+      "name": "ming-29-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.4677894896658351e-08
+      }
+    },
+    {
+      "name": "ming-29-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-29-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.716665948483162e-08
+      }
+    },
+    {
+      "name": "ming-30-p01-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p01-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p01-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.628842375827166e-08
+      }
+    },
+    {
+      "name": "ming-30-p02-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p02-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p02-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.5524478747847365e-08
+      }
+    },
+    {
+      "name": "ming-30-p03-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p03-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p03-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.7240725022123714e-08
+      }
+    },
+    {
+      "name": "ming-30-p04-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p04-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p04-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 2.3528619099340753e-12
+      }
+    },
+    {
+      "name": "ming-30-p05-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p05-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p05-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.6920836112252095e-12
+      }
+    },
+    {
+      "name": "ming-30-p06-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p06-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p06-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 4.82869466394329e-08
+      }
+    },
+    {
+      "name": "ming-30-p07-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p07-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p07-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 1.344095380755144e-07
+      }
+    },
+    {
+      "name": "ming-30-p08-valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p08-center-inside",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-30-p08-svg-equivalent",
+      "passed": true,
+      "detail": {
+        "difference": 6.471025340348607e-08
+      }
+    },
+    {
+      "name": "whole-land-only-adds-declared-islands",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "no-increase-in-inherited-overlap",
+      "passed": true,
+      "detail": {
+        "old": 22.348017886513844,
+        "new": 22.348017886455636
+      }
+    },
+    {
+      "name": "country-change-scope-fac-tokugawa-japan",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-kazakh",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-matsumae-ainu",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-yarkand",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3f60u3b",
+      "passed": true,
+      "detail": {
+        "difference": 3.661298318694366e-16
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3ish4kg",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-khalkha",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-wild-jurchen",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3fjy38l",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3itegih",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-tumed",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3fd62j6",
+      "passed": true,
+      "detail": {
+        "difference": 1.4579757214895628e-13
+      }
+    },
+    {
+      "name": "country-change-scope-fac-oirat",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-dai-viet",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3fex7fo",
+      "passed": true,
+      "detail": {
+        "difference": 1.097472807076727e-12
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3ilucz2",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac-turpan",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "country-change-scope-fac_mp9rsc3f4r9co",
+      "passed": true,
+      "detail": {
+        "difference": 0.0
+      }
+    },
+    {
+      "name": "pidao-korean-shore-correction-only-on-island",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "unchanged-other-existing-shapes",
+      "passed": true,
+      "detail": [
+        "ming-01-p06",
+        "ming2-36-p01",
+        "ming2-36-p02",
+        "ming2-36-p03",
+        "ming2-36-p05",
+        "ming-27-p08",
+        "ming-29-p03"
+      ]
+    },
+    {
+      "name": "ming2-34-five-subregions",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming2-36-five-subregions",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "guanning-eight-subregions",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p07-no-land-bridge",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p07-multiple-sea-links",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p08-no-land-bridge",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ming-28-p08-multiple-sea-links",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "changedExistingGeometries": [
+    "ming-01-p06",
+    "ming2-36-p01",
+    "ming2-36-p02",
+    "ming2-36-p03",
+    "ming2-36-p05",
+    "ming-27-p08",
+    "ming-29-p03"
+  ],
+  "addedIslandArea": 0.4244598957909269,
+  "scope": "approved Ning-Jin corridor, physical islands, same-owner Chahar; inherited unrelated outlines unchanged"
+}

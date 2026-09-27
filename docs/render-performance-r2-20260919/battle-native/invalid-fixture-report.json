@@ -1,0 +1,9 @@
+{
+  "complete": false,
+  "errors": [
+    "Uncaught Error: 未提供有效的交战双方名册"
+  ],
+  "started": "2026-09-19T12:25:57.304Z",
+  "code": 1,
+  "error": "Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\n    at node:electron/js2c/sandbox_bundle:2:127259\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/sandbox_bundle:2:121504)\n    at IpcRendererInternal.emit (node:electron/js2c/sandbox_bundle:2:45997)\n    at Object.onMessage (node:electron/js2c/sandbox_bundle:2:119481)"
+}

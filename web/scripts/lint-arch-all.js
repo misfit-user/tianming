@@ -25,6 +25,8 @@ const CHECKS = [
   { name: 'lint-split-contracts', file: 'lint-split-contracts.js' },
   { name: 'lint-split-stamps', file: 'lint-split-stamps.js' },
   { name: 'lint-smoke-family-order', file: 'lint-smoke-family-order.js' },
+  { name: 'lint-scenario-data', file: 'lint-scenario-data.js' },
+  { name: 'lint-design-tokens', file: 'lint-design-tokens.js' },
   { name: 'ref-check', file: 'ref-check.js' }
 ];
 

@@ -421,7 +421,12 @@ var NpcMemorySystem = {
       else if (/问对|谈|说|议/.test(event)) memType = 'dialogue';
     }
 
+    GM._personalMemorySequence = (Number(GM._personalMemorySequence) || 0) + 1; // arch-ok: owning personal-memory writer allocates its persistent record IDs here
     var memEntry = {
+      id: 'npc-memory-' + GM._personalMemorySequence, actorId: ch.id || charName,
+      taskId: (meta && meta.taskId) || '',
+      factStatus: (meta && meta.factStatus) || ((meta && (meta.source === 'reported' || meta.source === 'rumor')) ? 'unverified_claim' : 'personal_experience'),
+      sourceRefs: (meta && Array.isArray(meta.sourceRefs)) ? meta.sourceRefs.slice(0, 12) : [],
       event: event,
       emotion: emotion || '平',
       importance: Math.max(0.1, Math.min(10, importance || 5)),
@@ -714,7 +719,8 @@ var NpcMemorySystem = {
 
   /** 获取角色的记忆摘要（供AI使用——像一个人的内心自述）6.2: 带每回合缓存 */
   _memCache: {}, _memCacheTurn: -1,
-  getMemoryContext: function(charName) {
+  getMemoryContext: function(charName, opts) {
+    opts = opts || {};
     charName = _tmMemoryCanonName(charName);
     // 6.2: 每回合缓存——同一回合内同一角色只构建一次（读档代际参与失效·读同turn档曾把旧局记忆注入新局prompt·2026-07-04 审查定罪）
     var _mcGen = (typeof window !== 'undefined' && window._tmLoadGen) || 0;
@@ -725,46 +731,55 @@ var NpcMemorySystem = {
     var _vitalSig = 0, _vgChars = GM.chars || [];
     for (var _vi = 0; _vi < _vgChars.length; _vi++) { var _vgc = _vgChars[_vi]; if (_vgc && (_vgc.deathTurn === GM.turn || _vgc._deathTurn === GM.turn)) _vitalSig++; }
     if (this._memCacheTurn !== GM.turn || this._memCacheGen !== _mcGen || this._memCacheVital !== _vitalSig) { this._memCache = {}; this._memCacheTurn = GM.turn; this._memCacheGen = _mcGen; this._memCacheVital = _vitalSig; }
-    if (this._memCache[charName]) return this._memCache[charName];
+    // World facts are rebuilt below; only the personal summary is cached.
     if (!GM.chars) return '';
     charName = _tmMemoryCanonName(charName);
     var ch = _tmMemoryFindChar(charName);
     if (!ch) return '';
-    var parts = [];
+    var parts = [], liveParts = [];
 
     // 角色自我认识（字/家族/仕途/心事等，AI 据此保持身份一致）
     if (typeof CharFullSchema !== 'undefined' && typeof CharFullSchema.toAIContext === 'function') {
       var selfCtx = CharFullSchema.toAIContext(ch);
-      if (selfCtx) parts.push(selfCtx);
+      if (selfCtx) liveParts.push(selfCtx);
     }
     // 角色所知天下大势——货币/央地财政/户口/环境/诏令（精要）
     if (typeof CurrencyEngine !== 'undefined' && typeof CurrencyEngine.getAIContext === 'function') {
-      try { var cc = CurrencyEngine.getAIContext(); if (cc) parts.push(cc); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var cc = CurrencyEngine.getAIContext(); if (cc) liveParts.push(cc); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof CentralLocalEngine !== 'undefined' && typeof CentralLocalEngine.getAIContext === 'function') {
-      try { var cl = CentralLocalEngine.getAIContext(); if (cl) parts.push(cl); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var cl = CentralLocalEngine.getAIContext(); if (cl) liveParts.push(cl); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof HujiEngine !== 'undefined' && typeof HujiEngine.getAIContext === 'function') {
-      try { var hj = HujiEngine.getAIContext(); if (hj) parts.push(hj); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var hj = HujiEngine.getAIContext(); if (hj) liveParts.push(hj); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof HujiDeepFill !== 'undefined' && typeof HujiDeepFill.getExtendedAIContext === 'function') {
-      try { var hjd = HujiDeepFill.getExtendedAIContext(); if (hjd) parts.push(hjd); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var hjd = HujiDeepFill.getExtendedAIContext(); if (hjd) liveParts.push(hjd); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof EnvCapacityEngine !== 'undefined' && typeof EnvCapacityEngine.getAIContext === 'function') {
-      try { var env = EnvCapacityEngine.getAIContext(); if (env) parts.push(env); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var env = EnvCapacityEngine.getAIContext(); if (env) liveParts.push(env); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof EdictParser !== 'undefined' && typeof EdictParser.getAIContext === 'function') {
-      try { var ep = EdictParser.getAIContext(); if (ep) parts.push(ep); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var ep = EdictParser.getAIContext(); if (ep) liveParts.push(ep); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof AuthorityEngines !== 'undefined' && typeof AuthorityEngines.getAuthorityAIContext === 'function') {
-      try { var auth = AuthorityEngines.getAuthorityAIContext(); if (auth) parts.push(auth); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var auth = AuthorityEngines.getAuthorityAIContext(); if (auth) liveParts.push(auth); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof AuthorityComplete !== 'undefined' && typeof AuthorityComplete.getExtendedAIContext === 'function') {
-      try { var authc = AuthorityComplete.getExtendedAIContext(); if (authc) parts.push(authc); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var authc = AuthorityComplete.getExtendedAIContext(); if (authc) liveParts.push(authc); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
     if (typeof HistoricalPresets !== 'undefined' && typeof HistoricalPresets.getAIContext === 'function') {
-      try { var hp = HistoricalPresets.getAIContext(); if (hp) parts.push(hp); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
+      try { var hp = HistoricalPresets.getAIContext(); if (hp) liveParts.push(hp); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-mechanics');}catch(_){}}
     }
+
+    var personalStamp = JSON.stringify([ch.age,ch.stress,ch._mood,ch._mentorId,ch._tenure,ch._impressions,(ch._memory||[]).length,(ch._scars||[]).length,(ch._memArchive||[]).length]);
+    this._personalStamps = this._personalStamps || {};
+    function combine(text) {
+      var topic = opts.topic || opts.query || '';
+      var recalled = topic && typeof TM !== 'undefined' && TM.PersonalMemoryRecall ? TM.PersonalMemoryRecall.personal(GM,ch,topic,6) : '';
+      return [liveParts.join('。'),text,recalled ? '议题相关原始记忆：'+recalled : ''].filter(Boolean).join('。');
+    }
+    if(this._memCache[charName] && this._personalStamps[charName]===personalStamp) return combine(this._memCache[charName]);
 
     // 人生阶段感（基于年龄和经历量）
     if (ch.age) {
@@ -865,7 +880,8 @@ var NpcMemorySystem = {
 
     var result = parts.join('。');
     this._memCache[charName] = result;
-    return result;
+    this._personalStamps[charName] = personalStamp;
+    return combine(result);
   },
 
   /** 获取对特定人物的印象值 */

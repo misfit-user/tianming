@@ -1,0 +1,58 @@
+{
+  "started": "2026-09-17T11:10:28.402Z",
+  "complete": false,
+  "checks": [
+    {
+      "name": "official-loader",
+      "passed": true,
+      "detail": {
+        "regions": 566,
+        "circuits": 101,
+        "polities": [
+          {
+            "id": "fac_song",
+            "name": "大宋"
+          },
+          {
+            "id": "fac_jin",
+            "name": "大金"
+          },
+          {
+            "id": "fac_xixia",
+            "name": "大夏"
+          }
+        ]
+      }
+    }
+  ],
+  "stages": [
+    {
+      "name": "page-loaded",
+      "elapsedMs": 2948
+    },
+    {
+      "name": "official-loaded",
+      "elapsedMs": 8099,
+      "regions": 566,
+      "circuits": 101,
+      "polities": [
+        {
+          "id": "fac_song",
+          "name": "大宋"
+        },
+        {
+          "id": "fac_jin",
+          "name": "大金"
+        },
+        {
+          "id": "fac_xixia",
+          "name": "大夏"
+        }
+      ]
+    }
+  ],
+  "sourceSha256": "2a6e7e4f92a34e30927ea6205f6a5d9070f91767afefe22a9d305c20b2823c38",
+  "error": "Renderer exited: {\"reason\":\"crashed\",\"exitCode\":-36861}",
+  "exitCode": 1,
+  "elapsedMs": 17510
+}

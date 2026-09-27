@@ -491,6 +491,8 @@
 
     getClasses(root).forEach(function(cls) {
       var name = classNameOf(cls);
+      // A scoped runtime pressure has already resolved who is exposed. Topic affinity is not exposure.
+      if (raw.classImpactsAuthoritative === true && !classNames[normalizeName(name)]) return;
       var score = scoreClass(root, cls, tokens);
       if (!name || score < 2) return;
       classMatches.push({ name: name, score: score, categories: categories.slice() });

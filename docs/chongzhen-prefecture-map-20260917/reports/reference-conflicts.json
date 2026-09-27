@@ -1,0 +1,344 @@
+[
+  {
+    "parent": "鞑靼土默特部",
+    "name": "归化城",
+    "distance": 131.04,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "鞑靼土默特部",
+    "name": "土默川",
+    "distance": 123.33,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "鞑靼土默特部",
+    "name": "丰州滩",
+    "distance": 132.93,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "鞑靼土默特部",
+    "name": "河套牧地",
+    "distance": 93.45,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "鞑靼土默特部",
+    "name": "大青山前",
+    "distance": 118.59,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "鞑靼土默特部",
+    "name": "杀虎口互市",
+    "distance": 134.81,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "吐鲁番",
+    "name": "焉耆",
+    "distance": 5.96,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "突厥斯坦",
+    "distance": 51.87,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "赛兰",
+    "distance": 41.6,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "塔什干边地",
+    "distance": 53.5,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "楚河牧场",
+    "distance": 4.41,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "锡尔河城镇",
+    "distance": 81.2,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "哈萨克",
+    "name": "萨雷苏牧地",
+    "distance": 40.59,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "瓦刺",
+    "name": "伊犁河谷",
+    "distance": 31.48,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "瓦刺",
+    "name": "塔尔巴哈台",
+    "distance": 4.63,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "瓦刺",
+    "name": "巴尔喀什西岸",
+    "distance": 10.55,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "沈阳",
+    "distance": 8.4,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "辽阳",
+    "distance": 12.98,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "海州",
+    "distance": 19.88,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "盖州",
+    "distance": 26.75,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "复州",
+    "distance": 35.12,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "铁岭",
+    "distance": 4.16,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "开原",
+    "distance": 3.45,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（盛京辽沈）",
+    "name": "奉集堡",
+    "distance": 6.41,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "苦兀（野人女真）",
+    "name": "黑龙江下游",
+    "distance": 24.51,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "苦兀（野人女真）",
+    "name": "费雅喀海岸",
+    "distance": 17.2,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "苦兀（野人女真）",
+    "name": "萨哈连渔猎地",
+    "distance": 18.56,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北哈萨克",
+    "name": "额尔齐斯西岸",
+    "distance": 25.19,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "东哈萨克",
+    "name": "巴尔喀什北岸",
+    "distance": 12.83,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "东哈萨克",
+    "name": "斋桑湖",
+    "distance": 89.44,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "东哈萨克",
+    "name": "塔尔巴哈台东麓",
+    "distance": 63.52,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "东哈萨克",
+    "name": "额尔齐斯上游",
+    "distance": 60.43,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "东哈萨克",
+    "name": "阿拉湖道",
+    "distance": 60.85,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "赫图阿拉旧城",
+    "distance": 62.62,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "建州三卫",
+    "distance": 35.46,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "抚顺东路",
+    "distance": 64.75,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "浑江谷地",
+    "distance": 52.38,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "苏子河谷",
+    "distance": 67.94,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（建州本部）",
+    "name": "鸭绿江北岸",
+    "distance": 53.81,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "科尔沁",
+    "name": "科尔沁左翼",
+    "distance": 31.33,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "科尔沁",
+    "name": "科尔沁右翼",
+    "distance": 36.58,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "科尔沁",
+    "name": "扎赉特",
+    "distance": 8.09,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北山女真",
+    "name": "黑龙江中游",
+    "distance": 20.22,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北山女真",
+    "name": "乌苏里江",
+    "distance": 65.41,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北山女真",
+    "name": "松花江北岸",
+    "distance": 66.72,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北山女真",
+    "name": "宁古塔旧地",
+    "distance": 92.97,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "北山女真",
+    "name": "呼尔哈部",
+    "distance": 86.21,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "交趾",
+    "name": "占城旧地",
+    "distance": 9.4,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "漠南诸部",
+    "name": "张家口互市",
+    "distance": 20.15,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "漠南诸部",
+    "name": "察哈尔边帐",
+    "distance": 6.78,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "喀尔喀蒙古",
+    "name": "扎萨克图汗部",
+    "distance": 17.88,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "后金（辽东占领区）",
+    "name": "辽河西岸",
+    "distance": 2.14,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "辽东（明·关宁东江）",
+    "name": "锦州城",
+    "distance": 2.77,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "辽东（明·关宁东江）",
+    "name": "皮岛",
+    "distance": 44.78,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "辽东（明·关宁东江）",
+    "name": "铁山",
+    "distance": 43.63,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "辽东（明·关宁东江）",
+    "name": "镇江堡",
+    "distance": 39.51,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  },
+  {
+    "parent": "辽东（明·关宁东江）",
+    "name": "鸭绿江口",
+    "distance": 40.25,
+    "reason": "reference point outside inherited provincial outline; operational anchor constrained to parent"
+  }
+]

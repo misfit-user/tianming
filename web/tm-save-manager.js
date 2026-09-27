@@ -245,7 +245,7 @@ var SaveManager = {
       return Promise.resolve(record);
     }
 
-    TM_SaveDB.load(slotKey).then(function(record) {
+    return TM_SaveDB.load(slotKey).then(function(record) {
       if (!record) { toast('该槽位没有存档'); return; }
       return _ensureDecompressed(record);
     }).then(function(record) {
@@ -282,15 +282,11 @@ var SaveManager = {
         console.error('[exportSave] serialized too short:', json && json.length);
         return;
       }
-      var blob = new Blob([json], {type: 'application/json'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = (record.name || 'save') + '_T' + (record.turn||0) + '.json';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-      toast('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB');
+      var filename = (record.name || 'save') + '_T' + (record.turn||0) + '.json';
+      return TM.fileExport.saveJson(json, filename).then(function(result) {
+        if (result.mode === 'canceled') { toast('已取消导出'); return; }
+        toast(result.mode === 'native' ? ('✅ 存档已保存到所选位置 · ' + result.fileName) : ('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB'));
+      });
     }).catch(function(e) {
       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'exportSave') : console.error('[exportSave] 异常:', e);
       toast('❌ 导出失败: ' + (e.message || e));
@@ -495,6 +491,11 @@ function openSaveManager() {
     _renderSaveManagerUI(ov, saves, preEndturnRec);
   }).catch(function(e) {
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'openSaveManager') : console.error('[openSaveManager] 加载失败:', e);
+    if(window.tianming&&window.tianming.isDesktop){
+      ov.textContent='';var box=document.createElement('div');box.className='generic-modal scroll-panel';box.style.padding='2rem';
+      var text=document.createElement('p');text.textContent='暂时无法读取存档目录，这不代表旧存档已经删除。请完全退出天命后重开，并检查磁盘空间。';box.appendChild(text);
+      var close=document.createElement('button');close.textContent='关闭';close.onclick=closeSaveManager;box.appendChild(close);ov.appendChild(box);return;
+    }
     // 降级：从 localStorage 索引读
     var saves = SaveManager.getAllSaves();
     _renderSaveManagerUI(ov, saves, null);
@@ -607,6 +608,9 @@ function _renderSaveManagerUI(ov, saves, preEndturnRec) {
     html += '<button class="bt bs bsm" onclick="publishCurrentAsResume(this)" style="padding:var(--space-2) var(--space-3);" title="把此局发到在线工坊，他人可从此接演续写">'+_ic('chronicle',14)+' 发为残局</button>';
   }
   html += '<button class="bt bs bsm" onclick="openSaveCompare()" style="padding:var(--space-2) var(--space-3);">\u2696 \u5BF9\u6BD4\u5377\u5B97</button>';
+  if (typeof _tmHasNativeFs === 'function' && _tmHasNativeFs() && typeof window.desktopLoadAutoSave === 'function') {
+    html += '<button class="bt bs bsm" onclick="loadDesktopAutoSave()" style="padding:var(--space-2) var(--space-3);" title="手动恢复桌面定时备份；不会自动进入上一局">桌面自动存档</button>';
+  }
   html += '<label class="bt bs" style="cursor:pointer;padding:var(--space-2) var(--space-4);">';
   html += _ic('load',14) + ' 调入外卷';
   html += '<input type="file" id="import-save-file" accept=".json" style="display:none;">';
@@ -774,6 +778,21 @@ function saveToSlot(slotId) {
       Promise.resolve(p).then(afterSave, function() { resolve(false); });
     }, 450);
   });
+  });
+}
+
+// UI 入口复用桌面读档事务；启动不调用它，也不消费/删除备份。
+window.desktopLoadAutoSave=async function(){
+  return typeof window.desktopLoadSave === 'function' ? window.desktopLoadSave({ desktopAutoSave: true }) : false;
+};
+
+function loadDesktopAutoSave() {
+  if (typeof window.desktopLoadAutoSave !== 'function') { toast('桌面自动存档入口未就绪'); return; }
+  showScrollConfirm({
+    title: '读取桌面自动存档？',
+    body: '恢复最近一次桌面定时备份。当前尚未保存的进度将被替换；原自动存档不会删除。',
+    okText: '读取备份',
+    onOk: function() { window.desktopLoadAutoSave(); }
   });
 }
 

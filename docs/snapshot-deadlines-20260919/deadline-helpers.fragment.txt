@@ -1,0 +1,32 @@
+  var _openOwner = null;
+  var SNAPSHOT_OPEN_MS = 15000, SNAPSHOT_OPERATION_MS = 30000;
+  var _snapshotIssues = [];
+  function _snapshotIssue(stage, code, extra) {
+    var row = Object.assign({ stage: stage, code: code, at: Date.now() }, extra || {});
+    _snapshotIssues.push(row); if (_snapshotIssues.length > 12) _snapshotIssues.shift();
+    return row;
+  }
+  function _snapshotError(stage, code) {
+    var e = new Error('时间快照操作未完成：' + stage);
+    e.name = code === 'SNAPSHOT_TIMEOUT' ? 'TimeoutError' : 'Error'; e.code = code; e.stage = stage;
+    return e;
+  }
+  function _closeSnapshotConnection(db) {
+    if (_openOwner && _openOwner.db === db) { _openOwner = null; _dbPromise = null; }
+    try { if (db) db.close(); } catch (_) {}
+  }
+  function _snapshotOperation(stage, transaction, work) {
+    return new Promise(function(resolve, reject) {
+      var settled = false, timer;
+      function abort() { try { var tx = transaction(); if (tx) { tx.abort(); return true; } } catch (_) {} return false; }
+      function done(value) { if (settled) return; settled = true; clearTimeout(timer); resolve(value); }
+      function fail(e) { if (settled) return; settled = true; clearTimeout(timer); abort(); reject(e); }
+      timer = setTimeout(function() {
+        if (settled) return; settled = true;
+        var stopped = abort(), tx = transaction(); _closeSnapshotConnection(tx && tx.db);
+        var e = _snapshotError(stage, 'SNAPSHOT_TIMEOUT'); e.abortRequested = stopped;
+        _snapshotIssue(stage, e.code, { abortRequested: stopped, outcome: 'unconfirmed' }); reject(e);
+      }, SNAPSHOT_OPERATION_MS);
+      try { work(done, fail, function() { return !settled; }); } catch (e) { fail(e); }
+    });
+  }

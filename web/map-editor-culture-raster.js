@@ -60,6 +60,29 @@
 
   // ─── build raster·coarse grid·每 step px 一格·扩到 bitmap 尺 ─
 
+  // Exact 3-nearest search. Original entry order resolves equal-distance ties.
+  function buildNearestTree(entries, depth){
+    if (!entries.length) return null;
+    var axis = depth % 2 ? 'y' : 'x', sorted = entries.slice().sort(function(a,b){ return a[axis]-b[axis] || a.order-b.order; }), mid = sorted.length >> 1;
+    return { point: sorted[mid], axis: axis, left: buildNearestTree(sorted.slice(0,mid),depth+1), right: buildNearestTree(sorted.slice(mid+1),depth+1) };
+  }
+  function nearestThree(tree, x, y){
+    var best = [];
+    function visit(node){
+      if (!node) return;
+      var p = node.point, dx = p.x-x, dy = p.y-y, distance = dx*dx+dy*dy;
+      if (distance < Infinity){
+        var at = 0;
+        while (at < best.length && (best[at].distance < distance || (best[at].distance === distance && best[at].entry.order < p.order))) at++;
+        if (at < 3){ best.splice(at,0,{entry:p,distance:distance}); if (best.length>3) best.pop(); }
+      }
+      var delta = node.axis === 'x' ? x-p.x : y-p.y;
+      visit(delta < 0 ? node.left : node.right);
+      if (best.length < 3 || delta*delta <= best[2].distance) visit(delta < 0 ? node.right : node.left);
+    }
+    visit(tree); return best;
+  }
+
   function buildRaster(){
     if (_mode === 'off'){
       _canvas = null; _hash = '';
@@ -68,11 +91,7 @@
     var map = ME.EDITOR.map;
     var bw = map.bitmapWidth || 1280, bh = map.bitmapHeight || 800;
     var divs = map.divisions || [];
-    if (!divs.length) return null;
-
-    // hash·divs.length + mode
-    var hash = _mode + ':' + divs.length + ':' + bw + 'x' + bh;
-    if (_canvas && _hash === hash) return _canvas;
+    if (!divs.length){ _canvas = null; _hash = ''; return null; }
 
     // 提 centroid + color
     var entries = [];
@@ -81,9 +100,15 @@
       if (!c) return;
       var color = getColor(d, _mode);
       if (!color) return;
-      entries.push({ x: c[0], y: c[1], rgb: hexToRgb(color) });
+      var x = Number(c[0]), y = Number(c[1]);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      entries.push({ x: x, y: y, rgb: hexToRgb(color), order: entries.length });
     });
-    if (!entries.length) return null;
+    if (!entries.length){ _canvas = null; _hash = ''; return null; }
+    // Validate every input that can change the rendered colors.
+    var hash = _mode + ':' + bw + 'x' + bh + ':' + JSON.stringify(entries);
+    if (_canvas && _hash === hash) return _canvas;
+    var tree = buildNearestTree(entries, 0);
 
     // coarse·step px (e.g., 8)·结果 canvas 是 bw/8 × bh/8·然后 drawImage 缩到 bw × bh (smooth)
     var step = 8;
@@ -99,25 +124,10 @@
       for (var x = 0; x < w; x++){
         var wx = x * step;
         var wy = y * step;
-        // 找最近·O(n) 每像素·n*w*h
-        // 加权·三邻平均 (k-NN)·smoother
-        var nearest = null, nDist = Infinity;
-        var second = null, sDist = Infinity;
-        var third = null, tDist = Infinity;
-        for (var i = 0; i < entries.length; i++){
-          var dx = entries[i].x - wx, dy = entries[i].y - wy;
-          var d2 = dx * dx + dy * dy;
-          if (d2 < nDist){
-            tDist = sDist; third = second;
-            sDist = nDist; second = nearest;
-            nDist = d2; nearest = entries[i];
-          } else if (d2 < sDist){
-            tDist = sDist; third = second;
-            sDist = d2; second = entries[i];
-          } else if (d2 < tDist){
-            tDist = d2; third = entries[i];
-          }
-        }
+        var hits = nearestThree(tree, wx, wy);
+        var nearest = hits[0] && hits[0].entry, nDist = hits[0] ? hits[0].distance : Infinity;
+        var second = hits[1] && hits[1].entry, sDist = hits[1] ? hits[1].distance : Infinity;
+        var third = hits[2] && hits[2].entry, tDist = hits[2] ? hits[2].distance : Infinity;
         if (!nearest){
           var idx = (y * w + x) * 4;
           data[idx] = 0; data[idx + 1] = 0; data[idx + 2] = 0; data[idx + 3] = 0;
@@ -201,7 +211,7 @@
       }
     });
     // 数据变·重 build
-    ME.on('mutation', function(){ _hash = ''; });
+    ME.on('mutation', function(){ ME.requestRender(); });
   }
 
   // ─── expose ────────────────────────────────────────────

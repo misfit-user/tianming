@@ -12,7 +12,7 @@
 //
 //  宪法闸(只验不产)：人选须在档活人非俘非玩家·夺门须君已归+真有复辟旨+不在谋泄冷却·
 //  复位真复位(称号账本双清)。双轨：AI 缺席=被虏 6 回合朝廷自立储君(resolveHeir)兜底·
-//  兜底无监国无夺门(夺门之变非机械可断)。随 revoltEntityEnabled(破京链同族)。
+//  兜底无监国无夺门(夺门之变非机械可断)。属于正式破京链。
 //  本文件为 _regent/_rivalEmperor/称号迁转的唯一写口(已登记 gm-writes owners)。
 // ============================================================
 (function (global) {
@@ -22,8 +22,7 @@
   var CRACKDOWN_COOLDOWN = 4;        // 谋泄后 N 回合内不再断夺门
 
   function enabled() {
-    try { return !(global.P && global.P.conf && global.P.conf.revoltEntityEnabled === false); }
-    catch (_) { return false; }
+    return true; // 民变实体及其后果属于正式玩法。
   }
   function _aiOn() {
     try { return typeof global.callAI === 'function'; } catch (_) { return false; }

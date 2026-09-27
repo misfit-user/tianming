@@ -5,7 +5,8 @@
   var C = root.TM && root.TM.StartContracts;
   if (!C && typeof module !== 'undefined' && module.exports) C = require('./tm-start-contracts.js');
   var sources = new WeakMap(),
-    MAX_BYTES = 96 * 1024 * 1024;
+    MAX_BYTES = 96 * 1024 * 1024,
+    MAX_NODES = 8 * 1024 * 1024; // Fits current full official sources; still finite for dense JSON.
   function failure(code, message, diagnostics) {
     var e = new Error(message);
     e.code = code;
@@ -55,7 +56,7 @@
       nodes = 0,
       stringUnits = 0;
     function walk(v, depth) {
-      if (++nodes > 3000000 || depth > 128) throw failure('source-complexity', '源数据超过本地准备器的结构预算');
+      if (++nodes > MAX_NODES || depth > 128) throw failure('source-complexity', '源数据超过本地准备器的结构预算', [{ nodes: nodes, maxNodes: MAX_NODES, depth: depth, maxDepth: 128 }]);
       if (typeof v === 'string') {
         stringUnits += v.length;
         if (stringUnits > MAX_BYTES) throw failure('source-size', '源文本超过准备预算');

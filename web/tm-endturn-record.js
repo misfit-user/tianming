@@ -19,8 +19,6 @@
 //            smoke-endturn-section-boundary (含 record.js 文件存在 + finalize export)
 // Notes:     R210·P7-η·suggestions 来源 ctx.record.suggestions (P7-ζ followup 已自 sc2 写)
 //            非读取 p2 的 sc2 局部·避免重引入 main-entry 局部依赖
-//            timeRatio 来自 ctx.input.timeRatio·主入口在 finalize 前已 ctx.input 重置
-//            sanitize 后·主入口必须先写 sanitized locals 回 ctx.record·再调 finalize
 // ============================================================
 (function(global) {
   'use strict';
@@ -76,6 +74,7 @@
   }
   ns.finalize = function(ctx) {
     _captureCostHistorySnapshot();
+    if (ctx && global.TM.Endturn.Validity && global.TM.Endturn.Validity.preserveNarrative) global.TM.Endturn.Validity.preserveNarrative(ctx);
     var record = (ctx && ctx.record) ? ctx.record : {};
     var input = (ctx && ctx.input) ? ctx.input : {};
     return {
@@ -86,6 +85,7 @@
       turnSummary: record.turnSummary || '',
       timeRatio: input.timeRatio,
       suggestions: Array.isArray(record.suggestions) ? record.suggestions : [],
+      basis_refs: Array.isArray(record.basis_refs) ? record.basis_refs : [],
       shiluText: record.shiluText || '',
       szjTitle: record.szjTitle || '',
       szjSummary: record.szjSummary || '',

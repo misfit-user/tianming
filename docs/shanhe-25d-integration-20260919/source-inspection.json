@@ -1,0 +1,4139 @@
+[
+  {
+    "file": "天启七年·九月（官方）.json",
+    "id": "sc-tianqi7-1627",
+    "sha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+    "mapId": "tianqi-prefecture-refined-r3",
+    "width": 1200,
+    "height": 720,
+    "regions": 307,
+    "source": {
+      "id": "tianqi-prefecture-r3-guanning-steppe",
+      "sourceScenario": "scenarios/天启七年·九月（官方）.json",
+      "sourceSha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+      "sourceProvinceCount": 43,
+      "logicalRegionCount": 307,
+      "precision": "inferred-defense-corridor-modern-island-outline-and-same-owner-subdivision"
+    },
+    "geographicReferences": [
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "通州",
+        "logicalName": "顺天府",
+        "lonLat": [
+          116.66,
+          39.91
+        ],
+        "xy": [
+          729.3263452845116,
+          306.4465665592844
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "蓟州",
+        "logicalName": "顺天府",
+        "lonLat": [
+          117.41,
+          40.05
+        ],
+        "xy": [
+          738.2049542687382,
+          304.78923781141305
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "密云",
+        "logicalName": "顺天府",
+        "lonLat": [
+          116.85,
+          40.38
+        ],
+        "xy": [
+          731.5755911110799,
+          300.8826591300475
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "昌平",
+        "logicalName": "顺天府",
+        "lonLat": [
+          116.23,
+          40.22
+        ],
+        "xy": [
+          724.2359411990664,
+          302.77675096755945
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "霸州",
+        "logicalName": "顺天府",
+        "lonLat": [
+          116.39,
+          39.13
+        ],
+        "xy": [
+          726.1300490435352,
+          315.6802856232571
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "涿州",
+        "logicalName": "顺天府",
+        "lonLat": [
+          115.97,
+          39.49
+        ],
+        "xy": [
+          721.1580262137352,
+          311.41856490662974
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "遵化",
+        "logicalName": "顺天府",
+        "lonLat": [
+          117.96,
+          40.19
+        ],
+        "xy": [
+          744.7159340373363,
+          303.13190751178126
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "丰润",
+        "logicalName": "顺天府",
+        "lonLat": [
+          118.15,
+          39.83
+        ],
+        "xy": [
+          746.9651832691632,
+          307.39362644388416
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_01",
+        "parentName": "北直隶",
+        "name": "宝坻",
+        "logicalName": "顺天府",
+        "lonLat": [
+          117.31,
+          39.72
+        ],
+        "xy": [
+          737.021141014822,
+          308.69581137196906
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "易州",
+        "logicalName": "保定府",
+        "lonLat": [
+          115.5,
+          39.35
+        ],
+        "xy": [
+          715.5940981313888,
+          313.07589582696573
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "涞水",
+        "logicalName": "保定府",
+        "lonLat": [
+          115.71,
+          39.4
+        ],
+        "xy": [
+          718.0801086026628,
+          312.4839922538239
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "唐县",
+        "logicalName": "保定府",
+        "lonLat": [
+          114.98,
+          38.75
+        ],
+        "xy": [
+          709.4382646323868,
+          320.1787542222727
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "定兴",
+        "logicalName": "保定府",
+        "lonLat": [
+          115.81,
+          39.26
+        ],
+        "xy": [
+          719.2639237848582,
+          314.141327596677
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "安肃",
+        "logicalName": "保定府",
+        "lonLat": [
+          115.65,
+          39.02
+        ],
+        "xy": [
+          717.3698213970083,
+          316.98247132722224
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_02",
+        "parentName": "北直隶",
+        "name": "祁州",
+        "logicalName": "保定府",
+        "lonLat": [
+          115.32,
+          38.42
+        ],
+        "xy": [
+          713.4632356528533,
+          324.08533119670165
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_03",
+        "parentName": "北直隶",
+        "name": "沧州",
+        "logicalName": "河间府",
+        "lonLat": [
+          116.87,
+          38.29
+        ],
+        "xy": [
+          731.8123626073296,
+          325.6242967493199
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_03",
+        "parentName": "北直隶",
+        "name": "景州",
+        "logicalName": "河间府",
+        "lonLat": [
+          116.27,
+          37.7
+        ],
+        "xy": [
+          724.7094773810488,
+          332.60877348342456
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_03",
+        "parentName": "北直隶",
+        "name": "献县",
+        "logicalName": "河间府",
+        "lonLat": [
+          116.12,
+          38.2
+        ],
+        "xy": [
+          722.9337534179668,
+          326.6897202947008
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_03",
+        "parentName": "北直隶",
+        "name": "静海",
+        "logicalName": "河间府",
+        "lonLat": [
+          116.92,
+          38.94
+        ],
+        "xy": [
+          732.4042672444682,
+          317.92952950488564
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_03",
+        "parentName": "北直隶",
+        "name": "盐山",
+        "logicalName": "河间府",
+        "lonLat": [
+          117.23,
+          38.06
+        ],
+        "xy": [
+          736.0740961390871,
+          328.3470634739441
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_04",
+        "parentName": "北直隶",
+        "name": "冀州",
+        "logicalName": "真定府",
+        "lonLat": [
+          115.58,
+          37.55
+        ],
+        "xy": [
+          716.541157202538,
+          334.38448373732217
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_04",
+        "parentName": "北直隶",
+        "name": "深州",
+        "logicalName": "真定府",
+        "lonLat": [
+          115.55,
+          38
+        ],
+        "xy": [
+          716.1860109739692,
+          329.057336682145
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_04",
+        "parentName": "北直隶",
+        "name": "赵州",
+        "logicalName": "真定府",
+        "lonLat": [
+          114.78,
+          37.75
+        ],
+        "xy": [
+          707.070639519479,
+          332.0168567203191
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_04",
+        "parentName": "北直隶",
+        "name": "平山",
+        "logicalName": "真定府",
+        "lonLat": [
+          114.19,
+          38.25
+        ],
+        "xy": [
+          700.0861312820138,
+          326.0978001177225
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_04",
+        "parentName": "北直隶",
+        "name": "赞皇",
+        "logicalName": "真定府",
+        "lonLat": [
+          114.39,
+          37.67
+        ],
+        "xy": [
+          702.4537628772206,
+          332.96390201837085
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_05",
+        "parentName": "北直隶",
+        "name": "开州",
+        "logicalName": "大名府",
+        "lonLat": [
+          115.03,
+          35.72
+        ],
+        "xy": [
+          710.0301843675385,
+          356.0482098811275
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_05",
+        "parentName": "北直隶",
+        "name": "濮州",
+        "logicalName": "大名府",
+        "lonLat": [
+          115.5,
+          35.56
+        ],
+        "xy": [
+          715.5941136807012,
+          357.9423101757335
+        ],
+        "accepted": false,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_05",
+        "parentName": "北直隶",
+        "name": "长垣",
+        "logicalName": "大名府",
+        "lonLat": [
+          114.67,
+          35.21
+        ],
+        "xy": [
+          705.7684538717945,
+          362.08564015336015
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_06",
+        "parentName": "北直隶",
+        "name": "迁安",
+        "logicalName": "永平府",
+        "lonLat": [
+          118.7,
+          40.01
+        ],
+        "xy": [
+          753.4761628736524,
+          305.26277198226
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_06",
+        "parentName": "北直隶",
+        "name": "昌黎",
+        "logicalName": "永平府",
+        "lonLat": [
+          119.16,
+          39.71
+        ],
+        "xy": [
+          758.9217113004145,
+          308.814206766251
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_06",
+        "parentName": "北直隶",
+        "name": "滦州",
+        "logicalName": "永平府",
+        "lonLat": [
+          118.74,
+          39.74
+        ],
+        "xy": [
+          753.9496898245127,
+          308.45906038605995
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_08",
+        "parentName": "北直隶",
+        "name": "邯郸",
+        "logicalName": "广平府",
+        "lonLat": [
+          114.49,
+          36.61
+        ],
+        "xy": [
+          703.6375818339191,
+          345.51229308704615
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_08",
+        "parentName": "北直隶",
+        "name": "成安",
+        "logicalName": "广平府",
+        "lonLat": [
+          114.67,
+          36.45
+        ],
+        "xy": [
+          705.7684487844205,
+          347.40639113159966
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-01",
+        "accountId": "div_pref_ming_01_08",
+        "parentName": "北直隶",
+        "name": "磁州",
+        "logicalName": "广平府",
+        "lonLat": [
+          114.38,
+          36.36
+        ],
+        "xy": [
+          702.3353867910037,
+          348.47181824602967
+        ],
+        "accepted": false,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_01",
+        "parentName": "南直隶",
+        "name": "溧水",
+        "logicalName": "应天府",
+        "lonLat": [
+          119.02,
+          31.65
+        ],
+        "xy": [
+          757.2644039174054,
+          404.2293243214616
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_01",
+        "parentName": "南直隶",
+        "name": "江浦",
+        "logicalName": "应天府",
+        "lonLat": [
+          118.63,
+          32.05
+        ],
+        "xy": [
+          752.647525305841,
+          399.49407967560603
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_01",
+        "parentName": "南直隶",
+        "name": "高淳",
+        "logicalName": "应天府",
+        "lonLat": [
+          118.89,
+          31.33
+        ],
+        "xy": [
+          755.7254462401175,
+          408.0175166087555
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_01",
+        "parentName": "南直隶",
+        "name": "六合",
+        "logicalName": "应天府",
+        "lonLat": [
+          118.84,
+          32.35
+        ],
+        "xy": [
+          755.133534751435,
+          395.9426500900124
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_02",
+        "parentName": "南直隶",
+        "name": "常熟",
+        "logicalName": "苏州府",
+        "lonLat": [
+          120.75,
+          31.65
+        ],
+        "xy": [
+          777.7443966325939,
+          404.22933774418925
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_02",
+        "parentName": "南直隶",
+        "name": "太仓",
+        "logicalName": "苏州府",
+        "lonLat": [
+          121.1,
+          31.45
+        ],
+        "xy": [
+          781.8877485804882,
+          406.5969612697313
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_02",
+        "parentName": "南直隶",
+        "name": "昆山",
+        "logicalName": "苏州府",
+        "lonLat": [
+          120.98,
+          31.38
+        ],
+        "xy": [
+          780.4671713383015,
+          407.42562762216176
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_02",
+        "parentName": "南直隶",
+        "name": "吴江",
+        "logicalName": "苏州府",
+        "lonLat": [
+          120.64,
+          31.16
+        ],
+        "xy": [
+          776.4422025743313,
+          410.03000787512633
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_02",
+        "parentName": "南直隶",
+        "name": "崇明",
+        "logicalName": "苏州府",
+        "lonLat": [
+          121.39,
+          31.62
+        ],
+        "xy": [
+          785.3208102456874,
+          404.5844858313168
+        ],
+        "accepted": false,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_03",
+        "parentName": "南直隶",
+        "name": "上海",
+        "logicalName": "松江府",
+        "lonLat": [
+          121.48,
+          31.23
+        ],
+        "xy": [
+          786.3862449927816,
+          409.2013471090337
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_03",
+        "parentName": "南直隶",
+        "name": "青浦",
+        "logicalName": "松江府",
+        "lonLat": [
+          121.12,
+          31.15
+        ],
+        "xy": [
+          782.1245127328675,
+          410.1483926398495
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_04",
+        "parentName": "南直隶",
+        "name": "江阴",
+        "logicalName": "常州府",
+        "lonLat": [
+          120.28,
+          31.92
+        ],
+        "xy": [
+          772.1804668681317,
+          401.03304600410445
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_04",
+        "parentName": "南直隶",
+        "name": "宜兴",
+        "logicalName": "常州府",
+        "lonLat": [
+          119.82,
+          31.35
+        ],
+        "xy": [
+          766.7349220107366,
+          407.7807617434453
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_04",
+        "parentName": "南直隶",
+        "name": "无锡",
+        "logicalName": "常州府",
+        "lonLat": [
+          120.3,
+          31.57
+        ],
+        "xy": [
+          772.4172312256468,
+          405.17638257671285
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_06",
+        "parentName": "南直隶",
+        "name": "高邮",
+        "logicalName": "扬州府",
+        "lonLat": [
+          119.45,
+          32.78
+        ],
+        "xy": [
+          762.3548020949326,
+          390.8522700814648
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_06",
+        "parentName": "南直隶",
+        "name": "泰州",
+        "logicalName": "扬州府",
+        "lonLat": [
+          119.91,
+          32.49
+        ],
+        "xy": [
+          767.8003504806676,
+          394.2853238249577
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_06",
+        "parentName": "南直隶",
+        "name": "通州",
+        "logicalName": "扬州府",
+        "lonLat": [
+          120.87,
+          32.02
+        ],
+        "xy": [
+          779.1649726439645,
+          399.8492401768169
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_07",
+        "parentName": "南直隶",
+        "name": "盐城",
+        "logicalName": "淮安府",
+        "lonLat": [
+          120.14,
+          33.38
+        ],
+        "xy": [
+          770.5231204272189,
+          383.7494130051542
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_07",
+        "parentName": "南直隶",
+        "name": "海州",
+        "logicalName": "淮安府",
+        "lonLat": [
+          119.13,
+          34.57
+        ],
+        "xy": [
+          758.566588006056,
+          369.6620613494939
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_07",
+        "parentName": "南直隶",
+        "name": "邳州",
+        "logicalName": "淮安府",
+        "lonLat": [
+          117.97,
+          34.31
+        ],
+        "xy": [
+          744.834339622117,
+          372.7399594022331
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_07",
+        "parentName": "南直隶",
+        "name": "沭阳",
+        "logicalName": "淮安府",
+        "lonLat": [
+          118.77,
+          34.13
+        ],
+        "xy": [
+          754.3048572231215,
+          374.87082433824025
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "寿州",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          116.78,
+          32.57
+        ],
+        "xy": [
+          730.7469529278605,
+          393.3382512159226
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "亳州",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          115.78,
+          33.85
+        ],
+        "xy": [
+          718.9088015982343,
+          378.1854702733676
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "宿州",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          116.98,
+          33.64
+        ],
+        "xy": [
+          733.114577753578,
+          380.67148143438976
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "泗州",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          118.49,
+          33.12
+        ],
+        "xy": [
+          750.9901804649896,
+          386.8273072560804
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "颍州",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          115.82,
+          32.9
+        ],
+        "xy": [
+          719.3823313389448,
+          389.4316694310362
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_08",
+        "parentName": "南直隶",
+        "name": "霍丘",
+        "logicalName": "凤阳府",
+        "lonLat": [
+          116.28,
+          32.35
+        ],
+        "xy": [
+          724.8278807913875,
+          395.94263022747896
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_10",
+        "parentName": "南直隶",
+        "name": "祁门",
+        "logicalName": "徽州府",
+        "lonLat": [
+          117.72,
+          29.86
+        ],
+        "xy": [
+          741.8748213596895,
+          425.41952048417295
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_10",
+        "parentName": "南直隶",
+        "name": "婺源",
+        "logicalName": "徽州府",
+        "lonLat": [
+          117.86,
+          29.25
+        ],
+        "xy": [
+          743.5321643132893,
+          432.6407650407874
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_10",
+        "parentName": "南直隶",
+        "name": "休宁",
+        "logicalName": "徽州府",
+        "lonLat": [
+          118.19,
+          29.79
+        ],
+        "xy": [
+          747.4387503036073,
+          426.24819141429646
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-02",
+        "accountId": "div_pref_ming_02_10",
+        "parentName": "南直隶",
+        "name": "黟县",
+        "logicalName": "徽州府",
+        "lonLat": [
+          117.93,
+          29.93
+        ],
+        "xy": [
+          744.3608317489093,
+          424.590854830035
+        ],
+        "accepted": true,
+        "source": "明史40"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_01",
+        "parentName": "浙江",
+        "name": "临安",
+        "logicalName": "杭州府",
+        "lonLat": [
+          119.73,
+          30.23
+        ],
+        "xy": [
+          765.6694934587513,
+          421.0394375809367
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_01",
+        "parentName": "浙江",
+        "name": "於潜",
+        "logicalName": "杭州府",
+        "lonLat": [
+          119.39,
+          30.19
+        ],
+        "xy": [
+          761.6445239562913,
+          421.5129591049364
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_01",
+        "parentName": "浙江",
+        "name": "新城",
+        "logicalName": "杭州府",
+        "lonLat": [
+          119.73,
+          29.95
+        ],
+        "xy": [
+          765.6694946075131,
+          424.3541067148826
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_04",
+        "parentName": "浙江",
+        "name": "余姚",
+        "logicalName": "绍兴府",
+        "lonLat": [
+          121.15,
+          30.05
+        ],
+        "xy": [
+          782.4796616282049,
+          423.170307327401
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_04",
+        "parentName": "浙江",
+        "name": "嵊县",
+        "logicalName": "绍兴府",
+        "lonLat": [
+          120.82,
+          29.59
+        ],
+        "xy": [
+          778.573075309669,
+          428.61583262990735
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_04",
+        "parentName": "浙江",
+        "name": "诸暨",
+        "logicalName": "绍兴府",
+        "lonLat": [
+          120.23,
+          29.72
+        ],
+        "xy": [
+          771.5885685902107,
+          427.0768745257393
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_04",
+        "parentName": "浙江",
+        "name": "新昌",
+        "logicalName": "绍兴府",
+        "lonLat": [
+          120.9,
+          29.5
+        ],
+        "xy": [
+          779.5201273651655,
+          429.68126261509417
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_05",
+        "parentName": "浙江",
+        "name": "定海",
+        "logicalName": "宁波府",
+        "lonLat": [
+          121.71,
+          29.96
+        ],
+        "xy": [
+          789.10902380121,
+          424.2357410368129
+        ],
+        "accepted": false,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_05",
+        "parentName": "浙江",
+        "name": "奉化",
+        "logicalName": "宁波府",
+        "lonLat": [
+          121.41,
+          29.65
+        ],
+        "xy": [
+          785.5575812496104,
+          427.9055509646123
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_05",
+        "parentName": "浙江",
+        "name": "象山",
+        "logicalName": "宁波府",
+        "lonLat": [
+          121.87,
+          29.48
+        ],
+        "xy": [
+          791.0031291430191,
+          429.91803222212843
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_05",
+        "parentName": "浙江",
+        "name": "慈溪",
+        "logicalName": "宁波府",
+        "lonLat": [
+          121.45,
+          29.98
+        ],
+        "xy": [
+          786.0311057388385,
+          423.998976938528
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_06",
+        "parentName": "浙江",
+        "name": "仙居",
+        "logicalName": "台州府",
+        "lonLat": [
+          120.73,
+          28.85
+        ],
+        "xy": [
+          777.5076451986497,
+          437.37602892847224
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_06",
+        "parentName": "浙江",
+        "name": "天台",
+        "logicalName": "台州府",
+        "lonLat": [
+          121.03,
+          29.14
+        ],
+        "xy": [
+          781.0590878323037,
+          433.9429810816689
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-03",
+        "accountId": "div_pref_ming_03_06",
+        "parentName": "浙江",
+        "name": "宁海",
+        "logicalName": "台州府",
+        "lonLat": [
+          121.43,
+          29.29
+        ],
+        "xy": [
+          785.794345648153,
+          432.1672685777188
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_01",
+        "parentName": "福建",
+        "name": "福清",
+        "logicalName": "福州府",
+        "lonLat": [
+          119.38,
+          25.72
+        ],
+        "xy": [
+          761.5261608346725,
+          474.4292841299847
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_01",
+        "parentName": "福建",
+        "name": "连江",
+        "logicalName": "福州府",
+        "lonLat": [
+          119.54,
+          26.2
+        ],
+        "xy": [
+          763.4202622378696,
+          468.7469954274857
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_01",
+        "parentName": "福建",
+        "name": "古田",
+        "logicalName": "福州府",
+        "lonLat": [
+          118.89,
+          26.58
+        ],
+        "xy": [
+          755.7254657280422,
+          464.2485108453378
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_01",
+        "parentName": "福建",
+        "name": "罗源",
+        "logicalName": "福州府",
+        "lonLat": [
+          119.55,
+          26.49
+        ],
+        "xy": [
+          763.5386425088617,
+          465.31394533062985
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_03",
+        "parentName": "福建",
+        "name": "同安",
+        "logicalName": "泉州府",
+        "lonLat": [
+          118.15,
+          24.73
+        ],
+        "xy": [
+          746.9652452202498,
+          486.14899759596676
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_03",
+        "parentName": "福建",
+        "name": "安溪",
+        "logicalName": "泉州府",
+        "lonLat": [
+          118.18,
+          25.06
+        ],
+        "xy": [
+          747.3203882486962,
+          482.2424234922946
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_03",
+        "parentName": "福建",
+        "name": "永春",
+        "logicalName": "泉州府",
+        "lonLat": [
+          118.29,
+          25.32
+        ],
+        "xy": [
+          748.6225832505845,
+          479.1645172928131
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_03",
+        "parentName": "福建",
+        "name": "德化",
+        "logicalName": "泉州府",
+        "lonLat": [
+          118.24,
+          25.49
+        ],
+        "xy": [
+          748.0306752492146,
+          477.1520392164059
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_04",
+        "parentName": "福建",
+        "name": "龙溪",
+        "logicalName": "漳州府",
+        "lonLat": [
+          117.66,
+          24.52
+        ],
+        "xy": [
+          741.1645545035308,
+          488.63499564461324
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_04",
+        "parentName": "福建",
+        "name": "龙岩",
+        "logicalName": "漳州府",
+        "lonLat": [
+          117.02,
+          25.1
+        ],
+        "xy": [
+          733.5881386339406,
+          481.76889033009195
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_04",
+        "parentName": "福建",
+        "name": "诏安",
+        "logicalName": "漳州府",
+        "lonLat": [
+          117.18,
+          23.71
+        ],
+        "xy": [
+          735.4822477092259,
+          498.2238562007317
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_04",
+        "parentName": "福建",
+        "name": "漳浦",
+        "logicalName": "漳州府",
+        "lonLat": [
+          117.62,
+          24.12
+        ],
+        "xy": [
+          740.6910303014935,
+          493.37023695418384
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_08",
+        "parentName": "福建",
+        "name": "上杭",
+        "logicalName": "汀州府",
+        "lonLat": [
+          116.42,
+          25.04
+        ],
+        "xy": [
+          726.4852512332179,
+          482.479171917799
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_08",
+        "parentName": "福建",
+        "name": "宁化",
+        "logicalName": "汀州府",
+        "lonLat": [
+          116.65,
+          26.26
+        ],
+        "xy": [
+          729.2080198258714,
+          468.03668676155917
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-04",
+        "accountId": "div_pref_ming_04_08",
+        "parentName": "福建",
+        "name": "清流",
+        "logicalName": "汀州府",
+        "lonLat": [
+          116.82,
+          26.18
+        ],
+        "xy": [
+          731.2205049873734,
+          468.9837364045401
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_01",
+        "parentName": "江西",
+        "name": "宁州",
+        "logicalName": "南昌府",
+        "lonLat": [
+          114.56,
+          29.04
+        ],
+        "xy": [
+          704.4662831169871,
+          435.1267412871998
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_01",
+        "parentName": "江西",
+        "name": "武宁",
+        "logicalName": "南昌府",
+        "lonLat": [
+          115.09,
+          29.26
+        ],
+        "xy": [
+          710.7404996358046,
+          432.52236250840735
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_01",
+        "parentName": "江西",
+        "name": "丰城",
+        "logicalName": "南昌府",
+        "lonLat": [
+          115.79,
+          28.2
+        ],
+        "xy": [
+          719.0272062393892,
+          445.07075823236426
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_01",
+        "parentName": "江西",
+        "name": "进贤",
+        "logicalName": "南昌府",
+        "lonLat": [
+          116.26,
+          28.37
+        ],
+        "xy": [
+          724.5911341986541,
+          443.058284190534
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_05",
+        "parentName": "江西",
+        "name": "泰和",
+        "logicalName": "吉安府",
+        "lonLat": [
+          114.88,
+          26.79
+        ],
+        "xy": [
+          708.2544990931151,
+          461.76247788208195
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_05",
+        "parentName": "江西",
+        "name": "永新",
+        "logicalName": "吉安府",
+        "lonLat": [
+          114.24,
+          26.95
+        ],
+        "xy": [
+          700.6780849466678,
+          459.86837626847944
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_05",
+        "parentName": "江西",
+        "name": "安福",
+        "logicalName": "吉安府",
+        "lonLat": [
+          114.62,
+          27.39
+        ],
+        "xy": [
+          705.1765786511653,
+          454.65961343490926
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_13",
+        "parentName": "江西",
+        "name": "瑞金",
+        "logicalName": "赣州府",
+        "lonLat": [
+          116.02,
+          25.88
+        ],
+        "xy": [
+          721.7499893556748,
+          472.5351614124405
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_13",
+        "parentName": "江西",
+        "name": "雩都",
+        "logicalName": "赣州府",
+        "lonLat": [
+          115.42,
+          25.95
+        ],
+        "xy": [
+          714.6471014215981,
+          471.7064894736726
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_13",
+        "parentName": "江西",
+        "name": "会昌",
+        "logicalName": "赣州府",
+        "lonLat": [
+          115.79,
+          25.6
+        ],
+        "xy": [
+          719.0272169064638,
+          475.8498287618619
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-07",
+        "accountId": "div_pref_ming_07_13",
+        "parentName": "江西",
+        "name": "龙南",
+        "logicalName": "赣州府",
+        "lonLat": [
+          114.79,
+          24.91
+        ],
+        "xy": [
+          707.1890736591977,
+          484.0181127974266
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_05",
+        "parentName": "湖广",
+        "name": "浏阳",
+        "logicalName": "长沙府",
+        "lonLat": [
+          113.64,
+          28.15
+        ],
+        "xy": [
+          693.5751923765167,
+          445.66264675343007
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_05",
+        "parentName": "湖广",
+        "name": "湘潭",
+        "logicalName": "长沙府",
+        "lonLat": [
+          112.94,
+          27.83
+        ],
+        "xy": [
+          685.2884914346869,
+          449.4508346182067
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_05",
+        "parentName": "湖广",
+        "name": "宁乡",
+        "logicalName": "长沙府",
+        "lonLat": [
+          112.55,
+          28.28
+        ],
+        "xy": [
+          680.6716126179865,
+          444.1236847698607
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_05",
+        "parentName": "湖广",
+        "name": "醴陵",
+        "logicalName": "长沙府",
+        "lonLat": [
+          113.5,
+          27.66
+        ],
+        "xy": [
+          691.9178539359098,
+          451.463316651603
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_06",
+        "parentName": "湖广",
+        "name": "衡山",
+        "logicalName": "衡州府",
+        "lonLat": [
+          112.87,
+          27.23
+        ],
+        "xy": [
+          684.4598236708495,
+          456.5536965049745
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_06",
+        "parentName": "湖广",
+        "name": "耒阳",
+        "logicalName": "衡州府",
+        "lonLat": [
+          112.85,
+          26.42
+        ],
+        "xy": [
+          684.2230640724904,
+          466.14256063014204
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_06",
+        "parentName": "湖广",
+        "name": "常宁",
+        "logicalName": "衡州府",
+        "lonLat": [
+          112.4,
+          26.42
+        ],
+        "xy": [
+          678.895898337326,
+          466.1425571386811
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_13",
+        "parentName": "湖广",
+        "name": "江陵",
+        "logicalName": "荆州府",
+        "lonLat": [
+          112.19,
+          30.35
+        ],
+        "xy": [
+          676.4098715372223,
+          419.6188065935919
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_13",
+        "parentName": "湖广",
+        "name": "公安",
+        "logicalName": "荆州府",
+        "lonLat": [
+          112.23,
+          30.06
+        ],
+        "xy": [
+          676.8833985701373,
+          423.0518570783879
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_13",
+        "parentName": "湖广",
+        "name": "石首",
+        "logicalName": "荆州府",
+        "lonLat": [
+          112.42,
+          29.72
+        ],
+        "xy": [
+          679.1326477199098,
+          427.07681392949473
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_13",
+        "parentName": "湖广",
+        "name": "夷陵",
+        "logicalName": "荆州府",
+        "lonLat": [
+          111.28,
+          30.7
+        ],
+        "xy": [
+          665.6371571701595,
+          415.47546311564963
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_13",
+        "parentName": "湖广",
+        "name": "松滋",
+        "logicalName": "荆州府",
+        "lonLat": [
+          111.76,
+          30.17
+        ],
+        "xy": [
+          671.3194694621104,
+          421.74966198627226
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_12",
+        "parentName": "湖广",
+        "name": "谷城",
+        "logicalName": "襄阳府",
+        "lonLat": [
+          111.65,
+          32.27
+        ],
+        "xy": [
+          670.0172647778006,
+          396.8896426282097
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_12",
+        "parentName": "湖广",
+        "name": "南漳",
+        "logicalName": "襄阳府",
+        "lonLat": [
+          111.84,
+          31.78
+        ],
+        "xy": [
+          672.2665145429812,
+          402.69031508678745
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_12",
+        "parentName": "湖广",
+        "name": "宜城",
+        "logicalName": "襄阳府",
+        "lonLat": [
+          112.26,
+          31.71
+        ],
+        "xy": [
+          677.2385361829919,
+          403.51898562897077
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_12",
+        "parentName": "湖广",
+        "name": "枣阳",
+        "logicalName": "襄阳府",
+        "lonLat": [
+          112.77,
+          32.13
+        ],
+        "xy": [
+          683.2759889597023,
+          398.54698588504095
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_10",
+        "parentName": "湖广",
+        "name": "沅陵",
+        "logicalName": "辰州府",
+        "lonLat": [
+          110.4,
+          28.46
+        ],
+        "xy": [
+          655.2195978114881,
+          441.9928093594709
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_10",
+        "parentName": "湖广",
+        "name": "泸溪",
+        "logicalName": "辰州府",
+        "lonLat": [
+          110.21,
+          28.22
+        ],
+        "xy": [
+          652.9703510412937,
+          444.83395285725226
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_10",
+        "parentName": "湖广",
+        "name": "溆浦",
+        "logicalName": "辰州府",
+        "lonLat": [
+          110.59,
+          27.91
+        ],
+        "xy": [
+          657.4688478228318,
+          448.50376806103714
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_07",
+        "parentName": "湖广",
+        "name": "祁阳",
+        "logicalName": "永州府",
+        "lonLat": [
+          111.84,
+          26.58
+        ],
+        "xy": [
+          672.2665358771303,
+          464.2484561457828
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_07",
+        "parentName": "湖广",
+        "name": "东安",
+        "logicalName": "永州府",
+        "lonLat": [
+          111.32,
+          26.4
+        ],
+        "xy": [
+          666.1107006549852,
+          466.379310840171
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_07",
+        "parentName": "湖广",
+        "name": "道州",
+        "logicalName": "永州府",
+        "lonLat": [
+          111.6,
+          25.53
+        ],
+        "xy": [
+          669.4253851262328,
+          476.67846353596735
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-08",
+        "accountId": "div_pref_ming_08_07",
+        "parentName": "湖广",
+        "name": "宁远",
+        "logicalName": "永州府",
+        "lonLat": [
+          111.94,
+          25.57
+        ],
+        "xy": [
+          673.4503546286927,
+          476.204942011968
+        ],
+        "accepted": true,
+        "source": "明史44"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_01",
+        "parentName": "河南",
+        "name": "郑州",
+        "logicalName": "开封府",
+        "lonLat": [
+          113.63,
+          34.75
+        ],
+        "xy": [
+          693.4567838377768,
+          367.5311599471171
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_01",
+        "parentName": "河南",
+        "name": "许州",
+        "logicalName": "开封府",
+        "lonLat": [
+          113.85,
+          34.03
+        ],
+        "xy": [
+          696.0611789289275,
+          376.05459656991434
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_01",
+        "parentName": "河南",
+        "name": "陈州",
+        "logicalName": "开封府",
+        "lonLat": [
+          114.89,
+          33.73
+        ],
+        "xy": [
+          708.372852081013,
+          379.60603585401066
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_01",
+        "parentName": "河南",
+        "name": "兰阳",
+        "logicalName": "开封府",
+        "lonLat": [
+          114.81,
+          34.83
+        ],
+        "xy": [
+          707.4257958817686,
+          366.58412077851915
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_01",
+        "parentName": "河南",
+        "name": "封丘",
+        "logicalName": "开封府",
+        "lonLat": [
+          114.42,
+          35.04
+        ],
+        "xy": [
+          702.8089180497211,
+          364.0981159021268
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_08",
+        "parentName": "河南",
+        "name": "邓州",
+        "logicalName": "南阳府",
+        "lonLat": [
+          112.09,
+          32.69
+        ],
+        "xy": [
+          675.2260473290409,
+          391.91764234116386
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_08",
+        "parentName": "河南",
+        "name": "内乡",
+        "logicalName": "南阳府",
+        "lonLat": [
+          111.85,
+          33.05
+        ],
+        "xy": [
+          672.3848907933069,
+          387.6559230211209
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_08",
+        "parentName": "河南",
+        "name": "裕州",
+        "logicalName": "南阳府",
+        "lonLat": [
+          113.01,
+          33.26
+        ],
+        "xy": [
+          686.1171393823821,
+          385.1699301708719
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_08",
+        "parentName": "河南",
+        "name": "唐县",
+        "logicalName": "南阳府",
+        "lonLat": [
+          112.83,
+          32.69
+        ],
+        "xy": [
+          683.9862754268671,
+          391.9176480826774
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_06",
+        "parentName": "河南",
+        "name": "嵩县",
+        "logicalName": "河南府",
+        "lonLat": [
+          112.09,
+          34.13
+        ],
+        "xy": [
+          675.2260414211227,
+          374.8707725094421
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_06",
+        "parentName": "河南",
+        "name": "卢氏",
+        "logicalName": "河南府",
+        "lonLat": [
+          111.05,
+          34.05
+        ],
+        "xy": [
+          662.9143698280711,
+          375.8178127642724
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_06",
+        "parentName": "河南",
+        "name": "新安",
+        "logicalName": "河南府",
+        "lonLat": [
+          112.13,
+          34.74
+        ],
+        "xy": [
+          675.6995647615886,
+          367.64952934941186
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-09",
+        "accountId": "div_pref_ming_09_06",
+        "parentName": "河南",
+        "name": "渑池",
+        "logicalName": "河南府",
+        "lonLat": [
+          111.76,
+          34.76
+        ],
+        "xy": [
+          671.3194506306212,
+          367.4127643976591
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_01",
+        "parentName": "山西",
+        "name": "忻州",
+        "logicalName": "太原府",
+        "lonLat": [
+          112.73,
+          38.41
+        ],
+        "xy": [
+          682.8024373514888,
+          324.20369214190237
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_01",
+        "parentName": "山西",
+        "name": "代州",
+        "logicalName": "太原府",
+        "lonLat": [
+          112.96,
+          39.07
+        ],
+        "xy": [
+          685.525208241666,
+          316.39054525355425
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_01",
+        "parentName": "山西",
+        "name": "平定",
+        "logicalName": "太原府",
+        "lonLat": [
+          113.63,
+          37.79
+        ],
+        "xy": [
+          693.456771365505,
+          331.5433236357044
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_01",
+        "parentName": "山西",
+        "name": "榆次",
+        "logicalName": "太原府",
+        "lonLat": [
+          112.74,
+          37.69
+        ],
+        "xy": [
+          682.9208217662293,
+          332.7271271353511
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_01",
+        "parentName": "山西",
+        "name": "岢岚",
+        "logicalName": "太原府",
+        "lonLat": [
+          111.57,
+          38.7
+        ],
+        "xy": [
+          669.0701867110531,
+          320.7706329672477
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_02",
+        "parentName": "山西",
+        "name": "蒲州",
+        "logicalName": "平阳府",
+        "lonLat": [
+          110.3,
+          34.85
+        ],
+        "xy": [
+          654.0357569872866,
+          366.34732370532527
+        ],
+        "accepted": false,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_02",
+        "parentName": "山西",
+        "name": "解州",
+        "logicalName": "平阳府",
+        "lonLat": [
+          110.86,
+          34.92
+        ],
+        "xy": [
+          660.6651185038565,
+          365.518660766768
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_02",
+        "parentName": "山西",
+        "name": "绛州",
+        "logicalName": "平阳府",
+        "lonLat": [
+          111.22,
+          35.61
+        ],
+        "xy": [
+          664.9268482611109,
+          357.35037176557
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_02",
+        "parentName": "山西",
+        "name": "吉州",
+        "logicalName": "平阳府",
+        "lonLat": [
+          110.68,
+          36.1
+        ],
+        "xy": [
+          658.53424736858,
+          351.5496965914116
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_02",
+        "parentName": "山西",
+        "name": "隰州",
+        "logicalName": "平阳府",
+        "lonLat": [
+          110.94,
+          36.69
+        ],
+        "xy": [
+          661.6121629282918,
+          344.56521721931415
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_03",
+        "parentName": "山西",
+        "name": "襄垣",
+        "logicalName": "潞安府",
+        "lonLat": [
+          113.05,
+          36.54
+        ],
+        "xy": [
+          686.5906517685829,
+          346.34094919785764
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_03",
+        "parentName": "山西",
+        "name": "黎城",
+        "logicalName": "潞安府",
+        "lonLat": [
+          113.39,
+          36.5
+        ],
+        "xy": [
+          690.6156215992606,
+          346.8144759978426
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-10",
+        "accountId": "div_pref_ming_10_03",
+        "parentName": "山西",
+        "name": "长子",
+        "logicalName": "潞安府",
+        "lonLat": [
+          112.88,
+          36.12
+        ],
+        "xy": [
+          684.5781686584413,
+          351.31295157978013
+        ],
+        "accepted": true,
+        "source": "明史41"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "同州",
+        "logicalName": "西安府",
+        "lonLat": [
+          109.94,
+          34.8
+        ],
+        "xy": [
+          649.774024604291,
+          366.9392261146468
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "华州",
+        "logicalName": "西安府",
+        "lonLat": [
+          109.77,
+          34.51
+        ],
+        "xy": [
+          647.7615409607956,
+          370.3722749700945
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "商州",
+        "logicalName": "西安府",
+        "lonLat": [
+          109.94,
+          33.87
+        ],
+        "xy": [
+          649.7740284198214,
+          377.94866288096716
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "邠州",
+        "logicalName": "西安府",
+        "lonLat": [
+          108.08,
+          35.03
+        ],
+        "xy": [
+          627.7550719553183,
+          364.2164477518194
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "耀州",
+        "logicalName": "西安府",
+        "lonLat": [
+          108.98,
+          34.91
+        ],
+        "xy": [
+          638.4094039179739,
+          365.6370272207181
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_01",
+        "parentName": "陕西",
+        "name": "韩城",
+        "logicalName": "西安府",
+        "lonLat": [
+          110.44,
+          35.48
+        ],
+        "xy": [
+          655.6930948535125,
+          358.88931924017936
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_02",
+        "parentName": "陕西",
+        "name": "绥德",
+        "logicalName": "延安府",
+        "lonLat": [
+          110.26,
+          37.51
+        ],
+        "xy": [
+          653.5622202309233,
+          334.8579666224872
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_02",
+        "parentName": "陕西",
+        "name": "宜川",
+        "logicalName": "延安府",
+        "lonLat": [
+          110.17,
+          36.05
+        ],
+        "xy": [
+          652.4967930738629,
+          352.141597836913
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_02",
+        "parentName": "陕西",
+        "name": "洛川",
+        "logicalName": "延安府",
+        "lonLat": [
+          109.43,
+          35.76
+        ],
+        "xy": [
+          643.7365661658256,
+          355.57464226984325
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_02",
+        "parentName": "陕西",
+        "name": "延长",
+        "logicalName": "延安府",
+        "lonLat": [
+          110.01,
+          36.58
+        ],
+        "xy": [
+          650.6026875269177,
+          345.867401449107
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_02",
+        "parentName": "陕西",
+        "name": "米脂",
+        "logicalName": "延安府",
+        "lonLat": [
+          110.18,
+          37.76
+        ],
+        "xy": [
+          652.6151675189916,
+          331.8984399893312
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_04",
+        "parentName": "陕西",
+        "name": "西乡",
+        "logicalName": "汉中府",
+        "lonLat": [
+          107.77,
+          32.98
+        ],
+        "xy": [
+          624.0852550816717,
+          388.4845586486946
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_04",
+        "parentName": "陕西",
+        "name": "略阳",
+        "logicalName": "汉中府",
+        "lonLat": [
+          106.15,
+          33.33
+        ],
+        "xy": [
+          604.9074569991269,
+          384.3412096620028
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_04",
+        "parentName": "陕西",
+        "name": "宁羌",
+        "logicalName": "汉中府",
+        "lonLat": [
+          106.26,
+          32.83
+        ],
+        "xy": [
+          606.2096551190831,
+          390.26026254037447
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_04",
+        "parentName": "陕西",
+        "name": "凤县",
+        "logicalName": "汉中府",
+        "lonLat": [
+          106.52,
+          33.91
+        ],
+        "xy": [
+          609.2875686684617,
+          377.4751121838717
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_05",
+        "parentName": "陕西",
+        "name": "固原",
+        "logicalName": "平凉府",
+        "lonLat": [
+          106.28,
+          36.01
+        ],
+        "xy": [
+          606.4464049939934,
+          352.61509181716485
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_05",
+        "parentName": "陕西",
+        "name": "静宁",
+        "logicalName": "平凉府",
+        "lonLat": [
+          105.73,
+          35.52
+        ],
+        "xy": [
+          599.9354266613477,
+          358.415758534229
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_05",
+        "parentName": "陕西",
+        "name": "泾州",
+        "logicalName": "平凉府",
+        "lonLat": [
+          107.37,
+          35.33
+        ],
+        "xy": [
+          619.3499870090201,
+          360.66501102812776
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_05",
+        "parentName": "陕西",
+        "name": "隆德",
+        "logicalName": "平凉府",
+        "lonLat": [
+          106.12,
+          35.62
+        ],
+        "xy": [
+          604.5523032215515,
+          357.23195115518126
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_06",
+        "parentName": "陕西",
+        "name": "秦州",
+        "logicalName": "巩昌府",
+        "lonLat": [
+          105.72,
+          34.58
+        ],
+        "xy": [
+          599.8170490571239,
+          369.5435762634595
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_06",
+        "parentName": "陕西",
+        "name": "成县",
+        "logicalName": "巩昌府",
+        "lonLat": [
+          105.74,
+          33.75
+        ],
+        "xy": [
+          600.0538153839451,
+          379.3692027799751
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_06",
+        "parentName": "陕西",
+        "name": "徽州",
+        "logicalName": "巩昌府",
+        "lonLat": [
+          106.09,
+          33.77
+        ],
+        "xy": [
+          604.197166429241,
+          379.1324434145596
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-11",
+        "accountId": "div_pref_ming_11_06",
+        "parentName": "陕西",
+        "name": "伏羌",
+        "logicalName": "巩昌府",
+        "lonLat": [
+          105.33,
+          34.75
+        ],
+        "xy": [
+          595.2001713891854,
+          367.5310955490595
+        ],
+        "accepted": true,
+        "source": "明史42"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "绵州",
+        "logicalName": "成都府",
+        "lonLat": [
+          104.74,
+          31.46
+        ],
+        "xy": [
+          588.2156787010326,
+          406.47845329523057
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "茂州",
+        "logicalName": "成都府",
+        "lonLat": [
+          103.86,
+          31.68
+        ],
+        "xy": [
+          577.7981092496677,
+          403.8740635765272
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "灌县",
+        "logicalName": "成都府",
+        "lonLat": [
+          103.62,
+          30.99
+        ],
+        "xy": [
+          574.9569570217907,
+          412.0423535087815
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "崇庆州",
+        "logicalName": "成都府",
+        "lonLat": [
+          103.67,
+          30.63
+        ],
+        "xy": [
+          575.5488658026775,
+          416.304071354652
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "简州",
+        "logicalName": "成都府",
+        "lonLat": [
+          104.55,
+          30.39
+        ],
+        "xy": [
+          585.9664353360968,
+          419.14522315435147
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_01",
+        "parentName": "四川",
+        "name": "汉州",
+        "logicalName": "成都府",
+        "lonLat": [
+          104.28,
+          30.98
+        ],
+        "xy": [
+          582.7701334743927,
+          412.1607396700889
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_02",
+        "parentName": "四川",
+        "name": "合州",
+        "logicalName": "重庆府",
+        "lonLat": [
+          106.26,
+          29.99
+        ],
+        "xy": [
+          606.2096667708107,
+          423.8804780418259
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_02",
+        "parentName": "四川",
+        "name": "涪州",
+        "logicalName": "重庆府",
+        "lonLat": [
+          107.39,
+          29.71
+        ],
+        "xy": [
+          619.5867729878748,
+          427.1951559432181
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_02",
+        "parentName": "四川",
+        "name": "江津",
+        "logicalName": "重庆府",
+        "lonLat": [
+          106.26,
+          29.29
+        ],
+        "xy": [
+          606.2096696427153,
+          432.1671508766906
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_02",
+        "parentName": "四川",
+        "name": "长寿",
+        "logicalName": "重庆府",
+        "lonLat": [
+          107.08,
+          29.86
+        ],
+        "xy": [
+          615.9169470882421,
+          425.41943793051837
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_03",
+        "parentName": "四川",
+        "name": "广安州",
+        "logicalName": "顺庆府",
+        "lonLat": [
+          106.63,
+          30.47
+        ],
+        "xy": [
+          610.5897788504176,
+          418.19819096867536
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_03",
+        "parentName": "四川",
+        "name": "蓬州",
+        "logicalName": "顺庆府",
+        "lonLat": [
+          106.42,
+          31.06
+        ],
+        "xy": [
+          608.1037657534022,
+          411.21370794994084
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_03",
+        "parentName": "四川",
+        "name": "西充",
+        "logicalName": "顺庆府",
+        "lonLat": [
+          105.9,
+          31
+        ],
+        "xy": [
+          601.947930038931,
+          411.9239901583521
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_10",
+        "parentName": "四川",
+        "name": "巴州",
+        "logicalName": "保宁府",
+        "lonLat": [
+          106.75,
+          31.86
+        ],
+        "xy": [
+          612.0103506770128,
+          401.74322727050014
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_10",
+        "parentName": "四川",
+        "name": "剑州",
+        "logicalName": "保宁府",
+        "lonLat": [
+          105.53,
+          32.04
+        ],
+        "xy": [
+          597.5678117231878,
+          399.61235907579635
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_10",
+        "parentName": "四川",
+        "name": "广元",
+        "logicalName": "保宁府",
+        "lonLat": [
+          105.83,
+          32.44
+        ],
+        "xy": [
+          601.1192539055425,
+          394.8771197835142
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_10",
+        "parentName": "四川",
+        "name": "南部",
+        "logicalName": "保宁府",
+        "lonLat": [
+          106.07,
+          31.35
+        ],
+        "xy": [
+          603.9604134362628,
+          407.78065505991606
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_06",
+        "parentName": "四川",
+        "name": "万县",
+        "logicalName": "夔州府",
+        "lonLat": [
+          108.4,
+          30.81
+        ],
+        "xy": [
+          631.5432960138066,
+          414.17324932482074
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_06",
+        "parentName": "四川",
+        "name": "云阳",
+        "logicalName": "夔州府",
+        "lonLat": [
+          108.89,
+          30.95
+        ],
+        "xy": [
+          637.343987017716,
+          412.5159185596608
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_06",
+        "parentName": "四川",
+        "name": "巫山",
+        "logicalName": "夔州府",
+        "lonLat": [
+          109.88,
+          31.07
+        ],
+        "xy": [
+          649.0637511427516,
+          411.09535375489816
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-12",
+        "accountId": "div_pref_ming_12_06",
+        "parentName": "四川",
+        "name": "大宁",
+        "logicalName": "夔州府",
+        "lonLat": [
+          109.63,
+          31.4
+        ],
+        "xy": [
+          646.1042132693177,
+          407.1887774787614
+        ],
+        "accepted": true,
+        "source": "明史43"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "南海",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.12,
+          23.03
+        ],
+        "xy": [
+          687.4193774218134,
+          506.27373545386376
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "东莞",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.75,
+          23.05
+        ],
+        "xy": [
+          694.8774093689893,
+          506.036978260913
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "增城",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.83,
+          23.29
+        ],
+        "xy": [
+          695.8244600705877,
+          503.1958339096634
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "从化",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.58,
+          23.55
+        ],
+        "xy": [
+          692.8649224843444,
+          500.11792491701317
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "新会",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.03,
+          22.46
+        ],
+        "xy": [
+          686.3539466133313,
+          513.0214540639614
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_01",
+        "parentName": "广东",
+        "name": "香山",
+        "logicalName": "广州府",
+        "lonLat": [
+          113.38,
+          22.52
+        ],
+        "xy": [
+          690.4972974945182,
+          512.3111705365537
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_06",
+        "parentName": "广东",
+        "name": "德庆",
+        "logicalName": "肇庆府",
+        "lonLat": [
+          111.79,
+          23.14
+        ],
+        "xy": [
+          671.6746426865832,
+          504.97153368917816
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_06",
+        "parentName": "广东",
+        "name": "开建",
+        "logicalName": "肇庆府",
+        "lonLat": [
+          111.86,
+          23.59
+        ],
+        "xy": [
+          672.5033110658286,
+          499.6443874098811
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_06",
+        "parentName": "广东",
+        "name": "阳春",
+        "logicalName": "肇庆府",
+        "lonLat": [
+          111.79,
+          22.17
+        ],
+        "xy": [
+          671.6746466662225,
+          516.4544946174906
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_06",
+        "parentName": "广东",
+        "name": "阳江",
+        "logicalName": "肇庆府",
+        "lonLat": [
+          111.97,
+          21.86
+        ],
+        "xy": [
+          673.8055142321318,
+          520.1243082695153
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_04",
+        "parentName": "广东",
+        "name": "河源",
+        "logicalName": "惠州府",
+        "lonLat": [
+          114.69,
+          23.74
+        ],
+        "xy": [
+          706.0052638515668,
+          497.8686937598202
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_04",
+        "parentName": "广东",
+        "name": "龙川",
+        "logicalName": "惠州府",
+        "lonLat": [
+          115.26,
+          24.1
+        ],
+        "xy": [
+          712.7530056391291,
+          493.606980724407
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_04",
+        "parentName": "广东",
+        "name": "海丰",
+        "logicalName": "惠州府",
+        "lonLat": [
+          115.34,
+          22.97
+        ],
+        "xy": [
+          713.7000619614553,
+          506.984038921393
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_04",
+        "parentName": "广东",
+        "name": "博罗",
+        "logicalName": "惠州府",
+        "lonLat": [
+          114.28,
+          23.17
+        ],
+        "xy": [
+          701.151626298079,
+          504.6164098871012
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_05",
+        "parentName": "广东",
+        "name": "程乡",
+        "logicalName": "潮州府",
+        "lonLat": [
+          116.12,
+          24.29
+        ],
+        "xy": [
+          722.9338104868156,
+          491.3577476275135
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_05",
+        "parentName": "广东",
+        "name": "揭阳",
+        "logicalName": "潮州府",
+        "lonLat": [
+          116.37,
+          23.55
+        ],
+        "xy": [
+          725.893350042365,
+          500.1179465640711
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_05",
+        "parentName": "广东",
+        "name": "饶平",
+        "logicalName": "潮州府",
+        "lonLat": [
+          117,
+          23.99
+        ],
+        "xy": [
+          733.3513802663982,
+          494.9091856702015
+        ],
+        "accepted": false,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-05",
+        "accountId": "div_pref_ming_05_05",
+        "parentName": "广东",
+        "name": "大埔",
+        "logicalName": "潮州府",
+        "lonLat": [
+          116.69,
+          24.35
+        ],
+        "xy": [
+          729.6815535051942,
+          490.6474658070423
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_01",
+        "parentName": "广西",
+        "name": "全州",
+        "logicalName": "桂林府",
+        "lonLat": [
+          111.07,
+          25.93
+        ],
+        "xy": [
+          663.1511660637283,
+          471.94321780387975
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_01",
+        "parentName": "广西",
+        "name": "灌阳",
+        "logicalName": "桂林府",
+        "lonLat": [
+          111.16,
+          25.49
+        ],
+        "xy": [
+          664.2166010159584,
+          477.1519842840869
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_01",
+        "parentName": "广西",
+        "name": "临桂",
+        "logicalName": "桂林府",
+        "lonLat": [
+          110.21,
+          25.25
+        ],
+        "xy": [
+          652.970363226375,
+          479.99312188517854
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_04",
+        "parentName": "广西",
+        "name": "荔浦",
+        "logicalName": "平乐府",
+        "lonLat": [
+          110.4,
+          24.5
+        ],
+        "xy": [
+          655.2196140582632,
+          488.87170139670593
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_04",
+        "parentName": "广西",
+        "name": "恭城",
+        "logicalName": "平乐府",
+        "lonLat": [
+          110.83,
+          24.83
+        ],
+        "xy": [
+          660.3100155179668,
+          484.9651303965546
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-06",
+        "accountId": "div_pref_ming_06_04",
+        "parentName": "广西",
+        "name": "昭平",
+        "logicalName": "平乐府",
+        "lonLat": [
+          110.81,
+          24.17
+        ],
+        "xy": [
+          660.0732553042001,
+          492.778278914251
+        ],
+        "accepted": true,
+        "source": "明史45"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_01",
+        "parentName": "云南",
+        "name": "安宁",
+        "logicalName": "云南府",
+        "lonLat": [
+          102.48,
+          24.92
+        ],
+        "xy": [
+          561.4614953962233,
+          483.89963624607424
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_01",
+        "parentName": "云南",
+        "name": "昆阳",
+        "logicalName": "云南府",
+        "lonLat": [
+          102.6,
+          24.67
+        ],
+        "xy": [
+          562.8820739512807,
+          486.8591631895822
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_01",
+        "parentName": "云南",
+        "name": "富民",
+        "logicalName": "云南府",
+        "lonLat": [
+          102.5,
+          25.22
+        ],
+        "xy": [
+          561.69825708697,
+          480.3482051863082
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_01",
+        "parentName": "云南",
+        "name": "嵩明",
+        "logicalName": "云南府",
+        "lonLat": [
+          103.04,
+          25.34
+        ],
+        "xy": [
+          568.090855476841,
+          478.9276368900846
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_02",
+        "parentName": "云南",
+        "name": "宾川",
+        "logicalName": "大理府",
+        "lonLat": [
+          100.58,
+          25.83
+        ],
+        "xy": [
+          538.9690141142745,
+          473.126946819026
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_02",
+        "parentName": "云南",
+        "name": "云龙",
+        "logicalName": "大理府",
+        "lonLat": [
+          99.37,
+          25.89
+        ],
+        "xy": [
+          524.6448571135576,
+          472.41665118788706
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_02",
+        "parentName": "云南",
+        "name": "邓川",
+        "logicalName": "大理府",
+        "lonLat": [
+          100.11,
+          26.02
+        ],
+        "xy": [
+          533.40508467803,
+          470.8777034029258
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "parentId": "ming-14",
+        "accountId": "div_pref_ming_14_02",
+        "parentName": "云南",
+        "name": "太和",
+        "logicalName": "大理府",
+        "lonLat": [
+          100.17,
+          25.7
+        ],
+        "xy": [
+          534.1153747555894,
+          474.66589716439205
+        ],
+        "accepted": true,
+        "source": "明史46"
+      },
+      {
+        "name": "觉华岛",
+        "source": "Natural Earth 10m land 5.1.1; modern coastline approximation, not a 1627 survey",
+        "lonLat": [
+          120.8022627799194,
+          40.493651809144914
+        ],
+        "accepted": true,
+        "purpose": "physical-island-position"
+      },
+      {
+        "name": "皮岛",
+        "source": "Natural Earth 10m land 5.1.1; modern coastline approximation, not a 1627 survey",
+        "lonLat": [
+          124.65421946676271,
+          39.55373541502281
+        ],
+        "accepted": true,
+        "purpose": "physical-island-position"
+      }
+    ],
+    "anchors": [
+      {
+        "id": "ming-01-p01",
+        "center": [
+          726.2484273041943,
+          306.4465645419958
+        ],
+        "referenceSeat": [
+          726.2484273041943,
+          306.4465645419958
+        ]
+      },
+      {
+        "id": "ming-01-p02",
+        "center": [
+          715.357337179132,
+          318.758185615697
+        ],
+        "referenceSeat": [
+          715.357337179132,
+          318.758185615697
+        ]
+      },
+      {
+        "id": "ming-01-p03",
+        "center": [
+          722.6969895117508,
+          323.8485751675712
+        ],
+        "referenceSeat": [
+          722.6969895117508,
+          323.8485751675712
+        ]
+      },
+      {
+        "id": "ming-01-p04",
+        "center": [
+          704.5846272019803,
+          327.281613471048
+        ],
+        "referenceSeat": [
+          704.5846272019803,
+          327.281613471048
+        ]
+      }
+    ]
+  },
+  {
+    "file": "晚唐·开成五年（官方）.json",
+    "id": "sc-tang840-840",
+    "sha256": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51",
+    "mapId": "map-sc-tang840-840",
+    "width": 4316.521739,
+    "height": 3257.391304,
+    "regions": 575,
+    "projection": {
+      "type": "equirectangular",
+      "bbox": [
+        66,
+        -2,
+        150,
+        61
+      ],
+      "scale": 50.43478260869565,
+      "offset": [
+        40,
+        40
+      ],
+      "units": "map pixels; not longitude/latitude"
+    },
+    "anchors": [
+      {
+        "id": "京兆府·长安",
+        "center": [
+          2205.669566,
+          1388.121739
+        ],
+        "geographicCenter": [
+          108.94000001,
+          34.27
+        ]
+      },
+      {
+        "id": "同州",
+        "center": [
+          2256.104348,
+          1361.391304
+        ],
+        "geographicCenter": [
+          109.94,
+          34.80000001
+        ]
+      },
+      {
+        "id": "华州",
+        "center": [
+          2247.530435,
+          1376.017391
+        ],
+        "geographicCenter": [
+          109.77,
+          34.51000001
+        ]
+      },
+      {
+        "id": "商州",
+        "center": [
+          2256.104348,
+          1408.295652
+        ],
+        "geographicCenter": [
+          109.94,
+          33.87
+        ]
+      }
+    ]
+  },
+  {
+    "file": "绍宋·建炎元年八月（官方）.json",
+    "id": "sc-jianyan1-1127-shaosong",
+    "sha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+    "mapId": "shaosong-three-tiers-r6",
+    "width": 4312,
+    "height": 3332,
+    "regions": 566,
+    "projection": {
+      "type": "equirectangular",
+      "bbox": [
+        65,
+        5.5,
+        146,
+        56
+      ],
+      "scaleX": 52,
+      "scaleY": 64,
+      "offset": [
+        50,
+        50
+      ],
+      "units": "game-pixels"
+    },
+    "source": "shaosong-r6-geometry-original-account-preserving",
+    "anchors": [
+      {
+        "id": "ssr-0001",
+        "center": [
+          2614.1342187499995,
+          1409.45171875
+        ],
+        "referenceSeat": [
+          2616.2,
+          1407.44
+        ]
+      },
+      {
+        "id": "ssr-0002",
+        "center": [
+          2642.728125,
+          1407.281875
+        ],
+        "referenceSeat": [
+          2633.88,
+          1415.12
+        ]
+      },
+      {
+        "id": "ssr-0003",
+        "center": [
+          2633.850000000001,
+          1430.21
+        ],
+        "referenceSeat": [
+          2638.56,
+          1422.8
+        ]
+      },
+      {
+        "id": "ssr-0004",
+        "center": [
+          2607.05734375,
+          1432.0042187500005
+        ],
+        "referenceSeat": [
+          2607.88,
+          1431.76
+        ]
+      }
+    ]
+  }
+]

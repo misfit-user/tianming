@@ -1,0 +1,187 @@
+{
+  "installedAt": "2026-09-26T09:34:47.655Z",
+  "source": "C:\\Users\\37814\\Desktop\\tianming",
+  "candidate": "D:\\Codex-Deliverables\\edict-feedback-fix-20260926\\tianming",
+  "updates": [
+    {
+      "path": "web/tm-edict-outcomes.js",
+      "before": "7447ec7171e09d9d93f7655188823245aa0c2cf0a2ceff2965bfc770d2aa3e6d",
+      "after": "a194eec62f2a6919c0819134a596bd98117daebc755f6dc133851b60446ea45b"
+    },
+    {
+      "path": "web/tm-edict-effects.js",
+      "before": "dfe55f7be1d22da550d3a069c8a5cd11fdd79aec207dec9e7f34baa5f48e1e78",
+      "after": "46e05709f3970b0bebf9676b182cb870f40ec1c6858bae4109f6e987b278fd4b"
+    },
+    {
+      "path": "web/scripts/smoke-edict-outcomes.js",
+      "before": "4be88233a6eaad6866a9a2127893d9842dc5d4ea6c05b56838e3fe260f889f31",
+      "after": "60ab7833374c1c0655969707352c52806d46e0e20c2d265f32b85983a4d3cd98"
+    },
+    {
+      "path": "web/scripts/smoke-edict-data-writeback.js",
+      "before": "908c506476f914476f26b54085c131f036aa167363a69b94fbab9ca98c66fe1b",
+      "after": "bef9791a09cc9d945443ac3c1d260fb83a78969140f74d5660daf342be3725bf"
+    },
+    {
+      "path": "web/index.html",
+      "before": "1a91321e3a99199d6bf387a54a994b2ce8511c45ba604ee015c6abf409f0fe18",
+      "after": "4a48a6d960c0e0f1ffad64b4651332f069321212b830966899727ab28d5aedf8"
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "before": "1baddb0c1656e91c20012fa9411b0a70c2232f9a57e9143d8f4a4714b63e4888",
+      "after": "4b97d1c0c3e4cc89fe30ffa0587d189567c02269109529be8fec2c4514cd9f02"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "before": "cfa5cb61b7e3e02d3da8fd58d63899b4c07fe619d88998fa360d02f1c553ecc1",
+      "after": "56e4fa2fa51a2ae9b92621f463144ec075aadc04b5d2e22e0609af12c8123d9a"
+    },
+    {
+      "path": "web/scripts/smoke-startup-phase-observability.js",
+      "before": "98f4d51e15fa9bc243a81ae35a98670a5aa11c1db69a4deb1ce268129edef8c3",
+      "after": "f72fa42a39cad80be75ed3b6d4c81c19d723d5bf0042c985d3e3392de1958f47"
+    }
+  ],
+  "files": [
+    {
+      "path": "web/tm-edict-outcomes.js",
+      "sha256": "a194eec62f2a6919c0819134a596bd98117daebc755f6dc133851b60446ea45b"
+    },
+    {
+      "path": "web/tm-edict-effects.js",
+      "sha256": "46e05709f3970b0bebf9676b182cb870f40ec1c6858bae4109f6e987b278fd4b"
+    },
+    {
+      "path": "web/tm-endturn-prep.js",
+      "sha256": "cf4212811c0aedd6d88b6612938be5e917f4efe0050891fdd09fb8f39148f78c"
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "sha256": "1bee071b1c0827ea97697621850e09baddd05bc00eaff577c6fc43cd4e444d06"
+    },
+    {
+      "path": "web/tm-endturn-apply.js",
+      "sha256": "01a6d613769b936a0320af5a6d64540c41b3781bcbed4c06a8ec0a4d9b81632a"
+    },
+    {
+      "path": "web/tm-endturn-apply-stages.js",
+      "sha256": "451b786185fec43ac31251c0e1c52713863e5d034f1c8a9c731c46a0d46214a5"
+    },
+    {
+      "path": "web/tm-endturn-ai.js",
+      "sha256": "2e40bcb9ac7e5334f3638a76b93f6d7b78d8fbe493a34f931e2eef8b2be12a78"
+    },
+    {
+      "path": "web/tm-endturn-ai-infer.js",
+      "sha256": "0203a15d6efa1778815116ba5816223d59605260f6c1acfd893b616a7b85d8ca"
+    },
+    {
+      "path": "web/tm-endturn-ai-helpers.js",
+      "sha256": "f19b058ac76dfe9f9e09471fcd0e41a4a4462084c3c4cc35a4798343ce46e547"
+    },
+    {
+      "path": "web/tm-endturn-followup.js",
+      "sha256": "7bea016bfba79387b2da35d98190b439e49b020df5e7cfb24b8129d53ff9e561"
+    },
+    {
+      "path": "web/tm-endturn-validity.js",
+      "sha256": "3dfdd51cdb6e9dfaa793ece10cd58def94ea0d68165fb309bcea04f36c0fe8f7"
+    },
+    {
+      "path": "web/tm-endturn-render.js",
+      "sha256": "5a16e2e8981863e9e0d1b9a2cc21920a15d7df897c2499456a9ffbd83638c030"
+    },
+    {
+      "path": "web/tm-endturn-shiji-compose.js",
+      "sha256": "6dc6882e7c53285358b0f10459bf1b973179cde51f90c03cd793b8ea1491ce1d"
+    },
+    {
+      "path": "web/tm-endturn-agent-mode.js",
+      "sha256": "e9f2b9a0f9877a26ed80d8d06c743cd9db622ab3cb6d31a3a1400dbc4440d13b"
+    },
+    {
+      "path": "web/tm-endturn-agent-write-tools.js",
+      "sha256": "24fb51222bba16719e815ef2ff73818d46855a1c47f2f4fd201405224278d91a"
+    },
+    {
+      "path": "web/tm-endturn-agent-depth-tools.js",
+      "sha256": "e9b6b745de06b1c646a2b7164ea27705d67a968dff85aa0299af071d02558090"
+    },
+    {
+      "path": "web/tm-endturn-pipeline-steps.js",
+      "sha256": "963e29d7cf72965be1ce32b5d46e038d371ea9af4f50fe7874adfee443bc6f58"
+    },
+    {
+      "path": "web/tm-edict-oversight.js",
+      "sha256": "da601adb63991eaa9f57491ba4d0f7921500d9f8179acc73bf43c6ac8ae3ac54"
+    },
+    {
+      "path": "web/tm-ai-change-pathutils.js",
+      "sha256": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5"
+    },
+    {
+      "path": "web/tm-corruption-engine.js",
+      "sha256": "e516b599b3858fc4015ddbc6bc7ff7bac2ceabe9ab0a386a1e6f64589004b10d"
+    },
+    {
+      "path": "web/modules/ai-change-applier/core.js",
+      "sha256": "b20c5087c1024ac8862650fcf1b17d2ade6e94e194a326e9ec7fa5f0a2f7be9a"
+    },
+    {
+      "path": "web/generated/tm-ai-change-applier.bundle.js",
+      "sha256": "3cdd4e1ad09379e571ab3298ff3f4314c62347b52b07527a6923bb2cb8290382"
+    },
+    {
+      "path": "web/scripts/smoke-edict-outcomes.js",
+      "sha256": "60ab7833374c1c0655969707352c52806d46e0e20c2d265f32b85983a4d3cd98"
+    },
+    {
+      "path": "web/scripts/smoke-edict-data-writeback.js",
+      "sha256": "bef9791a09cc9d945443ac3c1d260fb83a78969140f74d5660daf342be3725bf"
+    },
+    {
+      "path": "web/scripts/smoke-edict-narrative-link.js",
+      "sha256": "742c48d4ca9685c6531fecec015560755585e8febc4f0cb882ca68a708a8e709"
+    },
+    {
+      "path": "web/scripts/smoke-edict-efficacy.js",
+      "sha256": "b98b9e6e9550ac05fc153726588d7be87c2692fd0440970a3dea6ccc3f595c1c"
+    },
+    {
+      "path": "web/scripts/smoke-shiji-volumes.js",
+      "sha256": "d46f530071da9c8127b36049b99afd952f7a45077483de47547186156838054b"
+    },
+    {
+      "path": "web/scripts/smoke-agent-mode-s8.js",
+      "sha256": "18f7b12a0b2a6080ec35e63251bb788781abe2e67d029746b0370baa81c53404"
+    },
+    {
+      "path": "web/scripts/smoke-endturn-narrative.js",
+      "sha256": "98b8046faaa0874cc26cfa805c0e24e683fe1e08a126d0093c934ed112ba4b30"
+    },
+    {
+      "path": "web/scripts/verify-all.js",
+      "sha256": "21858389382fcfdfee18485c333217e0718a52ac63f2c086a3d909675b3dfb3a"
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "4a48a6d960c0e0f1ffad64b4651332f069321212b830966899727ab28d5aedf8"
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "sha256": "4b97d1c0c3e4cc89fe30ffa0587d189567c02269109529be8fec2c4514cd9f02"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "sha256": "56e4fa2fa51a2ae9b92621f463144ec075aadc04b5d2e22e0609af12c8123d9a"
+    },
+    {
+      "path": "web/scripts/smoke-startup-phase-observability.js",
+      "sha256": "f72fa42a39cad80be75ed3b6d4c81c19d723d5bf0042c985d3e3392de1958f47"
+    }
+  ],
+  "indexUnchanged": true,
+  "published": false
+}

@@ -33,6 +33,7 @@ const aiHelpersSrc = read('tm-endturn-ai-helpers.js');
 const endturnHelpersSrc = read('tm-endturn-helpers.js');
 const diagnosticsPanelSrc = read('tm-diagnostics-panel.js');
 
+async function main() {
 assert(fs.existsSync(timingPath), 'endturn timing ledger module exists');
 assert(indexSrc.indexOf('tm-endturn-timing-ledger.js') >= 0, 'timing ledger is loaded by index.html');
 assert(/TM\.Endturn\.Timing/.test(timingSrc), 'TM.Endturn.Timing namespace exists');
@@ -76,7 +77,11 @@ assert(/_reviewText27\.length > 7000/.test(followupSrc), 'SC27 trims very long n
 assert(/id:\s*'sc27'[\s\S]{0,180}priority:\s*'high'/.test(followupSrc), 'SC27 foreground review uses high queue priority');
 assert(/id:\s*'sc27'[\s\S]{0,220}timeoutMs:\s*60000/.test(followupSrc), 'SC27 foreground review has bounded timeout');
 assert(/id:\s*'sc27'[\s\S]{0,240}maxRetries:\s*1/.test(followupSrc), 'SC27 foreground review has one bounded internal retry');
-assert(/subcallRetries:1/.test(aiSubcallSrc), 'subcall wrappers retry once by policy');
+// 2026-09-18：整段子调用可能已经落账，默认不重放；网络恢复由传输层的共享预算负责。
+// 明确配置仍然保留。smoke-turn-request-reliability 动态验证传输耗尽不触发外层重放。
+assert(/var _retries = \(_policy && _policy\.subcallRetries != null\) \? _policy\.subcallRetries : 0;/.test(aiSubcallSrc),
+  'subcall wrapper honors explicit retry count and defaults to no whole-stage replay');
+assert(/subcallRetries:0/.test(aiSubcallSrc), 'default call policy does not replay partially applied stages');
 assert(/max_tokens:\s*_tok\(3000\)/.test(followupSrc), 'SC27 output budget is bounded to review-sized JSON');
 assert(/var _needsForegroundHistoryCheck =/.test(followupSrc), 'historical foreground check controls post-turn launch timing');
 assert(/if \(!_needsForegroundHistoryCheck\)[\s\S]*_flushQueuedPostTurnSubcalls/.test(followupSrc), 'post-turn jobs are not flushed before foreground history check');
@@ -104,10 +109,11 @@ assert(/_queuePostTurnSubcall\('compress_foreshadows'/.test(followupSrc), 'fores
 assert(/_queuePostTurnSubcall\('compress_conversation'/.test(followupSrc), 'conversation compression is queued post-turn');
 assert(!/await\s+fetch\(opts\.url/.test(inferSrc + '\n' + read('tm-endturn-ai.js')), 'JSON repair uses controlled AI queue instead of raw fetch');
 assert(/function\s+_callAIMessagesStreamDirect/.test(infraSrc)
-  && /_aiQueue\.enqueue\(function\(\)\s*\{\s*return _callAIMessagesStreamDirect/.test(infraSrc)
-  && /function\s+callAIBodyStream[\s\S]*?_aiQueue\.enqueue\(run, opts\.priority \|\| 'normal'\)/.test(infraSrc),
-  'legacy and finalized-body streaming AI calls are routed through the shared AI queue');
-assert(/priority:\s*opts\.priority/.test(infraSrc), 'generic AI helpers forward explicit priority into the queue');
+  && /function\s+callAIMessagesStream[\s\S]*?_aiWithStreamScope/.test(infraSrc)
+  && /function\s+callAIBodyStream[\s\S]*?_aiWithStreamScope/.test(infraSrc)
+  && /_aiQueue\.enqueue\(run, opts\.priority \|\| 'normal', \{ signal: opts\.signal/.test(infraSrc),
+  'legacy and finalized streams use cancellation-aware scopes and the same request queue');
+await require('./lib-ai-priority-routing').verifyGenericPriority(assert);
 assert(/callAIBodyStream\(_sc1Body[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 finalized-body streaming request is queued as critical foreground work');
 assert(/callAIMessages\(_callABody\.messages[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 Call A compression is queued as critical foreground work');
 assert(/typeof _callARaw === 'string'/.test(aiSubcallSrc), 'SC1 Call A accepts callAIMessages string results');
@@ -137,3 +143,5 @@ assert((aiHelpersSrc.match(/fetchMaxRetries:\s*1/g) || []).length >= 3, 'end-tur
 assert(/callAI\(prompt,\s*600,\s*null,\s*'primary',[\s\S]*timeoutMs:\s*45000[\s\S]*maxRetries:\s*1/.test(endturnHelpersSrc), 'post-result taishigong generation is bounded with one retry');
 
 console.log('[smoke-endturn-performance-optimizations] pass assertions=' + passed.value);
+}
+main().catch(error => { console.error(error.stack || error); process.exitCode = 1; });

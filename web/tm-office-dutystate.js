@@ -17,10 +17,12 @@
 
   var POWER_KEYS = ['taxCollect', 'militaryCommand', 'appointment', 'impeach', 'supervise', 'yinBu', 'judicial', 'works', 'drafting'];
   var DOMAIN_ATTR = { militaryCommand: 'military', works: 'management', drafting: 'intelligence' }; // 其余默认 administration
+  var HS = (global.TM && global.TM.OfficeHolderState) || (typeof require === 'function' ? require('./tm-office-holder-state.js') : null);
+  var Evidence = (global.TM && global.TM.OfficeActionEvidence) || (typeof require === 'function' ? require('./tm-office-action-evidence.js') : null);
 
   // owner 裁示·对称档（可调）
   var DEFAULT_FORCE = {
-    vacancyDecay: 12,   // 出缺·履职度每回合衰减
+    vacancyDecay: 12,   // 出缺·履职度每30日衰减
     driftRate: 0.3,     // 在任·履职度漂向"承载力"的速率
     lowBand: 35, highBand: 70,
     compLow: 0.025, compHigh: 0.01,  // 实征率：失职扣 / 称职奖
@@ -29,12 +31,6 @@
 
   function _clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function _fn(name) { return (typeof global[name] === 'function') ? global[name] : null; }
-  function _holderChar(GM, p) {
-    if (!p || !p.holder) return null;
-    var find = _fn('findCharByName');
-    if (find) return find(p.holder);
-    return (GM.chars || []).find(function (c) { return c && c.name === p.holder; }) || null;
-  }
   function _powersOf(p) {
     var out = [], pw = p && p.powers;
     if (pw) POWER_KEYS.forEach(function (k) { if (pw[k]) out.push(k); });
@@ -45,22 +41,39 @@
     if (_rankLvl(p) <= 6) return true;
     return /尚书|侍郎|都御史|大学士|卿$|总督|巡抚|首辅|长官|令$|尹$|使$/.test(p.name || '');
   }
-  function _walk(nodes, visit) {
-    (nodes || []).forEach(function (n) {
-      (n.positions || []).forEach(function (p) { visit(p, n.name || ''); });
-      if (n.subs && n.subs.length) _walk(n.subs, visit);
-    });
-  }
 
   // 五常评分(0-100)·履职看德性非忠君(owner 2026-06-20修正)：义.28信.28礼.20仁.16智.08(智已被才覆盖故低)。镜像 tmfRenwuWuchangValue 兜底读法·不依赖UI层
   var _WC_ALIAS = { ren: ['仁', 'ren', 'benevolence'], yi: ['义', 'yi', 'righteousness'], li: ['礼', 'li', 'propriety'], zhi: ['智', 'zhi', 'wisdom'], xin: ['信', 'xin', 'honesty', 'trust'] };
   function _wcVal(ch, k) { var src = (ch && (ch.wuchang || ch.wuchangOverride || ch.fiveConstants || ch.morals)) || {}; var al = _WC_ALIAS[k]; for (var i = 0; i < al.length; i++) { var v = src[al[i]]; if (v != null && !isNaN(Number(v))) return Number(v); } return 50; }
   function _wuchangScore(ch) { return _wcVal(ch, 'yi') * 0.28 + _wcVal(ch, 'xin') * 0.28 + _wcVal(ch, 'li') * 0.20 + _wcVal(ch, 'ren') * 0.16 + _wcVal(ch, 'zhi') * 0.08; }
   // 在任者对该职位的"承载力"(0-100)：域才0.6 + 五常德性0.4（履职=能不能干×愿不愿尽职·不看忠君）
-  function _capacity(ch, pwKeys) {
-    var domainKey = DOMAIN_ATTR[pwKeys[0]] || 'administration';
+  function _capacity(ch, power) {
+    var domainKey = DOMAIN_ATTR[power] || 'administration';
     var dv = (ch[domainKey] != null) ? ch[domainKey] : 50;
     return dv * 0.6 + _wuchangScore(ch) * 0.4;
+  }
+
+  // Integrate continuous drift and band effects, splitting exactly at threshold crossings.
+  function _advance(prev, target, vacant, days, F) {
+    var rate = Math.max(0, F.vacancyDecay) / 30;
+    var k = -Math.log(Math.max(1e-12, 1 - _clamp(F.driftRate, 0, 1))) / 30;
+    function at(t) { return _clamp(vacant ? prev - rate * t : target + (prev - target) * Math.exp(-k * t), 0, 100); }
+    var cuts = [0, days];
+    [F.lowBand, F.highBand].forEach(function(level) {
+      var t = vacant ? (rate ? (prev-level)/rate : -1) : k && prev!==target && (level-target)/(prev-target)>0 ? -Math.log((level-target)/(prev-target))/k : -1;
+      if(t>0 && t<days) cuts.push(t);
+    });
+    cuts.sort(function(a,b){return a-b;});
+    var low=0,high=0;
+    for(var i=1;i<cuts.length;i++) {var mid=at((cuts[i]+cuts[i-1])/2), len=cuts[i]-cuts[i-1];if(mid<F.lowBand)low+=len;else if(mid>F.highBand)high+=len;}
+    return {next:at(days),low:low/30,high:high/30};
+  }
+  function _days(G,opts) {
+    if(opts.days!=null) return Math.max(0,HS.number(opts.days,0));
+    if(opts.elapsedDays!=null) return Math.max(0,HS.number(opts.elapsedDays,0));
+    if(opts.monthRatio!=null) return Math.max(0,HS.number(opts.monthRatio,0)*30);
+    var get=_fn('_getDaysPerTurn');
+    return Math.max(0,HS.number(get ? get() : G.daysPerTurn,30));
   }
 
   /**
@@ -71,45 +84,75 @@
    */
   function tickOfficeDutyState(GM, opts) {
     opts = opts || {};
-    var F = opts.force || DEFAULT_FORCE;
+    var F = Object.assign({}, DEFAULT_FORCE, opts.force || {});
     var agg = { compliance: 0, corruption: 0, details: [] };
-    if (!GM || !GM.officeTree || !GM.officeTree.length) return agg;
+    if (!GM || !GM.officeTree || !GM.officeTree.length || !HS) return agg;
     var turn = (GM.turn != null) ? GM.turn : 0;
-
-    _walk(GM.officeTree, function (p, deptName) {
+    var days=_days(GM,opts);
+    if(!days) return agg;
+    var rows=[];
+    HS.walk(GM.officeTree, function(p,n,path) {
+      var powers=_powersOf(p); if(!powers.length && !_isHead(p))return;
+      var state=HS.read(GM,p);
+      rows.push({p:p,dept:n.name || '',path:path,state:state,powers:powers,regionId:p.jurisdictionId || p.regionId || n.jurisdictionId || n.regionId,regionName:p.jurisdiction || n.jurisdiction,faction:p.factionId || n.factionId});
+    });
+    var start=HS.number(opts.startDay,rows.reduce(function(v,row){return Math.max(v,HS.number(row.p._dutyState && row.p._dutyState.elapsedDays,0));},0));
+    var boundaries=[start,start+days];
+    rows.forEach(function(row){row.state.characters.forEach(function(h){
+      var leave=row.p.officeLeave || row.p.leave || h.char.officeLeave || h.char.leave || {};
+      [leave.startDay,leave.endDay].forEach(function(day){if(day!=null && Number(day)>start && Number(day)<start+days && boundaries.indexOf(Number(day))<0)boundaries.push(Number(day));});
+    });});
+    boundaries.sort(function(a,b){return a-b;});
+    function actorsAt(row,day) {return row.state.characters.map(function(h){return HS.availability(GM,h.char,row.p,day);});}
+    var segments=boundaries.slice(1).map(function(end,i) {
+      var day=(end+boundaries[i])/2,loads=new Map(),actors=rows.map(function(row){return actorsAt(row,day);});
+      actors.forEach(function(list){list.forEach(function(a){loads.set(a.char,(loads.get(a.char)||0)+1);});});
+      return {days:end-boundaries[i],actors:actors,shares:actors.map(function(list){return list.length?list.reduce(function(sum,a){return sum+1/loads.get(a.char);},0)/list.length:1;})};
+    });
+    rows.forEach(function(row,rowIndex) {
+      var p=row.p,deptName=row.dept;
       var pwKeys = _powersOf(p);
       if (!pwKeys.length && !_isHead(p)) return;     // 同舆图过滤：只主官/掌权
       var ds = p._dutyState || (p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
       if (ds.lastTurn === turn) return;              // 本回合已 tick·防重复施加
 
-      var ch = _holderChar(GM, p);
       var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
-      var delta;
-      if (!ch) {
-        delta = -F.vacancyDecay;                     // 出缺·快衰
-      } else {
-        delta = (_capacity(ch, pwKeys) - prev) * F.driftRate;  // 在任·漂向承载力
-      }
-      var next = _clamp(prev + delta, 0, 100);
+      if(!ds.byPower) ds.byPower={};
+      var keys=pwKeys.length?pwKeys:['general'], results={};
+      keys.forEach(function(power) {
+        var current=HS.number(ds.byPower[power],prev), result={next:current,low:0,high:0};
+        for(var bi=0;bi<segments.length;bi++) {
+          var segment=segments[bi], actors=segment.actors[rowIndex], target=current;
+          if(actors.length) target=actors.reduce(function(sum,a){return sum+_capacity(a.char,power)*a.capacity;},0)/actors.length;
+          var step=_advance(current,target,!row.state.occupied,segment.days,F), share=segment.shares[rowIndex];
+          result.low+=step.low*share;result.high+=step.high*share;current=step.next;
+        }
+        result.next=current; results[power]=result;
+        ds.byPower[power]=results[power].next;
+      });
+      var next=keys.reduce(function(sum,k){return sum+ds.byPower[k];},0)/keys.length;
       ds.fulfillment = next;
       ds.trend = next > prev + 0.5 ? 'rising' : next < prev - 0.5 ? 'falling' : 'stable';
       ds.lastTurn = turn;
+      ds.elapsedDays = start+days;
 
       // 域效果（带 × power·仅 v1 已接杠杆）
-      var band = next < F.lowBand ? 'low' : next > F.highBand ? 'high' : 'mid';
-      if (band === 'mid') return;
       var did = {};   // 每杠杆每官最多记一次（防 supervise+impeach 同署双扣腐败）
       pwKeys.forEach(function (k) {
+        var r=results[k];
+        var band=r.next<F.lowBand?'low':r.next>F.highBand?'high':'mid';
         if (k === 'taxCollect' && !did.compliance) {
           did.compliance = 1;
-          var d = band === 'low' ? -F.compLow : F.compHigh;
+          var d = -r.low*F.compLow+r.high*F.compHigh;
+          if(!d) return;
           agg.compliance += d;
-          agg.details.push({ dept: deptName, pos: p.name || '', lever: 'compliance', delta: d, fulfillment: Math.round(next), band: band });
+          agg.details.push({ dept: deptName, pos: p.name || '', positionId:p.id, jurisdiction:p.jurisdictionId || row.path, regionId:row.regionId,regionName:row.regionName,faction:row.faction, lever: 'compliance', delta: d, fulfillment: Math.round(r.next), band: band });
         } else if ((k === 'supervise' || k === 'impeach') && !did.corruption) {
           did.corruption = 1;
-          var c = band === 'low' ? F.corrLow : -F.corrHigh;
+          var c = r.low*F.corrLow-r.high*F.corrHigh;
+          if(!c) return;
           agg.corruption += c;
-          agg.details.push({ dept: deptName, pos: p.name || '', lever: 'corruption', delta: c, fulfillment: Math.round(next), band: band });
+          agg.details.push({ dept: deptName, pos: p.name || '', positionId:p.id, jurisdiction:p.jurisdictionId || row.path, regionId:row.regionId,regionName:row.regionName,faction:row.faction, lever: 'corruption', delta: c, fulfillment: Math.round(r.next), band: band });
         }
       });
     });
@@ -117,29 +160,36 @@
   }
 
   // ── ④B·npc_action → 履职反哺：官本回合主动行动定性 → 调其履职度（履职活在人物 agency 里·非脱钩公式·与 tick 的才五常漂移叠加=基线+行动）──
-  var _DUTY_DILIGENT = /勤政|治事|整顿|赈|巡按|巡查|巡视|革弊|清理|清丈|督办|督饷|兴修|缮城|修边|平乱|平叛|讨平|安抚|招抚|言事|上疏|进谏|纠劾|弹劾墨|考课|稽查|筹饷|理财|劝农|肃贪|查办/;
-  var _DUTY_DERELICT = /谋身|钻营|党争|结党|营私|缺席|不朝|旷|告病|称疾|避事|推诿|敛财|贪墨|纳贿|受贿|中饱|懈怠|怠政|尸位|嬉游|宴饮|挂冠|乞归/;
-  var _DUTY_ACT_FORCE = { diligent: 5, derelict: 6 };  // 每回合·行动定性的履职 delta（owner 可调）
-  function _npcActionDutyDelta(act) {
-    var s = String((act && act.action) || '') + '|' + String((act && act.behaviorType) || '') + '|' + String((act && act.type) || '') + '|' + String((act && act.reason) || '');
-    if (_DUTY_DERELICT.test(s)) return -_DUTY_ACT_FORCE.derelict;
-    if (_DUTY_DILIGENT.test(s)) return _DUTY_ACT_FORCE.diligent;
-    if (/develop|donate|relief|govern|reform/.test((act && act.behaviorType) || '')) return _DUTY_ACT_FORCE.diligent; // behaviorType 兜底·治事类
-    return 0;
-  }
   // 把某官本回合行动的履职 delta 落到其在职位的 _dutyState（非在职官/中性行动则不动）
   function applyNpcActionToDuty(GM, act) {
-    if (!GM || !GM.officeTree || !act || !act.name) return null;
-    var delta = _npcActionDutyDelta(act);
-    if (!delta) return null;
-    var hit = null;
-    _walk(GM.officeTree, function (p, deptName) { if (!hit && p.holder === act.name) hit = { p: p, dept: deptName }; });
+    if (!GM || !GM.officeTree || !act || !HS || !Evidence) return null;
+    var ch=HS.identity(GM,act.characterId != null ? act.characterId : act.actorId,act.name).char;
+    if(!ch || ch.alive===false || ch.dead===true) return null;
+    var hit=HS.select(GM,ch,Object.assign({},act.dutyEvidence || {},act));
     if (!hit) return null;  // 该人物非在职官·不影响履职
-    var ds = hit.p._dutyState || (hit.p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
+    var fact=Evidence.classify(GM,act,ch);
+    if(!fact) return null;
+    var delta=fact.delta, key=Evidence.actionKey(GM,act,ch,hit);
+    if(!Array.isArray(ch._officeDutyActions)) ch._officeDutyActions=[];
+    if(ch._officeDutyActions.indexOf(key)>=0) return null;
+    if(fact.kind==='leave') {
+      var leave=act.dutyEvidence || {};
+      hit.pos.officeLeave={characterId:ch.id,approved:fact.approved,capacity:fact.capacity,canPerform:leave.canPerform,delegateId:fact.delegateId,startDay:leave.startDay,endDay:leave.endDay};
+      ch._officeDutyActions.push(key);
+      return null;
+    }
+    var ds = hit.pos._dutyState || (hit.pos._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
     var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
     ds.fulfillment = _clamp(prev + delta, 0, 100);
+    if(ds.byPower) {
+      var power=act.power || (act.dutyEvidence && act.dutyEvidence.power);
+      Object.keys(ds.byPower).forEach(function(k){if(!power || k===power) ds.byPower[k]=_clamp(ds.byPower[k]+delta,0,100);});
+      var domains=Object.keys(ds.byPower);
+      if(domains.length) ds.fulfillment=domains.reduce(function(sum,k){return sum+ds.byPower[k];},0)/domains.length;
+    }
     ds.trend = delta > 0 ? 'rising' : 'falling';
-    return { holder: act.name, dept: hit.dept, pos: hit.p.name, delta: delta, fulfillment: Math.round(ds.fulfillment) };
+    ch._officeDutyActions.push(key);
+    return { holder: ch.name, characterId:ch.id, dept: hit.dept, pos: hit.pos.name, positionId:hit.pos.id, delta: ds.fulfillment-prev, fulfillment: Math.round(ds.fulfillment) };
   }
 
   global.tickOfficeDutyState = tickOfficeDutyState;

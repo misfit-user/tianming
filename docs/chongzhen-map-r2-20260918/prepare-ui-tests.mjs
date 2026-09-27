@@ -1,0 +1,21 @@
+// Reuse native game acceptance, now exercise the actual visible layer buttons.
+import fs from 'node:fs';import assert from 'node:assert/strict';
+const from='docs/chongzhen-prefecture-map-20260917/',to='docs/chongzhen-map-r2-20260918/';
+let ui=fs.readFileSync(from+'verify-native-ui.mjs','utf8').replaceAll('284','296').replaceAll('chongzhen-prefecture-map-20260917','chongzhen-map-r2-20260918');
+assert.ok(ui.includes('state._zoomLevelLinkOff=true;'));
+ui=ui.replace('state._zoomLevelLinkOff=true;',"const fit=document.querySelector('[data-map-fit-all]');if(!fit||getComputedStyle(fit).display==='none')throw Error('Visible full-map button missing');fit.click();");
+ui=ui.replaceAll("document.querySelector('[data-map-reset]').click()","document.querySelector('[data-map-fit-all]').click()");
+const needle=" for(const tier of ['realm','region','prefecture']){";assert.equal(ui.split(needle).length,2);
+ui=ui.replace(needle,` const controls=await js(\`(()=>{const s=TMPhase8FormalBridge.__p8MapParts.state,b=document.querySelector('[data-map-tier-lock]');return {locked:s._zoomLevelLinkOff,text:b.textContent,shown:getComputedStyle(b).display!=='none',scale:s.mapView.scale};})()\`);
+ check('visible-layer-lock-and-full-map',controls.locked&&controls.shown&&controls.scale===1,controls);
+`+needle);
+ui=ui.replaceAll('崇祯开局 · ','崇祯 R2 · ');
+const marker=" report.liveTransfers=await js(";assert.equal(ui.split(marker).length,2);
+ui=ui.replace(marker,` await js(\`TMPhase8FormalBridge.map.focusRegion('ming-22-p01')\`);await sleep(1800);await win.webContents.capturePage();await sleep(750);
+ fs.writeFileSync(path.join(dir,'map-liaodong-detail.png'),(await win.webContents.capturePage()).toPNG());
+`+marker);
+fs.writeFileSync(to+'verify-native-ui.mjs',ui);
+fs.copyFileSync(from+'verify-live-transfers.js',to+'verify-live-transfers.js');
+let runner=fs.readFileSync(from+'run-native-ui.mjs','utf8').replaceAll('chongzhen-prefecture-map-20260917','chongzhen-map-r2-20260918');
+fs.writeFileSync(to+'run-native-ui.mjs',runner);
+console.log('Native R2 screenshot and live-state tests prepared.');

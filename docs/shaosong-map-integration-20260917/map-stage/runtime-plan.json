@@ -1,0 +1,22 @@
+[
+  {
+    "name": "tm-fiscal-engine.js",
+    "before": "5f7b05159f437b9ad2d86f83132a697dc8752e3fab86153f47c75b27c5a8eb54",
+    "after": "3e2c3d30b9100daa14bca3bd234b30d55281c5f74de2a30cb4d493fc9284cc6a"
+  },
+  {
+    "name": "phase8-formal-map-dossier.js",
+    "before": "92940f5e48426e362c4e3c3d0e7a40983f6e2334e40ed0249a865961f1cdd4b1",
+    "after": "5fbf579cf69a945ab18318d5d8aec54db3e878318565a1201077b5582e9e067d"
+  },
+  {
+    "name": "tm-faction-membership.js",
+    "before": "d52d183623730808bb4e72ff76383504cf47fb44a0d8aed41ac2c7f5d0850157",
+    "after": "f100978575281926d994d0c4dbf075ce90477a9dce1208b06fc8ca3c9e098f3c"
+  },
+  {
+    "name": "tm-faction-derived-economy.js",
+    "before": "5a5091da00914711348ff34bebad1162d18f286aa4acdc489f298d7d08d63241",
+    "after": "ea6f47fe177b91e67beef6e9d2dc024a0c15e9e0d60dc03a070d0140eb83c06c"
+  }
+]

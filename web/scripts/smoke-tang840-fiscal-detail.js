@@ -30,7 +30,8 @@ ok(!wineCosts.some(r=>['京兆府·长安','太原府','扬州'].includes(r.regi
 near(taxRows('wine').reduce((a,t)=>a+t.central+t.local,0)-520000,1040000,'wine net profit is not added again as a second revenue');
 const centralItems=annual.expenses.items.filter(r=>r.funding==='central');ok(new Set(centralItems.map(r=>r.name)).size>=90,'central services, offices and armies retain distinct payable items');
  ok(centralItems.filter(r=>r.category==='army').every(r=>r.sourceTag==='junxiang')&&centralItems.filter(r=>r.category==='administration').every(r=>r.sourceTag==='fenglu'),'army and staff share the official expense contract');
-near(annual.expenses.army.grain,7479000,'troop grain rations not multiplied when cash support changes');near(annual.expenses.army.cloth,2535000,'troop cloth allowance not duplicated');
+const authoredArmyAnnual=k=>s.military.initialTroops.filter(a=>a.faction==='唐朝廷').reduce((t,a)=>t+(a[{grain:'monthlyGrainPayPerSoldier',cloth:'monthlyClothPayPerSoldier'}[k]]*a.payrollStrength+a.monthlyUpkeep[k])*12,0);
+near(annual.expenses.army.grain,authoredArmyAnnual('grain'),'troop grain rations not multiplied when cash support changes');near(annual.expenses.army.cloth,authoredArmyAnnual('cloth'),'troop cloth allowance not duplicated');
 for(const a of g.armies.filter(a=>a.faction==='唐朝廷'))ok(!!a.funding.localShareByResource,'resource-specific military payer '+a.id);
 const primary=c.FiscalEngine.getConsolidatedView({game:g,factionId:'唐朝廷'}),stocks=Object.fromEntries(RES.map(k=>[k,primary.resources[k].stock]));
 const received=c.CascadeTax.collect({game:g,turnDays:10}),paid=c.FixedExpense.collect({game:g,turnDays:10});ok(received.ok&&paid.ok,'real collection and payment consume the new source');

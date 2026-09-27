@@ -36,7 +36,7 @@ function setup(switchOn) {
 (function () {
   setup(false);
   var lines = FND._formatBuildOpportunities({ name: '后金' });
-  ok(Array.isArray(lines) && lines.length === 0, 'BUILD_OPPORTUNITIES 开关关·返空·_pushSection 不注入零回归');
+  ok(Array.isArray(lines) && lines.length > 0, '旧关闭值不再关闭正式势力营建感知');
 })();
 
 // ── T3: _landFactionBuilds 落地本派叶 ──

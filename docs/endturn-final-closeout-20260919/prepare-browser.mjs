@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const dir='docs/endturn-final-closeout-20260919';
+let code=fs.readFileSync('docs/storage-write-reliability-20260919/browser-realtime.mjs','utf8');
+code=code.replaceAll('docs/storage-write-reliability-20260919',dir);
+const from=code.indexOf("const source=fs.readFileSync('web/tm-storage.js'");
+const to=code.indexOf('const server=',from);
+if(from<0||to<0)throw Error('Existing isolated browser harness boundary missing');
+const replacement="const source=fs.readFileSync('web/tm-endturn-response-recovery.js','utf8');\nfs.writeFileSync(path.join(dir,'browser-response.js'),source);\nfs.writeFileSync(path.join(dir,'browser-vault.js'),fs.readFileSync('web/tm-endturn-recovery-vault.js'));\nconst files={'/test.html':['browser-vault.html','text/html; charset=utf-8'],'/tm-endturn-response-recovery.js':['browser-response.js','text/javascript; charset=utf-8'],'/tm-endturn-recovery-vault.js':['browser-vault.js','text/javascript; charset=utf-8']};\n";
+code=code.slice(0,from)+replacement+code.slice(to);
+fs.writeFileSync(dir+'/browser-test.mjs',code,'utf8');
+console.log('Isolated native browser reload test prepared');

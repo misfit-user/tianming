@@ -1,0 +1,252 @@
+{
+  "completedAt": "2026-09-23T11:44:39.157Z",
+  "status": "implemented_locally",
+  "source": "C:/Users/37814/Desktop/tianming",
+  "candidate": "E:/tianming-memory-policy-20260923/candidate",
+  "releasePerformed": false,
+  "realPlayerDataUsed": false,
+  "paidModelCalls": 0,
+  "fullSmoke": {
+    "summary": {
+      "selected": 1093,
+      "pass": 1093,
+      "fail": 0,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "report": "E:/tianming-memory-policy-20260923/candidate/web/dev-tools/arch-guard/ci-aTNWGK/smoke-report.json"
+  },
+  "finalRelevantSmokes": {
+    "summary": {
+      "selected": 145,
+      "pass": 145,
+      "fail": 0,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "report": "E:/tianming-memory-policy-20260923/verified-memory-smokes.json"
+  },
+  "dailyChecks": {
+    "policyCases": 11,
+    "lifecycleCases": 23,
+    "architectureGuards": 13,
+    "officialParityAssertions": 41,
+    "releaseContractAssertions": 182,
+    "baselineFiles": 1328,
+    "logs": [
+      "E:/tianming-memory-policy-20260923/local-arch.log",
+      "E:/tianming-memory-policy-20260923/local-parity.log",
+      "E:/tianming-memory-policy-20260923/local-release-contract.log",
+      "E:/tianming-memory-policy-20260923/local-baseline-check.log"
+    ]
+  },
+  "nativeAcceptance": {
+    "runtime": "Electron 33.4.11",
+    "saveAndRestart": true,
+    "restoredPolicies": 1,
+    "restoredOriginals": 1,
+    "fullSourceTailSearch": true,
+    "panelRendered": true,
+    "errors": [],
+    "screenshot": "E:/tianming-memory-policy-20260923/client-read-panel.png",
+    "lastReadback": "read",
+    "confirmedProcessExit": 0
+  },
+  "syntheticLongRun": {
+    "turns": 100,
+    "saveForks": 3,
+    "paidModelGameplay": false
+  },
+  "files": [
+    {
+      "file": "web/.hot-update-manifest.json",
+      "sha256": "03ab9c73fe32c8d29ead97c31b21a968aeb06c1dc1616c68af458e2b7d93fbe4"
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "d62b3de5fe0362252bef09798159b40ba970e749c8668c505c83d5f44368571d"
+    },
+    {
+      "file": "web/phase8-formal-map.js",
+      "sha256": "78e843532c357d06477f166e5200f83d215cab3c7b229b3fae6279b45c20e759"
+    },
+    {
+      "file": "web/scripts/lib-memory-upgrade-r2.js",
+      "sha256": "99889c36503569e5a4e32050806c514305acb77d20775429ad287bc69073528b"
+    },
+    {
+      "file": "web/scripts/smoke-agent-mode-s2.js",
+      "sha256": "0797039207e91caa35bcd58dd0a244a2944583bb1d94c61d319c2ad315ded491"
+    },
+    {
+      "file": "web/scripts/smoke-agent-mode-tools.js",
+      "sha256": "83b4a126585c9bb45651ee2570d0552afbfed053801eae065df613f5a6a1fce5"
+    },
+    {
+      "file": "web/scripts/smoke-memory-continuity-lifecycle.js",
+      "sha256": "a97978d6d30526bfa30329c3d3efe5573a94f3730078e4d7d0191a9d0cc998fb"
+    },
+    {
+      "file": "web/scripts/smoke-memory-policy-continuity.js",
+      "sha256": "f45f5d87a55a201e96fbfe0f387fe566e338cfd1a2ceac3aba5681d52f743d6d"
+    },
+    {
+      "file": "web/scripts/smoke-recovery-settings-restore.js",
+      "sha256": "bc7514af89d0869b93e365a83ea61efa95f94105876daec21214aa654f178aaa"
+    },
+    {
+      "file": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "fd011ec2a517f9cf6692a893d6a1c9518c8464750061b8062f2a22848241a1c6"
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "sha256": "aea71fb9726def5aac019151c2475e6fd32ce90df48fdfdaeabe2dbb1fa30bfd"
+    },
+    {
+      "file": "web/scripts/verify-all.js",
+      "sha256": "8f141db2895bb9c1420c3a0c5cfcdfca7a1237345fb5d36cf997dbaf447bf9fa"
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "38913258fe03e8023f07f208ab0650654ee552e0e638ed47caf0b9d77bbb3b92"
+    },
+    {
+      "file": "web/tm-agent-world-editor.js",
+      "sha256": "5950a2998927ee34a2cc0e556b5d80b08f1e250c416f7878ce3058b768664373"
+    },
+    {
+      "file": "web/tm-ai-infra-retry.js",
+      "sha256": "5632afd6dc4c868f3e9f3df230ff96debb7470f1d85e685f833f246b7967461d"
+    },
+    {
+      "file": "web/tm-ai-infra.js",
+      "sha256": "b26bfa7cf6d59b6e913a9205874dd3ae0ec24fe8a7ecd2782b8151092cb5f9ea"
+    },
+    {
+      "file": "web/tm-ai-output-validator.js",
+      "sha256": "30ea79f665825a2b7d0d6cf71ceacf75f8bf5af7b2d503cb47c0ec97aa72670c"
+    },
+    {
+      "file": "web/tm-ai-schema.js",
+      "sha256": "f0b02578a356bb73a4776b5090bcb21c6605cc18eee347ac2ed3b3c2857b24ba"
+    },
+    {
+      "file": "web/tm-chronicle-tracker.js",
+      "sha256": "a49fa19f1a2955f1b2abb2cdeb7ae46629dee051ba22c50d5c55453f9e9fea1e"
+    },
+    {
+      "file": "web/tm-emergency-recovery-review.js",
+      "sha256": "71474e85a50b89ae06b474bdd58aaa7c769d38f792fe0b71b4e1de4477b69556"
+    },
+    {
+      "file": "web/tm-endturn-agent-depth-tools.js",
+      "sha256": "d6c19b8b10983ec53c4e7fbf40c71531986002970e2bd51cfd6fb3114e2fb18f"
+    },
+    {
+      "file": "web/tm-endturn-agent-intent-plan.js",
+      "sha256": "4559d35dc9f7e6a0b668279a41f11ff097c6aab3601c54aa0c970fd800af92fb"
+    },
+    {
+      "file": "web/tm-endturn-agent-read-tools.js",
+      "sha256": "009bc17a2832af89983d54be27450d3120fa87fb4d3a672a269d74b00b35396b"
+    },
+    {
+      "file": "web/tm-endturn-agent-write-tools.js",
+      "sha256": "20ee2904c441e53775bd70eb881159fc55242e5953eed36baf18c8d59e726418"
+    },
+    {
+      "file": "web/tm-endturn-ai-sc1-budget.js",
+      "sha256": "46e913ae146adbc24f539e6238874886cf4d538fefc1200d664e6029a7d05948"
+    },
+    {
+      "file": "web/tm-endturn-ai.js",
+      "sha256": "bc6f037c5ec716f9d32862dc6a05aa2b68d17e07bb9793e93fc49aa0fa2b84a3"
+    },
+    {
+      "file": "web/tm-endturn-apply-stages.js",
+      "sha256": "f7aa3a61e7727cfc95042b91cb4762497c9d0850b7aee10fd29caca658204609"
+    },
+    {
+      "file": "web/tm-endturn-followup.js",
+      "sha256": "318267c427a91217fd255d15e6dd147c1cce0fcc9c307e38ee37f053e10de283"
+    },
+    {
+      "file": "web/tm-memory-context-compiler.js",
+      "sha256": "b8e77d8a28361275e70e9f9114092c92b1faf8460a295ac6c4ccd98cda47520f"
+    },
+    {
+      "file": "web/tm-memory-continuity-ui.js",
+      "sha256": "af0267ad04dddd2db0c447d320f831d3436ff6a50295b3028ea29c3cc2324b84"
+    },
+    {
+      "file": "web/tm-memory-controls.js",
+      "sha256": "13d7ea027e842bbab1beca3c7e75964d5076d72877347c2d32ffc6956b3dd9dc"
+    },
+    {
+      "file": "web/tm-memory-envelope.js",
+      "sha256": "7bb533d8728b0c5e2dfaa328b42841cd8d672c9bafddd3f9cfbbfcd062987700"
+    },
+    {
+      "file": "web/tm-memory-mode-bridge.js",
+      "sha256": "2fbc82880d0e200640e54da5880c474ca9719a3057a9e83e66ca5200ae530df4"
+    },
+    {
+      "file": "web/tm-memory-retrieval.js",
+      "sha256": "6ce9813888ad279bf7af0bef8f264301ef74fbdd78e2fc4c8b6af227c2e5bd9c"
+    },
+    {
+      "file": "web/tm-memory-source-archive.js",
+      "sha256": "3bd6812c3f6a61337d80666c6cb5c4f2f36a55bb0aedf238d2a3827d862d759a"
+    },
+    {
+      "file": "web/tm-memory-steward.js",
+      "sha256": "e878992c44a5d911ad99b4d0076eaa3110e0a9b499b8aaae8b04b6e14cfd81c7"
+    },
+    {
+      "file": "web/tm-memory-ui.js",
+      "sha256": "b23f774a71b261aa5a9fabf9d76ac19dc0a92673a006497199e6892922bdfca0"
+    },
+    {
+      "file": "web/tm-policy-memory.js",
+      "sha256": "0b49fc9ffa9a4dd96970d76f622e42e6ab62b109e2435a0ae031f631415637de"
+    },
+    {
+      "file": "web/tm-post-turn-jobs.js",
+      "sha256": "e0d1e545ec9fa6cccfaf3ef8495d83d32893ebe6296af1fed643173e19726cdc"
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "437d7fae58a90e7a6f8bb2db43134e32c8461da6a2c79c82fc8978f193098a7b"
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "fdbb704816786f31c959b2579c12bd265538624b4c41965389ec820f92e34599"
+    },
+    {
+      "file": "web/tm-wentian-agent.js",
+      "sha256": "85567c31f7a3add8b792e78d3912924f4db3d2d937dd7e0215d781c54ba39786"
+    }
+  ],
+  "backup": "E:/tianming-memory-policy-20260923/daily-before",
+  "limits": [
+    "尚未进行真实付费模型百回合对照",
+    "有限上下文中未展开规则有索引与覆盖记录",
+    "原文块随存档持久化；容量满时保留活源并延后压缩"
+  ],
+  "cleanup": {
+    "status": "quarantined_reversibly",
+    "path": "E:/tianming-memory-policy-20260923/test-quarantine",
+    "items": 9,
+    "directDeletion": "automatic approval rejected with blocked by policy",
+    "kept": [
+      "regression tests",
+      "source backups",
+      "verification evidence",
+      "final UI screenshot"
+    ]
+  }
+}

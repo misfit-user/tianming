@@ -138,6 +138,11 @@
 
       if (!entry.ok) {
         var policy = step.onError || 'abort';
+        var completion=TM.Endturn.Validity;
+        if(step.name!=='prep'&&step.name!=='prepare-commit-barrier'&&completion&&completion.canDefer(ctx,entry.error)){
+          completion.defer(ctx,step.name,entry.error);entry.deferred=true;policy='continue';
+          if(step.name==='systems'&&typeof GM!=='undefined'&&Number(GM.turn)===Number(ctx.meta.turn))GM.turn=Number(ctx.meta.turn)+1; // arch-ok: completion owner advances exactly once when optional settlement exits before the normal turn increment.
+        }
         if (policy === 'abort') {
           ctx.meta.lastRun = log.slice();
           _lastRunLog = log.slice();

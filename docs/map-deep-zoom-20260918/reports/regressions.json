@@ -1,0 +1,93 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "name": "smoke-map-zoom-preload.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 649
+    },
+    {
+      "name": "smoke-pinch-pan-gestures.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 166
+    },
+    {
+      "name": "smoke-map-viewport-collision.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 2038
+    },
+    {
+      "name": "smoke-map-label-spatial-index.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 274
+    },
+    {
+      "name": "smoke-map-label-feature-late-binding.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 209
+    },
+    {
+      "name": "smoke-map-realm-layout.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 363
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 136
+    },
+    {
+      "name": "smoke-phase8-map-live-panels.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 8155
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 894
+    },
+    {
+      "name": "lint-arch-all.js",
+      "passed": false,
+      "status": 1,
+      "signal": null,
+      "error": null,
+      "ms": 99013
+    },
+    {
+      "name": "verify-official-scenario-parity.js",
+      "passed": true,
+      "status": 0,
+      "signal": null,
+      "error": null,
+      "ms": 58666
+    }
+  ]
+}

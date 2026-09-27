@@ -715,6 +715,30 @@
     return out;
   }
 
+  // 与国库面板共用只读报表，旧存档的概算标量不得覆盖已交割流水。
+  function _sjcReadFiscal(account) {
+    account = account || {};
+    var opts = { game: GM, account: account, scope: 'central' };
+    if (global.FiscalEngine && typeof global.FiscalEngine.readAccountStatement === 'function') return global.FiscalEngine.readAccountStatement(opts);
+    if (global.FiscalStatement && typeof global.FiscalStatement.read === 'function') return global.FiscalStatement.read(opts);
+    // 兼容未装载报表模块的旧入口：有账本时零值有效，缺项待核，只在无账本时保留旧概算。
+    var view = Object.assign({}, account), ledgers = account.ledgers || {};
+    var hasLedger = Object.keys(ledgers).length > 0;
+    var days = Number((account.accounting || account.period || {}).days) || Number(account.turnDays) || 30;
+    if (hasLedger) ['money', 'grain', 'cloth'].forEach(function(r) {
+      var led = ledgers[r] || {}, suffix = r === 'money' ? '' : r.charAt(0).toUpperCase() + r.slice(1);
+      if (typeof led.stock === 'number' && isFinite(led.stock)) { view[r] = led.stock; if (r === 'money') view.balance = led.stock; }
+      [['thisTurnIn', 'Income'], ['thisTurnOut', 'Expense']].forEach(function(pair) {
+        var value = led[pair[0]];
+        value = typeof value === 'number' && isFinite(value) ? value : null;
+        view['turn' + suffix + pair[1]] = value;
+        view['monthly' + suffix + pair[1]] = value === null ? null : value * 30 / days;
+      });
+    });
+    view.turnDays = days;
+    return { account: view, forecast: !hasLedger, unit: account.unit };
+  }
+
   /** 数值卷正文（帑廪/内帑/户口/政治核心/军事/势力/党派/阶层/人物 + 岁计流水） */
   function _sjcUnifiedChanges(oldVars) {
     oldVars = oldVars || {};
@@ -723,50 +747,59 @@
     // ═══ 帑廪·中央国库 ═══
     var turnIn = 0, turnOut = 0;
     if (GM.guoku) {
-      var og = GM._prevGuoku || {};
-      var ng = GM.guoku;
+      var og = _sjcReadFiscal(GM._prevGuoku).account;
+      var fiscalView = _sjcReadFiscal(GM.guoku);
+      var ng = fiscalView.account;
+      var fiscalUnit = fiscalView.unit || ng.unit || {};
+      var moneyUnit = fiscalUnit.money || '两';
+      var flowLabel = fiscalView.forecast ? '预计' : '本期';
       var gItems = [];
       var fExp = GM._lastFixedExpense || {};
       var sal = fExp.salary && fExp.salary.money || 0;
       var arm = fExp.army && fExp.army.money || 0;
       var imp = fExp.imperial && fExp.imperial.money || 0;
-      turnIn = ng.turnIncome || 0;
-      turnOut = ng.turnExpense || 0;
+      turnIn = ng.turnIncome;
+      turnOut = ng.turnExpense;
       // 对齐顶栏权威取数（治「史记与顶部栏帑廪数值不一致」）：统一走 _barAccountStock·不可用时降级
       var gkS = function(a, r) { return (typeof _barAccountStock === 'function') ? _barAccountStock(a, r) : (a && typeof a[r] === 'number' ? a[r] : (r === 'money' && a && typeof a.balance === 'number' ? a.balance : 0)); };
       var gkHas = function(r) { return !!(ng && (typeof ng[r] === 'number' || (r === 'money' && typeof ng.balance === 'number') || (ng.ledgers && ng.ledgers[r]))); };
       if (gkHas('money')) {
         var moneyReasons = [];
-        if (turnIn > 0) moneyReasons.push('<span class="tr-reason-chip pos">岁入<span class="v">+' + _sjcFmtBig(turnIn) + '</span></span>');
+        if (turnIn > 0) moneyReasons.push('<span class="tr-reason-chip pos">' + flowLabel + '收入<span class="v">+' + _sjcFmtBig(turnIn) + '</span></span>');
         if (sal > 0) moneyReasons.push('<span class="tr-reason-chip neg">俸禄<span class="v">−' + _sjcFmtBig(sal) + '</span></span>');
         if (arm > 0) moneyReasons.push('<span class="tr-reason-chip neg">军饷<span class="v">−' + _sjcFmtBig(arm) + '</span></span>');
         if (imp > 0) moneyReasons.push('<span class="tr-reason-chip neg">宫廷<span class="v">−' + _sjcFmtBig(imp) + '</span></span>');
         Array.prototype.push.apply(moneyReasons, _sjcCollectFiscalAdjChips('guoku', 'money'));
-        gItems.push({ ic: '钱', name: '银两', unit: '两', ov: gkS(og, 'money'), nv: gkS(ng, 'money'), reasonsHtml: moneyReasons.join('') });
+        gItems.push({ ic: '钱', name: moneyUnit === '两' ? '银两' : '钱', unit: moneyUnit, ov: gkS(og, 'money'), nv: gkS(ng, 'money'), reasonsHtml: moneyReasons.join('') });
       }
       if (gkHas('grain')) {
         var grainR = [];
-        var turnGIn = ng.turnGrainIncome || 0;
-        var turnGOut = ng.turnGrainExpense || 0;
+        var turnGIn = ng.turnGrainIncome;
+        var turnGOut = ng.turnGrainExpense;
         if (turnGIn > 0) grainR.push('<span class="tr-reason-chip pos">漕粮<span class="v">+' + _sjcFmtBig(turnGIn) + '</span></span>');
         if (turnGOut > 0) grainR.push('<span class="tr-reason-chip neg">支用<span class="v">−' + _sjcFmtBig(turnGOut) + '</span></span>');
         Array.prototype.push.apply(grainR, _sjcCollectFiscalAdjChips('guoku', 'grain'));
-        gItems.push({ ic: '粮', name: '粮米', unit: '石', ov: gkS(og, 'grain'), nv: gkS(ng, 'grain'), reasonsHtml: grainR.join('') });
+        gItems.push({ ic: '粮', name: '粮米', unit: fiscalUnit.grain || '石', ov: gkS(og, 'grain'), nv: gkS(ng, 'grain'), reasonsHtml: grainR.join('') });
       }
       if (gkHas('cloth')) {
         var clothR = _sjcCollectFiscalAdjChips('guoku', 'cloth');
         if (clothR.length === 0) clothR.push('<span class="tr-reason-txt">织染上解·赏赐扣减</span>');
-        gItems.push({ ic: '布', name: '布匹', unit: '匹', ov: gkS(og, 'cloth'), nv: gkS(ng, 'cloth'), reasonsHtml: clothR.join('') });
+        gItems.push({ ic: '布', name: '布匹', unit: fiscalUnit.cloth || '匹', ov: gkS(og, 'cloth'), nv: gkS(ng, 'cloth'), reasonsHtml: clothR.join('') });
       }
       if (typeof ng.monthlyIncome === 'number') {
-        gItems.push({ ic: '月', name: '月入', sub: '两/月', ov: og.monthlyIncome, nv: ng.monthlyIncome, reasonsHtml: '<span class="tr-reason-txt">税收级联上解中央</span>' });
+        gItems.push({ ic: '月', name: '月入', sub: moneyUnit + '/月', ov: og.monthlyIncome, nv: ng.monthlyIncome, reasonsHtml: '<span class="tr-reason-txt">' + (fiscalView.forecast ? '预计收入' : '本期实收') + '折合月额</span>' });
       }
       if (gItems.length > 0) {
         html += '<div class="tr-cg-block tr-cg-guoku">';
         var netTxt = '';
-        if (turnIn > 0 || turnOut > 0) {
-          var net = turnIn - turnOut;
-          netTxt = '岁入 ' + _sjcFmtBig(turnIn) + '两 / 岁出 ' + _sjcFmtBig(turnOut) + '两' + (net >= 0 ? ' · 结余 ' : ' · 亏空 ') + _sjcFmtBig(Math.abs(net)) + '两';
+        if (gkHas('money')) {
+          var knownIn = typeof turnIn === 'number' && isFinite(turnIn), knownOut = typeof turnOut === 'number' && isFinite(turnOut);
+          netTxt = flowLabel + '收入 ' + (knownIn ? _sjcFmtBig(turnIn) + moneyUnit : '待核') + ' / ' + flowLabel + '支出 ' + (knownOut ? _sjcFmtBig(turnOut) + moneyUnit : '待核');
+          if (knownIn && knownOut) {
+            var net = turnIn - turnOut;
+            netTxt += (net >= 0 ? ' · 结余 ' : ' · 亏空 ') + _sjcFmtBig(Math.abs(net)) + moneyUnit;
+          } else netTxt += ' · 结余待核';
+          if (ng.turnDays > 0) netTxt += ' · ' + ng.turnDays + '日';
         }
         // 赤字警告条
         var gDefLines = [];
@@ -1081,10 +1114,11 @@
 
   // ───────────────────────── §5 问责板块 + 一致性附录 ─────────────────────────
   /** 御批回听·对玩家本回合诏令的执行问责（aiEdictEfficacyAudit 生成）——inline style 巨块收进 .sjc-ef-* 结构类 */
-  function _sjcEfficacy() {
+  function _sjcEfficacy(report, turn) {
     var html = '';
     try {
-      var ef = GM._edictEfficacyReport;
+      var ef = report || GM._edictEfficacyReport;
+      if (ef && ef.turn !== (turn == null ? GM.turn-1 : turn)) return '';
       if (!(ef && !ef.skipped && Array.isArray(ef.reports) && ef.reports.length > 0)) return '';
       var efVal = ef.overallEfficacy || 0;
       var efTone = efVal >= 75 ? 'good' : efVal >= 50 ? 'mid' : 'bad';
@@ -1546,7 +1580,9 @@
     var annalsHtml = _sjcShilu(o.shiluText) + _sjcSzjSection(o.shizhengji, o.szjTitle, o.szjSummary);
     var militaryHtml = _sjcBattleSection();
     var ledgerHtml = _sjcUnifiedChanges(o.oldVars);
-    var auditHtml = _sjcEfficacy() + _sjcTinyiReview();
+    var edictTurn = o.turn == null ? GM.turn-1 : o.turn;
+    var edictReports = o.edictReports || (global.TM && TM.EdictOutcomes ? TM.EdictOutcomes.forTurn(GM,edictTurn) : []);
+    var auditHtml = (global.TM && TM.EdictOutcomes ? TM.EdictOutcomes.feedbackHtml(edictReports,edictTurn) : '') + '<div data-edict-audit-turn="'+edictTurn+'"><!--edict-audit:'+edictTurn+':start-->' + _sjcEfficacy(o.edictAudit,edictTurn) + '<!--edict-audit:'+edictTurn+':end--></div>' + _sjcTinyiReview();
     var personnelHtml = _sjcPersonnel(o.personnelChanges);
     var miscHtml = _sjcHouren(o.hourenXishuo) + _sjcStatus(o.playerStatus, o.playerInner)
       + _sjcTyrant(o.tyrantResult) + _sjcFactionEvt() + _sjcConsistency();
@@ -1561,8 +1597,9 @@
       });
       changeCount += (GM.turnChanges.variables || []).length;
     }
-    var ef = GM._edictEfficacyReport;
-    var efN = (ef && !ef.skipped && Array.isArray(ef.reports)) ? ef.reports.length : 0;
+    var ef = o.edictAudit || GM._edictEfficacyReport;
+    if (ef && ef.turn !== edictTurn) ef = null;
+    var efN = edictReports.length || ((ef && !ef.skipped && Array.isArray(ef.reports)) ? ef.reports.length : 0);
     var tyN = ((GM._turnReport || []).filter(function(r) { return r && r.type === 'tinyi_review' && r.turn === (GM.turn - 1); })).length;
     var deathN = 0;
     (o.personnelChanges || []).forEach(function(pc) {
@@ -1705,6 +1742,7 @@
 
   // ───────────────────────── 导出 ─────────────────────────
   global._composeShijiHtml = _composeShijiHtml;
+  global._renderEdictAudit = _sjcEfficacy;
   global._sjcSwitchVol = _sjcSwitchVol;
   global._sjcRestoreVol = _sjcRestoreVol;
   // 兼容 alias：原 tm-endturn-render.js 全局名——pipeline-steps:544 以 typeof _renderUnifiedChanges 判是否跳过

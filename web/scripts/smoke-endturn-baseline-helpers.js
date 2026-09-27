@@ -18,6 +18,7 @@ const ENDTURN_FILE = path.join(ROOT, 'tm-endturn-ai-infer.js');
 const ENDTURN_FAMILY = [
   'tm-endturn-ai-infer.js',     // 主入口·原始/拆分后均存
   'tm-endturn-prompt.js',       // P7-γ
+  'tm-endturn-ai-sc1-budget.js', // Shared exact schema providers precede their consumers.
   'tm-endturn-ai.js',           // P7-δ
   'tm-endturn-apply.js',        // P7-ε
   'tm-endturn-apply-stages.js', // apply解构S2·AP-1/AP-6 stage 片(紧随 apply.js·writeBack 主体源码级消费须含之)

@@ -1,0 +1,13 @@
+{
+  "name": "ci-smokes-low-memory",
+  "args": [
+    "web/scripts/ci-smokes.js",
+    "--jobs",
+    "2"
+  ],
+  "started": "2026-09-27T10:30:34.173Z",
+  "finished": "2026-09-27T10:41:28.460Z",
+  "code": 1,
+  "signal": null,
+  "log": "C:\\Users\\37814\\Desktop\\tianming\\docs\\office-duty-fixes-20260927\\ci-smokes-low-memory.log"
+}

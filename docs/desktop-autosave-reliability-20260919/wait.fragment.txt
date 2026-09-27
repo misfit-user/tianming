@@ -1,0 +1,37 @@
+var _autoSaveNativePending=null, _autoSaveTransportEvents=[];
+var _DESKTOP_AUTOSAVE_WAIT_MS=60000;
+function _tmDesktopAutoSaveWaitError(code){
+  var e=new Error(code==='DESKTOP_AUTOSAVE_UNCONFIRMED'
+    ? '桌面自动存档回执尚未确认；未重发或标记成功，请保留当前页面并核对主存档。'
+    : '桌面自动存档对应的世界或会话已变化，旧快照未发送');
+  e.code=code; return e;
+}
+function _tmDesktopAutoSaveTransportEvent(phase){
+  _autoSaveTransportEvents.push({phase:phase,at:Date.now()});
+  if(_autoSaveTransportEvents.length>12)_autoSaveTransportEvents.shift();
+}
+function _tmDesktopAutoSaveTransportStatus(){
+  return {pending:!!_autoSaveNativePending,timedOut:!!(_autoSaveNativePending&&_autoSaveNativePending.timedOut),
+    events:_autoSaveTransportEvents.map(function(e){return {phase:e.phase,at:e.at};})};
+}
+function _tmAwaitDesktopAutoSaveReply(execute){
+  if(_autoSaveNativePending)return Promise.reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+  return new Promise(function(resolve,reject){
+    var job={timedOut:false},settled=false,timer;
+    _autoSaveNativePending=job;
+    function ended(error,value){
+      clearTimeout(timer);
+      if(_autoSaveNativePending===job)_autoSaveNativePending=null;
+      if(settled){_tmDesktopAutoSaveTransportEvent(error?'late-rejection':'late-reply');return;}
+      settled=true;_tmDesktopAutoSaveTransportEvent(error?'rejected':_tmDesktopAutoSaveResultOk(value)?'acknowledged':'negative-reply');
+      if(error)reject(error);else resolve(value);
+    }
+    timer=setTimeout(function(){
+      if(settled)return;settled=true;job.timedOut=true;
+      _tmDesktopAutoSaveTransportEvent('unconfirmed');
+      reject(_tmDesktopAutoSaveWaitError('DESKTOP_AUTOSAVE_UNCONFIRMED'));
+    },_DESKTOP_AUTOSAVE_WAIT_MS);
+    try{Promise.resolve(execute()).then(function(value){ended(null,value);},function(error){ended(error);});}
+    catch(error){ended(error);}
+  });
+}

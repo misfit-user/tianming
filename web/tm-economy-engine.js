@@ -312,7 +312,10 @@
     var byProvince = population.byProvince || {};
     var wanted = String(rid == null ? '' : rid);
     var top = _envPlayerTopLevel();
-    var owner = top.find(function(node) { return _envRegionAliases(node).indexOf(wanted) >= 0; }) || null;
+    var ids = top.filter(function(node) { return node && node.id != null && String(node.id) === wanted; });
+    var named = top.filter(function(node) { return _envRegionAliases(node).indexOf(wanted) >= 0; });
+    if (ids.length > 1 || !ids.length && !byLeaf[wanted] && named.length > 1) return { ok:false, reason:'environment-region-ambiguous', rows:[], leafIds:[], mouths:0 };
+    var owner = ids.length === 1 ? ids[0] : (!byLeaf[wanted] && named.length === 1 ? named[0] : null);
     var leaves = [];
     if (owner) _collectEnvLeaves(owner, leaves);
     if (!leaves.length && byLeaf[wanted]) {
@@ -388,6 +391,7 @@
         if (!allocations[i]) continue;
         var result = global.HujiEngine.applyPopulationLoss({
           cause:String(cause || 'environment'),
+          factionScope:"player", // Never search NPC aliases for a player environmental loss.
           regionId:scope.rows[i].id,
           mouths:allocations[i]
         });
@@ -568,6 +572,7 @@
       // 级别 3: >1.5 崩溃
       var level = load < 1.2 ? 1 : load < 1.5 ? 2 : 3;
       var scope = _environmentPopulationScope(rid);
+      if (!scope.ok && scope.reason) { var ambiguous = new Error('环境人口范围无法唯一确定：' + scope.reason); ambiguous.code = scope.reason; throw ambiguous; }
       if (!scope.ok || scope.mouths <= 0) return;
       var deathRate = level === 1 ? 0.002 : level === 2 ? 0.008 : 0.02;
       var deaths = Math.min(scope.mouths, Math.max(0, Math.round(scope.mouths * deathRate * mr / 12)));
@@ -1458,7 +1463,19 @@
     return GM.fiscal.peasantBurden[regionId];
   }
 
+  function declaredTaxCollection(){return typeof CascadeTax!=='undefined'&&CascadeTax.isUnified&&CascadeTax.isUnified(GM,'player');}
+  function syncCollectionBurden(){
+    var report=GM.guoku&&GM.guoku.taxCollection;if(!report||!report.period||!report.regions)return null;
+    if(!GM.fiscal)GM.fiscal={};var byRegion={}; // arch-ok: EconFiscalLinkage initializes its derived burden view, not a treasury balance.
+    report.regions.forEach(function(row){
+      var money=row.resources.money,detail=row.collection.money,rates=[];
+      ['money','grain','cloth'].forEach(function(k){var regular=Number(row.resources[k].collectedRevenue)||0,extra=Number(row.collection[k].extraCollected)||0;if(regular>0)rates.push(extra/regular);});
+      byRegion[row.id]={regionId:row.id,period:report.period,flowBasis:'actual',nominal:money.claimedRevenue,regularPaid:money.collectedRevenue,peasantActual:money.collectedRevenue+detail.extraCollected,officialReceived:money.actualRevenue,extraPaid:detail.extraCollected,resources:row.collection,assessments:row.resources,levyLevels:{county:rates.length?Math.max.apply(Math,rates):0,prefecture:0,province:0,landlord:0,converter:0},pocketedByLocal:detail.withheldByAgent.clerk+detail.withheldByAgent.official,pocketedByLandlord:detail.withheldByAgent.power,pocketedByConverter:0,source:'cascade-collection'};
+    });
+    GM.fiscal.peasantBurden=byRegion;return report; // arch-ok: EconFiscalLinkage owns this projection of the canonical collection receipt; no funds are posted here.
+  }
   function calcPeasantBurden(regionId, nominalTax, mr) {
+    if(declaredTaxCollection()){syncCollectionBurden();return ensurePeasantBurden(regionId);}
     mr = mr || 1;
     var b = ensurePeasantBurden(regionId);
     b.nominal = nominalTax;
@@ -1528,6 +1545,7 @@
   }
 
   function allocateRegionTax(regionId, nominalTax, mr) {
+    if(declaredTaxCollection())return {localAmt:0,parentAmt:0,centerAmt:0,skipped:'cascade-already-owns-tax-receipts'};
     mr = mr || 1;
     var r = ensureRegionFiscal(regionId);
     var b = calcPeasantBurden(regionId, nominalTax, mr);
@@ -1787,6 +1805,7 @@
   // ═════════════════════════════════════════════════════════════
 
   function distributeIllicitIncome(mr) {
+    if(declaredTaxCollection())return; // Aggregate collection losses do not identify a named official's personal assets.
     if (typeof CharEconEngine === 'undefined') return;
     if (!GM.corruption) return;
     var chars = GM.chars || [];
@@ -1895,6 +1914,13 @@
 
   // 民心受百姓负担影响
   function applyBurdenToMinxin(mr) {
+    if(declaredTaxCollection()){
+      var report=syncCollectionBurden();if(!report||report.period.turn!==(GM.turn||0)||GM.fiscal._collectionBurdenTurnKey===report.period.turnKey)return;
+      var rates=[];['money','grain','cloth'].forEach(function(k){var base=Number(report.totals.grossCollected[k])||0;if(base>0)rates.push((Number(report.totals.collection[k].extraCollected)||0)/base);});
+      var pressure=rates.length?Math.max.apply(Math,rates):0;GM.fiscal.extraCollectionPressure=pressure;
+      if(pressure>0&&typeof TM!=='undefined'&&TM.MinxinLedger&&TM.MinxinLedger.recordAndApply){TM.MinxinLedger.recordAndApply(GM,{sourceSystem:'fiscal-collection',kind:'taxation',delta:-pressure*4*report.period.days/30,reason:'正额之外又有征取，民间负担加重'});GM.fiscal._collectionBurdenTurnKey=report.period.turnKey;}
+      return;
+    }
     if (!GM.minxin || !GM.fiscal || !GM.fiscal.peasantBurden) return;
     var burdens = Object.values(GM.fiscal.peasantBurden);
     if (burdens.length === 0) return;
@@ -2152,8 +2178,11 @@
     if (!sc) return null;
     var depth = (sc.adminHierarchy && sc.adminHierarchy.depth) || 3;
     var levelNames = (sc.adminHierarchy && sc.adminHierarchy.levelNames) || ['道','州','县'];
-    var regions = _getRegionsArray(sc);
-    if (!regions.length && global.GM) regions = _getRegionsArray(global.GM);
+    // Levels are runtime bookkeeping, not edits to the reusable scenario template.
+    // An editor inspecting another world must not touch the current live world's tree.
+    var game = global.GM;
+    var regions = game && game.running && game.sid === sc.id ? _getRegionsArray(game) : [];
+    if (!regions.length) regions = _getRegionsArray(sc).map(function(r) { return Object.assign({}, r); });
     // 建立 id → level 映射
     var byId = {};
     regions.forEach(function(r) { if (r && r.id) byId[r.id] = r; });

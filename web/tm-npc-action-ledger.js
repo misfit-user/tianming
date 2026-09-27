@@ -125,6 +125,7 @@
       id: raw.id || raw.actionLedgerId || _uid('npcact'),
       turn: raw.turn != null ? Number(raw.turn) : _turn(opts.GM || _gm()),
       actor: actor,
+      characterId: _str(raw.characterId != null ? raw.characterId : raw.actorId),
       kind: kind,
       type: type,
       behaviorType: behaviorType,
@@ -150,7 +151,9 @@
     var errors = [];
     var warnings = [];
     if (!entry.actor) errors.push('missing_actor');
-    var ch = findChar(entry.actor, world);
+    var actorWorld = world || _gm();
+    var actorMatches = _arr(actorWorld && actorWorld.chars).filter(function(c) { return c && (entry.characterId ? _str(c.id) === entry.characterId : c.name === entry.actor); });
+    var ch = actorMatches.length === 1 ? actorMatches[0] : null;
     if (!ch) {
       errors.push('unknown_actor');
     } else {

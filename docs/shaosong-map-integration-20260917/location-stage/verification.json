@@ -1,0 +1,148 @@
+{
+  "candidateSha256": "0a09d7d5415923ac6fb45de8c4df52d4d50490ae4eedbdbd86703dc70464fc5b",
+  "runtimeSha256": {
+    "index.html": "2d18d1e81d9e43a7c5c5dd00e0265709789ed5183beee207eb16972896f6439d",
+    "tm-ai-change-army.js": "3daf8d56624adea6b2b737e9a58cfbf704c203a537521c8b825956ec97fde28a",
+    "tm-military.js": "ea7c8af6afe58a69ce7482134306864ab5fcf2a6261e2ead98910db19a46ae4b",
+    "tm-three-systems-ext.js": "cdc4cceb8119234df0d5abeef7d35420db35ea804f8d9ccd319c32d555184a89",
+    "tm-battle-turn.js": "25b08c38635921429e8851d78e13032eb293e0bf185a1b4c63376ea4e5b1ee8c",
+    "tm-border-invasion.js": "74adb02448d86d9f231106edb9481de611a367579d88598dd5cae6c20ce11b01",
+    "tm-faction-action-engine.js": "45188df4fab95a40ec3d465eff8698d30130b0b79a1eaf48021fd99273c14f53",
+    "tm-faction-npc-llm-decision.js": "c7b3abc76c76124942cac23c42e939e69c34f753868c7e76f95a59b46dbb4cca",
+    "tm-feudal-warfare.js": "79871ff07970d318582abf3add5e4f9930b1a61f025882cec61dd6b0ef1c837d",
+    "tm-military-ui.js": "8fc989b4d2415323d6932a8ab95406517a6cca170f22b9ffba9cdddd706be79b",
+    "tm-endturn-agent-write-tools.js": "2aa2e92d672aab08ea3e711136f99a675c7e0648eec52e3aa9d59d51a67627f8",
+    "tm-endturn-apply.js": "8cc60ac1e5e3d6fd1113153337fa74ac618e18e7f2abc6d5309f984ec892d06a",
+    "tm-game-loop-wentian-hardchange.js": "ac159dcda5dc023a342ac78c924944e962e25854e5f4db7ba362830459403234",
+    "tm-patches.js": "ed98b9aaa0c780cce85af6822b3847afc0fa0004541108618cedfa108443845e",
+    "tm-patches-start.js": "1ed92721ea65e7a75f1c6654bb7791d7cdaedac1b0e28e7bd972c6ecb31332a3",
+    "tm-map-system.js": "ca115209b0cdb1ac9a3153393150c6e722c2b6fe49e2d08f7794ea3ed5d4486a",
+    "phase8-formal-map-dossier.js": "fba99eade15b9e97d0fa88378216dc58c49b67f2e77fae9fdcd9db6d5779c92f",
+    "tm-map-locations.js": "4264e8242fc449787508f68bd49acded4910183128c940fad6add874aaf921a7"
+  },
+  "date": "2026-09-17T11:48:41.127Z",
+  "passed": 30,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "all-staged-runtime-javascript-parses",
+      "passed": true
+    },
+    {
+      "name": "original-current-place-outranks-parenthetical-future",
+      "passed": true
+    },
+    {
+      "name": "yunzhong-not-parenthetical-yanjing",
+      "passed": true
+    },
+    {
+      "name": "jin-tokyo-liaoyang-is-not-song-kaifeng",
+      "passed": true
+    },
+    {
+      "name": "ambiguous-two-city-deployment-does-not-invent-a-single-camp",
+      "passed": true
+    },
+    {
+      "name": "faction-specific-japanese-capital-alias",
+      "passed": true
+    },
+    {
+      "name": "future-biography-is-not-current-location",
+      "passed": true
+    },
+    {
+      "name": "broad-character-area-retains-candidates-without-centre-fallback",
+      "passed": true
+    },
+    {
+      "name": "changed-garrison-invalidates-old-id-in-same-turn",
+      "passed": true
+    },
+    {
+      "name": "legacy-location-only-write-invalidates-old-garrison",
+      "passed": true
+    },
+    {
+      "name": "unknown-arrival-clears-all-stale-location-ids",
+      "passed": true
+    },
+    {
+      "name": "destination-is-not-present-location",
+      "passed": true
+    },
+    {
+      "name": "character-travel-keeps-origin-and-target-separate",
+      "passed": true
+    },
+    {
+      "name": "court-followers-use-live-court-not-capital",
+      "passed": true
+    },
+    {
+      "name": "foreign-location-does-not-change-owner-or-paymaster",
+      "passed": true
+    },
+    {
+      "name": "legacy-maps-without-contract-unchanged",
+      "passed": true
+    },
+    {
+      "name": "read-path-never-mutates-live-entity",
+      "passed": true
+    },
+    {
+      "name": "native-map-markers-follow-current-text-not-stale-id",
+      "passed": true
+    },
+    {
+      "name": "native-map-marker-unknown-location-is-not-old-camp",
+      "passed": true
+    },
+    {
+      "name": "native-dossier-cache-invalidates-on-same-turn-move",
+      "passed": true
+    },
+    {
+      "name": "native-dossier-cache-invalidates-on-world-reload",
+      "passed": true
+    },
+    {
+      "name": "native-AI-location-write-synchronizes-map-ids",
+      "passed": true
+    },
+    {
+      "name": "native-AI-destination-does-not-teleport",
+      "passed": true
+    },
+    {
+      "name": "native-march-arrival-synchronizes-map-ids",
+      "passed": true
+    },
+    {
+      "name": "native-agent-character-movement-keeps-travel-distinct",
+      "passed": true
+    },
+    {
+      "name": "source-location-id-closure",
+      "passed": true
+    },
+    {
+      "name": "save-roundtrip-preserves-location-links",
+      "passed": true
+    },
+    {
+      "name": "repeated-location-sync-idempotent",
+      "passed": true
+    },
+    {
+      "name": "same-total-troop-reallocation-updates-dossier",
+      "passed": true
+    },
+    {
+      "name": "disbanded-unit-is-not-a-stale-map-garrison",
+      "passed": true
+    }
+  ]
+}

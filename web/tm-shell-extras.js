@@ -1083,6 +1083,11 @@
   };
   window._tmApplyTheme = function(name, el) {
     var pal = THEME_PALETTES[name] || THEME_PALETTES.plain;
+    // 色板令牌连同 RGB 三元组一起改（与 tm-theme-font.js 同）
+    var rgb = function(hex) {
+      var h = String(hex).replace('#', '');
+      return [0, 2, 4].map(function(i){ return parseInt(h.slice(i, i + 2), 16); }).join(',');
+    };
     var css = ':root{'
       + '--color-background:' + pal.bg + ';'
       + '--color-surface:' + pal.surface + ';'
@@ -1091,13 +1096,13 @@
       + '--color-accent:' + pal.accent + ';'
       + '--color-info:' + pal.info + ';'
       + '--color-warning:' + pal.warn + ';'
-      + '--gold-400:' + pal.gold2 + ';'
-      + '--gold-500:' + pal.gold1 + ';'
-      + '--gold-300:' + pal.gold3 + ';'
-      + '--vermillion-400:' + pal.verm2 + ';'
-      + '--vermillion-500:' + pal.verm1 + ';'
-      + '--vermillion-300:' + pal.verm3 + ';'
-      + '--celadon-400:' + pal.cela + ';'
+      + '--gold-400:' + pal.gold2 + ';--gold-400-rgb:' + rgb(pal.gold2) + ';'
+      + '--gold-500:' + pal.gold1 + ';--gold-500-rgb:' + rgb(pal.gold1) + ';'
+      + '--gold-300:' + pal.gold3 + ';--gold-300-rgb:' + rgb(pal.gold3) + ';'
+      + '--vermillion-400:' + pal.verm2 + ';--vermillion-400-rgb:' + rgb(pal.verm2) + ';'
+      + '--vermillion-500:' + pal.verm1 + ';--vermillion-500-rgb:' + rgb(pal.verm1) + ';'
+      + '--vermillion-300:' + pal.verm3 + ';--vermillion-300-rgb:' + rgb(pal.verm3) + ';'
+      + '--celadon-400:' + pal.cela + ';--celadon-400-rgb:' + rgb(pal.cela) + ';'
       + '--bg-2:' + pal.bg + ';'
       + '--bg-3:' + pal.surface + ';'
       + '}';

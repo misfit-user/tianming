@@ -26,6 +26,15 @@
 
   function _cloneNpcApplyState(value) {
     if (value == null || typeof value !== 'object') return value;
+    if (value === global.GM || value === global.P) {
+      var plain = {};
+      Object.keys(value).forEach(function(k) {
+        if (k === '_postTurnJobs' || k === '_postTurnDetachedJobs' || k === '_indices') return;
+        var d = Object.getOwnPropertyDescriptor(value,k);
+        if (d && Object.prototype.hasOwnProperty.call(d,'value') && typeof d.value !== 'function') Object.defineProperty(plain,k,{value:d.value,enumerable:true,writable:true,configurable:true});
+      });
+      value = plain;
+    }
     if (typeof deepClone === 'function') return deepClone(value);
     return JSON.parse(JSON.stringify(value));
   }
@@ -44,7 +53,9 @@
       }
       return target;
     }
+    var rootState = target === global.GM || target === global.P;
     Object.keys(target || {}).forEach(function(key) {
+      if (rootState && (key === '_postTurnJobs' || key === '_postTurnDetachedJobs' || key === '_indices')) return;
       if (!Object.prototype.hasOwnProperty.call(snapshot || {}, key)) delete target[key];
     });
     Object.keys(snapshot || {}).forEach(function(key) {
@@ -71,6 +82,7 @@
     } catch (error) {
       _restoreNpcApplyState(gmRef, gmSnapshot);
       _restoreNpcApplyState(pRef, pSnapshot);
+      if (global.TM && TM.Indices && typeof TM.Indices.invalidate === "function") TM.Indices.invalidate(gmRef,pRef);
       try {
         if (global.TM && TM.errors && typeof TM.errors.capture === 'function') TM.errors.capture(error, 'npc-deep-result.atomic');
       } catch (_) {}
@@ -116,6 +128,7 @@
 
   ns.run = async function(ctx) {
     ensureGroups(ctx);
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     var _followupStart = Date.now();
     var edicts = ctx.input.edicts || {};
     var xinglu = ctx.input.xinglu || "";
@@ -152,7 +165,7 @@
       var label = opts.label || opts.id || 'endturn-followup';
       try {
         if (typeof _callEndturnAI === 'function') {
-          var routed = await _callEndturnAI(body, {
+          var routed = await _callEndturnAI(body, Object.assign({}, opts, {
             id: opts.id || '',
             label: label,
             url: callUrl,
@@ -160,7 +173,7 @@
             priority: opts.priority,
             timeoutMs: opts.timeoutMs,
             maxRetries: opts.maxRetries
-          });
+          }));
           if (opts.soft) routed.ok = true;
           return routed;
         }
@@ -1313,11 +1326,11 @@
           max_tokens: _tok(3000)
         };
         if (_tmDetectModelFamily(_auCfg.model, _modelFamily) === 'openai') _auditBody.response_format = { type: 'json_object' };
-        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, priority: 'normal', timeoutMs: 60000, maxRetries: 1 });
+        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, tier: _auCfg.tier || _auTier, priority: 'normal', timeoutMs: 60000, maxRetries: 1 });
         {
           var dataAu = _auditCall.data;
           var cAu = _auditCall.raw || '';
-          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 1 });
+          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { id: 'sc_audit', url: _auUrl, key: _auCfg.key, tier: _auCfg.tier || _auTier, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 1 });
           if (_pAuParse && _pAuParse.raw) cAu = _pAuParse.raw;
           var pAu = _pAuParse ? _pAuParse.parsed : null;
           if (pAu) {
@@ -1720,7 +1733,7 @@
       //   (时政记/实录/NPC行动/死亡/暗流)·连玩家诏令/奏疏批复/朝议/追责回响都看不见·开 3stage 反而叙事失据。
       //   纯读闭包内既有变量不动状态·内容与原内联一致·尾部新增 O1「天下牵动·因果综述」(W1)两路径同享。
       var _buildSc2FactsCore = function() {
-        var _ps = '';
+        var _ps = TM.EdictOutcomes ? TM.EdictOutcomes.narrativeFacts(GM, GM.turn) : '';
         if (p1) {
           if (shizhengji) _ps += '【时政记(摘要)】' + shizhengji.substring(0, 400) + '\n';
           if (shiluText) _ps += '【实录】' + shiluText + '\n';
@@ -1993,6 +2006,7 @@
                 hourenXishuo = _pResult.houren_xishuo || _pResult.zhengwen;
                 // Phase 5·canonical mirror·subcall2 = { zhengwen, houren_xishuo, _sc2outline, _sc27review }
                 GM._turnAiResults.subcall2 = { zhengwen: zhengwen, hourenXishuo: hourenXishuo, houren_xishuo: hourenXishuo, _sc2outline: _sc2OutlineResult, _sc27review: _sc27ReviewResult, _threeStage: true };
+                ctx.results.sc2 = GM._turnAiResults.subcall2;
                 GM._turnAiResults.subcall2_raw = _pCall.raw || '';   // ★与 legacy 对齐(诊断/agent 工具读 raw·此前 3stage 缺)
                 // 建议与编年产出(2026-07-02·与 legacy 对齐·建议不足时下游标志位块再兜底)
                 try { if (Array.isArray(_pResult.suggestions) && _pResult.suggestions.length) GM._turnAiResults.subcall2.suggestions = _pResult.suggestions.slice(0, 4); } catch(_sgP) {}
@@ -2093,6 +2107,7 @@
       p2 = _p2Parse ? _p2Parse.parsed : null;
       GM._turnAiResults.subcall2_raw = c2;
       GM._turnAiResults.subcall2 = p2;
+      ctx.results.sc2 = p2;
 
       if(p2){
         // 优先读取新字段houren_xishuo；兼容旧zhengwen字段
@@ -2117,6 +2132,7 @@
       }
       if (p2 && !p2.houren_xishuo) p2.houren_xishuo = hourenXishuo;
       GM._turnAiResults.subcall2 = p2;
+      ctx.results.sc2 = p2;
       // 【防止对话历史被后人戏说撑爆】——将过长叙事截断为摘要入conv；完整版已在shijiHistory
       // 标准策略：>1500字时只保留开头600+结尾400作为上下文线索；其余用"……(中略)……"代替
       var _convContent = zhengwen || '';
@@ -2160,7 +2176,7 @@
         if (Array.isArray(GM.shijiHistory) && GM.shijiHistory.length > 0) {
           _ctx25c += '\n近 5 回合时政：\n';
           GM.shijiHistory.slice(-5).forEach(function(sh) {
-            if (sh.shizhengji) _ctx25c += 'T' + sh.turn + ': ' + String(sh.shizhengji).slice(0, 300) + '\n';
+            if (sh.shizhengji) _ctx25c += 'T' + sh.turn + ': ' + (global.TM && TM.AIResultContract ? TM.AIResultContract.historyText(sh.shizhengji) : String(sh.shizhengji)).slice(0, 300) + '\n';
           });
         }
         // sc28 上下文 (若可用)
@@ -2428,12 +2444,12 @@
         _dbg('[sc25] using tier:', _c25.tier || _t25, 'model:', _c25.model);
         var _sc25Body = {model:_c25.model, messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc25'))},{role:"user",content:tp25}], temperature:0.7, max_tokens:_tok(12000)};
         if (_tmDetectModelFamily(_c25.model, _modelFamily) === 'openai') _sc25Body.response_format = { type: 'json_object' };
-        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, priority: 'high' });
+        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, tier: _c25.tier || _t25, priority: 'high' });
         {
           var data25 = _sc25Call.data;
           _checkTruncated(data25, '伏笔记忆');
           var c25 = _sc25Call.raw || '';
-          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { url: _u25, key: _c25.key, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'], priority: 'high' });
+          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { id: 'sc25', url: _u25, key: _c25.key, tier: _c25.tier || _t25, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'], priority: 'high' });
           if (_p25Parse && _p25Parse.raw) c25 = _p25Parse.raw;
           var p25 = _p25Parse ? _p25Parse.parsed : null;
           if (p25) {
@@ -2895,29 +2911,6 @@
         tp07 += '· 某人本回合「亲历」之事他必知;非亲历非在场之远事·除非有亲近者可通报·否则列入 doesntKnow。\n';
         tp07 += '· 消息顺关系网传:与消息当事人愈亲近愈早知愈详;素无往来者多不知或只得风闻(入 rumorVsFact 而非 knows)。勿让人人皆知一切。\n';
 
-        // ★ Token 预算监控·SC07（与 sc1/sc1b/sc1c 同款：warn 时静默降载次要 section）
-        try {
-          if (typeof checkPromptTokenBudget === 'function') {
-            var _sc07Sys = _maybeCacheSys(sysPFor('sc07'));
-            var _sc07TokRes = checkPromptTokenBudget((_sc07Sys || '') + '\n' + tp07, function(status, tokens, bg) {
-              if (typeof toast === 'function') toast('[SC07] prompt ' + status + '·' + tokens + ' tokens');
-            });
-            if (typeof window !== 'undefined') {
-              window.TM = window.TM || {}; window.TM.lastPromptTokens = window.TM.lastPromptTokens || {};
-              window.TM.lastPromptTokens.sc07 = { tokens: _sc07TokRes.tokens, status: _sc07TokRes.status, ts: Date.now() };
-            }
-            if (_sc07TokRes.status === 'warn' && tp07.length > 8000 && typeof softTrimNarrativeSections === 'function') {
-              var _st07 = softTrimNarrativeSections(tp07);
-              if (_st07 && _st07.trimmedChars > 0) {
-                tp07 = _st07.text;
-                if (typeof console !== 'undefined') {
-                  try { console.log('[TokenBudget] warn 降载·静默截 ' + _st07.trimmedChars + ' 字（次要 section 头 400 字·sc07）'); } catch(_e) {}
-                }
-              }
-            }
-          }
-        } catch(_tokE07) {}
-
         var _sc07Body = {model:P.ai.model||'gpt-4o', messages:[{role:'system',content:_maybeCacheSys(sysPFor('sc07'))},{role:'user',content:tp07}], temperature:_modelTemp, max_tokens:_tok(12000)};
         if (_modelFamily === 'openai') _sc07Body.response_format = { type:'json_object' };
 
@@ -3260,12 +3253,12 @@
           {role:"user",content:tpC}
         ], temperature:0.5, max_tokens:_tok(8000)};
         if (_tmDetectModelFamily(_cCons.model, _modelFamily) === 'openai') _consolidateBody.response_format = { type: 'json_object' };
-        var _consCall = await _callFollowupAI(_consolidateBody, { id: 'sc_consolidate', label: '记忆固化', url: _uCons, key: _cCons.key, priority: 'low' });
+        var _consCall = await _callFollowupAI(_consolidateBody, { id: 'sc_consolidate', label: '记忆固化', url: _uCons, key: _cCons.key, tier: _cCons.tier || _tCons, priority: 'low' });
         {
           var dataC = _consCall.data;
           _checkTruncated(dataC, '记忆固化');
           var cC = _consCall.raw || '';
-          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { url: _uCons, key: _cCons.key, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'], priority: 'low' });
+          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { id: 'sc_consolidate', url: _uCons, key: _cCons.key, tier: _cCons.tier || _tCons, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'], priority: 'low' });
           if (_pCParse && _pCParse.raw) cC = _pCParse.raw;
           var pC = _pCParse ? _pCParse.parsed : null;
           if (pC && (pC.consolidated || pC.key_threads || pC.next_turn_focus)) {
@@ -3598,7 +3591,7 @@
             if(histJson && histJson.has_ai_hallucination) {
               _dbg('[历史检查] AI 幻觉:', histJson.ai_errors);
               // 替换 AI 自生的错误·玩家诏令引起的内容由 AI 保留
-              if (histJson.corrected_shizhengji) shizhengji = histJson.corrected_shizhengji;
+              if (histJson.corrected_shizhengji) shizhengji = (global.TM && TM.AIResultContract) ? TM.AIResultContract.text(histJson.corrected_shizhengji, 'corrected_shizhengji') : histJson.corrected_shizhengji;
               if (histJson.corrected_zhengwen) zhengwen = histJson.corrected_zhengwen;
               // 追加史官按注释
               if (histJson.note) {
@@ -3664,11 +3657,14 @@
 
       // Start queued next-turn memory/snapshot jobs only after foreground cleanup
       // has finished, so compression cannot overwrite their late writes.
+      Object.defineProperty(ctx.followup,'startBackground',{configurable:true,value:function(){
       try { _flushQueuedPostTurnSubcalls(); } catch(_qptE) { _dbg('[PostTurn] queued subcall launch failed:', _qptE); }
 
       // S2：启动 post-turn 异步任务（L2_AI/L3_CONDENSE/REFLECT/factionArcs）
       //   不 await·让玩家看结果时后台运行·下回合开始前 _awaitPostTurnJobs 会等齐
-      try { if (typeof _launchPostTurnJobs === 'function') _launchPostTurnJobs(); } catch(_ptE) { _dbg('[PostTurn] launch failed:', _ptE); }    ctx.results.sc1 = p1 || ctx.results.sc1 || null;
+      try { if (typeof _launchPostTurnJobs === 'function') _launchPostTurnJobs(); } catch(_ptE) { _dbg('[PostTurn] launch failed:', _ptE); }
+      }}); // Read-back verification owns foreground state until review joins.
+      ctx.results.sc1 = p1 || ctx.results.sc1 || null;
     copyResultsFromTurnState(ctx, p2);
     ctx.followup.p1Summary = p1Summary || "";
     ctx.followup.npcDeep = { sc15: ctx.results.sc15, sc_memwrite: ctx.results.sc_memwrite };
@@ -3684,6 +3680,7 @@
     ctx.record.szjSummary = szjSummary || "";
     ctx.record.personnelChanges = Array.isArray(personnelChanges) ? personnelChanges : [];
     ctx.record.hourenXishuo = hourenXishuo || "";
+    if (global.TM && TM.AIResultContract) TM.AIResultContract.normalizeRecord(ctx.record);
     ctx.record.suggestions = (ctx.results.sc2 && Array.isArray(ctx.results.sc2.suggestions)) ? ctx.results.sc2.suggestions : (Array.isArray(ctx.record.suggestions) ? ctx.record.suggestions : []);
     // v2.6 Slice 2.5.10·廷议 decay 接入点·tinyi-decay-contract.md
     // 民意度 / 言官离心 按 dynasty + monthsPerTurn decay·conveningPolitics 7-turn 后 reset·pending events 按 expireTurn 清理

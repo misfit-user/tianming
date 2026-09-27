@@ -1,0 +1,107 @@
+{
+  "date": "2026-09-19T12:03:11.649Z",
+  "work": "C:\\Users\\37814\\Desktop\\tianming\\docs\\render-performance-session-1789818088385",
+  "branch": "codex/audit-20260905",
+  "map": {
+    "beforeMedianMs": 364.19999999925494,
+    "afterMedianMs": 85.34999999962747,
+    "beforeMutations": 264,
+    "afterMutations": 48,
+    "regions": 566,
+    "pathCount": 1143,
+    "svgBytes": 22766949,
+    "retained": true,
+    "liveOwnership": {
+      "owner": "fac_jin",
+      "target": "fac_jin",
+      "oldKey": "fac_song",
+      "signatureChanged": true
+    },
+    "nativePassed": true
+  },
+  "battle": {
+    "beforeMedianMs": 4.299999998882413,
+    "afterMedianMs": 2.5,
+    "beforeMutations": 660,
+    "afterMutations": 180,
+    "beforeChildChanges": 120,
+    "afterChildChanges": 0,
+    "unitsUnchanged": true,
+    "textsEqual": true,
+    "primitiveValues": true,
+    "nativePassed": true
+  },
+  "culture": {
+    "referenceComparisons": 1048576,
+    "indexVisits": 12207,
+    "checks": 5
+  },
+  "minimap": {
+    "idlePolls": 60,
+    "idlePaints": 0,
+    "checks": 6
+  },
+  "sourceHashes": {
+    "web/phase8-formal-map.js": "be0e74b5a12ac116999034406284f738f92271c7ccbd8eb154c49e234b561fe8",
+    "web/map-editor-culture-raster.js": "023a4e080fb2511eadeb961e08e387cc4b3002f9fe826b25c941a15fcf8dd535",
+    "web/map-editor-minimap.js": "b883eefb2f9e8f49500c0167950d17819d88046bf7f25e7b1cb8e160c35acf71",
+    "web/battle/index.html": "32d702963726562d03b6facd0e21bb71dd70fac31764a17b99b346e0b6159ba7",
+    "web/scripts/verify-all.js": "1bfc8cd89d88733fe212007f9e3e245445ff26d6b783685a8731adadf6d55cb0"
+  },
+  "guards": [
+    {
+      "name": "render-query-budget",
+      "file": "smoke-render-query-budget.js",
+      "code": 0,
+      "summary": [
+        "PASS owner precedence and sentinel values remain unchanged",
+        "{\"passed\":4,\"failed\":0}"
+      ]
+    },
+    {
+      "name": "culture-raster-performance",
+      "file": "smoke-culture-raster-performance.js",
+      "code": 0,
+      "summary": [
+        "PASS spatial index avoids full-region traversal for ordinary grid queries",
+        "{\"passed\":5,\"failed\":0}"
+      ]
+    },
+    {
+      "name": "minimap-idle-render",
+      "file": "smoke-minimap-idle-render.js",
+      "code": 0,
+      "summary": [
+        "PASS public render still honors in-place geometry edits",
+        "{\"passed\":6,\"failed\":0}"
+      ]
+    },
+    {
+      "name": "battle-hud-retained",
+      "file": "smoke-battle-hud-retained.js",
+      "code": 0,
+      "summary": [
+        "PASS null text keeps the native empty-text result",
+        "{\"passed\":6,\"failed\":0}"
+      ]
+    },
+    {
+      "name": "raster-display-cache",
+      "file": "smoke-raster-display-cache.mjs",
+      "code": 0,
+      "summary": [
+        "PASS all 256 terrain and height values preserve pixel output",
+        "{\"passed\":13,\"failed\":0}"
+      ]
+    }
+  ],
+  "syntax": {
+    "files": [
+      "web/phase8-formal-map.js",
+      "web/map-editor-culture-raster.js",
+      "web/map-editor-minimap.js",
+      "web/scripts/verify-all.js"
+    ],
+    "battleInlineScripts": 1
+  }
+}

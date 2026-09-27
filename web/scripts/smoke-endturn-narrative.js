@@ -63,7 +63,7 @@ assert(returnRe.test(src),
   '_szjMax',
   '时政记正文'
 ].forEach(function(token) {
-  assert(src.indexOf(token) >= 0, 'szj 体例·"' + token + '"');
+  assert((src + fs.readFileSync(path.join(ROOT, 'tm-endturn-record-specs.js'), 'utf8')).indexOf(token) >= 0, 'szj 体例·"' + token + '"');
 });
 
 // ─── 时政记 体例·朝政纪要 ───

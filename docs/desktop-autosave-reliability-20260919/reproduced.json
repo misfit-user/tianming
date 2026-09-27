@@ -1,0 +1,40 @@
+[
+  {
+    "label": "before",
+    "scenario": "native-never-replies",
+    "deadlines": 0,
+    "settled": false,
+    "inFlight": true,
+    "pendingNative": null
+  },
+  {
+    "label": "before",
+    "scenario": "late-old-success",
+    "keptNewSession": false
+  },
+  {
+    "label": "before",
+    "scenario": "same-turn-new-snapshot",
+    "saved": false,
+    "calls": 1
+  },
+  {
+    "label": "after",
+    "scenario": "native-never-replies",
+    "deadlines": 1,
+    "settled": true,
+    "inFlight": false,
+    "pendingNative": true
+  },
+  {
+    "label": "after",
+    "scenario": "late-old-success",
+    "keptNewSession": true
+  },
+  {
+    "label": "after",
+    "scenario": "same-turn-new-snapshot",
+    "saved": true,
+    "calls": 2
+  }
+]

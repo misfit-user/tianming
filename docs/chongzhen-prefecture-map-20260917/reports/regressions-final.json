@@ -1,0 +1,68 @@
+{
+  "complete": true,
+  "results": [
+    {
+      "name": "smoke-map-realm-layout.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 484
+    },
+    {
+      "name": "smoke-map-live-vitals.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 159
+    },
+    {
+      "name": "smoke-phase8-map-live-panels.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 10435
+    },
+    {
+      "name": "smoke-army-march-order.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 169
+    },
+    {
+      "name": "smoke-army-march-viz.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 200
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 1149
+    },
+    {
+      "name": "smoke-tianqi-official-cache-recovery.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 2002
+    },
+    {
+      "name": "smoke-stable-id-reference-integrity.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 208
+    },
+    {
+      "name": "verify-official-scenario-parity.js",
+      "passed": true,
+      "status": 0,
+      "error": null,
+      "elapsedMs": 71686
+    }
+  ]
+}

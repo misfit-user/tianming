@@ -1,0 +1,45 @@
+{
+  "edits": [
+    {
+      "old": "  function zoomMapAt(factor, x, y){",
+      "value": "  function zoomMapAt(factor, x, y){\n    if (window.TMShanheRuntime && TMShanheRuntime.zoomAt(factor, x, y, state)) return;"
+    },
+    {
+      "old": "    var svg = world.ownerSVGElement, camera = svg && svg.parentElement;",
+      "value": "    if (window.TMShanheRuntime && TMShanheRuntime.apply(stage, getMapData(), v, state)) return;\n    var svg = world.ownerSVGElement, camera = svg && svg.parentElement;"
+    },
+    {
+      "old": "  function regionPathFromPoint(e){\n    if (!e) return null;",
+      "value": "  function regionPathFromPoint(e){\n    if (!e) return null;\n    if (window.TMShanheRuntime && TMShanheRuntime.active()) return TMShanheRuntime.pick(e);"
+    },
+    {
+      "old": "  function resolveLabelLayout(){",
+      "value": "  function resolveLabelLayout(){\n    if (window.TMShanheRuntime && TMShanheRuntime.layoutLabels(mapStage())) return;"
+    },
+    {
+      "old": "      var dy = (e.clientY - state.drag.y) / viewport.ratio;",
+      "value": "      var dy = (e.clientY - state.drag.y) / viewport.ratio;\n      if (window.TMShanheRuntime && TMShanheRuntime.active(stage)) { var shDelta = TMShanheRuntime.panDelta(dx, dy); dx = shDelta[0]; dy = shDelta[1]; }"
+    },
+    {
+      "old": "            state.mapView.tx = (state.mapView.tx || 0) + g.panDX / viewport.ratio;\n            state.mapView.ty = (state.mapView.ty || 0) + g.panDY / viewport.ratio;",
+      "value": "            var shPan = window.TMShanheRuntime ? TMShanheRuntime.panDelta(g.panDX / viewport.ratio, g.panDY / viewport.ratio) : [g.panDX / viewport.ratio, g.panDY / viewport.ratio];\n            state.mapView.tx = (state.mapView.tx || 0) + shPan[0];\n            state.mapView.ty = (state.mapView.ty || 0) + shPan[1];"
+    },
+    {
+      "old": "    if (!shell || !stage || !isGameVisible()) {",
+      "value": "    if (!shell || !stage || !isGameVisible()) {\n      if (window.TMShanheRuntime) TMShanheRuntime.hide();"
+    }
+  ],
+  "indexTag": "<script src=\"tm-shanhe-runtime.js?v=20260919-native1\"></script>\n",
+  "files": [
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\web\\phase8-formal-map.js",
+      "before": "3f57c121bdfa622878d9b12272114bc195b67153fcca006b3da6276306903afc",
+      "after": "7c58f367ba53585829ea7bbb03b56334f1145b672b28260c7367b3a238381552"
+    },
+    {
+      "path": "C:\\Users\\37814\\Desktop\\tianming\\web\\index.html",
+      "before": "869c17726d61ab26fc0d78727ae81c160ab4664ca8e76845d8162fa985d43759",
+      "after": "458b4b113a86d329a61a99c7aa55fe59dc8e40ede738a0564eb4b95930a82550"
+    }
+  ]
+}

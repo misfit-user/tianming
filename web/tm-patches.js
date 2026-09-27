@@ -104,29 +104,16 @@ if (typeof _setAiSubcallConcurrency === 'undefined') {
 // P15.2 _togglePConf 工具函数（同文件保证·不依赖 player-settings.js·防被回滚）
 if (typeof _togglePConf === 'undefined') {
   window._togglePConf = function(confKey, on) {
+  if (["factionLivingWorldDefault","agentLiveWorldEnabled","factionAgentEnabled","factionGoalStackEnabled","revoltEntityEnabled","useTinyiV3","deterministicCasualties","partyClassLlmEnabled","npcAiPrecision"].indexOf(confKey) >= 0) return false; // 旧调用不能关闭已转正的玩法。
     if (typeof P === 'undefined' || !P) return;
     if (!P.conf) P.conf = {};
-    if (confKey === 'npcAiPrecision') {
-      if (window.TM && TM.FactionNpcSettings && typeof TM.FactionNpcSettings.setEnabled === 'function') {
-        TM.FactionNpcSettings.setEnabled(!!on);
-      } else {
-        P.conf.npcAiPrecision = !!on;
-        if (on) P.conf.npcAiPrecisionMode = 'eager';
-        else if (window.TM && TM.FactionNpcInTurnDriver && typeof TM.FactionNpcInTurnDriver.cancelInTurnTimers === 'function') {
-          TM.FactionNpcInTurnDriver.cancelInTurnTimers();
-        }
-      }
-    } else {
-      P.conf[confKey] = !!on;
-    }
+    P.conf[confKey] = !!on;
     if (typeof saveP === 'function') saveP();
     var labels = {
       recallGateEnabled: { on: '已启用召回节流·常规回合跳过 SC_RECALL 节省 API', off: '已关闭召回节流·每回合都全跑 5 源召回' },
       consolidationEnabled: { on: '已启用后台记忆固化', off: '已关闭后台记忆固化·sc_consolidate 不再调用' },
       semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' },
-      npcAiPrecision: { on: '已启用 NPC 势力真决策·会真实改动数据并写入账本', off: '已关闭 NPC 势力真决策·走本地模板 + 人格 hints' },
       npcAiCosmeticEnrich: { on: '已启用 NPC 文字润色·仅改显示文辞', off: '已关闭 NPC 文字润色·不影响真决策' },
-      useTinyiV3: { on: '已启用廷议 v3 (默认·8 阶段·新框架)', off: '已关闭 v3·退回 v2 廷议 (简陋·5 阶段·已加 ChronicleTracker/ClassEngine 集成 fallback)' },
       rigidHistEventsOff: { on: '已关闭注定史实事件·演义模式下史实人物的注定命运（如史实死亡）不再自动触发', off: '已恢复注定史实事件·演义模式下史实注定命运照常触发（轻度/严格史实模式一向照旧）' }
     };
     var l = labels[confKey] || { on: '已启用 ' + confKey, off: '已关闭 ' + confKey };
@@ -470,10 +457,23 @@ function _tmUiFontScaleDefault(){
   } catch(_) {}
   return s;
 }
+// 御案样式的字号写成 calc(N * var(--tm-px, 1px))（美术宪法第2刀）：显式选了档时 --tm-px = 选档 ÷ 出厂档，
+// 御案跟着界面字号一起缩放；没选过档或选的正好是出厂档时不写，回落 1px，画面与从前一样。
+// 与 index.html early-apply ③同算法；换显示器出厂档会变，所以窗口变化时也重算。
+function _tmSyncUiPx(){
+  try {
+    var v = parseFloat(localStorage.getItem('tm.uiFontScale'));
+    var auto = _tmUiFontScaleDefault();
+    var rootStyle = document.documentElement.style;
+    if (!v || v < 0.8 || v > 1.6 || v === auto) rootStyle.removeProperty('--tm-px');
+    else rootStyle.setProperty('--tm-px', (Math.round(v / auto * 10000) / 10000) + 'px');
+  } catch(_) {}
+}
 window._tmSetUiFontScale = function(v, btn){
   // 顺手清旧键 tianming_font_size（tm-audio-theme.js 旧 A+/A- 面板遗留）——它曾在开局时把根字号改回旧值
   try { localStorage.setItem('tm.uiFontScale', String(v)); localStorage.removeItem('tianming_font_size'); } catch(_){}
   try { document.documentElement.style.fontSize = (v === 1 ? '' : (16 * v) + 'px'); } catch(_){}
+  _tmSyncUiPx();
   if (btn && btn.parentElement) {
     var sib = btn.parentElement.children;
     for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
@@ -493,6 +493,11 @@ try {
         document.documentElement.style.fontSize = (s === 1 ? '' : (16 * s) + 'px');
       } catch(_) {}
     }, 300);
+  });
+  var _tmUiPxT = null;
+  window.addEventListener('resize', function(){
+    if (_tmUiPxT) clearTimeout(_tmUiPxT);
+    _tmUiPxT = setTimeout(_tmSyncUiPx, 300);
   });
 } catch(_) {}
 // 渲染分辨率（fit 虚拟舞台·tm-fixed-fit.js 读同 key）：'auto'=桌面自适应窗口（不开 fit）·
@@ -529,6 +534,19 @@ window._tmSetFullscreen = function(want, btn){
 };
 // 启动时按上次偏好应用窗口模式（默认全屏不动）。Electron 须重建出含 setFullScreen 的 preload 才生效。
 try { setTimeout(function(){ try { if (localStorage.getItem('tm.fullscreen') === '0' && window.tianming && typeof window.tianming.setFullScreen === 'function') window.tianming.setFullScreen(false); } catch(_){} }, 1200); } catch(_){}
+
+// 舆图点击（通志一期 S3·设置·界面显示）：左键随层级开谱牒 / 通志 / 方志，或照旧一律开方志。
+// 存 P.conf.mapClickFollowTier（随设置存档），没设过就是随层级；右键小菜单不受这个开关影响。
+// 写入走设置的通用开关 _togglePConf（tm-player-settings.js，负责存档与提示）。
+window._tmSetMapClickTier = function(want, btn){
+  if (typeof _togglePConf !== 'function') return;
+  _togglePConf('mapClickFollowTier', !!want);
+  if (btn && btn.parentElement) {
+    var sib = btn.parentElement.children;
+    for (var i = 0; i < sib.length; i++) { sib[i].classList.remove('bp'); sib[i].classList.add('bs'); }
+    btn.classList.remove('bs'); btn.classList.add('bp');
+  }
+};
 
 // ── 服务商预设（2026-07-10·13 家 OpenAI 兼容 + 自定义）─────────────────
 // 选中只自动填地址（2026-07-11 owner 拍板：Model_ID 玩家自填·示例仅作文字提示·model 字段只供提示文案引用）。
@@ -623,6 +641,12 @@ openSettings=function(){
       var pillFs = function(want, label){ var on = (_fsPref === (want ? '1' : '0')); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetFullscreen(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
       h += '<div style="font-size:0.78rem;color:var(--txt-d);margin:0.6rem 0 0.4rem;">显示模式·全屏沉浸或窗口化·只影响本设备</div>' +
         '<div style="display:flex;gap:0.3rem;">' + pillFs(true, '全屏') + pillFs(false, '窗口') + '</div>';
+      // 舆图点击（通志一期 S3）：左键随层级开册页，或照旧一律开方志；存 P.conf，随设置存档
+      // 说明行字号与本节其他说明行一样取 0.78rem（随根字号走）；写成 calc 以免给写死字号的棘轮加账，UI 重做时换令牌
+      var _tierOn = !(P.conf && P.conf.mapClickFollowTier === false);
+      var pillTier = function(want, label){ var on = (_tierOn === want); return '<button class="bt ' + (on ? 'bp' : 'bs') + ' bsm" onclick="_tmSetMapClickTier(' + want + ',this)" style="flex:1;">' + label + '</button>'; };
+      h += '<div style="font-size:calc(0.78 * 1rem);color:var(--txt-d);margin:0.6rem 0 0.4rem;">舆图点击·左键随地图层级开册页（天下开谱牒、省道开通志、府州开方志），或照旧一律开方志；右键总有三级小菜单</div>' +
+        '<div style="display:flex;gap:0.3rem;">' + pillTier(true, '随层级') + pillTier(false, '一律方志') + '</div>';
       return h + '</div>';
     })()+
     // 御驾亲征·战术战斗(接入 Phase2·开关 GM._yujiaQinzheng·本局存档生效)+他方战事旁观(O12·GM._yujiaObserve)
@@ -635,16 +659,6 @@ openSettings=function(){
         + '<div style="display:flex;gap:0.3rem;">' + pill(true,'开启 · 亲征') + pill(false,'关闭 · 庙算') + '</div>'
         + '<div style="font-size:0.78rem;color:var(--txt-d);margin:0.6rem 0 0.4rem;">他方战事旁观：开启后，与朕无涉之战每回合末可<b>遣人观之</b>（战况重演·不改战果）。</div>'
         + '<div style="display:flex;gap:0.3rem;">' + pillOb(true,'开启 · 观之') + pillOb(false,'关闭 · 不观') + '</div>'
-        + '</div>';
-    })()+
-    // 势力活世界·实验(F2·开关 GM._factionLivingWorld·本局存档生效·总闸 OFF=零行为变更)
-    (function(){
-      // 勾选态推导(2026-07-22 翻默认+迁移)：GM 有 boolean 字段→!==false;无字段(如发车前临时 GM)→读跨局默认镜像 P.conf.factionLivingWorldDefault(默认 ON)
-      var on = true; try { on = (typeof GM!=='undefined' && GM && typeof GM._factionLivingWorld==='boolean') ? (GM._factionLivingWorld !== false) : !(typeof P!=='undefined' && P && P.conf && P.conf.factionLivingWorldDefault === false); } catch(_){}
-      function pill(want, label){ return '<button class="bt '+((on===want)?'bp':'bs')+' bsm" data-slhs="'+(want?1:0)+'" onclick="_tmSetFactionLivingWorld('+want+',this)" style="flex:1;">'+label+'</button>'; }
-      return '<div class="settings-section"><h4>势力活世界 · 实验</h4>'
-        + '<div style="font-size:0.78rem;color:var(--txt-d);margin:-0.2rem 0 0.4rem;">开启后，列国势力不再只作壁上观：可<b>真宣战/参战</b>（走正当法理·非乱咬）、<b>结盟背刺</b>结出真外交后果、跨回合<b>立志兴事</b>，重大动向<b>入御案时政</b>待陛下应对。默认启用（2026-07-22 翻默认·可关），本局存档生效。</div>'
-        + '<div style="display:flex;gap:0.3rem;">' + pill(true,'开启 · 活世界') + pill(false,'关闭 · 现状') + '</div>'
         + '</div>';
     })()+
     // API
@@ -703,6 +717,7 @@ openSettings=function(){
       // 注:agent-only 调参(记忆深度/自适应深化/工作上下文窗口)已移至「🧪实验模式→🤖Agent 模式」块(仅该模式生效·归位)
       return '<div class="settings-section" style="border-left:3px solid var(--celadon-500,#5a8f7f);background:rgba(126,184,167,0.03);">' +
         '<h4 style="color:var(--celadon-400,#7eb8a7);">⚡ 性能·成本控制</h4>' +
+        '<div id="s-call-budget-controls"></div>' +
         '<div style="font-size:0.72rem;color:var(--txt-d);margin:-0.3rem 0 0.6rem;line-height:1.55;">这些开关控制 AI 调用频率与本地资源使用·默认设置面向"质量优先"。</div>' +
         '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
           '<input type="checkbox" id="s-recall-gate" ' + (_gateOn?'checked ':'') + 'onchange="_togglePConf(\'recallGateEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
@@ -763,31 +778,8 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })() +
-          // 活世界演绎·总纲(2026-07-22 翻默认)：一键设/清四组件(民变实体化/边患真入侵/兵败牵动天下/势力活世界)·个体开关仍在下方逐项细调
           (function(){
-            var _re = !(P.conf && P.conf.revoltEntityEnabled === false);
-            var _bi = !(P.conf && P.conf.borderInvasionEnabled === false);
-            var _wr = !(P.conf && P.conf.worldReactorBattleEnabled === false);
-            var _flw = true; try { _flw = (typeof GM!=='undefined' && GM && typeof GM._factionLivingWorld==='boolean') ? (GM._factionLivingWorld !== false) : !(typeof P!=='undefined' && P && P.conf && P.conf.factionLivingWorldDefault === false); } catch(_){}
-            var _lwAll = _re && _bi && _wr && _flw;
             return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
-              '<input type="checkbox" id="s-livingworld-master" ' + (_lwAll?'checked ':'') + 'onchange="_tmToggleLivingWorldMaster(this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-              '<div style="flex:1;">' +
-                '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🌏 活世界演绎·总纲（默认启用）</div>' +
-                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">一键开合下列四项「活世界」：<b>民变实体化</b>、<b>边患真入侵</b>、<b>兵败牵动天下</b>、<b>势力活世界</b>——让民变、外患、列国不再只是数字与文案，而交 AI 真演绎。可在下方逐项细调；勾选表示四项全开。势力活世界随本局存档，其余随游戏设置。</div>' +
-              '</div>' +
-            '</label>';
-          })() +
-          (function(){
-            var _revEntOn = !(P.conf && P.conf.revoltEntityEnabled === false);
-            return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
-              '<input type="checkbox" id="s-revolt-entity" ' + (_revEntOn?'checked ':'') + 'onchange="_togglePConf(\'revoltEntityEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-              '<div style="flex:1;">' +
-                '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">民变实体化（默认启用·实验）</div>' +
-                '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">民变闹到「暴动」及以上时具象化为<b>真实体</b>并交 <b>AI 演绎</b>：起真旗号·立有名有姓的渠帅·定纲领；此后每回合由 AI 决断攻守/裹挟/分裂合流/僭号建国·并按你的招抚旨意<b>真谈判</b>（讨价/诈许/真降皆有可能·银子真扣）。占据的府县真易手。被剿/瓦解则军散档除；打到顶级=<b>兵临京师三拍</b>（有储君则继统续玩残局）。无 AI 时落确定性兜底。每回合约多 1-2 次轻量调用（走次要 API）。关闭时维持原五级抽象台账。</div>' +
-              '</div>' +
-            '</label>' +
-            '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-bottom:1px dotted var(--bdr);cursor:pointer;">' +
               '<input type="checkbox" id="s-border-invasion" ' + ((!(P.conf && P.conf.borderInvasionEnabled === false))?'checked ':'') + 'onchange="_togglePConf(\'borderInvasionEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
               '<div style="flex:1;">' +
                 '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">边患·真实入侵（默认启用·实验）</div>' +
@@ -819,31 +811,12 @@ openSettings=function(){
         '</label>' +
         // Phase F3·2026-05-10·NPC 决策精细化开关
         (function(){
-          var _npcAi = !(P.conf && P.conf.npcAiPrecision === false);
           var _npcPolish = !(P.conf && P.conf.npcAiCosmeticEnrich === false);
           return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
-            '<input type="checkbox" id="s-npc-ai" ' + (_npcAi?'checked ':'') + 'onchange="_togglePConf(\'npcAiPrecision\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-            '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">NPC 势力真决策（LLM 精细推演·真实改动数据）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">关闭：NPC 奏疏/诏令/朝议/人事主要走本地模板。开启：每回合按优先级调用 LLM，让非玩家势力产生可落账的财政、军务、外交、地政等行动；结果会进入势力 AI 账本、近事和后续推演依据。需有主 API key。</div>' +
-            '</div>' +
-          '</label>' +
-          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
             '<input type="checkbox" id="s-npc-polish" ' + (_npcPolish?'checked ':'') + 'onchange="_togglePConf(\'npcAiCosmeticEnrich\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +
               '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">NPC 文字润色（cosmetic·不改数据）</div>' +
               '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">只润色 NPC 已有奏疏/诏令的文辞显示，不新增行动、不改财政军务外交地政；用于和“真决策”区分。</div>' +
-            '</div>' +
-          '</label>';
-        })()+
-        // v2.6 Slice 0·廷议 v3 toggle·默认 ON (useTinyiV3 != false)·user 主动关到 v2 fallback
-        (function(){
-          var _v3On = !(P.conf && P.conf.useTinyiV3 === false);
-          return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
-            '<input type="checkbox" id="s-tinyi-v3" ' + (_v3On?'checked ':'') + 'onchange="_togglePConf(\'useTinyiV3\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-            '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">廷议·新框架 v3 (8 阶段·默认启用)</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">默认启用 v3 廷议·8 阶段政治模拟 (议前预审/起议/辩议/廷推/钦定/草诏/用印/追责)。关闭则退回 v2 (简陋 5 阶段·已加 ChronicleTracker/ClassEngine fallback)。sprint 测试期遇 bug 关掉走 v2。</div>' +
             '</div>' +
           '</label>';
         })()+
@@ -903,13 +876,13 @@ openSettings=function(){
             '</div>' +
           '</label>';
         })()+
-        // Scandal·科场弊案 (opt-in·默认关·2026-07-01·补设置开关·此前仅 console 可开) ───
+        // 科场弊案默认开启，保留显式关闭 ───
         (function(){
-          var _on = !!(P.conf && P.conf.useNewKejuScandal === true);
+          var _on = !(P.conf && P.conf.useNewKejuScandal === false);
           return '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;border-top:1px dotted var(--bdr);cursor:pointer;">' +
             '<input type="checkbox" id="s-keju-scandal" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'useNewKejuScandal\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎓 科场弊案（默认关）</div>' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎓 科场弊案（默认开启）</div>' +
               '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后，科举可能爆出舞弊/科场案（关节、冒籍、鬻题、通关节等），牵连考官士子、引发清议与查办；关闭则不触发弊案链。</div>' +
             '</div>' +
           '</label>';
@@ -925,7 +898,6 @@ openSettings=function(){
       var _on = !!((P.conf && P.conf.agentUpgradesEnabled) || (P.ai && P.ai.agentUpgradesEnabled));
       var _ftc = !!((P.conf && P.conf.factionToolDecisionEnabled) || (P.ai && P.ai.factionToolDecisionEnabled));
       var _evu = !!((P.conf && P.conf.eventUnificationEnabled) || (P.ai && P.ai.eventUnificationEnabled));
-      var _ofa = !!((P.conf && P.conf.officeActivationEnabled) || (P.ai && P.ai.officeActivationEnabled));
       var _tlc = !!((P.conf && P.conf.talentCohortEnabled) || (P.ai && P.ai.talentCohortEnabled));
       var h = '<div class="settings-section" style="border-left:3px solid var(--vermillion-400,#c04030);background:rgba(192,64,48,0.04);">' +
         '<h4 style="color:var(--vermillion-300,#d4706a);">🧪 实验模式</h4>' +
@@ -1026,18 +998,6 @@ openSettings=function(){
                 '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.55;margin-top:0.12rem;">玩家做出格/创造性举措时，agent 先深查真实史例先例再推演其可信后果（硬核×自由的命门交点·让天马行空也有史可依）。</div></div>' +
             '</label>' +
           '</div>';
-          // ── 活世界·势力自主（实验·命门「活世界」·后台 agent 调用·默认关·扩展①）──
-          //   agent 模式默认势力不决策(endturn-systems 不跑 NPC + factionAgentEnabled 被互斥关)→世界静止。此开关经"活世界例外"放行势力 agent③ 满血。
-          var _liveWorldOn = !!(P.conf && P.conf.agentLiveWorldEnabled);
-          h += '<div style="margin-top:0.45rem;padding:0.5rem 0.6rem;background:rgba(120,200,160,0.06);border-radius:3px;">' +
-            '<div style="font-size:0.8rem;color:#9fe0c0;font-weight:600;margin-bottom:0.15rem;">🌍 活世界 · 势力自主决策（实验 · 默认关）</div>' +
-            '<div style="font-size:0.66rem;color:var(--txt-d);opacity:0.85;line-height:1.5;margin-bottom:0.1rem;">agent 模式默认只推演「你的朝廷」·列国/各方势力静止。开启后每回合后台让最强及与你相关的数派势力自主决策（外交/备战/结盟/背叛）·世界不再围你转——服务「活世界」命门。复用已验证的势力 agent（含战略姿态/双向外交）·每派每回合多一次 AI 调用（封顶）。</div>' +
-            '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.35rem 0;border-top:1px dotted rgba(120,200,160,0.25);cursor:pointer;">' +
-              '<input type="checkbox" id="s-agent-liveworld" ' + (_liveWorldOn?'checked ':'') + 'onchange="_togglePConf(\'agentLiveWorldEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-              '<div style="flex:1;"><div style="font-size:0.8rem;color:var(--gold);font-weight:600;">势力自主当家</div>' +
-                '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.55;margin-top:0.12rem;">每回合后台跑数派非玩家势力的自主推演（激活：最强三派固定 + 与你相关者动态入选）·各派按自己的目标/宿怨/姿态行动并回写世界。需主 API key。</div></div>' +
-            '</label>' +
-          '</div>';
         } else {
           // ── LLM 模式（原"实验玩法"·对现管线的增量增强·各项独立开关）──
           h += '<div style="font-size:0.7rem;color:var(--txt-d);margin:0.25rem 0 0.2rem;line-height:1.5;">LLM 模式：在现有回合管线上叠加的 AI 增强（各项独立·可单独调试）。</div>' +
@@ -1045,44 +1005,9 @@ openSettings=function(){
             '<input type="checkbox" id="s-agent-upgrades" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'agentUpgradesEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
             '<div style="flex:1;">' +
               '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🧠 启用全部 LLM 升级（默认关·实验）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">一键开启 9 项对 LLM 管线的增强：按需取数召回、势力前瞻目标栈、主推演异常路由、朝堂博弈、记忆管家固化、自我反思偏差校正、诏令执行督查、史实顾问引证(仅史实模式)、势力自主当家(激活策略3固定最强+5动态·战略姿态自著)。各项原有独立开关仍可单独调试。需主 API key·会增加 API 调用。</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启对 LLM 管线的增强：按需取数召回、异常路由、朝堂博弈、记忆管家固化、自我反思、诏令执行督查、史实顾问引证和势力按需取数。各项原有独立开关仍可单独调试。需主 API key·会增加 API 调用。</div>' +
             '</div>' +
           '</label>' +
-          // ── 官制活化（实验）·总闸·2026-06-20·一键启用官职履职/权限门/改制裁定/agent 按需取数 ──
-          '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(192,64,48,0.15);margin-top:0.3rem;">' +
-            '<input type="checkbox" id="s-office-activation" ' + (_ofa?'checked ':'') + 'onchange="_togglePConf(\'officeActivationEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-            '<div style="flex:1;">' +
-              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🏛️ 启用官制活化（默认关·实验）</div>' +
-              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">让死的官制活起来：①职权舆图喂推演 ②官员履职度(才+五常·失职衰减·与主动行动耦合) ③权限门(掌“征税”之权出缺/失职→实征打折·腐败涨) ④AI 裁定式改制(玩家自由改官制·官僚抵抗·拟制两回合) ⑤官署按需细查(agent 走次要 API·返职责描述)。各刀另有独立开关可单独调试·会增加 API 调用。</div>' +
-            '</div>' +
-          '</label>' +
-          // ── 官制活化·细粒度（活化四刀/recall/出缺补员各独立开关·总闸开则全覆盖·此处供总闸关时单独调；默认开者可在此关·2026-07-01）──
-          '<div style="font-size:0.74rem;color:var(--gold-d);margin:0.45rem 0 0.15rem;padding-top:0.35rem;border-top:1px dashed rgba(192,64,48,0.22);">🏛️ 官制活化·细粒度（总闸开则四刀全启；下列供总闸关时单独调·默认开者可在此关）</div>' +
-          (function(){
-            var _acts = [
-              ['officePowerPerceptionEnabled','职权舆图（默认开）','把官制结构(谁掌何权/才德/履职/出缺)喂进 AI 推演·纯增益无 balance 后果。',true],
-              ['officeDutyStateEnabled','官员履职度','官员履职度(才+五常)·失职衰减·与主动行动耦合(影响 balance)。',false],
-              ['officeAuthorityGateEnabled','权限门控','掌“征税”等权者出缺/失职→实征打折·腐败涨(影响 balance)。',false],
-              ['officeReformAdjudicationEnabled','改制裁定','玩家自由改官制→官僚抵抗·拟制两回合·AI 裁定准驳。',false],
-              ['officeCharterEnabled','设衙章程','下诏设新衙门时 AI 拟开衙章程：正名·职掌·官职表(品级/编制/职权/月俸)·首任荐单·开办费(国库真扣)，廷议裁定后按章开衙。须同开「改制裁定」方有拟制态可拟(增 AI 子调用)。',false],
-              ['officeDynMigrationEnabled','旧衙归树','把历年「设衙门」攒下的权设台账衙门一次性迁入官制树·著为定制：岁支旧账停走·员额俸给改循官制·旧掌其事者荐正授入建议库·有 AI 则补章程定职官表。开一次迁一次·并账不重立。',false],
-              ['officeRecallAgentEnabled','官署按需细查','主推演对焦点衙门发 agent 子调用取职责细节(走次要 API·增调用)。',false],
-              ['officeVacancyEnabled','出缺补员（默认开）','官员亡故/致仕留缺→按建制走出缺·可被补员(关则不自动出缺)。',true]
-            ];
-            var _ah = '';
-            for (var _ai2 = 0; _ai2 < _acts.length; _ai2++) {
-              var _ac = _acts[_ai2];
-              var _acOn = _ac[3]
-                ? !((P && P.conf && P.conf[_ac[0]] === false) || (P && P.ai && P.ai[_ac[0]] === false))
-                : !!((P && P.conf && P.conf[_ac[0]]) || (P && P.ai && P.ai[_ac[0]]));
-              _ah += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.3rem 0;cursor:pointer;border-top:1px dotted rgba(192,64,48,0.12);">' +
-                '<input type="checkbox" ' + (_acOn ? 'checked ' : '') + 'onchange="_togglePConf(\'' + _ac[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-                '<div style="flex:1;"><div style="font-size:0.8rem;color:var(--gold);font-weight:600;">' + _ac[1] + '</div>' +
-                '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.5;margin-top:0.1rem;">' + _ac[2] + '</div></div>' +
-                '</label>';
-            }
-            return _ah;
-          })() +
           // ── 官制·机制深化（S1/S4·各独立开关·与上「官制活化」并行·默认关·2026-06-30）──
           '<div style="font-size:0.74rem;color:var(--gold-d);margin:0.45rem 0 0.15rem;padding-top:0.35rem;border-top:1px dashed rgba(192,64,48,0.22);">🏛️ 官制·机制深化（独立开关·默认关·开后官制真撬动财政/吏治/阴谋/人才/皇权）</div>' +
           (function(){
@@ -1137,31 +1062,50 @@ openSettings=function(){
       return h;
     })()+
 
-    // ── 战斗规则·确定性战果 (默认开·2026-07-05 翻默认·原 opt-in 2026-06-15) ──
     (function(){
-      var _on = !(P.conf && P.conf.deterministicCasualties === false);
-      return '<div class="settings-section"><h4>战斗规则</h4>' +
-        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
-        '<input type="checkbox" id="s-det-cas" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'deterministicCasualties\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">⚔️ 确定性战果（默认开）</div>' +
-          '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后（默认），当推演 AI 漏报或给出离谱伤亡时，改由战斗引擎按双方兵力、地形、城防、季节确定性核算战损，机械可信度更高；关闭则一切战果由 AI 自由裁量。</div>' +
-        '</div>' +
-      '</label></div>';
+      var _ofa = window.TM && TM.OfficeFlags ? TM.OfficeFlags.masterOn() : (P.conf && typeof P.conf.officeActivationEnabled === 'boolean' ? P.conf.officeActivationEnabled : !(P.ai && P.ai.officeActivationEnabled === false));
+      return '<div class="settings-section"><h4>官制活化</h4>' +
+'<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px solid rgba(192,64,48,0.15);margin-top:0.3rem;">' +
+            '<input type="checkbox" id="s-office-activation" ' + (_ofa?'checked ':'') + 'onchange="_togglePConf(\'officeActivationEnabled\',this.checked);closeSettings();openSettings();" style="margin-top:0.15rem;flex-shrink:0;">' +
+            '<div style="flex:1;">' +
+              '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🏛️ 官制活化（默认开启）</div>' +
+              '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">让死的官制活起来：①职权舆图喂推演 ②官员履职度(才+五常·失职衰减·与主动行动耦合) ③权限门(掌“征税”之权出缺/失职→实征打折·腐败涨) ④AI 裁定式改制(玩家自由改官制·官僚抵抗·拟制两回合) ⑤官署按需细查(agent 走次要 API·返职责描述)。同时启用设衙章程与旧衙归树，旧机构迁入官制后停止旧预算扣支，避免重复支出。关闭总闸后可逐项选择；部分功能增加 API 调用。</div>' +
+            '</div>' +
+          '</label>' +
+          // ── 官制活化·细粒度（活化四刀/recall/出缺补员各独立开关·总闸开则全覆盖·此处供总闸关时单独调；默认开者可在此关·2026-07-01）──
+          '<div style="font-size:0.74rem;color:var(--gold-d);margin:0.45rem 0 0.15rem;padding-top:0.35rem;border-top:1px dashed rgba(192,64,48,0.22);">🏛️ 官制活化·细粒度（总闸开启时统一生效；关闭总闸后可逐项选择，出缺补员独立设置）</div>' +
+          (function(){
+            var _acts = [
+              ['officePowerPerceptionEnabled','职权舆图（默认开）','把官制结构(谁掌何权/才德/履职/出缺)喂进 AI 推演·纯增益无 balance 后果。',true],
+              ['officeDutyStateEnabled','官员履职度','官员履职度(才+五常)·失职衰减·与主动行动耦合(影响 balance)。',false],
+              ['officeAuthorityGateEnabled','权限门控','掌“征税”等权者出缺/失职→实征打折·腐败涨(影响 balance)。',false],
+              ['officeReformAdjudicationEnabled','改制裁定','玩家自由改官制→官僚抵抗·拟制两回合·AI 裁定准驳。',false],
+              ['officeCharterEnabled','设衙章程','下诏设新衙门时 AI 拟开衙章程：正名·职掌·官职表(品级/编制/职权/月俸)·首任荐单·开办费(国库真扣)，廷议裁定后按章开衙。须同开「改制裁定」方有拟制态可拟(增 AI 子调用)。',false],
+              ['officeDynMigrationEnabled','旧衙归树','把历年「设衙门」攒下的权设台账衙门一次性迁入官制树·著为定制：岁支旧账停走·员额俸给改循官制·旧掌其事者荐正授入建议库·有 AI 则补章程定职官表。开一次迁一次·并账不重立。',false],
+              ['officeRecallAgentEnabled','官署按需细查','主推演对焦点衙门发 agent 子调用取职责细节(走次要 API·增调用)。',false],
+              ['officeVacancyEnabled','出缺补员（默认开）','官员亡故/致仕留缺→按建制走出缺·可被补员(关则不自动出缺)。',true]
+            ];
+            var _ah = '';
+            for (var _ai2 = 0; _ai2 < _acts.length; _ai2++) {
+              var _ac = _acts[_ai2];
+              var _acOn = _ac[0] !== 'officeVacancyEnabled' && _ofa ? true : _ac[3]
+                ? !((P && P.conf && P.conf[_ac[0]] === false) || (P && P.ai && P.ai[_ac[0]] === false))
+                : !!((P && P.conf && P.conf[_ac[0]]) || (P && P.ai && P.ai[_ac[0]]));
+              _ah += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.3rem 0;cursor:pointer;border-top:1px dotted rgba(192,64,48,0.12);">' +
+                '<input type="checkbox" ' + (_acOn ? 'checked ' : '') + ((_ofa && _ac[0] !== 'officeVacancyEnabled') ? 'disabled ' : '') + 'onchange="_togglePConf(\'' + _ac[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
+                '<div style="flex:1;"><div style="font-size:0.8rem;color:var(--gold);font-weight:600;">' + _ac[1] + '</div>' +
+                '<div style="font-size:0.68rem;color:var(--txt-d);line-height:1.5;margin-top:0.1rem;">' + _ac[2] + '</div></div>' +
+                '</label>';
+            }
+            return _ah;
+          })()
+        + '</div>';
     })()+
 
-    // ── 党争/阶层·LLM 校准 (默认开·2026-07 补设置开关·此前仅 console·耗 API) ──
+    // 党派自主行动仍保留独立设置。
     (function(){
-      var _on = !(P.conf && P.conf.partyClassLlmEnabled === false);
       var _pon = !(P.conf && P.conf.partyInferenceEnabled === false);
-      return '<div class="settings-section"><h4>AI 校准</h4>' +
-        '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;">' +
-        '<input type="checkbox" id="s-party-class-llm" ' + (_on?'checked ':'') + 'onchange="_togglePConf(\'partyClassLlmEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
-        '<div style="flex:1;">' +
-          '<div style="font-size:0.82rem;color:var(--gold);font-weight:600;">🎭 党争/阶层·LLM 校准（默认开）</div>' +
-          '<div style="font-size:0.7rem;color:var(--txt-d);line-height:1.55;margin-top:0.15rem;">开启后（默认），游戏按剧本设定的党派/阶层，在每回合推演及你临朝理事时用 AI 精细校准各党派、各阶层对时局的态度与倾向（耗 API）；关闭则省这部分 AI 调用，党派/阶层动态退回内置机械信号规则（仍照常演化，只是不再逐回合 AI 精修）。</div>' +
-        '</div>' +
-      '</label>' +
+      return '<div class="settings-section"><h4>党派自主行动</h4>' +
         '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px dotted var(--bdr);">' +
         '<input type="checkbox" id="s-party-inference" ' + (_pon?'checked ':'') + 'onchange="_togglePConf(\'partyInferenceEnabled\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
         '<div style="flex:1;">' +
@@ -1171,7 +1115,7 @@ openSettings=function(){
       '</label></div>';
     })()+
 
-    // ── 玩法机制·深化 (opt-in·默认关·2026-07-01·补设置开关·此前仅 console 可开·确定性玩法非 AI) ──
+    // 可选玩法按各项说明采用默认值，仍允许玩家显式关闭。
     (function(){
       var _mechs = [
         ['worldReactorBattleEnabled','⚔️ 兵败牵动天下（默认启用）','开启后（默认），一方在会战中大败，其军事实力确定性受损，并联动编年记述天下反应；关闭则战败只走 AI 自由裁量，不自动折损实力。'],
@@ -1179,9 +1123,9 @@ openSettings=function(){
         ['conspiracyResolutionEnabled','⚖️ 逆案裁断·阴谋真发动（默认启用）','开启后（默认），朝中阴谋不再只是叙事摆设：叙事里「即将发动」且涉弑君/篡位/兵变/清君侧的密谋会被播种为确定性机械阴谋、逐回合酝酿；交 AI 演绎两回合仍无人收束者，引擎按主谋身份走五等发动出口——先过君威硬门（皇权或皇威够高则一律未遂就擒），过门后拥兵者兵变流亡、内竖谋宫变废立、图谋社稷者交裁决器定生死（有储君则继统续玩）、构陷政敌者诬敌下狱、聚众举义者化入民变渠帅；凡事发，同谋随主谋连坐下狱。关闭则阴谋交 AI 自由裁量、迁延自破、同谋不连坐（旧行为等价）。'],
         ['populationBottomUpEnabled','👥 人口自下而上（默认关）','开启后，人口增长发生在各叶级政区、按当地民心与承载力分别核算并写入地方户口；关闭则走全局粗粒度增长。'],
         ['cognitionFeedbackEnabled','🎭 认知反馈·忠诚（默认关·未充分实测）','开启后，臣子被贬则渐离心、受知遇则渐效忠——把「知遇/贬谪」从叙事落到忠诚数值动平衡；关闭则忠诚不因升降迁谪自动漂移。此项动平衡幅度未充分验证，酌情开启。'],
-        ['agencyWatchEnabled','🕵 密探常侦（默认关）','开启后，常设的直属天子密探机构（治理面板可诏设，依机构独立性识别，台谏不算）逐回合暗中侦缉，确定性推高在酿阴谋的败露进度；衙门够力时，朝中百官暗动亦入耳目，以「密探风闻」呈御案（只报风闻类别，真相须下诏穷治）。机构腐败、缺员则侦缉效力打折，特务坐大另有反噬制衡。关闭则查案只靠陛下亲自下诏。'],
-        ['marchSystemEnabled','🏇 军令·移防（默认关）','开启后，「朝野内情→军事要务」中我方驻防军队可直接下移防军令：指定目的地，行军按路程、季节、兵种逐回合推进，抵达自动接防（在途进度在抽屉与过回合报告可见）；有地图剧本走真寻路，无路可达则拒单。关闭则军队调动仅经诏令由 AI 推演。'],
-        ['disasterSimEnabled','🌾 天时·灾异推演（默认关）','开启后，天灾由游戏自身环境模拟发生：气候严酷期（如小冰河）、国土过载、地方积弊都会推高灾异概率，灾种随季节物候（春夏旱、盛夏洪、夏秋蝗、冬春疫），同一局面必得同一天时（确定性，不掷骰）。灾起后赈济、粮价、流民、民变等既有机制原样联动。关闭则天灾仅由 AI 叙事偶发。'],
+        ['agencyWatchEnabled','🕵 密探常侦（默认开启）','开启后，常设的直属天子密探机构（治理面板可诏设，依机构独立性识别，台谏不算）逐回合暗中侦缉，确定性推高在酿阴谋的败露进度；衙门够力时，朝中百官暗动亦入耳目，以「密探风闻」呈御案（只报风闻类别，真相须下诏穷治）。机构腐败、缺员则侦缉效力打折，特务坐大另有反噬制衡。关闭则查案只靠陛下亲自下诏。'],
+        ['marchSystemEnabled','🏇 军令·移防（默认开启）','开启后，「朝野内情→军事要务」中我方驻防军队可直接下移防军令：指定目的地，行军按路程、季节、兵种逐回合推进，抵达自动接防（在途进度在抽屉与过回合报告可见）；有地图剧本走真寻路，无路可达则拒单。关闭则军队调动仅经诏令由 AI 推演。'],
+        ['disasterSimEnabled','🌾 天时·灾异推演（默认开启）','开启后，天灾由游戏自身环境模拟发生：气候严酷期（如小冰河）、国土过载、地方积弊都会推高灾异概率，灾种随季节物候（春夏旱、盛夏洪、夏秋蝗、冬春疫），同一局面必得同一天时（确定性，不掷骰）。灾起后赈济、粮价、流民、民变等既有机制原样联动。关闭则天灾仅由 AI 叙事偶发。'],
         ['edictDiplomacyEnabled','🕊 诏令·外交动词（默认关）','开启后，诏书中点名他国势力的「议和罢兵」「征讨宣战」「开互市」「纳岁币」将确定性落地：议和真止战并上停战期，宣战入战争法则（师出无名有代价），互市岁币真金出入国库并牵动皇威。诏书须点名对象势力方生效；否定语（如「不许议和」「罢互市」）不会被误执行。关闭则对外意志仅由 AI 推演斟酌。'],
         ['deptReplyEnabled','📋 部议限期·有司回奏（默认关）','开启后，常朝「发部议」交办有司的事项有真限期：逐回合催办、临期在常朝议程加急，限满由承办衙门主官具本回奏（呈御案时政）——主官虚悬则逾期无人回奏（可补官或申饬督办），主官离心则回奏敷衍塞责，可循报穷究。关闭则部议交办仅在常朝议程中列示，无人回奏。'],
         ['threatVarLinkEnabled','⚔ 外患威胁·联动战和（默认关）','开启后，剧本中声明了所系势力的威胁类变量（如绍宋「金军威胁等级」系于大金）不再是死数：逐回合向该势力实际实力与战和态势缓慢靠拢（史事抉择的冲击保留为渐衰的偏离，不被硬覆写），且该势力施加的边境风险随威胁值增减——威胁愈高边警愈紧，弭兵休战或削其实力则威胁渐消，「威胁≤N」类目标从此可经真实战和达成。关闭则此类变量仅由史事抉择拨动。'],
@@ -1190,14 +1134,16 @@ openSettings=function(){
         ['clanGrowthEnabled','👑 宗藩世禄·随宗室繁衍（默认关）','开启后，「宗藩世禄」岁支不再是恒定账：凡朝代处于宗室压力时期（如明中后期，由朝代预设驱动），享世禄的王爵宗支数随宗室人口逐年繁衍同步攀升——开国不过数十家，数十年后宗禄渐成财政巨壑，是为宗禄之螺旋（确定性复利，开启时以当前账面为种子不跳变）。宗禄难支另有既有的宗室生计危机联动。关闭则宗藩世禄按恒定王爵数计。'],
         ['zoushuGenEnabled','📜 百官有事·主动上奏（默认关）','开启后，朝中对口衙门主官会就真实国事主动具疏，入常朝「百官奏疏」议程：地方民变由兵事主官奏闻、新罹灾异由钱谷主官请赈、部门积弊与部务逾期由风宪科道纠劾催督。所奏皆取自当下实况（确定性，不掷骰），同一事由六回合内不重奏；对口衙门主官虚悬则此事无人入奏——缺员之弊自见。关闭则常朝议程无百官主动上奏。'],
         ['sysPTieringEnabled','⚡ AI 省流·分级系统提示（默认关）','开启后，过回合的各专项子推演（财政/军事/势力/诏令/认知/快照）只携带各自任务所需的系统提示段落，而非整份剧本大提示——一回合可省大量输入 token（省钱且提速），主推演与对话不受影响。若开启后出现人名地名错乱等异常，请关闭并反馈。'],
-        ['reportedViewEnabled','🕯 奏报失真·据奏与实情（默认关·仅严格史实模式生效）','开启后（且开局选了「严格史实」模式），朝廷数值面板所见渐为有司上报的「据奏值」——吏治愈坏、经手之臣愈离心，粉饰愈甚（同一回合数字恒定不乱跳，确定性推导不掷骰）；实情须经厂卫密奏、诏狱推问、派员核查方得掀见，掀开后若干回合内显实情。凡失真数字均标「据奏」徽以示口径。此为地基开关：各数值面板分波接入中（财政→民心→户口→军额→吏治），未接入的面板暂仍显实情。关闭或非严格史实模式则一切照旧。']
+        ['reportedViewEnabled','🕯 奏报失真·据奏与实情（默认开启·仅严格史实模式生效）','开启后（且开局选了「严格史实」模式），朝廷数值面板所见渐为有司上报的「据奏值」——吏治愈坏、经手之臣愈离心，粉饰愈甚（同一回合数字恒定不乱跳，确定性推导不掷骰）；实情须经厂卫密奏、诏狱推问、派员核查方得掀见，掀开后若干回合内显实情。凡失真数字均标「据奏」徽以示口径。此为地基开关：各数值面板分波接入中（财政→民心→户口→军额→吏治），未接入的面板暂仍显实情。关闭或非严格史实模式则一切照旧。']
       ];
-      var _mh = '<div class="settings-section"><h4>玩法机制·深化（实验·默认关）</h4>' +
-        '<div style="font-size:0.7rem;color:var(--txt-d);margin:0 0 0.2rem;line-height:1.5;">确定性玩法深化，不依赖 AI；默认关以保持零回归，逐项 opt-in。</div>';
+      var _mh = '<div class="settings-section"><h4>玩法机制·深化</h4>' +
+        '<div style="font-size:0.7rem;color:var(--txt-d);margin:0 0 0.2rem;line-height:1.5;">各项机制按说明默认开启或保留选用；关闭某项只影响该机制，正式玩法持续运行。</div>';
       for (var _mi = 0; _mi < _mechs.length; _mi++) {
         var _m = _mechs[_mi];
-        // worldReactorBattleEnabled/negotiationSessionsEnabled 默认 ON(显式 false 才关·勾选态须反映新默认);其余机制仍默认 OFF
-        var _mon = (_m[0] === 'worldReactorBattleEnabled' || _m[0] === 'negotiationSessionsEnabled' || _m[0] === 'conspiracyResolutionEnabled') ? !(P && P.conf && P.conf[_m[0]] === false) : !!(P && P.conf && P.conf[_m[0]]);
+        // 勾选态反映引擎默认值、历史偏好及剧本限制。
+        var _mon = ['worldReactorBattleEnabled', 'negotiationSessionsEnabled', 'conspiracyResolutionEnabled', 'marchSystemEnabled', 'disasterSimEnabled', 'agencyWatchEnabled', 'reportedViewEnabled'].indexOf(_m[0]) >= 0 ? !(P && P.conf && P.conf[_m[0]] === false) : !!(P && P.conf && P.conf[_m[0]]);
+        if (_m[0] === 'agencyWatchEnabled' && !(P.conf && typeof P.conf.agencyWatchEnabled === 'boolean') && P.ai && typeof P.ai.agencyWatchEnabled === 'boolean') _mon = P.ai.agencyWatchEnabled;
+        if (_m[0] === 'marchSystemEnabled' && !(P.conf && typeof P.conf.marchSystemEnabled === 'boolean')) _mon = !(P.battleConfig && P.battleConfig.marchConfig && P.battleConfig.marchConfig.enabled === false);
         _mh += '<label style="display:flex;align-items:flex-start;gap:0.5rem;padding:0.4rem 0;cursor:pointer;border-top:1px dotted var(--bdr);">' +
           '<input type="checkbox" ' + (_mon?'checked ':'') + 'onchange="_togglePConf(\'' + _m[0] + '\',this.checked)" style="margin-top:0.15rem;flex-shrink:0;">' +
           '<div style="flex:1;"><div style="font-size:0.82rem;color:var(--gold);font-weight:600;">' + _m[1] + '</div>' +
@@ -1383,6 +1329,7 @@ openSettings=function(){
     "<button class=\"bt bp\" onclick=\"sSaveAll()\" style=\"width:100%;padding:0.7rem;font-size:1rem;\">\u4FDD\u5B58\u6240\u6709\u8BBE\u7F6E</button>";
 
   if (window.TM && TM.APISettings) TM.APISettings.mount();
+  if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.mount();
   _settingsBuildTabs();
   setTimeout(function(){
     var p=_$("s-prov");if(p&&P.ai.provider)p.value=P.ai.provider;
@@ -1530,18 +1477,26 @@ function _sApplyPrimaryApiFields(){
   P.ai.key=_$("s-key")?_$("s-key").value:"";P.ai.url=_$("s-url")?_$("s-url").value:"";P.ai.model=_$("s-model")?_$("s-model").value:"";var _tv=parseFloat(_$("s-temp")?_$("s-temp").value:"");P.ai.temp=isNaN(_tv)?0.8:_tv;var _mv=parseInt(_$("s-mem")?_$("s-mem").value:"");P.ai.mem=isNaN(_mv)?20:_mv;P.ai.provider=_$("s-prov")?_$("s-prov").value:"openai";
   if (window.TM && TM.APISettings) TM.APISettings.read('primary', P.ai);
 }
+function _sDeviceSettingsReady(){
+  try{if(typeof TM_SaveDB!=='undefined'&&TM_SaveDB.assertWritable)TM_SaveDB.assertWritable();return true;}
+  catch(error){toast('未保存：'+error.message);return false;}
+}
 function sSaveAPI(){
+  if(!_sDeviceSettingsReady())return false;
+  try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   _sApplyPrimaryApiFields();
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
   // ★2026-07-01·修「桌面端保存主 API key·关游戏再进就丢」:key 真源在 localStorage.tm_api(启动时 tm-player-core.js:257
   //   从此水合 P.ai)·桌面 autoSave 走 _tmStripAiKeyView 故意剥掉 key(不进可分享存档·安全)。原实现桌面分支只 autoSave、
   //   漏写 localStorage.tm_api → 主 key 只活内存·重启即失。改为两端都写 localStorage.tm_api(与 sSaveSecondaryAPI 同范式)·桌面再 autoSave。
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   // 统一交给 saveP：对局中只写 IDB/lite，绝不以纯 P 覆盖桌面崩溃恢复档；非对局再由 saveP 写 Electron。
   if(typeof saveP==='function') saveP();
   toast("\u2705 API\u5DF2\u4FDD\u5B58");
 }
 function sSaveAll(){
+  if(!_sDeviceSettingsReady())return false;
+  try { if (window.TM && TM.CallBudgetSettings) TM.CallBudgetSettings.validate(); } catch(e) { toast(e.message); return false; }
   // 先把主/次 API 面板全部合入内存，最后一次性写 tm_api；旧实现先持久化旧 secondary，
   // 随后只改内存，导致重启恢复旧次 key。
   _sApplyPrimaryApiFields();
@@ -1559,6 +1514,9 @@ function sSaveAll(){
     else if(P.ai) delete P.ai.secondary;
   }
   P.conf.qijuLookback=parseInt(_$("s-qlb")?_$("s-qlb").value:"5");P.conf.shijiLookback=parseInt(_$("s-slb")?_$("s-slb").value:"5");P.conf.summaryRule=_$("s-sumrule")?_$("s-sumrule").value:"";P.conf.autoSaveTurns=parseInt(_$("s-as-turns")?_$("s-as-turns").value:"5")||5;
+  if (window.TM && TM.CallBudgetSettings) { var callRetryDraft = TM.CallBudgetSettings.readConfig(); if (callRetryDraft) P.conf.aiCallRetryOverrides = callRetryDraft; } // arch-ok: existing settings-save owner commits a fully validated draft.
+  if (window.TM && TM.CallBudgetSettings) { var secondaryRetryDraft = TM.CallBudgetSettings.readSecondaryRetries(); if (secondaryRetryDraft != null) P.conf.aiSecondaryRetryCount = secondaryRetryDraft; } // arch-ok: existing settings-save owner commits the validated secondary request retry preference.
+  if (window.TM && TM.RecoverySettings) { var recoveryDraft=TM.RecoverySettings.read(); if(recoveryDraft) P.conf.emergencyRecovery=recoveryDraft; } // arch-ok: settings owner commits only the fully validated emergency draft.
   // AI 记忆容量设置
   P.conf.memoryAnchorKeep=parseInt(_$("s-mem-anchor")?_$("s-mem-anchor").value:"40")||40;
   P.conf.memoryArchiveKeep=parseInt(_$("s-mem-archive")?_$("s-mem-archive").value:"20")||20;
@@ -1605,7 +1563,7 @@ function sSaveAll(){
   P.conf.customStyle=_$("s-cstyle")?_$("s-cstyle").value:"";P.conf.gameMode=_$("s-mode")?_$("s-mode").value:"yanyi";P.conf.aiCallDepth=_$("s-aidepth")?_$("s-aidepth").value:"full";
   P.ai.prompt=_$("s-prompt")?_$("s-prompt").value:"";P.ai.rules=_$("s-rules")?_$("s-rules").value:"";
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){ console.warn("[catch] 静默异常:", e.message || e); }
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   saveP(); // 持久化所有设置（含记忆容量配置）
   toast("\u2705 \u5168\u90E8\u5DF2\u4FDD\u5B58");
 }
@@ -1617,6 +1575,7 @@ function sPickModel(m,el){var inp=_$("s-model");if(inp)inp.value=m;document.quer
 
 // ══ 次要 API·M3 快模型路由 ══════════════════════════════════════
 function sSaveSecondaryAPI(){
+  if(!_sDeviceSettingsReady())return false;
   var sk=_$("s-sec-key")?_$("s-sec-key").value.trim():"";
   var su=_$("s-sec-url")?_$("s-sec-url").value.trim():"";
   var sm=_$("s-sec-model")?_$("s-sec-model").value.trim():"";
@@ -1625,22 +1584,24 @@ function sSaveSecondaryAPI(){
   if(sk||su||sm){
     P.ai.secondary={key:sk,url:su,model:sm,provider:sp};
     if (window.TM && TM.APISettings) TM.APISettings.read('secondary', P.ai.secondary);
-    toast("\u2705 \u6B21 API \u5DF2\u4FDD\u5B58\u00B7\u95EE\u5BF9/\u671D\u8BAE\u5C06\u8D70\u6B64\u914D\u7F6E");
+    // 保存成功提示在写后回读通过后发出。
   } else {
     delete P.ai.secondary;
-    toast("\u2705 \u5DF2\u6E05\u7A7A\u6B21 API\u00B7\u56DE\u9000\u4E3B API");
+    // 清除成功提示在写后回读通过后发出。
   }
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   try{ if(typeof tmApplyInsecureTlsConfig==='function') tmApplyInsecureTlsConfig(); }catch(_){}  // 次 API 地址变了·刷新放行白名单
   saveP();
+  toast(sk||su||sm ? "次 API 已保存" : "已清空次 API，回退主 API");
   // 刷新面板以更新徽标和清除按钮可见性
   try{closeSettings();openSettings();}catch(_){}
 }
 
 function sClearSecondaryAPI(){
+  if(!_sDeviceSettingsReady())return false;
   if(!confirm("\u786E\u5B9A\u6E05\u9664\u6B21 API \u914D\u7F6E\uFF1F"))return;
   if(P.ai)delete P.ai.secondary;
-  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));}catch(e){}
+  try{localStorage.setItem("tm_api",JSON.stringify(P.ai));if(localStorage.getItem("tm_api")!==JSON.stringify(P.ai))throw new Error("配置写后回读不一致");}catch(e){toast("API 配置未保存，请检查本机存储");return false;}
   saveP();
   toast("\u5DF2\u6E05\u9664\u6B21 API");
   try{closeSettings();openSettings();}catch(_){}

@@ -1,0 +1,57 @@
+  var WRITE_WAIT_MS = 60000, WRITE_ABORT_WAIT_MS = 5000;
+  var _writeSafety = null;
+  function _unconfirmedWriteError(stage) {
+    var error = new Error('主存档写入结果尚未确认；已暂停本页继续写入，不能直接重试覆盖。请重新打开游戏并核对恢复点。');
+    error.code = 'SAVE_WRITE_UNCONFIRMED'; error.storageOutcome = 'unconfirmed'; error.stage = stage;
+    return error;
+  }
+  function _assertStorageWritable() {
+    if (_writeSafety) throw _unconfirmedWriteError(_writeSafety.stage);
+  }
+  function _runStorageWrite(stores, stage, writer) {
+    var connection = _db;
+    return new Promise(function(resolve, reject) {
+      var tx, timer, abortTimer, settled = false, cause = null, abortRequested = false;
+      function clear() { clearTimeout(timer); clearTimeout(abortTimer); }
+      function end(error) {
+        if (settled) return;
+        settled = true; clear();
+        if (error) { try { _storageDiagnostic(stage, error, 'confirmed'); } catch (_) {} reject(error); }
+        else resolve(true);
+      }
+      function unknown() {
+        if (settled) return;
+        settled = true; clear();
+        _writeSafety = { stage: stage, outcome: 'unconfirmed', at: Date.now() };
+        var error = _unconfirmedWriteError(stage);
+        try { _storageDiagnostic(stage, error, 'unconfirmed'); } catch (_) {}
+        reject(error);
+      }
+      function abort(error) {
+        if (settled || abortRequested) return;
+        cause = error; abortRequested = true; clearTimeout(timer);
+        abortTimer = setTimeout(unknown, WRITE_ABORT_WAIT_MS);
+        try { tx.abort(); } catch (_) { /* Await the genuine terminal event, never infer a commit. */ }
+      }
+      try {
+        _assertStorageWritable();
+        tx = connection.transaction(stores, 'readwrite');
+        tx.oncomplete = function() {
+          if (settled) { try { _storageDiagnostic(stage, { code: 'SAVE_LATE_COMMIT' }, 'late-committed'); } catch (_) {} return; }
+          end(null);
+        };
+        tx.onabort = function(e) {
+          if (settled) { try { _storageDiagnostic(stage, { code: 'SAVE_LATE_ABORT' }, 'late-aborted'); } catch (_) {} return; }
+          var error = cause || e && e.target && e.target.error || tx.error || new Error('主存档写事务已中止');
+          try { error.storageOutcome = 'aborted'; } catch (_) {}
+          end(error);
+        };
+        tx.onerror = function(e) { abort(e && e.target && e.target.error || tx.error || new Error('主存档写事务发生错误')); };
+        timer = setTimeout(function() {
+          var error = new Error('主存档写入等待超时，正在确认事务中止'); error.name = 'TimeoutError'; error.code = 'SAVE_WRITE_TIMEOUT';
+          abort(error);
+        }, WRITE_WAIT_MS);
+        writer(tx);
+      } catch (error) { if (tx) abort(error); else end(error); }
+    });
+  }

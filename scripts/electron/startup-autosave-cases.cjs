@@ -9,6 +9,7 @@ module.exports = async function ({ win, root, temp, controls, check }) {
     P.scenarios=[${JSON.stringify(scenario)}];P.ai={key:'',url:'',model:''};doActualStart(${JSON.stringify(scenario.id)});
     await _tmAwaitLoadBarrier();const snapshot=_buildSaveState({format:'project',detach:true});
     const result=await tianming.autoSave(snapshot);if(!result.success)throw Error(result.error||'native autosave failed');
+    const project=_tmStripAiKeyInPlace(deepClone(P));project.conf=project.conf||{};project.conf.__startupReadProbe='primary-project';await TM_SaveDB.saveProject(project);
     return{sid:GM.sid,turn:GM.turn,ids:[...new Set(GM.chars.map(c=>c.id))].sort()};})()`);
   const file = path.join(temp, 'saves/__autosave__.json'), original = fs.readFileSync(file);
   await check('real running T1 autosave exists and the validated native reader can read it', async () => {
@@ -23,7 +24,8 @@ module.exports = async function ({ win, root, temp, controls, check }) {
       win.webContents.reloadIgnoringCache();
     });
     const deadline = Date.now() + 10000;
-    while ((controls.startupAutoSaveReads || 0) <= reads) { if (Date.now() > deadline) throw Error('actual startup autosave IPC not observed'); await new Promise(r => setTimeout(r, 25)); }
+    while (!(await js(`P.conf&&P.conf.__startupReadProbe==='primary-project'`))) { if (Date.now() > deadline) throw Error('primary project did not restore'); await new Promise(r => setTimeout(r, 25)); }
+    assert.equal(controls.startupAutoSaveReads || 0,reads,'healthy startup must not transfer the complete desktop backup');
     const state = await js(`(async()=>{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));const launch=document.getElementById('launch'),b=launch.getBoundingClientRect();
       return{running:GM.running,menu:getComputedStyle(launch).display!=='none'&&b.width>0&&b.height>0,provider:typeof desktopLoadAutoSave};})()`);
     assert.equal(state.running, false); assert(state.menu, JSON.stringify(state)); assert.equal(state.provider, 'function');

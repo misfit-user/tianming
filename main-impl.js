@@ -3382,6 +3382,8 @@ ipcMain.handle('dialog-export', async (event, data, opts) => {
 });
 
 // --- 系统对话框：导入 ---
+const exportVerifiedArtifact = require('./main-artifact-export.js').createArtifactExporter({dialog,window:()=>mainWindow,writeFileAtomic});
+ipcMain.handle('dialog-export-artifact', (_event, bytes, meta) => exportVerifiedArtifact(bytes, meta));
 ipcMain.handle('dialog-import', async event => {
   const result = await dialog.showOpenDialog(mainWindow, {
     title: '导入天命项目',

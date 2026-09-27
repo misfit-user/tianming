@@ -2,8 +2,8 @@
 //  tm-revolt-entity.js — 民变实体镜像层（R2 第一波·2026-07-21）
 //
 //  owner 范式铁律(2026-07-07)：民变=实体演进链·终局=玩家角色被杀·绝非数值阈值。
-//  R2 双轨(鼎革战役已拍)：flag P.conf.revoltEntityEnabled(默认 OFF·设置可开)——
-//  ON 时·五级爬梯(tm-authority-complete P0-2·仍是进度时钟·本层零改动)中 level≥3 的民变
+//  R2 双轨(鼎革战役已拍)：民变实体化已纳入正式玩法——
+//  五级爬梯(tm-authority-complete P0-2·仍是进度时钟·本层零改动)中 level≥3 的民变
 //  被具象化为**真实体三件套**：义军势力(GM.facs) + 渠帅人物(GM.chars) + 义军军队(GM.armies)。
 //  全游戏系统(军事/势力索引/花名册/AI 叙事)经由既有容器自然看见它们；爬梯状态逐回合
 //  镜像到实体：升级→扩军·被剿/瓦解→覆灭(军散/势力除档/渠帅溃散流亡)。
@@ -22,8 +22,7 @@
   var STRENGTH_BY_LEVEL = { 3: 40, 4: 60, 5: 85 };
 
   function enabled() {
-    try { return !(global.P && global.P.conf && global.P.conf.revoltEntityEnabled === false); }
-    catch (_) { return false; }
+    return true; // 民变实体及其后果属于正式玩法。
   }
 
   function _eb(msg) {

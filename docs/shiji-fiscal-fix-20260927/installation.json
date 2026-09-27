@@ -1,0 +1,26 @@
+{
+  "installed": [
+    {
+      "file": "web/tm-endturn-shiji-compose.js",
+      "sha256": "29668e39b5562a400a960cd28e51efe89f1332ce28201045a2a09f581b4ad0b6",
+      "bytes": 113023
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "ecdd168dbc1fe66b5674a1109a83efe82248ed8aec35dec05124cee0dea9047a",
+      "bytes": 75604
+    },
+    {
+      "file": "web/scripts/smoke-shiji-fiscal-ledger.js",
+      "sha256": "4e555170b0e46e2b8183d3c349fc64712100739835ed93ee9a609382be68692f",
+      "bytes": 7948
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "c115fc0e964d8d95c47b49849106a1f9c70060faeb2ffd984055f5dace71f861",
+      "bytes": 135473
+    }
+  ],
+  "indexUnchanged": true,
+  "indexMatchesBaseline": true
+}

@@ -1,0 +1,21 @@
+{
+  "scope": "Actual official startup and complete production _endTurn_collectInput, synthetic published record, no real model or player save",
+  "sid": "sc-tianqi7-1627",
+  "turn": 1,
+  "edicts": {
+    "political": "",
+    "military": "",
+    "diplomatic": "",
+    "economic": "",
+    "other": "",
+    "decree": "令百官奏事时均注明承办人及日期，以便逐项检核，不得虚报。"
+  },
+  "trackerCountBefore": 0,
+  "trackerCountAfter": 0,
+  "matchingTrackers": [],
+  "classification": {
+    "pathway": "other",
+    "typeKey": null,
+    "reason": "未识别为制度类诏书"
+  }
+}

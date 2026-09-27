@@ -1,0 +1,24 @@
+  function governCompilerHits(hits, opts, suppressed) {
+    var MR = root.TM && root.TM.MemoryRetrieval;
+    var policy = {};
+    Object.keys(opts).forEach(function(k) { policy[k] = opts[k]; });
+    policy.intent = opts.intent || 'historical_evidence';
+    if (MR && typeof MR.rankHitsDetailed === 'function') {
+      var ranked = MR.rankHitsDetailed(hits, policy);
+      Array.prototype.push.apply(suppressed, arr(ranked.suppressed));
+      return arr(ranked.ranked).map(function(hit) { hit._compilerScore = normalizedScore(hit, opts); return hit; }).sort(sortHits);
+    }
+    return hits.filter(function(hit) {
+      var states = [hit.status, hit.reviewStatus, hit.factStatus].join('|').toLowerCase();
+      var reason = /(^|\|)(draft|pending_review|rejected|quarantined|quarantine|deleted|deleted_tombstone|redacted)(\||$)/.test(states) ? 'unaccepted_memory' : '';
+      var audience = opts.audience || (opts.actorScope && opts.actorScope.kind) || opts.actorScope || 'system';
+      var scopes = String(hit.readScope || '').toLowerCase().split(/[\s,;|]+/);
+      var actor = String(opts.actorId || (opts.actorScope && (opts.actorScope.actorId || opts.actorScope.npcId)) || '').toLowerCase();
+      if (!reason && scopes.length && scopes[0] && ['system', 'gm', 'designer'].indexOf(audience) < 0 && scopes.indexOf('public') < 0 && scopes.indexOf(audience) < 0 && (!actor || scopes.indexOf('npc:' + actor) < 0)) reason = 'read_scope';
+      if (!reason && hit.visibility && ['public', 'court', 'internal', 'world_truth', 'player_known'].indexOf(hit.visibility) < 0) reason = 'visibility_policy_unavailable';
+      if (!reason && opts.turn != null && opts.includeFuture !== true && Number(hit.turn) > Number(opts.turn)) reason = 'future_memory';
+      if (!reason) return true;
+      suppressed.push({ id: hit.id, source: hit.source, reason: reason });
+      return false;
+    });
+  }

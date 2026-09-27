@@ -1,0 +1,592 @@
+[
+  {
+    "file": "README.md",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "README.md",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "README.md",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "mobile/release-version.json",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "package-lock.json",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "package-lock.json",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "package.json",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "package.json",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "package.json",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/changelog.json",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/editor.html",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/editor.html",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/editor.html",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 4,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 5,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 6,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 7,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 8,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 9,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 10,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 11,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 12,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 13,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 14,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 15,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 16,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 17,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 18,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 19,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 20,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 21,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 22,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 23,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 24,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 25,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 26,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 27,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 28,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 29,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 30,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 31,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 32,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 33,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 34,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 35,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/index.html",
+    "block": 36,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/index.html",
+    "block": 37,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/index.html",
+    "block": 38,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/index.html",
+    "block": 39,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 40,
+    "resolution": "local"
+  },
+  {
+    "file": "web/index.html",
+    "block": 41,
+    "resolution": "local"
+  },
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/modules/ai-change-applier/fiscal-posting.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/phase8-formal-rightrail.js",
+    "block": 0,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/preview/scenario-editor-reset-preview.html",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/scripts/smoke-agent-mode-s8.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/scripts/smoke-edict-efficacy.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/scripts/smoke-edict-office-tree-writeback.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/scripts/smoke-guoku-shared-display.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/scripts/smoke-perf-save-preparation.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/scripts/smoke-recovery-settings-restore.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "block": 0,
+    "resolution": "combined module assertions"
+  },
+  {
+    "file": "web/scripts/verify-all.js",
+    "block": 0,
+    "resolution": "combined smoke registry"
+  },
+  {
+    "file": "web/scripts/verify-secondary-fallback.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-change-pathutils.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-change-pathutils.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra-retry.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 4,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 5,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-ai-infra.js",
+    "block": 6,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-call-budget-settings.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/tm-call-retry-policy.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/tm-corruption-engine.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-edict-oversight.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-agent-mode.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-agent-write-tools.js",
+    "block": 0,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/tm-endturn-agent-write-tools.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-agent-write-tools.js",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-agent-write-tools.js",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai-infer.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-ai.js",
+    "block": 4,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-apply.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-endturn-apply.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-fiscal-statements.js",
+    "resolution": "local completed extension of upstream module"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 4,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 5,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "block": 6,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 2,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 3,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 4,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "block": 5,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-office-system.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-patches-start.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-patches.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-renli.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "block": 0,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "block": 1,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-save-lifecycle.js",
+    "block": 2,
+    "resolution": "upstream"
+  },
+  {
+    "file": "web/tm-topbar-vars.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/tm-utils.js",
+    "block": 0,
+    "resolution": "local"
+  },
+  {
+    "file": "web/version.json",
+    "block": 0,
+    "resolution": "local"
+  }
+]

@@ -1255,6 +1255,11 @@
     return '';   // 无人
   }
 
+  function rightAdminGovernorText(x){
+    if (x.governor) return x.governor;
+    return x.governorUnrecorded ? '任官未详' : '空缺·待补';
+  }
+
   function rightAdminFromDivision(d, faction){
     d = d || {};
     var popObj = (d.population && typeof d.population === 'object') ? d.population : null;
@@ -1264,6 +1269,8 @@
       level: rightAdminLevelLabel(d.level || d.adminLevel || d.regionType || d.type || ''),
       faction: rightFactionDisplay(faction || d.dejureOwner || d.owner || d.factionName || d.faction || ''),
       governor: rightAdminLiveGovernor(d),
+      // 剧本从未记下任官者（没有 governor 字段）显示「任官未详」；写了却为空才是出缺（与方志、执行率管线同口径）
+      governorUnrecorded: !Object.prototype.hasOwnProperty.call(d, 'governor') && !(d.chief || d.holder || d.official),
       position: d.officialPosition || d.office || d.position || '',
       pop: (popObj && (popObj.mouths || popObj.population)) || d.population || detail.mouths || d.pop || 0,
       households: (popObj && popObj.households) || d.households || detail.households || 0,
@@ -1317,7 +1324,7 @@
       var hot = rightAdminNum(x.minxin, 60) < 45 || rightAdminNum(x.corruption, 0) > 55;
       return '<section class="tmrp-card tmrp-admin-card ' + (hot ? 'hot' : '') + '" style="--admin-c:' + ['#c9a84c','#70b097','#8e6aa8','#c95340','#5e8fb3'][i % 5] + '">' +
         '<div class="tmrp-admin-title"><b>' + esc(x.name) + '</b><small>' + esc(x.level) + '<br>' + esc(x.faction || '未录') + '</small></div>' +
-        '<div class="tmrp-mini-grid"><div><span>主官</span><b>' + esc(x.governor || '空缺·待补') + '</b></div><div><span>官职</span><b>' + esc(x.position || '未录') + '</b></div><div><span>人口</span><b>' + esc(rightAdminWan(x.pop)) + '</b></div><div><span>户数</span><b>' + esc(rightAdminWan(x.households)) + '</b></div></div>' +
+        '<div class="tmrp-mini-grid"><div><span>主官</span><b>' + esc(rightAdminGovernorText(x)) + '</b></div><div><span>官职</span><b>' + esc(x.position || '未录') + '</b></div><div><span>人口</span><b>' + esc(rightAdminWan(x.pop)) + '</b></div><div><span>户数</span><b>' + esc(rightAdminWan(x.households)) + '</b></div></div>' +
         rightArmyBar('民心', rightAdminNum(x.minxin, 50)) + rightArmyBar('繁荣', rightAdminNum(x.prosperity, 50)) + rightArmyBar('腐败', rightAdminNum(x.corruption, 0)) +
         rightArmyRows([['地形', x.terrain], ['特产', x.resources], ['税负', x.tax], ['下辖', Array.isArray(x.children) ? x.children.length + ' 处' : '未录']]) +
         '<div class="tmrp-action-row"><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="安民" data-name="' + attr(x.name) + '">安民</button><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="巡按" data-name="' + attr(x.name) + '">巡按</button><button type="button" class="tmrp-btn" data-right-action="admin-edict" data-kind="调粮" data-name="' + attr(x.name) + '">调粮</button><button type="button" class="tmrp-btn primary" data-right-action="admin-edict" data-kind="拟诏" data-name="' + attr(x.name) + '">拟诏</button></div>' +
@@ -1347,7 +1354,7 @@
       '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(items.length) + '</b><span>行政区</span></div><div class="tmrp-stat"><b>' + esc(rightAdminWan(totalPop)) + '</b><span>总人口</span></div><div class="tmrp-stat"><b>' + esc(crisis.length) + '</b><span>危机</span></div></div>' +
       '<section class="tmrp-card"><div class="tmrp-card-title"><span>各方据地</span><small>据有州县的诸方</small></div>' +
       (factions.length ? '<div class="tmrp-chip-list">' + factions.slice(0, 8).map(function(f){ return '<span class="tmrp-pill">' + esc(f) + '</span>'; }).join('') + (factions.length > 8 ? '<span class="tmrp-pill">…</span>' : '') + '</div>' : '<div class="tmrp-meta">疆域归属未录。</div>') + '</section>' +
-      (crisis.length ? '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>区划预警</span><small>民心低 / 腐败高</small></div>' + crisis.slice(0, 4).map(function(x){ return '<div class="tmrp-step"><b>' + esc(x.name) + '</b> 民心 ' + esc(Math.round(rightAdminNum(x.minxin, 0))) + ' · 腐败 ' + esc(Math.round(rightAdminNum(x.corruption, 0))) + ' · ' + esc(x.governor || '空缺·待补') + '</div>'; }).join('') + '</section>' : '') +
+      (crisis.length ? '<section class="tmrp-card hot"><div class="tmrp-card-title"><span>区划预警</span><small>民心低 / 腐败高</small></div>' + crisis.slice(0, 4).map(function(x){ return '<div class="tmrp-step"><b>' + esc(x.name) + '</b> 民心 ' + esc(Math.round(rightAdminNum(x.minxin, 0))) + ' · 腐败 ' + esc(Math.round(rightAdminNum(x.corruption, 0))) + ' · ' + esc(rightAdminGovernorText(x)) + '</div>'; }).join('') + '</section>' : '') +
       (items.length ? '<div class="tmrp-scroll tall" data-admin-list-token="' + attr(listToken) + '">' + rightAdminCardsHtml(syncItems) + (deferredList ? '<div class="tmrp-meta">余下政区正在载入...</div>' : '') + '</div>' : '<section class="tmrp-card empty"><div class="tmrp-empty">天下州县尚未录入舆图。</div></section>') +
       '</div>';
   }
@@ -1427,9 +1434,9 @@
     } catch (_) {}
     return tag;
   }
-  function rightFinanceCascadeItems(kind){
+  function rightFinanceCascadeItems(kind, account, forecast){
     var gm = window.GM || {};
-    var g = gm.guoku || (window.P && P.guoku) || {};
+    var g = account || gm.guoku || (window.P && P.guoku) || {};
     var ledgers = g.ledgers || {};
     var customStats = g._customTaxStats || {};
     var mapKey = kind === 'expense' ? 'sinks' : 'sources';
@@ -1442,13 +1449,13 @@
       Object.keys(m).forEach(function(tag){
         var v = m[tag]; if (!v) return;
         seen[tag] = true;
-        out.push({ name: rightFinanceResolveTagName(tag, customStats) + '·' + u[1], amount: v, note: '本回合结算' });
+        out.push({ name: rightFinanceResolveTagName(tag, customStats) + '·' + u[1], amount: v, note: forecast ? '本期预计' : '本期交割' });
       });
     });
     // 自定义税：仅补 ledger 未枚举到的(去重)·且统一本回合口径(turnAmount·非年化 amount)——
     //   producer 已把自定义税本回合值写进 ledger.sources[sourceTag]，若无条件追加 _customTaxStats.amount 会
     //   同一税列两行且口径混用(本回合 vs 年化)。realized 税已在 seen 里跳过；未 realized 者 turnAmount=0 略过。
-    if (kind !== 'expense') {
+    if (kind !== 'expense' && !account) {
       Object.keys(customStats).forEach(function(k){
         if (seen[k]) return;
         var c = customStats[k]; if (!c) return;
@@ -1476,32 +1483,42 @@
   function renderFinanceRich(){
     var root = rightFinanceRoot();
     var g = root.guoku || {};
+    var statement = null;
+    if(window.FiscalEngine && FiscalEngine.readAccountStatement) statement = FiscalEngine.readAccountStatement({game:window.GM || {},account:g,scope:'central'});
+    else if(window.FiscalStatement) statement = FiscalStatement.read({game:window.GM || {},account:g,scope:'central'});
+    if(statement) g = statement.account;
+    var forecast = !!(statement && statement.forecast);
+    var periodLabel = forecast ? '预计' : statement && statement.periodStatus === 'previous' ? '上期' : '本期';
+    var periodNote = (g.turnIncome === null || g.turnExpense === null ? '交割缺项' : forecast ? '预计' : '已交割') + ' · ' + (g.turnDays || 30) + '日';
     var n = root.neitang || {};
     var f = root.fiscal || {};
-    var _rvM = rightFiscalReported('guoku.money', rightFinanceFirst(g, ['stockMoney','money','balance','silver','taicangMoney'], 0), 'good');
+    var _rvM = rightFiscalReported('guoku.money', rightFinanceFirst(g, ['money','stockMoney','balance','silver','taicangMoney'], 0), 'good');
     var money = _rvM.shown;
-    var grain = rightFiscalReported('guoku.grain', rightFinanceFirst(g, ['stockGrain','grain','grainStock','food'], 0), 'good').shown;
-    var cloth = rightFiscalReported('guoku.cloth', rightFinanceFirst(g, ['stockCloth','cloth','clothStock'], ''), 'good').shown;
+    var grain = rightFiscalReported('guoku.grain', rightFinanceFirst(g, ['grain','stockGrain','grainStock','food'], 0), 'good').shown;
+    var cloth = rightFiscalReported('guoku.cloth', rightFinanceFirst(g, ['cloth','stockCloth','clothStock'], ''), 'good').shown;
     var neitang = rightFinanceFirst(n, ['money','balance','silver'], '');
-    var income = rightFiscalReported('fiscal.turnIncome', rightFinanceFirst(g, ['turnIncome','monthlyIncome','income','lastIncome'], rightFinanceFirst(f, ['turnIncome','monthlyIncome','income'], 0)), 'good').shown;
-    var expense = rightFiscalReported('fiscal.turnExpense', rightFinanceFirst(g, ['turnExpense','monthlyExpense','expense','lastExpense'], rightFinanceFirst(f, ['turnExpense','monthlyExpense','expense'], 0)), 'bad').shown;
-    var net = rightAdminNum(income, 0) - rightAdminNum(expense, 0);
-    var _casIncome = rightFinanceCascadeItems('income');
-    var _casExpense = rightFinanceCascadeItems('expense');
-    var incomeFromCascade = _casIncome.length > 0;
-    var expenseFromCascade = _casExpense.length > 0;
+    var _rvIncome = rightFiscalReported('fiscal.turnIncome', statement && g.turnIncome === null ? '待核' : rightFinanceFirst(g, ['turnIncome','monthlyIncome','income','lastIncome'], rightFinanceFirst(f, ['turnIncome','monthlyIncome','income'], 0)), 'good');
+    var income = _rvIncome.shown;
+    var _rvExpense = rightFiscalReported('fiscal.turnExpense', statement && g.turnExpense === null ? '待核' : rightFinanceFirst(g, ['turnExpense','monthlyExpense','expense','lastExpense'], rightFinanceFirst(f, ['turnExpense','monthlyExpense','expense'], 0)), 'bad');
+    var expense = _rvExpense.shown;
+    var _rvFlowBadge = (window.TM && TM.ReportedView) ? TM.ReportedView.badge(_rvIncome.distorted ? _rvIncome : _rvExpense) : '';
+    var net = income === '待核' || expense === '待核' ? '待核' : rightAdminNum(income, 0) - rightAdminNum(expense, 0);
+    var _casIncome = rightFinanceCascadeItems('income', statement ? g : null, forecast);
+    var _casExpense = rightFinanceCascadeItems('expense', statement ? g : null, forecast);
+    var incomeFromCascade = !!statement || _casIncome.length > 0;
+    var expenseFromCascade = !!statement || _casExpense.length > 0;
     var incomeItems = incomeFromCascade ? _casIncome : rightFinanceCollect(['incomeItems','incomes','longTermIncome','recurringIncome','customTaxes','taxes']);
     var expenseItems = expenseFromCascade ? _casExpense : rightFinanceCollect(['expenseItems','expenses','longTermExpense','recurringExpense','fixedExpenses','spendingItems']);
     var _rvBadge = (_rvM.distorted && window.TM && TM.ReportedView) ? TM.ReportedView.badge(_rvM) : '';
     return '<div class="tmrp-finance-shell">' +
-      '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(money)) + '</b><span>太仓银</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(grain)) + '</b><span>太仓粮</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(net)) + '</b><span>本期结余</span></div></div>' +
+      '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(money)) + '</b><span>太仓银</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(grain)) + '</b><span>太仓粮</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(net)) + '</b><span>' + esc(periodLabel) + '结余' + _rvFlowBadge + '</span></div></div>' +
       '<section class="tmrp-card"><div class="tmrp-card-title"><span>库藏' + _rvBadge + '</span><small>国库 / 内帑 / 本回合</small></div>' +
       '<div class="tmrp-mini-grid"><div><span>太仓银</span><b>' + esc(rightFinanceMoney(money)) + '</b></div><div><span>太仓粮</span><b>' + esc(rightFinanceMoney(grain)) + '</b></div><div><span>库存布</span><b>' + esc(rightFinanceMoney(cloth)) + '</b></div><div><span>内帑银</span><b>' + esc(rightFinanceMoney(neitang)) + '</b></div></div></section>' +
-      '<section class="tmrp-card ' + (net < 0 ? 'hot' : '') + '"><div class="tmrp-card-title"><span>本期收支</span><small>' + esc(getTurnText(window.GM && GM.turn)) + '</small></div>' +
-      rightArmyRows([['本期收入', rightFinanceMoney(income)], ['本期支出', rightFinanceMoney(expense)], ['军饷', rightFinanceMoney(rightFinanceFirst(g, ['armyExpense','militaryExpense'], '待核'))], ['宗禄', rightFinanceMoney(rightFinanceFirst(g, ['royalExpense','clanExpense'], '待核'))]]) +
+      '<section class="tmrp-card ' + (net < 0 ? 'hot' : '') + '"><div class="tmrp-card-title"><span>' + esc(periodLabel) + '收支' + _rvFlowBadge + '</span><small>' + esc(periodNote) + '</small></div>' +
+      rightArmyRows([[periodLabel + '收入', rightFinanceMoney(income)], [periodLabel + '支出', rightFinanceMoney(expense)], ['军饷', rightFinanceMoney(rightFinanceFirst(g, ['armyExpense','militaryExpense'], '待核'))], ['宗禄', rightFinanceMoney(rightFinanceFirst(g, ['royalExpense','clanExpense'], '待核'))]]) +
       '<div class="tmrp-action-row"><button type="button" class="tmrp-btn primary" data-right-action="finance-module">帑廪详情</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="extraTax">加派</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="openGranary">开仓</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="loan">借贷</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="advisor">户部参议</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="拨内帑">拨内帑</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="核饷">核饷</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="清查税粮">清查税粮</button></div></section>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁入分项</span><small>' + (incomeItems.length ? esc(incomeItems.length) + ' 项 · ' + (incomeFromCascade ? '本回合级联结算' : '盐课关税田赋等 · (概算)') : '盐课、关税、田赋等') + '</small></div>' + rightFinanceItemList(incomeItems, '暂无岁入分项。') + '</section>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁出分项</span><small>' + (expenseItems.length ? esc(expenseItems.length) + ' 项 · ' + (expenseFromCascade ? '本回合级联结算' : '军饷宗禄工程赈济 · (概算)') : '军饷、宗禄、工程、赈济等') + '</small></div>' + rightFinanceItemList(expenseItems, '暂无岁出分项。') + '</section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁入分项</span><small>' + (incomeItems.length ? esc(incomeItems.length) + ' 项 · ' + (incomeFromCascade ? periodNote : '盐课关税田赋等 · (概算)') : '盐课、关税、田赋等') + '</small></div>' + rightFinanceItemList(incomeItems, '暂无岁入分项。') + '</section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁出分项</span><small>' + (expenseItems.length ? esc(expenseItems.length) + ' 项 · ' + (expenseFromCascade ? periodNote : '军饷宗禄工程赈济 · (概算)') : '军饷、宗禄、工程、赈济等') + '</small></div>' + rightFinanceItemList(expenseItems, '暂无岁出分项。') + '</section>' +
       '</div>';
   }
 
@@ -2699,6 +2716,9 @@
   bridge.rightrail.handleRightPanelAction = handleRightPanelAction;
   bridge.rightrail.bindRightPanelActions = bindRightPanelActions;
   bridge.rightrail.pendingAudiences = rightWenduiPendingState;
+  // 通志页脚动作复用同一个诏书建议写入口（它同时记玩家行为信号），「本方」判定也与右栏一致
+  bridge.rightrail.addEdictSuggestion = rightAddEdictSuggestion;
+  bridge.rightrail.playerFactionNames = rightCollectPlayerFactionNames;
   bridge.rightrail.rightCloseArmyFlyout = rightCloseArmyFlyout;
   bridge.rightrail.rightOpenArmyFlyout = rightOpenArmyFlyout;
   bridge.rightrail.refreshArmyFlyout = typeof refreshArmyFlyout === "function" ? refreshArmyFlyout : null;

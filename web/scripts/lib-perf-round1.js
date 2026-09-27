@@ -31,7 +31,7 @@ function storage(root = ROOT, options = {}) {
   }
   const c = {
     console: { log() {}, warn(...args) { work.warnings.push(String(args[0])); }, error() {} },
-    Blob, Response, CompressionStream, DecompressionStream, TextDecoder, TextEncoder: Encoder,
+    Blob, Response, ReadableStream, AbortController, CompressionStream, DecompressionStream, TextDecoder, TextEncoder: Encoder,
     crypto: webcrypto, performance, setTimeout, clearTimeout, navigator: {},
     localStorage: { get length() { return local.size; }, key: i => [...local.keys()][i],
       getItem: key => local.get(key) ?? null, setItem: (key, value) => local.set(key, String(value)), removeItem: key => local.delete(key) },
@@ -49,11 +49,13 @@ function storage(root = ROOT, options = {}) {
 }
 function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
   const source = read(root, 'web/phase8-formal-map.js');
-  const stage = { innerHTML: '', dataset: {}, querySelector() { return this.innerHTML.includes('tmf-formal-map') ? {} : null; } };
+  const stage = { innerHTML: '', dataset: {}, replaceChildren(surface) { this.innerHTML = surface.outerHTML; }, querySelector() { return this.innerHTML.includes('tmf-formal-map') ? {} : null; } };
   const work = { paths: 0, layouts: 0, chrome: 0, features: 0 };
   const c = {
-    console, performance, Map, state: {}, _mapRenderMemo: null, document: { getElementById: () => ({}) },
+    console, performance, Map, state: {}, _mapRenderMemo: null, document: { getElementById: () => ({}), createElement: () => ({ innerHTML: '', get firstElementChild() { return { outerHTML: this.innerHTML }; } }) },
     mapStage: () => stage, isGameVisible: () => true,
+    // Geometry harness records generated markup; native tests cover surface/label DOM moves.
+    splitMapLabelSurface: camera => camera,
     map: { id: 'fixture', regions, width: 1200, height: 720, oceans: [] },
     getMapData() { return c.map; }, requestMapLabelFeature() { work.features++; },
     mapIdentity: m => m.id, resolveBasemap: () => null, generatedBasemapLayer: () => '',
@@ -64,6 +66,8 @@ function mapRenderer(root = ROOT, regions = [], legacyLabels = false) {
     factionLabelLayer: () => '<g>faction</g>', sentinelLayer: () => '<g>sentinel</g>',
     applyMapTransform() {}, updateMapChrome() { work.chrome++; }, renderLegend() {}, renderMapAlerts() {}, syncMapSearch() {}, bindRegionPathEvents() {},
     scheduleLabelLayout() { work.layouts++; }, setTimeout() {}, renderFormalMapSoon() {},
+    // renderFormalMap 读这个模块变量判断地名模块是否已请求；本桩不加载地名模块，所以恒为 false
+    _labelFeatureRequested: false,
     __TM_LABEL_LEGACY: legacyLabels
   };
   c.attr = c.esc; c.window = c; vm.createContext(c);

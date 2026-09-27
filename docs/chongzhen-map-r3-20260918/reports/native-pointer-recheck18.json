@@ -1,0 +1,964 @@
+{
+  "started": "2026-09-18T06:53:59.607Z",
+  "complete": true,
+  "checks": [
+    {
+      "name": "official-loader-current-candidate",
+      "passed": true,
+      "detail": {
+        "id": "sc-tianqi7-1627",
+        "regions": 307,
+        "provinces": 43,
+        "characters": 203,
+        "armies": 48
+      }
+    },
+    {
+      "name": "native-world-running",
+      "passed": true,
+      "detail": {
+        "running": true,
+        "regions": 307,
+        "player": "朱由检",
+        "characters": 203,
+        "armies": 61
+      }
+    },
+    {
+      "name": "palace-location-uses-prefecture",
+      "passed": true,
+      "detail": {
+        "text": "京师·紫禁城·乾清宫",
+        "regionId": "ming-01-p01",
+        "regionName": "顺天府",
+        "contract": "source-text-location-v2"
+      }
+    },
+    {
+      "name": "visible-layer-lock-and-full-map",
+      "passed": true,
+      "detail": {
+        "locked": true,
+        "text": "层级已锁",
+        "shown": true,
+        "scale": 1
+      }
+    },
+    {
+      "name": "tier-realm",
+      "passed": true,
+      "detail": {
+        "paths": 307,
+        "scale": "realm",
+        "message": "渤海\n黄海\n日本海\n东海\n台湾海峡\n南海\n东太平洋\n鄂霍茨克海\n明\n后\n金\n日本幕府\n察哈尔\n虾夷\n朝\n鲜\n荷\n叶尔羌汗国\n西\n大越\n吐鲁番诸伯克\n哈萨克汗国\n野人女真诸部\n土默特蒙古\n瓦刺诸部\n科尔沁蒙古\n喀尔喀蒙古\n葡"
+      }
+    },
+    {
+      "name": "panorama-realm",
+      "passed": true,
+      "detail": {
+        "camera": {
+          "scale": 1,
+          "tx": 0,
+          "ty": 0
+        },
+        "paths": 307,
+        "clipped": []
+      }
+    },
+    {
+      "name": "screenshot-realm",
+      "passed": true,
+      "bytes": 2401417,
+      "sha256": "235366d4179b6181e9b183609174005f24a1a9188cdfbaca94a00bb6c5a7dfbc"
+    },
+    {
+      "name": "tier-region",
+      "passed": true,
+      "detail": {
+        "paths": 307,
+        "scale": "region",
+        "message": "渤海\n黄海\n日本海\n东海\n台湾海峡\n南海\n东太平洋\n鄂霍茨克海\n北直隶\n南直隶\n浙江\n福建\n广西\n江\n西\n湖\n广\n河南\n山\n西\n陕西\n四川\n贵州\n云南\n朵甘思宣慰司\n鞑靼土默特部\n乌思藏宣慰司\n叶尔羌\n吐鲁番\n哈萨克\n瓦刺\n后金（盛京辽沈）"
+      }
+    },
+    {
+      "name": "panorama-region",
+      "passed": true,
+      "detail": {
+        "camera": {
+          "scale": 1,
+          "tx": 0,
+          "ty": 0
+        },
+        "paths": 307,
+        "clipped": []
+      }
+    },
+    {
+      "name": "screenshot-region",
+      "passed": true,
+      "bytes": 2427636,
+      "sha256": "18296474bbb53a998edc00f292b02705968cf343e610d62603c78fb3007f9324"
+    },
+    {
+      "name": "tier-prefecture",
+      "passed": true,
+      "detail": {
+        "paths": 307,
+        "scale": "prefecture",
+        "message": "渤海\n黄海\n日本海\n东海\n台湾海峡\n南海\n东太平洋\n鄂霍茨克海\n顺天府\n保定府\n河间府\n真定府\n大\n名\n府\n永平府\n顺德府\n广平府\n延\n庆\n州\n保\n安\n州\n宣府镇\n应天府\n苏州府\n松江府\n常州府\n镇江府\n扬州府\n淮安府\n凤阳府\n安庆府\n徽州"
+      }
+    },
+    {
+      "name": "panorama-prefecture",
+      "passed": true,
+      "detail": {
+        "camera": {
+          "scale": 1,
+          "tx": 0,
+          "ty": 0
+        },
+        "paths": 307,
+        "clipped": []
+      }
+    },
+    {
+      "name": "screenshot-prefecture",
+      "passed": true,
+      "bytes": 2419420,
+      "sha256": "c42740b7cd9e8d3f88f38aa85e33cda7544d75cfa940602164581c2403153c4c"
+    },
+    {
+      "name": "live-dossier-does-not-read-parent-population",
+      "passed": true,
+      "detail": {
+        "adminId": "div_pref_ming_28_03",
+        "pop": {
+          "mouths": 48936,
+          "fugitives": 27404,
+          "hiddenCount": 3915,
+          "households": 9411,
+          "ding": 12723,
+          "byAge": {
+            "age_0_10": 9787,
+            "age_11_20": 8808,
+            "age_21_30": 7340,
+            "age_31_40": 6362,
+            "age_41_50": 5383,
+            "age_51_60": 4894,
+            "age_61_70": 3915,
+            "age_71_plus": 2447,
+            "old": 0,
+            "ding": 0,
+            "young": 0
+          },
+          "byGender": {
+            "male": 24956,
+            "female": 23979,
+            "sexRatio": 1
+          },
+          "id": "div_pref_ming_28_03",
+          "name": "锦州城",
+          "regionType": "frontier_defense",
+          "hidden": 3915
+        },
+        "gender": {
+          "male": 24956,
+          "female": 23979,
+          "sexRatio": 1
+        }
+      }
+    },
+    {
+      "name": "pidao-shared-account-population-not-first-child",
+      "passed": true,
+      "detail": {
+        "population": 170214,
+        "ding": 44256,
+        "count": 4,
+        "note": "辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛。"
+      }
+    },
+    {
+      "name": "pidao-dossier-real-name-and-id",
+      "passed": true,
+      "detail": {
+        "regionId": "ming-28-p08",
+        "text": "御览\n方 志\n—\n×\n皮岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛。\n\n户口\n17万\n丁 4.4万\n实征\n18.1万\n合规 72%\n驻军\n3.4万\n民心\n13\n危\n吏"
+      }
+    },
+    {
+      "name": "live-mao-wenlong-at-pidao",
+      "passed": true,
+      "detail": {
+        "maoText": "皮岛",
+        "maoMapRegion": "ming-28-p08",
+        "islandName": "皮岛",
+        "theaterLedgers": 4
+      }
+    },
+    {
+      "name": "pointer-target-ming-28-p03",
+      "passed": true,
+      "detail": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p03",
+        "name": "锦州城",
+        "geometryPoint": [
+          776.7223983291187,
+          409.09715245478105
+        ]
+      }
+    },
+    {
+      "name": "real-pointer-selects-ming-28-p03",
+      "passed": true,
+      "detail": {
+        "id": "ming-28-p03",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n锦州城\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的州级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。\n\n户口\n4.9万\n丁 1.3万\n实征\n5.2万\n合规 72%\n驻军\n0\n民心\n11\n危\n吏"
+      }
+    },
+    {
+      "name": "pointer-target-ming-28-p07",
+      "passed": true,
+      "detail": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p07",
+        "name": "觉华岛",
+        "geometryPoint": [
+          776.7149149651486,
+          409.1117641954236
+        ]
+      }
+    },
+    {
+      "name": "real-pointer-selects-ming-28-p07",
+      "passed": true,
+      "detail": {
+        "id": "ming-28-p07",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n觉华岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。\n\n户口\n4.3万\n丁 1.1万\n实征\n4.5万\n合规 72%\n驻军\n0\n民心\n11\n危\n吏"
+      }
+    },
+    {
+      "name": "pointer-target-ming-28-p08",
+      "passed": true,
+      "detail": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p08",
+        "name": "皮岛",
+        "geometryPoint": [
+          776.7996521542195,
+          409.13226438247307
+        ]
+      }
+    },
+    {
+      "name": "real-pointer-selects-ming-28-p08",
+      "passed": true,
+      "detail": {
+        "id": "ming-28-p08",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n皮岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛"
+      }
+    },
+    {
+      "name": "native-live-transfer-and-location-sequence",
+      "passed": true,
+      "detail": {
+        "passed": 4,
+        "failed": 0,
+        "checks": [
+          {
+            "name": "live-one-prefecture-transfer",
+            "passed": true,
+            "detail": {
+              "name": "保定府",
+              "restored": true
+            }
+          },
+          {
+            "name": "live-whole-province-and-recapture",
+            "passed": true,
+            "detail": {
+              "cells": 11,
+              "accounts": 382,
+              "population": 134841500
+            }
+          },
+          {
+            "name": "live-batch-failure-full-rollback",
+            "passed": true
+          },
+          {
+            "name": "live-character-arrival-updates-prefecture",
+            "passed": true,
+            "detail": {
+              "current": "京师·紫禁城·乾清宫",
+              "regionId": "ming-01-p01"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "source-unchanged-by-running-game",
+      "passed": true
+    }
+  ],
+  "steps": [
+    {
+      "name": "game-page-loaded",
+      "elapsedMs": 2971
+    },
+    {
+      "name": "official-loaded",
+      "elapsedMs": 3548,
+      "id": "sc-tianqi7-1627",
+      "regions": 307,
+      "provinces": 43,
+      "characters": 203,
+      "armies": 48
+    },
+    {
+      "name": "native-start-returned",
+      "elapsedMs": 9930
+    },
+    {
+      "name": "map-ready",
+      "elapsedMs": 16787
+    },
+    {
+      "name": "锦州城",
+      "elapsedMs": 49928,
+      "id": "ming-28-p03"
+    },
+    {
+      "name": "觉华岛",
+      "elapsedMs": 51953,
+      "id": "ming-28-p07"
+    },
+    {
+      "name": "皮岛",
+      "elapsedMs": 53974,
+      "id": "ming-28-p08"
+    }
+  ],
+  "errors": [],
+  "sourceSha256": "6c307027d977418bcadcfc35bcd268986009296b65b83758ac127f1d16dde42d",
+  "world": {
+    "running": true,
+    "regions": 307,
+    "player": "朱由检",
+    "characters": 203,
+    "armies": 61
+  },
+  "membership": [
+    {
+      "name": "明朝廷",
+      "id": "fac_mp9rsc3fd62j6",
+      "ownedCells": 195,
+      "listed": [
+        "顺天府",
+        "保定府",
+        "河间府",
+        "真定府",
+        "大名府",
+        "永平府",
+        "顺德府",
+        "广平府",
+        "延庆州",
+        "保安州",
+        "宣府镇",
+        "应天府",
+        "苏州府",
+        "松江府",
+        "常州府",
+        "镇江府",
+        "扬州府",
+        "淮安府",
+        "凤阳府",
+        "安庆府",
+        "徽州府",
+        "宁国府",
+        "南直隶太平府",
+        "池州府",
+        "徐州",
+        "杭州府",
+        "嘉兴府",
+        "湖州府",
+        "绍兴府",
+        "宁波府",
+        "台州府",
+        "金华府",
+        "衢州府",
+        "严州府",
+        "温州府",
+        "处州府",
+        "福州府",
+        "兴化府",
+        "泉州府",
+        "漳州府",
+        "延平府",
+        "建宁府",
+        "邵武府",
+        "汀州府",
+        "福宁州",
+        "桂林府",
+        "柳州府",
+        "庆远府",
+        "平乐府",
+        "梧州府",
+        "浔州府",
+        "南宁府",
+        "广西太平府",
+        "思恩府",
+        "田州",
+        "泗城州",
+        "南昌府",
+        "瑞州府",
+        "袁州府",
+        "临江府",
+        "吉安府",
+        "抚州府",
+        "江西建昌府",
+        "广信府",
+        "饶州府",
+        "南康府",
+        "九江府",
+        "南安府",
+        "赣州府",
+        "武昌府",
+        "汉阳府",
+        "黄州府",
+        "岳州府",
+        "长沙府",
+        "衡州府",
+        "永州府",
+        "宝庆府",
+        "常德府",
+        "辰州府",
+        "郧阳府",
+        "襄阳府",
+        "荆州府",
+        "承天府",
+        "德安府",
+        "开封府",
+        "归德府",
+        "彰德府",
+        "卫辉府",
+        "怀庆府",
+        "河南府",
+        "汝宁府",
+        "南阳府",
+        "汝州",
+        "陕州",
+        "禹州",
+        "太原府",
+        "平阳府",
+        "潞安府",
+        "汾州府",
+        "泽州",
+        "大同府",
+        "朔州",
+        "宁武关",
+        "偏关",
+        "西安府",
+        "延安府",
+        "凤翔府",
+        "汉中府",
+        "平凉府",
+        "巩昌府",
+        "庆阳府",
+        "临洮府",
+        "庄浪卫",
+        "洮州卫",
+        "岷州卫",
+        "甘州卫",
+        "肃州卫",
+        "宁夏镇",
+        "榆林镇",
+        "成都府",
+        "重庆府",
+        "顺庆府",
+        "叙州府",
+        "泸州",
+        "夔州府",
+        "嘉定州",
+        "雅州",
+        "龙安府",
+        "保宁府",
+        "眉州",
+        "贵阳府",
+        "安顺府",
+        "平越府",
+        "都匀府",
+        "思南府",
+        "铜仁府",
+        "镇远府",
+        "黎平府",
+        "石阡府",
+        "龙里卫",
+        "水西宣慰司",
+        "云南府",
+        "大理府",
+        "临安府",
+        "楚雄府",
+        "曲靖府",
+        "永昌府",
+        "鹤庆府",
+        "丽江府",
+        "景东府",
+        "蒙化府",
+        "顺宁府",
+        "元江府",
+        "腾越州",
+        "朵甘思本部地域",
+        "长河西宣慰司",
+        "董卜韩胡宣慰司",
+        "白利土司",
+        "德格土司",
+        "理塘土司",
+        "巴塘土司",
+        "乌思藏本部地域",
+        "拉萨城",
+        "日喀则宗",
+        "江孜宗",
+        "山南诸宗",
+        "阿里三围",
+        "济南府",
+        "青州府",
+        "兖州府",
+        "东昌府",
+        "莱州府",
+        "登州府",
+        "武定州",
+        "泰安州",
+        "济宁州",
+        "临清州",
+        "广州府",
+        "韶州府",
+        "南雄府",
+        "惠州府",
+        "潮州府",
+        "肇庆府",
+        "高州府",
+        "雷州府",
+        "廉州府",
+        "琼州府",
+        "山海关",
+        "宁远城",
+        "锦州城",
+        "松山堡",
+        "杏山堡",
+        "塔山堡",
+        "觉华岛",
+        "皮岛"
+      ]
+    },
+    {
+      "name": "后金",
+      "id": "fac_mp9rsc3f4r9co",
+      "ownedCells": 22,
+      "listed": [
+        "沈阳",
+        "辽阳",
+        "海州",
+        "盖州",
+        "复州",
+        "铁岭",
+        "开原",
+        "奉集堡",
+        "赫图阿拉旧城",
+        "建州三卫",
+        "抚顺东路",
+        "浑江谷地",
+        "苏子河谷",
+        "鸭绿江北岸",
+        "广宁旧城",
+        "义州",
+        "懿路",
+        "蒲河",
+        "抚顺",
+        "辽河西岸",
+        "大凌河东",
+        "小凌河东"
+      ]
+    },
+    {
+      "name": "察哈尔",
+      "id": "fac_mp9rsc3fex7fo",
+      "ownedCells": 10,
+      "listed": [
+        "张家口塞外互市",
+        "归化城外诸营",
+        "鄂尔多斯东部",
+        "察哈尔边帐",
+        "大同塞外牧场",
+        "察哈尔本部",
+        "林丹汗大帐",
+        "宣府塞外牧地",
+        "西拉木伦河",
+        "克什克腾边地"
+      ]
+    },
+    {
+      "name": "科尔沁蒙古",
+      "id": "fac_mp9rsc3fjy38l",
+      "ownedCells": 1,
+      "listed": [
+        "科尔沁"
+      ]
+    },
+    {
+      "name": "朝鲜",
+      "id": "fac_mp9rsc3f60u3b",
+      "ownedCells": 8,
+      "listed": [
+        "京畿道",
+        "黄海道",
+        "平安道",
+        "咸镜道",
+        "江原道",
+        "忠清道",
+        "全罗道",
+        "庆尚道"
+      ]
+    },
+    {
+      "name": "播州土司·杨氏(余裔)",
+      "id": "fac_mp9rsc3fuezsa",
+      "ownedCells": 0,
+      "listed": []
+    },
+    {
+      "name": "郑氏海商",
+      "id": "fac_mp9rsc3funmyu",
+      "ownedCells": 0,
+      "listed": []
+    },
+    {
+      "name": "陕北饥民(将起)",
+      "id": "fac_mp9rsc3fcjwcm",
+      "ownedCells": 0,
+      "listed": []
+    },
+    {
+      "name": "葡萄牙·澳门",
+      "id": "fac_mp9rsc3ilucz2",
+      "ownedCells": 1,
+      "listed": [
+        "澳门（葡萄牙占）"
+      ]
+    },
+    {
+      "name": "荷兰·台海(东印度公司)",
+      "id": "fac_mp9rsc3ish4kg",
+      "ownedCells": 8,
+      "listed": [
+        "大员",
+        "赤崁",
+        "北线尾",
+        "新港社",
+        "目加溜湾社",
+        "萧垄社",
+        "淡水社",
+        "鸡笼港"
+      ]
+    },
+    {
+      "name": "西班牙·马尼拉",
+      "id": "fac_mp9rsc3itegih",
+      "ownedCells": 7,
+      "listed": [
+        "马尼拉",
+        "甲米地",
+        "拉古纳",
+        "邦板牙",
+        "伊罗戈",
+        "卡加延",
+        "邦阿西楠"
+      ]
+    },
+    {
+      "name": "奢安之乱联军",
+      "id": "fac_mp9rsc3iwppav",
+      "ownedCells": 0,
+      "listed": []
+    },
+    {
+      "name": "土默特蒙古",
+      "id": "fac-tumed",
+      "ownedCells": 1,
+      "listed": [
+        "鞑靼土默特部"
+      ]
+    },
+    {
+      "name": "叶尔羌汗国",
+      "id": "fac-yarkand",
+      "ownedCells": 7,
+      "listed": [
+        "叶尔羌城",
+        "喀什噶尔",
+        "和田",
+        "阿克苏",
+        "库车",
+        "英吉沙尔",
+        "塔里木绿洲"
+      ]
+    },
+    {
+      "name": "吐鲁番诸伯克",
+      "id": "fac-turpan",
+      "ownedCells": 6,
+      "listed": [
+        "吐鲁番城",
+        "哈密卫故地",
+        "鲁克沁",
+        "鄯善",
+        "火州",
+        "焉耆"
+      ]
+    },
+    {
+      "name": "哈萨克汗国",
+      "id": "fac-kazakh",
+      "ownedCells": 3,
+      "listed": [
+        "哈萨克",
+        "北哈萨克",
+        "东哈萨克"
+      ]
+    },
+    {
+      "name": "瓦刺诸部",
+      "id": "fac-oirat",
+      "ownedCells": 1,
+      "listed": [
+        "瓦刺"
+      ]
+    },
+    {
+      "name": "野人女真诸部",
+      "id": "fac-wild-jurchen",
+      "ownedCells": 2,
+      "listed": [
+        "苦兀（野人女真）",
+        "北山女真"
+      ]
+    },
+    {
+      "name": "虾夷地与松前氏",
+      "id": "fac-matsumae-ainu",
+      "ownedCells": 8,
+      "listed": [
+        "松前",
+        "箱馆",
+        "江差",
+        "石狩",
+        "胆振",
+        "十胜",
+        "钏路",
+        "宗谷"
+      ]
+    },
+    {
+      "name": "日本幕府",
+      "id": "fac-tokugawa-japan",
+      "ownedCells": 19,
+      "listed": [
+        "博多",
+        "熊本",
+        "鹿儿岛",
+        "长崎",
+        "平户",
+        "小仓",
+        "日向",
+        "阿波",
+        "赞岐",
+        "伊予",
+        "土佐",
+        "江户",
+        "京都",
+        "大坂",
+        "仙台",
+        "金泽",
+        "尾张",
+        "骏府",
+        "会津"
+      ]
+    },
+    {
+      "name": "大越黎郑阮格局",
+      "id": "fac-dai-viet",
+      "ownedCells": 7,
+      "listed": [
+        "升龙",
+        "清化",
+        "乂安",
+        "顺化",
+        "广南",
+        "广义",
+        "占城旧地"
+      ]
+    },
+    {
+      "name": "喀尔喀蒙古",
+      "id": "fac-khalkha",
+      "ownedCells": 1,
+      "listed": [
+        "喀尔喀蒙古"
+      ]
+    }
+  ],
+  "location": {
+    "text": "京师·紫禁城·乾清宫",
+    "regionId": "ming-01-p01",
+    "regionName": "顺天府",
+    "contract": "source-text-location-v2"
+  },
+  "jinzhouBundle": {
+    "adminId": "div_pref_ming_28_03",
+    "pop": {
+      "mouths": 48936,
+      "fugitives": 27404,
+      "hiddenCount": 3915,
+      "households": 9411,
+      "ding": 12723,
+      "byAge": {
+        "age_0_10": 9787,
+        "age_11_20": 8808,
+        "age_21_30": 7340,
+        "age_31_40": 6362,
+        "age_41_50": 5383,
+        "age_51_60": 4894,
+        "age_61_70": 3915,
+        "age_71_plus": 2447,
+        "old": 0,
+        "ding": 0,
+        "young": 0
+      },
+      "byGender": {
+        "male": 24956,
+        "female": 23979,
+        "sexRatio": 1
+      },
+      "id": "div_pref_ming_28_03",
+      "name": "锦州城",
+      "regionType": "frontier_defense",
+      "hidden": 3915
+    },
+    "gender": {
+      "male": 24956,
+      "female": 23979,
+      "sexRatio": 1
+    }
+  },
+  "pidaoAccounts": {
+    "population": 170214,
+    "ding": 44256,
+    "count": 4,
+    "note": "辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛。"
+  },
+  "newGeography": {
+    "maoText": "皮岛",
+    "maoMapRegion": "ming-28-p08",
+    "islandName": "皮岛",
+    "theaterLedgers": 4
+  },
+  "pointerChecks": [
+    {
+      "target": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p03",
+        "name": "锦州城",
+        "geometryPoint": [
+          776.7223983291187,
+          409.09715245478105
+        ]
+      },
+      "panel": {
+        "id": "ming-28-p03",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n锦州城\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的州级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。\n\n户口\n4.9万\n丁 1.3万\n实征\n5.2万\n合规 72%\n驻军\n0\n民心\n11\n危\n吏"
+      }
+    },
+    {
+      "target": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p07",
+        "name": "觉华岛",
+        "geometryPoint": [
+          776.7149149651486,
+          409.1117641954236
+        ]
+      },
+      "panel": {
+        "id": "ming-28-p07",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n觉华岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。\n\n户口\n4.3万\n丁 1.1万\n实征\n4.5万\n合规 72%\n驻军\n0\n民心\n11\n危\n吏"
+      }
+    },
+    {
+      "target": {
+        "x": 777,
+        "y": 409,
+        "regionId": "ming-28-p08",
+        "name": "皮岛",
+        "geometryPoint": [
+          776.7996521542195,
+          409.13226438247307
+        ]
+      },
+      "panel": {
+        "id": "ming-28-p08",
+        "visible": true,
+        "text": "御览\n方 志\n—\n×\n皮岛\n政区 · 明朝廷\n隶\n明朝廷\n地方官\n空缺·待补\n山地/海岛/边堡\n税\n轻\n\n辽东（明·关宁东江）地块内的岛级要地，地形以山地/海岛/边堡为主，关联辽饷·边军·海岛屯粮·马·盐。 本图块合并显示4份原账，分项身份与数值分别保留。其中含战区分项，不表示所有人口均居于图示海岛"
+      }
+    }
+  ],
+  "liveTransfers": {
+    "passed": 4,
+    "failed": 0,
+    "checks": [
+      {
+        "name": "live-one-prefecture-transfer",
+        "passed": true,
+        "detail": {
+          "name": "保定府",
+          "restored": true
+        }
+      },
+      {
+        "name": "live-whole-province-and-recapture",
+        "passed": true,
+        "detail": {
+          "cells": 11,
+          "accounts": 382,
+          "population": 134841500
+        }
+      },
+      {
+        "name": "live-batch-failure-full-rollback",
+        "passed": true
+      },
+      {
+        "name": "live-character-arrival-updates-prefecture",
+        "passed": true,
+        "detail": {
+          "current": "京师·紫禁城·乾清宫",
+          "regionId": "ming-01-p01"
+        }
+      }
+    ]
+  },
+  "exitCode": 0,
+  "elapsedMs": 54815
+}

@@ -1,0 +1,158 @@
+{
+  "base": "c9ad8e6f",
+  "normalization": "仅去空白与 -{字}- 排版标记，不做繁简转换",
+  "quotes": [
+    {
+      "id": "pay/high",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "中書令，門下中書侍郎，左右僕射，太子太師、太保、太傅，百四十萬。尚書，御史大夫，太子少師、少保、少傅，百萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/eighty",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "左右丞，侍郎，散騎常侍，諫議大夫，給事中，中書舍人，祕書、殿中、內侍監，御史中丞，太常、宗正、大理、司農、太府、鴻臚、太僕、光祿、衞尉卿，國子祭酒，將作、少府監，太子賓客、詹事，諸府尹，大都督府長史，都團練使、副使，上州刺史，八萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/seventy",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "太常、宗正少卿，太子左右庶子，節度副使，刺史知軍事，七萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/sixtyFive",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "六軍統軍，諸府少尹，少監，少卿，國子司業，少詹事，六萬五千。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/fifty",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "郎中，司天監，太子左右諭德、家令寺、僕寺、率更寺令，親王傅，別敕判官，觀察、團練判官掌書記，上州長史、司馬，五萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/forty",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "員外郎，起居郎，通事舍人，起居舍人，著作郎，內常侍，侍御史，殿中侍御史，太常、宗正、殿中、祕書丞，大理正，國子博士，京都宮苑總監監，都水使者，太子中舍、中允，王府長史，歸德將軍，節度推官、支使，防禦判官，上州錄事參軍事，畿縣、上縣令，四萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/thirtyFive",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "補闕，殿中侍御史，諸府、大都督府判官，赤縣丞，三萬五千。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/thirty",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "拾遺，司天少監，六局奉御，內常侍，監察御史，御史臺主簿，太常博士，陵署令，大理司直，中書主書，門下錄事，太子贊善、典內、洗馬、司議郎，王府司馬，驍衞、武衞、威衞、領軍衞、監門衞、六軍、射生、神策軍將軍，歸德中郎將，觀察防禦團練推官巡官，鴘赤縣丞，兩赤縣主簿、尉，上州功曹參軍以下，上縣丞，三萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/twenty",
+      "file": "新唐書_卷055.wiki",
+      "source": "《新唐書》卷五十五·食貨五（會昌後百官俸錢）",
+      "text": "五官正，太常寺協律郎，陵署丞，諸寺監主簿，國子、太學、廣文助教，都水監丞，詹事府司直，太子通事舍人、文學、三寺丞、五局郎，王府諮議參軍、友，畿縣上縣主簿尉，二萬。",
+      "rawSha256": "aa0aafffe1060a9a5c4cfbd980e5ea93e0ff0dfd0d16a077a37e318984158fe3",
+      "verified": true
+    },
+    {
+      "id": "pay/zhenyuanEighty",
+      "file": "唐會要_卷091.wiki",
+      "source": "《唐會要》卷九十一·內外官料錢上（貞元四年）",
+      "text": "左右丞。諸司侍郎。給事舍人。御史中丞。太子賓客。詹事。國子祭酒。諸卿監。內侍監。各八十貫文。",
+      "rawSha256": "d128dd417c42b8828264240f96ff14bc1cfb7d4cea837e7649a7306477b55245",
+      "verified": true
+    },
+    {
+      "id": "pay/zhenyuanTwentyFive",
+      "file": "唐會要_卷091.wiki",
+      "source": "《唐會要》卷九十一·內外官料錢上（貞元四年）",
+      "text": "太子文學。祕書郎。著作佐郎。城門。符寶郎。大學。廣文。四門博士。大理司直。大理。詹事諸寺監丞。內謁者監。中書門下主事。各二十五貫文。",
+      "rawSha256": "d128dd417c42b8828264240f96ff14bc1cfb7d4cea837e7649a7306477b55245",
+      "verified": true
+    },
+    {
+      "id": "pay/half",
+      "file": "唐會要_卷092.wiki",
+      "source": "《唐會要》卷九十二（太和七年庾敬休奏）",
+      "text": "應文武九品已上。每月料錢。一半合給段疋絲綿等。",
+      "rawSha256": "3c6b36b9da601da74763912ae7f6b349be19af86d2c53715a4c9c685184c049f",
+      "verified": true
+    },
+    {
+      "id": "pay/cash",
+      "file": "唐會要_卷092.wiki",
+      "source": "《唐會要》卷九十二（太和九年）",
+      "text": "宰相俸料。宜依元和十四年以前舊例。並給見錢。",
+      "rawSha256": "3c6b36b9da601da74763912ae7f6b349be19af86d2c53715a4c9c685184c049f",
+      "verified": true
+    },
+    {
+      "id": "tuntian",
+      "file": "太白陰經_卷五.wiki",
+      "source": "李筌《太白陰經》卷五·屯田篇",
+      "text": "合屯田六十頃：四十頃種子，五頃大荳種子，五頃麥種子，五頃麻種子，五頃蕎種子。",
+      "rawSha256": "49c50dace412967d58115b20b33f688eb54bdf86d430390a11bc509ef914bff8",
+      "verified": true
+    },
+    {
+      "id": "yield",
+      "file": "太白陰經_卷五.wiki",
+      "source": "李筌《太白陰經》卷五·屯田篇",
+      "text": "等級，殊等九千石，第一等七千石，第二等六千石，第三等五千石。歲無水旱、災蝗，滿四千石者，屯官有殿。",
+      "rawSha256": "49c50dace412967d58115b20b33f688eb54bdf86d430390a11bc509ef914bff8",
+      "verified": true
+    },
+    {
+      "id": "ration",
+      "file": "太白陰經_卷五.wiki",
+      "source": "李筌《太白陰經》卷五·人糧馬料篇",
+      "text": "經曰：一軍一萬二千五百人，人日支米二升，一月六斗，一年七石二斗。",
+      "rawSha256": "49c50dace412967d58115b20b33f688eb54bdf86d430390a11bc509ef914bff8",
+      "verified": true
+    },
+    {
+      "id": "millet",
+      "file": "太白陰經_卷五.wiki",
+      "source": "李筌《太白陰經》卷五·人糧馬料篇",
+      "text": "以六分支粟，一人日支粟三升三合三勺三抄三圭三粒，一月一石，一年一十二石。",
+      "rawSha256": "49c50dace412967d58115b20b33f688eb54bdf86d430390a11bc509ef914bff8",
+      "verified": true
+    },
+    {
+      "id": "conversion",
+      "file": "通典_卷006.wiki",
+      "source": "《通典》卷六·食貨六",
+      "text": "應貯米處，折粟一斛，輸米六斗。",
+      "rawSha256": "c4fbb8abb0f9d8a4da621a4aa0a2d808e7def4c6e7ff32f3e6f160f6825f554c",
+      "verified": true
+    },
+    {
+      "id": "soil",
+      "file": "新唐書_卷051.wiki",
+      "source": "《新唐書》卷五十一·食貨一",
+      "text": "其地有薄厚，歲一易者，倍授之。",
+      "rawSha256": "0abeb88b9d300a10786219b94f1e29701c9d81f4a36cd41e48ea45912df58970",
+      "verified": true
+    }
+  ]
+}

@@ -1,0 +1,208 @@
+{
+  "verifiedAt": "2026-09-17T16:55:43.225Z",
+  "officialMapApplied": true,
+  "releaseReady": false,
+  "source": "scenarios/天启七年·九月（官方）.json",
+  "sourceSha256": "c529cce3b970fcbbec2cc70aeb788054a9419993a15a28b07a6943f6ed25685c",
+  "sourceBeforeSha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c",
+  "regions": 284,
+  "provinceGroups": 43,
+  "subdividedParents": 29,
+  "retainedCoarseParents": [
+    "鞑靼土默特部",
+    "哈萨克",
+    "瓦刺",
+    "后金（盛京辽沈）",
+    "苦兀（野人女真）",
+    "北哈萨克",
+    "东哈萨克",
+    "后金（建州本部）",
+    "科尔沁",
+    "北山女真",
+    "漠南诸部",
+    "喀尔喀蒙古",
+    "澳门（葡萄牙占）",
+    "辽东（明·关宁东江）"
+  ],
+  "originalAccounts": 382,
+  "mappedAccounts": 359,
+  "nonterritorialOriginalAccounts": 23,
+  "characters": 203,
+  "armies": 48,
+  "events": 62,
+  "originalContentFieldsPreserved": true,
+  "originalAdminValuesPreserved": true,
+  "locationCoverage": {
+    "characters": {
+      "resolved": 140,
+      "area": 9,
+      "unresolved": 45,
+      "ambiguous": 9
+    },
+    "armies": {
+      "resolved": 40,
+      "unresolved": 2,
+      "area": 5,
+      "ambiguous": 1
+    }
+  },
+  "fiscalComparison": {
+    "original": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    },
+    "candidate": {
+      "central": {
+        "money": 445109,
+        "grain": 87638,
+        "cloth": 0
+      },
+      "localRetain": {
+        "money": 149380,
+        "grain": 61416,
+        "cloth": 0
+      },
+      "skimmed": {
+        "money": 204212,
+        "grain": 40161,
+        "cloth": 0
+      },
+      "lostTransit": {
+        "money": 78564,
+        "grain": 15461,
+        "cloth": 0
+      },
+      "divisionCount": 191
+    }
+  },
+  "screenshots": [
+    {
+      "tier": "realm",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/天下全景.png",
+      "sha256": "5bd166b8c4da0d5f19233f36e5d8c7394c691a0b4352dabc9b6a6a6397ecbf5c",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "tier": "region",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/省道全景.png",
+      "sha256": "7a4d102f45bfa7ff37a4d1c4b4c0656711d742f1417443947368e5d87f2be65d",
+      "width": 1903,
+      "height": 1002
+    },
+    {
+      "tier": "prefecture",
+      "file": "docs/chongzhen-prefecture-map-20260917/screenshots/府州全景.png",
+      "sha256": "73c8f18ba6056b2c1f9b247ca2871c80a268c68d5b5a70c9fc5abdcb0a329e31",
+      "width": 1903,
+      "height": 1002
+    }
+  ],
+  "assets": [
+    {
+      "file": "web/data/maps/chongzhen-prefecture-v1/geometry.json",
+      "sha256": "da35451b7757083544d5b91fb84a768132bbc4d46e967ed4a0b0a1c53ae98e8b"
+    },
+    {
+      "file": "web/data/maps/chongzhen-prefecture-v1/scenario-bindings.json",
+      "sha256": "e6ec4f3e516f04a3d0b9dc6b43808f1f6e4c4d62461d85c71205b8f087e7cbc2"
+    }
+  ],
+  "checks": {
+    "geometry": {
+      "passed": 654,
+      "failed": 0
+    },
+    "installedNative": {
+      "passed": 22,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 14,
+      "failed": 0
+    },
+    "liveTransfers": {
+      "passed": 4,
+      "failed": 0,
+      "checks": [
+        {
+          "name": "live-one-prefecture-transfer",
+          "passed": true,
+          "detail": {
+            "name": "保定府",
+            "restored": true
+          }
+        },
+        {
+          "name": "live-whole-province-and-recapture",
+          "passed": true,
+          "detail": {
+            "cells": 11,
+            "accounts": 382,
+            "population": 134841500
+          }
+        },
+        {
+          "name": "live-batch-failure-full-rollback",
+          "passed": true
+        },
+        {
+          "name": "live-character-arrival-updates-prefecture",
+          "passed": true,
+          "detail": {
+            "current": "京师·紫禁城·乾清宫",
+            "regionId": "ming-01-p01"
+          }
+        }
+      ]
+    },
+    "guards": {
+      "checkedAt": "2026-09-17T16:52:20.846Z",
+      "complete": true,
+      "results": [
+        {
+          "name": "lint-arch-all.js",
+          "passed": false,
+          "status": 1,
+          "signal": null,
+          "error": null,
+          "elapsedMs": 40673
+        },
+        {
+          "name": "verify-official-scenario-parity.js",
+          "passed": true,
+          "status": 0,
+          "signal": null,
+          "error": null,
+          "elapsedMs": 79616
+        }
+      ]
+    }
+  },
+  "limits": [
+    "偏远地区14个仍保留粗地域；没有把错位旧外轮廓包装成精确府界",
+    "府州边界由治所与概化山系约束推定，不是历史测绘边界",
+    "原有跨省轮廓缺陷保留；未擅改省界和势力范围",
+    "全仓架构门禁仍未全绿；未做真实用户存档迁移、联网AI长局和移动端性能验收",
+    "未执行Git提交、推送或正式打包发布"
+  ]
+}

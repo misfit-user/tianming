@@ -61,7 +61,7 @@
 
   function _scEnabled() {
     if (typeof P === 'undefined' || !P || !P.conf) return false;
-    return P.conf.useNewKejuScandal === true; // 默认 off·显式 true 才开
+    return P.conf.useNewKejuScandal !== false; // 默认开启，依附正式考试且保留显式关闭。
   }
 
   function _scGM() { return (typeof GM !== 'undefined' && GM) ? GM : null; }
@@ -106,6 +106,13 @@
   function _scGetCorruption() {
     var g = _scGM(); if (!g) return 0;
     if (typeof g.corruption === 'number') return g.corruption;
+    if (g.corruption && typeof g.corruption === 'object') {
+      var fields = ['trueIndex', 'overall', 'index'];
+      for (var i = 0; i < fields.length; i++) {
+        var value = g.corruption[fields[i]];
+        if (typeof value === 'number' && Number.isFinite(value)) return value;
+      }
+    }
     if (g.vars && g.vars['吏治'] && typeof g.vars['吏治'].value === 'number') return g.vars['吏治'].value;
     if (g.keju && typeof g.keju.corruption === 'number') return g.keju.corruption;
     return 0;

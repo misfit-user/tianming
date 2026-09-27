@@ -66,10 +66,10 @@
         "factions": 42,
         "regions": 575
       },
-      "bytes": 31312354,
-      "sha256": "2dfe2e0e856890546c9087d0376d948851d361f1280da20fc6b6b88b1281c292",
-      "sourceBytes": 52524147,
-      "sourceSha256": "db2624ca8abed31fefebee3d3650b4ff3e1adde9cca848bab18e86c7f2505afc"
+      "bytes": 31410625,
+      "sha256": "446951ecdb35b8f3eac148a3e4baaa768715e59185c8036e9b1f3166575d91c4",
+      "sourceBytes": 52644640,
+      "sourceSha256": "879c718dfd6f67fb722a021408b7a27e0afd0d795f6913a07f30f361839b0a74"
     }
   ]
 }

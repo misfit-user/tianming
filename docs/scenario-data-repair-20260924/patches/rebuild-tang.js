@@ -65,6 +65,10 @@ function main() {
   console.log('死条目抄件：' + run([path.join(DIR, 'patches/tang-cleanup.js'), '--report', path.join(DIR, 'reports/tang-cleanup.md'), '--write']));
   // 第十二刀：官俸（同类独低、副职与正职同俸的两处改正，会动财政平衡的建议只写进报告）
   console.log('官俸：' + run([path.join(DIR, 'patches/tang-pay.js'), '--report', path.join(DIR, 'reports/tang-pay.md'), '--write']));
+  // 第十三刀：京官料钱按会昌整组重定，缺会昌明文取贞元，未考明与地方使职保留
+  console.log('京官料钱：' + run([path.join(DIR, 'patches/tang-capital-pay.js'), '--report', path.join(DIR, 'reports/tang-capital-pay.md'), '--write']));
+  // 第十四刀：唐廷与河朔四镇的府州承载力、道级合计及环境和财政前后对账
+  console.log('承载力：' + run([path.join(DIR, 'patches/tang-carrying.js'), '--report', path.join(DIR, 'reports/tang-carrying.md'), '--write']));
 }
 
 main();

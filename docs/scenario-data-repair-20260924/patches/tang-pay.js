@@ -3,8 +3,9 @@
 // 官俸按职位的 monthlyPay（钱、粮、布）逐月支给，财政引擎与公帑都读它（salary 与 monthlyPay.money 同值）；
 // 军饷按部队的每兵月给（monthly*PayPerSoldier）乘兵数支给，另有全军每月给养 monthlyUpkeep，salary 是每兵月给乘兵数的岁额。
 // 核查逐类对照会昌后百官俸钱与《太白阴经》，这里改（data/tang-pay.js）：两处离谱的官俸、诸节度使按会昌三百贯、
-// 神策优给取边军两倍、骑军补马料。后三项按史实会让开局财政吃紧，同志定「按史实算」。京官整组重定只写进报告。
-// 职位在剧本里有三份（唐廷势力的 officeTree、顶层 officeTree、officeRegistryByFaction.唐朝廷），三份一向相同，一并改。
+// 神策优给取边军两倍、骑军补马料。后三项按史实会让开局财政吃紧，同志定「按史实算」。京官整组另见 tang-capital-pay.js（第十三刀）。
+// 职位在剧本里有三份（唐廷势力的 officeTree、顶层 officeTree、officeRegistryByFaction.唐朝廷），三份一向相同，一并改；
+// 官制页与编辑器先读 perPersonSalary 这段月俸、岁俸文案，改俸时按原模板一并重算。
 //
 // 用法（在仓库根目录）：node docs/scenario-data-repair-20260924/patches/tang-pay.js [--write] [--report <文件>]
 'use strict';
@@ -15,12 +16,13 @@ const path = require('path');
 const REPO = path.resolve(__dirname, '../../..');
 const DIR = path.join(REPO, 'docs/scenario-data-repair-20260924');
 const SCENARIO_FILE = path.join(REPO, 'scenarios', '晚唐·开成五年（官方）.json');
-const { FIXES, JIEDU, TROOPS, FODDER, NOT_APPLIED } = require(path.join(DIR, 'data/tang-pay.js'));
+const { FIXES, JIEDU, TROOPS, FODDER } = require(path.join(DIR, 'data/tang-pay.js'));
 
 const FACTION = '唐朝廷';
 const PAY_KEYS = ['money', 'grain', 'cloth'];
 const SOLDIER_KEYS = { money: 'monthlyMoneyPayPerSoldier', grain: 'monthlyGrainPayPerSoldier', cloth: 'monthlyClothPayPerSoldier' };
 const SALARY_RESOURCE = { money: '钱', grain: '粮食', cloth: '布匹' };
+const SALARY_UNIT = { money: '贯', grain: '石', cloth: '匹' };
 
 const tidy = (x) => Number(x.toPrecision(12));
 const fmt = (pay) => PAY_KEYS.map((k) => pay[k]).join('/');
@@ -56,10 +58,18 @@ function copiesOf(scenario, name) {
   return copies;
 }
 
+// 俸给文案的原模板：月给与岁给各列大于零的几项，显示到六位小数
+function payText(pay) {
+  const items = (factor) => PAY_KEYS.filter((k) => pay[k] > 0).map((k) => SALARY_RESOURCE[k] + Number((pay[k] * factor).toFixed(6)) + ' ' + SALARY_UNIT[k]).join('、');
+  return '月俸 ' + items(1) + ' · 岁俸 ' + items(12);
+}
+
 function setPay(copies, pay) {
   copies.forEach((p) => {
+    if (p.perPersonSalary !== payText(p.monthlyPay)) throw new Error(p.name + ' 的俸给文案不是原模板，核对后再改');
     p.salary = pay.money;
     p.monthlyPay = Object.assign({}, p.monthlyPay, pay);
+    p.perPersonSalary = payText(p.monthlyPay);
   });
 }
 
@@ -134,14 +144,12 @@ function main() {
 
   const report = ['# 晚唐·官俸军饷报告', '',
     '改单个职位 ' + FIXES.length + ' 处、诸节度使 ' + jieduDone.length + ' 员按会昌三百贯、神策三营按边军两倍给、骑军四军补马料（钱/粮/布，每月）；职位三份一并改。' +
-      '后三项按史实会让开局财政吃紧（同志 09-27 定按史实算）。京官整组重定工作量大，列在末尾。', '',
+      '后三项按史实会让开局财政吃紧（同志 09-27 定按史实算）。官制页显示的月俸、岁俸文案随之重算。京官整组见 [京官料钱报告](tang-capital-pay.md)（第十三刀）。', '',
     '## 单个职位', '', '| 职位 | 改前 | 改后 | 可信度 | 理由 | 依据 |', '| --- | --- | --- | --- | --- | --- |', ...officeRows, '',
     '## 诸节度使', '', JIEDU.why + '（可信度 ' + JIEDU.confidence + '）依据：' + quotesOf(JIEDU.quotes), '',
     '改为钱/粮/布 ' + fmt(JIEDU.to) + '：' + jieduDone.join('、') + '。', '',
     jieduSkipped.length ? '俸给不是标准数、未改：' + jieduSkipped.join('、') + '。' : '唐廷诸节度使俸给原都是标准数，全部改了。', '',
-    '## 军饷', '', '| 部队 | 兵数 | 改动 | 可信度 | 理由 | 依据 |', '| --- | --- | --- | --- | --- | --- |', ...troopRows, '',
-    '## 不改的建议', '', '| 编号 | 对象 | 建议 | 唐廷每月开支变化 | 不改的理由 |', '| --- | --- | --- | --- | --- |',
-    ...NOT_APPLIED.map((r) => '| ' + r.id + ' | ' + r.target + ' | ' + r.proposal + ' | ' + r.impact + ' | ' + r.reason + ' |')];
+    '## 军饷', '', '| 部队 | 兵数 | 改动 | 可信度 | 理由 | 依据 |', '| --- | --- | --- | --- | --- | --- |', ...troopRows];
   if (reportFile) fs.writeFileSync(reportFile, report.join('\n') + '\n');
   console.log(report.slice(0, 3).join('\n'));
 

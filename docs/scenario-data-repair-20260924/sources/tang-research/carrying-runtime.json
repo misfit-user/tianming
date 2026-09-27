@@ -1,0 +1,1549 @@
+{
+  "description": "doActualStart 完整开局无真实 API；after 的45道环境逐项与补丁生产子系统预演一致。year budget=360日，不是推进一年。环境tick仅独立调用10日，未完整推进回合。",
+  "beforeBudget": {
+    "central": {
+      "money": 12022575.435,
+      "grain": 3750722.5266,
+      "cloth": 1745055.2905
+    },
+    "local": {
+      "money": 7988457.5414,
+      "grain": 7513843.9151,
+      "cloth": 2465954.956
+    },
+    "expenses": {
+      "money": 10564683.192,
+      "grain": 3703610.63,
+      "cloth": 1703805.692
+    }
+  },
+  "afterBudget": {
+    "central": {
+      "money": 12022575.435,
+      "grain": 3750722.5266,
+      "cloth": 1745055.2905
+    },
+    "local": {
+      "money": 7988457.5414,
+      "grain": 7513843.9151,
+      "cloth": 2465954.956
+    },
+    "expenses": {
+      "money": 10584660.792,
+      "grain": 3703610.63,
+      "cloth": 1719253.692
+    }
+  },
+  "environmentRows": [
+    {
+      "id": "circuit-fcbb6db903e5",
+      "name": "京畿",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.669230294664844,
+          "water": 1.669230294664844,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.59907851,
+        "arableLand": 2245714,
+        "waterCapacity": 2245714,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-73c65d904e95",
+      "name": "华州防御",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6692379597642755,
+          "water": 1.6692379597642755,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.59907576,
+        "arableLand": 205358,
+        "waterCapacity": 205358,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-e00116cb986e",
+      "name": "河中",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.70768924285902,
+          "water": 1.70768924285902,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.58558664,
+        "arableLand": 1208670,
+        "waterCapacity": 1208670,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-c3ce2a358e6d",
+      "name": "同州防御",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7076981685319974,
+          "water": 1.7076981685319974,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.58558358,
+        "arableLand": 295857,
+        "waterCapacity": 295857,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-6efad25adc25",
+      "name": "金商",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.330934781453923,
+          "water": 1.330934781453923,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.75135162,
+        "arableLand": 325721,
+        "waterCapacity": 325721,
+        "carryingRegime": "strained"
+      }
+    },
+    {
+      "id": "circuit-0e5aec7cd61a",
+      "name": "东都",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.848039973965554,
+          "water": 1.848039973965554,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.54111384,
+        "arableLand": 1266362,
+        "waterCapacity": 1266362,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-472ceb5133c8",
+      "name": "陕虢",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.5692291527422269,
+          "water": 1.5692291527422269,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.63725556,
+        "arableLand": 537654,
+        "waterCapacity": 537654,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-855efb7188a4",
+      "name": "河阳",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.750000638457079,
+          "water": 1.750000638457079,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.57142836,
+        "arableLand": 685246,
+        "waterCapacity": 685246,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-9d221cb47716",
+      "name": "河东",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.5658370862434805,
+          "water": 1.5658370862434805,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.63863604,
+        "arableLand": 2682459,
+        "waterCapacity": 2682459,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-7b56570b0017",
+      "name": "振武",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.1072746836649914,
+          "water": 1.1072746836649914,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.90311827,
+        "arableLand": 162590,
+        "waterCapacity": 162590,
+        "carryingRegime": "strained"
+      }
+    },
+    {
+      "id": "circuit-6a6a3f34f7aa",
+      "name": "天德",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.145446001716177,
+          "water": 1.145446001716177,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.87302238,
+        "arableLand": 112130,
+        "waterCapacity": 112130,
+        "carryingRegime": "strained"
+      }
+    },
+    {
+      "id": "circuit-493d9b5d13f8",
+      "name": "灵盐",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.4463365426360548,
+          "water": 1.4463365426360548,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.69140202,
+        "arableLand": 283171,
+        "waterCapacity": 283171,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-28b4c7d75b79",
+      "name": "夏绥银",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.2384168740372081,
+          "water": 1.2384168740372081,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.80748254,
+        "arableLand": 303079,
+        "waterCapacity": 303079,
+        "carryingRegime": "strained"
+      }
+    },
+    {
+      "id": "circuit-074bed2f1ea6",
+      "name": "鄜坊",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.4749304790983282,
+          "water": 1.4749304790983282,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.67799806,
+        "arableLand": 649729,
+        "waterCapacity": 649729,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-5ba46e32fccb",
+      "name": "邠宁",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.5320748067390422,
+          "water": 1.5320748067390422,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.65270964,
+        "arableLand": 599913,
+        "waterCapacity": 599913,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-8cd0350528f2",
+      "name": "泾原",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.3381504169546814,
+          "water": 1.3381504169546814,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.74730014,
+        "arableLand": 392984,
+        "waterCapacity": 392984,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-0145a6fa4671",
+      "name": "凤翔",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6822171978057525,
+          "water": 1.6822171978057525,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.59445356,
+        "arableLand": 988057,
+        "waterCapacity": 988057,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-109f413f0a02",
+      "name": "义武",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.712692959900532,
+          "water": 1.712692959900532,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.58387582,
+        "arableLand": 1173616,
+        "waterCapacity": 1173616,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-ec9d22a78a77",
+      "name": "义昌",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7294121653065162,
+          "water": 1.7294121653065162,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.57823116,
+        "arableLand": 1523664,
+        "waterCapacity": 1523664,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-e38a346e2c14",
+      "name": "平卢",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6911763669846798,
+          "water": 1.6911763669846798,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.59130438,
+        "arableLand": 2400520,
+        "waterCapacity": 2400520,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-a25f7afbdeab",
+      "name": "天平",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.835294851378045,
+          "water": 1.835294851378045,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.54487158,
+        "arableLand": 1706782,
+        "waterCapacity": 1706782,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-6e4f1fe8c634",
+      "name": "兖海",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6815682548924966,
+          "water": 1.6815682548924966,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.59468297,
+        "arableLand": 1975350,
+        "waterCapacity": 1975350,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-717c4305c5af",
+      "name": "宣武",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6564700814756361,
+          "water": 1.6564700814756361,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.60369337,
+        "arableLand": 1945867,
+        "waterCapacity": 1945867,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-1e3461fb47fe",
+      "name": "义成",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7599995096652137,
+          "water": 1.7599995096652137,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.56818198,
+        "arableLand": 1722904,
+        "waterCapacity": 1722904,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-b3383286d154",
+      "name": "忠武",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7680395750074838,
+          "water": 1.7680395750074838,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5655982,
+        "arableLand": 1990390,
+        "waterCapacity": 1990390,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-404bcc73e13c",
+      "name": "武宁",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.631373276263772,
+          "water": 1.631373276263772,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.6129805,
+        "arableLand": 2076084,
+        "waterCapacity": 2076084,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-214f2de00ef9",
+      "name": "淮南",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.8857143520474733,
+          "water": 1.8857143520474733,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.53030301,
+        "arableLand": 4061131,
+        "waterCapacity": 4061131,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-050164ec911f",
+      "name": "鄂岳",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.73979652958029,
+          "water": 1.73979652958029,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.57477986,
+        "arableLand": 1873439,
+        "waterCapacity": 1873439,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-97031fea1260",
+      "name": "浙西",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.8885420617697717,
+          "water": 1.8885420617697717,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.52950899,
+        "arableLand": 4252094,
+        "waterCapacity": 4252094,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-ee17dba1d328",
+      "name": "浙东",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.5577567173917342,
+          "water": 1.5577567173917342,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.64194876,
+        "arableLand": 2363631,
+        "waterCapacity": 2363631,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-d927658a70b9",
+      "name": "宣歙",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.5662985369397182,
+          "water": 1.5662985369397182,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.63844789,
+        "arableLand": 1379956,
+        "waterCapacity": 1379956,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-7b14a21bfa3f",
+      "name": "福建",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.4342591268386207,
+          "water": 1.4342591268386207,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.69722408,
+        "arableLand": 1333828,
+        "waterCapacity": 1333828,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-0882a98a00d2",
+      "name": "江西",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.821874050295095,
+          "water": 1.821874050295095,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.54888536,
+        "arableLand": 3566947,
+        "waterCapacity": 3566947,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-08f480473cbd",
+      "name": "湖南",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.658190191013928,
+          "water": 1.658190191013928,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.60306713,
+        "arableLand": 2643709,
+        "waterCapacity": 2643709,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-f14dccddb8d4",
+      "name": "荆南",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7263937367200057,
+          "water": 1.7263937367200057,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.57924214,
+        "arableLand": 2035306,
+        "waterCapacity": 2035306,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-1bf9f95c2b9f",
+      "name": "山南东道",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.7402269592414792,
+          "water": 1.7402269592414792,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.57463769,
+        "arableLand": 2122078,
+        "waterCapacity": 2122078,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-9920e4240b5c",
+      "name": "山南西道",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6007801773922898,
+          "water": 1.6007801773922898,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.62469539,
+        "arableLand": 2350560,
+        "waterCapacity": 2350560,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-e9c11698735b",
+      "name": "剑南西川",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.9620380863134803,
+          "water": 1.9620380863134803,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5096741,
+        "arableLand": 4321538,
+        "waterCapacity": 4321538,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-89e9df1066fe",
+      "name": "剑南东川",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.8315141796801448,
+          "water": 1.8315141796801448,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.54599632,
+        "arableLand": 3316885,
+        "waterCapacity": 3316885,
+        "carryingRegime": "abundant"
+      }
+    },
+    {
+      "id": "circuit-a8a3f460b7fa",
+      "name": "黔中",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 0.9575593273613076,
+          "water": 0.9575593273613076,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 1.04432172,
+        "arableLand": 609295,
+        "waterCapacity": 609295,
+        "carryingRegime": "overload"
+      }
+    },
+    {
+      "id": "circuit-53b2ca5109e8",
+      "name": "岭南",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6156239300342812,
+          "water": 1.6156239300342812,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.61895592,
+        "arableLand": 2293278,
+        "waterCapacity": 2293278,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-adc7157939ae",
+      "name": "桂管",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.508541696776991,
+          "water": 1.508541696776991,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.66289185,
+        "arableLand": 626256,
+        "waterCapacity": 626256,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-a539c36cd2c3",
+      "name": "容管",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.4374981925147388,
+          "water": 1.4374981925147388,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.69565305,
+        "arableLand": 347945,
+        "waterCapacity": 347945,
+        "carryingRegime": "sustainable"
+      }
+    },
+    {
+      "id": "circuit-b0922201b667",
+      "name": "邕管",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.2249973823259757,
+          "water": 1.2249973823259757,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.81632828,
+        "arableLand": 479671,
+        "waterCapacity": 479671,
+        "carryingRegime": "strained"
+      }
+    },
+    {
+      "id": "circuit-97a50d999831",
+      "name": "安南",
+      "before": {
+        "carrying": {
+          "farmland": 30000,
+          "water": 80000,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.5,
+        "arableLand": 30000,
+        "waterCapacity": 80000,
+        "carryingRegime": "balanced"
+      },
+      "after": {
+        "carrying": {
+          "farmland": 1.6041669706937363,
+          "water": 1.6041669706937363,
+          "fuel": 1,
+          "housing": 1,
+          "sanitation": 1
+        },
+        "ecoScars": {},
+        "currentLoad": 0.62337651,
+        "arableLand": 1099249,
+        "waterCapacity": 1099249,
+        "carryingRegime": "sustainable"
+      }
+    }
+  ],
+  "firstTickExample": {
+    "id": "circuit-fcbb6db903e5",
+    "before": {
+      "carrying": {
+        "farmland": 30000,
+        "water": 80000,
+        "fuel": 1,
+        "housing": 1,
+        "sanitation": 1,
+        "farmlandSupport": 896910.6250000001,
+        "waterSupport": 1499966.6666666667,
+        "fuelSupport": 749933.3333333334,
+        "housingSupport": 1479894.9000000001,
+        "sanitationSupport": 999950
+      },
+      "ecoScars": {
+        "deforestation": 0.00016666666666666666,
+        "soilErosion": 0.00009999999999999999,
+        "waterTableDrop": 0.00006666666666666667,
+        "riverSilting": 0.00006666666666666667,
+        "soilFertilityLoss": 0.0008333333333333333,
+        "salinization": 0.000033333333333333335,
+        "biodiversityLoss": 0.000033333333333333335,
+        "urbanSewageOverload": 0.00009999999999999999
+      },
+      "currentLoad": 1.7939714641301447,
+      "arableLand": 30000,
+      "waterCapacity": 80000,
+      "carryingRegime": "balanced",
+      "soilFertility": 0.8491666666666666,
+      "overloadYears": null,
+      "carryingMax": 749933.3333333334,
+      "physicalLoad": 1.7939714641301447,
+      "effectiveLoadRelief": 0
+    },
+    "after": {
+      "carrying": {
+        "farmland": 1.669230294664844,
+        "water": 1.669230294664844,
+        "fuel": 1,
+        "housing": 1,
+        "sanitation": 1,
+        "farmlandSupport": 896910.6250000001,
+        "waterSupport": 1499966.6666666667,
+        "fuelSupport": 749933.3333333334,
+        "housingSupport": 1479894.9000000001,
+        "sanitationSupport": 999950
+      },
+      "ecoScars": {
+        "deforestation": 0.00016666666666666666,
+        "soilErosion": 0.00009999999999999999,
+        "waterTableDrop": 0.00006666666666666667,
+        "riverSilting": 0.00006666666666666667,
+        "soilFertilityLoss": 0.0008333333333333333,
+        "salinization": 0.000033333333333333335,
+        "biodiversityLoss": 0.000033333333333333335,
+        "urbanSewageOverload": 0.00009999999999999999
+      },
+      "currentLoad": 1.7939714641301447,
+      "arableLand": 2245714,
+      "waterCapacity": 2245714,
+      "carryingRegime": "sustainable",
+      "soilFertility": 0.8491666666666666,
+      "overloadYears": null,
+      "carryingMax": 749933.3333333334,
+      "physicalLoad": 1.7939714641301447,
+      "effectiveLoadRelief": 0
+    },
+    "note": "overloadYears=null 来自未初始化字段参与运算成为 NaN 的 JSON 序列化；此为两侧都存在的引擎缺口。"
+  }
+}

@@ -75,9 +75,4 @@ const FODDER = {
   ],
 };
 
-// 核查提出、这次不改的建议
-const NOT_APPLIED = [
-  { id: 'R3', target: '京官（宰相、仆射、尚书、侍郎、给舍、台官、九寺五监、郎官、谏官等 116 员）', proposal: '整组按会昌俸钱重定（宰相 140 贯全给钱，其余钱 = 料钱 ÷ 2，布 = 钱 ÷ 1.2，粮不动）', impact: '钱 +1656、布 +1280', reason: '郎中、员外郎、谏议、补阙、拾遗折数 0.38～0.47，出了下限；但单改这五类会使郎中高于侍郎，须把京官一百多个职位逐个对到会昌、贞元数，工作量大，另行处理。' },
-];
-
-module.exports = { FIXES, JIEDU, TROOPS, FODDER, NOT_APPLIED };
+module.exports = { FIXES, JIEDU, TROOPS, FODDER };

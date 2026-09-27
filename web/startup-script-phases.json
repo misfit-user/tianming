@@ -2385,6 +2385,7 @@
         "_offResolveRealmFaction",
         "_offResolveSeat",
         "_offRuntimeWorld",
+        "_offSeatOwnPart",
         "_offSeatPersonInPosition",
         "_offSweepGhostHolders",
         "_offSyncHoldersFromChars",

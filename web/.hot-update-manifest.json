@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.2",
   "entry": "index.html",
-  "generatedAt": "2026-09-27T15:55:54.807Z",
+  "generatedAt": "2026-09-27T16:06:06.259Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -2891,7 +2891,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "ec5d808e4dfccb4b0577f6893bad35dba5a376fca2a495ec410986a60c7708ea",
+      "sha256": "c6efdc6b7d90dd0499cb3a5213217ea50fa65409a014abcc9cc3a36c5c299942",
       "size": 76095
     },
     {
@@ -4136,8 +4136,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "cf5b3bd5f433b0ca38f10317d0c33dda8c7199d4c0712d91980f83ea3ce06720",
-      "size": 382311
+      "sha256": "f4abe456a42c7ad9c1afd1ae7419c9cc8c58f862717f1557bbbd2dd078b4b9b4",
+      "size": 382338
     },
     {
       "path": "styles.css",
@@ -5916,8 +5916,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "6bcc42dc9bc681dc6172d4eeae61d1bd4bef6faf002acde40684e642522fd49d",
-      "size": 107168
+      "sha256": "819fc5333a7605cc46299e3162f77c33732f69ca7a5e60018c16b7b7ad441552",
+      "size": 108034
     },
     {
       "path": "tm-office-vacancy.js",
@@ -6266,7 +6266,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "33d032f02c205b5789e8836df73ebd0735b4669ad054eae1ed6fe21caaf3b29a",
+      "sha256": "e9132d9764930f87cb8b79ad8619ae60c9dcef1f8793de52d9764ce37eff6c04",
       "size": 136220
     },
     {

@@ -1491,11 +1491,23 @@ function _offDeptTokens(deptName) {
   return Object.keys(toks).filter(Boolean);
 }
 
+// 座名里属于部门名的前缀不算职位本身：「东京留守司判官」的「东京留守司」是衙门，判官才是这一座。
+// 诉求本身带着这个部门名时（如「东京留守司判官」「内阁首辅」）照旧按全名比；不带时只拿部门名之后的部分比。
+function _offSeatOwnPart(deptName, posName, claimTitle) {
+  var np = _offNormalizeTitleName(posName);
+  var core = _offNormalizeTitleName(String(deptName || '').replace(/[（(].*?[)）]/g, ''));
+  var ct = _offNormalizeTitleName(claimTitle);
+  if (core.length < 2 || np.length <= core.length || np.indexOf(core) !== 0) return np;
+  if (ct.indexOf(core) >= 0) return np;
+  return np.slice(core.length);
+}
+
 /** 人物某官职诉求 vs 职位槽 评分 (claimTitle, dept名, pos名, 是否既有holder) */
 function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   var ct = _offNormalizeTitleName(claimTitle);
   var np = _offNormalizeTitleName(posName);
   var nd = _offNormalizeTitleName(deptName);
+  var own = _offSeatOwnPart(deptName, posName, claimTitle);
   if (!ct || !np) return 0;
   // A duty or honorary designation is not a substantive office with a similar name.
   // Preserve exact authored seats, including explicitly modeled duty positions.
@@ -1503,9 +1515,9 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
   var sc = 0;
   if (ct === np) sc = 100;
   else if (ct === nd + np) sc = 98;
-  else if (np.indexOf(ct) >= 0 && ct.length >= 3) sc = 88;
+  else if (own.indexOf(ct) >= 0 && ct.length >= 3) sc = 88;
   else if (ct.indexOf(np) >= 0 && np.length >= 3) sc = 86;
-  else if (_offLongestCommonSub(ct, np) >= 4) sc = 76;
+  else if (_offLongestCommonSub(ct, own) >= 4) sc = 76;
   else {
     var core = _offCoreOfPos(posName);
     if (core && ct.indexOf(core) >= 0) {
@@ -1654,7 +1666,7 @@ function _offResolveSeat(dept, position) {
       var s = _offTitleSlotScore(position, n.name, p.name, false);
       if (deptN) { var s2 = _offTitleSlotScore(deptN + claim, n.name, p.name, false); if (s2 > s) s = s2; }  // 容 AI 只写"尚书"靠 dept 补全
       if (s < 60 && p.name.indexOf('·') > 0) {        // 容 AI 写简衔(首辅/次辅/右侍郎)命中座名"·"前的衔头
-        var head = _offNormalizeTitleName(String(p.name).split('·')[0]);
+        var head = _offNormalizeTitleName(_offSeatOwnPart(n.name, p.name, position).split('·')[0]);
         if (head && (claim === head || (head.indexOf(claim) >= 0 && claim.length >= 2))) s = Math.max(s, 82);
       }
       if (s > 0 && deptN) s += dc ? 6 : -30;          // dept 提示:符则微升·不符重罚(防"尚书"跨部门误解析)
@@ -1817,6 +1829,7 @@ function _offSyncHoldersFromChars(opts) {
   });
 
   // ── Pass 2: 贪心填空(余 claims × 余槽容量·按分高优先) ──
+  // 部门名前缀不参与模糊匹配，见 _offSeatOwnPart。
   var pairs = [];
   for (var ci = 0; ci < claims.length; ci++) {
     if (used[ci]) continue;

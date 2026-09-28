@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.3",
   "entry": "index.html",
-  "generatedAt": "2026-09-28T02:50:24.953Z",
+  "generatedAt": "2026-09-28T04:02:08.148Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "67d485201031293aefb63e0c9830883e3d2f5c2d42df0b25e46807bd64ea2a78",
-      "size": 76546
+      "sha256": "32eca0a067a8d33d27a81507b006f5ba26b0b335559de9d2a1c4e86eeaedcece",
+      "size": 76682
     },
     {
       "path": "INDEX.md",
@@ -6251,8 +6251,8 @@
     },
     {
       "path": "tm-office-holder-state.js",
-      "sha256": "b5639e83ed7a7df8a7f19d2e8bbe6a81a26daafdda671944f9d7ff4cfecec5d7",
-      "size": 6204
+      "sha256": "b2b8923f33c53ae3b4ba6dad5a292d5b4a06435469ba6210581c039f1880df54",
+      "size": 6800
     },
     {
       "path": "tm-office-panel.js",
@@ -6286,8 +6286,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "21ae328cd085ffe1e8f40a4d149ac964e161f9e4997943d5ee61781595ec992d",
-      "size": 109969
+      "sha256": "7e6834c7572458e7912dc12bdad7ac0d6838470ff2e22ffdd768e01426130cae",
+      "size": 110292
     },
     {
       "path": "tm-office-vacancy.js",
@@ -6636,8 +6636,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "45ef0f719852237d70d76a131cd479189e0d1538bb9cd251dc9ea778c10689a6",
-      "size": 137263
+      "sha256": "b88ee428be242f2ebe1e8fbc5ed17e28d5e8d531dda9c5596f66d84f44d05d0c",
+      "size": 137399
     },
     {
       "path": "tm-start-selector.js",

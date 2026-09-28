@@ -27,6 +27,13 @@
     var anonymous=Math.max(0,number(p.unrecordedCount,0));
     var declared=number(p.actualCount, null);
     var fromVacancy=p.vacancyCount != null ? Math.max(0,established-number(p.vacancyCount,0)) : 0;
+    // Legacy seat arrays also held empty vacancy placeholders. Explicit actual
+    // and vacancy counts distinguish those rows from anonymous serving people.
+    if(declared!=null || p.vacancyCount!=null) {
+      function definite(h){return !!h.characterId || (h.row.generated!==false && !!h.name) || number(h.row.filledTurn,null)!=null;}
+      var remaining=Math.max(0,Math.max(fromVacancy,declared==null?0:declared)-anonymous-holders.filter(definite).length);
+      holders=holders.filter(function(h){if(definite(h))return true;if(remaining>0){remaining--;return true;}return false;});
+    }
     var actual=Math.max(holders.length+anonymous, fromVacancy, declared == null ? 0 : Math.max(0,declared));
     if (p.occupancyStatus==='unrecorded' && declared==null && p.vacancyCount==null) actual=Math.max(actual,established);
     var named=holders.filter(function(h){return !!h.char;});

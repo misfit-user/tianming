@@ -22,7 +22,14 @@ for(const action of ['经准告病休养','传闻甲受贿','乙受贿，正在�
 test('动机中的负面词不能覆盖行动事实',()=>{const c=env();c.applyNpcActionToDuty(c.GM,{name:'甲',action:'查办账目',reason:'怀疑乙受贿'});near(pos(c)._dutyState.fulfillment,55);});
 test('真实自身失职仍扣分',()=>{const c=env();c.applyNpcActionToDuty(c.GM,{name:'甲',action:'结党营私、敛财避事、称疾不朝'});near(pos(c)._dutyState.fulfillment,44);});
 test('匿名在岗连续两次不会变成空缺',()=>{const c=env();Object.assign(pos(c),{holder:'',holderId:'',actualHolders:[],occupancyStatus:'unrecorded'});c.tickOfficeDutyState(c.GM);c.GM.turn++;c.tickOfficeDutyState(c.GM);near(pos(c)._dutyState.fulfillment,50);assert(!c.buildOfficePowerMap(c.GM).includes('出缺'));assert(c.resolveOfficeAuthority(c.GM,'taxCollect').band!=='vacant');});
-test('有效 ID 无姓名镜像仍识别任职者',()=>{const c=env();pos(c).holder='';c.tickOfficeDutyState(c.GM);assert(pos(c)._dutyState.fulfillment>50);assert(c.buildOfficePowerMap(c.GM).includes('甲'));assert(c.resolveOfficeAuthority(c.GM,'taxCollect').holder==='甲');});
+for(const actual of [0,1,2]) test('旧占位数组按实际人数区分空缺与匿名在岗: '+actual,()=>{
+  const c=env(),p=pos(c);Object.assign(p,{holder:'',holderId:'',headCount:2,establishedCount:2,actualCount:actual,vacancyCount:2-actual,actualHolders:[{generated:false,placeholderId:'a'},{generated:false,placeholderId:'b'}]});
+  const state=c.TM.OfficeHolderState.read(c.GM,p);assert.equal(state.actualCount,actual);assert.equal(state.vacancyCount,2-actual);assert.equal(state.holders.length,actual);
+  vm.runInContext(fs.readFileSync(path.join(root,'tm-office-system.js'),'utf8'),c,{filename:'tm-office-system.js'});
+  c._offMigratePosition(p,c.GM);c._offMigratePosition(p,c.GM);
+  assert.equal(p.actualCount,actual);assert.equal(p.actualHolders.length,actual);assert.equal(c._offOccupancy(p,c.GM).occupied,actual>0);
+});
+test('有效 ID 无姓名镜像仍识别任职者' ,()=>{const c=env();pos(c).holder='';c.tickOfficeDutyState(c.GM);assert(pos(c)._dutyState.fulfillment>50);assert(c.buildOfficePowerMap(c.GM).includes('甲'));assert(c.resolveOfficeAuthority(c.GM,'taxCollect').holder==='甲');});
 test('错误 ID 不得回退同名人',()=>{const c=env();pos(c).holderId='bad';c.tickOfficeDutyState(c.GM);near(pos(c)._dutyState.fulfillment,50);assert(!c.buildOfficePowerMap(c.GM).includes('政90'));});
 test('兼任同领域效果共享工作量',()=>{const c=env();pos(c)._dutyState.fulfillment=90;const one=c.tickOfficeDutyState(c.GM).compliance;const d=env();d.GM.officeTree[0].positions=Array.from({length:5},(_,i)=>Object.assign(seat('p'+i,d.GM.chars[0]),{_dutyState:{fulfillment:90,lastTurn:null}}));near(d.tickOfficeDutyState(d.GM).compliance,one);});
 test('明确第二职位只改变第二职位',()=>{const c=env();c.GM.officeTree[0].positions.push(seat('p2',c.GM.chars[0]));c.applyNpcActionToDuty(c.GM,{name:'甲',positionId:'p2',action:'查办账目'});near(pos(c)._dutyState.fulfillment,50);near(pos(c,1)._dutyState.fulfillment,55);});

@@ -392,7 +392,8 @@ var NpcMemorySystem = {
       if (Array.isArray(meta.participants)) meta.participants = _tmMemoryCanonNameArray(meta.participants);
       if (Array.isArray(meta.witnesses)) meta.witnesses = _tmMemoryCanonNameArray(meta.witnesses);
     }
-    var ch = _tmMemoryFindChar(charName);
+    var ch = meta && meta.characterId != null && typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger
+      ? TM.NPC.ActionLedger.findChar({id:meta.characterId},GM) : _tmMemoryFindChar(charName);
     if (!ch || ch.alive === false) return;
     // 刀B·写闸：生死矛盾检测——AI 幻觉「X已伏诛」而本局 X 在世等，拒写（不落 _memory / _memoryArchiveFull /
     //   _impressions / _relationHistory / 不镜像），只落弱提示账 + console.warn 留痕。宁误放勿误杀。
@@ -402,7 +403,8 @@ var NpcMemorySystem = {
     if (!ch._memArchive) ch._memArchive = [];
 
     // 近窗口完全相同 event 去重(防同一事件每回合重复刷·人物图志记忆清爽·2026-06-13)
-    if (event && ch._memory.length) {
+    if (meta && meta.sourceId && ch._memory.concat(ch._memArchive || []).some(function(m){return m.sourceId === meta.sourceId;})) return;
+    if (!(meta && meta.sourceId) && event && ch._memory.length) {
       for (var _ddi = ch._memory.length - 1, _ddn = 0; _ddi >= 0 && _ddn < 8; _ddi--, _ddn++) {
         if (ch._memory[_ddi] && ch._memory[_ddi].event === event) return;
       }
@@ -424,6 +426,7 @@ var NpcMemorySystem = {
     GM._personalMemorySequence = (Number(GM._personalMemorySequence) || 0) + 1; // arch-ok: owning personal-memory writer allocates its persistent record IDs here
     var memEntry = {
       id: 'npc-memory-' + GM._personalMemorySequence, actorId: ch.id || charName,
+      sourceId: (meta && meta.sourceId) || '',
       taskId: (meta && meta.taskId) || '',
       factStatus: (meta && meta.factStatus) || ((meta && (meta.source === 'reported' || meta.source === 'rumor')) ? 'unverified_claim' : 'personal_experience'),
       sourceRefs: (meta && Array.isArray(meta.sourceRefs)) ? meta.sourceRefs.slice(0, 12) : [],
@@ -452,7 +455,7 @@ var NpcMemorySystem = {
     GM._memoryArchiveFull.push(archiveEntry);
 
     // === 方向11：关系历史快照（favor 变化 ≥5 时记录） ===
-    if (relatedPerson && relatedPerson !== charName) {
+    if (relatedPerson && relatedPerson !== charName && !(meta && meta.relationshipHandled)) {
       if (!ch._impressions) ch._impressions = {};
       if (!ch._impressions[relatedPerson]) ch._impressions[relatedPerson] = { favor: 0, events: [] };
       var imp = ch._impressions[relatedPerson];
@@ -529,7 +532,7 @@ var NpcMemorySystem = {
     // importance 稍衰减（非亲历者记忆稍浅）
     var mirroredImp = Math.max(0.5, (importance || 5) - (asParticipant ? 0 : 1));
     // 镜像 meta·标记 _noMirror 防止死循环
-    var mirroredMeta = Object.assign({}, meta || {}, { _noMirror: true });
+    var mirroredMeta = Object.assign({}, meta || {}, { _noMirror: true, characterId: other.id });
     // 递归调用 remember·但关闭 mirror
     NpcMemorySystem.remember(otherName, mirroredEvent, mirroredEmotion, mirroredImp, originName, mirroredMeta);
   },

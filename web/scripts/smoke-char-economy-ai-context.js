@@ -160,23 +160,19 @@ async function main() {
   assert(richNpc.economy.lastTick && richNpc.economy.lastTick.net === -56,
     'full AI context should expose the last character economy tick');
 
-  const behaviorContext = ctx.buildNpcBehaviorContext();
-  assert(Array.isArray(behaviorContext.characterEconomy) && behaviorContext.characterEconomy.length >= 2,
-    'NPC behavior context should include a characterEconomy list');
-  const richEconomy = behaviorContext.characterEconomy.find(function(e) { return e.name === 'RichMinister'; });
-  const poorEconomy = behaviorContext.characterEconomy.find(function(e) { return e.name === 'PoorScholar'; });
-  assert(richEconomy && richEconomy.privateWealth.money === 8800,
-    'NPC behavior context should expose rich minister private money');
-  assert(richEconomy.publicPurse.money === 30000 && richEconomy.publicTreasury.deficit === 1500,
-    'NPC behavior context should expose public purse and treasury deficit');
-  assert(poorEconomy && poorEconomy.privateWealth.money === -300 && poorEconomy.debt === 300,
-    'NPC behavior context should surface poor or indebted characters');
 
-  await ctx.batchNpcDecisions([chars[0]], behaviorContext, { maxTokens: 800, tier: 'secondary' });
-  assert(/CharacterEconomy\(JSON\)/.test(lastPrompt),
-    'batch NPC prompt should include the character economy block');
-  assert(/RichMinister/.test(lastPrompt) && /8800/.test(lastPrompt) && /publicTreasury/.test(lastPrompt),
-    'batch NPC prompt should carry concrete character economy values');
+  const behaviorContext=ctx.buildNpcBehaviorContext();
+  assert(behaviorContext.characterEconomy.length===0,'public batch excludes private wealth');
+  const richEconomy=ctx.buildNpcBehaviorContext(chars[0]).self.resources;
+  const poorEconomy=ctx.buildNpcBehaviorContext(chars[1]).self.resources;
+  assert(richEconomy.privateWealth.money===8800,'rich NPC knows its recorded private balance');
+  assert(richEconomy.publicTreasury.isReadOnly&&richEconomy.publicTreasury.legacyReported,'legacy treasury mirror is labeled as reported information');
+  assert(poorEconomy.privateWealth.money===-300,'legacy negative balance is preserved as data, without creating a loan or payoff');
+  await ctx.batchNpcDecisions([chars[0]],behaviorContext,{maxTokens:800,tier:'secondary',privateActorId:chars[0].id});
+  assert(lastPrompt.includes('8800')&&lastPrompt.includes('self'),'private packet contains the actor own resources');
+  assert(!lastPrompt.includes('"money":-300'),'private packet cannot contain a different person private ledger');
+  await ctx.batchNpcDecisions(chars,behaviorContext,{maxTokens:800,tier:'secondary'});
+  assert(!lastPrompt.includes('8800'),'common batch contains no private balance');
 
   console.log('[smoke-char-economy-ai-context] PASS ' + passed + ' assertions');
 }

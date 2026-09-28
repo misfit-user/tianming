@@ -1018,6 +1018,7 @@ function _restoreSavedFields(options) {
   if (GM._savedNpcInternalActionHistory) { GM._npcInternalActionHistory = GM._savedNpcInternalActionHistory; delete GM._savedNpcInternalActionHistory; }
   if (GM._savedNpcActionLedger) { GM._npcActionLedger = GM._savedNpcActionLedger; delete GM._savedNpcActionLedger; }
   if (GM._savedNpcPlans) { GM._npcPlans = GM._savedNpcPlans; delete GM._savedNpcPlans; }
+  if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger) TM.NPC.ActionLedger.migrate(GM);
   if (GM._savedNpcDecisionDiagnostics) { GM._npcDecisionDiagnostics = GM._savedNpcDecisionDiagnostics; delete GM._savedNpcDecisionDiagnostics; }
   if (GM._savedNpcFactionAiTurnLedger) { GM._npcFactionAiTurnLedger = GM._savedNpcFactionAiTurnLedger; delete GM._savedNpcFactionAiTurnLedger; }
   if (GM._savedNpcFactionLlmLedger) { GM._npcFactionLlmLedger = GM._savedNpcFactionLlmLedger; delete GM._savedNpcFactionLlmLedger; }

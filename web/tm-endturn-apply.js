@@ -159,6 +159,8 @@
     ensureGroups(ctx);
     var _applyStart = Date.now();
     var p1 = ctx.results.sc1 || null;
+    var _npcLedger = global.TM && global.TM.NPC && global.TM.NPC.ActionLedger;
+    if (_npcLedger) { _npcLedger.advance(GM); _npcLedger.flushDeferred(); }
     if (global.TM && TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
     var sc = ctx.prompt.sc;
     var shizhengji = ctx.record.shizhengji || "";
@@ -255,6 +257,11 @@
         if (p1.npc_actions && Array.isArray(p1.npc_actions)) {
           p1.npc_actions.forEach(function(act) {
             if (!act || !act.action) return;
+            var _actionLedger = global.TM && global.TM.NPC && global.TM.NPC.ActionLedger;
+            if (_actionLedger && _actionLedger.owns(act.behaviorType || act.type)) {
+              _actionLedger.ingest(act, 'main_ai:npc_actions');
+              return;
+            }
             var _officeIdentity = global.TM && global.TM.OfficeHolderState;
             if (_officeIdentity && (act.characterId != null || act.actorId != null)) {
               var _stableActor = _officeIdentity.identity(GM, act.characterId != null ? act.characterId : act.actorId, '').char;
@@ -640,6 +647,12 @@
           if (!GM._pendingNpcLetters) GM._pendingNpcLetters = [];
           var _nlAccepted = 0, _nlSkipNoChar = 0, _nlSkipCapital = 0, _nlSkipMissing = 0;
           p1.npc_letters.forEach(function(nl) {
+            if (global.TM && global.TM.NPC && global.TM.NPC.ActionLedger) {
+              var mailActor=global.TM.NPC.ActionLedger.findChar({id:nl.actorId||nl.characterId,name:nl.from},GM);
+              var mailType=mailActor && typeof _npcIsAtPlayerLocation==='function' && _npcIsAtPlayerLocation(mailActor) ? 'petition' : 'send_letter';
+              global.TM.NPC.ActionLedger.ingest(Object.assign(nl,{behaviorType:mailType}),'main_ai:npc_letters');
+              return;
+            }
             if (!nl.from || !nl.content) { _nlSkipMissing++; return; }
             // 验证from是远方NPC
             var _nlCh = findCharByName(nl.from);
@@ -695,6 +708,10 @@
         if (p1.npc_correspondence && Array.isArray(p1.npc_correspondence)) {
           if (!GM._pendingNpcCorrespondence) GM._pendingNpcCorrespondence = [];
           p1.npc_correspondence.forEach(function(nc) {
+            if (global.TM && global.TM.NPC && global.TM.NPC.ActionLedger) {
+              global.TM.NPC.ActionLedger.ingest(Object.assign(nc, { behaviorType:'private_correspondence' }), 'main_ai:npc_correspondence');
+              return;
+            }
             if (!nc.from || !nc.to) return;
             var _ncF = findCharByName(nc.from), _ncT = findCharByName(nc.to);
             if ((_ncF && (_ncF.alive === false || _ncF.dead)) || (_ncT && (_ncT.alive === false || _ncT.dead))) return; // 死者不参与密信
@@ -4398,6 +4415,11 @@
           var _pName = (P.playerInfo && P.playerInfo.characterName) || '';
           p1.npc_interactions.forEach(function(it) {
             if (!it || !it.type || !it.actor || !it.target) return;
+            var _interactionLedger = global.TM && global.TM.NPC && global.TM.NPC.ActionLedger;
+            if (_interactionLedger && _interactionLedger.owns(it.type)) {
+              _interactionLedger.ingest(it, 'main_ai:npc_interactions');
+              return;
+            }
             // ── 玩家保护：actor=玩家的 autonomous 互动一律过滤（玩家应通过诏令/批奏疏/问对自行操作）──
             if (_pName && (it.actor === _pName)) {
               addEB('\u8FC7\u6EE4', 'AI 试图替玩家 ' + _pName + ' 擅自互动(' + it.type + '→' + it.target + ')，已过滤');
@@ -5045,7 +5067,7 @@
   function _tmNpcLedgerRecord(raw) {
     try {
       var L = _tmNpcLedger();
-      if (L && L.record) L.record(raw, { markHandled: true });
+      if (L && L.record) L.record(raw, { markHandled: false });
     } catch(_npcLedgerRecordErr) {}
   }
 

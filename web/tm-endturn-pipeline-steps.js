@@ -87,6 +87,7 @@
       if (typeof executeNpcBehaviors !== 'function') return;
       if (typeof GM === 'undefined' || !GM) return;
       var queuedTurn = GM.turn || 0;
+      var npcLease = typeof _tmCaptureWorldLease === 'function' ? _tmCaptureWorldLease() : null;
       if (GM._npcBehaviorPostTurnQueued === queuedTurn) return;
       GM._npcBehaviorPostTurnQueued = queuedTurn;
       var runner = async function() {
@@ -95,7 +96,9 @@
           if (TM.Endturn && TM.Endturn.Timing && typeof TM.Endturn.Timing.mark === 'function') {
             TM.Endturn.Timing.mark(ctx, 'background', { id: 'npc_behavior', phase: 'start', turn: queuedTurn });
           }
-          await executeNpcBehaviors();
+          if (npcLease && !_tmWorldLeaseCurrent(npcLease)) return;
+          await executeNpcBehaviors({idle:true});
+          if (npcLease && !_tmWorldLeaseCurrent(npcLease)) return;
           if (typeof _scheduleNpcIdleAutonomyLoop === 'function') {
             _scheduleNpcIdleAutonomyLoop({ source: 'post_render_npc_behavior' });
           }

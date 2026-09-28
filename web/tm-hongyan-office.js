@@ -596,6 +596,17 @@ function _ltReplyToNpc(letterId) {
   renderLetterPanel();
   var ta = _$('letter-textarea');
   if (ta) { ta.focus(); ta.placeholder = '回复' + l.from + '的来函……'; }
+  if (l.npcPlanId && ta && ta.parentNode) {
+    var select = document.createElement('select');
+    select.id = 'npc-plan-reply-choice'; select.setAttribute('aria-label','对此请求的回应');
+    var plan=(GM._npcPlans||[]).find(function(p){return p.id===l.npcPlanId;}),player=(GM.chars||[]).find(function(c){return c.isPlayer;});
+    var view=plan&&player&&TM.NPC.ActionLedger.planView(plan,player);
+    var choices=view&&view.nextPhase==='perform'?[['','请选择回应'],['deliver','提交文书']]:view&&view.nextPhase==='feedback'?[['','请选择回应'],['ack','已收到'],['satisfied','有助于事项'],['unsatisfied','需要改进']]:[['','请选择回应'],['accept','接受'],['reject','拒绝'],['conditions','提出条件'],['defer','延期'],['partial','部分答应']];
+    choices.forEach(function(row){
+      var option=document.createElement('option');option.value=row[0];option.textContent=row[1];select.appendChild(option);
+    });
+    ta.parentNode.insertBefore(select,ta);
+  }
 }
 
 /** 绕过中书门下阻止——改为密旨发出 */
@@ -713,6 +724,17 @@ function sendLetter() {
   var textarea = _$('letter-textarea');
   var content = textarea ? textarea.value.trim() : '';
   if (!content) { toast('请写下信函内容'); return; }
+  var originalPlanLetter=(GM.letters||[]).find(function(l){return l.id===GM._ltReplyingTo&&l.npcPlanId;});
+  if(originalPlanLetter && typeof TM!=='undefined' && TM.NPC && TM.NPC.ActionLedger) {
+    var responseChoice=_$('npc-plan-reply-choice');
+    if(!responseChoice||!responseChoice.value){toast('请明确选择接受、拒绝或调整条件');return;}
+    var response=TM.NPC.ActionLedger.playerRespond(originalPlanLetter.npcPlanId,responseChoice.value,content);
+    if(!response||!/^(submitted|completed)$/.test(response.outcome)){toast(response&&response.reason||'此事项暂不能回应');return;}
+    originalPlanLetter._playerReplied=true;
+    if(textarea)textarea.value='';
+    GM._ltReplyingTo=undefined; // arch-ok letter composer owns clearing its consumed reply selection
+    toast('回应已寄出');renderLetterPanel();return;
+  }
   var urgency = _$('letter-urgency') ? _$('letter-urgency').value : 'normal';
   var letterType = _$('letter-type') ? _$('letter-type').value : 'personal';
   var cipher = _$('letter-cipher') ? _$('letter-cipher').value : 'none';

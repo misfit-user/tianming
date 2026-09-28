@@ -1639,7 +1639,7 @@
       });
       (aiOutput.relations || []).forEach(function(r) {
         if (typeof global.applyNpcInteraction === "function" && r.actor && r.target && r.type) {
-          global.applyNpcInteraction(r.actor, r.target, r.type, r.extra);
+          global.applyNpcInteraction(r.actor, r.target, r.type, Object.assign({}, r, r.extra || {}, { executionMode: r.executionMode || "report" }));
           applied.relations++;
           G._turnReport.push({ type: "relation", actor: r.actor, target: r.target, interaction: r.type, turn: G.turn || 0 });
         }

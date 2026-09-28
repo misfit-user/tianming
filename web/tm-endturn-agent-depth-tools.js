@@ -134,7 +134,8 @@
     if (!npcs.length) return { ok: false, text: '(无可深化的存活角色)' };
     var turn = gm.turn || 0;
     var roster = npcs.map(function (c) { return '· ' + c.name + (c.title ? ('/' + c.title) : '') + (c.faction ? (' 势:' + c.faction) : '') + ' 忠' + (c.loyalty || 50) + ' 野' + (c.ambition || 50) + (c.stress ? (' 压' + c.stress) : '') + (c._mood ? (' 情:' + c._mood) : '') + (c.personalGoal ? (' 求:' + String(c.personalGoal).slice(0, 20)) : ''); }).join('\n');
-    var tp = '本回合发生:\n' + _turnDigest(gm) + '\n\n以下重点人物·请据本回合之事推演各自的内心反应:\n' + roster
+    var relationContext = typeof root.buildNpcBehaviorContext === 'function' ? JSON.stringify(root.buildNpcBehaviorContext()) : roster;
+    var tp = '公开背景:\n' + relationContext + '\n\n以下重点人物·请据本回合之事推演各自的内心反应:\n' + roster
       + '\n\n为每人给出:据本回合实际发生·此人此刻的心绪与暗筹(贴合其忠/野/性格/处境·勿套话)。'
       + '\n⚠【一致性·防人格分裂】若此人在上方【本回合玩家操作】的问对/朝议/书信中已有言行,其内心与暗筹**须与那些言行一致**:问对中慷慨陈词者,内心不应莫名冷淡;朝议中力主某策者,暗筹不应反对该策——除非此人正是表里不一(那也须在 hidden_intent 点明"口是心非·实则…",而非无故矛盾)。'
       + '\n只返回 JSON:\n'
@@ -193,10 +194,11 @@
     var roster = npcs.map(function (c) { return '· ' + c.name + (c.title ? ('/' + c.title) : '') + (c.faction ? (' 势:' + c.faction) : ''); }).join('\n');
     var typeGuide = charTypes.map(function (k) { return k + '(' + (TYPES[k].label || '') + ')'; }).join('、');
     var label2key = {}; charTypes.forEach(function (k) { if (TYPES[k].label) label2key[TYPES[k].label] = k; });
-    var tp = '本回合发生:\n' + _turnDigest(gm) + '\n\n以下重点人物·请据本回合实际发生之事·推演他们之间因本回合而起的关系变化(谁因何与谁交恶/结盟/举荐/弹劾/构陷/和解…):\n' + roster
+    var relationContext = typeof root.buildNpcBehaviorContext === 'function' ? JSON.stringify(root.buildNpcBehaviorContext()) : roster;
+    var tp = '公开背景:\n' + relationContext + '\n\n以下重点人物·请据已知公开事实整理他们之间的关系经历:\n' + roster
       + '\n\n只取本回合真有其事、确有因果的关系变化·勿凭空捏造·勿把日常往来都列上。'
       + '\n可用关系类型(请用括号前的英文 type):' + typeGuide
-      + '\n只返回 JSON:\n{"relations":[{"actor":"发起者姓名","target":"对象姓名","type":"英文type","reason":"因本回合何事(≤25字)"}]}';
+      + '\n只返回 JSON:\n{"relations":[{"actor":"发起者姓名","target":"对象姓名","type":"英文type","reason":"因本回合何事(≤25字)","executionMode":"report","actionId":"已有来源行动ID(若有)"}]}';
     var sys = '你是天命的人物关系史官。据本回合实际发生·推演重点人物之间的关系变化·须有真实因果(本回合确有其事)·勿捏造。只返回 JSON·不要解释。';
     // 时空约束·人物关系深析(reason为自由文本·防「因某人史实伏诛」类越今引后事)·clauseOnly（typeof守卫防加载序）
     if (typeof root._buildTemporalConstraint === 'function') { try { sys += '\n' + root._buildTemporalConstraint(null, { clauseOnly: true }); } catch (_) {} }
@@ -216,7 +218,7 @@
       if (!TYPES[type] || TYPES[type].historyType) return;            // 非法 / 势力级 type 跳过
       if (!names[r.actor] || !names[r.target]) return;                // 须是真实存在的人物
       var ok2 = false;
-      try { ok2 = root.applyNpcInteraction(r.actor, r.target, type, { description: (r.reason || '') + '·本回合推演', visibility: 'court', _agent: true }); }
+      try { ok2 = root.applyNpcInteraction(r.actor, r.target, type, Object.assign({}, r, { executionMode:r.executionMode || 'report', description: (r.reason || '') + '·本回合推演', visibility: 'court', _agent: true })); }
       catch (e) { ok2 = false; }
       if (ok2) {
         applied++;

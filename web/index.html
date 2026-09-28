@@ -560,7 +560,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-traits-data.js?v=20260928-release1353"></script>
 <script src="tm-chronicle-tracker.js?v=20260928-release1353"></script>
 <script src="tm-chronicle-effects.js?v=20260928-release1353"></script>
-<script src="tm-relations.js?v=20260928-release1353"></script>
+<script src="tm-relations.js?v=20260928-npc-actions"></script>
 <!-- 2026-05-01 6系统翻新 phase 0：引擎常量/Typed RelGraph/迁移框架 -->
 <script src="tm-engine-constants.js?v=20260928-release1353"></script>
 <script src="tm-rel-graph.js?v=20260928-release1353"></script>
@@ -589,8 +589,8 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-04-30 Phase 4.5 标准外部记忆适配器（XML/JSON/DSL 入口） -->
 <script src="tm-memory-adapter.js?v=20260928-release1353"></script>
 <!-- R128 (2026-04-25) tm-mechanics.js 拆分 → mechanics + mechanics-world -->
-<script src="tm-mechanics.js?v=20260928-release1353"></script>
-<script src="tm-mechanics-memory.js?v=20260928-release1353"></script>
+<script src="tm-mechanics.js?v=20260928-npc-actions"></script>
+<script src="tm-mechanics-memory.js?v=20260928-npc-actions"></script>
 <script src="tm-mechanics-world.js?v=20260928-release1353"></script>
 <!-- S2 (2026-06-18) 按需取数 agent 工具层：包现有检索 API 为 LLM 可调用工具·供 SC_RECALL agent 分支（开关 P.conf.agentRecallEnabled 默认关） -->
 <script src="tm-agent-kernel.js?v=20260928-release1353"></script>
@@ -647,9 +647,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-office-recall-agent.js?v=20260928-release1353-vacancy"></script>
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
 <script src="tm-npc-engine.js?v=20260928-release1353"></script>
-<script src="tm-npc-action-ledger.js?v=20260928-release1353"></script>
-<script src="tm-npc-decision.js?v=20260928-release1353"></script>
-<script src="tm-npc-decision-ai-driven.js?v=20260928-release1353"></script>
+<script src="tm-npc-action-ledger.js?v=20260928-npc-actions"></script>
+<script src="tm-npc-decision.js?v=20260928-npc-actions"></script>
+<script src="tm-npc-decision-ai-driven.js?v=20260928-npc-actions"></script>
 <!-- R111+R127 拆分 tm-game-engine.js → launch + player-settings + player-core + hongyan-office + game-loop -->
 <script src="tm-promotion.js?v=20260928-release1353"></script>
 <script src="tm-gongming.js?v=20260928-release1353"></script>
@@ -657,9 +657,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-launch.js?v=20260928-release1353"></script>
 <script src="tm-player-settings.js?v=20260928-release1353"></script>
 <script src="tm-player-core.js?v=20260928-release1353"></script>
-<script src="tm-hongyan-office.js?v=20260928-release1353"></script>
-<script src="tm-game-ui-shell.js?v=20260928-release1353"></script>
-<script src="tm-hongyan-edict-ui.js?v=20260928-release1353"></script>
+<script src="tm-hongyan-office.js?v=20260928-npc-actions"></script>
+<script src="tm-game-ui-shell.js?v=20260928-npc-actions"></script>
+<script src="tm-hongyan-edict-ui.js?v=20260928-npc-actions"></script>
 <script src="tm-game-loop.js?v=20260928-release1353"></script>
 <script src="tm-game-loop-wentian-hardchange.js?v=20260928-release1353"></script>
 <script src="tm-map-system.js?v=20260928-release1353"></script>
@@ -668,7 +668,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-dynamic-systems.js?v=20260928-release1353"></script>
 <script src="tm-save-manager.js?v=20260928-release1353"></script>
 <script src="tm-resume-point.js?v=20260928-release1353"></script><!-- 残局接演·发布 payload 构造（Wave4 slice-1·存档→resume 工坊包） -->
-<script src="tm-help-social.js?v=20260928-release1353"></script>
+<script src="tm-help-social.js?v=20260928-npc-actions"></script>
 <!-- R122+R130 拆分 tm-economy-military.js → economy + military + feudal -->
 <script src="tm-economy.js?v=20260928-release1353"></script>
 <script src="tm-military.js?v=20260928-release1353"></script>
@@ -739,10 +739,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-prompt.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-sc1-budget.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai.js?v=20260928-release1353"></script>
-<script src="tm-endturn-apply.js?v=20260928-release1353"></script>
-<script src="tm-endturn-apply-stages.js?v=20260928-release1353"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
-<script src="tm-endturn-followup-helpers.js?v=20260928-release1353"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
-<script src="tm-endturn-followup.js?v=20260928-release1353"></script>
+<script src="tm-endturn-apply.js?v=20260928-npc-actions"></script>
+<script src="tm-endturn-apply-stages.js?v=20260928-npc-actions"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-followup-helpers.js?v=20260928-npc-actions"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
+<script src="tm-endturn-followup.js?v=20260928-npc-actions"></script>
 <script src="tm-endturn-record.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-infer.js?v=20260928-release1353"></script>
 <script src="tm-endturn-reliability.js?v=20260928-release1353"></script>
@@ -756,14 +756,14 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-timing-ledger.js?v=20260928-release1353"></script>
 <script src="tm-endturn-pipeline-executor.js?v=20260928-release1353"></script>
 <script src="tm-endturn-validity.js?v=20260928-release1353"></script>
-<script src="tm-endturn-pipeline-steps.js?v=20260928-release1353"></script>
+<script src="tm-endturn-pipeline-steps.js?v=20260928-npc-actions"></script>
 <!-- 回合推演「模式 b · agent 模式」平行引擎(开关 agentModeEnabled 默认关)·详设 docs/agent-mode-design.md -->
 <script src="tm-endturn-agent-mode.js?v=20260928-release1353"></script>
 <script src="tm-endturn-agent-read-tools.js?v=20260928-release1353"></script>
 <script src="tm-wentian-agent.js?v=20260928-release1353"></script><!-- 问天 agent 模式·先查证后裁定(复用只读工具+callAIWithTools)·默认开可关 -->
 <script src="tm-endturn-agent-write-tools.js?v=20260928-release1353"></script>
-<script src="tm-endturn-agent-depth-tools.js?v=20260928-release1353"></script>
-<script src="tm-endturn-agent-intent-plan.js?v=20260928-release1353"></script>
+<script src="tm-endturn-agent-depth-tools.js?v=20260928-npc-actions"></script>
+<script src="tm-endturn-agent-intent-plan.js?v=20260928-npc-actions"></script>
 <script src="tm-endturn-shiji-compose.js?v=20260928-release1353"></script><!-- 史记弹窗·御览分卷组装·须先于 render 加载（render 调 _composeShijiHtml·alias _renderUnifiedChanges 在此） -->
 <script src="tm-endturn-render.js?v=20260928-release1353"></script>
 <!-- 过回合进度拍表引擎 + 电影化加载层·2026-06-10·见 web/docs/endturn-progress-precision-backlog.md·agent 拍表 2026-06-20 -->
@@ -896,8 +896,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-bgm-config.js?v=20260928-release1353"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260928-release1353"></script>
-<script src="tm-save-world-validation.js?v=20260928-release1353"></script>
-<script src="tm-save-lifecycle.js?v=20260928-release1353"></script>
+<script src="tm-save-world-validation.js?v=20260928-npc-actions"></script>
+<script src="tm-save-lifecycle.js?v=20260928-npc-actions"></script>
 <script src="tm-save-close-flush.js?v=20260928-release1353"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260928-release1353-vacancy"></script>
 <script src="tm-topbar-vars.js?v=20260928-release1353"></script>
@@ -973,7 +973,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-thresholds.js?v=20260928-release1353"></script>
 <script src="tm-fiscal-ui.js?v=20260928-release1353"></script>
 <script src="tm-integration-bridge.js?v=20260928-release1353"></script>
-<script src="tm-public-treasury.js?v=20260928-release1353"></script>
+<script src="tm-public-treasury.js?v=20260928-npc-actions"></script>
 <script src="tm-military-arrears.js?v=20260928-release1353"></script>
 <script src="tm-command-authority.js?v=20260928-release1353"></script>
 <script src="tm-char-economy-ledger.js?v=20260928-release1353"></script>
@@ -999,7 +999,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-change-army.js?v=20260928-release1353"></script>
 <script src="tm-ai-change-narrative.js?v=20260928-release1353"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
-<script src="generated/tm-ai-change-applier.bundle.js?v=20260928-release1353"></script>
+<script src="generated/tm-ai-change-applier.bundle.js?v=20260928-npc-actions"></script>
 <script src="tm-ai-npc-memorials.js?v=20260928-release1353"></script>
 <!-- 侧边抽屉·已合并三代为单文件 (R116a, 2026-04-24) -->
 <script src="tm-var-drawers.js?v=20260928-release1353"></script>

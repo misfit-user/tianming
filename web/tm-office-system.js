@@ -53,6 +53,12 @@ function _offMigratePosition(pos, world) {
     pos.actualHolders=[];pos.additionalHolders=[];pos.additionalHolderIds=[];pos.holder='';pos.holderId='';pos._migrated=true;return;
   }
 
+  // 清除旧数组中代表空缺的占位行，实际人数声明仍保留匿名在岗者。
+  if(Array.isArray(pos.actualHolders)&&pos.actualHolders.some(function(h){return h&&!h.characterId&&(h.generated===false||!h.name);})&&typeof TM!=='undefined'&&TM.OfficeHolderState){
+    var occupiedRows=TM.OfficeHolderState.read(_offRuntimeWorld(world),pos).holders.map(function(h){return h.row;});
+    if(occupiedRows.length!==pos.actualHolders.length)pos.actualHolders=occupiedRows;
+  }
+
   // ── Step 1: 规范老字段 ──
   if (pos.headCount === undefined || pos.headCount === null || pos.headCount === '') pos.headCount = 1;
   if (typeof pos.headCount === 'string') { var _hc = parseInt(pos.headCount, 10); pos.headCount = isNaN(_hc) || _hc < 0 ? 1 : _hc; }
@@ -1915,15 +1921,12 @@ function _offSyncHoldersFromChars(opts) {
       };
     });
     var estab = Math.max(named.length, p.establishedCount || p.headCount || 1);
-    var ki = 0;
-    while (ah.length < estab) {
-      ah.push(keepPlaceholders[ki++] || { name: '', generated: false, placeholderId: 'ph_' + Math.random().toString(36).slice(2, 8) });
-    }
+    // actualHolders 只记录实有占员；空缺由 vacancyCount 表达。
+    ah=ah.concat(keepPlaceholders.slice(0,Math.max(0,estab-ah.length-(p.unrecordedCount||0))));
     p.actualHolders = ah;
     _offSyncLegacyHolderFields(p);
-    // 保留 office_aggregate 的匿名填充占位(generated:false 且有 filledTurn)计入实有
-    var anonFilled = ah.filter(function(h){ return h && h.generated === false && h.filledTurn; }).length;
-    p.actualCount = named.length + anonFilled + (p.unrecordedCount||0);
+    // 已知任职者与有实际人数依据的匿名行统一计数。
+    p.actualCount = ah.length + (p.unrecordedCount||0);
     p.vacancyCount = Math.max(0, estab - p.actualCount);
   });
 

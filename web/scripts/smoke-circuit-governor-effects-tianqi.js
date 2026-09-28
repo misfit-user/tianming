@@ -169,7 +169,13 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
       assert(officialCard(world, circuit).includes('首府不在本方，暂无长官之效'));
       parts.openRegionDossier(farthest.region); assert(context.document.getElementById('ppop').innerHTML.includes(' · 首府失守'));
     });
-    const unbound = Object.values(gm.circuitGovernance.byCircuit).filter(row => row.status === 'unbound'); assert(unbound.length);
+    let unbound = Object.values(gm.circuitGovernance.byCircuit).filter(row => row.status === 'unbound');
+    // 数据补齐主官后本方可能已无未绑定道：临时拿掉北直隶的显式路径与官衔，造出一道来核
+    if (!unbound.length) withFields(node, { governorOffice: undefined, officialPosition: '不存在的官衔' }, () => {
+      gm.turn++; effects.tick(gm, context.P);
+      unbound = Object.values(gm.circuitGovernance.byCircuit).filter(row => row.status === 'unbound');
+    });
+    assert(unbound.length);
     unbound.forEach(row => assert.deepEqual(Object.keys(row).sort(), ['status', 'turn']));
     reset(); effects.tick(gm, context.P); const outside = leaves.find(leaf => !gm.circuitGovernance.byLeaf[leaf.id]);
     assert(outside); gm.circuitGovernance.byLeaf[outside.id] = { exec: -0.06, circuitKey: '旧辖区' };

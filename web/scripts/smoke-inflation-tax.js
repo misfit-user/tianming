@@ -15,7 +15,9 @@ console.log('smoke-inflation-tax');
 
 const fiscal = fs.readFileSync(path.join(ROOT,'tm-fiscal-engine.js'),'utf8');
 const fnSrc = sliceFn(fiscal, 'function computeTaxAmount(');
+const rawSrc = sliceFn(fiscal, 'function rawTaxAmount(');
 ok(!!fnSrc, 'computeTaxAmount 抽取成功');
+ok(!!rawSrc, '共用名义额计算抽取成功');
 ok(/inflationPenalty/.test(fnSrc) && /tax\.storeAs \|\| 'money'\) === 'money'/.test(fnSrc), '源契约:仅 money storeAs 折减');
 ok(/Math\.min\(0\.35, 1 - _pp\)/.test(fnSrc), '源契约:夹 ≤35%');
 ok(/\* \(1 - inflationPenalty\) \*/.test(fnSrc), '源契约:接入权威乘子链');
@@ -29,7 +31,7 @@ function run(storeAs, pp, baseAmt){
   ctx.P = {};
   ctx.global = ctx; // Preserve the real fiscal IIFE closure while testing the extracted function.
 vm.createContext(ctx);
-  vm.runInContext(fnSrc + '\nthis.calc = computeTaxAmount;', ctx);
+  vm.runInContext(rawSrc + '\n' + fnSrc + '\nthis.calc = computeTaxAmount;', ctx);
   return ctx.calc({ corruption:0 }, { storeAs: storeAs, base:'farmland', baseFactor:1, rate:0.1, annual:false }, {});
 }
 

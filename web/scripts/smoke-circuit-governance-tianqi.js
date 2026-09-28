@@ -66,7 +66,8 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
       assert.equal(view.status, 'travelling'); assert.equal(view.travelDaysLeft, 7);
       assert(officialCard(world, circuit).includes('<span class="gv warn">赴任 · 余 7 日</span>'));
     });
-    withFields(node, { officialPosition: '不存在的官衔' }, () => {
+    // 数据补了 governorOffice 后只改官衔解不了绑，须连显式路径一并拿掉
+    withFields(node, { officialPosition: '不存在的官衔', governorOffice: undefined }, () => {
       assert.equal(api.governorOf(gm, circuit, owner).status, 'unbound');
       assert(officialCard(world, circuit).includes('<b>未设主官</b>'));
     });

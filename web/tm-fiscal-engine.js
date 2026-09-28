@@ -229,6 +229,10 @@
 
     if (!G.fiscalConfig) G.fiscalConfig = {};
 
+    // 新开局保存显式税表；读档生命周期会清掉 fresh 标记，旧档不从新剧本迁移。
+    var authored = G._isFreshNewGame === true && G.turn === 1 && global.findScenarioById && global.findScenarioById(G.sid);
+    if (authored && authored.fiscalConfig && authored.fiscalConfig.productionTaxVersion && !G.fiscalConfig.productionTaxVersion) G.fiscalConfig = Object.assign({}, clone(authored.fiscalConfig), G.fiscalConfig); // arch-ok fiscal initializer seeds the declared config only for a fresh opted-in world
+
     var sourceMap = normalizeTaxMap(G.fiscalConfig.taxesEnabled || G.fiscalConfig.taxes || {});
     var dynasty = resolveDynasty(G);
     if (!G.dynasty && dynasty) G.dynasty = dynasty;
@@ -607,6 +611,12 @@
     var override = cfg.factionOverrides && (cfg.factionOverrides[fac.id] || cfg.factionOverrides[fac.name]);
     if (override) copyFields(cfg, override);
     if (fac.fiscalConfig) copyFields(cfg, fac.fiscalConfig);
+    if (cfg.productionTaxVersion && G && !(G.fiscalConfig && G.fiscalConfig.productionTaxVersion) && G._isFreshNewGame !== true) {
+      var oldLayers = [cfg.legacyTaxConfig, global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, fac.fiscalConfig];
+      var saved = Object.assign.apply(Object, [{}].concat(oldLayers.filter(function(c) { return c && !c.productionTaxVersion; })));
+      ['taxList','taxes','customTaxes','centralLocalRules'].forEach(function(k) { if (saved[k] != null) cfg[k] = saved[k]; else delete cfg[k]; });
+      delete cfg.productionTaxVersion;
+    }
     return cfg;
   }
 
@@ -706,7 +716,7 @@
         var base = taxBase(div, tax), yf = tax.annual === false ? 1 : ctx.turnFracOfYear;
         var adjust = cfg.annualFuyi && Number(cfg.annualFuyi.taxRateAdjust);
         var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
-        var nominal = fiscalRound(Math.max(0, base * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0) * yf * fuyi));
+        var nominal = fiscalRound(Math.max(0, rawTaxAmount(div, tax) * yf * fuyi));
         var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*Math.max(0,Math.min(1,safeNumber(div.fiscal.compliance,1))));
         var split = unifiedSplit(div, tax, collected, ctx), r = rec.resources[kind];
         var collection=global.FiscalStatement.collectionTax({nominal:nominal,eligible:eligible,collected:collected,skimmed:split.skimmed,config:Object.assign({},cfg.collection,div.fiscal.collection,tax.collection)});
@@ -726,7 +736,7 @@
           if (!totals.contribByCategory[tag]) totals.contribByCategory[tag] = {};
           totals.contribByCategory[tag][rec.name] = fiscalRound(safeNumber(totals.contribByCategory[tag][rec.name], 0) + split.toCentral);
         }
-        rec.taxes.push({ id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind, base:tax.base, baseValue:base, nominal:nominal, collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit, collection:collection });
+        rec.taxes.push({ id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind, base:tax.base, baseValue:base, productionTax:tax.productionTax || null, taxBasePolicy:tax.taxBasePolicy || '', nominal:nominal, collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit, collection:collection });
       });
       rows.push(rec);
     });
@@ -890,12 +900,12 @@
   function collectUnifiedRevenue(opts) {
     opts=opts || {};var G=getGame(opts.game),fac=budgetFaction(G,opts.faction),player=budgetFaction(G,'player'),marker=fac.id===player.id?G:fac,turn=G.turn||0;
     if(!opts.force&&marker._lastCascadeTaxTurn===turn)return {ok:false,skipped:'already-collected-this-turn'};
-    var snapshot=_captureFiscalTransaction(G,['adminHierarchy','guoku','neitang','facs','officeTree']);
+    var snapshot=_captureFiscalTransaction(G,['adminHierarchy','guoku','neitang','facs','officeTree','_publicTreasuryOpeningTransfers','_publicTreasuryTransfers']);
     try {
       var days=getTurnDays(opts,G),divs=ownedBudgetDivisions(G,fac);
       var budget=previewBudget({game:G,faction:fac.id,turnDays:days}),account=budgetAccount(G,fac);
-      var service=global.TM&&global.TM.PublicTreasury;if(service)service.beginPeriod({game:G,factionId:fac.id,period:budget.period});
-      divs.forEach(function(n){_settleLandFlow(n,{turnDays:days,turnFracOfYear:days/360});});
+      var service=global.TM&&global.TM.PublicTreasury;if(service&&fac.id===player.id&&account.openingFiscalPending){var opening=service.initialize({game:G,settleOpening:true});if(!opening.ok)throw Error('opening transfers failed: '+opening.missing.join(','));}if(service)service.beginPeriod({game:G,factionId:fac.id,period:budget.period});
+      divs.forEach(function(n){_settleLandFlow(n,{turnDays:days,turnFracOfYear:days/360,fiscalConfig:getFiscalConfig(G,fac.id)});});
       ['money','grain','cloth'].forEach(function(k){var led=account.ledgers[k];if(!service)resetTurnLedger(led,false);reconcileLedgerScalar(led,account[k],k==='money'?account.balance:null);Object.keys(budget.totals.sourcesByResource[k]).forEach(function(tag){addToLedger(led,budget.totals.sourcesByResource[k][tag],tag);});});
       budget.regions.forEach(function(row){var n=divs.find(function(d){return (d.id||d.name)===row.id;});writeRegionBudget(n,row,budget,true);if(opts._faultInjector)opts._faultInjector('division',n,budget.totals);});
       var sourceFlows=global.FiscalStatement.budgetFlows(budget,'central');
@@ -904,7 +914,7 @@
       account.taxCollection={period:clone(budget.period),totals:clone(budget.totals),regions:budget.regions.map(function(r){return {id:r.id,name:r.name,resources:clone(r.resources),collection:clone(r.collection)};})};
       account._sourceContributors=clone(budget.totals.contribByCategory);
       marker._lastCascadeTaxTurn=turn;
-      if(fac.id===player.id){G._lastCascadeTurn=turn;G._lastCascadeSummary=budget.totals;} // arch-ok fiscal settlement owns its idempotence and summary
+      if(fac.id===player.id){G._lastCascadeTurn=turn;G._lastCascadeSummary=budget.totals;if(global.GuokuEngine&&global.GuokuEngine.finishOpeningFiscal)global.GuokuEngine.finishOpeningFiscal(G);} // arch-ok fiscal settlement owns its idempotence and summary
       return {ok:true,totals:budget.totals,budget:budget};
     } catch(e){_restoreFiscalTransaction(G,snapshot);throw e;}
   }
@@ -1246,7 +1256,7 @@
   }
 
   // B2/B3a 共用：首回合以剧本量为自然基础，之后按同一口径随人口/田亩浮动；建筑增量沿用 B1 的差额捕获。
-  function settleProductionBase(eb, key, driver, fallbackRate) {
+  function settleProductionBase(eb, key, driver, fallbackRate, acceptLoss) {
     var lastKey = '_' + key + 'NaturalLast', rateKey = '_' + key + 'NaturalRate';
     var driverKey = '_' + key + 'NaturalDriverLast';
     var current = Math.max(0, safeNumber(eb[key], 0));
@@ -1257,6 +1267,10 @@
       // 新开局连显式 0、低于兜底公式的量也保留；不能用 max(剧本值, 人口公式)。
       eb[rateKey] = hasLast ? fallbackRate : (driver > 0 ? current / driver : fallbackRate);
     }
+    if (acceptLoss && hasLast && current < eb[lastKey]) {
+      eb[rateKey] = eb[driverKey] > 0 ? current / eb[driverKey] : 0;
+      eb[lastKey] = current;
+    }
     var natural = hasLast ? (driver === eb[driverKey] ? eb[lastKey] : Math.round(driver * Math.max(0, eb[rateKey]))) : current;
     var built = hasLast ? Math.max(0, current - eb[lastKey]) : 0;
     eb[key] = natural + built;
@@ -1266,6 +1280,13 @@
 
   function _settleLandFlow(div, ctx) {
     if (!div) return null;
+    var declared = ctx && ctx.fiscalConfig;
+    if (declared && declared.productionTaxVersion) {
+      if (!div.economyBase) div.economyBase = {};
+      (declared.taxList || []).forEach(function(t) {
+        if (t.productionTax && !Object.prototype.hasOwnProperty.call(div.economyBase, t.base)) div.economyBase[t.base] = 0;
+      });
+    }
     var eb = _ensureEconomyBase(div);
     if (!eb) return null;
     var turnFrac = safeNumber(ctx && ctx.turnFracOfYear, 30 / 365);
@@ -1338,7 +1359,8 @@
     for (var _pi = 0; _pi < _prodFields.length; _pi++) {
       var _pk = _prodFields[_pi][0], _prate = _prodFields[_pi][1];
       if (_prate <= 0) continue;                                   // 非产区·不浮动(保持 0/剧本值)
-      settleProductionBase(eb, _pk, _mouthsB1, _prate);
+      settleProductionBase(eb, _pk, _mouthsB1, _prate, !!(ctx && ctx.fiscalConfig &&
+        ctx.fiscalConfig.productionTaxVersion && (ctx.fiscalConfig.taxList || []).some(function(t) { return t.productionTax && t.base === _pk; })));
     }
 
     // P1-B3a·皇庄田 imperialFarmland 随 farmland 同步(farmland 已活·皇庄田跟着浮动·imperialDomain 才有)
@@ -1444,10 +1466,13 @@
         if (converted) taxes.push(converted);
       });
     }
+    if (fc && fc.productionTaxVersion) taxes.forEach(function(t) { t._productionTaxScope = true; });
     return taxes;
   }
 
   function taxBase(div, tax) {
+    if (tax._productionTaxScope && Array.isArray(tax.regionIds) && tax.regionIds.indexOf(div.id) < 0) return 0;
+    if (tax.productionTax) return global.FiscalStatement.productionTaxBase(div, tax);
     var eb = _ensureEconomyBase(div) || {};
     var pop = div.populationDetail || (div.population && typeof div.population === 'object' ? div.population : null);
     var mouths = safeNumber(pop && pop.mouths, safeNumber(typeof div.population === 'number' ? div.population : eb.mouths, 0));
@@ -1469,11 +1494,61 @@
     return 0;
   }
 
+  function rawTaxAmount(div, tax) {
+    var amount = taxBase(div, tax) * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0);
+    return tax.productionTax ? global.FiscalStatement.productionTaxAmount(amount, tax.productionTax) : amount;
+  }
+
+  // 方志与旧国库兜底共用征收函数；只在副本上演算，不写库存、自然率或回合标记。
+  function previewRevenue(opts) {
+    opts = opts || {};
+    var G = getGame(opts.game), cfg = getFiscalConfig(G, opts.faction);
+    if (!G || (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G))) return null;
+    var unified = unifiedAccounting(G, opts.faction), year = unified ? 360 : 365;
+    var days = safeNumber(opts.turnDays, year), taxes = normalizeTaxListForCascade(G, cfg), nodes = [];
+    if (opts.division) {
+      (function visit(d) { if (d.children && d.children.length) d.children.forEach(visit); else nodes.push(d); })(opts.division);
+    }
+    else if (unified) nodes = ownedBudgetDivisions(G, budgetFaction(G, opts.faction));
+    else walkAdminDivisions(G, function(d) { nodes.push(d); }, { faction:opts.faction || 'player', leafOnly:true });
+    if (unified) {
+      var budget = budgetRevenue(G, budgetFaction(G, opts.faction), cfg, days, nodes);
+      budget.totals.collected = budget.totals.grossCollected;
+      return Object.assign(budget, {daysPerYear:year, turnDays:days});
+    }
+    var ctx = { game:G, fiscalConfig:cfg, turnDays:days,
+      turnFracOfYear:Math.max(0.01, Math.min(1, days/year)),
+      centralLocalRules:cfg.centralLocalRules || DEFAULT_ALLOCATION,
+      logisticsLoss:safeNumber(cfg.logisticsLoss, DEFAULT_LOGISTICS_LOSS) };
+    var parents = {};
+    walkAdminDivisions(G, function(d, parent) { if (parent) parents[d.id || d.name] = parent; }, {leafOnly:true});
+    return global.FiscalStatement.taxRevenuePreview(nodes, function(node) {
+      var div = clone(node);
+      var parent = parents[node.id || node.name];
+      var tree = parent ? {id:parent.id, name:parent.name, children:[div]} : div;
+      applyDisasterEconomyReduction(Object.assign({}, G, {adminHierarchy:{player:{divisions:[tree]}}}));
+      _ensureRegionFiscal(div, null);
+      if (opts.settleProduction !== false) _settleLandFlow(div, ctx);
+      return taxes.map(function(original) {
+        var tax = original;
+        if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax(G, div, tax, ctx);
+        var kind = tax.storeAs || 'money', adjust = Number(cfg.annualFuyi && cfg.annualFuyi.taxRateAdjust);
+        var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
+        var nominal = rawTaxAmount(div, tax) * (tax.annual ? ctx.turnFracOfYear : 1) * fuyi;
+        var collected = computeTaxAmount(div, original, ctx);
+        var split = splitCascadeAmount(div, original, collected, ctx);
+        return { id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind,
+          base:tax.base, baseValue:taxBase(div,tax), productionTax:tax.productionTax || null, taxBasePolicy:tax.taxBasePolicy || '', nominal:Math.max(0, nominal),
+          collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit };
+      });
+    }, {daysPerYear:year, turnDays:days});
+  }
+
   function computeTaxAmount(div, tax, ctx) {
     if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax((ctx && ctx.game) || getGame(), div, tax, ctx);
     var base = taxBase(div, tax);
     if (base <= 0) return 0;
-    var amount = base * safeNumber(tax.baseFactor, 1) * safeNumber(tax.rate, 0);
+    var amount = rawTaxAmount(div, tax);
     if (tax.annual && ctx && ctx.turnFracOfYear) amount *= ctx.turnFracOfYear;
 
     var corruption = safeNumber(div.corruption, safeNumber(div.corruptionLocal, 0));
@@ -1998,6 +2073,7 @@
     G._lastCascadeTurn = G.turn || 0;
     pushCascadeTurnChanges(G, totals);
     G._lastCascadeTaxTurn = G.turn || 0;
+    if (global.GuokuEngine && global.GuokuEngine.finishOpeningFiscal) global.GuokuEngine.finishOpeningFiscal(G);
     return { ok: true, totals: totals };
     } catch (e) {
       _restoreFiscalTransaction(G, _cascadeTxn);
@@ -2453,6 +2529,7 @@
     G.guoku.annualExpense = Math.round(turnExpense.totalMoney * (365 / Math.max(1, getTurnDays(ctx, G))));
     G._lastFixedExpense = turnExpense;
     G._lastFixedExpenseTurn = G.turn || 0;
+    if (global.GuokuEngine && global.GuokuEngine.finishOpeningFiscal) global.GuokuEngine.finishOpeningFiscal(G);
     return {
       ok: true,
       salary: salary,
@@ -2876,6 +2953,7 @@
     DEFAULT_ALLOCATION: DEFAULT_ALLOCATION,
     collect: cascadeCollect,
     previewBudget: previewBudget,
+    previewRevenue: previewRevenue,
     fundingRegionIds: fundingRegionIds,
     applyBudgetSnapshot: applyBudgetSnapshot,
     settleFactionBudget: settleFactionBudget,

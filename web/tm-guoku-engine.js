@@ -562,10 +562,72 @@
   // 三数对照（与腐败联动）
   // ═════════════════════════════════════════════════════════════
 
+  function openingFiscalPending(G) {
+    G = G || GM;
+    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return false;
+    return !!(G && G.turn === 1 && (G._isFreshNewGame === true || (G.guoku && G.guoku.openingFiscalPending)) && G._lastCascadeTaxTurn == null && G._lastFixedExpenseTurn == null);
+  }
+
+  // 新开局（包括尚未过回合便保存再读回）只写显示预估，不写账本、库存或征收标记。
+  function previewOpeningFiscal(opts) {
+    opts = opts || {};
+    var G = opts.game || GM, days = Number(opts.turnDays) || 30;
+    if (!openingFiscalPending(G) || !G.guoku || !global.CascadeTax) return null;
+    var g = G.guoku, budget = global.CascadeTax.previewBudget({game:G, faction:'player', turnDays:days});
+    if (budget) global.CascadeTax.applyBudgetSnapshot({game:G, faction:'player', budget:budget});
+    else {
+      var revenue = global.CascadeTax.previewRevenue({game:G, faction:'player', turnDays:days});
+      var expense = global.FixedExpense.preview({game:G, turnDays:days});
+      if (!revenue || !expense) return null;
+      g.sources = {}; g.sourcesDetail = {}; // arch-ok: 国库开局预估写口初始化本库显示分目，不写收款账。
+      revenue.regions.forEach(function(region) { region.taxes.forEach(function(t) {
+        if (t.resource !== 'money') return;
+        var key = global.FiscalStatement.flowTag({sourceTag:t.sourceTag || t.id}, 'central', 'in').key;
+        g.sources[key] = (g.sources[key] || 0) + t.central * 365 / days; // arch-ok: 国库写口汇总征收引擎报价，仅供年度收入显示。
+      }); });
+      g.expenses = {fenglu:expense.salary.money*365/days, junxiang:expense.army.money*365/days, neiting:expense.imperial.money*365/days, qita:expense.royal.money*365/days}; // arch-ok: 国库写口维护本库支出预估分类，不扣库存。
+      ['money','grain','cloth'].forEach(function(k) {
+        var suffix = k === 'money' ? '' : k[0].toUpperCase()+k.slice(1), cost = expense['total'+k[0].toUpperCase()+k.slice(1)];
+        ['Income','Expense'].forEach(function(dir) {
+          var amount = dir === 'Income' ? revenue.totals.central[k] : cost;
+          g['turn'+suffix+dir] = amount; // arch-ok: 国库预估写口按资源写本期显示量，不写ledger。
+          g['monthly'+suffix+dir] = Math.round(amount*30/days); // arch-ok: 同一预估折算月显示量。
+          g['annual'+suffix+dir] = Math.round(amount*365/days); // arch-ok: 同一预估折算年显示量。
+        });
+      });
+      g.flowBasis = 'forecast'; g.turnDays = days; g.lastDelta = g.turnIncome-g.turnExpense; // arch-ok: 国库写口标明本库显示为未结算预估。
+    }
+    g.openingFiscalPending = true; // arch-ok: 国库开局写口保留未结算状态供新档重入，非征收完成标记。
+    return {budget:budget};
+  }
+
+  function finishOpeningFiscal(G) {
+    var g = G && G.guoku;
+    if (g && g.openingFiscalPending) { delete g.openingFiscalPending; g.flowBasis = 'actual'; } // arch-ok: 国库结算写口只在财政引擎成功入账后结束开局预估状态。
+  }
+
+  function sourceFiscalConfig() {
+    var cfg = (typeof P !== 'undefined' && P && P.fiscalConfig) || null;
+    if (cfg && cfg.productionTaxVersion && GM._isFreshNewGame !== true && !(GM.fiscalConfig && GM.fiscalConfig.productionTaxVersion)) return cfg.legacyTaxConfig || cfg;
+    return cfg;
+  }
+
+  function declaredProductionForecast() {
+    if (!GM.fiscalConfig || !GM.fiscalConfig.productionTaxVersion || !global.CascadeTax || !global.CascadeTax.previewRevenue) return null;
+    return global.CascadeTax.previewRevenue({game:GM, faction:'player'});
+  }
+
   function computeTaxFlow(annualNominal) {
     if(unifiedFiscalActive()){
       var b=global.CascadeTax.previewBudget({faction:'player',turnDays:360}),n=b.annual.nominal.money,actual=b.annual.central.money+b.annual.localRetain.money;
       return {nominal:n,actualReceived:actual,peasantPaid:b.annual.grossCollected.money,leakageRate:n>0?Math.max(0,1-actual/n):0,overCollectRate:0,purchasingPower:1,compliance:1,huangquanMult:1};
+    }
+    var declared = declaredProductionForecast();
+    if (declared) {
+      var n = declared.totals.nominal.money, actual = declared.totals.central.money;
+      return {nominal:n,actualReceived:actual,peasantPaid:declared.totals.collected.money,
+        leakageRate:n > 0 ? Math.max(0,1-(actual+declared.totals.localRetain.money)/n) : 0,
+        overCollectRate:0,purchasingPower:1,compliance:1,huangquanMult:1};
     }
     // 腐败漏损率
     var leakageRate = 0;
@@ -1899,7 +1961,20 @@
     var _wrappedSources = {};
     Object.keys(_origSources).forEach(function(key) {
       _wrappedSources[key] = function() {
-        var cfg = ((typeof P !== 'undefined' && P.fiscalConfig) || (GM.fiscalConfig) || {}).taxesEnabled;
+        var declared = declaredProductionForecast();
+        if (declared) {
+          var aliases = {tianfu_money:'tianfu',tianfu_silver:'tianfu',ding:'dingshui',yanke:'yanlizhuan',salt_iron:'yanlizhuan',shibo:'shipaiShui',guanshui:'shipaiShui',maritime:'shipaiShui',kuangye:'mining',shangShui:'quanShui',chake:'quanShui',jiuke:'quanShui'}, items = [], total = 0;
+          declared.regions.forEach(function(r) { r.taxes.forEach(function(t) {
+            var category = aliases[t.sourceTag] || t.sourceTag;
+            if (!Object.prototype.hasOwnProperty.call(_origSources, category)) category = 'qita';
+            if (category === key && t.resource === 'money') { total += t.central; items.push({id:t.id,name:t.name,amount:t.central,note:'现行税表年度上解预计'}); }
+          }); });
+          var grouped = {};
+          items.forEach(function(t) { if (!grouped[t.id]) grouped[t.id] = Object.assign({},t,{amount:0}); grouped[t.id].amount += t.amount; });
+          _setSubs(key, Object.keys(grouped).map(function(id) { return grouped[id]; }));
+          return total;
+        }
+        var cfg = (sourceFiscalConfig() || GM.fiscalConfig || {}).taxesEnabled;
         if (cfg && cfg[key] === false) return 0;
         var val = _origSources[key]() || 0;
         var mults = (GM.guoku && GM.guoku.sourceMultipliers) || {};
@@ -2146,7 +2221,7 @@
   // ═════════════════════════════════════════════════════════════
 
   function calcCustomTaxes() {
-    var cfg = ((typeof P !== 'undefined' && P.fiscalConfig) || {}).customTaxes;
+    var cfg = (sourceFiscalConfig() || {}).customTaxes;
     if (!Array.isArray(cfg) || cfg.length === 0) return {};
     var results = {};
     cfg.forEach(function(tax) {
@@ -2171,6 +2246,7 @@
     var _origQita = Sources.qita;
     Sources.qita = function() {
       var base = _origQita() || 0;
+      if (GM.fiscalConfig && GM.fiscalConfig.productionTaxVersion) return base; // customTaxes 已在共用税表中计过
       var custom = calcCustomTaxes();
       var total = base;
       for (var k in custom) total += custom[k].amount;
@@ -2402,6 +2478,9 @@
   // ═════════════════════════════════════════════════════════════
 
   global.GuokuEngine = {
+    openingFiscalPending: openingFiscalPending,
+    previewOpeningFiscal: previewOpeningFiscal,
+    finishOpeningFiscal: finishOpeningFiscal,
     tick: tick,
     syncBattleCasualtyBonus: syncBattleCasualtyBonus,
     ensureModel: ensureGuokuModel,

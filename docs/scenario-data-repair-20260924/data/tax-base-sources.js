@@ -1,0 +1,31 @@
+'use strict';
+// 所有摘录由 patches/tax-base.js 对 sources/p1b2/raw 原文逐字校验。
+module.exports = Object.assign({}, require('./p1b2-sources'), {
+  mingRemit: { file:'明史_卷80.wiki', quote:'商人困守支，戶部尚書葉淇請召商納銀運司，類解太倉，分給各邊。' },
+  mingZheMoney: { file:'明史_卷80.wiki', quote:'歲入太倉餘鹽銀十四萬兩。' },
+  mingLuMoney: { file:'明史_卷80.wiki', quote:'歲入太倉餘鹽銀十二萬兩。' },
+  mingLuQuota: { file:'明史_卷80.wiki', quote:'弘治時，改辦小引鹽十八萬八百餘引。萬歷時同。' },
+  mingShandongMoney: { file:'明史_卷80.wiki', quote:'歲入太倉餘鹽銀五萬兩。' },
+  mingFujianMoney: { file:'明史_卷80.wiki', quote:'歲入太倉銀二萬二千餘兩。' },
+  mingHedongMoney: { file:'明史_卷80.wiki', quote:'歲入太倉銀四千餘兩，給宣府鎮及大同代府祿糧，抵補山西民糧銀，共十九萬兩有奇。' },
+  mingShaanxiMoney: { file:'明史_卷80.wiki', quote:'歲解寧夏、延綏、固原餉銀三萬六千餘兩。' },
+  mingGuangdongMoney: { file:'明史_卷80.wiki', quote:'歲入太倉鹽課銀萬一千餘兩。' },
+  mingSichuanMoney: { file:'明史_卷80.wiki', quote:'歲解陝西鎮鹽課銀七萬一千餘兩。' },
+  mingYunnanMoney: { file:'明史_卷80.wiki', quote:'歲入太倉鹽課銀三萬五千餘兩。' },
+  mingUnquantified: { file:'明史_卷80.wiki', quote:'天啟時，言利者恣蒐括，務增引超掣。魏忠賢黨郭興治、崔呈秀等，巧立名目以取之，所入無算。' },
+  mingShipRate: { file:'東西洋考_卷七.wiki', quote:'陸餉胡椒、蘇木等貨計值一兩者，徵餉二分。' },
+  mingShipLocal: { file:'東西洋考_卷七.wiki', quote:'而水陸官兵月糧、修船、直器、犒賞諸費，歲不下六萬。' },
+  mingShipYear: { file:'東西洋考_卷七.wiki', quote:'二十二年，餉驟溢至二萬九千有奇。' },
+  songSaltSale: { file:'宋史_卷182.wiki', quote:'鹽多則請鈔者眾，所入亦倍，其闕鹽地，客不肯住。' },
+  songSaltBenchmark: { file:'宋史_卷182.wiki', quote:'慶元之初，歲為錢九百九十萬八千有奇' },
+  songSaltCost: { file:'宋史_卷182.wiki', quote:'淮南亭戶貧瘠，官賦本錢六十四萬緡，皆倚辦諸路' },
+  songFujianTax: { file:'宋史_卷183.wiki', quote:'舊法，閩之上四州建、劍、汀、邵行官賣鹽法，閩之下四州福、泉、漳、化行產鹽法。' },
+  songFujianQuota: { file:'宋史_卷183.wiki', quote:'及鈔法既罷，歲令漕司認鈔錢二十萬緡輸行在所榷貨務，自後或減或增，卒為二十二萬緡。' },
+  songGuangSalt: { file:'宋史_卷183.wiki', quote:'南渡，二廣之鹽皆屬於漕司，量諸州歲用而給之鹽。' },
+  songSichuanQuota: { file:'宋史_卷183.wiki', quote:'四路鹽課，縣官之所仰給，然井源或發或微，而積課如舊，任事者多務增課為功，往往貽患後人。' },
+  songMineRate: { file:'建炎以來朝野雜記_甲集_卷十六.wiki', quote:'紹興七年，詔江浙金銀坑冶，並依熙、豐法，召百姓採取，自備物料烹煉，十分為率，官收二分' },
+  songMineRemit: { file:'宋史_卷185.wiki', quote:'初隸諸路轉運司，本錢亦資焉，其物悉歸之內帑。' },
+  songMineRemission: { file:'宋史_卷185.wiki', quote:'諸路坑冶苗礦既微，或舊有今無，悉令蠲損，凡民承買金場並罷。' },
+  tangSaleNotProfit: { file:'新唐書_卷054.wiki', quote:'盡榷天下鹽，斗加時價百錢而出之，為錢一百一十。' },
+  tangWell: { file:'新唐書_卷054.wiki', quote:'皆隨月督課。' }
+});

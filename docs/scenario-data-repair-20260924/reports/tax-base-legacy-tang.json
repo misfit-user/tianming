@@ -1,0 +1,158 @@
+{
+  "scenario": "sc-tang840-840",
+  "sourceRef": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+  "unit": {
+    "money": "贯",
+    "grain": "石",
+    "cloth": "匹"
+  },
+  "method": "doActualStart + actual CascadeTax.collect(force,360 days); legacy year=365, ledger/2=360; fiscal-only, fixed opening seed 840; no AI/network/war/spending",
+  "native": false,
+  "openingProduction": {
+    "saltProduction": 2097084,
+    "mineralProduction": 700000,
+    "maritimeTradeVolume": 177417
+  },
+  "taxes": {
+    "land_silver": {
+      "name": "夏秋两税钱",
+      "base": "taxableHouseholds",
+      "resource": "money",
+      "nominal": 21303655.1564,
+      "central": 5365528.6736,
+      "local": 4944870.1427,
+      "skimmed": 1749865.161,
+      "transit": 342311.2558
+    },
+    "salt_iron": {
+      "name": "东南海盐课利",
+      "base": "seaSaltFiscalAssessment",
+      "resource": "money",
+      "nominal": 10574782.8038,
+      "central": 4922709.3295,
+      "local": 577290.6705,
+      "skimmed": 867385.3758,
+      "transit": 272906.706
+    },
+    "salt_hedong": {
+      "name": "河东两池盐利",
+      "base": "poolSaltFiscalAssessment",
+      "resource": "money",
+      "nominal": 1000000,
+      "central": 565634.16,
+      "local": 0,
+      "skimmed": 71702.4,
+      "transit": 14503.44
+    },
+    "salt_sichuan": {
+      "name": "川峡井盐课利",
+      "base": "wellSaltFiscalAssessment",
+      "resource": "money",
+      "nominal": 635159.1729,
+      "central": 56622.8253,
+      "local": 243377.1748,
+      "skimmed": 52367.8222,
+      "transit": 4221.4683
+    },
+    "salt_retained": {
+      "name": "淄青兖郓留镇盐利",
+      "base": "retainedSaltFiscalAssessment",
+      "resource": "money",
+      "nominal": 1545280.0084,
+      "central": 0,
+      "local": 700000,
+      "skimmed": 145888.2706,
+      "transit": 0
+    },
+    "tea": {
+      "name": "茶课",
+      "base": "teaTaxableSales",
+      "resource": "money",
+      "nominal": 793318.1976,
+      "central": 378563.5795,
+      "local": 21436.4203,
+      "skimmed": 61454.3105,
+      "transit": 28728.4098
+    },
+    "wine": {
+      "name": "榷酒与榷曲课",
+      "base": "wineFiscalAssessment",
+      "resource": "money",
+      "nominal": 3163964.1934,
+      "central": 500912.71,
+      "local": 1059087.2916,
+      "skimmed": 262471.7874,
+      "transit": 28630.9355
+    },
+    "commerce": {
+      "name": "津堰商货课利",
+      "base": "ordinaryTradeFiscalAssessment",
+      "resource": "money",
+      "nominal": 1002592.0377,
+      "central": 193703.9534,
+      "local": 306296.045,
+      "skimmed": 82899.8828,
+      "transit": 10493.4116
+    },
+    "maritime": {
+      "name": "蕃舶舶脚与货课",
+      "base": "maritimeFiscalAssessment",
+      "resource": "money",
+      "nominal": 270647.0087,
+      "central": 38900.2037,
+      "local": 61099.7964,
+      "skimmed": 26258.8223,
+      "transit": 1832.9939
+    },
+    "mining": {
+      "name": "坑冶课利",
+      "base": "miningFiscalAssessment",
+      "resource": "money",
+      "nominal": 153244.4922,
+      "central": 0,
+      "local": 75000.0001,
+      "skimmed": 12400.5125,
+      "transit": 0
+    },
+    "land_grain": {
+      "name": "两税米粟",
+      "base": "arableLand",
+      "resource": "grain",
+      "nominal": 23083832.7992,
+      "central": 3750722.5266,
+      "local": 7513843.9151,
+      "skimmed": 1903365.8847,
+      "transit": 237480.3166
+    },
+    "land_cloth": {
+      "name": "两税折纳绢布",
+      "base": "taxableHouseholds",
+      "resource": "cloth",
+      "nominal": 8644723.2431,
+      "central": 1745055.2905,
+      "local": 2465954.956,
+      "skimmed": 710070.6389,
+      "transit": 111709.4791
+    }
+  },
+  "central": {
+    "money": 12022575.435,
+    "grain": 3750722.5266,
+    "cloth": 1745055.2905
+  },
+  "local": {
+    "money": 7988457.5414,
+    "grain": 7513843.9151,
+    "cloth": 2465954.956
+  },
+  "sensitivity": [],
+  "legacyCompatibility": {
+    "newScenarioDefaults": true,
+    "sameVM": true,
+    "allTaxRowsAndDestinationsIdentical": true,
+    "storedConfigKeys": [
+      "taxes",
+      "taxesEnabled"
+    ]
+  }
+}

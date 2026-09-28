@@ -1,0 +1,35 @@
+{
+  "head": "e1c8384c",
+  "canonical": [
+    {
+      "scenario": "天启七年·九月（官方）.json",
+      "md5": "793a0db09e944021a1d366d3b7d2c30d",
+      "byteFormat": true
+    },
+    {
+      "scenario": "绍宋·建炎元年八月（官方）.json",
+      "md5": "c6c5d51f4272f640dcb59f9fb0ca2141",
+      "byteFormat": true
+    },
+    {
+      "scenario": "晚唐·开成五年（官方）.json",
+      "md5": "ce7546a2299168835514a4f19303aa03",
+      "byteFormat": true
+    }
+  ],
+  "manifestEntries": 3,
+  "reportJsonValid": true,
+  "runtimeSyntaxValid": [
+    "web/tm-fiscal-engine.js",
+    "web/tm-fiscal-statements.js",
+    "web/tm-game-loop.js",
+    "web/tm-guoku-engine.js",
+    "web/tm-patches-start.js",
+    "web/tm-public-treasury.js",
+    "web/tm-endturn-province.js",
+    "web/scripts/smoke-opening-treasury-fiscal.js",
+    "web/scripts/smoke-tax-production-base.js",
+    "web/scripts/smoke-tang840-fiscal-detail.js"
+  ],
+  "partialWriteFound": false
+}

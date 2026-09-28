@@ -1,0 +1,2495 @@
+{
+  "scenario": "sc-tianqi7-1627",
+  "sourceRef": "working-tree",
+  "unit": {
+    "money": "两",
+    "grain": "石",
+    "cloth": "匹"
+  },
+  "method": "doActualStart + actual CascadeTax.collect(force,360 days); legacy year=365, ledger/2=360; fiscal-only, fixed opening seed 840; no AI/network/war/spending",
+  "native": false,
+  "openingProduction": {
+    "saltProduction": 513979250,
+    "mineralProduction": 11200000,
+    "maritimeTradeVolume": 14876000
+  },
+  "taxes": {
+    "land_silver": {
+      "name": "田赋折银（条编）",
+      "base": "arableLand",
+      "resource": "money",
+      "nominal": 7796329.2592,
+      "central": 1976295,
+      "local": 1369750,
+      "skimmed": 871014,
+      "transit": 348756
+    },
+    "caoliang": {
+      "name": "漕粮（本色）",
+      "base": "arableLand",
+      "resource": "grain",
+      "nominal": 4009534.6689,
+      "central": 1016376,
+      "local": 704441,
+      "skimmed": 447951,
+      "transit": 179366
+    },
+    "salt_lu": {
+      "name": "长芦盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 118356.1644,
+      "central": 40376,
+      "local": 0,
+      "skimmed": 19462,
+      "transit": 7126
+    },
+    "liaoxiang": {
+      "name": "辽饷加派",
+      "base": "arableLand",
+      "resource": "money",
+      "nominal": 5011918.3361,
+      "central": 1814965,
+      "local": 0,
+      "skimmed": 799909,
+      "transit": 320279
+    },
+    "chama": {
+      "name": "茶马司",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 118356.1644,
+      "central": 28981,
+      "local": 20197,
+      "skimmed": 13035,
+      "transit": 5114
+    },
+    "chaoguan": {
+      "name": "钞关过货税",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 591780.8219,
+      "central": 144902,
+      "local": 101002,
+      "skimmed": 65172,
+      "transit": 25570
+    },
+    "junhu": {
+      "name": "军户屯田",
+      "base": "mouths",
+      "resource": "money",
+      "nominal": 345205.4795,
+      "central": 84523,
+      "local": 58920,
+      "skimmed": 38010,
+      "transit": 14919
+    },
+    "salt_zhe": {
+      "name": "两浙盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 138082.1918,
+      "central": 49730,
+      "local": 0,
+      "skimmed": 23739,
+      "transit": 8775
+    },
+    "salt_iron": {
+      "name": "两淮盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 1430136.9863,
+      "central": 548939,
+      "local": 0,
+      "skimmed": 182311,
+      "transit": 96871
+    },
+    "salt_fujian": {
+      "name": "福建盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 21698.6301,
+      "central": 7852,
+      "local": 0,
+      "skimmed": 3651,
+      "transit": 1385
+    },
+    "guanshui": {
+      "name": "月港陆饷",
+      "base": "maritimeTradeVolume",
+      "resource": "money",
+      "nominal": 26162.9458,
+      "central": 0,
+      "local": 15199,
+      "skimmed": 0,
+      "transit": 0
+    },
+    "salt_lu_shandong": {
+      "name": "山东盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 49315.0685,
+      "central": 18795,
+      "local": 0,
+      "skimmed": 7928,
+      "transit": 3317
+    },
+    "salt_hedong": {
+      "name": "河东盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 187397.2603,
+      "central": 1445,
+      "local": 108289,
+      "skimmed": 629,
+      "transit": 255
+    },
+    "salt_shaanxi": {
+      "name": "陕西盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 35506.8493,
+      "central": 0,
+      "local": 18122,
+      "skimmed": 0,
+      "transit": 0
+    },
+    "salt_sichuan": {
+      "name": "四川盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 70027.3973,
+      "central": 0,
+      "local": 41560,
+      "skimmed": 0,
+      "transit": 0
+    },
+    "salt_guangdong": {
+      "name": "广东海北盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 10849.3151,
+      "central": 4001,
+      "local": 0,
+      "skimmed": 1854,
+      "transit": 705
+    },
+    "salt_yunnan": {
+      "name": "云南盐课",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 34520.5479,
+      "central": 12993,
+      "local": 0,
+      "skimmed": 5749,
+      "transit": 2293
+    }
+  },
+  "central": {
+    "money": 4733797,
+    "grain": 1016376,
+    "cloth": 0
+  },
+  "local": {
+    "money": 1733039,
+    "grain": 704441,
+    "cloth": 0
+  },
+  "previewMatches": true,
+  "sensitivity": [
+    {
+      "driver": "production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 411183399.99999994,
+        "mineralProduction": 8960000,
+        "maritimeTradeVolume": 11900800
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7796329.2592,
+          "central": 1976295,
+          "local": 1369750,
+          "skimmed": 871014,
+          "transit": 348756
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4009534.6689,
+          "central": 1016376,
+          "local": 704441,
+          "skimmed": 447951,
+          "transit": 179366
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 94684.9315,
+          "central": 32300,
+          "local": 0,
+          "skimmed": 15570,
+          "transit": 5700
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5011918.3361,
+          "central": 1814965,
+          "local": 0,
+          "skimmed": 799909,
+          "transit": 320279
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 28981,
+          "local": 20197,
+          "skimmed": 13035,
+          "transit": 5114
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 591780.8219,
+          "central": 144902,
+          "local": 101002,
+          "skimmed": 65172,
+          "transit": 25570
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 345205.4795,
+          "central": 84523,
+          "local": 58920,
+          "skimmed": 38010,
+          "transit": 14919
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 110465.7534,
+          "central": 39784,
+          "local": 0,
+          "skimmed": 18991,
+          "transit": 7020
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1144109.589,
+          "central": 439151,
+          "local": 0,
+          "skimmed": 145849,
+          "transit": 77497
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 17358.9041,
+          "central": 6282,
+          "local": 0,
+          "skimmed": 2920,
+          "transit": 1109
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 20930.3566,
+          "central": 0,
+          "local": 12159,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39452.0548,
+          "central": 15036,
+          "local": 0,
+          "skimmed": 6341,
+          "transit": 2655
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 149917.8082,
+          "central": 1156,
+          "local": 86631,
+          "skimmed": 503,
+          "transit": 204
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 28405.4795,
+          "central": 0,
+          "local": 14497,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 56021.9178,
+          "central": 0,
+          "local": 33249,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 8679.4521,
+          "central": 3200,
+          "local": 0,
+          "skimmed": 1483,
+          "transit": 564
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 27616.4384,
+          "central": 10393,
+          "local": 0,
+          "skimmed": 4599,
+          "transit": 1834
+        }
+      },
+      "central": {
+        "money": 4596968,
+        "grain": 1016376,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1696405,
+        "grain": 704441,
+        "cloth": 0
+      }
+    },
+    {
+      "driver": "production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 616775100,
+        "mineralProduction": 13440000,
+        "maritimeTradeVolume": 17851200
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7796329.2592,
+          "central": 1976295,
+          "local": 1369750,
+          "skimmed": 871014,
+          "transit": 348756
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4009534.6689,
+          "central": 1016376,
+          "local": 704441,
+          "skimmed": 447951,
+          "transit": 179366
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 142027.3973,
+          "central": 48450,
+          "local": 0,
+          "skimmed": 23354,
+          "transit": 8549
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5011918.3361,
+          "central": 1814965,
+          "local": 0,
+          "skimmed": 799909,
+          "transit": 320279
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 28981,
+          "local": 20197,
+          "skimmed": 13035,
+          "transit": 5114
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 591780.8219,
+          "central": 144902,
+          "local": 101002,
+          "skimmed": 65172,
+          "transit": 25570
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 345205.4795,
+          "central": 84523,
+          "local": 58920,
+          "skimmed": 38010,
+          "transit": 14919
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 165698.6301,
+          "central": 59674,
+          "local": 0,
+          "skimmed": 28488,
+          "transit": 10530
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1716164.3836,
+          "central": 658727,
+          "local": 0,
+          "skimmed": 218773,
+          "transit": 116246
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 26038.3562,
+          "central": 9423,
+          "local": 0,
+          "skimmed": 4381,
+          "transit": 1663
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 31395.5349,
+          "central": 0,
+          "local": 18239,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 59178.0822,
+          "central": 22555,
+          "local": 0,
+          "skimmed": 9513,
+          "transit": 3980
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224876.7123,
+          "central": 1734,
+          "local": 129946,
+          "skimmed": 755,
+          "transit": 306
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 42608.2192,
+          "central": 0,
+          "local": 21746,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 84032.8767,
+          "central": 0,
+          "local": 49875,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 13019.1781,
+          "central": 4801,
+          "local": 0,
+          "skimmed": 2223,
+          "transit": 846
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 41424.6575,
+          "central": 15591,
+          "local": 0,
+          "skimmed": 6900,
+          "transit": 2751
+        }
+      },
+      "central": {
+        "money": 4870621,
+        "grain": 1016376,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1769675,
+        "grain": 704441,
+        "cloth": 0
+      }
+    },
+    {
+      "driver": "population-held-production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7830736.3726,
+          "central": 1964813,
+          "local": 1361743,
+          "skimmed": 865842,
+          "transit": 346729
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4027235.8488,
+          "central": 1010475,
+          "local": 700336,
+          "skimmed": 445293,
+          "transit": 178317
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1430136.9863,
+          "central": 547136,
+          "local": 0,
+          "skimmed": 181566,
+          "transit": 96553
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 138082.1918,
+          "central": 49419,
+          "local": 0,
+          "skimmed": 23575,
+          "transit": 8720
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 40238,
+          "local": 0,
+          "skimmed": 19383,
+          "transit": 7101
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 49315.0685,
+          "central": 18602,
+          "local": 0,
+          "skimmed": 7846,
+          "transit": 3283
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 21698.6301,
+          "central": 7769,
+          "local": 0,
+          "skimmed": 3612,
+          "transit": 1370
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 187397.2603,
+          "central": 1430,
+          "local": 107160,
+          "skimmed": 622,
+          "transit": 252
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 35506.8493,
+          "central": 0,
+          "local": 17683,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 10849.3151,
+          "central": 3959,
+          "local": 0,
+          "skimmed": 1833,
+          "transit": 698
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 70027.3973,
+          "central": 0,
+          "local": 41111,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 34520.5479,
+          "central": 12853,
+          "local": 0,
+          "skimmed": 5688,
+          "transit": 2267
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 26162.9458,
+          "central": 0,
+          "local": 15039,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5034044.811,
+          "central": 1804418,
+          "local": 0,
+          "skimmed": 795158,
+          "transit": 318428
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 94684.9315,
+          "central": 22937,
+          "local": 15995,
+          "skimmed": 10318,
+          "transit": 4046
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 473424.6575,
+          "central": 114718,
+          "local": 79949,
+          "skimmed": 51578,
+          "transit": 20236
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 276164.3836,
+          "central": 66903,
+          "local": 46648,
+          "skimmed": 30083,
+          "transit": 11814
+        }
+      },
+      "central": {
+        "money": 4655195,
+        "grain": 1010475,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1685328,
+        "grain": 700336,
+        "cloth": 0
+      }
+    },
+    {
+      "driver": "population-held-production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7830736.3726,
+          "central": 2001325,
+          "local": 1387208,
+          "skimmed": 882279,
+          "transit": 353179
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4027235.8488,
+          "central": 1029262,
+          "local": 713418,
+          "skimmed": 453746,
+          "transit": 181640
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1430136.9863,
+          "central": 552794,
+          "local": 0,
+          "skimmed": 183445,
+          "transit": 97552
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 138082.1918,
+          "central": 49931,
+          "local": 0,
+          "skimmed": 23820,
+          "transit": 8811
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 40796,
+          "local": 0,
+          "skimmed": 19665,
+          "transit": 7200
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 49315.0685,
+          "central": 18795,
+          "local": 0,
+          "skimmed": 7928,
+          "transit": 3317
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 21698.6301,
+          "central": 7936,
+          "local": 0,
+          "skimmed": 3690,
+          "transit": 1401
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 187397.2603,
+          "central": 1460,
+          "local": 109417,
+          "skimmed": 635,
+          "transit": 258
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 35506.8493,
+          "central": 0,
+          "local": 18560,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 10849.3151,
+          "central": 4044,
+          "local": 0,
+          "skimmed": 1873,
+          "transit": 714
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 70027.3973,
+          "central": 0,
+          "local": 42464,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 34520.5479,
+          "central": 13271,
+          "local": 0,
+          "skimmed": 5873,
+          "transit": 2341
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 26162.9458,
+          "central": 0,
+          "local": 15359,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5034044.811,
+          "central": 1837963,
+          "local": 0,
+          "skimmed": 810268,
+          "transit": 324345
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 142027.3973,
+          "central": 35087,
+          "local": 24469,
+          "skimmed": 15784,
+          "transit": 6188
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 710136.9863,
+          "central": 175452,
+          "local": 122295,
+          "skimmed": 78926,
+          "transit": 30957
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 414246.5753,
+          "central": 102343,
+          "local": 71338,
+          "skimmed": 46041,
+          "transit": 18066
+        }
+      },
+      "central": {
+        "money": 4841197,
+        "grain": 1029262,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1791110,
+        "grain": 713418,
+        "cloth": 0
+      }
+    },
+    {
+      "driver": "population-with-production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7796329.2592,
+          "central": 1956455,
+          "local": 1355893,
+          "skimmed": 862005,
+          "transit": 345252
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4009534.6689,
+          "central": 1006172,
+          "local": 697320,
+          "skimmed": 443324,
+          "transit": 177559
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 40238,
+          "local": 0,
+          "skimmed": 19383,
+          "transit": 7101
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5011918.3361,
+          "central": 1796738,
+          "local": 0,
+          "skimmed": 791647,
+          "transit": 317074
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 94684.9315,
+          "central": 22937,
+          "local": 15995,
+          "skimmed": 10318,
+          "transit": 4046
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 473424.6575,
+          "central": 114718,
+          "local": 79949,
+          "skimmed": 51578,
+          "transit": 20236
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 276164.3836,
+          "central": 66903,
+          "local": 46648,
+          "skimmed": 30083,
+          "transit": 11814
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 138082.1918,
+          "central": 49419,
+          "local": 0,
+          "skimmed": 23575,
+          "transit": 8720
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1430136.9863,
+          "central": 547136,
+          "local": 0,
+          "skimmed": 181566,
+          "transit": 96553
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 21698.6301,
+          "central": 7769,
+          "local": 0,
+          "skimmed": 3612,
+          "transit": 1370
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 26162.9458,
+          "central": 0,
+          "local": 15039,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 49315.0685,
+          "central": 18602,
+          "local": 0,
+          "skimmed": 7846,
+          "transit": 3283
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 187397.2603,
+          "central": 1430,
+          "local": 107160,
+          "skimmed": 622,
+          "transit": 252
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 35506.8493,
+          "central": 0,
+          "local": 17683,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 70027.3973,
+          "central": 0,
+          "local": 41111,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 10849.3151,
+          "central": 3959,
+          "local": 0,
+          "skimmed": 1833,
+          "transit": 698
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 34520.5479,
+          "central": 12853,
+          "local": 0,
+          "skimmed": 5688,
+          "transit": 2267
+        }
+      },
+      "central": {
+        "money": 4639157,
+        "grain": 1006172,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1679478,
+        "grain": 697320,
+        "cloth": 0
+      }
+    },
+    {
+      "driver": "population-with-production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 7796333.9954,
+          "central": 1992808,
+          "local": 1381231,
+          "skimmed": 878384,
+          "transit": 351672
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 4009534.6689,
+          "central": 1024879,
+          "local": 710344,
+          "skimmed": 451742,
+          "transit": 180865
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 118356.1644,
+          "central": 40796,
+          "local": 0,
+          "skimmed": 19665,
+          "transit": 7200
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5011918.3361,
+          "central": 1830132,
+          "local": 0,
+          "skimmed": 806674,
+          "transit": 322961
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 142027.3973,
+          "central": 35087,
+          "local": 24469,
+          "skimmed": 15784,
+          "transit": 6188
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 710136.9863,
+          "central": 175452,
+          "local": 122295,
+          "skimmed": 78926,
+          "transit": 30957
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 414246.5753,
+          "central": 102343,
+          "local": 71338,
+          "skimmed": 46041,
+          "transit": 18066
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 138082.1918,
+          "central": 49931,
+          "local": 0,
+          "skimmed": 23820,
+          "transit": 8811
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1430136.9863,
+          "central": 552794,
+          "local": 0,
+          "skimmed": 183445,
+          "transit": 97552
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 21698.6301,
+          "central": 7936,
+          "local": 0,
+          "skimmed": 3690,
+          "transit": 1401
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 26162.9458,
+          "central": 0,
+          "local": 15359,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 49315.0685,
+          "central": 18795,
+          "local": 0,
+          "skimmed": 7928,
+          "transit": 3317
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 187397.2603,
+          "central": 1460,
+          "local": 109417,
+          "skimmed": 635,
+          "transit": 258
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 35506.8493,
+          "central": 0,
+          "local": 18560,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 70027.3973,
+          "central": 0,
+          "local": 42464,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 10849.3151,
+          "central": 4044,
+          "local": 0,
+          "skimmed": 1873,
+          "transit": 714
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 34520.5479,
+          "central": 13271,
+          "local": 0,
+          "skimmed": 5873,
+          "transit": 2341
+        }
+      },
+      "central": {
+        "money": 4824849,
+        "grain": 1024879,
+        "cloth": 0
+      },
+      "local": {
+        "money": 1785133,
+        "grain": 710344,
+        "cloth": 0
+      }
+    }
+  ],
+  "turns": [
+    {
+      "turn": 2,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217491.9849,
+          "central": 55121,
+          "local": 38223,
+          "skimmed": 24302,
+          "transit": 9728
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111844.6925,
+          "central": 28347,
+          "local": 19655,
+          "skimmed": 12488,
+          "transit": 5004
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139807.1562,
+          "central": 50633,
+          "local": 0,
+          "skimmed": 22318,
+          "transit": 8929
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131913,
+        "grain": 28347,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48326,
+        "grain": 19655,
+        "cloth": 0
+      }
+    },
+    {
+      "turn": 3,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217465.4536,
+          "central": 55118,
+          "local": 38223,
+          "skimmed": 24299,
+          "transit": 9726
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111831.048,
+          "central": 28343,
+          "local": 19654,
+          "skimmed": 12487,
+          "transit": 5004
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139790.1006,
+          "central": 50629,
+          "local": 0,
+          "skimmed": 22318,
+          "transit": 8928
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131906,
+        "grain": 28343,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48326,
+        "grain": 19654,
+        "cloth": 0
+      }
+    },
+    {
+      "turn": 4,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217438.9272,
+          "central": 55110,
+          "local": 38218,
+          "skimmed": 24295,
+          "transit": 9724
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111817.4061,
+          "central": 28337,
+          "local": 19653,
+          "skimmed": 12486,
+          "transit": 5003
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139773.0482,
+          "central": 50622,
+          "local": 0,
+          "skimmed": 22315,
+          "transit": 8923
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131891,
+        "grain": 28337,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48321,
+        "grain": 19653,
+        "cloth": 0
+      }
+    },
+    {
+      "turn": 5,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217412.4055,
+          "central": 55105,
+          "local": 38213,
+          "skimmed": 24292,
+          "transit": 9723
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111803.7665,
+          "central": 28335,
+          "local": 19650,
+          "skimmed": 12484,
+          "transit": 5002
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139755.9987,
+          "central": 50613,
+          "local": 0,
+          "skimmed": 22311,
+          "transit": 8920
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131877,
+        "grain": 28335,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48316,
+        "grain": 19650,
+        "cloth": 0
+      }
+    },
+    {
+      "turn": 6,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217385.8883,
+          "central": 55099,
+          "local": 38207,
+          "skimmed": 24289,
+          "transit": 9721
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111790.1293,
+          "central": 28331,
+          "local": 19650,
+          "skimmed": 12484,
+          "transit": 5002
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139738.9522,
+          "central": 50606,
+          "local": 0,
+          "skimmed": 22309,
+          "transit": 8920
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131864,
+        "grain": 28331,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48310,
+        "grain": 19650,
+        "cloth": 0
+      }
+    },
+    {
+      "turn": 7,
+      "days": 10,
+      "production": {
+        "saltProduction": 513979250,
+        "mineralProduction": 11200000,
+        "maritimeTradeVolume": 14876000
+      },
+      "taxes": {
+        "land_silver": {
+          "name": "田赋折银（条编）",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 217359.3781,
+          "central": 55091,
+          "local": 38200,
+          "skimmed": 24285,
+          "transit": 9720
+        },
+        "caoliang": {
+          "name": "漕粮（本色）",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 111776.4957,
+          "central": 28328,
+          "local": 19649,
+          "skimmed": 12484,
+          "transit": 5002
+        },
+        "salt_lu": {
+          "name": "长芦盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3287.6712,
+          "central": 1121,
+          "local": 0,
+          "skimmed": 540,
+          "transit": 198
+        },
+        "liaoxiang": {
+          "name": "辽饷加派",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 139721.9102,
+          "central": 50602,
+          "local": 0,
+          "skimmed": 22306,
+          "transit": 8919
+        },
+        "chama": {
+          "name": "茶马司",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 3218.7051,
+          "central": 797,
+          "local": 554,
+          "skimmed": 356,
+          "transit": 137
+        },
+        "chaoguan": {
+          "name": "钞关过货税",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 16433.1393,
+          "central": 4018,
+          "local": 2819,
+          "skimmed": 1807,
+          "transit": 705
+        },
+        "junhu": {
+          "name": "军户屯田",
+          "base": "mouths",
+          "resource": "money",
+          "nominal": 9571.0379,
+          "central": 2341,
+          "local": 1642,
+          "skimmed": 1052,
+          "transit": 416
+        },
+        "salt_zhe": {
+          "name": "两浙盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 3835.6164,
+          "central": 1382,
+          "local": 0,
+          "skimmed": 660,
+          "transit": 244
+        },
+        "salt_iron": {
+          "name": "两淮盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 39726.0274,
+          "central": 15248,
+          "local": 0,
+          "skimmed": 5065,
+          "transit": 2690
+        },
+        "salt_fujian": {
+          "name": "福建盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 602.7397,
+          "central": 217,
+          "local": 0,
+          "skimmed": 102,
+          "transit": 39
+        },
+        "guanshui": {
+          "name": "月港陆饷",
+          "base": "maritimeTradeVolume",
+          "resource": "money",
+          "nominal": 726.7485,
+          "central": 0,
+          "local": 422,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_lu_shandong": {
+          "name": "山东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1369.863,
+          "central": 523,
+          "local": 0,
+          "skimmed": 220,
+          "transit": 93
+        },
+        "salt_hedong": {
+          "name": "河东盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 5205.4795,
+          "central": 40,
+          "local": 3008,
+          "skimmed": 17,
+          "transit": 7
+        },
+        "salt_shaanxi": {
+          "name": "陕西盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 986.3014,
+          "central": 0,
+          "local": 503,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_sichuan": {
+          "name": "四川盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 1945.2055,
+          "central": 0,
+          "local": 1155,
+          "skimmed": 0,
+          "transit": 0
+        },
+        "salt_guangdong": {
+          "name": "广东海北盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 301.3699,
+          "central": 111,
+          "local": 0,
+          "skimmed": 53,
+          "transit": 20
+        },
+        "salt_yunnan": {
+          "name": "云南盐课",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 958.9041,
+          "central": 361,
+          "local": 0,
+          "skimmed": 161,
+          "transit": 63
+        }
+      },
+      "central": {
+        "money": 131852,
+        "grain": 28328,
+        "cloth": 0
+      },
+      "local": {
+        "money": 48303,
+        "grain": 19649,
+        "cloth": 0
+      }
+    }
+  ]
+}

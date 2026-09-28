@@ -1,0 +1,476 @@
+{
+  "scenario": "sc-tang840-840",
+  "days": 10,
+  "method": "doActualStart, then deterministic fiscal entry before turn++; no AI, war or population simulation",
+  "authored": {
+    "money": 2800000,
+    "grain": 2200000,
+    "cloth": 620000
+  },
+  "opening": {
+    "guoku": {
+      "money": {
+        "scalar": 2682100,
+        "stock": 2682100,
+        "deficit": 17100,
+        "income": 0,
+        "expense": 0
+      },
+      "grain": {
+        "scalar": 2166520,
+        "stock": 2166520,
+        "deficit": 13500,
+        "income": 0,
+        "expense": 0
+      },
+      "cloth": {
+        "scalar": 606860,
+        "stock": 606860,
+        "deficit": 8100,
+        "income": 0,
+        "expense": 0
+      }
+    },
+    "neitang": {
+      "money": {
+        "scalar": 638000,
+        "stock": 638000,
+        "deficit": 0,
+        "income": 0,
+        "expense": 0
+      },
+      "grain": {
+        "scalar": 88200,
+        "stock": 88200,
+        "deficit": 0,
+        "income": 0,
+        "expense": 0
+      },
+      "cloth": {
+        "scalar": 81400,
+        "stock": 81400,
+        "deficit": 0,
+        "income": 0,
+        "expense": 0
+      }
+    }
+  },
+  "display": {
+    "income": 1001881.2903,
+    "expense": 972055.062,
+    "lastFixed": {
+      "salary": {
+        "money": 25719.5486,
+        "grain": 6596.1334,
+        "cloth": 1699.8717
+      },
+      "army": {
+        "money": 182715.472,
+        "grain": 128997.2675,
+        "cloth": 61090.5089
+      },
+      "royal": {
+        "money": 0,
+        "grain": 0,
+        "cloth": 0
+      },
+      "imperial": {
+        "money": 12833.3333,
+        "grain": 1866.6666,
+        "cloth": 733.3334
+      },
+      "administration": {
+        "money": 101039.3826,
+        "grain": 38151.8,
+        "cloth": 3815.18
+      },
+      "recurring": {
+        "money": 198594.4437,
+        "grain": 55138.8895,
+        "cloth": 19026.6672
+      },
+      "local": {
+        "money": 208671.4369,
+        "grain": 202416.7316,
+        "cloth": 47614.7745
+      },
+      "totalMoney": 324018.354,
+      "totalGrain": 147065.6232,
+      "totalCloth": 65757.0473,
+      "turnDays": 10
+    },
+    "flowBasis": "forecast"
+  },
+  "startupTrace": [],
+  "periods": [
+    {
+      "turn": 1,
+      "before": {
+        "guoku": {
+          "money": {
+            "scalar": 2682100,
+            "stock": 2682100,
+            "deficit": 17100,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 2166520,
+            "stock": 2166520,
+            "deficit": 13500,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 606860,
+            "stock": 606860,
+            "deficit": 8100,
+            "income": 0,
+            "expense": 0
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 638000,
+            "stock": 638000,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 88200,
+            "stock": 88200,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 81400,
+            "stock": 81400,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          }
+        }
+      },
+      "after": {
+        "guoku": {
+          "money": {
+            "scalar": 2692042.0760999997,
+            "stock": 2692042.0760999997,
+            "deficit": 17100,
+            "income": 333960.43009999994,
+            "expense": 324018.35400000005
+          },
+          "grain": {
+            "scalar": 2123641.1127000004,
+            "stock": 2123641.1127000004,
+            "deficit": 13500,
+            "income": 104186.7359,
+            "expense": 147065.62320000003
+          },
+          "cloth": {
+            "scalar": 589576.7114000008,
+            "stock": 589576.7114000008,
+            "deficit": 8100,
+            "income": 48473.7587,
+            "expense": 65757.0473
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 635166.6667,
+            "stock": 635166.6667,
+            "deficit": 0,
+            "income": 10000,
+            "expense": 12833.3333
+          },
+          "grain": {
+            "scalar": 88000.0001,
+            "stock": 88000.0001,
+            "deficit": 0,
+            "income": 1666.6667,
+            "expense": 1866.6666
+          },
+          "cloth": {
+            "scalar": 81333.3333,
+            "stock": 81333.3333,
+            "deficit": 0,
+            "income": 666.6667,
+            "expense": 733.3334
+          }
+        }
+      },
+      "income": {
+        "central": {
+          "money": 333960.4301,
+          "grain": 104186.7359,
+          "cloth": 48473.7587
+        },
+        "localRetain": {
+          "money": 221901.5976,
+          "grain": 208717.8861,
+          "cloth": 68498.7489
+        },
+        "nominal": {
+          "money": 1123406.7512,
+          "grain": 641217.5771,
+          "cloth": 240131.2015
+        }
+      },
+      "expense": {
+        "salary": {
+          "money": 25719.5486,
+          "grain": 6596.1334,
+          "cloth": 1699.8717
+        },
+        "army": {
+          "money": 182715.472,
+          "grain": 128997.2675,
+          "cloth": 61090.5089
+        },
+        "royal": {
+          "money": 0,
+          "grain": 0,
+          "cloth": 0
+        },
+        "imperial": {
+          "money": 12833.3333,
+          "grain": 1866.6666,
+          "cloth": 733.3334
+        },
+        "administration": {
+          "money": 101039.3826,
+          "grain": 38151.8,
+          "cloth": 3815.18
+        },
+        "recurring": {
+          "money": 198594.4437,
+          "grain": 55138.8895,
+          "cloth": 19026.6672
+        },
+        "local": {
+          "money": 208671.4369,
+          "grain": 202416.7316,
+          "cloth": 47614.7745
+        },
+        "totalMoney": 324018.354,
+        "totalGrain": 147065.6232,
+        "totalCloth": 65757.0473,
+        "turnDays": 10
+      }
+    }
+  ],
+  "firstTurnTrace": [
+    {
+      "name": "CascadeTax",
+      "turn": 1,
+      "requestedDays": 10,
+      "days": 10,
+      "before": {
+        "guoku": {
+          "money": {
+            "scalar": 2682100,
+            "stock": 2682100,
+            "deficit": 17100,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 2166520,
+            "stock": 2166520,
+            "deficit": 13500,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 606860,
+            "stock": 606860,
+            "deficit": 8100,
+            "income": 0,
+            "expense": 0
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 638000,
+            "stock": 638000,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 88200,
+            "stock": 88200,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 81400,
+            "stock": 81400,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          }
+        }
+      },
+      "result": {
+        "ok": true
+      },
+      "after": {
+        "guoku": {
+          "money": {
+            "scalar": 3016060.4301,
+            "stock": 3016060.4301,
+            "deficit": 17100,
+            "income": 333960.43009999994,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 2270706.7359,
+            "stock": 2270706.7359,
+            "deficit": 13500,
+            "income": 104186.7359,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 655333.7587,
+            "stock": 655333.7587,
+            "deficit": 8100,
+            "income": 48473.7587,
+            "expense": 0
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 638000,
+            "stock": 638000,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 88200,
+            "stock": 88200,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 81400,
+            "stock": 81400,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "FixedExpense",
+      "turn": 1,
+      "requestedDays": 10,
+      "days": 10,
+      "before": {
+        "guoku": {
+          "money": {
+            "scalar": 3016060.4301,
+            "stock": 3016060.4301,
+            "deficit": 17100,
+            "income": 333960.43009999994,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 2270706.7359,
+            "stock": 2270706.7359,
+            "deficit": 13500,
+            "income": 104186.7359,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 655333.7587,
+            "stock": 655333.7587,
+            "deficit": 8100,
+            "income": 48473.7587,
+            "expense": 0
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 638000,
+            "stock": 638000,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "grain": {
+            "scalar": 88200,
+            "stock": 88200,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          },
+          "cloth": {
+            "scalar": 81400,
+            "stock": 81400,
+            "deficit": 0,
+            "income": 0,
+            "expense": 0
+          }
+        }
+      },
+      "result": {
+        "ok": true
+      },
+      "after": {
+        "guoku": {
+          "money": {
+            "scalar": 2692042.0760999997,
+            "stock": 2692042.0760999997,
+            "deficit": 17100,
+            "income": 333960.43009999994,
+            "expense": 324018.35400000005
+          },
+          "grain": {
+            "scalar": 2123641.1127000004,
+            "stock": 2123641.1127000004,
+            "deficit": 13500,
+            "income": 104186.7359,
+            "expense": 147065.62320000003
+          },
+          "cloth": {
+            "scalar": 589576.7114000008,
+            "stock": 589576.7114000008,
+            "deficit": 8100,
+            "income": 48473.7587,
+            "expense": 65757.0473
+          }
+        },
+        "neitang": {
+          "money": {
+            "scalar": 635166.6667,
+            "stock": 635166.6667,
+            "deficit": 0,
+            "income": 10000,
+            "expense": 12833.3333
+          },
+          "grain": {
+            "scalar": 88000.0001,
+            "stock": 88000.0001,
+            "deficit": 0,
+            "income": 1666.6667,
+            "expense": 1866.6666
+          },
+          "cloth": {
+            "scalar": 81333.3333,
+            "stock": 81333.3333,
+            "deficit": 0,
+            "income": 666.6667,
+            "expense": 733.3334
+          }
+        }
+      }
+    }
+  ]
+}

@@ -73,6 +73,9 @@ function main() {
   console.log('地图错位：' + run([path.join(DIR, 'patches/tang-map.js'), '--report', path.join(DIR, 'reports/tang-map.md'), '--write']));
   // P1-B2：产量有史据的按史料规整（坑冶按岁课反推模型产值），引擎首回合起保留剧本产量
   console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'tang', '--report', path.join(DIR, 'reports/p1b2-tang.md'), '--write']));
+  // 税基重接：产量税声明与开局财政口径（省道主官之前）
+  console.log('税基重接：' + run([path.join(DIR, 'patches/tax-base.js'), 'tang', '--report', path.join(DIR, 'reports/tax-base-tang.md'), '--write']));
+  console.log('省道主官：' + run([path.join(DIR, 'patches/governors.js'), 'tang', '--report', path.join(DIR, 'reports/governors-tang.md'), '--write']));
 }
 
 main();

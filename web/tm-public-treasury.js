@@ -167,7 +167,10 @@
         if(initial){loc.target.publicTreasury={handoverLog:[]};RES.forEach(function(k){var v=number(initial[k]);loc.target.publicTreasury[k]={stock:v,available:v,quota:number(initial['quota'+k.charAt(0).toUpperCase()+k.slice(1)]),used:0,deficit:0,thisTurnIn:0,thisTurnOut:0,sources:{},sinks:{}};});report.initialized++;}
       }
     });
-    definitions(G).forEach(function(a){if(!a||!a.openingTransfer)return;var t=a.openingTransfer,result=transact({game:G,from:t.from,to:a.id,amounts:t.amounts,reason:t.reason||('拨给'+a.name+'周转'),transactionId:'opening:'+String(G.sid||'')+':'+a.id,opening:true});report.transfers.push(result);if(!result.ok){report.ok=false;report.missing.push(result.reason+':'+a.id);}});
+    // Same persisted contract as NativeWorld.enabled; the editor does not load NativeFiscal.
+    var nativeFiscal=G.startContext&&G.startContext.schemaVersion==='tm-start-context/1';
+    var deferOpening=!nativeFiscal&&!(o&&o.settleOpening)&&G.turn===1&&(G._isFreshNewGame===true||(G.guoku&&G.guoku.openingFiscalPending))&&G._lastCascadeTaxTurn==null;
+    if(!deferOpening)definitions(G).forEach(function(a){if(!a||!a.openingTransfer)return;var t=a.openingTransfer,result=transact({game:G,from:t.from,to:a.id,amounts:t.amounts,reason:t.reason||('拨给'+a.name+'周转'),transactionId:'opening:'+String(G.sid||'')+':'+a.id,opening:true});report.transfers.push(result);if(!result.ok){report.ok=false;report.missing.push(result.reason+':'+a.id);}});
     positionRows(G).forEach(function(row){var b=row.position.treasuryBinding;if(!b)return;bindingRefs(row.position).forEach(function(ref){var e=expand(G,ref);Array.prototype.push.apply(report.missing,e.missing);});});
     report.ok=report.ok&&!report.missing.length;return report;
   }

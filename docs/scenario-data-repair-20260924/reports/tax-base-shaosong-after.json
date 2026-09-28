@@ -1,0 +1,2105 @@
+{
+  "scenario": "sc-jianyan1-1127-shaosong",
+  "sourceRef": "working-tree",
+  "unit": {
+    "money": "贯",
+    "grain": "石",
+    "cloth": "匹"
+  },
+  "method": "doActualStart + actual CascadeTax.collect(force,360 days); legacy year=365, ledger/2=360; fiscal-only, fixed opening seed 840; no AI/network/war/spending",
+  "native": false,
+  "openingProduction": {
+    "saltProduction": 172953142,
+    "mineralProduction": 712704,
+    "maritimeTradeVolume": 78696
+  },
+  "taxes": {
+    "land_grain": {
+      "name": "田赋·两税(粮)",
+      "base": "arableLand",
+      "resource": "grain",
+      "nominal": 16446383.4921,
+      "central": 1892791,
+      "local": 7662622,
+      "skimmed": 753099,
+      "transit": 334018
+    },
+    "land_money": {
+      "name": "田赋·折钱",
+      "base": "arableLand",
+      "resource": "money",
+      "nominal": 5060425.6899,
+      "central": 582394,
+      "local": 2357726,
+      "skimmed": 231715,
+      "transit": 102779
+    },
+    "dingshen": {
+      "name": "丁税·身丁钱",
+      "base": "consumption",
+      "resource": "money",
+      "nominal": 516490.5205,
+      "central": 60175,
+      "local": 241370,
+      "skimmed": 23067,
+      "transit": 10619
+    },
+    "shangshui": {
+      "name": "商税(过税·住税)",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 7570152,
+      "central": 862294,
+      "local": 3514130,
+      "skimmed": 352152,
+      "transit": 152159
+    },
+    "chake": {
+      "name": "茶课(榷茶)",
+      "base": "consumption",
+      "resource": "money",
+      "nominal": 1614032.8767,
+      "central": 188072,
+      "local": 754289,
+      "skimmed": 72083,
+      "transit": 33187
+    },
+    "jiuke": {
+      "name": "酒课(榷酤)",
+      "base": "consumption",
+      "resource": "money",
+      "nominal": 2582452.6027,
+      "central": 300915,
+      "local": 1206856,
+      "skimmed": 115325,
+      "transit": 53109
+    },
+    "shibo": {
+      "name": "市舶(抽解·关税)",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 3785076,
+      "central": 923858,
+      "local": 976140,
+      "skimmed": 377304,
+      "transit": 163066
+    },
+    "jingzongzhi": {
+      "name": "经总制钱",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 10093536,
+      "central": 2874264,
+      "local": 1952318,
+      "skimmed": 1173883,
+      "transit": 507239
+    },
+    "yuezhuang": {
+      "name": "月桩钱",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 3785076,
+      "central": 1000857,
+      "local": 854129,
+      "skimmed": 408769,
+      "transit": 176642
+    },
+    "mianyi": {
+      "name": "免役钱",
+      "base": "commerceVolume",
+      "resource": "money",
+      "nominal": 2523384,
+      "central": 287453,
+      "local": 1171402,
+      "skimmed": 117382,
+      "transit": 50700
+    },
+    "hemai": {
+      "name": "和买·折帛钱",
+      "base": "commerceVolume",
+      "resource": "cloth",
+      "nominal": 1514030.4,
+      "central": 172475,
+      "local": 702808,
+      "skimmed": 70444,
+      "transit": 30439
+    },
+    "kuangye": {
+      "name": "坑冶民采抽分",
+      "base": "mineralProduction",
+      "resource": "money",
+      "nominal": 140588.1863,
+      "central": 16564,
+      "local": 65882,
+      "skimmed": 6131,
+      "transit": 2921
+    },
+    "yanke_other": {
+      "name": "其余盐课（旧估额待核）",
+      "base": "consumption",
+      "resource": "money",
+      "nominal": 541563.8992,
+      "central": 125270,
+      "local": 158471,
+      "skimmed": 46305,
+      "transit": 22106
+    },
+    "yanke": {
+      "name": "淮浙盐钞",
+      "base": "saltProduction",
+      "resource": "money",
+      "nominal": 8074849.3151,
+      "central": 1753093,
+      "local": 2336593,
+      "skimmed": 793372,
+      "transit": 309370
+    }
+  },
+  "central": {
+    "money": 8975209,
+    "grain": 1892791,
+    "cloth": 172475
+  },
+  "local": {
+    "money": 15589306,
+    "grain": 7662622,
+    "cloth": 702808
+  },
+  "previewMatches": true,
+  "sensitivity": [
+    {
+      "driver": "production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 138362513.60000002,
+        "mineralProduction": 570163.1999999998,
+        "maritimeTradeVolume": 62956.8
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16446383.4921,
+          "central": 1892791,
+          "local": 7662622,
+          "skimmed": 753099,
+          "transit": 334018
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060425.6899,
+          "central": 582394,
+          "local": 2357726,
+          "skimmed": 231715,
+          "transit": 102779
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 516490.5205,
+          "central": 60175,
+          "local": 241370,
+          "skimmed": 23067,
+          "transit": 10619
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 862294,
+          "local": 3514130,
+          "skimmed": 352152,
+          "transit": 152159
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1614032.8767,
+          "central": 188072,
+          "local": 754289,
+          "skimmed": 72083,
+          "transit": 33187
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 2582452.6027,
+          "central": 300915,
+          "local": 1206856,
+          "skimmed": 115325,
+          "transit": 53109
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 923858,
+          "local": 976140,
+          "skimmed": 377304,
+          "transit": 163066
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2874264,
+          "local": 1952318,
+          "skimmed": 1173883,
+          "transit": 507239
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 1000857,
+          "local": 854129,
+          "skimmed": 408769,
+          "transit": 176642
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 287453,
+          "local": 1171402,
+          "skimmed": 117382,
+          "transit": 50700
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 172475,
+          "local": 702808,
+          "skimmed": 70444,
+          "transit": 30439
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 112470.549,
+          "central": 13254,
+          "local": 52704,
+          "skimmed": 4908,
+          "transit": 2339
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 541563.8992,
+          "central": 125270,
+          "local": 158471,
+          "skimmed": 46305,
+          "transit": 22106
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 6459879.4521,
+          "central": 1402475,
+          "local": 1869273,
+          "skimmed": 634698,
+          "transit": 247494
+        }
+      },
+      "central": {
+        "money": 8621281,
+        "grain": 1892791,
+        "cloth": 172475
+      },
+      "local": {
+        "money": 15108808,
+        "grain": 7662622,
+        "cloth": 702808
+      }
+    },
+    {
+      "driver": "production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 207543770.39999998,
+        "mineralProduction": 855244.8000000003,
+        "maritimeTradeVolume": 94435.2
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16446383.4921,
+          "central": 1892791,
+          "local": 7662622,
+          "skimmed": 753099,
+          "transit": 334018
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060425.6899,
+          "central": 582394,
+          "local": 2357726,
+          "skimmed": 231715,
+          "transit": 102779
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 516490.5205,
+          "central": 60175,
+          "local": 241370,
+          "skimmed": 23067,
+          "transit": 10619
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 862294,
+          "local": 3514130,
+          "skimmed": 352152,
+          "transit": 152159
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1614032.8767,
+          "central": 188072,
+          "local": 754289,
+          "skimmed": 72083,
+          "transit": 33187
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 2582452.6027,
+          "central": 300915,
+          "local": 1206856,
+          "skimmed": 115325,
+          "transit": 53109
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 923858,
+          "local": 976140,
+          "skimmed": 377304,
+          "transit": 163066
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2874264,
+          "local": 1952318,
+          "skimmed": 1173883,
+          "transit": 507239
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 1000857,
+          "local": 854129,
+          "skimmed": 408769,
+          "transit": 176642
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 287453,
+          "local": 1171402,
+          "skimmed": 117382,
+          "transit": 50700
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 172475,
+          "local": 702808,
+          "skimmed": 70444,
+          "transit": 30439
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 168705.8236,
+          "central": 19881,
+          "local": 79061,
+          "skimmed": 7358,
+          "transit": 3507
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 541563.8992,
+          "central": 125270,
+          "local": 158471,
+          "skimmed": 46305,
+          "transit": 22106
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 9689819.1781,
+          "central": 2103711,
+          "local": 2803912,
+          "skimmed": 952046,
+          "transit": 371244
+        }
+      },
+      "central": {
+        "money": 9329144,
+        "grain": 1892791,
+        "cloth": 172475
+      },
+      "local": {
+        "money": 16069804,
+        "grain": 7662622,
+        "cloth": 702808
+      }
+    },
+    {
+      "driver": "population-held-production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16445864.2428,
+          "central": 1878314,
+          "local": 7603440,
+          "skimmed": 747107,
+          "transit": 331472
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060265.9209,
+          "central": 577945,
+          "local": 2339518,
+          "skimmed": 229874,
+          "transit": 101987
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 413192.4164,
+          "central": 47782,
+          "local": 191602,
+          "skimmed": 18308,
+          "transit": 8427
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 854605,
+          "local": 3482596,
+          "skimmed": 348922,
+          "transit": 150795
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 8074849.3151,
+          "central": 1735022,
+          "local": 2312504,
+          "skimmed": 785194,
+          "transit": 306179
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 433251.1193,
+          "central": 99361,
+          "local": 125687,
+          "skimmed": 36720,
+          "transit": 17533
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1291226.3014,
+          "central": 149294,
+          "local": 598760,
+          "skimmed": 57200,
+          "transit": 26345
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 2065962.0822,
+          "central": 238872,
+          "local": 958008,
+          "skimmed": 91528,
+          "transit": 42160
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 915647,
+          "local": 967359,
+          "skimmed": 373847,
+          "transit": 161572
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 140588.1863,
+          "central": 16484,
+          "local": 65560,
+          "skimmed": 6099,
+          "transit": 2909
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2848663,
+          "local": 1934794,
+          "skimmed": 1163077,
+          "transit": 502714
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 991940,
+          "local": 846481,
+          "skimmed": 405026,
+          "transit": 175060
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 284888,
+          "local": 1160878,
+          "skimmed": 116308,
+          "transit": 50272
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 170916,
+          "local": 696488,
+          "skimmed": 69776,
+          "transit": 30167
+        }
+      },
+      "central": {
+        "money": 8760503,
+        "grain": 1878314,
+        "cloth": 170916
+      },
+      "local": {
+        "money": 14983747,
+        "grain": 7603440,
+        "cloth": 696488
+      }
+    },
+    {
+      "driver": "population-held-production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16445864.2428,
+          "central": 1903740,
+          "local": 7705986,
+          "skimmed": 757075,
+          "transit": 335951
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060265.9209,
+          "central": 585764,
+          "local": 2371067,
+          "skimmed": 232949,
+          "transit": 103378
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 619788.6247,
+          "central": 72676,
+          "local": 291499,
+          "skimmed": 27848,
+          "transit": 12822
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 866365,
+          "local": 3530441,
+          "skimmed": 353721,
+          "transit": 152870
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 8074849.3151,
+          "central": 1755159,
+          "local": 2339150,
+          "skimmed": 794067,
+          "transit": 309734
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 649876.679,
+          "central": 151471,
+          "local": 191591,
+          "skimmed": 55962,
+          "transit": 26731
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1936839.4521,
+          "central": 227147,
+          "local": 910932,
+          "skimmed": 87025,
+          "transit": 40083
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 3098943.1233,
+          "central": 363424,
+          "local": 1457501,
+          "skimmed": 139237,
+          "transit": 64134
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 928223,
+          "local": 980694,
+          "skimmed": 378973,
+          "transit": 163823
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 140588.1863,
+          "central": 16696,
+          "local": 66399,
+          "skimmed": 6179,
+          "transit": 2946
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2887884,
+          "local": 1961389,
+          "skimmed": 1179017,
+          "transit": 509633
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 1005599,
+          "local": 858092,
+          "skimmed": 410541,
+          "transit": 177489
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 288792,
+          "local": 1176830,
+          "skimmed": 117900,
+          "transit": 50938
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 173272,
+          "local": 706076,
+          "skimmed": 70756,
+          "transit": 30566
+        }
+      },
+      "central": {
+        "money": 9149200,
+        "grain": 1903740,
+        "cloth": 173272
+      },
+      "local": {
+        "money": 16135585,
+        "grain": 7705986,
+        "cloth": 706076
+      }
+    },
+    {
+      "driver": "population-with-production",
+      "factor": 0.8,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16446383.4921,
+          "central": 1878377,
+          "local": 7603682,
+          "skimmed": 747129,
+          "transit": 331482
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060425.6899,
+          "central": 577964,
+          "local": 2339592,
+          "skimmed": 229881,
+          "transit": 101990
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 413192.4164,
+          "central": 47782,
+          "local": 191602,
+          "skimmed": 18308,
+          "transit": 8427
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 854605,
+          "local": 3482596,
+          "skimmed": 348922,
+          "transit": 150795
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1291226.3014,
+          "central": 149294,
+          "local": 598760,
+          "skimmed": 57200,
+          "transit": 26345
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 2065962.0822,
+          "central": 238872,
+          "local": 958008,
+          "skimmed": 91528,
+          "transit": 42160
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 915647,
+          "local": 967359,
+          "skimmed": 373847,
+          "transit": 161572
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2848663,
+          "local": 1934794,
+          "skimmed": 1163077,
+          "transit": 502714
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 991940,
+          "local": 846481,
+          "skimmed": 405026,
+          "transit": 175060
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 284888,
+          "local": 1160878,
+          "skimmed": 116308,
+          "transit": 50272
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 170916,
+          "local": 696488,
+          "skimmed": 69776,
+          "transit": 30167
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 140588.1863,
+          "central": 16484,
+          "local": 65560,
+          "skimmed": 6099,
+          "transit": 2909
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 433251.1193,
+          "central": 99361,
+          "local": 125687,
+          "skimmed": 36720,
+          "transit": 17533
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 8074849.3151,
+          "central": 1735022,
+          "local": 2312504,
+          "skimmed": 785194,
+          "transit": 306179
+        }
+      },
+      "central": {
+        "money": 8760522,
+        "grain": 1878377,
+        "cloth": 170916
+      },
+      "local": {
+        "money": 14983821,
+        "grain": 7603682,
+        "cloth": 696488
+      }
+    },
+    {
+      "driver": "population-with-production",
+      "factor": 1.2,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 16446383.4921,
+          "central": 1903802,
+          "local": 7706233,
+          "skimmed": 757097,
+          "transit": 335966
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 5060425.6899,
+          "central": 585785,
+          "local": 2371142,
+          "skimmed": 232954,
+          "transit": 103381
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 619788.6247,
+          "central": 72676,
+          "local": 291499,
+          "skimmed": 27848,
+          "transit": 12822
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 7570152,
+          "central": 866365,
+          "local": 3530441,
+          "skimmed": 353721,
+          "transit": 152870
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 1936839.4521,
+          "central": 227147,
+          "local": 910932,
+          "skimmed": 87025,
+          "transit": 40083
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 3098943.1233,
+          "central": 363424,
+          "local": 1457501,
+          "skimmed": 139237,
+          "transit": 64134
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 928223,
+          "local": 980694,
+          "skimmed": 378973,
+          "transit": 163823
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 10093536,
+          "central": 2887884,
+          "local": 1961389,
+          "skimmed": 1179017,
+          "transit": 509633
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 3785076,
+          "central": 1005599,
+          "local": 858092,
+          "skimmed": 410541,
+          "transit": 177489
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 2523384,
+          "central": 288792,
+          "local": 1176830,
+          "skimmed": 117900,
+          "transit": 50938
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 1514030.4,
+          "central": 173272,
+          "local": 706076,
+          "skimmed": 70756,
+          "transit": 30566
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 140588.1863,
+          "central": 16696,
+          "local": 66399,
+          "skimmed": 6179,
+          "transit": 2946
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 649876.679,
+          "central": 151471,
+          "local": 191591,
+          "skimmed": 55962,
+          "transit": 26731
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 8074849.3151,
+          "central": 1755159,
+          "local": 2339150,
+          "skimmed": 794067,
+          "transit": 309734
+        }
+      },
+      "central": {
+        "money": 9149221,
+        "grain": 1903802,
+        "cloth": 173272
+      },
+      "local": {
+        "money": 16135660,
+        "grain": 7706233,
+        "cloth": 706076
+      }
+    }
+  ],
+  "turns": [
+    {
+      "turn": 2,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456829.963,
+          "central": 52577,
+          "local": 212829,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.0655,
+          "central": 16179,
+          "local": 65498,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432967,
+        "grain": 212829,
+        "cloth": 19496
+      }
+    },
+    {
+      "turn": 3,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456830.3637,
+          "central": 52577,
+          "local": 212830,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.1888,
+          "central": 16179,
+          "local": 65499,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432968,
+        "grain": 212830,
+        "cloth": 19496
+      }
+    },
+    {
+      "turn": 4,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456830.7644,
+          "central": 52577,
+          "local": 212830,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.3121,
+          "central": 16179,
+          "local": 65499,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432968,
+        "grain": 212830,
+        "cloth": 19496
+      }
+    },
+    {
+      "turn": 5,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456831.165,
+          "central": 52577,
+          "local": 212830,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.4354,
+          "central": 16179,
+          "local": 65499,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432968,
+        "grain": 212830,
+        "cloth": 19496
+      }
+    },
+    {
+      "turn": 6,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456831.5657,
+          "central": 52577,
+          "local": 212830,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.5587,
+          "central": 16179,
+          "local": 65499,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432968,
+        "grain": 212830,
+        "cloth": 19496
+      }
+    },
+    {
+      "turn": 7,
+      "days": 10,
+      "production": {
+        "saltProduction": 172953142,
+        "mineralProduction": 712704,
+        "maritimeTradeVolume": 78696
+      },
+      "taxes": {
+        "land_grain": {
+          "name": "田赋·两税(粮)",
+          "base": "arableLand",
+          "resource": "grain",
+          "nominal": 456831.9664,
+          "central": 52577,
+          "local": 212830,
+          "skimmed": 20911,
+          "transit": 9275
+        },
+        "land_money": {
+          "name": "田赋·折钱",
+          "base": "arableLand",
+          "resource": "money",
+          "nominal": 140563.682,
+          "central": 16179,
+          "local": 65499,
+          "skimmed": 6441,
+          "transit": 2854
+        },
+        "dingshen": {
+          "name": "丁税·身丁钱",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 14343.5502,
+          "central": 1670,
+          "local": 6709,
+          "skimmed": 628,
+          "transit": 291
+        },
+        "shangshui": {
+          "name": "商税(过税·住税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 210282,
+          "central": 23970,
+          "local": 97573,
+          "skimmed": 9786,
+          "transit": 4238
+        },
+        "chake": {
+          "name": "茶课(榷茶)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 44833.05,
+          "central": 5211,
+          "local": 20936,
+          "skimmed": 2000,
+          "transit": 918
+        },
+        "jiuke": {
+          "name": "酒课(榷酤)",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 71734.08,
+          "central": 8351,
+          "local": 33517,
+          "skimmed": 3201,
+          "transit": 1474
+        },
+        "shibo": {
+          "name": "市舶(抽解·关税)",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 25706,
+          "local": 27116,
+          "skimmed": 10491,
+          "transit": 4539
+        },
+        "jingzongzhi": {
+          "name": "经总制钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 280376,
+          "central": 79808,
+          "local": 54242,
+          "skimmed": 32593,
+          "transit": 14082
+        },
+        "yuezhuang": {
+          "name": "月桩钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 105141,
+          "central": 27822,
+          "local": 23724,
+          "skimmed": 11341,
+          "transit": 4881
+        },
+        "mianyi": {
+          "name": "免役钱",
+          "base": "commerceVolume",
+          "resource": "money",
+          "nominal": 70094,
+          "central": 7988,
+          "local": 32515,
+          "skimmed": 3260,
+          "transit": 1400
+        },
+        "hemai": {
+          "name": "和买·折帛钱",
+          "base": "commerceVolume",
+          "resource": "cloth",
+          "nominal": 42056.4,
+          "central": 4802,
+          "local": 19496,
+          "skimmed": 1941,
+          "transit": 863
+        },
+        "kuangye": {
+          "name": "坑冶民采抽分",
+          "base": "mineralProduction",
+          "resource": "money",
+          "nominal": 3905.2274,
+          "central": 460,
+          "local": 1828,
+          "skimmed": 170,
+          "transit": 79
+        },
+        "yanke_other": {
+          "name": "其余盐课（旧估额待核）",
+          "base": "consumption",
+          "resource": "money",
+          "nominal": 15043.4416,
+          "central": 3478,
+          "local": 4403,
+          "skimmed": 1287,
+          "transit": 611
+        },
+        "yanke": {
+          "name": "淮浙盐钞",
+          "base": "saltProduction",
+          "resource": "money",
+          "nominal": 224301.3699,
+          "central": 48697,
+          "local": 64906,
+          "skimmed": 22038,
+          "transit": 8595
+        }
+      },
+      "central": {
+        "money": 249340,
+        "grain": 52577,
+        "cloth": 4802
+      },
+      "local": {
+        "money": 432968,
+        "grain": 212830,
+        "cloth": 19496
+      }
+    }
+  ]
+}

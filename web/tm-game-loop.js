@@ -322,7 +322,7 @@ function enterGame(){
     // 帑廪/内帑 三账初始化（若剧本未配置则 ensureGuokuModel 给默认）
     if (typeof GuokuEngine !== 'undefined' && typeof GuokuEngine.ensureModel === 'function') GuokuEngine.ensureModel();
     if (typeof NeitangEngine !== 'undefined' && typeof NeitangEngine.ensureModel === 'function') NeitangEngine.ensureModel();
-    // 首回合立即跑一次税收级联 + 聚合，这样 UI 启动时不会显示 0
+    // 开局只读预估；首期实收实支留给第一次过回合。
     if (GM.turn === 1) {
       console.log('[enterGame-T1] GM.adminHierarchy 结构:',
         GM.adminHierarchy ? ('键=' + Object.keys(GM.adminHierarchy).join(',') +
@@ -331,16 +331,17 @@ function enterGame(){
     // Loading native balances is not a new fiscal period. Legacy starts retain their budget snapshot path.
     var nativeBalances = window.TM && TM.NativeWorld && TM.NativeWorld.enabled(GM);
     var _entryBudget = null;
-    if (!nativeBalances && typeof CascadeTax !== 'undefined' && typeof CascadeTax.previewBudget === 'function') {
+    var _openingFiscal = !nativeBalances && typeof GuokuEngine !== 'undefined' && GuokuEngine.openingFiscalPending && GuokuEngine.openingFiscalPending(GM);
+    if (!nativeBalances && !_openingFiscal && typeof CascadeTax !== 'undefined' && typeof CascadeTax.previewBudget === 'function') {
       _entryBudget = CascadeTax.previewBudget({game:GM,faction:'player',turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
     }
     if (_entryBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {
       CascadeTax.applyBudgetSnapshot({game:GM,faction:'player',budget:_entryBudget,turnDays:_entryBudget.period.days});
-    } else if (!nativeBalances && typeof CascadeTax !== 'undefined' && typeof CascadeTax.collect === 'function') {
+    } else if (!nativeBalances && !_openingFiscal && typeof CascadeTax !== 'undefined' && typeof CascadeTax.collect === 'function') {
       try { CascadeTax.collect(); } catch(_ctInitE) { _tmStartupIssue('CascadeTax 首轮征税失败', _ctInitE, true); }
     }
     // 固定支出：俸禄+军饷+宫廷（endTurn 本来每回合跑·此处补首回合）
-    if (!nativeBalances && !_entryBudget && typeof FixedExpense !== 'undefined' && typeof FixedExpense.collect === 'function') {
+    if (!nativeBalances && !_openingFiscal && !_entryBudget && typeof FixedExpense !== 'undefined' && typeof FixedExpense.collect === 'function') {
       try {
         var _feR = FixedExpense.collect();
         if (GM.turn === 1) console.log('[enterGame-T1] FixedExpense 首回合结算:', _feR && _feR.turnExpense);
@@ -349,6 +350,7 @@ function enterGame(){
     if (typeof IntegrationBridge !== 'undefined' && typeof IntegrationBridge.aggregateRegionsToVariables === 'function') {
       try { IntegrationBridge.aggregateRegionsToVariables(); } catch(_agInitE) { _tmStartupIssue('IntegrationBridge 首轮聚合失败', _agInitE, true); }
     }
+    if (_openingFiscal) GuokuEngine.previewOpeningFiscal({game:GM,turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
     if (GM.turn === 1) {
       console.log('[enterGame-T1] 聚合后 GM.population.national:', GM.population && GM.population.national);
     }

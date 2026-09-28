@@ -1,0 +1,9 @@
+{
+  "rawDiffCRCount": 25,
+  "allCRIn": "web/tm-patches-start.js",
+  "modifiedParagraphEOL": "CRLF in original and new lines",
+  "plainDiffCheckStatus": 2,
+  "crAwareDiffCheckStatus": 0,
+  "plainOutput": "web/tm-patches-start.js:419: trailing whitespace.\n+  // 新开局只写收支预估，首期征收留给第一次过回合；旧档仍沿原入口。\r\nweb/tm-patches-start.js:423: trailing whitespace.\n+      var startBudget = null;\r\nweb/tm-patches-start.js:424: trailing whitespace.\n+      if (typeof GuokuEngine !== 'undefined' && GuokuEngine.openingFiscalPending && GuokuEngine.openingFiscalPending(GM)) {\r\nweb/tm-patches-start.js:425: trailing whitespace.\n+        var openingFiscal = GuokuEngine.previewOpeningFiscal({game:GM,turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});\r\nweb/tm-patches-start.js:426: trailing whitespace.\n+        startBudget = openingFiscal && openingFiscal.budget;\r\nweb/tm-patches-start.js:427: trailing whitespace.\n+      } else {\r\nweb/tm-patches-start.js:428: trailing whitespace.\n+        startBudget = typeof CascadeTax.previewBudget === 'function' ? CascadeTax.previewBudget({game:GM,faction:'player',turnDays:(sc && sc.time && sc.time.daysPerTurn) || 10}) : null;\r\nweb/tm-patches-start.js:429: trailing whitespace.\n+        if (startBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {\r\nweb/tm-patches-start.js:430: trailing whitespace.\n+          CascadeTax.applyBudgetSnapshot({ game: GM, faction: 'player', budget: startBudget, turnDays: startBudget.period.days });\r\nweb/tm-patches-start.js:431: trailing whitespace.\n+        } else CascadeTax.collect({ faction: 'player', turnDays: 30 });\r\nweb/tm-patches-start.js:432: trailing whitespace.\n+      }",
+  "note": "Latest mandate requires matching the surrounding paragraph. The raw CR count is 25, not zero; no whole-file line-ending normalization was performed. Command-local cr-at-eol treats the preserved CRLF correctly; git config was not changed."
+}

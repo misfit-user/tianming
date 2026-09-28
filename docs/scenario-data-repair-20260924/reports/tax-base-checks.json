@@ -1,0 +1,484 @@
+{
+  "serial": true,
+  "maxOldSpaceMiB": 1792,
+  "excludes": [
+    "full smoke",
+    "sync-hot-baseline"
+  ],
+  "checks": [
+    {
+      "name": "smoke-active-fiscal-readers.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-armory-readiness.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-armory.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-army-liability-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-authority-declared-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-battle-cost-guoku.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-building-payment-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-character-wealth-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-circuit-governance-shaosong.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 21
+    },
+    {
+      "name": "smoke-circuit-governance-tianqi.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 7
+    },
+    {
+      "name": "smoke-circuit-governor-effects-tianqi.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 9
+    },
+    {
+      "name": "smoke-corruption-impact-on-treasury.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-declared-currency-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-disaster-taxbase.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-divergence-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-edict-fiscal-ledger-integrity.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-faction-npc-guoku.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-faction-npc-llm-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-ai-field-routing.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-ai-posting.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-fiscal-collection-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-contract-edgecases.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-cut-guard.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-dynamic-settlement.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-field-contracts.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-monthly-shizheng-sync.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-recurring-coerce.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-reform-reconcile.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-region-labels.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-target-alias-preflight.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-transaction-atomicity.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-transfer-pair-guard.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-fiscal-unified-budget.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-bankruptcy-seven-stage.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-compute-tax-flow-tyrant.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-compute-tax-flow.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-enact-reform.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-init-from-dynasty.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-legacy-fiscal-compat.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-loan-and-bankruptcy.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-shared-display.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-sources-scenario-disabled.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-tick-full-pass.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-guoku-yearly-settle.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-imperial-tax-policy.mjs",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-inflation-tax-namespace.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-inflation-tax.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-keju-guoku-cost.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-ledger-consistency.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-ledgergate-memory-wendui.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-ledgergate-narrative-fallback.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-map-circuit-book-shaosong.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 24
+    },
+    {
+      "name": "smoke-minxin-ledger-six-stage.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-native-fiscal-consumers.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-neitang-inner-treasury-compat.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-neitang-shared-fields.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-opening-treasury-fiscal.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-p5-delta-fiscal.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-population-faction-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-population-registered-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-production-authored.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-public-treasury-a3.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-public-treasury-custody.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-public-treasury-scale.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 11
+    },
+    {
+      "name": "smoke-reported-fiscal-wiring.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-scenario-fiscal-registration.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-seigniorage-ledger.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-shaosong-target-map-regions.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 2
+    },
+    {
+      "name": "smoke-start-game-data-integrity.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 44
+    },
+    {
+      "name": "smoke-tang840-authority-autonomy.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-tang840-fiscal-detail.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 9
+    },
+    {
+      "name": "smoke-tang840-opening-ledgers.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 40
+    },
+    {
+      "name": "smoke-tang840-wuchang.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-tax-production-base.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-tianqi-map-runtime.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-tianqi-official-cache-recovery.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 1
+    },
+    {
+      "name": "smoke-topbar-fiscal-consistency.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-treasury-account-books.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    },
+    {
+      "name": "smoke-world-fiscal-reactor.js",
+      "status": 0,
+      "signal": null,
+      "seconds": 0
+    }
+  ]
+}

@@ -16,8 +16,12 @@ for(const id of taxIds)ok(taxRows(id).some(t=>t.collected>0),'authored tax actua
 for(const id of ['salt_retained','mining']){near(taxRows(id).reduce((a,t)=>a+t.central,0),0,'locally reserved revenue never enters central store '+id);ok(taxRows(id).some(t=>t.local>0),'local tax retained '+id);}
 const namesByTax=id=>annual.regions.filter(r=>r.taxes.some(t=>t.id===id&&t.collected>0)).map(r=>r.id);
 ok(JSON.stringify(namesByTax('salt_hedong'))===JSON.stringify(['河中府']),'two-pool salt belongs to actual producing prefecture');
-near(taxRows('salt_hedong').reduce((a,t)=>a+t.nominal,0),1000000,'historical million-guan quota is the assessment, not a guaranteed receipt');
-ok(taxRows('salt_hedong').reduce((a,t)=>a+t.central+t.local,0)<1000000,'collection friction remains after correcting the statutory quota');
+const poolTax=s.fiscalConfig.taxList.find(t=>t.id==='salt_hedong');
+const sourceLeaves=nodes=>nodes.flatMap(d=>d.children&&d.children.length?sourceLeaves(d.children):[d]);
+const poolNominal=sourceLeaves(s.adminHierarchy.player.divisions).reduce((n,d)=>n+Number((d.economyBase||{})[poolTax.base]||0)*(poolTax.baseFactor==null?1:poolTax.baseFactor)*poolTax.rate*(poolTax.productionTax?poolTax.productionTax.unitPrice-(poolTax.productionTax.unitCost||0):1),0);
+near(taxRows('salt_hedong').reduce((a,t)=>a+t.nominal,0),poolNominal,'source quantity/assessment and declared price determine nominal receipts');
+ok(taxRows('salt_hedong').reduce((a,t)=>a+t.nominal,0)===1000000,'Taihe three-year edict anchors the two-pool nominal quota at exactly one million guan');
+ok(taxRows('salt_hedong').reduce((a,t)=>a+t.central+t.local,0)<poolNominal,'collection friction remains after correcting the statutory quota');
 ok(namesByTax('salt_iron').every(id=>!namesByTax('salt_retained').includes(id)),'central and reserved sea salt areas do not double count');
 ok(namesByTax('maritime').length===1&&namesByTax('maritime')[0]==='广州','small maritime receipt not spread to landlocked prefectures');
 ok(!namesByTax('tea').includes('京兆府·长安')&&!namesByTax('mining').includes('天德军'),'commodity taxes have real geographic scope');

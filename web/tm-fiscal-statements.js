@@ -188,5 +188,28 @@
     summary.resources={};RES.forEach(function(k){var led=(a.ledgers||{})[k]||{};summary.resources[k]={stock:led.stock!=null?led.stock:a[k],income:led.thisTurnIn,expense:led.thisTurnOut,sources:clone(led.sources||{}),sinks:clone(led.sinks||{}),deficit:num(led.deficit),deficitDetails:clone(led.deficitDetails||{})};});
     return summary;
   }
-  global.FiscalStatement={read:read,sync:sync,flowIsActual:flowIsActual,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
+  // 显式物量与价率的纯计算；未声明的旧税表不调用，零/缺项不改成人口税基。
+  function productionTaxBase(div, tax) {
+    if (tax.enabled === false) return 0;
+    var ids = tax.productionTax.regionIds;
+    if (Array.isArray(ids) && ids.indexOf(div.id) < 0) return 0;
+    return Math.max(0, num(div.economyBase && div.economyBase[tax.base]));
+  }
+  function productionTaxAmount(amount, production) {
+    return amount * Math.max(0, num(production.unitPrice) - Math.max(0, num(production.unitCost)));
+  }
+  // 只汇总征收引擎给出的分税报价；不再次取价、抽分、扣损或折算粮布。
+  function taxRevenuePreview(nodes, quote, period) {
+    var totals = {nominal:zero(), central:zero(), localRetain:zero(), collected:zero()};
+    var regions = nodes.map(function(node) {
+      var rows = quote(node).filter(function(t) { return t && RES.indexOf(t.resource) >= 0; });
+      rows.forEach(function(t) {
+        totals.nominal[t.resource] += num(t.nominal); totals.central[t.resource] += num(t.central);
+        totals.localRetain[t.resource] += num(t.local); totals.collected[t.resource] += num(t.collected);
+      });
+      return {id:node.id, name:node.name, taxes:rows};
+    });
+    return Object.assign({regions:regions, totals:totals}, period);
+  }
+  global.FiscalStatement={productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
 })(typeof window!=='undefined'?window:globalThis);

@@ -3,6 +3,7 @@
     "owners": [
       "tm-border-invasion.js",
       "tm-captive-court.js",
+      "tm-circuit-governor-effects.js",
       "tm-indices.js",
       "tm-negotiation.js",
       "tm-party-inference.js",

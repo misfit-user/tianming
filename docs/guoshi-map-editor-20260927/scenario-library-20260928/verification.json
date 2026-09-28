@@ -1,0 +1,94 @@
+{
+  "date": "2026-09-28",
+  "head": "f204d92430a62cf5845eddf0244661223ee33096",
+  "scope": "内置地图国师：剧本与层级导入、改名、完整工具回执、取消固定任务预算",
+  "focused": [
+    {
+      "script": "web/scripts/smoke-map-editor-agent.js",
+      "exit": 0,
+      "log": "smoke-map-editor-agent.log"
+    },
+    {
+      "script": "web/scripts/smoke-map-editor-scenario-library.js",
+      "exit": 0,
+      "log": "smoke-map-editor-scenario-library.log"
+    },
+    {
+      "script": "web/scripts/smoke-faction-binding-lint.js",
+      "exit": 0,
+      "log": "smoke-faction-binding-lint.log"
+    }
+  ],
+  "browser": {
+    "cases": 6,
+    "errors": 0,
+    "provider": "localhost deterministic fixture; no real model API",
+    "report": "browser-report.json"
+  },
+  "electron": {
+    "ok": true,
+    "protocol": "file:",
+    "catalog": [
+      "sc-tianqi7-1627",
+      "sc-tang840-840",
+      "sc-jianyan1-1127-shaosong"
+    ],
+    "ming": 369,
+    "song": 104,
+    "source": "sc-jianyan1-1127-shaosong",
+    "crypto": true
+  },
+  "architecture": {
+    "pass": 15,
+    "fail": 0,
+    "log": "arch-final.log"
+  },
+  "checks": [
+    {
+      "command": "node scripts/build-map-editor-scenario-library.cjs --check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/build-native-preparation-manifest.cjs --check",
+      "exit": 0
+    }
+  ],
+  "fullSmoke": {
+    "command": "node web/scripts/ci-smokes.js --jobs 2",
+    "runId": "5144b660-f367-4580-8f67-101fd28646e7",
+    "complete": true,
+    "total": 1128,
+    "pass": 1126,
+    "fail": 2,
+    "report": "full-smoke-report.json",
+    "failures": [
+      {
+        "name": "smoke-faction-binding-lint.js",
+        "resolution": "地图候选副本的归属元数据不属于运行时人物/军队绑定；增加有注释的精确判定后独立复测通过，并断言修改期间当前地图归属不变。",
+        "recheck": "smoke-faction-binding-lint.log"
+      },
+      {
+        "name": "smoke-division-reassign.js",
+        "resolution": "原始用例仍失败：读取的 web/bundled-scenarios 官方派生未同步。诊断副本只将读取路径换为仓根官方真源后通过；没有改写原用例或派生数据。",
+        "recheck": "division-reassign-recheck.log",
+        "diagnostic": "division-reassign-canonical-diagnostic.log"
+      }
+    ],
+    "note": "保留完整原始失败报告；未将补测结果篡改为全量门禁通过。"
+  },
+  "releaseGates": {
+    "officialParity": {
+      "exit": 1,
+      "log": "official-parity-final.log"
+    },
+    "releaseContract": {
+      "exit": 1,
+      "log": "release-contract-final.log"
+    },
+    "hotBaseline": {
+      "exit": 1,
+      "log": "hot-baseline-final.log"
+    }
+  },
+  "published": false
+}

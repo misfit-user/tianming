@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.3",
   "entry": "index.html",
-  "generatedAt": "2026-09-27T15:35:12.072Z",
+  "generatedAt": "2026-09-28T02:35:23.506Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -250,6 +250,16 @@
       "size": 3622187
     },
     {
+      "path": "assets/portraits/shaosong/曾开.png",
+      "sha256": "d6c63ae9be6c6da01bce10255b4e29d4758f285b9fac2d602736b2fbc3679550",
+      "size": 2196094
+    },
+    {
+      "path": "assets/portraits/shaosong/曾孝序.png",
+      "sha256": "4d07356715f09bfa18d5bc801b3cb918f385b0a5b442ffbc85adbcd2838ea861",
+      "size": 3734651
+    },
+    {
       "path": "assets/portraits/shaosong/察哥.png",
       "sha256": "9fbefe4542d069181be02932906098fe010e83a69b9579670c506d2006ba93c9",
       "size": 3729126
@@ -490,6 +500,11 @@
       "size": 2687046
     },
     {
+      "path": "assets/portraits/shaosong/卢法原.png",
+      "sha256": "838a70012c7a293a3af222d84919d85d26df0b36f65b5747e4dd9eeac296475e",
+      "size": 2373245
+    },
+    {
       "path": "assets/portraits/shaosong/卢益.png",
       "sha256": "3a0dc27aae0aec64ca1c7dd095630efd066d2ce40952486a00121db334e3c5f7",
       "size": 3475836
@@ -573,6 +588,26 @@
       "path": "assets/portraits/shaosong/时立爱.png",
       "sha256": "7ba508d6f0619738c813cfc4adfa53e3e04cd46f34b3b0131d60b7d72fd401b4",
       "size": 3271455
+    },
+    {
+      "path": "assets/portraits/shaosong/孙竢.png",
+      "sha256": "4c3aa8ff69368b85fea6101b974298c56dc84ee9a2cd5781ebff5d06f668a0f1",
+      "size": 3641615
+    },
+    {
+      "path": "assets/portraits/shaosong/孙昭远.png",
+      "sha256": "380b308df6b856d07c30231b25f710143ad9402948096c8bbf0a72e33e118511",
+      "size": 3674783
+    },
+    {
+      "path": "assets/portraits/shaosong/唐悫.png",
+      "sha256": "4652705ad91ab872ef2adefac568c33cc2c049a9849d6235cb9d5278ad5af8cc",
+      "size": 4077241
+    },
+    {
+      "path": "assets/portraits/shaosong/唐重.png",
+      "sha256": "b3e2f8dde036e4d1c9988846d538116a82c644b4f061316d43a88d53ab642ba8",
+      "size": 3581429
     },
     {
       "path": "assets/portraits/shaosong/滕康.png",
@@ -680,6 +715,11 @@
       "size": 3545441
     },
     {
+      "path": "assets/portraits/shaosong/王似.png",
+      "sha256": "3bcd17c21fa553ffffdcae83895eaab78201d2f39088641c6cfd56c7f6083aa0",
+      "size": 2424902
+    },
+    {
       "path": "assets/portraits/shaosong/王彦.png",
       "sha256": "10cfbfca331e0b97324af318b8ee06c1d6289fd8f0e11bb650c981c19e7373d8",
       "size": 2822704
@@ -708,6 +748,11 @@
       "path": "assets/portraits/shaosong/吴氏.png",
       "sha256": "a7b7499e295928b3a9964d31e3d91704c53b646abaa736b965d3df45a6e79feb",
       "size": 2352290
+    },
+    {
+      "path": "assets/portraits/shaosong/席贡.png",
+      "sha256": "e9457f1ac209ed3acf0925831791c5905848c7f532ec7dca30db4ccf21126392",
+      "size": 2406883
     },
     {
       "path": "assets/portraits/shaosong/萧查剌阿不.png",
@@ -780,6 +825,11 @@
       "size": 3450644
     },
     {
+      "path": "assets/portraits/shaosong/姚鹏.png",
+      "sha256": "ec8f8aa078e1ed139fc2f58fee02e431ecc0ab6b6796fdab5d06fae2a28ac6c1",
+      "size": 3628546
+    },
+    {
       "path": "assets/portraits/shaosong/耶律南仙.png",
       "sha256": "c02d09462c71e242e5f320962dd05ee753a86e2574f0778d7ae075420e596f7a",
       "size": 3659976
@@ -830,6 +880,11 @@
       "size": 3431309
     },
     {
+      "path": "assets/portraits/shaosong/张深.png",
+      "sha256": "169f108de183650ff6ac6cb6c5ff8235832036e714aae51e43ffc7b41dec5542",
+      "size": 2582330
+    },
+    {
       "path": "assets/portraits/shaosong/张氏(婕妤).png",
       "sha256": "9d5d7e2ff616ef591a3c4bdee4a99f5516126249a173c2d744833545afc0bb7b",
       "size": 3672684
@@ -860,6 +915,11 @@
       "size": 2386925
     },
     {
+      "path": "assets/portraits/shaosong/赵点.png",
+      "sha256": "8171b20e9ad48824ce28c1a19f9c54cbcc98f644442a1af320a8c60517b75d19",
+      "size": 2500938
+    },
+    {
       "path": "assets/portraits/shaosong/赵鼎.png",
       "sha256": "ad0253a50b50326fecc113848f9fd4f9b6d9333cc77d93a8e9e4926c6de957ac",
       "size": 2622662
@@ -883,6 +943,11 @@
       "path": "assets/portraits/shaosong/赵令畤.png",
       "sha256": "5eb5031a0cc01eb8b9f8586b62cad8535cb6beff0f5f8381d047379d4e6a56f2",
       "size": 2421743
+    },
+    {
+      "path": "assets/portraits/shaosong/赵明诚.png",
+      "sha256": "b1d5b2a811000be5d00b5a45830a87c218075d46d03e240d838a94a4c20fab3d",
+      "size": 3780543
     },
     {
       "path": "assets/portraits/shaosong/赵哲.png",
@@ -1975,6 +2040,11 @@
       "size": 782787
     },
     {
+      "path": "assets/portraits/tianqi7/单明诩.png",
+      "sha256": "b91377ad81d08d119f42048a111140d2ac9973b9c44f25908490dfc2cd78a73e",
+      "size": 778296
+    },
+    {
       "path": "assets/portraits/tianqi7/杜文焕.png",
       "sha256": "27e7bbc5e55dca2a886a0a2e060819bacba8d2f9f93a00e34e103c52636716f8",
       "size": 788790
@@ -2008,6 +2078,11 @@
       "path": "assets/portraits/tianqi7/郭允厚.png",
       "sha256": "551d60bc26ffc358d5d0b291fb69df80e271ca33c188f4134d18a88ce2b93b4e",
       "size": 802533
+    },
+    {
+      "path": "assets/portraits/tianqi7/郭增光.png",
+      "sha256": "8b1d4135b0e9883aedc1e339f5fd219e80bb1979eb25b6a61843c6b0ea8b8ed5",
+      "size": 753706
     },
     {
       "path": "assets/portraits/tianqi7/海兰珠.png",
@@ -2070,9 +2145,24 @@
       "size": 802043
     },
     {
+      "path": "assets/portraits/tianqi7/李待问.png",
+      "sha256": "560cd8819adb68f33b7da92db60af69f4987f0c0aa882336cf154d6a801b9ba9",
+      "size": 841793
+    },
+    {
+      "path": "assets/portraits/tianqi7/李逢节.png",
+      "sha256": "ed8f7cd0b50b43b766a3a6e3ee15990b03fcb6dc6ace462d4da64abf379d5406",
+      "size": 778451
+    },
+    {
       "path": "assets/portraits/tianqi7/李国普.png",
       "sha256": "163c9b69c73ad47c2c9763730a1fca028a7256ae25450e717b6bb136e0f305b3",
       "size": 605318
+    },
+    {
+      "path": "assets/portraits/tianqi7/李精白.png",
+      "sha256": "dbb288b5ecb5306cadfb1f8052db01b3b63f535cb43f1bc29a34f4461ea2ff1b",
+      "size": 781066
     },
     {
       "path": "assets/portraits/tianqi7/李选侍.png",
@@ -2143,6 +2233,11 @@
       "path": "assets/portraits/tianqi7/毛一鹭.png",
       "sha256": "938056031c5c4c3aa75d60317cef50121950650ef909414b419617139f6edf11",
       "size": 639852
+    },
+    {
+      "path": "assets/portraits/tianqi7/牟志夔.png",
+      "sha256": "a2df91459c286a322442d22f1cd73d2416aed4fb2f29569d109d08ff76dc1cad",
+      "size": 798451
     },
     {
       "path": "assets/portraits/tianqi7/囊囊太后.png",
@@ -2240,6 +2335,11 @@
       "size": 806673
     },
     {
+      "path": "assets/portraits/tianqi7/王尊德.png",
+      "sha256": "cb9890c4eb53429dfcd978e5213f6848bd9875819f4ccdc1f14f7a2914b32134",
+      "size": 832589
+    },
+    {
       "path": "assets/portraits/tianqi7/魏忠贤.png",
       "sha256": "7230526dcadd442efff1459d7a283bb326cc0a6499794e9ecee7d10258fe1cc0",
       "size": 789274
@@ -2258,6 +2358,11 @@
       "path": "assets/portraits/tianqi7/武之望.png",
       "sha256": "4894bdd9f4beeae4bb3aea53d95c3f44c465ad83661c1073ed5fd7048ee6fddc",
       "size": 640757
+    },
+    {
+      "path": "assets/portraits/tianqi7/谢存仁.png",
+      "sha256": "cd5f9503a16d11ccf16268dc3e29ed8ebd7d7b22e3d180be3919164ce0ea21d1",
+      "size": 804008
     },
     {
       "path": "assets/portraits/tianqi7/徐光启.png",
@@ -2285,6 +2390,11 @@
       "size": 640964
     },
     {
+      "path": "assets/portraits/tianqi7/杨邦宪.png",
+      "sha256": "4a51f6cce0a969812143bcc4987843e316b986c6b3ddfb8510d8ebea5b3214c6",
+      "size": 799972
+    },
+    {
       "path": "assets/portraits/tianqi7/杨鹤.png",
       "sha256": "5702df8b7771acacfd1262d999d6e3800488a9ac9379e0a68aa4a9c31a84a86e",
       "size": 669898
@@ -2293,6 +2403,16 @@
       "path": "assets/portraits/tianqi7/杨所修.png",
       "sha256": "f760e8c3898ef1f2804e340a19e0c4ea5778cec53212a5a5c94d8a6f98f1c309",
       "size": 788882
+    },
+    {
+      "path": "assets/portraits/tianqi7/姚宗文.png",
+      "sha256": "3140e3183187cda7faadb0abdd8d710181f4f39cde80f336932a769fb482904e",
+      "size": 770184
+    },
+    {
+      "path": "assets/portraits/tianqi7/尹同皋.png",
+      "sha256": "a392e24d18692b9217f5d15ef09a3ce5bb17a7cec4d6ea448c07dbbd550227bf",
+      "size": 818014
     },
     {
       "path": "assets/portraits/tianqi7/袁崇焕.png",
@@ -2305,6 +2425,11 @@
       "size": 630834
     },
     {
+      "path": "assets/portraits/tianqi7/张鹤鸣.png",
+      "sha256": "c331aed502733e7b5a8517ec82687fb850f276dbec50dcb6676740a358fe2468",
+      "size": 826405
+    },
+    {
       "path": "assets/portraits/tianqi7/张瑞图.png",
       "sha256": "22c6db7e9568fb6f872ab3b4be2a41f1ab9c78b9708e4883126fdd34f39ebbd5",
       "size": 636068
@@ -2313,6 +2438,11 @@
       "path": "assets/portraits/tianqi7/张献忠.png",
       "sha256": "211f25cc1d6dae8da6eeed5b5995d9ec953cf3be2affca6fee2ff937978eba75",
       "size": 805775
+    },
+    {
+      "path": "assets/portraits/tianqi7/张延登.png",
+      "sha256": "fcd5fe5ee14ec520962d6795acdb1e8901c454ea2ecd78b0a1303385b0d97bfc",
+      "size": 793642
     },
     {
       "path": "assets/portraits/tianqi7/张懿安.png",
@@ -2353,6 +2483,11 @@
       "path": "assets/portraits/tianqi7/朱梅.png",
       "sha256": "a4fc64f8bd1c8e58f78ddd59186bd20b2ac6e37d4a57231e51c417899ab9cd27",
       "size": 819926
+    },
+    {
+      "path": "assets/portraits/tianqi7/朱一冯.png",
+      "sha256": "b6e16fe2ce4c2f208d26e0e0d12394a0337da911291b7d4cc70c78c1e58d74ab",
+      "size": 812218
     },
     {
       "path": "assets/portraits/tianqi7/朱由检.png",
@@ -2771,33 +2906,33 @@
     },
     {
       "path": "bundled-scenarios/绍宋·建炎元年八月（官方）.json",
-      "sha256": "b9d93ee676c51d2e2995507bc8829b686a7593bbfcbcee9be283e8e814f24ab1",
-      "size": 90923695
+      "sha256": "7a51847565b761bd13f68845ce6b2c32c2b2b553922032586fd83a6fd7d719a5",
+      "size": 90984615
     },
     {
       "path": "bundled-scenarios/天启七年·九月（官方）.json",
-      "sha256": "c372715a931d617c2f6acaed44aac83b3edee58b64d37d1102f2c5799b37d859",
-      "size": 16318793
+      "sha256": "fe728654dccc93b00fca5c481c736b5d66172972f22b42b8f5f34b5f3f83a5f3",
+      "size": 16384309
     },
     {
       "path": "bundled-scenarios/晚唐·开成五年（官方）.json",
-      "sha256": "3d03ef5839e2748a1c02bfb907b8f77c6cf7bac69de69a7237f51464c609f302",
-      "size": 52956146
+      "sha256": "86c9a74685b9b512166e62bf7f15e2e6b6d0e795de867fd56c87c322906a1751",
+      "size": 53244408
     },
     {
       "path": "bundled-scenarios/manifest.js",
-      "sha256": "b9d178552dc7d5a9e989b278675f9534650c7ebbea36fbe958a3d44d43379067",
-      "size": 6007
+      "sha256": "f125d313538ce76191bdd03de3a64457fdd874e0971370ec581bff135e1f2be6",
+      "size": 6008
     },
     {
       "path": "bundled-scenarios/manifest.json",
-      "sha256": "aac2a261beed5a656b8e7ae3706d999f94b1823c4658c087fe4d4df18eeb1b87",
-      "size": 6386
+      "sha256": "2e13cb5e955c572e8c0a1fa720747028b5ab7fdcd84664d2448a20409c094090",
+      "size": 6387
     },
     {
       "path": "changelog.json",
-      "sha256": "50293bb976040b8702db65a58bd7a4a23d032449a045c40f40e2d4f89654c913",
-      "size": 1022646
+      "sha256": "96fe3223521664d25079d83c676b77cc1dc10d471d5bbb7ee3b0332b0b825896",
+      "size": 1023709
     },
     {
       "path": "data/maps/chongzhen-prefecture-r2/geometry.json",
@@ -2833,6 +2968,26 @@
       "path": "data/maps/default-map.json",
       "sha256": "4f8ed7a215ed3cffa66168662d9e81c9efb135afcc642be9c08df0678f956082",
       "size": 198251
+    },
+    {
+      "path": "data/maps/scenario-library/index.json",
+      "sha256": "50bee2b2e0e381eb6b2223308843921c7c907ffd21c7cde92d3fb410c7cd651f",
+      "size": 2410
+    },
+    {
+      "path": "data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
+      "sha256": "55b43c060adb8736d53a849c88b517b46af8f5364f82a81132cc54e0669ea8c2",
+      "size": 11815292
+    },
+    {
+      "path": "data/maps/scenario-library/sc-tang840-840.json",
+      "sha256": "be5c2cbbf06cc014f431e6c0e4830057d03aa75f9b5480542da10d5da4150694",
+      "size": 5202646
+    },
+    {
+      "path": "data/maps/scenario-library/sc-tianqi7-1627.json",
+      "sha256": "985f64c8f7cd201f2eacda8d447c5756564470abe0776923cf248a2207d70711",
+      "size": 1486190
     },
     {
       "path": "data/maps/tianqi-ming2/tianqi-map-attach-audit.json",
@@ -2921,8 +3076,8 @@
     },
     {
       "path": "editor-authoring-agent.js",
-      "sha256": "f676e32174cbf8003fb0a22314c85bbf0819ee3447391ce04f401389b9cc6ad7",
-      "size": 313888
+      "sha256": "6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e",
+      "size": 313568
     },
     {
       "path": "editor-core.js",
@@ -3026,8 +3181,8 @@
     },
     {
       "path": "editor.html",
-      "sha256": "908a2a33d605c99f1895805274073589aeb3a126316eeadbec239d8bea06cb37",
-      "size": 185511
+      "sha256": "39482727e1fa7fb4cd54cffa5cb2e2e84dd83f47fe278f10ca54cabf3720aa18",
+      "size": 185530
     },
     {
       "path": "editor.js",
@@ -3041,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "f68fae288371d1da057b733f852c023fb729bcecf43ba2367d71270e6c3903be",
-      "size": 370597
+      "sha256": "181c963234c912e45403f8be2563c0eb19036cf493e7e2965e4bc37d50efa4be",
+      "size": 370912
     },
     {
       "path": "icon.png",
@@ -3051,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "ad564d3254e091adcefddda970d67f0f563969d228f57146bb9b1a7b23799791",
-      "size": 76266
+      "sha256": "67d485201031293aefb63e0c9830883e3d2f5c2d42df0b25e46807bd64ea2a78",
+      "size": 76546
     },
     {
       "path": "INDEX.md",
@@ -3078,6 +3233,26 @@
       "path": "map-display.js",
       "sha256": "750389c4077a898a99ea6dc0193ea29d9de6cfc5d143ce51e79e369df0fc3d39",
       "size": 17373
+    },
+    {
+      "path": "map-editor-agent-tools.js",
+      "sha256": "904ddc4bc96177415d7457d04929aef792416c30f0e331d546401c7625ffde18",
+      "size": 17479
+    },
+    {
+      "path": "map-editor-agent-ui.js",
+      "sha256": "3395b9e82eb7d530670f30f6ac2313f9d8ee5993c1f254dc77ed1592ae3d9592",
+      "size": 5200
+    },
+    {
+      "path": "map-editor-agent.css",
+      "sha256": "335cac444e998bd580807dea9d8170555e6042f059c20a248245d38f73ca4a61",
+      "size": 2607
+    },
+    {
+      "path": "map-editor-agent.js",
+      "sha256": "46904d4cc14dc67f6a780ad371d1437f3e2bf9428ea602139356f2c2d16db4ba",
+      "size": 6864
     },
     {
       "path": "map-editor-ai.js",
@@ -3156,8 +3331,8 @@
     },
     {
       "path": "map-editor-core.js",
-      "sha256": "90940ee59ac7ca5b10d0b495cd61d9189bf502964c8389e83ca2b8a87dab5098",
-      "size": 61506
+      "sha256": "efccb64e5a849dfafada4639c1a746c1e5c0a254320ee5e0cf317fbfbefbd7d1",
+      "size": 62796
     },
     {
       "path": "map-editor-cross-time.js",
@@ -3236,8 +3411,8 @@
     },
     {
       "path": "map-editor-ink-realm.js",
-      "sha256": "8bf722c963924bf8222f679c3a3a9499ec26557493339e941e1d51fb15cb4647",
-      "size": 7202
+      "sha256": "9257c5b2d48082019a9bd47eaf504766bfec1682beff9dab0265ebcac40eb50d",
+      "size": 7538
     },
     {
       "path": "map-editor-io.js",
@@ -3276,8 +3451,8 @@
     },
     {
       "path": "map-editor-minimap.js",
-      "sha256": "b883eefb2f9e8f49500c0167950d17819d88046bf7f25e7b1cb8e160c35acf71",
-      "size": 11443
+      "sha256": "0911cbfcbb3cc9c0eafd3d1bbca891d15f15b9989d9bfdbbcafdfa57c25d16e0",
+      "size": 11552
     },
     {
       "path": "map-editor-mode-banner.js",
@@ -3360,6 +3535,16 @@
       "size": 12673
     },
     {
+      "path": "map-editor-scenario-geometry.js",
+      "sha256": "250cbfc93237440aeab6d71aa7d1d6f9b86882fd62ba004c95e849da8523d1dd",
+      "size": 9822
+    },
+    {
+      "path": "map-editor-scenario-library.js",
+      "sha256": "9a17844511a33fb0571572c078eee634b345c876977b9e9ba483b1318090440f",
+      "size": 6819
+    },
+    {
       "path": "map-editor-season.js",
       "sha256": "e918786d361400c1f2f3f058d50688c0d39edc18806b4315fea2d7da9e799c4f",
       "size": 5244
@@ -3401,8 +3586,8 @@
     },
     {
       "path": "map-editor-to-game.js",
-      "sha256": "2363bf1c61ad27ff4bb780e332fb9e7c380b61950b703929e7c732df833b2898",
-      "size": 22554
+      "sha256": "01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87",
+      "size": 24081
     },
     {
       "path": "map-editor-tools.js",
@@ -3456,8 +3641,8 @@
     },
     {
       "path": "map-editor.html",
-      "sha256": "d0ac341b6e4f5a92092741d30a7141fc201bf539c3b89734930ec5f67d7a4f76",
-      "size": 112985
+      "sha256": "23fe2a1d169d39076329f297530a2ab7a5c9c3edd07723e14ae97341f6c94ff2",
+      "size": 113928
     },
     {
       "path": "map-integration.js",
@@ -3506,8 +3691,8 @@
     },
     {
       "path": "modules/ai-change-applier/reconcile.js",
-      "sha256": "4af41d278c93d50dea110e84d9ef0b27417aa6c7cc9822c3caeadbdbdea16be4",
-      "size": 98994
+      "sha256": "99ea00050b981deffd6014ea19c71209fb642281207f01dddb34a5a0321af5f5",
+      "size": 99282
     },
     {
       "path": "modules/ai-change-applier/validators.js",
@@ -3521,8 +3706,8 @@
     },
     {
       "path": "phase8-formal-bridge-styles.js",
-      "sha256": "5999e9bdb1e67e271bea1ab6e0ce3563fe00beafcc83503a3df433e867066286",
-      "size": 320049
+      "sha256": "5cc608970768d85dca5fcb7a348e3319ea05e449701d4ce5919e2910662a810a",
+      "size": 322222
     },
     {
       "path": "phase8-formal-bridge.js",
@@ -3541,8 +3726,8 @@
     },
     {
       "path": "phase8-formal-map-dossier.js",
-      "sha256": "27f225159b3800882de1d54dd0a8b75940900315933f5dfefd09ea9f74f68dd5",
-      "size": 158833
+      "sha256": "6f044da60519dec79091969b4405506b6947fa7f92a3b62bc20104c1e5cbda57",
+      "size": 169682
     },
     {
       "path": "phase8-formal-map.js",
@@ -4056,8 +4241,8 @@
     },
     {
       "path": "preview/official-scenarios-bundle.js",
-      "sha256": "b1c864fd68d0b424d10ee77282b0f4440b5d6c36933ed82d00c0f4357684ff4d",
-      "size": 92347460
+      "sha256": "3d1bb5211baffe40edcf6aaf0a275b41b3a331ac91edcf375eac8e6a4d1598de",
+      "size": 92815883
     },
     {
       "path": "preview/opening-redesign-preview.html",
@@ -4151,13 +4336,13 @@
     },
     {
       "path": "preview/scenario-editor-reset-data.js",
-      "sha256": "ebda9a6bd6e96619e980253775897fa036064a547dd7f4807f9625907a879f99",
-      "size": 16335850
+      "sha256": "fb09ed48df9abeea24650955e8fe9c3d2876c279b66624d33de7ef8cd58acb14",
+      "size": 16401564
     },
     {
       "path": "preview/scenario-editor-reset-preview.html",
-      "sha256": "40d2c20d986f49a5630daa616d852dfb140b41201ad618e9c767b9d81cedb34c",
-      "size": 33910
+      "sha256": "397587edd462da9e052587122521f1fe15927c23c4ef66084e80de65b0d038f6",
+      "size": 33907
     },
     {
       "path": "preview/scenario-editor-reset-style.css",
@@ -4256,18 +4441,18 @@
     },
     {
       "path": "scenarios/shaosong-jianyan-1127.js",
-      "sha256": "ce680eff6153f1199f6c6ded5f9aa176db6efab9e7ee95d42c8a3f69de88a7bd",
-      "size": 50815088
+      "sha256": "1b1b4f1a2a6bb99380141e05c7c685081ca992a3c3c04984fabb2b0420e2ac15",
+      "size": 50883649
     },
     {
       "path": "scenarios/tang840-840.js",
-      "sha256": "e7ec94a0020e4b989b7ffbff17bf3add2f22431dda2cf6b08a668e80574edf3e",
-      "size": 31582639
+      "sha256": "e2b99025748c6d3a0ef495c44b2321bb058c11258ec04358cd45661954a68579",
+      "size": 31911207
     },
     {
       "path": "scenarios/tianqi7-1627.js",
-      "sha256": "e3628e3229572685d0d721781bf6f083ff98cf7c5a4e5eee0dce84b941a36e7c",
-      "size": 9951486
+      "sha256": "b03e65066cad926f5d4817e7dfcfad6380bb1a04fd7b303d91f085461b0c3ead",
+      "size": 10022780
     },
     {
       "path": "schemas/sc1.schema.json",
@@ -4296,8 +4481,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "7070abc9fef5019e1c0542d453ceb74030a3850605af417fd61596d61dd5ecd8",
-      "size": 383356
+      "sha256": "4c5676d0921bd715469909ea343ee4e5c15691b95da3ce1c4e95882f95fe6f71",
+      "size": 385199
     },
     {
       "path": "styles.css",
@@ -4700,6 +4885,16 @@
       "size": 16851
     },
     {
+      "path": "tm-circuit-governance.js",
+      "sha256": "8611e6deeda0a172a131bda750afd4eaa201fcc9e4bcc6d89771ad0a0495762e",
+      "size": 9622
+    },
+    {
+      "path": "tm-circuit-governor-effects.js",
+      "sha256": "52e70d8441fa90309866f3b069608e54cec8b4b63d22a264a975fbd82eee8d15",
+      "size": 8174
+    },
+    {
       "path": "tm-class-character-relations.js",
       "sha256": "1a357ab236a46bf60e2bb20c631d71b1b82706b0b5c360c45204f8cc95876427",
       "size": 35611
@@ -4821,8 +5016,8 @@
     },
     {
       "path": "tm-division-reassign.js",
-      "sha256": "91b07395024ac058493240d2c9d45e8319448c7c93584c51eb91b720d601b482",
-      "size": 17770
+      "sha256": "4d3b9e60f373cd97c0cebe1afb25f0d2d297d165486b5b286c45afb9c9bdc05c",
+      "size": 18989
     },
     {
       "path": "tm-dynamic-systems.js",
@@ -4991,8 +5186,8 @@
     },
     {
       "path": "tm-endturn-core.js",
-      "sha256": "76f43b844b9ae0de9f31e1f12fbea212190379a2b7840fa653e376d43c535b1d",
-      "size": 106879
+      "sha256": "deba2faf6f311f675ac1cbdd44516c3561e09a38564fbd28f8d0ebb24ba76174",
+      "size": 107166
     },
     {
       "path": "tm-endturn-edict.js",
@@ -5056,8 +5251,8 @@
     },
     {
       "path": "tm-endturn-province.js",
-      "sha256": "4295a59fa0b0749937eb09804f15d12097da2bdb263ac419610d5c30f3eae24c",
-      "size": 120105
+      "sha256": "78a6ad0110de0b2ac40f8f132d2f4a3a5e2a6d30a7786b7cdfef3eb3d4f9509b",
+      "size": 121682
     },
     {
       "path": "tm-endturn-qiaozhi.js",
@@ -5296,8 +5491,8 @@
     },
     {
       "path": "tm-field-pipelines.js",
-      "sha256": "ba4e05650409e6462ebbde92fd3fc0e1f9b915548dc80d694a98823908db3442",
-      "size": 10336
+      "sha256": "987d783bca19f11d8e40de94ce3e8a198dff60853ebfd591dfe984ce1132c882",
+      "size": 10997
     },
     {
       "path": "tm-file-export.js",
@@ -5306,13 +5501,13 @@
     },
     {
       "path": "tm-fiscal-engine.js",
-      "sha256": "afd78a54ed6ec07c91f0394ff09a3babd9c7f4b5df359739143ce324c680e79d",
-      "size": 161693
+      "sha256": "cbc9911d6335efd89d762063de5b8c05b5b50dc3ccf0505477372d27dab678b3",
+      "size": 165549
     },
     {
       "path": "tm-fiscal-statements.js",
-      "sha256": "07cb0e8ffa1591f8c911ee10e4e641a2bbb9498813f67b65561344f5f7beb68b",
-      "size": 20747
+      "sha256": "6f1e2e1dd0b4ee2fde6d0e40341c609c90c3a98293e09ef7e6c9f196f29d94a1",
+      "size": 26148
     },
     {
       "path": "tm-fiscal-ui.js",
@@ -5331,8 +5526,8 @@
     },
     {
       "path": "tm-game-loop.js",
-      "sha256": "4092ae09f758603d8c5bcbfd66ba4ab174f05d1fe3041c4c9db0baaffd679c2b",
-      "size": 111253
+      "sha256": "7182d5921355fc2ab5687b6abbd05fbb97d553cf018cb73d59882a8abf6edbcd",
+      "size": 111592
     },
     {
       "path": "tm-game-ui-shell.js",
@@ -5351,8 +5546,8 @@
     },
     {
       "path": "tm-guoku-engine.js",
-      "sha256": "238849c440c3962de29e4e58d8917e969e1f1e6ce65ee2e9858ddb1d58f8ea81",
-      "size": 147046
+      "sha256": "55214795a25d1fb7b75c27872076ce22ad97b312df64c430a3257f98f910c55f",
+      "size": 152445
     },
     {
       "path": "tm-guoku-panel.js",
@@ -5421,8 +5616,8 @@
     },
     {
       "path": "tm-huji-engine.js",
-      "sha256": "23c8fd4ee8adf3e01efd38aac209a7cbfb906f92f59bd2f0677049312631571d",
-      "size": 155513
+      "sha256": "6eb2c3a7e3e9bc5bcefe12454232b5d278dd149ee065d84adcf2c513c7698c2b",
+      "size": 155687
     },
     {
       "path": "tm-huji-governance-loop.js",
@@ -5730,6 +5925,11 @@
       "size": 24939
     },
     {
+      "path": "tm-map-route-days.js",
+      "sha256": "480ea02ef8f8d40d173a1c9928c3489005d49c0e66e995c1b1fca309d83c52e8",
+      "size": 5671
+    },
+    {
       "path": "tm-map-system.js",
       "sha256": "ca115209b0cdb1ac9a3153393150c6e722c2b6fe49e2d08f7794ea3ed5d4486a",
       "size": 99815
@@ -6031,8 +6231,8 @@
     },
     {
       "path": "tm-office-dutystate.js",
-      "sha256": "e8f66020b8ea62bcf15acf1d5d4039fb93660aa0f16c734519e23fd3d136b6ba",
-      "size": 13144
+      "sha256": "df37509377d335860249d5dfe37722a2b99071b7b62845daa47e58332e417fb2",
+      "size": 16936
     },
     {
       "path": "tm-office-editor.js",
@@ -6086,8 +6286,8 @@
     },
     {
       "path": "tm-office-system.js",
-      "sha256": "97a2bb734ac0b8cc1771358130cbed5e8ec75341d0faf81d44cdd837eba8bdd3",
-      "size": 109103
+      "sha256": "21ae328cd085ffe1e8f40a4d149ac964e161f9e4997943d5ee61781595ec992d",
+      "size": 109969
     },
     {
       "path": "tm-office-vacancy.js",
@@ -6096,8 +6296,8 @@
     },
     {
       "path": "tm-official-scenario-bundle.js",
-      "sha256": "1b7540c2b01447ccc80a27645d0d7703f33f54110d092e13374691c48adcf503",
-      "size": 92347789
+      "sha256": "c6d9c1e35d0cb5c919c42d8658c2243361f921eb349b60e04b771d80ec4fb039",
+      "size": 92816212
     },
     {
       "path": "tm-official-scenario-loader.js",
@@ -6166,13 +6366,13 @@
     },
     {
       "path": "tm-patches-start.js",
-      "sha256": "d2106452d018cd10b7bdba3c7e1788c001ec10a48f598f29469c027bc5dcc5ee",
-      "size": 129946
+      "sha256": "b310eb450068d73412253a4fc282cb837f227ca6ce2102b38966ea207052c425",
+      "size": 130309
     },
     {
       "path": "tm-patches.js",
-      "sha256": "dee8bab3651e77f123ea352144e0712aefc73bd70ebd94ccfbdb1ddaac4bd031",
-      "size": 184728
+      "sha256": "3a22baf24cf701b508b9164cc3768f9affbb91f262f1217d63611947ffeb833d",
+      "size": 187687
     },
     {
       "path": "tm-pause-fab.js",
@@ -6211,8 +6411,8 @@
     },
     {
       "path": "tm-player-settings.js",
-      "sha256": "c251b4c5a6e7e0dc8f306000804b654c0ad639acd3a2c8147a6db1d9dfeed778",
-      "size": 34222
+      "sha256": "8ad8b9f810e38647682b8dec3cbf365caf739bff38a6be24a9dcd70f2d3ac755",
+      "size": 34406
     },
     {
       "path": "tm-player-tools.js",
@@ -6246,8 +6446,8 @@
     },
     {
       "path": "tm-public-treasury.js",
-      "sha256": "03f1ffda135028b104184eba803b0e47644d85dd4392210e424722fe780ee523",
-      "size": 42588
+      "sha256": "13c30e84af9a76f5c20f45d774fcef58f646c61269c777b6460539ea32f15b94",
+      "size": 42958
     },
     {
       "path": "tm-qiju-ledger.js",
@@ -6436,8 +6636,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "08d35ef8ea2ae4d67032a01a5770a77308b5f3ce98a21027ca50fd2d4a8acdad",
-      "size": 136621
+      "sha256": "45ef0f719852237d70d76a131cd479189e0d1538bb9cd251dc9ea778c10689a6",
+      "size": 137263
     },
     {
       "path": "tm-start-selector.js",

@@ -1,0 +1,286 @@
+{
+  "method": "360-day actual collection; money, grain and cloth kept separate",
+  "scenarios": [
+    {
+      "key": "tianqi",
+      "unit": {
+        "money": "两",
+        "grain": "石",
+        "cloth": "匹"
+      },
+      "moneyBefore": {
+        "nominal": 42455508.3972,
+        "central": 12347604,
+        "local": 4339273
+      },
+      "moneyAfter": {
+        "nominal": 15985643.4179,
+        "central": 4733797,
+        "local": 1733039
+      },
+      "native": false,
+      "previewMatches": true,
+      "legacyIdentical": true,
+      "responses": [
+        {
+          "id": "salt_lu",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_zhe",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_iron",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_fujian",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "guanshui",
+          "base": "maritimeTradeVolume",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_lu_shandong",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_hedong",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_shaanxi",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_sichuan",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_guangdong",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_yunnan",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        }
+      ]
+    },
+    {
+      "key": "shaosong",
+      "unit": {
+        "money": "贯",
+        "grain": "石",
+        "cloth": "匹"
+      },
+      "moneyBefore": {
+        "nominal": 42918348.40359999,
+        "central": 8139365,
+        "local": 14862615
+      },
+      "moneyAfter": {
+        "nominal": 46287627.090399995,
+        "central": 8975209,
+        "local": 15589306
+      },
+      "native": false,
+      "previewMatches": true,
+      "legacyIdentical": true,
+      "responses": [
+        {
+          "id": "kuangye",
+          "base": "mineralProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "yanke",
+          "base": "saltProduction",
+          "productionElasticity": 1,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        }
+      ]
+    },
+    {
+      "key": "tang",
+      "unit": {
+        "money": "贯",
+        "grain": "石",
+        "cloth": "匹"
+      },
+      "moneyBefore": {
+        "nominal": 40442643.0711,
+        "central": 12022575.435000004,
+        "local": 7988457.5414
+      },
+      "moneyAfter": {
+        "nominal": 40442643.0711,
+        "central": 12022575.435000004,
+        "local": 7988457.5414
+      },
+      "native": false,
+      "previewMatches": true,
+      "legacyIdentical": true,
+      "responses": [
+        {
+          "id": "salt_iron",
+          "base": "seaSaltFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_hedong",
+          "base": "poolSaltFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_sichuan",
+          "base": "wellSaltFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "salt_retained",
+          "base": "retainedSaltFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "wine",
+          "base": "wineFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "commerce",
+          "base": "ordinaryTradeFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "maritime",
+          "base": "maritimeFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        },
+        {
+          "id": "mining",
+          "base": "miningFiscalAssessment",
+          "productionElasticity": 0,
+          "populationDirectElasticity": 0,
+          "sixTurnMoneyDrift": 0
+        }
+      ]
+    }
+  ],
+  "benchmarks": [
+    {
+      "key": "tianqi",
+      "label": "十运司有据课银",
+      "annualReference": 2125000,
+      "annualizedModelReceipt": 863936.75,
+      "shortfall": 1261063.25,
+      "shortfallPercent": 59.344152941176475,
+      "caveat": "将史载课银作为模型名义基准后仍扣原游戏征收损耗；不少引文为岁入，故模型实收明显低，不用提高单位价掩盖。额盐、余课和年份范围也不完全相同。"
+    },
+    {
+      "key": "tianqi",
+      "label": "月港诸饷二万九千下限",
+      "annualReference": 29000,
+      "annualizedModelReceipt": 15410.097222222223,
+      "shortfall": 13589.902777777777,
+      "shortfallPercent": 46.861733716475094,
+      "caveat": "万历二十二年跨年参照含水陆加增，本模型只有陆饷，非同口径同年账。"
+    },
+    {
+      "key": "shaosong",
+      "label": "淮浙盐课庆元参照",
+      "annualReference": 9908000,
+      "annualizedModelReceipt": 4146487.1944444445,
+      "shortfall": 5761512.805555556,
+      "shortfallPercent": 58.150109058897414,
+      "caveat": "庆元不同于建炎；现有产量取北宋旧额、价取南渡，且模型收入未另扣未知亭户工本，只作量级参照。"
+    },
+    {
+      "key": "shaosong",
+      "label": "抽解与和买合数",
+      "annualReference": 2000000,
+      "annualizedModelReceipt": 1926386.861111111,
+      "shortfall": 73613.13888888899,
+      "shortfallPercent": 3.6806569444444492,
+      "caveat": "含和买，不能全视税收。缺可分离的同期纯抽解年额；按审查授权回退原commerceVolume估算，未用二百万目标校准产值或系数。"
+    },
+    {
+      "key": "tang",
+      "label": "大历末盐利六百万下限",
+      "annualReference": 6000000,
+      "annualizedModelReceipt": 5500000,
+      "shortfall": 500000,
+      "shortfallPercent": 8.333333333333337,
+      "caveat": "大历末早于840，且东南海盐范围不必与引文严格相同，只作参照。"
+    },
+    {
+      "key": "tang",
+      "label": "两池实钱定额",
+      "annualReference": 1000000,
+      "annualizedModelReceipt": 565634.16,
+      "shortfall": 434365.83999999997,
+      "shortfallPercent": 43.436584,
+      "caveat": "史料是定额，本模型名义恰百万；实收扣原征解损耗。"
+    },
+    {
+      "key": "tang",
+      "label": "坑冶七万余下限",
+      "annualReference": 70000,
+      "annualizedModelReceipt": 75000.0001,
+      "shortfall": -5000.000100000005,
+      "shortfallPercent": -7.142857285714288,
+      "caveat": "模型实际地方留用7.5万，比下限多0.5万；模型名义约15.3244万，不能把实收写成名义。"
+    }
+  ]
+}

@@ -28,19 +28,155 @@ function check(name, fn) {
   checks.push(name);
 }
 
-setTimeout(() => {
+const { bantuSnapshot, bantuMarkup, assertBantuConservation } = require('./lib-map-circuit-bantu.js');
+
+setTimeout(async () => {
   try {
     // 浏览器里省道分组来自按需加载的地名模块；VM 不跑按需加载，这里直接装入它的布局脚本
     vm.runInContext(fs.readFileSync(path.join(WEB, 'tm-map-realm-layout.js'), 'utf8'), c, { filename: 'tm-map-realm-layout.js' });
     const run = (code) => vm.runInContext(code, c, { timeout: 60000 });
 
     run(`
+      // 默认 VM 把各 id 共用一个节点；单独隔离册页，让点击只到达实际册页委托。
+      var __bookNode = document.createElement('div'), __oldGetById = document.getElementById;
+      document.getElementById = function(id){ return id === 'ppop' ? __bookNode : __oldGetById.call(document, id); };
       var __parts = TMPhase8FormalBridge.__p8MapParts;
       var __map = GM.mapData;
       var __shuntian = __map.regions.filter(function(r){ return /顺天/.test(r.name || ''); })[0];
       var __circuit = __parts.findCircuit(__shuntian);
       var __book = function(){ return document.getElementById('ppop'); };
     `);
+
+    check('开册批次内外：明朝廷全部地块的装配值与户籍视图逐块全等', () => {
+      const d = JSON.parse(run(`(function(){
+        var f = __parts.findFaction('明朝廷', '');
+        var regions = __map.regions.filter(function(r){ return __parts.factionOwnsRegion(r, '明朝廷', f); });
+        function populationOptions(r){ return { root: GM, region: __parts.findLiveAdminDivision(r) || r.id, factionId: __parts.ownerKey(r) }; }
+        var outside = regions.map(function(r){ return {
+          id: r.id, bundle: JSON.stringify(__parts.regionBundle(r)), population: JSON.stringify(HujiEngine.getPopulationView(populationOptions(r)))
+        }; });
+        var reused = true;
+        var inside = __parts.withRenderBatch(function(){
+          var groups = HujiEngine.factionLeafGroups(GM);
+          return regions.map(function(r){
+            var bundle = __parts.regionBundle(r), options = populationOptions(r);
+            reused = reused && bundle === __parts.regionBundle(r);
+            options.leafGroups = groups;
+            return { id: r.id, bundle: JSON.stringify(bundle), population: JSON.stringify(HujiEngine.getPopulationView(options)) };
+          });
+        });
+        return JSON.stringify({ outside: outside, inside: inside, reused: reused });
+      })()`));
+      assert.ok(d.outside.length > 0, '确有明朝廷地块，逐块对比不空跑');
+      assert.equal(d.inside.length, d.outside.length);
+      d.outside.forEach((row, i) => {
+        assert.equal(d.inside[i].id, row.id);
+        assert.equal(d.inside[i].bundle, row.bundle, row.id + ' regionBundle 的 JSON.stringify 全等');
+        assert.equal(d.inside[i].population, row.population, row.id + ' 同 region、同 factionId 的人口视图全等');
+      });
+      assert.equal(d.reused, true, '同批次按地块对象身份复用装配值');
+      console.log('[render-batch] 明朝廷逐块全等 regions=' + d.outside.length);
+    });
+
+    check('跨次开册不吃旧数：同回合改现行户口，谱牒读数随之变化并可恢复', () => {
+      const d = JSON.parse(run(`(function(){
+        // 天启沿用旧户口口径，现行省账的数值 population 覆盖 populationDetail.mouths。
+        // findLiveProvinceStats 返回浅副本，须改 GM 中同键的原记录，验完恢复。
+        var stats = __parts.findLiveProvinceStats(__shuntian), current = GM.provinceStats[stats._provinceKey];
+        var keep = current.population, delta = 1000000, out = { field: 'GM.provinceStats[' + stats._provinceKey + '].population', delta: delta };
+        if (typeof keep !== 'number' || !isFinite(keep)) throw new Error('顺天府现行户口字段缺失');
+        function readBook(){
+          __parts.openFactionDossier('明朝廷', null);
+          var value = __book().innerHTML.split('<span class="k">户口</span><span class="v">')[1];
+          if (!value) throw new Error('谱牒户口读数缺失');
+          return value.split('<')[0];
+        }
+        try {
+          out.before = readBook();
+          out.regionBefore = Number(__parts.regionBundle(__shuntian).data.population);
+          current.population = keep + delta;
+          out.after = readBook();
+          out.regionAfter = Number(__parts.regionBundle(__shuntian).data.population);
+        } finally {
+          current.population = keep;
+        }
+        out.restored = readBook();
+        out.regionRestored = Number(__parts.regionBundle(__shuntian).data.population);
+        return JSON.stringify(out);
+      })()`));
+      assert.equal(d.regionAfter - d.regionBefore, d.delta, '现行户口变化进入下一次开册');
+      assert.notEqual(d.after, d.before, '谱牒户口读数同步变化');
+      assert.equal(d.restored, d.before, '恢复户口后谱牒读数复原');
+      assert.equal(d.regionRestored, d.regionBefore);
+      console.log('[render-batch] 户口字段=' + d.field + ' 谱牒=' + d.before + ' -> ' + d.after + ' -> ' + d.restored);
+    });
+
+    check('批次不外泄：三类册页、嵌套与异常结束后均恢复现算和军队签名检查', () => {
+      const d = JSON.parse(run(`(function(){
+        var originalView = HujiEngine.getPopulationView, originalGroups = HujiEngine.factionLeafGroups;
+        var locations = TMMapLocations, originalRead = locations.read;
+        var reads = 0, groupCalls = 0, views = [], out = { after: [] };
+        HujiEngine.getPopulationView = function(options){
+          views.push({ supplied: Object.prototype.hasOwnProperty.call(options, 'leafGroups'), groups: options.leafGroups });
+          return originalView.apply(this, arguments);
+        };
+        HujiEngine.factionLeafGroups = function(){ groupCalls += 1; return originalGroups.apply(this, arguments); };
+        locations.read = function(entity, kind){ if (kind === 'army') reads += 1; return originalRead.apply(this, arguments); };
+        function outside(label){
+          reads = 0; views = [];
+          var first = __parts.regionBundle(__shuntian), second = __parts.regionBundle(__shuntian);
+          out.after.push({ label: label, distinct: first !== second, reads: reads, views: views.length,
+            supplied: views.some(function(v){ return v.supplied; }) });
+        }
+        try {
+          out.strict = locations.enabled(__map);
+          out.armies = GM.armies.length;
+          __parts.openRegionDossier(__shuntian); outside('方志');
+          __parts.openFactionDossier('明朝廷', null); outside('谱牒');
+          __parts.openCircuitDossier(__circuit.key, __shuntian); outside('通志');
+          // 前面的开册已暖好旧军队缓存；命中旧签名时也必须将它放进本批次。
+          reads = 0; views = []; groupCalls = 0;
+          var firstBatch;
+          __parts.withRenderBatch(function(){
+            firstBatch = __parts.regionBundle(__shuntian);
+            out.nested = __parts.withRenderBatch(function(){ return __parts.regionBundle(__shuntian); }) === firstBatch;
+            var other = __circuit.members.map(function(m){ return m.region; }).filter(function(r){ return r !== __shuntian; })[0];
+            __parts.regionBundle(other);
+            // 同 id 的另一个对象不能误命中对象身份缓存。
+            out.identity = __parts.regionBundle(Object.assign({}, __shuntian)) !== firstBatch;
+          });
+          out.batch = { reads: reads, groupCalls: groupCalls, views: views.length,
+            shared: views.every(function(v){ return v.supplied && Array.isArray(v.groups) && v.groups === views[0].groups; }) };
+          out.nextFresh = __parts.withRenderBatch(function(){ return __parts.regionBundle(__shuntian); }) !== firstBatch;
+          outside('显式批次');
+          var marker = new Error('批次清理探针');
+          try { __parts.withRenderBatch(function(){ __parts.regionBundle(__shuntian); throw marker; }); }
+          catch (error) { out.rethrown = error === marker; }
+          outside('异常批次');
+        } finally {
+          HujiEngine.getPopulationView = originalView;
+          HujiEngine.factionLeafGroups = originalGroups;
+          locations.read = originalRead;
+        }
+        return JSON.stringify(out);
+      })()`));
+      assert.equal(d.strict, true, '真实天启启用军队地名解析');
+      assert.ok(d.armies > 0, '有军队，签名检查不空跑');
+      for (const row of d.after) {
+        assert.equal(row.distinct, true, row.label + '结束后两次装配互不复用');
+        assert.equal(row.views, 2, row.label + '结束后两次均重取户籍视图');
+        assert.equal(row.supplied, false, row.label + '结束后不再传 leafGroups');
+        assert.equal(row.reads, d.armies * 2, row.label + '结束后仍每次重算全图军队签名');
+      }
+      assert.equal(d.nested, true, '嵌套批次复用外层缓存');
+      assert.equal(d.identity, true, '按对象身份缓存，不按 id 缓存');
+      assert.equal(d.batch.reads, d.armies, '旧军队缓存命中后，本批次只算一次签名');
+      assert.equal(d.batch.groupCalls, 1, '本批次只走一次户籍叶子分组');
+      assert.equal(d.batch.views, 3, '三个不同地块对象各装配一次');
+      assert.equal(d.batch.shared, true, '批次内传同一份叶子分组');
+      assert.equal(d.nextFresh, true, '下一批次重新装配');
+      assert.equal(d.rethrown, true, '异常原样抛出且清理批次');
+    });
 
     check('北直隶通志能从府州打开，页头有层级路径、长官与治所', () => {
       const d = JSON.parse(run(`(function(){
@@ -54,7 +190,9 @@ setTimeout(() => {
       assert.match(d.cls, /circuit-panel/);
       assert.ok(d.html.includes('通 志'), '册页种类是通志');
       assert.ok(d.html.includes('bk-crumbs') && d.html.includes('北直隶'), '页头有层级路径');
-      assert.ok(d.html.includes('顺天巡抚') && d.html.includes('刘诏'), '长官卡取自省道档案');
+      // 长官姓名随剧本数据（数据线补主官后北直隶现任会变），按本方省道节点上的官衔与姓名核
+      const head = JSON.parse(run('JSON.stringify((function(){ var n = TM.DivisionReassign.circuitAdminNode(GM, __circuit.key, TM.DivisionReassign.ownerKeyOf(__shuntian)); return { post: n.officialPosition, who: n.governor }; })())'));
+      assert.ok(head.post && head.who && d.html.includes(head.post) && d.html.includes(head.who), '长官卡取自本方省道档案');
       assert.ok(d.html.includes('治所 <b>顺天府</b>'), '治所可点开其方志');
     });
 
@@ -92,7 +230,7 @@ setTimeout(() => {
     });
 
     check('页脚动作经右栏同一个写入口写诏书建议，范围写明本道各州', () => {
-      // 先数按钮再动作：VM 的模拟 DOM 对所有 id 返回同一个节点，诏书建议栏重画会覆盖册页内容（真浏览器里是两个节点）
+      // 先数按钮再动作；册页已用独立节点，建议栏重画不会覆盖本次读数。
       const d = JSON.parse(run(`(function(){
         TMPhase8FormalBridge.map.openCircuitDossier(__shuntian);
         var buttons = (__book().innerHTML.match(/data-bk-circuit-act="/g) || []).length;
@@ -116,8 +254,10 @@ setTimeout(() => {
       const d = JSON.parse(run(`(function(){
         var MC = TM.MapCircuits, names = TMPhase8FormalBridge.rightrail.playerFactionNames();
         var foreign = null;
+        // 全图逐州查省道时先建一次索引，免得每州都重算全图归属签名
+        var index = MC.indexCircuits(__map, { layout: TMMapRealmLayout, ownerOf: __parts.canonicalOwnerKey });
         __map.regions.some(function(r){
-          var c = __parts.findCircuit(r);
+          var c = __parts.findCircuit(r, index);
           var mine = function(m){ var f = __parts.findFaction(m.owner, ''); return names.indexOf(String(m.owner)) >= 0 || !!(f && names.indexOf(String(f.name)) >= 0); };
           if (c && !c.members.some(mine)) { foreign = { circuit: c, region: r }; return true; }
           return false;
@@ -205,6 +345,64 @@ setTimeout(() => {
       assert.equal(d.write, false);
     });
 
+    // 通志一期补：谱牒版图按省道分组，先验真实天启开局，再验证委托与旧地图退化。
+    const mingBantu = bantuSnapshot(run, '明朝廷');
+    const mingMarkup = bantuMarkup(mingBantu);
+    check('天启明朝廷版图：省道组数、州签集合守恒，各组链接与叶子汇总相符并按户口排序', () => {
+      assertBantuConservation(mingBantu, mingMarkup);
+      const expected = [...mingBantu.groups].sort((a, b) => b.population - a.population || a.label.localeCompare(b.label, 'zh-CN'));
+      assert.deepEqual(mingMarkup.groups.filter((g) => g.key).map((g) => g.key), expected.map((g) => g.key), '户口降序，同户口按省道名');
+      const summary = '省道 ' + expected.length + ' 个' + (mingBantu.none.length ? ' · 未设省道 ' + mingBantu.none.length + ' 块' : '');
+      assert.ok(mingMarkup.html.includes('<div class="bk-bantu-sum">' + summary + '</div>'), '概数文案准确');
+      for (const group of mingMarkup.groups) {
+        assert.doesNotMatch(group.attrs, /\bopen(?:\s|=|$)/, '分组默认收起');
+        if (!group.key) {
+          assert.equal(group, mingMarkup.groups[mingMarkup.groups.length - 1], '未设省道永远最后');
+          assert.deepEqual([...group.ids].sort(), [...mingBantu.none].sort());
+          continue;
+        }
+        const row = expected.find((g) => g.key === group.key);
+        assert(row, '分组来自正式省道');
+        assert.deepEqual([...group.html.matchAll(/data-bk-open-circuit="([^"]+)"/g)].map((m) => m[1]), [group.key], '行首省名打开本组通志');
+        assert.deepEqual([...group.ids].sort(), [...row.ids].sort(), '每组只含本方府州');
+        assert.ok(group.html.includes('<span class="bd-n">' + row.count + '/' + row.total + ' 州</span>'), '本方/全道计数');
+        assert.deepEqual([...group.html.matchAll(/<span class="bd-v">([\s\S]*?)<\/span>/g)].map((m) => m[1]), row.values, '汇总读数、等级、警色与通志同口径');
+      }
+    });
+
+    check('谱牒版图省名沿用现有点击委托，打开同 key 通志', () => {
+      const key = mingMarkup.groups[0].key;
+      const d = JSON.parse(run(`(function(){
+        var pop = __book(), key = ${JSON.stringify(key)};
+        var button = { dataset: { bkOpenCircuit: key }, closest: function(sel){ return sel === '[data-bk-open-circuit]' ? this : null; } };
+        var event = { target: button, preventDefault: function(){}, stopPropagation: function(){} };
+        (pop._listeners.click || []).slice().forEach(function(fn){ fn.call(pop, event); });
+        return JSON.stringify({ kind: pop.dataset.panelKind, key: pop.dataset.circuitKey, html: pop.innerHTML });
+      })()`));
+      assert.equal(d.kind, 'circuit');
+      assert.equal(d.key, key);
+      assert.ok(d.html.includes('通 志'));
+    });
+
+    check('无正式省道的势力保持原平铺：没有省道概数和 details', () => {
+      // 天启有归属地块已全登记：在同一真实开局中保留一个他方州、暂去登记，构成缺层级旧地图；验完恢复。
+      run(`var __keepBantuRegions = __map.regions, __keepBantuRegistry = __map.circuitRegistry;
+        var __loneBantuRegion = __map.regions.filter(function(r){ return !__parts.factionOwnsRegion(r, '明朝廷', __parts.findFaction('明朝廷', '')); })[0];
+        __map.regions = [__loneBantuRegion]; __map.circuitRegistry = [];`);
+      try {
+        const key = run('__parts.canonicalOwnerKey(__loneBantuRegion)');
+        const snapshot = bantuSnapshot(run, key), parsed = bantuMarkup(snapshot);
+        assert.equal(snapshot.groups.length, 0, '该势力确实没有正式省道');
+        assert.equal(snapshot.ids.length, 1, '该势力有地块，退化断言不空跑');
+        assert.doesNotMatch(parsed.html, /bk-bantu-sum|bk-bantu-dao|<details/);
+        assert.deepEqual(parsed.ids, snapshot.ids);
+        const expected = run(`'<div class="bk-qian-links"><button type="button" class="bk-qian" data-bk-open-region="' + __loneBantuRegion.id + '">' + __parts.esc(__parts.regionTitle(__loneBantuRegion)) + '</button></div>'`);
+        assert.ok(parsed.html.includes(expected), '平铺州签保持原标记');
+      } finally {
+        run('__map.regions = __keepBantuRegions; __map.circuitRegistry = __keepBantuRegistry;');
+      }
+    });
+
     // 第三片：左键随层级开册页，设置可切回「一律开方志」，点省名恒按省道级
     check('左键随层级：天下开谱牒、省道开通志、府州开方志；设置可切回一律方志', () => {
       const d = JSON.parse(run(`(function(){
@@ -221,7 +419,8 @@ setTimeout(() => {
         out.tipOff = __parts.mapTipHtml(__shuntian);
         if (keepConf === undefined) delete conf.mapClickFollowTier; else conf.mapClickFollowTier = keepConf;
         // 不属正式省道的孤块在省道级照旧开方志
-        var lone = __map.regions.filter(function(r){ return !__parts.findCircuit(r) && __parts.ownerKey(r); })[0];
+        var index = TM.MapCircuits.indexCircuits(__map, { layout: TMMapRealmLayout, ownerOf: __parts.canonicalOwnerKey });
+        var lone = __map.regions.filter(function(r){ return !__parts.findCircuit(r, index) && __parts.ownerKey(r); })[0];
         out.lone = lone ? kindAt('region', lone) : 'none';
         st.mapScale = keep;
         return JSON.stringify(out);
@@ -313,6 +512,7 @@ setTimeout(() => {
       assert.equal(d.sameMap, true, '改的是运行时唯一那份地图');
     });
 
+    // 绍宋大宋的版图守恒拆到 smoke-map-circuit-book-shaosong.js：一个文件只开一局，免得全量测试里超 120 秒
     console.log('[smoke-map-circuit-book] ' + checks.length + ' 组检查全部通过');
     checks.forEach((name) => console.log('  ok · ' + name));
     process.exit(0);

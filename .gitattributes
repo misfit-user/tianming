@@ -153,3 +153,6 @@ docs/local-sync-20260927/README.md whitespace=blank-at-eol,blank-at-eof,space-be
 docs/local-sync-20260927/scope.md whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/local-sync-20260927/verification.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/local-sync-20260927/conflict-resolutions.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Map editor authoring keeps existing CRLF bytes; actual trailing spaces still fail.
+web/scripts/smoke-faction-binding-lint.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/guoshi-map-editor-20260927/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

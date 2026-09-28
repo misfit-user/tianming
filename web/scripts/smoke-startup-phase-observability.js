@@ -50,7 +50,7 @@ edictEfficacyModules.forEach(name=>assert(scriptNames.indexOf(name)<scriptNames.
 const exportModules=['tm-file-export.js'];
 exportModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-save-manager.js'),'export backend precedes save UI');});
 // 省道（通志）数据层：纯函数模块，地图册页从这里取省道分组、档案与汇总，须先于册页装载
-const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js'];
+const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js','tm-map-route-days.js','tm-circuit-governance.js','tm-circuit-governor-effects.js'];
 mapDataModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
 assert.strictEqual(manifest.scriptCount,417+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');

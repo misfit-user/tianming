@@ -1,0 +1,208 @@
+{
+  "serial": true,
+  "startedAt": "2026-09-27T16:27:00.125Z",
+  "stages": [
+    {
+      "name": "sync",
+      "command": "node web/scripts/sync-official-scenarios.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 23,
+      "log": "final-sync.log"
+    },
+    {
+      "name": "opening-tang",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-opening-probe.js tang",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 132,
+      "log": "final-opening-tang.log"
+    },
+    {
+      "name": "after-tianqi",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tianqi docs/scenario-data-repair-20260924/reports/tax-base-tianqi-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 10,
+      "log": "final-after-tianqi.log"
+    },
+    {
+      "name": "after-shaosong",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js shaosong docs/scenario-data-repair-20260924/reports/tax-base-shaosong-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 25,
+      "log": "final-after-shaosong.log"
+    },
+    {
+      "name": "after-tang",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tang docs/scenario-data-repair-20260924/reports/tax-base-tang-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 79,
+      "log": "final-after-tang.log"
+    },
+    {
+      "name": "legacy-tianqi",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tianqi docs/scenario-data-repair-20260924/reports/tax-base-legacy-tianqi.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 12,
+      "log": "final-legacy-tianqi.log"
+    },
+    {
+      "name": "legacy-shaosong",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js shaosong docs/scenario-data-repair-20260924/reports/tax-base-legacy-shaosong.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 35,
+      "log": "final-legacy-shaosong.log"
+    },
+    {
+      "name": "legacy-tang",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tang docs/scenario-data-repair-20260924/reports/tax-base-legacy-tang.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 54,
+      "log": "final-legacy-tang.log"
+    },
+    {
+      "name": "report",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-report.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 0,
+      "log": "final-report.log"
+    },
+    {
+      "name": "opening-report",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-opening-report.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 0,
+      "log": "final-opening-report.log"
+    },
+    {
+      "name": "evidence",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-evidence.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 0,
+      "log": "final-evidence.log"
+    },
+    {
+      "name": "scope",
+      "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-scope.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 15,
+      "log": "final-scope.log"
+    },
+    {
+      "name": "parity",
+      "command": "node web/scripts/verify-official-scenario-parity.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 43,
+      "log": "final-parity.log"
+    },
+    {
+      "name": "arch",
+      "command": "node scripts/lint-arch-all.js",
+      "cwd": "web",
+      "status": 0,
+      "seconds": 101,
+      "log": "final-arch.log"
+    },
+    {
+      "name": "scenario-lint",
+      "command": "node scripts/lint-scenario-data.js",
+      "cwd": "web",
+      "status": 0,
+      "seconds": 3,
+      "log": "final-scenario-lint.log"
+    },
+    {
+      "name": "smokes",
+      "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-checks.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 143,
+      "log": "final-smokes.log",
+      "attempts": [
+        {
+          "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-checks.js",
+          "status": 1,
+          "seconds": 143,
+          "log": "final-smokes.log"
+        },
+        {
+          "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-checks.js --failed-only",
+          "status": 0,
+          "seconds": 41,
+          "log": "smokes-retry.log",
+          "reason": "Opening accounts now retain authored national stocks until the first fiscal settlement. Added strict opening equality, transfer conservation and duplicate-collection checks; all prior custody and payroll assertions retained."
+        }
+      ],
+      "finalResult": {
+        "passed": 75,
+        "total": 75
+      }
+    }
+  ],
+  "resumedAt": "2026-09-27T22:50:04.115Z",
+  "completedAt": "2026-09-27T23:11:26.856Z",
+  "postAudit": {
+    "reason": "Explicitly exclude NativeFiscal from deferred PublicTreasury opening, matching the Guoku forecast boundary; rerun affected custody tests and architecture guards.",
+    "steps": [
+      {
+        "name": "smoke-opening-treasury-fiscal.js",
+        "command": "node web/scripts/smoke-opening-treasury-fiscal.js",
+        "cwd": "repo",
+        "status": 0,
+        "seconds": 0,
+        "log": "audit-smoke-opening-treasury-fiscal.js.log"
+      },
+      {
+        "name": "smoke-public-treasury-a3.js",
+        "command": "node web/scripts/smoke-public-treasury-a3.js",
+        "cwd": "repo",
+        "status": 0,
+        "seconds": 0,
+        "log": "audit-smoke-public-treasury-a3.js.log"
+      },
+      {
+        "name": "smoke-public-treasury-custody.js",
+        "command": "node web/scripts/smoke-public-treasury-custody.js",
+        "cwd": "repo",
+        "status": 0,
+        "seconds": 0,
+        "log": "audit-smoke-public-treasury-custody.js.log"
+      },
+      {
+        "name": "smoke-public-treasury-scale.js",
+        "command": "node web/scripts/smoke-public-treasury-scale.js",
+        "cwd": "repo",
+        "status": 0,
+        "seconds": 12,
+        "log": "audit-smoke-public-treasury-scale.js.log"
+      },
+      {
+        "name": "smoke-native-fiscal-consumers.js",
+        "command": "node web/scripts/smoke-native-fiscal-consumers.js",
+        "cwd": "repo",
+        "status": 0,
+        "seconds": 0,
+        "log": "audit-smoke-native-fiscal-consumers.js.log"
+      },
+      {
+        "name": "arch-native-scope",
+        "command": "node scripts/lint-arch-all.js",
+        "cwd": "web",
+        "status": 0,
+        "seconds": 21,
+        "log": "audit-arch-native-scope.log"
+      }
+    ]
+  }
+}

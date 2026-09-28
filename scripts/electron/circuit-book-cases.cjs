@@ -61,16 +61,19 @@ module.exports = async function ({ win, check }) {
   await check('从顺天府方志页头的层级路径真点击进入北直隶通志', async () => {
     const d = await js(`(async()=>{
       var parts = TMPhase8FormalBridge.__p8MapParts, r = GM.mapData.regions.filter(function(x){ return /顺天/.test(x.name || ''); })[0];
+      // 册页宽度有 0.38 秒过渡：量宽前等宽度连续两帧不变（开册快了之后，只等 100~150ms 会量到过渡中途）
+      var settledWidth = async function(el){ var last = -1, end = Date.now() + 1500; while (Date.now() < end) { await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res))); if (el.offsetWidth === last) return last; last = el.offsetWidth; } return el.offsetWidth; };
       parts.openRegionDossier(r);
       await new Promise(res => setTimeout(res, 100));
-      var regionWidth = ${book}.offsetWidth;
+      var regionWidth = await settledWidth(${book});
       var pill = ${book}.querySelector('.bk-crumbs [data-bk-open-circuit]');
       if (!pill) return { pill: false };
       pill.click();
       await new Promise(res => setTimeout(res, 150));
       var pop = ${book};
       // 正式界面整体按窗口缩放，量布局宽度 offsetWidth，不量缩放后的屏幕像素
-      return { pill: true, kind: pop.dataset.panelKind, cls: pop.className, width: pop.offsetWidth, regionWidth: regionWidth, rows: pop.querySelectorAll('.bk-circuit-table tbody tr').length,
+      var circuitWidth = await settledWidth(pop);
+      return { pill: true, kind: pop.dataset.panelKind, cls: pop.className, width: circuitWidth, regionWidth: regionWidth, rows: pop.querySelectorAll('.bk-circuit-table tbody tr').length,
         common: !!pop.querySelector('.bk-circuit-common'), acts: pop.querySelectorAll('[data-bk-circuit-act]').length, title: (pop.querySelector('.bk-name') || {}).textContent };
     })()`);
     assert.equal(d.pill, true, '方志页头层级路径里有北直隶');
@@ -229,6 +232,45 @@ module.exports = async function ({ win, check }) {
     await click(pt);
     const s = await bookState();
     assert.equal(s.kind, 'faction', JSON.stringify({ pt, s }));
+  });
+
+  await check('谱牒版图卷按省道分组，点省名开通志（截图）', async () => {
+    const d = await js(`(async()=>{
+      var parts = TMPhase8FormalBridge.__p8MapParts, names = TMPhase8FormalBridge.rightrail.playerFactionNames();
+      var r = GM.mapData.regions.find(function(r){ var f = parts.findFaction(parts.ownerKey(r), ''); return names.includes(String(parts.ownerKey(r))) || !!(f && names.includes(String(f.name))); });
+      if (!r) return { player: false };
+      parts.openFactionDossier(parts.canonicalOwnerKey(r), r);
+      await new Promise(res => setTimeout(res, 150));
+      var section = ${book}.querySelector('#bk-bantu'), group = section && section.querySelector('.bk-bantu-dao[data-bk-bantu-circuit]');
+      if (!group) return { player: true, group: false };
+      var closed = !group.open;
+      section.scrollIntoView({ block: 'start' });
+      group.querySelector('summary').click();
+      await new Promise(res => setTimeout(res, 150));
+      return { player: true, group: true, kind: ${book}.dataset.panelKind, closed: closed, open: group.open,
+        count: section.querySelectorAll('.bk-bantu-dao').length, signs: group.querySelectorAll('.bk-qian').length, key: group.dataset.bkBantuCircuit };
+    })()`);
+    assert.equal(d.player, true);
+    assert.equal(d.group, true);
+    assert.equal(d.kind, 'faction');
+    assert.equal(d.closed, true, '第一组默认收起');
+    assert.equal(d.open, true, '展开第一组');
+    assert(d.count > 1 && d.signs > 0, JSON.stringify(d));
+    await shot('faction-bantu.png');
+    const target = await js(`(()=>{
+      var group = ${book}.querySelector('#bk-bantu .bk-bantu-dao[data-bk-bantu-circuit]'), btn = group.querySelector('[data-bk-open-circuit]');
+      window.__bantuClickProbe = group;
+      var b = btn.getBoundingClientRect(), x = Math.round(b.x + b.width / 2), y = Math.round(b.y + b.height / 2);
+      return { x: x, y: y, hit: document.elementFromPoint(x, y)?.closest('[data-bk-open-circuit]') === btn, key: btn.dataset.bkOpenCircuit };
+    })()`);
+    assert.equal(target.hit, true, '第一组省名在可见区域且可点');
+    assert.equal(target.key, d.key);
+    await click(target);
+    const state = await bookState();
+    assert.equal(state.kind, 'circuit');
+    assert.equal(state.circuitKey, d.key);
+    const stillOpen = await js(`(()=>{ var open = window.__bantuClickProbe.open; delete window.__bantuClickProbe; return open; })()`);
+    assert.equal(stillOpen, true, '点省名只开通志，不触发 details 收起');
   });
 
   await check('右键小菜单：三项齐全、焦点在第一项，下键加回车选「本道通志」', async () => {

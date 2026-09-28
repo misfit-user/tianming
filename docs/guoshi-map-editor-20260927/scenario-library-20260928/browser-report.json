@@ -1,0 +1,446 @@
+[
+  {
+    "name": "天启",
+    "tier": "all",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "天启"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-tianqi7-1627",
+          "tier": "all"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "顺天府",
+          "level": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "ming-01-p01",
+              "patch": {
+                "name": "顺天府·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "ming-01-p01"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-tianqi7-1627",
+    "count": 369,
+    "renamed": [
+      {
+        "id": "ming-01-p01",
+        "name": "顺天府·新名",
+        "parentId": "province:cz-province-ming-01:fac-ming",
+        "role": "prefecture"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  },
+  {
+    "name": "天启",
+    "tier": "region",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "天启"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-tianqi7-1627",
+          "tier": "region"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "北直隶",
+          "level": "province"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "province:cz-province-ming-01:fac-ming",
+              "patch": {
+                "name": "北直隶·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "province:cz-province-ming-01:fac-ming"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-tianqi7-1627",
+    "count": 43,
+    "renamed": [
+      {
+        "id": "province:cz-province-ming-01:fac-ming",
+        "name": "北直隶·新名",
+        "parentId": "",
+        "role": "region"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  },
+  {
+    "name": "天启",
+    "tier": "prefecture",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "天启"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-tianqi7-1627",
+          "tier": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "顺天府",
+          "level": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "ming-01-p01",
+              "patch": {
+                "name": "顺天府·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "ming-01-p01"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-tianqi7-1627",
+    "count": 307,
+    "renamed": [
+      {
+        "id": "ming-01-p01",
+        "name": "顺天府·新名",
+        "parentId": "",
+        "role": "prefecture"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  },
+  {
+    "name": "绍宋",
+    "tier": "all",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "绍宋"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-jianyan1-1127-shaosong",
+          "tier": "all"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "开封府",
+          "level": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "ssr-0001",
+              "patch": {
+                "name": "开封府·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "ssr-0001"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-jianyan1-1127-shaosong",
+    "count": 705,
+    "renamed": [
+      {
+        "id": "ssr-0001",
+        "name": "开封府·新名",
+        "parentId": "province:ss-circuit-e15bbc8644e3:fac_song",
+        "role": "prefecture"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  },
+  {
+    "name": "绍宋",
+    "tier": "region",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "绍宋"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-jianyan1-1127-shaosong",
+          "tier": "region"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "京畿路",
+          "level": "province"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "province:ss-circuit-e15bbc8644e3:fac_song",
+              "patch": {
+                "name": "京畿路·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "province:ss-circuit-e15bbc8644e3:fac_song"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-jianyan1-1127-shaosong",
+    "count": 104,
+    "renamed": [
+      {
+        "id": "province:ss-circuit-e15bbc8644e3:fac_song",
+        "name": "京畿路·新名",
+        "parentId": "",
+        "role": "region"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  },
+  {
+    "name": "绍宋",
+    "tier": "prefecture",
+    "ok": true,
+    "reason": "已应用到地图，可撤销",
+    "stopReason": "finish",
+    "trace": [
+      {
+        "name": "listScenarioMaps",
+        "input": {
+          "query": "绍宋"
+        },
+        "ok": true
+      },
+      {
+        "name": "loadScenarioMap",
+        "input": {
+          "scenarioId": "sc-jianyan1-1127-shaosong",
+          "tier": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorOverview",
+        "input": {
+          "query": "开封府",
+          "level": "prefecture"
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorEdit",
+        "input": {
+          "edits": [
+            {
+              "id": "ssr-0001",
+              "patch": {
+                "name": "开封府·新名"
+              }
+            }
+          ]
+        },
+        "ok": true
+      },
+      {
+        "name": "mapEditorFocus",
+        "input": {
+          "id": "ssr-0001"
+        },
+        "ok": true
+      },
+      {
+        "name": "finish",
+        "input": {
+          "summary": "已载入指定剧本地图并修改地名。"
+        },
+        "ok": true
+      }
+    ],
+    "source": "sc-jianyan1-1127-shaosong",
+    "count": 566,
+    "renamed": [
+      {
+        "id": "ssr-0001",
+        "name": "开封府·新名",
+        "parentId": "",
+        "role": "prefecture"
+      }
+    ],
+    "history": 1,
+    "exportReload": true,
+    "undo": true,
+    "errors": []
+  }
+]

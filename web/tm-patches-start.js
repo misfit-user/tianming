@@ -416,14 +416,20 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
 
   // 开局即真活算财政收入（根治「绍宋月入显估算 20万/旧兜底 7万·实应 ~70万」）。
   // 此处在 GuokuEngine 加载静态估算之后、enterGame 之前·adminHierarchy 与各区 economyBase 均已就绪——
-  // 跑一次 cascadeCollect(turnDays:30=月入口径) 用真活算值覆盖静态估算。settle 幂等·首回合会重算。
+  // 新开局只写收支预估，首期征收留给第一次过回合；旧档仍沿原入口。
   try {
     if (typeof CascadeTax !== 'undefined' && CascadeTax && typeof CascadeTax.collect === 'function'
         && GM && GM.adminHierarchy && (GM.adminHierarchy.player || Object.keys(GM.adminHierarchy).length)) {
-      var startBudget = typeof CascadeTax.previewBudget === 'function' ? CascadeTax.previewBudget({game:GM,faction:'player',turnDays:(sc && sc.time && sc.time.daysPerTurn) || 10}) : null;
-      if (startBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {
-        CascadeTax.applyBudgetSnapshot({ game: GM, faction: 'player', budget: startBudget, turnDays: startBudget.period.days });
-      } else CascadeTax.collect({ faction: 'player', turnDays: 30 });
+      var startBudget = null;
+      if (typeof GuokuEngine !== 'undefined' && GuokuEngine.openingFiscalPending && GuokuEngine.openingFiscalPending(GM)) {
+        var openingFiscal = GuokuEngine.previewOpeningFiscal({game:GM,turnDays:typeof _getDaysPerTurn === 'function' ? _getDaysPerTurn() : 30});
+        startBudget = openingFiscal && openingFiscal.budget;
+      } else {
+        startBudget = typeof CascadeTax.previewBudget === 'function' ? CascadeTax.previewBudget({game:GM,faction:'player',turnDays:(sc && sc.time && sc.time.daysPerTurn) || 10}) : null;
+        if (startBudget && typeof CascadeTax.applyBudgetSnapshot === 'function') {
+          CascadeTax.applyBudgetSnapshot({ game: GM, faction: 'player', budget: startBudget, turnDays: startBudget.period.days });
+        } else CascadeTax.collect({ faction: 'player', turnDays: 30 });
+      }
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-fiscal'); } catch(_) {} }
 

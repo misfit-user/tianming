@@ -5309,7 +5309,14 @@
       if (typeof officeFlagOn !== "function" || !officeFlagOn("officeDutyStateEnabled")) return;
       if (typeof tickOfficeDutyState !== "function") return;
       var days = typeof global._getDaysPerTurn === "function" ? global._getDaysPerTurn() : G.daysPerTurn != null ? G.daysPerTurn : 30;
-      var agg = tickOfficeDutyState(G, { days });
+      var opts = { days }, effects = global.TM && global.TM.CircuitGovernorEffects;
+      if (effects && effects.enabled() && global.TM.CircuitGovernance) {
+        var governors = global.TM.CircuitGovernance.governorPositions(G);
+        opts.skip = function(p) {
+          return governors.has(p);
+        };
+      }
+      var agg = tickOfficeDutyState(G, opts);
       if (!agg || !agg.compliance && !agg.corruption && !(agg.details || []).length) return;
       var FE = typeof window !== "undefined" && window.FiscalEngine || typeof global !== "undefined" && global.FiscalEngine || null;
       var _P = typeof window !== "undefined" && window.P || typeof global !== "undefined" && global.P || null;

@@ -1,0 +1,162 @@
+{
+  "ok": true,
+  "exportImport": true,
+  "keyboardIsolation": true,
+  "provider": "offline fixture; no real model request",
+  "result": {
+    "division": {
+      "id": "demo-a",
+      "name": "临安",
+      "level": "province",
+      "description": "",
+      "officialPosition": "",
+      "governor": "",
+      "dejureOwner": "",
+      "capitalChildId": "",
+      "regionType": "normal",
+      "sources": [],
+      "crossDynastyId": "",
+      "polygon": [
+        [
+          100,
+          100
+        ],
+        [
+          480,
+          100
+        ],
+        [
+          480,
+          500
+        ],
+        [
+          100,
+          500
+        ]
+      ],
+      "holes": [],
+      "extraPolygons": [],
+      "polygonVids": null,
+      "extraPolygonsVids": null,
+      "holesVids": null,
+      "centroid": [
+        290,
+        300
+      ],
+      "area": 152000,
+      "neighbors": [],
+      "bbox": {
+        "x": 100,
+        "y": 100,
+        "w": 380,
+        "h": 400
+      },
+      "bitmap_color": "",
+      "colorKey": 1048577,
+      "z_order": 0,
+      "treats_as": "实控",
+      "treaty_year": null,
+      "population": 0,
+      "populationDetail": {
+        "households": 0,
+        "mouths": 0,
+        "ding": 0,
+        "fugitives": 0,
+        "hiddenCount": 0
+      },
+      "byAge": null,
+      "byGender": null,
+      "bySettlement": null,
+      "byEthnicity": null,
+      "byFaith": null,
+      "baojia": null,
+      "prosperity": 50,
+      "taxLevel": "中",
+      "terrain": "平原",
+      "specialResources": "",
+      "carryingCapacity": null,
+      "fiscalDetail": null,
+      "publicTreasuryInit": null,
+      "tags": {
+        "hasPort": false,
+        "saltRegion": false,
+        "mineralRegion": false,
+        "horseRegion": false,
+        "fishingRegion": false,
+        "imperialDomain": false
+      },
+      "economyBase": {
+        "farmland": 0,
+        "commerceCoefficient": 1,
+        "commerceVolume": 0,
+        "maritimeTradeVolume": 0,
+        "saltProduction": 0,
+        "mineralProduction": 0,
+        "horseProduction": 0,
+        "fishingProduction": 0,
+        "imperialFarmland": 0,
+        "imperialAssets": {
+          "zhizao": 0,
+          "kuangchang": 0,
+          "yuyao": 0
+        },
+        "postRelays": 0,
+        "kejuQuota": 0,
+        "roadQuality": 50,
+        "landsAnnexed": 0,
+        "landsReclaimed": 0,
+        "landsSurveyed": 0,
+        "disasterRecord": []
+      },
+      "minxinLocal": 60,
+      "corruptionLocal": 30,
+      "autonomy": {
+        "type": "zhixia",
+        "subtype": "",
+        "holder": "",
+        "suzerain": "",
+        "loyalty": 80,
+        "tributeRate": 0
+      },
+      "permissions": null,
+      "factionId": "song",
+      "timeline": [],
+      "establishedYear": null,
+      "abolishedYear": null,
+      "renamedFrom": "",
+      "renamedTo": "",
+      "isCapital": false,
+      "isFrontier": false,
+      "isDeposit": false,
+      "isJunDi": false,
+      "isTunTian": false,
+      "isPiao": false,
+      "isTradePort": false,
+      "isPilgrim": false,
+      "isHistoric": false
+    },
+    "history": 1,
+    "dirty": true,
+    "receipts": [
+      {
+        "tool": "mapEditorRead",
+        "ok": true,
+        "verified": true
+      },
+      {
+        "tool": "mapEditorEdit",
+        "ok": true,
+        "verified": true
+      },
+      {
+        "tool": "finish",
+        "ok": true,
+        "verified": true
+      }
+    ]
+  },
+  "undo": true,
+  "exportedMap": true,
+  "mobilePanelFits": true,
+  "errors": []
+}

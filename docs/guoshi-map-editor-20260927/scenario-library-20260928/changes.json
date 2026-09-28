@@ -1,0 +1,196 @@
+{
+  "root": "C:\\Users\\37814\\Desktop\\tianming",
+  "head": "f204d92430a62cf5845eddf0244661223ee33096",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "type": "modified",
+      "bytes": 15497,
+      "sha256": "0e76202165b12370d0ab25f140643d5f7eef4448fea09c82f09cd209c21fcb5d"
+    },
+    {
+      "file": "web/editor-authoring-agent.js",
+      "type": "modified",
+      "bytes": 313568,
+      "sha256": "6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e",
+      "lf": 4191,
+      "crlf": 0
+    },
+    {
+      "file": "web/editor.html",
+      "type": "modified",
+      "bytes": 185515,
+      "sha256": "8bd987b5ba71d96ff31e69690151dd417a2a106a4f9f699c191bb273ac58806b",
+      "lf": 2964,
+      "crlf": 2947
+    },
+    {
+      "file": "web/map-editor-core.js",
+      "type": "modified",
+      "bytes": 62796,
+      "sha256": "efccb64e5a849dfafada4639c1a746c1e5c0a254320ee5e0cf317fbfbefbd7d1",
+      "lf": 1640,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-ink-realm.js",
+      "type": "modified",
+      "bytes": 7538,
+      "sha256": "9257c5b2d48082019a9bd47eaf504766bfec1682beff9dab0265ebcac40eb50d",
+      "lf": 227,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-minimap.js",
+      "type": "modified",
+      "bytes": 11552,
+      "sha256": "0911cbfcbb3cc9c0eafd3d1bbca891d15f15b9989d9bfdbbcafdfa57c25d16e0",
+      "lf": 318,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-to-game.js",
+      "type": "modified",
+      "bytes": 24081,
+      "sha256": "01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87",
+      "lf": 561,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor.html",
+      "type": "modified",
+      "bytes": 113944,
+      "sha256": "e8a47b4946edfa4fcd9115b322965e4f818cf5528bcee5576b2a4437677ec8b9",
+      "lf": 2819,
+      "crlf": 0
+    },
+    {
+      "file": "web/preview/scenario-editor-reset-preview.html",
+      "type": "modified",
+      "bytes": 33914,
+      "sha256": "240e21e5e44a4c096d74bb190dc0f2382d170dd92847818a71cdd36611e4a42d",
+      "lf": 615,
+      "crlf": 590
+    },
+    {
+      "file": "web/scripts/smoke-faction-binding-lint.js",
+      "type": "modified",
+      "bytes": 10524,
+      "sha256": "6ef5577e366d042a24815a9d7b61cccaf58b0d415f4c6862724c642bb5d58de9",
+      "lf": 180,
+      "crlf": 160
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "type": "modified",
+      "bytes": 136621,
+      "sha256": "4991cf6edbcc2ff6ffdd15d7a3223aa2ff76a926a33128f9a85cf2e9591ce85c",
+      "lf": 1,
+      "crlf": 0
+    },
+    {
+      "file": "scripts/build-map-editor-scenario-library.cjs",
+      "type": "added",
+      "bytes": 2632,
+      "sha256": "61f56972302d83e877626f6090e391f63994e8e4b0acb2b9eaf4ed1b0a9a0cb4",
+      "lf": 36,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-agent-tools.js",
+      "type": "added",
+      "bytes": 17479,
+      "sha256": "904ddc4bc96177415d7457d04929aef792416c30f0e331d546401c7625ffde18",
+      "lf": 243,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-agent-ui.js",
+      "type": "added",
+      "bytes": 5200,
+      "sha256": "3395b9e82eb7d530670f30f6ac2313f9d8ee5993c1f254dc77ed1592ae3d9592",
+      "lf": 63,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-agent.css",
+      "type": "added",
+      "bytes": 2607,
+      "sha256": "335cac444e998bd580807dea9d8170555e6042f059c20a248245d38f73ca4a61",
+      "lf": 24,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-agent.js",
+      "type": "added",
+      "bytes": 6864,
+      "sha256": "46904d4cc14dc67f6a780ad371d1437f3e2bf9428ea602139356f2c2d16db4ba",
+      "lf": 106,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-scenario-geometry.js",
+      "type": "added",
+      "bytes": 9822,
+      "sha256": "250cbfc93237440aeab6d71aa7d1d6f9b86882fd62ba004c95e849da8523d1dd",
+      "lf": 122,
+      "crlf": 0
+    },
+    {
+      "file": "web/map-editor-scenario-library.js",
+      "type": "added",
+      "bytes": 6819,
+      "sha256": "9a17844511a33fb0571572c078eee634b345c876977b9e9ba483b1318090440f",
+      "lf": 97,
+      "crlf": 0
+    },
+    {
+      "file": "web/scripts/smoke-map-editor-agent.js",
+      "type": "added",
+      "bytes": 10109,
+      "sha256": "5bcd11dfecd1475c32862ab0fa454a84b35479298eda8d5f89e6d82bc504d0a0",
+      "lf": 95,
+      "crlf": 0
+    },
+    {
+      "file": "web/scripts/smoke-map-editor-scenario-library.js",
+      "type": "added",
+      "bytes": 10676,
+      "sha256": "3444f2d38e637549cb285ee8293d3f3a2a3e1acd7dd18e3703c1daa8b6aff49b",
+      "lf": 79,
+      "crlf": 0
+    },
+    {
+      "file": "web/data/maps/scenario-library/index.json",
+      "type": "added",
+      "bytes": 2410,
+      "sha256": "63e66bfa0db607d95114c311627bbda16b41c48895669b8d71a357b4906421b9",
+      "lf": 81,
+      "crlf": 0
+    },
+    {
+      "file": "web/data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
+      "type": "added",
+      "bytes": 11815292,
+      "sha256": "4b5ecd67dfbbb348990160feb99700719528ea907fc011ebeb3251777e483339",
+      "lf": 1,
+      "crlf": 0
+    },
+    {
+      "file": "web/data/maps/scenario-library/sc-tang840-840.json",
+      "type": "added",
+      "bytes": 5203469,
+      "sha256": "d7ade8006eccd8c3d6794e8486c807962d8b66bcb56003aae2070b1c04c5fdd7",
+      "lf": 1,
+      "crlf": 0
+    },
+    {
+      "file": "web/data/maps/scenario-library/sc-tianqi7-1627.json",
+      "type": "added",
+      "bytes": 1486190,
+      "sha256": "e0a2946fb45a0825f15a317cd6121325fca984c2d5e17df3ef0fb3a79e4ab1a2",
+      "lf": 1,
+      "crlf": 0
+    }
+  ]
+}

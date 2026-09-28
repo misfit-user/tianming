@@ -90,6 +90,7 @@
     ME.on('mutation', schedule);
     ME.on('map-loaded', function(){ recalcBounds(); render(); });
     ME.on('view-year-change', schedule);
+    ME.on('map-layer-change', schedule);
     ME.on('selection-change', schedule);
 
     // 初始
@@ -193,6 +194,7 @@
     ME.EDITOR.selectedIds.forEach(function(id){ sel[id] = true; });
 
     ME.EDITOR.map.divisions.forEach(function(d){
+      if (ME.isDivisionVisible && !ME.isDivisionVisible(d)) return;
       if (!d.polygon || d.polygon.length < 3) return;
       ctx.beginPath();
       var first = w2m(d.polygon[0][0], d.polygon[0][1]);

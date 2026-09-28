@@ -1,0 +1,129 @@
+{
+  "serial": true,
+  "startedAt": "2026-09-27T13:58:00.049Z",
+  "stages": [
+    {
+      "name": "sync",
+      "command": "node web/scripts/sync-official-scenarios.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 29,
+      "log": "final-sync.log"
+    },
+    {
+      "name": "after-tianqi",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tianqi docs/scenario-data-repair-20260924/reports/tax-base-tianqi-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 53,
+      "log": "final-after-tianqi.log"
+    },
+    {
+      "name": "after-shaosong",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js shaosong docs/scenario-data-repair-20260924/reports/tax-base-shaosong-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 26,
+      "log": "final-after-shaosong.log"
+    },
+    {
+      "name": "after-tang",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tang docs/scenario-data-repair-20260924/reports/tax-base-tang-after.json",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 57,
+      "log": "final-after-tang.log"
+    },
+    {
+      "name": "legacy-tianqi",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tianqi docs/scenario-data-repair-20260924/reports/tax-base-legacy-tianqi.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 17,
+      "log": "final-legacy-tianqi.log"
+    },
+    {
+      "name": "legacy-shaosong",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js shaosong docs/scenario-data-repair-20260924/reports/tax-base-legacy-shaosong.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 26,
+      "log": "final-legacy-shaosong.log"
+    },
+    {
+      "name": "legacy-tang",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-probe.js tang docs/scenario-data-repair-20260924/reports/tax-base-legacy-tang.json --baseline e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 38,
+      "log": "final-legacy-tang.log"
+    },
+    {
+      "name": "report",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-report.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 1,
+      "log": "final-report.log"
+    },
+    {
+      "name": "evidence",
+      "command": "node docs/scenario-data-repair-20260924/tools/tax-base-evidence.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 0,
+      "log": "final-evidence.log"
+    },
+    {
+      "name": "scope",
+      "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-scope.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 18,
+      "log": "final-scope.log"
+    },
+    {
+      "name": "parity",
+      "command": "node web/scripts/verify-official-scenario-parity.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 84,
+      "log": "final-parity.log"
+    },
+    {
+      "name": "arch",
+      "command": "node scripts/lint-arch-all.js",
+      "cwd": "web",
+      "status": 0,
+      "seconds": 103,
+      "log": "final-arch.log"
+    },
+    {
+      "name": "scenario-lint",
+      "command": "node scripts/lint-scenario-data.js",
+      "cwd": "web",
+      "status": 0,
+      "seconds": 9,
+      "log": "final-scenario-lint.log"
+    },
+    {
+      "name": "smokes",
+      "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-checks.js",
+      "cwd": "repo",
+      "status": 0,
+      "seconds": 301,
+      "log": "final-smokes.log",
+      "supplemental": [
+        {
+          "command": "node docs/scenario-data-repair-20260924/tools/verify-tax-base-checks.js --missing-only",
+          "status": 0,
+          "log": "final-smokes-missing.log",
+          "reason": "include .mjs/.cjs fiscal smoke names"
+        }
+      ]
+    }
+  ],
+  "resumedAt": "2026-09-27T14:13:50.374Z",
+  "scope": "Initial mandate E validation; follow-up results supersede this record",
+  "supersededBy": "tax-base-review-verification.json"
+}

@@ -1281,6 +1281,24 @@ function _peLineItem(name, formula, amount, unit, color) {
 
 /** 应输上解·赋税核算细目（按 division.economyBase 实时算 7-9 项） */
 function _peRenderRevenueBreakdown(div) {
+  if (typeof CascadeTax !== 'undefined' && CascadeTax.previewRevenue && typeof GM !== 'undefined' && GM.fiscalConfig && GM.fiscalConfig.productionTaxVersion) {
+    var forecast = CascadeTax.previewRevenue({game:GM, division:div}), units = _peU();
+    if (forecast) {
+      var byTax = {}, markup = '<div class="tm-div-line-list">';
+      forecast.regions.forEach(function(region) { region.taxes.forEach(function(row) {
+        var item = byTax[row.id];
+        if (!item) item = byTax[row.id] = {name:row.name,resource:row.resource,nominal:0,central:0,local:0,baseValue:0,quantityUnit:row.productionTax && row.productionTax.quantityUnit,assessment:row.taxBasePolicy === 'retained-assessment'};
+        item.nominal += row.nominal; item.central += row.central; item.local += row.local; item.baseValue += row.baseValue || 0;
+      }); });
+      Object.keys(byTax).forEach(function(id) {
+        var row = byTax[id]; if (!(row.nominal > 0 || row.central > 0 || row.local > 0)) return;
+        var baseUnit = row.quantityUnit === '本位钱' ? units.money : row.quantityUnit;
+        var basis = baseUnit ? '税基 ' + _peN(row.baseValue) + ' ' + baseUnit + ' · ' : row.assessment ? '账额 ' + _peN(row.baseValue) + ' ' + units[row.resource] + ' · ' : '';
+        markup += _peLineItem(row.name, basis + '名义 ' + _peN(row.nominal) + ' · 地方留用 ' + _peN(row.local), row.central, units[row.resource]);
+      });
+      return markup + '</div><div class="tm-div-compare">年度上解预计 · 按现行税表与征收损耗计算，钱粮布分别计量</div>';
+    }
+  }
   var eb = div.economyBase || {};
   var tags = div.tags || {};
   var pop = div.population || {};

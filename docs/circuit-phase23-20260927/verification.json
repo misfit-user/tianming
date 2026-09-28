@@ -1,0 +1,508 @@
+{
+  "baseline": "bedc320885abaff238049c7f905b725d25c41498",
+  "generatedAt": "2026-09-27T11:35:47.924Z",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "scope": "read-only research; offline VM only",
+  "probe": {
+    "path": "E:/tianming-tmp/codex-phase23/vm-probe.cjs",
+    "sha256": "e0eb99600b86b6c80f32d4597373ea5dfd6b08dec63621f4b140d79158ba6fbe",
+    "helper": "web/scripts/smoke-start-game-data-integrity.js:59-118",
+    "realNetwork": false
+  },
+  "checks": [
+    "天启真实开局与数量",
+    "天启财政收取与幂等",
+    "天启任免现状断链",
+    "天启父静态账与公库本次未动",
+    "天启省道档案接口有效",
+    "晚唐真实开局与数量",
+    "晚唐财政收取与幂等",
+    "晚唐任免现状断链",
+    "晚唐父静态账与公库本次未动",
+    "晚唐省道档案接口有效",
+    "绍宋真实开局与数量",
+    "绍宋财政收取与幂等",
+    "绍宋任免现状断链",
+    "绍宋父静态账与公库本次未动",
+    "绍宋省道档案接口有效",
+    "玩家辖区清点",
+    "政治分区与建筑清点",
+    "天启和绍宋样本父库初值已分摊",
+    "授权目录外全树哈希一致"
+  ],
+  "integrity": {
+    "files": 11708,
+    "changed": [],
+    "removed": [],
+    "added": [],
+    "exclusions": [
+      ".git metadata",
+      "symbolic links",
+      "docs/circuit-phase23-20260927/**"
+    ],
+    "state": "verified"
+  },
+  "rows": [
+    {
+      "id": "sc-tianqi7-1627",
+      "name": "天启",
+      "entered": true,
+      "chars": 203,
+      "regions": 307,
+      "leaves": 382,
+      "circuits": 43,
+      "profilesWithGovernor": 43,
+      "positions": 158,
+      "provinceStats": 380,
+      "unified": false,
+      "native": false,
+      "sameAdmin": false,
+      "officeDutyEnabled": false,
+      "publicAccounts": {
+        "total": 0,
+        "pools": 0
+      },
+      "saveBytes": 35819977,
+      "gmBytes": 18266241,
+      "startupMs": 33599.2638,
+      "timings": {
+        "circuitIndex": {
+          "runs": 12,
+          "minMs": 20.01369999999588,
+          "medianMs": 33.5625,
+          "maxMs": 45.07630000000063
+        },
+        "budgetPreview": {
+          "runs": 3,
+          "minMs": 25.951200000003155,
+          "medianMs": 27.77150000000256,
+          "maxMs": 30.434400000005553
+        },
+        "buildSave": {
+          "runs": 1,
+          "minMs": 2472.2381000000023,
+          "medianMs": 2472.2381000000023,
+          "maxMs": 2472.2381000000023
+        },
+        "stringifySave": {
+          "runs": 1,
+          "minMs": 1222.0889000000025,
+          "medianMs": 1222.0889000000025,
+          "maxMs": 1222.0889000000025
+        }
+      },
+      "fiscal": {
+        "settledLeaves": 198,
+        "collectMs": 528,
+        "centralDelta": {
+          "money": 1030090.9999999999,
+          "grain": 394645,
+          "cloth": 53012.99999999994
+        },
+        "localRetain": {
+          "money": 362071,
+          "grain": 425492,
+          "cloth": 86273
+        },
+        "skimmed": {
+          "money": 461330,
+          "grain": 173960,
+          "cloth": 23862
+        },
+        "lostTransit": {
+          "money": 181781,
+          "grain": 69643,
+          "cloth": 9355
+        },
+        "duplicate": {
+          "ok": false,
+          "skipped": "already-collected-this-turn"
+        },
+        "parentCount": 50,
+        "parentChanges": [
+          {
+            "id": "div_mp3yvbbor3fzw",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbohzikt",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbosdju4",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbp4bi0t",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpk06jz",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbp0ky3x",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpu04s4",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpgkntv",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpg4464",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpoo72u",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpqnzc3",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpttcsp",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpevmoc",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpyqoqt",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbpg4f5s",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_mp3yvbbrj19ga",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "div_ming_guanning_dongjiang",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "map-group-ming-28-p08",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          },
+          {
+            "id": "supp-dokham",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          }
+        ],
+        "openingLeaf": {
+          "id": "div_pref_ming_01_01",
+          "name": "顺天府",
+          "fiscalActual": 11537,
+          "detailActual": 1954716,
+          "fiscalCompliance": 0.67,
+          "detailCompliance": 0.67,
+          "sameFiscal": false
+        },
+        "afterLeaf": {
+          "id": "div_pref_ming_01_01",
+          "name": "顺天府",
+          "fiscalActual": 43959,
+          "detailActual": 1954716,
+          "fiscalCompliance": 0.67,
+          "detailCompliance": 0.67,
+          "sameFiscal": false
+        }
+      },
+      "appointment": {
+        "title": "顺天巡抚(北直隶)",
+        "character": "熊文灿",
+        "beforeHolder": "刘诏",
+        "afterHolder": "熊文灿",
+        "result": {
+          "ok": true,
+          "treeUpdated": true,
+          "evicted": "刘诏"
+        },
+        "governorChanges": []
+      },
+      "evidence": {
+        "file": "E:/tianming-tmp/codex-phase23/vm-sc-tianqi7-1627.json",
+        "sha256": "1f2835a73727ea9fa1425e16c15aa6a9244654c0454a9a48c96f5fc48e219937"
+      }
+    },
+    {
+      "id": "sc-tang840-840",
+      "name": "晚唐",
+      "entered": true,
+      "chars": 142,
+      "regions": 575,
+      "leaves": 575,
+      "circuits": 107,
+      "profilesWithGovernor": 46,
+      "positions": 220,
+      "provinceStats": 852,
+      "unified": true,
+      "native": false,
+      "sameAdmin": false,
+      "officeDutyEnabled": false,
+      "publicAccounts": {
+        "schema": "tm-public-treasury/2",
+        "total": 714,
+        "pools": 107
+      },
+      "saveBytes": 107512597,
+      "gmBytes": 49940165,
+      "startupMs": 170696.75830000002,
+      "timings": {
+        "circuitIndex": {
+          "runs": 12,
+          "minMs": 24.079500000021653,
+          "medianMs": 51.638400000025285,
+          "maxMs": 61.697099999990314
+        },
+        "budgetPreview": {
+          "runs": 3,
+          "minMs": 3561.970499999996,
+          "medianMs": 3876.246199999994,
+          "maxMs": 5384.231200000009
+        },
+        "buildSave": {
+          "runs": 1,
+          "minMs": 5198.0429,
+          "medianMs": 5198.0429,
+          "maxMs": 5198.0429
+        },
+        "stringifySave": {
+          "runs": 1,
+          "minMs": 2589.951300000015,
+          "medianMs": 2589.951300000015,
+          "maxMs": 2589.951300000015
+        }
+      },
+      "fiscal": {
+        "settledLeaves": 249,
+        "collectMs": 6499,
+        "centralDelta": {
+          "money": 1001881.2865999998,
+          "grain": 312560.2105999999,
+          "cloth": 145421.27419999999
+        },
+        "localRetain": {
+          "money": 665704.7971,
+          "grain": 626153.6585,
+          "cloth": 205496.2458
+        },
+        "skimmed": {
+          "money": 277724.5277,
+          "grain": 158613.8239,
+          "cloth": 59172.5535
+        },
+        "lostTransit": {
+          "money": 58635.7175,
+          "grain": 19790.0264,
+          "cloth": 9309.1234
+        },
+        "duplicate": {
+          "ok": false,
+          "skipped": "already-collected-this-turn"
+        },
+        "parentCount": 107,
+        "parentChanges": [],
+        "openingLeaf": {
+          "id": "京兆府·长安",
+          "name": "京兆府·长安",
+          "detailActual": 624403.7944,
+          "detailCompliance": 0.86,
+          "sameFiscal": false
+        },
+        "afterLeaf": {
+          "id": "京兆府·长安",
+          "name": "京兆府·长安",
+          "fiscalActual": 52033.6494,
+          "detailActual": 624403.7944,
+          "fiscalCompliance": 0.86,
+          "detailCompliance": 0.86,
+          "sameFiscal": false
+        }
+      },
+      "appointment": {
+        "title": "河中节度使",
+        "character": "李德裕",
+        "beforeHolder": "郑肃",
+        "afterHolder": "李德裕",
+        "result": {
+          "ok": true,
+          "treeUpdated": true,
+          "evicted": "郑肃"
+        },
+        "governorChanges": []
+      },
+      "evidence": {
+        "file": "E:/tianming-tmp/codex-phase23/vm-sc-tang840-840.json",
+        "sha256": "425c6fa98dfb44de9364adf3e8966ec62f7c802c5caf30358d893197951693e4"
+      }
+    },
+    {
+      "id": "sc-jianyan1-1127-shaosong",
+      "name": "绍宋",
+      "entered": true,
+      "chars": 500,
+      "regions": 566,
+      "leaves": 566,
+      "circuits": 101,
+      "profilesWithGovernor": 4,
+      "positions": 232,
+      "provinceStats": 570,
+      "unified": false,
+      "native": false,
+      "sameAdmin": false,
+      "officeDutyEnabled": false,
+      "publicAccounts": {
+        "total": 0,
+        "pools": 0
+      },
+      "saveBytes": 164374656,
+      "gmBytes": 71998790,
+      "startupMs": 30308.7,
+      "timings": {
+        "circuitIndex": {
+          "runs": 12,
+          "minMs": 1.4115999999994528,
+          "medianMs": 3.0027999999983876,
+          "maxMs": 4.226600000001781
+        },
+        "budgetPreview": {
+          "runs": 3,
+          "minMs": 0.43369999999777065,
+          "medianMs": 0.8132000000005064,
+          "maxMs": 1.2278000000005704
+        },
+        "buildSave": {
+          "runs": 1,
+          "minMs": 5402.589000000004,
+          "medianMs": 5402.589000000004,
+          "maxMs": 5402.589000000004
+        },
+        "stringifySave": {
+          "runs": 1,
+          "minMs": 3598.0380000000005,
+          "medianMs": 3598.0380000000005,
+          "maxMs": 3598.0380000000005
+        }
+      },
+      "fiscal": {
+        "settledLeaves": 277,
+        "collectMs": 262,
+        "centralDelta": {
+          "money": 678271,
+          "grain": 157729,
+          "cloth": 14338
+        },
+        "localRetain": {
+          "money": 1238501,
+          "grain": 638529,
+          "cloth": 58580
+        },
+        "skimmed": {
+          "money": 273401,
+          "grain": 62757,
+          "cloth": 5852
+        },
+        "lostTransit": {
+          "money": 119734,
+          "grain": 27826,
+          "cloth": 2548
+        },
+        "duplicate": {
+          "ok": false,
+          "skipped": "already-collected-this-turn"
+        },
+        "parentCount": 104,
+        "parentChanges": [
+          {
+            "id": "div_ss_a6fd2ffe8c7e",
+            "fiscal": true,
+            "fiscalDetail": false,
+            "publicTreasury": false
+          }
+        ],
+        "openingLeaf": {
+          "id": "ssr-0001",
+          "name": "开封府",
+          "fiscalActual": 65646,
+          "detailActual": 592415,
+          "fiscalCompliance": 0.71,
+          "detailCompliance": 0.71,
+          "sameFiscal": false
+        },
+        "afterLeaf": {
+          "id": "ssr-0001",
+          "name": "开封府",
+          "fiscalActual": 65646,
+          "detailActual": 592415,
+          "fiscalCompliance": 0.71,
+          "detailCompliance": 0.71,
+          "sameFiscal": false
+        }
+      },
+      "appointment": {
+        "title": "东京留守兼开封尹",
+        "character": "王渊",
+        "beforeHolder": "宗泽",
+        "afterHolder": "王渊",
+        "result": {
+          "ok": true,
+          "treeUpdated": true,
+          "evicted": "宗泽"
+        },
+        "governorChanges": []
+      },
+      "evidence": {
+        "file": "E:/tianming-tmp/codex-phase23/vm-sc-jianyan1-1127-shaosong.json",
+        "sha256": "5da7821da7103bb9ad4f99885b112907cf551bf56b4b2d64aebe85cb5bc707f9"
+      }
+    }
+  ]
+}

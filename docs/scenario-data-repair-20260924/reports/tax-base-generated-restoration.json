@@ -1,0 +1,114 @@
+[
+  {
+    "path": "web/bundled-scenarios/manifest.js",
+    "validatedSha256": "dcb746f4af7ea5da4fa7210934c50d174ae2658739f48619cc42c946b7adb3db",
+    "restoredSha256": "b9d178552dc7d5a9e989b278675f9534650c7ebbea36fbe958a3d44d43379067",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/bundled-scenarios/manifest.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/bundled-scenarios/manifest.json",
+    "validatedSha256": "9192f996c4a174d1ef365540d05f4d3f9f8c3740b49a4c4241cd09cf2eef0f1a",
+    "restoredSha256": "aac2a261beed5a656b8e7ae3706d999f94b1823c4658c087fe4d4df18eeb1b87",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/bundled-scenarios/manifest.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/preview/official-scenarios-bundle.js",
+    "validatedSha256": "8c613e3fdbd255258651c131ba8a006097972913be36ff874340f81b8b896fa4",
+    "restoredSha256": "b1c864fd68d0b424d10ee77282b0f4440b5d6c36933ed82d00c0f4357684ff4d",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/preview/official-scenarios-bundle.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/preview/scenario-editor-reset-data.js",
+    "validatedSha256": "8919d0a56102f8c897f00acca3c80bd7cd414140f4865ae21cad0134a9f3e4b4",
+    "restoredSha256": "ebda9a6bd6e96619e980253775897fa036064a547dd7f4807f9625907a879f99",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/preview/scenario-editor-reset-data.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/tm-official-scenario-bundle.js",
+    "validatedSha256": "f734db700d9aac16c2036ce6b5220949db032c6f4f808bc66b0307b2f251e4e2",
+    "restoredSha256": "1b7540c2b01447ccc80a27645d0d7703f33f54110d092e13374691c48adcf503",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/tm-official-scenario-bundle.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/scenarios/shaosong-jianyan-1127.js",
+    "validatedSha256": "4cbf45998001bf26dc0b980f27409550c4b889e6d814432d33f3b84af5039a27",
+    "restoredSha256": "ce680eff6153f1199f6c6ded5f9aa176db6efab9e7ee95d42c8a3f69de88a7bd",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/scenarios/shaosong-jianyan-1127.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/scenarios/tang840-840.js",
+    "validatedSha256": "7a93058bcdc2756497834f6a21f961e27b025bb965fa053185a06dc4de5d283e",
+    "restoredSha256": "e7ec94a0020e4b989b7ffbff17bf3add2f22431dda2cf6b08a668e80574edf3e",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/scenarios/tang840-840.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/scenarios/tianqi7-1627.js",
+    "validatedSha256": "ec28bce8b869888d8c0cba597e95d0bfdee5875586d8869864ccc423ba311091",
+    "restoredSha256": "e3628e3229572685d0d721781bf6f083ff98cf7c5a4e5eee0dce84b941a36e7c",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "web/scenarios/tianqi7-1627.js",
+    "byteIdentical": true
+  },
+  {
+    "path": "scenarios/天启七年·九月（官方）.json",
+    "validatedSha256": "099a110d716e62e1569d502e5418e6322a284902fb2f605327b0716e5a7332d2",
+    "restoredSha256": "c372715a931d617c2f6acaed44aac83b3edee58b64d37d1102f2c5799b37d859",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/天启七年·九月（官方）.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+    "validatedSha256": "8f57b380b82bec80b8deb3768addf9f87cd4d0123a63b130d19d10454345633a",
+    "restoredSha256": "b9d93ee676c51d2e2995507bc8829b686a7593bbfcbcee9be283e8e814f24ab1",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/绍宋·建炎元年八月（官方）.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "scenarios/晚唐·开成五年（官方）.json",
+    "validatedSha256": "bcad236a1f19c466558108df7b33664abf4ad20f3fd8fd8e6994a5f54de4e150",
+    "restoredSha256": "3d03ef5839e2748a1c02bfb907b8f77c6cf7bac69de69a7237f51464c609f302",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/晚唐·开成五年（官方）.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/bundled-scenarios/天启七年·九月（官方）.json",
+    "validatedSha256": "099a110d716e62e1569d502e5418e6322a284902fb2f605327b0716e5a7332d2",
+    "restoredSha256": "c372715a931d617c2f6acaed44aac83b3edee58b64d37d1102f2c5799b37d859",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/天启七年·九月（官方）.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/bundled-scenarios/绍宋·建炎元年八月（官方）.json",
+    "validatedSha256": "8f57b380b82bec80b8deb3768addf9f87cd4d0123a63b130d19d10454345633a",
+    "restoredSha256": "b9d93ee676c51d2e2995507bc8829b686a7593bbfcbcee9be283e8e814f24ab1",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/绍宋·建炎元年八月（官方）.json",
+    "byteIdentical": true
+  },
+  {
+    "path": "web/bundled-scenarios/晚唐·开成五年（官方）.json",
+    "validatedSha256": "bcad236a1f19c466558108df7b33664abf4ad20f3fd8fd8e6994a5f54de4e150",
+    "restoredSha256": "3d03ef5839e2748a1c02bfb907b8f77c6cf7bac69de69a7237f51464c609f302",
+    "restoredTo": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "gitBlobPath": "scenarios/晚唐·开成五年（官方）.json",
+    "byteIdentical": true
+  }
+]

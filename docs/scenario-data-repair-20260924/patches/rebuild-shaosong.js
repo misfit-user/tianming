@@ -92,6 +92,9 @@ function main() {
   console.log('人物时代错误：' + run([path.join(DIR, 'patches/shaosong-people.js'), '--report', path.join(DIR, 'reports/shaosong-people.md'), '--write']));
   // P1-B2：有史据的产量量纲（最后一步）
   console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'shaosong', '--report', path.join(DIR, 'reports/p1b2-shaosong.md'), '--write']));
+  // 税基重接：产量税声明与开局财政口径（省道主官之前）
+  console.log('税基重接：' + run([path.join(DIR, 'patches/tax-base.js'), 'shaosong', '--report', path.join(DIR, 'reports/tax-base-shaosong.md'), '--write']));
+  console.log('省道主官：' + run([path.join(DIR, 'patches/governors.js'), 'shaosong', '--report', path.join(DIR, 'reports/governors-shaosong.md'), '--write']));
 }
 
 main();

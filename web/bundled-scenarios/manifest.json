@@ -16,14 +16,14 @@
       "active": true,
       "hasMap": true,
       "counts": {
-        "characters": 203,
+        "characters": 217,
         "factions": 22,
         "regions": 307
       },
-      "bytes": 9951486,
-      "sha256": "e3628e3229572685d0d721781bf6f083ff98cf7c5a4e5eee0dce84b941a36e7c",
-      "sourceBytes": 16318793,
-      "sourceSha256": "c372715a931d617c2f6acaed44aac83b3edee58b64d37d1102f2c5799b37d859"
+      "bytes": 10022780,
+      "sha256": "b03e65066cad926f5d4817e7dfcfad6380bb1a04fd7b303d91f085461b0c3ead",
+      "sourceBytes": 16384309,
+      "sourceSha256": "fe728654dccc93b00fca5c481c736b5d66172972f22b42b8f5f34b5f3f83a5f3"
     },
     {
       "key": "shaosong",
@@ -39,14 +39,14 @@
       "active": true,
       "hasMap": true,
       "counts": {
-        "characters": 500,
+        "characters": 513,
         "factions": 39,
         "regions": 566
       },
-      "bytes": 50815088,
-      "sha256": "ce680eff6153f1199f6c6ded5f9aa176db6efab9e7ee95d42c8a3f69de88a7bd",
-      "sourceBytes": 90923695,
-      "sourceSha256": "b9d93ee676c51d2e2995507bc8829b686a7593bbfcbcee9be283e8e814f24ab1"
+      "bytes": 50883649,
+      "sha256": "1b1b4f1a2a6bb99380141e05c7c685081ca992a3c3c04984fabb2b0420e2ac15",
+      "sourceBytes": 90984615,
+      "sourceSha256": "7a51847565b761bd13f68845ce6b2c32c2b2b553922032586fd83a6fd7d719a5"
     },
     {
       "key": "tang840",
@@ -66,10 +66,10 @@
         "factions": 42,
         "regions": 575
       },
-      "bytes": 31582639,
-      "sha256": "e7ec94a0020e4b989b7ffbff17bf3add2f22431dda2cf6b08a668e80574edf3e",
-      "sourceBytes": 52956146,
-      "sourceSha256": "3d03ef5839e2748a1c02bfb907b8f77c6cf7bac69de69a7237f51464c609f302"
+      "bytes": 31911207,
+      "sha256": "e2b99025748c6d3a0ef495c44b2321bb058c11258ec04358cd45661954a68579",
+      "sourceBytes": 53244408,
+      "sourceSha256": "86c9a74685b9b512166e62bf7f15e2e6b6d0e795de867fd56c87c322906a1751"
     }
   ]
 }

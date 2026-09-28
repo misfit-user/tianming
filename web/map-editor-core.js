@@ -16,6 +16,13 @@
       id: opts.id || ('div_' + now + '_' + Math.floor(Math.random()*9999)),
       name: opts.name || '未命名',
       level: opts.level || 'province',
+      parentId: opts.parentId || '',
+      logicalRegionId: opts.logicalRegionId || '',
+      sourceRegionIds: opts.sourceRegionIds || null,
+      sourceParentId: opts.sourceParentId || '',
+      sourceCircuitId: opts.sourceCircuitId || '',
+      sourceMapRegionId: opts.sourceMapRegionId || '',
+      layerRole: opts.layerRole || '',
       description: opts.description || '',
       officialPosition: opts.officialPosition || '',
       governor: opts.governor || '',
@@ -28,6 +35,7 @@
       // geometry
       polygon: opts.polygon || [],     // [[x,y],...] in world coord·主 polygon (mainland) outer ring
       holes: opts.holes || [],         // 主 polygon 内的洞 (主圈)·array of polygons (inner rings)·非此省领土
+      extraPolygonHoles: opts.extraPolygonHoles || [],
       extraPolygons: opts.extraPolygons || [],  // 飞地·exclaves·array of outer rings
       // topology mode·shared vertex registry (phase 9)·若 map.topology.enabled·则下面 vid arrays 有效
       polygonVids: opts.polygonVids || null,
@@ -314,6 +322,7 @@
         if (p.length < 3) return;
         var a = polygonArea(p);
         if (idx === 0) a -= holeArea;  // 主 polygon 扣 hole area
+        else ((div.extraPolygonHoles || [])[idx-1] || []).forEach(function(h){ a -= polygonArea(h); });
         var c = polygonCentroid(p);
         var b = polygonBBox(p);
         totalArea += a;
@@ -380,16 +389,12 @@
     if (_bb && (wx < _bb.x || wy < _bb.y || wx > _bb.x + _bb.w || wy > _bb.y + _bb.h)) return false;
     if (d.polygon && pointInPolygon(wx, wy, d.polygon)){
       // 检查 hole·若在 hole 内·不算领土
-      if (d.holes && d.holes.length){
-        for (var i = 0; i < d.holes.length; i++){
-          if (pointInPolygon(wx, wy, d.holes[i])) return false;
-        }
-      }
-      return true;
+      var insideHole = (d.holes || []).some(function(h){ return pointInPolygon(wx, wy, h); });
+      if (!insideHole) return true;
     }
     if (d.extraPolygons && d.extraPolygons.length){
       for (var j = 0; j < d.extraPolygons.length; j++){
-        if (pointInPolygon(wx, wy, d.extraPolygons[j])) return true;
+        if (pointInPolygon(wx, wy, d.extraPolygons[j]) && !((d.extraPolygonHoles || [])[j] || []).some(function(h){ return pointInPolygon(wx, wy, h); })) return true;
       }
     }
     return false;
@@ -397,13 +402,18 @@
 
   // ─── division helpers ──────────────────────────────────────
 
+  function isDivisionVisible(d){
+    var meta = EDITOR.map.meta && EDITOR.map.meta.scenarioMap;
+    return !meta || d.level === (EDITOR.mapLayer || meta.defaultLevel);
+  }
+
   function findDivisionAt(wx, wy){
     // 优先用可见列表 (timeline-aware)·hover 不命中 hidden div
     var visible = EDITOR._visibleCache;
     if (visible){
       for (var i = visible.length - 1; i >= 0; i--){
         var v = visible[i];
-        if (pointInDivision(v.base, wx, wy)) return v.base;
+        if (isDivisionVisible(v.base) && pointInDivision(v.base, wx, wy)) return v.base;
       }
       return null;
     }
@@ -411,7 +421,7 @@
     var divs = EDITOR.map.divisions;
     for (var j = divs.length - 1; j >= 0; j--){
       var d = divs[j];
-      if (pointInDivision(d, wx, wy)) return d;
+      if (isDivisionVisible(d) && pointInDivision(d, wx, wy)) return d;
     }
     return null;
   }
@@ -616,6 +626,7 @@
     }
     EDITOR.map.divisions.forEach(function(d){
       // 视口裁剪:bbox 完全在视口外 → 跳过(部分相交/包住视口仍画)
+      if (!isDivisionVisible(d)) return;
       if (_vp && d.bbox && (d.bbox.x > _vp.maxX || d.bbox.x + d.bbox.w < _vp.minX || d.bbox.y > _vp.maxY || d.bbox.y + d.bbox.h < _vp.minY)) return;
       var state = d;
       if (!inDiff && EDITOR.viewYear != null && TL){
@@ -744,10 +755,9 @@
       for (var px = 1; px < v.allPolys.length; px++){
         var ep = v.allPolys[px];
         if (!ep || ep.length < 3) continue;
-        if (tracePolyPath(ctx, ep)){
-          ctx.fillStyle = fillColor;
-          ctx.fill();
-        }
+        var extraHoles = (d.extraPolygonHoles || [])[px - 1] || [];
+        fillMainWithHoles(ctx, ep, extraHoles, fillColor);
+        extraHoles.forEach(function(h){ strokePolygon(ctx, h, holeW, holeCol, holeDash); });
         if (!skipStroke){
           strokePolygon(ctx, ep, mainW, mainCol, [3 / z, 3 / z]);
         }
@@ -1321,6 +1331,8 @@
       TM.MapEditor.arealinks.buildColorKeyIndex(EDITOR.map);
     }
     fitToContent();
+    EDITOR.mapLayer = EDITOR.map.meta && EDITOR.map.meta.scenarioMap ? EDITOR.map.meta.scenarioMap.defaultLevel : null;
+    EDITOR._visibleCache = null;
     fire('map-loaded');
   }
 
@@ -1329,6 +1341,8 @@
       console.error('[map-editor] invalid map data');
       return;
     }
+    EDITOR.mapLayer = mapData.meta && mapData.meta.scenarioMap ? mapData.meta.scenarioMap.defaultLevel : null;
+    EDITOR._visibleCache = null;
     // ensure each division has expected fields (sanitize via createDivision)
     var divs = mapData.divisions.map(function(d){
       var nd = createDivision(d);
@@ -1591,9 +1605,11 @@
 
     // division ops
     createDivision: createDivision,
+    createMapState: createMapState,
     getAllPolygons: getAllPolygons,
     getAllRings: getAllRings,
     pointInDivision: pointInDivision,
+    isDivisionVisible: isDivisionVisible,
     findDivisionAt: findDivisionAt,
     getSelected: getSelected,
     selectOne: selectOne,

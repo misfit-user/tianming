@@ -5,7 +5,7 @@
 <title>地图编辑器·tianming</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <!-- 移动端「固定分辨率 contain 缩放」适配（仅 capacitor/?fit=1 生效·桌面 no-op）：1280×800 虚拟舞台·配 tools.js _csf 抗缩放补丁 -->
-<script src="tm-mapeditor-fit.js?v=20260604-mapfit"></script>
+<script src="tm-mapeditor-fit.js?v=20260928-release1353"></script>
 <style>
 /* ════════════════════════════════════════════════════════════════
    tianming · 地图编辑器·design tokens
@@ -1790,7 +1790,7 @@ body.me-player-mode #map-canvas {
 <!-- ═════════ scripts (load order matters) ═════════ -->
 <script src="map-editor-dynasty.js"></script>
 <script src="map-editor-undo.js"></script>
-<script src="map-editor-core.js"></script>
+<script src="map-editor-core.js?v=20260928-release1353"></script>
 <script src="map-editor-tools.js"></script>
 <script src="map-editor-io.js"></script>
 <script src="map-editor-layers.js"></script>
@@ -1822,9 +1822,9 @@ body.me-player-mode #map-canvas {
 <script src="map-editor-rastermaps.js"></script>
 <script src="map-editor-postprocess.js"></script>
 <script src="map-editor-ferry.js"></script>
-<script src="map-editor-to-game.js?v=20260916-release1350"></script>
+<script src="map-editor-to-game.js?v=20260928-release1353"></script>
 <script src="map-editor-marquee.js"></script>
-<script src="map-editor-minimap.js"></script>
+<script src="map-editor-minimap.js?v=20260928-release1353"></script>
 <script src="map-editor-state.js"></script>
 <script src="map-editor-workflow-chain.js"></script>
 <script src="map-editor-mode-banner.js"></script>
@@ -1856,7 +1856,7 @@ body.me-player-mode #map-canvas {
 <script src="map-editor-terrain.js"></script>
 <script src="map-editor-impassable.js"></script>
 <script src="map-editor-zoom-blend.js"></script>
-<script src="map-editor-ink-realm.js"></script>
+<script src="map-editor-ink-realm.js?v=20260928-release1353"></script>
 <script src="map-editor-factions.js"></script>
 <script src="map-editor-faction-presets.js"></script>
 <script src="map-editor-player-view.js"></script>
@@ -1864,6 +1864,18 @@ body.me-player-mode #map-canvas {
 <script src="map-editor-ui.js"></script>
 <script src="map-editor-panel.js"></script>
 <script src="map-editor-juben-handoff.js"></script>
+<script src="tm-authoring-extensions.js?v=20260928-release1353"></script>
+<script src="tm-agent-kernel.js?v=20260928-release1353"></script>
+<script src="tm-ai-request-options.js?v=20260928-release1353"></script>
+<script src="libs/polygon-clipping-0.15.7.min.js"></script>
+<script src="map-editor-scenario-geometry.js?v=20260928-release1353"></script>
+<script src="map-editor-scenario-library.js?v=20260928-release1353"></script>
+<script src="map-editor-agent-tools.js?v=20260928-release1353"></script>
+<script src="editor-authoring-agent-provider.js?v=20260928-release1353"></script>
+<script src="editor-authoring-agent.js?v=20260928-release1353"></script>
+<script src="map-editor-agent.js?v=20260928-release1353"></script>
+<script src="map-editor-agent-ui.js?v=20260928-release1353"></script>
+<link rel="stylesheet" href="map-editor-agent.css?v=20260928-release1353">
 
 <script>
 (function(){

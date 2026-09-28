@@ -49,6 +49,9 @@ function main() {
   console.log('个人目标：' + run([path.join(DIR, 'patches/tianqi-goals.js'), '--write']));
   // P1-B2：有史据的产量量纲（最后一步，避免改动前序各省补丁）
   console.log('产量量纲：' + run([path.join(DIR, 'patches/p1b2-production.js'), 'tianqi', '--report', path.join(DIR, 'reports/p1b2-tianqi.md'), '--write']));
+  // 税基重接：产量税声明与开局财政口径（省道主官之前）
+  console.log('税基重接：' + run([path.join(DIR, 'patches/tax-base.js'), 'tianqi', '--report', path.join(DIR, 'reports/tax-base-tianqi.md'), '--write']));
+  console.log('省道主官：' + run([path.join(DIR, 'patches/governors.js'), 'tianqi', '--report', path.join(DIR, 'reports/governors-tianqi.md'), '--write']));
 }
 
 main();

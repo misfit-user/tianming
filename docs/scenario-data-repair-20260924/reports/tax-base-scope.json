@@ -1,0 +1,30 @@
+[
+  {
+    "scenario": "天启七年·九月（官方）.json",
+    "baseline": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "nonFiscalHash": "07fba9ca5f9d0f27e15247456d71fd3792431a8b2c7b773589d0447e90a0e08f",
+    "unchangedFiscalRemainders": [
+      "48e2ebf9dd7b41548d877a489d813c9bc45157b5be9097293ac48de482a8ca92"
+    ],
+    "pass": true
+  },
+  {
+    "scenario": "绍宋·建炎元年八月（官方）.json",
+    "baseline": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "nonFiscalHash": "8ef4beffd356d78794593e7f7ab0f5c4ff23e2c761c30b514ab6d24b430d7b35",
+    "unchangedFiscalRemainders": [
+      "e6aa054009a0e48ab47127038b5d36840b245dd89647897c2b70e17abfa46c9d"
+    ],
+    "pass": true
+  },
+  {
+    "scenario": "晚唐·开成五年（官方）.json",
+    "baseline": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+    "nonFiscalHash": "f60876a5cca4791ffc2a9bcc86e20ac17473d34cfb4d0c20af4ae84ca5ce541c",
+    "unchangedFiscalRemainders": [
+      "98c5b9a6c7ff6404428aedbd3ae4d0e9a8d3a61d9d84484a830c536ebd0e24e7",
+      "98c5b9a6c7ff6404428aedbd3ae4d0e9a8d3a61d9d84484a830c536ebd0e24e7"
+    ],
+    "pass": true
+  }
+]

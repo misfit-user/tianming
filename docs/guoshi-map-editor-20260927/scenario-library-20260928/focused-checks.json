@@ -1,0 +1,17 @@
+[
+  {
+    "script": "web/scripts/smoke-map-editor-agent.js",
+    "exit": 0,
+    "log": "smoke-map-editor-agent.log"
+  },
+  {
+    "script": "web/scripts/smoke-map-editor-scenario-library.js",
+    "exit": 0,
+    "log": "smoke-map-editor-scenario-library.log"
+  },
+  {
+    "script": "web/scripts/smoke-faction-binding-lint.js",
+    "exit": 0,
+    "log": "smoke-faction-binding-lint.log"
+  }
+]

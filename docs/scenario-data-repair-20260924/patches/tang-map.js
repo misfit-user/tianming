@@ -81,6 +81,7 @@ function apply(s) {
   assert.strictEqual(Object.keys(DATA.geometryHashes).length, touched.size, '缺几何前置指纹');
   for (const id of touched) assert.strictEqual(hash(byId.get(id).geometry), DATA.geometryHashes[id], id + ' 几何已变化，拒绝按旧序号改写');
   const original = new Map([...touched].map(id => [id, clone(byId.get(id))]));
+  const retained = DATA.unresolved.map(t => ({ ...t, polygon: clone(G.polys(byId.get(t.from).geometry)[t.part]) }));
   const beforeEdges = landEdges(m.regions);
   const water = m.roads.filter(r => r.type === 'water');
   const oldRoads = new Map(m.roads.map(r => [pair(r.from, r.to), r]));
@@ -119,6 +120,7 @@ function apply(s) {
     transfers.push({ ...t, area: round(area([p])), overlap: round(overlap), bbox: G.bbox(shape([p])) });
   }
   for (const [id, parts] of removed) setGeometry(byId.get(id), G.polys(original.get(id).geometry).filter((p, i) => !parts.has(i)));
+  for (const t of retained) assert(G.polys(byId.get(t.from).geometry).some(p => hash(p) === hash(t.polygon)), t.from + '/' + t.part + ' 待核原片必须逐字保留');
   const promoted = [];
   for (const id of DATA.promote) {
     const r = byId.get(id), ps = G.polys(r.geometry), best = ps.reduce((a, p, i) => area([p]) > area([ps[a]]) ? i : a, 0);
@@ -297,13 +299,13 @@ function report(r, scans, after) {
     '修后主面候选 ' + after.mainOutliers.length + '，远片候选 ' + after.remoteParts.length + ' 面/' + new Set(after.remoteParts.map(x => x.id)).size + ' 块，不可能陆邻 ' + after.impossibleLand.length + '，非对称/缺 id ' + after.asymmetric.length + '/' + after.missingNeighbors.length + '。', '',
     ...DATA.unresolved.map(x => '- ' + x.from + ' 原分面 ' + x.part + '：' + x.reason + ' 候选接收州：' + list(x.candidates) + '；保留几何及由该碎片形成的旧连接，并明确不称为全部错位已清零。'),
     '- 绍宋、天启阈值候选只报告，未改其真源。天启宗谷小主面、钏路远岛和建州三卫相关陆邻，以及绍宋长春州远片，需按各自编译规则和史地依据再核；没有凭距离把群岛一律裁掉。',
-    '- 归还依据是原粗图中唯一共享边的在地行政块与原治所地理位置，不是重绘精确唐代县界；新罗海岸沿用现有州块口径。',
+    '- 原十片按原粗图中唯一共享边的在地行政块与原治所地理位置归还；委任状F新增的占不劳原分面1另依属县、四至及河口地望归恩州（见下文），不按边长多数判州。不是重绘精确唐代县界；新罗海岸沿用现有州块口径。',
     '- 补丁验证了改动组修前修后陆地并集、内洞保留及非地图数据 hash；既有中心/地方账不动。全图历史边界准确性与旧存档迁移不在此报告的完成声明内。', '',
     '## 复现', '',
     '```text', 'node docs/scenario-data-repair-20260924/patches/tang-map.js --report docs/scenario-data-repair-20260924/reports/tang-map.md --write',
     'node docs/scenario-data-repair-20260924/patches/rebuild-tang.js', '```', '',
     '直接补丁只能用于匹配修前指纹的输入；再次修复请整体重建。报告与真源均无时间戳随机数。收尾定向验证与截图记录见本报告末尾的验收记录。');
-  return lines.join('\n') + '\n' + (DATA.acceptance || '');
+  return lines.join('\n') + '\n\n' + (DATA.fragmentReview || '') + '\n' + (DATA.acceptance || '') + '\n' + (DATA.fragmentAcceptance || '');
 }
 function main() {
   const args = process.argv.slice(2), raw = fs.readFileSync(FILE, 'utf8'), s = JSON.parse(raw);

@@ -76,6 +76,12 @@ async function _tmRunEndTurnDeterministicTail() {
     }
   });
 
+  await _tmRunCriticalEndTurnSystem('endTurn] circuit governor tick', function() {
+    if (typeof window !== 'undefined' && window.TM && TM.CircuitGovernorEffects && typeof TM.CircuitGovernorEffects.tick === 'function') {
+      return TM.CircuitGovernorEffects.tick(GM, P);
+    }
+  });
+
   await _tmRunCriticalEndTurnSystem('endTurn] final aggregate', function() {
     if (typeof IntegrationBridge !== 'undefined' && IntegrationBridge && typeof IntegrationBridge.aggregateRegionsToVariables === 'function') {
       return IntegrationBridge.aggregateRegionsToVariables();

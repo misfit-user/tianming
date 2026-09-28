@@ -59,14 +59,21 @@
     var k = -Math.log(Math.max(1e-12, 1 - _clamp(F.driftRate, 0, 1))) / 30;
     function at(t) { return _clamp(vacant ? prev - rate * t : target + (prev - target) * Math.exp(-k * t), 0, 100); }
     var cuts = [0, days];
-    [F.lowBand, F.highBand].forEach(function(level) {
+    [0, F.lowBand, 50, F.highBand, 100].forEach(function(level) {
       var t = vacant ? (rate ? (prev-level)/rate : -1) : k && prev!==target && (level-target)/(prev-target)>0 ? -Math.log((level-target)/(prev-target))/k : -1;
       if(t>0 && t<days) cuts.push(t);
     });
     cuts.sort(function(a,b){return a-b;});
-    var low=0,high=0;
-    for(var i=1;i<cuts.length;i++) {var mid=at((cuts[i]+cuts[i-1])/2), len=cuts[i]-cuts[i-1];if(mid<F.lowBand)low+=len;else if(mid>F.highBand)high+=len;}
-    return {next:at(days),low:low/30,high:high/30};
+    var low=0,high=0,exposure=[];
+    for(var i=1;i<cuts.length;i++) {
+      var a=cuts[i-1],b=cuts[i],mid=at((a+b)/2),len=b-a,area;
+      if(mid<F.lowBand)low+=len;else if(mid>F.highBand)high+=len;
+      if(mid<=0||mid>=100)area=mid*len;
+      else if(vacant)area=prev*len-rate*(b*b-a*a)/2;
+      else area=k?target*len+(prev-target)*(Math.exp(-k*a)-Math.exp(-k*b))/k:prev*len;
+      exposure.push((area/50-len)/30);
+    }
+    return {next:at(days),low:low/30,high:high/30,exposure:exposure};
   }
   function _days(G,opts) {
     if(opts.days!=null) return Math.max(0,HS.number(opts.days,0));
@@ -74,6 +81,33 @@
     if(opts.monthRatio!=null) return Math.max(0,HS.number(opts.monthRatio,0)*30);
     var get=_fn('_getDaysPerTurn');
     return Math.max(0,HS.number(get ? get() : G.daysPerTurn,30));
+  }
+
+  // 省道与全国共享占员、稳定身份和分事务能力；读口不初始化履职态。
+  function officeDutyView(GM, position, opts) {
+    opts=opts||{};
+    var state=HS?HS.read(GM,position):null,ds=position&&position._dutyState;
+    var powers=opts.power?[opts.power]:_powersOf(position),actors=state?state.characters:[];
+    if(!powers.length)powers=['general'];
+    var capacity=actors.length?actors.reduce(function(sum,h){
+      var active=HS.availability(GM,h.char,position,HS.number(opts.day,HS.number(ds&&ds.elapsedDays,0)));
+      return sum+powers.reduce(function(n,k){return n+_capacity(active.char,k)*active.capacity;},0)/powers.length;
+    },0)/actors.length:null;
+    var fulfillment=ds&&typeof ds.fulfillment==='number'?ds.fulfillment:null;
+    return {capacity:capacity,fulfillment:fulfillment,band:fulfillment===null?null:fulfillment<DEFAULT_FORCE.lowBand?'low':fulfillment>DEFAULT_FORCE.highBand?'high':'mid'};
+  }
+  function _currentPosition(p,F) {
+    var ds=p&&p._dutyState,value=ds&&typeof ds.fulfillment==='number'?ds.fulfillment:50,byPower={};
+    Object.keys(ds&&ds.byPower||{}).forEach(function(k){byPower[k]={next:ds.byPower[k]};});
+    return {prev:value,next:value,band:value<F.lowBand?'low':value>F.highBand?'high':'mid',ticked:false,byPower:byPower};
+  }
+  function tickDutyPosition(GM,position,opts) {
+    opts=opts||{};
+    var F=Object.assign({},DEFAULT_FORCE,opts.force||{}),result=_currentPosition(position,F);
+    if(!GM||!position||!HS||opts.frozen===true)return result;
+    var selected=Object.assign({},opts,{_position:position,_capture:function(row){result=row;}});
+    tickOfficeDutyState(GM,selected);
+    return result;
   }
 
   /**
@@ -86,17 +120,23 @@
     opts = opts || {};
     var F = Object.assign({}, DEFAULT_FORCE, opts.force || {});
     var agg = { compliance: 0, corruption: 0, details: [] };
-    if (!GM || !GM.officeTree || !GM.officeTree.length || !HS) return agg;
+    if (!GM || !HS || ((!GM.officeTree || !GM.officeTree.length) && !opts._position)) return agg;
     var turn = (GM.turn != null) ? GM.turn : 0;
     var days=_days(GM,opts);
     if(!days) return agg;
-    var rows=[];
+    // One synchronous province settlement shares holder/leave/workload reads.
+    // The caller discards this scope after the batch; no cross-turn cache lives here.
+    var frame=opts._scope&&opts._scope.frame;
+    if(frame&&(frame.game!==GM||frame.turn!==turn||frame.days!==days||opts._position&&!frame.rows.some(function(r){return r.p===opts._position;})))frame=null;
+    var rows=frame?frame.rows:[],start=frame&&frame.start,segments=frame&&frame.segments;
+    if(!frame){
     HS.walk(GM.officeTree, function(p,n,path) {
-      var powers=_powersOf(p); if(!powers.length && !_isHead(p))return;
+      var powers=_powersOf(p); if(!powers.length && !_isHead(p) && p!==opts._position)return;
       var state=HS.read(GM,p);
       rows.push({p:p,dept:n.name || '',path:path,state:state,powers:powers,regionId:p.jurisdictionId || p.regionId || n.jurisdictionId || n.regionId,regionName:p.jurisdiction || n.jurisdiction,faction:p.factionId || n.factionId});
     });
-    var start=HS.number(opts.startDay,rows.reduce(function(v,row){return Math.max(v,HS.number(row.p._dutyState && row.p._dutyState.elapsedDays,0));},0));
+    if(opts._position&&!rows.some(function(row){return row.p===opts._position;}))rows.push({p:opts._position,dept:'',path:'',state:HS.read(GM,opts._position),powers:_powersOf(opts._position)});
+    start=HS.number(opts.startDay,rows.reduce(function(v,row){var state=row.p._dutyState,day=HS.number(state&&state.elapsedDays,0);return Math.max(v,state&&state.lastTurn===turn?Math.max(0,day-days):day);},0));
     var boundaries=[start,start+days];
     rows.forEach(function(row){row.state.characters.forEach(function(h){
       var leave=row.p.officeLeave || row.p.leave || h.char.officeLeave || h.char.leave || {};
@@ -104,28 +144,40 @@
     });});
     boundaries.sort(function(a,b){return a-b;});
     function actorsAt(row,day) {return row.state.characters.map(function(h){return HS.availability(GM,h.char,row.p,day);});}
-    var segments=boundaries.slice(1).map(function(end,i) {
+    segments=boundaries.slice(1).map(function(end,i) {
       var day=(end+boundaries[i])/2,loads=new Map(),actors=rows.map(function(row){return actorsAt(row,day);});
       actors.forEach(function(list){list.forEach(function(a){loads.set(a.char,(loads.get(a.char)||0)+1);});});
       return {days:end-boundaries[i],actors:actors,shares:actors.map(function(list){return list.length?list.reduce(function(sum,a){return sum+1/loads.get(a.char);},0)/list.length:1;})};
     });
+    if(opts._scope)opts._scope.frame={game:GM,turn:turn,days:days,rows:rows,start:start,segments:segments};
+    }
     rows.forEach(function(row,rowIndex) {
       var p=row.p,deptName=row.dept;
+      if(opts._position&&p!==opts._position)return;
+      if(typeof opts.skip==='function'&&opts.skip(p))return;
       var pwKeys = _powersOf(p);
-      if (!pwKeys.length && !_isHead(p)) return;     // 同舆图过滤：只主官/掌权
+      if (!pwKeys.length && !_isHead(p) && p!==opts._position) return;     // 同舆图过滤：只主官/掌权
       var ds = p._dutyState || (p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
-      if (ds.lastTurn === turn) return;              // 本回合已 tick·防重复施加
+      if (ds.lastTurn === turn) {
+        if(typeof opts._capture==='function') {
+          var current=_currentPosition(p,F),existingKeys=pwKeys.length?pwKeys:['general'];
+          existingKeys.forEach(function(k){var value=HS.number(ds.byPower&&ds.byPower[k],current.next);current.byPower[k]={next:value,exposure:segments.map(function(s){return (value-50)/50*s.days/30*s.shares[rowIndex];})};});
+          opts._capture(current);
+        }
+        return; // 本回合已 tick·防重复施加
+      }
 
       var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
       if(!ds.byPower) ds.byPower={};
       var keys=pwKeys.length?pwKeys:['general'], results={};
       keys.forEach(function(power) {
-        var current=HS.number(ds.byPower[power],prev), result={next:current,low:0,high:0};
+        var current=HS.number(ds.byPower[power],prev), result={next:current,low:0,high:0,exposure:[]};
         for(var bi=0;bi<segments.length;bi++) {
           var segment=segments[bi], actors=segment.actors[rowIndex], target=current;
           if(actors.length) target=actors.reduce(function(sum,a){return sum+_capacity(a.char,power)*a.capacity;},0)/actors.length;
           var step=_advance(current,target,!row.state.occupied,segment.days,F), share=segment.shares[rowIndex];
-          result.low+=step.low*share;result.high+=step.high*share;current=step.next;
+          result.low+=step.low*share;result.high+=step.high*share;
+          step.exposure.forEach(function(value){result.exposure.push(value*share);});current=step.next;
         }
         result.next=current; results[power]=result;
         ds.byPower[power]=results[power].next;
@@ -135,6 +187,7 @@
       ds.trend = next > prev + 0.5 ? 'rising' : next < prev - 0.5 ? 'falling' : 'stable';
       ds.lastTurn = turn;
       ds.elapsedDays = start+days;
+      if(typeof opts._capture==='function')opts._capture({prev:prev,next:next,band:next<F.lowBand?'low':next>F.highBand?'high':'mid',ticked:true,byPower:results});
 
       // 域效果（带 × power·仅 v1 已接杠杆）
       var did = {};   // 每杠杆每官最多记一次（防 supervise+impeach 同署双扣腐败）
@@ -192,7 +245,9 @@
     return { holder: ch.name, characterId:ch.id, dept: hit.dept, pos: hit.pos.name, positionId:hit.pos.id, delta: ds.fulfillment-prev, fulfillment: Math.round(ds.fulfillment) };
   }
 
+  global.officeDutyView = officeDutyView;
+  global.tickDutyPosition = tickDutyPosition;
   global.tickOfficeDutyState = tickOfficeDutyState;
   global.applyNpcActionToDuty = applyNpcActionToDuty;
-  if (typeof module !== 'undefined' && module.exports) module.exports = { tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { tickDutyPosition: tickDutyPosition, officeDutyView: officeDutyView, tickOfficeDutyState: tickOfficeDutyState, applyNpcActionToDuty: applyNpcActionToDuty, DEFAULT_FORCE: DEFAULT_FORCE };
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));

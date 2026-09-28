@@ -1,0 +1,24 @@
+#me-guoshi-launcher{position:fixed;right:20px;bottom:62px;z-index:950;padding:10px 19px;border:1px solid #ad8d4b;border-radius:8px;background:#211d17;color:#f2d799;font:600 16px "Microsoft YaHei",sans-serif;cursor:pointer;box-shadow:0 4px 18px #0005}
+#me-guoshi{position:fixed;right:16px;top:64px;bottom:60px;width:min(410px,calc(100vw - 32px));z-index:960;display:flex;flex-direction:column;background:#211e19;color:#ede3d1;border:1px solid #8c733e;border-radius:12px;box-shadow:0 16px 50px #0008;font:14px/1.6 "Microsoft YaHei",sans-serif;overflow:hidden}
+#me-guoshi[hidden]{display:none}
+#me-guoshi header{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid #655438}
+#me-guoshi header b{font-size:21px;color:#f2d799}
+#me-guoshi header small{margin-left:12px;color:#c2b398}
+#me-guoshi button{border:1px solid #8c733e;border-radius:6px;padding:6px 11px;background:#383023;color:#f0e0bf;cursor:pointer;font:inherit}
+#me-guoshi button:disabled{opacity:.45;cursor:default}
+#me-guoshi button[type=submit]{background:#b28d41;color:#17140e;font-weight:700}
+#me-guoshi button:focus-visible,#me-guoshi textarea:focus-visible,#me-guoshi-launcher:focus-visible{outline:2px solid #f2d799;outline-offset:3px}
+#me-guoshi .me-guoshi-hint{margin:13px 18px 6px;color:#d2c4ad;font-size:13px}
+#me-guoshi [data-role=selection]{margin:0 18px 12px;color:#c5aa76;font-size:12px}
+#me-guoshi [data-role=log]{flex:1;min-height:80px;overflow:auto;padding:0 18px;white-space:pre-wrap;overflow-wrap:anywhere}
+#me-guoshi [data-role=log] p{padding:10px 0;margin:0;border-bottom:1px solid #494032}
+#me-guoshi [data-role=log] b{color:#f2d799}
+#me-guoshi form{padding:12px 18px 0;border-top:1px solid #655438}
+#me-guoshi form>label{display:block;margin-bottom:5px;font-size:12px;color:#c2b398}
+#me-guoshi textarea{width:100%;box-sizing:border-box;resize:vertical;max-height:180px;min-height:76px;background:#151410;color:#eee1cb;border:1px solid #82704e;border-radius:6px;padding:10px;font:inherit}
+#me-guoshi textarea::placeholder{color:#b7aa91}
+#me-guoshi .me-guoshi-options{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0;font-size:12px;color:#c2b398}
+#me-guoshi [data-role=model]{max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#me-guoshi .me-guoshi-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#me-guoshi [data-role=status]{font-size:12px;color:#d5c5a7;margin:9px 18px 13px;overflow-wrap:anywhere}
+@media(max-height:600px){#me-guoshi{top:8px;bottom:8px}#me-guoshi .me-guoshi-hint{display:none}}

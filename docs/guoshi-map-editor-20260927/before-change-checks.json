@@ -1,0 +1,61 @@
+{
+  "method": "Replayed failed checks with the original map-editor.html and editor-authoring-agent.js bytes through an isolated Node read/require hook; other current workspace files unchanged.",
+  "results": [
+    {
+      "name": "smoke-edict-data-writeback.js",
+      "exit": 0,
+      "timedOut": false,
+      "ms": 37826,
+      "excerpt": "[smoke-edict-data-writeback] PASS 53 assertions {\"before\":{\"neitang.money\":2393600,\"minxin.trueIndex\":47.688629842378084,\"corruption.trueIndex\":61.08148869142071,\"huangwei.index\":70,\"huangquan.index\":75,\"vars.河道清淤进度.value\":20,\"classes.cls_mp9rsc3jaq48h.satisfaction\":62,\"classes.cls_mp9rsc3jaq48h.influence\":42,\"parties.pty_mp9rsc3iz8kgn.influence\":92,\"vars.军械储备.value\":4},\"after\":{\"neitang.money\":2392600,\"minxin.trueIndex\":48.688629842378084,\"corruption.trueIndex\":60.08148869142071,\"huangwei.index\":71,\"huangquan.index\":76,\"vars.河道清淤进度.value\":27,\"classes.cls_mp9rsc3jaq48h.satisfaction\":64,\"classes.cls_mp9rsc3jaq48h.influence\":43,\"parties.pty_mp9rsc3iz8kgn.influence\":93,\"vars.军械储备.value\":6},\"receipts\":10}\n\n[err] 播放背景音乐失败: ReferenceError: Audio is not defined\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] 初始化失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n[err] [SaveDB] IndexedDB打开失败: Error: stub·no-idb\n"
+    },
+    {
+      "name": "smoke-faction-npc-llm-decision.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 831,
+      "excerpt": "[smoke-faction-npc-llm-decision] unit tests pass·9 assertions\n[action-schema] normalization and office sync assertions pass\n[native-actions] expanded military/diplomacy/province assertions pass\n[native-actions] office/fiscal assertions pass\n[action-engine] strategic actions and priority scoring assertions pass\n[action-engine-v2] preflight, strategy memory, news, scoring assertions pass\n[faction-ai-diagnostics] snapshot assertions pass\n[local-template-ledger] shared ledger assertions pass\n[player-isPlayer-guard] assertions pass\n[llm-retry-concurrency] assertions pass\n\n[smoke-faction-npc-llm-decision] fail: prompt should include runtime admin hierarchy, not stale opening land\n    at fail (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:12:28)\n    at assert (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:13:41)\n    at promptContextExpansionTest (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:717:3)\n    at main (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-faction-npc-llm-decision.js:858:3)\n"
+    },
+    {
+      "name": "smoke-native-start-preparation.js",
+      "exit": 0,
+      "timedOut": false,
+      "ms": 2533,
+      "excerpt": "PASS actual generator is deterministic, byte-pinned and carries only local native resources\nPASS manifest rejects path escapes, remote/encoded paths, conflicting versions, altered hash and embedded scripts\nPASS document requires fresh bounded nonce/session and contains exactly one nonced bootstrap script\nPASS one-shot service hashes actual returned bytes and cleans all frames, listeners and active state\nPASS reentry and pre-aborted input never allocate another preparation or touch storage\nPASS timeout covers a hung fetch and body stream, not only headers\nPASS duplicate script loading preserves the same active owner and cancel handle\nPASS actual resource size budget and malformed runtime/identity fields fail before native execution\nPASS partial HTTP response and bytes inconsistent with the pinned native resource fail closed\nPASS unexpected parent-window identity, origin or token cannot open the private port\nPASS stale result/session cannot finish, and source/identity mismatch is rejected\nPASS cancel while verifying ignores late digest and a cancelled operation cannot replace the next result\nPASS remounting or navigating a preparation frame fails instead of accepting a new page as native\nPASS child runtime refuses ordinary page, same-origin child and desktop-bridge contexts before touching P\n14 PASS / 0 FAIL\n\n"
+    },
+    {
+      "name": "smoke-official-bundle-parity.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 18926,
+      "excerpt": "\nnode:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: Electron seeder must be byte-identical to the unified root-JSON artifact\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-official-bundle-parity.js:17:10)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-official-bundle-parity.js:35:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at node:internal/modules/cjs/loader:1943:10\r\n    at Module._extensions..js (C:\\Users\\37814\\AppData\\Local\\Temp\\tm-guoshi-map-editor-20260927\\before-hook.cjs:6:183)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-public-treasury-scale.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 6945,
+      "excerpt": "\nnode:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: fixture covers actual late Tang scale\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-public-treasury-scale.js:6:21)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-public-treasury-scale.js:15:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at node:internal/modules/cjs/loader:1943:10\r\n    at Module._extensions..js (C:\\Users\\37814\\AppData\\Local\\Temp\\tm-guoshi-map-editor-20260927\\before-hook.cjs:6:183)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-tang840-authority-autonomy.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 1303,
+      "excerpt": "\nnode:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: 44 circuits in actual central-local view: 45 / 44\r\n    at ok (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:5:31)\r\n    at eq (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:5:66)\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-authority-autonomy.js:18:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at node:internal/modules/cjs/loader:1943:10\r\n    at Module._extensions..js (C:\\Users\\37814\\AppData\\Local\\Temp\\tm-guoshi-map-editor-20260927\\before-hook.cjs:6:183)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5) {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: false,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-tang840-wuchang.js",
+      "exit": 1,
+      "timedOut": false,
+      "ms": 1118,
+      "excerpt": "\nnode:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n\r\n142 !== 434\r\n\r\n    at Object.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\web\\scripts\\smoke-tang840-wuchang.js:10:8)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at node:internal/modules/cjs/loader:1943:10\r\n    at Module._extensions..js (C:\\Users\\37814\\AppData\\Local\\Temp\\tm-guoshi-map-editor-20260927\\before-hook.cjs:6:183)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 142,\r\n  expected: 434,\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-tianqi-official-cache-recovery.js",
+      "exit": 134,
+      "timedOut": false,
+      "ms": 23478,
+      "excerpt": "ew GCs --->\r\n\r\n[15892:000001E1B7045000]    21765 ms: Mark-Compact (reduce) 323.4 (326.8) -> 323.4 (325.5) MB, pooled: 0 MB, 172.45 / 0.00 ms  (average mu = 0.067, current mu = 0.001) external memory pressure; GC in old space requested\r\n\r\nFATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory\r\n----- Native stack trace -----\r\n\r\n 1: 00007FF682C8C36F node::OnFatalError+1343\r\n 2: 00007FF6838D4D77 v8::Function::NewInstance+423\r\n 3: 00007FF6836D5467 v8::base::AddressSpaceReservation::AddressSpaceReservation+322071\r\n 4: 00007FF68366DE8B v8::platform::DefaultPlatform::CurrentClockTimeMillis+491051\r\n 5: 00007FF6836961FA v8::base::AddressSpaceReservation::AddressSpaceReservation+63402\r\n 6: 00007FF6836D7846 v8::base::AddressSpaceReservation::AddressSpaceReservation+331254\r\n 7: 00007FF6836D6E96 v8::base::AddressSpaceReservation::AddressSpaceReservation+328774\r\n 8: 00007FF6836E7E22 v8::internal::StrongRootAllocatorBase::deallocate_impl+15858\r\n 9: 00007FF6836E794B v8::internal::StrongRootAllocatorBase::deallocate_impl+14619\r\n10: 00007FF684B6DAED v8::base::UnsignedDivisionByConstant<unsigned __int64>+2791421\r\n11: 00007FF6836D2F30 v8::base::AddressSpaceReservation::AddressSpaceReservation+312544\r\n12: 00007FF6836D3912 v8::base::AddressSpaceReservation::AddressSpaceReservation+315074\r\n13: 00007FF6836DAED6 v8::base::AddressSpaceReservation::AddressSpaceReservation+345222\r\n14: 00007FF683551A84 v8::Promise::MarkAsSilent+88484\r\n15: 00007FF6838ABD80 X509_STORE_set_get_issuer+607040\r\n16: 00007FF6838AB25B X509_STORE_set_get_issuer+604187\r\n17: 000001E1EF7B727A \r\n"
+    }
+  ]
+}

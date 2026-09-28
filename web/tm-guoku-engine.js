@@ -1163,7 +1163,7 @@
     t = Math.round(t);
     return Math.max(1, Math.min(12, t || 1));
   }
-  // ═══ 天时·灾异推演(2026-07-07·flag disasterSimEnabled 默认关)：环境状态自生天灾 ═══
+  // ═══ 天时·灾异推演(2026-07-07·默认开启·disasterSimEnabled 可关闭)：环境状态自生天灾 ═══
   //   此前 GM.activeDisasters 唯一生产者=AI 叙事一致性补录(apply)——天灾是否发生取决于 LLM 本回合
   //   是否恰好叙及，而非游戏自身环境。此发生器读 climatePhase(小冰河)/nationalLoad/region.disasterLevel
   //   (区域准灾上卷·双轨互认)·确定性 hash 掷灾(不触全局 rng 序列·同局同回合同果·存档重载不漂)·
@@ -1175,10 +1175,30 @@
     return (h % 100000) / 100000;
   }
   function _dsimRegions() {
-    var rs = GM.regions;
-    if (Array.isArray(rs)) return rs.filter(Boolean);
-    if (rs && typeof rs === 'object') return Object.keys(rs).map(function (k) { var o = rs[k]; if (o && typeof o === 'object') { if (!o.id) o.id = k; return o; } return null; }).filter(Boolean);
-    return [];
+    var rs = GM.regions || {}, p = (typeof P !== 'undefined' && P) || {};
+    var info = GM.playerInfo || p.playerInfo || {}, refs = ['player'];
+    [GM.startContext && GM.startContext.playerFactionId, GM.playerFactionId, GM.playerFaction, GM.playerFactionName, info.factionId, info.factionName].forEach(function (v) { if (v) refs.push(String(v)); });
+    (GM.facs || []).forEach(function (f) {
+      if (f && (f.isPlayer || refs.indexOf(String(f.id || '')) >= 0 || refs.indexOf(String(f.name || '')) >= 0)) {
+        if (f.id) refs.push(String(f.id)); if (f.name) refs.push(String(f.name));
+      }
+    });
+    function rows(value) { return Array.isArray(value) ? value.filter(Boolean) : value && typeof value === 'object' ? Object.keys(value).map(function (key) { var row = value[key]; return row && typeof row === 'object' ? { id: row.id || key, name: row.name, disasterLevel: row.disasterLevel, _source: row } : null; }).filter(Boolean) : []; }
+    var legacy = rows(rs), tree = GM.adminHierarchy || {}, top = Array.isArray(tree.divisions) ? tree.divisions : [];
+    refs.some(function (key) { var branch = tree[key]; var list = Array.isArray(branch) ? branch : branch && branch.divisions; if (!top.length && Array.isArray(list) && list.length) { top = list; return true; } return false; });
+    var mapRows = GM.mapData && GM.mapData.regions;
+    mapRows = Array.isArray(mapRows) ? mapRows : [];
+    function regionalSignal(r) {
+      var old = legacy.find(function (row) { return (r.id && row.id === r.id) || (r.name && (row.name === r.name || row.id === r.name)); });
+      var src = old ? (old._source || old) : r;
+      return { id: r.id, name: r.name || (old && old.name) || r.id, disasterLevel: typeof src.disasterLevel === 'number' ? src.disasterLevel : 0, _source: src };
+    }
+    if (top.length) return top.filter(Boolean).map(regionalSignal);
+    if (mapRows.length) return mapRows.filter(function (r) {
+      var owner = r && (r.currentOwner || r.owner || r.factionId || r.factionName || r.ownerName);
+      return r && (!owner || refs.indexOf(String(owner)) >= 0);
+    }).map(regionalSignal);
+    return legacy;
   }
   function _dsimMonth() {
     try { if (typeof calcDateFromTurn === 'function') { var d = calcDateFromTurn(GM.turn || 0); if (d && d.month) return d.month; } } catch (_) {}
@@ -1201,7 +1221,7 @@
   function simulateDisasterGenesis() {
     if (typeof GM === 'undefined' || !GM) return null;
     var _pc = (typeof P !== 'undefined' && P && P.conf) || {};
-    if (_pc.disasterSimEnabled !== true) return null;              // flag 默认关(设置·玩法机制深化)
+    if (_pc.disasterSimEnabled === false) return null;             // 默认开启，保留显式关闭。
     var now = GM.turn || 0;
     if (!Array.isArray(GM.activeDisasters)) GM.activeDisasters = [];
     var simActive = GM.activeDisasters.filter(function (d) { return d && d._simGen; }).length;
@@ -1244,7 +1264,7 @@
     GM._lastSimDisasterTurn = now;
     // 区域准灾释放：上卷成真灾后该区灾级回落(避免同区连环加权)
     if (regionBoost > 0 && regs.length) {
-      regs.forEach(function (r) { if (String(r.name || r.id || '') === regionName) r.disasterLevel = Math.max(0, (r.disasterLevel || 0) * 0.4); });
+      regs.forEach(function (r) { if (String(r.name || r.id || '') === regionName) { var source = r._source || r; source.disasterLevel = Math.max(0, (r.disasterLevel || 0) * 0.4); } });
     }
     if (typeof addEB === 'function') {
       try { addEB('朝代', regionName + '·' + _disasterCatCN(cat) + '起（' + ({ minor: '轻', moderate: '中', severe: '重' })[severity] + '）——' + (E.climatePhase === 'little_ice_age' ? '天时严酷，' : '') + '有司当速议赈济', { credibility: 'high' }); } catch (_e) {}
@@ -1282,7 +1302,7 @@
   // 每回合一次：到期灾害出队(已赈灾者寿命减半·更快平息)·返回平息数。治本"永不消除"。
   function tickDisasters() {
     if (typeof GM === 'undefined' || !GM) return 0;
-    try { simulateDisasterGenesis(); } catch (_eg) {}   // 天时·灾异推演(flag 内自检·默认关零行为·新灾当回合即入派生信号)
+    try { simulateDisasterGenesis(); } catch (_eg) {}   // 天时·灾异推演(显式关闭时跳过发生器·新灾当回合即入派生信号)
     if (!Array.isArray(GM.activeDisasters) || !GM.activeDisasters.length) { _syncDisasterSignals([]); return 0; }  // 无灾:清陈旧派生信号(原早返回致 disasterLevel 永不归零)
     var now = GM.turn || 0, kept = [], passed = 0;
     GM.activeDisasters.forEach(function(d) {

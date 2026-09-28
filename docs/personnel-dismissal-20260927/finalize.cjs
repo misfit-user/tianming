@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('fs'),path=require('path'),cp=require('child_process');
+const log=fs.readFileSync(path.join(__dirname,'full-smokes.log'),'utf8');
+if(!/\[ci-smokes\] PASS gate /.test(log))throw Error('Full gate has not passed');
+const found=log.match(/report=([^\r\n]+smoke-report\.json)/);if(!found)throw Error('Missing report path');
+const report=JSON.parse(fs.readFileSync(found[1],'utf8')),results=report.results||[];
+if(!report.complete||results.length!==report.expected.length||results.some(r=>!r.pass)||report.skipped.length)throw Error('Incomplete or failed evidence');
+cp.execFileSync(process.execPath,[path.join(__dirname,'verify-files.cjs')],{stdio:'inherit'});
+const validation={completedAt:new Date().toISOString(),head:report.head,runId:report.runId,smokes:{pass:results.length,fail:0,skip:0},report:found[1],focused:results.filter(r=>/^smoke-personnel-dismissal-/.test(r.name)).map(r=>({name:r.name,pass:r.pass,output:r.output})),architecture:'PASS',officialParity:'PASS',releaseContractAssertions:182,baseline:{version:'1.3.5.2',files:1361},realModelCalls:false,published:false,playerSavesModified:false};
+fs.writeFileSync(path.join(__dirname,'validation.json'),JSON.stringify(validation,null,2));
+const readme=path.join(__dirname,'README.md');fs.writeFileSync(readme,fs.readFileSync(readme,'utf8').replace('全量门禁结果以本目录 `full-smokes.log` 和最终验证记录为准。','最终全量门禁：**'+results.length+' PASS / 0 FAIL / 0 SKIP**。完整证据见本目录 `full-smokes.log` 和 `validation.json`。'));
+const plan=path.join(__dirname,'task_plan.md');fs.writeFileSync(plan,fs.readFileSync(plan,'utf8').replace('4. [in_progress]','4. [complete]'));
+fs.appendFileSync(path.join(__dirname,'progress.md'),'\n- 最终全量门禁 '+results.length+'/'+results.length+' 通过，零失败、跳过。最终10文件及Git index哈希核对通过。未发布，未改玩家存档。\n');
+console.log(JSON.stringify(validation.smokes));

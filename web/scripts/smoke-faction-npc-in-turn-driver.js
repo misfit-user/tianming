@@ -81,9 +81,11 @@ async function main() {
   };
   ctx.P.conf.npcAiPrecisionMode = 'lazy';
   ctx.TM.FactionNpcSettings.setEnabled(true);
-  assert(ctx.P.conf.npcAiPrecisionMode === 'eager', 'turning precision on should migrate old lazy mode to eager');
+  assert(ctx.P.conf.npcAiPrecisionMode === 'lazy', 'retired setter preserves explicit cadence preference');
+  assert(!ctx.TM.FactionNpcSettings.isEagerMode(), 'explicit lazy cadence remains available');
+  delete ctx.P.conf.npcAiPrecisionMode;
   assert(ctx.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'precision switch + key should enable NPC LLM');
-  assert(ctx.TM.FactionNpcSettings.isEagerMode(), 'precision switch should also enable endturn eager NPC LLM batch');
+  assert(ctx.TM.FactionNpcSettings.isEagerMode(), 'default cadence includes endturn eager NPC LLM batch');
   assert(ctx.TM.FactionNpcSettings.getStatus().maxPerTurn === 2, 'legacy endturn precision max should migrate from 8 to 2');
   assert(ctx.P.conf.npcInTurnMaxPerTurn === 8, 'legacy in-turn precision max should migrate from 2 to 8');
   ctx.GM = {
@@ -161,9 +163,9 @@ async function main() {
   assert(ranFac._inTurnLlmRanTurns.indexOf(7) >= 0, 'ran faction should be marked for this turn');
   assert(ctx.GM.qijuHistory.length === 1 && ctx.GM.qijuHistory[0]._source === 'npc-in-turn-llm', 'qiju marker missing');
   ctx.TM.FactionNpcSettings.setEnabled(false);
-  assert(ctx.P.conf.npcAiPrecision === false, 'turning precision off should lower the master switch');
-  assert(!ctx.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'turning precision off should stop NPC LLM');
-  assert(!ctx.TM.FactionNpcSettings.isEagerMode(), 'turning precision off should stop endturn eager NPC LLM batch');
+  assert(ctx.P.conf.npcAiPrecision === true, 'retired setter does not write an off switch');
+  assert(ctx.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'retired off call cannot stop formal NPC decisions');
+  assert(ctx.TM.FactionNpcSettings.isEagerMode(), 'retired off call preserves default cadence');
 
   timers.length = 0;
   cleared.length = 0;

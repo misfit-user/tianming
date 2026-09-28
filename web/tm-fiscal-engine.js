@@ -750,18 +750,32 @@
     ['money','grain','cloth'].forEach(function(k){var field='monthly'+k.charAt(0).toUpperCase()+k.slice(1)+'PayPerSoldier';pay[k]=n*Math.max(0,safeNumber(army[field],basePay[k]));});
     return resourceAdd(pay,army.monthlyUpkeep||{});
   }
-  function fundingRegionIds(opts) {
+  // One budget reads one administrative tree. Keep duplicate IDs/names and their
+  // traversal order, but do not walk the full world again for every local expense.
+  function fundingNodeIndex(G) {
+    var index = { ids:new Map(), names:new Map() };
+    walkAdminDivisions(G,function(n){
+      [[index.ids,n.id],[index.names,n.name]].forEach(function(pair){
+        var rows=pair[0].get(pair[1]);
+        if(!rows){rows=[];pair[0].set(pair[1],rows);}
+        rows.push(n);
+      });
+    },{leafOnly:false});
+    return index;
+  }
+  function fundingRegionIds(opts, nodeIndex) {
     opts=opts||{};var G=getGame(opts.game),fac=budgetFaction(G,opts.faction),divs=opts.divisions||ownedBudgetDivisions(G,fac),key=String(opts.regionId||''),selected={};
     if(!key)return [];
     if(key===fac.id||key===fac.name)return divs.map(function(n){return n.id||n.name;});
     function gather(node){var groups=childArrays(node);if(groups.some(function(a){return a.length;}))groups.forEach(function(a){a.forEach(gather);});else if(node)selected[node.id||node.name]=true;}
     var exact=[],names=[];
-    walkAdminDivisions(G,function(n){if(n.id===key)exact.push(n);else if(n.name===key)names.push(n);},{leafOnly:false});
+    if(nodeIndex){exact=nodeIndex.ids.get(key)||[];names=nodeIndex.names.get(key)||[];}
+    else walkAdminDivisions(G,function(n){if(n.id===key)exact.push(n);else if(n.name===key)names.push(n);},{leafOnly:false});
     (exact.length?exact:names).forEach(gather);
     return divs.filter(function(n){return selected[n.id||n.name];}).map(function(n){return n.id||n.name;});
   }
   function budgetExpenses(G, fac, cfg, days, divisions, revenueRows) {
-    var fixed = cfg.fixedExpense || {}, ratio = days/30, fundingIndex=Object.create(null), revenueIndex=Object.create(null);
+    var fixed = cfg.fixedExpense || {}, ratio = days/30, fundingIndex=Object.create(null), fundingNodes=null, revenueIndex=Object.create(null);
     (revenueRows||[]).forEach(function(row){if(!Object.prototype.hasOwnProperty.call(revenueIndex,String(row.id)))revenueIndex[String(row.id)]=row;});
     var out = { central:resourceZero(), local:resourceZero(), internal:resourceZero(), total:resourceZero(), salary:resourceZero(), army:resourceZero(), administration:resourceZero(), recurring:resourceZero(), transfers:resourceZero(), transferIn:resourceZero(), items:[], warnings:[] };
     function put(name, monthly, funding, regionId, category, count, meta) {
@@ -772,7 +786,7 @@
       if(meta&&meta.destination){resourceAdd(out.transfers,amounts);resourceAdd(out.transferIn,amounts);}else resourceAdd(out.total, amounts);
       function item(extra){return Object.assign({name:name,amounts:amounts,funding:funding,regionId:regionId||'',category:category},meta||{},extra||{});}
       if(funding==='local'){
-        var cacheKey=String(regionId||''),ids=fundingIndex[cacheKey]||(fundingIndex[cacheKey]=fundingRegionIds({game:G,faction:fac.id,regionId:regionId,divisions:divisions})),shares={};
+        var cacheKey=String(regionId||''),ids=fundingIndex[cacheKey]||(fundingIndex[cacheKey]=fundingRegionIds({game:G,faction:fac.id,regionId:regionId,divisions:divisions},fundingNodes||(fundingNodes=fundingNodeIndex(G)))),shares={};
         if(!ids.length){out.warnings.push('地方支出未找到承付区域：'+name+' / '+String(regionId||''));out.items.push(item());return;}
         ids.forEach(function(id){shares[id]=resourceZero();});
         ['money','grain','cloth'].forEach(function(k){
@@ -1499,49 +1513,14 @@
     return tax.productionTax ? global.FiscalStatement.productionTaxAmount(amount, tax.productionTax) : amount;
   }
 
-  // 方志与旧国库兜底共用征收函数；只在副本上演算，不写库存、自然率或回合标记。
   function previewRevenue(opts) {
-    opts = opts || {};
-    var G = getGame(opts.game), cfg = getFiscalConfig(G, opts.faction);
-    if (!G || (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G))) return null;
-    var unified = unifiedAccounting(G, opts.faction), year = unified ? 360 : 365;
-    var days = safeNumber(opts.turnDays, year), taxes = normalizeTaxListForCascade(G, cfg), nodes = [];
-    if (opts.division) {
-      (function visit(d) { if (d.children && d.children.length) d.children.forEach(visit); else nodes.push(d); })(opts.division);
-    }
-    else if (unified) nodes = ownedBudgetDivisions(G, budgetFaction(G, opts.faction));
-    else walkAdminDivisions(G, function(d) { nodes.push(d); }, { faction:opts.faction || 'player', leafOnly:true });
-    if (unified) {
-      var budget = budgetRevenue(G, budgetFaction(G, opts.faction), cfg, days, nodes);
-      budget.totals.collected = budget.totals.grossCollected;
-      return Object.assign(budget, {daysPerYear:year, turnDays:days});
-    }
-    var ctx = { game:G, fiscalConfig:cfg, turnDays:days,
-      turnFracOfYear:Math.max(0.01, Math.min(1, days/year)),
-      centralLocalRules:cfg.centralLocalRules || DEFAULT_ALLOCATION,
-      logisticsLoss:safeNumber(cfg.logisticsLoss, DEFAULT_LOGISTICS_LOSS) };
-    var parents = {};
-    walkAdminDivisions(G, function(d, parent) { if (parent) parents[d.id || d.name] = parent; }, {leafOnly:true});
-    return global.FiscalStatement.taxRevenuePreview(nodes, function(node) {
-      var div = clone(node);
-      var parent = parents[node.id || node.name];
-      var tree = parent ? {id:parent.id, name:parent.name, children:[div]} : div;
-      applyDisasterEconomyReduction(Object.assign({}, G, {adminHierarchy:{player:{divisions:[tree]}}}));
-      _ensureRegionFiscal(div, null);
-      if (opts.settleProduction !== false) _settleLandFlow(div, ctx);
-      return taxes.map(function(original) {
-        var tax = original;
-        if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax(G, div, tax, ctx);
-        var kind = tax.storeAs || 'money', adjust = Number(cfg.annualFuyi && cfg.annualFuyi.taxRateAdjust);
-        var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
-        var nominal = rawTaxAmount(div, tax) * (tax.annual ? ctx.turnFracOfYear : 1) * fuyi;
-        var collected = computeTaxAmount(div, original, ctx);
-        var split = splitCascadeAmount(div, original, collected, ctx);
-        return { id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind,
-          base:tax.base, baseValue:taxBase(div,tax), productionTax:tax.productionTax || null, taxBasePolicy:tax.taxBasePolicy || '', nominal:Math.max(0, nominal),
-          collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit };
-      });
-    }, {daysPerYear:year, turnDays:days});
+    return global.FiscalStatement.previewRevenue(opts, {
+      getGame:getGame, getFiscalConfig:getFiscalConfig, unifiedAccounting:unifiedAccounting, safeNumber:safeNumber,
+      normalizeTaxListForCascade:normalizeTaxListForCascade, ownedBudgetDivisions:ownedBudgetDivisions, budgetFaction:budgetFaction, walkAdminDivisions:walkAdminDivisions,
+      budgetRevenue:budgetRevenue, DEFAULT_ALLOCATION:DEFAULT_ALLOCATION, DEFAULT_LOGISTICS_LOSS:DEFAULT_LOGISTICS_LOSS, clone:clone,
+      applyDisasterEconomyReduction:applyDisasterEconomyReduction, _ensureRegionFiscal:_ensureRegionFiscal, _settleLandFlow:_settleLandFlow, rawTaxAmount:rawTaxAmount,
+      computeTaxAmount:computeTaxAmount, splitCascadeAmount:splitCascadeAmount, taxBase:taxBase
+    });
   }
 
   function computeTaxAmount(div, tax, ctx) {
@@ -2142,15 +2121,29 @@
 
   // P-VWF·2026-05-29·确定性升本势力各 division 的 compliance（cascade 真读·splitCascadeAmount qiyunNet=qiyunGross×compliance）
   // 复用 walkAdminDivisions 正确遍历·delta 由对账层给（AI 力度 或 粗保底）·此处只夹安全护栏·返回生效 division 数
-  function adjustPlayerCompliance(faction, delta, clampMin, clampMax) {
+  function _officeScopeFilter(scope) {
+    if (!scope || (!scope.regionId && !scope.regionName)) return function() { return true; };
+    var matches = [], allowed = [];
+    walkAdminDivisions(getGame(), function(div) {
+      if (scope.regionId ? String(div.id) === String(scope.regionId) : div.name === scope.regionName) matches.push(div);
+    });
+    // A broken ID or an ambiguous place name never widens the operation to the realm.
+    if (matches.length === 1) (function add(div) {
+      if (allowed.indexOf(div) >= 0) return;
+      allowed.push(div); childArrays(div).forEach(function(children) { children.forEach(add); });
+    })(matches[0]);
+    return function(div) { return allowed.indexOf(div) >= 0; };
+  }
+  function adjustPlayerCompliance(faction, delta, clampMin, clampMax, scope) {
     var d = Number(delta) || 0;
     if (!d) return 0;
     var lo = typeof clampMin === 'number' ? clampMin : 0.1;
     var hi = typeof clampMax === 'number' ? clampMax : 1;
+    var inScope = _officeScopeFilter(scope);
     var n = 0;
     walkAdminDivisions(getGame(), function(div, parent, fac) {
       if (faction && fac && fac !== faction) return;
-      if (div && div.fiscal && typeof div.fiscal.compliance === 'number') {
+      if (div && inScope(div) && div.fiscal && typeof div.fiscal.compliance === 'number') {
         div.fiscal.compliance = Math.max(lo, Math.min(hi, div.fiscal.compliance + d));
         n++;
       }
@@ -2160,15 +2153,16 @@
 
   // P-DZ·2026-05-29·确定性降本势力各 division 的 corruption（cascade corrPenalty 真读·computeTaxAmount → 中央实收；且 aggregateRegionsToVariables 把它聚合成 subDepts.provincial.true → 实征率面板）
   // delta 由对账层给（AI 力度 或 粗保底·负值=降浊度）·此处只夹安全护栏·返回生效 division 数
-  function adjustPlayerDivisionCorruption(faction, delta, clampMin, clampMax) {
+  function adjustPlayerDivisionCorruption(faction, delta, clampMin, clampMax, scope) {
     var d = Number(delta) || 0;
     if (!d) return 0;
     var lo = typeof clampMin === 'number' ? clampMin : 0;
     var hi = typeof clampMax === 'number' ? clampMax : 100;
+    var inScope = _officeScopeFilter(scope);
     var n = 0;
     walkAdminDivisions(getGame(), function(div, parent, fac) {
       if (faction && fac && fac !== faction) return;
-      if (div && typeof div.corruption === 'number') {
+      if (div && inScope(div) && typeof div.corruption === 'number') {
         div.corruption = Math.max(lo, Math.min(hi, div.corruption + d));
         n++;
       }

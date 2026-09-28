@@ -307,8 +307,8 @@ function _officeCountDept(d) {
 // 筛选通过判断·列表视图用
 function _officePosMatchFilter(p, mode) {
   if (p && p._pendingEdict && p._pendingEdict.turn === (GM && GM.turn)) return true;
-  if (mode === 'empty') return !p.holder&&p.occupancyStatus!=='unrecorded';
-  if (mode === 'filled') return !!p.holder||p.occupancyStatus==='unrecorded';
+  if (mode === 'empty') return !_offOccupancy(p).occupied;
+  if (mode === 'filled') return _offOccupancy(p).occupied;
   return true;
 }
 
@@ -523,7 +523,7 @@ function _renderOfficeTreeList(container) {
     var cls = (typeof _officeClassifyDept === 'function') ? _officeClassifyDept(d) : { court:'central', group:'sijian' };
     (d.positions||[]).forEach(function(p){
       perCourt[cls.court].pos++;
-      if (!p.holder&&p.occupancyStatus!=='unrecorded') perCourt[cls.court].vac++;
+      if (!_offOccupancy(p).occupied) perCourt[cls.court].vac++;
     });
   });
 
@@ -717,7 +717,7 @@ function _ogRenderDeptCard(fi, idx, NW, cardH, pathStr) {
 
   var psCount = (nd.positions || []).length;
   var subCount = (nd.subs || []).length;
-  var vacCount = (nd.positions||[]).filter(function(p){return !p.holder&&p.occupancyStatus!=='unrecorded';}).length;
+  var vacCount = (nd.positions||[]).filter(function(p){return !_offOccupancy(p).occupied;}).length;
   var filledCount = psCount - vacCount;
   var canCollapse = (psCount + subCount > 0) && !isEmperor;
   var isColl = fi.collapsed;
@@ -727,7 +727,7 @@ function _ogRenderDeptCard(fi, idx, NW, cardH, pathStr) {
   if (!isEmperor && psCount > 0) {
     (nd.positions||[]).forEach(function(p) {
       if (p.holder) {
-        var _pc = findCharByName(p.holder);
+        var _pc = _offOccupancy(p).primary;
         var _rl = typeof getRankLevel === 'function' ? getRankLevel(p.rank) : 10;
         _deptPower += (_pc ? ((_pc.intelligence||50)+(_pc.administration||50))/2 : 30) + Math.max(0, (18 - _rl)) * 3;
       }
@@ -813,8 +813,8 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
   var nd = fi.node;
   if (typeof _offMigratePosition === 'function') _offMigratePosition(nd);
 
-  var _holder = nd.holder ? findCharByName(nd.holder) : null;
-  var _unrecorded=nd.occupancyStatus==='unrecorded'&&!_holder;
+  var _holder = _offOccupancy(nd).primary;
+  var _unrecorded=_offOccupancy(nd).occupied&&!_holder;
   var _deptName = fi.parent && fi.parent.node ? (fi.parent.node.name||'') : '';
   var _parentFunc = fi.parent && fi.parent.node && fi.parent.node.functions ? (fi.parent.node.functions[0]||'') : '';
 
@@ -1025,20 +1025,20 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
       else if (typeof _mp.turnsLeft === 'number') _mt += '·还需 <b>' + _mp.turnsLeft + '</b> 回合';
       else _mt += '<b> 27</b> 月再起';
       html += '<div class="og-state-note mourn">' + _mt + '</div>';
-    } else if (_holder._sickLeave) {
+    } else if (_holder && _holder._sickLeave) {
       var _sk = _holder._sickLeave;
       var _skTxt = escHtml(_sk.reason || '\u75C5\u6682\u79BB');
       var _skDays = _sk.days || _sk.duration;
       html += '<div class="og-sick-banner"><span class="icon">\u2695</span><span class="sec-lbl">\u544A \u75C5</span><span>' + _skTxt + '</span>' + (_skDays ? '<span style="margin-left:auto;">\u2192 <b>' + _skDays + ' \u65E5</b></span>' : '') + '</div>';
-    } else if (_holder._actingPos) {
+    } else if (_holder && _holder._actingPos) {
       var _ap = _holder._actingPos;
       var _apNote = _ap.note || ('\u4EE5' + (_ap.fromPos||'\u4F9B\u804C') + '\u6444' + (nd.name||'\u5C1A\u4E66') + '\u4E8B\u00B7\u4FDF\u9662\u4E0B\u7B80\u62D4\u6B63\u5B98');
       html += '<div class="og-acting-note">' + escHtml(_apNote) + '</div>';
-    } else if (_holder._demoted) {
+    } else if (_holder && _holder._demoted) {
       var _dm = _holder._demoted;
       var _dmReason = _dm.reason || '\u88AB\u8D2C\u00B7\u56DE\u4EFB\u5E0C\u671B\u6E3A\u8302';
       html += '<div class="og-state-note demoted">' + escHtml(_dmReason) + '</div>';
-    } else if (_holder._retirePending) {
+    } else if (_holder && _holder._retirePending) {
       var _rp = _holder._retirePending;
       var _rpTxt = (_holder.age ? _holder.age + '\u5C81' : '\u5E74\u9AD8') + (_rp.count ? '\u00B7' + _rp.count + '\u5EA6\u8BF7\u8F9E' : '\u00B7\u8BF7\u9AB8\u9AA8\u5F52') + '\u00B7\u9661\u4E0B\u672A\u5141';
       html += '<div class="og-state-note retire">' + escHtml(_rpTxt) + '</div>';
@@ -1111,7 +1111,7 @@ function _renderOfficeTreeSVG(container) {
     var cls = (typeof _officeClassifyDept === 'function') ? _officeClassifyDept(d) : { court:'central', group:'sijian' };
     (d.positions||[]).forEach(function(p){
       perCourt[cls.court].pos++;
-      if (!p.holder) perCourt[cls.court].vac++;
+      if (!_offOccupancy(p).occupied) perCourt[cls.court].vac++;
     });
   });
 
@@ -1131,8 +1131,8 @@ function _renderOfficeTreeSVG(container) {
     if (fi.type !== 'pos') return true;
     if (fi.node && fi.node._pendingEdict && fi.node._pendingEdict.turn === GM.turn) return true;
     if (_kw && typeof _officePosMatchKw === 'function' && !_officePosMatchKw(fi.node, _kw)) return false;
-    if (_fm === 'empty') return !fi.node.holder&&fi.node.occupancyStatus!=='unrecorded';
-    if (_fm === 'filled') return !!fi.node.holder||fi.node.occupancyStatus==='unrecorded';
+    if (_fm === 'empty') return !_offOccupancy(fi.node).occupied;
+    if (_fm === 'filled') return _offOccupancy(fi.node).occupied;
     return true;
   }
 
@@ -1377,7 +1377,7 @@ function _renderOfficeTreeSVG(container) {
 function _ogRenderDeptCardV10(fi, courtKey) {
   var nd = fi.node;
   var psCount = (nd.positions||[]).length;
-  var vac = (nd.positions||[]).filter(function(p){ return !p.holder&&p.occupancyStatus!=='unrecorded'; }).length;
+  var vac = (nd.positions||[]).filter(function(p){ return !_offOccupancy(p).occupied; }).length;
   var actual = psCount - vac;
   var seal = (nd.seal || (nd.name||'\u00B7').replace(/\s/g,'').slice(0,1));
   var themeCls = courtKey === 'inner' ? ' theme-inner' : (courtKey === 'region' ? ' theme-region' : '');
@@ -1404,21 +1404,21 @@ function _ogRenderDeptCardV10(fi, courtKey) {
 function _ogRenderPosCardV10(fi, courtKey) {
   var nd = fi.node;
   if (typeof _offMigratePosition === 'function') _offMigratePosition(nd);
-  var _holder = nd.holder ? findCharByName(nd.holder) : null;
+  var _holder = _offOccupancy(nd).primary;
   var _deptName = (fi.parent && fi.parent.node) ? (fi.parent.node.name||'') : '';
   var _rankLvl = typeof getRankLevel === 'function' ? getRankLevel(nd.rank) : 18;
   var _rankCls = _rankLvl <= 2 ? 'rank-top' : _rankLvl <= 6 ? 'rank-high' : _rankLvl <= 12 ? 'rank-mid' : 'rank-low';
   var _sealCls = _rankLvl <= 6 ? '' : (_rankLvl <= 12 ? 'mid-lvl' : 'low-lvl');
 
   // 态识别（参考旧版 _ogRenderPosCard 数据源）
-  var _isVacant = !_holder;
+  var _isVacant = !_offOccupancy(nd).occupied;
   var _state = '';
   if (_isVacant) _state = 'vacant';
-  else if (_holder._mourning) _state = 'mourning';
-  else if (_holder._sickLeave) _state = 'sick';
-  else if (_holder._actingPos) _state = 'acting';
-  else if (_holder._demoted) _state = 'demoted';
-  else if (_holder._retirePending) _state = 'retire';
+  else if (_holder && _holder._mourning) _state = 'mourning';
+  else if (_holder && _holder._sickLeave) _state = 'sick';
+  else if (_holder && _holder._actingPos) _state = 'acting';
+  else if (_holder && _holder._demoted) _state = 'demoted';
+  else if (_holder && _holder._retirePending) _state = 'retire';
   var _hasPending = nd._pendingEdict && nd._pendingEdict.turn === GM.turn;
   var _concurrentWith = _holder && _holder._concurrentWith;
   // 赴任态·识别新模型 _travelTo 与旧模型 _enRouteToOffice
@@ -1505,6 +1505,8 @@ function _ogRenderPosCardV10(fi, courtKey) {
   if (_isVacant) {
     html += '<div class="og-v10-pos-holder"></div>';
     html += '<div class="og-v10-pos-meta" style="color:var(--vermillion-300,#d97b6b);justify-content:center;padding:10px 12px;"><span>\u6B64 \u804C \u65E0 \u4EBA</span></div>';
+  } else if (!_holder) {
+    html += '<div class="og-v10-pos-holder">' + escHtml(_offOccupancy(nd).label) + '</div>';
   } else {
     // 在任者行
     var initial = (nd.holder||'?').slice(0,1);
@@ -1626,7 +1628,7 @@ function _ogRenderGroupBanner(fi, themeSuffix) {
   fi.children.forEach(function(d){
     (d.node.positions || []).forEach(function(p){
       pos++;
-      if (!p.holder) vac++;
+      if (!_offOccupancy(p).occupied) vac++;
     });
   });
   var style = 'left:' + fi.x + 'px;top:' + fi.y + 'px;width:' + fi.w + 'px;height:' + fi.h + 'px;';
@@ -1668,7 +1670,7 @@ function _countSubtabPos(courtKey, subKey) {
     if (subKey !== 'all' && cls.group !== subKey) return;
     (d.positions||[]).forEach(function(p){
       r.pos++;
-      if (!p.holder) r.vac++;
+      if (!_offOccupancy(p).occupied) r.vac++;
     });
   });
   return r;
@@ -1791,7 +1793,7 @@ function officeApplyDismissalPressure(root) {
     var candidates = [];
     _officeWalkPositions(root, function(dept, pos) {
       if (!pos || !pos.holder) return;
-      var ch = _officeFindCharByName(pos.holder, root);
+      var ch = _offOccupancy(pos, root).primary;
       var charParty = ch && (ch.party || ch.faction);
       if (charParty !== partyName) return;
       candidates.push({ ch: ch, dept: dept, pos: pos, score: _officeDismissCandidateScore({ ch: ch, pos: pos }) });

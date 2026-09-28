@@ -15,6 +15,16 @@
     if(tier==='primary')fields.agentRunTimeoutMs=duration(grid,prefix,'agent-total-wait','Agent 回合总等待（秒，0 = 不设）',cfg.agentRunTimeoutMs!=null?cfg.agentRunTimeoutMs:root.P.conf&&root.P.conf.agentModeDeadlineMs);
     host.appendChild(group);return fields;
   }
+  function secondaryRetries(host){
+    var group=el('fieldset');group.style.cssText='border:1px solid var(--bdr);padding:.6rem;margin:.6rem 0;';group.appendChild(el('legend','次要 API 重试'));
+    var label=el('label','次要 API 失败后重试次数'),input=el('input'),summary=el('span');
+    label.htmlFor='s-secondary-api-retry-count';label.style.cssText='display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;';
+    input.id='s-secondary-api-retry-count';input.type='number';input.min='0';input.max='20';input.step='1';input.placeholder='1';input.value=String(TM.CallRetryPolicy.secondaryRetries());input.style.width='6rem';
+    input.setAttribute('aria-label','次要 API 失败后重试次数');label.append(input,summary);group.appendChild(label);
+    function refresh(){try{var n=TM.CallRetryPolicy.count(input.value);summary.textContent='最多尝试 '+((n==null?1:n)+1)+' 次';}catch(_){summary.textContent='请输入 0 至 20 的整数';}}
+    input.addEventListener('input',refresh);refresh();group.appendChild(button('恢复默认（1 次）',function(){input.value='1';refresh();}));
+    var help=el('p','默认失败后重试 1 次；0 表示不重试，留空恢复默认。适用于游戏生成中的次要 API 请求；已单独设置的过回合项目优先。网络故障时回退主 API 也计入此次数，修改后点击底部“全部保存”。');help.style.cssText='font-size:var(--text-xs);line-height:1.6;color:var(--txt-d)';group.appendChild(help);host.appendChild(group);return input;
+  }
   function mount(){
     state=null;var host=document.getElementById('s-call-budget-controls');if(!host||!TM.CallRetryPolicy)return;
     host.replaceChildren();host.appendChild(el('h4','逐项调用重试与最大等待'));
@@ -24,11 +34,11 @@
     var values=root.P.conf&&root.P.conf.aiCallRetryOverrides||{},inputs={},rows=[];
     var wrap=el('div');wrap.style.cssText='max-height:24rem;overflow:auto;margin-top:.5rem;';var table=el('table');table.style.cssText='width:100%;font-size:.8rem;border-collapse:collapse;';wrap.appendChild(table);host.appendChild(wrap);
     var head=el('thead'),tr=el('tr');['调用项目','额外重试次数','故障尝试上限'].forEach(function(t){var th=el('th',t);th.style.textAlign='left';tr.appendChild(th);});head.appendChild(tr);table.appendChild(head);var tbody=el('tbody');table.appendChild(tbody);
-    [{id:'*',label:'所有过回合调用的默认重试'}].concat(TM.CallRetryPolicy.catalog()).forEach(function(item){
+    [{id:'*',label:'过回合调用的默认重试（次要 API 另设）'}].concat(TM.CallRetryPolicy.catalog()).forEach(function(item){
       var row=el('tr'),name=el('td',item.label+(item.id==='*'?'':' · '+item.id)),cell=el('td'),input=el('input'),countCell=el('td');
       input.type='number';input.min='0';input.max='20';input.step='1';input.value=values[item.id]!=null?String(values[item.id]):'';input.placeholder='默认';input.style.width='6rem';input.setAttribute('data-call-retry-id',item.id);input.setAttribute('aria-label',item.label+'额外重试次数');
       inputs[item.id]=input;cell.appendChild(input);row.append(name,cell,countCell);tbody.appendChild(row);name.style.cssText='padding:.45rem .35rem;overflow-wrap:anywhere;';rows.push({node:row,text:(item.label+' '+item.id).toLowerCase()});
-      function refresh(){try{var n=TM.CallRetryPolicy.count(input.value);if(n==null&&item.id!=='*')n=TM.CallRetryPolicy.count(inputs['*'].value);countCell.textContent=n==null?'引擎默认':String(n+1)+' 次';}catch(_){countCell.textContent='输入无效';}}
+      function refresh(){try{var n=TM.CallRetryPolicy.count(input.value),inherited=n==null&&item.id!=='*';if(inherited)n=TM.CallRetryPolicy.count(inputs['*'].value);countCell.textContent=n==null?'跟随 API 默认':String(n+1)+' 次'+(inherited?'（主 API 默认）':'');}catch(_){countCell.textContent='输入无效';}}
       input.addEventListener('input',refresh);input._refreshBudget=refresh;refresh();
     });
     controls.appendChild(button('全部设为 3 次',function(){Object.keys(inputs).forEach(function(id){inputs[id].value=id==='*'?'3':'';});refreshAll();}));
@@ -36,7 +46,7 @@
     function refreshAll(){Object.keys(inputs).forEach(function(id){inputs[id]._refreshBudget();});}
     inputs['*'].addEventListener('input',refreshAll);search.addEventListener('input',function(){var q=search.value.trim().toLowerCase();rows.forEach(function(r){r.node.hidden=!!q&&r.text.indexOf(q)<0;});});
     var help=el('p','上表指单个请求的首次尝试加故障重试，不含独立的结构修复和一次性协议协商。主、次 API 原有等待值保留。成功响应头到达后继续等待完整正文；0 不会被改成固定总期限。Agent 每轮采用同一项设置，工具轮数限制不变；未完整收到的流式正文不拼接重发。修改后点击底部“全部保存”。');help.style.cssText='font-size:.76rem;line-height:1.6;color:var(--txt-d)';host.appendChild(help);
-    state={host:host,inputs:inputs,waits:{primary:waits(host,'primary'),secondary:waits(host,'secondary')}};
+    state={host:host,inputs:inputs,secondary:secondaryRetries(host),waits:{primary:waits(host,'primary'),secondary:waits(host,'secondary')}};
     if(TM.RecoverySettings)TM.RecoverySettings.mount(host);
   }
   function readWaits(tier,target){
@@ -45,6 +55,7 @@
     Object.assign(target,draft);
   }
   function readConfig(){if(!state||!state.host.isConnected)return null;var values={};Object.keys(state.inputs).forEach(function(id){values[id]=state.inputs[id].value;});return TM.CallRetryPolicy.validate(values);}
-  function validate(){readConfig();readWaits('primary',{});readWaits('secondary',{});if(TM.RecoverySettings)TM.RecoverySettings.read();return true;}
-  TM.CallBudgetSettings={mount:mount,validate:validate,readConfig:readConfig,readWaits:readWaits,close:function(){state=null;if(TM.RecoverySettings)TM.RecoverySettings.close();}};
+  function readSecondaryRetries(){if(!state||!state.host.isConnected)return null;var n=TM.CallRetryPolicy.count(state.secondary.value);return n==null?1:n;}
+  function validate(){readConfig();readSecondaryRetries();readWaits('primary',{});readWaits('secondary',{});if(TM.RecoverySettings)TM.RecoverySettings.read();return true;}
+  TM.CallBudgetSettings={mount:mount,validate:validate,readConfig:readConfig,readSecondaryRetries:readSecondaryRetries,readWaits:readWaits,close:function(){state=null;if(TM.RecoverySettings)TM.RecoverySettings.close();}};
 })(typeof window!=='undefined'?window:globalThis);

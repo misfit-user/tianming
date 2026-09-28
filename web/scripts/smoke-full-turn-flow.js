@@ -205,7 +205,9 @@ function installInputNodes(sandbox) {
       document.getElementById = function(id) { return nodes[id] || prevGet(id); };
       window.__flow.inputNodeIds = Object.keys(nodes);
     })();
-  `, sandbox, { timeout: 10000 });
+  // 完整官方剧本会在此同步初始化 200+ 人物、22 派系以及回合反馈模块；
+  // 并发门禁下脚本编译/首轮索引可能超过 10 秒，但不应改变后续断言或回合逻辑。
+  `, sandbox, { timeout: 30000 });
 }
 
 function installMockAi(sandbox) {

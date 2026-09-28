@@ -121,3 +121,38 @@ web/tm-ai-schema.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-
 web/tm-endturn-ai-infer.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 web/vendor/shanhe25d/ming-calibration.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 启动天命-山河境实测.cmd whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Local integration preserves historical CRLF bytes and still checks real trailing spaces.
+docs/recovery-budget-and-restart-20260921/architecture.txt whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/recovery-budget-and-restart-20260921/original-evidence-architecture.txt whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/editor.html whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-edict-efficacy.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-office-dynastification.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-secondary-retry-routing.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/scripts/smoke-tinyi-impeachment.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/styles.css whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-ai-change-pathutils.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-corruption-engine.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-endturn-agent-write-tools.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-endturn-record.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-faction-npc-in-turn-driver.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-faction-npc-llm-decision.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-faction-npc-settings.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-guoku-panel.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-neitang-panel.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-office-runtime-summary-appoint.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-office-runtime.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-patches-start.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-three-systems-ui.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Verbatim primary-source capture: keep original whitespace bytes.
+"docs/scenario-data-repair-20260924/sources/p1b2/raw/東西洋考_卷七.wiki" -whitespace
+web/scripts/verify-all.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+web/tm-fiscal-engine.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/README.md whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/scope.md whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/verification.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/local-sync-20260927/conflict-resolutions.json whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Map editor authoring keeps existing CRLF bytes; actual trailing spaces still fail.
+web/scripts/smoke-faction-binding-lint.js whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/guoshi-map-editor-20260927/** whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

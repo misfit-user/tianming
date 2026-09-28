@@ -21,7 +21,7 @@
 
   function active(P){
     var Pp = P || global.P || null;
-    return !!(Pp && Pp.conf && Pp.conf.gameMode === 'strict_hist' && Pp.conf.reportedViewEnabled === true);
+    return !!(Pp && Pp.conf && Pp.conf.gameMode === 'strict_hist' && Pp.conf.reportedViewEnabled !== false);
   }
 
   // 吏治「面」因子 0..1(浊度越高粉饰越狠·共识：吏治管面·方向固定往粉饰偏)
@@ -49,6 +49,7 @@
   // 返回 { shown, distorted, basis, frac }——渲染处显 shown·distorted 时配 badge()。
   function value(domain, key, trueVal, ctx){
     ctx = ctx || {};
+    if (trueVal == null || (typeof trueVal === 'string' && !trueVal.trim())) return { shown: trueVal, distorted: false, basis: 'non-numeric' };
     var t = Number(trueVal);
     if (!isFinite(t)) return { shown: trueVal, distorted: false, basis: 'non-numeric' };
     if (!active(ctx.P)) return { shown: t, distorted: false, basis: 'inactive' };
@@ -61,7 +62,7 @@
     var jitter = ((seed % 1000) / 1000 - 0.5) * 0.2;                    // ±10% 确定性抖动·防玩家心算还原固定比例
     var frac = Math.max(0, Math.min(CAP, mag * 0.3 * (1 + jitter)));
     var dir = ctx.direction === 'good' ? 1 : -1;
-    var shown = t * (1 + dir * frac);
+    var shown = t + dir * Math.abs(t) * frac;
     if (t === Math.round(t)) shown = Math.round(shown);                 // 整数真值出整数上报·贴口径形态
     return { shown: shown, distorted: frac > 0.0001 && shown !== t, basis: 'reported', frac: frac };
   }

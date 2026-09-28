@@ -25,9 +25,13 @@ const nativeModules=['tm-start-contracts.js','libs/polygon-clipping-0.15.7.min.j
 const fiscalModules=['tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-public-treasury.js','tm-military-arrears.js','tm-command-authority.js'];
 const recoveryModules=['tm-memory-adaptive.js','tm-memory-long-term.js','tm-memory-hybrid.js','tm-memory-mode-bridge.js','tm-endturn-reliability.js','tm-endturn-response-recovery.js','tm-endturn-recovery-vault.js','tm-endturn-save-reconcile.js'];
 recoveryModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+const officeDutyModules=['tm-office-holder-state.js','tm-office-action-evidence.js'];
 const outputContractModules=['tm-ai-result-contract.js'];
 outputContractModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-ai-result-contract.js')<scriptNames.indexOf('tm-world.js'),'output contract precedes world context and inference consumers');
+officeDutyModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+assert(scriptNames.indexOf(officeDutyModules[0])<scriptNames.indexOf(officeDutyModules[1]),'holder identity precedes action evidence');
+assert(scriptNames.indexOf(officeDutyModules[1])<scriptNames.indexOf('tm-office-system.js'),'shared office readers precede their consumers');
 const visualAdapters=['tm-shanhe-runtime.js'];
 const requestControls=['tm-call-retry-policy.js','tm-call-budget-settings.js'];
 const emergencyModules=['core','tools','adapters','runtime','edict','review','settings'].map(n=>'tm-emergency-recovery-'+n+'.js');
@@ -39,14 +43,17 @@ assert(scriptNames.indexOf('tm-call-budget-settings.js')<scriptNames.indexOf('tm
 assert(scriptNames.indexOf('tm-social-formation.js')<scriptNames.indexOf('tm-endturn-apply.js'),'canonical social formation loads before its apply consumer');
 visualAdapters.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 // 诏令效力：回合准备每回合调用它的时钟与清理，须先于回合准备加载
-const edictEfficacyModules=['tm-edict-efficacy.js'];
+const edictEfficacyModules=['tm-edict-efficacy.js','tm-edict-outcomes.js','tm-edict-effects.js'];
 edictEfficacyModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-edict-efficacy.js')<scriptNames.indexOf('tm-endturn-prep.js'),'edict efficacy loads before its turn-prep consumer');
+edictEfficacyModules.forEach(name=>assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-endturn-prep.js'),name+' loads before collection and inference'));
+const exportModules=['tm-file-export.js'];
+exportModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-save-manager.js'),'export backend precedes save UI');});
 // 省道（通志）数据层：纯函数模块，地图册页从这里取省道分组、档案与汇总，须先于册页装载
 const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js','tm-map-route-days.js','tm-circuit-governance.js','tm-circuit-governor-effects.js'];
 mapDataModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
-assert.strictEqual(manifest.scriptCount,417+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');
+assert.strictEqual(manifest.scriptCount,417+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

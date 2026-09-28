@@ -267,9 +267,12 @@ test('agent judge_edict tool shares the same judgment path', () => {
 });
 
 test('main inference applies efficacy only on exact matches', () => {
-  const apply = fs.readFileSync(path.join(WEB, 'tm-endturn-apply.js'), 'utf8');
-  assert(/_efficacyUnsure = !!tracker;/.test(apply), '兜底匹配时标记不确定');
-  assert(/if \(!_efficacyUnsure && TM && TM\.EdictEfficacy\) TM\.EdictEfficacy\.judge\(GM, tracker, ef\);/.test(apply));
+  const c=world(4);vm.runInContext(fs.readFileSync(path.join(WEB,'tm-edict-outcomes.js'),'utf8'),c);
+  const e=edict({id:'exact-edict',turn:4});c.GM._edictTracker=[e];
+  c.TM.EdictOutcomes.receive(c.GM,{edict_feedback:[{edictId:'wrong-id',content:e.content,status:'completed',feedback:'错误回报',efficacy:'standing'}]},[],4,[]);
+  assert.equal(c.TM.EdictEfficacy.stateOf(e),'unjudged');assert.equal(e.status,'pending');
+  c.TM.EdictOutcomes.receive(c.GM,{edict_feedback:[{edictId:e.id,content:e.content,status:'completed',feedback:'已颁行',efficacy:'standing'}]},[],4,[]);
+  assert.equal(c.TM.EdictEfficacy.stateOf(e),'standing');assert.equal(e.status,'completed');
   const ai = fs.readFileSync(path.join(WEB, 'tm-endturn-ai.js'), 'utf8');
   assert(/tp1 \+= '  #id=' \+ e\.id \+ ' 【' \+ e\.category \+ '】' \+ e\.content;/.test(ai), '本回合诏令带编号');
   assert(/TM\.EdictEfficacy\.feedbackGuide\(GM\)/.test(ai), '主推演附判定说明');

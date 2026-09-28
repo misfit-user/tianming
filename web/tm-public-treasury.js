@@ -37,17 +37,17 @@
       key=(inner?'internal:':'central:')+String(f&&f.id||fid);
     }
     else if(s.kind==='region'||s.kind==='department')target=lookup&&lookup[s.kind]?lookup[s.kind][s.id]:nodes(G,s.kind).find(function(n){return n.id===s.id;});
-    if(!target)return null;
+    if(!target||((s.kind==='region'||s.kind==='department')&&target.id!==s.id))return null;
     if(s.kind==='region'&&['children','divisions','subRegions'].some(function(k){return target[k]&&target[k].length;}))return null;
     if((s.kind==='region'||s.kind==='department')&&a.factionId&&target.factionId&&!sameFaction(G,a.factionId,target.factionId))return null;
     return {id:a.id,name:a.name||a.id,definition:a,kind:kind,target:target,key:key||s.kind+':'+(s.id||''),source:s};
   }
-  function expand(G,ref,stack){
+  function expand(G,ref,stack,lookup){
     var a=definition(G,ref);if(!a)return {entries:[],missing:['account:'+ref]};
     stack=stack||[];if(stack.indexOf(ref)>=0)return {entries:[],missing:['account-cycle:'+ref]};
-    if(a.kind!=='pool'){var loc=locate(G,a);return {entries:loc?[loc]:[],missing:loc?[]:['source:'+ref]};}
+    if(a.kind!=='pool'){var loc=locate(G,a,lookup);return {entries:loc?[loc]:[],missing:loc?[]:['source:'+ref]};}
     var out={entries:[],missing:[]},seen={};
-    (a.members||[]).forEach(function(member){var next=expand(G,typeof member==='string'?member:member.ref,stack.concat(ref));Array.prototype.push.apply(out.missing,next.missing);next.entries.forEach(function(e){if(!seen[e.key]){seen[e.key]=true;out.entries.push(e);}});});
+    (a.members||[]).forEach(function(member){var next=expand(G,typeof member==='string'?member:member.ref,stack.concat(ref),lookup);Array.prototype.push.apply(out.missing,next.missing);next.entries.forEach(function(e){if(!seen[e.key]){seen[e.key]=true;out.entries.push(e);}});});
     if(!out.entries.length&&!out.missing.length)out.missing.push('empty-pool:'+ref);
     return out;
   }
@@ -158,9 +158,14 @@
   function initialize(o){
     var G=game(o),sc=o&&o.scenario;if(sc&&sc.publicTreasuryConfig&&!G.publicTreasuryConfig)G.publicTreasuryConfig=clone(sc.publicTreasuryConfig); // arch-ok explicit scenario public treasury initialization
     if(!declared(G))return {ok:true,legacy:true};
-    var report={ok:true,initialized:0,transfers:[],missing:[]};
+    var report={ok:true,initialized:0,transfers:[],missing:[]},lookup={region:Object.create(null),department:Object.create(null)};
+    // Account balances change below; the administrative/office nodes do not.
+    // Resolve them once for this initialization, then discard the lookup.
+    ['region','department'].forEach(function(k){
+      if(definitions(G).some(function(a){return a&&a.source&&a.source.kind===k;}))nodes(G,k).forEach(function(n){lookup[k][n.id]=n;});
+    });
     definitions(G).filter(function(a){return a&&a.kind!=='pool';}).forEach(function(a){
-      var loc=locate(G,a);if(!loc){report.missing.push('source:'+a.id);return;}
+      var loc=locate(G,a,lookup);if(!loc){report.missing.push('source:'+a.id);return;}
       if((loc.kind==='department'||loc.kind==='region')&&!loc.target.publicTreasury){
         var initial=loc.target.publicTreasuryInit;
         if(!initial&&a.openingTransfer)initial={money:0,grain:0,cloth:0};
@@ -171,7 +176,7 @@
     var nativeFiscal=G.startContext&&G.startContext.schemaVersion==='tm-start-context/1';
     var deferOpening=!nativeFiscal&&!(o&&o.settleOpening)&&G.turn===1&&(G._isFreshNewGame===true||(G.guoku&&G.guoku.openingFiscalPending))&&G._lastCascadeTaxTurn==null;
     if(!deferOpening)definitions(G).forEach(function(a){if(!a||!a.openingTransfer)return;var t=a.openingTransfer,result=transact({game:G,from:t.from,to:a.id,amounts:t.amounts,reason:t.reason||('拨给'+a.name+'周转'),transactionId:'opening:'+String(G.sid||'')+':'+a.id,opening:true});report.transfers.push(result);if(!result.ok){report.ok=false;report.missing.push(result.reason+':'+a.id);}});
-    positionRows(G).forEach(function(row){var b=row.position.treasuryBinding;if(!b)return;bindingRefs(row.position).forEach(function(ref){var e=expand(G,ref);Array.prototype.push.apply(report.missing,e.missing);});});
+    positionRows(G).forEach(function(row){var b=row.position.treasuryBinding;if(!b)return;bindingRefs(row.position).forEach(function(ref){var e=expand(G,ref,null,lookup);Array.prototype.push.apply(report.missing,e.missing);});});
     report.ok=report.ok&&!report.missing.length;return report;
   }
   function officeAssignmentChanged(o){

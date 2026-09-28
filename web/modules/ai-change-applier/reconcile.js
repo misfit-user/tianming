@@ -366,24 +366,37 @@ export function createReconcile(deps) {
   function _applyOfficeDutyTick(G) {
     if (typeof officeFlagOn !== 'function' || !officeFlagOn('officeDutyStateEnabled')) return;
     if (typeof tickOfficeDutyState !== 'function') return;
-    var opts = {}, effects = global.TM && global.TM.CircuitGovernorEffects;
+    var days = typeof global._getDaysPerTurn === 'function' ? global._getDaysPerTurn() : (G.daysPerTurn != null ? G.daysPerTurn : 30);
+    var opts = { days: days }, effects = global.TM && global.TM.CircuitGovernorEffects;
     if (effects && effects.enabled() && global.TM.CircuitGovernance) {
       var governors = global.TM.CircuitGovernance.governorPositions(G);
       opts.skip = function (p) { return governors.has(p); };
     }
     var agg = tickOfficeDutyState(G, opts);
-    if (!agg || (!agg.compliance && !agg.corruption)) return;
+    if (!agg || (!agg.compliance && !agg.corruption && !(agg.details || []).length)) return;
     var FE = (typeof window !== 'undefined' && window.FiscalEngine) || (typeof global !== 'undefined' && global.FiscalEngine) || null;
     var _P = (typeof window !== 'undefined' && window.P) || (typeof global !== 'undefined' && global.P) || null;
     var pFac = (_P && _P.playerInfo && _P.playerInfo.factionName) || '';
     if (!FE) return;
-    if (agg.compliance && FE.adjustPlayerCompliance) {
-      var nc = FE.adjustPlayerCompliance(pFac, agg.compliance, 0.1, 1);
-      if (nc === 0) FE.adjustPlayerCompliance('', agg.compliance, 0.1, 1);   // 势力 key 对不上→不过滤兜底·保生效
+    var unscoped = agg.details && agg.details.length ? {compliance:0,corruption:0} : {compliance:agg.compliance,corruption:agg.corruption};
+    (agg.details || []).forEach(function(d) { if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta; });
+    // Retain the region of each duty. Only realm-wide roles use the legacy aggregate.
+    (agg.details || []).filter(function(d) { return d.regionId || d.regionName; }).forEach(function(d) {
+      var scope = { regionId:d.regionId, regionName:d.regionName };
+      var apply = d.lever === 'compliance' ? FE.adjustPlayerCompliance : FE.adjustPlayerDivisionCorruption;
+      var lo = d.lever === 'compliance' ? 0.1 : 0, hi = d.lever === 'compliance' ? 1 : 100;
+      if (typeof apply === 'function') {
+        var count = apply(d.faction || pFac, d.delta, lo, hi, scope);
+        if (count === 0 && !d.faction) apply('', d.delta, lo, hi, scope);
+      }
+    });
+    if (unscoped.compliance && FE.adjustPlayerCompliance) {
+      var nc = FE.adjustPlayerCompliance(pFac, unscoped.compliance, 0.1, 1);
+      if (nc === 0) FE.adjustPlayerCompliance('', unscoped.compliance, 0.1, 1);   // 势力 key 对不上→不过滤兜底·保生效
     }
-    if (agg.corruption && FE.adjustPlayerDivisionCorruption) {
-      var nk = FE.adjustPlayerDivisionCorruption(pFac, agg.corruption, 0, 100);
-      if (nk === 0) FE.adjustPlayerDivisionCorruption('', agg.corruption, 0, 100);
+    if (unscoped.corruption && FE.adjustPlayerDivisionCorruption) {
+      var nk = FE.adjustPlayerDivisionCorruption(pFac, unscoped.corruption, 0, 100);
+      if (nk === 0) FE.adjustPlayerDivisionCorruption('', unscoped.corruption, 0, 100);
     }
     try {
       if (typeof global.addEB === 'function' && agg.details && agg.details.length) {

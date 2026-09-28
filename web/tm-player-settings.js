@@ -307,23 +307,12 @@ function _toggleSecondaryEnabled(on) {
 }
 // P15: 通用 P.conf 字段开关·切换 boolean 值并保存
 function _togglePConf(confKey, on) {
+  if (["factionLivingWorldDefault","agentLiveWorldEnabled","factionAgentEnabled","factionGoalStackEnabled","revoltEntityEnabled","useTinyiV3","deterministicCasualties","partyClassLlmEnabled","npcAiPrecision"].indexOf(confKey) >= 0) return false; // 旧调用不能关闭已转正的玩法。
   if (!P.conf) P.conf = {};
-  if (confKey === 'npcAiPrecision') {
-    if (window.TM && TM.FactionNpcSettings && typeof TM.FactionNpcSettings.setEnabled === 'function') {
-      TM.FactionNpcSettings.setEnabled(!!on);
-    } else {
-      P.conf.npcAiPrecision = !!on;
-      if (on) P.conf.npcAiPrecisionMode = 'eager';
-      else if (window.TM && TM.FactionNpcInTurnDriver && typeof TM.FactionNpcInTurnDriver.cancelInTurnTimers === 'function') {
-        TM.FactionNpcInTurnDriver.cancelInTurnTimers();
-      }
-    }
-  } else {
-    P.conf[confKey] = !!on;
-  }
+  P.conf[confKey] = !!on;
   if (typeof saveP === 'function') saveP();
   // 个体活世界组件切换后·即时同步「活世界演绎·总纲」勾选态(幂等·仅读状态设 checkbox·不递归)
-  if (confKey === 'revoltEntityEnabled' || confKey === 'borderInvasionEnabled' || confKey === 'worldReactorBattleEnabled') {
+  if (confKey === 'borderInvasionEnabled' || confKey === 'worldReactorBattleEnabled') {
     try { if (typeof _tmSyncLivingWorldMaster === 'function') _tmSyncLivingWorldMaster(); } catch (_e) {}
   }
   var labels = {
@@ -333,11 +322,10 @@ function _togglePConf(confKey, on) {
     semanticRecallAutoload: { on: '已启用语义检索自动加载', off: '已关闭语义检索自动加载·SC_RECALL 第 5 源失效' },
     agentUpgradesEnabled: { on: '已启用全部 agent 升级（实验）·6 项 AI agent 化全开', off: '已关闭全部 agent 升级·各 agent 回落写死路径（单独开关仍生效）' },
     eventUnificationEnabled: { on: '已启用事件系统统一（S1 骨架·当前无可见效果·仅验证不破坏现状）', off: '已关闭事件系统统一·事件总线 drain 不跑' },
-    officeActivationEnabled: { on: '已启用官制活化（实验）·5 刀全开：职权舆图/履职度/权限门/改制裁定/按需细查', off: '已关闭官制活化·官制回落写死路径（各刀独立开关仍生效）' },
+    officeActivationEnabled: { on: '已启用官制活化·职权、履职、权限、改制、章程、旧衙迁移与按需细查', off: '已关闭官制活化总闸·各项独立设置仍生效' },
     agentAdaptiveDeepen: { on: '已启用自适应深化·收尾只深化本回合有动静的维度（省调用·去填充·地板维度始终深化）', off: '已关闭自适应深化·每维度都深化（深度纯粹优先·更耗调用）' },
     talentCohortEnabled: { on: '已启用人才范式渗透（实验）·新式学校→多瓶颈漏斗→渐渗+双向阻力·兴造弹窗见「人才与风气」', off: '已关闭人才范式渗透·学校不再注入人才引擎（零回归）' },
     worldReactorBattleEnabled: { on: '已启用兵败牵动天下·战败方确定性折损实力', off: '已关闭·战败只走 AI 裁量·不自动折损实力' },
-    revoltEntityEnabled: { on: '已启用民变实体化·民变闹大交 AI 演绎(起旗号/立渠帅/攻守招抚)', off: '已关闭·民变维持原五级抽象台账' },
     partyInferenceEnabled: { on: '已启用党争演绎·党派自主行动(立身份·联名/清议/杯葛/结盟/倒阁/煽动阶层交 AI 演绎)', off: '已关闭·党派退回纯数值信号(内部动态照旧演化·不再逐回合自主行动)' },
     borderInvasionEnabled: { on: '已启用边患真入侵·持续高压时敌对势力真出兵', off: '已关闭·边患仅停留在数值与文案' },
     populationBottomUpEnabled: { on: '已启用人口自下而上·按叶级政区分别核算', off: '已关闭·走全局粗粒度人口增长' },
@@ -357,7 +345,6 @@ function _togglePConf(confKey, on) {
 function _tmToggleLivingWorldMaster(on) {
   on = !!on;
   if (!P.conf) P.conf = {};   // arch-ok: 设置面板 setter 惯例初始化(同 _setAiSubcallConcurrency)
-  P.conf.revoltEntityEnabled = on;        // arch-ok: 活世界总纲·设置面板 setter(同 _togglePConf 范式·玩家设置项)
   P.conf.borderInvasionEnabled = on;      // arch-ok: 同上
   P.conf.worldReactorBattleEnabled = on;  // arch-ok: 同上
   try {
@@ -366,8 +353,8 @@ function _tmToggleLivingWorldMaster(on) {
   } catch (_e) {}
   if (typeof saveP === 'function') saveP();
   if (typeof toast === 'function') toast(on
-    ? '✅ 活世界演绎·总纲已开启（民变实体化 / 边患真入侵 / 兵败牵动天下 / 势力活世界 四项全开）'
-    : '✅ 活世界演绎·总纲已关闭（四项全关·回到纯数值与文案）');
+    ? '✅ 活世界演绎·总纲已开启（边患真入侵 / 兵败牵动天下）'
+    : '✅ 活世界演绎·总纲已关闭（仅关闭边患真入侵 / 兵败牵动天下）');
   try { closeSettings(); openSettings(); } catch (_) {}
 }
 if (typeof window !== 'undefined') { try { window._tmToggleLivingWorldMaster = _tmToggleLivingWorldMaster; } catch (_e) {} }
@@ -379,10 +366,10 @@ function _tmSyncLivingWorldMaster() {
     var el = document.getElementById('s-livingworld-master');
     if (!el) return;
     var c = (typeof P !== 'undefined' && P && P.conf) ? P.conf : {};
-    var re = !(c.revoltEntityEnabled === false);
+    var re = true;
     var bi = !(c.borderInvasionEnabled === false);
     var wr = !(c.worldReactorBattleEnabled === false);
-    var flw = (typeof GM !== 'undefined' && GM && typeof GM._factionLivingWorld === 'boolean') ? (GM._factionLivingWorld !== false) : !(c.factionLivingWorldDefault === false);
+    var flw = true;
     el.checked = !!(re && bi && wr && flw);
   } catch (_e) {}
 }

@@ -1,0 +1,13 @@
+diff --git a/web/scripts/smoke-tianqi-map-runtime.js b/web/scripts/smoke-tianqi-map-runtime.js
+index 02da7923..318e6bfd 100644
+--- a/web/scripts/smoke-tianqi-map-runtime.js
++++ b/web/scripts/smoke-tianqi-map-runtime.js
+@@ -90,6 +90,7 @@ function main() {
+ 
+   const ctx = makeContext(sc);
+   runFile(ctx, 'tm-map-system.js');
++  runFile(ctx, 'tm-faction-membership.js'); // AI ownership must use the country/map transaction together.
+   runFile(ctx, 'map-integration.js');
+ 
+   assert(ctx.TMMapRuntime, 'TMMapRuntime missing');
+

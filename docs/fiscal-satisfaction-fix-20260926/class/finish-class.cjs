@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const root=path.resolve(__dirname,'../../..');
+const backup=path.join(root,'docs/fiscal-satisfaction-fix-20260926/backups/class/tm-patches-start.js.bak');
+const file=path.join(root,'web/tm-patches-start.js');
+let raw=fs.readFileSync(backup,'utf8'),current=fs.readFileSync(file,'utf8');
+const start=raw.indexOf('      if (sc && sc.populationConfig && sc.populationConfig.accounting && sc.populationConfig.accounting.schema ===');
+const stop=raw.indexOf('\r\n',raw.indexOf('      else if (typeof TM.Renli.endturnTick',start));
+const nextStart=current.indexOf('      if (typeof TM.Renli.prime ==='),nextStop=current.indexOf('\r\n',nextStart);
+if(start<0||stop<0||nextStart<0||nextStop<0)throw Error('exact boundaries absent');
+raw=raw.slice(0,start)+current.slice(nextStart,nextStop)+raw.slice(stop);
+fs.writeFileSync(file,raw);
+console.log('mixed line endings preserved',crypto.createHash('sha256').update(fs.readFileSync(backup)).digest('hex'),{bareLf:(raw.match(/(?<!\r)\n/g)||[]).length});
+const sps=path.join(root,'web/tm-social-political-signals.js');let s=fs.readFileSync(sps,'utf8');
+function one(from,to){if(s.split(from).length!==2)throw Error('Expected one match: '+from);s=s.replace(from,to);}
+one("      emit('turn-result-military-arrears', {\n        sourceSystem: 'turn-result',","      emit('turn-result-military-arrears', {\n        classImpactsAuthoritative: true,\n        sourceSystem: 'turn-result',");
+one("affectedClasses: inferClassImpacts(root, ['military', 'soldier', 'wage', 'arrears', 'garrison', '\\u519b', '\\u5175', '\\u9977', '\\u6b20\\u9977'], function() {","affectedClasses: inferScopedClassImpacts(root, 'military', function() {");
+one("      emit('turn-result-local-unrest', {\n        sourceSystem: 'turn-result',","      emit('turn-result-local-unrest', {\n        classImpactsAuthoritative: true,\n        sourceSystem: 'turn-result',");
+one("affectedClasses: inferClassImpacts(root, ['local', 'revolt', 'unrest', 'peasant', 'commoner', 'rural', '\\u5730\\u65b9', '\\u6c11\\u53d8', '\\u6c11'], function() {","affectedClasses: inferScopedClassImpacts(root, 'local', function() {");
+fs.writeFileSync(sps,s);

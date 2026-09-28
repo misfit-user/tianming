@@ -1,0 +1,1 @@
+2026-09-17: Resume the user-authorized local Tang scenario update. No push, no release, no save-game changes.

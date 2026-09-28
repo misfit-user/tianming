@@ -10,7 +10,7 @@ assert(start >= 0 && end > start, 'actual office writeback slice exists');
 let pass = 0, fail = 0;
 function test(name, fn) { try { fn(); pass++; console.log('PASS ' + name); } catch (e) { fail++; console.error('FAIL ' + name + '\n' + e.stack); } }
 function context() {
-  const c = { console, Date, JSON, Math, setTimeout() {}, clearTimeout() {}, P: { conf: {} },
+  const c = { console, Date, JSON, Math, setTimeout() {}, clearTimeout() {}, P: { conf: { officeActivationEnabled: false } },
     GM: { turn: 4, sid: 'office-fixture', month: 2, officeTree: [{ id: 'finance', name: '财政部', positions: [], subs: [] }], chars: [], facs: [],
       guoku: { money: 1000000, balance: 1000000 }, huangquan: { index: 60 }, huangwei: { index: 60 },
       dynamicInstitutions: [], customOffices: [], _pendingMemorials: [], _pendingClarifications: [] },
@@ -71,8 +71,8 @@ test('direct edict creates a named post under an existing department with stated
   const c = context(), r = c.EdictParser.tryExecute('在财政部增设审计官二人，正六品，掌账簿稽核。', {}, {});
   assert(r && r.ok); const p = nodes(c, '财政部')[0].positions.find(p => p.name === '审计官'); assert(p); assert.equal(p.establishedCount, 2);
 });
-test('adjudication mode stays pending then applies the complete named structure after approval', () => {
-  const c = context(); c.P.conf.officeReformAdjudicationEnabled = true;
+test('default adjudication stays pending then applies the complete named structure after approval', () => {
+  const c = context(); delete c.P.conf.officeActivationEnabled; // 默认官制活化必须进入裁定。
   apply(c, [{ action: 'reform', reformDetail: '增设', dept: '文书署', positions: [{ name: '校书郎', rank: '正六品', count: 2 }] }]);
   assert.equal(nodes(c, '文书署').length, 0); assert.equal(c.GM._pendingReforms.length, 1);
   c.GM.turn++; const result = c.adjudicatePendingReforms(c.GM, { authority: 100 }); assert(result[0].applied);

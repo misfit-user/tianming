@@ -111,6 +111,14 @@
     }
     root.guoku = root.guoku && typeof root.guoku === 'object' ? root.guoku : {};
     root.fiscal = root.fiscal && typeof root.fiscal === 'object' ? root.fiscal : {};
+    var S=global.FiscalStatement,options={game:root,account:root.guoku,scope:'central'};
+    if(S&&S.hasActualLedger&&S.hasActualLedger(options)){
+      // The existing ledger owns cash flow; repair old display scalars without posting money.
+      var settled=S.sync(options),account=settled.account;
+      var recorded={turn:turn,plannedIncome:account.turnIncome,actualIncome:account.turnIncome,remittedIncome:account.turnIncome,flowBasis:'actual',periodDays:account.turnDays,source:'canonical-fiscal-ledger'};
+      root.guoku.minxinConsumer=recorded;root.fiscal.minxinConsumer=clone(recorded);root.fiscal.effectiveRevenue=account.turnIncome;
+      return clone(recorded);
+    }
     var hard = snapshot.summary && snapshot.summary.fiscal || {};
     var planned = numFirst([
       root.guoku._preMinxinTurnIncome,

@@ -306,5 +306,71 @@ check('源码约束：不碰 GM、P、DOM，也不调 AI', () => {
   assert.doesNotMatch(code, /fetch\(|_aiFetch|callAI/i, '不得调用 AI 或网络');
 });
 
+// 册页查询必须按当前实时归属读取；只在一次同步查询内共享昂贵的势力解析。
+function dossierFixture() {
+  const map = {
+    regions: Array.from({ length: 120 }, (_, i) => region('r' + i, '州' + i, 'shared', {
+      factionName: i % 2 ? '甲方' : '乙方', parentId: 'c1'
+    })),
+    circuitRegistry: [{ key: 'c1', name: '一道' }, { key: 'c2', name: '二道' }]
+  };
+  const liveOwners = new Map();
+  const aliases = { '甲方': 'a', '乙方': 'b' };
+  const calls = [];
+  const parts = {
+    getMapData: () => map,
+    firstValue: (...values) => values.find((v) => v !== null && v !== undefined && v !== ''),
+    ownerKey: (r) => liveOwners.has(r) ? liveOwners.get(r) : r.owner,
+    canonicalOwnerKey: (r) => {
+      const raw = parts.ownerKey(r);
+      calls.push([raw, r.factionName || r.ownerName]);
+      return raw === 'shared' ? aliases[r.factionName || r.ownerName] : raw;
+    }
+  };
+  const context = { console, TM: { MapCircuits: circuits }, TMMapRealmLayout: layout,
+    TMPhase8FormalBridge: { __p8MapParts: parts } };
+  context.window = context;
+  require('node:vm').runInNewContext(fs.readFileSync(path.join(__dirname, '..', 'phase8-formal-map-dossier.js'), 'utf8'), context);
+  return { map, parts, calls, liveOwners, aliases };
+}
+
+check('通志查询：一百二十州只解析两种归属，同归属不同名称不串方', () => {
+  const f = dossierFixture();
+  const before = JSON.stringify(f.map);
+  const circuit = f.parts.findCircuit(f.map.regions[0]);
+  assert.equal(circuit.members.length, 120);
+  assert.equal(circuits.partitionByOwner(circuit, 'a').own.length, 60);
+  assert.equal(circuits.partitionByOwner(circuit, 'b').own.length, 60);
+  assert.equal(f.calls.length, 2, '解析工作应随不同归属数增长，而非州数增长');
+  assert.strictEqual(f.parts.findCircuit(f.map.regions[1]), circuit, '局面不变可复用索引');
+  assert.equal(f.calls.length, 4, '下一次查询重新读势力资料');
+  assert.equal(JSON.stringify(f.map), before, '读取不修改地图');
+});
+
+check('通志查询：实时归属、势力映射和名称变化在下一次读取生效', () => {
+  const f = dossierFixture();
+  const r = f.map.regions[0];
+  f.parts.findCircuit(r);
+  f.aliases['乙方'] = 'c';
+  let circuit = f.parts.findCircuit(r);
+  assert.equal(circuits.partitionByOwner(circuit, 'c').own.length, 60, '无须换地图或过回合');
+  r.factionName = '甲方';
+  circuit = f.parts.findCircuit(r);
+  assert.equal(circuits.partitionByOwner(circuit, 'a').own.length, 61);
+  f.liveOwners.set(r, 'live-owner');
+  circuit = f.parts.findCircuit(r);
+  assert.deepEqual(circuits.partitionByOwner(circuit, 'live-owner').own, [r], '活归属优先于地图静态归属');
+});
+
+check('通志查询：改隶立即更新两道成员，不沿用旧分组', () => {
+  const f = dossierFixture();
+  const r = f.map.regions[0];
+  f.parts.findCircuit(r);
+  r.parentId = 'c2';
+  assert.equal(f.parts.findCircuit(r).key, 'c2');
+  assert.equal(f.parts.findCircuit(r).members.length, 1);
+  assert.equal(f.parts.findCircuit(f.map.regions[1]).members.length, 119);
+});
+
 console.log('[smoke-map-circuits] ' + checks.length + ' 组检查全部通过');
 checks.forEach((name) => console.log('  ok · ' + name));

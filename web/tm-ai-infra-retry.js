@@ -77,13 +77,17 @@ function _aiWaitSnapshot() {
   return Array.from(_aiPendingWaits.values(), function(row) { return { phase: row.phase, elapsedMs: Date.now() - row.startedAt, headersReceived: row.headersAt != null }; });
 }
 
+function _aiEndpointStamp(player) {
+  var ai=player && player.ai || {}, secondary=ai.secondary || {};
+  return JSON.stringify([ai.url,ai.model,ai.key,secondary.url,secondary.model,secondary.key]);
+}
+
 async function _aiWithStreamScope(opts, execute) {
   opts = _aiConfiguredCallOptions(opts);
   var root = typeof window !== 'undefined' ? window : globalThis;
   var gm = typeof GM !== 'undefined' ? GM : null, player = typeof P !== 'undefined' ? P : null, generation = root._tmLoadGen;
   var identity = gm ? [gm._campaignId, gm._timelineId, gm.turn].join('|') : '';
-  var cfg = typeof _getAITier === 'function' ? _getAITier(opts.tier) : player && player.ai || {};
-  var cfgKey = JSON.stringify([cfg.url, cfg.model, cfg.key]);
+  var cfgKey = _aiEndpointStamp(player);
   var ctrl = new AbortController(), deadlineReject, timer, external;
   var deadline = new Promise(function(_resolve, reject) { deadlineReject = reject; }); deadline.catch(function() {});
   var userLimit = _aiTotalResponseTimeout(opts);
@@ -91,8 +95,7 @@ async function _aiWithStreamScope(opts, execute) {
   if (timeout <= 0) throw _aiRetryBudgetError();
   function guard() {
     if (ctrl.signal.aborted) throw ctrl.signal.reason || _aiCancelledError(opts.signal);
-    var currentCfg = typeof _getAITier === 'function' ? _getAITier(opts.tier) : player && player.ai || {};
-    if ((root.GM || null) !== gm || (root.P || null) !== player || root._tmLoadGen !== generation || (gm && identity !== [gm._campaignId, gm._timelineId, gm.turn].join('|')) || cfgKey !== JSON.stringify([currentCfg.url, currentCfg.model, currentCfg.key])) {
+    if ((root.GM || null) !== gm || (root.P || null) !== player || root._tmLoadGen !== generation || (gm && identity !== [gm._campaignId, gm._timelineId, gm.turn].join('|')) || cfgKey !== _aiEndpointStamp(player)) {
       var e = new Error('流式推演对应的存档或模型配置已改变'); e.code = 'AI_STALE_WORLD'; throw e;
     }
   }
@@ -128,6 +131,9 @@ async function _aiConfiguredStreamRetry(messages, maxTok, opts) {
     try { return await _callAIMessagesStreamDirect(messages,maxTok,owned); }
     catch(e) {
       if(partial || attempt>=opts.maxRetries || !policy.retryable(e)) { if(e && typeof e==='object')e._aiRetryExhausted=true;throw e; }
+      if (!opts.finalizedBody && !opts._noSecFallback && _aiEffectiveTierIsSecondary(owned.tier) && _isAINetworkError(e)) {
+        owned.tier='primary';owned._noSecFallback=true;
+      }
       await _aiBudgetedRetryWait(Number.isFinite(e.retryAfterMs) ? e.retryAfterMs : _aiRetryDelay(null,attempt),opts.signal,owned.retryBudget);
     }
   }
@@ -371,7 +377,7 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
     maxTok = hasOutputLimit ? Math.floor(_exactMax) : undefined;
   }
   // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
-  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback) {
+  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback && !opts._streamRetryOwner) {
     var _oS = Object.assign({}, opts, { _noSecFallback: true });
     try { return await _callAIMessagesStreamDirect(messages, maxTok, _oS); }
     catch (e) {

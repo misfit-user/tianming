@@ -1,0 +1,208 @@
+{
+  "source": "C:\\Users\\37814\\Desktop\\tianming",
+  "candidate": "C:\\Users\\37814\\.codex\\worktrees\\fiscal-satisfaction-fix\\tianming",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "files": [
+    {
+      "path": "web/tm-minxin-hard-link-consumers.js",
+      "before": "6d325dc71f88f0659fd7c173478f11e484a5d8ba9cf360c4e5f66abf8c30dc66",
+      "after": "ea71f7111d2310e9b874d48e5028dfc547032bbdac0feaf00a279a23a6eb8b56",
+      "live": "6d325dc71f88f0659fd7c173478f11e484a5d8ba9cf360c4e5f66abf8c30dc66",
+      "sourceUnchanged": true,
+      "bytes": 20674
+    },
+    {
+      "path": "web/tm-fiscal-statements.js",
+      "before": "57827d166162c31ad6045eaff5fb5440e4b812a889d3167e3bf135ee8016ae74",
+      "after": "07cb0e8ffa1591f8c911ee10e4e641a2bbb9498813f67b65561344f5f7beb68b",
+      "live": "57827d166162c31ad6045eaff5fb5440e4b812a889d3167e3bf135ee8016ae74",
+      "sourceUnchanged": true,
+      "bytes": 20747
+    },
+    {
+      "path": "web/tm-guoku-panel.js",
+      "before": "531242b839f8b23a8c87b9a796e808fea48f80eb9e2ca3e728d9a76c8fe82cf1",
+      "after": "e35e88a734b3f15620e059c1d720ebc693fbb3631e6bf491331c3e3a8c4b4c2f",
+      "live": "531242b839f8b23a8c87b9a796e808fea48f80eb9e2ca3e728d9a76c8fe82cf1",
+      "sourceUnchanged": true,
+      "bytes": 85209
+    },
+    {
+      "path": "web/phase8-formal-rightrail.js",
+      "before": "5a6d9f141cd8fc946bbfc43de620d2d84c1c7e15166ac60e2fbc8e7721d7dde5",
+      "after": "b634f6a111ab6169d90ca72aa87540283f5d65a016c73ec301c056b28748d295",
+      "live": "5a6d9f141cd8fc946bbfc43de620d2d84c1c7e15166ac60e2fbc8e7721d7dde5",
+      "sourceUnchanged": true,
+      "bytes": 153118
+    },
+    {
+      "path": "web/tm-class-engine.js",
+      "before": "88e30afe78b0f8d39b96a5e12251b65c211e0a7a704462b0b62de7648e3d9a78",
+      "after": "226727868b4133976eefbc5d2dd6ed46edb867e607359075520070f23846f848",
+      "live": "88e30afe78b0f8d39b96a5e12251b65c211e0a7a704462b0b62de7648e3d9a78",
+      "sourceUnchanged": true,
+      "bytes": 56991
+    },
+    {
+      "path": "web/tm-party-class-llm-calibrator.js",
+      "before": "4e2064c164ab38f65c624ff063d61a8cc1a4cc50c5fbcf051464a9aed4531637",
+      "after": "2dec2e3ba8157fd8294ee586663c608659e45805ea03fee4af96645ba089e7a8",
+      "live": "4e2064c164ab38f65c624ff063d61a8cc1a4cc50c5fbcf051464a9aed4531637",
+      "sourceUnchanged": true,
+      "bytes": 81479
+    },
+    {
+      "path": "web/tm-social-political-signals.js",
+      "before": "dbd6e80863a2dcb309a05fa05c7fd4518a455c2a11f466d12bca9053c48c95ed",
+      "after": "de14c7e3df21a1e092d7e882560d1eb7c84f40e6b65b079c57eba1b96caf21e3",
+      "live": "dbd6e80863a2dcb309a05fa05c7fd4518a455c2a11f466d12bca9053c48c95ed",
+      "sourceUnchanged": true,
+      "bytes": 101023
+    },
+    {
+      "path": "web/tm-party-class-ecology.js",
+      "before": "57cb971e6ecd7de24a1a614f145fcbfb28a99407db5e256e992836ec16f6dc88",
+      "after": "cf5f8d295bdee6ee8e398fb6f66cf312ec17eed9ee9899f86171252aa43a87d8",
+      "live": "57cb971e6ecd7de24a1a614f145fcbfb28a99407db5e256e992836ec16f6dc88",
+      "sourceUnchanged": true,
+      "bytes": 24308
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "before": "149259d2f2972a0131b9f483b6b1b989f157536018ab59ae9f5e6ebc5c1864b2",
+      "after": "d2106452d018cd10b7bdba3c7e1788c001ec10a48f598f29469c027bc5dcc5ee",
+      "live": "149259d2f2972a0131b9f483b6b1b989f157536018ab59ae9f5e6ebc5c1864b2",
+      "sourceUnchanged": true,
+      "bytes": 129946
+    },
+    {
+      "path": "web/tm-renli.js",
+      "before": "4ff00ebb559a61515607f1f9b511ce405ef6df8624641c5e1610f6e25bf8e1a9",
+      "after": "a21c96341a059054cd4ac00d71f9c1faff3bcdb1a7c8e5ad3fbb91893f022f88",
+      "live": "4ff00ebb559a61515607f1f9b511ce405ef6df8624641c5e1610f6e25bf8e1a9",
+      "sourceUnchanged": true,
+      "bytes": 84321
+    },
+    {
+      "path": "web/tm-topbar-vars.js",
+      "before": "0c7a2977f3227e99a70d12b9deb0be5079f4e50d7edbbe78f96df59c4c368e01",
+      "after": "8f638cce6dd00c2cc5b811aa6a83608be8244138f8c855a5ea6510cdff6bc809",
+      "live": "0c7a2977f3227e99a70d12b9deb0be5079f4e50d7edbbe78f96df59c4c368e01",
+      "sourceUnchanged": true,
+      "bytes": 98557
+    },
+    {
+      "path": "web/scripts/smoke-class-satisfaction-guard.js",
+      "before": "3d62289becf24386a46c5f223d3a03615bc8259bfa37e8b6d975ed90cfef0661",
+      "after": "eb2ec9b628eebbaad51aa7792ea505999566b4b8f3065d3c20f6e9d5319eff53",
+      "live": "3d62289becf24386a46c5f223d3a03615bc8259bfa37e8b6d975ed90cfef0661",
+      "sourceUnchanged": true,
+      "bytes": 7783
+    },
+    {
+      "path": "web/scripts/smoke-social-satisfaction-recovery.js",
+      "before": null,
+      "after": "4b377e823ecb32a246421f0c4705aab8bbf1baf166f98a7a2ea32ffa6d343452",
+      "live": null,
+      "sourceUnchanged": true,
+      "bytes": 9199
+    },
+    {
+      "path": "web/scripts/smoke-fiscal-actual-display.js",
+      "before": null,
+      "after": "5c60762eeacbd3b2d1d8330eac881cb8463659f90b2ec4e91a2d595fc4ef248f",
+      "live": null,
+      "sourceUnchanged": true,
+      "bytes": 11432
+    },
+    {
+      "path": "web/scripts/smoke-guoku-shared-display.js",
+      "before": "333988bf30991e4ea78fe37c7cf93c3633af8046431c459c56fcd06e6d113d69",
+      "after": "d9e537a3fa9581e28310ffcb935abcb042c1b79218ce9459ec1d670705029a8e",
+      "live": "333988bf30991e4ea78fe37c7cf93c3633af8046431c459c56fcd06e6d113d69",
+      "sourceUnchanged": true,
+      "bytes": 9743
+    },
+    {
+      "path": "web/scripts/smoke-topbar-fiscal-consistency.js",
+      "before": "ebce0be061ab422d0317abd5946379e7e8eee56a495575ef34d5b13fad554411",
+      "after": "147ec39be354ea9523654662ced1326c45da7964782ffb70329e7f845dd3e9f8",
+      "live": "ebce0be061ab422d0317abd5946379e7e8eee56a495575ef34d5b13fad554411",
+      "sourceUnchanged": true,
+      "bytes": 7628
+    },
+    {
+      "path": "web/scripts/smoke-class-pressure-scope.js",
+      "before": null,
+      "after": "3b6690f9438e53162b70bf1df3c60463334d1698592576ddcb1d2a8d54ec6400",
+      "live": null,
+      "sourceUnchanged": true,
+      "bytes": 7584
+    },
+    {
+      "path": "web/scripts/smoke-opening-renli-prime.js",
+      "before": null,
+      "after": "0540c36b2ec733ce755a8ec6ddc651833ea74a524129ec045bc35fdfadf06292",
+      "live": null,
+      "sourceUnchanged": true,
+      "bytes": 2689
+    },
+    {
+      "path": "web/scripts/verify-all.js",
+      "before": "b9906248165b56b570ac689cee88beb55fb6ac611e007769c270a2b0426269b1",
+      "after": "c930a097a25af5ae6ba71a97a4144d77baf7f5a807f47c529b14decb1a01d24d",
+      "live": "b9906248165b56b570ac689cee88beb55fb6ac611e007769c270a2b0426269b1",
+      "sourceUnchanged": true,
+      "bytes": 47791
+    },
+    {
+      "path": "web/scripts/lib-ai-priority-routing.js",
+      "before": null,
+      "after": "8255169c175877af85d2ec65b75465b77c3e4308dc8a190bd701c7b9ab65b4c2",
+      "live": null,
+      "sourceUnchanged": true,
+      "bytes": 2125
+    },
+    {
+      "path": "web/scripts/smoke-rightrail-datasource.js",
+      "before": "ccb51444daf17bebe72548ae55080b418c0868c8b396a085695e2c2237d0cb1f",
+      "after": "377c8d5e3410ebe899c0c9f33ff0b22cc1b70df1b89e74621f2b5e4c6f32d6a4",
+      "live": "ccb51444daf17bebe72548ae55080b418c0868c8b396a085695e2c2237d0cb1f",
+      "sourceUnchanged": true,
+      "bytes": 15385
+    },
+    {
+      "path": "web/scripts/smoke-endturn-performance-optimizations.js",
+      "before": "07ed2bc1e5caf178c88e415477af68ffc3a894234874a2158b9c1931bc3b7cb0",
+      "after": "8a82611315f218331e50ac899251d336d4e8afb9b4b368750bc8521777bc0865",
+      "live": "07ed2bc1e5caf178c88e415477af68ffc3a894234874a2158b9c1931bc3b7cb0",
+      "sourceUnchanged": true,
+      "bytes": 14601
+    },
+    {
+      "path": "web/index.html",
+      "before": "92bc7e7ec49a82788bbd8a0fdfb3ea2679912f18de49e014db3578df9e27f196",
+      "after": "c794588b13af89bae85e669c2fc159b1eb488c7b1e8595a30b83c3247d75f40a",
+      "live": "92bc7e7ec49a82788bbd8a0fdfb3ea2679912f18de49e014db3578df9e27f196",
+      "sourceUnchanged": true,
+      "bytes": 75341
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "before": "53069a765b56c46b23dbd25332061a0d0080ded829bea6ded6e6e988fadc1b1c",
+      "after": "1ca9510b29cba57e4830f85f919d67c351557bcbfaae9ab791248c29e581025a",
+      "live": "53069a765b56c46b23dbd25332061a0d0080ded829bea6ded6e6e988fadc1b1c",
+      "sourceUnchanged": true,
+      "bytes": 134977
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "before": "3e10d04d8e11af4e1877f1869be3314bca010b40d605a54e3558709d9a0ff4cc",
+      "after": "00f63f439c7eb37de30823eaa15555d58ad1f0d33d5c6dc0ff92b5321926c527",
+      "live": "3e10d04d8e11af4e1877f1869be3314bca010b40d605a54e3558709d9a0ff4cc",
+      "sourceUnchanged": true,
+      "bytes": 223670
+    }
+  ],
+  "conflicts": []
+}

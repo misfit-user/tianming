@@ -130,7 +130,7 @@ try {
   assert(fa.agentFlagOn('factionAgentEnabled') === true, 'A·默认(GM._factionLivingWorld 未显式关) → factionAgentEnabled 生效(证明默认 ON)');
   assert(fa.agentFlagOn('factionGoalStackEnabled') === true, 'A·同上 → factionGoalStackEnabled 生效');
   fa.P.conf.agentModeEnabled = true;                 // 进 agent 模式(mode-b)
-  assert(fa.agentFlagOn('factionAgentEnabled') === false, 'A·B8 互斥不变：agent 模式下总闸不点亮子闸(功能不可达·翻默认不破坏互斥)');
+  assert(fa.agentFlagOn('factionAgentEnabled') === true, '正式势力决策和长期目标忽略旧关闭值及管线互斥');
 
   // ══════════════ 场景 B：显式全 OFF（老轨回归守卫） ══════════════
   console.log('══ 场景B：显式全 OFF conf（老轨回归·字节级 OFF 路径） ══');
@@ -139,8 +139,8 @@ try {
   var rb = revoltSandbox({ revoltEntityEnabled: false });
   rb.GM.minxin.revolts.push({ id: 'rvB', region: '陕西', status: 'ongoing', level: 3, scale: 30000, turn: 8 });
   rb.TM.RevoltEntity.sync(rb.GM);
-  assert(rb.GM.facs.length === 1 && !rb.GM.facs.some(function (f) { return f._revoltEntity; }), 'B·显式 OFF → 民变不具象化(势力零新增)');
-  assert(rb.GM.armies.length === 1 && rb.GM.chars.length === 1, 'B·显式 OFF → 军队/人物零新增(老轨)');
+  assert(rb.GM.facs.length === 2 && rb.GM.facs.some(function (f) { return f._revoltEntity; }), '旧关闭值下民变仍具象化');
+  assert(rb.GM.armies.length === 2 && rb.GM.chars.length === 2, '正式民变生成真实军队和渠帅');
 
   console.log('— B2 边患真入侵 OFF：永不出兵 —');
   var bb = borderSandbox({ borderInvasionEnabled: false });
@@ -157,8 +157,8 @@ try {
 
   console.log('— B4 势力活世界总闸 OFF：子闸不点亮 —');
   var fb = flagSandbox(false);                       // GM._factionLivingWorld = 显式 false
-  assert(fb.agentFlagOn('factionAgentEnabled') === false, 'B·显式 false → factionAgentEnabled 不点亮(老轨)');
-  assert(fb.agentFlagOn('factionGoalStackEnabled') === false, 'B·显式 false → factionGoalStackEnabled 不点亮(老轨)');
+  assert(fb.agentFlagOn('factionAgentEnabled') === true, '正式势力决策和长期目标忽略旧关闭值及管线互斥');
+  assert(fb.agentFlagOn('factionGoalStackEnabled') === true, '正式势力决策和长期目标忽略旧关闭值及管线互斥');
 
   // ══════════════ 场景 C：势力活世界迁移矩阵（normalizer 真源实跑）+ 总纲勾选推导 ══════════════
   console.log('══ 场景C：迁移矩阵（tm-save-lifecycle normalizer 真源抽取实跑）+ 总纲勾选推导 ══');
@@ -170,15 +170,15 @@ try {
   var runNorm = new Function('gm', 'p', (reconM ? reconM[0] : 'throw new Error("no reconcile fn")') + '\n_tmReconcileFactionLivingWorld(gm, p);');
   function normResult(gm, p) { runNorm(gm, p); return gm._factionLivingWorld; }
   assert(normResult({ _factionLivingWorld: false }, { conf: {} }) === true, 'C①·旧档自动 false + 无戳 → 一次性翻 ON(true·迁移根治混合态)');
-  assert(normResult({ _factionLivingWorld: false, _factionLivingWorldSetByUser: true }, { conf: {} }) === false, 'C②·带用户意图戳 false → 永久尊重·保持 false');
+  assert(normResult({ _factionLivingWorld: false, _factionLivingWorldSetByUser: true }, { conf: {} }) === true, '旧存档关闭值、用户戳及迟到镜像均迁移为正式玩法');
   assert(normResult({}, { conf: {} }) === true, 'C③·字段缺失(全新/异常档) → 翻默认 ON(true)');
-  assert(normResult({ _factionLivingWorld: false }, { conf: { factionLivingWorldDefault: false } }) === false, 'C④·无戳 + P.conf.factionLivingWorldDefault=false → 取跨局镜像·false');
+  assert(normResult({ _factionLivingWorld: false }, { conf: { factionLivingWorldDefault: false } }) === true, '旧存档关闭值、用户戳及迟到镜像均迁移为正式玩法');
   assert(normResult({ _factionLivingWorld: true, _factionLivingWorldSetByUser: true }, { conf: {} }) === true, 'C⑤·带戳 true → 尊重·保持 true');
-  assert(normResult({}, { conf: { factionLivingWorldDefault: false } }) === false, 'C⑥·无戳+字段缺失+镜像 false → 取镜像 false(不越过用户跨局选择)');
+  assert(normResult({}, { conf: { factionLivingWorldDefault: false } }) === true, '旧存档关闭值、用户戳及迟到镜像均迁移为正式玩法');
 
   console.log('— C1b 启动竞态自愈（Codex 二轮 B）：lite 曾无 conf → 迟到镜像重算 —');
   // 竞态：boot 时无镜像+无戳 → normalizer 落 GM=true；完整 P 迟到带回 factionLivingWorldDefault=false → tm:p-restored 自愈同一真源重算
-  assert(normResult({ _factionLivingWorld: true }, { conf: { factionLivingWorldDefault: false } }) === false, 'C⑦·自愈：无戳 GM 已=true(启动无镜像) + 迟到恢复镜像 false → 重算为 false(消除 GM=true↔镜像 false 永久矛盾)');
+  assert(normResult({ _factionLivingWorld: true }, { conf: { factionLivingWorldDefault: false } }) === true, '旧存档关闭值、用户戳及迟到镜像均迁移为正式玩法');
   assert(normResult({ _factionLivingWorld: true, _factionLivingWorldSetByUser: true }, { conf: { factionLivingWorldDefault: false } }) === true, 'C⑧·带戳 true 不被自愈覆盖(用户本会话显式设过·迟到镜像 false 不动它)');
   console.log('— C1c lite conf 净化器 _tmLiteSafeConf（Codex 三轮 A·敏感值/配额）：真源实跑 —');
   var utilsSrc = fs.readFileSync(path.join(ROOT, 'tm-utils.js'), 'utf8');
@@ -213,10 +213,11 @@ try {
     vm.runInContext(syncM[0] + '\n_tmSyncLivingWorldMaster();', sb, { filename: 'sync-extract.js' });
     return el.checked;
   }
+  assert(masterChecked({borderInvasionEnabled:false}, true) === false, '未转正的可选边患仍允许关闭');
   assert(masterChecked({}, true) === true, 'C·总纲推导：四组件默认 + 势力活世界 ON → 勾选');
-  assert(masterChecked({ revoltEntityEnabled: false }, true) === false, 'C·总纲推导：任一组件显式关(民变) → 不勾');
-  assert(masterChecked({}, false) === false, 'C·总纲推导：势力活世界 OFF → 不勾');
-  assert(masterChecked({ factionLivingWorldDefault: false }, undefined) === false, 'C·总纲推导：无 GM 字段 + 跨局镜像 false → 不勾(读镜像)');
+  assert(masterChecked({ revoltEntityEnabled: false }, true) === true, '兼容旧总纲读口时不再读取正式玩法的禁用值');
+  assert(masterChecked({}, false) === true, '兼容旧总纲读口时不再读取正式玩法的禁用值');
+  assert(masterChecked({ factionLivingWorldDefault: false }, undefined) === true, '兼容旧总纲读口时不再读取正式玩法的禁用值');
 } catch (e) {
   exceptions++;
   console.log('  FAIL 快测抛异常: ' + ((e && e.stack) || e));

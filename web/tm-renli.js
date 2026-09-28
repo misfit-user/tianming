@@ -710,7 +710,15 @@
     if(!GM)return {ready:0,missing:[]}; Pp=Pp||_P();
     ensurePilotSeeds(GM,Pp);
     var out={ready:0,missing:[],unconfigured:0};
-    _allAdminLeaves(GM,Pp).forEach(function(leaf){
+    var seedLeaves = leaves(Pp).filter(function(leaf) { return leaf && leaf.renliSeed; });
+    var primeLeaves = _allAdminLeaves(GM,Pp).map(function(leaf) {
+      if (leaf.renliSeed) return leaf;
+      return seedLeaves.find(function(seedLeaf) { return regionIdOf(seedLeaf) === regionIdOf(leaf); }) || leaf;
+    });
+    seedLeaves.forEach(function(leaf) {
+      if (!primeLeaves.some(function(existing) { return regionIdOf(existing) === regionIdOf(leaf); })) primeLeaves.push(leaf);
+    });
+    primeLeaves.forEach(function(leaf){
       if(!leaf.renliSeed){out.unconfigured++;return;}
       var pd=popOf(leaf), r=ensureRegion(GM,regionIdOf(leaf),leaf.renliSeed);
       if(pd && pd.baselineExemptDing!=null)pd.exemptDing=Math.min(presentDing(pd),Math.max(0,Math.round(num(pd.baselineExemptDing,0)*num(r.exemptCapFactor,1)+num(pd.commendedDing,0))));

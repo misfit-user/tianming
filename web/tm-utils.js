@@ -1874,6 +1874,11 @@ function _tmRehydrateCallPreferences() {
       if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner reapplies the latest explicit device call preferences.
       P.conf[key] = conf[key]; // arch-ok: only the two named call-preference maps, never game state or other project settings.
     });
+    var secondaryRetries = conf.aiSecondaryRetryCount;
+    if (Object.prototype.hasOwnProperty.call(conf, 'aiSecondaryRetryCount') && Number.isInteger(secondaryRetries) && secondaryRetries >= 0 && secondaryRetries <= 20) {
+      if (!P.conf) P.conf = {}; // arch-ok: project-restoration owner initializes call preferences.
+      P.conf.aiSecondaryRetryCount = secondaryRetries; // arch-ok: restore the latest validated device preference, including explicit zero.
+    }
   } catch (_) { /* A damaged optional cache must not block valid project restoration. */ }
 }
 

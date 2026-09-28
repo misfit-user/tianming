@@ -814,9 +814,7 @@
 
   // ── 【F2·势力活世界】总闸读口 + 真战争接线(declare_war/join_war 走 CasusBelliSystem·绝不自写 activeWars) ──
   function _livingWorldOn() {
-    if (!global.GM || global.GM._factionLivingWorld === false) return false;   // 2026-07-22 翻默认 ON·可关(显式 false 才关)
-    if (typeof global.agentModeOn === 'function' && global.agentModeOn()) return false;   // B8·agent 模式(mode-b·平行回合引擎)下总闸不生效·功能不可达·与 agent-flags「子 flag 不点亮」同一语义
-    return true;
+    return !!global.GM; // 正式势力世界：两种回合模式均可执行，调用所有权由各自管线负责。
   }
   var _LW_PLAYER_WAR_REL_THRESHOLD = -40;   // 对玩家宣战/参战门槛：关系值须 <= 此值 且 有正当 casus belli·防开局乱咬
   function _lwPlayerFacNames() {
@@ -914,15 +912,8 @@
     _pushFacTrajectory(fac, 'npcWarActions', rec);
     return { ok: true, summaryKey: 'wars', detail: { targetFaction: enemy, warId: rec.warId, parentWarId: origWar.id || '', joinedWar: true }, worldEvent: { kind: 'join_war', actor: joiner, target: enemy, cb: rec.casusBelli } };
   }
-  // 设置面板「势力活世界·实验」开关处理器(tm-patches.js 设置渲染调·切 GM._factionLivingWorld·本局存档生效·御驾亲征式 pill 类切换)
-  function setFactionLivingWorld(on, btn) {
-    on = !!on;
-    try { if (global.GM) { global.GM._factionLivingWorld = on; global.GM._factionLivingWorldSetByUser = true; } } catch (e) {}   // arch-ok: F2 势力活世界总闸 + 用户意图戳·本局存档·御驾亲征式设置开关(唯一写口)
-    try { if (global.P) { global.P.conf = global.P.conf || {}; global.P.conf.factionLivingWorldDefault = on; } } catch (e) {}   // arch-ok: 跨局默认镜像·发车前(临时 GM 会被 tm-patches-start 重建)靠此存活到新局·normalizer 无戳时读它
-    try { if (btn && btn.parentNode) { var bs = btn.parentNode.querySelectorAll('button[data-slhs]'); for (var i = 0; i < bs.length; i++) { var want = bs[i].getAttribute('data-slhs') === '1'; bs[i].className = 'bt ' + (want === on ? 'bp' : 'bs') + ' bsm'; } } } catch (e) {}
-    try { if (typeof global._tmSyncLivingWorldMaster === 'function') global._tmSyncLivingWorldMaster(); } catch (e) {}   // 个体切换后同步「活世界演绎·总纲」勾选态(幂等·不递归)
-    try { if (typeof global.toast === 'function') global.toast(on ? '势力活世界已开启 · 列国将真宣战/结盟/立志/兴事(本局存档生效)' : '势力活世界已关闭 · 列国维持现状'); } catch (e) {}
-  }
+  // 兼容旧入口；势力世界已纳入正式玩法，不再改写禁用标记。
+  function setFactionLivingWorld() { return true; }
 
   var APPLIERS = {
     memorial: _applyMemorial,
@@ -947,7 +938,7 @@
     if (!Array.isArray(s.grudges)) s.grudges = [];
     if (!Array.isArray(s.warAims)) s.warAims = [];
     // B4·目标栈激活(总闸带动/独立开)时 s.goals 归 FactionGoalStack 结构化对象所有·字符串行为标签改落 s.recentActionLabels(objectives 亦已收同标签)·防混合数组撞契约
-    var _gsOn = (typeof agentFlagOn === 'function') ? !!agentFlagOn('factionGoalStackEnabled') : !!(global.P && global.P.conf && global.P.conf.factionGoalStackEnabled);
+    var _gsOn = true; // 正式目标栈，保留旧字符串目标的一次性迁移。
     if (_gsOn) {
       if (!Array.isArray(s.recentActionLabels)) s.recentActionLabels = [];
       if (s.goals.some(function(g){ return typeof g === 'string'; })) {   // B4·一次性迁移·幂等(迁完再跑无字符串项)
@@ -956,7 +947,7 @@
       }
     }
     // 【势力 agent·posture 自著·2026-06-19】开关开 + LLM 给了 posture → 用势力自己宣告的战略姿态(替冻结的启发式默认·随局势演进)·否则保留现有或启发式种子(零回归)
-    if (decision && decision.posture && (typeof agentFlagOn === 'function' ? agentFlagOn('factionAgentEnabled') : (global.P && global.P.conf && global.P.conf.factionAgentEnabled))) {
+    if (decision && decision.posture) {
       s.posture = String(decision.posture).slice(0, 16);
     } else if (!s.posture) {
       s.posture = (fac.aiProfile && fac.aiProfile.posture) || fac.posture || '观望';

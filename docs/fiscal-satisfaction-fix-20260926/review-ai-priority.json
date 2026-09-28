@@ -1,0 +1,43 @@
+{
+  "existingRegexMatches": false,
+  "results": [
+    {
+      "helper": "callAI",
+      "requested": "high",
+      "overload": false,
+      "queued": "high"
+    },
+    {
+      "helper": "callAIMessages",
+      "requested": "critical",
+      "overload": false,
+      "queued": "critical"
+    },
+    {
+      "helper": "callAI",
+      "requested": "background",
+      "overload": true,
+      "queued": "background"
+    },
+    {
+      "helper": "callAIMessages",
+      "requested": "low",
+      "overload": true,
+      "queued": "low"
+    },
+    {
+      "helper": "callAI",
+      "requested": "(default)",
+      "overload": false,
+      "queued": "normal"
+    },
+    {
+      "helper": "callAIMessages",
+      "requested": "(default)",
+      "overload": false,
+      "queued": "normal"
+    }
+  ],
+  "fetches": 6,
+  "network": "fetch is an in-memory synthetic response; no network call"
+}

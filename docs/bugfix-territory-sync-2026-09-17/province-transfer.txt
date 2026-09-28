@@ -1,0 +1,153 @@
+  // Resolve an explicit region reference; names are accepted only when unambiguous.
+  function _provinceTransferRecord(g, ref) {
+    var map = g.mapData || g.map, regions = (map && map.regions) || [];
+    var region = regions.find(function(r) { return r && String(r.id) === String(ref); });
+    if (!region) {
+      var matches = regions.filter(function(r) { return r && [r.name, r.adminBinding, r.mapRegionId].indexOf(ref) >= 0; });
+      if (matches.length > 1) throw new Error('地块引用不唯一，请使用稳定 ID：' + ref);
+      region = matches[0] || null;
+    }
+    var divisions = [], seen = new Set();
+    function walk(n) {
+      if (!n || typeof n !== 'object' || seen.has(n)) return;
+      seen.add(n);
+      if (Array.isArray(n)) { n.forEach(walk); return; }
+      if (n.id || n.name) divisions.push(n);
+      ['children','divisions','prefectures','counties'].forEach(function(k) { if (n[k]) walk(n[k]); });
+    }
+    Object.keys(g.adminHierarchy || {}).forEach(function(k) { walk(g.adminHierarchy[k]); });
+    var binding = region && (region.adminBinding || region.mapRegionId || region.id);
+    var division = divisions.find(function(d) { return d.id && String(d.id) === String(binding || ref); });
+    if (!division && region) division = divisions.find(function(d) { return Array.isArray(d.mappedRegions) && d.mappedRegions.indexOf(region.id) >= 0; });
+    if (!division) {
+      var ds = divisions.filter(function(d) { return d.name === (region && region.name || ref); });
+      if (ds.length === 1) division = ds[0];
+    }
+    var aliases = [ref, region && region.id, region && region.name, region && region.adminBinding, division && division.id, division && division.name];
+    aliases = Array.from(new Set(aliases.filter(function(v) { return v !== undefined && v !== null && v !== ''; }).map(String)));
+    return { map:map, region:region, division:division, aliases:aliases, name:region && region.name || division && division.name || String(ref), id:region && region.id || division && division.id || String(ref) };
+  }
+
+  function _writeProvinceOwner(obj, name, id, mapRecord) {
+    if (!obj || typeof obj !== 'object') return false;
+    var changed = false;
+    function set(k, v) { if (obj[k] !== v) { obj[k] = v; changed = true; } }
+    ['owner','currentOwner','controller'].forEach(function(k) { set(k, mapRecord ? id : name); });
+    ['factionId','factionKey','ownerKey','currentOwnerKey','controllerKey','stableOwnerKey','stableFactionId','mapFactionId','ownerFactionId','controllerFactionId','sovereignFactionId'].forEach(function(k) { set(k, id); });
+    ['factionName','ownerName','currentOwnerName','controllerName','currentFactionName'].forEach(function(k) { set(k, name); });
+    if (Object.prototype.hasOwnProperty.call(obj, 'groupKey')) set('groupKey', id);
+    return changed;
+  }
+
+  function assignProvince(provName, newFacName, opts) {
+    if (!provName) return false;
+    opts = opts || {};
+    var g = _gm(); if (!g) return false;
+    var rec = _provinceTransferRecord(g, provName);
+    var target = _resolveAssignmentTarget(newFacName, opts);
+    if (target.explicitId && !target.target) return false;
+    var fac = target.target || _findFacById(newFacName);
+    if (!fac && newFacName && typeof global.findScenarioFactionByMapValue === 'function') {
+      var resolved = global.findScenarioFactionByMapValue(newFacName, rec.map);
+      fac = resolved && (_findFacById(resolved.id) || _findFac(resolved.name));
+    }
+    var newName = fac ? fac.name : (newFacName || ''), newId = fac ? (fac.id || fac.name) : newName;
+    var table = g._provinceToFaction || {}, found = false, oldName = '';
+    rec.aliases.some(function(k) { if (Object.prototype.hasOwnProperty.call(table,k)) { oldName=table[k] || ''; found=true; return true; } return false; });
+    if (!found) oldName = rec.region && (rec.region.currentOwner || rec.region.owner) || rec.division && (rec.division.currentOwner || rec.division.owner) || g.provinceStats && g.provinceStats[rec.name] && g.provinceStats[rec.name].owner || '';
+    var oldFac = _findFacById(oldName) || _findFac(oldName); if (oldFac) oldName=oldFac.name;
+    var journal = [], changed = false, seenObjects = new Set();
+    function remember(obj) { if (!obj || seenObjects.has(obj)) return; seenObjects.add(obj); journal.push({obj:obj, before:Object.assign({},obj)}); }
+    function write(obj, isMap) { if (!obj) return; remember(obj); if (_writeProvinceOwner(obj,newName,newId,isMap)) changed=true; }
+    function list(f, key, value) {
+      var old=f[key]; if (!Array.isArray(old) && f.name!==newName) return;
+      var next=(Array.isArray(old)?old:[]).filter(function(v) { return rec.aliases.indexOf(String(v))<0; });
+      if (f.name===newName && next.indexOf(value)<0) next.push(value);
+      if (!Array.isArray(old) || next.length!==old.length || next.some(function(v,i){return v!==old[i];})) { remember(f); f[key]=next; changed=true; }
+    }
+    var mapOld = rec.region && (rec.region.currentOwner || rec.region.owner) || '';
+    var turn=opts.byTurn!=null?opts.byTurn:_now(), reason=opts.reason || '领地易主';
+    try {
+      remember(g); remember(table);
+      if (!g._provinceToFaction) g._provinceToFaction=table;
+      rec.aliases.forEach(function(k) {
+        if (k!==rec.name && !Object.prototype.hasOwnProperty.call(table,k)) return;
+        if (table[k]!==newName) { table[k]=newName; changed=true; }
+      });
+      if (!Object.prototype.hasOwnProperty.call(table,rec.name)) { table[rec.name]=newName; changed=true; }
+      write(rec.division,false);
+      Object.keys(g.provinceStats || {}).forEach(function(k) {
+        var st=g.provinceStats[k];
+        if (rec.aliases.indexOf(k)>=0 || st && st.id && rec.aliases.indexOf(st.id)>=0) write(st,false);
+      });
+      write(rec.region,true);
+      if (rec.region) {
+        var data=Object.assign({},rec.region.data || {});
+        if (_writeProvinceOwner(data,newName,newId,false)) { rec.region.data=data; changed=true; }
+        if (fac && fac.color) rec.region.color=fac.color;
+        else if (!newName) rec.region.color='#cccccc';
+        (rec.map.items || []).forEach(function(item) { if (item && String(item.id)===String(rec.region.id)) write(item,true); });
+        if (oldName!==newName) {
+          rec.region.ownerHistory=(rec.region.ownerHistory || []).concat([{turn:turn,from:mapOld,fromKey:oldFac && oldFac.id || oldName,to:newId,toKey:newId,reason:reason}]);
+          rec.region.events=(rec.region.events ? rec.region.events+'\n' : '')+reason;
+        }
+      }
+      (g.facs || []).forEach(function(f) { if (!f || !f.name) return; list(f,'territories',rec.name); list(f,'provinceIds',rec.id); if (Array.isArray(f.territory)) list(f,'territory',rec.name); });
+      if (oldName!==newName && g.provinceStats) {
+        var history=g.provinceStats[rec.name] || g.provinceStats[rec.id];
+        if (history) { remember(history); history._factionHistory=(history._factionHistory || []).concat([{from:oldName,to:newName,turn:turn,reason:reason}]); }
+      }
+    } catch (error) {
+      for (var j=journal.length-1;j>=0;j--) {
+        var entry=journal[j];
+        Object.keys(entry.obj).forEach(function(k) { if (!Object.prototype.hasOwnProperty.call(entry.before,k)) delete entry.obj[k]; });
+        Object.keys(entry.before).forEach(function(k) { if (entry.obj[k]!==entry.before[k]) entry.obj[k]=entry.before[k]; });
+      }
+      throw error;
+    }
+    if (!changed && oldName===newName) return false;
+    if (oldName) _stamp(oldName); if (newName) _stamp(newName);
+    _refreshIndex(); // Every consumer sees the same completed transfer before recomputing.
+    if (oldName!==newName && rec.region && typeof global.pushMapTurnChange==='function') {
+      global.pushMapTurnChange({regionId:rec.region.id,regionName:rec.name,field:'owner',oldValue:mapOld,newValue:newId,reason:reason});
+    }
+    if (!opts.silent) _emit('faction:provinceTransferred',{province:rec.name,regionId:rec.id,from:oldName,to:newName,reason:reason});
+    try {
+      if (rec.map && typeof global.updateMapColors==='function') global.updateMapColors({refresh:false});
+      var ui=global.TMPhase8FormalBridge && global.TMPhase8FormalBridge.map;
+      if (ui) {
+        if (typeof ui.invalidateFormalMap==='function') ui.invalidateFormalMap();
+        if (typeof ui.refreshMapFromRuntime==='function') ui.refreshMapFromRuntime();
+      }
+      if (typeof global.refreshMapDisplay==='function') global.refreshMapDisplay();
+    } catch (error) {
+      if (global.TM && global.TM.errors && global.TM.errors.captureSilent) global.TM.errors.captureSilent(error,'territory-map-refresh');
+      else if (global.console) global.console.warn('[territory-map-refresh]',error);
+    }
+    return true;
+  }
+
+  // Compatibility aliases in _provinceToFaction must not inflate national totals.
+  function getProvinces(factionName) {
+    var g=_gm(); if (!g) return [];
+    var fac=_findFac(factionName) || _findFacById(factionName), name=fac ? fac.name : factionName;
+    var table=g._provinceToFaction || {}, map=g.mapData || g.map, index=new Map(), seen=new Set(), out=[];
+    ((map && map.regions) || []).forEach(function(r) {
+      if (!r) return;
+      [r.id,r.name,r.adminBinding,r.mapRegionId].filter(Boolean).forEach(function(k) {
+        k=String(k); if (!index.has(k)) index.set(k,r); else if (index.get(k)!==r) index.set(k,null);
+      });
+    });
+    Object.keys(table).forEach(function(k) {
+      var r=index.get(k), identity=r && (r.id || r.name) || k;
+      if (seen.has(identity)) return;
+      var owner=table[k];
+      if (r) {
+        if (Object.prototype.hasOwnProperty.call(table,r.id)) owner=table[r.id];
+        else if (Object.prototype.hasOwnProperty.call(table,r.name)) owner=table[r.name];
+      }
+      var ownerFac=_findFacById(owner) || _findFac(owner); if (ownerFac) owner=ownerFac.name;
+      if (owner===name) { seen.add(identity); out.push(r && r.name || k); }
+    });
+    return out;
+  }

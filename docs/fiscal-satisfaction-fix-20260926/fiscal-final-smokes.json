@@ -1,0 +1,77 @@
+[
+  {
+    "name": "smoke-fiscal-actual-display",
+    "status": 0,
+    "output": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n[smoke-fiscal-actual-display] PASS 62 assertions\n"
+  },
+  {
+    "name": "smoke-guoku-shared-display",
+    "status": 0,
+    "output": "[smoke-guoku-shared-display] PASS 53 assertions\n"
+  },
+  {
+    "name": "smoke-fiscal-field-contracts",
+    "status": 0,
+    "output": "[smoke-fiscal-field-contracts] PASS 99 assertions\n"
+  },
+  {
+    "name": "smoke-reported-fiscal-wiring",
+    "status": 0,
+    "output": "smoke-reported-fiscal-wiring\n  ✓ ① 顶栏 接 TM.ReportedView(_barReported)\n  ✓ ① 顶栏 未开失真层=真值直通兜底\n  ✓ ① 右rail 接 TM.ReportedView(rightFiscalReported)\n  ✓ ① 右rail 未开失真层=真值直通兜底\n  ✓ ① 帑廪panel 接 TM.ReportedView(_gkReported)\n  ✓ ① 帑廪panel 未开失真层=真值直通兜底\n  ✓ ② 键 guoku.money 三面同名\n  ✓ ② 键 guoku.grain 三面同名\n  ✓ ② 键 guoku.cloth 三面同名\n  ✓ ② 键 fiscal.turnIncome 三面同名\n  ✓ ② 键 fiscal.turnExpense 三面同名\n  ✓ ② 键 fiscal.annualIncome 顶栏/panel 同名\n  ✓ ③ 顶栏 库藏银 direction=good(账面报多)\n  ✓ ③ 顶栏 岁支 direction=bad(报少显节用)\n  ✓ ③ 右rail 库藏银 direction=good(账面报多)\n  ✓ ③ 右rail 岁支 direction=bad(报少显节用)\n  ✓ ③ 帑廪panel 库藏银 direction=good(账面报多)\n  ✓ ③ 帑廪panel 岁支 direction=bad(报少显节用)\n  ✓ ④ 内帑(皇帝私账)三面均不套据奏\n  ✓ ⑤ 顶栏 tooltip 副题标注据奏\n  ✓ ⑤ 右rail/panel 配据奏徽\n  ✓ ⑥ 引擎缺席 → 直通真值不崩\n\nsmoke-reported-fiscal-wiring PASS 22/22\n"
+  },
+  {
+    "name": "smoke-reported-view",
+    "status": 0,
+    "output": "smoke-reported-view\n  ✓ ① 严格史实+开关开 → active\n  ✓ ① 开关未开 → inactive(默认关·家规)\n  ✓ ① 非严格史实 → inactive(演义照旧)\n  ✓ ① inactive → 直通真值\n  ✓ ② 同回合同键两次调用 → 同上报值(不落库也不乱跳)\n  ✓ ② 回合推进 → 种子变·上报值可变\n  ✓ ③ 坏消息(direction bad) → 瞒减(报少)\n  ✓ ③ 好消息(direction good) → 虚增(报多)\n  ✓ ③ 偏移封顶 ≤35%\n  ✓ ③ 整数真值 → 整数上报(口径形态)\n  ✓ ④ 吏治清明(浊5) → 粉饰远小于浊世(浊60)\n  ✓ ④ 直臣经手(忠90)偏移 < 离心之臣(忠20)\n  ✓ ④ 分部门吏治(军队浊80) ≥ 全局(浊60)\n  ✓ ⑤ reveal 登记 → revealed\n  ✓ ⑤ 已揭键 → 显实情\n  ✓ ⑤ ttl 过 → 重新蒙尘\n  ✓ ⑤ 许可表只存许可不存数值(非第二本账)\n  ✓ ⑥ 失真配据奏徽·实情无徽\n  ✓ ⑥ 非数值直通不碰\n\nsmoke-reported-view PASS 19/19\n"
+  },
+  {
+    "name": "smoke-minxin-hard-link-consumers",
+    "status": 0,
+    "output": "[smoke-minxin-hard-link-consumers] PASS hard-link consumers\n"
+  },
+  {
+    "name": "smoke-treasury-account-books",
+    "status": 0,
+    "output": "[smoke-treasury-account-books] PASS 91 assertions\n"
+  },
+  {
+    "name": "smoke-fiscal-monthly-shizheng-sync",
+    "status": 0,
+    "output": "[smoke-fiscal-monthly-shizheng-sync] PASS 17 assertions\n"
+  },
+  {
+    "name": "smoke-active-fiscal-readers",
+    "status": 0,
+    "output": "[smoke-active-fiscal-readers] PASS 56 assertions; real AST functions, offline only\n"
+  },
+  {
+    "name": "smoke-fiscal-dynamic-settlement",
+    "status": 0,
+    "output": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\nsmoke-fiscal-dynamic-settlement: pass assertions=40\n"
+  },
+  {
+    "name": "smoke-fiscal-unified-budget",
+    "status": 0,
+    "output": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[smoke-fiscal-unified-budget] PASS 72 assertions\n"
+  },
+  {
+    "name": "smoke-fiscal-collection-ledger",
+    "status": 0,
+    "output": "[smoke-fiscal-collection-ledger] PASS 26 assertions\n"
+  },
+  {
+    "name": "smoke-neitang-shared-fields",
+    "status": 0,
+    "output": "[smoke-neitang-shared-fields] PASS 91 assertions\n"
+  },
+  {
+    "name": "smoke-neitang-inner-treasury-compat",
+    "status": 0,
+    "output": "[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n[smoke-neitang-inner-treasury-compat] pass assertions=10\n"
+  },
+  {
+    "name": "smoke-native-fiscal-consumers",
+    "status": 0,
+    "output": "[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\nPASS sovereign A and controller B never collect C tax receipts, including repeat ticks and a changed colour\nPASS a deliberate tax-right transfer routes later receipts without changing sovereignty or control\nPASS missing tax authority, wrong units and invalid rates fail before balances or receipts change\nPASS real fixed expense owner respects joint payers and foreign appointees, not commander nationality\nPASS actual treasury and NPC consumers skip only explicit current faction despite stale template flags\nPASS a zero private treasury gains no imperial estate income or expenses over ten actual ticks\nPASS real expense fault rolls all stocks and idempotency receipts back before a retry\nPASS shortfalls remain debt, never an invented refill or money-to-grain exchange\nPASS serialization rebind shares the same canonical stock and does not reseed initial money\nPASS unimplemented flows and missing pay rates are explicit errors before initialization\nPASS legal succession updates current ID, not the historical profile or treasury, and uses local titles\nPASS native social array edits update the world registry without dropping foreign records\nPASS the actual class coupling follows stable support edges and preserves foreign namesakes\nPASS actual party outcomes follow stable support edges without changing foreign namesakes\nPASS displaying an emperor title cannot bypass the actual stable-ID appointment writer\nPASS an abdicated living ruler loses inherited head authority; neither title nor stale profile regrants it\nPASS actual treasury actions obey authority and reject missing private accounts without partial debits\nPASS native fiscal UI and topbar projections use actual rates and escape authored account names\nPASS the real death sink rejects ambiguous names and clears only exact-ID commands and offices\n19 PASS / 0 FAIL\n"
+  }
+]

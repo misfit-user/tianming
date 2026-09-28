@@ -18,15 +18,22 @@
     return Number(value);
   }
   function config() { return root.P && root.P.conf && root.P.conf.aiCallRetryOverrides || {}; }
-  function selected(id) {
+  function selected(id, individualOnly) {
     if (!eligible(id)) return null;
     var cfg=config(), base=id.split(':')[0];seen.add(id);
-    for (var keys=[id,base,'*'],i=0;i<keys.length;i++) { if(Object.prototype.hasOwnProperty.call(cfg,keys[i])) { var n=count(cfg[keys[i]]);if(n!=null)return n; } }
+    for (var keys=individualOnly?[id,base]:[id,base,'*'],i=0;i<keys.length;i++) { if(Object.prototype.hasOwnProperty.call(cfg,keys[i])) { var n=count(cfg[keys[i]]);if(n!=null)return n; } }
     return null;
+  }
+  function secondaryRetries() {
+    var value=root.P && root.P.conf && root.P.conf.aiSecondaryRetryCount,n=count(value);
+    return n==null?1:n;
   }
   function options(opts) {
     var out=Object.assign({},opts||{});if(out._turnRetriesResolved)return out;
-    var n=selected(out.id);out._turnRetriesResolved=true;
+    var secondary=out.tier==='secondary';
+    if(secondary&&typeof root._getAITier==='function'){try{secondary=root._getAITier('secondary').tier==='secondary';}catch(_){secondary=false;}}
+    var n=selected(out.id,secondary);out._turnRetriesResolved=true;
+    if(n==null&&secondary){n=secondaryRetries();out._secondaryRetryCount=n;}
     if(n!=null){out.maxRetries=n;out._configuredRetries=true;out._turnRetryCount=n;}
     return out;
   }
@@ -45,5 +52,5 @@
     if(/ABORT|STALE|DEADLINE|BUDGET|CONFIG|context_|writeback|narrative/.test(e.code||'')||e.name==='AbortError')return false;
     return Number(e.status)===429 || Number(e.status)>=500 || (e.code==='AI_TIMEOUT' || e.code==='tool-timeout') || (e instanceof TypeError || e.name==='TypeError') && /fetch|network/i.test(e.message||'');
   }
-  TM.CallRetryPolicy={options:options,selected:selected,count:count,catalog:catalog,validate:validate,retryable:retryable,maxRetries:20};
+  TM.CallRetryPolicy={options:options,selected:selected,secondaryRetries:secondaryRetries,count:count,catalog:catalog,validate:validate,retryable:retryable,maxRetries:20};
 })(typeof window!=='undefined'?window:globalThis);

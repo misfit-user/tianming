@@ -116,4 +116,21 @@ assert(sandbox._barAccountStock({ ledgers: { money: { stock: 720000 } } }, 'mone
 assert(sandbox._barAccountStock({ grain: 13000000 }, 'grain') === 13000000, 'grain 标量取数一致');
 assert(sandbox._barAccountStock({}, 'money') === 0, '三源皆缺 → 0(不抛/不 NaN)');
 
+vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-fiscal-statements.js'), 'utf8'), sandbox, { filename:'tm-fiscal-statements.js' });
+sandbox.GM.turn=2;sandbox.GM._lastCascadeTurn=1;
+Object.assign(sandbox.GM.guoku,{turnDays:10,turnIncome:17463000,monthlyIncome:17463000,turnExpense:2606000,monthlyExpense:2606000});
+Object.assign(sandbox.GM.guoku.ledgers.money,{thisTurnIn:915557,thisTurnOut:1100000,sources:{tax:915557},sinks:{military:1100000}});
+let fiscalBefore=JSON.stringify(sandbox.GM),actualTip=sandbox._renderGuoku().tip;
+assert(actualTip.flows[0].val===sandbox._barFmtNum(915557),'old polluted save tooltip uses actual ledger income');
+assert(actualTip.flows[1].val===sandbox._barFmtNum(1100000),'old polluted save tooltip uses actual ledger expenses');
+assert(actualTip.flows[0].label==='上期回合入','tooltip records the actual ten-day previous period');
+assert(actualTip.flows[2].val===sandbox._barFmtNum(915557*365/10),'annualization uses the recorded period');
+assert(JSON.stringify(sandbox.GM)===fiscalBefore,'reading financial tooltip leaves save and stocks unchanged');
+Object.assign(sandbox.GM.guoku.ledgers.money,{thisTurnIn:0,thisTurnOut:0,lastTurnIn:99999,lastTurnOut:88888});
+actualTip=sandbox._renderGuoku().tip;assert(actualTip.flows[0].val==='0'&&actualTip.flows[1].val==='0','actual zero does not fall back to old monthly/previous income');
+delete sandbox.GM._lastCascadeTurn;sandbox.GM.guoku={turnDays:10,monthlyIncome:300,monthlyExpense:150};
+actualTip=sandbox._renderGuoku().tip;assert(actualTip.flows[0].label==='预计回合入'&&actualTip.flows[0].val==='100','unsettled monthly estimate is clearly forecast and prorated');
+sandbox.GM._lastCascadeTurn=1;sandbox.GM.guoku={turnDays:10,turnIncome:17463000,monthlyIncome:17463000,turnExpense:2606000,ledgers:{money:{thisTurnOut:5}}};
+actualTip=sandbox._renderGuoku().tip;assert(actualTip.flows[0].val==='待核'&&actualTip.flows[2].val==='待核','missing actual income direction stays unknown instead of fake income or zero');
+assert(actualTip.flows[1].val==='5','known actual expenses remain visible beside unknown income');
 console.log(`[smoke-topbar-fiscal-consistency] PASS ${passed} assertions`);

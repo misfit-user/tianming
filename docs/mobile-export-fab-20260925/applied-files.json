@@ -1,0 +1,131 @@
+{
+  "target": "C:/Users/37814/Desktop/tianming",
+  "backupRoot": "C:\\Users\\37814\\AppData\\Local\\Temp\\tm-mobile-export-fab-20260925-integrate-before",
+  "files": [
+    {
+      "file": "web/tm-save-manager.js",
+      "sha256": "83cf51fdc526cacd48ccf671a2f8d3f331aa2a4ec67a480522894ab42426956f",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "a5d1dd11371ff5b63d70cbaf345145542704b464b894a21ff30ab2f4aa316707",
+      "newFile": false
+    },
+    {
+      "file": "web/editor-fullgen.js",
+      "sha256": "71e866a0bc365bda1cc035b5602404f86ab2a7e156dddf70f1e49b93a8908f0e",
+      "newFile": false
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "bc0927e4f88de5278521fb1ffebed9f54560e9e653784843aa5128000e4e395f",
+      "newFile": false
+    },
+    {
+      "file": "web/editor.html",
+      "sha256": "714b9c8ca52b94a2fada0ff79844731230ebc2066338363ba64c972f795d7100",
+      "newFile": false
+    },
+    {
+      "file": "web/preview/scenario-editor-reset-preview.html",
+      "sha256": "40d2c20d986f49a5630daa616d852dfb140b41201ad618e9c767b9d81cedb34c",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-audio-theme.js",
+      "sha256": "475d554ffe5b696c1b30beec0bdc1b7ec53acbbf03289951a165b5a429c2d5cd",
+      "newFile": false
+    },
+    {
+      "file": "web/preview/scenario-editor-reset-app.js",
+      "sha256": "9d8f3f193f09f78a1cb202e37a755b1c2375819ea7e9f9d5c7d520b8c878f091",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-pause-fab.js",
+      "sha256": "3903579fad1703f4ad615b04c1a24c0ecb36a77ab179b155c6b5995ce7cfdeea",
+      "newFile": false
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "cccd0ad330dd587dc2b2fc4ea2b787e91583b96059df42e25e0a97d68c43fe7c",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "18cafaf46c1cc0e0d4250174cbc740ccc74f6c1d80ecb5c70a1a3b0e60b3882e",
+      "newFile": false
+    },
+    {
+      "file": "mobile/package.json",
+      "sha256": "a55216751956d2740b1bfad63eec4b03cb704e80998e6b0e0128d0abf7163fc0",
+      "newFile": false
+    },
+    {
+      "file": "mobile/package-lock.json",
+      "sha256": "e0f03ff76b130807d4e1321fc57b85f5612bb3b85a1fabd102b1f0e9b5b3310f",
+      "newFile": false
+    },
+    {
+      "file": "mobile/README.md",
+      "sha256": "f3ee84a59ba258ada47aace9ea5b917f396ac0be17cee980372fe724cbb12496",
+      "newFile": false
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "sha256": "98f4d51e15fa9bc243a81ae35a98670a5aa11c1db69a4deb1ce268129edef8c3",
+      "newFile": false
+    },
+    {
+      "file": "web/tm-file-export.js",
+      "sha256": "415c6dae92d62d0249dbe1c33acfece674ad286ae090f3458abc497256b2ec4a",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-mobile-file-export.js",
+      "sha256": "de995fa8c60f2314e20cc1a783981c0da5419a5cca4963a886b116b94de64d51",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-mobile-scenario-export.js",
+      "sha256": "00675dc9e68e7576dddf2d835f0e2562bacc0fdbbdb5d8a6f2d522bb78208b62",
+      "newFile": true
+    },
+    {
+      "file": "web/scripts/smoke-pause-fab-reposition.js",
+      "sha256": "a09c7bfcb16230a766af984d5d8a16ae240f86fcabd78345cef87ee4b30cb2d4",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/package.json",
+      "sha256": "dba4caf455ead34818cbba0e5770f23778874a54d5046dfbd0ae70cfba875a96",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/index.js",
+      "sha256": "013a95694f0416300c23caaedd472fd54c9795731056bec7fccda45fa9e1199c",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/index.d.ts",
+      "sha256": "bc1ef585dabd920f63da86d85d9b7159762c40a36601e60f313be098d830223b",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/native/build.gradle",
+      "sha256": "41e24d48ac38daae0e5e7caed5e70b0b14376d990be5c627e31c2536ee0cbe99",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/native/src/main/AndroidManifest.xml",
+      "sha256": "c8fe08b06e479efc7e3d00476fffe693a3e943e2b874b3c6a1ba5156fc180751",
+      "newFile": true
+    },
+    {
+      "file": "mobile/plugins/tianming-file-export/native/src/main/java/com/tianming/plugins/fileexport/TianmingFileExportPlugin.java",
+      "sha256": "49395ca81382479c6df1efb31e70f5fcbe587864b44c6c7f06f1d5581a58cf3b",
+      "newFile": true
+    }
+  ]
+}

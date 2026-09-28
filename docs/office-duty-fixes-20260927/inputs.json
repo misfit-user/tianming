@@ -1,0 +1,158 @@
+[
+  {
+    "file": "web/tm-office-system.js",
+    "sha256": "d7784c91cd1f6e92c3bd67752dc47f655095691412ba6dfee9f831d8ed28af91",
+    "bytes": 107344,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-office-dutystate.js",
+    "sha256": "6ca7979f02960b305d4e7f9a24d881978d5b5fb16366083a86f437cc09e5dd42",
+    "bytes": 9336,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-office-authority.js",
+    "sha256": "0993549b1ec177a64ffabba867152d9d6bfb4e96f8a350fd4b5d3fe03ea61db6",
+    "bytes": 5745,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-office-powermap.js",
+    "sha256": "58e2865bb42af41f5361d1be123ec5cd1d063ad7f65bc2b4023dbe8dc4d72a93",
+    "bytes": 18565,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-endturn-helpers.js",
+    "sha256": "90a8a6b8da7a1b4c4decc2c195a77f7158ffb382d4545a109fda443069275471",
+    "bytes": 151641,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-endturn-apply.js",
+    "sha256": "01a6d613769b936a0320af5a6d64540c41b3781bcbed4c06a8ec0a4d9b81632a",
+    "bytes": 347489,
+    "crlf": 4891
+  },
+  {
+    "file": "web/modules/ai-change-applier/reconcile.js",
+    "sha256": "d8270c8d559a9f41858d36c9a286f96a7f61aa7bf659b8cad6bc6429f8fae5a7",
+    "bytes": 97867,
+    "crlf": 0
+  },
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "sha256": "683e7c431d82306bfb5a623f8a657970a4f0bf2915ca00271ca66607afab6961",
+    "bytes": 185281,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-char-economy-engine.js",
+    "sha256": "40a851ba2368dba4382a0adbb99e1976dacc204756707ec25bfc148e39398bf7",
+    "bytes": 95946,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "sha256": "68e75c739145fc7603d9068676e0582728352661741c226165184eeebcebe1b8",
+    "bytes": 51692,
+    "crlf": 902
+  },
+  {
+    "file": "web/index.html",
+    "sha256": "7677ce26515a4db5094b2e9cd01c235637e267bb00680011ec505a2c2b03dd7d",
+    "bytes": 75268,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "sha256": "2623b173ed46993d1125f2f878d437a8b3e6cd0fe4bae9febe6731e611e3c004",
+    "bytes": 135137,
+    "crlf": 0
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "sha256": "5d0adb6d21aeb3347777cfaa801778ab192d498ed9e44882b4105709ff13e893",
+    "bytes": 369299,
+    "crlf": 0
+  },
+  {
+    "file": "web/scripts/smoke-merit-dynamics.js",
+    "sha256": "e5f317063dcfd684c3d5099ec6cb3f8878ffda1cb13159d0ebcfb51cb58a52c7",
+    "bytes": 5659,
+    "crlf": 0
+  },
+  {
+    "file": "web/scripts/smoke-s2b-duty-authority-reform.js",
+    "sha256": "854f0d2b3c131263d9d23bf6038fd3e9dea6792358e3fe562be00c9581297734",
+    "bytes": 7214,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-endturn-apply-stages.js",
+    "sha256": "451b786185fec43ac31251c0e1c52713863e5d034f1c8a9c731c46a0d46214a5",
+    "bytes": 97220,
+    "crlf": 760
+  },
+  {
+    "file": "web/modules/ai-change-applier/fiscal-posting.js",
+    "sha256": "5ee571c77706cb42f42895ae37afbfb538a7a59337ee38f053c352ccfc13ab19",
+    "bytes": 12188,
+    "crlf": 0
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "sha256": "79a49a21c3a3eae3253ffbeeb7dd5d7f5f8c7617eda8a6f85d2b25daedf7f465",
+    "bytes": 110731,
+    "crlf": 1900
+  },
+  {
+    "file": "web/tm-office-runtime-summary-appoint.js",
+    "sha256": "ee314f2204bf13a7b6ebb2af425fa0082563ba5555832e2d2af0c3a107c40319",
+    "bytes": 40464,
+    "crlf": 605
+  },
+  {
+    "file": "web/tm-office-reform.js",
+    "sha256": "27b7ef09965d546f910d08db304c2533fb2d6eee7b7e417b6cbd7bb1af7531dd",
+    "bytes": 32728,
+    "crlf": 0
+  },
+  {
+    "file": "web/scripts/smoke-office-dynastification.js",
+    "sha256": "72c94287a533c2ebde9fafd1210200fbf8cff366efcf66634de9c41e16d24f73",
+    "bytes": 9098,
+    "crlf": 200
+  },
+  {
+    "file": "web/tm-fiscal-engine.js",
+    "sha256": "f95a3eb3f6143fa9d90465c24e4dde37ccc02d2831a3d7db788bd54ff814d08f",
+    "bytes": 159097,
+    "crlf": 11
+  },
+  {
+    "file": "web/tm-npc-action-ledger.js",
+    "sha256": "9c24d956fb1478d77e53dd03899143979c79f25de2c992886fe093ff8591d3e4",
+    "bytes": 12988,
+    "crlf": 0
+  },
+  {
+    "file": "web/scripts/smoke-office-reform-add-overlap.js",
+    "sha256": "d92379e0b1b91f7e77192206575be62138bd74214fbc691caf3e48c92658e917",
+    "bytes": 7084,
+    "crlf": 0
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "sha256": "f72fa42a39cad80be75ed3b6d4c81c19d723d5bf0042c985d3e3392de1958f47",
+    "bytes": 10101,
+    "crlf": 0
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "sha256": "56e4fa2fa51a2ae9b92621f463144ec075aadc04b5d2e22e0609af12c8123d9a",
+    "bytes": 380918,
+    "crlf": 0
+  }
+]

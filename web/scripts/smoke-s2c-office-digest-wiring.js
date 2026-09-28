@@ -34,7 +34,7 @@ ok(vm.runInContext('typeof _applyTaxAuthorityGate === "function" && !!(typeof Wo
 
 function taxGate(flagOn, amount) {
   sandbox.GM = { turn: 5, chars: [], _chronicle: [], officeTree: [{ name: '户部', positions: [{ name: '尚书', rank: '正二品', holder: null, powers: { taxCollect: true } }] }] };
-  sandbox.P = { conf: flagOn ? { officeAuthorityGateEnabled: true } : {}, playerInfo: {} };
+  sandbox.P = { conf: flagOn ? {} : { officeActivationEnabled: false, officeAuthorityGateEnabled: false }, playerInfo: {} };
   sandbox.__fa = { kind: 'income', category: '田赋', name: '田赋' };
   sandbox.__amt = amount;
   const collected = vm.runInContext('_applyTaxAuthorityGate(GM, __fa, __amt)', sandbox);

@@ -1,0 +1,26 @@
+test('replaying unchanged ownership preserves list order and performs no extra refresh',()=>{
+  const f=fixture();f.ctx.TMMapRuntime.setRegionOwner('r1','fb');f.ctx.TMMapRuntime.setRegionOwner('r2','fb');
+  const before=JSON.stringify(f.G),refreshes=f.refreshes.length,derived=f.derived.length;
+  f.ctx.TMMapRuntime.setRegionOwner('r1','fb');assert.equal(JSON.stringify(f.G),before);
+  assert.equal(f.refreshes.length,refreshes);assert.equal(f.derived.length,derived);
+});
+test('failed first binding restores a mapless world and preserves its template',()=>{
+  const f=fixture();f.ctx.P.map=JSON.parse(JSON.stringify(f.map));delete f.G.mapData;Object.freeze(f.d2);
+  const before=JSON.stringify([f.G,f.ctx.P]);
+  assert.throws(()=>f.ctx.TMMapRuntime.applyAIMapChanges(packet([transfer('r1','fb'),transfer('r2','fa')])));
+  assert.equal(JSON.stringify([f.G,f.ctx.P]),before);assert(!Object.prototype.hasOwnProperty.call(f.G,'mapData'));
+});
+test('success events observe every region after the batch completes',()=>{
+  const f=fixture(),seen=[];f.ctx.GameEventBus.emit=(kind)=>{if(kind==='faction:provinceTransferred')seen.push(f.map.regions.map(r=>r.owner).join(','));};
+  f.ctx.TMMapRuntime.applyAIMapChanges(packet([transfer('r1','fb'),transfer('r2','fa')]));
+  assert.deepEqual(seen,['fb,fa','fb,fa']);
+});
+test('invalid explicit ID is rejected even when another region has that display name',()=>{
+  const f=fixture();f.map.regions[1].name='missing';const before=JSON.stringify(f.G);
+  assert.throws(()=>f.ctx.TMMapRuntime.applyAIMapChanges(packet([transfer('missing','fa')])));
+  assert.equal(JSON.stringify(f.G),before);
+});
+test('same-turn replay after JSON reload creates no new ownership history',()=>{
+  const f=fixture();f.ctx.TMMapRuntime.setRegionOwner('r1','fb');f.ctx.GM=JSON.parse(JSON.stringify(f.G));
+  const before=JSON.stringify(f.ctx.GM);f.ctx.TMMapRuntime.setRegionOwner('r1','fb');assert.equal(JSON.stringify(f.ctx.GM),before);
+});

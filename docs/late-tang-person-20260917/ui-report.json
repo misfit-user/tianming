@@ -1,0 +1,15 @@
+{
+  "applied": true,
+  "changes": [
+    {
+      "path": "web/tm-renwu-tuzhi.js",
+      "before": "87a8582fc2937387fc3ac214f3879bd1bd1014d0ef4453bbed4414b6bfbfecca",
+      "after": "12cd2ddcbfc9a0cbc77818e2dc6809d441cffd0fa4cf31d720cfdd3017f73138"
+    },
+    {
+      "path": "web/phase8-formal-modules.js",
+      "before": "782d8449b844fbd2ec5d2a493534daf633a1d7ef1557f27e951d9e665bfeba6e",
+      "after": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18"
+    }
+  ]
+}

@@ -384,7 +384,7 @@
         source.partyState[p.name] = {
           name: p.name,
           influence: parseTurnNumber(p.influence) || 30,
-          cohesion: parseTurnNumber(p.cohesion) || 50,
+          cohesion: p.cohesion != null && p.cohesion !== '' && isFinite(Number(p.cohesion)) ? Number(p.cohesion) : 50,
           reputationBalance: 0,
           alliedWith: toArray(p.allies || p.alliedWith).map(function(x){ return typeof x === 'string' ? x.trim() : String(x && (x.name || x.party) || '').trim(); }).filter(Boolean),
           conflictWith: toArray(p.enemies || p.rivals || p.conflictWith).map(function(x){ return typeof x === 'string' ? x.trim() : String(x && (x.name || x.party) || '').trim(); }).filter(Boolean),
@@ -472,9 +472,11 @@
           historyLog: []
         };
       }
-      var oldC = parseTurnNumber(ps.cohesion);
+      var oldC = ps.cohesion != null && ps.cohesion !== '' ? Number(ps.cohesion) : NaN;
       if (!isFinite(oldC)) oldC = 50; // cohesion=0 是合法值(被弹劾/压制打空)·不可当缺省复活到 50(2026-07-04 审查定罪)
-      var nextC = clamp(oldC + partyDelta, 0, 100);
+      var nextC = Math.round(clamp(oldC + partyDelta, 0, 100) * 100) / 100;
+      partyDelta = Math.round((nextC - oldC) * 100) / 100;
+      if (!partyDelta) return;
       ps.cohesion = nextC;
       ps.lastShift = {
         turn: parseTurnNumber(source.turn || (options && options.turn)),
@@ -810,7 +812,7 @@
   // 满意度总闸：事件源（AI 推演/党派胜负耦合/LLM 校准器）统一过闸——
   // 每阶层每回合净变动封顶 classSatTurnBudget（默认 14），写 _satLedger 近账。
   // 旧版多源各写各的无总预算，同回合可叠扣 30 以上，是「无缘无故跌到 0」主因之一。
-  // 稳定器（结构回归）走闸外：它是恢复通道，自身限幅 ±1.2。
+  // 稳定器（结构回归）走闸外；事件预算按净额计算，压力后的纾解仍可生效。
   function gateSatisfaction(root, cls, rawDelta, info) {
     var source = ensureRootContainers(root);
     info = info || {};
@@ -823,14 +825,30 @@
     var turn = parseTurnNumber(info.turn != null ? info.turn : source.turn);
     var budget = parseFloat(read('classSatTurnBudget', source));
     if (!isFinite(budget) || budget <= 0) budget = 14;
-    if (!cls._satBudget || cls._satBudget.turn !== turn) cls._satBudget = { turn: turn, used: 0 };
-    var room = Math.max(0, budget - cls._satBudget.used);
-    var approved = clamp(d, -room, room);
+    if (!cls._satBudget || cls._satBudget.turn !== turn) cls._satBudget = { turn: turn, version: 2, net: 0, uncertainty: 0, used: 0 };
+    var account = cls._satBudget;
+    if (account.version !== 2 || typeof account.net !== 'number' || !isFinite(account.net) || typeof account.uncertainty !== 'number' || !isFinite(account.uncertainty) || account.uncertainty < 0) {
+      // 旧账只存绝对额：近账完整时还原净额；截断的未知部分保留上下界，不能读档后凭空重发预算。
+      var spent = Math.max(0, Number(account.used) || 0), known = 0, magnitude = 0;
+      toArray(cls._satLedger).forEach(function(entry) {
+        if (!entry || Number(entry.t) !== turn || entry.src === 'struct-drift') return;
+        var delta = Number(entry.d);
+        if (!isFinite(delta)) return;
+        known += delta; magnitude += Math.abs(delta);
+      });
+      if (!isFinite(spent)) spent = budget;
+      if (magnitude > spent + 0.01) { known = 0; magnitude = 0; }
+      account = cls._satBudget = { turn: turn, version: 2, net: known, uncertainty: Math.max(0, spent - magnitude), used: spent };
+    }
+    var downRoom = Math.max(0, budget + account.net - account.uncertainty);
+    var upRoom = Math.max(0, budget - account.net - account.uncertainty);
+    var approved = clamp(d, -downRoom, upRoom);
     var after = clamp(cur + approved, 0, 100);
     approved = Math.round((after - cur) * 100) / 100;
     if (!approved) return { approved: 0, before: cur, after: cur, capped: true };
     cls.satisfaction = Math.round(after * 100) / 100;
-    cls._satBudget.used += Math.abs(approved);
+    account.net = Math.round((account.net + approved) * 100) / 100;
+    account.used = Math.round((account.used + Math.abs(approved)) * 100) / 100;
     if (!Array.isArray(cls._satLedger)) cls._satLedger = [];
     cls._satLedger.push({
       t: turn,

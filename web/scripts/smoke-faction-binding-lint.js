@@ -42,6 +42,9 @@ const ALLOW_FILES = new Set([
 
 // 白名单·特定行·legacy fallback 在 if (window.TM && TM.FactionMembership) else 分支
 const ALLOW_LINES = [
+  // 地图国师的 next 是隔离原生地图副本；这里只同步聚合层下辖地块的元数据，不写人物/军队/运行时势力。
+  // smoke-map-editor-scenario-library 验证当前地图归属保持不变，成功整轮才经 commitMutation 提交。
+  { file: 'map-editor-agent-tools.js', match: /if\(leaf\.layerRole==='prefecture'&&members\.has\(leaf\.id\)\)leaf\.factionId=v;/ },
   // tm-endturn-apply.js·dissolve 路径的 legacy fallback (else 分支)
   { file: 'tm-endturn-apply.js', match: /_affected\.forEach.*c\.faction\s*=\s*_newFac/ },
   { file: 'tm-endturn-apply.js', match: /c\.alive\s*!==\s*false\s*&&\s*c\.faction\s*===\s*fc\.name\)\s*c\.faction\s*=\s*''/ },

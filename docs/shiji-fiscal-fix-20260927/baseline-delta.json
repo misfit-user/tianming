@@ -1,0 +1,12 @@
+{
+  "versionBefore": "1.3.5.2",
+  "versionAfter": "1.3.5.2",
+  "filesBefore": 1361,
+  "filesAfter": 1361,
+  "changed": [
+    "index.html",
+    "tm-endturn-shiji-compose.js",
+    "tm-start-runtime-manifest.json"
+  ],
+  "removed": []
+}

@@ -505,8 +505,11 @@ function _endTurn_finalizeRecords(shizhengji, zhengwen, playerStatus, playerInne
 
   // 史记弹窗·御览分卷组装（tm-endturn-shiji-compose.js·2026-07-06 重做）——
   // 组装为纯函数（读 GM/P·零写入）·素材已经上方 _unescNarr 清洗+死亡过滤·副作用（digest/风闻/落账/存档）全留本函数
+  if (TM.EdictOutcomes) { TM.EdictOutcomes.receive(GM,{edict_feedback:[]},edicts||{},GM.turn-1,[]); TM.EdictOutcomes.finalizeTurn(GM,GM.turn-1); }
   var shijiHtml = (typeof _composeShijiHtml === 'function')
     ? _composeShijiHtml({
+        turn: GM.turn-1,
+        edictReports: TM.EdictOutcomes ? TM.EdictOutcomes.forTurn(GM,GM.turn-1) : [],
         shizhengji: shizhengji,
         playerStatus: playerStatus,
         playerInner: playerInner,
@@ -569,6 +572,8 @@ function _endTurn_finalizeRecords(shizhengji, zhengwen, playerStatus, playerInne
     basisMaxAuthorityRank: _recordMeta && _recordMeta.basisMaxAuthorityRank,
     generatedBy: 'endturn.sc1d',
     factStatus: 'recorded_turn',
+    edictReports: TM.EdictOutcomes ? TM.EdictOutcomes.forTurn(GM,GM.turn-1) : [],
+    edictAudit: GM._edictEfficacyReport && GM._edictEfficacyReport.turn===GM.turn-1 ? deepClone(GM._edictEfficacyReport) : null,
     edicts: _thisTurnEdicts,  // 保留玩家诏令全文以便史记回顾+下回合 AI 上下文
     html: _fullHtml
   });

@@ -955,6 +955,15 @@ function doExport(){
   if(!P.world.entries)P.world.entries=[];
   if(!P.officeDeptLinks)P.officeDeptLinks=[];
 
+  if(window.TM && TM.fileExport && TM.fileExport.isNative()){
+    return Promise.resolve().then(function(){
+      return TM.fileExport.saveJson(JSON.stringify(_tmStripAiKeyView(P),null,2),(P.conf.gameTitle||"tianming")+".json");
+    }).then(function(result){
+      if(result.mode==="canceled"){toast("已取消导出");return result;}
+      toast("✅ 已导出到："+(result.path||result.fileName||(P.conf.gameTitle||"tianming")+".json"));
+      return result;
+    }).catch(function(error){toast("导出失败："+(error && error.message || error));});
+  }
   var blob=new Blob([JSON.stringify(_tmStripAiKeyView(P),null,2)],{type:"application/json"});
   var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=(P.conf.gameTitle||"tianming")+".json";a.click();
   toast("\u2705 \u5DF2\u5BFC\u51FA");

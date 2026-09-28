@@ -2313,14 +2313,10 @@ function _ty3_renderRegaliaList() {
     var orig = window._cy_pickMode;
     window._cy_pickMode = function(mode) {
       if (mode === 'tinyi') {
-        // v2.6 Slice 0·v3 gate flag·默认 v3 ON (useTinyiV3 != false)·user 主动设 false 才 fallback v2
-        var v3On = !(window.P && window.P.conf && window.P.conf.useTinyiV3 === false);
-        if (v3On) {
-          if (typeof CY !== 'undefined') CY.mode = mode;
-          _ty3_open();
-          return;
-        }
-        // fallback·走 v2 (orig)·v2 path 已加 ChronicleTracker + ClassEngine + partyStrife 集成 (Slice 0.0b)
+        // 廷议正式采用八阶段流程；其他朝议模式仍交给原路由。
+        if (typeof CY !== 'undefined') CY.mode = mode;
+        _ty3_open();
+        return;
       }
       return orig.apply(this, arguments);
     };

@@ -78,7 +78,19 @@
   function flowIsActual(o){
     if(o.actual!=null)return !!o.actual;
     var G=o.game||{},a=o.account||{},marker=o.marker||G,turn=G.turn||0;
-    return a.flowBasis==='actual'||marker._lastFixedExpenseTurn===turn||marker._lastCascadeTaxTurn===turn||RES.some(function(k){var l=(a.ledgers||{})[k]||{};return num(l.thisTurnIn)!==0||num(l.thisTurnOut)!==0;});
+    var native=G.nativeWorld||{},player=G.startContext&&G.startContext.playerFactionId,kind=o.scope==='internal'?'private':'public';
+    var nativeActual=a===G[kind==='private'?'neitang':'guoku']&&(native.accounts||[]).some(function(account){
+      if(account.ownerFactionId!==player||account.kind!==kind)return false;
+      return ['income','expense'].some(function(phase){
+        var frontier=(native.fiscalFrontier||{})[phase+':'+account.id];
+        return typeof frontier==='number'||Object.keys(native.fiscalOperations||{}).some(function(key){var receipt=native.fiscalOperations[key];return key.indexOf(phase+':')===0&&receipt&&receipt.accountId===account.id;});
+      });
+    });
+    return nativeActual||a.flowBasis==='actual'||marker._lastFixedExpenseTurn===turn||marker._lastCascadeTaxTurn===turn||marker._lastCascadeTurn===turn||marker._lastCascadeTurn===turn-1||RES.some(function(k){var l=(a.ledgers||{})[k]||{};return num(l.thisTurnIn)!==0||num(l.thisTurnOut)!==0;});
+  }
+  function hasActualLedger(o){
+    var a=o.account||{};
+    return flowIsActual(o)&&RES.some(function(k){var l=(a.ledgers||{})[k]||{};return ['thisTurnIn','thisTurnOut'].some(function(f){return typeof l[f]==='number'&&isFinite(l[f]);});});
   }
   function actualFlow(ledger,planned,scope){
     var raw=ledger||{},result={sources:{},sinks:{},sourceDetails:{},sinkDetails:{},income:num(raw.thisTurnIn),expense:num(raw.thisTurnOut)};
@@ -102,9 +114,9 @@
   }
   function legacyStatement(o){
     var a=o.account||{},view=Object.assign({},a),scope=o.scope||'central',sources={},expenses={};
-    if(o.actual!=null)view.flowBasis=o.actual?'actual':'forecast';
-    if(o.turnDays>0)view.turnDays=o.turnDays;
-    var forecast=view.flowBasis==='forecast',days=view.turnDays||30,year=scope==='internal'?360:365;
+    var actual=hasActualLedger(o),forecast=!actual,recorded=a.accounting||a.period||{};
+    var days=(actual&&num(recorded.days))||num(a.turnDays)||num(o.turnDays)||30,year=num(recorded.daysPerYear)||(scope==='internal'?360:365);
+    view.flowBasis=actual?'actual':'forecast';view.turnDays=days;
     view.ledgers={};
     RES.forEach(function(k){
       var raw=(a.ledgers||{})[k]||{},led=Object.assign({},raw),suffix=k==='money'?'':k.charAt(0).toUpperCase()+k.slice(1);
@@ -121,9 +133,25 @@
           Object.keys(details).forEach(function(id){p[4][id]=details[id].map(function(r){return Object.assign({},r,{amount:round(r.amount*ratio)});});});
         });
       }
+      if(actual){
+        [['thisTurnIn','Income','sources','sourceDetails'],['thisTurnOut','Expense','sinks','sinkDetails']].forEach(function(p){
+          if(typeof raw[p[0]]!=='number'||!isFinite(raw[p[0]])){
+            led[p[0]]=null;led[p[2]]={};led[p[3]]={};
+            ['turn','monthly','annual'].forEach(function(prefix){view[prefix+suffix+p[1]]=null;});return;
+          }
+          var value=raw[p[0]];view['turn'+suffix+p[1]]=value;view['monthly'+suffix+p[1]]=round(value*30/days);view['annual'+suffix+p[1]]=round(value*year/days);
+          if(value===0){led[p[2]]={};led[p[3]]={};}
+        });
+      }else{
+        view['turn'+suffix+'Income']=led.thisTurnIn;view['turn'+suffix+'Expense']=led.thisTurnOut;
+      }
+      if(typeof raw.stock==='number'&&isFinite(raw.stock)){view[k]=raw.stock;if(k==='money')view.balance=raw.stock;}
       view.ledgers[k]=led;
     });
-    return {account:view,forecast:forecast,unit:view.unit,budget:null,sourceDetailsByResource:sources,expenseDetailsByResource:expenses};
+    view.lastDelta=view.turnIncome===null||view.turnExpense===null?null:num(view.turnIncome)-num(view.turnExpense);
+    var periodTurn=recorded.turn!=null?recorded.turn:(o.game||{})._lastCascadeTurn;
+    var status=actual&&periodTurn!=null&&periodTurn<(o.game||{}).turn?'previous':'current';
+    return {account:view,forecast:forecast,periodStatus:status,unit:view.unit,budget:null,sourceDetailsByResource:sources,expenseDetailsByResource:expenses};
   }
   function read(o){
     o=o||{};var account=o.account||{},budget=o.budget,scope=o.scope||'central';
@@ -153,7 +181,15 @@
   }
   function sync(o){
     var result=read(o),a=o.account,v=result.account;
-    if(!o.budget){if(v.flowBasis)a.flowBasis=v.flowBasis;if(v.turnDays>0)a.turnDays=v.turnDays;return result;}
+    if(!o.budget){
+      if(v.flowBasis)a.flowBasis=v.flowBasis;if(v.turnDays>0)a.turnDays=v.turnDays;
+      if(!result.forecast){
+        RES.forEach(function(k){var l=(a.ledgers||{})[k]||{},suffix=k==='money'?'':k.charAt(0).toUpperCase()+k.slice(1);[['thisTurnIn','Income'],['thisTurnOut','Expense']].forEach(function(pair){
+          ['turn','monthly','annual'].forEach(function(p){var key=p+suffix+pair[1];a[key]=v[key];});
+        });});a.lastDelta=v.lastDelta;
+      }
+      return result;
+    }
     ['unit','turnDays','lastDelta','flowBasis','accounting','sources','expenses','sourcesDetail','expensesDetail'].forEach(function(k){a[k]=clone(v[k]);});
     RES.forEach(function(k){var suffix=k==='money'?'':k.charAt(0).toUpperCase()+k.slice(1);['turn','monthly','annual'].forEach(function(p){['Income','Expense'].forEach(function(d){var key=p+suffix+d;a[key]=v[key];});});});
     return result;
@@ -211,5 +247,55 @@
     });
     return Object.assign({regions:regions, totals:totals}, period);
   }
-  global.FiscalStatement={productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
+  // 方志与旧国库兜底共用征收函数；只在副本上演算，不写库存、自然率或回合标记。
+  function previewRevenue(opts, helpers) {
+    var getGame = helpers.getGame, getFiscalConfig = helpers.getFiscalConfig, unifiedAccounting = helpers.unifiedAccounting, safeNumber = helpers.safeNumber;
+    var normalizeTaxListForCascade = helpers.normalizeTaxListForCascade, ownedBudgetDivisions = helpers.ownedBudgetDivisions, budgetFaction = helpers.budgetFaction, walkAdminDivisions = helpers.walkAdminDivisions;
+    var budgetRevenue = helpers.budgetRevenue, DEFAULT_ALLOCATION = helpers.DEFAULT_ALLOCATION, DEFAULT_LOGISTICS_LOSS = helpers.DEFAULT_LOGISTICS_LOSS, clone = helpers.clone;
+    var applyDisasterEconomyReduction = helpers.applyDisasterEconomyReduction, _ensureRegionFiscal = helpers._ensureRegionFiscal, _settleLandFlow = helpers._settleLandFlow, rawTaxAmount = helpers.rawTaxAmount;
+    var computeTaxAmount = helpers.computeTaxAmount, splitCascadeAmount = helpers.splitCascadeAmount, taxBase = helpers.taxBase;
+    opts = opts || {};
+    var G = getGame(opts.game), cfg = getFiscalConfig(G, opts.faction);
+    if (!G || (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G))) return null;
+    var unified = unifiedAccounting(G, opts.faction), year = unified ? 360 : 365;
+    var days = safeNumber(opts.turnDays, year), taxes = normalizeTaxListForCascade(G, cfg), nodes = [];
+    if (opts.division) {
+      (function visit(d) { if (d.children && d.children.length) d.children.forEach(visit); else nodes.push(d); })(opts.division);
+    }
+    else if (unified) nodes = ownedBudgetDivisions(G, budgetFaction(G, opts.faction));
+    else walkAdminDivisions(G, function(d) { nodes.push(d); }, { faction:opts.faction || 'player', leafOnly:true });
+    if (unified) {
+      var budget = budgetRevenue(G, budgetFaction(G, opts.faction), cfg, days, nodes);
+      budget.totals.collected = budget.totals.grossCollected;
+      return Object.assign(budget, {daysPerYear:year, turnDays:days});
+    }
+    var ctx = { game:G, fiscalConfig:cfg, turnDays:days,
+      turnFracOfYear:Math.max(0.01, Math.min(1, days/year)),
+      centralLocalRules:cfg.centralLocalRules || DEFAULT_ALLOCATION,
+      logisticsLoss:safeNumber(cfg.logisticsLoss, DEFAULT_LOGISTICS_LOSS) };
+    var parents = {};
+    walkAdminDivisions(G, function(d, parent) { if (parent) parents[d.id || d.name] = parent; }, {leafOnly:true});
+    return global.FiscalStatement.taxRevenuePreview(nodes, function(node) {
+      var div = clone(node);
+      var parent = parents[node.id || node.name];
+      var tree = parent ? {id:parent.id, name:parent.name, children:[div]} : div;
+      applyDisasterEconomyReduction(Object.assign({}, G, {adminHierarchy:{player:{divisions:[tree]}}}));
+      _ensureRegionFiscal(div, null);
+      if (opts.settleProduction !== false) _settleLandFlow(div, ctx);
+      return taxes.map(function(original) {
+        var tax = original;
+        if (global.TM && global.TM.TaxPolicy) tax = global.TM.TaxPolicy.effectiveTax(G, div, tax, ctx);
+        var kind = tax.storeAs || 'money', adjust = Number(cfg.annualFuyi && cfg.annualFuyi.taxRateAdjust);
+        var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
+        var nominal = rawTaxAmount(div, tax) * (tax.annual ? ctx.turnFracOfYear : 1) * fuyi;
+        var collected = computeTaxAmount(div, original, ctx);
+        var split = splitCascadeAmount(div, original, collected, ctx);
+        return { id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind,
+          base:tax.base, baseValue:taxBase(div,tax), productionTax:tax.productionTax || null, taxBasePolicy:tax.taxBasePolicy || '', nominal:Math.max(0, nominal),
+          collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit };
+      });
+    }, {daysPerYear:year, turnDays:days});
+  }
+
+  global.FiscalStatement={previewRevenue:previewRevenue,productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,hasActualLedger:hasActualLedger,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
 })(typeof window!=='undefined'?window:globalThis);

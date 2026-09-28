@@ -42,8 +42,7 @@
   }
 
   function _partyClassEnabled() {
-    return !!(global.TM && TM.PartyClassLlmCalibrator && typeof TM.PartyClassLlmCalibrator.run === 'function'
-      && (!global.P || !P.conf || P.conf.partyClassLlmEnabled !== false));
+    return !!(global.TM && TM.PartyClassLlmCalibrator && typeof TM.PartyClassLlmCalibrator.run === 'function');
   }
 
   function _ensureTurnLedger(turn) {

@@ -1,0 +1,131 @@
+{
+  "scope": "completed local work and the fixed upstream commit; no push or release",
+  "parentHead": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "upstream": "e1c8384cc93ee35d8c221f7d2a543b9776fb1d60",
+  "validatedTreeBeforeThisReport": "46dc5d0e18c0671072be963e1bd27384ecaf601a",
+  "worktreesInventoried": 53,
+  "conflictedFilesReviewed": 44,
+  "localArtifactsPreservedOutsideCommit": 698,
+  "fullSmoke": {
+    "runId": "9f89780f-78c8-46d2-9e51-96ff4758417c",
+    "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+    "summary": {
+      "selected": 1126,
+      "pass": 1126,
+      "fail": 0,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "seconds": 1011.46
+  },
+  "optionalAssetWaivers": [],
+  "officeDutyCases": {
+    "pass": 30,
+    "fail": 0
+  },
+  "realTurnOfficeDutyIntegrationAssertions": 43,
+  "startupScripts": 469,
+  "architectureGuards": {
+    "pass": 15,
+    "fail": 0
+  },
+  "officialScenarioParity": "PASS for all three canonical sources and their derived products",
+  "releaseContractAssertions": 182,
+  "canonicalHotBaselineEntries": 1365,
+  "dependencyRecheck": {
+    "pass": 5,
+    "fail": 0
+  },
+  "initialFullRun": {
+    "pass": 1123,
+    "fail": 1,
+    "waived": 2,
+    "cause": "npm ls misread a whole-node_modules directory junction; resolved by a real production dependency tree, then full CI rerun"
+  },
+  "secondFullRun": {
+    "pass": 1122,
+    "fail": 2,
+    "waived": 2,
+    "details": "Startup and Tang opening checks timed out while available virtual memory was about 1.8 GB. Both then passed independently under the original deadlines."
+  },
+  "thirdFullRun": {
+    "pass": 1120,
+    "fail": 4,
+    "waived": 2,
+    "details": "The temporary 1 GB validation heap cap was too small for full scenario/editor and save fixtures. No product code or test assertions were changed."
+  },
+  "heavyFixtureRecheck": {
+    "selected": 6,
+    "pass": 6,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "fourthFullRun": {
+    "pass": 1121,
+    "fail": 3,
+    "waived": 2,
+    "details": "Resource-heavy checks exceeded time limits after a parallel full run, despite all six passing separately. The failing full run was retained and never counted as accepted."
+  },
+  "fifthFullRun": {
+    "complete": false,
+    "details": "Stopped after map-circuit-book and personnel-dismissal-official timed out; never counted as a passing run."
+  },
+  "sixthFullRun": {
+    "runId": "df47b37b-975d-43e6-bf0d-34a797bc1cd7",
+    "pass": 1125,
+    "fail": 1,
+    "waived": 0,
+    "details": "Late Tang opening exceeded its internal 60-second deadline. All other checks passed, including the full long-save check. Submission was held."
+  },
+  "queryPerformanceRepair": {
+    "cause": "Repeated canonical faction resolution for every region on every circuit lookup",
+    "behavior": "Resolve each distinct owner and name once per synchronous query; re-read live inputs on the next query",
+    "additionalRegressionCases": 3,
+    "focusedReport": {
+      "selected": 3,
+      "pass": 3,
+      "fail": 0,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    }
+  },
+  "openingPerformanceRepair": {
+    "cause": "Full administrative trees repeatedly traversed for public account initialization and local funding sources",
+    "behavior": "Build indexes only for the current initialization or budget calculation; preserve duplicate names, strict IDs and live changes on the next call",
+    "additionalAssertions": 13,
+    "focusedReport": {
+      "selected": 3,
+      "pass": 3,
+      "fail": 0,
+      "waived": 0,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    }
+  },
+  "approvedAssetSnapshot": {
+    "files": 568,
+    "bytes": 1363830487,
+    "verifiedAgainstPriorCanonicalSha256": true,
+    "newMainWindowFilesExcluded": [
+      "web/map-editor-agent-tools.js",
+      "web/map-editor-agent-ui.js",
+      "web/map-editor-agent.css",
+      "web/map-editor-agent.js"
+    ]
+  },
+  "finalValidationEnvironment": {
+    "NODE_OPTIONS": "--max-old-space-size=3072",
+    "jobs": 2,
+    "deadlineChanges": false,
+    "existingAssertionsRemoved": false
+  },
+  "rawEvidenceDirectory": "E:\\CodexValidation\\local-sync-20260927"
+}

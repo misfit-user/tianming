@@ -89,7 +89,7 @@ ok((rail.match(/esc\(rightIssuePersonTitle\(p\)\)/g) || []).length >= 2, '③ �
 {
   const tagNamesSrc = grab(rail, /function rightFinanceTagNames\(\)\{[\s\S]*?\n {2}\}/, 'rightFinanceTagNames');
   const resolverSrc = grab(rail, /function rightFinanceResolveTagName\(tag, customStats\)\{[\s\S]*?\n {2}\}/, 'rightFinanceResolveTagName');
-  const cascadeSrc = grab(rail, /function rightFinanceCascadeItems\(kind\)\{[\s\S]*?\n {2}\}/, 'rightFinanceCascadeItems');
+  const cascadeSrc = grab(rail, /function rightFinanceCascadeItems\([^)]*\)\{[\s\S]*?\n {2}\}/, 'rightFinanceCascadeItems');
   const makeCascade = function(GM, P){
     return new Function('window', 'GM', 'P', 'findScenarioById',
       tagNamesSrc + '\n' + resolverSrc + '\n' + cascadeSrc + '\nreturn rightFinanceCascadeItems;')({ GM: GM, P: P }, GM, P, null);
@@ -112,8 +112,21 @@ ok((rail.match(/esc\(rightIssuePersonTitle\(p\)\)/g) || []).length >= 2, '③ �
   const exp = cascade('expense');
   ok(exp.length === 1 && /军饷/.test(exp[0].name), '⑤ 岁出分项走 ledger.sinks(军饷)');
   ok(makeCascade({}, {})('income').length === 0, '⑤ 无 ledger 数据→[](上层回落静态数组标概算)');
+  const provider = {};
+  new Function('window', fs.readFileSync(path.join(ROOT, 'tm-fiscal-statements.js'), 'utf8'))(provider);
+  const account = { turnDays:10, turnIncome:17463000, _customTaxStats:{phantom:{name:'未入账旧税',turnAmount:9000}}, ledgers:{money:{stock:50,thisTurnIn:18,thisTurnOut:7,sources:{tianfu:18},sinks:{junxiang:7}},grain:{stock:0,thisTurnIn:0,thisTurnOut:0,sources:{stale:9999}}} };
+  const statement = provider.FiscalStatement.read({game:{turn:4,_lastCascadeTurn:3},account:account});
+  const actualItems = cascade('income', statement.account, statement.forecast);
+  ok(actualItems.length === 1 && actualItems[0].amount === 18, '⑤ 正式statement的实际收入覆盖GM旧标量·零流水不复活旧税');
+  ok(actualItems[0].note === '本期交割', '⑤ 实际账本行明确标交割');
+  account.ledgers.money.thisTurnIn = 0;
+  const zero = provider.FiscalStatement.read({game:{turn:4,_lastCascadeTurn:3},account:account});
+  ok(cascade('income', zero.account, zero.forecast).length === 0, '⑤ 实结0不回落全局GM旧sources或customTaxStats');
+  const estimate = provider.FiscalStatement.read({game:{turn:1},account:{flowBasis:'forecast',turnDays:10,monthlyIncome:60,monthlyExpense:30}});
+  const estimatedItems = cascade('income', estimate.account, estimate.forecast);
+  ok(estimatedItems.length === 1 && estimatedItems[0].amount === 20 && estimatedItems[0].note === '本期预计', '⑤ 预测模型按10日口径列明本期预计20');
 }
-ok(/incomeFromCascade \? '本回合级联结算' : '[^']*概算/.test(rail), '⑤ cascade 缺数据回落标「(概算)」');
+ok(/incomeFromCascade \? periodNote : '[^']*概算/.test(rail), '⑤ cascade 缺数据回落标「(概算)」·已交割/预计使用真实期长');
 
 // ── ⑥ 文苑余 N 提示 ───────────────────────────────────────────
 ok(/filteredWorks\.length > 24 \? '<div class="tmrp-meta">余 ' \+ \(filteredWorks\.length - 24\)/.test(rail), '⑥ 文苑超 24 件留「余 N 件」提示');

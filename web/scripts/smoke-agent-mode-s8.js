@@ -17,9 +17,9 @@ require(path.join(ROOT, 'tm-endturn-agent-write-tools.js'));
 const WT = globalThis.TM.Endturn.AgentWriteTools;
 
 const originalTools=['set_field','adjust_field','push_field','adjust_treasury','appoint_official','dismiss_official','remove_field','adjust_fiscal_item','resolve_battle','command_army','diplomatic_action','building_project','restructure_division','move_character','relocate_capital','change_region_owner','adjust_region_state'];
-const explicitNewTools=['form_party','emerge_class','create_office'];
+const explicitNewTools=['form_party','emerge_class','create_office','report_edict'];
 const actualTools=WT.defs().map(tool=>tool.name);
-assert(actualTools.length===20&&new Set(actualTools).size===20&&originalTools.concat(explicitNewTools).every(name=>actualTools.includes(name)&&WT.isToolName(name)), '保留全部17个原工具及当前3个正式创建工具，无重复或遗漏');
+assert(actualTools.length===21&&new Set(actualTools).size===21&&originalTools.concat(explicitNewTools).every(name=>actualTools.includes(name)&&WT.isToolName(name)), '保留全部17个原工具及当前3个正式创建工具与诏令回报工具，无重复或遗漏');
 assert(WT.isToolName('adjust_treasury') && WT.isToolName('remove_field') && WT.isToolName('adjust_fiscal_item') && WT.isToolName('command_army') && WT.isToolName('diplomatic_action') && WT.isToolName('building_project') && WT.isToolName('restructure_division'), 'isToolName 认全部语义工具(含四域)');
 
 function makeGM() { return { turn: 7, guoku: { balance: 1000000, money: 1000000, grain: 500000 }, chars: [{ id: 'c1', name: '张三' }], _turnReport: [] }; }

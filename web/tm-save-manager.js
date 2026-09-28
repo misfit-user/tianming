@@ -245,7 +245,7 @@ var SaveManager = {
       return Promise.resolve(record);
     }
 
-    TM_SaveDB.load(slotKey).then(function(record) {
+    return TM_SaveDB.load(slotKey).then(function(record) {
       if (!record) { toast('该槽位没有存档'); return; }
       return _ensureDecompressed(record);
     }).then(function(record) {
@@ -282,15 +282,11 @@ var SaveManager = {
         console.error('[exportSave] serialized too short:', json && json.length);
         return;
       }
-      var blob = new Blob([json], {type: 'application/json'});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = (record.name || 'save') + '_T' + (record.turn||0) + '.json';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
-      toast('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB');
+      var filename = (record.name || 'save') + '_T' + (record.turn||0) + '.json';
+      return TM.fileExport.saveJson(json, filename).then(function(result) {
+        if (result.mode === 'canceled') { toast('已取消导出'); return; }
+        toast(result.mode === 'native' ? ('✅ 存档已保存到所选位置 · ' + result.fileName) : ('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB'));
+      });
     }).catch(function(e) {
       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'exportSave') : console.error('[exportSave] 异常:', e);
       toast('❌ 导出失败: ' + (e.message || e));

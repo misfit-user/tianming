@@ -1,0 +1,175 @@
+{
+  "nativeZero": {
+    "input": {
+      "ok": true,
+      "receipts": [
+        {
+          "accountId": "account-b",
+          "resource": "money",
+          "unit": "两",
+          "before": 0,
+          "after": 0,
+          "requested": 0,
+          "paid": 0,
+          "deficit": 0,
+          "payments": []
+        }
+      ],
+      "turnDays": 30
+    },
+    "output": {
+      "ok": true,
+      "receipts": [
+        {
+          "accountId": "account-b",
+          "resource": "money",
+          "unit": "两",
+          "before": 0,
+          "after": 0,
+          "requested": 10,
+          "paid": 0,
+          "deficit": 10,
+          "payments": []
+        }
+      ],
+      "turnDays": 30
+    },
+    "forecast": false,
+    "income": 0,
+    "expense": 0,
+    "ledger": {
+      "stock": 0,
+      "deficit": 10,
+      "sources": {},
+      "sinks": {},
+      "lastTurnIn": 0,
+      "thisTurnIn": 0,
+      "turnDelta": 0,
+      "lastTurnOut": 0,
+      "thisTurnOut": 0,
+      "sourceDetails": {},
+      "sinkDetails": {}
+    },
+    "operations": {
+      "income:1:account-b": {
+        "accountId": "account-b",
+        "resource": "money",
+        "unit": "两",
+        "before": 0,
+        "after": 0,
+        "requested": 0,
+        "paid": 0,
+        "deficit": 0,
+        "payments": []
+      },
+      "expense:1:account-b": {
+        "accountId": "account-b",
+        "resource": "money",
+        "unit": "两",
+        "before": 0,
+        "after": 0,
+        "requested": 10,
+        "paid": 0,
+        "deficit": 10,
+        "payments": []
+      }
+    }
+  },
+  "legacy": [
+    {
+      "input": {
+        "turnIncome": 17463000,
+        "turnExpense": 2606000,
+        "ledgers": {
+          "grain": {
+            "stock": 10,
+            "thisTurnIn": 2,
+            "thisTurnOut": 0
+          }
+        }
+      },
+      "forecast": false,
+      "income": null,
+      "expense": null,
+      "net": null,
+      "money": {
+        "thisTurnIn": null,
+        "sources": {},
+        "sourceDetails": {},
+        "thisTurnOut": null,
+        "sinks": {},
+        "sinkDetails": {}
+      }
+    },
+    {
+      "input": {
+        "flowBasis": "actual",
+        "turnIncome": 17463000,
+        "turnExpense": 2606000,
+        "ledgers": {
+          "money": {
+            "stock": 10,
+            "thisTurnOut": 5
+          }
+        }
+      },
+      "forecast": false,
+      "income": null,
+      "expense": 5,
+      "net": null,
+      "money": {
+        "stock": 10,
+        "thisTurnOut": 5,
+        "thisTurnIn": null,
+        "sources": {},
+        "sourceDetails": {}
+      }
+    },
+    {
+      "input": {
+        "flowBasis": "forecast",
+        "turnIncome": 400,
+        "turnExpense": 200,
+        "ledgers": {
+          "money": {
+            "stock": 10,
+            "thisTurnIn": 400,
+            "thisTurnOut": 200
+          }
+        }
+      },
+      "forecast": false,
+      "income": 400,
+      "expense": 200,
+      "net": 200,
+      "money": {
+        "stock": 10,
+        "thisTurnIn": 400,
+        "thisTurnOut": 200
+      }
+    },
+    {
+      "input": {
+        "flowBasis": "actual",
+        "turnIncome": 400,
+        "turnExpense": 200,
+        "ledgers": {
+          "money": {
+            "stock": 10,
+            "thisTurnIn": -5,
+            "thisTurnOut": -2
+          }
+        }
+      },
+      "forecast": false,
+      "income": -5,
+      "expense": -2,
+      "net": -3,
+      "money": {
+        "stock": 10,
+        "thisTurnIn": -5,
+        "thisTurnOut": -2
+      }
+    }
+  ]
+}

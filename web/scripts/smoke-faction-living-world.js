@@ -67,57 +67,28 @@ function mkDecision(actions) { return { rationale: '测·因果·Phase 1·X (cau
 
 // ─────────────── OFF 矩阵：零行为变更 ───────────────
 function offZeroChangeTest() {
-  const ctx = buildContext();
-  installCasusBelli(ctx);
-  baseGM(ctx);   // 默认 OFF
-  const eng = ctx.TM.FactionActionEngine;
-  const fld = ctx.TM.FactionNpcLlmDecision;
-
-  assert(eng.livingWorldOn() === false, 'living world OFF when _factionLivingWorld=false (2026-07-22 已翻默认 ON·显式关才 OFF)');
-  assert(ctx.agentFlagOn('factionAgentEnabled') === false, 'OFF: factionAgentEnabled not brought on');
-  assert(ctx.agentFlagOn('factionGoalStackEnabled') === false, 'OFF: factionGoalStackEnabled not brought on');
-
-  // 契约 prompt·OFF 不列 living-world 类型
-  const contractOff = eng.formatActionContractForPrompt({ maxChars: 4000 });
-  assert(contractOff.indexOf('declare_war') < 0 && contractOff.indexOf('join_war') < 0, 'OFF: ACTION_CONTRACT must not advertise declare_war/join_war');
-
-  // validateDecision·OFF 丢弃 living-world 动作(等同 F1：非法类型被过滤)
-  const vOff = eng.validateDecision(mkDecision([{ type: 'declare_war', targetFaction: '乙势力' }, { type: 'edict', edictType: '安抚', type_x: 1 }]));
-  assert(vOff.actions.filter(function(a){ return a.type === 'declare_war'; }).length === 0, 'OFF: validateDecision drops declare_war');
-
-  // applyDecision·OFF：declare_war no-op·activeWars 不变·CasusBelli 未被调用
-  const facA = ctx.GM.facs[0];
-  const sumOff = eng.applyDecision(facA, mkDecision([{ type: 'declare_war', targetFaction: '乙势力' }]), { turn: 5 });
-  assert(!sumOff.wars, 'OFF: no war applied');
-  assert(ctx.GM.activeWars.length === 0, 'OFF: activeWars untouched');
-  assert(ctx.CasusBelliSystem._calls.length === 0, 'OFF: CasusBelliSystem.declareWar never called');
-
-  // buildPrompt·OFF：无 living-world / agent 段
-  const pOff = fld._buildPrompt(facA);
-  const combOff = pOff.system + '\n' + pOff.user;
-  assert(combOff.indexOf('declare_war') < 0, 'OFF: prompt has no declare_war token');
-  assert(combOff.indexOf('[ACTIVE_GOALS]') < 0 && combOff.indexOf('[INCOMING_PROPOSALS]') < 0, 'OFF: prompt has no goal-stack / diplomacy sections');
-  return combOff;
+  const ctx = buildContext(); installCasusBelli(ctx); baseGM(ctx);
+  const eng = ctx.TM.FactionActionEngine, fld = ctx.TM.FactionNpcLlmDecision;
+  assert(eng.livingWorldOn(), '旧世界关闭值不能关闭正式玩法');
+  assert(ctx.agentFlagOn('factionAgentEnabled') && ctx.agentFlagOn('factionGoalStackEnabled'), '自主势力及目标栈固定生效');
+  const contract = eng.formatActionContractForPrompt({ maxChars: 4000 });
+  assert(contract.includes('declare_war') && contract.includes('join_war'), '正式契约包含战争动作');
+  const decision = mkDecision([{ type:'declare_war', targetFaction:'乙势力', casusBelli:'border' }]);
+  assert(eng.validateDecision(decision).actions.length === 1, '旧关闭值不再删除合法动作');
+  const result = eng.applyDecision(ctx.GM.facs[0], decision, {turn:5});
+  assert(result.wars === 1 && ctx.GM.activeWars.length === 1 && ctx.CasusBelliSystem._calls.length === 1, '合法战争经统一写口执行一次');
+  assert(fld._buildPrompt(ctx.GM.facs[0]).user.includes('declare_war'), '正式推演包含世界动作');
 }
 
 // OFF idempotent + ON adds (逐字节：OFF 两次一致；ON 仅新增)
 function offOnDiffTest() {
-  const ctx = buildContext();
-  installCasusBelli(ctx);
-  baseGM(ctx);
-  const fld = ctx.TM.FactionNpcLlmDecision;
-  const facA = ctx.GM.facs[0];
-
-  const off1 = (function(p){ return p.system + '\n' + p.user; })(fld._buildPrompt(facA));
+  const ctx = buildContext(); installCasusBelli(ctx); baseGM(ctx);
+  const fld = ctx.TM.FactionNpcLlmDecision, fac = ctx.GM.facs[0];
+  const a = JSON.stringify(fld._buildPrompt(fac));
   ctx.GM._factionLivingWorld = true;
-  const on1 = (function(p){ return p.system + '\n' + p.user; })(fld._buildPrompt(facA));
+  const b = JSON.stringify(fld._buildPrompt(fac));
   ctx.GM._factionLivingWorld = false;
-  const off2 = (function(p){ return p.system + '\n' + p.user; })(fld._buildPrompt(facA));
-
-  assert(off1 === off2, 'OFF prompt is byte-identical before and after toggling ON (zero residue)');
-  assert(on1 !== off1, 'ON prompt differs from OFF (feature adds content)');
-  assert(on1.length > off1.length && on1.indexOf('declare_war') >= 0, 'ON prompt is a superset that adds declare_war contract');
-  assert(off1.indexOf('declare_war') < 0, 'OFF prompt never mentions declare_war');
+  assert(a === b && a === JSON.stringify(fld._buildPrompt(fac)), '旧开关真假不再改变正式推演内容');
 }
 
 // ─────────────── ON 矩阵：真战争接线 ───────────────
@@ -202,12 +173,9 @@ function goalGM(ctx, facObj, opts) {
 }
 
 function goalLifecycleOffTest() {
-  const ctx = buildContext(); installCasusBelli(ctx);
-  const fac = goalStrat('甲势力');
-  goalGM(ctx, fac);   // OFF
-  assert(ctx.agentFlagOn('factionGoalStackEnabled') === false, 'OFF: factionGoalStackEnabled not brought on');
-  ctx.TM.FactionActionEngine.ensureStrategy(fac, { rationale: 'x' }, []);
-  assert(fac.aiStrategy.claims.length === 2 && fac.aiStrategy.threats.length === 2, 'OFF: strategy arrays are NOT pruned (zero behavior change)');
+  const ctx = buildContext(); installCasusBelli(ctx); const fac = goalStrat('甲势力'); goalGM(ctx,fac);
+  ctx.TM.FactionActionEngine.ensureStrategy(fac,{rationale:'x'},[]);
+  assert(fac.aiStrategy.claims.length === 1 && fac.aiStrategy.threats.length === 1, '旧关闭值下仍清理已完成目标及已亡威胁');
 }
 
 function goalLifecycleOnTest() {
@@ -238,13 +206,9 @@ function goalLifecycleOnTest() {
 
 // ─────────────── Slice 3·后果事件化 ───────────────
 function eventOffTest() {
-  const ctx = buildContext(); installCasusBelli(ctx);
-  baseGM(ctx);   // OFF
-  const eng = ctx.TM.FactionActionEngine;
-  const facA = ctx.GM.facs[0];
-  ctx.GM.currentIssues = [];
-  eng.applyDecision(facA, mkDecision([{ type: 'diplomacy', targetFaction: '乙势力', relationDelta: 60, treaty: '盟约' }]), { turn: 5 });
-  assert(ctx.GM.currentIssues.filter(function(x){ return x && x._flw; }).length === 0, 'OFF: major decision does NOT emit any world event to currentIssues');
+  const ctx = buildContext(); installCasusBelli(ctx); baseGM(ctx); ctx.GM.currentIssues=[];
+  ctx.TM.FactionActionEngine.applyDecision(ctx.GM.facs[0],mkDecision([{type:'declare_war',targetFaction:'乙势力',casusBelli:'border'}]),{turn:5});
+  assert(ctx.GM.currentIssues.filter(x=>x && x._flw).length === 1, '旧关闭值下重大世界事件仍进入御案');
 }
 
 function eventOnDeclareWarTest() {
@@ -309,15 +273,11 @@ function b1ContractNotTruncatedTest() {
 
 // B8·OFF 契约绝对过滤：getActionContract() 公开 API 在 OFF 不列两新类型；OFF enum 无 declare_war
 function b8OffContractFilterTest() {
-  const ctx = buildContext(); installCasusBelli(ctx);
-  baseGM(ctx);   // OFF
-  const eng = ctx.TM.FactionActionEngine, fld = ctx.TM.FactionNpcLlmDecision;
-  const c = eng.getActionContract();
-  assert(!c.declare_war && !c.join_war, 'B8: getActionContract() must NOT expose living-world types when OFF');
-  const p = fld._buildPrompt(ctx.GM.facs[0]);
-  assert(p.user.indexOf('declare_war') < 0 && p.user.indexOf('10 种 type') >= 0, 'B8: OFF static schema stays 10-class F1 text, no declare_war leak');
-  ctx.GM._factionLivingWorld = true;
-  assert(!!eng.getActionContract().declare_war, 'B8: ON getActionContract() DOES expose declare_war (control)');
+  const ctx=buildContext(); installCasusBelli(ctx); baseGM(ctx);
+  const eng=ctx.TM.FactionActionEngine;
+  assert(eng.getActionContract().declare_war && eng.getActionContract().join_war, '旧关闭值下公开动作契约仍完整');
+  ctx.TM.FactionActionEngine.setFactionLivingWorld(false);
+  assert(eng.livingWorldOn(), '兼容旧 setter 不再关闭正式机制');
 }
 
 // B2·响应按 id 精确匹配：同回合 A 发 alliance+joint_action，B 接受 alliance/拒绝 joint_action 不错配
@@ -491,8 +451,7 @@ function b4MigrationTest() {
   ctx.P = { playerInfo: { factionName: '玩家朝廷' }, conf: { npcAiPrecision: true }, ai: { key: 'fake' } };
   ctx.GM = { turn: 5, _factionLivingWorld: false, facs: [fac, { name: '乙势力' }, { name: '玩家朝廷', isPlayer: true }], _facIndex: { '甲势力': { chars: [], parties: {}, metrics: {} } }, activeWars: [], factionRelations: [] };
   const eng = ctx.TM.FactionActionEngine;
-  eng.ensureStrategy(fac, { rationale: 'x' }, [{ type: 'diplomacy', payload: { targetFaction: '乙势力', relationDelta: -10 } }]);   // OFF (显式 _factionLivingWorld=false)
-  assert(fac.aiStrategy.goals.some(function(g){ return typeof g === 'string'; }), 'B4 setup: OFF produced legacy string goals');
+  fac.aiStrategy = { goals: ['diplomacy:乙势力'] }; // 实际旧存档中的字符串目标。
   ctx.GM._factionLivingWorld = true;
   ctx.TM.FactionGoalStack.addGoal(fac, { desc: '真目标', horizon: 'short' }, 5);   // 此刻 goals 混合(字符串+对象)
   eng.ensureStrategy(fac, { rationale: 'y' }, []);   // 触发一次性迁移
@@ -550,18 +509,14 @@ function b7UnconditionalExpireTest() {
 }
 // B8·agent-mode + 总闸组合：功能不可达 + prompt 不注入新段(一致语义·消除半开)
 function b8AgentModeInertTest() {
-  const ctx = buildContext(); installCasusBelli(ctx);
-  baseGM(ctx, { livingWorld: true });
-  ctx.P.conf.agentModeEnabled = true;   // 进入 agent 模式(mode-b)
-  const eng = ctx.TM.FactionActionEngine, fld = ctx.TM.FactionNpcLlmDecision;
-  assert(ctx.agentModeOn() === true, 'B8 setup: agent-mode on');
-  assert(eng.livingWorldOn() === false, 'B8: _livingWorldOn is false in agent-mode even with master ON (功能不可达)');
-  assert(ctx.agentFlagOn('factionAgentEnabled') === false && ctx.agentFlagOn('factionGoalStackEnabled') === false, 'B8: master does NOT light sub-flags in agent-mode (no half-open)');
-  assert(eng.formatActionContractForPrompt({ maxChars: 4000 }).indexOf('declare_war') < 0, 'B8: agent-mode+master → contract has no living-world types');
-  const p = fld._buildPrompt(ctx.GM.facs[0]);
-  assert((p.system + p.user).indexOf('declare_war') < 0 && p.user.indexOf('proposalResponses') < 0, 'B8: agent-mode+master → prompt injects no new sections/schema (no goalUpdates/proposalResponses without a consumer)');
-  const sum = eng.applyDecision(ctx.GM.facs[0], mkDecision([{ type: 'declare_war', targetFaction: '乙势力', casusBelli: 'border' }]), { turn: 5 });
-  assert(!sum.wars && ctx.CasusBelliSystem._calls.length === 0, 'B8: agent-mode+master → declare_war applier is a no-op (war unreachable)');
+  const ctx=buildContext(); installCasusBelli(ctx); baseGM(ctx); ctx.P.conf.agentModeEnabled=true;
+  const eng=ctx.TM.FactionActionEngine, fld=ctx.TM.FactionNpcLlmDecision;
+  assert(ctx.agentModeOn() && eng.livingWorldOn(), 'Agent 管线具有完整势力世界');
+  assert(ctx.agentFlagOn('factionAgentEnabled') && ctx.agentFlagOn('factionGoalStackEnabled'), 'Agent 管线同样具有自主决策和目标栈');
+  const p=fld._buildPrompt(ctx.GM.facs[0]);
+  assert(p.user.includes('declare_war') && p.user.includes('proposalResponses'), 'Agent 势力决策保留外交及战争契约');
+  const sum=eng.applyDecision(ctx.GM.facs[0],mkDecision([{type:'declare_war',targetFaction:'乙势力',casusBelli:'border'}]),{turn:5});
+  assert(sum.wars === 1 && ctx.CasusBelliSystem._calls.length === 1,'Agent 合法战争仍走同一写口');
 }
 
 function main() {

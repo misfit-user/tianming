@@ -1434,9 +1434,9 @@
     } catch (_) {}
     return tag;
   }
-  function rightFinanceCascadeItems(kind){
+  function rightFinanceCascadeItems(kind, account, forecast){
     var gm = window.GM || {};
-    var g = gm.guoku || (window.P && P.guoku) || {};
+    var g = account || gm.guoku || (window.P && P.guoku) || {};
     var ledgers = g.ledgers || {};
     var customStats = g._customTaxStats || {};
     var mapKey = kind === 'expense' ? 'sinks' : 'sources';
@@ -1449,13 +1449,13 @@
       Object.keys(m).forEach(function(tag){
         var v = m[tag]; if (!v) return;
         seen[tag] = true;
-        out.push({ name: rightFinanceResolveTagName(tag, customStats) + '·' + u[1], amount: v, note: '本回合结算' });
+        out.push({ name: rightFinanceResolveTagName(tag, customStats) + '·' + u[1], amount: v, note: forecast ? '本期预计' : '本期交割' });
       });
     });
     // 自定义税：仅补 ledger 未枚举到的(去重)·且统一本回合口径(turnAmount·非年化 amount)——
     //   producer 已把自定义税本回合值写进 ledger.sources[sourceTag]，若无条件追加 _customTaxStats.amount 会
     //   同一税列两行且口径混用(本回合 vs 年化)。realized 税已在 seen 里跳过；未 realized 者 turnAmount=0 略过。
-    if (kind !== 'expense') {
+    if (kind !== 'expense' && !account) {
       Object.keys(customStats).forEach(function(k){
         if (seen[k]) return;
         var c = customStats[k]; if (!c) return;
@@ -1483,32 +1483,42 @@
   function renderFinanceRich(){
     var root = rightFinanceRoot();
     var g = root.guoku || {};
+    var statement = null;
+    if(window.FiscalEngine && FiscalEngine.readAccountStatement) statement = FiscalEngine.readAccountStatement({game:window.GM || {},account:g,scope:'central'});
+    else if(window.FiscalStatement) statement = FiscalStatement.read({game:window.GM || {},account:g,scope:'central'});
+    if(statement) g = statement.account;
+    var forecast = !!(statement && statement.forecast);
+    var periodLabel = forecast ? '预计' : statement && statement.periodStatus === 'previous' ? '上期' : '本期';
+    var periodNote = (g.turnIncome === null || g.turnExpense === null ? '交割缺项' : forecast ? '预计' : '已交割') + ' · ' + (g.turnDays || 30) + '日';
     var n = root.neitang || {};
     var f = root.fiscal || {};
-    var _rvM = rightFiscalReported('guoku.money', rightFinanceFirst(g, ['stockMoney','money','balance','silver','taicangMoney'], 0), 'good');
+    var _rvM = rightFiscalReported('guoku.money', rightFinanceFirst(g, ['money','stockMoney','balance','silver','taicangMoney'], 0), 'good');
     var money = _rvM.shown;
-    var grain = rightFiscalReported('guoku.grain', rightFinanceFirst(g, ['stockGrain','grain','grainStock','food'], 0), 'good').shown;
-    var cloth = rightFiscalReported('guoku.cloth', rightFinanceFirst(g, ['stockCloth','cloth','clothStock'], ''), 'good').shown;
+    var grain = rightFiscalReported('guoku.grain', rightFinanceFirst(g, ['grain','stockGrain','grainStock','food'], 0), 'good').shown;
+    var cloth = rightFiscalReported('guoku.cloth', rightFinanceFirst(g, ['cloth','stockCloth','clothStock'], ''), 'good').shown;
     var neitang = rightFinanceFirst(n, ['money','balance','silver'], '');
-    var income = rightFiscalReported('fiscal.turnIncome', rightFinanceFirst(g, ['turnIncome','monthlyIncome','income','lastIncome'], rightFinanceFirst(f, ['turnIncome','monthlyIncome','income'], 0)), 'good').shown;
-    var expense = rightFiscalReported('fiscal.turnExpense', rightFinanceFirst(g, ['turnExpense','monthlyExpense','expense','lastExpense'], rightFinanceFirst(f, ['turnExpense','monthlyExpense','expense'], 0)), 'bad').shown;
-    var net = rightAdminNum(income, 0) - rightAdminNum(expense, 0);
-    var _casIncome = rightFinanceCascadeItems('income');
-    var _casExpense = rightFinanceCascadeItems('expense');
-    var incomeFromCascade = _casIncome.length > 0;
-    var expenseFromCascade = _casExpense.length > 0;
+    var _rvIncome = rightFiscalReported('fiscal.turnIncome', statement && g.turnIncome === null ? '待核' : rightFinanceFirst(g, ['turnIncome','monthlyIncome','income','lastIncome'], rightFinanceFirst(f, ['turnIncome','monthlyIncome','income'], 0)), 'good');
+    var income = _rvIncome.shown;
+    var _rvExpense = rightFiscalReported('fiscal.turnExpense', statement && g.turnExpense === null ? '待核' : rightFinanceFirst(g, ['turnExpense','monthlyExpense','expense','lastExpense'], rightFinanceFirst(f, ['turnExpense','monthlyExpense','expense'], 0)), 'bad');
+    var expense = _rvExpense.shown;
+    var _rvFlowBadge = (window.TM && TM.ReportedView) ? TM.ReportedView.badge(_rvIncome.distorted ? _rvIncome : _rvExpense) : '';
+    var net = income === '待核' || expense === '待核' ? '待核' : rightAdminNum(income, 0) - rightAdminNum(expense, 0);
+    var _casIncome = rightFinanceCascadeItems('income', statement ? g : null, forecast);
+    var _casExpense = rightFinanceCascadeItems('expense', statement ? g : null, forecast);
+    var incomeFromCascade = !!statement || _casIncome.length > 0;
+    var expenseFromCascade = !!statement || _casExpense.length > 0;
     var incomeItems = incomeFromCascade ? _casIncome : rightFinanceCollect(['incomeItems','incomes','longTermIncome','recurringIncome','customTaxes','taxes']);
     var expenseItems = expenseFromCascade ? _casExpense : rightFinanceCollect(['expenseItems','expenses','longTermExpense','recurringExpense','fixedExpenses','spendingItems']);
     var _rvBadge = (_rvM.distorted && window.TM && TM.ReportedView) ? TM.ReportedView.badge(_rvM) : '';
     return '<div class="tmrp-finance-shell">' +
-      '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(money)) + '</b><span>太仓银</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(grain)) + '</b><span>太仓粮</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(net)) + '</b><span>本期结余</span></div></div>' +
+      '<div class="tmrp-summary"><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(money)) + '</b><span>太仓银</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(grain)) + '</b><span>太仓粮</span></div><div class="tmrp-stat"><b>' + esc(rightFinanceMoney(net)) + '</b><span>' + esc(periodLabel) + '结余' + _rvFlowBadge + '</span></div></div>' +
       '<section class="tmrp-card"><div class="tmrp-card-title"><span>库藏' + _rvBadge + '</span><small>国库 / 内帑 / 本回合</small></div>' +
       '<div class="tmrp-mini-grid"><div><span>太仓银</span><b>' + esc(rightFinanceMoney(money)) + '</b></div><div><span>太仓粮</span><b>' + esc(rightFinanceMoney(grain)) + '</b></div><div><span>库存布</span><b>' + esc(rightFinanceMoney(cloth)) + '</b></div><div><span>内帑银</span><b>' + esc(rightFinanceMoney(neitang)) + '</b></div></div></section>' +
-      '<section class="tmrp-card ' + (net < 0 ? 'hot' : '') + '"><div class="tmrp-card-title"><span>本期收支</span><small>' + esc(getTurnText(window.GM && GM.turn)) + '</small></div>' +
-      rightArmyRows([['本期收入', rightFinanceMoney(income)], ['本期支出', rightFinanceMoney(expense)], ['军饷', rightFinanceMoney(rightFinanceFirst(g, ['armyExpense','militaryExpense'], '待核'))], ['宗禄', rightFinanceMoney(rightFinanceFirst(g, ['royalExpense','clanExpense'], '待核'))]]) +
+      '<section class="tmrp-card ' + (net < 0 ? 'hot' : '') + '"><div class="tmrp-card-title"><span>' + esc(periodLabel) + '收支' + _rvFlowBadge + '</span><small>' + esc(periodNote) + '</small></div>' +
+      rightArmyRows([[periodLabel + '收入', rightFinanceMoney(income)], [periodLabel + '支出', rightFinanceMoney(expense)], ['军饷', rightFinanceMoney(rightFinanceFirst(g, ['armyExpense','militaryExpense'], '待核'))], ['宗禄', rightFinanceMoney(rightFinanceFirst(g, ['royalExpense','clanExpense'], '待核'))]]) +
       '<div class="tmrp-action-row"><button type="button" class="tmrp-btn primary" data-right-action="finance-module">帑廪详情</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="extraTax">加派</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="openGranary">开仓</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="loan">借贷</button><button type="button" class="tmrp-btn" data-right-action="finance-old" data-method="advisor">户部参议</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="拨内帑">拨内帑</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="核饷">核饷</button><button type="button" class="tmrp-btn" data-right-action="finance-edict" data-kind="清查税粮">清查税粮</button></div></section>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁入分项</span><small>' + (incomeItems.length ? esc(incomeItems.length) + ' 项 · ' + (incomeFromCascade ? '本回合级联结算' : '盐课关税田赋等 · (概算)') : '盐课、关税、田赋等') + '</small></div>' + rightFinanceItemList(incomeItems, '暂无岁入分项。') + '</section>' +
-      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁出分项</span><small>' + (expenseItems.length ? esc(expenseItems.length) + ' 项 · ' + (expenseFromCascade ? '本回合级联结算' : '军饷宗禄工程赈济 · (概算)') : '军饷、宗禄、工程、赈济等') + '</small></div>' + rightFinanceItemList(expenseItems, '暂无岁出分项。') + '</section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁入分项</span><small>' + (incomeItems.length ? esc(incomeItems.length) + ' 项 · ' + (incomeFromCascade ? periodNote : '盐课关税田赋等 · (概算)') : '盐课、关税、田赋等') + '</small></div>' + rightFinanceItemList(incomeItems, '暂无岁入分项。') + '</section>' +
+      '<section class="tmrp-card"><div class="tmrp-card-title"><span>岁出分项</span><small>' + (expenseItems.length ? esc(expenseItems.length) + ' 项 · ' + (expenseFromCascade ? periodNote : '军饷宗禄工程赈济 · (概算)') : '军饷、宗禄、工程、赈济等') + '</small></div>' + rightFinanceItemList(expenseItems, '暂无岁出分项。') + '</section>' +
       '</div>';
   }
 

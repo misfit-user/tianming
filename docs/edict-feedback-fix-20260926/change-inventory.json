@@ -1,0 +1,559 @@
+{
+  "root": "D:\\Codex-Deliverables\\edict-feedback-fix-20260926\\tianming",
+  "source": "C:\\Users\\37814\\Desktop\\tianming",
+  "files": [
+    {
+      "path": "web/tm-edict-outcomes.js",
+      "before": null,
+      "after": "7447ec7171e09d9d93f7655188823245aa0c2cf0a2ceff2965bfc770d2aa3e6d",
+      "live": null,
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 18310,
+        "cjk": 638,
+        "crlf": 0,
+        "lf": 187
+      }
+    },
+    {
+      "path": "web/tm-edict-effects.js",
+      "before": null,
+      "after": "dfe55f7be1d22da550d3a069c8a5cd11fdd79aec207dec9e7f34baa5f48e1e78",
+      "live": null,
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 19520,
+        "cjk": 206,
+        "crlf": 0,
+        "lf": 177
+      }
+    },
+    {
+      "path": "web/tm-endturn-prep.js",
+      "before": "a5a6247dfcc7aed08a8612beb9a577b55bca3d7e48e666b9183aca0cfdb67dd6",
+      "after": "cf4212811c0aedd6d88b6612938be5e917f4efe0050891fdd09fb8f39148f78c",
+      "live": "a5a6247dfcc7aed08a8612beb9a577b55bca3d7e48e666b9183aca0cfdb67dd6",
+      "beforeCounts": {
+        "bytes": 39324,
+        "cjk": 2286,
+        "crlf": 0,
+        "lf": 697
+      },
+      "afterCounts": {
+        "bytes": 39424,
+        "cjk": 2286,
+        "crlf": 0,
+        "lf": 698
+      }
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "before": "96f6f6cd61cc30076eaced00e354443319768ffccadf699c2d9d051d2f315037",
+      "after": "1bee071b1c0827ea97697621850e09baddd05bc00eaff577c6fc43cd4e444d06",
+      "live": "96f6f6cd61cc30076eaced00e354443319768ffccadf699c2d9d051d2f315037",
+      "beforeCounts": {
+        "bytes": 365893,
+        "cjk": 38845,
+        "crlf": 4213,
+        "lf": 0
+      },
+      "afterCounts": {
+        "bytes": 365977,
+        "cjk": 38845,
+        "crlf": 4214,
+        "lf": 0
+      }
+    },
+    {
+      "path": "web/tm-endturn-apply.js",
+      "before": "484c5ad580250051b273ca3439794bca56ceab0d892a5d021936d091e8ba6a51",
+      "after": "01a6d613769b936a0320af5a6d64540c41b3781bcbed4c06a8ec0a4d9b81632a",
+      "live": "484c5ad580250051b273ca3439794bca56ceab0d892a5d021936d091e8ba6a51",
+      "beforeCounts": {
+        "bytes": 351439,
+        "cjk": 10268,
+        "crlf": 4956,
+        "lf": 157
+      },
+      "afterCounts": {
+        "bytes": 347489,
+        "cjk": 10098,
+        "crlf": 4891,
+        "lf": 154
+      }
+    },
+    {
+      "path": "web/tm-endturn-apply-stages.js",
+      "before": "6c1c56a9490dcc9ada7557dc30c300ac023eb3736530ccd0c5446f58ea04d585",
+      "after": "451b786185fec43ac31251c0e1c52713863e5d034f1c8a9c731c46a0d46214a5",
+      "live": "6c1c56a9490dcc9ada7557dc30c300ac023eb3736530ccd0c5446f58ea04d585",
+      "beforeCounts": {
+        "bytes": 96604,
+        "cjk": 3621,
+        "crlf": 760,
+        "lf": 425
+      },
+      "afterCounts": {
+        "bytes": 97220,
+        "cjk": 3621,
+        "crlf": 760,
+        "lf": 434
+      }
+    },
+    {
+      "path": "web/tm-endturn-ai.js",
+      "before": "7ff553a38a12af8004a42dd7497cb78d0ddb070935416043e965df48ca0d737f",
+      "after": "2e40bcb9ac7e5334f3638a76b93f6d7b78d8fbe493a34f931e2eef8b2be12a78",
+      "live": "7ff553a38a12af8004a42dd7497cb78d0ddb070935416043e965df48ca0d737f",
+      "beforeCounts": {
+        "bytes": 416008,
+        "cjk": 18193,
+        "crlf": 4975,
+        "lf": 32
+      },
+      "afterCounts": {
+        "bytes": 417595,
+        "cjk": 18170,
+        "crlf": 4993,
+        "lf": 32
+      }
+    },
+    {
+      "path": "web/tm-endturn-ai-infer.js",
+      "before": "658ad7fb9fcc07289c3bf0bb7f8b1b7ae8dddeb12d725bb43e203c96443915ec",
+      "after": "0203a15d6efa1778815116ba5816223d59605260f6c1acfd893b616a7b85d8ca",
+      "live": "658ad7fb9fcc07289c3bf0bb7f8b1b7ae8dddeb12d725bb43e203c96443915ec",
+      "beforeCounts": {
+        "bytes": 17999,
+        "cjk": 584,
+        "crlf": 274,
+        "lf": 29
+      },
+      "afterCounts": {
+        "bytes": 18232,
+        "cjk": 584,
+        "crlf": 276,
+        "lf": 29
+      }
+    },
+    {
+      "path": "web/tm-endturn-ai-helpers.js",
+      "before": "c484b32e7eb39b6a0261a84f78497b0ac0fc93ce8434441881d58a6921b66022",
+      "after": "f19b058ac76dfe9f9e09471fcd0e41a4a4462084c3c4cc35a4798343ce46e547",
+      "live": "c484b32e7eb39b6a0261a84f78497b0ac0fc93ce8434441881d58a6921b66022",
+      "beforeCounts": {
+        "bytes": 27289,
+        "cjk": 1707,
+        "crlf": 0,
+        "lf": 532
+      },
+      "afterCounts": {
+        "bytes": 28274,
+        "cjk": 1713,
+        "crlf": 0,
+        "lf": 545
+      }
+    },
+    {
+      "path": "web/tm-endturn-followup.js",
+      "before": "91a7df167849cc65580da0b67f1f886fe5dd9e839f413f99c377f6fad62993bc",
+      "after": "7bea016bfba79387b2da35d98190b439e49b020df5e7cfb24b8129d53ff9e561",
+      "live": "91a7df167849cc65580da0b67f1f886fe5dd9e839f413f99c377f6fad62993bc",
+      "beforeCounts": {
+        "bytes": 296465,
+        "cjk": 13809,
+        "crlf": 3592,
+        "lf": 113
+      },
+      "afterCounts": {
+        "bytes": 296531,
+        "cjk": 13809,
+        "crlf": 3592,
+        "lf": 113
+      }
+    },
+    {
+      "path": "web/tm-endturn-validity.js",
+      "before": "4b395ec0cdf6dac29cb0020a384eb8f4265bdf8de09e2395809764d160614edc",
+      "after": "3dfdd51cdb6e9dfaa793ece10cd58def94ea0d68165fb309bcea04f36c0fe8f7",
+      "live": "4b395ec0cdf6dac29cb0020a384eb8f4265bdf8de09e2395809764d160614edc",
+      "beforeCounts": {
+        "bytes": 11581,
+        "cjk": 217,
+        "crlf": 0,
+        "lf": 198
+      },
+      "afterCounts": {
+        "bytes": 12123,
+        "cjk": 242,
+        "crlf": 0,
+        "lf": 203
+      }
+    },
+    {
+      "path": "web/tm-endturn-render.js",
+      "before": "51a16f3b842491275b5d76ab29fbbee10a965d36935c94fe73947a5e57f40897",
+      "after": "5a16e2e8981863e9e0d1b9a2cc21920a15d7df897c2499456a9ffbd83638c030",
+      "live": "51a16f3b842491275b5d76ab29fbbee10a965d36935c94fe73947a5e57f40897",
+      "beforeCounts": {
+        "bytes": 45889,
+        "cjk": 1854,
+        "crlf": 0,
+        "lf": 791
+      },
+      "afterCounts": {
+        "bytes": 46358,
+        "cjk": 1854,
+        "crlf": 0,
+        "lf": 796
+      }
+    },
+    {
+      "path": "web/tm-endturn-shiji-compose.js",
+      "before": "00b11da00e6c6bfd317202fdc55b3cc8043a1dbf0ff04b98a89047348ba47049",
+      "after": "6dc6882e7c53285358b0f10459bf1b973179cde51f90c03cd793b8ea1491ce1d",
+      "live": "00b11da00e6c6bfd317202fdc55b3cc8043a1dbf0ff04b98a89047348ba47049",
+      "beforeCounts": {
+        "bytes": 109965,
+        "cjk": 3815,
+        "crlf": 0,
+        "lf": 1725
+      },
+      "afterCounts": {
+        "bytes": 110620,
+        "cjk": 3815,
+        "crlf": 0,
+        "lf": 1730
+      }
+    },
+    {
+      "path": "web/tm-endturn-agent-mode.js",
+      "before": "9b588138145d5bc6e6806449f928f9a07b09e053dc0138f9c213f3c685c93112",
+      "after": "e9f2b9a0f9877a26ed80d8d06c743cd9db622ab3cb6d31a3a1400dbc4440d13b",
+      "live": "9b588138145d5bc6e6806449f928f9a07b09e053dc0138f9c213f3c685c93112",
+      "beforeCounts": {
+        "bytes": 116760,
+        "cjk": 10396,
+        "crlf": 0,
+        "lf": 1344
+      },
+      "afterCounts": {
+        "bytes": 117353,
+        "cjk": 10423,
+        "crlf": 0,
+        "lf": 1348
+      }
+    },
+    {
+      "path": "web/tm-endturn-agent-write-tools.js",
+      "before": "4285ef7ddc223cfe582e6062e839005a79aad9ca9c9ebe6620e78cb0d8a7657c",
+      "after": "24fb51222bba16719e815ef2ff73818d46855a1c47f2f4fd201405224278d91a",
+      "live": "4285ef7ddc223cfe582e6062e839005a79aad9ca9c9ebe6620e78cb0d8a7657c",
+      "beforeCounts": {
+        "bytes": 69638,
+        "cjk": 3619,
+        "crlf": 0,
+        "lf": 783
+      },
+      "afterCounts": {
+        "bytes": 71326,
+        "cjk": 3708,
+        "crlf": 8,
+        "lf": 784
+      }
+    },
+    {
+      "path": "web/tm-endturn-agent-depth-tools.js",
+      "before": "b23fc6e4e3ef69301ae1112f8f93dd310ce41cd787ecf47d904ebef9e3b5c076",
+      "after": "e9b6b745de06b1c646a2b7164ea27705d67a968dff85aa0299af071d02558090",
+      "live": "b23fc6e4e3ef69301ae1112f8f93dd310ce41cd787ecf47d904ebef9e3b5c076",
+      "beforeCounts": {
+        "bytes": 75909,
+        "cjk": 6554,
+        "crlf": 0,
+        "lf": 722
+      },
+      "afterCounts": {
+        "bytes": 76071,
+        "cjk": 6554,
+        "crlf": 0,
+        "lf": 723
+      }
+    },
+    {
+      "path": "web/tm-endturn-pipeline-steps.js",
+      "before": "4c208d7c4cbbe2115bc13e2ebe3a0f95561b4fc8db1fa99723493e9269b307f2",
+      "after": "963e29d7cf72965be1ce32b5d46e038d371ea9af4f50fe7874adfee443bc6f58",
+      "live": "4c208d7c4cbbe2115bc13e2ebe3a0f95561b4fc8db1fa99723493e9269b307f2",
+      "beforeCounts": {
+        "bytes": 57016,
+        "cjk": 1319,
+        "crlf": 0,
+        "lf": 921
+      },
+      "afterCounts": {
+        "bytes": 57119,
+        "cjk": 1319,
+        "crlf": 0,
+        "lf": 922
+      }
+    },
+    {
+      "path": "web/tm-edict-oversight.js",
+      "before": "491464a0e81d12fa9e956d58ed268f7932f8f40c393c6bfcd3e43a9c96719bf2",
+      "after": "da601adb63991eaa9f57491ba4d0f7921500d9f8179acc73bf43c6ac8ae3ac54",
+      "live": "491464a0e81d12fa9e956d58ed268f7932f8f40c393c6bfcd3e43a9c96719bf2",
+      "beforeCounts": {
+        "bytes": 18215,
+        "cjk": 834,
+        "crlf": 0,
+        "lf": 231
+      },
+      "afterCounts": {
+        "bytes": 18645,
+        "cjk": 834,
+        "crlf": 0,
+        "lf": 235
+      }
+    },
+    {
+      "path": "web/tm-ai-change-pathutils.js",
+      "before": "47c55f486c8bb5d574eeb5cb400fd1dc5e8a90cc03d37ebb33c17189417a1939",
+      "after": "89a60e594ccd7bcb4e298923c5faaad5cadfbef09fa9c381667315b092f282d5",
+      "live": "47c55f486c8bb5d574eeb5cb400fd1dc5e8a90cc03d37ebb33c17189417a1939",
+      "beforeCounts": {
+        "bytes": 39864,
+        "cjk": 1227,
+        "crlf": 11,
+        "lf": 769
+      },
+      "afterCounts": {
+        "bytes": 40450,
+        "cjk": 1237,
+        "crlf": 15,
+        "lf": 771
+      }
+    },
+    {
+      "path": "web/tm-corruption-engine.js",
+      "before": "5dec55bbc80c0dd8d7afba94994a0d719a8c5ded4af9008a298372d577e3f9d7",
+      "after": "e516b599b3858fc4015ddbc6bc7ff7bac2ceabe9ab0a386a1e6f64589004b10d",
+      "live": "5dec55bbc80c0dd8d7afba94994a0d719a8c5ded4af9008a298372d577e3f9d7",
+      "beforeCounts": {
+        "bytes": 61093,
+        "cjk": 1968,
+        "crlf": 1264,
+        "lf": 0
+      },
+      "afterCounts": {
+        "bytes": 62902,
+        "cjk": 1986,
+        "crlf": 1284,
+        "lf": 0
+      }
+    },
+    {
+      "path": "web/modules/ai-change-applier/core.js",
+      "before": "99d252b701ec784ebe382e8079452e12d7ea79ea9027ee1bc92aded50fbca5ec",
+      "after": "b20c5087c1024ac8862650fcf1b17d2ade6e94e194a326e9ec7fa5f0a2f7be9a",
+      "live": "99d252b701ec784ebe382e8079452e12d7ea79ea9027ee1bc92aded50fbca5ec",
+      "beforeCounts": {
+        "bytes": 183942,
+        "cjk": 7253,
+        "crlf": 0,
+        "lf": 2904
+      },
+      "afterCounts": {
+        "bytes": 184323,
+        "cjk": 7253,
+        "crlf": 0,
+        "lf": 2906
+      }
+    },
+    {
+      "path": "web/generated/tm-ai-change-applier.bundle.js",
+      "before": "342fa737a346be00cad1d3f9c31a73d0ee346922c6dc9e7ccce0372abb76e450",
+      "after": "3cdd4e1ad09379e571ab3298ff3f4314c62347b52b07527a6923bb2cb8290382",
+      "live": "342fa737a346be00cad1d3f9c31a73d0ee346922c6dc9e7ccce0372abb76e450",
+      "beforeCounts": {
+        "bytes": 367061,
+        "cjk": 6744,
+        "crlf": 0,
+        "lf": 6823
+      },
+      "afterCounts": {
+        "bytes": 367445,
+        "cjk": 6744,
+        "crlf": 0,
+        "lf": 6825
+      }
+    },
+    {
+      "path": "web/scripts/smoke-edict-outcomes.js",
+      "before": null,
+      "after": "4be88233a6eaad6866a9a2127893d9842dc5d4ea6c05b56838e3fe260f889f31",
+      "live": null,
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 12558,
+        "cjk": 320,
+        "crlf": 0,
+        "lf": 93
+      }
+    },
+    {
+      "path": "web/scripts/smoke-edict-data-writeback.js",
+      "before": null,
+      "after": "908c506476f914476f26b54085c131f036aa167363a69b94fbab9ca98c66fe1b",
+      "live": null,
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 9890,
+        "cjk": 363,
+        "crlf": 0,
+        "lf": 60
+      }
+    },
+    {
+      "path": "web/scripts/smoke-edict-narrative-link.js",
+      "before": null,
+      "after": "742c48d4ca9685c6531fecec015560755585e8febc4f0cb882ca68a708a8e709",
+      "live": null,
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 6635,
+        "cjk": 218,
+        "crlf": 0,
+        "lf": 50
+      }
+    },
+    {
+      "path": "web/scripts/smoke-edict-efficacy.js",
+      "before": "278b35833bdd8e14e436ccdef25278b9a1fe4fedd2634406487941604a88f1e6",
+      "after": "b98b9e6e9550ac05fc153726588d7be87c2692fd0440970a3dea6ccc3f595c1c",
+      "live": "278b35833bdd8e14e436ccdef25278b9a1fe4fedd2634406487941604a88f1e6",
+      "beforeCounts": {
+        "bytes": 18512,
+        "cjk": 820,
+        "crlf": 0,
+        "lf": 303
+      },
+      "afterCounts": {
+        "bytes": 18902,
+        "cjk": 817,
+        "crlf": 6,
+        "lf": 300
+      }
+    },
+    {
+      "path": "web/scripts/smoke-shiji-volumes.js",
+      "before": "077fbee6ffa6f4493c972276a376c61fde9459155f2a3373024af5a02b7c96bc",
+      "after": "d46f530071da9c8127b36049b99afd952f7a45077483de47547186156838054b",
+      "live": "077fbee6ffa6f4493c972276a376c61fde9459155f2a3373024af5a02b7c96bc",
+      "beforeCounts": {
+        "bytes": 12854,
+        "cjk": 750,
+        "crlf": 0,
+        "lf": 174
+      },
+      "afterCounts": {
+        "bytes": 12868,
+        "cjk": 750,
+        "crlf": 0,
+        "lf": 175
+      }
+    },
+    {
+      "path": "web/scripts/smoke-agent-mode-s8.js",
+      "before": "060de6cb2554118ba387a24af4eab34016c29ee55d643a74d35b682f94404999",
+      "after": "18f7b12a0b2a6080ec35e63251bb788781abe2e67d029746b0370baa81c53404",
+      "live": "060de6cb2554118ba387a24af4eab34016c29ee55d643a74d35b682f94404999",
+      "beforeCounts": {
+        "bytes": 15059,
+        "cjk": 646,
+        "crlf": 0,
+        "lf": 161
+      },
+      "afterCounts": {
+        "bytes": 15095,
+        "cjk": 653,
+        "crlf": 0,
+        "lf": 161
+      }
+    },
+    {
+      "path": "web/scripts/smoke-endturn-narrative.js",
+      "before": "054e103de975003245375a7e38160c0d15213d4d4c33573e72898b5d45c9d13e",
+      "after": "98b8046faaa0874cc26cfa805c0e24e683fe1e08a126d0093c934ed112ba4b30",
+      "live": "054e103de975003245375a7e38160c0d15213d4d4c33573e72898b5d45c9d13e",
+      "beforeCounts": {
+        "bytes": 4624,
+        "cjk": 201,
+        "crlf": 0,
+        "lf": 98
+      },
+      "afterCounts": {
+        "bytes": 4699,
+        "cjk": 201,
+        "crlf": 0,
+        "lf": 98
+      }
+    },
+    {
+      "path": "web/scripts/verify-all.js",
+      "before": "c930a097a25af5ae6ba71a97a4144d77baf7f5a807f47c529b14decb1a01d24d",
+      "after": "21858389382fcfdfee18485c333217e0718a52ac63f2c086a3d909675b3dfb3a",
+      "live": "c930a097a25af5ae6ba71a97a4144d77baf7f5a807f47c529b14decb1a01d24d",
+      "beforeCounts": {
+        "bytes": 47791,
+        "cjk": 110,
+        "crlf": 446,
+        "lf": 57
+      },
+      "afterCounts": {
+        "bytes": 48083,
+        "cjk": 110,
+        "crlf": 446,
+        "lf": 60
+      }
+    },
+    {
+      "path": "web/index.html",
+      "before": "c794588b13af89bae85e669c2fc159b1eb488c7b1e8595a30b83c3247d75f40a",
+      "after": "1a91321e3a99199d6bf387a54a994b2ce8511c45ba604ee015c6abf409f0fe18",
+      "live": "c794588b13af89bae85e669c2fc159b1eb488c7b1e8595a30b83c3247d75f40a",
+      "beforeCounts": {
+        "bytes": 75341,
+        "cjk": 3392,
+        "crlf": 0,
+        "lf": 1066
+      },
+      "afterCounts": {
+        "bytes": 75536,
+        "cjk": 3392,
+        "crlf": 0,
+        "lf": 1068
+      }
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "before": "1ca9510b29cba57e4830f85f919d67c351557bcbfaae9ab791248c29e581025a",
+      "after": "1baddb0c1656e91c20012fa9411b0a70c2232f9a57e9143d8f4a4714b63e4888",
+      "live": "1ca9510b29cba57e4830f85f919d67c351557bcbfaae9ab791248c29e581025a",
+      "beforeCounts": {
+        "bytes": 134977,
+        "cjk": 3392,
+        "crlf": 0,
+        "lf": 1
+      },
+      "afterCounts": {
+        "bytes": 135405,
+        "cjk": 3392,
+        "crlf": 0,
+        "lf": 1
+      }
+    }
+  ],
+  "conflicts": [],
+  "indexUnchanged": true
+}

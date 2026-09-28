@@ -2597,9 +2597,8 @@
   /** tool_result 内容文本（喂回模型）。带违规时明列，让 agent 知道修什么。 */
   function _resultToText(result) {
     if (!result) return '';
-    if (result.violations && result.violations.length) return 'ok:false ' + (result.errorCode ? '[' + result.errorCode + '] ' : '') + (result.reason ? result.reason + ' · ' : '') + '违规: ' + result.violations.slice(0, 8).join('; ');   // 刀①·errorCode/reason 不再被违规清单挤掉(质量闸的「基线→现值」教学语要让模型看见)
-    if (result.ok === false) return 'ok:false ' + (result.errorCode ? '[' + result.errorCode + '] ' : '') + (result.reason || '');   // 刀G9 · errorCode 让模型可见(错误分类可模式化自纠)
-    return JSON.stringify(result).slice(0, 1200);
+    // Preserve complete, parseable receipts; tools paginate data and the loop handles context overflow.
+    return JSON.stringify(result);
   }
 
   /** 稳定 system（规则 + schema 速查）——多轮间字节稳定，供 prompt caching。 */
@@ -4007,23 +4006,28 @@
   }
 
   /** 旧编辑器（editor.html）：body = 全局 scriptData。 */
+  // Legacy document identity is supplied by the adapter host. Map-only pages have no legacy host.
+  function _legacyDocumentFor(g) {
+    var host = g && g.TM;
+    return host && host.legacyEditorDocument;
+  }
   function makeOldEditorAdapter(g) {
     g = g || global;
     // S5 · 文件身份（CC session↔cwd 对照）：旧编辑器一页一剧本·无库可切，openFile 仅同键命中。
-    function _fileKey() { var doc = g.TM && g.TM.legacyEditorDocument; return doc ? ('legacy:' + doc.id) : 'legacy:unsupported'; }
+    function _fileKey() { var doc = _legacyDocumentFor(g); return doc ? ('legacy:' + doc.id) : 'legacy:unsupported'; }
     return {
       id: 'legacy-editor',
       label: '剧本编辑器',
       isAvailable: function() { return typeof g.scriptData !== 'undefined' && g.scriptData && typeof g.saveScript === 'function'; },
       getScenario: function() { return g.scriptData; },
-      captureLease: function() { return { scenario: g.scriptData, document: g.TM && g.TM.legacyEditorDocument }; },
-      isLeaseCurrent: function(lease) { return !!lease && !!lease.document && lease.document === (g.TM && g.TM.legacyEditorDocument) && lease.scenario === g.scriptData; },
+      captureLease: function() { return { scenario: g.scriptData, document: _legacyDocumentFor(g) }; },
+      isLeaseCurrent: function(lease) { return !!lease && !!lease.document && lease.document === (_legacyDocumentFor(g)) && lease.scenario === g.scriptData; },
       getFileKey: _fileKey,
       getFileLabel: function() { try { var sc = g.scriptData; return String((sc && sc.name) || '当前剧本'); } catch (e) { return '当前剧本'; } },
-      openFile: function(key) { return Promise.resolve(!!(g.TM && g.TM.legacyEditorDocument) && String(key || '') === _fileKey()); },
+      openFile: function(key) { return Promise.resolve(!!(_legacyDocumentFor(g)) && String(key || '') === _fileKey()); },
       getContext: function() { return ''; },   // 旧编辑器 state 结构不同·暂不提供焦点上下文
       commit: function(draft, lease) {
-        var doc = g.TM && g.TM.legacyEditorDocument;
+        var doc = _legacyDocumentFor(g);
         if (!doc) throw new Error('旧编辑器缺少安全加载身份，请刷新页面后重试');
         if (lease && (lease.scenario !== g.scriptData || lease.document !== doc)) { var stale = new Error('案卷已变化，未应用国师修改'); stale.code = 'editor-document-changed'; throw stale; }
         var sd = g.scriptData;

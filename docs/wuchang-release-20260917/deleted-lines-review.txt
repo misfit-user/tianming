@@ -1,0 +1,1338 @@
+diff --git a/web/map-integration.js b/web/map-integration.js
+ADDED 39 REMOVED 29
+@@ -76,12 +76,18 @@ function generateMapContextForAI(mapData, gameState) {
+-    const regions = mapData.regions;
+-    const factions = gameState.factions || [];
+-    context += `共有 ${regions.length} 个省份。\n\n`;
+@@ -98,10 +104,27 @@ function generateMapContextForAI(mapData, gameState) {
+-        context += `${factionName}：控制 ${territories.length} 个省份（${territories.slice(0, 5).join('、')}${territories.length > 5 ? '等' : ''}）\n`;
+@@ -147,32 +170,19 @@ function generateMapContextForAI(mapData, gameState) {
+-    const conflicts = [];
+-
+-    regions.forEach(r1 => {
+-        if (!r1.owner) return;
+-
+-        r1.neighbors.forEach(neighborId => {
+-            const r2 = regions.find(r => r.id === neighborId);
+-            if (r2 && r2.owner && r2.owner !== r1.owner) {
+-                // 避免重复
+-                const exists = conflicts.some(c =>
+-                    (c.region1 === r1.name && c.region2 === r2.name) ||
+-                    (c.region1 === r2.name && c.region2 === r1.name)
+-                );
+-
+-                if (!exists) {
+-                    conflicts.push({
+-                        region1: r1.name,
+-                        owner1: r1.owner,
+-                        region2: r2.name,
+-                        owner2: r2.owner
+-                    });
+-                }
+-            }
+-
+@@ -352,7 +362,7 @@ function applyAIMapChanges(aiResponse, mapData) {
+-        TMMapRuntime.applyAIMapChanges(aiResponse);
+diff --git a/web/phase8-formal-map-dossier.js b/web/phase8-formal-map-dossier.js
+ADDED 4 REMOVED 5
+@@ -98,7 +98,7 @@
+-      var hint = a.regionHint || a.regionId;
+@@ -897,7 +897,6 @@
+-    var moneyUnit = typeof CurrencyUnit !== 'undefined' && CurrencyUnit.getUnit ? CurrencyUnit.getUnit().money : (P && P.fiscalConfig && P.fiscalConfig.unit && P.fiscalConfig.unit.money) || '两';
+@@ -910,9 +909,9 @@
+-      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护用钱：地方库款 ' + esc(ledger.upkeep) + ' ' + esc(moneyUnit) + '/回合</div>' : '') +
+-      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库款足付修缮费 ' + esc(ledger.repairCost) + ' ' + esc(moneyUnit) + '（造价 30%，至少 20 ' + esc(moneyUnit) + '）则自动葺治复完。</div>' : '') +
+-      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修停用，工成之利暂停，候地方修缮后再启。</div>' : '') +
+diff --git a/web/phase8-formal-modules.js b/web/phase8-formal-modules.js
+ADDED 1 REMOVED 1
+@@ -746,7 +746,7 @@
+-    var raw = tmfRenwuArray(p && (p.sourceNotes || p.sources || p.historicalSources || p.notes || p.commentary));
+diff --git a/web/scripts/smoke-military-execution-binding.js b/web/scripts/smoke-military-execution-binding.js
+ADDED 0 REMOVED 18
+@@ -1,18 +0,0 @@
+-'use strict';
+-const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert');
+-const root=path.resolve(__dirname,'..');let checks=0;function ok(v,m){assert(v,m);checks++;}
+-const c={console,P:{},GM:{},findCharByName:n=>c.GM.chars.find(x=>x.name===n)};c.window=c;vm.createContext(c);
+-const mil=fs.readFileSync(path.join(root,'tm-military.js'),'utf8');vm.runInContext(mil.slice(mil.indexOf('var MilitarySystems ='),mil.indexOf('var BattleEngine =')),c);
+-const helper=fs.readFileSync(path.join(root,'tm-endturn-helpers.js'),'utf8');vm.runInContext(helper.slice(helper.indexOf('function _walkOfficeTree'),helper.indexOf('/**\r\n * 获取官制职能摘要')>0?helper.indexOf('/**\r\n * 获取官制职能摘要'):helper.indexOf('/**\n * 获取官制职能摘要')),c);
+-const edict=fs.readFileSync(path.join(root,'tm-endturn-edict.js'),'utf8');vm.runInContext(edict.slice(edict.indexOf('function computeExecutionPipeline'),edict.indexOf('// ============================================================',edict.indexOf('function computeExecutionPipeline'))),c);
+-c.P={engineConstants:{militarySystems:[{id:'a',name:'甲军',recruitmentType:'paid',loyaltyAttribution:'leader'},{id:'b',name:'乙军',recruitmentType:'paid',loyaltyAttribution:'local'}]}};
+-ok(c.MilitarySystems.getMilitarySystemForArmy({systemId:'b',type:'甲军'},{}).id==='b','explicit id wins over type');
+-ok(c.MilitarySystems.getMilitarySystemForArmy({systemId:'typo',type:'甲军'},{}).id==='unclassified','invalid explicit id never silently rebinds');
+-ok(c.MilitarySystems.getMilitarySystemForArmy({type:'paid'},{}).id==='a','unbound legacy recruitment keeps its existing behavior');
+-ok(c.MilitarySystems.getMilitarySystemForArmy({type:'infantry'},{}).id==='a','old saves without explicit binding are not silently migrated');
+-c.P.engineConstants.militarySystems.pop();ok(c.MilitarySystems.getMilitarySystemForArmy({},{}).id==='a','legacy single system remains usable');
+-const scenario=path.join(root,'../scenarios/晚唐·开成五年（官方）.json');
+-if(fs.existsSync(scenario)){const s=JSON.parse(fs.readFileSync(scenario));c.P=s;c.GM={officeTree:s.officeTree,chars:s.characters};const found=new Set();for(const a of s.military.initialTroops){const system=c.MilitarySystems.getMilitarySystemForArmy(a,c.GM);ok(system.id===a.militarySystemId&&system.id!=='unclassified','every Tang army resolves explicitly');found.add(system.id);}ok(found.size>=8,'different institutional roles are retained');const e=c.computeExecutionPipeline('令有司核查收支','经济');ok(e.
+-c.P={mechanicsConfig:{executionPipeline:[{name:'承办',functionKey:'military'}]}};c.GM={officeTree:[{name:'军务机关',functions:['military'],positions:[{name:'军务长官',holder:'甲',rank:1}]}],chars:[{name:'甲',military:0,ability:90,loyalty:0}]};let e=c.computeExecutionPipeline('调兵','军令');ok(e.stages[0].ability===0&&e.stages[0].loyalty===0,'legitimate zero attributes are not replaced with defaults');
+-c.P={mechanicsConfig:{executionPipeline:[{name:'承办',functionKey:'财计收支'}]}};c.GM.officeTree=[{name:'议政机关',positions:[{name:'议政官',holder:'甲',duties:'参与财计收支议论'}]},{name:'财计机关',functions:['财计收支'],positions:[{name:'财计官',holder:''}]}];e=c.computeExecutionPipeline('拨款','经济');ok(e.stages[0].note==='空缺'&&!e.stages[0].officer,'explicit vacant department wins over incidental text on a filled office');
+-console.log('PASS military-execution-binding '+checks+' checks');
+diff --git a/web/scripts/smoke-tianqi-map-runtime.js b/web/scripts/smoke-tianqi-map-runtime.js
+ADDED 1 REMOVED 0
+@@ -90,6 +90,7 @@ function main() {
+diff --git a/web/tm-ai-change-narrative.js b/web/tm-ai-change-narrative.js
+ADDED 6 REMOVED 52
+@@ -278,58 +278,12 @@
+-    if (!G || !rec || !fac) return false;
+-    var facName = fac.name || fac.id || '';
+-    var facId = fac.id || fac.name || '';
+-    var regionRef = rec.id || rec.name;
+-    var mapRegion = rec.mapRegion || _mapRegionByNameOrId(G, regionRef);
+-    var oldOwner = mapRegion ? (mapRegion.ownerName || mapRegion.factionName || mapRegion.owner || '') : '';
+-    var changed = false;
+-    try {
+-      if (global.TMMapRuntime && typeof global.TMMapRuntime.setRegionOwner === 'function') {
+-        var updated = global.TMMapRuntime.setRegionOwner(regionRef, facName, { mapData:G.mapData, reason:reason || '叙事地块归属补录' });
+-        if (updated) mapRegion = updated;
+-      }
+-    } catch(_) {}
+-    if (mapRegion) {
+-      if (_writeRegionOwnerAliases(mapRegion, facName, facId, true)) changed = true;
+-      if (!mapRegion.data || typeof mapRegion.data !== 'object') mapRegion.data = {};
+-      if (_writeRegionOwnerAliases(mapRegion.data, facName, facId, false)) changed = true;
+-      if (fac.color) mapRegion.color = fac.color;
+-    }
+-    var div = rec.adminDiv || _findDivisionByNameOrId(G, rec.name || rec.id);
+-    if (div) {
+-      if (_writeRegionOwnerAliases(div, facName, facId, false)) changed = true;
+-    }
+-    if (!G._provinceToFaction) G._provinceToFaction = {};
+-    try {
+-      if (global.TM && TM.FactionMembership && typeof TM.FactionMembership.assignProvince === 'function') {
+-        TM.FactionMembership.assignProvince(rec.name || rec.id, facName, { reason: reason || '叙事地块归属补录', silent: true });
+-      }
+-    } catch(_) {}
+-    [rec.name, rec.id, mapRegion && mapRegion.name, mapRegion && mapRegion.id].filter(Boolean).forEach(function(k) {
+-      G._provinceToFaction[k] = facName;
+-    });
+-    if (G.provinceStats && typeof G.provinceStats === 'object') {
+-      var touched = false;
+-      Object.keys(G.provinceStats).forEach(function(k) {
+-        var st = G.provinceStats[k];
+-        if (!st || typeof st !== 'object') return;
+-        if ([rec.name, rec.id, mapRegion && mapRegion.name, mapRegion && mapRegion.id].filter(Boolean).some(function(v){ return _normalizeArmyKey(v) === _normalizeArmyKey(k); })) {
+-          _writeRegionOwnerAliases(st, facName, facId, false);
+-          touched = true;
+-        }
+-      });
+-      if (!touched && (rec.id || rec.name)) {
+-        G.provinceStats[rec.id || rec.name] = {};
+-        _writeRegionOwnerAliases(G.provinceStats[rec.id || rec.name], facName, facId, false);
+-      }
+-    }
+-    if (G._turnReport && oldOwner !== facName) {
+-      G._turnReport.push({ type:'region_update', entity:rec.name || rec.id, field:'owner', old:oldOwner, new:facName, reason:reason || '叙事地块归属补录', turn:G.turn||0 });
+-    }
+-    _refreshMapFieldViews();
+-    return changed || oldOwner !== facName;
+diff --git a/web/tm-ai-infra-model-detect.js b/web/tm-ai-infra-model-detect.js
+ADDED 45 REMOVED 33
+@@ -46,6 +46,8 @@ var _MODEL_CTX_MAP = [
+@@ -119,13 +121,19 @@ function _matchModelCtx(modelName) {
+-  if (url.indexOf('deepseek') >= 0) return 64;
+@@ -285,7 +293,7 @@ async function detectModelContextSize(opts) {
+-    var resp1 = await fetch(modelUrl, {
+@@ -310,7 +318,7 @@ async function detectModelContextSize(opts) {
+-      var resp1b = await fetch(listUrl, {
+@@ -346,7 +354,7 @@ async function detectModelContextSize(opts) {
+-      var resp2 = await fetch(chatUrl2, {
+@@ -387,7 +395,7 @@ async function detectModelContextSize(opts) {
+-      var resp3 = await fetch(chatUrl3, {
+@@ -453,7 +461,7 @@ async function detectModelContextSize(opts) {
+-        var resp4 = await fetch(chatUrl4, {
+@@ -511,13 +519,13 @@ async function detectModelContextSize(opts) {
+-  var _sfx = (tier === 'secondary') ? '_secondary' : '';
+-  // 新模型只探得上下文时，不给旧模型的输出上限盖上新的身份；仍由下方原写口收笔。
+-  var _sameOutputOwner = P.conf['_ctxCacheKey' + _sfx] === cacheKey;
+-  P.conf['_detectedContextK' + _sfx] = k;
+-  if ((maxOutputTok && maxOutputTok > 0) || !_sameOutputOwner) P.conf['_detectedMaxOutput' + _sfx] = maxOutputTok > 0 ? maxOutputTok : 0;
+@@ -547,7 +555,7 @@ async function detectModelOutputLimit(opts) {
+-      var resp = await fetch(chatUrl, {
+@@ -638,7 +646,7 @@ async function probeModelSelfReport(opts) {
+-      var resp = await fetch(chatUrl, {
+@@ -789,7 +797,7 @@ async function probeModelEvidenceAudit(opts) {
+-        var resp = await fetch(chatUrl, {
+@@ -939,7 +947,7 @@ async function probeModelQuickCheck(opts) {
+-  var r1 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000),
+@@ -958,11 +966,15 @@ async function probeModelQuickCheck(opts) {
+-  // 2/3 流式 SSE
+-  try {
+-    var r2 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(20000),
+@@ -979,13 +991,13 @@ async function probeModelQuickCheck(opts) {
+-  if (!report.stream.ok) report.warnings.push('流式不可用：' + report.stream.detail + '（不碍推演，问天等逐字显示退化为整段）');
+-    var r3 = await fetch(chatUrl, { method: 'POST', headers: _hdrs, signal: _sig(25000),
+@@ -1024,7 +1036,7 @@ async function listAvailableModels(opts) {
+-    var resp = await fetch(listUrl, {
+@@ -1063,25 +1075,25 @@ async function listAvailableModels(opts) {
+-function getModelContextSizeK() {
+-  var player = typeof P !== 'undefined' && P || {}, conf = player.conf || {}, ai = player.ai || {};
+-  var manual = Number(conf.contextSizeK);
+-  if (Number.isFinite(manual) && manual > 0) return manual; // 手动覆写最高，不擅自放大
+-  // 与异步探测使用同一身份：切换模型/中转后，旧值不能继续约束新请求。
+-  // 无身份的旧缓存保留在设置里，但不冒充当前模型容量。
+-  var currentKey = String(ai.model || '').trim() + '@' + String(ai.url || '');
+-  var detected = Number(conf._detectedContextK);
+-  var k = conf._ctxCacheKey === currentKey && Number.isFinite(detected) && detected > 0 ? detected : 0;
+-      var _mk = Number(_matchModelCtx(ai.model || ''));
+-      if (Number.isFinite(_mk) && _mk > k) k = _mk;
+-  return k > 0 ? k : 32; // 全未知模型的保守默认
+diff --git a/web/tm-ai-infra-retry.js b/web/tm-ai-infra-retry.js
+ADDED 0 REMOVED 71
+@@ -1,71 +0,0 @@
+-// @ts-check
+-// Retry ownership and cancellation helpers; classic script, loaded before tm-ai-infra.js.
+-// ============================================================
+-//  1.7.5 AI 调用基础设施（重试 + 超时 + 429 处理 + raw 保留）
+-// ============================================================
+-var _aiLastRaw = { url: '', body: null, response: null, error: null, ts: 0 };
+-/**
+- * 统一的 AI fetch 包装：3 次指数退避重试、180s 超时、429 读取 Retry-After、原始响应保留供 debug。
+- * 返回已解析的 JSON。抛出时 error.lastRaw 含现场信息。
+- */
+-async function _aiFetchWithRetry(url, body, signal, opts) {
+-  opts = opts || {};
+-  var priority = opts.priority || 'normal';
+-  // 所有 AI 调用走队列，受全局 maxConcurrent + minInterval 约束
+-  return _aiQueue.enqueue(function() {
+-    return _aiFetchWithRetryInner(url, body, signal, opts);
+-  }, priority);
+-}
+-
+-// 默认按输出体量取 30–200s；显式子调用策略优先。本轮不改变时限/输出质量，
+-// 只保证同一个时限覆盖响应头与完整正文，而不是拿到响应头就提前清掉。
+-function _aiComputeTimeout(maxTok, optsTimeoutMs) {
+-  if (optsTimeoutMs != null) return optsTimeoutMs;
+-  var t = Number(maxTok) || 2000;
+-  return Math.min(200000, Math.max(30000, Math.round(t * 15)));
+-}
+-
+-function _aiCancelledError(signal) {
+-  var error = new Error('AI 请求已取消');
+-  error.name = 'AbortError'; error.code = 'AI_ABORTED';
+-  if (signal && signal.reason !== undefined) error.cause = signal.reason;
+-  return error;
+-}
+-
+-function _aiErrorIsTerminal(error) {
+-  return !!(error && (error.code === 'AI_TIMEOUT' || error.code === 'AI_ABORTED'
+-    || error.name === 'AbortError' || error.name === 'TimeoutError'
+-    || error.code === 'mandatory_context_overflow' || error.code === 'context_length_exceeded'
+-    || (Number(error.status) >= 400 && Number(error.status) < 500)));
+-}
+-
+-function _aiWaitForRetry(ms, signal) {
+-  return new Promise(function(resolve, reject) {
+-    if (signal && signal.aborted) { reject(_aiCancelledError(signal)); return; }
+-    var timer;
+-    function cleanup() { clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancel); }
+-    function cancel() { cleanup(); reject(_aiCancelledError(signal)); }
+-    timer = setTimeout(function() { cleanup(); resolve(); }, ms);
+-    if (signal) signal.addEventListener('abort', cancel, { once:true });
+-  });
+-}
+-
+-// Request-protocol compatibility helpers, loaded before the transport.
+-// 把 body.messages 里「带 cache_control 的数组型 content」拍回纯字符串·返回是否真剥离了（仅动含 cache_control 的，真·多模态数组不碰）
+-function _stripCacheControlFromBody(body) {
+-  if (!body || !Array.isArray(body.messages)) return false;
+-  var stripped = false;
+-  for (var i = 0; i < body.messages.length; i++) {
+-    var m = body.messages[i];
+-    if (m && Array.isArray(m.content) && m.content.some(function(b){ return b && b.cache_control; })) {
+-      m.content = m.content.map(function(b){ return (b && typeof b.text === 'string') ? b.text : ''; }).join('');
+-      stripped = true;
+-    }
+-  }
+-  return stripped;
+-}
+-
+-function _isContextLengthResponse(status, text) {
+-  if (Number(status) !== 400) return false;
+-  return /context(?:_|\s|-)*(?:length|window)|maximum context|too many (?:input )?tokens|prompt (?:is )?too long|token limit|上下文.{0,8}(?:过长|超限)|超出.{0,8}(?:上下文|token)/i.test(String(text || ''));
+-}
+diff --git a/web/tm-ai-infra.js b/web/tm-ai-infra.js
+ADDED 333 REMOVED 315
+@@ -384,6 +384,24 @@ function _recordCacheStats(usage) {
+@@ -464,8 +482,8 @@ function estimateTokens(text) {
+-  var cp = (typeof getCompressionParams === 'function') ? getCompressionParams() : { contextK: 32 };
+-  var contextK = cp.contextK || 32;
+@@ -521,15 +539,15 @@ function checkPromptTokenBudget(promptText, onWarn) {
+-async function _aiFetchWithRetryInner(url, body, signal, opts) {
+-  var timeoutMs = _aiComputeTimeout(body && (body.max_completion_tokens || body.max_tokens), opts.timeoutMs);
+-  var lastError = null;
+-  var _ccStripped = false;   // cache_control 撞 400 脱字段重试·每请求只脱一次
+-  var _contextReduced = false; // context-length 400 只允许一次调用方提供的更严预算重编排
+@@ -537,61 +555,61 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
+-  for (var attempt = 0; attempt <= maxRetries; attempt++) {
+-    var ctrl = new AbortController();
+-    var timedOut = false;
+-    var requestPhase = 'headers', timeoutError, rejectDeadline;
+-    var deadline = new Promise(function(_resolve, reject) { rejectDeadline = reject; });
+-    var timeoutAborter = function() {
+-      timedOut = true; timeoutError = new Error('AI 请求超时（' + timeoutMs + 'ms，' + (requestPhase === 'body' ? '读取正文' : '等待响应头') + '）');
+-      timeoutError.name = 'TimeoutError'; timeoutError.code = 'AI_TIMEOUT'; timeoutError.timeoutMs = timeoutMs; timeoutError.phase = requestPhase;
+-      rejectDeadline(timeoutError); ctrl.abort(timeoutError);
+-    };
+-    var timer = setTimeout(timeoutAborter, timeoutMs);
+-    if (signal) {
+-      if (signal.aborted) { clearTimeout(timer); throw _aiCancelledError(signal); }
+-      signal.addEventListener('abort', externalAborter);
+-    try {
+-      var resp = await Promise.race([fetch(url, {
+-        method: 'POST',
+-        signal: ctrl.signal
+-      }), deadline]);
+-      requestPhase = 'body';
+-      if (resp.status === 429 && attempt < maxRetries) {
+-        var retryAfter = parseInt(resp.headers.get('Retry-After') || '0', 10);
+-        var delay429 = (retryAfter > 0) ? retryAfter * 1000 : Math.min(30000, 1000 * Math.pow(2, attempt));
+-        console.warn('[AI] 429 速率限制，等待 ' + delay429 + 'ms 后重试 (' + (attempt+1) + '/' + maxRetries + ')');
+-        continue;
+-      }
+-      if (!resp.ok) {
+-        try { errText = await Promise.race([resp.text(), deadline]); } catch(_e) {}
+-        if (timedOut) throw timeoutError;
+-        if (signal && signal.aborted) throw _aiCancelledError(signal);
+-        clearTimeout(timer);
+-        lastError = new Error('HTTP ' + resp.status + (errText ? ': ' + errText.substring(0, 300) : ''));
+-        lastError.status = resp.status;
+-        _aiLastRaw = { url: url, body: body, response: errText, error: lastError.message, ts: Date.now() };
+-        var _isContextLength = _isContextLengthResponse(resp.status, errText);
+-        if (_isContextLength) {
+-          lastError.code = 'context_length_exceeded';
+-          lastError.contextOverflow = true;
+-          if (!_contextReduced && typeof opts.contextOverflowReducer === 'function') {
+-            try {
+-              var _beforeBody = JSON.stringify(body);
+-              var _reducedBody = opts.contextOverflowReducer(body, {
+-                status: resp.status,
+-                responseText: errText,
+-                attempt: attempt,
+-                emergencyRetry: 1
+@@ -610,86 +628,86 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
+-          _ccStripped = true;
+-          _aiCacheCtrlDisabled = true;
+-          console.warn('[AI] 400 且请求含 cache_control·疑代理不认·已脱字段重试并本会话停用 prompt 缓存标记');
+-          continue;
+-        }
+-        // 5xx 可重试；4xx（除 429）不重试
+-        if (resp.status >= 500 && attempt < maxRetries) {
+-          continue;
+-        }
+-        throw lastError;
+-      }
+-      clearTimeout(timer);
+-    } catch(e) {
+-      clearTimeout(timer);
+-      if (timedOut) e = timeoutError;
+-      else if (signal && signal.aborted) e = _aiCancelledError(signal);
+-      lastError = e;
+-      // 外部 signal 主动中断——不重试
+-      if (signal && signal.aborted) throw e;
+-      // 明确的 4xx（429 已在响应分支处理）是请求错误；不得被通用网络重试再次原样发送。
+-      if (e && e.status >= 400 && e.status < 500 && e.status !== 429) {
+-        if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+-        throw e;
+-      }
+-      // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
+-      //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
+-      if (timedOut) {
+-        var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
+-        if (_bigReq || attempt >= 1) {
+-          if (!e.lastRaw) e.lastRaw = _aiLastRaw;
+-          throw e;
+-        }
+-      // 网络错误 / 小请求首次超时——指数退避重试
+-        await _aiWaitForRetry(delayRetry, signal);
+-      }
+-    } finally {
+-      clearTimeout(timer);
+-      if (signal && typeof signal.removeEventListener === 'function') signal.removeEventListener('abort', externalAborter);
+-    }
+-  }
+-// 失败态人话化（2026-07-02）：把 AI 调用的技术性报错翻成「哪坏了 + 该去哪修」的人话。
+-//   此前过回合/探测失败直接把 error.message 甩给玩家（HTTP 401: {"error"...}），新手无从下手。
+-//   分类不出返回 null → 调用方回退原文（不吞信息）。挂 window 供过回合/设置探测等出错兜底共用。
+-// ============================================================
+-function _tmAiErrHuman(err) {
+-  try {
+-    var msg = String((err && err.message) || err || '');
+-    var m = msg.match(/HTTP (\d{3})/);
+-    var status = (err && err.status) || (m ? +m[1] : 0);
+-    if ((err && (err.code === 'mandatory_context_overflow' || err.code === 'context_length_exceeded')) || /context(?:_|\s|-)*(?:length|window)|上下文.{0,8}(?:过长|超限)/i.test(msg)) return '本回合必须保留的规则与上下文超过配置上限' + (err && err.contextTokens ? '（当前 ' + Math.round(err.contextTokens / 1024) + 'K）' : '') + '，不能靠删减内容继续推演。请核对「设置 → AI · 模型」的上下文容量，或使用支持足够上下文的接口。';
+-    if (err && err.code === 'AI_ABORTED') return '本次 AI 请求已取消，没有继续重试。';
+-    if (err && err.code === 'AI_TIMEOUT') return 'AI 请求在' + (err.phase === 'body' ? '读取完整正文' : '等待响应头') + '时超过 ' + Math.round(err.timeoutMs / 1000) + ' 秒期限，未收到完整结果；这不能单凭日志判断为模型故障，可检查诊断后重试。';
+-    if (status === 404 || /model.{0,20}(not.{0,8}found|does not exist)|无此模型/i.test(msg)) return '接口路径或模型名不存在（404）——请到「设置 → AI · 模型」核对 API 地址与模型名拼写。';
+-    if (status === 429 || /rate.?limit|too many requests/i.test(msg)) return 'AI 接口限速（429）且重试后仍被拒——稍候片刻再试；频繁出现可换中转或升级所用平台套餐。';
+-    if (status >= 500) return 'AI 服务端故障（' + status + '）——对方服务器暂时不稳，稍候重试；反复出现可更换中转或改用官方接口。';
+-    if ((err && err.name === 'AbortError') || /\babort/i.test(msg) || /timeout|超时/i.test(msg)) return 'AI 响应超时——网络不稳或模型推理过慢；可稍候重试，或到「设置」换更快的模型/中转。';
+@@ -748,20 +766,20 @@ async function callAI(prompt,maxTok,signal,tier,opts){
+-  var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+-  if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
+-  var fetchOpts = { apiKey: key, priority: opts.priority || 'normal' };
+-  if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
+-  if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, 'openai');
+-  var data = await _aiFetchWithRetry(url, body, signal, fetchOpts);
+-  if(data.usage && typeof TokenUsageTracker !== 'undefined') TokenUsageTracker.record(data.usage, opts.id || 'callAI:generic');
+-  return _tmAITextResult(data, opts.requireText === true, _scaledTok);
+-}
+-
+@@ -776,7 +794,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
+- * @returns {Promise<{text:string, toolCalls:Array<{name:string,input:object}>, fallback?:boolean, error?:object}>}
+@@ -810,31 +828,31 @@ async function callAIWithTools(prompt, tools, opts) {
+-  var maxTok = opts.maxTok || 2000;
+-  var _scaledTok = Math.round(maxTok * ((typeof getCompressionParams === 'function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
+-
+-  // Additive failure metadata: never return an Error/lastRaw (which may contain
+-  // request contents or credentials) to a UI consumer. Existing callers can
+-  // still inspect text/toolCalls; structured-only agents can stop failed rounds.
+-  function _toolErrorInfo(error) {
+-    var status = Number(error && error.status) || 0;
+-    var code = (opts.signal && opts.signal.aborted) ? 'aborted' :
+-      (error && error.code === 'tool-timeout') ? 'tool-timeout' :
+-      (error && error.code === 'tool-choice-unsupported') ? 'tool-choice-unsupported' :
+-      status ? 'tool-http-error' : 'tool-call-failed';
+-    return { code: code, status: status, message: status ? ('HTTP ' + status) : code };
+-  }
+-  // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
+-  async function _runFallback(cause) {
+-    try {
+-      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries });
+-      var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
+-      return { text: String(raw||''), toolCalls: calls, fallback: true,
+-        error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
+-    } catch(_fe) {
+-      var info = _toolErrorInfo(_fe);
+-      console.warn('[callAIWithTools] fallback 也失败:', info.code, info.status);
+-      return { text: '', toolCalls: [], fallback: true, error: info };
+@@ -892,55 +910,55 @@ async function callAIWithTools(prompt, tools, opts) {
+-    parseMode = 'openai';
+-  }
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfg, parseMode);
+-  // Use the effective request URL, not the primary config when tier=secondary.
+-  // DeepSeek's thinking endpoint rejects even explicit auto on some versions.
+-  if (parseMode === 'openai' && /^https?:\/\/api\.deepseek\.com(?::\d+)?(?:\/|$)/i.test(url)) _tmAIToolJSON.omitChoice(body, opts.forceTool);
+-  // ─── 调用（自带 abort+timeout·不走 _aiFetchWithRetry 因为 header 不一定 Bearer） ───
+-  async function _toolFetchQueued() {
+-    var ctrl = new AbortController();
+-    var timedOut = false;
+-    var timer = setTimeout(function() { timedOut = true; ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+-    if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 已置位的 signal 监听器永不触发·排队期被取消的请求曾照常发出白烧token(2026-07-04 审查定罪)
+-    var onExternalAbort = function() { ctrl.abort(); };
+-    if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+-    try {
+-      var choiceRetried = false;
+-      while (true) {
+-        if (ctrl.signal.aborted) throw new Error('Aborted');
+-        var resp = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: ctrl.signal });
+-        if (!resp.ok) {
+-          var errT = '';
+-            _tmAIToolJSON.omitChoice(body, opts.forceTool);
+-            console.warn('[callAIWithTools] 思考模式不支持 tool_choice·省略该参数后重试一次');
+-            continue;
+-          }
+-          console.warn('[callAIWithTools] HTTP ' + resp.status + ' (parseMode=' + parseMode + ')');
+-          var err = new Error('HTTP ' + resp.status);
+-          err.status = resp.status;
+-          if (choiceUnsupported) err.code = 'tool-choice-unsupported';
+-          throw err;
+-        }
+-        return await resp.json();
+-      }
+-      throw error;
+-    } finally {
+-      clearTimeout(timer);
+-      if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+-    }
+@@ -948,11 +966,11 @@ async function callAIWithTools(prompt, tools, opts) {
+-  } catch(e) {
+-    var failure = _toolErrorInfo(e);
+-    if (failure.code === 'aborted' || failure.code === 'tool-timeout') return { text: '', toolCalls: [], error: failure };
+-    console.warn('[callAIWithTools] fetch 异常·走 fallback:', failure.code, failure.status);
+-    return await _runFallback(e);
+@@ -982,13 +1000,13 @@ async function callAIWithTools(prompt, tools, opts) {
+-            var input = _tmAIToolJSON.decode(fn.arguments);
+-            if (fn.name && input !== null) toolCalls.push({ name: fn.name, input: input });
+-          toolCalls.push({ name: msg.function_call.name, input: _tmAIToolJSON.decode(msg.function_call.arguments) });
+@@ -1001,10 +1019,10 @@ async function callAIWithTools(prompt, tools, opts) {
+-    return await _runFallback(_parseE);
+-  if (toolCalls.length === 0 && text) toolCalls = _tmAIToolJSON.parse(text);
+@@ -1012,9 +1030,9 @@ async function callAIWithTools(prompt, tools, opts) {
+-  } catch (_tH2E) {}
+-  toolCalls = _tmAIToolJSON.filter(toolCalls, tools, opts.forceTool);
+-  return { text: text, toolCalls: toolCalls, truncated: _truncH2 };
+@@ -1044,16 +1062,16 @@ async function callAISmart(prompt, maxTok, options) {
+-      var result = await callAI(currentPrompt, maxTok, signal, options.tier, {
+-        maxRetries: (options.fetchMaxRetries != null) ? options.fetchMaxRetries : 1,
+-        contextOverflowReducer: options.contextOverflowReducer
+-      });
+-      if (allContent.length > 0) {
+-        allContent += '\n\n' + result;
+@@ -1076,14 +1094,14 @@ async function callAISmart(prompt, maxTok, options) {
+-    } catch(e) {
+-      if ((signal && signal.aborted) || _aiErrorIsTerminal(e)) throw e;
+-      if (attemptCount < maxRetries) {
+-        await _aiWaitForRetry(1000, signal);
+-        return await attemptCall();
+-      } else {
+-        throw e;
+@@ -1137,15 +1155,15 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
+-  var fetchOpts2 = { apiKey: key, priority: opts.priority || 'normal' };
+-  if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
+-  if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;
+-  if (window.TM && TM.AIOptions) body = TM.AIOptions.apply(body, _aiCfgM, 'openai');
+-}
+@@ -1154,12 +1172,12 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
+-async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+-  opts = opts || {};
+-  var _finalizedBody = null;
+-  if (opts.finalizedBody !== undefined) {
+-    if (!opts.finalizedBody || typeof opts.finalizedBody !== 'object' || Array.isArray(opts.finalizedBody)) {
+-      throw new Error('流式 finalizedBody 非法');
+@@ -1168,12 +1186,12 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+-  // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
+-  if (_aiEffectiveTierIsSecondary(opts.tier) && !opts._noSecFallback) {
+-    var _oS = Object.assign({}, opts, { _noSecFallback: true });
+-    try { return await _callAIMessagesStreamDirect(messages, maxTok, _oS); }
+-    catch (e) {
+-      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await _callAIMessagesStreamDirect(messages, maxTok, Object.assign({}, _oS, { tier: 'primary' })); }
+@@ -1184,41 +1202,41 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+-  var ctrl = new AbortController();
+-  var timer = setTimeout(function() { ctrl.abort(); }, (opts.timeoutMs != null ? opts.timeoutMs : 180000));
+-  if (opts.signal && opts.signal.aborted) { clearTimeout(timer); throw new Error('Aborted'); } // 同 _toolFetchQueued·已置位预检(2026-07-04 审查定罪)
+-  var onExternalAbort = function() { ctrl.abort(); };
+-  if (opts.signal) opts.signal.addEventListener('abort', onExternalAbort);
+-  var _scaledTok = _finalizedBody
+-    // M4·Anthropic cache_control：原生 Anthropic API + sys 足够长 → 加 cache_control 享 90% 折扣
+-        if (_firstS && _firstS.role === 'system' && typeof _firstS.content === 'string' && _firstS.content.length > 1500) {
+-          _msgsStream = messages.slice();
+-          _msgsStream[0] = { role: 'system', content: [{ type: 'text', text: _firstS.content, cache_control: { type: 'ephemeral' } }] };
+-        }
+-      }
+-    var _bodyCore = _finalizedBody || {
+-      model: (_aiCfg && _aiCfg.model) || (P.ai && P.ai.model) || 'gpt-4o', messages: _msgsStream,
+-      temperature: (opts.temperature !== undefined) ? opts.temperature : (P.ai.temp || 0.8),
+-      max_tokens: _scaledTok
+-    };
+-    if (!_finalizedBody && opts.extraBody) Object.assign(_bodyCore, opts.extraBody);
+-    var resp = await fetch(url, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+-      body: JSON.stringify(_bodyCore),
+-      signal: ctrl.signal
+@@ -1263,26 +1281,26 @@ async function _callAIMessagesStreamDirect(messages, maxTok, opts) {
+-  } finally {
+-    clearTimeout(timer);
+-    if (opts.signal && typeof opts.signal.removeEventListener === 'function') opts.signal.removeEventListener('abort', onExternalAbort);
+-  }
+-}
+-
+-  opts = opts || {};
+-  if (opts.skipQueue || typeof _aiQueue === 'undefined' || !_aiQueue || typeof _aiQueue.enqueue !== 'function') {
+-    return _callAIMessagesStreamDirect(messages, maxTok, opts);
+-  var queuedOpts = Object.assign({}, opts, { skipQueue: true });
+-}
+-
+-// 已经通过最终物理预算审核的请求必须原样发送。除 stream:true 外，模型、消息、
+-// completion 上限、strict schema/tools 等都不得在 transport 层重新解释或放大。
+-async function callAIBodyStream(finalizedBody, opts) {
+@@ -1305,11 +1323,11 @@ async function callAIBodyStream(finalizedBody, opts) {
+-
+-// ============================================================
+-// GameHooks — 统一钩子系统，替代猴子补丁链
+-// 用法：GameHooks.on('enterGame:after', fn)  注册回调
+-//       GameHooks.run('enterGame:after')       触发所有回调
+@@ -2086,13 +2104,13 @@ function calcDateFromTurn(turn){
+-  var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
+-  var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
+-function _tmTimeDisplayParts(turn){
+-  if(!P.time) return { main:'第'+turn+'回合', tip:'' };
+@@ -2122,12 +2140,12 @@ function _tmTimeDisplayParts(turn){
+-  tipParts.push(adStr);
+-  // 农历日期（中文）
+-  tipParts.push('农历'+lunarMonthName(di.lunarMonth)+lunarDayName(di.lunarDay));
+-  // 干支年
+-  if(t.enableGanzhiYear!==false)tipParts.push(di.gzYearStr+'年');
+-
+@@ -2145,20 +2163,20 @@ function getTS(turn){
+-  span.textContent=parts.main;
+-  span.title=parts.tip;
+-  span.style.cursor='help';
+-  span.style.borderBottom='1px dotted var(--gold-d)';
+-  return span;
+-
+-/**
+-function getTSText(turn){
+-  return _tmTimeDisplayParts(turn).main;
+-}
+@@ -2388,12 +2406,12 @@ function _buildLongTermActionsDigest() {
+-      lines.push('  · 【' + (p.type || '工程') + '】' + p.name + '·' + p.status + '·进度 ' + (p.progress || 0) + '%·已 ' + elapsed + ' 回合' + (p.leader ? '·' + p.leader + '督办' : '') + etaText);
+-    });
+-    lines.push('  ※ 续推须给新 progress（高于上次）·或写 status=completed/abandoned·不写则系统判为停滞');
+-  }
+-  return lines.length > 0 ? lines.join('\n') : '';
+-}
+@@ -2404,12 +2422,12 @@ function renderEraNamesList(){
+-    var save=document.createElement('button');save.type='button';save.className='bd bsm';save.textContent='保';save.addEventListener('click',function(){window._eraUpd(i);});row.appendChild(save);
+-    var del=document.createElement('button');del.type='button';del.className='bd bsm';del.textContent='删';del.addEventListener('click',function(){window._eraDel(i);});row.appendChild(del);return row;
+-  });
+-  if(el.replaceChildren)el.replaceChildren.apply(el,rows);else{el.textContent='';rows.forEach(function(row){el.appendChild(row);});}
+-}
+-window._eraAdd=function(){if(!P.time.eraNames)P.time.eraNames=[];P.time.eraNames.push({name:"",startYear:P.time.year,startMonth:1,startDay:1});renderEraNamesList();};window._eraDel=function(i){if(!P.time.eraNames)return;P.time.eraNames.splice(i,1);renderEraNamesList();};window._eraUpd=function(i){var e=P.time.eraNames[i];if(!e)return;var n=document.getElementById("t-era-n-"+i);if(n)e.name=n.value;var y=document.getElementById("t-era-y-"+i);if(y)e.startYear=+y.value||P.time.year;var m=document.g
+@@ -2461,7 +2479,7 @@ var ImageAPI = {
+-    return fetch(cfg.url, {
+@@ -2583,12 +2601,12 @@ function ensureAIDiagnostics(turn) {
+-  d.memory.snapshots = Array.isArray(d.memory.snapshots) ? d.memory.snapshots : [];
+-  return d;
+-}
+-
+-// Phase 7·完整 4 区成本面板·读 GM._costHistory + TokenUsageTracker.getSnapshot + GM._turnAiResults
+-// 调用方·设置面板"AI 成本面板"按钮·或 TM.ai.showCostPanel()
+@@ -2727,12 +2745,12 @@ function _buildAICostPanelElement() {
+-  if (typeof document === 'undefined') return;
+-  var prev = document.getElementById('ai-cost-panel-backdrop');
+-  if (prev) prev.remove();
+-  var panel = _buildAICostPanelElement();
+-  if (panel) document.body.appendChild(panel);
+-}
+diff --git a/web/tm-api-models.js b/web/tm-api-models.js
+ADDED 0 REMOVED 73
+@@ -1,73 +0,0 @@
+-// Models discovery never calls inference, invents fallback IDs, or persists API credentials.
+-(function(global) {
+-  'use strict';
+-  function fail(message) { return new Error(message); }
+-  function endpoint(cfg) {
+-    var u; try { u = new URL(String(cfg.url || '').trim()); } catch (_) { throw fail('请填写完整的 API 地址'); }
+-    if (!/^https?:$/.test(u.protocol) || u.username || u.password) throw fail('API 地址须为 HTTP(S)，且不能含账号密码');
+-    if (u.search || u.hash) throw fail('拉取模型时请使用不含查询参数的 Base URL，密钥填写在 Key 栏');
+-    var path = u.pathname.replace(/\/+$/, ''), host = u.hostname.toLowerCase(), mode = 'openai';
+-    if (/\/messages$/.test(path) || host === 'api.anthropic.com') mode = 'anthropic';
+-    if ((host === 'generativelanguage.googleapis.com' || /:generateContent$/.test(path)) && !/\/openai(?:\/|$)/.test(path)) mode = 'gemini';
+-    if (mode === 'gemini') path = path.replace(/\/models\/[^/]+:(?:streamGenerateContent|generateContent)$/, '');
+-    else path = path.replace(/\/(?:chat\/completions|messages|responses)$/, '');
+-    if (!path) path = mode === 'anthropic' ? '/v1' : mode === 'gemini' ? '/v1beta' : '';
+-    u.pathname = /\/models$/.test(path) ? path : path + '/models';
+-    return { url: u, mode: mode };
+-  }
+-  async function list(cfg, options) {
+-    options = options || {};
+-    var key = String(cfg.key || '').trim();
+-    if (!key) throw fail('请先填写 API Key');
+-    var target = endpoint(cfg), headers = { Accept: 'application/json' };
+-    if (target.mode === 'anthropic') { headers['x-api-key'] = key; headers['anthropic-version'] = '2023-06-01'; }
+-    else if (target.mode === 'gemini') headers['x-goog-api-key'] = key;
+-    else headers.Authorization = 'Bearer ' + key;
+-    var ctrl = new AbortController(), signal = options.signal, timedOut = false, timer;
+-    function cancel() { ctrl.abort(); }
+-    if (signal) { if (signal.aborted) cancel(); else signal.addEventListener('abort', cancel, { once: true }); }
+-    var stop;
+-    var aborted = new Promise(function(_, reject) {
+-      stop = function() { var e = fail(timedOut ? '模型列表请求超时，请重试' : '已取消模型列表请求'); e.name = 'AbortError'; reject(e); };
+-      if (ctrl.signal.aborted) stop(); else ctrl.signal.addEventListener('abort', stop, { once: true });
+-    });
+-    timer = setTimeout(function() { timedOut = true; cancel(); }, options.timeoutMs || 20000);
+-    async function read() {
+-      var entries = new Map(), tokens = new Set(), partial = false;
+-      for (var page = 0; page < 20; page++) {
+-        if (ctrl.signal.aborted) throw fail('请求已取消');
+-        var resp = await (options.fetch || global.fetch)(target.url.href, {
+-          method: 'GET', headers: headers, signal: ctrl.signal, redirect: 'error', cache: 'no-store', credentials: 'omit'
+-        });
+-        if (!resp.ok) throw fail('模型列表 HTTP ' + resp.status + '；请检查地址、密钥或模型列表权限');
+-        var data; try { data = await resp.json(); } catch (_) { throw fail('模型列表不是有效 JSON，可能是网页地址或中转响应异常'); }
+-        if (ctrl.signal.aborted) throw fail('请求已取消');
+-        var rows = target.mode === 'gemini' ? data && data.models : data && data.data;
+-        if (!Array.isArray(rows)) throw fail('响应没有模型列表；保留手动填写 Model_ID');
+-        rows.forEach(function(row) {
+-          if (!row || typeof row !== 'object') return;
+-          if (target.mode === 'gemini' && Array.isArray(row.supportedGenerationMethods) && row.supportedGenerationMethods.indexOf('generateContent') < 0) return;
+-          var id = target.mode === 'gemini' ? row.name : row.id;
+-          if (typeof id !== 'string' || !id.trim()) return;
+-          if (target.mode === 'gemini') id = id.replace(/^models\//, '');
+-          entries.set(id, { id: id });
+-        });
+-        var next = target.mode === 'gemini' ? data.nextPageToken : (target.mode === 'anthropic' && data.has_more ? data.last_id : '');
+-        if (!next) { partial = data.has_more === true; break; }
+-        if (typeof next !== 'string' || tokens.has(next)) throw fail('模型列表分页异常，请稍后重试');
+-        tokens.add(next); target.url.searchParams.set(target.mode === 'gemini' ? 'pageToken' : 'after_id', next);
+-        partial = page === 19;
+-      }
+-      return { models: Array.from(entries.values()).sort(function(a, b) { return a.id.localeCompare(b.id); }), partial: partial };
+-    }
+-    try { return await Promise.race([read(), aborted]); }
+-    catch (e) {
+-      if (e && (e.name === 'AbortError' || /^模型列表|^响应没有/.test(e.message || ''))) throw e;
+-      throw fail('无法拉取模型列表，请检查网络、跨域许可或地址；仍可手动填写 Model_ID');
+-    } finally {
+-      clearTimeout(timer); if (signal) signal.removeEventListener('abort', cancel); ctrl.signal.removeEventListener('abort', stop);
+-    }
+-  }
+-  global.TM = global.TM || {};
+-  global.TM.APIModels = { endpoint: endpoint, list: list };
+-})(typeof window !== 'undefined' ? window : globalThis);
+diff --git a/web/tm-chaoyi-tinyi.js b/web/tm-chaoyi-tinyi.js
+ADDED 97 REMOVED 14
+@@ -14,7 +14,50 @@
+@@ -108,7 +151,7 @@ function _ty2_openSetup() {
+-  html += '<button class="bt" onclick="this.closest(\'div[style*=fixed]\').remove();">取消</button>';
+@@ -120,6 +163,12 @@ function _ty2_openSetup() {
+@@ -138,11 +187,14 @@ function _ty2_pickPending(sel) {
+-  window._ty2_pendingMeta = null;
+@@ -151,11 +203,6 @@ async function _ty2_startSession() {
+-  // 能量消耗
+-  if (typeof _spendEnergy === 'function' && !_spendEnergy(15, '廷议')) return;
+-
+-  var bg = _$('ty2-setup-bg'); if (bg) bg.remove();
+-
+@@ -163,6 +210,15 @@ async function _ty2_startSession() {
+@@ -181,10 +237,6 @@ async function _ty2_startSession() {
+-  // 从待议题目列表中移除
+-  if (pendingMeta && GM._pendingTinyiTopics) {
+-    GM._pendingTinyiTopics = GM._pendingTinyiTopics.filter(function(x) { return x !== pendingMeta; });
+-  }
+@@ -201,9 +253,40 @@ async function _ty2_startSession() {
+-  try { _ty2_relayout(); } catch(_tyLayoutErr) { try { window.TM && TM.errors && TM.errors.captureSilent(_tyLayoutErr, 'tinyi-relayout'); } catch(_) {} }
+-  // 进入初议
+-  _ty2_phaseInitialRound();
+diff --git a/web/tm-edict-parser.js b/web/tm-edict-parser.js
+ADDED 18 REMOVED 1
+@@ -1412,7 +1412,24 @@
+-    } catch(e) { console.error('[edict] exec', e); exec = false; execOk = false; }
+diff --git a/web/tm-endturn-ai.js b/web/tm-endturn-ai.js
+ADDED 230 REMOVED 222
+@@ -55,10 +55,10 @@
+-      var manual = Number(P.conf.maxOutputTokens), detected = Number(P.conf._detectedMaxOutput);
+-      if (Number.isFinite(manual) && manual > 0) return manual;
+-      var currentKey = String(P.ai.model || '').trim() + '@' + String(P.ai.url || '');
+-      if (P.conf._ctxCacheKey === currentKey && Number.isFinite(detected) && detected > 0) return detected;
+@@ -322,8 +322,8 @@
+-        if (originalBody.response_format) repairBody.response_format = originalBody.response_format;
+-        if (global.TM && global.TM.AIOptions) repairBody = global.TM.AIOptions.inheritForRepair(repairBody, originalBody);
+@@ -377,8 +377,8 @@
+-      var key = opts.key || (P.ai && P.ai.key);
+-      var _thinkingCfg = P.ai;
+@@ -389,26 +389,26 @@
+-          key = _secCfg.key;
+-          _thinkingCfg = _secCfg;
+-      // SC1 is already finalized with its thinking settings; never alter audited bytes here.
+-      if (opts.id !== 'sc1' && global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, _thinkingCfg, 'openai');
+-      var label = opts.label || 'endturn';
+-      var started = Date.now();
+-      var data = null;
+-      var raw = '';
+-      try {
+-        if (typeof _aiFetchWithRetry === 'function') {
+-            priority: opts.priority || 'normal',
+-            timeoutMs: opts.timeoutMs,
+-            maxRetries: opts.maxRetries,
+-            contextOverflowReducer: opts.contextOverflowReducer
+-          });
+@@ -594,8 +594,8 @@
+-          edict_feedback: { type: 'array', items: { type: 'object', additionalProperties: true } },
+-          building_decisions: { type: 'array', items: { type: 'object', additionalProperties: true } },
+@@ -794,13 +794,13 @@
+-    var _effectiveOutCap = ctx.subcalls._effectiveOutCap;
+-    var _modelTemp = ctx.subcalls._modelTemp;
+-    var _modelFamily = ctx.subcalls._modelFamily;
+-
+-    // 必需系统前缀都装不下时，不先花多轮 SC0/记忆调用再等最终预算失败。
+-    // 这里只预检不可删的下界；后面的完整 schema/正文预算仍原样执行。
+-    ns.assertSc1MandatoryPrefix(sysPFor('sc1'), Math.min(_effectiveOutCap || 16384, 16384));
+@@ -958,8 +958,8 @@
+-            var _terminalError = typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_scErr);
+-            if (_attempt >= _retries || _terminalError) {
+@@ -979,9 +979,9 @@
+-                    error: _errInfo.message,
+-                    status: _errInfo.status,
+-                    snippet: _errInfo.snippet,
+@@ -990,14 +990,14 @@
+-                toast('\u26A0 ' + name + '失败：' + String(_brief || '').slice(0, 80) + (id === 'sc1' && _terminalError ? '；主推演中止，详见AI诊断' : '；本回合会继续，详见AI诊断'));
+-              console.warn('[' + name + '] 重试' + _attempt + '次后仍失败');
+-              try {
+-                if (typeof setAIBranchDiagnostic === 'function') setAIBranchDiagnostic(id, 'failed', _errInfo.message);
+-              } catch(_branchFailErr) { try { console.warn('[AIDiagnostic] branch failed failed:', _branchFailErr); } catch(_) {} }
+-              if ((id === 'sc1' && _terminalError) || (typeof _isCriticalPostTurnJob === 'function' && _isCriticalPostTurnJob({ id: id }))) throw _scErr;
+-              return;
+@@ -1094,9 +1094,9 @@
+-      async function _runIncrementalSc1Retry(p1, missingFields, buildingBatch) {
+-        if (!Array.isArray(missingFields) || (missingFields.length <= 3 && !buildingBatch)) {
+@@ -1113,13 +1113,13 @@
+-            + '\nJSON 结构·{' + missingFields.map(function(k){ return '"' + k + '":' + (k === 'events' || /changes$|feedback$|adjustments$|decisions$/.test(k) ? '[]' : '""'); }).join(',') + '}';
+-          if (buildingBatch && TM.BuildingOrders) prompt += TM.BuildingOrders.prompt(GM, buildingBatch, false);
+-          var parsed = (call && call.parse) ? call.parse.parsed : null;
+-          if (buildingBatch && !TM.BuildingOrders.current(GM, P, buildingBatch, false)) return null;
+@@ -1221,14 +1221,14 @@
+-        } catch(_) {}
+-        return base;
+-      }
+-
+-      var _queuedPostTurnSubcalls = [];
+-      function _queuePostTurnSubcall(id, fn) {
+-        _queuedPostTurnSubcalls.push({ id: id, fn: fn });
+-      }
+@@ -1238,15 +1238,15 @@
+-      function _enqueueLocalPostTurnJob(id, fn) {
+-        if (!GM._postTurnJobs || !Array.isArray(GM._postTurnJobs.pending)) GM._postTurnJobs = { pending: [], launchedAt: Date.now(), results: {} };
+-        var p = Promise.resolve().then(fn).then(function(value) {
+-          return { ok: true, value: value };
+-        GM._postTurnJobs.pending.push({ id: id, promise: p });
+@@ -1254,16 +1254,16 @@
+-        }
+-        if (waiting.length) {
+-          var results = await Promise.all(waiting.map(function(job) { return job.promise; }));
+-          var failed = results.filter(function(result) { return result && result.ok === false; });
+-          if (failed.length) throw failed[0].error || new Error('关键后台任务失败');
+-        }
+@@ -1271,7 +1271,7 @@
+-      } catch(_emfE) { _dbg('[MemoryFresh] 预处理失败:', _emfE); throw _emfE; }
+@@ -1851,34 +1851,34 @@
+-          if (Array.isArray(_ML.L2) && _ML.L2.length > 0) {
+-                _recentHistory += '  <scene range="' + _xE2(x.turnRange) + '" mood="' + _xE2(x.mood||'') + '">' + _xE2(x.summary) + '</scene>\n';
+-              } else {
+-                _recentHistory += '  <scene range="' + _xE2(x.turnRange) + '">' + _xE2(x.summary) + '</scene>\n';
+-              }
+-            });
+-            _recentHistory += '</scene-summaries>\n';
+-          }
+-              _compiledRecall = global.TM.MemoryContextCompiler.compileRecall(_recallResults, {
+-                suppressed: _traceSuppressed
+-              });
+-              if (typeof global.TM.MemoryContextCompiler.requireCompiled === 'function') global.TM.MemoryContextCompiler.requireCompiled(_compiledRecall, 'SC_RECALL');
+-            }
+-          } catch(_compileRecallE) {
+-            if (_compileRecallE && _compileRecallE.code === 'mandatory_context_overflow') throw _compileRecallE;
+-            _compiledRecall = null;
+@@ -1979,13 +1979,13 @@
+-              text: _recentHistory.slice(_recallGroupStart),
+-              source: _recallGroupMeta.source,
+-              reason: 'SC_RECALL',
+-              authority: _recallGroupMeta.authority,
+-              authorityRank: _recallGroupMeta.authorityRank,
+@@ -1996,13 +1996,13 @@
+-            _recallPackedZones = global.TM.ContextZones.packZones([
+-              { id:'recall-footer', lane:'L6_retrieved_evidence', text:_recallFooterText, mustKeep:true, order:999999, source:'SC_RECALL', reason:'recall footer' }
+-            ]), { maxTokens:_recallZoneBudget });
+-            if (typeof global.TM.ContextZones.requirePacked === 'function') global.TM.ContextZones.requirePacked(_recallPackedZones, 'SC_RECALL fallback');
+-            _recentHistory = _recentHistory.slice(0, _recallTraceStart) + (_recallPackedZones.text || '');
+@@ -2297,11 +2297,11 @@
+-              // P11.2C-full：rejected 不展示·approved/pending 区分（focus 默认全部建议级）
+-              var _vfocus = _lastC.next_turn_focus.filter(function(f) {
+-                return typeof f === 'string' || f._status !== 'rejected';
+-              });
+-              if (_vfocus.length > 0) {
+@@ -2309,16 +2309,16 @@
+-            _consolidated += '=== 记忆固化结束·此段是下回合 sc1 推演的最高优先级输入 ===\n\n';
+-          }
+-        }
+-      } catch(_consE){ _dbg('[sc1 consolidate inject] fail:', _consE); }
+-      if (ctx.apply) ctx.apply._hardConstraints = _hardConstraints;
+-          var _sc1ZonePacked = TM.ContextZones.packZones([
+@@ -2326,15 +2326,15 @@
+-          ], {
+-            maxTokens: _sc1PrefixBudgetRaw,
+-            defaultMaxTokens: 0
+-          });
+-          if (typeof TM.ContextZones.requirePacked === 'function') TM.ContextZones.requirePacked(_sc1ZonePacked, 'SC1 prefix');
+-          _sc1Prefix = _sc1ZonePacked.text;
+-          if (TM.ContextZones.recordZoneInjection) TM.ContextZones.recordZoneInjection(GM, _sc1ZonePacked, { stage:'sc1-prefix' });
+-        }
+-      } catch(_czE) { _dbg('[ContextZones sc1-prefix] fail:', _czE); if (_czE && _czE.code === 'mandatory_context_overflow') throw _czE; }
+@@ -2726,7 +2726,7 @@
+-          if (e._reliefCaseId) return false; // Retired standalone pilot data: no automatic reinterpretation or payment.
+@@ -3614,8 +3614,8 @@
+-      // ★ 后置强调（depth=0 等价物·LSR 范式）：把表操作规则投到 user prompt 末尾·克服长上下文头部衰减
+-      if (_memTblRule) tp1 += '\n\n' + _memTblRule;
+@@ -3624,18 +3624,18 @@
+-      tp1 += '\n\n【新增字段·economic_advice (Phase 3 A10·SC17 已让位)】\n';
+-      tp1 += '  SC1 输出 JSON 需包含 "economic_advice"·string·100-200 字·内容·当前财政完整分析(收入来源/支出压力/盈亏)·通胀压力·下回合资源预测·应该做什么/不应该做什么·\n';
+-      tp1 += '  无突出经济变化也必须给出·至少给一句"国库平稳·税入正常"\n';
+-
+-          var _sc1MemBudget = (global.TM.ContextZones && typeof global.TM.ContextZones.finiteNonNegative === 'function') ? global.TM.ContextZones.finiteNonNegative(_sc1MemBudgetRaw == null ? 1800 : _sc1MemBudgetRaw, 1800) : Number(_sc1MemBudgetRaw == null ? 1800 : _sc1MemBudgetRaw);
+-          if (_sc1MemBudget > 0) {
+@@ -3644,10 +3644,10 @@
+-            };
+-            var _sc1CompiledContext = global.TM.MemoryContextCompiler.compileFromGM(GM, _sc1MemCompileOpts);
+-            if (typeof global.TM.MemoryContextCompiler.requireCompiled === 'function') global.TM.MemoryContextCompiler.requireCompiled(_sc1CompiledContext, 'SC1_PRE_CONTEXT');
+-            if (_sc1CompiledContext && _sc1CompiledContext.text) {
+@@ -3660,12 +3660,12 @@
+-                    audience: 'system',
+-                    actorScope: 'system',
+-                    maxTokens: _sc1MemBudget,
+-                    compileOpts: _sc1MemCompileOpts
+-                  });
+-                }
+@@ -3680,12 +3680,12 @@
+-      } catch(_sc1MemCtxE) {
+-        _dbg('[SC1_PRE_CONTEXT] compile fail:', _sc1MemCtxE);
+-        try { if (typeof recordSubcallError === 'function') recordSubcallError('sc1', 'memory_context_compile', _sc1MemCtxE); }
+-        catch(_recordContextError) { _dbg('[SC1_PRE_CONTEXT] diagnostic record fail:', _recordContextError); }
+-        if (_sc1MemCtxE && _sc1MemCtxE.code === 'mandatory_context_overflow') throw _sc1MemCtxE;
+-      }
+@@ -3695,89 +3695,89 @@
+-          });
+-        }
+-      } catch(_sc1qLsrE) {}
+-      // ①-S2 anomaly 强化：玩家有非常规举措时·要求 sc1 特别推演（开关 + 检出·放在格式约束前·属内容指令）
+-      if ((typeof agentFlagOn==='function' ? agentFlagOn('anomalyRoutingEnabled') : (P.conf && P.conf.anomalyRoutingEnabled)) && GM._turnAiResults && GM._turnAiResults.anomaly && GM._turnAiResults.anomaly.detected) {
+-        try {
+-          var _anomMv = GM._turnAiResults.anomaly.moves || [];
+-          var _anomTxt = _anomMv.map(function(m){ return '「' + ((m && m.what) || '') + '」(' + ((m && m.why_uncommon) || '') + ')'; }).join('·');
+-          if (_anomTxt) {
+-            tp1 += '\n\n=== 非常规举措·特别推演要求 (玩家自由动作·须硬核可信) ===\n'
+-                 + '玩家本回合有越出常规的举措：' + _anomTxt + '。\n'
+-                 + '务必：(1) 严肃考量其历史先例与现实可行性·不可套路化或敷衍；(2) 推演其可能引发的非常规连锁反应(制度/人心/势力/财政)；(3) 若 SC_RECALL 注入了相关历史先例·参照其成败据实推演；(4) 不因其罕见而回避后果·也不夸大到失真。';
+-      // Phase 0 D-2·SC1 JSON-only 强约束 LSR·prompt 末尾压住 (大上下文衰减时模型最易丢 JSON 格式)
+-           + 'YOU MUST RETURN JSON ONLY. 不要包裹 markdown 代码块·不要前言·不要解释·不要附加任何 prose。\n'
+-           + '第一个字符必须是 `{`·最后一个字符必须是 `}`。任何非 JSON 字符都会导致整回合推演失败·后续 sc1b/sc1c/sc1d/sc2 等子调用会全部降级。\n'
+-      var _sc1Rf = _selectResponseFormat(_modelFamily, _buildSc1JsonSchema);
+-      if (_sc1Rf) _sc1Body.response_format = _sc1Rf;
+-      // 所有记忆、sc1q、anomaly、JSON 规则与 response schema 都已加入后，才做唯一可信的最终整包预算。
+-      // 预算同时保留 completion 空间；组件层 mustKeep 不得让最终 API 请求突破模型物理上下文。
+-      var _sc1FinalBudgetOptions = { completionTokens: _sc1BaseTok };
+-      if (global.TM && global.TM.AIOptions) _sc1Body = global.TM.AIOptions.apply(_sc1Body, P.ai, 'openai');
+-      var _sc1Finalized = ns.finalizeSc1RequestBody(_sc1Body, _sc1FinalBudgetOptions);
+-      _sc1Body = _sc1Finalized.body;
+-      var _sc1OverflowReducer = ns.createSc1ContextOverflowReducer(_sc1FinalBudgetOptions);
+-      ns.recordSc1FinalDiagnostics(_sc1Finalized.diagnostics);
+-      var _streamSC1 = !!(P.ai && P.ai.stream_sc1 === true);  // Phase 0 D-1·默认关·需 P.ai.stream_sc1=true 显式开 (stream 用于进度条不打 JSON 抢救)
+-      var data1 = null;
+-      var _sc1Call = null;
+-        // 流式直接消费已通过最终预算审核的完整 body；transport 只允许添加 stream:true。
+-        try {
+-          var _sc1PolicyForStream = ns.getCallPolicy('sc1');
+-          c1 = await callAIBodyStream(_sc1Body, {
+-            onChunk: function(text) {
+-          });
+-        } catch(_se) {
+-          var _streamCompatibility = [400,422].indexOf(Number(_se && _se.status)) >= 0 && /stream|response_format|json_schema/i.test(String(_se && _se.message || ''));
+-          if (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_se) && !_streamCompatibility) throw _se;
+-          _dbg('[SC1 stream] failed·fallback to fetch:', _se);
+-      }
+-      if (!_streamSC1) {
+-        try {
+-          _sc1Call = await _callEndturnAI(_sc1Body, ns.sc1ProductionCallOptions('结构化数据', _sc1OverflowReducer));
+-          data1 = _sc1Call.data;
+-          c1 = _sc1Call.raw || '';
+-          _sc1CriticalError = null;
+-          var _isStrictErr = (_sc1Body.response_format && _sc1Body.response_format.type === 'json_schema')
+-            && [400,422].indexOf(Number(_sc1FetchErr && _sc1FetchErr.status)) >= 0
+-            && /response_format|json_schema|strict/i.test(String(_sc1FetchErr && _sc1FetchErr.message || ''))
+-            && !(_sc1FetchErr && _sc1FetchErr.contextOverflow);
+-              _sc1Call = await _callEndturnAI(_sc1Body, ns.sc1ProductionCallOptions('结构化数据·fallback', _sc1OverflowReducer));
+-              c1 = _sc1Call.raw || '';
+-              _sc1CriticalError = null;
+@@ -3793,8 +3793,8 @@
+-      if (_sc1CriticalError && typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(_sc1CriticalError)) throw _sc1CriticalError;
+-      p1=null; // 赋值到外层声明的p1
+@@ -3821,8 +3821,8 @@
+-      if ((!p1 || !_hasSc1StructuredResult(p1)) && (!_sc1ExtraPassUsed || (P.conf && P.conf.sc1RepairUncapped === true))) {
+-        _sc1ExtraPassUsed = true;
+@@ -3832,33 +3832,33 @@
+-      if (p1 && TM.BuildingOrders && TM.BuildingOrders.missing(GM, P, ctx.input.buildingOrders, p1).length && !_sc1ExtraPassUsed) {
+-        _sc1ExtraPassUsed = true; // 与既有增量修复/救援共用一次额度，不新增无界重问。
+-        var _buildingFilled = await _runIncrementalSc1Retry(p1, ['building_decisions'], ctx.input.buildingOrders);
+-        if (_buildingFilled) p1 = _buildingFilled;
+-      }
+-      GM._turnAiResults.subcall1_raw = c1;
+-        var _sc1qOut = (ctx && ctx.results && ctx.results.sc1q) || (GM._turnAiResults && GM._turnAiResults.subcall1q) || null;
+-        if (_sc1qOut && Array.isArray(_sc1qOut.dialogue_commitments) && _sc1qOut.dialogue_commitments.length > 0) {
+-          var _covered = new Set();
+-          (p1.dialogue_commitment_feedback || []).forEach(function(d) { if (d && d.npc) _covered.add(d.npc); });
+-              var arr = GM._npcCommitments[nm] || [];
+-              if (arr.some(function(c){ return c && c.id === cu.id; })) _covered.add(nm);
+-            });
+-          });
+-          var _missed = [];
+@@ -3879,22 +3879,22 @@
+-          if (!Array.isArray(GM._edictRelations)) GM._edictRelations = [];
+-          var _relationAdded = false, _curT = GM.turn || 1;
+-          p1.edict_relations.forEach(function(er) {
+-            GM._edictRelations.push({
+-              turn: _curT
+-            }); _relationAdded = true;
+-          });
+-          if (GM._edictRelations.length > 100) GM._edictRelations = GM._edictRelations.slice(-100);
+-          if (_relationAdded && global.TM && global.TM.MemoryRetrieval) global.TM.MemoryRetrieval.bumpRevision(GM, 'edges');
+@@ -4894,7 +4894,15 @@
+-          console.warn('[SC1 apply] failed after structured result:', _applyCbErr);
+diff --git a/web/tm-endturn-apply-stages.js b/web/tm-endturn-apply-stages.js
+ADDED 76 REMOVED 60
+@@ -398,21 +398,30 @@ inst._imprisonedTurn = GM.turn||0;
+-              anyPathChanges: Array.isArray(p1.anyPathChanges) ? p1.anyPathChanges : [],
+-              regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
+-            }
+-              throw new Error('AI 主写回未能原子提交');
+@@ -773,23 +782,23 @@ inst._imprisonedTurn = GM.turn||0;
+-                if (typeof P !== 'undefined') {
+-                  if (!P.keju) P.keju = {};
+-                  if (!P.keju.history) P.keju.history = [];
+-                  P.keju.history.push({ turn: GM.turn||0, stage: e.stage, year: e.year||'', topThree: e.topThree||[], reason: e.reason||'', _autoFromReconcile: true });
+-                }
+-                if (!GM.turnChanges) GM.turnChanges = {};
+-                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+-              _patch.party_events.forEach(function(e) {
+-                if (!Array.isArray(GM.parties)) GM.parties = [];
+-                if (e.action === 'form') {
+-                  var _formedParty = { name: e.partyName, leader:'', head:'', members:[], formedTurn: GM.turn||0, status: 'active', reason: e.reason||'', _autoFromReconcile: true };
+-                  if (e.leader && !_stageSetPartyLeader(_formedParty, e.leader, e.reason || '一致性补录立党')) return;
+-                  if (_formedParty.leader) _formedParty.members = [_formedParty.leader];
+-                  GM.parties.push(_formedParty);
+@@ -838,9 +847,9 @@ inst._imprisonedTurn = GM.turn||0;
+-              _patch.construction_events.forEach(function(e) {
+-                if (TM.BuildingOrders && TM.BuildingOrders.manages(GM, e.name, e.region, ctx.input && ctx.input.buildingOrders)) return; // 原营造案由唯一地区建筑账处理，补录不另造 activeProjects 影子。
+-                if (!Array.isArray(GM.activeProjects)) GM.activeProjects = [];
+@@ -933,49 +942,56 @@ inst._imprisonedTurn = GM.turn||0;
+-                throw new Error('AI 二审补录未能原子提交');
+-              if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
+-              GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });
+-              if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);
+-              console.log('[Reconcile] AI 二审完成·补录 ' + _patched + ' 条·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
+-              if (typeof addEB === 'function') {
+-                addEB('校验补录', 'AI 二审一致性·补录 ' + _patched + ' 条结构化数据' + (_toolResp.fallback?'（兜底）':''));
+-              }
+-            } else {
+-              console.log('[Reconcile] AI 二审完成·无需补录·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
+-            }
+-          } catch(_recE) {
+-            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_recE, 'endturn] reconcile AI:') : console.warn('[endturn] reconcile AI failed:', _recE);
+-          }
+-        }
+-  };
+-
+-  // ── AP-6（自 origin writeBack 尾部逐字节迁出·幻觉防火墙后验+记忆入账+record 组装+return ctx）──
+-  //   writeBack 局部变量经状态包 _st 传入·顶部解构回同名 var 保业务体逐字节一致。
+-      // 主链的 faction_succession consumer 还承担稳定度/史事副作用；在其执行后统一经
+-      // Narrative 语义 sink 补齐 leader/leaderName/ruler/leadership.ruler/leaderInfo.name 镜像。
+-      // 前置 preflight 已将 faction/newLeader 收紧为当前活跃势力与存活人物的精确对象。
+-      if (p1 && Array.isArray(p1.faction_succession) && global.TM && global.TM.AIChange && global.TM.AIChange.Narrative && typeof global.TM.AIChange.Narrative.setFactionLeader === 'function') {
+-        p1.faction_succession.forEach(function(sc) {
+-          if (!sc || !(sc.factionId || sc.faction) || !(sc.newLeaderId || sc.newLeader)) return;
+-          var factionRef=String(sc.factionId || sc.faction).trim();
+-          var fac=(GM.facs || []).find(function(f) {
+-            return f && f.id != null && String(f.id).trim()===factionRef;
+-          });
+-          if (!fac && !sc.factionId) {
+-            var matches=(GM.facs || []).filter(function(f) { return f && f.name===sc.faction; });
+-            if (matches.length===1) fac=matches[0];
+-          }
+-          if (fac) global.TM.AIChange.Narrative.setFactionLeader(fac, sc.newLeaderId || sc.newLeader, GM, '势力继统');
+-        });
+-      }
+-      // 1.4: 幻觉防火墙——后验校验（检查AI返回的人名/地名是否在白名单内）
+@@ -1045,7 +1061,7 @@ inst._imprisonedTurn = GM.turn||0;
+-      faction_changes: p1 && Array.isArray(p1.faction_changes) ? p1.faction_changes.length : 0,
+@@ -1063,4 +1079,4 @@ inst._imprisonedTurn = GM.turn||0;
+-})(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
+diff --git a/web/tm-endturn-apply.js b/web/tm-endturn-apply.js
+ADDED 11 REMOVED 22
+@@ -246,14 +246,7 @@
+-        // 应用 AI 返回的地图变化
+-        if(p1.map_changes && P.map) {
+-          try {
+-            applyAIMapChanges(p1, P.map);
+-          } catch(e) {
+-            console.error('应用地图变化失败:', e);
+-          }
+-        }
+@@ -2595,6 +2588,12 @@
+@@ -2789,20 +2788,12 @@
+-          if (window.TM && TM.OfficeCreation) p1.office_changes = p1.office_changes.map(function (oc) { return TM.OfficeCreation.normalize(oc) || oc; });
+-            if (!oc || typeof oc !== 'object') return;
+-            if (window.TM && TM.OfficeCreation && TM.OfficeCreation.isCreation(oc)) {
+-              var _createdOffice = typeof applyReformToTree === 'function' ? applyReformToTree(GM, oc) : { applied: false, summary: '官制创建入口未加载' };
+-              addEB(_createdOffice.applied ? '官制改革' : (_createdOffice.unchanged ? '官制核对' : '官制未施行'), _createdOffice.summary);
+-              if (!_createdOffice.applied && !_createdOffice.unchanged && typeof _tmRecordSemanticFailure === 'function') _tmRecordSemanticFailure('office_creation', oc.newDept || oc.dept || '', _createdOffice.summary);
+-              return;
+-            }
+@@ -5224,7 +5215,7 @@
+-              if (!tt || !tt.name) return;
+@@ -5236,16 +5227,14 @@
+-          if ((GM.events && GM.events.length > 0) || (GM.nativeWorld && GM.nativeWorld.events && GM.nativeWorld.events.length)) {
+-              if (!tt || (!tt.name && !tt.eventId)) return;
+-              var gmEvt = (global.TM && global.TM.NativeWorld && global.TM.NativeWorld.enabled(GM)) ? global.TM.NativeWorld.resolveEvent(GM,tt) : GM.events.find(function(e) { return e.name === tt.name && !e.triggered; });
+-              if(gmEvt&&gmEvt.triggered)return;
+-                if(global.TM&&global.TM.NativeWorld&&global.TM.NativeWorld.enabled(GM)&&!global.TM.NativeWorld.eventVisible(GM,gmEvt))return;
+diff --git a/web/tm-endturn-edict.js b/web/tm-endturn-edict.js
+ADDED 16 REMOVED 8
+@@ -444,6 +444,21 @@ function _findPositionInOfficeTree(posName) {
+@@ -1189,8 +1204,7 @@ function processEdictEffects(allEdictText, edictCategory) {
+-        var classification = edictResult.classification || edictResult;
+-        var typeLabel = classification.typeKey ? (EdictParser.EDICT_TYPES[classification.typeKey] ? EdictParser.EDICT_TYPES[classification.typeKey].name : classification.typeKey) : '';
+@@ -1200,12 +1214,6 @@ function processEdictEffects(allEdictText, edictCategory) {
+-        } else if (edictResult.ok && edictResult.executionResult && edictResult.executionResult.pending) {
+-          if (typeof addEB === 'function') addEB('诏令', '〔' + typeLabel + '〕已入拟制，待廷议裁定；尚未正式设立');
+-          if (typeof toast === 'function') toast('官制之议待廷议裁定');
+-        } else if (!edictResult.ok && classification.typeKey === 'office_reform' && edictResult.executionResult && edictResult.executionResult.reason) {
+-          if (typeof addEB === 'function') addEB('官制未施行', edictResult.executionResult.reason);
+-          if (typeof toast === 'function') toast('官制未施行：' + edictResult.executionResult.reason);
+diff --git a/web/tm-endturn-prompt.js b/web/tm-endturn-prompt.js
+ADDED 3 REMOVED 4
+@@ -1822,8 +1822,9 @@
+-    if(P.map && P.map.regions && P.map.regions.length > 0) {
+-      try { tp += generateMapContextForAI(P.map, P) + "\n"; } catch(e) { if(window.TM&&TM.errors) TM.errors.capture(e,'endturn.mapContextForAI'); }
+@@ -3721,8 +3722,6 @@
+-    sysP += '\n    新部门附带官职表→positions:[{name:"官职名",rank:"品级",count:编制数}]；不得为部门硬填position，任命另用appoint且安排在创建之后。';
+-    sysP += '\n    新设下属部门→dept:实际父部门名 + newDept:新部门名；父部门同名时给deptId或完整deptPath。已落地结构不重复创建，未获准不得宣称已设立。';
+diff --git a/web/tm-faction-derived-economy.js b/web/tm-faction-derived-economy.js
+ADDED 14 REMOVED 1
+@@ -239,6 +239,14 @@
+@@ -260,7 +268,12 @@
+-        sum += f; n += 1;
+diff --git a/web/tm-faction-membership.js b/web/tm-faction-membership.js
+ADDED 295 REMOVED 71
+@@ -129,23 +129,23 @@
+-  function _refreshIndex(facName) {
+-      try { global.TM.FactionIndex.rebuild(); } catch(_){}
+-      try { global.TM.FactionDerived.compute(); } catch(_){}
+-      try { global.TM.FactionDerivedEconomy.compute(); } catch(_){}
+-      try { global.TM.FactionDerivedCohesion.compute(); } catch(_){}
+-      try { global.TM.FactionDerivedStrength.compute(); } catch(_){}
+@@ -310,84 +310,296 @@
+-  function assignProvince(provName, newFacName, opts) {
+-    if (!provName) return false;
+-    opts = opts || {};
+-    var g = _gm();
+-    if (!g) return false;
+-    var newName = newFacName || '';
+-    if (!g._provinceToFaction) g._provinceToFaction = {};
+-    var oldName = g._provinceToFaction[provName] || '';
+-    if (oldName === newName) return false;
+-
+-    if (newName && !_findFac(newName)) {
+-      try { console.warn('[FactionMembership.assignProvince] 目标势力 "' + newName + '" 不在 GM.facs·仍写入·可能 stale ref'); } catch(_){}
+-    }
+-    // 1. canonical
+-    if (newName) g._provinceToFaction[provName] = newName;
+-    else delete g._provinceToFaction[provName];
+-    // 2. 同步 provinceStats[].owner
+-    if (g.provinceStats && g.provinceStats[provName]) {
+-      g.provinceStats[provName].owner = newName;
+-
+-    // 3. 同步 facs[].territories / provinceIds
+-    if (Array.isArray(g.facs)) {
+-      g.facs.forEach(function(f){
+-        if (!f || !f.name) return;
+-        if (f.name === oldName) {
+-          if (Array.isArray(f.territories)) f.territories = f.territories.filter(function(t){return t!==provName;});
+-          if (Array.isArray(f.provinceIds)) f.provinceIds = f.provinceIds.filter(function(t){return t!==provName;});
+-        if (f.name === newName) {
+-          if (!Array.isArray(f.territories)) f.territories = [];
+-          if (!Array.isArray(f.provinceIds)) f.provinceIds = [];
+-          if (f.territories.indexOf(provName) < 0) f.territories.push(provName);
+-          if (f.provinceIds.indexOf(provName) < 0) f.provinceIds.push(provName);
+-
+-    // 4. 审计 (province 自己加 _factionHistory·prov 是 string·只能挂在 provinceStats[].factionHistory)
+-    if (g.provinceStats && g.provinceStats[provName]) {
+-      var ps = g.provinceStats[provName];
+-      if (!Array.isArray(ps._factionHistory)) ps._factionHistory = [];
+-      ps._factionHistory.push({
+-        from: oldName, to: newName,
+-        turn: opts.byTurn != null ? opts.byTurn : _now(),
+-        reason: opts.reason || ''
+-      });
+-
+-    if (oldName) _stamp(oldName);
+-    if (newName) _stamp(newName);
+-    _refreshIndex();
+-
+-    if (!opts.silent) {
+-      _emit('faction:provinceTransferred', { province: provName, from: oldName, to: newName, reason: opts.reason });
+-  function bulkReassignProvinces(filterFn, newFacName, opts) {
+-    var g = _gm();
+-    if (!g) return 0;
+-    opts = opts || {};
+-    var pToF = g._provinceToFaction || {};
+-    var changed = 0;
+-    Object.keys(pToF).forEach(function(provName){
+-      try {
+-        if (filterFn(provName, pToF[provName])) {
+-          if (assignProvince(provName, newFacName, Object.assign({ silent: true }, opts))) changed++;
+-      } catch(_){}
+-    if (changed > 0 && !opts.silent) {
+-      _emit('faction:bulkProvinces', { newFaction: newFacName, count: changed, reason: opts.reason });
+-    return changed;
+@@ -406,7 +618,7 @@
+-        if (owner && !pToF[name]) { pToF[name] = owner; sourceCounts.fromStats++; }
+@@ -415,7 +627,7 @@
+-          if (pid && !pToF[pid]) { pToF[pid] = f.name; sourceCounts.fromFac++; }
+@@ -441,6 +653,16 @@
+@@ -624,6 +846,8 @@
+diff --git a/web/tm-fiscal-engine.js b/web/tm-fiscal-engine.js
+ADDED 75 REMOVED 26
+@@ -647,7 +647,9 @@
+-        add(byId[binding] || byId[r.mapRegionId] || byId[r.id] || byMapId[binding] || byMapId[r.mapRegionId] || byMapId[r.id] || named(r.name));
+@@ -680,7 +682,6 @@
+-    totals.collection={money:global.FiscalStatement.collectionZero(),grain:global.FiscalStatement.collectionZero(),cloth:global.FiscalStatement.collectionZero()};
+@@ -693,7 +694,7 @@
+-      var rec = { id:node.id || node.name, name:node.name || node.id, resources:{}, taxes:[], collection:{money:global.FiscalStatement.collectionZero(),grain:global.FiscalStatement.collectionZero(),cloth:global.FiscalStatement.collectionZero()} };
+@@ -703,10 +704,8 @@
+-        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*Math.max(0,Math.min(1,safeNumber(div.fiscal.compliance,1))));
+-        var collection=global.FiscalStatement.collectionTax({nominal:nominal,eligible:eligible,collected:collected,skimmed:split.skimmed,config:Object.assign({},cfg.collection,div.fiscal.collection,tax.collection)});
+-        global.FiscalStatement.addCollection(rec.collection[kind],collection);global.FiscalStatement.addCollection(totals.collection[kind],collection);
+@@ -722,7 +721,7 @@
+-        rec.taxes.push({ id:tax.id, name:tax.name || tax.id, sourceTag:tax.sourceTag || tax.id, resource:kind, base:tax.base, baseValue:base, nominal:nominal, collected:collected, central:split.toCentral, local:split.cunliu, skimmed:split.skimmed, transit:split.lostInTransit, collection:collection });
+@@ -814,7 +813,7 @@
+-    ['central','localRetain','nominal','grossCollected','skimmed','lostTransit','collection'].forEach(function(k) { annual[k]=clone(yearRevenue.totals[k]); });
+@@ -869,7 +868,6 @@
+-    if(receive)f.taxCollection={period:clone(budget.period),resources:clone(row.collection)};
+@@ -897,7 +895,6 @@
+-      account.taxCollection={period:clone(budget.period),totals:clone(budget.totals),regions:budget.regions.map(function(r){return {id:r.id,name:r.name,resources:clone(r.resources),collection:clone(r.collection)};})};
+@@ -954,8 +951,8 @@
+-      kinds.forEach(function(k){var led=account.ledgers[k],debt=safeNumber(led.deficit,0),manual=Object.keys(led.deficitDetails||{}).reduce(function(n,c){return n+(led.deficitDetails[c]||[]).filter(function(r){return r.manualSettlement===true;}).reduce(function(s,r){return s+safeNumber(r.amount,0);},0);},0),repayment=Math.min(Math.max(0,safeNumber(led.stock,0)),Math.max(0,debt-manual));
+-        if(repayment>0){deductFromLedger(led,repayment,'偿付旧欠');led.deficit=fiscalRound(debt-repayment);global.FiscalStatement.repayDeficits(led,repayment,{excludeManual:true});account[k]=led.stock;}
+@@ -1858,7 +1855,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return global.TM.NativeFiscal.tick(G, opts, 'public');
+@@ -2131,7 +2127,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) { var nq = global.TM.NativeFiscal.quote(G, ctx); return { total:nq.salary, byDept:nq._salaryByDept }; }
+@@ -2202,7 +2197,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return {total:{money:0,grain:0,cloth:0},members:0,arrears:0,native:true};
+@@ -2241,7 +2235,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) { var nq = global.TM.NativeFiscal.quote(G, ctx); return { total:nq.army, byArmy:nq._armyByArmy }; }
+@@ -2298,7 +2291,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return {total:{money:0,grain:0,cloth:0},royalCount:0,scale:0,native:true};
+@@ -2325,8 +2317,6 @@
+-    var ng = getGame(ctx && ctx.game);
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(ng)) return global.TM.NativeFiscal.quote(ng, ctx);
+@@ -2354,7 +2344,6 @@
+-    if (global.TM && global.TM.NativeFiscal && global.TM.NativeFiscal.enabled(G)) return global.TM.NativeFiscal.collect(G, ctx);
+@@ -2475,6 +2464,69 @@
+@@ -2801,6 +2853,8 @@
+@@ -2818,9 +2872,6 @@
+-    recordLiability:function(o){return publicTreasuryCall('recordLiability',o);},
+-    repayLiability:function(o){return publicTreasuryCall('repayLiability',o);},
+-    getLiabilities:function(o){return publicTreasuryCall('getLiabilities',o);},
+@@ -2828,9 +2879,7 @@
+-      var out={guoku:S?S.contextAccount(g):g.account,neitang:known?(S?S.contextAccount(n):n.account):{known:false}};
+-      if(g.budget&&S){var recorded=G.guoku&&G.guoku.taxCollection,source=recorded||{period:g.budget.period,totals:g.budget.totals};out.guoku.taxCollection={flowBasis:recorded?'actual':'forecast',period:clone(source.period),governmentScope:'central-and-regional',resources:{}};['money','grain','cloth'].forEach(function(k){out.guoku.taxCollection.resources[k]=S.taxThree(source.totals,k);});}
+-      return out;
+diff --git a/web/tm-map-system.js b/web/tm-map-system.js
+ADDED 91 REMOVED 23
+@@ -385,9 +385,12 @@ function findMapRegion(mapData, regionRef) {
+-  return mapData.regions.find(function(region) {
+-    return region && (region.id === regionRef || region.name === regionRef || region.adminBinding === regionRef || region.mapRegionId === regionRef);
+-  }) || null;
+@@ -398,13 +401,25 @@ function pushMapTurnChange(change) {
+-  var resolved = findScenarioFactionByMapValue(newOwner, mapData);
+@@ -435,6 +450,8 @@ function setMapRegionOwner(regionRef, newOwner, opts) {
+@@ -452,26 +469,77 @@ function updateMapRegionFields(regionRef, patch, opts) {
+-function applyRuntimeAIMapChanges(aiResponse, mapData) {
+-  if (!aiResponse || !aiResponse.map_changes) return;
+-  // A caller-supplied P/scenario map is only a clone source. All writes land in GM.mapData.
+-  mapData = ensureWritableRuntimeMap({ sourceMap: mapData });
+-  var changes = aiResponse.map_changes;
+-  (changes.ownership_changes || []).forEach(function(change) {
+-    setMapRegionOwner(change.region_id || change.region_name, change.new_owner, { mapData: mapData, reason: change.reason || 'AI推演领地易主' });
+-  });
+-  (changes.troop_changes || []).forEach(function(change) {
+-    var region = findMapRegion(mapData, change.region_id || change.region_name);
+-    if (region) updateMapRegionFields(region.id, { troops: Math.max(0, Number(region.troops || 0) + Number(change.delta || 0)) }, { mapData: mapData, reason: change.reason || 'AI推演驻军变化' });
+-  });
+-  (changes.development_changes || []).forEach(function(change) {
+-    var region = findMapRegion(mapData, change.region_id || change.region_name);
+-    if (region) updateMapRegionFields(region.id, { development: clamp(_mapSystemFiniteNumberOr(region.development, 50) + _mapSystemFiniteNumberOr(change.delta, 0), 0, 100) }, { mapData: mapData, reason: change.reason || 'AI推演发展度变化' });
+-  });
+-  (changes.events || []).forEach(function(event) {
+-    var region = findMapRegion(mapData, event.region_id || event.region_name);
+-    if (region) updateMapRegionFields(region.id, { events: (region.events ? region.events + '\n' : '') + (event.description || '') }, { mapData: mapData, reason: 'AI推演地块事件' });
+diff --git a/web/tm-office-system.js b/web/tm-office-system.js
+ADDED 21 REMOVED 20
+@@ -357,7 +357,7 @@ function _offUniqueTitles(list) {
+-function _offGetCharOfficeTitles(ch) {
+@@ -374,14 +374,26 @@ function _offGetCharOfficeTitles(ch) {
+-  return _offUniqueTitles(arr);
+-  var titles = _offGetCharOfficeTitles(ch);
+@@ -415,7 +427,7 @@ function _offAddCharOfficeTitle(ch, title, opts) {
+-  if (opts.concurrent && currentMain && currentMain !== title) {
+@@ -514,14 +526,8 @@ function _offSeatPersonInPosition(pos, person, opts) {
+-  var nativeWorld = options.world || (typeof GM !== 'undefined' ? GM : null);
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && !TM.NativeWorld.officePermission(nativeWorld, pos, options.actorCharacterId)) return {ok:false,reason:'native-appointment-authority-denied'};
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(nativeWorld)) {
+-    if (!TM.StartContracts.isAlive(resolved.char)) return {ok:false,reason:'native-appointment-dead'};
+-    if (!Array.isArray(pos.salaryPayments) || pos.salaryPayments.some(function(p){return !p||!Number.isFinite(p.amountPer30Days)||p.amountPer30Days<0||!nativeWorld.nativeWorld.accounts.some(function(a){return a.id===p.accountId;});})) return {ok:false,reason:'native-appointment-salary-contract-required'};
+-  }
+@@ -582,8 +588,6 @@ function _offAppointPerson(pos, person) {
+-  var nativeWorld = options.world || (typeof GM !== 'undefined' ? GM : null);
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && !TM.NativeWorld.officePermission(nativeWorld, pos, options.actorCharacterId)) return {ok:false,reason:'native-appointment-authority-denied'};
+@@ -1392,13 +1396,6 @@ function _findPositionByCharName(charName) {
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) {
+-    var found = (GM.chars || []).filter(function(c){return c.id === charName;});
+-    if (!found.length) found = (GM.chars || []).filter(function(c){return c.name === charName;});
+-    var powers = {appointment:'appoint',taxCollect:'treasury',militaryCommand:'command'};
+-    var permitted = found.length === 1 && TM.NativeWorld.allowed(GM, powers[action] || action, GM.startContext.playerFactionId, null, found[0].id);
+-    return {can:permitted,reason:permitted?'明确政治授权':'无明确政治授权（显示称号不授予权限）'};
+-  }
+@@ -1485,6 +1482,9 @@ function _offTitleSlotScore(claimTitle, deptName, posName, prevHolder) {
+@@ -1688,7 +1688,6 @@ function _offVacateCharFromSeat(ch, dept, posName) {
+-  if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) return TM.NativeWorld.bindOffices(GM);
+@@ -1807,6 +1806,8 @@ function _offSyncHoldersFromChars(opts) {
+diff --git a/web/tm-patches-start.js b/web/tm-patches-start.js
+ADDED 4 REMOVED 25
+@@ -454,13 +454,6 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
+-  try {
+-    if (typeof MilitarySystems !== 'undefined' && typeof MilitarySystems.initializeArmyArrears === 'function') {
+-      var arrearsOpening = MilitarySystems.initializeArmyArrears({game:GM,scenario:sc});
+-      if (arrearsOpening.ok) { if (arrearsOpening.registered) fixed.push('military-arrears'); }
+-      else console.warn('[StartMilitaryArrears]', arrearsOpening.missing);
+-    }
+-  } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-military-arrears'); } catch(_) {} }
+@@ -603,10 +596,6 @@ async function _tmStartCheckOpeningHistory(sc, requestToken) {
+-  if (window.TM && TM.NativeStart) {
+-    if (TM.NativeStart.busy()) { toast('新局正在提交，请稍候再选择'); return; }
+-    TM.NativeStart.cancel(false);
+-  }
+@@ -635,17 +624,8 @@ startGame=async function(sid){
+-  if (sc.nativeStart) {
+-    if (!(window.TM && TM.NativeStart)) { _tmStartRestoreSelectionAfterFailure(_startRequestToken); toast('原生身份选择模块未加载'); return; }
+-    await TM.NativeStart.open(sc, _startRequestToken);
+-    return;
+-  }
+-  // Opening fallback/history correction is presentation for this launch, not an
+-  // edit of the immutable catalog template. Nested runtime collections are cloned
+-  // by doActualStart's existing owner; do not duplicate the whole world here.
+-  sc = Object.assign({}, sc);
+@@ -1214,7 +1194,6 @@ function doActualStart(sid, requestToken){
+-  if (sc.nativeStart && !window.__tmNativePreparation) throw new Error('多身份剧本必须通过原生选择与隔离提交入口');
+@@ -1777,7 +1756,7 @@ function doActualStart(sid, requestToken){
+-        if (c.isPlayer && !sc.startContext) c.familyTier = 'imperial';
+@@ -1794,7 +1773,6 @@ function doActualStart(sid, requestToken){
+-    if (sc.startContext && window.TM && TM.NativeWorld) { TM.NativeWorld.initialize(GM, P, sc); return; }
+@@ -2046,6 +2024,8 @@ function doActualStart(sid, requestToken){
+@@ -2073,7 +2053,7 @@ function doActualStart(sid, requestToken){
+-  try { if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({ importSeats: true, dedupChars: !sc.startContext, force: true }); } catch (_e) {}
+@@ -2196,7 +2176,6 @@ function doActualStart(sid, requestToken){
+-  if (window.TM && TM.NativeWorld && sc.startContext) TM.NativeWorld.finishInitialization(GM);
+diff --git a/web/tm-patches.js b/web/tm-patches.js
+ADDED 2 REMOVED 2
+@@ -1693,7 +1693,7 @@ function _sRenderConnReport(qr, ctxK, ctxSrc, outTok, outSrc, tier) {
+-  h += '<div>' + chip(qr.stream.ok, '流式', qr.stream.detail) + chip(qr.json.ok, '严格JSON', qr.json.detail) + chip(qr.usageSeen, 'usage用量', '是否返回 token 用量·关系成本统计与预算档位');
+@@ -1738,7 +1738,7 @@ async function sTestSecondaryConn(){
+-  var key=_$("s-key")?_$("s-key").value:"";var url=_$("s-url")?_$("s-url").value:"";
+diff --git a/web/tm-renwu-tuzhi.js b/web/tm-renwu-tuzhi.js
+ADDED 60 REMOVED 4
+@@ -131,7 +131,7 @@ var CSS = [
+-'#tm-zhi-overlay .dh-pills{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}',
+@@ -543,8 +543,60 @@ function adaptBlood(c){
+-  try{if(typeof _offGetCharOfficeTitles==='function'){var a=_offGetCharOfficeTitles(c);if(a&&a.length)return a;}}catch(e){}
+@@ -704,14 +756,14 @@ function renderStatbar(){var st=computeStat(),cells=[['all',st.all,'在世'],['c
+-var TABS=[['overview','总览'],['identity','身份'],['mind','心绪'],['relations','关系'],['benji','纪传'],['family','家族'],['memory','记忆'],['works','文事'],['pov','视角']];
+-    +'<div class="dh-pills"><span class="dh-pill fac">'+esc(p.faction)+'</span>'+(p.party?'<span class="dh-pill">'+esc(p.party)+'</span>':'')+(p.rank?'<span class="dh-pill rank">'+esc(p.rank)+'</span>':'')+_zhiOfficePills(p)+'</div>'
+@@ -1110,6 +1162,7 @@ function renderTab(p){
+@@ -1123,9 +1176,12 @@ function renderMain(){
+diff --git a/web/tm-shizheng-panel.js b/web/tm-shizheng-panel.js
+ADDED 22 REMOVED 5
+@@ -256,8 +256,13 @@ function _openShizhengDetail(issueId) {
+-  var det = document.getElementById('shizheng-task-detail'); if (det) det.remove();
+-  var ov = document.getElementById('shizheng-tasks-overlay'); if (ov) ov.remove();
+@@ -276,10 +281,22 @@ function _shizhengConvene(issueId) {
+-    _ty2_openSetup(); // 廷议筹备面板·读 _pendingTinyiTopics 出待议下拉
+-    if (_szTopic) setTimeout(function(){ try { var t = document.getElementById('ty2-topic'); if (t) t.value = _szTopic; } catch(_){} }, 60);
+-    openChaoyi(); // 兜底·议题已在待议队列
+diff --git a/web/tm-three-systems-ext.js b/web/tm-three-systems-ext.js
+ADDED 4 REMOVED 1
+@@ -79,6 +79,7 @@
+@@ -101,6 +102,7 @@
+@@ -113,12 +115,13 @@
+-            global.GameEventBus.emit('province:ownerChange', { province: provinceName, from: GM._provinceToFaction[provinceName], to: newOwnerName, reason: reason || '' });

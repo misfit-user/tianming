@@ -47,7 +47,7 @@ function _offTreasuryHandover(pos,fromId,toId,world,reason) {
 function _offMigratePosition(pos, world) {
   if (!pos || typeof pos !== 'object') return;
   if(!pos.treasuryBinding&&_offDeclaredPublicTreasury(world))pos.treasuryBinding={role:'none'};
-  if(pos.occupancyStatus==='unrecorded'&&!pos.holder&&!(pos.actualHolders||[]).some(function(h){return h&&h.generated!==false&&h.name;})){
+  if(pos.occupancyStatus==='unrecorded'&&!pos.holder&&!pos.holderId&&!(pos.actualHolders||[]).some(function(h){return h&&(h.characterId||(h.generated!==false&&h.name));})){
     var establishment=Number(pos.establishedCount!=null?pos.establishedCount:pos.headCount);if(!Number.isFinite(establishment)||establishment<0)establishment=1;
     pos.headCount=pos.establishedCount=Math.floor(establishment);pos.unrecordedCount=pos.headCount;pos.actualCount=pos.headCount;pos.vacancyCount=0;
     pos.actualHolders=[];pos.additionalHolders=[];pos.additionalHolderIds=[];pos.holder='';pos.holderId='';pos._migrated=true;return;
@@ -55,10 +55,10 @@ function _offMigratePosition(pos, world) {
 
   // ── Step 1: 规范老字段 ──
   if (pos.headCount === undefined || pos.headCount === null || pos.headCount === '') pos.headCount = 1;
-  if (typeof pos.headCount === 'string') { var _hc = parseInt(pos.headCount, 10); pos.headCount = isNaN(_hc) || _hc < 1 ? 1 : _hc; }
+  if (typeof pos.headCount === 'string') { var _hc = parseInt(pos.headCount, 10); pos.headCount = isNaN(_hc) || _hc < 0 ? 1 : _hc; }
   if (!Array.isArray(pos.additionalHolders)) pos.additionalHolders = [];
   if (!Array.isArray(pos.additionalHolderIds)) pos.additionalHolderIds = [];
-  var _matCount = (pos.holder ? 1 : 0) + pos.additionalHolders.length;
+  var _matCount = (pos.holder || pos.holderId ? 1 : 0) + pos.additionalHolders.length;
   if (pos.actualCount === undefined) pos.actualCount = _matCount;
 
   // ── Step 2: 新字段——若已存在则以新字段为权威 ──
@@ -82,7 +82,7 @@ function _offMigratePosition(pos, world) {
   // ── Step 3: actualHolders——若未存在则从老字段(holder + additionalHolders)构建 ──
   if (!Array.isArray(pos.actualHolders)) {
     var ah = [];
-    if (pos.holder) ah.push({
+    if (pos.holder || pos.holderId) ah.push({
       characterId: pos.holderId === undefined || pos.holderId === null ? '' : String(pos.holderId).trim(),
       name: pos.holder,
       generated: true
@@ -103,6 +103,13 @@ function _offMigratePosition(pos, world) {
     pos.actualHolders = ah;
   } else {
     // 新字段已存在——反向同步到老字段（holder + additionalHolders）
+    if (!pos.actualHolders.length && pos.holderId) {
+      pos.actualHolders.push({characterId:pos.holderId,name:pos.holder || '',generated:true});
+    }
+    // actualCount 表达实际在岗；资料空白必须补为匿名占员，不能被姓名镜像清空。
+    while (pos.actualHolders.length < Math.max(0, Number(pos.actualCount) - (Number(pos.unrecordedCount) || 0))) {
+      pos.actualHolders.push({name:'',generated:false,placeholderId:'unrecorded_'+pos.actualHolders.length});
+    }
     var namedArr = pos.actualHolders.filter(function(h){return h && h.name && h.generated!==false;}).map(function(h){return h.name;});
     pos.holder = namedArr[0] || '';
     pos.additionalHolders = namedArr.slice(1);
@@ -114,8 +121,8 @@ function _offMigratePosition(pos, world) {
   _offSyncLegacyHolderFields(pos, world);
 
   // 单人俸禄兼容
-  if (!pos.perPersonSalary && pos.salary) pos.perPersonSalary = pos.salary;
-  if (!pos.salary && pos.perPersonSalary) pos.salary = pos.perPersonSalary;
+  if (pos.perPersonSalary == null && pos.salary != null) pos.perPersonSalary = pos.salary;
+  if (pos.salary == null && pos.perPersonSalary != null) pos.salary = pos.perPersonSalary;
 
   pos._migrated = true;
 }
@@ -169,16 +176,22 @@ function _offResolveCharacterIdentity(ref, world) {
 }
 
 function _offMigrateHolderIdentity(holder, world) {
-  if (!holder || holder.generated === false) return { ok: false, reason: 'not-materialized' };
+  if (!holder || (holder.generated === false && !holder.characterId)) return { ok: false, reason: 'not-materialized' };
   var existingId = holder.characterId === undefined || holder.characterId === null
     ? '' : String(holder.characterId).trim();
-  var resolved = _offResolveCharacterIdentity(existingId || holder.name, world);
+  var resolved;
+  if (existingId) {
+    var chars = (_offRuntimeWorld(world) || {}).chars || [];
+    var matches = chars.filter(function(ch) { return ch && ch.id != null && String(ch.id).trim() === existingId; });
+    resolved = matches.length === 1 ? _offResolveCharacterIdentity(matches[0], world) : { ok:false, reason:matches.length ? 'duplicate-character-id' : 'character-id-not-found' };
+  } else resolved = _offResolveCharacterIdentity(holder.name, world);
   if (!resolved.ok) {
     holder.identityStatus = resolved.reason;
     return resolved;
   }
   holder.characterId = resolved.characterId;
   holder.name = resolved.name;
+  holder.generated = true;
   delete holder.identityStatus;
   return resolved;
 }
@@ -187,7 +200,7 @@ function _offMigratePositionHolderIdentities(pos, world) {
   var out = { migrated: 0, ambiguous: 0, unresolved: 0 };
   if (!pos || !Array.isArray(pos.actualHolders)) return out;
   pos.actualHolders.forEach(function(holder) {
-    if (!holder || holder.generated === false) return;
+    if (!holder || (holder.generated === false && !holder.characterId)) return;
     var before = holder.characterId;
     var result = _offMigrateHolderIdentity(holder, world);
     if (result.ok && before !== holder.characterId) out.migrated++;
@@ -210,7 +223,7 @@ function _offAllHolderEntries(pos, world) {
   _offMigratePositionHolderIdentities(pos, world);
   var seen = Object.create(null);
   return pos.actualHolders.filter(function(holder, index) {
-    if (!holder || !holder.name || holder.generated === false) return false;
+    if (!holder || (!holder.name && !holder.characterId) || holder.generated === false) return false;
     var key = _offHolderIdentityKey(holder, index);
     if (seen[key]) return false;
     seen[key] = true;
@@ -280,6 +293,15 @@ function _offPositionStats(pos) {
   };
 }
 
+/** UI 与告警共用占员读法；小型旧入口未加载共享模块时沿用规范化统计。 */
+function _offOccupancy(pos, world) {
+  var g=_offRuntimeWorld(world);
+  if(typeof TM!=='undefined' && TM.OfficeHolderState) return TM.OfficeHolderState.read(g,pos);
+  var stats=_offPositionStats(pos), entries=_offAllHolderEntries(pos,g), primary=null;
+  entries.some(function(h){var result=_offMigrateHolderIdentity(h,g);if(result.ok){primary=result.char;return true;}return false;});
+  return {occupied:stats.actualCount>0,actualCount:stats.actualCount,vacancyCount:stats.vacant,primary:primary,label:primary?primary.name:stats.actualCount>0?'在岗·姓名未详':'出缺'};
+}
+
 function _offWalkOfficeTree(nodes, visitor, chain) {
   if (!Array.isArray(nodes)) return true;
   for (var i = 0; i < nodes.length; i++) {
@@ -287,7 +309,9 @@ function _offWalkOfficeTree(nodes, visitor, chain) {
     if (!n) continue;
     var curChain = chain ? (chain + '·' + (n.name || '')) : (n.name || '');
     if (visitor(n, curChain) === false) return false;
-    if (Array.isArray(n.subs) && _offWalkOfficeTree(n.subs, visitor, curChain) === false) return false;
+    var branches = Array.isArray(n.subs) ? n.subs.slice() : [];
+    (Array.isArray(n.children) ? n.children : []).forEach(function(child) { if (branches.indexOf(child) < 0) branches.push(child); });
+    if (_offWalkOfficeTree(branches, visitor, curChain) === false) return false;
   }
   return true;
 }

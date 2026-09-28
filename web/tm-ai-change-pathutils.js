@@ -76,6 +76,7 @@
     p = p.replace(/\[(\d+)\]/g, '.$1');
     p = p.replace(/^(GM|gm)\./, '');
     p = p.replace(/^factions(?=\.|$)/i, 'facs');
+    var variablePrefix = /^(vars|variables|var|变量|變量|七变量|七變量)\./i.test(p);
     p = p.replace(/^(vars|variables|var|变量|變量|七变量|七變量)\./i, '');
     var aliases = {
       '皇权': 'huangquan.index',
@@ -122,7 +123,7 @@
       '內帑': 'neitang.money',
       'neitang.balance': 'neitang.money'
     };
-    return aliases[p] || p;
+    return aliases[p] || (variablePrefix && !/^(guoku|neitang|huangwei|huangquan|minxin|corruption)\./.test(p) ? 'vars.' + p : p);
   }
 
   function _syncCoreVarSideEffects(path, value, meta) {
@@ -411,6 +412,8 @@
   }
 
   function _applyPathDelta(obj, path, delta, reason) {
+    var edictRoute = global.TM && TM.EdictEffects && TM.EdictEffects.route(obj, path, delta, 'delta', reason);
+    if (edictRoute) return edictRoute;
     path = _normalizeCoreVarPath(path);
     if (_isPathBlocked(path)) return { ok: false, path: path, reason: 'blocked' };
     // AI JSON 必须给真 number。旧逻辑把非数字目标当 0，并直接做 old + delta；
@@ -454,6 +457,8 @@
   }
 
   function _applyPathSet(obj, path, value, reason) {
+    var edictRoute = global.TM && TM.EdictEffects && TM.EdictEffects.route(obj, path, value, 'set', reason);
+    if (edictRoute) return edictRoute;
     path = _normalizeCoreVarPath(path);
     if (_isPresetWorkTextWrite(obj,path,value)) return {ok:false,path:path,reason:'scenario manuscript text is immutable'};
     if (_isPathBlocked(path)) return { ok: false, path: path, reason: 'blocked' };
@@ -678,6 +683,7 @@
         failed.push({ path: ch.path, reason: 'unsupported op: ' + (op || '(missing)') });
         return;
       }
+      if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(obj,ch,result);
       if (result && result.ok) {
         count++;
         if (Array.isArray(report)) report.push({

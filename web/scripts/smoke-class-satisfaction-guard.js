@@ -66,8 +66,8 @@ ok(c2b.applied.satisfaction === 10, '② 同号取强者：AI+5 与基线+10(反
 
 // ── ③ 总预算闸 ──
 const c3 = CE.applyClassChange(r2, gentry, { name: '士绅', satisfaction_delta: -12, reason: '又有变故' }, { turn: 12, source: 'smoke' });
-ok(Math.abs(c3.applied.satisfaction) <= 2.01, '③ 同回合第二刀只放余额 (got ' + c3.applied.satisfaction + ')');
-ok(gentry._satBudget && gentry._satBudget.used >= 13.9, '③ 预算账本就位 used=' + (gentry._satBudget && gentry._satBudget.used));
+ok(c3.applied.satisfaction === -12 && gentry.satisfaction === 50, '③ 同回合反向变化按净额生效 (got ' + c3.applied.satisfaction + ')');
+ok(gentry._satBudget && gentry._satBudget.net === 0 && gentry._satBudget.used === 24, '③ 预算保留累计量并独立记录净额');
 ok(Array.isArray(gentry._satLedger) && gentry._satLedger.length === 2, '③ 近账逐笔（2 条）');
 // 跨回合预算重置
 r2.turn = 13;
@@ -108,7 +108,7 @@ ok(r6.partyState['甲党'].alliedWith.join() === '乙党' && r6.partyState['甲�
 const cal = fs.readFileSync(path.join(WEB, 'tm-party-class-llm-calibrator.js'), 'utf8');
 ok(/绝对值通道关闸/.test(cal) && /pushSat\(absTarget - absCur/.test(cal), '⑦ 校准器绝对值→差值过闸');
 ok(/gateSatisfaction === 'function'/.test(cal), '⑦ 校准器 delta 路接总闸');
-ok(/Never return absolute satisfaction values/.test(cal), '⑦ 校准器系统提示禁绝对值');
+ok(/Never return absolute satisfaction or cohesion values/.test(cal), '⑦ 校准器系统提示禁绝对值');
 ok(/never reuse the same demand wording across different classes/.test(cal), '⑦ 校准器系统提示禁诉求雷同');
 ok(/setAiDemand/.test(cal), '⑦ 校准器 demands 走议程槽不覆盖');
 ok(cal.indexOf("demands: ['short demand']") < 0, '⑦ 英文模板诉求示例已除（议程雷同源之一）');

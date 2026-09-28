@@ -347,6 +347,7 @@
       }
     }
     GM._generatingChars[name] = true;
+    var _generationOwner = GM;
 
     if (!P.ai || !P.ai.key) {
       delete GM._generatingChars[name];
@@ -823,6 +824,12 @@
         return newChar;
       } catch(e) {
         lastErr = e;
+        if (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(e)) {
+          if (e && (e.name === 'AbortError' || /^AI_(?:ABORTED|STALE_WORLD|REQUEST_DEADLINE|RETRY_BUDGET|QUEUE_TIMEOUT)$/.test(e.code || ''))) {
+            delete _generationOwner._generatingChars[name]; throw e; // arch-ok: generation owner releases its transient lock; the newly loaded world is untouched.
+          }
+          break;
+        }
         console.warn('[\u89D2\u8272\u81EA\u751F\u6210] \u7B2C' + attempt + '\u6B21\u5931\u8D25', e.message || e);
         if (/\u53F2\u5B9E\u4E0D\u53EF\u73B0/.test(e.message || '')) {
           delete GM._generatingChars[name];

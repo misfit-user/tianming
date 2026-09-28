@@ -1,0 +1,10 @@
+[
+  {
+    "name": "full-smokes",
+    "command": "node web/scripts/ci-smokes.js --jobs 4",
+    "exitCode": 1,
+    "signal": null,
+    "elapsedSeconds": 576.085,
+    "log": "full-smokes.log"
+  }
+]

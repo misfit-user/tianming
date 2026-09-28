@@ -1,0 +1,8 @@
+{
+  "command": "node web/scripts/smoke-tang840-opening-ledgers.js",
+  "exitCode": 0,
+  "assertions": 7266,
+  "elapsedMs": 42677,
+  "priorFailure": "Script execution timed out after 60000ms during full suite",
+  "concurrentSuiteObserved": "E:/tianming-codex-tang-data/web/scripts/run-smokes.js"
+}

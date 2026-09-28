@@ -43,11 +43,11 @@ vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-revolt-entity.js'), 'utf8'),
 var GM = sandbox.GM;
 var RE = sandbox.TM.RevoltEntity;
 
-console.log('① flag 显式 OFF → 零行为（2026-07-22 已翻默认 ON·显式 false 才回老轨）');
+console.log('① 旧关闭值下三级民变仍产生真实人物、势力和军队');
 sandbox.P.conf.revoltEntityEnabled = false;
 GM.minxin.revolts.push({ id: 'rv1', region: '陕西', status: 'ongoing', level: 3, scale: 30000, turn: 8 });
 RE.sync(GM);
-assert(GM.facs.length === 1 && GM.armies.length === 1 && GM.chars.length === 1, 'flag 显式关 → 不具象化（OFF 路径零行为）');
+assert(GM.facs.length === 2 && GM.armies.length === 2 && GM.chars.length === 2, '旧关闭值不能阻止三级民变实体化');
 
 console.log('② flag ON·level3 具象化三件套');
 sandbox.P.conf.revoltEntityEnabled = true;

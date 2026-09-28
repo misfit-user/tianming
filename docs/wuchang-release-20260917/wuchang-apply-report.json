@@ -1,0 +1,14 @@
+{
+  "characters": 434,
+  "historical": 81,
+  "fictional": 353,
+  "scores": 2170,
+  "before": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28",
+  "after": "ecac8b6dde9408986c543f4a5619d700fbd528f921a57e9fde47d067e3159b51",
+  "inputSha256": {
+    "historical-ratings.ndjson": "10bf04f35418397e22ee6c38ef4015a0b903d346bebefcb3a3a6ba5df0d560f7",
+    "fictional-ratings.txt": "74c13587a97f1ada068de31020f8bbd054ab236f0d44853a0de1bc8c4b681349"
+  },
+  "applied": true,
+  "backup": "C:\\Users\\37814\\Desktop\\tianming\\.bak-wuchang-20260917-191046"
+}

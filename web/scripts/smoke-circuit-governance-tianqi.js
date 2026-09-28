@@ -13,6 +13,7 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
   assert(binding, '找到北直隶职位');
   const position = binding.position, character = gm.chars.find(ch => ch.name === position.holder);
   const before = snapshot(gm);
+  const vacant = {holder:'',holderId:null,actualHolders:[],actualCount:0,vacancyCount:1,occupancyStatus:'vacant',unrecordedCount:0,additionalHolders:[],additionalHolderIds:[]};
 
   // 数据线补 governorOffice 之前按官衔兜底绑到刘诏；补上之后按显式路径绑到数据写明的现任。两种状态都要成立。
   const authored = !!node.governorOffice;
@@ -51,15 +52,21 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
   });
 
   check('出缺、人物缺档与赴任七日的视图及卡片', () => {
-    withFields(position, { holder: '' }, () => {
+    withFields(position, vacant, () => {
       const view = api.governorOf(gm, circuit, owner);
       assert.equal(view.status, 'vacant'); assert.equal(view.ability, null); assert.equal(view.travelDaysLeft, null);
       const card = officialCard(world, circuit);
       assert(card.includes('<b>出缺</b>')); assert(!card.includes('class="bk-gov"'));
     });
-    withFields(position, { holder: '未建档人物' }, () => {
-      assert.equal(api.governorOf(gm, circuit, owner).status, 'vacant');
+    withFields(position, {holder:'',holderId:character.id}, () => {
+      const view=api.governorOf(gm,circuit,owner);
+      assert.equal(view.status,'serving'); assert.equal(view.holderName,character.name);
+      assert.notEqual(view.ability,null,'稳定 ID 不受姓名镜像缺失影响');
+    });
+    withFields(position, {...vacant,holder:'未建档人物',actualCount:1,vacancyCount:0,occupancyStatus:'unrecorded'}, () => {
+      assert.equal(api.governorOf(gm, circuit, owner).status, 'serving');
       assert.equal(api.governorOf(gm, circuit, owner).ability, null);
+      assert(!officialCard(world,circuit).includes('<b>出缺</b>'));
     });
     withFields(character, { _travelTo: '顺天府', _travelRemainingDays: 7 }, () => {
       const view = api.governorOf(gm, circuit, owner);
@@ -130,7 +137,7 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
     });
   });
 
-  check('非省道职位 tick 仍按原漂移公式，缺员衰减与重复 tick 不变', () => {
+  check('非省道职位按天数及各专业能力漂移，实际缺员衰减且同回合防重', () => {
     const governors = new Set(circuits.map(row => api.resolveGovernorPosition(gm, division.circuitAdminNode(gm, row.key, owner))).filter(Boolean).map(row => row.position));
     const offices = [];
     // 遍历真实官制，只挑一个有掌权且在任的非省道职位作公式对照。
@@ -140,7 +147,8 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
     assert(original, '找到非省道职位');
     const p = JSON.parse(JSON.stringify(original)), ch = gm.chars.find(row => row.name === p.holder);
     const keys = ['taxCollect', 'militaryCommand', 'appointment', 'impeach', 'supervise', 'yinBu', 'judicial', 'works', 'drafting'];
-    const domain = { militaryCommand: 'military', works: 'management', drafting: 'intelligence' }[keys.find(key => p.powers[key])] || 'administration';
+    const powers=keys.filter(key=>p.powers[key]);
+    const domains=powers.map(key=>({militaryCommand:'military',works:'management',drafting:'intelligence'}[key]||'administration'));
     const morals = ch.wuchang || ch.wuchangOverride || ch.fiveConstants || ch.morals || {};
     const aliases = [['义', 'yi', 'righteousness'], ['信', 'xin', 'honesty', 'trust'], ['礼', 'li', 'propriety'], ['仁', 'ren', 'benevolence'], ['智', 'zhi', 'wisdom']];
     const weights = [0.28, 0.28, 0.20, 0.16, 0.08];
@@ -148,16 +156,17 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governance-tianqi', (world, check) =>
       const key = group.find(name => morals[name] != null && !isNaN(Number(morals[name])));
       return sum + (key === undefined ? 50 : Number(morals[key])) * weights[i];
     }, 0);
-    const capacity = (ch[domain] == null ? 50 : ch[domain]) * 0.6 + morality * 0.4;
+    const capacity = domains.reduce((sum,domain)=>sum+(ch[domain] == null ? 50 : ch[domain])*0.6+morality*0.4,0)/domains.length;
+    const months=context._getDaysPerTurn()/30;
     const prev = p._dutyState && typeof p._dutyState.fulfillment === 'number' ? p._dutyState.fulfillment : 50;
     const fixture = { officeTree: [{ name: '公式对照', positions: [p] }], chars: gm.chars, turn: (gm.turn || 0) + 1 };
     context.tickOfficeDutyState(fixture);
-    assert(Math.abs(p._dutyState.fulfillment - Math.max(0, Math.min(100, prev + (capacity - prev) * 0.3))) < 1e-10);
+    assert(Math.abs(p._dutyState.fulfillment - Math.max(0, Math.min(100, capacity + (prev-capacity)*Math.pow(0.7,months)))) < 1e-10);
     assert.equal(context.tickOfficeDutyState(fixture).details.length, 0, '同回合不重算');
     const serving = p._dutyState.fulfillment;
-    p.holder = ''; fixture.turn++;
+    Object.assign(p,vacant); fixture.turn++;
     context.tickOfficeDutyState(fixture);
-    assert.equal(p._dutyState.fulfillment, Math.max(0, serving - 12));
+    assert(Math.abs(p._dutyState.fulfillment-Math.max(0,serving-12*months))<1e-10);
   });
 
   check('批量只遍历一次官制树，读取与临时测试均不遗留写入', () => {

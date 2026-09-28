@@ -1,0 +1,433 @@
+{
+  "scope": "VM runtime entrypoints with exact Tianqi authored parties/classes; no network, no save, no production edits",
+  "cases": [
+    {
+      "name": "coupling truncates prior fractional cohesion on every call",
+      "series": [
+        {
+          "classDeltaPerCall": -1,
+          "before": {
+            "name": "东林党",
+            "cohesion": 82,
+            "influence": 12,
+            "satisfaction": 18
+          },
+          "expectedCohesion": 81,
+          "points": [
+            {
+              "party": {
+                "name": "东林党",
+                "cohesion": 81.5,
+                "influence": 12,
+                "satisfaction": 18
+              },
+              "receipt": {
+                "partyName": "东林党",
+                "oldCohesion": 82,
+                "newCohesion": 81.5,
+                "delta": -0.5,
+                "affinity": 0.5
+              }
+            },
+            {
+              "party": {
+                "name": "东林党",
+                "cohesion": 80.5,
+                "influence": 12,
+                "satisfaction": 18
+              },
+              "receipt": {
+                "partyName": "东林党",
+                "oldCohesion": 81,
+                "newCohesion": 80.5,
+                "delta": -0.5,
+                "affinity": 0.5
+              }
+            }
+          ]
+        },
+        {
+          "classDeltaPerCall": 1,
+          "before": {
+            "name": "东林党",
+            "cohesion": 82,
+            "influence": 12,
+            "satisfaction": 18
+          },
+          "expectedCohesion": 83,
+          "points": [
+            {
+              "party": {
+                "name": "东林党",
+                "cohesion": 82.5,
+                "influence": 12,
+                "satisfaction": 18
+              },
+              "receipt": {
+                "partyName": "东林党",
+                "oldCohesion": 82,
+                "newCohesion": 82.5,
+                "delta": 0.5,
+                "affinity": 0.5
+              }
+            },
+            {
+              "party": {
+                "name": "东林党",
+                "cohesion": 82.5,
+                "influence": 12,
+                "satisfaction": 18
+              },
+              "receipt": {
+                "partyName": "东林党",
+                "oldCohesion": 82,
+                "newCohesion": 82.5,
+                "delta": 0.5,
+                "affinity": 0.5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "VM-only Number conversion preserves both positive and negative fractions; production files untouched",
+      "series": [
+        {
+          "classDeltaPerCall": -1,
+          "before": {
+            "name": "东林党",
+            "cohesion": 82,
+            "influence": 12,
+            "satisfaction": 18
+          },
+          "after": {
+            "name": "东林党",
+            "cohesion": 81,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "classDeltaPerCall": 1,
+          "before": {
+            "name": "东林党",
+            "cohesion": 82,
+            "influence": 12,
+            "satisfaction": 18
+          },
+          "after": {
+            "name": "东林党",
+            "cohesion": 83,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        }
+      ]
+    },
+    {
+      "name": "absolute cohesion bypasses delta clamp",
+      "before": {
+        "name": "阉党",
+        "cohesion": 65,
+        "influence": 92,
+        "satisfaction": 55
+      },
+      "after": {
+        "name": "阉党",
+        "cohesion": 0,
+        "influence": 92,
+        "satisfaction": 55
+      },
+      "history": [
+        {
+          "turn": 1,
+          "source": "audit-absolute",
+          "update": {
+            "party": "阉党",
+            "cohesion": 0,
+            "reason": "audit synthetic response"
+          }
+        }
+      ]
+    },
+    {
+      "name": "five same-target party update rows stack in one result",
+      "before": {
+        "name": "阉党",
+        "cohesion": 65,
+        "influence": 92,
+        "satisfaction": 55
+      },
+      "after": {
+        "name": "阉党",
+        "cohesion": 0,
+        "influence": 92,
+        "satisfaction": 55
+      },
+      "history": [
+        {
+          "turn": 1,
+          "source": "audit-duplicate",
+          "update": {
+            "party": "阉党",
+            "cohesionDelta": -15,
+            "reason": "audit duplicate target"
+          }
+        },
+        {
+          "turn": 1,
+          "source": "audit-duplicate",
+          "update": {
+            "party": "阉党",
+            "cohesionDelta": -15,
+            "reason": "audit duplicate target"
+          }
+        },
+        {
+          "turn": 1,
+          "source": "audit-duplicate",
+          "update": {
+            "party": "阉党",
+            "cohesionDelta": -15,
+            "reason": "audit duplicate target"
+          }
+        },
+        {
+          "turn": 1,
+          "source": "audit-duplicate",
+          "update": {
+            "party": "阉党",
+            "cohesionDelta": -15,
+            "reason": "audit duplicate target"
+          }
+        },
+        {
+          "turn": 1,
+          "source": "audit-duplicate",
+          "update": {
+            "party": "阉党",
+            "cohesionDelta": -15,
+            "reason": "audit duplicate target"
+          }
+        }
+      ]
+    },
+    {
+      "name": "exact authored support edge couples approved class loss only",
+      "before": {
+        "name": "东林党",
+        "cohesion": 82,
+        "influence": 12,
+        "satisfaction": 18
+      },
+      "changes": [
+        {
+          "turn": 1,
+          "classSatisfaction": 16,
+          "party": {
+            "name": "东林党",
+            "cohesion": 75,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "turn": 2,
+          "classSatisfaction": 2,
+          "party": {
+            "name": "东林党",
+            "cohesion": 68,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "turn": 3,
+          "classSatisfaction": 0,
+          "party": {
+            "name": "东林党",
+            "cohesion": 67,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "turn": 4,
+          "classSatisfaction": 0,
+          "party": {
+            "name": "东林党",
+            "cohesion": 67,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "turn": 5,
+          "classSatisfaction": 0,
+          "party": {
+            "name": "东林党",
+            "cohesion": 67,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        },
+        {
+          "turn": 6,
+          "classSatisfaction": 0,
+          "party": {
+            "name": "东林党",
+            "cohesion": 67,
+            "influence": 12,
+            "satisfaction": 18
+          }
+        }
+      ],
+      "log": [
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "东林党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "浙党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "阉党(附者)",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 2,
+          "className": "士大夫",
+          "partyName": "东林党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 2,
+          "className": "士大夫",
+          "partyName": "浙党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 2,
+          "className": "士大夫",
+          "partyName": "阉党(附者)",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 3,
+          "className": "士大夫",
+          "partyName": "东林党",
+          "cohesionDelta": -1,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 3,
+          "className": "士大夫",
+          "partyName": "浙党",
+          "cohesionDelta": -1,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        },
+        {
+          "turn": 3,
+          "className": "士大夫",
+          "partyName": "阉党(附者)",
+          "cohesionDelta": -1,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit isolated legitimate -14 class pressure"
+        }
+      ]
+    },
+    {
+      "name": "two supporting classes each lose 14, one party loses 14 at default affinity .5",
+      "before": {
+        "name": "东林党",
+        "cohesion": 82,
+        "influence": 12,
+        "satisfaction": 18
+      },
+      "after": {
+        "name": "东林党",
+        "cohesion": 68,
+        "influence": 12,
+        "satisfaction": 18
+      },
+      "log": [
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "东林党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit controlled -14 in two authored supporter classes"
+        },
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "浙党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit controlled -14 in two authored supporter classes"
+        },
+        {
+          "turn": 1,
+          "className": "士大夫",
+          "partyName": "阉党(附者)",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit controlled -14 in two authored supporter classes"
+        },
+        {
+          "turn": 1,
+          "className": "缙绅",
+          "partyName": "东林党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit controlled -14 in two authored supporter classes"
+        },
+        {
+          "turn": 1,
+          "className": "缙绅",
+          "partyName": "浙党",
+          "cohesionDelta": -7,
+          "affinity": 0.5,
+          "weight": 1,
+          "reason": "Audit controlled -14 in two authored supporter classes"
+        }
+      ]
+    }
+  ]
+}

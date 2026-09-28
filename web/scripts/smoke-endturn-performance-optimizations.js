@@ -33,6 +33,7 @@ const aiHelpersSrc = read('tm-endturn-ai-helpers.js');
 const endturnHelpersSrc = read('tm-endturn-helpers.js');
 const diagnosticsPanelSrc = read('tm-diagnostics-panel.js');
 
+async function main() {
 assert(fs.existsSync(timingPath), 'endturn timing ledger module exists');
 assert(indexSrc.indexOf('tm-endturn-timing-ledger.js') >= 0, 'timing ledger is loaded by index.html');
 assert(/TM\.Endturn\.Timing/.test(timingSrc), 'TM.Endturn.Timing namespace exists');
@@ -112,7 +113,7 @@ assert(/function\s+_callAIMessagesStreamDirect/.test(infraSrc)
   && /function\s+callAIBodyStream[\s\S]*?_aiWithStreamScope/.test(infraSrc)
   && /_aiQueue\.enqueue\(run, opts\.priority \|\| 'normal', \{ signal: opts\.signal/.test(infraSrc),
   'legacy and finalized streams use cancellation-aware scopes and the same request queue');
-assert(/priority:\s*opts\.priority/.test(infraSrc), 'generic AI helpers forward explicit priority into the queue');
+await require('./lib-ai-priority-routing').verifyGenericPriority(assert);
 assert(/callAIBodyStream\(_sc1Body[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 finalized-body streaming request is queued as critical foreground work');
 assert(/callAIMessages\(_callABody\.messages[\s\S]*priority:\s*'critical'/.test(aiSubcallSrc), 'SC1 Call A compression is queued as critical foreground work');
 assert(/typeof _callARaw === 'string'/.test(aiSubcallSrc), 'SC1 Call A accepts callAIMessages string results');
@@ -142,3 +143,5 @@ assert((aiHelpersSrc.match(/fetchMaxRetries:\s*1/g) || []).length >= 3, 'end-tur
 assert(/callAI\(prompt,\s*600,\s*null,\s*'primary',[\s\S]*timeoutMs:\s*45000[\s\S]*maxRetries:\s*1/.test(endturnHelpersSrc), 'post-result taishigong generation is bounded with one retry');
 
 console.log('[smoke-endturn-performance-optimizations] pass assertions=' + passed.value);
+}
+main().catch(error => { console.error(error.stack || error); process.exitCode = 1; });

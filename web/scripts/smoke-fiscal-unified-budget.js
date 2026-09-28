@@ -121,4 +121,28 @@ c=make();const sourceOnly=clone(c.GM.fiscalConfig);c.GM.sid='source-only';delete
 ok(c.CascadeTax.previewBudget({faction:'player',turnDays:10}).schema==='tm-fiscal-ledger/2','v2 source fallback works before GM fiscalConfig exists');
 const beforeEnsure=JSON.stringify([c.GM.guoku.money,c.GM.guoku.grain,c.GM.guoku.cloth]);c.GuokuEngine.ensureModel();
 ok(JSON.stringify([c.GM.guoku.money,c.GM.guoku.grain,c.GM.guoku.cloth])===beforeEnsure&&!c.GM._lastFixedExpenseTurn,'guoku initialization creates no military payment or collection');
+// Many local payments share a single current tree lookup. Reparenting must be
+// visible on the next preview, including previews made within the same turn.
+c=make();c.GM.armies=[];
+const fundingLeaves=Array.from({length:40},(_,i)=>Object.assign(clone(c.GM.adminHierarchy.player.divisions[0]),{id:'fund-'+i,name:'承付州'+i}));
+let fundingRoots=[{id:'fund-pool',name:'承付道',children:fundingLeaves.slice(0,20)},{id:'fund-other',name:'另道',children:fundingLeaves.slice(20)}],fundingWalks=0;
+Object.defineProperty(c.GM.adminHierarchy.player,'divisions',{configurable:true,get(){fundingWalks++;return fundingRoots;}});
+c.GM.mapData.regions=fundingLeaves.map(n=>({id:n.id,owner:'唐',adminBinding:n.id}));
+const localExpenses=fundingLeaves.map(n=>({id:n.id,monthly:{money:1},funding:'local',regionId:n.id}));
+for(const cfg of [c.GM.fiscalConfig,c.GM.facs[0].fiscalConfig])cfg.fixedExpense.recurringExpenses=localExpenses.slice(0,1);
+c.CascadeTax.previewBudget({game:c.GM,faction:'唐',turnDays:30});
+const singlePaymentWalks=fundingWalks;fundingWalks=0;
+for(const cfg of [c.GM.fiscalConfig,c.GM.facs[0].fiscalConfig])cfg.fixedExpense.recurringExpenses=localExpenses;
+let indexedBudget=c.CascadeTax.previewBudget({game:c.GM,faction:'唐',turnDays:30});
+near(indexedBudget.expenses.local.money,40,'all forty local expense amounts preserved');
+ok(indexedBudget.expenses.items.filter(x=>x.funding==='local').length===40,'every distinct local payer is retained');
+ok(fundingWalks<=singlePaymentWalks,'forty local payments do not each traverse the full administrative tree: '+fundingWalks);
+for(const cfg of [c.GM.fiscalConfig,c.GM.facs[0].fiscalConfig])cfg.fixedExpense.recurringExpenses=[{monthly:{money:40},funding:'local',regionId:'fund-pool'}];
+indexedBudget=c.CascadeTax.previewBudget({game:c.GM,faction:'唐',turnDays:30});
+ok(indexedBudget.expenses.items.filter(x=>x.funding==='local').length===20,'parent payer includes its current twenty leaves');
+const movedFundingLeaf=fundingRoots[0].children.pop();fundingRoots[1].children.push(movedFundingLeaf);
+indexedBudget=c.CascadeTax.previewBudget({game:c.GM,faction:'唐',turnDays:30});
+const currentPayers=indexedBudget.expenses.items.filter(x=>x.funding==='local');
+ok(currentPayers.length===19&&!currentPayers.some(x=>x.regionId===movedFundingLeaf.id),'same-turn reparenting immediately changes the funding pool');
+near(currentPayers.reduce((n,x)=>n+x.amounts.money,0),40,'changed allocation still conserves total expense');
 console.log('[smoke-fiscal-unified-budget] PASS '+passed+' assertions');

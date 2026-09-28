@@ -1,0 +1,16 @@
+{
+  "source": "C:\\Users\\37814\\Desktop\\tianming",
+  "target": "C:/Users/37814/.codex/worktrees/shiji-fiscal/tianming",
+  "file": "web/tm-endturn-shiji-compose.js",
+  "sha256": "6dc6882e7c53285358b0f10459bf1b973179cde51f90c03cd793b8ea1491ce1d",
+  "indexSha256": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "copied": 4967,
+  "bytes": 1064832332,
+  "absent": 0,
+  "files": {
+    "web/tm-endturn-shiji-compose.js": "6dc6882e7c53285358b0f10459bf1b973179cde51f90c03cd793b8ea1491ce1d",
+    "web/index.html": "4a48a6d960c0e0f1ffad64b4651332f069321212b830966899727ab28d5aedf8",
+    "web/tm-start-runtime-manifest.json": "4b97d1c0c3e4cc89fe30ffa0587d189567c02269109529be8fec2c4514cd9f02"
+  }
+}

@@ -561,6 +561,7 @@
     if (!gm) return { ok: false, text: '(无存档)' };
     if (typeof root.callAIMessages !== 'function') return { ok: false, text: '(callAIMessages 未加载)' };
     var turn = gm.turn || 0; var digest = _turnDigest(gm); var memCtx = _memoryContext(gm);   // memCtx:跨回合记忆·史记须接前文
+    if (TM.EdictOutcomes) digest += TM.EdictOutcomes.narrativeFacts(gm,ctx && ctx.input && ctx.input.resolutionTurn != null ? ctx.input.resolutionTurn : turn-1);
     // 第1遍·纲要
     // 时空约束·史记纲要脉络·clauseOnly(纲要虽内部脚手架·仍防把史实结局写进beats污染下游正文)（typeof守卫防加载序）
     var _tcBeats = '';

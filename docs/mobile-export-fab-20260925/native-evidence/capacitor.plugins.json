@@ -1,0 +1,6 @@
+[
+	{
+		"pkg": "@tianming/capacitor-file-export",
+		"classpath": "com.tianming.plugins.fileexport.TianmingFileExportPlugin"
+	}
+]

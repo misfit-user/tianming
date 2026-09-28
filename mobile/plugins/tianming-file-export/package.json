@@ -1,0 +1,17 @@
+{
+  "name": "@tianming/capacitor-file-export",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android system Save As dialog for Tianming JSON exports",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "native/src/main", "native/build.gradle"],
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0"
+  },
+  "capacitor": {
+    "android": {
+      "src": "native"
+    }
+  }
+}

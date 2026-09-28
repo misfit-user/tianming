@@ -1969,17 +1969,17 @@
   function circuitIndex(){
     var MC = circuitApi(), map = getMapData(), layout = window.TMMapRealmLayout;
     if (!MC || !layout || !map || !Array.isArray(map.regions) || !map.regions.length) return null;
-    // 规范归属 key 只取决于（原归属, 势力名）：全图几百州只对应几十个势力，本次取索引内按这对值记住，不逐州重查势力表
-    var ownerMemo = new Map();
-    function ownerOf(r){
-      var memoKey = ownerKey(r) + '\u0001' + String((r && (r.factionName || r.ownerName)) || '');
-      if (!ownerMemo.has(memoKey)) ownerMemo.set(memoKey, circuitOwnerKey(r));
-      return ownerMemo.get(memoKey);
-    }
-    var sig = map.regions.map(function(r){ return ownerOf(r) + '>' + firstValue(r.parentId, r.circuitId, ''); }).join('|') +
-      '#' + JSON.stringify((map.circuitRegistry || []).map(function(e){ return e && [e.key || e.id, (e.memberRegionIds || []).length]; }));
+    // 每次查询重读实时归属；同一归属与名称只解析一次势力，避免逐州重复合并整份势力资料。
+    var canonicalOwners = new Map(), regionOwners = new Map();
+    var sig = map.regions.map(function(r){
+      var key = JSON.stringify([ownerKey(r), r && (r.factionName || r.ownerName) || '']);
+      if (!canonicalOwners.has(key)) canonicalOwners.set(key, circuitOwnerKey(r));
+      var owner = canonicalOwners.get(key);
+      regionOwners.set(r, owner);
+      return owner + '>' + firstValue(r.parentId, r.circuitId, '');
+    }).join('|') + '#' + JSON.stringify((map.circuitRegistry || []).map(function(e){ return e && [e.key || e.id, (e.memberRegionIds || []).length]; }));
     if (_circuitMemo.map !== map || _circuitMemo.sig !== sig) {
-      _circuitMemo = { map: map, sig: sig, index: MC.indexCircuits(map, { layout: layout, ownerOf: ownerOf }) };
+      _circuitMemo = { map: map, sig: sig, index: MC.indexCircuits(map, { layout: layout, ownerOf: function(r){ return regionOwners.get(r); } }) };
     }
     return _circuitMemo.index;
   }

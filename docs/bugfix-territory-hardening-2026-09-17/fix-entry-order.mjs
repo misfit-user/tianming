@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import vm from 'node:vm';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),file=path.resolve(here,'../../web/tm-endturn-apply.js');
+if(os.hostname()!=='LAPTOP-AV4J1O7I')throw Error('wrong device');
+const before=fs.readFileSync(file),source=before.toString('utf8');
+const block="        // 当前世界拥有地图；错误交回回合事务，不得吞掉后继续提交。\r\n        if(p1.map_changes) {\r\n          if (typeof applyAIMapChanges !== 'function') throw new Error('地图变更模块未加载，本回合未能完成写入');\r\n          ctx.apply.mapChanges = applyAIMapChanges(p1, GM.mapData || GM.map);\r\n        }";
+const anchor='        // ── 势力覆灭 ──';
+if(source.split(block).length!==2 || source.split(anchor).length!==2)throw Error('entry order anchor not unique');
+let next=source.replace(block,'        // 地图变化在本响应的新势力登记后统一应用，见下方 map_changes。');
+next=next.replace(anchor,block+'\r\n\r\n'+anchor);
+new vm.Script(next,{filename:file});
+if(!fs.readFileSync(file).equals(before))throw Error('concurrent edit');
+fs.writeFileSync(path.join(here,'main-before-order.bak'),before,{flag:'wx'});
+const data=Buffer.from(next,'utf8'),fd=fs.openSync(file,'r+');
+try{let n=0;while(n<data.length)n+=fs.writeSync(fd,data,n,data.length-n,n);fs.ftruncateSync(fd,data.length);fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
+if(!fs.readFileSync(file).equals(data))throw Error('readback mismatch');
+console.log('MAIN_MAP_ORDER_PATCH_READBACK_OK');

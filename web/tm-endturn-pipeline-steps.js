@@ -543,8 +543,9 @@
           if (!ctx.input._agentModeRan && typeof aiEdictEfficacyAudit === 'function' && typeof P !== 'undefined' && P.ai && P.ai.key) {
             // 【诏令执行督查 agent·S2】开关开且未回落时·督查 agent 接管(追所有活诏令跨回合生命周期)·此写死审计跳；默认关/连失回落 → aiEdictEfficacyAudit 原样跑零回归
             var _gmEO = (typeof GM !== 'undefined') ? GM : (typeof window !== 'undefined' ? window.GM : null);
+            var _edictResolutionTurn = _gmEO ? _gmEO.turn-1 : 0;
             var _runEdictAudit = function(){
-              try { if (typeof window !== 'undefined' && window.TM && window.TM.EdictOversight && _gmEO && window.TM.EdictOversight.shouldHandle(_gmEO)) return window.TM.EdictOversight.run(_gmEO); } catch(_eoE){}
+              try { if (typeof window !== 'undefined' && window.TM && window.TM.EdictOversight && _gmEO && window.TM.EdictOversight.shouldHandle(_gmEO)) return window.TM.EdictOversight.run(_gmEO,{resolutionTurn:_edictResolutionTurn}); } catch(_eoE){}
               return aiEdictEfficacyAudit(ar, ctx.input.edicts || []);
             };
             if (typeof _enqueuePostTurnJob === 'function') {

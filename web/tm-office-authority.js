@@ -13,9 +13,9 @@
 
   var POWER_DOMAIN_ATTR = { taxCollect: 'administration', militaryCommand: 'military', appointment: 'administration', impeach: 'administration', supervise: 'administration', yinBu: 'administration', judicial: 'administration', works: 'management', drafting: 'intelligence' };
   var FORCE = { vacant: 0.25, low: 0.55, mid: 0.85, high: 1.0, disloyalMul: 0.7, disloyalBelow: 40, loBand: 35, hiBand: 70, min: 0.2, max: 1.05 };
+  var HS = (global.TM && global.TM.OfficeHolderState) || (typeof require === 'function' ? require('./tm-office-holder-state.js') : null);
 
   function _fn(n) { return (typeof global[n] === 'function') ? global[n] : null; }
-  function _holderChar(GM, name) { if (!name) return null; var f = _fn('findCharByName'); if (f) return f(name); return (GM.chars || []).find(function (c) { return c && c.name === name; }) || null; }
   function _rankLvl(p) { var g = _fn('getRankLevel'); return g ? g(p.rank) : 99; }
   function _clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
@@ -25,7 +25,8 @@
     (function walk(ns) {
       (ns || []).forEach(function (n) {
         (n.positions || []).forEach(function (p) {
-          if (p && p.powers && p.powers[power] && p.holder) { var lvl = _rankLvl(p); if (lvl < bestLvl) { bestLvl = lvl; best = { pos: p, dept: n.name || '', holder: p.holder }; } }
+          var state = HS && HS.read(GM,p);
+          if (p && p.powers && p.powers[power] && state && state.occupied) { var lvl = _rankLvl(p); if (lvl < bestLvl) { bestLvl = lvl; best = { pos: p, dept: n.name || '', holder: state.label, state:state }; } }
         });
         if (n.subs) walk(n.subs);
       });
@@ -51,22 +52,23 @@
    */
   function resolveOfficeAuthority(GM, power, opts) {
     opts = opts || {};
-    var F = opts.force || FORCE;
+    var F = Object.assign({}, FORCE, opts.force || {});
     if (!GM || !GM.officeTree) return { effectiveness: F.vacant, band: 'vacant', holder: null, fulfillment: null, disloyal: false, reason: '无官制' };
     var hit = _findPowerHolder(GM, power);
     if (!hit) {
       var exists = _powerExists(GM, power);
       return { effectiveness: F.vacant, band: 'vacant', holder: null, fulfillment: null, disloyal: false, reason: exists ? ('掌' + power + '之职出缺·无人主持') : ('官制无掌' + power + '之职') };
     }
-    var ch = _holderChar(GM, hit.holder);
+    var ch = hit.state.primary;
     var ds = hit.pos._dutyState;
-    var f = (ds && typeof ds.fulfillment === 'number') ? ds.fulfillment : (ch ? _capacity(ch, power) : 50);
+    var availability = HS.availability(GM,ch,hit.pos);
+    var f = ds && ds.byPower && typeof ds.byPower[power] === 'number' ? ds.byPower[power] : (ds && typeof ds.fulfillment === 'number') ? ds.fulfillment : (availability.char ? _capacity(availability.char, power)*availability.capacity : 50);
     var band = f < F.loBand ? 'low' : f > F.hiBand ? 'high' : 'mid';
     var base = band === 'low' ? F.low : band === 'high' ? F.high : F.mid;
     // 忠退出官制机制(owner 2026-06-20)：执行不可靠经 信→五常→履职 自然兜住·不再单设忠×0.7
     return {
       effectiveness: _clamp(base, F.min, F.max), band: band, holder: hit.holder, dept: hit.dept, pos: hit.pos.name,
-      fulfillment: Math.round(f),
+      fulfillment: Math.round(f), occupancyStatus:hit.state.status, disloyal:false,
       reason: hit.dept + '·' + hit.pos.name + '(' + hit.holder + ')·履职' + Math.round(f)
     };
   }

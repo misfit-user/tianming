@@ -1,0 +1,165 @@
+{
+  "files": [
+    {
+      "path": "web/modules/ai-change-applier/core.js",
+      "before": "b20c5087c1024ac8862650fcf1b17d2ade6e94e194a326e9ec7fa5f0a2f7be9a",
+      "after": "683e7c431d82306bfb5a623f8a657970a4f0bf2915ca00271ca66607afab6961",
+      "beforeCounts": {
+        "bytes": 184323,
+        "crlf": 0,
+        "lf": 2906,
+        "cjk": 7253
+      },
+      "afterCounts": {
+        "bytes": 185281,
+        "crlf": 0,
+        "lf": 2914,
+        "cjk": 7294
+      }
+    },
+    {
+      "path": "web/modules/ai-change-applier/validators.js",
+      "before": "ff0f3880dad02373ed87cbe62e2174f8face5acdff7d6e4a476e9c93613811ab",
+      "after": "40f0079ecd24fec17166a2ec0c3d79066eb660eb380a367f7d83bf3fb3ce3ea1",
+      "beforeCounts": {
+        "bytes": 125189,
+        "crlf": 0,
+        "lf": 1670,
+        "cjk": 8905
+      },
+      "afterCounts": {
+        "bytes": 126092,
+        "crlf": 0,
+        "lf": 1682,
+        "cjk": 8905
+      }
+    },
+    {
+      "path": "web/generated/tm-ai-change-applier.bundle.js",
+      "before": "3cdd4e1ad09379e571ab3298ff3f4314c62347b52b07527a6923bb2cb8290382",
+      "after": "5d0adb6d21aeb3347777cfaa801778ab192d498ed9e44882b4105709ff13e893",
+      "beforeCounts": {
+        "bytes": 367445,
+        "crlf": 0,
+        "lf": 6825,
+        "cjk": 6744
+      },
+      "afterCounts": {
+        "bytes": 369299,
+        "crlf": 0,
+        "lf": 6849,
+        "cjk": 6791
+      }
+    },
+    {
+      "path": "web/tm-office-system.js",
+      "before": "6bcc42dc9bc681dc6172d4eeae61d1bd4bef6faf002acde40684e642522fd49d",
+      "after": "d7784c91cd1f6e92c3bd67752dc47f655095691412ba6dfee9f831d8ed28af91",
+      "beforeCounts": {
+        "bytes": 107168,
+        "crlf": 0,
+        "lf": 2071,
+        "cjk": 5373
+      },
+      "afterCounts": {
+        "bytes": 107344,
+        "crlf": 0,
+        "lf": 2073,
+        "cjk": 5373
+      }
+    },
+    {
+      "path": "web/scripts/verify-all.js",
+      "before": "21858389382fcfdfee18485c333217e0718a52ac63f2c086a3d909675b3dfb3a",
+      "after": "e09b5ae41f2c4d14c0eb95b93c8b84a0d5e30d2e05693a8c8f050bb582bd69a4",
+      "beforeCounts": {
+        "bytes": 48083,
+        "crlf": 446,
+        "lf": 60,
+        "cjk": 110
+      },
+      "afterCounts": {
+        "bytes": 48320,
+        "crlf": 446,
+        "lf": 62,
+        "cjk": 110
+      }
+    },
+    {
+      "path": "web/scripts/smoke-personnel-dismissal-writeback.js",
+      "before": null,
+      "after": "93674865af6ab45f753a84665b7e255c48d1f794a5cd95d718a10017f381a068",
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 6671,
+        "crlf": 0,
+        "lf": 52,
+        "cjk": 232
+      }
+    },
+    {
+      "path": "web/scripts/smoke-personnel-dismissal-official.js",
+      "before": null,
+      "after": "e6b49112fd6e7aee8fd9c99a69e25027341df8c105cc75a7dcd470ed03a2ed6a",
+      "beforeCounts": null,
+      "afterCounts": {
+        "bytes": 4232,
+        "crlf": 0,
+        "lf": 27,
+        "cjk": 114
+      }
+    },
+    {
+      "path": "web/index.html",
+      "before": "ecdd168dbc1fe66b5674a1109a83efe82248ed8aec35dec05124cee0dea9047a",
+      "after": "b03f15d1152135fe46cba5bdee0508caec4cfed2a55d0946c6b7c7ceba47d2cf",
+      "beforeCounts": {
+        "bytes": 75604,
+        "crlf": 0,
+        "lf": 1068,
+        "cjk": 3392
+      },
+      "afterCounts": {
+        "bytes": 75614,
+        "crlf": 0,
+        "lf": 1068,
+        "cjk": 3392
+      }
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "before": "c115fc0e964d8d95c47b49849106a1f9c70060faeb2ffd984055f5dace71f861",
+      "after": "b93959051e2799e05be0332856f0622701a6e4fb27d61201abd0882c66d8a67e",
+      "beforeCounts": {
+        "bytes": 135473,
+        "crlf": 0,
+        "lf": 1,
+        "cjk": 3392
+      },
+      "afterCounts": {
+        "bytes": 135483,
+        "crlf": 0,
+        "lf": 1,
+        "cjk": 3392
+      }
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "before": "ebfa277e62574afe1612fb8154e81d28b9ec25973e5350d54caeeff63e53b233",
+      "after": "ce35156a987ff8ca7814025dc9c76a5cb1efe28500afd18e6cf214edee7a63d5",
+      "beforeCounts": {
+        "bytes": 230091,
+        "crlf": 0,
+        "lf": 6814,
+        "cjk": 680
+      },
+      "afterCounts": {
+        "bytes": 230091,
+        "crlf": 0,
+        "lf": 6814,
+        "cjk": 680
+      }
+    }
+  ],
+  "indexUnchanged": true
+}

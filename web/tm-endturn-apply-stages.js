@@ -1070,6 +1070,15 @@ inst._imprisonedTurn = GM.turn||0;
 
   // ── AP-6（自 origin writeBack 尾部逐字节迁出·幻觉防火墙后验+记忆入账+record 组装+return ctx）──
   //   writeBack 局部变量经状态包 _st 传入·顶部解构回同名 var 保业务体逐字节一致。
+  ns.stages.refreshNarrative = function(ctx,p1) {
+    ['shizhengji','zhengwen'].forEach(function(k){if(p1[k])ctx.record[k]=p1[k];});
+    ctx.record.shiluText=p1.shilu_text||ctx.record.shiluText;
+    ctx.record.szjTitle=p1.szj_title||ctx.record.szjTitle;
+    ctx.record.szjSummary=p1.szj_summary||ctx.record.szjSummary;
+    var latest=(GM._recentNarrative||[]).find(function(r){return r.turn===GM.turn;});
+    if(latest){latest.shizhengji=String(ctx.record.shizhengji||'').slice(0,2600);latest.shilu=String(ctx.record.shiluText||'').slice(0,1300);latest.summary=String(ctx.record.szjSummary||'').slice(0,200);}
+  };
+
   ns.stages._applyPostValidateAssemble = function(ctx, _st) {
     var p1 = _st.p1;
     var shizhengji = _st.shizhengji, zhengwen = _st.zhengwen, playerStatus = _st.playerStatus, playerInner = _st.playerInner, turnSummary = _st.turnSummary, shiluText = _st.shiluText, szjTitle = _st.szjTitle, szjSummary = _st.szjSummary, personnelChanges = _st.personnelChanges, hourenXishuo = _st.hourenXishuo;
@@ -1097,6 +1106,11 @@ inst._imprisonedTurn = GM.turn||0;
         var _aliveSet = {};
         (GM.chars || []).forEach(function(c) { if (c.alive !== false) _aliveSet[c.name] = true; });
         p1.npc_actions.forEach(function(act) {
+          if (global.TM && global.TM.OfficeHolderState && (act.characterId != null || act.actorId != null)) {
+            var stableActor = global.TM.OfficeHolderState.identity(GM, act.characterId != null ? act.characterId : act.actorId, '').char;
+            if (!stableActor || stableActor.alive === false || stableActor.dead) { act._hallucinated = true; return; }
+            act.name = stableActor.name; return;
+          }
           if (act.name && !_aliveSet[act.name]) {
             // 尝试模糊匹配
             var _fuzzy = (typeof _fuzzyFindChar === 'function') ? _fuzzyFindChar(act.name) : null;

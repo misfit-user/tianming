@@ -151,6 +151,11 @@
 
     var reasons = [];
     var warnings = [];
+    if (global.TM && TM.EdictOutcomes && global.GM) {
+      var edictCoverage = TM.EdictOutcomes.coverage(GM,ctx.input && ctx.input.edicts || {},sc1 || {},ctx.input && ctx.input.resolutionTurn || (ctx.meta && ctx.meta.transaction && ctx.meta.transaction.turn) || GM.turn);
+      if (edictCoverage.missing.length) warnings.push(edictCoverage.missing.length+' 道诏令尚缺执行回报，待补正');
+      if (edictCoverage.unmatched.length) warnings.push(edictCoverage.unmatched.length+' 条诏令回报未能精确对应，待核');
+    }
     var shizhengji = _text(aiResult.shizhengji || record.shizhengji);
     var zhengwen = _text(aiResult.zhengwen || record.zhengwen);
     var hasSc1 = _isObject(sc1) && Object.keys(sc1).length > 0;

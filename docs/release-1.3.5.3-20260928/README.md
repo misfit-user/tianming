@@ -29,3 +29,14 @@
 用户已明确同意未签名测试 EXE，使用 `scripts/build-electron.js --platform win --unsigned-test`。APK 保持既有签名，并核对版本 1.3.5.3 / versionCode 1355。
 
 构建后逐文件核对源树、EXE ASAR、APK、上一版安装包、新 2.5D 与 preview，另做隔离 Windows 首启和重启。只有制品验证完成后才推送 PR，CI 通过后合并，最后从 clean main 发布完整安装包及同提交 Pages。APK 的设备安装结果单独记载。
+
+## 已完成的制品验收
+
+完整输入为 1,414 个文件、1,989,095,814 字节，树哈希为 `de25945dffbf9ae186f3e3ba2ac355afdf96ce397e30198c549a5a1967bf529d`。EXE 与 APK 均已逐文件对齐，对比 1.3.5.2 新增 80 个文件，没有不明运行文件遗漏或字节不一致。
+
+- Windows：安装程序内嵌 ASAR 与程序 EXE 的哈希和解包结果一致；上一版 74 个原生文件均保留。实际打包程序在隔离用户目录中断开外网，完成首启和重启、LocalStorage 与 IndexedDB 恢复、三个官方剧本加载、立绘与 preview 图片读取、512 维本地语义推理和新 2.5D C1 地图显示。
+- Android：使用 JDK 17、现有 Gradle 8.7 与 SDK 34 完整构建，4 个原生插件含文件导出插件。补齐 Windows Gradle 所产归档中 261 个中文文件名的 UTF-8 标记，SDK zipalign 后用既有证书重新签名。资源内容逐文件不变，Java 可按原路径读取全部 1,410 个应用资源。v1/v2 签名通过，证书与上一版相同。签名元数据由 CERT 改为 ANDROIDD，是重签生成的元数据，不是运行文件遗漏。
+- preview 保留 106 个相关文件，其中 `preview/img` 41 个资源包括 38 张图片；2.5D 资源 12 项，离线模型 7 项。设计稿与构建临时文件按统一发布排除规则处理。
+- 本机没有连接安卓设备，未将静态与签名检查表述为真机安装验证。
+
+详细摘要见 [package-acceptance.json](package-acceptance.json)。本地主目录已快进到准备提交 3ebf48af；地图编辑器的 35 个已完成工作文件另以 stash `8b1b5a2f8e1005c7dbb6567895618ca4b053d327` 保留原稿。发布分支以 140b27d9 从最新主干建立，文件树与准备提交逐字一致。

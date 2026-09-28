@@ -36,8 +36,8 @@ ok(vm.runInContext('typeof officeFlagOn === "function"', sandbox), 'officeFlagOn
 // flag 行为：①职权舆图默认开(纯增益·owner flip 2026-06-30)·显式 false 才关；②③④仍默认关
 sandbox.P = { conf: {} };
 ok(vm.runInContext('officeFlagOn("officePowerPerceptionEnabled") === true', sandbox), '①职权舆图默认开（纯增益·flip 后 officeFlagOn 返 true）');
-ok(vm.runInContext('officeFlagOn("officeDutyStateEnabled") === false && officeFlagOn("officeAuthorityGateEnabled") === false', sandbox), '②③仍默认关（有 balance·待 playtest flip）');
-sandbox.P = { conf: { officePowerPerceptionEnabled: false } };
+ok(vm.runInContext('officeFlagOn("officeDutyStateEnabled") === true && officeFlagOn("officeAuthorityGateEnabled") === true', sandbox), '默认总闸开启履职度和权限门');
+sandbox.P = { conf: { officeActivationEnabled: false, officePowerPerceptionEnabled: false } };
 ok(vm.runInContext('officeFlagOn("officePowerPerceptionEnabled") === false', sandbox), '①显式 false 才关（可关回）');
 sandbox.P = { conf: { officeActivationEnabled: true } };
 ok(vm.runInContext('officeFlagOn("officePowerPerceptionEnabled") === true && officeFlagOn("officeDutyStateEnabled") === true', sandbox), '组闸 officeActivationEnabled → 四刀全开');

@@ -476,8 +476,11 @@ export function createCore(deps) {
 
   function onDismissal(charName, reason, aiOutput) {
     var G = global.GM;
-    var ch = _findChar(charName);
+    var identity = typeof global._offResolveCharacterIdentity === 'function' ? global._offResolveCharacterIdentity(charName, G) : null;
+    if (identity && !identity.ok && identity.reason !== 'character-stable-id-missing') return { ok:false, reason:identity.reason };
+    var ch = identity && identity.ok ? identity.char : _findChar(charName);
     if (!ch) return { ok: false, reason: '未找到 ' + charName };
+    charName = ch.name;
     // 重复抄家(reason 含抄/查抄且此人已被抄)·跳过移交/追亏·免二次进账(与下方抄家三标记守卫一致)
     var _wgD = _modules.validators; if (_wgD && _wgD._gateDeathRoutingSource && _wgD._gateDeathRoutingSource(G, ch, String(reason || ''), aiOutput)) return { ok: false, reason: 'no-source-bare-death(write-gate·返工issue4·死亡管线收口)' };     var _repeatConfisc = /抄|籍没|没官|查抄/.test(String(reason || '')) && (ch._confiscated || ch.confiscated || ch._confiscatedTurn != null);
     var binding = ch.resources && ch.resources.publicTreasury && ch.resources.publicTreasury.binding;
@@ -600,8 +603,11 @@ export function createCore(deps) {
         }
       } catch(_confE) { try { window.TM&&TM.errors&&TM.errors.captureSilent&&TM.errors.captureSilent(_confE,'confiscate'); } catch(__){} }
     }
-    // ★ 清 officeTree 里所有此人 holder + actualHolders
-    (function _clearAll(nodes){
+    // Stable-ID office owner clears all seats, mirrors and treasury heads together.
+    if (ch.id && typeof global._offVacateByCharId === 'function') {
+      var vacated = global._offVacateByCharId(ch.id, reason || '免职', G.officeTree, { world:G, leaveVacancy:true });
+      if (!vacated.ok) return { ok:false, reason:vacated.reason };
+    } else (function _clearAll(nodes){
       (nodes||[]).forEach(function(n){
         if (!n) return;
         if (Array.isArray(n.positions)) n.positions.forEach(function(p){
@@ -640,6 +646,7 @@ export function createCore(deps) {
     })(G.officeTree || []);
     ch.officialTitle = null;
     ch.position = '';
+    if (ch.currentPosition && typeof ch.currentPosition === 'object') ch.currentPosition.title = '';
     ch.title = ''; // 同步描述性 title·否则免职后廷议等 `officialTitle||title` 回退仍显示原官职
     ch.officialTitles = [];
     ch.concurrentTitles = [];
@@ -1478,8 +1485,9 @@ export function createCore(deps) {
     (aiOutput.personnel_changes || []).forEach(function(pc){
       if (!pc || !pc.name) return;
       if (handledNames[pc.name]) return;
-      var changeText = String(pc.change || '').trim();
+      var changeText = String(pc.change || pc.desc || '').trim();
       if (!changeText) return;
+      if (/^(?:留任|原职留任|原职照旧|暂不|尚未|未予|不予|拟|建议)/.test(changeText)) return;
       // 动作识别
       var action = null, post = '', reason = pc.reason || changeText;
       var isConcurrentPersonnel = (typeof global._offIsConcurrentAppointment === 'function')
@@ -1487,16 +1495,16 @@ export function createCore(deps) {
         : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(changeText);
       // 免/罢/贬/黜/斩/诛/免职/罢官/致仕
       // \u4E0B\u72F1/\u5165\u72F1/\u7CFB\u72F1/\u6349\u62FF/\u902E\u6355 -> imprison
-      if (/\u4E0B\u72F1|\u5165\u72F1|\u7CFB\u72F1|\u6349\u62FF|\u902E\u6355|\u6293\u6355|\u7F09\u62FF/.test(changeText)) {
+      if (_tmReasonIsImprison(changeText)) {
         action = 'dismiss'; reason = changeText;
       // \u62C4\u5BB6/\u62C4\u6CA1/\u7C4D\u6CA1/\u67E5\u62C4/\u6CA1\u5B98 -> confiscate
-      } else if (/\u62C4\u5BB6|\u62C4\u6CA1|\u7C4D\u6CA1|\u67E5\u62C4|\u6CA1\u5B98/.test(changeText)) {
+      } else if (/抄家|抄没|籍没|查抄|没官/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
       // \u6D41\u653E/\u53D1\u914D/\u620D\u8FB9 -> exile
       } else if (/\u6D41\u653E|\u53D1\u914D|\u620D\u8FB9/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
-      } else if (/(\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
-        action = 'dismiss';
+      } else if (/(革职|革除|撤职|褫职|削职|夺职|解职|\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
+        action = 'dismiss'; reason = changeText + (pc.reason ? '；' + pc.reason : '');
       } else if (/(\u65A9|\u8BDB|\u66B4\u6BD9|\u8D50\u6B7B|\u6B3B|\u8BDB\u6740|\u8BDB\u4E5D\u65CF|\u62C4\u5BB6)/.test(changeText)) {
         action = 'dismiss'; reason = 'execute';
       } else {
@@ -1506,7 +1514,7 @@ export function createCore(deps) {
         if ((m = changeText.match(/(?:\u547D|\u4EE4|\u62DC|\u6388|\u6412|\u8FC1|\u8F6C|\u8FC1\u8F6C|\u8FDB|\u5347|\u4E3A|\u4EFB)\s*([^\s，,。.；;]+)/))) {
           post = m[1].replace(/^(\u4E3A|\u4EFB)/, '');
         }
-        if (!post && pc.former && changeText.indexOf(pc.former) < 0) {
+        if (!post && pc.former && changeText.indexOf(pc.former) < 0 && (_findOfficePos(G.officeTree, changeText) || _isKnownOfficeType(G, changeText))) {
           // 若 former 有职，change 里是新职
           post = changeText.replace(/^(?:\u4ECE|\u81EA)?.*(?:\u8FC1|\u6539|\u8F6C)\s*/, '').replace(/[\s，,。.；;].*$/, '');
         }
@@ -1516,7 +1524,7 @@ export function createCore(deps) {
       if (action === 'dismiss') { var _c2b = _modules.validators; if (_c2b && _c2b._gateJudicialPersonnelChange && _c2b._gateJudicialPersonnelChange(G, aiOutput, pc, changeText, applied)) return; }   // 刀C·C2·司法类人事无源判据(逻辑在 validators·alias 内联·免堆巨石)
       var r = null;
       if (action === 'appoint' && post) r = onAppointment(pc.name, post, { concurrent: isConcurrentPersonnel, reason: reason });
-      else if (action === 'dismiss') r = onDismissal(pc.name, reason, aiOutput);
+      else if (action === 'dismiss') r = onDismissal(pc.characterId || pc.charId || pc.name, reason, aiOutput);
       if (r && r.ok) {
         personnelFromPcCount++;
         handledNames[pc.name] = true;
@@ -1666,7 +1674,6 @@ export function createCore(deps) {
       if (action !== 'add' && action !== 'update' && action !== 'stop' && action !== 'remove') action = 'add';
       var amount = Math.abs(parseFloat(fa.amount) || 0);
       if (action === 'add' && amount <= 0) return;
-      amount = _applyTaxAuthorityGate(G, fa, amount);   // 官制活化 Slice③ 权限门：税类 income 按掌征税权者执行力打折
       var resource = (fa.resource === 'grain' || fa.resource === 'cloth') ? fa.resource : 'money';
       // ★ 裁减语义守卫(2026-07-12·居平内帑案)：「裁减/节省用度」类旨意是降常例支出率的节流令·不是帑银调拨——
       //   本 schema 只有 income/expense 两个库存动词·LLM 只能错映射成「支出 N 两」(内帑侧被真扣)或
@@ -1809,6 +1816,9 @@ export function createCore(deps) {
           applied.semantic.fiscal_adjustments_replayed = (applied.semantic.fiscal_adjustments_replayed || 0) + 1;
           return;
         }
+        // Domain side effects share the fiscal operation receipt: replay must not charge corruption twice.
+        amount = _applyTaxAuthorityGate(G, fa, amount);
+        entry.amount = amount;
         target[containerKey].push(entry);
         fiscalCount++;
         // ★ 刀②·转账对嫌疑留痕：两笔照落·不动银·仅按对告警一次(供 playtest 核是否单边节流/增支误记成两库搬家)
@@ -1862,6 +1872,7 @@ export function createCore(deps) {
         entry.applied = actualApplied;
         entry.shortfall = shortfall;
         entry.executionStatus = executionStatus;
+        if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G,fa,{ok:true,old:typeof cur==='number'?cur:undefined,new:immediateTarget?_readFiscalStock(fiscalStockTarget||immediateTarget,resource):undefined,shortfall:shortfall,executionStatus:executionStatus},fa.target+'.'+resource);
         // turnReport：记 actual + shortfall + status（渲染器区别对待）
         G._turnReport.push({ type:'fiscal_adj', action: action, target: fa.target, kind: fa.kind, resource: resource, name: entry.name, amount: actualApplied, requested: amount, annualAmount: entry.recurring ? amount : 0, recurring: !!entry.recurring, coercedOneTime: !!entry._coercedOneTime, transferPairSuspect: !!fa._transferPairSuspect, shortfall: shortfall, executionStatus: executionStatus, reason: entry.reason, turn: G.turn||0 });
         // 亏欠单独登记——供下回合 AI 推演、史记、风闻录事参考
@@ -2055,6 +2066,7 @@ export function createCore(deps) {
       } else {
         result = { ok:false, reason:'unsupported op: ' + anyOp };
       }
+      if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G,apc,result);
       if (result && result.ok) {
         anyPathCount++;
         G._turnReport.push({ type:'anyPath', path: result.path || apc.path, op: apc.op||'set', old: result.old, new: result.new, reason: apc.reason, turn: G.turn||0 });

@@ -3,6 +3,7 @@
 // tm-pause-fab.js — 御案正式界面「宝相团花」悬浮设置/暂停按钮
 //   · 默认锚在御案顶栏时间 #tmf-tb-time 的【右下方】
 //   · 可拖动重定位（拖后记住位置·localStorage·按舞台分数存·跨缩放不变）
+//   · 右键／长按御案时间归位；拖动、重载、窗口变化均限制在可见舞台内
 //   · 点击（未拖动）= 按 Esc：openPause()/closePause() 切换暂停菜单
 //   · 挂 document.body（fixed-fit 舞台）+ 高 z-index → 压住地图 mapwrap·命中可点
 //   · 仅游戏运行中（GM.running）且御案时间在场时显示
@@ -73,14 +74,16 @@
 
   var btn = null, wired = false;
   var userPositioned = false, posFx = 0, posFy = 0;   // 拖后记住的舞台分数
-  var justDragged = false;
+  var justDragged = false, dragging = false;
 
   function loadPos() {
     try {
       var raw = localStorage.getItem(POS_KEY);
       if (!raw) return;
       var o = JSON.parse(raw);
-      if (o && isFinite(o.fx) && isFinite(o.fy)) { posFx = o.fx; posFy = o.fy; userPositioned = true; }
+      if (o && typeof o.fx === 'number' && typeof o.fy === 'number' && isFinite(o.fx) && isFinite(o.fy)) {
+        posFx = o.fx; posFy = o.fy; userPositioned = true;
+      }
     } catch (e) {}
   }
   function savePos(left, top, hostW, hostH) {
@@ -97,7 +100,8 @@
     if (!btn) return;
     ensureAppended();
     var run = (typeof window.GM !== 'undefined' && window.GM && window.GM.running);
-    var inYuan = !!document.getElementById(TIME_ID);
+    var time = document.getElementById(TIME_ID), inYuan = !!time;
+    if (time && !time.title) time.title = '右键或长按：将悬浮设置按钮归位';
     var inGame = isGameSurfaceVisible();
     btn.classList.toggle('on', !!(run && inYuan && inGame));
   }
@@ -111,15 +115,36 @@
     return game.style.display !== 'none';
   }
 
-  // 锚位：拖过则按记忆分数·否则默认御案时间「右下方」
-  function place() {
-    if (!btn) return;
+  // 将真实可见视口投回舞台坐标，兼容 fixed-fit 缩放、留黑边与软键盘缩小视口。
+  function geometry() {
     var host = btn.offsetParent || document.body;
     var hr = host.getBoundingClientRect();
-    var hw = host.offsetWidth, hh = host.offsetHeight;
-    var scale = hw ? (hr.width / hw) : 1; if (!scale) scale = 1;
+    var hw = host.offsetWidth || window.innerWidth, hh = host.offsetHeight || window.innerHeight;
+    var sx = hr.width / hw || 1, sy = hr.height / hh || sx;
+    var vv = window.visualViewport, vx = vv ? vv.offsetLeft : 0, vy = vv ? vv.offsetTop : 0;
+    var vw = vv ? vv.width : window.innerWidth, vh = vv ? vv.height : window.innerHeight;
+    var minX = Math.ceil(Math.max(0, (vx - hr.left) / sx) + 4);
+    var minY = Math.ceil(Math.max(0, (vy - hr.top) / sy) + 4);
+    return {
+      hr: hr, hw: hw, hh: hh, sx: sx, sy: sy, minX: minX, minY: minY,
+      maxX: Math.max(minX, Math.floor(Math.min(hw, (vx + vw - hr.left) / sx) - (btn.offsetWidth || SIZE) - 4)),
+      maxY: Math.max(minY, Math.floor(Math.min(hh, (vy + vh - hr.top) / sy) - (btn.offsetHeight || SIZE) - 4))
+    };
+  }
+  function setPosition(left, top, g) {
+    left = Math.max(g.minX, Math.min(g.maxX, Math.round(left)));
+    top = Math.max(g.minY, Math.min(g.maxY, Math.round(top)));
+    btn.style.left = left + 'px'; btn.style.top = top + 'px';
+    return { left: left, top: top };
+  }
+
+  // 锚位：拖过则按记忆分数·否则默认御案时间「右下方」；定时刷新不可抢正在拖的按钮。
+  function place() {
+    if (!btn || dragging) return;
+    var g = geometry();
     if (userPositioned) {
-      if (hw && hh) { btn.style.left = Math.round(posFx * hw) + 'px'; btn.style.top = Math.round(posFy * hh) + 'px'; }
+      var left = posFx * g.hw, top = posFy * g.hh, p = setPosition(left, top, g);
+      if (Math.abs(p.left - left) > 0.5 || Math.abs(p.top - top) > 0.5) savePos(p.left, p.top, g.hw, g.hh);
       return;
     }
     var time = document.getElementById(TIME_ID);
@@ -127,46 +152,50 @@
     var tr = time.getBoundingClientRect();
     if (!tr.width) return;
     // 默认：右缘对齐时间右缘、略低 → 时间「右下方」
-    var left = (tr.right - hr.left) / scale - SIZE + 2;
-    var top = (tr.bottom - hr.top) / scale + 6;
-    if (top > 0) btn.style.top = Math.round(top) + 'px';
-    if (left > 0) btn.style.left = Math.round(left) + 'px';
+    setPosition((tr.right - g.hr.left) / g.sx - SIZE + 2, (tr.bottom - g.hr.top) / g.sy + 6, g);
+  }
+
+  function resetPos() {
+    userPositioned = false;
+    try { localStorage.removeItem(POS_KEY); } catch (e) {}
+    place();
   }
 
   // 拖动：pointer 拖动重定位·与点击区分（动了算拖·没动算点）
   function setupDrag() {
-    var dragging = false, moved = false, sx = 0, sy = 0, sl = 0, st = 0, scl = 1, hostW = 0, hostH = 0;
+    var moved = false, sx = 0, sy = 0, sl = 0, st = 0, scaleX = 1, scaleY = 1, pointerId = null;
     btn.addEventListener('pointerdown', function (e) {
-      if (e.button !== undefined && e.button !== 0) return;
+      if (dragging || e.isPrimary === false || (e.button !== undefined && e.button !== 0)) return;
       dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
-      var host = btn.offsetParent || document.body, hr = host.getBoundingClientRect(), r = btn.getBoundingClientRect();
-      scl = host.offsetWidth ? (hr.width / host.offsetWidth) : 1; if (!scl) scl = 1;
-      hostW = host.offsetWidth; hostH = host.offsetHeight;
-      sl = (r.left - hr.left) / scl; st = (r.top - hr.top) / scl;
+      pointerId = e.pointerId;
+      var g = geometry(), r = btn.getBoundingClientRect();
+      scaleX = g.sx; scaleY = g.sy;
+      sl = (r.left - g.hr.left) / scaleX; st = (r.top - g.hr.top) / scaleY;
       try { btn.setPointerCapture(e.pointerId); } catch (_) {}
       e.preventDefault(); e.stopPropagation();
     });
     btn.addEventListener('pointermove', function (e) {
-      if (!dragging) return;
+      if (!dragging || e.pointerId !== pointerId) return;
       var ddx = e.clientX - sx, ddy = e.clientY - sy;
       if (!moved && Math.abs(ddx) + Math.abs(ddy) > 4) { moved = true; btn.classList.add('tm-dragging'); }
       if (!moved) return;
-      btn.style.left = Math.round(sl + ddx / scl) + 'px';
-      btn.style.top = Math.round(st + ddy / scl) + 'px';
+      setPosition(sl + ddx / scaleX, st + ddy / scaleY, geometry());
       e.preventDefault();
     });
     function end(e) {
-      if (!dragging) return;
+      if (!dragging || e.pointerId !== pointerId) return;
       dragging = false; btn.classList.remove('tm-dragging');
       try { btn.releasePointerCapture(e.pointerId); } catch (_) {}
       if (moved) {
         justDragged = true;                 // 抑制随后的 click
-        savePos(parseFloat(btn.style.left) || 0, parseFloat(btn.style.top) || 0, hostW, hostH);
+        var g = geometry(), p = setPosition(parseFloat(btn.style.left) || 0, parseFloat(btn.style.top) || 0, g);
+        savePos(p.left, p.top, g.hw, g.hh);
         setTimeout(function () { justDragged = false; }, 60);
       }
     }
     btn.addEventListener('pointerup', end);
     btn.addEventListener('pointercancel', end);
+    btn.addEventListener('lostpointercapture', end);
   }
 
   function wireOnce() {
@@ -186,7 +215,21 @@
         return r;
       };
     }
-    window.addEventListener('resize', place);
+    // 委托监听：正式界面的时间栏可能被重建；手机长按由 tm-touch-gestures 派发同一个事件。
+    document.addEventListener('contextmenu', function (e) {
+      var target = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentElement);
+      if (!target || !target.closest('#' + TIME_ID) || !window.GM || !window.GM.running || !isGameSurfaceVisible()) return;
+      e.preventDefault(); e.stopPropagation(); resetPos();
+    });
+    function viewportChanged() {
+      // fixed-fit 同一 resize 中先排队更新舞台 transform，下一帧再读取新坐标。
+      if (window.requestAnimationFrame) window.requestAnimationFrame(place); else setTimeout(place, 0);
+    }
+    window.addEventListener('resize', viewportChanged);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', viewportChanged);
+      window.visualViewport.addEventListener('scroll', viewportChanged);
+    }
     setInterval(function () { updateVis(); place(); }, 1500);
   }
 
@@ -199,7 +242,7 @@
       btn.id = FAB_ID;
       btn.type = 'button';
       btn.setAttribute('aria-label', '设置·暂停（可拖动）');
-      btn.title = '设置·暂停（Esc）· 可拖动';
+      btn.title = '设置·暂停（Esc）· 可拖动 · 右键或长按时间栏归位';
       btn.innerHTML = rosetteSVG();
       btn.addEventListener('click', function (e) {
         if (justDragged) { justDragged = false; e.preventDefault(); return; }  // 拖动结束的 click 不触发
@@ -230,6 +273,6 @@
   window.TM.pauseFab = {
     init: init, place: place,
     refresh: function () { updateVis(); place(); },
-    resetPos: function () { userPositioned = false; try { localStorage.removeItem(POS_KEY); } catch (e) {} place(); }
+    resetPos: resetPos
   };
 })();

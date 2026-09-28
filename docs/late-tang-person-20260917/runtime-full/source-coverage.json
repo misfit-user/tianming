@@ -1,0 +1,488 @@
+[
+  {
+    "id": "char-e75f49d9605e",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-6dc868d558aa",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-fe140db0ded6",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-6a2dab98e766",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-e0aa358a5382",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-09a2964a484b",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-c280bfadc208",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-535ea9c19b97",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-ca29d914f13a",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-dd7e7eab9343",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-a4b634810ee8",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-7cbde09ac245",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-efc4b7c189fa",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-c52f336d4ff1",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-f289fdad7d0e",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-ddce57d3a48e",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-2bf08096d186",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-c4e575644b83",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-bd8868a9546f",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-984049d9c161",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-a9816a4d9603",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-8337e0dcb17a",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-f2e364765a5b",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-e6445e2e0cd8",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-cc286b8e50dd",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-de2ade080f36",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-577efad05ac0",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-4db0d950f314",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-8c0945ba0b6c",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-f66c94d9050d",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-e5ed99b81551",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-2c3f12713e67",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-a557fdeaa135",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-de20cd2e9cf8",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-9a747f5c8d41",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-0e9fcb9e8981",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-eee274437a62",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-2b8ba60d788e",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-257d1272a490",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-d6aac031740b",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-0d2c834ecefd",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-d722b35a9f02",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-7777c2a2e28a",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-ad2ce35dd501",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-0f13a4f810fe",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-4de4651e76ca",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-98d3d3a85799",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-fa56fad119b5",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-f48749d0f1cf",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-ed1aa4a090e0",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-741889c87528",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-ae4ab71232d5",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-27e1c2527bdf",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-5ff27e4a1474",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-69121e496591",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-688218650cbf",
+    "quoted": 0,
+    "pending": true,
+    "name": false
+  },
+  {
+    "id": "char-ebd4e79ae231",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-0111ba7cfbcc",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-b9f08ed4b554",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-6db2f64ea9a3",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-cc146ad82e85",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-2c100296089c",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-a59eefd2f333",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-silla-gyeongeung-840",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v15-e6a49034ec70",
+    "quoted": 0,
+    "pending": true,
+    "name": false
+  },
+  {
+    "id": "char-v15-b68648b92feb",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v17-89daada97a33",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-0f04c4cb6390",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-5ebe3a5e81a3",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-f37cd97a9c39",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-fc4850f23bad",
+    "quoted": 2,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-ee9d0da0aa08",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-98dd683de2e0",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-b2df2bf6ef65",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-38348fb43faa",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-658ac4c711de",
+    "quoted": 2,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v17-9ea88d4c5613",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v17-580900899030",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v17-eef66c3f8da1",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  },
+  {
+    "id": "char-v17-72e3f77e4e2f",
+    "quoted": 1,
+    "pending": false,
+    "name": true
+  },
+  {
+    "id": "char-v17-907bfa0d1793",
+    "quoted": 1,
+    "pending": false,
+    "name": false
+  }
+]

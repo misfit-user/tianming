@@ -69,7 +69,7 @@
     var s = MULTIPLIERS[strength()], map = GM.mapData || {}, turn = GM.turn;
     var ledger = GM.circuitGovernance || (GM.circuitGovernance = { v: 1, turn: null, byLeaf: {}, byCircuit: {} });
     var index = leafIndex(GM), touched = new Set(), applied = new Set(), high = [], low = [];
-    var circuits = governance.playerCircuits(GM);
+    var circuits = governance.playerCircuits(GM),dutyUpdates=new Map(),dutyScope={};
     var summary = { circuits: circuits.length, leaves: 0, serving: 0, vacant: 0, travelling: 0, seatLost: 0 };
     // 上回合各道档位留作对照：事件簿只记档位有变的道，免得每回合重复列出同一批称职、失职
     var previous = ledger.byCircuit || {};
@@ -81,7 +81,8 @@
       ledger.byCircuit[circuit.key] = row;
       if (view.status === 'note' || view.status === 'unbound') return;
       var binding = governance.resolveGovernorPosition(GM, division.circuitAdminNode(GM, circuit.key, owner));
-      var advanced = root.tickDutyPosition(GM, binding.position, { frozen: view.status === 'travelling' });
+      var advanced=dutyUpdates.get(binding.position);
+      if(!advanced){advanced=root.tickDutyPosition(GM,binding.position,{days:m*30,frozen:view.status==='travelling',_scope:dutyScope});dutyUpdates.set(binding.position,advanced);}
       row.holder = view.status === 'vacant' ? '' : view.holderName;
       row.fulfillment = advanced.next; row.band = advanced.band; row.E = clamp((advanced.next - 50) / 50, -1, 1);
       row.seatRegionId = view.seatRegionId; row.execAvg = 0; row.corrMonthly = 0;
@@ -98,7 +99,9 @@
       if (!seat || !governance.isPlayerRegion(GM, seat)) { row.status = 'seatLost'; summary.seatLost++; return; }
       summary[view.status]++;
       var distances = route.routeDays(map, seat), values = [];
-      row.corrMonthly = -0.8 * s * row.E;
+      var powers=advanced.byPower||{},tax=powers.taxCollect||powers.general,supervision=powers.supervise||powers.impeach||powers.general;
+      var taxExposure=tax&&tax.exposure||[row.E*m],corrExposure=supervision&&supervision.exposure||[row.E*m];
+      row.corrMonthly=m?-0.8*s*corrExposure.reduce(function(sum,value){return sum+value;},0)/m:0;
       own.forEach(function (region) {
         var trip = distances.get(String(region.id)) || { days: route.DEFAULT_DAYS, estimated: true };
         var R = 1 / (1 + trip.days / 15);
@@ -107,9 +110,9 @@
           if (touched.has(id)) return;
           touched.add(id); applied.add(id);
           var old = ledger.byLeaf[id], prev = old && Number.isFinite(old.exec) ? old.exec : 0;
-          var exec = clamp(prev + 0.03 * s * row.E * R * m, -0.06 * s, 0.06 * s);
+          var exec=taxExposure.reduce(function(value,part){return clamp(value+0.03*s*part*R,-0.06*s,0.06*s);},prev);
           ledger.byLeaf[id] = { exec: exec, circuitKey: circuit.key, holder: row.holder, days: trip.days, estimated: trip.estimated, R: R, E: row.E, turn: turn };
-          if (Number.isFinite(leaf.corruption)) leaf.corruption = clamp(leaf.corruption + row.corrMonthly * R * m, 0, 100);
+          if(Number.isFinite(leaf.corruption))leaf.corruption=corrExposure.reduce(function(value,part){return clamp(value-0.8*s*part*R,0,100);},leaf.corruption);
           values.push(exec);
         });
       });

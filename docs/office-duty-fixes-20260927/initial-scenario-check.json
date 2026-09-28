@@ -1,0 +1,89 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "d55f6357-0d47-4eec-b035-426fe2fed84f",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "expected": [
+    "smoke-faction-npc-llm-decision.js",
+    "smoke-public-treasury-scale.js",
+    "smoke-tang840-authority-autonomy.js",
+    "smoke-tang840-wuchang.js"
+  ],
+  "generatedAt": "2026-09-27T10:30:16.139Z",
+  "args": [
+    "--grep",
+    "faction-npc-llm-decision",
+    "--grep",
+    "public-treasury-scale",
+    "--grep",
+    "tang840-authority-autonomy",
+    "--grep",
+    "tang840-wuchang",
+    "--jobs",
+    "2",
+    "--no-retry",
+    "--report",
+    "docs/office-duty-fixes-20260927/initial-scenario-check.json"
+  ],
+  "scheduling": {
+    "parallelJobs": 2,
+    "resourceIsolated": []
+  },
+  "summary": {
+    "selected": 4,
+    "pass": 4,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [],
+  "results": [
+    {
+      "name": "smoke-faction-npc-llm-decision.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 703,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-faction-npc-llm-decision] unit tests pass·9 assertions\n[action-schema] normalization and office sync assertions pass\n[native-actions] expanded military/diplomacy/province assertions pass\n[native-actions] office/fiscal assertions pass\n[action-engine] strategic actions and priority scoring assertions pass\n[action-engine-v2] preflight, strategy memory, news, scoring assertions pass\n[faction-ai-diagnostics] snapshot assertions pass\n[local-template-ledger] shared ledger assertions pass\n[player-isPlayer-guard] assertions pass\n[llm-retry-concurrency] assertions pass\n[prompt] expansion assertions pass\n[sc16-bridge] precision history assertions pass\n[e2e] apply summary: {\"memorials\":1,\"edicts\":1,\"chaoyi\":1,\"office\":1,\"actions\":4,\"attemptedActions\":4,\"skippedActions\":0,\"mergedActions\":0,\"skippedDetails\":[],\"mergedDetails\":[]}\n[e2e] 阿敏 loyalty: 50 → 61 position=议政大臣\n[e2e] 后金 treasury.money: 600000 → 500000\n[e2e] 后金._lastLlmRationale.text: \"后金势盛·当下安抚之诏·稳八旗。汉军八旗暗中提阿敏入议政·示笼络。\"\n[e2e] tianqi assertions pass·12 assertions\n[smoke-faction-npc-llm-decision] all pass\n"
+    },
+    {
+      "name": "smoke-public-treasury-scale.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 14878,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-public-treasury-scale] PASS 1361 assertions {\"counts\":{\"characters\":434,\"factions\":47,\"nodes\":686,\"leaves\":575,\"expenseItems\":3917,\"localItems\":3557,\"receipts\":552},\"timings\":{\"initializeAccountsMs\":1157.76,\"reference47BudgetsMs\":1694.39,\"allCharacterDueMs\":386.45,\"allFactionExpenseSettlementMs\":9035.28,\"allCharacterReceiptSettlementMs\":57.92,\"repeatReceiptSettlementMs\":73.62},\"previews\":0,\"accountViewLists\":0,\"regionIndexBuilds\":47}\n"
+    },
+    {
+      "name": "smoke-tang840-authority-autonomy.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 699,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-tang840-authority-autonomy] PASS 454 assertions\n"
+    },
+    {
+      "name": "smoke-tang840-wuchang.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 673,
+      "timedOut": false,
+      "waivers": [],
+      "output": "PASS tang840-wuchang 5213 assertions; 434 people, 2170 configured values\n"
+    }
+  ],
+  "skipped": []
+}

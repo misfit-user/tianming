@@ -1,0 +1,215 @@
+{
+  "scope": "Offline production function/AST blocks; controlled outputs; no actual model, UI, save or production edits. Registration stops before unrelated mechanical actions.",
+  "inputSha256": {
+    "tm-hongyan-edict-ui.js": "1695a495f0fc40f85059edc4e028f6aa59c05cc59643f7f811254f2b86882237",
+    "tm-endturn-prep.js": "a5a6247dfcc7aed08a8612beb9a577b55bca3d7e48e666b9183aca0cfdb67dd6",
+    "tm-endturn-prompt.js": "96f6f6cd61cc30076eaced00e354443319768ffccadf699c2d9d051d2f315037",
+    "tm-endturn-ai.js": "7ff553a38a12af8004a42dd7497cb78d0ddb070935416043e965df48ca0d737f",
+    "tm-endturn-apply.js": "484c5ad580250051b273ca3439794bca56ceab0d892a5d021936d091e8ba6a51",
+    "tm-endturn-validity.js": "4b395ec0cdf6dac29cb0020a384eb8f4265bdf8de09e2395809764d160614edc",
+    "tm-ai-output-validator.js": "15cd21916b1b2817a4f6dd87296c0bbbbef4d2a81dacdfecf46c090fde00d25f",
+    "tm-endturn-ai-helpers.js": "c484b32e7eb39b6a0261a84f78497b0ac0fc93ce8434441881d58a6921b66022",
+    "tm-endturn-shiji-compose.js": "00b11da00e6c6bfd317202fdc55b3cc8043a1dbf0ff04b98a89047348ba47049",
+    "tm-post-turn-jobs.js": "efcad561a913125f83db4a1467749841f9cd40133e119277842b0d74b115542f",
+    "tm-endturn-render.js": "51a16f3b842491275b5d76ab29fbbee10a965d36935c94fe73947a5e57f40897",
+    "tm-endturn-pipeline-steps.js": "4c208d7c4cbbe2115bc13e2ebe3a0f95561b4fc8db1fa99723493e9269b307f2",
+    "tm-edict-efficacy.js": "2865be4c81f169e1a702d080b3f854edb538531408c83f465aa71a96afed45f1",
+    "tm-imperial-orders.js": "22ef15ddc1a4f8042dabf7c290ba280bd6a0bcd9df45115f79af322b0eb3992d",
+    "tm-tax-policy.js": "bf1ecac91e094095264780a51356ef987b3406622dc8eccf81828bed0650072e"
+  },
+  "cases": [
+    {
+      "name": "published whole decree has prompt text but no tracker; its actual feedback handler silently drops the report",
+      "manual": {
+        "input": {
+          "political": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。",
+          "military": "",
+          "diplomatic": "",
+          "economic": "",
+          "other": ""
+        },
+        "trackers": [
+          {
+            "id": "audit-1",
+            "content": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。",
+            "category": "政令",
+            "turn": 4,
+            "status": "completed",
+            "assignee": "有司",
+            "feedback": "已按县立册，首批巡查回报已送达。",
+            "progressPercent": 100,
+            "_crossFactionChecked": true,
+            "_deliveryChecked": true,
+            "_deliveryStatus": "local"
+          }
+        ],
+        "events": [
+          {
+            "type": "诏令功成",
+            "text": "政令：着有司逐县核查水患，按月具报堤防修护进度，不得扰民。 — 已按县立册，首批巡查回报已送达。"
+          }
+        ]
+      },
+      "published": {
+        "input": {
+          "political": "",
+          "military": "",
+          "diplomatic": "",
+          "economic": "",
+          "other": "",
+          "decree": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。"
+        },
+        "record": {
+          "id": "edict-4-1790406791509-1",
+          "buildingOrderRefs": [],
+          "buildingBindingText": "",
+          "turn": 4,
+          "time": "T4",
+          "text": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。",
+          "status": "promulgated",
+          "source": "polish",
+          "style": "elegant",
+          "styleLabel": "典雅",
+          "polishVersion": 1,
+          "_chainEffects": []
+        },
+        "trackers": [],
+        "promptContainsText": true,
+        "promptContainsTrackerId": false,
+        "events": []
+      }
+    },
+    {
+      "name": "unknown feedback id falls back to unrelated first pending tracker",
+      "tracker": {
+        "id": "audit-1",
+        "content": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。",
+        "category": "政令",
+        "turn": 4,
+        "status": "completed",
+        "assignee": "",
+        "feedback": "另一道命令的回报被错误接收。",
+        "progressPercent": 100,
+        "_crossFactionChecked": true,
+        "_deliveryChecked": true,
+        "_deliveryStatus": "local"
+      }
+    },
+    {
+      "name": "coverage-missing",
+      "shape": {
+        "ok": true,
+        "tag": "edict-audit",
+        "mode": "strict",
+        "timestamp": 1790406791518,
+        "stats": {
+          "knownKeys": 3,
+          "unknownKeys": 0,
+          "deprecatedKeys": 0,
+          "itemCount": 0
+        },
+        "errors": [],
+        "warnings": []
+      },
+      "commit": {
+        "status": "ok",
+        "reasons": [],
+        "warnings": [],
+        "criticalFailures": [],
+        "sc1Present": true,
+        "shizhengjiLength": 14,
+        "zhengwenLength": 7,
+        "checkedAt": 4,
+        "ok": true
+      }
+    },
+    {
+      "name": "coverage-empty",
+      "shape": {
+        "ok": true,
+        "tag": "edict-audit",
+        "mode": "strict",
+        "timestamp": 1790406791520,
+        "stats": {
+          "knownKeys": 4,
+          "unknownKeys": 0,
+          "deprecatedKeys": 0,
+          "itemCount": 0
+        },
+        "errors": [],
+        "warnings": []
+      },
+      "commit": {
+        "status": "ok",
+        "reasons": [],
+        "warnings": [],
+        "criticalFailures": [],
+        "sc1Present": true,
+        "shizhengjiLength": 14,
+        "zhengwenLength": 7,
+        "checkedAt": 4,
+        "ok": true
+      }
+    },
+    {
+      "name": "coverage-one-of-two",
+      "shape": {
+        "ok": true,
+        "tag": "edict-audit",
+        "mode": "strict",
+        "timestamp": 1790406791524,
+        "stats": {
+          "knownKeys": 4,
+          "unknownKeys": 0,
+          "deprecatedKeys": 0,
+          "itemCount": 1
+        },
+        "errors": [],
+        "warnings": []
+      },
+      "commit": {
+        "status": "ok",
+        "reasons": [],
+        "warnings": [],
+        "criticalFailures": [],
+        "sc1Present": true,
+        "shizhengjiLength": 14,
+        "zhengwenLength": 7,
+        "checkedAt": 4,
+        "ok": true
+      }
+    },
+    {
+      "name": "executing feedback is stored on the tracker but absent from turn-result HTML and current event feed",
+      "tracker": {
+        "id": "audit-1",
+        "content": "着有司逐县核查水患，按月具报堤防修护进度，不得扰民。",
+        "category": "政令",
+        "turn": 4,
+        "status": "executing",
+        "assignee": "",
+        "feedback": "本诏已派员逐县查勘，预计下月复奏。",
+        "progressPercent": 30,
+        "_crossFactionChecked": true,
+        "_deliveryChecked": true,
+        "_deliveryStatus": "local"
+      },
+      "renderedFeedback": false,
+      "events": []
+    },
+    {
+      "name": "background audit updates live report but leaves archived turn HTML with prior-turn feedback",
+      "targetTurn": 4,
+      "previousReportTurn": 3,
+      "liveReportTurn": 4,
+      "liveReportContent": "本期查勘回听标记",
+      "archivedHasCurrent": false,
+      "archivedHasPrior": true
+    },
+    {
+      "name": "first background audit also leaves an empty current-turn feedback panel",
+      "liveReports": 1,
+      "archivedHasCurrent": false
+    }
+  ]
+}

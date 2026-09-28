@@ -549,7 +549,7 @@
       'Class-character relation updates should describe who a class treats as spokesperson, patron, broker, suppressor, symbol, or debtor from current evidence only.',
       'Return strict JSON only. No markdown, no prose outside JSON.',
       'Deltas should usually be small: affinity/trust/grievance between -25 and 25, satisfaction/cohesion between -10 and 10, faction deltas between -8 and 8.',
-      'Never return absolute satisfaction values; use satisfactionDelta only. Class mood must move gradually with evidence.',
+      'Never return absolute satisfaction or cohesion values; use satisfactionDelta or cohesionDelta only. Mood and cohesion must move gradually with evidence. Return at most one update per party.',
       'All demands/agenda/goal texts must be written in Chinese, concise and concrete. Each class has distinct interests rooted in its own economic role and grievances - never reuse the same demand wording across different classes. Only include demands for a class when the evidence shows a genuinely new or shifted demand; omit otherwise.',
       'For class-character relation updates use fractional deltas between -0.25 and 0.25 and keep evidence short.',
       'For new or uncertain party-class links set emergent:true and keep affinityDelta small.',
@@ -724,6 +724,35 @@
     return changed;
   }
 
+  function mergePartyUpdates(root, updates) {
+    var groups = [];
+    toArray(updates).forEach(function(update) {
+      update = update || {};
+      var party = findParty(root, update.party || update.partyName || update.name);
+      if (!party) return;
+      var group = groups.find(function(row) { return row.party === party; });
+      if (!group) { group = { party: party, update: { party: partyNameOf(party) }, delta: 0, target: null, seen: [] }; groups.push(group); }
+      var agenda = textOf(update.currentAgenda || update.agenda), goal = textOf(update.shortGoal || update.goal);
+      var delta = Number(update.cohesionDelta != null ? update.cohesionDelta : update.cohesion_delta);
+      var target = update.cohesion != null && update.cohesion !== '' ? Number(update.cohesion) : NaN;
+      var key = JSON.stringify([agenda, goal, isFinite(delta) ? delta : null, isFinite(target) ? target : null, textOf(update.reason)]);
+      if (group.seen.indexOf(key) >= 0) return;
+      group.seen.push(key);
+      if (agenda) group.update.currentAgenda = agenda;
+      if (goal) group.update.shortGoal = goal;
+      if (update.reason) group.update.reason = textOf(update.reason);
+      // 同条绝对目标沿用覆盖 delta 的语义；同党同批只结一次有界净调整。
+      if (isFinite(target)) { group.target = clamp(target, 0, 100); group.delta = 0; }
+      else if (isFinite(delta)) group.delta += delta;
+    });
+    return groups.map(function(group) {
+      var before = Number(group.party.cohesion);
+      if (!isFinite(before)) before = 50;
+      group.update.cohesionDelta = group.delta + (group.target == null ? 0 : group.target - before);
+      return group.update;
+    });
+  }
+
   function applyPartyUpdate(root, update, turn, sourceName) {
     update = update || {};
     var party = findParty(root, update.party || update.partyName || update.name);
@@ -758,12 +787,24 @@
     if (isFinite(cohesionDelta) && cohesionDelta) {
       var cohesion = Number(party.cohesion);
       if (!isFinite(cohesion)) cohesion = 50;
-      party.cohesion = Math.round(clamp(cohesion + clamp(cohesionDelta, -15, 15), 0, 100) * 100) / 100;
-      changed = true;
-    }
-    if (update.cohesion != null) {
-      party.cohesion = Math.round(clamp(update.cohesion, 0, 100) * 100) / 100;
-      changed = true;
+      var budget = party._cohesionCalibrationBudget;
+      if (!budget || budget.turn !== turn || !isFinite(budget.net)) budget = party._cohesionCalibrationBudget = { turn: turn, net: 0 };
+      var approved = clamp(clamp(cohesionDelta, -15, 15), -Math.max(0, 15 + budget.net), Math.max(0, 15 - budget.net));
+      var after = Math.round(clamp(cohesion + approved, 0, 100) * 100) / 100;
+      approved = Math.round((after - cohesion) * 100) / 100;
+      if (approved) {
+        party.cohesion = after;
+        budget.net = Math.round((budget.net + approved) * 100) / 100;
+        var state = root.partyState && root.partyState[partyNameOf(party)];
+        if (state) {
+          state.cohesion = after;
+          state._synced_cohesion = after;
+          state.historyLog = toArray(state.historyLog);
+          state.historyLog.push({ turn: turn, field: 'cohesion', delta: approved, source: sourceName, reason: update.reason || '党派校准' });
+          if (state.historyLog.length > 20) state.historyLog = state.historyLog.slice(-20);
+        }
+        changed = true;
+      }
     }
     if (changed) {
       party._partyClassLlmHistory = toArray(party._partyClassLlmHistory);
@@ -1100,7 +1141,7 @@
     result.class_updates.forEach(function(update) {
       if (applyClassUpdate(source, update, turn, sourceName)) applied.classes++;
     });
-    result.party_updates.forEach(function(update) {
+    mergePartyUpdates(source, result.party_updates).forEach(function(update) {
       if (applyPartyUpdate(source, update, turn, sourceName)) applied.parties++;
     });
     result.faction_updates.forEach(function(update) {
@@ -1254,10 +1295,6 @@
     var turn = Number(options.turn != null ? options.turn : source.turn) || 0;
     var phase = options.phase || options.source || 'player-action';
     var ledger = ensureLedger(source, turn);
-    if (global.P && P.conf && P.conf.partyClassLlmEnabled === false) {
-      if (ledger) ledger.stats.skipped++;
-      return { skipped: true, reason: 'partyClassLlm disabled', turn: turn };
-    }
     if (!getClasses(source).length || !getParties(source).length) {
       if (ledger) ledger.stats.skipped++;
       return { skipped: true, reason: 'missing classes or parties', turn: turn };
@@ -1344,7 +1381,6 @@
     var source = pickRoot(options.root);
     var turn = Number(options.turn != null ? options.turn : source.turn) || 0;
     if (source && (source.busy || source._endTurnBusy)) return { skipped: true, reason: 'endturn busy', turn: turn };
-    if (global.P && P.conf && P.conf.partyClassLlmEnabled === false) return { skipped: true, reason: 'partyClassLlm disabled', turn: turn };
     if (!source._partyClassLlmActionSeq) source._partyClassLlmActionSeq = 0;
     source._partyClassLlmActionSeq += 1;
     var seq = source._partyClassLlmActionSeq;
@@ -1518,7 +1554,7 @@
     var ledger = source._partyClassLlmLedger || null;
     return {
       turn: Number(source.turn) || 0,
-      enabled: !(global.P && P.conf && P.conf.partyClassLlmEnabled === false),
+      enabled: true, // 正式推演，仍由下方 API 条件与冷却控制执行。
       tier: chooseTier(),
       hasAiConfig: hasAnyAiConfig(),
       actionSeq: Number(source._partyClassLlmActionSeq) || 0,

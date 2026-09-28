@@ -1,0 +1,104 @@
+{
+  "date": "2026-09-14T06:22:47.474Z",
+  "status": "VERIFIED_WITH_USER_SCOPE",
+  "content": {
+    "status": "PASS",
+    "assertions": 14212,
+    "counts": {
+      "characters": 434,
+      "regions": 575,
+      "armies": 121,
+      "memorials": 9,
+      "issues": 10,
+      "letters": 9,
+      "rumors": 10,
+      "parties": 8,
+      "families": 6
+    }
+  },
+  "opening": {
+    "status": "OPENING_VERIFIED_TURNS_OMITTED",
+    "recordedAt": "2026-09-14T05:59:02.465Z",
+    "openingVerified": true,
+    "realAiTurnsVerified": 0,
+    "userWaiver": {
+      "text": "可以不用检查过回合情况了",
+      "scope": "停止连续回合游玩验收，不再发起推演请求"
+    },
+    "opening": {
+      "characters": 434,
+      "roles": {
+        "harem": 22,
+        "civil": 86,
+        "bu": 218,
+        "mili": 108
+      },
+      "memorials": 9,
+      "issues": 10,
+      "letters": 9,
+      "fullWorks": 6,
+      "rigidHistoryPopups": 0,
+      "playerDrivenHistory": true
+    },
+    "era": {
+      "name": "长宁",
+      "savedThroughGameModal": true,
+      "displayObserved": "长宁元年春正月十四"
+    },
+    "edictConfirmation": {
+      "normalPointerHit": true,
+      "cancelPreservedDraftsObserved": true
+    },
+    "outgoingLetter": {
+      "to": "白居易",
+      "dispatchObserved": true,
+      "statusObserved": "traveling",
+      "replyVerified": false
+    },
+    "evidence": [
+      "client/reports/initial-state-final.json",
+      "client/reports/modal-hit-test.json",
+      "client/screenshots/accept-1789320834470-2.png"
+    ],
+    "limits": [
+      "未验证真实连续回合、回信抵达或回合后存读档。",
+      "朝会选择框的后续层级修复通过专项测试；依用户要求停止回合游玩复验。"
+    ]
+  },
+  "regression": {
+    "selected": 960,
+    "pass": 958,
+    "fail": 2,
+    "skipped": 0,
+    "newFailures": [],
+    "existingFailures": [
+      "smoke-production-dependencies.js",
+      "smoke-relief-governance.js"
+    ]
+  },
+  "architecture": {
+    "candidate": {
+      "status": "PASS",
+      "guards": 13
+    },
+    "installed": {
+      "pass": 12,
+      "fail": 1,
+      "check": "ref-check",
+      "reason": "本机9月11日历史备份index.html包含缺失的相对引用；备份未改动。"
+    }
+  },
+  "officialParity": {
+    "status": "PASS",
+    "assertions": 39
+  },
+  "release": {
+    "published": false,
+    "baselineModified": false,
+    "limits": [
+      "发布树体积超契约上限",
+      "热更基线与当前开发文件未对齐"
+    ]
+  },
+  "sourceSha256": "32354b04aa1bb7d0a9c1054caf54dfb60d75fdf2b99c2320903b0fecfc28899f"
+}

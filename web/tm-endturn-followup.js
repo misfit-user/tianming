@@ -165,7 +165,7 @@
       var label = opts.label || opts.id || 'endturn-followup';
       try {
         if (typeof _callEndturnAI === 'function') {
-          var routed = await _callEndturnAI(body, {
+          var routed = await _callEndturnAI(body, Object.assign({}, opts, {
             id: opts.id || '',
             label: label,
             url: callUrl,
@@ -173,7 +173,7 @@
             priority: opts.priority,
             timeoutMs: opts.timeoutMs,
             maxRetries: opts.maxRetries
-          });
+          }));
           if (opts.soft) routed.ok = true;
           return routed;
         }
@@ -1326,11 +1326,11 @@
           max_tokens: _tok(3000)
         };
         if (_tmDetectModelFamily(_auCfg.model, _modelFamily) === 'openai') _auditBody.response_format = { type: 'json_object' };
-        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, priority: 'normal', timeoutMs: 60000, maxRetries: 1 });
+        var _auditCall = await _callFollowupAI(_auditBody, { id: 'sc_audit', label: '数据一致性审核', url: _auUrl, key: _auCfg.key, tier: _auCfg.tier || _auTier, priority: 'normal', timeoutMs: 60000, maxRetries: 1 });
         {
           var dataAu = _auditCall.data;
           var cAu = _auditCall.raw || '';
-          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { url: _auUrl, key: _auCfg.key, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 1 });
+          var _pAuParse = await _parseOrRepairJsonResult(cAu, dataAu, '数据一致性审核', { id: 'sc_audit', url: _auUrl, key: _auCfg.key, tier: _auCfg.tier || _auTier, body: _auditBody, expectedKeys: ['conflicts', 'auto_patches', 'needs_rerun'], priority: 'normal', repairTimeoutMs: 45000, repairMaxRetries: 1 });
           if (_pAuParse && _pAuParse.raw) cAu = _pAuParse.raw;
           var pAu = _pAuParse ? _pAuParse.parsed : null;
           if (pAu) {
@@ -1733,7 +1733,7 @@
       //   (时政记/实录/NPC行动/死亡/暗流)·连玩家诏令/奏疏批复/朝议/追责回响都看不见·开 3stage 反而叙事失据。
       //   纯读闭包内既有变量不动状态·内容与原内联一致·尾部新增 O1「天下牵动·因果综述」(W1)两路径同享。
       var _buildSc2FactsCore = function() {
-        var _ps = '';
+        var _ps = TM.EdictOutcomes ? TM.EdictOutcomes.narrativeFacts(GM, GM.turn) : '';
         if (p1) {
           if (shizhengji) _ps += '【时政记(摘要)】' + shizhengji.substring(0, 400) + '\n';
           if (shiluText) _ps += '【实录】' + shiluText + '\n';
@@ -2444,12 +2444,12 @@
         _dbg('[sc25] using tier:', _c25.tier || _t25, 'model:', _c25.model);
         var _sc25Body = {model:_c25.model, messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc25'))},{role:"user",content:tp25}], temperature:0.7, max_tokens:_tok(12000)};
         if (_tmDetectModelFamily(_c25.model, _modelFamily) === 'openai') _sc25Body.response_format = { type: 'json_object' };
-        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, priority: 'high' });
+        var _sc25Call = await _callFollowupAI(_sc25Body, { id: 'sc25', label: '伏笔记忆', url: _u25, key: _c25.key, tier: _c25.tier || _t25, priority: 'high' });
         {
           var data25 = _sc25Call.data;
           _checkTruncated(data25, '伏笔记忆');
           var c25 = _sc25Call.raw || '';
-          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { url: _u25, key: _c25.key, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'], priority: 'high' });
+          var _p25Parse = await _parseOrRepairJsonResult(c25, data25, '伏笔记忆', { id: 'sc25', url: _u25, key: _c25.key, tier: _c25.tier || _t25, body: _sc25Body, expectedKeys: ['foreshadow', 'memory', 'state_board', 'event_weights'], priority: 'high' });
           if (_p25Parse && _p25Parse.raw) c25 = _p25Parse.raw;
           var p25 = _p25Parse ? _p25Parse.parsed : null;
           if (p25) {
@@ -3253,12 +3253,12 @@
           {role:"user",content:tpC}
         ], temperature:0.5, max_tokens:_tok(8000)};
         if (_tmDetectModelFamily(_cCons.model, _modelFamily) === 'openai') _consolidateBody.response_format = { type: 'json_object' };
-        var _consCall = await _callFollowupAI(_consolidateBody, { id: 'sc_consolidate', label: '记忆固化', url: _uCons, key: _cCons.key, priority: 'low' });
+        var _consCall = await _callFollowupAI(_consolidateBody, { id: 'sc_consolidate', label: '记忆固化', url: _uCons, key: _cCons.key, tier: _cCons.tier || _tCons, priority: 'low' });
         {
           var dataC = _consCall.data;
           _checkTruncated(dataC, '记忆固化');
           var cC = _consCall.raw || '';
-          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { url: _uCons, key: _cCons.key, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'], priority: 'low' });
+          var _pCParse = await _parseOrRepairJsonResult(cC, dataC, '记忆固化', { id: 'sc_consolidate', url: _uCons, key: _cCons.key, tier: _cCons.tier || _tCons, body: _consolidateBody, expectedKeys: ['consolidated', 'key_threads', 'next_turn_focus'], priority: 'low' });
           if (_pCParse && _pCParse.raw) cC = _pCParse.raw;
           var pC = _pCParse ? _pCParse.parsed : null;
           if (pC && (pC.consolidated || pC.key_threads || pC.next_turn_focus)) {

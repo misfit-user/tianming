@@ -1,0 +1,35 @@
+[
+  {
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "office"
+    ],
+    "code": 1,
+    "seconds": 24.81,
+    "log": "ui-smokes-office.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "renwu"
+    ],
+    "code": 0,
+    "seconds": 0.56,
+    "log": "ui-smokes-renwu.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "rank"
+    ],
+    "code": 0,
+    "seconds": 4.17,
+    "log": "ui-smokes-rank.log"
+  }
+]

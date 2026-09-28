@@ -44,7 +44,21 @@
     var splitExclaves = opts.splitExclaves !== false; // 默 true·飞地拆 sibling
     var simplifyTopology = !!opts.simplifyTopology;   // 拓扑顶点 cache·游戏端不需
 
-    meData.divisions.forEach(function(d){
+    var imported = meData.meta && meData.meta.scenarioMap;
+    var sourceDivisions = imported && imported.tier === 'all'
+      ? meData.divisions.filter(function(d){ return d.layerRole === 'prefecture'; }) : meData.divisions;
+    if (imported) {
+      gm.source = { scenario: imported.source, tier: imported.tier };
+      gm.factions = {};
+      (meData.factions || []).forEach(function(f){ gm.factions[f.id] = { id:f.id, name:f.name, color:f.color }; });
+      if (imported.tier === 'all') {
+        gm.circuitRegistry = meData.divisions.filter(function(d){ return d.layerRole === 'region'; }).map(function(d){
+          return { id:d.id, key:d.id, name:d.name, level:'province', memberRegionIds:(d.sourceRegionIds || []).slice(), geometrySource:'union-of-leaf-regions', accounting:'derived-view-only' };
+        });
+        gm.hierarchyPresentation = { version:1, levels:['realm','region','prefecture'], leafLevel:'prefecture', provinceMode:'circuitRegistry-union', ownershipPolicy:'partition-by-current-owner' };
+      }
+    }
+    sourceDivisions.forEach(function(d){
       gm.regions.push(divisionToRegion(d, meData));
       if (splitExclaves && d.logicalRegionId !== d.id && d.extraPolygons && d.extraPolygons.length){
         d.extraPolygons.forEach(function(p, i){
@@ -129,6 +143,12 @@
       geometry: compound ? {type:compound.parts.length>1?'MultiPolygon':'Polygon',coordinates:compound.parts.length>1?compound.parts:compound.parts[0]} : undefined,
       id: d.id + (override.idSuffix || ''),
       name: d.name + (override.nameSuffix || ''),
+      level: d.layerRole ? d.level : undefined,
+      parentId: d.layerRole && meData.meta && meData.meta.scenarioMap && meData.meta.scenarioMap.tier === 'all' ? d.parentId : undefined,
+      circuitId: d.layerRole && meData.meta && meData.meta.scenarioMap && meData.meta.scenarioMap.tier === 'all' ? d.parentId : undefined,
+      ownerKey: d.layerRole ? d.factionId : undefined,
+      currentOwnerKey: d.layerRole ? d.factionId : undefined,
+      factionId: d.layerRole ? d.factionId : undefined,
       type: 'poly',
       coords: coordsFlat,
       center: d.centroid ? d.centroid.slice() : polygonCentroid(poly),

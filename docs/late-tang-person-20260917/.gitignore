@@ -1,0 +1,5 @@
+# Disposable acceptance profiles and byte backups are local-only.
+isolated-userdata-*/
+ui-before/
+*.bin
+*.tmp

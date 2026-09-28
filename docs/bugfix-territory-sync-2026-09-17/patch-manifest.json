@@ -1,0 +1,20 @@
+{
+  "updatedAt": "2026-09-17T09:00:04.885Z",
+  "files": [
+    {
+      "path": "web/tm-faction-membership.js",
+      "before": "396c45df15c0072c47b06ba0bd8296f9792e91c67e9b8395d9c88c32b3e383ee",
+      "after": "280b28e10cb243c7a28bd18d94511ffb96fb114817896ce2019410d75b94410d"
+    },
+    {
+      "path": "web/tm-map-system.js",
+      "before": "dce9af4206ce066617867c1dae01592f0ad0a3e485edcebaf541ede33cc2fec2",
+      "after": "18dc9b92c20017b0ed7dc24cc3322edeb86a5400ae5774e640a4d60b3a1bd463"
+    },
+    {
+      "path": "web/tm-three-systems-ext.js",
+      "before": "99e3060b66fa882ff7e0553499a619047c5436ee452a97740dd9affe59b11828",
+      "after": "7fd3b0ede5df91319e2d5525abcb4a395f44de57fb2f0515024f9b4e2712bd41"
+    }
+  ]
+}

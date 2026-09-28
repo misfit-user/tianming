@@ -1,0 +1,11 @@
+[
+  "web/assets/reference/tang840-characters.json",
+  "web/assets/reference/tang840-wuchang.json",
+  "web/scripts/smoke-mobile-api-transport.js",
+  "web/scripts/smoke-renwu-source-reader.js",
+  "web/scripts/smoke-shizheng-tinyi-entry.js",
+  "web/scripts/smoke-territory-context-sync.js",
+  "web/scripts/smoke-territory-hardening.js",
+  "web/scripts/smoke-territory-ownership-sync.js",
+  "web/scripts/smoke-territory-render-economy.js"
+]

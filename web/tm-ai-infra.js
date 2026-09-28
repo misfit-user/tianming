@@ -683,18 +683,24 @@ async function _aiFetchWithRetryInner(url, body, signal, opts) {
       }
       // 第三刀·防重试风暴：本地超时（timer 触发）原样重发大概率再次超时，白等一整个超时周期 + 翻倍 token 费用。
       //   大请求（maxTok>8000，如 sc1）超时 → 立即放弃，不在 fetch 层重发；小请求最多再试一次。
-      if (timedOut) {
+      if (timedOut && !opts._configuredRetries) {
         var _bigReq = !!(body && (body.max_completion_tokens || body.max_tokens) > 8000);
         if (_bigReq || attempt >= 1) {
           if (!e.lastRaw) e.lastRaw = _aiLastRaw;
           throw e;
         }
       }
+      if (opts._configuredRetries && globalThis.TM && TM.CallRetryPolicy && !TM.CallRetryPolicy.retryable(e)) throw e;
+      // The wrapper rebuilds the primary request, spending this same remaining retry allowance.
+      if (opts._secondaryFallbackOwner && attempt < maxRetries && _isAINetworkError(e)) {
+        if (opts._requestGuard) opts._requestGuard();
+        e._aiSecondaryRetriesRemaining = maxRetries - attempt; e._aiSecondaryRetryGuard = opts._requestGuard; throw e;
+      }
       // 网络错误 / 小请求首次超时——指数退避重试
       if (attempt < maxRetries) {
         var delayRetry = _aiRetryDelay(null, attempt);
         console.warn('[AI] 第 ' + (attempt+1) + ' 次尝试失败: ' + (e.message || e) + '，' + delayRetry + 'ms 后重试');
-        await _aiBudgetedRetryWait(delayRetry, ctrl.signal, opts.retryBudget);
+        await _aiBudgetedRetryWait(delayRetry, timedOut ? signal : ctrl.signal, opts.retryBudget);
       } else {
         // 挂载最后的原始响应
         if (!e.lastRaw) e.lastRaw = _aiLastRaw;
@@ -771,13 +777,14 @@ async function callAI(prompt,maxTok,signal,tier,opts){
     opts = tier;
     tier = opts.tier;
   }
-  opts = opts || {};
+  opts = _aiConfiguredCallOptions(Object.assign({}, opts || {}, { tier: tier }));
   // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
   if (_aiEffectiveTierIsSecondary(tier) && !opts._noSecFallback) {
-    var _o = Object.assign({}, opts, { _noSecFallback: true });
+    opts.retryBudget = opts.retryBudget || _aiCreateRetryBudget({ maxAttempts: (opts.maxRetries == null ? 3 : Number(opts.maxRetries)) + 3, configuredRetries: opts._configuredRetries === true, totalTimeoutMs: _aiTotalResponseTimeout(opts) });
+    var _o = Object.assign({}, opts, { _noSecFallback: true, _secondaryFallbackOwner: true });
     try { return await callAI(prompt, maxTok, signal, 'secondary', _o); }
     catch (e) {
-      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await callAI(prompt, maxTok, signal, 'primary', _o); }
+      if (_isAINetworkError(e) && e._aiSecondaryRetriesRemaining > 0 && !(signal && signal.aborted) && !e._tmNativeTransport) { if (e._aiSecondaryRetryGuard) e._aiSecondaryRetryGuard(); console.warn('[AI] 次 API 不可达·使用剩余重试回退主 API'); return await callAI(prompt, maxTok, signal, 'primary', Object.assign({}, _o, { maxRetries: e._aiSecondaryRetriesRemaining - 1, _secondaryFallbackOwner: false })); }
       throw e;
     }
   }
@@ -791,7 +798,7 @@ async function callAI(prompt,maxTok,signal,tier,opts){
   var _scaledTok = Math.round((maxTok||2000) * ((typeof getCompressionParams==='function') ? Math.max(1.0, getCompressionParams().scale) : 1.0));
   if (Number.isFinite(opts.maxOutputTokens) && opts.maxOutputTokens > 0) _scaledTok = Math.min(_scaledTok, Math.floor(opts.maxOutputTokens));
   var body = { model: _aiCfg.model || (P.ai&&P.ai.model) || "gpt-4o", messages:[{role:"user",content:prompt}], temperature: P.ai.temp||0.8, max_tokens: _scaledTok };
-  var fetchOpts = { apiKey: key, tier: tier, firstResponseTimeoutMs: opts.firstResponseTimeoutMs, totalResponseTimeoutMs: opts.totalResponseTimeoutMs, queueTimeoutMs: opts.queueTimeoutMs, priority: opts.priority || 'normal', retryBudget: opts.retryBudget, id: opts.id };
+  var fetchOpts = Object.assign({}, opts, { apiKey: key, tier: tier });
   if (opts.timeoutMs != null) fetchOpts.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts.contextOverflowReducer = opts.contextOverflowReducer;
@@ -836,7 +843,7 @@ async function _callAIWithToolsUncached(prompt, tools, opts) {
     while (true) {
       try { result = await _callAIWithToolsScoped(prompt, tools, scoped); break; }
       catch (failure) {
-        if (!scoped._toolRetryState || !retryPolicy || !retryPolicy.retryable(failure) || scoped._toolRetryState.remaining <= 0) throw failure;
+        if ((failure && failure._aiRetryExhausted) || !scoped._toolRetryState || !retryPolicy || !retryPolicy.retryable(failure) || scoped._toolRetryState.remaining <= 0) throw failure;
         scoped._toolRetryState.remaining--;
         await _aiBudgetedRetryWait(_aiRetryDelay(null, retryIndex++), scoped.signal, scoped.retryBudget);
         if (scoped._streamGuard) scoped._streamGuard();
@@ -850,7 +857,7 @@ async function _callAIWithToolsUncached(prompt, tools, opts) {
 async function _callAIWithToolsScoped(prompt, tools, opts) {
   opts = opts || {};
   if (!Array.isArray(tools) || tools.length === 0) {
-    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries, retryBudget: opts.retryBudget, id: opts.id });
+    var _t0 = await callAI(prompt, opts.maxTok || 2000, opts.signal, opts.tier, Object.assign({}, opts, { maxRetries: opts._toolRetryState ? opts._toolRetryState.remaining : opts.maxRetries }));
     return { text: _t0 || '', toolCalls: [] };
   }
   // 取 tier 配置
@@ -893,7 +900,7 @@ async function _callAIWithToolsScoped(prompt, tools, opts) {
   // ─── fallback：把 schema 注入 prompt → 普通 callAI → 解析 JSON 映射回 toolCalls ───
   async function _runFallback(cause) {
     try {
-      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, { priority: opts.priority || 'normal', timeoutMs: opts.timeoutMs, maxRetries: opts.maxRetries, retryBudget: opts.retryBudget, id: opts.id });
+      var raw = await callAI(_tmAIToolJSON.prompt(prompt, tools, opts.forceTool), maxTok, opts.signal, opts.tier, Object.assign({}, opts, { maxRetries: opts._toolRetryState ? opts._toolRetryState.remaining : opts.maxRetries }));
       var calls = _tmAIToolJSON.filter(_tmAIToolJSON.parse(raw), tools, opts.forceTool);
       return { text: String(raw||''), toolCalls: calls, fallback: true,
         error: calls.length ? undefined : (cause ? _toolErrorInfo(cause) : { code: 'tool-response-invalid', status: 0 }) };
@@ -1200,13 +1207,14 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
     opts = tier;
     tier = opts.tier;
   }
-  opts = opts || {};
+  opts = _aiConfiguredCallOptions(Object.assign({}, opts || {}, { tier: tier }));
   // M3.1·次 API 走 secondary 且网络不可达 → 自动回退主 API 重试一次（_noSecFallback 防递归）
   if (_aiEffectiveTierIsSecondary(tier) && !opts._noSecFallback) {
-    var _oM = Object.assign({}, opts, { _noSecFallback: true });
+    opts.retryBudget = opts.retryBudget || _aiCreateRetryBudget({ maxAttempts: (opts.maxRetries == null ? 3 : Number(opts.maxRetries)) + 3, configuredRetries: opts._configuredRetries === true, totalTimeoutMs: _aiTotalResponseTimeout(opts) });
+    var _oM = Object.assign({}, opts, { _noSecFallback: true, _secondaryFallbackOwner: true });
     try { return await callAIMessages(messages, maxTok, signal, 'secondary', _oM); }
     catch (e) {
-      if (_isAINetworkError(e)) { console.warn('[AI] 次 API 不可达·回退主 API: ' + ((e && e.message) || e)); return await callAIMessages(messages, maxTok, signal, 'primary', _oM); }
+      if (_isAINetworkError(e) && e._aiSecondaryRetriesRemaining > 0 && !(signal && signal.aborted) && !e._tmNativeTransport) { if (e._aiSecondaryRetryGuard) e._aiSecondaryRetryGuard(); console.warn('[AI] 次 API 不可达·使用剩余重试回退主 API'); return await callAIMessages(messages, maxTok, signal, 'primary', Object.assign({}, _oM, { maxRetries: e._aiSecondaryRetriesRemaining - 1, _secondaryFallbackOwner: false })); }
       throw e;
     }
   }
@@ -1235,7 +1243,7 @@ async function callAIMessages(messages,maxTok,signal,tier,opts){
     }
   }
   var body = { model: _aiCfgM.model || (P.ai&&P.ai.model) || "gpt-4o", messages: _msgs, temperature: 0.8, max_tokens: _scaledTok2 };
-  var fetchOpts2 = { apiKey: key, tier: tier, firstResponseTimeoutMs: opts.firstResponseTimeoutMs, totalResponseTimeoutMs: opts.totalResponseTimeoutMs, queueTimeoutMs: opts.queueTimeoutMs, priority: opts.priority || 'normal', retryBudget: opts.retryBudget, id: opts.id };
+  var fetchOpts2 = Object.assign({}, opts, { apiKey: key, tier: tier });
   if (opts.timeoutMs != null) fetchOpts2.timeoutMs = opts.timeoutMs;
   if (opts.maxRetries != null) fetchOpts2.maxRetries = opts.maxRetries;
   if (typeof opts.contextOverflowReducer === 'function') fetchOpts2.contextOverflowReducer = opts.contextOverflowReducer;

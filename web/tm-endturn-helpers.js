@@ -191,24 +191,21 @@ function runAnnualReview() {
 
     // 多维评分
     var postReq = _getPostRequirement(char);
-    var postAbility = char[postReq.key] || char.intelligence || 50;
-    var virtue = char.virtue || char.benevolence || 50;
-    var loyalty = char.loyalty || 50;
-    var admin = char.administration || 50;
+    function value(v, fallback) { return v != null && v !== '' && isFinite(Number(v)) ? Number(v) : fallback; }
+    var postAbility = value(char[postReq.key], value(char.intelligence, 50));
+    var virtue = value(char.virtue, value(char.benevolence, 50));
+    var loyalty = value(char.loyalty, 50);
+    var admin = value(char.administration, 50);
 
     // 五常加权（仁义礼智信各影响不同方面）
     var wuchang = char.wuchang || {};
-    var wuchangAvg = ((wuchang.ren||50) + (wuchang.yi||50) + (wuchang.li||50) + (wuchang.zhi||50) + (wuchang.xin||50)) / 5;
+    var wuchangAvg = ['ren','yi','li','zhi','xin'].reduce(function(sum,k) { return sum+value(wuchang[k],50); },0) / 5;
 
     // 综合评分：职务匹配度×0.25 + 忠诚×0.2 + 品德×0.2 + 行政×0.15 + 五常×0.1 + 任期表现×0.1
-    var tenureBonus = 0;
-    if (char._memory && char._memory.length > 0) {
-      var goodDeeds = char._memory.filter(function(m){ return m.importance >= 7; }).length;
-      tenureBonus = Math.min(20, goodDeeds * 3);
-    }
+    var tenureBonus = typeof TM !== 'undefined' && TM.OfficeActionEvidence ? TM.OfficeActionEvidence.tenureAchievements(GM,char) : 0;
     var score = postAbility * 0.25 + loyalty * 0.2 + virtue * 0.2 + admin * 0.15 + wuchangAvg * 0.1 + tenureBonus * 0.1;
 
-    var entry = { name: char.name, score: Math.round(score), postType: postReq.type, rank: char.rankLevel || 9 };
+    var entry = { name: char.name, characterId:char.id, score: Math.round(score), postType: postReq.type, rank: value(char.rankLevel,9) };
 
     if (score >= 75) results.excellent.push(entry);
     else if (score >= 45) results.adequate.push(entry);
@@ -237,7 +234,7 @@ function runAnnualReview() {
 
     // 优等效果
     results.excellent.forEach(function(r) {
-      var c = findCharByName(r.name);
+      var c = typeof TM !== 'undefined' && TM.OfficeHolderState ? TM.OfficeHolderState.identity(GM,r.characterId,r.name).char : findCharByName(r.name);
       if (c) {
         if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(c, 5, '\u8003\u8BFE\u4F18\u7B49(' + r.score + '\u5206)', { source:'official-evaluation-excellent' });
         else c.loyalty = Math.min(100, ((typeof c.loyalty === 'number' && isFinite(c.loyalty)) ? c.loyalty : 50) + 5);
@@ -260,7 +257,7 @@ function runAnnualReview() {
     });
     // 劣等效果
     results.poor.forEach(function(r) {
-      var c = findCharByName(r.name);
+      var c = typeof TM !== 'undefined' && TM.OfficeHolderState ? TM.OfficeHolderState.identity(GM,r.characterId,r.name).char : findCharByName(r.name);
       if (c) {
         if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(c, -5, '\u8003\u8BFE\u52A3\u7B49(' + r.score + '\u5206)', { source:'official-evaluation-poor' });
         else c.loyalty = Math.max(0, ((typeof c.loyalty === 'number' && isFinite(c.loyalty)) ? c.loyalty : 50) - 5);

@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "protocol": "file:",
+  "catalog": [
+    "sc-tianqi7-1627",
+    "sc-tang840-840",
+    "sc-jianyan1-1127-shaosong"
+  ],
+  "ming": 369,
+  "song": 104,
+  "source": "sc-jianyan1-1127-shaosong",
+  "crypto": true
+}

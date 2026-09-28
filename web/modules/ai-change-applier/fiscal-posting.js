@@ -144,7 +144,8 @@ export function createFiscalPosting(global) {
   function hash(text) { var h = 2166136261; for (var i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
   function identity(G, fa, index, namespace) {
     var sig = signature(fa), prefix = (namespace || 'fa') + ':' + String(G.sid || '') + ':' + String(G.turn || 0) + ':';
-    return { id: fa.id ? String(fa.id) : prefix + String(index) + ':' + hash(sig), resource: fa.resource || 'money', signature: sig };
+    var stable = fa.id != null ? String(fa.id) : (fa.operationId || fa.actionId) ? JSON.stringify([fa.operationId || fa.actionId, fa.target, fa.kind, fa.resource || 'money']) : '';
+    return { id: stable || prefix + String(index) + ':' + hash(sig), resource: fa.resource || 'money', signature: sig };
   }
   function findPosted(list, posting) {
     var previous = (list || []).find(function(e) { return e && e.id === posting.id && (e.resource || 'money') === posting.resource && e._postingSignature; });

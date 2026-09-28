@@ -23,6 +23,33 @@ function fixture(conf,desktop=false,lateStorage=false){
 }
 function oldProject(){return {scenarios:[{id:'custom',name:'旧项目'}],characters:[],ai:{},conf:{emergencyRecovery:{...selected,mode:'off',maxTokens:4000},aiCallRetryOverrides:{sc1:0},unrelatedProjectFlag:'restored'}};}
 function equal(value,expected){assert.equal(JSON.stringify(value),JSON.stringify(expected));}
+for(const count of [0,1,7,20])test('secondary retry '+count+' survives delayed old projects and a fresh restart',async()=>{
+  const f=fixture({aiSecondaryRetryCount:count});assert.equal(f.c.P.conf.aiSecondaryRetryCount,count);
+  f.idb({...oldProject(),conf:{aiSecondaryRetryCount:12}});await tick();assert.equal(f.c.P.conf.aiSecondaryRetryCount,count);
+  f.c.saveP();const saved=JSON.parse(f.store.tm_P_lite).conf;assert.equal(saved.aiSecondaryRetryCount,count);
+  const restarted=fixture(saved);assert.equal(restarted.c.P.conf.aiSecondaryRetryCount,count);
+  restarted.idb({...oldProject(),conf:{aiSecondaryRetryCount:12}});await tick();assert.equal(restarted.c.P.conf.aiSecondaryRetryCount,count);
+});
+test('secondary retry zero survives desktop autosave restoration',async()=>{
+  const f=fixture({aiSecondaryRetryCount:0},true);f.idb(null);await tick();
+  f.desktop({...oldProject(),conf:{aiSecondaryRetryCount:12}});await tick();assert.equal(f.c.P.conf.aiSecondaryRetryCount,0);
+});
+test('secondary retries saved while an old project read is pending stay authoritative',async()=>{
+  const f=fixture({aiSecondaryRetryCount:1});f.c.P.conf.aiSecondaryRetryCount=6;f.c.saveP();
+  f.idb({...oldProject(),conf:{aiSecondaryRetryCount:12}});await tick();assert.equal(f.c.P.conf.aiSecondaryRetryCount,6);
+});
+test('unconfigured legacy projects leave secondary retry policy defaults implicit',async()=>{
+  const f=fixture({});assert.equal(Object.hasOwn(f.c.P.conf,'aiSecondaryRetryCount'),false);
+  f.idb(oldProject());await tick();assert.equal(Object.hasOwn(f.c.P.conf,'aiSecondaryRetryCount'),false);
+  f.c.saveP();assert.equal(Object.hasOwn(JSON.parse(f.store.tm_P_lite).conf,'aiSecondaryRetryCount'),false);
+});
+test('valid legacy secondary preferences restore when no device choice exists',async()=>{
+  const f=fixture(null);f.idb({...oldProject(),conf:{aiSecondaryRetryCount:4}});await tick();assert.equal(f.c.P.conf.aiSecondaryRetryCount,4);
+});
+for(const count of [-1,1.5,21,'5',{},null])test('invalid device secondary retry '+JSON.stringify(count)+' cannot overwrite a valid restored value',async()=>{
+  const f=fixture({aiSecondaryRetryCount:count});f.idb({...oldProject(),conf:{aiSecondaryRetryCount:4}});await tick();assert.equal(f.c.P.conf.aiSecondaryRetryCount,4);
+});
+
 test('late IndexedDB project cannot replace the latest synchronous recovery or retry preferences',async()=>{
   const f=fixture({emergencyRecovery:selected,aiCallRetryOverrides:{sc1:8}});equal(f.c.P.conf.emergencyRecovery,selected);
   f.idb(oldProject());await tick();equal(f.c.P.conf.emergencyRecovery,selected);equal(f.c.P.conf.aiCallRetryOverrides,{sc1:8});
@@ -58,15 +85,15 @@ test('storage loaded after the initial polling window still restores after real 
 test('missing storage at script completion stops without endless timers or fabricated restoration',()=>{
   const f=fixture(null,false,true);f.expire();f.ready(false);assert.equal(f.loads(),0);assert.equal(f.timerCount(),0);assert.equal(f.events.length,0);
 });
-test('loading an old game preserves current recovery and retry budgets through the production load owner',async()=>{
+for(const count of [0,1,7,20])test('loading an old game preserves current recovery and retry budgets including secondary '+count,async()=>{
   const lifecycle=fs.readFileSync(path.resolve(__dirname,'../tm-save-lifecycle.js'),'utf8');
   const keys=lifecycle.match(/var PREF_CONF_KEYS = \[[\s\S]*?\];/)[0];
   const start=lifecycle.indexOf('async function _fullLoadGameApplyImpl('),stop=lifecycle.indexOf('  if(GM){',start);
   const selected={mode:'off',tier:'primary',maxCalls:100,maxRepairs:50,maxSteps:1000,maxTokens:2000000,timeoutMs:0};
-  const c={P:{conf:{emergencyRecovery:selected,aiCallRetryOverrides:{sc1:8}}},GM:{},TM:{},localStorage:{getItem:()=>null},
+  const c={P:{conf:{emergencyRecovery:selected,aiCallRetryOverrides:{sc1:8},aiSecondaryRetryCount:count}},GM:{},TM:{},localStorage:{getItem:()=>null},
     _tmCulturalRestoreOptions:()=>({}),_tmStripSaveTransportMetadata(){},_ensurePDefaults(){},_ensureGMDefaults(){},_tmRunCriticalLoadStep:(_n,fn)=>fn()};
   c.window=c;vm.createContext(c);vm.runInContext(keys+'\n'+lifecycle.slice(start,stop)+'return true;}',c);
-  await c._fullLoadGameApplyImpl({gameState:{GM:{turn:1},P:{conf:{emergencyRecovery:{mode:'auto',maxCalls:6},aiCallRetryOverrides:{sc1:0},difficulty:'saved'}}}},{});
-  equal(c.P.conf.emergencyRecovery,selected);equal(c.P.conf.aiCallRetryOverrides,{sc1:8});assert.equal(c.P.conf.difficulty,'saved');
+  await c._fullLoadGameApplyImpl({gameState:{GM:{turn:1},P:{conf:{emergencyRecovery:{mode:'auto',maxCalls:6},aiCallRetryOverrides:{sc1:0},aiSecondaryRetryCount:12,difficulty:'saved'}}}},{});
+  equal(c.P.conf.emergencyRecovery,selected);equal(c.P.conf.aiCallRetryOverrides,{sc1:8});assert.equal(c.P.conf.aiSecondaryRetryCount,count);assert.equal(c.P.conf.difficulty,'saved');
 });
 (async()=>{let pass=0,fail=0;for(const t of tests)try{await t.fn();pass++;console.log('PASS '+t.name);}catch(e){fail++;console.error('FAIL '+t.name+'\n'+e.stack);}console.log(JSON.stringify({pass,fail,total:tests.length}));if(fail)process.exitCode=1;})();

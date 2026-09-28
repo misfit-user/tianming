@@ -115,12 +115,14 @@
     var position = binding.position;
     view.position = { name: text(position.name), dept: binding.dept, rank: position.rank == null ? null : position.rank };
     view.source = binding.source;
-    view.holderName = text(position.holder);
-    var ch = view.holderName && ((gm && gm.chars) || []).filter(function (c) { return c && c.name === view.holderName; })[0];
+    var holderState=root.TM&&root.TM.OfficeHolderState;
+    var occupancy=holderState?holderState.read(gm,position):null;
+    view.holderName=occupancy?occupancy.label:text(position.holder);
+    var ch=occupancy?occupancy.primary:null;
     var duty = typeof root.officeDutyView === 'function' ? root.officeDutyView(gm, position) : null;
     if (duty) { view.fulfillment = duty.fulfillment; view.band = duty.band; }
-    if (!ch || ch.alive === false || ch.dead === true) { view.status = 'vacant'; return view; }
-    view.status = ch._travelTo && ch._travelRemainingDays > 0 ? 'travelling' : 'serving';
+    if (occupancy ? !occupancy.occupied || ch && (ch.alive === false || ch.dead === true) : !ch) { view.status = 'vacant'; return view; }
+    view.status = ch && ch._travelTo && ch._travelRemainingDays > 0 ? 'travelling' : 'serving';
     view.travelDaysLeft = view.status === 'travelling' ? Number(ch._travelRemainingDays) : null;
     view.ability = duty ? duty.capacity : null;
     return view;

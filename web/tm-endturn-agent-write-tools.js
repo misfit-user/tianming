@@ -99,9 +99,10 @@
     // ③ 引用完整性 + 真写(委托 PathUtils·复用现成)
     var res;
     try {
-      if (op === 'push') res = PU.applyPathPush(gm, path, payload);
-      else if (op === 'adjust') res = PU.applyPathDelta(gm, path, payload, reason);
-      else res = PU.applyPathSet(gm, path, payload, reason);
+      if (op !== 'push' && TM.EdictEffects) res=TM.EdictEffects.applyNumeric(gm,path,payload,op==='adjust'?'delta':'set',reason);
+      if (!res && op === 'push') res = PU.applyPathPush(gm, path, payload);
+      else if (!res && op === 'adjust') res = PU.applyPathDelta(gm, path, payload, reason);
+      else if (!res) res = PU.applyPathSet(gm, path, payload, reason);
     } catch (e) { _recordFail(gm, op, path, 'apply 异常:' + (e && e.message)); return { ok: false, reason: 'apply 异常:' + (e && e.message) }; }
     if (!res || !res.ok) { _recordFail(gm, op, path, (res && res.reason) || 'apply 失败'); return { ok: false, reason: (res && res.reason) || 'apply 失败' }; }
     // 真正没有变化时返回成功但不冒充落地；进展记账只认 changed=true。
@@ -710,6 +711,8 @@
       reason: { type: 'string' }
     }, required: ['edictId'] }
   });
+  DEFS.push({name:'report_edict',description:'逐道回报诏令执行；数值操作先使用领域工具实际落账并带 edictId/effectId，本工具只关联执行记录与反馈，不再次改数值。',parameters:{type:'object',properties:{edictId:{type:'string'},status:{type:'string'},assignee:{type:'string'},feedback:{type:'string'},nextStep:{type:'string'},progressPercent:{type:'number'},clauses:{type:'array',items:{type:'object'}}},required:['edictId','status','feedback']}});
+  DEFS.forEach(function(d){d.parameters.properties.edictId=d.parameters.properties.edictId||{type:'string',description:'若因诏令执行，填原诏令编号'};d.parameters.properties.effectId={type:'string',description:'本回合同一效果的稳定编号，重试沿用'};});
   var SPECS = DEFS.map(function (d) {
     var s = Object.assign({}, d, {
       effect: 'runtime-write', domain: _domainOf(d.name), pack: 'runtime-write',
@@ -733,6 +736,10 @@
       return { ok: false, changed: false, name: name, text: '营造案造价由 building_project 唯一落账，禁止重复扣款' };
     }
     var reason = input.reason || 'agent 推演';
+    var resolutionTurn=ctx && ctx.input && ctx.input.resolutionTurn != null ? ctx.input.resolutionTurn : gm.turn;
+    var edictToken=name==='report_edict'?null:TM.EdictOutcomes&&TM.EdictOutcomes.toolStart(gm,name,input,resolutionTurn);
+    if(edictToken && edictToken.blocked)return {ok:false,changed:false,name:name,text:edictToken.reason};
+    if(edictToken && edictToken.duplicate)return {ok:true,changed:false,verified:true,name:name,text:'该诏令效果已结算',result:edictToken.receipt};
     var r;
     var reportBefore = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     switch (name) {
@@ -758,8 +765,10 @@
       case 'change_region_owner':  r = _semRegionOwner(gm, input); break;
       case 'adjust_region_state':  r = _semRegionState(gm, input); break;
       case 'judge_edict':          r = _semJudgeEdict(gm, input); break;
+      case 'report_edict':         r = TM.EdictOutcomes ? TM.EdictOutcomes.agentReport(gm,input,resolutionTurn) : {ok:false,reason:'诏令回报模块未加载'}; break;
       default: return { ok: false, name: name, text: '(未知写工具:' + name + ')' };
     }
+    if (TM.EdictOutcomes) TM.EdictOutcomes.toolFinish(gm,edictToken,name,input,r);
     var reportAfter = gm && Array.isArray(gm._agentWriteLog) ? gm._agentWriteLog.length : 0;
     if (r && r.ok && r.changed == null) r.changed = reportAfter > reportBefore;
     if (r && r.ok && r.verified == null) r.verified = true;

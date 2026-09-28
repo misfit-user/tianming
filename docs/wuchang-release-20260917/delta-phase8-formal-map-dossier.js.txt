@@ -1,0 +1,35 @@
+diff --git a/web/phase8-formal-map-dossier.js b/web/phase8-formal-map-dossier.js
+index c6cf2c0e..a0a99d99 100644
+--- a/web/phase8-formal-map-dossier.js
++++ b/web/phase8-formal-map-dossier.js
+@@ -98,7 +98,7 @@
+       if (soldiers <= 0) return;
+       var garrisonText = String(a.garrison || a.location || '');
+       // ① 剧本 regionHint 直绑：不在区划树/聚落层的驻地（蓟州/固原/京师等）由剧本点名所属地块
+-      var hint = a.regionHint || a.regionId;
++      var hint = a.garrisonRegionId || a.regionId || a.regionHint;
+       var rid = hint ? matchRegion(String(hint)) : null;
+       // ② 驻地名 token 两遍匹配（区划子树+聚落层城名）
+       if (!rid) {
+@@ -897,7 +897,6 @@
+     var neglected = bld.status === 'neglected';
+     var damaged = bld.status === 'damaged';   // S6·半损态
+     var ledger = (bw && bw.buildingLedger && !bld._proposal) ? bw.buildingLedger(bld, typeDef) : null;
+-    var moneyUnit = typeof CurrencyUnit !== 'undefined' && CurrencyUnit.getUnit ? CurrencyUnit.getUnit().money : (P && P.fiscalConfig && P.fiscalConfig.unit && P.fiscalConfig.unit.money) || '两';
+     var total = Number(bld.timeActual) || Number(typeDef && typeDef.buildTime) || Math.max(1, Number(bld.remainingTurns) || 1);
+     var prog = doing ? Math.round(Math.max(0, Math.min(1, (total - (Number(bld.remainingTurns) || 0)) / total)) * 100) : 100;
+     var stCls = doing ? 'doing' : (neglected ? 'ni' : (damaged ? 'ni' : 'done'));
+@@ -910,9 +909,9 @@
+       // S7·营造可观测账：完工/半损卡显「实入账」(真为本地所添·非 per-level 规则) + 工成之利岁入
+       (!doing && ledger && ledger.applied && ledger.applied.length ? '<div style="margin-top:4px;font-size:12px;color:#5a4a32;">实入账：' + esc(ledger.applied.join(' · ')) + '</div>' : '') +
+       (ledger && ledger.flowPct > 0 ? '<div style="margin-top:3px;font-size:12px;color:#5a4a32;">工成之利：地方岁入 +' + ledger.flowPct + '%/回合（单建筑上限 6%）</div>' : '') +
+-      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护用钱：地方库款 ' + esc(ledger.upkeep) + ' ' + esc(moneyUnit) + '/回合</div>' : '') +
+-      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库款足付修缮费 ' + esc(ledger.repairCost) + ' ' + esc(moneyUnit) + '（造价 30%，至少 20 ' + esc(moneyUnit) + '）则自动葺治复完。</div>' : '') +
+-      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修停用，工成之利暂停，候地方修缮后再启。</div>' : '') +
++      (ledger ? '<div style="margin-top:3px;font-size:12px;color:#6a5638;">' + (doing ? '完工后' : '') + '养护用钱： ' + esc(ledger.upkeep) + '（本期，地方支给）</div>' : '') +
++      (damaged && ledger ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">半损 · 存量效用减半，工成之利暂停；地方库银足付修缮费 ' + esc(ledger.repairCost) + ' 两（造价 30%，至少 20 两）则自动葺治复完。</div>' : '') +
++      (neglected ? '<div style="margin-top:3px;font-size:12px;color:#9a3a2a;">失修停用，候地方修缮后再启。</div>' : '') +
+       (doing ? '<div class="gq"><div class="gq-bar"><i style="width:' + prog + '%"></i></div><em>余 ' + esc(bld.remainingTurns) + ' 回合</em></div>' : '') +
+       '</div>';
+   }
+

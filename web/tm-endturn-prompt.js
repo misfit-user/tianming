@@ -612,6 +612,7 @@
       });
       tp += '\n▶ 共 ' + _edictSeq + ' 道诏令须逐条落实：edict_feedback 数组长度 == ' + _edictSeq + '·缺一不可。\n\n';
     }
+    if (TM.EdictOutcomes) tp += TM.EdictOutcomes.inputPrompt(GM, edicts, GM.turn);
     if(xinglu){
       tp+="\u3010\u4E3B\u89D2\u884C\u6B62\u3011\uFF08\u73A9\u5BB6\u89D2\u8272\u672C\u56DE\u5408\u7684\u4E2A\u4EBA\u884C\u52A8\uFF0C\u4E0E\u8BCF\u4E66\u4E92\u8865\u2014\u2014\u8BCF\u4E66\u662F\u5143\u9996\u53D1\u53F7\u65BD\u4EE4\uFF0C\u884C\u6B62\u662F\u89D2\u8272\u4E2A\u4EBA\u7684\u4E3E\u52A8\uFF09\n"+xinglu+"\n";
     }

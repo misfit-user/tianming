@@ -1,0 +1,67 @@
+[
+  {
+    "file": "web/tm-fiscal-statements.js",
+    "before": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 192
+    },
+    "after": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 218
+    }
+  },
+  {
+    "file": "web/tm-minxin-hard-link-consumers.js",
+    "before": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 423
+    },
+    "after": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 431
+    }
+  },
+  {
+    "file": "web/tm-guoku-panel.js",
+    "before": {
+      "bom": false,
+      "crlf": 1285,
+      "lf": 8
+    },
+    "after": {
+      "bom": false,
+      "crlf": 1291,
+      "lf": 8
+    }
+  },
+  {
+    "file": "web/phase8-formal-rightrail.js",
+    "before": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 2708
+    },
+    "after": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 2718
+    }
+  },
+  {
+    "file": "web/scripts/smoke-guoku-shared-display.js",
+    "before": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 75
+    },
+    "after": {
+      "bom": false,
+      "crlf": 0,
+      "lf": 75
+    }
+  }
+]

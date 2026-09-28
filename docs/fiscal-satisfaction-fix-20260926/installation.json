@@ -1,0 +1,139 @@
+{
+  "at": "2026-09-26T06:20:07.909Z",
+  "candidate": "C:\\Users\\37814\\.codex\\worktrees\\fiscal-satisfaction-fix\\tianming",
+  "target": "C:\\Users\\37814\\Desktop\\tianming",
+  "indexBefore": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "indexAfter": "2be63f9b19eb507475f047755cf066e144c24c550c7ce13e44c6deb4a2171d35",
+  "installed": [
+    {
+      "path": "web/tm-minxin-hard-link-consumers.js",
+      "sha256": "ea71f7111d2310e9b874d48e5028dfc547032bbdac0feaf00a279a23a6eb8b56",
+      "bytes": 20674
+    },
+    {
+      "path": "web/tm-fiscal-statements.js",
+      "sha256": "07cb0e8ffa1591f8c911ee10e4e641a2bbb9498813f67b65561344f5f7beb68b",
+      "bytes": 20747
+    },
+    {
+      "path": "web/tm-guoku-panel.js",
+      "sha256": "e35e88a734b3f15620e059c1d720ebc693fbb3631e6bf491331c3e3a8c4b4c2f",
+      "bytes": 85209
+    },
+    {
+      "path": "web/phase8-formal-rightrail.js",
+      "sha256": "b634f6a111ab6169d90ca72aa87540283f5d65a016c73ec301c056b28748d295",
+      "bytes": 153118
+    },
+    {
+      "path": "web/tm-class-engine.js",
+      "sha256": "226727868b4133976eefbc5d2dd6ed46edb867e607359075520070f23846f848",
+      "bytes": 56991
+    },
+    {
+      "path": "web/tm-party-class-llm-calibrator.js",
+      "sha256": "2dec2e3ba8157fd8294ee586663c608659e45805ea03fee4af96645ba089e7a8",
+      "bytes": 81479
+    },
+    {
+      "path": "web/tm-social-political-signals.js",
+      "sha256": "de14c7e3df21a1e092d7e882560d1eb7c84f40e6b65b079c57eba1b96caf21e3",
+      "bytes": 101023
+    },
+    {
+      "path": "web/tm-party-class-ecology.js",
+      "sha256": "cf5f8d295bdee6ee8e398fb6f66cf312ec17eed9ee9899f86171252aa43a87d8",
+      "bytes": 24308
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "sha256": "d2106452d018cd10b7bdba3c7e1788c001ec10a48f598f29469c027bc5dcc5ee",
+      "bytes": 129946
+    },
+    {
+      "path": "web/tm-renli.js",
+      "sha256": "a21c96341a059054cd4ac00d71f9c1faff3bcdb1a7c8e5ad3fbb91893f022f88",
+      "bytes": 84321
+    },
+    {
+      "path": "web/tm-topbar-vars.js",
+      "sha256": "8f638cce6dd00c2cc5b811aa6a83608be8244138f8c855a5ea6510cdff6bc809",
+      "bytes": 98557
+    },
+    {
+      "path": "web/scripts/smoke-class-satisfaction-guard.js",
+      "sha256": "eb2ec9b628eebbaad51aa7792ea505999566b4b8f3065d3c20f6e9d5319eff53",
+      "bytes": 7783
+    },
+    {
+      "path": "web/scripts/smoke-social-satisfaction-recovery.js",
+      "sha256": "4b377e823ecb32a246421f0c4705aab8bbf1baf166f98a7a2ea32ffa6d343452",
+      "bytes": 9199
+    },
+    {
+      "path": "web/scripts/smoke-fiscal-actual-display.js",
+      "sha256": "5c60762eeacbd3b2d1d8330eac881cb8463659f90b2ec4e91a2d595fc4ef248f",
+      "bytes": 11432
+    },
+    {
+      "path": "web/scripts/smoke-guoku-shared-display.js",
+      "sha256": "d9e537a3fa9581e28310ffcb935abcb042c1b79218ce9459ec1d670705029a8e",
+      "bytes": 9743
+    },
+    {
+      "path": "web/scripts/smoke-topbar-fiscal-consistency.js",
+      "sha256": "147ec39be354ea9523654662ced1326c45da7964782ffb70329e7f845dd3e9f8",
+      "bytes": 7628
+    },
+    {
+      "path": "web/scripts/smoke-class-pressure-scope.js",
+      "sha256": "3b6690f9438e53162b70bf1df3c60463334d1698592576ddcb1d2a8d54ec6400",
+      "bytes": 7584
+    },
+    {
+      "path": "web/scripts/smoke-opening-renli-prime.js",
+      "sha256": "0540c36b2ec733ce755a8ec6ddc651833ea74a524129ec045bc35fdfadf06292",
+      "bytes": 2689
+    },
+    {
+      "path": "web/scripts/verify-all.js",
+      "sha256": "c930a097a25af5ae6ba71a97a4144d77baf7f5a807f47c529b14decb1a01d24d",
+      "bytes": 47791
+    },
+    {
+      "path": "web/scripts/lib-ai-priority-routing.js",
+      "sha256": "8255169c175877af85d2ec65b75465b77c3e4308dc8a190bd701c7b9ab65b4c2",
+      "bytes": 2125
+    },
+    {
+      "path": "web/scripts/smoke-rightrail-datasource.js",
+      "sha256": "377c8d5e3410ebe899c0c9f33ff0b22cc1b70df1b89e74621f2b5e4c6f32d6a4",
+      "bytes": 15385
+    },
+    {
+      "path": "web/scripts/smoke-endturn-performance-optimizations.js",
+      "sha256": "8a82611315f218331e50ac899251d336d4e8afb9b4b368750bc8521777bc0865",
+      "bytes": 14601
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "c794588b13af89bae85e669c2fc159b1eb488c7b1e8595a30b83c3247d75f40a",
+      "bytes": 75341
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "sha256": "1ca9510b29cba57e4830f85f919d67c351557bcbfaae9ab791248c29e581025a",
+      "bytes": 134977
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "sha256": "00f63f439c7eb37de30823eaa15555d58ad1f0d33d5c6dc0ff92b5321926c527",
+      "bytes": 223670
+    },
+    {
+      "path": "web/scripts/smoke-start-game-data-integrity.js",
+      "sha256": "6bee240b3d0510af3a30076999d5f283f578f8241fada48a7e97bbd640c552ec",
+      "bytes": 38097
+    }
+  ]
+}

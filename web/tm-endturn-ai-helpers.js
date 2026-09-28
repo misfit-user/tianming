@@ -253,6 +253,9 @@ async function aiDigestLongTermActions() {
 // 御批回听·post-inference·对玩家诏令的执行问责
 // ============================================================
 async function aiEdictEfficacyAudit(aiResult, edicts) {
+  var _auditG = GM, _auditTurn = GM.turn-1;
+  var _auditDate = typeof getTSText==='function' ? getTSText(_auditTurn) : GM._gameDate || '';
+  var _auditLease = window.TM && TM.EdictOutcomes ? TM.EdictOutcomes.auditLease(GM,_auditTurn) : null;
   if (!P.ai || !P.ai.key) return;
   if (!aiResult || typeof aiResult !== 'object') return;
 
@@ -272,6 +275,10 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
         });
       }
     });
+  }
+  if (window.TM && TM.EdictOutcomes) {
+    var _actualEdictReports=TM.EdictOutcomes.forTurn(GM,_auditTurn);
+    if (_actualEdictReports.length) edictLines=_actualEdictReports.map(function(r){return {id:r.edictId,content:r.content,category:r.category};});
   }
   if (edictLines.length === 0) {
     // 玩家本回合无诏令·跳过审查
@@ -300,6 +307,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
 
   var input = {
     edicts: edictLines,
+    executionReceipts: window.TM && TM.EdictOutcomes ? TM.EdictOutcomes.forTurn(GM,_auditTurn) : [],
     mainNarrative: (aiResult.shizhengji || '').slice(0, 1200),
     supplementaryNarrative: (aiResult.zhengwen || '').slice(0, 600),
     varChanges: varChangesSummary,
@@ -309,6 +317,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
 
   var prompt = '你是御前侍读·职责是代陛下核查本回合所下诏令是否被 AI 推演真实执行·并对朝局做多维度体检。\n\n' +
     '【本回合玩家诏令·按条列出】\n' + JSON.stringify(input.edicts, null, 2) +
+    '\n\n【实际执行回执】\n' + JSON.stringify(input.executionReceipts) +
     '\n\n【主推演叙事·时政记】\n' + input.mainNarrative +
     (input.supplementaryNarrative ? '\n\n【辅助叙事·政文】\n' + input.supplementaryNarrative : '') +
     '\n\n【数值变化】\n' + (input.varChanges.length ? input.varChanges.join('\n') : '（无）') +
@@ -407,8 +416,9 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
       });
     }
 
-    GM._edictEfficacyReport = {
-      turn: GM.turn - 1,
+    if (GM !== _auditG || (_auditLease && !TM.EdictOutcomes.leaseCurrent(_auditLease))) return;
+    var _edictAuditReport = {
+      turn: _auditTurn,
       total: edictLines.length,
       reports: parsed.reports.slice(0, 20),
       unexpectedEvents: normalizedUnexpected,
@@ -424,10 +434,11 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
 
     // 历史快照·供趋势对比(最多存 20 回合)
     if (!GM._edictEfficacyHistory) GM._edictEfficacyHistory = [];
+    GM._edictEfficacyHistory = GM._edictEfficacyHistory.filter(function(r){return r.turn!==_auditTurn;});
     GM._edictEfficacyHistory.push({
-      turn: GM.turn - 1,
-      overallEfficacy: GM._edictEfficacyReport.overallEfficacy,
-      efficacyByDimension: GM._edictEfficacyReport.efficacyByDimension,
+      turn: _auditTurn,
+      overallEfficacy: _edictAuditReport.overallEfficacy,
+      efficacyByDimension: _edictAuditReport.efficacyByDimension,
       total: edictLines.length
     });
     if (GM._edictEfficacyHistory.length > 20) GM._edictEfficacyHistory = GM._edictEfficacyHistory.slice(-20);
@@ -435,7 +446,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     // 统计·为下回合 sysP 注入被忽略/延宕的诏令+各派反应+战略洞见
     var ignoredList = parsed.reports.filter(function(r){ return r.status === 'ignored' || r.status === 'delayed'; });
     if (ignoredList.length > 0) {
-      GM._edictEfficacyReport.ignoredOrDelayed = ignoredList.map(function(r) {
+      _edictAuditReport.ignoredOrDelayed = ignoredList.map(function(r) {
         return { id: r.id, content: r.content, status: r.status, reason: r.reason, nextAdvice: r.nextAdvice };
       });
     }
@@ -447,9 +458,11 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
         if (key && key !== '无') oppositionSet[key] = (oppositionSet[key] || 0) + 1;
       }
     });
-    GM._edictEfficacyReport.oppositionSummary = Object.keys(oppositionSet)
+    _edictAuditReport.oppositionSummary = Object.keys(oppositionSet)
       .sort(function(a,b){return oppositionSet[b]-oppositionSet[a];})
       .slice(0, 5);
+    if (_auditLease) TM.EdictOutcomes.publishAudit(_auditLease,_edictAuditReport);
+    else GM._edictEfficacyReport = _edictAuditReport;
 
     // 写编年
     if (!GM._chronicle) GM._chronicle = [];
@@ -458,7 +471,7 @@ async function aiEdictEfficacyAudit(aiResult, edicts) {
     var dl = parsed.reports.filter(function(r){return r.status==='delayed';}).length;
     var ig = parsed.reports.filter(function(r){return r.status==='ignored';}).length;
     if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
-      turn: GM.turn - 1, date: GM._gameDate || '',
+      turn: _auditTurn, date: _auditDate,
       type: '御批回听',
       text: '本回合 ' + edictLines.length + ' 条诏令·完全执行 ' + ex + '·部分 ' + pa + '·延宕 ' + dl + '·忽略 ' + ig + '·效能 ' + (parsed.overallEfficacy || 0) + '%',
       tags: ['御批', '诏令', '问责']

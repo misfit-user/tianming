@@ -29,48 +29,28 @@ async function main() {
 
   assert(typeof ctx.agentLiveWorldOn === 'function', 'agentLiveWorldOn 已导出');
 
-  // ① 开关逻辑:仅 agent 模式下有意义(LLM 模式用 factionAgentEnabled·此开关绕过 agent 互斥)
-  ctx.P = { conf: {}, ai: {} };
-  assert(ctx.agentLiveWorldOn() === false, '默认(无开关)→ false');
-  ctx.P.conf.agentLiveWorldEnabled = true;
-  assert(ctx.agentLiveWorldOn() === false, 'LLM 模式(非 agent)+ 活世界开 → false(仅 agent 模式有意义)');
+  // 正式势力世界在两种管线均运行，Agent 入口只属于 Agent 管线。
+  ctx.P = { conf: { agentLiveWorldEnabled: false, factionAgentEnabled: false, factionGoalStackEnabled: false }, ai: {} };
+  assert(ctx.agentLiveWorldOn() === false, 'LLM 管线不启用 Agent 执行入口');
+  assert(ctx.agentFlagOn('factionAgentEnabled') && ctx.agentFlagOn('factionGoalStackEnabled'), '旧关闭值下正式势力机制仍启用');
   ctx.P.conf.agentModeEnabled = true;
-  assert(ctx.agentLiveWorldOn() === true, 'agent 模式 + 活世界开 → true');
-  ctx.P.conf.agentLiveWorldEnabled = false;
-  assert(ctx.agentLiveWorldOn() === false, 'agent 模式但活世界关 → false');
-  ctx.P.ai.agentLiveWorldEnabled = true;  // 两命名空间都认
-  assert(ctx.agentLiveWorldOn() === true, 'P.ai 命名空间亦认');
-
-  // ④ 活世界例外 + 互斥边界:factionAgentEnabled 经 agentLiveWorld 在 agent 模式放行(满血)·其余升级仍互斥关
-  ctx.P = { conf: { factionAgentEnabled: true }, ai: {} };
-  assert(ctx.agentFlagOn('factionAgentEnabled') === true, 'LLM 模式·factionAgentEnabled 开 → agentFlagOn=true');
-  ctx.P.conf.agentModeEnabled = true;  // agent 模式·活世界未开
-  assert(ctx.agentFlagOn('factionAgentEnabled') === false, 'agent 模式 + 活世界未开 → factionAgentEnabled 仍互斥关');
-  ctx.P.conf.agentLiveWorldEnabled = true;  // 开活世界
-  assert(ctx.agentFlagOn('factionAgentEnabled') === true, '★活世界例外:agent 模式 + 活世界开 → factionAgentEnabled 放行(势力 agent 满血:top3 激活+prompt 增强)');
-  assert(ctx.agentFlagOn('courtDebateEnabled') === false && ctx.agentFlagOn('memoryStewardEnabled') === false, '活世界例外仅限 factionAgentEnabled·其余 LLM 升级仍互斥关(不波及)');
-
-  // ② driver _isEnabled:agent 模式活世界绕过"势力精算"gate(精算关也能跑·只要 agent 模式+活世界+key)
-  ctx.P = { playerInfo: { factionName: '明朝廷' }, conf: { agentModeEnabled: true, agentLiveWorldEnabled: true, npcAiPrecision: false, npcInTurnMaxPerTurn: 8 }, ai: { key: 'fake' } };
-  ctx.GM = { turn: 7, _factionLivingWorld: false, facs: [ { name: '明朝廷', derivedStrength: { value: 99 } }, { name: '后金', derivedStrength: { value: 80 } }, { name: '察哈尔', derivedStrength: { value: 20 } } ], qijuHistory: [] };   // 势力活世界已翻默认 ON(2026-07-22)·此处显式关·令 LLM 模式对照(r3)不被默认总闸带亮 factionAgentEnabled
-  ctx.TM.FactionNpcLlmDecision = { calls: [], hasRunThisTurn: function () { return false; }, decideFor: async function (name) { this.calls.push(name); return { applied: true, rationale: name + ' 自主措置' }; } };
+  assert(ctx.agentLiveWorldOn(), 'Agent 管线固定接入活世界');
+  assert(!ctx.agentFlagOn('courtDebateEnabled') && !ctx.agentFlagOn('memoryStewardEnabled'), '无关实验增强仍受模式互斥');
+  ctx.P.playerInfo = { factionName: '明朝廷' };
+  ctx.P.conf.npcAiPrecision = false;
+  ctx.P.ai.key = 'offline-fixture';
+  ctx.GM = { turn: 7, _factionLivingWorld: false, facs: [{name:'明朝廷'}, {name:'后金',derivedStrength:{value:80}}, {name:'察哈尔',derivedStrength:{value:20}}], qijuHistory: [] };
+  ctx.TM.FactionNpcLlmDecision = {calls:[], hasRunThisTurn(){return false;}, async decideFor(name){this.calls.push(name);return {applied:true,rationale:name+' 自主措置'};}};
   ctx.TM.FactionNpcNewsBridge = {};
-  assert(ctx.TM.FactionNpcSettings.isAiPrecisionEnabled() === false, '前提:势力精算关闭(npcAiPrecision=false)');
-  const r1 = await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(7, 'lw-test');
-  assert(r1 && !r1.skipped && r1.applied === true, '精算关·但 agent 模式+活世界+key → _runOneInTurn 仍跑(绕过精算 gate)');
-  assert(ctx.TM.FactionNpcLlmDecision.calls.length === 1, '活世界确实调了一次 decideFor(势力自主决策落地)');
-
-  // ③ 对照·零回归:活世界关 + 精算关 → _isEnabled 挡(原逻辑·不绕过)
-  ctx.P.conf.agentLiveWorldEnabled = false;
-  ctx.GM.facs.forEach(function (f) { delete f._inTurnLlmRanTurns; });
-  const r2 = await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(7, 'off-test');
-  assert(r2 && r2.skipped && /precision/.test(r2.reason || ''), '活世界关+精算关 → skipped(precision off·零回归)');
-  // 且非 agent 模式 + 活世界开 + 精算关 → 仍挡(活世界仅 agent 模式有意义)
-  ctx.P.conf.agentModeEnabled = false;
-  ctx.P.conf.agentLiveWorldEnabled = true;
-  ctx.GM.facs.forEach(function (f) { delete f._inTurnLlmRanTurns; });
-  const r3 = await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(7, 'llm-mode-test');
-  assert(r3 && r3.skipped, 'LLM 模式(非 agent)+ 活世界开 + 精算关 → 仍 skipped(活世界不在 LLM 模式生效)');
+  assert(ctx.TM.FactionNpcSettings.isAiPrecisionEnabled(), 'NPC 真决策忽略退役关闭值');
+  const r1=await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(7,'agent-core');
+  assert(r1 && r1.applied && ctx.TM.FactionNpcLlmDecision.calls.length===1, 'Agent 真实调度执行一次自主决策');
+  ctx.P.conf.agentModeEnabled=false; ctx.GM.turn=8;
+  const r2=await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(8,'llm-core');
+  assert(r2 && r2.applied && ctx.TM.FactionNpcLlmDecision.calls.length===2, 'LLM 管线同样保留正式决策');
+  delete ctx.P.ai.key; ctx.GM.turn=9;
+  const r3=await ctx.TM.FactionNpcInTurnDriver._runOneInTurn(9,'no-api');
+  assert(r3 && r3.skipped && ctx.TM.FactionNpcLlmDecision.calls.length===2, '无 API 不发起调用');
 
   // ⑤ run() 活世界 job wired(源码静态验·不跑 run)
   const amSrc = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-mode.js'), 'utf8');
@@ -79,12 +59,8 @@ async function main() {
   assert(/agent-lw-/.test(amSrc), 'agent-mode 活世界 job 用 agent-lw- 标签(可观测)');
   assert(/_agentLiveWorldRan/.test(amSrc), 'agent-mode 记 _agentLiveWorldRan(观测落地势力数)');
 
-  // ⑥ 设置面板 toggle wired(tm-patches.js·agent 模式专属)
-  const patchSrc = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
-  assert(/s-agent-liveworld/.test(patchSrc), 'patches 含活世界 toggle(id s-agent-liveworld)');
-  // 注:onchange 内是 JS 字符串·单引号被转义为 \'·故用 indexOf 宽松匹配(同 smoke-agent-mode-s6 做法)
-  assert(patchSrc.indexOf('agentLiveWorldEnabled') >= 0 && patchSrc.indexOf('_togglePConf') >= 0, 'patches 活世界 toggle 绑 _togglePConf(agentLiveWorldEnabled)');
-  assert(/🌍 活世界/.test(patchSrc), 'patches 活世界组标题(🌍 活世界)');
+  const patchSrc = fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8');
+  assert(!/s-agent-liveworld/.test(patchSrc), '已移除 Agent 活世界的独立设置区');
 
   console.log('[smoke-agent-mode-liveworld] PASS assertions=' + passed);
 }

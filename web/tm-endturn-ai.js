@@ -330,13 +330,19 @@
         if (originalBody.response_format) repairBody.response_format = originalBody.response_format;
         if (global.TM && global.TM.AIOptions) repairBody = global.TM.AIOptions.inheritForRepair(repairBody, originalBody);
         if (typeof _aiFetchWithRetry !== "function") throw new Error("AI queue unavailable for JSON repair");
-        var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, {
+        var repairOpts = Object.assign({}, opts, {
           apiKey: opts.key,
           priority: opts.repairPriority || opts.priority || "normal",
           timeoutMs: opts.repairTimeoutMs || 45000,
           maxRetries: opts.repairMaxRetries != null ? opts.repairMaxRetries : 1,
           retryBudget: opts.retryBudget, id: (opts.id || "json") + ":repair"
         });
+        if (opts._recoveryValidationRetry || opts._emergency) repairOpts.maxRetries = 0;
+        else {
+          delete repairOpts._turnRetriesResolved; delete repairOpts._configuredRetries;
+          delete repairOpts._turnRetryCount; delete repairOpts._secondaryRetryCount;
+        }
+        var repairData = await _aiFetchWithRetry(opts.url, repairBody, opts.signal || null, repairOpts);
         _checkTruncated(repairData, (label || "JSON") + " repair");
         if (repairData.usage && typeof TokenUsageTracker !== "undefined") TokenUsageTracker.record(repairData.usage, ((opts && opts.id) || (label && (label + ':repair'))) || 'repair');
         var repairRaw = "";
@@ -381,7 +387,7 @@
     }
 
     async function _callEndturnAI(body, opts) {
-      opts = _mergeCallPolicy(opts && opts.id, opts || {});
+      opts = Object.assign({}, opts || {});
       var callUrl = opts.url || url;
       var key = opts.key || (P.ai && P.ai.key);
       var _thinkingCfg = P.ai;
@@ -397,9 +403,12 @@
           callUrl = _buildAIUrlForTier('secondary');
           key = _secCfg.key;
           _thinkingCfg = _secCfg;
+          opts.tier = 'secondary';
           if (body && body.model) body.model = _secCfg.model;
         }
       }
+      opts.tier = opts.tier || (_thinkingCfg && _thinkingCfg.tier) || 'primary';
+      opts = _mergeCallPolicy(opts.id, opts);
       // SC1 is already finalized with its thinking settings; never alter audited bytes here.
       if (opts.id !== 'sc1' && global.TM && global.TM.AIOptions) body = global.TM.AIOptions.apply(body, _thinkingCfg, 'openai');
       if (!opts.retryBudget && typeof _aiCreateRetryBudget === 'function') opts.retryBudget = _aiCreateRetryBudget({
@@ -413,14 +422,14 @@
       var raw = '';
       try {
         if (typeof _aiFetchWithRetry === 'function') {
-          data = await _aiFetchWithRetry(callUrl, body, opts.signal || null, {
-            apiKey: key, tier:(_thinkingCfg && _thinkingCfg.tier)||'primary',
+          data = await _aiFetchWithRetry(callUrl, body, opts.signal || null, Object.assign({}, opts, {
+            apiKey: key, tier: opts.tier,
             priority: opts.priority || 'normal',
             timeoutMs: opts.timeoutMs,
             maxRetries: opts.maxRetries,
             contextOverflowReducer: opts.contextOverflowReducer,
             retryBudget: opts.retryBudget, id: opts.id
-          });
+          }));
         } else {
           var resp = await fetch(callUrl, {
             method: 'POST',
@@ -481,7 +490,7 @@
           recordAIDiagnostic('call', { id: opts.id || '', label: label, ok: true, ms: Date.now() - started });
         }
         if (opts.expectedKeys) {
-          var parsed = await _parseOrRepairJsonResult(raw, data, label, {
+          var parsed = await _parseOrRepairJsonResult(raw, data, label, Object.assign({}, opts, {
             url: callUrl,
             key: key,
             body: body,
@@ -492,8 +501,8 @@
             repairPriority: opts.repairPriority,
             repairTimeoutMs: opts.repairTimeoutMs,
             repairMaxRetries: opts.repairMaxRetries,
-            retryBudget: opts.retryBudget, signal: opts.signal, id: opts.id, tier:opts.tier || (_thinkingCfg && _thinkingCfg.tier) || 'primary', maxRetries:opts.maxRetries
-          });
+            retryBudget: opts.retryBudget, signal: opts.signal, id: opts.id, tier:opts.tier, maxRetries:opts.maxRetries
+          }));
           if (parsed && parsed.repaired && typeof recordAIDiagnostic === 'function') {
             recordAIDiagnostic('json_repair', { id: opts.id || '', label: label, raw_len: String(raw || '').length });
           }
@@ -2291,7 +2300,7 @@
         "\"event\":{\"title\":\"...\",\"type\":\"...\"}\u6216null,"+
         "\"npc_actions\":[{\"name\":\"\u89D2\u8272\u540D\",\"action\":\"\u505A\u4E86\u4EC0\u4E48(30\u5B57)\",\"target\":\"\u5BF9\u8C01\",\"result\":\"\u7ED3\u679C\",\"behaviorType\":\"\u884C\u4E3A\u7C7B\u578B\",\"publicReason\":\"\u5BF9\u5916\u8BF4\u8F9E\",\"privateMotiv\":\"\u771F\u5B9E\u52A8\u673A\",\"new_location\":\"\u56E0\u884C\u52A8\u8F6C\u79FB\u5230\u4F55\u5904(\u53EF\u9009)\"}],"+
         "\"affinity_changes\":[{\"a\":\"\u89D2\u8272A\",\"b\":\"\u89D2\u8272B\",\"delta\":\u53D8\u5316\u91CF,\"reason\":\"\u539F\u56E0\",\"relType\":\"blood/marriage/mentor/sworn/rival/benefactor/enemy(\u53EF\u9009\uFF0C\u65B0\u589E\u6216\u5F3A\u5316\u5173\u7CFB\u7C7B\u578B)\"}],"+
-        "\"goal_updates\":[{\"name\":\"\u89D2\u8272\u540D\",\"goalId\":\"goal_1\",\"action\":\"update/add/complete/replace\",\"longTerm\":\"\u957F\u671F\u76EE\u6807(add/replace\u65F6\u5FC5\u586B)\",\"shortTerm\":\"\u5F53\u524D\u77ED\u671F\u76EE\u6807\",\"progress\":\"0-100\",\"context\":\"\u5F53\u524D\u884C\u52A8\u65B9\u5411(1\u53E5)\",\"type\":\"power/wealth/revenge/protect/knowledge/faith(add\u65F6\u5FC5\u586B)\",\"priority\":\"1-10\"}],\"character_deaths\":[{\"name\":\"角色名\",\"reason\":\"死因描述\"}],\"char_updates\":[{\"name\":\"角色名\",\"loyalty_delta\":0,\"ambition_delta\":0,\"stress_delta\":0,\"intelligence_delta\":0,\"valor_delta\":0,\"military_delta\":0,\"administration_delta\":0,\"management_delta\":0,\"charisma_delta\":0,\"diplomacy_delta\":0,\"benevolence_delta\":0,\"legitimacy_delta\":0,\"add_traits\":[\"新获得的特质id\"],\"remove_traits\":[\"失去的特质id\"],\"new_location\":\"新所在地(可选,如被贬/外派/召回)\",\"new_stance\":\"新立场(可选)\",\"new_party\":\"新党派(可选)\",\"action_type\":\"行为类型(punish/reward/betray/mercy/declare_war/reform等)\",\"reason\":\"原因\"}],\"faction_changes\":[{\"name\":\"\u52BF\u529B\u540D\",\"strength_delta\":0,\"economy_delta\":0,\"playerRelation_delta\":0,\"reason\":\"\u539F\u56E0\"}],\"party_changes\":[{\"name\":\"\u515A\u6D3E\u540D\",\"influence_delta\":0,\"new_status\":\"\u6D3B\u8DC3/\u5F0F\u5FAE/\u88AB\u538B\u5236/\u5DF2\u89E3\u6563(\u53EF\u9009)\",\"new_leader\":\"\u65B0\u9996\u9886(\u53EF\u9009)\",\"new_agenda\":\"\u65B0\u8BAE\u7A0B(\u53EF\u9009)\",\"new_shortGoal\":\"\u65B0\u77ED\u671F\u76EE\u6807(\u53EF\u9009)\",\"reason\":\"\u539F\u56E0\"}],"+
+        "\"goal_updates\":[{\"name\":\"\u89D2\u8272\u540D\",\"goalId\":\"goal_1\",\"action\":\"update/add/complete/replace\",\"longTerm\":\"\u957F\u671F\u76EE\u6807(add/replace\u65F6\u5FC5\u586B)\",\"shortTerm\":\"\u5F53\u524D\u77ED\u671F\u76EE\u6807\",\"progress\":\"0-100\",\"context\":\"\u5F53\u524D\u884C\u52A8\u65B9\u5411(1\u53E5)\",\"type\":\"power/wealth/revenge/protect/knowledge/faith(add\u65F6\u5FC5\u586B)\",\"priority\":\"1-10\"}],\"character_deaths\":[{\"name\":\"角色名\",\"reason\":\"死因描述\"}],\"char_updates\":[{\"name\":\"角色名\",\"loyalty_delta\":0,\"ambition_delta\":0,\"stress_delta\":0,\"intelligence_delta\":0,\"valor_delta\":0,\"military_delta\":0,\"administration_delta\":0,\"management_delta\":0,\"charisma_delta\":0,\"diplomacy_delta\":0,\"benevolence_delta\":0,\"legitimacy_delta\":0,\"add_traits\":[\"新获得的特质id\"],\"remove_traits\":[\"失去的特质id\"],\"new_location\":\"新所在地(可选,如被贬/外派/召回)\",\"new_stance\":\"新立场(可选)\",\"new_party\":\"新党派(可选)\",\"action_type\":\"行为类型(punish/reward/betray/mercy/declare_war/reform等)\",\"reason\":\"原因\"}],\"faction_changes\":[{\"name\":\"\u52BF\u529B\u540D\",\"strength_delta\":0,\"economy_delta\":0,\"playerRelation_delta\":0,\"reason\":\"\u539F\u56E0\"}],\"party_changes\":[{\"cohesion_delta\":0,\"name\":\"\u515A\u6D3E\u540D\",\"influence_delta\":0,\"new_status\":\"\u6D3B\u8DC3/\u5F0F\u5FAE/\u88AB\u538B\u5236/\u5DF2\u89E3\u6563(\u53EF\u9009)\",\"new_leader\":\"\u65B0\u9996\u9886(\u53EF\u9009)\",\"new_agenda\":\"\u65B0\u8BAE\u7A0B(\u53EF\u9009)\",\"new_shortGoal\":\"\u65B0\u77ED\u671F\u76EE\u6807(\u53EF\u9009)\",\"reason\":\"\u539F\u56E0\"}],"+
         "\"faction_events\":[{\"actor\":\"\u52BF\u529BA\",\"target\":\"\u52BF\u529BB\u6216\u7A7A(\u5185\u653F\u4E8B\u4EF6\u53EF\u4E0D\u586Btarget)\",\"action\":\"\u5177\u4F53\u884C\u4E3A\u63CF\u8FF0(30\u5B57)\",\"actionType\":\"\u5916\u4EA4/\u5185\u653F/\u519B\u4E8B/\u7ECF\u6D4E\",\"result\":\"\u7ED3\u679C(30\u5B57)\",\"strength_effect\":0,\"geoData\":{\"routeKm\":0,\"terrainDifficulty\":0.5,\"hasOfficialRoad\":true,\"routeDescription\":\"\u7ECF\u2026\u2026\",\"passesAndBarriers\":[],\"fortLevel\":0,\"garrison\":0}}],"+
         "\"faction_ai_outcomes\":[{\"faction\":\"势力名\",\"factionId\":\"可选\",\"intent\":\"势力AI本回合意图\",\"action\":\"实际推动的行动\",\"target\":\"目标势力/地区/人物\",\"motive\":\"依据aiPersonality/aiDecisionWeights/aiConditionalBehaviors和当前局势的动机\",\"result\":\"结果\",\"publicSummary\":\"可进时政记的公开摘要\",\"posterityComment\":\"可进后人戏说的场景线索\",\"recordTarget\":\"shizhengji|houren|both|none\",\"structuralLinks\":[\"faction_events[0]\"]}],"+
         "\"faction_relation_changes\":[{\"from\":\"\u52BF\u529BA\",\"to\":\"\u52BF\u529BB\",\"type\":\"\u65B0\u5173\u7CFB\",\"delta\":\u53D8\u5316\u91CF,\"reason\":\"\u539F\u56E0\"}],"+
@@ -2469,7 +2478,7 @@
         "\"policy_changes\":[{\"action\":\"add/remove\",\"name\":\"\u56FD\u7B56\u540D\",\"reason\":\"\u539F\u56E0\"}],"+
         "\"scheme_actions\":[{\"schemer\":\"\u53D1\u8D77\u8005\u540D\",\"action\":\"advance/disrupt/abort/expose\",\"reason\":\"\u539F\u56E0\"}],"+
         "\"timeline_triggers\":[{\"name\":\"\u65F6\u95F4\u7EBF\u4E8B\u4EF6\u540D\",\"result\":\"\u5B9E\u9645\u53D1\u751F\u60C5\u51B5\"}],"+
-        "\"edict_feedback\":[{\"content\":\"\u8BCF\u4EE4\u5185\u5BB9\u6458\u8981\",\"assignee\":\"\u8D1F\u8D23\u6267\u884C\u7684\u5B98\u5458\u540D(\u5FC5\u586B)\",\"status\":\"executing/completed/obstructed/partial/pending_delivery(\u4FE1\u4F7F\u5728\u9014\u5C1A\u672A\u9001\u8FBE)\",\"feedback\":\"\u6267\u884C\u60C5\u51B5\u8BE6\u7EC6\u63CF\u8FF0\u2014\u2014\u8C01\u505A\u4E86\u4EC0\u4E48\u3001\u8FDB\u5C55\u5982\u4F55\u3001\u906D\u9047\u4EC0\u4E48\u963B\u529B\u3001\u4E3A\u4EC0\u4E48\u53D7\u963B\",\"progressPercent\":50}],"+
+        "\"edict_feedback\":[{\"edictId\":\"原诏令编号\",\"effectRefs\":[],\"clauses\":[],\"nextStep\":\"后续安排\",\"content\":\"\u8BCF\u4EE4\u5185\u5BB9\u6458\u8981\",\"assignee\":\"\u8D1F\u8D23\u6267\u884C\u7684\u5B98\u5458\u540D(\u5FC5\u586B)\",\"status\":\"executing/completed/obstructed/partial/pending_delivery(\u4FE1\u4F7F\u5728\u9014\u5C1A\u672A\u9001\u8FBE)\",\"feedback\":\"\u6267\u884C\u60C5\u51B5\u8BE6\u7EC6\u63CF\u8FF0\u2014\u2014\u8C01\u505A\u4E86\u4EC0\u4E48\u3001\u8FDB\u5C55\u5982\u4F55\u3001\u906D\u9047\u4EC0\u4E48\u963B\u529B\u3001\u4E3A\u4EC0\u4E48\u53D7\u963B\",\"progressPercent\":50}],"+
         // 诏令生命周期更新——AI每回合推进诏令的阶段状态，按中国施政真实模型
         "\"edict_lifecycle_update\":[{"+
           "\"edictId\":\"诏令ID——本回合新诏令必须取自上方【本回合诏令】列表中的tracker.id；延续推演的诏令必须用上方【生命周期推演中的诏令】列表中的已有id，不得凭空生成新id\","+
@@ -3953,7 +3962,7 @@
 
       // ═══ Sub-call 1b + 1c + 1d · 并行执行（S3 优化）════════════════════════
       // 三者无交集字段，通过 async IIFE 并行启动，Promise.all 等待
-      var _sc1dP = (async function() {
+      var _runSc1d = async function() {
       // Sub-call 1d · 实录/时政记专项：SC1 只判账本，此处把账本改写为史官文本。
       try {
         // Phase 0 Q3·_seedFromBasicFacts·SC1 失败时不再早 return·从 edicts/player_status 兜底成文
@@ -4024,10 +4033,11 @@
         } catch(_supplE) { _dbg('[SC1d Slice 5] supplement fail', _supplE); }
         var _dateText1d = ''; try { _dateText1d = (typeof getTSText === 'function') ? getTSText(GM.turn || 1) : ''; } catch(_) {}
         var tp1d = '【实录·时政记专项】\n';
+        if (TM.EdictOutcomes) tp1d += TM.EdictOutcomes.narrativeFacts(GM, GM.turn);
         tp1d += '你只负责把 SC1 已判定的结构化账本改写为史官文本，不得新增任何事实、数值、死亡、任免、战事或地块变化。\n';
         tp1d += '本回合：T' + (GM.turn || 1) + (_dateText1d ? (' · ' + _dateText1d) : '') + '\n';
         tp1d += '玩家诏令/行止原始摘要：' + _packSc1d({ edicts: edicts || {}, xinglu: xinglu || '' }, 2500) + '\n';
-        tp1d += 'SC1结构化账本：' + _packSc1d(_facts1d, 12000) + '\n\n';
+        tp1d += 'SC1行动与奏报（数值以实际执行回执为准）：' + _packSc1d(_facts1d, 12000) + '\n\n';
         // 【sc1d 升级·D1】给时政记喂涉事 NPC 的认知/关系线索(所求/势/视上/睦/隙)——兄弟 sc1b/sc1c 都吃·时政记要写"谁办的·遇何阻力"却看不到 → 复用 _cogRelCueSC。
         try {
           var _d1Names = {};
@@ -4056,7 +4066,8 @@
           }
         } catch(_d2E) {}
         tp1d += '请返回严格 JSON，只包含以下字段：\n';
-        tp1d += '{"shilu_text":"实录' + _shiluMin + '-' + _shiluMax + '字。纯文言史官体，仿《资治通鉴》《明实录》，以月日/是月/上命为句式，只记可验证事实，不评论。","szj_title":"时政记副标题，七字对仗两句，用顿号或逗号分隔。","shizhengji":"时政记正文' + _szjMin + '-' + _szjMax + '字。仿朝政纪要体，分3-5段，逐条复述玩家诏令/奏疏批复/问对朝议，并写执行者、执行过程、阻力、实际效果、遗留隐患。不得编造 SC1 账本没有的变化。","szj_summary":"时政记总结一句话，概括局势与隐患。"}';
+        var _recordSpec1d = TM.Endturn.AI.prompt.recordSpecs(ctx);
+        tp1d += JSON.stringify({shilu_text:_recordSpec1d.shilu, szj_title:_recordSpec1d.szjTitle, shizhengji:_recordSpec1d.shizhengji, szj_summary:_recordSpec1d.szjSummary});
         tp1d += '\n可选字段 basis_refs：数组，列出 shilu_text/shizhengji 所依据的 SC1 字段、诏令、问对或奏疏摘要；不得把 basis_refs 当作新增事实。';
         tp1d += '\n可选字段 zhengwen：一段独立的"史臣曰/朝野时评"(80-160字·带立场的短评论断·区别于时政记的纪实体·不新增事实)；若无从评则留空。';
         var _sc1dBaseTok = Math.min(_effectiveOutCap || 7000, 7000);
@@ -4100,7 +4111,7 @@
         p1 = _attachSc1RecordFallback(p1, _sc1dErr);
         if (GM && GM._turnAiResults) GM._turnAiResults.subcall1 = p1;
       }
-      })();
+      };
 
       // 【sc1b/sc1c 升级·C2/B1】共享:把 sc07 的 _npcCognition(所求/朝局判断/视上)+ NPC 间关系(睦/隙)压成紧凑线索——
       //   让书信/阴谋/结盟不再无视「谁想要什么·谁信谁·谁恨谁」这两大既有富数据源(此前 sc1b/sc1c 只看对玩家亲和)。
@@ -4824,7 +4835,7 @@
       })();  // end SC1c IIFE
 
       // 并行等待 SC1b + SC1c + SC1d 完成（互不争用写入字段）
-      try { await Promise.all([_sc1bP, _sc1cP, _sc1dP]); } catch(_sc1bcErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_sc1bcErr, 'sc1b+1c+1d parallel') : console.warn('[sc1b+1c+1d parallel]', _sc1bcErr); }
+      try { await Promise.all([_sc1bP, _sc1cP]); } catch(_sc1bcErr) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_sc1bcErr, 'sc1b+1c+1d parallel') : console.warn('[sc1b+1c+1d parallel]', _sc1bcErr); }
 
       if ((!p1 || !_hasSc1StructuredResult(p1)) && global.TM && TM.RecoveryRuntime) {
         var emergencySC1 = await TM.RecoveryRuntime.finalSC1({raw:c1,data:data1,body:_sc1Body,deadlineAt:ctx.meta.sc1RecoveryDeadline,validate:_hasSc1StructuredResult,signal:ctx.signal||ctx.meta&&ctx.meta.signal});
@@ -4833,6 +4844,15 @@
       }
       // 主推演没有完整结构时，不以其他子调用片段伪造完整回合。
       if (!p1 || !_hasSc1StructuredResult(p1)) { var incomplete = new Error('主推演未形成完整结构化结果；保留响应并中止本回合'); incomplete.code = 'sc1-result-unavailable'; throw incomplete; }
+       if (TM.EdictOutcomes) {
+         var _edictCoverage = TM.EdictOutcomes.coverage(GM, edicts, p1, GM.turn);
+         if (_edictCoverage.missing.length) {
+           try {
+             var _edictRepair = await _callEndturnAI({model:P.ai.model||'gpt-4o',messages:[{role:'system',content:_maybeCacheSys(sysPFor('sc1'))},{role:'user',content:TM.EdictOutcomes.inputPrompt(GM, edicts, GM.turn)+'\n补齐以下遗漏诏令的判定：'+JSON.stringify(_edictCoverage.missing.map(function(t){return {edictId:t.id,content:t.content};}))+'\n已有主推演：'+JSON.stringify(p1)+'\n仅返回遗漏诏令的 edict_feedback 和必须补充的结构化操作。新增操作须带对应 edictId；effectRefs 只引用本次补充的操作。已有变化不得重复输出。缺少执行条件则报告原因。'}],max_tokens:_tok(4000),temperature:0.3},{id:'sc1_edicts',label:'诏令回报补正',expectedKeys:['edict_feedback'],priority:'high',maxRetries:0,repairMaxRetries:0});
+             if (_edictRepair && _edictRepair.parse && _edictRepair.parse.parsed) TM.EdictOutcomes.mergeSupplement(p1,_edictRepair.parse.parsed,_edictCoverage.missing.map(function(t){return t.id;}));
+           } catch (_edictRepairError) { ctx.meta.warnings.push('部分诏令回报待补正'); }
+         }
+       }
       // G2·失败降级链：若 SC1 主推演 JSON 失败或空·从 SC1b/SC1c 合成最小可用 p1·避免整回合卡死
       if (!p1 || !_hasSc1StructuredResult(p1)) {
         var _p1bG2 = GM._turnAiResults && GM._turnAiResults.subcall1b;
@@ -4924,6 +4944,13 @@
           throw _applyCbErr;
         }
       }
+      p1 = ctx.results.sc1 || p1;
+      await _runSc1d();
+      ['shizhengji','zhengwen'].forEach(function(k){if(p1[k])ctx.record[k]=p1[k];});
+      ctx.record.shiluText=p1.shilu_text||ctx.record.shiluText;
+      ctx.record.szjTitle=p1.szj_title||ctx.record.szjTitle;
+      ctx.record.szjSummary=p1.szj_summary||ctx.record.szjSummary;
+      if (TM.Endturn.AI.apply.stages.refreshNarrative) TM.Endturn.AI.apply.stages.refreshNarrative(ctx,p1);
       }); // end Sub-call 1 _runSubcall
 
     // 外层保险：_runSubcall 会吞掉最终异常并继续流程；若 sc1 包装层失败，仍要给后续写回/弹窗一个可用账本。

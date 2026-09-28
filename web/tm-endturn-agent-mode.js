@@ -113,7 +113,7 @@
   // ── 切片1·自我反思·校准开关(agent 模式专属·P.conf 命名空间·与 LLM 升级 reflectionAgentEnabled 分开:后者在 agent 模式被互斥强关) ──
   function _agentSelfReflectOn(P) { P = P || root.P || {}; return !!(P.conf && P.conf.agentSelfReflectEnabled); }
   // ── 活世界·势力③ agent 决策开关(agent 模式专属·绕过 LLM 升级互斥·默认关) ──
-  function _agentLiveWorldOn(P) { P = P || root.P || {}; return (typeof root.agentLiveWorldOn === 'function') ? root.agentLiveWorldOn() : !!(P.conf && P.conf.agentLiveWorldEnabled); }
+  function _agentLiveWorldOn(P) { return (typeof root.agentLiveWorldOn === 'function') ? root.agentLiveWorldOn() : true; }
   // ── 切片3·跨回合一致·诏令督查开关(agent 模式专属·P.conf) ──
   function _agentEdictOversightOn(P) { P = P || root.P || {}; return !!(P.conf && P.conf.agentEdictOversightEnabled); }
 
@@ -121,6 +121,7 @@
   //   真游戏 prep(tm-endturn-prep.js:363)已登记→此处**去重跳过**(防重复);prep 未跑(如直调/某路径)则补登记。形状对齐 prep。gate 在 edict-oversight 开关下(其消费者)·关则不动。
   function _registerPlayerEdicts(gm, ctx, resolutionTurn) {
     try {
+      if (TM.EdictOutcomes) return TM.EdictOutcomes.collect(gm,ctx && ctx.input && ctx.input.edicts || {},resolutionTurn).length;
       var inp = (ctx && ctx.input) || {};
       var edicts = inp.edicts || [];
       if (!edicts.length) return 0;
@@ -894,6 +895,7 @@
       });
     }
     var resolutionTurn = gm.turn || 0;
+    ctx.input.resolutionTurn=resolutionTurn;
     var _intentPlan = TM.Endturn.AgentIntentPlan.create({ mode: 'agent', turn: resolutionTurn });
     ctx.meta.agentIntentPlan = _intentPlan;
 
@@ -958,8 +960,9 @@
     var _biasInject = '';
     try { if (_agentSelfReflectOn(P) && TM.ReflectionAgent && typeof TM.ReflectionAgent.formatBiasForSc0 === 'function') _biasInject = TM.ReflectionAgent.formatBiasForSc0(gm) || ''; } catch (_biE) {}
     // 切片3·跨回合一致·诏令督查:把在办活诏令+近期既定事实注入 basis(推演接续上回合不失忆/不矛盾)·开关关/无活诏令则空
-    var _edictDossier = '';
-    try { if (_agentEdictOversightOn(P)) { _registerPlayerEdicts(gm, ctx, resolutionTurn); _edictDossier = _activeEdictsDossier(gm) || ''; } } catch (_edE) {}
+    _registerPlayerEdicts(gm, ctx, resolutionTurn);
+    var _edictDossier = TM.EdictOutcomes ? TM.EdictOutcomes.inputPrompt(gm,ctx.input.edicts || {},resolutionTurn)+'\n使用 report_edict 逐道回报；相关写工具须带 edictId 和稳定 effectId。回报使用工具已确认结果。' : '';
+    try { if (_agentEdictOversightOn(P)) { _registerPlayerEdicts(gm, ctx, resolutionTurn); _edictDossier += _activeEdictsDossier(gm) || ''; } } catch (_edE) {}
     // 现行诏制：已颁行且仍作数的诏令（办结不等于废止）·不受督查开关限制·本回合新诏已在玩家操作里
     var _standingEdicts = '';
     try { if (TM.EdictEfficacy) _standingEdicts = (TM.EdictEfficacy.promptSection(gm, { excludeTurn: resolutionTurn }) + TM.EdictEfficacy.feedbackGuide(gm, { tool: 'judge_edict' })).trim(); } catch (_seE) {}
@@ -1117,7 +1120,7 @@
       if (_eoClaim.ok) {
         try {
           _show('⟨执政⟩督查在办诏令…', 81);
-          await TM.EdictOversight.run(gm, { evidence: state.narrative || _synthNarrative(gm), tier: 'primary', maxTok: 2400, timeoutMs: 60000, signal: _agentSignal(ctx) });
+          await TM.EdictOversight.run(gm, { resolutionTurn:resolutionTurn, evidence: state.narrative || _synthNarrative(gm), tier: 'primary', maxTok: 2400, timeoutMs: 60000, signal: _agentSignal(ctx) });
           ctx.meta.agentTaskOwnership.edictRan = true;
         } catch (_eoRunE) { ctx.meta.agentTaskOwnership.edictError = String((_eoRunE && _eoRunE.message) || _eoRunE).slice(0, 160); }
       } else ctx.meta.agentTaskOwnership.edictSkipped = 'budget';
@@ -1222,6 +1225,7 @@
       return bail('Agent 无实质产出且引擎未跑·无可叙述');
     }
 
+    if (TM.EdictOutcomes) TM.EdictOutcomes.receive(gm,{edict_feedback:[]},ctx.input.edicts||{},resolutionTurn,[]);
     _show('⟨执政⟩撰史定章…', 86);                       // 加载层:agent-narrate 拍
     // 叙述焊死:确保 _turnReport 有 narrative(优先 agent 的·否则从实际改动反推)
     if (!Array.isArray(gm._turnReport)) gm._turnReport = [];

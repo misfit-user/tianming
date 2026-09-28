@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "file": "web/map-editor.html",
+      "sha256": "443b8cfe31422a36e3beca9c6c1c82ce666a9b923409cf266872e227afbfea2b",
+      "bytes": 113628,
+      "beforeSha256": "d0ac341b6e4f5a92092741d30a7141fc201bf539c3b89734930ec5f67d7a4f76"
+    },
+    {
+      "file": "web/editor-authoring-agent.js",
+      "sha256": "7508b3b6c29a457940745feaf029450243ad890b2c0d59388aa8698a1256701d",
+      "bytes": 314038,
+      "beforeSha256": "f676e32174cbf8003fb0a22314c85bbf0819ee3447391ce04f401389b9cc6ad7"
+    },
+    {
+      "file": "web/map-editor-agent-tools.js",
+      "sha256": "8b11aa70e49859f283a185c17e6585738c30d90657503a3ac837bed50e5d0b76",
+      "bytes": 13575
+    },
+    {
+      "file": "web/map-editor-agent.js",
+      "sha256": "38cb10f22e767c8bb2d1f9f6961aafdb04f6f0eaf0c277651b969c175c21d7df",
+      "bytes": 5163
+    },
+    {
+      "file": "web/map-editor-agent-ui.js",
+      "sha256": "e5c3a7214cb1ada127092e0564f155f434381c4addfeeec846d9b7e9e6d5f3e9",
+      "bytes": 5092
+    },
+    {
+      "file": "web/map-editor-agent.css",
+      "sha256": "335cac444e998bd580807dea9d8170555e6042f059c20a248245d38f73ca4a61",
+      "bytes": 2607
+    },
+    {
+      "file": "web/scripts/smoke-map-editor-agent.js",
+      "sha256": "2ccbefbe12fa866ecd3316d05cc5fbf83c620af855a55e7e43fd6eaaa1467f3e",
+      "bytes": 8518
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "824c7b138c86164655400f501cfe79e9969b94093d6706d396e541d6124fa1aa",
+      "bytes": 135504,
+      "beforeSha256": "dbf168128cee1a449dd6512fec319f06f939cf9f71d2af818a5391236bb5da00"
+    }
+  ],
+  "release": false,
+  "realProviderTested": false,
+  "nativeManifestChangedKeys": [
+    "workbenchSources",
+    "runtimeHash"
+  ]
+}

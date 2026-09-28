@@ -1,0 +1,224 @@
+{
+  "status": "SCOPED_FIX_VERIFIED_WITH_BASELINE_FAILURES",
+  "device": "LAPTOP-AV4J1O7I",
+  "directory": "C:\\Users\\37814\\Desktop\\tianming",
+  "verifiedAt": "2026-09-17T10:14:46.783Z",
+  "head": "5ed032afe65cc041dd4d890227ada23e736b4713",
+  "branch": "codex/audit-20260905",
+  "commitCreated": false,
+  "pushed": false,
+  "published": false,
+  "files": [
+    {
+      "path": "web/tm-endturn-apply.js",
+      "sha256": "dffd0bcd60d87b5be02435c33cd2897ab74f6459a4a2691d4221aeb4021c2388",
+      "before": "bf75b3db916e6e29e257c5a145b904447d600f2f9c40fa45d152d02f30af8024",
+      "bytes": 373146,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 5309,
+          "lf": 119
+        },
+        "after": {
+          "crlf": 5308,
+          "lf": 119
+        }
+      }
+    },
+    {
+      "path": "web/tm-faction-membership.js",
+      "sha256": "d52d183623730808bb4e72ff76383504cf47fb44a0d8aed41ac2c7f5d0850157",
+      "before": "280b28e10cb243c7a28bd18d94511ffb96fb114817896ce2019410d75b94410d",
+      "bytes": 42421,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 0,
+          "lf": 728
+        },
+        "after": {
+          "crlf": 0,
+          "lf": 820
+        }
+      }
+    },
+    {
+      "path": "web/tm-map-system.js",
+      "sha256": "ba2961aa90a291c88555d6f44511a19801e22f2cf0e396bf7945bb21e55405e6",
+      "before": "18dc9b92c20017b0ed7dc24cc3322edeb86a5400ae5774e640a4d60b3a1bd463",
+      "bytes": 99367,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 0,
+          "lf": 2760
+        },
+        "after": {
+          "crlf": 0,
+          "lf": 2820
+        }
+      }
+    },
+    {
+      "path": "web/map-integration.js",
+      "sha256": "794ee55a2c1bfefd63612053e508e4179283871d606406388b1d0f9bf1d315ab",
+      "before": "8cf8050e27ff6c7fed6758fb7834154c05f8a1f3077d322899f8c072c8232f8b",
+      "bytes": 15845,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 0,
+          "lf": 457
+        },
+        "after": {
+          "crlf": 0,
+          "lf": 457
+        }
+      }
+    },
+    {
+      "path": "web/tm-ai-change-narrative.js",
+      "sha256": "d5ee2b17a969f13096bb73bf0bdc40d000761a56a23652d14857a0c11e504b91",
+      "before": "e920fc79c1521328d5239a5042856694fcab34623eae6a2b0970837a704c657f",
+      "bytes": 50856,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 0,
+          "lf": 1044
+        },
+        "after": {
+          "crlf": 0,
+          "lf": 998
+        }
+      }
+    },
+    {
+      "path": "web/scripts/smoke-tianqi-map-runtime.js",
+      "sha256": "dabb8b32a126a471fbed147a0b3adb4972d462c0949217c6908beb0d2a8d6a5e",
+      "before": "a3b8fb1aa93fa1b1aa1fce7a9374829f94302ffb13ca07d6dc15b04f31932ea1",
+      "bytes": 6586,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": {
+          "crlf": 0,
+          "lf": 150
+        },
+        "after": {
+          "crlf": 0,
+          "lf": 151
+        }
+      }
+    },
+    {
+      "path": "web/scripts/smoke-territory-hardening.js",
+      "sha256": "cc78cc68ae22ddd39ed207ac5263f9ad3b455f38cb75e6dc2f9350017c7e07aa",
+      "before": null,
+      "bytes": 10711,
+      "syntaxExitCode": 0,
+      "lineEndings": {
+        "before": null,
+        "after": {
+          "crlf": 0,
+          "lf": 150
+        }
+      }
+    }
+  ],
+  "preserved": [
+    {
+      "path": "web/tm-three-systems-ext.js",
+      "unchanged": true
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "unchanged": true
+    },
+    {
+      "path": "web/phase8-formal-map.js",
+      "unchanged": true
+    }
+  ],
+  "tests": [
+    {
+      "suite": "territory-context-sync",
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "suite": "territory-hardening",
+      "total": 28,
+      "passed": 28,
+      "failed": 0
+    },
+    {
+      "suite": "territory-ownership-sync",
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "suite": "territory-render-economy",
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  ],
+  "relatedSmokes": {
+    "selected": 105,
+    "pass": 103,
+    "fail": 2,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "unrelatedFailures": [
+    {
+      "name": "smoke-runtime-save-consistency.js",
+      "baselineEvidence": {
+        "log": "baseline-save.log",
+        "marker": "读档以显式 Promise 屏障等待编年 hydration 和 receipt 恢复后才开放玩法"
+      }
+    },
+    {
+      "name": "smoke-shaosong-target-map-regions.js",
+      "baselineEvidence": {
+        "log": "baseline-scenario.log",
+        "marker": "Western Xia external force summary not synced"
+      }
+    }
+  ],
+  "architecture": {
+    "newDiagnostics": false,
+    "failedGuards": 5,
+    "totalGuards": 13,
+    "diagnostics": [
+      "[lint-arch-all] FAIL  lint-dep-graph",
+      "[lint-dep-graph] FAIL — index.html 新增悬空引用 3 个（typo？还是忘了挂 <script>？）：",
+      "TM.NativeWorld ← tm-office-reform.js, tm-ai-apply-deaths.js, tm-arcs.js",
+      "TM.OfficeCreation ← tm-office-reform.js, tm-edict-parser.js",
+      "TM.StartContracts ← tm-mechanics-memory.js",
+      "[lint-dep-graph] FAIL — editor.html 新增悬空引用 3 个（typo？还是忘了挂 <script>？）：",
+      "TM.AIOptions ← editor-authoring-agent-provider.js",
+      "TM.AuthoringExtensions ← editor-authoring-agent.js, editor-authoring-agent-ui.js",
+      "TM.StartContracts ← tm-mechanics-memory.js",
+      "[lint-arch-all] FAIL  lint-global-providers",
+      "[lint-global-providers] unapproved duplicate provider: _isContextLengthResponse => tm-ai-infra-retry.js -> tm-ai-infra.js",
+      "[lint-global-providers] unapproved duplicate provider: _stripCacheControlFromBody => tm-ai-infra-retry.js -> tm-ai-infra.js",
+      "[lint-arch-all] FAIL  lint-file-size",
+      "[lint-file-size] FAIL — 1 处：巨石只许拆、不许堆（alias+内联范式见 docs/arch-guards.md）",
+      "tm-ai-infra.js: 新巨石（3004 行 > 3000）——拆了再来",
+      "[lint-arch-all] FAIL  lint-split-contracts",
+      "[lint-split-contracts] FAIL tm-save-world-validation.js 家族：index.html 缺装载点 tm-save-world-validation.js",
+      "[lint-split-contracts] FAIL tm-military.js 家族：index.html 缺装载点 tm-battle-contract.js",
+      "[lint-split-contracts] FAIL tm-military.js 家族：editor.html 缺装载点 tm-battle-contract.js",
+      "[lint-arch-all] FAIL  ref-check",
+      "[lint-arch-all] FAIL — 5/13 项未过"
+    ]
+  },
+  "diffCheckExitCode": 0,
+  "verificationScope": "Production functions in isolated Node fixtures on the actual device; no real save loaded; no external AI request; no full game GUI end-to-end run."
+}

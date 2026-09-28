@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "selected": 947,
+    "pass": 945,
+    "fail": 2,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "failed": [
+    {
+      "name": "smoke-production-dependencies.js",
+      "output": "node:assert:152\r\n  throw new AssertionError(obj);\r\n  ^\r\n\r\nAssertionError [ERR_ASSERTION]: Missing expected exception.\r\n    at D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-production-dependencies.js:16:10\r\n    at test (D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-production-dependencies.js:10:27)\r\n    at Object.<anonymous> (D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-production-dependencies.js:14:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\r\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\r\n    at node:internal/main/run_main_module:33:47 {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: undefined,\r\n  expected: /maxTotalMergeKeys/,\r\n  operator: 'throws',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.14.0\r\n"
+    },
+    {
+      "name": "smoke-relief-governance.js",
+      "output": "[econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ [Function: commitReliefPayment]\n- undefined\n\n    at D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-relief-governance.js:11:10\n    at test (D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-relief-governance.js:6:49)\n    at D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-relief-governance.js:9:7\n    at Object.<anonymous> (D:\\Codex-Verification\\tang840-official-integration\\web\\scripts\\smoke-relief-governance.js:124:3)\n    at Module._compile (node:internal/modules/cjs/loader:1812:14)\n    at Object..js (node:internal/modules/cjs/loader:1943:10)\n    at Module.load (node:internal/modules/cjs/loader:1533:32)\n    at Module._load (node:internal/modules/cjs/loader:1335:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5) {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: [Function: commitReliefPayment],\n  expected: undefined,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n"
+    }
+  ],
+  "report": "web/dev-tools/arch-guard/ci-ORQkPV/smoke-report.json"
+}

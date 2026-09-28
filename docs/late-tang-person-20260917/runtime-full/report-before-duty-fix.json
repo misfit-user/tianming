@@ -1,0 +1,71 @@
+{
+  "complete": true,
+  "ok": false,
+  "mode": "native-start-neutral-atlas",
+  "baseline": false,
+  "versions": {
+    "node": "20.18.3",
+    "acorn": "8.14.0",
+    "ada": "2.9.2",
+    "ares": "1.34.4",
+    "base64": "0.5.2",
+    "brotli": "1.0.9",
+    "cjs_module_lexer": "1.4.1",
+    "cldr": "44.1",
+    "icu": "74.2",
+    "llhttp": "8.1.2",
+    "modules": "130",
+    "napi": "9",
+    "nghttp2": "1.61.0",
+    "openssl": "0.0.0",
+    "simdutf": "5.6.4",
+    "tz": "2024a",
+    "undici": "6.21.1",
+    "unicode": "15.1",
+    "uv": "1.46.0",
+    "uvwasi": "0.0.21",
+    "v8": "13.0.245.25-electron.0",
+    "zlib": "1.3.0.1-motley",
+    "electron": "33.4.11",
+    "chrome": "130.0.6723.191"
+  },
+  "results": [
+    {
+      "name": "locked-electron-runtime",
+      "status": "PASS"
+    },
+    {
+      "name": "production-webpreferences",
+      "status": "PASS"
+    },
+    {
+      "name": "observed-turn-data-protocol",
+      "value": 2,
+      "status": "PASS",
+      "required": 2
+    },
+    {
+      "name": "real-bridge-and-ipc",
+      "status": "PASS"
+    },
+    {
+      "name": "production-test-exports-boundary",
+      "status": "PASS"
+    },
+    {
+      "name": "real-official-tang-scenario-starts-from-synced-bundle",
+      "status": "PASS"
+    }
+  ],
+  "failures": [
+    "AssertionError [ERR_ASSERTION]: Temporary selection duty gained real minister seat\n    at C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\ui-full-scenario-electron.cjs:32:3\n    at async check (C:\\Users\\37814\\Desktop\\tianming\\scripts\\electron\\bridge-main.cjs:72:34)\n    at async exports (C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\ui-full-scenario-electron.cjs:24:2)\n    at async WebContents.<anonymous> (C:\\Users\\37814\\Desktop\\tianming\\scripts\\electron\\bridge-main.cjs:138:55)"
+  ],
+  "timing": {
+    "startedAt": "2026-09-17T10:06:10.243Z",
+    "assertionsFinishedAt": "2026-09-17T10:06:35.303Z",
+    "elapsedMs": 25060,
+    "nodeUptimeSeconds": 25.2126089
+  },
+  "securityScope": "real unpackaged production main/preload; visible window; temporary userData; external network denied; no player data",
+  "temporaryUserData": "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\runtime-full\\userdata-XCudfo"
+}

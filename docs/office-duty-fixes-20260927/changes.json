@@ -1,0 +1,152 @@
+[
+  {
+    "file": "web/tm-office-system.js",
+    "before": "d7784c91cd1f6e92c3bd67752dc47f655095691412ba6dfee9f831d8ed28af91",
+    "after": "97a2bb734ac0b8cc1771358130cbed5e8ec75341d0faf81d44cdd837eba8bdd3"
+  },
+  {
+    "file": "web/tm-office-dutystate.js",
+    "before": "6ca7979f02960b305d4e7f9a24d881978d5b5fb16366083a86f437cc09e5dd42",
+    "after": "e8f66020b8ea62bcf15acf1d5d4039fb93660aa0f16c734519e23fd3d136b6ba"
+  },
+  {
+    "file": "web/tm-office-authority.js",
+    "before": "0993549b1ec177a64ffabba867152d9d6bfb4e96f8a350fd4b5d3fe03ea61db6",
+    "after": "443b2f0940e408516b9ab5699ce32951f886e388a0a88055acd365836b1145f4"
+  },
+  {
+    "file": "web/tm-office-powermap.js",
+    "before": "58e2865bb42af41f5361d1be123ec5cd1d063ad7f65bc2b4023dbe8dc4d72a93",
+    "after": "b2a24b45a2695c6ecbd5f12101e174a1941dca7b944dd97cf503a2fb9d89086b"
+  },
+  {
+    "file": "web/tm-endturn-helpers.js",
+    "before": "90a8a6b8da7a1b4c4decc2c195a77f7158ffb382d4545a109fda443069275471",
+    "after": "08626c79efaae1cfa77680a3c5760bd4d99cdee817b50f01630e2118a3c98fc7"
+  },
+  {
+    "file": "web/tm-endturn-apply.js",
+    "before": "01a6d613769b936a0320af5a6d64540c41b3781bcbed4c06a8ec0a4d9b81632a",
+    "after": "f61f44b1c9e62e28c115e47d3f84a00b29e71cd82585ff7950970f5559cb2d96"
+  },
+  {
+    "file": "web/modules/ai-change-applier/reconcile.js",
+    "before": "d8270c8d559a9f41858d36c9a286f96a7f61aa7bf659b8cad6bc6429f8fae5a7",
+    "after": "4af41d278c93d50dea110e84d9ef0b27417aa6c7cc9822c3caeadbdbdea16be4"
+  },
+  {
+    "file": "web/modules/ai-change-applier/core.js",
+    "before": "683e7c431d82306bfb5a623f8a657970a4f0bf2915ca00271ca66607afab6961",
+    "after": "3f9a09b847a0e9618ed817c7574647f109333215c8695b1567bd815c9658bfcc"
+  },
+  {
+    "file": "web/tm-char-economy-engine.js",
+    "before": "40a851ba2368dba4382a0adbb99e1976dacc204756707ec25bfc148e39398bf7",
+    "after": "0f40a131f8e9dec12636a70a32ec07fcdcb59c86302aa4b3bb38601b0fc3f054"
+  },
+  {
+    "file": "web/tm-ai-schema.js",
+    "before": "68e75c739145fc7603d9068676e0582728352661741c226165184eeebcebe1b8",
+    "after": "6bf763fad3d4dd4aa45e9fc2c19b68a36fc23c03d34815f8aea90090958a7554"
+  },
+  {
+    "file": "web/index.html",
+    "before": "7677ce26515a4db5094b2e9cd01c235637e267bb00680011ec505a2c2b03dd7d",
+    "after": "dd3f3da7c6c87d2744481f3b5be1cd7eb9a38b89d148f863f6b179dc248645f3"
+  },
+  {
+    "file": "web/tm-start-runtime-manifest.json",
+    "before": "2623b173ed46993d1125f2f878d437a8b3e6cd0fe4bae9febe6731e611e3c004",
+    "after": "dbf168128cee1a449dd6512fec319f06f939cf9f71d2af818a5391236bb5da00"
+  },
+  {
+    "file": "web/generated/tm-ai-change-applier.bundle.js",
+    "before": "5d0adb6d21aeb3347777cfaa801778ab192d498ed9e44882b4105709ff13e893",
+    "after": "f68fae288371d1da057b733f852c023fb729bcecf43ba2367d71270e6c3903be"
+  },
+  {
+    "file": "web/scripts/smoke-merit-dynamics.js",
+    "before": "e5f317063dcfd684c3d5099ec6cb3f8878ffda1cb13159d0ebcfb51cb58a52c7",
+    "after": "1cddd6f3058cf14277aa85a4dd1107d1b2c7c01ece03d2472a84e0ce8cd33e21"
+  },
+  {
+    "file": "web/scripts/smoke-s2b-duty-authority-reform.js",
+    "before": "854f0d2b3c131263d9d23bf6038fd3e9dea6792358e3fe562be00c9581297734",
+    "after": "98fe6d3b366f006ff2af016131ef83199b8b0434c3b05583493434a8ca94c48d"
+  },
+  {
+    "file": "web/tm-endturn-apply-stages.js",
+    "before": "451b786185fec43ac31251c0e1c52713863e5d034f1c8a9c731c46a0d46214a5",
+    "after": "c398310d7b2e3d74cc4168e35a7a9bcc0339bd961993f68aafcb64c3056e6406"
+  },
+  {
+    "file": "web/modules/ai-change-applier/fiscal-posting.js",
+    "before": "5ee571c77706cb42f42895ae37afbfb538a7a59337ee38f053c352ccfc13ab19",
+    "after": "f682caeb1b7f0c9c91c53f9495bb484260338ef59a4af125f32316fa127d4b56"
+  },
+  {
+    "file": "web/tm-office-runtime.js",
+    "before": "79a49a21c3a3eae3253ffbeeb7dd5d7f5f8c7617eda8a6f85d2b25daedf7f465",
+    "after": "7929d565392efdf544d107ad9df6e81becee4d60bc90b38a82a748b94c3ae22c"
+  },
+  {
+    "file": "web/tm-office-runtime-summary-appoint.js",
+    "before": "ee314f2204bf13a7b6ebb2af425fa0082563ba5555832e2d2af0c3a107c40319",
+    "after": "aed88190831d39cd37c5c45ff23bff3ccdf3a68022f8fd8a0f99e50428301756"
+  },
+  {
+    "file": "web/tm-office-reform.js",
+    "before": "27b7ef09965d546f910d08db304c2533fb2d6eee7b7e417b6cbd7bb1af7531dd",
+    "after": "2458ae656d1942cca267dddd07ef85f25f9387d52a4dc4f03b6181a2852be0bb"
+  },
+  {
+    "file": "web/scripts/smoke-office-dynastification.js",
+    "before": "72c94287a533c2ebde9fafd1210200fbf8cff366efcf66634de9c41e16d24f73",
+    "after": "9f9bae5d1ad663cc329ef3987acbe0b332c47d8a713ffba9e4ce602e97118968"
+  },
+  {
+    "file": "web/tm-fiscal-engine.js",
+    "before": "f95a3eb3f6143fa9d90465c24e4dde37ccc02d2831a3d7db788bd54ff814d08f",
+    "after": "8254562cc06ee35ebc9473c2e9a9d6d54a975ae8e9d6211903fddcd656b30075"
+  },
+  {
+    "file": "web/tm-npc-action-ledger.js",
+    "before": "9c24d956fb1478d77e53dd03899143979c79f25de2c992886fe093ff8591d3e4",
+    "after": "1c4ff494e105af5378db2dcd21255e77b1bebd52d1077346a2a0f66c56a51fae"
+  },
+  {
+    "file": "web/scripts/smoke-office-reform-add-overlap.js",
+    "before": "d92379e0b1b91f7e77192206575be62138bd74214fbc691caf3e48c92658e917",
+    "after": "10b89509a0483aa54c1f337b0490b21938bbb74cf089801a18895472083b47ed"
+  },
+  {
+    "file": "web/scripts/smoke-startup-phase-observability.js",
+    "before": "f72fa42a39cad80be75ed3b6d4c81c19d723d5bf0042c985d3e3392de1958f47",
+    "after": "218dc70670d1a34001409106a14b31e53d33aa9fad017fd465cec1f2b52909b2"
+  },
+  {
+    "file": "web/startup-script-phases.json",
+    "before": "56e4fa2fa51a2ae9b92621f463144ec075aadc04b5d2e22e0609af12c8123d9a",
+    "after": "2a5fde1b0295f7825eb3d0ae2ec4638c912d249d6d2af737eef9e0cd4b551fb7"
+  },
+  {
+    "file": "web/tm-office-holder-state.js",
+    "before": null,
+    "after": "b5639e83ed7a7df8a7f19d2e8bbe6a81a26daafdda671944f9d7ff4cfecec5d7"
+  },
+  {
+    "file": "web/tm-office-action-evidence.js",
+    "before": null,
+    "after": "1624d50bf5cbd3bfd92cc134dada4947930ed944a3552839953b0607a9072a89"
+  },
+  {
+    "file": "web/scripts/smoke-office-duty-accounting.js",
+    "before": null,
+    "after": "d2a7485aa84a9b45d990aec4d822b7827bd565669d2a7d180c8a7758b6687e48"
+  },
+  {
+    "file": "web/scripts/smoke-office-duty-integration.js",
+    "before": null,
+    "after": "53ea9f871843463a2cc6be91b2d1c66b81bf9a84c62141cdfb07d27ac50709ef"
+  }
+]

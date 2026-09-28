@@ -1,0 +1,884 @@
+ M .gitattributes
+ M .github/workflows/ci.yml
+ M PROJECT-STRUCTURE.md
+ M README.md
+ M docs/audit-fix-2026-09-05.md
+ M main-impl.js
+ M main-workshop-transaction.js
+ M mobile/release-version.json
+ M package-lock.json
+ M package.json
+ M preload-impl.js
+ M scripts/build-electron.js
+ M scripts/release-excludes.json
+ M scripts/verify-release-contract.js
+ M web/.hot-update-manifest.json
+ M web/_yan_harness.html
+ M web/battle/_BUNDLED_FROM.txt
+ M web/battle/index.html
+ M web/bundled-scenarios/manifest.js
+ M web/bundled-scenarios/manifest.json
+ M web/changelog.json
+ M web/docs/hot-update-format.md
+ M web/editor-authoring-agent-provider.js
+ M web/editor-authoring-agent-ui-icons.js
+ M web/editor-authoring-agent-ui.js
+ M web/editor-authoring-agent.js
+ M web/editor-fullgen.js
+ M web/editor.html
+ M web/feature-manifest.js
+ M web/generated/tm-ai-change-applier.bundle.js
+ M web/index.html
+ M web/map-editor-to-game.js
+ M web/map-editor.html
+ M web/map-integration.js
+ M web/modules/ai-change-applier/core.js
+ M web/modules/ai-change-applier/reconcile.js
+ M web/modules/ai-change-applier/validators.js
+ M web/phase8-formal-bridge-styles.js
+ M web/phase8-formal-bridge.js
+ M web/phase8-formal-drafts-message-panels.js
+ M web/phase8-formal-drafts.js
+ M web/phase8-formal-map-dossier.js
+ M web/phase8-formal-map.js
+ M web/phase8-formal-modules.js
+ M web/phase8-formal-rightrail.js
+ M web/phase8-formal-topbar.js
+ M web/preview/official-scenarios-bundle.js
+ M web/preview/renwu-tuzhi-runtime-test.html
+ M web/preview/scenario-editor-reset-app.js
+ M web/preview/scenario-editor-reset-preview.html
+ M web/preview/scenario-editor-sandbox-bridge.js
+ M web/scripts/benchmark-round20-workloads.js
+ M web/scripts/build-startup-phase-manifest.js
+ M web/scripts/ci-smokes.js
+ M web/scripts/lint-feature-boundaries.js
+ M web/scripts/lint-split-contracts.js
+ M web/scripts/run-smokes.js
+ M web/scripts/smoke-agent-mode-s8.js
+ M web/scripts/smoke-agent-trunc-selfheal.js
+ M web/scripts/smoke-ai-abort-listener-cleanup.js
+ M web/scripts/smoke-ai-err-human.js
+ M web/scripts/smoke-ai-institution-lifecycle-actions.js
+ M web/scripts/smoke-ai-preflight-diagnostics.js
+ M web/scripts/smoke-army-supply-strength.js
+ M web/scripts/smoke-authoring-agent-runtime-contract.js
+ M web/scripts/smoke-authoring-agent-tools.js
+ M web/scripts/smoke-battle-cost-guoku.js
+ M web/scripts/smoke-battle-deterministic.js
+ M web/scripts/smoke-battle-veterancy-wire.js
+ M web/scripts/smoke-calendar-contract.js
+ M web/scripts/smoke-clan-stipend-growth.js
+ M web/scripts/smoke-class-engine.js
+ M web/scripts/smoke-classparty-tinyi-optim.js
+ M web/scripts/smoke-conn-quickcheck.js
+ M web/scripts/smoke-context-hard-ceiling.js
+ M web/scripts/smoke-cost-panel-ui.js
+ M web/scripts/smoke-desktop-back-to-start-panel.js
+ M web/scripts/smoke-divergence-ledger.js
+ M web/scripts/smoke-edict-parser-layered.js
+ M web/scripts/smoke-editor-pipeline-shim.js
+ M web/scripts/smoke-endturn-console-regressions.js
+ M web/scripts/smoke-endturn-performance-optimizations.js
+ M web/scripts/smoke-endturn-speed-batch1.js
+ M web/scripts/smoke-feature-loader-v2.js
+ M web/scripts/smoke-final-completion.js
+ M web/scripts/smoke-formal-module-modal-size.js
+ M web/scripts/smoke-globalrules-build.js
+ M web/scripts/smoke-guoku-legacy-fiscal-compat.js
+ M web/scripts/smoke-guoshi-cc-port.js
+ M web/scripts/smoke-guoshi-memskills.js
+ M web/scripts/smoke-guoshi-write-sanitize.js
+ M web/scripts/smoke-imageapi-url.js
+ M web/scripts/smoke-ledger-consistency.js
+ M web/scripts/smoke-map-live-vitals.js
+ M web/scripts/smoke-memory-read-contract.js
+ M web/scripts/smoke-memory-sanitize.js
+ M web/scripts/smoke-memory-strengthen.js
+ M web/scripts/smoke-military-systems.js
+ M web/scripts/smoke-model-probe-evidence.js
+ M web/scripts/smoke-neitang-inner-treasury-compat.js
+ M web/scripts/smoke-newui-routing.js
+ M web/scripts/smoke-official-scenario-lazy-loader.js
+ M web/scripts/smoke-phase3-deep-refactor.js
+ M web/scripts/smoke-phase7-ux-collapse.js
+ M web/scripts/smoke-pinch-pan-gestures.js
+ M web/scripts/smoke-prompt-cache-proxy-claude.js
+ M web/scripts/smoke-quicktest-multiturn.js
+ M web/scripts/smoke-rank-display-sources.js
+ M web/scripts/smoke-region-age-settlement-labels.js
+ M web/scripts/smoke-renderer-untrusted-dom.js
+ M web/scripts/smoke-rightrail-datasource.js
+ M web/scripts/smoke-round19-cross-system-rollback.js
+ M web/scripts/smoke-round20-performance-isolation.js
+ M web/scripts/smoke-runtime-save-consistency.js
+ M web/scripts/smoke-save-integrity-audit.js
+ M web/scripts/smoke-save-saved-clone.js
+ M web/scripts/smoke-save-slim.js
+ M web/scripts/smoke-sc1-stream-final-budget.js
+ M web/scripts/smoke-security-ipc-hardening.js
+ M web/scripts/smoke-security-trust-boundary.js
+ M web/scripts/smoke-seigniorage-ledger.js
+ M web/scripts/smoke-stable-id-migration.js
+ M web/scripts/smoke-stable-id-reference-integrity.js
+ M web/scripts/smoke-startup-phase-observability.js
+ M web/scripts/smoke-talent-s4.js
+ M web/scripts/smoke-tc-dialogue-wave.js
+ M web/scripts/smoke-tc-history-wave.js
+ M web/scripts/smoke-tc-keju-wave.js
+ M web/scripts/smoke-temporal-constraint.js
+ M web/scripts/smoke-tier3-connects.js
+ M web/scripts/smoke-tier3-supplement.js
+ M web/scripts/smoke-tinyi-impeachment.js
+ M web/scripts/smoke-turn-capture-work-count.js
+ M web/scripts/smoke-write-gate-expansion.js
+ M web/scripts/sync-official-scenarios.js
+ M web/scripts/verify-hotupdate-selfheal.js
+ M web/scripts/verify-secondary-fallback.js
+ M web/startup-script-phases.json
+ M web/tm-agent-kernel.js
+ M web/tm-ai-apply-deaths.js
+ M web/tm-ai-change-army.js
+ M web/tm-ai-change-pathutils.js
+ M web/tm-ai-infra-json.js
+ M web/tm-ai-infra-model-detect.js
+ M web/tm-ai-infra.js
+ M web/tm-ai-npc-memorials.js
+ M web/tm-ai-output-validator.js
+ M web/tm-ai-planning.js
+ M web/tm-ai-schema.js
+ M web/tm-arcs.js
+ M web/tm-authority-complete.js
+ M web/tm-authority-deep.js
+ M web/tm-authority-engines.js
+ M web/tm-battle-adapter.js
+ M web/tm-battle-embed.js
+ M web/tm-battle-resolve.js
+ M web/tm-battle-turn.js
+ M web/tm-border-risk.js
+ M web/tm-building-works.js
+ M web/tm-ceming.js
+ M web/tm-central-local-engine.js
+ M web/tm-chaoyi-changchao-adapter.js
+ M web/tm-chaoyi-tinyi.js
+ M web/tm-char-autogen.js
+ M web/tm-char-economy-engine.js
+ M web/tm-char-economy-ui.js
+ M web/tm-class-engine.js
+ M web/tm-class-minxin-bridge.js
+ M web/tm-class-mobility.js
+ M web/tm-conspiracy.js
+ M web/tm-corruption-engine.js
+ M web/tm-court-meter.js
+ M web/tm-custom-build-agent.js
+ M web/tm-economy-engine-currency.js
+ M web/tm-economy-engine.js
+ M web/tm-edict-oversight.js
+ M web/tm-edict-parser.js
+ M web/tm-electron.js
+ M web/tm-endturn-agent-mode.js
+ M web/tm-endturn-agent-write-tools.js
+ M web/tm-endturn-ai-infer.js
+ M web/tm-endturn-ai-sc1-budget.js
+ M web/tm-endturn-ai.js
+ M web/tm-endturn-apply-stages.js
+ M web/tm-endturn-apply.js
+ M web/tm-endturn-core.js
+ M web/tm-endturn-edict.js
+ M web/tm-endturn-followup.js
+ M web/tm-endturn-helpers.js
+ M web/tm-endturn-prep.js
+ M web/tm-endturn-prompt.js
+ M web/tm-endturn-province.js
+ M web/tm-endturn-systems.js
+ M web/tm-event-bus.js
+ M web/tm-faction-action-engine.js
+ M web/tm-faction-derived-economy.js
+ M web/tm-faction-membership.js
+ M web/tm-faction-npc-guoku.js
+ M web/tm-faction-npc-llm-decision.js
+ M web/tm-feature-loader.js
+ M web/tm-fiscal-engine.js
+ M web/tm-fiscal-ui.js
+ M web/tm-game-loop.js
+ M web/tm-guoku-engine.js
+ M web/tm-guoku-panel.js
+ M web/tm-help-social.js
+ M web/tm-history-advisor.js
+ M web/tm-history-events.js
+ M web/tm-hongyan-edict-ui.js
+ M web/tm-huji-engine.js
+ M web/tm-huji-governance-loop.js
+ M web/tm-huji-runtime-bridge.js
+ M web/tm-indices.js
+ M web/tm-integration-bridge.js
+ M web/tm-keju-paradigm.js
+ M web/tm-keju-runtime-keyi.js
+ M web/tm-keju-runtime.js
+ M web/tm-keju-wuju.js
+ M web/tm-keju.js
+ M web/tm-launch.js
+ M web/tm-lizhi-panel.js
+ M web/tm-map-label-collide.js
+ M web/tm-map-system.js
+ M web/tm-mechanics-memory.js
+ M web/tm-mechanics.js
+ M web/tm-military.js
+ M web/tm-minxin-commitment-tracker.js
+ M web/tm-minxin-hard-link-consumers.js
+ M web/tm-minxin-hard-links.js
+ M web/tm-neitang-engine.js
+ M web/tm-neitang-panel.js
+ M web/tm-office-editor.js
+ M web/tm-office-panel.js
+ M web/tm-office-powermap.js
+ M web/tm-office-reform.js
+ M web/tm-office-runtime.js
+ M web/tm-office-system.js
+ M web/tm-official-scenario-bundle.js
+ M web/tm-official-scenario-seeder.js
+ M web/tm-party-class-llm-calibrator.js
+ M web/tm-patches-start.js
+ M web/tm-patches.js
+ M web/tm-player-core.js
+ M web/tm-player-settings.js
+ M web/tm-player-tools.js
+ M web/tm-prompt-composer.js
+ M web/tm-prophecy.js
+ M web/tm-region-enrich.js
+ M web/tm-renli.js
+ M web/tm-renwu-tuzhi.js
+ M web/tm-save-lifecycle.js
+ M web/tm-save-manager.js
+ M web/tm-semantic-recall.js
+ M web/tm-semantic-worker.js
+ M web/tm-shell-extras.js
+ M web/tm-shizheng-panel.js
+ M web/tm-storage.js
+ M web/tm-theme-font.js
+ M web/tm-three-systems-ext.js
+ M web/tm-three-systems-ui.js
+ M web/tm-topbar-vars.js
+ M web/tm-ui-foundation.js
+ M web/tm-utils.js
+ M web/tm-var-drawers.js
+ M web/tm-wendui.js
+ M web/tm-world-digest.js
+ M web/tools/build-hot-update-package.js
+ M web/vendor/transformers/README.md
+ M web/version.json
+?? docs/audit-followup-2026-09-07/README.md
+?? docs/audit-followup-2026-09-07/collect.cjs
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/production.json
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/production.txt
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/provenance.json
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/report.json
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/restart.json
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/restart.txt
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/test-exports.json
+?? docs/audit-followup-2026-09-07/electron/156501ab-b5b6-45a3-b971-e0f95143fd18/test-exports.txt
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/production.json
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/production.txt
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/provenance.json
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/report.json
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/restart.json
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/restart.txt
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/test-exports.json
+?? docs/audit-followup-2026-09-07/electron/82fdd063-3f2c-474e-841a-ab50ba3bb8b2/test-exports.txt
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/production.json
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/production.txt
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/provenance.json
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/report.json
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/test-exports.json
+?? docs/audit-followup-2026-09-07/electron/8aaa5673-0d7a-4c19-9abd-2a5350eb03b3/test-exports.txt
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/production.json
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/production.txt
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/provenance.json
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/report.json
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/test-exports.json
+?? docs/audit-followup-2026-09-07/electron/ca1af9d3-ac4a-4ca8-abab-83b14aa64611/test-exports.txt
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/production.json
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/production.txt
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/provenance.json
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/report.json
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/restart.json
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/restart.txt
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/test-exports.json
+?? docs/audit-followup-2026-09-07/electron/f6723acc-4899-45ec-9665-1bbbd1a311f7/test-exports.txt
+?? docs/audit-followup-2026-09-07/evidence/architecture.json
+?? docs/audit-followup-2026-09-07/evidence/architecture.txt
+?? docs/audit-followup-2026-09-07/evidence/audit-worktree.json
+?? docs/audit-followup-2026-09-07/evidence/audit-worktree.txt
+?? docs/audit-followup-2026-09-07/evidence/baseline-electron.json
+?? docs/audit-followup-2026-09-07/evidence/baseline-electron.txt
+?? docs/audit-followup-2026-09-07/evidence/baseline-lock-verified.json
+?? docs/audit-followup-2026-09-07/evidence/baseline-lock-verified.txt
+?? docs/audit-followup-2026-09-07/evidence/baseline-lock.json
+?? docs/audit-followup-2026-09-07/evidence/baseline-lock.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-architecture.json
+?? docs/audit-followup-2026-09-07/evidence/committed-architecture.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-audit-worktree.json
+?? docs/audit-followup-2026-09-07/evidence/committed-audit-worktree.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-electron.json
+?? docs/audit-followup-2026-09-07/evidence/committed-electron.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-lock.json
+?? docs/audit-followup-2026-09-07/evidence/committed-lock.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-smoke.json
+?? docs/audit-followup-2026-09-07/evidence/committed-smoke.txt
+?? docs/audit-followup-2026-09-07/evidence/committed-tls.json
+?? docs/audit-followup-2026-09-07/evidence/committed-tls.txt
+?? docs/audit-followup-2026-09-07/evidence/controlled-tls.json
+?? docs/audit-followup-2026-09-07/evidence/controlled-tls.txt
+?? docs/audit-followup-2026-09-07/evidence/dependencies-audit.json
+?? docs/audit-followup-2026-09-07/evidence/dependencies-audit.txt
+?? docs/audit-followup-2026-09-07/evidence/dependencies.json
+?? docs/audit-followup-2026-09-07/evidence/dependencies.txt
+?? docs/audit-followup-2026-09-07/evidence/diff-check.json
+?? docs/audit-followup-2026-09-07/evidence/diff-check.txt
+?? docs/audit-followup-2026-09-07/evidence/electron-desktop-bounded-snapshot.json
+?? docs/audit-followup-2026-09-07/evidence/electron-desktop-bounded-snapshot.txt
+?? docs/audit-followup-2026-09-07/evidence/electron-desktop-first.json
+?? docs/audit-followup-2026-09-07/evidence/electron-desktop-first.txt
+?? docs/audit-followup-2026-09-07/evidence/electron-runtime.json
+?? docs/audit-followup-2026-09-07/evidence/electron-runtime.txt
+?? docs/audit-followup-2026-09-07/evidence/electron-save-diagnostic.json
+?? docs/audit-followup-2026-09-07/evidence/electron-save-diagnostic.txt
+?? docs/audit-followup-2026-09-07/evidence/electron-save-values.json
+?? docs/audit-followup-2026-09-07/evidence/electron-save-values.txt
+?? docs/audit-followup-2026-09-07/evidence/full-smoke-provenance.json
+?? docs/audit-followup-2026-09-07/evidence/full-smoke-report.json
+?? docs/audit-followup-2026-09-07/evidence/full-smoke.json
+?? docs/audit-followup-2026-09-07/evidence/full-smoke.txt
+?? docs/audit-followup-2026-09-07/evidence/hot-builder.json
+?? docs/audit-followup-2026-09-07/evidence/hot-builder.txt
+?? docs/audit-followup-2026-09-07/evidence/lock-contention-diagnostic.json
+?? docs/audit-followup-2026-09-07/evidence/lock-contention-diagnostic.txt
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-first.json
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-first.txt
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-verified.json
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-verified.txt
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-windows.json
+?? docs/audit-followup-2026-09-07/evidence/lock-recovery-windows.txt
+?? docs/audit-followup-2026-09-07/evidence/official-parity.json
+?? docs/audit-followup-2026-09-07/evidence/official-parity.txt
+?? docs/audit-followup-2026-09-07/evidence/official-sync.json
+?? docs/audit-followup-2026-09-07/evidence/official-sync.txt
+?? docs/audit-followup-2026-09-07/evidence/preload-electron-first.json
+?? docs/audit-followup-2026-09-07/evidence/preload-electron-first.txt
+?? docs/audit-followup-2026-09-07/evidence/preload-electron-verified.json
+?? docs/audit-followup-2026-09-07/evidence/preload-electron-verified.txt
+?? docs/audit-followup-2026-09-07/evidence/release-contract.json
+?? docs/audit-followup-2026-09-07/evidence/release-contract.txt
+?? docs/audit-followup-2026-09-07/lock-window-probe.cjs
+?? docs/audit-followup-2026-09-07/run.cjs
+?? docs/audit-review-2026-09-07/README.md
+?? docs/audit-review-2026-09-07/adapter.diff.json
+?? docs/audit-review-2026-09-07/adapter.diff.txt
+?? docs/audit-review-2026-09-07/baseline-comparison.json
+?? docs/audit-review-2026-09-07/current/electron-baseline.json
+?? docs/audit-review-2026-09-07/current/electron-baseline.txt
+?? docs/audit-review-2026-09-07/current/electron-install.json
+?? docs/audit-review-2026-09-07/current/electron-install.txt
+?? docs/audit-review-2026-09-07/current/electron-startup.json
+?? docs/audit-review-2026-09-07/current/electron-startup.txt
+?? docs/audit-review-2026-09-07/current/full-smoke-report.json
+?? docs/audit-review-2026-09-07/current/npm-ci.json
+?? docs/audit-review-2026-09-07/current/npm-ci.txt
+?? docs/audit-review-2026-09-07/current/official-sync.json
+?? docs/audit-review-2026-09-07/current/official-sync.txt
+?? docs/audit-review-2026-09-07/current/original-probe-baseline.json
+?? docs/audit-review-2026-09-07/current/original-probe-baseline.txt
+?? docs/audit-review-2026-09-07/current/repro-results.json
+?? docs/audit-review-2026-09-07/current/review-arch.json
+?? docs/audit-review-2026-09-07/current/review-arch.txt
+?? docs/audit-review-2026-09-07/current/review-audit.json
+?? docs/audit-review-2026-09-07/current/review-audit.txt
+?? docs/audit-review-2026-09-07/current/review-hot-gates.json
+?? docs/audit-review-2026-09-07/current/review-hot-gates.txt
+?? docs/audit-review-2026-09-07/current/review-parity.json
+?? docs/audit-review-2026-09-07/current/review-parity.txt
+?? docs/audit-review-2026-09-07/current/review-release.json
+?? docs/audit-review-2026-09-07/current/review-release.txt
+?? docs/audit-review-2026-09-07/current/review-repro.json
+?? docs/audit-review-2026-09-07/current/review-repro.txt
+?? docs/audit-review-2026-09-07/current/review-smokes.json
+?? docs/audit-review-2026-09-07/current/review-smokes.txt
+?? docs/audit-review-2026-09-07/current/review-targeted.json
+?? docs/audit-review-2026-09-07/current/review-targeted.txt
+?? docs/audit-review-2026-09-07/current/targeted-report.json
+?? docs/audit-review-2026-09-07/electron-probe.cjs
+?? docs/audit-review-2026-09-07/evidence.cjs
+?? docs/audit-review-2026-09-07/hash-sync.diff.txt
+?? docs/audit-review-2026-09-07/hash-sync.json
+?? docs/audit-review-2026-09-07/historical/baseline-fixture.txt
+?? docs/audit-review-2026-09-07/historical/baseline-repo.txt
+?? docs/audit-review-2026-09-07/historical/committed-baseline-check.txt
+?? docs/audit-review-2026-09-07/historical/committed-generated-check.txt
+?? docs/audit-review-2026-09-07/historical/committed-targeted.txt
+?? docs/audit-review-2026-09-07/historical/delivery-arch.txt
+?? docs/audit-review-2026-09-07/historical/delivery-release.txt
+?? docs/audit-review-2026-09-07/historical/delivery-repro.txt
+?? docs/audit-review-2026-09-07/historical/delivery-smokes.txt
+?? docs/audit-review-2026-09-07/historical/dependencies-audit.txt
+?? docs/audit-review-2026-09-07/historical/full-smoke-first.txt
+?? docs/audit-review-2026-09-07/historical/full-smoke-report.json
+?? docs/audit-review-2026-09-07/historical/handoff-diff.txt
+?? docs/audit-review-2026-09-07/historical/handoff-repro.txt
+?? docs/audit-review-2026-09-07/historical/hot-baseline-sync.txt
+?? docs/audit-review-2026-09-07/historical/hot-gates-final.txt
+?? docs/audit-review-2026-09-07/historical/index.json
+?? docs/audit-review-2026-09-07/historical/mobile-dry-run.txt
+?? docs/audit-review-2026-09-07/historical/mobile-stage-final.txt
+?? docs/audit-review-2026-09-07/historical/mobile-verify-final.txt
+?? docs/audit-review-2026-09-07/historical/module-reproducible.txt
+?? docs/audit-review-2026-09-07/historical/npm-ci.txt
+?? docs/audit-review-2026-09-07/historical/official-sync.txt
+?? docs/audit-review-2026-09-07/historical/parity-final.txt
+?? docs/audit-review-2026-09-07/historical/release-before-baseline.txt
+?? docs/audit-review-2026-09-07/historical/repro-adapted-results.json
+?? docs/audit-review-2026-09-07/historical/repro-current-original.txt
+?? docs/audit-review-2026-09-07/historical/runs.jsonl
+?? docs/audit-review-2026-09-07/historical/safe-remote-retest.txt
+?? docs/audit-review-2026-09-07/historical/safe-remote.txt
+?? docs/audit-review-2026-09-07/historical/save-files-retest.txt
+?? docs/audit-review-2026-09-07/historical/save-files.txt
+?? docs/audit-review-2026-09-07/historical/targeted-ten-final-report.json
+?? docs/audit-review-2026-09-07/historical/targeted-ten-final.txt
+?? docs/audit-review-2026-09-07/historical/workshop-transactions-retest.txt
+?? docs/audit-review-2026-09-07/historical/workshop-transactions.txt
+?? docs/audit-review-2026-09-07/original/audit-repro.cjs
+?? docs/audit-review-2026-09-07/original/fixtures/ci-smokes.js
+?? docs/audit-review-2026-09-07/original/fixtures/main-excerpts.js
+?? docs/audit-review-2026-09-07/original/fixtures/main-turn-data-commit.js
+?? docs/audit-review-2026-09-07/original/fixtures/renderer-excerpts.js
+?? docs/audit-review-2026-09-07/original/manifest.json
+?? docs/audit-review-2026-09-07/original/repro-results.json
+?? docs/bugfix-authoring-agent-stream-2026-09-10.md
+?? docs/bugfix-authoring-region-paths-2026-09-08.md
+?? docs/bugfix-authoring-region-paths/evidence.json
+?? docs/bugfix-building-appraisal-2026-09-08.md
+?? docs/bugfix-building-appraisal/electron.json
+?? docs/bugfix-building-appraisal/executions.json
+?? docs/bugfix-building-appraisal/smoke.json
+?? docs/bugfix-edict-polish-2026-09-08.md
+?? docs/bugfix-edict-polish/electron.json
+?? docs/bugfix-edict-polish/executions.json
+?? docs/bugfix-edict-polish/smoke.json
+?? docs/bugfix-empty-scenario-origin-2026-09-11.md
+?? docs/bugfix-guoshi-continuation-2026-09-10.md
+?? docs/bugfix-guoshi-reasoning-continuity-2026-09-11.md
+?? docs/bugfix-guoshi-response-recovery-2026-09-11.md
+?? docs/bugfix-guoshi-wire-autoapply-2026-09-11.md
+?? docs/bugfix-guoshi-wire-recovery-2026-09-11.md
+?? docs/bugfix-memorial-reading-2026-09-10.md
+?? docs/bugfix-personal-campaign-2026-09-13.md
+?? docs/bugfix-player-feedback-2026-09-11.md
+?? docs/bugfix-seven-ui-settings-2026-09-12.md
+?? docs/bugfix-shizheng-tinyi-2026-09-17/README.md
+?? docs/bugfix-shizheng-tinyi-2026-09-17/related-smokes.json
+?? docs/bugfix-six-ui-local-2026-09-14.md
+?? docs/bugfix-startup-autosave-2026-09-13.md
+?? docs/bugfix-startup-mode-actions-2026-09-14.md
+?? docs/bugfix-territory-sync-2026-09-17/FINAL-RESULT.json
+?? docs/bugfix-territory-sync-2026-09-17/README.md
+?? docs/bugfix-territory-sync-2026-09-17/apply-context-fix.mjs
+?? docs/bugfix-territory-sync-2026-09-17/apply-fix.mjs
+?? docs/bugfix-territory-sync-2026-09-17/context-patch-manifest.json
+?? docs/bugfix-territory-sync-2026-09-17/final-smokes.json
+?? docs/bugfix-territory-sync-2026-09-17/patch-manifest.json
+?? docs/bugfix-territory-sync-2026-09-17/province-transfer.txt
+?? docs/bugfix-territory-sync-2026-09-17/related-smokes.json
+?? docs/bugfix-territory-sync-2026-09-17/verify-final.mjs
+?? docs/bugfix-workshop-config-2026-09-08.md
+?? docs/bugfix-workshop-config/evidence.json
+?? docs/bugfix-workshop-hierarchy-2026-09-11.md
+?? docs/building-first-round-2026-09-09.md
+?? docs/building-order-writeback-2026-09-10.md
+?? docs/character-actions-office-fit-2026-09-09.md
+?? docs/edict-clarity-2026-09-09.md
+?? docs/evidence/guoshi-completion-recovery-20260910.json
+?? docs/evidence/guoshi-continuation-20260910.json
+?? docs/evidence/guoshi-delivery-gates-20260911.json
+?? docs/evidence/guoshi-native-readback-20260911.json
+?? docs/evidence/guoshi-reasoning-continuity-20260911.json
+?? docs/evidence/guoshi-response-recovery-20260911.json
+?? docs/evidence/guoshi-wire-autoapply-20260911.json
+?? docs/evidence/guoshi-wire-recovery-20260911.json
+?? docs/evidence/memorial-reading-20260910.json
+?? docs/evidence/player-feedback-20260911.json
+?? docs/evidence/recent-building-guoshi-20260910.json
+?? docs/evidence/seven-ui-settings-20260912.json
+?? docs/evidence/seven-ui-thinking-tier-20260912.json
+?? docs/evidence/workshop-hierarchy-20260911.json
+?? docs/gameplay-relief-pilot.md
+?? docs/gameplay-relief-pilot/evidence.json
+?? docs/guoshi-boundaries-2026-09-10.md
+?? docs/guoshi-completion-recovery-2026-09-10.md
+?? docs/guoshi-delivery-gates-2026-09-11.md
+?? docs/guoshi-efficiency-2026-09-10.md
+?? docs/handoff-third-party-site-2026-09-11.md
+?? docs/late-tang-integration/README.md
+?? docs/late-tang-integration/browser.json
+?? docs/late-tang-integration/ci-summary.json
+?? docs/late-tang-integration/desktop-registration.json
+?? docs/late-tang-integration/install.json
+?? docs/late-tang-integration/preservation.json
+?? docs/late-tang-person-20260917/before.json
+?? docs/late-tang-person-20260917/books.json
+?? docs/late-tang-person-20260917/git-status-before.txt
+?? docs/late-tang-person-20260917/history-0.ndjson
+?? docs/late-tang-person-20260917/history-1.ndjson
+?? docs/late-tang-person-20260917/reconnect-check.txt
+?? docs/late-tang-person-20260917/setup.py
+?? docs/late-tang-v19/browser.json
+?? docs/late-tang-v19/校订说明.md
+?? docs/late-tang-v20/browser.json
+?? docs/late-tang-v20/本轮改动说明.md
+?? docs/late-tang-v21/README.md
+?? docs/late-tang-v21/verification.json
+?? docs/map-tier-labels-2026-09-14.md
+?? docs/map-zoom-preload-2026-09-15.md
+?? docs/native-start-workbench/README.md
+?? docs/office-edict-writeback-2026-09-13.md
+?? docs/performance-interactive.md
+?? docs/performance-interactive/electron-bridge-final.json
+?? docs/performance-interactive/execution-index.json
+?? docs/performance-interactive/inspect-after-cpu-summary.json
+?? docs/performance-interactive/inspect-after-report.json
+?? docs/performance-interactive/inspect-after-source.json
+?? docs/performance-interactive/inspect-after-trace.json
+?? docs/performance-interactive/inspect-before-cpu-summary.json
+?? docs/performance-interactive/inspect-before-report.json
+?? docs/performance-interactive/inspect-before-source.json
+?? docs/performance-interactive/inspect-before-trace.json
+?? docs/performance-interactive/logs.json
+?? docs/performance-interactive/paired-raw.json
+?? docs/performance-interactive/smoke-failed.json
+?? docs/performance-interactive/summary.json
+?? docs/performance-panels.md
+?? docs/performance-panels/electron-bridge.json
+?? docs/performance-panels/executions.json
+?? docs/performance-panels/experiments.json
+?? docs/performance-panels/logs.json
+?? docs/performance-panels/mouse-raw.json
+?? docs/performance-panels/mouse.json
+?? docs/performance-panels/smoke.json
+?? docs/performance-round1.md
+?? docs/performance-round1/additional-evidence.json
+?? docs/performance-round1/computer-use-report.json
+?? docs/performance-round1/computer-use-source.json
+?? docs/performance-round1/computer-use-trace.json
+?? docs/performance-round1/electron-bridge-final.json
+?? docs/performance-round1/electron-raw.json
+?? docs/performance-round1/execution-index.json
+?? docs/performance-round1/logs.json
+?? docs/performance-round1/microbench-raw.json
+?? docs/performance-round1/smoke-final.json
+?? docs/performance-round1/summary.json
+?? docs/rail-audience-badges-2026-09-09.md
+?? docs/recent-building-guoshi-delivery-2026-09-10.md
+?? docs/release-1.3.5.0-full.md
+?? docs/relief-channel-followup.md
+?? docs/relief-channel-followup/evidence.json
+?? docs/shaosong-map-integration-20260917/FileLockOwners.cs
+?? docs/shaosong-map-integration-20260917/backup-manifest.json
+?? docs/shaosong-map-integration-20260917/backup/scenarios/绍宋·建炎元年八月（官方）.json
+?? docs/shaosong-map-integration-20260917/backup/web/bundled-scenarios/manifest.js
+?? docs/shaosong-map-integration-20260917/backup/web/bundled-scenarios/manifest.json
+?? docs/shaosong-map-integration-20260917/backup/web/bundled-scenarios/天启七年·九月（官方）.json
+?? docs/shaosong-map-integration-20260917/backup/web/bundled-scenarios/晚唐·开成五年（官方）.json
+?? docs/shaosong-map-integration-20260917/backup/web/bundled-scenarios/绍宋·建炎元年八月（官方）.json
+?? docs/shaosong-map-integration-20260917/backup/web/preview/official-scenarios-bundle.js
+?? docs/shaosong-map-integration-20260917/backup/web/preview/scenario-editor-reset-data.js
+?? docs/shaosong-map-integration-20260917/backup/web/scenarios/shaosong-jianyan-1127.js
+?? docs/shaosong-map-integration-20260917/backup/web/scenarios/tang840-840.js
+?? docs/shaosong-map-integration-20260917/backup/web/scenarios/tianqi7-1627.js
+?? docs/shaosong-map-integration-20260917/backup/web/tm-official-scenario-bundle.js
+?? docs/shaosong-map-integration-20260917/candidate-country-labels.json
+?? docs/shaosong-map-integration-20260917/input-r6-map/manifest.json
+?? docs/shaosong-map-integration-20260917/input-r6-map/shaosong-r6.map-only.json
+?? docs/shaosong-map-integration-20260917/input-r6-map/请先读我.txt
+?? docs/shaosong-map-integration-20260917/pending-country-labels.atomic.json
+?? docs/shaosong-map-integration-20260917/rename-apply-error.json
+?? docs/shaosong-map-integration-20260917/rename-check.json
+?? docs/shaosong-map-integration-20260917/rename-official.mjs
+?? docs/shaosong-map-integration-20260917/当前状态与续作说明.md
+?? docs/strategic-map-quality-2026-09-14.md
+?? docs/tactical-final-upgrade-2026-09-13.md
+?? docs/tactical-phase2-upgrade-2026-09-13.md
+?? docs/tactical-terrain-upgrade-2026-09-13.md
+?? main-artifact-export.js
+?? main-workshop-lock.js
+?? scenarios/晚唐·开成五年（官方）.json
+?? scripts/build-native-acceptance-matrix.cjs
+?? scripts/build-native-preparation-manifest.cjs
+?? scripts/collect-authoring-region-evidence.cjs
+?? scripts/collect-building-appraisal-evidence.cjs
+?? scripts/collect-edict-polish-evidence.cjs
+?? scripts/collect-relief-evidence.cjs
+?? scripts/collect-relief-followup-evidence.cjs
+?? scripts/electron/authoring-autoapply-cases.cjs
+?? scripts/electron/authoring-boundary-cases.cjs
+?? scripts/electron/authoring-continuation-cases.cjs
+?? scripts/electron/authoring-efficiency-cases.cjs
+?? scripts/electron/authoring-recovery-cases.cjs
+?? scripts/electron/authoring-region-cases.cjs
+?? scripts/electron/authoring-response-recovery-cases.cjs
+?? scripts/electron/authoring-stream-cases.cjs
+?? scripts/electron/bridge-main.cjs
+?? scripts/electron/building-appraisal-cases.cjs
+?? scripts/electron/building-orders-cases.cjs
+?? scripts/electron/character-actions-cases.cjs
+?? scripts/electron/desktop-cases.cjs
+?? scripts/electron/edict-clarity-cases.cjs
+?? scripts/electron/edict-polish-cases.cjs
+?? scripts/electron/import-worker.cjs
+?? scripts/electron/map-label-assertions.cjs
+?? scripts/electron/map-tier-cases.cjs
+?? scripts/electron/map-zoom-cases.cjs
+?? scripts/electron/memorial-reading-cases.cjs
+?? scripts/electron/native-legacy-official-cases.cjs
+?? scripts/electron/native-live-authoring-cases.cjs
+?? scripts/electron/native-live-authoring-main.cjs
+?? scripts/electron/native-map-hit-cases.cjs
+?? scripts/electron/native-neutral-atlas-cases.cjs
+?? scripts/electron/native-preparation-document.cjs
+?? scripts/electron/native-start-core-cases.cjs
+?? scripts/electron/native-start-entry-cases.cjs
+?? scripts/electron/native-start-fault-cases.cjs
+?? scripts/electron/native-start-isolation-cases.cjs
+?? scripts/electron/native-start-preparation-cases.cjs
+?? scripts/electron/native-workbench-asset-cases.cjs
+?? scripts/electron/native-workbench-flow-cases.cjs
+?? scripts/electron/native-workbench-permission-cases.cjs
+?? scripts/electron/native-workbench-task-cases.cjs
+?? scripts/electron/office-writeback-cases.cjs
+?? scripts/electron/personal-campaign-cases.cjs
+?? scripts/electron/player-feedback-cases.cjs
+?? scripts/electron/rail-badges-cases.cjs
+?? scripts/electron/relief-pilot-cases.cjs
+?? scripts/electron/scenario-origin-cases.cjs
+?? scripts/electron/semantic-offline-main.cjs
+?? scripts/electron/seven-api-cases.cjs
+?? scripts/electron/seven-ui-cases.cjs
+?? scripts/electron/startup-autosave-cases.cjs
+?? scripts/electron/startup-mode-cases.cjs
+?? scripts/electron/strategic-map-cases.cjs
+?? scripts/electron/tactical-cache-cases.cjs
+?? scripts/electron/tactical-phase2-cases.cjs
+?? scripts/electron/tactical-profile.cjs
+?? scripts/electron/tactical-resolution-cases.cjs
+?? scripts/electron/tactical-terrain-cases.cjs
+?? scripts/electron/tactical-units-cases.cjs
+?? scripts/electron/workshop-hierarchy-cases.cjs
+?? scripts/fixtures/workshop-hierarchy.json
+?? scripts/native-browser-acceptance-step.cjs
+?? scripts/perf/autosave-electron-cases.cjs
+?? scripts/perf/guoshi-cost.cjs
+?? scripts/perf/inspect-electron-cases.cjs
+?? scripts/perf/inspect-electron.cjs
+?? scripts/perf/panels-contracts.cjs
+?? scripts/perf/panels-electron-cases.cjs
+?? scripts/perf/panels-electron.cjs
+?? scripts/perf/round1-electron-cases.cjs
+?? scripts/perf/round1-electron.cjs
+?? scripts/perf/round1-microbench.cjs
+?? scripts/perf/run.cjs
+?? scripts/perf/summarize-interactive.cjs
+?? scripts/perf/summarize-panels.cjs
+?? scripts/perf/summarize.cjs
+?? scripts/run-office-verification.cjs
+?? scripts/verify-electron-bridge.js
+?? scripts/verify-native-live-authoring.cjs
+?? scripts/verify-native-workbench-completion.cjs
+?? scripts/verify-remote-tls.js
+?? scripts/verify-semantic-offline.cjs
+?? scripts/verify-workshop-config-fixture.cjs
+?? web/battle/render-resolution.js
+?? web/battle/terrain-assets.js
+?? web/battle/terrain-frame-cache.js
+?? web/battle/terrain-landscape.js
+?? web/battle/terrain-motion.js
+?? web/battle/terrain-navigation.js
+?? web/battle/terrain-props.js
+?? web/battle/terrain-shadows.js
+?? web/battle/terrain-world.js
+?? web/battle/unit-assets.js
+?? web/battle/unit-command.js
+?? web/battle/unit-impostors.js
+?? web/battle/unit-render.js
+?? web/battle/unit-visibility.js
+?? web/docs/fiscal-field-contract.md
+?? web/libs/polygon-clipping-0.15.7.min.js
+?? web/libs/polygon-clipping-LICENSE.md
+?? web/modules/ai-change-applier/fiscal-posting.js
+?? web/scenarios/tang840-840.js
+?? web/scripts/fixtures/native-preparation-harness.cjs
+?? web/scripts/fixtures/native-start-fixture.cjs
+?? web/scripts/lib-perf-round1.js
+?? web/scripts/lib-relief-channel-test.js
+?? web/scripts/lib-tang840-treasury-checks.js
+?? web/scripts/smoke-active-fiscal-readers.js
+?? web/scripts/smoke-ai-transport-deadlines.js
+?? web/scripts/smoke-api-models-thinking.js
+?? web/scripts/smoke-army-liability-ledger.js
+?? web/scripts/smoke-army-resource-funding.js
+?? web/scripts/smoke-army-roster-search.js
+?? web/scripts/smoke-authoring-completion-recovery.js
+?? web/scripts/smoke-authoring-document-lease.js
+?? web/scripts/smoke-authoring-efficiency.js
+?? web/scripts/smoke-authoring-provider-stream.js
+?? web/scripts/smoke-authoring-reasoning-continuity.js
+?? web/scripts/smoke-authoring-region-paths.js
+?? web/scripts/smoke-authoring-relay-continuation.js
+?? web/scripts/smoke-authoring-response-recovery.js
+?? web/scripts/smoke-authoring-sse-candidate-index.js
+?? web/scripts/smoke-authoring-thinking-settings.js
+?? web/scripts/smoke-authoring-tool-authorization.js
+?? web/scripts/smoke-authoring-wire-retry.js
+?? web/scripts/smoke-authority-declared-ledger.js
+?? web/scripts/smoke-autosave-text-bridge.js
+?? web/scripts/smoke-battle-commanders.js
+?? web/scripts/smoke-battle-deployment-display.js
+?? web/scripts/smoke-battle-embed-protocol.js
+?? web/scripts/smoke-battle-frame-cache.js
+?? web/scripts/smoke-battle-impostors.js
+?? web/scripts/smoke-battle-navigation.js
+?? web/scripts/smoke-battle-render-assets.js
+?? web/scripts/smoke-battle-render-resolution.js
+?? web/scripts/smoke-battle-terrain-world.js
+?? web/scripts/smoke-battle-trigger-contract.js
+?? web/scripts/smoke-battle-unit-assets.js
+?? web/scripts/smoke-battle-unit-visibility.js
+?? web/scripts/smoke-building-appraisal-compat.js
+?? web/scripts/smoke-building-order-sc1.js
+?? web/scripts/smoke-building-order-writeback.js
+?? web/scripts/smoke-building-original-channels.js
+?? web/scripts/smoke-building-payment-ledger.js
+?? web/scripts/smoke-calendar-lunar-display.js
+?? web/scripts/smoke-character-actions-office-fit.js
+?? web/scripts/smoke-character-rank-label.js
+?? web/scripts/smoke-character-wealth-ledger.js
+?? web/scripts/smoke-ci-runner-jobs.js
+?? web/scripts/smoke-command-authority.js
+?? web/scripts/smoke-cultural-runtime-consumption.js
+?? web/scripts/smoke-declared-currency-ledger.js
+?? web/scripts/smoke-edict-office-tree-writeback.js
+?? web/scripts/smoke-edict-polish-results.js
+?? web/scripts/smoke-electron-gate-process-result.js
+?? web/scripts/smoke-endturn-fatal-boundary.js
+?? web/scripts/smoke-fiscal-ai-field-routing.js
+?? web/scripts/smoke-fiscal-ai-posting.js
+?? web/scripts/smoke-fiscal-collection-ledger.js
+?? web/scripts/smoke-fiscal-contract-edgecases.js
+?? web/scripts/smoke-fiscal-field-contracts.js
+?? web/scripts/smoke-fiscal-region-labels.js
+?? web/scripts/smoke-fiscal-unified-budget.js
+?? web/scripts/smoke-funded-transfer-conservation.js
+?? web/scripts/smoke-guoku-shared-display.js
+?? web/scripts/smoke-institutional-power-minister.js
+?? web/scripts/smoke-keju-terminal-exam-flow.js
+?? web/scripts/smoke-map-asset-formats.js
+?? web/scripts/smoke-map-demographic-display.js
+?? web/scripts/smoke-map-realm-layout.js
+?? web/scripts/smoke-map-spatial-index.js
+?? web/scripts/smoke-map-viewport-collision.js
+?? web/scripts/smoke-map-workbench.js
+?? web/scripts/smoke-map-zoom-preload.js
+?? web/scripts/smoke-memorial-reading-preferences.js
+?? web/scripts/smoke-military-execution-binding.js
+?? web/scripts/smoke-modal-layer-focus.js
+?? web/scripts/smoke-model-context-identity.js
+?? web/scripts/smoke-native-artifact-export.js
+?? web/scripts/smoke-native-fiscal-consumers.js
+?? web/scripts/smoke-native-start-compiler.js
+?? web/scripts/smoke-native-start-contracts.js
+?? web/scripts/smoke-native-start-preparation.js
+?? web/scripts/smoke-native-start-world.js
+?? web/scripts/smoke-native-world-events.js
+?? web/scripts/smoke-neitang-shared-fields.js
+?? web/scripts/smoke-office-recursive-layout.js
+?? web/scripts/smoke-opening-regional-pressure.js
+?? web/scripts/smoke-party-calibration-response.js
+?? web/scripts/smoke-party-opening-standing.js
+?? web/scripts/smoke-perf-canonical-utf8.js
+?? web/scripts/smoke-perf-desk-panels.js
+?? web/scripts/smoke-perf-map-render-path.js
+?? web/scripts/smoke-perf-save-preparation.js
+?? web/scripts/smoke-player-driven-history.js
+?? web/scripts/smoke-population-registered-ledger.js
+?? web/scripts/smoke-postturn-court-modal-layer.js
+?? web/scripts/smoke-production-dependencies.js
+?? web/scripts/smoke-public-treasury-custody.js
+?? web/scripts/smoke-public-treasury-scale.js
+?? web/scripts/smoke-release-key-fingerprint.js
+?? web/scripts/smoke-relief-adjudication.js
+?? web/scripts/smoke-relief-governance.js
+?? web/scripts/smoke-renwu-relations-role.js
+?? web/scripts/smoke-right-rail-badge-semantics.js
+?? web/scripts/smoke-runner-resource-isolation.js
+?? web/scripts/smoke-scenario-editor-origin-isolation.js
+?? web/scripts/smoke-scenario-fiscal-registration.js
+?? web/scripts/smoke-scenario-opening-narrative.js
+?? web/scripts/smoke-semantic-offline-assets.js
+?? web/scripts/smoke-shizheng-tinyi-entry.js
+?? web/scripts/smoke-start-hierarchy-immutability.js
+?? web/scripts/smoke-startup-autosave-opt-in.js
+?? web/scripts/smoke-startup-budget-reuse.js
+?? web/scripts/smoke-startup-mode-actions.js
+?? web/scripts/smoke-tang840-authority-autonomy.js
+?? web/scripts/smoke-tang840-fiscal-detail.js
+?? web/scripts/smoke-tang840-opening-ledgers.js
+?? web/scripts/smoke-territory-context-sync.js
+?? web/scripts/smoke-territory-ownership-sync.js
+?? web/scripts/smoke-territory-render-economy.js
+?? web/scripts/smoke-treasury-account-books.js
+?? web/scripts/smoke-workbench-operation-contract.js
+?? web/scripts/smoke-workshop-hierarchy.js
+?? web/scripts/smoke-workshop-lock-recovery.js
+?? web/tm-ai-infra-retry.js
+?? web/tm-ai-request-options.js
+?? web/tm-api-models.js
+?? web/tm-api-settings.js
+?? web/tm-authoring-extensions.js
+?? web/tm-battle-contract.js
+?? web/tm-building-orders.js
+?? web/tm-char-economy-ledger.js
+?? web/tm-command-authority.js
+?? web/tm-data-zip.js
+?? web/tm-fiscal-statements.js
+?? web/tm-map-asset-formats.js
+?? web/tm-map-binding-workbench.js
+?? web/tm-map-realm-layout.js
+?? web/tm-map-workbench-client.js
+?? web/tm-map-workbench-worker.js
+?? web/tm-map-workbench.js
+?? web/tm-military-arrears.js
+?? web/tm-native-fiscal-adapter.js
+?? web/tm-native-fiscal-ui.js
+?? web/tm-native-scope.js
+?? web/tm-office-creation.js
+?? web/tm-project-assets.js
+?? web/tm-public-treasury.js
+?? web/tm-relief-governance-ui.js
+?? web/tm-relief-governance.js
+?? web/tm-save-world-validation.js
+?? web/tm-start-commit.js
+?? web/tm-start-compiler.js
+?? web/tm-start-contracts.js
+?? web/tm-start-preparation-document.js
+?? web/tm-start-preparation-runtime.js
+?? web/tm-start-preparation.js
+?? web/tm-start-runtime-manifest.json
+?? web/tm-start-selector.js
+?? web/tm-start-world.js
+?? web/tm-workbench-artifacts.js
+?? web/tm-workbench-service.js
+?? web/tm-workbench-ui.js
+?? web/vendor/transformers/onnxruntime-LICENSE.txt
+?? web/vendor/transformers/onnxruntime-ThirdPartyNotices.txt
+?? web/vendor/transformers/ort-wasm-simd-threaded.wasm
+?? web/vendor/transformers/ort-wasm-simd.wasm
+?? web/vendor/transformers/ort-wasm-threaded.wasm
+?? web/vendor/transformers/ort-wasm.wasm
+?? web/vendor/transformers/wasm-manifest.json

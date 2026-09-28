@@ -197,6 +197,18 @@ export function createValidators(deps) {
       var nm = ch.name;
       var allNames = _wgCachedAllNames(G);   // 记忆化·按回合(issue5)
       var _hit = function(t) { return _textMentionsName(t, nm, allNames); };
+      // Only real player submissions in this turn may authorize a judicial write.
+      var turn = Number(G.turn || 0);
+      if ((G.edicts || []).some(function(e) { return e && e.turn === turn && e.status === 'promulgated' && _hit(e.text); })) return true;
+      var submitted = (G._edictTracker || []).some(function(e) {
+        if (!e || (e.turn !== turn && e.lastSubmittedTurn !== turn) || /^(cancelled|failed|pending_delivery)$/.test(e.status || '')) return false;
+        if ((e._letterIds || []).some(function(id) {
+          var letter = (G.letters || []).find(function(l) { return l && l.id === id; });
+          return !letter || ['delivered','returned','replying'].indexOf(letter.status) < 0;
+        })) return false;
+        return _hit(e.content);
+      });
+      if (submitted) return true;
       var mems = (G && Array.isArray(G.memorials)) ? G.memorials : [];
       for (var i = 0; i < mems.length; i++) {
         var m = mems[i]; if (!m) continue;
@@ -222,7 +234,7 @@ export function createValidators(deps) {
     if (!G || !pc || !pc.name) return false;
     // ★返工issue4(2026-07-19)：并入裸/自然死词表(暴毙/病故/薨/自尽/伏诛/卒…)——personnel 解析器(applier:1614)把这些映射进死亡管线·
     //   C2 旧司法词表漏之→personnel『魏忠贤暴毙』零提示落死。与 onDismissal:554 死亡面对齐·统一过同款来源判据。
-    var judicial = /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ''));
+    var judicial = (typeof global._tmReasonIsImprison === 'function' && global._tmReasonIsImprison(changeText)) || /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ''));
     if (!judicial) return false;
     var ch = (typeof _findEntity === 'function') ? _findEntity(G, 'char', pc.name) : (Array.isArray(G.chars) ? G.chars.filter(function(c){ return c && c.name === pc.name; })[0] : null);
     if (!ch) return false;   // 查无此人·实体存在性另由既有 onDismissal 兜底·此闸只管来源

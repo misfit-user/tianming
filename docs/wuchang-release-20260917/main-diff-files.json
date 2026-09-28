@@ -1,0 +1,541 @@
+{
+  "rows": [
+    {
+      "path": "main-impl.js",
+      "status": "different",
+      "main": "ee3fad65b9d303e41cfd73366cf33f2b71b16adb",
+      "local": "f418408c1fbf91e8b52e9908aff6710c9ac268b3",
+      "bytes": 184265,
+      "mtime": "2026-09-13T18:16:42.148873"
+    },
+    {
+      "path": "package.json",
+      "status": "different",
+      "main": "f0d2bf7d006466480a340a4123cc4868f39ab739",
+      "local": "7bb9542cd8bb11ea4453857ff5f4bd462477e98f",
+      "bytes": 6120,
+      "mtime": "2026-09-15T23:54:32.100972"
+    },
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "status": "different",
+      "main": "6f4b55f481305e54e6823d54f7f20e85a9587efe",
+      "local": "45bc53939829ef1786588571dd1ab35d5c6bb9a2",
+      "bytes": 65899030,
+      "mtime": "2026-09-17T18:26:16.420358"
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "status": "different",
+      "main": "e95695333d420f121a3e6f49c2327e03d7747709",
+      "local": "078935e071fd81282101a4974f409bd89a3b08be",
+      "bytes": 91172704,
+      "mtime": "2026-09-17T18:42:15.885668"
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "status": "different",
+      "main": "3d449e95a68ed7b865adbcdc152d48412addcbf7",
+      "local": "82950398ba9180c50457c68bc9493a42fc9b08a6",
+      "bytes": 211180,
+      "mtime": "2026-09-15T23:55:35.103660"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.js",
+      "status": "different",
+      "main": "993a7fcae658555c845e5591a4604c845ff75edd",
+      "local": "c913da6b4dc0703f9491b9766c0ed14e2104ee50",
+      "bytes": 6006,
+      "mtime": "2026-09-17T18:43:55.103704"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.json",
+      "status": "different",
+      "main": "00c78b992a6a90cbd29b14285b3fc896ad45f200",
+      "local": "9ff3c977904bde43df7a3f1926b4f956c45b8a92",
+      "bytes": 6385,
+      "mtime": "2026-09-17T18:43:55.101658"
+    },
+    {
+      "path": "web/changelog.json",
+      "status": "different",
+      "main": "716c785405e81327de12a8002a074a4b1d52d00c",
+      "local": "189675ab88b0a8d7b694a546e2f59ecb873e0e63",
+      "bytes": 1015270,
+      "mtime": "2026-09-15T23:37:15.140736"
+    },
+    {
+      "path": "web/editor.html",
+      "status": "different",
+      "main": "8e2b3d6b4907012b18f6e88c66a455fafc3dc127",
+      "local": "8307769d281148d4beafeaae785da9f96d72fa43",
+      "bytes": 184852,
+      "mtime": "2026-09-15T19:41:05.557909"
+    },
+    {
+      "path": "web/index.html",
+      "status": "different",
+      "main": "f5c64d1f6a7fc0cbd12cab6aa39d8e0f23aacaed",
+      "local": "3be068c24b3b5de78f8d4e13ea75f0bf25396577",
+      "bytes": 70105,
+      "mtime": "2026-09-15T23:54:32.106810"
+    },
+    {
+      "path": "web/map-integration.js",
+      "status": "different",
+      "main": "1b1146a344fc75ebaaf544f819c97c6f7cb3b046",
+      "local": "81caa02a1d4aa34af61f18cabca731d92b32f259",
+      "bytes": 15845,
+      "mtime": "2026-09-17T18:00:40.932953"
+    },
+    {
+      "path": "web/phase8-formal-bridge.js",
+      "status": "different",
+      "main": "238d12275475e08166e29badd5fb91e590a7bb6e",
+      "local": "01550b747bdc56a7f5c907af546f5b600d7a3e79",
+      "bytes": 184337,
+      "mtime": "2026-09-14T22:26:08.671940"
+    },
+    {
+      "path": "web/phase8-formal-map-dossier.js",
+      "status": "different",
+      "main": "c6cf2c0efb4cec416bd3dc583e7825ee0613e2d0",
+      "local": "a0a99d9969b7f73af8f8617c110692e787fec11f",
+      "bytes": 101907,
+      "mtime": "2026-09-17T18:42:10.489324"
+    },
+    {
+      "path": "web/phase8-formal-modules.js",
+      "status": "different",
+      "main": "7201c8246646060f05daa86957a8f2798a08878d",
+      "local": "55668a2b794aac139018cdb03bc6feace4428cca",
+      "bytes": 95947,
+      "mtime": "2026-09-17T18:03:07.505430"
+    },
+    {
+      "path": "web/preview/official-scenarios-bundle.js",
+      "status": "different",
+      "main": "7bb7eb0489aa99ac439b2ead5fed190dec080de9",
+      "local": "f18326645f53db8d1330d537d7bbfa3bf2ed2d4e",
+      "bytes": 164295841,
+      "mtime": "2026-09-17T18:43:55.018734"
+    },
+    {
+      "path": "web/scenarios/shaosong-jianyan-1127.js",
+      "status": "different",
+      "main": "ef6cfba2355f5cd6c447ef69e2c6db320edfc7ef",
+      "local": "f295b1b6588cc81d9ef58c6e8a9d2f6e78d02f79",
+      "bytes": 91173379,
+      "mtime": "2026-09-17T18:42:42.100610"
+    },
+    {
+      "path": "web/scenarios/tang840-840.js",
+      "status": "different",
+      "main": "dca13be33ba896fbaf0a75e84dd19c7e66b1208a",
+      "local": "de85c27b7b40b755d25514171ac781cce4b60a72",
+      "bytes": 65899699,
+      "mtime": "2026-09-17T18:26:24.508416"
+    },
+    {
+      "path": "web/scripts/smoke-military-execution-binding.js",
+      "status": "different",
+      "main": "3ebd2be98ff8a37521133d7f161d2a2deeafff61",
+      "local": "f9476bb4c6813432af42df886a01351e7c817eac",
+      "bytes": 3774,
+      "mtime": "2026-09-17T18:23:34.102386"
+    },
+    {
+      "path": "web/scripts/smoke-startup-phase-observability.js",
+      "status": "different",
+      "main": "06e075b84dfda149756fe5e495bf067b3fbaa4a1",
+      "local": "7ec70a4ed4199ae19abf771dbc9d84a24e7262bb",
+      "bytes": 5267,
+      "mtime": "2026-09-14T18:11:50.021304"
+    },
+    {
+      "path": "web/scripts/smoke-tianqi-map-runtime.js",
+      "status": "different",
+      "main": "02da79232f4c76e8c26932a8f5c81eb8f50218ed",
+      "local": "318e6bfd8683d73c65c57e03682f22e6a0406e5b",
+      "bytes": 6586,
+      "mtime": "2026-09-17T18:04:29.293760"
+    },
+    {
+      "path": "web/scripts/smoke-tinyi-impeachment.js",
+      "status": "different",
+      "main": "9cb2e549cc783ce188133674a8211159c72f5a08",
+      "local": "c2f9fb8fb524642a66a31665328c9b93ae4f321a",
+      "bytes": 30955,
+      "mtime": "2026-09-15T20:06:56.581336"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "status": "different",
+      "main": "c2804a9c14839d83b6b33c3aecd9c1b4d7b3a9dd",
+      "local": "f95fc39be3b5cbafa705a0ed5903b0efae801ae3",
+      "bytes": 352978,
+      "mtime": "2026-09-15T20:59:29.695382"
+    },
+    {
+      "path": "web/tm-ai-change-narrative.js",
+      "status": "different",
+      "main": "27a2660e0966ce5b17d0a7b45ce4cc50c45a0101",
+      "local": "24abc81118de27cd2303602736e1d179166f5ddf",
+      "bytes": 50856,
+      "mtime": "2026-09-17T18:00:40.980152"
+    },
+    {
+      "path": "web/tm-ai-infra-model-detect.js",
+      "status": "different",
+      "main": "15425cbf8676563a51a3f8d2bfa6bd289fa975a5",
+      "local": "923654df99acd48acbb41dbacf6ed105265c2d9b",
+      "bytes": 73217,
+      "mtime": "2026-09-17T18:49:55.996178"
+    },
+    {
+      "path": "web/tm-ai-infra.js",
+      "status": "different",
+      "main": "ff116874506d7cf6e067dd171e6823cb91bf170f",
+      "local": "e928679e07c53bb092eabe9baed060b3a7d2b173",
+      "bytes": 163586,
+      "mtime": "2026-09-14T22:26:08.553303"
+    },
+    {
+      "path": "web/tm-chaoyi-tinyi.js",
+      "status": "different",
+      "main": "17b7906e5b92acc27d1438b3fdb8e79c0a0b6c7e",
+      "local": "7b44a044491a9adaf94fab6f96d3a3a62b199b8a",
+      "bytes": 88984,
+      "mtime": "2026-09-17T15:48:21.785707"
+    },
+    {
+      "path": "web/tm-char-autogen.js",
+      "status": "different",
+      "main": "7e06b4105a891175dee664c26aa2aae307652962",
+      "local": "21f0cf6ad6cba15c123515db4c29c7710c594436",
+      "bytes": 107033,
+      "mtime": "2026-09-13T23:47:03.631828"
+    },
+    {
+      "path": "web/tm-class-engine.js",
+      "status": "different",
+      "main": "03d766f613be9691c4c37003fe9d86dd4b4312e2",
+      "local": "6a9ad9a4d0c3599eae973e03093d94a956a771e9",
+      "bytes": 55038,
+      "mtime": "2026-09-13T18:16:41.707878"
+    },
+    {
+      "path": "web/tm-economy-engine.js",
+      "status": "different",
+      "main": "b152cd3f9febeab76016c6219e0133b430f4c661",
+      "local": "fdab3d2574fbcf6bb172fbcb9abaf623b3121c2d",
+      "bytes": 144485,
+      "mtime": "2026-09-14T22:04:17.918902"
+    },
+    {
+      "path": "web/tm-edict-parser.js",
+      "status": "different",
+      "main": "e881737a91543eae7b9d78b35f95f392606fc3e4",
+      "local": "2790a0fde4f02f0bad2dddc5f3a6390984771f3a",
+      "bytes": 122052,
+      "mtime": "2026-09-17T18:48:34.175275"
+    },
+    {
+      "path": "web/tm-endturn-ai.js",
+      "status": "different",
+      "main": "65ff1ea51699e6106c3ead076ff655a4c592c8a2",
+      "local": "69c719703ef87d0a8c2902c4620037318c709335",
+      "bytes": 408419,
+      "mtime": "2026-09-17T18:22:26.941293"
+    },
+    {
+      "path": "web/tm-endturn-apply-stages.js",
+      "status": "different",
+      "main": "2d9cb6120587aa2b781984d944620cc9c1c38cf9",
+      "local": "491b49621a9f1b6787d1d9c6e24bfbe3118bf8c9",
+      "bytes": 88618,
+      "mtime": "2026-09-17T18:21:07.049615"
+    },
+    {
+      "path": "web/tm-endturn-apply.js",
+      "status": "different",
+      "main": "aea4b9291b2549119b2e753cb5404764f8fdf873",
+      "local": "ad5c4e226ce0f997a4502611c1c22bf4e7504286",
+      "bytes": 373146,
+      "mtime": "2026-09-17T18:01:42.961632"
+    },
+    {
+      "path": "web/tm-endturn-edict.js",
+      "status": "different",
+      "main": "1b22dd342173228595ee5b0ffeb9a730eb656d42",
+      "local": "743392169160b1a63ceb417a431ec519077e9707",
+      "bytes": 85483,
+      "mtime": "2026-09-17T18:15:10.837549"
+    },
+    {
+      "path": "web/tm-endturn-helpers.js",
+      "status": "different",
+      "main": "de2bb00ba72ea1ff4c6f530a5a4d9ee4a9eb9122",
+      "local": "158766a61ba26fbf68fe3d9e675bc5f3751a0d34",
+      "bytes": 148931,
+      "mtime": "2026-09-13T20:51:05.199736"
+    },
+    {
+      "path": "web/tm-endturn-prompt.js",
+      "status": "different",
+      "main": "c827861721ff06a279f0c931aa00fd622fdb15f4",
+      "local": "f7d5d850765929f0d377656d999f07fa9b0aa8b5",
+      "bytes": 365231,
+      "mtime": "2026-09-17T17:06:19.367463"
+    },
+    {
+      "path": "web/tm-endturn-systems.js",
+      "status": "different",
+      "main": "3b02be8b3c3e4817f01246910ce074a33705a45e",
+      "local": "87d1b319801dca810d8d6fb6cab1b8bb2ea93f46",
+      "bytes": 39858,
+      "mtime": "2026-09-14T01:06:47.175547"
+    },
+    {
+      "path": "web/tm-faction-derived-economy.js",
+      "status": "different",
+      "main": "ab4601229e33c1ab5d3be8ef3f8d36209b2a82e0",
+      "local": "2060e6de07d01311d0cec55a6b7501fe774331d5",
+      "bytes": 19257,
+      "mtime": "2026-09-17T18:42:10.925296"
+    },
+    {
+      "path": "web/tm-faction-membership.js",
+      "status": "different",
+      "main": "d9a0f1b10ae3e5855ef3d81d70fcc507311c72bc",
+      "local": "94ab97e8c4c354e3d0ce4e798ca3a940b928973a",
+      "bytes": 44668,
+      "mtime": "2026-09-17T18:42:10.691280"
+    },
+    {
+      "path": "web/tm-faction-npc-guoku.js",
+      "status": "different",
+      "main": "bcc60f2b31951af111437f605c9e6c8e0a0c4e02",
+      "local": "17624bdb71680d261581ad0fa27c823c930fb0b4",
+      "bytes": 11380,
+      "mtime": "2026-09-14T17:56:03.873663"
+    },
+    {
+      "path": "web/tm-feature-loader.js",
+      "status": "different",
+      "main": "9110d981dcf5d4d44936a24f3a9d9b86271bc115",
+      "local": "7f7ce5d75f8ece3df2e819133ef94d12385b3982",
+      "bytes": 22641,
+      "mtime": "2026-09-15T23:10:47.629432"
+    },
+    {
+      "path": "web/tm-fiscal-engine.js",
+      "status": "different",
+      "main": "7f5a1e28026f56877cdc3f1b3de8eafa8f8623eb",
+      "local": "6ad82d8906051d7cb23da4cf9604f9df02a99349",
+      "bytes": 159985,
+      "mtime": "2026-09-17T18:42:10.334140"
+    },
+    {
+      "path": "web/tm-game-loop.js",
+      "status": "different",
+      "main": "b2ac3f6feb4a5ff223e7ecf0eb060c1825f51698",
+      "local": "06b204e2c6e93cab04027ec0fefc8d8ac13ffde2",
+      "bytes": 108243,
+      "mtime": "2026-09-15T18:16:10.633874"
+    },
+    {
+      "path": "web/tm-guoku-engine.js",
+      "status": "different",
+      "main": "be02224ef629a458de9fb088ab6c12ea5dfad050",
+      "local": "1e5c16e75a15457ffe9549407504b578a031c3aa",
+      "bytes": 144574,
+      "mtime": "2026-09-15T19:15:08.108791"
+    },
+    {
+      "path": "web/tm-guoku-panel.js",
+      "status": "different",
+      "main": "19a76d18d390a25b649479f79fdbcf296cdb72db",
+      "local": "c01a545ebb0824f161962372d485a5e41f4c9603",
+      "bytes": 81489,
+      "mtime": "2026-09-15T17:47:34.714489"
+    },
+    {
+      "path": "web/tm-history-events.js",
+      "status": "different",
+      "main": "74c7e74f27db392c1b9b85f9e44790d4a1b0c558",
+      "local": "6455694100bc013808df7f31de244fb2b1998b39",
+      "bytes": 44804,
+      "mtime": "2026-09-13T23:35:27.527219"
+    },
+    {
+      "path": "web/tm-huji-runtime-bridge.js",
+      "status": "different",
+      "main": "ce4db10a810463077820653045a3778772856489",
+      "local": "8033dd5b227eebbc77aadff694e9ceae5fb58660",
+      "bytes": 75959,
+      "mtime": "2026-09-14T18:07:49.108187"
+    },
+    {
+      "path": "web/tm-indices.js",
+      "status": "different",
+      "main": "47196620f7491ce4a25639a27187d8c5bf1ecea6",
+      "local": "f37dd527a702573b1b2fe3e2c38fc6ad044af91f",
+      "bytes": 65974,
+      "mtime": "2026-09-13T23:47:04.417799"
+    },
+    {
+      "path": "web/tm-lizhi-panel.js",
+      "status": "different",
+      "main": "fc4d996f5769964aeda0b914a1d272dd62459f37",
+      "local": "f1dae79c41f9732068c2847df1f6b4fe18019315",
+      "bytes": 51456,
+      "mtime": "2026-09-15T17:37:05.811738"
+    },
+    {
+      "path": "web/tm-map-system.js",
+      "status": "different",
+      "main": "212120c8c56531270d34117590c31ef3faa6eaf9",
+      "local": "92d62352268465e4d1b92427657aeaf4c69da313",
+      "bytes": 99367,
+      "mtime": "2026-09-17T18:08:50.001135"
+    },
+    {
+      "path": "web/tm-military.js",
+      "status": "different",
+      "main": "0bb7303e55289410845d368ded4701bda00119b7",
+      "local": "004cba2e81c1dbda989709c3c29af9b4c67ff16a",
+      "bytes": 141777,
+      "mtime": "2026-09-15T16:15:52.436135"
+    },
+    {
+      "path": "web/tm-minxin-hard-link-consumers.js",
+      "status": "different",
+      "main": "385f172c0f8fd1a1a5a318c787a03680fce74330",
+      "local": "30165cfdec20d08eff3d502187187cd5c3184d79",
+      "bytes": 19397,
+      "mtime": "2026-09-14T18:14:23.060422"
+    },
+    {
+      "path": "web/tm-neitang-engine.js",
+      "status": "different",
+      "main": "1c719609c2ffe8beb62ca911de38086d42500155",
+      "local": "4ecfb1788734eb491fc3b08d96117b7173e3e3b2",
+      "bytes": 93301,
+      "mtime": "2026-09-15T19:40:36.202149"
+    },
+    {
+      "path": "web/tm-neitang-panel.js",
+      "status": "different",
+      "main": "f8641b5566d1237ae7a2791f781a66e3fb058314",
+      "local": "88fa199b2a7c393e0d568803f6ced61788237be3",
+      "bytes": 35150,
+      "mtime": "2026-09-15T17:48:29.532701"
+    },
+    {
+      "path": "web/tm-office-system.js",
+      "status": "different",
+      "main": "d3db54583cf8cabd39a31c371e2252b78033ac6e",
+      "local": "702a5c5beb50af63408f227bcdd648784f926425",
+      "bytes": 105369,
+      "mtime": "2026-09-17T18:33:07.335696"
+    },
+    {
+      "path": "web/tm-official-scenario-bundle.js",
+      "status": "different",
+      "main": "dbf2b0185b550d3155d0bd41782692d7add3cdd6",
+      "local": "ece6a18fd6eb61e4e0be861f48f515b255b15c7c",
+      "bytes": 164296170,
+      "mtime": "2026-09-17T18:43:53.747673"
+    },
+    {
+      "path": "web/tm-official-scenario-seeder.js",
+      "status": "different",
+      "main": "6aabd0af140f889fe825b1e6cee5b16f683224dd",
+      "local": "149f1d592f354d87cd36a20435dc033a4691205a",
+      "bytes": 3855,
+      "mtime": "2026-09-13T18:16:42.264303"
+    },
+    {
+      "path": "web/tm-patches-start.js",
+      "status": "different",
+      "main": "1adbd367f33ffde27337e2800a327c53907140b7",
+      "local": "3645f3afcfdb0d6bc4ddaf0841f3a3a22e6e3e43",
+      "bytes": 128358,
+      "mtime": "2026-09-17T18:18:10.557147"
+    },
+    {
+      "path": "web/tm-player-core.js",
+      "status": "different",
+      "main": "073a7ab1dc28f2a2c48943a8388756db85c0a4c0",
+      "local": "9eadbbeb1a28f6d1d8564b958cdbca67c7060f58",
+      "bytes": 225548,
+      "mtime": "2026-09-14T01:32:41.896389"
+    },
+    {
+      "path": "web/tm-renwu-tuzhi.js",
+      "status": "different",
+      "main": "b937cc2905cf259b59a68ab127f79d2bbbf3dc66",
+      "local": "02f610f784da2d9e74fcc312db338ec5ac795dda",
+      "bytes": 166198,
+      "mtime": "2026-09-17T18:36:59.808269"
+    },
+    {
+      "path": "web/tm-save-lifecycle.js",
+      "status": "different",
+      "main": "44abea16e0cd79d4577bcf727b5e88207f2d6614",
+      "local": "233cf4e279f2c3ee5e6233ab63acfe2831552a0d",
+      "bytes": 169906,
+      "mtime": "2026-09-14T01:16:43.973665"
+    },
+    {
+      "path": "web/tm-save-manager.js",
+      "status": "different",
+      "main": "04ddc84c74efb72538d59188b1ba196be36fec23",
+      "local": "e920fa2dafe66f76eb297d29ea59a4e9dac18356",
+      "bytes": 50473,
+      "mtime": "2026-09-14T00:54:46.337112"
+    },
+    {
+      "path": "web/tm-shizheng-panel.js",
+      "status": "different",
+      "main": "2eab42a1f9ff8a6e5a93e54bb0f6618ffa97cc76",
+      "local": "e60d09c9d8447bc6da32cb3c76652f22fc7a2668",
+      "bytes": 66907,
+      "mtime": "2026-09-17T15:52:05.987715"
+    },
+    {
+      "path": "web/tm-three-systems-ext.js",
+      "status": "different",
+      "main": "0a212848331320ab3cc099a425c16f7cdd584179",
+      "local": "ed7fccd93fc10669c973cb74920fb5a693cc052e",
+      "bytes": 70338,
+      "mtime": "2026-09-17T17:00:04.861041"
+    },
+    {
+      "path": "web/tm-three-systems-ui.js",
+      "status": "different",
+      "main": "7c0280d2cd79e333b0dd03a4fd125d0e07a1c568",
+      "local": "1b4f7f26af3285d595423fbc1dfd0c69111ddf0a",
+      "bytes": 93641,
+      "mtime": "2026-09-15T16:15:52.069485"
+    },
+    {
+      "path": "web/tm-topbar-vars.js",
+      "status": "different",
+      "main": "89d06ce8b92684c4245f708cad533cdf1afccb19",
+      "local": "40907bbe41ffb9e7bef7b79bff7b9e2175f656ff",
+      "bytes": 97257,
+      "mtime": "2026-09-14T21:03:16.240006"
+    },
+    {
+      "path": "web/tm-utils.js",
+      "status": "different",
+      "main": "d99d870567548703b472f8fe689b728b286bef2e",
+      "local": "87644d4b646340101b1b247bb69e3f1724620a80",
+      "bytes": 99614,
+      "mtime": "2026-09-14T22:26:08.416150"
+    }
+  ],
+  "readErrors": []
+}

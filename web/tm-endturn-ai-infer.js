@@ -138,6 +138,8 @@ async function _endTurn_aiInfer(edicts, xinglu, memRes, oldVars, externalCtx) {
         if (TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
         try{await TM.Endturn.AI.apply.writeBack(ctx);}
         catch(writeError){
+          var partialEdictEffects=TM.EdictEffects?TM.EdictEffects.fail(GM,ctx):[];
+          if (TM.EdictOutcomes) TM.EdictOutcomes.receive(GM,ctx.results.sc1||{edict_feedback:[]},ctx.input.edicts||{},GM.turn,partialEdictEffects);
           var mainCompletion=TM.Endturn.Validity;
           if(!mainCompletion||!mainCompletion.recoverMain(ctx,writeError,'主推演变更待补正'))throw writeError;
           if(TM.RecoveryReview)TM.RecoveryReview.prepareFailedOutput(ctx,writeError);

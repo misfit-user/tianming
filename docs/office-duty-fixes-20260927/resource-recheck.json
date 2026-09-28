@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "complete": true,
+  "runId": "77fd2796-abc6-44d1-9c61-4523c3fe32a1",
+  "head": "5bef8008fe3592e8c026fbbe3bf03345b1cadf2d",
+  "expected": [
+    "smoke-tinyi-impeachment.js",
+    "smoke-tinyi-party-class-agenda.js"
+  ],
+  "generatedAt": "2026-09-27T10:43:34.642Z",
+  "args": [
+    "--grep",
+    "tinyi-impeachment",
+    "--grep",
+    "tinyi-party-class-agenda",
+    "--jobs",
+    "1",
+    "--no-retry",
+    "--report",
+    "docs/office-duty-fixes-20260927/resource-recheck.json"
+  ],
+  "scheduling": {
+    "parallelJobs": 1,
+    "resourceIsolated": []
+  },
+  "summary": {
+    "selected": 2,
+    "pass": 2,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "clusters": [],
+  "results": [
+    {
+      "name": "smoke-tinyi-impeachment.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 1739,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[TM.platform] TM.platform[web] caps={\"ipc\":false,\"fs\":false,\"nativeHttp\":false,\"hotUpdate\":false,\"online\":false,\"installerUpdate\":false,\"filePicker\":false}\n[debug-logger] 已启用·浏览器内存模式\n[SaveDB] IndexedDB不可用，回退localStorage\n[三系统联动] 事件总线钩子已连接\n[corruption-p2] 已加载：25 条案件库 + lumpSum API + 风闻四类 + 新官标记\n[corruption-p4] 已加载：模式调节 / 轮换副作用 / 卖官 / AI增强 / 地图热力 / 编辑器面板\n[guoku] 引擎已加载：8 收入源 + 8 支出类 + 破产链 + 6 紧急措施 + 朝代预设\n[neitang] 引擎已加载：6 源 + 5 支 + 双向转运 + 大典 + 危机链\n[neitang-p2] 加载：5 进奉类 + 13 预设 + 宗室压力 + 调拨阻力 + 税种重定向\n[charEcon] 引擎已加载：6 资源 + 14×14 收支 + 8 阶层 + 家族共财 + 抄家 + 字系统\n[historical] 加载 27 条历史人物档案\n[historical-wave-01] 加载 60 条\n[historical-wave-02] 加载 46 条\n[historical-wave-03] 加载 44 条\n[historical-wave-04] 加载 40 条\n[historical-wave-05] 加载 37 条\n[historical-wave-06] 加载 36 条\n[historical-wave-07] 加载 29 条\n[historical-wave-08] 加载 38 条\n[historical-wave-09] 加载 30 条\n[historical-wave-10] 加载 36 条\n[historical-wave-11] 加载 36 条\n[historical-wave-12] 加载 49 条\n[charEcon-ui] 角色资源 UI 已加载：6 资源展示 + 抄家 + 派员\n[econLinkage] 已加载：层层剥夺+区域财政树+下拨生命周期+俸禄流+贪腐流+抄家触发+事件总线\n[TMZhi] formal 人物图志 入口已接管\n[scenario] 天启七年·九月——君王初立，权阉当国 已注册 (id=sc-tianqi7-1627)\n[TMContentManager] web load workshop failed Error: 当前环境不支持 IndexedDB\n    at tm-content-manager.js:1613:44\n    at new Promise (<anonymous>)\n    at wsOpen (tm-content-manager.js:1611:12)\n    at wsGetAll (tm-content-manager.js:1632:12)\n    at loadWorkshopScenariosWeb (tm-content-manager.js:2678:27)\n    at loadWorkshopScenarios (tm-content-manager.js:2693:28)\n    at Timeout._onTimeout (tm-content-manager.js:2917:5)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)\n[SaveDB] IndexedDB不可用，回退localStorage\n[baseline] case auto-12-policy-summa·snapshot ready·拷贝到 _baseline-tinyi-before-prompts.json actual 字段·\n{\n  \"caseId\": \"auto-12-policy-summa\",\n  \"topic\": \"policy-summary\",\n  \"topicType\": \"\",\n  \"promptTokens\": null,\n  \"modeDistribution\": {},\n  \"stanceDistribution\": {\n    \"极支\": 0,\n    \"支\": 1,\n    \"中\": 0,\n    \"反\": 0,\n    \"极反\": 0\n  },\n  \"extremeRatio\": 0,\n  \"confrontTriggered\": false,\n  \"clientelismTriggered\": 0,\n  \"martyrUsed\": 0,\n  \"v3PostProcess\": true\n}\n[baseline] case auto-12-policy·alpha·snapshot ready·拷贝到 _baseline-tinyi-before-prompts.json actual 字段·\n{\n  \"caseId\": \"auto-12-policy·alpha\",\n  \"topic\": \"policy·alpha\",\n  \"topicType\": \"\",\n  \"promptTokens\": null,\n  \"modeDistribution\": {},\n  \"stanceDistribution\": {\n    \"极支\": 0,\n    \"支\": 0,\n    \"中\": 0,\n    \"反\": 0,\n    \"极反\": 0\n  },\n  \"extremeRatio\": 0,\n  \"confrontTriggered\": false,\n  \"clientelismTriggered\": 0,\n  \"martyrUsed\": 0,\n  \"v3PostProcess\": true\n}\n[smoke-tinyi-impeachment] pass assertions=149\n"
+    },
+    {
+      "name": "smoke-tinyi-party-class-agenda.js",
+      "pass": true,
+      "flaky": false,
+      "suspect": false,
+      "exit": 0,
+      "ms": 6672,
+      "timedOut": false,
+      "waivers": [],
+      "output": "[smoke-tinyi-party-class-agenda] PASS party/class agenda tinyi loop\n"
+    }
+  ],
+  "skipped": []
+}

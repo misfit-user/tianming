@@ -114,7 +114,14 @@
           ctx.lineTo(p[i][0], p[i][1]);
         }
         ctx.closePath();
-        ctx.clip();
+        var holes = idx === 0 ? (d.holes || []) : ((d.extraPolygonHoles || [])[idx - 1] || []);
+        holes.forEach(function(h){
+          if (!h || h.length < 3) return;
+          ctx.moveTo(h[0][0], h[0][1]);
+          for (var k = 1; k < h.length; k++) ctx.lineTo(h[k][0], h[k][1]);
+          ctx.closePath();
+        });
+        ctx.clip('evenodd');
 
         var grad = ctx.createRadialGradient(cx, cy, rad * 0.05, cx, cy, rad);
         grad.addColorStop(0,    rgbStr(rgb, 0.50));

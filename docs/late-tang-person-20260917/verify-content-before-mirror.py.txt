@@ -1,0 +1,30 @@
+# Read-only verification of the user-authorized late Tang scenario update.
+from pathlib import Path
+import json,hashlib
+w=Path(__file__).parent;r=w.parents[1]
+meta=json.loads((w/'before.json').read_bytes());backup=Path(meta['_backup'])
+source='scenarios/晚唐·开成五年（官方）.json'
+old=json.loads((backup/source).read_bytes());s=json.loads((r/source).read_bytes());cs=s['characters']
+report=json.loads((w/'content-report.json').read_bytes())
+archive=json.loads((r/'web'/report['archive']).read_bytes());checks=[]
+def check(name,ok):
+    assert ok,name
+    checks.append(name)
+check('434 unique people unchanged IDs/order/names',len(cs)==434 and [(x['id'],x['name']) for x in cs]==[(x['id'],x['name']) for x in old['characters']])
+check('81 historical / 353 fictional',sum(c['isHistorical'] for c in cs)==81 and sum(c['isFictional'] for c in cs)==353)
+check('81 reference records, 79 quoted, 93 passages, 2 pending',len(archive['characters'])==81 and sum(bool(x['quotes']) for x in archive['characters'].values())==79 and sum(len(x['quotes']) for x in archive['characters'].values())==93)
+check('all fields covered without false histories',all(all(k in c for k in ['appearance','ethnicity','faith','familyMembers','skills','type','historicalSources','career','dialogues']) for c in cs) and all(not c['historicalSources'] for c in cs if c['isFictional']))
+check('reference ID links correct',all(c['historicalSourceKey']==c['id'] and c['id'] in archive['characters'] for c in cs if c['isHistorical']))
+check('three definite seats corrected and mirrored',len(report['seatBindings'])==6)
+check('player agency and memory preserved',cs[0]['_memory']==old['characters'][0]['_memory'] and all(k not in cs[0] for k in ['personality','personalGoal','innerThought','stance']))
+check('later Cui Gong appointment stays in reader only','夏，五月' not in str(cs[7]) and '夏，五月' in str(archive['characters'][cs[7]['id']]))
+check('honorary not ordinary office claims',all(not any(h in c.get('officialTitles',[]) for h in c.get('honoraryTitles',[])) for c in cs))
+check('Zheng Su correct location and no central ritual post',cs[20]['officialTitle']=='河中节度使' and cs[20]['location']=='河中府' and cs[20]['honoraryTitles']==['检校礼部尚书'])
+check('unrelated scenario fields unchanged',all(s[k]==old[k] for k in report['unchangedTopLevel']))
+keys=['id','name','age','alive','portrait','resources','relations','loyalty','ambition','intelligence','military','administration','management','valor','charisma','diplomacy','health','stress','traitIds','partyIds']
+check('identity, images, wealth, relations and numbers unchanged',all(a.get(k)==b.get(k) for a,b in zip(old['characters'],cs) for k in keys))
+observations=[{'path':q,'before':meta[q],'now':hashlib.sha256((r/q).read_bytes()).hexdigest()} for q in ['scenarios/天启七年·九月（官方）.json','scenarios/绍宋·建炎元年八月（官方）.json']]
+check('JSON save/load roundtrip retains additions',json.loads(json.dumps(s,ensure_ascii=False))==s)
+out={'ok':True,'otherScenarioObservations':observations,'warnings':[x['path']+' changed during this session; not reverted or edited by this patch' for x in observations if x['before']!=x['now']],'checks':checks,'sourceSha256':hashlib.sha256((r/source).read_bytes()).hexdigest(),'counts':{k:report[k] for k in ['characters','historical','fictional','quotedPeople','originalQuotes','originalPending']}}
+(w/'content-verification.json').write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+print(json.dumps(out,ensure_ascii=False))

@@ -1,0 +1,318 @@
+diff --git a/web/tm-endturn-apply-stages.js b/web/tm-endturn-apply-stages.js
+index 2d9cb612..26af962b 100644
+--- a/web/tm-endturn-apply-stages.js
++++ b/web/tm-endturn-apply-stages.js
+@@ -398,21 +398,30 @@ inst._imprisonedTurn = GM.turn||0;
+               region_updates: Array.isArray(p1.region_updates) ? p1.region_updates : [],
+               project_updates: Array.isArray(p1.project_updates) ? p1.project_updates : [],
+               construction_receipts: ((ctx.apply && ctx.apply.buildingReceipts) || []).map(function(r) { return r && r.receipt; }).filter(Boolean), // 旧独立 stage 调用可无 apply；仅真实领域回执，不读取 AI 自填回执。
+-              anyPathChanges: Array.isArray(p1.anyPathChanges) ? p1.anyPathChanges : [],
++              anyPathChanges: Array.isArray(p1.anyPathChanges) ? p1.anyPathChanges : [],
+
+               // 兜底：AI 常只写 personnel_changes (展示用) 而不写 office_assignments — applier 里做备胎消费
+
+               personnel_changes: Array.isArray(p1.personnel_changes) ? p1.personnel_changes : [],
+
+               // 问天 directive 合规回报
+
+               directive_compliance: Array.isArray(p1.directive_compliance) ? p1.directive_compliance : [],
+
+-              regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
+
++              regent_decisions: Array.isArray(p1.regent_decisions) ? p1.regent_decisions : []
+             });
+             if (_deathNorm1.failed && _deathNorm1.failed.length) {
+               _applyRes1.applied = _applyRes1.applied || {};
+               _applyRes1.applied.failed = Array.isArray(_applyRes1.applied.failed) ? _applyRes1.applied.failed : [];
+               Array.prototype.push.apply(_applyRes1.applied.failed, _deathNorm1.failed);
+-            }
++            }
+
+             _surfaceUnappliedChanges(_applyRes1, 'sc1主应用');  // 【落地核对】接住失败清单·让静默 #1 可见
+
+             if (!_applyRes1 || _applyRes1.ok !== true || (_applyRes1.applied && _applyRes1.applied.failed && _applyRes1.applied.failed.length)) {
+
+-              throw new Error('AI 主写回未能原子提交');
+
++              // 把失败条目的 reason/target 摘要塞进 Error.message，避免玩家只看到
+
++              // 一句「AI 主写回未能原子提交」却猜不到是哪几条、为啥失败。
+
++              var _failed1 = (_applyRes1 && _applyRes1.applied && Array.isArray(_applyRes1.applied.failed)) ? _applyRes1.applied.failed : [];
+
++              var _reasons1 = {};
+
++              _failed1.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons1[r]=(_reasons1[r]||0)+1; });
+
++              var _sum1 = Object.keys(_reasons1).map(function(r){ return r + '×' + _reasons1[r]; }).join('·');
+
++              var _sample1 = _failed1.slice(0, 3).map(function(f){
+
++                return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+
++              }).join(' | ');
+
++              throw new Error('AI 主写回未能原子提交(' + _failed1.length + ' 条' + (_sum1 ? '·' + _sum1 : '') + (_sample1 ? '·样本: ' + _sample1 : '') + ')');
+
+             }
+
+           }
+
+         } catch(_applyErr) {
+
+@@ -773,23 +782,23 @@ inst._imprisonedTurn = GM.turn||0;
+               });
+
+               // 科举补录
+
+               _patch.keju_events.forEach(function(e) {
+
+-                if (typeof P !== 'undefined') {
+
+-                  if (!P.keju) P.keju = {};
+
+-                  if (!P.keju.history) P.keju.history = [];
+
+-                  P.keju.history.push({ turn: GM.turn||0, stage: e.stage, year: e.year||'', topThree: e.topThree||[], reason: e.reason||'', _autoFromReconcile: true });
+
+-                }
+
+-                if (!GM.turnChanges) GM.turnChanges = {};
+
+-                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+
++                if (typeof P !== 'undefined') {
++                  if (!P.keju) P.keju = {};
++                  if (!P.keju.history) P.keju.history = [];
++                  P.keju.history.push({ turn: GM.turn||0, stage: e.stage, year: e.year||'', topThree: e.topThree||[], reason: e.reason||'', _autoFromReconcile: true });
++                }
++                if (!GM.turnChanges) GM.turnChanges = {};
++                if (!GM.turnChanges.variables) GM.turnChanges.variables = [];
+                 GM.turnChanges.variables.push({ path: 'keju.history', label: '科举·' + e.stage + (e.year?'·'+e.year:''), delta: 1, reason: e.reason || '一致性补录' });
+
+               });
+
+               // 党派补录
+
+-              _patch.party_events.forEach(function(e) {
+-                if (!Array.isArray(GM.parties)) GM.parties = [];
+-                if (e.action === 'form') {
+-                  var _formedParty = { name: e.partyName, leader:'', head:'', members:[], formedTurn: GM.turn||0, status: 'active', reason: e.reason||'', _autoFromReconcile: true };
+-                  if (e.leader && !_stageSetPartyLeader(_formedParty, e.leader, e.reason || '一致性补录立党')) return;
+-                  if (_formedParty.leader) _formedParty.members = [_formedParty.leader];
+-                  GM.parties.push(_formedParty);
++              _patch.party_events.forEach(function(e) {
+
++                if (!Array.isArray(GM.parties)) GM.parties = [];
+
++                if (e.action === 'form') {
+
++                  var _formedParty = { name: e.partyName, leader:'', head:'', members:[], formedTurn: GM.turn||0, status: 'active', reason: e.reason||'', _autoFromReconcile: true };
+
++                  if (e.leader && !_stageSetPartyLeader(_formedParty, e.leader, e.reason || '一致性补录立党')) return;
+
++                  if (_formedParty.leader) _formedParty.members = [_formedParty.leader];
+
++                  GM.parties.push(_formedParty);
+
+                 } else if (e.action === 'dissolve') {
+
+                   var p = GM.parties.find(function(x){return x && x.name === e.partyName && x.status === 'active';});
+
+                   if (p) { p.status = 'dissolved'; p.dissolvedTurn = GM.turn||0; }
+
+@@ -838,9 +847,9 @@ inst._imprisonedTurn = GM.turn||0;
+                 GM.turnChanges.variables.push({ path: 'court.' + e.target, label: '朝仪·' + e.target + '·' + e.action, delta: 0, reason: e.reason || '一致性补录' });
+
+               });
+
+               // 工程·物品·建筑补录
+
+-              _patch.construction_events.forEach(function(e) {
+-                if (TM.BuildingOrders && TM.BuildingOrders.manages(GM, e.name, e.region, ctx.input && ctx.input.buildingOrders)) return; // 原营造案由唯一地区建筑账处理，补录不另造 activeProjects 影子。
+-                if (!Array.isArray(GM.activeProjects)) GM.activeProjects = [];
++              _patch.construction_events.forEach(function(e) {
+
++                if (TM.BuildingOrders && TM.BuildingOrders.manages(GM, e.name, e.region, ctx.input && ctx.input.buildingOrders)) return; // 原营造案由唯一地区建筑账处理，补录不另造 activeProjects 影子。
+
++                if (!Array.isArray(GM.activeProjects)) GM.activeProjects = [];
+
+                 if (e.action === 'build' || e.action === 'restore' || e.action === 'cast') {
+
+                   GM.activeProjects.push({ kind: e.kind, name: e.name, region: e.region||'', cost: e.cost||0, action: e.action, status: 'in_progress', startedTurn: GM.turn||0, reason: e.reason||'', _autoFromReconcile: true });
+
+                 } else if (e.action === 'complete') {
+
+@@ -933,49 +942,56 @@ inst._imprisonedTurn = GM.turn||0;
+               });
+
+               _surfaceUnappliedChanges(_applyRes2, 'reconcile补录');  // 【落地核对】二审补录也接住失败清单
+
+               if (!_applyRes2 || _applyRes2.ok !== true || (_applyRes2.applied && _applyRes2.applied.failed && _applyRes2.applied.failed.length)) {
+
+-                throw new Error('AI 二审补录未能原子提交');
+
++                var _failed2 = (_applyRes2 && _applyRes2.applied && Array.isArray(_applyRes2.applied.failed)) ? _applyRes2.applied.failed : [];
+
++                var _reasons2 = {};
+
++                _failed2.forEach(function(f){ var r=(f && f.reason) || 'unknown'; _reasons2[r]=(_reasons2[r]||0)+1; });
+
++                var _sum2 = Object.keys(_reasons2).map(function(r){ return r + '×' + _reasons2[r]; }).join('·');
+
++                var _sample2 = _failed2.slice(0, 3).map(function(f){
+
++                  return '[' + ((f && f.kind) || '?') + ':' + ((f && f.target) || (f && f.ref) || '?') + '] ' + ((f && f.reason) || '');
+
++                }).join(' | ');
+
++                throw new Error('AI 二审补录未能原子提交(' + _failed2.length + ' 条' + (_sum2 ? '·' + _sum2 : '') + (_sample2 ? '·样本: ' + _sample2 : '') + ')');
+
+               }
+
+-              if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
+
+-              GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });
+
+-              if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);
+
+-              console.log('[Reconcile] AI 二审完成·补录 ' + _patched + ' 条·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
+
+-              if (typeof addEB === 'function') {
+
+-                addEB('校验补录', 'AI 二审一致性·补录 ' + _patched + ' 条结构化数据' + (_toolResp.fallback?'（兜底）':''));
+
+-              }
+
+-            } else {
+
+-              console.log('[Reconcile] AI 二审完成·无需补录·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
+
+-            }
+
+-          } catch(_recE) {
+
+-            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_recE, 'endturn] reconcile AI:') : console.warn('[endturn] reconcile AI failed:', _recE);
+
+-          }
+
+-        }
+
+-  };
+
+-
+
+-  // ── AP-6（自 origin writeBack 尾部逐字节迁出·幻觉防火墙后验+记忆入账+record 组装+return ctx）──
+
+-  //   writeBack 局部变量经状态包 _st 传入·顶部解构回同名 var 保业务体逐字节一致。
+
++              if (!GM._reconcilePatchLog) GM._reconcilePatchLog = [];
++              GM._reconcilePatchLog.push({ turn: GM.turn||0, patch: _patch, mode: _toolResp.fallback ? 'fallback' : 'tool_use', timestamp: Date.now() });
++              if (GM._reconcilePatchLog.length > 10) GM._reconcilePatchLog = GM._reconcilePatchLog.slice(-10);
++              console.log('[Reconcile] AI 二审完成·补录 ' + _patched + ' 条·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
++              if (typeof addEB === 'function') {
++                addEB('校验补录', 'AI 二审一致性·补录 ' + _patched + ' 条结构化数据' + (_toolResp.fallback?'（兜底）':''));
++              }
++            } else {
++              console.log('[Reconcile] AI 二审完成·无需补录·模式=' + (_toolResp.fallback?'fallback':'tool_use'));
++            }
++          } catch(_recE) {
++            (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_recE, 'endturn] reconcile AI:') : console.warn('[endturn] reconcile AI failed:', _recE);
++          }
++        }
++  };
++
++  // ── AP-6（自 origin writeBack 尾部逐字节迁出·幻觉防火墙后验+记忆入账+record 组装+return ctx）──
++  //   writeBack 局部变量经状态包 _st 传入·顶部解构回同名 var 保业务体逐字节一致。
+   ns.stages._applyPostValidateAssemble = function(ctx, _st) {
+     var p1 = _st.p1;
+     var shizhengji = _st.shizhengji, zhengwen = _st.zhengwen, playerStatus = _st.playerStatus, playerInner = _st.playerInner, turnSummary = _st.turnSummary, shiluText = _st.shiluText, szjTitle = _st.szjTitle, szjSummary = _st.szjSummary, personnelChanges = _st.personnelChanges, hourenXishuo = _st.hourenXishuo;
+     var _applied = _st._applied;
+     var _applyStart = _st._applyStart;
+-      // 主链的 faction_succession consumer 还承担稳定度/史事副作用；在其执行后统一经
+-      // Narrative 语义 sink 补齐 leader/leaderName/ruler/leadership.ruler/leaderInfo.name 镜像。
+-      // 前置 preflight 已将 faction/newLeader 收紧为当前活跃势力与存活人物的精确对象。
+-      if (p1 && Array.isArray(p1.faction_succession) && global.TM && global.TM.AIChange && global.TM.AIChange.Narrative && typeof global.TM.AIChange.Narrative.setFactionLeader === 'function') {
+-        p1.faction_succession.forEach(function(sc) {
+-          if (!sc || !(sc.factionId || sc.faction) || !(sc.newLeaderId || sc.newLeader)) return;
+-          var factionRef=String(sc.factionId || sc.faction).trim();
+-          var fac=(GM.facs || []).find(function(f) {
+-            return f && f.id != null && String(f.id).trim()===factionRef;
+-          });
+-          if (!fac && !sc.factionId) {
+-            var matches=(GM.facs || []).filter(function(f) { return f && f.name===sc.faction; });
+-            if (matches.length===1) fac=matches[0];
+-          }
+-          if (fac) global.TM.AIChange.Narrative.setFactionLeader(fac, sc.newLeaderId || sc.newLeader, GM, '势力继统');
+-        });
+-      }
+-      // 1.4: 幻觉防火墙——后验校验（检查AI返回的人名/地名是否在白名单内）
++      // 主链的 faction_succession consumer 还承担稳定度/史事副作用；在其执行后统一经
+
++      // Narrative 语义 sink 补齐 leader/leaderName/ruler/leadership.ruler/leaderInfo.name 镜像。
+
++      // 前置 preflight 已将 faction/newLeader 收紧为当前活跃势力与存活人物的精确对象。
+
++      if (p1 && Array.isArray(p1.faction_succession) && global.TM && global.TM.AIChange && global.TM.AIChange.Narrative && typeof global.TM.AIChange.Narrative.setFactionLeader === 'function') {
+
++        p1.faction_succession.forEach(function(sc) {
+
++          if (!sc || !(sc.factionId || sc.faction) || !(sc.newLeaderId || sc.newLeader)) return;
+
++          var factionRef=String(sc.factionId || sc.faction).trim();
+
++          var fac=(GM.facs || []).find(function(f) {
+
++            return f && f.id != null && String(f.id).trim()===factionRef;
+
++          });
+
++          if (!fac && !sc.factionId) {
+
++            var matches=(GM.facs || []).filter(function(f) { return f && f.name===sc.faction; });
+
++            if (matches.length===1) fac=matches[0];
+
++          }
+
++          if (fac) global.TM.AIChange.Narrative.setFactionLeader(fac, sc.newLeaderId || sc.newLeader, GM, '势力继统');
+
++        });
+
++      }
+
++      // 1.4: 幻觉防火墙——后验校验（检查AI返回的人名/地名是否在白名单内）
+
+       if (p1 && p1.npc_actions) {
+
+         var _aliveSet = {};
+
+         (GM.chars || []).forEach(function(c) { if (c.alive !== false) _aliveSet[c.name] = true; });
+
+@@ -1045,7 +1061,7 @@ inst._imprisonedTurn = GM.turn||0;
+       character_deaths: p1 && Array.isArray(p1.character_deaths) ? p1.character_deaths.length : 0
+
+     };
+
+     _applied.factions = _applied.factions || {
+
+-      faction_changes: p1 && Array.isArray(p1.faction_changes) ? p1.faction_changes.length : 0,
+
++      faction_changes: p1 && Array.isArray(p1.faction_changes) ? p1.faction_changes.length : 0,
+       faction_events: p1 && Array.isArray(p1.faction_events) ? p1.faction_events.length : 0,
+
+       faction_relation_changes: p1 && Array.isArray(p1.faction_relation_changes) ? p1.faction_relation_changes.length : 0,
+
+       faction_ai_outcomes: p1 && Array.isArray(p1.faction_ai_outcomes) ? p1.faction_ai_outcomes.length : 0
+
+@@ -1063,4 +1079,4 @@ inst._imprisonedTurn = GM.turn||0;
+     return ctx;
+
+   };
+
+ 
+
+-})(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
++})(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
+
+

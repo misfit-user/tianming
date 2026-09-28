@@ -1,0 +1,82 @@
+[
+  {
+    "relative": "scenarios\\绍宋·建炎元年八月（官方）.json",
+    "exists": true,
+    "sha256": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04"
+  },
+  {
+    "relative": "web\\tm-fiscal-engine.js",
+    "exists": true,
+    "sha256": "5f7b05159f437b9ad2d86f83132a697dc8752e3fab86153f47c75b27c5a8eb54"
+  },
+  {
+    "relative": "web\\phase8-formal-map-dossier.js",
+    "exists": true,
+    "sha256": "92940f5e48426e362c4e3c3d0e7a40983f6e2334e40ed0249a865961f1cdd4b1"
+  },
+  {
+    "relative": "web\\tm-faction-membership.js",
+    "exists": true,
+    "sha256": "d52d183623730808bb4e72ff76383504cf47fb44a0d8aed41ac2c7f5d0850157"
+  },
+  {
+    "relative": "web\\tm-faction-derived-economy.js",
+    "exists": true,
+    "sha256": "5a5091da00914711348ff34bebad1162d18f286aa4acdc489f298d7d08d63241"
+  },
+  {
+    "relative": "web\\scenarios\\tianqi7-1627.js",
+    "exists": true,
+    "sha256": "e36f880589d2bb2feb7a5d146efaaa5dc7d4060d2bc5623754d65964af339a8e"
+  },
+  {
+    "relative": "web\\bundled-scenarios\\天启七年·九月（官方）.json",
+    "exists": true,
+    "sha256": "ee65e49ded5b539630b03ea5ef51842689b2a7d20da2ca545019667696768f0c"
+  },
+  {
+    "relative": "web\\scenarios\\shaosong-jianyan-1127.js",
+    "exists": true,
+    "sha256": "ba0a67ecfb4d094639d3a0cdd5d7e596ae83ce9d5d696178468a2bd3dc9f52a4"
+  },
+  {
+    "relative": "web\\bundled-scenarios\\绍宋·建炎元年八月（官方）.json",
+    "exists": true,
+    "sha256": "51e9ca52808cbc2b0ae205e5f6569f3142620c5ba32eab3a082606a09c313a04"
+  },
+  {
+    "relative": "web\\scenarios\\tang840-840.js",
+    "exists": true,
+    "sha256": "2bea67fa040885715b3c5932d396d3f0cb70758341a13ec3226efda049aebab0"
+  },
+  {
+    "relative": "web\\bundled-scenarios\\晚唐·开成五年（官方）.json",
+    "exists": true,
+    "sha256": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28"
+  },
+  {
+    "relative": "web\\tm-official-scenario-bundle.js",
+    "exists": true,
+    "sha256": "b2da1e20f0bf64afb766e848c4aad11a269fe33b349bdb4116f99c609d74e903"
+  },
+  {
+    "relative": "web\\preview\\official-scenarios-bundle.js",
+    "exists": true,
+    "sha256": "eb934b818ab054b739dfbf0e3130e89bacde3cbdeab4a984996c324d9d8cb5cd"
+  },
+  {
+    "relative": "web\\preview\\scenario-editor-reset-data.js",
+    "exists": true,
+    "sha256": "0f9728b3d1aa82b6bd3bba470f1719a5b319f07e558c5449a74437800c9cdd0e"
+  },
+  {
+    "relative": "web\\bundled-scenarios\\manifest.json",
+    "exists": true,
+    "sha256": "ff90d42a51e3bacc92a477e2d1e9ee32ee37103f1f566228646b6c070603f403"
+  },
+  {
+    "relative": "web\\bundled-scenarios\\manifest.js",
+    "exists": true,
+    "sha256": "59c8ba53673a0bda9bab106ec0dfbfa737e315a0ca94ae7c9360f00c51f504fc"
+  }
+]

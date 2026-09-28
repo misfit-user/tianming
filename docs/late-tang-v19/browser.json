@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "sid": "sc-tang840-840",
+  "chars": 488,
+  "portraits": 488,
+  "classes": 24,
+  "regions": 575,
+  "effects": "function",
+  "credit": "function",
+  "decoded": 126,
+  "officialCards": 3,
+  "lazyLoad": true,
+  "nativeUiStart": true,
+  "saveLoad": true,
+  "hukou": {
+    "hidden": 3446028,
+    "effective": 3005305,
+    "nominal": 3769138,
+    "japan": true
+  },
+  "errors": []
+}

@@ -1,0 +1,19 @@
+{
+  "suite": "initial smoke-office-duty-accounting",
+  "cases": 23,
+  "passed": 3,
+  "failed": 20,
+  "observations": {
+    "investigateBribery": "fulfillment below 50",
+    "approvedLeave": [50, 44],
+    "unrecordedOccupiedTwoTicks": [50, 38, 26],
+    "fiveConcurrentTaxPostsVsOne": [0.05, 0.01],
+    "explicitSecondPost": "first post rose to 55; expected unchanged 50",
+    "replayedAction": [50, 60],
+    "supervisionPlusMilitaryVsSupervision": [46, 62],
+    "vacant30DaysOneCallVsDailyCalls": [28, 0],
+    "occupied30DaysOneCallVsDailyCalls": [72.5, 89.99943651649274],
+    "zeroElapsedDays": [50, 62],
+    "sameTurnTickGuard": "already present and passed"
+  }
+}

@@ -1061,7 +1061,7 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
   }
 
   // 调用 AI（流式·拆 JSON 中的 line 实时回调）
-  let raw = '';
+  let raw = '', streamed = false;
   const tok = Math.max(600, (typeof _aiDialogueTok === 'function') ? _aiDialogueTok('cy', 1) : 600);
   const signal = (typeof CY !== 'undefined' && CY.abortCtrl) ? CY.abortCtrl.signal : null;
 
@@ -1086,6 +1086,7 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
           signal: signal,
           tier: 'secondary',
           onChunk: (partial) => {
+            if (partial) streamed = true;
             if (typeof onChunk === 'function') {
               const lineSoFar = extractLineFromPartial(partial);
               if (lineSoFar) onChunk(lineSoFar);
@@ -1094,6 +1095,8 @@ async function _cc3_aiGenReact(name, item, role, onChunk) {
         }
       );
     } catch (e) {
+      if (streamed || (signal && signal.aborted) || (e && (e._aiRetryExhausted || e._tmNativeTransport || e.name === 'AbortError' || e.code === 'AI_ABORTED')) ||
+          (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(e))) return null;
       console.warn('[cc3·react] 流式失败·退非流式·', e && e.message);
       try {
         raw = (typeof callAIMessages === 'function')
@@ -1202,11 +1205,14 @@ async function _cc3_callAI(prompt, onChunk) {
   const tok = (typeof _aiDialogueTok === "function") ? _aiDialogueTok("cy", 1) : 500;
   const signal = (typeof CY !== "undefined" && CY.abortCtrl) ? CY.abortCtrl.signal : null;
   const messages = _cc3_makeMessagesWithSystem(prompt);
+  let streamed = false;
   // 流式优先（有 onChunk 且 callAIMessagesStream 可用）
   if (typeof onChunk === 'function' && typeof callAIMessagesStream === 'function') {
     try {
-      return await callAIMessagesStream(messages, tok, { signal: signal, onChunk: onChunk, tier: 'secondary' });
+      return await callAIMessagesStream(messages, tok, { signal: signal, onChunk: function(partial) { if (partial) streamed = true; onChunk(partial); }, tier: 'secondary' });
     } catch (e) {
+      if (streamed || (signal && signal.aborted) || (e && (e._aiRetryExhausted || e._tmNativeTransport || e.name === 'AbortError' || e.code === 'AI_ABORTED')) ||
+          (typeof _aiErrorIsTerminal === 'function' && _aiErrorIsTerminal(e))) throw e;
       console.warn('[cc3·stream] 流式失败·退非流式·', e && e.message);
     }
   }

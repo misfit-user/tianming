@@ -1,0 +1,161 @@
+{
+  "generatedAt": "2026-09-17T18:32:51.207023",
+  "scopePassed": true,
+  "contentChecks": 15,
+  "electronChecks": 13,
+  "checks": [
+    {
+      "command": [
+        "python",
+        "-X",
+        "utf8",
+        "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\verify-content.py"
+      ],
+      "exitCode": 0,
+      "log": "final-check-0.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-renwu-source-reader.js"
+      ],
+      "exitCode": 0,
+      "log": "final-check-1.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-renwu-multioffice-display.js"
+      ],
+      "exitCode": 0,
+      "log": "final-check-2.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/smoke-military-execution-binding.js"
+      ],
+      "exitCode": 0,
+      "log": "final-check-3.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/sync-official-scenarios.js",
+        "--check"
+      ],
+      "exitCode": 0,
+      "log": "final-check-4.log"
+    },
+    {
+      "command": [
+        "node",
+        "web/scripts/verify-official-scenario-parity.js"
+      ],
+      "exitCode": 0,
+      "log": "final-check-5.log"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "web/tm-renwu-tuzhi.js",
+        "web/phase8-formal-modules.js",
+        "web/scripts/smoke-renwu-source-reader.js",
+        "web/scripts/smoke-military-execution-binding.js"
+      ],
+      "exitCode": 0,
+      "log": "final-check-6.log"
+    }
+  ],
+  "content": {
+    "characters": 434,
+    "historical": 81,
+    "fictional": 353,
+    "quotedPeople": 79,
+    "originalQuotes": 93,
+    "originalPending": 2
+  },
+  "files": [
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "sha256": "eac33ec4a1af95c8c9514f1399155ff2c52d3255c20d20d9af59a5e48bd91f28",
+      "bytes": 65899030
+    },
+    {
+      "path": "web/tm-renwu-tuzhi.js",
+      "sha256": "1202f944dc5bd3d3a35972fa3b38f55f686358a5d259ae2f345360d718c9f1fe",
+      "bytes": 166189
+    },
+    {
+      "path": "web/phase8-formal-modules.js",
+      "sha256": "0615eb61ced1feb588841aec10418441d51a114fbe3acd4faf33d7948e5a9d18",
+      "bytes": 95947
+    },
+    {
+      "path": "web/assets/reference/tang840-characters.json",
+      "sha256": "1d24281f0fdbd359a48e8113fcc1c899015e09c1279190c43a03947553811e53",
+      "bytes": 67124
+    },
+    {
+      "path": "web/scripts/smoke-renwu-source-reader.js",
+      "sha256": "d4264b47a5d748428e1fa86baf285e6e3013702d3b96210c6c7756ce2f3abc84",
+      "bytes": 4526
+    },
+    {
+      "path": "web/scripts/smoke-military-execution-binding.js",
+      "sha256": "9cfa731b5cb2d34ad1defc8a8d41dcbd8f6b19e804be597c957c7ddfee0854cc",
+      "bytes": 3774
+    }
+  ],
+  "otherScenarioWarnings": [
+    "scenarios/绍宋·建炎元年八月（官方）.json changed during this session; not reverted or edited by this patch"
+  ],
+  "fullSuiteInitial": {
+    "selected": 1030,
+    "pass": 1001,
+    "fail": 29,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "fullSuiteInitialFailed": [
+    "smoke-army-liability-ledger.js",
+    "smoke-battle-cost-guoku.js",
+    "smoke-battle-trigger-contract.js",
+    "smoke-building-payment-ledger.js",
+    "smoke-deploy-manifest-atomicity.js",
+    "smoke-edict-office-tree-writeback.js",
+    "smoke-fiscal-collection-ledger.js",
+    "smoke-ledgergate-narrative-fallback.js",
+    "smoke-military-execution-binding.js",
+    "smoke-native-fiscal-consumers.js",
+    "smoke-native-start-preparation.js",
+    "smoke-native-world-events.js",
+    "smoke-production-dependencies.js",
+    "smoke-relief-governance.js",
+    "smoke-runtime-save-consistency.js",
+    "smoke-s1c-office-conspiracy.js",
+    "smoke-s1d-official-disaffection.js",
+    "smoke-s1e-salary-headcount.js",
+    "smoke-s2-office-powermap.js",
+    "smoke-s2b-duty-authority-reform.js",
+    "smoke-s2c-office-digest-wiring.js",
+    "smoke-s4-office-retirement.js",
+    "smoke-s5-menyin.js",
+    "smoke-scenario-editor-origin-isolation.js",
+    "smoke-shaosong-target-map-regions.js",
+    "smoke-start-game-data-integrity.js",
+    "smoke-start-hierarchy-immutability.js",
+    "smoke-startup-autosave-opt-in.js",
+    "smoke-startup-phase-observability.js"
+  ],
+  "correctedOutdatedFixture": "smoke-military-execution-binding.js",
+  "globalArchitecture": "7 of 13 checks failed in the current shared workspace; logs retained; baselines not relaxed",
+  "backup": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-completion-20260917-173435",
+  "noCommitPushRelease": true,
+  "noPlayerSavesTouched": true
+}

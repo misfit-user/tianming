@@ -1,0 +1,41 @@
+[
+  {
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "code": 1,
+    "seconds": 51.58,
+    "log": "ui-gate-0.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/run-smokes.js",
+      "--grep",
+      "office|renwu|rank"
+    ],
+    "code": 1,
+    "seconds": 0.25,
+    "log": "ui-gate-1.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js",
+      "--check"
+    ],
+    "code": 0,
+    "seconds": 10.47,
+    "log": "ui-gate-2.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/verify-official-scenario-parity.js"
+    ],
+    "code": 0,
+    "seconds": 13.09,
+    "log": "ui-gate-3.log"
+  }
+]

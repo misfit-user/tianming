@@ -4,48 +4,78 @@
 const assert = require('node:assert/strict'), fs = require('fs'), path = require('path'), vm = require('vm');
 const { runSuite, withFields, assertReadOnly, officialCard } = require('./lib-circuit-governance-harness');
 
-// 8ea9b700 的原始 tick 函数全文；仅作为对照，不跟随新实现修改。
+// f204d924 已验收的按经过时间 tick 函数全文；仅作为对照，不跟随新实现修改。
 const LEGACY_TICK = String.raw`  function tickOfficeDutyState(GM, opts) {
     opts = opts || {};
-    var F = opts.force || DEFAULT_FORCE;
+    var F = Object.assign({}, DEFAULT_FORCE, opts.force || {});
     var agg = { compliance: 0, corruption: 0, details: [] };
-    if (!GM || !GM.officeTree || !GM.officeTree.length) return agg;
+    if (!GM || !GM.officeTree || !GM.officeTree.length || !HS) return agg;
     var turn = (GM.turn != null) ? GM.turn : 0;
-
-    _walk(GM.officeTree, function (p, deptName) {
+    var days=_days(GM,opts);
+    if(!days) return agg;
+    var rows=[];
+    HS.walk(GM.officeTree, function(p,n,path) {
+      var powers=_powersOf(p); if(!powers.length && !_isHead(p))return;
+      var state=HS.read(GM,p);
+      rows.push({p:p,dept:n.name || '',path:path,state:state,powers:powers,regionId:p.jurisdictionId || p.regionId || n.jurisdictionId || n.regionId,regionName:p.jurisdiction || n.jurisdiction,faction:p.factionId || n.factionId});
+    });
+    var start=HS.number(opts.startDay,rows.reduce(function(v,row){return Math.max(v,HS.number(row.p._dutyState && row.p._dutyState.elapsedDays,0));},0));
+    var boundaries=[start,start+days];
+    rows.forEach(function(row){row.state.characters.forEach(function(h){
+      var leave=row.p.officeLeave || row.p.leave || h.char.officeLeave || h.char.leave || {};
+      [leave.startDay,leave.endDay].forEach(function(day){if(day!=null && Number(day)>start && Number(day)<start+days && boundaries.indexOf(Number(day))<0)boundaries.push(Number(day));});
+    });});
+    boundaries.sort(function(a,b){return a-b;});
+    function actorsAt(row,day) {return row.state.characters.map(function(h){return HS.availability(GM,h.char,row.p,day);});}
+    var segments=boundaries.slice(1).map(function(end,i) {
+      var day=(end+boundaries[i])/2,loads=new Map(),actors=rows.map(function(row){return actorsAt(row,day);});
+      actors.forEach(function(list){list.forEach(function(a){loads.set(a.char,(loads.get(a.char)||0)+1);});});
+      return {days:end-boundaries[i],actors:actors,shares:actors.map(function(list){return list.length?list.reduce(function(sum,a){return sum+1/loads.get(a.char);},0)/list.length:1;})};
+    });
+    rows.forEach(function(row,rowIndex) {
+      var p=row.p,deptName=row.dept;
       var pwKeys = _powersOf(p);
       if (!pwKeys.length && !_isHead(p)) return;     // 同舆图过滤：只主官/掌权
       var ds = p._dutyState || (p._dutyState = { fulfillment: 50, trend: 'stable', lastTurn: null });
       if (ds.lastTurn === turn) return;              // 本回合已 tick·防重复施加
 
-      var ch = _holderChar(GM, p);
       var prev = (typeof ds.fulfillment === 'number') ? ds.fulfillment : 50;
-      var delta;
-      if (!ch) {
-        delta = -F.vacancyDecay;                     // 出缺·快衰
-      } else {
-        delta = (_capacity(ch, pwKeys) - prev) * F.driftRate;  // 在任·漂向承载力
-      }
-      var next = _clamp(prev + delta, 0, 100);
+      if(!ds.byPower) ds.byPower={};
+      var keys=pwKeys.length?pwKeys:['general'], results={};
+      keys.forEach(function(power) {
+        var current=HS.number(ds.byPower[power],prev), result={next:current,low:0,high:0};
+        for(var bi=0;bi<segments.length;bi++) {
+          var segment=segments[bi], actors=segment.actors[rowIndex], target=current;
+          if(actors.length) target=actors.reduce(function(sum,a){return sum+_capacity(a.char,power)*a.capacity;},0)/actors.length;
+          var step=_advance(current,target,!row.state.occupied,segment.days,F), share=segment.shares[rowIndex];
+          result.low+=step.low*share;result.high+=step.high*share;current=step.next;
+        }
+        result.next=current; results[power]=result;
+        ds.byPower[power]=results[power].next;
+      });
+      var next=keys.reduce(function(sum,k){return sum+ds.byPower[k];},0)/keys.length;
       ds.fulfillment = next;
       ds.trend = next > prev + 0.5 ? 'rising' : next < prev - 0.5 ? 'falling' : 'stable';
       ds.lastTurn = turn;
+      ds.elapsedDays = start+days;
 
       // 域效果（带 × power·仅 v1 已接杠杆）
-      var band = next < F.lowBand ? 'low' : next > F.highBand ? 'high' : 'mid';
-      if (band === 'mid') return;
       var did = {};   // 每杠杆每官最多记一次（防 supervise+impeach 同署双扣腐败）
       pwKeys.forEach(function (k) {
+        var r=results[k];
+        var band=r.next<F.lowBand?'low':r.next>F.highBand?'high':'mid';
         if (k === 'taxCollect' && !did.compliance) {
           did.compliance = 1;
-          var d = band === 'low' ? -F.compLow : F.compHigh;
+          var d = -r.low*F.compLow+r.high*F.compHigh;
+          if(!d) return;
           agg.compliance += d;
-          agg.details.push({ dept: deptName, pos: p.name || '', lever: 'compliance', delta: d, fulfillment: Math.round(next), band: band });
+          agg.details.push({ dept: deptName, pos: p.name || '', positionId:p.id, jurisdiction:p.jurisdictionId || row.path, regionId:row.regionId,regionName:row.regionName,faction:row.faction, lever: 'compliance', delta: d, fulfillment: Math.round(r.next), band: band });
         } else if ((k === 'supervise' || k === 'impeach') && !did.corruption) {
           did.corruption = 1;
-          var c = band === 'low' ? F.corrLow : -F.corrHigh;
+          var c = r.low*F.corrLow-r.high*F.corrHigh;
+          if(!c) return;
           agg.corruption += c;
-          agg.details.push({ dept: deptName, pos: p.name || '', lever: 'corruption', delta: c, fulfillment: Math.round(next), band: band });
+          agg.details.push({ dept: deptName, pos: p.name || '', positionId:p.id, jurisdiction:p.jurisdictionId || row.path, regionId:row.regionId,regionName:row.regionName,faction:row.faction, lever: 'corruption', delta: c, fulfillment: Math.round(r.next), band: band });
         }
       });
     });
@@ -75,6 +105,8 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
   const seat = gm.mapData.regions.find(r => r.id === api.governorOf(gm, circuit, owner).seatRegionId);
   const leaves = allLeaves(gm.adminHierarchy.player), offices = positions(gm.officeTree);
   const oldDuty = offices.map(p => [p, p._dutyState && copy(p._dutyState), p.holder]);
+  const holderKeys=['holder','holderId','actualHolders','actualCount','vacancyCount','occupancyStatus','unrecordedCount','additionalHolders','additionalHolderIds'];
+  const oldHolders=offices.map(p=>[p,holderKeys.map(key=>[key,Object.getOwnPropertyDescriptor(p,key)])]);
   const oldCorruption = leaves.map(leaf => [leaf, leaf.corruption]);
   const own = circuit.members.map(row => row.region).filter(r => api.isPlayerRegion(gm, r));
   const targets = own.flatMap(region => {
@@ -87,10 +119,14 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
   const sorted = targets.slice().sort((a, b) => route.daysBetween(gm.mapData, seat, a.region).days - route.daysBetween(gm.mapData, seat, b.region).days);
   const closest = sorted[0], farthest = sorted[sorted.length - 1];
   const m = context._getDaysPerTurn() / 30, table = [];
+  const dutyAssignments=context.TM.OfficeHolderState.assignments(gm,character).filter(r=>Object.values(r.pos.powers||{}).some(Boolean)||context.getRankLevel(r.pos.rank)<=6);
+  assert(dutyAssignments.length>0);
+  const workloadShare=1/dutyAssignments.length;
 
   // 每组恢复原履职与腐败，回合递增，避免上组影响下组。
   function reset(strength = 'normal') {
     oldDuty.forEach(([p, duty, holder]) => { p.holder = holder; if (duty) p._dutyState = copy(duty); else delete p._dutyState; });
+    oldHolders.forEach(([p,fields])=>fields.forEach(([key,descriptor])=>{if(descriptor)Object.defineProperty(p,key,descriptor);else delete p[key];}));
     oldCorruption.forEach(([leaf, corruption]) => { leaf.corruption = corruption; });
     delete gm.circuitGovernance;
     gm.turn++;
@@ -99,17 +135,20 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
   }
 
   check('本方全图与各道长官对象逐项对齐，读口无写入', () => assertReadOnly(world));
-  check('F=80 起步：先原算法漂移，再逐叶按驿程公式落账', () => {
+  check('F=80 起步：按经过天数漂移并积分，再逐叶按驿程公式落账', () => {
     reset();
     const before = new Map(leaves.map(leaf => [leaf.id, leaf.corruption]));
     const capacity = context.officeDutyView(gm, position).capacity;
-    const result = effects.tick(gm, context.P), F = 80 + (capacity - 80) * 0.3, E = (F - 50) / 50;
+    const taxCapacity=context.officeDutyView(gm,position,{power:'taxCollect'}).capacity;
+    const supervisionCapacity=context.officeDutyView(gm,position,{power:'supervise'}).capacity;
+    const exposure=target=>((target-50)*m+(80-target)*(1-Math.pow(0.7,m))/-Math.log(0.7))/50;
+    const result = effects.tick(gm, context.P), F = capacity+(80-capacity)*Math.pow(0.7,m), E = (F - 50) / 50;
     near(position._dutyState.fulfillment, F, '原漂移'); assert(result.serving >= 1);
     targets.forEach(({ leaf, region }) => {
       const trip = route.daysBetween(gm.mapData, seat, region), R = 1 / (1 + trip.days / 15);
       const row = gm.circuitGovernance.byLeaf[leaf.id]; assert(row.exec > 0);
-      near(row.exec, 0.03 * E * R * m, leaf.name + ' exec');
-      near(leaf.corruption, Math.max(0, before.get(leaf.id) - 0.8 * E * R * m), leaf.name + ' corruption');
+      near(row.exec, 0.03 * exposure(taxCapacity) * workloadShare * R, leaf.name + ' exec');
+      near(leaf.corruption, Math.max(0, before.get(leaf.id) - 0.8 * exposure(supervisionCapacity) * workloadShare * R), leaf.name + ' corruption');
       near(row.R, R, 'R'); near(row.E, E, 'E'); assert.equal(row.days, trip.days); assert.equal(row.estimated, trip.estimated);
     });
     assert(gm.circuitGovernance.byLeaf[closest.leaf.id].exec > gm.circuitGovernance.byLeaf[farthest.leaf.id].exec);
@@ -139,13 +178,13 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
     }
     console.log('[F80-table] ' + JSON.stringify({ monthsPerTurn: m, rows: table }));
   });
-  check('出缺每回合衰减 12，赴任冻结 F 与既有 exec', () => {
-    reset(); effects.tick(gm, context.P); position.holder = '';
+  check('出缺每三十日衰减 12，赴任冻结 F 与既有 exec', () => {
+    reset(); effects.tick(gm, context.P); Object.assign(position,{holder:'',holderId:null,actualHolders:[],actualCount:0,vacancyCount:1,unrecordedCount:0,additionalHolders:[],additionalHolderIds:[],occupancyStatus:'vacant'});
     let negative = false;
     for (let i = 0; i < 8; i++) {
       const F = position._dutyState.fulfillment, exec = gm.circuitGovernance.byLeaf[closest.leaf.id].exec;
-      gm.turn++; effects.tick(gm, context.P); near(position._dutyState.fulfillment, Math.max(0, F - 12), 'vacancy F');
-      if (position._dutyState.fulfillment < 50) {
+      gm.turn++; effects.tick(gm, context.P); near(position._dutyState.fulfillment, Math.max(0, F - 12*m), 'vacancy F per elapsed month');
+      if ((F+position._dutyState.fulfillment)/2 < 50) {
         negative = true;
         const next = gm.circuitGovernance.byLeaf[closest.leaf.id].exec;
         assert(exec > -0.06 ? next < exec : next === -0.06, '失职向下至负封顶');
@@ -200,11 +239,11 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
     assert(officialCard(world, circuit).includes('设置中已关闭'));
     parts.openRegionDossier(farthest.region); assert(context.document.getElementById('ppop').innerHTML.includes(' · 长官之效已关'));
   });
-  check('实际全国加总接线剔除省道，非省道与改前原文副本完全一致', () => {
+  check('全国结算跳过省道写入，并保留兼任长官的共同工作量', () => {
     reset(); context.P.conf.officeDutyStateEnabled = true;
     const source = fs.readFileSync(path.join(__dirname, '../tm-office-dutystate.js'), 'utf8');
-    const original = { getRankLevel: context.getRankLevel }; vm.runInNewContext(source.replace('global.tickOfficeDutyState = tickOfficeDutyState;', 'global.tickOfficeDutyState = ' + LEGACY_TICK + ';'), original);
-    const modern = { getRankLevel: context.getRankLevel }; vm.runInNewContext(source, modern);
+    const original = { getRankLevel: context.getRankLevel, _getDaysPerTurn: context._getDaysPerTurn, TM:{OfficeHolderState:context.TM.OfficeHolderState,OfficeActionEvidence:context.TM.OfficeActionEvidence} }; vm.runInNewContext(source.replace('global.tickOfficeDutyState = tickOfficeDutyState;', 'global.tickOfficeDutyState = ' + LEGACY_TICK + ';'), original);
+    const modern = { getRankLevel: context.getRankLevel, _getDaysPerTurn: context._getDaysPerTurn, TM: original.TM }; vm.runInNewContext(source, modern);
     const fixture = { chars: copy(gm.chars), officeTree: copy(gm.officeTree), turn: gm.turn + 1 };
     const old = copy(fixture), now = copy(fixture);
     assert.equal(JSON.stringify(modern.tickOfficeDutyState(now)), JSON.stringify(original.tickOfficeDutyState(old)), '不传 skip 的全国算法逐字等价');
@@ -218,14 +257,16 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
     } }, () => context._applyOfficeDutyTick(gm));
     assert.equal(skipCalls, 1); assert(aggregate.details.every(row => !names.has(row.pos)));
     governors.forEach(p => assert(!p._dutyState || p._dutyState.lastTurn !== gm.turn));
-    // 从同一基线删掉省道职位，旧算法余下结果应与 skip 路径完全相同。
+    // 对照仍包含所有任职以计算共享工作量；仅从结算结果中剔除省道贡献。
     const expected = copy(fixture); expected.turn = gm.turn;
-    // 只剔除省道职位，原函数自身不接收新 skip 选项。
-    function remove(nodes) { nodes.forEach(dept => { dept.positions = (dept.positions || []).filter(p => !names.has(p.name)); remove(dept.subs || []); }); }
-    remove(expected.officeTree);
-    assert.equal(JSON.stringify(aggregate), JSON.stringify(original.tickOfficeDutyState(expected)));
+    const reference = original.tickOfficeDutyState(expected);
+    const nonGovernorDetails = reference.details.filter(row => !names.has(row.pos));
+    near(aggregate.compliance, nonGovernorDetails.filter(row => row.lever === 'compliance').reduce((sum,row) => sum+row.delta,0), '非省道实征率');
+    near(aggregate.corruption, nonGovernorDetails.filter(row => row.lever === 'corruption').reduce((sum,row) => sum+row.delta,0), '非省道腐败');
+    assert.equal(JSON.stringify(aggregate.details), JSON.stringify(nonGovernorDetails));
     const currentNon = positions(gm.officeTree).filter(p => !governors.has(p));
-    assert.equal(JSON.stringify(currentNon.map(p => p._dutyState)), JSON.stringify(positions(expected.officeTree).map(p => p._dutyState)));
+    const expectedNon = positions(expected.officeTree).filter(p => !names.has(p.name));
+    assert.equal(JSON.stringify(currentNon.map(p => p._dutyState)), JSON.stringify(expectedNon.map(p => p._dutyState)));
   });
   check('通志与非首府方志的标记、数值和转义；设置 setter 三档校验', () => {
     reset(); effects.tick(gm, context.P);
@@ -247,7 +288,7 @@ runSuite('sc-tianqi7-1627', 'smoke-circuit-governor-effects-tianqi', (world, che
   check('单职位不作主官过滤，冻结不初始化；账本存档往返不改下一回合结果', () => {
     const clerk = { name: '书手', holder: '' }, mini = { turn: 1, officeTree: [], chars: [] };
     assert.equal(context.tickDutyPosition(mini, clerk, { frozen: true }).ticked, false); assert(!clerk._dutyState);
-    assert.equal(context.tickDutyPosition(mini, clerk).next, 38); assert.equal(context.tickDutyPosition(mini, clerk).ticked, false);
+    assert.equal(context.tickDutyPosition(mini, clerk).next, 50-12*m); assert.equal(context.tickDutyPosition(mini, clerk).ticked, false);
     reset(); effects.tick(gm, context.P);
     const saved = copy(gm.circuitGovernance), duty = offices.map(p => p._dutyState && copy(p._dutyState)), corr = leaves.map(leaf => leaf.corruption);
     gm.turn++; effects.tick(gm, context.P); const expected = JSON.stringify({ ledger: gm.circuitGovernance, corruption: leaves.map(leaf => leaf.corruption) });

@@ -787,11 +787,10 @@ var MilitarySystems = (function(global) {
       attacker: Math.max(0, Math.round(_toNum((br.casualties || {}).attacker, 0))),
       defender: Math.max(0, Math.round(_toNum((br.casualties || {}).defender, 0)))
     };
-    // 确定性战果 (2026-07-05 owner 定·翻默认 ON·P.conf/battleConfig.deterministicCasualties===false 才关)
+    // 确定性战果：正式伤亡校核规则。
     // AI 漏报(双方皆0)或离谱(超兵力)伤亡时·用 BattleEngine 按兵力/地形/城防/季节确定性核算·治「战果全凭 AI 自由裁量·机械可信度低」·正常合理伤亡不干预(仅在 AI 明显出错/地形强矛盾时接管)
     try {
-      var _detOn = (typeof P !== 'undefined' && P) && !((P.conf && P.conf.deterministicCasualties === false) || (P.battleConfig && P.battleConfig.deterministicCasualties === false));
-      if (_detOn && attackerArmy && defenderArmy && typeof BattleEngine !== 'undefined' && BattleEngine && typeof BattleEngine.resolve === 'function') {
+      if (attackerArmy && defenderArmy && typeof BattleEngine !== 'undefined' && BattleEngine && typeof BattleEngine.resolve === 'function') {
         var _aSz = _toNum(attackerArmy.soldiers != null ? attackerArmy.soldiers : attackerArmy.strength, 0);
         var _dSz = _toNum(defenderArmy.soldiers != null ? defenderArmy.soldiers : defenderArmy.strength, 0);
         var _absurd = function(loss, size) { return !isFinite(loss) || loss < 0 || (size > 0 && loss > size); };
@@ -1444,8 +1443,8 @@ var MarchSystem = (function() {
     var mc = (P && P.battleConfig && P.battleConfig.marchConfig) || {};
     return {
       // ★Wave2·军令移防(2026-07-07)：设置面板「玩法机制·深化」开关(P.conf.marchSystemEnabled)可开行军系统·
-      //   与剧本 battleConfig.marchConfig.enabled 任一为真即开(默认双关=零回归)
-      enabled: mc.enabled === true || !!(typeof P !== 'undefined' && P && P.conf && P.conf.marchSystemEnabled),
+      //   默认开启；玩家显式设置优先，未设置时尊重剧本限制。
+      enabled: P && P.conf && typeof P.conf.marchSystemEnabled === 'boolean' ? P.conf.marchSystemEnabled : mc.enabled !== false,
       baseSpeeds: mc.baseSpeeds || { infantry: 1, cavalry: 2, siege: 0.5 },
       postRoadBonus: mc.postRoadBonus || 0.5,
       winterPenalty: mc.winterPenalty || 0.7,
@@ -1640,9 +1639,17 @@ var MarchSystem = (function() {
     var army = null;
     (GM.armies || []).some(function (a) { if (a && (a.id === armyRef || a.name === armyRef)) { army = a; return true; } return false; });
     if (!army) return { ok: false, reason: '查无此军' };
-    var pf = '';
-    try { (GM.chars || []).some(function (c) { if (c && c.isPlayer) { pf = c.faction || ''; return true; } return false; }); } catch (_pfE) {}
-    if (pf && army.faction && army.faction !== pf) return { ok: false, reason: '非我王师·不受节制' };
+    var pi = (P && P.playerInfo) || GM.playerInfo || {};
+    var pf = (GM.startContext && GM.startContext.playerFactionId) || GM.playerFactionId || pi.factionId || pi.factionName || GM.playerFactionName || GM.playerFaction || '';
+    if (!pf) (GM.chars || []).some(function (c) { if (c && c.isPlayer) { pf = c.factionId || c.faction || ''; return true; } return false; });
+    function factionKey(ref) {
+      var key = String(ref || '');
+      var fac = (GM.facs || []).find(function (f) { return f && (f.id === key || f.name === key); });
+      return fac ? String(fac.id || fac.name) : key;
+    }
+    var af = army.factionId || army.faction;
+    if (!pf || !af) return { ok: false, reason: '军队归属尚未核实·暂不能移防' };
+    if (factionKey(af) !== factionKey(pf)) return { ok: false, reason: '非我王师·不受节制' };
     var from = army.garrison || army.location || '';
     if (!from) return { ok: false, reason: '此军驻地不明' };
     if (from === to) return { ok: false, reason: '此军已驻' + to };

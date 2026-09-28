@@ -1,0 +1,549 @@
+{
+  "militaryTokens": [
+    "military",
+    "soldier",
+    "wage",
+    "arrears",
+    "mutiny",
+    "garrison",
+    "军饷",
+    "欠饷",
+    "哗变",
+    "兵"
+  ],
+  "militaryCategories": [
+    "tax",
+    "military"
+  ],
+  "localTokens": [
+    "local",
+    "revolt",
+    "rebellion",
+    "uprising",
+    "unrest",
+    "peasant",
+    "commoner",
+    "rural",
+    "地方",
+    "民变",
+    "起义",
+    "民"
+  ],
+  "localCategories": [
+    "land",
+    "local"
+  ],
+  "classes": [
+    {
+      "name": "宗室",
+      "militaryScore": 0.7,
+      "localScore": 2,
+      "profile": {
+        "className": "宗室",
+        "pressureProfile": {
+          "tax": 0,
+          "land": 2,
+          "corvee": 0,
+          "military": 0,
+          "keju": 0,
+          "office": 0,
+          "commerce": 0,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "land"
+        ],
+        "evidence": {
+          "land": [
+            "田",
+            "地"
+          ]
+        },
+        "satisfaction": 62,
+        "influence": 42,
+        "demand": "增岁禄·恢复万历末年禄米拖欠·允私自经营皇庄"
+      }
+    },
+    {
+      "name": "士大夫",
+      "militaryScore": 1.35,
+      "localScore": 2.25,
+      "profile": {
+        "className": "士大夫",
+        "pressureProfile": {
+          "tax": 1,
+          "land": 1,
+          "corvee": 0,
+          "military": 0,
+          "keju": 2,
+          "office": 1,
+          "commerce": 0,
+          "local": 1,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "keju",
+          "tax",
+          "land",
+          "office",
+          "local"
+        ],
+        "evidence": {
+          "tax": [
+            "税"
+          ],
+          "land": [
+            "地"
+          ],
+          "keju": [
+            "科举",
+            "士"
+          ],
+          "office": [
+            "官"
+          ],
+          "local": [
+            "地方"
+          ]
+        },
+        "satisfaction": 30,
+        "influence": 88,
+        "demand": "复东林·平六君子冤案·重整吏治·恢复殿试廷推·矿税永罢"
+      }
+    },
+    {
+      "name": "缙绅",
+      "militaryScore": 4.05,
+      "localScore": 4.75,
+      "profile": {
+        "className": "缙绅",
+        "pressureProfile": {
+          "tax": 3,
+          "land": 3,
+          "corvee": 0,
+          "military": 0,
+          "keju": 0,
+          "office": 1,
+          "commerce": 1,
+          "local": 1,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "tax",
+          "land",
+          "office",
+          "commerce",
+          "local"
+        ],
+        "evidence": {
+          "tax": [
+            "税",
+            "赋",
+            "派"
+          ],
+          "land": [
+            "田",
+            "地",
+            "兼并"
+          ],
+          "office": [
+            "官"
+          ],
+          "commerce": [
+            "商"
+          ],
+          "local": [
+            "地方"
+          ]
+        },
+        "satisfaction": 64,
+        "influence": 74,
+        "demand": "免派·维护里甲特权·反对丈田清查·反矿税商税"
+      }
+    },
+    {
+      "name": "自耕农",
+      "militaryScore": 5.05,
+      "localScore": 3.75,
+      "profile": {
+        "className": "自耕农",
+        "pressureProfile": {
+          "tax": 3,
+          "land": 3,
+          "corvee": 1,
+          "military": 1,
+          "keju": 0,
+          "office": 0,
+          "commerce": 0,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "tax",
+          "land",
+          "corvee",
+          "military"
+        ],
+        "evidence": {
+          "tax": [
+            "赋",
+            "饷",
+            "派"
+          ],
+          "land": [
+            "地",
+            "佃",
+            "兼并"
+          ],
+          "corvee": [
+            "役"
+          ],
+          "military": [
+            "饷"
+          ]
+        },
+        "satisfaction": 26,
+        "influence": 25,
+        "demand": "减赋免派·禁止兼并·救荒"
+      }
+    },
+    {
+      "name": "佃农与流民",
+      "militaryScore": 6.05,
+      "localScore": 5,
+      "profile": {
+        "className": "佃农与流民",
+        "pressureProfile": {
+          "tax": 4,
+          "land": 3,
+          "corvee": 0,
+          "military": 1,
+          "keju": 0,
+          "office": 0,
+          "commerce": 0,
+          "local": 1,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "tax",
+          "land",
+          "military",
+          "local"
+        ],
+        "evidence": {
+          "tax": [
+            "赋",
+            "饷",
+            "租",
+            "派"
+          ],
+          "land": [
+            "田",
+            "地",
+            "佃"
+          ],
+          "military": [
+            "饷"
+          ],
+          "local": [
+            "民变"
+          ]
+        },
+        "satisfaction": 10,
+        "influence": 10,
+        "demand": "土地·救食·均田免赋·反辽饷"
+      }
+    },
+    {
+      "name": "商人",
+      "militaryScore": 1,
+      "localScore": 0.25,
+      "profile": {
+        "className": "商人",
+        "pressureProfile": {
+          "tax": 1,
+          "land": 0,
+          "corvee": 0,
+          "military": 0,
+          "keju": 1,
+          "office": 0,
+          "commerce": 2,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "commerce",
+          "tax",
+          "keju"
+        ],
+        "evidence": {
+          "tax": [
+            "税"
+          ],
+          "keju": [
+            "科举"
+          ],
+          "commerce": [
+            "商",
+            "盐"
+          ]
+        },
+        "satisfaction": 50,
+        "influence": 55,
+        "demand": "减商税·开海禁·允子弟科举·保护商路"
+      }
+    },
+    {
+      "name": "工匠",
+      "militaryScore": 1,
+      "localScore": 0,
+      "profile": {
+        "className": "工匠",
+        "pressureProfile": {
+          "tax": 0,
+          "land": 0,
+          "corvee": 1,
+          "military": 1,
+          "keju": 0,
+          "office": 1,
+          "commerce": 0,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "corvee",
+          "military",
+          "office"
+        ],
+        "evidence": {
+          "corvee": [
+            "役"
+          ],
+          "military": [
+            "军"
+          ],
+          "office": [
+            "官"
+          ]
+        },
+        "satisfaction": 36,
+        "influence": 15,
+        "demand": "减匠役·允转业·提高工钱·废匠籍"
+      }
+    },
+    {
+      "name": "军户",
+      "militaryScore": 5.35,
+      "localScore": 1.25,
+      "profile": {
+        "className": "军户",
+        "pressureProfile": {
+          "tax": 1,
+          "land": 1,
+          "corvee": 0,
+          "military": 4,
+          "keju": 0,
+          "office": 0,
+          "commerce": 0,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "military",
+          "tax",
+          "land"
+        ],
+        "evidence": {
+          "tax": [
+            "饷"
+          ],
+          "land": [
+            "田"
+          ],
+          "military": [
+            "军",
+            "饷",
+            "欠饷",
+            "哗变"
+          ]
+        },
+        "satisfaction": 22,
+        "influence": 30,
+        "demand": "补发欠饷·允脱军籍·归还被占屯田"
+      }
+    },
+    {
+      "name": "僧道·外籍",
+      "militaryScore": 1,
+      "localScore": 0.25,
+      "profile": {
+        "className": "僧道·外籍",
+        "pressureProfile": {
+          "tax": 1,
+          "land": 0,
+          "corvee": 0,
+          "military": 0,
+          "keju": 1,
+          "office": 0,
+          "commerce": 1,
+          "local": 0,
+          "corruption": 0
+        },
+        "primaryCategories": [
+          "tax",
+          "keju",
+          "commerce"
+        ],
+        "evidence": {
+          "tax": [
+            "赋"
+          ],
+          "keju": [
+            "士"
+          ],
+          "commerce": [
+            "市"
+          ]
+        },
+        "satisfaction": 55,
+        "influence": 18,
+        "demand": "保护寺产·允传教·开放互市"
+      }
+    }
+  ],
+  "withEcology": [
+    {
+      "kind": "military-wage-arrears",
+      "classes": [
+        {
+          "name": "宗室",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "士大夫",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "缙绅",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "自耕农",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "佃农与流民",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "商人",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "工匠",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "军户",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        },
+        {
+          "name": "僧道·外籍",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        }
+      ]
+    }
+  ],
+  "withoutEcology": [
+    {
+      "kind": "military-wage-arrears",
+      "classes": [
+        {
+          "name": "军户",
+          "satisfactionDelta": -5,
+          "influenceDelta": 1,
+          "demand": "pay military wage arrears",
+          "status": "",
+          "unrestDelta": {
+            "grievance": -4,
+            "revolt": -3
+          },
+          "reason": "military wage arrears"
+        }
+      ]
+    }
+  ]
+}

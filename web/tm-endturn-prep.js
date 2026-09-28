@@ -511,6 +511,7 @@ function _endTurn_collectInput() {
       if (typeof recordPlayerDecision === 'function') recordPlayerDecision('edict', '颁行诏书:' + _decreeText.substring(0, 80));
     }
   }
+  if (typeof TM !== 'undefined' && TM.EdictOutcomes) TM.EdictOutcomes.collect(GM, edicts, GM.turn);
   if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({turn:GM.turn,time:getTSText(GM.turn),edicts:edicts,xinglu:xinglu,memorials:memRes,edictsSource:_edictsSource});
   resetTurnChanges();
   // 注意：不在此处清空 _couplingReport/_edictExecutionReport/_buildingOutputReport/_npcIntents/_healthAlerts/_decisionAlerts

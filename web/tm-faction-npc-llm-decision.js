@@ -899,9 +899,9 @@
   }
 
   // S5·营建机宜：本派各地建筑之需(NPC 势力 LLM 自主营建用·借 A4 活字段——边警高宜筑防/官缺重宜兴学/田邑可垦)。
-  //   仅本派叶·降序取需最急者·无需则返空(_pushSection 不注入·零回归)。开关 factionAgentEnabled(势力 agent 总闸)。
+  //   仅本派叶·降序取需最急者·无需则返空(_pushSection 不注入·零回归)。正式势力自主决策。
   function _formatBuildOpportunities(fac) {
-    if (!(global.P && (typeof agentFlagOn === 'function' ? agentFlagOn('factionAgentEnabled') : (global.P.conf && global.P.conf.factionAgentEnabled)))) return [];
+    if (!(global.P)) return [];
     if (!fac || !fac.name) return [];
     var own = _findAdminTreeForFac(fac);
     if (!own || !own.tree) return [];
@@ -1564,8 +1564,8 @@
     var extra = [];
     // G1·2026-05-22·智力反喂 3 段·必须在世界态势 / SC16 / 候选目标之前·让 LLM 先看见"自己的过去"再读"当前局面"
     _pushSection(extra, 'OWN_STRATEGIC_MEMORY', _formatOwnStrategicMemory(fac));
-    // ③-S2 前瞻式目标栈（开关 P.conf.factionGoalStackEnabled·默认关·关=本段不注入·prompt 等同现状）
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionGoalStackEnabled') : (P.conf && P.conf.factionGoalStackEnabled)) && global.TM && global.TM.FactionGoalStack && typeof global.TM.FactionGoalStack.formatForPrompt === 'function') {
+    // ③-S2 前瞻式目标栈（正式玩法·长期目标进入推演）
+    if (global.P && global.TM && global.TM.FactionGoalStack && typeof global.TM.FactionGoalStack.formatForPrompt === 'function') {
       try {
         var _goalTxt = global.TM.FactionGoalStack.formatForPrompt(fac);
         if (_goalTxt) _pushSection(extra, 'ACTIVE_GOALS', String(_goalTxt).split('\n').filter(function(x){ return x && x.trim(); }));
@@ -1575,8 +1575,8 @@
     if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('courtDebateEnabled') : (P.conf && P.conf.courtDebateEnabled)) && typeof _formatCourtDebateMemory === 'function') {
       _pushSection(extra, 'COURT_DEBATE_RECENT', _formatCourtDebateMemory());
     }
-    // 【势力 agent 社会·双向外交 S1】注入其他势力向本派提出的外交动议·让其按自己目标/宿怨/姿态回应(开关 factionAgentEnabled·默认关)
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionAgentEnabled') : (P.conf && P.conf.factionAgentEnabled)) && global.TM && global.TM.FactionDiplomacy) {
+    // 【势力 agent 社会·双向外交 S1】注入其他势力向本派提出的外交动议·让其按自己目标/宿怨/姿态回应(正式势力自主行为)
+    if (global.P && global.TM && global.TM.FactionDiplomacy) {
       _pushSection(extra, 'INCOMING_PROPOSALS', global.TM.FactionDiplomacy.formatIncomingProposals(fac, _currentTurn()));
       // 【S3】注入君上(玩家)对本派近期递交之议的答复(已纳/见拒)·让势力据真实结果调整对君策·非仅邦交 delta 间接推
       if (typeof global.TM.FactionDiplomacy.formatPlayerProposalOutcomes === 'function') {
@@ -1634,10 +1634,10 @@
     user += '{\n';
     user += '  "rationale": "主君考量·80-250 字·须含因果链·格式·Phase 1·X (cause: 何故而做)。Phase 2·Y (因 X 后果·或对 X 失败的补救)。Phase 3·Z (后续预防 / 长期承接·可选)。每 phase 必明 action_type + target·若只有一 phase 则只写 Phase 1·不可省略 cause 描述。",\n';
     user += '  "actions": [ ...本回合所有动作·0-8 条·每条按下表填字段 ]';
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionGoalStackEnabled') : (P.conf && P.conf.factionGoalStackEnabled))) {
+    if (global.P) {
       user += ',\n  "goalUpdates": { "advance":[{"id":"<ACTIVE_GOALS 中的目标 id>","stepDone":true,"note":"<本回合进展>"}], "resolve":[{"id":"<目标 id>","status":"achieved|failed|abandoned"}], "newGoals":[{"desc":"<新目标·勿与现有重复>","horizon":"long|short","steps":[{"desc":"<分步>"}],"priority":0}] }';
     }
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionAgentEnabled') : (P.conf && P.conf.factionAgentEnabled))) {
+    if (global.P) {
       user += ',\n  "posture": "本势力当前战略姿态(2-6字·如 扩张/守成/隐忍/结盟/孤立/复仇/观望/决战/称霸)·应随局势演进·若较上回合转变须在 rationale 说明因由"';
       user += ',\n  "proposals": [ {"toFaction":"<目标势力名·可含玩家方>","type":"alliance|nonaggression|deal|joint_action|ultimatum|peace","terms":"<条款·40字>","rationale":"<为何向其提此议·30字>"} ]·0-3 条·仅当确有外交意图主动向他派(或玩家)提议·不必每回合都提';
       user += ',\n  "proposalResponses": [ {"proposalId":"<INCOMING_PROPOSALS 段中该提议的 id·精确回应防同回合多提议错配>","from":"<提议来源势力名>","type":"<提议类型>","decision":"accept|reject|counter","reason":"<按你自己目标/宿怨/姿态权衡·30字>","counterTerms":"<若 counter 才填·还价条款·40字>"} ]·逐条回应 INCOMING_PROPOSALS 段中收到的提议(务必填其 id)·无收到则空数组';
@@ -1659,7 +1659,7 @@
     user += '\n约束: 单轨 actions[]·不要再用 memorials/edict/chaoyi/office 顶层字段 (已废)·所有动作放 actions[]。type/enum 必须用给定值·content 必须中文古文风。';
     user += '\nTARGET RULE: char/army/province/faction names must come from ACTION_CANDIDATES or the visible context above. Prefer concrete actions[] that operationalize SC16_WORLD_DIRECTIVE; do not invent invisible characters or armies.';
     user += '\nLIMITS: actions[] 长度 0-8·宁少勿多·空数组也允许。';
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionGoalStackEnabled') : (P.conf && P.conf.factionGoalStackEnabled))) {
+    if (global.P) {
       user += '\nGOALS: 见 ACTIVE_GOALS 段·连贯推进既有目标(每回合通常 advance 一步)·达成则 resolve·世界剧变才 newGoals(≤1/回合)·goalUpdates.id 必须用 ACTIVE_GOALS 中真实 id·与 actions/rationale 保持一致。';
     }
 
@@ -1771,6 +1771,7 @@
         lastError = (e && e.message) || String(e || 'parse failed');
         failureKind = lastPossibleTruncation ? 'truncated_json' : (/timeout/i.test(lastError) ? 'timeout' : 'call_or_parse');
         try { console.warn('[npc-llm-decision] parse/call failed attempt ' + (i + 1), lastError); } catch(_){}
+        if ((e && (e._aiRetryExhausted || e.message === 'LLM timeout' || (typeof global._aiErrorIsTerminal === 'function' && global._aiErrorIsTerminal(e))))) { attempts = i + 1; break; }
       }
     }
     return { parsed:null, diagnostics:{ kind:failureKind, error:lastError, rawPreview:lastRawPreview, rawLength:lastRawLength, possibleTruncation:lastPossibleTruncation, attempts:attempts, maxTokens:maxTokens } };
@@ -1861,6 +1862,9 @@
       }), timeoutMs);
       var toolCalls = (r1 && Array.isArray(r1.toolCalls)) ? r1.toolCalls.slice(0, 4) : [];  // 护栏 ≤4/势力
       if (!toolCalls.length) {
+        if (r1 && r1.error && ((r1.error._aiRetryExhausted || (typeof global._aiErrorIsTerminal === 'function' && global._aiErrorIsTerminal(r1.error))) || /^(?:aborted|tool-(?:call-failed|http-error|timeout|stale))$/.test(r1.error.code || ''))) {
+          return { parsed:null, diagnostics:{ kind:'call_or_parse', error:r1.error.code || 'tool-call-failed', status:r1.error.status || 0, via:'tools', rounds:1, maxTokens:maxTokens } };
+        }
         // 未查工具 → r1.text 即决策 JSON(简单回合·1 轮即出·更省)
         var p0 = _parseDecisionJson((r1 && r1.text) || '');
         if (p0) { _recordFacToolStat(fac.name, 1, 0, []); return { parsed: p0, diagnostics: { kind: 'ok', via: 'tools', rounds: 1, toolCalls: 0, maxTokens: maxTokens } }; }
@@ -1884,6 +1888,7 @@
       if (p2) { _recordFacToolStat(fac.name, 2, _toolNames.length, _toolNames); return { parsed: p2, diagnostics: { kind: 'ok', via: 'tools', rounds: 2, toolCalls: _toolNames.length, maxTokens: maxTokens } }; }
       return _callLLMDecision(_buildPrompt(fac), opts);  // 第二轮没解析出 → 回落原单发(保决策不丢)
     } catch (e) {
+      if ((e && (e._aiRetryExhausted || e.message === 'LLM timeout' || (typeof global._aiErrorIsTerminal === 'function' && global._aiErrorIsTerminal(e))))) return { parsed:null, diagnostics:{ kind:'call_or_parse', error:(e && e.message) || 'tool-call-failed', status:e && e.status || 0, via:'tools', maxTokens:maxTokens } };
       try { console.warn('[npc-llm-decision·tools] fallback to single-shot:', (e && e.message) || e); } catch (_) {}
       return _callLLMDecision(_buildPrompt(fac), opts);  // 任何异常 → 回落原单发
     }
@@ -2593,15 +2598,15 @@
       return { skipped: true, reason: 'decision invalid', fallbackToTemplate: true };
     }
     var summary = _applyDecision(fac, decision);
-    // ③-S3 闭环：消费 LLM 报告的 goalUpdates·更新前瞻式目标栈（开关 P.conf.factionGoalStackEnabled·默认关）
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionGoalStackEnabled') : (P.conf && P.conf.factionGoalStackEnabled)) && global.TM && global.TM.FactionGoalStack && decision && decision.goalUpdates) {
+    // ③-S3 闭环：消费 LLM 报告的 goalUpdates·更新前瞻式目标栈（正式目标栈）
+    if (global.P && global.TM && global.TM.FactionGoalStack && decision && decision.goalUpdates) {
       try {
         var _gu = global.TM.FactionGoalStack.applyUpdates(fac, decision.goalUpdates, _currentTurn());
         if (summary && typeof summary === 'object') summary.goalUpdates = _gu;
       } catch (_guE) {}
     }
-    // 【势力 agent 社会·双向外交 S1】先回应收到的提议(结盟/结怨/还价)·再发起本派新提议(存目标派·跨回合)·开关 factionAgentEnabled·默认关·零额外调用(骑本次决策)
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionAgentEnabled') : (P.conf && P.conf.factionAgentEnabled)) && global.TM && global.TM.FactionDiplomacy && decision) {
+    // 【势力 agent 社会·双向外交 S1】先回应收到的提议(结盟/结怨/还价)·再发起本派新提议(存目标派·跨回合)·正式势力自主行为·零额外调用(骑本次决策)
+    if (global.P && global.TM && global.TM.FactionDiplomacy && decision) {
       try {
         if (Array.isArray(decision.proposalResponses) && decision.proposalResponses.length) global.TM.FactionDiplomacy.applyResponses(fac, decision.proposalResponses, _currentTurn());
         if (Array.isArray(decision.proposals) && decision.proposals.length) {
@@ -2610,9 +2615,9 @@
         }
       } catch (_dpE) {}
     }
-    // S5·NPC 自主营建（+完善）：本派据地方之需自主兴造 + 自修半损建筑(骑本次决策·零额外调用·开关 factionAgentEnabled·默认关)。
+    // S5·NPC 自主营建（+完善）：本派据地方之需自主兴造 + 自修半损建筑(骑本次决策·零额外调用·正式势力自主行为)。
     //   新建读 raw.builds(未校验·绕开 validateDecision·同 proposals/goalUpdates)·落本派叶过既有工期 tick·扣本派库银·谍报可观测。
-    if (global.P && (typeof agentFlagOn==='function' ? agentFlagOn('factionAgentEnabled') : (P.conf && P.conf.factionAgentEnabled))) {
+    if (global.P) {
       try {
         if (raw && Array.isArray(raw.builds) && raw.builds.length) {
           var _lb = _landFactionBuilds(fac, raw.builds);

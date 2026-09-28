@@ -176,6 +176,7 @@
       // §4 sc1 写回（applyAITurnChanges + 各字段族 GM 落地·~4000 行）
       // ═══════════════════════════════════════════════════════════
       if(p1){
+        if (TM.EdictEffects) TM.EdictEffects.begin(GM, P, ctx, p1);
         if (!TM.BuildingOrders && ctx.input.buildingOrders && ctx.input.buildingOrders.ids.length) throw new Error('营造案写回模块未加载，未执行旧版兼容写法');
         if (TM.BuildingOrders) TM.BuildingOrders.protectOutput(GM, P, ctx.input.buildingOrders, p1);
         var buildingTransaction = TM.BuildingOrders && TM.BuildingOrders.begin(GM, P, ctx.input.buildingOrders);
@@ -222,7 +223,8 @@
           var _innerEmo = /痛|苦|忧|恨|怒|惧|恐|悲|泪/.test(playerInner) ? '忧' : /喜|乐|慰|畅|笑/.test(playerInner) ? '喜' : '平';
           NpcMemorySystem.remember(P.playerInfo.characterName, playerInner, _innerEmo, 6);
         }
-        if(p1.resource_changes){
+        if (TM.EdictEffects) TM.EdictEffects.applyAuxiliary(GM, ctx);
+        if(!TM.EdictEffects && p1.resource_changes){
           Object.entries(p1.resource_changes).forEach(function(e){
             var d=parseFloat(e[1]);if(isNaN(d))return;
             if(GM.vars[e[0]]){
@@ -252,7 +254,14 @@
         // 处理 NPC 自主行为（AI 报告的 NPC 独立行动）
         if (p1.npc_actions && Array.isArray(p1.npc_actions)) {
           p1.npc_actions.forEach(function(act) {
-            if (!act.name || !act.action) return;
+            if (!act || !act.action) return;
+            var _officeIdentity = global.TM && global.TM.OfficeHolderState;
+            if (_officeIdentity && (act.characterId != null || act.actorId != null)) {
+              var _stableActor = _officeIdentity.identity(GM, act.characterId != null ? act.characterId : act.actorId, '').char;
+              if (!_stableActor) return;
+              act.name = _stableActor.name;
+            }
+            if (!act.name) return;
             // 2.3: 模糊匹配名称（防止AI用字/号/略称导致匹配失败）
             var _ff = typeof _fuzzyFindChar === 'function' ? _fuzzyFindChar : null;
             if (_ff && act.name && !findCharByName(act.name)) {
@@ -264,7 +273,7 @@
               if (_ft) act.target = _ft.name;
             }
 
-            if (!_tmNpcLedgerPreflight({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '' }, 'AI NPC行动已阻止')) return;
+            if (!_tmNpcLedgerPreflight({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, characterId: act.characterId != null ? act.characterId : act.actorId, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '' }, 'AI NPC行动已阻止')) return;
 
             // 官制活化 ④B·npc_action → 履职反哺（开 officeDutyStateEnabled·官的本回合行止定性回调其履职度·与才五常基线漂移叠加·关则零回归）
             try {
@@ -592,7 +601,7 @@
             var _pubReason = act.publicReason || act.intent || '';
             var _evtText = act.name + '：' + act.action + (act.target ? '（对象：' + act.target + '）' : '') + (act.result ? ' → ' + act.result : '');
             if (_pubReason) _evtText += '（' + _pubReason + '）';
-            _tmNpcLedgerRecord({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '', result: act.result || '', publicReason: _pubReason, motivePrivate: act.privateMotiv || act.innerThought || '', intent: act.intent || '', status: mechanicallyExecuted ? 'applied' : 'narrative_only', uiRoutes: ['event', 'memory'] });
+            _tmNpcLedgerRecord({ source: 'main_ai:npc_actions', kind: 'npc_action', actor: act.name, characterId: act.characterId != null ? act.characterId : act.actorId, behaviorType: act.behaviorType || act.type || 'unknown', type: act.type || act.behaviorType || 'unknown', target: act.target || '', action: act.action || '', result: act.result || '', publicReason: _pubReason, motivePrivate: act.privateMotiv || act.innerThought || '', intent: act.intent || '', status: mechanicallyExecuted ? 'applied' : 'narrative_only', uiRoutes: ['event', 'memory'] });
             addEB('NPC自主', _evtText);
             // 角色弧线记录真实动机（玩家通过人物志可窥见深层故事）
             var _arcDesc = act.action;
@@ -1325,9 +1334,12 @@
           p1.party_changes.forEach(function(pc) {
             if (!pc.name) return;
             var party = null;
-            if (GM.parties) GM.parties.forEach(function(p) { if (p.name === pc.name) party = p; });
+            if (TM.EdictEffects) party=TM.EdictEffects.entity(GM,'parties',pc.id||pc.partyId||pc.name);
+            else if (GM.parties) GM.parties.forEach(function(p) { if (p.name === pc.name) party = p; });
             if (!party) return;
-            if (pc.influence_delta) {
+            if (TM.EdictEffects && pc.cohesion_delta) TM.EdictEffects.partyNumeric(GM, party, 'cohesion', Number(pc.cohesion_delta), pc.reason || '诏令推演', pc);
+            if (TM.EdictEffects && pc.influence_delta) TM.EdictEffects.partyNumeric(GM, party, 'influence', Number(pc.influence_delta), pc.reason || '诏令推演', pc);
+            if (!TM.EdictEffects && pc.influence_delta) {
               var oldI = party.influence || 50;
               party.influence = clamp(oldI + clamp(parseInt(pc.influence_delta)||0, -20, 20), 0, 100);
               recordChange('parties', pc.name, 'influence', oldI, party.influence, pc.reason || 'AI\u63A8\u6F14');
@@ -1380,7 +1392,8 @@
           p1.class_changes.forEach(function(cc) {
             if (!cc.name) return;
             var cls = null;
-            if (GM.classes) GM.classes.forEach(function(c) { if (c.name === cc.name) cls = c; });
+            if (TM.EdictEffects) cls=TM.EdictEffects.entity(GM,'classes',cc.id||cc.classId||cc.name);
+            else if (GM.classes) GM.classes.forEach(function(c) { if (c.name === cc.name) cls = c; });
             if (!cls) return;
             var _classWrite = null;
             if (TM && TM.ClassEngine && typeof TM.ClassEngine.applyClassChange === 'function') {
@@ -1391,6 +1404,7 @@
               }
             }
             if (_classWrite && _classWrite.ok) {
+              if (TM.EdictEffects) ['satisfaction','influence'].forEach(function(k){TM.EdictEffects.recordApplied(GM,cc,{ok:true,old:_classWrite.before[k],new:_classWrite.after[k]},'classes.'+(cls.id||cls.name)+'.'+k);});
               recordChange('classes', cc.name, 'satisfaction', _classWrite.before.satisfaction, _classWrite.after.satisfaction, cc.reason || 'AI\u63A8\u6F14');
               recordChange('classes', cc.name, 'influence', _classWrite.before.influence, _classWrite.after.influence, cc.reason || 'AI\u63A8\u6F14');
             } else {
@@ -4208,7 +4222,7 @@
             }
 
             // 应用 currentEffects 到资源/阶层
-            if (u.currentEffects && typeof u.currentEffects === 'object') {
+            if (!u._effectsRouted && u.currentEffects && typeof u.currentEffects === 'object') {
               Object.keys(u.currentEffects).forEach(function(k) {
                 if (/^(stateTreasury|privateTreasury|guoku|neitang)(?:\.(money|grain|cloth))?$/.test(k)) {
                   _tmRecordSemanticFailure('fiscal',u.edictId,'诏令收支须另具财务凭据，本项尚未入账');
@@ -4223,7 +4237,7 @@
               });
             }
             // 阶层影响 → classSatisfaction / unrest 联动
-            if (u.classesAffected && typeof u.classesAffected === 'object' && GM.classes) {
+            if (!u._effectsRouted && u.classesAffected && typeof u.classesAffected === 'object' && GM.classes) {
               Object.keys(u.classesAffected).forEach(function(cls) {
                 var info = u.classesAffected[cls] || {};
                 var impact = parseFloat(info.impact) || 0;
@@ -4281,7 +4295,7 @@
                 var infDelta = parseFloat(info.influence_delta) || 0;
                 var pObj = (GM.parties || []).find(function(pp) { return pp.name === pn; });
                 if (pObj) {
-                  if (infDelta) pObj.influence = Math.max(0, Math.min(100, (pObj.influence || 50) + infDelta));
+                  if (!u._effectsRouted && infDelta) pObj.influence = Math.max(0, Math.min(100, (pObj.influence || 50) + infDelta));
                   // 写入议程演进
                   if (info.agenda_impact || info.reason) {
                     if (!Array.isArray(pObj.agenda_history)) pObj.agenda_history = [];
@@ -4363,17 +4377,17 @@
         if (p1.merit_changes && Array.isArray(p1.merit_changes) && p1.merit_changes.length > 0 && window.CharEconEngine) {
           var _mcPName = (P.playerInfo && P.playerInfo.characterName) || '';
           p1.merit_changes.forEach(function(mc) {
-            if (!mc || !mc.name) return;
+            if (!mc || (!mc.name && mc.characterId == null)) return;
             if (_mcPName && mc.name === _mcPName) return; // 君上功名不受 AI 改
-            var _mch = (typeof findCharByName === 'function') ? findCharByName(mc.name) : null;
-            if (!_mch) return;
+            var _mch = global.TM && global.TM.OfficeHolderState ? global.TM.OfficeHolderState.identity(GM, mc.characterId, mc.name).char : ((typeof findCharByName === 'function') ? findCharByName(mc.name) : null);
+            if (!_mch || _mch.isPlayer || (_mcPName && _mch.name === _mcPName)) return;
             try {
               if (mc.kind === 'failure' && window.TMPromotion) {
                 var _fd = TMPromotion.failureDelta(mc.failureType || 'task_botched');
                 if (_fd) { CharEconEngine.adjustVirtueMerit(_mch, _fd, mc.reason || mc.failureType || '失职'); addEB('功名', mc.name + ' 因「' + (mc.reason || mc.failureType || '失职') + '」失功名 ' + Math.abs(_fd)); }
               } else {
-                if (CharEconEngine.addAchievement) CharEconEngine.addAchievement(_mch, Math.min(20, Number(mc.amount) || 8), mc.reason || '立功');
-                addEB('功名', mc.name + ' 以「' + (mc.reason || '功绩') + '」著功名');
+                var _awarded = CharEconEngine.addAchievement && CharEconEngine.addAchievement(_mch, Math.min(20, mc.amount == null ? 8 : Number(mc.amount)), mc.reason || '立功', mc);
+                if (_awarded) addEB('功名', _mch.name + ' 以「' + (mc.reason || '功绩') + '」著功名');
               }
             } catch (_mce) {}
           });
@@ -4951,85 +4965,10 @@
             });
           }
         }
-        // 1.1: 处理诏令执行反馈——支持跨回合长期诏令的追报+连锁效应累积
-        if (p1.edict_feedback && Array.isArray(p1.edict_feedback) && GM._edictTracker) {
-          p1.edict_feedback.forEach(function(ef) {
-            if (TM && TM.ImperialOrders) ef = TM.ImperialOrders.guardEdict(GM, ef);
-            if (!ef.content && !ef.edictId) return;
-            var tracker = null;
-            // Path 1: 按 edictId 精确匹配（AI 若遵循指示会填 edictId）
-            if (ef.edictId) {
-              tracker = GM._edictTracker.find(function(t) { return t.id === ef.edictId; });
-            }
-            // Path 2: 按 content 模糊匹配本回合 pending
-            if (!tracker && ef.content) {
-              tracker = GM._edictTracker.find(function(t) {
-                return t.turn === GM.turn && t.status === 'pending' && t.content.indexOf(ef.content.slice(0, 10)) >= 0;
-              });
-            }
-            // Path 3: 跨回合匹配·对前回合未收束诏令追报
-            if (!tracker && ef.content) {
-              tracker = GM._edictTracker.find(function(t) {
-                return t.turn < GM.turn && (t.status==='executing'||t.status==='partial'||t.status==='obstructed'||t.status==='pending_delivery')
-                  && t.content.indexOf(ef.content.slice(0, 10)) >= 0;
-              });
-            }
-            // Path 4: 按类别匹配本回合 pending
-            var _efficacyUnsure = false;
-            if (!tracker) {
-              tracker = GM._edictTracker.find(function(t) { return t.turn === GM.turn && t.status === 'pending'; });
-              _efficacyUnsure = !!tracker;
-            }
-            if (tracker && !tracker._reliefCaseId) {
-              // Content-only legacy feedback must pass verification after its exact tracker is resolved.
-              if (TM && TM.ImperialOrders) ef = TM.ImperialOrders.guardEdict(GM, Object.assign({}, ef, {edictId:tracker.id}));
-              // 诏令效力：常制/有期/一次性、要点与撤销（tm-edict-efficacy.js）·兜底匹配的不采纳·防判到别的诏令上
-              if (!_efficacyUnsure && TM && TM.EdictEfficacy) TM.EdictEfficacy.judge(GM, tracker, ef);
-              // 远方诏令——信使未送达前强制pending_delivery
-              if (tracker._remoteTargets && tracker._letterIds && tracker._letterIds.length > 0) {
-                var _allDelivered = tracker._letterIds.every(function(lid) {
-                  var lt = (GM.letters||[]).find(function(l){ return l.id === lid; });
-                  return lt && (lt.status === 'delivered' || lt.status === 'returned' || lt.status === 'replying');
-                });
-                if (!_allDelivered) {
-                  tracker.status = 'pending_delivery';
-                  tracker.feedback = ef.feedback || '信使尚在途中，目标NPC未收到诏令';
-                  tracker.progressPercent = 0;
-                  return;
-                }
-              }
-              // 旧回合追报·连锁效应累积（不覆盖·累加）
-              if (tracker.turn < GM.turn) {
-                if (!tracker._chainEffects) tracker._chainEffects = [];
-                tracker._chainEffects.push({
-                  turn: GM.turn, status: ef.status || 'executing',
-                  effect: ef.feedback || ef.content || '',
-                  progress: parseInt(ef.progressPercent) || tracker.progressPercent || 0
-                });
-                // 累积进度·不倒退
-                var newProg = parseInt(ef.progressPercent) || 0;
-                if (newProg > (tracker.progressPercent || 0)) tracker.progressPercent = newProg;
-                tracker.status = ef.status || tracker.status;
-                tracker.feedback = ef.feedback || tracker.feedback;
-              } else {
-                // 本回合新诏令·初次设置
-                tracker.status = ef.status || 'executing';
-                tracker.assignee = ef.assignee || tracker.assignee || '';
-                tracker.feedback = ef.feedback || '';
-                tracker.progressPercent = parseInt(ef.progressPercent) || (ef.status === 'completed' ? 100 : 50);
-              }
-              // 受阻/完成推送到 eventBus 供 数值变化说明立即展示
-              if (ef.status === 'obstructed') {
-                addEB('\u8BCF\u4EE4\u53D7\u963B', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u6267\u884C\u53D7\u963B'));
-              } else if (ef.status === 'completed') {
-                addEB('\u8BCF\u4EE4\u529F\u6210', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u5DF2\u8F7D\u65BD\u884C'));
-              } else if (ef.status === 'partial') {
-                addEB('\u8BCF\u4EE4\u90E8\u884C', tracker.category + '\uFF1A' + tracker.content.slice(0,40) + ' \u2014 ' + (ef.feedback || '\u90E8\u5206\u6267\u884C'));
-              } else if (tracker.turn < GM.turn) {
-                addEB('\u8BCF\u4EE4\u8FDB\u5C55', tracker.category + '\uFF1A' + tracker.content.slice(0,30) + ' \u8FDB\u5C55 ' + (tracker.progressPercent||0) + '% \u2014 ' + (ef.feedback || ''));
-              }
-            }
-          });
+        // Same-turn execution receipts are derived after all domain writers finish.
+        if (TM.EdictOutcomes) {
+          var _edictEffects = TM.EdictEffects ? TM.EdictEffects.finish(GM, ctx, p1) : [];
+          ctx.record.edictReports = TM.EdictOutcomes.receive(GM, p1, ctx.input.edicts || {}, GM.turn, _edictEffects);
         }
       }else{
         shizhengji="\u63A8\u6F14\u5B8C\u6210";

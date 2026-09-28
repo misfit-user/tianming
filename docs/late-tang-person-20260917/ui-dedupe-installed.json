@@ -1,0 +1,15 @@
+{
+  "backup": "C:\\Users\\37814\\Desktop\\tianming\\.bak-tang-ui-20260917-175152",
+  "files": [
+    {
+      "file": "web\\tm-office-system.js",
+      "before": "89f80fac04d09b37c9a82b18678e4450e75a8efed2053b2cb6ff911b0abb0a07",
+      "after": "b226d5e65dec6aa9499cc9ef4de29ae0151f0ea47d7be17f116941e2943a061b"
+    },
+    {
+      "file": "web\\tm-renwu-tuzhi.js",
+      "before": "ada672792f15c57a70a37fddea1112794f68000ca71ed08b44bced4a7dd9e2fe",
+      "after": "87a8582fc2937387fc3ac214f3879bd1bd1014d0ef4453bbed4414b6bfbfecca"
+    }
+  ]
+}

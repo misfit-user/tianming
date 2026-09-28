@@ -52,7 +52,7 @@ for (const s of (selectedCase < 4 ? [scenario(Math.floor(selectedCase / 2))] : [
       assert.equal(gm._savedNpcDecisionDiagnostics.length, 120);
       assert(gm._savedRenli); assert(gm._savedGovernment); assert(gm._savedEventBus); assert(gm._savedEventOpinions);
       assert.equal(gm._chronicleSysState.version, 3); assert.equal(gm._warTruces.truces.example, 900);
-      assert.equal(p.conf.memorySynthesisEnabled, false); assert.equal(p.conf._saveSchemaVersion, '1.3.0-ai-upgrade');
+      assert.equal(p.conf.memorySynthesisEnabled, false); assert.equal(p.conf._saveSchemaVersion, h.c.SAVE_SCHEMA_VERSION);
       assert.equal(typeof gm.population.national.mouths, 'number');
       equalComplete(JSON.stringify(fixture), before, 'live GM/P unchanged by normalization and drafts');
     }

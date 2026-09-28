@@ -44,17 +44,34 @@ function mkCtx(opts) {
   return ctx;
 }
 
+// 原生政区、地图来源以及旧经济信号必须相容，不能随机选中别国领地。
+{
+  const c = mkCtx({conf:{}});
+  c.GM.startContext = {playerFactionId:'fac-song'};
+  c.GM.facs = [{id:'fac-song',name:'宋'},{id:'fac-jin',name:'金'}];
+  c.GM.mapData = {regions:[{id:'r1',name:'开封府',currentOwner:'fac-song'},{id:'r2',name:'大同府',currentOwner:'fac-jin'}]};
+  const source = {disasterLevel:0.8}; c.GM.regions = {r1:source};
+  const list = c._dsimRegions();
+  ok(list.length===1 && list[0].name==='开封府' && list[0].disasterLevel===0.8, '真实地图名、玩家归属和旧准灾信号一致');
+  ok(source.id===undefined, '只读地区选择不会给旧账本附加 ID');
+  let spawned;
+  for(let t=1;t<=60&&!spawned;t++){c.GM.turn=t;spawned=c.simulateDisasterGenesis();}
+  ok(spawned && spawned.region==='开封府' && Math.abs(source.disasterLevel-0.32)<1e-9, '灾异落在本国真实地名，准灾释放回原信号');
+  c.GM.adminHierarchy = {player:{divisions:[{id:'route',name:'京畿路'}]}};
+  ok(c._dsimRegions()[0].name==='京畿路', '国家环境优先使用玩家上级行政区');
+}
+
 /* ── §a 发生器行为 ─────────────────────────────────────────────── */
 console.log('— §a · 发生器行为 —');
 (function () {
-  // flag 默认关：零行为
-  var c0 = mkCtx({ conf: {} });
-  ok(c0.simulateDisasterGenesis() === null && c0.GM.activeDisasters.length === 0, 'flag 默认关：零行为(零回归)');
+  // 显式关闭：零行为
+  var c0 = mkCtx({ conf: { disasterSimEnabled: false } });
+  ok(c0.simulateDisasterGenesis() === null && c0.GM.activeDisasters.length === 0, '显式关闭：零行为(零回归)');
   c0.tickDisasters();
   ok(c0.GM.activeDisasters.length === 0 && c0.GM.vars.disasterLevel === undefined, '关闸下 tickDisasters 原样(不无谓触碰 vars)');
 
   // 小冰河 60 回合模拟：生成节奏/并发cap/冷却
-  var c1 = mkCtx({});
+  var c1 = mkCtx({ conf: {} });
   var genCount = 0, maxConcurrent = 0, genTurns = [];
   for (var t = 1; t <= 60; t++) {
     c1.GM.turn = t;
@@ -150,7 +167,7 @@ console.log('— §c · 接线契约 —');
 (function () {
   ok(/try \{ simulateDisasterGenesis\(\); \} catch/.test(src), 'tickDisasters 开头挂发生器(管线零改动·新灾当回合入派生信号)');
   ok(/simulateDisasterGenesis: simulateDisasterGenesis,/.test(src), '发生器导出(可诊断)');
-  ok(/disasterSimEnabled !== true\) return null/.test(src), 'flag 闸在发生器内(默认关)');
+  ok(/disasterSimEnabled === false\) return null/.test(src), '发生器保留显式关闭；60回合验证默认开启');
   ok(/GM\._grainReleaseTurn = GM\.turn \|\| 0/.test(src), 'openGranary 落放粮信号');
   var cl = read('tm-central-local-engine.js');
   ok(/global\.GM\._grainReleaseTurn = global\.GM\.turn \|\| 0/.test(cl), '央地平粜同写放粮信号');

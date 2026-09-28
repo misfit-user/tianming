@@ -1,0 +1,24 @@
+{
+  "stamp": "20260926-fiscal-social-fix",
+  "families": [
+    "phase8-formal-rightrail-social.js",
+    "phase8-formal-rightrail.js",
+    "tm-class-engine.js",
+    "tm-fiscal-statements.js",
+    "tm-guoku-panel.js",
+    "tm-minxin-hard-link-consumers.js",
+    "tm-party-class-ecology.js",
+    "tm-party-class-llm-calibrator.js",
+    "tm-patches-start.js",
+    "tm-patches.js",
+    "tm-renli.js",
+    "tm-social-political-signals.js",
+    "tm-topbar-vars.js"
+  ],
+  "changed": [
+    {
+      "file": "web/index.html",
+      "refs": 13
+    }
+  ]
+}

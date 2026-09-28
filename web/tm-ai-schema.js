@@ -218,7 +218,7 @@
     // ──────────────────────────────────────────────
     // NPC 互动与诏令问责
     // ──────────────────────────────────────────────
-    npc_actions:          { type: 'array', desc: 'NPC 自主行动（兼容旧 prompt；endturn 仍消费）', consumedBy: ['endturn-ai-infer'] },
+    npc_actions:          { type: 'array', desc: 'NPC 自主行动：name/characterId 指行动者，actionId 标识同一行动；兼任须填 positionId 或 appointmentId，power 指此次事务。dutyEvidence={actorId,subjectId,kind:investigation|work|misconduct|leave,status:confirmed|observed|rumor|denied|planned,negated,approved,capacity,delegateId}。调查对象与行为人分开；未经证实、否定和合法休假不算失职；reason 只说明缘由', consumedBy: ['endturn-ai-infer'] },
     npc_interactions:     { type: 'array', desc: 'NPC 之间或 NPC→玩家的主动互动/奏对', consumedBy: ['endturn-ai-infer:sc1b'] },
     npc_letters:          { type: 'array', desc: 'NPC 主动来书/远方奏报', consumedBy: ['endturn-ai-infer:sc1b'] },
     npc_correspondence:   { type: 'array', desc: 'NPC 之间私信/密信', consumedBy: ['endturn-ai-infer:sc1b'] },

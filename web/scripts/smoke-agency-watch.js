@@ -2,7 +2,7 @@
 'use strict';
 /* smoke-agency-watch — 密探常侦(S4·2026-07-02)
  * 常设直属天子密探机构(corruption.supervision.institutions·独立性≤30)在阴谋引擎 tick 内
- * 逐回合确定性推高在酿阴谋败露。flag agencyWatchEnabled 默认关=零回归。
+ * 逐回合确定性推高在酿阴谋败露。常侦默认开启，显式关闭后 exposure 不变。
  * 不复用 _sweep：常侦静默积累 exposure·不置 _knownToPlayer(不向玩家亮牌)。
  */
 const fs = require('fs');
@@ -31,10 +31,10 @@ function mkG(insts) {
 const FULL = { independence: 5, radius: 100, corruption: 20, vacancies: 0.1 };  // 东厂形制
 
 // ① flag 关 → 0·exposure 不动（零回归）
-sandbox.P = { conf: {} };
+sandbox.P = { conf: { agencyWatchEnabled: false } };
 let G = mkG([FULL]);
 ok(CE._agencyWatch(G) === 0 && G._activePlots[0].exposure === 20, '① flag 关 → 无效果(零回归)');
-ok(CE._agencyWatchOn() === false, '① _agencyWatchOn 默认 false');
+ok(CE._agencyWatchOn() === false, '① 显式关闭常侦仍生效');
 
 // ② flag 开 + 直属密探机构 → 确定性侦缉
 sandbox.P = { conf: { agencyWatchEnabled: true } };

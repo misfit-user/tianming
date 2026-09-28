@@ -1,0 +1,36 @@
+{
+  "stamp": "20260926-edict-feedback-r2",
+  "names": [
+    "tm-edict-outcomes.js",
+    "tm-edict-effects.js",
+    "tm-endturn-prep.js",
+    "tm-endturn-prompt.js",
+    "tm-endturn-apply.js",
+    "tm-endturn-apply-stages.js",
+    "tm-endturn-ai.js",
+    "tm-endturn-ai-infer.js",
+    "tm-endturn-ai-helpers.js",
+    "tm-endturn-followup.js",
+    "tm-endturn-validity.js",
+    "tm-endturn-render.js",
+    "tm-endturn-shiji-compose.js",
+    "tm-endturn-agent-mode.js",
+    "tm-endturn-agent-write-tools.js",
+    "tm-endturn-agent-depth-tools.js",
+    "tm-endturn-pipeline-steps.js",
+    "tm-edict-oversight.js",
+    "tm-ai-change-pathutils.js",
+    "tm-corruption-engine.js",
+    "core.js",
+    "tm-ai-change-applier.bundle.js",
+    "tm-corruption-cases.js",
+    "tm-corruption-extras.js",
+    "tm-endturn-followup-helpers.js"
+  ],
+  "changed": [
+    {
+      "file": "web/index.html",
+      "refs": 24
+    }
+  ]
+}

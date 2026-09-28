@@ -1,0 +1,6 @@
+'use strict';
+const fs=require('fs'),path=require('path'),cp=require('child_process');
+const cwd=path.resolve(process.argv[2]),mode=process.argv[3]||'baseline',out=path.join(__dirname,mode);fs.mkdirSync(out,{recursive:true});
+const specs=[['architecture',['web/scripts/lint-arch-all.js']],['scenario-parity',['web/scripts/verify-official-scenario-parity.js']],['release-contract',['scripts/verify-release-contract.js']],['hot-baseline',['scripts/sync-hot-baseline.js','--check','--version','1.3.5.2']]];
+async function run([name,args]){const started=Date.now(),log=fs.createWriteStream(path.join(out,name+'.log'));return new Promise(resolve=>{const ch=cp.spawn(process.execPath,args,{cwd,windowsHide:true,stdio:['ignore','pipe','pipe']});ch.stdout.pipe(log,{end:false});ch.stderr.pipe(log,{end:false});ch.on('error',e=>{log.end(String(e));resolve({name,exitCode:null,error:String(e)});});ch.on('exit',(code,signal)=>{log.end();const r={name,command:['node',...args].join(' '),cwd,exitCode:code,signal,milliseconds:Date.now()-started};console.log(JSON.stringify(r));resolve(r);});});}
+(async()=>{const rows=[];for(let i=0;i<specs.length;i+=2)rows.push(...await Promise.all(specs.slice(i,i+2).map(run)));fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(rows,null,2));})();

@@ -1,0 +1,79 @@
+[
+  {
+    "command": [
+      "python",
+      "-X",
+      "utf8",
+      "C:\\Users\\37814\\Desktop\\tianming\\docs\\late-tang-person-20260917\\verify-content.py"
+    ],
+    "exitCode": 1,
+    "seconds": 3.83,
+    "log": "check-0.log"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/tm-renwu-tuzhi.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.11,
+    "log": "check-1.log"
+  },
+  {
+    "command": [
+      "node",
+      "--check",
+      "web/phase8-formal-modules.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.09,
+    "log": "check-2.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/smoke-renwu-multioffice-display.js"
+    ],
+    "exitCode": 0,
+    "seconds": 0.1,
+    "log": "check-3.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js"
+    ],
+    "exitCode": 0,
+    "seconds": 12.28,
+    "log": "check-4.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/sync-official-scenarios.js",
+      "--check"
+    ],
+    "exitCode": 0,
+    "seconds": 6.71,
+    "log": "check-5.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/verify-official-scenario-parity.js"
+    ],
+    "exitCode": 0,
+    "seconds": 9.04,
+    "log": "check-6.log"
+  },
+  {
+    "command": [
+      "node",
+      "web/scripts/lint-arch-all.js"
+    ],
+    "exitCode": 1,
+    "seconds": 32.39,
+    "log": "check-7.log"
+  }
+]

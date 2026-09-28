@@ -438,8 +438,7 @@ function _tmStartPrimeFormalRuntime(sid, sc, reason) {
   try {
     if (typeof TM !== 'undefined' && TM.Renli) {
       if (typeof TM.Renli.ensurePilotSeeds === 'function') TM.Renli.ensurePilotSeeds(GM);
-      if (sc && sc.populationConfig && sc.populationConfig.accounting && sc.populationConfig.accounting.schema === 'tm-population-ledger/2' && typeof TM.Renli.prime === 'function') TM.Renli.prime(GM, typeof P !== 'undefined' ? P : null);
-      else if (typeof TM.Renli.endturnTick === 'function') TM.Renli.endturnTick(GM, typeof P !== 'undefined' ? P : null);
+      if (typeof TM.Renli.prime === 'function') TM.Renli.prime(GM, typeof P !== 'undefined' ? P : null);
     }
   } catch(e) { try { if (window.TM && TM.errors && TM.errors.captureSilent) TM.errors.captureSilent(e, 'start-prime-renli'); } catch(_) {} }
 

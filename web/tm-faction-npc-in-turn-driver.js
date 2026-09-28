@@ -73,7 +73,7 @@
     }
   }
 
-  // agent 模式活世界:绕过"势力精算"开关·改由 agentLiveWorldOn 门控(仍需 P.ai.key·decideFor 走 LLM)。LLM 模式 agentModeOn=false → 此项 false → 原逻辑零回归。
+  // Agent 管线的势力决策同样需要可用 API，调度仍由对应管线控制。
   function _agentLiveWorldActive() {
     return typeof global.agentLiveWorldOn === 'function' && global.agentLiveWorldOn()
       && !!(global.P && global.P.ai && global.P.ai.key);
@@ -122,7 +122,7 @@
     if (!global.GM || !Array.isArray(global.GM.facs)) return { fixed: [], note: 'no facs' };
     var pn = _resolvePlayerFactionNames();
     return { turn: turn, fixed: _topNStrongest(global.GM.facs, pn, 3), dynamicSlots: 5, policy: '3-fixed-strongest + 5-relevance',
-      enabled: (typeof global.agentFlagOn === 'function') ? global.agentFlagOn('factionAgentEnabled') : false };
+      enabled: true };
   }
 
   // 选 1 个 NPC fac (按战略评分加权随机·已跑 fac 不重复)

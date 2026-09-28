@@ -1,0 +1,26 @@
+[
+  {
+    "file": "web/tm-class-engine.js",
+    "sha256": "226727868b4133976eefbc5d2dd6ed46edb867e607359075520070f23846f848"
+  },
+  {
+    "file": "web/tm-party-class-llm-calibrator.js",
+    "sha256": "2dec2e3ba8157fd8294ee586663c608659e45805ea03fee4af96645ba089e7a8"
+  },
+  {
+    "file": "web/scripts/smoke-class-satisfaction-guard.js",
+    "sha256": "eb2ec9b628eebbaad51aa7792ea505999566b4b8f3065d3c20f6e9d5319eff53"
+  },
+  {
+    "file": "web/scripts/smoke-social-satisfaction-recovery.js",
+    "sha256": "4b377e823ecb32a246421f0c4705aab8bbf1baf166f98a7a2ea32ffa6d343452"
+  },
+  {
+    "file": "web/scripts/smoke-endturn-performance-optimizations.js",
+    "sha256": "8a82611315f218331e50ac899251d336d4e8afb9b4b368750bc8521777bc0865"
+  },
+  {
+    "file": "web/scripts/lib-ai-priority-routing.js",
+    "sha256": "8255169c175877af85d2ec65b75465b77c3e4308dc8a190bd701c7b9ab65b4c2"
+  }
+]

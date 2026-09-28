@@ -338,7 +338,8 @@
     }
     function identity(G, fa, index, namespace) {
       var sig = signature(fa), prefix = (namespace || "fa") + ":" + String(G.sid || "") + ":" + String(G.turn || 0) + ":";
-      return { id: fa.id ? String(fa.id) : prefix + String(index) + ":" + hash(sig), resource: fa.resource || "money", signature: sig };
+      var stable = fa.id != null ? String(fa.id) : fa.operationId || fa.actionId ? JSON.stringify([fa.operationId || fa.actionId, fa.target, fa.kind, fa.resource || "money"]) : "";
+      return { id: stable || prefix + String(index) + ":" + hash(sig), resource: fa.resource || "money", signature: sig };
     }
     function findPosted(list, posting) {
       var previous = (list || []).find(function(e) {
@@ -872,8 +873,11 @@
     }
     function onDismissal(charName, reason, aiOutput) {
       var G = global.GM;
-      var ch = _findChar(charName);
+      var identity = typeof global._offResolveCharacterIdentity === "function" ? global._offResolveCharacterIdentity(charName, G) : null;
+      if (identity && !identity.ok && identity.reason !== "character-stable-id-missing") return { ok: false, reason: identity.reason };
+      var ch = identity && identity.ok ? identity.char : _findChar(charName);
       if (!ch) return { ok: false, reason: "未找到 " + charName };
+      charName = ch.name;
       var _wgD = _modules.validators;
       if (_wgD && _wgD._gateDeathRoutingSource && _wgD._gateDeathRoutingSource(G, ch, String(reason || ""), aiOutput)) return { ok: false, reason: "no-source-bare-death(write-gate·返工issue4·死亡管线收口)" };
       var _repeatConfisc = /抄|籍没|没官|查抄/.test(String(reason || "")) && (ch._confiscated || ch.confiscated || ch._confiscatedTurn != null);
@@ -992,7 +996,10 @@
           }
         }
       }
-      (function _clearAll(nodes) {
+      if (ch.id && typeof global._offVacateByCharId === "function") {
+        var vacated = global._offVacateByCharId(ch.id, reason || "免职", G.officeTree, { world: G, leaveVacancy: true });
+        if (!vacated.ok) return { ok: false, reason: vacated.reason };
+      } else (function _clearAll(nodes) {
         (nodes || []).forEach(function(n) {
           if (!n) return;
           if (Array.isArray(n.positions)) n.positions.forEach(function(p) {
@@ -1035,6 +1042,7 @@
       })(G.officeTree || []);
       ch.officialTitle = null;
       ch.position = "";
+      if (ch.currentPosition && typeof ch.currentPosition === "object") ch.currentPosition.title = "";
       ch.title = "";
       ch.officialTitles = [];
       ch.concurrentTitles = [];
@@ -1859,21 +1867,23 @@
       (aiOutput.personnel_changes || []).forEach(function(pc) {
         if (!pc || !pc.name) return;
         if (handledNames[pc.name]) return;
-        var changeText = String(pc.change || "").trim();
+        var changeText = String(pc.change || pc.desc || "").trim();
         if (!changeText) return;
+        if (/^(?:留任|原职留任|原职照旧|暂不|尚未|未予|不予|拟|建议)/.test(changeText)) return;
         var action = null, post = "", reason = pc.reason || changeText;
         var isConcurrentPersonnel = typeof global._offIsConcurrentAppointment === "function" ? global._offIsConcurrentAppointment({ reason, raw: changeText }, changeText) : /兼任|兼职|加兼|兼领|兼署|兼管|兼摄/.test(changeText);
-        if (/\u4E0B\u72F1|\u5165\u72F1|\u7CFB\u72F1|\u6349\u62FF|\u902E\u6355|\u6293\u6355|\u7F09\u62FF/.test(changeText)) {
+        if (_tmReasonIsImprison(changeText)) {
           action = "dismiss";
           reason = changeText;
-        } else if (/\u62C4\u5BB6|\u62C4\u6CA1|\u7C4D\u6CA1|\u67E5\u62C4|\u6CA1\u5B98/.test(changeText)) {
+        } else if (/抄家|抄没|籍没|查抄|没官/.test(changeText)) {
           action = "dismiss";
           reason = changeText;
         } else if (/\u6D41\u653E|\u53D1\u914D|\u620D\u8FB9/.test(changeText)) {
           action = "dismiss";
           reason = changeText;
-        } else if (/(\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
+        } else if (/(革职|革除|撤职|褫职|削职|夺职|解职|\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
           action = "dismiss";
+          reason = changeText + (pc.reason ? "；" + pc.reason : "");
         } else if (/(\u65A9|\u8BDB|\u66B4\u6BD9|\u8D50\u6B7B|\u6B3B|\u8BDB\u6740|\u8BDB\u4E5D\u65CF|\u62C4\u5BB6)/.test(changeText)) {
           action = "dismiss";
           reason = "execute";
@@ -1882,7 +1892,7 @@
           if (m = changeText.match(/(?:\u547D|\u4EE4|\u62DC|\u6388|\u6412|\u8FC1|\u8F6C|\u8FC1\u8F6C|\u8FDB|\u5347|\u4E3A|\u4EFB)\s*([^\s，,。.；;]+)/)) {
             post = m[1].replace(/^(\u4E3A|\u4EFB)/, "");
           }
-          if (!post && pc.former && changeText.indexOf(pc.former) < 0) {
+          if (!post && pc.former && changeText.indexOf(pc.former) < 0 && (_findOfficePos(G.officeTree, changeText) || _isKnownOfficeType(G, changeText))) {
             post = changeText.replace(/^(?:\u4ECE|\u81EA)?.*(?:\u8FC1|\u6539|\u8F6C)\s*/, "").replace(/[\s，,。.；;].*$/, "");
           }
           if (post) action = "appoint";
@@ -1894,7 +1904,7 @@
         }
         var r = null;
         if (action === "appoint" && post) r = onAppointment(pc.name, post, { concurrent: isConcurrentPersonnel, reason });
-        else if (action === "dismiss") r = onDismissal(pc.name, reason, aiOutput);
+        else if (action === "dismiss") r = onDismissal(pc.characterId || pc.charId || pc.name, reason, aiOutput);
         if (r && r.ok) {
           personnelFromPcCount++;
           handledNames[pc.name] = true;
@@ -2048,7 +2058,6 @@
         if (action !== "add" && action !== "update" && action !== "stop" && action !== "remove") action = "add";
         var amount = Math.abs(parseFloat(fa.amount) || 0);
         if (action === "add" && amount <= 0) return;
-        amount = _applyTaxAuthorityGate(G, fa, amount);
         var resource = fa.resource === "grain" || fa.resource === "cloth" ? fa.resource : "money";
         if (action === "add") {
           var _cutLabel = String((fa.name || "") + " " + (fa.category || "") + " " + (fa.reason || ""));
@@ -2172,6 +2181,8 @@
             applied.semantic.fiscal_adjustments_replayed = (applied.semantic.fiscal_adjustments_replayed || 0) + 1;
             return;
           }
+          amount = _applyTaxAuthorityGate(G, fa, amount);
+          entry.amount = amount;
           target[containerKey].push(entry);
           fiscalCount++;
           if (fa._transferPairSuspect && !_transferPairSeen[fa._transferPairId]) {
@@ -2218,6 +2229,7 @@
           entry.applied = actualApplied;
           entry.shortfall = shortfall;
           entry.executionStatus = executionStatus;
+          if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G, fa, { ok: true, old: typeof cur === "number" ? cur : void 0, new: immediateTarget ? _readFiscalStock(fiscalStockTarget || immediateTarget, resource) : void 0, shortfall, executionStatus }, fa.target + "." + resource);
           G._turnReport.push({ type: "fiscal_adj", action, target: fa.target, kind: fa.kind, resource, name: entry.name, amount: actualApplied, requested: amount, annualAmount: entry.recurring ? amount : 0, recurring: !!entry.recurring, coercedOneTime: !!entry._coercedOneTime, transferPairSuspect: !!fa._transferPairSuspect, shortfall, executionStatus, reason: entry.reason, turn: G.turn || 0 });
           if (shortfall > 0) {
             if (!G._fiscalShortfalls) G._fiscalShortfalls = [];
@@ -2423,6 +2435,7 @@
         } else {
           result = { ok: false, reason: "unsupported op: " + anyOp };
         }
+        if (global.TM && TM.EdictEffects) TM.EdictEffects.recordApplied(G, apc, result);
         if (result && result.ok) {
           anyPathCount++;
           G._turnReport.push({ type: "anyPath", path: result.path || apc.path, op: apc.op || "set", old: result.old, new: result.new, reason: apc.reason, turn: G.turn || 0 });
@@ -3515,6 +3528,21 @@
         var _hit = function(t) {
           return _textMentionsName(t, nm, allNames);
         };
+        var turn = Number(G.turn || 0);
+        if ((G.edicts || []).some(function(e) {
+          return e && e.turn === turn && e.status === "promulgated" && _hit(e.text);
+        })) return true;
+        var submitted = (G._edictTracker || []).some(function(e) {
+          if (!e || e.turn !== turn && e.lastSubmittedTurn !== turn || /^(cancelled|failed|pending_delivery)$/.test(e.status || "")) return false;
+          if ((e._letterIds || []).some(function(id) {
+            var letter = (G.letters || []).find(function(l) {
+              return l && l.id === id;
+            });
+            return !letter || ["delivered", "returned", "replying"].indexOf(letter.status) < 0;
+          })) return false;
+          return _hit(e.content);
+        });
+        if (submitted) return true;
         var mems = G && Array.isArray(G.memorials) ? G.memorials : [];
         for (var i = 0; i < mems.length; i++) {
           var m = mems[i];
@@ -3534,7 +3562,7 @@
     }
     function _gateJudicialPersonnelChange(G, aiOutput, pc, changeText, applied) {
       if (!G || !pc || !pc.name) return false;
-      var judicial = /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ""));
+      var judicial = typeof global._tmReasonIsImprison === "function" && global._tmReasonIsImprison(changeText) || /下狱|入狱|系狱|收押|收监|关押|囚禁|捉拿|逮捕|抓捕|缉拿|锁拿|拿问|逮治|械系|下诏狱|抄家|抄没|籍没|查抄|没官|流放|发配|戍边|充军|斩|诛|处决|处斩|处死|正法|凌迟|枭首|问斩|赐死|杖毙|廷杖|杖责|夺职拿问|暴毙|暴卒|暴亡|猝死|病故|病逝|病殁|病卒|病亡|亡故|物故|身故|溘逝|薨逝|薨|寿终|自尽|自缢|自刎|自裁|服毒|伏诛|伏法|弃市|殒命|毙命/.test(String(changeText || ""));
       if (!judicial) return false;
       var ch = typeof _findEntity === "function" ? _findEntity(G, "char", pc.name) : Array.isArray(G.chars) ? G.chars.filter(function(c) {
         return c && c.name === pc.name;
@@ -5280,7 +5308,8 @@
     function _applyOfficeDutyTick(G) {
       if (typeof officeFlagOn !== "function" || !officeFlagOn("officeDutyStateEnabled")) return;
       if (typeof tickOfficeDutyState !== "function") return;
-      var opts = {}, effects = global.TM && global.TM.CircuitGovernorEffects;
+      var days = typeof global._getDaysPerTurn === "function" ? global._getDaysPerTurn() : G.daysPerTurn != null ? G.daysPerTurn : 30;
+      var opts = { days }, effects = global.TM && global.TM.CircuitGovernorEffects;
       if (effects && effects.enabled() && global.TM.CircuitGovernance) {
         var governors = global.TM.CircuitGovernance.governorPositions(G);
         opts.skip = function(p) {
@@ -5288,18 +5317,33 @@
         };
       }
       var agg = tickOfficeDutyState(G, opts);
-      if (!agg || !agg.compliance && !agg.corruption) return;
+      if (!agg || !agg.compliance && !agg.corruption && !(agg.details || []).length) return;
       var FE = typeof window !== "undefined" && window.FiscalEngine || typeof global !== "undefined" && global.FiscalEngine || null;
       var _P = typeof window !== "undefined" && window.P || typeof global !== "undefined" && global.P || null;
       var pFac = _P && _P.playerInfo && _P.playerInfo.factionName || "";
       if (!FE) return;
-      if (agg.compliance && FE.adjustPlayerCompliance) {
-        var nc = FE.adjustPlayerCompliance(pFac, agg.compliance, 0.1, 1);
-        if (nc === 0) FE.adjustPlayerCompliance("", agg.compliance, 0.1, 1);
+      var unscoped = agg.details && agg.details.length ? { compliance: 0, corruption: 0 } : { compliance: agg.compliance, corruption: agg.corruption };
+      (agg.details || []).forEach(function(d) {
+        if (!d.regionId && !d.regionName) unscoped[d.lever] += d.delta;
+      });
+      (agg.details || []).filter(function(d) {
+        return d.regionId || d.regionName;
+      }).forEach(function(d) {
+        var scope = { regionId: d.regionId, regionName: d.regionName };
+        var apply = d.lever === "compliance" ? FE.adjustPlayerCompliance : FE.adjustPlayerDivisionCorruption;
+        var lo = d.lever === "compliance" ? 0.1 : 0, hi = d.lever === "compliance" ? 1 : 100;
+        if (typeof apply === "function") {
+          var count = apply(d.faction || pFac, d.delta, lo, hi, scope);
+          if (count === 0 && !d.faction) apply("", d.delta, lo, hi, scope);
+        }
+      });
+      if (unscoped.compliance && FE.adjustPlayerCompliance) {
+        var nc = FE.adjustPlayerCompliance(pFac, unscoped.compliance, 0.1, 1);
+        if (nc === 0) FE.adjustPlayerCompliance("", unscoped.compliance, 0.1, 1);
       }
-      if (agg.corruption && FE.adjustPlayerDivisionCorruption) {
-        var nk = FE.adjustPlayerDivisionCorruption(pFac, agg.corruption, 0, 100);
-        if (nk === 0) FE.adjustPlayerDivisionCorruption("", agg.corruption, 0, 100);
+      if (unscoped.corruption && FE.adjustPlayerDivisionCorruption) {
+        var nk = FE.adjustPlayerDivisionCorruption(pFac, unscoped.corruption, 0, 100);
+        if (nk === 0) FE.adjustPlayerDivisionCorruption("", unscoped.corruption, 0, 100);
       }
       try {
         if (typeof global.addEB === "function" && agg.details && agg.details.length) {

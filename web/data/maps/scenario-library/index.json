@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "tm-map-editor-library-index/1",
+  "producerSha256": "a472566808a2b8c35e229f3daff9f782065ddbc3277e0cd7652ce7ec75ceaf1c",
+  "entries": [
+    {
+      "id": "sc-tianqi7-1627",
+      "name": "天启七年·九月——君王初立，权阉当国",
+      "era": "明末·天启朝尾",
+      "dynasty": "明",
+      "mapName": "天启七年新舆图",
+      "levels": [
+        "all",
+        "realm",
+        "region",
+        "prefecture"
+      ],
+      "counts": {
+        "realm": 19,
+        "region": 43,
+        "prefecture": 307
+      },
+      "source": {
+        "path": "scenarios/天启七年·九月（官方）.json",
+        "sha256": "fe728654dccc93b00fca5c481c736b5d66172972f22b42b8f5f34b5f3f83a5f3"
+      },
+      "filename": "sc-tianqi7-1627.json",
+      "bytes": 1486190,
+      "sha256": "985f64c8f7cd201f2eacda8d447c5756564470abe0776923cf248a2207d70711"
+    },
+    {
+      "id": "sc-tang840-840",
+      "name": "晚唐·开成五年——山海诸邦",
+      "era": "晚唐·开成五年",
+      "dynasty": "唐",
+      "mapName": "开成五年·唐朝廷",
+      "levels": [
+        "all",
+        "realm",
+        "region",
+        "prefecture"
+      ],
+      "counts": {
+        "realm": 42,
+        "region": 107,
+        "prefecture": 575
+      },
+      "source": {
+        "path": "scenarios/晚唐·开成五年（官方）.json",
+        "sha256": "86c9a74685b9b512166e62bf7f15e2e6b6d0e795de867fd56c87c322906a1751"
+      },
+      "filename": "sc-tang840-840.json",
+      "bytes": 5202646,
+      "sha256": "be5c2cbbf06cc014f431e6c0e4830057d03aa75f9b5480542da10d5da4150694"
+    },
+    {
+      "id": "sc-jianyan1-1127-shaosong",
+      "name": "绍宋·建炎元年八月——亳州明道宫，九龙井醒",
+      "era": "南宋·建炎初",
+      "dynasty": "宋",
+      "mapName": "绍宋·省道三级地图 R6",
+      "levels": [
+        "all",
+        "realm",
+        "region",
+        "prefecture"
+      ],
+      "counts": {
+        "realm": 35,
+        "region": 104,
+        "prefecture": 566
+      },
+      "source": {
+        "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+        "sha256": "7a51847565b761bd13f68845ce6b2c32c2b2b553922032586fd83a6fd7d719a5"
+      },
+      "filename": "sc-jianyan1-1127-shaosong.json",
+      "bytes": 11815292,
+      "sha256": "55b43c060adb8736d53a849c88b517b46af8f5364f82a81132cc54e0669ea8c2"
+    }
+  ]
+}

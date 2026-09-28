@@ -1,0 +1,65 @@
+{
+  "completedAt": "2026-09-27T10:46:13.372Z",
+  "newRegression": {
+    "functionalCases": 30,
+    "integrationAssertions": 43,
+    "status": "pass"
+  },
+  "related": {
+    "selected": 76,
+    "passed": 76,
+    "failed": []
+  },
+  "fullRun": {
+    "selected": 1114,
+    "pass": 1106,
+    "fail": 8,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "isolatedResourceRecheck": {
+    "selected": 2,
+    "pass": 2,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "remainingFailures": [
+    "smoke-faction-npc-llm-decision.js",
+    "smoke-official-bundle-parity.js",
+    "smoke-public-treasury-scale.js",
+    "smoke-tang840-authority-autonomy.js",
+    "smoke-tang840-wuchang.js",
+    "smoke-tianqi-official-cache-recovery.js"
+  ],
+  "architecture": {
+    "exitCode": 0,
+    "passedGuards": 13
+  },
+  "officialParity": {
+    "status": "failed",
+    "reason": "two official root sources changed since initial snapshot; nine generated products stale"
+  },
+  "releaseContract": {
+    "status": "failed",
+    "reason": "canonical hot baseline hashes stale after source edits"
+  },
+  "hotBaseline": {
+    "status": "failed",
+    "written": false,
+    "version": "1.3.5.3"
+  },
+  "generatedArtifacts": {
+    "rendererBundle": "pass",
+    "startupPhases": "pass",
+    "nativeRuntime": "pass"
+  },
+  "published": false,
+  "committed": false,
+  "pushed": false,
+  "changedFiles": 30
+}

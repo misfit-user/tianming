@@ -43,7 +43,7 @@ ok(br2._deterministicCasualties === true, '② 默认ON:br 标记 _deterministic
 // ── ②b 显式 false → 关(尊重 opt-out·离谱伤亡照旧应用) ──
 freshGM(); ctx.P = { conf: { deterministicCasualties: false }, battleConfig: {} };
 MS.applyBattleResult(brAbsurd(), ctx.GM);
-ok(atk().soldiers === 0, '②b 显式关(===false):离谱伤亡 999999 照旧应用→关宁军削到 0(尊重 opt-out)');
+ok(atk().soldiers > 0 && atk().soldiers < 50000, '②b 旧关闭值不能绕过正式伤亡校核');
 
 // ── ③ ON:离谱伤亡 → BattleEngine 确定性替代(损失合理) ──
 freshGM(); ctx.P = { conf: { deterministicCasualties: true }, battleConfig: {} };
@@ -78,19 +78,19 @@ ok(!brOk._deterministicCasualties, '⑥ ON:合理数不标记替代(不干预)')
 freshGM(); ctx.P = { conf: { deterministicCasualties: false }, battleConfig: {} };
 let br0b = { winner: '后金', loser: '明朝廷', attacker: '关宁军', defender: '八旗', casualties: { attacker: 0, defender: 0 } };
 MS.applyBattleResult(br0b, ctx.GM);
-ok(atk().soldiers === 50000 && def().soldiers === 60000, '⑦ 显式关(===false):双方 0 伤亡照旧→兵力不变(尊重 opt-out·关时整块跳过)');
+ok(atk().soldiers < 50000 && def().soldiers < 60000 && br0b._deterministicCasualties, '⑦ 旧关闭值下零伤亡仍由引擎核算');
 
 // ── ⑧ battleConfig 入口同样启用 ──
-freshGM(); ctx.P = { conf: {}, battleConfig: { deterministicCasualties: true } };
+freshGM(); ctx.P = { conf: {}, battleConfig: { deterministicCasualties: false } };
 let brc = brAbsurd();
 MS.applyBattleResult(brc, ctx.GM);
-ok(brc._deterministicCasualties === true, '⑧ battleConfig.deterministicCasualties 同样启用 opt-in');
+ok(brc._deterministicCasualties === true, '⑧ 剧本旧关闭值也不能禁用正式伤亡校核');
 
 // ── ⑨ 源契约 ──
 const mil = fs.readFileSync(path.join(ROOT, 'tm-military.js'), 'utf8');
 ok(/!cfg\.enabled && !\(context && context\.forceCompute\)/.test(mil), '⑨ resolve 加 forceCompute 旁路(不需全引擎 enabled)');
-ok(/deterministicCasualties === false[\s\S]{0,400}BattleEngine\.resolve/.test(mil), '⑨ applyBattleResult 默认ON块(===false才关)接 BattleEngine.resolve');
+ok(!/conf\.deterministicCasualties|battleConfig\.deterministicCasualties/.test(mil) && /BattleEngine\.resolve/.test(mil), '⑨ 正式伤亡核算不再读取退役开关');
 const pat = (fs.readFileSync(path.join(ROOT, 'tm-patches.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8'));
-ok(pat.indexOf('确定性战果（默认开）') >= 0 && pat.indexOf('deterministicCasualties') >= 0 && /id="s-det-cas"/.test(pat), '⑨ 设置开关「确定性战果（默认开）」已加(checkbox 接 _togglePConf)');
+ok(!/id="s-det-cas"/.test(pat), '⑨ 设置中已移除确定性战果开关');
 
 console.log('\n结果: ' + A + ' 通过 / 0 失败');

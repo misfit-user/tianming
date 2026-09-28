@@ -569,9 +569,18 @@ async function runMemorialInteractionGuardCase() {
     sc.memorials = [];
     window.__guardedMemorialGenerateCalls = 0;
     window.__resolveGuardedCandidates = null;
+    window.__guardedStartSession = null;
+    // The normal opening hook runs before the prewarm memorial fingerprint is captured.
+    // Keep this a system memorial (no _sid), so late AI generation is still eligible before interaction.
+    GameHooks.on('startGame:after', function(){
+      GM.memorials.push({ id: 'guard-system-opening', turn: GM.turn, from: 'System Reporter',
+        title: 'Opening system report', content: 'Known opening facts awaiting review.',
+        type: 'report', category: '政务', status: 'pending', read: false });
+    }, 1000);
     generateMemorials = function(){ window.__guardedMemorialGenerateCalls += 1; };
     renderMemorials = function(){};
-    aiPlanFirstTurnEvents = function(){
+    aiPlanFirstTurnEvents = function(opts){
+      window.__guardedStartSession = opts && opts.session;
       return new Promise(function(resolve){
         window.__resolveGuardedCandidates = function(){
           GM._candidateEvents = [{ id: 'late-opening-smoke', type: 'memorial', presenter: 'Tester', payload: 'Late opening event' }];
@@ -587,7 +596,14 @@ async function runMemorialInteractionGuardCase() {
   for (let i = 0; i < 10 && typeof sandbox.__resolveGuardedCandidates !== 'function'; i++) await delay(20);
   assert(typeof sandbox.__resolveGuardedCandidates === 'function', 'guarded candidate planner did not start');
   assert(sandbox.GM.memorials.length > 0, 'interaction guard needs the opening system memorial set');
-  sandbox.GM.memorials[0].content = String(sandbox.GM.memorials[0].content || '') + ' [player body edit]';
+  const initialCount = sandbox.GM.memorials.length;
+  const memorial = sandbox.GM.memorials.find(row => row && row.id === 'guard-system-opening');
+  const session = sandbox.__guardedStartSession;
+  assert(memorial && !memorial._sid, 'fixture must be a system opening report, not a preset memorial');
+  assert(session && !session.hasPresetMemorials, 'preset memorials must not bypass the interaction guard');
+  assert(session.initialMemorialFingerprint === sandbox._tmStartMemorialFingerprint(sandbox.GM.memorials), 'system memorial must exist before the exact prewarm baseline is captured');
+  memorial.content = String(memorial.content || '') + ' [player body edit]';
+  assert(sandbox.GM.memorials.length === initialCount, 'body-only fixture must not change memorial count');
   sandbox.__resolveGuardedCandidates();
   await delay(80);
   assert(sandbox.__guardedMemorialGenerateCalls === 0, 'late candidates overwrote memorials after a body-only edit');

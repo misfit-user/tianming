@@ -1,0 +1,62 @@
+#!/usr/bin/env node
+'use strict';
+// Official startup + real end-turn writeback, with offline structured model output.
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict'),{createRequire}=require('module');
+const ROOT=path.resolve(__dirname,'../..'),file=path.join(__dirname,'smoke-start-game-data-integrity.js');
+const src=fs.readFileSync(file,'utf8').replace(/^#![^\n]*\n/,''),end=src.indexOf('(async function main()');assert(end>0);
+const helper=new Function('require','process','__dirname','__filename','module','exports',src.slice(0,end)+'\nreturn {loadGame,dispose:()=>disposeGame()};')(createRequire(file),process,__dirname,file,{exports:{}},{});
+let checks=0;const ok=(v,m)=>{assert(v,m);checks++;},near=(a,b,m)=>ok(Math.abs(a-b)<1e-7,m+': '+a+' vs '+b),clone=x=>JSON.parse(JSON.stringify(x));
+(async()=>{
+ const c=helper.loadGame(null),sc=JSON.parse(fs.readFileSync(path.join(ROOT,'scenarios/天启七年·九月（官方）.json'),'utf8'));
+ c.__source=sc;vm.runInContext("P.scenarios=P.scenarios.filter(s=>s.id!==__source.id);P.scenarios.push(__source);P.ai.key='';P.ai.url='';P.ai.model='';doActualStart(__source.id);",c,{timeout:60000});
+ await new Promise(r=>setTimeout(r,250));
+ const G=c.GM,O=c.TM.EdictOutcomes,E=c.TM.EdictEffects;ok(O&&E,'new modules loaded through actual native startup manifest');
+ const command='令有司督办河道清淤，拨内帑银一千两付工，体恤受役民户，核查吏弊，按月具报。';
+ G.edicts=[{id:'native-edict',turn:G.turn,text:command,status:'promulgated'}];
+ for(const id of ['edict-pol','edict-mil','edict-dip','edict-eco','edict-oth']){const el=c.document.getElementById(id);if(el)el.value='';}
+ if(c.TMPhase8FormalBridge?.clearEdictDrafts)c.TMPhase8FormalBridge.clearEdictDrafts();
+ const input=c._endTurn_collectInput();ok(input.edicts.decree===command,'whole promulgated decree retained by complete collector');
+ ok(G._edictTracker.some(e=>e.id==='native-edict'),'complete collector registers published ID');
+ G.vars['河道清淤进度']={value:20,min:0,max:100,unit:'%'};
+ G.vars['军械储备']={value:4,min:0,max:30,unit:'辆'};
+ const cls=G.classes.find(x=>typeof x.satisfaction==='number'&&typeof x.influence==='number'),party=G.parties.find(x=>typeof x.influence==='number');ok(cls&&party,'official class and party state available');
+ if(typeof party.cohesion!=='number')party.cohesion=50;
+ const paths=['neitang.money','minxin.trueIndex','corruption.trueIndex','huangwei.index','huangquan.index','vars.河道清淤进度.value','classes.'+(cls.id||cls.name)+'.satisfaction','classes.'+(cls.id||cls.name)+'.influence','parties.'+(party.id||party.name)+'.influence'];
+ paths.push('vars.军械储备.value');
+ const snapshot=()=>Object.fromEntries(paths.map(p=>[p,E.read(G,p)])),before=snapshot();
+ const p1={turn_summary:'有司奉诏督办河道，内帑支银付工。',shizhengji_basis:'督办河道与核查吏弊。',shizhengji:'【朝政】有司奉诏督办河道，已核实首批工程，内帑支银付工。',shilu_text:'上命有司督办河道。',zhengwen:'有司具报首批工役。',changes:[{path:'皇威',delta:1,reason:'督办有成',edictId:'native-edict'},{path:'皇权',delta:1,reason:'督办有成',edictId:'native-edict'},{path:'民心',delta:1,reason:'惠及民户',edictId:'native-edict'},{path:'吏治',delta:-1,reason:'核实贪墨',edictId:'native-edict'}],resource_changes:{'河道清淤进度':7},fiscal_adjustments:[{target:'neitang',kind:'expense',resource:'money',amount:1000,name:'河道首批工银',reason:'奉诏付工',edictId:'native-edict'}],class_changes:[{name:cls.name,satisfaction_delta:2,influence_delta:1,reason:'首批工银发放',edictId:'native-edict'}],party_changes:[{name:party.name,influence_delta:1,reason:'督办公务',edictId:'native-edict'}],edict_lifecycle_update:[{edictId:'native-edict',stage:'execution',stageProgress:.4,currentEffects:{'河道清淤进度':7},classesAffected:{[cls.name]:{impact:2,reason:'首批工银发放'}},partiesAffected:{[party.name]:{influence_delta:1,reason:'督办公务'}}}],edict_feedback:[{edictId:'native-edict',assignee:'有司',status:'partial',feedback:'已完成首批清淤并拨付工银，余段继续办理。',progressPercent:40,effectRefs:['changes[0]','changes[1]','changes[2]','changes[3]','resource_changes.河道清淤进度','fiscal_adjustments[0]','class_changes[0]','party_changes[0]'],clauses:[{clauseId:'payment',content:'拨银付工',feedback:'首批工银已拨',status:'completed',effectRefs:['fiscal_adjustments[0]']},{clauseId:'works',content:'清淤河道',feedback:'首批完成，余段继续',status:'partial',effectRefs:['resource_changes.河道清淤进度']}]}]};
+ p1.changes.push({path:'vars.军械储备.value',delta:2,edictId:'native-edict',reason:'配发河工器具'},{path:'内帑',delta:-1000,edictId:'native-edict',reason:'同一笔工银的重复字段'});
+ p1.edict_feedback[0].effectRefs.push('changes[4]','changes[5]');
+ const original=clone(p1),ctx={input,prompt:{sc},results:{sc1:p1},record:{},apply:{},meta:{warnings:[],requireMainWriteback:true,requireTurnReview:false}};
+ await c.TM.Endturn.AI.apply.writeBack(ctx);
+  const after=snapshot();
+ near(after['neitang.money'],before['neitang.money']-1000,'real treasury money posted');
+ near(G.neitang.ledgers.money.stock,G.neitang.money,'actual treasury ledger and scalar agree');
+ near(after['vars.河道清淤进度.value'],27,'custom variable changes exactly once');
+ near(after['vars.军械储备.value'],6,'declared custom variable path survives full preflight and writes to its real state');
+ ok(after['huangwei.index']>before['huangwei.index'],'prestige data changes');ok(after['huangquan.index']>before['huangquan.index'],'authority data changes');ok(after['minxin.trueIndex']>before['minxin.trueIndex'],'minxin changes through actual ledger');ok(after['corruption.trueIndex']<before['corruption.trueIndex'],'corruption departments and true index change');
+ ok(cls.satisfaction>before[paths[6]],'class satisfaction applied');near(cls.influence,before[paths[7]]+1,'class influence applied');near(party.influence,before[paths[8]]+1,'party influence only once across primary and lifecycle');
+ const receipts=O.forTurn(G,G.turn);eqSafe(receipts.length,1,'one edict response');ok(receipts[0].effects.length>=9,'receipts cover fiscal core custom class and party data');ok(receipts[0].effects.some(e=>e.path==='neitang.money'&&e.before-e.after===1000),'feedback references actual paid amount');
+ const minxin=G.minxin.trueIndex,corr=G.corruption.trueIndex;c.IntegrationBridge.aggregateRegionsToVariables({strict:true});near(G.minxin.trueIndex,minxin,'minxin survives regional aggregation');near(G.corruption.trueIndex,corr,'corruption survives regional aggregation');
+ const retry={input,prompt:{sc},results:{sc1:clone(original)},record:{},apply:{},meta:{warnings:[],requireMainWriteback:true,requireTurnReview:false}};
+ await c.TM.Endturn.AI.apply.writeBack(retry);const afterRetry=snapshot();for(const p of paths)near(afterRetry[p],after[p],'same-turn writeback retry: '+p);
+ const serialized=JSON.parse(JSON.stringify(G));near(serialized.neitang.ledgers.money.stock,after['neitang.money'],'save serialization preserves treasury ledger');near(serialized.vars['河道清淤进度'].value,27,'save serialization preserves dynamic variable');ok(O.forTurn(serialized,G.turn)[0].effects.length>=9,'serialized tracker retains receipts');
+ const html=c._composeShijiHtml({turn:G.turn,edictReports:receipts,shiluText:p1.shilu_text,shizhengji:p1.shizhengji,oldVars:input.oldVars,personnelChanges:[]});ok(html.includes('首批清淤')&&html.includes('河道首批工银'),'actual composer includes execution and fiscal evidence');ok(html.includes('实 录')&&html.includes('朝政'),'annals and political chronicle retain their presentation');
+ c._prepareGMForSave(G,c.P,{});
+ const save=clone({gameState:{GM:G,P:c.P}});
+ await c._fullLoadGameImpl(save,{nativeStart:true});
+ for(const p of paths)near(E.read(c.GM,p),after[p],'real load preserves edict data: '+p);
+ ok(O.forTurn(c.GM,G.turn)[0].effects.length>=9,'actual save loader preserves execution receipts');
+ const loaded=c.GM;c.FiscalEngine.spendFromNeitang({money:loaded.neitang.money-300},'测试准备：保留三百两');
+ const smallInput={edicts:{political:'拨内帑银一千两赈灾。'}},smallId=O.collect(loaded,smallInput.edicts,loaded.turn)[0].id;
+ const small={turn_summary:'奉诏拨付赈银，库存不足。',shizhengji:'【经济】奉诏议拨内帑一千两，实付须据库存核算。',fiscal_adjustments:[{target:'neitang',kind:'expense',resource:'money',amount:1000,name:'库存不足的赈银',edictId:smallId,reason:'奉诏赈灾'}],edict_feedback:[{edictId:smallId,status:'completed',feedback:'报称赈银已经付清。',effectRefs:['fiscal_adjustments[0]']}]};
+ small.edict_feedback[0].clauses=[{clauseId:'payment',content:'拨付一千两',status:'completed',feedback:'回报称已付清',effectRefs:['fiscal_adjustments[0]']}];
+ const smallCtx={input:smallInput,prompt:{sc},results:{sc1:small},record:{},apply:{},meta:{warnings:[]}};await c.TM.Endturn.AI.apply.writeBack(smallCtx);
+ const shortReport=O.forTurn(loaded,loaded.turn).find(r=>r.edictId===smallId),moneyReceipt=shortReport.effects.find(e=>e.path==='neitang.money');
+ near(moneyReceipt.before,300,'shortfall receipt captures actual starting stock');near(moneyReceipt.after,0,'shortfall receipt records real exhausted stock');near(moneyReceipt.shortfall,700,'shortfall is recorded separately from actual payment');ok(shortReport.status==='partial','claimed completed payment is downgraded to partial from real receipt');
+ ok(O.feedbackHtml([shortReport],loaded.turn).includes('尚缺 700'),'player sees actual unpaid amount');
+ near(shortReport.progressPercent,30,'payment progress uses actual paid proportion');ok(shortReport.clauses[0].status==='partial','individual payment clause also follows its actual receipt');
+ console.log('[smoke-edict-data-writeback] PASS '+checks+' assertions '+JSON.stringify({before,after,receipts:receipts[0].effects.length}));
+ helper.dispose();
+ function eqSafe(a,b,m){ok(a===b,m);}
+})().catch(e=>{console.error(e.stack);helper.dispose();process.exitCode=1;});

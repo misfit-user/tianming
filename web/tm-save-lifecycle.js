@@ -93,16 +93,11 @@ function _tmAwaitLoadBarrier() {
 }
 
 // 确保 GM 所有字段存在默认值（存档前/读档后统一调用）
-// F2 势力活世界总闸·翻默认 ON 迁移 + 启动竞态自愈的【单一真源】规则(normalizer 与 tm:p-restored 自愈两处同调·避免逻辑分叉·Codex 二轮 B)。
-//   带用户意图戳(_factionLivingWorldSetByUser) → 尊重存档值(仅异常值兜底 ON)；
-//   无戳(含旧档旧 normalizer 写死的自动 false·或启动时完整 P 迟到、镜像尚未到) → 取跨局默认镜像 P.conf.factionLivingWorldDefault(是 boolean 才认)否则翻默认 ON。
+// 势力世界已纳入正式玩法；旧存档的禁用值与用户意图戳统一迁移。
 function _tmReconcileFactionLivingWorld(gm, p) {
   if (!gm) return;
-  if (gm._factionLivingWorldSetByUser) {
-    if (typeof gm._factionLivingWorld !== 'boolean') gm._factionLivingWorld = true;   // 带戳·尊重存档值(仅异常值兜底 ON)
-    return;
-  }
-  gm._factionLivingWorld = (p && p.conf && typeof p.conf.factionLivingWorldDefault === 'boolean') ? p.conf.factionLivingWorldDefault : true;   // 无戳→取跨局镜像·否则翻默认 ON
+  gm._factionLivingWorld = true;
+  delete gm._factionLivingWorldSetByUser;
 }
 
 function _tmNormalizeCoreWorldCollections(gm) {
@@ -165,13 +160,11 @@ function _tmNormalizeCoreWorldCollections(gm) {
   return { ok: true, diagnostics: diagnostics };
 }
 if (typeof window !== 'undefined') window._tmNormalizeCoreWorldCollections = _tmNormalizeCoreWorldCollections;
-// 启动竞态自愈：桌面端每 5 次自动存档曾把 lite 覆写成无 conf(现已在 saveP/autoSave 两处补 conf)——历史 lite 仍可能无镜像。
-//   完整 P 异步恢复晚到时 tm-utils 派 tm:p-restored·此处按同一真源用刚恢复的 P.conf.factionLivingWorldDefault 重算 GM._factionLivingWorld·
-//   消除「无戳 + 启动时 GM=true 而迟到镜像=false」的永久矛盾(用户显式关闭被翻 ON)。用户本会话显式设过(带戳)则不动。
+// 完整设置晚于世界恢复时，仍统一采用正式势力世界，不恢复退役关闭值。
 try {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('tm:p-restored', function () {
-      try { if (typeof GM !== 'undefined' && GM && !GM._factionLivingWorldSetByUser) _tmReconcileFactionLivingWorld(GM, (typeof P !== 'undefined') ? P : null); } catch (_e) {}
+      try { if (typeof GM !== 'undefined' && GM) _tmReconcileFactionLivingWorld(GM, (typeof P !== 'undefined') ? P : null); } catch (_e) {}
     });
   }
 } catch (_e) {}
@@ -298,8 +291,20 @@ function _ensureGMDefaults(GM, P) {
 // §6.5 R3·真 Migration Framework (2026-05-22)
 // 版本号 + deprecation pipeline + 日志·让存档/conf 升级有迹可循
 // ════════════════════════════════════════════════════════════════════════
-var SAVE_SCHEMA_VERSION = '1.3.0-ai-upgrade';
+var SAVE_SCHEMA_VERSION = '1.3.5-gameplay-core';
 var _MIGRATIONS = [
+  { from: '*', to: '1.3.5-gameplay-core', desc: '正式玩法旧设置退役', migrate: function(Pref, GMref) {
+    var retired = ['factionLivingWorldDefault', 'agentLiveWorldEnabled', 'factionAgentEnabled', 'factionGoalStackEnabled', 'revoltEntityEnabled', 'useTinyiV3', 'deterministicCasualties', 'partyClassLlmEnabled', 'npcAiPrecision'];
+    var removed = [];
+    ['conf', 'ai'].forEach(function(namespace) {
+      var bag = Pref && Pref[namespace];
+      if (!bag) return;
+      retired.forEach(function(key) { if (Object.prototype.hasOwnProperty.call(bag, key)) { delete bag[key]; removed.push(namespace + '.' + key); } });
+    });
+    if (Pref && Pref.battleConfig) delete Pref.battleConfig.deterministicCasualties;
+    if (GMref) _tmReconcileFactionLivingWorld(GMref, Pref);
+    return removed;
+  } },
   // 每条·{ from: '1.2.0', to: '1.3.0-ai-upgrade', migrate: function(P, GM) {...}, desc: '...' }
   { from: '*', to: '1.3.0-ai-upgrade', desc: 'Phase 0-7.5·rename consolidationEnabled→memorySynthesisEnabled', migrate: function(Pref, GMref) {
     if (Pref && Pref.conf && typeof Pref.conf.consolidationEnabled === 'boolean' && typeof Pref.conf.memorySynthesisEnabled !== 'boolean') {
@@ -390,7 +395,6 @@ function _ensurePDefaults(P, GM) {
   }
   // §6.5 R3·调 migration framework·版本检查 + rule apply + log
   runMigrations(P, GM);
-  if (typeof P.conf.npcAiPrecision !== 'boolean') P.conf.npcAiPrecision = true;
   if (typeof P.conf.npcAiCosmeticEnrich !== 'boolean') P.conf.npcAiCosmeticEnrich = true;
   if (!P.conf.npcAiPrecisionMode) P.conf.npcAiPrecisionMode = 'eager';
   if (typeof P.conf.npcAiPrecisionMaxPerTurn !== 'number') P.conf.npcAiPrecisionMaxPerTurn = 2;
@@ -855,9 +859,11 @@ doSaveGame=async function(){
     var name="T"+GM.turn+"_"+(sc2?sc2.name:"save")+"_"+new Date().toISOString().slice(0,10);
     var saveData2=_buildSaveState({format:'project'});
     saveData2._saveMeta={name:name,turn:GM.turn,time:getTSText(GM.turn),scenario:sc2?sc2.name:"",date:new Date().toISOString(),version:P.meta.v};
-    var blob=new Blob([JSON.stringify(saveData2)],{type:"application/json"});// 紧凑写(存档非配置·再导入走 JSON.parse·缩进约占体积一半)
-    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name+".json";a.click();
-    toast("\u2705 \u5DF2\u5BFC\u51FA: "+name+".json");
+    try {
+      var result = await TM.fileExport.saveJson(JSON.stringify(saveData2), name+".json");
+      if (result.mode === "canceled") { toast("已取消导出"); return; }
+      toast(result.mode === "native" ? ("✅ 存档已保存到所选位置 · " + result.fileName) : ("✅ 已导出: " + name+".json"));
+    } catch (error) { toast("❌ 导出失败: " + (error.message || error)); }
   }
 };
 
@@ -1103,7 +1109,7 @@ function _restoreSavedFields(options) {
 var PREF_CONF_KEYS = [
   'verbosity', 'aiCallDepth',
   'maxOutputTokens', 'turnTokenBudget', 'modelTier', 'contextSizeK',
-  'aiCallRetryOverrides', 'emergencyRecovery',
+  'aiCallRetryOverrides', 'aiSecondaryRetryCount', 'emergencyRecovery',
   'memoryAnchorKeep', 'memoryArchiveKeep', 'characterArcKeep',
   'playerDecisionKeep', 'chronicleKeep', 'convKeep',
   'shiluMin', 'shiluMax', 'szjMin', 'szjMax', 'hourenMin', 'hourenMax',
@@ -1112,7 +1118,7 @@ var PREF_CONF_KEYS = [
   'chronicleMin', 'chronicleMax', 'commentMin', 'commentMax',
   'qijuLookback', 'shijiLookback', 'autoSaveTurns', 'summaryRule',
   'dialogueRecallTurns', 'costAlertThreshold', 'strictSchemaEnabled', 'memorySynthesisEnabled',
-  'npcAiPrecision', 'npcAiCosmeticEnrich', 'npcAiPrecisionMode', 'npcAiPrecisionMaxPerTurn', 'npcInTurnMaxPerTurn',
+  'npcAiCosmeticEnrich', 'npcAiPrecisionMode', 'npcAiPrecisionMaxPerTurn', 'npcInTurnMaxPerTurn',
   'insecureTlsRelay'
 ];
 

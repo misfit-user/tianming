@@ -1,10 +1,10 @@
 {
   "version": "1.3.5.3",
-  "preparedHead": "140b27d9ecb1e18f99f6d9658dfdb14061d37681",
+  "preparedHead": "152956365650ef897eb9ab5d9fb6c6ea5b80f13b",
   "source": {
-    "webTreeHash": "de25945dffbf9ae186f3e3ba2ac355afdf96ce397e30198c549a5a1967bf529d",
+    "webTreeHash": "0e667dfe1ebc773679324918322138d14efeadbc875e2f282c3dc08b5f172a04",
     "webFiles": 1414,
-    "webBytes": 1989095814,
+    "webBytes": 1989097005,
     "shell": [
       {
         "file": "main-account-requests.js",
@@ -87,21 +87,26 @@
   "artifacts": [
     {
       "name": "天命-1.3.5.3-x64.exe",
-      "bytes": 1580327004,
-      "sha256": "1def310ee56e3b06fa672b2eb8d45aa9d39c088aa704b2e9cef0deefcb6855fe"
+      "bytes": 1580337363,
+      "sha256": "4e9c1d90e0c7705faefb4c364cfaf26457816f0e96d120aebd63f25bd3b6317b"
     },
     {
       "name": "天命-1.3.5.3-完整.apk",
       "bytes": 1575534844,
-      "sha256": "81ca2cb1a012d3e0f871c6df76136d1e98771dc370e7c19677d97efbd05d48e2"
+      "sha256": "47e1ca188abdb2915d57ce900f8f6dba9f5b69c5ea6b61d2091c5991aaec34f7"
     }
   ],
   "localFullSmoke": {
     "pass": 1139,
     "fail": 0,
     "skip": 0,
-    "waived": 0
+    "waived": 0,
+    "runId": "6aa3645b-055e-4d15-a060-aa816d9a6b5b",
+    "testedTree": "9476c8940b8aaa2914d37c266816e1f1525cb2d6"
   },
+  "officeAccountingCases": 33,
+  "officeRegressionCases": 48,
+  "nativeOfficeWritebackCases": 12,
   "architecture": 15,
   "sourceRuntimeFiles": 1414,
   "addedComparedWith1352": 80,
@@ -110,7 +115,7 @@
   "unexplainedPreviousVersionOmissions": 0,
   "preview": {
     "files": 1414,
-    "bytes": 1989095814,
+    "bytes": 1989097005,
     "assets": 554,
     "previewFiles": 106,
     "previewRuntimeAssets": 41,

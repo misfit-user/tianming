@@ -228,6 +228,13 @@ if (typeof window !== 'undefined') {
  * 应用一次NPC互动
  */
 function applyNpcInteraction(actor, target, type, extra) {
+  var ledger = typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger;
+  if (ledger && ledger.owns(type)) {
+    var intent = Object.assign({}, extra || {}, { actor:actor, target:target, behaviorType:type, intent:extra && extra.description || type });
+    var receipt = ledger.ingest(intent, extra && extra._agent ? 'agent:relations' : 'relations');
+    if (extra && intent.actionId) extra.actionId = intent.actionId;
+    return !!receipt && /^(submitted|waiting|started|partial|completed)$/.test(receipt.outcome);
+  }
   extra = extra || {};
   actor = _tmRelationCanonName(actor);
   target = _tmRelationCanonName(target);

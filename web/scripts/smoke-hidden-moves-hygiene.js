@@ -27,59 +27,19 @@ runtimeFiles.forEach(function (f) {
 assert(defHits === 0, '① createExecutionConstraint 定义已删·全运行时零复活');
 assert(writeHits === 0, '② GM.executionConstraints 读写全清·子树死绝');
 
-// ── 载入 NPC 决策引擎（照 smoke-npc-action-logic 同款沙箱）──
-const chars = [
-  { id: 'c1', name: 'ZhangSan', alive: true, loyalty: 65, ambition: 82, officialTitle: 'Minister', location: 'Capital' },
-  { id: 'c2', name: 'LiSi', alive: true, loyalty: 50, ambition: 40, officialTitle: 'Clerk', location: 'Capital' }
-];
-const ctx = {
-  console: console, Promise: Promise, Math: Math, Date: Date, JSON: JSON, Map: Map,
-  Array: Array, Object: Object, String: String, Number: Number, RegExp: RegExp,
-  setTimeout: function (fn) { return { fn: fn }; }, clearTimeout: function () {},
-  P: { ai: {}, traitDefinitions: [], npcEngine: { enabled: true, behaviors: [] } },
-  GM: {
-    running: true, turn: 9, vars: {}, rels: {}, facs: [],
-    guoku: { balance: 0, money: 0, ledgers: { money: { stock: 0 } } },
-    corruption: { subDepts: {} }, chars: chars, armies: [], memorials: [], letters: [],
-    _pendingNpcLetters: [], _pendingNpcCorrespondence: [], _pendingNpcConspiracies: [],
-    _npcHiddenMoves: [], _pendingAudiences: [], _npcActionLedger: [], _npcPlans: [],
-    _npcDecisionDiagnostics: [], _capital: 'Capital', provinceStats: {}, officeTree: []
-  },
-  addEB: function () {},
-  random: function () { return 0.3; },
-  findCharByName: function (n) { for (var i = 0; i < chars.length; i++) if (chars[i].name === n) return chars[i]; return null; }
-};
-ctx.window = ctx; ctx.global = ctx; ctx.globalThis = ctx;
-vm.createContext(ctx);
-load(ctx, 'tm-npc-engine.js');
-load(ctx, 'tm-npc-action-ledger.js');
-load(ctx, 'tm-fiscal-engine.js');
-load(ctx, 'tm-npc-decision.js');
-load(ctx, 'tm-npc-decision-ai-driven.js');
-assert(typeof ctx.executeObstructBehavior === 'function' && typeof ctx.executeSlanderBehavior === 'function', '③ 两行为函数在位');
 
-// ── ② obstruct 落账原样 + 封顶 ──
-ctx.executeObstructBehavior(chars[0], 'LiSi', { intent: '暗中作梗' }, {});
-assert(ctx.GM._npcHiddenMoves.length === 1, '④ obstruct 落 _npcHiddenMoves(原有写端不破)');
-var rec0 = ctx.GM._npcHiddenMoves[0];
-assert(rec0.actor === 'ZhangSan' && rec0.target === 'LiSi' && rec0.visibility === 'hidden' && rec0.turn === 9, '⑤ obstruct 记录形状不变');
-
-// ── ③ slander 双落账对齐 ──
-ctx.executeSlanderBehavior(chars[0], 'LiSi', { intent: '谗言中伤' }, {});
-assert(ctx.GM._npcHiddenMoves.length === 2, '⑥ slander 现亦落 _npcHiddenMoves(与 obstruct 对齐)');
-var rec1 = ctx.GM._npcHiddenMoves[1];
-assert(/^slander/.test(rec1.id) && rec1.actor === 'ZhangSan' && rec1.target === 'LiSi' && rec1.visibility === 'hidden', '⑦ slander 记录形状与 obstruct 同构');
-assert(ctx.GM._npcInternalActionHistory && ctx.GM._npcInternalActionHistory.length >= 2, '⑧ InternalActionHistory 双落账仍在(不是搬家是对齐)');
-
-// ── recency 惩罚读得到 slander 了 ──
-var pen = ctx._npcRecentTargetPenalty(chars[0], 'slander', 'LiSi');
-assert(typeof pen === 'number' && pen > 0, '⑨ 同人近攻讦 recency 惩罚>0(经 _npcHiddenMoves 读到)');
-
-// ── 封顶40 ──
-for (var i = 0; i < 50; i++) ctx.executeObstructBehavior(chars[0], 'T' + i, { intent: 'x' }, {});
-assert(ctx.GM._npcHiddenMoves.length === 40, '⑩ obstruct 写端封顶40(只增不裁修毕)');
-ctx.executeSlanderBehavior(chars[0], 'T99', { intent: 'y' }, {});
-assert(ctx.GM._npcHiddenMoves.length === 40, '⑪ slander 写端同封顶');
-assert(ctx.GM._npcHiddenMoves[39].target === 'T99', '⑫ 封顶裁旧留新');
-
-console.log('smoke-hidden-moves-hygiene OK — ' + N + ' 断言全绿（死代码防复活/封顶/slander双落账对齐）');
+// The views now describe intentions. They are not independent executable actions or automatic grievances.
+const ctx=require('./lib-npc-action-fixture').fixture(),a=ctx.actor('a','张三'),b=ctx.actor('b','李四');
+function act(type,id){return ctx.TM.NPC.ActionLedger.ingest({actionId:id,actorId:a.id,targetId:b.id,behaviorType:type,intent:'待拟具体办法'},'hygiene');}
+assert(act('obstruct','ob-1').outcome==='submitted','obstruct keeps a pending plan');
+assert(act('slander','sl-1').outcome==='submitted','slander keeps a pending plan');
+assert(ctx.GM._npcHiddenMoves.length===2,'both hidden-move views retain their sources');
+assert(ctx.GM._npcHiddenMoves.every(m=>m.planId&&m.status==='intended'),'views never assert unverified execution');
+assert(ctx.GM._npcPlans.length===2&&ctx.GM._npcPlans.every(p=>p.progress===0),'registration gives no progress');
+assert(b.loyalty===80&&(b._memory||[]).length===0,'a secret intention cannot psychically affect its subject');
+assert(act('slander','sl-1').duplicate===true&&ctx.GM._npcHiddenMoves.length===2,'replay cannot make another view or plan');
+for(let i=0;i<50;i++)act('obstruct','ob-'+(i+2));
+assert(ctx.GM._npcHiddenMoves.length===40,'display history retains its bounded length');
+assert(ctx.GM._npcPlans.length===52,'view trimming cannot destroy active obligations');
+assert(typeof ctx.createExecutionConstraint==='undefined','retired driver remains absent');
+console.log('smoke-hidden-moves-hygiene OK — '+N+' assertions');

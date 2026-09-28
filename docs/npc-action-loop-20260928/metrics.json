@@ -1,0 +1,25 @@
+{
+  "baseline": "9b4f253f31de64d1928ded0401b95ccdc50f2c72",
+  "device": {
+    "node": "v24.14.0",
+    "platform": "win32",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H"
+  },
+  "fixture": "100 identified officials, ten routine petitions; 12 fresh runs per version. AI replaced by identical local responses. Module loading excluded. Plan retention measured separately. JSON world bytes, excluding artwork.",
+  "before": {
+    "settlementMedianMs": 14.775499999999965,
+    "settlementP95Ms": 37.35609999999997,
+    "mockedModelCalls": 1,
+    "promptBytes": 8553,
+    "serializedWorldBytes": 59284,
+    "retainedOutstandingPlansOf200": 99
+  },
+  "after": {
+    "settlementMedianMs": 16.23849999999993,
+    "settlementP95Ms": 24.11869999999999,
+    "mockedModelCalls": 1,
+    "promptBytes": 10886,
+    "serializedWorldBytes": 69041,
+    "retainedOutstandingPlansOf200": 200
+  }
+}

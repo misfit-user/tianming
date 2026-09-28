@@ -1,0 +1,122 @@
+[
+  {
+    "path": "web/.hot-update-manifest.json",
+    "sha256": "9c57ec5e24c540658eaad0eac128e4fe65d22ec635168b451255c0400b22d233"
+  },
+  {
+    "path": "web/editor.html",
+    "sha256": "d9a9784b44c5d77d88e4f7c7eb9be5100650ced27977bd4c0ea51567b4ea95b7"
+  },
+  {
+    "path": "web/generated/tm-ai-change-applier.bundle.js",
+    "sha256": "a521c156a06105c980b4a89f00f7dfa20d75e751a65ff76f7f0f72bb69787ddb"
+  },
+  {
+    "path": "web/index.html",
+    "sha256": "6b1f246beab8780f62ba06e054ae0b9b9782b2efa12359bfd426115a946e0b35"
+  },
+  {
+    "path": "web/modules/ai-change-applier/core.js",
+    "sha256": "1a0f7a10d43f255c84a32647806c399aca0acd74c60a974a078a562c384e5f5e"
+  },
+  {
+    "path": "web/scripts/lib-npc-action-fixture.js",
+    "sha256": "5ac6c693f8cc742e94093023c1ac7447190e85ee02a77659339b218f91e0eeb6"
+  },
+  {
+    "path": "web/scripts/smoke-char-economy-ai-context.js",
+    "sha256": "90e861c3232c0937611013511fb67c24ea357894cfa67a3a2f5d4223e93181cc"
+  },
+  {
+    "path": "web/scripts/smoke-char-economy-family-tier-contract.js",
+    "sha256": "86bd9af718afca0e68464fa94f4f836cf63dbc755f90793e8dfffe907a66cc98"
+  },
+  {
+    "path": "web/scripts/smoke-hidden-moves-hygiene.js",
+    "sha256": "8ff50dfc92406e4cc53e52481478118d700c5fd406071a6dbbe45760cdcd6721"
+  },
+  {
+    "path": "web/scripts/smoke-npc-action-entrypoints.js",
+    "sha256": "08f86796554e1652a0bfbb879833a920c8143fda89ee767ff3d034c1091016f7"
+  },
+  {
+    "path": "web/scripts/smoke-npc-action-logic.js",
+    "sha256": "7b07a2c16b71a8f7c31297f437715c92deb3de2eaa325dd1b29b644193db3ccd"
+  },
+  {
+    "path": "web/scripts/smoke-npc-action-loop.js",
+    "sha256": "af0c266308bac701c3809ff1b863f24972bb2edca8a1c1e6efd81a69dbc1b9d0"
+  },
+  {
+    "path": "web/scripts/smoke-npc-execution-economy-ability-wuchang-results.js",
+    "sha256": "fdd47c242648ec73a2ba1dfcdfa4f5ff4adc665e212566248b29681124aaa3f9"
+  },
+  {
+    "path": "web/scripts/smoke-npc-family-tier-behavior-effects.js",
+    "sha256": "ee2ec328af6b71e3c4da583d11931f118b1fb4b9c36d6dae7c2b83b2c1619698"
+  },
+  {
+    "path": "web/startup-script-phases.json",
+    "sha256": "e9cc20c901eb162a3faf8f4e81362349357cd08663be1ea4d0165ab433efc49d"
+  },
+  {
+    "path": "web/tm-endturn-agent-depth-tools.js",
+    "sha256": "58de70cd1815684344944a152e2168e7046c30d6f160462dddef16318c80535d"
+  },
+  {
+    "path": "web/tm-endturn-agent-intent-plan.js",
+    "sha256": "e83a315d36e90964070b106d1682b7acbcd49dc160a6eeced556dbb894186079"
+  },
+  {
+    "path": "web/tm-endturn-apply.js",
+    "sha256": "14f120dfade47d3444a8410a072ee14ac4cc148801f467f99bef97e8fd55d97c"
+  },
+  {
+    "path": "web/tm-endturn-followup.js",
+    "sha256": "2e002918cbfa9347604922b8f674c420bed868d64be37324177abfabc24487bb"
+  },
+  {
+    "path": "web/tm-endturn-pipeline-steps.js",
+    "sha256": "903815b714c4cde658d40e3f8e3599904158ff7c9ad69c68390b5dea9b608170"
+  },
+  {
+    "path": "web/tm-help-social.js",
+    "sha256": "7a1b92fe51bc2fbde51915cf4dea19d8b1660141175fafb54d6b1d420b3265e4"
+  },
+  {
+    "path": "web/tm-hongyan-office.js",
+    "sha256": "47a0bbc5e0df43c9b8a6ef0370a1494a2290c34df0bee191dc9eaaee27fda4a7"
+  },
+  {
+    "path": "web/tm-mechanics-memory.js",
+    "sha256": "fe73e30f22af7f540458e2ea5370288673b52ca963222150bad18167d48da221"
+  },
+  {
+    "path": "web/tm-npc-action-ledger.js",
+    "sha256": "6144501e396ff2817b9b963c2e11db5ac79e435ad108b8e8143bc464384a0153"
+  },
+  {
+    "path": "web/tm-npc-decision-ai-driven.js",
+    "sha256": "70a96bbe5a1690353d25d189cdcd856675aa2d540bb142b42a33479191b4ee1a"
+  },
+  {
+    "path": "web/tm-npc-decision.js",
+    "sha256": "ec84f30b676483fa0fe45b9633b46699f33c6b80d5f1cd2ee9933d89fd65b8b4"
+  },
+  {
+    "path": "web/tm-public-treasury.js",
+    "sha256": "a125f809cfc9a0093c679c3708d2ee1a529d54c84bc36ac8f1eddf986f627cf1"
+  },
+  {
+    "path": "web/tm-relations.js",
+    "sha256": "dca56960d411b3d92436fecedc86da0e5e3f449d0edfa88addf047c6f29a21cc"
+  },
+  {
+    "path": "web/tm-save-lifecycle.js",
+    "sha256": "fa31407a30ccec38114e156ad0ee256b4aae0bbd7f4e666e45f7aa069c8b9548"
+  },
+  {
+    "path": "web/tm-start-runtime-manifest.json",
+    "sha256": "f888eff91f235d7f8404f096510bd8f9e33d04c53125e04204e8880d7245b857"
+  }
+]

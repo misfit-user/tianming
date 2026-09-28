@@ -117,6 +117,9 @@
 
   // 仍依赖全局 GM 的 canonical 子系统必须独占 root.GM 沙箱，不能与普通
   // 专家并行：关系走 applyNpcInteraction，NPC 心绪走 NpcMemorySystem.remember。
+  ['_npcActionState','_npcActionLedger','_npcPlans','_npcExecutionResults','_npcDecisionDiagnostics','_personalMemorySequence','evtLog','affinityMap','letters'].forEach(function(k) {
+    if (ALLOWED.deepen_relations.indexOf(k)<0) ALLOWED.deepen_relations.push(k);
+  });
   var ROOT_BOUND = { deepen_npcs: 1, deepen_relations: 1 };
   function isRootBound(tool) { return !!ROOT_BOUND[tool]; }
   function captureProposalBasis(gm) {

@@ -248,6 +248,9 @@
       //   自 sc15 内联逐字抽出共享·字段缺省自然跳过·语义与原 sc15 内联一致。
       var _applyNpcDeepResult = function(pND) {
         if (!pND) return;
+        var actionLedger = global.TM && global.TM.NPC && global.TM.NPC.ActionLedger;
+        // SC15 is a world-settlement/report input. Its additional summaries cannot replay operations.
+        if (actionLedger && Array.isArray(pND.npc_actions)) pND.npc_actions.forEach(function(a){actionLedger.ingest(Object.assign({},a,{executionMode:'report'}),'sc15:npc_actions');});
         // 应用心态变化
         if (pND.mood_shifts && Array.isArray(pND.mood_shifts)) {
           pND.mood_shifts.forEach(function(ms) {
@@ -291,6 +294,7 @@
         if (pND.relationship_changes && Array.isArray(pND.relationship_changes)) {
           pND.relationship_changes.forEach(function(rc) {
             if (!rc.a || !rc.b || !rc.delta) return;
+            if (actionLedger && rc.actionId && Object.keys(actionLedger.state(GM).receipts).some(function(k){return actionLedger.state(GM).receipts[k].result.actionId===rc.actionId;})) return;
             var _rcD = clamp(parseInt(rc.delta) || 0, -15, 15);
             if (typeof AffinityMap !== 'undefined') AffinityMap.add(rc.a, rc.b, _rcD, rc.reason || '暗流');
             // ★关系变动须留记忆(方向B补漏·暗流隐于叙事外·②失败即丢)·A 记住对 B 观感因何而变·否则"疏远/亲近却不记得为何"
@@ -404,6 +408,7 @@
           if (!GM.activeSchemes) GM.activeSchemes = [];
           pND.npc_schemes.forEach(function(sc2) {
             if (!sc2.schemer || !sc2.plan) return;
+            if (sc2.planId && actionLedger && actionLedger.ensurePlans(GM).some(function(p){return p.id===sc2.planId;})) return;
             // 查找是否有已存在的同一阴谋
             var existing = GM.activeSchemes.find(function(s) { return s.schemer === sc2.schemer && s.target === sc2.target; });
             var _sc15scheme;

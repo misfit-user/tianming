@@ -127,6 +127,7 @@
       if(src.entries.concat(dst.entries).some(function(e){return !resource(e,k).known;})){bad='balance-unknown:'+k;return;}
       var have=src.entries.reduce(function(n,e){return n+Math.max(0,resource(e,k).available||0);},0);
       if(have<amounts[k]&&!o.allowPartial){bad='insufficient-resources:'+k;return;}
+      if(o.enforceQuota && src.entries.some(function(e){var r=resource(e,k);return r.quota==null||r.used==null||amounts[k]>Math.max(0,r.quota-r.used);})){bad='quota-unavailable:'+k;return;}
       paid[k]=round(Math.min(have,amounts[k]));shortfall[k]=round(amounts[k]-paid[k]);
       distribute(paid[k],src.entries,k,false).forEach(function(r){if(r.amount)debits.push({entry:r.entry,resource:k,amount:r.amount});});
       if(to)distribute(paid[k],dst.entries,k,true).forEach(function(r){if(r.amount)credits.push({entry:r.entry,resource:k,amount:r.amount});});
@@ -140,7 +141,7 @@
     var sinkTag=o.sinkTag||(centralOut&&palaceIn?'内廷转运':palaceOut&&centralIn?'接济帑廪':reason),sourceTag=o.sourceTag||(centralOut&&palaceIn?'guokuTransfer':reason);
     try{
       if(!o.opening)affected.forEach(function(x){rollPeriod(x.entry,{turn:G.turn||0,turnKey:String(G.sid||'')+':'+String(G.turn||0),days:turnDays(G),daysPerMonth:30,daysPerYear:360});});
-      debits.forEach(function(r){var b=ensureKnownBox(r.entry,r.resource);b.stock=round(b.stock-r.amount);b.available=round(b.available-r.amount);if(!o.opening){b.thisTurnOut=round((number(b.thisTurnOut)||0)+r.amount);var sink=sinkTag;b.sinks[sink]=round((number(b.sinks[sink])||0)+r.amount);if(global.FiscalStatement)global.FiscalStatement.recordFlow(b,r.entry.definition.scope==='palace'?'internal':'central','out',sink,id,reason,r.amount);}sync(r.entry);});
+      debits.forEach(function(r){var b=ensureKnownBox(r.entry,r.resource);b.stock=round(b.stock-r.amount);b.available=round(b.available-r.amount);if(o.enforceQuota)b.used=round((number(b.used)||0)+r.amount);if(!o.opening){b.thisTurnOut=round((number(b.thisTurnOut)||0)+r.amount);var sink=sinkTag;b.sinks[sink]=round((number(b.sinks[sink])||0)+r.amount);if(global.FiscalStatement)global.FiscalStatement.recordFlow(b,r.entry.definition.scope==='palace'?'internal':'central','out',sink,id,reason,r.amount);}sync(r.entry);});
       if(o._faultInjector)o._faultInjector('after-debit');
       credits.forEach(function(r){var b=ensureKnownBox(r.entry,r.resource);b.stock=round(b.stock+r.amount);b.available=round(b.available+r.amount);if(!o.opening){b.thisTurnIn=round((number(b.thisTurnIn)||0)+r.amount);var source=sourceTag;b.sources[source]=round((number(b.sources[source])||0)+r.amount);if(global.FiscalStatement)global.FiscalStatement.recordFlow(b,r.entry.definition.scope==='palace'?'internal':'central','in',source,id,reason,r.amount);}sync(r.entry);});
       var result={ok:true,transactionId:id,paid:paid,shortfall:shortfall,debits:debits.map(function(r){return {accountId:r.entry.id,physicalKey:r.entry.key,resource:r.resource,amount:r.amount};}),credits:credits.map(function(r){return {accountId:r.entry.id,physicalKey:r.entry.key,resource:r.resource,amount:r.amount};})};

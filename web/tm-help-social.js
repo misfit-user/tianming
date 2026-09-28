@@ -1047,11 +1047,16 @@ var OpinionSystem = {
    * @param {number} value - 好感变化（正/负）
    * @param {string} reason - 原因描述
    */
-  addEventOpinion: function(charName, fromName, value, reason) {
-    var char = findCharByName(charName);
+  addEventOpinion: function(charName, fromName, value, reason, meta) {
+    var char = charName && typeof charName === 'object' ? charName : (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger ? TM.NPC.ActionLedger.findChar(charName, GM) : findCharByName(charName));
+    var sourceId = meta && meta.sourceId;
+    var fromId = fromName && typeof fromName === 'object' ? fromName.id : null;
+    fromName = fromName && typeof fromName === 'object' ? fromName.name : fromName;
     if (!char) return;
     if (!char._eventOpinions) char._eventOpinions = [];
+    if (sourceId && char._eventOpinions.some(function(o){return o.sourceId===sourceId;})) return;
     char._eventOpinions.push({
+      sourceId: sourceId || '', fromId: fromId,
       from: fromName,
       value: value,
       reason: reason || '',
@@ -1070,7 +1075,7 @@ var OpinionSystem = {
     var eventSum = 0;
     if (charA._eventOpinions) {
       charA._eventOpinions.forEach(function(op) {
-        if (op.from === charB.name) eventSum += op.value;
+        if (op.fromId ? String(op.fromId) === String(charB.id) : op.from === charB.name) eventSum += op.value;
       });
     }
     // 加入亲疏关系网数据

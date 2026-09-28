@@ -178,17 +178,17 @@ async function main() {
   assert(legacyNpc.economy.familyEconomy.sharedWealth === 20000 && legacyNpc.economy.socialTier.key === 'civilOfficial',
     'full AI context should expose family economy and social tier');
 
-  const behaviorContext = ctx.buildNpcBehaviorContext();
-  const legacyEconomy = behaviorContext.characterEconomy.find(function(e) { return e.name === 'LegacyGentry'; });
-  const merchantEconomy = behaviorContext.characterEconomy.find(function(e) { return e.name === 'MerchantHead'; });
-  assert(legacyEconomy && legacyEconomy.familyEconomy.clanName === '\u9647\u897f\u674e\u6c0f',
-    'NPC behavior context should expose clan economy');
-  assert(merchantEconomy && merchantEconomy.socialTier.key === 'merchant',
-    'NPC behavior context should include non-official merchant tier economy');
 
-  await ctx.batchNpcDecisions([chars[0]], behaviorContext, { maxTokens: 800, tier: 'secondary' });
-  assert(/familyEconomy/.test(lastPrompt) && /\u9647\u897f\u674e\u6c0f/.test(lastPrompt) && /socialTier/.test(lastPrompt),
-    'NPC prompt should carry family economy and social tier fields');
+  const behaviorContext=ctx.buildNpcBehaviorContext();
+  assert(behaviorContext.characterEconomy.length===0,'shared batch has no family treasury block');
+  const legacyEconomy=ctx.buildNpcBehaviorContext(chars[0]).self.resources;
+  const merchantEconomy=ctx.buildNpcBehaviorContext(chars[1]).self.resources;
+  assert(legacyEconomy.familyEconomy.clanName==='陇西李氏','private actor packet retains own family background');
+  assert(merchantEconomy.socialTier.key==='merchant','private merchant packet retains own economic circumstances');
+  await ctx.batchNpcDecisions([chars[0]],behaviorContext,{maxTokens:800,tier:'secondary',privateActorId:chars[0].id});
+  assert(lastPrompt.includes('familyEconomy')&&lastPrompt.includes('socialTier'),'actor own family and tier inform private decisions');
+  await ctx.batchNpcDecisions(chars,behaviorContext,{maxTokens:800,tier:'secondary'});
+  assert(!lastPrompt.includes('sharedWealth'),'another actor cannot receive clan balances through a shared prompt');
 
   console.log('[smoke-char-economy-family-tier-contract] PASS ' + passed + ' assertions');
 }

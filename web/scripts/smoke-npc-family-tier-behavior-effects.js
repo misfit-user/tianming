@@ -207,10 +207,12 @@ function executeCard(ctx, npc, card) {
 
 async function main() {
   const ctx = buildContext();
+  ctx.GM.chars.forEach((c,i)=>c.id='family-'+i);
   load(ctx, 'tm-char-economy-engine.js');
   load(ctx, 'tm-npc-engine.js');
   load(ctx, 'tm-npc-action-ledger.js');
   load(ctx, 'tm-npc-decision.js'); load(ctx, 'tm-npc-decision-ai-driven.js');
+  ['tm-ai-change-pathutils.js','tm-ai-change-army.js','tm-ai-change-narrative.js','generated/tm-ai-change-applier.bundle.js'].forEach(f=>load(ctx,f));
 
   const patron = ctx.GM.chars[0];
   const isolated = ctx.GM.chars[1];
@@ -240,34 +242,20 @@ async function main() {
   assert(debtorPrivate && debtorPrivate.tierFit >= 2,
     'debt-burdened commoner should still carry tier/survival pressure on private_life');
 
-  const clanBefore = ctx.GM.clans['great-clan'].sharedWealth;
-  executeCard(ctx, patron, patronNetwork);
-  assert(ctx.GM.clans['great-clan'].sharedWealth < clanBefore,
-    'build_network by clan head should spend clan shared wealth');
-  assert(patron._lastNpcExecution && patron._lastNpcExecution.familySupport && patron._lastNpcExecution.familySupport.spent > 0,
-    'build_network execution should record family support spending');
-  assert(ctx.GM._npcActionLedger.some(function(x) {
-    return x.actor === 'ClanPatron' && x.stateEffects && x.stateEffects.executionResult && x.stateEffects.executionResult.familySupport;
-  }), 'action ledger should preserve familySupport execution result');
-  assert(ctx.GM._npcInternalActionHistory.some(function(x) {
-    return x.kind === 'plan' && x.from === 'ClanPatron' && x.familyFit >= 8 && x.tierFit > 0;
-  }), 'internal build_network plan should preserve family and tier fit');
-
-  const merchantMoneyBefore = merchant.resources.privateWealth.money;
-  executeCard(ctx, merchant, merchantPrivate);
-  assert(merchant.resources.privateWealth.money > merchantMoneyBefore,
-    'merchant private_life should profit from commerce tier');
-  assert(merchant._lastNpcExecution && merchant._lastNpcExecution.tierOutcome && merchant._lastNpcExecution.tierOutcome.commerceYield > 0,
-    'merchant private_life should record commerce tier outcome');
-  assert(ctx.GM._npcInternalActionHistory.some(function(x) {
-    return x.kind === 'private_life' && x.from === 'MerchantBroker' && x.tierFit >= 8 && typeof x.familyFit === 'number';
-  }), 'internal money action should preserve family and tier fit');
-
-  await ctx.batchNpcDecisions([patron], context, { maxTokens: 800, tier: 'secondary' });
-  const promptFit = lastPrompt.match(/fit=([0-9.]+\/[0-9.]+\/[0-9.]+\/[0-9.]+\/[0-9.]+)/);
-  assert(promptFit,
-    'NPC prompt ActionCards should expose ability/wuchang/economy/family/tier fit values');
-
+  // Family position changes motivation; asking for a network no longer spends family money or invents consent.
+  const clanBefore=ctx.GM.clans['great-clan'].sharedWealth;
+  executeCard(ctx,patron,patronNetwork);
+  assert(ctx.GM.clans['great-clan'].sharedWealth===clanBefore,'an invitation does not spend clan resources');
+  assert(ctx.GM._npcPlans.length===1&&ctx.GM._npcPlans[0].progress===0,'network request is a persistent uncompleted plan');
+  assert(patron._lastNpcExecution.outcome==='submitted','network record reports submission, not completion');
+  const wealth=merchant.resources.privateWealth.money;
+  const merchantResult=ctx.TM.NPC.ActionLedger.ingest({actorId:merchant.id,behaviorType:'private_life',intent:'料理家务'},'smoke');
+  assert(merchantResult.outcome==='noop','private life can legitimately rest without a transaction');
+  assert(ctx.GM.chars.find(c=>c.id===merchant.id).resources.privateWealth.money===wealth,'commerce class does not mint money in autonomous handler');
+  await ctx.batchNpcDecisions([patron],context,{maxTokens:800,tier:'secondary',privateActorId:patron.id});
+  assert(lastPrompt.includes(patron.name)&&lastPrompt.includes('self'),'private decision receives its own context');
+  await ctx.batchNpcDecisions([patron,merchant],context,{maxTokens:800,tier:'secondary'});
+  assert(!lastPrompt.includes('sharedWealth'),'public batch excludes clan private ledgers');
   console.log('[smoke-npc-family-tier-behavior-effects] PASS ' + passed + ' assertions');
 }
 

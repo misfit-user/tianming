@@ -854,6 +854,16 @@ function _wdEnvoyDecision(kind) {
   var playerFac = (typeof P !== 'undefined' && (P.playerFactionName || (P.playerInfo && P.playerInfo.factionName))) || GM.playerFactionName || GM.playerFaction || '本朝';
   var L = ({ accept: '准奏', reject: '驳回', temporize: '羁縻' })[kind] || kind;
   // 批己·谈判会话专线：招抚(pacify)/议和(peace)据当前台面 offer 走各自子系统结算·不走下方通用邦交效果表
+  if(ch._factionProposalId) {
+    var dip=window.TM&&TM.FactionDiplomacy;
+    var receipt=dip&&dip.recordPlayerResponse({id:ch._fromFactionId,name:fac},{id:ch._factionProposalId,proposalVersion:ch._proposalVersion,outcome:({accept:'accepted',reject:'rejected',temporize:'temporized'})[kind]});
+    if(!receipt||['completed','submitted','waiting'].indexOf(receipt.outcome)<0){if(typeof toast==='function')toast(receipt&&receipt.reason||'外交事项尚不能办理');return;}
+    ch._pendingEnvoyDisposition=kind;
+    if(typeof toast==='function')toast(receipt.reason);
+    if(ch._negotiationId&&TM.Negotiation&&kind!=='temporize')TM.Negotiation.resolve(ch._negotiationId,kind==='accept'?'accepted':'rejected');
+    if(typeof closeWenduiModal==='function')setTimeout(closeWenduiModal,600);
+    return;
+  }
   var _ng = (ch._negotiationId != null && typeof window !== 'undefined' && window.TM && window.TM.Negotiation && window.TM.Negotiation.get) ? window.TM.Negotiation.get(ch._negotiationId) : null;
   if (_ng && (_ng.topic === 'pacify' || _ng.topic === 'peace')) { _wdSettleNegotiation(kind, ch, fac, _ng, playerFac); return; }
   var _km = _WD_ENVOY_EFFECTS[kind] || _WD_ENVOY_EFFECTS.temporize;
@@ -953,7 +963,7 @@ function _wdEnvoyCounter() {
   var _from = String(ch.fromFaction || ch.faction || '外藩');
   var body = '<div style="display:flex;flex-direction:column;gap:8px;">'
     + '<div style="font-size:0.75rem;color:var(--txt-d);">向「' + escHtml(_from) + '」提出还价条款（对方将据此续演）</div>'
-    + '<textarea id="wd-ng-counter-terms" rows="3" maxlength="80" placeholder="还价条款（≤80字）" style="width:100%;"></textarea>'
+    + '<textarea id="wd-ng-counter-terms" rows="3" maxlength="12000" placeholder="完整还价条款" style="width:100%;"></textarea>'
     + '<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:0.75rem;color:var(--txt-d);">加银(可选)</span><input type="number" id="wd-ng-counter-silver" min="0" placeholder="两" style="width:120px;"></div>'
     + '</div>';
   openGenericModal('回价·续谈', body, function () {
@@ -962,6 +972,13 @@ function _wdEnvoyCounter() {
     var silver = Number(sEl && sEl.value) || 0;
     if (!terms && !silver) { if (typeof toast === 'function') toast('请填还价条款或加银'); return; }
     var counterTerms = terms || ('加银' + silver + '两');
+    if(ch._factionProposalId) {
+      var dip=window.TM&&TM.FactionDiplomacy,r=dip&&dip.recordPlayerResponse({id:ch._fromFactionId,name:_from},{id:ch._factionProposalId,proposalVersion:ch._proposalVersion,outcome:'countered',counterTerms:counterTerms,obligations:silver>0?[{kind:'delivery',resource:'money',amount:silver,status:'unfulfilled'}]:[]});
+      if(!r||r.outcome!=='submitted'){if(typeof toast==='function')toast(r&&r.reason||'还价未提交');return;}
+      if(typeof closeGenericModal==='function')closeGenericModal();
+      if(typeof toast==='function')toast(r.reason);
+      if(typeof closeWenduiModal==='function')closeWenduiModal();return;
+    }
     var res = N.playerCounter(ch._negotiationId, counterTerms, silver);
     if (typeof closeGenericModal === 'function') closeGenericModal();
     if (!res) { if (typeof toast === 'function') toast('回价未成（逾期或轮次已满）'); return; }
@@ -1531,7 +1548,7 @@ function _wdOpenAudienceQueue(ref) {
       faction: q.fromFaction || '',  // 关键：挂钩势力（标准字段）
       fromFaction: q.fromFaction,
       interactionType: q.interactionType,
-      _factionProposalId: q._factionProposalId, _diplomacyType: q._diplomacyType,  // 【S3】带提议 id·供准奏/驳回回写发起势力持久记忆
+      _factionProposalId: q._factionProposalId, _proposalVersion:q._proposalVersion, _fromFactionId:q._fromFactionId, _diplomacyType: q._diplomacyType,  // 【S3】带提议 id·供准奏/驳回回写发起势力持久记忆
       _negotiationId: q._negotiationId,  // 批己·带谈判会话 id·供回价钮+按台面 offer 结算
       envoyMission: q.reason || '',
       location: (typeof _getPlayerLocation === 'function' ? _getPlayerLocation() : null) || GM._capital || '京城',  // 2026-06-26 使节所在地随玩家实际所在地(非固定 GM._capital/京城)·否则玩家不在都城(如绍宋在应天府)时使节被判"远在京城·不能召见"
@@ -1566,7 +1583,7 @@ function _wdOpenAudienceQueue(ref) {
     }
     ch.fromFaction = q.fromFaction;
     ch.interactionType = q.interactionType;
-    ch._factionProposalId = q._factionProposalId; ch._diplomacyType = q._diplomacyType;  // 【S3】同步提议 id(重复求见也能回写)
+    ch._factionProposalId = q._factionProposalId; ch._proposalVersion=q._proposalVersion; ch._fromFactionId=q._fromFactionId; ch._diplomacyType = q._diplomacyType;  // 【S3】同步提议 id(重复求见也能回写)
     ch._negotiationId = q._negotiationId;  // 批己·同步谈判会话 id(重复求见也带回价钮)
     ch.envoyMission = q.reason || ch.envoyMission || '';
     ch.position = ch.position || '使节';

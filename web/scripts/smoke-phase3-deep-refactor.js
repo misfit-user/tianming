@@ -22,10 +22,9 @@ assert(/npc_schemes=酝酿中跨回合/.test(followupSrc) || /酝酿中跨回合
   'Slice 1·SC15 npc_schemes 边界明文 (跨回合酝酿)');
 
 // ─── Slice 2·A9·SC16 diplomatic_shifts 必输 ───
-assert(/Phase 3 A9·SC16 唯一负责/.test(followupSrc),
-  'Slice 2·SC16 diplomatic_shifts 唯一负责 hard rule');
-assert(/必输此字段·无外交变化也必须返回 \[\]/.test(followupSrc),
-  'Slice 2·SC16 prompt 必输 diplomatic_shifts·无则 []');
+const c=require('./lib-political-action-fixture').politicalFixture(),B=c.TM.PoliticalActions;
+assert(B.strategicPrompt().user.includes('diplomatic_shifts'),'Slice 2·SC16 仍可提出明确外交建议');
+assert(B.strategicCandidates({diplomatic_shifts:[]},'no-change').length===0&&!(c.GM.treaties||[]).length,'Slice 2·无变化不制造任何外交事实');
 
 // ─── Slice 3·A10·SC17 skip + SC1 economic_advice ───
 assert(/Phase 3 A10·SC17 默认 skip/.test(followupSrc),

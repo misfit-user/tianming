@@ -262,13 +262,8 @@ assert(D2._ebs.some(function (e) { return e.indexOf('要挟') >= 0; }) && D2.GM.
 
 // D3·faction 提议：ON 挂会话·OFF 无
 function factionSandbox(flag) {
-  var s = mkSandbox({
-    GM: { turn: 12, facs: [{ name: '后金', playerRelation: -20 }], _pendingAudiences: [], _factionDiplomacyLog: [] },
-    P: { conf: { negotiationSessionsEnabled: flag }, playerInfo: { factionName: '大明' } }
-  });
-  load(s, 'tm-negotiation.js'); load(s, 'tm-faction-diplomacy.js');
-  s.TM.FactionDiplomacy.recordProposals('后金', [{ toFaction: '大明', type: 'peace', terms: '媾和罢兵' }], 12);
-  return s;
+  var s=require('./lib-political-action-fixture').politicalFixture();s.P.conf.negotiationSessionsEnabled=flag;s.b.isPlayer=true;s.GM.playerInfo={factionId:'fb',characterId:'b'};
+  s.load('tm-negotiation.js');s.TM.FactionDiplomacy.recordProposals(s.fa,[{toFactionId:'fb',type:'peace',terms:'媾和罢兵'}],s.GM.turn,{binding:s.TM.PoliticalActions.bind(s.fa,'a',{actingPositionId:'pa',sourceId:'envoy'})});s.TM.FactionDiplomacy.advance();return s;
 }
 var fON = factionSandbox(true);
 var faON = (fON.GM._pendingAudiences || []).filter(function (a) { return a._factionProposalId; });
@@ -278,9 +273,11 @@ var fOFF = factionSandbox(false);
 var faOFF = (fOFF.GM._pendingAudiences || []).filter(function (a) { return a._factionProposalId; });
 assert(faOFF.length === 1 && faOFF[0]._negotiationId == null, '势力提议(OFF)：旧行为·使节无 _negotiationId·无会话');
 assert(!(fOFF.GM._negotiations && fOFF.GM._negotiations.length), '势力提议(OFF)：不开会话');
-// countered 结局码已入 _OUTCOME_CN
-var fdSrc = fs.readFileSync(path.join(ROOT, 'tm-faction-diplomacy.js'), 'utf8');
-assert(/_OUTCOME_CN[\s\S]*countered/.test(fdSrc), 'faction-diplomacy _OUTCOME_CN 含 countered(回价供 decideFor 续演)');
+// The current player counter updates the same proposal/version; no extra treaty is signed.
+var proposal=fON.TM.FactionDiplomacy.get(faON[0]._factionProposalId);
+var reply=fON.TM.FactionDiplomacy.recordPlayerResponse('甲国',{id:proposal.id,proposalVersion:1,outcome:'countered',counterTerms:'只愿约定一年停战',actingPositionId:'pb'});
+assert(reply.outcome==='submitted'&&proposal.version===2&&proposal.versions[1].terms.text==='只愿约定一年停战','玩家还价保留完整条款并递增原事项版本');
+assert(!(fON.GM.treaties||[]).length,'还价本身没有签约效果');
 
 // ═══════════════════════════════════════════════════════════════
 console.log('\n§E save-lifecycle explicit mirror 登记契约（真源抽取）');

@@ -1733,8 +1733,8 @@
     var gm = window.GM || {};
     var p = window.P || {};
     // 单一真相源:渲染前从人物 officialTitle 派生官制树任职者(状态未变则跳过)
-    try { if (typeof window._offSyncHoldersFromChars === 'function') window._offSyncHoldersFromChars(((window.GM&&window.GM.chars||[]).some(function(c){return c&&c.alive!==false&&c.officialTitle;})?{ force: true }:{ ifChanged: true })); } catch (_) {}
-    if (Array.isArray(gm.officeTree) && gm.officeTree.length) return gm.officeTree;
+    try { if (typeof window._offSyncHoldersFromChars === 'function') window._offSyncHoldersFromChars({readOnly:true}); } catch (_) {}
+    if (Array.isArray(gm.officeTree)) return gm.officeTree;
     if (Array.isArray(p.officeTree) && p.officeTree.length) return p.officeTree;
     if (p.government && Array.isArray(p.government.nodes) && p.government.nodes.length) return p.government.nodes;
     if (p.government && p.government.officeTree) {

@@ -775,7 +775,7 @@ function getCurrentMonth() {
         need(p.cls && p.cls.faction === playerFaction(), '受影响阶层不属本局玩家');
         need(typeof a.satisfaction === 'number' && Math.abs(a.satisfaction) <= 12 && Number.isFinite(a.satisfaction), '阶层变化超出幅度');
       } else if (a.type === 'proposal') {
-        need(TM.FactionDiplomacy && typeof TM.FactionDiplomacy.recordProposals === 'function', '交涉接口尚未就绪');
+        need(TM.FactionDiplomacy && typeof TM.FactionDiplomacy.recordPlayerProposal === 'function', '交涉接口尚未就绪');
         p.from = one('facs', playerFaction()); p.to = one('facs', a.factionId);
         need(p.from && p.to && p.from.id !== p.to.id, '交涉对象无效');
         need(['deal','ultimatum','joint_action'].indexOf(a.proposalType) >= 0, '交涉类型无效');
@@ -806,16 +806,16 @@ function getCurrentMonth() {
     try {
       prep = prepare(event, branch); state = capture(G);
       var receipts = [];
-      prep.plans.forEach(function(p) {
+      prep.plans.forEach(function(p,operationIndex) {
         var a = p.spec, result;
         if (a.type === 'spend') result = global.FiscalEngine.trySpendFromGuoku({ amounts: p.amounts, requireFullAmount: true, sinkTag: a.reason || event.name, gameRef: G });
         else if (a.type === 'armyArrears') result = global.MilitarySystems.settleArmyArrears(p.army, { months: p.months });
         else if (a.type === 'taxRate') result = global.FiscalEngine.applyPlayerTaxReform({ op: 'rate', taxId: a.taxId, rate: a.rate });
         else if (a.type === 'classChange') result = TM.ClassEngine.applyClassChange(G, p.cls, { name:p.cls.name, satisfaction_delta:a.satisfaction, reason:a.reason || event.name }, { source:'scenario-decision', turn:G.turn });
         else if (a.type === 'proposal') {
-          result = TM.FactionDiplomacy.recordProposals(p.from, [{ toFactionId:p.to.id, toFaction:p.to.name, type:a.proposalType, terms:a.terms, rationale:a.reason || event.name }], G.turn || 1);
-          need(result && result.recorded === 1, '交涉文书未送达'); result.ok = true;
-          var prop=(p.to._incomingProposals || []).filter(function(x){return x.fromId===p.from.id && x.terms===a.terms && x.turn===(G.turn||1);}).pop();
+          result = TM.FactionDiplomacy.recordPlayerProposal(p.from, { toFactionId:p.to.id, type:a.proposalType, terms:a.terms, obligations:a.obligations||[], rationale:a.reason || event.name }, event.id+':'+branch.id+':'+operationIndex);
+          need(result && result.outcome === 'submitted', '交涉文书未签发'); result.ok = true;
+          var prop=TM.FactionDiplomacy.get(result.proposalId);
           need(prop,'交涉收讫不存在');result.proposalId=prop.id;result.targetId=p.to.id;
         }
         else if(a.type==='factionDelivery')result=TM.FactionNpcGuoku.transferToPlayer({factionId:p.from.id,proposalId:p.proposal.id,amounts:p.amounts,transferId:event.id+':'+branch.id,reason:a.reason||event.name});

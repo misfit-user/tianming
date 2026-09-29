@@ -1743,6 +1743,7 @@ function _offVacateCharFromSeat(ch, dept, posName) {
  * 幂等:重复调用结果稳定(既有座位硬锁)。
  */
 function _offSyncHoldersFromChars(opts) {
+  if(opts&&opts.readOnly)return {ok:true,readOnly:true};
   opts = opts || {};
   if (typeof GM === 'undefined' || !GM || !Array.isArray(GM.officeTree)) return { ok: false };
   if (typeof TM !== 'undefined' && TM.NativeWorld && TM.NativeWorld.enabled(GM)) return TM.NativeWorld.bindOffices(GM);

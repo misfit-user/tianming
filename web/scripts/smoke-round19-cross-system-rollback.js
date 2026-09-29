@@ -337,6 +337,7 @@ async function main() {
   context.GM._endTurnBusy = true;
   context.GM._endTurnCommitPending = true;
 
+  require('./lib-political-test-runtime').install(context);require('./lib-political-test-runtime').bindNamedTestCallers(context);
   const a = context.GM.facs[0];
   const b = context.GM.facs[1];
   const diplomacy = context.TM.FactionDiplomacy;
@@ -351,7 +352,7 @@ async function main() {
   assert.strictEqual(diplomacy.applyResponses(b, [{ proposalId: proposal.id, decision: 'accept' }], context.GM.turn).resolved, 1);
   assert.strictEqual(context.GM.activeWars.length, 0, 'peace removes active war inside the transaction');
   assert.strictEqual(context.WarWeightSystem.hasTruce('甲', '乙'), true, 'peace creates world-owned truce');
-  assert.deepStrictEqual(Array.from(a.aiStrategy.grudgeIds), ['fac-c']);
+  assert.deepStrictEqual(Array.from(a.aiStrategy.grudgeIds), ['fac-b','fac-c'], 'peace preserves the existing subjective evaluations');
 
   context.updateMilitary(1);
   context.updateMap(1);

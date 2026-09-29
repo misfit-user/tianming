@@ -26,6 +26,7 @@ const fiscalModules=['tm-char-economy-ledger.js','tm-fiscal-statements.js','tm-p
 const recoveryModules=['tm-memory-adaptive.js','tm-memory-long-term.js','tm-memory-hybrid.js','tm-memory-mode-bridge.js','tm-endturn-reliability.js','tm-endturn-response-recovery.js','tm-endturn-recovery-vault.js','tm-endturn-save-reconcile.js'];
 recoveryModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 const officeDutyModules=['tm-office-holder-state.js','tm-office-action-evidence.js'];
+const politicalModules=['tm-political-actions.js'];politicalModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-npc-action-ledger.js'),'political adapter follows actual ledger');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-faction-npc-llm-decision.js'),'political identity binds before faction generation');});
 const outputContractModules=['tm-ai-result-contract.js'];
 outputContractModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-ai-result-contract.js')<scriptNames.indexOf('tm-world.js'),'output contract precedes world context and inference consumers');
@@ -53,7 +54,7 @@ exportModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===na
 const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js','tm-map-route-days.js','tm-circuit-governance.js','tm-circuit-governor-effects.js'];
 mapDataModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
-assert.strictEqual(manifest.scriptCount,417+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');
+assert.strictEqual(manifest.scriptCount,417+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

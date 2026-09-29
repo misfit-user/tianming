@@ -388,7 +388,7 @@ var CasusBelliSystem = (function() {
     if (!Array.isArray(GM.treaties)) return;
     var seen = {};
     GM.treaties.forEach(function(t){
-      if (!t || t.active === false) return;
+      if (!t || t.active === false || t.expiryTurn>0&&GM.turn>=t.expiryTurn) return;
       var isAlliance = t.mutual_defense === true || t.type === 'alliance' || t.typeName === '同盟';
       if (!isAlliance) return;
       var parties = Array.isArray(t.parties) ? t.parties.map(function(p){ return (p && p.name) || p; }) : [];
@@ -489,6 +489,10 @@ var TreatySystem = (function() {
     return (P.diplomacyConfig && P.diplomacyConfig.treatyTypes) || [
       {id:'alliance', name:'同盟', durationMonths:36, mutual_defense:true, breakPenalty:{prestige:-20}},
       {id:'truce', name:'停战', durationMonths:12, breakPenalty:{prestige:-15}},
+      {id:'nonaggression',name:'互不侵犯',durationMonths:12},
+      {id:'joint_action',name:'共同行动',durationMonths:12},
+      {id:'deal',name:'约定交割',durationMonths:12},
+      {id:'ultimatum',name:'应约事项',durationMonths:12},
       {id:'tribute', name:'朝贡', durationMonths:0},
       {id:'marriage', name:'和亲', durationMonths:0, breakPenalty:{prestige:-25}},
       {id:'trade', name:'互市', durationMonths:12}
@@ -518,7 +522,7 @@ var TreatySystem = (function() {
     };
     if (!GM.treaties) GM.treaties = [];
     GM.treaties.push(treaty);
-    addEB('外交', partyA + '与' + partyB + '缔结' + template.name + (durationTurns>0 ? '（期限'+durationTurns+'回合）' : '（永久）'));
+    try { addEB('外交', _partyName(partyA) + '与' + _partyName(partyB) + '缔结' + template.name + (durationTurns>0 ? '（期限'+durationTurns+'回合）' : '（永久）')); } catch(_notifyError) {}
     return treaty;
   }
 
@@ -555,7 +559,7 @@ var TreatySystem = (function() {
   }
 
   function _isTreatyActive(t) {
-    return !!t && t.active !== false;
+    return !!t && t.active !== false && (!t.expiryTurn || GM.turn<t.expiryTurn);
   }
 
   /**
@@ -567,8 +571,9 @@ var TreatySystem = (function() {
     var treaty = GM.treaties[idx];
     var parties = _treatyParties(treaty);
     var others = parties.filter(function(p){return p!==breakerName;});
-    addEB('外交', breakerName + '废除了与' + (others.length ? others.join('、') : '对方') + '的' + _treatyTypeName(treaty) + '，信誉受损');
-    GM.treaties.splice(idx, 1);
+    treaty.active=false;treaty.status='broken';treaty.brokenBy=breakerName;
+    try{addEB('外交', breakerName + '废除了与' + (others.length ? others.join('、') : '对方') + '的' + _treatyTypeName(treaty) + '，信誉受损');}catch(_notifyError){}
+    if(typeof TreatySystem!=='undefined'&&typeof TreatySystem.onChange==='function')TreatySystem.onChange();
   }
 
   /**
@@ -577,10 +582,11 @@ var TreatySystem = (function() {
   function cleanExpired() {
     if (!Array.isArray(GM.treaties)) return;
     GM.treaties = GM.treaties.filter(function(t) {
-      if (t.expiryTurn > 0 && GM.turn >= t.expiryTurn) {
+      if (t.active!==false && t.expiryTurn > 0 && GM.turn >= t.expiryTurn) {
         var parties = _treatyParties(t);
-        addEB('外交', (parties.length ? parties.join('与') : '一项条约') + '的' + _treatyTypeName(t) + '到期解除');
-        return false;
+        t.active=false;t.status='expired';
+        try{addEB('外交', (parties.length ? parties.join('与') : '一项条约') + '的' + _treatyTypeName(t) + '到期解除');}catch(_notifyError){}
+        return true;
       }
       return true;
     });
@@ -598,7 +604,7 @@ var TreatySystem = (function() {
   }
 
   function getPromptInjection() {
-    var treaties = _treaties();
+    var treaties = _treaties().filter(_isTreatyActive);
     if (!treaties.length) return '';
     var lines = ['【现有条约】'];
     treaties.forEach(function(t) {

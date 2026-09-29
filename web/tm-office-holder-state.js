@@ -52,27 +52,59 @@
       walk((n.subs || []).concat(n.children || []),fn,path,visited);
     });
   }
-  function assignments(G, ch) {
-    var out=[];
-    walk(G && G.officeTree,function(p,n,path) {
-      read(G,p).holders.forEach(function(h) { if(h.char===ch) out.push({ pos:p, dept:n.name || '', node:n, key:path, holder:h.row,
-        appointmentId:key(h.row.appointmentId || p.appointmentId), positionId:key(p.id), jurisdiction:key(p.jurisdictionId || p.jurisdiction || n.jurisdictionId || n.jurisdiction || n.id || n.name) }); });
-    });
+  // Read every authoritative tree in this world; never swap GM or materialize holders.
+  function scopes(G) {
+    var out=[],seen=[],native=G&&G.startContext&&G.startContext.schemaVersion==='tm-start-context/1'?G.nativeWorld:null,player=key(G&&G.startContext&&G.startContext.playerFactionId || G&&G.playerInfo&&G.playerInfo.factionId || G&&G.playerFactionId);
+    if(!player){var marked=(G&&G.facs||[]).filter(function(f){return f&&f.isPlayer;});if(marked.length===1)player=key(marked[0].id);}
+    if(!player){
+      var pi=G&&G.playerInfo||{},liveInfo=G===global.GM&&global.P&&global.P.playerInfo||{},label=pi.factionName||G&&G.playerFactionName||G&&G.playerFaction||liveInfo.factionId||liveInfo.factionName;
+      var match=(G&&G.facs||[]).filter(function(f){return f&&label&&(key(f.id)===key(label)||f.name===label);});if(match.length===1)player=key(match[0].id);
+    }
+    function add(tree,id,source){if(!Array.isArray(tree)||seen.indexOf(tree)>=0)return;seen.push(tree);out.push({tree:tree,organizationId:key(id),source:source});}
+    if(native&&native.offices)Object.keys(native.offices).forEach(function(id){add(native.offices[id],id,'native');});
+    if(!native||!native.offices||!native.offices[player])add(G&&G.officeTree,player,'world');
+    (G&&G.facs||[]).forEach(function(f){if(f&&!(native&&native.offices&&native.offices[key(f.id)])&&!(key(f.id)===player&&Array.isArray(G.officeTree)&&G.officeTree.length))add(f.officeTree,f.id,'faction');});
+    if(native)add(native.baseOfficeTree,'','native-base');
     return out;
   }
+  function positions(G,ref) {
+    ref=ref||{};var out=[],seen=[],id=key(ref.positionId||ref.id),org=key(ref.organizationId||ref.factionId);
+    scopes(G).forEach(function(s){walk(s.tree,function(p,n,path){
+      var owner=key(p.authorityFactionId||n.authorityFactionId||s.organizationId);
+      if(seen.indexOf(p)>=0||id&&key(p.id)!==id||org&&owner!==org)return;
+      seen.push(p);out.push({pos:p,node:n,key:owner+':'+path,organizationId:owner,source:s.source});
+    });});return out;
+  }
+  function position(G,ref){var rows=positions(G,ref);return rows.length===1?rows[0]:null;}
+  function assignments(G,ch,ref) {
+    var out=[];
+    positions(G,ref).forEach(function(a){read(G,a.pos).holders.forEach(function(h){
+      var availabilityNow=h.char&&availability(G,h.char,a.pos);
+      if(h.char!==ch&&!(availabilityNow&&availabilityNow.delegated&&availabilityNow.char===ch))return;
+      out.push(Object.assign({},a,{dept:a.node.name||'',holder:h.row,principalCharacterId:h.characterId,delegated:h.char!==ch,
+        appointmentId:key(h.row.appointmentId||a.pos.appointmentId),positionId:key(a.pos.id),jurisdiction:key(a.pos.jurisdictionId||a.pos.jurisdiction||a.node.jurisdictionId||a.node.jurisdiction||a.node.id||a.node.name)}));
+    });});return out;
+  }
+  function activeAssignments(G,ch,ref) {
+    return assignments(G,ch,ref).filter(function(a){var p=a.pos,h=a.holder||{},principal=a.delegated?identity(G,a.principalCharacterId).char:ch,av=availability(G,principal,p);
+      return p.enabled!==false&&p.status!=='abolished'&&(p.expiresTurn==null||G.turn<p.expiresTurn)&&(h.expiresTurn==null||G.turn<h.expiresTurn)&&av.char===ch&&av.capacity>0;
+    });
+  }
   function select(G,ch,ref) {
-    ref=ref || {};
-    var matches=assignments(G,ch), aid=key(ref.appointmentId), pid=key(ref.positionId || ref.officeId), name=key(ref.position || ref.positionName), dept=key(ref.dept || ref.department), power=key(ref.power);
-    if(aid) matches=matches.filter(function(a){return a.appointmentId===aid;});
-    if(pid) matches=matches.filter(function(a){return a.positionId===pid;});
-    if(name) matches=matches.filter(function(a){return a.pos.name===name;});
-    if(dept) matches=matches.filter(function(a){return a.dept===dept || key(a.node.id)===dept;});
-    if(power) matches=matches.filter(function(a){return a.pos.powers && a.pos.powers[power];});
-    return matches.length===1 ? matches[0] : null;
+    ref=ref||{};
+    var matches=assignments(G,ch,{organizationId:ref.organizationId||ref.factionId}),aid=key(ref.appointmentId),pid=key(ref.positionId||ref.officeId),name=key(ref.position||ref.positionName),dept=key(ref.dept||ref.department),power=key(ref.power);
+    if(aid)matches=matches.filter(function(a){return a.appointmentId===aid;});
+    if(pid)matches=matches.filter(function(a){return a.positionId===pid;});
+    if(name)matches=matches.filter(function(a){return a.pos.name===name;});
+    if(dept)matches=matches.filter(function(a){return a.dept===dept||key(a.node.id)===dept;});
+    if(power)matches=matches.filter(function(a){return a.pos.powers&&a.pos.powers[power];});
+    return matches.length===1?matches[0]:null;
   }
   function availability(G,ch,p,day) {
     if(!ch) return {char:null,capacity:null,approved:false};
+    if(day==null&&global.TM&&global.TM.TaxPolicy&&global.TM.TaxPolicy.now)day=global.TM.TaxPolicy.now(G);
     var leave=p.officeLeave || p.leave || ch.officeLeave || ch.leave || {};
+    if(leave.startTurn!=null&&G.turn<Number(leave.startTurn)||leave.endTurn!=null&&G.turn>=Number(leave.endTurn))leave={};
     if(leave.characterId!=null && key(leave.characterId)!==key(ch.id)) leave={};
     if(day!=null && ((leave.startDay!=null && day<Number(leave.startDay)) || (leave.endDay!=null && day>=Number(leave.endDay)))) leave={};
     var approved=leave.approved===true || leave.status==='approved';
@@ -83,7 +115,7 @@
     if(delegate && delegate!==ch && approved && delegate.alive!==false && !delegate.dead && !delegate._imprisoned && !delegate.imprisoned) return {char:delegate,capacity:1,approved:approved,delegated:true};
     return {char:ch,capacity:Math.max(0,Math.min(1,capacity)),approved:approved,delegated:false};
   }
-  var api={key:key,number:number,identity:identity,read:read,walk:walk,assignments:assignments,select:select,availability:availability};
+  var api={key:key,number:number,identity:identity,read:read,walk:walk,scopes:scopes,positions:positions,position:position,assignments:assignments,activeAssignments:activeAssignments,select:select,availability:availability};
   global.TM=global.TM || {}; global.TM.OfficeHolderState=api;
   if(typeof module!=='undefined' && module.exports) module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

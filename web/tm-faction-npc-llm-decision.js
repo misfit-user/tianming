@@ -124,6 +124,7 @@
   }
 
   function _isPlayerFaction(f, playerFactionNames) {
+    if(global.TM&&TM.PoliticalActions&&f)return TM.PoliticalActions.principals(f).length===0;
     return !!(f && (_isMarkedPlayerFaction(f) || _isPlayerFactionName(f.name, playerFactionNames)));
   }
 
@@ -148,7 +149,7 @@
   }
 
   function _ledgerEnabled(opts) {
-    return !!(opts && (opts.source === 'eager' || opts.source === 'in-turn' || opts.source === 'manual'));
+    return true; // every generation path shares the same simulation-turn budget
   }
 
   function _ensureFactionAiTurnLedger(turn) {
@@ -194,10 +195,11 @@
   }
 
   function hasRunThisTurn(facName, turn) {
+    if(global.TM&&TM.PoliticalActions){var current=TM.PoliticalActions.resolve('organization',facName);if(!current)return false;facName=current.id;}
     var ledger = _readLedger(turn);
     if (!ledger || !ledger.runs || !ledger.runs[facName]) return false;
     var row = ledger.runs[facName];
-    return row.status === 'pending' || row.status === 'applied' || row.status === 'failed' || row.status === 'skipped';
+    return ['pending','generated','waiting','submitted','applied','failed','skipped'].indexOf(row.status)>=0;
   }
 
   function countRunsThisTurn(turn) {
@@ -205,7 +207,7 @@
     if (!ledger || !ledger.runs) return 0;
     return Object.keys(ledger.runs).filter(function(name){
       var row = ledger.runs[name];
-      return row && (row.status === 'pending' || row.status === 'applied' || row.status === 'failed' || row.status === 'skipped');
+      return row && ['pending','generated','waiting','submitted','applied','failed','skipped'].indexOf(row.status)>=0;
     }).length;
   }
 
@@ -226,6 +228,7 @@
       turn: runTurn,
       source: opts.source || 'auto'
     };
+    if(global.TM&&TM.NPC&&TM.NPC.ActionLedger)Object.defineProperty(token,'lease',{value:TM.NPC.ActionLedger.capture()});
     ledger.runs[facName] = {
       fac: facName,
       turn: runTurn,
@@ -239,11 +242,11 @@
   }
 
   function _isLedgerTokenStale(token) {
-    return !!(token && token.turn !== _currentTurn());
+    return !!(token && (token.turn !== _currentTurn() || token.lease && !TM.NPC.ActionLedger.current(token.lease)));
   }
 
   function _finishLedgerRun(token, status, reason, diagnostics, extra) {
-    if (!token) return;
+    if (!token || _isLedgerTokenStale(token)) return;
     var ledger = _readLedger(token.turn);
     if (!ledger || !ledger.runs || !ledger.runs[token.fac]) return;
     var row = ledger.runs[token.fac];
@@ -1521,7 +1524,9 @@
   // ──────────────────────────────────────────────────────────
   // Build prompt — 拼 fac state·让 LLM 全面理解再决策
   // ──────────────────────────────────────────────────────────
+  var _politicalBindings=new WeakMap();
   function _buildPrompt(fac) {
+    if(global.TM&&TM.PoliticalActions)return TM.PoliticalActions.prompt(fac,_politicalBindings.get(fac));
     var paradigm = (global.TM && global.TM.FactionParadigm) ? global.TM.FactionParadigm.detect(fac.name, fac) : 'generic';
     var era = (global.P && (global.P.scenarioName || (global.P.playerInfo && global.P.playerInfo.era))) || '';
     var turn = (global.GM && global.GM.turn) || 1;
@@ -1788,6 +1793,7 @@
   }
 
   function _factionToolCtx(fac) {
+    if(global.TM&&TM.PoliticalActions)return TM.PoliticalActions.tools(fac,_politicalBindings.get(fac));
     var entry = (global.GM && global.GM._facIndex && global.GM._facIndex[fac.name]) || null;
     var alive = (entry && entry.chars) ? entry.chars.filter(function (c) { return c.alive !== false; }) : [];
     function _safe(fn) { return function () { try { return fn.apply(null, arguments); } catch (e) { return ''; } }; }
@@ -2242,269 +2248,11 @@
   // ──────────────────────────────────────────────────────────
   // Apply decision·按 schema 改 fac/chars 数据
   // ──────────────────────────────────────────────────────────
-  function _applyDecision(fac, decision, opts) {
-    var engine = _actionEngine();
-    if (engine && typeof engine.applyDecision === 'function') {
-      return engine.applyDecision(fac, decision, opts || {});
-    }
-    // F0·2026-05-22·~260 行 fallback 应已死 (action-engine 在 index.html 中先于 decision 加载)·warn 一次以便回收·下个 sprint 评估删除
-    try { console.warn('[npc-llm-decision] _applyDecision fallback fired·FactionActionEngine missing — please report'); } catch(_){}
-    var turn = (global.GM && global.GM.turn) || 1;
-    var entry = (global.GM && global.GM._facIndex && global.GM._facIndex[fac.name]) || null;
-    var alive = (entry && entry.chars) ? entry.chars.filter(function(c){ return c.alive !== false; }) : [];
-    var ruler = alive.find(function(c){ return _classifyChar(c) === 'ruler'; }) || alive[0];
-
-    var normalizedActions = _normalizeDecisionActions(fac, decision, { turn: turn });
-    var actionBuckets = _bucketActions(normalizedActions);
-    var summary = { memorials: 0, edicts: 0, chaoyi: 0, office: 0, actions: 0, skippedActions: 0 };
-    function nextAction(type) {
-      var list = actionBuckets[type] || [];
-      return list.shift() || _makeAction(_makeDecisionId(fac, turn), turn, fac, type, summary.actions + summary.skippedActions, {});
-    }
-    function recordAction(action, status, detail) {
-      if (!action) return;
-      if (!Array.isArray(fac._npcLlmActionLedger)) fac._npcLlmActionLedger = [];
-      fac._npcLlmActionLedger.push({
-        decisionId: action.decisionId,
-        actionId: action.actionId,
-        type: action.type,
-        turn: turn,
-        status: status || 'applied',
-        detail: detail || null
-      });
-      if (status === 'applied') summary.actions++;
-      else summary.skippedActions++;
-      _trimLedger(fac);
-    }
-
-    // 1. memorials
-    decision.memorials.forEach(function(m, idx){
-      var action = nextAction('memorial');
-      var char = alive.find(function(c){ return c.name === m.from; });
-      if (!char) { recordAction(action, 'skipped', { reason: 'char not found', target: m.from }); return; }  // LLM hallucinated char·skip
-      var loyaltyDelta = _clamp(_safeNum(m.loyaltyDelta), -10, 10);
-      char.loyalty = _clamp(_safeNum(char.loyalty) + loyaltyDelta, 0, 100);
-      if (!Array.isArray(char._memorialMemory)) char._memorialMemory = [];
-      char._memorialMemory.push(turn + ': ' + m.type + '·' + m.rulerDecision);
-      if (char._memorialMemory.length > 10) char._memorialMemory = char._memorialMemory.slice(-10);
-
-      var rec = {
-        id: 'npcm_llm_' + turn + '_' + fac.name + '_' + idx,
-        from: m.from,
-        fromRole: _classifyChar(char),
-        to: ruler ? ruler.name : '',
-        type: m.type,
-        subtype: m.type === '密奏' ? '密折' : '上疏',
-        content: m.content,
-        status: m.rulerDecision,
-        ruling: m.ruling || '',
-        turn: turn,
-        resolvedTurn: turn,
-        impact: { loyaltyDelta: loyaltyDelta, memoryNote: turn + ': ' + m.type + '·' + m.rulerDecision },
-        _generatedByLlm: true,
-        _decisionId: action.decisionId,
-        _actionId: action.actionId,
-        _actionType: action.type
-      };
-      if (!Array.isArray(fac.npcMemorials)) fac.npcMemorials = [];
-      if (fac.npcMemorials.length > 30) fac.npcMemorials = fac.npcMemorials.slice(-30);
-      fac.npcMemorials.push(rec);
-      // Phase H2·LLM 决策也入近事快报
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushMemorial(fac, rec); } catch(_){}
-      }
-      summary.memorials++;
-      recordAction(action, 'applied', { from: m.from, type: m.type });
-    });
-
-    // 2. edict
-    if (decision.edict) {
-      var edictAction = nextAction('edict');
-      var ed = decision.edict;
-      var treasuryDelta = _clamp(_safeNum(ed.treasuryDelta), -1000000, 1000000);
-      if (fac.treasury && typeof fac.treasury === 'object') {
-        fac.treasury.money = Math.max(0, _safeNum(fac.treasury.money) + treasuryDelta);
-      }
-      var loyDeltas = ed.loyaltyDeltas || {};
-      ['court', 'general', 'clan'].forEach(function(role){
-        var d = _clamp(_safeNum(loyDeltas[role]), -15, 15);
-        if (!d) return;
-        alive.forEach(function(c){
-          if (_classifyChar(c) !== role) return;
-          c.loyalty = _clamp(_safeNum(c.loyalty) + d, 0, 100);
-        });
-      });
-      var edictRec = {
-        id: 'npce_llm_' + turn + '_' + fac.name,
-        issuer: ruler ? ruler.name : '',
-        turn: turn,
-        type: ed.type,
-        content: ed.content,
-        trigger: ed.trigger || '',
-        effects: { treasuryDelta: treasuryDelta, loyaltyDeltas: loyDeltas },
-        applied: true,
-        _generatedByLlm: true,
-        _decisionId: edictAction.decisionId,
-        _actionId: edictAction.actionId,
-        _actionType: edictAction.type
-      };
-      if (!Array.isArray(fac.npcEdicts)) fac.npcEdicts = [];
-      if (fac.npcEdicts.length > 30) fac.npcEdicts = fac.npcEdicts.slice(-30);
-      fac.npcEdicts.push(edictRec);
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushEdict(fac, edictRec); } catch(_){}
-      }
-      summary.edicts++;
-      recordAction(edictAction, 'applied', { type: ed.type, treasuryDelta: treasuryDelta });
-    }
-
-    // 3. chaoyi
-    if (decision.chaoyi) {
-      var chaoyiAction = nextAction('court_alignment');
-      var cy = decision.chaoyi;
-      var pid = _clamp(_safeNum(cy.partyImbalanceDelta), -0.3, 0.3);
-      if (fac.derivedHealth && fac.derivedHealth._source) {
-        fac.derivedHealth._source.partyImbalance = _clamp(_safeNum(fac.derivedHealth._source.partyImbalance) + pid, 0, 1);
-      }
-      var lByP = cy.loyaltyDeltaByParty || {};
-      Object.keys(lByP).forEach(function(p){
-        var d = _clamp(_safeNum(lByP[p]), -10, 10);
-        alive.forEach(function(c){
-          if (c.party !== p) return;
-          c.loyalty = _clamp(_safeNum(c.loyalty) + d, 0, 100);
-        });
-      });
-      var cyRec = {
-        id: 'npccy_llm_' + turn + '_' + fac.name,
-        turn: turn,
-        type: cy.type,
-        parties: Object.keys(lByP),
-        participants: [],  // LLM 没指明·留空
-        summary: cy.summary || '',
-        effects: { partyImbalanceDelta: pid, loyaltyDeltaByParty: lByP },
-        _generatedByLlm: true,
-        _decisionId: chaoyiAction.decisionId,
-        _actionId: chaoyiAction.actionId,
-        _actionType: chaoyiAction.type
-      };
-      if (!Array.isArray(fac.npcChaoyi)) fac.npcChaoyi = [];
-      if (fac.npcChaoyi.length > 30) fac.npcChaoyi = fac.npcChaoyi.slice(-30);
-      fac.npcChaoyi.push(cyRec);
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushChaoyi(fac, cyRec); } catch(_){}
-      }
-      summary.chaoyi++;
-      recordAction(chaoyiAction, 'applied', { type: cy.type, partyImbalanceDelta: pid });
-    }
-
-    // 4. office
-    decision.office.forEach(function(o, idx){
-      var officeAction = nextAction('office_change');
-      var char = alive.find(function(c){ return c.name === o.target; });
-      if (!char) { recordAction(officeAction, 'skipped', { reason: 'char not found', target: o.target }); return; }
-      var d = _clamp(_safeNum(o.loyaltyDelta), -15, 15);
-      var posBefore = char.position || char.officialTitle || char.role || char.title || '';
-      var hookResult = null;
-      var appointHook = (typeof global.onAppointment === 'function')
-        ? global.onAppointment
-        : ((global.AIChangeApplier && typeof global.AIChangeApplier.onAppointment === 'function') ? global.AIChangeApplier.onAppointment : null);
-      if (appointHook && o.newPosition) {
-        try { hookResult = appointHook(o.target, o.newPosition, { dept: o.dept || o.deptHint || '' }); } catch(_){}
-      }
-      char.position = o.newPosition || char.officialTitle || posBefore;
-      if (o.newPosition && !char.officialTitle) char.officialTitle = o.newPosition;
-      char.loyalty = _clamp(_safeNum(char.loyalty) + d, 0, 100);
-
-      var rec = {
-        id: 'npco_llm_' + turn + '_' + fac.name + '_' + idx,
-        action: o.kind,
-        target: o.target,
-        ruler: ruler ? ruler.name : '',
-        reason: o.reason || '',
-        effect: { positionFrom: posBefore, positionTo: char.position, loyaltyDelta: d, appointmentHook: !!(hookResult && hookResult.ok), treeUpdated: !!(hookResult && hookResult.treeUpdated) },
-        turn: turn,
-        _generatedByLlm: true,
-        _decisionId: officeAction.decisionId,
-        _actionId: officeAction.actionId,
-        _actionType: officeAction.type
-      };
-      if (!Array.isArray(fac.npcOfficeActions)) fac.npcOfficeActions = [];
-      if (fac.npcOfficeActions.length > 30) fac.npcOfficeActions = fac.npcOfficeActions.slice(-30);
-      fac.npcOfficeActions.push(rec);
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushOffice(fac, rec); } catch(_){}
-      }
-      summary.office++;
-      recordAction(officeAction, 'applied', { target: o.target, kind: o.kind, positionTo: char.position });
-    });
-
-    function applyNativeOfficeChange(localFac, action, localTurn) {
-      var o = action.payload || {};
-      var target = o.target || o.char || o.name || '';
-      var char = alive.find(function(c){ return c.name === target; });
-      if (!char) return { ok: false, reason: 'char not found', target: target };
-      var d = _clamp(_safeNum(o.loyaltyDelta != null ? o.loyaltyDelta : o.loyalty_delta), -15, 15);
-      var posBefore = char.position || char.officialTitle || char.role || char.title || '';
-      var newPosition = o.newPosition || o.position || o.post || o.title || posBefore;
-      var hookResult = null;
-      var appointHook = (typeof global.onAppointment === 'function')
-        ? global.onAppointment
-        : ((global.AIChangeApplier && typeof global.AIChangeApplier.onAppointment === 'function') ? global.AIChangeApplier.onAppointment : null);
-      if (appointHook && newPosition) {
-        try { hookResult = appointHook(target, newPosition, { dept: o.dept || o.deptHint || '' }); } catch(_){}
-      }
-      char.position = newPosition || char.officialTitle || posBefore;
-      if (newPosition && !char.officialTitle) char.officialTitle = newPosition;
-      char.loyalty = _clamp(_safeNum(char.loyalty) + d, 0, 100);
-      var rec = {
-        id: action.actionId,
-        action: o.kind || o.action || 'appoint',
-        target: target,
-        ruler: ruler ? ruler.name : '',
-        reason: o.reason || '',
-        effect: { positionFrom: posBefore, positionTo: char.position, loyaltyDelta: d, appointmentHook: !!(hookResult && hookResult.ok), treeUpdated: !!(hookResult && hookResult.treeUpdated) },
-        turn: localTurn,
-        _generatedByLlm: true,
-        _decisionId: action.decisionId,
-        _actionId: action.actionId,
-        _actionType: action.type
-      };
-      _pushFacTrajectory(localFac, 'npcOfficeActions', rec);
-      return { ok: true, detail: { target: target, positionTo: char.position } };
-    }
-
-    function applyNativeBucket(type, summaryKey, applier) {
-      var list = actionBuckets[type] || [];
-      list.forEach(function(action) {
-        var res = applier(fac, action, turn);
-        if (res && res.ok) {
-          summary[summaryKey] = (summary[summaryKey] || 0) + 1;
-          recordAction(action, 'applied', res.detail || null);
-        } else {
-          recordAction(action, 'skipped', { reason: (res && res.reason) || 'apply failed' });
-        }
-      });
-      actionBuckets[type] = [];
-    }
-
-    // 5. native expanded actions·统一 actions[] 写回
-    applyNativeBucket('office_change', 'office', applyNativeOfficeChange);
-    applyNativeBucket('fiscal_policy', 'fiscalPolicy', _applyFiscalPolicy);
-    applyNativeBucket('military_order', 'military', _applyMilitaryOrder);
-    applyNativeBucket('diplomacy', 'diplomacy', _applyDiplomacy);
-    applyNativeBucket('province_policy', 'provincePolicy', _applyProvincePolicy);
-
-    // 5. rationale·写到 fac._lastLlmRationale
-    if (decision.rationale) fac._lastLlmRationale = { turn: turn, text: decision.rationale };
-
-    return summary;
+  function _applyDecision(fac,decision,opts) {
+    var engine=global.TM&&TM.FactionActionEngine;
+    return engine?engine.applyDecision(fac,decision,opts||{}):{actions:0,skippedActions:1,reason:'political_domain_unavailable'};
   }
 
-  // ──────────────────────────────────────────────────────────
-  // Public API
-  // ──────────────────────────────────────────────────────────
-
-  // 单 fac LLM 决策·async·返回 summary
   // Slice 2·本地启发式兜底·LLM 决策解析彻底失败时据势力当前态势择一保守之策(edict)·免整回合躺平·走同一 applyDecision 管线
   function _buildTemplateFallbackDecision(fac, opts) {
     opts = opts || {};
@@ -2550,85 +2298,36 @@
     return { summary: summary, decisionId: fbId, rationale: decision.rationale };
   }
 
-  async function decideFor(facName, opts) {
-    opts = opts || {};
-    if (!_isEnabled()) return { skipped: true, reason: 'LLM mode off' };
-    if (typeof global.GM === 'undefined') return { skipped: true, reason: 'no GM' };
-    var fac = global.GM.facs.find(function(x){ return x && x.name === facName; });
-    if (!fac) return { skipped: true, reason: 'fac not found' };
-    var playerFacNames = _resolvePlayerFactionNames();
-    if (_isPlayerFaction(fac, playerFacNames)) return { skipped: true, reason: 'player faction' };
-    var ledgerRun = _beginLedgerRun(fac.name, opts);
-    if (!ledgerRun.ok) return { skipped: true, reason: ledgerRun.reason, turn: ledgerRun.turn, currentTurn: ledgerRun.currentTurn };
-    var ledgerToken = ledgerRun.token;
+  async function decideFor(facName,opts) {
+    opts=opts||{};
+    if(!_isEnabled())return {skipped:true,reason:'LLM mode off'};
+    var boundary=global.TM&&TM.PoliticalActions,world=global.GM;
+    if(!boundary||!world)return {skipped:true,reason:'political_boundary_unavailable'};
+    var migration=boundary.migrate(world);if(!migration.ok)return {failed:true,reason:migration.reason};
+    var fac=boundary.resolve('organization',facName,world);
+    if(!fac)return {skipped:true,reason:'unknown_or_ambiguous_faction'};
+    if(_politicalBindings.has(fac))return {skipped:true,reason:'decision_already_pending'};
+    var selected=opts.actorId?{actor:boundary.resolve('character',{id:opts.actorId}),assignment:{positionId:opts.actingPositionId}}:boundary.choose(fac);
+    if(!selected||!selected.actor)return {skipped:true,reason:'representative_unresolved'};
+    if(TM.FactionDiplomacy)TM.FactionDiplomacy.advance();
+    var context=boundary.bind(fac,selected.actor.id,{actingPositionId:opts.actingPositionId||selected.assignment.positionId||selected.assignment.pos&&selected.assignment.pos.id,authorityRef:opts.authorityRef||selected.assignment.authorityRef,source:opts.source||'faction-planner',sourceId:opts.sourceId});
+    if(!context)return {skipped:true,reason:'human_or_invalid_actor'};
+    var ledgerRun=_beginLedgerRun(fac.id,opts);if(!ledgerRun.ok)return {skipped:true,reason:ledgerRun.reason};
+    var token=ledgerRun.token;var boundRun=_readLedger(token.turn).runs[token.fac];boundRun.actorId=context.actorId;boundRun.actingPositionId=context.actingPositionId;boundRun.sourceKind='proposal';_politicalBindings.set(fac,context);
+    try {
 
-    // 【A·按需取数 S2】开关开→工具路径(势力按需取数·2轮)·关→原单发(下两行字节不变·零回归)
-    var callResult;
-    if (global.P && (typeof agentFlagOn === 'function' ? agentFlagOn('factionToolDecisionEnabled') : (P.conf && P.conf.factionToolDecisionEnabled))) {
-      callResult = await _decideViaTools(fac, opts);
-    } else {
-      var prompts = _buildPrompt(fac);
-      callResult = await _callLLMDecision(prompts, opts);
-    }
-    var raw = callResult && callResult.parsed;
-    var callDiagnostics = (callResult && callResult.diagnostics) || null;
-    if (_isLedgerTokenStale(ledgerToken)) {
-      return { skipped: true, reason: 'stale turn', turn: ledgerToken.turn, currentTurn: _currentTurn() };
-    }
-    if (!raw) {
-      var _fbA = _runTemplateFallback(fac, ledgerToken, { turn: (ledgerToken && ledgerToken.turn) || opts.turn || _currentTurn(), source: opts.source });
-      if (_fbA) {
-        _finishLedgerRun(ledgerToken, 'applied', 'template-fallback', null, { templateFallback: true, parseFailed: true, parseFailure: callDiagnostics || { kind: 'parse', error: 'empty parsed decision' } });
-        return { applied: true, templateFallback: true, summary: _fbA.summary, rationale: _fbA.rationale, diagnostics: callDiagnostics };
-      }
-      _finishLedgerRun(ledgerToken, 'failed', 'LLM call/parse failed', callDiagnostics || { kind:'parse', error:'empty parsed decision' });
-      return { skipped: true, reason: 'LLM call/parse failed', fallbackToTemplate: true, diagnostics: callDiagnostics };
-    }
-    var decision = _validateDecision(raw);
-    if (_isLedgerTokenStale(ledgerToken)) {
-      return { skipped: true, reason: 'stale turn', turn: ledgerToken.turn, currentTurn: _currentTurn() };
-    }
-    if (!decision) {
-      var _fbB = _runTemplateFallback(fac, ledgerToken, { turn: (ledgerToken && ledgerToken.turn) || opts.turn || _currentTurn(), source: opts.source });
-      if (_fbB) {
-        _finishLedgerRun(ledgerToken, 'applied', 'template-fallback', null, { templateFallback: true, parseFailed: true, parseFailure: { kind: 'schema', error: 'decision invalid' } });
-        return { applied: true, templateFallback: true, summary: _fbB.summary, rationale: _fbB.rationale };
-      }
-      _finishLedgerRun(ledgerToken, 'failed', 'decision invalid', { kind:'schema', error:'decision invalid', rawPreview:'' });
-      return { skipped: true, reason: 'decision invalid', fallbackToTemplate: true };
-    }
-    var summary = _applyDecision(fac, decision);
-    // ③-S3 闭环：消费 LLM 报告的 goalUpdates·更新前瞻式目标栈（正式目标栈）
-    if (global.P && global.TM && global.TM.FactionGoalStack && decision && decision.goalUpdates) {
-      try {
-        var _gu = global.TM.FactionGoalStack.applyUpdates(fac, decision.goalUpdates, _currentTurn());
-        if (summary && typeof summary === 'object') summary.goalUpdates = _gu;
-      } catch (_guE) {}
-    }
-    // 【势力 agent 社会·双向外交 S1】先回应收到的提议(结盟/结怨/还价)·再发起本派新提议(存目标派·跨回合)·正式势力自主行为·零额外调用(骑本次决策)
-    if (global.P && global.TM && global.TM.FactionDiplomacy && decision) {
-      try {
-        if (Array.isArray(decision.proposalResponses) && decision.proposalResponses.length) global.TM.FactionDiplomacy.applyResponses(fac, decision.proposalResponses, _currentTurn());
-        if (Array.isArray(decision.proposals) && decision.proposals.length) {
-          var _dp = global.TM.FactionDiplomacy.recordProposals(fac, decision.proposals, _currentTurn());
-          if (summary && typeof summary === 'object') summary.diplomacy = _dp;
-        }
-      } catch (_dpE) {}
-    }
-    // S5·NPC 自主营建（+完善）：本派据地方之需自主兴造 + 自修半损建筑(骑本次决策·零额外调用·正式势力自主行为)。
-    //   新建读 raw.builds(未校验·绕开 validateDecision·同 proposals/goalUpdates)·落本派叶过既有工期 tick·扣本派库银·谍报可观测。
-    if (global.P) {
-      try {
-        if (raw && Array.isArray(raw.builds) && raw.builds.length) {
-          var _lb = _landFactionBuilds(fac, raw.builds);
-          if (_lb && summary && typeof summary === 'object') summary.builds = _lb;
-        }
-        var _rp = _repairFactionBuildings(fac);                              // 完善·自修半损建筑(闭 S6 损坏循环·独立于本回合是否新建)
-        if (_rp && summary && typeof summary === 'object') summary.repaired = _rp;
-      } catch (_lbE) {}
-    }
-    _finishLedgerRun(ledgerToken, 'applied');
-    return { applied: true, summary: summary, rationale: decision.rationale };
+      var callResult=global.P&&(typeof agentFlagOn==='function'?agentFlagOn('factionToolDecisionEnabled'):P.conf&&P.conf.factionToolDecisionEnabled)
+        ?await _decideViaTools(fac,opts):await _callLLMDecision(_buildPrompt(fac),opts);
+      if(!boundary.valid(context)||_isLedgerTokenStale(token)){_finishLedgerRun(token,'skipped','stale world or turn');return {skipped:true,expired:true,reason:'stale world or turn'};}
+      var decision=callResult&&callResult.parsed&&_validateDecision(callResult.parsed);
+      if(!decision){_finishLedgerRun(token,'failed','model_or_schema_failure',callResult&&callResult.diagnostics);return {failed:true,applied:false,reason:'model_or_schema_failure'};}
+      // All wall-clock entry points only plan. The existing simulation writeback consumes the packet.
+      var queued=boundary.defer(context,decision);_finishLedgerRun(token,'generated',queued.reason,null,{generated:1,appliedActions:0});
+      return {generated:true,queued:queued.outcome==='waiting',applied:false,summary:{actions:0,generated:1},rationale:decision.rationale};
+    } catch(e) {
+      if(boundary.valid(context))_finishLedgerRun(token,'failed',e.message,{kind:'generation',error:e.message});
+      return {failed:true,applied:false,reason:e.message};
+    } finally {_politicalBindings.delete(fac);}
   }
 
   // 多 fac 并发·用 action engine 评分优先处理战争/财政/干预后的活跃势力
@@ -2688,6 +2387,7 @@
   }
 
   function _applySc16HardPriorityRows(rows, turn) {
+    if(global.TM&&TM.PoliticalActions)return _arr(rows).slice(); // strategic suggestions do not force actors to follow or receive secret-based priority
     rows = _arr(rows).slice();
     var names = _sc16HardPriorityNames(turn);
     if (!names.length) return rows;
@@ -2753,10 +2453,10 @@
     } catch(_){}
 
     var results = await _mapLimit(npcs, _precisionConcurrency(), function(f){
-      return decideFor(f.name, { source: source, turn: batchTurn }).then(function(r){ return { fac: f.name, result: r }; });
+      return decideFor({id:f.id}, { source: source, turn: batchTurn }).then(function(r){ return { fac: f.name, result: r }; });
     });
     var applied = results.filter(function(r){ return r.result.applied; }).length;
-    return { applied: applied, attempted: npcs.length, results: results };
+    return { applied: applied, generated:results.filter(function(r){return r.result.generated;}).length, attempted: npcs.length, results: results };
   }
 
   function _diagText(obj) {
@@ -2928,12 +2628,12 @@
     } catch(_){}
 
     // Slice 2·turn 级落地率聚合·观测(parseFail/skipped/merged/templateFallback)·消费兜底后 parse 失败不再=整回合躺平
-    var turnAggregate = { turn: turn, runs: 0, applied: 0, failed: 0, parseFail: 0, templateFallback: 0, skippedActions: 0, mergedActions: 0 };
+    var turnAggregate = { turn: turn, runs: 0, generated:0, applied: 0, failed: 0, parseFail: 0, templateFallback: 0, skippedActions: 0, mergedActions: 0 };
     try {
       Object.keys(runs).forEach(function(name) {
         var r = runs[name];
         if (!r || _safeNum(r.turn) !== turn) return;
-        turnAggregate.runs++;
+        turnAggregate.runs++;if(r.status==='generated')turnAggregate.generated++;
         if (r.status === 'applied') turnAggregate.applied++; else if (r.status === 'failed') turnAggregate.failed++;
         if (r.templateFallback) turnAggregate.templateFallback++;
         if (r.parseFailed || (r.status === 'failed' && /parse|truncat|schema|empty|call_or_parse/i.test((r.failure && r.failure.kind) || ''))) turnAggregate.parseFail++;

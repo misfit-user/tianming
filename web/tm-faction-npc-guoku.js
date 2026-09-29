@@ -101,7 +101,7 @@
       resources:resources,model:'tm-fiscal-profile/1',noGrainClothConversion:true};
   }
 
-  function _runFiscalCycle(fac) {
+  function _computeFiscalCycle(fac) {
     if (global.CascadeTax && global.CascadeTax.isUnified && global.CascadeTax.isUnified(global.GM,fac.id || fac.name)) return global.CascadeTax.settleFactionBudget({faction:fac.id || fac.name,turnDays:_daysPerTurn()});
     var de = fac.derivedEconomy;
     if (!de) return null;
@@ -144,6 +144,14 @@
     };
   }
 
+  // This remains world-process settlement, independent of political candidates.
+  function _runFiscalCycle(fac) {
+    var G=global.GM||{},period=String(G._campaignId||G.sid||'world')+':'+String(G.turn||0);
+    if(fac._lastNpcFiscalPeriod===period)return null;
+    var rec=_computeFiscalCycle(fac);
+    if(rec)fac._lastNpcFiscalPeriod=period;
+    return rec;
+  }
   function generateNpcFiscalCycles() {
     if (typeof global.GM === 'undefined') return null;
     var GM = global.GM;
@@ -160,7 +168,7 @@
 
       var rec = _runFiscalCycle(fac);
       if (!rec) return;
-      rec.id = 'npcfc_' + turn + '_' + fac.name;
+      rec.id = 'npcfc_' + turn + '_' + encodeURIComponent(fac.id||fac.name);rec.sourceKind='world_process';
       rec.turn = turn;
 
       if (!Array.isArray(fac.npcFiscalLedger)) fac.npcFiscalLedger = [];
@@ -192,29 +200,18 @@
 
   // Accepted, one-off delivery to the current player. Treasury changes are conserved across both parties.
   function transferToPlayer(spec) {
-    spec=spec||{};var G=global.GM || {}, pi=G.playerInfo || (global.P && global.P.playerInfo) || {};
-    var fac=_arr(G.facs).find(function(f){return f && f.id===spec.factionId;});
-    if(!fac || fac.isPlayer || fac.id===pi.factionId || !spec.transferId || !G.guoku || !fac.treasury)return {ok:false,reason:'invalid-delivery-party'};
-    var proposal=_arr(fac._incomingProposals).find(function(p){return p && p.id===spec.proposalId;});
-    if(!proposal || proposal.status!=='accepted' || (proposal.fromId!==pi.factionId && proposal.from!==pi.factionName))return {ok:false,reason:'proposal-not-accepted'};
-    if(proposal._settledResourceTransferId)return {ok:false,reason:'delivery-already-settled'};
-    if(!global.FiscalEngine || typeof global.FiscalEngine.tryAddToGuoku!=='function')return {ok:false,reason:'treasury-interface-unavailable'};
-    var amounts={},kinds=['money','grain','cloth'];
-    for(var i=0;i<kinds.length;i++){var k=kinds[i],n=spec.amounts && spec.amounts[k]!==undefined?spec.amounts[k]:0;
-      if(typeof n!=='number'||!isFinite(n)||n<0||n>1e9||!isFinite(Number(fac.treasury[k]))||Number(fac.treasury[k])<n)return {ok:false,reason:'invalid-or-unfunded-delivery'};amounts[k]=n;
-    }
-    var beforeSource=JSON.parse(JSON.stringify(fac.treasury));
-    try {
-      proposal._settledResourceTransferId=spec.transferId;
-      kinds.forEach(function(k){fac.treasury[k]=Number(fac.treasury[k])-amounts[k];});
-      var result=global.FiscalEngine.tryAddToGuoku({amounts:amounts,sourceTag:spec.reason||'议定输纳',gameRef:G});
-      if(!result||!result.ok)throw Error('credit-failed');
-      return {ok:true,factionId:fac.id,factionName:fac.name,amounts:amounts,proposalId:proposal.id,transferId:spec.transferId};
-    }catch(e){
-      Object.keys(fac.treasury).forEach(function(k){delete fac.treasury[k];});Object.assign(fac.treasury,beforeSource);
-      delete proposal._settledResourceTransferId;
-      return {ok:false,reason:e.message || 'delivery-failed'};
-    }
+    spec=spec||{};var B=global.TM&&TM.PoliticalActions,D=global.TM&&TM.FactionDiplomacy,g=global.GM;
+    if(!B||!D)return {ok:false,reason:'political_boundary_unavailable'};
+    var org=B.resolve('organization',{id:spec.factionId},g),p=D.get(spec.proposalId),o=p&&_arr(p.obligations).find(function(x){return x.id===spec.obligationId;});
+    if(!org||!p||p.schemaVersion!==2||p.status!=='accepted'||!o||o.kind!=='public_transfer')return {ok:false,reason:'typed_accepted_obligation_required'};
+    var accounts=TM.PublicTreasury,source=accounts&&accounts.getAccountView({game:g,ref:o.fromAccount}),playerAccount=accounts&&accounts.getFactionAccountRef({game:g});
+    if(!source||!source.exists||source.factionId!==org.id||!playerAccount||o.toAccount!==playerAccount)return {ok:false,reason:'delivery_account_parties_mismatch'};
+    if(spec.amounts&&B.signature(spec.amounts)!==B.signature(o.amounts))return {ok:false,reason:'obligation_amount_mismatch'};
+    if(o.status==='fulfilled')return {ok:true,duplicate:true,proposalId:p.id,obligationId:o.id,operationRefs:o.operationRefs};
+    if(!spec.binding||!B.valid(spec.binding))return {ok:false,reason:'actual_executor_decision_required',proposalId:p.id,obligationId:o.id};
+    var r=B.submit(org,{type:'fiscal_policy',fromAccount:o.fromAccount,toAccount:o.toAccount,amounts:o.amounts,purpose:spec.reason||('协议义务 '+o.id),
+      proposalId:p.id,proposalVersion:p.version,obligationId:o.id},{binding:spec.binding,index:'obligation:'+o.id});
+    return {ok:r.outcome==='completed',outcome:r.outcome,reason:r.reason,receipt:r,proposalId:p.id,obligationId:o.id,amounts:r.outcome==='completed'?o.amounts:undefined};
   }
 
   function getNpcFiscalLedgerFor(facName) {

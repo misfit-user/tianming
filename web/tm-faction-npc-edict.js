@@ -206,61 +206,8 @@
   }
 
   function generateNpcEdicts() {
-    if (typeof global.GM === 'undefined') return null;
-    var GM = global.GM;
-    if (!Array.isArray(GM.facs)) return null;
-    var turn = _safeNum(GM.turn) || 1;
-    var playerFacNames = _resolvePlayerFactionNames();
-
-    var totalIssued = 0;
-    GM.facs.forEach(function(fac) {
-      if (!fac || !fac.name) return;
-      if (_isPlayerFaction(fac, playerFacNames)) return;
-      var entry = GM._facIndex && GM._facIndex[fac.name];
-      if (!entry) return;
-      var alive = (entry.chars || []).filter(_isAlive);
-      if (alive.length === 0) return;
-
-      var ruler = alive.find(function(c){ return _classifyChar(c) === 'ruler'; });
-      if (!ruler) ruler = alive[0];
-
-      var type = _decideEdictType(fac, ruler);  // F1·传 ruler personality
-      var tpl = EDICT_TEMPLATES[type] || EDICT_TEMPLATES['赏赐'];
-
-      var edict = {
-        id: 'npce_' + turn + '_' + fac.name,
-        issuer: ruler.name,
-        turn: turn,
-        type: type,
-        content: tpl.content,
-        trigger: _triggerLabel(type),
-        effects: Object.assign({}, tpl.effects),
-        applied: false
-      };
-
-      _applyEffects(fac, edict, alive);
-
-      if (!Array.isArray(fac.npcEdicts)) fac.npcEdicts = [];
-      if (fac.npcEdicts.length > 30) fac.npcEdicts = fac.npcEdicts.slice(-30);
-      fac.npcEdicts.push(edict);
-      if (global.TM && global.TM.FactionActionEngine && typeof global.TM.FactionActionEngine.recordLocalAction === 'function') {
-        try {
-          global.TM.FactionActionEngine.recordLocalAction(fac, 'edict', {
-            type: edict.type,
-            content: edict.content,
-            trigger: edict.trigger,
-            treasuryDelta: edict.effects && edict.effects.treasuryDelta,
-            loyaltyDeltas: edict.effects && edict.effects.loyaltyDeltas
-          }, edict);
-        } catch(_){}
-      }
-      // Phase H2·诏令全入近事快报
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushEdict(fac, edict); } catch(_){}
-      }
-      totalIssued++;
-    });
-    return { issued: totalIssued };
+    var boundary=global.TM&&TM.PoliticalActions;
+    return boundary?boundary.localCandidates('edict'):{actions:0,issued:0,run:0,generated:0,reason:'political_boundary_unavailable'};
   }
 
   function getNpcEdictsFor(facName) {

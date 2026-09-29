@@ -416,13 +416,24 @@ function _npcEconomyNum(v) {
   return isFinite(n) ? n : null;
 }
 
-function _npcBuildCharacterEconomySnapshot(npc) {
+function _npcBuildCharacterEconomySnapshot(npc, options) {
+  if(!npc||npc.alive===false)return null;
+  options=options||{};
+  var refs=options.publicAccountRefs;
+  if(!refs&&typeof TM!=='undefined'&&TM.OfficeHolderState) {
+    refs=[];TM.OfficeHolderState.assignments(GM,npc).forEach(function(a){
+      var principal=a.delegated?TM.OfficeHolderState.identity(GM,a.principalCharacterId).char:npc,av=TM.OfficeHolderState.availability(GM,principal,a.pos),h=a.holder||{};
+      if(!av.capacity||av.char!==npc||a.pos.status==='abolished'||a.pos.enabled===false||h.expiresTurn!=null&&GM.turn>=h.expiresTurn||a.pos.expiresTurn!=null&&GM.turn>=a.pos.expiresTurn)return;
+      var b=a.pos.treasuryBinding||{};if(['custodian','oversight','manager'].indexOf(b.role)<0)return;
+      (b.accountRefs||(b.accountRef?[b.accountRef]:[])).forEach(function(id){if(refs.indexOf(id)<0)refs.push(id);});
+    });
+  }
   if (!npc || npc.alive === false) return null;
   var r = npc.resources || {};
   var privateWealth = r.privateWealth || r.private || {};
   var money = _npcEconomyNum(privateWealth.money);
-  var publicPurse = r.publicPurse || null;
-  var publicTreasury = r.publicTreasury || null;
+  var publicPurse = options.omitPublic || refs&&refs.length===0 ? null : r.publicPurse || null;
+  var publicTreasury = options.omitPublic || refs&&refs.length===0 ? null : r.publicTreasury || null;
   var debt = _npcEconomyNum(privateWealth.debt);
   return {
     name: npc.name || '',
@@ -431,7 +442,7 @@ function _npcBuildCharacterEconomySnapshot(npc) {
     faction: npc.faction || '',
     familyEconomy: typeof CharEconEngine !== 'undefined' && CharEconEngine.buildFamilyEconomySnapshot ? CharEconEngine.buildFamilyEconomySnapshot(npc) : null,
     socialTier: typeof CharEconEngine !== 'undefined' && CharEconEngine.buildSocialTierSnapshot ? CharEconEngine.buildSocialTierSnapshot(npc) : null,
-    publicAccounts: typeof TM !== 'undefined' && TM.PublicTreasury ? TM.PublicTreasury.getCharacterPublicAccounts({game:GM,characterId:npc.id}) : null,
+    publicAccounts: typeof TM !== 'undefined' && TM.PublicTreasury ? {accounts:(refs||[]).map(function(ref){return TM.PublicTreasury.getAccountView({game:GM,ref:ref});}),isReadOnly:true} : null,
     privateWealth: {
       money: money,
       grain: _npcEconomyNum(privateWealth.grain),
@@ -503,7 +514,7 @@ function buildNpcBehaviorContext(npc, options) {
     npcInternalActions:_collectRecentNpcInternalActions(8,publicOnly?null:npc),characterEconomy:[]};
   Object.defineProperty(context,'_npcLease',{value:ledger.capture(),enumerable:false});
   if(publicOnly)return context;
-  context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:npc.traitIds||[],personality:typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||'',abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc)};
+  context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:npc.traitIds||[],personality:typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||'',abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc,options)};
   context.assignments=TM.OfficeHolderState?TM.OfficeHolderState.assignments(GM,npc).map(function(a){return {positionId:a.positionId,appointmentId:a.appointmentId,title:a.pos.name,powers:a.pos.powers||{},scope:a.pos.authorityScope||{},treasuryBinding:a.pos.treasuryBinding||null};}):[];
   var planExposure=ledger.state(GM).planExposure||{};
   context.plans=ledger.ensurePlans(GM).filter(function(p){return !/^(done|rejected|failed|cancelled)$/.test(p.status);}).map(function(p){return ledger.planView(p,npc);}).filter(Boolean).sort(function(a,b){return (planExposure[a.id]||0)-(planExposure[b.id]||0);}).slice(0,8);

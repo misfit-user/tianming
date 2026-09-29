@@ -79,6 +79,11 @@ assert(p16._playerFactionGuard && p16._playerFactionGuard.removedFactionActions 
 assert(p16._playerFactionGuard.removedDiplomaticShifts === 1, 'filter should report removed player diplomacy');
 
 const src = fs.readFileSync(path.join(ROOT, 'tm-endturn-followup.js'), 'utf8');
-assert(src.indexOf('玩家势力不得作为行动发起方') >= 0, 'SC16 prompt must explicitly forbid player faction actors');
+const c=require('./lib-political-action-fixture').politicalFixture();c.a.isPlayer=true;c.GM.playerInfo={characterId:'a',factionId:'fa'};c.fa.isPlayer=true;
+c.fa.officeTree[0].positions.push({id:'other-official',name:'本国另一官员',holderId:'l',powers:{diplomacy:true}});
+const B=c.TM.PoliticalActions,ids=B.strategicCandidates({faction_actions:[{factionId:'fa',action:'评估与乙国交涉',targetId:'fb'}]},'sc16-player-country');
+assert(ids.length===1&&c.GM._npcPlans.find(p=>p.id===ids[0]).actorId==='l','player country can route an optional suggestion to another actual official');
+assert(!c.GM._npcPlans.some(p=>p.actorId==='a')&&!c.a._lastNpcExecution,'the actual player is never assigned consent or a command by NPC planning');
+assert(!(c.GM.treaties||[]).length,'a strategic suggestion has not made a political result');
 
 console.log('[smoke-sc16-player-faction-guard] all assertions pass');

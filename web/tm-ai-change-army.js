@@ -218,9 +218,9 @@
     var name = String(raw == null ? '' : raw).trim();
     if (!name) return { ok: true, name: '' }; // 明确清空主帅
     var chars = Array.isArray(G && G.chars) ? G.chars : [];
-    var ch = chars.find(function(c) {
-      return c && ((c.name != null && String(c.name).trim() === name) || (c.id != null && String(c.id).trim() === name));
-    });
+    var ids=chars.filter(function(c){return c&&String(c.id||'').trim()===name;});
+    var matches=ids.length?ids:chars.filter(function(c){return c&&String(c.name||'').trim()===name;});
+    var ch=matches.length===1?matches[0]:null;
     if (!ch) return { ok: false, reason: 'commander not found: ' + name };
     if (ch.alive === false || ch.dead === true) return { ok: false, reason: 'commander is dead: ' + name };
     return { ok: true, name: String(ch.name || name).trim(), char: ch };
@@ -261,7 +261,7 @@
     return '';
   }
 
-  function _syncArmyCommanderAliases(army, commander, oldCommander, world) {
+  function _syncArmyCommanderAliases(army, commander, oldCommander, world, explicitId) {
     if (!army) return false;
     commander = String(commander || '').trim();
     var changed = false;
@@ -284,7 +284,7 @@
         changed = true;
       }
     });
-    var resolved = _resolveLivingCommanderName(world || global.GM, commander);
+    var resolved = _resolveLivingCommanderName(world || global.GM, explicitId||commander);
     var nextId = resolved.ok && resolved.char ? (resolved.char.id || '') : '';
     if (army.commanderId !== nextId) { army.commanderId = nextId; changed = true; }
     return changed;
@@ -343,7 +343,9 @@
       if (String(priorArmy.name || '').trim() !== name) return {ok:false,reason:'army id already belongs to another formation',name:name};
       return {ok:true,changed:false,created:false,duplicate:true,army:priorArmy};
     }
-    var army = explicitCreate ? null : _findArmyForAIChange(G, name);
+    var exactArmies=opts.armyId?(G.armies||[]).filter(function(a){return a&&String(a.id)===String(opts.armyId);}):null;
+    if(exactArmies&&(explicitCreate||exactArmies.length!==1))return {ok:false,reason:'explicit-army-id-unresolved'};
+    var army = exactArmies?exactArmies[0]:(explicitCreate ? null : _findArmyForAIChange(G, name));
     var reason = change.reason || change.rationale || opts.reason || 'AI推演';
     var commanderFields = _armyCommanderField(change);
     if (commanderFields && commanderFields.conflict) {
@@ -351,7 +353,7 @@
     }
     var commanderInput = commanderFields ? commanderFields.value : null;
     if (commanderFields) {
-      var commanderResolution = _resolveLivingCommanderName(G, commanderInput);
+      var commanderResolution = _resolveLivingCommanderName(G, opts.commanderId||commanderInput);
       if (!commanderResolution.ok) return { ok:false, reason:commanderResolution.reason, name:name, commander:commanderInput };
       commanderInput = commanderResolution.name;
     }
@@ -412,7 +414,7 @@
         _aiCreated: true,
         _createdTurn: G.turn || 0
       };
-      if (commanderInput) _syncArmyCommanderAliases(army, commanderInput, '', G);
+      if (commanderInput) _syncArmyCommanderAliases(army, commanderInput, '', G,opts.commanderId);
       if (qualityInput !== null) _syncArmyQualityAliases(army, qualityInput);
       if (equipmentInput !== null) _syncArmyEquipmentAliases(army, equipmentInput);
       G.armies.push(army);
@@ -435,7 +437,7 @@
     } else {
       if (commanderFields) {
         var oldCommander = _armyCurrentCommander(army);
-        var aliasesChanged = _syncArmyCommanderAliases(army, commanderInput, oldCommander, G);
+        var aliasesChanged = _syncArmyCommanderAliases(army, commanderInput, oldCommander, G,opts.commanderId);
         if (aliasesChanged) {
           if (oldCommander !== commanderInput && typeof opts.recordChange === 'function') {
             opts.recordChange('military', army.name || name, 'commander', oldCommander, commanderInput, reason);

@@ -100,7 +100,7 @@
       expireTurn: turn + EXPIRE_TURNS
     };
     list.push(ng);
-    if (list.length > MAX_SESSIONS) G._negotiations = list.slice(-MAX_SESSIONS);   // arch-ok: 会话账本封顶(本文件写口·owners)
+    if (list.length > MAX_SESSIONS) G._negotiations = list.filter(function(n){return n.status==='open';}).concat(list.filter(function(n){return n.status!=='open';}).slice(-MAX_SESSIONS));   // arch-ok: 会话账本封顶(本文件写口·owners)
     return ng;
   }
 
@@ -129,6 +129,7 @@
     var G = _G();
     if (!G || !enabled()) return null;
     var ng = get(id);
+    if(ng&&ng.sourceRef&&ng.sourceRef.kind==='proposal')return null; // faction proposals counter through their canonical versioned decision
     if (!ng || ng.status !== 'open') return null;   // fail-closed·未命中/已决→不回价
     if (ng.round >= MAX_ROUND) return null;         // round≥3 后不再允许 counter
     var off = _normOffer({ by: 'player', terms: terms, silver: silver }, _turn(G));
@@ -144,6 +145,7 @@
     var ng = get(id);
     if (!ng || ng.status !== 'open') return null;
     if (status !== 'accepted' && status !== 'rejected' && status !== 'lapsed') return null;
+    if(ng.sourceRef&&ng.sourceRef.kind==='proposal'){var p=TM.FactionDiplomacy&&TM.FactionDiplomacy.get(ng.sourceRef.refId);if(!p||p.status!==status)return null;}
     ng.status = status;
     return ng;
   }

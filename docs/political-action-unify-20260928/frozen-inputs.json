@@ -1,0 +1,391 @@
+{
+  "head": "ae4ba9c15cc58c21cf5fb322a8c195bdf26c8cbe",
+  "branch": "codex/political-action-unify-20260928",
+  "files": [
+    {
+      "path": "scenarios/天启七年·九月（官方）.json",
+      "bytes": 16384821,
+      "sha256": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+    },
+    {
+      "path": "scenarios/晚唐·开成五年（官方）.json",
+      "bytes": 53247392,
+      "sha256": "9aef64b6d357dda850abce920ab90c8e5bd501636ddbe2aef6d8ac70cccd5fc4"
+    },
+    {
+      "path": "scenarios/绍宋·建炎元年八月（官方）.json",
+      "bytes": 90986044,
+      "sha256": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+    },
+    {
+      "path": "web/.hot-update-manifest.json",
+      "bytes": 237738,
+      "sha256": "1ec546bb6916f7fe81898c527fc4aa5b07fb70ff04c30059c5b6d4248b34cb75"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.js",
+      "bytes": 6008,
+      "sha256": "f71fec77b70df92485ff823e2fffd198c9c3daaefcaf59a29119cc29b6ef40cb"
+    },
+    {
+      "path": "web/bundled-scenarios/manifest.json",
+      "bytes": 6387,
+      "sha256": "4d36a1ba006ddb9121f9903cec92cbc54e5ea71874742d1f1cce801ef1565d8d"
+    },
+    {
+      "path": "web/data/maps/scenario-library/index.json",
+      "bytes": 2410,
+      "sha256": "d32d53d8185fdafc9804006d919959beb1e99235766adf516f25888e3ae30078"
+    },
+    {
+      "path": "web/data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
+      "bytes": 11815292,
+      "sha256": "6eb403654009d5cf3295ba210a6f5c9a4f93dcdf9671776ebb90c0b1897b0444"
+    },
+    {
+      "path": "web/data/maps/scenario-library/sc-tang840-840.json",
+      "bytes": 5202646,
+      "sha256": "fa1fd361c39f84f8b9570ef07f9af1964c87a93d8db0d552f7014a814280b610"
+    },
+    {
+      "path": "web/data/maps/scenario-library/sc-tianqi7-1627.json",
+      "bytes": 1486190,
+      "sha256": "954db922637106b4c3f9a10ff77ceada0fa37ce22ad2328194d157976f7d1f46"
+    },
+    {
+      "path": "web/editor.html",
+      "bytes": 185623,
+      "sha256": "0d543de303bba65c7af9f485d8b19dc628e47e0b41c0f99fe01eb4384b262990"
+    },
+    {
+      "path": "web/index.html",
+      "bytes": 76931,
+      "sha256": "cd530d4c7196c406197ee7dda7c327ac505cda30b8b1a2e5a22ad8e682f22c64"
+    },
+    {
+      "path": "web/phase8-formal-rightrail.js",
+      "bytes": 153670,
+      "sha256": "f327e3b6a55c0dfd9671484ad0281e65efb3955536d31fda3efe685d465cb430"
+    },
+    {
+      "path": "web/preview/official-scenarios-bundle.js",
+      "bytes": 92821162,
+      "sha256": "910138abe5a8fa8ece3aaf71a6e64dcc5238a8471976f40c9dec513f12700cf5"
+    },
+    {
+      "path": "web/preview/scenario-editor-reset-data.js",
+      "bytes": 16402076,
+      "sha256": "017eabbcc27c22d47c57fa179b480a543fac1ee039e2cd812112d3f4a86c8fd0"
+    },
+    {
+      "path": "web/scenarios/shaosong-jianyan-1127.js",
+      "bytes": 50885204,
+      "sha256": "0ee62d18736a578e1c3d89084511efa641110fe1741aa65b39f65ce15dffab27"
+    },
+    {
+      "path": "web/scenarios/tang840-840.js",
+      "bytes": 31914383,
+      "sha256": "bf54a3250c4b3e263ca85c9a9d8547800b96b4cdd449a9d60c48196709c283da"
+    },
+    {
+      "path": "web/scenarios/tianqi7-1627.js",
+      "bytes": 10023328,
+      "sha256": "3b8aebe99f7171fcd8036580ffd9b731134aae04473e7483efb60d4001b76a11"
+    },
+    {
+      "path": "web/scripts/lib-political-action-fixture.js",
+      "bytes": 1504,
+      "sha256": "af31028e52169a517537065067ba31b5ff48620c19d1e2cd4c15d7a11fbb5314"
+    },
+    {
+      "path": "web/scripts/lib-political-official-fixture.js",
+      "bytes": 5058,
+      "sha256": "36070eb8e33c91773558c12796cc0b7f0684c54c8271cd895ba30e51f71bbc75"
+    },
+    {
+      "path": "web/scripts/lib-political-test-runtime.js",
+      "bytes": 3687,
+      "sha256": "e9f4329cfba10b016adf64b475457ff5e7dbcc27c2f151c52f885563b5918dd6"
+    },
+    {
+      "path": "web/scripts/smoke-command-authority.js",
+      "bytes": 15897,
+      "sha256": "0a86b2b64b8d679af694bf230646dcd9d772d50d7baefd3f2d825acfd42dc0d6"
+    },
+    {
+      "path": "web/scripts/smoke-dangling-signal-fixes.js",
+      "bytes": 5773,
+      "sha256": "009b43c7b58a293cb917d68fd5c3cc3fe158a7090220889f343c1ea2d928189c"
+    },
+    {
+      "path": "web/scripts/smoke-endturn-multicall-upgrade.js",
+      "bytes": 6827,
+      "sha256": "5371e941a935d5c29305fe0943c6ab4393574a372f53e9566f624bbce30c1e9e"
+    },
+    {
+      "path": "web/scripts/smoke-faction-diplomacy-grudge-identities.js",
+      "bytes": 3556,
+      "sha256": "154414cb37473eb742356e3707b3714b8e610b4c1f819d4233acc787b6847ee4"
+    },
+    {
+      "path": "web/scripts/smoke-faction-living-world.js",
+      "bytes": 37444,
+      "sha256": "5246e5b5c541c332fc199bac8ee4a856163be535b93dbbf34fb9159b58721011"
+    },
+    {
+      "path": "web/scripts/smoke-faction-llm-comprehensive-upgrade.js",
+      "bytes": 4048,
+      "sha256": "e706916d2dfee770184217040b856559a737387b662e45d2d94a5eb8d5ddea1d"
+    },
+    {
+      "path": "web/scripts/smoke-faction-llm-wave1.js",
+      "bytes": 4113,
+      "sha256": "326309d2366ac187f755e03691d9779f4aaaff8c9ed12f3652a1bf1d9cf85b44"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-edict.js",
+      "bytes": 5792,
+      "sha256": "3b4af6a8c82fdd4112c753099e9ff7f2af39dc18374e99c4cbf5304b7d975401"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-endturn-e2e.js",
+      "bytes": 3735,
+      "sha256": "21ff725f35ecde8eec61699937a60374618c5267fd59aca73c71fc0201f92b81"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-full-audit.js",
+      "bytes": 2707,
+      "sha256": "7a7d896ad7e9181776339bfeedf7825163c27c0af4baf513d32cc16611356fd1"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-guoku.js",
+      "bytes": 6329,
+      "sha256": "f9983b2ad8bb05d88618be1997f8b063f75c46034be729fa8ca2a7c03a1dbfb5"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-in-turn-driver.js",
+      "bytes": 10184,
+      "sha256": "96c21c20661ea0c254ae7c54d988a97bd335225fc058f66df49c139b7924a278"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-llm-decision.js",
+      "bytes": 10490,
+      "sha256": "6afecdada34f718de9f41d975ce3a04bb420bba75e90270aa8d09f2daebbed38"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-llm-ledger.js",
+      "bytes": 4766,
+      "sha256": "cc3ca5afedebd953072623b3888f5c15b9aa23d2bed3a41bb06f0a4efd90354a"
+    },
+    {
+      "path": "web/scripts/smoke-faction-npc-memorial.js",
+      "bytes": 6915,
+      "sha256": "6094c68a9b0d8e36b155a70f2b196229472611357b6718f58dfc27ca9a661d97"
+    },
+    {
+      "path": "web/scripts/smoke-negotiation-sessions.js",
+      "bytes": 24503,
+      "sha256": "81d37b66aa177345e48de3725e1fb3191fa0cc530ad8fcadfc4da64fba6c6592"
+    },
+    {
+      "path": "web/scripts/smoke-office-tree-render-rederive.js",
+      "bytes": 1814,
+      "sha256": "a1b32f424a32894d5865fa781fcde032cc39b74b18a2ca39cc0ede4eea68d339"
+    },
+    {
+      "path": "web/scripts/smoke-p6-inline-namespaces.js",
+      "bytes": 4004,
+      "sha256": "7e93374fe97064e4d2e6bd4ac857dc6ad85e27de884f72949799e68f9fcc8262"
+    },
+    {
+      "path": "web/scripts/smoke-phase3-deep-refactor.js",
+      "bytes": 3322,
+      "sha256": "763aa22c136140997fc21970e71145e42321c12e7c2050ab30f66dd41c60d1cb"
+    },
+    {
+      "path": "web/scripts/smoke-political-action-unification.js",
+      "bytes": 16123,
+      "sha256": "2c2a9b98a00cb6f268e194c4f4c44756175c42e9e52b80d2d49fdfd32c1e43c8"
+    },
+    {
+      "path": "web/scripts/smoke-political-boundaries.js",
+      "bytes": 16293,
+      "sha256": "42488b698b720f97e6791918c63dd9b493302d5724a34627c1065553b9c7223c"
+    },
+    {
+      "path": "web/scripts/smoke-political-generation.js",
+      "bytes": 3825,
+      "sha256": "7b49baa4980d445fea7bc20ad4d659e7d37e58f30c3e4ecef0c13a204bb8c414"
+    },
+    {
+      "path": "web/scripts/smoke-political-official-scenarios.js",
+      "bytes": 2594,
+      "sha256": "99c037703704011de8a4ceacec6299fee65be2532df10df529e96df1698a8649"
+    },
+    {
+      "path": "web/scripts/smoke-rightrail-datasource.js",
+      "bytes": 16047,
+      "sha256": "11185fea41ca6563696e24b9a01bdc53c395d78341ce2d6dccfc86ddf0237d60"
+    },
+    {
+      "path": "web/scripts/smoke-round19-cross-system-rollback.js",
+      "bytes": 20384,
+      "sha256": "de673ab34819cbd90ca61022de5bc2679750bbe46407d48295141b94f77ec987"
+    },
+    {
+      "path": "web/scripts/smoke-sc16-player-faction-guard.js",
+      "bytes": 3926,
+      "sha256": "e95d4d55495e4a8d623d77b54f708af723ed9617be696aad18bf5c86283859ab"
+    },
+    {
+      "path": "web/scripts/smoke-startup-phase-observability.js",
+      "bytes": 11651,
+      "sha256": "fe290bcf7f4082b9d1b1dd652c6f7b4b2ca2085e1d7bb91266e5fd21ddfaf137"
+    },
+    {
+      "path": "web/startup-script-phases.json",
+      "bytes": 386124,
+      "sha256": "66a65dc6cd95db37fd1cfd3bfecd1ead9b1e5bc114647aceb904d6215da00967"
+    },
+    {
+      "path": "web/tm-ai-change-army.js",
+      "bytes": 47762,
+      "sha256": "c4057529d5e57a65d41573812e18777a0821604a0de0b84e57fe0d6d1e1f02d4"
+    },
+    {
+      "path": "web/tm-endturn-apply.js",
+      "bytes": 350045,
+      "sha256": "bdc32cc0354dfc870bdc1657492f1e053d611feccca6e6730a115bd5873a3854"
+    },
+    {
+      "path": "web/tm-endturn-followup.js",
+      "bytes": 285999,
+      "sha256": "922602ce65aaaf48868a00a4238d1d421de1dc18cfb0b2f0d058959d75166128"
+    },
+    {
+      "path": "web/tm-faction-action-engine.js",
+      "bytes": 96780,
+      "sha256": "746729f6108fa05deb099c6426fd20b630190bd64a70cf39b7795302918a9585"
+    },
+    {
+      "path": "web/tm-faction-diplomacy.js",
+      "bytes": 29907,
+      "sha256": "ebec13056b1399481fa6371a942cbf1fd8dc46485e7e01344470964df5c93b5f"
+    },
+    {
+      "path": "web/tm-faction-npc-chaoyi.js",
+      "bytes": 7454,
+      "sha256": "eb4afb94dadaccec081159ba01b121a53191cba789f82c2debffab2a5745d0cc"
+    },
+    {
+      "path": "web/tm-faction-npc-dispatcher.js",
+      "bytes": 13391,
+      "sha256": "81a3bb682c0607030ac9ac62ca0fe745fc3003e31cb6fd6e5bf57c458e84fea4"
+    },
+    {
+      "path": "web/tm-faction-npc-edict.js",
+      "bytes": 9848,
+      "sha256": "e79be86329d3ccbc843bbcfb0b577ca2600dccbde570d38eac2cd07d148974a8"
+    },
+    {
+      "path": "web/tm-faction-npc-guoku.js",
+      "bytes": 11634,
+      "sha256": "60813f434bc91cad6df36b8cc31553c5b6ceef49a12b823733db02ec00410a37"
+    },
+    {
+      "path": "web/tm-faction-npc-in-turn-driver.js",
+      "bytes": 16528,
+      "sha256": "7a7c86e7e0e5c0c6fd0bc8bd682267eda24778217b4e20b7f6f0f8bf156bd1e8"
+    },
+    {
+      "path": "web/tm-faction-npc-llm-decision.js",
+      "bytes": 155671,
+      "sha256": "c1a8011b929980333ed32357bb378a06f6941606e6202a0f3782f03e7df16290"
+    },
+    {
+      "path": "web/tm-faction-npc-memorial.js",
+      "bytes": 13642,
+      "sha256": "105999cd7b17aa28a0fdb91e7e319a2ea06bce99b610513941ec7e7c11f282b9"
+    },
+    {
+      "path": "web/tm-faction-npc-office.js",
+      "bytes": 8151,
+      "sha256": "a143209bfdd6f0e3450dace87250052efb68088b96a3909958ae4540d0940507"
+    },
+    {
+      "path": "web/tm-feudal-warfare.js",
+      "bytes": 52337,
+      "sha256": "1cde591ed539957ddbbd7fd86c44002fd30e0f0c1bd6afacc047d717609a7ac4"
+    },
+    {
+      "path": "web/tm-history-events.js",
+      "bytes": 46475,
+      "sha256": "fef6e7d01ece7aab98bc95153d7c70e808fc11e661476c24e0331095cd8a9fe3"
+    },
+    {
+      "path": "web/tm-negotiation.js",
+      "bytes": 11887,
+      "sha256": "8446fa5d97b45416aec01b87e7e41c00abbccfc8510a6e1d293f243d47d4fdb7"
+    },
+    {
+      "path": "web/tm-npc-action-ledger.js",
+      "bytes": 45298,
+      "sha256": "359bfd3b5390ab72baace7732bf847c6da1a4a172be6324cebb8d97f4dedb27f"
+    },
+    {
+      "path": "web/tm-npc-decision-ai-driven.js",
+      "bytes": 28685,
+      "sha256": "efa581df4313161a2e041886e2506c9c53b5f411f1ceecc83471d68ceffef37b"
+    },
+    {
+      "path": "web/tm-npc-decision.js",
+      "bytes": 87153,
+      "sha256": "8ec3ad8ae3cd902150ba7812ceba53679e85564b9436bc3dc321bde3e43ea6af"
+    },
+    {
+      "path": "web/tm-office-holder-state.js",
+      "bytes": 9884,
+      "sha256": "83e031b5c8af9d1ba41691a9c198e4624017264f979b190ed679d59024b65842"
+    },
+    {
+      "path": "web/tm-office-runtime.js",
+      "bytes": 110564,
+      "sha256": "39158be152b838aaefcd47ff5b7d3428b8597c115b48d77ea7df5f2171691e18"
+    },
+    {
+      "path": "web/tm-office-system.js",
+      "bytes": 110349,
+      "sha256": "ce1057a6af6404fdb88ee9a05a7f8e255de6b1e14c78619cdb2b730ca850dc14"
+    },
+    {
+      "path": "web/tm-official-scenario-bundle.js",
+      "bytes": 92821491,
+      "sha256": "ae2ff0ccd18eb4234890cf955c17cb569328028aa2106564ead58162bda02ae3"
+    },
+    {
+      "path": "web/tm-political-actions.js",
+      "bytes": 39991,
+      "sha256": "00a060f6353d1283f964627f8e477f538cff0cfc038dcd5f57ce1ff676aaa908"
+    },
+    {
+      "path": "web/tm-public-treasury.js",
+      "bytes": 43243,
+      "sha256": "60e7ae194ee08fd944faec5c3386fac6923658048a9395cfbfc9fe016a8fef29"
+    },
+    {
+      "path": "web/tm-save-lifecycle.js",
+      "bytes": 169207,
+      "sha256": "ed4bbee3eb704843ee61d87aa6b040023cd5095d523edbb3c39f8242c7b42090"
+    },
+    {
+      "path": "web/tm-start-runtime-manifest.json",
+      "bytes": 137766,
+      "sha256": "972891abc3b34064dcb95782e963a6de6fbd0c79a0624e2c96fbd4c471a12461"
+    },
+    {
+      "path": "web/tm-wendui.js",
+      "bytes": 188069,
+      "sha256": "a6aa02e0ba5be501e8c7c5e2641b992b36a2bacb902ac88bb14c761ca54aa7f8"
+    }
+  ]
+}

@@ -163,9 +163,11 @@
       _finish(job, 'failed', null, 'setTimeout unavailable');
       return null;
     }
+    var lease=global.TM&&TM.NPC&&TM.NPC.ActionLedger&&TM.NPC.ActionLedger.capture();
     var rec = { id: null, source: source, job: job };
     var timer = global.setTimeout(function() {
       _removeTimer(rec);
+      if(lease&&!TM.NPC.ActionLedger.current(lease)){job.status='expired';job.finishedAt=_now();return;}
       if (_turn() !== turn) {
         _finish(job, 'skipped', { reason: 'stale turn', currentTurn: _turn() });
         return;
@@ -182,9 +184,11 @@
         return;
       }
       Promise.resolve(p).then(function(result) {
+        if(lease&&!TM.NPC.ActionLedger.current(lease))return;
         var status = _classifyResult(result);
         _finish(job, status, result, null);
       }, function(e) {
+        if(lease&&!TM.NPC.ActionLedger.current(lease))return;
         _finish(job, 'failed', null, e);
         try { console.warn('[npc-llm-dispatcher] ' + source + ' failed', e); } catch(_){}
       });

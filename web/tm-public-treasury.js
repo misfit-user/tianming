@@ -127,7 +127,7 @@
       if(src.entries.concat(dst.entries).some(function(e){return !resource(e,k).known;})){bad='balance-unknown:'+k;return;}
       var have=src.entries.reduce(function(n,e){return n+Math.max(0,resource(e,k).available||0);},0);
       if(have<amounts[k]&&!o.allowPartial){bad='insufficient-resources:'+k;return;}
-      if(o.enforceQuota && src.entries.some(function(e){var r=resource(e,k);return r.quota==null||r.used==null||amounts[k]>Math.max(0,r.quota-r.used);})){bad='quota-unavailable:'+k;return;}
+      if(o.enforceQuota && src.entries.some(function(e){var r=resource(e,k);return r.quota==null?!o.allowUnbudgetedInternalTransfer:r.used==null||amounts[k]>Math.max(0,r.quota-r.used);})){bad='quota-unavailable:'+k;return;}
       paid[k]=round(Math.min(have,amounts[k]));shortfall[k]=round(amounts[k]-paid[k]);
       distribute(paid[k],src.entries,k,false).forEach(function(r){if(r.amount)debits.push({entry:r.entry,resource:k,amount:r.amount});});
       if(to)distribute(paid[k],dst.entries,k,true).forEach(function(r){if(r.amount)credits.push({entry:r.entry,resource:k,amount:r.amount});});

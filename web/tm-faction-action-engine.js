@@ -48,48 +48,13 @@
   var LIVING_WORLD_TYPES = ['declare_war', 'join_war'];
   var VALID_CASUS_BELLI = ['rebellion', 'border', 'claim', 'holy', 'subjugation', 'none'];
   var ACTION_CONTRACT = {
-    memorial: {
-      required: ['from','type','content','rulerDecision'],
-      optional: ['ruling','loyaltyDelta'],
-      mutates: ['fac.npcMemorials','char.loyalty'],
-      visible: ['qijuHistory','faction panel ledger']
-    },
-    edict: {
-      required: ['type','content'],
-      optional: ['trigger','treasuryDelta','loyaltyDeltas'],
-      mutates: ['fac.npcEdicts','fac.treasury','char.loyalty'],
-      visible: ['qijuHistory','faction panel ledger']
-    },
-    court_alignment: {
-      required: ['type','summary'],
-      optional: ['partyImbalanceDelta','loyaltyDeltaByParty'],
-      mutates: ['fac.npcChaoyi','party metrics','char.loyalty'],
-      visible: ['qijuHistory','faction panel ledger']
-    },
-    office_change: {
-      required: ['target','newPosition'],
-      optional: ['kind','loyaltyDelta','reason'],
-      mutates: ['char.position','char.officialTitle','admin hierarchy when hook exists'],
-      visible: ['qijuHistory','character card','office UI']
-    },
-    fiscal_policy: {
-      required: ['resource'],
-      optional: ['reason','incomeDelta','expenseDelta','longTermIncomeDelta','longTermExpenseDelta','policyName','durationTurns'],
-      mutates: ['fac.treasury.money/grain/cloth','fac.fiscalPolicy.longTermIncomeDelta/longTermExpenseDelta','fac.npcFiscalActions'],
-      visible: ['faction panel','treasury UI','qijuHistory']
-    },
-    military_order: {
-      required: ['army','order'],
-      optional: ['commander','destination','location','garrison','soldiersDelta','moraleDelta','trainingDelta','reason'],
-      mutates: ['GM.armies','army.soldiers/morale/training/location','fac.npcMilitaryActions'],
-      visible: ['army UI','map/faction panel','qijuHistory']
-    },
-    diplomacy: {
-      required: ['targetFaction','relationDelta'],
-      optional: ['relationType','reason','treaty','treatyName','durationTurns'],
-      mutates: ['GM.factionRelations','GM.treaties','fac.npcDiplomacyActions'],
-      visible: ['faction relation UI','qijuHistory']
-    },
+    memorial: {required:['targetId','content'],optional:['sourcePlanId'],mutates:['_npcPlans document request'],visible:['faction panel ledger']},
+    edict: {required:['targetId','content'],optional:['sourcePlanId'],mutates:['_npcPlans document request'],visible:['faction panel ledger']},
+    court_alignment: {required:['targetId','content'],optional:['sourcePlanId'],mutates:['_npcPlans consultation'],visible:['faction panel ledger']},
+    office_change: {required:['targetId','positionId'],optional:['kind','actingPositionId','fromPositionId','sourcePlanId'],mutates:['authoritative scoped office via NPC personnel domain'],visible:['character card','office UI']},
+    fiscal_policy: {required:['fromAccount','toAccount','amounts','purpose'],optional:['actingPositionId','sourcePlanId'],mutates:['PublicTreasury verified transfer'],visible:['treasury UI']},
+    military_order: {required:['armyId'],optional:['actingPositionId','commanderId','destinationId','commandHandoverTo','commandReceipt','reason'],mutates:['CommandAuthority receipt then Army or MarchSystem'],visible:['army UI','map']},
+    diplomacy: {required:['toFactionId','proposalType','terms'],optional:['proposalId','proposalVersion','decision','counterTerms','durationTurns','obligations','actingPositionId','diplomacyAction','treatyId'],mutates:['FactionDiplomacy proposal; GM.treaties after actual signatures'],visible:['envoy','faction panel']},
     province_policy: {
       required: ['province','policy'],
       optional: ['ownerFaction','minxinDelta','corruptionDelta','unrestDelta','taxDelta','revenueDelta','reason'],
@@ -247,7 +212,7 @@
       actionId: action.actionId,
       faction: fac.name || action.faction || '',
       type: action.type,
-      source: action.source || '',
+      source: action.source || '',sourceKind:action.sourceKind||'proposal',organizationId:fac.id||'',
       turn: action.turn || _turn(),
       status: status || 'applied',
       detail: detail || null,
@@ -273,7 +238,8 @@
       rec._actionType = type;
       rec._actionSource = 'local';
     }
-    _recordAction(fac, action, 'applied', rec || null);
+    action.sourceKind=type==='fiscal_policy'&&rec&&_arr(fac.npcFiscalLedger).indexOf(rec)>=0?'world_process':'narrative';
+    _recordAction(fac, action, action.sourceKind==='world_process'?'completed':'reported', rec || null);
     return action;
   }
 
@@ -404,7 +370,7 @@
   }
 
   function _rulerOf(alive) {
-    return alive.find(function(c){ return _classifyChar(c) === 'ruler'; }) || alive[0] || null;
+    var rulers=alive.filter(function(c){ return _classifyChar(c) === 'ruler'; });return rulers.length===1?rulers[0]:null;
   }
 
   function _applyMemorial(fac, action, ctx) {
@@ -791,7 +757,7 @@
     if (!targetFac) return { ok:false, reason:'target faction not found', targetFaction:targetFacName };
     var pressure = Math.max(1, Math.round(Math.abs(_safeNum(p.relationDelta || p.pressure || 8)) / 6));
     targetFac._intriguePressure = _safeNum(targetFac._intriguePressure) + pressure;
-    if (p.relationDelta) _applyDiplomacy(fac, _makeAction(action.decisionId, action.turn, fac, 'diplomacy', 0, { targetFaction:targetFacName, relationDelta:p.relationDelta, relationType:p.relationType || '暗斗加深', reason:p.reason || '暗中离间' }, action.source));
+    // Intrigue pressure is an unadapted legacy process; it cannot sign agreements or rewrite formal diplomacy.
     var rec = { id:action.actionId, turn:action.turn || _turn(), targetFaction:targetFacName, intrigue:p.intrigue || p.policy || 'covert', pressure:pressure, reason:p.reason || '', _generatedByLlm:action.source !== 'local', _decisionId:action.decisionId, _actionId:action.actionId, _actionType:action.type };
     _pushFacTrajectory(fac, 'npcIntrigueActions', rec);
     if (global.TM && global.TM.FactionNpcNewsBridge && typeof global.TM.FactionNpcNewsBridge.pushIntrigue === 'function') try { global.TM.FactionNpcNewsBridge.pushIntrigue(fac, rec); } catch(_){}
@@ -868,6 +834,7 @@
     return { ok: true, war: res.war || null };
   }
   function _applyDeclareWar(fac, action) {
+    if (!TM.PoliticalActions || !TM.PoliticalActions.verifyIssued(action)) return { ok:false, reason:"bound_war_decision_required" };
     if (!_livingWorldOn()) return { ok: false, reason: 'living world off' };
     var p = action.payload || {};
     var attacker = fac && fac.name;
@@ -886,6 +853,7 @@
     return { ok: true, summaryKey: 'wars', detail: { targetFaction: target, warId: rec.warId, casusBelli: rec.casusBelli }, worldEvent: { kind: 'declare_war', actor: attacker, target: target, cb: rec.casusBelli } };
   }
   function _applyJoinWar(fac, action) {
+    if (!TM.PoliticalActions || !TM.PoliticalActions.verifyIssued(action)) return { ok:false, reason:"bound_war_decision_required" };
     if (!_livingWorldOn()) return { ok: false, reason: 'living world off' };
     var p = action.payload || {};
     var joiner = fac && fac.name;
@@ -897,6 +865,7 @@
     if (!_joinWars.length) return { ok: false, reason: 'no ongoing war involving target (join needs an existing war)', targetFaction: enemy };
     var _wantWarId = p.warId || p.warID || p.war || '';
     var origWar = _wantWarId ? (_joinWars.filter(function(w){ return String(w.id) === String(_wantWarId); })[0] || null) : null;
+    if (_wantWarId && !origWar) return { ok:false, reason:'explicit_war_not_found_or_inactive' };
     if (!origWar) origWar = _joinWars.reduce(function(best, w){ return (!best || _safeNum(w.startTurn) >= _safeNum(best.startTurn)) ? w : best; }, null);
     if (_lwAlreadyAtWar(joiner, enemy)) return { ok: false, reason: 'already at war', targetFaction: enemy };
     var cbMatched = _lwResolveCasusBelli(p.casusBelli || p.cb);
@@ -1330,6 +1299,7 @@
   }
   function applyDecision(fac, decision, opts) {
     opts = opts || {};
+    if(global.TM&&TM.PoliticalActions){fac=TM.PoliticalActions.resolve('organization',{id:fac&&fac.id});if(!fac)return {actions:0,skippedActions:1,reason:'organization_unresolved'};}
     var d = validateDecision(decision);
     var turn = _safeNum(opts.turn) || _turn();
     var actions = normalizeDecisionActions(fac, d, { turn:turn, decisionId: opts.decisionId });
@@ -1340,7 +1310,22 @@
     // F1·2026-05-22·in-batch 去重·防 LLM 同一 decision 重复 emit (legacy+native 双填或纯 native 双填)
     var seenBatchKeys = {};
     var _worldEvents = [];   // F2·Slice3·收集重大决策世界事件(仅总闸 ON 时消费)
-    actions.forEach(function(action) {
+    actions.forEach(function(action,actionIndex) {
+      if(['office_change','fiscal_policy','diplomacy','memorial','edict','court_alignment','military_order','declare_war','join_war'].indexOf(action.type)>=0) {
+        var boundary=global.TM&&global.TM.PoliticalActions;
+        var actual=boundary?boundary.submit(fac,action,Object.assign({},opts,{index:actionIndex})):{outcome:'blocked',reason:'political_boundary_unavailable'};
+        action._actualOutcome=actual.duplicate?'duplicate':actual.outcome;action.sourceKind='verified_result';
+        if(actual.actionId){action.generatedActionId=action.actionId;action.actionId=actual.actionId;}
+        var completed=actual.outcome==='completed'||actual.outcome==='started'||actual.outcome==='partial';
+        if(completed&&!actual.duplicate){summary.actions++;var category={office_change:'office',fiscal_policy:'fiscalPolicy',diplomacy:'diplomacy',military_order:'military',memorial:'memorials',edict:'edicts',court_alignment:'chaoyi',declare_war:'wars',join_war:'wars'}[action.type];summary[category]=(summary[category]||0)+1;}
+        else if(actual.duplicate)summary.mergedActions++;
+        else if(actual.outcome==='submitted'||actual.outcome==='waiting'){summary.submittedActions=(summary.submittedActions||0)+1;}
+        else{summary.skippedActions++;summary.skippedDetails.push({actionId:action.actionId,type:action.type,reason:actual.reason});}
+        if(completed&&!actual.duplicate&&actual.worldEvent)_worldEvents.push(actual.worldEvent);
+        if(!summary.results)summary.results=[];summary.results.push(actual);
+        fac=boundary&&boundary.resolve('organization',{id:fac.id})||fac;
+        _recordAction(fac,action,actual.outcome,actual);return;
+      }
       var preflight = validateActionTarget(fac, action, ctx);
       if (!preflight || !preflight.ok) {
         var preflightDetail = { stage:'preflight', reason:(preflight && preflight.reason) || 'invalid action target', detail:preflight || null };
@@ -1382,9 +1367,9 @@
     });
     if (_livingWorldOn()) { try { _expireWorldEvents(global.GM || {}, turn); if (_worldEvents.length) _emitWorldEvents(fac, _worldEvents, turn); } catch (_) {} }   // F2·Slice3·后果事件化(过期清理每回合必经·再判新事件)
     if (d && d.rationale) fac._lastLlmRationale = { turn:turn, text:d.rationale };
-    ensureStrategyV2(fac, d, actions);
+    ensureStrategyV2(fac, TM.PoliticalActions?null:d, TM.PoliticalActions?[]:actions);
     // G3-C·2026-05-22·决策风格 rolling memory·写在 strategy 后·只算 applied actions·skipped 不入
-    try { _updateStyleTrajectory(fac, actions.filter(function(a){ return a && a.type; }), turn); } catch(_){}
+    try { _updateStyleTrajectory(fac, actions.filter(function(a){ return a && a.type && /^(completed|started|partial)$/.test(a._actualOutcome||''); }), turn); } catch(_){}
     // F2 Sub 1·2026-05-22·SC16 采纳审计·跑在 strategy 之后·summary 之前·结果挂在 summary 上
     var compliance = null;
     try { compliance = _auditSc16Compliance(fac, actions, turn); } catch(_){}
@@ -1465,6 +1450,9 @@
   }
 
   function scoreFactionCandidate(fac, opts) {
+    if(global.TM&&TM.PoliticalActions){var now=_turn(),last=_latestRunTurn(fac),pending=(fac&&fac._incomingProposals||[]).filter(function(p){return p&&p.status==='pending';}).length;
+      return {fac:fac,score:Math.min(100,Math.max(0,now-last))*4+Math.min(20,pending),reasons:['waiting-time','delivered-work']};
+    }
     opts = opts || {};
     var G = global.GM || {};
     var turn = _safeNum(opts.turn) || _turn();

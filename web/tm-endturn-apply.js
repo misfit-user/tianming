@@ -161,6 +161,7 @@
     var p1 = ctx.results.sc1 || null;
     var _npcLedger = global.TM && global.TM.NPC && global.TM.NPC.ActionLedger;
     if (_npcLedger) { _npcLedger.advance(GM); _npcLedger.flushDeferred(); }
+    if(global.TM&&global.TM.PoliticalActions){var pm=global.TM.PoliticalActions.migrate(GM);if(!pm.ok)throw Error(pm.reason||'political-migration-failed');global.TM.PoliticalActions.flush();if(global.TM.FactionDiplomacy)global.TM.FactionDiplomacy.advance();}
     if (global.TM && TM.AIResultContract) { TM.AIResultContract.normalizeOutput(p1); TM.AIResultContract.normalizeRecord(ctx.record); }
     var sc = ctx.prompt.sc;
     var shizhengji = ctx.record.shizhengji || "";

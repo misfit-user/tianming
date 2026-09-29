@@ -1,0 +1,139 @@
+{
+  "baseline": "ae4ba9c15cc58c21cf5fb322a8c195bdf26c8cbe",
+  "node": "v24.14.0",
+  "platform": "win32",
+  "fixtureSha256": "e33edd9a99bd79e38312be65a9442a3bee2bcc6805a35bd6ba8af1e1631048f2",
+  "note": "Same local VM fixture and mocked response. No real model call. Token estimate is UTF-8 bytes / 4, not tokenizer usage. Generation and commit are separate after this change.",
+  "samples": [
+    {
+      "version": "before",
+      "runs": [
+        {
+          "calls": 1,
+          "promptBytes": 9697,
+          "tokenEstimate": 2425,
+          "generationMs": 10.91339999999991,
+          "commitMs": 0.0010000000002037268,
+          "saveBytes": 5250,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": true,
+          "verifiedOfficeWrites": 0
+        },
+        {
+          "calls": 1,
+          "promptBytes": 9697,
+          "tokenEstimate": 2425,
+          "generationMs": 1.4519999999997708,
+          "commitMs": 0.001099999999951251,
+          "saveBytes": 5250,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": true,
+          "verifiedOfficeWrites": 0
+        },
+        {
+          "calls": 1,
+          "promptBytes": 9697,
+          "tokenEstimate": 2425,
+          "generationMs": 1.3811000000000604,
+          "commitMs": 0.0007000000000516593,
+          "saveBytes": 5250,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": true,
+          "verifiedOfficeWrites": 0
+        },
+        {
+          "calls": 1,
+          "promptBytes": 9697,
+          "tokenEstimate": 2425,
+          "generationMs": 1.4778999999998632,
+          "commitMs": 0.0007999999997991836,
+          "saveBytes": 5250,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": true,
+          "verifiedOfficeWrites": 0
+        },
+        {
+          "calls": 1,
+          "promptBytes": 9697,
+          "tokenEstimate": 2425,
+          "generationMs": 1.1549999999997453,
+          "commitMs": 0.0012000000001535227,
+          "saveBytes": 5250,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": true,
+          "verifiedOfficeWrites": 0
+        }
+      ]
+    },
+    {
+      "version": "after",
+      "runs": [
+        {
+          "calls": 1,
+          "promptBytes": 3786,
+          "tokenEstimate": 947,
+          "generationMs": 5.760899999999765,
+          "commitMs": 10.76780000000008,
+          "saveBytes": 14177,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": false,
+          "verifiedOfficeWrites": 1
+        },
+        {
+          "calls": 1,
+          "promptBytes": 3786,
+          "tokenEstimate": 947,
+          "generationMs": 2.330699999999979,
+          "commitMs": 2.030500000000302,
+          "saveBytes": 14177,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": false,
+          "verifiedOfficeWrites": 1
+        },
+        {
+          "calls": 1,
+          "promptBytes": 3786,
+          "tokenEstimate": 947,
+          "generationMs": 2.121099999999842,
+          "commitMs": 1.9449000000004162,
+          "saveBytes": 14177,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": false,
+          "verifiedOfficeWrites": 1
+        },
+        {
+          "calls": 1,
+          "promptBytes": 3786,
+          "tokenEstimate": 947,
+          "generationMs": 2.0161000000002787,
+          "commitMs": 1.8184000000001106,
+          "saveBytes": 14177,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": false,
+          "verifiedOfficeWrites": 1
+        },
+        {
+          "calls": 1,
+          "promptBytes": 3786,
+          "tokenEstimate": 947,
+          "generationMs": 1.3184000000001106,
+          "commitMs": 1.2120999999997366,
+          "saveBytes": 14177,
+          "activePlans": 0,
+          "pendingAgeTurns": 0,
+          "reportedApplied": false,
+          "verifiedOfficeWrites": 1
+        }
+      ]
+    }
+  ]
+}

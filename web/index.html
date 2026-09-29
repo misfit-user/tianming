@@ -618,21 +618,21 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-ai-result-contract.js?v=20260928-release1353"></script>
 <script src="tm-world.js?v=20260928-release1353"></script>
 <script src="tm-memorials.js?v=20260928-release1353"></script>
-<script src="tm-wendui.js?v=20260928-release1353"></script>
-<script src="tm-wendui-persona-views.js?v=20260928-release1353"></script>
+<script src="tm-wendui.js?v=20260929-political-actions"></script>
+<script src="tm-wendui-persona-views.js?v=20260929-political-actions"></script>
 <!-- 2026-05-21·狱中问对模式·6 动作 + AI 解析 + 频率限制 + 朝议反应 -->
 <script src="tm-wendui-prison.js?v=20260928-release1353"></script>
 <!-- R161 R6 (2026-05-03) tm-office-system 从 tm-hongyan-office 拆出·官制 system (~700 行) -->
-<script src="tm-office-holder-state.js?v=20260928-release1353-vacancy"></script>
+<script src="tm-office-holder-state.js?v=20260929-political-actions"></script>
 <script src="tm-office-action-evidence.js?v=20260928-release1353-vacancy"></script>
-<script src="tm-office-system.js?v=20260928-release1353-vacancy"></script>
+<script src="tm-office-system.js?v=20260929-political-actions"></script>
 <script src="tm-region-magnate.js?v=20260928-release1353"></script>
 <script src="tm-era-language-pack.js?v=20260928-release1353"></script>
 <script src="tm-ai-narrative-guards.js?v=20260928-release1353"></script>
 <script src="tm-office-fallback.js?v=20260928-release1353-vacancy"></script>
-<script src="tm-office-runtime.js?v=20260928-release1353-vacancy"></script>
+<script src="tm-office-runtime.js?v=20260929-political-actions"></script>
 <!-- 第十六拆(保序切割 sibling·必须紧接 tm-office-runtime.js 之后)：官员表摘要预警+中推/荐举+选任器 -->
-<script src="tm-office-runtime-summary-appoint.js?v=20260928-release1353-vacancy"></script>
+<script src="tm-office-runtime-summary-appoint.js?v=20260929-political-actions"></script>
 <script src="tm-office-panel.js?v=20260928-release1353-vacancy"></script>
 <!-- 官制活化（实验）：开关组 + 职权舆图（Slice①·默认关·零回归） -->
 <script src="tm-office-flags.js?v=20260928-release1353-vacancy"></script>
@@ -647,9 +647,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-office-recall-agent.js?v=20260928-release1353-vacancy"></script>
 <!-- R133 (2026-04-25) tm-npc-engine 拆分 → engine + decision -->
 <script src="tm-npc-engine.js?v=20260928-release1353"></script>
-<script src="tm-npc-action-ledger.js?v=20260928-npc-actions"></script>
-<script src="tm-npc-decision.js?v=20260928-npc-actions"></script>
-<script src="tm-npc-decision-ai-driven.js?v=20260928-npc-actions"></script>
+<script src="tm-npc-action-ledger.js?v=20260929-political-actions"></script>
+<script src="tm-npc-decision.js?v=20260929-political-actions"></script>
+<script src="tm-npc-decision-ai-driven.js?v=20260929-political-actions"></script>
+<script src="tm-political-actions.js?v=20260929-political-actions"></script>
 <!-- R111+R127 拆分 tm-game-engine.js → launch + player-settings + player-core + hongyan-office + game-loop -->
 <script src="tm-promotion.js?v=20260928-release1353"></script>
 <script src="tm-gongming.js?v=20260928-release1353"></script>
@@ -673,8 +674,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-economy.js?v=20260928-release1353"></script>
 <script src="tm-military.js?v=20260928-release1353"></script>
 <script src="tm-battle-contract.js?v=20260928-release1353"></script>
-<script src="tm-feudal.js?v=20260928-release1353"></script>
-<script src="tm-feudal-warfare.js?v=20260928-release1353"></script>
+<script src="tm-feudal.js?v=20260929-political-actions"></script>
+<script src="tm-feudal-warfare.js?v=20260929-political-actions"></script>
 <script src="tm-event-system.js?v=20260928-release1353"></script>
 <script src="tm-storage.js?v=20260928-release1353"></script>
 <script src="tm-endturn-helpers.js?v=20260928-release1353"></script>
@@ -701,7 +702,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-systems.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-helpers.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-context.js?v=20260928-release1353"></script>
-<script src="tm-history-events.js?v=20260928-release1353"></script>
+<script src="tm-history-events.js?v=20260929-political-actions"></script>
 <script src="tm-tianji.js?v=20260928-release1353"></script><!-- 史实「天机」·改命(穿越/上帝视角剧本预知正史+改命追踪)·gated tianjiEnabled默认关·跨朝代·依赖rigidHistoryEvents -->
 <script src="tm-junqing-brief.js?v=20260928-release1353"></script><!-- 边报·天下军情(从活势力关系算敌我大势digest·开局即见每回合刷)·gated junqingBriefEnabled默认关·跨朝代 -->
 <script src="tm-xinjun-observe.js?v=20260928-release1353"></script><!-- 新君观政·百日(即位之初百官观望/政令初行阻·相位+AI framing)·gated xinjunObserveEnabled默认关·跨朝代 -->
@@ -739,10 +740,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-endturn-prompt.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-sc1-budget.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai.js?v=20260928-release1353"></script>
-<script src="tm-endturn-apply.js?v=20260928-npc-actions"></script>
-<script src="tm-endturn-apply-stages.js?v=20260928-npc-actions"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
-<script src="tm-endturn-followup-helpers.js?v=20260928-npc-actions"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
-<script src="tm-endturn-followup.js?v=20260928-npc-actions"></script>
+<script src="tm-endturn-apply.js?v=20260929-political-actions"></script>
+<script src="tm-endturn-apply-stages.js?v=20260929-political-actions"></script><!-- apply解构S2·stages须紧随origin(运行时ns.stages解析·writeBack dispatcher调用期取)·勿动位置 -->
+<script src="tm-endturn-followup-helpers.js?v=20260929-political-actions"></script><!-- 第十九拆·helpers须在origin之前(填TM.__etFollowupParts bucket·origin顶alias回绑)·勿动位置 -->
+<script src="tm-endturn-followup.js?v=20260929-political-actions"></script>
 <script src="tm-endturn-record.js?v=20260928-release1353"></script>
 <script src="tm-endturn-ai-infer.js?v=20260928-release1353"></script>
 <script src="tm-endturn-reliability.js?v=20260928-release1353"></script>
@@ -800,7 +801,7 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-05-10·Phase H1·NPC 事件 → 近事快报桥·必须在所有 npc-* 模块之前·让 generate 时能调 -->
 <script src="tm-faction-npc-news-bridge.js?v=20260928-release1353"></script>
 <!-- 2026-05-17·NPC 势力精细化推演统一 action engine -->
-<script src="tm-faction-action-engine.js?v=20260928-release1353"></script>
+<script src="tm-faction-action-engine.js?v=20260929-political-actions"></script>
 <!-- ③-S2 (2026-06-19) 势力前瞻式目标栈：带状态多步计划·供 NPC 决策连贯推进（开关 P.conf.factionGoalStackEnabled 默认关） -->
 <script src="tm-faction-goal-stack.js?v=20260928-release1353"></script>
 <!-- 2026-05-10·Phase F2·player 干预 NPC 内政 -->
@@ -808,14 +809,14 @@ console.log('天命游戏脚本开始加载...');
 <!-- 2026-05-10·Phase F4·NPC 内政 LLM 润色·cosmetic·依赖 npc-settings (开关) + callAI -->
 <script src="tm-faction-npc-llm-enrich.js?v=20260928-release1353"></script>
 <!-- 2026-05-10·Phase G·NPC LLM 决策接管·真改机制·替代模板 -->
-<script src="tm-faction-npc-llm-decision.js?v=20260928-release1353"></script>
-<script src="tm-faction-diplomacy.js?v=20260928-release1353"></script>
-<script src="tm-negotiation.js?v=20260928-release1353"></script><!-- 批己·谈判多轮会话引擎·招抚/议和/势力外交共用状态机·玩家可回价续谈·flag negotiationSessionsEnabled 默认ON -->
+<script src="tm-faction-npc-llm-decision.js?v=20260929-political-actions"></script>
+<script src="tm-faction-diplomacy.js?v=20260929-political-actions"></script>
+<script src="tm-negotiation.js?v=20260929-political-actions"></script><!-- 批己·谈判多轮会话引擎·招抚/议和/势力外交共用状态机·玩家可回价续谈·flag negotiationSessionsEnabled 默认ON -->
 <script src="tm-faction-decision-tools.js?v=20260928-release1353"></script>
 <!-- 2026-05-10 Phase H3: in-turn NPC background LLM driver -->
-<script src="tm-faction-npc-in-turn-driver.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-in-turn-driver.js?v=20260929-political-actions"></script>
 <!-- 2026-05-17: unified faction precision LLM scheduler + dispatch ledger -->
-<script src="tm-faction-npc-dispatcher.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-dispatcher.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Layer 2 势力反向索引·必须在 three-systems-ui 之前·game-loop 之后 -->
 <script src="tm-faction-index.js?v=20260928-release1353"></script>
 <!-- 2026-05-10·Layer 3 势力派生健康度·依赖 _facIndex·必须在 index 之后 -->
@@ -825,15 +826,15 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-faction-derived-cohesion.js?v=20260928-release1353"></script>
 <script src="tm-faction-derived-strength.js?v=20260928-release1353"></script>
 <!-- 2026-05-10·Phase C1·NPC memorial 系统·依赖 derived -->
-<script src="tm-faction-npc-memorial.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-memorial.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Phase C2·NPC edict 系统·依赖 derived + memorial -->
-<script src="tm-faction-npc-edict.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-edict.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Phase C3·NPC chaoyi 派系朝议·依赖 derived + memorial -->
-<script src="tm-faction-npc-chaoyi.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-chaoyi.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Phase C4·NPC office 人事任免·依赖 derived + memorial -->
-<script src="tm-faction-npc-office.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-office.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Phase C5·NPC guoku 财政周期·依赖 derivedEconomy -->
-<script src="tm-faction-npc-guoku.js?v=20260928-release1353"></script>
+<script src="tm-faction-npc-guoku.js?v=20260929-political-actions"></script>
 <!-- 2026-05-10·Slice D 势力归属单一 mutator·依赖 index + derived (内部 refresh) -->
 <script src="tm-faction-membership.js?v=20260928-release1353"></script>
 <script src="tm-three-systems-ui.js?v=20260928-release1353"></script>
@@ -896,8 +897,8 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-bgm-config.js?v=20260928-release1353"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260928-release1353"></script>
-<script src="tm-save-world-validation.js?v=20260928-npc-actions"></script>
-<script src="tm-save-lifecycle.js?v=20260928-npc-actions"></script>
+<script src="tm-save-world-validation.js?v=20260929-political-actions"></script>
+<script src="tm-save-lifecycle.js?v=20260929-political-actions"></script>
 <script src="tm-save-close-flush.js?v=20260928-release1353"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260928-release1353-vacancy"></script>
 <script src="tm-topbar-vars.js?v=20260928-release1353"></script>
@@ -973,7 +974,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-edict-thresholds.js?v=20260928-release1353"></script>
 <script src="tm-fiscal-ui.js?v=20260928-release1353"></script>
 <script src="tm-integration-bridge.js?v=20260928-release1353"></script>
-<script src="tm-public-treasury.js?v=20260928-npc-actions"></script>
+<script src="tm-public-treasury.js?v=20260929-political-actions"></script>
 <script src="tm-military-arrears.js?v=20260928-release1353"></script>
 <script src="tm-command-authority.js?v=20260928-release1353"></script>
 <script src="tm-char-economy-ledger.js?v=20260928-release1353"></script>
@@ -996,7 +997,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-data-access.js?v=20260928-release1353"></script>
 <!-- AI change 基础能力须在模块岛 bundle 之前加载：pathutils → army → narrative → generated applier。 -->
 <script src="tm-ai-change-pathutils.js?v=20260928-release1353"></script>
-<script src="tm-ai-change-army.js?v=20260928-release1353"></script>
+<script src="tm-ai-change-army.js?v=20260929-political-actions"></script>
 <script src="tm-ai-change-narrative.js?v=20260928-release1353"></script>
 <!-- ES module 源经受检构建生成单一 IIFE；内部依赖显式注入，不再依赖相邻 classic-script bucket。 -->
 <script src="generated/tm-ai-change-applier.bundle.js?v=20260928-npc-actions"></script>
@@ -1007,7 +1008,7 @@ console.log('天命游戏脚本开始加载...');
 <script src="editor-office-deep.js?v=20260928-release1353" defer></script>
 <script src="editor-presets.js?v=20260928-release1353" defer></script>
 <!-- 官方剧本：首屏只载生成的轻量 manifest；完整 24.4MiB 数据在玩家选定剧本后按需注入。 -->
-<script src="bundled-scenarios/manifest.js?v=20260928-release1353"></script>
+<script src="bundled-scenarios/manifest.js?v=20260929-political-actions"></script>
 <script src="tm-official-scenario-loader.js?v=20260928-release1353"></script>
 <!-- 旧 Tianqi runtime snapshot 仍可作为兼容产物生成，但在线入口不再空闲时无条件下载。
      完整官方脚本已包含同源地图与运行时数组，由 TMOfficialScenarioLoader 在选中剧本时一次性加载。 -->
@@ -1047,9 +1048,9 @@ console.log('天命游戏脚本开始加载...');
 <script src="phase8-formal-drafts-message-panels.js?v=20260928-release1353"></script>
 <script src="phase8-formal-records.js?v=20260928-release1353"></script>
 <script src="tm-renwu-tuzhi.js?v=20260928-release1353"></script>
-<script src="phase8-formal-rightrail.js?v=20260928-release1353"></script>
+<script src="phase8-formal-rightrail.js?v=20260929-political-actions"></script>
 <!-- 勿动位置·第二十四拆：social 分片须紧随 origin 之后(②b origin-first 双向 bucket TM.__p8RailParts·错序=捕获 undefined 立崩)·契约见 scripts/lint-split-contracts.js -->
-<script src="phase8-formal-rightrail-social.js?v=20260928-release1353"></script>
+<script src="phase8-formal-rightrail-social.js?v=20260929-political-actions"></script>
 <script src="preview/scenario-editor-sandbox-bridge.js?v=20260928-release1353"></script>
 <!-- 正式界面「宝相团花」悬浮设置/暂停按钮·锚 #bar-time 下方·点击=Esc·仅 GM.running 显示 -->
 <script src="tm-pause-fab.js?v=20260928-release1353"></script>

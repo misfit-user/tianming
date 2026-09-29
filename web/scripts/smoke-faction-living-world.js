@@ -31,23 +31,15 @@ function buildContext() {
    'tm-faction-npc-llm-decision.js'].forEach(function(f){
     vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
   });
+  require('./lib-political-test-runtime').install(ctx);
+  require('./lib-political-test-runtime').bindNamedTestCallers(ctx);
   return ctx;
 }
 
 // 忠实镜像 tm-feudal-warfare.js:257 CasusBelliSystem.declareWar 契约(停战/重复双向查/落 activeWars/{success,war})
 function installCasusBelli(ctx) {
-  ctx.CasusBelliSystem = {
-    _calls: [],
-    declareWar: function(attacker, defender, cbId) {
-      ctx.CasusBelliSystem._calls.push({ attacker: attacker, defender: defender, cbId: cbId });
-      var G = ctx.GM; if (!G.activeWars) G.activeWars = [];
-      var exist = G.activeWars.find(function(w){ return (w.attacker===attacker&&w.defender===defender)||(w.attacker===defender&&w.defender===attacker); });
-      if (exist) return { success: false, message: '已在交战中' };
-      var war = { id: 'w' + (G.activeWars.length + 1), attacker: attacker, defender: defender, casusBelli: cbId, casusBelliName: cbId, startTurn: G.turn, warScore: 0, truceMonths: 12, _viaCasusBelli: true };
-      G.activeWars.push(war);
-      return { success: true, war: war };
-    }
-  };
+  const real=ctx.CasusBelliSystem.declareWar;ctx.CasusBelliSystem._calls=[];
+  ctx.CasusBelliSystem.declareWar=function(a,b,cb){ctx.CasusBelliSystem._calls.push({attacker:a,defender:b,cbId:cb});const r=real(a,b,cb);if(r.war)r.war._viaCasusBelli=true;return r;};
 }
 
 function baseGM(ctx, opts) {
@@ -201,7 +193,7 @@ function goalLifecycleOnTest() {
   const fld = ctx.TM.FactionNpcLlmDecision;
   ctx.GM._facIndex['甲势力'] = { chars: [], parties: {}, metrics: {} };
   const p = fld._buildPrompt(fac);
-  assert((p.system + p.user).indexOf('goalUpdates') >= 0, 'ON: goal-stack schema (goalUpdates) injected into decision prompt');
+  assert(p.user.includes('sourcePlanId') && !p.user.includes('stepDone'), 'plans progress through concrete adopted operations rather than a model stepDone flag');
 }
 
 // ─────────────── Slice 3·后果事件化 ───────────────
@@ -254,7 +246,7 @@ function eventDiplomacyKindTest() {
   ctx.GM.currentIssues = [];
   eng.applyDecision(facA, mkDecision([{ type: 'diplomacy', targetFaction: '乙势力', relationDelta: -70 }]), { turn: 7 });
   const iss = ctx.GM.currentIssues.filter(function(x){ return x && x._flw && Number(x.raisedTurn) === 7; });
-  assert(iss.length === 1 && iss[0]._flwKind === 'betrayal' && iss[0].title.indexOf('交恶') >= 0, 'ON: big negative diplomacy emits a 背刺/交恶 world event');
+  assert(iss.length === 0 && ctx.GM.factionRelations.length === 0, 'a model relation delta cannot fabricate a diplomatic act or world event');
 }
 
 // ═══════════ Codex 返工·八阻断红绿 ═══════════
@@ -267,7 +259,7 @@ function b1ContractNotTruncatedTest() {
   assert(c.indexOf('declare_war') >= 0 && c.indexOf('join_war') >= 0, 'B1: contract at maxChars=1800 still lists BOTH new types (not truncated off the tail)');
   assert(c.indexOf('CasusBelliSystem') >= 0, 'B1: the declare_war full field line (mutates=CasusBelliSystem) survives, not just a mention');
   const p = fld._buildPrompt(ctx.GM.facs[0]);
-  assert(p.user.indexOf('|declare_war|join_war') >= 0, 'B1: static enum becomes 12-class when living world is ON');
+  assert(p.user.includes('declare_war/join_war') && p.user.includes('actingPositionId'), 'war choices advertise actual acting identity and both domain actions');
   assert(p.user.indexOf('10 种 type') < 0, 'B1: the false "10 种" claim is gone when ON');
 }
 
@@ -290,7 +282,7 @@ function b2ResponseIdMatchTest() {
     { toFaction: '乙势力', type: 'alliance', terms: '共御外敌' },
     { toFaction: '乙势力', type: 'joint_action', terms: '联攻丙' }
   ], 5);
-  const inc = B._incomingProposals;
+  const inc = ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals;
   assert(inc && inc.length === 2, 'B2 setup: two proposals from 甲 recorded on 乙');
   const idAlliance = inc.find(function(x){ return x.type === 'alliance'; }).id;
   const idJoint = inc.find(function(x){ return x.type === 'joint_action'; }).id;
@@ -298,8 +290,8 @@ function b2ResponseIdMatchTest() {
     { proposalId: idAlliance, decision: 'accept' },
     { proposalId: idJoint, decision: 'reject' }
   ], 5);
-  const allianceProp = (B._incomingProposals || []).find(function(x){ return x.id === idAlliance; });
-  const jointProp = (B._incomingProposals || []).find(function(x){ return x.id === idJoint; });
+  const allianceProp = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).find(function(x){ return x.id === idAlliance; });
+  const jointProp = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).find(function(x){ return x.id === idJoint; });
   assert(allianceProp && allianceProp.status === 'accepted', 'B2: alliance accepted by id (not swapped)');
   assert(jointProp && jointProp.status === 'rejected', 'B2: joint_action rejected by id (not swapped)');
 }
@@ -311,7 +303,7 @@ function b3AllianceTreatyTest() {
   const dip = ctx.TM.FactionDiplomacy;
   const B = ctx.GM.facs[1];
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'alliance', terms: '同盟' }], 5);
-  const id = B._incomingProposals[0].id;
+  const id = ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals[0].id;
   dip.applyResponses(B, [{ proposalId: id, decision: 'accept' }], 5);
   const tr = (ctx.GM.treaties || []).find(function(t){
     var parties = Array.isArray(t.parties) ? t.parties.map(function(p){ return (p && p.name) || p; }) : [];
@@ -332,9 +324,9 @@ function b3bStableFactionIdentityTest() {
   ctx.GM = { turn: 5, _factionLivingWorld: true, facs: [from, sameA, sameB], activeWars: [], factionRelations: [] };
   const dip = ctx.TM.FactionDiplomacy;
   const routed = dip.recordProposals(from, [{ toFaction: '同名势力', toFactionId: 'fac-same-b', type: 'alliance', terms: '凭 ID 缔盟' }], 5);
-  assert(routed.recorded === 1 && !sameA._incomingProposals && sameB._incomingProposals.length === 1,
+  assert(routed.recorded === 1 && !sameA._incomingProposals && ctx.GM.facs.find(f=>f.id===sameB.id)._incomingProposals.length === 1,
     'B3b: explicit toFactionId routes a proposal to the correct same-name faction only');
-  const proposal = sameB._incomingProposals[0];
+  const proposal = ctx.GM.facs.find(f=>f.id===sameB.id)._incomingProposals[0];
   assert(proposal.fromId === 'fac-from' && proposal.toId === 'fac-same-b', 'B3b: proposal persists stable from/to ids');
   dip.applyResponses(sameB, [{ proposalId: proposal.id, decision: 'accept' }], 5);
   assert(from.aiStrategy.allianceIds[0] === 'fac-same-b' && sameB.aiStrategy.allianceIds[0] === 'fac-from',
@@ -355,7 +347,7 @@ function b4GoalStructureTest() {
   eng.applyDecision(facA, mkDecision([{ type: 'diplomacy', targetFaction: '乙势力', relationDelta: -20, reason: '边衅' }]), { turn: 5 });
   const goals = facA.aiStrategy.goals || [];
   assert(goals.length >= 1 && goals.every(function(g){ return g && typeof g === 'object'; }), 'B4: aiStrategy.goals holds ONLY structured objects (no string labels mixed in)');
-  assert(Array.isArray(facA.aiStrategy.recentActionLabels) && facA.aiStrategy.recentActionLabels.some(function(l){ return typeof l === 'string' && l.indexOf('diplomacy') >= 0; }), 'B4: action string labels are redirected to recentActionLabels');
+  assert(!(facA.aiStrategy.recentActionLabels||[]).some(function(l){return l.includes('diplomacy');}), 'unexecuted diplomacy does not become a label for completed political work');
 }
 
 // B5·join_war 语义：新战标 parentWarId 关联原战对象(双边模型取舍)
@@ -403,7 +395,7 @@ function b7EventBoundAndTitleTest() {
   ctx.GM.currentIssues = [];
   eng.applyDecision(ctx.GM.facs[0], mkDecision([{ type: 'diplomacy', targetFaction: '乙势力', relationDelta: 55, relationType: '互不侵犯' }]), { turn: 5 });
   const iss = ctx.GM.currentIssues.filter(function(x){ return x && x._flw && Number(x.raisedTurn) === 5; })[0];
-  assert(iss && iss.title.indexOf('议互不侵犯') >= 0 && iss.title.indexOf('结盟') < 0, 'B7: alliance-family event title splits by relationType (互不侵犯→议互不侵犯, not 结盟)');
+  assert(!iss && !(ctx.GM.treaties||[]).length, 'an unaccepted relation proposal cannot become a treaty event');
 }
 
 // ═══════════ Codex 二轮·五阻断红绿 ═══════════
@@ -414,7 +406,7 @@ function b2aDedupTermsTest() {
   const dip = ctx.TM.FactionDiplomacy, B = ctx.GM.facs[1];
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'deal', terms: '互市粮秣' }], 5);
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'deal', terms: '互市茶马' }], 5);
-  const deals = (B._incomingProposals || []).filter(function(x){ return x.type === 'deal' && x.status === 'pending'; });
+  const deals = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).filter(function(x){ return x.type === 'deal' && x.status === 'pending'; });
   assert(deals.length === 2, 'B2①: two same from+type but DIFFERENT-terms proposals are both kept (not deduped to one)');
 }
 // B2②·全局递增序号：同回合两次 recordProposals 的 id 不碰撞(旧=n 重置 → dp-5-a-0 撞)
@@ -424,7 +416,7 @@ function b2bSeqNoCollisionTest() {
   const dip = ctx.TM.FactionDiplomacy, B = ctx.GM.facs[1];
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'alliance', terms: 'a' }], 5);
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'nonaggression', terms: 'b' }], 5);
-  const ids = (B._incomingProposals || []).map(function(x){ return x.id; });
+  const ids = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).map(function(x){ return x.id; });
   assert(ids.length === 2 && ids[0] !== ids[1], 'B2②: two same-turn recordProposals calls yield DISTINCT ids (global seq)');
 }
 // B2③·匹配 fail-closed：带 id 未命中→保持未决；无 id 歧义→保持未决；无 id 唯一→结算
@@ -434,15 +426,15 @@ function b2cMatchFailClosedTest() {
   const dip = ctx.TM.FactionDiplomacy, B = ctx.GM.facs[1];
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'alliance', terms: 't' }], 5);
   dip.applyResponses(B, [{ proposalId: 'no-such-id', decision: 'accept' }], 5);
-  assert((B._incomingProposals || []).every(function(p){ return p.status === 'pending'; }), 'B2③: response with unknown id is fail-closed (stays pending, not mis-settled to another proposal)');
+  assert((ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).every(function(p){ return p.status === 'pending'; }), 'B2③: response with unknown id is fail-closed (stays pending, not mis-settled to another proposal)');
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'deal', terms: 'x' }], 5);
   dip.recordProposals('甲势力', [{ toFaction: '乙势力', type: 'deal', terms: 'y' }], 5);
   dip.applyResponses(B, [{ from: '甲势力', type: 'deal', decision: 'accept' }], 5);
-  const deals = (B._incomingProposals || []).filter(function(p){ return p.type === 'deal'; });
+  const deals = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).filter(function(p){ return p.type === 'deal'; });
   assert(deals.length === 2 && deals.every(function(p){ return p.status === 'pending'; }), 'B2③: ambiguous no-id response (2 candidates) keeps BOTH pending');
   dip.applyResponses(B, [{ from: '甲势力', type: 'alliance', decision: 'accept' }], 5);
-  const alli = (B._incomingProposals || []).filter(function(p){ return p.type === 'alliance'; })[0];
-  assert(alli && alli.status === 'accepted', 'B2③: unique no-id response IS settled');
+  const alli = (ctx.GM.facs.find(f=>f.id===B.id)._incomingProposals || []).filter(function(p){ return p.type === 'alliance'; })[0];
+  assert(alli && alli.status === 'pending', 'responses must identify the exact proposal even when another kind happens to be unique');
 }
 // B4·混合数组一次性迁移：OFF 跑出字符串 goals → 开闸 → 纯结构对象
 function b4MigrationTest() {
@@ -480,7 +472,7 @@ function b5InactiveWarIdTest() {
   ctx.GM.activeWars.push({ id: 'w-live', attacker: '玩家朝廷', defender: '乙势力', startTurn: 4 });               // 进行中
   eng.applyDecision(ctx.GM.facs[0], mkDecision([{ type: 'join_war', targetFaction: '乙势力', casusBelli: 'holy', warId: 'w-dead' }]), { turn: 10 });
   const joined = ctx.GM.activeWars.find(function(w){ return w.attacker === '甲势力' && w.defender === '乙势力'; });
-  assert(joined && joined.parentWarId === 'w-live', 'B5b: inactive warId=w-dead is rejected → falls back to latest ONGOING war (w-live), not the ended w-dead');
+  assert(!joined, 'an explicit inactive war ID must not silently authorize a different ongoing war');
 }
 function b5AllInactiveRejectTest() {
   const ctx = buildContext(); installCasusBelli(ctx);

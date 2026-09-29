@@ -376,20 +376,36 @@
     else Object.keys(g._npcCommitments||{}).forEach(function(name){_arr(g._npcCommitments[name]).forEach(function(c){rows.push({c:c,name:name});});});
     return rows.filter(function(r){return r.c&&!/^(done|completed|failed|cancelled|fulfilled)$/.test(r.c.status)&&findChar({id:r.c.actorId||r.c.characterId,name:r.name},g)===ch;}).map(function(r){return r.c;});
   }
+  var humanContexts=new WeakSet();
+  function executeHuman(npc,d,context,handler) {
+    if(!TM.PoliticalActions||!TM.PoliticalActions.controlled(npc,_gm())||findChar({id:npc.id},_gm())!==npc)return result('blocked','trusted_player_identity_required');
+    var c=Object.assign({},context||{});humanContexts.add(c);
+    try{return execute(npc,d,c,handler);}finally{humanContexts.delete(c);}
+  }
+  function executionSignature(d,actor) {
+    var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType'];
+    var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
+    return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
+  }
   function execute(npc, d, context, handler) {
     var g = _gm();
     prepare(d, g);
     if(d._npcInvalidActionId)return result('blocked','invalid_action_id');
     var actor = findChar({ id: d.actorId || d.characterId || npc && npc.id, name: d.name || npc && npc.name }, g);
     var pf = preflight({ actor: actor && actor.name, characterId: actor && actor.id, target: d.target, behaviorType: d.behaviorType }, g);
+    if(context&&humanContexts.has(context)){pf.errors=pf.errors.filter(function(e){return e!=='player_actor';});pf.ok=!pf.errors.length;}
     if (!actor || !pf.ok) return result('blocked', pf.errors.join(',') || 'unknown_actor');
     if(!_str(actor.id))return result('blocked','stable_actor_id_required');
-    if(d.behaviorType!=='declare_war') {
+    if(d.behaviorType!=='declare_war'&&(!d.targetType||d.targetType==='character')) {
       var concreteTarget=findChar({id:d.targetId,name:d.target},g);
       if(concreteTarget){d.targetId=_str(concreteTarget.id);d.target=concreteTarget.name;}
     }
     if (context && !current(context._npcLease)) return result('expired', 'world_changed');
-    var st = state(g), key = JSON.stringify([d.actionId, d.phase]), signature = JSON.stringify([_str(actor.id), d.behaviorType, _str(d.targetId || d.target), d.planId || '', d.response || '', d.positionId || '', d.amount == null ? '' : d.amount, d.actingPositionId||'', d.fromAccount||'', d.toAccount||'', d.amounts||null, d.task||null]);
+    if(TM.PoliticalActions&&/^(declare_war|join_war)$/.test(d.behaviorType)){
+      var enemy=TM.PoliticalActions.resolve('organization',{id:d.targetOrganizationId||d.targetId,name:d.targetFaction||d.target||d.enemy||d.against},g);
+      if(!enemy)return result('blocked','organization_target_unresolved');d.targetType='organization';d.targetOrganizationId=enemy.id;
+    }
+    var st = state(g), key = JSON.stringify([d.actionId, d.phase]), signature = executionSignature(d,actor);
     var prior = st.receipts[key];
     if (prior) return prior.signature === signature ? Object.assign({}, prior.result, { duplicate: true }) : result('blocked', 'action_id_conflict');
     if (typeof handler !== 'function') return result('blocked', 'unregistered_behavior');
@@ -419,6 +435,7 @@
       }
       receipt = Object.assign({}, receipt, { actionId: d.actionId, phase: d.phase, actorId: _str(actor.id), actor: actor.name,
         targetId: _str(d.targetId), target: d.target || '', behaviorType: d.behaviorType, turn: _turn(g), schemaVersion: 2 });
+      if(TM.PoliticalActions&&TM.PoliticalActions.onReceipt)TM.PoliticalActions.onReceipt(d,receipt,g);
       st.receipts[key] = { signature: signature, result: receipt };
       record(Object.assign({}, receipt, { characterId: actor.id, status: receipt.outcome, source: d.source || 'npc-autonomy',
         action: d.intent || d.action || d.behaviorType, stateEffects: { executionResult: receipt } }), { GM: g, markHandled: false });
@@ -434,25 +451,40 @@
 
   function verifyEvidence(ref,d,actor,g,before) {
     if(!ref||!ref.kind)return false;
+    if(['march','command','army_operation'].indexOf(ref.kind)>=0)return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyEvidence(ref,d,g,before));
+    if(ref.kind==='diplomacy_step'||ref.kind==='treaty'||ref.kind==='treaty_termination')return !!(TM.FactionDiplomacy&&TM.FactionDiplomacy.verifyEvidence(ref,d,g,before));
+    if(ref.kind==='political_review')return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyReview(ref,d,g,before));
     if(ref.kind==='plan')return ensurePlans(g).some(function(p){return p.id===ref.id;});
     if(ref.kind==='npc_message')return ensurePlans(g).some(function(p){return _arr(p.messages).some(function(m){return m.id===ref.id;});});
     if(ref.kind==='memorial')return _arr(g.memorials).some(function(m){return m.id===ref.id&&m._actionId===d.actionId;});
     if(ref.kind==='letter_queue')return _arr(g._pendingNpcLetters).some(function(m){return m.id===ref.id&&m._actionId===d.actionId;});
     if(ref.kind==='audience')return _arr(g._pendingAudiences).some(function(m){return m._actionId===ref.id;});
-    if(ref.kind==='public_transfer')return _arr(g._publicTreasuryTransfers).some(function(t){return t.id===ref.id&&t.result&&t.result.ok&&ref.id===d.actionId+':'+d.phase;});
+    if(ref.kind==='public_transfer') {
+      var transfer=_arr(g._publicTreasuryTransfers).find(function(t){return t.id===ref.id;});
+      var task=d.planId&&planById(d.planId,g),spec=task&&task.task||d,service=TM.PublicTreasury;
+      if(!transfer||!transfer.result||!transfer.result.ok||!service||ref.id!==d.actionId+':'+d.phase||_arr(before._publicTreasuryTransfers).some(function(t){return t.id===ref.id;}))return false;
+      var from=service.getAccountView({game:g,ref:spec.fromAccount}),to=service.getAccountView({game:g,ref:spec.toAccount}),oldFrom=service.getAccountView({game:before,ref:spec.fromAccount}),oldTo=service.getAccountView({game:before,ref:spec.toAccount});
+      return from.exists&&to.exists&&oldFrom.exists&&oldTo.exists&&Object.keys(spec.amounts||{}).some(function(k){return spec.amounts[k]>0;})&&['money','grain','cloth'].every(function(k){
+        var amount=Number(spec.amounts&&spec.amounts[k]||0),r=transfer.result;
+        return r.paid[k]===amount&&_arr(r.debits).filter(function(x){return x.accountId===from.id&&x.resource===k;}).reduce(function(n,x){return n+x.amount;},0)===amount&&
+          _arr(r.credits).filter(function(x){return x.accountId===to.id&&x.resource===k;}).reduce(function(n,x){return n+x.amount;},0)===amount&&
+          (!amount||Math.abs(oldFrom.resources[k].stock-from.resources[k].stock-amount)<0.00001&&Math.abs(to.resources[k].stock-oldTo.resources[k].stock-amount)<0.00001);
+      });
+    }
     if(ref.kind==='private_transfer') {
       var from=findChar({id:ref.fromId},g),to=findChar({id:ref.toId},g),oldFrom=findChar({id:ref.fromId},before),oldTo=findChar({id:ref.toId},before);
       return ref.fromId===actor.id&&ref.id===d.actionId&&ref.amount>0&&from&&to&&oldFrom&&oldTo&&
         oldFrom.resources.privateWealth.money-from.resources.privateWealth.money===ref.amount&&to.resources.privateWealth.money-oldTo.resources.privateWealth.money===ref.amount;
     }
     if(ref.kind==='office') {
-      var seat=global._npcPosition(ref.positionId),who=findChar({id:ref.characterId},g);
-      if(!seat||!who||!TM.OfficeHolderState)return false;
-      var seated=TM.OfficeHolderState.read(g,seat.pos).characters.some(function(h){return h.char===who;});
-      return d.behaviorType==='dismiss'?!seated:seated;
+      var hs=TM.OfficeHolderState,scope={organizationId:ref.organizationId||d.organizationId,positionId:ref.positionId};
+      var seat=hs&&hs.position(g,scope),oldSeat=hs&&hs.position(before,scope),who=findChar({id:ref.characterId},g),oldWho=findChar({id:ref.characterId},before);
+      if(!seat||!oldSeat||!who||!oldWho||ref.actionId!==d.actionId||String(ref.positionId)!==String(d.positionId))return false;
+      var seated=hs.read(g,seat.pos).characters.some(function(h){return h.char===who;}),wasSeated=hs.read(before,oldSeat.pos).characters.some(function(h){return h.char===oldWho;});
+      return d.behaviorType==='dismiss'?wasSeated&&!seated:!wasSeated&&seated;
     }
     if(ref.kind==='army_training')return _arr(g.armies).some(function(a){return (a.id||a.name)===ref.id&&a._npcTrainingTurn===ref.turn;});
-    if(ref.kind==='war')return _arr(g.activeWars).some(function(w){return w.id===ref.id;});
+    if(ref.kind==='war')return !_arr(before.activeWars).some(function(w){return w.id===ref.id;})&&_arr(g.activeWars).some(function(w){return w.id===ref.id&&w.sourceActionId===d.actionId&&w.decisionActorId===actor.id&&(!d.organizationId||w.attackerId===d.organizationId)&&w.defenderId===(d.targetOrganizationId||d.targetId);});
     if(ref.kind==='reform')return _arr(g._pendingReforms).some(function(r){return r._key===ref.id;});
     return false;
   }
@@ -689,7 +721,7 @@
     state: state,
     migrate: migrate,
     prepare: prepare,
-    execute: execute,
+    execute: execute, executeHuman: executeHuman,
     result: result,
     capture: capture,
     current: current,

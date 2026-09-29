@@ -1,0 +1,1799 @@
+[
+  {
+    "file": "scenarios/天启七年·九月（官方）.json",
+    "changes": [
+      {
+        "path": "/factions/1/officeTree/0/positions/0/id",
+        "after": "political-office:fac_mp9rsc3f4r9co:sovereign"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/0/holderId",
+        "after": "char_mp3yvbcaov2vr"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/0/authoritySource",
+        "after": "本剧本既有君主任职及“统理本王庭事务”职责；本轮只配置对外交涉和签约。"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/0/powers",
+        "after": {
+          "diplomacy": true,
+          "treatySign": true
+        }
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/id",
+        "after": "political-office:fac_mp9rsc3fex7fo:sovereign"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/holderId",
+        "after": "char_mp3yvbcaxom24"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/authoritySource",
+        "after": "本剧本既有君主任职及“统理本王庭事务”职责；本轮只配置对外交涉和签约。"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/powers",
+        "after": {
+          "diplomacy": true,
+          "treatySign": true
+        }
+      }
+    ]
+  },
+  {
+    "file": "scenarios/晚唐·开成五年（官方）.json",
+    "changes": [
+      {
+        "path": "/factions/2/officeTree/0/positions/0/powers/appointment",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/powers/treatySign",
+        "after": true
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/powers/treasurySpend",
+        "after": true
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/0",
+        "before": "pool:circuit-9f81793098fe",
+        "after": "region:魏州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/1",
+        "after": "region:博州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/2",
+        "after": "region:贝州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/3",
+        "after": "region:相州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/4",
+        "after": "region:卫州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/5",
+        "after": "region:澶州"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/accountRefs/6",
+        "after": "faction:唐·魏博镇"
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/treasuryBinding/allowUnbudgetedInternalTransfer",
+        "after": true
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/authorityScope",
+        "after": {
+          "positionIds": [
+            "office-v14-43fab1c7a95d"
+          ],
+          "accountRefs": [
+            "region:魏州",
+            "region:博州",
+            "region:贝州",
+            "region:相州",
+            "region:卫州",
+            "region:澶州",
+            "faction:唐·魏博镇"
+          ],
+          "treatyTypes": [
+            "nonaggression",
+            "joint_action"
+          ]
+        }
+      },
+      {
+        "path": "/factions/2/officeTree/0/positions/0/authoritySource",
+        "after": "本剧本节帅职责中的军府用人、州县给用和往来。新增任用仅限本府书吏；给用仍受真实账户余额与已有额度约束；对外仅配置互不侵犯和协同行动。 本轮仅对同组织实体库间移交允许无预算额度的库存转移，不能据此形成外部支出或新增预算。"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/powers/appointment",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/powers/treatySign",
+        "after": true
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/powers/treasurySpend",
+        "after": true
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/accountRefs/0",
+        "before": "pool:circuit-e44653cad28d",
+        "after": "region:镇州"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/accountRefs/1",
+        "after": "region:冀州"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/accountRefs/2",
+        "after": "region:深州"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/accountRefs/3",
+        "after": "region:赵州"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/accountRefs/4",
+        "after": "faction:唐·成德镇"
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/treasuryBinding/allowUnbudgetedInternalTransfer",
+        "after": true
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/authorityScope",
+        "after": {
+          "positionIds": [
+            "office-v14-6bd063acc8af"
+          ],
+          "accountRefs": [
+            "region:镇州",
+            "region:冀州",
+            "region:深州",
+            "region:赵州",
+            "faction:唐·成德镇"
+          ],
+          "treatyTypes": [
+            "nonaggression",
+            "joint_action"
+          ]
+        }
+      },
+      {
+        "path": "/factions/3/officeTree/0/positions/0/authoritySource",
+        "after": "本剧本节帅职责中的军府用人、州县给用和往来。新增任用仅限本府书吏；给用仍受真实账户余额与已有额度约束；对外仅配置互不侵犯和协同行动。 本轮仅对同组织实体库间移交允许无预算额度的库存转移，不能据此形成外部支出或新增预算。"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/powers/appointment",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/powers/treatySign",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/powers/treasurySpend",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/0",
+        "before": "pool:circuit-9f81793098fe",
+        "after": "region:魏州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/1",
+        "after": "region:博州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/2",
+        "after": "region:贝州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/3",
+        "after": "region:相州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/4",
+        "after": "region:卫州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/5",
+        "after": "region:澶州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/accountRefs/6",
+        "after": "faction:唐·魏博镇"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/treasuryBinding/allowUnbudgetedInternalTransfer",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/authorityScope",
+        "after": {
+          "positionIds": [
+            "office-v14-43fab1c7a95d"
+          ],
+          "accountRefs": [
+            "region:魏州",
+            "region:博州",
+            "region:贝州",
+            "region:相州",
+            "region:卫州",
+            "region:澶州",
+            "faction:唐·魏博镇"
+          ],
+          "treatyTypes": [
+            "nonaggression",
+            "joint_action"
+          ]
+        }
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·魏博镇/0/positions/0/authoritySource",
+        "after": "本剧本节帅职责中的军府用人、州县给用和往来。新增任用仅限本府书吏；给用仍受真实账户余额与已有额度约束；对外仅配置互不侵犯和协同行动。 本轮仅对同组织实体库间移交允许无预算额度的库存转移，不能据此形成外部支出或新增预算。"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/powers/appointment",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/powers/treatySign",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/powers/treasurySpend",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/accountRefs/0",
+        "before": "pool:circuit-e44653cad28d",
+        "after": "region:镇州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/accountRefs/1",
+        "after": "region:冀州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/accountRefs/2",
+        "after": "region:深州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/accountRefs/3",
+        "after": "region:赵州"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/accountRefs/4",
+        "after": "faction:唐·成德镇"
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/treasuryBinding/allowUnbudgetedInternalTransfer",
+        "after": true
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/authorityScope",
+        "after": {
+          "positionIds": [
+            "office-v14-6bd063acc8af"
+          ],
+          "accountRefs": [
+            "region:镇州",
+            "region:冀州",
+            "region:深州",
+            "region:赵州",
+            "faction:唐·成德镇"
+          ],
+          "treatyTypes": [
+            "nonaggression",
+            "joint_action"
+          ]
+        }
+      },
+      {
+        "path": "/officeRegistryByFaction/唐·成德镇/0/positions/0/authoritySource",
+        "after": "本剧本节帅职责中的军府用人、州县给用和往来。新增任用仅限本府书吏；给用仍受真实账户余额与已有额度约束；对外仅配置互不侵犯和协同行动。 本轮仅对同组织实体库间移交允许无预算额度的库存转移，不能据此形成外部支出或新增预算。"
+      }
+    ]
+  },
+  {
+    "file": "scenarios/绍宋·建炎元年八月（官方）.json",
+    "changes": [
+      {
+        "path": "/factions/1/officeTree/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/0/id",
+        "after": "political-office:fac_jin:council:0"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/0/holderId",
+        "after": "char_jianyan1_53"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/1/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/1/id",
+        "after": "political-office:fac_jin:council:1"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/1/holderId",
+        "after": "char_ss_124"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/3/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/3/id",
+        "after": "political-office:fac_jin:council:2"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/3/holderId",
+        "after": "char_jianyan1_54"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/4/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/4/id",
+        "after": "political-office:fac_jin:council:3"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/5/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/5/id",
+        "after": "political-office:fac_jin:council:4"
+      },
+      {
+        "path": "/factions/1/officeTree/0/positions/5/holderId",
+        "after": "char_jianyan1_60"
+      },
+      {
+        "path": "/factions/1/politicalRules",
+        "after": [
+          {
+            "id": "jin-existing-council-treaties",
+            "kind": "treaty_council",
+            "status": "active",
+            "version": 1,
+            "positionIds": [
+              "political-office:fac_jin:council:0",
+              "political-office:fac_jin:council:1",
+              "political-office:fac_jin:council:2",
+              "political-office:fac_jin:council:3",
+              "political-office:fac_jin:council:4"
+            ],
+            "quorum": 3,
+            "source": "既有勃极烈官制注明大政由贵族共议。本轮引擎最小配置：五个具名议事席按当前任职分别表决，过半形成签署；此人数门槛是模拟规则，不是新史实断言。"
+          }
+        ]
+      },
+      {
+        "path": "/factions/6/officeTree/0/id",
+        "before": "off_ssmqq1w3s18",
+        "after": "political-office:fac_xixia:sovereign-court"
+      },
+      {
+        "path": "/factions/6/officeTree/0/name",
+        "before": "中书省 (汉职·总文政)",
+        "after": "夏国君主"
+      },
+      {
+        "path": "/factions/6/officeTree/0/desc",
+        "before": "中书省 (汉职·总文政)"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/name",
+        "before": "中书令",
+        "after": "夏国皇帝"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/rank",
+        "before": "正一品·汉官首"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/holder",
+        "before": "",
+        "after": "李乾顺"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/desc",
+        "before": "中书省长官,西夏仿宋所设文官之首,总文治政令、佐天子理万机。崇宗崇汉法,中书令以宗室重臣或汉儒大臣居之,与枢密对掌文武。员重而崇宗朝多由君亲裁、不常置专员。"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/salary",
+        "before": 120,
+        "after": 0
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/perPersonSalary",
+        "before": "月俸 120 石 · 岁俸 1440 石"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/vacancyCount",
+        "before": 1
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/authority",
+        "before": "decision"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/succession",
+        "before": "appointment"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/duties",
+        "before": "中书省长官,西夏仿宋所设文官之首,总文治政令、佐天子理万机。崇宗崇汉法,中书令以宗室重臣或汉儒大臣居之,与枢密对掌文武。员重而崇宗朝多由君亲裁、不常置专员。"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/publicTreasuryInit",
+        "before": {
+          "money": 0,
+          "grain": 0,
+          "cloth": 0,
+          "quotaMoney": 0,
+          "quotaGrain": 0,
+          "quotaCloth": 0
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/bindingHint",
+        "before": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/privateIncome",
+        "before": {
+          "bonusType": "恩赏",
+          "illicitRisk": "high"
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/appointment",
+        "before": true
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/impeach",
+        "before": false
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/supervise",
+        "before": true
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/taxCollect",
+        "before": false
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/militaryCommand",
+        "before": false
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/diplomacy",
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/powers/treatySign",
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/id",
+        "after": "political-office:fac_xixia:sovereign"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/holderId",
+        "after": "char_ss_128"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/headCount",
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/0/authoritySource",
+        "after": "本剧本 leader 与具名人物李乾顺已存在；补记君主交涉身份，不新增俸给、资产或其他官职权限。"
+      },
+      {
+        "path": "/factions/6/officeTree/0/positions/1",
+        "before": {
+          "name": "中书侍郎·参知政事",
+          "rank": "正二品",
+          "holder": "李仁礼",
+          "desc": "中书副贰,佐中书令参决文政。崇宗用宗室文学之士与汉官参治。李仁礼(宗室·博学工文)预机务,典汉法文事。",
+          "establishedCount": 2,
+          "salary": 80,
+          "perPersonSalary": "月俸 80 石 · 岁俸 960 石",
+          "vacancyCount": 0,
+          "authority": "decision",
+          "succession": "appointment",
+          "duties": "中书副贰,佐中书令参决文政。崇宗用宗室文学之士与汉官参治。李仁礼(宗室·博学工文)预机务,典汉法文事。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "ministry",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "high"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/0/subs",
+        "before": []
+      },
+      {
+        "path": "/factions/6/officeTree/0/authorityFactionId",
+        "after": "fac_xixia"
+      },
+      {
+        "path": "/factions/6/officeTree/1/id",
+        "before": "off_ssmqq1w3s19",
+        "after": "off_ssmqq1w3s18"
+      },
+      {
+        "path": "/factions/6/officeTree/1/name",
+        "before": "枢密院 (总兵柄)",
+        "after": "中书省 (汉职·总文政)"
+      },
+      {
+        "path": "/factions/6/officeTree/1/desc",
+        "before": "枢密院 (总兵柄)",
+        "after": "中书省 (汉职·总文政)"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/name",
+        "before": "枢密使",
+        "after": "中书令"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/rank",
+        "before": "从一品·武班首",
+        "after": "正一品·汉官首"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/holder",
+        "before": "察哥",
+        "after": ""
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/desc",
+        "before": "枢密院长官,掌军国机务、兵防、武选,与中书对掌文武。崇宗朝兵柄重,晋王察哥总军政、屡破宋师,实掌枢柄(秉钺拓边之首)。枢密为蕃汉武职交汇之枢。",
+        "after": "中书省长官,西夏仿宋所设文官之首,总文治政令、佐天子理万机。崇宗崇汉法,中书令以宗室重臣或汉儒大臣居之,与枢密对掌文武。员重而崇宗朝多由君亲裁、不常置专员。"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/salary",
+        "before": 100,
+        "after": 120
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/perPersonSalary",
+        "before": "月俸 100 石 · 岁俸 1200 石",
+        "after": "月俸 120 石 · 岁俸 1440 石"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/vacancyCount",
+        "before": 0,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/duties",
+        "before": "枢密院长官,掌军国机务、兵防、武选,与中书对掌文武。崇宗朝兵柄重,晋王察哥总军政、屡破宋师,实掌枢柄(秉钺拓边之首)。枢密为蕃汉武职交汇之枢。",
+        "after": "中书省长官,西夏仿宋所设文官之首,总文治政令、佐天子理万机。崇宗崇汉法,中书令以宗室重臣或汉儒大臣居之,与枢密对掌文武。员重而崇宗朝多由君亲裁、不常置专员。"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/bindingHint",
+        "before": "military",
+        "after": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/0/powers/militaryCommand",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/name",
+        "before": "同知枢密院事·副使",
+        "after": "中书侍郎·参知政事"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/holder",
+        "before": "",
+        "after": "李仁礼"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/desc",
+        "before": "枢密副贰,佐长官治兵机、节制诸监军司。以宗室将领或蕃汉重将兼,随军事除授。",
+        "after": "中书副贰,佐中书令参决文政。崇宗用宗室文学之士与汉官参治。李仁礼(宗室·博学工文)预机务,典汉法文事。"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/vacancyCount",
+        "before": 2,
+        "after": 0
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/duties",
+        "before": "枢密副贰,佐长官治兵机、节制诸监军司。以宗室将领或蕃汉重将兼,随军事除授。",
+        "after": "中书副贰,佐中书令参决文政。崇宗用宗室文学之士与汉官参治。李仁礼(宗室·博学工文)预机务,典汉法文事。"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/bindingHint",
+        "before": "military",
+        "after": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/1/positions/1/powers/militaryCommand",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/2/id",
+        "before": "off_ssmqq1w3s1a",
+        "after": "off_ssmqq1w3s19"
+      },
+      {
+        "path": "/factions/6/officeTree/2/name",
+        "before": "蕃职 (党项官号·蕃官)",
+        "after": "枢密院 (总兵柄)"
+      },
+      {
+        "path": "/factions/6/officeTree/2/desc",
+        "before": "蕃职 (党项官号·蕃官)",
+        "after": "枢密院 (总兵柄)"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/name",
+        "before": "宁令 (大王)",
+        "after": "枢密使"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/rank",
+        "before": "蕃官·尊",
+        "after": "从一品·武班首"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/holder",
+        "before": "",
+        "after": "察哥"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/desc",
+        "before": "党项蕃官号,意为'大王',蕃官之尊,授党项皇族贵戚或大酋。蕃汉二元官制中专属党项的荣崇之位,非党项不得居。崇宗行汉法虽抑蕃官,然宁令谟宁令之号犹存以系党项之心。",
+        "after": "枢密院长官,掌军国机务、兵防、武选,与中书对掌文武。崇宗朝兵柄重,晋王察哥总军政、屡破宋师,实掌枢柄(秉钺拓边之首)。枢密为蕃汉武职交汇之枢。"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/establishedCount",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/salary",
+        "before": 90,
+        "after": 100
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/perPersonSalary",
+        "before": "月俸 90 石 · 岁俸 1080 石",
+        "after": "月俸 100 石 · 岁俸 1200 石"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/vacancyCount",
+        "before": 2,
+        "after": 0
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/duties",
+        "before": "党项蕃官号,意为'大王',蕃官之尊,授党项皇族贵戚或大酋。蕃汉二元官制中专属党项的荣崇之位,非党项不得居。崇宗行汉法虽抑蕃官,然宁令谟宁令之号犹存以系党项之心。",
+        "after": "枢密院长官,掌军国机务、兵防、武选,与中书对掌文武。崇宗朝兵柄重,晋王察哥总军政、屡破宋师,实掌枢柄(秉钺拓边之首)。枢密为蕃汉武职交汇之枢。"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/bindingHint",
+        "before": "ministry",
+        "after": "military"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/0/powers/militaryCommand",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/name",
+        "before": "谟宁令 (天大王)",
+        "after": "同知枢密院事·副使"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/rank",
+        "before": "蕃官·极尊",
+        "after": "正二品"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/desc",
+        "before": "党项蕃官号,意为'天大王',蕃号之极尊,授宗室元勋大酋。与宁令同为党项专属荣衔,蕃礼派权贵之所系。",
+        "after": "枢密副贰,佐长官治兵机、节制诸监军司。以宗室将领或蕃汉重将兼,随军事除授。"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/establishedCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/salary",
+        "before": 90,
+        "after": 80
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/perPersonSalary",
+        "before": "月俸 90 石 · 岁俸 1080 石",
+        "after": "月俸 80 石 · 岁俸 960 石"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/vacancyCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/authority",
+        "before": "execution",
+        "after": "decision"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/duties",
+        "before": "党项蕃官号,意为'天大王',蕃号之极尊,授宗室元勋大酋。与宁令同为党项专属荣衔,蕃礼派权贵之所系。",
+        "after": "枢密副贰,佐长官治兵机、节制诸监军司。以宗室将领或蕃汉重将兼,随军事除授。"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/bindingHint",
+        "before": "ministry",
+        "after": "military"
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/1/powers/militaryCommand",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/2",
+        "before": {
+          "name": "丁卢·丁弩·素赍 (蕃官中职)",
+          "rank": "蕃官·中",
+          "holder": "",
+          "desc": "党项蕃官号(丁卢、丁弩、素赍/素斋等),蕃官之中级职任,掌部落军政庶务。蕃汉异译多歧,职掌今多难详,然为党项豪酋世据之实任,蕃部领兵理事所凭。",
+          "establishedCount": 4,
+          "salary": 20,
+          "perPersonSalary": "月俸 20 石 · 岁俸 240 石",
+          "vacancyCount": 4,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "党项蕃官号(丁卢、丁弩、素赍/素斋等),蕃官之中级职任,掌部落军政庶务。蕃汉异译多歧,职掌今多难详,然为党项豪酋世据之实任,蕃部领兵理事所凭。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "ministry",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "medium"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/2/positions/3",
+        "before": {
+          "name": "祖儒·吕则·枢铭 (蕃官属职)",
+          "rank": "蕃官·属",
+          "holder": "",
+          "desc": "党项蕃官号(祖儒、吕则、枢铭等),蕃官属职,分理蕃部文书、刑名、簿籍诸事。为蕃官体系之基层,与汉职诸司并行而专属党项。",
+          "establishedCount": 6,
+          "salary": 12,
+          "perPersonSalary": "月俸 12 石 · 岁俸 144 石",
+          "vacancyCount": 6,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "党项蕃官号(祖儒、吕则、枢铭等),蕃官属职,分理蕃部文书、刑名、簿籍诸事。为蕃官体系之基层,与汉职诸司并行而专属党项。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "ministry",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "low"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/3/id",
+        "before": "off_ssmqq1w3s1b",
+        "after": "off_ssmqq1w3s1a"
+      },
+      {
+        "path": "/factions/6/officeTree/3/name",
+        "before": "御史台 (监察)",
+        "after": "蕃职 (党项官号·蕃官)"
+      },
+      {
+        "path": "/factions/6/officeTree/3/desc",
+        "before": "御史台 (监察)",
+        "after": "蕃职 (党项官号·蕃官)"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/name",
+        "before": "御史大夫",
+        "after": "宁令 (大王)"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/rank",
+        "before": "从二品",
+        "after": "蕃官·尊"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/desc",
+        "before": "御史台长官,仿宋所设,掌纠察百官、肃正纲纪、监诸司。崇宗以汉法整饬吏治,御史台为汉法之耳目。员阙或以重臣兼。",
+        "after": "党项蕃官号,意为'大王',蕃官之尊,授党项皇族贵戚或大酋。蕃汉二元官制中专属党项的荣崇之位,非党项不得居。崇宗行汉法虽抑蕃官,然宁令谟宁令之号犹存以系党项之心。"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/establishedCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/salary",
+        "before": 60,
+        "after": 90
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/perPersonSalary",
+        "before": "月俸 60 石 · 岁俸 720 石",
+        "after": "月俸 90 石 · 岁俸 1080 石"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/vacancyCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/authority",
+        "before": "supervision",
+        "after": "decision"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/duties",
+        "before": "御史台长官,仿宋所设,掌纠察百官、肃正纲纪、监诸司。崇宗以汉法整饬吏治,御史台为汉法之耳目。员阙或以重臣兼。",
+        "after": "党项蕃官号,意为'大王',蕃官之尊,授党项皇族贵戚或大酋。蕃汉二元官制中专属党项的荣崇之位,非党项不得居。崇宗行汉法虽抑蕃官,然宁令谟宁令之号犹存以系党项之心。"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/0/powers/impeach",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/name",
+        "before": "御史中丞·侍御史",
+        "after": "谟宁令 (天大王)"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/rank",
+        "before": "从三品",
+        "after": "蕃官·极尊"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/desc",
+        "before": "御史台佐贰,佐大夫纠弹、巡按。蕃汉官吏并察,然西夏监察之权终慑于皇族豪酋,行之不力。",
+        "after": "党项蕃官号,意为'天大王',蕃号之极尊,授宗室元勋大酋。与宁令同为党项专属荣衔,蕃礼派权贵之所系。"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/establishedCount",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/salary",
+        "before": 35,
+        "after": 90
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/perPersonSalary",
+        "before": "月俸 35 石 · 岁俸 420 石",
+        "after": "月俸 90 石 · 岁俸 1080 石"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/vacancyCount",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/authority",
+        "before": "supervision",
+        "after": "execution"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/duties",
+        "before": "御史台佐贰,佐大夫纠弹、巡按。蕃汉官吏并察,然西夏监察之权终慑于皇族豪酋,行之不力。",
+        "after": "党项蕃官号,意为'天大王',蕃号之极尊,授宗室元勋大酋。与宁令同为党项专属荣衔,蕃礼派权贵之所系。"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/privateIncome/illicitRisk",
+        "before": "medium",
+        "after": "high"
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/powers/impeach",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/1/powers/supervise",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/2",
+        "after": {
+          "name": "丁卢·丁弩·素赍 (蕃官中职)",
+          "rank": "蕃官·中",
+          "holder": "",
+          "desc": "党项蕃官号(丁卢、丁弩、素赍/素斋等),蕃官之中级职任,掌部落军政庶务。蕃汉异译多歧,职掌今多难详,然为党项豪酋世据之实任,蕃部领兵理事所凭。",
+          "establishedCount": 4,
+          "salary": 20,
+          "perPersonSalary": "月俸 20 石 · 岁俸 240 石",
+          "vacancyCount": 4,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "党项蕃官号(丁卢、丁弩、素赍/素斋等),蕃官之中级职任,掌部落军政庶务。蕃汉异译多歧,职掌今多难详,然为党项豪酋世据之实任,蕃部领兵理事所凭。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "ministry",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "medium"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/3/positions/3",
+        "after": {
+          "name": "祖儒·吕则·枢铭 (蕃官属职)",
+          "rank": "蕃官·属",
+          "holder": "",
+          "desc": "党项蕃官号(祖儒、吕则、枢铭等),蕃官属职,分理蕃部文书、刑名、簿籍诸事。为蕃官体系之基层,与汉职诸司并行而专属党项。",
+          "establishedCount": 6,
+          "salary": 12,
+          "perPersonSalary": "月俸 12 石 · 岁俸 144 石",
+          "vacancyCount": 6,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "党项蕃官号(祖儒、吕则、枢铭等),蕃官属职,分理蕃部文书、刑名、簿籍诸事。为蕃官体系之基层,与汉职诸司并行而专属党项。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "ministry",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "low"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/4/id",
+        "before": "off_ssmqq1w3s1c",
+        "after": "off_ssmqq1w3s1b"
+      },
+      {
+        "path": "/factions/6/officeTree/4/name",
+        "before": "三司 (财赋·盐铁度支户部)",
+        "after": "御史台 (监察)"
+      },
+      {
+        "path": "/factions/6/officeTree/4/desc",
+        "before": "三司 (财赋·盐铁度支户部)",
+        "after": "御史台 (监察)"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/name",
+        "before": "三司使",
+        "after": "御史大夫"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/rank",
+        "before": "正三品",
+        "after": "从二品"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/desc",
+        "before": "三司长官,仿宋掌天下财赋、盐铁、度支、户部之政。西夏财用赖灵夏屯田、河西绿洲、青白盐(贩宋)、丝路榷商及战获。三司总钱谷出纳,军兴拓边、财用尤亟。",
+        "after": "御史台长官,仿宋所设,掌纠察百官、肃正纲纪、监诸司。崇宗以汉法整饬吏治,御史台为汉法之耳目。员阙或以重臣兼。"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/salary",
+        "before": 45,
+        "after": 60
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/perPersonSalary",
+        "before": "月俸 45 石 · 岁俸 540 石",
+        "after": "月俸 60 石 · 岁俸 720 石"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/authority",
+        "before": "decision",
+        "after": "supervision"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/duties",
+        "before": "三司长官,仿宋掌天下财赋、盐铁、度支、户部之政。西夏财用赖灵夏屯田、河西绿洲、青白盐(贩宋)、丝路榷商及战获。三司总钱谷出纳,军兴拓边、财用尤亟。",
+        "after": "御史台长官,仿宋所设,掌纠察百官、肃正纲纪、监诸司。崇宗以汉法整饬吏治,御史台为汉法之耳目。员阙或以重臣兼。"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/privateIncome/illicitRisk",
+        "before": "medium",
+        "after": "high"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/powers/impeach",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/0/powers/taxCollect",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/name",
+        "before": "三司副使·判官",
+        "after": "御史中丞·侍御史"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/rank",
+        "before": "正五品",
+        "after": "从三品"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/desc",
+        "before": "三司佐贰,分掌盐铁度支户部案籍。汉官胥吏多充其职,典簿书钱谷。",
+        "after": "御史台佐贰,佐大夫纠弹、巡按。蕃汉官吏并察,然西夏监察之权终慑于皇族豪酋,行之不力。"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/establishedCount",
+        "before": 3,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/salary",
+        "before": 16,
+        "after": 35
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/perPersonSalary",
+        "before": "月俸 16 石 · 岁俸 192 石",
+        "after": "月俸 35 石 · 岁俸 420 石"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/vacancyCount",
+        "before": 3,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/authority",
+        "before": "execution",
+        "after": "supervision"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/duties",
+        "before": "三司佐贰,分掌盐铁度支户部案籍。汉官胥吏多充其职,典簿书钱谷。",
+        "after": "御史台佐贰,佐大夫纠弹、巡按。蕃汉官吏并察,然西夏监察之权终慑于皇族豪酋,行之不力。"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/privateIncome/illicitRisk",
+        "before": "low",
+        "after": "medium"
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/powers/impeach",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/powers/supervise",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/4/positions/1/powers/taxCollect",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/5/id",
+        "before": "off_ssmqq1w3s1d",
+        "after": "off_ssmqq1w3s1c"
+      },
+      {
+        "path": "/factions/6/officeTree/5/name",
+        "before": "翰林学士院 (汉学·内制)",
+        "after": "三司 (财赋·盐铁度支户部)"
+      },
+      {
+        "path": "/factions/6/officeTree/5/desc",
+        "before": "翰林学士院 (汉学·内制)",
+        "after": "三司 (财赋·盐铁度支户部)"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/name",
+        "before": "翰林学士",
+        "after": "三司使"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/desc",
+        "before": "崇宗仿宋所设(慕汉文物、兴汉学),掌制诰、诏命、国书及侍从顾问。番汉两体并撰(西夏文与汉文诏诰)。崇宗朝汉学渐盛,学士院为文翰之府、培蕃汉文士之所。员择能文者充,多未常置。",
+        "after": "三司长官,仿宋掌天下财赋、盐铁、度支、户部之政。西夏财用赖灵夏屯田、河西绿洲、青白盐(贩宋)、丝路榷商及战获。三司总钱谷出纳,军兴拓边、财用尤亟。"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/establishedCount",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/vacancyCount",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/duties",
+        "before": "崇宗仿宋所设(慕汉文物、兴汉学),掌制诰、诏命、国书及侍从顾问。番汉两体并撰(西夏文与汉文诏诰)。崇宗朝汉学渐盛,学士院为文翰之府、培蕃汉文士之所。员择能文者充,多未常置。",
+        "after": "三司长官,仿宋掌天下财赋、盐铁、度支、户部之政。西夏财用赖灵夏屯田、河西绿洲、青白盐(贩宋)、丝路榷商及战获。三司总钱谷出纳,军兴拓边、财用尤亟。"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/bindingHint",
+        "before": "imperial",
+        "after": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/0/powers/taxCollect",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/name",
+        "before": "蕃汉学教授 (国学)",
+        "after": "三司副使·判官"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/rank",
+        "before": "从五品",
+        "after": "正五品"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/desc",
+        "before": "掌国学(蕃学·汉学)养士、教党项汉人子弟经书。崇宗崇儒兴学,立学养弟子员,为以汉法育才、蕃汉同文之要政。后仁宗朝大兴国学、立太学即承此绪(此时方草创)。",
+        "after": "三司佐贰,分掌盐铁度支户部案籍。汉官胥吏多充其职,典簿书钱谷。"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/establishedCount",
+        "before": 2,
+        "after": 3
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/salary",
+        "before": 12,
+        "after": 16
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/perPersonSalary",
+        "before": "月俸 12 石 · 岁俸 144 石",
+        "after": "月俸 16 石 · 岁俸 192 石"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/vacancyCount",
+        "before": 2,
+        "after": 3
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/duties",
+        "before": "掌国学(蕃学·汉学)养士、教党项汉人子弟经书。崇宗崇儒兴学,立学养弟子员,为以汉法育才、蕃汉同文之要政。后仁宗朝大兴国学、立太学即承此绪(此时方草创)。",
+        "after": "三司佐贰,分掌盐铁度支户部案籍。汉官胥吏多充其职,典簿书钱谷。"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/bindingHint",
+        "before": "imperial",
+        "after": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/5/positions/1/powers/taxCollect",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/6/id",
+        "before": "off_ssmqq1w3s1e",
+        "after": "off_ssmqq1w3s1d"
+      },
+      {
+        "path": "/factions/6/officeTree/6/name",
+        "before": "中兴府 (国都·尹)",
+        "after": "翰林学士院 (汉学·内制)"
+      },
+      {
+        "path": "/factions/6/officeTree/6/desc",
+        "before": "中兴府 (国都·尹)",
+        "after": "翰林学士院 (汉学·内制)"
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/name",
+        "before": "中兴府尹",
+        "after": "翰林学士"
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/desc",
+        "before": "西夏国都中兴府(兴庆府,今银川)之长,掌京畿军民、宫卫、庶政,犹宋之开封尹。畿辅灵夏膏腴、宫城官署所萃,府尹例以宗室或重臣居之。",
+        "after": "崇宗仿宋所设(慕汉文物、兴汉学),掌制诰、诏命、国书及侍从顾问。番汉两体并撰(西夏文与汉文诏诰)。崇宗朝汉学渐盛,学士院为文翰之府、培蕃汉文士之所。员择能文者充,多未常置。"
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/establishedCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/vacancyCount",
+        "before": 1,
+        "after": 2
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/duties",
+        "before": "西夏国都中兴府(兴庆府,今银川)之长,掌京畿军民、宫卫、庶政,犹宋之开封尹。畿辅灵夏膏腴、宫城官署所萃,府尹例以宗室或重臣居之。",
+        "after": "崇宗仿宋所设(慕汉文物、兴汉学),掌制诰、诏命、国书及侍从顾问。番汉两体并撰(西夏文与汉文诏诰)。崇宗朝汉学渐盛,学士院为文翰之府、培蕃汉文士之所。员择能文者充,多未常置。"
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/0/bindingHint",
+        "before": "ministry",
+        "after": "imperial"
+      },
+      {
+        "path": "/factions/6/officeTree/6/positions/1",
+        "after": {
+          "name": "蕃汉学教授 (国学)",
+          "rank": "从五品",
+          "holder": "",
+          "desc": "掌国学(蕃学·汉学)养士、教党项汉人子弟经书。崇宗崇儒兴学,立学养弟子员,为以汉法育才、蕃汉同文之要政。后仁宗朝大兴国学、立太学即承此绪(此时方草创)。",
+          "establishedCount": 2,
+          "salary": 12,
+          "perPersonSalary": "月俸 12 石 · 岁俸 144 石",
+          "vacancyCount": 2,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "掌国学(蕃学·汉学)养士、教党项汉人子弟经书。崇宗崇儒兴学,立学养弟子员,为以汉法育才、蕃汉同文之要政。后仁宗朝大兴国学、立太学即承此绪(此时方草创)。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "imperial",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "low"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/7/id",
+        "before": "off_ssmqq1w3s1f",
+        "after": "off_ssmqq1w3s1e"
+      },
+      {
+        "path": "/factions/6/officeTree/7/name",
+        "before": "翊卫司·飞龙院 (宿卫·内廷诸司)",
+        "after": "中兴府 (国都·尹)"
+      },
+      {
+        "path": "/factions/6/officeTree/7/desc",
+        "before": "翊卫司·飞龙院 (宿卫·内廷诸司)",
+        "after": "中兴府 (国都·尹)"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/name",
+        "before": "翊卫司 (宿卫)",
+        "after": "中兴府尹"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/rank",
+        "before": "正四品·武",
+        "after": "正三品"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/desc",
+        "before": "掌宫城宿卫、扈从仪卫,天子亲军之司(质子军'御园内六班直'之类精选党项豪族子弟充禁卫)。仿宋而具党项部落质子之制,皇族近卫所赖。",
+        "after": "西夏国都中兴府(兴庆府,今银川)之长,掌京畿军民、宫卫、庶政,犹宋之开封尹。畿辅灵夏膏腴、宫城官署所萃,府尹例以宗室或重臣居之。"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/salary",
+        "before": 28,
+        "after": 45
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/perPersonSalary",
+        "before": "月俸 28 石 · 岁俸 336 石",
+        "after": "月俸 45 石 · 岁俸 540 石"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/duties",
+        "before": "掌宫城宿卫、扈从仪卫,天子亲军之司(质子军'御园内六班直'之类精选党项豪族子弟充禁卫)。仿宋而具党项部落质子之制,皇族近卫所赖。",
+        "after": "西夏国都中兴府(兴庆府,今银川)之长,掌京畿军民、宫卫、庶政,犹宋之开封尹。畿辅灵夏膏腴、宫城官署所萃,府尹例以宗室或重臣居之。"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/0/bindingHint",
+        "before": "imperial",
+        "after": "ministry"
+      },
+      {
+        "path": "/factions/6/officeTree/7/positions/1",
+        "before": {
+          "name": "群牧司·飞龙院 (马政)",
+          "rank": "从五品",
+          "holder": "",
+          "desc": "群牧司掌国马孳牧(河西草地牧监、夏国良马甲天下),飞龙院掌御厩。马为西夏军国之命(骑兵、贩马),马政诸司职任甚重。",
+          "establishedCount": 2,
+          "salary": 12,
+          "perPersonSalary": "月俸 12 石 · 岁俸 144 石",
+          "vacancyCount": 2,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "群牧司掌国马孳牧(河西草地牧监、夏国良马甲天下),飞龙院掌御厩。马为西夏军国之命(骑兵、贩马),马政诸司职任甚重。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "imperial",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "low"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/8/id",
+        "before": "off_ssmqq1w3s1g",
+        "after": "off_ssmqq1w3s1f"
+      },
+      {
+        "path": "/factions/6/officeTree/8/name",
+        "before": "左厢监军司 (东路·军区)",
+        "after": "翊卫司·飞龙院 (宿卫·内廷诸司)"
+      },
+      {
+        "path": "/factions/6/officeTree/8/desc",
+        "before": "左厢监军司 (东路·军区)",
+        "after": "翊卫司·飞龙院 (宿卫·内廷诸司)"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/name",
+        "before": "左厢都统军·监军使",
+        "after": "翊卫司 (宿卫)"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/rank",
+        "before": "正二品·军",
+        "after": "正四品·武"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/desc",
+        "before": "西夏以中兴府为轴、以东为左厢。左厢辖六监军司:神勇(驻弥陀洞)、祥祐(石州)、嘉宁(宥州)、静塞(韦州)、西寿保泰(柔狼山北)、卓啰和南(兰州黄河北喀啰川)。监军司乃军政合一之地方军区,都统军(党项贵族世任)、监军使(宗室或大酋)、习判(汉官佐文书)三长统之,辖正军、负担、擒生。左厢直面宋鄜延、环庆、泾原诸路,崇宗朝乘金攻宋自此蚕食陕右。",
+        "after": "掌宫城宿卫、扈从仪卫,天子亲军之司(质子军'御园内六班直'之类精选党项豪族子弟充禁卫)。仿宋而具党项部落质子之制,皇族近卫所赖。"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/establishedCount",
+        "before": 6,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/salary",
+        "before": 80,
+        "after": 28
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/perPersonSalary",
+        "before": "月俸 80 石 · 岁俸 960 石",
+        "after": "月俸 28 石 · 岁俸 336 石"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/vacancyCount",
+        "before": 6,
+        "after": 1
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/authority",
+        "before": "supervision",
+        "after": "decision"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/duties",
+        "before": "西夏以中兴府为轴、以东为左厢。左厢辖六监军司:神勇(驻弥陀洞)、祥祐(石州)、嘉宁(宥州)、静塞(韦州)、西寿保泰(柔狼山北)、卓啰和南(兰州黄河北喀啰川)。监军司乃军政合一之地方军区,都统军(党项贵族世任)、监军使(宗室或大酋)、习判(汉官佐文书)三长统之,辖正军、负担、擒生。左厢直面宋鄜延、环庆、泾原诸路,崇宗朝乘金攻宋自此蚕食陕右。",
+        "after": "掌宫城宿卫、扈从仪卫,天子亲军之司(质子军'御园内六班直'之类精选党项豪族子弟充禁卫)。仿宋而具党项部落质子之制,皇族近卫所赖。"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/bindingHint",
+        "before": "region",
+        "after": "imperial"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/privateIncome/illicitRisk",
+        "before": "high",
+        "after": "medium"
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/powers/impeach",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/0/powers/militaryCommand",
+        "before": true,
+        "after": false
+      },
+      {
+        "path": "/factions/6/officeTree/8/positions/1",
+        "after": {
+          "name": "群牧司·飞龙院 (马政)",
+          "rank": "从五品",
+          "holder": "",
+          "desc": "群牧司掌国马孳牧(河西草地牧监、夏国良马甲天下),飞龙院掌御厩。马为西夏军国之命(骑兵、贩马),马政诸司职任甚重。",
+          "establishedCount": 2,
+          "salary": 12,
+          "perPersonSalary": "月俸 12 石 · 岁俸 144 石",
+          "vacancyCount": 2,
+          "authority": "execution",
+          "succession": "appointment",
+          "duties": "群牧司掌国马孳牧(河西草地牧监、夏国良马甲天下),飞龙院掌御厩。马为西夏军国之命(骑兵、贩马),马政诸司职任甚重。",
+          "publicTreasuryInit": {
+            "money": 0,
+            "grain": 0,
+            "cloth": 0,
+            "quotaMoney": 0,
+            "quotaGrain": 0,
+            "quotaCloth": 0
+          },
+          "bindingHint": "imperial",
+          "privateIncome": {
+            "bonusType": "恩赏",
+            "illicitRisk": "low"
+          },
+          "powers": {
+            "appointment": false,
+            "impeach": false,
+            "supervise": false,
+            "taxCollect": false,
+            "militaryCommand": false
+          }
+        }
+      },
+      {
+        "path": "/factions/6/officeTree/9/id",
+        "before": "off_ssmqq1w3s1h",
+        "after": "off_ssmqq1w3s1g"
+      },
+      {
+        "path": "/factions/6/officeTree/9/name",
+        "before": "右厢监军司 (西路·军区)",
+        "after": "左厢监军司 (东路·军区)"
+      },
+      {
+        "path": "/factions/6/officeTree/9/desc",
+        "before": "右厢监军司 (西路·军区)",
+        "after": "左厢监军司 (东路·军区)"
+      },
+      {
+        "path": "/factions/6/officeTree/9/positions/0/name",
+        "before": "右厢都统军·监军使",
+        "after": "左厢都统军·监军使"
+      },
+      {
+        "path": "/factions/6/officeTree/9/positions/0/desc",
+        "before": "中兴府以西为右厢。右厢辖六监军司:朝顺(驻贺兰山克夷门·拱卫国都)、甘州甘肃(删丹故地)、瓜州西平(瓜州)、黑水镇燕(居延海黑水城)、白马强镇(娄博贝)、黑山威福(阴山)。控河西走廊、丝路要冲及北御草原。崇宗永安二年(1099)铲除梁氏母党后,曾参酌北宋制于两厢上叠设'诸边经略司'统之,然监军司仍为夏国地方军政之根本建制。",
+        "after": "西夏以中兴府为轴、以东为左厢。左厢辖六监军司:神勇(驻弥陀洞)、祥祐(石州)、嘉宁(宥州)、静塞(韦州)、西寿保泰(柔狼山北)、卓啰和南(兰州黄河北喀啰川)。监军司乃军政合一之地方军区,都统军(党项贵族世任)、监军使(宗室或大酋)、习判(汉官佐文书)三长统之,辖正军、负担、擒生。左厢直面宋鄜延、环庆、泾原诸路,崇宗朝乘金攻宋自此蚕食陕右。"
+      },
+      {
+        "path": "/factions/6/officeTree/9/positions/0/duties",
+        "before": "中兴府以西为右厢。右厢辖六监军司:朝顺(驻贺兰山克夷门·拱卫国都)、甘州甘肃(删丹故地)、瓜州西平(瓜州)、黑水镇燕(居延海黑水城)、白马强镇(娄博贝)、黑山威福(阴山)。控河西走廊、丝路要冲及北御草原。崇宗永安二年(1099)铲除梁氏母党后,曾参酌北宋制于两厢上叠设'诸边经略司'统之,然监军司仍为夏国地方军政之根本建制。",
+        "after": "西夏以中兴府为轴、以东为左厢。左厢辖六监军司:神勇(驻弥陀洞)、祥祐(石州)、嘉宁(宥州)、静塞(韦州)、西寿保泰(柔狼山北)、卓啰和南(兰州黄河北喀啰川)。监军司乃军政合一之地方军区,都统军(党项贵族世任)、监军使(宗室或大酋)、习判(汉官佐文书)三长统之,辖正军、负担、擒生。左厢直面宋鄜延、环庆、泾原诸路,崇宗朝乘金攻宋自此蚕食陕右。"
+      },
+      {
+        "path": "/factions/6/officeTree/10/id",
+        "before": "off_ssmqq1w3s1i",
+        "after": "off_ssmqq1w3s1h"
+      },
+      {
+        "path": "/factions/6/officeTree/10/name",
+        "before": "河西诸州 (正听·地方)",
+        "after": "右厢监军司 (西路·军区)"
+      },
+      {
+        "path": "/factions/6/officeTree/10/desc",
+        "before": "河西诸州 (正听·地方)",
+        "after": "右厢监军司 (西路·军区)"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/name",
+        "before": "州正听·城防使 (诸州)",
+        "after": "右厢都统军·监军使"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/rank",
+        "before": "从四品·诸州",
+        "after": "正二品·军"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/desc",
+        "before": "西夏河西、灵夏、陇右诸州之地方长官(州称'正听'/刺史,城寨置防御、城防使)。灵州(西平府·根本)、凉甘肃瓜沙(河西)、盐州夏州宥州银州(横山故地)等。蕃汉杂治,掌州城军民、屯戍、榷场、贡赋。与监军司军区并行,构地方蕃汉二元之治。",
+        "after": "中兴府以西为右厢。右厢辖六监军司:朝顺(驻贺兰山克夷门·拱卫国都)、甘州甘肃(删丹故地)、瓜州西平(瓜州)、黑水镇燕(居延海黑水城)、白马强镇(娄博贝)、黑山威福(阴山)。控河西走廊、丝路要冲及北御草原。崇宗永安二年(1099)铲除梁氏母党后,曾参酌北宋制于两厢上叠设'诸边经略司'统之,然监军司仍为夏国地方军政之根本建制。"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/establishedCount",
+        "before": 12,
+        "after": 6
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/salary",
+        "before": 22,
+        "after": 80
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/perPersonSalary",
+        "before": "月俸 22 石 · 岁俸 264 石",
+        "after": "月俸 80 石 · 岁俸 960 石"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/vacancyCount",
+        "before": 12,
+        "after": 6
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/authority",
+        "before": "decision",
+        "after": "supervision"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/duties",
+        "before": "西夏河西、灵夏、陇右诸州之地方长官(州称'正听'/刺史,城寨置防御、城防使)。灵州(西平府·根本)、凉甘肃瓜沙(河西)、盐州夏州宥州银州(横山故地)等。蕃汉杂治,掌州城军民、屯戍、榷场、贡赋。与监军司军区并行,构地方蕃汉二元之治。",
+        "after": "中兴府以西为右厢。右厢辖六监军司:朝顺(驻贺兰山克夷门·拱卫国都)、甘州甘肃(删丹故地)、瓜州西平(瓜州)、黑水镇燕(居延海黑水城)、白马强镇(娄博贝)、黑山威福(阴山)。控河西走廊、丝路要冲及北御草原。崇宗永安二年(1099)铲除梁氏母党后,曾参酌北宋制于两厢上叠设'诸边经略司'统之,然监军司仍为夏国地方军政之根本建制。"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/privateIncome/illicitRisk",
+        "before": "medium",
+        "after": "high"
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/powers/impeach",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/10/positions/0/powers/militaryCommand",
+        "before": false,
+        "after": true
+      },
+      {
+        "path": "/factions/6/officeTree/11",
+        "after": {
+          "id": "off_ssmqq1w3s1i",
+          "name": "河西诸州 (正听·地方)",
+          "desc": "河西诸州 (正听·地方)",
+          "positions": [
+            {
+              "name": "州正听·城防使 (诸州)",
+              "rank": "从四品·诸州",
+              "holder": "",
+              "desc": "西夏河西、灵夏、陇右诸州之地方长官(州称'正听'/刺史,城寨置防御、城防使)。灵州(西平府·根本)、凉甘肃瓜沙(河西)、盐州夏州宥州银州(横山故地)等。蕃汉杂治,掌州城军民、屯戍、榷场、贡赋。与监军司军区并行,构地方蕃汉二元之治。",
+              "establishedCount": 12,
+              "salary": 22,
+              "perPersonSalary": "月俸 22 石 · 岁俸 264 石",
+              "vacancyCount": 12,
+              "authority": "decision",
+              "succession": "appointment",
+              "duties": "西夏河西、灵夏、陇右诸州之地方长官(州称'正听'/刺史,城寨置防御、城防使)。灵州(西平府·根本)、凉甘肃瓜沙(河西)、盐州夏州宥州银州(横山故地)等。蕃汉杂治,掌州城军民、屯戍、榷场、贡赋。与监军司军区并行,构地方蕃汉二元之治。",
+              "publicTreasuryInit": {
+                "money": 0,
+                "grain": 0,
+                "cloth": 0,
+                "quotaMoney": 0,
+                "quotaGrain": 0,
+                "quotaCloth": 0
+              },
+              "bindingHint": "region",
+              "privateIncome": {
+                "bonusType": "恩赏",
+                "illicitRisk": "medium"
+              },
+              "powers": {
+                "appointment": true,
+                "impeach": false,
+                "supervise": true,
+                "taxCollect": false,
+                "militaryCommand": false
+              }
+            }
+          ],
+          "subs": []
+        }
+      }
+    ]
+  },
+  {
+    "file": "web/data/maps/scenario-library/index.json",
+    "changes": [
+      {
+        "path": "/entries/0/source/sha256",
+        "before": "fe728654dccc93b00fca5c481c736b5d66172972f22b42b8f5f34b5f3f83a5f3",
+        "after": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+      },
+      {
+        "path": "/entries/0/sha256",
+        "before": "985f64c8f7cd201f2eacda8d447c5756564470abe0776923cf248a2207d70711",
+        "after": "954db922637106b4c3f9a10ff77ceada0fa37ce22ad2328194d157976f7d1f46"
+      },
+      {
+        "path": "/entries/1/source/sha256",
+        "before": "86c9a74685b9b512166e62bf7f15e2e6b6d0e795de867fd56c87c322906a1751",
+        "after": "f98152f08de61c726f20eb88ba721af387757fe5dbbae708696de00c1488bb75"
+      },
+      {
+        "path": "/entries/1/sha256",
+        "before": "be5c2cbbf06cc014f431e6c0e4830057d03aa75f9b5480542da10d5da4150694",
+        "after": "aa5c52ce6016e9f757b5b7d710d205cc92a2b7136f1615a1ad4f580058df3860"
+      },
+      {
+        "path": "/entries/2/source/sha256",
+        "before": "7a51847565b761bd13f68845ce6b2c32c2b2b553922032586fd83a6fd7d719a5",
+        "after": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+      },
+      {
+        "path": "/entries/2/sha256",
+        "before": "55b43c060adb8736d53a849c88b517b46af8f5364f82a81132cc54e0669ea8c2",
+        "after": "6eb403654009d5cf3295ba210a6f5c9a4f93dcdf9671776ebb90c0b1897b0444"
+      }
+    ]
+  },
+  {
+    "file": "web/data/maps/scenario-library/sc-jianyan1-1127-shaosong.json",
+    "changes": [
+      {
+        "path": "/source/sha256",
+        "before": "7a51847565b761bd13f68845ce6b2c32c2b2b553922032586fd83a6fd7d719a5",
+        "after": "7c8e661f3d05147df8a70e1d9018855f422f89a57cca93fc39d9d302a304c2e7"
+      }
+    ]
+  },
+  {
+    "file": "web/data/maps/scenario-library/sc-tang840-840.json",
+    "changes": [
+      {
+        "path": "/source/sha256",
+        "before": "86c9a74685b9b512166e62bf7f15e2e6b6d0e795de867fd56c87c322906a1751",
+        "after": "f98152f08de61c726f20eb88ba721af387757fe5dbbae708696de00c1488bb75"
+      }
+    ]
+  },
+  {
+    "file": "web/data/maps/scenario-library/sc-tianqi7-1627.json",
+    "changes": [
+      {
+        "path": "/source/sha256",
+        "before": "fe728654dccc93b00fca5c481c736b5d66172972f22b42b8f5f34b5f3f83a5f3",
+        "after": "1f53cca788d63ef1ef8305613ca38d5b3d2202cab1497b1a948a261c2d70ac9e"
+      }
+    ]
+  }
+]

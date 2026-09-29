@@ -58,6 +58,7 @@ function loadScenarioToGM(ctx, sc) {
 
 function unitTests() {
   var ctx = buildContext();
+  ctx.GM={turn:1};
   var fng = ctx.TM.FactionNpcGuoku;
   assert(typeof fng.generate === 'function', 'generate missing');
   assert(typeof fng._runFiscalCycle === 'function', '_runFiscalCycle missing');
@@ -76,7 +77,9 @@ function unitTests() {
   assert(fac1.treasury.money === 0, 'treasury clamped 0');
   assert(fac1._fiscalDebt > 0, 'debt accumulated');
 
-  // 黑账继续累加
+  // 重复调用不能重复结算；新模拟周期才继续记欠。
+  const priorDebt=fac1._fiscalDebt;fng._runFiscalCycle(fac1);assert(fac1._fiscalDebt===priorDebt,'same-period debt is idempotent');
+  ctx.GM.turn++;
   fng._runFiscalCycle(fac1);
   assert(fac1._fiscalDebt > 3000, 'debt grows');
 

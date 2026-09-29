@@ -51,6 +51,7 @@
     return names;
   }
   function _isPlayerFaction(f, playerFactionNames) {
+    if(global.TM&&TM.PoliticalActions&&f)return TM.PoliticalActions.principals(f).length===0;
     if (!f) return false;
     if (_isMarkedPlayerFaction(f)) return true;
     var k = _normFactionName(f.name);
@@ -140,7 +141,7 @@
     if (npcs.length === 0) return null;
     // 【势力 agent 激活策略·2026-06-19·3 固定最强 + 5 动态相关度】开关 factionAgentEnabled·
     //   开时保证非玩家最强三个每回合优先思考(固定槽)·跑满后剩 5 槽落下方现有相关度评分(玩家互动/张力/危机/防饿死·纯运行时·自然随剧本变)。关时走原加权随机·零回归。
-    if (typeof global.agentFlagOn === 'function' ? global.agentFlagOn('factionAgentEnabled') : !!(global.P && ((global.P.ai && global.P.ai.factionAgentEnabled) || (global.P.conf && global.P.conf.factionAgentEnabled)))) {
+    if (!(global.TM&&TM.PoliticalActions) && (typeof global.agentFlagOn === 'function' ? global.agentFlagOn('factionAgentEnabled') : !!(global.P && ((global.P.ai && global.P.ai.factionAgentEnabled) || (global.P.conf && global.P.conf.factionAgentEnabled))))) {
       var _top3 = _topNStrongest(global.GM.facs, playerFacNames, 3);
       var _top3unrun = npcs.filter(function(f){ return _top3.indexOf(f.name) >= 0; });
       if (_top3unrun.length) {
@@ -217,7 +218,9 @@
     var fac = _pickOneFac(turn);
     if (!fac) return { skipped: true, reason: 'no NPC available' };
 
-    var ret = await global.TM.FactionNpcLlmDecision.decideFor(fac.name, { source: 'in-turn', turn: turn });
+    var lease=global.TM&&TM.NPC&&TM.NPC.ActionLedger&&TM.NPC.ActionLedger.capture();
+    var ret = await global.TM.FactionNpcLlmDecision.decideFor({id:fac.id}, { source: 'in-turn', turn: turn });
+    if(lease&&!TM.NPC.ActionLedger.current(lease))return {skipped:true,reason:'stale world'};
     if (ret.applied) {
       _markRan(fac, turn);
       // 单行 "in-turn" 标签·告诉 player 这是回合内推演·不是过回合产物
@@ -257,7 +260,9 @@
     for (var i = 1; i <= maxRuns; i++) {
       (function(attempt) {
         var delay = attempt === 1 ? conf.inTurnFirstDelayMs : conf.inTurnRepeatDelayMs + (attempt - 2) * step;
+        var lease=global.TM&&TM.NPC&&TM.NPC.ActionLedger&&TM.NPC.ActionLedger.capture();
         var t = setTimeout(function() {
+          if(lease&&!TM.NPC.ActionLedger.current(lease))return;
           _runOneInTurn(turn, attempt).catch(function(e){
             try { console.warn('[npc-in-turn] attempt ' + attempt + ' failed', e); } catch(_){}
           });

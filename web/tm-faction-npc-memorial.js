@@ -242,102 +242,15 @@
 
   // 生成 + 立即 resolve (一回合一轮·NPC 不积压)
   function generateNpcMemorials() {
-    if (typeof global.GM === 'undefined') return null;
-    var GM = global.GM;
-    if (!Array.isArray(GM.facs)) return null;
-    var turn = _safeNum(GM.turn) || 1;
-    var playerFacNames = _resolvePlayerFactionNames();
-
-    var totalGenerated = 0;
-    GM.facs.forEach(function(fac) {
-      if (!fac || !fac.name) return;
-      if (_isPlayerFaction(fac, playerFacNames)) return;  // skip player·走现有 GM.memorials
-      var entry = GM._facIndex && GM._facIndex[fac.name];
-      if (!entry) return;
-      var alive = (entry.chars || []).filter(_isAlive);
-      if (alive.length === 0) return;
-
-      // 找 ruler (charByRole.ruler·若多个取第一个)
-      var ruler = alive.find(function(c){ return _classifyChar(c) === 'ruler'; });
-      if (!ruler) ruler = alive[0];  // fallback
-
-      // 候选上奏者·非 ruler 的 court/general/clan·loyalty < 95 (满忠不上奏·防 noise)
-      var candidates = alive.filter(function(c){
-        if (c === ruler) return false;
-        // 受限者不上奏(玩家报:已下狱/罢官者仍上奏)·下狱/流放/逃亡/致仕/失踪
-        if (c._imprisoned || c.imprisoned || c._inPrison || c._exiled || c.exiled ||
-            c._banished || c._fled || c.fled || c._missing || c._retired || c.retired) return false;
-        var role = _classifyChar(c);
-        return role === 'court' || role === 'general' || role === 'clan';
-      });
-
-      // 每回合数量: max(1, min(3, candidates 数 / 4))
-      var n = Math.max(1, Math.min(3, Math.floor(candidates.length / 4)));
-      if (candidates.length === 0) return;
-
-      // shuffle + take n
-      candidates = candidates.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, n);
-
-      if (!Array.isArray(fac.npcMemorials)) fac.npcMemorials = [];
-      // 限存量·只保留 last 30
-      if (fac.npcMemorials.length > 30) {
-        fac.npcMemorials = fac.npcMemorials.slice(-30);
-      }
-
-      candidates.forEach(function(char, idx) {
-        var role = _classifyChar(char);
-        var type = _pickType(role, fac, char);  // F1·传 char 让 personality 影响
-        var content = _genContent(type, char, fac);
-        var mem = {
-          id: 'npcm_' + turn + '_' + fac.name + '_' + idx,
-          from: char.name,
-          fromRole: role,
-          to: ruler.name,
-          type: type,
-          subtype: type === '密奏' ? '密折' : (role === 'general' ? '题本' : '上疏'),
-          content: content,
-          status: 'pending',
-          turn: turn
-        };
-        // 立即 resolve
-        var dec = _rulerDecide(ruler, mem, char, fac);
-        mem.status = dec.status;
-        mem.ruling = dec.ruling;
-        mem.resolvedTurn = turn;
-        mem.impact = { loyaltyDelta: dec.loyaltyDelta, memoryNote: dec.memoryNote };
-
-        // 副作用·char loyalty + 记忆
-        char.loyalty = Math.max(0, Math.min(100, _safeNum(char.loyalty) + dec.loyaltyDelta));
-        _ensureMemoryArray(char);
-        char._memorialMemory.push(dec.memoryNote);
-        if (char._memorialMemory.length > 10) char._memorialMemory = char._memorialMemory.slice(-10);
-
-        fac.npcMemorials.push(mem);
-        if (global.TM && global.TM.FactionActionEngine && typeof global.TM.FactionActionEngine.recordLocalAction === 'function') {
-          try {
-            global.TM.FactionActionEngine.recordLocalAction(fac, 'memorial', {
-              from: mem.from,
-              type: mem.type,
-              content: mem.content,
-              rulerDecision: mem.status,
-              loyaltyDelta: dec.loyaltyDelta
-            }, mem);
-          } catch(_){}
-        }
-        // Phase H2·重要事件入近事快报
-        if (global.TM && global.TM.FactionNpcNewsBridge) {
-          try { global.TM.FactionNpcNewsBridge.pushMemorial(fac, mem); } catch(_){}
-        }
-        totalGenerated++;
-      });
-    });
-    return { generated: totalGenerated };
+    var boundary=global.TM&&TM.PoliticalActions;
+    return boundary?boundary.localCandidates('memorial'):{actions:0,issued:0,run:0,generated:0,reason:'political_boundary_unavailable'};
   }
 
-  // alias·若用户想分两 step·resolveNpcMemorials 现在 noop (因 generate 内立即 resolve)
-  // 留 API 给将来"NPC ruler 决策延迟"留口
   function resolveNpcMemorials() {
-    return { resolved: 0 };
+    // A report view may follow its canonical dialogue; it cannot decide for a ruler.
+    var count=0,L=global.TM&&TM.NPC&&TM.NPC.ActionLedger,plans=L?L.ensurePlans(global.GM):[];
+    _arr(global.GM&&global.GM.facs).forEach(function(f){_arr(f.npcMemorials).forEach(function(r){var p=plans.find(function(p){return p.id===r.planId;});if(p&&p.status==='done'){r.status='completed';count++;}});});
+    return {resolved:count};
   }
 
   function getNpcMemorialsFor(facName) {

@@ -15,20 +15,14 @@ let A = 0, F = 0;
 function ok(c, m) { if (c) { A++; console.log('  ✓ ' + m); } else { F++; console.log('  ✗ FAIL: ' + m); } }
 console.log('smoke-endturn-multicall-upgrade');
 
-// ══ sc16 F1 ══
-ok(/_sc16RelTarget = function/.test(fu) && /p16\.diplomatic_shifts\.forEach/.test(fu), 'sc16 F1 有 diplomatic_shifts→factionRelations 应用块');
-ok(/GM\.factionRelations\.push\(\{ from: ds\.from, to: ds\.to/.test(fu) && /from: ds\.to, to: ds\.from/.test(fu), 'sc16 F1 双向写入 factionRelations(正向+反向)');
-(function () {
-  var _tbl = function (rel) { var s = String(rel || ''); var has = function (arr) { return arr.some(function (k) { return s.indexOf(k) >= 0; }); }; if (has(['同盟', '结盟', '盟友', '联盟'])) return 70; if (has(['宿敌', '死敌', '敌对', '开战'])) return -70; if (has(['中立'])) return 0; return null; };
-  ok(_tbl('结为同盟') === 70 && _tbl('转为敌对') === -70 && _tbl('莫名其妙') === null, 'sc16 F1行为 关系类型→数值靶(未知类型→null 不改 value)');
-  // 复刻应用:已有关系被移向靶
-  var fr = [{ from: 'A', to: 'B', type: '中立', value: 0 }];
-  var ds = { from: 'A', to: 'B', new_relation: '结为同盟' };
-  var _tv = _tbl(ds.new_relation);
-  var _f = fr.find(function (r) { return r.from === ds.from && r.to === ds.to; });
-  _f.type = ds.new_relation; if (_tv != null) _f.value = Math.round(((_f.value || 0) + _tv) / 2);
-  ok(_f.type === '结为同盟' && _f.value === 35, 'sc16 F1行为 既有关系移向靶(0→35·类型更新)');
-})();
+// SC16 now proposes work to people and cannot sign a bilateral relation itself.
+const c=require('./lib-political-action-fixture').politicalFixture(),B=c.TM.PoliticalActions;
+c.GM.factionRelations=[{from:'甲国',to:'乙国',type:'中立',value:0}];const beforeRelations=JSON.stringify(c.GM.factionRelations);
+const suggestion={diplomatic_shifts:[{fromId:'fa',toId:'fb',new_relation:'结盟',reason:'可讨论共同防御'}]};
+const ids=B.strategicCandidates(suggestion,'sc16:fixed');ok(ids.length===1,'sc16 将具体建议交给一个实际有职任人物');
+ok(JSON.stringify(c.GM.factionRelations)===beforeRelations&&!(c.GM.treaties||[]).length,'sc16 不直接改国家关系或制造条约');
+ok(c.GM._npcPlans.find(p=>p.id===ids[0]).sourceKind==='proposal','战略建议不标为已签署命令');
+ok(fu.includes('var tp16=_sc16Projection.user')&&fu.includes('var tp16L=_sc16Projection.user'),'full/lite 在检索前都采用公开投影');
 
 // ══ sc25c M1/M2/M3 ══
 ok(/sc25c·M1/.test(fu) && /GM\._imperialCandidates/.test(fu) && /MemTables\.editorWrite\('imperialEdict'/.test(fu), 'sc25c M1 imperial_candidates 自动核议(auto-approve→imperialEdict / pending→_imperialCandidates)');
@@ -76,19 +70,13 @@ ok(/sc18·A2/.test(fu) && /_aiScenarioDigest && GM\._aiScenarioDigest\.periodVoc
 
 // ══ Codex 审修复 ══
 ok(/无关键字匹配则跳过/.test(fu) && !/hits = \[_eh25c\.rows\[_eh25c\.rows\.length - 1\]\]/.test(fu), 'Codex-HIGH M3b event_weights 无匹配则跳过(不兜底写末行覆盖无关事件)');
-ok(/if \(_tv16 != null\) GM\.factionRelations\.push\(\{ from: ds\.from/.test(fu), 'Codex-MED F1 未知关系类型不新建中立行(_tv16!=null 才 push)');
-ok(/_fwd16\._sc16Turn !== GM\.turn/.test(fu) && /_sc16Turn: GM\.turn/.test(fu), 'Codex-MED F1 同回合 _sc16Turn 幂等(防同 response 叠乘)');
-ok(/GM\.factionRelations\.length > 200\) GM\.factionRelations = GM\.factionRelations\.slice\(-200\)/.test(fu), 'Codex-MED F1 sc16 自身写入后封顶 200');
+const count=c.GM._npcPlans.length;B.strategicCandidates(suggestion,'sc16:fixed');ok(c.GM._npcPlans.length===count,'同一战略来源重述不重复创建事项');
+ok(JSON.stringify(c.GM.factionRelations)===beforeRelations,'重复战略输出不叠加任何外交差额');
 ok(/_prevMO\.situation \|\| _prevMO\.army_morale/.test(fu) && /态势：/.test(fu), 'Codex-MED A1 注入含 situation/army_morale(数组空也有连续性)');
 ok(/GM\._turnAiResults && GM\._turnAiResults\.subcall25 && GM\._turnAiResults\.subcall25\.memory/.test(pt), 'Codex-MED M3a reflect 快照过期回退读 live GM.subcall25.memory');
-(function () {
-  // 复刻 F1 未知类型不建行
-  function applyFwd(fr, ds, tv) { var f = fr.find(function (r) { return r.from === ds.from && r.to === ds.to; }); if (!f) { if (tv != null) fr.push({ from: ds.from, to: ds.to, type: ds.new_relation, value: tv }); } return fr; }
-  var fr1 = applyFwd([], { from: 'A', to: 'B', new_relation: '暂缓议和' }, null);
-  ok(fr1.length === 0, 'Codex-MED行为 未知类型+无行→不建行(不留 value:0 中立)');
-  var fr2 = applyFwd([], { from: 'A', to: 'B', new_relation: '结盟' }, 70);
-  ok(fr2.length === 1 && fr2[0].value === 70, 'Codex-MED行为 已知类型→正常建行');
-})();
+B.strategicCandidates({diplomatic_shifts:[{fromId:'fa',toId:'fb',new_relation:'未知说法'}]},'sc16:independent');
+ok(JSON.stringify(c.GM.factionRelations)===beforeRelations,'未识别关系描述仍然只是候选，不产生中立占位行');
+
 
 console.log('\nsmoke-endturn-multicall-upgrade ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + A + '/' + (A + F));
 process.exit(F ? 1 : 0);

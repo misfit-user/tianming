@@ -20,7 +20,7 @@ console.log('— §a · 党派叙事错名修 —');
 (function () {
   var fu = read('tm-endturn-followup.js');
   ok(!/GM\._factionNarratives/.test(fu), 'followup 复数错名 _factionNarratives 已绝迹');
-  ok(/GM\._factionNarrative && typeof GM\._factionNarrative === 'object'/.test(fu), '单数读取带 typeof object 防御(对齐 ai-planning 写法)');
+  var ctx=require('./lib-political-action-fixture').politicalFixture();ctx.GM._factionNarrative={privateThought:'PRIVATE_FACTION_NARRATIVE'};ok(!ctx.TM.PoliticalActions.strategicPrompt().user.includes('PRIVATE_FACTION_NARRATIVE'),'SC16 公开投影不读取全局人物内心叙述');
   ok(/GM\._factionNarrative = p25\.faction_narrative/.test(fu), '写点(单数)原样保留');
   var ap = read('tm-ai-planning.js');
   ok(/GM\._factionNarrative && typeof GM\._factionNarrative === 'object'/.test(ap), 'ai-planning 单数读点未受扰(零回归)');

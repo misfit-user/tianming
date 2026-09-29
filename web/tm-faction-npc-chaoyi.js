@@ -151,61 +151,8 @@
   }
 
   function generateNpcChaoyi() {
-    if (typeof global.GM === 'undefined') return null;
-    var GM = global.GM;
-    if (!Array.isArray(GM.facs)) return null;
-    var turn = _safeNum(GM.turn) || 1;
-    var playerFacNames = _resolvePlayerFactionNames();
-
-    var totalRun = 0;
-    GM.facs.forEach(function(fac) {
-      if (!fac || !fac.name) return;
-      if (_isPlayerFaction(fac, playerFacNames)) return;
-      var entry = GM._facIndex && GM._facIndex[fac.name];
-      if (!entry) return;
-      var alive = (entry.chars || []).filter(_isAlive);
-      if (alive.length === 0) return;
-
-      var parties = entry.parties || {};
-      if (Object.keys(parties).length < 2) return;  // 0/1 派不议
-
-      var type = _decideType(fac, Object.keys(parties));
-      if (!type) return;
-
-      var result = _runInteraction(fac, type, parties, alive);
-
-      var chaoyi = {
-        id: 'npccy_' + turn + '_' + fac.name,
-        turn: turn,
-        type: type,
-        parties: Object.keys(parties),
-        participants: result.participants,
-        summary: result.summary,
-        effects: result.effects
-      };
-
-      if (!Array.isArray(fac.npcChaoyi)) fac.npcChaoyi = [];
-      if (fac.npcChaoyi.length > 30) fac.npcChaoyi = fac.npcChaoyi.slice(-30);
-      fac.npcChaoyi.push(chaoyi);
-      if (global.TM && global.TM.FactionActionEngine && typeof global.TM.FactionActionEngine.recordLocalAction === 'function') {
-        try {
-          global.TM.FactionActionEngine.recordLocalAction(fac, 'court_alignment', {
-            type: chaoyi.type,
-            summary: chaoyi.summary,
-            parties: chaoyi.parties,
-            participants: chaoyi.participants,
-            partyImbalanceDelta: chaoyi.effects && chaoyi.effects.partyImbalanceDelta,
-            loyaltyDeltaByParty: chaoyi.effects && chaoyi.effects.loyaltyDeltaByParty
-          }, chaoyi);
-        } catch(_){}
-      }
-      // Phase H2·attack/cooperate 入近事快报
-      if (global.TM && global.TM.FactionNpcNewsBridge) {
-        try { global.TM.FactionNpcNewsBridge.pushChaoyi(fac, chaoyi); } catch(_){}
-      }
-      totalRun++;
-    });
-    return { run: totalRun };
+    var boundary=global.TM&&TM.PoliticalActions;
+    return boundary?boundary.localCandidates('court_alignment'):{actions:0,issued:0,run:0,generated:0,reason:'political_boundary_unavailable'};
   }
 
   function getNpcChaoyiFor(facName) {

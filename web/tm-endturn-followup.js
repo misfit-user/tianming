@@ -857,26 +857,21 @@
       var _branchB = _runSubcallBatch('full-specialty', [
       function(){ return _runSubcall('sc16', '势力推演', 'full', async function() {
       // Phase 3 Q5·SC16 lite variant·当 P.ai.sc16Lite=true 走 top-3 priorities 简版·~80% token 节省
+      var _sc16Political=typeof TM!=='undefined'&&TM.PoliticalActions;
+      if(!_sc16Political){ctx.results.sc16={skipped:true,reason:'political_boundary_unavailable'};return;}
+      var _sc16Lease=TM.NPC.ActionLedger.capture(),_sc16Projection=_sc16Political.strategicPrompt();
       var _sc16Lite = !!(P.ai && P.ai.sc16Lite === true);
       if (_sc16Lite) {
         try {
-          var tp16L = '本回合非玩家势力前 3 优先级精简推演 (lite mode·SC16 Q5)·';
-          var _facsLite = (GM.facs || []).filter(function(f) { return f && (!f.player); }).slice(0, 8);
-          tp16L += '势力：' + _facsLite.map(function(f){ return f.name + '(' + (f.strength||0) + ')'; }).join('、') + '\n';
-          try {
-            if (typeof TM !== 'undefined' && TM.FactionAiMainloopBridge && typeof TM.FactionAiMainloopBridge.formatForPrompt === 'function') {
-              var _fai16L = TM.FactionAiMainloopBridge.formatForPrompt(GM, P, { limit: 8 });
-              if (_fai16L) tp16L += '\n' + _fai16L + '\n';
-            }
-          } catch(_fai16LErr) { try { _dbg('[sc16 lite faction-ai bridge] fail:', _fai16LErr); } catch(_){} }
-          tp16L += '\n请返回 JSON·只含·{"faction_priorities":[{"faction":"势力名","priority":1-3,"urgency":"high|normal|low","reason":"为何"}],"diplomatic_shifts":[{"from":"","to":"","old_relation":"","new_relation":"","reason":""}],"power_balance_shift":"力量对比一句话(50字)"}\n';
-          tp16L += '只输出最该行动的 top 3 势力·diplomatic_shifts 无变化也返回 []。';
-          var _sc16LBody = { model: P.ai.model || 'gpt-4o', messages: [{role:'system',content:_maybeCacheSys(sysPFor('sc16L'))},{role:'user',content:tp16L}], temperature: 0.5, max_tokens: _tok(2000) };
+          var tp16L=_sc16Projection.user;
+          var _sc16LBody = { model: P.ai.model || 'gpt-4o', messages: [{role:'system',content:_maybeCacheSys(_sc16Projection.system)},{role:'user',content:tp16L}], temperature: 0.5, max_tokens: _tok(2000) };
           if (_modelFamily === 'openai') _sc16LBody.response_format = { type: 'json_object' };
           var _sc16LCall = await _callFollowupAI(_sc16LBody, { id: 'sc16', label: '势力推演·lite', priority: 'normal' });
           var _p16LParse = await _parseOrRepairJsonResult((_sc16LCall && _sc16LCall.raw) || '', _sc16LCall && _sc16LCall.data, '势力推演·lite', { url: url, key: P.ai.key, body: _sc16LBody, expectedKeys: ['faction_priorities', 'diplomatic_shifts'], priority: 'normal' });
           var p16L = (_p16LParse && _p16LParse.parsed) || null;
+          if(!TM.NPC.ActionLedger.current(_sc16Lease))return;
           if (p16L) {
+            p16L.sourceKind='proposal';_sc16Political.strategicCandidates(p16L,'sc16:'+GM.turn);
             GM._turnAiResults.subcall16 = Object.assign({ _liteVariant: true }, p16L);
             ctx.results.sc16 = p16L;
             _specialtySummary.sc16 = '【势力·lite】top3·' + (p16L.faction_priorities || []).slice(0,3).map(function(p){return p.faction;}).join('、') + '\n';
@@ -887,66 +882,9 @@
       }
       showLoading("\u52BF\u529B\u81EA\u4E3B\u63A8\u6F14",63);
       try {
-        var _playerFacNames16 = _tmResolvePlayerFactionNamesForAi(GM, P);
-        var tp16 = '\u57FA\u4E8E\u672C\u56DE\u5408\u5C40\u52BF\uFF0C\u751F\u6210\u975E\u73A9\u5BB6\u52BF\u529B\u7684\u6218\u7565\u65B9\u5411\u4E0E\u7CBE\u7EC6\u5316\u63A8\u6F14\u4F18\u5148\u7EA7\uFF1A\n';
-        tp16 += '\u65F6\u653F\u8BB0\uFF1A' + (shizhengji||'').substring(0,500) + '\n';
-        (GM.facs||[]).forEach(function(f) {
-          if (_tmIsPlayerFactionForAi(f, _playerFacNames16)) return;
-          tp16 += f.name + ' \u5B9E\u529B' + (f.strength||50) + (f.leader?' \u9996\u9886:'+f.leader:'') + (f.goal?' \u76EE\u6807:'+f.goal:'') + (f.attitude?' \u6001\u5EA6:'+f.attitude:'') + '\n';
-        });
-        if (_playerFacNames16.length) {
-          tp16 += '\n【玩家势力控制边界】' + _playerFacNames16.join('、') + '由玩家亲自控制；玩家势力不得作为行动发起方，不要为它生成 faction_actions，也不要以它作为 diplomatic_shifts.from。NPC 可以把玩家势力作为 target/to。\n';
-        }
-        if (GM.factionRelations && GM.factionRelations.length > 0) {
-          tp16 += '\u52BF\u529B\u5173\u7CFB\uFF1A' + GM.factionRelations.map(function(r){return r.from+'\u2192'+r.to+' '+r.type+'('+r.value+')';}).join('\uFF1B') + '\n';
-        }
-        try {
-          if (typeof TM !== 'undefined' && TM.FactionAiMainloopBridge && typeof TM.FactionAiMainloopBridge.formatForPrompt === 'function') {
-            var _fai16 = TM.FactionAiMainloopBridge.formatForPrompt(GM, P, { limit: 12 });
-            if (_fai16) tp16 += '\n' + _fai16 + '\n';
-          }
-        } catch(_fai16Err) { try { _dbg('[sc16 faction-ai bridge] fail:', _fai16Err); } catch(_){} }
-        try {
-          var _adminHierarchy16 = (typeof TM !== 'undefined' && TM.FactionNpcLlmDecision && typeof TM.FactionNpcLlmDecision.buildFactionAdminSummaryForSc16 === 'function')
-            ? TM.FactionNpcLlmDecision.buildFactionAdminSummaryForSc16({ maxFactions: 16, maxDivisions: 4, maxChars: 8000 })
-            : '';
-          if (_adminHierarchy16) {
-            tp16 += '\n' + _adminHierarchy16 + '\n';
-            tp16 += '\u3010\u52BF\u529B\u5730\u76D8\u5224\u65AD\u8981\u6C42\u3011\u4EE5\u4E0A\u662F\u5F53\u524D\u8FD0\u884C\u65F6\u5404\u52BF\u529B\u7701\u7EA7\u5730\u76D8\u8D26\u518C\uFF1B\u82E5\u672C\u56DE\u5408\u6216\u5148\u524D\u56DE\u5408\u5DF2\u53D1\u751F\u9886\u571F\u53D8\u52A8\uFF0C\u5E94\u4EE5\u8FD9\u4EFD\u5F53\u524D\u533A\u5212\u4E3A\u51C6\uFF0C\u4E0D\u8981\u53EA\u6309\u5F00\u5C40\u65E7\u5730\u63A8\u6F14\uFF1B\u6BCF\u4E2A\u52BF\u529B\u7684\u6269\u5F20\u3001\u9632\u5B88\u3001\u8865\u7ED9\u3001\u8D22\u653F\u4E0E\u5916\u4EA4\u90FD\u8981\u5148\u770B\u81EA\u5BB6\u5F53\u524D\u5730\u76D8\u3002\n';
-          }
-        } catch(_adminHierarchy16Err) { try { _dbg('[sc16 admin hierarchy] fail:', _adminHierarchy16Err); } catch(_){} }
-        // 势力暗流（连续性——上回合行动应有后续）
-        if (GM._factionUndercurrents && GM._factionUndercurrents.length > 0) {
-          tp16 += '\n【势力暗流——上回合行动应有后续进展】\n';
-          GM._factionUndercurrents.forEach(function(fu) {
-            tp16 += '  ' + fu.faction + '：' + fu.situation + (fu.nextMove ? ' 可能行动:' + fu.nextMove : '') + '\n';
-          });
-        }
-        // 势力叙事（记忆上文）
-        if (GM._factionNarrative && typeof GM._factionNarrative === 'object') {
-          var _fnKeys = Object.keys(GM._factionNarrative);
-          if (_fnKeys.length > 0) {
-            tp16 += '【势力发展记忆】\n';
-            _fnKeys.forEach(function(k) { tp16 += '  ' + k + '\uFF1A' + (GM._factionNarrative[k]||'') + '\n'; });
-          }
-        }
-        try {
-          var _npcPrecision16 = (typeof TM !== 'undefined' && TM.FactionNpcLlmDecision && typeof TM.FactionNpcLlmDecision.buildRecentTrajectoryContextForSc16 === 'function')
-            ? TM.FactionNpcLlmDecision.buildRecentTrajectoryContextForSc16({ maxFactions: 12, maxChars: 6000 })
-            : '';
-          if (_npcPrecision16) {
-            tp16 += '\n' + _npcPrecision16 + '\n';
-            tp16 += '\u3010\u7CBE\u7EC6\u5316\u52BF\u529B\u63A8\u6F14\u627F\u63A5\u8981\u6C42\u3011\u4EE5\u4E0A\u662F\u5148\u524D\u56DE\u5408\u7684\u52BF\u529B\u7CBE\u7EC6\u5316\u63A8\u6F14\u8BB0\u5F55\uFF0C\u5305\u62EC\u8FC7\u56DE\u5408\u65F6\u6279\u91CF\u52BF\u529B\u63A8\u6F14\u5199\u5165\u7684\u52BF\u529B\u65E7\u8D26\u3001\u8FC7\u56DE\u5408\u540E\u8FD1\u4E8B\u5FEB\u62A5\u5199\u5165\u3001\u4EE5\u53CA\u56DE\u5408\u5185\u7CBE\u7EC6\u5316\u52BF\u529B\u63A8\u6F14\u3002sc16\u5FC5\u987B\u628A\u5B83\u4EEC\u5F53\u4F5C\u5404\u52BF\u529B\u5DF2\u5F62\u6210\u7684\u8DEF\u7EBF\u548C\u8BB0\u5FC6\uFF1B\u4E0D\u5F97\u65E0\u6545\u53CD\u5411\u63A8\u7FFB\u3002\u5982\u9700\u8F6C\u5411\uFF0C\u5FC5\u987B\u5728motive/reason\u4E2D\u8BF4\u660E\u65B0\u53D8\u6545\u3002\n';
-          }
-        } catch(_npcPrecision16Err) { try { _dbg('[sc16 precision history] fail:', _npcPrecision16Err); } catch(_){} }
-        tp16 += '\n\u8BF7\u8FD4\u56DEJSON\uFF1A{"faction_priorities":[{"faction":"\u52BF\u529B\u540D","priority":0,"urgency":"high|normal|low","reason":"\u4E3A\u4EC0\u4E48\u8FD9\u4E2A\u52BF\u529B\u5E94\u4F18\u5148\u4EA4\u7ED9\u7CBE\u7EC6\u5316LLM"}],"faction_actions":[{"faction":"\u52BF\u529B\u540D","action":"\u5177\u4F53\u884C\u52A8(50\u5B57)","target":"\u5BF9\u8C01","motive":"\u52A8\u673A","impact":"\u5F71\u54CD"}],"faction_directives":[{"faction":"\u52BF\u529B\u540D","strategic_intent":"\u672C\u56DE\u5408\u603B\u76EE\u6807(30-80\u5B57)","must_follow":"\u7CBE\u7EC6\u5316\u52BF\u529BLLM\u5FC5\u987B\u627F\u63A5\u7684\u65B9\u5411","preferred_actions":["\u5EFA\u8BAE\u843D\u5730\u52A8\u4F5C"],"red_lines":"\u4E0D\u5E94\u53CD\u5411\u63A8\u7FFB\u7684\u8FB9\u754C","reason":"\u4F9D\u636E"}],"diplomatic_shifts":[{"from":"","to":"","old_relation":"","new_relation":"","reason":""}],"territorial_changes":"\u9886\u571F\u53D8\u5316\u63CF\u8FF0(100\u5B57)","power_balance_shift":"\u529B\u91CF\u5BF9\u6BD4\u53D8\u5316(100\u5B57)"}\n';
-        tp16 += 'SC16 是势力层的战略指令账本与优先级队列；faction_priorities 决定后续精细化 LLM 优先处理谁，faction_actions/faction_directives 只提供战略方向。真正的人物、军队、财政、地块等落地由后续势力精细化 LLM 执行。只为上述非玩家势力生成方向；玩家势力不得作为行动发起方。不要为了凑满全部势力而制造低价值行动，优先标出最该行动、最可能行动、最危险的势力。包括战争、联盟、贸易、内部整合、扩张、防御等。\n';
-        // Phase 3 A9·SC16 必输 diplomatic_shifts·SC1c 不再生成此字段·SC16 唯一负责
-        tp16 += '\n■ diplomatic_shifts 硬规则 (Phase 3 A9·SC16 唯一负责)·\n';
-        tp16 += '  · 必输此字段·无外交变化也必须返回 [] 空数组·NOT 省略 key\n';
-        tp16 += '  · 形·{from, to, old_relation, new_relation, reason}·new_relation 从 敌对/中立/盟好/朝贡/通婚/交战 中选\n';
-        tp16 += '  · SC1c 已让位·不再输出 diplomatic_shifts·所有势力间外交关系变化由 SC16 收口';
-        var _sc16Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(sysPFor('sc16'))},{role:"user",content:tp16}], temperature:P.ai.temp||0.8, max_tokens:_tok(8000)};
+        var _playerFacNames16 = _tmResolvePlayerFactionNamesForAi(GM, P).filter(function(n){var f=_sc16Political.resolve('organization',n);return !f||!_sc16Political.principals(f).length;});
+        var tp16=_sc16Projection.user;
+        var _sc16Body = {model:P.ai.model||"gpt-4o", messages:[{role:"system",content:_maybeCacheSys(_sc16Projection.system)},{role:"user",content:tp16}], temperature:P.ai.temp||0.8, max_tokens:_tok(8000)};
         if (_modelFamily === 'openai') _sc16Body.response_format = { type: 'json_object' };
         var _sc16Call = await _callFollowupAI(_sc16Body, { id: 'sc16', label: '势力行动', priority: 'normal' });
         {
@@ -954,43 +892,15 @@
           var _p16Parse = await _parseOrRepairJsonResult(c16, j16, '势力行动', { url: url, key: P.ai.key, body: _sc16Body, expectedKeys: ['faction_priorities', 'faction_actions', 'faction_directives', 'diplomatic_shifts', 'power_balance_shift'], priority: 'normal' });
           if (_p16Parse && _p16Parse.raw) c16 = _p16Parse.raw;
           var p16 = _p16Parse ? _p16Parse.parsed : null;
+          if(!TM.NPC.ActionLedger.current(_sc16Lease))return;
           if (p16) {
+            p16.sourceKind='proposal';_sc16Political.strategicCandidates(p16,'sc16:'+GM.turn);
             p16 = _tmFilterSc16PlayerOutputs(p16, _playerFacNames16);
             _tmStoreSc16DirectiveLedger(p16, GM, _playerFacNames16);
             if (p16.faction_actions && Array.isArray(p16.faction_actions)) {
-              p16.faction_actions.forEach(function(fa) { if (fa.faction && fa.action) addEB('\u52BF\u529B\u52A8\u6001', fa.faction + '：' + fa.action); });
+              p16.faction_actions.forEach(function(fa) { if (fa.faction && fa.action) addEB('\u52BF\u529B\u52A8\u6001', fa.faction + '：拟议·' + fa.action); });
             }
-            if (p16.diplomatic_shifts && Array.isArray(p16.diplomatic_shifts)) {
-              // \u3010sc16\u00B7F1\u3011new_relation(\u5173\u7CFB\u7C7B\u578B)\u2192\u6570\u503C\u9776\u00B7\u5206\u7C7B\u5173\u952E\u8BCD(\u7528 indexOf \u907F\u514D\u6B63\u5219\u542B\u4E2D\u6587\u88AB lint \u8F6C\u4E49)
-              var _sc16RelTarget = function(rel) {
-                var s = String(rel || ''); var has = function(arr){ return arr.some(function(k){ return s.indexOf(k) >= 0; }); };
-                if (has(['\u540C\u76DF','\u7ED3\u76DF','\u76DF\u53CB','\u8054\u76DF'])) return 70;
-                if (has(['\u9644\u5EB8','\u81E3\u5C5E','\u5F52\u9644','\u79F0\u81E3'])) return 55;
-                if (has(['\u53CB\u597D','\u4EB2\u5584','\u4FEE\u597D','\u548C\u7766','\u901A\u597D'])) return 40;
-                if (has(['\u5BBF\u654C','\u6B7B\u654C','\u654C\u5BF9','\u5F00\u6218','\u4EA4\u6218','\u51B3\u88C2','\u53CD\u76EE'])) return -70;
-                if (has(['\u4EA4\u6076','\u4E0D\u548C','\u654C\u610F','\u7D27\u5F20','\u6469\u64E6','\u9F83\u9F89'])) return -35;
-                if (has(['\u4E2D\u7ACB','\u89C2\u671B','\u9A91\u5899','\u758F\u8FDC'])) return 0;
-                return null;
-              };
-              var _cl16 = function(v){ return Math.max(-100, Math.min(100, Math.round(v))); };
-              p16.diplomatic_shifts.forEach(function(ds) {
-                if (!ds || !ds.from || !ds.to || !ds.new_relation) return;
-                addEB('\u5916\u4EA4\u98CE\u5411', ds.from+'\u2192'+ds.to+' \u915D\u917F '+ds.new_relation);
-                // \u3010sc16\u00B7F1\u3011\u628A\u5916\u4EA4\u8F6C\u5411\u771F\u6B63\u5E94\u7528\u5230 GM.factionRelations(\u539F\u5148\u53EA\u51FA\u4E8B\u4EF6\u00B7\u5173\u7CFB\u6570\u503C/\u7C7B\u578B\u4ECE\u4E0D\u53D8\u2192sc16"\u552F\u4E00\u8D1F\u8D23\u5916\u4EA4"\u843D\u7A7A)\u00B7\u53CC\u5411\u00B7\u672A\u77E5\u7C7B\u578B\u53EA\u8BB0 type \u4E0D\u6539 value
-                try {
-                  if (!Array.isArray(GM.factionRelations)) GM.factionRelations = [];
-                  var _tv16 = _sc16RelTarget(ds.new_relation);
-                  var _fwd16 = GM.factionRelations.find(function(r){ return r.from === ds.from && r.to === ds.to; });
-                  if (!_fwd16) { if (_tv16 != null) GM.factionRelations.push({ from: ds.from, to: ds.to, type: ds.new_relation, value: _cl16(_tv16 * 0.5), desc: ds.reason || '', _sc16: true, _sc16Turn: GM.turn }); }   // Codex修·MED:未知类型(_tv16==null)不新建中立行(否则"不改value"变成持久化中立关系)
-                  else { _fwd16.type = ds.new_relation; if (_tv16 != null && _fwd16._sc16Turn !== GM.turn) _fwd16.value = _cl16(((_fwd16.value||0) + _tv16) / 2); if (ds.reason) _fwd16.desc = ds.reason; _fwd16._sc16 = true; _fwd16._sc16Turn = GM.turn; }   // Codex修·MED:同回合已被 sc16 改过只更 type 不再叠 value(防同 response 重复 shift 叠乘)
-                  var _rev16 = GM.factionRelations.find(function(r){ return r.from === ds.to && r.to === ds.from; });
-                  if (!_rev16) { if (_tv16 != null) GM.factionRelations.push({ from: ds.to, to: ds.from, type: ds.new_relation, value: _cl16(_tv16 * 0.35), desc: ds.reason || '', _sc16Turn: GM.turn }); }
-                  else if (_tv16 != null && _rev16._sc16Turn !== GM.turn) { _rev16.value = _cl16((_rev16.value||0) * 0.7 + _tv16 * 0.3); _rev16._sc16Turn = GM.turn; }
-                  _dbg('[sc16 F1\u00B7diplomacy applied] ' + ds.from + '->' + ds.to + ' ' + ds.new_relation + ' target=' + _tv16);
-                } catch(_dsApplyE16) {}
-              });
-              if (GM.factionRelations.length > 200) GM.factionRelations = GM.factionRelations.slice(-200);   // Codex修·MED:sc16 自身写入后也封顶(原 >200 dedupe 仅在 p1 apply 路径·幻觉势力会无上限累积)
-            }
+            // Strategic changes are candidates. Effective treaties and relations keep their domain owners.
             _specialtySummary.sc16 = '\u3010\u52BF\u529B\u52A8\u6001\u3011' + (p16.power_balance_shift||'') + '\n';
             GM._turnAiResults.subcall16 = p16;
           }

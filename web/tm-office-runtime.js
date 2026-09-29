@@ -630,10 +630,7 @@ function renderOfficeTree(force){
   // 整棵 SVG 衙门树+摘要对隐藏 tab 纯浪费)·switchGTab 切入钩/官制 standalone 都是先显后调·不受影响
   if(!force && typeof _gtTabVisible==='function' && !_gtTabVisible('gt-office')) return;
   var el=_$("office-tree");if(!el)return;
-  // 容错：如果 GM.officeTree 为空但 P.officeTree 有数据，恢复
-  if ((!GM.officeTree || GM.officeTree.length===0) && P.officeTree && P.officeTree.length > 0) {
-    try { GM.officeTree = deepClone(P.officeTree); } catch(_e) { GM.officeTree = P.officeTree; }
-  }
+  // Runtime office assignments are authoritative. Loading/import owns migration; rendering cannot restore source-scenario appointments.
   if(!GM.officeTree||GM.officeTree.length===0){
     // \u7A7A\u6001\u5206\u652F\u63D0\u524D\u8FD4\u56DE\u00B7\u6B64\u5904\u4E5F\u987B\u6302\u5236\u5EA6\u5FD7\u6309\u94AE(\u5426\u5219\u5B98\u5236\u672A\u914D\u7F6E\u65F6\u4F11\u7720 shim \u8DF3\u6765\u65E0\u5165\u53E3\u00B7\u300C\u5E38\u663E\u300D\u4E0D\u6210\u7ACB)
     var _icBarEmpty = (typeof _offInstitutionsChronicleBar === 'function') ? _offInstitutionsChronicleBar() : '';
@@ -641,7 +638,7 @@ function renderOfficeTree(force){
     return;
   }
   // 单一真相源:渲染前从人物 officialTitle 派生官制树任职者(状态未变则跳过)
-  try { if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars((((typeof GM!=="undefined"&&GM.chars)||[]).some(function(c){return c&&c.alive!==false&&c.officialTitle;})?{ force: true }:{ ifChanged: true })); } catch (_) {}
+  try { if (typeof _offSyncHoldersFromChars === 'function') _offSyncHoldersFromChars({readOnly:true}); } catch (_) {}
   // v10·初始化默认折叠+分类
   if (typeof _officeInitDefaults === 'function') _officeInitDefaults();
   // 视图模式·v10 默认 tree（预览同）·仅当玩家手动切过才保留其选择

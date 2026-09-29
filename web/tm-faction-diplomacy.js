@@ -1,323 +1,274 @@
-// @ts-check
-/// <reference path="types.d.ts" />
-// ============================================================
-// tm-faction-diplomacy.js — 势力 agent 双向外交（S1·NPC↔NPC·核心）
-//
-// 把势力从"各自盘算的平行 agent"升级成"会谈判/结盟/背叛的 agent 社会"。
-// 现状缺口(一手核实)：势力间无双向谈判——decideFor 的 diplomacy 是**单向**(relationDelta 一改了事)·tm-faction-npc-chaoyi.js 的协作/攻讦是**启发式掷骰**(按 cohesion/imbalance 概率·非 agent 按目标决定)。
-//
-// 本模块让交互从双方 agent 推理涌现·且**零额外 LLM 调用**(骑每派现有 decideFor)：
-//   ① A 的决策产 proposals(向谁·结盟/媾和/交易/联手/最后通牒·条款+理由)
-//   ② recordProposals 存到目标派 fac._incomingProposals(跨回合·目标=玩家则入 GM._pendingFactionProposalsToPlayer 队·留 S2 走鸿雁/奏疏)
-//   ③ B 决策时 formatIncomingProposals 注入 INCOMING_PROPOSALS 段(谁向我提了什么)
-//   ④ B 的决策产 proposalResponses(接受/拒绝/还价·按 B 自己 aiStrategy 的目标/宿怨/姿态)
-//   ⑤ applyResponses 结算：接受→双方 aiStrategy.alliances 互加·拒→提议方结怨·还价→反向新提议。
-//
-// 守铁律：后台(玩家不等·骑 post-turn 的势力决策)·有界(每派每回合≤少量提议·跨回合谈判=更真实的外交节奏)·开关 factionAgentEnabled 默认关·零回归·跨朝代中立(proposal type 通用词·无朝代专名)。
-// 接线(decideFor·S1 同步做)：_buildPrompt 注 INCOMING_PROPOSALS 段 + 决策 schema 加 proposals/proposalResponses + apply 调 recordProposals/applyResponses。
-// ============================================================
-
-(function (global) {
-  var TM = global.TM = global.TM || {};
-  if (TM.FactionDiplomacy) return;
-
-  var TYPES = { alliance: 1, nonaggression: 1, deal: 1, joint_action: 1, ultimatum: 1, peace: 1 };
-  var TYPE_CN = { alliance: '结盟', nonaggression: '互不侵犯', deal: '交易', joint_action: '联手', ultimatum: '最后通牒', peace: '媾和' };
-  var EXPIRE_TURNS = 4, MAX_PENDING = 6;
-
-  function _dbg() { try { if (global.DebugLog && typeof global.DebugLog.log === 'function') global.DebugLog.log.apply(global.DebugLog, ['ai'].concat(Array.prototype.slice.call(arguments))); } catch (e) {} }
-  function _norm(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
-  function _facId(fac) { return fac && (fac.id || fac.factionId || fac.facId || fac.key) != null ? String(fac.id || fac.factionId || fac.facId || fac.key) : ''; }
-  function _facName(fac) { return String(fac && (fac.name || fac.title) || ''); }
-  function _facByRef(ref) {
-    var G = global.GM || {};
-    if (!Array.isArray(G.facs) || ref == null) return null;
-    var refId = typeof ref === 'object' ? String(ref.id || ref.factionId || ref.facId || ref.key || '') : String(ref);
-    var refName = typeof ref === 'object' ? String(ref.name || ref.title || '') : String(ref);
-    if (refId) {
-      var idMatches = G.facs.filter(function (fac) { return fac && _facId(fac) === refId; });
-      if (idMatches.length === 1) return idMatches[0];
-      // 显式 ID 未命中时不可降级按同名猜测。
-      if (typeof ref === 'object' && (ref.id || ref.factionId || ref.facId || ref.key)) return null;
+// Existing faction proposal queues and GM.treaties remain the canonical records.
+(function(global){
+  'use strict';
+  var TM=global.TM=global.TM||{},TYPES={alliance:1,nonaggression:1,joint_action:1,peace:1,deal:1,ultimatum:1};
+  var TYPE_CN={alliance:'结盟',nonaggression:'互不侵犯',joint_action:'联手',peace:'媾和',deal:'交易',ultimatum:'最后通牒'};
+  function G(){return global.GM;}
+  function A(x){return Array.isArray(x)?x:[];}
+  function S(x){return x==null?'':String(x);}
+  function copy(x){return JSON.parse(JSON.stringify(x));}
+  function P(){return TM.PoliticalActions;}
+  function L(){return TM.NPC&&TM.NPC.ActionLedger;}
+  function result(s,r,refs,extra){return L().result(s,r,refs,extra);}
+  function fac(ref,g){return P()&&P().resolve('organization',ref,g||G());}
+  function person(id,g){return P()&&P().resolve('character',{id:id},g||G());}
+  function all(g){var rows=[];A((g||G()).facs).forEach(function(f){A(f._incomingProposals).forEach(function(p){if(p&&!p.proposalRef)rows.push(p);});});return rows;}
+  function get(id,g){var rows=all(g).filter(function(p){return p.id===id;});return rows.length===1?rows[0]:null;}
+  function version(p,n){return A(p.versions).find(function(v){return v.version===(n==null?p.version:n);});}
+  function terminal(p){return /^(accepted|rejected|cancelled|lapsed)$/.test(p.status);}
+  function log(row){var g=G();if(!Array.isArray(g._factionDiplomacyLog))g._factionDiplomacyLog=[];g._factionDiplomacyLog.push(row);if(g._factionDiplomacyLog.length>80)g._factionDiplomacyLog.splice(0,g._factionDiplomacyLog.length-80);}
+  function notice(text){try{if(typeof global.addEB==='function')global.addEB('外交',text);}catch(e){if(global.console)console.warn('[diplomacy notification]',e.message);}}
+  function terms(raw){
+    var text=S(raw.terms!=null?raw.terms:raw.treaty||raw.treatyName||raw.content),n=raw.durationTurns;
+    if(!text.trim()||text.length>12000||raw.obligations!=null&&!Array.isArray(raw.obligations)||A(raw.obligations).length>20||n!=null&&(!Number.isInteger(n)||n<0||n>1200))return null;
+    return {text:text,durationTurns:n==null?36:n,effectiveRule:'both_signatures',obligations:copy(raw.obligations||[])};
+  }
+  function hasPower(ch,org,power,ref){return P().authority(ch,Object.assign({},ref||{},{organizationId:org.id}),power);}
+  function representative(org,explicit,requireSign){
+    if(!org)return null;
+    var rows=A(G().chars).filter(function(c){return P().live(c)&&(!explicit||S(c.id)===S(explicit))&&
+      (role(c,org,{},!!requireSign)||TM.OfficeHolderState.activeAssignments(G(),c,{organizationId:org.id}).some(function(a){return hasPower(c,org,'treatySign',{actingPositionId:a.pos.id})||!requireSign&&hasPower(c,org,'diplomacy',{actingPositionId:a.pos.id});}));});
+    rows.sort(function(a,b){return S(a.id).localeCompare(S(b.id));});return rows[0]||null;
+  }
+  function councilRole(ch,org,ref){
+    if(!P().live(ch))return null;var rows=[];
+    A(org.politicalRules).filter(function(r){return r&&r.kind==='treaty_council'&&r.status==='active'&&r.source&&r.id&&Number.isInteger(r.version)&&Number.isInteger(r.quorum)&&r.quorum>0&&r.quorum<=A(r.positionIds).length&&(!r.expiresTurn||G().turn<r.expiresTurn)&&(!ref.treatyType||!r.treatyTypes||r.treatyTypes.indexOf(ref.treatyType)>=0);}).forEach(function(rule){
+      TM.OfficeHolderState.activeAssignments(G(),ch,{organizationId:org.id}).forEach(function(a){
+        var principal=a.delegated?TM.OfficeHolderState.identity(G(),a.principalCharacterId).char:ch,av=TM.OfficeHolderState.availability(G(),principal,a.pos);
+        if(rule.positionIds.indexOf(a.pos.id)<0||ref.actingPositionId&&a.pos.id!==ref.actingPositionId||av.char!==ch||!av.capacity||a.pos.enabled===false||a.pos.status==='abolished'||a.holder&&a.holder.expiresTurn!=null&&G().turn>=a.holder.expiresTurn)return;
+        rows.push({pos:a.pos,positionId:a.pos.id,appointmentId:a.appointmentId,delegated:a.delegated,collectiveRule:rule});
+      });
+    });return rows.length===1?rows[0]:null;
+  }
+  function nextCouncilMember(p,org,rule){
+    return A(G().chars).find(function(ch){var r=councilRole(ch,org,{treatyType:p.type});return r&&r.collectiveRule.id===rule.id&&!A(p.collectiveVotes).some(function(v){return v.actorId===ch.id&&v.version===p.version&&v.ruleVersion===rule.version;});})||null;
+  }
+  function role(ch,org,ref,sign){
+    return hasPower(ch,org,sign?'treatySign':'diplomacy',ref)||(!sign&&hasPower(ch,org,'treatySign',ref))||councilRole(ch,org,ref||{});
+  }
+  function signed(p,orgId){return A(p.decisions).find(function(d){return d.organizationId===orgId&&d.version===p.version&&d.choice==='sign';});}
+  function entry(p,d,kind,extra){
+    var e=Object.assign({id:d.actionId,actionId:d.actionId,actorId:d.actorId,organizationId:d.organizationId,kind:kind,version:p.version,termsSignature:P().signature(version(p).terms),turn:G().turn},extra||{});
+    p.history.push(e);if(!p.knownState)p.knownState={};p.knownState[d.actorId]={version:p.version,status:p.status,history:p.history.length,turn:G().turn,needsResponse:false};return e;
+  }
+  function consent(p,ch,org,d){
+    var auth=role(ch,org,Object.assign({},d,{treatyType:p.type}),true);if(!auth)return false;
+    var collective=null;
+    if(auth.collectiveRule){
+      var rule=auth.collectiveRule;if(!p.collectiveVotes)p.collectiveVotes=[];
+      if(!p.collectiveVotes.some(function(v){return v.actorId===ch.id&&v.version===p.version&&v.ruleId===rule.id&&v.ruleVersion===rule.version;}))p.collectiveVotes.push({actorId:ch.id,positionId:auth.positionId,appointmentId:auth.appointmentId,organizationId:org.id,actionId:d.actionId,ruleId:rule.id,ruleVersion:rule.version,version:p.version,termsSignature:P().signature(version(p).terms),turn:G().turn});
+      var seen={},votes=p.collectiveVotes.filter(function(v){var current=councilRole(person(v.actorId),org,{actingPositionId:v.positionId,treatyType:p.type});if(v.version!==p.version||v.ruleId!==rule.id||v.ruleVersion!==rule.version||!current||current.appointmentId!==v.appointmentId||seen[v.positionId])return false;seen[v.positionId]=true;return true;});
+      if(votes.length<rule.quorum)return true;
+      collective={ruleId:rule.id,ruleVersion:rule.version,source:rule.source,quorum:rule.quorum,participants:copy(votes)};
     }
-    var k = _norm(refName);
-    if (!k) return null;
-    var nameMatches = G.facs.filter(function (fac) { return fac && _norm(_facName(fac)) === k; });
-    return nameMatches.length === 1 ? nameMatches[0] : null;
-  }
-  function _isPlayerRef(ref) {
-    var P = global.P || {};
-    var pi = P.playerInfo || {};
-    var refId = typeof ref === 'object' ? String(ref.id || ref.factionId || '') : '';
-    if (refId && [pi.factionId, P.playerFactionId, global.GM && global.GM.playerFactionId].some(function (id) { return id != null && String(id) === refId; })) return true;
-    var refName = typeof ref === 'object' ? ref.name : ref;
-    var k = _norm(refName);
-    if (!k) return false;
-    return [pi.factionName, P.playerFactionName, P.playerFaction, (global.GM && global.GM.playerFaction)].some(function (n) { return n && _norm(n) === k; });
-  }
-  function _strat(fac) { if (!fac.aiStrategy || typeof fac.aiStrategy !== 'object') fac.aiStrategy = {}; var s = fac.aiStrategy; if (!Array.isArray(s.alliances)) s.alliances = []; if (!Array.isArray(s.grudges)) s.grudges = []; if (!Array.isArray(s.allianceIds)) s.allianceIds = []; if (!Array.isArray(s.grudgeIds)) s.grudgeIds = []; return s; }
-  function _pushUniq(arr, v) { if (v && arr.indexOf(v) < 0) arr.push(v); }
-  function _clearOneGrudge(owner, counterpart) {
-    if (!owner || !counterpart) return;
-    var strategy = _strat(owner);
-    var counterpartId = _facId(counterpart);
-    var counterpartName = _norm(_facName(counterpart));
-    if (counterpartId) {
-      strategy.grudgeIds = strategy.grudgeIds.filter(function(grudgeId) {
-        return String(grudgeId || '') !== counterpartId;
-      });
-    }
-    if (!counterpartName) return;
-    // 名称数组是旧档兼容面。若另一个稳定 ID 仍指向同名势力，必须保留
-    // 名称宿怨，避免缔结甲的盟约时误删对同名乙的宿怨。
-    var sameNameStillReferenced = strategy.grudgeIds.some(function(grudgeId) {
-      var fac = _facByRef({ id: String(grudgeId || '') });
-      return fac && _norm(_facName(fac)) === counterpartName;
-    });
-    if (!sameNameStillReferenced) {
-      strategy.grudges = strategy.grudges.filter(function(grudgeName) {
-        return _norm(grudgeName) !== counterpartName;
-      });
-    }
-  }
-  function _clearMutualGrudge(a, b) {
-    _clearOneGrudge(a, b);
-    _clearOneGrudge(b, a);
-  }
-  function _log(entry) { try { var G = global.GM; if (!G) return; if (!Array.isArray(G._factionDiplomacyLog)) G._factionDiplomacyLog = []; G._factionDiplomacyLog.push(entry); if (G._factionDiplomacyLog.length > 40) G._factionDiplomacyLog = G._factionDiplomacyLog.slice(-40); } catch (e) {} }
-
-  // 【S2·玩家通道】势力对玩家的提议 → 复用现有「势力使节」求见结构(tm-endturn-apply.js envoy audience)·surface 到问对·玩家在对话中回应·进 jishiRecords→sc1q/PLAYER_RECENT 反馈回势力
-  // 外交 type → 问对现有「外藩使节」效果表(tm-wendui.js _WD_ENVOY_EFFECTS)·仅映语义安全的两类(无强制机械副作用)·余走 _default(准 rel+12/驳 rel-12)
-  var _DIP2ENVOY = { alliance: 'form_confederation', peace: 'sue_for_peace' };
-  function _toPlayerAudience(fromName, item) {
-    var G = global.GM; if (!G) return;
-    if (!Array.isArray(G._pendingAudiences)) G._pendingAudiences = [];
-    // 防刷屏：同派同 type 未决的使节求见只留最新一条(仅去重本通道·_factionProposalId 标记)
-    var _dedup = function (a) { return !(a && a._factionProposalId && a._diplomacyType === item.type && _norm(a.fromFaction) === _norm(fromName)); };
-    if (typeof _wdCleansePendingAudiences === 'function' && typeof GM !== 'undefined' && G === GM) _wdCleansePendingAudiences(_dedup);   // 唯一清洗写口(按谓词)
-    else G._pendingAudiences = G._pendingAudiences.filter(_dedup);
-    // 批己·势力提议也挂谈判会话·玩家可回价续谈(flag OFF→ngId 保持 null·旧行为不变)
-    var _ngId = null;
-    try {
-      var _N = global.TM && global.TM.Negotiation;
-      if (_N && typeof _N.open === 'function' && _N.enabled()) {
-        var _ng = _N.open({ topic: 'diplomacy', initiator: fromName, sourceRef: { kind: 'proposal', refId: item.id }, offer: { by: 'them', terms: item.terms || (TYPE_CN[item.type] || item.type) }, turn: item.turn });
-        _ngId = _ng && _ng.id;
-      }
-    } catch (_e) {}
-    G._pendingAudiences.push({
-      name: fromName + '使节', reason: '【' + (TYPE_CN[item.type] || item.type) + '】' + (item.terms || '') + (item.rationale ? '（' + item.rationale + '）' : ''),
-      turn: item.turn, isEnvoy: true, fromFaction: fromName, interactionType: (_DIP2ENVOY[item.type] || 'faction_proposal'),
-      _fromFactionId: item.fromId || '', _factionProposalId: item.id, _diplomacyType: item.type, _negotiationId: _ngId
-    });
-    if (typeof _wdCapPendingAudiences === 'function' && typeof GM !== 'undefined' && G === GM) _wdCapPendingAudiences(20);   // 唯一去顶写口
-    else if (G._pendingAudiences.length > 20) G._pendingAudiences = G._pendingAudiences.slice(-20);
-    _log({ turn: item.turn, kind: 'propose_player', from: fromName, to: 'player', type: item.type, terms: item.terms });
-  }
-
-  // ── ① 存提议：A 的 proposals → 目标派 _incomingProposals(玩家目标入 player 队·留 S2) ──
-  // B2②·全局递增序号(GM 级)·防同回合多次 recordProposals 的本地 n 重置 → id 碰撞(dp-5-a-0 撞 dp-5-a-0)
-  function _dipSeq() { var G = global.GM; if (!G) return Date.now(); var v = Number(G._factionDiplomacySeq); G._factionDiplomacySeq = (isFinite(v) ? v : 0) + 1; return G._factionDiplomacySeq; }   // arch-ok: F2 外交提案全局递增序号(GM 级·防 id 碰撞)
-  function recordProposals(fromRef, proposals, turn) {
-    if (!Array.isArray(proposals) || !proposals.length) return { recorded: 0, toPlayer: 0 };
-    var fromFac = _facByRef(fromRef);
-    var fromName = fromFac ? _facName(fromFac) : String(fromRef && (fromRef.name || fromRef.title) || fromRef || '');
-    var fromId = _facId(fromFac);
-    if (!fromName && !fromId) return { recorded: 0, toPlayer: 0 };
-    var recorded = 0, toPlayer = 0;
-    proposals.slice(0, 4).forEach(function (p) {
-      if (!p || !p.toFaction || !p.type || !TYPES[p.type]) return;
-      var targetRef = { id: p.toFactionId || p.toId || '', name: p.toFaction };
-      var target = _facByRef(targetRef);
-      var targetId = _facId(target) || String(targetRef.id || '');
-      var targetName = target ? _facName(target) : String(p.toFaction || '');
-      if ((fromFac && target && fromFac === target) || (fromId && targetId && fromId === targetId) || (!fromId && !targetId && _norm(targetName) === _norm(fromName))) return;
-      var item = { id: 'dp-' + turn + '-' + _norm(fromId || fromName).slice(0, 12) + '-' + _dipSeq(), from: String(fromName).slice(0, 30), fromId: fromId, to: String(targetName).slice(0, 30), toId: targetId, type: p.type, terms: String(p.terms || '').slice(0, 60), rationale: String(p.rationale || '').slice(0, 50), turn: turn, status: 'pending' };
-      if (_isPlayerRef(targetRef)) {
-        // 目标=玩家：①入队(供观测/反馈) ②【S2】路由成「势力使节」求见(复用现有 envoy audience·surface 到问对)
-        var G = global.GM; if (!G) return;
-        if (!Array.isArray(G._pendingFactionProposalsToPlayer)) G._pendingFactionProposalsToPlayer = [];
-        G._pendingFactionProposalsToPlayer.push(Object.assign({ to: 'player' }, item));
-        if (G._pendingFactionProposalsToPlayer.length > 12) G._pendingFactionProposalsToPlayer = G._pendingFactionProposalsToPlayer.slice(-12);
-        _toPlayerAudience(String(fromName).slice(0, 30), item);
-        toPlayer++;
-        return;
-      }
-      if (!target) return; // 目标势力不存在
-      if (!Array.isArray(target._incomingProposals)) target._incomingProposals = [];
-      // B2①·去重键加 terms 摘要：仅【同 from+type+条款】的重复才合并·真正不同条款的两提案都保留(不再丢第一条)
-      target._incomingProposals = target._incomingProposals.filter(function (x) {
-        var sameFrom = x.fromId && item.fromId ? String(x.fromId) === String(item.fromId) : _norm(x.from) === _norm(item.from);
-        return !(x.status === 'pending' && sameFrom && x.type === item.type && _norm(x.terms) === _norm(item.terms));
-      });
-      target._incomingProposals.push(item);
-      if (target._incomingProposals.length > MAX_PENDING) target._incomingProposals = target._incomingProposals.slice(-MAX_PENDING);
-      _log({ turn: turn, kind: 'propose', from: item.from, fromId: item.fromId, to: targetName, toId: targetId, type: p.type, terms: item.terms });
-      recorded++;
-    });
-    return { recorded: recorded, toPlayer: toPlayer };
-  }
-
-  // ── ③ 感知：目标派决策时·格式化待它回应的提议(INCOMING_PROPOSALS 段) ──
-  function formatIncomingProposals(fac, turn) {
-    if (!fac) return [];
-    _expire(fac, turn != null ? turn : _turn());
-    var pend = (fac._incomingProposals || []).filter(function (p) { return p && p.status === 'pending'; });
-    if (!pend.length) return [];
-    var lines = ['  其他势力本回合/近回合向你提出的外交动议·你须在 proposalResponses 中逐条回应(accept/reject/counter·按你自己的目标/宿怨/姿态权衡·非必接受)：'];
-    pend.slice(0, MAX_PENDING).forEach(function (p) {
-      lines.push('  · [id:' + p.id + '] 来自「' + p.from + '」·' + (TYPE_CN[p.type] || p.type) + (p.terms ? '·条款：' + p.terms : '') + (p.rationale ? '·其由：' + p.rationale : '') + '(T' + p.turn + ')·回应时于 proposalResponses 填此 id');
-    });
-    return lines;
-  }
-
-  // ── ⑤ 结算：目标派的 responses → 应用结果(从双方推理涌现) ──
-  function applyResponses(fac, responses, turn) {
-    if (!fac || !Array.isArray(responses) || !responses.length) return { resolved: 0 };
-    var resolved = 0;
-    responses.slice(0, MAX_PENDING).forEach(function (r) {
-      if (!r || !r.decision) return;
-      var pendAll = (fac._incomingProposals || []).filter(function (p) { return p.status === 'pending'; });
-      if (!pendAll.length) return;
-      // B2③·张冠李戴防护(fail-closed)：带 id → 命中即结算·未命中则保持未决(不降级猜)；无 id → 仅候选唯一才结算·歧义(0 或 >1)保持未决
-      var prop = null;
-      var pid = r.proposalId != null ? r.proposalId : r.id;
-      if (pid != null && String(pid)) {
-        prop = pendAll.filter(function (p) { return String(p.id) === String(pid); })[0] || null;
-        if (!prop) return;   // 带 id 未命中 → fail-closed·保持未决
-      } else {
-        var cand = pendAll;
-        if (r.fromId) cand = cand.filter(function (p) { return p.fromId && String(p.fromId) === String(r.fromId); });
-        else if (r.from) cand = cand.filter(function (p) { return _norm(p.from) === _norm(r.from); });
-        if (r.type) { var rt = _norm(r.type); cand = cand.filter(function (p) { return _norm(p.type) === rt || _norm(TYPE_CN[p.type]) === rt; }); }
-        if (cand.length !== 1) return;   // 无候选/歧义 → 保持未决(不错配)
-        prop = cand[0];
-      }
-      var proposer = _facByRef({ id: prop.fromId || '', name: prop.from });
-      var dec = _norm(r.decision);
-      if (dec === 'accept') {
-        prop.status = 'accepted';
-        _resolveAccept(proposer, fac, prop);
-        _log({ turn: turn, kind: 'accept', from: prop.from, to: fac.name, type: prop.type, reason: String(r.reason || '').slice(0, 50) });
-      } else if (dec === 'counter') {
-        prop.status = 'countered';
-        // 反向新提议：fac → proposer(还价)
-        if (proposer) {
-          recordProposals(fac, [{ toFaction: prop.from, toFactionId: prop.fromId || '', type: prop.type, terms: String(r.counterTerms || r.reason || '').slice(0, 60), rationale: '对「' + prop.from + '」原议的还价' }], turn);
-        }
-        _log({ turn: turn, kind: 'counter', from: prop.from, to: fac.name, type: prop.type, counter: String(r.counterTerms || '').slice(0, 50) });
-      } else { // reject
-        prop.status = 'rejected';
-        // 提议被拒·提议方可能结怨被拒方(尤其最后通牒/结盟被拒)
-        if (proposer && (prop.type === 'ultimatum' || prop.type === 'alliance' || prop.type === 'joint_action')) {
-          _pushUniq(_strat(proposer).grudges, fac.name);
-          _pushUniq(_strat(proposer).grudgeIds, _facId(fac));
-        }
-        _log({ turn: turn, kind: 'reject', from: prop.from, to: fac.name, type: prop.type, reason: String(r.reason || '').slice(0, 50) });
-      }
-      resolved++;
-    });
-    // 清理已决的(保留近期供观测)
-    fac._incomingProposals = (fac._incomingProposals || []).filter(function (p) { return p.status === 'pending' || (turn - p.turn) <= 2; });
-    return { resolved: resolved };
-  }
-
-  // 结盟/互不侵犯/联手落 GM.treaties——与 tm-feudal-warfare._ty_callAlliesToWar 消费面对齐字段(parties/type/mutual_defense/active)·
-  //   此前只写 aiStrategy.alliances(软标签)·战争盟友参战只读真实 treaties → 结盟「无牙」。alliance 置 mutual_defense 使盟友应约参战。
-  function _lodgeTreaty(a, b, type, turn) {
-    try {
-      var G = global.GM; if (!G) return;
-      var aName = _facName(a), bName = _facName(b), aId = _facId(a), bId = _facId(b);
-      var aKey = aId ? 'id:' + aId : 'name:' + _norm(aName);
-      var bKey = bId ? 'id:' + bId : 'name:' + _norm(bName);
-      if (!Array.isArray(G.treaties)) G.treaties = [];   // arch-ok: F2 势力社会结盟落账(GM.treaties 既有子树·战争引擎消费面)
-      var mutual = (type === 'alliance');
-      var typeName = ({ alliance: '同盟', nonaggression: '互不侵犯', joint_action: '共同行动' })[type] || type;
-      var dup = G.treaties.some(function (t) {
-        if (!t || t.active === false || t.type !== type) return false;
-        var parties = Array.isArray(t.parties) ? t.parties.map(function (p) { return p && p.id ? 'id:' + p.id : 'name:' + _norm((p && p.name) || p); }) : [];
-        return parties.indexOf(aKey) >= 0 && parties.indexOf(bKey) >= 0;
-      });
-      if (dup) return;
-      G.treaties.push({ id: 'ftr-' + (turn || _turn()) + '-' + _norm(type).slice(0, 10) + '-' + _dipSeq(), type: type, typeName: typeName, mutual_defense: mutual, parties: [{ id: aId, name: aName }, { id: bId, name: bName }], startTurn: (turn || _turn()), active: true, _source: 'faction-diplomacy' });   // arch-ok: F2 结盟落 GM.treaties(战争引擎消费面)·全局序号防同回合跨类型碰撞
-      if (G.treaties.length > 80) G.treaties = G.treaties.slice(-80);   // arch-ok: F2 结盟落账截断(GM.treaties 既有子树·战争引擎消费面)
-    } catch (e) {}
-  }
-
-  function _resolveAccept(proposer, target, prop) {
-    if (!proposer || !target) return;
-    var ps = _strat(proposer), ts = _strat(target);
-    if (prop.type === 'alliance' || prop.type === 'nonaggression' || prop.type === 'joint_action') {
-      _pushUniq(ps.alliances, target.name); _pushUniq(ts.alliances, proposer.name);
-      _pushUniq(ps.allianceIds, _facId(target)); _pushUniq(ts.allianceIds, _facId(proposer));
-      // 结盟→消解彼此宿怨
-      _clearMutualGrudge(proposer, target);
-      _lodgeTreaty(proposer, target, prop.type, prop.turn);   // B3·落 GM.treaties·让战争盟友参战真读到
-    } else if (prop.type === 'peace') {
-      // 媾和必须走唯一战争终结入口；只消宿怨不等于结束战争。
-      _clearMutualGrudge(proposer, target);
-      var G = global.GM || {};
-      var wars = Array.isArray(G.activeWars) ? G.activeWars.slice() : [];
-      wars.forEach(function (war) {
-        if (!war) return;
-        var wa = _norm(war.attacker || war.from || war.sideA), wd = _norm(war.defender || war.to || war.sideB);
-        var pa = _norm(proposer.name), ta = _norm(target.name);
-        if (!((wa === pa && wd === ta) || (wa === ta && wd === pa))) return;
-        if (global.CasusBelliSystem && typeof global.CasusBelliSystem.endWar === 'function') global.CasusBelliSystem.endWar(war.id);
-      });
-    }
-    // deal/ultimatum 接受：记入双方 currentPlan 提示·不强改 alliances
-  }
-
-  function _expire(fac, turn) {
-    if (!fac || !Array.isArray(fac._incomingProposals)) return;
-    fac._incomingProposals.forEach(function (p) { if (p.status === 'pending' && (turn - p.turn) > EXPIRE_TURNS) p.status = 'lapsed'; });
-  }
-
-  function _turn() { return (global.GM && global.GM.turn) || 0; }
-
-  function diplomacyLog(GM) { GM = GM || global.GM; return (GM && GM._factionDiplomacyLog) || []; }
-  function summarize(GM) {
-    GM = GM || global.GM; var log = (GM && GM._factionDiplomacyLog) || [];
-    var by = {}; log.slice(-20).forEach(function (e) { by[e.kind] = (by[e.kind] || 0) + 1; });
-    return { recentEvents: log.length, byKind: by, pendingToPlayer: ((GM && GM._pendingFactionProposalsToPlayer) || []).length };
-  }
-
-  // ── ⑥【S3】玩家对「我的提议」的答复 → 回写发起势力持久记忆(aiStrategy)·供其下回合决策显式感知(非仅邦交 delta 间接推) ──
-  function recordPlayerResponse(fromName, info) {
-    info = info || {};
-    var fac = _facByRef(fromName); if (!fac) return false;
-    if (!fac.aiStrategy) fac.aiStrategy = {};
-    var arr = Array.isArray(fac.aiStrategy.playerProposalOutcomes) ? fac.aiStrategy.playerProposalOutcomes : [];
-    arr = arr.filter(function (o) { return o && o.id !== info.id; }); // 同提议只留一条结果
-    arr.push({ id: info.id || '', type: info.type || '', terms: String(info.terms || '').slice(0, 50), outcome: info.outcome || '', turn: info.turn != null ? info.turn : _turn() });
-    if (arr.length > 6) arr = arr.slice(-6);
-    fac.aiStrategy.playerProposalOutcomes = arr;
-    _log({ turn: info.turn != null ? info.turn : _turn(), kind: 'player_response', from: fromName, to: 'player', type: info.type, outcome: info.outcome });
+    if(!signed(p,org.id))p.decisions.push({organizationId:org.id,actorId:ch.id,version:p.version,choice:'sign',actionId:d.actionId,
+      collective:collective,basis:{positionId:auth.positionId||auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,authorityRef:auth.authorityRef,delegated:!!auth.delegated},termsSignature:P().signature(version(p).terms),turn:G().turn});
     return true;
   }
-
-  // ── ⑦【S3】感知：发起势力决策时·格式化「君上对我提议的近期答复」(PLAYER_PROPOSAL_OUTCOMES 段) ──
-  var _OUTCOME_CN = { accepted: '已纳', rejected: '见拒', temporized: '羁縻未决', countered: '君上还价' };
-  function formatPlayerProposalOutcomes(fac, turn) {
-    if (!fac || !fac.aiStrategy) return [];
-    var arr = (fac.aiStrategy.playerProposalOutcomes || []).filter(function (o) { return o && (turn == null || (turn - (o.turn || 0)) <= 8); }); // 仅近 8 回合
-    if (!arr.length) return [];
-    var lines = ['  你近回合向君上(玩家)递交之议·已得答复(据此调整对君上之策：见纳则可深交/趁势进言·见拒则另谋或转冷·勿重复无效之请)：'];
-    arr.slice(-4).forEach(function (o) {
-      lines.push('  · ' + (TYPE_CN[o.type] || o.type) + (o.terms ? '·' + o.terms : '') + ' → ' + (_OUTCOME_CN[o.outcome] || o.outcome) + '(T' + o.turn + ')');
-    });
-    return lines;
+  function enqueue(p,from,to,kind){
+    var m={id:'dipmsg:'+ (++L().state(G()).sequence),proposalId:p.id,version:p.version,fromId:from.id,toId:to&&to.id||'',kind:kind,sentTurn:G().turn,
+      deliveryTurn:G().turn+(to&&from.location&&from.location===to.location?0:1),deliveredTurn:null,state:p.status,history:p.history.length};
+    p.messages.push(m);p.recipientId=m.toId;p.nextTurn=m.deliveryTurn;return m;
   }
-
-  TM.FactionDiplomacy = {
-    recordProposals: recordProposals,
-    formatIncomingProposals: formatIncomingProposals,
-    applyResponses: applyResponses,
-    recordPlayerResponse: recordPlayerResponse,
-    formatPlayerProposalOutcomes: formatPlayerProposalOutcomes,
-    diplomacyLog: diplomacyLog,
-    summarize: summarize,
-    TYPE_CN: TYPE_CN
-  };
-})(typeof window !== 'undefined' ? window : globalThis);
+  function remember(ch,m,p,text){if(!ch||!global.NpcMemorySystem)return;
+    global.NpcMemorySystem.remember(ch.name,text,'平',5,'',{characterId:ch.id,_noMirror:true,relationshipHandled:true,sourceId:m.id,sourceRefs:[{kind:'diplomacy_message',id:m.id,proposalId:p.id,version:m.version}],factStatus:'received_document'});
+  }
+  function audience(p,m){
+    var g=G(),v=version(p,m.version),from=fac({id:v.fromId});
+    if(!Array.isArray(g._pendingAudiences))g._pendingAudiences=[];
+    if(g._pendingAudiences.some(function(a){return a._diplomacyMessageId===m.id;}))return;
+    var ng=TM.Negotiation&&TM.Negotiation.enabled()&&TM.Negotiation.open({topic:'diplomacy',initiator:from.name,sourceRef:{kind:'proposal',refId:p.id},offer:{by:'them',terms:v.terms.text},turn:g.turn});
+    g._pendingAudiences.push({name:from.name+'使节',reason:'【'+TYPE_CN[p.type]+'】'+v.terms.text,turn:g.turn,isEnvoy:true,fromFaction:from.name,
+      interactionType:'faction_proposal',_fromFactionId:from.id,_factionProposalId:p.id,_proposalVersion:m.version,_diplomacyType:p.type,_diplomacyMessageId:m.id,_negotiationId:ng?ng.id:undefined});
+    if(!Array.isArray(g._pendingFactionProposalsToPlayer))g._pendingFactionProposalsToPlayer=[];
+    if(!g._pendingFactionProposalsToPlayer.some(function(x){return x.id===p.id;}))g._pendingFactionProposalsToPlayer.push({id:p.id,proposalRef:p.id,toId:p.toId});
+  }
+  function advance(){
+    if(!P()||!G())return;all().forEach(function(p){if(p.schemaVersion!==2)return;
+      A(p.messages).forEach(function(m){if(m.deliveredTurn!=null||m.deliveryTurn>G().turn)return;var to=person(m.toId);
+        if(!P().live(to))return;m.deliveredTurn=G().turn;p.knowledge[to.id]=Math.max(p.knowledge[to.id]||0,m.version);
+        if(!p.knownState)p.knownState={};var known=p.knownState[to.id];
+        if(!known||m.version>known.version||m.version===known.version&&m.history>=known.history)p.knownState[to.id]={version:m.version,status:m.state==='in_transit'?'pending':m.state,history:m.history,turn:G().turn,needsResponse:m.state!=='accepted'&&['proposal','private_suggestion','counter','signed_draft','handoff','replanned_draft'].indexOf(m.kind)>=0};
+        if(!terminal(p)&&m.version===p.version)p.status=p.status==='draft'?'draft':'pending';
+        remember(to,m,p,'收到'+(person(m.fromId)&&person(m.fromId).name||'使者')+'关于'+TYPE_CN[p.type]+'的第'+m.version+'版文书：'+version(p,m.version).terms.text);
+        if(P().controlled(to,G()))audience(p,m);
+      });
+    });refreshCaches(G());
+  }
+  function create(org,ch,d){
+    var target=fac({id:d.toFactionId||d.targetOrganizationId||d.targetId,name:d.toFaction||d.targetFaction||d.target}),t=terms(d),type=d.proposalType||d.treatyType||(TYPES[d.type]?d.type:d.relationType);
+    if(!target||target===org||!TYPES[type]||!t)return result('blocked','specific_parties_type_and_terms_required');
+    d.treatyType=type;var negotiating=role(ch,org,d,false),receiver=representative(negotiating?target:org,d.recipientId,!negotiating);
+    var p={schemaVersion:2,id:'dp:'+ (++L().state(G()).sequence),from:org.name,fromId:org.id,to:target.name,toId:target.id,type:type,terms:t.text,
+      version:1,versions:[{version:1,fromId:org.id,toId:target.id,terms:t,createdTurn:G().turn}],turn:G().turn,status:negotiating?'in_transit':'draft',
+      initiatorId:ch.id,recipientOrganizationId:negotiating?target.id:org.id,decisions:[],messages:[],history:[],knowledge:{}};
+    p.knowledge[ch.id]=1;
+    if(!Array.isArray(target._incomingProposals))target._incomingProposals=[];
+    target._incomingProposals.push(p);
+    if(negotiating)consent(p,ch,org,d);
+    enqueue(p,ch,receiver,negotiating?'proposal':'private_suggestion');entry(p,d,negotiating?'propose':'suggest');
+    remember(ch,{id:d.actionId},p,'提出'+TYPE_CN[type]+'文书：'+t.text);
+    return result('submitted',negotiating?'提案已签发，等待实际送达与对方决定':'私人建议已送交有权代表，尚无国家签署',
+      [{kind:'diplomacy_step',id:d.actionId,proposalId:p.id,version:p.version}],{proposalId:p.id,proposalVersion:p.version});
+  }
+  function lodge(p,d){
+    var a=fac({id:p.fromId}),b=fac({id:p.toId}),v=version(p),prior=A(G().treaties).find(function(t){return t.proposalId===p.id&&t.proposalVersion===p.version;});
+    if(prior)return result('failed','treaty_already_exists_without_action_receipt');
+    var sa=signed(p,a.id),sb=signed(p,b.id),sig=P().signature(v.terms);
+    if(!sa||!sb||sa.termsSignature!==sig||sb.termsSignature!==sig)return result('blocked','both_current_terms_signatures_required');
+    if(!global.TreatySystem||typeof global.TreatySystem.createTreaty!=='function')return result('blocked','treaty_domain_unavailable');
+    var type=p.type==='peace'?'truce':p.type,treaty=global.TreatySystem.createTreaty(type,{id:a.id,name:a.name},{id:b.id,name:b.name},copy(v.terms));
+    if(!treaty)return result('blocked','treaty_type_not_supported');
+    Object.assign(treaty,{from:a.name,to:b.name,fromId:a.id,toId:b.id,status:'active',active:true,startTurn:G().turn,effectiveTurn:G().turn,
+      durationTurns:v.terms.durationTurns,expiryTurn:v.terms.durationTurns?G().turn+v.terms.durationTurns:0,expiresTurn:v.terms.durationTurns?G().turn+v.terms.durationTurns:null,
+      proposalId:p.id,proposalVersion:p.version,sourceActionId:d.actionId,signatures:copy([sa,sb]),termsSignature:sig,sourceStatus:'verified_decision'});
+    if(p.type==='peace'){
+      if(!global.CasusBelliSystem)throw Error('war_domain_unavailable');
+      A(G().activeWars).slice().filter(function(w){return w.attacker===a.name&&w.defender===b.name||w.attacker===b.name&&w.defender===a.name;}).forEach(function(w){global.CasusBelliSystem.endWar(w.id);});
+    }
+    p.status='accepted';p.effectiveTurn=G().turn;p.treatyId=treaty.id;
+    p.obligations=copy(v.terms.obligations).map(function(o,i){return Object.assign({},o,{id:p.id+':obligation:'+i,status:'unfulfilled'});});
+    entry(p,d,'effective',{treatyId:treaty.id});
+    var otherOrg=fac({id:d.organizationId===p.fromId?p.toId:p.fromId}),receiver=representative(otherOrg);
+    enqueue(p,person(d.actorId),receiver,'effective');
+    log({id:d.actionId,kind:'effective',turn:G().turn,fromId:p.fromId,toId:p.toId,type:p.type,proposalId:p.id,treatyId:treaty.id,sourceKind:'verified_result'});refreshCaches(G());
+    return result('completed','双方当前条款已生效；约定的资源义务另待实际履行',[{kind:'treaty',id:treaty.id,proposalId:p.id,version:p.version}],{proposalId:p.id,treatyId:treaty.id,unfulfilledObligations:p.obligations.length});
+  }
+  function respond(org,ch,d){
+    var p=get(d.proposalId),choice=d.response||d.decision;
+    if(!p)return result('blocked','unknown_proposal');
+    if(p.schemaVersion!==2) {
+      if(choice!=='replan'||!role(ch,org,d,false)||!d.terms)return result('blocked','legacy_proposal_requires_authorized_replan');
+      var from=fac({id:p.fromId,name:p.from}),to=fac({id:p.toId,name:p.to}),t=terms(d);
+      if(!from||!to||org.id!==from.id||!t||!TYPES[p.type])return result('blocked','legacy_parties_or_terms_unresolved');
+      var legacy=copy(p),id=p.id;
+      Object.assign(p,{schemaVersion:2,sourceStatus:'replanned',legacy:legacy,fromId:from.id,toId:to.id,version:1,
+        versions:[{version:1,fromId:from.id,toId:to.id,terms:t,createdTurn:G().turn}],terms:t.text,status:'in_transit',decisions:[],history:[],messages:[],knowledge:{},initiatorId:ch.id,recipientOrganizationId:to.id});
+      p.knowledge[ch.id]=1;consent(p,ch,org,d);entry(p,d,'replan');enqueue(p,ch,representative(to),'replanned_draft');
+      return result('submitted','旧事项原位重拟，未补造旧签署或旧效果',[{kind:'diplomacy_step',id:d.actionId,proposalId:id,version:1}],{proposalId:id,proposalVersion:1});
+    }
+    if(d.proposalVersion!==p.version)return result('blocked','proposal_version_mismatch');
+    if(terminal(p)&&!(p.status==='accepted'&&choice==='handoff'))return result('noop','proposal_already_resolved');
+    if(p.knowledge[ch.id]!==p.version)return result('blocked','current_terms_not_received');
+    if([p.fromId,p.toId].indexOf(org.id)<0)return result('blocked','not_a_party');
+    d.treatyType=p.type;var current=version(p),other=fac({id:org.id===p.fromId?p.toId:p.fromId}),negotiating=role(ch,org,d,false);
+    if(!negotiating)return result('blocked','current_representative_authority_required');
+    if(choice==='handoff'){
+      var successor=representative(org,d.successorId)||person(d.successorId);if(!P().live(successor))return result('blocked','successor_identity_unresolved');
+      enqueue(p,ch,successor,'handoff');entry(p,d,'handoff');
+    }else if(choice==='cancel'||choice==='reject'){
+      p.status=choice==='cancel'?'cancelled':'rejected';entry(p,d,choice);enqueue(p,ch,representative(other),'response');
+    }else if(choice==='defer'||choice==='temporize'){
+      p.status='pending';p.nextTurn=G().turn+1;entry(p,d,'defer');
+    }else if(choice==='counter'){
+      var next=terms(Object.assign({},d,{terms:d.counterTerms!=null?d.counterTerms:d.terms}));if(!next)return result('blocked','counter_terms_required');
+      p.version++;p.versions.push({version:p.version,fromId:org.id,toId:other.id,terms:next,createdTurn:G().turn});p.terms=next.text;
+      if(TM.Negotiation&&TM.Negotiation.findOpenByRef){var ng=TM.Negotiation.findOpenByRef('proposal',p.id);if(ng){ng.offers.push({by:P().controlled(ch,G())?'player':'them',terms:next.text.slice(0,80),proposalVersion:p.version,turn:G().turn});ng.round++;ng.expireTurn=G().turn+4;}}
+      p.knowledge[ch.id]=p.version;p.recipientOrganizationId=other.id;p.status='in_transit';consent(p,ch,org,d);entry(p,d,'counter');enqueue(p,ch,representative(other),'counter');
+    }else if(choice==='accept'||choice==='approve'){
+      if(!consent(p,ch,org,d))return result('blocked','final_signature_authority_required');
+      if(signed(p,p.fromId)&&signed(p,p.toId))return lodge(p,d);
+      var ownRule=councilRole(ch,org,Object.assign({},d,{treatyType:p.type})),next=!signed(p,org.id)&&ownRule&&nextCouncilMember(p,org,ownRule.collectiveRule);
+      p.status='in_transit';p.recipientOrganizationId=next?org.id:other.id;entry(p,d,next?'vote':'sign');enqueue(p,ch,next||representative(other,null,true),'signed_draft');
+    }else return result('blocked','explicit_response_required');
+    return result('submitted','本次答复已记录，后续按送达、双方签署和实际履行推进',[{kind:'diplomacy_step',id:d.actionId,proposalId:p.id,version:p.version}],{proposalId:p.id,proposalVersion:p.version});
+  }
+  function submit(org,raw,context,index){
+    if(!P()||!L())return {outcome:'blocked',reason:'political_boundary_unavailable'};
+    org=fac({id:org&&org.id});if(!org)return result('blocked','organization_unresolved');
+    advance();var d=Object.assign({},raw,{behaviorType:'diplomacy',targetType:'organization'});
+    return P().execute(context,d,function(ch,target,x){return x.diplomacyAction?unilateral(org,ch,x):x.proposalId?respond(org,ch,x):create(org,ch,x);},index);
+  }
+  function unilateral(org,ch,d){
+    if(d.diplomacyAction!=='withdraw_treaty')return result('blocked','unilateral_operation_not_supported');
+    if(!role(ch,org,d,true))return result('blocked','current_treaty_authority_required');
+    var hits=A(G().treaties).filter(function(t){return t.id===d.treatyId;}),t=hits.length===1&&hits[0],p=t&&get(t.proposalId);
+    if(!t||t.active===false||!A(t.parties).some(function(x){return x&&x.id===org.id;}))return result('blocked','active_party_treaty_required');
+    if(!p||!p.knownState||!p.knownState[ch.id]||p.knownState[ch.id].status!=='accepted')return result('blocked','effective_agreement_not_yet_known');
+    if(!global.TreatySystem||!global.TreatySystem.breakTreaty)return result('blocked','treaty_domain_unavailable');
+    global.TreatySystem.breakTreaty(t.id,org.name);t.terminationActionId=d.actionId;t.terminatedTurn=G().turn;
+    if(t.active!==false)throw Error('treaty_termination_postcondition');
+    log({id:d.actionId,kind:'withdraw',turn:G().turn,fromId:org.id,treatyId:t.id,sourceKind:'verified_result'});refreshCaches(G());
+    return result('completed','本方退出已生效协议；既有交付与历史继续保留',[{kind:'treaty_termination',id:t.id}],{treatyId:t.id});
+  }
+  function refreshCaches(g){
+    A(g.facs).forEach(function(f){
+      var strategy=f.aiStrategy;if(!strategy||typeof strategy!=='object'||Array.isArray(strategy))strategy=f.aiStrategy={legacyText:typeof strategy==='string'?strategy:''};var previous=A(strategy.treatyAllianceIds),current=[];
+      A(g.treaties).filter(function(t){return t.active!==false&&t.type==='alliance'&&(!t.expiryTurn||t.expiryTurn>g.turn);}).forEach(function(t){
+        var parties=A(t.parties).map(function(p){return typeof p==='object'?fac(p,g):fac(p,g);}).filter(Boolean);
+        if(!parties.some(function(p){return p.id===f.id;}))return;parties.forEach(function(p){if(p.id!==f.id&&current.indexOf(p.id)<0)current.push(p.id);});
+      });
+      strategy.allianceIds=A(strategy.allianceIds).filter(function(id){return previous.indexOf(id)<0;});current.forEach(function(id){if(strategy.allianceIds.indexOf(id)<0)strategy.allianceIds.push(id);});
+      var oldNames=previous.map(function(id){var x=fac({id:id},g);return x&&x.name;});strategy.alliances=A(strategy.alliances).filter(function(name){return oldNames.indexOf(name)<0;});
+      current.forEach(function(id){var x=fac({id:id},g);if(x&&strategy.alliances.indexOf(x.name)<0)strategy.alliances.push(x.name);});strategy.treatyAllianceIds=current;
+    });
+  }
+  function recordProposals(from,rows,turn,opts){
+    opts=opts||{};var org=fac(from),out={recorded:0,toPlayer:0,results:[]};if(!org)return out;
+    A(rows).slice(0,4).forEach(function(p,i){var r=submit(org,p,opts.binding,'proposal:'+i);out.results.push(r);if(r.outcome==='submitted')out.recorded++;});return out;
+  }
+  function applyResponses(org,rows,turn,opts){
+    opts=opts||{};var out={resolved:0,submitted:0,results:[]};A(rows).slice(0,6).forEach(function(r,i){var res=submit(org,Object.assign({},r,{proposalId:r.proposalId||r.id}),opts.binding,'response:'+i);out.results.push(res);if(res.outcome==='completed')out.resolved++;else if(res.outcome==='submitted')out.submitted++;});return out;
+  }
+  function visible(ch,org){var old=all().filter(function(p){return p.schemaVersion!==2&&[p.fromId,p.toId].indexOf(org.id)>=0&&!terminal(p)&&role(ch,org,{},false);}).map(function(p){return {id:p.id,version:0,type:p.type,terms:{text:S(p.terms)},fromId:p.fromId,toId:p.toId,status:'needs_replan',sourceStatus:'legacy_unbound',recipientId:ch.id};});return old.concat(all().filter(function(p){return p.schemaVersion===2&&p.knowledge[ch.id]&&[p.fromId,p.toId].indexOf(org.id)>=0;}).map(function(p){
+    var known=p.knownState&&p.knownState[ch.id],v=version(p,p.knowledge[ch.id]);
+    return {id:p.id,version:v.version,type:p.type,terms:copy(v.terms),fromId:p.fromId,toId:p.toId,status:known&&known.status||'pending',recipientId:known&&known.needsResponse?ch.id:null,
+      obligations:known&&known.status==='accepted'?copy(p.obligations||[]):undefined};
+  })).sort(function(a,b){function priority(x){return x.recipientId?0:A(x.obligations).some(function(o){return o.status==='unfulfilled';})?1:/^(accepted|rejected|cancelled)$/.test(x.status)?3:2;}return priority(a)-priority(b);});}
+  function due(ch,org){return all().some(function(p){if([p.fromId,p.toId].indexOf(org.id)<0)return false;var known=p.knownState&&p.knownState[ch.id];return !!known&&(known.needsResponse||known.status==='accepted'&&A(p.obligations).some(function(o){return o.status==='unfulfilled';}));});}
+  function inputView(ch,org){var rows=visible(ch,org),active=rows.filter(function(p){return p.recipientId||A(p.obligations).some(function(o){return o.status==='unfulfilled';});}),rest=rows.filter(function(p){return active.indexOf(p)<0;}),offset=active.length?(G().turn*12)%active.length:0;return active.slice(offset).concat(active.slice(0,offset),rest).slice(0,12);}
+  function formatIncomingProposals(org,turn,actor){return actor?visible(actor,org).map(function(p){return JSON.stringify(p);}):[];}
+  function verify(ref,d,g,before){
+    if(ref.kind==='treaty_termination')return A(before.treaties).some(function(t){return t.id===ref.id&&t.active!==false;})&&A(g.treaties).some(function(t){return t.id===ref.id&&t.active===false&&t.terminationActionId===d.actionId;});
+    var p=get(ref.proposalId,g),old=get(ref.proposalId,before),v=p&&version(p,ref.version),sig=v&&P().signature(v.terms);
+    if(!p||!v)return false;
+    if(ref.kind==='diplomacy_step')return !A(old&&old.history).some(function(e){return e.id===ref.id;})&&A(p.history).some(function(e){return e.id===d.actionId&&e.id===ref.id&&e.actorId===d.actorId&&e.organizationId===d.organizationId&&e.version===ref.version&&e.termsSignature===sig;});
+    if(ref.kind==='treaty')return !A(before.treaties).some(function(t){return t.id===ref.id;})&&A(g.treaties).some(function(t){return t.id===ref.id&&t.sourceActionId===d.actionId&&t.proposalId===p.id&&t.proposalVersion===ref.version&&t.termsSignature===sig&&t.active===true&&p.status==='accepted'&&
+      [p.fromId,p.toId].every(function(id){return A(t.signatures).some(function(s){return s.organizationId===id&&s.version===ref.version&&s.termsSignature===sig;});});});
+    return false;
+  }
+  function resourceObligation(d,actor,g){
+    var p=get(d.proposalId,g),o=p&&A(p.obligations).find(function(o){return o.id===d.obligationId;});
+    if(!p||p.schemaVersion!==2||p.status!=='accepted'||p.version!==d.proposalVersion||!o||o.kind!=='public_transfer')return {ok:false,reason:'current_typed_obligation_required'};
+    if(o.status==='fulfilled')return {ok:false,reason:'obligation_already_fulfilled',duplicate:true,operationRefs:o.operationRefs};
+    if(p.knowledge[actor.id]!==p.version)return {ok:false,reason:'obligation_terms_not_received'};
+    if(o.fromAccount!==d.fromAccount||o.toAccount!==d.toAccount||P().signature(o.amounts)!==P().signature(d.amounts))return {ok:false,reason:'obligation_transfer_mismatch'};
+    return {ok:true,obligation:o};
+  }
+  function fulfillResourceObligation(d,ref){var p=get(d.proposalId),o=p&&A(p.obligations).find(function(o){return o.id===d.obligationId;});if(!o||o.status!=='unfulfilled')throw Error('obligation_changed_during_transfer');o.status='fulfilled';o.fulfilledTurn=G().turn;o.fulfilledActionId=d.actionId;o.operationRefs=[copy(ref)];}
+  function recordPlayerProposal(org,raw,origin){
+    var players=A(G().chars).filter(function(c){return P().controlled(c,G());});org=fac(org);
+    if(!org||players.length!==1||!origin)return result('blocked','player_and_stable_source_required');
+    var st=L().state(G());if(!st.playerProposalSources)st.playerProposalSources={};
+    var key=JSON.stringify([org.id,String(origin)]);if(!st.playerProposalSources[key])st.playerProposalSources[key]='human-proposal:'+ (++st.sequence);
+    var d=Object.assign({},raw,{actorId:players[0].id,organizationId:org.id,actionId:st.playerProposalSources[key],phase:'execute',behaviorType:'diplomacy',targetType:'organization'});
+    return L().executeHuman(players[0],d,null,function(ch,target,x){return create(org,ch,x);});
+  }
+  function recordPlayerResponse(from,info){
+    var p=get(info&&info.id),ch=A(G().chars).filter(function(c){return P().controlled(c,G());});
+    if(!p||ch.length!==1||!L().executeHuman)return result('blocked','player_identity_or_proposal_unresolved');
+    advance();var st=L().state(G()),key=JSON.stringify([p.id,info.proposalVersion,info.outcome]);if(!st.playerDiplomacySources)st.playerDiplomacySources={};
+    if(!st.playerDiplomacySources[key])st.playerDiplomacySources[key]='player-diplomacy:'+ (++st.sequence);
+    var org=fac({id:p.recipientOrganizationId}),d={actionId:st.playerDiplomacySources[key],phase:'execute',actorId:ch[0].id,organizationId:org&&org.id,proposalId:p.id,proposalVersion:info.proposalVersion,
+      behaviorType:'diplomacy',targetType:'organization',response:({accepted:'accept',rejected:'reject',countered:'counter',temporized:'defer'})[info.outcome],counterTerms:info.counterTerms,terms:info.terms,obligations:info.obligations,actingPositionId:info.actingPositionId};
+    return org?L().executeHuman(ch[0],d,null,function(actor,target,x){return respond(org,actor,x);}):result('blocked','player_party_unresolved');
+  }
+  function migrate(g){
+    if(!P())return;var changes=[];
+    A(g._pendingFactionProposalsToPlayer).forEach(function(old){
+      if(!old||old.proposalRef)return;var target=fac({id:old.toId||g.playerInfo&&g.playerInfo.factionId,name:old.to},g);
+      if(!target){old.sourceStatus=old.sourceStatus||'legacy_unbound';return;}
+      var matches=all(g).filter(function(p){return p.id===old.id;});if(matches.length>1)throw Error('ambiguous_legacy_proposal');
+      if(!matches.length){if(!Array.isArray(target._incomingProposals))target._incomingProposals=[];target._incomingProposals.push(copy(old));}
+      old.proposalRef=old.id;
+    });A(g.facs).forEach(function(f){A(f._incomingProposals).forEach(function(p){if(!p||p.schemaVersion===2||p.sourceStatus==='legacy_unbound')return;var n=copy(p);n.sourceStatus='legacy_unbound';n.legacyStatus=n.status;changes.push({target:p,next:n});});});
+    A(g.treaties).forEach(function(t){if(!t||t.sourceStatus)return;var n=copy(t);n.sourceStatus='legacy_unattributed';if(!n.parties&&n.from&&n.to){var a=fac(n.from,g),b=fac(n.to,g);if(a&&b)n.parties=[{id:a.id,name:a.name},{id:b.id,name:b.name}];}
+      if(n.active==null)n.active=!/^(expired|broken|cancelled|inactive)$/.test(n.status||'');if(n.status==null)n.status=n.active?'active':'inactive';if(n.expiryTurn==null&&n.expiresTurn!=null)n.expiryTurn=n.expiresTurn;changes.push({target:t,next:n});});
+    changes.forEach(function(x){Object.assign(x.target,x.next);});
+  }
+  if(global.TreatySystem)global.TreatySystem.onChange=function(){refreshCaches(G());};
+  function diplomacyLog(g){return A((g||G())._factionDiplomacyLog);}
+  TM.FactionDiplomacy={recordProposals:recordProposals,applyResponses:applyResponses,submit:submit,advance:advance,visible:visible,inputView:inputView,due:due,get:get,verifyEvidence:verify,migrate:migrate,refreshCaches:refreshCaches,
+    resourceObligation:resourceObligation,fulfillResourceObligation:fulfillResourceObligation,recordPlayerProposal:recordPlayerProposal,recordPlayerResponse:recordPlayerResponse,formatIncomingProposals:formatIncomingProposals,formatPlayerProposalOutcomes:function(org,turn,actor){return actor?visible(actor,org).filter(function(p){return /^(accepted|rejected|cancelled)$/.test(p.status);}).map(function(p){return JSON.stringify(p);}):[];},diplomacyLog:diplomacyLog,
+    summarize:function(g){return {recentEvents:diplomacyLog(g).length,pending:all(g).filter(function(p){return !terminal(p);}).length};},TYPE_CN:TYPE_CN};
+})(typeof window!=='undefined'?window:globalThis);

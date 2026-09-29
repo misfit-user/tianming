@@ -1516,28 +1516,33 @@ function executeSlanderBehavior(npc,target,decision,context) { return _npcCovert
 function _npcResult(status, reason, refs, extra) { return TM.NPC.ActionLedger.result(status, reason, refs, extra); }
 function _npcEvent(type, text) { try { if (typeof addEB === 'function') addEB(type, text); } catch(e) { console.warn('[NPC notification]', e); } }
 function _npcTarget(d) { return TM.NPC.ActionLedger.findChar({ id: d.targetId, name: d.target }, GM); }
-function _npcPosition(id) {
-  var rows = [];
-  if (TM.OfficeHolderState) TM.OfficeHolderState.walk(GM.officeTree, function(p,n) { if (String(p.id) === String(id)) rows.push({ pos:p, node:n }); });
-  return rows.length === 1 ? rows[0] : null;
+function _npcPosition(id, scope, world) {
+  var hs=TM.OfficeHolderState;return hs&&hs.position ? hs.position(world||GM,Object.assign({},scope||{},{positionId:id})) : null;
 }
 function _npcAuthority(npc, d, power, subject) {
+  if(d.organizationId)return TM.PoliticalActions?TM.PoliticalActions.authority(npc,d,power,subject):null;
   var hs = TM.OfficeHolderState;
   if (!hs) return null;
-  var assignment = hs.select(GM, npc, { positionId:d.actingPositionId, appointmentId:d.appointmentId });
+  var assignment = hs.select(GM, npc, { positionId:d.actingPositionId, appointmentId:d.appointmentId, organizationId:d.organizationId });
   if (!assignment || !assignment.pos.powers || assignment.pos.powers[power] !== true) return null;
   var row = assignment.holder || {}, pos = assignment.pos;
   if (pos.status === 'abolished' || pos.enabled === false || row.expiresTurn != null && GM.turn >= row.expiresTurn || pos.expiresTurn != null && GM.turn >= pos.expiresTurn) return null;
-  var availability = hs.availability(GM, npc, pos);
+  var principal=assignment.delegated ? hs.identity(GM,assignment.principalCharacterId).char : npc;
+  var availability = hs.availability(GM, principal, pos);
   if (!availability.capacity || availability.char !== npc) return null;
+  if(subject&&subject.organizationId!==assignment.organizationId)return null;
   if (subject && subject.node !== assignment.node) {
     var scope = pos.authorityScope || {};
     if (!(Array.isArray(scope.positionIds) && scope.positionIds.indexOf(subject.pos.id) >= 0) && !(Array.isArray(scope.departmentIds) && scope.departmentIds.indexOf(subject.node.id) >= 0)) return null;
   }
   return assignment;
 }
+function _npcAuthorityBasis(auth) {
+  if(!auth)return null;var p=auth.pos||{},n=auth.nativeAuthority||{};
+  return JSON.parse(JSON.stringify({organizationId:auth.organizationId,positionId:p.id,appointmentId:auth.appointmentId,authorityRef:auth.authorityRef,delegated:!!auth.delegated,source:auth.basisSource||p.authoritySource||n.source||'current_office_powers',scope:p.authorityScope||n.authorityScope||n.jurisdiction||{}}));
+}
 function _npcPersonnel(npc, target, d) {
-  var who = _npcTarget(d), seat = _npcPosition(d.positionId);
+  var who = _npcTarget(d), seat = _npcPosition(d.positionId,d);
   if (!who || who.alive === false || who.dead) return _npcResult('blocked', 'unknown_or_dead_target');
   if (!seat) return _npcResult('blocked', 'specific_position_required');
   var auth = _npcAuthority(npc, d, 'appointment', seat);
@@ -1553,7 +1558,7 @@ function _npcPersonnel(npc, target, d) {
   } else {
     if (before.characters.some(function(h){return h.char === who;})) return _npcResult('noop','already_appointed');
     if (before.vacancyCount <= 0) return _npcResult('blocked','position_has_no_vacancy');
-    var former = d.behaviorType === 'transfer' ? _npcPosition(d.fromPositionId) : null;
+    var former = d.behaviorType === 'transfer' ? _npcPosition(d.fromPositionId,d) : null;
     if (d.behaviorType === 'transfer') {
       if (!former || !_npcAuthority(npc,d,'appointment',former) || !hs.read(GM,former.pos).characters.some(function(h){return h.char===who;})) return _npcResult('blocked','transfer_source_or_authority_invalid');
       if (TM.NativeWorld && !TM.NativeWorld.officePermission(GM,former.pos,npc.id)) return _npcResult('blocked','native_transfer_authority_denied');
@@ -1573,7 +1578,7 @@ function _npcPersonnel(npc, target, d) {
     NpcMemorySystem.remember(who.name,(d.behaviorType==='dismiss'?'已卸任':d.behaviorType==='transfer'?'已调任':'已获任')+seat.pos.name+'，经办人为'+npc.name,'平',6,npc.name,Object.assign({},officeMeta,{characterId:who.id}));
     NpcMemorySystem.remember(npc.name,'已为'+who.name+'办理'+seat.pos.name+'任职变更','平',5,who.name,Object.assign({},officeMeta,{characterId:npc.id}));
   }
-  return _npcResult('completed','任职真源已核验',[{kind:'office',positionId:seat.pos.id,characterId:who.id}],{actingPositionId:auth.pos.id});
+  return _npcResult('completed','任职真源已核验',[{kind:'office',positionId:seat.pos.id,organizationId:seat.organizationId,characterId:who.id,actionId:d.actionId}],{actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,organizationId:seat.organizationId,authorityBasis:_npcAuthorityBasis(auth)});
 }
 function _npcReward(npc, target, d) {
   var who = _npcTarget(d), amount = Number(d.amount);
@@ -1604,13 +1609,7 @@ function _npcPunish(npc, target, d) {
   return executePetitionBehavior(npc,target,d);
 }
 function _npcWar(npc, target, d) {
-  var factions = GM.facs || [], own = factions.filter(function(f){return String(f.leaderId || f.rulerId || '')===String(npc.id) || !f.leaderId && !f.rulerId && f.leader===npc.name && TM.NPC.ActionLedger.findChar(npc.name,GM)===npc;});
-  var enemies = factions.filter(function(f){return d.targetId ? String(f.id)===String(d.targetId) : f.name===target;});
-  if (own.length!==1 || enemies.length!==1 || own[0]===enemies[0]) return _npcResult('blocked','faction_leader_and_enemy_required');
-  if (typeof CasusBelliSystem==='undefined' || !CasusBelliSystem.declareWar) return _npcResult('blocked','war_domain_unavailable');
-  var r = CasusBelliSystem.declareWar(own[0].name,enemies[0].name,d.casusBelliId);
-  if (!r || !r.success || !r.war || !(GM.activeWars||[]).some(function(w){return w.id===r.war.id;})) return _npcResult('blocked',r&&r.message||'war_not_started');
-  return _npcResult('started','战争已登记',[{kind:'war',id:r.war.id}]);
+  return TM.PoliticalActions ? TM.PoliticalActions.performWar(npc,d,'declare_war') : _npcResult('blocked','political_boundary_unavailable');
 }
 function _npcReform(npc, target, d) {
   if (!_npcAuthority(npc,d,'reform')) { d.title=d.title||'改制建议'; return executePetitionBehavior(npc,target,d); }
@@ -1620,23 +1619,30 @@ function _npcReform(npc, target, d) {
 }
 function _npcTransferPublic(npc, d) {
   var auth = _npcAuthority(npc,d,'treasurySpend'), service=TM.PublicTreasury;
+  if(d.proposalId||d.obligationId){var obligation=TM.FactionDiplomacy&&TM.FactionDiplomacy.resourceObligation(d,npc,GM);if(!obligation||!obligation.ok)return _npcResult(obligation&&obligation.duplicate?'noop':'blocked',obligation&&obligation.reason||'obligation_domain_unavailable');}
   if (!auth || !service) return _npcResult('blocked','spending_authority_required');
-  var binding=auth.pos.treasuryBinding||{}, refs=binding.accountRefs||(binding.accountRef?[binding.accountRef]:[]);
+  var binding=auth.pos&&auth.pos.treasuryBinding||auth.nativeAuthority&&auth.nativeAuthority.treasuryBinding||{}, refs=binding.accountRefs||(binding.accountRef?[binding.accountRef]:[]);
   if (refs.indexOf(d.fromAccount)<0 || binding.role==='oversight' || binding.role==='none') return _npcResult('blocked','account_scope_denied');
   var src=service.getAccountView({game:GM,ref:d.fromAccount}),dst=service.getAccountView({game:GM,ref:d.toAccount});
   if (!src.exists || !dst.exists || src.kind==='pool' || dst.kind==='pool') return _npcResult('blocked','physical_accounts_required');
+  if(d.organizationId && TM.PoliticalActions) {
+    var owner=TM.PoliticalActions.resolve('organization',{id:src.factionId},GM);
+    if(!owner||String(owner.id)!==String(d.organizationId))return _npcResult('blocked','represented_organization_does_not_own_source');
+  }
   if (!d.purpose || !d.amounts || !Object.keys(d.amounts).some(function(k){return Number(d.amounts[k])>0;})) return _npcResult('blocked','purpose_and_amounts_required');
   var keys=Object.keys(d.amounts);
   if (keys.some(function(k){var r=src.resources[k],n=Number(d.amounts[k]);return !r||!Number.isFinite(n)||n<0||r.available==null||n>r.available||r.quota!=null && n>Math.max(0,r.quota-(r.used||0));})) return _npcResult('blocked','insufficient_resources_or_quota');
-  var scope=auth.pos.authorityScope||{};
+  var scope=auth.pos&&auth.pos.authorityScope||auth.nativeAuthority&&auth.nativeAuthority.authorityScope||{};
   if(Array.isArray(scope.accountRefs)&&scope.accountRefs.indexOf(dst.id)<0)return _npcResult('blocked','destination_scope_denied');
   if (src.factionId && dst.factionId && src.factionId!==dst.factionId && (!scope.accountRefs || scope.accountRefs.indexOf(dst.id)<0)) return _npcResult('blocked','destination_scope_denied');
-  var r=service.transfer({game:GM,from:d.fromAccount,to:d.toAccount,amounts:d.amounts,reason:d.purpose,enforceQuota:true,transactionId:d.actionId+':'+(d.phase||'execute')});
+  var r=service.transfer({game:GM,from:d.fromAccount,to:d.toAccount,amounts:d.amounts,reason:d.purpose,enforceQuota:true,allowUnbudgetedInternalTransfer:binding.allowUnbudgetedInternalTransfer===true&&src.factionId===dst.factionId&&!!src.factionId,transactionId:d.actionId+':'+(d.phase||'execute')});
   if (!r || !r.ok) return _npcResult('blocked',r&&r.reason||'public_transfer_failed');
-  return _npcResult('completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId}],{transfer:r,actingPositionId:auth.pos.id});
+  if(d.obligationId)TM.FactionDiplomacy.fulfillResourceObligation(d,{kind:'public_transfer',id:r.transactionId});
+  return _npcResult('completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId}],{transfer:r,actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,authorityBasis:_npcAuthorityBasis(auth)});
 }
 function _npcConcreteDuty(npc, d) {
-  var hs=TM.OfficeHolderState, assignment=hs&&hs.select(GM,npc,{positionId:d.actingPositionId,appointmentId:d.appointmentId});
+  if(d.step==='transfer')return _npcTransferPublic(npc,d);
+  var hs=TM.OfficeHolderState, assignment=hs&&hs.select(GM,npc,{positionId:d.actingPositionId,appointmentId:d.appointmentId,organizationId:d.organizationId});
   if (!assignment) return _npcResult('blocked','specific_current_assignment_required');
   if (d.planId) return TM.NPC.ActionLedger.social(npc,d);
   if (d.step==='transfer') return _npcTransferPublic(npc,d);

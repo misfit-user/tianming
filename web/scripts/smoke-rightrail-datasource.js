@@ -172,8 +172,12 @@ ok(/function _wdOpenAudienceQueue\(ref\)[\s\S]{0,90}_wdResolvePending\(ref\)/.te
   const diplo = fs.readFileSync(path.join(ROOT, 'tm-faction-diplomacy.js'), 'utf8');
   const patches = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
   const agentDepth = fs.readFileSync(path.join(ROOT, 'tm-endturn-agent-depth-tools.js'), 'utf8');
-  ok(/_wdCleansePendingAudiences\(_dedup\)/.test(diplo) && /_wdCapPendingAudiences\(20\)/.test(diplo), '⑦ tm-faction-diplomacy 去重/去顶走唯一写口');
-  ok(/G === GM\) _wdCleansePendingAudiences/.test(diplo) && /G === GM\) _wdCapPendingAudiences/.test(diplo), '⑦ diplomacy 带 G===GM 守卫(局部别名≠全局则回退裸写)');
+  const fixture=require('./lib-political-action-fixture').politicalFixture();fixture.b.isPlayer=true;fixture.GM.playerInfo={characterId:'b',factionId:'fb'};fixture.load('tm-wendui.js');
+  const D=fixture.TM.FactionDiplomacy,B=fixture.TM.PoliticalActions;
+  for(let i=0;i<24;i++){D.recordProposals(fixture.fa,[{toFactionId:'fb',type:'deal',terms:'未决文书 '+i}],fixture.GM.turn,{binding:B.bind(fixture.fa,'a',{actingPositionId:'pa',sourceId:'audience-'+i})});D.advance();}
+  fixture._wdEnsurePendingQids();const audiences=fixture.GM._pendingAudiences;
+  ok(audiences.length===24&&new Set(audiences.map(x=>x._qid)).size===24,'⑦ 活跃外交队列超展示上限仍保留，按来源消息和稳定 qid 区分');
+  D.advance();ok(fixture.GM._pendingAudiences.length===24,'⑦ 重复送达不会新增队列项');
   ok(/_wdCleansePendingAudiences\(function\(x\)\{return x && x\._sid!==sid;\}\)/.test(patches), '⑦ tm-patches-start 开局清洗走唯一写口');
   ok(/gm === GM\) _wdCapPendingAudiences\(20\)/.test(agentDepth), '⑦ tm-endturn-agent-depth-tools 去顶走唯一写口(gm===GM 守卫)');
 }

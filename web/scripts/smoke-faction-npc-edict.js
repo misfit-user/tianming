@@ -86,47 +86,19 @@ function unitTests() {
 }
 
 function e2eTianqi() {
-  var ctx = buildContext();
-  var sc = JSON.parse(fs.readFileSync(path.join(SCN_DIR, '天启七年·九月（官方）.json'), 'utf8'));
-  loadScenarioToGM(ctx, sc);
-
-  // 后金·turn 1 之前的 fiscalStress
-  var hj = ctx.GM.facs.find(function(f){ return f.name === '后金'; });
-  var fsBefore = hj.derivedEconomy.fiscalStress;
-  var moneyBefore = hj.treasury && hj.treasury.money;
-
-  var ret = ctx.TM.FactionNpcEdict.generate();
-  assert(ret && typeof ret.issued === 'number', 'issued count');
-  console.log('[e2e] 共发出 NPC 诏令:', ret.issued);
-  assert(ret.issued > 0, '应至少有 1 NPC ruler 下诏·got ' + ret.issued);
-
-  // 后金应有 npcEdicts
-  assert(Array.isArray(hj.npcEdicts), '后金.npcEdicts is array');
-  assert(hj.npcEdicts.length > 0, '后金 should have edicts');
-
-  console.log('[e2e] 后金 turn 1 诏令:');
-  hj.npcEdicts.forEach(function(e){
-    console.log('  ' + e.issuer + ' [' + e.type + '·trigger:' + e.trigger + '] ' + e.content.slice(0, 50) + '...');
-    console.log('    effects: ' + JSON.stringify(e.effects));
-  });
-  console.log('  treasury.money: ' + moneyBefore + ' → ' + hj.treasury.money);
-  console.log('  fiscalStress: ' + fsBefore + ' → ' + hj.derivedEconomy.fiscalStress);
-
-  // 检 player faction 不下诏
-  var ming = ctx.GM.facs.find(function(f){ return f.name === '明朝廷'; });
-  if (ming.npcEdicts && ming.npcEdicts.length > 0) {
-    fail('明朝廷 (player) should NOT have npcEdicts');
-  }
-
-  // 多回合测试
-  ctx.GM.turn = 2;
-  ctx.TM.FactionNpcEdict.generate();
-  ctx.GM.turn = 3;
-  ctx.TM.FactionNpcEdict.generate();
-  console.log('\n[e2e] 后金·turn 1-3 累计诏令:', hj.npcEdicts.length);
-  assert(hj.npcEdicts.length >= 3, '3 turns should accumulate >= 3·got ' + hj.npcEdicts.length);
-
-  console.log('[e2e] tianqi assertions pass');
+  const {official,documentLoop}=require('./lib-political-official-fixture'),ctx=official('天启');
+  const originalCash=ctx.GM.facs.map(f=>f.treasury&&f.treasury.money),originalLoyalty=ctx.GM.chars.map(c=>c.loyalty);
+  const {actor,target,org,plan,candidate,receipt}=documentLoop(ctx,'edict');
+  assert(plan.status==='done'&&candidate.status==='done','real request, response, document and feedback reach completion');
+  assert(plan.steps.length===1,'one actual document delivery');
+  assert(org.npcEdicts[0].planId===plan.id&&org.npcEdicts[0].sourceActionId===receipt.actionId,'faction view links canonical dialogue');
+  assert(actor._memory.some(m=>(m.sourceRefs||[]).some(r=>r.planId===plan.id)),'sender retains its experience');
+  assert(target._memory.some(m=>(m.sourceRefs||[]).some(r=>r.planId===plan.id)),'recipient retains its experience');
+  assert(JSON.stringify(originalCash)===JSON.stringify(ctx.GM.facs.map(f=>f.treasury&&f.treasury.money)),'document is not a direct money change');
+  assert(JSON.stringify(originalLoyalty)===JSON.stringify(ctx.GM.chars.map(c=>c.loyalty)),'no template loyalty reward');
+  assert(ctx.GM.memorials.length===0,'NPC document to another NPC does not route into the player inbox');
+  const count=ctx.GM._npcPlans.length;ctx.GM.turn++;ctx.TM.FactionNpcEdict.generate();assert(ctx.GM._npcPlans.some(p=>p.id===plan.id),'closed history is retained after the next generation');
+  console.log('[e2e] official edict dialogue '+plan.id+' complete; models=0');
 }
 
 function main() {

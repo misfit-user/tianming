@@ -78,7 +78,7 @@ const editorHtml = read('editor.html');
 ].forEach(function(needle) { mustContain(editorHtml, needle, 'editor.html'); });
 
 const editorAdminScript = editorHtml.indexOf('<script src="editor-administration.js" defer=""></script>');
-const scenarioScript = editorHtml.indexOf('<script src="scenarios/tianqi7-1627.js" defer=""></script>');
+const scenarioTags=Array.from(editorHtml.matchAll(/<script src="scenarios\/tianqi7-1627\.js(?:\?v=[^"]*)?" defer=""><\/script>/g));assert(scenarioTags.length===1,'one actual versioned scenario provider');const scenarioScript=scenarioTags[0].index;
 const namespaceScript = editorHtml.indexOf('<script src="tm-namespaces.js" defer="" data-tm-no-auto-verify="1"></script>');
 assert(editorAdminScript >= 0, 'editor-administration.js script should be present');
 assert(scenarioScript >= 0, 'scenario script should be present');

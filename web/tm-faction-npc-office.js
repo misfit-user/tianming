@@ -165,52 +165,8 @@
   }
 
   function generateNpcOfficeActions() {
-    if (typeof global.GM === 'undefined') return null;
-    var GM = global.GM;
-    if (!Array.isArray(GM.facs)) return null;
-    var turn = _safeNum(GM.turn) || 1;
-    var playerFacNames = _resolvePlayerFactionNames();
-
-    var totalActions = 0;
-    GM.facs.forEach(function(fac) {
-      if (!fac || !fac.name) return;
-      if (_isPlayerFaction(fac, playerFacNames)) return;
-      var entry = GM._facIndex && GM._facIndex[fac.name];
-      if (!entry) return;
-      var alive = (entry.chars || []).filter(_isAlive);
-      if (alive.length === 0) return;
-      var ruler = alive.find(function(c){ return _classifyChar(c) === 'ruler'; });
-      if (!ruler) ruler = alive[0];
-
-      var actions = _decideActions(fac, alive, ruler);
-      if (!Array.isArray(fac.npcOfficeActions)) fac.npcOfficeActions = [];
-      if (fac.npcOfficeActions.length > 30) fac.npcOfficeActions = fac.npcOfficeActions.slice(-30);
-
-      actions.forEach(function(a, idx){
-        var rec = _applyAction(a, fac, ruler);
-        rec.id = 'npco_' + turn + '_' + fac.name + '_' + idx;
-        rec.turn = turn;
-        fac.npcOfficeActions.push(rec);
-        if (global.TM && global.TM.FactionActionEngine && typeof global.TM.FactionActionEngine.recordLocalAction === 'function') {
-          try {
-            global.TM.FactionActionEngine.recordLocalAction(fac, 'office_change', {
-              kind: rec.action || a.kind,
-              target: rec.target,
-              oldPosition: rec.effect && rec.effect.positionFrom,
-              newPosition: rec.effect && rec.effect.positionTo,
-              loyaltyDelta: rec.effect && rec.effect.loyaltyDelta,
-              reason: rec.reason
-            }, rec);
-          } catch(_){}
-        }
-        // Phase H2·人事变动入近事快报
-        if (global.TM && global.TM.FactionNpcNewsBridge) {
-          try { global.TM.FactionNpcNewsBridge.pushOffice(fac, rec); } catch(_){}
-        }
-        totalActions++;
-      });
-    });
-    return { actions: totalActions };
+    var boundary=global.TM&&TM.PoliticalActions;
+    return boundary?boundary.localCandidates('office_change'):{actions:0,issued:0,run:0,generated:0,reason:'political_boundary_unavailable'};
   }
 
   function getNpcOfficeActionsFor(facName) {

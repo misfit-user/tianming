@@ -51,6 +51,7 @@ function makeContext(opts) {
   ctx.globalThis = ctx;
   vm.createContext(ctx);
 
+  require('./lib-political-test-runtime').install(ctx);
   runFile(ctx, 'tm-faction-npc-settings.js');
   runFile(ctx, 'tm-faction-action-engine.js');
   runFile(ctx, 'tm-faction-npc-llm-decision.js');
@@ -80,6 +81,7 @@ function makeContext(opts) {
     shijiHistory: [],
     qijuHistory: []
   };
+  require('./lib-political-test-runtime').schedulingWorld(ctx);
   ctx.callAI = async function() {
     return JSON.stringify({ rationale: 'ok', memorials: [], edict: null, chaoyi: null, office: [] });
   };
@@ -91,7 +93,9 @@ async function main() {
 
   const eager = await ctx.TM.FactionNpcLlmDecision.decideAll({ source: 'eager', turn: 7 });
   assert(eager && eager.attempted === 2, 'eager should attempt the two NPC factions');
-  assert(eager.applied === 2, 'eager should apply both mocked decisions');
+  assert(eager.applied === 0 && eager.generated === 2, 'generation is deferred and never counted as an executed political action');
+  assert(ctx.GM._npcActionState.politicalPending.length===2, 'both bounded packets persist until simulation advances');
+  ctx.TM.PoliticalActions.flush();assert(ctx.GM._npcActionState.politicalPending.every(p=>p.status==='waiting'),'real-time repeats cannot settle packets');
   assert(ctx.TM.FactionNpcInTurnDriver._pickOneFac(7) === null, 'in-turn picker must skip NPC factions already run by eager ledger');
 
   const stale = makeContext();
@@ -100,7 +104,7 @@ async function main() {
     return JSON.stringify({ rationale: 'late', memorials: [], edict: null, chaoyi: null, office: [] });
   };
   const staleResult = await stale.TM.FactionNpcLlmDecision.decideFor('A', { source: 'eager', turn: 7 });
-  assert(staleResult && staleResult.skipped && staleResult.reason === 'stale turn', 'stale NPC LLM result should be skipped');
+  assert(staleResult && staleResult.skipped && staleResult.expired && staleResult.reason === 'stale world or turn', 'stale NPC LLM result should be skipped');
   assert(!stale.GM.facs[1]._lastLlmRationale, 'stale NPC LLM result must not mutate faction state');
 
   const budget = makeContext({
@@ -113,7 +117,7 @@ async function main() {
   });
   await budget.TM.FactionNpcLlmDecision.decideAll({ source: 'eager', turn: 7 });
   const firstInTurn = await budget.TM.FactionNpcInTurnDriver._runOneInTurn(7, 'budget-1');
-  assert(firstInTurn && firstInTurn.applied, 'one in-turn run should be allowed after two eager runs when total budget is three');
+  assert(firstInTurn && firstInTurn.generated, 'one in-turn run should be allowed after two eager runs when total budget is three');
   const overBudget = await budget.TM.FactionNpcInTurnDriver._runOneInTurn(7, 'budget-2');
   assert(overBudget && overBudget.skipped && overBudget.reason === 'NPC LLM turn budget exhausted', 'in-turn should stop once eager + in-turn reaches total budget');
 

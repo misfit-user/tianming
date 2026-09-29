@@ -110,6 +110,7 @@ async function main() {
   assert(driver && typeof driver.scheduleInTurnRuns === 'function', 'driver export missing');
 
   const normalGM = ctx.GM;
+  normalGM.facs.forEach(f=>{f.id='fixture:'+f.name;});
   const normalPlayerFactionName = ctx.P.playerInfo.factionName;
   ctx.P.playerInfo.factionName = 'mismatched-player-name';
   ctx.GM = {
@@ -159,7 +160,7 @@ async function main() {
   assert(ret && ret.applied, 'runOneInTurn should apply mocked decision');
   assert(ctx.TM.FactionNpcLlmDecision.calls.length === 1, 'decideFor should be called once');
   assert(ctx.TM.FactionNpcLlmDecision.calls[0] !== '明朝廷', 'decideFor must not target player faction');
-  const ranFac = ctx.GM.facs.find(f => f.name === ctx.TM.FactionNpcLlmDecision.calls[0]);
+  const ref=ctx.TM.FactionNpcLlmDecision.calls[0];const ranFac = ctx.GM.facs.find(f => ref&&typeof ref==='object'?f.id===ref.id:f.name===ref);
   assert(ranFac._inTurnLlmRanTurns.indexOf(7) >= 0, 'ran faction should be marked for this turn');
   assert(ctx.GM.qijuHistory.length === 1 && ctx.GM.qijuHistory[0]._source === 'npc-in-turn-llm', 'qiju marker missing');
   ctx.TM.FactionNpcSettings.setEnabled(false);

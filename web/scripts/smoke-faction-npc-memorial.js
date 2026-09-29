@@ -93,57 +93,19 @@ function unitTests() {
 }
 
 function e2eTianqi() {
-  var ctx = buildContext();
-  var sc = JSON.parse(fs.readFileSync(path.join(SCN_DIR, '天启七年·九月（官方）.json'), 'utf8'));
-  loadScenarioToGM(ctx, sc);
-
-  var ret = ctx.TM.FactionNpcMemorial.generate();
-  assert(ret && typeof ret.generated === 'number', 'generate returns count');
-  console.log('[e2e] generated NPC memorials:', ret.generated);
-  assert(ret.generated > 0, 'should generate >0·got ' + ret.generated);
-
-  // 后金应该有 npcMemorials (是 NPC·有 chars)
-  var hj = ctx.GM.facs.find(function(f){ return f.name === '后金'; });
-  assert(Array.isArray(hj.npcMemorials), '后金.npcMemorials is array');
-  console.log('[e2e] 后金 npcMemorials count:', hj.npcMemorials.length);
-  assert(hj.npcMemorials.length > 0, '后金 should have memorials');
-
-  // 明朝廷 (player) 不应该有 npcMemorials (走 GM.memorials)
-  var ming = ctx.GM.facs.find(function(f){ return f.name === '明朝廷'; });
-  if (ming.npcMemorials && ming.npcMemorials.length > 0) {
-    fail('明朝廷 should NOT have npcMemorials (player faction)');
-  }
-
-  // 每条 memorial 必有完整字段
-  hj.npcMemorials.forEach(function(m){
-    ['id','from','fromRole','to','type','content','status','turn','ruling'].forEach(function(k){
-      assert(m[k] !== undefined && m[k] !== null, '后金 memorial missing ' + k);
-    });
-    assert(['approved','rejected','annotated','referred'].indexOf(m.status) >= 0, 'status valid');
-    assert(['军务','政务','民生','经济','人事','密奏'].indexOf(m.type) >= 0, 'type valid');
-  });
-
-  // 副作用·至少有一个 char 的 _memorialMemory 增长
-  var hjChars = ctx.GM._facIndex['后金'].chars;
-  var anyMem = hjChars.some(function(c){ return Array.isArray(c._memorialMemory) && c._memorialMemory.length > 0; });
-  assert(anyMem, '至少一个后金 char 应有 _memorialMemory 记录');
-
-  console.log('\n[e2e] 后金·首 3 条 memorial 样例:');
-  hj.npcMemorials.slice(0, 3).forEach(function(m){
-    console.log('  ' + m.from + '(' + m.fromRole + ') → ' + m.to + ' [' + m.type + '/' + m.status + ']');
-    console.log('    "' + m.content + '"');
-    console.log('    ruling: ' + m.ruling + ' (loyaltyΔ=' + m.impact.loyaltyDelta + ')');
-  });
-
-  // 跑 turn 2 看 last 30 上限
-  ctx.GM.turn = 2;
-  ctx.TM.FactionNpcMemorial.generate();
-  ctx.GM.turn = 3;
-  ctx.TM.FactionNpcMemorial.generate();
-  console.log('\n[e2e] 后金·turn 1-3 累计 memorials:', hj.npcMemorials.length);
-  assert(hj.npcMemorials.length <= 30, 'cap at 30·got ' + hj.npcMemorials.length);
-
-  console.log('[e2e] tianqi assertions pass');
+  const {official,documentLoop}=require('./lib-political-official-fixture'),ctx=official('天启');
+  const originalCash=ctx.GM.facs.map(f=>f.treasury&&f.treasury.money),originalLoyalty=ctx.GM.chars.map(c=>c.loyalty);
+  const {actor,target,org,plan,candidate,receipt}=documentLoop(ctx,'memorial');
+  assert(plan.status==='done'&&candidate.status==='done','real request, response, document and feedback reach completion');
+  assert(plan.steps.length===1,'one actual document delivery');
+  assert(org.npcMemorials[0].planId===plan.id&&org.npcMemorials[0].sourceActionId===receipt.actionId,'faction view links canonical dialogue');
+  assert(actor._memory.some(m=>(m.sourceRefs||[]).some(r=>r.planId===plan.id)),'sender retains its experience');
+  assert(target._memory.some(m=>(m.sourceRefs||[]).some(r=>r.planId===plan.id)),'recipient retains its experience');
+  assert(JSON.stringify(originalCash)===JSON.stringify(ctx.GM.facs.map(f=>f.treasury&&f.treasury.money)),'document is not a direct money change');
+  assert(JSON.stringify(originalLoyalty)===JSON.stringify(ctx.GM.chars.map(c=>c.loyalty)),'no template loyalty reward');
+  assert(ctx.GM.memorials.length===0,'NPC document to another NPC does not route into the player inbox');
+  const count=ctx.GM._npcPlans.length;ctx.GM.turn++;ctx.TM.FactionNpcMemorial.generate();assert(ctx.GM._npcPlans.some(p=>p.id===plan.id),'closed history is retained after the next generation');
+  console.log('[e2e] official memorial dialogue '+plan.id+' complete; models=0');
 }
 
 function main() {

@@ -500,8 +500,8 @@
     // 2026-06-11·治「右侧来函点展阅看不到全文/就地展开太挤」:展阅改为弹「大居中阅览浮层」(openLetterReadOverlay)，
     //   舒适读全文，不再受右栏窄列(262px)挤成一小块。右卡仍保留 2 行预览。
     var actions = actionBtn('展阅', 'letter-read-desk', { id:item.id || '' }, 'inc-btn');
-    if (!item.reply) actions += actionBtn('回书', 'letter-thread-action-desk', { id:item.id || '', letterAction:'reply' }, 'inc-btn green');
-    actions += actionBtn('摘入', 'letter-thread-action-desk', { id:item.id || '', letterAction:'excerpt' }, 'inc-btn');
+    if (!item.reply) actions += actionBtn(item.raw && item.raw._localActivity ? '处理事项' : '回书', 'letter-thread-action-desk', { id:item.id || '', letterAction:'reply' }, 'inc-btn green');
+    if (!(item.raw && item.raw._localActivity)) actions += actionBtn('摘入', 'letter-thread-action-desk', { id:item.id || '', letterAction:'excerpt' }, 'inc-btn');
     return '<article class="incard ' + (item.unread ? 'unread ' : '') + (item.reply ? 'reply' : '') + '">' +
       '<div class="inc-top">' + yanFaceImg({ name:item.from, portrait:pp }, 'inc-seal') + '<div class="inc-who"><b>' + esc(item.from || '来信者') + '</b><span>' + (item.reply ? '回书' : '主动来函') + '</span></div></div>' +
       '<div class="inc-title">' + fullHongyanText(item.title || '来函', '来函', 'hy-inbox-title-full-v5') + '</div>' +
@@ -569,7 +569,8 @@
         '<span class="lr-nav-pos">' + (navIdx + 1) + ' / ' + navList.length + '</span>' +
         '<button type="button" class="lr-nav-btn" onclick="window._tmLetterReadGo&&window._tmLetterReadGo(1)"' + (navIdx >= navList.length - 1 ? ' disabled' : '') + '>下一封 ▶</button>' +
       '</div>') : '';
-    var replyBtnHtml = canReply ? '<button type="button" class="lr-reply-btn" onclick="window._tmLetterReadReply&&window._tmLetterReadReply()">✍ 回　信</button>' : '';
+    var localMatter = letter.raw && letter.raw._localActivity || letter.source && letter.source.raw && letter.source.raw._localActivity;
+    var replyBtnHtml = canReply ? '<button type="button" class="lr-reply-btn" onclick="window._tmLetterReadReply&&window._tmLetterReadReply()">' + (localMatter ? '处理当前事项' : '✍ 回　信') + '</button>' : '';
     var footHtml = (replyBtnHtml || navHtml) ? ('<div class="lr-foot">' + replyBtnHtml + navHtml + '</div>') : '';
     var html = '<div class="tm-letter-read-card" role="dialog" aria-modal="true">' +
       '<button type="button" class="lr-close" data-close-bridge="1" title="关闭">×</button>' +
@@ -587,6 +588,7 @@
     openDeskOverlay('tm-letter-read-overlay', html);
   }
   function renderFormalLetterCard(l, targetName){
+    if(l.raw&&l.raw._localActivity&&window.TM&&TM.NPC&&TM.NPC.DailyUI)return TM.NPC.DailyUI.letterCard(l.raw);
     var outgoing = String(l.from) === '玩家' || String(l.to) === String(targetName);
     if (!outgoing && l.raw && !l.raw._playerRead) l.raw._playerRead = true;
     var statusText = letterStatusTextFormal(l);
@@ -758,6 +760,7 @@
           '<div class="multi-bar">' + actionBtn(multiOn ? ('群发中 · ' + multiTargets.length + ' 人') : '群发', 'letter-multi-toggle-desk', {}, 'multi-toggle' + (multiOn ? ' on' : '')) + '<span class="multi-hint">' + (multiOn ? '勾选收件人，写完正文按「遣使送出」一并发出' : '点名册可逐一选定收信人') + '</span></div></div>' +
           '<div class="roster-scroll">' + roster + '</div></aside>' +
         '<main class="deskmain">' +
+          '<section class="compose" data-npc-daily-panel="formal" aria-label="日常往来" style="flex:0 0 auto;max-height:48vh;overflow:auto;"></section>' +
           '<section class="compose"><div class="cmp-head">' + yanFaceImg(target, 'cmp-face') + '<div class="cmp-who"><b>致 ' + esc(target.name) + '<small data-hy-contact-role="1">' + esc(target.role||'') + '</small></b><div class="cmp-loc" data-hy-contact-location="1">' + esc(target.location||'') + (target.faction ? ' · ' + esc(target.faction) : '') + '</div></div><div class="cmp-stat">' + actionChip('往来 ' + c.total, 'green') + (c.unread ? actionChip('未阅 ' + c.unread, 'hot') : '') + (c.road ? actionChip('在途 ' + c.road, 'indigo') : '') + '</div></div>' +
             routeWarningHtml +
             yanRouteBlock(target, letters) +

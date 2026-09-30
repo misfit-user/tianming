@@ -23,6 +23,14 @@
   var _inProgress = false;
   var _abortController = null;
   var _lastTriggerTurn = -2;
+  var _requestSerial = 0;
+  function _captureArcWorld() {
+    var ledger = global.TM && TM.NPC && TM.NPC.ActionLedger;
+    return ledger ? { ledger: ledger, token: ledger.capture() } : { gm: global.GM, p: global.P, turn: global.GM && GM.turn, loadGen: global._tmLoadGen || 0 };
+  }
+  function _arcWorldCurrent(lease) {
+    return lease.ledger ? lease.ledger.current(lease.token) : lease.gm === global.GM && lease.p === global.P && lease.turn === (global.GM && GM.turn) && lease.loadGen === (global._tmLoadGen || 0);
+  }
 
   function _shouldAdvance() {
     if (_inProgress) return false;
@@ -144,6 +152,7 @@
     if (keyChars.length === 0) return;
 
     _inProgress = true;
+    var worldLease = _captureArcWorld(), requestSerial = ++_requestSerial;
     _abortController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var signal = _abortController ? _abortController.signal : undefined;
 
@@ -161,7 +170,7 @@
       var raw;
       try {
         if (typeof callAISmart === 'function') {
-          raw = await callAISmart(prompt, 2500, { maxRetries: 1, tier: (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined });  // 【降本2026-06-19】情节弧(后台叙事增强)走次 API + retry 2→1(无validator·仅异常重试)
+          raw = await callAISmart(prompt, 2500, { signal: signal, maxRetries: 1, tier: (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined });  // 【降本2026-06-19】情节弧(后台叙事增强)走次 API + retry 2→1(无validator·仅异常重试)
         } else if (typeof callAI === 'function') {
           raw = await callAI(prompt, 2500, signal, (typeof _useSecondaryTier === 'function' && _useSecondaryTier()) ? 'secondary' : undefined);  // 【降本2026-06-19】走次 API(fallback 路径对齐)
         }
@@ -169,7 +178,7 @@
         if (e && e.name === 'AbortError') { console.log('[情节弧] 已取消'); return; }
         throw e;
       }
-      if (!raw) return;
+      if (!raw || requestSerial !== _requestSerial || !_arcWorldCurrent(worldLease)) return;
       var parsed;
       try {
         parsed = (typeof robustParseJSON === 'function') ? robustParseJSON(raw) : JSON.parse(raw);
@@ -209,12 +218,12 @@
     } catch(e) {
       console.warn('[情节弧] 异常', e);
     } finally {
-      _inProgress = false;
-      _abortController = null;
+      if (requestSerial === _requestSerial) { _inProgress = false; _abortController = null; }
     }
   }
 
   function abortCharArcs() {
+    _requestSerial++;
     if (_abortController) {
       try { _abortController.abort(); } catch(e){try{window.TM&&TM.errors&&TM.errors.captureSilent(e,'tm-char-arcs');}catch(_){}}
       _abortController = null;
@@ -249,11 +258,12 @@
   // Layer 1·enterGame:after + 10s·requestIdleCallback
   function _scheduleIdleAdvance() {
     if (!global.GM || !GM.running) return;
+    var lease = _captureArcWorld();
     setTimeout(function() {
-      if (!GM.running) return;
+      if (!_arcWorldCurrent(lease) || !GM.running) return;
       if (!_shouldAdvance()) return;
       var run = function() {
-        if (!GM.running || !_shouldAdvance()) return;
+        if (!_arcWorldCurrent(lease) || !GM.running || !_shouldAdvance()) return;
         advanceCharArcs({ showToast: false }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '情节弧·idle') : console.warn('[情节弧·idle]', e); });
       };
       if (typeof requestIdleCallback === 'function') {
@@ -267,9 +277,10 @@
   // Layer 2·面板打开时预热(若缓存过期)·不阻塞
   function warmCharArcsIfStale() {
     if (!_shouldAdvance()) return;
+    var lease = _captureArcWorld();
     // 延迟 2 秒·让面板先渲染
     setTimeout(function() {
-      if (_shouldAdvance()) {
+      if (_arcWorldCurrent(lease) && _shouldAdvance()) {
         advanceCharArcs({ showToast: false }).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '情节弧·warm') : console.warn('[情节弧·warm]', e); });
       }
     }, 2000);

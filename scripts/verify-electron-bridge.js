@@ -12,6 +12,7 @@ const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('g
   status: cp.execFileSync('git', ['status', '--short'], { cwd: repo, encoding: 'utf8' }).trim(), platform: process.platform, node: process.version,
   baseline: argv.includes('--baseline'), complete: false, results: [] };
 try {
+  if (argv.includes('--npc-daily')) modes.splice(0, modes.length, 'npc-daily');
   if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   if (argv.includes('--seven-ui')) modes.splice(0, modes.length, 'seven-ui');
   if (argv.includes('--native-start-entry')) modes.splice(0, modes.length, 'native-start-entry', 'native-start-restart');

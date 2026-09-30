@@ -132,6 +132,7 @@
   }
 
   function closeDeskOverlay(){
+    if(window.TM&&TM.NPC&&TM.NPC.DailyUI)TM.NPC.DailyUI.close();
     var nodes = document.querySelectorAll('.tm-desk-overlay');
     Array.prototype.forEach.call(nodes, function(n){
       captureDeskOverlayState(n);
@@ -232,6 +233,7 @@
       if (edict) updateFormalEdictDraft(edict);
     });
     document.body.appendChild(ov);
+    if(id==='tm-action-letter-overlay'&&window.TM&&TM.NPC&&TM.NPC.DailyUI)TM.NPC.DailyUI.render(ov.querySelector('[data-npc-daily-panel]'));
     if (id === 'tm-action-letter-overlay') applyFormalLetterSearch(ov, state.letterSearch || '');
     if (id === 'tm-action-records-overlay') applyFormalRecordSearch(ov, state.recordSearch || '');
   }
@@ -1288,6 +1290,11 @@
     } else if (action === 'letter-thread-action-desk') {
       var letter = getLetters().find(function(x){ return String(x.id || '') === String(data.id || ''); });
       var rawLetter = letter && letter.raw;
+      if (rawLetter && rawLetter._localActivity) {
+        openHongyanPreviewPanel();
+        if (window.TM && TM.NPC && TM.NPC.DailyUI) TM.NPC.DailyUI.open(rawLetter.npcPlanId);
+        return;
+      }
       if (data.letterAction === 'recall' && rawLetter && typeof window._ltRecall === 'function') {
         window._ltRecall(rawLetter.id);
       } else if (data.letterAction === 'resend-secret' && rawLetter && typeof window._ltResend === 'function') {

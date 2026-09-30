@@ -282,6 +282,7 @@ function renderGameState(options){
   ltP.innerHTML='<div class="hy-panel-wrap"><div class="hy-inner">'
     +'<div class="hy-title"><div class="seal">\u9C7C<br>\u96C1</div><div class="main">\u9E3F \u96C1 \u4F20 \u4E66</div><div class="sub">\u7B3A\u672D\u5F80\u6765\u3000\u3000\u9A7F\u4F7F\u4F20\u9012</div></div>'
     +'<div id="letter-route-bar" class="hy-route-warn" style="display:none;"></div>'
+    +'<section id="npc-daily-panel" aria-label="日常往来" style="padding:var(--space-2,8px);border-bottom:1px solid var(--color-border-subtle);"></section>'
     +'<div class="hy-main">'
     +  '<div class="hy-left">'
     +    '<div class="hy-left-header"><span class="hy-left-title">\u8FDC \u65B9 \u81E3 \u5B50</span>'

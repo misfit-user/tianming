@@ -42,7 +42,7 @@ var HelpSystem = {
       title: '🔑 如何配置 AI 密钥',
       content: `
         <h4>为什么需要密钥</h4>
-        <p>天命以 AI 为引擎推演整个世界——臣子的回应、派系的博弈、史局的走向都由大语言模型当场演绎。<b>没有 API 密钥，过回合就只是空转：回合数变了，世界却毫无反应。这不是故障，而是缺了引擎的燃料。</b></p>
+        <p>全局过回合、重大事项和自由输入的推演需要配置 AI 密钥。<b>鸿雁传书中的「日常往来」可在当前日期内本地办理通问、引见和少量材料整理，无需密钥；多日工作仍须等待正式日期推进。</b></p>
 
         <h4>需要什么样的密钥</h4>
         <p>任意一个 <b>OpenAI 兼容</b>的对话（Chat Completions）接口即可。你需要四样东西：</p>
@@ -514,7 +514,7 @@ function _tmCheckApiKeyOnStart() {
     bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:2147483600;max-width:min(680px,92vw);background:linear-gradient(#3a2412,#2a1a0c);border:1px solid #c08a3a;border-radius:8px;padding:12px 16px;color:#f0dcc0;font-family:serif;font-size:0.85rem;box-shadow:0 8px 30px rgba(0,0,0,.55);display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
     var msg = document.createElement('span');
     msg.style.cssText = 'flex:1;min-width:220px;line-height:1.55;';
-    msg.innerHTML = '⚠ <b style="color:#e8c87a;">尚未配置 AI 密钥</b>——天命以 AI 为引擎，没有密钥过回合只会空转、世界毫无反应（这不是故障，是缺了引擎的燃料）。';
+    msg.innerHTML = '⚠ <b style="color:#e8c87a;">尚未配置 AI 密钥</b>——全局过回合与自由推演需要密钥。可先在鸿雁传书的「日常往来」中办理当前日期内的普通交互。';
     bar.appendChild(msg);
     var help = document.createElement('button');
     help.className = 'bt bp'; help.textContent = '如何配置';

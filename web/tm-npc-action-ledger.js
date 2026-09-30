@@ -361,6 +361,7 @@
     var id = _str(ch && ch.id), turn = _turn(g);
     return ensurePlans(g).some(function(p) {
       if (!p || /^(done|failed|cancelled|rejected)$/.test(p.status)) return false;
+      if(p.localActivity)return false; // Ordinary activities have their own bounded local chooser.
       if (p.version === 2) return p.nextActorId === id && p.nextTurn <= turn && p.status !== 'in_transit';
       return (p.actorId ? p.actorId === id : p.actor === ch.name) && (!p.nextTurn || p.nextTurn <= turn);
     }) || commitments(ch,g).some(function(p) {
@@ -384,6 +385,7 @@
   }
   function executionSignature(d,actor) {
     var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType'];
+    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
   }
@@ -433,6 +435,7 @@
         receipt=result('failed','unverified_operation_reference');
         return {ok:false,reason:receipt.reason};
       }
+      if(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.afterVerifiedCommit)receipt=TM.NPC.DailyActivities.afterVerifiedCommit(d,receipt);
       receipt = Object.assign({}, receipt, { actionId: d.actionId, phase: d.phase, actorId: _str(actor.id), actor: actor.name,
         targetId: _str(d.targetId), target: d.target || '', behaviorType: d.behaviorType, turn: _turn(g), schemaVersion: 2 });
       if(TM.PoliticalActions&&TM.PoliticalActions.onReceipt)TM.PoliticalActions.onReceipt(d,receipt,g);
@@ -451,6 +454,7 @@
 
   function verifyEvidence(ref,d,actor,g,before) {
     if(!ref||!ref.kind)return false;
+    if(ref.kind==='daily_step')return !!(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.verifyEvidence(ref,d,actor,g,before));
     if(['march','command','army_operation'].indexOf(ref.kind)>=0)return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyEvidence(ref,d,g,before));
     if(ref.kind==='diplomacy_step'||ref.kind==='treaty'||ref.kind==='treaty_termination')return !!(TM.FactionDiplomacy&&TM.FactionDiplomacy.verifyEvidence(ref,d,g,before));
     if(ref.kind==='political_review')return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyReview(ref,d,g,before));
@@ -510,6 +514,7 @@
   }
   function social(npc,d) {
     var g=_gm(), p=d.planId ? planById(d.planId,g) : null, who, legacy=null;
+    if(d.activityKind||p&&p.localActivity)return TM.NPC.DailyActivities?TM.NPC.DailyActivities.commit(npc,null,d):result('blocked','local_activity_domain_unavailable');
     if(d.planId && !p) {
       legacy=ensurePlans(g).find(function(x){return x.id===d.planId&&x.version!==2;});
       var legacyActor=legacy&&findChar({id:legacy.actorId,name:legacy.actor},g);
@@ -642,19 +647,23 @@
         _npcInitiated:true,_playerRead:false,_replyExpected:/^(request|response|delivery)$/.test(m.kind),npcPlanId:p.id,npcMessageId:m.id});
     }
   }
-  function advance(g) {
+  function advance(g,options) {
     g=g||_gm();if(g!==_gm())return {ok:false,reason:'world_mismatch'};
+    if(options&&options.localOnly&&TM.NPC.DailyActivities&&!TM.NPC.DailyActivities.needsAdvance(g))return {ok:true,delivered:0};
     migrate(g);
     var guard=TM.AIChange&&TM.AIChange.WriteGuards;
     if(!guard)return {ok:false,reason:'atomic_writer_unavailable'};
     return guard.runAtomicMutation(function(){
-      ensurePlans(g).filter(function(p){return p&&p.version===2&&!/^(done|rejected|cancelled|failed)$/.test(p.status);}).forEach(function(p){
+      if(TM.NPC.DailyActivities)TM.NPC.DailyActivities.advanceWithin();
+      if(options&&options.localOnly)return {ok:true};
+      ensurePlans(g).filter(function(p){return p&&p.version===2&&!p.localActivity&&!/^(done|rejected|cancelled|failed)$/.test(p.status);}).forEach(function(p){
         p.messages.filter(function(m){return m.status==='in_transit'&&m.deliveryTurn<=_turn(g);}).forEach(function(m){deliver(p,m,g);});
       });
       return {ok:true};
     });
   }
   function planView(p,ch) {
+    if(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.isPlan(p))return TM.NPC.DailyActivities.view(p,ch);
     var id=_str(ch.id), knowledge=p.knowledge&&p.knowledge[id];
     if(p.version!==2){
       var owner=findChar({id:p.actorId,name:p.actor},_gm());
@@ -667,6 +676,7 @@
   }
   function playerRespond(planId,response,content) {
     var g=_gm(),p=planById(planId,g),player=_arr(g.chars).filter(function(c){return c&&c.isPlayer;});
+    if(p&&p.localActivity)return result('blocked','use_current_activity_controls');
     if(!p||player.length!==1)return result('blocked','player_or_plan_unknown');
     var ch=player[0],view=planView(p,ch);
     if(!view||!/^(respond|agree|perform|feedback)$/.test(view.nextPhase))return result('blocked','player_response_not_due');

@@ -1,0 +1,7144 @@
+{
+  "base": "22472d247e54956238387defaeda1c50db7acd43",
+  "sourceInventory": "SOURCE.json",
+  "baseline": {
+    "selected": 19,
+    "pass": 19,
+    "fail": 0,
+    "waived": 0,
+    "flaky": 0,
+    "suspect": 0,
+    "skipped": 0
+  },
+  "full": {
+    "command": "node web/scripts/ci-smokes.js --jobs 2",
+    "runId": "cb97fd9b-5572-44d3-b66f-ea85e5c90bcc",
+    "summary": {
+      "selected": 1149,
+      "pass": 1147,
+      "fail": 0,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "waivers": [
+      {
+        "name": "smoke-audio-bgm.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ]
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ]
+      }
+    ],
+    "slowest": [
+      {
+        "name": "smoke-perf-save-preparation.js",
+        "ms": 177768,
+        "pass": true
+      },
+      {
+        "name": "smoke-start-game-data-integrity.js",
+        "ms": 111097,
+        "pass": true
+      },
+      {
+        "name": "smoke-full-turn-flow.js",
+        "ms": 72122,
+        "pass": true
+      },
+      {
+        "name": "smoke-tang840-opening-ledgers.js",
+        "ms": 70188,
+        "pass": true
+      },
+      {
+        "name": "smoke-circuit-governance-shaosong.js",
+        "ms": 64301,
+        "pass": true
+      },
+      {
+        "name": "smoke-map-circuit-book-shaosong.js",
+        "ms": 59573,
+        "pass": true
+      },
+      {
+        "name": "smoke-edict-data-writeback.js",
+        "ms": 53581,
+        "pass": true
+      },
+      {
+        "name": "smoke-office-seat-dept-prefix.js",
+        "ms": 49271,
+        "pass": true
+      }
+    ],
+    "results": [
+      {
+        "name": "smoke-active-fiscal-readers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 270
+      },
+      {
+        "name": "smoke-agency-covert-report.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-agency-watch.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 141
+      },
+      {
+        "name": "smoke-agent-kernel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 120
+      },
+      {
+        "name": "smoke-agent-mode-anomaly.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 130
+      },
+      {
+        "name": "smoke-agent-mode-court.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-agent-mode-d1d6.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-agent-mode-d2d3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 143
+      },
+      {
+        "name": "smoke-agent-mode-d7.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-agent-mode-da2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-agent-mode-da4.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 132
+      },
+      {
+        "name": "smoke-agent-mode-daq3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-agent-mode-edict.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 130
+      },
+      {
+        "name": "smoke-agent-mode-geo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 129
+      },
+      {
+        "name": "smoke-agent-mode-governance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 239
+      },
+      {
+        "name": "smoke-agent-mode-liveworld.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-agent-mode-mem.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-agent-mode-metacog-wired.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 208
+      },
+      {
+        "name": "smoke-agent-mode-quality.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-agent-mode-reflect.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-agent-mode-rel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-agent-mode-s1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-agent-mode-s10.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 219
+      },
+      {
+        "name": "smoke-agent-mode-s11.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-agent-mode-s12.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-agent-mode-s13.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 204
+      },
+      {
+        "name": "smoke-agent-mode-s2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-agent-mode-s3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 204
+      },
+      {
+        "name": "smoke-agent-mode-s4.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 237
+      },
+      {
+        "name": "smoke-agent-mode-s5.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-agent-mode-s6.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-agent-mode-s7.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-agent-mode-s8.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-agent-mode-s9.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-agent-mode-t1t3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-agent-mode-timegate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-agent-mode-tools.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 144
+      },
+      {
+        "name": "smoke-agent-mode-w1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-agent-mode-wf2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-agent-pipeline-store-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-agent-selfcheck-deep.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 188
+      },
+      {
+        "name": "smoke-agent-trunc-selfheal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-agent-world-editor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 353
+      },
+      {
+        "name": "smoke-ai-abort-listener-cleanup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2054
+      },
+      {
+        "name": "smoke-ai-change-applier-baseline.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-ai-change-applier-module-island.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 215
+      },
+      {
+        "name": "smoke-ai-context-institution-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-ai-core-path-aliases.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-ai-err-human.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-ai-institution-lifecycle-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-ai-preflight-diagnostics.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-ai-structured-policy-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 219
+      },
+      {
+        "name": "smoke-ai-structured-policy-detail-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 209
+      },
+      {
+        "name": "smoke-ai-transport-deadlines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1017
+      },
+      {
+        "name": "smoke-ai-writeback-integrity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 293
+      },
+      {
+        "name": "smoke-android-endturn-oom-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-api-models-thinking.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 233
+      },
+      {
+        "name": "smoke-api-wait-compatibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 409
+      },
+      {
+        "name": "smoke-apikey-persist.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-apikey-restore-rehydrate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-app-close-background-flush.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 457
+      },
+      {
+        "name": "smoke-appoint-commander-living.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 144
+      },
+      {
+        "name": "smoke-appointment-office-invariants.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-arc-chronicle-l10n.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-armory-readiness.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-armory.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 150
+      },
+      {
+        "name": "smoke-army-liability-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 224
+      },
+      {
+        "name": "smoke-army-march-order.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-army-march-viz.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-army-morale-default.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 131
+      },
+      {
+        "name": "smoke-army-mutiny.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 122
+      },
+      {
+        "name": "smoke-army-panel-lag-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 128
+      },
+      {
+        "name": "smoke-army-pressure.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-army-recruit-cost.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 232
+      },
+      {
+        "name": "smoke-army-resource-funding.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 243
+      },
+      {
+        "name": "smoke-army-roster-search.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 624
+      },
+      {
+        "name": "smoke-army-supply-strength.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-army-units-derivation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-army-units-lexicon.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-army-units-loss-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-army-veterancy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 139
+      },
+      {
+        "name": "smoke-audio-bgm.js",
+        "pass": true,
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/tianming-hegui.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/gucheng-junqi.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/hanwei-fengyun.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/changhe-zhangu.mp3"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/audio/bgm/yunkai-wanli.mp3"
+          }
+        ],
+        "ms": 136
+      },
+      {
+        "name": "smoke-audit-account-generation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 345
+      },
+      {
+        "name": "smoke-audit-ci-evidence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 478
+      },
+      {
+        "name": "smoke-audit-file-import.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 626
+      },
+      {
+        "name": "smoke-audit-manual-save-lease.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-audit-safe-remote.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 372
+      },
+      {
+        "name": "smoke-audit-save-files.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 641
+      },
+      {
+        "name": "smoke-audit-save-slot-results.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 248
+      },
+      {
+        "name": "smoke-audit-turn-ipc.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 799
+      },
+      {
+        "name": "smoke-audit-turn-namespaces.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 867
+      },
+      {
+        "name": "smoke-audit-workshop-transactions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 3414
+      },
+      {
+        "name": "smoke-authoring-agent-fiction.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 279
+      },
+      {
+        "name": "smoke-authoring-agent-office-source.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 557
+      },
+      {
+        "name": "smoke-authoring-agent-optims.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6284
+      },
+      {
+        "name": "smoke-authoring-agent-runtime-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 245
+      },
+      {
+        "name": "smoke-authoring-agent-tools.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6348
+      },
+      {
+        "name": "smoke-authoring-completion-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 537
+      },
+      {
+        "name": "smoke-authoring-document-lease.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 412
+      },
+      {
+        "name": "smoke-authoring-efficiency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 603
+      },
+      {
+        "name": "smoke-authoring-provider-stream.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 508
+      },
+      {
+        "name": "smoke-authoring-reasoning-continuity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 431
+      },
+      {
+        "name": "smoke-authoring-region-paths.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-authoring-relay-continuation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 541
+      },
+      {
+        "name": "smoke-authoring-response-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 619
+      },
+      {
+        "name": "smoke-authoring-sse-candidate-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 381
+      },
+      {
+        "name": "smoke-authoring-thinking-settings.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 296
+      },
+      {
+        "name": "smoke-authoring-tool-authorization.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 392
+      },
+      {
+        "name": "smoke-authoring-ui-worldkind.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-authoring-user-write-failures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 217
+      },
+      {
+        "name": "smoke-authoring-wire-retry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 520
+      },
+      {
+        "name": "smoke-authority-declared-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 249
+      },
+      {
+        "name": "smoke-authority-f1-layered.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 234
+      },
+      {
+        "name": "smoke-authority-variable-linkage-effects.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-authority-variable-linkage-matrix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 237
+      },
+      {
+        "name": "smoke-autosave-text-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 269
+      },
+      {
+        "name": "smoke-back-to-launch-formal-exit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 400
+      },
+      {
+        "name": "smoke-battle-adapter.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 334
+      },
+      {
+        "name": "smoke-battle-commanders.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 281
+      },
+      {
+        "name": "smoke-battle-cost-guoku.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-battle-deployment-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-battle-deterministic.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 222
+      },
+      {
+        "name": "smoke-battle-embed-protocol.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-battle-frame-cache.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1222
+      },
+      {
+        "name": "smoke-battle-hud-retained.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1282
+      },
+      {
+        "name": "smoke-battle-impostors.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 374
+      },
+      {
+        "name": "smoke-battle-navigation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4064
+      },
+      {
+        "name": "smoke-battle-observe.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 211
+      },
+      {
+        "name": "smoke-battle-render-assets.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 341
+      },
+      {
+        "name": "smoke-battle-render-resolution.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-battle-replenish.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 218
+      },
+      {
+        "name": "smoke-battle-report.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 263
+      },
+      {
+        "name": "smoke-battle-resolve.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 247
+      },
+      {
+        "name": "smoke-battle-retreat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 255
+      },
+      {
+        "name": "smoke-battle-terrain-clamp.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 233
+      },
+      {
+        "name": "smoke-battle-terrain-world.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 11935
+      },
+      {
+        "name": "smoke-battle-trigger-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1050
+      },
+      {
+        "name": "smoke-battle-turn.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 382
+      },
+      {
+        "name": "smoke-battle-unit-assets.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 983
+      },
+      {
+        "name": "smoke-battle-unit-visibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 389
+      },
+      {
+        "name": "smoke-battle-veterancy-wire.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 320
+      },
+      {
+        "name": "smoke-behavior-weights-d1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-benji-compose.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 231
+      },
+      {
+        "name": "smoke-benji-storage-failures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-bgm-import.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 246
+      },
+      {
+        "name": "smoke-border-invasion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 223
+      },
+      {
+        "name": "smoke-border-risk.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-breach-fate-menu.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 204
+      },
+      {
+        "name": "smoke-building-appraisal-compat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2257
+      },
+      {
+        "name": "smoke-building-compat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-building-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-building-order-sc1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 504
+      },
+      {
+        "name": "smoke-building-order-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 549
+      },
+      {
+        "name": "smoke-building-original-channels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 396
+      },
+      {
+        "name": "smoke-building-payment-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 399
+      },
+      {
+        "name": "smoke-building-product-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-building-works.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 212
+      },
+      {
+        "name": "smoke-c4-ai-wiring.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 228
+      },
+      {
+        "name": "smoke-c4-roving-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 246
+      },
+      {
+        "name": "smoke-calendar-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 209
+      },
+      {
+        "name": "smoke-calendar-lunar-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 227
+      },
+      {
+        "name": "smoke-call-retry-settings.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1772
+      },
+      {
+        "name": "smoke-capgo-ota-stall-retry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 245
+      },
+      {
+        "name": "smoke-captive-court.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 224
+      },
+      {
+        "name": "smoke-cascade-static-remit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 270
+      },
+      {
+        "name": "smoke-ceming-profile-schema.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 213
+      },
+      {
+        "name": "smoke-ceming.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 243
+      },
+      {
+        "name": "smoke-centralization-finance-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-changchao-agenda-tags.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2128
+      },
+      {
+        "name": "smoke-changchao-ambient-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 246
+      },
+      {
+        "name": "smoke-changchao-line-salvage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-changchao-mode-pipeline.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-changchao-persona-stance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1876
+      },
+      {
+        "name": "smoke-changequeue-apply-safety.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 253
+      },
+      {
+        "name": "smoke-chaoyi-attribution.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 258
+      },
+      {
+        "name": "smoke-chaoyi-interject-respond.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 271
+      },
+      {
+        "name": "smoke-chaoyi-policy-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 280
+      },
+      {
+        "name": "smoke-chaoyi-v3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 393
+      },
+      {
+        "name": "smoke-char-autogen-containers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 258
+      },
+      {
+        "name": "smoke-char-delete-blacklist.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 257
+      },
+      {
+        "name": "smoke-char-economy-ai-context.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 271
+      },
+      {
+        "name": "smoke-char-economy-family-tier-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 363
+      },
+      {
+        "name": "smoke-char-inspect-closure.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 229
+      },
+      {
+        "name": "smoke-char-var-linkage-c1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 286
+      },
+      {
+        "name": "smoke-character-actions-office-fit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4050
+      },
+      {
+        "name": "smoke-character-class-action-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 515
+      },
+      {
+        "name": "smoke-character-location-travel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 11130
+      },
+      {
+        "name": "smoke-character-rank-label.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1126
+      },
+      {
+        "name": "smoke-character-wealth-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 496
+      },
+      {
+        "name": "smoke-chronicle-world-lease.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 251
+      },
+      {
+        "name": "smoke-ci-runner-jobs.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-circuit-governance-shaosong.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 64301
+      },
+      {
+        "name": "smoke-circuit-governance-tang.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 45964
+      },
+      {
+        "name": "smoke-circuit-governance-tianqi.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 16663
+      },
+      {
+        "name": "smoke-circuit-governor-effects-tang.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 48143
+      },
+      {
+        "name": "smoke-circuit-governor-effects-tianqi.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 20935
+      },
+      {
+        "name": "smoke-clan-stipend-growth.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-class-action-delegate-character.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-class-action-delegate-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-class-character-ai-context.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-class-character-court-office-links.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-class-character-effects.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-class-character-relations.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-class-character-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-class-demand-party-goals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6476
+      },
+      {
+        "name": "smoke-class-descriptor-adjudicate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 218
+      },
+      {
+        "name": "smoke-class-descriptor-ai-tags.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 231
+      },
+      {
+        "name": "smoke-class-descriptor-reconcile.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 193
+      },
+      {
+        "name": "smoke-class-emerge-population.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 231
+      },
+      {
+        "name": "smoke-class-engine.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 267
+      },
+      {
+        "name": "smoke-class-legitimacy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 216
+      },
+      {
+        "name": "smoke-class-minxin-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 299
+      },
+      {
+        "name": "smoke-class-minxin-live-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 286
+      },
+      {
+        "name": "smoke-class-party-bidirectional.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-class-pressure-scope.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 643
+      },
+      {
+        "name": "smoke-class-radical-flight.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 184
+      },
+      {
+        "name": "smoke-class-radical-fraction.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 255
+      },
+      {
+        "name": "smoke-class-radical-regional.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 239
+      },
+      {
+        "name": "smoke-class-radical-revolt.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-class-roster-ai-inject.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-class-roving-coalesce.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 189
+      },
+      {
+        "name": "smoke-class-satisfaction-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 288
+      },
+      {
+        "name": "smoke-class-satisfaction-signal-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 281
+      },
+      {
+        "name": "smoke-classparty-tinyi-optim.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 285
+      },
+      {
+        "name": "smoke-coastal-raid.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 250
+      },
+      {
+        "name": "smoke-codemod-design-tokens.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 247
+      },
+      {
+        "name": "smoke-command-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 883
+      },
+      {
+        "name": "smoke-commerce-float.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 272
+      },
+      {
+        "name": "smoke-confiscate-tiers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 307
+      },
+      {
+        "name": "smoke-conn-quickcheck.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 495
+      },
+      {
+        "name": "smoke-conspiracy-brewing-feed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 239
+      },
+      {
+        "name": "smoke-conspiracy-engine.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 395
+      },
+      {
+        "name": "smoke-conspiracy-unification.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 333
+      },
+      {
+        "name": "smoke-content-manager-account-session.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 363
+      },
+      {
+        "name": "smoke-content-manager-workshop-fullpage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 329
+      },
+      {
+        "name": "smoke-content-manager-workshop-publish-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-context-hard-ceiling.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 452
+      },
+      {
+        "name": "smoke-context-zones-core.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-core-schema-defenses.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 211
+      },
+      {
+        "name": "smoke-core-ui-field-reads.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 224
+      },
+      {
+        "name": "smoke-corruption-ai-detect-prompt.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 280
+      },
+      {
+        "name": "smoke-corruption-clique-formation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 193
+      },
+      {
+        "name": "smoke-corruption-detection-event.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 220
+      },
+      {
+        "name": "smoke-corruption-harness.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 281
+      },
+      {
+        "name": "smoke-corruption-impact-on-treasury.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 247
+      },
+      {
+        "name": "smoke-corruption-pardon-and-restore.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 212
+      },
+      {
+        "name": "smoke-corruption-player-actions-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 257
+      },
+      {
+        "name": "smoke-corruption-purge-and-asset-seize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 451
+      },
+      {
+        "name": "smoke-corruption-tick-full-pass.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-corruption-yearly-evaluate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-cost-panel-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 189
+      },
+      {
+        "name": "smoke-court-office-imprison-dismiss-refresh.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-court-social-uplift.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-courtesy-address.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-crisis-player-paths.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 208
+      },
+      {
+        "name": "smoke-crisis-player-surface-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-css-resource-retry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-cultural-runtime-consumption.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1486
+      },
+      {
+        "name": "smoke-culture-raster-performance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 402
+      },
+      {
+        "name": "smoke-currency-dynasty-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 220
+      },
+      {
+        "name": "smoke-currency-precision-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 298
+      },
+      {
+        "name": "smoke-custom-build-agent.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-d2-legitimacy-cascade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 220
+      },
+      {
+        "name": "smoke-dangling-signal-fixes.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 359
+      },
+      {
+        "name": "smoke-dead-char-no-memorial-revoke-alive.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 269
+      },
+      {
+        "name": "smoke-dead-code-removal-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 487
+      },
+      {
+        "name": "smoke-deadcode-bugfix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-deaduifix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 420
+      },
+      {
+        "name": "smoke-death-office-travel-roster.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 275
+      },
+      {
+        "name": "smoke-declared-currency-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 254
+      },
+      {
+        "name": "smoke-dedup-keys-pruning.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-deepen2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 231
+      },
+      {
+        "name": "smoke-deepread-wave-parallel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2762
+      },
+      {
+        "name": "smoke-deploy-manifest-atomicity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 21065
+      },
+      {
+        "name": "smoke-dept-tasks-reply.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-derive-theme-palette.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 258
+      },
+      {
+        "name": "smoke-design-token-palette.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 236
+      },
+      {
+        "name": "smoke-desktop-autosave-committed-world.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 217
+      },
+      {
+        "name": "smoke-desktop-autosave-reliability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 338
+      },
+      {
+        "name": "smoke-desktop-back-to-start-panel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-desktop-bridge-reliability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1478
+      },
+      {
+        "name": "smoke-desktop-profile-ownership.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-desktop-save-async-load.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 376
+      },
+      {
+        "name": "smoke-dev-sync-git-paths.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2530
+      },
+      {
+        "name": "smoke-diagnostics-foundation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-dianzhang-consumers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-dianzhang-office-source.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 208
+      },
+      {
+        "name": "smoke-dianzhang-panel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-dianzhang.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-diebao-log.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 238
+      },
+      {
+        "name": "smoke-dikuai-systems.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 229
+      },
+      {
+        "name": "smoke-diplo-consequence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 263
+      },
+      {
+        "name": "smoke-disaster-genesis.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 280
+      },
+      {
+        "name": "smoke-disaster-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-disaster-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-disaster-taxbase.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-disband-editor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-dismissal-state-regex.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-divergence-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 521
+      },
+      {
+        "name": "smoke-division-reassign.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 19423
+      },
+      {
+        "name": "smoke-dynasty-endgame.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-dynasty-realcause.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-economy-env-huangquan.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 297
+      },
+      {
+        "name": "smoke-edict-chinese-quantity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-edict-currency-quantity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 297
+      },
+      {
+        "name": "smoke-edict-data-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 53581
+      },
+      {
+        "name": "smoke-edict-decree-whole.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-edict-diplomacy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-edict-dismiss-parse.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 345
+      },
+      {
+        "name": "smoke-edict-efficacy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 319
+      },
+      {
+        "name": "smoke-edict-fiscal-ledger-integrity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-edict-institution-ai-context.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-edict-institution-lifecycle-events.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-edict-movement-reconcile.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-edict-narrative-link.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 375
+      },
+      {
+        "name": "smoke-edict-npc-atomicity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-edict-office-abolish-dynamic-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-edict-office-reform-dynamic-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-edict-office-tree-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 530
+      },
+      {
+        "name": "smoke-edict-outcomes.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 291
+      },
+      {
+        "name": "smoke-edict-pardon.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 142
+      },
+      {
+        "name": "smoke-edict-parser-layered.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-edict-polish-results.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2099
+      },
+      {
+        "name": "smoke-edict-recruit-parse.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-edict-typed-incidence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-editor-military-legacy-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2790
+      },
+      {
+        "name": "smoke-editor-pipeline-shim.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-editor-renderall-resilient.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 139
+      },
+      {
+        "name": "smoke-editor-reset-inventory.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 455
+      },
+      {
+        "name": "smoke-electron-gate-process-result.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-electron-save-lifecycle-dead-code.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 117
+      },
+      {
+        "name": "smoke-emergency-recovery-boundaries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 397
+      },
+      {
+        "name": "smoke-emergency-recovery-budgets.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 435
+      },
+      {
+        "name": "smoke-emergency-recovery-core.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 581
+      },
+      {
+        "name": "smoke-emergency-recovery-evidence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 399
+      },
+      {
+        "name": "smoke-emergency-recovery-integration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 628
+      },
+      {
+        "name": "smoke-emergency-recovery-review.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1302
+      },
+      {
+        "name": "smoke-encoding-check.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 15055
+      },
+      {
+        "name": "smoke-endgame-screen-unify.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-endturn-ai-policy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-endturn-apply-fields.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-endturn-baseline-helpers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-endturn-battle-detail-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-endturn-callai.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-endturn-cause-legibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-endturn-console-regressions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 132
+      },
+      {
+        "name": "smoke-endturn-context-caps.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-endturn-error-path.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 215
+      },
+      {
+        "name": "smoke-endturn-fatal-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 780
+      },
+      {
+        "name": "smoke-endturn-followup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 218
+      },
+      {
+        "name": "smoke-endturn-helpers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 255
+      },
+      {
+        "name": "smoke-endturn-loading-visibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-endturn-mode-parity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 152
+      },
+      {
+        "name": "smoke-endturn-multicall-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 310
+      },
+      {
+        "name": "smoke-endturn-namespace-deps.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-endturn-narrative-preservation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-endturn-narrative.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 222
+      },
+      {
+        "name": "smoke-endturn-nonblocking-completion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 342
+      },
+      {
+        "name": "smoke-endturn-party-class-change-groups.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-endturn-performance-optimizations.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 303
+      },
+      {
+        "name": "smoke-endturn-policy-bridges.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-endturn-prompt-tokens.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-endturn-public-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 235
+      },
+      {
+        "name": "smoke-endturn-render-loading-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-endturn-section-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 210
+      },
+      {
+        "name": "smoke-endturn-speed-batch1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-endturn-speed-batch2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-endturn-subcall-registry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-endturn-systems-tail-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 128
+      },
+      {
+        "name": "smoke-endturn-token-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-endturn-transaction-failures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-endturn-validity-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-enemy-casualty-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-engine-phase0.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-ensure-char-complete-e4.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-env-policy-complete-chain.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 263
+      },
+      {
+        "name": "smoke-environment-migration-capacity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 278
+      },
+      {
+        "name": "smoke-environment-policy-expiry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 207
+      },
+      {
+        "name": "smoke-eunuch-inner-court-s2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 228
+      },
+      {
+        "name": "smoke-eunuch-minister.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-event-collect.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-eventbus-vestigial.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2483
+      },
+      {
+        "name": "smoke-faction-ai-mainloop-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-faction-binding-lint.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2273
+      },
+      {
+        "name": "smoke-faction-build.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-faction-derived-cohesion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 447
+      },
+      {
+        "name": "smoke-faction-derived-economy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 434
+      },
+      {
+        "name": "smoke-faction-derived-strength.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 567
+      },
+      {
+        "name": "smoke-faction-diplomacy-grudge-identities.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 382
+      },
+      {
+        "name": "smoke-faction-event-ripple.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-faction-index-e2e.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 407
+      },
+      {
+        "name": "smoke-faction-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-faction-lifecycle-invariants.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-faction-living-world.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1297
+      },
+      {
+        "name": "smoke-faction-llm-comprehensive-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 324
+      },
+      {
+        "name": "smoke-faction-llm-priority-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-faction-llm-wave1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 337
+      },
+      {
+        "name": "smoke-faction-membership.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 269
+      },
+      {
+        "name": "smoke-faction-npc-chaoyi.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 475
+      },
+      {
+        "name": "smoke-faction-npc-edict.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 5038
+      },
+      {
+        "name": "smoke-faction-npc-endturn-e2e.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 304
+      },
+      {
+        "name": "smoke-faction-npc-full-audit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 258
+      },
+      {
+        "name": "smoke-faction-npc-guoku.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 428
+      },
+      {
+        "name": "smoke-faction-npc-in-turn-driver.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-faction-npc-intervention.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 465
+      },
+      {
+        "name": "smoke-faction-npc-isplayer-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-faction-npc-llm-decision.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 625
+      },
+      {
+        "name": "smoke-faction-npc-llm-enrich-player-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-faction-npc-llm-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 289
+      },
+      {
+        "name": "smoke-faction-npc-memorial.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6347
+      },
+      {
+        "name": "smoke-faction-npc-multiturn-e2e.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 287
+      },
+      {
+        "name": "smoke-faction-npc-office.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 703
+      },
+      {
+        "name": "smoke-faction-panel-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 213
+      },
+      {
+        "name": "smoke-faction-relations.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1198
+      },
+      {
+        "name": "smoke-faction-stats-nooverflow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 416
+      },
+      {
+        "name": "smoke-fake-numbers-fix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 192
+      },
+      {
+        "name": "smoke-fame-events-b1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-fame-tinyi-b2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-family-mode-e3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-feature-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 192
+      },
+      {
+        "name": "smoke-feature-loader-v2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-feudal-template-immutability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-field-pipelines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-final-completion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-final-recovery-races.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 346
+      },
+      {
+        "name": "smoke-final-save-reconcile.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 730
+      },
+      {
+        "name": "smoke-findchar-index-first.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-fiscal-actual-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 530
+      },
+      {
+        "name": "smoke-fiscal-ai-field-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 260
+      },
+      {
+        "name": "smoke-fiscal-ai-posting.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 743
+      },
+      {
+        "name": "smoke-fiscal-collection-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 223
+      },
+      {
+        "name": "smoke-fiscal-contract-edgecases.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 302
+      },
+      {
+        "name": "smoke-fiscal-cut-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 216
+      },
+      {
+        "name": "smoke-fiscal-dynamic-settlement.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 198
+      },
+      {
+        "name": "smoke-fiscal-field-contracts.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 333
+      },
+      {
+        "name": "smoke-fiscal-monthly-shizheng-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-fiscal-recurring-coerce.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-fiscal-reform-reconcile.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-fiscal-region-labels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 414
+      },
+      {
+        "name": "smoke-fiscal-target-alias-preflight.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-fiscal-transaction-atomicity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-fiscal-transfer-pair-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-fiscal-unified-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 478
+      },
+      {
+        "name": "smoke-fixed-fit-modern-viewport-units.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 127
+      },
+      {
+        "name": "smoke-foreign-ruler-court-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-formal-desk-player-action-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-formal-edict-endturn-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-formal-edict-polish-scope.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-formal-edict-portrait.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-formal-hongyan-fulltext.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-formal-module-modal-size.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-formal-player-action-only.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-formal-records-fulltext.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-formal-runtime-chrome-throttle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 207
+      },
+      {
+        "name": "smoke-formal-ui-bridge-state.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 220
+      },
+      {
+        "name": "smoke-formalmap-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-fortify-writes.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-full-graph-digest.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-full-turn-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 72122
+      },
+      {
+        "name": "smoke-fullgen-editor-worldkind.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-fullgen-worldkind-modern.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-fullscreen-toggle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-funded-transfer-conservation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 273
+      },
+      {
+        "name": "smoke-fuyi-income-wire.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-g1-special-exams.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-g5-tongzi.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-gameplay-default-audit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-gameplay-promotion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 626
+      },
+      {
+        "name": "smoke-global-provider-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 449
+      },
+      {
+        "name": "smoke-globalrules-build.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-globalrules-entrench.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-globalrules-reback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 227
+      },
+      {
+        "name": "smoke-globalrules-resist.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 241
+      },
+      {
+        "name": "smoke-globalrules.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-goal-axis-repair.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2114
+      },
+      {
+        "name": "smoke-gongming-aiface.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-gongming-consequence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-gongming-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-gongming-engine.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-gongming-production.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-guoku-bankruptcy-seven-stage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-guoku-compute-tax-flow-tyrant.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-guoku-compute-tax-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-guoku-enact-reform.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-guoku-init-from-dynasty.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 211
+      },
+      {
+        "name": "smoke-guoku-legacy-fiscal-compat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-guoku-loan-and-bankruptcy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 189
+      },
+      {
+        "name": "smoke-guoku-shared-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 520
+      },
+      {
+        "name": "smoke-guoku-sources-scenario-disabled.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-guoku-tick-full-pass.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-guoku-yearly-settle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-guoshi-cc-port.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6412
+      },
+      {
+        "name": "smoke-guoshi-memskills.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-guoshi-source-ipc.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-guoshi-write-sanitize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 292
+      },
+      {
+        "name": "smoke-guozuo-collapse-proximity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-guozuo-junctures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-h-school.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 211
+      },
+      {
+        "name": "smoke-hearts-coverage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-heir-guoben.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-hidden-moves-hygiene.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1209
+      },
+      {
+        "name": "smoke-hist-fall-compare.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1919
+      },
+      {
+        "name": "smoke-history-trigger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 192
+      },
+      {
+        "name": "smoke-home-ui-settings.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-hongyan-policy-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-hongyan-send-freeze.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 223
+      },
+      {
+        "name": "smoke-hongyan-yuan.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-houguong-module-load.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 133
+      },
+      {
+        "name": "smoke-hover-fulltext.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-huangquan-attribution.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-huangwei-writeport-collection.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-huji-deep-fields-and-presets.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-huji-governance-court-feedback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-huji-governance-executor-causes-backlash.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-huji-governance-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-huji-hard-effects.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-huji-runtime-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 256
+      },
+      {
+        "name": "smoke-imageapi-test-buttons.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 121
+      },
+      {
+        "name": "smoke-imageapi-url.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-imprison-recognition.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 193
+      },
+      {
+        "name": "smoke-inflation-tax-namespace.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 138
+      },
+      {
+        "name": "smoke-inflation-tax.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 142
+      },
+      {
+        "name": "smoke-influence-groups.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 230
+      },
+      {
+        "name": "smoke-institution-lifecycle-player-chain.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-institution-lifecycle-ui-surface.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 142
+      },
+      {
+        "name": "smoke-institutional-power-minister.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1244
+      },
+      {
+        "name": "smoke-invasion-ai.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 127
+      },
+      {
+        "name": "smoke-issue-adjudication.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 184
+      },
+      {
+        "name": "smoke-j4-scandal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-json-repair-layers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-keju-guoku-cost.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-keju-hl-default-on.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 208
+      },
+      {
+        "name": "smoke-keju-indicators.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 184
+      },
+      {
+        "name": "smoke-keju-mobility-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-keju-paradigm-panel-baseline.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-keju-quota-lever.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 193
+      },
+      {
+        "name": "smoke-keju-specialexam-default-on.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 207
+      },
+      {
+        "name": "smoke-keju-tekedetail.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-keju-terminal-exam-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 248
+      },
+      {
+        "name": "smoke-keyi-open-atomicity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-launch-reentry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 494
+      },
+      {
+        "name": "smoke-ledger-consistency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-ledgergate-memory-wendui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-ledgergate-narrative-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 295
+      },
+      {
+        "name": "smoke-legacy-city-info-security.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 241
+      },
+      {
+        "name": "smoke-letter-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2389
+      },
+      {
+        "name": "smoke-letter-full.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4057
+      },
+      {
+        "name": "smoke-letter-intercept-react.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2118
+      },
+      {
+        "name": "smoke-letter-radical.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 3153
+      },
+      {
+        "name": "smoke-lint-design-tokens.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 192
+      },
+      {
+        "name": "smoke-lint-scenario-data.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-livingworld-quicktest.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 228
+      },
+      {
+        "name": "smoke-local-official-fame-task29.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 207
+      },
+      {
+        "name": "smoke-loyalty-attribution.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-map-asset-formats.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 224
+      },
+      {
+        "name": "smoke-map-circuit-book-shaosong.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 59573
+      },
+      {
+        "name": "smoke-map-circuit-book.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 25515
+      },
+      {
+        "name": "smoke-map-circuits.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 221
+      },
+      {
+        "name": "smoke-map-core-controls.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2933
+      },
+      {
+        "name": "smoke-map-demographic-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 327
+      },
+      {
+        "name": "smoke-map-drag-motion-lifetime.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 260
+      },
+      {
+        "name": "smoke-map-editor-agent.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 546
+      },
+      {
+        "name": "smoke-map-editor-bookmarks-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-map-editor-scenario-library.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 5158
+      },
+      {
+        "name": "smoke-map-hierarchy-aggregate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 139
+      },
+      {
+        "name": "smoke-map-label-feature-late-binding.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-map-label-spatial-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 299
+      },
+      {
+        "name": "smoke-map-live-vitals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-map-merge-weld.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 150
+      },
+      {
+        "name": "smoke-map-pathfinding-heap.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-map-realm-layout.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 356
+      },
+      {
+        "name": "smoke-map-route-days.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1965
+      },
+      {
+        "name": "smoke-map-runtime-write-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-map-spatial-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 243
+      },
+      {
+        "name": "smoke-map-view-scores.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-map-viewport-collision.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1883
+      },
+      {
+        "name": "smoke-map-workbench.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 243
+      },
+      {
+        "name": "smoke-map-zoom-preload.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 647
+      },
+      {
+        "name": "smoke-mapeditor-ui.js",
+        "pass": true,
+        "waivers": [
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/ZCOOLXiaoWei-Regular.ttf"
+          },
+          {
+            "code": "optional-asset-absent",
+            "path": "assets/fonts/MaShanZheng-Regular.ttf"
+          }
+        ],
+        "ms": 190
+      },
+      {
+        "name": "smoke-mass-amnesty.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-memorial-consequences.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-memorial-court-debate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 189
+      },
+      {
+        "name": "smoke-memorial-disposition-as-edict.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-memorial-reading-preferences.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-memorial-reply-stable-id.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-memory-accepted-governance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-memory-accepted-readback-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-memory-adaptive-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1063
+      },
+      {
+        "name": "smoke-memory-boundary-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 459
+      },
+      {
+        "name": "smoke-memory-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-memory-capacity-limits.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-memory-capacity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-memory-character-scope.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 141
+      },
+      {
+        "name": "smoke-memory-character-stance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-memory-compress-consumer.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-memory-context-compiler.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-memory-controls-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-memory-controls.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-memory-court-record-envelope.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-memory-current-issues-governance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-memory-e2e-game-golden.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-memory-envelope-facade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-memory-envelope-retrieval.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-memory-envelope-schema-v0.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-memory-era-rollup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 235
+      },
+      {
+        "name": "smoke-memory-evidence-endturn-metadata.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-memory-evidence-envelope.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-memory-evidence-registry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-memory-evidence-risk-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-memory-failed-edict-lesson.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-memory-focus-relevance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-memory-forget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-memory-governance-goldens.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-memory-governance-live-chain.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-memory-hard-state-source.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-memory-injection-guarantees.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-memory-legacy-source-migration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-memory-loop-closure.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-memory-manifest.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 128
+      },
+      {
+        "name": "smoke-memory-model-detection.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 350
+      },
+      {
+        "name": "smoke-memory-pipeline-continuity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-memory-procedural-lessons.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-memory-read-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 124
+      },
+      {
+        "name": "smoke-memory-recall-context-zones.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-memory-recall-injection-lineage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-memory-recall-query-builder.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 227
+      },
+      {
+        "name": "smoke-memory-recency-decay.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-memory-relation-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1651
+      },
+      {
+        "name": "smoke-memory-retrieval-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-memory-retrieval-core.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-memory-retrieval-diagnostics.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 217
+      },
+      {
+        "name": "smoke-memory-retrieval-golden-matrix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-memory-retrieval-golden.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-memory-retrieval-governance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-memory-retrieval-graph-hop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-memory-retrieval-integration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-memory-sanitize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 233
+      },
+      {
+        "name": "smoke-memory-sc1-governance-markers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 309
+      },
+      {
+        "name": "smoke-memory-sc1-precontext-trace.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-memory-sc1-writeback-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 270
+      },
+      {
+        "name": "smoke-memory-sc1q-commitment-sourcebound.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 215
+      },
+      {
+        "name": "smoke-memory-scoring-equivalence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 10351
+      },
+      {
+        "name": "smoke-memory-source-bound-records.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-memory-source-bound-summaries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-memory-stance-netting.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-memory-strengthen.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 188
+      },
+      {
+        "name": "smoke-memory-temporal-validity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-memory-trace-authority-lineage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-memory-trace-core.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-memory-trace-integration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-memory-trace-persist.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-memory-turn-archive.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 222
+      },
+      {
+        "name": "smoke-memory-turn-backfill.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-memory-turn-inference-projection.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-memory-turn-issue-supersedes.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-memory-turn-output-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-memory-turn-quality-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-memory-turn-rollup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 249
+      },
+      {
+        "name": "smoke-memory-turn-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-memory-vector-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 779
+      },
+      {
+        "name": "smoke-memory-visibility-audience.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-memory-workshop-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-memory-workshop-audit-capacity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-memory-workshop-audit-filters.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-memory-workshop-governance-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-memory-workshop-governance-undo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 188
+      },
+      {
+        "name": "smoke-memory-workshop-governance-visibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-memory-workshop-mvp.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-memory-workshop-panel-click.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-memory-workshop-panel-danger-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-memory-workshop-preinference.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-memory-workshop-review-details.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-memory-workshop-rollup-controls.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-memory-workshop-rollup-undo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-memory-writegate-flush.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-memory-writegate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-memwrite-continuation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-memwrite-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-mentor-coverage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1825
+      },
+      {
+        "name": "smoke-merit-dynamics.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-mil-fullfeed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-military-execution-binding.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 867
+      },
+      {
+        "name": "smoke-military-systems.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 480
+      },
+      {
+        "name": "smoke-minimap-idle-render.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-mint-agency-panel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-minxin-3dao-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-minxin-commitment-tracker.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-minxin-hard-link-consumers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-minxin-hard-links.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-minxin-ledger-six-stage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-minxin-pressure-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-minxin-responsibility-chain.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-mobile-api-integration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 464
+      },
+      {
+        "name": "smoke-mobile-api-transport.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 257
+      },
+      {
+        "name": "smoke-mobile-file-export.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 335
+      },
+      {
+        "name": "smoke-mobile-scenario-export.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 219
+      },
+      {
+        "name": "smoke-modal-layer-focus.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-model-context-identity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 404
+      },
+      {
+        "name": "smoke-model-probe-evidence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-mutiny-dedup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 119
+      },
+      {
+        "name": "smoke-name-extraction.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 131
+      },
+      {
+        "name": "smoke-narr-3stage-repair.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-narrative-execution-consistency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 655
+      },
+      {
+        "name": "smoke-narrative-validator-restart.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 466
+      },
+      {
+        "name": "smoke-native-artifact-export.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-native-fiscal-consumers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 465
+      },
+      {
+        "name": "smoke-native-start-compiler.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 254
+      },
+      {
+        "name": "smoke-native-start-contracts.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 5995
+      },
+      {
+        "name": "smoke-native-start-preparation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1540
+      },
+      {
+        "name": "smoke-native-start-world.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 243
+      },
+      {
+        "name": "smoke-native-world-events.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 296
+      },
+      {
+        "name": "smoke-negotiation-sessions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 314
+      },
+      {
+        "name": "smoke-neitang-inner-treasury-compat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 114
+      },
+      {
+        "name": "smoke-neitang-shared-fields.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1912
+      },
+      {
+        "name": "smoke-newui-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 271
+      },
+      {
+        "name": "smoke-no-source-death-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 226
+      },
+      {
+        "name": "smoke-nokey-endturn-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-non-dead-retention-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-npc-action-entrypoints.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 320
+      },
+      {
+        "name": "smoke-npc-action-logic.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 326
+      },
+      {
+        "name": "smoke-npc-action-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2151
+      },
+      {
+        "name": "smoke-npc-affinity-ties.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-npc-behavior-consequences.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 143
+      },
+      {
+        "name": "smoke-npc-cluster-repair.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-npc-covert-memory.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 117
+      },
+      {
+        "name": "smoke-npc-daily-activities.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 283
+      },
+      {
+        "name": "smoke-npc-daily-boundaries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 536
+      },
+      {
+        "name": "smoke-npc-daily-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1144
+      },
+      {
+        "name": "smoke-npc-death-ripple.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-npc-defeat-retire-ripple.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 135
+      },
+      {
+        "name": "smoke-npc-disgrace-ripple.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 139
+      },
+      {
+        "name": "smoke-npc-dongtai-feed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 150
+      },
+      {
+        "name": "smoke-npc-economy-ability-wuchang-candidates.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 189
+      },
+      {
+        "name": "smoke-npc-execution-economy-ability-wuchang-results.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 291
+      },
+      {
+        "name": "smoke-npc-family-tier-behavior-effects.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 290
+      },
+      {
+        "name": "smoke-npc-goal-in-heart.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-npc-interaction-enrich.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-npc-local-ai.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 323
+      },
+      {
+        "name": "smoke-npc-mood-recency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 122
+      },
+      {
+        "name": "smoke-npc-output-leak-fix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-npc-plans-feed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 184
+      },
+      {
+        "name": "smoke-npc-prominence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-npc-relation-events.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-office-apply-resolve-vacate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-office-appointment-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 202
+      },
+      {
+        "name": "smoke-office-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-office-charter-review.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 184
+      },
+      {
+        "name": "smoke-office-charter.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 213
+      },
+      {
+        "name": "smoke-office-circuit-duty.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 255
+      },
+      {
+        "name": "smoke-office-concurrent-appointments.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-office-derive-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-office-dismiss-tree-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-office-dup-seat-heal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 204
+      },
+      {
+        "name": "smoke-office-duty-accounting.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 399
+      },
+      {
+        "name": "smoke-office-duty-integration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 279
+      },
+      {
+        "name": "smoke-office-dutystate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 141
+      },
+      {
+        "name": "smoke-office-dyn-migration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-office-dynastification.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-office-empty-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 132
+      },
+      {
+        "name": "smoke-office-holder-stable-identities.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-office-institutions-chronicle-entry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-office-loyalty-transfer.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 166
+      },
+      {
+        "name": "smoke-office-powermap.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-office-recall.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-office-recursive-layout.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 284
+      },
+      {
+        "name": "smoke-office-reform-add-overlap.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 225
+      },
+      {
+        "name": "smoke-office-reform.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-office-seat-dept-prefix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 49271
+      },
+      {
+        "name": "smoke-office-settings-toggles.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-office-supervision.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-office-tree-render-rederive.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4080
+      },
+      {
+        "name": "smoke-office-tree-shape-normalize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1437
+      },
+      {
+        "name": "smoke-office-vacancy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 95
+      },
+      {
+        "name": "smoke-official-bundle-parity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 29153
+      },
+      {
+        "name": "smoke-official-scenario-expression.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-official-scenario-lazy-loader.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 735
+      },
+      {
+        "name": "smoke-official-source-structure-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7951
+      },
+      {
+        "name": "smoke-offtree-appoint-deterministic.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-old-save-compat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-onboarding-help.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 129
+      },
+      {
+        "name": "smoke-online-desktop-token-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-opening-regional-pressure.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-opening-renli-prime.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 11869
+      },
+      {
+        "name": "smoke-opening-treasury-fiscal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 288
+      },
+      {
+        "name": "smoke-p5-alpha-namespaces.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 129
+      },
+      {
+        "name": "smoke-p5-beta-npc-char.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-p5-delta-fiscal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 120
+      },
+      {
+        "name": "smoke-p5-epsilon-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 141
+      },
+      {
+        "name": "smoke-p5-eta-endturn.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 125
+      },
+      {
+        "name": "smoke-p5-gamma-edict.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-p5-theta-editor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-p5-zeta-map-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-p6-inline-namespaces.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-party-calibration-response.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 377
+      },
+      {
+        "name": "smoke-party-class-action-scheduler.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 276
+      },
+      {
+        "name": "smoke-party-class-action-tinyi-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-party-class-actors.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-party-class-closed-loop.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 262
+      },
+      {
+        "name": "smoke-party-class-decay-escalation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-party-class-drift-bidirectional.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-party-class-dynamic-relations.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-party-class-ecology.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-party-class-llm-calibrator.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-party-class-tuning.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-party-class-v3style.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-party-goals-adaptive-evidence.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-party-goals-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6546
+      },
+      {
+        "name": "smoke-party-goals-scenario-variance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-party-inference.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-party-opening-standing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 886
+      },
+      {
+        "name": "smoke-pause-fab-reposition.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-perf-canonical-utf8.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 287
+      },
+      {
+        "name": "smoke-perf-desk-panels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 370
+      },
+      {
+        "name": "smoke-perf-map-render-path.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6169
+      },
+      {
+        "name": "smoke-perf-save-preparation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177768
+      },
+      {
+        "name": "smoke-perf-work-counters.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1170
+      },
+      {
+        "name": "smoke-performance-optimization-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 143
+      },
+      {
+        "name": "smoke-personnel-death-pipeline-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 346
+      },
+      {
+        "name": "smoke-personnel-dismissal-official.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 34297
+      },
+      {
+        "name": "smoke-personnel-dismissal-writeback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 448
+      },
+      {
+        "name": "smoke-phase3-deep-refactor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-phase4-memory-merge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-phase5-sc2-3stage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-phase6-strict-schema.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-phase7-ux-collapse.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 118
+      },
+      {
+        "name": "smoke-phase8-listener-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 108
+      },
+      {
+        "name": "smoke-phase8-map-live-panels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7611
+      },
+      {
+        "name": "smoke-phase8-office-standalone.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7310
+      },
+      {
+        "name": "smoke-phase8-party-class-debug-panel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-phase8-party-class-ecology-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-phase8-party-class-nearcauses.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 210
+      },
+      {
+        "name": "smoke-phase8-party-class-relation-forecast.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-phase8-party-class-relation-interventions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 169
+      },
+      {
+        "name": "smoke-phase8-social-political-cause-chain.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 229
+      },
+      {
+        "name": "smoke-pinch-pan-gestures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-pipeline-diff.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2641
+      },
+      {
+        "name": "smoke-player-action-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-player-commander-fate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-player-death-adjudicator.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-player-driven-history.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 713
+      },
+      {
+        "name": "smoke-player-natural-death-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-player-state-regressions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 425
+      },
+      {
+        "name": "smoke-player-text-memory-regressions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 272
+      },
+      {
+        "name": "smoke-player-writeback-regressions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 951
+      },
+      {
+        "name": "smoke-playhistory.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-policy-detail-player-paths.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-political-action-unification.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 639
+      },
+      {
+        "name": "smoke-political-boundaries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 695
+      },
+      {
+        "name": "smoke-political-generation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 423
+      },
+      {
+        "name": "smoke-political-official-scenarios.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 14553
+      },
+      {
+        "name": "smoke-pop-bottomup-s1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-pop-bottomup-s2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-pop-bottomup-s4.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-pop-bottomup-s5.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-population-faction-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 455
+      },
+      {
+        "name": "smoke-population-registered-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 296
+      },
+      {
+        "name": "smoke-population-single-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 549
+      },
+      {
+        "name": "smoke-population-transfer-invariants.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 152
+      },
+      {
+        "name": "smoke-postcommit-draft-cleanup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-postturn-court-deferred-finalize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-postturn-court-modal-layer.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-postturn-court-render-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-postturn-court-turn-gating.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-postturn-critical-failures.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 133
+      },
+      {
+        "name": "smoke-preload-ipc-disposers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-preload-online-request-limit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 193
+      },
+      {
+        "name": "smoke-private-granular-e2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 228
+      },
+      {
+        "name": "smoke-private-summary-e1.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 140
+      },
+      {
+        "name": "smoke-production-authored.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-production-b2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-production-dependencies.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 5811
+      },
+      {
+        "name": "smoke-promotion-subs-walk.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-prompt-budget-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-prompt-cache-proxy-claude.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-public-treasury-a3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 137
+      },
+      {
+        "name": "smoke-public-treasury-custody.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 610
+      },
+      {
+        "name": "smoke-public-treasury-scale.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 14847
+      },
+      {
+        "name": "smoke-pvwf-income-flow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-qiju-category-coverage.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-qiyun-preview-panel.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-quicktest-multiturn.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 3826
+      },
+      {
+        "name": "smoke-rank-age-invariants.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-rank-display-sources.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 122
+      },
+      {
+        "name": "smoke-rank-resolve.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 120
+      },
+      {
+        "name": "smoke-ransom-recolor-wendui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-reactive-cascade-bounds.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 434
+      },
+      {
+        "name": "smoke-recent-narrative.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-recovery-settings-restore.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-recovery-vault.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 233
+      },
+      {
+        "name": "smoke-regicide-adjudication.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-region-age-settlement-labels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 152
+      },
+      {
+        "name": "smoke-region-governor-live.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-region-status.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 192
+      },
+      {
+        "name": "smoke-release-baseline-inputs.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 269
+      },
+      {
+        "name": "smoke-release-key-fingerprint.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-relief-adjudication.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 331
+      },
+      {
+        "name": "smoke-relief-governance.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 681
+      },
+      {
+        "name": "smoke-relief-resettle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 126
+      },
+      {
+        "name": "smoke-render-query-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2633
+      },
+      {
+        "name": "smoke-renderer-untrusted-dom.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 232
+      },
+      {
+        "name": "smoke-renli-corvee-demand-baseline.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-renli-corvee-sat-dedup.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-renli-data-base.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-renli-edict-trigger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 158
+      },
+      {
+        "name": "smoke-renli-fugitive-authority.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 178
+      },
+      {
+        "name": "smoke-renli-grain-shortfall.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-renli-military.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-renli-pilot-seed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 174
+      },
+      {
+        "name": "smoke-renli-prompt-context.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-renli-reforms.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-renli-reported-channels.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-renli-reported-fog.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-renli-reported-value-fn.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-renli-satisfaction-flight.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 148
+      },
+      {
+        "name": "smoke-renli-tanding.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 145
+      },
+      {
+        "name": "smoke-renli-tick-walkthrough.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 150
+      },
+      {
+        "name": "smoke-renli-unrest-ignition.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-renli-weather-disaster.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-renli-wentian.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 152
+      },
+      {
+        "name": "smoke-renli-youmian.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-renwu-delete-search-dead.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-renwu-jail-filter.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-renwu-jiawang-real.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-renwu-multioffice-display.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-renwu-nian-conspiracies.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-renwu-relations-role.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 197
+      },
+      {
+        "name": "smoke-renwu-source-reader.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-renwu-works-route.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-reported-fiscal-wiring.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-reported-spread.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 163
+      },
+      {
+        "name": "smoke-reported-topbar-flip.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 162
+      },
+      {
+        "name": "smoke-reported-view.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-restore-custom-scenarios.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-restored-deprecated-code-paths.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-restricted-roster.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-resume-point.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-revolt-amnesty-rejected.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-revolt-breach.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-revolt-entity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-revolt-inference.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 188
+      },
+      {
+        "name": "smoke-right-panel-lag-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-right-rail-badge-semantics.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 609
+      },
+      {
+        "name": "smoke-rightrail-datasource.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 323
+      },
+      {
+        "name": "smoke-round19-cross-system-rollback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 300
+      },
+      {
+        "name": "smoke-round20-performance-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1210
+      },
+      {
+        "name": "smoke-roving-plunder.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 204
+      },
+      {
+        "name": "smoke-rumor-mill-agg.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-runner-resource-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 397
+      },
+      {
+        "name": "smoke-runtime-map-economy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-runtime-save-consistency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 395
+      },
+      {
+        "name": "smoke-s1-power-minister-revival.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7469
+      },
+      {
+        "name": "smoke-s1b-review-landing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7473
+      },
+      {
+        "name": "smoke-s1c-office-conspiracy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7093
+      },
+      {
+        "name": "smoke-s1d-official-disaffection.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7168
+      },
+      {
+        "name": "smoke-s1e-salary-headcount.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7445
+      },
+      {
+        "name": "smoke-s2-office-powermap.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7418
+      },
+      {
+        "name": "smoke-s2b-duty-authority-reform.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 8180
+      },
+      {
+        "name": "smoke-s2c-office-digest-wiring.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 8196
+      },
+      {
+        "name": "smoke-s4-office-retirement.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 8273
+      },
+      {
+        "name": "smoke-s4b-jingcha.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 8275
+      },
+      {
+        "name": "smoke-s5-menyin.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7841
+      },
+      {
+        "name": "smoke-s6-rank-override.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 7758
+      },
+      {
+        "name": "smoke-s7-office-ai-feed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-s8-talent-alert.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 201
+      },
+      {
+        "name": "smoke-save-codec-deadlines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 311
+      },
+      {
+        "name": "smoke-save-commit-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 635
+      },
+      {
+        "name": "smoke-save-finite-validation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 320
+      },
+      {
+        "name": "smoke-save-integrity-audit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-save-load-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 556
+      },
+      {
+        "name": "smoke-save-map-aliases.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 240
+      },
+      {
+        "name": "smoke-save-project-text-bridge.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 212
+      },
+      {
+        "name": "smoke-save-saved-clone.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 179
+      },
+      {
+        "name": "smoke-save-slim.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 402
+      },
+      {
+        "name": "smoke-sc07-cognition-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-sc1-family-refactor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 200
+      },
+      {
+        "name": "smoke-sc1-lossless-capacity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 244
+      },
+      {
+        "name": "smoke-sc1-stream-final-budget.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 224
+      },
+      {
+        "name": "smoke-sc16-player-faction-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 284
+      },
+      {
+        "name": "smoke-sc1bc-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 221
+      },
+      {
+        "name": "smoke-sc1q-dialogue-commitment.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 216
+      },
+      {
+        "name": "smoke-sc1q-sc19-upgrade.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 346
+      },
+      {
+        "name": "smoke-scenario-editor-origin-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 21013
+      },
+      {
+        "name": "smoke-scenario-editor-reset-preview.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 10488
+      },
+      {
+        "name": "smoke-scenario-editor-reset-roundtrip.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 8750
+      },
+      {
+        "name": "smoke-scenario-fiscal-registration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-scenario-import-events-shape.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 191
+      },
+      {
+        "name": "smoke-scenario-index-selfheal.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-scenario-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 5580
+      },
+      {
+        "name": "smoke-scenario-opening-narrative.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 313
+      },
+      {
+        "name": "smoke-scenario-renderer-html-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 180
+      },
+      {
+        "name": "smoke-scenario-return-sanitize.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-search-empty-state.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 322
+      },
+      {
+        "name": "smoke-secondary-api-retries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4234
+      },
+      {
+        "name": "smoke-secondary-changchao-retries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 363
+      },
+      {
+        "name": "smoke-secondary-retry-routing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2425
+      },
+      {
+        "name": "smoke-secondary-retry-settings-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 339
+      },
+      {
+        "name": "smoke-secondary-task-retries.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1084
+      },
+      {
+        "name": "smoke-security-content-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 135
+      },
+      {
+        "name": "smoke-security-ipc-hardening.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-security-trust-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 2628
+      },
+      {
+        "name": "smoke-seigniorage-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 129
+      },
+      {
+        "name": "smoke-semantic-atomic-world-lease.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 445
+      },
+      {
+        "name": "smoke-semantic-cache-scheme-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 196
+      },
+      {
+        "name": "smoke-semantic-offline-assets.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 295
+      },
+      {
+        "name": "smoke-semantic-true-incremental.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1953
+      },
+      {
+        "name": "smoke-serialization-roundtrip.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 171
+      },
+      {
+        "name": "smoke-settings-media-theme.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 153
+      },
+      {
+        "name": "smoke-settings-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-settlement-reentrant-rollback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 219
+      },
+      {
+        "name": "smoke-shanhe-load-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-shanhe-pointer-coordinates.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 294
+      },
+      {
+        "name": "smoke-shaosong-target-map-regions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 3101
+      },
+      {
+        "name": "smoke-shiji-fiscal-ledger.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 507
+      },
+      {
+        "name": "smoke-shiji-history-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 194
+      },
+      {
+        "name": "smoke-shiji-volumes.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 240
+      },
+      {
+        "name": "smoke-shizheng-tinyi-entry.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 345
+      },
+      {
+        "name": "smoke-shuochao-endturn-anim.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 181
+      },
+      {
+        "name": "smoke-snapshot-deadlines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 394
+      },
+      {
+        "name": "smoke-social-class-transition.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 182
+      },
+      {
+        "name": "smoke-social-descriptor-formation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 205
+      },
+      {
+        "name": "smoke-social-foundation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 386
+      },
+      {
+        "name": "smoke-social-nav-promote.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 173
+      },
+      {
+        "name": "smoke-social-political-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 257
+      },
+      {
+        "name": "smoke-social-satisfaction-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 759
+      },
+      {
+        "name": "smoke-sovereign-address-sensing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 139
+      },
+      {
+        "name": "smoke-stable-id-migration.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 176
+      },
+      {
+        "name": "smoke-stable-id-reference-integrity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 203
+      },
+      {
+        "name": "smoke-start-game-data-integrity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 111097
+      },
+      {
+        "name": "smoke-start-game-scenario-library.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 236
+      },
+      {
+        "name": "smoke-start-hierarchy-immutability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 183
+      },
+      {
+        "name": "smoke-startup-autorestore.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-startup-autosave-opt-in.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 186
+      },
+      {
+        "name": "smoke-startup-budget-reuse.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 280
+      },
+      {
+        "name": "smoke-startup-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-startup-health-gate.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-startup-mode-actions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 279
+      },
+      {
+        "name": "smoke-startup-phase-observability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 512
+      },
+      {
+        "name": "smoke-startup-project-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-state-snapshot-integrity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 957
+      },
+      {
+        "name": "smoke-status-idempotency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 248
+      },
+      {
+        "name": "smoke-storage-atomic-batch.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1628
+      },
+      {
+        "name": "smoke-storage-desktop-unavailable.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 343
+      },
+      {
+        "name": "smoke-storage-local-fallback.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-storage-metadata-index.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1571
+      },
+      {
+        "name": "smoke-storage-migration-collisions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 526
+      },
+      {
+        "name": "smoke-storage-read-deadlines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 214
+      },
+      {
+        "name": "smoke-storage-write-reliability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 416
+      },
+      {
+        "name": "smoke-succession-roster-invariants.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 151
+      },
+      {
+        "name": "smoke-sysp-tiering.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 134
+      },
+      {
+        "name": "smoke-talent-cohorts.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 120
+      },
+      {
+        "name": "smoke-talent-s2.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 129
+      },
+      {
+        "name": "smoke-talent-s3.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 142
+      },
+      {
+        "name": "smoke-talent-s3b.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 134
+      },
+      {
+        "name": "smoke-talent-s4.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 156
+      },
+      {
+        "name": "smoke-talent-s5.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 150
+      },
+      {
+        "name": "smoke-talent-s6.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-tang840-authority-autonomy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 820
+      },
+      {
+        "name": "smoke-tang840-fiscal-detail.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 9880
+      },
+      {
+        "name": "smoke-tang840-opening-ledgers.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 70188
+      },
+      {
+        "name": "smoke-tang840-wuchang.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 810
+      },
+      {
+        "name": "smoke-tax-production-base.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 274
+      },
+      {
+        "name": "smoke-tc-dialogue-wave.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-tc-history-wave.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 252
+      },
+      {
+        "name": "smoke-tc-keju-wave.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 233
+      },
+      {
+        "name": "smoke-temporal-constraint.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 615
+      },
+      {
+        "name": "smoke-territory-context-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 185
+      },
+      {
+        "name": "smoke-territory-hardening.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 549
+      },
+      {
+        "name": "smoke-territory-ownership-sync.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 302
+      },
+      {
+        "name": "smoke-territory-render-economy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 605
+      },
+      {
+        "name": "smoke-threat-var-link.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1611
+      },
+      {
+        "name": "smoke-tianqi-map-runtime.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 974
+      },
+      {
+        "name": "smoke-tianqi-official-cache-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1831
+      },
+      {
+        "name": "smoke-tier2-l10n.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-tier3-connects.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-tier3-supplement.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 149
+      },
+      {
+        "name": "smoke-tier4-landmines.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 190
+      },
+      {
+        "name": "smoke-tinyi-fix.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1896
+      },
+      {
+        "name": "smoke-tinyi-impeachment.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1928
+      },
+      {
+        "name": "smoke-tinyi-party-class-agenda.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6484
+      },
+      {
+        "name": "smoke-tinyi-reissued.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6446
+      },
+      {
+        "name": "smoke-tinyi-revoke-confirm.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 172
+      },
+      {
+        "name": "smoke-tinyi-scenario-class-source.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6510
+      },
+      {
+        "name": "smoke-tinyi-topic-localization.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-tinyi-v3-full.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 4343
+      },
+      {
+        "name": "smoke-tinyi-verdict-l10n.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 95
+      },
+      {
+        "name": "smoke-topbar-fiscal-consistency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 81
+      },
+      {
+        "name": "smoke-travel-arrival-cap.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 98
+      },
+      {
+        "name": "smoke-treasury-account-books.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 251
+      },
+      {
+        "name": "smoke-turn-capture-work-count.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 1252
+      },
+      {
+        "name": "smoke-turn-data-commit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 379
+      },
+      {
+        "name": "smoke-turn-inference-call-optim.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 206
+      },
+      {
+        "name": "smoke-turn-memory-parity.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 430
+      },
+      {
+        "name": "smoke-turn-recovery-quality.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 386
+      },
+      {
+        "name": "smoke-turn-report-institution-lifecycle.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 147
+      },
+      {
+        "name": "smoke-turn-request-reliability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 474
+      },
+      {
+        "name": "smoke-turn-response-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 549
+      },
+      {
+        "name": "smoke-turn-result-social-political-signals.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 247
+      },
+      {
+        "name": "smoke-turn-result-theme-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 120
+      },
+      {
+        "name": "smoke-turn-runtime-cycle-boundary.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 593
+      },
+      {
+        "name": "smoke-turn-stream-reliability.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 393
+      },
+      {
+        "name": "smoke-typing-lag-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-ui-fontscale-adaptive.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 175
+      },
+      {
+        "name": "smoke-ui-foundation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 127
+      },
+      {
+        "name": "smoke-ui-lag-guards.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-usurpation-deposed.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-w2a-doublecount-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 6523
+      },
+      {
+        "name": "smoke-war-closure.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 165
+      },
+      {
+        "name": "smoke-war-truce-hot-path.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 218
+      },
+      {
+        "name": "smoke-war-truce-world-isolation.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 131
+      },
+      {
+        "name": "smoke-wave1-combo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 155
+      },
+      {
+        "name": "smoke-wdsusp-suspicion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 132
+      },
+      {
+        "name": "smoke-wendui-active-audience.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 154
+      },
+      {
+        "name": "smoke-wendui-dialogue-budget-typing.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 159
+      },
+      {
+        "name": "smoke-wendui-edict-draft-suggestions.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 223
+      },
+      {
+        "name": "smoke-wendui-json-leak-guard.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-wendui-prison.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 199
+      },
+      {
+        "name": "smoke-wentian-agent.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 177
+      },
+      {
+        "name": "smoke-wentian-class-hardchange.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-wentian-clearchat.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 152
+      },
+      {
+        "name": "smoke-wentian-facparty-hardchange.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 161
+      },
+      {
+        "name": "smoke-wentian-fulfill-audit.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 146
+      },
+      {
+        "name": "smoke-wentian-hardchange.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 358
+      },
+      {
+        "name": "smoke-wentian-light-theme.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 160
+      },
+      {
+        "name": "smoke-wentian-undo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-wentian-workorder.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 167
+      },
+      {
+        "name": "smoke-workbench-operation-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 187
+      },
+      {
+        "name": "smoke-workshop-admin-review-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 195
+      },
+      {
+        "name": "smoke-workshop-asset-effect.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 135
+      },
+      {
+        "name": "smoke-workshop-asset-types.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 108
+      },
+      {
+        "name": "smoke-workshop-hierarchy.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 533
+      },
+      {
+        "name": "smoke-workshop-lock-recovery.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 11643
+      },
+      {
+        "name": "smoke-workshop-pipeline-a.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-workshop-pipeline-b.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 170
+      },
+      {
+        "name": "smoke-workshop-pipeline-e.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 168
+      },
+      {
+        "name": "smoke-workshop-preflight-access.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 122
+      },
+      {
+        "name": "smoke-workshop-ranks.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 109
+      },
+      {
+        "name": "smoke-workshop-runtime-truth-ui.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 121
+      },
+      {
+        "name": "smoke-workshop-ui-redo.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 164
+      },
+      {
+        "name": "smoke-world-digest.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 136
+      },
+      {
+        "name": "smoke-world-fiscal-reactor.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 132
+      },
+      {
+        "name": "smoke-world-reactors.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 134
+      },
+      {
+        "name": "smoke-world-w3-prompt-visibility.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 125
+      },
+      {
+        "name": "smoke-write-gate-expansion.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 698
+      },
+      {
+        "name": "smoke-yingzao-shadow.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 144
+      },
+      {
+        "name": "smoke-yuqian-open-frequency.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 127
+      },
+      {
+        "name": "smoke-zero-value-contract.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 157
+      },
+      {
+        "name": "smoke-zhao-promulgated-yan-expand.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 133
+      },
+      {
+        "name": "smoke-zoushu-ai-draft.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 126
+      },
+      {
+        "name": "smoke-zoushu-pool-gen.js",
+        "pass": true,
+        "waivers": [],
+        "ms": 142
+      }
+    ]
+  },
+  "firstFull": {
+    "summary": {
+      "selected": 1149,
+      "pass": 1135,
+      "fail": 12,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "failures": [
+      {
+        "name": "smoke-circuit-governance-shaosong.js",
+        "ms": 78638
+      },
+      {
+        "name": "smoke-circuit-governance-tang.js",
+        "ms": 33056
+      },
+      {
+        "name": "smoke-circuit-governance-tianqi.js",
+        "ms": 20194
+      },
+      {
+        "name": "smoke-circuit-governor-effects-tang.js",
+        "ms": 46181
+      },
+      {
+        "name": "smoke-circuit-governor-effects-tianqi.js",
+        "ms": 19294
+      },
+      {
+        "name": "smoke-edict-data-writeback.js",
+        "ms": 17030
+      },
+      {
+        "name": "smoke-full-turn-flow.js",
+        "ms": 11639
+      },
+      {
+        "name": "smoke-map-circuit-book-shaosong.js",
+        "ms": 73235
+      },
+      {
+        "name": "smoke-map-circuit-book.js",
+        "ms": 15006
+      },
+      {
+        "name": "smoke-native-start-preparation.js",
+        "ms": 1094
+      },
+      {
+        "name": "smoke-start-game-data-integrity.js",
+        "ms": 120386
+      },
+      {
+        "name": "smoke-startup-phase-observability.js",
+        "ms": 433
+      }
+    ],
+    "note": "Development run; fixes were applied while later tests continued. Not the acceptance run."
+  },
+  "secondFull": {
+    "summary": {
+      "selected": 1149,
+      "pass": 1145,
+      "fail": 2,
+      "waived": 2,
+      "flaky": 0,
+      "suspect": 0,
+      "skipped": 0
+    },
+    "failures": [
+      {
+        "name": "smoke-full-turn-flow.js",
+        "ms": 11580
+      },
+      {
+        "name": "smoke-start-game-data-integrity.js",
+        "ms": 115921
+      }
+    ],
+    "note": "Development run; initialization and stale arc timer failures were then fixed."
+  },
+  "architecture": {
+    "command": "node web/scripts/lint-arch-all.js",
+    "passed": true,
+    "guards": 15
+  },
+  "officialSync": "[official-sync] sync PASS · sources=3 artifacts=11",
+  "officialParity": "[official-sync] parity PASS · sources=3 artifacts=11",
+  "releaseContract": "PASS assertions=182 files=823 bytes=573593634",
+  "hotBaseline": "PASS canonical hot baseline files=814 version=1.3.5.3（容忍 595 条本 checkout 缺席的未跟踪资产条目）",
+  "browser": {
+    "command": "node scripts/verify-electron-bridge.js --npc-daily",
+    "report": "web/dev-tools/electron-bridge/67febff4-dd6e-4cc8-9f45-252866ea5a39/report.json",
+    "evidence": "browser/daily-browser-evidence.json",
+    "apiAttempts": 0,
+    "externalAttempts": 0,
+    "rendererErrors": 0,
+    "fixture": true,
+    "productionUI": true
+  },
+  "limits": [
+    "no paid model",
+    "no mobile device",
+    "no player production save",
+    "not full-world offline endTurn",
+    "two existing optional asset waivers if listed above"
+  ]
+}

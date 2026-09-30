@@ -1,0 +1,109 @@
+{
+  "base": "22472d247e54956238387defaeda1c50db7acd43",
+  "files": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "sha256": "b3b344707cd03514215ec4956a4f6809545afda6c9d855c0c49b752289d5a42a"
+    },
+    {
+      "file": "scripts/electron/bridge-main.cjs",
+      "sha256": "8cd2041dc42a82c674bd9ba7b09fb335464818b3090f5a696537a78c662332d7"
+    },
+    {
+      "file": "scripts/electron/npc-daily-cases.cjs",
+      "sha256": "18e7f5eb5f2963658d564f3106c0fd7bef9e7a4970662a667ab494e6879d1f66"
+    },
+    {
+      "file": "scripts/verify-electron-bridge.js",
+      "sha256": "56d4c00c5fa520e370f102b7d9bd13fe8c070f00907b7b1b09e27bb0ae5d4da8"
+    },
+    {
+      "file": "web/.hot-update-manifest.json",
+      "sha256": "be463770c01644e73ce6dcd71ad3b3d803f8e54c2d7dfd3c8a993861b0b1fcbb"
+    },
+    {
+      "file": "web/index.html",
+      "sha256": "9bce1db6451f47db800bcb0990390723a90629bf77e97bf7e43edc0bc6af2c7c"
+    },
+    {
+      "file": "web/phase8-formal-drafts-message-panels.js",
+      "sha256": "8d5e5c87889ef2f8581b18ec12cce6db2c1f4011354b3623221deb6d1d1fc636"
+    },
+    {
+      "file": "web/phase8-formal-drafts.js",
+      "sha256": "2190e0acba7f7aebc24ae86864bdbed9a18307ea0c2a3ad355d2ade0d4d59df1"
+    },
+    {
+      "file": "web/scripts/lib-npc-daily-fixture.js",
+      "sha256": "da7a2a6dfec1ae24a64fde0689dbf9a52b128f6d1eb90de4b0a1994b3538d08c"
+    },
+    {
+      "file": "web/scripts/smoke-npc-daily-activities.js",
+      "sha256": "b40b987335216accf7120aa2b3201bc5fafdb40329161f168bc4a43356aa316a"
+    },
+    {
+      "file": "web/scripts/smoke-npc-daily-boundaries.js",
+      "sha256": "6bd1d2d651830141fb087db105271d260acd5ccb12909594352424971857ce8b"
+    },
+    {
+      "file": "web/scripts/smoke-npc-daily-lifecycle.js",
+      "sha256": "f025e247e0542cf3613bd0e7427fd3f7eafc6e1823158c74a1d111273b7b7c66"
+    },
+    {
+      "file": "web/scripts/smoke-npc-local-ai.js",
+      "sha256": "103dcc4394b4be3ea6cb59184f485be6611595d4aa9adae8844fc99ebf3edd26"
+    },
+    {
+      "file": "web/scripts/smoke-startup-phase-observability.js",
+      "sha256": "9d94a9263ae19538301be52f54d14cdc591969b6f84506ff3edfd075094f414d"
+    },
+    {
+      "file": "web/startup-script-phases.json",
+      "sha256": "e4c1ce084fe84fd78d93e78eeb139409d0090232dc80a9d8861f3f00c3bdc1b8"
+    },
+    {
+      "file": "web/tm-char-arcs.js",
+      "sha256": "be197644c27711e2b523732983fc7462594959e67d7c808e36efa399234bbf5d"
+    },
+    {
+      "file": "web/tm-game-ui-shell.js",
+      "sha256": "f342055d2d1f73050dedbe469494ec96d08bf8cf69838e31a418cc93738b57a0"
+    },
+    {
+      "file": "web/tm-help-social.js",
+      "sha256": "80ea076cde9c396011e840d8364f3c395a0467e9461f1ac254f73c5333713d9f"
+    },
+    {
+      "file": "web/tm-hongyan-office.js",
+      "sha256": "29aae1cad3da68125adaa95e623481b5e26e82da7481e1bb78c6d6fe5195dd18"
+    },
+    {
+      "file": "web/tm-npc-action-ledger.js",
+      "sha256": "0f4f6e0b6079d5ec73bd994a00a5e3e952d056260b963c1cedf70df1e3a54b17"
+    },
+    {
+      "file": "web/tm-npc-daily-activities.js",
+      "sha256": "fa77fa41bad7c5db639213dd6d4b47e2934b261e1e8bfc177da8b86d90c297fa"
+    },
+    {
+      "file": "web/tm-npc-daily-ui.js",
+      "sha256": "e3ff1b4dd9dc0f4c843068e588e15454840dae4b5e42b3165013b4dd3f29a5b1"
+    },
+    {
+      "file": "web/tm-npc-decision-ai-driven.js",
+      "sha256": "7edd35e0d9f025aef88063c1633bde1bc1db16de85f21d7b6dffb996283602c3"
+    },
+    {
+      "file": "web/tm-npc-local-ai.js",
+      "sha256": "bcd59fe70df6ce07aaafa863d354c3534adb5b3c02cefeca043fbc4e7b66120a"
+    },
+    {
+      "file": "web/tm-save-lifecycle.js",
+      "sha256": "03520eaffee76829ad589080a6a341b58a386dae3f54d669bf70dfceb18b4352"
+    },
+    {
+      "file": "web/tm-start-runtime-manifest.json",
+      "sha256": "962bdf5094fbb935c05c801f70d96827f11be7efc9c4123ce983816d417db446"
+    }
+  ]
+}

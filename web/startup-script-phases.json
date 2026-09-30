@@ -853,7 +853,9 @@
       "platform": "any",
       "sideEffects": "legacy-unknown",
       "provides": [
+        "_CTX_DETECTION_VERSION",
         "_MODEL_CTX_MAP",
+        "_capabilityValue",
         "_charRangeDefaults",
         "_charRangeScaled",
         "_charRangeText",
@@ -866,6 +868,7 @@
         "_matchModelCtx",
         "_matchModelOutput",
         "_normalizeToK",
+        "_parseCapabilityTokens",
         "_tmProbeFamily",
         "_tmProbeJsonParse",
         "detectModelContextSize",

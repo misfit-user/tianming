@@ -323,8 +323,10 @@ async function executeNpcBehaviors(options) {
   options=options||{};
   var ledger=TM.NPC.ActionLedger,lease=ledger.capture();
   if(!GM||!GM.chars)return {skipped:'no_chars'};
+  var local=TM.NPC.LocalAI?TM.NPC.LocalAI.wake('turn'):null;
+  if(options.localOnly)return {local:local,modelCalls:0};
   if(!options.idle){ledger.advance(GM);ledger.flushDeferred();}
-  if(!P.ai||!P.ai.key)return {skipped:'missing_ai_key'};
+  if(!P.ai||!P.ai.key)return {skipped:'missing_ai_key',local:local,modelCalls:0};
   var budget=ledger.state(GM);
   if(budget.modelTurn!==GM.turn){budget.modelTurn=GM.turn;budget.modelCalls=0;}
   if(budget.modelCalls>=3)return {skipped:'turn_model_budget'};
@@ -517,7 +519,8 @@ function buildNpcBehaviorContext(npc, options) {
   context.self={id:npc.id,name:npc.name,goal:npc.personalGoal||'',thought:npc.innerThought||'',traits:npc.traitIds||[],personality:typeof getCharacterPersonalityBrief==='function'?getCharacterPersonalityBrief(npc):npc.personality||'',abilities:_npcAbilityProfile(npc),stress:npc.stress,resources:_npcBuildCharacterEconomySnapshot(npc,options)};
   context.assignments=TM.OfficeHolderState?TM.OfficeHolderState.assignments(GM,npc).map(function(a){return {positionId:a.positionId,appointmentId:a.appointmentId,title:a.pos.name,powers:a.pos.powers||{},scope:a.pos.authorityScope||{},treasuryBinding:a.pos.treasuryBinding||null};}):[];
   var planExposure=ledger.state(GM).planExposure||{};
-  context.plans=ledger.ensurePlans(GM).filter(function(p){return !/^(done|rejected|failed|cancelled)$/.test(p.status);}).map(function(p){return ledger.planView(p,npc);}).filter(Boolean).sort(function(a,b){return (planExposure[a.id]||0)-(planExposure[b.id]||0);}).slice(0,8);
+  context.plans=ledger.ensurePlans(GM).filter(function(p){return !p.localActivity&&!/^(done|rejected|failed|cancelled)$/.test(p.status);}).map(function(p){return ledger.planView(p,npc);}).filter(Boolean).sort(function(a,b){return (planExposure[a.id]||0)-(planExposure[b.id]||0);}).slice(0,8);
+  if(TM.NPC.DailyActivities)context.localActivities={executionOwner:'local',instruction:'普通通问、引见及已有材料清单由本地办理。只引用实际经历，不另建事项或替任何人答复。',matters:TM.NPC.DailyActivities.plans(GM).map(function(p){return TM.NPC.DailyActivities.view(p,npc);}).filter(Boolean).slice(-8).map(function(v){return {id:v.id,kind:v.kind,stage:v.stage,sourceMessageIds:v.messages.map(function(m){return m.id;})};})};
   context.memories=(npc._memory||[]).filter(function(m){return m&&(!m.actorId||String(m.actorId)===String(npc.id)||m.actorId===npc.name);}).slice().sort(function(a,b){
     var active=context.plans.map(function(p){return p.id;}),sa=(active.indexOf(a.taskId)>=0?1000:0)+(a.importance||0)*10+(a.turn||0),sb=(active.indexOf(b.taskId)>=0?1000:0)+(b.importance||0)*10+(b.turn||0);return sb-sa;
   }).slice(0,12).map(function(m){return {id:m.id,event:m.event,factStatus:m.factStatus||'personal_experience',sourceRefs:m.sourceRefs||[],turn:m.turn};});

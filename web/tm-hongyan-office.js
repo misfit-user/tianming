@@ -137,6 +137,7 @@ function _ltCheckSameProvince(loc1, loc2) {
 
 /** 渲染鸿雁传书面板 */
 function renderLetterPanel() {
+  if(typeof TM!=='undefined'&&TM.NPC&&TM.NPC.DailyUI)TM.NPC.DailyUI.render();
   var capital = GM._capital || '京城';
   var _filter = GM._ltFilter || 'all';
 
@@ -383,6 +384,7 @@ function _ltOnSearchInput(v) {
 
 /** 渲染单封信笺卡片 */
 function _ltRenderLetterCard(l, target) {
+  if(l._localActivity&&typeof TM!=='undefined'&&TM.NPC&&TM.NPC.DailyUI)return TM.NPC.DailyUI.letterCard(l);
   var html = '';
   var isOutgoing = (l.from === '玩家');
   var sentDate = (typeof getTSText === 'function') ? getTSText(l.sentTurn) : '第' + l.sentTurn + '回合';
@@ -588,6 +590,7 @@ function _ltRecall(letterId) {
 function _ltReplyToNpc(letterId) {
   var l = (GM.letters||[]).find(function(x){ return x.id === letterId; });
   if (!l) return;
+  if(l._localActivity){if(TM.NPC.DailyUI)TM.NPC.DailyUI.render();toast('请在日常往来的当前事项内选择回应');return;}
   // 守卫：仅 NPC 来函可调此函·防止误传玩家信件 id 把发信目标设成"玩家"自己
   if (!l._npcInitiated || !l.from || l.from === '玩家') return;
   // 设置当前目标为该NPC，并在textarea中预填回复提示
@@ -1505,6 +1508,7 @@ function _ltDoIntercept(l, hostileFacs) {
 }
 
 function _generateLetterReply(letter) {
+  if(letter&&letter._localActivity)return; // The local activity owns response choice and delivery.
   try { _ltApplyFormalPolicyOnDelivery(letter); } catch(_policyE) {}
   letter.status = 'replying';
   var ch = findCharByName(letter.to);

@@ -128,6 +128,9 @@ jobs:
       - name: Character actions, office recommendations and existing appointment flow
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --character-actions
+      - name: Zero API local introduction, independent player response and sourced assistance
+        if: matrix.group == 'court'
+        run: node scripts/verify-electron-bridge.js --npc-daily
       - name: Edict office creation, recursive tree, appointment target and native save recovery
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --office-writeback

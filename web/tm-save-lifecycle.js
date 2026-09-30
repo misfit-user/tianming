@@ -1020,6 +1020,7 @@ function _restoreSavedFields(options) {
   if (GM._savedNpcPlans) { GM._npcPlans = GM._savedNpcPlans; delete GM._savedNpcPlans; }
   if (typeof TM !== 'undefined' && TM.PoliticalActions) { var politicalMigration=TM.PoliticalActions.migrate(GM); if(!politicalMigration.ok)throw Error(politicalMigration.reason||'political-migration-failed'); }
   else if (typeof TM !== 'undefined' && TM.NPC && TM.NPC.ActionLedger) TM.NPC.ActionLedger.migrate(GM);
+  if(typeof TM!=='undefined'&&TM.NPC&&TM.NPC.DailyActivities){var dailyMigration=TM.NPC.DailyActivities.migrate(GM);if(!dailyMigration.ok)throw Error(dailyMigration.reason||'daily-activity-migration-failed');TM.NPC.DailyActivities.revokeTickets();}
   if (GM._savedNpcDecisionDiagnostics) { GM._npcDecisionDiagnostics = GM._savedNpcDecisionDiagnostics; delete GM._savedNpcDecisionDiagnostics; }
   if (GM._savedNpcFactionAiTurnLedger) { GM._npcFactionAiTurnLedger = GM._savedNpcFactionAiTurnLedger; delete GM._savedNpcFactionAiTurnLedger; }
   if (GM._savedNpcFactionLlmLedger) { GM._npcFactionLlmLedger = GM._savedNpcFactionLlmLedger; delete GM._savedNpcFactionLlmLedger; }
@@ -1680,6 +1681,7 @@ async function _fullLoadGameImpl(data, loadOptions){
       await loadOptions.beforeCommit({ GM: GM, P: P, transaction: _loadTxn });
     }
     if (loadOptions && loadOptions.nativeStart && GM) { GM.busy = false; GM._loadHydrationPending = false; } // arch-ok: existing load commit owner opens the new world only after canonical commit
+    if (loadOptions && loadOptions.nativeStart && window.TM && TM.NPC && TM.NPC.LocalAI) TM.NPC.LocalAI.scheduleEntry();
     if (typeof window !== 'undefined' && window._tmActiveLoadTransaction === _loadTxn) {
       window._tmActiveLoadTransaction = null;
     }

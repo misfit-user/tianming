@@ -1,0 +1,26 @@
+{
+  "observation": {
+    "apiAttempts": [],
+    "errors": [],
+    "turn": 1,
+    "plans": [
+      {
+        "id": "plan:daily-local:1",
+        "status": "done",
+        "kind": "introduction",
+        "steps": 5,
+        "messages": 7
+      },
+      {
+        "id": "plan:daily-ui:1790753349440:9",
+        "status": "done",
+        "kind": "assistance",
+        "steps": 4,
+        "messages": 4
+      }
+    ]
+  },
+  "externalTraffic": [],
+  "networkPolicy": "all HTTP/HTTPS/WS/WSS requests denied",
+  "inputMethod": "real Chromium DOM controls with hit testing; initial fixture only"
+}

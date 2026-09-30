@@ -42,7 +42,7 @@ const observedElectron = new Proxy(nativeElectron, { get(target, key) {
   if (key !== 'BrowserWindow') return target[key];
   return new Proxy(target.BrowserWindow, { construct(Window, args) {
     if (visibleWindow) args[0] = { ...args[0], width: 1280, height: 800, fullscreen: false, show: true, alwaysOnTop: true, webPreferences: { ...args[0].webPreferences, backgroundThrottling: false } }; // UI gates must not wait for a ready-to-show event bypassed by test navigation.
-    if (mode === 'shanhe-load' || mode === 'shanhe-pointer' || mode === 'map-core-controls' || mode === 'startup-project-fallback') args[0] = { ...args[0], width:1280, height:800, fullscreen:false, show:false, webPreferences:{...args[0].webPreferences,backgroundThrottling:false} };
+    if (mode === 'npc-daily' || mode === 'shanhe-load' || mode === 'shanhe-pointer' || mode === 'map-core-controls' || mode === 'startup-project-fallback') args[0] = { ...args[0], width:1280, height:800, fullscreen:false, show:false, webPreferences:{...args[0].webPreferences,backgroundThrottling:false} };
     windowOptions.push(args[0]); return Reflect.construct(Window, args);
   } });
 } });
@@ -116,6 +116,7 @@ app.on('browser-window-created', (_event, win) => {
         assert.equal(!!exports.__test, mode === 'test-exports');
       });
       if (mode === 'performance') performanceReport = await require('../perf/round1-electron-cases.cjs')({ win, root, temp, controls, check, recordPerformance: report => { performanceReport = report; } });
+      else if (mode === 'npc-daily') await require('./npc-daily-cases.cjs')({ win, root, temp, check, results });
       else if (mode === 'performance-inspect') performanceReport = await require('../perf/inspect-electron-cases.cjs')({ win, root, temp, check });
       else if (mode === 'performance-autosave') performanceReport = await require('../perf/autosave-electron-cases.cjs')({ win, root, temp, check, recordPerformance: report => { performanceReport = report; } });
       else if (mode === 'performance-panels') performanceReport = await require('../perf/panels-electron-cases.cjs')({ win, root, temp, check, recordPerformance: report => { performanceReport = report; } });

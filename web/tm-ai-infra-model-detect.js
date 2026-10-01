@@ -25,6 +25,9 @@
 // 按匹配优先级排序（长前缀先匹配），覆盖主流模型族
 // 白名单条目：p=模型前缀，k=上下文窗口(K tokens)，o=单次最大输出(K tokens)
 // 各模型输出上限根据官方文档：OpenAI多为16K、Claude多为8-64K、Gemini 8K、DeepSeek 8K、GPT-4/3.5多为4K
+// Context detection cache schema. Bump when a detector bug can make persisted capacity unsafe.
+var _CTX_DETECTION_VERSION = 2;
+
 var _MODEL_CTX_MAP = [
   // === OpenAI ===
   {p:'gpt-4.1-mini',k:1024,o:32},{p:'gpt-4.1-nano',k:1024,o:32},{p:'gpt-4.1',k:1024,o:32},
@@ -167,37 +170,60 @@ function _ctxLog(msg) {
 }
 
 /**
- * 从API JSON响应中深度提取上下文窗口字段
- * 支持各种嵌套格式（capabilities, limits, model_info, pricing等）
+ * 解析能力元数据中的 token 数。元数据经常把数字序列化成字符串，
+ * 也会用 128K / 1M 这种单位；纯数字小于 2048 继续按 K 兼容旧接口。
+ */
+function _parseCapabilityTokens(value) {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : 0;
+  if (typeof value !== 'string') return 0;
+  var text = value.trim().toLowerCase().replace(/,/g, '');
+  var match = text.match(/^([0-9]+(?:\.[0-9]+)?)\s*(k|m|b)?(?:\s*(?:tokens?|t))?$/i);
+  if (!match) return 0;
+  var n = Number(match[1]);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  if (match[2] === 'k') n *= 1024;
+  else if (match[2] === 'm') n *= 1024 * 1024;
+  else if (match[2] === 'b') n *= 1024 * 1024 * 1024;
+  return n;
+}
+
+function _capabilityValue(obj, fields) {
+  if (!obj || typeof obj !== 'object') return 0;
+  for (var i = 0; i < fields.length; i++) {
+    var parsed = _parseCapabilityTokens(obj[fields[i]]);
+    if (parsed > 100) return parsed;
+  }
+  return 0;
+}
+
+/**
+ * 从API JSON响应中深度提取上下文窗口字段。
+ * 这里只接受明确的上下文/输入上限字段；max_tokens 是输出参数，
+ * 绝不能把 4096 的输出上限误判成 4K 上下文。
  */
 function _extractCtxFromJson(obj) {
   if (!obj || typeof obj !== 'object') return 0;
-  var fields = [
-    'context_length', 'context_window', 'max_context_tokens',
-    'max_model_len', 'context_size', 'max_input_tokens',
-    'max_total_tokens', 'token_limit', 'max_context_length',
-    'max_prompt_tokens', 'context_length_limit', 'input_token_limit'
+  var contextFields = [
+    'context_length', 'context_window', 'max_context_tokens', 'max_context_length',
+    'context_size', 'contextLength', 'contextWindow', 'max_model_len', 'max_seq_len',
+    'max_position_embeddings', 'num_ctx'
   ];
-  // 顶层
-  for (var i = 0; i < fields.length; i++) {
-    var v = obj[fields[i]];
-    if (v && typeof v === 'number' && v > 100) return v;
-  }
-  // 嵌套层（常见格式）
-  var nests = ['capabilities', 'limits', 'model_info', 'pricing', 'metadata', 'config', 'properties', 'top_provider'];
+  var inputFields = [
+    'max_input_tokens', 'maxInputTokens', 'max_total_tokens', 'maxTotalTokens',
+    'token_limit', 'max_prompt_tokens', 'maxPromptTokens', 'context_length_limit',
+    'input_token_limit', 'inputTokenLimit'
+  ];
+  var direct = _capabilityValue(obj, contextFields);
+  if (direct) return direct;
+  direct = _capabilityValue(obj, inputFields);
+  if (direct) return direct;
+  var nests = ['capabilities', 'limits', 'model_info', 'metadata', 'config', 'properties', 'model', 'top_provider'];
   for (var n = 0; n < nests.length; n++) {
     var sub = obj[nests[n]];
-    if (sub && typeof sub === 'object') {
-      for (var j = 0; j < fields.length; j++) {
-        var v2 = sub[fields[j]];
-        if (v2 && typeof v2 === 'number' && v2 > 100) return v2;
-      }
-    }
+    if (!sub || typeof sub !== 'object') continue;
+    var nested = _capabilityValue(sub, contextFields) || _capabilityValue(sub, inputFields);
+    if (nested) return nested;
   }
-  // OpenRouter 特殊格式: context_length 在 top_provider.context_length
-  if (obj.top_provider && obj.top_provider.context_length) return obj.top_provider.context_length;
-  // max_tokens 放最后（有些API的max_tokens是输出上限不是上下文窗口）
-  if (obj.max_tokens && typeof obj.max_tokens === 'number' && obj.max_tokens > 4000) return obj.max_tokens;
   return 0;
 }
 
@@ -259,7 +285,7 @@ async function detectModelContextSize(opts) {
   // 缓存检查
   var _cacheKey = model + '@' + (_aiCfgDet.url || '');
   var _cachedK = P.conf['_detectedContextK' + _sfx];
-  if (!opts.force && _cachedK && P.conf['_ctxCacheKey' + _sfx] === _cacheKey) {
+  if (!opts.force && _cachedK && P.conf['_ctxDetectionVersion' + _sfx] === _CTX_DETECTION_VERSION && P.conf['_ctxCacheKey' + _sfx] === _cacheKey) {
     _ctxLog('[' + _tier + '] 命中缓存: ' + model + ' = ' + _cachedK + 'K');
     return _cachedK;
   }
@@ -267,6 +293,7 @@ async function detectModelContextSize(opts) {
   _ctxDetectLog = []; // 清空日志
   var detectedK = 0;
   var detectedLayer = '';
+  var lowerBoundK = 0;
   var detectedOutputTok = 0;  // 单次最大输出token（0=未知，将由白名单回退）
   var key = _aiCfgDet.key;
   var baseUrl = (_aiCfgDet.url || '').replace(/\/+$/, '');
@@ -277,10 +304,10 @@ async function detectModelContextSize(opts) {
   if (whitelistK > 0) _ctxLog('层0 白名单: ' + model + ' → ' + whitelistK + 'K');
 
   if (!key || !baseUrl) {
-    detectedK = whitelistK || 32;
-    detectedLayer = whitelistK ? 'L0白名单' : '默认';
+    detectedK = whitelistK;
+    detectedLayer = whitelistK ? 'L0白名单' : '未测定（缺少API配置）';
     _finishDetect(detectedK, detectedLayer, _cacheKey, 0, _tier);
-    return detectedK;
+    return detectedK || getModelContextSizeK(_tier);
   }
 
   // ═══ 层1：API /models 元数据查询 ═══
@@ -412,10 +439,10 @@ async function detectModelContextSize(opts) {
         var j3 = await resp3.json();
         var answer = (j3.choices && j3.choices[0] && j3.choices[0].message) ? j3.choices[0].message.content : '';
         _ctxLog('层3: 模型回复 "' + answer.slice(0, 60) + '"');
-        // 提取所有数字
-        var nums = answer.match(/[\d,_.]+/g);
+        // 模型常回答 128K / 1M；解析单位，避免把示例数或输出上限当成窗口。
+        var nums = answer.match(/[\d,.]+\s*(?:k|m|b)?/ig);
         if (nums) {
-          var candidates = nums.map(function(n) { return parseInt(n.replace(/[,_.]/g, ''), 10); }).filter(function(n) { return n >= 2000; });
+          var candidates = nums.map(_parseCapabilityTokens).filter(function(n) { return n >= 2000; });
           if (candidates.length > 0) {
             // 取最合理的数字（接近2的幂次或常见上下文值）
             var bestNum = candidates.reduce(function(best, n) {
@@ -428,11 +455,11 @@ async function detectModelContextSize(opts) {
               return nClose < bClose ? n : best;
             });
             var selfK = _normalizeToK(bestNum);
-            // 交叉验证
-            if (whitelistK > 0 && (selfK > whitelistK * 4 || selfK < whitelistK / 4)) {
-              _ctxLog('层3: AI自报' + selfK + 'K vs 白名单' + whitelistK + 'K 差距过大，采用白名单');
-              detectedK = whitelistK;
-              detectedLayer = 'L0白名单(L3偏差修正)';
+            // 交叉验证：白名单是已知模型的下限。模型自报偏低时，不能把偏低值写成有效窗口。
+            if (whitelistK > 0 && (selfK > whitelistK * 4 || selfK < whitelistK)) {
+              detectedK = selfK > whitelistK * 4 ? whitelistK : Math.max(selfK, whitelistK);
+              detectedLayer = selfK > whitelistK * 4 ? 'L0白名单(L3偏差修正)' : 'L0白名单(L3偏低修正)';
+              _ctxLog('层3: AI自报' + selfK + 'K vs 白名单' + whitelistK + 'K，采用' + detectedK + 'K');
             } else {
               detectedK = selfK;
               detectedLayer = 'L3 AI自报';
@@ -468,9 +495,13 @@ async function detectModelContextSize(opts) {
           signal: AbortSignal.timeout ? AbortSignal.timeout(20000) : undefined
         });
         if (resp4.ok) {
-          _ctxLog('层4: ' + probe.label + ' 通过 → ≥' + probe.passK + 'K');
-          detectedK = whitelistK || probe.passK;
-          detectedLayer = 'L4 实测(≥' + probe.passK + 'K)';
+          _ctxLog('层4: ' + probe.label + ' 通过 → 仅证明 ≥' + probe.passK + 'K');
+          lowerBoundK = probe.passK;
+          // 未知模型的短探针只能证明下界，不能把 30K 当成最大窗口写入缓存。
+          if (whitelistK > 0) {
+            detectedK = whitelistK;
+            detectedLayer = 'L0白名单（实测≥' + probe.passK + 'K）';
+          }
           break;
         } else {
           var errBody = '';
@@ -496,8 +527,9 @@ async function detectModelContextSize(opts) {
     _ctxLog('回退到白名单: ' + detectedK + 'K');
   }
   if (!detectedK || detectedK < 2) {
-    detectedK = 32;
-    detectedLayer = '默认兜底';
+    detectedK = 0;
+    detectedLayer = lowerBoundK ? '未测定（实测仅证明≥' + lowerBoundK + 'K）' : '未测定';
+    _ctxLog('未得到可确认的上下文上限；保留未知状态，不写入猜测值');
   }
 
   // 输出上限：API未返回时回退白名单
@@ -514,15 +546,16 @@ async function detectModelContextSize(opts) {
   }
 
   _finishDetect(detectedK, detectedLayer, _cacheKey, detectedOutputTok, _tier);
-  return detectedK;
+  return detectedK || getModelContextSizeK(_tier);
 }
 
 function _finishDetect(k, layer, cacheKey, maxOutputTok, tier) {
   // M3·tier 特化·次 API 用 _secondary 后缀字段·不污染主
   var _sfx = (tier === 'secondary') ? '_secondary' : '';
   // 新模型只探得上下文时，不给旧模型的输出上限盖上新的身份；仍由下方原写口收笔。
-  var _sameOutputOwner = P.conf['_ctxCacheKey' + _sfx] === cacheKey;
+  var _sameOutputOwner = P.conf['_ctxDetectionVersion' + _sfx] === _CTX_DETECTION_VERSION && P.conf['_ctxCacheKey' + _sfx] === cacheKey;
   P.conf['_detectedContextK' + _sfx] = k;
+  P.conf['_ctxDetectionVersion' + _sfx] = _CTX_DETECTION_VERSION; // arch-ok 模型探测缓存版本写口
   P.conf['_ctxCacheKey' + _sfx] = cacheKey;
   P.conf['_ctxDetectLayer' + _sfx] = layer;
   if ((maxOutputTok && maxOutputTok > 0) || !_sameOutputOwner) P.conf['_detectedMaxOutput' + _sfx] = maxOutputTok > 0 ? maxOutputTok : 0;
@@ -1058,11 +1091,14 @@ async function listAvailableModels(opts) {
       var id = (m.id || m.name || m.model || '') + '';
       var wlCtx = (typeof _matchModelCtx === 'function') ? _matchModelCtx(id) : 0;
       var wlOut = (typeof _matchModelOutput === 'function') ? _matchModelOutput(id) : 0;
+      var metaCtx = _normalizeToK(_extractCtxFromJson(m));
+      var contextK = metaCtx || wlCtx;
       return {
         id: id,
-        contextK: wlCtx,
+        contextK: contextK,
         outputK: wlOut,
-        matched: wlCtx > 0,
+        contextSource: metaCtx ? 'API元数据' : (wlCtx ? '白名单' : ''),
+        matched: contextK > 0,
         ownedBy: m.owned_by || m.organization || '',
         created: m.created || 0
       };
@@ -1078,28 +1114,30 @@ async function listAvailableModels(opts) {
 
 /**
  * 获取当前模型的上下文窗口大小（同步版本，使用缓存）
- * 如果尚未探测，返回保守默认值32K
+ * 如果尚未得到可确认上限，返回256K预算值；这不是模型能力检测结果。
  * @returns {number} K tokens
  */
-function getModelContextSizeK() {
+function getModelContextSizeK(tier) {
+  tier = tier || 'primary';
   var player = typeof P !== 'undefined' && P || {}, conf = player.conf || {}, ai = player.ai || {};
-  var manual = Number(conf.contextSizeK);
-  if (Number.isFinite(manual) && manual > 0) return manual; // 手动覆写最高，不擅自放大
-  // 自动路径:取「探测值」与「按当前模型名查白名单」的较大值——
-  //   不同玩家用不同模型·各取其真实窗口;无须先跑探测即可享受模型真实窗口;
-  //   取较大值防探测自报层偏低(如模型谎报 64K 而实为 128K)。手动覆写仍可强制压低(应对受限代理)。
-  // 与异步探测使用同一身份：切换模型/中转后，旧值不能继续约束新请求。
-  // 无身份的旧缓存保留在设置里，但不冒充当前模型容量。
-  var currentKey = String(ai.model || '').trim() + '@' + String(ai.url || '');
-  var detected = Number(conf._detectedContextK);
-  var k = conf._ctxCacheKey === currentKey && Number.isFinite(detected) && detected > 0 ? detected : 0;
+  var suffix = tier === 'secondary' ? '_secondary' : '';
+  var cfg = ai;
+  if (tier === 'secondary' && ai.secondary && ai.secondary.key && ai.secondary.url) cfg = ai.secondary;
+  var manual = Number(conf['contextSizeK' + suffix]);
+  if (Number.isFinite(manual) && manual > 0) return manual;
+  var model = String(cfg.model || '').trim();
+  var currentKey = model + '@' + String(cfg.url || '');
+  var detected = Number(conf['_detectedContextK' + suffix]);
+  var k = conf['_ctxDetectionVersion' + suffix] === _CTX_DETECTION_VERSION
+    && conf['_ctxCacheKey' + suffix] === currentKey
+    && Number.isFinite(detected) && detected > 0 ? detected : 0;
   try {
     if (typeof _matchModelCtx === 'function') {
-      var _mk = Number(_matchModelCtx(ai.model || ''));
-      if (Number.isFinite(_mk) && _mk > k) k = _mk;
+      var known = Number(_matchModelCtx(model));
+      if (Number.isFinite(known) && known > k) k = known;
     }
-  } catch (_mkE) {}
-  return k > 0 ? k : 256; // 全未知模型的默认窗口（owner 2026-09-17 拍板：现今模型普遍 ≥256K·保守 32K 会让预算砍到 24K·prompt 反复 critical→压缩失败→超时链）
+  } catch (_) {}
+  return k > 0 ? k : 256;
 }
 
 /**

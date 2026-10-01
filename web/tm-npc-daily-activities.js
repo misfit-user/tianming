@@ -22,6 +22,7 @@
   function controlled(ch, g) { return !!(TM.PoliticalActions && TM.PoliticalActions.controlled(ch, g || game())); }
   function day(g) {
     g = g || game();
+    if (TM.SimTime && TM.SimTime.read(g)) return TM.SimTime.now(g);
     if (g === game() && typeof root.getCurrentGameDay === 'function') return Number(root.getCurrentGameDay());
     if (TM.TaxPolicy) return TM.TaxPolicy.now(g);
     return Math.max(0, Number(g.turn || 1) - 1) * Number((g.time || {}).daysPerTurn || (root.P && root.P.time || {}).daysPerTurn || 30);
@@ -67,8 +68,12 @@
   }
   function budget(ch, g) {
     g = g || game(); var st = readState(g), b = st && st.actors[id(ch)];
-    // Changing daysPerTurn, rendering or loading the same turn cannot renew a day allowance.
-    return b && b.turn === g.turn ? b : { turn: g.turn, day: day(g), starts: 0, steps: 0 };
+    // Budget is keyed by the committed simulation day, not by an arbitrary
+    // render or the current turn number. A 30-day turn grants one interval,
+    // while changing the setting without advancing time grants nothing.
+    var now = day(g);
+    now = Math.floor(now);
+    return b && (b.periodStartDay === now || b.periodStartDay == null && b.turn === g.turn) ? b : { turn: g.turn, day: now, periodStartDay: now, starts: 0, steps: 0 };
   }
   function spend(ch, start) {
     var st = readState(), b = copy(budget(ch));
@@ -101,7 +106,7 @@
     });
     rows(ch._eventOpinions).forEach(function (o) { if (o.fromId) set.add(text(o.fromId)); else name(o.from); });
     Object.keys(ch._impressions || {}).forEach(name);
-    [ch._mentorId, ch.father, ch.mother, ch.spouse].filter(Boolean).forEach(function (ref) { if (person(ref, g)) set.add(text(ref)); else name(ref); });
+    relationshipRefs(ch).forEach(function (ref) { relationshipIds(ref, g).forEach(function (key) { set.add(key); }); });
     rows(ch._memory).concat(rows(ch._memArchive)).forEach(function (m) { name(m.who); });
     plans(g).forEach(function (p) {
       rows(p.messages).filter(function (m) { return m.fromId === id(ch) || m.toId === id(ch) && m.status === 'delivered'; }).forEach(function (m) {
@@ -123,14 +128,27 @@
     if (unique) value += Number((ch._impressions || {})[other.name] && ch._impressions[other.name].favor || 0);
     return Math.max(-100, Math.min(100, value));
   }
+  function relationshipIds(ref, g) {
+    g = g || game();
+    var explicit = ref && typeof ref === 'object' && (ref.characterId != null || ref.id != null);
+    var key = ref && typeof ref === 'object' ? text(explicit ? ref.characterId != null ? ref.characterId : ref.id : ref.name) : text(ref);
+    if (!key) return [];
+    var byId = rows(g.chars).filter(function (c) { return c && id(c) === key; });
+    if (byId.length === 1) return [key];
+    if (explicit || byId.length > 1) return [];
+    var byName = rows(g.chars).filter(function (c) { return c && c.name === key; });
+    return byName.length === 1 ? [id(byName[0])] : [];
+  }
+  function relationshipRefs(ch) {
+    return ['fatherId','motherId','spouseId','_mentorId','mentorId'].filter(function (k) { return ch[k] != null; }).map(function (k) { return { id: ch[k] }; })
+      .concat(['father','mother','spouse','mentor'].filter(function (k) { return ch[k]; }).map(function (k) { return ch[k]; }))
+      .concat(rows(ch.studentsIds).map(function (key) { return { id: key }; }), rows(ch.mentees));
+  }
   function relationKind(ch, other, g) {
     g = g || game(); if (!ch || !other) return 'acquaintance';
-    function matches(ref) {
-      if (ref && typeof ref === 'object') return text(ref.characterId || ref.id) === id(other);
-      return text(ref) === id(other) || text(ref) === other.name && rows(g.chars).filter(function (c) { return c.name === other.name; }).length === 1;
-    }
-    if (ch._mentorId && matches(ch._mentorId)) return 'teacher';
-    if ([ch.fatherId, ch.motherId, ch.spouseId, ch.father, ch.mother, ch.spouse].some(function (v) { return v && matches(v); })) return 'family';
+    function matches(ref) { return relationshipIds(ref, g).indexOf(id(other)) >= 0; }
+    if (matches({id:ch._mentorId || ch.mentorId}) || matches(ch.mentor)) return 'teacher';
+    if ([{id:ch.fatherId}, {id:ch.motherId}, {id:ch.spouseId}, ch.father, ch.mother, ch.spouse].some(function (v) { return v && matches(v); })) return 'family';
     return relation(ch, other, g) >= 24 ? 'friend' : 'acquaintance';
   }
   function contactFor(ch, other, g) {
@@ -174,6 +192,19 @@
     knownIds(ch, g).forEach(function (key) { var v = material(ch, { kind: 'character_public', characterId: key }, g); if (v) out.push(v); });
     return out;
   }
+  function selectMaterial(ch, task, g) {
+    g = g || game(); task = task || {};
+    var refs = rows(task.materialRefs).concat(rows(task.materials).map(function (m) { return m.ref; })).filter(Boolean), options = materialOptions(ch, g);
+    if (refs.length) {
+      var matched = options.filter(function (v) { return refs.some(function (ref) { return signature(ref) === signature(v.ref); }); });
+      if (matched.length) return matched[0];
+    }
+    // Only structured scope can establish relevance. Readability is not
+    // permission to forward a received document or an unrelated memory.
+    var scope = task.materialScope;
+    if (!scope || scope.kind !== 'public_identity') return null;
+    return options.find(function (v) { return v.ref.kind === 'character_public' && rows(scope.characterIds).indexOf(v.ref.characterId) >= 0; }) || null;
+  }
   function remember(ch, other, p, source, content, factStatus) {
     if (!ch || !root.NpcMemorySystem) return;
     var origin = p.messages.find(function (m) { return source === m.id || source === m.id + ':sent' || source === m.id + ':received'; });
@@ -199,7 +230,7 @@
     spec = spec || {}; var refs = rows(spec.materialRefs), materials = [];
     if (refs.length > config.maxMaterials || spec.kind && spec.kind !== 'material_summary') return null;
     for (var i = 0; i < refs.length; i++) { var m = material(ch, refs[i]); if (!m || rows(spec.expectedFingerprints).length && spec.expectedFingerprints[i] !== m.fingerprint) return null; materials.push(m); }
-    return { kind: 'material_summary', title: text(spec.title || '整理已提供材料的简短清单'), materials: materials };
+    return { kind: 'material_summary', title: text(spec.title || '整理已提供材料的简短清单'), materials: materials, materialScope: copy(spec.materialScope || null) };
   }
   function workDays(ch, task) {
     var ability = typeof root._npcAbilityProfile === 'function' ? root._npcAbilityProfile(ch) : {};
@@ -235,6 +266,7 @@
     if (!issued.has(d)) return result('blocked', 'ordinary_activity_requires_local_choice');
     if (!game().running || game().busy || game()._endTurnBusy || game()._loadHydrationPending) return result('blocked', 'world_busy');
     var p = d.planId ? get(d.planId) : null, key = id(actor), kind = p && p.localActivity.kind || d.activityKind;
+    if (kind === 'meeting' && TM.NPC.Meetings) return TM.NPC.Meetings.commit(actor, d);
     if (!/^(greeting|introduction|assistance)$/.test(kind)) return result('blocked', 'unsupported_ordinary_activity');
     if (d.planId && !p) return result('blocked', 'unknown_daily_plan');
     if (!p) {
@@ -364,13 +396,15 @@
   function submitNPC(ch, d, options) {
     var migration = migrate(); if (!migration.ok) return result('blocked', migration.reason);
     if (controlled(ch)) return result('blocked', 'player_choice_required');
-    d = Object.assign({}, d, { actorId: id(ch), behaviorType: 'ordinary_interaction', source: 'daily-local' });
+    var existing = d.planId && get(d.planId);
+    d = Object.assign({}, d, { activityKind: d.activityKind || existing && existing.localActivity.kind, actorId: id(ch), behaviorType: 'ordinary_interaction', source: 'daily-local' });
     issued.add(d);
     if (options && options.inlineDelivery === true) inlineDeliveries.add(d);
     try { return root.NpcBehaviorRegistry.execute(ch, d, { _npcLease: ledger().capture() }); }
     finally { issued.delete(d); inlineDeliveries.delete(d); }
   }
   function afterVerifiedCommit(d, receipt) {
+    if (d.activityKind === 'meeting' && TM.NPC.Meetings && TM.NPC.Meetings.afterVerifiedCommit) return TM.NPC.Meetings.afterVerifiedCommit(d, receipt);
     if (!issued.has(d) || !inlineDeliveries.has(d)) return receipt;
     var p = get(receipt.planId), delivered = [];
     if (!p) throw Error('daily_inline_plan_missing');
@@ -383,7 +417,9 @@
       reason: delivered.length ? '本步骤文书已送达，后续按当前事项办理。' : '本地递送未能安排，尚未取得对方回应。' });
   }
   function verifyEvidence(ref, d, actor, g, before) {
-    if (!issued.has(d) || ref.kind !== 'daily_step') return false;
+    if (!issued.has(d)) return false;
+    if (d.activityKind === 'meeting' && ref.kind === 'meeting_step' && TM.NPC.Meetings && TM.NPC.Meetings.verifyEvidence) return TM.NPC.Meetings.verifyEvidence(ref, d, actor, g, before);
+    if (ref.kind !== 'daily_step') return false;
     var p = get(ref.planId, g), old = get(ref.planId, before), step = p && p.steps.find(function (s) { return s.id === ref.id; });
     if (!p || !step || step.actionId !== d.actionId || step.phase !== d.phase || step.actorId !== id(actor) || step.inputHash !== inputHash(d)) return false;
     if (old && old.steps.some(function (s) { return s.id === ref.id; })) return false;
@@ -507,17 +543,19 @@
   // Called by ActionLedger.advance inside its existing synchronous atomic boundary.
   function needsAdvance(g) {
     g = g || game(); var now = day(g);
+    if (TM.NPC.Meetings && TM.NPC.Meetings.needsAdvance && TM.NPC.Meetings.needsAdvance(g)) return true;
     return plans(g).some(function (p) {
       var a = p.localActivity;
-      return a.definitionVersion === 1 && (p.messages.some(function (m) { return m.status === 'in_transit' && m.deliveryDay <= now; }) ||
+      return a.kind !== 'meeting' && a.definitionVersion === 1 && (p.messages.some(function (m) { return m.status === 'in_transit' && m.deliveryDay <= now; }) ||
         !terminal(p) && (replyMayExpire(p) && g.turn > p.createdTurn && now >= a.expiresDay || p.status === 'deferred' && g.turn > a.retryTurn && now >= a.retryDay));
     });
   }
   function advanceWithin() {
     var delivered = 0;
+    if (TM.NPC.Meetings && TM.NPC.Meetings.advanceWithin) TM.NPC.Meetings.advanceWithin();
     plans().forEach(function (p) {
       var a = p.localActivity;
-      if(a.definitionVersion!==1)return;
+      if(a.definitionVersion!==1 || a.kind === 'meeting')return;
       p.messages.slice().filter(function (m) { return m.status === 'in_transit' && m.deliveryDay <= day(); }).forEach(function (m) {
         var to = person(m.toId);
         if (alive(to) && m.originLocationId && m.originLocationId === exactLocation(to, game())) { receive(p, m); delivered++; }
@@ -538,6 +576,7 @@
     return delivered;
   }
   function view(p, ch) {
+    if (isPlan(p) && p.localActivity.kind === 'meeting' && TM.NPC.Meetings && TM.NPC.Meetings.view) return TM.NPC.Meetings.view(p, ch);
     if (!isPlan(p) || !ch || !p.knowledge[id(ch)]) return null;
     var key = id(ch), k = p.knowledge[key], a = p.localActivity;
     var messages = p.messages.filter(function (m) { return m.fromId === key || m.toId === key && m.status === 'delivered'; });
@@ -566,8 +605,9 @@
     var t = tickets.get(key); if (!t || !ledger().current(t.lease)) return result('expired', 'stale_activity_button');
     var actor = person(t.actorId); if (!controlled(actor)) return result('blocked', 'player_choice_required');
     var migration = migrate(); if (!migration.ok) return result('blocked', migration.reason);
-    var d = Object.assign({}, t.request, { actorId: t.actorId, behaviorType: 'ordinary_interaction', actionId: key, source: 'daily-human' });
-    ['response', 'task'].forEach(function (field) { if (selection && selection[field] != null) d[field] = copy(selection[field]); });
+    var existing = t.request.planId && get(t.request.planId);
+    var d = Object.assign({}, t.request, { activityKind: t.request.activityKind || existing && existing.localActivity.kind, actorId: t.actorId, behaviorType: 'ordinary_interaction', actionId: key, source: 'daily-human' });
+    ['response', 'task', 'meeting'].forEach(function (field) { if (selection && selection[field] != null) d[field] = copy(selection[field]); });
     if (d.planId) { d.expectedRevision = t.revision; d.termsVersion = t.termsVersion; }
     issued.add(d);
     var receipt;
@@ -578,8 +618,8 @@
   }
   var api = { config: config, day: day, migrate: migrate, readState: readState, budget: budget, controlled: controlled,
     isPlan: isPlan, get: get, plans: plans, terminal: terminal, knownIds: knownIds, knows: knows, relation: relation, relationKind: relationKind, contactFor: contactFor,
-    material: material, materialOptions: materialOptions, exactLocation: exactLocation, canDeliver: canDeliver,
-    person: person, commit: commit, submitNPC: submitNPC, afterVerifiedCommit: afterVerifiedCommit, verifyEvidence: verifyEvidence, needsAdvance: needsAdvance, advanceWithin: advanceWithin,
+    material: material, materialOptions: materialOptions, selectMaterial: selectMaterial, relationshipIds: relationshipIds, exactLocation: exactLocation, canDeliver: canDeliver,
+    person: person, spend: spend, relationshipRefs: relationshipRefs, commit: commit, submitNPC: submitNPC, afterVerifiedCommit: afterVerifiedCommit, verifyEvidence: verifyEvidence, needsAdvance: needsAdvance, advanceWithin: advanceWithin,
     view: view, ticket: ticket, submitHuman: submitHuman, withIndex: withIndex, revokeTickets: function () { tickets.clear(); } };
   TM.NPC.DailyActivities = api;
   if (root.NpcBehaviorRegistry) root.NpcBehaviorRegistry.register('ordinary_interaction', commit);

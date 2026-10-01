@@ -1,0 +1,14 @@
+'use strict';
+const fs = require('fs'), vm = require('vm'), assert = require('node:assert/strict');
+const source = fs.readFileSync(require.resolve('../tm-sim-time.js'), 'utf8');
+const c = { console, Date, Math, JSON, Number, String, Object, Array, Map, Set, isFinite, P: { time: { daysPerTurn: 30 } }, GM: { sid: 'segmented', turn: 1 } };
+c.window = c; c.globalThis = c; vm.createContext(c); vm.runInContext(source, c, { filename: 'tm-sim-time.js' });
+const T = c.TM.SimTime;
+assert.equal(T.now(c.GM), 0);
+const first = T.prepare(c.GM); assert.equal(first.days, 30); c.GM.turn = 2; assert.equal(T.commit(c.GM, first).ok, true); assert.equal(T.now(c.GM), 30);
+c.P.time.daysPerTurn = 5; assert.equal(T.now(c.GM), 30, 'changing the setting does not rewrite elapsed time');
+const second = T.prepare(c.GM); assert.equal(second.days, 5); c.GM.turn = 3; T.commit(c.GM, second); assert.equal(T.now(c.GM), 35);
+assert.equal(T.dayAtTurn(c.GM, 2), 30); assert.equal(T.dayAtTurn(c.GM, 3), 35);
+assert.equal(T.commit(c.GM, second).duplicate, true, 'same interval retry is idempotent');
+const old = { turn: 4 }; c.P.time.daysPerTurn = 10; assert.equal(T.ensure(old).legacy.historyQuality, 'unknown_step_history'); assert.equal(T.now(old), 30);
+console.log('[smoke-calendar-segmented] PASS step-change / historical-baseline / retry-idempotence');

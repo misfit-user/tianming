@@ -37,6 +37,7 @@
       if (d.phase === 'respond') {
         if (disposition.score < 4) { d.response = 'reject'; reason = '本人对这项请求意愿不足'; }
         else if (disposition.stress >= 75 && p.localActivity.deferrals < D.config.maxDeferrals) { d.response = 'defer'; reason = '当前负担较重，明确请求延期'; }
+        else if (view.kind === 'meeting') { d.response = disposition.score < 22 ? 'defer' : 'accept'; reason = '按关系、负担和已知行程决定是否赴约'; }
         else if (view.kind === 'greeting') { d.response = disposition.score > 45 && disposition.sociability >= 0 ? 'warm' : 'brief'; reason = '依已有往来选择答复方式'; }
         else if (view.kind === 'assistance' && !arr(p.localActivity.task && p.localActivity.task.materials).length) { d.response = 'conditions'; reason = '已收到的任务缺少材料'; }
         else if (view.kind === 'assistance' && disposition.score < 22 && p.localActivity.task.materials.length > 1) { d.response = 'partial'; reason = '只愿承接较小范围'; }
@@ -45,7 +46,7 @@
       } else if (d.phase === 'agree') {
         d.response = disposition.score < 0 ? 'reject' : 'accept'; reason = '核对已收到的当前条件';
         if (view.kind === 'assistance' && !arr(p.localActivity.proposedTask && p.localActivity.proposedTask.materials).length) {
-          var material = D.materialOptions(ch)[0];
+          var material = D.selectMaterial(ch, p.localActivity.task);
           if (material) d.task = { kind: 'material_summary', title: '整理现有材料清单', materialRefs: [material.ref] };
           else { d.phase = 'cancel'; delete d.response; reason = '本人暂无可提供材料，结束本次请求'; }
         }
@@ -61,7 +62,7 @@
     if (b.steps >= D.config.dailySteps) return [];
     if (out.length || b.starts >= D.config.dailyStarts) return out.slice(0, config.maxCandidates);
     arr(ch.localGoals).forEach(function (goal) {
-      if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance)$/.test(goal.kind)) return;
+      if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting)$/.test(goal.kind)) return;
       var source = String(goal.id) + ':' + Number(goal.version || 1);
       if (related.some(function (p) { return p.actorId === ch.id && p.localActivity.sourceGoalId === source; })) return;
       var target = actor(goal.targetId), third = goal.kind === 'introduction' && actor(goal.thirdPartyId);
@@ -69,7 +70,7 @@
       var willingness = inclination(ch, target, goal.kind);
       if (willingness.stress > 90 || willingness.score < 0) return;
       out.push({ priority: 50 + willingness.score, source: 'goal:' + source, reason: '推进本人明确的普通交往目标',
-        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task } });
+        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: goal.meeting } });
     });
     if (!out.length && !(options && options.skipUnsolicited)) {
       D.knownIds(ch).forEach(function (key) {
@@ -174,11 +175,11 @@
     var g = root.GM || {}, chars = arr(g.chars);
     var hasGoals = chars.some(function (ch) {
       return arr(ch && ch.localGoals).some(function (goal) {
-        return goal && /^(greeting|introduction|assistance)$/.test(goal.kind) && goal.status !== 'cancelled';
+        return goal && /^(greeting|introduction|assistance|meeting)$/.test(goal.kind) && goal.status !== 'cancelled';
       });
     });
     var hasMatters = arr(g._npcPlans).some(function (p) { return p && p.localActivity && p.localActivity.schemaVersion === 1; });
-    var hasKnownRelations = !!(g.affinityMap && Object.keys(g.affinityMap).length);
+    var hasKnownRelations = !!(g.affinityMap && Object.keys(g.affinityMap).length) || chars.some(function (ch) { return ch && domain().relationshipRefs(ch).some(function (ref) { return domain().relationshipIds(ref, g).length; }); });
     if (!hasGoals && !hasMatters && !hasKnownRelations && !g._npcLocalAiEnabled) return;
     var lease = ledger().capture();
     root.setTimeout(function () {

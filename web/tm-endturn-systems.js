@@ -50,6 +50,8 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
   var monthRatio = (typeof _getDaysPerTurn === 'function')
     ? _getDaysPerTurn() / 30
     : ((typeof timeRatio === 'number' && isFinite(timeRatio) && timeRatio > 0) ? timeRatio * 12 : 1);
+  var _tmTimeInterval = null;
+  if (window.TM && TM.SimTime) _tmTimeInterval = TM.SimTime.prepare(GM);
   var pipelineCtx = { timeRatio: timeRatio, turn: GM.turn, monthRatio: monthRatio, _monthRatio: monthRatio };
   var _currencyFullTicked = false;
   await Promise.resolve(SubTickRunner.run(pipelineCtx));
@@ -63,6 +65,7 @@ async function _endTurn_updateSystems(timeRatio, zhengwen) {
 
   // 6. 推进回合
   GM.turn++;
+  if (window.TM && TM.SimTime && _tmTimeInterval) TM.SimTime.commit(GM, _tmTimeInterval);
   // 同步旧子系统读取的年月日镜像；不得另算第二套时钟。
   try { if (typeof _tmSyncGMCalendar === 'function') _tmSyncGMCalendar(GM, GM.turn); }
   catch (_calendarSyncE) { try { console.warn('[endTurn] calendar sync failed:', _calendarSyncE); } catch (_) {} throw _calendarSyncE; }

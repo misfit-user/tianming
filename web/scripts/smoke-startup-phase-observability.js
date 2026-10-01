@@ -55,8 +55,12 @@ exportModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===na
 // 省道（通志）数据层：纯函数模块，地图册页从这里取省道分组、档案与汇总，须先于册页装载
 const mapDataModules=['tm-map-circuits.js','tm-division-reassign.js','tm-map-route-days.js','tm-circuit-governance.js','tm-circuit-governor-effects.js'];
 mapDataModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
+const timeModules=['tm-sim-time.js'];
+timeModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)<scriptNames.indexOf('tm-ai-infra.js'),'simulation clock precedes date consumers');});
+const travelModules=['tm-npc-travel.js'];
+travelModules.forEach(name=>{assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once');assert(scriptNames.indexOf(name)>scriptNames.indexOf('tm-map-route-days.js'),'travel domain follows its route provider');});
 assert(scriptNames.indexOf('tm-map-circuits.js')<scriptNames.indexOf('phase8-formal-map-dossier.js'),'circuit data layer precedes the map dossier that reads it');
-assert.strictEqual(manifest.scriptCount,417+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length,'retain every prior script and every explicitly registered runtime addition');
+assert.strictEqual(manifest.scriptCount,417+dailyModules.length+politicalModules.length+officeDutyModules.length+exportModules.length+nativeModules.length+fiscalModules.length+recoveryModules.length+outputContractModules.length+visualAdapters.length+requestControls.length+enactedOrderModules.length+emergencyModules.length+edictEfficacyModules.length+mapDataModules.length+timeModules.length+travelModules.length,'retain every prior script and every explicitly registered runtime addition');
 fiscalModules.forEach(name=>assert.strictEqual(scriptNames.filter(src=>src===name).length,1,name+' loads once'));
 assert(scriptNames.indexOf('tm-fiscal-statements.js')<scriptNames.indexOf('tm-fiscal-engine.js'),'shared statements precede the fiscal engine');
 assert(scriptNames.indexOf('tm-public-treasury.js')<scriptNames.indexOf('tm-military-arrears.js'),'public treasury precedes army liabilities');

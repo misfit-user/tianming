@@ -385,7 +385,7 @@
   }
   function executionSignature(d,actor) {
     var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType'];
-    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId']);
+    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
   }
@@ -454,7 +454,7 @@
 
   function verifyEvidence(ref,d,actor,g,before) {
     if(!ref||!ref.kind)return false;
-    if(ref.kind==='daily_step')return !!(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.verifyEvidence(ref,d,actor,g,before));
+    if(ref.kind==='daily_step'||ref.kind==='meeting_step')return !!(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.verifyEvidence(ref,d,actor,g,before));
     if(['march','command','army_operation'].indexOf(ref.kind)>=0)return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyEvidence(ref,d,g,before));
     if(ref.kind==='diplomacy_step'||ref.kind==='treaty'||ref.kind==='treaty_termination')return !!(TM.FactionDiplomacy&&TM.FactionDiplomacy.verifyEvidence(ref,d,g,before));
     if(ref.kind==='political_review')return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyReview(ref,d,g,before));

@@ -1,0 +1,11 @@
+{
+  "command": "node scripts/verify-electron-bridge.js --npc-travel",
+  "modelAttempts": 0,
+  "externalTraffic": 0,
+  "finalDay": 15,
+  "plan": "plan:daily-local:1",
+  "status": "done",
+  "meeting": "returned",
+  "networkPolicy": "all HTTP/HTTPS/WS/WSS requests denied",
+  "inputMethod": "real Electron Chromium controls plus production local travel boundary"
+}

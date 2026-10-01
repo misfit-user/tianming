@@ -794,6 +794,9 @@ async function _endTurnCore(options){
   _turnTxn = _tmCaptureEndTurnTransaction();
   // 必须在后朝标记、busy/commit barrier 及校准写入之前冻结点击时世界。
   var _preCommittedState = _tmCapturePreEndTurnCommittedState(_turnTxn);
+  // Freeze the elapsed interval before any asynchronous inference or settings
+  // changes. The existing turn transaction restores this on failure.
+  if (window.TM && TM.SimTime) TM.SimTime.prepare(GM);
   if (options && Object.prototype.hasOwnProperty.call(options, 'postTurnCourt')) {
     if (typeof _beginPostTurnCourtState !== 'function') throw new Error('后朝状态写口未加载');
     _beginPostTurnCourtState(!!options.postTurnCourt);

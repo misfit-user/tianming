@@ -11,7 +11,11 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   'use strict';
   var DEFAULT_DAYS = 10, KM_PER_DAY = 100;
-  var fits = new WeakMap(), routes = new WeakMap();
+  // Legacy administrative consumers still use DEFAULT_DAYS through daysBetween.
+  // Person travel uses planRoute below, which never turns missing data into an
+  // arrival claim and keeps mode/speed separate from geographic distance.
+  var SPEEDS = Object.freeze({ walking: 25, horse: 50, courier: 80, land: 35, boat: 40 });
+  var fits = new WeakMap(), routes = new WeakMap(), strictPlans = new WeakMap();
 
   // 坐标须为两个有限数，不把空值或字符串当坐标。
   function pair(value) {
@@ -79,6 +83,101 @@
       regions.find(function (r) { return String(r.name) === key || String(r.title) === key; }) || null;
   }
 
+  function resolveRegion(map, ref) {
+    var regions = map && Array.isArray(map.regions) ? map.regions : [];
+    if (ref && typeof ref === 'object' && regions.indexOf(ref) >= 0) return { status: 'resolved', region: ref, method: 'object' };
+    var key = ref == null ? '' : String(typeof ref === 'object' ? (ref.id || ref.name || ref.title || '') : ref);
+    if (!key) return { status: 'unresolved', reason: 'missing_location' };
+    var byId = regions.filter(function (r) { return r && String(r.id) === key; });
+    if (byId.length === 1) return { status: 'resolved', region: byId[0], method: 'id' };
+    if (byId.length > 1) return { status: 'ambiguous', candidates: byId.map(function (r) { return String(r.id); }) };
+    var byName = regions.filter(function (r) { return r && (String(r.name || '') === key || String(r.title || '') === key); });
+    if (byName.length === 1) return { status: 'resolved', region: byName[0], method: 'name' };
+    if (byName.length > 1) return { status: 'ambiguous', candidates: byName.map(function (r) { return String(r.id); }) };
+    return { status: 'unresolved', reason: 'unknown_location', sourceText: key };
+  }
+
+  function routeVersion(map) {
+    var explicit = map && (map.routeVersion || map.travelConditionsVersion || map.locationBindingContract && map.locationBindingContract.revision || map.revision);
+    if (explicit != null && String(explicit) !== '0' && String(explicit) !== '') return String(explicit);
+    // Older maps have no route revision. Keep their cache safe when an editor
+    // or a scenario mutates neighbours/edges in place by deriving a compact,
+    // deterministic fingerprint from the route-bearing fields.
+    var rows = Array.isArray(map && map.regions) ? map.regions : [], raw = rows.map(function (r) {
+      return [r && r.id, Array.isArray(r && r.neighbors) ? r.neighbors : [], Array.isArray(r && r.routeEdges) ? r.routeEdges : []];
+    });
+    if (Array.isArray(map && map.routeEdges)) raw.push(['@map', map.routeEdges]);
+    var text = JSON.stringify(raw), h = 2166136261;
+    for (var i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return 'derived-' + (h >>> 0).toString(16);
+  }
+
+  function edgeRows(map, region) {
+    var rows = [];
+    if (Array.isArray(region && region.routeEdges)) rows = rows.concat(region.routeEdges.map(function (e) { return Object.assign({}, e, { from: e.from || region.id }); }));
+    if (Array.isArray(map && map.routeEdges)) rows = rows.concat(map.routeEdges.filter(function (e) { return e && String(e.from || '') === String(region && region.id); }));
+    if (!rows.length && Array.isArray(region && region.neighbors)) rows = region.neighbors.map(function (ref) { return { to: ref, mode: 'land', source: 'neighbors' }; });
+    return rows;
+  }
+
+  function allowedMode(edge, mode) {
+    var declared = edge && (edge.mode || edge.transport || edge.kind);
+    var modes = Array.isArray(edge && edge.modes) ? edge.modes : declared ? [declared] : ['land'];
+    modes = modes.map(function (v) { return String(v).toLowerCase(); });
+    if (!mode) return true;
+    var wanted = String(mode).toLowerCase();
+    if (modes.indexOf(wanted) >= 0) return true;
+    return modes.indexOf('land') >= 0 && ['land', 'walking', 'horse', 'courier'].indexOf(wanted) >= 0;
+  }
+
+  function planRoute(map, fromRef, toRef, opts) {
+    opts = opts || {};
+    var fromResolved = resolveRegion(map, fromRef), toResolved = resolveRegion(map, toRef);
+    if (fromResolved.status !== 'resolved') return { status: fromResolved.status, reason: fromResolved.reason || 'ambiguous_origin', candidates: fromResolved.candidates || [] };
+    if (toResolved.status !== 'resolved') return { status: toResolved.status, reason: toResolved.reason || 'ambiguous_destination', candidates: toResolved.candidates || [] };
+    var from = fromResolved.region, to = toResolved.region, mode = opts.mode ? String(opts.mode).toLowerCase() : '';
+    var startCoord = lonLatOf(map, from), endCoord = lonLatOf(map, to), version = routeVersion(map);
+    if (!startCoord || !endCoord) return { status: 'unresolved', reason: 'coordinate_missing', fromRegionId: String(from.id), toRegionId: String(to.id), routeVersion: version };
+    if (String(from.id) === String(to.id)) return { status: 'reachable', fromRegionId: String(from.id), toRegionId: String(to.id), path: [String(from.id)], segments: [], km: 0, days: 0, mode: mode || 'land', estimated: false, quality: 'direct-region', routeVersion: version };
+    var cacheKey = [String(from.id), String(to.id), mode || 'default', Number(opts.speedKmPerDay) || '', version].join('|');
+    var cache = strictPlans.get(map);
+    if (!cache) { cache = new Map(); strictPlans.set(map, cache); }
+    if (!opts.fresh && cache.has(cacheKey)) return cache.get(cacheKey);
+    var regions = Array.isArray(map.regions) ? map.regions : [], pending = new Set([from]), done = new Set(), best = new Map();
+    best.set(String(from.id), { days: 0, km: 0, path: [String(from.id)], segments: [] });
+    while (pending.size) {
+      var current = null, currentBest = null;
+      pending.forEach(function (r) { var candidate = best.get(String(r.id)); if (candidate && (!currentBest || candidate.days < currentBest.days)) { current = r; currentBest = candidate; } });
+      if (!current) break;
+      pending.delete(current); done.add(String(current.id));
+      if (String(current.id) === String(to.id)) break;
+      var a = lonLatOf(map, current); if (!a) continue;
+      edgeRows(map, current).forEach(function (edge) {
+        if (!edge || edge.available === false || !allowedMode(edge, mode)) return;
+        var targetRef = edge.to != null ? edge.to : edge.target != null ? edge.target : edge.regionId;
+        var targetResolved = resolveRegion(map, targetRef); if (targetResolved.status !== 'resolved') return;
+        var next = targetResolved.region, nextId = String(next.id); if (done.has(nextId)) return;
+        var b = lonLatOf(map, next); if (!b) return;
+        var km = Number(edge.km != null ? edge.km : edge.distanceKm != null ? edge.distanceKm : distance(a, b));
+        if (!(km >= 0) || !Number.isFinite(km)) return;
+        var edgeMode = mode || String(edge.mode || edge.transport || edge.kind || 'land').toLowerCase();
+        var speed = Number(edge.speedKmPerDay || opts.speedKmPerDay || SPEEDS[edgeMode] || SPEEDS.land);
+        if (!(speed > 0) || !Number.isFinite(speed)) return;
+        var days = Number(edge.days); if (!(days >= 0) || !Number.isFinite(days)) days = km / speed;
+        var total = { days: currentBest.days + days, km: currentBest.km + km,
+          path: currentBest.path.concat([nextId]),
+          segments: currentBest.segments.concat([{ fromRegionId: String(current.id), toRegionId: nextId, km: km, days: days, mode: edgeMode, source: edge.source || 'map-edge' }]) };
+        var prior = best.get(nextId); if (!prior || total.days < prior.days) { best.set(nextId, total); pending.add(next); }
+      });
+    }
+    var found = best.get(String(to.id));
+    var result = found ? { status: 'reachable', fromRegionId: String(from.id), toRegionId: String(to.id), path: found.path, segments: found.segments,
+      km: Math.round(found.km * 100) / 100, days: Math.max(0, Math.round(found.days * 10) / 10), mode: mode || (found.segments[0] && found.segments[0].mode) || 'land', estimated: false,
+      quality: (map.geographicReferences && map.geographicReferences.length) || from.geographicCenter || to.geographicCenter ? 'calibrated' : 'region-center', routeVersion: version } :
+      { status: 'unreachable', reason: mode ? 'no_supported_route_for_mode' : 'no_supported_route', fromRegionId: String(from.id), toRegionId: String(to.id), routeVersion: version };
+    cache.set(cacheKey, result); return result;
+  }
+
   // 沿有坐标的邻接边跑 Dijkstra；不可达地块不进入结果，路程按起点缓存。
   function routeDays(map, fromRegion, opts) {
     if (!map) return new Map();
@@ -114,5 +213,6 @@
     return (to && routeDays(map, fromRegion).get(String(to.id))) || { days: DEFAULT_DAYS, km: DEFAULT_DAYS * KM_PER_DAY, estimated: true };
   }
 
-  return { lonLatOf: lonLatOf, routeDays: routeDays, daysBetween: daysBetween, DEFAULT_DAYS: DEFAULT_DAYS, KM_PER_DAY: KM_PER_DAY };
+  return { lonLatOf: lonLatOf, routeDays: routeDays, daysBetween: daysBetween, planRoute: planRoute, resolveRegion: resolveRegion,
+    routeVersion: routeVersion, SPEEDS: SPEEDS, DEFAULT_DAYS: DEFAULT_DAYS, KM_PER_DAY: KM_PER_DAY };
 });

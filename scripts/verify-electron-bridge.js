@@ -13,6 +13,7 @@ const report = { runId: path.basename(reportDir), repo, head: cp.execFileSync('g
   baseline: argv.includes('--baseline'), complete: false, results: [] };
 try {
   if (argv.includes('--npc-daily')) modes.splice(0, modes.length, 'npc-daily');
+  if (argv.includes('--npc-travel')) modes.splice(0, modes.length, 'npc-travel');
   if (argv.includes('--authoring-autoapply')) modes.splice(0, modes.length, 'authoring-autoapply');
   if (argv.includes('--seven-ui')) modes.splice(0, modes.length, 'seven-ui');
   if (argv.includes('--native-start-entry')) modes.splice(0, modes.length, 'native-start-entry', 'native-start-restart');

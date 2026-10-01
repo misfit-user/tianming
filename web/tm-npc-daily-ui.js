@@ -9,11 +9,17 @@
     daily_activity_budget: '当日活动安排已满，请等待正式日期推进。', recent_contact_cooldown: '近期已有同类往来，请先处理原事项。',
     existing_activity_continues: '已有同类事项正在办理，请在原事项中继续。', specific_supplement_materials_required: '请求补办须选择具体的补充材料。',
     work_date_not_reached: '工作所需日期尚未经过，当前不能交付。', player_choice_required: '这项选择须由本人作出。' };
+  reasons.meeting_target_location_unknown = '尚不能确认对方可知的当前位置，未替其安排赴约。';
+  reasons.meeting_location_unresolved = '约见地点没有可核验的地块，未创建行程。';
+  reasons.meeting_invite_route_unavailable = '当前支持的路线无法递送这次邀约。';
+  reasons.meeting_response_route_unavailable = '回应暂时无法按已知路线传回。';
+  reasons.route_service_unavailable = '路线服务尚未就绪，事项保持等待。';
   var stages = { sent: '文书已递出', awaiting_response: '待本人答复', awaiting_third: '待本人决定是否接受引见',
     awaiting_agreement: '待确认当前条件', ready_forward: '待转达引见', ready_report: '待传回对方答复', ready_confirm: '待确认联系条件',
     working: '待整理已同意的材料', awaiting_feedback: '已收文书，待反馈', done: '本次往来已结束', rejected: '本次请求未获接受',
     deferred: '已明确延期，待正式日期推进', waiting_contact: '尚未取得回应，本地递送未能安排', cancel_sent: '已提出取消，通知正在传递',
-    cancelled: '此项请求已取消', cancel_not_delivered: '本人已取消；通知尚未送达对方', expired: '已到本次事项的截止日期', consent_given: '已表达联系意愿' };
+    cancelled: '此项请求已取消', cancel_not_delivered: '本人已取消；通知尚未送达对方', expired: '已到本次事项的截止日期', consent_given: '已表达联系意愿',
+    traveling: '双方正在按路线赴约', scheduled: '约期已定，等待出发或抵达', participated: '双方已实际会面', returning: '会面结束，正在按安排返程', returned: '已返抵原处', waiting_route: '路线或当前位置暂不能确认', missed: '未在约定窗口内同时到场' };
   var choices = { respond: [['accept', '接受'], ['reject', '婉拒'], ['conditions', '提出条件'], ['defer', '延期答复']],
     agree: [['accept', '同意当前条件'], ['reject', '不接受条件']], forward: [['send', '代为转达']], report: [['send', '传回实际答复']],
     confirm: [['send', '确认通书条件']], perform: [['deliver', '整理并交付清单']], feedback: [['ack', '确认收到'], ['satisfied', '清单有帮助'], ['supplement', '请求补充材料']] };
@@ -33,10 +39,11 @@
   }
   function activityCard(p, ch, materials) {
     var v = D().view(p, ch); if (!v) return '';
-    var label = v.kind === 'greeting' ? '通问' : v.kind === 'introduction' ? '引见' : '协助';
+    var label = v.kind === 'greeting' ? '通问' : v.kind === 'introduction' ? '引见' : v.kind === 'meeting' ? '约见' : '协助';
     var html = '<article data-daily-plan="' + escape(v.id) + '" style="border-top:1px solid var(--color-border-subtle);padding:var(--space-2,8px) 0">';
     html += '<strong>' + escape(label + ' · ' + who(v.actorId) + ' → ' + who(v.targetId) + (v.thirdPartyId ? ' · 引见 ' + who(v.thirdPartyId) : '')) + '</strong>';
-    html += '<p data-daily-stage>' + escape(stages[v.stage] || '等待实际回应') + '</p><p>新请求答复期限：开局后第' + escape(v.expiresDay) + '日。已承接的工作与已收到的文书继续保留，可办理或取消。</p>';
+    html += '<p data-daily-stage>' + escape(stages[v.stage] || '等待实际回应') + '</p><p>事项期限：第' + escape(v.expiresDay) + '日。已承接的工作与已收到的文书继续保留，可办理或取消。</p>';
+    if (v.meeting) html += '<p data-daily-meeting>地点：' + escape(v.meeting.locationName || v.meeting.locationId || '未定') + '；目的：' + escape(v.meeting.purpose || '') + '；路线状态：' + escape(stages[v.meeting.status] || v.meeting.status || '待定') + '</p>';
     html += v.messages.slice(-8).map(function (m) { return '<details><summary>' + escape((m.fromId ? who(m.fromId) : '传递记录') + ' · ' + (m.fromId === ch.id && m.status !== 'delivered' ? '已发出' : '已收到')) + '</summary><p style="white-space:pre-wrap">' + escape(m.content) + '</p></details>'; }).join('');
     html += v.documents.map(function (document) {
       return '<details open data-daily-document="' + escape(document.id) + '"><summary>已交付文书：材料清单</summary><pre style="white-space:pre-wrap;font:inherit">' + escape(document.content) + '</pre><details><summary>查看材料来源</summary>' + document.sources.map(function (s) {
@@ -47,6 +54,7 @@
     if (v.nextPhase) {
       var options = choices[v.nextPhase] || [];
       if (v.kind === 'greeting' && v.nextPhase === 'respond') options = [['warm', '关切答复'], ['brief', '简短答复'], ['reject', '婉拒继续往来'], ['defer', '延期答复']];
+      if (v.kind === 'meeting' && v.nextPhase === 'respond') options = [['accept', '接受约见'], ['reject', '婉拒约见'], ['defer', '建议改期']];
       if (v.kind === 'assistance' && v.nextPhase === 'respond') options = options.concat([['partial', '仅承接首份材料']]);
       var token = D().ticket(ch, { planId: v.id, phase: v.nextPhase });
       html += '<div data-daily-response="' + escape(token) + '">' + options.map(function (o) { return '<button type="button" class="hy-filter-btn" data-daily-answer="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
@@ -65,11 +73,11 @@
       var options = '<option value="">请选择已知人物</option>' + people.map(function (c) { return '<option value="' + escape(c.id) + '">' + escape(c.name) + '</option>'; }).join('');
       var budget = D().budget(ch), views = D().plans().filter(function (p) { return D().view(p, ch); }), materials = D().materialOptions(ch).slice(0, 18);
       var waiting = views.filter(function (p) { return !!D().view(p, ch).nextPhase; }).length;
-      var html = '<details style="font-size:calc(13 * var(--tm-px,1px));line-height:1.7"' + (collapsed ? '' : ' open') + '><summary><strong>日常往来 · 本地办理' + (waiting ? ' · 待回应 ' + waiting : '') + '</strong></summary><p>当前日期内可通问、引见和整理少量已有材料；不等于面谈。多日工作须等待正式时间推进，自由信函仍使用原推演。</p>';
+      var html = '<details style="font-size:calc(13 * var(--tm-px,1px));line-height:1.7"' + (collapsed ? '' : ' open') + '><summary><strong>日常往来 · 本地办理' + (waiting ? ' · 待回应 ' + waiting : '') + '</strong></summary><p>通问、引见和材料协助沿同一事项办理；约见须按已知地点和路线真实赴约。多日工作须等待正式时间推进，自由信函仍使用原推演。</p>';
       html += '<p>当日已新发起 ' + budget.starts + ' / ' + D().config.dailyStarts + ' 项，可回应已送达事项。</p><div data-daily-compose>';
       html += '<label>联系对象 <select id="daily-target" aria-label="日常往来对象">' + options + '</select></label> ';
       html += '<label>希望引见的人 <select id="daily-third" aria-label="希望引见的人">' + options + '</select></label>';
-      html += formMaterials(materials, 'new') + '<div><button type="button" class="hy-filter-btn" data-daily-new="greeting">通问</button> <button type="button" class="hy-filter-btn" data-daily-new="introduction">请求引见</button> <button type="button" class="hy-filter-btn" data-daily-new="assistance">请求协助整理材料</button></div></div>';
+      html += formMaterials(materials, 'new') + '<div><button type="button" class="hy-filter-btn" data-daily-new="greeting">通问</button> <button type="button" class="hy-filter-btn" data-daily-new="introduction">请求引见</button> <button type="button" class="hy-filter-btn" data-daily-new="assistance">请求协助整理材料</button> <button type="button" class="hy-filter-btn" data-daily-new="meeting">提出约见</button></div></div>';
       html += '<p id="daily-feedback" role="status"></p><h4>实际往来与待回应事项</h4>';
       views.sort(function (a, b) { return Number(!!D().view(b, ch).nextPhase) - Number(!!D().view(a, ch).nextPhase) || b.updatedTurn - a.updatedTurn; });
       html += views.map(function (p) { return activityCard(p, ch, materials); }).join('') || '<p>尚无本地往来。</p>';
@@ -84,7 +92,8 @@
         if (button.dataset.dailyNew) {
           if (!composeLease || !NPC.ActionLedger.current(composeLease)) { render(); return; }
           var kind = button.dataset.dailyNew, target = panel.querySelector('#daily-target').value, third = panel.querySelector('#daily-third').value;
-          var request = { activityKind: kind, targetId: target, thirdPartyId: kind === 'introduction' ? third : '', task: kind === 'assistance' ? selectedMaterials(panel, materials, 'new') : undefined };
+          var request = { activityKind: kind, targetId: target, thirdPartyId: kind === 'introduction' ? third : '', task: kind === 'assistance' ? selectedMaterials(panel, materials, 'new') : undefined,
+            meeting: kind === 'meeting' ? { purpose: '探望与叙谈', returnMode: 'return' } : undefined };
           receipt = D().submitHuman(D().ticket(ch, request));
         } else if (button.dataset.dailyCancel) receipt = D().submitHuman(button.dataset.dailyCancel);
         else if (button.dataset.dailyAnswer) {

@@ -101,7 +101,8 @@
     var start = _getStartDate();
     start.day = _validDay(start.day, start.year, start.month);
     // 回合开始那天·距离剧本起点的天数
-    var daysFromStart = Math.floor((Number(turn) - 1) * dpv);
+    var daysFromStart = (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined' && GM)
+      ? TM.SimTime.dayAtTurn(GM, Number(turn)) : Math.floor((Number(turn) - 1) * dpv);
     if (!isFinite(daysFromStart)) daysFromStart = 0;
     var d = _civilFromDays(_daysFromCivil(start.year, start.month, start.day) + daysFromStart);
     var year = d.year;
@@ -129,7 +130,9 @@
     if (thenTurn == null || nowTurn == null) return '';
     if (thenTurn === nowTurn) return '本回合';
     var dpv = _getDaysPerTurn_();
-    var diffDays = (nowTurn - thenTurn) * dpv;
+    var diffDays = (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined' && GM)
+      ? TM.SimTime.dayAtTurn(GM, Number(nowTurn)) - TM.SimTime.dayAtTurn(GM, Number(thenTurn))
+      : (nowTurn - thenTurn) * dpv;
     var future = diffDays < 0;
     diffDays = Math.abs(diffDays);
 

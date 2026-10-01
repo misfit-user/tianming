@@ -2717,6 +2717,7 @@ export function createCore(deps) {
     G.chars.forEach(function(ch) {
       if (!ch || !ch._travelTo) return;
       if (ch.alive === false || ch.dead === true) return; // 死者不赶路·不「抵达就任」(2026-07-04 审查定罪)
+      if (ch._travelPaused === true) { inflight++; return; } // local travel domain pauses on a verified roadblock
       // ★赴任硬上限·按"天"计(与每回合天数刻度无关·1回合=1天的剧本不会被误伤)：
       //  逐 tick 累计实耗天数(AI 重发同终点不清此计数→剩余天数被重置也兜得住)·
       //  首 tick 锚定应耗天数(此后不被 AI 重置缩小)·实耗超「应耗×2 且 ≥40 天」即判卡死强制抵达。

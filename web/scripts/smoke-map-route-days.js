@@ -31,6 +31,8 @@ for (const [file, samples, trip] of cases) {
   });
   const first = route.routeDays(map, regions[trip[0]]), target = route.daysBetween(map, regions[trip[0]], regions[trip[1]]);
   assert(target.days >= trip[2] && target.days <= trip[3]); assert.equal(target.estimated, false);
+  const strict = route.planRoute(map, regions[trip[0]].id, regions[trip[1]].id, { mode: 'walking' });
+  assert.equal(strict.status, 'reachable'); assert(strict.path.length >= 2 && strict.km > 0 && strict.days > 0 && strict.segments.length > 0);
   assert.equal(first.get(regions[trip[0]].id).days, 0);
   assert.equal(route.routeDays(map, regions[trip[0]]), first);
   const fresh = route.routeDays(map, regions[trip[0]], { fresh: true });
@@ -57,5 +59,5 @@ assert.equal(route.routeDays(fixture, c).get('c').days, 0);
 assert.equal(route.lonLatOf({}, { geographicCenter: [NaN, 3] }), null);
 assert.equal(route.lonLatOf({}, { geographicCenter: ['110', 35] }), null);
 assert.equal(JSON.stringify(fixture), before, '路程计算没有写地图');
-console.log('[smoke-map-route-days] PASS 9 coordinates / 3 routes / fit / unreachable / cache / read-only');
+console.log('[smoke-map-route-days] PASS 9 coordinates / 3 legacy+strict routes / fit / unreachable / cache / read-only');
 console.log('[timing] total=' + ((Date.now() - started) / 1000).toFixed(3) + 's');

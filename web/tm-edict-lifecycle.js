@@ -173,6 +173,7 @@ var REFORM_PHASES = {
 // This later definition intentionally mirrors tm-utils.js for the edict module.
 // Treat it as duplicated compatibility, not dead code, until the helper is centralized.
 function _getDaysPerTurn() {
+  if (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined') { var locked = TM.SimTime.lockedDays(GM); if (locked != null) return locked; }
   if (typeof P === 'undefined' || !P.time) return 30;
   var dpt = Number(P.time.daysPerTurn);
   if (dpt > 0) return dpt;

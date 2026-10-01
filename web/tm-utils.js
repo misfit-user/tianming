@@ -841,6 +841,7 @@ function checkpointRng() {
 // This early-loaded definition is intentionally kept for scripts loaded before
 // tm-edict-lifecycle.js redefines the same helper. Centralize before removing.
 function _getDaysPerTurn() {
+  if (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined') { var locked = TM.SimTime.lockedDays(GM); if (locked != null) return locked; }
   if (!P || !P.time) return 30;
   // 新格式：直接读 daysPerTurn
   if (P.time.daysPerTurn && P.time.daysPerTurn > 0) return P.time.daysPerTurn;

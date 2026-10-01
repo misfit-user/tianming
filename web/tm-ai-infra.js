@@ -2012,12 +2012,9 @@ function getEraDisplay(y,mo,dy){
  *
  * @returns {{adYear,solarMonth,solarDay,lunarMonth,lunarDay,season,eraInfo,gzYearStr,gzDayStr,reignYear}}
  */
-/** 取当前游戏自开局累计天数·跨剧本统一时间标尺
- *  · 用于鸿雁/驿递/续问/自愈等"按真实时间"判定的逻辑
- *  · 与 calcDateFromTurn 内部的 (turn-1)*dpv 计算一致
- *  · 开局 turn=1 → day=0
- */
+/** 取当前游戏自开局累计天数·由 TM.SimTime 读取。 */
 function getCurrentGameDay(){
+  if (typeof TM !== 'undefined' && TM.SimTime) return TM.SimTime.now(GM);
   var dpv = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
   return ((GM.turn || 1) - 1) * dpv;
 }
@@ -2036,7 +2033,8 @@ function calcDateFromTurn(turn){
 
   // 每回合推进天数（统一用 _getDaysPerTurn）
   var daysPer = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : 30;
-  var totalDays=(turn-1)*daysPer;
+  var totalDays = (typeof TM !== 'undefined' && TM.SimTime && typeof GM !== 'undefined' && GM)
+    ? TM.SimTime.dayAtTurn(GM, turn) : (turn - 1) * daysPer;
 
   // === 公历日期推进（用于干支计算）===
   // 使用精确的公历月天数
@@ -2085,9 +2083,10 @@ function calcDateFromTurn(turn){
   };
 }
 
-/** turn + P.time 是权威日期；GM.year/month/day 仅为旧读者兼容镜像。 */ function _tmSyncGMCalendar(targetGM, turn){
+/** turn + 累计时间段是权威日期；GM.year/month/day 仅为旧读者兼容镜像。 */ function _tmSyncGMCalendar(targetGM, turn){
   var G = targetGM || ((typeof GM !== 'undefined' && GM) ? GM : null), timeConfig = null; try { timeConfig = (typeof P !== 'undefined' && P) ? P.time : null; } catch (_) {}
   if (!G || typeof calcDateFromTurn !== 'function' || !timeConfig) return null; // 缺 P.time 时保留旧档镜像，不写 adYear=0 占位
+  if (typeof TM !== 'undefined' && TM.SimTime) TM.SimTime.ensure(G);
   var di = calcDateFromTurn(turn == null ? (G.turn || 1) : turn); if (!di || !isFinite(Number(di.adYear))) return null;
   var month=timeConfig.calendar==='lunar'?di.lunarMonth:di.solarMonth,day=timeConfig.calendar==='lunar'?di.lunarDay:di.solarDay;
   G.year = Number(di.adYear); G.month = isFinite(Number(month)) ? Number(month) : 1; G.day = isFinite(Number(day)) ? Number(day) : 1; return { year: G.year, month: G.month, day: G.day };

@@ -660,8 +660,17 @@
           // 4.5/4.6 仍跑·不延后 (legacy 也是这样)
           try { if (typeof _settleCourtMeter === 'function') await Promise.resolve(_settleCourtMeter()); }
           catch(e) { _rethrowCriticalFinalizeFailure('court-meter-deferred', e, ctx); }
-          try { if (typeof advanceCharTravelByDays === 'function') await Promise.resolve(advanceCharTravelByDays((typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30))); }
+          try { if (window.TM && TM.NPC && TM.NPC.Meetings && TM.NPC.Meetings.beforeTravelAdvance) TM.NPC.Meetings.beforeTravelAdvance(); if (typeof advanceCharTravelByDays === 'function') await Promise.resolve(advanceCharTravelByDays((typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30))); }
           catch(e) { _rethrowCriticalFinalizeFailure('character-travel-deferred', e, ctx); }
+          // Travel is the physical movement boundary. Advance the shared NPC
+          // ledger after it so delivery, arrival and meeting participation see
+          // the committed simulation day and cannot retroactively attend.
+          try {
+            if (window.TM && TM.NPC && TM.NPC.ActionLedger) {
+              var _dailyAdvanceDeferred = TM.NPC.ActionLedger.advance(GM);
+              if (!_dailyAdvanceDeferred || _dailyAdvanceDeferred.ok !== true) throw new Error((_dailyAdvanceDeferred && _dailyAdvanceDeferred.reason) || 'daily-travel-advance-failed');
+            }
+          } catch(e) { _rethrowCriticalFinalizeFailure('npc-travel-ledger-deferred', e, ctx); }
           // Phase 5·登记到 ctx.deferredSteps·用 'court-close' as when
           ctx.deferredSteps.push({
             name: 'phase5-after-hooks-keju',
@@ -781,8 +790,18 @@
         catch(e) { _rethrowCriticalFinalizeFailure('court-meter', e, ctx); }
 
         // Phase 4.6·角色路程推进
-        try { if (typeof advanceCharTravelByDays === 'function') await Promise.resolve(advanceCharTravelByDays((typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30))); }
+        try { if (window.TM && TM.NPC && TM.NPC.Meetings && TM.NPC.Meetings.beforeTravelAdvance) TM.NPC.Meetings.beforeTravelAdvance(); if (typeof advanceCharTravelByDays === 'function') await Promise.resolve(advanceCharTravelByDays((typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30))); }
         catch(e) { _rethrowCriticalFinalizeFailure('character-travel', e, ctx); }
+        // Run the same canonical ledger after physical travel in the normal
+        // finalize path. This is a read/commit boundary, not another decision
+        // generator, and keeps cross-location delivery and meeting arrival in
+        // the existing end-turn transaction.
+        try {
+          if (window.TM && TM.NPC && TM.NPC.ActionLedger) {
+            var _dailyAdvance = TM.NPC.ActionLedger.advance(GM);
+            if (!_dailyAdvance || _dailyAdvance.ok !== true) throw new Error((_dailyAdvance && _dailyAdvance.reason) || 'daily-travel-advance-failed');
+          }
+        } catch(e) { _rethrowCriticalFinalizeFailure('npc-travel-ledger', e, ctx); }
 
         // Phase 5·after hooks + keju·wrap 策略对齐 legacy
         // legacy 的 after-hooks 和 keju trigger 都未 wrap·pipeline 也不 wrap·error 同 propagate

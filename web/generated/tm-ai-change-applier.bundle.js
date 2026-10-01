@@ -3164,6 +3164,10 @@
       G.chars.forEach(function(ch) {
         if (!ch || !ch._travelTo) return;
         if (ch.alive === false || ch.dead === true) return;
+        if (ch._travelPaused === true) {
+          inflight++;
+          return;
+        }
         ch._travelElapsedDays = (Number(ch._travelElapsedDays) || 0) + daysPassed;
         if (!(ch._travelExpectedDays > 0)) {
           ch._travelExpectedDays = typeof ch._travelRemainingDays === "number" && ch._travelRemainingDays > 0 ? ch._travelRemainingDays : 20;

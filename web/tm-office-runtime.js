@@ -636,6 +636,7 @@ function renderOfficeTree(force){
     var _icBarEmpty = (typeof _offInstitutionsChronicleBar === 'function') ? _offInstitutionsChronicleBar() : '';
     el.innerHTML=_icBarEmpty+'<div style="color:var(--txt-d);font-size:0.82rem;padding:1rem;text-align:center;">\u5B98\u5236\u672A\u914D\u7F6E\u3002\u8BF7\u5728\u5267\u672C\u7F16\u8F91\u5668\u7684\u300C\u653F\u5E9C\u300D\u6216\u300C\u5B98\u5236\u300D\u9762\u677F\u4E2D\u914D\u7F6E\uFF0C\u6216\u70B9\u4E0A\u65B9\u300C\uFF0B \u90E8\u95E8\u300D\u6DFB\u52A0</div>';
     try { if (TM.OfficeTenure && TM.OfficeTenure.renderPanel) el.insertAdjacentHTML('afterbegin', TM.OfficeTenure.renderPanel()); } catch (_) {}
+    try { if (TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.renderDutyPanel) el.insertAdjacentHTML('afterbegin', TM.NPC.LocalAI.renderDutyPanel()); } catch (_) {}
     return;
   }
   // 单一真相源:渲染前从人物 officialTitle 派生官制树任职者(状态未变则跳过)
@@ -672,9 +673,29 @@ function renderOfficeTree(force){
   // 制度志入口按钮·常显于面板头部(不随机构增减隐现)·点击弹专用弹窗·走 PhaseF5 命名空间绕开被覆盖的全局名
   try { var _icBarHtml = (typeof _offInstitutionsChronicleBar === 'function') ? _offInstitutionsChronicleBar() : ''; if (_icBarHtml) el.insertAdjacentHTML('afterbegin', _icBarHtml); } catch (_icBarE) {}
   try { if (TM.OfficeTenure && TM.OfficeTenure.renderPanel) el.insertAdjacentHTML('afterbegin', TM.OfficeTenure.renderPanel()); } catch (_tenurePanelE) {}
+  try { if (TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.renderDutyPanel) el.insertAdjacentHTML('afterbegin', TM.NPC.LocalAI.renderDutyPanel()); } catch (_dutyPanelE) {}
   if (!el._officeTenureBound && typeof el.addEventListener === 'function') {
     el.addEventListener('click', function (ev) {
       var t = ev.target && ev.target.closest ? ev.target.closest('[data-office-tenure]') : null;
+      var duty = ev.target && ev.target.closest ? ev.target.closest('[data-office-duty]') : null;
+      if (duty && duty.getAttribute('data-office-duty') === 'request-transfer' && TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.requestPublicTransfer) {
+        var panel = duty.closest('[data-office-duty-panel]'), player = (GM.chars || []).find(function (c) { return c && c.isPlayer; });
+        var position = panel && panel.querySelector('[data-duty-position]'), target = panel && panel.querySelector('[data-duty-target]');
+        var from = panel && panel.querySelector('[data-duty-from]'), to = panel && panel.querySelector('[data-duty-to]');
+        var amount = panel && panel.querySelector('[data-duty-amount]'), purpose = panel && panel.querySelector('[data-duty-purpose]');
+        var pos = position && TM.OfficeHolderState && TM.OfficeHolderState.position(GM, { positionId: position.value, organizationId: position.selectedOptions[0] && position.selectedOptions[0].dataset.org });
+        var n = Number(amount && amount.value), text = String(purpose && purpose.value || '').trim();
+        var feedback = panel && panel.querySelector('[data-duty-feedback]');
+        if (!player || !pos || !target || !from || !to || from.value === to.value || !Number.isFinite(n) || n <= 0 || n !== Math.floor(n) || !text) {
+          if (feedback) feedback.textContent = '请补全事项、用途、金额和不同的收支账户。';
+          return;
+        }
+        var receipt = TM.NPC.LocalAI.requestPublicTransfer(player, { actionId: 'ui-duty:' + GM.turn + ':' + player.id + ':' + pos.pos.id, targetId: target.value, target: target.selectedOptions[0] && target.selectedOptions[0].textContent, organizationId: pos.organizationId, actingPositionId: pos.positionId, appointmentId: pos.appointmentId, fromAccount: from.value, toAccount: to.value, amounts: { money: n }, purpose: text, intent: text }, true);
+        if (feedback) feedback.textContent = receipt && receipt.reason || (receipt && receipt.outcome === 'submitted' ? '事项已提出，待承办人收到并核办。' : '当前事项暂不能提交。');
+        if (typeof toast === 'function') toast(receipt && receipt.reason || (receipt && receipt.outcome === 'submitted' ? '事项已提出' : '事项未能提交'));
+        if (receipt && /^(submitted|completed)$/.test(receipt.outcome) && TM.NPC.LocalAI.wake) TM.NPC.LocalAI.wake('response', receipt);
+        return;
+      }
       if (!t || !TM.OfficeTenure) return;
       var action = t.getAttribute('data-office-tenure'), pid = t.getAttribute('data-position-id'), lid = t.getAttribute('data-leave-id');
       if (action === 'request' && TM.OfficeTenure.uiRequest) TM.OfficeTenure.uiRequest(pid);

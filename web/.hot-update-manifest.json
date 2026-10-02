@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.3",
   "entry": "index.html",
-  "generatedAt": "2026-10-02T08:59:12.832Z",
+  "generatedAt": "2026-10-02T16:29:38.411Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -6216,8 +6216,8 @@
     },
     {
       "path": "tm-npc-local-ai.js",
-      "sha256": "9afc2c02f4c6a7455e038571c222e265d0b9660e6c0caab7bfe6f9cd7247808c",
-      "size": 18945
+      "sha256": "0610086ec29d3b9c327403a778a8e1719f527cc7450d0aaf48e2ecfb05726b1f",
+      "size": 30129
     },
     {
       "path": "tm-npc-travel.js",
@@ -6301,8 +6301,8 @@
     },
     {
       "path": "tm-office-runtime.js",
-      "sha256": "5b27bb1da406eec2f665f8a48d6df3d3a2a16f32a217e40e3e80c8e1cb8b9fde",
-      "size": 111513
+      "sha256": "c8f0230d9c8ff92098511fadccb0b8d8214ac910b9a7503bcaf2ec3fae43ca06",
+      "size": 114303
     },
     {
       "path": "tm-office-system.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "a1e420c7c63bf6bcfd15c3b780d285d28946b65c620bd50ff1d672db71cd8bda",
+      "sha256": "59f8a2f8570f004dd6711d5b21c648eea2b4e2a2f3c77d94a7f36c5006213b1a",
       "size": 138846
     },
     {

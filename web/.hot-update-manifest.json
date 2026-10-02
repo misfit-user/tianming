@@ -3196,8 +3196,8 @@
     },
     {
       "path": "generated/tm-ai-change-applier.bundle.js",
-      "sha256": "77d36a15d4093a9248ab57b68e6662390c11494165731176d24e9e905797d77c",
-      "size": 371079
+      "sha256": "84bb584f61fd1ab935c6c7bd947c47b541a5b12cfe3dbf31410288b7deb0aad5",
+      "size": 371300
     },
     {
       "path": "icon.png",
@@ -3661,8 +3661,8 @@
     },
     {
       "path": "modules/ai-change-applier/core.js",
-      "sha256": "0ee459a97b527d21d1e8177f7bdf79db2b179b2caa3285d4a13d1a4c074c3273",
-      "size": 185526
+      "sha256": "d4ebe20835ee2193da33183186b78783068891b1aac87b5db128c7434f0e6243",
+      "size": 185858
     },
     {
       "path": "modules/ai-change-applier/fiscal-posting.js",
@@ -6186,8 +6186,8 @@
     },
     {
       "path": "tm-npc-action-ledger.js",
-      "sha256": "d510cf8f2391c98f09186966a1a4ca84dcbca576f5fd0540a08ab0ff45fa3268",
-      "size": 46463
+      "sha256": "9905ec4fea76755a82dfb29a84716057c866ea2ea621d2d759aa7edf67c87094",
+      "size": 46476
     },
     {
       "path": "tm-npc-daily-activities.js",
@@ -6196,8 +6196,8 @@
     },
     {
       "path": "tm-npc-daily-ui.js",
-      "sha256": "720501d1a7cd9e5bbac1c29b91461caefe51715868db21d59222e246bafe63da",
-      "size": 14593
+      "sha256": "a8b979cb0f4436e7770e6f7caa47acb86009ef794015cc8cdb6e1640d8822d3f",
+      "size": 15000
     },
     {
       "path": "tm-npc-decision-ai-driven.js",
@@ -6221,8 +6221,8 @@
     },
     {
       "path": "tm-npc-travel.js",
-      "sha256": "82d0d6507e585b524178ed11c7234b5af96d0568ff94831293e61f1e4d676217",
-      "size": 23310
+      "sha256": "c3049a3e7db790b39a7fdd343d12c214d7275793e07927a7f1b68ca58ee07504",
+      "size": 42973
     },
     {
       "path": "tm-number-parser.js",

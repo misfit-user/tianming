@@ -104,6 +104,35 @@
     st.event = { id: key, remaining: source === 'enter' ? config.initialDecisions : config.decisionsPerEvent, batches: source === 'enter' ? 1 : 4, newContacts: 0, active: true, source: source, turn: root.GM.turn };
     return st.event;
   }
+  // Office leave/delegation is a regular local choice, not a model fallback.
+  // It runs only for NPC participants whose current message has been delivered;
+  // player decisions remain pending for the existing human UI.
+  function officeLeaveForPlan(p) {
+    var row = TM.OfficeHolderState && TM.OfficeHolderState.position(root.GM, { positionId: p.officeTenure && p.officeTenure.positionId, organizationId: p.officeTenure && p.officeTenure.organizationId });
+    var st = row && TM.OfficeTenure && TM.OfficeTenure.state(row, false);
+    return st && arr(st.leaves).find(function (v) { return v && v.id === p.officeTenure.leaveId; }) || null;
+  }
+  function runOfficeChoices(limit) {
+    if (!TM.OfficeTenure || !TM.OfficeHolderState) return 0;
+    var done = 0, now = TM.SimTime && TM.SimTime.now ? TM.SimTime.now(root.GM) : Number(root.GM.turn || 0);
+    arr(root.GM._npcPlans).filter(function (p) { return p && p.type === 'office_leave' && p.officeTenure && !/^(done|rejected|cancelled)$/.test(p.status); }).forEach(function (p) {
+      if (done >= (limit || 4)) return;
+      var leave = officeLeaveForPlan(p); if (!leave) return;
+      var next = p.nextActorId && actor(p.nextActorId);
+      if (!next || player(next)) return;
+      var args = { positionId: leave.positionId, organizationId: leave.organizationId, leaveId: leave.id };
+      var r = null;
+      if (p.status === 'awaiting_response') r = TM.OfficeTenure.decideLeave(next, Object.assign({}, args, { actionId: 'local-office-decide:' + p.id + ':' + root.GM.turn, decision: 'approve' }), false);
+      else if (p.status === 'handoff_ready') r = TM.OfficeTenure.acceptDelegate(next, Object.assign({}, args, { actionId: 'local-office-accept:' + p.id + ':' + root.GM.turn, delegationId: leave.delegationId }), false);
+      else if (leave.status === 'approved' && leave.holderId === next.id && now >= Number(leave.startDay)) r = TM.OfficeTenure.beginLeave(next, Object.assign({}, args, { actionId: 'local-office-depart:' + p.id + ':' + root.GM.turn }), false);
+      else if (leave.status === 'returned_pending_report') {
+        var approver = TM.OfficeTenure.authorityTarget(root.GM, TM.OfficeHolderState.position(root.GM, { positionId: leave.positionId, organizationId: leave.organizationId }));
+        if (approver && approver.id === next.id) r = TM.OfficeTenure.receiveReturnReport(next, Object.assign({}, args, { actionId: 'local-office-report:' + p.id + ':' + root.GM.turn }), false);
+      }
+      if (r && /^(submitted|started|completed)$/.test(r.outcome)) done++;
+    });
+    return done;
+  }
   function wake(source, detail) {
     if (running || !root.GM || !root.GM.running || root.GM.busy || root.GM._endTurnBusy || root.GM._loadHydrationPending) return { waiting: true, reason: 'world_busy' };
     if (queued && !ledger().current(queued.lease)) queued = null;
@@ -116,16 +145,17 @@
     var started = Date.now(), summary = { processed: 0, candidates: 0, decisions: 0, messages: 0, completed: 0, apiCalls: 0 };
     try {
       D.withIndex(function () {
+        runOfficeChoices(4);
         var visited = new Set(), attempted = new Set();
         for (var count = 0; count < config.decisionsPerBatch && event.remaining > 0; count++) {
           var advance = ledger().advance(root.GM,{localOnly:true}); if (!advance.ok) throw Error(advance.reason || 'local_delivery_failed');
           st = D.readState(); event = st.event;
           var all = arr(root.GM.chars).filter(function (ch) { return ch && ch.id && ch.alive !== false && ch.dead !== true && !player(ch) && D.budget(ch).steps < D.config.dailySteps; }).sort(function (a, b) { return order(a.id, b.id); });
           var matterIndex = new Map();
-          D.plans().forEach(function (p) { [p.actorId, p.targetId, p.localActivity.thirdPartyId].filter(Boolean).forEach(function (key) {
+          D.plans().filter(function (p) { return p && p.localActivity; }).forEach(function (p) { [p.actorId, p.targetId, p.localActivity.thirdPartyId].filter(Boolean).forEach(function (key) {
             if (!matterIndex.has(key)) matterIndex.set(key, []); matterIndex.get(key).push(p);
           }); });
-          var dueIds = D.plans().filter(function (p) { var who = p.nextActorId && actor(p.nextActorId), v = who && D.view(p, who); return !D.terminal(p) && v && v.nextPhase; }).sort(function (a, b) { return a.localActivity.createdDay - b.localActivity.createdDay || order(a.id, b.id); }).map(function (p) { return p.nextActorId; });
+          var dueIds = D.plans().filter(function (p) { if (!p || !p.localActivity) return false; var who = p.nextActorId && actor(p.nextActorId), v = who && D.view(p, who); return !D.terminal(p) && v && v.nextPhase; }).sort(function (a, b) { return a.localActivity.createdDay - b.localActivity.createdDay || order(a.id, b.id); }).map(function (p) { return p.nextActorId; });
           var ordered = all.slice(), cursor = ordered.findIndex(function (ch) { return ch.id === st.cursor; });
           if (cursor >= 0) ordered = ordered.slice(cursor + 1).concat(ordered.slice(0, cursor + 1));
           ordered.sort(function (a, b) { return (dueIds.indexOf(a.id) < 0 ? 1 : 0) - (dueIds.indexOf(b.id) < 0 ? 1 : 0); });

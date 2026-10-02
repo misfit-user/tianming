@@ -635,6 +635,7 @@ function renderOfficeTree(force){
     // \u7A7A\u6001\u5206\u652F\u63D0\u524D\u8FD4\u56DE\u00B7\u6B64\u5904\u4E5F\u987B\u6302\u5236\u5EA6\u5FD7\u6309\u94AE(\u5426\u5219\u5B98\u5236\u672A\u914D\u7F6E\u65F6\u4F11\u7720 shim \u8DF3\u6765\u65E0\u5165\u53E3\u00B7\u300C\u5E38\u663E\u300D\u4E0D\u6210\u7ACB)
     var _icBarEmpty = (typeof _offInstitutionsChronicleBar === 'function') ? _offInstitutionsChronicleBar() : '';
     el.innerHTML=_icBarEmpty+'<div style="color:var(--txt-d);font-size:0.82rem;padding:1rem;text-align:center;">\u5B98\u5236\u672A\u914D\u7F6E\u3002\u8BF7\u5728\u5267\u672C\u7F16\u8F91\u5668\u7684\u300C\u653F\u5E9C\u300D\u6216\u300C\u5B98\u5236\u300D\u9762\u677F\u4E2D\u914D\u7F6E\uFF0C\u6216\u70B9\u4E0A\u65B9\u300C\uFF0B \u90E8\u95E8\u300D\u6DFB\u52A0</div>';
+    try { if (TM.OfficeTenure && TM.OfficeTenure.renderPanel) el.insertAdjacentHTML('afterbegin', TM.OfficeTenure.renderPanel()); } catch (_) {}
     return;
   }
   // 单一真相源:渲染前从人物 officialTitle 派生官制树任职者(状态未变则跳过)
@@ -670,6 +671,17 @@ function renderOfficeTree(force){
   try { var _prbHtml = (typeof _offPendingReformsBanner === 'function') ? _offPendingReformsBanner() : ''; if (_prbHtml) el.insertAdjacentHTML('afterbegin', _prbHtml); } catch (_prbE) {}
   // 制度志入口按钮·常显于面板头部(不随机构增减隐现)·点击弹专用弹窗·走 PhaseF5 命名空间绕开被覆盖的全局名
   try { var _icBarHtml = (typeof _offInstitutionsChronicleBar === 'function') ? _offInstitutionsChronicleBar() : ''; if (_icBarHtml) el.insertAdjacentHTML('afterbegin', _icBarHtml); } catch (_icBarE) {}
+  try { if (TM.OfficeTenure && TM.OfficeTenure.renderPanel) el.insertAdjacentHTML('afterbegin', TM.OfficeTenure.renderPanel()); } catch (_tenurePanelE) {}
+  if (!el._officeTenureBound && typeof el.addEventListener === 'function') {
+    el.addEventListener('click', function (ev) {
+      var t = ev.target && ev.target.closest ? ev.target.closest('[data-office-tenure]') : null;
+      if (!t || !TM.OfficeTenure) return;
+      var action = t.getAttribute('data-office-tenure'), pid = t.getAttribute('data-position-id'), lid = t.getAttribute('data-leave-id');
+      if (action === 'request' && TM.OfficeTenure.uiRequest) TM.OfficeTenure.uiRequest(pid);
+      if (action === 'report' && TM.OfficeTenure.uiReport) TM.OfficeTenure.uiReport(pid, lid);
+    });
+    el._officeTenureBound = true;
+  }
 }
 
 /** v2 helper：每个节点的可视高度（部门 ~120，职位 ~196·有「待下诏书」条时 +34） */

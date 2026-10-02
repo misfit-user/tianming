@@ -14,6 +14,7 @@
   function G() { return root.GM; }
   function rows(v) { return Array.isArray(v) ? v : []; }
   function text(v) { return String(v == null ? '' : v).trim(); }
+  function key(v) { return text(v); }
   function copy(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
   function id(v) { return text(v && v.id); }
   function person(key) { return D() && D().person(key, G()); }
@@ -97,11 +98,17 @@
     if (!j || !ch) return false;
     if (j.status === 'in_transit' || j.status === 'ready') {
       j.status = 'stopped'; j.stopDay = day(); j.pauseReason = reason || 'stopped';
+      // Keep the stopped journey as the physical fact.  Clearing only the old
+      // mirror fields used to make a mid-route character look as if they had
+      // returned to the last saved origin.  The segment index/progress remains
+      // resumable and the read model can still distinguish a stopped traveller.
+      ch._stoppedTravelRef = { journeyId: j.id, currentRegionId: j.currentRegionId || j.fromRegionId || currentRegion(ch) || '',
+        segmentIndex: j.segmentIndex || 0, segmentElapsedDays: Number(j.segmentElapsedDays || 0), stoppedDay: day(), reason: reason || 'stopped' };
       if (ch._localTravelRef && ch._localTravelRef.journeyId === j.id) {
         delete ch._localTravelRef; delete ch._travelTo; delete ch._travelRemainingDays;
         delete ch._travelExpectedDays; delete ch._travelReason; delete ch._travelPaused;
       }
-      ch._travelCurrentRegionId = j.currentRegionId || j.fromRegionId || currentRegion(ch) || '';
+      ch._travelCurrentRegionId = ch._stoppedTravelRef.currentRegionId;
       return true;
     }
     return false;
@@ -202,6 +209,7 @@
     var m = p.localActivity.meeting;
     if (/^(in_meeting|participated|ended|returning|returned|cancelled|missed|rejected)$/.test(m.status || '')) return;
     if (/^(roadblocked|return_route_unavailable)$/.test(m.status || '')) return;
+    if (m.status === 'deferred') { p.status = 'awaiting_reschedule'; return; }
     var aj = m.actorJourney, tj = m.targetJourney;
     if (aj && aj.status === 'in_transit' || tj && tj.status === 'in_transit') { p.status = 'traveling'; m.status = 'traveling'; return; }
     if (actorResponseKnown(p) && m.actorDeparturePolicy === 'manual' && (!aj || !/^(in_transit|arrived)$/.test(aj.status))) { p.status = 'waiting_departure'; m.status = 'scheduled'; return; }
@@ -254,6 +262,72 @@
     return true;
   }
 
+  // Shared physical travel adapter for non-meeting activities (currently
+  // office leave/return).  It deliberately lives in this module so there is
+  // one route planner, one segment progress model and one set of location
+  // mirrors.  The office-tenure layer only owns the purpose and permissions.
+  function projectExternalJourney(ch, j) {
+    if (!ch || !j || j.status !== 'in_transit') return;
+    ch._travelFrom = locationName(j.fromRegionId); ch._travelTo = locationName(j.toRegionId);
+    ch._travelCurrentRegionId = j.currentRegionId || j.fromRegionId;
+    ch._travelStartTurn = j.startedTurn; ch._travelRemainingDays = Math.max(0, Number(j.remainingDays || 0));
+    ch._travelExpectedDays = Number(j.expectedDays || 0); ch._travelElapsedDays = Number(j.elapsedDays || 0);
+    ch._travelReason = 'external:' + (j.planId || j.id); ch._localTravelRef = { planId: j.planId || '', journeyId: j.id, role: 'external', phase: j.phase, toRegionId: j.toRegionId, routeVersion: j.route && j.route.routeVersion };
+  }
+  function externalJourney(ch) { return ch && ch._officeJourney || null; }
+  function buildExternalJourney(ch, opts) {
+    opts = opts || {}; var from = currentRegion(ch), target = key(opts.toRegionId), resolved = TM.MapRouteDays && TM.MapRouteDays.resolveRegion ? TM.MapRouteDays.resolveRegion(map(), target) : null;
+    var base = { id: key(opts.journeyId) || 'journey:external:' + Date.now(), role: 'external', phase: opts.phase || 'outbound', planId: key(opts.planId), purpose: key(opts.purpose), status: 'ready' };
+    if (!from) return Object.assign(base, { status: 'unresolved', reason: 'current_location_unknown' });
+    if (!resolved || resolved.status !== 'resolved') return Object.assign(base, { status: resolved && resolved.status || 'unresolved', reason: resolved && resolved.reason || 'destination_unresolved' });
+    var to = String(resolved.region.id), r = route(from, to, opts.mode || config.defaultMode);
+    var j = Object.assign(base, { fromRegionId: String(from), toRegionId: to, currentRegionId: String(from), fromName: locationName(from), toName: locationName(to),
+      route: copy(r), expectedDays: Number(r && r.days), elapsedDays: 0, remainingDays: Number(r && r.days), segmentIndex: 0, segmentElapsedDays: 0,
+      startedDay: null, startedTurn: null, lastAdvancedDay: null, arrivedDay: null, history: [] });
+    if (!r || r.status !== 'reachable' || !finiteNonNegative(r.days) || Number(r.days) > config.maxDistanceDays) { j.status = r && r.status || 'blocked'; j.reason = r && r.reason || 'route_unavailable'; return j; }
+    if (String(from) === to || Number(r.days) <= config.epsilon) { j.status = 'arrived'; j.arrivedDay = day(); j.remainingDays = 0; }
+    return j;
+  }
+  function startExternalJourney(ch, opts) {
+    opts = opts || {}; if (!ch) return { status: 'blocked', reason: 'character_unavailable' };
+    var existing = externalJourney(ch);
+    if (existing && existing.status === 'in_transit') return existing;
+    if (existing && existing.status === 'stopped' && String(existing.toRegionId) === String(opts.toRegionId)) {
+      existing.status = 'in_transit'; existing.pauseReason = ''; existing.startedDay = existing.startedDay == null ? (Number.isFinite(Number(opts.startAt)) ? Number(opts.startAt) : day()) : existing.startedDay;
+      existing.lastAdvancedDay = Number.isFinite(Number(opts.startAt)) ? Number(opts.startAt) : day(); projectExternalJourney(ch, existing); return existing;
+    }
+    if (ch._localTravelRef && ch._localTravelRef.role !== 'external') return { status: 'blocked', reason: 'schedule_conflict_with_existing_travel' };
+    var j = buildExternalJourney(ch, opts); ch._officeJourney = j;
+    if (j.status === 'unresolved' || j.status === 'unreachable' || j.status === 'blocked') return j;
+    if (j.status === 'arrived') { ch._travelCurrentRegionId = j.toRegionId; ch.location = locationName(j.toRegionId); ch.regionId = j.toRegionId; ch.mapRegionId = j.toRegionId; return j; }
+    var startAt = Number.isFinite(Number(opts.startAt)) ? Number(opts.startAt) : day();
+    j.status = 'in_transit'; j.startedDay = startAt; j.startedTurn = G().turn; j.lastAdvancedDay = startAt; projectExternalJourney(ch, j); return j;
+  }
+  function stopExternalJourney(ch, reason) {
+    var j = externalJourney(ch); if (!j || !/^(in_transit|ready)$/.test(j.status)) return { ok: false, reason: 'external_journey_not_active' };
+    j.status = 'stopped'; j.stopDay = day(); j.pauseReason = reason || 'stopped'; ch._stoppedTravelRef = { journeyId: j.id, currentRegionId: j.currentRegionId, segmentIndex: j.segmentIndex || 0, segmentElapsedDays: Number(j.segmentElapsedDays || 0), stoppedDay: day(), reason: j.pauseReason };
+    if (ch._localTravelRef && ch._localTravelRef.journeyId === j.id) delete ch._localTravelRef;
+    delete ch._travelTo; delete ch._travelRemainingDays; delete ch._travelExpectedDays; delete ch._travelReason; delete ch._travelPaused;
+    ch._travelCurrentRegionId = j.currentRegionId || currentRegion(ch); return { ok: true, journey: j };
+  }
+  function advanceExternalJourney(ch, now) {
+    var j = externalJourney(ch); if (!j || !ch || j.status !== 'in_transit') return false;
+    if (!j.route || !Array.isArray(j.route.segments)) { j.status = 'blocked'; j.pauseReason = 'journey_route_missing'; return false; }
+    if (!routeSegmentAvailable(j)) { j.status = 'blocked'; j.pauseReason = 'route_changed'; ch._travelPaused = true; return false; }
+    var last = Number(j.lastAdvancedDay); if (!Number.isFinite(last)) last = Number(j.startedDay); if (!Number.isFinite(last)) last = now;
+    var left = Math.max(0, now - last); if (!(left > config.epsilon)) return false; j.lastAdvancedDay = now;
+    while (left > config.epsilon && j.status === 'in_transit') {
+      var seg = rows(j.route.segments)[j.segmentIndex]; if (!seg) { j.status = 'arrived'; j.arrivedDay = Number(j.startedDay) + Number(j.expectedDays || 0); j.currentRegionId = j.toRegionId; j.remainingDays = 0; break; }
+      var segmentDays = Math.max(config.epsilon, Number(seg.days) || 0), rem = Math.max(0, segmentDays - Number(j.segmentElapsedDays || 0)), used = Math.min(left, rem);
+      j.segmentElapsedDays = Number(j.segmentElapsedDays || 0) + used; j.elapsedDays = Number(j.elapsedDays || 0) + used; j.remainingDays = Math.max(0, Number(j.expectedDays) - j.elapsedDays); left -= used;
+      if (j.segmentElapsedDays + config.epsilon >= segmentDays) { j.currentRegionId = seg.toRegionId; j.segmentIndex++; j.segmentElapsedDays = 0; ch.location = locationName(j.currentRegionId); ch.regionId = j.currentRegionId; ch.mapRegionId = j.currentRegionId; if (j.segmentIndex >= rows(j.route.segments).length) { j.status = 'arrived'; j.arrivedDay = Number(j.startedDay) + Number(j.expectedDays || 0); j.remainingDays = 0; } }
+    }
+    if (j.status === 'arrived') { ch._travelCurrentRegionId = j.toRegionId; if (ch._localTravelRef && ch._localTravelRef.journeyId === j.id) delete ch._localTravelRef; delete ch._travelTo; delete ch._travelRemainingDays; delete ch._travelExpectedDays; delete ch._travelReason; delete ch._travelPaused; }
+    else projectExternalJourney(ch, j);
+    return true;
+  }
+  function advanceExternalJourneys(now) { var total = 0; rows(G() && G().chars).forEach(function (ch) { if (advanceExternalJourney(ch, now)) total++; }); return total; }
+
   function syncJourneys(p) {
     var m = p.localActivity.meeting;
     ['actor', 'target'].forEach(function (role) {
@@ -284,6 +358,11 @@
     if (start < m.requestedStartDay) { m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; return false; }
     if (start > m.requestedStartDay + m.windowDays) { m.status = 'missed'; p.status = 'missed'; return false; }
     var end = start + m.durationDays, actor = person(p.actorId), target = person(p.targetId);
+    // A stale arrived flag is not enough: both characters must still occupy
+    // the agreed venue when the meeting actually starts.
+    if (currentRegion(actor) !== String(m.locationId) || currentRegion(target) !== String(m.locationId)) {
+      m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; return false;
+    }
     if (hasConflict(actor, p, start, end) || hasConflict(target, p, start, end)) { m.status = 'schedule_conflict'; p.status = 'waiting_schedule'; return false; }
     m.status = 'in_meeting'; p.status = 'in_meeting'; m.startedDay = start; m.endDay = end;
     m.participationStart = { id: 'meeting-start:' + p.id, day: start, participants: [p.actorId, p.targetId], locationId: m.locationId, sourcePlanId: p.id };
@@ -331,6 +410,9 @@
     remember(to, from, p, msg.id, '收到' + (from && from.name || '来人') + '的约见文书：' + msg.content, 'received_claim');
     if (msg.kind === 'meeting_request' && msg.termsVersion === a.termsVersion) { p.status = 'awaiting_response'; p.nextActorId = p.targetId; m.status = 'awaiting_response'; }
     if (msg.kind === 'meeting_response') {
+      // A defer response is authored against the current terms.  The next
+      // terms version is carried separately and is created only when the
+      // requester explicitly accepts the reschedule.
       if (msg.termsVersion !== a.termsVersion) { msg.stale = true; return true; }
       m.actorResponseDelivered = true; m.responseDeliveredDay = day();
       if (msg.data.response === 'reject') { m.status = 'rejected'; p.status = 'rejected'; }
@@ -364,6 +446,9 @@
   function advanceWithin(options) {
     options = options || {};
     var now = Number.isFinite(Number(options.toDay)) ? Number(options.toDay) : day();
+    // External (office leave/return) journeys use the same physical route
+    // service and progress clock as meetings, but never create a meeting plan.
+    advanceExternalJourneys(now);
     rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
       var a = p.localActivity, m = a.meeting;
       processMessages(p, now);
@@ -387,6 +472,9 @@
   }
 
   function beforeTravelAdvance() {
+    rows(G() && G().chars).forEach(function (ch) {
+      var j = externalJourney(ch); if (j && j.status === 'in_transit' && !routeSegmentAvailable(j)) { j.status = 'blocked'; j.pauseReason = 'route_changed'; ch._travelPaused = true; }
+    });
     rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
       ['actor', 'target'].forEach(function (role) { revalidateJourney(p, role, false); revalidateJourney(p, role, true); });
     });
@@ -469,7 +557,12 @@
       var departure = startJourneyFor(p, 'actor', 'manual'); aggregateStatus(p); return step(p, actor, d, departure ? 'started' : 'waiting', departure ? '本人已按收到的接受回信启程' : '当前路线或日程不能安全启程');
     }
     if (d.phase === 'reschedule' && key === p.actorId && p.status === 'awaiting_reschedule' && m.pendingTerms) {
-      m.version++; a.termsVersion++; m.requestedStartDay = m.pendingTerms.requestedStartDay; m.windowDays = m.pendingTerms.windowDays; m.durationDays = m.pendingTerms.durationDays; m.termsHistory.push({ version: m.version, terms: copy(m.pendingTerms) }); m.pendingTerms = null; m.status = 'invitation_in_transit'; p.status = 'invitation_in_transit';
+      m.version++; a.termsVersion++; m.requestedStartDay = m.pendingTerms.requestedStartDay; m.windowDays = m.pendingTerms.windowDays; m.durationDays = m.pendingTerms.durationDays; m.termsHistory.push({ version: m.version, terms: copy(m.pendingTerms) }); m.pendingTerms = null;
+      // A deferred response belongs to the old version.  Clear its decision
+      // before creating the new invitation so the post-commit advance cannot
+      // reinterpret the old acceptance as approval of the new terms.
+      m.targetDecision = null; m.actorResponseDelivered = false; m.responseDeliveredDay = null;
+      m.status = 'invitation_in_transit'; p.status = 'invitation_in_transit';
       var rr2 = route(currentRegion(actor), m.inviteDeliveryRegionId, m.mode);
       informedMessage(p, actor, person(p.targetId), 'meeting_request', '改期后的约见安排如下，请重新按当前条款决定。', { actionId: d.actionId, phase: d.phase, purpose: m.purpose, terms: termsFrom(m), termsVersion: a.termsVersion }, { day: day() + Math.ceil(rr2 && rr2.status === 'reachable' ? rr2.days : 0), regionId: m.inviteDeliveryRegionId, addressType: 'known_recipient_location' });
       return step(p, actor, d, 'submitted', '改期形成新的条款版本，旧同意不再适用');
@@ -488,7 +581,7 @@
     if (d.response === 'defer') {
       var proposed = { requestedStartDay: m.requestedStartDay + 1, windowDays: m.windowDays, durationDays: m.durationDays };
       m.targetDecision = { response: 'defer', day: day(), termsVersion: a.termsVersion, proposedTerms: proposed }; m.status = 'response_in_transit';
-      informedMessage(p, target, requester, 'meeting_response', '眼下尚有安排，请按新的明确时间再议。', { actionId: d.actionId, phase: d.phase, response: 'defer', proposedTerms: proposed, termsVersion: a.termsVersion + 1 }, { day: day() + Math.ceil(responseRoute.days), regionId: replyAddress, addressType: 'reply_address_snapshot' });
+      informedMessage(p, target, requester, 'meeting_response', '眼下尚有安排，请按新的明确时间再议。', { actionId: d.actionId, phase: d.phase, response: 'defer', proposedTerms: proposed, nextTermsVersion: a.termsVersion + 1, termsVersion: a.termsVersion }, { day: day() + Math.ceil(responseRoute.days), regionId: replyAddress, addressType: 'reply_address_snapshot' });
       return step(p, actor, d, 'submitted', '改期建议已递出，须收到后形成新条款');
     }
     m.targetDecision = { response: 'accept', day: day(), termsVersion: a.termsVersion };
@@ -568,6 +661,7 @@
   }
 
   NPC.Meetings = { config: config, isPlan: isMeeting, commit: commit, beforeTravelAdvance: beforeTravelAdvance, needsAdvance: needsAdvance,
-    advanceWithin: advanceWithin, view: view, verifyEvidence: verifyEvidence, advanceLocalDays: advanceLocalDays,
+    advanceWithin: advanceWithin, advanceExternalJourneys: advanceExternalJourneys, startExternalJourney: startExternalJourney, stopExternalJourney: stopExternalJourney, externalJourney: externalJourney,
+    view: view, verifyEvidence: verifyEvidence, advanceLocalDays: advanceLocalDays,
     afterVerifiedCommit: function (d, receipt) { advanceWithin(); return receipt; } };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -169,6 +169,33 @@ test('invalid terms, stale response and test-only local clock are explicit', () 
   assert.equal(stale.outcome, 'expired');
 });
 
+test('defer response is delivered against the current terms and creates a new proposal version', () => {
+  const c = world(), a = c.add('a', '甲'), b = c.add('b', '乙');
+  c.GM.affinityMap = { '甲|乙': 70 };
+  const req = c.TM.NPC.DailyActivities.submitNPC(a, {
+    actionId: 'meeting-defer-version', activityKind: 'meeting', targetId: b.id,
+    meeting: { locationId: 'west', requestedStartDay: 8, durationDays: 1, windowDays: 3 }
+  });
+  const p = c.TM.NPC.DailyActivities.get(req.planId);
+  advance(c, 3);
+  const deferred = c.TM.NPC.DailyActivities.submitNPC(b, {
+    actionId: 'meeting-defer-version-response', planId: p.id, phase: 'respond', response: 'defer',
+    expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion
+  });
+  assert.equal(deferred.outcome, 'submitted');
+  advance(c, 3);
+  assert.equal(p.localActivity.meeting.status, 'deferred');
+  assert.equal(p.localActivity.meeting.targetDecision.response, 'defer');
+  const oldVersion = p.localActivity.termsVersion;
+  const rescheduled = c.TM.NPC.DailyActivities.submitNPC(a, {
+    actionId: 'meeting-defer-version-reschedule', planId: p.id, phase: 'reschedule',
+    expectedRevision: p.localActivity.revision, termsVersion: oldVersion
+  });
+  assert.equal(rescheduled.outcome, 'submitted');
+  assert.equal(p.localActivity.termsVersion, oldVersion + 1);
+  assert.equal(p.localActivity.meeting.status, 'invitation_in_transit');
+});
+
 test('relationship IDs work without affinity and automatic material selection skips private memory', () => {
   const c = world(), a = c.add('a', '甲', { fatherId: 'b', _memory: [{ id: 'secret', event: '私密经历' }] }), b = c.add('b', '乙');
   assert.equal(c.TM.NPC.DailyActivities.relationKind(a, b), 'family');

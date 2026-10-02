@@ -30,6 +30,7 @@
   function _reformKind(reform) {
     if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(reform)) return 'add';
     var d = String((reform && reform.reformDetail) || (reform && reform.kind) || '');
+    if (reform && (reform.kind === 'authority_transfer' || reform.kind === 'tenure_policy' || /权责|职权|权限转移|任职地域|离任/.test(d))) return 'authorityTransfer';
     if (/增设|新设|增置|创设/.test(d)) return 'add';
     if (/裁撤|废除|罢省|省并|裁/.test(d)) return (reform && reform.position) ? 'abolishPos' : 'abolishDept';
     if (/改名|更名/.test(d)) return 'rename';
@@ -225,6 +226,30 @@
       return { applied: true, summary: plan.summary, nodeId: plan.node.id };
     }
     var kind = _reformKind(reform), tree = GM.officeTree, dept = reform.dept, pos = reform.position, newDept = reform.newDept;
+    if (kind === 'authorityTransfer') {
+      var fromRow = reform.fromPositionId ? (HS && HS.position(GM, { positionId: reform.fromPositionId })) : null;
+      var toRow = reform.toPositionId ? (HS && HS.position(GM, { positionId: reform.toPositionId })) : null;
+      if (!fromRow || !toRow || fromRow.pos === toRow.pos) return { applied: false, summary: '权责转移需要唯一的源职位与目标职位' };
+      var source = fromRow.pos, target = toRow.pos, sourceTenure = source.officeTenure || source.tenure || source.dutyRules || {}, targetTenure = target.officeTenure || target.tenure || target.dutyRules || {};
+      sourceTenure = JSON.parse(JSON.stringify(sourceTenure)); targetTenure = JSON.parse(JSON.stringify(targetTenure));
+      var authorityKey = reform.authorityKey || 'leave_decision';
+      if (!sourceTenure.leave) sourceTenure.leave = {};
+      if (!targetTenure.delegation) targetTenure.delegation = {};
+      if (authorityKey === 'leave_decision') {
+        sourceTenure.leave.decisionPositionId = target.id; sourceTenure.leave.authorityRef = '';
+      } else if (authorityKey === 'delegate') {
+        sourceTenure.delegation.grantorPositionId = target.id; sourceTenure.delegation.allowed = true;
+      } else if (authorityKey === 'jurisdiction') {
+        sourceTenure.jurisdictionIds = Array.isArray(reform.jurisdictionIds) ? reform.jurisdictionIds.slice() : sourceTenure.jurisdictionIds || [];
+      } else if (authorityKey === 'duty_location') {
+        sourceTenure.usualDutyLocationId = reform.usualDutyLocationId || sourceTenure.usualDutyLocationId || '';
+      } else return { applied: false, summary: '未支持的职任权责调整类型' };
+      if (reform.maxDays != null) { if (!sourceTenure.leave) sourceTenure.leave = {}; sourceTenure.leave.maxDays = Number(reform.maxDays); }
+      source.officeTenure = sourceTenure; source._officeTenureRevision = Number(source._officeTenureRevision || 0) + 1;
+      if (!Array.isArray(source._officeReformHistory)) source._officeReformHistory = [];
+      source._officeReformHistory.push({ id: reform.actionId || reform._key || 'reform', turn: GM.turn, authorityKey: authorityKey, fromPositionId: source.id, toPositionId: target.id, source: 'office_reform' });
+      return { applied: true, summary: '职任权责已由' + (fromRow.pos.name || fromRow.pos.id) + '转交' + (target.name || target.id), sourcePositionId: source.id, targetPositionId: target.id, authorityKey: authorityKey };
+    }
     if (kind === 'add') {
       if (pos) {
         var added = false;
@@ -302,7 +327,7 @@
   }
   function _difficultyOf() { var P = global.P || {}; return DIFF_MAP[(P.conf && P.conf.difficulty) || ''] || 'standard'; }
   function _reformKey(oc) {
-    var key = (oc.reformDetail || '') + '|' + (oc.dept || '') + '|' + (oc.position || '') + '|' + (oc.newDept || '');
+    var key = (oc.reformDetail || '') + '|' + (oc.kind || '') + '|' + (oc.dept || '') + '|' + (oc.position || '') + '|' + (oc.newDept || '') + '|' + (oc.fromPositionId || '') + '|' + (oc.toPositionId || '') + '|' + (oc.authorityKey || '');
     if (global.TM && global.TM.OfficeCreation && global.TM.OfficeCreation.isCreation(oc)) {
       key += '|' + JSON.stringify([oc.deptId || '', oc.deptPath || [], oc.newRank || '', oc.positions || [],
         oc.establishedCount, oc.headCount, oc.count, oc.salary, oc.powers, oc.authority]);
@@ -331,8 +356,8 @@
     if (!Array.isArray(GM._pendingReforms)) GM._pendingReforms = [];
     var key = _reformKey(oc);
     if (GM._pendingReforms.some(function (r) { return r.status === '拟制中' && _reformKey(r) === key; })) return null;
-    var item = { _key: key, reformDetail: oc.reformDetail, dept: oc.dept, position: oc.position || '', newDept: oc.newDept || '', newRank: oc.newRank || '', reason: oc.reason || '', proposedTurn: (turn != null ? turn : (GM.turn || 0)), status: '拟制中', stalls: 0 };
-    ['positions', 'deptId', 'deptPath', 'establishedCount', 'headCount', 'count', 'salary', 'powers', 'authority'].forEach(function (key) {
+    var item = { _key: key, kind: oc.kind || '', reformDetail: oc.reformDetail, dept: oc.dept, position: oc.position || '', newDept: oc.newDept || '', newRank: oc.newRank || '', reason: oc.reason || '', proposedTurn: (turn != null ? turn : (GM.turn || 0)), status: '拟制中', stalls: 0 };
+    ['positions', 'deptId', 'deptPath', 'establishedCount', 'headCount', 'count', 'salary', 'powers', 'authority', 'fromPositionId', 'toPositionId', 'authorityKey', 'jurisdictionIds', 'maxDays', 'dutyMode', 'usualDutyLocationId'].forEach(function (key) {
       if (oc[key] !== undefined) item[key] = JSON.parse(JSON.stringify(oc[key]));
     });
     GM._pendingReforms.push(item);

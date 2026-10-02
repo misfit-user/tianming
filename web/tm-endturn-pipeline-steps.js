@@ -670,6 +670,10 @@
               var _dailyAdvanceDeferred = TM.NPC.ActionLedger.advance(GM);
               if (!_dailyAdvanceDeferred || _dailyAdvanceDeferred.ok !== true) throw new Error((_dailyAdvanceDeferred && _dailyAdvanceDeferred.reason) || 'daily-travel-advance-failed');
             }
+            if (window.TM && TM.OfficeTenure && TM.OfficeTenure.tick) {
+              var _tenureAdvanceDeferred = TM.OfficeTenure.tick(GM, { toDay: TM.SimTime && TM.SimTime.now ? TM.SimTime.now(GM) : undefined });
+              if (!_tenureAdvanceDeferred || _tenureAdvanceDeferred.ok !== true) throw new Error((_tenureAdvanceDeferred && _tenureAdvanceDeferred.reason) || 'office-tenure-advance-failed');
+            }
           } catch(e) { _rethrowCriticalFinalizeFailure('npc-travel-ledger-deferred', e, ctx); }
           // Phase 5·登记到 ctx.deferredSteps·用 'court-close' as when
           ctx.deferredSteps.push({
@@ -800,6 +804,10 @@
           if (window.TM && TM.NPC && TM.NPC.ActionLedger) {
             var _dailyAdvance = TM.NPC.ActionLedger.advance(GM);
             if (!_dailyAdvance || _dailyAdvance.ok !== true) throw new Error((_dailyAdvance && _dailyAdvance.reason) || 'daily-travel-advance-failed');
+          }
+          if (window.TM && TM.OfficeTenure && TM.OfficeTenure.tick) {
+            var _tenureAdvance = TM.OfficeTenure.tick(GM, { toDay: TM.SimTime && TM.SimTime.now ? TM.SimTime.now(GM) : undefined });
+            if (!_tenureAdvance || _tenureAdvance.ok !== true) throw new Error((_tenureAdvance && _tenureAdvance.reason) || 'office-tenure-advance-failed');
           }
         } catch(e) { _rethrowCriticalFinalizeFailure('npc-travel-ledger', e, ctx); }
 

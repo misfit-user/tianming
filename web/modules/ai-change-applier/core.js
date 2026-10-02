@@ -652,7 +652,9 @@ export function createCore(deps) {
     ch.concurrentTitles = [];
     ch.concurrentTitle = '';
     // 免职须斩在途赴任链：否则 _arriveCharNow 到期无条件 onAppointment·被免者「抵达即复职」翻案(2026-07-04 审查定罪)
-    delete ch._travelAssignPost; delete ch._travelTo; delete ch._travelRemainingDays;
+    if (!(ch._localTravelRef && ch._localTravelRef.planId)) {
+      delete ch._travelAssignPost; delete ch._travelTo; delete ch._travelRemainingDays;
+    }
     // 记去职标记·供推演 prompt「受限人员现状名册」识别罢官者·令 AI 勿再称旧衔/勿令其理事
     // (下狱/流放另有 _imprisoned/_exiled·此标记主要覆盖纯罢官免职;再任命后 officialTitle 非空即不再判罢官)
     ch._removedFromOfficeTurn = G.turn || 0;
@@ -2680,7 +2682,7 @@ export function createCore(deps) {
     [G.chars, G.allCharacters].forEach(function(list) {
       if (!Array.isArray(list)) return;
       list.forEach(function(item) {
-        if (!item || item.name !== ch.name) return;
+        if (!item || (ch.id ? item.id !== ch.id : item.name !== ch.name)) return;
         Object.keys(fields).forEach(function(k) { item[k] = fields[k]; });
         deleteKeys.forEach(function(k) { try { delete item[k]; } catch(_) {} });
       });
@@ -2717,6 +2719,9 @@ export function createCore(deps) {
     G.chars.forEach(function(ch) {
       if (!ch || !ch._travelTo) return;
       if (ch.alive === false || ch.dead === true) return; // 死者不赶路·不「抵达就任」(2026-07-04 审查定罪)
+      // Local meeting travel is advanced by TM.NPC.Meetings against its
+      // segmented route. The legacy office tick must not consume it again.
+      if (ch._localTravelRef && ch._localTravelRef.planId) { inflight++; return; }
       if (ch._travelPaused === true) { inflight++; return; } // local travel domain pauses on a verified roadblock
       // ★赴任硬上限·按"天"计(与每回合天数刻度无关·1回合=1天的剧本不会被误伤)：
       //  逐 tick 累计实耗天数(AI 重发同终点不清此计数→剩余天数被重置也兜得住)·

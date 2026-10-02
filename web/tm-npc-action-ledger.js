@@ -654,7 +654,7 @@
     var guard=TM.AIChange&&TM.AIChange.WriteGuards;
     if(!guard)return {ok:false,reason:'atomic_writer_unavailable'};
     return guard.runAtomicMutation(function(){
-      if(TM.NPC.DailyActivities)TM.NPC.DailyActivities.advanceWithin();
+      if(TM.NPC.DailyActivities)TM.NPC.DailyActivities.advanceWithin(options || {});
       if(options&&options.localOnly)return {ok:true};
       ensurePlans(g).filter(function(p){return p&&p.version===2&&!p.localActivity&&!/^(done|rejected|cancelled|failed)$/.test(p.status);}).forEach(function(p){
         p.messages.filter(function(m){return m.status==='in_transit'&&m.deliveryTurn<=_turn(g);}).forEach(function(m){deliver(p,m,g);});

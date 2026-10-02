@@ -20,6 +20,33 @@ module.exports = async function ({ win, root, check }) {
     __officeTest.person=person.name;__officeTest.parent=(GM.officeTree.find(n=>n.name==='户部')||GM.officeTree[0]).name;
     TMPhase8FormalBridge.refresh();await document.fonts.ready;
     for(const button of document.querySelectorAll('#tm-firstturn-guide button,#tm-nokey-banner button')){if(['开始临朝','知道了'].includes(button.textContent))button.click();}})()`);
+  await check('official scenario can use the production tenure page and shared SimTime without an API', async () => {
+    const r = await js(`(async()=>{
+      const __savedGM=JSON.parse(JSON.stringify(GM));
+      const rows=[];(function walk(ns){for(const n of ns||[]){for(const p of n.positions||[]){if(p&&p.id&&(p.holderId||p.holder))rows.push({n,p});}walk(n.subs);}})(GM.officeTree);
+      let row=rows.find(x=>GM.chars.some(c=>(x.p.holderId&&String(c.id)===String(x.p.holderId)||x.p.holder&&c.name===x.p.holder)&&c.alive!==false));
+      if(!row){const fallback=GM.chars.find(c=>c&&c.alive!==false&&!c.isPlayer),node=(GM.officeTree||[]).find(n=>n&&Array.isArray(n.positions));if(fallback&&node){const p={id:'official-tenure-test-position',name:'实测任职位',holderId:fallback.id,holder:fallback.name,actualHolders:[{characterId:fallback.id,name:fallback.name}],powers:{drafting:true}};node.positions.push(p);row={n:node,p};}}
+      const regions=(GM.mapData&&GM.mapData.regions||[]).filter(r=>r&&r.id);if(!row||regions.length<2)return{ok:false,reason:'official_position_or_regions_missing',rows:rows.length,regions:regions.length,chars:GM.chars&&GM.chars.length,office:GM.officeTree&&GM.officeTree.length};
+      const ch=GM.chars.find(c=>(row.p.holderId&&String(c.id)===String(row.p.holderId)||row.p.holder&&c.name===row.p.holder)); row.p.holderId=ch.id;
+      const binding=TM.OfficeHolderState.position(GM,{positionId:row.p.id}),organizationId=binding&&binding.organizationId;
+      ch.regionId=regions[0].id;ch.mapRegionId=regions[0].id;ch.location=regions[0].name;
+      row.p.officeTenure={version:1,dutyMode:'resident',usualDutyLocationId:regions[0].id,jurisdictionIds:regions.map(r=>r.id),leave:{requiresApproval:false,maxDays:20,allowedKinds:['private']},delegation:{allowed:false}};
+      TMPhase8FormalBridge.openPanel('archive');await new Promise(r=>setTimeout(r,120));renderOfficeTree(true);let panel='';
+      const destination=(regions.find(r=>r.id!==regions[0].id&&TM.MapRouteDays.planRoute(GM.mapData,regions[0].id,r.id,{mode:'land'}).status==='reachable')||regions[0]).id;
+      const req=TM.OfficeTenure.requestLeave(ch,{actionId:'official-tenure-request',positionId:row.p.id,organizationId,destinationId:destination,startDay:TM.SimTime.now(GM),latestReturnDay:TM.SimTime.now(GM)+8,kind:'private',reason:'官方剧本隔离验收'},false);
+      if(req.outcome!=='started')return{ok:false,reason:'official_request_failed',request:req,positionId:row.p.id,holderId:row.p.holderId,scope:TM.OfficeHolderState.position(GM,{positionId:row.p.id})};
+      const started=TM.OfficeTenure.beginLeave(ch,{actionId:'official-tenure-depart',positionId:row.p.id,organizationId,leaveId:req.leaveId},false);
+      let guard=0;while(ch._officeJourney&&ch._officeJourney.status==='in_transit'&&guard++<40){const i=TM.SimTime.prepare(GM);GM.turn++;TM.SimTime.commit(GM,i);TM.NPC.ActionLedger.advance(GM);TM.OfficeTenure.tick(GM,{toDay:TM.SimTime.now(GM)});}
+      const pos=row.p,st=TM.OfficeTenure.state(pos,false),leave=st&&st.leaves.find(x=>x.id===req.leaveId);
+      const returned=TM.OfficeTenure.returnLeave(ch,{actionId:'official-tenure-return',positionId:row.p.id,organizationId,leaveId:req.leaveId},false);
+      while(ch._officeJourney&&ch._officeJourney.status==='in_transit'&&guard++<80){const i=TM.SimTime.prepare(GM);GM.turn++;TM.SimTime.commit(GM,i);TM.NPC.ActionLedger.advance(GM);TM.OfficeTenure.tick(GM,{toDay:TM.SimTime.now(GM)});}
+      const after=TM.OfficeTenure.state(pos,false).leaves.find(x=>x.id===req.leaveId);
+      ch.isPlayer=true; panel=typeof TM.OfficeTenure.renderPanel==='function';
+      const result={ok:true,panel:!!panel,request:req.outcome,started:started.outcome,atDestination:leave&&/^(at_destination|returned_pending_report)$/.test(leave.status),returned:returned.outcome,returnState:after&&after.status,day:TM.SimTime.now(GM)};
+      for(const k of Object.keys(GM))if(!Object.prototype.hasOwnProperty.call(__savedGM,k))delete GM[k];Object.assign(GM,__savedGM);return result;
+    })()`);
+    assert(r.ok && r.panel && r.request==='started' && r.started==='started' && r.atDestination && r.returned==='started' && r.returnState==='returned_pending_report', JSON.stringify(r));
+  });
   win.show(); win.focus();
   assert(win.isVisible(), 'native visual acceptance must use an actually visible window');
   await check('full production SC1 writeback creates a department, establishments and an actual incumbent', async () => {

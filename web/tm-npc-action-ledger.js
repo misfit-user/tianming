@@ -341,7 +341,10 @@
       if (raw.actionId) raw.cardId = raw.actionId;
       raw.actionId = 'npc:' + _str(g._campaignId || g.sid || 'world').replace(/[^A-Za-z0-9_-]/g,'_') + ':' + (++state(g).sequence);
     }
-    raw.phase = raw.planId ? _str(raw.phase || 'execute') : 'execute';
+    // Typed office-tenure requests are first-class multi-phase actions even
+    // before a plan exists.  Preserve their explicit phase; ordinary actions
+    // keep the historical execute default.
+    raw.phase = raw.planId || raw.behaviorType === 'office_tenure' ? _str(raw.phase || 'execute') : 'execute';
     return raw;
   }
   function result(outcome, reason, refs, extra) {
@@ -384,7 +387,7 @@
     try{return execute(npc,d,c,handler);}finally{humanContexts.delete(c);}
   }
   function executionSignature(d,actor) {
-    var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType'];
+    var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType','leaveId','delegationId','delegateId','scope','leaveKind','startDay','latestReturnDay','regionId','sourceRefs','documentId'];
     fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
@@ -454,6 +457,7 @@
 
   function verifyEvidence(ref,d,actor,g,before) {
     if(!ref||!ref.kind)return false;
+    if(ref.kind==='office_tenure'||ref.kind==='office_delegated_document')return !!(TM.OfficeTenure&&TM.OfficeTenure.verifyEvidence&&TM.OfficeTenure.verifyEvidence(ref,d,actor,g,before));
     if(ref.kind==='daily_step'||ref.kind==='meeting_step')return !!(TM.NPC.DailyActivities&&TM.NPC.DailyActivities.verifyEvidence(ref,d,actor,g,before));
     if(['march','command','army_operation'].indexOf(ref.kind)>=0)return !!(TM.PoliticalActions&&TM.PoliticalActions.verifyEvidence(ref,d,g,before));
     if(ref.kind==='diplomacy_step'||ref.kind==='treaty'||ref.kind==='treaty_termination')return !!(TM.FactionDiplomacy&&TM.FactionDiplomacy.verifyEvidence(ref,d,g,before));
@@ -616,6 +620,9 @@
     return result('blocked','phase_not_available');
   }
   function deliver(p,m,g) {
+    if (p && p.type === 'office_leave' && TM.OfficeTenure && TM.OfficeTenure.onMessageDelivered) {
+      return TM.OfficeTenure.onMessageDelivered(p,m,g);
+    }
     var from=findChar({id:m.fromId},g),to=findChar({id:m.toId},g);
     if (!alive(to)) { m.status='undeliverable';p.status='waiting_contact';p.nextActorId='';return; }
     if (to._missing || to.missing) { p.status='in_transit';p.nextTurn=_turn(g)+1;return; }
@@ -655,6 +662,7 @@
     if(!guard)return {ok:false,reason:'atomic_writer_unavailable'};
     return guard.runAtomicMutation(function(){
       if(TM.NPC.DailyActivities)TM.NPC.DailyActivities.advanceWithin(options || {});
+      if(TM.OfficeTenure&&TM.OfficeTenure.advancePlans)TM.OfficeTenure.advancePlans(g);
       if(options&&options.localOnly)return {ok:true};
       ensurePlans(g).filter(function(p){return p&&p.version===2&&!p.localActivity&&!/^(done|rejected|cancelled|failed)$/.test(p.status);}).forEach(function(p){
         p.messages.filter(function(m){return m.status==='in_transit'&&m.deliveryTurn<=_turn(g);}).forEach(function(m){deliver(p,m,g);});

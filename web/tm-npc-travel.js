@@ -1,9 +1,14 @@
-// Local meeting travel. It stores plans/messages in the existing NPC ledger;
-// _travel* remains the shared physical movement state used by office travel.
+// Local meeting travel. A meeting uses the existing NPC plans/messages and
+// the canonical character location fields. It owns only the physical
+// progress of a local meeting journey; office travel keeps its own domain.
 (function (root) {
   'use strict';
   var TM = root.TM = root.TM || {}, NPC = TM.NPC = TM.NPC || {};
-  var config = Object.freeze({ responseDays: 30, defaultWindowDays: 3, defaultDurationDays: 1, defaultMode: 'land', maxDistanceDays: 365 });
+  var config = Object.freeze({
+    responseDays: 30, defaultWindowDays: 3, defaultDurationDays: 1,
+    defaultMode: 'land', maxDistanceDays: 365, epsilon: 0.000001
+  });
+
   function D() { return NPC.DailyActivities; }
   function L() { return NPC.ActionLedger; }
   function G() { return root.GM; }
@@ -11,25 +16,32 @@
   function text(v) { return String(v == null ? '' : v).trim(); }
   function copy(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
   function id(v) { return text(v && v.id); }
-  function person(key) { return D().person(key, G()); }
-  function day() { return D().day(G()); }
+  function person(key) { return D() && D().person(key, G()); }
+  function day() { return D() ? D().day(G()) : (TM.SimTime ? TM.SimTime.now(G()) : 0); }
   function result(outcome, reason, refs, extra) { return L().result(outcome, reason, refs, extra); }
   function map() { return G() && (G().mapData || G().map); }
-  function route(from, to, mode) {
-    return root.TM && TM.MapRouteDays && TM.MapRouteDays.planRoute ? TM.MapRouteDays.planRoute(map(), from, to, { mode: mode || config.defaultMode }) : { status: 'blocked', reason: 'route_service_unavailable' };
+  function route(from, to, mode, fresh) {
+    return TM.MapRouteDays && TM.MapRouteDays.planRoute ? TM.MapRouteDays.planRoute(map(), from, to, { mode: mode || config.defaultMode, fresh: !!fresh }) : { status: 'blocked', reason: 'route_service_unavailable' };
   }
   function locationName(regionId) {
     var r = TM.MapRouteDays && TM.MapRouteDays.resolveRegion && TM.MapRouteDays.resolveRegion(map(), regionId);
     return r && r.region ? r.region.name || r.region.id : String(regionId || '');
   }
-  function currentRegion(ch) { return D().exactLocation(ch, G()); }
+  function currentRegion(ch) { return D() && D().exactLocation ? D().exactLocation(ch, G()) : ''; }
   function alive(ch) { return !!ch && ch.alive !== false && ch.dead !== true; }
-  function plan(idValue) { return D().get(idValue, G()); }
-  function isMeeting(p) { return !!(p && p.localActivity && p.localActivity.kind === 'meeting'); }
-  function terminal(p) { return /^(done|rejected|cancelled|expired|missed)$/.test(p.status); }
+  function plan(idValue) { return D() && D().get(idValue, G()); }
+  function isMeeting(p) { return !!(p && p.localActivity && p.localActivity.kind === 'meeting' && p.localActivity.meeting); }
+  function terminal(p) { return /^(done|rejected|cancelled|expired|missed)$/.test(p && p.status || ''); }
   function signature(v) { return TM.PoliticalActions && TM.PoliticalActions.signature ? TM.PoliticalActions.signature(v) : JSON.stringify(v); }
   function nextId() { return 'daily-message:' + (++L().state(G()).sequence); }
-  function participant(p, key) { return p.actorId === key || p.targetId === key; }
+  function participant(p, key) { return p && (p.actorId === key || p.targetId === key); }
+  function roleFor(p, key) { return p.actorId === key ? 'actor' : p.targetId === key ? 'target' : ''; }
+  function journeyKey(role, returning) { return role + (returning ? 'ReturnJourney' : 'Journey'); }
+  function journeyFor(m, role, returning) { return m && m[journeyKey(role, returning)] || null; }
+  function setJourney(m, role, returning, value) { m[journeyKey(role, returning)] = value; return value; }
+  function charForRole(p, role) { return person(role === 'actor' ? p.actorId : p.targetId); }
+  function finiteNonNegative(v) { return Number.isFinite(Number(v)) && Number(v) >= 0; }
+
   function remember(ch, other, p, source, content, factStatus) {
     if (!ch || !root.NpcMemorySystem) return;
     root.NpcMemorySystem.remember(ch.name, content, '平', 4, other && other.name || '', {
@@ -38,224 +50,524 @@
       sourceRefs: [{ kind: 'meeting_step', planId: p.id, id: source }]
     });
   }
+
   function step(p, actor, d, outcome, reason) {
     var before = p.localActivity.revision;
     p.localActivity.revision++; p.updatedTurn = G().turn;
     var row = { id: d.actionId + ':' + d.phase, actionId: d.actionId, phase: d.phase, actorId: id(actor),
-      beforeRevision: before, afterRevision: p.localActivity.revision, inputHash: signature({ actionId: d.actionId, phase: d.phase, actorId: id(actor), response: d.response, meeting: d.meeting }),
+      beforeRevision: before, afterRevision: p.localActivity.revision,
+      inputHash: signature({ actionId: d.actionId, phase: d.phase, actorId: id(actor), response: d.response, termsVersion: d.termsVersion, meeting: d.meeting }),
       day: day(), termsVersion: p.localActivity.termsVersion };
     p.steps.push(row);
-    return result(outcome, reason, [{ kind: 'meeting_step', id: row.id, planId: p.id }], { planId: p.id, activityKind: 'meeting', revision: p.localActivity.revision });
+    return result(outcome, reason, [{ kind: 'meeting_step', id: row.id, planId: p.id }], {
+      planId: p.id, activityKind: 'meeting', revision: p.localActivity.revision
+    });
   }
+
+  function termsFrom(m) {
+    return { locationId: m.venueLocationId || m.locationId, locationName: m.locationName,
+      requestedStartDay: m.requestedStartDay, windowDays: m.windowDays, durationDays: m.durationDays,
+      purpose: m.purpose, mode: m.mode, version: m.version || 1 };
+  }
+
   function informedMessage(p, from, to, kind, content, data, delivery) {
-    var m = { id: nextId(), sourceId: p.id, actionId: data.actionId, phase: data.phase, fromId: id(from), toId: id(to), kind: kind,
-      content: content, data: copy(data), channel: 'travel', sentTurn: G().turn, sentDay: day(), deliveryDay: delivery.day,
-      deliveryRegionId: delivery.regionId, status: 'in_transit', termsVersion: p.localActivity.termsVersion };
-    p.messages.push(m); p.status = 'in_transit'; p.nextActorId = ''; p.nextTurn = G().turn;
-    p.knowledge[id(from)] = { stage: 'sent', lastMessageId: m.id, termsVersion: p.localActivity.termsVersion };
-    remember(from, to, p, m.id, '向' + to.name + '发出约见邀约：' + content, 'personal_experience');
-    return m;
+    data = data || {}; delivery = delivery || {};
+    var a = p.localActivity, m = a.meeting;
+    var termsVersion = data.termsVersion != null ? data.termsVersion : a.termsVersion;
+    var msg = { id: nextId(), sourceId: p.id, actionId: data.actionId, phase: data.phase,
+      fromId: id(from), toId: id(to), kind: kind, content: content, data: copy(data), channel: 'travel',
+      sentTurn: G().turn, sentDay: day(), deliveryDay: Number(delivery.day), deliveryRegionId: text(delivery.regionId),
+      deliveryAddressType: delivery.addressType || 'known_location', status: 'in_transit', termsVersion: termsVersion,
+      venueLocationId: m && (m.venueLocationId || m.locationId) || '' };
+    if (!Number.isFinite(msg.deliveryDay)) msg.deliveryDay = day();
+    p.messages.push(msg);
+    p.status = kind === 'meeting_request' ? 'invitation_in_transit' : 'response_in_transit';
+    p.nextActorId = ''; p.nextTurn = G().turn;
+    p.knowledge[id(from)] = { stage: 'sent', lastMessageId: msg.id, termsVersion: termsVersion };
+    remember(from, to, p, msg.id, '向' + (to && to.name || '对方') + '发出约见文书：' + content, 'personal_experience');
+    return msg;
   }
-  function deliver(p, m) {
-    var to = person(m.toId), from = person(m.fromId);
-    if (!alive(to) || !m.deliveryRegionId || currentRegion(to) !== m.deliveryRegionId) return false;
-    m.status = 'delivered'; m.deliveredDay = day(); m.deliveredTurn = G().turn;
-    m.deliveryRef = { id: 'travel-delivery:' + m.id, sourceMessageId: m.id, fromId: m.fromId, toId: m.toId, termsVersion: m.termsVersion };
-    p.knowledge[m.toId] = { stage: 'delivered', lastMessageId: m.id, termsVersion: m.termsVersion };
-    remember(to, from, p, m.id, '收到' + (from && from.name || '来人') + '的约见文书：' + m.content, 'received_claim');
-    if (m.kind === 'meeting_request') { p.status = 'awaiting_response'; p.nextActorId = p.targetId; p.nextTurn = G().turn; }
-    if (m.kind === 'meeting_response' && /^(in_transit|awaiting_response|deferred)$/.test(p.status)) { p.status = m.data.response === 'accept' ? 'scheduled' : m.data.response === 'defer' ? 'deferred' : 'rejected'; p.nextActorId = ''; }
+
+  function setOwnKnowledge(p, key, stage, message) {
+    p.knowledge[key] = { stage: stage, lastMessageId: message && message.id || '', termsVersion: message && message.termsVersion || p.localActivity.termsVersion };
+  }
+
+  function stopJourney(p, role, returning, reason) {
+    var j = journeyFor(p.localActivity.meeting, role, returning), ch = charForRole(p, role);
+    if (!j || !ch) return false;
+    if (j.status === 'in_transit' || j.status === 'ready') {
+      j.status = 'stopped'; j.stopDay = day(); j.pauseReason = reason || 'stopped';
+      if (ch._localTravelRef && ch._localTravelRef.journeyId === j.id) {
+        delete ch._localTravelRef; delete ch._travelTo; delete ch._travelRemainingDays;
+        delete ch._travelExpectedDays; delete ch._travelReason; delete ch._travelPaused;
+      }
+      ch._travelCurrentRegionId = j.currentRegionId || j.fromRegionId || currentRegion(ch) || '';
+      return true;
+    }
+    return false;
+  }
+
+  function routeSegmentAvailable(j) {
+    if (!j || !j.route || !Array.isArray(j.route.segments)) return false;
+    var currentVersion = TM.MapRouteDays && TM.MapRouteDays.routeVersion ? TM.MapRouteDays.routeVersion(map()) : '';
+    if (!currentVersion || String(currentVersion) === String(j.route.routeVersion)) return true;
+    function edges(region) {
+      var out = rows(region && region.routeEdges).map(function (e) { return Object.assign({}, e, { from: e.from || region.id }); });
+      if (Array.isArray(map() && map().routeEdges)) out = out.concat(map().routeEdges.filter(function (e) { return e && String(e.from || '') === String(region && region.id); }));
+      if (!out.length) out = rows(region && region.neighbors).map(function (v) { return { to: v, mode: 'land' }; });
+      return out;
+    }
+    for (var i = j.segmentIndex || 0; i < j.route.segments.length; i++) {
+      var seg = j.route.segments[i], rr = TM.MapRouteDays.resolveRegion(map(), seg.fromRegionId);
+      if (!rr || rr.status !== 'resolved') return false;
+      var found = edges(rr.region).some(function (e) {
+        var to = e.to != null ? e.to : e.target != null ? e.target : e.regionId;
+        if (String(to) !== String(seg.toRegionId) || e.available === false) return false;
+        var mode = String(e.mode || e.transport || e.kind || 'land').toLowerCase();
+        return !seg.mode || mode === String(seg.mode).toLowerCase() || (mode === 'land' && ['walking', 'horse', 'courier', 'land'].indexOf(String(seg.mode).toLowerCase()) >= 0);
+      });
+      if (!found) return false;
+    }
+    j.route.routeVersion = currentVersion;
     return true;
   }
-  function knownTargetLocation(actor, target, requested) {
-    var explicit = text(requested && (requested.regionId || requested.locationId));
-    if (explicit) return TM.MapRouteDays.resolveRegion(map(), explicit).status === 'resolved' ? explicit : '';
-    if (target.locationPublic === false || target._locationSecret || target.visibility === 'private' || target.visibility === 'secret') return '';
+
+  function projectJourney(ch, j, p) {
+    if (!ch || !j || j.status !== 'in_transit') return;
+    ch._travelFrom = locationName(j.fromRegionId);
+    ch._travelTo = locationName(j.toRegionId);
+    ch._travelCurrentRegionId = j.currentRegionId || j.fromRegionId;
+    ch._travelStartTurn = j.startedTurn;
+    ch._travelRemainingDays = Math.max(0, Number(j.remainingDays || 0));
+    ch._travelExpectedDays = Number(j.expectedDays || 0);
+    ch._travelElapsedDays = Number(j.elapsedDays || 0);
+    ch._travelReason = 'local-meeting:' + p.id + ':' + j.role + ':' + j.phase;
+    ch._localTravelRef = { planId: p.id, journeyId: j.id, role: j.role, phase: j.phase, toRegionId: j.toRegionId, routeVersion: j.route.routeVersion };
+  }
+
+  function buildJourney(ch, targetRegionId, mode, role, p, phase) {
+    var from = currentRegion(ch), resolved = TM.MapRouteDays.resolveRegion(map(), targetRegionId);
+    var base = { id: 'journey:' + p.id + ':' + role + ':' + (phase || 'outbound'), role: role, phase: phase || 'outbound' };
+    if (!from) return Object.assign(base, { status: 'unresolved', reason: 'current_location_unknown' });
+    if (!resolved || resolved.status !== 'resolved') return Object.assign(base, { status: resolved && resolved.status || 'unresolved', reason: resolved && resolved.reason || 'destination_unresolved' });
+    var to = String(resolved.region.id), r = route(from, to, mode);
+    var j = Object.assign(base, { status: 'ready', fromRegionId: String(from), toRegionId: to, currentRegionId: String(from),
+      fromName: locationName(from), toName: locationName(to), route: copy(r), expectedDays: Number(r.days),
+      elapsedDays: 0, remainingDays: Number(r.days), segmentIndex: 0, segmentElapsedDays: 0,
+      startedDay: null, startedTurn: null, lastAdvancedDay: null, arrivedDay: null, planId: p.id });
+    if (r.status !== 'reachable' || !finiteNonNegative(r.days) || Number(r.days) > config.maxDistanceDays) {
+      j.status = r.status || 'blocked'; j.reason = r.reason || 'route_unavailable'; return j;
+    }
+    if (String(from) === to || Number(r.days) <= config.epsilon) {
+      j.status = 'arrived'; j.arrivedDay = day(); j.remainingDays = 0;
+    }
+    return j;
+  }
+
+  function markTravel(ch, journey, p, startAt) {
+    if (!journey || !ch) return false;
+    if (journey.status === 'arrived') return true;
+    if (journey.status !== 'ready') return false;
+    if (ch._localTravelRef && ch._localTravelRef.journeyId !== journey.id) return false;
+    if (ch._enRouteToOffice || ch._travelTo && !ch._localTravelRef) return false;
+    var startDay = Number.isFinite(Number(startAt)) ? Number(startAt) : day();
+    journey.status = 'in_transit'; journey.startedDay = startDay; journey.startedTurn = G().turn; journey.lastAdvancedDay = startDay;
+    projectJourney(ch, journey, p);
+    return true;
+  }
+
+  function startJourneyFor(p, role, reason, startAt) {
+    var a = p.localActivity, m = a.meeting, ch = charForRole(p, role), returning = /^return$/.test(reason || '');
+    if (!alive(ch)) { m[role + 'JourneyStatus'] = 'participant_unavailable'; return false; }
+    var existing = journeyFor(m, role, returning);
+    if (existing && /^(in_transit|arrived|stopped|returned|staying)$/.test(existing.status)) return /^(in_transit|arrived|returned|staying)$/.test(existing.status);
+    var destination = returning ? m[role + 'HomeRegionId'] : (m.venueLocationId || m.locationId);
+    if (!destination) { m[role + 'JourneyStatus'] = 'unresolved'; return false; }
+    if (!returning) m[role + 'HomeRegionId'] = m[role + 'HomeRegionId'] || currentRegion(ch);
+    var j = buildJourney(ch, destination, m.mode, role, p, returning ? 'return' : 'outbound');
+    setJourney(m, role, returning, j);
+    if (j.status === 'unresolved' || j.status === 'unreachable' || j.status === 'blocked') { m[role + 'JourneyStatus'] = j.status; return false; }
+    if (j.status === 'arrived') { m[role + 'JourneyStatus'] = 'arrived'; return true; }
+    var started = markTravel(ch, j, p, startAt); m[role + 'JourneyStatus'] = started ? 'in_transit' : 'schedule_conflict';
+    if (!started) { j.status = 'blocked'; j.reason = 'schedule_conflict'; }
+    return started;
+  }
+
+  function actorResponseKnown(p) {
+    var m = p.localActivity.meeting, k = p.knowledge[p.actorId];
+    return !!(m.actorResponseDelivered && k && k.termsVersion === p.localActivity.termsVersion);
+  }
+
+  function aggregateStatus(p) {
+    var m = p.localActivity.meeting;
+    if (/^(in_meeting|participated|ended|returning|returned|cancelled|missed|rejected)$/.test(m.status || '')) return;
+    if (/^(roadblocked|return_route_unavailable)$/.test(m.status || '')) return;
+    var aj = m.actorJourney, tj = m.targetJourney;
+    if (aj && aj.status === 'in_transit' || tj && tj.status === 'in_transit') { p.status = 'traveling'; m.status = 'traveling'; return; }
+    if (actorResponseKnown(p) && m.actorDeparturePolicy === 'manual' && (!aj || !/^(in_transit|arrived)$/.test(aj.status))) { p.status = 'waiting_departure'; m.status = 'scheduled'; return; }
+    if (m.targetDecision && !actorResponseKnown(p)) { p.status = 'response_in_transit'; m.status = 'response_in_transit'; return; }
+    if (aj && tj && aj.status === 'arrived' && tj.status === 'arrived') { p.status = 'arrived_waiting'; m.status = 'arrived_waiting'; return; }
+    if (m.targetDecision && (!aj || aj.status === 'ready') && (!tj || tj.status === 'ready')) { p.status = 'scheduled'; m.status = 'scheduled'; }
+  }
+
+  function revalidateJourney(p, role, returning) {
+    var m = p.localActivity.meeting, j = journeyFor(m, role, returning), ch = charForRole(p, role);
+    if (!j || j.status !== 'in_transit') return true;
+    if (routeSegmentAvailable(j)) return true;
+    j.status = 'blocked'; j.pauseReason = 'route_changed'; j.blockedDay = day();
+    if (ch && ch._localTravelRef && ch._localTravelRef.journeyId === j.id) ch._travelPaused = true;
+    m.status = returning ? 'return_route_unavailable' : 'roadblocked';
+    m.roadblock = { day: day(), role: role, journeyId: j.id, action: 'paused', reason: 'current_route_segment_unavailable' };
+    p.status = 'waiting_route';
+    return false;
+  }
+
+  function advanceJourney(p, role, returning, now) {
+    var m = p.localActivity.meeting, j = journeyFor(m, role, returning), ch = charForRole(p, role);
+    if (!j || !ch || j.status !== 'in_transit') return false;
+    if (!j.route || !Array.isArray(j.route.segments)) {
+      j.status = 'blocked'; j.pauseReason = 'journey_route_missing';
+      m.status = returning ? 'return_route_unavailable' : 'roadblocked'; p.status = 'waiting_route';
+      return false;
+    }
+    if (!revalidateJourney(p, role, returning)) return false;
+    var last = Number(j.lastAdvancedDay); if (!Number.isFinite(last)) last = Number(j.startedDay); if (!Number.isFinite(last)) last = now;
+    var left = Math.max(0, now - last); if (!(left > config.epsilon)) return false;
+    j.lastAdvancedDay = now;
+    while (left > config.epsilon && j.status === 'in_transit') {
+      var seg = rows(j.route.segments)[j.segmentIndex];
+      if (!seg) { j.status = 'arrived'; j.arrivedDay = Number(j.startedDay) + Number(j.expectedDays || 0); j.currentRegionId = j.toRegionId; j.remainingDays = 0; break; }
+      var segmentDays = Math.max(config.epsilon, Number(seg.days) || 0), rem = Math.max(0, segmentDays - Number(j.segmentElapsedDays || 0)), used = Math.min(left, rem);
+      j.segmentElapsedDays = Number(j.segmentElapsedDays || 0) + used; j.elapsedDays = Number(j.elapsedDays || 0) + used; j.remainingDays = Math.max(0, Number(j.expectedDays) - j.elapsedDays); left -= used;
+      if (j.segmentElapsedDays + config.epsilon >= segmentDays) {
+        j.currentRegionId = seg.toRegionId; j.segmentIndex++; j.segmentElapsedDays = 0;
+        ch.location = locationName(j.currentRegionId); ch.regionId = j.currentRegionId; ch.mapRegionId = j.currentRegionId;
+        if (j.segmentIndex >= rows(j.route.segments).length) { j.status = 'arrived'; j.arrivedDay = Number(j.startedDay) + Number(j.expectedDays || 0); j.remainingDays = 0; }
+      }
+    }
+    if (j.status === 'arrived') {
+      ch._travelCurrentRegionId = j.toRegionId;
+      if (ch._localTravelRef && ch._localTravelRef.journeyId === j.id) {
+        delete ch._localTravelRef; delete ch._travelTo; delete ch._travelRemainingDays; delete ch._travelExpectedDays; delete ch._travelReason; delete ch._travelPaused;
+      }
+    } else projectJourney(ch, j, p);
+    return true;
+  }
+
+  function syncJourneys(p) {
+    var m = p.localActivity.meeting;
+    ['actor', 'target'].forEach(function (role) {
+      var ch = charForRole(p, role), j = journeyFor(m, role, false);
+      if (!ch || !j || !alive(ch)) { if (j) j.status = 'unavailable'; return; }
+      if (j.status === 'arrived' && currentRegion(ch) === j.toRegionId) j.arrivedDay = j.arrivedDay || day();
+    });
+    ['actor', 'target'].forEach(function (role) {
+      var ch = charForRole(p, role), j = journeyFor(m, role, true);
+      if (j && j.status === 'arrived' && ch && currentRegion(ch) === j.toRegionId) j.status = 'returned';
+    });
+  }
+
+  function hasConflict(ch, p, start, end) {
+    return rows(G()._npcPlans).some(function (other) {
+      if (!other || other === p || !isMeeting(other)) return false;
+      var om = other.localActivity.meeting;
+      if (other.actorId !== id(ch) && other.targetId !== id(ch)) return false;
+      if (!om || !Number.isFinite(om.startedDay) || !Number.isFinite(om.endDay)) return false;
+      return om.status === 'in_meeting' && om.locationId === p.localActivity.meeting.locationId && start < om.endDay && end > om.startedDay;
+    });
+  }
+
+  function beginMeeting(p, now, startOverride) {
+    var a = p.localActivity, m = a.meeting, aj = m.actorJourney, tj = m.targetJourney;
+    if (m.status === 'in_meeting' || m.participation || !aj || !tj || aj.status !== 'arrived' || tj.status !== 'arrived') return false;
+    var start = Number.isFinite(Number(startOverride)) ? Number(startOverride) : now;
+    if (start < m.requestedStartDay) { m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; return false; }
+    if (start > m.requestedStartDay + m.windowDays) { m.status = 'missed'; p.status = 'missed'; return false; }
+    var end = start + m.durationDays, actor = person(p.actorId), target = person(p.targetId);
+    if (hasConflict(actor, p, start, end) || hasConflict(target, p, start, end)) { m.status = 'schedule_conflict'; p.status = 'waiting_schedule'; return false; }
+    m.status = 'in_meeting'; p.status = 'in_meeting'; m.startedDay = start; m.endDay = end;
+    m.participationStart = { id: 'meeting-start:' + p.id, day: start, participants: [p.actorId, p.targetId], locationId: m.locationId, sourcePlanId: p.id };
+    return true;
+  }
+
+  function beginReturnFor(p, role, startAt) {
+    var m = p.localActivity.meeting, mode = m[role + 'ReturnMode'] || 'return', ch = charForRole(p, role);
+    if (mode === 'stay') { setJourney(m, role, true, { id: 'journey:' + p.id + ':' + role + ':return', role: role, phase: 'return', status: 'staying', fromRegionId: currentRegion(ch), toRegionId: currentRegion(ch), arrivedDay: day(), planId: p.id }); return true; }
+    m[role + 'HomeRegionId'] = m[role + 'HomeRegionId'] || currentRegion(ch);
+    return startJourneyFor(p, role, 'return', startAt);
+  }
+
+  function finishMeeting(p, now) {
+    var a = p.localActivity, m = a.meeting;
+    if (m.status !== 'in_meeting' || !Number.isFinite(m.endDay) || now < m.endDay) return false;
+    if (!m.participation) {
+      m.participation = { id: 'meeting:' + p.id, startDay: m.startedDay, endDay: now, durationDays: now - m.startedDay,
+        participants: [p.actorId, p.targetId], locationId: m.locationId, purpose: m.purpose, sourcePlanId: p.id };
+      var actor = person(p.actorId), target = person(p.targetId);
+      remember(actor, target, p, m.participation.id, '与' + target.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
+      remember(target, actor, p, m.participation.id + ':target', '与' + actor.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
+      if (root.OpinionSystem && typeof root.OpinionSystem.addEventOpinion === 'function') root.OpinionSystem.addEventOpinion(actor, target, 1, '实际约见已完成', { sourceId: m.participation.id });
+      m.effectsApplied = true;
+    }
+    m.status = 'returning'; p.status = 'returning';
+    ['actor', 'target'].forEach(function (role) { if (!journeyFor(m, role, true)) beginReturnFor(p, role, now); });
+    syncJourneys(p); finalizeReturn(p);
+    return true;
+  }
+
+  function finalizeReturn(p) {
+    var m = p.localActivity.meeting;
+    if (m.status !== 'returning') return;
+    var done = ['actor', 'target'].every(function (role) { var j = journeyFor(m, role, true); return j && /^(arrived|returned|staying)$/.test(j.status); });
+    if (done) { ['actor', 'target'].forEach(function (role) { var j = journeyFor(m, role, true); if (j.status === 'arrived') j.status = 'returned'; }); m.status = 'returned'; p.status = 'done'; p.nextActorId = ''; }
+  }
+
+  function deliver(p, msg, deliveredAt) {
+    var to = person(msg.toId), from = person(msg.fromId), a = p.localActivity, m = a.meeting;
+    if (!alive(to) || !msg.deliveryRegionId || currentRegion(to) !== msg.deliveryRegionId) return false;
+    msg.status = 'delivered'; msg.deliveredDay = day(); msg.deliveredTurn = G().turn;
+    msg.deliveryRef = { id: 'travel-delivery:' + msg.id, sourceMessageId: msg.id, fromId: msg.fromId, toId: msg.toId, termsVersion: msg.termsVersion };
+    setOwnKnowledge(p, msg.toId, 'delivered', msg);
+    remember(to, from, p, msg.id, '收到' + (from && from.name || '来人') + '的约见文书：' + msg.content, 'received_claim');
+    if (msg.kind === 'meeting_request' && msg.termsVersion === a.termsVersion) { p.status = 'awaiting_response'; p.nextActorId = p.targetId; m.status = 'awaiting_response'; }
+    if (msg.kind === 'meeting_response') {
+      if (msg.termsVersion !== a.termsVersion) { msg.stale = true; return true; }
+      m.actorResponseDelivered = true; m.responseDeliveredDay = day();
+      if (msg.data.response === 'reject') { m.status = 'rejected'; p.status = 'rejected'; }
+      else if (msg.data.response === 'defer') { m.pendingTerms = copy(msg.data.proposedTerms || null); m.status = 'deferred'; p.status = 'awaiting_reschedule'; p.nextActorId = p.actorId; }
+      else {
+        m.status = 'scheduled';
+        if (m.actorDeparturePolicy === 'after_acceptance_delivery') startJourneyFor(p, 'actor', 'acceptance_delivered', deliveredAt);
+        else { p.status = 'waiting_departure'; p.nextActorId = p.actorId; }
+      }
+    }
+    if (msg.kind === 'meeting_cancel') {
+      var r = roleFor(p, msg.toId); if (r) stopJourney(p, r, false, 'cancel_notice_received');
+      m.status = 'cancelled'; p.status = 'cancelled'; p.nextActorId = '';
+    }
+    return true;
+  }
+
+  function failedDelivery(p, msg) {
+    msg.status = 'undeliverable'; msg.failedDay = day(); msg.failure = 'recipient_not_at_known_address';
+    if (msg.kind === 'meeting_request' && !terminal(p)) { p.status = 'waiting_contact'; p.nextActorId = ''; }
+    if (msg.kind === 'meeting_response' && !terminal(p)) { p.status = 'waiting_contact'; p.nextActorId = ''; }
+    return false;
+  }
+
+  function processMessages(p, now) {
+    p.messages.slice().filter(function (m) { return m.status === 'in_transit' && m.deliveryDay <= now; }).forEach(function (m) {
+      if (!deliver(p, m, Number(m.deliveryDay))) failedDelivery(p, m);
+    });
+  }
+
+  function advanceWithin(options) {
+    options = options || {};
+    var now = Number.isFinite(Number(options.toDay)) ? Number(options.toDay) : day();
+    rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
+      var a = p.localActivity, m = a.meeting;
+      processMessages(p, now);
+      ['actor', 'target'].forEach(function (role) { advanceJourney(p, role, false, now); });
+      syncJourneys(p);
+      if (m.status === 'traveling' || m.status === 'scheduled' || m.status === 'response_in_transit' || m.status === 'arrived_waiting') {
+        if (m.actorJourney && m.targetJourney && m.actorJourney.status === 'arrived' && m.targetJourney.status === 'arrived') {
+          var arrivalDay = Math.max(Number(m.actorJourney.arrivedDay || now), Number(m.targetJourney.arrivedDay || now));
+          var startDay = Math.max(Number(m.requestedStartDay), arrivalDay);
+          if (startDay > Number(m.requestedStartDay) + Number(m.windowDays)) { m.status = 'missed'; p.status = 'missed'; }
+          else beginMeeting(p, now, startDay);
+        }
+      }
+      if (m.status === 'in_meeting' && now >= Number(m.endDay)) finishMeeting(p, Number(m.endDay));
+      ['actor', 'target'].forEach(function (role) { advanceJourney(p, role, true, now); });
+      syncJourneys(p); finalizeReturn(p);
+      if (!terminal(p) && m.status === 'invitation_in_transit' && now >= a.expiresDay) { m.status = 'expired'; p.status = 'expired'; }
+      aggregateStatus(p);
+    });
+    return true;
+  }
+
+  function beforeTravelAdvance() {
+    rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
+      ['actor', 'target'].forEach(function (role) { revalidateJourney(p, role, false); revalidateJourney(p, role, true); });
+    });
+  }
+
+  function knownTargetLocation(actor, target) {
+    if (!target || target.locationPublic === false || target._locationSecret || target.visibility === 'private' || target.visibility === 'secret') return '';
     return currentRegion(target) || '';
   }
-  function buildJourney(ch, targetRegionId, mode, role, p) {
-    var from = currentRegion(ch); if (!from) return { status: 'unresolved', reason: 'current_location_unknown' };
-    var r = route(from, targetRegionId, mode); if (r.status !== 'reachable' || r.days > config.maxDistanceDays) return { status: r.status, reason: r.reason || 'route_unavailable', route: r };
-    return { role: role, status: String(from) === String(targetRegionId) ? 'arrived' : 'ready', fromRegionId: from, toRegionId: targetRegionId,
-      fromName: locationName(from), toName: locationName(targetRegionId), route: copy(r), expectedDays: r.days, elapsedDays: 0, startedDay: null, arrivedDay: String(from) === String(targetRegionId) ? day() : null, planId: p.id };
+
+  function validTerms(spec, inviteRoute) {
+    spec = spec || {};
+    var start = spec.requestedStartDay == null ? day() + Math.ceil(inviteRoute.days) : Number(spec.requestedStartDay);
+    var window = spec.windowDays == null ? config.defaultWindowDays : Number(spec.windowDays);
+    var duration = spec.durationDays == null ? config.defaultDurationDays : Number(spec.durationDays);
+    if (!Number.isFinite(start) || start < day() || !Number.isFinite(window) || window < 0 || !Number.isFinite(duration) || duration <= 0) return null;
+    return { requestedStartDay: start, windowDays: window, durationDays: duration };
   }
-  function markTravel(ch, journey, p) {
-    if (journey.status !== 'ready') return true;
-    if (ch._travelTo || ch._travel && ch._travel.status === 'traveling' || ch._enRouteToOffice) return false;
-    delete ch._travelPaused;
-    ch._travelFrom = journey.fromName; ch._travelTo = journey.toName; ch._travelStartTurn = G().turn;
-    ch._travelRemainingDays = Math.max(0, Math.ceil(journey.expectedDays)); ch._travelExpectedDays = journey.expectedDays;
-    ch._travelReason = 'local-meeting:' + p.id + ':' + journey.role;
-    ch._localTravelRef = { planId: p.id, role: journey.role, toRegionId: journey.toRegionId, routeVersion: journey.route.routeVersion };
-    journey.status = journey.expectedDays > 0 ? 'in_transit' : 'arrived'; journey.startedDay = day();
-    if (journey.status === 'arrived') { journey.arrivedDay = day(); delete ch._localTravelRef; }
-    return true;
+
+  function createMeeting(actor, d, target, targetRegion, inviteRoute, locationId) {
+    var t = validTerms(d.meeting, inviteRoute); if (!t) return null;
+    var a = d.meeting || {}, fallbackReturn = a.returnMode === 'stay' ? 'stay' : 'return';
+    return { version: 1, status: 'invitation_in_transit', locationId: locationId, venueLocationId: locationId, locationName: locationName(locationId),
+      purpose: text(a.purpose) || '探望与叙谈', mode: text(a.mode) || config.defaultMode, requestedStartDay: t.requestedStartDay,
+      windowDays: t.windowDays, durationDays: t.durationDays, actorReturnMode: a.actorReturnMode === 'stay' ? 'stay' : fallbackReturn,
+      targetReturnMode: a.targetReturnMode === 'stay' ? 'stay' : fallbackReturn,
+      actorDeparturePolicy: a.departurePolicy === 'manual' || actor.isPlayer ? 'manual' : 'after_acceptance_delivery',
+      actorReplyAddressRegionId: currentRegion(actor), inviteDeliveryRegionId: targetRegion, targetKnownRegionId: targetRegion,
+      inviteRoute: copy(inviteRoute), termsHistory: [{ version: 1, terms: copy(t) }], actorResponseDelivered: false };
   }
-  function beforeTravelAdvance() {
-    var currentVersion = TM.MapRouteDays && TM.MapRouteDays.routeVersion ? TM.MapRouteDays.routeVersion(map()) : '';
-    rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
-      var m = p.localActivity.meeting;
-      if (m.status !== 'traveling' || !currentVersion) return;
-      var journeys = [m.actorJourney, m.targetJourney].filter(Boolean), blocked = journeys.some(function (j) {
-        return j.status === 'in_transit' && j.route && String(j.route.routeVersion) !== String(currentVersion);
-      });
-      if (!blocked) return;
-      m.status = 'roadblocked'; p.status = 'waiting_route'; p.nextActorId = '';
-      m.roadblock = { day: day(), previousRouteVersion: journeys[0] && journeys[0].route && journeys[0].route.routeVersion || '', routeVersion: currentVersion, action: 'paused' };
-      journeys.forEach(function (j) {
-        if (j.status !== 'in_transit') return;
-        var ch = person(/^actor/.test(j.role) ? p.actorId : p.targetId);
-        if (ch) ch._travelPaused = true;
-      });
-    });
-  }
-  function syncJourneys(p) {
-    var a = p.localActivity, all = [a.meeting.actorJourney, a.meeting.targetJourney, a.meeting.actorReturnJourney, a.meeting.targetReturnJourney].filter(Boolean);
-    all.forEach(function (j) {
-      var ch = person(/^actor/.test(j.role) ? p.actorId : p.targetId); if (!ch || !alive(ch)) { j.status = 'unavailable'; return; }
-      var ref = ch._localTravelRef;
-      if (j.status === 'in_transit' && (!ref || ref.planId !== p.id || ch._travelTo)) return;
-      if ((j.status === 'in_transit' || j.status === 'ready') && currentRegion(ch) === j.toRegionId) { j.status = 'arrived'; j.arrivedDay = day(); delete ch._localTravelRef; }
-      if (j.status === 'arrived' && a.meeting.status === 'returning' && currentRegion(ch) === j.toRegionId) j.status = 'returned';
-    });
-  }
-  function completeMeeting(p) {
-    var a = p.localActivity, m = a.meeting;
-    if (m.participation) return;
-    m.status = 'participated'; m.participation = { id: 'meeting:' + p.id, startDay: day(), endDay: day() + m.durationDays, participants: [p.actorId, p.targetId], locationId: m.locationId, purpose: m.purpose, sourcePlanId: p.id };
-    p.status = m.returnMode === 'return' ? 'returning' : 'done'; p.nextActorId = '';
-    var actor = person(p.actorId), target = person(p.targetId);
-    remember(actor, target, p, m.participation.id, '与' + target.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
-    remember(target, actor, p, m.participation.id + ':target', '与' + actor.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
-    if (root.OpinionSystem) root.OpinionSystem.addEventOpinion(actor, target, 1, '实际约见已完成', { sourceId: m.participation.id });
-    if (m.returnMode === 'return') {
-      m.status = 'returning';
-      m.actorJourney = buildJourney(actor, m.actorHomeRegionId, m.mode, 'actor_return', p);
-      m.targetJourney = buildJourney(target, m.targetHomeRegionId, m.mode, 'target_return', p);
-      m.actorJourney.role = 'actor_return'; m.targetJourney.role = 'target_return';
-      if (m.actorJourney.status === 'unresolved' || m.targetJourney.status === 'unresolved') { m.status = 'staying'; p.status = 'done'; return; }
-      markTravel(actor, m.actorJourney, p); markTravel(target, m.targetJourney, p);
-    }
-  }
-  function startScheduled(p) {
-    var a = p.localActivity, m = a.meeting, actor = person(p.actorId), target = person(p.targetId);
-    if (!alive(actor) || !alive(target)) { p.status = 'cancelled'; m.status = 'participant_unavailable'; return false; }
-    m.actorJourney = buildJourney(actor, m.locationId, m.mode, 'actor', p); m.targetJourney = buildJourney(target, m.locationId, m.mode, 'target', p);
-    if (m.actorJourney.status === 'unresolved' || m.targetJourney.status === 'unresolved') { p.status = 'waiting_route'; m.status = 'route_unavailable'; return false; }
-    m.status = 'traveling'; p.status = 'traveling'; m.startDay = Math.max(day(), m.requestedStartDay);
-    m.actorHomeRegionId = m.actorJourney.fromRegionId; m.targetHomeRegionId = m.targetJourney.fromRegionId;
-    var actorStarted = markTravel(actor, m.actorJourney, p), targetStarted = markTravel(target, m.targetJourney, p);
-    if (!actorStarted || !targetStarted) { m.status = 'schedule_conflict'; p.status = 'waiting_route'; return false; }
-    syncJourneys(p);
-    return true;
-  }
+
   function commit(actor, d) {
-    var p = d.planId ? plan(d.planId) : null, key = id(actor), kind = 'meeting';
+    var p = d.planId ? plan(d.planId) : null, key = id(actor);
     if (!p) {
-      var target = person(d.targetId); if (!target || target === actor || !alive(target)) return result('blocked', 'meeting_target_unavailable');
+      var target = person(d.targetId);
+      if (!target || target === actor || !alive(target)) return result('blocked', 'meeting_target_unavailable');
       if (!D().knows(actor, target)) return result('blocked', 'meeting_target_not_known');
-      var targetRegion = knownTargetLocation(actor, target, d.meeting); if (!targetRegion) return result('blocked', 'meeting_target_location_unknown');
-      var fromRegion = currentRegion(actor), inviteRoute = route(fromRegion, targetRegion, d.meeting && d.meeting.mode); if (inviteRoute.status !== 'reachable') return result('blocked', inviteRoute.reason || 'meeting_invite_route_unavailable');
-      var locationId = text(d.meeting && (d.meeting.locationId || d.meeting.regionId)) || targetRegion, loc = TM.MapRouteDays.resolveRegion(map(), locationId);
-      if (loc.status !== 'resolved') return result('blocked', 'meeting_location_unresolved');
-      var meeting = { version: 1, status: 'invitation_in_transit', locationId: locationId, locationName: locationName(locationId), purpose: text(d.meeting && d.meeting.purpose) || '探望与叙谈', mode: text(d.meeting && d.meeting.mode) || config.defaultMode,
-        requestedStartDay: Number(d.meeting && d.meeting.requestedStartDay || day() + inviteRoute.days), windowDays: Number(d.meeting && d.meeting.windowDays || config.defaultWindowDays), durationDays: Number(d.meeting && d.meeting.durationDays || config.defaultDurationDays), returnMode: d.meeting && d.meeting.returnMode === 'stay' ? 'stay' : 'return', inviteRoute: copy(inviteRoute), targetKnownRegionId: targetRegion };
+      var targetRegion = knownTargetLocation(actor, target), fromRegion = currentRegion(actor);
+      if (!targetRegion) return result('blocked', 'meeting_target_location_unknown');
+      var inviteRoute = route(fromRegion, targetRegion, d.meeting && d.meeting.mode);
+      if (!inviteRoute || inviteRoute.status !== 'reachable') return result('blocked', inviteRoute && inviteRoute.reason || 'meeting_invite_route_unavailable');
+      var locationId = text(d.meeting && (d.meeting.locationId || d.meeting.venueLocationId)); if (!locationId) locationId = targetRegion;
+      var loc = TM.MapRouteDays.resolveRegion(map(), locationId); if (!loc || loc.status !== 'resolved') return result('blocked', 'meeting_location_unresolved');
+      var meeting = createMeeting(actor, d, target, targetRegion, inviteRoute, String(loc.region.id)); if (!meeting) return result('blocked', 'meeting_terms_invalid');
+      if (!D().spend(actor, true)) return result('blocked', 'daily_activity_budget');
       p = { id: 'plan:' + d.actionId, version: 2, type: 'ordinary_interaction', actorId: key, actor: actor.name, targetId: id(target), target: target.name,
-        createdTurn: G().turn, updatedTurn: G().turn, progress: 0, intent: '约见与探望', messages: [], steps: [], knowledge: {}, status: 'in_transit', nextActorId: '', nextTurn: G().turn,
-        localActivity: { schemaVersion: 1, definitionVersion: 1, kind: kind, revision: 0, termsVersion: 1, createdDay: day(), expiresDay: day() + config.responseDays,
+        createdTurn: G().turn, updatedTurn: G().turn, progress: 0, intent: '约见与探望', messages: [], steps: [], knowledge: {}, status: 'invitation_in_transit', nextActorId: '', nextTurn: G().turn,
+        localActivity: { schemaVersion: 1, definitionVersion: 1, kind: 'meeting', revision: 0, termsVersion: 1, createdDay: day(), expiresDay: day() + config.responseDays,
           sourceGoalId: text(d.sourceGoalId), meeting: meeting } };
       L().ensurePlans(G()).push(p);
       var requestPhase = d.phase || 'execute';
-      var m = informedMessage(p, actor, target, 'meeting_request', '邀请你于第' + meeting.requestedStartDay + '日前后在' + meeting.locationName + '会面，议题：' + meeting.purpose + '。请按自己的日程决定。', { actionId: d.actionId, phase: requestPhase, purpose: meeting.purpose }, { day: day() + Math.ceil(inviteRoute.days), regionId: targetRegion });
+      informedMessage(p, actor, target, 'meeting_request', '邀请你于第' + meeting.requestedStartDay + '日前后在' + meeting.locationName + '会面，议题：' + meeting.purpose + '。请按自己的日程决定。',
+        { actionId: d.actionId, phase: requestPhase, purpose: meeting.purpose, terms: termsFrom(meeting), termsVersion: 1 },
+        { day: day() + Math.ceil(inviteRoute.days), regionId: targetRegion, addressType: 'known_recipient_location' });
       p.localActivity.revision++;
       p.steps.push({ id: d.actionId + ':' + requestPhase, actionId: d.actionId, phase: requestPhase, actorId: key, beforeRevision: 0, afterRevision: p.localActivity.revision, inputHash: signature(d), day: day(), termsVersion: 1 });
-      return result('submitted', '约见邀请已按路线递送，尚待对方收到并回应', [{ kind: 'meeting_step', id: d.actionId + ':' + requestPhase, planId: p.id }], { planId: p.id, activityKind: kind, revision: p.localActivity.revision });
+      return result('submitted', '约见邀请已按已知收件地点递送，尚待对方收到并回应', [{ kind: 'meeting_step', id: d.actionId + ':' + requestPhase, planId: p.id }], { planId: p.id, activityKind: 'meeting', revision: p.localActivity.revision });
     }
     var a = p.localActivity, m = a.meeting;
     if (!isMeeting(p) || a.definitionVersion !== 1) return result('blocked', 'meeting_definition_requires_migration');
-    if (!participant(p, key) || !p.knowledge[key] && key !== p.targetId) return result('blocked', 'meeting_participant_not_informed');
+    if (!participant(p, key) || !p.knowledge[key]) return result('blocked', 'meeting_participant_not_informed');
     if (d.expectedRevision != null && d.expectedRevision !== a.revision || d.termsVersion != null && d.termsVersion !== a.termsVersion) return result('expired', 'meeting_or_terms_changed');
     if (d.phase === 'cancel') {
       if (terminal(p)) return result('noop', 'meeting_terminal');
-      [m.actorJourney, m.targetJourney].filter(Boolean).forEach(function (j) {
-        var ch = person(/^actor/.test(j.role) ? p.actorId : p.targetId);
-        if (ch && ch._travelPaused) {
-          delete ch._travelPaused; delete ch._travelTo; delete ch._travelFrom; delete ch._travelStartTurn;
-          delete ch._travelRemainingDays; delete ch._travelExpectedDays; delete ch._travelReason; delete ch._localTravelRef;
-          j.status = 'stopped';
-        }
-      });
-      m.status = 'cancelled'; p.status = 'cancelled'; p.nextActorId = '';
-      return step(p, actor, d, 'completed', '约见已取消；已走路程保留，受阻行程在当前地点停止');
+      if (!D().spend(actor, false)) return result('blocked', 'daily_activity_budget');
+      stopJourney(p, roleFor(p, key), false, 'cancelled_by_self');
+      var informed = [p.actorId, p.targetId].filter(function (v) { return v !== key && p.knowledge[v] && p.knowledge[v].stage !== 'sent'; });
+      if (!informed.length) { p.messages.forEach(function (msg) { if (msg.fromId === key && msg.status === 'in_transit') msg.status = 'withdrawn'; }); m.status = 'cancelled'; p.status = 'cancelled'; }
+      else {
+        informed.forEach(function (v) {
+          var to = person(v), address = currentRegion(to), rr = route(currentRegion(actor), address, m.mode);
+          informedMessage(p, actor, to, 'meeting_cancel', '此次约见已由发起方取消；已走过的路程不因此倒退。', { actionId: d.actionId, phase: d.phase, termsVersion: a.termsVersion }, { day: day() + Math.ceil(rr && rr.status === 'reachable' ? rr.days : 0), regionId: address, addressType: 'last_known_location' });
+        });
+        m.status = 'cancel_pending'; p.status = 'cancel_pending';
+      }
+      p.nextActorId = ''; return step(p, actor, d, 'submitted', informed.length ? '取消通知已发，其他参与者收到后再决定自己的行程' : '未送达的约见已撤回');
+    }
+    if (d.phase === 'depart' && key === p.actorId && p.status === 'waiting_departure') {
+      if (!D().spend(actor, false)) return result('blocked', 'daily_activity_budget');
+      var departure = startJourneyFor(p, 'actor', 'manual'); aggregateStatus(p); return step(p, actor, d, departure ? 'started' : 'waiting', departure ? '本人已按收到的接受回信启程' : '当前路线或日程不能安全启程');
+    }
+    if (d.phase === 'reschedule' && key === p.actorId && p.status === 'awaiting_reschedule' && m.pendingTerms) {
+      m.version++; a.termsVersion++; m.requestedStartDay = m.pendingTerms.requestedStartDay; m.windowDays = m.pendingTerms.windowDays; m.durationDays = m.pendingTerms.durationDays; m.termsHistory.push({ version: m.version, terms: copy(m.pendingTerms) }); m.pendingTerms = null; m.status = 'invitation_in_transit'; p.status = 'invitation_in_transit';
+      var rr2 = route(currentRegion(actor), m.inviteDeliveryRegionId, m.mode);
+      informedMessage(p, actor, person(p.targetId), 'meeting_request', '改期后的约见安排如下，请重新按当前条款决定。', { actionId: d.actionId, phase: d.phase, purpose: m.purpose, terms: termsFrom(m), termsVersion: a.termsVersion }, { day: day() + Math.ceil(rr2 && rr2.status === 'reachable' ? rr2.days : 0), regionId: m.inviteDeliveryRegionId, addressType: 'known_recipient_location' });
+      return step(p, actor, d, 'submitted', '改期形成新的条款版本，旧同意不再适用');
     }
     if (p.status !== 'awaiting_response' || key !== p.targetId || d.phase !== 'respond') return result('blocked', 'meeting_response_not_due');
     if (!/^(accept|reject|defer)$/.test(d.response || '')) return result('blocked', 'supported_meeting_response_required');
-    var target = person(p.targetId), requester = person(p.actorId), responseRoute = route(currentRegion(target), currentRegion(requester), m.mode);
+    if (!D().spend(actor, false)) return result('blocked', 'daily_activity_budget');
+    var target = person(p.targetId), requester = person(p.actorId), replyAddress = m.actorReplyAddressRegionId;
+    var responseRoute = route(currentRegion(target), replyAddress, m.mode);
     if (!responseRoute || responseRoute.status !== 'reachable') return result('blocked', 'meeting_response_route_unavailable');
-    if (d.response === 'reject') { m.status = 'rejected'; p.status = 'rejected'; informedMessage(p, target, requester, 'meeting_response', '这次不便赴约，约见暂且作罢。', { actionId: d.actionId, phase: d.phase, response: 'reject' }, { day: day() + Math.ceil(responseRoute.days), regionId: currentRegion(requester) }); return step(p, actor, d, 'completed', '对方拒绝约见'); }
-    if (d.response === 'defer') { p.status = 'deferred'; m.status = 'deferred'; m.requestedStartDay += 1; informedMessage(p, target, requester, 'meeting_response', '眼下尚有安排，请改期再议。', { actionId: d.actionId, phase: d.phase, response: 'defer' }, { day: day() + Math.ceil(responseRoute.days), regionId: currentRegion(requester) }); return step(p, actor, d, 'submitted', '对方要求改期，尚未同意出行'); }
+    if (d.response === 'reject') {
+      m.targetDecision = { response: 'reject', day: day(), termsVersion: a.termsVersion }; m.status = 'response_in_transit';
+      informedMessage(p, target, requester, 'meeting_response', '这次不便赴约，约见暂且作罢。', { actionId: d.actionId, phase: d.phase, response: 'reject', termsVersion: a.termsVersion }, { day: day() + Math.ceil(responseRoute.days), regionId: replyAddress, addressType: 'reply_address_snapshot' });
+      return step(p, actor, d, 'submitted', '拒绝已递出，发起者收到后事项才结束');
+    }
+    if (d.response === 'defer') {
+      var proposed = { requestedStartDay: m.requestedStartDay + 1, windowDays: m.windowDays, durationDays: m.durationDays };
+      m.targetDecision = { response: 'defer', day: day(), termsVersion: a.termsVersion, proposedTerms: proposed }; m.status = 'response_in_transit';
+      informedMessage(p, target, requester, 'meeting_response', '眼下尚有安排，请按新的明确时间再议。', { actionId: d.actionId, phase: d.phase, response: 'defer', proposedTerms: proposed, termsVersion: a.termsVersion + 1 }, { day: day() + Math.ceil(responseRoute.days), regionId: replyAddress, addressType: 'reply_address_snapshot' });
+      return step(p, actor, d, 'submitted', '改期建议已递出，须收到后形成新条款');
+    }
     m.targetDecision = { response: 'accept', day: day(), termsVersion: a.termsVersion };
-    informedMessage(p, target, requester, 'meeting_response', '愿按当前约期赴约；双方到场后再行会面。', { actionId: d.actionId, phase: d.phase, response: 'accept' }, { day: day() + Math.ceil(responseRoute.days), regionId: currentRegion(requester) });
-    var started = startScheduled(p);
-    return step(p, actor, d, started ? 'started' : 'waiting', started ? '对方已接受当前约期，双方按程序出发' : '对方已答应，但当前位置或既有行程暂不能安全出发');
+    var targetStarted = startJourneyFor(p, 'target', 'accepted');
+    informedMessage(p, target, requester, 'meeting_response', '愿按当前约期赴约；双方各自按已知安排准备。', { actionId: d.actionId, phase: d.phase, response: 'accept', termsVersion: a.termsVersion }, { day: day() + Math.ceil(responseRoute.days), regionId: replyAddress, addressType: 'reply_address_snapshot' });
+    aggregateStatus(p);
+    return step(p, actor, d, targetStarted ? 'submitted' : 'waiting', targetStarted ? '本人已接受并按自己的安排准备；回信送达后发起者再决定是否启程' : '本人已接受但当前路线或日程暂不能出发');
   }
-  function needsAdvance(g) { return rows(g._npcPlans).some(function (p) { var a = p && p.localActivity; return isMeeting(p) && (!terminal(p) || rows(p.messages).some(function (m) { return m.status === 'in_transit' && m.deliveryDay <= day(); })); }); }
-  function advanceWithin() {
-    rows(G()._npcPlans).filter(isMeeting).forEach(function (p) {
-      var a = p.localActivity, m = a.meeting;
-      p.messages.slice().filter(function (x) { return x.status === 'in_transit' && x.deliveryDay <= day(); }).forEach(function (x) { deliver(p, x); });
-      if (p.status === 'deferred' && day() >= m.requestedStartDay - 1) { p.status = 'awaiting_response'; p.nextActorId = p.targetId; }
-      if (p.status === 'waiting_route' && m.targetDecision && /^(schedule_conflict|route_unavailable)$/.test(m.status)) startScheduled(p);
-      syncJourneys(p);
-      if (m.actorJourney && (m.actorJourney.status === 'unavailable' || m.targetJourney && m.targetJourney.status === 'unavailable')) { m.status = 'participant_unavailable'; p.status = 'cancelled'; }
-      if (m.status === 'traveling' && m.actorJourney && m.targetJourney && m.actorJourney.status === 'arrived' && m.targetJourney.status === 'arrived') {
-        if (day() <= m.startDay + m.windowDays) completeMeeting(p); else { m.status = 'missed'; p.status = 'missed'; }
-      }
-      if (m.status === 'returning') {
-        syncJourneys(p);
-        if (m.actorJourney.status === 'returned' && m.targetJourney.status === 'returned') { m.status = 'returned'; p.status = 'done'; }
-      }
-      if (!terminal(p) && day() >= a.expiresDay && p.status === 'in_transit') { p.status = 'expired'; m.status = 'expired'; }
+
+  function needsAdvance(g) {
+    return rows(g._npcPlans).some(function (p) {
+      if (!isMeeting(p)) return false;
+      var m = p.localActivity.meeting;
+      return p.messages.some(function (x) { return x.status === 'in_transit' && x.deliveryDay <= day(g); }) ||
+        ['actor', 'target'].some(function (r) { var j = journeyFor(m, r, false) || journeyFor(m, r, true); return j && j.status === 'in_transit'; }) ||
+        m.status === 'in_meeting' || m.status === 'arrived_waiting' || m.status === 'roadblocked' || m.status === 'returning';
     });
   }
-  function view(p, ch) {
-    if (!isMeeting(p) || !ch || !p.knowledge[id(ch)] && id(ch) !== p.targetId) return null;
-    var m = p.localActivity.meeting, phase = p.status === 'awaiting_response' && id(ch) === p.targetId ? 'respond' : '';
-    return { id: p.id, kind: 'meeting', actorId: p.actorId, targetId: p.targetId, intent: p.intent, stage: p.knowledge[id(ch)] && p.knowledge[id(ch)].stage || p.status,
-      nextPhase: phase, revision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion, expiresDay: p.localActivity.expiresDay, messages: copy(p.messages.filter(function (x) { return x.fromId === id(ch) || x.toId === id(ch) && x.status === 'delivered'; })), documents: [], contact: null,
-      meeting: copy(m), canCancel: !terminal(p), factStatus: 'own_meeting_view' };
+
+  function publicJourney(j) {
+    if (!j) return null;
+    return { id: j.id, role: j.role, phase: j.phase, status: j.status, fromRegionId: j.fromRegionId, toRegionId: j.toRegionId,
+      currentRegionId: j.currentRegionId, segmentIndex: j.segmentIndex, elapsedDays: j.elapsedDays, remainingDays: j.remainingDays,
+      startedDay: j.startedDay, arrivedDay: j.arrivedDay, pauseReason: j.pauseReason || '' };
   }
+
+  function view(p, ch) {
+    if (!isMeeting(p) || !ch || !p.knowledge[id(ch)]) return null;
+    var key = id(ch), role = roleFor(p, key), m = p.localActivity.meeting, k = p.knowledge[key];
+    var messages = p.messages.filter(function (x) { return x.fromId === key || x.toId === key && x.status === 'delivered'; });
+    var next = '';
+    if (p.status === 'awaiting_response' && key === p.targetId) next = 'respond';
+    if (p.status === 'waiting_departure' && key === p.actorId) next = 'depart';
+    if (p.status === 'awaiting_reschedule' && key === p.actorId) next = 'reschedule';
+    return { id: p.id, kind: 'meeting', actorId: p.actorId, targetId: p.targetId, intent: p.intent,
+      stage: k.stage, nextPhase: next, revision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion,
+      expiresDay: p.localActivity.expiresDay, messages: copy(messages), documents: [], contact: null,
+      meeting: { version: m.version, status: m.status, locationId: m.locationId, locationName: m.locationName, purpose: m.purpose,
+        mode: m.mode, requestedStartDay: m.requestedStartDay, windowDays: m.windowDays, durationDays: m.durationDays,
+        actorReturnMode: role === 'actor' ? m.actorReturnMode : undefined, targetReturnMode: role === 'target' ? m.targetReturnMode : undefined,
+        ownDecision: role && copy(m[role + 'Decision'] || null), ownJourney: role && publicJourney(journeyFor(m, role, false)),
+        ownReturnJourney: role && publicJourney(journeyFor(m, role, true)), participationStart: m.participationStart && copy(m.participationStart),
+        participation: m.participation && copy(m.participation) }, canCancel: !terminal(p), factStatus: 'own_meeting_view' };
+  }
+
   function verifyEvidence(ref, d, actor, g, before) {
     var p = plan(ref.planId), old = before && rows(before._npcPlans).find(function (x) { return x.id === ref.planId; }), row = p && rows(p.steps).find(function (x) { return x.id === ref.id; });
-    var ok = !!(p && isMeeting(p) && row && row.actionId === d.actionId && row.phase === d.phase && row.actorId === id(actor) && (!old || !rows(old.steps).some(function (x) { return x.id === ref.id; })) && p.localActivity.revision === row.afterRevision);
-    return ok;
+    if (!(p && isMeeting(p) && row && row.actionId === d.actionId && row.phase === d.phase && row.actorId === id(actor) && row.termsVersion === p.localActivity.termsVersion && (!old || !rows(old.steps).some(function (x) { return x.id === ref.id; })) && p.localActivity.revision === row.afterRevision)) return false;
+    var messages = rows(p.messages).filter(function (m) { return m.actionId === d.actionId && m.phase === d.phase; });
+    if (d.phase === 'execute' && !messages.some(function (m) { return m.kind === 'meeting_request' && m.fromId === id(actor) && m.termsVersion === p.localActivity.termsVersion; })) return false;
+    if (d.phase === 'respond' && !messages.some(function (m) { return m.kind === 'meeting_response' && m.fromId === id(actor) && m.data && m.data.response === d.response; })) return false;
+    if (d.phase === 'depart' && !(p.localActivity.meeting.actorJourney && /^(in_transit|arrived)$/.test(p.localActivity.meeting.actorJourney.status))) return false;
+    if (d.phase === 'cancel' && !/^(cancelled|cancel_pending)$/.test(p.localActivity.meeting.status)) return false;
+    return true;
   }
+
+  // Test-only compatibility shim. Production callers must use the canonical endTurn pipeline.
   function advanceLocalDays(days) {
     var left = Number(days), advanced = 0, interval;
-    if (!(left > 0) || !G() || G().busy || G()._endTurnBusy) return { ok: false, reason: 'world_busy_or_invalid_days' };
+    if (!G() || G()._tmTravelTestHarness !== true) return { ok: false, reason: 'formal_time_entry_required' };
+    if (!(left > 0) || G().busy || G()._endTurnBusy) return { ok: false, reason: 'world_busy_or_invalid_days' };
     while (left > 0) {
       if (!TM.SimTime || !TM.SimTime.prepare || !TM.SimTime.commit) return { ok: false, reason: 'simulation_clock_unavailable' };
-      interval = TM.SimTime.prepare(G());
-      if (interval.days > left) return { ok: false, reason: 'local_step_smaller_than_turn_interval' };
+      interval = TM.SimTime.prepare(G()); if (interval.days > left) return { ok: false, reason: 'local_step_smaller_than_turn_interval' };
       var guards = TM.AIChange && TM.AIChange.WriteGuards;
       if (!guards || typeof guards.runAtomicMutation !== 'function') return { ok: false, reason: 'atomic_writer_unavailable' };
       var receipt = guards.runAtomicMutation(function () {
-        G().turn++;
-        var clockReceipt = TM.SimTime.commit(G(), interval);
+        G().turn++; var clockReceipt = TM.SimTime.commit(G(), interval);
         if (!clockReceipt || clockReceipt.ok !== true) return { ok: false, reason: 'simulation_clock_commit_failed' };
-        if (typeof root.advanceCharTravelByDays === 'function') root.advanceCharTravelByDays(interval.days);
-        var dailyReceipt = L().advance(G());
-        if (!dailyReceipt || dailyReceipt.ok !== true) return { ok: false, reason: dailyReceipt && dailyReceipt.reason || 'daily_travel_advance_failed' };
+        var dailyReceipt = L().advance(G()); if (!dailyReceipt || dailyReceipt.ok !== true) return { ok: false, reason: dailyReceipt && dailyReceipt.reason || 'daily_travel_advance_failed' };
         return { ok: true, clock: clockReceipt, travel: dailyReceipt };
       });
-      if (!receipt || receipt.ok !== true) {
-        if (TM.SimTime.discardPrepared) TM.SimTime.discardPrepared(G(), interval);
-        return receipt || { ok: false, reason: 'daily_travel_advance_failed' };
-      }
+      if (!receipt || receipt.ok !== true) { if (TM.SimTime.discardPrepared) TM.SimTime.discardPrepared(G(), interval); return receipt || { ok: false, reason: 'daily_travel_advance_failed' }; }
       left -= interval.days; advanced += interval.days;
     }
     return { ok: true, advancedDays: advanced, day: day() };
   }
-  NPC.Meetings = { config: config, isPlan: isMeeting, commit: commit, beforeTravelAdvance: beforeTravelAdvance, needsAdvance: needsAdvance, advanceWithin: advanceWithin, view: view,
-    verifyEvidence: verifyEvidence, advanceLocalDays: advanceLocalDays, afterVerifiedCommit: function (d, receipt) { advanceWithin(); return receipt; } };
+
+  NPC.Meetings = { config: config, isPlan: isMeeting, commit: commit, beforeTravelAdvance: beforeTravelAdvance, needsAdvance: needsAdvance,
+    advanceWithin: advanceWithin, view: view, verifyEvidence: verifyEvidence, advanceLocalDays: advanceLocalDays,
+    afterVerifiedCommit: function (d, receipt) { advanceWithin(); return receipt; } };
 })(typeof window !== 'undefined' ? window : globalThis);

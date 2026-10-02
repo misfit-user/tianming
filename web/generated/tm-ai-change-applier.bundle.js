@@ -1047,9 +1047,11 @@
       ch.officialTitles = [];
       ch.concurrentTitles = [];
       ch.concurrentTitle = "";
-      delete ch._travelAssignPost;
-      delete ch._travelTo;
-      delete ch._travelRemainingDays;
+      if (!(ch._localTravelRef && ch._localTravelRef.planId)) {
+        delete ch._travelAssignPost;
+        delete ch._travelTo;
+        delete ch._travelRemainingDays;
+      }
       ch._removedFromOfficeTurn = G.turn || 0;
       ch._removedReason = _reasonStr || "免职";
       if (global.addEB) global.addEB("任免", charName + " " + (reason || "免职"));
@@ -3117,7 +3119,7 @@
       [G.chars, G.allCharacters].forEach(function(list) {
         if (!Array.isArray(list)) return;
         list.forEach(function(item) {
-          if (!item || item.name !== ch.name) return;
+          if (!item || (ch.id ? item.id !== ch.id : item.name !== ch.name)) return;
           Object.keys(fields).forEach(function(k) {
             item[k] = fields[k];
           });
@@ -3164,6 +3166,10 @@
       G.chars.forEach(function(ch) {
         if (!ch || !ch._travelTo) return;
         if (ch.alive === false || ch.dead === true) return;
+        if (ch._localTravelRef && ch._localTravelRef.planId) {
+          inflight++;
+          return;
+        }
         if (ch._travelPaused === true) {
           inflight++;
           return;

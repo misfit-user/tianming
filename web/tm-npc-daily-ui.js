@@ -19,8 +19,8 @@
     working: '待整理已同意的材料', awaiting_feedback: '已收文书，待反馈', done: '本次往来已结束', rejected: '本次请求未获接受',
     deferred: '已明确延期，待正式日期推进', waiting_contact: '尚未取得回应，本地递送未能安排', cancel_sent: '已提出取消，通知正在传递',
     cancelled: '此项请求已取消', cancel_not_delivered: '本人已取消；通知尚未送达对方', expired: '已到本次事项的截止日期', consent_given: '已表达联系意愿',
-    traveling: '双方正在按路线赴约', scheduled: '约期已定，等待出发或抵达', participated: '双方已实际会面', returning: '会面结束，正在按安排返程', returned: '已返抵原处', waiting_route: '路线或当前位置暂不能确认', missed: '未在约定窗口内同时到场' };
-  var choices = { respond: [['accept', '接受'], ['reject', '婉拒'], ['conditions', '提出条件'], ['defer', '延期答复']],
+    traveling: '双方正在按路线赴约', response_in_transit: '接受回信正在传回', waiting_departure: '已收到接受，等待本人决定启程', arrived_waiting: '已抵达，等待约定开始', in_meeting: '正在会面，占用约定时长', schedule_conflict: '日程冲突，尚未入场', cancel_pending: '取消通知正在传递', scheduled: '约期已定，等待出发或抵达', participated: '双方已实际会面', returning: '会面结束，正在按安排返程', returned: '已返抵原处', waiting_route: '路线或当前位置暂不能确认', missed: '未在约定窗口内同时到场' };
+  var choices = { respond: [['accept', '接受'], ['reject', '婉拒'], ['conditions', '提出条件'], ['defer', '延期答复']], depart: [['depart', '按当前安排启程']], reschedule: [['reschedule', '确认改期条款']],
     agree: [['accept', '同意当前条件'], ['reject', '不接受条件']], forward: [['send', '代为转达']], report: [['send', '传回实际答复']],
     confirm: [['send', '确认通书条件']], perform: [['deliver', '整理并交付清单']], feedback: [['ack', '确认收到'], ['satisfied', '清单有帮助'], ['supplement', '请求补充材料']] };
   function D() { return NPC.DailyActivities; }

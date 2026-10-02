@@ -27,9 +27,9 @@ module.exports = async function ({ win, check, results }) {
     for(const name of ['callAI','callAIMessages','callAIWithTools','callAISmart','callAIStream','callAIStreamMessages'])if(typeof window[name]==='function')window[name]=function(){__travelBrowser.apiAttempts.push(name);throw Error('travel-browser-model-attempt:'+name)};
     addEventListener('error',e=>__travelBrowser.errors.push(e.message));
     const common={alive:true,age:35,health:90,publicIdentity:true,officialTitle:'',faction:'',factionId:'',isRuler:false,intelligence:65,administration:60,loyalty:80,ambition:20};
-    const people=[Object.assign({},common,{id:'travel-a',name:'沈行之',location:'东城',localGoals:[{id:'meeting-goal',kind:'meeting',targetId:'travel-player',meeting:{locationId:'west',purpose:'探望故友',windowDays:10,returnMode:'return'}}]}),Object.assign({},common,{id:'travel-player',name:'来客',location:'西城',isPlayer:true})];
+    const people=[Object.assign({},common,{id:'travel-a',name:'沈行之',location:'东城',localGoals:[{id:'meeting-goal',kind:'meeting',targetId:'travel-player',meeting:{locationId:'west',purpose:'探望故友',windowDays:12,returnMode:'return'}}]}),Object.assign({},common,{id:'travel-player',name:'来客',location:'西城',isPlayer:true})];
     P.ai={key:'',url:'',model:''};P.time={year:1627,startMonth:9,startDay:1,daysPerTurn:1};P.playerInfo={characterId:'travel-player',characterName:'来客',factionId:'',factionName:''};
-    GM=Object.assign({},GM,{sid:'local-travel-browser',_campaignId:'local-travel-browser',_timelineId:'local-travel-browser',turn:1,running:true,busy:false,_endTurnBusy:false,chars:people,facs:[],armies:[],officeTree:[],playerInfo:P.playerInfo,letters:[],memorials:[],evtLog:[],_npcPlans:[],_npcActionLedger:[],_npcExecutionResults:[],_npcDecisionDiagnostics:[],_turnContext:{npcActionsThisTurn:[],},affinityMap:{},mapData:{locationBindingContract:{schema:'source-text-location-v2'},regions:[{id:'east',name:'东城',geographicCenter:[116,40],neighbors:['west']},{id:'west',name:'西城',geographicCenter:[117,40],neighbors:['east']}]}});
+    GM=Object.assign({},GM,{sid:'local-travel-browser',_campaignId:'local-travel-browser',_timelineId:'local-travel-browser',turn:1,running:true,busy:false,_endTurnBusy:false,_tmTravelTestHarness:true,chars:people,facs:[],armies:[],officeTree:[],playerInfo:P.playerInfo,letters:[],memorials:[],evtLog:[],_npcPlans:[],_npcActionLedger:[],_npcExecutionResults:[],_npcDecisionDiagnostics:[],_turnContext:{npcActionsThisTurn:[],},affinityMap:{},mapData:{locationBindingContract:{schema:'source-text-location-v2'},regions:[{id:'east',name:'东城',geographicCenter:[116,40],neighbors:['west']},{id:'west',name:'西城',geographicCenter:[117,40],neighbors:['east']}]}});
     delete GM._npcActionState;delete GM._tmTime;buildIndices&&buildIndices();document.body.classList.add('tm-phase8-formal');if(document.getElementById('L'))document.getElementById('L').style.display='none';if(document.getElementById('G'))document.getElementById('G').style.display='block';
     GameHooks.run('enterGame:after');await new Promise(r=>setTimeout(r,180));openCharRenwuPage('沈行之');
   })()`); await settle();
@@ -38,7 +38,7 @@ module.exports = async function ({ win, check, results }) {
   assert.equal(await js(`TM.MapRouteDays.planRoute(GM.mapData,'east','west',{mode:'walking'}).status`), 'reachable');
   await check('NPC invitation is real and remains in transit before date advances', async () => {
     const v = await js(`(()=>{const p=TM.NPC.DailyActivities.plans().find(p=>p.localActivity.kind==='meeting');return{status:p&&p.status,kind:p&&p.localActivity.kind,travel:p&&p.localActivity.meeting,statuses:p&&p.messages.map(m=>m.status),day:TM.SimTime.now(GM)}})()`);
-    assert.equal(v.kind, 'meeting', JSON.stringify(v)); assert.equal(v.status, 'in_transit', JSON.stringify(v)); assert(v.statuses.includes('in_transit'), JSON.stringify(v)); assert(v.day === 0); assert.deepEqual(await js(`__travelBrowser.apiAttempts`), []);
+    assert.equal(v.kind, 'meeting', JSON.stringify(v)); assert.equal(v.status, 'invitation_in_transit', JSON.stringify(v)); assert(v.statuses.includes('in_transit'), JSON.stringify(v)); assert(v.day === 0); assert.deepEqual(await js(`__travelBrowser.apiAttempts`), []);
   });
   // Use the same production folio route as the existing formal NPC daily flow.
   // Calling the internal drafts bucket directly can race its late-bound sibling
@@ -48,19 +48,19 @@ module.exports = async function ({ win, check, results }) {
   const panelInfo = await js(`(()=>{const p=document.querySelector(${JSON.stringify(panel)});return{exists:!!p,details:p&&p.querySelectorAll('details').length||0}})()`);
   if (panelInfo.exists && panelInfo.details) await js(`document.querySelector(${JSON.stringify(panel+' details')}).open=true`);
   await settle();
-  await js(`TM.NPC.Meetings.advanceLocalDays(5)`); await js(`TM.NPC.DailyUI.render()`); await settle();
+  await js(`TM.NPC.Meetings.advanceLocalDays(8)`); await js(`TM.NPC.DailyUI.render()`); await settle();
   await check('player receives the invitation only after the route delivery boundary', async () => {
     const v = await js(`(()=>{const p=TM.NPC.DailyActivities.plans().find(p=>p.localActivity.kind==='meeting');return{status:p.status,day:TM.SimTime.now(GM),stage:TM.NPC.DailyActivities.view(p,GM.chars.find(c=>c.id==='travel-player')).stage}})()`);
     assert.equal(v.status, 'awaiting_response', JSON.stringify(v)); assert(v.day >= 5); assert.equal(v.stage, 'delivered');
   });
   await click(panel + ' [data-daily-answer="accept"]');
-  await check('player acceptance starts a real journey without moving location immediately', async () => {
+  await check('player acceptance is delivered before the requester starts independently', async () => {
     const v = await js(`(()=>{const p=TM.NPC.DailyActivities.plans().find(p=>p.localActivity.kind==='meeting');const a=GM.chars.find(c=>c.id==='travel-a');return{status:p.status,travelTo:a._travelTo,location:a.location,route:p.localActivity.meeting.actorJourney&&p.localActivity.meeting.actorJourney.route}})()`);
-    assert.equal(v.status, 'traveling', JSON.stringify(v)); assert.equal(v.location, '东城'); assert.equal(v.travelTo, '西城'); assert(v.route && v.route.km > 0); await screenshot('01-meeting-in-transit');
+    assert.equal(v.status, 'response_in_transit', JSON.stringify(v)); assert.equal(v.location, '东城'); assert.equal(v.travelTo, undefined); await screenshot('01-response-in-transit');
   });
-  await js(`TM.NPC.Meetings.advanceLocalDays(5)`); await js(`TM.NPC.DailyUI.render()`); await settle();
+  await js(`TM.NPC.Meetings.advanceLocalDays(8)`); await js(`TM.NPC.DailyUI.render()`); await settle();
   const participated = await js(`(()=>{const p=TM.NPC.DailyActivities.plans().find(p=>p.localActivity.kind==='meeting');return{status:p.status,meeting:p.localActivity.meeting,location:GM.chars.map(c=>({id:c.id,location:c.location,travel:c._travelTo||''})),api:__travelBrowser.apiAttempts}})()`);
-  assert.equal(participated.meeting.status, 'returning', JSON.stringify(participated)); assert(participated.meeting.participation); await screenshot('02-meeting-participated');
+  assert(['in_meeting','returning','returned'].includes(participated.meeting.status), JSON.stringify(participated)); assert(participated.meeting.participation); await screenshot('02-meeting-participated');
   await js(`TM.NPC.Meetings.advanceLocalDays(5)`); await js(`TM.NPC.DailyUI.render()`); await settle();
   const done = await js(`(()=>{const p=TM.NPC.DailyActivities.plans().find(p=>p.localActivity.kind==='meeting');return{status:p.status,meeting:p.localActivity.meeting,locations:GM.chars.map(c=>({id:c.id,location:c.location,travel:c._travelTo||''})),day:TM.SimTime.now(GM),api:__travelBrowser.apiAttempts}})()`);
   await check('meeting returns and save/load does not replay the participation', async () => {

@@ -1,7 +1,7 @@
 'use strict';
 const {fixture}=require('./lib-npc-action-fixture');
 function dailyFixture(){
-  const c=fixture();c.P.ai={};c.P.time={daysPerTurn:1};c.GM.turn=1;c.GM.facs=[];c.GM.officeTree=[];delete c.GM.guoku;
+  const c=fixture();c.P.ai={};c.P.time={daysPerTurn:1};c.GM.turn=1;c.GM._tmTravelTestHarness=true;c.GM.facs=[];c.GM.officeTree=[];delete c.GM.guoku;
   c._getDaysPerTurn=()=>c.P.time.daysPerTurn;c.getCurrentGameDay=()=>Math.max(0,c.GM.turn-1)*c._getDaysPerTurn();
   c.GM.mapData={locationBindingContract:{schema:'source-text-location-v2'},regions:[{id:'place-a',name:'城内'},{id:'place-b',name:'别处'}]};
   c.apiAttempts=[];

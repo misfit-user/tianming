@@ -1630,21 +1630,35 @@ function _npcTransferPublic(npc, d) {
     if(!owner||String(owner.id)!==String(d.organizationId))return _npcResult('blocked','represented_organization_does_not_own_source');
   }
   if (!d.purpose || !d.amounts || !Object.keys(d.amounts).some(function(k){return Number(d.amounts[k])>0;})) return _npcResult('blocked','purpose_and_amounts_required');
+  if (d.dutyRequest === true) {
+    if (Object.keys(d.amounts).some(function(k){return k !== 'money' && Number(d.amounts[k]) > 0;})) return _npcResult('blocked','unsupported_duty_resource');
+    if (!d.basis || !d.basis.matterRef || !Array.isArray(d.basis.sourceRefs) || !d.basis.sourceRefs.length) return _npcResult('blocked','duty_material_reference_required');
+    if (TM.NPC.LocalAI && TM.NPC.LocalAI.dutyEvidence) {
+      var evidence=TM.NPC.LocalAI.dutyEvidence({kind:'public_transfer',organizationId:d.organizationId,fromAccount:d.fromAccount,toAccount:d.toAccount,amounts:d.amounts,purpose:d.purpose,basis:d.basis,allowPartial:d.allowPartial===true},npc);
+      if (!evidence.ok) return _npcResult('blocked',evidence.reason);
+    }
+  }
   var keys=Object.keys(d.amounts);
   if (keys.some(function(k){var r=src.resources[k],n=Number(d.amounts[k]);return !r||!Number.isFinite(n)||n<0||r.available==null||n>r.available||r.quota!=null && n>Math.max(0,r.quota-(r.used||0));})) return _npcResult('blocked','insufficient_resources_or_quota');
   var scope=auth.pos&&auth.pos.authorityScope||auth.nativeAuthority&&auth.nativeAuthority.authorityScope||{};
   if(Array.isArray(scope.accountRefs)&&scope.accountRefs.indexOf(dst.id)<0)return _npcResult('blocked','destination_scope_denied');
   if (src.factionId && dst.factionId && src.factionId!==dst.factionId && (!scope.accountRefs || scope.accountRefs.indexOf(dst.id)<0)) return _npcResult('blocked','destination_scope_denied');
-  var r=service.transfer({game:GM,from:d.fromAccount,to:d.toAccount,amounts:d.amounts,reason:d.purpose,enforceQuota:true,allowUnbudgetedInternalTransfer:binding.allowUnbudgetedInternalTransfer===true&&src.factionId===dst.factionId&&!!src.factionId,transactionId:d.actionId+':'+(d.phase||'execute')});
+  var r=service.transfer({game:GM,from:d.fromAccount,to:d.toAccount,amounts:d.amounts,reason:d.purpose,enforceQuota:true,allowPartial:d.allowPartial===true,allowUnbudgetedInternalTransfer:binding.allowUnbudgetedInternalTransfer===true&&src.factionId===dst.factionId&&!!src.factionId,transactionId:d.actionId+':'+(d.phase||'execute')});
   if (!r || !r.ok) return _npcResult('blocked',r&&r.reason||'public_transfer_failed');
   if(d.obligationId)TM.FactionDiplomacy.fulfillResourceObligation(d,{kind:'public_transfer',id:r.transactionId});
-  return _npcResult('completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId}],{transfer:r,actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,authorityBasis:_npcAuthorityBasis(auth)});
+  var paid=r.paid||{}, requested=d.amounts||{}, partial=Object.keys(requested).some(function(k){return Number(paid[k]||0)<Number(requested[k]||0);});
+  if (d.dutyRequest && Array.isArray(GM._publicTreasuryTransfers)) {
+    var domainReceipt=GM._publicTreasuryTransfers.find(function(t){return t && t.id===r.transactionId;});
+    if (domainReceipt) domainReceipt.dutyEvidence={matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null};
+  }
+  return _npcResult(partial?'partial':'completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId,dutyEvidence:d.dutyRequest?{matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null}:null}],{transfer:r,actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,authorityBasis:_npcAuthorityBasis(auth),dutyEvidence:d.dutyRequest?{matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null}:null});
 }
 function _npcConcreteDuty(npc, d) {
   if(d.step==='transfer')return _npcTransferPublic(npc,d);
   var hs=TM.OfficeHolderState, assignment=hs&&hs.select(GM,npc,{positionId:d.actingPositionId,appointmentId:d.appointmentId,organizationId:d.organizationId});
-  if (!assignment) return _npcResult('blocked','specific_current_assignment_required');
   if (d.planId) return TM.NPC.ActionLedger.social(npc,d);
+  if (!assignment && d.task && d.task.kind === 'public_transfer' && d.targetId) return TM.NPC.ActionLedger.social(npc,d);
+  if (!assignment) return _npcResult('blocked','specific_current_assignment_required');
   if (d.step==='transfer') return _npcTransferPublic(npc,d);
   if (d.target || d.targetId) return TM.NPC.ActionLedger.social(npc,d);
   if(d.step==='report' && typeof d.content==='string' && d.content.trim()) {

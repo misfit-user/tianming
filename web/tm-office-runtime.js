@@ -691,6 +691,17 @@ function renderOfficeTree(force){
         renderOfficeTree(true);
         return;
       }
+      if (duty && duty.getAttribute('data-office-duty') === 'create-matter' && TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.createDutyMatter) {
+        var createPanel = duty.closest('[data-office-duty-panel]'), creator = (GM.chars || []).find(function (c) { return c && c.isPlayer; }), materialSelect = createPanel && createPanel.querySelector('[data-duty-new-material]'), materialOption = materialSelect && materialSelect.selectedOptions[0], createPurpose = createPanel && createPanel.querySelector('[data-duty-new-purpose]'), createAmount = createPanel && createPanel.querySelector('[data-duty-new-amount]'), createFeedback = createPanel && createPanel.querySelector('[data-duty-create-feedback]'), materialRef = null;
+        try { materialRef = materialOption && JSON.parse(materialOption.value); } catch (_) { materialRef = null; }
+        var createAmountNumber = Number(createAmount && createAmount.value), createText = String(createPurpose && createPurpose.value || '').trim();
+        if (!creator || !materialRef || !createText || !Number.isFinite(createAmountNumber) || createAmountNumber <= 0 || createAmountNumber !== Math.floor(createAmountNumber)) { if (createFeedback) createFeedback.textContent = '请先选择已取得的材料并填写用途与金额。'; return; }
+        var createReceipt = TM.NPC.LocalAI.createDutyMatter(creator, { actionId: 'ui-duty-matter:' + GM.turn + ':' + creator.id + ':' + materialRef.id, title: createText, purpose: createText, amount: createAmountNumber, organizationId: materialOption.dataset.org || '', subjectId: materialOption.dataset.subject || '', fromAccount: materialOption.dataset.from || '', toAccount: materialOption.dataset.to || '', sourceRefs: [materialRef] }, true);
+        if (createFeedback) createFeedback.textContent = createReceipt && createReceipt.reason || '事项依据已登记';
+        if (typeof toast === 'function') toast(createReceipt && createReceipt.reason || '事项依据已登记');
+        if (createReceipt && /^(submitted|completed)$/.test(createReceipt.outcome)) renderOfficeTree(true);
+        return;
+      }
       if (duty && duty.getAttribute('data-office-duty') === 'request-transfer' && TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.requestPublicTransfer) {
         var panel = duty.closest('[data-office-duty-panel]'), player = (GM.chars || []).find(function (c) { return c && c.isPlayer; });
         var matter = panel && panel.querySelector('[data-duty-matter]'), position = panel && panel.querySelector('[data-duty-position]'), target = panel && panel.querySelector('[data-duty-target]');

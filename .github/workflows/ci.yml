@@ -134,6 +134,9 @@ jobs:
       - name: Edict office creation, recursive tree, appointment target and native save recovery
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --office-writeback
+      - name: Formal sourced public-duty request, local decision, payment and save
+        if: matrix.group == 'court'
+        run: node scripts/verify-electron-bridge.js --office-duty
       - name: Right rail pending audiences, navigation and completion feedback
         if: matrix.group == 'court'
         run: node scripts/verify-electron-bridge.js --rail-badges

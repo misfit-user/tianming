@@ -15,7 +15,7 @@ function fixture(options={}){
   c.addEB=(type,text)=>c.GM.evtLog.push({type,text});c.callAI=async()=>{throw Error('real model forbidden in fixture');};
   vm.createContext(c);
   c.load=f=>vm.runInContext(options.source?options.source(f):fs.readFileSync(path.join(web,f),'utf8'),c,{filename:f});
-  ['tm-office-holder-state.js','tm-office-system.js','tm-public-treasury.js','tm-npc-engine.js','tm-npc-action-ledger.js','tm-npc-decision.js','tm-npc-decision-ai-driven.js','tm-help-social.js','tm-relations.js','tm-mechanics-memory.js','tm-ai-change-pathutils.js','tm-ai-change-army.js','tm-ai-change-narrative.js','generated/tm-ai-change-applier.bundle.js','tm-post-turn-jobs.js'].forEach(c.load);
+  ['tm-office-holder-state.js','tm-office-system.js','tm-public-treasury.js','tm-npc-engine.js','tm-npc-action-ledger.js','tm-npc-decision.js','tm-npc-decision-ai-driven.js','tm-office-tenure.js','tm-help-social.js','tm-relations.js','tm-mechanics-memory.js','tm-ai-change-pathutils.js','tm-ai-change-army.js','tm-ai-change-narrative.js','generated/tm-ai-change-applier.bundle.js','tm-post-turn-jobs.js'].forEach(c.load);
   c.actor=(id,name,extra={})=>{const ch={id,name,alive:true,loyalty:80,ambition:30,intelligence:50,location:'京师',faction:'朝廷',...extra};c.GM.chars.push(ch);return ch;};
   c.execute=(npc,type,extra={})=>c._executeNormalizedNpcDecision({name:npc.name,actorId:npc.id,behaviorType:type,shouldExecute:true,intent:type,...extra},npc,c.buildNpcBehaviorContext());
   return c;

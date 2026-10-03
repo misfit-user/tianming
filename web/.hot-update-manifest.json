@@ -2,7 +2,7 @@
   "type": "tianming-hot-update",
   "version": "1.3.5.3",
   "entry": "index.html",
-  "generatedAt": "2026-10-03T12:41:20.897Z",
+  "generatedAt": "2026-10-03T16:21:02.642Z",
   "files": [
     {
       "path": "ARCHITECTURE.md",
@@ -6186,8 +6186,8 @@
     },
     {
       "path": "tm-npc-action-ledger.js",
-      "sha256": "6d386055cdd6504d829e4d4531b97f749b5708826b430389728f5a6bb7b13975",
-      "size": 52835
+      "sha256": "9fb078c78f809f19e30412ea1c97ac81158091b13b2f90e73de7f55a8662e155",
+      "size": 55690
     },
     {
       "path": "tm-npc-daily-activities.js",
@@ -6206,8 +6206,8 @@
     },
     {
       "path": "tm-npc-decision.js",
-      "sha256": "03b9a4d24ea4a945960aa94652005d0053222b7ec0933cbed3b7bdabef26d650",
-      "size": 89158
+      "sha256": "43a7ecb29bbe4bafbe767976a538def5896f50060858c60bf0280a1a281c933c",
+      "size": 90023
     },
     {
       "path": "tm-npc-engine.js",
@@ -6216,8 +6216,8 @@
     },
     {
       "path": "tm-npc-local-ai.js",
-      "sha256": "efec8f66302dcca37c83e4033a1f34d1c45a8e950d21ba8a646fbd12cd6404c2",
-      "size": 54187
+      "sha256": "35f7a7902bd5264debf23afc5c74b9578e5227ea644444860bed084065e353d9",
+      "size": 65279
     },
     {
       "path": "tm-npc-travel.js",
@@ -6301,8 +6301,8 @@
     },
     {
       "path": "tm-office-runtime.js",
-      "sha256": "1f9041d256bf7c250b6b2287a57ed2000c97431bc3751295eb56bfb29147074e",
-      "size": 118292
+      "sha256": "48219be2afbaa2ac7abfa9462ffb3859351b3c28e0520c233df5b0cb0a5adeb3",
+      "size": 120403
     },
     {
       "path": "tm-office-system.js",
@@ -6311,8 +6311,8 @@
     },
     {
       "path": "tm-office-tenure.js",
-      "sha256": "cb324b74765a99d4377314e33daa5871ea4b0b68fc8613594564b4a7d803bae7",
-      "size": 41612
+      "sha256": "ea81d025676b934ba6a957a4a6219cf8081f7386009983370a2ac18dc7ac5d81",
+      "size": 41829
     },
     {
       "path": "tm-office-vacancy.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "b382bc90d7e656049714ab7a5ba49feaa88943e17b4b262a706babf3b4d2a175",
+      "sha256": "b1c2575689cabfda2193721e79099184b483504e2ba7843d9111e444812e27ec",
       "size": 138846
     },
     {

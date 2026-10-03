@@ -153,7 +153,10 @@
     return { unresolved: true, reason: 'leave_authority_not_configured' };
   }
   function delegateRecord(g, pos, actorId, action, regionId, now) {
-    var st = state(pos, false), rows = st && A(st.delegations);
+    // A position with no leave/delegation state is the normal in-service
+    // case.  Keep the read path total: absence of a record means no active
+    // delegation, not an exception and not an implicit grant.
+    var st = state(pos, false), rows = st ? A(st.delegations) : [];
     var hit = rows.filter(function (d) {
       return d && d.active && key(d.delegateId) === key(actorId) && A(d.scope).indexOf(action) >= 0 &&
         (!d.regionId || d.regionId === regionId) && now >= n(d.startDay, -Infinity) && now < n(d.endDay, Infinity);

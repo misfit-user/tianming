@@ -65,9 +65,10 @@ const revised = c.TM.NPC.LocalAI.requestPublicTransfer(a, {
   matter: { kind: 'memorial', id: 'water-matter-1', version: 1 }, sourceRefs: [{ kind: 'document', id: 'water-report-1', version: 1 }]
 }, false);
 assert.equal(revised.outcome, 'submitted', revised.reason);
-for (let i = 0; i < 10 && c.GM._npcPlans.find(p => p.id === revised.planId).status !== 'done'; i++) step();
+for (let i = 0; i < 14 && !/^(done|cancelled|rejected)$/.test(c.GM._npcPlans.find(p => p.id === revised.planId).status); i++) step();
 const revisedPlan = c.GM._npcPlans.find(p => p.id === revised.planId);
-assert.equal(revisedPlan.status, 'done', JSON.stringify(revisedPlan));
+assert.equal(revisedPlan.status, 'cancelled', JSON.stringify(revisedPlan));
+assert.equal(revisedPlan.remainingTask.amounts.money, 30, 'a stage payment preserves the original request remainder');
 assert.equal(c.GM.officeTree[0].publicTreasury.money.stock, 0, 'the revised task is capped by the material actually available');
 assert.equal(c.GM.officeTree[1].publicTreasury.money.stock, 100, 'the revised transfer remains conserved');
 

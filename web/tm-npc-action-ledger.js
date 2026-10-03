@@ -388,7 +388,7 @@
   }
   function executionSignature(d,actor) {
     var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType','leaveId','delegationId','delegateId','scope','leaveKind','startDay','latestReturnDay','regionId','sourceRefs','documentId','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestVersion','decisionRef','allowPartial','subjectId','decisionBasis'];
-    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestVersion','decisionRef','allowPartial','subjectId']);
+    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestKind','dutySource','requestVersion','decisionRef','allowPartial','subjectId']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
   }
@@ -471,11 +471,11 @@
       var transfer=_arr(g._publicTreasuryTransfers).find(function(t){return t.id===ref.id;});
       var task=d.planId&&planById(d.planId,g),spec=task&&task.task||d,service=TM.PublicTreasury;
       if(!transfer||!transfer.result||!transfer.result.ok||!service||ref.id!==d.actionId+':'+d.phase||_arr(before._publicTreasuryTransfers).some(function(t){return t.id===ref.id;}))return false;
-      if ((d.dutyRequest === true || spec.dutyRequest === true) && (!transfer.dutyEvidence || !transfer.dutyEvidence.matterRef || !Array.isArray(transfer.dutyEvidence.materialRefs) || !transfer.dutyEvidence.materialRefs.length || transfer.dutyEvidence.actorId !== actor.id)) return false;
+      if ((d.dutyRequest === true || spec.dutyRequest === true || spec.requestKind === 'sourced-duty') && (!transfer.dutyEvidence || !transfer.dutyEvidence.matterRef || !Array.isArray(transfer.dutyEvidence.materialRefs) || !transfer.dutyEvidence.materialRefs.length || transfer.dutyEvidence.actorId !== actor.id)) return false;
       var from=service.getAccountView({game:g,ref:spec.fromAccount}),to=service.getAccountView({game:g,ref:spec.toAccount}),oldFrom=service.getAccountView({game:before,ref:spec.fromAccount}),oldTo=service.getAccountView({game:before,ref:spec.toAccount});
       return from.exists&&to.exists&&oldFrom.exists&&oldTo.exists&&Object.keys(spec.amounts||{}).some(function(k){return spec.amounts[k]>0;})&&['money','grain','cloth'].every(function(k){
         var amount=Number(spec.amounts&&spec.amounts[k]||0),r=transfer.result,paid=Number(r.paid&&r.paid[k]||0),expected=(d.dutyRequest||spec.dutyRequest===true)?paid:amount;
-        if ((d.dutyRequest||spec.dutyRequest===true) && paid>amount) return false;
+        if ((d.dutyRequest||spec.dutyRequest===true||spec.requestKind==='sourced-duty') && paid>amount) return false;
         return paid===expected&&_arr(r.debits).filter(function(x){return x.accountId===from.id&&x.resource===k;}).reduce(function(n,x){return n+x.amount;},0)===expected&&
           _arr(r.credits).filter(function(x){return x.accountId===to.id&&x.resource===k;}).reduce(function(n,x){return n+x.amount;},0)===expected&&
           (!expected||Math.abs(oldFrom.resources[k].stock-from.resources[k].stock-expected)<0.00001&&Math.abs(to.resources[k].stock-oldTo.resources[k].stock-expected)<0.00001);
@@ -548,7 +548,7 @@
         requesterAppointmentId:_str(d.appointmentId || d.task && d.task.requesterAppointmentId)};
       // An unsupported task remains a negotiation; it cannot produce money or state by naming an effect.
       if (!/^(document|public_transfer|notice)$/.test(p.task.kind)) return result('blocked','unsupported_concrete_task');
-      var request=message(p,npc,who,'request',d.content||d.intent,{task:p.task,basis:clone(p.task.basis||p.task.requestBasis||null),revision:p.revision,termsVersion:p.termsVersion});
+      var request=message(p,npc,who,'request',d.content||d.intent,{task:p.task,basis:clone(p.task.basis||p.task.requestBasis||null),revision:p.revision,termsVersion:p.termsVersion,requestKind:p.task.requestKind||''});
       p.knowledge[p.actorId]={stage:'awaiting_delivery',lastMessageId:request.id};
       if(legacy){p.legacyEvidence={status:legacy.status,progress:legacy.progress,intent:legacy.intent};ensurePlans(g)[ensurePlans(g).indexOf(legacy)]=p;}
       else ensurePlans(g).push(p);
@@ -577,50 +577,61 @@
     }
     if (p.cancelRequested) return result('blocked','cancellation_pending');
     if (p.nextActorId!==id || p.nextTurn>_turn(g)) return result('waiting','尚未收到下一步所需信息',[{kind:'plan',id:p.id}]);
-    if (d.phase==='respond' && /^(awaiting_response|needs_replan)$/.test(p.status) && id===p.targetId) {
+    if (d.phase==='respond' && /^(awaiting_response|needs_replan|deferred)$/.test(p.status) && id===p.targetId) {
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
       if (!/^(accept|reject|conditions|defer|partial)$/.test(d.response||'')) return result('blocked','explicit_response_required');
       if(d.task&&!/^(document|public_transfer)$/.test(d.task.kind))return result('blocked','unsupported_revised_task');
       var ability=typeof global._npcAbilityProfile==='function'?global._npcAbilityProfile(npc):{};
       var workTurns=Math.max(1,Math.min(3,Math.ceil(60/Math.max(20,((Number(ability.administration)||50)+(Number(ability.intelligence)||50))/2+20))));
-      if (d.task) { p.task=Object.assign({},p.task,clone(d.task)); bumpRevision(p,true); }
-      if (d.sourceRefs || d.basis) { p.task.basis=clone(d.basis || p.task.basis || {}); if (d.sourceRefs) p.task.basis.sourceRefs=clone(d.sourceRefs); bumpRevision(p,true); }
-      var response=message(p,npc,who,'response',d.content||d.response,{response:d.response,terms:_str(d.terms||d.content),revisedTask:clone(d.task||null),basis:clone(d.basis||p.task.basis||null),sourceRefs:clone(d.sourceRefs||p.task.basis&&p.task.basis.sourceRefs||[]),revision:p.revision,termsVersion:p.termsVersion,workTurns:workTurns,dueTurn:Number.isFinite(Number(d.dueTurn))?Math.max(_turn(g)+1,Number(d.dueTurn)):_turn(g)+1});
+      if (d.response === 'accept' && p.task && p.task.requestKind === 'sourced-duty' && global.TM && TM.NPC && TM.NPC.LocalAI && typeof TM.NPC.LocalAI.authorizeDutyMatter === 'function') {
+        var matterDecision = TM.NPC.LocalAI.authorizeDutyMatter(p.task, npc);
+        if (!matterDecision || matterDecision.ok !== true) return result('blocked', matterDecision && matterDecision.reason || 'duty_decision_unavailable');
+      }
+      // A response can propose a new amount or material set, but the current
+      // agreement remains authoritative until the requester receives and
+      // accepts that proposal.  Never mutate p.task merely because a message
+      // is in transit.
+      var proposedTask = d.task ? Object.assign({}, p.task, clone(d.task)) : null;
+      var proposedBasis = (d.sourceRefs || d.basis) ? clone(d.basis || p.task.basis || p.task.requestBasis || {}) : null;
+      if (d.sourceRefs) { proposedBasis = proposedBasis || {}; proposedBasis.sourceRefs = clone(d.sourceRefs); }
+      var responseRevision = (proposedTask || proposedBasis) ? Number(p.revision || 1) + 1 : Number(p.revision || 1);
+      var response=message(p,npc,who,'response',d.content||d.response,{response:d.response,terms:_str(d.terms||d.content),revisedTask:clone(proposedTask),basis:clone(proposedBasis || p.task.basis || p.task.requestBasis || null),sourceRefs:clone((proposedBasis && proposedBasis.sourceRefs) || p.task.basis&&p.task.basis.sourceRefs || []),revision:responseRevision,termsVersion:(proposedTask || proposedBasis) ? Number(p.termsVersion || 1) + 1 : Number(p.termsVersion || 1),workTurns:workTurns,dueTurn:Number.isFinite(Number(d.dueTurn))?Math.max(_turn(g)+1,Number(d.dueTurn)):_turn(g)+1});
       if(p.task.kind==='public_transfer' && TM.PublicTreasury) {
         var material=TM.PublicTreasury.getCharacterPublicAccounts({game:g,characterId:npc.id});
         response.data.materials={source:'public_treasury',turn:_turn(g),accounts:clone(material.accounts.filter(function(a){return a.id===p.task.fromAccount;}))};
       }
       p.knowledge[id]={stage:'responded',lastMessageId:response.id};
-      if (d.response==='accept') { p.performerPositionId=_str(d.actingPositionId);p.performerAppointmentId=_str(d.appointmentId); p.performerOrganizationId=_str(d.organizationId || p.organizationId); p.decision={actorId:npc.id,positionId:p.performerPositionId,appointmentId:p.performerAppointmentId,organizationId:p.performerOrganizationId,response:d.response,revision:p.revision,turn:_turn(g),basis:clone(d.decisionBasis||null)}; }
+      if (d.response==='accept') { p.performerPositionId=_str(d.actingPositionId);p.performerAppointmentId=_str(d.appointmentId); p.performerOrganizationId=_str(d.organizationId || p.organizationId); p.decision={actorId:npc.id,positionId:p.performerPositionId,appointmentId:p.performerAppointmentId,organizationId:p.performerOrganizationId,response:d.response,revision:responseRevision,turn:_turn(g),basis:clone(d.decisionBasis||null)}; }
       rememberPlan(npc,who,p,response,'已答复'+who.name+'：'+response.content);
       return result('submitted','答复已寄出，对方尚未获知',[{kind:'npc_message',id:response.id,planId:p.id}]);
     }
     if (d.phase==='agree' && p.status==='awaiting_agreement' && id===p.actorId) {
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
       if (!/^(accept|reject)$/.test(d.response||'')) return result('blocked','explicit_agreement_required');
-      if (d.response==='accept' && (d.task || d.sourceRefs || d.basis)) {
-        if (d.task) p.task=Object.assign({},p.task,clone(d.task));
-        if (d.basis) p.task.basis=clone(d.basis);
-        if (d.sourceRefs) { p.task.basis=p.task.basis||{}; p.task.basis.sourceRefs=clone(d.sourceRefs); }
-        bumpRevision(p,true);
-      }
-      var agreement=message(p,npc,who,'agreement',d.content||d.response,{response:d.response,task:clone(d.task||null),basis:clone(p.task.basis||null),sourceRefs:clone(p.task.basis&&p.task.basis.sourceRefs||[]),revision:p.revision,termsVersion:p.termsVersion});
+      var acceptedTask = d.task ? Object.assign({}, p.task, clone(d.task)) : (p.proposedTask ? clone(p.proposedTask) : null);
+      var acceptedBasis = d.basis ? clone(d.basis) : (p.proposedBasis ? clone(p.proposedBasis) : null);
+      if (d.sourceRefs) { acceptedBasis = acceptedBasis || {}; acceptedBasis.sourceRefs = clone(d.sourceRefs); }
+      var agreementRevision = (acceptedTask || acceptedBasis) ? Number(p.revision || 1) + 1 : Number(p.revision || 1);
+      p.pendingAgreement = (acceptedTask || acceptedBasis) ? { task: clone(acceptedTask), basis: clone(acceptedBasis), revision: agreementRevision } : null;
+      var agreement=message(p,npc,who,'agreement',d.content||d.response,{response:d.response,task:clone(acceptedTask),basis:clone(acceptedBasis || p.task.basis||null),sourceRefs:clone(acceptedBasis&&acceptedBasis.sourceRefs||p.task.basis&&p.task.basis.sourceRefs||[]),revision:agreementRevision,termsVersion:(acceptedTask || acceptedBasis) ? Number(p.termsVersion || 1) + 1 : Number(p.termsVersion || 1)});
       p.knowledge[id]={stage:'agreement_sent',lastMessageId:agreement.id};
       return result('submitted','约定变更待对方收悉',[{kind:'npc_message',id:agreement.id,planId:p.id}]);
     }
     if (d.phase==='perform' && /^(ready|needs_replan)$/.test(p.status) && id===p.targetId) {
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
       var execution, body;
-      if (p.task.kind==='public_transfer') {
+      var executionTask = p.remainingTask || p.task;
+      if (executionTask.kind==='public_transfer') {
         execution=global._npcTransferPublic(npc,{
           actionId:d.actionId,phase:d.phase,actingPositionId:d.actingPositionId||p.performerPositionId,
           appointmentId:d.appointmentId||p.performerAppointmentId,organizationId:p.organizationId||p.performerOrganizationId||p.task.organizationId,
-          fromAccount:p.task.fromAccount,toAccount:p.task.toAccount,amounts:p.task.amounts,purpose:p.task.purpose||p.intent,
-          dutyRequest:p.task.dutyRequest===true,basis:clone(p.task.basis||p.task.requestBasis||null),sourceRefs:clone(p.task.basis&&p.task.basis.sourceRefs||[]),allowPartial:d.allowPartial===true || p.task.allowPartial===true,
+          fromAccount:executionTask.fromAccount,toAccount:executionTask.toAccount,amounts:executionTask.amounts,purpose:executionTask.purpose||p.intent,
+          dutyRequest:executionTask.dutyRequest===true || executionTask.requestKind==='sourced-duty',requestKind:executionTask.requestKind||'',dutySource:p.source||'',basis:clone(executionTask.basis||executionTask.requestBasis||null),sourceRefs:clone(executionTask.basis&&executionTask.basis.sourceRefs||[]),allowPartial:d.allowPartial===true || executionTask.allowPartial===true,
           planId:p.id,expectedRevision:p.revision
         });
-        if (execution.outcome!=='completed') {
+        if (!/^(completed|partial)$/.test(execution.outcome)) {
           p.status='needs_replan';p.nextTurn=_turn(g)+1;p.blockedReason=execution.reason;
+          p.nextActorId=p.targetId;
           return result('waiting',execution.reason,[{kind:'plan',id:p.id}],{planId:p.id});
         }
         body='已核验公库转移：'+JSON.stringify(execution.transfer.paid);
@@ -630,13 +641,20 @@
         execution=result('submitted','文书已形成',[]);
       }
       var document=message(p,npc,who,'delivery',body,{operationRefs:execution.operationRefs});
-      var paid=execution.transfer&&execution.transfer.paid||{}, requested=p.task.amounts||{}, partial=Object.keys(requested).some(function(k){return Number(paid[k]||0)<Number(requested[k]||0);});
-      p.partial=partial; if(partial){p.remainingTask=clone(p.task);p.remainingTask.amounts=Object.assign({},p.task.amounts);Object.keys(p.remainingTask.amounts).forEach(function(k){p.remainingTask.amounts[k]=Math.max(0,Number(p.remainingTask.amounts[k]||0)-Number(paid[k]||0));});}
-      p.steps.push({id:d.actionId,turn:_turn(g),kind:p.task.kind,paid:clone(paid),requestedTask:clone(p.task),evidence:clone(execution.dutyEvidence||null),operationRefs:execution.operationRefs.concat([{kind:'npc_message',id:document.id}])});
+      var paid=execution.transfer&&execution.transfer.paid||{}, requested=executionTask.amounts||{};
+      p.originalTask=p.originalTask||clone(p.task);
+      var totals={}; Object.keys(p.originalTask.amounts||requested).forEach(function(k){ totals[k]=0; });
+      _arr(p.steps).forEach(function(step){ Object.keys(totals).forEach(function(k){ totals[k]+=Number(step.paid&&step.paid[k]||0); }); });
+      Object.keys(totals).forEach(function(k){ totals[k]+=Number(paid[k]||0); });
+      var baseAmounts=p.originalTask.amounts||requested, partial=Object.keys(baseAmounts).some(function(k){return totals[k]<Number(baseAmounts[k]||0);});
+      p.partial=partial;
+      if(partial){p.remainingTask=clone(executionTask);p.remainingTask.amounts=Object.assign({},baseAmounts);Object.keys(p.remainingTask.amounts).forEach(function(k){p.remainingTask.amounts[k]=Math.max(0,Number(baseAmounts[k]||0)-totals[k]);});}
+      else { p.remainingTask=null; }
+      p.steps.push({id:d.actionId,turn:_turn(g),kind:executionTask.kind,paid:clone(paid),requestedTask:clone(executionTask),evidence:clone(execution.dutyEvidence||null),operationRefs:execution.operationRefs.concat([{kind:'npc_message',id:document.id}])});
       p.progress=p.steps.length;
       p.knowledge[id]={stage:'delivery_sent',lastMessageId:document.id};
       rememberPlan(npc,who,p,document,'已向'+who.name+'交付文书：'+body);
-      return result(p.task.kind==='public_transfer'?(partial?'partial':'completed'):'submitted',execution.reason,p.steps[p.steps.length-1].operationRefs,{planId:p.id,dutyEvidence:execution.dutyEvidence||null});
+      return result(executionTask.kind==='public_transfer'?(partial?'partial':'completed'):'submitted',execution.reason,p.steps[p.steps.length-1].operationRefs,{planId:p.id,dutyEvidence:execution.dutyEvidence||null});
     }
     if (d.phase==='feedback' && p.status==='awaiting_feedback' && id===p.actorId) {
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
@@ -659,21 +677,25 @@
     if(m.kind==='request') {p.status=p.task.kind==='notice'?'done':'awaiting_response';if(p.status==='done')p.nextActorId='';}
     if(m.kind==='response') {
       if(m.data.response==='reject') {p.status='rejected';p.nextActorId='';}
-      else if(m.data.response==='defer') {p.status='deferred';p.nextActorId='';p.nextTurn=Math.max(_turn(g)+1,m.data.dueTurn||_turn(g)+1);p.deferredReason=m.content;}
+      else if(m.data.response==='defer') {p.status='deferred';p.nextActorId=p.targetId;p.nextTurn=Math.max(_turn(g)+1,m.data.dueTurn||_turn(g)+1);p.deferredReason=m.content;p.wakeup={actorId:p.targetId,reason:m.content,afterTurn:p.nextTurn};}
       else if(m.data.response==='accept') {p.status='ready';p.nextActorId=p.targetId;p.nextTurn=Math.max(_turn(g)+(m.data.workTurns||1),m.data.dueTurn);}
-      else {p.status='awaiting_agreement';p.terms=m.data.terms;p.agreedDueTurn=m.data.dueTurn;p.proposedTask=m.data.revisedTask;p.requiresRevisedTask=p.task.kind==='public_transfer'&&/^(conditions|partial)$/.test(m.data.response)&&!m.data.revisedTask;p.revision=Number(m.data.revision||p.revision||1);p.termsVersion=Number(m.data.termsVersion||p.termsVersion||1);}
+      else {p.status='awaiting_agreement';p.terms=m.data.terms;p.agreedDueTurn=m.data.dueTurn;p.proposedTask=m.data.revisedTask?clone(m.data.revisedTask):null;p.proposedBasis=m.data.basis?clone(m.data.basis):null;p.requiresRevisedTask=p.task.kind==='public_transfer'&&/^(conditions|partial)$/.test(m.data.response)&&!m.data.revisedTask;p.revision=Number(m.data.revision||p.revision||1);p.termsVersion=Number(m.data.termsVersion||p.termsVersion||1);}
     }
     if(m.kind==='agreement') {
       p.status=m.data.response==='accept'?(p.requiresRevisedTask?'needs_replan':'ready'):'rejected';p.nextActorId=m.data.response==='accept'?p.targetId:'';
-      if(m.data.response==='accept'&&p.proposedTask)p.task=clone(p.proposedTask);
+      if(m.data.response==='accept'&&m.data.task){
+        if (m.data.task.preserveOriginal && !p.originalTask) p.originalTask=clone(p.task);
+        p.task=clone(m.data.task);
+      }
       if(m.data.response==='accept'&&m.data.basis){p.task.basis=clone(m.data.basis);}
       if(m.data.response==='accept'&&m.data.sourceRefs){p.task.basis=p.task.basis||{};p.task.basis.sourceRefs=clone(m.data.sourceRefs);}
+      if(m.data.response==='accept'){p.proposedTask=null;p.proposedBasis=null;p.pendingAgreement=null;}
       p.revision=Number(m.data.revision||p.revision||1);p.termsVersion=Number(m.data.termsVersion||p.termsVersion||1);
       p.nextTurn=Math.max(_turn(g),p.agreedDueTurn||0);
     }
     if(m.kind==='delivery') p.status='awaiting_feedback';
     if(m.kind==='feedback') {
-      if (p.partial && p.remainingTask) { p.status='needs_replan'; p.nextActorId=''; p.nextTurn=_turn(g)+1; }
+      if (p.partial && p.remainingTask) { p.status='needs_replan'; p.nextActorId=p.targetId; p.nextTurn=_turn(g)+1; p.wakeup={actorId:p.targetId,reason:'partial_payment_remaining',afterTurn:p.nextTurn}; }
       else { p.status='done'; p.nextActorId=''; }
     }
     if(m.kind==='cancel') {p.status='cancelled';p.nextActorId='';}
@@ -715,7 +737,7 @@
     if(!knowledge)return null;
     return {id:p.id,actorId:p.actorId,targetId:p.targetId,intent:p.intent,stage:knowledge.stage,revision:Number(p.revision||1),termsVersion:Number(p.termsVersion||1),task:clone(p.task),remainingTask:clone(p.remainingTask||null),partial:!!p.partial,
       messages:_arr(p.messages).filter(function(m){return m.fromId===id||m.toId===id&&m.status==='delivered';}).map(function(m){return {id:m.id,fromId:m.fromId,toId:m.toId,kind:m.kind,content:m.content,data:clone(m.data),factStatus:'received_claim',status:m.fromId===id&&m.status!=='delivered'?'sent':m.status};}),
-      nextPhase:p.nextActorId===id&&p.nextTurn<=_turn(_gm())?({awaiting_response:'respond',awaiting_agreement:'agree',ready:'perform',needs_replan:'perform',awaiting_feedback:'feedback'}[p.status]||''):''};
+      nextPhase:p.nextActorId===id&&p.nextTurn<=_turn(_gm())?({awaiting_response:'respond',deferred:'respond',awaiting_agreement:'agree',ready:'perform',needs_replan:'perform',awaiting_feedback:'feedback'}[p.status]||''):''};
   }
   function playerRespond(planId,response,content,details) {
     var g=_gm(),p=planById(planId,g),player=_arr(g.chars).filter(function(c){return c&&c.isPlayer;});

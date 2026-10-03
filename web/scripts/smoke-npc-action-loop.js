@@ -68,6 +68,7 @@ test('rejection, conditions, cancellation and unavailable delivery stay distinct
  for(const response of ['reject','conditions','defer','partial']){
   const c=fixture(),[a,b]=pair(c),p=request(c,a,b);tick(c);assert.equal(step(c,b,p,'respond',{response,content:response,terms:'仅整理首卷',dueTurn:8}).outcome,'submitted');tick(c);
   if(response==='reject'){assert.equal(p.status,'rejected');assert.equal(p.progress,0);}
+  else if(response==='defer'){assert.equal(p.status,'deferred');assert.equal(p.nextTurn,8);}
   else {assert.equal(p.status,'awaiting_agreement');assert.equal(step(c,a,p,'agree',{response:'accept'}).outcome,'submitted');tick(c);assert.equal(p.status,'ready');assert.equal(p.nextTurn,8);}
  }
  const c=fixture(),[a,b]=pair(c),p=request(c,a,b);b._missing=true;tick(c);assert.equal(p.messages[0].status,'in_transit');assert.equal((b._memory||[]).length,0);b._missing=false;tick(c);

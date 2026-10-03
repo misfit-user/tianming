@@ -678,19 +678,37 @@ function renderOfficeTree(force){
     el.addEventListener('click', function (ev) {
       var t = ev.target && ev.target.closest ? ev.target.closest('[data-office-tenure]') : null;
       var duty = ev.target && ev.target.closest ? ev.target.closest('[data-office-duty]') : null;
+      var dutyResponse = ev.target && ev.target.closest ? ev.target.closest('[data-office-duty-response]') : null;
+      if (dutyResponse && TM.NPC && TM.NPC.ActionLedger && TM.NPC.ActionLedger.playerRespond) {
+        var responsePanel = dutyResponse.closest('[data-office-duty-panel]'), responsePlan = dutyResponse.getAttribute('data-office-duty-plan'), response = dutyResponse.getAttribute('data-office-duty-response'), phase = dutyResponse.getAttribute('data-office-duty-phase'), refs = [];
+        if (phase === 'agree' && responsePanel) responsePanel.querySelectorAll('[data-office-duty-material]').forEach(function (select) { if (select.getAttribute('data-office-duty-material') !== responsePlan) return; Array.prototype.forEach.call(select.selectedOptions || [], function (option) { try { refs.push(JSON.parse(option.value)); } catch (_) {} }); });
+        var responsePosition = responsePanel && responsePanel.querySelector('[data-office-duty-position="' + responsePlan + '"]'), responseAssignment = responsePosition && responsePosition.selectedOptions && responsePosition.selectedOptions[0];
+        var responseRevision = Number(dutyResponse.getAttribute('data-office-duty-revision')), responseTerms = Number(dutyResponse.getAttribute('data-office-duty-terms'));
+        var responseReceipt = TM.NPC.ActionLedger.playerRespond(responsePlan, response, response === 'accept' ? '已确认当前事项与材料版本' : response === 'deliver' ? '已按当前决定执行并提交回执' : '玩家已作出当前事项选择', { expectedRevision: responseRevision, termsVersion: responseTerms, sourceRefs: refs, actingPositionId: responsePosition && responsePosition.value || '', appointmentId: responseAssignment && responseAssignment.dataset.appointment || '' });
+        var responseFeedback = responsePanel && responsePanel.querySelector('[data-office-duty-plan-feedback]');
+        if (responseFeedback) responseFeedback.textContent = responseReceipt && responseReceipt.reason || '当前选择已记录';
+        if (responseReceipt && /^(submitted|completed)$/.test(responseReceipt.outcome) && TM.NPC.LocalAI && TM.NPC.LocalAI.wake) TM.NPC.LocalAI.wake('response', responseReceipt);
+        renderOfficeTree(true);
+        return;
+      }
       if (duty && duty.getAttribute('data-office-duty') === 'request-transfer' && TM.NPC && TM.NPC.LocalAI && TM.NPC.LocalAI.requestPublicTransfer) {
         var panel = duty.closest('[data-office-duty-panel]'), player = (GM.chars || []).find(function (c) { return c && c.isPlayer; });
-        var position = panel && panel.querySelector('[data-duty-position]'), target = panel && panel.querySelector('[data-duty-target]');
+        var matter = panel && panel.querySelector('[data-duty-matter]'), position = panel && panel.querySelector('[data-duty-position]'), target = panel && panel.querySelector('[data-duty-target]');
         var from = panel && panel.querySelector('[data-duty-from]'), to = panel && panel.querySelector('[data-duty-to]');
         var amount = panel && panel.querySelector('[data-duty-amount]'), purpose = panel && panel.querySelector('[data-duty-purpose]');
-        var pos = position && TM.OfficeHolderState && TM.OfficeHolderState.position(GM, { positionId: position.value, organizationId: position.selectedOptions[0] && position.selectedOptions[0].dataset.org });
+        var selectedMatter = matter && matter.selectedOptions[0], matterRefs = [];
+        try { matterRefs = selectedMatter && selectedMatter.dataset.refs ? JSON.parse(selectedMatter.dataset.refs) : []; } catch (_) { matterRefs = []; }
+        var pos = position && position.value && TM.OfficeHolderState && TM.OfficeHolderState.position(GM, { positionId: position.value, organizationId: position.selectedOptions[0] && position.selectedOptions[0].dataset.org });
+        var organizationId = pos && pos.organizationId || selectedMatter && selectedMatter.dataset.org || '';
+        var fromId = from && from.value || selectedMatter && selectedMatter.dataset.from || '', toId = to && to.value || selectedMatter && selectedMatter.dataset.to || '';
         var n = Number(amount && amount.value), text = String(purpose && purpose.value || '').trim();
         var feedback = panel && panel.querySelector('[data-duty-feedback]');
-        if (!player || !pos || !target || !from || !to || from.value === to.value || !Number.isFinite(n) || n <= 0 || n !== Math.floor(n) || !text) {
-          if (feedback) feedback.textContent = '请补全事项、用途、金额和不同的收支账户。';
+        if (!player || !matter || !selectedMatter || !fromId || !toId || fromId === toId || !Number.isFinite(n) || n <= 0 || n !== Math.floor(n) || !text) {
+          if (feedback) feedback.textContent = '请补全有依据的事项、用途、金额和不同的收支账户。';
           return;
         }
-        var receipt = TM.NPC.LocalAI.requestPublicTransfer(player, { actionId: 'ui-duty:' + GM.turn + ':' + player.id + ':' + pos.pos.id, targetId: target.value, target: target.selectedOptions[0] && target.selectedOptions[0].textContent, organizationId: pos.organizationId, actingPositionId: pos.positionId, appointmentId: pos.appointmentId, fromAccount: from.value, toAccount: to.value, amounts: { money: n }, purpose: text, intent: text }, true);
+        var receipt = TM.NPC.LocalAI.requestPublicTransfer(player, { actionId: 'ui-duty:' + GM.turn + ':' + player.id + ':' + (pos && pos.pos.id || selectedMatter.value), targetId: target && target.value || '', target: target && target.selectedOptions[0] && target.selectedOptions[0].textContent, organizationId: organizationId, actingPositionId: pos && pos.positionId || '', appointmentId: pos && pos.appointmentId || '', fromAccount: fromId, toAccount: toId, amounts: { money: n }, purpose: text, intent: text,
+          matter: { kind: selectedMatter.dataset.kind, id: selectedMatter.value, version: Number(selectedMatter.dataset.version || 1) }, sourceRefs: matterRefs }, true);
         if (feedback) feedback.textContent = receipt && receipt.reason || (receipt && receipt.outcome === 'submitted' ? '事项已提出，待承办人收到并核办。' : '当前事项暂不能提交。');
         if (typeof toast === 'function') toast(receipt && receipt.reason || (receipt && receipt.outcome === 'submitted' ? '事项已提出' : '事项未能提交'));
         if (receipt && /^(submitted|completed)$/.test(receipt.outcome) && TM.NPC.LocalAI.wake) TM.NPC.LocalAI.wake('response', receipt);
@@ -700,6 +718,17 @@ function renderOfficeTree(force){
       var action = t.getAttribute('data-office-tenure'), pid = t.getAttribute('data-position-id'), lid = t.getAttribute('data-leave-id');
       if (action === 'request' && TM.OfficeTenure.uiRequest) TM.OfficeTenure.uiRequest(pid);
       if (action === 'report' && TM.OfficeTenure.uiReport) TM.OfficeTenure.uiReport(pid, lid);
+    });
+    el.addEventListener('change', function (ev) {
+      var matter = ev.target && ev.target.closest ? ev.target.closest('[data-duty-matter]') : null;
+      if (!matter) return;
+      var panel = matter.closest('[data-office-duty-panel]'), option = matter.selectedOptions && matter.selectedOptions[0];
+      if (!panel || !option) return;
+      var amount = panel.querySelector('[data-duty-amount]'), purpose = panel.querySelector('[data-duty-purpose]'), from = panel.querySelector('[data-duty-from]'), to = panel.querySelector('[data-duty-to]');
+      if (amount && option.dataset.amount) amount.value = option.dataset.amount;
+      if (purpose && option.dataset.purpose) purpose.value = option.dataset.purpose;
+      if (from && option.dataset.from) from.value = option.dataset.from;
+      if (to && option.dataset.to) to.value = option.dataset.to;
     });
     el._officeTenureBound = true;
   }

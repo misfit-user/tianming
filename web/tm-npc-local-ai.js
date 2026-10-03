@@ -11,6 +11,12 @@
   function player(ch) { return domain().controlled(ch); }
   function actor(key) { return domain().person(key, root.GM); }
   function order(a, b) { a = String(a); b = String(b); return a < b ? -1 : a > b ? 1 : 0; }
+  function copy(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
+  function key(v) { return v == null ? '' : String(v).trim(); }
+  function finite(v) { return v != null && v !== '' && isFinite(Number(v)); }
+  function currentDay() { return TM.SimTime && TM.SimTime.now ? TM.SimTime.now(root.GM) : Number(root.GM && root.GM.turn || 0); }
+  function sameId(a, b) { return key(a) !== '' && key(a) === key(b); }
+  function list(v) { return Array.isArray(v) ? v : []; }
   function personality(ch) {
     var out = { greed: 0, compassion: 0, honor: 0, sociability: 0, caution: 0 };
     var ids = arr(ch.traitIds), defs = arr(root.P && root.P.traitDefinitions);
@@ -112,6 +118,122 @@
     var st = row && TM.OfficeTenure && TM.OfficeTenure.state(row, false);
     return st && arr(st.leaves).find(function (v) { return v && v.id === p.officeTenure.leaveId; }) || null;
   }
+  // A public-transfer plan carries a reference to an existing matter and its
+  // material.  The resolver is deliberately read-only and accepts stable IDs
+  // from the stores already used by the game; it never treats a label or a
+  // purpose sentence as evidence.
+  function dutyRecords(g) {
+    g = g || root.GM || {};
+    return [
+      { kind: 'memorial', rows: arr(g.memorials) },
+      { kind: 'document', rows: arr(g.documents) },
+      { kind: 'task', rows: arr(g.tasks).concat(arr(g.workItems), arr(g.activeTasks)) },
+      { kind: 'plan', rows: arr(g._npcPlans) },
+      { kind: 'duty_matter', rows: arr(g._npcDutyMatters) }
+    ];
+  }
+  function dutyRecord(ref, g) {
+    ref = ref || {}; g = g || root.GM || {};
+    var id = key(ref.id || ref.matterId || ref.documentId), kind = key(ref.kind || '');
+    if (!id) return null;
+    var hits = [];
+    dutyRecords(g).forEach(function (bucket) {
+      if (kind && kind !== bucket.kind && !(kind === 'work_item' && bucket.kind === 'task')) return;
+      bucket.rows.forEach(function (row) {
+        if (row && sameId(row.id || row.matterId || row.documentId, id)) hits.push({ row: row, kind: bucket.kind });
+      });
+    });
+    return hits.length === 1 ? hits[0] : null;
+  }
+  function dutyRef(ref) {
+    ref = ref || {};
+    var id = key(ref.id || ref.matterId || ref.documentId), kind = key(ref.kind || 'document');
+    if (!id || !/^[A-Za-z0-9_.:/-]{1,200}$/.test(id)) return null;
+    return { kind: kind, id: id, version: finite(ref.version) ? Number(ref.version) : null };
+  }
+  function dutyRefs(task, record) {
+    var basis = task && (task.basis || task.requestBasis) || {}, refs = list(basis.sourceRefs || basis.materialRefs || task && task.sourceRefs);
+    if (!refs.length && record && record.row) refs = list(record.row.sourceRefs || record.row.materialRefs || record.row.materials);
+    return refs.map(dutyRef).filter(Boolean);
+  }
+  function dutyVisible(ch, record, task) {
+    if (!record || !record.row || !ch) return false;
+    var row = record.row, id = key(ch.id), basis = task && (task.basis || task.requestBasis) || {};
+    if (row.public === true || /^(public|open|published)$/.test(key(row.visibility || row.access))) return true;
+    if (sameId(row.actorId || row.authorId || row.ownerId || row.requesterId, id)) return true;
+    if (list(row.knownTo || row.visibleTo || row.audienceIds || row.recipientIds).some(function (v) { return sameId(v, id); })) return true;
+    if (row.private === true || row.secret === true || /^(private|secret|hidden)$/.test(key(row.visibility))) return false;
+    // Organization records may be read by an active member of that organization;
+    // the caller still needs an actual assignment before it can read account data.
+    var org = key(basis.organizationId || task && task.organizationId);
+    if (!org || !(sameId(row.organizationId, org) || sameId(row.factionId, org))) return false;
+    return !!(TM.OfficeHolderState && TM.OfficeHolderState.activeAssignments && TM.OfficeHolderState.activeAssignments(root.GM, ch, { organizationId: org }).length);
+  }
+  function dutyMatter(task, ch) {
+    var basis = task && (task.basis || task.requestBasis) || {}, ref = dutyRef(basis.matterRef || task && task.matterRef), hit = dutyRecord(ref, root.GM);
+    if (!ref) return { ok: false, reason: 'duty_matter_reference_required' };
+    if (!hit) return { ok: false, reason: 'duty_matter_not_found', matterRef: ref };
+    var row = hit.row, version = finite(row.version || row.revision) ? Number(row.version || row.revision) : 1;
+    if (ref.version != null && version !== ref.version) return { ok: false, reason: 'duty_matter_version_mismatch', matterRef: ref, actualVersion: version };
+    if (!dutyVisible(ch, hit, task)) return { ok: false, reason: 'duty_matter_not_known', matterRef: ref };
+    if (/^(closed|cancelled|rejected|superseded)$/.test(key(row.status))) return { ok: false, reason: 'duty_matter_not_open', matterRef: ref };
+    var subjectId = key(basis.subjectId || task && task.subjectId), rowSubject = key(row.subjectId || row.objectId || row.beneficiaryId);
+    if (subjectId && rowSubject && subjectId !== rowSubject) return { ok: false, reason: 'duty_matter_subject_mismatch', matterRef: ref };
+    var policy = row.transferPolicy || row.publicTransfer || {};
+    if (row.allowPublicTransfer !== true && policy.allowMoney !== true && policy.allowPublicTransfer !== true) return { ok: false, reason: 'duty_purpose_not_authorized', matterRef: ref };
+    return { ok: true, ref: ref, record: row, version: version, policy: policy, subjectId: subjectId || rowSubject };
+  }
+  function dutyEvidence(task, ch) {
+    var matter = dutyMatter(task, ch);
+    if (!matter.ok) return matter;
+    var refs = dutyRefs(task, matter.record), basis = task && (task.basis || task.requestBasis) || {};
+    if (!refs.length) return { ok: false, reason: 'duty_material_reference_required', matter: matter };
+    var checked = [], missing = [], hidden = [], unverified = [];
+    refs.forEach(function (ref) {
+      var hit = dutyRecord(ref, root.GM);
+      if (!hit) { missing.push(ref); return; }
+      var version = finite(hit.row.version || hit.row.revision) ? Number(hit.row.version || hit.row.revision) : 1;
+      if (ref.version != null && version !== ref.version) { missing.push(Object.assign({}, ref, { reason: 'version_mismatch' })); return; }
+      if (!dutyVisible(ch, hit, task)) { hidden.push(ref); return; }
+      var factStatus = key(hit.row.factStatus || hit.row.status || 'observed');
+      if (/^(claimed|alleged|rumor|unverified|planned|reported)$/.test(factStatus)) { unverified.push(Object.assign({}, ref, { factStatus: factStatus })); return; }
+      checked.push({ kind: ref.kind, id: ref.id, version: version, factStatus: factStatus });
+    });
+    if (missing.length) return { ok: false, reason: 'duty_material_not_found_or_stale', matter: matter, missing: missing };
+    if (hidden.length) return { ok: false, reason: 'duty_material_not_readable', matter: matter, hidden: hidden };
+    if (unverified.length) return { ok: false, reason: 'duty_material_unverified', matter: matter, unverified: unverified };
+    var amounts = task && task.amounts || {}, resources = Object.keys(amounts).filter(function (k) { return Number(amounts[k]) > 0; });
+    if (resources.some(function (k) { return k !== 'money'; })) return { ok: false, reason: 'unsupported_duty_resource', matter: matter, checked: checked };
+    var requested = Number(amounts.money || 0), max = Number(matter.policy.maxMoney != null ? matter.policy.maxMoney : matter.record.maxMoney);
+    if (!finite(requested) || requested <= 0) return { ok: false, reason: 'specific_positive_money_required', matter: matter, checked: checked };
+    if (finite(max) && requested > max) return { ok: false, reason: 'duty_amount_exceeds_matter_scope', matter: matter, checked: checked, maxMoney: max };
+    return { ok: true, matter: matter, checked: checked, requestedMoney: requested,
+      allowPartial: task.allowPartial === true || basis.allowPartial === true || matter.policy.allowPartial === true,
+      facts: { matterRef: matter.ref, matterVersion: matter.version, materialRefs: checked, subjectId: matter.subjectId || '', checked: ['matter', 'materials', 'purpose_scope'] } };
+  }
+  function dutyMatterOptions(ch) {
+    var out = [];
+    dutyRecords(root.GM).forEach(function (bucket) { bucket.rows.forEach(function (row) {
+      if (!row || !row.id || !dutyVisible(ch, { row: row, kind: bucket.kind }, { organizationId: row.organizationId })) return;
+      var policy = row.transferPolicy || row.publicTransfer || {};
+      if (row.allowPublicTransfer !== true && policy.allowMoney !== true && policy.allowPublicTransfer !== true) return;
+      var ref = { kind: bucket.kind, id: key(row.id), version: finite(row.version || row.revision) ? Number(row.version || row.revision) : 1 };
+      if (!out.some(function (x) { return x.id === ref.id && x.kind === ref.kind; })) out.push({ id: ref.id, kind: ref.kind, version: ref.version, title: row.title || row.name || row.subject || ref.id,
+        purpose: row.purpose || row.description || '', organizationId: row.organizationId || row.factionId || '', fromAccount: row.fromAccount || row.sourceAccount || '', toAccount: row.toAccount || row.destinationAccount || '', amount: row.requestedAmount || row.amount || '', sourceRefs: row.sourceRefs || row.materialRefs || row.materials || [] });
+    }); });
+    return out.sort(function (a, b) { return order(a.id, b.id); });
+  }
+  function dutyMaterialOptions(ch) {
+    var out = [];
+    dutyRecords(root.GM).forEach(function (bucket) { bucket.rows.forEach(function (row) {
+      if (!row || !row.id || !dutyVisible(ch, { row: row, kind: bucket.kind }, { organizationId: row.organizationId || row.factionId })) return;
+      var status = key(row.factStatus || row.status || 'observed');
+      if (/^(claimed|alleged|rumor|unverified|planned|reported|closed|cancelled)$/.test(status)) return;
+      var ref = { kind: bucket.kind, id: key(row.id), version: finite(row.version || row.revision) ? Number(row.version || row.revision) : 1 };
+      if (!out.some(function (x) { return x.kind === ref.kind && x.id === ref.id; })) out.push({ kind: ref.kind, id: ref.id, version: ref.version, title: row.title || row.name || row.subject || ref.id });
+    }); });
+    return out.sort(function (a, b) { return order(a.id, b.id); });
+  }
   function activeDutyPlan(p) {
     return !!(p && p.version === 2 && !p.localActivity && p.task && p.task.kind === 'public_transfer' &&
       !/^(done|rejected|cancelled|failed)$/.test(p.status));
@@ -124,81 +246,157 @@
       var role = binding.role || '';
       if (!pos.powers || pos.powers.treasurySpend !== true || !/^(custodian|manager)$/.test(role)) return false;
       if (refs.indexOf(task.fromAccount) < 0) return false;
+      if (task.organizationId && key(a.organizationId) !== key(task.organizationId)) return false;
+      if (task.performerPositionId && key(a.positionId) !== key(task.performerPositionId)) return false;
+      if (task.performerAppointmentId && key(a.appointmentId) !== key(task.performerAppointmentId)) return false;
       var scope = pos.authorityScope || {};
-      return !Array.isArray(scope.accountRefs) || scope.accountRefs.indexOf(task.toAccount) >= 0;
+      if (Array.isArray(scope.accountRefs) && scope.accountRefs.indexOf(task.toAccount) < 0) return false;
+      if (Array.isArray(scope.positionIds) && task.subjectPositionId && scope.positionIds.indexOf(task.subjectPositionId) < 0) return false;
+      if (Array.isArray(scope.departmentIds) && task.subjectDepartmentId && scope.departmentIds.indexOf(task.subjectDepartmentId) < 0) return false;
+      if (TM.OfficeTenure && TM.OfficeTenure.canAct) {
+        var presence = TM.OfficeTenure.canAct({ world: g, actor: ch, positionId: a.positionId, organizationId: a.organizationId,
+          appointmentId: a.appointmentId, action: 'public_transfer', power: 'treasurySpend', regionId: task.regionId });
+        if (!presence || presence.ok !== true) return false;
+      }
+      if (TM.PoliticalActions && TM.PoliticalActions.resolve && task.organizationId && TM.PoliticalActions.resolve('organization', { id: task.organizationId }, g)) {
+        var auth = TM.PoliticalActions.authority(ch, { organizationId: task.organizationId, actingPositionId: a.positionId, appointmentId: a.appointmentId }, 'treasurySpend', null, g);
+        if (!auth) return false;
+      }
+      return true;
     }).sort(function (a, b) { return String(a.positionId).localeCompare(String(b.positionId)); });
   }
-  function dutyMaterial(task) {
+  function dutyMaterial(task, ch, assignment) {
     if (!TM.PublicTreasury || !task) return { ok: false, reason: 'public_account_service_unavailable' };
+    var evidence = dutyEvidence(task, ch);
+    if (!evidence.ok) return evidence;
+    if (!assignment) return { ok: false, reason: 'public_account_access_required', evidence: evidence };
     var view = TM.PublicTreasury.getAccountView({ game: root.GM, ref: task.fromAccount });
     if (!view || !view.exists || !view.known) return { ok: false, reason: 'public_account_material_unknown', view: view };
     var amount = Number(task.amounts && task.amounts.money || 0), available = Number(view.resources && view.resources.money && view.resources.money.available);
     if (!isFinite(amount) || amount <= 0) return { ok: false, reason: 'specific_positive_amount_required', view: view };
     if (!isFinite(available) || available <= 0) return { ok: false, reason: 'public_account_material_empty', view: view };
-    if (available < amount) return { ok: false, reason: 'public_account_material_shortfall', view: view, available: available };
-    return { ok: true, view: view, available: available };
+    if (available < amount) return { ok: false, reason: 'public_account_material_shortfall', view: view, available: available, evidence: evidence, allowPartial: evidence.allowPartial };
+    return { ok: true, view: view, available: available, evidence: evidence };
+  }
+  function dutyRecipients(task, excludeId) {
+    var g = root.GM, rows = arr(g && g.chars).filter(function (ch) { return ch && ch.id !== excludeId && ch.alive !== false && ch.dead !== true; });
+    return rows.map(function (ch) { return { actor: ch, assignments: dutyAssignments(ch, task) }; }).filter(function (row) { return row.assignments.length; })
+      .sort(function (a, b) { return order(a.actor.id, b.actor.id); });
+  }
+  function routeDutyRecipient(task, excludeId) {
+    var rows = dutyRecipients(task, excludeId);
+    return rows.length ? rows[0] : null;
+  }
+  function taskBasis(data, actor) {
+    var basis = copy(data && (data.basis || data.requestBasis)) || {}, matter = data && (data.matter || data.matterRef || basis.matterRef);
+    if (typeof matter === 'string') matter = { kind: 'memorial', id: matter };
+    if (!basis.matterRef && matter) basis.matterRef = dutyRef(matter);
+    if (basis.matterRef) basis.matterRef = dutyRef(basis.matterRef);
+    basis.version = finite(basis.version) ? Number(basis.version) : 1;
+    basis.requestedBy = key(basis.requestedBy || actor && actor.id);
+    basis.purpose = key(basis.purpose || data && data.purpose);
+    basis.statement = key(basis.statement || data && (data.statement || data.intent || data.purpose));
+    basis.subjectId = key(basis.subjectId || data && data.subjectId);
+    basis.organizationId = key(basis.organizationId || data && data.organizationId);
+    basis.allowPartial = basis.allowPartial === true || data && data.allowPartial === true;
+    basis.sourceRefs = list(basis.sourceRefs || basis.materialRefs || data && (data.sourceRefs || data.materialRefs) || matter && (matter.sourceRefs || matter.materialRefs)).map(dutyRef).filter(Boolean);
+    return basis;
   }
   function dutyChoice(p, ch, view) {
-    var task = p && p.task || {}, assignment = dutyAssignments(ch, task), material = dutyMaterial(task), action = {
+    var task = p && p.task || {}, assignment = dutyAssignments(ch, task), material = dutyMaterial(task, ch, assignment[0]), action = {
       actorId: ch.id, name: ch.name, behaviorType: 'office_duty', planId: p.id,
       targetId: p.actorId === ch.id ? p.targetId : p.actorId, target: p.actorId === ch.id ? p.target : p.actor,
-      intent: p.intent, expectedRevision: view && view.revision
+      organizationId: p.organizationId || task.organizationId, actingPositionId: p.performerPositionId || task.performerPositionId || '',
+      appointmentId: p.performerAppointmentId || task.performerAppointmentId || '', intent: p.intent, expectedRevision: view && view.revision,
+      termsVersion: view && view.termsVersion, dutyRequest: true, basis: copy(task.basis || task.requestBasis)
     };
     if (!view || !view.nextPhase) return null;
     if (view.nextPhase === 'respond' && ch.id === p.targetId) {
       if (!assignment.length) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'respond', response: 'reject', content: '此项公库事项不在我当前有效的经管权限内，不能冒领承办。' });
       if (!material.ok) {
-        if (material.reason === 'public_account_material_shortfall' && material.available > 0) {
+        if (material.reason === 'public_account_material_shortfall' && material.available > 0 && material.allowPartial) {
           var revised = Object.assign({}, task, { amounts: Object.assign({}, task.amounts, { money: Math.floor(material.available) }) });
-          return Object.assign(action, { phase: 'respond', response: 'conditions', task: revised, terms: '当前可核余额不足，最多先办' + revised.amounts.money + '贯。', content: '已核对来源账户，现有余额不足原申请，提出缩减为可核范围。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+          return Object.assign(action, { phase: 'respond', response: 'conditions', task: revised, terms: '当前可核余额不足，且事项允许分阶段办理，最多先办' + revised.amounts.money + '贯。', content: '已核对来源账户、事项材料和分阶段规则，提出缩减为可执行范围。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, decisionBasis: material.evidence && material.evidence.facts });
         }
-        return Object.assign(action, { phase: 'respond', response: 'reject', content: '已核对现有账目，但来源账户或金额材料尚未达到可执行条件：' + material.reason + '。' });
+        if (/duty_material_reference_required|duty_material_not_found_or_stale|duty_material_not_readable|duty_material_unverified/.test(material.reason)) {
+          return Object.assign(action, { phase: 'respond', response: 'conditions', content: '已收到事项，但还缺少可读取、可核对的材料；请补充材料来源或确认当前版本后再决定。', terms: '需要补充材料', needsMaterial: true, actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+        }
+        return Object.assign(action, { phase: 'respond', response: 'reject', content: '已核对事项范围与现有账目，但当前条件不能支持这笔公库转移：' + material.reason + '。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
       }
-      return Object.assign(action, { phase: 'respond', response: 'accept', content: '已核对来源账户、用途和当前余额，按本职承办。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+      var stress = Math.max(0, Math.min(100, Number(ch.stress || 0))), basis = material.evidence && material.evidence.facts || {};
+      if (stress >= 90 && !(task.basis && finite(task.basis.deadlineDay) && Number(task.basis.deadlineDay) <= currentDay() + 1)) {
+        return Object.assign(action, { phase: 'respond', response: 'defer', content: '事项材料和权限已核对，但当前承办负担过重，暂缓至下一办理时段。', terms: '待下一办理时段复核', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, decisionBasis: basis });
+      }
+      return Object.assign(action, { phase: 'respond', response: 'accept', content: '已核对事项依据、材料版本、用途范围、来源账户与当前余额，按本职承办。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, decisionBasis: basis });
     }
     if (view.nextPhase === 'agree' && ch.id === p.actorId) {
-      return Object.assign(action, { phase: 'agree', response: p.proposedTask ? 'accept' : 'reject', content: p.proposedTask ? '同意按已核明的可执行额度办理。' : '材料不足，暂不接受未明确的变更。' });
+      var proposed = p.proposedTask || task, refs = list((proposed.basis || task.basis || {}).sourceRefs || (proposed.basis || task.basis || {}).materialRefs);
+      if (!refs.length) refs = dutyRefs(proposed, dutyMatter(proposed, ch).record);
+      if (p.requiresRevisedTask && !p.proposedTask) return Object.assign(action, { phase: 'agree', response: 'reject', content: '当前条件变化但没有形成可核对的新任务版本，暂不接受。' });
+      if (!refs.length) return Object.assign(action, { phase: 'cancel', content: '本人没有可读取的材料来源，不能把陈述直接当作核验事实；本次事项结束。' });
+      return Object.assign(action, { phase: 'agree', response: 'accept', task: proposed, sourceRefs: refs, basis: copy(proposed.basis || task.basis), content: p.proposedTask ? '同意按当前材料和可执行额度办理，保留原事项未完成部分。' : '已确认当前事项版本与材料来源，继续办理。' });
     }
     if (view.nextPhase === 'perform' && ch.id === p.targetId) {
       if (!assignment.length) {
+        var routed = routeDutyRecipient(task, ch.id);
+        if (routed && routed.actor && routed.actor.id !== ch.id) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'handoff', successorId: routed.actor.id, handoffPositionId: routed.assignments[0].positionId, handoffAppointmentId: routed.assignments[0].appointmentId, content: '当前承办资格或职责路由已变化，转交现行有效承办职位继续核办。' });
         var seat = p.performerPositionId && TM.OfficeHolderState && TM.OfficeHolderState.position(root.GM, { positionId: p.performerPositionId });
         var successor = seat && TM.OfficeHolderState.read(root.GM, seat.pos).primary;
         if (successor && successor.id !== ch.id) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'handoff', content: '原承办资格已变化，转交当前在任者继续核办。' });
         return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'cancel', content: '原承办资格已变化，当前没有可核验的接任者；事项需重新提出。' });
       }
-      if (!dutyMaterial(task).ok) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'cancel', content: '接受后材料或余额已变化，当前交割不能继续；事项需重新核办。' });
-      return Object.assign(action, { phase: 'perform', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+      if (!material.ok && !(material.reason === 'public_account_material_shortfall' && material.available > 0 && material.allowPartial)) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'cancel', content: '接受后材料、权限或余额已变化，当前交割不能继续；事项需重新核办。' });
+      return Object.assign(action, { phase: 'perform', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, allowPartial: material.allowPartial === true, basis: copy(task.basis || task.requestBasis), sourceRefs: dutyRefs(task, dutyMatter(task, ch).record) });
     }
     if (view.nextPhase === 'feedback' && ch.id === p.actorId) {
-      return Object.assign(action, { phase: 'feedback', evaluation: 'satisfied', content: '已收到实际公库交割回执，金额与用途按本事项核收。' });
+      var step = arr(p.steps).filter(function (s) { return s && s.kind === 'public_transfer'; }).slice(-1)[0], paid = step && step.paid && Number(step.paid.money || 0), requested = Number((step && step.requestedTask && step.requestedTask.amounts && step.requestedTask.amounts.money) || task.amounts && task.amounts.money || 0);
+      var full = finite(paid) && finite(requested) && paid >= requested && !(p.partial && p.remainingTask);
+      return Object.assign(action, { phase: 'feedback', evaluation: full ? 'satisfied' : 'ack', content: full ? '已收到实际公库交割回执，金额、用途与材料范围按本事项核收。' : '已收到本阶段实际交割回执，但原事项仍有未完成部分，保留后续办理。' });
     }
     return null;
   }
   function runDutyChoices(limit) {
     var D = domain(), g = root.GM, rows = arr(g && g._npcPlans).filter(activeDutyPlan).sort(function (a, b) {
       return Number(a.updatedTurn || a.createdTurn || 0) - Number(b.updatedTurn || b.createdTurn || 0) || order(a.id, b.id);
-    }), done = 0, diagnostics = D && D.readState && D.readState();
-    for (var i = 0; i < rows.length && done < (limit || config.dutyPlansPerBatch); i++) {
+    }), processed = 0, completed = 0, executed = 0, diagnostics = D && D.readState && D.readState();
+    for (var i = 0; i < rows.length && processed < (limit || config.dutyPlansPerBatch); i++) {
       var p = rows[i], actor = p.nextActorId && actorById(p.nextActorId), view = actor && ledger().planView(p, actor);
       if (!actor || player(actor) || !view || !view.nextPhase) continue;
       var budget = D.budget(actor); if (budget.steps >= D.config.dailySteps) continue;
       var action = dutyChoice(p, actor, view); if (!action) continue;
       action.actionId = 'local-duty:' + p.id + ':' + view.nextPhase + ':' + String(g.turn);
       var receipt = ledger().ingest(action, 'local-office-duty');
-      if (receipt && /^(submitted|completed)$/.test(receipt.outcome)) { D.spend(actor, false); done++; }
+      if (receipt && !/^(blocked|failed|expired|noop)$/.test(receipt.outcome)) {
+        D.spend(actor, false); processed++;
+        if (action.phase === 'perform' && /^(completed|partial)$/.test(receipt.outcome)) executed++;
+        if (p.status === 'done') completed++;
+      }
       if (diagnostics && diagnostics.diagnostics) {
         diagnostics.diagnostics.push({ source: 'office-duty:' + p.id, actorId: actor.id, planId: p.id, choice: view.nextPhase, reason: receipt && receipt.reason || '', outcome: receipt && receipt.outcome || 'blocked', turn: g.turn });
         if (diagnostics.diagnostics.length > 80) diagnostics.diagnostics.splice(0, diagnostics.diagnostics.length - 80);
       }
     }
-    return done;
+    if (diagnostics) diagnostics.lastDutyBatch = { processed: processed, executed: executed, completed: completed, candidates: rows.length, turn: g.turn };
+    return { processed: processed, executed: executed, completed: completed, candidates: rows.length };
   }
   function actorById(id) { return id && domain().person(id, root.GM); }
   function requestPublicTransfer(actor, data, human) {
-    if (!actor || !data || !data.targetId) return ledger().result('blocked', 'specific_duty_recipient_required');
-    var assignment = TM.OfficeHolderState && TM.OfficeHolderState.select(root.GM, actor, { positionId: data.actingPositionId, appointmentId: data.appointmentId, organizationId: data.organizationId });
-    if (!assignment) return ledger().result('blocked', 'specific_current_assignment_required');
-    var action = Object.assign({}, data, { actorId: actor.id, name: actor.name, behaviorType: 'office_duty', intent: data.intent || data.purpose || '办理具体公库事项', task: { kind: 'public_transfer', fromAccount: data.fromAccount, toAccount: data.toAccount, amounts: Object.assign({}, data.amounts) } });
+    if (!actor || !data) return ledger().result('blocked', 'specific_duty_requester_required');
+    var g = root.GM, basis = taskBasis(data, actor), matter = dutyMatter({ basis: basis }, actor), org = key(data.organizationId || basis.organizationId), requesterAssignment = TM.OfficeHolderState && data.actingPositionId && TM.OfficeHolderState.select(g, actor, { positionId: data.actingPositionId, appointmentId: data.appointmentId, organizationId: org });
+    if (data.actingPositionId && !requesterAssignment) return ledger().result('blocked', 'specific_current_assignment_required');
+    if (!basis.matterRef) return ledger().result('blocked', 'duty_matter_reference_required');
+    if (!matter.ok && /not_found|version_mismatch|not_open|subject_mismatch/.test(matter.reason)) return ledger().result('blocked', matter.reason);
+    var sourceView = TM.PublicTreasury && data.fromAccount && TM.PublicTreasury.getAccountView({ game: g, ref: data.fromAccount });
+    org = org || key(sourceView && sourceView.factionId);
+    if (!org) return ledger().result('blocked', 'duty_organization_required');
+    var task = { kind: 'public_transfer', version: 1, dutyRequest: true, organizationId: org, fromAccount: key(data.fromAccount), toAccount: key(data.toAccount),
+      amounts: Object.assign({}, data.amounts), purpose: key(data.purpose || basis.purpose), basis: Object.assign({}, basis, { organizationId: org }), allowPartial: data.allowPartial === true || basis.allowPartial === true,
+      requesterPositionId: requesterAssignment && requesterAssignment.positionId || key(data.actingPositionId), requesterAppointmentId: requesterAssignment && requesterAssignment.appointmentId || key(data.appointmentId) };
+    var target = data.targetId && actorById(data.targetId), route = !target && routeDutyRecipient(task, actor.id);
+    if (!target && route) target = route.actor;
+    if (!target) return ledger().result('waiting', 'duty_recipient_unresolved', [{ kind: 'plan', id: 'duty-route:' + org }]);
+    task.targetId = target.id;
+    var action = Object.assign({}, data, { actorId: actor.id, name: actor.name, targetId: target.id, target: target.name, organizationId: org, behaviorType: 'office_duty', intent: data.intent || data.purpose || basis.purpose || '办理具体公库事项', basis: task.basis, dutyRequest: true, task: task });
     if (!human) return ledger().ingest(action, 'local-office-duty-request');
     var handler = root.NpcBehaviorRegistry && root.NpcBehaviorRegistry._behaviors && root.NpcBehaviorRegistry._behaviors.office_duty;
     if (!handler) return ledger().result('blocked', 'office_duty_handler_unavailable');
@@ -207,19 +405,34 @@
   function renderDutyPanel() {
     var g = root.GM || {}, ch = arr(g.chars).find(function (c) { return player(c); }), hs = TM.OfficeHolderState, treasury = TM.PublicTreasury;
     if (!ch || !hs || !treasury) return '';
-    var assignments = hs.activeAssignments(g, ch), accounts = treasury.listAccountViews({ game: g, includePools: false }).accounts.filter(function (a) { return a.exists; });
-    if (!assignments.length || accounts.length < 2) return '<div class="office-duty-panel" style="padding:8px;color:var(--txt-m);">当前没有可供你发起的已配置常务账户或有效任职。</div>';
+    var assignments = hs.activeAssignments(g, ch), matters = dutyMatterOptions(ch), bound = treasury.getCharacterPublicAccounts({ game: g, characterId: ch.id }), accounts = (bound && bound.accounts || []).filter(function (a) { return a.exists; });
+    var pending = arr(g._npcPlans).filter(activeDutyPlan).map(function (p) { return { plan: p, view: ledger().planView(p, ch) }; }).filter(function (x) { return x.view && x.view.nextPhase; });
+    if (!matters.length && !pending.length) return '<div class="office-duty-panel" style="padding:8px;color:var(--txt-m);">当前没有你已知且允许核办的公库事项材料。</div>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (x) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[x]; }); }
-    var posOptions = assignments.map(function (a) { return '<option value="' + esc(a.positionId) + '" data-org="' + esc(a.organizationId) + '">' + esc(a.dept + '·' + a.pos.name) + '</option>'; }).join('');
-    var accountOptions = accounts.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.name || a.id) + '</option>'; }).join('');
-    var recipients = arr(g.chars).filter(function (x) { return x && x.id !== ch.id && x.alive !== false && x.dead !== true; }).sort(function (a, b) { return order(a.id, b.id); });
+    var posOptions = '<option value="">本人提出（不代表组织）</option>' + assignments.map(function (a) { return '<option value="' + esc(a.positionId) + '" data-org="' + esc(a.organizationId) + '">' + esc(a.dept + '·' + a.pos.name) + '</option>'; }).join('');
+    var matterOptions = matters.map(function (m) { return '<option value="' + esc(m.id) + '" data-kind="' + esc(m.kind) + '" data-version="' + esc(m.version) + '" data-org="' + esc(m.organizationId) + '" data-from="' + esc(m.fromAccount) + '" data-to="' + esc(m.toAccount) + '" data-amount="' + esc(m.amount) + '" data-purpose="' + esc(m.purpose) + '" data-refs="' + esc(JSON.stringify(m.sourceRefs || [])) + '">' + esc(m.title) + '</option>'; }).join('');
+    var matter = matters[0] || {}, accountIds = {};
+    matters.forEach(function (m) { if (m.fromAccount) accountIds[m.fromAccount] = true; if (m.toAccount) accountIds[m.toAccount] = true; });
+    accounts.forEach(function (a) { accountIds[a.id] = true; });
+    var accountOptions = Object.keys(accountIds).sort(order).map(function (id) { var a = accounts.find(function (x) { return x.id === id; }); return '<option value="' + esc(id) + '">' + esc(a && (a.name || a.id) || id) + '</option>'; }).join('');
+    var task = { organizationId: matter.organizationId, fromAccount: matter.fromAccount, toAccount: matter.toAccount, basis: { matterRef: { kind: matter.kind, id: matter.id, version: matter.version }, sourceRefs: matter.sourceRefs } };
+    var recipients = dutyRecipients(task, ch.id).map(function (x) { return x.actor; });
     var recipientOptions = recipients.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.name) + '</option>'; }).join('');
+    var knownMaterials = dutyMaterialOptions(ch), pendingHtml = pending.map(function (x) {
+      var p = x.plan, v = x.view, refs = list(v.task && v.task.basis && v.task.basis.sourceRefs), materialOptions = knownMaterials.map(function (m) { var selected = refs.some(function (r) { return r && r.id === m.id && r.kind === m.kind; }) ? ' selected' : ''; return '<option value="' + esc(JSON.stringify({ kind: m.kind, id: m.id, version: m.version })) + '"' + selected + '>' + esc(m.title) + '</option>'; }).join('');
+      var phaseLabels = { respond: '处理受理决定', agree: '确认修订条件', perform: '执行已决定事项', feedback: '反馈实际结果' };
+      var positionOptions = dutyAssignments(ch, v.task || {}).map(function (a) { return '<option value="' + esc(a.positionId) + '" data-appointment="' + esc(a.appointmentId) + '">' + esc(a.dept + '·' + a.pos.name) + '</option>'; }).join('');
+      var choices = v.nextPhase === 'respond' ? [['accept', '接受'], ['conditions', '要求补充'], ['defer', '暂缓'], ['reject', '拒绝']] : v.nextPhase === 'agree' ? [['accept', '同意当前版本'], ['reject', '不接受']] : v.nextPhase === 'perform' ? [['deliver', '执行并提交回执']] : [['satisfied', '确认符合'], ['ack', '确认收到']];
+      var buttons = choices.map(function (c) { return '<button type="button" class="bt bsm" data-office-duty-response="' + esc(c[0]) + '" data-office-duty-plan="' + esc(p.id) + '" data-office-duty-phase="' + esc(v.nextPhase) + '" data-office-duty-revision="' + esc(v.revision) + '" data-office-duty-terms="' + esc(v.termsVersion) + '">' + esc(c[1]) + '</button>'; }).join('');
+      return '<div data-office-duty-plan="' + esc(p.id) + '" style="margin:6px 0;padding:7px;border-top:1px solid var(--color-border-subtle)"><strong>待处理公库事项</strong><p>' + esc(p.intent || '具体公库事项') + ' · ' + esc(phaseLabels[v.nextPhase] || v.nextPhase) + '</p>' + ((v.nextPhase === 'respond' || v.nextPhase === 'perform') && positionOptions ? '<label>本次行事职任 <select data-office-duty-position="' + esc(p.id) + '">' + positionOptions + '</select></label>' : '') + (v.nextPhase === 'agree' ? '<label>补充或确认材料 <select multiple size="2" data-office-duty-material="' + esc(p.id) + '">' + materialOptions + '</select></label>' : '') + '<div style="display:flex;gap:5px;flex-wrap:wrap">' + buttons + '</div><p data-office-duty-plan-feedback role="status"></p></div>';
+    }).join('');
+    if (!matters.length) return '<div class="office-duty-panel" data-office-duty-panel style="margin:8px 0;padding:10px;border:1px solid var(--gold-500);">' + pendingHtml + '</div>';
     return '<div class="office-duty-panel" data-office-duty-panel style="margin:8px 0;padding:10px;border:1px solid var(--gold-500);">' +
-      '<strong>具体常务·公库事项</strong><p style="margin:4px 0;color:var(--txt-m);">提出用途明确的交割请求；承办人会核对账户、权限与余额，实际执行后才产生流水。</p>' +
+      pendingHtml + '<strong>具体常务·公库事项</strong><p style="margin:4px 0;color:var(--txt-m);">选择已知事项和材料；承办人会核对事项版本、职责、用途范围与余额，实际执行后才产生流水。</p>' +
       '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">' +
-      '<select data-duty-position aria-label="行事职任">' + posOptions + '</select><select data-duty-target aria-label="承办人">' + recipientOptions + '</select>' +
+      '<select data-duty-matter aria-label="事项依据">' + matterOptions + '</select><select data-duty-position aria-label="行事职任">' + posOptions + '</select><select data-duty-target aria-label="承办人">' + recipientOptions + '</select>' +
       '<select data-duty-from aria-label="来源账户">' + accountOptions + '</select><span>→</span><select data-duty-to aria-label="目标账户">' + accountOptions + '</select>' +
-      '<input data-duty-amount type="number" min="1" step="1" value="1" aria-label="金额" style="width:78px"><input data-duty-purpose aria-label="用途" placeholder="用途" style="min-width:130px">' +
+      '<input data-duty-amount type="number" min="1" step="1" value="' + esc(matter.amount || 1) + '" aria-label="金额" style="width:78px"><input data-duty-purpose aria-label="用途" value="' + esc(matter.purpose) + '" placeholder="用途" style="min-width:130px">' +
       '<button class="bt bsm" data-office-duty="request-transfer">提出事项</button></div><p data-duty-feedback role="status" style="margin:5px 0 0;"></p></div>';
   }
   function runOfficeChoices(limit) {
@@ -252,10 +465,15 @@
     if (event.batches <= 0) { event.active = false; return { processed: 0, decisions: 0, apiCalls: 0 }; }
     event.batches--;
     running = true;
-    var started = Date.now(), summary = { processed: 0, candidates: 0, decisions: 0, messages: 0, completed: 0, apiCalls: 0, dutyCompleted: 0 };
+    var started = Date.now(), summary = { processed: 0, candidates: 0, decisions: 0, messages: 0, completed: 0, apiCalls: 0, dutySubmitted: 0, dutyExecuted: 0, dutyCompleted: 0, dutyWaiting: 0 };
     try {
       D.withIndex(function () {
-        summary.dutyCompleted = runDutyChoices(config.dutyPlansPerBatch);
+        var dutyDoneBefore = arr(root.GM._npcPlans).filter(function (p) { return p && p.task && p.task.kind === 'public_transfer' && p.status === 'done'; }).length;
+        var dutyBatch = runDutyChoices(config.dutyPlansPerBatch);
+        summary.dutySubmitted = dutyBatch.processed;
+        summary.dutyExecuted = dutyBatch.executed;
+        summary.dutyCompleted = dutyBatch.completed;
+        summary.dutyWaiting = Math.max(0, dutyBatch.candidates - dutyBatch.processed);
         runOfficeChoices(4);
         var visited = new Set(), attempted = new Set();
         for (var count = 0; count < config.decisionsPerBatch && event.remaining > 0; count++) {
@@ -298,6 +516,7 @@
         }
         summary.processed = visited.size;
         var finalDelivery = ledger().advance(root.GM,{localOnly:true}); if (!finalDelivery.ok) throw Error(finalDelivery.reason || 'local_delivery_failed');
+        summary.dutyCompleted += Math.max(0, arr(root.GM._npcPlans).filter(function (p) { return p && p.task && p.task.kind === 'public_transfer' && p.status === 'done'; }).length - dutyDoneBefore);
       });
       if (event.remaining <= 0 || event.batches <= 0) event.active = false;
       summary.ms = Date.now() - started; st.lastBatch = summary;
@@ -330,6 +549,7 @@
     }, 0);
   }
   NPC.LocalAI = { config: config, wake: wake, candidates: candidates, inclination: inclination, scheduleEntry: scheduleEntry,
-    requestPublicTransfer: requestPublicTransfer, renderDutyPanel: renderDutyPanel, runDutyChoices: runDutyChoices };
+    requestPublicTransfer: requestPublicTransfer, renderDutyPanel: renderDutyPanel, runDutyChoices: runDutyChoices,
+    dutyEvidence: dutyEvidence, dutyMatter: dutyMatter, dutyMatterOptions: dutyMatterOptions, dutyAssignments: dutyAssignments };
   if (root.GameHooks) root.GameHooks.on('enterGame:after', scheduleEntry, 60);
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -119,7 +119,11 @@ module.exports = async function ({ win, root, check }) {
     // A real request needs one turn to deliver the request and a later turn
     // to deliver the response.  The first call therefore intentionally stops
     // after the production turn commit while the matter remains in_transit.
-    if(!requireFeedback)return;
+    if(!requireFeedback){
+      await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);
+      await settle();
+      return;
+    }
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const p=GM._npcPlans[0],s=p&&p.status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+JSON.stringify({status:s,turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,preSubmit:endTurn&&endTurn._preSubmitInFlight,aiKey:!!(P&&P.ai&&P.ai.key),inferCalls:window.__dutyInferCalls||0,setupCalls:window.__dutySetupCalls||0,modelAttempts:window.__dutyModelAttempts||0,toast:document.getElementById('toast')&&document.getElementById('toast').textContent,pending:GM._pendingShijiModal&&{aiReady:GM._pendingShijiModal.aiReady,courtDone:GM._pendingShijiModal.courtDone},messages:p&&p.messages&&p.messages.map(m=>({kind:m.kind,status:m.status,deliveryTurn:m.deliveryTurn,sentTurn:m.sentTurn})),queued:GM._npcBehaviorPostTurnQueued})));return;}setTimeout(poll,100);})()})`);
   }
   await fullTurn(false);

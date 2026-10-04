@@ -52,6 +52,7 @@ module.exports = async function ({ win, root, check }) {
   await js(`(()=>{
     P.ai={key:'office-duty-fixture',url:'https://office-duty-fixture.invalid/v1',model:'fixture'};
     window.__dutyModelAttempts=0;
+    if(TM.PartyClassLlmCalibrator)TM.PartyClassLlmCalibrator.flushBeforeSubmit=async function(){return{ok:true,applied:{},source:'office-duty-fixture'};};
     window._aiFetchWithRetry=async function(url,body){
       window.__dutyModelAttempts++;
       let u='';try{const b=typeof body==='string'?JSON.parse(body):body;u=(b.messages&&b.messages[b.messages.length-1]&&b.messages[b.messages.length-1].content)||'';}catch(e){}

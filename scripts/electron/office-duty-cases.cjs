@@ -105,6 +105,11 @@ module.exports = async function ({ win, root, check }) {
       };
       return configured;
     };
+    // These two unrelated background inferences are outside the public-duty
+    // acceptance path. Replace only their external model boundary so several
+    // real delivery turns stay within the disposable Electron gate timeout.
+    window.scThreeSystemsAI=async function(){return{fixture:true,source:'office-duty-fixture'};};
+    window.aiDigestLongTermActions=async function(){return{fixture:true,source:'office-duty-fixture'};};
   })()`);
   async function fullTurn(requireFeedback=true) {
     await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);

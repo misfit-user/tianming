@@ -111,7 +111,7 @@ module.exports = async function ({ win, root, check }) {
     await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);
     await settle();
     await click('#gs-turn-big');
-    await js(`(async()=>{for(let i=0;i<200&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing formal end-turn confirmation');ok.click();})()`);
+    await js(`(async()=>{for(let i=0;i<200&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing formal end-turn confirmation '+JSON.stringify({turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,preSubmit:endTurn&&endTurn._preSubmitInFlight,buttonDisabled:document.getElementById('gs-turn-big')&&document.getElementById('gs-turn-big').disabled,buttonDisplay:document.getElementById('gs-turn-big')&&getComputedStyle(document.getElementById('gs-turn-big')).display,turnModal:document.getElementById('turn-modal')&&document.getElementById('turn-modal').className,topModal:typeof _tmTopModalLayer==='function'&&_tmTopModalLayer()&&_tmTopModalLayer().node&&_tmTopModalLayer().node.id,confirmType:TM.Endturn&&TM.Endturn.run&&typeof TM.Endturn.run.confirmEndTurn}));ok.click();})()`);
     // Select the ordinary "静候有司" branch so the top-level transaction
     // reaches its normal finalize boundary; the separate court-deferred path
     // is covered by the existing end-turn court tests.

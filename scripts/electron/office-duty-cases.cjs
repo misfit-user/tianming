@@ -60,6 +60,13 @@ module.exports = async function ({ win, root, check }) {
       if(/据此产出完整史记|shilu_text|shizhengji/.test(u))out={shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],events:[]};
       return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
     };
+    // Keep the endTurn transaction and all deterministic systems real while
+    // replacing only the external inference boundary with a valid result.
+    window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){
+      const result={timeRatio:1,shizhengji:'本回合按既定材料推进常务。',zhengwen:'按既定规则结算。',turnSummary:'常务办理',playerStatus:'办理中',playerInner:'继续核对事项。',shiluText:'本回合按既定事项推进。',szjTitle:'常务办理',szjSummary:'常务按材料推进。',hourenXishuo:'',personnelChanges:[],events:[],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};
+      if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.record=Object.assign(externalCtx.record||{},result);}
+      return result;
+    };
   })()`);
   async function fullTurn() {
     await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);

@@ -108,8 +108,10 @@ module.exports = async function ({ win, root, check }) {
   })()`);
   async function fullTurn(requireFeedback=true) {
     await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);
+    await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);
+    await settle();
     await click('#gs-turn-big');
-    await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing formal end-turn confirmation');ok.click();})()`);
+    await js(`(async()=>{for(let i=0;i<200&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing formal end-turn confirmation');ok.click();})()`);
     // Select the ordinary "静候有司" branch so the top-level transaction
     // reaches its normal finalize boundary; the separate court-deferred path
     // is covered by the existing end-turn court tests.

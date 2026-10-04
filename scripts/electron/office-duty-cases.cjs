@@ -123,7 +123,8 @@ module.exports = async function ({ win, root, check }) {
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const p=GM._npcPlans[0],s=p&&p.status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+JSON.stringify({status:s,turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,preSubmit:endTurn&&endTurn._preSubmitInFlight,aiKey:!!(P&&P.ai&&P.ai.key),inferCalls:window.__dutyInferCalls||0,setupCalls:window.__dutySetupCalls||0,modelAttempts:window.__dutyModelAttempts||0,toast:document.getElementById('toast')&&document.getElementById('toast').textContent,pending:GM._pendingShijiModal&&{aiReady:GM._pendingShijiModal.aiReady,courtDone:GM._pendingShijiModal.courtDone},messages:p&&p.messages&&p.messages.map(m=>({kind:m.kind,status:m.status,deliveryTurn:m.deliveryTurn,sentTurn:m.sentTurn})),queued:GM._npcBehaviorPostTurnQueued})));return;}setTimeout(poll,100);})()})`);
   }
   await fullTurn(false);
-  if((await js(`GM._npcPlans[0]?.status`))==='in_transit')await fullTurn(true);
+  const firstStatus=await js(`GM._npcPlans[0]?.status`);
+  if(firstStatus==='in_transit'||firstStatus==='awaiting_response')await fullTurn(true);
   await check('production time and local dispatch reach a real payment and player feedback', async () => {
     const r = await js(`(()=>({turn:GM.turn,status:GM._npcPlans[0]?.status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length,policy:!!GM._npcDutyMatters[0]?.transferPolicy,systems:!!GM._lastEndturnSystemsTimings,modelAttempts:window.__dutyModelAttempts||0}))()`);
     assert.equal(r.status, 'awaiting_feedback', JSON.stringify(r)); assert.equal(r.source,42); assert.equal(r.dest,8); assert.equal(r.transfers,1); assert(r.policy);

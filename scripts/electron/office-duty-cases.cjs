@@ -72,7 +72,10 @@ module.exports = async function ({ win, root, check }) {
     // fetch implementation.
     const dutyRealFetch=window.fetch;
     window.fetch=async function(url,opts){
-      if(String(url).indexOf('https://office-duty-fixture.invalid/')===0){
+      const bodyText=opts&&opts.body!=null?String(opts.body):'';
+      const isDutyAI=String(url).indexOf('https://office-duty-fixture.invalid/')===0
+        || (opts&&String(opts.method||'').toUpperCase()==='POST'&&bodyText.indexOf('"messages"')>=0);
+      if(isDutyAI){
         const data=await window._aiFetchWithRetry(url,opts&&opts.body);
         return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});
       }

@@ -1058,7 +1058,7 @@ async function _endTurnCore(options){
     await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
     GM.busy=false; // arch-ok end-turn transaction owns post-commit cleanup
     GM._endTurnBusy=false; // arch-ok end-turn transaction owns post-commit cleanup
-    _tmRefreshEndTurnButtonState();
+    if (typeof _tmRefreshEndTurnButtonState === 'function') _tmRefreshEndTurnButtonState();
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
     return;
   }
@@ -1078,7 +1078,7 @@ async function _endTurnCore(options){
   await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
   GM.busy=false;
   GM._endTurnBusy=false;
-  _tmRefreshEndTurnButtonState();
+  if (typeof _tmRefreshEndTurnButtonState === 'function') _tmRefreshEndTurnButtonState();
   _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
   } catch (error) {
     var completionPolicy=globalThis.TM&&TM.Endturn&&TM.Endturn.Validity;
@@ -1088,7 +1088,7 @@ async function _endTurnCore(options){
         if(Number(GM.turn)===Number(_turnTxn.turn))GM.turn=Number(_turnTxn.turn)+1; // arch-ok: completion owner advances the generated turn exactly once after an auxiliary tail failure.
         await _tmFinalizeEndTurnTransaction(_obsCtx,_turnTxn);
         GM.busy=false;GM._endTurnBusy=false; // arch-ok: successful canonical commit owns the completion flags.
-        _tmRefreshEndTurnButtonState();
+        if (typeof _tmRefreshEndTurnButtonState === 'function') _tmRefreshEndTurnButtonState();
         _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit-with-warnings');return;
       }catch(saveError){error=saveError;}
     }
@@ -1134,7 +1134,7 @@ async function _endTurnCore(options){
     toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message)) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;
-    _tmRefreshEndTurnButtonState();
+    if (typeof _tmRefreshEndTurnButtonState === 'function') _tmRefreshEndTurnButtonState();
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-error');
     var btn = _$("btn-end")||_$("btn-end-turn");
     if (btn) {

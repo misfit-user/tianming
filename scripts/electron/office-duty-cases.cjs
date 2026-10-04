@@ -66,6 +66,18 @@ module.exports = async function ({ win, root, check }) {
       return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
     };
     window._tmAIFetch=async function(url,opts){const data=await window._aiFetchWithRetry(url,opts&&opts.body);return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});};
+    // Some production call sites use the transport directly instead of the
+    // retry alias.  Keep the same deterministic fixture at the real renderer
+    // fetch boundary too; all non-fixture resources retain the production
+    // fetch implementation.
+    const dutyRealFetch=window.fetch;
+    window.fetch=async function(url,opts){
+      if(String(url).indexOf('https://office-duty-fixture.invalid/')===0){
+        const data=await window._aiFetchWithRetry(url,opts&&opts.body);
+        return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});
+      }
+      return dutyRealFetch.apply(this,arguments);
+    };
     // Keep the endTurn transaction and all deterministic systems real while
     // replacing only the external inference boundary with a valid result.
     window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){

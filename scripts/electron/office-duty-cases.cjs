@@ -70,7 +70,7 @@ module.exports = async function ({ win, root, check }) {
     await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(false);})()`);
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal endTurn timeout'));return;}setTimeout(poll,100);})()})`);
     await settle();
-    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const s=GM._npcPlans[0]&&GM._npcPlans[0].status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+s));return;}setTimeout(poll,100);})()})`);
+    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const p=GM._npcPlans[0],s=p&&p.status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+JSON.stringify({status:s,turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,pending:GM._pendingShijiModal&&{aiReady:GM._pendingShijiModal.aiReady,courtDone:GM._pendingShijiModal.courtDone},messages:p&&p.messages&&p.messages.map(m=>({kind:m.kind,status:m.status,deliveryTurn:m.deliveryTurn,sentTurn:m.sentTurn})),queued:GM._npcBehaviorPostTurnQueued})));return;}setTimeout(poll,100);})()})`);
   }
   await fullTurn();
   await check('production time and local dispatch reach a real payment and player feedback', async () => {

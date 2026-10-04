@@ -49,8 +49,8 @@ module.exports = async function ({ win, root, check }) {
   await js(`(()=>{const panel=document.querySelector('[data-office-duty-panel]'),matter=panel.querySelector('[data-duty-matter]'),target=panel.querySelector('[data-duty-target]'),amount=panel.querySelector('[data-duty-amount]');matter.value=matter.options[matter.options.length-1].value;matter.dispatchEvent(new Event('change',{bubbles:true}));target.value='duty-cashier';amount.value='8';})()`);
   await click('[data-office-duty="request-transfer"]');
   await check('formal UI request becomes a canonical plan without payment', async () => {
-    const r = await js(`(()=>{const p=GM._npcPlans[0];return{status:p&&p.status,matter:p&&p.task?.basis?.matterRef?.id,transfers:(GM._publicTreasuryTransfers||[]).length};})()`);
-    assert.equal(r.status, 'in_transit'); assert(r.matter); assert.equal(r.transfers, 0);
+    const r = await js(`(()=>{const p=GM._npcPlans[0],fb=document.querySelector('[data-duty-feedback]');return{status:p&&p.status,matter:p&&p.task?.basis?.matterRef?.id,transfers:(GM._publicTreasuryTransfers||[]).length,feedback:fb&&fb.textContent,plans:(GM._npcPlans||[]).map(x=>({id:x.id,status:x.status,targetId:x.targetId,task:x.task&&x.task.kind})),chars:(GM.chars||[]).filter(x=>x.id==='duty-player'||x.id==='duty-cashier').map(x=>({id:x.id,alive:x.alive,isPlayer:x.isPlayer}))};})()`);
+    assert.equal(r.status, 'in_transit', JSON.stringify(r)); assert(r.matter, JSON.stringify(r)); assert.equal(r.transfers, 0, JSON.stringify(r));
   });
   await js(`(()=>{if(TMPhase8FormalBridge.closePanel)TMPhase8FormalBridge.closePanel();})()`); await settle();
   // The browser case uses the real top-level endTurn entry.  The transport

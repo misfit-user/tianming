@@ -56,7 +56,7 @@ module.exports = async function ({ win, root, check }) {
     window._aiFetchWithRetry=async function(url,body){
       window.__dutyModelAttempts++;
       let u='';try{const b=typeof body==='string'?JSON.parse(body):body;u=(b.messages&&b.messages[b.messages.length-1]&&b.messages[b.messages.length-1].content)||'';}catch(e){}
-      let out={summary:'本回合按既定材料推进常务。',ok:true,events:[],char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[]};
+      let out={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',summary:'本回合按既定材料推进常务。',ok:true,events:[],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[],resource_changes:{}};
       if(/后人戏说|houren_xishuo|场景叙事/.test(u))out={houren_xishuo:'本回合按已知事项推进。',zhengwen:'按既定规则结算。',new_activities:[]};
       if(/据此产出完整史记|shilu_text|shizhengji/.test(u))out={shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],events:[]};
       return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};

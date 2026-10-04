@@ -64,7 +64,10 @@ module.exports = async function ({ win, root, check }) {
   async function fullTurn() {
     await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);
     await click('#gs-turn-big');
-    await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(true);})()`);
+    // Select the ordinary "静候有司" branch so the top-level transaction
+    // reaches its normal finalize boundary; the separate court-deferred path
+    // is covered by the existing end-turn court tests.
+    await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(false);})()`);
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal endTurn timeout'));return;}setTimeout(poll,100);})()})`);
     await settle();
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const s=GM._npcPlans[0]&&GM._npcPlans[0].status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+s));return;}setTimeout(poll,100);})()})`);

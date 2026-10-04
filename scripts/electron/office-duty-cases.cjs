@@ -123,6 +123,10 @@ module.exports = async function ({ win, root, check }) {
     await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(false);})()`);
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal endTurn timeout'));return;}setTimeout(poll,100);})()})`);
     await settle();
+    // The production pipeline schedules local NPC work as a post-render job.
+    // Await that queued job before starting the next formal turn so delivery
+    // and the NPC response are observed in their real order.
+    await js(`(async()=>{if(typeof _awaitPostTurnJobsById==='function')await _awaitPostTurnJobsById(['npc_behavior']);})()`);
     // A real request needs one turn to deliver the request and a later turn
     // to deliver the response.  The first call therefore intentionally stops
     // after the production turn commit while the matter remains in_transit.

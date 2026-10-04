@@ -56,16 +56,20 @@ module.exports = async function ({ win, root, check }) {
     window._aiFetchWithRetry=async function(url,body){
       window.__dutyModelAttempts++;
       let u='';try{const b=typeof body==='string'?JSON.parse(body):body;u=(b.messages&&b.messages[b.messages.length-1]&&b.messages[b.messages.length-1].content)||'';}catch(e){}
-      let out={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',summary:'本回合按既定材料推进常务。',ok:true,events:[],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[],resource_changes:{}};
+      let out={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',summary:'本回合按既定材料推进常务。',ok:true,events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[],resource_changes:{}};
       if(/后人戏说|houren_xishuo|场景叙事/.test(u))out={houren_xishuo:'本回合按已知事项推进。',zhengwen:'按既定规则结算。',new_activities:[]};
-      if(/据此产出完整史记|shilu_text|shizhengji/.test(u))out={shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],events:[]};
+      // Keep the structured result contract for the main SC1 request.  The
+      // prompt contains shilu/shizhengji field names, so matching those names
+      // here used to replace the valid result with an empty object and made
+      // the real end-turn validator report "SC1 结构化数据为空".
+      if(/据此产出完整史记/.test(u))out=Object.assign({},out,{shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。'});
       return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
     };
     window._tmAIFetch=async function(url,opts){const data=await window._aiFetchWithRetry(url,opts&&opts.body);return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});};
     // Keep the endTurn transaction and all deterministic systems real while
     // replacing only the external inference boundary with a valid result.
     window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){
-      const result={timeRatio:1,shizhengji:'本回合按既定材料推进常务。',zhengwen:'按既定规则结算。',turnSummary:'常务办理',playerStatus:'办理中',playerInner:'继续核对事项。',shiluText:'本回合按既定事项推进。',szjTitle:'常务办理',szjSummary:'常务按材料推进。',hourenXishuo:'',personnelChanges:[],events:[],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};
+      const result={timeRatio:1,shizhengji:'本回合按既定材料推进常务。',zhengwen:'按既定规则结算。',turnSummary:'常务办理',playerStatus:'办理中',playerInner:'继续核对事项。',shiluText:'本回合按既定事项推进。',szjTitle:'常务办理',szjSummary:'常务按材料推进。',hourenXishuo:'',personnelChanges:[],events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};
       if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.record=Object.assign(externalCtx.record||{},result);}
       return result;
     };

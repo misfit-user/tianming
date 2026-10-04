@@ -57,7 +57,7 @@ module.exports = async function ({ win, root, check }) {
       window.__dutyModelAttempts++;
       let u='';try{const b=typeof body==='string'?JSON.parse(body):body;u=(b.messages&&b.messages[b.messages.length-1]&&b.messages[b.messages.length-1].content)||'';}catch(e){}
       let out={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',summary:'本回合按既定材料推进常务。',ok:true,events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[],resource_changes:{}};
-      if(/后人戏说|houren_xishuo|场景叙事/.test(u))out={houren_xishuo:'本回合按已知事项推进。',zhengwen:'按既定规则结算。',new_activities:[]};
+      if(/后人戏说|houren_xishuo|场景叙事/.test(u))out=Object.assign({},out,{houren_xishuo:'本回合按已知事项推进。'});
       // Keep the structured result contract for the main SC1 request.  The
       // prompt contains shilu/shizhengji field names, so matching those names
       // here used to replace the valid result with an empty object and made

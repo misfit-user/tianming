@@ -88,6 +88,19 @@ module.exports = async function ({ win, root, check }) {
       if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.record=Object.assign(externalCtx.record||{},result);}
       return result;
     };
+    // The production inferer receives its model adapter from setupInfra.  Use
+    // that exact adapter seam so the real end-turn pipeline remains intact even
+    // when a build exposes the transport through a private lexical binding.
+    const dutySetupInfra=TM.Endturn.AI.subcalls.setupInfra;
+    TM.Endturn.AI.subcalls.setupInfra=function(ctx){
+      const configured=dutySetupInfra(ctx);
+      ctx.subcalls._callEndturnAI=async function(){
+        const parsed={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],changes:[],resource_changes:{}};
+        const raw=JSON.stringify(parsed),data={choices:[{message:{content:raw},finish_reason:'stop'}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
+        return {data,raw,parse:{parsed,raw,repaired:false,truncated:false}};
+      };
+      return configured;
+    };
   })()`);
   async function fullTurn() {
     await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);

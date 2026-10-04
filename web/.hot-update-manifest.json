@@ -5186,8 +5186,8 @@
     },
     {
       "path": "tm-endturn-core.js",
-      "sha256": "5a1e04574e131ca84bb3d85a61a47c2440f1f3247bd330add30f49644309b7e0",
-      "size": 107370
+      "sha256": "30b1a87d2ccc3be17614d63050bd4f53cc0ae8cd1a2663a2f1d3bea65c2c8fb0",
+      "size": 107940
     },
     {
       "path": "tm-endturn-edict.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "6873615279598a8f5252d5b6371eaa1283563ab74756fdc741d47482c80de1ea",
+      "sha256": "48480d2d39e9f8b988d95ef68a3a07c198013c5c6c852f332cbcf4e8a7e65775",
       "size": 138846
     },
     {

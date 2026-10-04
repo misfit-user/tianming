@@ -27,6 +27,15 @@ async function _tmRunCriticalEndTurnSystem(label, fn) {
   }
 }
 
+// The result renderer runs while the transaction is still busy. Refresh the
+// real turn button after the commit/rollback owner clears those flags.
+function _tmRefreshEndTurnButtonState() {
+  try {
+    var btn = typeof _$ === 'function' ? (_$('gs-turn-big') || _$('btn-end') || _$('btn-end-turn')) : null;
+    if (btn) btn.disabled = !!(typeof GM !== 'undefined' && GM && (GM.busy || GM._endTurnBusy));
+  } catch (_) {}
+}
+
 async function _tmRunEndTurnDeterministicTail() {
   await _tmRunCriticalEndTurnSystem('endTurn] building works tick', function() {
     if (typeof window !== 'undefined' && window.TM && TM.BuildingWorks && typeof TM.BuildingWorks.tick === 'function') {
@@ -1049,6 +1058,7 @@ async function _endTurnCore(options){
     await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
     GM.busy=false; // arch-ok end-turn transaction owns post-commit cleanup
     GM._endTurnBusy=false; // arch-ok end-turn transaction owns post-commit cleanup
+    _tmRefreshEndTurnButtonState();
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
     return;
   }
@@ -1068,6 +1078,7 @@ async function _endTurnCore(options){
   await _tmFinalizeEndTurnTransaction(_obsCtx, _turnTxn);
   GM.busy=false;
   GM._endTurnBusy=false;
+  _tmRefreshEndTurnButtonState();
   _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit');
   } catch (error) {
     var completionPolicy=globalThis.TM&&TM.Endturn&&TM.Endturn.Validity;
@@ -1077,6 +1088,7 @@ async function _endTurnCore(options){
         if(Number(GM.turn)===Number(_turnTxn.turn))GM.turn=Number(_turnTxn.turn)+1; // arch-ok: completion owner advances the generated turn exactly once after an auxiliary tail failure.
         await _tmFinalizeEndTurnTransaction(_obsCtx,_turnTxn);
         GM.busy=false;GM._endTurnBusy=false; // arch-ok: successful canonical commit owns the completion flags.
+        _tmRefreshEndTurnButtonState();
         _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-commit-with-warnings');return;
       }catch(saveError){error=saveError;}
     }
@@ -1122,6 +1134,7 @@ async function _endTurnCore(options){
     toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message)) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;
+    _tmRefreshEndTurnButtonState();
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-error');
     var btn = _$("btn-end")||_$("btn-end-turn");
     if (btn) {

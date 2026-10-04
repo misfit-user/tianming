@@ -21,7 +21,10 @@ module.exports = async function ({ win, root, check }) {
     const box=n=>({stock:n,available:n,quota:100,used:0});
     const player={id:'duty-player',name:'玩家申请人',alive:true,isPlayer:true,location:'京师',regionId:'capital'};
     const cashier={id:'duty-cashier',name:'库吏',alive:true,location:'京师',regionId:'capital'};
-    GM.sid='office-duty-browser';GM.turn=1;GM.running=true;GM.busy=false;GM.playerInfo=P.playerInfo;GM.chars=[player,cashier];
+    GM.sid='office-duty-browser';GM.turn=1;GM.running=true;GM.busy=false;GM.playerInfo=P.playerInfo;
+    const existingChars=Array.isArray(GM.chars)?GM.chars.filter(c=>c&&c.id&&c.id!=='duty-player'&&c.id!=='duty-cashier'):[];
+    existingChars.forEach(c=>{c.alive=false;c.dead=true;});
+    GM.chars=existingChars.concat([player,cashier]);
     const existingFacs=Array.isArray(GM.facs)?GM.facs.filter(f=>f&&f.id):[];
     if(!existingFacs.some(f=>f.id==='court'))existingFacs.push({id:'court',name:'朝廷',isPlayer:true});
     else existingFacs.forEach(f=>{if(f.id==='court'){f.name='朝廷';f.isPlayer=true;}});

@@ -132,7 +132,7 @@ module.exports = async function ({ win, root, check }) {
   // Delivery and local decision are separate production-turn boundaries. Run
   // a bounded continuation loop rather than treating an in-transit response
   // as a failed duty; every iteration still clicks the formal turn control.
-  for(let i=0;i<5;i++){
+  for(let i=0;i<6;i++){
     const status=await js(`GM._npcPlans[0]?.status`);
     if(status==='awaiting_feedback'||status==='done')break;
     await fullTurn(false);

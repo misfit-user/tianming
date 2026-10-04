@@ -21,7 +21,11 @@ module.exports = async function ({ win, root, check }) {
     const box=n=>({stock:n,available:n,quota:100,used:0});
     const player={id:'duty-player',name:'玩家申请人',alive:true,isPlayer:true,location:'京师',regionId:'capital'};
     const cashier={id:'duty-cashier',name:'库吏',alive:true,location:'京师',regionId:'capital'};
-    GM.sid='office-duty-browser';GM.turn=1;GM.running=true;GM.busy=false;GM.playerInfo=P.playerInfo;GM.chars=[player,cashier];GM.facs=[{id:'court',name:'朝廷',isPlayer:true}];
+    GM.sid='office-duty-browser';GM.turn=1;GM.running=true;GM.busy=false;GM.playerInfo=P.playerInfo;GM.chars=[player,cashier];
+    const existingFacs=Array.isArray(GM.facs)?GM.facs.filter(f=>f&&f.id):[];
+    if(!existingFacs.some(f=>f.id==='court'))existingFacs.push({id:'court',name:'朝廷',isPlayer:true});
+    else existingFacs.forEach(f=>{if(f.id==='court'){f.name='朝廷';f.isPlayer=true;}});
+    GM.facs=existingFacs;
     GM.officeTree=[{id:'source',name:'甲署',authorityFactionId:'court',publicTreasury:{money:box(50),grain:box(0),cloth:box(0)},positions:[{id:'cashier',name:'库吏',holderId:'duty-cashier',holder:'库吏',actualHolders:[{characterId:'duty-cashier',name:'库吏',appointmentId:'cashier-appt'}],powers:{treasurySpend:true,publicTransferDecide:true},publicTransferDecision:{maxMoney:8,allowedSubjects:['water-browser']},treasuryBinding:{role:'custodian',accountRef:'source'},authorityScope:{accountRefs:['dest']}}]},{id:'dest',name:'乙署',authorityFactionId:'court',publicTreasury:{money:box(0),grain:box(0),cloth:box(0)},positions:[]}];
     GM.publicTreasuryConfig={schema:'tm-public-treasury/2',accounts:['source','dest'].map(id=>({id,kind:'physical',factionId:'court',source:{kind:'department',id}}))};
     GM.documents=[{id:'browser-material',version:1,kind:'document',public:true,status:'confirmed',factStatus:'confirmed',organizationId:'court',subjectId:'water-browser',fromAccount:'source',toAccount:'dest',content:'已核对春耕水利材料'}];

@@ -97,6 +97,14 @@
             TM.Endturn.Timing.mark(ctx, 'background', { id: 'npc_behavior', phase: 'start', turn: queuedTurn });
           }
           if (npcLease && !_tmWorldLeaseCurrent(npcLease)) return;
+          // The render-finalize step enqueues this job before the transaction
+          // owner clears its busy flags. LocalAI intentionally refuses to
+          // decide while the world is busy, so wait for the committed boundary
+          // instead of consuming the job as a no-op and losing the wakeup.
+          while (GM && (GM.busy || GM._endTurnBusy)) {
+            await new Promise(function(resolve) { setTimeout(resolve, 25); });
+            if (npcLease && !_tmWorldLeaseCurrent(npcLease)) return;
+          }
           await executeNpcBehaviors({idle:true});
           if (npcLease && !_tmWorldLeaseCurrent(npcLease)) return;
           if (typeof _scheduleNpcIdleAutonomyLoop === 'function') {

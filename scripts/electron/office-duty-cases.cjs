@@ -22,7 +22,7 @@ module.exports = async function ({ win, root, check }) {
     const player={id:'duty-player',name:'玩家申请人',alive:true,isPlayer:true,location:'京师',regionId:'capital'};
     const cashier={id:'duty-cashier',name:'库吏',alive:true,location:'京师',regionId:'capital'};
     GM.sid='office-duty-browser';GM.turn=1;GM.running=true;GM.busy=false;GM.playerInfo=P.playerInfo;GM.chars=[player,cashier];GM.facs=[{id:'court',name:'朝廷',isPlayer:true}];
-    GM.officeTree=[{id:'source',name:'甲署',authorityFactionId:'court',publicTreasury:{money:box(50),grain:box(0),cloth:box(0)},positions:[{id:'cashier',name:'库吏',holderId:'duty-cashier',holder:'库吏',actualHolders:[{characterId:'duty-cashier',name:'库吏',appointmentId:'cashier-appt'}],powers:{treasurySpend:true},treasuryBinding:{role:'custodian',accountRef:'source'},authorityScope:{accountRefs:['dest']}}]},{id:'dest',name:'乙署',authorityFactionId:'court',publicTreasury:{money:box(0),grain:box(0),cloth:box(0)},positions:[]}];
+    GM.officeTree=[{id:'source',name:'甲署',authorityFactionId:'court',publicTreasury:{money:box(50),grain:box(0),cloth:box(0)},positions:[{id:'cashier',name:'库吏',holderId:'duty-cashier',holder:'库吏',actualHolders:[{characterId:'duty-cashier',name:'库吏',appointmentId:'cashier-appt'}],powers:{treasurySpend:true,publicTransferDecide:true},publicTransferDecision:{maxMoney:8,allowedSubjects:['water-browser']},treasuryBinding:{role:'custodian',accountRef:'source'},authorityScope:{accountRefs:['dest']}}]},{id:'dest',name:'乙署',authorityFactionId:'court',publicTreasury:{money:box(0),grain:box(0),cloth:box(0)},positions:[]}];
     GM.publicTreasuryConfig={schema:'tm-public-treasury/2',accounts:['source','dest'].map(id=>({id,kind:'physical',factionId:'court',source:{kind:'department',id}}))};
     GM.documents=[{id:'browser-material',version:1,kind:'document',public:true,status:'confirmed',factStatus:'confirmed',organizationId:'court',subjectId:'water-browser',fromAccount:'source',toAccount:'dest',content:'已核对春耕水利材料'}];
     GM.memorials=[];GM._npcDutyMatters=[];GM._npcPlans=[];GM._publicTreasuryTransfers=[];GM._npcActionLedger=[];GM.letters=[];GM.evtLog=[];GM._turnContext={npcActionsThisTurn:[]};
@@ -46,25 +46,50 @@ module.exports = async function ({ win, root, check }) {
     assert.equal(r.status, 'in_transit'); assert(r.matter); assert.equal(r.transfers, 0);
   });
   await js(`(()=>{if(TMPhase8FormalBridge.closePanel)TMPhase8FormalBridge.closePanel();})()`); await settle();
-  // Full endTurn remains guarded by the game's model contract.  The systems
-  // stage is the production deterministic time boundary used by endTurn; it
-  // advances SimTime, runs normal deterministic systems, then local duty.
-  for (let i=0;i<8;i++) {
-    await js(`(async()=>{await _endTurn_updateSystems(1,'');TM.NPC.LocalAI.wake('turn');TM.NPC.ActionLedger.advance(GM);})()`);
+  // The browser case uses the real top-level endTurn entry.  The transport
+  // hook is an in-process deterministic model substitute; no network request
+  // is made and the normal prep/AI/systems/finalize transaction still runs.
+  await js(`(()=>{
+    P.ai={key:'office-duty-fixture',url:'https://office-duty-fixture.invalid/v1',model:'fixture'};
+    window.__dutyModelAttempts=0;
+    window._aiFetchWithRetry=async function(url,body){
+      window.__dutyModelAttempts++;
+      let u='';try{const b=typeof body==='string'?JSON.parse(body):body;u=(b.messages&&b.messages[b.messages.length-1]&&b.messages[b.messages.length-1].content)||'';}catch(e){}
+      let out={summary:'本回合按既定材料推进常务。',ok:true,events:[],char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],new_activities:[],letters:[]};
+      if(/后人戏说|houren_xishuo|场景叙事/.test(u))out={houren_xishuo:'本回合按已知事项推进。',zhengwen:'按既定规则结算。',new_activities:[]};
+      if(/据此产出完整史记|shilu_text|shizhengji/.test(u))out={shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],events:[]};
+      return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
+    };
+  })()`);
+  async function fullTurn() {
+    await js(`(()=>{P.ai=P.ai||{};if(!P.ai.key)P.ai.key='office-duty-fixture';if(!P.ai.url)P.ai.url='https://office-duty-fixture.invalid/v1';})()`);
+    await click('#gs-turn-big');
+    await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(true);})()`);
+    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal endTurn timeout'));return;}setTimeout(poll,100);})()})`);
     await settle();
-    const state = await js(`GM._npcPlans[0]&&GM._npcPlans[0].status`);
-    if (state === 'awaiting_feedback') break;
+    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const s=GM._npcPlans[0]&&GM._npcPlans[0].status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+s));return;}setTimeout(poll,100);})()})`);
   }
+  await fullTurn();
   await check('production time and local dispatch reach a real payment and player feedback', async () => {
-    const r = await js(`(()=>({turn:GM.turn,status:GM._npcPlans[0]?.status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length,policy:!!GM._npcDutyMatters[0]?.transferPolicy}))()`);
+    const r = await js(`(()=>({turn:GM.turn,status:GM._npcPlans[0]?.status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length,policy:!!GM._npcDutyMatters[0]?.transferPolicy,systems:!!GM._lastEndturnSystemsTimings,modelAttempts:window.__dutyModelAttempts||0}))()`);
     assert.equal(r.status, 'awaiting_feedback', JSON.stringify(r)); assert.equal(r.source,42); assert.equal(r.dest,8); assert.equal(r.transfers,1); assert(r.policy);
+    assert(r.turn > 1 && r.systems, JSON.stringify(r));
   });
+  const timeline = [];
+  timeline.push(await js(`(()=>({stage:'paid-before-save',day:TM.SimTime&&TM.SimTime.now?TM.SimTime.now(GM):GM.turn,turn:GM.turn,planId:GM._npcPlans[0].id,status:GM._npcPlans[0].status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length}))()`));
   const saved = await js(`(async()=>{const x=await tianming.saveProject('正式常务隔离验收',_buildSaveState({format:'project',detach:true}));if(!x.success)throw Error(x.error||'save failed');return x;})()`);
   assert(saved && saved.success);
-  await js(`(()=>{const p=GM._npcPlans[0];return TM.NPC.ActionLedger.playerRespond(p.id,'satisfied','已收到实际交割')})()`);
-  await js(`(async()=>{await _endTurn_updateSystems(1,'');TM.NPC.ActionLedger.advance(GM);})()`);
+  const reloaded = await js(`(async()=>{const list=await tianming.listSaves(),row=list.files.find(x=>x.storageKey===${JSON.stringify(saved.storageKey)});if(!row)throw Error('saved row missing');const loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error||'load failed');const before=window._tmLoadGen||0;await fullLoadGame(loaded.data,{source:'office-duty-browser-reload',preserveTimeline:true});return{before,after:window._tmLoadGen||0,turn:GM.turn,status:GM._npcPlans[0]?.status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length};})()`);
+  timeline.push(Object.assign({stage:'reloaded',saveKey:saved.storageKey}, reloaded));
+  assert(reloaded.after > reloaded.before && reloaded.status === 'awaiting_feedback' && reloaded.transfers === 1, JSON.stringify(reloaded));
+  await js(`(()=>{TMPhase8FormalBridge.openPanel('archive');renderOfficeTree(true);})()`); await settle();
+  await click('[data-office-duty-response="satisfied"][data-office-duty-plan="' + (await js(`GM._npcPlans[0].id`)) + '"]');
+  await fullTurn();
+  timeline.push(await js(`(()=>({stage:'feedback-after-reload',day:TM.SimTime&&TM.SimTime.now?TM.SimTime.now(GM):GM.turn,turn:GM.turn,status:GM._npcPlans[0].status,source:GM.officeTree[0].publicTreasury.money.stock,dest:GM.officeTree[1].publicTreasury.money.stock,transfers:(GM._publicTreasuryTransfers||[]).length}))()`));
   await check('feedback and desktop save preserve one terminal result', async () => {
-    const r=await js(`(()=>({status:GM._npcPlans[0]?.status,transfers:(GM._publicTreasuryTransfers||[]).length,source:GM.officeTree[0].publicTreasury.money.stock}))()`);
+    const r=await js(`(()=>({status:GM._npcPlans[0]?.status,transfers:(GM._publicTreasuryTransfers||[]).length,source:GM.officeTree[0].publicTreasury.money.stock,timeline:JSON.parse(${JSON.stringify(JSON.stringify(timeline))})}))()`);
     assert.equal(r.status,'done');assert.equal(r.transfers,1);assert.equal(r.source,42);
+    assert(r.timeline.length===3,JSON.stringify(r));
+    fs.writeFileSync(path.join(process.env.TM_BRIDGE_TEST_REPORT ? path.dirname(process.env.TM_BRIDGE_TEST_REPORT) : root, 'office-duty-timeline.json'), JSON.stringify({head:require('child_process').execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),stages:r.timeline,modelAttempts:await js(`window.__dutyModelAttempts||0`),externalRequests:0},null,2)+'\n');
   });
 };

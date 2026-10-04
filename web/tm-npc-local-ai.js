@@ -14,6 +14,9 @@
   function copy(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
   function key(v) { return v == null ? '' : String(v).trim(); }
   function finite(v) { return v != null && v !== '' && isFinite(Number(v)); }
+  // Quota values are domain data, not UI strings.  In particular, null must
+  // never become zero through Number(null) or the global isFinite().
+  function finiteNumber(v) { return typeof v === 'number' && Number.isFinite(v); }
   function currentDay() { return TM.SimTime && TM.SimTime.now ? TM.SimTime.now(root.GM) : Number(root.GM && root.GM.turn || 0); }
   function sameId(a, b) { return key(a) !== '' && key(a) === key(b); }
   function list(v) { return Array.isArray(v) ? v : []; }
@@ -189,17 +192,20 @@
     if (row.allowPublicTransfer !== true && policy.allowMoney !== true && policy.allowPublicTransfer !== true && !pendingTransfer) return { ok: false, reason: 'duty_purpose_not_authorized', matterRef: ref };
     return { ok: true, ref: ref, record: row, version: version, policy: policy, pendingTransfer: pendingTransfer, pendingPolicy: !!(pendingTransfer && policy.allowMoney !== true && policy.allowPublicTransfer !== true && row.allowPublicTransfer !== true), subjectId: subjectId || rowSubject };
   }
-  function dutyEvidence(task, ch) {
+  function dutyEvidence(task, ch, options) {
+    options = options || {};
     var matter = dutyMatter(task, ch);
     if (!matter.ok) return matter;
-    if (matter.pendingPolicy) return { ok: false, reason: 'duty_purpose_not_authorized', matter: matter };
+    if (matter.pendingPolicy && options.allowPendingPolicy !== true) return { ok: false, reason: 'duty_purpose_not_authorized', matter: matter };
     var refs = dutyRefs(task, matter.record), basis = task && (task.basis || task.requestBasis) || {};
     if (!refs.length) return { ok: false, reason: 'duty_material_reference_required', matter: matter };
     var checked = [], missing = [], hidden = [], unverified = [], unrelated = [];
     function refMatches(a, b) { return a && b && key(a.kind) === key(b.kind) && key(a.id) === key(b.id) && (a.version == null || b.version == null || Number(a.version) === Number(b.version)); }
     function materialRelated(row, ref) {
       var matterRow = matter.record || {}, declared = list(matterRow.sourceRefs || matterRow.materialRefs || matterRow.materials).map(dutyRef).filter(Boolean);
-      if (declared.some(function (x) { return refMatches(x, ref); })) return true;
+      var verified = list(matterRow.verifiedSourceRefs).map(dutyRef).filter(Boolean);
+      if (matterRow.sourceRefsState === 'verified' && !verified.some(function (x) { return refMatches(x, ref); })) return false;
+      if (matterRow.sourceRefsState !== 'submitted' && declared.some(function (x) { return refMatches(x, ref); })) return true;
       var linked = row && (row.matterId || row.matterRef || row.sourceMatterId || row.relatedMatterId);
       if (linked && typeof linked === 'object') linked = linked.id;
       if (linked && key(linked) === key(matter.ref.id)) return true;
@@ -225,22 +231,38 @@
     if (hidden.length) return { ok: false, reason: 'duty_material_not_readable', matter: matter, hidden: hidden };
     if (unrelated.length) return { ok: false, reason: 'duty_material_not_related', matter: matter, unrelated: unrelated };
     if (unverified.length) return { ok: false, reason: 'duty_material_unverified', matter: matter, unverified: unverified };
+    if (matter.record.sourceRefsState === 'submitted' && options.allowPendingPolicy !== true) return { ok: false, reason: 'duty_material_not_verified', matter: matter, checked: checked };
     var amounts = task && task.amounts || {}, resources = Object.keys(amounts).filter(function (k) { return Number(amounts[k]) > 0; });
     if (resources.some(function (k) { return k !== 'money'; })) return { ok: false, reason: 'unsupported_duty_resource', matter: matter, checked: checked };
-    var requested = Number(amounts.money || 0), max = Number(matter.policy.maxMoney != null ? matter.policy.maxMoney : matter.record.maxMoney);
+    var requested = Number(amounts.money || 0), rawMax = Object.prototype.hasOwnProperty.call(matter.policy, 'maxMoney') ? matter.policy.maxMoney :
+      (Object.prototype.hasOwnProperty.call(matter.record, 'maxMoney') ? matter.record.maxMoney : null), max = null, quotaKind = 'unconfigured';
     if (!finite(requested) || requested <= 0) return { ok: false, reason: 'specific_positive_money_required', matter: matter, checked: checked };
+    var expectedSource = key(matter.record.fromAccount || matter.record.sourceAccount), expectedTarget = key(matter.record.toAccount || matter.record.destinationAccount);
+    if (expectedSource && key(task.fromAccount) !== expectedSource) return { ok: false, reason: 'duty_source_scope_mismatch', matter: matter, checked: checked };
+    if (expectedTarget && key(task.toAccount) !== expectedTarget) return { ok: false, reason: 'duty_target_scope_mismatch', matter: matter, checked: checked };
+    // Free-form wording is a request description.  Only a structured purpose
+    // kind participates in the authorization scope, when a matter declares
+    // one; otherwise the linked matter and subject/account bindings are the
+    // supported deterministic purpose checks.
+    var declaredPurpose = key(matter.record.purposeKind), taskPurpose = key(task.purposeKind || basis.purposeKind);
+    if (declaredPurpose && taskPurpose && declaredPurpose !== taskPurpose) return { ok: false, reason: 'duty_purpose_scope_mismatch', matter: matter, checked: checked };
+    if (rawMax !== null && rawMax !== undefined && rawMax !== '') {
+      if (!finiteNumber(rawMax) || rawMax < 0) return { ok: false, reason: 'duty_quota_unknown', matter: matter, checked: checked };
+      max = Math.floor(rawMax); quotaKind = 'finite_total';
+    }
     var spent = 0;
-    if (finite(max)) list(root.GM && root.GM._publicTreasuryTransfers).forEach(function (receipt) {
+    if (quotaKind === 'finite_total') list(root.GM && root.GM._publicTreasuryTransfers).forEach(function (receipt) {
       var ev = receipt && receipt.dutyEvidence, mr = ev && ev.matterRef;
       if (mr && key(mr.id) === key(matter.ref.id) && key(mr.kind) === key(matter.ref.kind)) spent += Number(receipt.result && receipt.result.paid && receipt.result.paid.money || 0);
     });
-    var remaining = finite(max) ? Math.max(0, max - spent) : null;
+    var remaining = quotaKind === 'finite_total' ? Math.max(0, max - spent) : null;
     var allowPartial = task.allowPartial === true || basis.allowPartial === true || matter.policy.allowPartial === true;
-    if (finite(remaining) && requested > remaining && !(allowPartial && remaining > 0)) return { ok: false, reason: 'duty_amount_exceeds_remaining', matter: matter, checked: checked, maxMoney: max, spentMoney: spent, remainingMoney: remaining };
+    if (quotaKind === 'finite_total' && requested > remaining && !(allowPartial && remaining > 0)) return { ok: false, reason: 'duty_amount_exceeds_remaining', matter: matter, checked: checked, maxMoney: max, spentMoney: spent, remainingMoney: remaining, quota: { kind: quotaKind, limit: max, used: spent, remaining: remaining } };
     return { ok: true, matter: matter, checked: checked, requestedMoney: requested,
       allowPartial: allowPartial,
-      maxMoney: finite(max) ? max : null, spentMoney: spent, remainingMoney: remaining,
-      facts: { matterRef: matter.ref, matterVersion: matter.version, materialRefs: checked, subjectId: matter.subjectId || '', checked: ['matter', 'materials', 'purpose_scope'], spentMoney: spent, remainingMoney: remaining } };
+      maxMoney: quotaKind === 'finite_total' ? max : null, spentMoney: spent, remainingMoney: remaining,
+      quota: { kind: quotaKind, limit: quotaKind === 'finite_total' ? max : null, used: quotaKind === 'finite_total' ? spent : null, remaining: remaining },
+      facts: { matterRef: matter.ref, matterVersion: matter.version, materialRefs: checked, subjectId: matter.subjectId || '', checked: ['matter', 'materials', 'purpose_scope'], spentMoney: quotaKind === 'finite_total' ? spent : null, remainingMoney: remaining, quotaKind: quotaKind } };
   }
   function dutyMatterOptions(ch) {
     var out = [];
@@ -296,20 +318,35 @@
       return true;
     }).sort(function (a, b) { return String(a.positionId).localeCompare(String(b.positionId)); });
   }
-  function dutyMaterial(task, ch, assignment) {
+  // Spending an already authorised transfer and deciding that a new matter
+  // may spend public money are separate powers.  The latter is deliberately
+  // opt-in on the position/authority scope; a treasury binding alone is not
+  // a blanket approval of every purpose or amount.
+  function dutyDecisionScope(assignment, task) {
+    var pos = assignment && assignment.pos || {}, powers = pos.powers || {}, scope = pos.authorityScope || {};
+    var policy = pos.publicTransferDecision || pos.publicTransferPolicy || scope.publicTransferDecision || scope.publicTransferPolicy || scope.transferPolicy || {};
+    var configured = powers.publicTransferDecide === true || powers.treasuryDecision === true || powers.publicTransferDecision === true || policy.allowDecision === true || Object.prototype.hasOwnProperty.call(policy, 'maxMoney');
+    if (!configured) return null;
+    return { positionId: assignment.positionId, appointmentId: assignment.appointmentId, policy: policy, scope: scope };
+  }
+  function dutyMaterial(task, ch, assignment, options) {
     if (!TM.PublicTreasury || !task) return { ok: false, reason: 'public_account_service_unavailable' };
-    var evidence = dutyEvidence(task, ch);
+    var evidence = dutyEvidence(task, ch, options);
     if (!evidence.ok) return evidence;
     if (!assignment) return { ok: false, reason: 'public_account_access_required', evidence: evidence };
     var view = TM.PublicTreasury.getAccountView({ game: root.GM, ref: task.fromAccount });
     if (!view || !view.exists || !view.known) return { ok: false, reason: 'public_account_material_unknown', view: view };
-    var amount = Number(task.amounts && task.amounts.money || 0), available = Number(view.resources && view.resources.money && view.resources.money.available);
+    var amount = Number(task.amounts && task.amounts.money || 0), rawAvailable = view.resources && view.resources.money && view.resources.money.available;
+    var available = finiteNumber(rawAvailable) ? rawAvailable : null;
     if (!isFinite(amount) || amount <= 0) return { ok: false, reason: 'specific_positive_amount_required', view: view };
-    if (!isFinite(available) || available <= 0) return { ok: false, reason: 'public_account_material_empty', view: view };
-    if (isFinite(evidence.remainingMoney)) available = Math.min(available, evidence.remainingMoney);
+    if (available == null) return { ok: false, reason: 'public_account_material_unknown', view: view, evidence: evidence };
+    if (available <= 0) return { ok: false, reason: 'public_account_material_empty', view: view };
+    var quota = evidence.quota || {};
+    if (quota.kind === 'unknown') return { ok: false, reason: 'duty_quota_unknown', view: view, evidence: evidence };
+    if (quota.kind === 'finite_total') available = Math.min(available, quota.remaining);
     if (available < amount) {
       if (available > 0 && evidence.allowPartial) return { ok: false, reason: 'public_account_material_shortfall', view: view, available: available, evidence: evidence, allowPartial: true };
-      return { ok: false, reason: evidence.remainingMoney === 0 ? 'duty_amount_exceeds_remaining' : 'public_account_material_shortfall', view: view, available: available, evidence: evidence, allowPartial: evidence.allowPartial };
+      return { ok: false, reason: quota.kind === 'finite_total' && quota.remaining === 0 ? 'duty_amount_exceeds_remaining' : 'public_account_material_shortfall', view: view, available: available, evidence: evidence, allowPartial: evidence.allowPartial };
     }
     return { ok: true, view: view, available: available, evidence: evidence };
   }
@@ -341,17 +378,42 @@
     var matter = dutyMatter(task, ch);
     if (!matter.ok) return matter;
     if (!matter.pendingPolicy) return { ok: true, matter: matter, existing: true };
-    var pending = matter.pendingTransfer || {}, amount = Number(task.amounts && task.amounts.money || pending.requestedAmount || 0), max = Number(pending.maxMoney != null ? pending.maxMoney : pending.requestedAmount);
+    var pending = matter.pendingTransfer || {}, amount = Number(task.amounts && task.amounts.money || pending.requestedAmount || 0);
     if (pending.resource && pending.resource !== 'money') return { ok: false, reason: 'unsupported_duty_resource', matter: matter };
-    if (!isFinite(amount) || amount <= 0 || !isFinite(max) || max <= 0 || amount > max) return { ok: false, reason: 'duty_request_policy_invalid', matter: matter };
+    if (!isFinite(amount) || amount <= 0) return { ok: false, reason: 'duty_request_policy_invalid', matter: matter };
     var assignment = dutyAssignments(ch, task);
     if (!assignment.length) return { ok: false, reason: 'public_account_access_required', matter: matter };
+    var decision = dutyDecisionScope(assignment[0], task);
+    if (!decision) return { ok: false, reason: 'duty_decision_authority_required', matter: matter };
+    var policy = decision.policy || {}, rawLimit = Object.prototype.hasOwnProperty.call(policy, 'maxMoney') ? policy.maxMoney : null;
+    if (rawLimit !== null && (rawLimit === undefined || rawLimit === '' || !finiteNumber(rawLimit) || rawLimit < 0)) return { ok: false, reason: 'duty_decision_scope_unknown', matter: matter };
+    if (rawLimit === null) return { ok: false, reason: 'duty_decision_scope_unknown', matter: matter };
+    var limit = Math.floor(rawLimit);
+    if (amount > limit) return { ok: false, reason: 'duty_decision_amount_exceeds_scope', matter: matter, limit: limit };
     var row = matter.record, version = Number(row.version || row.revision || 1);
-    row.transferPolicy = { allowMoney: true, maxMoney: Math.floor(max), allowPartial: pending.allowPartial !== false,
+    // Old records used maxMoney for the request field.  It is only a legacy
+    // statement of the requested total here; the trusted decision ceiling
+    // still comes from the current position scope above.
+    var requestedLimit = Number(pending.requestedAmount != null ? pending.requestedAmount : pending.maxMoney);
+    if (!Number.isFinite(requestedLimit) || requestedLimit <= 0) return { ok: false, reason: 'duty_request_policy_invalid', matter: matter };
+    var authorizedLimit = Math.min(limit, Math.floor(requestedLimit));
+    if (authorizedLimit <= 0) return { ok: false, reason: 'duty_decision_scope_unknown', matter: matter };
+    var pendingEvidence = dutyEvidence(task, ch, { allowPendingPolicy: true });
+    if (!pendingEvidence.ok) return pendingEvidence;
+    var expectedSource = key(row.fromAccount || row.sourceAccount), expectedTarget = key(row.toAccount || row.destinationAccount),
+      actualSource = key(task.fromAccount), actualTarget = key(task.toAccount);
+    if (expectedSource && actualSource && expectedSource !== actualSource) return { ok: false, reason: 'duty_source_scope_mismatch', matter: matter };
+    if (expectedTarget && actualTarget && expectedTarget !== actualTarget) return { ok: false, reason: 'duty_target_scope_mismatch', matter: matter };
+    if (Array.isArray(policy.accountRefs) && actualTarget && policy.accountRefs.indexOf(actualTarget) < 0) return { ok: false, reason: 'duty_target_scope_mismatch', matter: matter };
+    if (Array.isArray(policy.allowedSubjects) && policy.allowedSubjects.indexOf(matter.subjectId) < 0) return { ok: false, reason: 'duty_subject_scope_mismatch', matter: matter };
+    if (Array.isArray(policy.purposeKinds) && policy.purposeKinds.length && policy.purposeKinds.indexOf(key(row.kind || row.purposeKind)) < 0) return { ok: false, reason: 'duty_purpose_scope_mismatch', matter: matter };
+    row.sourceRefsState = 'verified';
+    row.verifiedSourceRefs = copy(pendingEvidence.checked);
+    row.transferPolicy = { allowMoney: true, maxMoney: authorizedLimit, allowPartial: pending.allowPartial !== false,
       source: 'office-duty-decision', decisionRef: { actorId: ch.id, organizationId: task.organizationId || row.organizationId || '', positionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, matterRef: matter.ref, version: version }, version: version };
     row.allowPublicTransfer = true;
     row.transferDecision = { actorId: ch.id, positionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, organizationId: task.organizationId || row.organizationId || '', day: currentDay(), matterRef: matter.ref, version: version };
-    pending.status = 'approved'; pending.approvedBy = ch.id; pending.approvedDay = currentDay();
+    pending.status = 'approved'; pending.approvedBy = ch.id; pending.approvedDay = currentDay(); pending.approvedAmount = authorizedLimit;
     return { ok: true, matter: dutyMatter(task, ch), decision: copy(row.transferDecision) };
   }
   function createDutyMatter(actor, data, human) {
@@ -362,20 +424,24 @@
     if (!refs.length) return ledger().result('blocked', 'duty_material_reference_required');
     var material = dutyRecord(refs[0], g), purpose = key(d.purpose || d.intent), amount = Number(d.amount);
     if (!material || !dutyVisible(actor, material, { organizationId: d.organizationId || material.row.organizationId || material.row.factionId })) return ledger().result('blocked', 'duty_material_not_readable');
-    var factStatus = key(material.row.factStatus || material.row.status);
-    if (!factStatus || !/^(confirmed|verified|observed)$/.test(factStatus)) return ledger().result('blocked', 'duty_material_unverified');
+    var factStatus = key(material.row.factStatus || material.row.status || 'unknown');
     if (!purpose || !isFinite(amount) || amount <= 0 || amount !== Math.floor(amount)) return ledger().result('blocked', 'duty_matter_terms_invalid');
-    if (!Array.isArray(g._npcDutyMatters)) g._npcDutyMatters = []; // arch-ok: sourced duty-matter producer owns its request collection
-    var prior = g._npcDutyMatters.find(function (row) { return row && row._requestActionId === actionId; });
-    if (prior) return ledger().result('submitted', '事项依据已存在', [{ kind: 'duty_matter', id: prior.id, actionId: actionId }], { duplicate: true, matterId: prior.id });
     var org = key(d.organizationId || material.row.organizationId || material.row.factionId);
     if (!org) return ledger().result('blocked', 'duty_organization_required');
     var subjectId = key(d.subjectId || material.row.subjectId || material.row.objectId || material.row.beneficiaryId);
     if (!subjectId) return ledger().result('blocked', 'duty_subject_required');
     var fromAccount = key(d.fromAccount || material.row.fromAccount || material.row.sourceAccount), toAccount = key(d.toAccount || material.row.toAccount || material.row.destinationAccount);
-    var row = { id: 'duty-matter:' + String(g.sid || g._campaignId || 'world') + ':' + actionId, kind: 'duty_matter', version: 1, status: 'open', public: true,
+    var requestFingerprint = JSON.stringify({ actorId: actor.id, organizationId: org, subjectId: subjectId, purpose: purpose, amount: amount, fromAccount: fromAccount, toAccount: toAccount, sourceRefs: refs });
+    if (!Array.isArray(g._npcDutyMatters)) g._npcDutyMatters = []; // arch-ok: sourced duty-matter producer owns its request collection
+    var prior = g._npcDutyMatters.find(function (row) { return row && row._requestActionId === actionId; });
+    if (prior) {
+      if (prior.requestFingerprint && prior.requestFingerprint !== requestFingerprint) return ledger().result('blocked', 'duty_matter_action_conflict');
+      return ledger().result('submitted', '事项依据已存在', [{ kind: 'duty_matter', id: prior.id, actionId: actionId }], { duplicate: true, matterId: prior.id });
+    }
+    var row = { id: 'duty-matter:' + String(g.sid || g._campaignId || 'world') + ':' + actionId, kind: 'duty_matter', version: 1, status: 'open', public: false, visibility: 'participants', knownTo: [actor.id],
       organizationId: org, subjectId: subjectId, title: key(d.title || purpose), purpose: purpose, sourceRefs: refs, requestedBy: actor.id, fromAccount: fromAccount, toAccount: toAccount,
-      requestedAmount: amount, requestedTransfer: { resource: 'money', requestedAmount: amount, maxMoney: amount, allowPartial: d.allowPartial === true, status: 'requested', fromAccount: fromAccount, toAccount: toAccount },
+      sourceRefsState: 'submitted', submittedBy: actor.id, submittedFactStatus: factStatus || 'unknown', requestFingerprint: requestFingerprint,
+      requestedAmount: amount, requestedTransfer: { resource: 'money', requestedAmount: amount, requestedMaxMoney: amount, allowPartial: d.allowPartial === true, status: 'requested', fromAccount: fromAccount, toAccount: toAccount },
       createdDay: currentDay(), _requestActionId: actionId };
     g._npcDutyMatters.push(row); // arch-ok: sourced duty-matter producer owns its request collection
     if (!Array.isArray(g._npcDutyMatterReceipts)) g._npcDutyMatterReceipts = []; // arch-ok: sourced duty-matter receipt index owner
@@ -394,7 +460,15 @@
     if (view.nextPhase === 'respond' && ch.id === p.targetId) {
       if (!assignment.length) return Object.assign(action, { behaviorType: 'private_correspondence', phase: 'respond', response: 'reject', content: '此项公库事项不在我当前有效的经管权限内，不能冒领承办。' });
       var pendingMatter = dutyMatter(task, ch);
-      if (pendingMatter.ok && pendingMatter.pendingPolicy) return Object.assign(action, { phase: 'respond', response: 'accept', content: '已收到事项依据，当前职任可以在限定额度内作出本次拨付决定。', terms: '按本事项申请额度核定', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, authorizeMatter: true });
+      if (pendingMatter.ok && pendingMatter.pendingPolicy) {
+        var pendingMaterial = dutyMaterial(task, ch, assignment[0], { allowPendingPolicy: true });
+        if (!pendingMaterial.ok) {
+          if (/duty_material_not_related|duty_material_unverified|duty_material_not_readable|duty_material_not_found/.test(pendingMaterial.reason)) return Object.assign(action, { phase: 'respond', response: 'conditions', content: '事项已收到，但附件尚未证明与本用途相关；请补充或更正材料。', terms: '需要可核验的事项材料', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+          return Object.assign(action, { phase: 'respond', response: 'reject', content: '当前事项不能在本职有效范围内办理：' + pendingMaterial.reason + '。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+        }
+        if (!dutyDecisionScope(assignment[0], task)) return Object.assign(action, { phase: 'respond', response: 'reject', content: '本人可以执行已成立的拨付，但没有这类新事项的决定权限。', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId });
+        return Object.assign(action, { phase: 'respond', response: 'accept', content: '已收到事项依据，按本职有效裁量范围作出本次拨付决定。', terms: '依据现行职任额度核定', actingPositionId: assignment[0].positionId, appointmentId: assignment[0].appointmentId, authorizeMatter: true });
+      }
       if (!material.ok) {
         if (material.reason === 'public_account_material_shortfall' && material.available > 0 && material.allowPartial) {
           var revised = Object.assign({}, task, { amounts: Object.assign({}, task.amounts, { money: Math.floor(material.available) }), preserveOriginal: true });

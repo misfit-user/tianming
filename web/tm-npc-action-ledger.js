@@ -388,7 +388,7 @@
   }
   function executionSignature(d,actor) {
     var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType','leaveId','delegationId','delegateId','scope','leaveKind','startDay','latestReturnDay','regionId','sourceRefs','documentId','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestVersion','decisionRef','allowPartial','subjectId','decisionBasis'];
-    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestKind','dutySource','requestVersion','decisionRef','allowPartial','subjectId']);
+    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestKind','dutySource','requestVersion','decisionRef','allowPartial','subjectId','executionSpec']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
   }
@@ -409,6 +409,14 @@
     if(TM.PoliticalActions&&/^(declare_war|join_war)$/.test(d.behaviorType)){
       var enemy=TM.PoliticalActions.resolve('organization',{id:d.targetOrganizationId||d.targetId,name:d.targetFaction||d.target||d.enemy||d.against},g);
       if(!enemy)return result('blocked','organization_target_unresolved');d.targetType='organization';d.targetOrganizationId=enemy.id;
+    }
+    // Bind the concrete stage before the handler can mutate remainingTask.
+    // A second partial payment must be verified against its own 40-unit stage,
+    // rather than the original 20-unit task left on the plan after the first
+    // payment.
+    if (d.phase === 'perform' && !d.executionSpec && d.planId) {
+      var boundPlan = planById(d.planId, g);
+      if (boundPlan) d.executionSpec = clone(boundPlan.remainingTask || boundPlan.task || null);
     }
     var st = state(g), key = JSON.stringify([d.actionId, d.phase]), signature = executionSignature(d,actor);
     var prior = st.receipts[key];
@@ -469,9 +477,15 @@
     if(ref.kind==='audience')return _arr(g._pendingAudiences).some(function(m){return m._actionId===ref.id;});
     if(ref.kind==='public_transfer') {
       var transfer=_arr(g._publicTreasuryTransfers).find(function(t){return t.id===ref.id;});
-      var task=d.planId&&planById(d.planId,g),spec=task&&task.task||d,service=TM.PublicTreasury;
+      var task=d.planId&&planById(d.planId,g),spec=d.executionSpec||task&&task.remainingTask||task&&task.task||d,service=TM.PublicTreasury;
       if(!transfer||!transfer.result||!transfer.result.ok||!service||ref.id!==d.actionId+':'+d.phase||_arr(before._publicTreasuryTransfers).some(function(t){return t.id===ref.id;}))return false;
       if ((d.dutyRequest === true || spec.dutyRequest === true || spec.requestKind === 'sourced-duty') && (!transfer.dutyEvidence || !transfer.dutyEvidence.matterRef || !Array.isArray(transfer.dutyEvidence.materialRefs) || !transfer.dutyEvidence.materialRefs.length || transfer.dutyEvidence.actorId !== actor.id)) return false;
+      if (d.executionSpec && transfer.dutyEvidence && transfer.dutyEvidence.executionSpec) {
+        var boundReceiptSpec=transfer.dutyEvidence.executionSpec;
+        if (String(boundReceiptSpec.fromAccount||'')!==String(d.executionSpec.fromAccount||'') || String(boundReceiptSpec.toAccount||'')!==String(d.executionSpec.toAccount||'')) return false;
+        var boundAmounts=d.executionSpec.amounts||{}, receiptAmounts=boundReceiptSpec.amounts||{}, amountKeys=Object.keys(boundAmounts).concat(Object.keys(receiptAmounts)).filter(function(k,i,a){return a.indexOf(k)===i;});
+        if (amountKeys.some(function(k){return Number(boundAmounts[k]||0)!==Number(receiptAmounts[k]||0);})) return false;
+      }
       var from=service.getAccountView({game:g,ref:spec.fromAccount}),to=service.getAccountView({game:g,ref:spec.toAccount}),oldFrom=service.getAccountView({game:before,ref:spec.fromAccount}),oldTo=service.getAccountView({game:before,ref:spec.toAccount});
       return from.exists&&to.exists&&oldFrom.exists&&oldTo.exists&&Object.keys(spec.amounts||{}).some(function(k){return spec.amounts[k]>0;})&&['money','grain','cloth'].every(function(k){
         var amount=Number(spec.amounts&&spec.amounts[k]||0),r=transfer.result,paid=Number(r.paid&&r.paid[k]||0),expected=(d.dutyRequest||spec.dutyRequest===true)?paid:amount;
@@ -583,10 +597,6 @@
       if(d.task&&!/^(document|public_transfer)$/.test(d.task.kind))return result('blocked','unsupported_revised_task');
       var ability=typeof global._npcAbilityProfile==='function'?global._npcAbilityProfile(npc):{};
       var workTurns=Math.max(1,Math.min(3,Math.ceil(60/Math.max(20,((Number(ability.administration)||50)+(Number(ability.intelligence)||50))/2+20))));
-      if (d.response === 'accept' && p.task && p.task.requestKind === 'sourced-duty' && global.TM && TM.NPC && TM.NPC.LocalAI && typeof TM.NPC.LocalAI.authorizeDutyMatter === 'function') {
-        var matterDecision = TM.NPC.LocalAI.authorizeDutyMatter(p.task, npc);
-        if (!matterDecision || matterDecision.ok !== true) return result('blocked', matterDecision && matterDecision.reason || 'duty_decision_unavailable');
-      }
       // A response can propose a new amount or material set, but the current
       // agreement remains authoritative until the requester receives and
       // accepts that proposal.  Never mutate p.task merely because a message
@@ -594,6 +604,13 @@
       var proposedTask = d.task ? Object.assign({}, p.task, clone(d.task)) : null;
       var proposedBasis = (d.sourceRefs || d.basis) ? clone(d.basis || p.task.basis || p.task.requestBasis || {}) : null;
       if (d.sourceRefs) { proposedBasis = proposedBasis || {}; proposedBasis.sourceRefs = clone(d.sourceRefs); }
+      if (/^(accept|conditions|partial)$/.test(d.response || '') && d.needsMaterial !== true && p.task && p.task.requestKind === 'sourced-duty' && global.TM && TM.NPC && TM.NPC.LocalAI && typeof TM.NPC.LocalAI.authorizeDutyMatter === 'function') {
+        // Conditions are a real decision too: validate the proposed stage
+        // before sending it, while the old task remains authoritative until
+        // the requester receives and accepts the proposal.
+        var matterDecision = TM.NPC.LocalAI.authorizeDutyMatter(proposedTask || p.task, npc);
+        if (!matterDecision || matterDecision.ok !== true) return result('blocked', matterDecision && matterDecision.reason || 'duty_decision_unavailable');
+      }
       var responseRevision = (proposedTask || proposedBasis) ? Number(p.revision || 1) + 1 : Number(p.revision || 1);
       var response=message(p,npc,who,'response',d.content||d.response,{response:d.response,terms:_str(d.terms||d.content),revisedTask:clone(proposedTask),basis:clone(proposedBasis || p.task.basis || p.task.requestBasis || null),sourceRefs:clone((proposedBasis && proposedBasis.sourceRefs) || p.task.basis&&p.task.basis.sourceRefs || []),revision:responseRevision,termsVersion:(proposedTask || proposedBasis) ? Number(p.termsVersion || 1) + 1 : Number(p.termsVersion || 1),workTurns:workTurns,dueTurn:Number.isFinite(Number(d.dueTurn))?Math.max(_turn(g)+1,Number(d.dueTurn)):_turn(g)+1});
       if(p.task.kind==='public_transfer' && TM.PublicTreasury) {
@@ -621,13 +638,18 @@
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
       var execution, body;
       var executionTask = p.remainingTask || p.task;
+      // Freeze the stage before the transfer handler updates remainingTask.
+      // This is the same object used by the ledger evidence verifier and by
+      // the domain receipt, so partial stages cannot be checked against an
+      // earlier or already-mutated task.
+      var executionSpec = clone(d.executionSpec || executionTask);
       if (executionTask.kind==='public_transfer') {
         execution=global._npcTransferPublic(npc,{
           actionId:d.actionId,phase:d.phase,actingPositionId:d.actingPositionId||p.performerPositionId,
           appointmentId:d.appointmentId||p.performerAppointmentId,organizationId:p.organizationId||p.performerOrganizationId||p.task.organizationId,
           fromAccount:executionTask.fromAccount,toAccount:executionTask.toAccount,amounts:executionTask.amounts,purpose:executionTask.purpose||p.intent,
           dutyRequest:executionTask.dutyRequest===true || executionTask.requestKind==='sourced-duty',requestKind:executionTask.requestKind||'',dutySource:p.source||'',basis:clone(executionTask.basis||executionTask.requestBasis||null),sourceRefs:clone(executionTask.basis&&executionTask.basis.sourceRefs||[]),allowPartial:d.allowPartial===true || executionTask.allowPartial===true,
-          planId:p.id,expectedRevision:p.revision
+          planId:p.id,expectedRevision:p.revision,executionSpec:clone(executionSpec)
         });
         if (!/^(completed|partial)$/.test(execution.outcome)) {
           p.status='needs_replan';p.nextTurn=_turn(g)+1;p.blockedReason=execution.reason;
@@ -654,7 +676,7 @@
       p.progress=p.steps.length;
       p.knowledge[id]={stage:'delivery_sent',lastMessageId:document.id};
       rememberPlan(npc,who,p,document,'已向'+who.name+'交付文书：'+body);
-      return result(executionTask.kind==='public_transfer'?(partial?'partial':'completed'):'submitted',execution.reason,p.steps[p.steps.length-1].operationRefs,{planId:p.id,dutyEvidence:execution.dutyEvidence||null});
+      return result(executionTask.kind==='public_transfer'?(partial?'partial':'completed'):'submitted',execution.reason,p.steps[p.steps.length-1].operationRefs,{planId:p.id,dutyEvidence:execution.dutyEvidence||null,executionSpec:clone(executionSpec)});
     }
     if (d.phase==='feedback' && p.status==='awaiting_feedback' && id===p.actorId) {
       if (!revisionMatches(p, d)) return result('blocked','plan_revision_mismatch');
@@ -673,6 +695,19 @@
     if (!alive(to)) { m.status='undeliverable';p.status='waiting_contact';p.nextActorId='';return; }
     if (to._missing || to.missing) { p.status='in_transit';p.nextTurn=_turn(g)+1;return; }
     m.status='delivered';m.deliveredTurn=_turn(g);p.updatedTurn=_turn(g);
+    // A private sourced-duty matter becomes visible to the receiving
+    // participant only when its request message is actually delivered.  The
+    // matter remains private to its recorded participants; organization
+    // membership alone is not disclosure.
+    if (m.kind === 'request' && p.task && p.task.requestKind === 'sourced-duty' && TM.NPC && TM.NPC.LocalAI) {
+      var dutyBasis = p.task.basis || p.task.requestBasis || {}, dutyRef = dutyBasis.matterRef, dutyRows = _arr(g._npcDutyMatters);
+      var dutyRow = dutyRows.find(function (row) { return row && dutyRef && String(row.id) === String(dutyRef.id); });
+      if (dutyRow) {
+        if (!Array.isArray(dutyRow.knownTo)) dutyRow.knownTo = [];
+        if (dutyRow.knownTo.indexOf(to.id) < 0) dutyRow.knownTo.push(to.id);
+        dutyRow.lastDeliveredMessageId = m.id;
+      }
+    }
     p.nextTurn=_turn(g);p.nextActorId=_str(to.id);
     if(m.kind==='request') {p.status=p.task.kind==='notice'?'done':'awaiting_response';if(p.status==='done')p.nextActorId='';}
     if(m.kind==='response') {

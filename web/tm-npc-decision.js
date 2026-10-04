@@ -1641,9 +1641,11 @@ function _npcTransferPublic(npc, d) {
     var evidence=TM.NPC.LocalAI.dutyEvidence({kind:'public_transfer',organizationId:d.organizationId,fromAccount:d.fromAccount,toAccount:d.toAccount,amounts:d.amounts,purpose:d.purpose,basis:d.basis,allowPartial:d.allowPartial===true},npc);
     if (!evidence.ok) return _npcResult('blocked',evidence.reason);
     var effectiveAmounts = Object.assign({}, d.amounts);
-    if (isFinite(Number(evidence.remainingMoney)) && Number(effectiveAmounts.money || 0) > Number(evidence.remainingMoney)) {
-      if (evidence.allowPartial !== true || Number(evidence.remainingMoney) <= 0) return _npcResult('blocked','duty_amount_exceeds_remaining');
-      effectiveAmounts.money = Number(evidence.remainingMoney);
+    var quota = evidence.quota || {}, finiteRemaining = quota.kind === 'finite_total' && typeof quota.remaining === 'number' && Number.isFinite(quota.remaining);
+    if (quota.kind === 'unknown') return _npcResult('blocked','duty_quota_unknown');
+    if (finiteRemaining && Number(effectiveAmounts.money || 0) > quota.remaining) {
+      if (evidence.allowPartial !== true || quota.remaining <= 0) return _npcResult('blocked','duty_amount_exceeds_remaining');
+      effectiveAmounts.money = quota.remaining;
     }
   } else {
     var effectiveAmounts = d.amounts;
@@ -1657,11 +1659,13 @@ function _npcTransferPublic(npc, d) {
   if (!r || !r.ok) return _npcResult('blocked',r&&r.reason||'public_transfer_failed');
   if(d.obligationId)TM.FactionDiplomacy.fulfillResourceObligation(d,{kind:'public_transfer',id:r.transactionId});
   var paid=r.paid||{}, requested=d.amounts||{}, partial=Object.keys(requested).some(function(k){return Number(paid[k]||0)<Number(requested[k]||0);});
+  var executionReceiptSpec=d.executionSpec&&{amounts:d.executionSpec.amounts||{},basis:d.executionSpec.basis||d.executionSpec.requestBasis||null,fromAccount:d.executionSpec.fromAccount,toAccount:d.executionSpec.toAccount};
+  var dutyReceiptEvidence=strictDuty?{matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null,executionSpec:executionReceiptSpec}:null;
   if (strictDuty && Array.isArray(GM._publicTreasuryTransfers)) {
     var domainReceipt=GM._publicTreasuryTransfers.find(function(t){return t && t.id===r.transactionId;});
-    if (domainReceipt) domainReceipt.dutyEvidence={matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null};
+    if (domainReceipt) domainReceipt.dutyEvidence=dutyReceiptEvidence;
   }
-  return _npcResult(partial?'partial':'completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId,dutyEvidence:strictDuty?{matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null}:null}],{transfer:r,actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,authorityBasis:_npcAuthorityBasis(auth),dutyEvidence:strictDuty?{matterRef:d.basis.matterRef,materialRefs:d.basis.sourceRefs,actorId:npc.id,organizationId:d.organizationId,actingPositionId:auth.pos&&auth.pos.id,appointmentId:auth.appointmentId,revision:d.expectedRevision||null}:null});
+  return _npcResult(partial?'partial':'completed','实体公库转移已核验',[{kind:'public_transfer',id:r.transactionId,dutyEvidence:dutyReceiptEvidence}],{transfer:r,actingPositionId:auth.pos&&auth.pos.id,authorityRef:auth.authorityRef,authorityBasis:_npcAuthorityBasis(auth),dutyEvidence:dutyReceiptEvidence,executionSpec:d.executionSpec||null});
 }
 function _npcConcreteDuty(npc, d) {
   if(d.step==='transfer')return _npcTransferPublic(npc,d);

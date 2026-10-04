@@ -61,6 +61,7 @@ module.exports = async function ({ win, root, check }) {
       if(/据此产出完整史记|shilu_text|shizhengji/.test(u))out={shizhengji:'按既定材料完成本回合记录。',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',char_updates:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],events:[]};
       return {choices:[{message:{content:JSON.stringify(out)}}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};
     };
+    window._tmAIFetch=async function(url,opts){const data=await window._aiFetchWithRetry(url,opts&&opts.body);return new Response(JSON.stringify(data),{status:200,headers:{'content-type':'application/json'}});};
     // Keep the endTurn transaction and all deterministic systems real while
     // replacing only the external inference boundary with a valid result.
     window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){

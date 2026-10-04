@@ -85,7 +85,8 @@ module.exports = async function ({ win, root, check }) {
     // replacing only the external inference boundary with a valid result.
     window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){
       const result={timeRatio:1,shizhengji:'本回合按既定材料推进常务。',zhengwen:'按既定规则结算。',turnSummary:'常务办理',playerStatus:'办理中',playerInner:'继续核对事项。',shiluText:'本回合按既定事项推进。',szjTitle:'常务办理',szjSummary:'常务按材料推进。',hourenXishuo:'',personnelChanges:[],events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};
-      if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.record=Object.assign(externalCtx.record||{},result);}
+      if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.results.sc1=result;externalCtx.results.aiResult=result;externalCtx.record=Object.assign(externalCtx.record||{},result);}
+      if(typeof GM!=='undefined'){GM._turnAiResults=GM._turnAiResults||{};GM._turnAiResults.subcall1=result;}
       return result;
     };
     // The production inferer receives its model adapter from setupInfra.  Use

@@ -83,7 +83,9 @@ module.exports = async function ({ win, root, check }) {
     };
     // Keep the endTurn transaction and all deterministic systems real while
     // replacing only the external inference boundary with a valid result.
+    window.__dutyInferCalls=0;window.__dutySetupCalls=0;
     window._endTurn_aiInfer=async function(edicts,xinglu,memRes,oldVars,externalCtx){
+      window.__dutyInferCalls++;
       const result={timeRatio:1,shizhengji:'本回合按既定材料推进常务。',zhengwen:'按既定规则结算。',turnSummary:'常务办理',playerStatus:'办理中',playerInner:'继续核对事项。',shiluText:'本回合按既定事项推进。',szjTitle:'常务办理',szjSummary:'常务按材料推进。',hourenXishuo:'',personnelChanges:[],events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};
       if(externalCtx){externalCtx.results=externalCtx.results||{};externalCtx.results.sc1=result;externalCtx.results.aiResult=result;externalCtx.record=Object.assign(externalCtx.record||{},result);}
       if(typeof GM!=='undefined'){GM._turnAiResults=GM._turnAiResults||{};GM._turnAiResults.subcall1=result;}
@@ -94,6 +96,7 @@ module.exports = async function ({ win, root, check }) {
     // when a build exposes the transport through a private lexical binding.
     const dutySetupInfra=TM.Endturn.AI.subcalls.setupInfra;
     TM.Endturn.AI.subcalls.setupInfra=function(ctx){
+      window.__dutySetupCalls++;
       const configured=dutySetupInfra(ctx);
       ctx.subcalls._callEndturnAI=async function(){
         const parsed={turn_summary:'常务办理',shizhengji_basis:'既有事项材料',shilu_text:'本回合按既定事项推进。',szj_title:'常务办理',shizhengji:'本回合按既定材料推进常务。',szj_summary:'常务按材料推进。',zhengwen:'按既定规则结算。',player_status:'办理中',player_inner:'继续核对事项。',events:[{type:'office-duty-fixture',title:'常务结算',text:'按已知事项和既有规则完成本回合结算。'}],char_updates:[],edict_feedback:[],office_assignments:[],fiscal_adjustments:[],personnel_changes:[],changes:[],resource_changes:{}};
@@ -113,7 +116,7 @@ module.exports = async function ({ win, root, check }) {
     await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt'))_postTurnCourtChoose(false);})()`);
     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal endTurn timeout'));return;}setTimeout(poll,100);})()})`);
     await settle();
-    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const p=GM._npcPlans[0],s=p&&p.status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+JSON.stringify({status:s,turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,preSubmit:endTurn&&endTurn._preSubmitInFlight,aiKey:!!(P&&P.ai&&P.ai.key),toast:document.getElementById('toast')&&document.getElementById('toast').textContent,pending:GM._pendingShijiModal&&{aiReady:GM._pendingShijiModal.aiReady,courtDone:GM._pendingShijiModal.courtDone},messages:p&&p.messages&&p.messages.map(m=>({kind:m.kind,status:m.status,deliveryTurn:m.deliveryTurn,sentTurn:m.sentTurn})),queued:GM._npcBehaviorPostTurnQueued})));return;}setTimeout(poll,100);})()})`);
+    await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){const p=GM._npcPlans[0],s=p&&p.status;if(s==='awaiting_feedback'||s==='done'){resolve(true);return;}if(Date.now()-t>30000){reject(new Error('local duty did not reach feedback: '+JSON.stringify({status:s,turn:GM.turn,busy:GM.busy,endTurnBusy:GM._endTurnBusy,preSubmit:endTurn&&endTurn._preSubmitInFlight,aiKey:!!(P&&P.ai&&P.ai.key),inferCalls:window.__dutyInferCalls||0,setupCalls:window.__dutySetupCalls||0,modelAttempts:window.__dutyModelAttempts||0,toast:document.getElementById('toast')&&document.getElementById('toast').textContent,pending:GM._pendingShijiModal&&{aiReady:GM._pendingShijiModal.aiReady,courtDone:GM._pendingShijiModal.courtDone},messages:p&&p.messages&&p.messages.map(m=>({kind:m.kind,status:m.status,deliveryTurn:m.deliveryTurn,sentTurn:m.sentTurn})),queued:GM._npcBehaviorPostTurnQueued})));return;}setTimeout(poll,100);})()})`);
   }
   await fullTurn();
   await check('production time and local dispatch reach a real payment and player feedback', async () => {

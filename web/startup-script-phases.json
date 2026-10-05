@@ -5662,6 +5662,7 @@
         "_tmLoadGen",
         "_tmMaybeStageTurnResult",
         "_tmPrepareEndTurnBoundary",
+        "_tmRefreshEndTurnButtonState",
         "_tmReportEndTurnBoundaryError",
         "_tmRequestEndTurnDesktopAutoSaveFlush",
         "_tmRestoreCommittedBaselineAfterRollback",

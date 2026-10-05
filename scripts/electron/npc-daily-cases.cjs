@@ -93,7 +93,10 @@ module.exports=async function({win,check,results}){
    assert.deepEqual(r.plans,beforePlans,'save/load must preserve every original matter, phase and message count');assert(r.plans.every(p=>p.status==='done'));assert.equal(r.turn,1);assert.deepEqual(r.api,[]);
  });
  await check('formal daily page creates a sourced consultation without hand-written localGoals',async()=>{
-   await js(`(()=>{openCharRenwuPage('来客');})()`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
+   // Open an ordinary NPC's人物志 as the formal recipient entry.  The player
+   // dossier intentionally has no outbound letter button; the daily panel
+   // still uses the current player as its actor after this target entry.
+   await js(`(()=>{openCharRenwuPage('周季平');})()`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
    await js(`(()=>{const panel=document.querySelector(${JSON.stringify(panel)}),target=panel.querySelector('#daily-target'),topic=panel.querySelector('#daily-consultation-topic');target.value='local-b';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='reading_understanding';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
    await click(panel+' [data-daily-new="consultation"]');
    const r=await js(`(()=>{const p=TM.NPC.DailyActivities.plans().filter(p=>p.localActivity.kind==='consultation').slice(-1)[0];return{status:p&&p.status,source:p&&p.localActivity.sourceOpportunity,topic:p&&p.localActivity.topicId,plans:TM.NPC.DailyActivities.plans().length,api:__dailyBrowser.apiAttempts};})()`);

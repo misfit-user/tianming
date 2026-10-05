@@ -6191,8 +6191,8 @@
     },
     {
       "path": "tm-npc-daily-activities.js",
-      "sha256": "d68a093d0d8a7a5f75fa800a9907a2699d429de4e8ec6f7aa12fa824192764dd",
-      "size": 64568
+      "sha256": "2ca90731a348b9ab16f7ddd6375eed6465122b485f37de4fd980d9cf516fc8d3",
+      "size": 64835
     },
     {
       "path": "tm-npc-daily-ui.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "a38bbf821e06c96fe9bf4020f5526949a7deff905c8fc007dd5a3c3e5642b103",
+      "sha256": "affaa905615287c6b2e1b135a4dc38169a0bde2e3b46bcedfea6ddcea19b46be",
       "size": 138846
     },
     {

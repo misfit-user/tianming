@@ -223,7 +223,11 @@
       });
       if (!source || !targetId || !topicInfo(topicId)) return;
       var target = person(targetId, g);
-      if (!target || !canDeliver(ch, target, g)) return;
+      // The source already proves a real contact/document channel.  Do not
+      // discard the opportunity merely because the next correspondence is
+      // remote or the recipient's current route is not yet available; the
+      // normal message commit will perform the actual delivery check.
+      if (!target) return;
       if (used[source.key] || plans(g).some(function (q) { return q.localActivity && q.localActivity.kind === 'consultation' && q.localActivity.sourceOpportunity && q.localActivity.sourceOpportunity.key === source.key; })) return;
       used[source.key] = true;
       var topic = topicInfo(topicId);

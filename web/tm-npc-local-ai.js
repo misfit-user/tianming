@@ -47,6 +47,10 @@
         if (disposition.score < 4) { d.response = 'reject'; reason = '本人对这项请求意愿不足'; }
         else if (disposition.stress >= 75 && p.localActivity.deferrals < D.config.maxDeferrals) { d.response = 'defer'; reason = '当前负担较重，明确请求延期'; }
         else if (view.kind === 'meeting') { d.response = disposition.score < 22 ? 'defer' : 'accept'; reason = '按关系、负担和已知行程决定是否赴约'; }
+        else if (view.kind === 'consultation') {
+          d.response = disposition.score < 18 ? 'reject' : disposition.stress >= 65 ? 'defer' : disposition.score < 32 ? 'brief' : 'accept';
+          reason = disposition.score < 18 ? '对方与当前话题关系不足，婉拒请益' : disposition.stress >= 65 ? '当前负担较重，暂缓请益' : d.response === 'brief' ? '只接受一次简短切磋，不承诺长期授业' : '按已知往来和当前负担接受一次具体请益';
+        }
         else if (view.kind === 'greeting') { d.response = disposition.score > 45 && disposition.sociability >= 0 ? 'warm' : 'brief'; reason = '依已有往来选择答复方式'; }
         else if (view.kind === 'assistance' && !arr(p.localActivity.task && p.localActivity.task.materials).length) { d.response = 'conditions'; reason = '已收到的任务缺少材料'; }
         else if (view.kind === 'assistance' && disposition.score < 22 && p.localActivity.task.materials.length > 1) { d.response = 'partial'; reason = '只愿承接较小范围'; }
@@ -59,19 +63,41 @@
           if (material) d.task = { kind: 'material_summary', title: '整理现有材料清单', materialRefs: [material.ref] };
           else { d.phase = 'cancel'; delete d.response; reason = '本人暂无可提供材料，结束本次请求'; }
         }
-      } else if (d.phase === 'feedback') { d.response = disposition.score >= 20 ? 'satisfied' : 'ack'; reason = '对实际收到的文书作反馈'; }
+      } else if (d.phase === 'perform' && view.kind === 'consultation') {
+        var preference = p.localActivity && p.localActivity.preferredExchange || 'explain';
+        d.exchangeChoice = preference === 'question' ? 'question' : disposition.li >= 70 ? 'counter' : 'explain';
+        reason = '依据具体话题和本人已知经历选择交流方式';
+      } else if (d.phase === 'feedback') {
+        if (view.kind === 'consultation') { d.response = D.consultationHistory(ch, p.localActivity.topicId) ? 'reflect' : 'ask'; reason = '依据本次交流和既有话题经历留下反馈'; }
+        else { d.response = disposition.score >= 20 ? 'satisfied' : 'ack'; reason = '对实际收到的文书作反馈'; }
+      }
       else if (d.phase === 'cancel') reason = '本地递送未能安排，结束此项请求';
       candidates.push({ priority: 1000 + Math.max(0, D.day() - p.localActivity.createdDay), source: p.id + ':' + view.revision + ':' + d.phase,
         action: d, reason: reason, planId: p.id });
     });
     return candidates;
   }
+  function opportunityCandidates(ch) {
+    var D = domain(), opportunities = D.consultationOpportunities ? D.consultationOpportunities(ch, root.GM) : [];
+    return opportunities.map(function (o) {
+      var target = actor(o.action && o.action.targetId), disposition = inclination(ch, target, 'consultation');
+      // A real source creates an opportunity, but it does not compel a new
+      // contact.  Current burden and the actor's relation/temperament still
+      // decide whether the local scheduler picks it up this turn.
+      if (disposition.stress > 80 || disposition.score < 8) return null;
+      return { priority: o.priority + Math.max(0, Math.round(disposition.score / 10)), source: o.source, reason: o.reason,
+        action: { activityKind: 'consultation', targetId: o.action.targetId, sourceOpportunity: o.action.consultation && o.action.consultation.sourceOpportunity,
+          consultation: o.action.consultation } };
+    }).filter(Boolean);
+  }
   function candidates(ch, related, options) {
     var D = domain(), out = dueCandidates(ch, related), b = D.budget(ch);
     if (b.steps >= D.config.dailySteps) return [];
     if (out.length || b.starts >= D.config.dailyStarts) return out.slice(0, config.maxCandidates);
+    out = opportunityCandidates(ch);
+    if (out.length) return out.slice(0, config.maxCandidates);
     arr(ch.localGoals).forEach(function (goal) {
-      if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting)$/.test(goal.kind)) return;
+      if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting|consultation)$/.test(goal.kind)) return;
       var source = String(goal.id) + ':' + Number(goal.version || 1);
       if (related.some(function (p) { return p.actorId === ch.id && p.localActivity.sourceGoalId === source; })) return;
       var target = actor(goal.targetId), third = goal.kind === 'introduction' && actor(goal.thirdPartyId);
@@ -79,7 +105,7 @@
       var willingness = inclination(ch, target, goal.kind);
       if (willingness.stress > 90 || willingness.score < 0) return;
       out.push({ priority: 50 + willingness.score, source: 'goal:' + source, reason: '推进本人明确的普通交往目标',
-        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: goal.meeting } });
+        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: goal.meeting, consultation: goal.consultation } });
     });
     if (!out.length && !(options && options.skipUnsolicited)) {
       D.knownIds(ch).forEach(function (key) {
@@ -693,7 +719,7 @@
     var g = root.GM || {}, chars = arr(g.chars);
     var hasGoals = chars.some(function (ch) {
       return arr(ch && ch.localGoals).some(function (goal) {
-        return goal && /^(greeting|introduction|assistance|meeting)$/.test(goal.kind) && goal.status !== 'cancelled';
+        return goal && /^(greeting|introduction|assistance|meeting|consultation)$/.test(goal.kind) && goal.status !== 'cancelled';
       });
     });
     var hasMatters = arr(g._npcPlans).some(function (p) { return p && p.localActivity && p.localActivity.schemaVersion === 1; });

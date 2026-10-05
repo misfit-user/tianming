@@ -8,7 +8,9 @@
     actual_permitted_materials_required: '所选材料无法使用，请重新选择有来源的材料。', materials_missing: '当前缺少材料，请先补充。',
     daily_activity_budget: '当日活动安排已满，请等待正式日期推进。', recent_contact_cooldown: '近期已有同类往来，请先处理原事项。',
     existing_activity_continues: '已有同类事项正在办理，请在原事项中继续。', specific_supplement_materials_required: '请求补办须选择具体的补充材料。',
-    work_date_not_reached: '工作所需日期尚未经过，当前不能交付。', player_choice_required: '这项选择须由本人作出。' };
+    work_date_not_reached: '工作所需日期尚未经过，当前不能交付。', consultation_time_not_reached: '约定的请益时段尚未经过，请按正式日期推进。',
+    consultation_source_required: '这次请益缺少已经发生且本人知道的来源。', consultation_choice_required: '请先选择一种具体交流方式。', consultation_feedback_required: '请先选择对本次交流的反馈。',
+    consultation_exchange_missing: '尚未收到实际交流内容。', player_choice_required: '这项选择须由本人作出。' };
   reasons.meeting_target_location_unknown = '尚不能确认对方可知的当前位置，未替其安排赴约。';
   reasons.meeting_location_unresolved = '约见地点没有可核验的地块，未创建行程。';
   reasons.meeting_invite_route_unavailable = '当前支持的路线无法递送这次邀约。';
@@ -16,7 +18,7 @@
   reasons.route_service_unavailable = '路线服务尚未就绪，事项保持等待。';
   var stages = { sent: '文书已递出', awaiting_response: '待本人答复', awaiting_third: '待本人决定是否接受引见',
     awaiting_agreement: '待确认当前条件', ready_forward: '待转达引见', ready_report: '待传回对方答复', ready_confirm: '待确认联系条件',
-    working: '待整理已同意的材料', awaiting_feedback: '已收文书，待反馈', done: '本次往来已结束', rejected: '本次请求未获接受',
+    working: '待整理已同意的材料', awaiting_feedback: '已收到实际内容，待反馈', done: '本次往来已结束', rejected: '本次请求未获接受',
     deferred: '已明确延期，待正式日期推进', waiting_contact: '尚未取得回应，本地递送未能安排', cancel_sent: '已提出取消，通知正在传递',
     cancelled: '此项请求已取消', cancel_not_delivered: '本人已取消；通知尚未送达对方', expired: '已到本次事项的截止日期', consent_given: '已表达联系意愿',
     traveling: '双方正在按路线赴约', response_in_transit: '接受回信正在传回', waiting_departure: '已收到接受，等待本人决定启程', arrived_waiting: '已抵达，等待约定开始', in_meeting: '正在会面，占用约定时长', schedule_conflict: '日程冲突，尚未入场', cancel_pending: '取消通知正在传递', scheduled: '约期已定，等待出发或抵达', participated: '双方已实际会面', returning: '会面结束，正在按安排返程', returned: '已返抵原处', waiting_route: '路线或当前位置暂不能确认', missed: '未在约定窗口内同时到场' };
@@ -39,11 +41,17 @@
   }
   function activityCard(p, ch, materials) {
     var v = D().view(p, ch); if (!v) return '';
-    var label = v.kind === 'greeting' ? '通问' : v.kind === 'introduction' ? '引见' : v.kind === 'meeting' ? '约见' : '协助';
+    var label = v.kind === 'greeting' ? '通问' : v.kind === 'introduction' ? '引见' : v.kind === 'meeting' ? '约见' : v.kind === 'consultation' ? '请益/切磋' : '协助';
     var html = '<article data-daily-plan="' + escape(v.id) + '" style="border-top:1px solid var(--color-border-subtle);padding:var(--space-2,8px) 0">';
     html += '<strong>' + escape(label + ' · ' + who(v.actorId) + ' → ' + who(v.targetId) + (v.thirdPartyId ? ' · 引见 ' + who(v.thirdPartyId) : '')) + '</strong>';
     html += '<p data-daily-stage>' + escape(stages[v.stage] || '等待实际回应') + '</p><p>事项期限：第' + escape(v.expiresDay) + '日。已承接的工作与已收到的文书继续保留，可办理或取消。</p>';
     if (v.meeting) html += '<p data-daily-meeting>地点：' + escape(v.meeting.locationName || v.meeting.locationId || '未定') + '；目的：' + escape(v.meeting.purpose || '') + '；路线状态：' + escape(stages[v.meeting.status] || v.meeting.status || '待定') + '</p>';
+    if (v.kind === 'consultation') {
+      var topic = D().topicInfo && D().topicInfo(v.topicId);
+      html += '<p data-daily-consultation>话题：' + escape(topic && topic.title || v.topicId || '未定') + '；问题：' + escape(v.question || topic && topic.question || '') + '；预计占用一个短时段。</p>';
+      if (v.exchange) html += '<details open><summary>本次交流内容</summary><p style="white-space:pre-wrap">' + escape(v.exchange.content || '') + '</p></details>';
+      if (v.result) html += '<p data-daily-consultation-result>结果：' + escape(v.result.summary || '') + '</p>';
+    }
     html += v.messages.slice(-8).map(function (m) { return '<details><summary>' + escape((m.fromId ? who(m.fromId) : '传递记录') + ' · ' + (m.fromId === ch.id && m.status !== 'delivered' ? '已发出' : '已收到')) + '</summary><p style="white-space:pre-wrap">' + escape(m.content) + '</p></details>'; }).join('');
     html += v.documents.map(function (document) {
       return '<details open data-daily-document="' + escape(document.id) + '"><summary>已交付文书：材料清单</summary><pre style="white-space:pre-wrap;font:inherit">' + escape(document.content) + '</pre><details><summary>查看材料来源</summary>' + document.sources.map(function (s) {
@@ -55,9 +63,15 @@
       var options = choices[v.nextPhase] || [];
       if (v.kind === 'greeting' && v.nextPhase === 'respond') options = [['warm', '关切答复'], ['brief', '简短答复'], ['reject', '婉拒继续往来'], ['defer', '延期答复']];
       if (v.kind === 'meeting' && v.nextPhase === 'respond') options = [['accept', '接受约见'], ['reject', '婉拒约见'], ['defer', '建议改期']];
+      if (v.kind === 'consultation' && v.nextPhase === 'respond') options = [['accept', '接受请益'], ['brief', '只作简短切磋'], ['reject', '暂不方便'], ['defer', '改日再议']];
+      if (v.kind === 'consultation' && v.nextPhase === 'perform') options = [['explain', '解释要点'], ['question', '先问对方理解'], ['counter', '提出不同看法']];
+      if (v.kind === 'consultation' && v.nextPhase === 'feedback') options = [['reflect', '整理自己的理解'], ['ask', '留下追问'], ['ack', '确认收到']];
       if (v.kind === 'assistance' && v.nextPhase === 'respond') options = options.concat([['partial', '仅承接首份材料']]);
       var token = D().ticket(ch, { planId: v.id, phase: v.nextPhase });
-      html += '<div data-daily-response="' + escape(token) + '">' + options.map(function (o) { return '<button type="button" class="hy-filter-btn" data-daily-answer="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
+      html += '<div data-daily-response="' + escape(token) + '">' + options.map(function (o) {
+        var attr = v.kind === 'consultation' && v.nextPhase === 'perform' ? 'data-daily-exchange' : 'data-daily-answer';
+        return '<button type="button" class="hy-filter-btn" ' + attr + '="' + o[0] + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
       if (v.kind === 'assistance' && /^(agree|feedback)$/.test(v.nextPhase)) html += formMaterials(materials, v.id);
     }
     if (v.canCancel) html += '<button type="button" class="hy-filter-btn" data-daily-cancel="' + escape(D().ticket(ch, { planId: v.id, phase: 'cancel' })) + '">取消此项请求</button>';
@@ -77,7 +91,8 @@
       html += '<p>当日已新发起 ' + budget.starts + ' / ' + D().config.dailyStarts + ' 项，可回应已送达事项。</p><div data-daily-compose>';
       html += '<label>联系对象 <select id="daily-target" aria-label="日常往来对象">' + options + '</select></label> ';
       html += '<label>希望引见的人 <select id="daily-third" aria-label="希望引见的人">' + options + '</select></label>';
-      html += formMaterials(materials, 'new') + '<div><button type="button" class="hy-filter-btn" data-daily-new="greeting">通问</button> <button type="button" class="hy-filter-btn" data-daily-new="introduction">请求引见</button> <button type="button" class="hy-filter-btn" data-daily-new="assistance">请求协助整理材料</button> <button type="button" class="hy-filter-btn" data-daily-new="meeting">提出约见</button></div></div>';
+      html += '<label>请益话题 <select id="daily-consultation-topic" aria-label="请益话题"><option value="letter_style">文书表达</option><option value="reading_understanding">阅读理解</option></select></label>';
+      html += formMaterials(materials, 'new') + '<div><button type="button" class="hy-filter-btn" data-daily-new="greeting">通问</button> <button type="button" class="hy-filter-btn" data-daily-new="introduction">请求引见</button> <button type="button" class="hy-filter-btn" data-daily-new="assistance">请求协助整理材料</button> <button type="button" class="hy-filter-btn" data-daily-new="consultation">提出请益/切磋</button> <button type="button" class="hy-filter-btn" data-daily-new="meeting">提出约见</button></div></div>';
       html += '<p id="daily-feedback" role="status"></p><h4>实际往来与待回应事项</h4>';
       views.sort(function (a, b) { return Number(!!D().view(b, ch).nextPhase) - Number(!!D().view(a, ch).nextPhase) || b.updatedTurn - a.updatedTurn; });
       html += views.map(function (p) { return activityCard(p, ch, materials); }).join('') || '<p>尚无本地往来。</p>';
@@ -92,13 +107,18 @@
         if (button.dataset.dailyNew) {
           if (!composeLease || !NPC.ActionLedger.current(composeLease)) { render(); return; }
           var kind = button.dataset.dailyNew, target = panel.querySelector('#daily-target').value, third = panel.querySelector('#daily-third').value;
+          var consultationTopic = panel.querySelector('#daily-consultation-topic');
+          var consultationOpportunity = kind === 'consultation' && D().consultationOpportunities ? D().consultationOpportunities(ch).find(function (o) { return o.action.targetId === target && o.action.consultation.topicId === (consultationTopic && consultationTopic.value); }) : null;
           var request = { activityKind: kind, targetId: target, thirdPartyId: kind === 'introduction' ? third : '', task: kind === 'assistance' ? selectedMaterials(panel, materials, 'new') : undefined,
+            consultation: kind === 'consultation' ? { topicId: consultationTopic && consultationTopic.value, sourceOpportunity: consultationOpportunity && consultationOpportunity.action.consultation.sourceOpportunity } : undefined,
             meeting: kind === 'meeting' ? { purpose: '探望与叙谈', returnMode: 'return' } : undefined };
           receipt = D().submitHuman(D().ticket(ch, request));
         } else if (button.dataset.dailyCancel) receipt = D().submitHuman(button.dataset.dailyCancel);
-        else if (button.dataset.dailyAnswer) {
+        else if (button.dataset.dailyAnswer || button.dataset.dailyExchange) {
           var responseRoot = button.closest('[data-daily-response]'), selection = { response: button.dataset.dailyAnswer };
+          if (button.dataset.dailyExchange) selection.response = undefined;
           if (planRow) { var task = selectedMaterials(panel, materials, planRow.dataset.dailyPlan); if (task.materialRefs.length) selection.task = task; }
+          if (button.dataset.dailyExchange) selection.exchangeChoice = button.dataset.dailyExchange;
           receipt = D().submitHuman(responseRoot.dataset.dailyResponse, selection);
         }
         if (!receipt) return;

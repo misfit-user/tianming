@@ -211,7 +211,10 @@
       rows(a.documents).filter(function (d) { return d && d.receivedBy === actorId && d.status === 'received'; }).some(function (doc) {
         var delivery = rows(p.messages).find(function (m) { return m && m.kind === 'delivery' && m.data && m.data.documentId === doc.id && m.toId === actorId && m.status === 'delivered'; });
         var target = person(p.targetId, g);
-        if (!delivery || !alive(target) || !knows(ch, target, g)) return false;
+        // Receiving a document from the helper is itself a sourced contact;
+        // do not require a pre-existing affinity/relationship entry before
+        // the recipient can decide whether to continue the conversation.
+        if (!delivery || !alive(target) || (!knows(ch, target, g) && delivery.fromId !== target.id)) return false;
         targetId = target.id; topicId = 'reading_understanding';
         source = { kind: 'document', sourcePlanId: p.id, sourceMessageId: delivery.id, documentId: doc.id, actorId: actorId,
           key: 'document:' + p.id + ':' + doc.id + ':' + actorId, knownDay: delivery.deliveredDay,

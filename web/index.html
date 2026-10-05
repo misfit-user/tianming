@@ -60,6 +60,21 @@
   };
 })();
 </script>
+<!-- 新前端（整体重做·开发中）：带 ?ui=new 或 localStorage tm_ui=new 时启用，内核照旧载入、老界面隐去；
+     整体切换前默认关，玩家无感。见 docs/newui-foundation-20261005/plan.md -->
+<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }</script>
+<script>
+(function () {
+  var on = false;
+  try { on = /[?&]ui=new(&|$)/.test(location.search) || localStorage.getItem('tm_ui') === 'new'; } catch (_e) { on = false; }
+  if (!on) return;
+  window.TM_NEW_UI = true;
+  document.documentElement.classList.add('tm-newui');
+  var st = document.createElement('style');
+  st.textContent = 'html.tm-newui body > *:not(#tm-newui-root){display:none!important}html.tm-newui,html.tm-newui body{background:#120a06}';
+  document.head.appendChild(st);
+})();
+</script>
 <link id="tm-main-css" rel="stylesheet" href="styles.css?v=20260928-release1353" data-css-base="styles.css?v=20260922-release1352" data-css-fallback="https://cdn.jsdelivr.net/gh/misfit-user/tianming@main/web/styles.css?v=20260922-release1352" onload="window.TM_CSS_LOADED&&window.TM_CSS_LOADED(this)" onerror="window.TM_CSS_RETRY&&window.TM_CSS_RETRY(this)">
 <link rel="stylesheet" href="tm-home-ui.css?v=20260928-release1353">
 <script src="tm-home-ui.js?v=20260928-release1353"></script>
@@ -1078,6 +1093,8 @@ console.log('天命游戏脚本开始加载...');
 <!-- 末尾 defer 启动契约：等待此前 blocking/defer 脚本均执行后检查关键全局，缺失时显示明确故障层。 -->
 <script>window.TMStartupPhases.finish({ boundary: 'startup-contract' });</script>
 <script src="tm-startup-contract.js?v=20260928-release1353" defer></script>
+<!-- 新前端入口：开关开着才载入（动态 import，老界面路径完全不经过这里） -->
+<script>if (window.TM_NEW_UI) import('./ui/boot.js').catch(function (e) { console.error('[newui] 新前端载入失败', e); });</script>
 
 <!-- 触屏工效层（移植 Phase 2·S2.1）·仅 @media(pointer:coarse) 生效·桌面零影响·置尾以压过御案注入样式 -->
 <link rel="stylesheet" href="tm-touch.css?v=20260928-release1353">

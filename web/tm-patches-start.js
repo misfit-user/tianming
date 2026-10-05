@@ -911,34 +911,55 @@ startGame=async function(sid){
 // 时机：在 doActualStart 之前展示·此刻 P/GM 尚未初始化·所有数据均从 sc（剧本对象）取，缺则兜底。
 // 数据：题署=sc.name/sc.era；身份=sc.playerInfo.characterName(去注解)→sc.characters 找立绘/称谓/bio；
 //       戏眼=sc.events 里 isOpeningEvent/triggerTurn:1 的前 3 条（每剧本皆有·绝不写死单朝专名）。
-function _tmShowOpeningCeremony(sc, sid, requestToken) {
-  if (!_tmStartRequestCurrent(requestToken)) return;
-  var _esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+// 开场仪典要展示的数据（纯数据、不碰 DOM）：老界面的仪典与新前端（web/ui）共用这一份取法
+function _tmOpeningCeremonyData(sc) {
+  sc = sc || {};
   // 玩家角色（容错去注解·跨剧本：绍宋 characterName 形如「赵构(穿越者赵玖)」）
-  var _pi = sc.playerInfo || {};
-  var _pName = _pi.characterName || '';
-  var _pClean = (_pName.replace(/[（(].*$/, '').trim()) || _pName;
-  var _pChar = null;
-  (sc.characters || []).some(function (c) { if (c && (c.name === _pClean || c.name === _pName)) { _pChar = c; return true; } return false; });
-  var _pTitle = _pi.characterTitle || (_pChar && (_pChar.officialTitle || _pChar.title)) || '';
-  var _pPortrait = (_pChar && _pChar.portrait) || '';
-  var _pBio = _pi.characterBio || (_pChar && _pChar.bio) || '';
-  if (_pBio) _pBio = String(_pBio).replace(/\s+/g, ' ').trim().slice(0, 64);
+  var pi = sc.playerInfo || {};
+  var name = pi.characterName || '';
+  var clean = (name.replace(/[（(].*$/, '').trim()) || name;
+  var ch = null;
+  (sc.characters || []).some(function (c) { if (c && (c.name === clean || c.name === name)) { ch = c; return true; } return false; });
+  var bio = pi.characterBio || (ch && ch.bio) || '';
+  if (bio) bio = String(bio).replace(/\s+/g, ' ').trim().slice(0, 64);
   // 开局戏眼（开局事件前 3·跨剧本通用）
   // 事件既可能是扁平数组（官方天启/绍宋），也可能是 {historical/random/conditional/story/chain}
   // 分组对象（编辑器/旧格式剧本，如西游记·紫霄纪）。此处与 doActualStart 同构地先归一化成数组再
   // 遍历——否则对分组对象直接 .forEach 会抛 TypeError，崩在开场仪典之前、整局黑屏无法进局。
-  var _evSrc = sc.events;
-  var _evList = Array.isArray(_evSrc) ? _evSrc
-    : (_evSrc ? [].concat(_evSrc.historical || [], _evSrc.random || [], _evSrc.conditional || [], _evSrc.story || [], _evSrc.chain || []) : []);
-  var _eyes = [];
-  _evList.forEach(function (e) {
-    if (_eyes.length >= 3 || !e) return;
+  var evSrc = sc.events;
+  var evList = Array.isArray(evSrc) ? evSrc
+    : (evSrc ? [].concat(evSrc.historical || [], evSrc.random || [], evSrc.conditional || [], evSrc.story || [], evSrc.chain || []) : []);
+  var eyes = [];
+  evList.forEach(function (e) {
+    if (eyes.length >= 3 || !e) return;
     if (!(e.isOpeningEvent === true || e.triggerTurn === 1)) return;
-    _eyes.push({ ti: e.name || '开局要务', ds: String(e.description || e.narrative || '').replace(/\s+/g, ' ').trim().slice(0, 16), key: (e.importance === '关键') });
+    eyes.push({ ti: e.name || '开局要务', ds: String(e.description || e.narrative || '').replace(/\s+/g, ' ').trim().slice(0, 16), key: (e.importance === '关键') });
   });
-  // 题署印字：剧本朝代字 > 剧本名首字
-  var _sealCh = ((sc.dynastyChar || sc.dynasty || '').toString().charAt(0)) || ((sc.name || '天').toString().charAt(0));
+  return {
+    name: sc.name || '', era: sc.era || '', opening: String(sc.opening || ''),
+    // 题署印字：剧本朝代字 > 剧本名首字
+    seal: ((sc.dynastyChar || sc.dynasty || '').toString().charAt(0)) || ((sc.name || '天').toString().charAt(0)),
+    player: {
+      name: name, clean: clean,
+      title: pi.characterTitle || (ch && (ch.officialTitle || ch.title)) || '',
+      portrait: (ch && ch.portrait) || '',
+      bio: bio
+    },
+    eyes: eyes
+  };
+}
+
+function _tmShowOpeningCeremony(sc, sid, requestToken) {
+  if (!_tmStartRequestCurrent(requestToken)) return;
+  var _esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var _od = _tmOpeningCeremonyData(sc);
+  var _pName = _od.player.name;
+  var _pClean = _od.player.clean;
+  var _pTitle = _od.player.title;
+  var _pPortrait = _od.player.portrait;
+  var _pBio = _od.player.bio;
+  var _eyes = _od.eyes;
+  var _sealCh = _od.seal;
 
   function _opEl(tag, className, text) {
     var node = document.createElement(tag);

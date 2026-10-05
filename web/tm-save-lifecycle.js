@@ -869,11 +869,13 @@ doSaveGame=async function(){
 
 window.desktopDoSave=async function(){
   var operation = window.desktopDoSave;
+  // 新前端直接给存档名：desktopDoSave(名)（web/ui）；老界面的按钮不传参，照旧读输入框
+  var _givenName = arguments[0];
   var sequence = operation._sequence = (operation._sequence || 0) + 1;
   var lease = _tmCaptureWorldLease();
   function current(){return operation._sequence === sequence && _tmWorldLeaseCurrent(lease);}
   try{
-    var name=(_$("save-name-inp").value||"").trim();
+    var name=(typeof _givenName==="string"?_givenName:(_$("save-name-inp").value||"")).trim();
     if(!name){toast("\u8BF7\u8F93\u5165\u5B58\u6863\u540D");return false;}
     await _tmAwaitLoadBarrier();
     if(!current()) return false;

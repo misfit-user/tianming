@@ -78,7 +78,7 @@ async function advance({ court = false } = {}) {
   if (g.busy) throw new Error('推演进行中');
   if (!(w.P && w.P.ai && w.P.ai.key)) {
     bus.emit('kernel:toast', { text: '未设置 AI 密钥，不能推演' });
-    throw new Error('未设置 AI 密钥');
+    throw Object.assign(new Error('未设置 AI 密钥'), { shown: true });   // 已提示过，调用方不必再报
   }
   bus.emit('game:advance-start', { turn: g.turn });
   try {

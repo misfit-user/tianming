@@ -1,7 +1,7 @@
 // 展卷对话框：一幅手卷，两根轴先并在中间，展开时各回两边，卷心由中线向两边展开。
 // const j = juan({ title, note, content, actions: [{ label, primary, onclick }], width });
 // await j.closed（关卷时 resolve，带关闭原因）；j.close(reason)
-import { h } from '../../core/dom.js';
+import { h, overlayHost } from '../../core/dom.js';
 import { yapai } from './controls.js';
 
 const stack = [];
@@ -31,7 +31,7 @@ export function juan({ title, note, content, actions = [], width = '46rem', heig
   }
 
   veil.addEventListener('pointerdown', (e) => { if (e.target === veil && closable) close('dismiss'); });
-  document.body.append(veil);
+  overlayHost().append(veil);
   // 两轴起始并在中线：各自向中间挪半个卷心宽
   scroll.style.setProperty('--juan-half', `${body.getBoundingClientRect().width / 2}px`);
   requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('open')));

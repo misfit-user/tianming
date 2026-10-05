@@ -50,3 +50,8 @@ export function installStyle(id, css) {
   installed.add(id);
   document.head.append(h('style', { 'data-ui': id }, css));
 }
+
+// 浮层（展卷、签条）挂在哪：新前端根节点在就挂它下面（老界面的 body 子节点在新前端模式下一律隐去），否则挂 body
+export function overlayHost() {
+  return document.getElementById('tm-newui-root') || document.body;
+}

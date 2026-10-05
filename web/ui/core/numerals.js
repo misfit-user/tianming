@@ -55,10 +55,17 @@ export function num(n) {
   return style === 'arabic' ? arabicNum(n) : cnNum(n);
 }
 
-// 增减：「亏八十二万」「盈三万」；零返回空串
+// 取几位有效数字（账上的增减不必记到个位）
+export function roundSig(v, digits = 3) {
+  if (!v) return 0;
+  const p = Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.abs(v))) + 1 - digits));
+  return Math.round(v / p) * p;
+}
+
+// 增减：「亏八十二万」「盈三万」，取三位有效数字；零返回空串
 export function delta(v) {
   if (!v || Number.isNaN(v)) return '';
-  return (v < 0 ? '亏' : '盈') + num(v);
+  return (v < 0 ? '亏' : '盈') + num(roundSig(v));
 }
 
 // 「13万」「-82万」「-9150」这类写法 → 数

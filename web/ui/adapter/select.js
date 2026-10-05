@@ -137,6 +137,28 @@ export function memorials() {
   }));
 }
 
+// 邸报：近事编年（GM._chronicle）由新到旧，取标题（首个【…】或前二十余字）；重要者标「急」，要务标「议」，余为「闻」
+export function news(limit = 8) {
+  const list = (G()._chronicle || []).filter((e) => e && e.text && !/paradigm|scenario|^system/i.test(String(e.type || '')));
+  return list.slice(-limit * 2).reverse().slice(0, limit).map((e) => {
+    const text = String(e.text);
+    const m = text.match(/【([^】]{2,24})】/);
+    const tags = Array.isArray(e.tags) ? e.tags : [];
+    return {
+      turn: e.turn, type: e.type || '',
+      tag: tags.includes('重要') || /急|变|乱/.test(e.type || '') ? '急' : /要务|议/.test(e.type || '') ? '议' : '闻',
+      text: m ? m[1] : text.replace(/\s+/g, ' ').slice(0, 22)
+    };
+  });
+}
+
+// 时局要务（案头花笺）：未结的几件，题与摘要
+export function issues(limit = 3) {
+  return (G().currentIssues || []).filter((i) => i && i.status !== 'resolved').slice(0, limit).map((i) => ({
+    id: i.id, title: i.title || '', summary: String(i.description || '').replace(/【[^】]*】/g, '').replace(/\s+/g, ' ').slice(0, 60)
+  }));
+}
+
 // 人物（在世），供图志与小立轴
 export function characters({ limit = 0 } = {}) {
   const list = (G().chars || []).filter((c) => c && c.alive !== false && !c.dead).map((c) => ({

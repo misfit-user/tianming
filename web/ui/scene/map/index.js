@@ -134,7 +134,7 @@ function pointsLayer(items, map, uniforms, fragmentShader, sizeMul, fade, clampP
 // 题名用的简称（剧本势力若带 short 字段就用它）
 const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷兰', '西班牙·马尼拉': '西班牙', '大越黎郑阮格局': '大越', '虾夷地与松前氏': '虾夷', '吐鲁番诸伯克': '吐鲁番', '野人女真诸部': '野人女真', '葡萄牙·澳门': '澳门', '瓦刺诸部': '瓦剌' };
 
-export async function createMapView(stage, { regions, factions, labelLayer = null, view = 'world', fov = 30, primary } = {}) {
+export async function createMapView(stage, { regions = [], factions = {}, labelLayer = null, view = 'world', fov = 30, primary } = {}) {
   const q = quality();
   const renderer = stage.renderer;
   const F = await terrainFields(renderer, { hiRes: q.mapHiRes });
@@ -153,9 +153,13 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
   controls.maxPolarAngle = 1.2;
 
   // ---------- 府州与势力 ----------
-  const ids = regionIdMap(regions, 2);
+  // 府州编号图（2 倍分辨率，编号写成两字节）。开局前没有剧本时为空，开局或读档后 setRegions 换上
+  let ids = regionIdMap(regions, 2);
   const idBytes = new Uint8Array(ids.data.length * 2);
-  for (let i = 0; i < ids.data.length; i++) { idBytes[i * 2] = ids.data[i] & 255; idBytes[i * 2 + 1] = ids.data[i] >> 8; }
+  const writeIds = () => {
+    for (let i = 0; i < ids.data.length; i++) { idBytes[i * 2] = ids.data[i] & 255; idBytes[i * 2 + 1] = ids.data[i] >> 8; }
+  };
+  writeIds();
   const regionTex = new THREE.DataTexture(idBytes, ids.width, ids.height, THREE.RGFormat, THREE.UnsignedByteType);
   regionTex.magFilter = THREE.NearestFilter;
   regionTex.minFilter = THREE.NearestFilter;
@@ -371,12 +375,16 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
       const k = width / extent.w;
       for (const r of realmList) {
         if (r.area < 600) continue;
-        const px = (r.x - extent.x0) * k, py = (r.y - extent.y0) * k;
-        if (px < 40 || py < 30 || px > width - 40 || py > height - 30) continue;
+        let px = (r.x - extent.x0) * k, py = (r.y - extent.y0) * k;
+        if (px < 0 || py < 0 || px > width || py > height) continue;
         const size = Math.max(26, Math.min(112, Math.sqrt(r.area) * 0.24)) * (width / W);
         g.font = `${size}px "TM-MaShanZheng"`;
         g.fillStyle = 'rgba(40,24,14,0.86)';
-        g.fillText([...(factions[r.id]?.short || SHORT[r.name] || r.name)].join(' '), px, py);
+        const text = [...(factions[r.id]?.short || SHORT[r.name] || r.name)].join(' ');
+        const half = g.measureText(text).width / 2, m = 48 * width / W;
+        px = Math.min(width - m - half, Math.max(m + half, px));     // 靠边的势力名挪回框里，免得被裁
+        py = Math.min(height - m - size / 2, Math.max(m + size / 2, py));
+        g.fillText(text, px, py);
       }
     }
     g.strokeStyle = 'rgba(40,24,14,0.7)';
@@ -432,6 +440,20 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
     select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; },
     // 府州易主：changes = { 府州下标: 新势力 id }
+    // 换一套府州（开局、读档、换剧本）：编号图、疆界、题名一并重做
+    setRegions(next) {
+      regions = (next && next.regions) || [];
+      factions = (next && next.factions) || {};
+      data.regions = regions;
+      data.factions = factions;
+      ids = regionIdMap(regions, 2);
+      writeIds();
+      regionTex.needsUpdate = true;
+      uniforms.uHover.value = -1;
+      uniforms.uSelected.value = -1;
+      applyPolitics();
+      buildLabels();
+    },
     setOwnership(changes) {
       for (const [i, fac] of Object.entries(changes)) if (regions[i]) regions[i].faction = fac;
       applyPolitics();

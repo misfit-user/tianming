@@ -24,9 +24,12 @@ export function pin(label, value, { text } = {}) {
 
 // 人物小立轴：zhou({ name, src, dead, onclick })；没有立像时以名字首字作像
 export function zhou({ name, src, dead = false, onclick, title }) {
-  const face = src
-    ? h('img', { src, alt: name, loading: 'lazy', decoding: 'async' })
-    : h('div.face', { style: { display: 'grid', placeItems: 'center', font: '400 2rem var(--f-title)', color: 'rgba(40,24,14,.6)' } }, [...name][0]);
+  const initial = () => h('div.face', { style: { display: 'grid', placeItems: 'center', font: '400 2rem var(--f-title)', color: 'rgba(40,24,14,.6)' } }, [...(name || '？')][0]);
+  let face = initial();
+  if (src) {
+    face = h('img', { src, alt: name, loading: 'lazy', decoding: 'async' });
+    face.addEventListener('error', () => face.replaceWith(initial()), { once: true });   // 立像缺失：以名字首字作像
+  }
   return h('figure.q-zhou' + (dead ? '.dead' : ''), { onclick, title: title || name, tabIndex: onclick ? 0 : null }, face, h('figcaption', name));
 }
 

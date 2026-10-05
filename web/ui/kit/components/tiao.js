@@ -1,6 +1,6 @@
 // 签条：悬停提示。元素上写 data-tiao="正文"（可加 data-tiao-title="题"），或用 tiao(el, { title, text })。
 // 全页只有一张签条，跟着指针走，靠近屏边时翻到另一侧。
-import { h } from '../../core/dom.js';
+import { h, overlayHost } from '../../core/dom.js';
 
 let slip = null;
 let current = null;
@@ -9,7 +9,7 @@ let showTimer = 0;
 function ensure() {
   if (!slip) {
     slip = h('div.q-tiao', { role: 'tooltip' });
-    document.body.append(slip);
+    overlayHost().append(slip);
   }
   return slip;
 }

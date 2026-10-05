@@ -1,0 +1,252 @@
+/* 界面器物：漆、纸、牙、印、签、牌、章、账、轴、刻本、笺、卷、签条、开关、镇尺。
+ * 纹饰图样由 ornaments.js 现画后装进 CSS 变量；尺度一律 rem（见 tokens.css）。
+ * 类名一律 q- 打头（器），不与老界面样式相撞。 */
+
+/* ---------- 底子 ---------- */
+.q-root { font-family: var(--f-kai); color: var(--ivory); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+.q-v { writing-mode: vertical-rl; text-orientation: mixed; }
+.q-gold { color: transparent; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-lo)); -webkit-background-clip: text; background-clip: text; }
+.q-gold-flat { color: var(--gold-hi); }
+.q-ink { color: var(--ink); }
+.q-verm { color: var(--verm); }
+.q-dim { color: var(--ivory-soft); }
+.q-hidden { display: none !important; }
+
+/* ---------- 漆：黑漆描金回纹框，里一道金线 ---------- */
+.q-qi { position: relative; border: .6875rem solid transparent; border-image: var(--huiwen) 14 round; color: var(--ivory);
+  background: var(--lac-grain), radial-gradient(ellipse at 30% 0%, rgba(255, 220, 170, .08), transparent 60%), linear-gradient(180deg, #2c1b13, #170d08);
+  box-shadow: var(--sh-panel), inset 0 0 0 1px var(--gold-line); }
+.q-qi.thin { border-width: .5rem; border-image: var(--huiwen-thin) 14 round; }
+/* 题头：一朵云头领起，右边小字注 */
+.q-ti { display: flex; align-items: center; gap: .5rem; margin: 0 0 .625rem; font: 400 var(--fs-6)/1 var(--f-title); letter-spacing: .22em; }
+.q-ti::before { content: ''; flex: none; width: 1.875rem; height: .75rem; background: var(--yuntou) center / contain no-repeat; }
+.q-ti small { margin-left: auto; font: var(--fs-1) var(--f-kai); letter-spacing: .12em; color: var(--ivory-soft); }
+.q-zhi .q-ti, .q-ti.ink { color: var(--ink); }
+.q-zhi .q-ti::before { background-image: var(--yuntou-red); }
+
+/* ---------- 纸：纸色渐变 + 纤维 ---------- */
+.q-zhi { position: relative; color: var(--ink); background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2);
+  box-shadow: var(--sh-paper), inset 0 0 0 1px rgba(120, 90, 50, .25), inset 0 0 2.5rem rgba(150, 110, 60, .12); }
+.q-zhi.old { background: var(--paper-grain), linear-gradient(180deg, #e9dcbc, #d6c298); }
+
+/* ---------- 朱签：窄长一条竖写数目（取代圆形红点角标） ---------- */
+.q-qian { position: absolute; z-index: 2; writing-mode: vertical-rl; padding: .375rem .1875rem .4375rem; background: linear-gradient(180deg, #ad3222, #7d1d12); color: #f9ead2;
+  font: var(--fs-1)/1 var(--f-kai); letter-spacing: .08em; box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(236, 210, 154, .45); pointer-events: none; }
+.q-qian::before { content: ''; position: absolute; left: 50%; top: -.3125rem; width: 1px; height: .375rem; background: #e8c982; }
+
+/* ---------- 牙牌：象牙小牌，左头穿绳孔 ---------- */
+.q-yapai { display: inline-flex; align-items: center; position: relative; padding: .25rem .625rem .25rem 1rem; font: var(--fs-3)/1.15 var(--f-kai); color: var(--ink); letter-spacing: .08em;
+  background: linear-gradient(180deg, #f5eddc, #dccaa4); border-radius: 3px .5rem .5rem 3px; box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(120, 90, 50, .35); white-space: nowrap; }
+.q-yapai::before { content: ''; position: absolute; left: .3125rem; top: 50%; width: .3125rem; height: .3125rem; margin-top: -.15625rem; border-radius: 50%; background: #6b4a2a; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .6); }
+button.q-yapai, a.q-yapai { cursor: pointer; border: 0; transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow: 0 .375rem .875rem rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(120, 90, 50, .45); }
+/* 系在器物上的牙牌：一截红绳、一个盘长结 */
+.q-tag { display: flex; align-items: center; white-space: nowrap; pointer-events: none; }
+.q-tag > i { position: relative; width: 1rem; height: 1.5px; background: var(--cinnabar); }
+.q-tag > i::before { content: ''; position: absolute; left: -.3125rem; top: -.4375rem; width: .9375rem; height: .9375rem; background: var(--panchang) center / contain no-repeat; }
+
+/* ---------- 印：朱红方，白文 ---------- */
+.q-yin { display: grid; place-items: center; background: linear-gradient(180deg, #a52d1c, #7a1f13); color: #f7e8d2; font-family: var(--f-seal);
+  box-shadow: var(--sh-lift), inset 0 0 0 2px rgba(247, 232, 210, .55), inset 0 0 0 4px #8e2416; }
+/* 画布印（sealCanvas）当按钮：钤盖之感——按下时一沉 */
+.q-seal { display: block; background: center / 100% 100% no-repeat; filter: drop-shadow(0 .625rem 1rem rgba(40, 10, 4, .55)); cursor: pointer; transition: transform var(--t-2) var(--ease-out), filter var(--t-2); }
+.q-seal:hover { transform: rotate(-1deg) scale(1.03); }
+.q-seal:active { transform: scale(.96); filter: drop-shadow(0 .25rem .375rem rgba(40, 10, 4, .6)); }
+
+/* ---------- 签子：一排竖写的小签，当前那枝朱红 ---------- */
+.q-qianzi { display: flex; gap: .4375rem; }
+.q-qianzi > button { writing-mode: vertical-rl; position: relative; width: 1.875rem; padding: .75rem 0 .5625rem; border: 0; text-align: center; cursor: pointer;
+  font: var(--fs-3)/1.875rem var(--f-kai); letter-spacing: .25em; color: var(--ink);
+  background: linear-gradient(90deg, #dccaa4, #f3ead6 45%, #d8c49c); border-radius: 0 0 4px 4px; box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(120, 90, 50, .35);
+  transition: transform var(--t-2) var(--ease-out); }
+.q-qianzi > button::before { content: ''; position: absolute; left: 50%; top: .25rem; width: .25rem; height: .25rem; margin-left: -.125rem; border-radius: 50%; background: rgba(90, 60, 30, .7); }
+.q-qianzi > button:hover { transform: translateY(2px); }
+.q-qianzi > button.on { color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(236, 210, 154, .6); transform: translateY(.375rem); }
+.q-qianzi > button.on::before { background: #e8c982; }
+.q-qianzi.big > button { width: 3rem; min-height: 5.75rem; padding: 1rem 0 .75rem; font: var(--fs-6)/3rem var(--f-title); letter-spacing: .18em; border-radius: 0 0 5px 5px;
+  background: var(--paper-grain), linear-gradient(90deg, #d8c49c, #f4ecdb 45%, #d6c298); }
+.q-qianzi.big > button.on { background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); }
+
+/* ---------- 瓦当圆章：外一圈连珠，悬停时名字从左边浮出 ---------- */
+.q-wadang { position: relative; width: 3.625rem; height: 3.625rem; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0;
+  background: var(--lianzhu) center / 100% no-repeat, radial-gradient(circle at 35% 30%, #5a3620, #2a170c 72%); box-shadow: 0 .375rem .875rem rgba(10, 5, 2, .6);
+  transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+.q-wadang > b { font: 400 1.5625rem/1 var(--f-title); }
+.q-wadang > small { position: absolute; right: 4.375rem; top: 50%; transform: translate(.5rem, -50%); font-size: var(--fs-3); letter-spacing: .3em; color: var(--ivory);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .9); opacity: 0; white-space: nowrap; pointer-events: none; transition: opacity var(--t-2), transform var(--t-2) var(--ease-out); }
+.q-wadang:hover > small, .q-wadang.on > small { opacity: 1; transform: translate(0, -50%); }
+.q-wadang.on { transform: translateX(-.5rem); box-shadow: 0 .5rem 1.125rem rgba(10, 5, 2, .7), 0 0 0 2px rgba(236, 210, 154, .35); }
+.q-wadang > .q-qian { left: -.75rem; top: .125rem; }
+
+/* ---------- 牌：漆牌按钮，顶上一朵云头 ---------- */
+.q-pai { position: relative; min-width: 10.5rem; padding: .625rem .75rem .5625rem; text-align: center; cursor: pointer; white-space: nowrap;
+  transition: transform var(--t-2) var(--ease-out); }
+.q-pai::before { content: ''; position: absolute; left: 50%; top: -1.5625rem; width: 2.875rem; height: 1.0625rem; margin-left: -1.4375rem; background: var(--yuntou) center / contain no-repeat; }
+.q-pai > b { display: block; font: 400 1.4375rem/1 var(--f-title); letter-spacing: .1em; }
+.q-pai > small { display: block; margin-top: .4375rem; font-size: var(--fs-1); letter-spacing: .32em; color: var(--ivory-soft); }
+.q-pai > .q-qian { right: -.5rem; top: -1rem; }
+.q-pai:hover { transform: translateY(-.1875rem); }
+.q-pai.aside { min-width: 9.375rem; opacity: .92; }
+.q-pai[aria-disabled='true'] { opacity: .45; cursor: default; transform: none; }
+
+/* 小方钮：顶栏工具（总、问、典…） */
+.q-btn { width: 2rem; height: 2rem; display: grid; place-items: center; border: 0; padding: 0; font: 400 1.0625rem var(--f-title); cursor: pointer; color: var(--gold-hi);
+  background: linear-gradient(180deg, #2c1b12, #1a0f09); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .75), inset 0 0 0 3px #1a0f09, inset 0 0 0 4px rgba(201, 164, 92, .3);
+  transition: filter var(--t-2); }
+.q-btn:hover { filter: brightness(1.25); }
+
+/* ---------- 账：竖写类名，右边一列账目（汉字记数、单位、亏盈） ---------- */
+.q-zhang { display: flex; align-items: center; gap: .5625rem; padding-left: .75rem; border-left: 1px solid var(--gold-faint); }
+.q-zhang > em { writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); font-style: normal; letter-spacing: .28em; }
+.q-zhang > ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
+.q-zhang li { display: flex; align-items: baseline; gap: .3125rem; font-size: .875rem; line-height: 1.125rem; white-space: nowrap; }
+.q-zhang li > i { font-style: normal; font-size: var(--fs-1); color: var(--gold); }
+.q-zhang li > b { font-weight: 400; color: #f6ecd8; letter-spacing: .04em; }
+.q-zhang li > u { text-decoration: none; font-size: .6875rem; color: var(--ivory-soft); margin-left: -.1875rem; }
+.q-zhang li > s { text-decoration: none; font-size: .6875rem; color: var(--loss); }
+.q-zhang li > s.up { color: var(--gain); }
+
+/* ---------- 九品刻度 ---------- */
+.q-pin { width: 4.75rem; }
+.q-pin > div { display: flex; justify-content: space-between; align-items: baseline; font-size: var(--fs-1); color: var(--ivory-soft); }
+.q-pin > div > b { font: 400 1.0625rem var(--f-title); }
+.q-pin > ol { margin: .3125rem 0 0; padding: 0; list-style: none; display: flex; justify-content: space-between; align-items: flex-end; height: .5rem; }
+.q-pin li { width: 2px; height: .25rem; background: rgba(201, 164, 92, .35); }
+.q-pin li.f { background: var(--gold); }
+.q-pin li.n { height: .5rem; width: 3px; background: var(--gold-hi); box-shadow: 0 0 6px rgba(236, 210, 154, .8); }
+
+/* ---------- 轴：人物小立轴（绫边、上下两根轴杆） ---------- */
+.q-zhou { position: relative; margin: 0; padding: .3125rem .25rem .375rem; background: linear-gradient(180deg, #d8cba9, #c9b890); box-shadow: 0 .1875rem .5rem rgba(0, 0, 0, .5); cursor: pointer;
+  transition: transform var(--t-2) var(--ease-out); }
+.q-zhou::before, .q-zhou::after { content: ''; position: absolute; left: -.1875rem; right: -.1875rem; height: .3125rem; background: linear-gradient(180deg, #4a2a1a, #1e100a); border-radius: 2px; }
+.q-zhou::before { top: -.1875rem; }
+.q-zhou::after { bottom: -.25rem; height: .4375rem; border-radius: .25rem; }
+.q-zhou > img, .q-zhou > .face { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 12%; box-shadow: 0 0 0 1px rgba(90, 60, 30, .5); background: #b9a77f; }
+.q-zhou > figcaption { margin-top: .3125rem; font-size: var(--fs-2); letter-spacing: .1em; color: var(--ink); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.q-zhou:hover { transform: translateY(-.1875rem); }
+.q-zhou.dead > img { filter: grayscale(1) sepia(.25) contrast(.9); }
+
+/* ---------- 刻本：一叶，四周双边、界行，题下一个黑鱼尾 ---------- */
+.q-keben { position: relative; padding: 1rem .875rem; writing-mode: vertical-rl; display: flex; flex-direction: column; border: 2.5px solid rgba(42, 29, 20, .85); overflow: hidden; }
+.q-keben::before { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(42, 29, 20, .6); pointer-events: none; }
+.q-keben > h3 { margin: 0 0 0 .5rem; padding: 1.625rem 0 0; font: 400 1.6875rem/2.125rem var(--f-print); letter-spacing: .3em; background: var(--yuwei) 50% .25rem / 1.625rem .8125rem no-repeat; flex: none; }
+.q-keben > p { margin: 0; font: 1rem/2rem var(--f-print); letter-spacing: .1em; border-left: 1px solid rgba(42, 29, 20, .35); padding: 0 1px; }
+.q-keben > p > em { font-style: normal; display: inline-block; width: 1.1875rem; height: 1.1875rem; text-align: center; background: var(--verm); color: #fbeee0; font: .6875rem/1.1875rem var(--f-kai); margin-bottom: .4375rem; letter-spacing: 0; }
+.q-keben > p.soft > em { background: #7c6a4f; }
+
+/* ---------- 笺：朱丝栏竖写小笺 ---------- */
+.q-jian { padding: .875rem .75rem .75rem; writing-mode: vertical-rl; display: flex; flex-direction: column; }
+.q-jian > .c { padding: 0 .25rem; font: var(--fs-3)/1.6875rem var(--f-kai); letter-spacing: .12em; border-left: 1px solid rgba(170, 60, 40, .35); white-space: nowrap; }
+.q-jian > .c:last-child { border-left: 0; }
+.q-jian > .c > i { font-style: normal; font-size: var(--fs-1); color: var(--ink-soft); }
+.q-jian > .c.t { font: 400 1.625rem/2.125rem var(--f-title); letter-spacing: .2em; }
+.q-jian > .c.s { font-size: var(--fs-1); color: var(--ink-soft); }
+.q-jian > .c.bad, .q-jian > .c.w { color: var(--verm); }
+.q-jian > .c.w { font-size: .875rem; white-space: normal; }
+
+/* ---------- 卷：展卷对话框（手卷左右两轴，展开时两轴分开） ---------- */
+.q-juan-veil { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 50%, rgba(14, 7, 3, .35), rgba(14, 7, 3, .72));
+  opacity: 0; transition: opacity var(--t-3) var(--ease-out); }
+.q-juan-veil.open { opacity: 1; }
+.q-juan { position: relative; display: flex; align-items: stretch; max-width: calc(100vw - 4rem); max-height: calc(100vh - 4rem); filter: drop-shadow(0 1.5rem 2.5rem rgba(8, 4, 2, .7)); }
+.q-juan > .axis { flex: none; width: 1.375rem; position: relative; z-index: 2; margin: -.875rem 0;
+  background: linear-gradient(90deg, #2a170d, #6b4428 35%, #3a2213 60%, #1a0d06); border-radius: .3125rem; box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .3); }
+/* 轴头：上下两枚白玉轴头 */
+.q-juan > .axis::before, .q-juan > .axis::after { content: ''; position: absolute; left: -.1875rem; right: -.1875rem; height: .875rem; border-radius: .25rem;
+  background: linear-gradient(90deg, #cfc7b0, #f4efe0 45%, #bdb39a); box-shadow: 0 2px 4px rgba(0, 0, 0, .5); }
+.q-juan > .axis::before { top: -.5rem; }
+.q-juan > .axis::after { bottom: -.5rem; }
+/* 卷身：上下绫边夹一道金线局条；右头是青灰绫「天头」，上贴白题签（手卷自右往左展，题在外头） */
+.q-juan > .body { position: relative; overflow: hidden; display: flex; flex-direction: row-reverse;
+  padding: .75rem 0; background: var(--ling-brown); color: var(--ink);
+  clip-path: inset(0 50% 0 50%); transition: clip-path var(--t-4) var(--ease-in-out); }
+.q-juan-veil.open .q-juan > .body { clip-path: inset(0 0 0 0); }
+.q-juan > .body > .tiantou { flex: none; display: flex; flex-direction: column; align-items: center; gap: .75rem; overflow: hidden; width: 4.25rem; margin: -.75rem 0; padding: 1.25rem 0;
+  background: var(--ling-qing); box-shadow: inset 2px 0 0 rgba(40, 34, 26, .35); }
+.q-juan > .body > .tiantou > h2 { flex: none; margin: 0; writing-mode: vertical-rl; padding: .875rem .3125rem 1.25rem;
+  font: 400 1.375rem/1.75rem var(--f-title); letter-spacing: .3em; color: var(--ink); white-space: nowrap;
+  background: var(--paper-grain), linear-gradient(90deg, #e9e0c8, #f6f0e0 45%, #e2d7bb); box-shadow: 0 1px 3px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.q-juan > .body > .tiantou > small { writing-mode: vertical-rl; font-size: var(--fs-1); letter-spacing: .3em; color: rgba(240, 232, 214, .85); white-space: nowrap; }
+/* 画心：洒金笺，四周白局条一圈 */
+.q-juan > .body > .xin { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; margin: 0 .25rem 0 1.25rem;
+  background: var(--paper-grain), linear-gradient(180deg, #f2e8d2, #e4d4b2); box-shadow: 0 0 0 .3125rem #efe6cf, 0 0 0 .375rem rgba(120, 90, 50, .35); }
+.q-juan > .body > .xin::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: .375rem; background: linear-gradient(180deg, rgba(60, 40, 20, .18), transparent); pointer-events: none; }
+.q-juan > .body > .xin > .content { flex: 1; overflow: auto; padding: 1.125rem 1.75rem 1.25rem; }
+.q-juan > .body > .xin > footer { display: flex; justify-content: flex-start; gap: .75rem; padding: .625rem 1.75rem .875rem; border-top: 1px solid rgba(163, 40, 27, .3); }
+.q-juan > .body > .xin > footer > .close { margin-left: auto; }
+/* 两轴随展开分开（axis 先并在中线，展开时各回两边） */
+.q-juan > .axis.l { transform: translateX(var(--juan-half, 0)); transition: transform var(--t-4) var(--ease-in-out); }
+.q-juan > .axis.r { transform: translateX(calc(var(--juan-half, 0) * -1)); transition: transform var(--t-4) var(--ease-in-out); }
+.q-juan-veil.open .q-juan > .axis { transform: none; }
+
+/* ---------- 签条：悬停提示，一条细长的纸签 ---------- */
+.q-tiao { position: fixed; z-index: 60; max-width: 20rem; padding: .4375rem .75rem .5rem; pointer-events: none; font: var(--fs-2)/1.6 var(--f-kai); color: var(--ink); letter-spacing: .06em;
+  background: var(--paper-grain), linear-gradient(180deg, #f4ecdb, #e6d6b4); border-left: .1875rem solid var(--verm); box-shadow: 0 .375rem 1rem rgba(10, 5, 2, .45), inset 0 0 0 1px rgba(120, 90, 50, .3);
+  opacity: 0; transform: translateY(.25rem); transition: opacity var(--t-2), transform var(--t-2) var(--ease-out); }
+.q-tiao.on { opacity: 1; transform: none; }
+.q-tiao > b { display: block; font: 400 var(--fs-4) var(--f-title); letter-spacing: .14em; margin-bottom: .125rem; }
+
+/* ---------- 开关：漆槽里一颗朱珠，开时滑到右头 ---------- */
+.q-kaiguan { position: relative; display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; font-size: var(--fs-3); user-select: none; }
+.q-kaiguan > input { position: absolute; opacity: 0; width: 0; height: 0; }
+.q-kaiguan > .cao { position: relative; width: 3rem; height: 1.25rem; border-radius: .625rem; background: linear-gradient(180deg, #0c0604, #24150d);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .8), 0 1px 0 rgba(236, 210, 154, .2), 0 0 0 1px rgba(201, 164, 92, .45); }
+.q-kaiguan > .cao::before, .q-kaiguan > .cao::after { position: absolute; top: 50%; transform: translateY(-50%); font: .625rem/1 var(--f-kai); color: rgba(236, 210, 154, .55); }
+.q-kaiguan > .cao::before { content: '否'; right: .4375rem; }
+.q-kaiguan > .cao::after { content: '是'; left: .4375rem; opacity: 0; }
+.q-kaiguan > .cao > i { position: absolute; left: .125rem; top: .125rem; width: 1rem; height: 1rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e4806a, #a3281b 55%, #6d170d); box-shadow: 0 1px 3px rgba(0, 0, 0, .6), 0 0 0 1.5px #c9a45c;
+  transition: left var(--t-3) var(--ease-out); }
+.q-kaiguan > input:checked + .cao > i { left: 1.875rem; }
+.q-kaiguan > input:checked + .cao::before { opacity: 0; }
+.q-kaiguan > input:checked + .cao::after { opacity: 1; }
+.q-kaiguan > input:focus-visible + .cao { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+/* ---------- 镇尺：铜尺上刻度，一枚铜镇压在当前值 ---------- */
+.q-chi { position: relative; display: flex; align-items: center; gap: .75rem; font-size: var(--fs-3); }
+.q-chi > input[type='range'] { -webkit-appearance: none; appearance: none; flex: 1; height: 1.5rem; margin: 0; background: transparent; cursor: pointer; }
+.q-chi > input[type='range']::-webkit-slider-runnable-track { height: .5rem; border-radius: 2px;
+  background: repeating-linear-gradient(90deg, rgba(40, 24, 10, .7) 0 1px, transparent 1px 10%), linear-gradient(180deg, #e2c47e, #b88d43 55%, #7d5d2a);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 240, 200, .5); }
+.q-chi > input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: .875rem; height: 1.375rem; margin-top: -.4375rem; border-radius: 2px;
+  background: linear-gradient(90deg, #5a3a1c, #a77d3e 40%, #6b4a24); box-shadow: 0 2px 4px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 230, 170, .35); }
+.q-chi > output { min-width: 3em; text-align: right; color: var(--gold-hi); font-family: var(--f-title); }
+.q-zhi .q-chi > output, .q-juan .q-chi > output { color: var(--verm); }
+
+/* ---------- 书写：笺上落笔（朱丝栏行格） ---------- */
+.q-shu { display: block; width: 100%; min-height: 8rem; padding: .375rem .75rem; resize: vertical; border: 0; outline: 0; color: var(--ink); font: var(--fs-4)/2rem var(--f-kai); letter-spacing: .06em;
+  background: repeating-linear-gradient(180deg, transparent 0 calc(2rem - 1px), rgba(170, 60, 40, .32) calc(2rem - 1px) 2rem) 0 .375rem / 100% 2rem local,
+    var(--paper-grain), linear-gradient(180deg, #f4ecdb, #eadcbc);
+  box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3), inset 0 .25rem .75rem rgba(120, 90, 50, .12); }
+.q-shu::placeholder { color: rgba(74, 58, 42, .45); }
+.q-shu:focus { box-shadow: inset 0 0 0 1px rgba(163, 40, 27, .55), inset 0 .25rem .75rem rgba(120, 90, 50, .12); }
+.q-shu.v { writing-mode: vertical-rl; min-height: 0; height: 16rem; resize: horizontal; line-height: 2rem;
+  background: repeating-linear-gradient(270deg, transparent 0 calc(2rem - 1px), rgba(170, 60, 40, .32) calc(2rem - 1px) 2rem) right .75rem top 0 / 2rem 100% local,
+    var(--paper-grain), linear-gradient(180deg, #f4ecdb, #eadcbc); }
+
+/* ---------- 卷内滚动：细金线滚条 ---------- */
+.q-scroll { overflow: auto; scrollbar-width: thin; scrollbar-color: rgba(201, 164, 92, .6) transparent; }
+.q-scroll::-webkit-scrollbar { width: .375rem; height: .375rem; }
+.q-scroll::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #7d5d2a, #c9a45c, #7d5d2a); border-radius: .1875rem; }
+.q-scroll::-webkit-scrollbar-track { background: rgba(201, 164, 92, .12); }
+.q-zhi .q-scroll, .q-scroll.ink { scrollbar-color: rgba(120, 60, 30, .55) transparent; }
+
+/* ---------- 界线 ---------- */
+.q-rule { height: 1px; margin: .625rem 0; background: linear-gradient(90deg, transparent, var(--gold-line), transparent); border: 0; }
+.q-rule.zhu { background: rgba(163, 40, 27, .4); }
+
+/* ---------- 时间件：日期、调速、推演 ---------- */
+.q-clock { display: flex; align-items: center; gap: .875rem; }
+.q-clock > .date > b { display: block; font: 400 1.5625rem/1.1 var(--f-title); letter-spacing: .12em; }
+.q-clock > .date > span { font-size: var(--fs-2); letter-spacing: .28em; color: var(--ivory-soft); }
+.q-clock > .speed { display: flex; gap: 3px; }
+.q-clock > .speed > button { width: 1.5rem; height: 1.5rem; padding: 0; border: 0; cursor: pointer; font: .8125rem/1 var(--f-kai); color: var(--ivory-soft);
+  background: linear-gradient(180deg, #2c1b12, #1a0f09); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .45); }
+.q-clock > .speed > button.on { color: #f9ead2; background: linear-gradient(180deg, #b13423, #7d1d12); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .6); }
+.q-clock > .speed > button:disabled { opacity: .35; cursor: default; }
+.q-clock > .tuiyan { position: relative; height: 2.5rem; padding: 0 .875rem 0 1.25rem; border: 0; cursor: pointer; font: 400 1.25rem/2.5rem var(--f-title); letter-spacing: .3em; color: #f9ead2;
+  background: linear-gradient(180deg, #b13423, #7d1d12); box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(236, 210, 154, .6), inset 0 0 0 3px #7d1d12, inset 0 0 0 4px rgba(236, 210, 154, .3);
+  transition: filter var(--t-2), transform var(--t-2) var(--ease-out); }
+.q-clock > .tuiyan::before { content: ''; position: absolute; left: .375rem; top: 50%; width: .3125rem; height: .3125rem; margin-top: -.15625rem; border-radius: 50%; background: #e8c982; }
+.q-clock > .tuiyan:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.q-clock > .tuiyan:disabled { filter: grayscale(.6) brightness(.8); cursor: progress; }

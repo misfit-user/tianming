@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天命 · 场景台</title>
+<link rel="stylesheet" href="../kit/tokens.css">
+<link rel="stylesheet" href="../kit/fonts.css">
+<link rel="stylesheet" href="../kit/qi.css">
+<link rel="stylesheet" href="../scene/scene.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #2a1d14; }
+  .bench { position: fixed; left: 1rem; bottom: 1rem; z-index: 10; display: flex; gap: .5rem; flex-wrap: wrap; }
+  .bench-info { position: fixed; right: 1rem; bottom: 1rem; z-index: 10; font: var(--fs-2) var(--f-kai); color: var(--ivory-soft); text-shadow: 0 1px 3px #000; }
+</style>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+</head>
+<body class="q-root">
+<div class="stage-host" id="stage"></div>
+<div class="map-labels" id="labels"></div>
+<div class="dive-cloud a" id="cloudA"></div>
+<div class="dive-cloud b" id="cloudB"></div>
+<div class="stage-vignette"></div>
+<div class="bench" id="bench"></div>
+<div class="bench-info" id="info"></div>
+<script type="module">
+import { installViewport } from '../core/viewport.js';
+import { installSettings, setSetting } from '../core/settings.js';
+import { resolveQuality } from '../core/quality.js';
+import { installOrnaments, yapai } from '../kit/index.js';
+import { createStage } from '../scene/stage.js';
+import { createStudyView } from '../scene/study/index.js';
+import { createMapView } from '../scene/map/index.js';
+import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
+import { createDive } from '../scene/transitions.js';
+
+const params = new URLSearchParams(location.search);
+installViewport();
+installSettings();
+if (params.get('quality')) setSetting('quality', params.get('quality'));
+const q = resolveQuality();
+installOrnaments();
+const info = document.getElementById('info');
+const t0 = performance.now();
+const log = (s) => { info.textContent = s; };
+
+const stage = createStage(document.getElementById('stage'), { preserve: params.has('shot') });
+const NOTES = [['陕西大饥', ['延庆诸府赤地千里', '斗米值银七钱', '饥民聚众于渭北']], ['太仓告匮', ['九边欠饷九十余日', '太仓仅存八十万', '户部请发内帑']], ['辽东空悬', ['督师缺员已两月', '关宁兵饷俱匮', '请速简大臣']]];
+const study = stage.add(await createStudyView(stage, { shot: params.get('cam') || 'desk', notes: NOTES, onProgress: (s, k) => log(`${s} ${(k * 100) | 0}%`) }));
+const tStudy = performance.now();
+log(`书房就绪 ${((performance.now() - t0) / 1000).toFixed(1)}s · 档 ${q.tier}（${q.detected.reason}）`);
+
+const regionsData = await fetch('sample/regions-tianqi.json').then((r) => r.json());
+const map = stage.add(await createMapView(stage, { regions: regionsData.regions, factions: regionsData.factions, labelLayer: document.getElementById('labels'), fov: 30 }));
+map.setActive(false);
+study.setMapSheet(await map.renderSheet({ look: LOOK_QINGLV_AGED }));
+log(`书房 ${((tStudy - t0) / 1000).toFixed(1)}s · 舆图 ${((performance.now() - tStudy) / 1000).toFixed(1)}s · 档 ${q.tier}（${q.detected.reason}）`);
+
+window.__bench = { stage, study, map };
+const dive = createDive({ stage, study, map, clouds: [document.getElementById('cloudA'), document.getElementById('cloudB')], onMode: (m) => { document.body.dataset.mode = m; } });
+stage.canvas.addEventListener('click', (ev) => {
+  if (dive.mode !== 'desk') return;
+  const p = study.pickMap(ev.clientX, ev.clientY);
+  if (p) dive.dive(p);
+});
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') dive.rise(); });
+const bench = document.getElementById('bench');
+for (const s of ['title', 'desk', 'court', 'memorial']) bench.append(yapai(s, { onclick: () => study.setShot(s) }));
+bench.append(yapai('入图', { onclick: () => dive.dive(null) }), yapai('回案', { onclick: () => dive.rise() }));
+
+await stage.nextFrames(6);
+document.body.dataset.ready = '1';
+// 截图：?dive=x,y 入图到该点（1 为全图）；?stop=毫秒 在途中定格
+if (params.get('dive')) {
+  const d = params.get('dive');
+  const going = dive.dive(d === '1' ? null : d.split(',').map(Number));
+  if (params.get('stop')) {
+    await new Promise((r) => setTimeout(r, +params.get('stop')));
+    stage.freeze();
+    document.getAnimations().forEach((a) => a.pause());
+  } else {
+    await going;
+    await stage.nextFrames(10);
+  }
+  document.body.dataset.ready = '2';
+}
+</script>
+</body>
+</html>

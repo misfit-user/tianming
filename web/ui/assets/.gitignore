@@ -1,0 +1,7 @@
+# 新前端的二进制资产（模型、光照贴图、图、字）不进 git：由 tools/ui-art/ 从源件重建，
+# 逐件记在各处 manifest.json 里（路径、字节、sha256、来源），发版前用 tools/ui-art/check-assets.cjs 核对。
+*
+!*/
+!.gitignore
+!manifest.json
+!*.md

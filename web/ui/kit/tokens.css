@@ -1,0 +1,96 @@
+/* 新前端设计令牌：色、字、尺度、影、动。
+ * 尺度一律用 rem：html 的字号由 core/viewport.js 按窗口大小定（1080 高时 1rem = 16px），整套界面随窗口等比缩放。
+ * 色名取器物本色：漆、金、纸、牙、墨、朱、石青石绿、赭、绢、瓷青。界面固定文案朝代中立。 */
+:root {
+  /* 漆：黑漆由深到浅 */
+  --lac-0: #0f0805;
+  --lac: #1b100b;
+  --lac-2: #2a1a12;
+  --lac-3: #3b2619;
+  /* 描金 */
+  --gold-hi: #ecd29a;
+  --gold: #c9a45c;
+  --gold-lo: #7d5d2a;
+  --gold-line: rgba(201, 164, 92, .45);
+  --gold-faint: rgba(201, 164, 92, .28);
+  /* 纸：笺纸由新到旧 */
+  --paper-hi: #f4ecdb;
+  --paper: #ebe0c7;
+  --paper-lo: #e1d0ae;
+  --paper-old: #d6c298;
+  --paper-edge: rgba(120, 90, 50, .35);
+  /* 牙 */
+  --ivory: #f1e6cf;
+  --ivory-soft: #c9b896;
+  /* 墨 */
+  --ink: #1d1410;
+  --ink-soft: #4a3a2a;
+  --ink-faint: #7c6a4f;
+  /* 朱：印泥、朱批、朱签 */
+  --verm: #a3281b;
+  --verm-hi: #b13423;
+  --verm-lo: #7d1d12;
+  --cinnabar: #b3301d;
+  --verm-soft: #e58f78;
+  /* 青绿与赭（舆图同色） */
+  --shiqing: #2f5f74;
+  --shilv: #4f8160;
+  --zhe: #8a5a32;
+  --silk: #d9ccaa;
+  --ciqing: #3e5170;
+  /* 盈亏 */
+  --gain: #b9c98a;
+  --loss: #e58f78;
+
+  /* 字族：界面正文小楷；题头毛笔楷；邸报刻本；场景书法（繁体）；朱批行书；印文小篆 */
+  --f-kai: 'TM-WenKai', 'KaiTi', 'STKaiti', serif;
+  --f-title: 'TM-MaShanZheng', 'TM-WenKai', serif;
+  --f-print: 'TM-Qiji', 'TM-WenKai', serif;
+  --f-shu: 'TM-Syuku', 'TM-MaShanZheng', serif;
+  --f-bian: 'TM-Boku', 'TM-Syuku', serif;
+  --f-xing: 'TM-Xing', 'TM-WenKai', serif;
+  --f-seal: 'TM-Seal', 'TM-MaShanZheng', serif;
+
+  /* 字号阶（1080 高时：12 13 15 17 21 25 34 46 58） */
+  --fs-1: .75rem;
+  --fs-2: .8125rem;
+  --fs-3: .9375rem;
+  --fs-4: 1.0625rem;
+  --fs-5: 1.3125rem;
+  --fs-6: 1.5625rem;
+  --fs-7: 2.125rem;
+  --fs-8: 2.875rem;
+  --fs-9: 3.625rem;
+
+  /* 间距 */
+  --sp-1: .25rem;
+  --sp-2: .5rem;
+  --sp-3: .75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+
+  /* 影：器物落在案上 / 挂在墙上 */
+  --sh-lift: 0 .1875rem .5rem rgba(0, 0, 0, .45);
+  --sh-panel: 0 .875rem 1.875rem rgba(10, 5, 2, .55);
+  --sh-paper: 0 1rem 2.125rem rgba(20, 10, 4, .5);
+  --sh-deep: 0 1.5rem 3.5rem rgba(8, 4, 2, .7);
+
+  /* 动：器物有分量，起落都带缓 */
+  --ease-out: cubic-bezier(.22, .8, .22, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-paper: cubic-bezier(.3, .7, .2, 1);
+  --t-1: 120ms;
+  --t-2: 220ms;
+  --t-3: 420ms;
+  --t-4: 800ms;
+  --t-5: 1400ms;
+}
+
+/* 减少动效（系统设置或游戏设置）：只留淡入淡出，时长压短 */
+:root[data-motion='less'] {
+  --t-3: 160ms;
+  --t-4: 200ms;
+  --t-5: 260ms;
+}

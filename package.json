@@ -124,6 +124,8 @@
       "!web/preview/**/*verify*.png",
       "!web/preview/home-ui-concepts/**",
       "!web/preview/workshop-ui-concepts/**",
+      "!web/ui/**",
+      "!web/vendor/three/**",
       "!web/.git-defunct-*/**/*",
       "!web/.git/**/*",
       "!web/_archive/**/*",

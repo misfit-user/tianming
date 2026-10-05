@@ -1,0 +1,15 @@
+/* 场景层的 DOM 部分：舞台画布、舆图题名、入图的云、暗角 */
+.stage-host { position: fixed; inset: 0; background: #2a1d14; }
+.stage-host > canvas { display: block; width: 100%; height: 100%; }
+.stage-vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, rgba(0, 0, 0, 0) 55%, rgba(20, 10, 4, .45) 100%); }
+
+/* 舆图题名：势力名毛笔楷墨色，府州名小楷 */
+.map-labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.m-lbl { position: absolute; left: 0; top: 0; white-space: nowrap; transition: opacity .35s; will-change: transform; }
+.m-lbl.realm { font-family: var(--f-title); letter-spacing: .12em; color: #1d1812; text-shadow: 0 0 8px rgba(242, 234, 216, .95), 0 0 2px rgba(242, 234, 216, .95); }
+.m-lbl.pref { font-family: var(--f-kai); letter-spacing: .08em; color: rgba(40, 30, 20, .8); text-shadow: 0 0 3px rgba(242, 234, 216, .85); }
+
+/* 入图时镜头前掠过的云 */
+.dive-cloud { position: fixed; inset: -12%; pointer-events: none; opacity: 0; mix-blend-mode: screen; z-index: 3;
+  background: url('../assets/study/tex/clouds.jpg') center / cover no-repeat; filter: sepia(.25) brightness(1.05); }
+.dive-cloud.b { background-position: 30% 60%; }

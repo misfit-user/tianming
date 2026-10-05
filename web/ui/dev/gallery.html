@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天命 · 器物谱</title>
+<link rel="stylesheet" href="../kit/tokens.css">
+<link rel="stylesheet" href="../kit/fonts.css">
+<link rel="stylesheet" href="../kit/qi.css">
+<style>
+  html, body { margin: 0; min-height: 100%; }
+  body { background: #20150e url('sample/backdrop.jpg') center / cover fixed; }
+  body::before { content: ''; position: fixed; inset: 0; background: rgba(18, 10, 5, .55); backdrop-filter: blur(6px); pointer-events: none; }
+  main { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.25rem 2rem; padding: 2.5rem 2.5rem 4rem; }
+  .cell { display: flex; flex-direction: column; gap: .75rem; }
+  .cell > h4 { margin: 0; font: 400 var(--fs-2) var(--f-kai); letter-spacing: .3em; color: var(--ivory-soft); }
+  .row { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: flex-end; }
+  .wide { grid-column: span 2; }
+  .faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+</style>
+</head>
+<body class="q-root">
+<main id="g"></main>
+<script type="module">
+import { h } from '../core/dom.js';
+import { installViewport } from '../core/viewport.js';
+import { installSettings } from '../core/settings.js';
+import { installOrnaments, qiPanel, zhiPanel, pai, yapai, tag, btn, qianzi, wadang, sealButton, kaiguan, chi, shu,
+  zhang, pin, zhou, keben, jian, juan, installTiao, clock, loadFonts } from '../kit/index.js';
+
+installViewport();
+installSettings();
+installOrnaments();
+installTiao();
+const g = document.getElementById('g');
+const cell = (title, ...kids) => h('div.cell', h('h4', title), kids);
+
+// 一、面板与题头
+g.append(cell('漆 · 题头 · 账目',
+  qiPanel({ title: '帑廪账', note: '天启七年 · 九月' },
+    h('div.row', { style: { gap: '1.25rem' } },
+      zhang('帑廪', [{ k: '银', v: 1300000, d: -820000, unit: '两' }, { k: '粮', v: 2460000, d: 30000, unit: '石' }, { k: '布', v: 91500, unit: '匹' }]),
+      zhang('内帑', [{ k: '银', v: 3200000, d: -150000, unit: '两' }, { k: '金', v: 41000, unit: '两' }])))));
+
+g.append(cell('纸 · 朱丝栏小笺',
+  h('div.row',
+    jian({ title: '西安府', sub: '陕西 · 关中道', rows: [['民心', '下上', 'bad'], ['户口', '八十四万口'], ['驻军', '一万二千人'], ['赋税', '重']], warn: '大旱二年，饥民聚众于渭北' }),
+    zhiPanel({ title: '奏疏摘要', note: '户部', className: 'p' },
+      h('p', { style: { margin: 0, font: 'var(--fs-3)/1.9 var(--f-kai)', maxWidth: '16rem' } }, '太仓所存仅八十万两，九边欠饷九十余日，请发内帑以济急。')))));
+
+g.append(cell('九品刻度 · 时间件',
+  qiPanel({ title: '国势' },
+    h('div.row', { style: { gap: '1rem' } }, pin('吏治', 42), pin('民心', 31), pin('皇权', 77), pin('皇威', 58)),
+    h('hr.q-rule'),
+    (() => { const c = clock({}); c.update({ era: '天启七年', year: 1627, month: 9, day: 3 }); return c; })())));
+
+// 二、按钮类
+g.append(h('div.cell.wide', h('h4', '漆牌 · 印 · 瓦当'),
+  h('div.row', { style: { paddingTop: '1.75rem', gap: '1.5rem' } },
+    pai({ title: '御案时政', sub: '案头花笺', aside: true }),
+    pai({ title: '百官奏疏', sub: '今日十三件', badge: 13 }),
+    pai({ title: '鸿雁传书', sub: '三封未复', badge: 3 }),
+    pai({ title: '撰写诏书', sub: '诏令草案' }),
+    sealButton({ chars: ['诏', '付', '有', '司'], title: '诏付有司' }),
+    h('div', { style: { display: 'flex', flexDirection: 'column', gap: '.5625rem', marginLeft: '2rem' } },
+      wadang({ ch: '朝', name: '朝议' }), wadang({ ch: '奏', name: '百官奏疏', on: true, badge: 13 }), wadang({ ch: '舆', name: '舆图' })))));
+
+g.append(cell('签子 · 牙牌 · 小方钮',
+  qiPanel({ title: '舆图', note: '七种看法' }, qianzi(['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'], { value: '势力' })),
+  h('div.row', yapai('奏折 · 十三'), yapai('时政花笺', { onclick: () => {} }), tag('玉玺'), btn('总', { title: '全部变量' }), btn('问', { title: '问天' }), btn('典', { title: '典章' }))));
+
+// 三、记事类
+g.append(cell('人物小立轴',
+  qiPanel({ title: '人物图志', note: '天启朝 · 二百零三人' },
+    h('div.faces', ['朱由检', '魏忠贤', '孙承宗', '袁崇焕'].map((n) => zhou({ name: n, src: `sample/${n}.png` }))),
+    h('div.faces', { style: { marginTop: '.75rem' } }, zhou({ name: '无像者' }), zhou({ name: '熊廷弼', dead: true })))));
+
+g.append(cell('邸报刻本',
+  keben('邸报', [
+    { tag: '急', text: '陕西大旱，延庆诸府赤地千里' },
+    { tag: '急', text: '辽东督师缺员已两月' },
+    { tag: '议', text: '户部请发内帑八十万' },
+    { tag: '闻', text: '登莱巡抚报海寇窥伺', soft: true },
+    { tag: '闻', text: '江南织造进新样云锦', soft: true }
+  ])));
+
+g.append(cell('批语签 · 开关 · 镇尺 · 书写',
+  qianzi(['准', '议', '留中', '驳', '另议'], { value: '准', big: true }),
+  qiPanel({ title: '典章', note: '规制条例' },
+    h('div', { style: { display: 'grid', gap: '.75rem' } },
+      kaiguan('自动存档', { checked: true }), kaiguan('汉字记数', { checked: true }), kaiguan('少动效'),
+      chi({ value: 0.6 }), chi({ value: 0.25 }))),
+  shu({ placeholder: '朕闻……', rows: 3 })));
+
+// 四、展卷对话框与签条
+const opener = yapai('展一卷看', { onclick: () => juan({
+  title: '典章', note: '规制条例',
+  content: h('div', { style: { display: 'grid', gap: '.875rem', font: 'var(--fs-3)/1.9 var(--f-kai)' } },
+    h('p', { style: { margin: 0 } }, '凡章奏到案，先阅事由；事涉兵饷者急，事涉礼制者缓。'),
+    kaiguan('自动存档', { checked: true }), chi({ value: 0.4 })),
+  actions: [{ label: '照准', onclick: ({ close }) => close('ok') }]
+}) });
+opener.dataset.tiao = '点开看展卷动效；Esc 或点卷外收卷';
+opener.dataset.tiaoTitle = '展卷';
+g.append(cell('展卷 · 签条', h('div.row', opener)));
+
+await loadFonts({ 'TM-MaShanZheng': g.textContent, 'TM-WenKai': g.textContent, 'TM-Qiji': g.textContent });
+await new Promise((r) => setTimeout(r, 300));
+if (new URLSearchParams(location.search).has('open')) opener.click();
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

@@ -30,11 +30,13 @@ import { resolveQuality } from '../core/quality.js';
 import { installOrnaments, yapai } from '../kit/index.js';
 import { createStage } from '../scene/stage.js';
 import { createStudyView } from '../scene/study/index.js';
-import { createMapView } from '../scene/map/index.js';
+import { createMapView, terrainFields } from '../scene/map/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 
 const params = new URLSearchParams(location.search);
+if (params.get('fields') === 'cpu') window.__tmForceCpuFields = true;
+if (params.get('debug') === 'fields') window.__tmFieldsDebug = true;
 installViewport();
 installSettings();
 if (params.get('quality')) setSetting('quality', params.get('quality'));
@@ -51,10 +53,17 @@ const tStudy = performance.now();
 log(`书房就绪 ${((performance.now() - t0) / 1000).toFixed(1)}s · 档 ${q.tier}（${q.detected.reason}）`);
 
 const regionsData = await fetch('sample/regions-tianqi.json').then((r) => r.json());
+if (params.has('pausefields')) stage.freeze();
+const tF0 = performance.now();
+const fields = await terrainFields(stage.renderer, { hiRes: q.mapHiRes });
+stage.thaw();
+const tFields = performance.now();
 const map = stage.add(await createMapView(stage, { regions: regionsData.regions, factions: regionsData.factions, labelLayer: document.getElementById('labels'), fov: 30 }));
 map.setActive(false);
+const tView = performance.now();
 study.setMapSheet(await map.renderSheet({ look: LOOK_QINGLV_AGED }));
-log(`书房 ${((tStudy - t0) / 1000).toFixed(1)}s · 舆图 ${((performance.now() - tStudy) / 1000).toFixed(1)}s · 档 ${q.tier}（${q.detected.reason}）`);
+const sec = (a, b) => ((b - a) / 1000).toFixed(1);
+log(`书房 ${sec(t0, tStudy)}s · 地形场 ${sec(tF0, tFields)}s（${fields.path}）· 舆图 ${sec(tFields, tView)}s · 绢图 ${sec(tView, performance.now())}s · 档 ${q.tier}（${q.detected.reason}）`);
 
 window.__bench = { stage, study, map };
 const dive = createDive({ stage, study, map, clouds: [document.getElementById('cloudA'), document.getElementById('cloudB')], onMode: (m) => { document.body.dataset.mode = m; } });

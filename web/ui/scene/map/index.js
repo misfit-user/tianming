@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { W, H, loadImage, decodeDem, coastField, riverMask, regionIdMap, realms as computeRealms, blur, realmBorderDistance, localRange } from './terrain.js';
+import { buildFieldsGPU } from './fields.js';
 import { terrainVertex, terrainFragment, treeFragment, pointsVertex } from './shaders.js';
 import { LOOK_QINGLV, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
 import { quality } from '../../core/quality.js';
@@ -13,8 +14,9 @@ const ASSETS = new URL('../../assets/map/', import.meta.url).href;
 const ENV_URL = new URL('../../../vendor/shanhe25d/environment.js', import.meta.url).href;
 const INFO_W = 4096, PALETTE_W = 256;
 
-// ---------- 地形场：与剧本无关，全页只算一次 ----------
-let terrainPromise = null;
+// ---------- 地形场：与剧本无关 ----------
+// 入料（dem.png、山河境矢量）全页只载一次；场在显卡上算（fields.js），不支持浮点离屏的设备退回 CPU 算。
+let sourcePromise = null;
 function loadEnvironment() {
   return new Promise((resolve, reject) => {
     if (window.TM_SHANHE_ENV) return resolve(window.TM_SHANHE_ENV);
@@ -25,26 +27,9 @@ function loadEnvironment() {
     document.head.append(s);
   });
 }
-export function loadTerrain() {
-  if (terrainPromise) return terrainPromise;
-  terrainPromise = (async () => {
-    const [demImg, env] = await Promise.all([loadImage(ASSETS + 'dem.png'), loadEnvironment()]);
-    await new Promise((r) => setTimeout(r, 0));
-    // 真实高程（海拔/6000，海里为负）：陆地夹到 0 以上作起伏，海深另存一份画海色
-    const dem = decodeDem(demImg);
-    const height = Float32Array.from(dem.lo, (v) => Math.max(v, 0));
-    const depth = blur(Float32Array.from(dem.lo, (v) => Math.max(-v, 0)), W, H, 6, 3);
-    const hiLand = Float32Array.from(dem.hi, (v) => Math.max(v, 0));
-    const heightSmall = blur(height, W, H, 1, 2);
-    const heightWide = blur(height, W, H, 28, 3);
-    const massifRaw = Float32Array.from(height, (v, i) => Math.min(1, Math.max(0, (v - heightWide[i]) / 0.10)));
-    const massif = blur(massifRaw, W, H, 2, 2);
-    const range = localRange(height, W, H, 12, 6), rangeWide = localRange(height, W, H, 30, 14);
-    const coast = coastField(env);
-    const rivers = riverMask(env, 2);
-    return { env, height, heightSmall, heightWide, massif, range, rangeWide, depth, hiLand, hiW: dem.width, hiH: dem.height, coast, rivers };
-  })();
-  return terrainPromise;
+export function loadTerrainSource() {
+  if (!sourcePromise) sourcePromise = Promise.all([loadImage(ASSETS + 'dem.png'), loadEnvironment()]).then(([dem, env]) => ({ dem, env }));
+  return sourcePromise;
 }
 
 function halfTexture(channels, w, h, format) {
@@ -56,6 +41,51 @@ function halfTexture(channels, w, h, format) {
   t.minFilter = THREE.LinearFilter;
   t.needsUpdate = true;
   return t;
+}
+
+// CPU 退路：与 fields.js 同一算法，逐像素在主线程算（慢，十秒上下）
+function buildFieldsCPU(demImg, env, { hiRes }) {
+  const dem = decodeDem(demImg);
+  const height = Float32Array.from(dem.lo, (v) => Math.max(v, 0));
+  const depth = blur(Float32Array.from(dem.lo, (v) => Math.max(-v, 0)), W, H, 6, 3);
+  const heightSmall = blur(height, W, H, 1, 2);
+  const heightWide = blur(height, W, H, 28, 3);
+  const massifRaw = Float32Array.from(height, (v, i) => Math.min(1, Math.max(0, (v - heightWide[i]) / 0.10)));
+  const massif = blur(massifRaw, W, H, 2, 2);
+  const range = localRange(height, W, H, 12, 6), rangeWide = localRange(height, W, H, 30, 14);
+  const rivers = riverMask(env, 2);
+  const riverTex = new THREE.DataTexture(rivers.data, rivers.width, rivers.height, THREE.RGFormat, THREE.UnsignedByteType);
+  riverTex.magFilter = riverTex.minFilter = THREE.LinearFilter;
+  riverTex.needsUpdate = true;
+  const relief = Float32Array.from(rangeWide.hi, (v, i) => v - rangeWide.lo[i]);
+  return {
+    textures: {
+      terrain: halfTexture([height, heightSmall, heightWide, new Float32Array(W * H)], W, H, THREE.RGBAFormat),
+      aux: halfTexture([massif, depth], W, H, THREE.RGFormat),
+      coast: halfTexture([coastField(env)], W, H, THREE.RedFormat),
+      range: halfTexture([range.lo, range.hi, rangeWide.lo, rangeWide.hi], W, H, THREE.RGBAFormat),
+      rivers: riverTex,
+      heightHi: hiRes ? halfTexture([Float32Array.from(dem.hi, (v) => Math.max(v, 0))], dem.width, dem.height, THREE.RedFormat) : halfTexture([height], W, H, THREE.RedFormat),
+      hiW: hiRes ? dem.width : W, hiH: hiRes ? dem.height : H
+    },
+    cpu: { heightSmall, massif, relief, height },
+    targets: []
+  };
+}
+
+const fieldsByRenderer = new WeakMap();
+export async function terrainFields(renderer, { hiRes = true } = {}) {
+  if (!fieldsByRenderer.has(renderer)) {
+    fieldsByRenderer.set(renderer, (async () => {
+      const { dem, env } = await loadTerrainSource();
+      const gpu = !window.__tmForceCpuFields && renderer.capabilities.isWebGL2 && renderer.extensions.has('EXT_color_buffer_float');
+      const fields = gpu ? await buildFieldsGPU(renderer, dem, env, { hiRes }) : buildFieldsCPU(dem, env, { hiRes });
+      fields.env = env;
+      fields.path = gpu ? 'gpu' : 'cpu';
+      return fields;
+    })());
+  }
+  return fieldsByRenderer.get(renderer);
 }
 
 function gridGeometry(cols, rows) {
@@ -107,7 +137,8 @@ const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷�
 export async function createMapView(stage, { regions, factions, labelLayer = null, view = 'world', fov = 30, primary } = {}) {
   const q = quality();
   const renderer = stage.renderer;
-  const d = await loadTerrain();
+  const F = await terrainFields(renderer, { hiRes: q.mapHiRes });
+  const d = { env: F.env, ...F.cpu };
   const data = { regions, factions };
   const scene = new THREE.Scene();
   scene.background = new THREE.Color().setRGB(...hexRgb(BACKGROUND).map((v) => v / 255), THREE.LinearSRGBColorSpace);
@@ -156,27 +187,22 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
   }
   applyPolitics();
 
-  const riverTex = new THREE.DataTexture(d.rivers.data, d.rivers.width, d.rivers.height, THREE.RGFormat, THREE.UnsignedByteType);
-  riverTex.magFilter = THREE.LinearFilter;
-  riverTex.minFilter = THREE.LinearFilter;
-  riverTex.needsUpdate = true;
   const uniforms = {
-    // 三通道半浮点不保证能线性过滤，补一个空通道凑成四通道
-    uTerrain: { value: halfTexture([d.height, d.heightSmall, d.heightWide, new Float32Array(W * H)], W, H, THREE.RGBAFormat) },
+    uTerrain: { value: F.textures.terrain },
     uBorder: { value: borderTex },
-    uAux: { value: halfTexture([d.massif, d.depth], W, H, THREE.RGFormat) },
-    uCoast: { value: halfTexture([d.coast], W, H, THREE.RedFormat) },
-    uRiver: { value: riverTex },
+    uAux: { value: F.textures.aux },
+    uCoast: { value: F.textures.coast },
+    uRiver: { value: F.textures.rivers },
     uRegion: { value: regionTex }, uRegionInfo: { value: infoTex }, uPalette: { value: paletteTex },
     uTexel: { value: new THREE.Vector2(1 / W, 1 / H) },
     // 低档不载原分辨率高程，用世界网格那一份代替
-    uHeightHi: { value: q.mapHiRes ? halfTexture([d.hiLand], d.hiW, d.hiH, THREE.RedFormat) : halfTexture([d.height], W, H, THREE.RedFormat) },
-    uTexelHi: { value: q.mapHiRes ? new THREE.Vector2(1 / d.hiW, 1 / d.hiH) : new THREE.Vector2(1 / W, 1 / H) },
+    uHeightHi: { value: F.textures.heightHi },
+    uTexelHi: { value: new THREE.Vector2(1 / F.textures.hiW, 1 / F.textures.hiH) },
     uRelief: { value: RELIEF }, uTime: { value: 0 }, uZoom: { value: 0 },
     uHover: { value: -1 }, uSelected: { value: -1 }, uCam: { value: new THREE.Vector3() },
     uFogColor: { value: new THREE.Vector3(0.91, 0.87, 0.78) }, uFogNear: { value: 1e6 }, uFogFar: { value: 2e6 }, uPolitical: { value: 1 },
     uPx: { value: stage.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2))) },
-    uRange: { value: halfTexture([d.range.lo, d.range.hi, d.rangeWide.lo, d.rangeWide.hi], W, H, THREE.RGBAFormat) },
+    uRange: { value: F.textures.range },
     uAmp: { value: new THREE.Vector4() }, uBand: { value: new THREE.Vector4() }, uShade: { value: new THREE.Vector4() }
   };
   for (const k of LOOK_COLORS) uniforms[k.u] = { value: new THREE.Vector3() };
@@ -192,7 +218,7 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
     const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
     const forested = (x, y) => {
       const i = Math.max(0, Math.min(W - 1, Math.round(x))) + Math.max(0, Math.min(H - 1, Math.round(y))) * W;
-      return d.rangeWide.hi[i] - d.rangeWide.lo[i] > 0.12 && d.height[i] < 0.6;
+      return d.relief[i] > 0.12 && d.height[i] < 0.6;
     };
     const trees = d.env.trees.filter((t) => massifAt(t[0], t[1]) > 0.08 && forested(t[0], t[1]));
     scene.add(pointsLayer(trees, (t) => [t[0], heightAt(t[0], t[1]), t[1], t[2] * (0.7 + 0.5 * rnd()), t[3]], uniforms, treeFragment, 2.0, [2.4, 4.4]));
@@ -426,7 +452,7 @@ export async function createMapView(stage, { regions, factions, labelLayer = nul
       stage.canvas.removeEventListener('pointermove', onMove);
       stage.canvas.removeEventListener('pointerleave', onLeave);
       controls.dispose();
-      for (const v of Object.values(uniforms)) if (v.value?.isTexture) v.value.dispose();
+      for (const t of [regionTex, infoTex, paletteTex, borderTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
       labelLayer?.replaceChildren();
     }

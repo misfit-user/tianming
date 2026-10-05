@@ -1,0 +1,323 @@
+{
+ "schema": "tm-ui-assets/1",
+ "generatedBy": "tools/ui-art/manifest.cjs",
+ "fileCount": 63,
+ "totalBytes": 92659964,
+ "files": {
+  "fonts/TM-Boku/00.woff2": {
+   "bytes": 927800,
+   "sha256": "c6b94e67b7525fa6ce1bc3e816135c63c80ffcf9722c7aaad0407407045cdb52",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Boku/01.woff2": {
+   "bytes": 1005496,
+   "sha256": "4cbc7a87416eff6cb6eab548506d2c0e2d5a2960e1ab223d574666abd796ff4a",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Boku/02.woff2": {
+   "bytes": 1434716,
+   "sha256": "283a99c52a5b7708ea550e96e661d2241383c76a5c939ff4434de1673aeb1811",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Boku/03.woff2": {
+   "bytes": 972960,
+   "sha256": "66aaa0b951dcebd35e14dfe5babb93a43ca0608d308e296effb0b2ba33664420",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-MaShanZheng/00.woff2": {
+   "bytes": 514104,
+   "sha256": "ea8c5f920286158bc116b9868452fe7f46f2a2749886aca6c8ae28c0ed7a90e9",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-MaShanZheng/01.woff2": {
+   "bytes": 862628,
+   "sha256": "6dfc7578acd9c71f72b54e897f46f9ed40a2f7378a1b71d919dff04160a14a15",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-MaShanZheng/02.woff2": {
+   "bytes": 1176420,
+   "sha256": "a016874b4bbff7d43d78e4212d129a04d8d103d1a7ea682d9cc7aa84de63eaf5",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-MaShanZheng/03.woff2": {
+   "bytes": 736340,
+   "sha256": "b4884382629a5ac873da714ec702678b195941971c25f0190c6534a9843fe36d",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/00.woff2": {
+   "bytes": 1179084,
+   "sha256": "481c53f4b4729b500e43c539187daf070be519217c372fe3865c15dad8b7dfa9",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/01.woff2": {
+   "bytes": 1827536,
+   "sha256": "77081b04937e34f17324a7460eb72a2673eb8ad86be48ec109f286f643bf0aa0",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/02.woff2": {
+   "bytes": 2385680,
+   "sha256": "b32d0a2df750b59953dad0d5ffc99277ebc15703c6f6fd60eb6c579b728fe9ef",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/03.woff2": {
+   "bytes": 2723212,
+   "sha256": "b3f552c10790cdc3cb9e21df929f41af2f6ce4cf5cf6ecd362340fd61210bb62",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/04.woff2": {
+   "bytes": 3256112,
+   "sha256": "a218b5b0b437f96551ca18cd3f3696fb80ef923ba5f580ab6b0b06ac0d40e229",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/05.woff2": {
+   "bytes": 3567284,
+   "sha256": "c3b8f24700af9b7ec5e3e48761f6376cc0881d4b6b7ecbc8c2460db02e66c051",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/06.woff2": {
+   "bytes": 3072244,
+   "sha256": "5bfd909e6c3e4c21f7946f48a2d7e3e2e82e637f8c72ff92bdb88bb28b1d2c85",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Qiji/07.woff2": {
+   "bytes": 2101788,
+   "sha256": "a0e14c77183d21ae9fadf2e46f61042e4928ed58b27fbb7ec5f3fa3c199621d3",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Seal/00.woff2": {
+   "bytes": 46052,
+   "sha256": "09ff79d96c95b8790d9a5a0b1fb4b72500b6b944872e77d29b779e2179cb8c9e",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Syuku/00.woff2": {
+   "bytes": 911208,
+   "sha256": "3d04bba0367cb4d14e83317a6a596870677ded5981f4730bdfff23807f4f67b8",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Syuku/01.woff2": {
+   "bytes": 1005396,
+   "sha256": "8dff18caeab1f85da9617e28e1a6292466621f9ff5e5967e8d3da9ac8485b325",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Syuku/02.woff2": {
+   "bytes": 1434816,
+   "sha256": "cd920d12e2b5667599ecd2575cc7e44b3c87ec70e719235bda24d9ba998a675c",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Syuku/03.woff2": {
+   "bytes": 972684,
+   "sha256": "cc49e56b7b2ee1b53f5387a4522240e218a0435bcf4fe55869810ee069ae1d4c",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/00.woff2": {
+   "bytes": 565880,
+   "sha256": "29308d9761c87660ffbb1291664d0943b98ee9079cd18f743725dfabc041509c",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/01.woff2": {
+   "bytes": 466680,
+   "sha256": "e9e68ef5249faf6908633107270ea97dadc30900e687531076449c354fecf4d5",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/02.woff2": {
+   "bytes": 685152,
+   "sha256": "ae368188281510c41b827bdd90fafacc2f07bbb01cd46470a2784bd0f409623a",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/03.woff2": {
+   "bytes": 804396,
+   "sha256": "143f68a8d2f35b498bf9f85659e289dfbfafb62ce63bd4247d6882a7851ef3c7",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/04.woff2": {
+   "bytes": 1050532,
+   "sha256": "a8098ce73855d0aeeeaac48deb4aee343d6310d33703589773e74e2dfad58d6c",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/05.woff2": {
+   "bytes": 1161108,
+   "sha256": "c6be4a9b4eac1979e3c8575933973687f507d1ee12ffa4a67bf4ee54a878df3a",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/06.woff2": {
+   "bytes": 1118552,
+   "sha256": "31d1c70e48736ede2fcfee1474e2a3730139774c08701d7141f6bb79b05d1266",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/07.woff2": {
+   "bytes": 1229612,
+   "sha256": "a8bc9471200edea3e4df77c451035ee3b710a85e68559ef1b840ded7b86984b9",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/08.woff2": {
+   "bytes": 1001564,
+   "sha256": "22ca1ce9f79ccfec8e0bd4ecb314bbacae19bbac790f777c7a304f0d22af6648",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/09.woff2": {
+   "bytes": 673696,
+   "sha256": "fe559f5eaa058a2c60f5515f05a37988d6a5625e84fafca3407e518fc23c3ce7",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/10.woff2": {
+   "bytes": 108680,
+   "sha256": "65e107652bb43a9bd3f5bf5ee2c427ebb2e732c3789642424ea103bb5933f225",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/11.woff2": {
+   "bytes": 108052,
+   "sha256": "b20dc62d83c5a2ea013ab7246e7315218f1fdffd318a0fe0e96fda704e5d5d70",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/12.woff2": {
+   "bytes": 321572,
+   "sha256": "0813744ca9b2814f4fa41ce5df23414af4e06c054ac10878ed4b163645022347",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-WenKai/13.woff2": {
+   "bytes": 812708,
+   "sha256": "419de92c406076f524bb9724e1350bcce05ec7318aff7dce2b488b8eb5fb4fd6",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Xing/00.woff2": {
+   "bytes": 377004,
+   "sha256": "5c00df10d9681e362fd7b1da73da2368a2ece7a134011d072ab6c14286e1cb85",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Xing/01.woff2": {
+   "bytes": 615724,
+   "sha256": "52d8a6b555b3bdb3b2048b1d6f60754c99d04b0b5a66253b3bfff6bde676c9ae",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Xing/02.woff2": {
+   "bytes": 826496,
+   "sha256": "29e3534f01b85dcbda43364b371f38c4095c542d640327bbf7e104fc12b13d5e",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "fonts/TM-Xing/03.woff2": {
+   "bytes": 514432,
+   "sha256": "ab709f100b8b6e5911dbfc72af1bcf134a18cc4d1219166e6ba3702530cf6d5c",
+   "rebuild": "python tools/ui-art/fonts/build-fonts.py ← 字体原件（OFL，见 fonts/LICENSES.md）"
+  },
+  "map/dem.png": {
+   "bytes": 15705632,
+   "sha256": "a95ecec79d6ed3f3566ce3a144ff656d34919bb8da1462dcc8c667e245443ede",
+   "rebuild": "python tools/ui-art/map/build_dem.py ← Terrain Tiles（SRTM、GMTED2010、ETOPO1，见 map/NOTICE.md）"
+  },
+  "study/props.glb": {
+   "bytes": 968984,
+   "sha256": "f101398a5c7bf909a232313e7942b1356f4dafe9757d24f827409eb5dcd62741",
+   "rebuild": "blender -b --factory-startup -P tools/ui-art/blender/build_props.py"
+  },
+  "study/room-lightmap.hdr": {
+   "bytes": 10130594,
+   "sha256": "83a22d20673ed60b9efe48fe1f27ad7ae6fa975e02b560cd78be52584f453646",
+   "rebuild": "blender -b --factory-startup -P tools/ui-art/blender/build_room.py -- bake=2048 samples=192"
+  },
+  "study/room.glb": {
+   "bytes": 11904088,
+   "sha256": "ec0bfa300ffddc1fb054ed91d68a942491bfffc9f88abd12df49a6a8c1b4952a",
+   "rebuild": "blender -b --factory-startup -P tools/ui-art/blender/build_room.py -- bake=2048 samples=192"
+  },
+  "study/tex/brocade.jpg": {
+   "bytes": 435602,
+   "sha256": "528b6343474a666740fc7c0cfc767947bd776ab625de79b6039b2269574bf145",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/caihua.jpg": {
+   "bytes": 509039,
+   "sha256": "b8a2ca023aadaf0485c4e405b2d410a3319ad3c4652a99e44d5cedb4ff3f218e",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/carpet.jpg": {
+   "bytes": 1208406,
+   "sha256": "e2fe908a9c32f9eefd5228a853ceec65292c5056a9bd54bb2437a74b5f2fb3f1",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/carved-clouds.jpg": {
+   "bytes": 201916,
+   "sha256": "2e4c6b04c4647f543525274fd68c7cc9e456688f52929cc24488146e7f6de925",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/ceiling.jpg": {
+   "bytes": 483506,
+   "sha256": "0bd34652714bfc70fc4be62fc4b0a63638e40176aea9c701414e147abb50b79e",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/cinnabar.jpg": {
+   "bytes": 269691,
+   "sha256": "9f5dd5bbd72e3c2a3114bba7ff7f7afc3a637510975b1f86977906abd52c873c",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/clouds.jpg": {
+   "bytes": 220413,
+   "sha256": "66795d4021b9c2133c70efa3296215e165d82d6e26b0aa55271651cdcb2289f2",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/door-skirt.jpg": {
+   "bytes": 347558,
+   "sha256": "eea92fbbe19a38740d865c71dc4cc46e1305159d41bd47b32a3f4aa6af6e4008",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/fan-face.jpg": {
+   "bytes": 596803,
+   "sha256": "34c210e423a2103278e28a0b9fdc50a8fc486a6552ff391bea6dc7b6c3fe9eb0",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/floor-tiles.jpg": {
+   "bytes": 1175280,
+   "sha256": "338c2463df02f644e369dd6e2a91183d207b4f6913d9e294572978fce93990f8",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/huanghuali.jpg": {
+   "bytes": 296059,
+   "sha256": "8be3d376e99c687b91a9029fc222a5da537e19867d3b7e131f4e9c7d11c8c574",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/lantern-painting.jpg": {
+   "bytes": 301803,
+   "sha256": "f2d51047cb2c1689b51592db276446f423070bca2c3ee7c9ac91b88a76c65080",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/plaque-frame.jpg": {
+   "bytes": 481647,
+   "sha256": "61bd508a4c64b3d9f3e27fad107c35586516844e61fef5d8367f6db7274c3c05",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/porcelain-wrap.jpg": {
+   "bytes": 383367,
+   "sha256": "6101b838bf082082288890b7f59e4d7dd292dc19a2aaa4ca4572bf529263d1dd",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/screen-qianli.jpg": {
+   "bytes": 740797,
+   "sha256": "d0cff6976cec67aa9fde223b86a226d489eaef81177654f2fef3aad5e78dd5d0",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/silk.jpg": {
+   "bytes": 320779,
+   "sha256": "5b09072603bc22ff0bc3b3f15e9535160649c427191607482bf32ad8a0783710",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/throne-back.jpg": {
+   "bytes": 608260,
+   "sha256": "488d7ffdb794391c21f02b22600734f1f1739b3e5de0a5a540d12fad8e2d9d47",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/wallpaper.jpg": {
+   "bytes": 179128,
+   "sha256": "489886d23afe3d329a29f0b6720e963fedb197f1600bd6097fbe519206038d1d",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/window-court.jpg": {
+   "bytes": 399372,
+   "sha256": "91c32194a76f714ec59226586e16595a44146eb225f4e4642168c3efcc3171c5",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  },
+  "study/tex/zitan.jpg": {
+   "bytes": 235840,
+   "sha256": "9a3f2b5896e527bb210b8f037ceba2a8b7d42fc3aa21f78d4f24dc46f0a597be",
+   "rebuild": "python tools/ui-art/tex/make_textures.py ← art/r3、art/r4 生图原稿与 art/pd 公有领域名画"
+  }
+ }
+}

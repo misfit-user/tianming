@@ -183,6 +183,19 @@
       return m && m.id === messageId && m.toId === actorId && m.status === 'delivered';
     }) || null;
   }
+  function receivedDocument(p, actorId) {
+    var a = p && p.localActivity;
+    return rows(a && a.documents).map(function (doc) {
+      var delivery = rows(p.messages).find(function (m) {
+        return m && m.kind === 'delivery' && m.data && m.data.documentId === doc.id && m.toId === actorId && m.status === 'delivered';
+      });
+      // The delivery receipt is the durable fact.  Older saves may not have
+      // carried receivedBy/status through the projection, so those fields
+      // constrain the read when present but never replace the receipt.
+      if (!delivery || doc.receivedBy != null && doc.receivedBy !== actorId || doc.status != null && !/^(received|sent)$/.test(doc.status)) return null;
+      return { document: doc, delivery: delivery };
+    }).find(Boolean) || null;
+  }
   function consultationHistory(ch, topicId, g) {
     var key = id(ch), count = 0;
     plans(g).forEach(function (p) {
@@ -208,8 +221,8 @@
             basisRefs: [{ kind: 'npc_message', planId: p.id, id: basisMessage.id }] };
         }
       }
-      rows(a.documents).filter(function (d) { return d && d.receivedBy === actorId && d.status === 'received'; }).some(function (doc) {
-        var delivery = rows(p.messages).find(function (m) { return m && m.kind === 'delivery' && m.data && m.data.documentId === doc.id && m.toId === actorId && m.status === 'delivered'; });
+      rows(a.documents).filter(function (d) { return !!d; }).some(function (doc) {
+        var receipt = receivedDocument(p, actorId), delivery = receipt && receipt.document.id === doc.id && receipt.delivery;
         var target = person(p.targetId, g);
         // Receiving a document from the helper is itself a sourced contact;
         // do not require a pre-existing affinity/relationship entry before
@@ -245,8 +258,8 @@
     m = deliveredMessage(p, source.sourceMessageId, id(ch));
     if (!m) return null;
     if (source.kind === 'document') {
-      var doc = rows(p.localActivity.documents).find(function (d) { return d && d.id === source.documentId && d.receivedBy === id(ch) && d.status === 'received'; });
-      if (!doc || !m.data || m.data.documentId !== doc.id) return null;
+      var receipt = receivedDocument(p, id(ch)), doc = receipt && receipt.document;
+      if (!doc || doc.id !== source.documentId || !m.data || m.data.documentId !== doc.id) return null;
     } else if (source.kind === 'contact' && !p.localActivity.contact) return null;
     return { source: copy(source), message: copy(m) };
   }

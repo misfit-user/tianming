@@ -362,6 +362,26 @@ export function referCandidates(id) {
     .map((c) => ({ id: c.id, name: c.name, title: c.officialTitle || c.title || '', portrait: c.portrait || '' }));
 }
 
+// 退位继承人候选：同势力在世者，储君、皇嗣置顶，余按官阶资望；取前十。排法照内核 openAbdication（tm-player-core.js）
+export function heirs() {
+  const g = G();
+  const pc = w.TM && w.TM.Player && typeof w.TM.Player.getCharacter === 'function' ? w.TM.Player.getCharacter(g) : (g.chars || []).find((c) => c && c.isPlayer === true);
+  if (!pc) return [];
+  const cpRef = pc.designatedHeirId || (g.harem && (g.harem.crownPrinceId || g.harem.crownPrince)) || '';
+  const byId = (g.chars || []).filter((c) => c && c.id != null && String(c.id) === String(cpRef));
+  const byName = byId.length ? [] : (g.chars || []).filter((c) => c && c.name === cpRef);
+  const cp = byId.length === 1 ? byId[0] : byName.length === 1 ? byName[0] : null;
+  const kids = new Set((pc.childrenIds || []).map(String));
+  const kin = (c) => (cp && c.name === cp.name ? 2 : kids.has(String(c.id)) || kids.has(c.name) || c._royalChild ? 1 : 0);
+  const senior = fn('getRankSeniorityScore');
+  const fin = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
+  return (g.chars || []).filter((c) => c && c.alive !== false && !c.isPlayer && c.faction === pc.faction)
+    .sort((a, b) => (kin(b) - kin(a)) || (senior ? senior(b) - senior(a) : fin(a.rankLevel, 99) - fin(b.rankLevel, 99)))
+    .slice(0, 10)
+    .map((c) => ({ id: c.id, name: c.name, title: c.officialTitle || c.title || '', age: c.age, kin: ['', 'heir-blood', 'heir'][kin(c)],
+      intelligence: fin(c.intelligence, 50), administration: fin(c.administration, 50), portrait: c.portrait || '' }));
+}
+
 // 邸报：近事编年（GM._chronicle）由新到旧，取标题（首个【…】或前二十余字）；重要者标「急」，要务标「议」，余为「闻」
 export function news(limit = 8) {
   const list = (G()._chronicle || []).filter((e) => e && e.text && !/paradigm|scenario|^system/i.test(String(e.type || '')));

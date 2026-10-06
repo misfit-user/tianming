@@ -128,12 +128,26 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     onEnter();
   }
 
+  // 离局回启幕：从案后起身、拉高（走开卷那段机位的反程），暗场里换回窗前的陈设与机位，再亮起启幕
+  const veil = h('div.tt-veil');
+  root.append(veil);
+  const dim = (on, ms) => new Promise((r) => { veil.classList.toggle('on', on); setTimeout(r, ms); });
+  async function riseFromDesk(inDark) {
+    await study.flyTo({ pos: TITLE_TO_DESK[0].pos, look: TITLE_TO_DESK[0].look, fov: TITLE_TO_DESK[0].fov }, 1.3);
+    await dim(true, 520);
+    study.setShot('title');
+    await inDark?.();
+  }
+
   return {
-    async show() {
+    // from: 'desk' 时走离局的转场；inDark 在暗场里调（换陈设）
+    async show({ from, inDark } = {}) {
       fill();
+      if (from === 'desk') await riseFromDesk(inDark);
+      else study.setShot('title');
       drift = true;
-      study.setShot('title');
       el.classList.add('on');
+      if (from === 'desk') await dim(false, 700);
     },
     hide() { el.classList.remove('on'); drift = false; }
   };

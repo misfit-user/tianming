@@ -394,18 +394,75 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
 
 
+  // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
+  let pausing = false;
+  function pause() {
+    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || document.querySelector('.q-juan-veil')) return;
+    pausing = true;
+    const item = (label, fn) => h('button.q-yapai.pz-item', { type: 'button', onclick: () => { j.close('ok'); fn(); } }, label);
+    const j = juan({
+      title: '天命', note: '暂停', width: '22rem',
+      content: h('div.pz',
+        item('续', () => {}),
+        item('案卷目录', () => openSaves({ game, inGame: true })),
+        item('典章', () => openSettings()),
+        item(prof.annals.title, () => openAnnals({ game, profile: () => prof })),
+        prof.abdicate && !game.viewAs ? item(prof.abdicate.name, () => openAbdicate()) : null,
+        item('回启幕', () => leaveGame()))
+    });
+    j.closed.then(() => { pausing = false; });
+  }
+  function openAbdicate() {
+    const ab = prof.abdicate;
+    const list = game.select.heirs();
+    const pick = async (c) => {
+      const sure = await new Promise((resolve) => {
+        let yes = false;
+        const q = juan({ title: ab.name, width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, ab.ask(c.name)),
+          actions: [{ label: ab.ok, onclick: ({ close }) => { yes = true; close('ok'); } }] });
+        q.closed.then(() => resolve(yes));
+      });
+      if (!sure) return;
+      let ok = false;
+      try { ok = game.act.abdicate(c.id); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); return; }
+      if (ok) { j.close('ok'); bus.emit('kernel:toast', { text: ab.done(c.name) }); }
+    };
+    const j = juan({
+      title: ab.name, note: ab.note, width: '30rem',
+      content: list.length
+        ? h('div.ab', list.map((c) => h('button.ab-row', { type: 'button', onclick: () => pick(c) },
+            h('b', c.name, c.kin ? h('em', `【${ab.tags[c.kin]}】`) : null),
+            h('small', [c.title, `智${num(c.intelligence)}`, `政${num(c.administration)}`].filter(Boolean).join(' · ')))))
+        : h('p.sv-none', '无合适继承人。')
+    });
+  }
+  async function leaveGame() {
+    const sure = await new Promise((resolve) => {
+      let yes = false;
+      const c = juan({ title: '回启幕', width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '离开此局，回到启幕。未封存的进度将会失去。'),
+        actions: [{ label: '先封存', onclick: ({ close }) => { close('ok'); openSaves({ game, inGame: true }); } }, { label: '离开', onclick: ({ close }) => { yes = true; close('ok'); } }] });
+      c.closed.then(() => resolve(yes));
+    });
+    if (!sure) return;
+    try { await game.leave(); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); }
+  }
+
   const offs = [];
   return {
     async show() {
       await loadWorld();
       refresh();
       el.classList.add('on');
+      game.setSurface(true);
       offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('view:changed', refresh),
         game.on('game:turn-result', (r) => openAnnals({ game, profile: () => prof, idx: r && r.idx })),
+        game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('game:entered', () => loadWorld().then(refresh)));
     },
     hide() {
       el.classList.remove('on');
+      game.setSurface(false);
+      notesSig = '';                                  // 下回落座重写花笺（离局时启幕换回了自己的）
       mapEl.classList.remove('on');
       offs.splice(0).forEach((off) => off());
     },

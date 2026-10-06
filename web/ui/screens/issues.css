@@ -185,3 +185,16 @@ select.st-in:disabled { opacity: .45; cursor: default; }
 .sv-row .q-yapai { cursor: pointer; }
 .sv-row small { font-size: var(--fs-1); color: var(--ink-faint); }
 .sv-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); }
+
+/* 暂停卷 */
+.pz { display: flex; flex-direction: column; gap: .625rem; align-items: stretch; padding: .25rem 1rem; }
+.pz-item { justify-content: center; cursor: pointer; font-size: var(--fs-4); padding: .375rem 1rem .4375rem 1.25rem; }
+
+/* 退位卷：继承人一行一位 */
+.ab { display: flex; flex-direction: column; gap: .375rem; max-height: 26rem; overflow-y: auto; }
+.ab-row { display: flex; flex-direction: column; align-items: flex-start; gap: .125rem; padding: .5rem .875rem; text-align: left;
+  font: inherit; color: var(--ink); background: rgba(255, 250, 238, .5); border: 1px solid rgba(110, 80, 40, .22); cursor: pointer; }
+.ab-row:hover { background: rgba(255, 246, 226, .9); border-color: rgba(140, 40, 28, .45); }
+.ab-row b { font-size: var(--fs-4); font-weight: 600; letter-spacing: .08em; }
+.ab-row em { font-style: normal; color: #8a2a1c; margin-left: .25rem; font-size: var(--fs-2); }
+.ab-row small { color: var(--ink-faint); font-size: var(--fs-2); }

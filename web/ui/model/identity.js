@@ -15,6 +15,7 @@
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
 //   ling     「令」那一页：纸面（silk 黄绫诏卷／paper 素纸）、议事清册、行止、私行、润色、颁行、档案诸名目，五类的提示，颁行前三种说法
+//   abdicate 暂停卷里的「退位」：叫法、卷首按语、继承人标签、确认语（空则不列）
 //   guide    进局「临朝须知」几条：[题, 说]
 //   annals   史记那一卷：卷名、令的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
@@ -55,6 +56,8 @@ export const PROFILES = {
       hints: { political: '诏谕天下，如：改革官制、降旨安抚、任免官员……', military: '调兵遣将，如：调动军队、加强边防、讨伐叛贼……',
         diplomatic: '纵横捭阖，如：遣使和亲、结盟讨伐、册封藩属……', economic: '经纶民生，如：减税轻赋、开仓放粮、兴修水利……', other: '其他旨意，如：大赦天下、科举取士、建造宫殿……' }
     },
+    abdicate: { name: '禅让退位', note: '传位于后人，此举不可逆', tags: { heir: '储君', 'heir-blood': '皇嗣' },
+      ask: (who) => `确定将大位禅让给${who}？此举不可撤回。`, ok: '禅让', done: (who) => `禅让既成，${who}已继大位` },
     props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
@@ -83,6 +86,7 @@ export const PROFILES = {
       empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
       hints: { political: '题奏、咨文……', military: '', diplomatic: '', economic: '', other: '' }
     },
+    abdicate: '',
     props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
@@ -111,6 +115,7 @@ export const PROFILES = {
       empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
       hints: { political: '札付、牌票、告示……', military: '', diplomatic: '', economic: '', other: '' }
     },
+    abdicate: '',
     props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
@@ -138,6 +143,7 @@ export const PROFILES = {
       empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
       hints: { political: '家令、公呈……', military: '', diplomatic: '', economic: '', other: '' }
     },
+    abdicate: '',
     props: { seal: 'private', yellowMemorials: false }
   }
 };

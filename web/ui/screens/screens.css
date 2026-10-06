@@ -17,6 +17,9 @@
 .scr-load .sub { font: var(--fs-1) var(--f-kai); letter-spacing: .3em; color: rgba(201, 184, 150, .45); min-height: 1.2em; }
 
 /* ---------- 启幕 ---------- */
+/* 离局回启幕的暗场 */
+.tt-veil { position: fixed; inset: 0; z-index: 40; background: #0c0603; opacity: 0; pointer-events: none; transition: opacity 480ms var(--ease-in-out); }
+.tt-veil.on { opacity: 1; pointer-events: auto; }
 .scr-title .shade { position: fixed; left: 0; top: 0; bottom: 0; width: 34rem; pointer-events: none !important;
   background: linear-gradient(90deg, rgba(18, 9, 4, .7), rgba(18, 9, 4, .32) 60%, rgba(18, 9, 4, 0)); }
 /* 卷目：黑漆描金挂屏，四列金字（繁体书法）自右往左，每列下一行小楷注 */

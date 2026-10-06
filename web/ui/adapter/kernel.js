@@ -173,6 +173,29 @@ function installNotices() {
   };
 }
 
+// 老界面的几个入口改道到新前端：它的键盘快捷键（Esc 暂停、Ctrl+S 案卷、无局时 Esc 设置）与别处的调用都还在，
+// 不改道就会去开看不见的老面板，或被兜底挪进来、与新前端的同名页打架。切标签（switchGTab）照常执行，另发 ui:tab 供新前端跟进。
+// 内核凭老 DOM（#G 可见、启动页不可见）判断「正在局中」，新前端下老 DOM 全隐着、永远判否（Esc 就成了开设置）：
+// 改问新前端此刻是否在局中的案前（setGameSurface，由书案显隐时告知）
+let surface = false;
+export function setGameSurface(on) {
+  surface = !!on;
+}
+function installRouting() {
+  swap('_tmPlayerGameSurfaceActive', () => function () { return !!(w.GM && w.GM.running) && surface; });
+  swap('openPause', () => function () {
+    if (!surface || (w.GM && w.GM.busy)) return;
+    bus.emit('ui:pause', {});
+  });
+  swap('openSaveManager', () => function () { bus.emit('ui:saves', {}); });
+  swap('openSettings', () => function () { bus.emit('ui:settings', {}); });
+  swap('switchGTab', (orig) => function (btn, id) {
+    const r = orig.apply(this, arguments);
+    bus.emit('ui:tab', { id: String(id || '') });
+    return r;
+  });
+}
+
 // 老界面自己弹出的浮层：
 //   新前端已另画的（TAKEN）照旧藏着；
 //   通用弹窗（generic-modal-overlay，许多子系统共用）与内联样式的全屏遮罩（例如战前御驾／委之、战报、他方旁观——它们等玩家点了流程才往下走）
@@ -217,5 +240,6 @@ export function installKernelBridge() {
   installFeedback();
   installLifecycle();
   installNotices();
+  installRouting();
   watchLegacyOverlays();
 }

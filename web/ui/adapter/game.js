@@ -11,7 +11,7 @@
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
-import { waitKernel, installKernelBridge, disableLegacyStyles } from './kernel.js';
+import { waitKernel, installKernelBridge, disableLegacyStyles, setGameSurface } from './kernel.js';
 import * as select from './select.js';
 import * as config from './config.js';
 import * as edict from './edict.js';
@@ -94,6 +94,16 @@ async function advance({ court = false } = {}) {
     if (w.GM && w.GM.turn > before) edict.clearDraft();   // 推进成功即已颁行；没推进（出错回滚）草稿留着
     bus.emit('game:advanced', { turn: w.GM && w.GM.turn });
   }
+}
+
+// 离局回启幕：走内核 backToLaunch（作废未完的开局、收拾运行壳），发 game:left 由应用壳切回启幕
+async function leave() {
+  await boot();
+  if (w.GM && w.GM.busy) throw new Error('推演进行中，不能离开');
+  if (typeof w.backToLaunch !== 'function') throw new Error('内核缺 backToLaunch');
+  const r = w.backToLaunch();
+  if (r === false) throw new Error('此刻不能离开');
+  bus.emit('game:left', {});
 }
 
 // ---------- 存读档 ----------
@@ -218,6 +228,17 @@ const act = {
     w._memExcerptToEdict(id);
     bus.emit('game:changed', { what: 'edict-suggestion', id });
   },
+  // 退位：把玩家之位传给 heirId。落位走内核 _confirmAbdication（移交玩家控制、记事、记忆）；
+  // 它自带一问 window.confirm，新前端已先问过，这里临时代答「是」
+  abdicate(heirId) {
+    if (typeof w._confirmAbdication !== 'function') throw new Error('内核缺 _confirmAbdication');
+    const ask = w.confirm;
+    w.confirm = () => true;
+    let ok;
+    try { ok = w._confirmAbdication(heirId); } finally { w.confirm = ask; }
+    if (ok) bus.emit('game:changed', { what: 'abdicate', heirId });
+    return !!ok;
+  },
   // 履职：回应一件公事（官制面板里的「应对」）
   duty(planId, response, opts) {
     const ledger = w.TM && w.TM.NPC && w.TM.NPC.ActionLedger;
@@ -241,7 +262,9 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, saves, act, select, config, edict, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, perspective, setViewAs,
+  // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
+  setSurface: setGameSurface,
   get viewAs() { return viewAs; },
   on: (name, fn) => bus.on(name, fn),
   once: (name, fn) => bus.once(name, fn),

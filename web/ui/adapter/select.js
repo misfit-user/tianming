@@ -409,6 +409,99 @@ export function characters({ limit = 0 } = {}) {
   return limit ? list.slice(0, limit) : list;
 }
 
+// 人物志（图志册页）：每人一条小传所需——身份、才具、五常、名望、特质、关系、处境。与老人物志卡片同取法（tm-renwu-ui.js）
+// 品级：正一品=1、从一品=2 … 从九品=18；解不出为 99
+const RANK_RE = /([正从])([一二三四五六七八九])品/;
+const rankLevel = (s) => { const m = RANK_RE.exec(String(s || '')); return m ? '一二三四五六七八九'.indexOf(m[2]) * 2 + (m[1] === '正' ? 1 : 2) : 99; };
+// 在任者的最高品级：官制上走一遍，按人记下所任职位里最高的品
+function postRanks(g) {
+  const ohs = w.TM && w.TM.OfficeHolderState;
+  const out = new Map();
+  if (!ohs || typeof ohs.positions !== 'function') return out;
+  try {
+    for (const row of ohs.positions(g)) {
+      const lv = rankLevel(row.pos.rank);
+      if (lv >= 99) continue;
+      const label = RANK_RE.exec(row.pos.rank)[0];
+      for (const c of ohs.read(g, row.pos).characters) {
+        const k = c.id != null ? 'id:' + c.id : 'name:' + c.name;
+        const had = out.get(k);
+        if (!had || lv < had.level) out.set(k, { level: lv, label, title: row.pos.name || '' });
+      }
+    }
+  } catch (err) {
+    console.warn('[newui] 取品级出错', err);
+  }
+  return out;
+}
+function rankOf(c, posts) {
+  const held = posts && (posts.get('id:' + c.id) || posts.get('name:' + c.name));
+  if (held) return { level: held.level, label: held.label };
+  const lvFn = fn('getRankLevel');
+  let level = 99, label = '';
+  if (c.rank) { label = c.rank; if (lvFn) level = lvFn(c.rank); }
+  else if ((c.officialTitle || c.title) && lvFn) level = lvFn(c.officialTitle || c.title);
+  const H = w.RANK_HIERARCHY;
+  if (!label && level < 99 && Array.isArray(H)) { const r = H.find((x) => x.level === level); if (r) label = r.label; }
+  return { level, label };
+}
+function traitsOf(c) {
+  const lib = w.TRAIT_LIBRARY || {};
+  return (Array.isArray(c.traits) ? c.traits : []).map((t) => {
+    const id = typeof t === 'string' ? t : (t && (t.id || t.name)) || '';
+    const def = lib[id];
+    const sum = def && def.effects ? Object.values(def.effects).reduce((a, v) => a + (Number(v) || 0), 0) : 0;
+    return { id, name: (def && def.name) || id, tone: sum >= 3 ? 'pos' : sum <= -3 ? 'neg' : 'neu' };
+  }).filter((t) => t.name);
+}
+function relationsOf(c, limit = 6) {
+  const out = [];
+  for (const [other, rels] of Object.entries(c._relationships || {})) {
+    for (const r of rels || []) out.push({ name: other, type: r.type || 'friend', strength: Number(r.strength) || 0 });
+  }
+  return out.sort((a, b) => Math.abs(b.strength) - Math.abs(a.strength)).slice(0, limit)
+    .map((r) => ({ ...r, tone: r.type === 'foe' || r.type === 'rival' || r.type === 'enemy' || r.strength < -30 ? 'foe' : r.type === 'spouse' || r.type === 'lover' ? 'spouse' : 'friend' }));
+}
+export function people({ dead = false } = {}) {
+  const g = G();
+  const turn = num(g.turn, 1);
+  const here = fn('_getPlayerLocation') ? fn('_getPlayerLocation')() : g._capital || '京城';
+  const same = fn('_isSameLocation');
+  const consort = fn('_tmIsPlayerConsort');
+  const newJoin = fn('turnsForMonths') ? fn('turnsForMonths')(5) : 5;
+  const posts = postRanks(g);
+  return (g.chars || []).filter((c) => c && (dead || c.alive !== false)).map((c) => {
+    const states = [];
+    if (c._imprisoned || c.imprisoned) states.push('诏狱');
+    if (c._exiled || c.exiled) states.push('流放');
+    if (c._fled || c._missing) states.push('逃亡');
+    if (c._mourning) states.push('丁忧');
+    if (c._retired) states.push('致仕');
+    if ((c.stress || 0) > 70) states.push('重压');
+    if (c._travelTo) states.push('赴任');
+    if (c._scheming) states.push('密谋');
+    if (c.joinTurn && turn - c.joinTurn < newJoin) states.push('新晋');
+    else if (c.age >= 60) states.push('老成');
+    const wc = c.wuchang || {};
+    const isConsort = (() => { try { return consort ? !!consort(c) : c.spouse === true; } catch (_e) { return false; } })();
+    return {
+      id: c.id, name: c.name || '', zi: c.zi || c.courtesy || '', hao: c.haoName || '', age: c.age || null, gender: c.gender || '',
+      office: c.officialTitle || c.title || c.role || c.occupation || (isConsort ? '后宫' : '布衣'), rank: rankOf(c, posts),
+      faction: c.faction || '', party: c.party || '', partyRank: c.partyRank || '', family: c.family || '',
+      portrait: c.portrait || '', location: c.location || '', travelTo: (c._travelTo && c._travelTo.toLocation) || '',
+      away: !!(c.location && same && !same(c.location, here)), alive: c.alive !== false, dead: c.alive === false,
+      deathReason: c.deathReason || '', isPlayer: !!c.isPlayer, consort: isConsort, states,
+      loyalty: Math.round(num(c.loyalty, 50)), ambition: Math.round(num(c.ambition, 50)),
+      stats: [['智', num(c.intelligence)], ['政', num(c.administration)], ['军', num(c.military)], ['交', num(c.diplomacy)], ['魅', num(c.charisma)], ['勇', num(c.valor)]],
+      wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, wc[k] != null ? num(wc[k]) : null]),
+      fame: c.mingwang != null ? Math.round(num(c.mingwang)) : c.reputation != null ? Math.round(num(c.reputation)) : null,
+      merit: c.xianneng != null ? Math.round(num(c.xianneng)) : null, integrity: c.integrity != null ? Math.round(num(c.integrity)) : null,
+      traits: traitsOf(c), relations: relationsOf(c),
+      personality: c.personality || '', goal: c.personalGoal || '', bio: String(c.bio || ''), appearance: c.appearance || ''
+    };
+  });
+}
+
 // ---------- 舆图府州：剧本地图坐标 → 舆图世界坐标（用内核山河境的同一套投影） ----------
 export function mapRegions() {
   const g = G();

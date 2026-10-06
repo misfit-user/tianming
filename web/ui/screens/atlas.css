@@ -1,0 +1,75 @@
+/* 人物图志：绫裱册页，摊开两叶，中缝一道折影 */
+.ce-ov { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(10, 5, 2, .7); opacity: 0; pointer-events: none; transition: opacity var(--t-3) var(--ease-out); }
+.ce-ov.on { opacity: 1; pointer-events: auto; }
+.ce-book { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 1.5rem minmax(0, 1fr); width: min(82rem, 94vw); height: min(49rem, 88vh); padding: 1.625rem;
+  background: var(--ling-brown); box-shadow: 0 2rem 4rem rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 230, 190, .18), inset 0 0 0 .5rem rgba(40, 26, 14, .25);
+  transform: translateY(1rem) scale(.985); transition: transform var(--t-4) var(--ease-out); }
+.ce-ov.on .ce-book { transform: none; }
+.ce-book .ce-ling { position: absolute; left: .625rem; right: .625rem; top: .625rem; bottom: .625rem; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255, 235, 200, .25); }
+.ce-leaf { position: relative; min-height: 0; display: flex; flex-direction: column; padding: 1.375rem 1.5rem 1.125rem; color: var(--ink);
+  background: var(--paper-grain), linear-gradient(180deg, #f4ecd9, #e7d9b8); box-shadow: inset 0 0 2rem rgba(150, 110, 60, .14); }
+.ce-leaf.left { background: linear-gradient(90deg, transparent 88%, rgba(90, 60, 30, .16)), var(--paper-grain), linear-gradient(180deg, #f4ecd9, #e7d9b8); }
+.ce-leaf.right { background: linear-gradient(270deg, transparent 88%, rgba(90, 60, 30, .16)), var(--paper-grain), linear-gradient(180deg, #f4ecd9, #e7d9b8); overflow: auto; scrollbar-width: thin; scrollbar-color: rgba(120, 60, 30, .45) transparent; }
+.ce-gutter { background: linear-gradient(90deg, rgba(60, 38, 20, .45), rgba(255, 240, 210, .12) 50%, rgba(60, 38, 20, .45)); }
+.ce-close { position: absolute; right: 1.75rem; top: -.875rem; z-index: 2; cursor: pointer; }
+.ce-unk { margin: 0; font-size: var(--fs-2); letter-spacing: .3em; color: var(--ink-faint); }
+
+/* 左叶：检、排、势力、小像格、翻叶 */
+.ce-head { display: flex; align-items: baseline; gap: .875rem; margin-bottom: .75rem; }
+.ce-head h2 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
+.ce-head small { font-size: var(--fs-2); color: var(--ink-faint); letter-spacing: .1em; }
+.ce-tools { display: flex; align-items: center; gap: 1.25rem; margin-bottom: .5rem; }
+.ce-search { flex: 1; min-width: 0; padding: .25rem .25rem .3125rem; border: 0; border-bottom: 1px solid rgba(120, 90, 50, .45); outline: 0; background: transparent; font: var(--fs-3) var(--f-kai); color: var(--ink); }
+.ce-search::placeholder { color: rgba(90, 70, 50, .45); }
+.ce-tools .q-kaiguan { color: var(--ink-soft); font-size: var(--fs-2); }
+.ce-sorts { display: flex; align-items: center; gap: .625rem; margin-bottom: .5rem; font-size: var(--fs-2); color: var(--ink-faint); }
+.ce-sorts .q-qianzi button { color: var(--ink); }
+.ce-facs { display: flex; flex-wrap: wrap; gap: .375rem; margin-bottom: .75rem; }
+.ce-facs button { display: inline-flex; align-items: baseline; gap: .25rem; padding: .125rem .5rem; border: 0; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--ink-soft);
+  background: rgba(163, 120, 60, .07); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .28); }
+.ce-facs button small { font-size: var(--fs-1); color: var(--ink-faint); }
+.ce-facs button.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
+.ce-facs button.on small { color: rgba(249, 234, 210, .75); }
+.ce-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 1.125rem .875rem; align-content: start; padding: .5rem .25rem; }
+.ce-grid .q-zhou { transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+.ce-grid .q-zhou.on { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .35), 0 0 0 2px rgba(163, 40, 27, .8); }
+.ce-grid .q-zhou.away > figcaption { color: #6b5a44; }
+.ce-foot { display: flex; align-items: center; justify-content: center; gap: 1rem; padding-top: .5rem; font-size: var(--fs-2); letter-spacing: .2em; color: var(--ink-faint); }
+.ce-turn { width: 2rem; height: 2rem; border: 1px solid rgba(120, 90, 50, .4); border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; font: 1.25rem/1 var(--f-title); }
+.ce-turn:disabled { opacity: .3; cursor: default; }
+.ce-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); grid-column: 1 / -1; }
+
+/* 右叶：小传 */
+.ce-who { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1.25rem; margin-bottom: 1rem; }
+.ce-who .q-zhou { cursor: default; }
+.ce-who .q-zhou:hover { transform: none; }
+.ce-id h3 { margin: 0 0 .25rem; font: 400 2.125rem/1.2 var(--f-title); letter-spacing: .14em; }
+.ce-id h3 small { margin-left: .75rem; font: var(--fs-3) var(--f-kai); letter-spacing: .1em; color: var(--ink-soft); }
+.ce-line { font-size: var(--fs-2); color: var(--ink-soft); line-height: 1.8; letter-spacing: .04em; }
+.ce-line.away { color: #8a5a2c; }
+.ce-office { margin: .125rem 0 .125rem; font-size: var(--fs-4); line-height: 1.5; }
+.ce-office em { margin-left: .5rem; padding: 0 .375rem; font: normal var(--fs-1) var(--f-kai); color: #8a2a1c; border: 1px solid rgba(163, 40, 27, .45); vertical-align: .125rem; }
+.ce-dead { margin-top: .25rem; font-size: var(--fs-2); color: #8a2a1c; }
+.ce-states { display: flex; flex-wrap: wrap; gap: .3125rem; margin-top: .375rem; }
+.ce-states span { padding: 0 .375rem; font-size: var(--fs-1); color: #7d1d12; border: 1px solid rgba(163, 40, 27, .4); background: rgba(192, 64, 48, .05); }
+.ce-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: .875rem; }
+.ce-sec { margin-bottom: .875rem; }
+.ce-sec h4 { margin: 0 0 .5rem; padding-bottom: .1875rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .35em; color: var(--verm); border-bottom: 1px solid rgba(163, 40, 27, .25); }
+.ce-sec p { margin: 0 0 .25rem; font-size: var(--fs-3); line-height: 1.85; color: var(--ink-soft); }
+.ce-sec p.goal { color: var(--ink); }
+.ce-pins { display: grid; grid-template-columns: repeat(2, 4.75rem); gap: .625rem 1rem; }
+.ce-leaf .q-pin > div { color: var(--ink-soft); }
+.ce-leaf .q-pin > div > b { color: #7d1d12; }
+.ce-leaf .q-pin li { background: rgba(120, 90, 50, .28); }
+.ce-leaf .q-pin li.f { background: #9a6a3a; }
+.ce-leaf .q-pin li.n { background: #a3281b; box-shadow: none; }
+.ce-rep { display: flex; gap: .875rem; margin-top: .625rem; font-size: var(--fs-3); }
+.ce-rep i { margin-right: .25rem; font-style: normal; font-size: var(--fs-1); color: var(--ink-faint); }
+.ce-chips { display: flex; flex-wrap: wrap; gap: .375rem; }
+.ce-chips span { padding: .0625rem .5rem; font-size: var(--fs-2); border: 1px solid rgba(120, 90, 50, .32); background: rgba(163, 120, 60, .06); }
+.ce-chips span.pos { color: #2f6b55; border-color: rgba(58, 125, 103, .45); }
+.ce-chips span.neg, .ce-chips span.foe { color: #8a2a1c; border-color: rgba(163, 40, 27, .45); }
+.ce-chips span.spouse { color: #8a3a6a; border-color: rgba(138, 58, 106, .4); }
+.ce-bio { max-height: 9.5rem; overflow: auto; white-space: pre-wrap; }
+.ce-acts { display: flex; gap: .75rem; margin-top: .25rem; }
+.ce-acts .q-yapai { cursor: pointer; }

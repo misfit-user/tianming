@@ -12,6 +12,7 @@ import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
 import { createIssues } from './issues.js';
+import { createAtlas } from './atlas.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 
@@ -219,7 +220,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const place = String(per.location || '').split('·')[0];
     const near = per.tier === 'sovereign' ? [] : people.filter((c) => c !== me && place && String(c.location || '').split('·')[0] === place);
     const shown = [me, ...near, ...people.filter((c) => c !== me && c.portrait && !near.includes(c))].filter(Boolean).slice(0, 4);
-    replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · ') })));
+    replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) })));
     renwu.querySelector('.q-ti small').textContent = `${num(people.length)}人`;
     const news = s.news ? s.news(8) : [];
     replaceChildren(dibao, keben('邸报', news.length ? news.map((n, i) => ({ tag: n.tag, text: n.text, soft: i > 2 })) : [{ tag: '闻', text: '今日无报', soft: true }]));
@@ -297,6 +298,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   function onBook(key, name) {
     if (key === 'map') return dive.mode === 'desk' ? enterMap() : dive.rise();
+    if (key === 'people') return atlas.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -316,6 +318,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   const issues = createIssues({ game, profile: () => prof });
+  const atlas = createAtlas({ root, game });
   function openDocket(id) {
     el.classList.remove('on');
     docket.open(id);

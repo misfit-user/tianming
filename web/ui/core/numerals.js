@@ -24,6 +24,12 @@ function cn4(n) {
   return s || '零';
 }
 
+// 年份逐位写：1627 → 一六二七（〇作零）；阿拉伯记数时照写数字
+export function yearNum(y) {
+  const s = String(Math.abs(Math.round(y)));
+  return style === 'arabic' ? s : s.replace(/\d/g, (d) => '〇一二三四五六七八九'[d]);
+}
+
 // 整数 → 汉字：一千二百三十万、九千一百五十、三亿零五百万（万以下的零头在亿级时略去）
 export function cnNum(n) {
   n = Math.round(Math.abs(n));

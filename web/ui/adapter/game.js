@@ -98,37 +98,86 @@ async function advance({ court = false } = {}) {
 
 // ---------- 存读档 ----------
 const desktop = () => !!(w.tianming && w.tianming.isDesktop !== false && typeof w.tianming.listSaves === 'function');
+// 案卷目录与老界面同口径（tm-save-manager.js openSaveManager）：TM_SaveDB 的槽位——0 自动、1～9 手存——与已落档的过回合前快照，
+// 兼容老的本机索引；桌面端另有按名存的卷宗（tianming.listSaves）与桌面自动存档。卷的键：slot:N、pre、desk:名、deskauto
+const saveMeta = (s, key, slot) => ({
+  key, slot, name: s.name || '', turn: s.turn, time: s.eraName || s.date || '', scenario: s.scenarioName || '', phase: s.dynastyPhase || '',
+  modified: s.timestamp || 0, auto: slot === 0
+});
 const saves = {
-  // [{ key, name, turn, time, scenario, modified }]
   async list() {
     await boot();
-    if (desktop()) {
-      const r = await w.tianming.listSaves();
-      return (r && r.success ? r.files : []).map((f) => ({ key: f.name, name: f.name, turn: f.turn, time: f.time || '', scenario: f.scenario || '', modified: f.modified || 0, auto: f.name === '__autosave__' }));
+    const out = { slots: [], pre: null, desktop: [], desktopAuto: false };
+    const sm = w.SaveManager || {};
+    const max = sm.maxSlots || 10;
+    const bySlot = {};
+    try {
+      const rows = w.TM_SaveDB && typeof w.TM_SaveDB.list === 'function' ? await w.TM_SaveDB.list() : [];
+      for (const s of rows || []) {
+        if (!s) continue;
+        if (s.id === 'autosave') bySlot[0] = s;
+        else if (/^slot_\d+$/.test(s.id || '')) bySlot[+s.id.slice(5)] = s;
+        else if (s.id === 'pre_endturn' && s.commitState === 'committed' && s.snapshotId && s.turn) out.pre = saveMeta(s, 'pre', null);
+      }
+    } catch (err) {
+      console.warn('[newui] 读案卷目录出错，退回本机索引', err);
     }
-    const sm = w.SaveManager;
-    const all = sm && typeof sm.getAllSaves === 'function' ? sm.getAllSaves() : [];
-    return (all || []).filter(Boolean).map((s) => ({ key: s.slotId, name: s.name || '', turn: s.turn, time: s.eraName || '', scenario: s.scenarioName || '', modified: s.timestamp || 0, auto: s.slotId === 0 }));
+    const idx = typeof w._getSaveIndex === 'function' ? w._getSaveIndex() || {} : {};
+    for (const [k, info] of Object.entries(idx)) { const n = parseInt(String(k).replace('slot_', ''), 10); if (!Number.isNaN(n) && !bySlot[n]) bySlot[n] = info; }
+    for (let i = 0; i < max; i++) if (bySlot[i]) out.slots.push(saveMeta(bySlot[i], 'slot:' + i, i));
+    if (desktop()) {
+      try {
+        const r = await w.tianming.listSaves();
+        out.desktop = (r && r.success ? r.files : []).filter((f) => f.name !== '__autosave__').map((f) => ({ key: 'desk:' + f.name, name: f.name, turn: f.turn, time: f.time || '', scenario: f.scenario || '', modified: f.modified || 0 }));
+      } catch (err) { console.warn('[newui] 读桌面卷宗出错', err); }
+      out.desktopAuto = typeof w.desktopLoadAutoSave === 'function' && (typeof w._tmHasNativeFs !== 'function' || w._tmHasNativeFs());
+    }
+    return out;
   },
-  // 桌面：按名存一卷；网页：存进空着的或指定的槽
+  // 封存：给了槽就存那一槽（重新封缄）；不给就取最早的空手存槽，满了覆盖最旧的手存
   async save(name, { slot } = {}) {
     await boot();
-    if (desktop()) return w.desktopDoSave(String(name));
     const sm = w.SaveManager;
+    if (!sm || typeof sm.saveToSlot !== 'function') throw new Error('内核缺 SaveManager');
     let target = slot;
     if (target == null) {
-      const used = new Set(((sm.getAllSaves && sm.getAllSaves()) || []).filter(Boolean).map((s) => s.slotId));
-      target = 1;                                   // 第 0 槽是自动存档
-      while (used.has(target) && target < (sm.maxSlots || 10) - 1) target++;
+      const { slots } = await saves.list();
+      const max = sm.maxSlots || 10;
+      const used = new Map(slots.map((s) => [s.slot, s]));
+      target = null;
+      for (let i = 1; i < max; i++) if (!used.has(i)) { target = i; break; }
+      if (target == null) target = slots.filter((s) => s.slot > 0).sort((a, b) => a.modified - b.modified)[0]?.slot ?? 1;
     }
-    return sm.saveToSlot(target, name);
+    return sm.saveToSlot(target, String(name));
   },
   async load(key) {
     await boot();
-    const entered = until('game:entered', { timeoutMs: 600000, failOn: /读档失败|存档损坏|失败/ });
-    if (desktop()) await w.desktopLoadSave(key);
-    else await w.SaveManager.loadFromSlot(key);
+    const entered = until('game:entered', { timeoutMs: 600000, failOn: /读档失败|存档损坏|失败|校验失败/ });
+    const k = String(key);
+    if (k.startsWith('slot:')) await w.SaveManager.loadFromSlot(+k.slice(5));
+    else if (k === 'pre') {
+      const rec = await w.TM_SaveDB.load('pre_endturn');
+      const chk = typeof w._validatePreEndturnSnapshot === 'function' ? w._validatePreEndturnSnapshot(rec, null, false) : { ok: false, reason: 'validator-missing' };
+      if (!chk.ok) throw new Error(`过回合前快照校验失败（${chk.reason}）`);
+      await w.fullLoadGame({ gameState: rec.gameState }, { source: 'pre-endturn' });
+      try { localStorage.removeItem('tm_pre_endturn_mark'); } catch (_e) { /* 标记清不掉不碍 */ }
+    } else if (k.startsWith('desk:')) await w.desktopLoadSave(k.slice(5));
+    else if (k === 'deskauto') await w.desktopLoadAutoSave();
+    else await w.SaveManager.loadFromSlot(+k);       // 旧调用：直接给槽号
     return entered;
+  },
+  async remove(slot) {
+    await boot();
+    return w.SaveManager.deleteSlot(slot);
+  },
+  // 抄送副本：导出为本机文件（内核会剥掉 API 密钥）
+  exportSlot(slot) {
+    return w.SaveManager.exportSave(slot);
+  },
+  // 调入外卷：把一个存档文件放进某槽
+  async importFile(file, slot) {
+    await boot();
+    return w.SaveManager.importSave(file, slot);
   }
 };
 

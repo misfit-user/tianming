@@ -6,6 +6,7 @@ import { num } from '../core/numerals.js';
 import { SHOTS, TITLE_TO_DESK } from '../scene/study/shots.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
+import { openSaves } from './saves.js';
 
 const BOARD = [
   { key: 'new', label: '開卷', note: '另起新篇', primary: true },
@@ -99,16 +100,9 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     });
   }
 
-  // ---------- 續卷：选存档 ----------
-  async function pickSave() {
-    const list = await game.saves.list();
-    const rows = list.length
-      ? list.map((s) => h('button.pick-item', { type: 'button', onclick: () => { j.close('ok'); startLoad(s.key); } },
-        h('div.ce', h('b', s.auto ? '自动' : shortName(s.name))),
-        h('div', h('h4', s.name || '无名'), h('div.era', [s.scenario, s.turn ? `第${num(s.turn)}回合` : '', s.time].filter(Boolean).join(' · ')),
-          s.modified ? h('p', new Date(s.modified).toLocaleString('zh-CN', { hour12: false })) : null)))
-      : [h('p', { style: { margin: 0 } }, '尚无封存之卷。')];
-    const j = juan({ title: '續卷', note: '启封旧卷，承续前局', width: '46rem', height: 'min(40rem, 80vh)', content: h('div.pick-list', rows) });
+  // ---------- 續卷：案卷目录 ----------
+  function pickSave() {
+    openSaves({ game, inGame: false, onLoaded: () => { busy = true; el.classList.remove('on'); enterDesk(); } });
   }
 
   async function startLoad(key) {

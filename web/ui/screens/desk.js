@@ -17,6 +17,7 @@ import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
 import { openAnnals } from './annals.js';
+import { openSaves } from './saves.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 // 七种看法对应老舆图的计分（adapter mapLayer）；势力即本色，不另染
@@ -56,7 +57,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const ledger = h('div.ledger');
   const gauges = h('div.gauges');
   const tools = h('div.tools',
-    btn('存', { title: '封存此卷', onclick: () => saveDialog() }),
+    btn('存', { title: '案卷目录', onclick: () => { if (!readOnly()) openSaves({ game, inGame: true }); } }),
     btn('典', { title: '典章', onclick: () => openSettings() }),
     btn('问', { title: '问天', onclick: () => building('问天', '问天控制台') }),
     btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }));
@@ -391,17 +392,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (per.tier === 'sovereign') return confirmAdvance();             // 用印即交出本期所拟、付诸推演
     building(prof.seal.title, prof.seal.note);
   }
-  function saveDialog() {
-    if (readOnly()) return;
-    let name = '';
-    const input = h('input', { type: 'text', placeholder: '为此卷题名', oninput: (e) => { name = e.target.value; },
-      style: { width: '100%', padding: '.5rem .75rem', font: 'var(--fs-4) var(--f-kai)', border: '0', outline: '0', background: 'rgba(255,255,255,.4)', boxShadow: 'inset 0 0 0 1px rgba(120,90,50,.35)' } });
-    juan({
-      title: '封存', note: '此卷存档', width: '30rem', content: input,
-      actions: [{ label: '封存', onclick: async ({ close }) => { close('ok'); const ok = await game.saves.save(name || `第${num(game.select.date().turn)}回合`); bus.emit('kernel:toast', { text: ok ? '已封存' : '封存未成' }); } }]
-    });
-    setTimeout(() => input.focus(), 400);
-  }
+
 
   const offs = [];
   return {

@@ -421,7 +421,7 @@ export async function createStudyView(stage, {
       if (dust && current) dust.uniforms.uPx.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(current.fov / 2)));
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
-    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, pickProp, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress,
+    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, pickProp, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress, setNotes: (list) => props.setNotes(list),
     get room() { return dressed; },
     get flightProgress() { return flight ? Math.min(1, (time - flight.t0) / flight.duration) : null; },
     get shot() { return current; },

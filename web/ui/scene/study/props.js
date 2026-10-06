@@ -192,7 +192,23 @@ export async function loadProps(scene, { notes }) {
     privateSeals.visible = seal === 'private';
     for (const [yellow, plain] of yellowPair) { yellow.visible = yellowMemorials; plain.visible = !yellowMemorials; }
   }
-  return { groups, anchors, place, add, take, lib, dress, notesTextures: tex.notes };
+  // 案头花笺换上真时政（开局、过回合后由书案调）：notes = [[题, [行…]], …]，至多三张；少于三张的空位收起
+  const firstNotes = new Set(tex.notes);
+  async function setNotes(list) {
+    await loadFonts({ 'TM-WenKai': list.flat(2).join('') });
+    groups.tray.traverse((o) => {
+      const k = o.isMesh && /^note_(\d)$/.exec(o.material.name);
+      if (!k) return;
+      const n = list[+k[1]];
+      o.visible = !!n;
+      if (!n) return;
+      const old = o.material.map;
+      o.material.map = noteTexture(n[0], n[1], +k[1] + 1);
+      o.material.needsUpdate = true;
+      if (old && !firstNotes.has(old)) old.dispose();
+    });
+  }
+  return { groups, anchors, place, add, take, lib, dress, setNotes, notesTextures: tex.notes };
 }
 
 // 官印匣：朱漆木匣、盖略宽，黄袱一道横过盖顶，正面一枚铜扣（毫米）

@@ -14,6 +14,7 @@
 //   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
+//   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
 
 const CHANNEL_KEYS = ['ling', 'pi', 'shu', 'jian', 'xing'];
@@ -38,6 +39,7 @@ export const PROFILES = {
       verdicts: [['approved', '准', '依议准行'], ['rejected', '驳', '不准所请'], ['annotated', '批', '朱笔示意'], ['held', '留中', '暂不发下'],
         ['referred', '交部议', '着有司议处'], ['court_debate', '付廷议', '下廷臣会议'], ['summon', '召对', '召上奏者面询']]
     },
+    issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
     props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
@@ -56,6 +58,7 @@ export const PROFILES = {
       verdicts: [['approved', '准', '照准'], ['rejected', '驳', '驳回'], ['annotated', '批', '批示'], ['held', '存案', '暂存'],
         ['referred', '转详', '转上官'], ['court_debate', '会议', '付堂议'], ['summon', '传见', '传来面询']]
     },
+    issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
     props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
@@ -74,6 +77,7 @@ export const PROFILES = {
       verdicts: [['approved', '准', '如详办理'], ['rejected', '驳', '驳令另议'], ['annotated', '批', '堂批'], ['held', '存案', '暂存'],
         ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传讯', '传来面询']]
     },
+    issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
     props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
@@ -91,6 +95,7 @@ export const PROFILES = {
       excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
       verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
     },
+    issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
     props: { seal: 'private', yellowMemorials: false }
   }
 };

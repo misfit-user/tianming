@@ -376,6 +376,30 @@ export function issues(limit = 3) {
   }));
 }
 
+// 时政（御案时政／案头要事）全账：待决、省览（信息卡，无须拍板）、已决。与老面板 openShizhengTasks 同口径
+const SEVERITY = { urgent: '紧急', high: '重要', warn: '警戒', info: '平常' };
+export function issueList() {
+  const g = G();
+  const ts = fn('getTSText');
+  const norm = fn('_tmNormIssueChoices');
+  const when = (turn, date) => date || (ts ? String(ts(turn || 1)) : `第${turn || 1}回合`);
+  return (g.currentIssues || []).filter(Boolean).map((i) => {
+    if (norm && Array.isArray(i.choices)) { try { norm(i); } catch (_e) { /* 归一失败照原样显示 */ } }
+    const resolved = i.status === 'resolved';
+    return {
+      id: i.id, title: i.title || '（未详）', description: String(i.description || ''), narrative: i.narrative && i.narrative !== i.description ? String(i.narrative) : '',
+      category: i.category || '', severity: SEVERITY[i.severity] || i.severity || '', region: i.affectedRegion || '',
+      group: resolved ? 'done' : i._info ? 'info' : 'open', resolving: !!i._resolving,
+      raised: when(i.raisedTurn, i.raisedDate), raisedTurn: i.raisedTurn || 1, resolvedOn: resolved && i.resolvedTurn ? when(i.resolvedTurn, i.resolvedDate) : '',
+      chars: Array.isArray(i.linkedChars) ? i.linkedChars.slice() : [], factions: Array.isArray(i.linkedFactions) ? i.linkedFactions.slice() : [],
+      consequences: i.longTermConsequences && typeof i.longTermConsequences === 'object' ? Object.entries(i.longTermConsequences).map(([k, v]) => [k, String(v)]) : [],
+      history: i.historicalNote || '', chosen: i.chosenText || '',
+      choices: Array.isArray(i.choices) ? i.choices.map((c, k) => ({ index: k, text: (c && (c.text || c.label)) || `选项${k + 1}`, desc: (c && (c.desc || c.consequence)) || '' })) : [],
+      legacyRelief: !!(i.relief && i.relief.version === 1)
+    };
+  });
+}
+
 // 人物（在世），供图志与小立轴
 export function characters({ limit = 0 } = {}) {
   const list = (G().chars || []).filter((c) => c && c.alive !== false && !c.dead).map((c) => ({

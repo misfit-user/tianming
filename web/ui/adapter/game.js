@@ -145,6 +145,17 @@ const act = {
     bus.emit('game:changed', { what: 'memorial', id });
     return r;
   },
+  // 时政决断：选第 index 项。异步——开关开着时内核先请 AI 据国势裁定后果（数秒），失败回落固定后果。
+  // 返回内核的结果（{ ok:false, code } 表示没办成，例如世局已变、事件不许此选）
+  async issue(id, index) {
+    if (typeof w._chooseIssueOption !== 'function') throw new Error('内核缺 _chooseIssueOption');
+    bus.emit('game:changed', { what: 'issue', id, resolving: true });
+    try {
+      return await w._chooseIssueOption(id, index);
+    } finally {
+      bus.emit('game:changed', { what: 'issue', id });
+    }
+  },
   // 摘入：把页面上划选的奏疏文字摘进诏书建议库（内核读 window.getSelection）
   excerpt(id) {
     if (typeof w._memExcerptToEdict !== 'function') throw new Error('内核缺 _memExcerptToEdict');

@@ -11,6 +11,7 @@ import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
+import { createIssues } from './issues.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 
@@ -228,7 +229,22 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     replaceChildren(plaques.pi, h('b.q-gold', chan.title), h('small', docket ? `今日${num(docket)}件` : chan.sub));
     if (docket) plaques.pi.append(h('span.q-qian', num(docket)));
     for (const t of tagEls) if (t.dataset.k === 'memorials') t.querySelector('.q-yapai').textContent = docket ? `${t.dataset.label} · ${num(docket)}` : t.dataset.label;
+    // 时政：托盘上的花笺换成此刻待决的几件；牙牌记待决之数
+    const open = per.previewing ? [] : s.issueList().filter((i) => i.group === 'open');
+    for (const t of tagEls) if (t.dataset.k === 'tray') t.querySelector('.q-yapai').textContent = open.length ? `${t.dataset.label} · ${num(open.length)}` : t.dataset.label;
+    const notes = open.slice(0, 3).map(noteOf);
+    const sig = JSON.stringify(notes);
+    if (sig !== notesSig) { notesSig = sig; study.setNotes(notes); }
     mapNote.textContent = `${d.era || ''} · ${num((map.regions || []).length)}府州`;
+  }
+
+  // 一件时政写成一张花笺：题取首句（至多六字），正文拆成三短行（每行至多八字）
+  let notesSig = '';
+  function noteOf(it) {
+    const clauses = (t) => String(t || '').replace(/【[^】]*】/g, '').split(/[，。；、：！？,.;:!?\s]+/).filter(Boolean);
+    const title = (clauses(it.title)[0] || it.title).slice(0, 6);
+    const lines = clauses(it.description).filter((c) => c.length >= 2).slice(0, 3).map((c) => c.slice(0, 8));
+    return [title, lines];
   }
 
   // 开局、读档后：舆图换上本剧本的府州，案上绢图重画（带势力名）
@@ -295,10 +311,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (name === 'letterbox') return onChannel(ch('shu'));
     if (name === 'books') return building(prof.books[prof.books.length - 1][1], '');
     if (name === 'seal') return onSeal();
-    if (name === 'tray') return building(prof.tags.tray, '');
+    if (name === 'tray') return readOnly() || issues.open();
   }
   // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
+  const issues = createIssues({ game, profile: () => prof });
   function openDocket(id) {
     el.classList.remove('on');
     docket.open(id);

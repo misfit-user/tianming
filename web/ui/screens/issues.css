@@ -1,0 +1,48 @@
+/* 时政：花笺清册与议题详卷（都在展卷对话框的纸心里，墨色） */
+.iss-list { display: flex; flex-direction: column; gap: 1.125rem; }
+.iss-count { font-size: var(--fs-2); letter-spacing: .3em; color: var(--ink-faint); }
+.iss-group h4 { margin: 0 0 .625rem; font: 400 var(--fs-5) var(--f-title); letter-spacing: .4em; color: var(--verm); }
+.iss-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .875rem; }
+/* 一张花笺：淡绯（待决）、淡青（省览）、素（已决），上缘一道色边，角上一方戳记 */
+.iss-card { position: relative; display: flex; flex-direction: column; gap: .375rem; min-height: 7.25rem; padding: .875rem 1rem 1rem; border: 0; text-align: left; cursor: pointer;
+  font-family: var(--f-kai); color: var(--ink); background: var(--paper-grain), linear-gradient(180deg, #f6e6da, #ecd6c4); border-top: 3px solid rgba(163, 40, 27, .55);
+  box-shadow: 0 .25rem .75rem rgba(80, 50, 20, .18), inset 0 0 0 1px rgba(120, 90, 50, .22); transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+.iss-card.info { background: var(--paper-grain), linear-gradient(180deg, #e6efe6, #d5e2d6); border-top-color: rgba(58, 125, 103, .6); }
+.iss-card.done { background: var(--paper-grain), linear-gradient(180deg, #eee7d6, #e1d6bf); border-top-color: rgba(110, 100, 80, .45); opacity: .82; }
+.iss-card:hover { transform: translateY(-.125rem); box-shadow: 0 .5rem 1.125rem rgba(80, 50, 20, .26), inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.iss-card b { padding-right: 4rem; font: 400 var(--fs-5)/1.4 var(--f-kai); letter-spacing: .06em; }
+.iss-card small { font-size: var(--fs-1); color: #8b7355; letter-spacing: .08em; }
+.iss-card p { margin: 0; font-size: var(--fs-2); line-height: 1.75; color: var(--ink-soft); }
+.iss-card .stamp { position: absolute; right: .75rem; top: .75rem; padding: .125rem .5rem; font: normal var(--fs-1) var(--f-kai); letter-spacing: .15em; transform: rotate(6deg);
+  color: #a13c2e; border: 1px solid rgba(163, 40, 27, .5); background: rgba(192, 64, 48, .06); }
+.iss-card.info .stamp { color: #3a7d67; border-color: rgba(58, 125, 103, .55); background: rgba(58, 125, 103, .07); }
+.iss-card.done .stamp { color: #6b6b6b; border-color: rgba(90, 90, 90, .45); background: rgba(90, 90, 90, .06); }
+.iss-empty { padding: 5rem 0; text-align: center; font-size: var(--fs-5); letter-spacing: .4em; color: var(--ink-faint); }
+
+/* 详卷 */
+.iss-detail { display: flex; flex-direction: column; gap: 1.125rem; }
+.iss-desc { padding: .75rem 1rem; white-space: pre-wrap; font-size: var(--fs-4); line-height: 2.05; letter-spacing: .02em; border-left: 2px solid rgba(163, 40, 27, .45); background: rgba(163, 120, 60, .05); }
+.iss-sec h5 { margin: 0 0 .5rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--verm); }
+.iss-text { white-space: pre-wrap; font-size: var(--fs-3); line-height: 2; color: var(--ink-soft); }
+.iss-text.history { font-style: italic; padding-left: .875rem; border-left: 2px solid rgba(120, 90, 50, .35); }
+.iss-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 1rem; }
+.iss-tags { display: flex; flex-wrap: wrap; gap: .375rem; }
+.iss-tags span { padding: .0625rem .5rem; font-size: var(--fs-2); border: 1px solid rgba(120, 90, 50, .35); background: rgba(163, 120, 60, .06); }
+.iss-tags.fac span { border-color: rgba(163, 40, 27, .35); color: #8a2a1c; }
+.iss-conseq { margin: 0 0 .25rem; font-size: var(--fs-3); line-height: 1.85; color: var(--ink-soft); }
+.iss-conseq b { font-weight: 400; color: var(--ink); }
+.iss-chosen { padding: .5rem .875rem; font-size: var(--fs-3); line-height: 1.8; color: #2f6b55; border: 1px solid rgba(58, 125, 103, .4); background: rgba(58, 125, 103, .06); }
+.iss-choices { display: flex; flex-direction: column; gap: .5rem; }
+.iss-choice { display: flex; flex-direction: column; gap: .125rem; padding: .625rem .875rem; border: 0; text-align: left; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, .12)); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35); transition: background var(--t-1), box-shadow var(--t-1); }
+.iss-choice b { font-weight: 400; font-size: var(--fs-4); letter-spacing: .04em; }
+.iss-choice small { font-size: var(--fs-2); color: var(--ink-faint); line-height: 1.6; }
+.iss-choice:hover:not(:disabled) { background: rgba(163, 40, 27, .06); box-shadow: inset 0 0 0 1px rgba(163, 40, 27, .55); }
+.iss-choice.picked { box-shadow: inset 0 0 0 2px rgba(163, 40, 27, .75); background: rgba(163, 40, 27, .08); }
+.iss-choice:disabled { cursor: default; }
+.iss-choice:disabled:not(.picked) { opacity: .5; }
+.iss-busy { margin-top: .5rem; text-align: center; font-size: var(--fs-3); letter-spacing: .4em; color: var(--verm); animation: iss-breathe 1.6s ease-in-out infinite; }
+.iss-busy[hidden] { display: none; }
+@keyframes iss-breathe { 50% { opacity: .45; } }
+.iss-when { text-align: center; font-size: var(--fs-2); letter-spacing: .25em; color: #2f6b55; }
+.iss-warn { margin: 0; padding: .75rem 1rem; color: #8a3a1c; line-height: 1.8; border: 1px dashed rgba(163, 40, 27, .5); }

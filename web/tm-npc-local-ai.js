@@ -702,6 +702,12 @@
           var command = Object.assign({}, choice.action, { actionId: st.origins[origin] });
           var beforeMessages = D.plans().reduce(function (n, p) { return n + p.messages.length; }, 0);
           var receipt = D.submitNPC(chosen, command, { inlineDelivery: true });
+          if (typeof root._npcPlanningStepResult === 'function' && receipt && receipt.planId) {
+            var _plannedActivity = D.get(receipt.planId);
+            if (_plannedActivity && _plannedActivity.localActivity && _plannedActivity.localActivity.sourceGoalId) {
+              root._npcPlanningStepResult(chosen.id, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) ? 'completed' : receipt.outcome, reason: receipt.reason });
+            }
+          }
           // A failed domain transaction restores nested state objects; do not keep their stale references.
           st = D.readState(); event = st.event; event.remaining--; summary.decisions++;
           if (/^(submitted|completed)$/.test(receipt.outcome) && !choice.action.planId && !choice.action.sourceGoalId) event.newContacts = (event.newContacts || 0) + 1;
@@ -746,7 +752,17 @@
       wake('enter'); if (NPC.DailyUI) NPC.DailyUI.render();
     }, 0);
   }
-  NPC.LocalAI = { config: config, wake: wake, candidates: candidates, inclination: inclination, scheduleEntry: scheduleEntry,
+  function localOnlyDue(ch) {
+    if (!ch || !domain()) return false;
+    var D = domain(), related = D.plans().filter(function (p) { return p && p.localActivity && (p.actorId === ch.id || p.targetId === ch.id || p.localActivity.thirdPartyId === ch.id); });
+    if (related.some(function (p) { return !D.terminal(p); })) return true;
+    return candidates(ch, related, { skipUnsolicited: true }).some(function (c) { return c && c.action && /^(greeting|introduction|assistance|consultation|meeting)$/.test(c.action.activityKind || ''); });
+  }
+  function routingStatus(ch) {
+    var planning = root.GM && root.GM._npcActionState && root.GM._npcActionState.planning || {}, pending = Array.isArray(planning.pending) ? planning.pending.filter(function (q) { return q && q.actorId === String(ch && ch.id) && q.status === 'pending'; }) : [];
+    return { ordinaryMode: 'local', localDue: localOnlyDue(ch), planningPending: pending.length, modelRequired: pending.length > 0, compatibilityPath: true };
+  }
+  NPC.LocalAI = { config: config, wake: wake, candidates: candidates, inclination: inclination, scheduleEntry: scheduleEntry, localOnlyDue: localOnlyDue, routingStatus: routingStatus,
     requestPublicTransfer: requestPublicTransfer, createDutyMatter: createDutyMatter, authorizeDutyMatter: authorizeDutyMatter, renderDutyPanel: renderDutyPanel, runDutyChoices: runDutyChoices,
     dutyEvidence: dutyEvidence, dutyMatter: dutyMatter, dutyMatterOptions: dutyMatterOptions, dutyAssignments: dutyAssignments };
   if (root.GameHooks) root.GameHooks.on('enterGame:after', scheduleEntry, 60);

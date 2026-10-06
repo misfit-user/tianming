@@ -147,6 +147,156 @@ function _recordNpcDecisionDiagnostic(raw, status, reason) {
   return GM._npcDecisionDiagnostics[GM._npcDecisionDiagnostics.length - 1];
 }
 
+// Planning requests live in the existing ActionLedger state.  They are an
+// index over real messages/appointments/goals, not a second goal database.
+function _npcPlanningState() {
+  var s = TM.NPC.ActionLedger.state(GM);
+  if (!s.planning || typeof s.planning !== 'object') s.planning = { version: 1, actors: {}, pending: [], directions: {}, sequence: 0, diagnostics: [], logicalRequests: 0, compatibilityRequests: 0, modelAttempts: 0 };
+  if (!s.planning.actors || typeof s.planning.actors !== 'object') s.planning.actors = {};
+  if (!Array.isArray(s.planning.pending)) s.planning.pending = [];
+  if (!s.planning.directions || typeof s.planning.directions !== 'object') s.planning.directions = {};
+  if (!Array.isArray(s.planning.diagnostics)) s.planning.diagnostics = [];
+  if (!Number.isFinite(Number(s.planning.logicalRequests))) s.planning.logicalRequests = 0;
+  if (!Number.isFinite(Number(s.planning.compatibilityRequests))) s.planning.compatibilityRequests = 0;
+  if (!Number.isFinite(Number(s.planning.modelAttempts))) s.planning.modelAttempts = 0;
+  return s.planning;
+}
+
+function _npcPlanningHash(value) {
+  var text = typeof value === 'string' ? value : JSON.stringify(value == null ? null : value);
+  var n = 2166136261;
+  for (var i = 0; i < text.length; i++) { n ^= text.charCodeAt(i); n = Math.imul(n, 16777619); }
+  return (n >>> 0).toString(36);
+}
+
+function _npcPlanningGoalFingerprint(ch) {
+  var rows = Array.isArray(ch && ch.personalGoals) ? ch.personalGoals.map(function (g) {
+    return { id: g && g.id || '', version: g && g.version || 1, longTerm: g && g.longTerm || '', shortTerm: g && g.shortTerm || '', priority: g && g.priority || 0, planningDue: !!(g && g.planningDue) };
+  }) : [];
+  return _npcPlanningHash({ personalGoal: ch && ch.personalGoal || '', personalGoalRevision: ch && ch.personalGoalRevision || 0, planningRequired: !!(ch && ch.personalGoalRequiresPlanning), goals: rows });
+}
+
+function _npcPlanningOfficeFingerprint(ch) {
+  var rows = [];
+  try {
+    if (TM.OfficeHolderState && typeof TM.OfficeHolderState.assignments === 'function') {
+      rows = TM.OfficeHolderState.assignments(GM, ch).map(function (a) {
+        var pos = a.pos || {}, tenure = pos._officeTenureState || {};
+        return { positionId: a.positionId || pos.id || '', appointmentId: a.appointmentId || '', organizationId: a.organizationId || '', delegated: !!a.delegated, principalCharacterId: a.principalCharacterId || '', dutyMode: pos.dutyMode || pos.tenureType || '', usualDutyLocationId: pos.usualDutyLocationId || '', leave: (tenure.leaves || []).map(function (x) { return { id: x.id || '', status: x.status || '', termsVersion: x.termsVersion || 1, startDay: x.startDay || null, latestReturnDay: x.latestReturnDay || null }; }).sort(function (x, y) { return String(x.id).localeCompare(String(y.id)); }), delegations: (tenure.delegations || []).map(function (x) { return { id: x.id || '', status: x.status || '', delegateId: x.delegateId || x.delegateCharacterId || '', termsVersion: x.termsVersion || 1 }; }).sort(function (x, y) { return String(x.id).localeCompare(String(y.id)); }) };
+      });
+    }
+  } catch (_) { rows = []; }
+  rows.sort(function (a, b) { return String(a.positionId).localeCompare(String(b.positionId)) || String(a.appointmentId).localeCompare(String(b.appointmentId)); });
+  return _npcPlanningHash(rows);
+}
+
+function _npcPlanningImportantMessage(p, m) {
+  if (!p || p.localActivity || !m || m.status !== 'delivered') return false;
+  var d = m.data || {}, importance = Number(d.importance);
+  if (d.planningRequired === true || d.important === true || d.goalRevision != null || d.replanRequired === true) return true;
+  if (isFinite(importance) && importance >= 8) return true;
+  return /^(appointment|dismissal|dispatch|reform|treaty|war|command|major_change|goal_revision)$/.test(String(m.kind || ''));
+}
+
+function _npcPlanningHasSource(planning, actorId, sourceKey) {
+  return planning.pending.some(function (q) { return q && q.actorId === actorId && q.sourceKey === sourceKey && /^(pending|accepted|evaluated)$/.test(q.status); }) || Object.keys(planning.directions).some(function (id) {
+    var d = planning.directions[id]; return d && d.actorId === actorId && d.sourceKey === sourceKey && !/^(cancelled|superseded)$/.test(d.status);
+  });
+}
+
+function _npcQueuePlanningRequest(planning, actor, kind, sourceKey, reason, details) {
+  if (!actor || !sourceKey || _npcPlanningHasSource(planning, String(actor.id), sourceKey)) return null;
+  var request = Object.assign({
+    id: 'npc-plan-request:' + _npcPlanningHash([actor.id, sourceKey]), actorId: String(actor.id), kind: kind, sourceKey: sourceKey,
+    reason: reason || '', createdTurn: Number(GM.turn) || 0, knownDay: typeof getCurrentGameDay === 'function' ? Number(getCurrentGameDay()) || 0 : Number(GM.turn) || 0,
+    status: 'pending', attempts: 0, notBeforeTurn: Number(GM.turn) || 0, expiresTurn: (Number(GM.turn) || 0) + 12
+  }, details || {});
+  planning.pending.push(request);
+  planning.diagnostics.push({ type: 'queued', requestId: request.id, actorId: request.actorId, sourceKey: sourceKey, kind: kind, turn: GM.turn, reason: request.reason });
+  if (planning.diagnostics.length > 160) planning.diagnostics.splice(0, planning.diagnostics.length - 160);
+  return request;
+}
+
+function _npcCollectPlanningTriggers(npcs) {
+  var planning = _npcPlanningState(), out = [], chars = npcs || (GM && GM.chars) || [];
+  chars.filter(function (c) { return c && c.id != null && c.alive !== false && !c.dead && !c.isPlayer; }).forEach(function (ch) {
+    var id = String(ch.id), actorState = planning.actors[id] || (planning.actors[id] = { initialized: false, seenMessages: {}, consumed: {} });
+    var goalFingerprint = _npcPlanningGoalFingerprint(ch), officeFingerprint = _npcPlanningOfficeFingerprint(ch);
+    var first = !actorState.initialized;
+    if (first) actorState.initialized = true;
+    if (first && String(ch.personalGoal || '').trim() && !(TM.NPC.LocalAI && typeof TM.NPC.LocalAI.localOnlyDue === 'function' && TM.NPC.LocalAI.localOnlyDue(ch))) {
+      var initialGoalKey = 'goal-initial:' + id + ':' + goalFingerprint;
+      if (_npcQueuePlanningRequest(planning, ch, 'goal_initial', initialGoalKey, '本人已有一个尚未展开的长期打算，首次进入具体规划点。', { goalFingerprint: goalFingerprint })) actorState.goalPlanningQueued = true;
+    }
+    if (!first && actorState.officeFingerprint && actorState.officeFingerprint !== officeFingerprint) {
+      var officeKey = 'office:' + id + ':' + officeFingerprint;
+      _npcQueuePlanningRequest(planning, ch, 'office_change', officeKey, '本人已知的任职或差遣发生变化，需要重新安排未来事务。', { officeFingerprint: officeFingerprint });
+    }
+    if (!first && actorState.goalFingerprint && actorState.goalFingerprint !== goalFingerprint) {
+      var goalKey = 'goal:' + id + ':' + goalFingerprint;
+      _npcQueuePlanningRequest(planning, ch, 'goal_revision', goalKey, '本人已有目标或短期打算发生实质修订，需要重新选择后续。', { goalFingerprint: goalFingerprint });
+    }
+    // Bare personalGoal text is not a per-turn model trigger.  A goal only
+    // enters planning when the producer marks a concrete planning review.
+    if ((ch.personalGoalRequiresPlanning === true || Array.isArray(ch.personalGoals) && ch.personalGoals.some(function (g) { return g && g.planningDue === true; })) && !actorState.goalPlanningQueued) {
+      var initialGoalKey = 'goal-review:' + id + ':' + goalFingerprint;
+      if (_npcQueuePlanningRequest(planning, ch, 'goal_review', initialGoalKey, '已有目标进入明确的规划复核点。', { goalFingerprint: goalFingerprint })) actorState.goalPlanningQueued = true;
+    }
+    (GM._npcPlans || []).forEach(function (p) {
+      if (!p || p.localActivity) return;
+      var messages = Array.isArray(p.messages) ? p.messages : [];
+      messages.forEach(function (m) {
+        if (!m || String(m.toId) !== id || m.status !== 'delivered' || !_npcPlanningImportantMessage(p, m)) return;
+        var sourceKey = 'message:' + String(p.id) + ':' + String(m.id) + ':' + String(m.termsVersion || p.termsVersion || 1);
+        if (actorState.seenMessages[sourceKey]) return;
+        actorState.seenMessages[sourceKey] = Number(GM.turn) || 0;
+        _npcQueuePlanningRequest(planning, ch, 'important_message', sourceKey, '本人实际收到的重要消息改变了现有安排。', { planId: p.id, messageId: m.id, termsVersion: m.termsVersion || p.termsVersion || 1 });
+      });
+      if (p.status === 'needs_replan' && String(p.nextActorId || '') === id) {
+        var replanKey = 'replan:' + String(p.id) + ':' + String(p.revision || 1);
+        _npcQueuePlanningRequest(planning, ch, 'plan_revision', replanKey, '已有事项失去前提或需要新的方向选择。', { planId: p.id, revision: p.revision || 1 });
+      }
+    });
+    actorState.goalFingerprint = goalFingerprint;
+    actorState.officeFingerprint = officeFingerprint;
+    planning.pending.forEach(function (q) {
+      if (q && q.actorId === id && q.status === 'pending' && Number(q.notBeforeTurn || 0) <= Number(GM.turn || 0) && Number(q.expiresTurn || 0) >= Number(GM.turn || 0)) out.push({ actor: ch, request: q });
+    });
+  });
+  return out;
+}
+
+function _npcPlanningCandidates(npcs) {
+  return _npcCollectPlanningTriggers(npcs).filter(function (x) { return x.request.attempts < 2; });
+}
+
+function _npcPlanningMarkRequest(request, status, extra) {
+  if (!request) return;
+  request.status = status;
+  request.lastAttemptTurn = Number(GM.turn) || 0;
+  Object.assign(request, extra || {});
+}
+
+function _npcPlanningStepResult(actorId, sourceGoalId, receipt) {
+  if (!sourceGoalId) return;
+  var planning = _npcPlanningState();
+  Object.keys(planning.directions).forEach(function (id) {
+    var direction = planning.directions[id];
+    if (!direction || direction.actorId !== String(actorId)) return;
+    var step = (direction.steps || []).find(function (s) { return s.goalSource === sourceGoalId || s.goalId === String(sourceGoalId).split(':')[0]; });
+    if (!step) return;
+    step.lastOutcome = receipt && receipt.outcome || '';
+    step.lastReason = receipt && receipt.reason || '';
+    if (receipt && /^(submitted|started|waiting|partial|completed)$/.test(receipt.outcome)) step.status = 'started';
+    if (receipt && receipt.outcome === 'completed') step.status = 'completed';
+    if (receipt && /^(blocked|failed|expired)$/.test(receipt.outcome)) step.status = 'waiting';
+    var active = (direction.steps || []).filter(function (s) { return !/^(completed|cancelled)$/.test(s.status); });
+    if (!active.length) direction.status = 'completed';
+  });
+}
+
+if (typeof window !== 'undefined') window._npcPlanningStepResult = _npcPlanningStepResult;
+
 function _isNpcIdleBehaviorAllowed(type) {
   var allowed = {
     petition: true,
@@ -174,6 +324,79 @@ function _isNpcIdleBehaviorAllowed(type) {
   return !!allowed[type];
 }
 
+function _npcPlanningDay() {
+  if (TM.SimTime && typeof TM.SimTime.now === 'function') return Number(TM.SimTime.now(GM)) || 0;
+  return typeof getCurrentGameDay === 'function' ? Number(getCurrentGameDay()) || 0 : Number(GM && GM.turn || 0);
+}
+
+function _npcPlanningValidStep(actor, step, directionId, index) {
+  step = step || {};
+  var kind = String(step.kind || step.activityKind || '').trim();
+  if (!/^(greeting|introduction|assistance|consultation|meeting)$/.test(kind)) return null;
+  var D = TM.NPC && TM.NPC.DailyActivities;
+  if (!D || typeof D.person !== 'function' || typeof D.knows !== 'function') return null;
+  var target = D.person(step.targetId, GM);
+  if (!target || target === actor || !D.knows(actor, target, GM)) return null;
+  var third = null;
+  if (kind === 'introduction') {
+    third = D.person(step.thirdPartyId, GM);
+    if (!third || third === actor || third === target || !D.knows(actor, third, GM)) return null;
+  }
+  var goal = { id: 'npc-model-step:' + directionId + ':' + index, version: 1, status: 'active', kind: kind, targetId: String(target.id), thirdPartyId: third && String(third.id) || '', source: 'model-planning', modelPlanId: directionId, stepIndex: index, reason: String(step.reason || step.intent || ''), planningSourceKey: String(step.sourceKey || '') };
+  if (kind === 'assistance') {
+    if (!step.task || typeof step.task !== 'object') return null;
+    goal.task = step.task;
+  }
+  if (kind === 'consultation') {
+    var opportunities = typeof D.consultationOpportunities === 'function' ? D.consultationOpportunities(actor, GM) : [];
+    var topicId = String(step.consultation && step.consultation.topicId || step.topicId || '');
+    var sourceOpportunity = step.consultation && step.consultation.sourceOpportunity || step.sourceOpportunity;
+    var match = opportunities.find(function (o) { return o && o.sendable !== false && o.action && String(o.action.targetId) === String(target.id) && o.action.consultation && String(o.action.consultation.topicId) === topicId && (!sourceOpportunity || o.action.consultation.sourceOpportunity && o.action.consultation.sourceOpportunity.key === sourceOpportunity.key); });
+    if (!match) return null;
+    goal.consultation = { topicId: topicId, question: String(step.consultation.question || match.action.consultation.question || ''), sourceOpportunity: match.action.consultation.sourceOpportunity, preferredExchange: step.consultation.preferredExchange || match.action.consultation.preferredExchange };
+  }
+  if (kind === 'meeting') goal.meeting = step.meeting || null;
+  goal.sourceGoalKey = goal.id + ':1';
+  return goal;
+}
+
+function _applyNpcPlanningProposal(actor, request, proposal, lease) {
+  if (!actor || !request || !proposal || !lease || !TM.NPC.ActionLedger.current(lease)) return { ok: false, reason: 'planning_world_changed' };
+  var planning = _npcPlanningState(), current = planning.pending.find(function (q) { return q.id === request.id && q.status === 'pending'; });
+  if (!current || current.actorId !== String(actor.id) || current.sourceKey !== request.sourceKey) return { ok: false, reason: 'planning_trigger_stale' };
+  var directionId = 'npc-direction:' + request.id, rawSteps = Array.isArray(proposal.nextSteps) ? proposal.nextSteps : Array.isArray(proposal.steps) ? proposal.steps : [];
+  rawSteps = rawSteps.slice(0, 4);
+  if (!rawSteps.length) return { ok: false, reason: 'planning_no_supported_steps' };
+  var valid = rawSteps.map(function (step, index) { return _npcPlanningValidStep(actor, step, directionId, index); }).filter(Boolean);
+  if (!valid.length) return { ok: false, reason: 'planning_steps_not_executable' };
+  var guard = TM.AIChange && TM.AIChange.WriteGuards;
+  if (!guard || typeof guard.runAtomicMutation !== 'function') return { ok: false, reason: 'atomic_writer_unavailable' };
+  var result = { ok: false, reason: 'planning_not_committed' };
+  var committed = guard.runAtomicMutation(function () {
+    if (!TM.NPC.ActionLedger.current(lease)) throw Error('planning_world_changed');
+    var goals = Array.isArray(actor.localGoals) ? actor.localGoals : (actor.localGoals = []);
+    valid.forEach(function (goal) {
+      if (!goals.some(function (old) { return old && old.id === goal.id; })) goals.push(goal);
+    });
+    var proposedReviewDay = Number(proposal.reviewDay), currentPlanningDay = _npcPlanningDay();
+    var reviewDay = Number.isFinite(proposedReviewDay) && proposedReviewDay >= currentPlanningDay ? proposedReviewDay : currentPlanningDay + 7;
+    var direction = { id: directionId, actorId: String(actor.id), sourceKey: request.sourceKey, sourceKind: request.kind, objective: String(proposal.objective || proposal.intent || request.reason || ''), status: 'active', createdTurn: Number(GM.turn) || 0, reviewDay: reviewDay, steps: valid.map(function (goal) { return { goalId: goal.id, goalSource: goal.sourceGoalKey, kind: goal.kind, status: 'pending', targetId: goal.targetId }; }) };
+    planning.directions[directionId] = direction;
+    _npcPlanningMarkRequest(current, 'accepted', { directionId: directionId, acceptedTurn: Number(GM.turn) || 0 });
+    planning.diagnostics.push({ type: 'accepted', requestId: current.id, actorId: String(actor.id), directionId: directionId, steps: valid.length, turn: GM.turn });
+    if (planning.diagnostics.length > 160) planning.diagnostics.splice(0, planning.diagnostics.length - 160);
+    result = { ok: true, directionId: directionId, steps: valid.length };
+    return result;
+  });
+  return committed && committed.ok === true ? committed : result;
+}
+
+function _npcApplyPlanningOutput(actor, request, decision, lease) {
+  var proposal = decision && (decision.planning || decision.planDirection || decision.direction || decision.plan);
+  if (!proposal) return { ok: false, reason: 'planning_proposal_missing' };
+  return _applyNpcPlanningProposal(actor, request, proposal, lease);
+}
+
 function _executeNormalizedNpcDecision(rawDecision, fallbackNpc, context, options) {
   options = options || {};
   if (!rawDecision) return false;
@@ -194,6 +417,7 @@ function _executeNormalizedNpcDecision(rawDecision, fallbackNpc, context, option
   _npcEnsureExecutionFactors(npc, decision.behaviorType, context, decision);
   var receipt = NpcBehaviorRegistry.execute(npc, decision, context) || ledger.result('failed', 'handler_result_missing');
   rawDecision._executionResult = decision._executionResult = receipt;
+  if (typeof _npcPlanningStepResult === 'function' && decision.sourceGoalId) _npcPlanningStepResult(npc.id, decision.sourceGoalId, receipt);
   _recordNpcDecisionDiagnostic(decision, receipt.outcome, receipt.reason);
   return /^(submitted|waiting|started|partial|completed)$/.test(receipt.outcome) && !receipt.duplicate;
 }
@@ -275,9 +499,9 @@ async function _runNpcIdleAutonomyRound(state) {
       maxTokens: state.maxTokens
     });
     state.lastSummary = summary || null;
-    if (summary && summary.skipped === 'no_candidates') {
+    if (summary && /^(no_candidates|no_planning_trigger|missing_ai_key)$/.test(summary.skipped || '')) {
       state.stopped = true;
-      state.stopReason = 'no_candidates';
+      state.stopReason = summary.skipped;
       return false;
     }
   } catch(e) {
@@ -303,6 +527,12 @@ function _scheduleNpcIdleAutonomyLoop(opts) {
   if (!cfg.enabled || cfg.maxRounds <= 0) return false;
   if (typeof P === 'undefined' || !P || !P.ai || !P.ai.key) return false;
   if (typeof GM === 'undefined' || !GM || !GM.running) return false;
+  var planningRows = typeof _npcPlanningCandidates === 'function' ? _npcPlanningCandidates(GM.chars || []) : [];
+  var hasLegacyDue = TM.NPC && TM.NPC.ActionLedger && (GM.chars || []).some(function (c) { return c && !c.isPlayer && (TM.NPC.ActionLedger.due(c, GM) || c._npcMajorDecisionPending === true); });
+  var hasLegacyAttention = (GM.chars || []).some(function (c) {
+    return c && !c.isPlayer && (hasLegacyDue || typeof hasOffice === 'function' && hasOffice(c.name) || typeof _hasMilitaryCommand === 'function' && _hasMilitaryCommand(c) || typeof _npcIsPlayerConsort === 'function' && _npcIsPlayerConsort(c) || Number(c.ambition || 0) > 70 || c.loyalty != null && Number(c.loyalty) < 60);
+  });
+  if (!planningRows.length && !hasLegacyDue && !hasLegacyAttention) return false;
   _cancelNpcIdleAutonomyLoop('rescheduled');
   GM._npcIdleAutonomy = {
     turn: GM.turn || 0,
@@ -326,32 +556,53 @@ async function executeNpcBehaviors(options) {
   var local=TM.NPC.LocalAI?TM.NPC.LocalAI.wake('turn'):null;
   if(options.localOnly)return {local:local,modelCalls:0};
   if(!options.idle){ledger.advance(GM);ledger.flushDeferred();}
-  if(!P.ai||!P.ai.key)return {skipped:'missing_ai_key',local:local,modelCalls:0};
+  var planningRows=_npcPlanningCandidates(GM.chars), planningState=_npcPlanningState();
+  if(!P.ai||!P.ai.key)return {skipped:'missing_ai_key',local:local,planningRequests:planningRows.length,modelCalls:0};
   var budget=ledger.state(GM);
   if(budget.modelTurn!==GM.turn){budget.modelTurn=GM.turn;budget.modelCalls=0;}
   if(budget.modelCalls>=3)return {skipped:'turn_model_budget'};
   var actors=selectImportantNpcs(GM.chars), privateSchedule=budget.privateSchedule || (budget.privateSchedule={});
-  var sensitive=actors.filter(function(c){return ledger.due(c,GM)||c.personalGoal;}).sort(function(a,b){return (privateSchedule[a.id]||0)-(privateSchedule[b.id]||0);}).slice(0,2);
-  sensitive.forEach(function(c){privateSchedule[c.id]=++budget.sequence;});
-  var batches=sensitive.map(function(c){return {npcs:[c],privateActorId:c.id};});
-  var publicActors=actors.filter(function(c){return sensitive.indexOf(c)<0&&!ledger.due(c,GM)&&!c.personalGoal;});
-  if(publicActors.length)batches.push({npcs:publicActors});
-  var executed=0,decided=0,called=0;
+  var triggerById={}; planningRows.forEach(function(row){triggerById[String(row.actor.id)]=row;});
+  var sensitive=planningRows.slice().sort(function(a,b){return (privateSchedule[a.actor.id]||0)-(privateSchedule[b.actor.id]||0);}).slice(0,2);
+  sensitive.forEach(function(row){privateSchedule[row.actor.id]=++budget.sequence;});
+  var batches=sensitive.map(function(row){return {npcs:[row.actor],privateActorId:row.actor.id,planningRequest:row.request};});
+  // Unmanaged, non-local obligations keep the existing compatibility path.
+  // Office rank, ambition and loyalty alone do not make a model request.
+  var legacyActors=actors.filter(function(c){return !triggerById[String(c.id)] && (ledger.due(c,GM) || c._npcMajorDecisionPending===true);});
+  if(legacyActors.length)batches.push({npcs:legacyActors});
+  if(!batches.length)return {skipped:'no_planning_trigger',local:local,considered:actors.length,planningRequests:0,modelCalls:0};
+  var executed=0,decided=0,called=0,planningAccepted=0,planningEvaluated=0;
   for(var i=0;i<batches.length&&ledger.state(GM).modelCalls<3;i++){
     if(!ledger.current(lease))return {skipped:'expired',executed:executed};
     var batch=batches[i],ctx=buildNpcBehaviorContext(batch.privateActorId?batch.npcs[0]:null);
+    if(batch.planningRequest)ctx.planningTrigger=Object.assign({},batch.planningRequest);
     called++;
     try{
-      var ds=await batchNpcDecisions(batch.npcs,ctx,Object.assign({},options,{privateActorId:batch.privateActorId}));
+      var ds=await batchNpcDecisions(batch.npcs,ctx,Object.assign({},options,{privateActorId:batch.privateActorId,planningRequest:batch.planningRequest || null}));
       if(!ledger.current(lease))return {skipped:'expired',executed:executed};
-      ds.forEach(function(d){decided++;if(_executeNormalizedNpcDecision(d,null,ctx,options))executed++;});
+      if(batch.planningRequest){
+        planningEvaluated++;
+        var accepted=false;
+        ds.forEach(function(d){
+          decided++;
+          // A planning request is a direction-only contract.  Even if a
+          // model returns a normal behavior beside its proposal, do not let
+          // this batch bypass LocalAI's ordinary activity owner.
+          if(d && d.planning){var applied=_applyNpcPlanningProposal(batch.npcs[0],batch.planningRequest,d.planning,lease);if(applied.ok){accepted=true;planningAccepted++;}return;}
+        });
+        if(!accepted){
+          _npcPlanningMarkRequest(batch.planningRequest,'evaluated',{evaluatedTurn:Number(GM.turn)||0,cooldownUntilTurn:(Number(GM.turn)||0)+3});
+          planningState.diagnostics.push({type:'evaluated',requestId:batch.planningRequest.id,actorId:batch.planningRequest.actorId,turn:GM.turn});
+        }
+      } else ds.forEach(function(d){decided++;if(_executeNormalizedNpcDecision(d,null,ctx,options))executed++;});
     }catch(error){
       if(!ledger.current(lease))return {skipped:'expired',executed:executed};
+      if(batch.planningRequest){batch.planningRequest.attempts=Number(batch.planningRequest.attempts||0)+1;if(batch.planningRequest.attempts>=2)_npcPlanningMarkRequest(batch.planningRequest,'blocked',{blockedReason:String(error.message||error)});}
       _recordNpcDecisionDiagnostic({source:'npc-autonomy'},'failed',String(error.message||error));
       // The next simulation turn may retry; no multiplying fallback calls.
     }
   }
-  return {considered:actors.length,decisions:decided,executed:executed,modelCalls:called,idle:!!options.idle};
+  return {considered:actors.length,decisions:decided,executed:executed,modelCalls:called,planningRequests:planningEvaluated,planningAccepted:planningAccepted,idle:!!options.idle};
 }
 
 /**
@@ -369,8 +620,13 @@ async function batchNpcDecisions(npcs, context, options) {
   if(modelBudget.modelTurn!==GM.turn){modelBudget.modelTurn=GM.turn;modelBudget.modelCalls=0;}
   if(modelBudget.modelCalls>=3)return [];
   modelBudget.modelCalls++;
+  var planningStats=_npcPlanningState();
+  if(options.planningRequest)planningStats.logicalRequests=Number(planningStats.logicalRequests||0)+1;
+  else planningStats.compatibilityRequests=Number(planningStats.compatibilityRequests||0)+1;
+  planningStats.modelAttempts=Number(planningStats.modelAttempts||0)+1;
   var privateActor=npcs.length===1&&String(options.privateActorId||'')===String(npcs[0].id);
   var packet=privateActor?buildNpcBehaviorContext(npcs[0]):buildNpcBehaviorContext();
+  if(options.planningRequest)packet.planningTrigger=Object.assign({},options.planningRequest);
   if(privateActor){
     var exposure=modelBudget.planExposure||(modelBudget.planExposure={});
     (packet.plans||[]).forEach(function(p){exposure[p.id]=++modelBudget.sequence;});
@@ -380,6 +636,7 @@ async function batchNpcDecisions(npcs, context, options) {
   prompt+='共享批次只含公开背景；未列出的私人事实不可推测为已知。\n';
   prompt+='行为类型：'+NpcBehaviorRegistry.list().join(',')+'。返回 JSON 数组 [{actorId,name,behaviorType,targetId,target,intent,shouldExecute,planId,phase,response,content,step,actingPositionId,appointmentId,positionId,task}]。office_duty 需具体事项：报告用 step=report 和实际 content；移交用 step=transfer 和明确账户、用途、金额。无事返回 none。\n';
   prompt+='已有事项使用 planId 与 nextPhase；respond 可 accept/reject/conditions/defer/partial；agree 可 accept/reject；perform 提供实际文书 content；feedback 表达收件评价。新请求 task.kind=document，公库协办可 public_transfer，必须具体 fromAccount/toAccount/amounts。不得自造完成凭据。\n';
+  if(options.planningRequest)prompt+='当前有一个本人已知的重要变化，必须优先给出可持续方向而非直接宣布结果。可返回 planning:{objective,reviewDay,nextSteps:[{kind,targetId,thirdPartyId,task,consultation,meeting,reason}]}；nextSteps 只能使用已有普通机制，不能替任何人同意、付款、任命或瞬移。若无需新方向，返回 planning:null。\n';
   prompt+=JSON.stringify(packet);
   // 涉议名单只取本批已在公开/本人上下文中的人物，沿用时空约束。
   if (typeof _buildTemporalConstraint === 'function') {
@@ -389,6 +646,13 @@ async function batchNpcDecisions(npcs, context, options) {
   var out=await callAI(prompt,options.maxTokens||2500,null,options.tier||null,{priority:options.priority||'background',timeoutMs:options.timeoutMs||60000,maxRetries:1});
   if(!TM.NPC.ActionLedger.current(requestLease))return [];
   var parsed=extractJSON(out),decisions=Array.isArray(parsed)?parsed:parsed&&(parsed.decisions||parsed.npc_actions)||[];
+  if(parsed&&!Array.isArray(parsed)&&parsed.planning){
+    decisions=decisions.slice();
+    decisions.push({actorId:parsed.actorId||privateActor&&npcs[0].id,name:parsed.name||privateActor&&npcs[0].name,planning:parsed.planning,shouldExecute:false,behaviorType:'none'});
+  }
+  if(parsed&&!Array.isArray(parsed)&&Array.isArray(parsed.plans)){
+    decisions=decisions.concat(parsed.plans.map(function(plan){return {actorId:plan.actorId||privateActor&&npcs[0].id,name:plan.name||privateActor&&npcs[0].name,planning:plan.planning||plan,shouldExecute:false,behaviorType:'none'};}));
+  }
   var allowed=npcs.map(function(c){return String(c.id);});
   return decisions.filter(function(d){var c=TM.NPC.ActionLedger.findChar({id:d.actorId||d.characterId,name:d.name||d.actor},GM);return c&&allowed.indexOf(String(c.id))>=0;}).map(function(d){
     TM.NPC.ActionLedger.prepare(d,GM);Object.defineProperty(d,'_npcLease',{value:requestLease,enumerable:false,configurable:true});return d;

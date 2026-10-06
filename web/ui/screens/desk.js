@@ -14,6 +14,7 @@ import { createDocket } from './docket.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
+import { openGazette } from './gazette.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 
@@ -55,7 +56,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const renwu = qiPanel({ title: '人物图志', note: '…' }, faces);
   const chips = qianzi(LAYERS, { value: '势力' });
   const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips);
-  const dibao = h('div.dibao');
+  const dibao = h('div.dibao', { onclick: () => openGazette({ game }), title: '展邸报全卷', style: { cursor: 'pointer' } });
   const left = h('div.left', renwu, maptools, dibao);
 
   // ---------- 右列书目、案底五渠道与印、器物牙牌：按身份档摆（furnish） ----------

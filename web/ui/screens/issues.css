@@ -58,3 +58,22 @@
 .av-card span { font: var(--fs-5) var(--f-title); color: #7d1d12; word-break: break-all; }
 .av-card small { font-size: var(--fs-1); line-height: 1.6; color: var(--ink-faint); }
 .av-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); }
+
+/* 邸报全卷 */
+.gz-wrap { display: flex; flex-direction: column; gap: .875rem; }
+.gz-tabs { display: flex; gap: .375rem; }
+.gz-tabs button { display: inline-flex; align-items: baseline; gap: .25rem; padding: .125rem .625rem; border: 0; cursor: pointer; font: var(--fs-3) var(--f-kai); color: var(--ink-soft);
+  background: rgba(163, 120, 60, .07); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .28); }
+.gz-tabs button small { font-size: var(--fs-1); color: var(--ink-faint); }
+.gz-tabs button.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
+.gz-tabs button.on small { color: rgba(249, 234, 210, .75); }
+.gz-day h4 { margin: .25rem 0 .5rem; padding-bottom: .1875rem; font: 400 var(--fs-3) var(--f-print); letter-spacing: .3em; color: var(--verm); border-bottom: 1px solid rgba(163, 40, 27, .25); }
+.gz-item { display: grid; grid-template-columns: 1.75rem 1fr; gap: .625rem; padding: .5rem 0 .625rem; border-bottom: 1px dashed rgba(120, 90, 50, .22); }
+.gz-item em { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; margin-top: .125rem; font: normal var(--fs-2) var(--f-kai); color: #f9ead2; background: #7a6a52; }
+.gz-item em.ji { background: #a3281b; }
+.gz-item em.yi { background: #8a6a2a; }
+.gz-item b { display: block; font: 400 var(--fs-4) var(--f-print); letter-spacing: .06em; }
+.gz-item small { font-size: var(--fs-1); color: var(--ink-faint); letter-spacing: .1em; }
+.gz-item p { margin: .25rem 0 0; font-size: var(--fs-3); line-height: 1.95; color: var(--ink-soft); white-space: pre-wrap; }
+.gz-more { margin-top: .25rem; padding: 0; border: 0; background: none; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--verm); letter-spacing: .2em; }
+.gz-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); }

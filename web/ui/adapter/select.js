@@ -376,6 +376,22 @@ export function issues(limit = 3) {
   }));
 }
 
+// 邸报全卷：编年（GM._chronicle）由新到旧，按日期分；标题取首个【…】，正文去掉标题。系统记账类（paradigm、scenario、system）不列
+export function gazette(limit = 160) {
+  const ts = fn('getTSText');
+  const list = (G()._chronicle || []).filter((e) => e && e.text && !/paradigm|scenario|^system/i.test(String(e.type || '')));
+  return list.slice(-limit).reverse().map((e) => {
+    const text = String(e.text);
+    const m = text.match(/【([^】]{1,30})】/);
+    const tags = Array.isArray(e.tags) ? e.tags : [];
+    return {
+      turn: e.turn, date: e.date || (ts && e.turn != null ? String(ts(e.turn)) : ''), type: e.type || '', tags,
+      tag: tags.includes('重要') || tags.includes('关键') || /急|变|乱/.test(e.type || '') ? '急' : /要务|议/.test(e.type || '') ? '议' : '闻',
+      title: m ? m[1] : '', text: (m ? text.replace(m[0], '') : text).replace(/^【[^】]{1,12}】/, '').trim()
+    };
+  });
+}
+
 // 时政（御案时政／案头要事）全账：待决、省览（信息卡，无须拍板）、已决。与老面板 openShizhengTasks 同口径
 const SEVERITY = { urgent: '紧急', high: '重要', warn: '警戒', info: '平常' };
 export function issueList() {

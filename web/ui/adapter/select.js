@@ -290,6 +290,70 @@ export function memorials() {
   }));
 }
 
+// 案头待批（元首一档即奏疏）：本回合的与未结的，与老奏疏面板同口径（tm-memorials.js renderMemorials）。
+// 分四组：urgent 急奏待批、pending 百官启奏、held 留中之折、done 已批（本回合可再改）
+const MEM_TYPE = { minxin: '民情', pressure: '积压', impeachment: '弹劾', minxin_accountability: '民情问责', report: '题本', intelligence: '密折', warning: '军务', policy: '政务', personnel: '人事', local: '地方', accountability: '问责' };
+const MEM_DONE = ['approved', 'rejected', 'annotated', 'referred', 'court_debate'];
+const memType = (v) => {
+  if (v == null || v === '') return '';
+  const s = String(v);
+  return MEM_TYPE[s] || MEM_TYPE[s.toLowerCase()] || (/^[A-Za-z_ ]+$/.test(s) ? '' : s);
+};
+export function docket() {
+  const g = G();
+  const turn = num(g.turn, 1);
+  const illegal = fn('_memMarkIllegalPresenter');
+  const yanyi = !!(w.P && w.P.conf && w.P.conf.gameMode === 'yanyi');
+  const ts = fn('getTSText');
+  const list = g.memorials || [];
+  return list.filter((m) => m && !(illegal && illegal(m, 'render')) && (m.turn === turn || m.status === 'pending' || m.status === 'pending_review')).map((m) => {
+    if (!m.id) m.id = typeof w.uid === 'function' ? w.uid() : 'mem_' + list.indexOf(m);   // 与老面板一样：没有 id 的补一个稳定 id
+    const system = !m.from || m.from === '有司';
+    const ch = system ? null : charById(g, m.from);
+    const type = memType(m.type);
+    return {
+      id: m.id, from: m.from || '有司', system,
+      fromTitle: ch ? ch.officialTitle || ch.title || '' : '', portrait: (ch && ch.portrait) || '',
+      title: m.title || m.subjectLine || '', body: String(m.content || m.body || ''),
+      type: type + (m.subtype ? '·' + (memType(m.subtype) || m.subtype) : ''),
+      urgent: m.priority === 'urgent', reliability: yanyi ? m.reliability || '' : '',
+      remoteFrom: m._remoteFrom || '', replySent: !!m._replyLetterSent, replyArrived: !!(m._replyDeliveryTurn && turn >= m._replyDeliveryTurn),
+      status: m.status || 'pending', reply: m.reply || '', referredTo: m._referredTo || '',
+      group: m.status === 'pending_review' ? 'held' : MEM_DONE.includes(m.status) ? 'done' : m.priority === 'urgent' ? 'urgent' : 'pending',
+      turn: m.turn, date: ts && m.turn != null ? String(ts(m.turn)) : ''
+    };
+  });
+}
+
+// 交部议：可批转之人——在侧的本朝臣工，按品级。筛法同老面板 _referMemorial，另加一条：须是官制上在任之人
+// （老面板只看头衔，后妃、白身也会列进来；头衔≠官职）
+function officeHolders(g) {
+  const ohs = w.TM && w.TM.OfficeHolderState;
+  if (!ohs || typeof ohs.positions !== 'function') return null;
+  const out = new Set();
+  try {
+    // read() 交回的人物对象未必就是 GM.chars 里那一个，按 id 与名字认
+    for (const row of ohs.positions(g)) for (const c of ohs.read(g, row.pos).characters) { if (c.id != null) out.add('id:' + c.id); if (c.name) out.add('name:' + c.name); }
+  } catch (err) {
+    console.warn('[newui] 取在任官员出错', err);
+    return null;
+  }
+  return out;
+}
+export function referCandidates(id) {
+  const g = G();
+  const m = (g.memorials || []).find((x) => x && x.id === id);
+  if (!m) return [];
+  const here = fn('_getPlayerLocation') ? fn('_getPlayerLocation')() : g._capital || '京城';
+  const same = fn('_isSameLocation'), foreign = fn('_tmIsForeignCourtChar'), rank = fn('getRankLevel');
+  const lv = (c) => (rank ? rank(c.officialTitle || '') : 99);
+  const holders = officeHolders(g);
+  const holds = (c) => !holders || holders.has('id:' + c.id) || holders.has('name:' + c.name);
+  return (g.chars || []).filter((c) => c && holds(c) && !(foreign && foreign(c)) && c.alive !== false && !c.isPlayer && c.name !== m.from && (!c.location || !same || same(c.location, here)))
+    .sort((a, b) => lv(a) - lv(b)).slice(0, 15)
+    .map((c) => ({ id: c.id, name: c.name, title: c.officialTitle || c.title || '', portrait: c.portrait || '' }));
+}
+
 // 邸报：近事编年（GM._chronicle）由新到旧，取标题（首个【…】或前二十余字）；重要者标「急」，要务标「议」，余为「闻」
 export function news(limit = 8) {
   const list = (G()._chronicle || []).filter((e) => e && e.text && !/paradigm|scenario|^system/i.test(String(e.type || '')));

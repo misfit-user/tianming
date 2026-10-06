@@ -10,6 +10,7 @@ import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
+import { createDocket } from './docket.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 
@@ -103,14 +104,21 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       if (m === 'desk' || m === 'desk-settled') el.classList.remove('flying', 'inmap');
     }
   });
+  // 点案上：绢图俯身入图；器物即功能（奏折批阅、笔砚拟令、信匣书信、史册实录、印）
+  const atDesk = () => el.classList.contains('on') && dive.mode === 'desk' && !dive.busy;
   stage.canvas.addEventListener('click', (ev) => {
-    if (!el.classList.contains('on') || dive.mode !== 'desk' || dive.busy) return;
+    if (!atDesk()) return;
     const p = study.pickMap(ev.clientX, ev.clientY);
-    if (p) dive.dive(p);
+    if (p) return dive.dive(p);
+    const prop = study.pickProp(ev.clientX, ev.clientY, Object.keys(prof.tags));
+    if (prop) onProp(prop);
   });
   stage.canvas.addEventListener('pointermove', (ev) => {
-    const over = el.classList.contains('on') && dive.mode === 'desk' && !dive.busy && !!study.pickMap(ev.clientX, ev.clientY);
-    stage.canvas.style.cursor = over ? 'zoom-in' : '';
+    const ok = atDesk();
+    const overMap = ok && !!study.pickMap(ev.clientX, ev.clientY);
+    const prop = ok && !overMap ? study.pickProp(ev.clientX, ev.clientY, Object.keys(prof.tags)) : null;
+    stage.canvas.style.cursor = overMap ? 'zoom-in' : prop ? 'pointer' : '';
+    for (const t of tagEls) t.classList.toggle('hot', t.dataset.k === prop);
   });
   let down = null;
   stage.canvas.addEventListener('pointerdown', (ev) => { down = [ev.clientX, ev.clientY]; });
@@ -277,7 +285,23 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   function onChannel(c) {
     if (readOnly()) return;
+    if (c.key === 'pi' && per.tier === 'sovereign') return openDocket();   // 案头待批：眼下内核只有元首的奏疏
     building(c.title, c.sub);
+  }
+  function onProp(name) {
+    const ch = (k) => prof.channels.find((c) => c.key === k);
+    if (name === 'memorials') return onChannel(ch('pi'));
+    if (name === 'writing') return onChannel(ch('ling'));
+    if (name === 'letterbox') return onChannel(ch('shu'));
+    if (name === 'books') return building(prof.books[prof.books.length - 1][1], '');
+    if (name === 'seal') return onSeal();
+    if (name === 'tray') return building(prof.tags.tray, '');
+  }
+  // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
+  const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
+  function openDocket(id) {
+    el.classList.remove('on');
+    docket.open(id);
   }
   function onSeal() {
     if (readOnly()) return;
@@ -310,6 +334,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       offs.splice(0).forEach((off) => off());
     },
     refresh,
+    docket,
     get profile() { return prof; }
   };
 }

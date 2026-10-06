@@ -18,7 +18,7 @@ function addStyle(href) {
 }
 
 async function start() {
-  await Promise.all(['kit/tokens.css', 'kit/fonts.css', 'kit/qi.css', 'scene/scene.css', 'screens/screens.css'].map(addStyle));
+  await Promise.all(['kit/tokens.css', 'kit/fonts.css', 'kit/qi.css', 'scene/scene.css', 'screens/screens.css', 'screens/docket.css'].map(addStyle));
   const root = document.createElement('div');
   root.id = 'tm-newui-root';
   root.className = 'q-root';

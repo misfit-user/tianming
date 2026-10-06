@@ -313,6 +313,17 @@ export async function createStudyView(stage, {
     const u = (p.x - o.x - MAP_SHEET.x) / MAP_SHEET.w + 0.5, v = (p.z - o.z - MAP_SHEET.z) / MAP_SHEET.h + 0.5;
     return u >= 0 && u <= 1 && v >= 0 && v <= 1 ? [E.x0 + u * E.w, E.y0 + v * E.h] : null;
   }
+  // 屏幕上一点落在哪组案上器物上（器物即功能：点奏折批阅、点笔砚拟诏……）；没点中返回 null。names 限定只认哪几组
+  function pickProp(clientX, clientY, names) {
+    const rect = stage.canvas.getBoundingClientRect();
+    ray.setFromCamera(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1), camera);
+    const groups = (names || Object.keys(props.groups)).map((n) => props.groups[n]).filter((g) => g && g.visible);
+    const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };   // 射线不管显隐，换陈设藏起来的件要自己剔掉
+    const hit = ray.intersectObjects(groups, true).find((x) => x.object.isMesh && !x.object.material.transparent && shown(x.object));
+    if (!hit) return null;
+    for (let o = hit.object; o; o = o.parent) if (o.parent && o.parent.isScene) return o.name || null;
+    return null;
+  }
   // 入图的最后一段：绢图渐渐「自己发光」、屋里的光斑光柱浮尘淡去；k=1 时连色调映射也关掉，画面就是那张绢图原样
   const sheetBase = sheet.material.color.clone();
   function setSheetGlow(k) {
@@ -410,7 +421,7 @@ export async function createStudyView(stage, {
       if (dust && current) dust.uniforms.uPx.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(current.fov / 2)));
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
-    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress,
+    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, pickProp, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress,
     get room() { return dressed; },
     get flightProgress() { return flight ? Math.min(1, (time - flight.t0) / flight.duration) : null; },
     get shot() { return current; },

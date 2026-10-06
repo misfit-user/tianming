@@ -1038,7 +1038,8 @@ function _referMemorial(idx) {
 function _doReferMemorial(idx, referTo) {
   var m = _memResolve(idx);
   if (!m) return;
-  var reply = (_$('mem-reply-' + idx) || {}).value || '着' + referTo + '议处';
+  // 新前端直接给批语：_doReferMemorial(id, 人, 批语)（web/ui）；老界面不传，照旧读朱批框
+  var reply = (typeof arguments[2] === 'string' ? arguments[2] : (_$('mem-reply-' + idx) || {}).value) || '着' + referTo + '议处';
   _stageMemorialDecision(m, 'referred', reply, { _referredTo: referTo });
   renderMemorials();
   toast('已批转给' + referTo + '（未提交，过回合生效）');
@@ -1048,7 +1049,8 @@ function _doReferMemorial(idx, referTo) {
 function _courtDebateMemorial(idx) {
   var m = _memResolve(idx);
   if (!m) return;
-  var reply = (_$('mem-reply-' + idx) || {}).value || '着廷议';
+  // 新前端直接给批语：_courtDebateMemorial(id, 批语)（web/ui）；老界面不传，照旧读朱批框
+  var reply = (typeof arguments[1] === 'string' ? arguments[1] : (_$('mem-reply-' + idx) || {}).value) || '着廷议';
   _stageMemorialDecision(m, 'court_debate', reply);
   // 修：旧版写错 DOM id cy-topic-input + 裸调 startChaoyiSession 不带议题，致议题丢失、弹空白朝议。
   // 改为复用 _pendingTinyiTopics 待议队列，与 phase8-formal-drafts 发廷议同源，下次开廷议自动列入议程。
@@ -1076,7 +1078,8 @@ function _courtDebateMemorial(idx) {
 function _holdMemorial(idx) {
   var m = _memResolve(idx);
   if (!m) return;
-  var reply = (_$('mem-reply-' + idx) || {}).value || '\u518D\u8BAE';
+  // 新前端直接给批语：_holdMemorial(id, 批语)（web/ui）；老界面不传，照旧读朱批框
+  var reply = (typeof arguments[1] === 'string' ? arguments[1] : (_$('mem-reply-' + idx) || {}).value) || '\u518D\u8BAE';
   m.status = 'pending_review';
   m.reply = reply;
   m._commitApplied = false;

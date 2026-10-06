@@ -127,15 +127,29 @@ const saves = {
 
 // ---------- 动作 ----------
 const act = {
-  // 奏疏批复：approved 准 / rejected 驳 / annotated 批（附朱批）/ referred 批转（extra._referredTo）/ court_debate 付廷议。
-  // 只改奏疏状态，后果在过回合推演前由内核 _commitMemorialDecisions 落地
+  // 奏疏批复：approved 准 / rejected 驳 / annotated 批（附朱批）/ referred 交部议（extra._referredTo 人名）/ court_debate 付廷议 / held 留中。
+  // 只改奏疏状态，后果在过回合推演前由内核 _commitMemorialDecisions 落地。
+  // 付廷议、留中、交部议走老面板同名函数（它们另有排廷议议题、改留中状态等），批语经接缝参数直接给
   memorial(id, action, reply = '', extra) {
     const m = ((w.GM && w.GM.memorials) || []).find((x) => x && x.id === id);
     if (!m) throw new Error('没有这件奏疏：' + id);
-    if (typeof w._stageMemorialDecision !== 'function') throw new Error('内核缺 _stageMemorialDecision');
-    const r = w._stageMemorialDecision(m, action, reply, extra);
+    const need = (name) => {
+      if (typeof w[name] !== 'function') throw new Error('内核缺 ' + name);
+      return w[name];
+    };
+    let r;
+    if (action === 'court_debate') r = need('_courtDebateMemorial')(id, reply);
+    else if (action === 'held') r = need('_holdMemorial')(id, reply);
+    else if (action === 'referred') r = need('_doReferMemorial')(id, extra && extra._referredTo, reply);
+    else r = need('_stageMemorialDecision')(m, action, reply, extra);
     bus.emit('game:changed', { what: 'memorial', id });
     return r;
+  },
+  // 摘入：把页面上划选的奏疏文字摘进诏书建议库（内核读 window.getSelection）
+  excerpt(id) {
+    if (typeof w._memExcerptToEdict !== 'function') throw new Error('内核缺 _memExcerptToEdict');
+    w._memExcerptToEdict(id);
+    bus.emit('game:changed', { what: 'edict-suggestion', id });
   },
   // 履职：回应一件公事（官制面板里的「应对」）
   duty(planId, response, opts) {

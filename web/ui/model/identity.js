@@ -14,7 +14,7 @@
 //   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
-//   docket   案头待批之件叫什么；props 案上器物的换法
+//   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
 
 const CHANNEL_KEYS = ['ling', 'pi', 'shu', 'jian', 'xing'];
 
@@ -29,7 +29,16 @@ export const PROFILES = {
     books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
     ledger: ['treasury', 'privy', 'census'], gauges: 'realm', map: 'realm',
-    docket: '奏疏', props: { seal: 'imperial', yellowMemorials: true }
+    docket: {
+      name: '奏疏', reply: '朱批', hint: '朱笔批注', empty: '案牍清净　百官无事启奏', excerpt: '摘入诏书',
+      sign: '{title}臣{name}谨奏', signBare: '{name}谨奏',
+      groups: { urgent: '急奏', pending: '启奏', held: '留中', done: '已批' },
+      // 抬头：称君上之词另起一行高出两格（双抬），称朝廷之词高出一格（单抬）
+      taitou: { double: ['皇上', '陛下', '圣上', '圣明', '圣恩', '圣裁', '圣躬', '天恩', '天颜', '宸衷', '宸断'], single: ['朝廷', '国家', '宗社', '社稷', '列祖', '祖宗', '天朝'] },
+      verdicts: [['approved', '准', '依议准行'], ['rejected', '驳', '不准所请'], ['annotated', '批', '朱笔示意'], ['held', '留中', '暂不发下'],
+        ['referred', '交部议', '着有司议处'], ['court_debate', '付廷议', '下廷臣会议'], ['summon', '召对', '召上奏者面询']]
+    },
+    props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
     name: '京官', room: 'ministry', desk: '公案', self: '本官', enter: '视事',
@@ -41,7 +50,13 @@ export const PROFILES = {
     books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
     tags: { memorials: '咨文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '部印' },
     ledger: ['purse', 'wealth'], gauges: 'self', map: 'seat',
-    docket: '公文', props: { seal: 'office', yellowMemorials: false }
+    docket: {
+      name: '公文', reply: '批语', hint: '批语', empty: '案上无待批公文',
+      excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
+      verdicts: [['approved', '准', '照准'], ['rejected', '驳', '驳回'], ['annotated', '批', '批示'], ['held', '存案', '暂存'],
+        ['referred', '转详', '转上官'], ['court_debate', '会议', '付堂议'], ['summon', '传见', '传来面询']]
+    },
+    props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
     name: '地方官', room: 'yamen', desk: '公案', self: '本官', enter: '视事',
@@ -53,7 +68,13 @@ export const PROFILES = {
     books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['册', '辖区册籍', 'registry'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
     tags: { memorials: '申文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '官印' },
     ledger: ['jurisdiction', 'purse', 'wealth'], gauges: 'self', map: 'jurisdiction',
-    docket: '申文', props: { seal: 'office', yellowMemorials: false }
+    docket: {
+      name: '申文', reply: '堂批', hint: '堂批', empty: '案上无待批申文',
+      excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
+      verdicts: [['approved', '准', '如详办理'], ['rejected', '驳', '驳令另议'], ['annotated', '批', '堂批'], ['held', '存案', '暂存'],
+        ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传讯', '传来面询']]
+    },
+    props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
     name: '不在官', room: 'study', desk: '书案', self: '', enter: '入座',
@@ -65,7 +86,12 @@ export const PROFILES = {
     books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['族', '家族', 'family'], ['产', '产业', 'estate'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
     tags: { memorials: '书札', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '书册', seal: '私印' },
     ledger: ['wealth'], gauges: 'self', map: 'home',
-    docket: '书札', props: { seal: 'private', yellowMemorials: false }
+    docket: {
+      name: '书札', reply: '批语', hint: '批语', empty: '案上无待办之事',
+      excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
+      verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
+    },
+    props: { seal: 'private', yellowMemorials: false }
   }
 };
 

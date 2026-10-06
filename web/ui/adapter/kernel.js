@@ -16,11 +16,33 @@ export async function waitKernel({ timeoutMs = 120000 } = {}) {
   }
 }
 
-// 老界面的样式表一律停用（新前端不受其全局选择器影响）
-export function disableLegacyStyles() {
-  for (const link of document.querySelectorAll('link[rel="stylesheet"]')) {
-    if (!link.dataset.newui) link.disabled = true;
+// 老界面的样式一律停用（新前端不受其全局选择器影响）：外链样式表，以及老代码插进页面的 <style>（主题配色、正文字体等，常带 !important）。
+// 新前端自己的认得出：外链带 data-newui，内联带 data-ui；index.html 开关那段隐去老 DOM 的样式以 html.tm-newui 起头，也留着。
+// 老代码换主题时会改写同一个 <style> 的内容（内容一改样式表重建、停用标记随之失效），所以盯着 <head> 随改随停
+const ours = (el) => !!(el.dataset.newui || el.dataset.ui || (el.tagName === 'STYLE' && /html\.tm-newui/.test(el.textContent || '')));
+function quiet(el) {
+  if (ours(el)) return;
+  if (el.tagName === 'STYLE' || (el.tagName === 'LINK' && el.rel === 'stylesheet')) {
+    el.disabled = true;
+    if (el.sheet) el.sheet.disabled = true;
   }
+}
+let styleWatch = null;
+export function disableLegacyStyles() {
+  document.querySelectorAll('link[rel="stylesheet"], style').forEach(quiet);
+  if (styleWatch) return;
+  styleWatch = new MutationObserver((records) => {
+    for (const r of records) {
+      const target = r.target.nodeType === 1 ? r.target : r.target.parentElement;
+      if (target && target.tagName === 'STYLE') quiet(target);
+      for (const n of r.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        quiet(n);
+        if (n.querySelectorAll) n.querySelectorAll('link[rel="stylesheet"], style').forEach(quiet);
+      }
+    }
+  });
+  styleWatch.observe(document.head, { childList: true, subtree: true, characterData: true });
 }
 
 // ---------- 换表现函数 ----------

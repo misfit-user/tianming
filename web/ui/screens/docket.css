@@ -1,0 +1,93 @@
+/* 批：案头待批之件。字层（.dk-fold）按像素排在 1180×780 的版面上，由单应变换贴到 3D 纸面；
+ * 它直接挂在根节点下（与舞台同一合成组），正片叠底才叠得到纸上。其余在 .scr-docket 里。 */
+
+/* ---------- 字层 ---------- */
+.dk-fold { position: fixed; left: 0; top: 0; z-index: 7; width: 1180px; height: 780px; box-sizing: border-box; transform-origin: 0 0; mix-blend-mode: multiply; color: var(--ink);
+  display: flex; flex-direction: row-reverse; padding: 46px 40px 40px; pointer-events: none; visibility: hidden; }
+.dk-fold.on { visibility: visible; }
+.dk-fold [hidden] { display: none !important; }              /* 下面各件写了 display，盖过 hidden 属性，须显式补 */
+.dk-fold .col { writing-mode: vertical-rl; }
+.dk-fold .hdr { flex: none; display: flex; flex-direction: column; align-items: center; gap: 12px; height: 100%; margin-left: 18px; }
+.dk-fold .hdr .from { font: 25px/44px var(--f-kai); letter-spacing: .2em; max-height: 450px; overflow: hidden; }
+.dk-fold .hdr .urg { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border: 1.5px solid var(--verm); color: var(--verm); font: 17px var(--f-kai); writing-mode: horizontal-tb; }
+.dk-fold .hdr .type { font: 15px/30px var(--f-kai); letter-spacing: .3em; color: var(--ink-soft); padding: 8px 0; border-top: 1px solid rgba(120, 90, 50, .35); border-bottom: 1px solid rgba(120, 90, 50, .35); }
+.dk-fold .hdr .note { font: 14px/30px var(--f-kai); letter-spacing: .2em; color: #8a2a1c; }
+.dk-fold .hdr .date { margin-top: auto; font: 15px/44px var(--f-kai); letter-spacing: .3em; color: var(--ink-soft); }
+.dk-fold .subject { flex: none; max-height: 100%; margin-left: 22px; font: 21px/44px var(--f-kai); letter-spacing: .14em; color: #3a2e22; }
+/* 正文：竖行自右向左；版心宽取整到整行，长折按版心翻 */
+.dk-fold .body { position: relative; flex: 1; min-width: 0; height: 100%; overflow: hidden; pointer-events: auto; cursor: text; user-select: text; }
+.dk-fold .flow { position: absolute; right: 0; top: 0; height: 100%; box-sizing: border-box; writing-mode: vertical-rl; font: 22px/44px var(--f-kai); letter-spacing: .1em;
+  padding-inline-start: 2.2em; transition: transform var(--t-3) var(--ease-out); }
+.dk-fold .flow p { margin: 0; }
+.dk-fold .flow p.tai2 { text-indent: -2.2em; }                   /* 双抬 */
+.dk-fold .flow p.tai1 { text-indent: -1.1em; }                   /* 单抬 */
+.dk-fold .flow ::selection { background: rgba(196, 150, 60, .35); }
+.dk-fold .rule { flex: none; width: 0; margin: 0 26px; border-left: 1px solid rgba(163, 40, 27, .5); }
+/* 批语：左幅，行书朱墨 */
+.dk-fold .pizhu { position: relative; flex: none; width: 300px; height: 100%; display: flex; flex-direction: row-reverse; gap: 14px; }
+.dk-fold .pizhu .lab { flex: none; align-self: flex-start; width: 30px; padding: 8px 0; writing-mode: vertical-rl; text-align: center; background: var(--verm); color: #f9ead2;
+  font: 14px var(--f-kai); letter-spacing: .3em; }
+.dk-fold .pizhu .ink { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; resize: none; overflow: hidden; background: transparent; pointer-events: auto;
+  writing-mode: vertical-rl; font: 34px/56px var(--f-xing); letter-spacing: .02em; color: #a8261a; caret-color: #a8261a; }
+.dk-fold .pizhu .ink::placeholder { color: rgba(168, 38, 26, .3); }
+.dk-fold .pizhu.want .lab { animation: dk-want .5s var(--ease-out); }
+@keyframes dk-want { 20%, 60% { transform: translateY(-6px); } 40%, 80% { transform: translateY(4px); } }
+/* 批过钤一方小印 */
+.dk-fold .pizhu .mark { position: absolute; left: 4px; bottom: 6px; padding: 6px 7px 5px; border: 3px solid #a8261a; border-radius: 3px; color: #a8261a; font: 30px/1 var(--f-seal);
+  letter-spacing: .05em; transform: rotate(-5deg); opacity: .88; }
+.dk-fold.stamped .pizhu .mark { animation: dk-stamp .5s var(--ease-out); }
+@keyframes dk-stamp { 0% { opacity: 0; transform: rotate(-5deg) scale(1.6); } 60% { opacity: 1; transform: rotate(-5deg) scale(.94); } 100% { transform: rotate(-5deg) scale(1); } }
+.dk-fold .empty { display: none; }
+.dk-fold.none > :not(.empty) { visibility: hidden; }
+.dk-fold.none .empty { display: grid; position: absolute; inset: 0; place-items: center; writing-mode: vertical-rl; font: 30px var(--f-kai); letter-spacing: .5em; color: var(--ink-soft); }
+
+/* ---------- 屏上 ---------- */
+.scr-docket { z-index: 8; }
+.scr-docket .crumb { position: fixed; left: 1.875rem; top: 1.625rem; display: flex; align-items: baseline; gap: .875rem; padding: .375rem .875rem; }
+.scr-docket .crumb b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .2em; }
+.scr-docket .crumb small { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ivory-soft); }
+.scr-docket .back { position: fixed; right: 1.875rem; top: 1.625rem; padding: .5rem 1.125rem .4375rem; }
+/* 折目：右列，按急、常、留中、已批分组 */
+.scr-docket .mbox { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 15rem; padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.scr-docket .mlist { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .875rem; }
+.scr-docket .mlist h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 .375rem; padding-bottom: .25rem; border-bottom: 1px solid var(--gold-line);
+  font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
+.scr-docket .mlist h4 small { font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--ivory-soft); }
+.scr-docket .mi { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; width: 100%; padding: .375rem .5rem; border: 0; border-left: 2px solid transparent;
+  background: transparent; color: var(--ivory); text-align: left; cursor: pointer; font-family: var(--f-kai); transition: background var(--t-1); }
+.scr-docket .mi b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }
+.scr-docket .mi small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
+.scr-docket .mi em { font: normal var(--fs-2)/1.2 var(--f-title); color: #e88a6c; padding: 0 .25rem; border: 1px solid rgba(232, 138, 108, .55); }
+.scr-docket .mi.urgent b { color: #f0a080; }
+.scr-docket .mi:hover { background: rgba(255, 230, 190, .06); }
+.scr-docket .mi.on { background: rgba(255, 230, 190, .11); border-left-color: var(--gold); }
+/* 签：案底一排竖写牙签，首枝朱红 */
+.scr-docket .slips { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: .875rem; }
+.scr-docket .slip { position: relative; width: 3rem; min-height: 5.75rem; padding: 1rem 0 .75rem; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
+  font: 400 var(--fs-6)/3rem var(--f-title); letter-spacing: .18em; color: var(--ink);
+  background: var(--paper-grain), linear-gradient(90deg, #d8c49c, #f4ecdb 45%, #d6c298); box-shadow: 0 .5rem 1.125rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(120, 90, 50, .4);
+  transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+.scr-docket .slip::before { content: ''; position: absolute; left: 50%; top: .375rem; width: .3125rem; height: .3125rem; margin-left: -.15625rem; border-radius: 50%; background: rgba(90, 60, 30, .7); }
+.scr-docket .slip.go { color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); box-shadow: 0 .625rem 1.375rem rgba(40, 10, 4, .55), inset 0 0 0 1px rgba(236, 210, 154, .6); }
+.scr-docket .slip.go::before { background: #e8c982; }
+.scr-docket .slip:hover:not(:disabled) { transform: translateY(-.25rem); }
+.scr-docket .slip.on { transform: translateY(-.75rem); box-shadow: 0 .75rem 1.5rem rgba(10, 5, 2, .6), 0 0 0 2px rgba(236, 210, 154, .75); }
+.scr-docket .slip:disabled { opacity: .45; cursor: default; }
+/* 翻折：纸两侧各一枚漆钮；版心下一行小字记第几折 */
+.scr-docket .turn { position: fixed; top: 50%; width: 2.75rem; height: 2.75rem; margin-top: -1.375rem; border: 1px solid var(--gold-line); border-radius: 50%; cursor: pointer;
+  background: radial-gradient(circle at 35% 30%, #3a2418, #160c07); color: var(--gold-hi); font: 400 1.75rem/1 var(--f-title); box-shadow: var(--sh-lift); }
+.scr-docket .turn.next { left: 15.5rem; }
+.scr-docket .turn.prev { right: 18.25rem; }
+.scr-docket .turn:disabled { opacity: .3; cursor: default; }
+.scr-docket .pagenote { position: fixed; left: 50%; top: 2.25rem; transform: translateX(-50%); font: var(--fs-2) var(--f-kai); letter-spacing: .3em; color: #fff3dc;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9); pointer-events: none !important; }
+/* 摘入：划选正文后浮出一枚牙牌 */
+.scr-docket .excerpt { position: fixed; left: 0; top: 0; opacity: 0; pointer-events: none !important; transition: opacity var(--t-1); cursor: pointer; }
+.scr-docket .excerpt.on { opacity: 1; pointer-events: auto !important; }
+/* 交部议：人选 */
+.pick-list.refer .pick-item { grid-template-columns: 3.75rem 1fr; align-items: center; }
+.pick-list.refer .q-zhou { width: 3.75rem; }
+
+/* 进出批阅：一层墨色薄幕 */
+.dk-veil { position: fixed; inset: 0; z-index: 40; background: #0c0603; opacity: 0; pointer-events: none; transition: opacity 260ms var(--ease-in-out); }
+.dk-veil.on { opacity: 1; pointer-events: auto; }

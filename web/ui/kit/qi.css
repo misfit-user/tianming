@@ -44,6 +44,8 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-tag { display: flex; align-items: center; white-space: nowrap; pointer-events: none; }
 .q-tag > i { position: relative; width: 1rem; height: 1.5px; background: var(--cinnabar); }
 .q-tag > i::before { content: ''; position: absolute; left: -.3125rem; top: -.4375rem; width: .9375rem; height: .9375rem; background: var(--panchang) center / contain no-repeat; }
+/* 指到器物上时，它那枚牙牌亮一下（器物即功能） */
+.q-tag.hot .q-yapai { background: linear-gradient(180deg, #fff7e6, #ecd9b0); box-shadow: var(--sh-lift), 0 0 0 1px rgba(236, 210, 154, .9), 0 0 .75rem rgba(255, 220, 150, .55); }
 
 /* ---------- 印：朱红方，白文 ---------- */
 .q-yin { display: grid; place-items: center; background: linear-gradient(180deg, #a52d1c, #7a1f13); color: #f7e8d2; font-family: var(--f-seal);

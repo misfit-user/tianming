@@ -5,12 +5,14 @@
 //   await game.advance({ court })           过回合（推演）；进度走 game:advance-progress
 //   game.saves.list() / save(name) / load(key)
 //   game.select.date() …                    读数快照
+//   game.config.saveAi(tier, 草稿) …        典章：AI 连接、体检、玩法开关、音量（adapter/config.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
 import { waitKernel, installKernelBridge, disableLegacyStyles } from './kernel.js';
 import * as select from './select.js';
+import * as config from './config.js';
 
 const w = window;
 let ready = null;
@@ -185,7 +187,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, saves, act, select, perspective, setViewAs,
+  boot, scenarios, newGame, advance, saves, act, select, config, perspective, setViewAs,
   get viewAs() { return viewAs; },
   on: (name, fn) => bus.on(name, fn),
   once: (name, fn) => bus.once(name, fn),

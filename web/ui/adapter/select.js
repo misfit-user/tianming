@@ -384,6 +384,19 @@ export function issues(limit = 3) {
   }));
 }
 
+// 天下大势（开局一览）：势力格局、显著矛盾、本人处境。与老界面 _showSituationOverview 同取法
+export function situation() {
+  const g = G();
+  const gpi = g.playerInfo || {};
+  const pi = { ...((w.P && w.P.playerInfo) || {}), ...Object.fromEntries(Object.entries(gpi).filter(([, v]) => v !== '' && v != null)) };
+  return {
+    factions: (g.facs || []).filter(Boolean).map((f) => ({ name: f.name || '', strength: Math.round(num(f.strength, 50)), leader: String(f.leader || '').split(/[（(]/)[0].trim().slice(0, 16), isPlayer: !!f.isPlayer }))
+      .sort((a, b) => (b.isPlayer - a.isPlayer) || (b.strength - a.strength)),
+    contradictions: (Array.isArray(pi.coreContradictions) ? pi.coreContradictions : []).filter(Boolean).map((c) => ({ title: c.title || '', parties: c.parties || '', dimension: c.dimension || '' })),
+    player: { name: pi.characterName || '', title: pi.characterTitle || '', faction: pi.factionName || '', goal: pi.factionGoal || '' }
+  };
+}
+
 // 史官实录：回合史记（GM.shijiHistory，每回合一条）。目录与单条全文
 const txt = (v) => (v == null ? '' : typeof v === 'string' ? v : String(v));
 function lineOf(x) {

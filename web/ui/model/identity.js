@@ -14,6 +14,7 @@
 //   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
+//   guide    进局「临朝须知」几条：[题, 说]
 //   annals   史记那一卷：卷名、令的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
@@ -43,6 +44,9 @@ export const PROFILES = {
     issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
     urgentAck: '朕已知晓',
     annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书' },
+    guideTitle: '临朝须知',
+    guide: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
+      ['召对朝议', '与群臣议事问对，听取异见。'], ['推演', '顶栏「推演」推进时局——AI 演绎天下对这一朝的反应。']],
     props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
@@ -64,6 +68,8 @@ export const PROFILES = {
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
     urgentAck: '知道了',
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
+    guideTitle: '视事须知',
+    guide: [['案头要事', '先看案上公文与要事。'], ['行文', '笔砚行文，上奏下札。'], ['推演', '顶栏「推演」推进时局。']],
     props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
@@ -85,6 +91,8 @@ export const PROFILES = {
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
     urgentAck: '知道了',
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
+    guideTitle: '视事须知',
+    guide: [['案头要事', '先看案上申文与要事。'], ['行文', '笔砚行文，札付告示。'], ['推演', '顶栏「推演」推进时局。']],
     props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
@@ -105,6 +113,8 @@ export const PROFILES = {
     issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
     urgentAck: '知道了',
     annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令' },
+    guideTitle: '入座须知',
+    guide: [['家事乡事', '先看案上书札与家事。'], ['书信', '信匣往还，结交师友。'], ['推演', '顶栏「推演」推进时局。']],
     props: { seal: 'private', yellowMemorials: false }
   }
 };

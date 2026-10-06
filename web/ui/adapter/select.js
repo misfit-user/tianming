@@ -40,6 +40,14 @@ export function date() {
   }
   const txt = fn('getTSText');
   out.text = txt ? String(txt(turn)) : '';
+  // 节气、物候（内核按日期推，与老顶栏同源）；天象取首个在发的灾异
+  try {
+    const sf = fn('_tmSeasonFromDate');
+    const w8 = sf && calc ? sf(calc(turn)) : null;
+    if (w8) { out.term = w8.name || ''; out.phenology = w8.description || ''; }
+  } catch (_e) { /* 推不出就不写 */ }
+  const dis = Array.isArray(g.activeDisasters) && g.activeDisasters[0];
+  out.omen = dis ? dis.name || dis.type || '' : '';
   out.daysPerTurn = num(w.P && w.P.time && w.P.time.daysPerTurn, 30);
   return out;
 }

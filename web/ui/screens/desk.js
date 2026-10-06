@@ -4,8 +4,8 @@
 // 数据一律经 game（适配层）取；动作未接上的牌子先展一卷「在建」说明。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num } from '../core/numerals.js';
-import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag } from '../kit/index.js';
+import { num, yearNum } from '../core/numerals.js';
+import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag, tiao } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
@@ -42,6 +42,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 顶栏 ----------
   const dyn = h('div.q-yin.dyn', '');
   const time = clock({ onSettle: () => confirmAdvance() });
+  // 时历小笺：指到日期上展开——主历、公元、岁次、时令、日辰、节气、物候、天象、回合
+  tiao(time.querySelector('.date'), () => {
+    const d = game.select.date();
+    const rows = [['主历', d.text], ['公元', d.year != null ? `${d.year < 0 ? '前' : ''}${yearNum(d.year)}年` : ''], ['岁次', d.ganzhi && d.ganzhi + '年'],
+      ['时令', d.season], ['日辰', d.dayGanzhi && d.dayGanzhi + '日'], ['节气', d.term], ['物候', d.phenology], ['天象', d.omen || '风调雨顺'], ['回合', `第${num(d.turn)}回合`]];
+    return { title: '时历', text: rows.filter(([, v]) => v).map(([k, v]) => `${k}　${v}`).join('\n') };
+  });
   const ledger = h('div.ledger');
   const gauges = h('div.gauges');
   const tools = h('div.tools',

@@ -14,6 +14,7 @@
 //   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
+//   ling     「令」那一页：纸面（silk 黄绫诏卷／paper 素纸）、议事清册、行止、私行、润色、颁行、档案诸名目，五类的提示，颁行前三种说法
 //   guide    进局「临朝须知」几条：[题, 说]
 //   annals   史记那一卷：卷名、令的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
@@ -47,6 +48,13 @@ export const PROFILES = {
     guideTitle: '临朝须知',
     guide: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
       ['召对朝议', '与群臣议事问对，听取异见。'], ['推演', '顶栏「推演」推进时局——AI 演绎天下对这一朝的反应。']],
+    ling: {
+      surface: 'silk', suggest: '议事清册', conduct: '主角行止', conductHint: '此期所为——如召见某臣、校阅三军、微服私访、祖庙祭祀……',
+      private: '帝王私行', privateNote: '至多三项，后果由推演定', polish: '有司润色', promulgate: '钤玺颁行', archive: '往期诏令', done: '已颁之诏',
+      empty: '今日无事，不如休息一番？天下太平，何必事事操心。', ready: '诏令已拟，是否颁行天下？', idle: '不理朝政，只顾享乐——如此甚好！',
+      hints: { political: '诏谕天下，如：改革官制、降旨安抚、任免官员……', military: '调兵遣将，如：调动军队、加强边防、讨伐叛贼……',
+        diplomatic: '纵横捭阖，如：遣使和亲、结盟讨伐、册封藩属……', economic: '经纶民生，如：减税轻赋、开仓放粮、兴修水利……', other: '其他旨意，如：大赦天下、科举取士、建造宫殿……' }
+    },
     props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
@@ -70,6 +78,11 @@ export const PROFILES = {
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
     guideTitle: '视事须知',
     guide: [['案头要事', '先看案上公文与要事。'], ['行文', '笔砚行文，上奏下札。'], ['推演', '顶栏「推演」推进时局。']],
+    ling: {
+      surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '用印发文', archive: '往期公文', done: '已发之文',
+      empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
+      hints: { political: '题奏、咨文……', military: '', diplomatic: '', economic: '', other: '' }
+    },
     props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
@@ -93,6 +106,11 @@ export const PROFILES = {
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
     guideTitle: '视事须知',
     guide: [['案头要事', '先看案上申文与要事。'], ['行文', '笔砚行文，札付告示。'], ['推演', '顶栏「推演」推进时局。']],
+    ling: {
+      surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '用印发文', archive: '往期公文', done: '已发之文',
+      empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
+      hints: { political: '札付、牌票、告示……', military: '', diplomatic: '', economic: '', other: '' }
+    },
     props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
@@ -115,6 +133,11 @@ export const PROFILES = {
     annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令' },
     guideTitle: '入座须知',
     guide: [['家事乡事', '先看案上书札与家事。'], ['书信', '信匣往还，结交师友。'], ['推演', '顶栏「推演」推进时局。']],
+    ling: {
+      surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '钤印封缄', archive: '往期书札', done: '已发之札',
+      empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
+      hints: { political: '家令、公呈……', military: '', diplomatic: '', economic: '', other: '' }
+    },
     props: { seal: 'private', yellowMemorials: false }
   }
 };

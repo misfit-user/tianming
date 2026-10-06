@@ -1,0 +1,71 @@
+/* 令：黄绫诏卷。字层（.ed-fold）按像素排在 1180×780 的版面，贴到绫面；挂在根节点下，与舞台同一合成组 */
+.ed-fold { position: fixed; left: 0; top: 0; z-index: 7; width: 1180px; height: 780px; box-sizing: border-box; transform-origin: 0 0; mix-blend-mode: multiply; color: #2a1608;
+  display: flex; flex-direction: row-reverse; gap: 18px; padding: 86px 92px 80px; pointer-events: none; visibility: hidden; }
+.ed-fold.on { visibility: visible; }
+/* 诏首：右起，大字 */
+.ed-head { flex: none; display: flex; flex-direction: row-reverse; gap: 6px; }
+.ed-head span { writing-mode: vertical-rl; font: 44px/58px var(--f-title); letter-spacing: .18em; color: #2a1608; }
+/* 五段：每段一枚朱签题、一格竖写；当前在写的那段展宽 */
+.ed-secs { flex: 1; min-width: 0; display: flex; flex-direction: row-reverse; gap: 10px; }
+.ed-sec { position: relative; flex: 1 1 0; min-width: 64px; display: flex; flex-direction: row-reverse; gap: 6px; transition: flex-grow var(--t-3) var(--ease-out); }
+.ed-tag { flex: none; align-self: flex-start; width: 26px; padding: 6px 0; border: 0; cursor: pointer; pointer-events: auto; writing-mode: vertical-rl; letter-spacing: .3em;
+  font: 15px var(--f-kai); color: #f9ead2; background: rgba(150, 30, 18, .82); }
+.ed-sec:not(.focus):not(.filled) .ed-tag { background: rgba(150, 30, 18, .45); }
+.ed-ta { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; resize: none; overflow: hidden; background: transparent; pointer-events: auto;
+  writing-mode: vertical-rl; font: 21px/38px var(--f-kai); letter-spacing: .08em; color: #2a1608; caret-color: #8a1a10; }
+.ed-sec:not(.focus) .ed-ta { overflow: hidden; }
+.ed-sec.focus .ed-ta { overflow-x: auto; }
+.ed-ta::placeholder { color: rgba(90, 60, 20, .35); }
+.ed-date { flex: none; writing-mode: vertical-rl; align-self: flex-end; font: 16px/30px var(--f-kai); letter-spacing: .3em; color: rgba(60, 36, 12, .8); }
+
+/* ---------- 屏上 ---------- */
+.scr-edict { z-index: 8; }
+.scr-edict .crumb { position: fixed; left: 1.875rem; top: 1.625rem; display: flex; align-items: baseline; gap: .875rem; padding: .375rem .875rem; }
+.scr-edict .crumb b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .2em; }
+.scr-edict .crumb small { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ivory-soft); }
+.scr-edict .back { position: fixed; right: 1.875rem; top: 1.625rem; padding: .5rem 1.125rem .4375rem; }
+/* 左列：议事清册 */
+.ed-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 15.5rem; padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.ed-sugs { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .5rem; }
+.ed-sug { display: flex; flex-direction: column; gap: .125rem; padding: .5rem .625rem; border: 0; text-align: left; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
+  background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: var(--sh-lift); transition: transform var(--t-1); }
+.ed-sug:hover { transform: translateX(.25rem); }
+.ed-sug small { font-size: var(--fs-1); color: #8a2a1c; letter-spacing: .08em; }
+.ed-sug span { font-size: var(--fs-2); line-height: 1.6; }
+.ed-none { margin: 1rem 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ivory-soft); letter-spacing: .06em; }
+/* 右列：行止、私行、档案 */
+.ed-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 17rem; padding: .75rem .875rem .875rem; display: flex; flex-direction: column; gap: .5rem; overflow: auto; }
+.ed-right h4 { margin: .25rem 0 0; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
+.ed-conduct { min-height: 6.5rem; padding: .5rem .625rem; border: 0; outline: 0; resize: vertical; font: var(--fs-2)/1.8 var(--f-kai); color: var(--ink);
+  background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.ed-privhead { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+.ed-privhead small { font-size: var(--fs-1); color: var(--ivory-soft); }
+.ed-priv { display: flex; flex-wrap: wrap; gap: .3125rem; }
+.ed-priv button { padding: .0625rem .5rem; border: 0; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--ivory); background: rgba(255, 230, 190, .07); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .3); }
+.ed-priv button.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
+.ed-done h4 { color: #e88a6c; }
+.ed-done p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory); }
+.ed-rbtn { margin-top: auto; padding-top: .5rem; }
+.ed-rbtn .q-yapai { cursor: pointer; }
+/* 案底：文风、润色、颁行 */
+.ed-bar { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: .875rem; }
+.ed-style { align-self: center; margin-right: .5rem; }
+.scr-edict .slip { position: relative; width: 3rem; min-height: 6.5rem; padding: 1rem 0 .75rem; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
+  font: 400 var(--fs-5)/3rem var(--f-title); letter-spacing: .18em; color: var(--ink);
+  background: var(--paper-grain), linear-gradient(90deg, #d8c49c, #f4ecdb 45%, #d6c298); box-shadow: 0 .5rem 1.125rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(120, 90, 50, .4);
+  transition: transform var(--t-2) var(--ease-out); }
+.scr-edict .slip.go { color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); box-shadow: 0 .625rem 1.375rem rgba(40, 10, 4, .55), inset 0 0 0 1px rgba(236, 210, 154, .6); }
+.scr-edict .slip:hover:not(:disabled) { transform: translateY(-.25rem); }
+.scr-edict .slip:disabled { opacity: .5; cursor: default; }
+/* 润色稿与往期档案（在展卷里） */
+.ed-lead { margin: 0 0 .5rem; font-size: var(--fs-2); color: var(--ink-faint); }
+.ed-polished { width: 100%; min-height: 24rem; padding: .75rem 1rem; border: 0; outline: 0; resize: vertical; box-sizing: border-box; font: var(--fs-4)/2 var(--f-kai); color: var(--ink);
+  background: rgba(233, 199, 102, .18); box-shadow: inset 0 0 0 1px rgba(150, 96, 22, .4); }
+.ed-arch { display: flex; flex-direction: column; gap: .75rem; }
+.ed-arch article { padding-bottom: .625rem; border-bottom: 1px dashed rgba(120, 90, 50, .25); }
+.ed-arch header { display: flex; align-items: baseline; gap: .75rem; }
+.ed-arch header b { font: 400 var(--fs-4) var(--f-title); color: var(--verm); letter-spacing: .15em; }
+.ed-arch header small { font-size: var(--fs-1); color: var(--ink-faint); }
+.ed-arch header em { font: normal var(--fs-1) var(--f-kai); padding: 0 .375rem; color: #2f6b55; border: 1px solid rgba(58, 125, 103, .45); }
+.ed-arch p { margin: .25rem 0 0; font-size: var(--fs-3); line-height: 1.85; white-space: pre-wrap; }
+.ed-arch p.fb { color: var(--ink-soft); font-size: var(--fs-2); }

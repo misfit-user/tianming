@@ -182,7 +182,10 @@ const TAKEN = new Set(['tm-newui-root', '_situationModal', 'tm-nokey-banner', 't
 function blocking(n) {
   if (/generic-modal-overlay|modal-overlay|-overlay\b/.test(String(n.className || ''))) return true;
   const s = n.style;
-  return s && s.position === 'fixed' && (Number(s.zIndex) >= 1000 || s.inset === '0px' || (s.top === '0px' && s.left === '0px'));
+  if (!s || s.position !== 'fixed') return false;
+  // 只认铺满全屏的遮罩（inset:0，或四边贴齐），别把老界面的浮钮、角落提示也挪进来
+  const full = (v) => v === '100%' || v === '100vw' || v === '100vh';
+  return s.inset === '0px' || (s.top === '0px' && s.left === '0px' && (s.right === '0px' || full(s.width)) && (s.bottom === '0px' || full(s.height)));
 }
 function watchLegacyOverlays() {
   const mo = new MutationObserver((list) => {

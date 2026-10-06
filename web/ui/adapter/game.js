@@ -6,6 +6,7 @@
 //   game.saves.list() / save(name) / load(key)
 //   game.select.date() …                    读数快照
 //   game.config.saveAi(tier, 草稿) …        典章：AI 连接、体检、玩法开关、音量（adapter/config.js）
+//   game.edict.setDraft({ political }) …    诏书草稿、议事清册、私行、润色（adapter/edict.js）；推演前自动写进内核
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -13,6 +14,7 @@ import { bus } from '../core/bus.js';
 import { waitKernel, installKernelBridge, disableLegacyStyles } from './kernel.js';
 import * as select from './select.js';
 import * as config from './config.js';
+import * as edict from './edict.js';
 
 const w = window;
 let ready = null;
@@ -84,9 +86,12 @@ async function advance({ court = false } = {}) {
     throw Object.assign(new Error('未设置 AI 密钥'), { shown: true });   // 已提示过，调用方不必再报
   }
   bus.emit('game:advance-start', { turn: g.turn });
+  const before = g.turn;
+  edict.inject();                                   // 新前端的诏书草稿此刻才写进内核读取处
   try {
     await w._endTurnInternal({ postTurnCourt: !!court });
   } finally {
+    if (w.GM && w.GM.turn > before) edict.clearDraft();   // 推进成功即已颁行；没推进（出错回滚）草稿留着
     bus.emit('game:advanced', { turn: w.GM && w.GM.turn });
   }
 }
@@ -187,7 +192,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, saves, act, select, config, perspective, setViewAs,
+  boot, scenarios, newGame, advance, saves, act, select, config, edict, perspective, setViewAs,
   get viewAs() { return viewAs; },
   on: (name, fn) => bus.on(name, fn),
   once: (name, fn) => bus.once(name, fn),

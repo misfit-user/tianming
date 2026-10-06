@@ -149,6 +149,54 @@ export function brocadeTexture(ground = '#7c1f14', gold = '#d7b060') {
   }, { repeat: [1, 1] });
 }
 
+// 黄绫诏书：明黄地、细织纹与一层缎光，四周一道织金团云边（字由页面 DOM 叠上去）。宽高比约 1.52，与摊开的诏卷同
+export function silkScrollTexture() {
+  return canvasTexture(2048, 1352, (g, w, h) => {
+    const r = rand(29);
+    const base = g.createLinearGradient(0, 0, 0, h);
+    base.addColorStop(0, '#e9c766');
+    base.addColorStop(0.5, '#e2bb52');
+    base.addColorStop(1, '#d8ae44');
+    g.fillStyle = base;
+    g.fillRect(0, 0, w, h);
+    // 缎光：斜向一道宽而淡的亮带
+    const sheen = g.createLinearGradient(0, 0, w, h);
+    sheen.addColorStop(0.25, 'rgba(255,248,220,0)');
+    sheen.addColorStop(0.45, 'rgba(255,248,220,0.16)');
+    sheen.addColorStop(0.6, 'rgba(255,248,220,0)');
+    g.fillStyle = sheen;
+    g.fillRect(0, 0, w, h);
+    // 织纹：经纬细线
+    g.fillStyle = '#7a5410';
+    g.globalAlpha = 0.06;
+    for (let y = 0; y < h; y += 3) g.fillRect(0, y, w, 1);
+    g.globalAlpha = 0.035;
+    for (let x = 0; x < w; x += 3) g.fillRect(x, 0, 1, h);
+    g.globalAlpha = 1;
+    // 纤维浓淡
+    for (let i = 0; i < 1400; i++) {
+      g.fillStyle = `rgba(${r() < 0.5 ? '120,80,20' : '255,240,200'},${0.03 + r() * 0.04})`;
+      g.fillRect(r() * w, r() * h, 20 + r() * 90, 1 + r() * 1.5);
+    }
+    // 织金团云边
+    const band = Math.round(h * 0.075);
+    g.fillStyle = 'rgba(150,96,22,0.55)';
+    for (const [x, y, bw, bh] of [[0, 0, w, band], [0, h - band, w, band], [0, 0, band, h], [w - band, 0, band, h]]) g.fillRect(x, y, bw, bh);
+    g.strokeStyle = 'rgba(250,224,150,0.85)';
+    g.lineWidth = 2.5;
+    const step = band * 1.6;
+    const motif = (cx, cy) => { g.beginPath(); g.arc(cx, cy, band * 0.3, 0, Math.PI * 2); g.stroke(); cloud(g, cx, cy - 2, band * 0.12); };
+    for (let x = band / 2; x < w; x += step) { motif(x, band / 2); motif(x, h - band / 2); }
+    for (let y = band / 2 + step; y < h - step / 2; y += step) { motif(band / 2, y); motif(w - band / 2, y); }
+    // 边内两道细金线
+    g.strokeStyle = 'rgba(140,90,20,0.7)';
+    g.lineWidth = 3;
+    g.strokeRect(band + 10, band + 10, w - 2 * band - 20, h - 2 * band - 20);
+    g.lineWidth = 1.5;
+    g.strokeRect(band + 22, band + 22, w - 2 * band - 44, h - 2 * band - 44);
+  });
+}
+
 // 绫（舆图裱边）：浅米色，同色暗花云纹，只在光下隐约可见
 export function damaskTexture(ground = '#d9ccad') {
   return canvasTexture(512, 512, (g, w, h) => {

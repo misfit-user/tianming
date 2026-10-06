@@ -6,7 +6,7 @@ import { buildWindow, loadRoom, buildCouplets, plaqueMap, coupletMap, sunVector,
 import { createPost, createDust, createSmoke } from './fx.js';
 import { loadProps, PLACE } from './props.js';
 import { SHOTS } from './shots.js';
-import { damaskTexture, paperTexture, wrapCanvas } from './textures.js';
+import { damaskTexture, paperTexture, silkScrollTexture, wrapCanvas } from './textures.js';
 import { titleScrollCanvases } from '../../kit/brush.js';
 import { quality } from '../../core/quality.js';
 import { cachedCanvases } from '../../core/texcache.js';
@@ -342,22 +342,45 @@ export async function createStudyView(stage, {
     old?.dispose();
   }
 
-  // 批奏疏时摊开的奏折（素纸面，经折装折痕一峰一谷交替；字由页面 DOM 叠上去）
+  // 案上摊开的一件：奏折（素纸面，经折装折痕一峰一谷交替）或诏卷（surface:'silk'，黄绫平展、两端卷轴）；字由页面 DOM 叠上去
   let paper = null, paperSpec = null;
   function setMemorialPaper(spec) {
-    if (paper) { scene.remove(paper); paper.geometry.dispose(); paper.material.dispose(); paper = null; }
+    if (paper) {
+      scene.remove(paper);
+      paper.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.map?.dispose(); o.material.dispose(); } });
+      paper = null;
+    }
     paperSpec = spec;
     if (!spec) return;
-    const { w, h, x = 0, z = 0, rot = 0, panels = 6 } = spec;
-    const g = new THREE.PlaneGeometry(w, h, panels * 4, 1);
+    const { w, h, x = 0, z = 0, rot = 0, panels = 6, surface = 'paper' } = spec;
+    const silk = surface === 'silk';
+    const g = new THREE.PlaneGeometry(w, h, silk ? 1 : panels * 4, 1);
     const pp = g.attributes.position;
-    for (let i = 0; i < pp.count; i++) {
-      const u = (pp.getX(i) / w + 0.5) * panels;
-      pp.setZ(i, Math.abs((u % 2) - 1) * 7);
+    if (!silk) {
+      for (let i = 0; i < pp.count; i++) {
+        const u = (pp.getX(i) / w + 0.5) * panels;
+        pp.setZ(i, Math.abs((u % 2) - 1) * 7);
+      }
     }
     g.computeVertexNormals();
-    paper = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: paperTexture('#e2d0a8', 17), roughness: 0.9 }));
-    paper.material.map.repeat.set(3, 2);
+    paper = new THREE.Mesh(g, new THREE.MeshStandardMaterial(silk ? { map: silkScrollTexture(), roughness: 0.48, metalness: 0.05 } : { map: paperTexture('#e2d0a8', 17), roughness: 0.9 }));
+    if (!silk) paper.material.map.repeat.set(3, 2);
+    if (silk) {
+      // 卷轴：深色木杆，两头青玉轴头；挂在绫的局部坐标里（绫面在 XY，杆顺 Y）
+      const wood = new THREE.MeshStandardMaterial({ color: 0x3a2214, roughness: 0.38 });
+      const jade = new THREE.MeshStandardMaterial({ color: 0x9fb89a, roughness: 0.25 });
+      for (const sx of [-1, 1]) {
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(15, 15, h + 30, 24), wood);
+        rod.position.set(sx * (w / 2 + 12), 0, 15);
+        for (const sy of [-1, 1]) {
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(17, 17, 26, 24), jade);
+          cap.position.set(0, sy * (h / 2 + 28), 0);
+          rod.add(cap);
+        }
+        rod.traverse((o) => { o.castShadow = o.receiveShadow = true; });
+        paper.add(rod);
+      }
+    }
     paper.rotation.x = -Math.PI / 2;
     paper.rotation.z = rot;
     paper.position.set(x, 4, z);

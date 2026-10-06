@@ -11,6 +11,7 @@ import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
+import { createEdict } from './edict.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
@@ -301,12 +302,26 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function confirmAdvance() {
     if (readOnly()) return;
     const d = game.select.date();
+    const t = prof.ling;
+    const E = game.edict;
+    const dr = E.draft();
+    const filled = E.CATS.filter(([k]) => String(dr[k] || '').trim()).map(([, , label]) => label);
+    const priv = E.privateActs().filter((a) => a.on).map((a) => a.name);
+    const done = E.promulgated().length;
+    const docket = per.tier === 'sovereign' ? game.select.memorials().length : 0;
+    const lead = filled.length || done ? t.ready : priv.length && t.idle ? t.idle : t.empty;
+    const line = (text, faint) => h('p', { style: { margin: '.375rem 0 0', ...(faint ? { color: 'var(--ink-faint)', fontSize: 'var(--fs-2)' } : {}) } }, text);
     juan({
-      title: '推演', note: `第${num(d.turn)}回合`, width: '34rem',
+      title: '推演', note: `第${num(d.turn)}回合`, width: '36rem',
       content: h('div', { style: { lineHeight: 2 } },
-        h('p', { style: { margin: 0 } }, `将此期所为付诸推演：自${d.text || '今日'}起，${num(d.daysPerTurn)}日之间天下之变，由推演落定。`),
-        h('p', { style: { margin: '.5rem 0 0', color: 'var(--ink-faint)', fontSize: 'var(--fs-2)' } }, '推演一回约需数分钟（视 AI 应答快慢）。')),
-      actions: [{ label: '静候推演', onclick: ({ close }) => { close('ok'); runAdvance(); } }]
+        h('p', { style: { margin: 0, font: '400 var(--fs-5) var(--f-title)', letterSpacing: '.1em' } }, lead),
+        filled.length ? line(`已拟：${filled.join('、')}`) : null,
+        done ? line(`${t.done}：${num(done)}道，整篇并入`) : null,
+        priv.length ? line(`${t.private}：${priv.join('、')}`) : null,
+        dr.xinglu && dr.xinglu.trim() ? line(`${t.conduct}：${dr.xinglu.trim().slice(0, 40)}${dr.xinglu.trim().length > 40 ? '……' : ''}`) : null,
+        docket ? line(`尚有${num(docket)}件${prof.docket.name}未批`, true) : null,
+        line(`自${d.text || '今日'}起，${num(d.daysPerTurn)}日之间天下之变，由推演落定。推演一回约需数分钟（视 AI 应答快慢）。`, true)),
+      actions: [{ label: t.promulgate, onclick: ({ close }) => { close('ok'); runAdvance(); } }]
     });
   }
   async function runAdvance() {
@@ -346,6 +361,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function onChannel(c) {
     if (readOnly()) return;
     if (c.key === 'pi' && per.tier === 'sovereign') return openDocket();   // 案头待批：眼下内核只有元首的奏疏
+    if (c.key === 'ling' && per.tier === 'sovereign') return openEdict();   // 撰写：眼下内核只收元首的诏令
     building(c.title, c.sub);
   }
   function onProp(name) {
@@ -361,12 +377,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   const issues = createIssues({ game, profile: () => prof });
   const atlas = createAtlas({ root, game });
+  const edictPage = createEdict({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onPromulgate: () => confirmAdvance() });
+  function openEdict() {
+    el.classList.remove('on');
+    edictPage.open();
+  }
   function openDocket(id) {
     el.classList.remove('on');
     docket.open(id);
   }
   function onSeal() {
     if (readOnly()) return;
+    if (per.tier === 'sovereign') return confirmAdvance();             // 用印即交出本期所拟、付诸推演
     building(prof.seal.title, prof.seal.note);
   }
   function saveDialog() {

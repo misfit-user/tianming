@@ -13,6 +13,7 @@ import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
+import { openAllVars } from './allvars.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 
@@ -46,7 +47,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     btn('存', { title: '封存此卷', onclick: () => saveDialog() }),
     btn('典', { title: '典章', onclick: () => openSettings() }),
     btn('问', { title: '问天', onclick: () => building('问天', '问天控制台') }),
-    btn('总', { title: '全部变量', onclick: () => building('全部变量', '诸般数目') }));
+    btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }));
   const topbar = h('header.topbar', dyn, time, ledger, gauges, tools);
 
   // ---------- 左列 ----------

@@ -409,6 +409,32 @@ export function characters({ limit = 0 } = {}) {
   return limit ? list.slice(0, limit) : list;
 }
 
+// 全部变量：剧本编辑器定义的（P.variables，取运行时值）与运行时另起的（GM.vars）。与老面板 _renderAllVarsBody 同取法
+function plainValue(v) {
+  if (v == null) return '—';
+  if (typeof v === 'object') {
+    const unit = v.unit ? String(v.unit) : '';
+    if (v.value !== undefined) return plainValue(v.value) + unit;
+    if (v.current !== undefined) return plainValue(v.current) + unit;
+    if (v.amount !== undefined) return plainValue(v.amount) + unit;
+    if (v.name) return String(v.name);
+    try { return JSON.stringify(v); } catch (_e) { return '—'; }
+  }
+  return String(v);
+}
+export function allVariables() {
+  const defs = (w.P && Array.isArray(w.P.variables)) ? w.P.variables : [];
+  const live = G().vars || {};
+  const descOf = (v) => (v && (v.description || v.desc || v.note || v.summary)) || '';
+  const scenario = defs.map((v) => ({
+    key: v.name || '', label: v.displayName || v.label || v.name || '未命名', desc: descOf(v),
+    value: plainValue(live[v.name] !== undefined ? live[v.name] : v.value !== undefined ? v.value : v.initial)
+  }));
+  const known = new Set(defs.map((v) => v.name));
+  const runtime = Object.keys(live).filter((k) => !known.has(k)).map((k) => ({ key: k, label: (live[k] && live[k].displayName) || k, desc: descOf(live[k]), value: plainValue(live[k]) }));
+  return { scenario, runtime };
+}
+
 // 人物志（图志册页）：每人一条小传所需——身份、才具、五常、名望、特质、关系、处境。与老人物志卡片同取法（tm-renwu-ui.js）
 // 品级：正一品=1、从一品=2 … 从九品=18；解不出为 99
 const RANK_RE = /([正从])([一二三四五六七八九])品/;

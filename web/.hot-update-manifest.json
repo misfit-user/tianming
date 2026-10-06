@@ -3206,8 +3206,8 @@
     },
     {
       "path": "index.html",
-      "sha256": "1ec31da51732c1f1295213a311e06ccbf58d347a485545a41e972dc9bc1ba581",
-      "size": 78434
+      "sha256": "5a4f639ed0a90c8aaeb923d2db72508a66d7981577dcf601832fdd5039354be2",
+      "size": 78670
     },
     {
       "path": "INDEX.md",
@@ -6671,8 +6671,8 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "63d186dcba52a2b3bb09e99c4c07609d3e99c2aef4d369391ba0fd2608aa441d",
-      "size": 138846
+      "sha256": "fdab717312a647ea88eeb16aefbfde435fff1463d8b54c3542ef3532679a35e9",
+      "size": 140397
     },
     {
       "path": "tm-start-selector.js",

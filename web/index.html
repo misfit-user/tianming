@@ -61,14 +61,18 @@
 })();
 </script>
 <!-- 新前端（整体重做·开发中）：带 ?ui=new 或 localStorage tm_ui=new 时启用，内核照旧载入、老界面隐去；
-     整体切换前默认关，玩家无感。见 docs/newui-foundation-20261005/plan.md -->
-<script type="importmap">{ "imports": { "three": "./vendor/three/three.module.js", "three/addons/": "./vendor/three/addons/" } }</script>
+     整体切换前默认关，玩家无感。见 docs/newui-foundation-20261005/plan.md
+     导入映射（three）开了才动态插入：页内不能写 type="importmap" 的 script，原生预备清单只认普通脚本 -->
 <script>
 (function () {
   var on = false;
   try { on = /[?&]ui=new(&|$)/.test(location.search) || localStorage.getItem('tm_ui') === 'new'; } catch (_e) { on = false; }
   if (!on) return;
   window.TM_NEW_UI = true;
+  var im = document.createElement('script');
+  im.type = 'importmap';
+  im.textContent = JSON.stringify({ imports: { three: './vendor/three/three.module.js', 'three/addons/': './vendor/three/addons/' } });
+  document.head.appendChild(im);
   document.documentElement.classList.add('tm-newui');
   var st = document.createElement('style');
   st.textContent = 'html.tm-newui body > *:not(#tm-newui-root){display:none!important}html.tm-newui,html.tm-newui body{background:#120a06}';

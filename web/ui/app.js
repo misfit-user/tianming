@@ -1,4 +1,4 @@
-// 应用壳：载入（先在显卡上算舆图地形场，再起书房、舆图）→ 启幕 → 開卷／續卷 → 御案 ⇄ 舆图。
+// 应用壳：载入（先在显卡上算舆图地形场，再起书房、舆图）→ 启幕 → 開卷／續卷 → 书案 ⇄ 舆图。
 // 舞台唯一；屏与屏之间只切 DOM 层与镜头。数据与动作一律经 game（适配层）。
 import { h } from './core/dom.js';
 import { resolveQuality } from './core/quality.js';
@@ -53,6 +53,9 @@ export async function startApp(root) {
   load.set('就 绪', 1);
   load.sub('');
 
+  // 开发用「借视角」：?as=人名，以此人的身份看书案（只换界面所见，内核照旧；见 ui/model/identity.js）
+  const as = params.get('as');
+  if (as) game.on('game:entered', () => game.setViewAs(as));
   const desk = createDesk({ root, stage, study, map, game, labels, clouds });
   const title = createTitle({
     root, stage, study, game,

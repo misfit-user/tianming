@@ -1,9 +1,10 @@
 // 启幕：窗前低机位，西墙中堂「奉天承運 治亂由人」；左侧黑漆描金卷目（開卷、續卷、著卷、典章），右下传世诸卷。
-// 開卷：选卷 → 开场白 → 臨朝（内核开局）→ 镜头走到御案后落座。續卷：选存档 → 读档 → 落座。
+// 開卷：选卷 → 开场白 → 落座（按身份：臨朝、视事……；内核开局）→ 镜头走到案后落座。續卷：选存档 → 读档 → 落座。
 import { h } from '../core/dom.js';
 import { juan, yapai, qianzi, zhou, loadFonts } from '../kit/index.js';
 import { num } from '../core/numerals.js';
 import { SHOTS, TITLE_TO_DESK } from '../scene/study/shots.js';
+import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 
 const BOARD = [
@@ -94,7 +95,7 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     juan({
       title: o.name.split(/——|—/)[0] || o.name, note: o.name.split(/——|—/)[1] || '', width: '58rem', height: 'min(40rem, 80vh)', closable: false,
       content: h('div.opening', h('div.text', o.opening), who),
-      actions: [{ label: '臨朝', onclick: ({ close }) => { close('ok'); o.begin(); } }]
+      actions: [{ label: profileOf(o.perspective || game.perspective()).enter, onclick: ({ close }) => { close('ok'); o.begin(); } }]
     });
   }
 
@@ -124,7 +125,7 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     }
   }
 
-  // 从窗前走到御案后、落座俯看
+  // 从窗前走到案后、落座俯看
   async function enterDesk() {
     drift = false;
     for (const leg of TITLE_TO_DESK) await study.flyTo({ pos: leg.pos, look: leg.look, fov: leg.fov }, leg.duration);

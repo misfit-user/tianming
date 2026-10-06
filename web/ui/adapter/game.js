@@ -5,6 +5,7 @@
 //   await game.advance({ court })           过回合（推演）；进度走 game:advance-progress
 //   game.saves.list() / save(name) / load(key)
 //   game.select.date() …                    读数快照
+//   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
@@ -146,8 +147,21 @@ const act = {
   }
 };
 
+// ---------- 视角 ----------
+// 界面按「视角人物」的身份长出来（ui/model/identity.js）。默认是玩家本人。
+// 借视角（开发用，?as=人名）：只换界面所见，内核照旧以玩家身份运转；借视角时案上动作一律只读。
+let viewAs = null;
+function perspective() {
+  return select.perspective(viewAs || undefined);
+}
+function setViewAs(ref) {
+  viewAs = ref || null;
+  bus.emit('view:changed', perspective());
+}
+
 export const game = {
-  boot, scenarios, newGame, advance, saves, act, select,
+  boot, scenarios, newGame, advance, saves, act, select, perspective, setViewAs,
+  get viewAs() { return viewAs; },
   on: (name, fn) => bus.on(name, fn),
   once: (name, fn) => bus.once(name, fn),
   get running() { return !!(w.GM && w.GM.running); }

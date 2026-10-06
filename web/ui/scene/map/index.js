@@ -172,6 +172,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   borderTex.magFilter = THREE.LinearFilter;
   borderTex.minFilter = THREE.LinearFilter;
   let realmList = [];
+  let focusSet = [];                          // 辖区（身份视野）：府州下标
   const primaryRe = primary ? new RegExp(primary) : undefined;
   function applyPolitics() {
     realmList = computeRealms(data);
@@ -180,6 +181,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     regions.forEach((r, i) => { regionRealm[i + 1] = realmIndex.has(r.faction) ? realmIndex.get(r.faction) : -1; });
     info.fill(0);
     for (let i = 1; i < regionRealm.length && i < INFO_W; i++) info[i * 4] = regionRealm[i] >= 0 ? regionRealm[i] : 255;
+    for (const k of focusSet) if (k + 1 < INFO_W) info[(k + 1) * 4 + 1] = 255;
     infoTex.needsUpdate = true;
     paletteData.fill(0);
     realmList.forEach((r, i) => { if (i < PALETTE_W) paletteData.set([...hexRgb(swatchFor(r.name, r.color, primaryRe ? { primary: primaryRe } : undefined)), 255], i * 4); });
@@ -203,7 +205,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uHeightHi: { value: F.textures.heightHi },
     uTexelHi: { value: new THREE.Vector2(1 / F.textures.hiW, 1 / F.textures.hiH) },
     uRelief: { value: RELIEF }, uTime: { value: 0 }, uZoom: { value: 0 },
-    uHover: { value: -1 }, uSelected: { value: -1 }, uCam: { value: new THREE.Vector3() },
+    uHover: { value: -1 }, uSelected: { value: -1 }, uFocus: { value: 0 }, uCam: { value: new THREE.Vector3() },
     uFogColor: { value: new THREE.Vector3(0.91, 0.87, 0.78) }, uFogNear: { value: 1e6 }, uFogFar: { value: 2e6 }, uPolitical: { value: 1 },
     uPx: { value: stage.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2))) },
     uRange: { value: F.textures.range },
@@ -332,8 +334,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // ---------- 案上那幅绢图：同一画法正俯视渲一张，题上势力名 ----------
   // extent：画世界里的哪一块（默认案上那幅的范围），宽高比须与 width/height 一致
   async function renderSheet({ look, width = 2100, height = 1540, names = true, extent = SHEET_EXTENT } = {}) {
-    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, relief: uniforms.uRelief.value, px: uniforms.uPx.value, look: currentLook };
+    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, relief: uniforms.uRelief.value, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
     if (look) setLook(look);
+    uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
     camera.fov = 20;
     uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(10)));   // 点叶按这张图的像素算大小
     camera.aspect = width / height;
@@ -396,6 +399,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setPose(saved.pose);
     uniforms.uRelief.value = saved.relief;
     uniforms.uPx.value = saved.px;
+    uniforms.uFocus.value = saved.focus;
     setLook(saved.look);
     return c;
   }
@@ -439,6 +443,14 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setLook, setPose, pose, renderSheet,
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
     select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; },
+    // 辖区视野：一组府州描金边、其余褪色（府州信息表 G 通道）。浓淡由 uniforms.uFocus（0～1）定，调用方按镜头渐变；给空就撤
+    setFocus(indices) {
+      focusSet = (indices || []).filter((k) => k >= 0 && k < regions.length);
+      for (let i = 1; i < INFO_W; i++) info[i * 4 + 1] = 0;
+      for (const k of focusSet) if (k + 1 < INFO_W) info[(k + 1) * 4 + 1] = 255;
+      infoTex.needsUpdate = true;
+      if (!focusSet.length) uniforms.uFocus.value = 0;
+    },
     // 府州易主：changes = { 府州下标: 新势力 id }
     // 换一套府州（开局、读档、换剧本）：编号图、疆界、题名一并重做
     setRegions(next) {
@@ -451,6 +463,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       regionTex.needsUpdate = true;
       uniforms.uHover.value = -1;
       uniforms.uSelected.value = -1;
+      focusSet = [];
+      uniforms.uFocus.value = 0;
       applyPolitics();
       buildLabels();
     },

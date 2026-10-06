@@ -60,6 +60,159 @@ export function player() {
   };
 }
 
+// ---------- 视角人物：界面按谁的身份长出来（官本位设计稿第九章「案头即身份」） ----------
+// 身份现算，不看头衔文字：
+//   元首：玩家看剧本的玩家定位（君主／emperor）或「玩家即势力之主」；别人看是不是某势力的首领
+//   官职：官制在任记录（TM.OfficeHolderState.activeAssignments），差使、出缺、丁忧不算
+//   辖区：区划上主官是此人的那几块（GM.adminHierarchy 的 governorId／governor）
+// 档：sovereign 元首、minister 京官、provincial 地方官、gentry 不在官。
+// as：开发用「借视角」，给人名或 id；不给就是玩家本人。
+const LOCAL_POST = /督抚|总督|巡抚|经略|督师|布政|按察|都指挥|总兵|知府|知州|知县|府尹|节度|观察|刺史|安抚|转运|提刑|道$/;
+
+function charById(g, ref) {
+  const chars = g.chars || [];
+  return chars.find((c) => c && c.id != null && String(c.id) === String(ref)) || chars.find((c) => c && c.name === ref) || null;
+}
+function playerChar(g) {
+  const pi = g.playerInfo || {};
+  const chars = g.chars || [];
+  const id = pi.characterId || g.playerCharacterId;
+  return (id != null && chars.find((c) => c && String(c.id) === String(id))) || chars.find((c) => c && c.isPlayer) ||
+    chars.find((c) => c && pi.characterName && c.name === pi.characterName) || null;
+}
+function postsOf(g, ch) {
+  const ohs = w.TM && w.TM.OfficeHolderState;
+  if (!ch || !ohs || typeof ohs.activeAssignments !== 'function') return [];
+  try {
+    return ohs.activeAssignments(g, ch).map((a) => ({
+      dept: a.dept || '', title: (a.pos && a.pos.name) || '', rank: (a.pos && a.pos.rank) || '',
+      organizationId: a.organizationId || '', local: (a.pos && a.pos.bindingHint) === 'region', delegated: !!a.delegated
+    }));
+  } catch (err) {
+    console.warn('[newui] 取官职出错', err);
+    return [];
+  }
+}
+function governedBy(g, ch) {
+  const out = [];
+  if (!ch) return out;
+  const ah = g.adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  const walk = (list, depth) => {
+    for (const d of list || []) {
+      if (!d) continue;
+      const mine = d.governorId != null && d.governorId !== '' ? String(d.governorId) === String(ch.id) : !!d.governor && d.governor === ch.name;
+      if (mine) out.push({ d, depth });
+      walk(d.children || d.divisions, depth + 1);
+    }
+  };
+  for (const k of Object.keys(ah)) walk(ah[k] && ah[k].divisions, 0);
+  return out;
+}
+
+export function perspective(as) {
+  const g = G();
+  // 运行态的玩家信息为准；开局途中（开场白时）它还空着，缺的项退回剧本模板
+  const gpi = g.playerInfo || {};
+  const pi = { ...((w.P && w.P.playerInfo) || {}), ...Object.fromEntries(Object.entries(gpi).filter(([, v]) => v !== '' && v != null)) };
+  const me = playerChar(g);
+  const ch = as ? charById(g, as) : me;
+  const isPlayer = !!ch && ch === me;
+  const facs = g.facs || [];
+  const fac = ch ? facs.find((f) => f && ((ch.factionId && f.id === ch.factionId) || f.name === ch.faction)) || null : null;
+  const pfac = facs.find((f) => f && ((pi.factionId && f.id === pi.factionId) || f.name === pi.factionName)) || null;
+  const role = isPlayer || !ch ? String(pi.playerRole || '') : '';
+  const leads = (f) => !!f && !!ch && (f.leader === ch.name || (f.leaderId != null && String(f.leaderId) === String(ch.id)));
+  const ruler = isPlayer || !ch
+    ? /^(emperor|君主)$/i.test(role) || (!role && pi.leaderIsPlayer === true) || leads(pfac) || leads(fac)
+    : facs.some(leads);
+  const posts = postsOf(g, ch);
+  const governs = governedBy(g, ch).sort((a, b) => a.depth - b.depth).map(({ d }) => ({
+    id: d.id, name: d.name || '', level: d.level || '', mapRegionId: d.mapRegionId || d.regionId || '',
+    regionIds: Array.isArray(d.mappedRegions) ? d.mappedRegions.slice() : []
+  }));
+  const tier = tierOf(ruler, posts, governs);
+  return {
+    id: ch ? ch.id : pi.characterId || null,
+    name: ch ? ch.name : pi.characterName || '',
+    title: ch ? ch.officialTitle || ch.title || '' : pi.characterTitle || '',
+    portrait: (ch && ch.portrait) || '',
+    faction: (fac && fac.name) || (ch && ch.faction) || pi.factionName || '',
+    role, ruler, tier, posts, governs,
+    location: (ch && ch.location) || '',
+    capital: pi.capital || (fac && fac.capital) || '',
+    isPlayer, previewing: !!as && !isPlayer
+  };
+}
+
+function tierOf(ruler, posts, governs) {
+  if (ruler) return 'sovereign';
+  if (!posts.length && !governs.length) return 'gentry';
+  return governs.length > 0 || posts.some((p) => p.local || LOCAL_POST.test(p.dept + p.title)) ? 'provincial' : 'minister';
+}
+
+// 开局途中（开场白时）内核还没装好人物与官制，身份按剧本本身算（同一套规则，只读剧本数据）
+export function scenarioPerspective(sc) {
+  const pi = (sc && sc.playerInfo) || {};
+  const name = pi.characterName || '';
+  const role = String(pi.playerRole || '');
+  const ruler = /^(emperor|君主)$/i.test(role) || (!role && pi.leaderIsPlayer === true) ||
+    ((sc && sc.factions) || []).some((f) => f && name && f.leader === name && (f.name === pi.factionName || (pi.factionId && f.id === pi.factionId)));
+  const posts = [];
+  const walkOffice = (nodes) => {
+    for (const n of nodes || []) {
+      if (!n) continue;
+      for (const p of n.positions || []) {
+        const holders = Array.isArray(p.actualHolders) ? p.actualHolders.map((x) => x && x.name) : [p.holder];
+        if (p && name && holders.includes(name)) posts.push({ dept: n.name || '', title: p.name || '', rank: p.rank || '', local: p.bindingHint === 'region' });
+      }
+      walkOffice((n.subs || []).concat(n.children || []));
+    }
+  };
+  walkOffice(sc && sc.officeTree);
+  const governs = [];
+  const walkDiv = (list) => { for (const d of list || []) { if (!d) continue; if (name && d.governor === name) governs.push({ id: d.id, name: d.name || '' }); walkDiv(d.children || d.divisions); } };
+  const ah = (sc && sc.adminHierarchy) || {};
+  for (const k of Object.keys(ah)) walkDiv(ah[k] && ah[k].divisions);
+  return { id: pi.characterId || null, name, title: pi.characterTitle || '', role, ruler, tier: tierOf(ruler, posts, governs), posts, governs, isPlayer: true, previewing: false };
+}
+
+// 人物自身的读数：名望、贤能、康健、心绪（100−压力）；家产（私财）与公费（所掌公库）
+export function person(ref) {
+  const g = G();
+  const ch = ref ? charById(g, ref) : playerChar(g);
+  const r = (ch && ch.resources) || {};
+  const pw = r.privateWealth || {}, pp = r.publicPurse || r.publicTreasury || {};
+  const fame = r.fame != null ? r.fame : ch && ch.fame;
+  return {
+    gauges: [
+      { key: 'fame', label: '名望', value: Math.round(num(fame)) },
+      { key: 'xianneng', label: '贤能', value: Math.round(num(ch && ch.xianneng, num(r.xianneng))) },
+      { key: 'health', label: '康健', value: Math.round(num(r.health, num(ch && ch.health, 80))) },
+      { key: 'mood', label: '心绪', value: Math.round(100 - num(r.stress, num(ch && ch.stress, 0))) }
+    ],
+    wealth: [{ k: '银', v: num(pw.money), unit: '两' }, { k: '粮', v: num(pw.grain), unit: '石' }, { k: '布', v: num(pw.cloth), unit: '匹' }],
+    purse: [{ k: '银', v: num(pp.money), unit: '两' }, { k: '粮', v: num(pp.grain), unit: '石' }, { k: '布', v: num(pp.cloth), unit: '匹' }]
+  };
+}
+
+// 辖区读数：所辖首块区划的户口（据册）、民心、吏治（100−地方浊度）
+export function jurisdiction(divisionId) {
+  const ah = G().adminHierarchy || (w.P && w.P.adminHierarchy) || {};
+  let hit = null;
+  const walk = (list) => { for (const d of list || []) { if (hit) return; if (d && d.id === divisionId) hit = d; else if (d) walk(d.children || d.divisions); } };
+  for (const k of Object.keys(ah)) walk(ah[k] && ah[k].divisions);
+  if (!hit) return null;
+  const pd = hit.populationDetail || {};
+  const pop = typeof hit.population === 'object' && hit.population ? hit.population : {};
+  const corr = typeof hit.corruptionLocal === 'object' && hit.corruptionLocal ? num(hit.corruptionLocal.value, num(hit.corruptionLocal.index)) : num(hit.corruptionLocal);
+  const mx = typeof hit.minxinLocal === 'object' && hit.minxinLocal ? num(hit.minxinLocal.value, num(hit.minxinLocal.index)) : num(hit.minxinLocal);
+  return {
+    id: hit.id, name: hit.name || '',
+    rows: [{ k: '口', v: num(pd.mouths, num(pop.mouths, typeof hit.population === 'number' ? hit.population : 0)) }, { k: '丁', v: num(pd.ding, num(pop.ding)) }],
+    minxin: Math.round(mx), lizhi: Math.round(100 - corr)
+  };
+}
+
 // 帑廪（国库）与内帑：库存（据奏）、本期增减、单位、状态；老顶栏的视图模型（_renderGuoku/_renderNeitang）提供增减与状态
 function ledger(kind) {
   const g = G();

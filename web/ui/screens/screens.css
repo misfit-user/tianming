@@ -67,7 +67,7 @@
 .opening .eyes li::before { content: ''; position: absolute; left: 0; top: .5em; width: .375rem; height: .375rem; background: var(--verm); transform: rotate(45deg); }
 .opening .eyes li b { font-weight: 400; font-family: var(--f-title); font-size: var(--fs-4); letter-spacing: .1em; }
 
-/* ---------- 御案 ---------- */
+/* ---------- 书案 ---------- */
 .scr-desk .topbar { position: fixed; left: 0; right: 0; top: 0; height: 4.75rem; display: flex; align-items: center; gap: 1.5rem; padding: 0 1.5rem; z-index: 6;
   border-bottom: .625rem solid transparent; border-image: var(--huiwen) 14 round;
   background: radial-gradient(ellipse at 50% -40%, rgba(255, 220, 170, .12), transparent 60%), linear-gradient(180deg, #2c1b12, #150c07);
@@ -89,6 +89,13 @@
 .scr-desk > * { transition: opacity var(--t-3); }
 .scr-desk.flying > *:not(.topbar), .scr-desk.inmap > *:not(.topbar) { opacity: 0; pointer-events: none !important; }
 html[data-layout='compact'] .scr-desk .left { display: none; }
+
+/* 借视角（开发用）：顶栏下一条小笺，写明此刻借谁的眼睛、此档只读 */
+.scr-desk .viewas { position: fixed; left: 50%; top: 5.75rem; transform: translateX(-50%); display: flex; align-items: baseline; gap: .75rem; padding: .375rem 1.125rem .4375rem;
+  font: var(--fs-3) var(--f-kai); letter-spacing: .12em; color: var(--ink); border-left: .1875rem solid var(--verm); white-space: nowrap; }
+.scr-desk .viewas b { font: 400 var(--fs-4) var(--f-title); color: var(--verm); letter-spacing: .2em; }
+.scr-desk .viewas small { font-size: var(--fs-1); color: var(--ink-faint); letter-spacing: .08em; }
+.scr-desk .viewas.hide { display: none; }
 
 /* 推演中：案上一层薄纱，中间一行进度 */
 .advancing { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(14, 7, 3, .55); opacity: 0; transition: opacity var(--t-3); pointer-events: none; }

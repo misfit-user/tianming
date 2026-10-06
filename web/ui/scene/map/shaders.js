@@ -30,6 +30,7 @@ uniform float uRelief;
 uniform float uTime;
 uniform float uZoom;             // 0 远 → 1 近
 uniform float uHover;
+uniform float uFocus;        // 有无辖区视野：1 时辖区之外略淡
 uniform float uSelected;
 uniform vec3 uCam;
 uniform vec3 uFogColor;          // 远景雾：低角度时让远山融进绢色；平时 near 很远等于关闭
@@ -62,6 +63,8 @@ float regionAt(vec2 uv) {
 }
 // 府州 → 势力编号查表（4096 宽，一格一州）；势力 → 设色查表（256 宽）
 float realmOf(float id) { return floor(texture2D(uRegionInfo, vec2((id + 0.5) / 4096.0, 0.5)).r * 255.0 + 0.5); }
+// 辖区（身份视野）：府州信息表 G 通道，1 为本辖
+float focusOf(float id) { return id > 0.5 ? texture2D(uRegionInfo, vec2((id + 0.5) / 4096.0, 0.5)).g : 0.0; }
 vec3 realmColor(float realm) { return texture2D(uPalette, vec2((realm + 0.5) / 256.0, 0.5)).rgb; }
 float line(float d, float w) { return 1.0 - smoothstep(0.0, w, abs(d)); }
 
@@ -91,16 +94,19 @@ void main() {
   float e = max(max(fw.x, fw.y) * 0.9, 0.35 / 4200.0);
   float id = regionAt(uv);
   float realm = id > 0.5 ? realmOf(id) : -1.0;
-  float prefEdge = 0.0, realmEdge = 0.0;
+  float focus = focusOf(id);
+  float prefEdge = 0.0, realmEdge = 0.0, focusEdge = 0.0;
   for (int k = 0; k < 4; k++) {
     vec2 o = k == 0 ? vec2(e, 0.0) : k == 1 ? vec2(-e, 0.0) : k == 2 ? vec2(0.0, e) : vec2(0.0, -e);
     float nid = regionAt(uv + o);
     float nrealm = nid > 0.5 ? realmOf(nid) : -1.0;
     prefEdge += step(0.5, abs(nid - id)) * step(0.5, nid) * step(0.5, id);
     realmEdge += step(0.5, abs(nrealm - realm)) * step(-0.5, nrealm) * step(-0.5, realm);
+    focusEdge += step(0.5, abs(focusOf(nid) - focus));
   }
   prefEdge = min(prefEdge * 0.5, 1.0) * land * uPolitical;
   realmEdge = min(realmEdge * 0.5, 1.0) * land * uPolitical;
+  focusEdge = min(focusEdge * 0.5, 1.0) * land * uFocus;
   vec3 tint = realm >= 0.0 ? realmColor(realm) : vec3(1.0);
   float owned = realm >= 0.0 ? uPolitical : 0.0;
   float hover = step(0.5, id) * (1.0 - step(0.5, abs(id - uHover)));
@@ -170,6 +176,10 @@ void main() {
   col = mix(col, col * uVeil, uShade.y);                                // 包浆
   col = mix(uSilk * 0.97, col, edgeFade);
 
+  // 辖区视野：辖区之外褪色略暗，辖区四周一道描金边
+  float gray = dot(col, vec3(0.3, 0.59, 0.11));
+  col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - focus) * uFocus * land);
+  col = mix(col, vec3(0.80, 0.60, 0.22), focusEdge * 0.95);
   col = mix(col, col * 1.18 + 0.04, hover * 0.6);
   col = mix(col, col * vec3(1.06, 0.97, 0.9) + vec3(0.05, 0.0, -0.02), picked * 0.7);
   col = mix(col, uFogColor, smoothstep(uFogNear, uFogFar, distance(vPos, uCam)));

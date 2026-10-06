@@ -2,7 +2,7 @@
 // 对外：setShot、flyTo、pickMap、screenOf、mapToScreen、sheetPose、setSheetGlow、setMapSheet、memorialPaper、anchors……
 import * as THREE from 'three';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
-import { buildWindow, loadRoom, buildCouplets, sunVector, SUN_UNIFORM, WIN, DESK, ROOM, ROOMS, LIGHTMAP_GAIN } from './room.js';
+import { buildWindow, loadRoom, buildCouplets, plaqueMap, coupletMap, sunVector, SUN_UNIFORM, WIN, DESK, ROOM, ROOMS, LIGHTMAP_GAIN } from './room.js';
 import { createPost, createDust, createSmoke } from './fx.js';
 import { loadProps, PLACE } from './props.js';
 import { SHOTS } from './shots.js';
@@ -165,7 +165,7 @@ export async function createStudyView(stage, {
   await buildWindow(scene);
   const room = await loadRoom(scene, preset);
   onProgress('陈设', 0.45);
-  await buildCouplets(scene, preset);
+  const boards = await buildCouplets(scene, preset);
   const sun = new THREE.DirectionalLight(0xffecd0, 3.9);
   sun.target.position.set(-600, 0, -300);
   sun.position.copy(sun.target.position).addScaledVector(SUN_UNIFORM.value, 7000);
@@ -365,6 +365,29 @@ export async function createStudyView(stage, {
     });
   }
 
+  // 按身份换陈设：匾、联、案上器物（ui/model/identity.js 各档的 room 与 props）。
+  // 另起一间屋（dir 不同）的要等那几间建好（页面期 P5），眼下几档都借御书房的骨架
+  let dressed = preset;
+  async function dress(roomKey, look = {}) {
+    const next = ROOMS[roomKey] || ROOMS.sovereign;
+    if ((next.dir || '') !== (preset.dir || '')) console.warn('[study] 另起一间屋尚未接上，先借本屋陈设：', roomKey);
+    if (next.plaque !== dressed.plaque) {
+      const map = await plaqueMap(next.plaque);
+      for (const m of room.plaques) { const old = m.map; m.map = map; m.needsUpdate = true; if (old && old !== map) old.dispose(); }
+    }
+    for (let i = 0; i < boards.length; i++) {
+      const text = next.couplets[i] && next.couplets[i][0];
+      if (!text || (dressed.couplets[i] && dressed.couplets[i][0] === text)) continue;
+      const old = boards[i].material.map;
+      boards[i].material.map = await coupletMap(text);
+      boards[i].material.needsUpdate = true;
+      old?.dispose();
+    }
+    props.dress(look);
+    dressed = next;
+    captureEnv();
+  }
+
   onProgress('落座', 1);
   const hooks = new Set();
   const view = {
@@ -387,7 +410,8 @@ export async function createStudyView(stage, {
       if (dust && current) dust.uniforms.uPx.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(current.fov / 2)));
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
-    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners,
+    setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress,
+    get room() { return dressed; },
     get flightProgress() { return flight ? Math.min(1, (time - flight.t0) / flight.duration) : null; },
     get shot() { return current; },
     dispose() {

@@ -163,14 +163,42 @@ export async function buildWindow(scene) {
 // 光照贴图总增益（与实时太阳的相对亮度，按眼睛调）
 export const LIGHTMAP_GAIN = 0.85;
 
-// 房间陈设按身份取：地基只有皇帝的御书房，官员签押房、白身书斋以后接上来
+// 房间陈设按身份取（键即 ui/model/identity.js 各档的 room）。
+// 只有元首的御书房是自己的屋；部院直房、签押房、书斋三间还没建（页面期 P5），先借御书房的骨架（dir 相同），只换匾、联与案上器物。
+// 匾联只取唐以前的经典，免得在早期剧本里时代错乱。
 export const ROOMS = {
   sovereign: {
     dir: '',
     plaque: '允執厥中',                      // 《尚书·大禹谟》十六字心传的末句
     couplets: [['惟以一人治天下', -1500], ['豈為天下奉一人', 1500]]   // 语出唐张蕴古《大宝箴》，上联在面对宝座时的右手
+  },
+  ministry: {                                // 京官：部院直房
+    dir: '', interim: true,
+    plaque: '夙夜在公',                      // 《诗经·召南·小星》
+    couplets: [['居之無倦', -1500], ['行之以忠', 1500]]                // 《论语·颜渊》子张问政
+  },
+  yamen: {                                   // 地方官：签押房
+    dir: '', interim: true,
+    plaque: '清慎勤',                        // 晋李秉《家诫》引司马昭语「为官长当清、当慎、当勤」，后世官箴之本
+    couplets: [['道之以德', -1500], ['齊之以禮', 1500]]                // 《论语·为政》
+  },
+  study: {                                   // 不在官：书斋
+    dir: '', interim: true,
+    plaque: '慎獨',                          // 《礼记·中庸》《大学》
+    couplets: [['學而不厭', -1500], ['誨人不倦', 1500]]                // 《论语·述而》
   }
 };
+
+// 匾心与联板的贴图（按字缓存）；换陈设时用
+export async function plaqueMap(text) {
+  const t = wrapCanvas(await cachedCanvas(`plaque:${text}`, () => plaqueCanvas(text)));
+  t.flipY = false;
+  t.needsUpdate = true;
+  return t;
+}
+export async function coupletMap(text) {
+  return wrapCanvas(await cachedCanvas(`couplet:${text}`, () => coupletCanvas(text)));
+}
 
 // 整间屋：按材质名换上贴图与质感；烘了光照贴图的面挂上光照贴图
 export async function loadRoom(scene, preset = ROOMS.sovereign) {
@@ -204,7 +232,7 @@ export async function loadRoom(scene, preset = ROOMS.sovereign) {
   plaqueFrame.wrapT = THREE.ClampToEdgeWrapping;
   const paper = paperTexture('#f4ecd8', 31);
   paper.repeat.set(3, 3);
-  const plaque = wrapCanvas(await cachedCanvas(`plaque:${preset.plaque}`, () => plaqueCanvas(preset.plaque)));
+  const plaque = await plaqueMap(preset.plaque);
   const cloths = {
     case_indigo: clothTexture('#2a3654', 6), case_blue: clothTexture('#3c4c64', 7), case_camel: clothTexture('#86694a', 8), case_brown: clothTexture('#5e3e2a', 9),
     scroll_silk: clothTexture('#cdbd98', 10), scroll_blue: clothTexture('#61738a', 11), book_case: clothTexture('#2c3c5c', 6)
@@ -294,7 +322,9 @@ export async function loadRoom(scene, preset = ROOMS.sovereign) {
     o.receiveShadow = true;
   });
   scene.add(root);
-  return { root, lightmap };
+  const plaques = [];
+  root.traverse((o) => { if (o.isMesh && o.material.name === 'plaque') plaques.push(o.material); });
+  return { root, lightmap, plaques };
 }
 
 // 抱柱联：北面两根金柱朝南一面，黑漆金字
@@ -302,14 +332,16 @@ export async function buildCouplets(scene, preset = ROOMS.sovereign) {
   const y0 = 950 - 780, y1 = 3050 - 780;                  // 离地 0.95~3.05 米
   const colR = (y) => 190 - 12 * ((y + 780) / 1000 - 0.2) / 3.55;
   const theta = 1.9;
+  const boards = [];
   for (const [text, x] of preset.couplets) {
-    const tex = wrapCanvas(await cachedCanvas(`couplet:${text}`, () => coupletCanvas(text)));
+    const tex = await coupletMap(text);
     const geo = new THREE.CylinderGeometry(colR(y1) + 11, colR(y0) + 11, y1 - y0, 40, 1, true, Math.PI - theta / 2, theta);
     const board = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.32, envMapIntensity: 1.1 }));
     board.position.set(x, (y0 + y1) / 2, ROOM.north);
     board.castShadow = true;
     board.receiveShadow = true;
     scene.add(board);
+    boards.push(board);
     for (const s of [-1, 1]) {                             // 板两边的厚度：两条细木边
       const a = Math.PI + s * theta / 2;
       const r = colR((y0 + y1) / 2) + 6;
@@ -319,4 +351,5 @@ export async function buildCouplets(scene, preset = ROOMS.sovereign) {
       scene.add(edge);
     }
   }
+  return boards;
 }

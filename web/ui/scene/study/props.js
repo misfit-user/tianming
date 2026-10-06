@@ -113,13 +113,26 @@ export async function loadProps(scene, { notes }) {
     return o;
   };
   // 奏折一摞：素纸为主，夹两本黄绫，第五本抽出一截
+  // 黄绫的两本只在元首案上；别的身份换成素纸本（两套都摆好，dress 时切）
   const mem = group('memorials');
-  for (let i = 0; i < 9; i++) add(mem, i === 2 || i === 6 ? 'memorial_yellow' : 'memorial_plain', [Math.sin(i * 2.1) * 6 + (i === 4 ? 26 : 0), Math.cos(i * 1.7) * 8, Math.sin(i * 1.3) * 0.04], i * 13.2);
+  const yellowPair = [];
+  for (let i = 0; i < 9; i++) {
+    const at = [Math.sin(i * 2.1) * 6 + (i === 4 ? 26 : 0), Math.cos(i * 1.7) * 8, Math.sin(i * 1.3) * 0.04];
+    if (i === 2 || i === 6) {
+      const plain = add(mem, 'memorial_plain', at, i * 13.2);
+      plain.visible = false;
+      yellowPair.push([add(mem, 'memorial_yellow', at, i * 13.2), plain]);
+    } else add(mem, 'memorial_plain', at, i * 13.2);
+  }
   add(group('tray'), 'tray', [0, 0]);
+  // 印：元首是锦垫上的玉玺；官员是官印匣（木匣、黄袱、铜扣）；不在官是两方石章。印泥盒人人有
   const sealG = group('seal');
-  add(sealG, 'cushion', [0, 0]);
-  add(sealG, 'seal', [0, 0], 26);
+  const imperial = [add(sealG, 'cushion', [0, 0]), add(sealG, 'seal', [0, 0], 26)];
   add(sealG, 'paste_box', [-150, 150, 0]);
+  const office = officeSealBox(await imageTexture('cinnabar.jpg'), tex.yellow);
+  const privateSeals = stoneSeals();
+  office.visible = privateSeals.visible = false;
+  sealG.add(office, privateSeals);
   add(group('letterbox'), 'letterbox', [0, 0]);
   add(group('censer'), 'censer', [0, 0]);
   // 笔砚：砚居中，右侧笔山横搁两支笔（笔与笔山长轴垂直），左下墨锭，右下水盂
@@ -171,5 +184,45 @@ export async function loadProps(scene, { notes }) {
     for (const name of Object.keys(ANCHOR_Y)) anchors[name] = [groups[name].position.x, ANCHOR_Y[name], groups[name].position.z];
   }
   place(PLACE);
-  return { groups, anchors, place, add, take, lib, notesTextures: tex.notes };
+
+  // 按身份换器物（ui/model/identity.js 各档的 props）
+  function dress({ seal = 'imperial', yellowMemorials = true } = {}) {
+    for (const o of imperial) o.visible = seal === 'imperial';
+    office.visible = seal === 'office';
+    privateSeals.visible = seal === 'private';
+    for (const [yellow, plain] of yellowPair) { yellow.visible = yellowMemorials; plain.visible = !yellowMemorials; }
+  }
+  return { groups, anchors, place, add, take, lib, dress, notesTextures: tex.notes };
+}
+
+// 官印匣：朱漆木匣、盖略宽，黄袱一道横过盖顶，正面一枚铜扣（毫米）
+function officeSealBox(lacquerTex, clothTex) {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({ map: lacquerTex, color: 0xb89890, roughness: 0.3 });
+  const cloth = new THREE.MeshStandardMaterial({ map: clothTex, color: 0xffffff, roughness: 0.68 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xb48c4a, metalness: 0.85, roughness: 0.32 });
+  const part = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
+  part(new THREE.BoxGeometry(128, 86, 128), wood, 0, 26 + 43, 0);
+  part(new THREE.BoxGeometry(140, 22, 140), wood, 0, 26 + 86 + 11, 0);
+  part(new THREE.BoxGeometry(144, 3, 48), cloth, 0, 26 + 108 + 1.5, 0);
+  part(new THREE.BoxGeometry(48, 26, 3), cloth, 0, 26 + 97, 71);
+  part(new THREE.BoxGeometry(48, 26, 3), cloth, 0, 26 + 97, -71);
+  part(new THREE.BoxGeometry(22, 28, 5), brass, 0, 26 + 76, 65);
+  return g;
+}
+
+// 两方寿山石章：一高一矮，略斜着立（毫米）
+function stoneSeals() {
+  const g = new THREE.Group();
+  const stone = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.42 });
+  const one = (w, hgt, x, z, rot, color) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, hgt, w), stone(color));
+    m.position.set(x, hgt / 2, z);
+    m.rotation.y = rot;
+    m.castShadow = m.receiveShadow = true;
+    g.add(m);
+  };
+  one(34, 82, 18, -10, 0.3, 0xc7955f);
+  one(28, 62, -38, 34, -0.2, 0x9c6b4a);
+  return g;
 }

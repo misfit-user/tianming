@@ -2,6 +2,7 @@
 // 内核流程一步不改，只是该弹窗、该进度条、该开场仪典的地方，改成在总线上发事件，由新前端来画。
 // 新前端只有 adapter/ 这一层碰内核全局（GM、P、老函数），其余各层一律经 game.js。
 import { bus } from '../core/bus.js';
+import { scenarioPerspective } from './select.js';
 
 const w = window;
 
@@ -50,6 +51,7 @@ function installOpening() {
     w._tmStartOpeningCleanup = cleanup;            // 内核另起一局时会调它作废这一场
     bus.emit('game:opening', {
       sid, ...data,
+      perspective: scenarioPerspective(sc),           // 开场时内核还没装好人物，身份按剧本算
       begin() {
         if (done) return;
         cleanup();

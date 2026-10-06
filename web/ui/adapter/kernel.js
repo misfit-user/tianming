@@ -97,12 +97,16 @@ function installFeedback() {
     bus.emit('kernel:toast', { text: String(msg ?? '') });
     return orig.apply(this, arguments);
   });
-  // 回合史记：内核在「尚未落档」「朝会进行中」时只暂存、过后再调；真正显示时才给 #turn-modal 加 show。只在真显示时发事件
+  // 回合史记：内核在「尚未落档」「朝会进行中」时只暂存、过后再调；真正显示时才给 #turn-modal 加 show。只在真显示时发事件。
+  // 发完随即替老弹窗收起（closeTurnResult 只摘 show）：不然它隐着仍算「开着」，Esc、←→ 与快捷键都先被它吃掉
   swap('showTurnResult', (orig) => function () {
     const modal = document.getElementById('turn-modal');
     if (modal) modal.classList.remove('show');
     const r = orig.apply(this, arguments);
-    if (!modal || modal.classList.contains('show')) bus.emit('game:turn-result', { idx: w.GM && typeof w.GM._trCurrentIdx === 'number' ? w.GM._trCurrentIdx : null });
+    if (!modal || modal.classList.contains('show')) {
+      if (modal) modal.classList.remove('show');
+      bus.emit('game:turn-result', { idx: w.GM && typeof w.GM._trCurrentIdx === 'number' ? w.GM._trCurrentIdx : null });
+    }
     return r;
   });
   // 内核每次「该重画了」都会调 renderGameState：新前端据此刷新读数（合并成一帧一次）

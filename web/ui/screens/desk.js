@@ -17,6 +17,8 @@ import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
+// 七种看法对应老舆图的计分（adapter mapLayer）；势力即本色，不另染
+const LAYER_MODE = { 民情: 'mood', 阶层: 'classPressure', 财赋: 'tax', 军务: 'army', 官守: 'office', 役政: 'yizheng', 势力: 'owner' };
 
 // 顶栏账簿：身份档的 ledger 列哪几本，这里就按键取
 const row = (r) => ({ k: r.label || r.k, v: r.value ?? r.v, d: r.delta ?? r.d, unit: r.unit });
@@ -61,8 +63,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 左列 ----------
   const faces = h('div.faces');
   const renwu = qiPanel({ title: '人物图志', note: '…' }, faces);
-  const chips = qianzi(LAYERS, { value: '势力' });
-  const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips);
+  const chips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
+  const legendDesk = h('div.legend');
+  const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips, legendDesk);
   const dibao = h('div.dibao', { onclick: () => openGazette({ game }), title: '展邸报全卷', style: { cursor: 'pointer' } });
   const left = h('div.left', renwu, maptools, dibao);
 
@@ -77,9 +80,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const el = h('section.scr.scr-desk', tags, topbar, left, rail, dock, hint, ribbon);
 
   // ---------- 舆图模式 ----------
-  const mapChips = qianzi(LAYERS, { value: '势力' });
+  const mapChips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
   const mapNote = h('small', '');
-  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote), mapChips);
+  const legendMap = h('div.legend');
+  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote), mapChips, legendMap);
   const card = h('div.card.hide');
   const backLabel = h('b.q-gold', '');
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
@@ -139,11 +143,38 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (!r) { card.classList.add('hide'); map.select(null); return; }
     map.select(r.index);
     const fac = r.faction && factions[r.faction];
-    replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [['府治', r.parent ? '属' + r.parent : '—']] }));
+    const lv = layer && layer.byId[r.id];
+    replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [['府治', r.parent ? '属' + r.parent : '—'], ...(lv ? [[layerLabel, lv.mark + (typeof lv.score === 'number' ? '　' + num(Math.round(lv.score)) : '')]] : [])] }));
     card.style.transform = `translate(${Math.min(window.innerWidth - 300, ev.clientX + 24)}px, ${Math.max(90, ev.clientY - 60)}px)`;
     card.classList.remove('hide');
   });
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dive.mode === 'map') dive.rise(); });
+
+  // 舆图看法：民情、阶层、财赋、军务、官守、役政按老舆图的计分分档淡染；势力为本色。书案上的绢图随之重画
+  let layer = null, layerLabel = '势力', layerTok = 0;
+  function legendOf(l) {
+    return l ? [h('small', l.note), h('div.sw', l.legend.map((b) => h('span', h('i', { style: { background: b.color } }), b.mark)))] : [h('small', '按势力归属着色')];
+  }
+  async function setLayer(label) {
+    const tok = ++layerTok;
+    layerLabel = label;
+    chips.setValue(label);
+    mapChips.setValue(label);
+    const mode = LAYER_MODE[label];
+    if (mode === 'owner') layer = null;
+    else {
+      replaceChildren(legendDesk, h('small', '勘算中……'));
+      replaceChildren(legendMap, h('small', '勘算中……'));
+      const l = await game.select.mapLayer(mode);
+      if (tok !== layerTok) return;
+      layer = l;
+    }
+    map.setLayer(layer ? (map.regions || []).map((r) => (layer.byId[r.id] || {}).color) : []);
+    map.uniforms.uLayer.value = layer ? 1 : 0;
+    replaceChildren(legendDesk, legendOf(layer));
+    replaceChildren(legendMap, legendOf(layer));
+    if (dive.mode === 'desk') study.setMapSheet(await map.renderSheet({ look: LOOK_QINGLV_AGED }));
+  }
 
   // 舆图视野按身份：元首看全境；京官京师居中；地方官辖区描金边、居中；不在官本籍描边、居中。
   // 辖区要在画案上绢图之前定下（绢图与立体舆图同一套着色，俯身入图时才接得上）

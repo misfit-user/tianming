@@ -31,6 +31,8 @@ uniform float uTime;
 uniform float uZoom;             // 0 远 → 1 近
 uniform float uHover;
 uniform float uFocus;        // 有无辖区视野：1 时辖区之外略淡
+uniform float uLayer;        // 看法设色的浓淡（0 不染）
+uniform sampler2D uLayerTex; // 每府州一色（A 为有无）
 uniform float uSelected;
 uniform vec3 uCam;
 uniform vec3 uFogColor;          // 远景雾：低角度时让远山融进绢色；平时 near 很远等于关闭
@@ -151,7 +153,11 @@ void main() {
 
   // ---------- 河湖、疆界、海 ----------
   ground = mix(ground, mix(uBlue, uSilk, 0.5), max(rv.r * 0.85, rv.g * 0.45 * (0.3 + 0.7 * uZoom)));
-  ground = mix(ground, mix(ground, tint, 0.55), owned * exp(-bd / 4.0) * 0.8);   // 界内晕一窄条势力色
+  ground = mix(ground, mix(ground, tint, 0.55), owned * exp(-bd / 4.0) * 0.8 * (1.0 - uLayer));   // 界内晕一窄条势力色（看法设色时让位）
+  // 看法设色：一层水色淡染，留住山川明暗
+  vec4 lc = id > 0.5 ? texture2D(uLayerTex, vec2((id + 0.5) / 4096.0, 0.5)) : vec4(0.0);
+  float gl = dot(ground, vec3(0.3, 0.59, 0.11));
+  ground = mix(ground, lc.rgb * (0.62 + 0.55 * gl), uLayer * lc.a * 0.6);
   float d = max(-sd, 0.0);
   vec3 sea = mix(uSea, uSeaDeep, smoothstep(0.02, 0.45, seaDepth));
   vec2 sp = wp / 7.0;
@@ -167,7 +173,7 @@ void main() {
   vec3 col = mix(sea, ground, land);
   col = mix(col, vec3(0.20, 0.24, 0.22), line(sd, aa * 1.8) * 0.8);
   col = mix(col, vec3(0.55, 0.17, 0.11), realmEdge * 0.9);
-  col = mix(col, vec3(0.30, 0.24, 0.18), prefEdge * 0.3 * uZoom);
+  col = mix(col, vec3(0.30, 0.24, 0.18), prefEdge * (0.3 * uZoom + 0.4 * uLayer));
   float mist = smoothstep(0.58, 0.82, fbm(uv * vec2(6.0, 11.0) + vec2(uTime * 0.003, 0.0)));
   mist *= smoothstep(0.02, 0.12, hb) * (1.0 - smoothstep(0.35, 0.6, hb)) * land;
   col = mix(col, vec3(0.93, 0.91, 0.85), mist * 0.42);

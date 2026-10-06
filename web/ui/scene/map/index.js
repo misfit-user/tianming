@@ -166,6 +166,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   regionTex.needsUpdate = true;
   const info = new Uint8Array(INFO_W * 4);
   const infoTex = new THREE.DataTexture(info, INFO_W, 1, THREE.RGBAFormat);
+  // 看法设色（民情、财赋……）：每府州一色，A 为有无
+  const layerData = new Uint8Array(INFO_W * 4);
+  const layerTex = new THREE.DataTexture(layerData, INFO_W, 1, THREE.RGBAFormat);
   const paletteData = new Uint8Array(PALETTE_W * 4);
   const paletteTex = new THREE.DataTexture(paletteData, PALETTE_W, 1, THREE.RGBAFormat);
   const borderTex = new THREE.DataTexture(new Uint16Array(W * H), W, H, THREE.RedFormat, THREE.HalfFloatType);
@@ -205,7 +208,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uHeightHi: { value: F.textures.heightHi },
     uTexelHi: { value: new THREE.Vector2(1 / F.textures.hiW, 1 / F.textures.hiH) },
     uRelief: { value: RELIEF }, uTime: { value: 0 }, uZoom: { value: 0 },
-    uHover: { value: -1 }, uSelected: { value: -1 }, uFocus: { value: 0 }, uCam: { value: new THREE.Vector3() },
+    uHover: { value: -1 }, uSelected: { value: -1 }, uFocus: { value: 0 }, uLayer: { value: 0 }, uLayerTex: { value: layerTex }, uCam: { value: new THREE.Vector3() },
     uFogColor: { value: new THREE.Vector3(0.91, 0.87, 0.78) }, uFogNear: { value: 1e6 }, uFogFar: { value: 2e6 }, uPolitical: { value: 1 },
     uPx: { value: stage.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2))) },
     uRange: { value: F.textures.range },
@@ -443,6 +446,16 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setLook, setPose, pose, renderSheet,
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
     select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; },
+    // 看法设色：colors[府州下标] = '#rrggbb' 或空（不染）；浓淡由 uniforms.uLayer（0～1）定，给空数组就撤
+    setLayer(colors) {
+      layerData.fill(0);
+      (colors || []).forEach((c, k) => {
+        if (!c || k + 1 >= INFO_W) return;
+        const [r, g, b] = hexRgb(c);
+        layerData.set([r, g, b, 255], (k + 1) * 4);
+      });
+      layerTex.needsUpdate = true;
+    },
     // 辖区视野：一组府州描金边、其余褪色（府州信息表 G 通道）。浓淡由 uniforms.uFocus（0～1）定，调用方按镜头渐变；给空就撤
     setFocus(indices) {
       focusSet = (indices || []).filter((k) => k >= 0 && k < regions.length);
@@ -488,7 +501,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       stage.canvas.removeEventListener('pointermove', onMove);
       stage.canvas.removeEventListener('pointerleave', onLeave);
       controls.dispose();
-      for (const t of [regionTex, infoTex, paletteTex, borderTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
+      for (const t of [regionTex, infoTex, paletteTex, borderTex, layerTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
       labelLayer?.replaceChildren();
     }

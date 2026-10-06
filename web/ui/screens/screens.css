@@ -105,6 +105,12 @@ html[data-layout='compact'] .scr-desk .left { display: none; }
 .advancing .box span { font: var(--fs-3) var(--f-kai); letter-spacing: .3em; color: var(--ivory-soft); }
 
 /* ---------- 舆图 ---------- */
+/* 看法图例：一行注、一排色块与字（书案左列与舆图面板同式） */
+.legend { margin-top: .5rem; display: flex; flex-direction: column; gap: .3125rem; }
+.legend > small { font-size: var(--fs-1); letter-spacing: .12em; color: var(--ivory-soft); }
+.legend .sw { display: flex; flex-wrap: wrap; gap: .375rem .625rem; font-size: var(--fs-2); color: var(--ivory); }
+.legend .sw span { display: inline-flex; align-items: center; gap: .25rem; }
+.legend .sw i { width: .75rem; height: .75rem; box-shadow: inset 0 0 0 1px rgba(255, 240, 210, .35); }
 .scr-map .mappanel { position: fixed; left: 1.25rem; top: 6.25rem; width: 21rem; padding: .625rem .75rem .8125rem; }
 .scr-map .back { position: fixed; left: 1.25rem; bottom: 1.5rem; padding: .75rem 1.25rem .6875rem; }
 .scr-map .card { position: fixed; left: 0; top: 0; height: 12rem; transition: opacity var(--t-2); }

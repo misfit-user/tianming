@@ -552,6 +552,38 @@ export function people({ dead = false } = {}) {
   });
 }
 
+// ---------- 舆图的看法：势力之外六种按地块打分着色（取老舆图 phase8-formal-map 的同一套计分与分档） ----------
+// mode：mood 民情、classPressure 阶层、tax 财赋、army 军务、office 官守、yizheng 役政。
+// 有几种逐块算要近一秒，分批让出主线程；同一回合内按看法缓存
+const LAYER_NOTE = { mood: '按民情冷暖着色', classPressure: '按阶层民心着色', tax: '按财赋盈欠着色', army: '按军务缓急着色', office: '按官守清浊着色', yizheng: '按役政轻重着色' };
+const layerCache = new Map();
+export async function mapLayer(mode) {
+  const parts = w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.__p8MapParts;
+  if (!parts || typeof parts.modeScore !== 'function' || typeof parts.gradeOf !== 'function') return null;
+  const g = G();
+  const key = `${mode}@${g.turn}@${w._tmLoadGen || 0}`;
+  if (layerCache.has(key)) return layerCache.get(key);
+  const map = typeof parts.getMapData === 'function' ? parts.getMapData() : null;
+  const regions = (map && map.regions) || [];
+  const byId = {};
+  for (let i = 0; i < regions.length; i++) {
+    const r = regions[i];
+    let score = null;
+    try { score = parts.modeScore(r, mode); } catch (_e) { score = null; }
+    const gr = parts.gradeOf(mode, score);
+    byId[r.id] = { score: score === '' ? null : score, color: gr ? gr.color : null, mark: gr ? gr.mark : '' };
+    if (i % 40 === 39) await new Promise((res) => setTimeout(res, 0));
+  }
+  const band = (parts.GRADE_BANDS || {})[mode];
+  const out = {
+    mode, note: LAYER_NOTE[mode] || '', byId,
+    legend: band ? band.bands.map(([, , color, mark]) => ({ color, mark })).concat(band.nullMark ? [{ color: band.nullColor, mark: band.nullMark }] : []) : []
+  };
+  for (const k of layerCache.keys()) if (!k.endsWith(`@${g.turn}@${w._tmLoadGen || 0}`)) layerCache.delete(k);
+  layerCache.set(key, out);
+  return out;
+}
+
 // ---------- 舆图府州：剧本地图坐标 → 舆图世界坐标（用内核山河境的同一套投影） ----------
 export function mapRegions() {
   const g = G();

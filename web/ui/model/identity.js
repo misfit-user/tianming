@@ -14,6 +14,7 @@
 //   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
 //   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
 //   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
+//   annals   史记那一卷：卷名、令的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
 
@@ -40,6 +41,8 @@ export const PROFILES = {
         ['referred', '交部议', '着有司议处'], ['court_debate', '付廷议', '下廷臣会议'], ['summon', '召对', '召上奏者面询']]
     },
     issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
+    urgentAck: '朕已知晓',
+    annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书' },
     props: { seal: 'imperial', yellowMemorials: true }
   },
   minister: {
@@ -59,6 +62,8 @@ export const PROFILES = {
         ['referred', '转详', '转上官'], ['court_debate', '会议', '付堂议'], ['summon', '传见', '传来面询']]
     },
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
+    urgentAck: '知道了',
+    annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
     props: { seal: 'office', yellowMemorials: false }
   },
   provincial: {
@@ -78,6 +83,8 @@ export const PROFILES = {
         ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传讯', '传来面询']]
     },
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
+    urgentAck: '知道了',
+    annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文' },
     props: { seal: 'office', yellowMemorials: false }
   },
   gentry: {
@@ -96,6 +103,8 @@ export const PROFILES = {
       verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
     },
     issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
+    urgentAck: '知道了',
+    annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令' },
     props: { seal: 'private', yellowMemorials: false }
   }
 };

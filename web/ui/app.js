@@ -11,6 +11,7 @@ import { loadingScreen } from './screens/loading.js';
 import { installToasts } from './screens/toast.js';
 import { createTitle } from './screens/title.js';
 import { createDesk } from './screens/desk.js';
+import { installNotices } from './screens/notices.js';
 
 // 案头花笺（启幕时案上那三张）：开局后换成真时政
 const NOTES = [['陕西大饥', ['延庆诸府赤地千里', '斗米值银七钱', '饥民聚众于渭北']], ['太仓告匮', ['九边欠饷九十余日', '太仓仅存八十万', '户部请发内帑']], ['辽东空悬', ['督师缺员已两月', '关宁兵饷俱匮', '请速简大臣']]];
@@ -57,6 +58,7 @@ export async function startApp(root) {
   const as = params.get('as');
   if (as) game.on('game:entered', () => game.setViewAs(as));
   const desk = createDesk({ root, stage, study, map, game, labels, clouds });
+  installNotices({ game, profile: () => desk.profile });
   const title = createTitle({
     root, stage, study, game,
     onEnter: async () => { title.hide(); await desk.show(); }

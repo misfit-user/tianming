@@ -122,3 +122,16 @@ html[data-layout='compact'] .scr-desk .left { display: none; }
   background: var(--paper-grain), linear-gradient(180deg, #f4ecdb, #e6d6b4); border-left: .1875rem solid var(--verm); box-shadow: var(--sh-paper);
   animation: q-toast 4.2s var(--ease-out) forwards; }
 @keyframes q-toast { 0% { opacity: 0; transform: translateY(-.5rem); } 8%, 82% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* 挪进新前端的老弹窗（尚未重做者，见 adapter/kernel.js watchLegacyOverlays）：通用弹窗配纸卷样式；内联样式的照原样 */
+#tm-newui-root > .tm-legacy-pass { z-index: 64; }
+#tm-newui-root > .generic-modal-overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(10, 5, 2, .62); }
+#tm-newui-root .generic-modal { width: min(48rem, 92vw); max-height: 84vh; display: flex; flex-direction: column; color: var(--ink); font-family: var(--f-kai);
+  background: var(--paper-grain), linear-gradient(180deg, #f4ecd9, #e7d9b8); box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(120, 90, 50, .3); }
+#tm-newui-root .generic-modal-header { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1.25rem .625rem; border-bottom: 1px solid rgba(163, 40, 27, .3); }
+#tm-newui-root .generic-modal-header h3 { margin: 0; font: 400 var(--fs-6) var(--f-title); letter-spacing: .2em; }
+#tm-newui-root .generic-modal-body { flex: 1; min-height: 0; overflow: auto; padding: 1rem 1.25rem; font-size: var(--fs-3); line-height: 1.9; }
+#tm-newui-root .generic-modal-footer { display: flex; justify-content: flex-end; gap: .75rem; padding: .625rem 1.25rem .875rem; border-top: 1px solid rgba(120, 90, 50, .25); }
+#tm-newui-root .tm-legacy-pass button { font-family: var(--f-kai); cursor: pointer; }
+#tm-newui-root .generic-modal .bt { padding: .25rem .875rem; border: 0; color: var(--ink); background: linear-gradient(180deg, #f5eddc, #dccaa4); box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(120, 90, 50, .35); }
+#tm-newui-root .generic-modal .bt.bp { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); }

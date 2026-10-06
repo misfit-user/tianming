@@ -384,6 +384,36 @@ export function issues(limit = 3) {
   }));
 }
 
+// 史官实录：回合史记（GM.shijiHistory，每回合一条）。目录与单条全文
+const txt = (v) => (v == null ? '' : typeof v === 'string' ? v : String(v));
+function lineOf(x) {
+  if (x == null) return '';
+  if (typeof x === 'string') return x;
+  if (typeof x !== 'object') return String(x);
+  const who = x.name || x.character || x.who || x.target || '';
+  const what = x.change || x.action || x.desc || x.description || x.content || x.text || x.summary || x.result || '';
+  const tail = x.status || x.outcome || x.feedback || '';
+  return [who, what, tail].filter(Boolean).join('　') || '';
+}
+export function annals() {
+  return (G().shijiHistory || []).map((s, i) => ({ idx: i, turn: s.turn, time: txt(s.time), title: txt(s.szjTitle), summary: txt(s.turnSummary) }));
+}
+export function annal(idx) {
+  const list = G().shijiHistory || [];
+  const i = idx == null ? list.length - 1 : idx;
+  const s = list[i];
+  if (!s) return null;
+  return {
+    idx: i, total: list.length, turn: s.turn, time: txt(s.time), title: txt(s.szjTitle), summary: txt(s.turnSummary), szjSummary: txt(s.szjSummary),
+    shilu: txt(s.shilu), shizhengji: txt(s.shizhengji), zhengwen: txt(s.zhengwen && s.zhengwen !== s.shizhengji ? s.zhengwen : ''), houren: txt(s.houren),
+    playerStatus: txt(s.playerStatus), playerInner: txt(s.playerInner),
+    personnel: (Array.isArray(s.personnel) ? s.personnel : []).map(lineOf).filter(Boolean),
+    edicts: s.edicts && typeof s.edicts === 'object' ? Object.entries(s.edicts).filter(([, v]) => v && typeof v === 'string' && v.trim()).map(([k, v]) => [k, v]) : [],
+    edictReports: (Array.isArray(s.edictReports) ? s.edictReports : []).map(lineOf).filter(Boolean),
+    suggestions: (Array.isArray(s.suggestions) ? s.suggestions : []).map(lineOf).filter(Boolean)
+  };
+}
+
 // 邸报全卷：编年（GM._chronicle）由新到旧，按日期分；标题取首个【…】，正文去掉标题。系统记账类（paradigm、scenario、system）不列
 export function gazette(limit = 160) {
   const ts = fn('getTSText');

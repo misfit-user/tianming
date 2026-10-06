@@ -97,9 +97,13 @@ function installFeedback() {
     bus.emit('kernel:toast', { text: String(msg ?? '') });
     return orig.apply(this, arguments);
   });
+  // 回合史记：内核在「尚未落档」「朝会进行中」时只暂存、过后再调；真正显示时才给 #turn-modal 加 show。只在真显示时发事件
   swap('showTurnResult', (orig) => function () {
-    bus.emit('game:turn-result', { args: [...arguments].map((a) => (typeof a === 'string' ? a : null)) });
-    return orig.apply(this, arguments);
+    const modal = document.getElementById('turn-modal');
+    if (modal) modal.classList.remove('show');
+    const r = orig.apply(this, arguments);
+    if (!modal || modal.classList.contains('show')) bus.emit('game:turn-result', { idx: w.GM && typeof w.GM._trCurrentIdx === 'number' ? w.GM._trCurrentIdx : null });
+    return r;
   });
   // 内核每次「该重画了」都会调 renderGameState：新前端据此刷新读数（合并成一帧一次）
   let pending = false;
@@ -146,14 +150,53 @@ function plain(v) {
   return out;
 }
 
-// 开发期守望：老界面若自己弹出了浮层（新前端还没接管的那些），记下来并发事件，免得流程卡在看不见的弹窗上
+// 急报与驻留提示：老界面挂全屏遮罩「朕已知晓」、角落提示条；新前端接过来自己画（kernel:urgent / kernel:notice）。
+// 仍先调原函数（它要记一笔通知史），再把它挂上去的老节点摘掉
+function installNotices() {
+  const ns = w.NotificationSystem;
+  if (!ns) { console.warn('[newui] 内核里没有 NotificationSystem，急报未接管'); return; }
+  const urgent = ns.urgent, persist = ns.persist;
+  ns.urgent = function (title, detail, onConfirm) {
+    const before = new Set(document.querySelectorAll('.notify-urgent'));
+    urgent.apply(this, arguments);
+    document.querySelectorAll('.notify-urgent').forEach((n) => { if (!before.has(n)) n.remove(); });
+    let done = false;
+    bus.emit('kernel:urgent', { title: String(title ?? ''), detail: String(detail ?? ''), confirm() { if (done) return; done = true; if (typeof onConfirm === 'function') onConfirm(); } });
+  };
+  ns.persist = function (msg) {
+    const box = document.getElementById('notify-container');
+    const before = box ? new Set(box.children) : new Set();
+    persist.apply(this, arguments);
+    const after = document.getElementById('notify-container');
+    if (after) [...after.children].forEach((n) => { if (!before.has(n)) n.remove(); });
+    bus.emit('kernel:notice', { text: String(msg ?? '') });
+  };
+}
+
+// 老界面自己弹出的浮层：
+//   新前端已另画的（TAKEN）照旧藏着；
+//   通用弹窗（generic-modal-overlay，许多子系统共用）与内联样式的全屏遮罩（例如战前御驾／委之、战报、他方旁观——它们等玩家点了流程才往下走）
+//   一律挪进新前端根节点，让玩家照样看得见、点得了（screens.css 给老弹窗的几个类配了纸卷样式），流程不至卡在看不见的弹窗上；
+//   其余记一笔、发 legacy:overlay
+const TAKEN = new Set(['tm-newui-root', '_situationModal', 'tm-nokey-banner', 'tm-firstturn-guide', 'tm-changelog-ov', 'notify-container']);
+function blocking(n) {
+  if (/generic-modal-overlay|modal-overlay|-overlay\b/.test(String(n.className || ''))) return true;
+  const s = n.style;
+  return s && s.position === 'fixed' && (Number(s.zIndex) >= 1000 || s.inset === '0px' || (s.top === '0px' && s.left === '0px'));
+}
 function watchLegacyOverlays() {
-  const known = new Set(['tm-newui-root']);
   const mo = new MutationObserver((list) => {
     for (const m of list) {
       for (const n of m.addedNodes) {
-        if (!(n instanceof HTMLElement) || known.has(n.id) || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || n.tagName === 'LINK') continue;
+        if (!(n instanceof HTMLElement) || TAKEN.has(n.id) || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || n.tagName === 'LINK') continue;
         const desc = { id: n.id || '', className: String(n.className || '').slice(0, 80), text: (n.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80) };
+        const root = document.getElementById('tm-newui-root');
+        if (root && blocking(n)) {
+          n.classList.add('tm-legacy-pass');
+          root.append(n);
+          bus.emit('legacy:pass', desc);
+          continue;
+        }
         if (!desc.text && !desc.id) continue;
         console.warn('[newui] 老界面弹出了未接管的浮层', desc);
         bus.emit('legacy:overlay', desc);
@@ -170,5 +213,6 @@ export function installKernelBridge() {
   installOpening();
   installFeedback();
   installLifecycle();
+  installNotices();
   watchLegacyOverlays();
 }

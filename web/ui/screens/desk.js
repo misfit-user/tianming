@@ -15,6 +15,7 @@ import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
+import { openAnnals } from './annals.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 // 七种看法对应老舆图的计分（adapter mapLayer）；势力即本色，不另染
@@ -339,6 +340,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function onBook(key, name) {
     if (key === 'map') return dive.mode === 'desk' ? enterMap() : dive.rise();
     if (key === 'people') return atlas.show();
+    if (key === 'annals') return openAnnals({ game, profile: () => prof });
     building(name, '');
   }
   function onChannel(c) {
@@ -351,7 +353,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (name === 'memorials') return onChannel(ch('pi'));
     if (name === 'writing') return onChannel(ch('ling'));
     if (name === 'letterbox') return onChannel(ch('shu'));
-    if (name === 'books') return building(prof.books[prof.books.length - 1][1], '');
+    if (name === 'books') return openAnnals({ game, profile: () => prof });
     if (name === 'seal') return onSeal();
     if (name === 'tray') return readOnly() || issues.open();
   }
@@ -386,6 +388,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       refresh();
       el.classList.add('on');
       offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('view:changed', refresh),
+        game.on('game:turn-result', (r) => openAnnals({ game, profile: () => prof, idx: r && r.idx })),
         game.on('game:entered', () => loadWorld().then(refresh)));
     },
     hide() {

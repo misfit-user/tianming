@@ -77,3 +77,22 @@
 .gz-item p { margin: .25rem 0 0; font-size: var(--fs-3); line-height: 1.95; color: var(--ink-soft); white-space: pre-wrap; }
 .gz-more { margin-top: .25rem; padding: 0; border: 0; background: none; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--verm); letter-spacing: .2em; }
 .gz-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); }
+
+/* 史官实录 */
+.an { display: flex; flex-direction: column; gap: .75rem; height: 100%; }
+.an-head b { display: block; font: 400 var(--fs-6) var(--f-print); letter-spacing: .14em; }
+.an-head small { font-size: var(--fs-2); letter-spacing: .2em; color: var(--ink-faint); }
+.an-head p { margin: .375rem 0 0; font-size: var(--fs-3); line-height: 1.9; color: var(--ink-soft); }
+.an-inner { margin: 0; padding: .375rem .875rem; font-size: var(--fs-3); line-height: 1.8; font-style: italic; color: #6a4a6a; border-left: 2px solid rgba(138, 58, 106, .4); }
+.an-tabs { display: flex; gap: .375rem; flex-wrap: wrap; }
+.an-tabs button { padding: .125rem .75rem; border: 0; cursor: pointer; font: var(--fs-3) var(--f-kai); letter-spacing: .15em; color: var(--ink-soft); background: rgba(163, 120, 60, .07); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .28); }
+.an-tabs button.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
+.an-page { flex: 1; min-height: 0; overflow: auto; padding-right: .5rem; }
+.an-text { white-space: pre-wrap; font-size: var(--fs-4); line-height: 2.05; letter-spacing: .03em; }
+.an-text.shilu { font-family: var(--f-print); font-size: var(--fs-5); }
+.an-text.houren { color: var(--ink-soft); }
+.an-list { margin: 0; padding-left: 1.5rem; font-size: var(--fs-3); line-height: 1.95; }
+.an-page h5 { margin: .5rem 0 .375rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--verm); }
+.an-edict { margin: 0 0 .375rem; font-size: var(--fs-3); line-height: 1.9; white-space: pre-wrap; }
+.an-edict b { font-weight: 400; color: var(--verm); }
+.an-none { margin: 4rem 0; text-align: center; font-size: var(--fs-4); letter-spacing: .2em; color: var(--ink-faint); }

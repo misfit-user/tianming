@@ -6191,13 +6191,13 @@
     },
     {
       "path": "tm-npc-daily-activities.js",
-      "sha256": "84c36acee8d514d12ed927db8840a3f94fa8eeac773eeb40150996195d147360",
-      "size": 65464
+      "sha256": "2869cbf05539e3cf3e09270a62516219594b91c10ce3c81eb655b61bb236419e",
+      "size": 81097
     },
     {
       "path": "tm-npc-daily-ui.js",
-      "sha256": "de3846148a1db1781b85afa2d2508399fcf4add821746328998a8827add1395d",
-      "size": 17893
+      "sha256": "ca266c1272a1ff82517d3505d045d74a2068762842cd3327b038d4797a6451aa",
+      "size": 19586
     },
     {
       "path": "tm-npc-decision-ai-driven.js",
@@ -6216,8 +6216,8 @@
     },
     {
       "path": "tm-npc-local-ai.js",
-      "sha256": "a77acd432b9d482a227031796a08504f018bea13b5529fd30cbafe9a5bf81786",
-      "size": 75679
+      "sha256": "5ae80158f4ec0b348b57c5ed616667be07e1ce18dce6893b740c4696c54ca4be",
+      "size": 77101
     },
     {
       "path": "tm-npc-travel.js",

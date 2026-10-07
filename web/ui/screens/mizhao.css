@@ -1,0 +1,31 @@
+/* 独召密问的老弹层：照建、挪到画外、点不着；画面由新前端镜出来 */
+html.tm-newui body > div#mizhao-picker, html.tm-newui body > div#mizhao-dialog, html.tm-newui body > div#mz-summary-panel {
+  position: fixed !important; left: -300vw !important; top: 0 !important; width: 1200px !important; height: 860px !important; opacity: 0 !important; pointer-events: none !important; }
+.scr-mizhao .ct-topic p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory-soft); }
+
+/* 选人选题卷 */
+.mz-pick { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: .75rem 1.25rem; height: 100%; min-height: 0; }
+.mz-pick section { display: flex; flex-direction: column; min-height: 0; }
+.mz-pick h5 { margin: 0 0 .5rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .4em; color: #6a1f12; border-bottom: 1px solid rgba(163, 40, 27, .25); }
+.mz-hint { grid-column: 1 / -1; text-align: right; font-size: var(--fs-2); color: var(--ink-faint); }
+.mz-faces { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: .5rem; align-content: start; scrollbar-width: thin; }
+.mz-face { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .375rem .25rem; border: 0; cursor: pointer; background: transparent; box-shadow: inset 0 0 0 1px transparent; }
+.mz-face .q-zhou { width: 4.25rem; pointer-events: none; }
+.mz-face small { max-width: 100%; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mz-face:hover { background: rgba(255, 246, 226, .6); }
+.mz-face.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 0 0 2px #a3301f; }
+.mz-face.on small { color: #8a2a1c; }
+.mz-issues { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .375rem; scrollbar-width: thin; }
+.mz-issues button { display: flex; flex-direction: column; align-items: flex-start; gap: .125rem; padding: .5rem .75rem; border: 0; cursor: pointer; text-align: left; font-family: var(--f-kai);
+  color: var(--ink); background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.mz-issues button b { font-weight: 400; font-size: var(--fs-3); line-height: 1.5; }
+.mz-issues button small { font-size: var(--fs-1); color: var(--ink-faint); }
+.mz-issues button.on { background: rgba(255, 246, 226, .95); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(140, 40, 28, .4); }
+
+/* 建言要点卷 */
+.mz-sums { display: flex; flex-direction: column; gap: .625rem; }
+.mz-sum { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .25rem .75rem; padding: .625rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #a8833a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.mz-sum b { grid-column: 1 / -1; font: 400 var(--fs-4) var(--f-title); letter-spacing: .15em; color: #6a1f12; }
+.mz-sum p { margin: 0; font-size: var(--fs-3); line-height: 1.85; color: var(--ink); }
+.mz-sum .q-yapai, .mz-sum small { align-self: end; }
+.mz-sum small.done { font-size: var(--fs-2); color: #2f6b55; }

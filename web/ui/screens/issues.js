@@ -1,6 +1,6 @@
 // 时政：案头那一托盘花笺（元首一档即御案时政）。展一卷花笺清册——待决、省览、已决；点一张展其详卷，
 // 看详情、关涉之人与势力、风势推演、史馆旧案，拍板（内核可能先请 AI 据国势裁定后果，故有「裁断中」）。
-// 召对群臣、独召密问要等朝议、问对两页接上。名目取身份档 issues。
+// 召对群臣开朝议，独召密问开密问。名目取身份档 issues。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
@@ -8,7 +8,7 @@ import { juan } from '../kit/index.js';
 
 const GROUPS = [['open', '待决'], ['info', '省览'], ['done', '已决']];
 
-export function createIssues({ game, profile, onConvene }) {
+export function createIssues({ game, profile, onConvene, onSecret }) {
   let listBody = null;
 
   function card(it) {
@@ -65,10 +65,10 @@ export function createIssues({ game, profile, onConvene }) {
       it.group === 'open' && it.choices.length ? sec(t.decide, h('div.iss-choices', choiceBtns), busy) : null,
       it.resolvedOn ? h('div.iss-when', `· 于 ${it.resolvedOn} 议决 ·`) : null);
     const meta = [it.raised, it.category, it.severity, it.region ? '影响·' + it.region : ''].filter(Boolean).join(' · ');
-    const later = (label) => () => juan({ title: label, width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '朝议、问对两页随后接上；眼下可先在此拍板。') });
     const j = juan({
       title: it.title, note: meta, width: '50rem', height: 'min(44rem, 84vh)', content,
-      actions: it.group === 'open' ? [{ label: t.convene, onclick: onConvene ? ({ close }) => { close('ok'); onConvene(it.id); } : later(t.convene) }, { label: t.secret, onclick: later(t.secret) }] : []
+      actions: it.group === 'open' ? [onConvene ? { label: t.convene, onclick: ({ close }) => { close('ok'); onConvene(it.id); } } : null,
+        onSecret ? { label: t.secret, onclick: ({ close }) => { close('ok'); onSecret(it.id); } } : null].filter(Boolean) : []
     });
 
     async function choose(c) {

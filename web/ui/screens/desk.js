@@ -21,6 +21,7 @@ import { createGuoshi } from './guoshi.js';
 import { createRealm } from './realm.js';
 import { createArchive } from './archive.js';
 import { createBio } from './bio.js';
+import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -412,7 +413,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 召对、廷议两页建在后头；这里的回调用到时才取
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); },
     onSummon: (name) => { el.classList.add('on'); audiencePage.summon(name); } });
-  const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); } });
+  const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); }, onSecret: (id) => { if (!readOnly()) mizhaoPage.pick(id); } });
   const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onBio: (name) => bioPage.show(name) });
   // 列传：召对、传书、官制、追赠（开撰写）、回图志
   const bioPage = createBio({ root, game, profile: () => prof, onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onLetter: (name) => openLetters(name),
@@ -434,6 +435,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 朝议：镜老流程；筹备卷、实录页都跟着内核的快照走
   const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('court:entered', () => el.classList.remove('on'));
+  // 独召密问：选人选题一卷，入对后景同朝议
+  const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => el.classList.remove('on'), onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('audience:open', () => el.classList.remove('on'));
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志
   const fiscalPage = createFiscal({ root, game });
@@ -467,7 +470,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
   let pausing = false;
   function pause() {
-    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || courtPage.opened || document.querySelector('.q-juan-veil')) return;
+    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || courtPage.opened || mizhaoPage.opened || document.querySelector('.q-juan-veil')) return;
     pausing = true;
     const item = (label, fn) => h('button.q-yapai.pz-item', { type: 'button', onclick: () => { j.close('ok'); fn(); } }, label);
     const j = juan({

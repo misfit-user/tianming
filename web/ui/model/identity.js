@@ -47,7 +47,7 @@ export const PROFILES = {
       verdicts: [['approved', '准', '依议准行'], ['rejected', '驳', '不准所请'], ['annotated', '批', '朱笔示意'], ['held', '留中', '暂不发下'],
         ['referred', '交部议', '着有司议处'], ['court_debate', '付廷议', '下廷臣会议'], ['summon', '召对', '召上奏者面询']]
     },
-    issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
+    issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', secretEnd: '退朝', secretSummary: '建言要点', empty: '四海升平　暂无要务', people: '关涉群臣' },
     urgentAck: '朕已知晓',
     bio: { lord: '君上', now: '今上', note: '御笔朱批', posthumous: '追赠', mind: '御览心志' },
     social: { summonParty: '召党魁', summonClass: '召代表', court: '付廷议', partyDraft: '拟平衡诏', classDraft: '拟安抚诏' },

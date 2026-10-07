@@ -61,8 +61,25 @@ export function header() {
 }
 
 // 议事清册：奏疏、问对、朝议等处摘来、尚未用过的建言
+// 特科、书院诸建议可先问本部（恩科、童子科问礼部，武举问兵部，书院问学政）：同老御案清册条上那枚小钮
+const ASK = [['_enkeSubtype', '_kjG2OpenLibuEnkeWendui', '问礼部'], ['_wujuSubtype', '_kjG3OpenBingbuWujuWendui', '问兵部'],
+  ['_schoolSubtype', '_kjpHOpenLibuSchoolWendui', ''], ['_tongziSubtype', '_kjG5OpenLibuTongziWendui', '问礼部']];
+function askOf(s) {
+  const a = ASK.find(([k, f]) => s[k] && typeof w[f] === 'function');
+  if (!a) return null;
+  let label = a[2];
+  if (!label) { try { label = typeof w._kjpHGetXuezhengLabel === 'function' ? String(w._kjpHGetXuezhengLabel()).slice(0, 4) : '问学政'; } catch (_e) { label = '问学政'; } }
+  return { fn: a[1], label };
+}
+export function askDept(i) {
+  const s = (G()._edictSuggestions || [])[i];
+  const a = s && askOf(s);
+  if (!a) throw new Error('此条无部可问');
+  return w[a.fn]() !== false;
+}
 export function suggestions() {
-  return (G()._edictSuggestions || []).map((s, i) => ({ i, source: s.source || '', from: s.from || '', content: String(s.content || s.text || ''), turn: s.turn, used: !!s.used, topic: s.topic || '' }))
+  return (G()._edictSuggestions || []).map((s, i) => ({ i, source: s.source || '', from: s.from || '', content: String(s.content || s.text || ''), turn: s.turn, used: !!s.used, topic: s.topic || '',
+    ask: (s && askOf(s) || {}).label || '' }))
     .filter((s) => !s.used && s.content);
 }
 export function useSuggestion(i) {

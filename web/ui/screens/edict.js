@@ -112,9 +112,15 @@ export function createEdict({ root, study, game, profile, onClose, onPromulgate 
   }
   function renderSugs() {
     const list = E.suggestions();
-    replaceChildren(sugList, list.length ? list.map((s) => h('button.ed-sug', { type: 'button', title: s.content, onclick: () => adopt(s) },
-      h('small', [s.source, s.from].filter(Boolean).join(' · ')), h('span', s.content.length > 54 ? s.content.slice(0, 54) + '……' : s.content)))
+    replaceChildren(sugList, list.length ? list.map((s) => h('div.ed-sug-row', h('button.ed-sug', { type: 'button', title: s.content, onclick: () => adopt(s) },
+      h('small', [s.source, s.from].filter(Boolean).join(' · ')), h('span', s.content.length > 54 ? s.content.slice(0, 54) + '……' : s.content)),
+      s.ask ? h('button.ed-sug-ask', { type: 'button', title: `${s.ask}，听其意见再定`, onclick: () => askDept(s) }, s.ask) : null))
       : [h('p.ed-none', `尚无摘录。批阅${prof.docket.name}时划选正文可摘入此处。`)]);
+  }
+  // 先问本部：收起诏书页，由内核开问对（召对页接过去）
+  async function askDept(s) {
+    await close();
+    try { E.askDept(s.i); } catch (e) { toast(e.message); }
   }
   function adopt(s) {
     const ta = secs[focus].ta;

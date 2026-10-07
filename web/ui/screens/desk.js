@@ -21,6 +21,8 @@ import { createGuoshi } from './guoshi.js';
 import { createRealm } from './realm.js';
 import { createArchive } from './archive.js';
 import { createWenyuan } from './wenyuan.js';
+import { createKeju } from './keju.js';
+import { createKeyi } from './keyi.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
@@ -309,6 +311,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const sig = JSON.stringify(notes);
     if (sig !== notesSig) { notesSig = sig; study.setNotes(notes); }
     mapNote.textContent = `${d.era || ''} · ${num((map.regions || []).length)}府州`;
+    // 科举有待定夺之事（选主考、定题、拟策问、钦定三甲……）：书目「科」挂一枝签
+    const kb = prof.books.find((b) => b[2] === 'keju');
+    const kw = kb && [...rail.children].find((b) => b.dataset.name === kb[1]);
+    if (kw) {
+      const due = per.previewing ? '' : game.keju.pending();
+      const tagEl = kw.querySelector('.q-qian');
+      if (due && !tagEl) kw.append(h('span.q-qian', '待'));
+      if (!due && tagEl) tagEl.remove();
+      kw.title = due ? `${kb[1]} · ${game.keju.STAGES_NEED[due] || '待定夺'}` : '';
+    }
   }
 
   // 一件时政写成一张花笺：题取首句（至多六字），正文拆成三短行（每行至多八字）
@@ -391,6 +403,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'army') return armyPage.show();
     if (key === 'realm') return realmPage.show();
     if (key === 'wenyuan') return wenyuanPage.show();
+    if (key === 'keju') return kejuPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -433,7 +446,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     lettersPage.open(name);
   }
   // 召对：名单一卷；择人择体后，书房换景、书案让位
-  const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode) });
+  const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode),
+    onExternal: () => { kejuPage.hide(); wenyuanPage.hide(); } });
   // 朝议：镜老流程；筹备卷、实录页都跟着内核的快照走
   const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('court:entered', () => el.classList.remove('on'));
@@ -456,6 +470,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
   const wenyuanPage = createWenyuan({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
+  // 科举册；科议画在殿上，开议时收册，散议后若是从册里起的便回册
+  const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
+  let keyiFromBook = false;
+  const keyiPage = createKeyi({ root, study, game, profile: () => prof,
+    onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); },
+    onClose: () => { el.classList.add('on'); refresh(); if (keyiFromBook) kejuPage.show(); } });
+  bus.on('ui:keju', () => { if (!readOnly()) kejuPage.show(); });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
@@ -473,7 +494,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
   let pausing = false;
   function pause() {
-    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || courtPage.opened || mizhaoPage.opened || document.querySelector('.q-juan-veil')) return;
+    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || courtPage.opened || mizhaoPage.opened || keyiPage.opened || document.querySelector('.q-juan-veil')) return;
     pausing = true;
     const item = (label, fn) => h('button.q-yapai.pz-item', { type: 'button', onclick: () => { j.close('ok'); fn(); } }, label);
     const j = juan({

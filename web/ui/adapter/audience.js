@@ -113,18 +113,37 @@ function opened(name) {
   return true;
 }
 export function open(name, mode = 'formal') {
-  call('openWenduiModal', name, mode);
+  own(() => call('openWenduiModal', name, mode));
   return opened(name);
 }
+// 别的系统径自开问对（科举「问礼部」、恩科武举童子科、书院……调 openWenduiModal(人, 'cedui', 预填)）：
+// 包一层，非新前端自己开的就发 audience:external，召对页照常接过去（takeOver）
+let mine = 0;
+function own(f) { mine++; try { return f(); } finally { mine--; } }
+function wrapOpen() {
+  const orig = w.openWenduiModal;
+  if (typeof orig !== 'function' || orig.__newui) return;
+  const wrapped = function (...args) {
+    const r = orig.apply(this, args);
+    const name = args[0];
+    if (!mine && name && G().wenduiTarget === name && $('wendui-modal')) bus.emit('audience:external', { name, mode: args[1] || '' });
+    return r;
+  };
+  wrapped.__newui = true;
+  w.openWenduiModal = wrapped;
+}
+wrapOpen();
+bus.on('kernel:ready', wrapOpen);
+export function takeOver(name) { return opened(name); }
 // 有臣求见：接见即正式问对，且由对方先开口（内核稍候即流式说出来意）
 export function openSeeking(name) {
-  call('_wdOpenAudience', name);
+  own(() => call('_wdOpenAudience', name));
   return opened(name);
 }
 // 阶下待见：使节等（内核为使节临时立人）
 export function openQueue(qid) {
   const q = (G()._pendingAudiences || []).find((x) => x && x._qid === qid);
-  call('_wdOpenAudienceQueue', qid);
+  own(() => call('_wdOpenAudienceQueue', qid));
   return q ? opened(q.name) : false;
 }
 

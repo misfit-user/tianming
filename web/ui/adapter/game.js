@@ -20,6 +20,8 @@
 //   game.mizhao.open(诸臣, 议题) / ask / end …         独召密问（adapter/mizhao.js 镜老流程）
 //   game.archive.catalog() / annotate / star         史馆：四库旧档（adapter/archive.js）
 //   game.wenyuan.works() / stats / act(篇, 动作)       文苑：诗文总集（adapter/wenyuan.js）
+//   game.keju.overview() / selectExaminer / answer …  科举：制度、本科各阶段、阅卷放榜（adapter/keju.js）
+//   game.keyi.snapshot() / speak / toVote / decide …  科议（adapter/keyi.js 照 KEYI_STATE 读）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -41,6 +43,8 @@ import * as bio from './bio.js';
 import * as mizhao from './mizhao.js';
 import * as archive from './archive.js';
 import * as wenyuan from './wenyuan.js';
+import * as keju from './keju.js';
+import * as keyi from './keyi.js';
 
 const w = window;
 let ready = null;
@@ -288,7 +292,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, wenyuan, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, wenyuan, keju, keyi, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

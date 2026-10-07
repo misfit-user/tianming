@@ -5,7 +5,7 @@
 // 认的老标识：#mizhao-picker（选人选题层，开了即由 _mzProceed 收掉）、#mizhao-dialog（#mz-dlg-body 发言、#mz-dlg-input 垂询、
 // #mz-send-btn），#mz-summary-panel（#mz-summary-body 下每人一块：mz-sum-* 归纳、*-act 显出即可纳入）。
 import { bus } from '../core/bus.js';
-import { claimOverlays } from './kernel.js';
+import { claimOverlays, legacyMutation } from './kernel.js';
 import { suggest } from './edict.js';
 
 const w = window;
@@ -85,7 +85,7 @@ function emit() {
 }
 function watch() {
   if (mo) return;
-  mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(emit); });
+  mo = new MutationObserver((list) => { if (!raf && legacyMutation(list)) raf = requestAnimationFrame(emit); });
   mo.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'disabled'] });
 }
 function stop() {

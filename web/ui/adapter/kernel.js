@@ -225,6 +225,11 @@ const claims = [];
 export function claimOverlays(test) {
   claims.push(test);
 }
+// 盯老弹层用的变动过滤：落在新前端根节点里的变动（新画面自己重画）不算
+export function legacyMutation(list) {
+  const root = document.getElementById('tm-newui-root');
+  return list.some((m) => !root || !root.contains(m.target));
+}
 const claimed = (n) => claims.some((f) => { try { return f(n); } catch (_e) { return false; } });
 function watchLegacyOverlays() {
   const mo = new MutationObserver((list) => {

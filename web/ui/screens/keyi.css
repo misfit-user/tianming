@@ -1,0 +1,22 @@
+/* 科议：老弹层照建、挪到画外、点不着；画面借朝议（.scr-court、.ct-*） */
+html.tm-newui body > div#keyi-modal {
+  position: fixed !important; left: -300vw !important; top: 0 !important; width: 1200px !important; height: 860px !important; opacity: 0 !important; pointer-events: none !important; }
+.scr-keyi .ct-topic p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory-soft); }
+.scr-keyi .ct-say[hidden], .scr-keyi .ky-tide[hidden] { display: none; }
+.scr-keyi .slip:disabled { opacity: .5; cursor: default; transform: none; }
+.scr-keyi .slip.warn { color: #f9ead2; background: linear-gradient(90deg, #2a1d14, #4a3424 45%, #2a1d14); box-shadow: 0 .625rem 1.375rem rgba(20, 10, 4, .55), inset 0 0 0 1px rgba(240, 160, 128, .55); }
+
+/* 表决之潮：赞成、观望、反对三色按人数分宽，朱线是门槛 */
+.ky-tide { flex: 1; min-width: 14rem; display: flex; align-items: center; gap: .75rem; padding-bottom: .5rem; }
+.ky-tide .ct-tide { position: relative; height: 2rem; overflow: visible; background: rgba(20, 12, 6, .55); }
+.ky-tide .ct-tide i { font-size: var(--fs-2); }
+.ky-tide .ky-line { position: absolute; top: -.375rem; bottom: -.375rem; width: 2px; margin-left: -1px; background: #e8c982; box-shadow: 0 0 .375rem rgba(232, 201, 130, .8); }
+.ky-tide > small { font: var(--fs-3) var(--f-kai); color: #f3dcb0; text-shadow: 0 1px 3px #000; }
+.ky-tide > .track { flex: 1; height: .5rem; background: rgba(20, 12, 6, .6); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .35); }
+.ky-tide > .track i { display: block; height: 100%; background: linear-gradient(90deg, #3f7a62, #e8c982); transition: width .3s; }
+
+.ky-stances p { display: grid; grid-template-columns: 3rem 6.5rem minmax(0, 1fr); align-items: baseline; gap: .5rem; margin: 0 0 .375rem; font-size: var(--fs-3); line-height: 1.8; }
+.ky-stances .ct-st { justify-self: start; }
+.ky-stances .ct-st.sup { color: #2f6b55; } .ky-stances .ct-st.opp { color: #a8261a; } .ky-stances .ct-st.neu { color: #6a5a44; }
+.ky-stances b { font-weight: 400; }
+.ky-stances span { color: var(--ink-soft); }

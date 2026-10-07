@@ -5,12 +5,12 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
-import { juan, qianzi, zhou, loadFonts } from '../kit/index.js';
+import { juan, qianzi, zhou, loadFonts, closeScrolls } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const EMOTION = ['', '镇定', '从容', '拘谨', '不安', '惶恐'];
 
-export function createAudience({ root, study, game, profile, onClose, onLetter, onCourt }) {
+export function createAudience({ root, study, game, profile, onClose, onLetter, onCourt, onExternal }) {
   const A = game.audience;
   let prof = profile();
   let opened = false;
@@ -108,6 +108,8 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     if (!live) render();
   });
   bus.on('audience:closed', () => { if (opened) finish(); });
+  // 别的系统径自开的问对（如科举「问礼部」）：照常入对
+  bus.on('audience:external', ({ name }) => { if (!opened) { closeScrolls(); onExternal?.(); enter(() => A.takeOver(name)); } });
 
   // ---------- 名牌与动作 ----------
   function refreshPlate() {

@@ -7,7 +7,7 @@
 // 浮层 .cy-popover / #strict-queue-popover，二级输入 .cy-input-modal（#modal-input、#modal-ok），散朝 .cy-summary-mask；
 // 其余朝议期间临时挂上的遮罩（如御前深问选人）一并认作「择一」的浮层。
 import { bus } from '../core/bus.js';
-import { claimOverlays } from './kernel.js';
+import { claimOverlays, legacyMutation } from './kernel.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -300,7 +300,7 @@ function emit() {
 }
 function watch() {
   if (mo) return;
-  mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(emit); });
+  mo = new MutationObserver((list) => { if (!raf && legacyMutation(list)) raf = requestAnimationFrame(emit); });
   mo.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['style', 'class', 'disabled'] });
 }
 function stop() {

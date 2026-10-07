@@ -24,6 +24,7 @@
 //   annals   史记那一卷：卷名、令的叫法；archive 旧档总库（史馆）的册名，note 起居注上加批的叫法
 //   wenyuan  文苑册名、副题；acts 篇末动作 [键, 叫法]（键见 adapter/wenyuan.js ACTS，拟入议事清册；不设则只读）
 //   keju     科举册：册名、副题，筹办／启用／改制、礼部议题、策问、钦定、张榜、收科诸叫法
+//   gongwei  宫闱册（后妃、宫中尊长、皇嗣、宫苑）：四签之名与召幸、问安、晋封、降位、立储、修缮、移居、新建诸叫法（不设则书目不列此册）
 //   keyi     科议（科举诸事付廷臣公议）：插言叫什么、提示、再议／付表决／裁决／暂缓，开议前一问的叫法与代价
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
@@ -38,7 +39,7 @@ export const PROFILES = {
       ling: ['撰写诏书', '起草政令'], pi: ['百官奏疏', '御览奏报'], shu: ['鸿雁传书', '手札密谕'],
       jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '主角行止']
     },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['科', '科举', 'keju'], ['史', '史官实录', 'annals']],
+    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['科', '科举', 'keju'], ['宫', '宫闱', 'gongwei'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
     ledger: ['treasury', 'privy', 'census'], gauges: 'realm', map: 'realm',
     docket: {
@@ -59,6 +60,8 @@ export const PROFILES = {
       acts: [['appreciate', '赐阅赏析'], ['inscribe', '御题赐序'], ['echo', '命臣追和'], ['circulate', '传抄流布'], ['ban', '查禁'], ['unban', '解禁']] },
     keju: { title: '科举', sub: '取士 · 考校 · 放榜 · 铨授', propose: '提议筹办科举', enable: '请求启用科举', reform: '发起科举改革', libu: '召礼部商议',
       question: '天子策问', rank: '殿试读卷·钦定三甲', publish: '钦定·张榜天下', finish: '完成科举·天下有所知' },
+    gongwei: { title: '宫闱', sub: '后妃 · 皇嗣 · 宫苑', consorts: '后妃', elders: '宫中尊长', heirs: '皇嗣', palaces: '宫苑',
+      visit: '召幸', greet: '问安', promote: '晋封', demote: '降位', crown: '立为储君', renovate: '修缮', move: '移居', build: '修建新宫殿' },
     keyi: { title: '科议', speak: '圣谕', hint: '随时可降圣谕，众臣立场与表决随之而动', again: '再议一轮', vote: '付表决', decide: '继续裁决', shelve: '暂缓',
       ask: '开科议', cost: '耗精力十五' },
     guideTitle: '临朝须知',

@@ -24,6 +24,7 @@ import { createWenyuan } from './wenyuan.js';
 import { createKeju } from './keju.js';
 import { createKeyi } from './keyi.js';
 import { createWentian } from './wentian.js';
+import { createGongwei } from './gongwei.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
@@ -405,6 +406,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'realm') return realmPage.show();
     if (key === 'wenyuan') return wenyuanPage.show();
     if (key === 'keju') return kejuPage.show();
+    if (key === 'gongwei') return gongweiPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -448,7 +450,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   // 召对：名单一卷；择人择体后，书房换景、书案让位
   const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode),
-    onExternal: () => { kejuPage.hide(); wenyuanPage.hide(); } });
+    onExternal: () => { kejuPage.hide(); wenyuanPage.hide(); gongweiPage.hide(); } });
   // 朝议：镜老流程；筹备卷、实录页都跟着内核的快照走
   const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('court:entered', () => el.classList.remove('on'));
@@ -479,6 +481,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onClose: () => { el.classList.add('on'); refresh(); if (keyiFromBook) kejuPage.show(); } });
   bus.on('ui:keju', () => { if (!readOnly()) kejuPage.show(); });
   const wentianPage = createWentian({ root, game });
+  const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });

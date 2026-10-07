@@ -23,6 +23,7 @@
 //   game.keju.overview() / selectExaminer / answer …  科举：制度、本科各阶段、阅卷放榜（adapter/keju.js）
 //   game.keyi.snapshot() / speak / toVote / decide …  科议（adapter/keyi.js 照 KEYI_STATE 读）
 //   game.wentian.snapshot() / send / confirm …        问天（adapter/wentian.js，老管线照用）
+//   game.gongwei.court() / proposeRank / designate …  宫闱：后妃、尊长、皇嗣、宫苑（adapter/gongwei.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -47,6 +48,7 @@ import * as wenyuan from './wenyuan.js';
 import * as keju from './keju.js';
 import * as keyi from './keyi.js';
 import * as wentian from './wentian.js';
+import * as gongwei from './gongwei.js';
 
 const w = window;
 let ready = null;
@@ -294,7 +296,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, wenyuan, keju, keyi, wentian, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, wenyuan, keju, keyi, wentian, gongwei, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

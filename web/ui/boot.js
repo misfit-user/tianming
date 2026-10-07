@@ -18,7 +18,7 @@ function addStyle(href) {
 }
 
 async function start() {
-  await Promise.all(['kit/tokens.css', 'kit/fonts.css', 'kit/qi.css', 'scene/scene.css', 'screens/screens.css', 'screens/docket.css', 'screens/issues.css', 'screens/atlas.css', 'screens/edict.css', 'screens/letters.css', 'screens/audience.css', 'screens/offices.css', 'screens/fiscal.css', 'screens/court.css', 'screens/army.css', 'screens/guoshi.css'].map(addStyle));
+  await Promise.all(['kit/tokens.css', 'kit/fonts.css', 'kit/qi.css', 'scene/scene.css', 'screens/screens.css', 'screens/docket.css', 'screens/issues.css', 'screens/atlas.css', 'screens/edict.css', 'screens/letters.css', 'screens/audience.css', 'screens/offices.css', 'screens/fiscal.css', 'screens/court.css', 'screens/army.css', 'screens/guoshi.css', 'screens/realm.css'].map(addStyle));
   const root = document.createElement('div');
   root.id = 'tm-newui-root';
   root.className = 'q-root';

@@ -18,6 +18,7 @@ import { createOffices } from './offices.js';
 import { createFiscal } from './fiscal.js';
 import { createArmy } from './army.js';
 import { createGuoshi } from './guoshi.js';
+import { createRealm } from './realm.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -384,6 +385,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'offices') return officesPage.show();
     if (key === 'fiscal') return fiscalPage.show();
     if (key === 'army') return armyPage.show();
+    if (key === 'realm') return realmPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -437,6 +439,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (k === 'edict') return openEdict();
     return audiencePage.openRoster();
   } });
+  const realmPage = createRealm({ root, game });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {

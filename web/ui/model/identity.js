@@ -33,7 +33,7 @@ export const PROFILES = {
       ling: ['撰写诏书', '起草政令'], pi: ['百官奏疏', '御览奏报'], shu: ['鸿雁传书', '手札密谕'],
       jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '主角行止']
     },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['史', '史官实录', 'annals']],
+    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
     ledger: ['treasury', 'privy', 'census'], gauges: 'realm', map: 'realm',
     docket: {

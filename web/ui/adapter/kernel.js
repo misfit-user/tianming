@@ -220,11 +220,17 @@ function blocking(n) {
   const full = (v) => v === '100%' || v === '100vw' || v === '100vh';
   return s.inset === '0px' || (s.top === '0px' && s.left === '0px' && (s.right === '0px' || full(s.width)) && (s.bottom === '0px' || full(s.height)));
 }
+// 别的接管模块可以认领一类老浮层（如朝议的老弹层由 adapter/court.js 自己镜像），兜底就不挪、不报
+const claims = [];
+export function claimOverlays(test) {
+  claims.push(test);
+}
+const claimed = (n) => claims.some((f) => { try { return f(n); } catch (_e) { return false; } });
 function watchLegacyOverlays() {
   const mo = new MutationObserver((list) => {
     for (const m of list) {
       for (const n of m.addedNodes) {
-        if (!(n instanceof HTMLElement) || TAKEN.has(n.id) || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || n.tagName === 'LINK') continue;
+        if (!(n instanceof HTMLElement) || TAKEN.has(n.id) || n.tagName === 'SCRIPT' || n.tagName === 'STYLE' || n.tagName === 'LINK' || claimed(n)) continue;
         const desc = { id: n.id || '', className: String(n.className || '').slice(0, 80), text: (n.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80) };
         const root = document.getElementById('tm-newui-root');
         if (root && blocking(n)) {

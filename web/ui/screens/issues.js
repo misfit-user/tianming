@@ -8,7 +8,7 @@ import { juan } from '../kit/index.js';
 
 const GROUPS = [['open', '待决'], ['info', '省览'], ['done', '已决']];
 
-export function createIssues({ game, profile }) {
+export function createIssues({ game, profile, onConvene }) {
   let listBody = null;
 
   function card(it) {
@@ -68,7 +68,7 @@ export function createIssues({ game, profile }) {
     const later = (label) => () => juan({ title: label, width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '朝议、问对两页随后接上；眼下可先在此拍板。') });
     const j = juan({
       title: it.title, note: meta, width: '50rem', height: 'min(44rem, 84vh)', content,
-      actions: it.group === 'open' ? [{ label: t.convene, onclick: later(t.convene) }, { label: t.secret, onclick: later(t.secret) }] : []
+      actions: it.group === 'open' ? [{ label: t.convene, onclick: onConvene ? ({ close }) => { close('ok'); onConvene(it.id); } : later(t.convene) }, { label: t.secret, onclick: later(t.secret) }] : []
     });
 
     async function choose(c) {

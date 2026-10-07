@@ -13,7 +13,7 @@ const PAPER = { w: 760, h: 500, x: 0, z: 0, rot: 0.02, panels: 6 };   // 摊开�
 const COL = 44;                                          // 正文一竖行的宽（像素）
 const ORDER = ['urgent', 'pending', 'held', 'done'];
 
-export function createDocket({ root, study, game, profile, onClose }) {
+export function createDocket({ root, study, game, profile, onClose, onSummon }) {
   let items = [];
   let cur = 0;
   let page = 0, pages = 1;
@@ -164,6 +164,7 @@ export function createDocket({ root, study, game, profile, onClose }) {
     if (!m) return;
     const text = reply.value.trim();
     if (key === 'summon') {
+      if (onSummon) { const who = m.from; close().then(() => onSummon(who)); return; }
       juan({ title: label, note: m.from, width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '召对一页随后接上；眼下请先以别的签批之。') });
       return;
     }

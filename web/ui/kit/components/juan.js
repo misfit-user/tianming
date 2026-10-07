@@ -54,3 +54,8 @@ window.addEventListener('keydown', (e) => {
 export function openScrolls() {
   return stack.length;
 }
+
+// 收起此刻展着的各卷（换场时用，如朝议开场时收掉案头的时政卷）；keep 里的不收
+export function closeScrolls(keep = []) {
+  for (const j of [...stack]) if (!keep.includes(j)) j.close('sync');
+}

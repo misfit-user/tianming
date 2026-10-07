@@ -10,7 +10,7 @@ import { juan, qianzi, zhou, loadFonts } from '../kit/index.js';
 const toast = (text) => bus.emit('kernel:toast', { text });
 const EMOTION = ['', '镇定', '从容', '拘谨', '不安', '惶恐'];
 
-export function createAudience({ root, study, game, profile, onClose, onLetter }) {
+export function createAudience({ root, study, game, profile, onClose, onLetter, onCourt }) {
   const A = game.audience;
   let prof = profile();
   let opened = false;
@@ -344,7 +344,10 @@ export function createAudience({ root, study, game, profile, onClose, onLetter }
       zhou({ name: c.name, src: c.portrait }), h('small', c.title || ''), c.met ? h('i', '旧') : null);
     let j = null;
     const go = (f) => () => { j.close('ok'); f(); };
+    const today = game.court ? game.court.todayCount() : 0;
     const content = h('div.au-roster',
+      onCourt && game.court ? h('section', h('h5', `朝议 · 今日已${num(today)}次`), h('div.au-court', game.court.MODES.map(([k, label, note, cost]) => h('button', { type: 'button', onclick: go(() => onCourt(k)) },
+        h('b', label), h('small', `${note} · 精力${num(cost)}`))))) : null,
       R.pending.length ? h('section', h('h5', `${t.pending} · ${num(R.pending.length)}`), R.pending.map((q) => h('div.au-req',
         h('b', q.name, q.envoy ? h('em', '使节') : null), h('p', q.reason),
         h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openQueue(q.qid))) }, t.accept),

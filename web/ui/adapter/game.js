@@ -16,6 +16,7 @@
 //   game.guoshi.detail(吏治|民心|皇权|皇威)          国势四项（adapter/guoshi.js）
 //   game.realm.factions() / faction(键)              朝野：势力（adapter/realm.js）
 //   game.social.parties() / party / classes / klass  朝野：党派、阶层（adapter/social.js）
+//   game.bio.person(名) / sources / note / setNote     列传（adapter/bio.js）
 //   game.archive.catalog() / annotate / star         史馆：四库旧档（adapter/archive.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
@@ -34,6 +35,7 @@ import * as army from './army.js';
 import * as guoshi from './guoshi.js';
 import * as realm from './realm.js';
 import * as social from './social.js';
+import * as bio from './bio.js';
 import * as archive from './archive.js';
 
 const w = window;
@@ -282,7 +284,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

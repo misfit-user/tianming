@@ -6536,8 +6536,8 @@
     },
     {
       "path": "tm-renwu-tuzhi.js",
-      "sha256": "f736bf3449d56cb145928662b8d85ebd2367fc81addcf5c8918ddab9dce4f29f",
-      "size": 169682
+      "sha256": "d5ef082aaa6b9c45549f93a133d52271c444034003e308f628aed978912c3432",
+      "size": 169819
     },
     {
       "path": "tm-renwu-ui.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "03091a3f99f2fd689fd1e20e6668c40747426eaf6ddd0137dc79f540313fc692",
+      "sha256": "cca66defc48b6e5726af3adc7d5d8a93113cd074de7f0bba41013ec78600bc8a",
       "size": 140397
     },
     {

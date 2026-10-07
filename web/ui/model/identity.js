@@ -20,6 +20,7 @@
 //   audience 召对（「见」之问对）：自称与「曰」「对曰」、实录卷首、名单分组、诸动作的叫法
 //   guide    进局「临朝须知」几条：[题, 说]
 //   social   朝野册党派、阶层两页卷底的动作叫法（召人、付议、拟令；不设则不列）
+//   bio      列传：称上之词（君上、今上）、对此人批注的叫法、身后追赠、看本人心志的叫法
 //   annals   史记那一卷：卷名、令的叫法；archive 旧档总库（史馆）的册名，note 起居注上加批的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
@@ -48,6 +49,7 @@ export const PROFILES = {
     },
     issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
     urgentAck: '朕已知晓',
+    bio: { lord: '君上', now: '今上', note: '御笔朱批', posthumous: '追赠', mind: '御览心志' },
     social: { summonParty: '召党魁', summonClass: '召代表', court: '付廷议', partyDraft: '拟平衡诏', classDraft: '拟安抚诏' },
     annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书', archive: '史馆', note: '御批' },
     guideTitle: '临朝须知',

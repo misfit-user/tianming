@@ -20,6 +20,7 @@ import { createArmy } from './army.js';
 import { createGuoshi } from './guoshi.js';
 import { createRealm } from './realm.js';
 import { createArchive } from './archive.js';
+import { createBio } from './bio.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -412,7 +413,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); },
     onSummon: (name) => { el.classList.add('on'); audiencePage.summon(name); } });
   const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); } });
-  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); } });
+  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onBio: (name) => bioPage.show(name) });
+  // 列传：召对、传书、官制、追赠（开撰写）、回图志
+  const bioPage = createBio({ root, game, profile: () => prof, onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onLetter: (name) => openLetters(name),
+    onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => atlas.show(name) });
   const edictPage = createEdict({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onPromulgate: () => confirmAdvance() });
   function openEdict(at) {
     el.classList.remove('on');

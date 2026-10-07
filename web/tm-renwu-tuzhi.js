@@ -1400,6 +1400,8 @@ var TMZhi={
   close:closePanel
 };
 window.TMZhi=TMZhi;
+/* 新前端列传借同一份人物适配（只读，不改面板行为） */
+TMZhi.__parts={adaptChar:adaptChar,arcTypeCN:_arcTypeCN};
 
 /* ===================== 入口覆盖（零 clobber 路由） ===================== */
 window.openCharRenwuPage=function(name){ try{ openPanel(name); }catch(e){ console.error('[TMZhi] open fail',e); } };

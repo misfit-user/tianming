@@ -1,6 +1,6 @@
 // 人物图志：一本绫裱册页。左页一叶叶立轴小像（可按势力、排序、搜索、显已殁筛，翻页），右页是选中之人的小传：
 // 身份、处境、心性（忠诚、野心）、才具六项与五常（九品刻度）、名望贤能廉、特质、交游、生平。
-// 问对、传书、详传要等问对、鸿雁、列传几页接上。数据经 game.select.people()。
+// 问对、传书转召对、鸿雁两页，详传翻列传。数据经 game.select.people()。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { zhou, pin, qianzi, kaiguan, juan } from '../kit/index.js';
@@ -8,7 +8,7 @@ import { zhou, pin, qianzi, kaiguan, juan } from '../kit/index.js';
 const PER_PAGE = 18;
 const SORTS = [['rank', '品秩'], ['loyalty', '忠诚'], ['智', '智'], ['政', '政'], ['军', '军'], ['ambition', '野心']];
 
-export function createAtlas({ root, game, onLetter, onAudience }) {
+export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
   let all = [];
   let list = [];
   let page = 0;
@@ -107,9 +107,9 @@ export function createAtlas({ root, game, onLetter, onAudience }) {
       p.relations.length ? sec('交游', h('div.ce-chips', p.relations.map((r) => h('span.' + r.tone, r.name)))) : null,
       p.personality || p.goal ? sec('志趣', p.personality ? h('p', p.personality) : null, p.goal ? h('p.goal', `所求：${p.goal}`) : null) : null,
       p.bio ? sec('生平', h('p.ce-bio.q-scroll.ink', p.bio)) : null,
-      !p.dead && !p.isPlayer ? h('div.ce-acts',
-        h('button.q-yapai', { type: 'button', onclick: p.away ? (onLetter ? () => { hide(); onLetter(p.name); } : later('传书')) : (onAudience ? () => { hide(); onAudience(p.name); } : later('问对')) }, p.away ? '传书' : '问对'),
-        h('button.q-yapai', { type: 'button', onclick: later('列传') }, '详传')) : null);
+      h('div.ce-acts',
+        !p.dead && !p.isPlayer ? h('button.q-yapai', { type: 'button', onclick: p.away ? (onLetter ? () => { hide(); onLetter(p.name); } : later('传书')) : (onAudience ? () => { hide(); onAudience(p.name); } : later('问对')) }, p.away ? '传书' : '问对') : null,
+        h('button.q-yapai', { type: 'button', onclick: onBio ? () => { hide(); onBio(p.name); } : later('列传') }, '详传')));
   }
 
   function onKey(e) {

@@ -12,7 +12,7 @@ export function createHelp({ root, game, profile }) {
   let opened = false;
   const title = h('h2', '帮助');
   const list = h('nav.hp-list');
-  const left = h('section.ce-leaf.left.hp-left', h('header.ce-head', title, h('small', '案前须知与诸般说明')), list);
+  const left = h('section.ce-leaf.left.hp-left', h('header.ce-head', title, h('small', '须知与说明')), list);
   const right = h('section.ce-leaf.right.hp-right');
   const shut = h('button.ce-close.q-yapai', { type: 'button', onclick: () => hide() }, '合册');
   const book = h('div.ce-book', h('div.ce-ling'), left, h('div.ce-gutter'), right, shut);
@@ -56,8 +56,8 @@ export function createHelp({ root, game, profile }) {
     replaceChildren(list, topics.map((t, i) => h('button' + (t.key === key ? '.on' : ''), { type: 'button', onclick: () => { key = t.key; render(); } }, h('i', num(i + 1)), t.title)));
     const t = topics.find((x) => x.key === key);
     const body = h('div.hp-body');
-    if (t.html) body.innerHTML = t.html;          // 内核帮助卷：写死的 HTML，已去行内样式
-    else replaceChildren(body, t.body());
+    if (t.body) replaceChildren(body, t.body());
+    else body.innerHTML = t.html || '';           // 内核帮助卷：写死的 HTML，已去行内样式
     replaceChildren(right, h('h3.hp-title', t.title), body);
     right.scrollTop = 0;
   }

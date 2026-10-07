@@ -13,6 +13,7 @@ import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
 import { createEdict } from './edict.js';
 import { createLetters } from './letters.js';
+import { createAudience } from './audience.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
@@ -371,6 +372,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (c.key === 'pi' && per.tier === 'sovereign') return openDocket();   // 案头待批：眼下内核只有元首的奏疏
     if (c.key === 'ling' && per.tier === 'sovereign') return openEdict();   // 撰写：眼下内核只收元首的诏令
     if (c.key === 'shu') return openLetters();                             // 书札往来各档皆有（内核以玩家本人收发）
+    if (c.key === 'jian') return audiencePage.openRoster();                // 召对：问对名单（朝议随后接上）
     building(c.title, c.sub);
   }
   function onProp(name) {
@@ -385,7 +387,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   const issues = createIssues({ game, profile: () => prof });
-  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name) });
+  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); } });
   const edictPage = createEdict({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onPromulgate: () => confirmAdvance() });
   function openEdict() {
     el.classList.remove('on');
@@ -398,6 +400,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     el.classList.remove('on');
     lettersPage.open(name);
   }
+  // 召对：名单一卷；择人择体后，书房换景、书案让位
+  const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name) });
+  game.on('audience:open', () => el.classList.remove('on'));
   function openDocket(id) {
     el.classList.remove('on');
     docket.open(id);
@@ -412,7 +417,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
   let pausing = false;
   function pause() {
-    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || document.querySelector('.q-juan-veil')) return;
+    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || document.querySelector('.q-juan-veil')) return;
     pausing = true;
     const item = (label, fn) => h('button.q-yapai.pz-item', { type: 'button', onclick: () => { j.close('ok'); fn(); } }, label);
     const j = juan({

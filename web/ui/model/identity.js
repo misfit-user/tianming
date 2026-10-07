@@ -17,6 +17,7 @@
 //   ling     「令」那一页：纸面（silk 黄绫诏卷／paper 素纸）、议事清册、行止、私行、润色、颁行、档案诸名目，五类的提示，颁行前三种说法
 //   abdicate 暂停卷里的「退位」：叫法、卷首按语、继承人标签、确认语（空则不列）
 //   letters  「书」那一页：可发的文书种类（内核 LETTER_TYPES 的键）、抬头与署名、来函署名、名册与截获密函的叫法
+//   audience 召对（「见」之问对）：自称与「曰」「对曰」、实录卷首、名单分组、诸动作的叫法
 //   guide    进局「临朝须知」几条：[题, 说]
 //   annals   史记那一卷：卷名、令的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
@@ -63,6 +64,13 @@ export const PROFILES = {
       far: '远方臣子', compose: '拟书', reply: '回书', send: '遣使', excerpt: '摘入诏书', hint: '致书远方臣子……',
       intercepted: '截获密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '在京诸臣不必传书，宜召对面陈'
     },
+    audience: {
+      title: '召对', me: '上', ask: '曰', reply: '对曰', privateReply: '曰', input: '垂询', hint: '问其所知……', send: '垂询', leave: '退下',
+      head: (name, formal) => (formal ? `召${name}入对` : `${name}入内叙话`), record: '起居注', privateRecord: '燕闲私语',
+      pending: '阶下待见', seeking: '有臣求见', court: '在朝诸臣', away: '远方之人', accept: '接见', refuse: '不见', dismiss: '暂却',
+      screen: '屏退左右', order: '面谕差遣', commits: '交办', excerpt: '摘入诏书', confront: '召人对质', reward: '赏', punish: '罚', adopt: '纳谏',
+      envoy: { accept: '准奏', reject: '驳回', temporize: '羁縻', counter: '回价' }
+    },
     abdicate: { name: '禅让退位', note: '传位于后人，此举不可逆', tags: { heir: '储君', 'heir-blood': '皇嗣' },
       ask: (who) => `确定将大位禅让给${who}？此举不可撤回。`, ok: '禅让', done: (who) => `禅让既成，${who}已继大位` },
     props: { seal: 'imperial', yellowMemorials: true }
@@ -99,6 +107,13 @@ export const PROFILES = {
       far: '远方故旧', compose: '拟书', reply: '回书', send: '寄出', excerpt: '摘录', hint: '致书远方……',
       intercepted: '风闻密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '同城之人不必传书，宜登门拜会'
     },
+    audience: {
+      title: '谒见', me: '余', ask: '曰', reply: '曰', privateReply: '曰', input: '问', hint: '问其所知……', send: '相询', leave: '辞别',
+      head: (name) => `与${name}相见`, record: '谈录', privateRecord: '私语',
+      pending: '门外候见', seeking: '登门求见', court: '同城之人', away: '远方之人', accept: '相见', refuse: '不见', dismiss: '改日',
+      screen: '屏退左右', order: '托付', commits: '托付之事', excerpt: '摘录', confront: '请人对质', reward: '馈赠', punish: '责备', adopt: '采纳',
+      envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
+    },
     abdicate: '',
     props: { seal: 'office', yellowMemorials: false }
   },
@@ -134,6 +149,13 @@ export const PROFILES = {
       far: '远方故旧', compose: '拟书', reply: '回书', send: '寄出', excerpt: '摘录', hint: '致书远方……',
       intercepted: '风闻密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '同城之人不必传书，宜登门拜会'
     },
+    audience: {
+      title: '谒见', me: '余', ask: '曰', reply: '曰', privateReply: '曰', input: '问', hint: '问其所知……', send: '相询', leave: '辞别',
+      head: (name) => `与${name}相见`, record: '谈录', privateRecord: '私语',
+      pending: '门外候见', seeking: '登门求见', court: '同城之人', away: '远方之人', accept: '相见', refuse: '不见', dismiss: '改日',
+      screen: '屏退左右', order: '托付', commits: '托付之事', excerpt: '摘录', confront: '请人对质', reward: '馈赠', punish: '责备', adopt: '采纳',
+      envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
+    },
     abdicate: '',
     props: { seal: 'office', yellowMemorials: false }
   },
@@ -167,6 +189,13 @@ export const PROFILES = {
       to: (n) => `致　${n}`, mine: '手书', theirs: (n) => `${n}　拜上`,
       far: '远方故旧', compose: '拟书', reply: '回书', send: '寄出', excerpt: '摘录', hint: '致书远方……',
       intercepted: '风闻密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '同城之人不必传书，宜登门拜会'
+    },
+    audience: {
+      title: '谒见', me: '余', ask: '曰', reply: '曰', privateReply: '曰', input: '问', hint: '问其所知……', send: '相询', leave: '辞别',
+      head: (name) => `与${name}相见`, record: '谈录', privateRecord: '私语',
+      pending: '门外候见', seeking: '登门求见', court: '同城之人', away: '远方之人', accept: '相见', refuse: '不见', dismiss: '改日',
+      screen: '屏退左右', order: '托付', commits: '托付之事', excerpt: '摘录', confront: '请人对质', reward: '馈赠', punish: '责备', adopt: '采纳',
+      envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
     },
     abdicate: '',
     props: { seal: 'private', yellowMemorials: false }

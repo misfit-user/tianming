@@ -8,7 +8,7 @@ import { zhou, pin, qianzi, kaiguan, juan } from '../kit/index.js';
 const PER_PAGE = 18;
 const SORTS = [['rank', '品秩'], ['loyalty', '忠诚'], ['智', '智'], ['政', '政'], ['军', '军'], ['ambition', '野心']];
 
-export function createAtlas({ root, game, onLetter }) {
+export function createAtlas({ root, game, onLetter, onAudience }) {
   let all = [];
   let list = [];
   let page = 0;
@@ -108,7 +108,7 @@ export function createAtlas({ root, game, onLetter }) {
       p.personality || p.goal ? sec('志趣', p.personality ? h('p', p.personality) : null, p.goal ? h('p.goal', `所求：${p.goal}`) : null) : null,
       p.bio ? sec('生平', h('p.ce-bio.q-scroll.ink', p.bio)) : null,
       !p.dead && !p.isPlayer ? h('div.ce-acts',
-        h('button.q-yapai', { type: 'button', onclick: p.away && onLetter ? () => { hide(); onLetter(p.name); } : later(p.away ? '传书' : '问对') }, p.away ? '传书' : '问对'),
+        h('button.q-yapai', { type: 'button', onclick: p.away ? (onLetter ? () => { hide(); onLetter(p.name); } : later('传书')) : (onAudience ? () => { hide(); onAudience(p.name); } : later('问对')) }, p.away ? '传书' : '问对'),
         h('button.q-yapai', { type: 'button', onclick: later('列传') }, '详传')) : null);
   }
 

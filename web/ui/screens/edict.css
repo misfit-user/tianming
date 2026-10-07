@@ -38,6 +38,10 @@
 .ed-right h4 { margin: .25rem 0 0; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
 .ed-conduct { min-height: 6.5rem; padding: .5rem .625rem; border: 0; outline: 0; resize: vertical; font: var(--fs-2)/1.8 var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+/* 从「行」渠道来：行止一栏描金一闪，示落笔处 */
+.ed-conduct.lit { animation: ed-lit 1.6s ease-out 1; }
+@keyframes ed-lit { 0%, 30% { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3), 0 0 0 2px rgba(240, 217, 140, .9), 0 0 14px rgba(240, 217, 140, .55); } 100% { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3), 0 0 0 2px rgba(240, 217, 140, 0); } }
+@media (prefers-reduced-motion: reduce) { .ed-conduct.lit { animation: none; } }
 .ed-privhead { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
 .ed-privhead small { font-size: var(--fs-1); color: var(--ivory-soft); }
 .ed-priv { display: flex; flex-wrap: wrap; gap: .3125rem; }

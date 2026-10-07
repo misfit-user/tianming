@@ -393,7 +393,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (c.key === 'pi' && per.tier === 'sovereign') return openDocket();   // 案头待批：眼下内核只有元首的奏疏
     if (c.key === 'ling' && per.tier === 'sovereign') return openEdict();   // 撰写：眼下内核只收元首的诏令
     if (c.key === 'shu') return openLetters();                             // 书札往来各档皆有（内核以玩家本人收发）
-    if (c.key === 'jian') return audiencePage.openRoster();                // 召对：问对名单（朝议随后接上）
+    if (c.key === 'jian') return audiencePage.openRoster();                // 召对：问对名单，常朝、廷议由此起
+    if (c.key === 'xing' && per.tier === 'sovereign') return openEdict('conduct');   // 行止：与诏书同期付推演，落笔在诏书页右栏
     building(c.title, c.sub);
   }
   function onProp(name) {
@@ -412,9 +413,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); } });
   const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); } });
   const edictPage = createEdict({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onPromulgate: () => confirmAdvance() });
-  function openEdict() {
+  function openEdict(at) {
     el.classList.remove('on');
-    edictPage.open();
+    edictPage.open(at);
   }
   // 书札：书案让位，镜头俯到摊开的花笺上
   const lettersPage = createLetters({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });

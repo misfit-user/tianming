@@ -180,7 +180,8 @@ export function createEdict({ root, study, game, profile, onClose, onPromulgate 
   const veil = h('div.dk-veil');
   root.append(veil);
   const fade = (on) => new Promise((r) => { veil.classList.toggle('on', on); setTimeout(r, on ? 280 : 360); });
-  async function open() {
+  // at='conduct'：从「行」渠道来，直接落笔在主角行止一栏
+  async function open(at) {
     if (opened) return;
     prof = profile();
     await fade(true);
@@ -193,7 +194,12 @@ export function createEdict({ root, study, game, profile, onClose, onPromulgate 
     fold.classList.add('on');
     el.classList.add('on');
     await fade(false);
-    secs[focus].ta.focus();
+    if (at === 'conduct') {
+      conduct.focus();
+      conduct.classList.remove('lit');
+      void conduct.offsetWidth;
+      conduct.classList.add('lit');
+    } else secs[focus].ta.focus();
   }
   async function close() {
     if (!opened) return;

@@ -1,0 +1,28 @@
+/* 帮助册：骨架沿用人物图志（.ce-*） */
+.hp-ov .ce-book { grid-template-columns: minmax(0, 17rem) 1.5rem minmax(0, 1fr); }
+.hp-list { display: flex; flex-direction: column; gap: .25rem; }
+.hp-list button { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); align-items: center; gap: .5rem; padding: .375rem .5rem; border: 0; cursor: pointer; text-align: left;
+  font: var(--fs-3) var(--f-kai); color: var(--ink); background: transparent; }
+.hp-list button:hover { background: rgba(255, 246, 226, .6); }
+.hp-list button.on { background: rgba(255, 246, 226, .95); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(140, 40, 28, .3); }
+.hp-list i { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; font: normal var(--fs-2)/1 var(--f-title); color: #f9ead2; background: #6a4a2a; }
+.hp-list button.on i { background: #a3301f; }
+.hp-right { gap: .5rem; }
+.hp-title { margin: 0 0 .25rem; font: 400 var(--fs-6)/1.4 var(--f-title); letter-spacing: .15em; }
+.hp-body { font-size: var(--fs-3); line-height: 1.95; color: var(--ink); }
+.hp-body h4 { margin: 1rem 0 .375rem; padding-bottom: .25rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .25em; color: var(--verm); border-bottom: 1px solid rgba(163, 40, 27, .28); }
+.hp-body h4:first-child { margin-top: 0; }
+.hp-body p { margin: 0 0 .5rem; }
+.hp-body ul, .hp-body ol { margin: 0 0 .5rem; padding-left: 1.5rem; }
+.hp-body li { margin-bottom: .125rem; }
+.hp-body strong, .hp-body b { font-weight: 400; color: #7d1d12; }
+.hp-body code, .hp-body kbd { padding: 0 .3125rem; font: var(--fs-2) ui-monospace, Consolas, monospace; background: rgba(120, 90, 50, .1); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.hp-body div { margin: .25rem 0; padding: .375rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #9a7a2e; }
+.hp-guide { padding-left: 1.75rem !important; }
+.hp-guide li { margin-bottom: .5rem; }
+.hp-guide b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .1em; color: #7d1d12; }
+.hp-guide p { margin: .125rem 0 0; color: var(--ink-soft); }
+.hp-dl { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: .25rem .875rem; margin: 0 0 .5rem; }
+.hp-dl dt { display: flex; align-items: center; gap: .375rem; font: var(--fs-3)/1.8 var(--f-title); letter-spacing: .08em; color: #6a1f12; }
+.hp-dl dd { margin: 0; font-size: var(--fs-3); line-height: 1.8; color: var(--ink-soft); }
+.hp-g { width: 1.5rem; height: 1.5rem; display: inline-grid; place-items: center; border-radius: 50%; font: normal var(--fs-2)/1 var(--f-title); color: #f0d98c; background: #3a2a1c; }

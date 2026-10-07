@@ -37,6 +37,31 @@ const MB_LABEL = { elite: '精锐', standingArmy: '常备', militia: '民兵', f
 const chips = (obj, warnBelow = 0) => (obj && typeof obj === 'object' && !Array.isArray(obj)
   ? Object.keys(obj).filter((k) => Number.isFinite(Number(obj[k]))).map((k) => ({ label: label(k), value: mapNum(obj[k]), warn: Number(obj[k]) < warnBelow })) : null);
 const row = (k, v, tone) => (has(v) && pp(v) ? { k, v: pp(v), tone } : null);
+// 盟约：双方名里有此势力者（TreatySystem 的记录：typeName、parties、startTurn、expiryTurn、active/status）
+const TREATY_STATUS = { broken: '已毁', expired: '已满期' };
+function treatyRow(f) {
+  const name = String(f.name || '');
+  const partyName = (v) => (typeof v === 'string' ? v : v && (v.name || v.faction || v.id) || '');
+  const rows = (Array.isArray(G().treaties) ? G().treaties : []).filter((t) => t && (t.parties || []).map(partyName).includes(name)).map((t) => {
+    const other = (t.parties || []).map(partyName).filter((x) => x && x !== name).join('、');
+    const live = t.active !== false && (!t.expiryTurn || G().turn < t.expiryTurn);
+    return `${t.typeName || t.type || '条约'}·与${other || '某方'}·第${t.startTurn || '?'}回合起${t.expiryTurn ? `·至第${t.expiryTurn}回合` : '·永久'}${live ? '' : `（${TREATY_STATUS[t.status] || '已止'}）`}`;
+  });
+  return rows.length ? { k: '盟约', v: rows.join('\n') } : null;
+}
+// 议约：此势力收到或发出的提案（FactionDiplomacy：type、status、version）
+const PROPOSAL_TYPE = { alliance: '结盟', nonaggression: '互不侵犯', joint_action: '联手', peace: '媾和', deal: '交易', ultimatum: '最后通牒' };
+const PROPOSAL_STATUS = { accepted: '已成', rejected: '被拒', cancelled: '撤回', lapsed: '作废' };
+function proposalRow(f) {
+  const facs = Array.isArray(G().facs) ? G().facs : [];
+  const nameOf = (id) => { const x = facs.find((y) => y && (y.id === id || y.name === id)); return x ? x.name : String(id || ''); };
+  const rows = [];
+  for (const fx of facs) for (const p of (fx && fx._incomingProposals) || []) {
+    if (!p || p.proposalRef || (p.fromId !== f.id && p.toId !== f.id && nameOf(p.fromId) !== f.name && nameOf(p.toId) !== f.name)) continue;
+    rows.push(`${nameOf(p.fromId)}→${nameOf(p.toId)}·${PROPOSAL_TYPE[p.type] || p.type || '议'}·${PROPOSAL_STATUS[p.status] || '在议'}${p.version > 1 ? `·第${p.version}稿` : ''}`);
+  }
+  return rows.length ? { k: '议约', v: rows.slice(-8).join('\n') } : null;
+}
 function person(title, p, main) {
   if (!has(p)) return null;
   const obj = p && typeof p === 'object';
@@ -126,7 +151,7 @@ export function faction(key) {
       .map(([title, obj, lim]) => (chips(obj, lim) ? { title, items: chips(obj, lim) } : null)).filter(Boolean)
   };
 
-  // 五、邦交
+  // 五、邦交（盟约读 GM.treaties，议约读诸势力 _incomingProposals——老界面没有专页，这里只列不动）
   const rel = [];
   const many = (v, kind) => { if (!has(v)) return; (Array.isArray(v) ? v : [v]).forEach((x) => { const name = typeof x === 'object' ? pp(first(x.name, x)) : pp(x); if (name) rel.push({ name, kind, note: typeof x === 'object' ? pp(first(x.note, x.attitude)) : '' }); }); };
   many(f.allies, 'meng'); many(f.enemies, 'di'); many(f.neutrals, 'zhong');
@@ -143,6 +168,7 @@ export function faction(key) {
     attitudeObj ? row('所敌', attitudeObj.enemies, 'zhu') : null, attitudeObj ? row('所盟', attitudeObj.allies) : null, attitudeObj ? row('所持中立', attitudeObj.neutrals) : null,
     row('与本朝', f.playerRelation), thresholds.length ? { k: '冒犯阈值', v: thresholds.join('\n'), tone: 'zhu' } : row('冒犯阈值', f.offendThresholds),
     row('内部派系', f.internalParties), row('党派关系', f.partyRelations),
+    treatyRow(f), proposalRow(f),
     spies ? row('已知耳目', Object.keys(spies).filter((k) => Number.isFinite(Number(spies[k]))).map((k) => `${label(k)} ${spies[k]}`).join(' · ')) : row('已知耳目', f.knownSpies)
   ].filter(Boolean) };
 

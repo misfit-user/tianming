@@ -25,6 +25,7 @@ import { createKeju } from './keju.js';
 import { createKeyi } from './keyi.js';
 import { createWentian } from './wentian.js';
 import { createGongwei } from './gongwei.js';
+import { createHelp } from './help.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
@@ -481,6 +482,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onClose: () => { el.classList.add('on'); refresh(); if (keyiFromBook) kejuPage.show(); } });
   bus.on('ui:keju', () => { if (!readOnly()) kejuPage.show(); });
   const wentianPage = createWentian({ root, game });
+  const helpPage = createHelp({ root, game, profile: () => prof });
   const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
@@ -496,7 +498,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
 
 
-  // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
+  // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、帮助、退位、回启幕 ----------
   let pausing = false;
   function pause() {
     if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || audiencePage.opened || courtPage.opened || mizhaoPage.opened || keyiPage.opened || document.querySelector('.q-juan-veil')) return;
@@ -509,6 +511,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         item('案卷目录', () => openSaves({ game, inGame: true })),
         item('典章', () => openSettings()),
         item(prof.annals.title, () => annals()),
+        item('帮助', () => helpPage.show()),
         prof.abdicate && !game.viewAs ? item(prof.abdicate.name, () => openAbdicate()) : null,
         item('回启幕', () => leaveGame()))
     });

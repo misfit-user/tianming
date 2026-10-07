@@ -22,6 +22,7 @@
 //   social   朝野册党派、阶层两页卷底的动作叫法（召人、付议、拟令；不设则不列）
 //   bio      列传：称上之词（君上、今上）、对此人批注的叫法、身后追赠、看本人心志的叫法
 //   annals   史记那一卷：卷名、令的叫法；archive 旧档总库（史馆）的册名，note 起居注上加批的叫法
+//   wenyuan  文苑册名、副题；acts 篇末动作 [键, 叫法]（键见 adapter/wenyuan.js ACTS，拟入议事清册；不设则只读）
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
 
@@ -35,7 +36,7 @@ export const PROFILES = {
       ling: ['撰写诏书', '起草政令'], pi: ['百官奏疏', '御览奏报'], shu: ['鸿雁传书', '手札密谕'],
       jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '主角行止']
     },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['史', '史官实录', 'annals']],
+    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
     ledger: ['treasury', 'privy', 'census'], gauges: 'realm', map: 'realm',
     docket: {
@@ -52,6 +53,8 @@ export const PROFILES = {
     bio: { lord: '君上', now: '今上', note: '御笔朱批', posthumous: '追赠', mind: '御览心志' },
     social: { summonParty: '召党魁', summonClass: '召代表', court: '付廷议', partyDraft: '拟平衡诏', classDraft: '拟安抚诏' },
     annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书', archive: '史馆', note: '御批' },
+    wenyuan: { title: '文苑', sub: '诗文总集',
+      acts: [['appreciate', '赐阅赏析'], ['inscribe', '御题赐序'], ['echo', '命臣追和'], ['circulate', '传抄流布'], ['ban', '查禁'], ['unban', '解禁']] },
     guideTitle: '临朝须知',
     guide: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
       ['召对朝议', '与群臣议事问对，听取异见。'], ['推演', '顶栏「推演」推进时局——AI 演绎天下对这一朝的反应。']],

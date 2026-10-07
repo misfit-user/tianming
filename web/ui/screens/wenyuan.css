@@ -1,0 +1,110 @@
+/* 文苑：诗文总集。册页骨架沿用人物图志（.ce-*）；左叶总数、筛、篇目，右叶一篇誊在笺上 */
+.wy-ov .ce-book { grid-template-columns: minmax(0, 23rem) 1.5rem minmax(0, 1fr); }
+.wy-left { gap: .5rem; }
+.wy-ov .career { --cc: #3f5a86; } .wy-ov .adversity { --cc: #8a2a1c; } .wy-ov .social { --cc: #a8733a; } .wy-ov .duty { --cc: #5e4a86; }
+.wy-ov .travel { --cc: #3f6e5e; } .wy-ov .private { --cc: #9a4466; } .wy-ov .times { --cc: #9a7a2e; } .wy-ov .mood { --cc: #5a6470; } .wy-ov .preset { --cc: #34465a; }
+
+.wy-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .25rem; }
+.wy-stats > div { display: flex; flex-direction: column; align-items: center; padding: .25rem 0 .1875rem; background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.wy-stats b { font: 400 var(--fs-5)/1.15 var(--f-title); color: #7d1d12; }
+.wy-stats span { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ink-faint); }
+.wy-stats p { grid-column: 1 / -1; margin: 0; font-size: var(--fs-1); color: var(--ink-faint); text-align: right; }
+
+.wy-chips, .wy-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; }
+.wy-chips:empty { display: none; }
+.wy-chips > span { margin-right: .25rem; font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.wy-chips button, .wy-tools button { padding: 0 .5rem; border: 0; cursor: pointer; font: var(--fs-1)/1.9 var(--f-kai); color: var(--ink-soft); background: transparent; box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .28); }
+.wy-chips button small { margin-left: .25rem; color: var(--ink-faint); }
+.wy-chips button.on, .wy-tools button.on { color: #f9ead2; background: #8a2a1c; box-shadow: none; }
+.wy-chips button.on small { color: rgba(249, 234, 210, .75); }
+.wy-tools .sorts { display: inline-flex; align-items: center; gap: .25rem; margin-left: auto; }
+.wy-tools .sorts small { font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+
+.wy-list { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .1875rem; padding-right: .25rem; scrollbar-width: thin; scrollbar-color: rgba(120, 60, 30, .45) transparent; }
+.wy-item { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) auto; grid-template-areas: 't b x' 't m x'; align-items: center; column-gap: .5rem; padding: .25rem .5rem .25rem .25rem;
+  border: 0; cursor: pointer; text-align: left; color: var(--ink); font-family: var(--f-kai); background: transparent; }
+.wy-item:hover { background: rgba(255, 246, 226, .6); }
+.wy-item.on { background: rgba(255, 246, 226, .92); box-shadow: inset 0 0 0 1px rgba(140, 40, 28, .3); }
+.wy-tab { grid-area: t; align-self: stretch; display: flex; align-items: center; justify-content: center; min-height: 2.75rem; writing-mode: vertical-rl; font: normal var(--fs-1)/1 var(--f-kai);
+  letter-spacing: .12em; color: #f9ead2; background: var(--cc); box-shadow: inset 0 0 0 1px rgba(249, 234, 210, .35); }
+.wy-item b { grid-area: b; font-weight: 400; font-size: var(--fs-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wy-item .meta { grid-area: m; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wy-item .marks { grid-area: x; display: flex; gap: .1875rem; }
+.wy-ov em.kept, .wy-ov em.ban, .wy-ov em.risk, .wy-ov em.pend { width: 1.125rem; height: 1.125rem; display: grid; place-items: center; font: normal var(--fs-1)/1 var(--f-kai); }
+.wy-ov em.kept { color: #f9ead2; background: #b3301d; }
+.wy-ov em.ban { color: #f2ebe0; background: #2a1d14; }
+.wy-ov em.risk { color: #a8261a; box-shadow: inset 0 0 0 1px rgba(168, 38, 26, .55); }
+.wy-ov em.pend { color: #7d5a1e; box-shadow: inset 0 0 0 1px rgba(125, 90, 30, .5); }
+
+/* 右叶 */
+.wy-right { gap: 1rem; }
+.wy-head h3 { margin: 0; font: 400 var(--fs-6)/1.4 var(--f-title); letter-spacing: .08em; }
+.wy-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: .125rem .75rem; margin: .375rem 0 0; font-size: var(--fs-2); color: var(--ink-faint); }
+.wy-who, .wy-ref { padding: 0; border: 0; cursor: pointer; font: inherit; color: #8a2a1c; background: transparent; text-decoration: underline; text-decoration-color: rgba(138, 42, 28, .4); text-underline-offset: .2em; }
+.wy-who:hover, .wy-ref:hover { color: #a3301f; text-decoration-color: currentColor; }
+.wy-ref { margin-right: .75rem; }
+
+/* 笺：诗词竖写在朱丝栏里；文赋横排 */
+.wy-paper { position: relative; padding: 1.25rem 1.5rem; color: var(--ink);
+  background: var(--paper-grain), radial-gradient(ellipse at 30% 20%, rgba(255, 252, 240, .7), transparent 60%), linear-gradient(180deg, #f6eedb, #ecdfc0);
+  box-shadow: 0 .125rem .5rem rgba(60, 35, 15, .18), inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.wy-jian { position: relative; display: flex; flex-direction: column; height: 21rem; max-width: 100%; margin: 0 auto; width: max-content; overflow-x: auto; overflow-y: hidden;
+  writing-mode: vertical-rl; padding: .75rem .5rem; border: 1.5px solid rgba(170, 52, 36, .7); scrollbar-width: thin; scrollbar-color: rgba(170, 52, 36, .4) transparent; }
+.wy-jian::before { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(170, 52, 36, .4); pointer-events: none; }
+.wy-jian > p { margin: 0; padding: .125rem .5rem; font: var(--fs-4)/1.6 var(--f-kai); letter-spacing: .16em; white-space: nowrap; border-left: 1px solid rgba(170, 52, 36, .4); }
+.wy-jian > p:last-child { border-left: 0; }
+.wy-jian > p.t { font: 400 var(--fs-5)/1.5 var(--f-title); letter-spacing: .2em; }
+.wy-jian > p.a { padding-inline-start: 5.5em; font-size: var(--fs-3); color: var(--ink-soft); }
+.wy-jian > p.a small { margin-inline-start: .75em; font-size: var(--fs-1); color: var(--ink-faint); }
+.wy-jian > p.sign { padding-inline-start: 8em; font: var(--fs-2)/1.6 var(--f-kai); color: var(--ink-soft); }
+.wy-paper.prose { padding: 1.25rem 1.75rem; }
+.wy-paper.prose p { margin: 0 0 .5rem; text-indent: 2em; font: var(--fs-3)/2 var(--f-kai); overflow-wrap: anywhere; }
+.wy-paper.prose p.wy-wait { text-indent: 0; text-align: center; letter-spacing: .2em; color: var(--ink-faint); }
+.wy-stamp { position: absolute; display: grid; place-items: center; font-style: normal; pointer-events: none; mix-blend-mode: multiply; }
+.wy-stamp.kept { right: 1rem; bottom: 1rem; width: 2.75rem; height: 2.75rem; writing-mode: vertical-rl; font: 400 1rem/1.15 var(--f-seal); color: #b3301d;
+  border: 2px solid #b3301d; box-shadow: inset 0 0 0 2px rgba(246, 238, 219, .6), inset 0 0 0 3px rgba(179, 48, 29, .7); transform: rotate(-4deg); opacity: .88; }
+.wy-stamp.ban { left: 1rem; top: 1rem; padding: .125rem .625rem; font: 400 var(--fs-5)/1.3 var(--f-title); letter-spacing: .3em; color: rgba(30, 20, 14, .8);
+  border: 2px solid rgba(30, 20, 14, .7); transform: rotate(-12deg); opacity: .78; }
+
+.wy-grade { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.wy-grade > span { padding: 0 .5rem; font-size: var(--fs-2); line-height: 1.9; color: var(--ink-soft); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.wy-grade .q { display: inline-flex; align-items: center; gap: .25rem; color: var(--ink); }
+.wy-grade .q small { font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.wy-grade .q i { font-style: normal; font-size: .625rem; letter-spacing: .1em; color: #a3301f; }
+.wy-grade .q i.d { color: rgba(120, 90, 50, .3); }
+.wy-grade .q b { font-weight: 400; margin-left: .125rem; }
+.wy-grade .risk.medium { color: #8a5a1a; box-shadow: inset 0 0 0 1px rgba(138, 90, 26, .5); }
+.wy-grade .risk.high { color: #f9ead2; background: #a3301f; box-shadow: none; }
+
+.wy-ctx, .wy-imp { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .75rem; margin: 0; font-size: var(--fs-3); line-height: 1.85; }
+.wy-ctx > span, .wy-imp > span, .wy-facts dt { font: var(--fs-2)/2 var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.wy-imp { padding: .375rem .75rem .375rem 0; background: rgba(163, 48, 31, .06); box-shadow: inset .1875rem 0 0 #a3301f; }
+.wy-imp > span { padding-left: .75rem; color: #8a2a1c; }
+.wy-imp p { margin: 0; color: #6d1c12; }
+.wy-imp p.t { font-size: var(--fs-2); color: var(--ink-soft); }
+.wy-facts { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .25rem .75rem; margin: 0; padding-top: .625rem; border-top: 1px solid rgba(120, 90, 50, .28); }
+.wy-facts dd { margin: 0; font-size: var(--fs-3); line-height: 2; }
+
+/* 典籍：线装书衣（右侧订线）、左上题签，一旁提要 */
+.wy-preset { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+.wy-cover { position: relative; width: 10rem; height: 14rem; background:
+    repeating-linear-gradient(180deg, transparent 0 2.4rem, rgba(236, 222, 190, .75) 2.4rem 2.55rem, transparent 2.55rem 2.8rem) right .6rem top 1rem / 1px calc(100% - 2rem) no-repeat,
+    radial-gradient(circle, rgba(20, 14, 10, .65) 0 .12rem, transparent .14rem) right .45rem top .6rem / .4rem 2.8rem repeat-y,
+    var(--paper-grain), linear-gradient(160deg, #46586c, #2f3d4e 60%, #26323f);
+  box-shadow: .25rem .375rem .75rem rgba(30, 20, 10, .35), inset 0 0 0 1px rgba(255, 255, 255, .08), inset -1.25rem 0 0 rgba(0, 0, 0, .12); }
+.wy-slip { position: absolute; left: .875rem; top: .875rem; width: 2.125rem; max-height: 10.5rem; padding: .625rem 0; display: flex; align-items: center; justify-content: flex-start;
+  writing-mode: vertical-rl; font: normal 400 var(--fs-3)/2.125rem var(--f-print); letter-spacing: .14em; color: #1f1710; overflow: hidden;
+  background: var(--paper-grain), linear-gradient(180deg, #f3ead4, #e5d6b3); box-shadow: inset 0 0 0 1px rgba(40, 28, 18, .45), inset 0 0 0 3px #efe4c8, inset 0 0 0 4px rgba(40, 28, 18, .3); }
+.wy-cover .wy-stamp.kept { right: 1.5rem; bottom: .75rem; }
+.wy-cover .wy-stamp.ban { left: auto; right: 1.5rem; top: 1rem; color: rgba(245, 236, 220, .85); border-color: rgba(245, 236, 220, .7); mix-blend-mode: normal; }
+.wy-tiyao h5 { margin: 0 0 .5rem; padding-bottom: .25rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: var(--verm); border-bottom: 1px solid rgba(163, 40, 27, .3); }
+.wy-tiyao dl { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: .125rem .75rem; margin: 0 0 .625rem; }
+.wy-tiyao dt { font: var(--fs-2)/2 var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.wy-tiyao dd { margin: 0; font-size: var(--fs-3); line-height: 2; }
+.wy-tiyao p { margin: 0 0 .5rem; font-size: var(--fs-3); line-height: 1.95; text-indent: 2em; }
+.wy-tiyao p.note { text-indent: 0; font-size: var(--fs-2); color: var(--ink-soft); }
+
+.wy-acts { position: sticky; bottom: -1.125rem; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin: auto -1.5rem -1.125rem; padding: .5rem 1.5rem .625rem;
+  background: linear-gradient(0deg, #e9dcbd 70%, rgba(233, 220, 189, 0)); }
+.wy-acts .q-yapai.danger { color: #8a2a1c; }
+.wy-acts .q-yapai:disabled { cursor: default; opacity: .6; transform: none; }

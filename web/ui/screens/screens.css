@@ -84,6 +84,7 @@
 .scr-desk .faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
 .scr-desk .dibao { height: 18.75rem; width: 20.25rem; margin-left: .375rem; }
 .scr-desk .rail { position: fixed; right: 1.125rem; top: 6.375rem; display: flex; flex-direction: column; gap: .5625rem; }
+@media (max-height: 52rem) { .scr-desk .rail { top: 5.75rem; gap: .3125rem; } .scr-desk .rail .q-wadang { width: 3.125rem; height: 3.125rem; } .scr-desk .rail .q-wadang > b { font-size: 1.375rem; } }
 .scr-desk .dock { position: fixed; left: 50%; bottom: 1.125rem; transform: translateX(-50%); display: flex; gap: .875rem; align-items: flex-end; }
 .scr-desk .dock .q-seal { margin-left: .75rem; }
 .scr-desk .hint { position: fixed; left: 50%; bottom: 9.5rem; transform: translateX(-50%); font-size: var(--fs-3); letter-spacing: .4em; color: #fff3dc; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); pointer-events: none !important; }

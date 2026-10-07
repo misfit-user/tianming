@@ -20,6 +20,7 @@ import { createArmy } from './army.js';
 import { createGuoshi } from './guoshi.js';
 import { createRealm } from './realm.js';
 import { createArchive } from './archive.js';
+import { createWenyuan } from './wenyuan.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
@@ -389,6 +390,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'fiscal') return fiscalPage.show();
     if (key === 'army') return armyPage.show();
     if (key === 'realm') return realmPage.show();
+    if (key === 'wenyuan') return wenyuanPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -453,6 +455,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
+  const wenyuanPage = createWenyuan({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });

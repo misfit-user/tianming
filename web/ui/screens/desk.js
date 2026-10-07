@@ -16,6 +16,7 @@ import { createLetters } from './letters.js';
 import { createAudience } from './audience.js';
 import { createOffices } from './offices.js';
 import { createFiscal } from './fiscal.js';
+import { createArmy } from './army.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -376,6 +377,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'annals') return openAnnals({ game, profile: () => prof });
     if (key === 'offices') return officesPage.show();
     if (key === 'fiscal') return fiscalPage.show();
+    if (key === 'army') return armyPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -421,6 +423,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   game.on('audience:open', () => el.classList.remove('on'));
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志
   const fiscalPage = createFiscal({ root, game });
+  // 军籍册：付廷议即开廷议、带上议题；核饷（失真层未开时）转去度支册
+  const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');

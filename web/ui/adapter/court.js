@@ -314,7 +314,7 @@ function stop() {
 
 // ---------- 动作 ----------
 // 开议：同老卡片的路子（openChaoyi 建宿主，_cy_pickMode 过精力、次数关）
-export function begin(mode) {
+export function begin(mode, { topic = '' } = {}) {
   if (typeof w.openChaoyi !== 'function' || typeof w._cy_pickMode !== 'function') throw new Error('内核缺 openChaoyi / _cy_pickMode');
   active = true;
   watch();
@@ -324,7 +324,10 @@ export function begin(mode) {
   // 被精力或次数关挡回：老宿主还停在择体卡片上，收掉（廷议走八阶段，先出预审层，那不算挡回）
   if (s.open && !s.setup && mode !== 'changchao' && !(w.CY && (w.CY._ty2 || w.CY._yq2 || w.CY._ty3)) && !document.querySelector('body > div[id^="ty3-"][id$="-bg"]')) { close(); return false; }
   if (mode === 'changchao' && !$('cy-stage')) { setTimeout(() => { if (!$('cy-stage')) close(); }, 1500); }
-  bus.emit('court:changed', s);
+  // 带议题开廷议（如军务「付廷议」）：填进预审的议题框，触发它自己的风向预估
+  const pa = $('ty3-pa-topic');
+  if (topic && pa && !pa.value) fill({ 'ty3-pa-topic': topic });
+  bus.emit('court:changed', snapshot());
   return true;
 }
 // 点一颗老按钮；要讨文字的先给文字（临时代答 prompt）

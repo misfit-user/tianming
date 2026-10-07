@@ -327,8 +327,8 @@ export function createCourt({ root, study, game, profile, onClose }) {
     await fade(false);
   }
   // 开议：先过内核的精力、次数关（不过则内核以 toast 说明），过了跟随快照
-  function begin(mode) {
-    try { return C.begin(mode); } catch (e) { toast(e.message); return false; }
+  function begin(mode, opts) {
+    try { return C.begin(mode, opts); } catch (e) { toast(e.message); return false; }
   }
   function convene(issueId) {
     try { return C.convene(issueId); } catch (e) { toast(e.message); return false; }

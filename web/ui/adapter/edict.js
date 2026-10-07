@@ -69,6 +69,15 @@ export function useSuggestion(i) {
   const s = (G()._edictSuggestions || [])[i];
   if (s) s.used = true;
 }
+// 摘一条进议事清册（同现行右栏 rightAddEdictSuggestion 的形状）
+export function suggest(source, from, topic, content) {
+  const g = w.GM;
+  if (!g || !content) return false;
+  if (!g._edictSuggestions) g._edictSuggestions = [];
+  g._edictSuggestions.push({ source: source || '', from: from || '', topic: topic || '', content, turn: g.turn || 1, used: false });
+  try { if (typeof w._renderEdictSuggestions === 'function') w._renderEdictSuggestions(); } catch (_e) { /* 老界面没开着也无妨 */ }
+  return true;
+}
 
 // 帝王私行：至多三项（TyrantActivitySystem 自己管上限并提示）
 export function privateActs() {

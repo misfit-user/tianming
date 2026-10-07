@@ -441,7 +441,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (k === 'edict') return openEdict();
     return audiencePage.openRoster();
   } });
-  const realmPage = createRealm({ root, game });
+  // 朝野册：人名翻人物图志；召党魁、召代表转召对；付廷议即开廷议、带上议题
+  const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); atlas.show(name); },
+    onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });

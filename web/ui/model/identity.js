@@ -19,6 +19,7 @@
 //   letters  「书」那一页：可发的文书种类（内核 LETTER_TYPES 的键）、抬头与署名、来函署名、名册与截获密函的叫法
 //   audience 召对（「见」之问对）：自称与「曰」「对曰」、实录卷首、名单分组、诸动作的叫法
 //   guide    进局「临朝须知」几条：[题, 说]
+//   social   朝野册党派、阶层两页卷底的动作叫法（召人、付议、拟令；不设则不列）
 //   annals   史记那一卷：卷名、令的叫法；archive 旧档总库（史馆）的册名，note 起居注上加批的叫法
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
@@ -47,6 +48,7 @@ export const PROFILES = {
     },
     issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', empty: '四海升平　暂无要务', people: '关涉群臣' },
     urgentAck: '朕已知晓',
+    social: { summonParty: '召党魁', summonClass: '召代表', court: '付廷议', partyDraft: '拟平衡诏', classDraft: '拟安抚诏' },
     annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书', archive: '史馆', note: '御批' },
     guideTitle: '临朝须知',
     guide: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],

@@ -43,14 +43,24 @@
       question: '怎样把这次往来写得有礼而不让对方误会成命令？',
       explain: '先说明来意和可拒绝的边界，再写明只求赐复，不以品级压人。',
       questionReply: '我先说我的理解：应把请求写成可选择的答复，而不是预设对方必须承诺。',
-      counter: '若已有约定，仍应写出本次条件，不能让旧往来替新承诺背书。'
+      counter: '若已有约定，仍应写出本次条件，不能让旧往来替新承诺背书。',
+      questionPrompt: '你先说说，怎样把这次请求写成可选择的答复？',
+      answer: '我理解应先说清来意，再给对方明确的拒绝余地，不能把品级写成必须答应的理由。',
+      uncertain: '我只能先确认，不能把礼貌用语直接当成对方已经同意。',
+      followUpQuestion: '如果对方已经知道来意，哪一项边界仍应在这次文书中重新写明？',
+      followUpAnswer: '仍应写明本次请求的范围与可拒绝之处，旧日来往不能代替新的同意。'
     },
     reading_understanding: {
       id: 'reading_understanding', title: '阅读理解',
       question: '如何分清材料中的已知事实、本人陈述和仍待确认之处？',
       explain: '先分出文书记录的事实、当事人的陈述和尚待核验之处；不要把陈述直接当成事实。',
       questionReply: '我先说我的理解：应把来源与时间列出，再问对方还有哪一段未核。',
-      counter: '若材料只有单一来源，仍不能把它视为完整结论；可先列出缺口。'
+      counter: '若材料只有单一来源，仍不能把它视为完整结论；可先列出缺口。',
+      questionPrompt: '你先说说，材料中的哪一部分仍不能直接当成已核实事实？',
+      answer: '我理解，材料中的本人陈述和还没有交叉来源的段落，都只能先列为待确认。',
+      uncertain: '我只能先指出来源和时间还不完整，不能替材料补出没有写明的事实。',
+      followUpQuestion: '如果只有一份转述，下一步最应该补哪一种来源或说明？',
+      followUpAnswer: '应补上直接来源或明确说明是谁在何时转述，仍不能把转述本身当作亲见。'
     }
   };
   function topicInfo(topicId) { return consultationTopics[text(topicId)] || null; }
@@ -183,7 +193,7 @@
       return m && m.id === messageId && m.toId === actorId && m.status === 'delivered';
     }) || null;
   }
-  function receivedDocument(p, actorId) {
+  function receivedDocument(p, actorId, documentId) {
     var a = p && p.localActivity;
     return rows(a && a.documents).map(function (doc) {
       var delivery = rows(p.messages).find(function (m) {
@@ -192,7 +202,7 @@
       // The delivery receipt is the durable fact.  Older saves may not have
       // carried receivedBy/status through the projection, so those fields
       // constrain the read when present but never replace the receipt.
-      if (!delivery || doc.receivedBy != null && doc.receivedBy !== actorId || doc.status != null && !/^(received|sent)$/.test(doc.status)) return null;
+      if (documentId && doc.id !== documentId || !delivery || doc.receivedBy != null && doc.receivedBy !== actorId || doc.status != null && !/^(received|sent)$/.test(doc.status)) return null;
       return { document: doc, delivery: delivery };
     }).find(Boolean) || null;
   }
@@ -200,9 +210,31 @@
     var key = id(ch), count = 0;
     plans(g).forEach(function (p) {
       var a = p.localActivity;
-      if (a.kind === 'consultation' && p.actorId === key && a.topicId === topicId && a.result && a.result.appliedKey) count++;
+      if (a.kind === 'consultation' && p.actorId === key && a.topicId === topicId && a.result && a.result.appliedKey && a.result.reflection === 'reflect') count++;
     });
     return count;
+  }
+  // A caller supplied opportunity key is only a projection.  The durable
+  // identity is derived from the delivered source record and the participant
+  // who actually knows it, so changing a string key cannot create a second
+  // opportunity for the same experience.
+  function consultationSourceKey(source) {
+    source = source || {};
+    var kind = text(source.kind), planId = text(source.sourcePlanId), messageId = text(source.sourceMessageId), actorId = text(source.actorId);
+    if (!kind || !planId || !messageId || !actorId) return '';
+    return kind + ':' + planId + ':' + messageId + ':' + actorId + (kind === 'document' ? ':' + text(source.documentId) : '');
+  }
+  function canonicalConsultationSource(source, g) {
+    source = source || {};
+    var out = copy(source), canonical = consultationSourceKey(source);
+    if (!canonical) return null;
+    out.key = canonical;
+    return out;
+  }
+  function consultationChannel(ch, target, g) {
+    if (!target || !alive(target)) return { available: false, reason: 'recipient_unavailable' };
+    if (canDeliver(ch, target, g)) return { available: true, mode: 'local' };
+    return { available: false, mode: 'local', reason: 'recipient_location_unavailable' };
   }
   function consultationOpportunities(ch, g) {
     g = g || game(); if (!ch || !alive(ch)) return [];
@@ -217,12 +249,12 @@
         if (targetId && basisMessage && alive(contactTarget) && knows(ch, contactTarget, g) && (contactRelation >= 20 || /^(teacher|family)$/.test(contactKind))) {
           topicId = 'letter_style';
           source = { kind: 'contact', sourcePlanId: p.id, sourceMessageId: basisMessage.id, actorId: actorId,
-            key: 'contact:' + p.id + ':' + basisMessage.id + ':' + actorId, knownDay: basisMessage.deliveredDay,
+            knownDay: basisMessage.deliveredDay,
             basisRefs: [{ kind: 'npc_message', planId: p.id, id: basisMessage.id }] };
         }
       }
       rows(a.documents).filter(function (d) { return !!d; }).some(function (doc) {
-        var receipt = receivedDocument(p, actorId), delivery = receipt && receipt.document.id === doc.id && receipt.delivery;
+        var receipt = receivedDocument(p, actorId, doc.id), delivery = receipt && receipt.document.id === doc.id && receipt.delivery;
         var target = person(p.targetId, g);
         // Receiving a document from the helper is itself a sourced contact;
         // do not require a pre-existing affinity/relationship entry before
@@ -230,7 +262,7 @@
         if (!delivery || !alive(target) || (!knows(ch, target, g) && delivery.fromId !== target.id)) return false;
         targetId = target.id; topicId = 'reading_understanding';
         source = { kind: 'document', sourcePlanId: p.id, sourceMessageId: delivery.id, documentId: doc.id, actorId: actorId,
-          key: 'document:' + p.id + ':' + doc.id + ':' + actorId, knownDay: delivery.deliveredDay,
+          knownDay: delivery.deliveredDay,
           basisRefs: [{ kind: 'npc_message', planId: p.id, id: delivery.id }] };
         return true;
       });
@@ -241,27 +273,32 @@
       // remote or the recipient's current route is not yet available; the
       // normal message commit will perform the actual delivery check.
       if (!target) return;
-      if (used[source.key] || plans(g).some(function (q) { return q.localActivity && q.localActivity.kind === 'consultation' && q.localActivity.sourceOpportunity && q.localActivity.sourceOpportunity.key === source.key; })) return;
+      source = canonicalConsultationSource(source, g); if (!source) return;
+      var channel = consultationChannel(ch, target, g);
+      if (used[source.key] || plans(g).some(function (q) { return q.localActivity && q.localActivity.kind === 'consultation' && canonicalConsultationSource(q.localActivity.sourceOpportunity, g) && canonicalConsultationSource(q.localActivity.sourceOpportunity, g).key === source.key; })) return;
       used[source.key] = true;
       var topic = topicInfo(topicId);
       out.push({ source: 'opportunity:' + source.key, priority: 72 + Math.min(12, consultationHistory(ch, topicId, g) * 2),
-        reason: source.kind === 'contact' ? '已实际收到引见后的来往，想就文书表达请益' : '已实际收到有来源的材料，想就阅读理解请教',
+        sendable: channel.available, waitingReason: channel.reason || '',
+        reason: channel.available ? (source.kind === 'contact' ? '已实际收到引见后的来往，想就文书表达请益' : '已实际收到有来源的材料，想就阅读理解请教') : '已有值得考虑的来源，但当前接触地点尚不可用',
         action: { activityKind: 'consultation', targetId: targetId, consultation: { topicId: topic.id, question: topic.question, sourceOpportunity: source,
-          preferredExchange: consultationHistory(ch, topicId, g) ? 'question' : 'explain' } } });
+          preferredExchange: consultationHistory(ch, topicId, g) ? 'question' : 'explain', channel: channel } } });
     });
     return out.sort(function (a, b) { return b.priority - a.priority || order(a.source, b.source); });
   }
   function consultationBasis(activity, ch, g) {
-    var source = activity && activity.sourceOpportunity, p, m;
+    var source = activity && activity.sourceOpportunity, p, m, canonical;
     if (!source || source.actorId !== id(ch)) return null;
+    if (!/^(contact|document)$/.test(text(source.kind))) return null;
     p = get(source.sourcePlanId, g); if (!p) return null;
     m = deliveredMessage(p, source.sourceMessageId, id(ch));
     if (!m) return null;
+    canonical = canonicalConsultationSource(source, g); if (!canonical) return null;
     if (source.kind === 'document') {
-      var receipt = receivedDocument(p, id(ch)), doc = receipt && receipt.document;
-      if (!doc || doc.id !== source.documentId || !m.data || m.data.documentId !== doc.id) return null;
-    } else if (source.kind === 'contact' && !p.localActivity.contact) return null;
-    return { source: copy(source), message: copy(m) };
+      var receipt = receivedDocument(p, id(ch), source.documentId), doc = receipt && receipt.document;
+      if (m.kind !== 'delivery' || !doc || doc.id !== source.documentId || !m.data || m.data.documentId !== doc.id) return null;
+    } else if (source.kind === 'contact' && (!p.localActivity.contact || p.localActivity.contact.sourceMessageId !== m.id)) return null;
+    return { source: canonical, message: copy(m) };
   }
   function material(ch, ref, g) {
     g = g || game(); if (!ref || !ref.kind) return null;
@@ -347,11 +384,11 @@
   }
   function syncShortPlan(p, phase, outcome) {
     var plan = p.localActivity && p.localActivity.shortPlan; if (!plan) return;
-    var map = { request: 'request', respond: 'response', agree: 'response', perform: 'exchange', feedback: 'reflection' }, step = map[phase];
+    var map = { request: 'request', respond: 'response', agree: 'response', perform: 'exchange', question_answer: 'answer', followup_response: 'followup', feedback: 'reflection' }, step = map[phase];
     if (step) markShortStep(p, step);
     if (/^(rejected|cancelled|expired)$/.test(p.status)) plan.current = 'ended';
     else if (p.status === 'done') plan.current = 'done';
-    else if (p.nextActorId) plan.current = map[p.status === 'awaiting_feedback' ? 'feedback' : p.status === 'working' ? 'perform' : 'respond'] || plan.current;
+    else if (p.nextActorId) plan.current = p.status === 'awaiting_question_answer' ? 'answer' : p.status === 'awaiting_followup_response' ? 'followup' : map[p.status === 'awaiting_feedback' ? 'feedback' : p.status === 'working' ? 'perform' : 'respond'] || plan.current;
     plan.attempts = Number(plan.attempts || 0) + 1;
     plan.lastOutcome = outcome || '';
   }
@@ -380,7 +417,7 @@
     if (kind === 'introduction') return '想请你代向' + third.name + '询问，是否愿意与我通书。尚请先征得本人意愿。';
     if (kind === 'consultation') {
       var topic = topicInfo(task && task.topicId);
-      return target.name + '：想就“' + (topic ? topic.title : '这件事') + '”请益切磋。具体问题是：' + (topic ? topic.question : '想听你说明一个要点') + '。只占一个短时段，是否方便由你决定。';
+      return target.name + '：想就“' + (topic ? topic.title : '这件事') + '”请益切磋。具体问题是：' + (task && task.question || topic && topic.question || '想听你说明一个要点') + '。只占一个短时段，是否方便由你决定。';
     }
     return '想请你据所附材料整理一份清单：' + task.title + '。只须注明现有材料和来源，不必另作调查。';
   }
@@ -396,7 +433,13 @@
       if (!target || target === actor || !knows(actor, target)) return result('blocked', 'known_specific_recipient_required');
       if (kind === 'introduction' && (!third || third === actor || third === target || !knows(actor, third))) return result('blocked', 'known_distinct_third_person_required');
       var task = kind === 'assistance' ? taskFor(actor, d.task) : kind === 'consultation' ? Object.assign({}, d.consultation || {}, { topicId: text(d.consultation && d.consultation.topicId), question: text(d.consultation && d.consultation.question) }) : null;
-      if (kind === 'consultation' && (!topicInfo(task.topicId) || !task.sourceOpportunity || task.sourceOpportunity.actorId !== key || !consultationBasis({ sourceOpportunity: task.sourceOpportunity }, actor, game()))) return result('blocked', 'consultation_source_required');
+      var consultationBasisResult = null;
+      if (kind === 'consultation') {
+        consultationBasisResult = consultationBasis({ sourceOpportunity: task && task.sourceOpportunity }, actor, game());
+        if (!topicInfo(task.topicId) || !consultationBasisResult) return result('blocked', 'consultation_source_required');
+        task.sourceOpportunity = consultationBasisResult.source;
+        if (!canDeliver(actor, target, game())) return result('blocked', 'consultation_contact_unavailable');
+      }
       if (kind === 'assistance' && !task) return result('blocked', 'actual_permitted_materials_required');
       if (kind === 'consultation' && !d.phase) d.phase = 'request';
       var pair = key + ':' + id(target) + ':' + kind, last = readState().cooldowns[pair];
@@ -410,7 +453,8 @@
         localActivity: { schemaVersion: 1, definitionVersion: kind === 'consultation' ? 2 : 1, kind: kind, revision: 0, termsVersion: 1,
           thirdPartyId: id(third), task: task, topicId: kind === 'consultation' ? task.topicId : '', question: kind === 'consultation' ? task.question : '',
           sourceOpportunity: kind === 'consultation' ? copy(task.sourceOpportunity) : null,
-          shortPlan: kind === 'consultation' ? { id: 'short:' + d.actionId, steps: [{ id: 'request', status: 'current' }, { id: 'response', status: 'pending' }, { id: 'exchange', status: 'pending' }, { id: 'reflection', status: 'pending' }], current: 'request', attempts: 0 } : null,
+          preferredExchange: kind === 'consultation' ? text(task.preferredExchange || task.exchangeChoice || 'explain') : '',
+          shortPlan: kind === 'consultation' ? { id: 'short:' + d.actionId, steps: [{ id: 'request', status: 'current' }, { id: 'response', status: 'pending' }, { id: 'exchange', status: 'pending' }, { id: 'question', status: 'pending' }, { id: 'answer', status: 'pending' }, { id: 'followup', status: 'pending' }, { id: 'reflection', status: 'pending' }], current: 'request', attempts: 0 } : null,
           createdDay: day(), expiresDay: day() + config.timeoutDays, deferrals: 0, contactMode: 'correspondence', sourceGoalId: text(d.sourceGoalId), sourceContact: contactFor(actor, target) } };
       ledger().ensurePlans(game()).push(p);
       readState().cooldowns[pair] = { day: day(), turn: game().turn, planId: p.id };
@@ -458,13 +502,15 @@
       if (answer === 'conditions' || answer === 'partial') {
         activity.termsVersion++;
         activity.conditionByThird = thirdResponse;
+        if (kind === 'consultation') activity.responseMode = 'brief';
         if (kind === 'assistance') activity.proposedTask = Object.assign({}, copy(activity.task), { materials: answer === 'partial' ? rows(activity.task.materials).slice(0, 1) : rows(activity.task.materials) });
         activity.condition = kind === 'introduction' ? '只先通书，不约面谈，也不承诺其它请托。' : kind === 'consultation' ? '可以只作简短切磋，不承诺长期授业或正式师承。' : !rows(activity.task && activity.task.materials).length ? '请先补交可使用的材料。' : '只整理当前提供的材料，不另作调查。';
       }
+      if (kind === 'consultation' && /^(accept|brief)$/.test(answer)) activity.responseMode = answer;
       if (answer === 'defer') { activity.deferrals++; activity.retryDay = day() + 1; activity.retryTurn = game().turn; activity.expiresDay = Math.max(activity.expiresDay, activity.retryDay + config.timeoutDays); }
       var topic = kind === 'consultation' ? topicInfo(activity.topicId) : null;
       var body = answer === 'reject' ? '眼下不便承接此事，还望见谅。' : answer === 'defer' ? '眼下尚有安排，请容我稍后再答复。' : /conditions|partial/.test(answer) ? activity.condition : kind === 'greeting' ? answer === 'warm' ? '来问已悉，多谢挂怀。也望你诸事顺遂。' : '来问已悉，谨复。' : kind === 'consultation' ? (answer === 'brief' ? '可以在一个短时段内只谈这一个问题，仍不构成长期授业。' : '愿就这一个问题作一次短时请益，具体内容到时再说。') : thirdResponse ? '愿先通书相识；其它事项另行商议。' : kind === 'introduction' ? '愿代为转达，仍须对方自行答复。' : '愿按所附材料整理清单，交付时注明来源。';
-      message(p, key, targetId, thirdResponse ? 'third_response' : 'response', body, { response: answer, task: activity.proposedTask || activity.task, topicId: activity.topicId, question: topic && topic.question || '', condition: activity.condition || '' }, d);
+      message(p, key, targetId, thirdResponse ? 'third_response' : 'response', body, { response: answer, task: activity.proposedTask || activity.task, topicId: activity.topicId, question: activity.question || topic && topic.question || '', condition: activity.condition || '' }, d);
       return finish(p, actor, d, 'submitted', '答复已递出，尚未替对方同意');
     }
     if (d.phase === 'agree' && p.status === 'awaiting_agreement' && key === p.actorId) {
@@ -501,11 +547,15 @@
       if (day() < activity.readyDay || activity.workDays > 0 && game().turn <= activity.acceptedTurn) return result('blocked', 'consultation_time_not_reached');
       var consultation = topicInfo(activity.topicId), exchangeChoice = text(d.exchangeChoice || 'explain');
       if (!consultation || !/^(explain|question|counter)$/.test(exchangeChoice)) return result('blocked', 'consultation_choice_required');
-      var exchangeContent = exchangeChoice === 'question' ? consultation.questionReply : exchangeChoice === 'counter' ? consultation.counter : consultation.explain;
-      activity.exchange = { topicId: consultation.id, choice: exchangeChoice, content: exchangeContent, day: day(), actorId: key,
+      var exchangeContent = exchangeChoice === 'counter' ? consultation.counter : consultation.explain;
+      var questionPrompt = consultation.question === activity.question ? consultation.questionPrompt : '你先说说，如何理解“' + activity.question + '”？';
+      activity.exchange = { topicId: consultation.id, choice: exchangeChoice, content: exchangeChoice === 'question' ? questionPrompt : exchangeContent, day: day(), actorId: key,
         sourceRefs: copy(activity.sourceOpportunity && activity.sourceOpportunity.basisRefs || []) };
-      message(p, key, p.actorId, 'consultation_exchange', exchangeContent, { topicId: consultation.id, question: consultation.question, choice: exchangeChoice,
-        sourceRefs: copy(activity.exchange.sourceRefs), sourceOpportunity: copy(activity.sourceOpportunity) }, d);
+      if (exchangeChoice === 'question') {
+        message(p, key, p.actorId, 'consultation_question', questionPrompt, { topicId: consultation.id, question: activity.question, choice: exchangeChoice }, d);
+        return finish(p, actor, d, 'submitted', '已提出一个具体理解问题，等待对方独立回答');
+      }
+      message(p, key, p.actorId, 'consultation_exchange', exchangeContent, { topicId: consultation.id, question: activity.question, choice: exchangeChoice }, d);
       return finish(p, actor, d, 'submitted', '已完成一次有具体话题的请益内容，待本人反馈');
     }
     if (d.phase === 'perform' && p.status === 'working' && key === p.targetId && kind === 'assistance') {
@@ -521,19 +571,53 @@
       document.status = 'sent';
       return finish(p, actor, d, 'submitted', '已形成并递送有来源的清单，尚待收件');
     }
+    if (d.phase === 'question_answer' && p.status === 'awaiting_question_answer' && key === p.actorId && kind === 'consultation') {
+      var questionTopic = topicInfo(activity.topicId), answerChoice = text(d.response || 'answer');
+      if (!questionTopic || !/^(answer|uncertain)$/.test(answerChoice) || !activity.exchange || activity.exchange.choice !== 'question') return result('blocked', 'consultation_question_missing');
+      var answerContent = answerChoice === 'uncertain' ? questionTopic.uncertain : questionTopic.answer;
+      activity.questionAnswer = { topicId: questionTopic.id, response: answerChoice, content: answerContent, day: day(), actorId: key, questionId: activity.exchange.receivedMessageId || '' };
+      message(p, key, p.targetId, 'consultation_question_answer', answerContent, { topicId: questionTopic.id, question: activity.exchange.content, response: answerChoice }, d);
+      return finish(p, actor, d, 'submitted', '已针对对方提出的问题作答，等待对方收到');
+    }
+    if (d.phase === 'followup_response' && p.status === 'awaiting_followup_response' && key === p.targetId && kind === 'consultation') {
+      var followTopic = topicInfo(activity.topicId), followChoice = text(d.response || 'answer'), follow = activity.followUp;
+      if (!followTopic || !follow || follow.status !== 'awaiting_response' || !/^(answer|decline|defer)$/.test(followChoice)) return result('blocked', 'consultation_followup_missing');
+      if (followChoice === 'defer') {
+        if (Number(follow.deferrals || 0) >= 1) return result('blocked', 'consultation_followup_defer_limit');
+        follow.deferrals = Number(follow.deferrals || 0) + 1; follow.retryDay = day() + 1; follow.retryTurn = game().turn;
+        activity.retryDay = follow.retryDay; activity.retryTurn = follow.retryTurn; activity.retryActorId = p.targetId; activity.retryPhase = 'followup_response';
+        setNext(p, 'deferred', '');
+        message(p, key, p.actorId, 'consultation_followup_response', '这一个追问暂待稍后再答，请容我有暇时再复。', { topicId: followTopic.id, response: followChoice, followUpId: follow.id }, d);
+        return finish(p, actor, d, 'submitted', '追问已收到延期答复，待约定时间再议');
+      }
+      var followContent = followChoice === 'decline' ? '这一个追问眼下不便再答，先请依已说明的范围办理。' : followTopic.followUpAnswer;
+      follow.response = { choice: followChoice, content: followContent, day: day(), actorId: key };
+      follow.status = 'answered';
+      message(p, key, p.actorId, 'consultation_followup_response', followContent, { topicId: followTopic.id, response: followChoice, followUpId: follow.id }, d);
+      return finish(p, actor, d, 'submitted', '追问已作出独立答复，等待请益者确认');
+    }
     if (d.phase === 'feedback' && p.status === 'awaiting_feedback' && key === p.actorId && kind === 'consultation') {
       var reflection = text(d.response || 'ack');
       if (!/^(reflect|ask|ack)$/.test(reflection)) return result('blocked', 'consultation_feedback_required');
       var exchanged = activity.exchange, topicDone = topicInfo(activity.topicId);
       if (!exchanged || !topicDone) return result('blocked', 'consultation_exchange_missing');
-      var summary = reflection === 'ask' ? '已听取对方说明，并留下一个待继续追问的问题。' : reflection === 'reflect' ? '已将本次要点与自己的理解对照，形成一次有来源的个人心得。' : '已确认收到本次说明，暂不继续追问。';
+      if (reflection === 'ask') {
+        if (activity.followUp) return result('blocked', 'consultation_followup_already_used');
+        activity.followUp = { id: p.id + ':followup:1', question: topicDone.followUpQuestion, topicId: topicDone.id, status: 'awaiting_response', count: 1, deferrals: 0, createdDay: day(), actorId: p.actorId, targetId: p.targetId,
+          sourceExchangeId: activity.exchange.receivedMessageId || activity.exchange.sourceMessageId || '' };
+        message(p, key, p.targetId, 'consultation_followup_request', topicDone.followUpQuestion, { topicId: topicDone.id, question: topicDone.followUpQuestion, followUpId: activity.followUp.id }, d);
+        return finish(p, actor, d, 'submitted', '已提出一个具体追问，等待对方独立决定是否回答');
+      }
+      var summary = reflection === 'reflect' ? '已将本次要点与自己的理解对照，形成一次有来源的个人心得。' : '已确认收到本次说明，暂不继续追问。';
+      if (activity.followUp && activity.followUp.status === 'answered') summary += activity.followUp.response.choice === 'decline' ? ' 对方已说明暂不再答，当前问题到此为止。' : ' 对方已针对追问补充说明。';
       activity.result = { topicId: topicDone.id, summary: summary, reflection: reflection, exchangeChoice: exchanged.choice,
-        sourceRefs: copy(exchanged.sourceRefs || []), appliedKey: p.id + ':consultation-result:' + activity.termsVersion, day: day(), actorId: key };
+        sourceRefs: copy(exchanged.sourceRefs || []), questionAnswer: copy(activity.questionAnswer || null), followUp: copy(activity.followUp || null), appliedKey: p.id + ':consultation-result:' + activity.termsVersion, day: day(), actorId: key };
       if (root.CharacterGrowthSystem && typeof root.CharacterGrowthSystem.recordExperience === 'function') {
         root.CharacterGrowthSystem.recordExperience(actor.name, '请益·' + topicDone.id, '与' + person(p.targetId).name + '切磋：' + exchanged.content);
       }
       if (root.OpinionSystem && reflection === 'reflect') root.OpinionSystem.addEventOpinion(actor, person(p.targetId), 1, '一次有具体内容的请益切磋', { sourceId: activity.result.appliedKey });
-      message(p, key, p.targetId, 'consultation_feedback', summary, { topicId: topicDone.id, reflection: reflection, result: copy(activity.result) }, d);
+      var publicResult = copy(activity.result); delete publicResult.sourceRefs;
+      message(p, key, p.targetId, 'consultation_feedback', summary, { topicId: topicDone.id, reflection: reflection, result: publicResult }, d);
       return finish(p, actor, d, 'completed', '请益切磋已结束，心得与后续倾向已记录');
     }
     if (d.phase === 'feedback' && p.status === 'awaiting_feedback' && key === p.actorId) {
@@ -589,14 +673,30 @@
     if (d.phase === 'perform' && p.localActivity.kind === 'consultation') {
       var exchange = p.localActivity.exchange;
       if (!exchange || exchange.actorId !== id(actor) || !exchange.content || exchange.topicId !== p.localActivity.topicId || old && old.localActivity.exchange) return false;
-      if (!created.some(function (m) { return m.kind === 'consultation_exchange' && m.fromId === id(actor) && m.toId === p.actorId && m.content === exchange.content && m.data && m.data.topicId === exchange.topicId; })) return false;
+      var exchangeKind = d.exchangeChoice === 'question' ? 'consultation_question' : 'consultation_exchange';
+      if (!created.some(function (m) { return m.kind === exchangeKind && m.fromId === id(actor) && m.toId === p.actorId && m.content === exchange.content && m.data && m.data.topicId === exchange.topicId; })) return false;
+    }
+    if (d.phase === 'question_answer' && p.localActivity.kind === 'consultation') {
+      var answer = p.localActivity.questionAnswer;
+      if (!answer || answer.actorId !== id(actor) || !answer.content || answer.topicId !== p.localActivity.topicId || old && old.localActivity.questionAnswer) return false;
+      if (!created.some(function (m) { return m.kind === 'consultation_question_answer' && m.fromId === id(actor) && m.toId === p.targetId && m.content === answer.content && m.data && m.data.topicId === answer.topicId; })) return false;
+    }
+    if (d.phase === 'followup_response' && p.localActivity.kind === 'consultation') {
+      var follow = p.localActivity.followUp, followResponse = follow && follow.response;
+      if (!follow) return false;
+      if (d.response === 'defer') {
+        if (!created.some(function (m) { return m.kind === 'consultation_followup_response' && m.fromId === id(actor) && m.toId === p.actorId && m.data && m.data.followUpId === follow.id; })) return false;
+      } else {
+        if (!followResponse || followResponse.actorId !== id(actor) || !followResponse.content) return false;
+        if (!created.some(function (m) { return m.kind === 'consultation_followup_response' && m.fromId === id(actor) && m.toId === p.actorId && m.content === followResponse.content && m.data && m.data.followUpId === follow.id; })) return false;
+      }
     }
     return true;
   }
 
   function beginWork(p) {
     var a = p.localActivity;
-    a.workDays = a.kind === 'consultation' ? 1 : workDays(person(p.targetId), a.task);
+    a.workDays = a.kind === 'consultation' ? (a.responseMode === 'brief' ? 0 : 1) : workDays(person(p.targetId), a.task);
     a.acceptedTurn = game().turn; a.acceptedDay = day(); a.readyDay = day() + a.workDays;
     setNext(p, 'working', p.targetId);
   }
@@ -653,6 +753,7 @@
       if (m.kind === 'agreement') {
         if (reply === 'reject') setNext(p, 'rejected', '');
         else if (a.kind === 'assistance') { a.task = copy(m.data.task); beginWork(p); }
+        else if (a.kind === 'consultation') { beginWork(p); }
         else if (a.conditionByThird) setNext(p, 'ready_confirm', a.thirdPartyId);
         else setNext(p, 'ready_forward', p.targetId);
       }
@@ -681,6 +782,27 @@
         a.exchange = Object.assign({}, a.exchange || {}, { topicId: m.data.topicId, content: m.content, choice: m.data.choice, receivedDay: day(), receivedMessageId: m.id });
         setNext(p, 'awaiting_feedback', p.actorId);
       }
+      if (m.kind === 'consultation_question') {
+        if (!m.data || !m.data.topicId || !topicInfo(m.data.topicId) || !m.content) throw Error('consultation_question_inconsistent');
+        a.exchange = Object.assign({}, a.exchange || {}, { topicId: m.data.topicId, content: m.content, choice: 'question', receivedDay: day(), receivedMessageId: m.id });
+        setNext(p, 'awaiting_question_answer', p.actorId);
+      }
+      if (m.kind === 'consultation_question_answer') {
+        if (!m.data || !m.data.topicId || !topicInfo(m.data.topicId) || !m.content) throw Error('consultation_question_answer_inconsistent');
+        a.questionAnswer = Object.assign({}, a.questionAnswer || {}, { topicId: m.data.topicId, content: m.content, response: m.data.response, actorId: m.fromId, receivedDay: day(), receivedMessageId: m.id });
+        setNext(p, 'awaiting_feedback', p.actorId);
+      }
+      if (m.kind === 'consultation_followup_request') {
+        if (!m.data || !m.data.topicId || !m.data.followUpId || !m.content) throw Error('consultation_followup_inconsistent');
+        a.followUp = Object.assign({}, a.followUp || {}, { id: m.data.followUpId, topicId: m.data.topicId, question: m.content, status: 'awaiting_response', receivedDay: day(), receivedMessageId: m.id });
+        setNext(p, 'awaiting_followup_response', p.targetId);
+      }
+      if (m.kind === 'consultation_followup_response') {
+        if (!m.data || !m.data.topicId || !m.data.followUpId || !m.content) throw Error('consultation_followup_response_inconsistent');
+        a.followUp = Object.assign({}, a.followUp || {}, { id: m.data.followUpId, topicId: m.data.topicId, status: m.data.response === 'defer' ? 'deferred' : 'answered', response: { choice: m.data.response, content: m.content, actorId: m.fromId, receivedDay: day(), receivedMessageId: m.id } });
+        if (m.data.response === 'defer') setNext(p, 'deferred', '');
+        else setNext(p, 'awaiting_feedback', p.actorId);
+      }
       if (m.kind === 'consultation_feedback') {
         a.result = copy(m.data && m.data.result || a.result);
         setNext(p, 'done', '');
@@ -692,6 +814,9 @@
       if (m.kind === 'request') markShortStep(p, 'request');
       if (m.kind === 'response' || m.kind === 'agreement') markShortStep(p, 'response');
       if (m.kind === 'consultation_exchange') markShortStep(p, 'exchange');
+      if (m.kind === 'consultation_question') markShortStep(p, 'question');
+      if (m.kind === 'consultation_question_answer') markShortStep(p, 'answer');
+      if (m.kind === 'consultation_followup_request' || m.kind === 'consultation_followup_response') markShortStep(p, 'followup');
       if (m.kind === 'consultation_feedback') markShortStep(p, 'reflection');
       a.shortPlan.current = p.status === 'done' ? 'done' : p.status === 'working' ? 'exchange' : p.status === 'awaiting_feedback' ? 'reflection' : a.shortPlan.current;
     }
@@ -738,7 +863,9 @@
         else failedDelivery(p, m);
       });
       if (!terminal(p) && p.status === 'deferred' && game().turn > a.retryTurn && day() >= a.retryDay) {
-        setNext(p, a.retryActorId === a.thirdPartyId ? 'awaiting_third' : 'awaiting_response', a.retryActorId);
+        var retryStatus = a.retryPhase === 'followup_response' ? 'awaiting_followup_response' : a.retryActorId === a.thirdPartyId ? 'awaiting_third' : 'awaiting_response';
+        if (a.retryPhase === 'followup_response' && a.followUp) a.followUp.status = 'awaiting_response';
+        setNext(p, retryStatus, a.retryActorId); a.retryPhase = '';
         a.revision++;
       }
       if (!terminal(p) && replyMayExpire(p) && game().turn > p.createdTurn && day() >= a.expiresDay) {
@@ -751,21 +878,61 @@
     });
     return delivered;
   }
+  function participantHasMessage(messages, key, kind) {
+    return rows(messages).some(function (m) { return m.kind === kind && (m.fromId === key || m.toId === key && m.status === 'delivered'); });
+  }
+  function visibleShortPlan(a, p, key, messages) {
+    if (!a.shortPlan) return null;
+    var out = copy(a.shortPlan);
+    out.steps = rows(out.steps).map(function (step) {
+      var status = 'pending';
+      if (step.id === 'request' && participantHasMessage(messages, key, 'request')) status = 'done';
+      if (step.id === 'response' && (participantHasMessage(messages, key, 'response') || participantHasMessage(messages, key, 'agreement'))) status = 'done';
+      if (step.id === 'exchange' && (participantHasMessage(messages, key, 'consultation_exchange') || participantHasMessage(messages, key, 'consultation_question'))) status = 'done';
+      if (step.id === 'question' && participantHasMessage(messages, key, 'consultation_question')) status = 'done';
+      if (step.id === 'answer' && participantHasMessage(messages, key, 'consultation_question_answer')) status = 'done';
+      if (step.id === 'followup' && (participantHasMessage(messages, key, 'consultation_followup_request') || participantHasMessage(messages, key, 'consultation_followup_response'))) status = 'done';
+      if (step.id === 'reflection' && participantHasMessage(messages, key, 'consultation_feedback')) status = 'done';
+      return { id: step.id, status: status };
+    });
+    // A participant may see that the other side is still considering the
+    // matter, but not the other side's private plan or pending answer.
+    out.current = p.nextActorId === key ? (p.status === 'awaiting_question_answer' ? 'answer' : p.status === 'awaiting_followup_response' ? 'followup' : out.current) :
+      terminal(p) ? (p.status === 'done' ? 'done' : 'ended') : 'waiting';
+    return out;
+  }
   function view(p, ch) {
     if (isPlan(p) && p.localActivity.kind === 'meeting' && TM.NPC.Meetings && TM.NPC.Meetings.view) return TM.NPC.Meetings.view(p, ch);
     if (!isPlan(p) || !ch || !p.knowledge[id(ch)]) return null;
     var key = id(ch), k = p.knowledge[key], a = p.localActivity;
     var messages = p.messages.filter(function (m) { return m.fromId === key || m.toId === key && m.status === 'delivered'; });
+    var visibleMessages = messages.map(function (m) {
+      var out = copy(m);
+      if (out.fromId !== key && out.data) {
+        delete out.data.sourceOpportunity;
+        delete out.data.sourceRefs;
+        if (out.data.result) { out.data.result = copy(out.data.result); delete out.data.result.sourceRefs; }
+      }
+      return out;
+    });
     var knownDeadline = messages.reduce(function (deadline, m) { return m.data && Number.isFinite(m.data.expiresDay) ? m.data.expiresDay : deadline; }, a.createdDay + config.timeoutDays);
     var phase = p.nextActorId === key && !terminal(p) ? ({ awaiting_response: 'respond', awaiting_third: 'respond', awaiting_agreement: 'agree',
-      ready_forward: 'forward', ready_report: 'report', ready_confirm: 'confirm', working: 'perform', awaiting_feedback: 'feedback', waiting_contact: 'cancel' })[p.status] || '' : '';
+      ready_forward: 'forward', ready_report: 'report', ready_confirm: 'confirm', working: 'perform', awaiting_feedback: 'feedback', awaiting_question_answer: 'question_answer', awaiting_followup_response: 'followup_response', waiting_contact: 'cancel' })[p.status] || '' : '';
     if (phase === 'perform' && (day() < a.readyDay || a.workDays > 0 && game().turn <= a.acceptedTurn)) phase = '';
     var permittedDocuments = rows(a.documents).filter(function (d) { return d.authorId === key || d.receivedBy === key; });
+    var exchangeVisible = a.exchange && (a.exchange.actorId === key || participantHasMessage(p.messages, key, 'consultation_exchange') || participantHasMessage(p.messages, key, 'consultation_question'));
+    var answerVisible = a.questionAnswer && (a.questionAnswer.actorId === key || participantHasMessage(p.messages, key, 'consultation_question_answer'));
+    var resultVisible = a.result && (a.result.actorId === key || participantHasMessage(p.messages, key, 'consultation_feedback'));
+    var followUpVisible = a.followUp && (a.followUp.actorId === key || participantHasMessage(p.messages, key, 'consultation_followup_request') || participantHasMessage(p.messages, key, 'consultation_followup_response'));
+    var visibleExchange = exchangeVisible ? copy(a.exchange) : null;
+    var visibleResult = resultVisible ? copy(a.result) : null;
+    if (visibleExchange && visibleExchange.actorId !== key) delete visibleExchange.sourceRefs;
+    if (visibleResult && visibleResult.actorId !== key) delete visibleResult.sourceRefs;
     return { id: p.id, kind: a.kind, actorId: p.actorId, targetId: p.targetId,
       thirdPartyId: key === a.thirdPartyId || messages.some(function (m) { return rows(m.data && m.data.publicParticipants).some(function (x) { return x.id === a.thirdPartyId; }); }) ? a.thirdPartyId : '',
       intent: p.intent, stage: k.stage, nextPhase: phase, revision: a.revision, termsVersion: a.termsVersion,
-      topicId: a.topicId || '', question: a.question || '', exchange: copy(a.exchange || null), result: copy(a.result || null), shortPlan: copy(a.shortPlan || null),
-      expiresDay: knownDeadline, messages: copy(messages), documents: copy(permittedDocuments),
+      topicId: a.topicId || '', question: a.question || '', exchange: visibleExchange, questionAnswer: copy(answerVisible ? a.questionAnswer : null), result: visibleResult, followUp: copy(followUpVisible ? a.followUp : null), shortPlan: visibleShortPlan(a, p, key, messages),
+      expiresDay: knownDeadline, messages: visibleMessages, documents: copy(permittedDocuments),
       contact: a.contact && a.contact.participants.indexOf(key) >= 0 && k.stage === 'done' ? copy(a.contact) : null,
       canCancel: !terminal(p) && a.cancelSenderId !== key, factStatus: 'own_activity_view',
       sourceOpportunity: key === p.actorId ? copy(a.sourceOpportunity || null) : null };

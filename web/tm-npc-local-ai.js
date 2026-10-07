@@ -48,8 +48,8 @@
         else if (disposition.stress >= 75 && p.localActivity.deferrals < D.config.maxDeferrals) { d.response = 'defer'; reason = '当前负担较重，明确请求延期'; }
         else if (view.kind === 'meeting') { d.response = disposition.score < 22 ? 'defer' : 'accept'; reason = '按关系、负担和已知行程决定是否赴约'; }
         else if (view.kind === 'consultation') {
-          d.response = disposition.score < 18 ? 'reject' : disposition.stress >= 65 ? 'defer' : disposition.score < 32 ? 'brief' : 'accept';
-          reason = disposition.score < 18 ? '对方与当前话题关系不足，婉拒请益' : disposition.stress >= 65 ? '当前负担较重，暂缓请益' : d.response === 'brief' ? '只接受一次简短切磋，不承诺长期授业' : '按已知往来和当前负担接受一次具体请益';
+          d.response = disposition.score < 18 ? 'reject' : disposition.stress >= 65 && p.localActivity.deferrals < D.config.maxDeferrals ? 'defer' : disposition.score < 42 ? 'brief' : 'accept';
+          reason = disposition.score < 18 ? '对方与当前话题关系不足，婉拒请益' : d.response === 'defer' ? '当前负担较重，暂缓请益' : d.response === 'brief' ? '延期次数已到上限，只接受一次简短切磋' : '按已知往来和当前负担接受一次具体请益';
         }
         else if (view.kind === 'greeting') { d.response = disposition.score > 45 && disposition.sociability >= 0 ? 'warm' : 'brief'; reason = '依已有往来选择答复方式'; }
         else if (view.kind === 'assistance' && !arr(p.localActivity.task && p.localActivity.task.materials).length) { d.response = 'conditions'; reason = '已收到的任务缺少材料'; }
@@ -67,8 +67,18 @@
         var preference = p.localActivity && p.localActivity.preferredExchange || 'explain';
         d.exchangeChoice = preference === 'question' ? 'question' : disposition.li >= 70 ? 'counter' : 'explain';
         reason = '依据具体话题和本人已知经历选择交流方式';
+      } else if (d.phase === 'question_answer' && view.kind === 'consultation') {
+        d.response = disposition.score < 18 ? 'uncertain' : 'answer';
+        reason = d.response === 'answer' ? '依据自己的理解回答对方的具体问题' : '说明目前只能给出有限理解';
+      } else if (d.phase === 'followup_response' && view.kind === 'consultation') {
+        d.response = disposition.stress >= 80 && Number(p.localActivity.followUp && p.localActivity.followUp.deferrals || 0) < 1 ? 'defer' : disposition.score < 8 ? 'decline' : 'answer';
+        reason = d.response === 'answer' ? '按当前话题和可用时间回应一次追问' : d.response === 'defer' ? '当前负担仍重，暂缓这一次追问' : '当前不再承接同一追问';
       } else if (d.phase === 'feedback') {
-        if (view.kind === 'consultation') { d.response = D.consultationHistory(ch, p.localActivity.topicId) ? 'reflect' : 'ask'; reason = '依据本次交流和既有话题经历留下反馈'; }
+        if (view.kind === 'consultation') {
+          d.response = p.localActivity.followUp && p.localActivity.followUp.status === 'received' ? 'reflect' :
+            D.consultationHistory(ch, p.localActivity.topicId) ? 'reflect' : 'ask';
+          reason = d.response === 'ask' ? '本次交流仍有一个具体问题，提出一次有界追问' : '依据已收到的答复整理本人的理解';
+        }
         else { d.response = disposition.score >= 20 ? 'satisfied' : 'ack'; reason = '对实际收到的文书作反馈'; }
       }
       else if (d.phase === 'cancel') reason = '本地递送未能安排，结束此项请求';
@@ -80,6 +90,7 @@
   function opportunityCandidates(ch) {
     var D = domain(), opportunities = D.consultationOpportunities ? D.consultationOpportunities(ch, root.GM) : [];
     return opportunities.map(function (o) {
+      if (o.sendable === false) return null;
       var target = actor(o.action && o.action.targetId), disposition = inclination(ch, target, 'consultation');
       // A real source creates an opportunity, but it does not compel a new
       // contact.  Current burden and the actor's relation/temperament still
@@ -91,12 +102,13 @@
     }).filter(Boolean);
   }
   function candidates(ch, related, options) {
-    var D = domain(), out = dueCandidates(ch, related), b = D.budget(ch);
+    var D = domain(), due = dueCandidates(ch, related), out = [], b = D.budget(ch);
     if (b.steps >= D.config.dailySteps) return [];
-    if (out.length || b.starts >= D.config.dailyStarts) return out.slice(0, config.maxCandidates);
-    out = opportunityCandidates(ch);
-    if (out.length) return out.slice(0, config.maxCandidates);
-    arr(ch.localGoals).forEach(function (goal) {
+    // Due responses keep their high priority, but a newly discovered
+    // opportunity must not hide an already valid local goal.  Starts are
+    // still bounded separately from the number of candidates shown.
+    if (b.starts < D.config.dailyStarts) out = opportunityCandidates(ch);
+    if (b.starts < D.config.dailyStarts) arr(ch.localGoals).forEach(function (goal) {
       if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting|consultation)$/.test(goal.kind)) return;
       var source = String(goal.id) + ':' + Number(goal.version || 1);
       if (related.some(function (p) { return p.actorId === ch.id && p.localActivity.sourceGoalId === source; })) return;
@@ -107,7 +119,7 @@
       out.push({ priority: 50 + willingness.score, source: 'goal:' + source, reason: '推进本人明确的普通交往目标',
         action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: goal.meeting, consultation: goal.consultation } });
     });
-    if (!out.length && !(options && options.skipUnsolicited)) {
+    if (!out.length && !due.length && !(options && options.skipUnsolicited) && b.starts < D.config.dailyStarts) {
       D.knownIds(ch).forEach(function (key) {
         var target = actor(key); if (!target || target === ch) return;
         var relation = D.relation(ch, target), role = D.relationKind(ch, target), disposition = inclination(ch, target, 'greeting');
@@ -126,7 +138,9 @@
           source: 'contact:' + key + ':' + root.GM.turn, reason: contact ? '依已获知的引见约定继续通书' : '已有来往且近期未通问', action: { activityKind: 'greeting', targetId: key } });
       });
     }
-    return out.sort(function (a, b) { return b.priority - a.priority || order(a.source, b.source); }).slice(0, config.maxCandidates);
+    // Pending work always wins over a new start, while other executable
+    // choices remain visible for the player and for bounded local selection.
+    return due.concat(out).sort(function (a, b) { return b.priority - a.priority || order(a.source, b.source); }).slice(0, config.maxCandidates);
   }
   function prepareEvent(source, detail) {
     var D = domain(), st = D.readState();
@@ -688,6 +702,12 @@
           var command = Object.assign({}, choice.action, { actionId: st.origins[origin] });
           var beforeMessages = D.plans().reduce(function (n, p) { return n + p.messages.length; }, 0);
           var receipt = D.submitNPC(chosen, command, { inlineDelivery: true });
+          if (typeof root._npcPlanningStepResult === 'function' && receipt && receipt.planId) {
+            var _plannedActivity = D.get(receipt.planId);
+            if (_plannedActivity && _plannedActivity.localActivity && _plannedActivity.localActivity.sourceGoalId) {
+              root._npcPlanningStepResult(chosen.id, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) ? 'completed' : receipt.outcome, reason: receipt.reason });
+            }
+          }
           // A failed domain transaction restores nested state objects; do not keep their stale references.
           st = D.readState(); event = st.event; event.remaining--; summary.decisions++;
           if (/^(submitted|completed)$/.test(receipt.outcome) && !choice.action.planId && !choice.action.sourceGoalId) event.newContacts = (event.newContacts || 0) + 1;
@@ -732,7 +752,17 @@
       wake('enter'); if (NPC.DailyUI) NPC.DailyUI.render();
     }, 0);
   }
-  NPC.LocalAI = { config: config, wake: wake, candidates: candidates, inclination: inclination, scheduleEntry: scheduleEntry,
+  function localOnlyDue(ch) {
+    if (!ch || !domain()) return false;
+    var D = domain(), related = D.plans().filter(function (p) { return p && p.localActivity && (p.actorId === ch.id || p.targetId === ch.id || p.localActivity.thirdPartyId === ch.id); });
+    if (related.some(function (p) { return !D.terminal(p); })) return true;
+    return candidates(ch, related, { skipUnsolicited: true }).some(function (c) { return c && c.action && /^(greeting|introduction|assistance|consultation|meeting)$/.test(c.action.activityKind || ''); });
+  }
+  function routingStatus(ch) {
+    var planning = root.GM && root.GM._npcActionState && root.GM._npcActionState.planning || {}, pending = Array.isArray(planning.pending) ? planning.pending.filter(function (q) { return q && q.actorId === String(ch && ch.id) && q.status === 'pending'; }) : [];
+    return { ordinaryMode: 'local', localDue: localOnlyDue(ch), planningPending: pending.length, modelRequired: pending.length > 0, compatibilityPath: true };
+  }
+  NPC.LocalAI = { config: config, wake: wake, candidates: candidates, inclination: inclination, scheduleEntry: scheduleEntry, localOnlyDue: localOnlyDue, routingStatus: routingStatus,
     requestPublicTransfer: requestPublicTransfer, createDutyMatter: createDutyMatter, authorizeDutyMatter: authorizeDutyMatter, renderDutyPanel: renderDutyPanel, runDutyChoices: runDutyChoices,
     dutyEvidence: dutyEvidence, dutyMatter: dutyMatter, dutyMatterOptions: dutyMatterOptions, dutyAssignments: dutyAssignments };
   if (root.GameHooks) root.GameHooks.on('enterGame:after', scheduleEntry, 60);

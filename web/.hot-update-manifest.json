@@ -4481,8 +4481,8 @@
     },
     {
       "path": "startup-script-phases.json",
-      "sha256": "549a59b35e5c9eee879f5bfacc0b430d772e199c6bc52037caf254379d21e2fc",
-      "size": 389579
+      "sha256": "0c8f4215a3ca8368d4f986a85e2c7f5b6a2d12451e2fc7a562ac2206c768a796",
+      "size": 390099
     },
     {
       "path": "styles.css",
@@ -6186,28 +6186,28 @@
     },
     {
       "path": "tm-npc-action-ledger.js",
-      "sha256": "e399930a345750402025e2af98aecaa89831cbca4fa144cc4a5611e1e329c0ff",
-      "size": 58516
+      "sha256": "eb5ffe345e983a6ab52ea9c857b514e1a2e044eeb47c6bae3770f4ca2ff2cd8e",
+      "size": 59909
     },
     {
       "path": "tm-npc-daily-activities.js",
-      "sha256": "84c36acee8d514d12ed927db8840a3f94fa8eeac773eeb40150996195d147360",
-      "size": 65464
+      "sha256": "2869cbf05539e3cf3e09270a62516219594b91c10ce3c81eb655b61bb236419e",
+      "size": 81097
     },
     {
       "path": "tm-npc-daily-ui.js",
-      "sha256": "de3846148a1db1781b85afa2d2508399fcf4add821746328998a8827add1395d",
-      "size": 17893
+      "sha256": "ca266c1272a1ff82517d3505d045d74a2068762842cd3327b038d4797a6451aa",
+      "size": 19586
     },
     {
       "path": "tm-npc-decision-ai-driven.js",
-      "sha256": "7edd35e0d9f025aef88063c1633bde1bc1db16de85f21d7b6dffb996283602c3",
-      "size": 29310
+      "sha256": "9f643d2d0e31aa1bdb07c2119452f306c5e4b817dbce2ce64a82e5bc9b162b51",
+      "size": 50254
     },
     {
       "path": "tm-npc-decision.js",
-      "sha256": "d51ce70e08c3236861cd00ccda0b10e242f790341debca67bf18745d60515eec",
-      "size": 90131
+      "sha256": "c249d2ca82cc6a5a821f660e48172e679daddc4fd4203a33695878c78d1cbb90",
+      "size": 90485
     },
     {
       "path": "tm-npc-engine.js",
@@ -6216,8 +6216,8 @@
     },
     {
       "path": "tm-npc-local-ai.js",
-      "sha256": "a77acd432b9d482a227031796a08504f018bea13b5529fd30cbafe9a5bf81786",
-      "size": 75679
+      "sha256": "e798f2985ce35c48589a3a2ab75dd785c856a2c411ac2979105e35cf42b8ea02",
+      "size": 78653
     },
     {
       "path": "tm-npc-travel.js",
@@ -6671,7 +6671,7 @@
     },
     {
       "path": "tm-start-runtime-manifest.json",
-      "sha256": "536c5cc27fa02456c875289d7ae4ada98f9d443bb6a21befdb5649161b7e897b",
+      "sha256": "733a81dc3f71db52a0466f21370dde97e0a9baef405b1352291e0681d934f967",
       "size": 138846
     },
     {

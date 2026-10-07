@@ -724,12 +724,16 @@ function _ltVerify(letterId) {
 
 /** 发送信件（支持单发/群发/密使/多路/加密/信物） */
 function sendLetter() {
-  var textarea = _$('letter-textarea');
-  var content = textarea ? textarea.value.trim() : '';
+  // 新前端接缝：arguments[0] 可传 { content, targets, urgency, letterType, cipher, sendMode, agent, replyingTo, planChoice }，
+  // 给了就不读老面板的输入框与选人状态；不传（老面板 onclick）照旧
+  var _opt = (arguments[0] && typeof arguments[0] === 'object') ? arguments[0] : null;
+  var textarea = _opt ? null : _$('letter-textarea');
+  var content = _opt ? String(_opt.content || '').trim() : (textarea ? textarea.value.trim() : '');
   if (!content) { toast('请写下信函内容'); return; }
-  var originalPlanLetter=(GM.letters||[]).find(function(l){return l.id===GM._ltReplyingTo&&l.npcPlanId;});
+  var _replyTo = _opt ? _opt.replyingTo : GM._ltReplyingTo;
+  var originalPlanLetter=(GM.letters||[]).find(function(l){return l.id===_replyTo&&l.npcPlanId;});
   if(originalPlanLetter && typeof TM!=='undefined' && TM.NPC && TM.NPC.ActionLedger) {
-    var responseChoice=_$('npc-plan-reply-choice');
+    var responseChoice=_opt ? { value: _opt.planChoice || '' } : _$('npc-plan-reply-choice');
     if(!responseChoice||!responseChoice.value){toast('请明确选择接受、拒绝或调整条件');return;}
     var response=TM.NPC.ActionLedger.playerRespond(originalPlanLetter.npcPlanId,responseChoice.value,content);
     if(!response||!/^(submitted|completed)$/.test(response.outcome)){toast(response&&response.reason||'此事项暂不能回应');return;}
@@ -738,14 +742,16 @@ function sendLetter() {
     GM._ltReplyingTo=undefined; // arch-ok letter composer owns clearing its consumed reply selection
     toast('回应已寄出');renderLetterPanel();return;
   }
-  var urgency = _$('letter-urgency') ? _$('letter-urgency').value : 'normal';
-  var letterType = _$('letter-type') ? _$('letter-type').value : 'personal';
-  var cipher = _$('letter-cipher') ? _$('letter-cipher').value : 'none';
-  var sendMode = _$('letter-sendmode') ? _$('letter-sendmode').value : 'normal';
+  var urgency = _opt ? (_opt.urgency || 'normal') : (_$('letter-urgency') ? _$('letter-urgency').value : 'normal');
+  var letterType = _opt ? (_opt.letterType || 'personal') : (_$('letter-type') ? _$('letter-type').value : 'personal');
+  var cipher = _opt ? (_opt.cipher || 'none') : (_$('letter-cipher') ? _$('letter-cipher').value : 'none');
+  var sendMode = _opt ? (_opt.sendMode || 'normal') : (_$('letter-sendmode') ? _$('letter-sendmode').value : 'normal');
 
   // 确定收信人列表
   var targets = [];
-  if (GM._ltMultiMode && GM._ltMultiTargets && GM._ltMultiTargets.length > 0) {
+  if (_opt) {
+    targets = Array.isArray(_opt.targets) ? _opt.targets.slice() : [];
+  } else if (GM._ltMultiMode && GM._ltMultiTargets && GM._ltMultiTargets.length > 0) {
     targets = GM._ltMultiTargets.slice();
   } else if (GM._pendingLetterTo) {
     targets = [GM._pendingLetterTo];
@@ -795,8 +801,8 @@ function sendLetter() {
   // 密使模式：选择一个NPC作为信使
   var agentName = '';
   if (sendMode === 'secret_agent') {
-    var _agentSel = _$('letter-agent');
-    agentName = _agentSel ? _agentSel.value : '';
+    var _agentSel = _opt ? null : _$('letter-agent');
+    agentName = _opt ? String(_opt.agent || '') : (_agentSel ? _agentSel.value : '');
   }
 
   // 正式诏令经中书门下（权臣可能阻挠）
@@ -841,13 +847,13 @@ function sendLetter() {
       _cipher: cipher, _sendMode: sendMode,
       _tokenUsed: tokenUsed, _agentName: agentName,
       _multiRecipients: multiCount > 0 ? multiCount : undefined,
-      _replyingTo: GM._ltReplyingTo || undefined,
+      _replyingTo: _replyTo || undefined,
       _replyExpected: true
     };
 
     // 如果是回复NPC来函，标记原函已回复
-    if (GM._ltReplyingTo) {
-      var origLetter = (GM.letters||[]).find(function(x){ return x.id === GM._ltReplyingTo; });
+    if (_replyTo) {
+      var origLetter = (GM.letters||[]).find(function(x){ return x.id === _replyTo; });
       if (origLetter) origLetter._playerReplied = true;
     }
 

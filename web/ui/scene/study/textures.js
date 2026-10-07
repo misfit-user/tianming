@@ -197,6 +197,75 @@ export function silkScrollTexture() {
   });
 }
 
+// 花笺（书札）：素笺，外框双道朱线；左下角一枝淡色折枝梅，是笺谱的木刻套印。
+// 朱丝栏不画在纸上——由页面字层随字一起画（字可卷动，栏要跟着字走才对得齐）。frame 是版心外框在纸面上的比例位置
+export function letterPaperTexture({ frame = [0.06, 0.08, 0.06, 0.08] } = {}) {
+  return canvasTexture(2048, 1354, (g, w, h) => {
+    const r = rand(41);
+    g.fillStyle = '#f0e6cf';
+    g.fillRect(0, 0, w, h);
+    // 纸纹：大片浅淡的浓淡，再加细纤维
+    for (let i = 0; i < 70; i++) {
+      const x = r() * w, y = r() * h, rad = 40 + r() * 160;
+      const grad = g.createRadialGradient(x, y, 0, x, y, rad);
+      grad.addColorStop(0, `rgba(160,128,80,${r() * 0.045})`);
+      grad.addColorStop(1, 'rgba(160,128,80,0)');
+      g.fillStyle = grad;
+      g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    for (let i = 0; i < 4200; i++) {
+      const x = r() * w, y = r() * h, a = r() * Math.PI, len = 4 + r() * 18;
+      g.strokeStyle = r() < 0.55 ? `rgba(255,252,240,${r() * 0.3})` : `rgba(130,100,60,${r() * 0.1})`;
+      g.lineWidth = 0.7;
+      g.beginPath();
+      g.moveTo(x, y);
+      g.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len);
+      g.stroke();
+    }
+    // 折枝梅：枝自左下角斜出，花五瓣，淡胭脂色
+    const ink = 'rgba(176,84,70,0.20)';
+    g.strokeStyle = ink;
+    g.fillStyle = ink;
+    g.lineCap = 'round';
+    const bx = w * 0.035, by = h * 0.97;
+    g.lineWidth = 11;
+    g.beginPath();
+    g.moveTo(bx, by);
+    g.bezierCurveTo(bx + 90, by - 140, bx + 150, by - 230, bx + 300, by - 330);
+    g.stroke();
+    g.lineWidth = 6;
+    g.beginPath();
+    g.moveTo(bx + 150, by - 220);
+    g.quadraticCurveTo(bx + 240, by - 215, bx + 300, by - 150);
+    g.stroke();
+    g.lineWidth = 4;
+    g.beginPath();
+    g.moveTo(bx + 230, by - 290);
+    g.quadraticCurveTo(bx + 250, by - 380, bx + 220, by - 450);
+    g.stroke();
+    const blossom = (x, y, s) => {
+      for (let p = 0; p < 5; p++) {
+        const a = p / 5 * Math.PI * 2 - Math.PI / 2;
+        g.beginPath();
+        g.arc(x + Math.cos(a) * s * 0.72, y + Math.sin(a) * s * 0.72, s * 0.52, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.fillStyle = 'rgba(150,70,40,0.25)';
+      for (let p = 0; p < 7; p++) { const a = p / 7 * Math.PI * 2; g.fillRect(x + Math.cos(a) * s * 0.5, y + Math.sin(a) * s * 0.5, 2.5, 2.5); }
+      g.fillStyle = ink;
+    };
+    for (const [x, y, sz] of [[300, 330, 30], [300, 152, 24], [222, 452, 20], [190, 250, 17], [258, 392, 14], [96, 120, 12]]) blossom(bx + x, by - y, sz);
+    // 版心外框：粗细两道朱线
+    const [fl, ft, fr, fb] = frame;
+    const x0 = w * fl, y0 = h * ft, x1 = w * (1 - fr), y1 = h * (1 - fb);
+    g.strokeStyle = 'rgba(176,52,34,0.55)';
+    g.lineWidth = 5;
+    g.strokeRect(x0 - 14, y0 - 14, x1 - x0 + 28, y1 - y0 + 28);
+    g.lineWidth = 1.6;
+    g.strokeRect(x0 - 4, y0 - 4, x1 - x0 + 8, y1 - y0 + 8);
+  });
+}
+
 // 绫（舆图裱边）：浅米色，同色暗花云纹，只在光下隐约可见
 export function damaskTexture(ground = '#d9ccad') {
   return canvasTexture(512, 512, (g, w, h) => {

@@ -12,6 +12,7 @@ import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
 import { createEdict } from './edict.js';
+import { createLetters } from './letters.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
@@ -273,6 +274,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     replaceChildren(plaques.pi, h('b.q-gold', chan.title), h('small', docket ? `今日${num(docket)}件` : chan.sub));
     if (docket) plaques.pi.append(h('span.q-qian', num(docket)));
     for (const t of tagEls) if (t.dataset.k === 'memorials') t.querySelector('.q-yapai').textContent = docket ? `${t.dataset.label} · ${num(docket)}` : t.dataset.label;
+    // 书札：新到来函之数记在「书」牌与信匣牙牌上
+    const fresh = per.previewing ? 0 : game.letters.unreadTotal();
+    const shu = prof.channels.find((c) => c.key === 'shu');
+    replaceChildren(plaques.shu, h('b.q-gold', shu.title), h('small', fresh ? `来函${num(fresh)}封` : shu.sub));
+    if (fresh) plaques.shu.append(h('span.q-qian', num(fresh)));
+    for (const t of tagEls) if (t.dataset.k === 'letterbox') t.querySelector('.q-yapai').textContent = fresh ? `${t.dataset.label} · ${num(fresh)}` : t.dataset.label;
     // 时政：托盘上的花笺换成此刻待决的几件；牙牌记待决之数
     const open = per.previewing ? [] : s.issueList().filter((i) => i.group === 'open');
     for (const t of tagEls) if (t.dataset.k === 'tray') t.querySelector('.q-yapai').textContent = open.length ? `${t.dataset.label} · ${num(open.length)}` : t.dataset.label;
@@ -363,6 +370,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (readOnly()) return;
     if (c.key === 'pi' && per.tier === 'sovereign') return openDocket();   // 案头待批：眼下内核只有元首的奏疏
     if (c.key === 'ling' && per.tier === 'sovereign') return openEdict();   // 撰写：眼下内核只收元首的诏令
+    if (c.key === 'shu') return openLetters();                             // 书札往来各档皆有（内核以玩家本人收发）
     building(c.title, c.sub);
   }
   function onProp(name) {
@@ -377,11 +385,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 批阅：书案让位，镜头俯到摊开的折子上；收折回来再亮书案
   const docket = createDocket({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   const issues = createIssues({ game, profile: () => prof });
-  const atlas = createAtlas({ root, game });
+  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name) });
   const edictPage = createEdict({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onPromulgate: () => confirmAdvance() });
   function openEdict() {
     el.classList.remove('on');
     edictPage.open();
+  }
+  // 书札：书案让位，镜头俯到摊开的花笺上
+  const lettersPage = createLetters({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
+  function openLetters(name) {
+    if (readOnly()) return;
+    el.classList.remove('on');
+    lettersPage.open(name);
   }
   function openDocket(id) {
     el.classList.remove('on');
@@ -397,7 +412,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // ---------- 暂停（Esc，或内核的暂停入口改道而来）：续、案卷、典章、实录、退位、回启幕 ----------
   let pausing = false;
   function pause() {
-    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || document.querySelector('.q-juan-veil')) return;
+    if (pausing || !el.classList.contains('on') || dive.mode !== 'desk' || dive.busy || docket.opened || edictPage.opened || lettersPage.opened || document.querySelector('.q-juan-veil')) return;
     pausing = true;
     const item = (label, fn) => h('button.q-yapai.pz-item', { type: 'button', onclick: () => { j.close('ok'); fn(); } }, label);
     const j = juan({

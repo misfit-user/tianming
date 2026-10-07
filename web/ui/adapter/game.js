@@ -7,6 +7,7 @@
 //   game.select.date() …                    读数快照
 //   game.config.saveAi(tier, 草稿) …        典章：AI 连接、体检、玩法开关、音量（adapter/config.js）
 //   game.edict.setDraft({ political }) …    诏书草稿、议事清册、私行、润色（adapter/edict.js）；推演前自动写进内核
+//   game.letters.contacts() / thread(人) / send({…}) …  书札：远方名册、往来、遣使与信上动作（adapter/letters.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -15,6 +16,7 @@ import { waitKernel, installKernelBridge, disableLegacyStyles, setGameSurface } 
 import * as select from './select.js';
 import * as config from './config.js';
 import * as edict from './edict.js';
+import * as letters from './letters.js';
 
 const w = window;
 let ready = null;
@@ -262,7 +264,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

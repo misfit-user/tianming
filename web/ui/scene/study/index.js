@@ -6,7 +6,7 @@ import { buildWindow, loadRoom, buildCouplets, plaqueMap, coupletMap, sunVector,
 import { createPost, createDust, createSmoke } from './fx.js';
 import { loadProps, PLACE } from './props.js';
 import { SHOTS } from './shots.js';
-import { damaskTexture, paperTexture, silkScrollTexture, wrapCanvas } from './textures.js';
+import { damaskTexture, letterPaperTexture, paperTexture, silkScrollTexture, wrapCanvas } from './textures.js';
 import { titleScrollCanvases } from '../../kit/brush.js';
 import { quality } from '../../core/quality.js';
 import { cachedCanvases } from '../../core/texcache.js';
@@ -342,7 +342,8 @@ export async function createStudyView(stage, {
     old?.dispose();
   }
 
-  // 案上摊开的一件：奏折（素纸面，经折装折痕一峰一谷交替）或诏卷（surface:'silk'，黄绫平展、两端卷轴）；字由页面 DOM 叠上去
+  // 案上摊开的一件：奏折（素纸面，经折装折痕一峰一谷交替）、诏卷（surface:'silk'，黄绫平展、两端卷轴）或花笺（surface:'letter'，平铺一张，frame 为版心外框）；
+  // 字由页面 DOM 叠上去
   let paper = null, paperSpec = null;
   function setMemorialPaper(spec) {
     if (paper) {
@@ -353,18 +354,22 @@ export async function createStudyView(stage, {
     paperSpec = spec;
     if (!spec) return;
     const { w, h, x = 0, z = 0, rot = 0, panels = 6, surface = 'paper' } = spec;
-    const silk = surface === 'silk';
-    const g = new THREE.PlaneGeometry(w, h, silk ? 1 : panels * 4, 1);
+    const silk = surface === 'silk', letter = surface === 'letter';
+    const flat = silk || letter;
+    const g = new THREE.PlaneGeometry(w, h, flat ? 1 : panels * 4, 1);
     const pp = g.attributes.position;
-    if (!silk) {
+    if (!flat) {
       for (let i = 0; i < pp.count; i++) {
         const u = (pp.getX(i) / w + 0.5) * panels;
         pp.setZ(i, Math.abs((u % 2) - 1) * 7);
       }
     }
     g.computeVertexNormals();
-    paper = new THREE.Mesh(g, new THREE.MeshStandardMaterial(silk ? { map: silkScrollTexture(), roughness: 0.48, metalness: 0.05 } : { map: paperTexture('#e2d0a8', 17), roughness: 0.9 }));
-    if (!silk) paper.material.map.repeat.set(3, 2);
+    const mat = silk ? { map: silkScrollTexture(), roughness: 0.48, metalness: 0.05 }
+      : letter ? { map: letterPaperTexture({ frame: spec.frame }), roughness: 0.92 }
+        : { map: paperTexture('#e2d0a8', 17), roughness: 0.9 };
+    paper = new THREE.Mesh(g, new THREE.MeshStandardMaterial(mat));
+    if (!flat) paper.material.map.repeat.set(3, 2);
     if (silk) {
       // 卷轴：深色木杆，两头青玉轴头；挂在绫的局部坐标里（绫面在 XY，杆顺 Y）
       const wood = new THREE.MeshStandardMaterial({ color: 0x3a2214, roughness: 0.38 });

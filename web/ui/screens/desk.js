@@ -23,6 +23,7 @@ import { createArchive } from './archive.js';
 import { createWenyuan } from './wenyuan.js';
 import { createKeju } from './keju.js';
 import { createKeyi } from './keyi.js';
+import { createWentian } from './wentian.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createCourt } from './court.js';
@@ -73,7 +74,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const tools = h('div.tools',
     btn('存', { title: '案卷目录', onclick: () => { if (!readOnly()) openSaves({ game, inGame: true }); } }),
     btn('典', { title: '典章', onclick: () => openSettings() }),
-    btn('问', { title: '问天', onclick: () => building('问天', '问天控制台') }),
+    btn('问', { title: '问天', onclick: () => { if (!readOnly()) wentianPage.show(); } }),
     btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }));
   const topbar = h('header.topbar', dyn, time, ledger, gauges, tools);
 
@@ -477,6 +478,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); },
     onClose: () => { el.classList.add('on'); refresh(); if (keyiFromBook) kejuPage.show(); } });
   bus.on('ui:keju', () => { if (!readOnly()) kejuPage.show(); });
+  const wentianPage = createWentian({ root, game });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });

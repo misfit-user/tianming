@@ -19,6 +19,7 @@ import { createFiscal } from './fiscal.js';
 import { createArmy } from './army.js';
 import { createGuoshi } from './guoshi.js';
 import { createRealm } from './realm.js';
+import { createArchive } from './archive.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -381,7 +382,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function onBook(key, name) {
     if (key === 'map') return dive.mode === 'desk' ? enterMap() : dive.rise();
     if (key === 'people') return atlas.show();
-    if (key === 'annals') return openAnnals({ game, profile: () => prof });
+    if (key === 'annals') return archivePage.show();
     if (key === 'offices') return officesPage.show();
     if (key === 'fiscal') return fiscalPage.show();
     if (key === 'army') return armyPage.show();
@@ -402,7 +403,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (name === 'memorials') return onChannel(ch('pi'));
     if (name === 'writing') return onChannel(ch('ling'));
     if (name === 'letterbox') return onChannel(ch('shu'));
-    if (name === 'books') return openAnnals({ game, profile: () => prof });
+    if (name === 'books') return archivePage.show();
     if (name === 'seal') return onSeal();
     if (name === 'tray') return readOnly() || issues.open();
   }
@@ -441,6 +442,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     return audiencePage.openRoster();
   } });
   const realmPage = createRealm({ root, game });
+  // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
+  const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
+  const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {
@@ -466,7 +470,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         item('续', () => {}),
         item('案卷目录', () => openSaves({ game, inGame: true })),
         item('典章', () => openSettings()),
-        item(prof.annals.title, () => openAnnals({ game, profile: () => prof })),
+        item(prof.annals.title, () => annals()),
         prof.abdicate && !game.viewAs ? item(prof.abdicate.name, () => openAbdicate()) : null,
         item('回启幕', () => leaveGame()))
     });
@@ -515,7 +519,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       el.classList.add('on');
       game.setSurface(true);
       offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('view:changed', refresh),
-        game.on('game:turn-result', (r) => openAnnals({ game, profile: () => prof, idx: r && r.idx })),
+        game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('game:entered', () => loadWorld().then(refresh)));
     },

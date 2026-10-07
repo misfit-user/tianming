@@ -4,9 +4,10 @@ import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
 
-const EDICT_LABEL = { political: '政令', military: '军令', diplomatic: '外交', economic: '经济', other: '其他', pol: '政令', mil: '军令', dip: '外交', eco: '经济', oth: '其他', xinglu: '行止' };
+export const EDICT_LABEL = { political: '政令', military: '军令', diplomatic: '外交', economic: '经济', personnel: '人事', other: '其他', pol: '政令', mil: '军令', dip: '外交', eco: '经济', oth: '其他', xinglu: '行止' };
 
-export function openAnnals({ game, profile, idx = null }) {
+// onArchive(id)：卷尾「入史馆」，在四库总册里打开这一回的史记
+export function openAnnals({ game, profile, idx = null, onArchive }) {
   const t = profile().annals;
   let cur = game.select.annal(idx);
   const body = h('div.an');
@@ -50,7 +51,8 @@ export function openAnnals({ game, profile, idx = null }) {
   render();
   j = juan({
     title: t.title, note: cur ? `第${num(cur.turn)}回合 · 第${num(cur.idx + 1)}卷共${num(cur.total)}卷` : '', width: '60rem', height: 'min(46rem, 86vh)', content: body,
-    actions: [{ label: '前一回', onclick: () => go(-1) }, { label: '后一回', onclick: () => go(1) }]
+    actions: [{ label: '前一回', onclick: () => go(-1) }, { label: '后一回', onclick: () => go(1) },
+      ...(onArchive ? [{ label: `入${t.archive}`, onclick: ({ close }) => { const id = cur ? `shiji-${cur.idx}` : ''; close('ok'); onArchive(id); } }] : [])]
   });
   return j;
 }

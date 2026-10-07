@@ -13,6 +13,7 @@
 //   game.fiscal.account(库) / census() / loans() …  财计（adapter/fiscal.js）
 //   game.court.begin(体) / snapshot() / press(签) …  朝议（adapter/court.js，镜老流程）
 //   game.army.roster() / detail(键) / battles() …     军务（adapter/army.js）
+//   game.guoshi.detail(吏治|民心|皇权|皇威)          国势四项（adapter/guoshi.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -27,6 +28,7 @@ import * as offices from './offices.js';
 import * as fiscal from './fiscal.js';
 import * as court from './court.js';
 import * as army from './army.js';
+import * as guoshi from './guoshi.js';
 
 const w = window;
 let ready = null;
@@ -274,7 +276,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

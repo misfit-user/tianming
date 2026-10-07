@@ -17,6 +17,7 @@ import { createAudience } from './audience.js';
 import { createOffices } from './offices.js';
 import { createFiscal } from './fiscal.js';
 import { createArmy } from './army.js';
+import { createGuoshi } from './guoshi.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -268,7 +269,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       return el;
     }).filter(Boolean));
     const gs = prof.gauges === 'realm' ? s.gauges() : s.person(per.id).gauges;
-    replaceChildren(gauges, gs.map((g) => pin(g.label, g.value)));
+    // 国势四项点开即翻到国势册的那一项（元首档）
+    replaceChildren(gauges, gs.map((g) => {
+      const el = pin(g.label, g.value);
+      if (prof.gauges === 'realm' && g.key && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => guoshiPage.show(g.key)); }
+      return el;
+    }));
     // 人物图志：元首看有立像的近臣；余者先看同地之人，不够再补有立像的
     const people = s.characters();
     const me = people.find((c) => c.id === per.id) || people.find((c) => c.isPlayer);
@@ -424,6 +430,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志
   const fiscalPage = createFiscal({ root, game });
   // 军籍册：付廷议即开廷议、带上议题；核饷（失真层未开时）转去度支册
+  // 国势册：名目里的去处（批阅、撰写、召对、朝议）交书案去开
+  const guoshiPage = createGuoshi({ root, game, onGo: (k) => {
+    if (readOnly()) return;
+    if (k === 'docket') return openDocket();
+    if (k === 'edict') return openEdict();
+    return audiencePage.openRoster();
+  } });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {

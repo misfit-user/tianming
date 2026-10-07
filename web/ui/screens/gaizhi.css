@@ -1,0 +1,222 @@
+/* 科举改制册：骨架沿用人物图志（.ce-*）；左叶奏稿（条陈、预判、议题），右叶十门逐项更定。签与章同科举册的朱、青二色 */
+.kg-ov .ce-book { grid-template-columns: minmax(0, 25rem) 1.5rem minmax(0, 1fr); }
+.kg-ov .dim { color: var(--ink-faint); }
+.kg-ov button.link { padding: 0; border: 0; cursor: pointer; font: inherit; color: #8a2a1c; background: transparent; text-decoration: underline; text-underline-offset: .2em; }
+.kg-left { gap: .75rem; overflow: auto; scrollbar-width: thin; scrollbar-color: rgba(120, 60, 30, .45) transparent; }
+.kg-block h5 { display: flex; align-items: baseline; gap: .5rem; margin: 0 0 .375rem; padding-bottom: .25rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em;
+  color: var(--verm); border-bottom: 1px solid rgba(163, 40, 27, .28); }
+.kg-block h5 small { margin-left: auto; font: var(--fs-1) var(--f-kai); letter-spacing: .05em; color: var(--ink-faint); }
+.kg-empty { margin: 0; padding: .25rem 0; font-size: var(--fs-2); color: var(--ink-faint); }
+.kg-row-acts { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .375rem; }
+
+/* 意向、其势、所改之大小 */
+.kg-state { display: flex; align-items: center; gap: .875rem; padding: .5rem .625rem; background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-state > span { display: flex; align-items: baseline; gap: .3125rem; }
+.kg-state small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-state b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .1em; color: #6a1f12; }
+.kg-seal { padding: .0625rem .5rem; font: 400 var(--fs-2)/1.6 var(--f-title); letter-spacing: .15em; color: #f9ead2; background: #a3301f; box-shadow: inset 0 0 0 2px rgba(249, 234, 210, .35); }
+.kg-size { margin-left: auto; align-items: center !important; }
+.kg-size i { display: block; width: 4.5rem; height: .3125rem; background: rgba(120, 90, 50, .15); }
+.kg-size u { display: block; height: 100%; background: linear-gradient(90deg, #7d1d12, #c4553a); }
+
+/* 条陈：汉字序号，点之跳到所属一门 */
+.kg-items { margin: 0; padding: 0; list-style: none; counter-reset: tiao; }
+.kg-items li { position: relative; padding: .1875rem .25rem .1875rem 3rem; font-size: var(--fs-3); line-height: 1.8; cursor: pointer; }
+.kg-items li::before { counter-increment: tiao; content: counter(tiao, cjk-ideographic) '、'; position: absolute; left: 0; top: .1875rem; width: 2.875rem; text-align: right; white-space: nowrap;
+  font: var(--fs-2)/1.8 var(--f-title); color: var(--verm); }
+.kg-items li:hover { background: rgba(255, 246, 226, .7); }
+.kg-preset { margin: .25rem 0 0; padding: .25rem .5rem; font-size: var(--fs-2); color: #5a4214; background: rgba(201, 162, 74, .14); box-shadow: inset .1875rem 0 0 #b08a32; }
+
+/* 朝议预判：青赞、灰观、朱反 */
+.kg-tally, .kg-party .bar { display: flex; height: .5rem; background: rgba(120, 90, 50, .12); }
+.kg-tally i, .kg-party .bar i { display: block; min-width: 0; }
+.kg-tally .s, .kg-party .bar .s { background: #3f6e5e; }
+.kg-tally .n, .kg-party .bar .n { background: #b9ab8c; }
+.kg-tally .o, .kg-party .bar .o { background: #a3301f; }
+.kg-tally-note { display: flex; gap: .875rem; margin: .25rem 0 .375rem; font-size: var(--fs-1); }
+.kg-tally-note .s { color: #2f5a4c; } .kg-tally-note .n { color: var(--ink-faint); } .kg-tally-note .o { color: #8a2a1c; }
+.kg-parties { display: flex; flex-direction: column; gap: .1875rem; }
+.kg-party { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) 5.5rem; align-items: center; column-gap: .5rem; font-size: var(--fs-2); }
+.kg-party b { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kg-party .bar { height: .375rem; }
+.kg-party small { font-size: var(--fs-1); color: var(--ink-faint); text-align: right; white-space: nowrap; }
+.kg-party.support small { color: #2f5a4c; } .kg-party.oppose small { color: #8a2a1c; }
+.kg-mood { margin-top: .5rem; padding: .375rem .625rem; background: rgba(255, 250, 238, .6); box-shadow: inset .1875rem 0 0 #3f6e5e; }
+.kg-mood p { margin: 0; font-size: var(--fs-3); line-height: 1.9; }
+.kg-mood small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-mood.stale { box-shadow: inset .1875rem 0 0 #b9ab8c; }
+.kg-mood.stale p { color: var(--ink-faint); }
+.kg-mood.stale small { color: #8a2a1c; }
+.kg-keys { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .625rem; margin-top: .25rem !important; font-size: var(--fs-2) !important; }
+.kg-keys span { font-size: var(--fs-1); color: var(--ink-faint); }
+
+/* 议题与付议 */
+.kg-topic { width: 100%; box-sizing: border-box; padding: .5rem .625rem; resize: vertical; border: 0; font: var(--fs-3)/1.85 var(--f-kai); color: var(--ink);
+  background: rgba(255, 252, 244, .8); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.kg-topic:focus { outline: none; box-shadow: inset 0 0 0 1px #a3301f; }
+.kg-acts { position: sticky; bottom: -1.125rem; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; margin: auto -1.5rem -1.125rem; padding: .5rem 1.5rem .625rem;
+  background: linear-gradient(180deg, rgba(239, 228, 201, 0), rgba(239, 228, 201, .96) 30%); }
+.kg-acts small { order: -1; margin-right: auto; font-size: var(--fs-1); color: #8a2a1c; }
+.kg-acts .q-yapai.main { color: #f9ead2; background: linear-gradient(180deg, #b13423, #7d1d12); }
+.kg-acts .q-yapai.main::before { background: #e8c982; }
+.kg-acts .q-yapai:disabled { opacity: .5; cursor: default; transform: none; }
+
+/* 右叶：十门签 */
+.kg-right { gap: .625rem; }
+.kg-tabs { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: .3125rem; }
+.kg-tabs button { display: flex; flex-direction: column; align-items: center; gap: .125rem; padding: .3125rem .125rem .25rem; border: 0; cursor: pointer; color: var(--ink);
+  font-family: var(--f-kai); background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.kg-tabs button.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .35); }
+.kg-tabs i { width: 1.75rem; height: 1.75rem; display: grid; place-items: center; font: normal 400 var(--fs-3)/1 var(--f-title); color: #f9ead2; background: #6a4a2a; }
+.kg-tabs button.on i { background: #a3301f; }
+.kg-tabs b { font-weight: 400; font-size: var(--fs-1); white-space: nowrap; }
+.kg-tabs small { min-height: 1em; font-size: var(--fs-1); line-height: 1; color: var(--verm); }
+.kg-pane { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .75rem; padding-right: .375rem; scrollbar-width: thin; scrollbar-color: rgba(120, 60, 30, .45) transparent; }
+.kg-head { display: flex; align-items: baseline; gap: .75rem; padding-bottom: .375rem; border-bottom: 1px solid rgba(120, 90, 50, .3); }
+.kg-head h3 { margin: 0; font: 400 var(--fs-6)/1.3 var(--f-title); letter-spacing: .2em; }
+.kg-head p { margin: 0; font-size: var(--fs-2); color: var(--ink-faint); }
+
+/* 一项一行：左名，右器 */
+.kg-row { display: grid; grid-template-columns: 6rem minmax(0, 1fr); column-gap: .875rem; align-items: start; }
+.kg-k { padding-top: .3125rem; font: var(--fs-3)/1.6 var(--f-title); letter-spacing: .12em; color: #6a1f12; text-align: right; }
+.kg-v { display: flex; flex-direction: column; align-items: flex-start; gap: .375rem; min-width: 0; }
+.kg-note { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-line { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; width: 100%; }
+
+/* 签：在者朱底，旧制描虚边 */
+.kg-chips { display: flex; flex-wrap: wrap; gap: .3125rem; }
+.kg-chips button { position: relative; padding: .1875rem .625rem; border: 0; cursor: pointer; font: var(--fs-2)/1.7 var(--f-kai); color: var(--ink);
+  background: rgba(255, 250, 238, .6); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.kg-chips button:hover { background: rgba(255, 246, 226, .95); }
+.kg-chips button.was { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3), 0 0 0 1px #efe4c9, 0 0 0 2px rgba(63, 110, 94, .55); }
+.kg-chips button.was::after { content: '旧'; position: absolute; top: -.5rem; right: -.375rem; padding: 0 .1875rem; font: var(--fs-0, .625rem)/1.4 var(--f-title); color: #f9ead2; background: #3f6e5e; }
+.kg-chips button.on { color: #f9ead2; background: linear-gradient(180deg, #b13423, #7d1d12); box-shadow: inset 0 0 0 1px rgba(249, 234, 210, .3); }
+.kg-chips button.on.was { box-shadow: inset 0 0 0 1px rgba(249, 234, 210, .3), 0 0 0 1px #efe4c9, 0 0 0 2px rgba(63, 110, 94, .55); }
+
+/* 章：立朱、罢灰；与旧制不同者底下一道朱线 */
+.kg-togs { display: flex; flex-wrap: wrap; gap: .375rem .625rem; }
+.kg-tog { display: inline-flex; align-items: center; gap: .375rem; padding: .1875rem .5rem .1875rem .25rem; border: 0; cursor: pointer; font: var(--fs-2)/1.6 var(--f-kai); color: var(--ink-soft);
+  background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-tog i { width: 1.375rem; height: 1.375rem; display: grid; place-items: center; font: normal 400 var(--fs-2)/1 var(--f-title); color: #efe4c9; background: #9a8f78; }
+.kg-tog.on { color: var(--ink); }
+.kg-tog.on i { background: #a3301f; box-shadow: inset 0 0 0 1.5px rgba(249, 234, 210, .4); }
+.kg-tog.chg { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22), inset 0 -.125rem 0 #c4553a; }
+
+/* 步进 */
+.kg-step { display: inline-flex; align-items: center; gap: .25rem; }
+.kg-step button { width: 1.5rem; height: 1.5rem; padding: 0; border: 0; cursor: pointer; font: 400 var(--fs-3)/1 var(--f-title); color: #6a1f12; background: rgba(255, 250, 238, .7);
+  box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35); }
+.kg-step small { font-size: var(--fs-2); color: var(--ink-soft); }
+.kg-num { width: 4rem; padding: .125rem .25rem; border: 0; text-align: center; font: var(--fs-3) var(--f-kai); color: var(--ink); background: rgba(255, 252, 244, .9); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3);
+  -moz-appearance: textfield; }
+.kg-num::-webkit-inner-spin-button, .kg-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.kg-step.chg .kg-num, .kg-in.chg { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3), inset 0 -.125rem 0 #c4553a; }
+.kg-was { padding: 0 .3125rem; font: normal var(--fs-1)/1.6 var(--f-kai); color: #3f6e5e; box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .5); }
+.kg-new { padding: 0 .3125rem; font: normal var(--fs-1)/1.6 var(--f-kai); color: #f9ead2; background: #3f6e5e; }
+.kg-in { flex: 1; min-width: 12rem; padding: .25rem .5rem; border: 0; font: var(--fs-3) var(--f-kai); color: var(--ink); background: rgba(255, 252, 244, .85); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.kg-in.short { flex: 0 0 5rem; min-width: 0; }
+.kg-in:focus, .kg-num:focus { outline: none; box-shadow: inset 0 0 0 1px #a3301f; }
+.kg-ai { flex: none; }
+.kg-fb { font-size: var(--fs-1); color: #8a6a2a; }
+
+/* 宗旨：其势四牌、所解、成例、沿革 */
+.kg-mags { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .375rem; width: 100%; }
+.kg-mag { display: flex; flex-direction: column; align-items: flex-start; gap: .125rem; padding: .375rem .5rem; border: 0; cursor: pointer; text-align: left; color: var(--ink);
+  background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .28); }
+.kg-mag b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .2em; }
+.kg-mag small { font-size: var(--fs-1); line-height: 1.5; color: var(--ink-faint); }
+.kg-mag.on { background: rgba(255, 246, 226, .98); box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .45); }
+.kg-mag.on b { color: #7d1d12; }
+.kg-parsed { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin: 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.kg-parsed b { font-weight: 400; font-size: var(--fs-3); color: var(--ink); }
+.kg-cases, .kg-sugs { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: .5rem; }
+.kg-case, .kg-sug { display: flex; flex-direction: column; gap: .25rem; padding: .5rem .625rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.kg-case.on, .kg-sug.on { box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .35); }
+.kg-case header, .kg-sug header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .5rem; }
+.kg-case header b, .kg-sug header b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; color: #6a1f12; }
+.kg-case header small, .kg-sug header small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-case p, .kg-sug p { margin: 0; font-size: var(--fs-2); line-height: 1.75; }
+.kg-case .q-yapai, .kg-sug .q-yapai { align-self: flex-end; margin-top: auto; }
+.kg-more { align-self: flex-start; margin: .375rem 0; font-size: var(--fs-2) !important; }
+.kg-hist { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .375rem; }
+.kg-hist li { padding: .375rem .625rem; background: rgba(255, 250, 238, .5); box-shadow: inset .1875rem 0 0 #6a4a2a; }
+.kg-hist header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.kg-hist b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .1em; }
+.kg-hist small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-hist p { margin: .125rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
+
+/* 科目：一科一行，权重为尺 */
+.kg-subjs { display: flex; flex-direction: column; gap: .25rem; }
+.kg-subj { display: grid; grid-template-columns: 4.5rem minmax(6rem, 1fr) minmax(8rem, 14rem) 3.25rem 3.5rem 2rem; align-items: center; column-gap: .625rem; padding: .3125rem .5rem;
+  background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.kg-subj .nm { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; }
+.kg-subj .fmt { font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kg-subj .w { font-weight: 400; font-size: var(--fs-3); color: #6a1f12; text-align: right; }
+.kg-subj em { justify-self: start; }
+.kg-subj.new { box-shadow: inset .1875rem 0 0 #3f6e5e, inset 0 0 0 1px rgba(63, 110, 94, .35); }
+.kg-subj.chg { box-shadow: inset .1875rem 0 0 #c4553a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.kg-subj.gone { opacity: .6; }
+.kg-subj.gone .nm { text-decoration: line-through; text-decoration-color: #a3301f; }
+.kg-range { width: 100%; accent-color: #a3301f; }
+.kg-x { padding: .0625rem .375rem; border: 0; cursor: pointer; font: var(--fs-2)/1.5 var(--f-title); color: #8a2a1c; background: transparent; box-shadow: inset 0 0 0 1px rgba(163, 48, 31, .4); }
+.kg-x:hover { color: #f9ead2; background: #a3301f; }
+.kg-sum { margin: 0; font-size: var(--fs-2); color: var(--ink-soft); text-align: right; }
+.kg-sum.over { color: #a3301f; } .kg-sum.under { color: #8a6a2a; }
+
+/* 考期之试级 */
+.kg-chain { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin: 0; font-size: var(--fs-3); }
+.kg-chain span { padding: .0625rem .5rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.kg-chain i { font-style: normal; color: var(--ink-faint); }
+
+/* 禁考之人：禁朱、准青 */
+.kg-classes { display: flex; flex-wrap: wrap; gap: .375rem; }
+.kg-classes button { display: inline-flex; align-items: center; gap: .3125rem; padding: .1875rem .5rem .1875rem .25rem; border: 0; cursor: pointer; font: var(--fs-2)/1.6 var(--f-kai); color: var(--ink);
+  background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-classes i { width: 1.375rem; height: 1.375rem; display: grid; place-items: center; font: normal 400 var(--fs-2)/1 var(--f-title); color: #f9ead2; background: #3f6e5e; }
+.kg-classes button.ban i { background: #a3301f; }
+.kg-classes button.chg { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22), inset 0 -.125rem 0 #c4553a; }
+
+/* 分卷分额 */
+.kg-ratios { display: flex; flex-direction: column; gap: .375rem; width: 100%; }
+.kg-ratio { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem .75rem; }
+.kg-vals { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; }
+.kg-vals small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-val { display: inline-flex; align-items: center; gap: .25rem; padding: .125rem .25rem .125rem .5rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-val b { font-weight: 400; font-size: var(--fs-2); }
+.kg-val .kg-num { width: 3.25rem; }
+
+/* 筹议：试点、召对 */
+.kg-pilot { display: flex; flex-wrap: wrap; align-items: baseline; gap: .375rem .75rem; margin: 0; }
+.kg-pilot b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .15em; color: #6a1f12; }
+.kg-pilot small { font-size: var(--fs-2); color: var(--ink-faint); }
+.kg-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .3125rem; margin: .375rem 0; }
+.kg-people button { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'b e' 's e'; align-items: center; column-gap: .375rem; padding: .25rem .5rem;
+  border: 0; cursor: pointer; text-align: left; color: var(--ink); font-family: var(--f-kai); background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-people button b { grid-area: b; font: 400 var(--fs-3) var(--f-title); letter-spacing: .06em; }
+.kg-people button small { grid-area: s; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kg-people button em { grid-area: e; font-style: normal; font-size: var(--fs-1); }
+.kg-people button.key { box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22), inset 0 -.125rem 0 #b08a32; }
+.kg-people button.on { background: rgba(255, 246, 226, .98); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .4); }
+.kg-ov em.s { color: #2f5a4c; } .kg-ov em.o { color: #8a2a1c; }
+.kg-who { display: inline-flex; align-items: baseline; gap: .375rem; min-width: 6rem; }
+.kg-who b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; color: #6a1f12; }
+.kg-who small { font-size: var(--fs-2); color: var(--ink-faint); }
+.kg-recs { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+.kg-rec { padding: .5rem .75rem; background: rgba(255, 250, 238, .6); box-shadow: inset .1875rem 0 0 #9a8f78; }
+.kg-rec.yes { box-shadow: inset .1875rem 0 0 #3f6e5e; } .kg-rec.no { box-shadow: inset .1875rem 0 0 #a3301f; }
+.kg-rec header { display: flex; align-items: baseline; gap: .5rem; }
+.kg-rec header b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; }
+.kg-rec header small { font-size: var(--fs-1); color: var(--ink-faint); }
+.kg-rec header i { margin-left: auto; padding: 0 .375rem; font: normal 400 var(--fs-2)/1.6 var(--f-title); color: #f9ead2; background: #9a8f78; }
+.kg-rec.yes header i { background: #3f6e5e; } .kg-rec.no header i { background: #a3301f; }
+.kg-rec header em { font-style: normal; font-size: var(--fs-2); }
+.kg-rec p { margin: .25rem 0 0; font-size: var(--fs-3); line-height: 1.85; }
+.kg-rec p.dim { font-size: var(--fs-2); }
+
+@media (max-width: 1280px) {
+  .kg-ov .ce-book { grid-template-columns: minmax(0, 21rem) 1.25rem minmax(0, 1fr); }
+  .kg-tabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .kg-mags { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kg-subj { grid-template-columns: 4rem minmax(0, 1fr) 3rem 3.5rem 2rem; }
+  .kg-subj .kg-range { grid-column: 1 / -1; grid-row: 2; }
+}

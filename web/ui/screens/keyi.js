@@ -126,9 +126,12 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   // 开议前一问
   bus.on('keyi:ask', (q) => {
     const t = T();
-    juan({ title: t.title || '科议', note: q.topic, width: '30rem',
+    let began = false;
+    const j = juan({ title: t.title || '科议', note: q.topic, width: '30rem',
       content: h('p', { style: { margin: 0, lineHeight: 2 } }, `召集在京${num(q.people)}名官员，议「${q.topic}」。`, h('br'), h('small', { style: { color: 'var(--ink-faint)' } }, t.cost || '耗精力十五')),
-      actions: [{ label: t.ask || '开议', onclick: ({ close }) => { close('ok'); try { if (q.accept() !== true) toast('科议未开'); } catch (e) { toast(e.message); } } }] });
+      actions: [{ label: t.ask || '开议', onclick: ({ close }) => { close('ok'); try { began = q.accept() === true; if (!began) toast('科议未开'); } catch (e) { toast(e.message); } } }] });
+    // 没开成（收卷，或开不起来）：告知发起处——改制册据此把草稿还给玩家
+    j.closed.then(() => { if (!began) bus.emit('keyi:declined', { topic: q.topic }); });
   });
 
   // ---------- 动作 ----------

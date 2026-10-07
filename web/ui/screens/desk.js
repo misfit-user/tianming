@@ -22,6 +22,7 @@ import { createRealm } from './realm.js';
 import { createArchive } from './archive.js';
 import { createWenyuan } from './wenyuan.js';
 import { createKeju } from './keju.js';
+import { createGaizhi } from './gaizhi.js';
 import { createKeyi } from './keyi.js';
 import { createWentian } from './wentian.js';
 import { createGongwei } from './gongwei.js';
@@ -475,7 +476,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
   const wenyuanPage = createWenyuan({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
   // 科举册；科议画在殿上，开议时收册，散议后若是从册里起的便回册
-  const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
+  const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onReform: () => { if (!readOnly()) gaizhiPage.show(); } });
+  // 改制册叠在科举册之上：开时收起科举册，合时（含付科议）再展开——科议开成则由科议场景收放
+  const gaizhiPage = createGaizhi({ root, game, onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: () => kejuPage.show() });
   let keyiFromBook = false;
   const keyiPage = createKeyi({ root, study, game, profile: () => prof,
     onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); },

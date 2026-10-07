@@ -10,7 +10,7 @@ import { juan } from '../kit/index.js';
 const toast = (text) => bus.emit('kernel:toast', { text });
 const SLOTS = [['zhuangyuan', '状元'], ['bangyan', '榜眼'], ['tanhua', '探花']];
 
-export function createKeju({ root, game, profile, onPerson }) {
+export function createKeju({ root, game, profile, onPerson, onReform }) {
   const K = game.keju;
   let data = null;
   let mode = 'exam';       // exam 本科 · hist 历届某科 · eco 特科与学派
@@ -76,7 +76,8 @@ export function createKeju({ root, game, profile, onPerson }) {
       h('button' + (mode === 'eco' ? '.on' : ''), { type: 'button', onclick: () => { mode = 'eco'; renderLeft(); renderRight(); } },
         [['恩科', e.enke.length, '次'], ['武举', e.wuju.length, '次'], ['童子科', e.tongzi.length, '童'], ['书院', e.academies, '处'], ['学派', e.lineages, '家']]
           .map(([k, n, u]) => h('span', h('small', k), h('b', num(n)), h('small', u))))));
-    if (d.canPropose) parts.push(h('div.kj-left-acts', h('button.q-yapai', { type: 'button', onclick: propose }, t.propose || '提议筹办科举')));
+    const reform = d.enabled && !d.preparing && onReform ? h('button.q-yapai', { type: 'button', onclick: () => onReform() }, t.reformParadigm || '更定取士之法') : null;
+    if (d.canPropose || reform) parts.push(h('div.kj-left-acts', d.canPropose ? h('button.q-yapai', { type: 'button', onclick: propose }, t.propose || '提议筹办科举') : null, reform));
     replaceChildren(left, parts);
   }
 

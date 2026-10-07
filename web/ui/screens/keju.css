@@ -47,7 +47,7 @@
 .kj-eco span { display: flex; flex-direction: column; align-items: center; font-family: var(--f-kai); color: var(--ink); }
 .kj-eco span b { font: 400 var(--fs-4)/1.2 var(--f-title); color: #7d1d12; }
 .kj-eco span small { font-size: var(--fs-1); color: var(--ink-faint); }
-.kj-left-acts { display: flex; justify-content: center; margin-top: auto; padding-top: .5rem; }
+.kj-left-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: auto; padding-top: .5rem; }
 
 /* 右叶 */
 .kj-right { gap: .875rem; }

@@ -211,7 +211,7 @@ function installRouting() {
 //   通用弹窗（generic-modal-overlay，许多子系统共用）与内联样式的全屏遮罩（例如战前御驾／委之、战报、他方旁观——它们等玩家点了流程才往下走）
 //   一律挪进新前端根节点，让玩家照样看得见、点得了（screens.css 给老弹窗的几个类配了纸卷样式），流程不至卡在看不见的弹窗上；
 //   其余记一笔、发 legacy:overlay
-const TAKEN = new Set(['tm-newui-root', '_situationModal', 'tm-nokey-banner', 'tm-firstturn-guide', 'tm-changelog-ov', 'notify-container', 'wendui-modal']);
+const TAKEN = new Set(['tm-newui-root', '_situationModal', 'tm-nokey-banner', 'tm-firstturn-guide', 'tm-changelog-ov', 'notify-container', 'wendui-modal', 'off-picker-modal']);
 function blocking(n) {
   if (/generic-modal-overlay|modal-overlay|-overlay\b/.test(String(n.className || ''))) return true;
   const s = n.style;

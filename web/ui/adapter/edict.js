@@ -29,8 +29,8 @@ export function hasAny(d = draft()) {
   return Object.values(d).some((v) => String(v || '').trim());
 }
 
-// 老界面的框不在（还没重绘出来）就补一个隐形的，内核照样读得到
-function legacyInput(id) {
+// 老界面的框不在（还没重绘出来）就补一个隐形的，内核照样读得到（官制任命等也经此读写政令框）
+export function legacyInput(id) {
   let el = document.getElementById(id);
   if (!el) {
     el = document.createElement('textarea');

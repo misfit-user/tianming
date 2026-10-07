@@ -14,6 +14,7 @@ import { createDocket } from './docket.js';
 import { createEdict } from './edict.js';
 import { createLetters } from './letters.js';
 import { createAudience } from './audience.js';
+import { createOffices } from './offices.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
@@ -365,6 +366,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'map') return dive.mode === 'desk' ? enterMap() : dive.rise();
     if (key === 'people') return atlas.show();
     if (key === 'annals') return openAnnals({ game, profile: () => prof });
+    if (key === 'offices') return officesPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -403,6 +405,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 召对：名单一卷；择人择体后，书房换景、书案让位
   const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name) });
   game.on('audience:open', () => el.classList.remove('on'));
+  // 职官志：册页浮在书案上；点任职者名字翻到人物图志
+  const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');
     docket.open(id);

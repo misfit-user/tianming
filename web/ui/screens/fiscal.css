@@ -1,0 +1,73 @@
+/* 财：度支册。册页骨架沿用人物图志（.ce-*）；左叶三本账卡，右叶名目条、欠项、借贷、条陈、各省户口 */
+.fi-ov .ce-book { grid-template-columns: minmax(0, 22rem) 1.5rem minmax(0, 1fr); }
+.fi-left { gap: .625rem; }
+.fi-left .ce-head { flex-direction: column; align-items: flex-start; gap: .125rem; margin-bottom: .25rem; }
+.fi-tabs .q-qianzi { flex-direction: row; }
+.fi-tabs .q-qianzi button { color: var(--ink); }
+.fi-lbody { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .625rem; scrollbar-width: thin; }
+.fi-note { margin: 0; font-size: var(--fs-1); line-height: 1.7; color: var(--ink-faint); letter-spacing: .04em; }
+.fi-card { padding: .625rem .75rem .5rem; cursor: pointer; background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); transition: box-shadow var(--t-1); }
+.fi-card.on { background: rgba(255, 246, 226, .85); box-shadow: inset 0 0 0 1px rgba(140, 40, 28, .5), inset .1875rem 0 0 #a3301f; }
+.fi-card header { display: flex; justify-content: space-between; align-items: baseline; }
+.fi-card header b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .3em; }
+.fi-card header small { font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-card .stock { margin: .125rem 0; font: 400 1.875rem/1.2 var(--f-title); letter-spacing: .06em; color: #2a1608; }
+.fi-card .stock small { margin-left: .25rem; font: var(--fs-2) var(--f-kai); color: var(--ink-faint); }
+.fi-card .flow { display: flex; flex-wrap: wrap; gap: .125rem .875rem; font-size: var(--fs-2); }
+.fi-card .flow span { white-space: nowrap; }
+.fi-card .flow .in { color: #2f6b55; }
+.fi-card .flow .out { color: #8a5a12; }
+.fi-card .flow .net { color: #2f6b55; }
+.fi-card .flow .net.neg { color: #8a2a1c; }
+.fi-card .last { font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-card .deficit { margin-top: .25rem; font-size: var(--fs-2); color: #8a2a1c; }
+.fi-cen { display: grid; grid-template-columns: 1fr; gap: .25rem; margin-top: .375rem; }
+.fi-cen p { margin: 0; display: flex; justify-content: space-between; font-size: var(--fs-3); }
+.fi-cen span { color: var(--ink-faint); }
+.fi-cen b { font: 400 var(--fs-4) var(--f-title); }
+
+.fi-right { gap: .75rem; }
+.fi-title { display: flex; align-items: baseline; gap: 1rem; border-bottom: 1px solid rgba(120, 90, 50, .35); padding-bottom: .375rem; }
+.fi-title h3 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
+.fi-title small { font-size: var(--fs-2); color: var(--ink-faint); }
+.fi-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.fi-sec h4 { margin: .25rem 0 .5rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .25em; color: #5a2a12; }
+.fi-bar { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 6rem 3rem; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
+.fi-bar .k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi-bar .v { height: .5rem; background: rgba(120, 90, 50, .12); }
+.fi-bar .v i { display: block; height: 100%; }
+.fi-bar.in .v i { background: linear-gradient(90deg, #3a7d67, #6fae8f); }
+.fi-bar.out .v i { background: linear-gradient(90deg, #a8822e, #d8b05a); }
+.fi-bar .n { text-align: right; font-family: var(--f-title); }
+.fi-bar small { text-align: right; color: var(--ink-faint); font-size: var(--fs-1); }
+.fi-debts { display: grid; grid-template-columns: 1fr 1fr; gap: .125rem 1.5rem; }
+.fi-debts p { margin: 0; display: flex; justify-content: space-between; gap: .5rem; font-size: var(--fs-2); border-bottom: 1px dotted rgba(120, 90, 50, .25); }
+.fi-debts p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fi-debts p b { font-weight: 400; color: #8a2a1c; }
+.fi-more { margin: .25rem 0 0; font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.fi-loan { margin: 0 0 .25rem; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
+.fi-loan b { margin-right: .5rem; font-weight: 400; color: var(--ink); }
+.fi-btns { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: .5rem; }
+.fi-sec .q-yapai { cursor: pointer; }
+.fi-sec .q-yapai.danger { color: #8a2a1c; }
+.fi-form { display: flex; flex-direction: column; gap: .625rem; margin-top: .5rem; }
+.fi-form > div { display: flex; align-items: center; gap: .875rem; }
+.fi-form > div > span { font: var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--ink); }
+.fi-form .q-qianzi { flex-direction: row; }
+.fi-form .q-qianzi button { color: var(--ink); }
+.au-pick-row.done { opacity: .6; cursor: default; }
+.fi-prov { display: flex; flex-direction: column; }
+.fi-prov p { margin: 0; display: grid; grid-template-columns: 7rem minmax(0, 1fr) 5.5rem 5.5rem 4.5rem 3rem 3rem; align-items: center; gap: .625rem; padding: .25rem 0; font-size: var(--fs-2); border-bottom: 1px dotted rgba(120, 90, 50, .22); }
+.fi-prov p.hd { font: var(--fs-1) var(--f-title); letter-spacing: .2em; color: var(--ink-faint); }
+.fi-prov .n { font: 400 var(--fs-3) var(--f-title); letter-spacing: .08em; }
+.fi-prov .bar { position: relative; height: 1.125rem; background: rgba(120, 90, 50, .1); }
+.fi-prov .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, rgba(168, 130, 46, .55), rgba(216, 176, 90, .55)); }
+.fi-prov .bar b { position: relative; padding-left: .375rem; font-weight: 400; line-height: 1.125rem; }
+.fi-prov span { text-align: right; }
+.fi-prov .n, .fi-prov .bar { text-align: left; }
+.fi-prov span.bad { color: #8a2a1c; }
+
+/* 顶栏账簿可点开度支册 */
+.topbar .q-zhang.link { cursor: pointer; }
+.topbar .q-zhang.link:hover { filter: brightness(1.15); }

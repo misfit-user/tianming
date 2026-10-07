@@ -10,6 +10,7 @@
 //   game.letters.contacts() / thread(人) / send({…}) …  书札：远方名册、往来、遣使与信上动作（adapter/letters.js）
 //   game.audience.roster() / open(人, 体) / say(话, 语气) …  召对问对（adapter/audience.js）
 //   game.offices.departments(廷, 组) / department(路径) / appoint(职, 人) …  官制（adapter/offices.js）
+//   game.fiscal.account(库) / census() / loans() …  财计（adapter/fiscal.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
@@ -21,6 +22,7 @@ import * as edict from './edict.js';
 import * as letters from './letters.js';
 import * as audience from './audience.js';
 import * as offices from './offices.js';
+import * as fiscal from './fiscal.js';
 
 const w = window;
 let ready = null;
@@ -268,7 +270,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

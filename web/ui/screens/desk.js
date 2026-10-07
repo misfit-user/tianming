@@ -15,6 +15,7 @@ import { createEdict } from './edict.js';
 import { createLetters } from './letters.js';
 import { createAudience } from './audience.js';
 import { createOffices } from './offices.js';
+import { createFiscal } from './fiscal.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
 import { openAllVars } from './allvars.js';
@@ -257,7 +258,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     time.update({ era: `${d.era || ''}${d.reignYear ? num(d.reignYear) + '年' : ''}`, year: d.year, month: d.month, day: d.day, settling: d.busy });
     // 左上那方印：元首是国号，余者是本人的姓
     dyn.textContent = (per.tier === 'sovereign' ? (per.faction || '').replace(/朝廷$/, '') : per.name).charAt(0) || '天';
-    replaceChildren(ledger, prof.ledger.map((k) => LEDGERS[k] && LEDGERS[k](s, per)).filter(Boolean));
+    // 帑廪、内帑、户口点开即翻到度支册的那一叶
+    const FISCAL_TAB = { treasury: 'guoku', privy: 'neitang', census: 'census' };
+    replaceChildren(ledger, prof.ledger.map((k) => {
+      const el = LEDGERS[k] && LEDGERS[k](s, per);
+      if (el && FISCAL_TAB[k] && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => fiscalPage.show(FISCAL_TAB[k])); }
+      return el;
+    }).filter(Boolean));
     const gs = prof.gauges === 'realm' ? s.gauges() : s.person(per.id).gauges;
     replaceChildren(gauges, gs.map((g) => pin(g.label, g.value)));
     // 人物图志：元首看有立像的近臣；余者先看同地之人，不够再补有立像的
@@ -367,6 +374,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'people') return atlas.show();
     if (key === 'annals') return openAnnals({ game, profile: () => prof });
     if (key === 'offices') return officesPage.show();
+    if (key === 'fiscal') return fiscalPage.show();
     building(name, '');
   }
   function onChannel(c) {
@@ -406,6 +414,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name) });
   game.on('audience:open', () => el.classList.remove('on'));
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志
+  const fiscalPage = createFiscal({ root, game });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');

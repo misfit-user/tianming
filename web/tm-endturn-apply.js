@@ -2544,6 +2544,9 @@
                           if (typeof CorruptionEngine !== 'undefined' && CorruptionEngine.markAsRecentAppointment) {
                             CorruptionEngine.markAsRecentAppointment(ch);
                           }
+                          if (window.TM && TM.OfficeTenure && typeof TM.OfficeTenure.notifyOfficeChange === 'function') {
+                            TM.OfficeTenure.notifyOfficeChange(GM, ch, { kind: 'appointment', positionId: pos.id || '', organizationId: node.id || node.organizationId || '', appointmentId: pos.appointmentId || '', intent: '任职已有变化', content: '官署通知：你已被任用' + oc.dept + oc.position + '，请按收到的现行安排重新考虑后续。' });
+                          }
                         }
                         // 单一真相源·让位:仅单编制座位自动腾退被顶替的现任(多编制靠 vacancy 容纳)·robust 按座撤衔治 ghost
                         var _estab1 = (pos.establishedCount || pos.headCount || 1) <= 1;
@@ -2725,6 +2728,9 @@
                           if (_isRetire) dch.title = '致仕';
                           else if (!_dchVacated && typeof _offRemoveCharOfficeTitle !== 'function' && !_isMoveExit) dch.title = '';
                           if (typeof recordCharacterArc === 'function') recordCharacterArc(dismissed, _isRetire ? 'retirement' : (_isMoveExit ? 'transfer' : 'dismissal'), (_isRetire ? '\u6069\u51C6\u81F4\u4ED5' : (_isMoveExit ? '\u8F6C\u4EFB\u5378\u804C' : '\u88AB\u514D\u53BB')) + oc.dept + oc.position + (oc.reason ? '：' + oc.reason : ''));
+                          if (typeof TM !== 'undefined' && TM.OfficeTenure && typeof TM.OfficeTenure.notifyOfficeChange === 'function') {
+                            TM.OfficeTenure.notifyOfficeChange(GM, dch, { kind: 'dismissal', positionId: pos.id || '', organizationId: node.id || node.organizationId || '', intent: '任职已有变化', content: '官署通知：你已离开' + oc.dept + oc.position + '，请按收到的现行安排重新考虑后续。' });
+                          }
                           }
                           // 同步PostSystem
                           if (typeof PostTransfer !== 'undefined') PostTransfer.cascadeVacate(dismissed);

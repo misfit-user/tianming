@@ -575,7 +575,12 @@
         requesterAppointmentId:_str(d.appointmentId || d.task && d.task.requesterAppointmentId)};
       // An unsupported task remains a negotiation; it cannot produce money or state by naming an effect.
       if (!/^(document|public_transfer|notice)$/.test(p.task.kind)) return result('blocked','unsupported_concrete_task');
-      var request=message(p,npc,who,'request',d.content||d.intent,{task:p.task,basis:clone(p.task.basis||p.task.requestBasis||null),revision:p.revision,termsVersion:p.termsVersion,requestKind:p.task.requestKind||''});
+      var requestData={task:p.task,basis:clone(p.task.basis||p.task.requestBasis||null),revision:p.revision,termsVersion:p.termsVersion,requestKind:p.task.requestKind||''};
+      // Producers may mark a concrete, important source at creation time.
+      // The flag travels with the message and only becomes planning evidence
+      // after the normal delivery path records it as delivered.
+      ['planningRequired','important','replanRequired','goalRevision','importance','officeChange','officeFingerprint','sourceVersion'].forEach(function(k){if(d[k]!=null)requestData[k]=clone(d[k]);});
+      var request=message(p,npc,who,'request',d.content||d.intent,requestData);
       p.knowledge[p.actorId]={stage:'awaiting_delivery',lastMessageId:request.id};
       if(legacy){p.legacyEvidence={status:legacy.status,progress:legacy.progress,intent:legacy.intent};ensurePlans(g)[ensurePlans(g).indexOf(legacy)]=p;}
       else ensurePlans(g).push(p);
@@ -758,6 +763,12 @@
         content:m.content,subjectLine:p.intent,letterType:'personal',sentTurn:m.sentTurn,deliveryTurn:m.deliveredTurn,status:'delivered',
         _npcInitiated:true,_playerRead:false,_replyExpected:/^(request|response|delivery)$/.test(m.kind),npcPlanId:p.id,npcMessageId:m.id});
     }
+    // Knowledge is established at the canonical delivery boundary.  The
+    // planning layer may record that this NPC now knows an important source,
+    // but it must never infer knowledge from an undelivered message.
+    if (typeof global._npcPlanningObserveDeliveredMessage === 'function') {
+      try { global._npcPlanningObserveDeliveredMessage(p, m, g); } catch (_) {}
+    }
   }
   function advance(g,options) {
     g=g||_gm();if(g!==_gm())return {ok:false,reason:'world_mismatch'};
@@ -799,6 +810,9 @@
     if(!guard)return result('blocked','atomic_writer_unavailable');
     var input=Object.assign({actionId:p.id+':player:'+p.messages.length,planId:p.id,phase:view.nextPhase,response:response,content:content,terms:content,evaluation:response,expectedRevision:view.revision,termsVersion:view.termsVersion},details||{});
     var tx=guard.runAtomicMutation(function(){answer=social(ch,input);return {ok:!!answer&&answer.outcome!=='blocked'};});
+    if (tx.ok && answer && p.localActivity && p.localActivity.sourceGoalId && typeof global._npcPlanningStepResult === 'function') {
+      global._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, Object.assign({}, answer, { planningOwnerId: p.actorId, verified: answer.outcome === 'completed' && p.status === 'done' }));
+    }
     return tx.ok?answer:result('failed',tx.reason);
   }
 

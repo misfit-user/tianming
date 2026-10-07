@@ -110,6 +110,7 @@
     if (b.starts < D.config.dailyStarts) out = opportunityCandidates(ch);
     if (b.starts < D.config.dailyStarts) arr(ch.localGoals).forEach(function (goal) {
       if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting|consultation)$/.test(goal.kind)) return;
+      if (typeof root._npcPlanningGoalReady === 'function' && !root._npcPlanningGoalReady(goal)) return;
       var source = String(goal.id) + ':' + Number(goal.version || 1);
       if (related.some(function (p) { return p.actorId === ch.id && p.localActivity.sourceGoalId === source; })) return;
       var target = actor(goal.targetId), third = goal.kind === 'introduction' && actor(goal.thirdPartyId);
@@ -705,7 +706,10 @@
           if (typeof root._npcPlanningStepResult === 'function' && receipt && receipt.planId) {
             var _plannedActivity = D.get(receipt.planId);
             if (_plannedActivity && _plannedActivity.localActivity && _plannedActivity.localActivity.sourceGoalId) {
-              root._npcPlanningStepResult(chosen.id, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) ? 'completed' : receipt.outcome, reason: receipt.reason });
+              // The planning direction belongs to the activity owner.  A
+              // partner/player may be the person submitting the response.
+              var planningOwner = _plannedActivity.actorId || chosen.id;
+              root._npcPlanningStepResult(planningOwner, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) && _plannedActivity.status === 'done' ? 'completed' : receipt.outcome, reason: receipt.reason, planningOwnerId: planningOwner, verified: D.terminal(_plannedActivity) && _plannedActivity.status === 'done' });
             }
           }
           // A failed domain transaction restores nested state objects; do not keep their stale references.

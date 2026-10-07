@@ -823,6 +823,9 @@
     a.revision++; p.updatedTurn = game().turn;
     remember(to, from, p, m.id + ':received', '收到' + (from ? from.name : '递话人') + '的文书：' + m.content, m.kind === 'delivery' ? 'received_document' : 'received_claim');
     projectLetter(p, m);
+    if (typeof root._npcPlanningStepResult === 'function' && a.sourceGoalId) {
+      root._npcPlanningStepResult(p.actorId, a.sourceGoalId, { outcome: p.status === 'done' ? 'completed' : p.status === 'rejected' ? 'rejected' : p.status === 'cancelled' ? 'cancelled' : 'waiting', reason: 'actual_message_delivered', planningOwnerId: p.actorId, verified: p.status === 'done' });
+    }
   }
   function failedDelivery(p, m) {
     m.status = 'undeliverable'; m.failedTurn = game().turn;
@@ -835,6 +838,9 @@
     p.localActivity.revision++;
     remember(person(m.fromId), null, p, receipt.id, receipt.content, 'delivery_status');
     projectLetter(p, receipt);
+    if (typeof root._npcPlanningStepResult === 'function' && p.localActivity.sourceGoalId) {
+      root._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, { outcome: m.kind === 'cancel' ? 'cancelled' : 'waiting', reason: 'delivery_unavailable', planningOwnerId: p.actorId, verified: false });
+    }
   }
   function replyMayExpire(p) {
     // Coarse turns must not cancel accepted short work before the next safe processing point.
@@ -874,6 +880,9 @@
           // Expiry is a pre-declared procedural deadline, not knowledge of another person's private reason.
           p.knowledge[key] = Object.assign({}, p.knowledge[key], { stage: 'expired' });
         });
+        if (typeof root._npcPlanningStepResult === 'function' && a.sourceGoalId) {
+          root._npcPlanningStepResult(p.actorId, a.sourceGoalId, { outcome: 'expired', reason: 'ordinary_activity_expired', planningOwnerId: p.actorId, verified: false });
+        }
       }
     });
     return delivered;

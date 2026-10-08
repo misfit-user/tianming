@@ -147,6 +147,8 @@ export function openQueue(qid) {
   return q ? opened(q.name) : false;
 }
 
+// 问对诸式之名：两式可选；策对（cedui）由科举改制、恩科、书院等处径开
+const MODE_NAME = { formal: '朝堂问对', private: '私下叙谈', cedui: '策对' };
 // 这一场的情形
 export function session() {
   const g = G();
@@ -163,12 +165,15 @@ export function session() {
   const chat = $('wd-modal-chat');
   const recap = chat && chat.firstElementChild && !/wendui-msg/.test(chat.firstElementChild.className || '') && /上次问对要点/.test(chat.firstElementChild.textContent || '') ? chat.firstElementChild.textContent : '';
   return {
-    name, mode: w._wenduiMode || 'formal', title: c.officialTitle || c.title || '', portrait: c.portrait || '', loyalty: Math.round(Number(c.loyalty) || 50),
+    name, mode: w._wenduiMode || 'formal', modeName: MODE_NAME[w._wenduiMode] || MODE_NAME.formal,
+    title: c.officialTitle || c.title || '', portrait: c.portrait || '', loyalty: Math.round(Number(c.loyalty) || 50),
     emotion: st.emotion || 3, turns: st.turns || 0, ceremony: !!$('wd-ceremony'), screened: !!w._wdScreened, sending: !!w._wenduiSending,
     envoy: !!(c._envoy || c.fromFaction), faction: c.fromFaction || c.faction || '', mission: c.envoyMission || '', counterable,
     topics: [...document.querySelectorAll('#wd-topics button')].map((b) => b.textContent.trim()).filter(Boolean),
     recap: recap.replace(/^上次问对要点：/, ''), greeting: greetingIn(chat),
-    confronters: Array.isArray(w._wdConfronters) ? w._wdConfronters.slice() : []
+    confronters: Array.isArray(w._wdConfronters) ? w._wdConfronters.slice() : [],
+    // 径开问对的一方可预拟首问（策对的问题、奏疏传召的事由），内核填进它自己的输入框
+    draft: String(($('wd-modal-input') || {}).value || '')
   };
 }
 // 开场白：内核开场时随机生成、只画进它的聊天区首个气泡（不入史），从那里读

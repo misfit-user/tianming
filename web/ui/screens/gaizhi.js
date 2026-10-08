@@ -1,6 +1,7 @@
 // 科举改制册（科举册「更定取士之法」）：左叶是奏稿——所改诸条随改随录，各党预判、朝议揣度、议题文字，末了「付科议」；
 // 右叶十门（宗旨、科目、考期、考生、主考、录取、授官、身份、仪轨、筹议）逐项更定：选项作签，立罢作章，旧制处留「旧」字为记。
-// 草稿只在本册里，付科议才交出（game.gaizhi → 内核 _kjpSubmitReform → 科议）；科议没开成，草稿原样还回。
+// 草稿只在本册里，付科议才交出（game.gaizhi → 内核 _kjpSubmitReform 那一套 → 科议）；科议没开成，草稿原样还回。
+// 筹议里可召史策对（借召对场景，本册暂收、问毕复开）；改制沿革里可议废前番改制（另付一场科议，草稿不动）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
@@ -17,7 +18,9 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
   let tab = 'zhi';
   let topicEdited = null;    // 玩家手改的议题；null 则随条陈自生
   let opened = false;
-  let pending = false;       // 已付科议、待其开成
+  let pending = '';          // 已付科议、待其开成：draft 本稿 · rollback 议废
+  let consulting = false;    // 召史策对中（本册暂收，问对毕复开）
+  let allAdvisors = false;
   let who = '';              // 召对之人
   let whoIntent = 'probe';
   let whoFilter = '';
@@ -198,7 +201,11 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
     const hist = Z.history();
     const ip = Z.inProgress();
     out.push(block('改制沿革', ip ? `前番改制推行中，${num(ip.years)}年乃定` : '',
-      hist.length ? h('ol.kg-hist', hist.map((e) => h('li', h('header', h('b', e.name), h('small', [e.year ? `${zh(e.year)}年` : '', e.by, e.method, e.status].filter(Boolean).join(' · '))), e.text ? h('p', e.text) : null)))
+      hist.length ? h('ol.kg-hist', hist.map((e) => h('li',
+        h('header', h('b', e.name), h('small', [e.year ? `${zh(e.year)}年` : '', e.by, e.method, e.status].filter(Boolean).join(' · ')),
+          e.canRollback ? h('button.q-yapai', { type: 'button', onclick: () => rollbackJuan(e.id) }, '议废') : null),
+        e.text ? h('p', e.text) : null,
+        e.yearly.length ? h('ul.kg-yearly', e.yearly.map((y) => h('li', h('span', `${zh(y.year)}年`), y.text))) : null)))
         : h('p.kg-empty', '本朝未尝改制。')));
     return out;
   }
@@ -388,8 +395,61 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
         h('header', h('b', r.npc), h('small', Z.AUDIENCE[r.intent] || ''), h('i', r.failed ? '未成' : r.willAccept ? '允' : '未允'),
           r.supportDelta ? h('em' + (r.supportDelta > 0 ? '.s' : '.o'), `${r.supportDelta > 0 ? '+' : '−'}${zh(Math.abs(r.supportDelta))}`) : null),
         h('p', r.speech || ''), r.offerTerms ? h('p.dim', `所求：${r.offerTerms}`) : null, Z.costText(r.cost) ? h('p.dim', `代价：${zh(Z.costText(r.cost))}`) : null, r.fallback ? aiNote('fallback') : null))) : null);
-    return [pilot, aud];
+    // 召史策对
+    const advs = Z.advisors();
+    const shownAdv = allAdvisors ? advs : advs.slice(0, 9);
+    const none = !Z.items(d).length;
+    const ce = block('召史策对', '密召史官、翰林、老臣，问此番改制数年之后成效如何；以问对行之，费精力',
+      none ? h('p.kg-empty', '条陈尚空，无可策问。') : null,
+      advs.length ? h('div.kg-cases', shownAdv.map((a) => h('div.kg-case',
+        h('header', h('b', a.name), h('small', [a.school, a.title].filter(Boolean).join(' · '))),
+        a.record ? h('p.dim', a.record) : null,
+        a.last ? h('p.kg-last', h('span', '前策'), a.last.text) : null,
+        h('button.q-yapai', { type: 'button', disabled: none, onclick: () => consult(a.name) }, '召之策对')))) : h('p.kg-empty', '京中无可召策对之臣。'),
+      advs.length > 9 ? h('button.link.kg-more', { type: 'button', onclick: () => { allAdvisors = !allAdvisors; renderPane(); } }, allAdvisors ? '收起' : `尚有${num(advs.length - 9)}人`) : null);
+    return [pilot, aud, ce];
   }
+
+  // ---------- 议废前番改制：择罢法、留科，付科议（草稿不动）----------
+  function names(list) {
+    const shown = list.slice(0, 12);
+    return [shown.map((p) => h('b' + (p.gone ? '.gone' : ''), { title: p.gone ? '已故或去位' : '' }, p.name)), list.length > 12 ? h('small', `等${num(list.length)}人`) : null];
+  }
+  function rollbackJuan(id) {
+    let plan;
+    try { plan = Z.rollbackPlan(id); } catch (e) { toast(e.message); return; }
+    let mode = 'full';
+    const keep = new Set(plan.added.map((x) => x.id));
+    const body = h('div.kg-rb');
+    const draw = () => replaceChildren(body,
+      h('p.kg-rb-target', h('b', plan.name), h('small', [plan.year ? `${zh(plan.year)}年` : '', plan.by, plan.status].filter(Boolean).join(' · '))),
+      plan.degraded ? h('p.kg-warn', '此番改制未存改动细目，议废只能整个复回本朝成法。') : null,
+      plan.stubs.length ? h('p.kg-warn', `复回之科（${plan.stubs.join('、')}）旧档不全，复后或须再校。`) : null,
+      h('div.kg-chips', Object.entries(Z.ROLLBACK).map(([k, label]) => h('button' + (mode === k ? '.on' : ''), { type: 'button', disabled: k === 'partial' && !plan.added.length,
+        title: k === 'partial' && !plan.added.length ? '前番未增新科' : '', onclick: () => { mode = k; draw(); } }, label))),
+      h('small.kg-note', Z.ROLLBACK_NOTE[mode]),
+      mode === 'partial' ? h('div.kg-togs', plan.added.map((x) => h('button.kg-tog' + (keep.has(x.id) ? '.on' : ''), { type: 'button',
+        onclick: () => { if (keep.has(x.id)) keep.delete(x.id); else keep.add(x.id); draw(); } }, h('i', keep.has(x.id) ? '留' : '罢'), h('span', x.name)))) : null,
+      plan.support.length ? h('p.kg-rb-who', h('span', '前番赞成者，或转而反对'), names(plan.support)) : null,
+      plan.oppose.length ? h('p.kg-rb-who', h('span', '前番反对者，或转而赞成'), names(plan.oppose)) : null,
+      h('p.kg-rb-shake', plan.shake));
+    draw();
+    juan({ title: '议废前番改制', width: '34rem', content: body, actions: [{ label: '付科议', onclick: ({ close }) => {
+      close('ok');
+      pending = 'rollback';
+      hide('submit');
+      try { Z.rollback(id, mode, [...keep]); } catch (e) { pending = ''; show(); toast(e.message); }
+    } }] });
+  }
+  // ---------- 召史策对：本册暂收，召对场景接手；问毕由 resume 复开 ----------
+  function consult(name) {
+    consulting = true;
+    hide('cedui');
+    let ok = false;
+    try { ok = Z.cedui(d, name); } catch (e) { toast(e.message); }
+    if (!ok) { consulting = false; show(); }
+  }
+  function resume() { if (consulting) { consulting = false; show(); } }
 
   // ---------- 开合与付议 ----------
   function ask(text, ok) {
@@ -411,13 +471,17 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
     const c = Z.check(d, text);
     if (!c.ok) return toast(c.why);
     if (c.weightSum > 100 && !(await ask(`诸科所占合计${zh(c.weightSum)}%，已过十成，议时恐生枝节。仍付科议？`, '仍付科议'))) return;
-    pending = true;
+    pending = 'draft';
     hide('submit');
-    try { Z.submit(d, text); } catch (e) { pending = false; show(); toast(e.message); }
+    try { Z.submit(d, text); } catch (e) { pending = ''; show(); toast(e.message); }
   }
-  // 科议没开成：草稿还回；开成了：此稿已交出
-  bus.on('keyi:declined', () => { if (pending) { pending = false; show(); toast('科议未开，草稿仍在'); } });
-  bus.on('keyi:changed', (s) => { if (pending && s && s.open) { pending = false; d = null; topicEdited = null; } });
+  // 科议没开成：本册复开、草稿仍在；开成了：本稿已交出（议废那一场不动草稿）
+  bus.on('keyi:declined', () => { if (pending) { pending = ''; show(); toast('科议未开，草稿仍在'); } });
+  bus.on('keyi:changed', (s) => {
+    if (!pending || !s || !s.open) return;
+    if (pending === 'draft') { d = null; topicEdited = null; }
+    pending = '';
+  });
   bus.on('ui:gaizhi', () => show());
 
   function render() { renderLeft(); renderRight(); }
@@ -441,5 +505,5 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
     if (!opened || document.querySelector('.q-juan-veil')) return;
     if (e.key === 'Escape' && !/^(INPUT|TEXTAREA)$/.test((document.activeElement || {}).tagName || '')) { e.stopPropagation(); hide(); }
   }, true);
-  return { show, hide, get opened() { return opened; } };
+  return { show, hide, resume, get opened() { return opened; } };
 }

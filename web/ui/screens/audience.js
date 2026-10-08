@@ -264,7 +264,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     const t = T();
     const formal = s.mode !== 'private';
     crumbName.textContent = t.title;
-    crumbNote.textContent = `${formal ? game.audience.MODES[0][1] : game.audience.MODES[1][1]}　${game.select.date().text || ''}`;
+    crumbNote.textContent = `${s.modeName}　${game.select.date().text || ''}`;
     leave.querySelector('b').textContent = t.leave;
     replaceChildren(portrait, zhou({ name: s.name, src: s.portrait }));
     nameEl.textContent = s.name;
@@ -279,7 +279,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     live = null;
     busy = false;
     tone.setValue('direct');
-    input.value = '';
+    input.value = s.draft || '';                          // 预拟的首问（策对、传召事由）
     refreshPlate();
     render();
     renderBar();

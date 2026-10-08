@@ -451,7 +451,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     lettersPage.open(name);
   }
   // 召对：名单一卷；择人择体后，书房换景、书案让位
-  const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode),
+  const audiencePage = createAudience({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); gaizhiPage.resume(); }, onLetter: (name) => openLetters(name), onCourt: (mode) => courtPage.begin(mode),
     onExternal: () => { kejuPage.hide(); wenyuanPage.hide(); gongweiPage.hide(); } });
   // 朝议：镜老流程；筹备卷、实录页都跟着内核的快照走
   const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
@@ -478,7 +478,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 科举册；科议画在殿上，开议时收册，散议后若是从册里起的便回册
   const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onReform: () => { if (!readOnly()) gaizhiPage.show(); } });
   // 改制册叠在科举册之上：开时收起科举册，合时（含付科议）再展开——科议开成则由科议场景收放
-  const gaizhiPage = createGaizhi({ root, game, onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: () => kejuPage.show() });
+  // 召史策对时改制册暂收、不展科举册（召对场景接手，问毕 audiencePage 的 onClose 里 resume 复开改制册）
+  const gaizhiPage = createGaizhi({ root, game, onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: (why) => { if (why !== 'cedui') kejuPage.show(); } });
   let keyiFromBook = false;
   const keyiPage = createKeyi({ root, study, game, profile: () => prof,
     onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); },

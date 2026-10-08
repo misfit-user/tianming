@@ -16,7 +16,7 @@
 
 /* 左叶：检、排、势力、小像格、翻叶 */
 .ce-head { display: flex; align-items: baseline; gap: .875rem; margin-bottom: .75rem; }
-.ce-head h2 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
+.ce-head h2 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; white-space: nowrap; flex: none; }
 .ce-head small { font-size: var(--fs-2); color: var(--ink-faint); letter-spacing: .1em; }
 .ce-tools { display: flex; align-items: center; gap: 1.25rem; margin-bottom: .5rem; }
 .ce-search { flex: 1; min-width: 0; padding: .25rem .25rem .3125rem; border: 0; border-bottom: 1px solid rgba(120, 90, 50, .45); outline: 0; background: transparent; font: var(--fs-3) var(--f-kai); color: var(--ink); }

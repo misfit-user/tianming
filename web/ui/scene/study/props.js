@@ -12,7 +12,7 @@ export const PLACE = {
   tray: [905, -440, -0.06],
   memorials: [915, -70, Math.PI / 2 - 0.04],
   seal: [890, 320, 0.1],
-  letterbox: [-1480, -470, 0.08],
+  letterbox: [-890, 465, 0.1],   // 案左近手处、邸报之下（原在案左远角，御案镜头里出画）
   map: [0, 0, 0],
   censer: [-1480, -880, 0],
   writing: [-800, 640, 0.06],
@@ -133,7 +133,8 @@ export async function loadProps(scene, { notes }) {
   const privateSeals = stoneSeals();
   office.visible = privateSeals.visible = false;
   sealG.add(office, privateSeals);
-  add(group('letterbox'), 'letterbox', [0, 0]);
+  group('letterbox').scale.setScalar(0.8);            // 案左近手处夹在邸报与笔砚之间，信匣小一号
+  add(groups.letterbox, 'letterbox', [0, 0]);
   add(group('censer'), 'censer', [0, 0]);
   // 笔砚：砚居中，右侧笔山横搁两支笔（笔与笔山长轴垂直），左下墨锭，右下水盂
   const wr = group('writing');

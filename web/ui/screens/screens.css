@@ -43,7 +43,7 @@
 .ce::before { content: ''; position: absolute; right: .375rem; top: .5rem; bottom: .5rem; width: 1px; background: repeating-linear-gradient(180deg, transparent 0 .5625rem, rgba(240, 232, 214, .8) .5625rem .8125rem, transparent .8125rem 1.375rem); }
 .ce::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(90deg, rgba(0, 0, 0, .25), rgba(230, 220, 196, .35)); }
 .ce > b { position: absolute; left: .6875rem; top: .625rem; bottom: 1.375rem; width: 1.375rem; overflow: hidden; background: linear-gradient(180deg, #f3ead6, #e2d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35);
-  writing-mode: vertical-rl; font: 400 .875rem/1.375rem var(--f-kai); color: var(--ink); letter-spacing: .14em; text-align: center; padding-top: .3125rem; white-space: nowrap; }
+  writing-mode: vertical-rl; font: 400 max(.875rem, 11px)/max(1.375rem, 17px) var(--f-kai); color: var(--ink); letter-spacing: .14em; text-align: center; padding-top: .3125rem; white-space: nowrap; }
 .ce:hover, .ce.on { transform: translateY(-.25rem); }
 .ce.on { box-shadow: 0 .75rem 1.5rem rgba(10, 5, 2, .7), 0 0 0 2px rgba(236, 210, 154, .45); }
 

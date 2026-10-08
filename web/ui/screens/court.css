@@ -32,12 +32,12 @@ html.tm-newui body > div#chaoyi-modal, html.tm-newui body > div#cy-stage, html.t
 /* 实录 */
 .ct-rec { right: 2.25rem; width: min(56vw, 66rem); bottom: 12rem; }
 .ct-flow .au-them b small { font-weight: 400; font-size: .9375rem; color: rgba(70, 46, 22, .7); }
-.ct-flow .ct-st { margin: .25em 0; font-size: .875rem; }
+.ct-flow .ct-st { margin: .25em 0; font-size: calc(max(.875rem, 12px) * var(--fs-k)); }
 .ct-flow .ct-st.sup { color: #2f6b55; }
 .ct-flow .ct-st.opp { color: #a8261a; }
 .ct-flow .ct-st.med { color: #8a5a12; }
 .ct-flow .ct-st.neu, .ct-flow .ct-st.alt { color: #6a5a44; }
-.ct-flow .ct-candor { font-size: .875rem; color: rgba(70, 46, 22, .6); }
+.ct-flow .ct-candor { font-size: calc(max(.875rem, 12px) * var(--fs-k)); color: rgba(70, 46, 22, .6); }
 .ct-divider { text-align: center; font-size: 1rem; letter-spacing: .4em; color: #8a2a1c; }
 
 /* 案底：状态一行、签；插言 */

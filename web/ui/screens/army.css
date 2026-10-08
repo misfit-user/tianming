@@ -20,7 +20,7 @@
 .ar-row .who { grid-area: who; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-row .who em { font-style: normal; color: #8a2a1c; }
 .ar-row .marks { grid-area: marks; display: flex; gap: .125rem; }
-.ar-row .marks i { font: normal .75rem/1.25rem var(--f-kai); width: 1.25rem; text-align: center; color: #8a5a12; border: 1px solid rgba(138, 90, 18, .45); }
+.ar-row .marks i { font: normal max(.75rem, 10px)/max(1.25rem, 15px) var(--f-kai); width: max(1.25rem, 15px); text-align: center; color: #8a5a12; border: 1px solid rgba(138, 90, 18, .45); }
 .ar-row .marks i.hot { color: #f9ead2; background: #a3301f; border-color: #a3301f; }
 .ar-row .marks i.go { color: #2f6b55; border-color: rgba(47, 107, 85, .5); }
 .ar-row.hot b { color: #7d1d12; }

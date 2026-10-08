@@ -145,6 +145,8 @@ export function openSettings({ tab = 'ai' } = {}) {
     const vol = (value, key) => chi({ min: 0, max: 100, step: 1, value, format: (v) => num(Math.round(v)), onchange: (v) => cfg.setAudio({ [key]: v }) });
     return h('div.st-form',
       row('画质', tierSel, `本机测为「${{ high: '上', medium: '中', low: '下' }[q.detected.tier]}」档（${q.detected.reason}）。改档下次启动生效。`),
+      row('字号', qianzi([{ value: 'std', label: '标准' }, { value: 'large', label: '大' }, { value: 'xlarge', label: '特大' }],
+        { value: getSetting('textSize'), onchange: (v) => setSetting('textSize', v) }), '正文字号。小屏上已自动放到看得清，仍嫌小可再放大。'),
       row('记数', kaiguan('汉字记数（关则用阿拉伯数字）', { checked: getSetting('numerals') !== 'arabic', onchange: (on) => setSetting('numerals', on ? 'cn' : 'arabic') })),
       row('动效', kaiguan('少动效（只留淡入淡出）', { checked: getSetting('motion') === 'less', onchange: (on) => setSetting('motion', on ? 'less' : 'full') })),
       a ? row('殿乐', h('div.st-inline', kaiguan('', { checked: a.music, onchange: (on) => cfg.setAudio({ music: on }) }), vol(a.musicVolume, 'musicVolume'))) : null,

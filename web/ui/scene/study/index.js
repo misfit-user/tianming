@@ -232,10 +232,20 @@ export async function createStudyView(stage, {
   // ---------- 镜头 ----------
   let current = null;
   let time = 0;
+  let pinned = false;                                // 停在给定视角的机位上（入图前的正俯视），换窗口大小时不改视角
+  // 各镜头的视角按 16:9 定。窗口比 16:9 窄（16:10、4:3）时保住横向取景、上下多看——否则案左的信匣、笔砚出画
+  const DESIGN_ASPECT = 16 / 9;
+  function fitFov(fov) {
+    const a = camera.aspect;
+    if (!(a > 0) || a >= DESIGN_ASPECT) return fov;
+    return THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(fov / 2)) * DESIGN_ASPECT / a));
+  }
+  const pxOf = (h) => h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
   function setShot(name) {
     const s = typeof name === 'string' ? SHOTS[name] : name;
     current = s;
-    camera.fov = s.fov;
+    pinned = false;
+    camera.fov = fitFov(s.fov);
     camera.position.set(...s.pos);
     camera.lookAt(...s.look);
     camera.updateProjectionMatrix();
@@ -247,7 +257,7 @@ export async function createStudyView(stage, {
     followSmoke();
     captureEnv();
     if (dust) {
-      dust.uniforms.uPx.value = stage.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(s.fov / 2)));
+      dust.uniforms.uPx.value = pxOf(stage.size.h);
       dust.uniforms.uAmount.value = s.dust ?? 1;
     }
     post.uniforms.uStrength.value = s.shafts ?? 1.2;
@@ -263,13 +273,15 @@ export async function createStudyView(stage, {
     camera.getWorldDirection(dir);
     const pos = camera.position.clone();
     const t = dir.y < -0.05 ? -pos.y / dir.y : 1500;     // 看点取视线与案面（y=0）的交点
-    return { pos: pos.toArray(), look: pos.clone().addScaledVector(dir, t).toArray(), fov: camera.fov };
+    return { pos: pos.toArray(), look: pos.clone().addScaledVector(dir, t).toArray(), fov: camera.fov, exact: true };
   }
   let flight = null;
+  // to.fov 照镜头预设按 16:9 给，飞到时按窗口比例换算；to.exact（入图的正俯视机位）则原样用
   function flyTo(to, duration = 1.2) {
     flight?.resolve();
     const from = currentPose();
-    return new Promise((resolve) => { flight = { from, to, t0: time, duration, resolve }; });
+    const fov = to.exact ? to.fov : fitFov(to.fov);
+    return new Promise((resolve) => { flight = { from, to: { ...to, fov }, t0: time, duration, resolve }; });
   }
   function stepFlight() {
     if (!flight) return;
@@ -280,7 +292,7 @@ export async function createStudyView(stage, {
     camera.lookAt(...lerp3(flight.from.look, flight.to.look));
     camera.fov = flight.from.fov + (flight.to.fov - flight.from.fov) * e;
     camera.updateProjectionMatrix();
-    if (k >= 1) { const r = flight.resolve; flight = null; r(); }
+    if (k >= 1) { pinned = !!flight.to.exact; const r = flight.resolve; flight = null; r(); }
   }
 
   // ---------- 屏幕与案面换算 ----------
@@ -299,7 +311,7 @@ export async function createStudyView(stage, {
     const o = props.groups.map.position;
     const cx = o.x + MAP_SHEET.x, cz = o.z + MAP_SHEET.z;
     const h = (MAP_SHEET.w / 2) / (Math.tan(THREE.MathUtils.degToRad(fov / 2)) * camera.aspect);
-    return { pos: [cx, h + SHEET_Y, cz + h * 1e-4], look: [cx, SHEET_Y, cz], fov, height: h };
+    return { pos: [cx, h + SHEET_Y, cz + h * 1e-4], look: [cx, SHEET_Y, cz], fov, height: h, exact: true };
   }
   // 屏幕上一点落在绢图上的舆图坐标；不在图上返回 null
   const ray = new THREE.Raycaster();
@@ -444,9 +456,10 @@ export async function createStudyView(stage, {
     },
     resize(w, h) {
       camera.aspect = w / h;
+      if (current && !flight && !pinned) camera.fov = fitFov(current.fov);
       camera.updateProjectionMatrix();
       post.setSize();
-      if (dust && current) dust.uniforms.uPx.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(current.fov / 2)));
+      if (dust && current) dust.uniforms.uPx.value = pxOf(h);
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
     setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, pickProp, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress, setNotes: (list) => props.setNotes(list),

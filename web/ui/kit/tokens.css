@@ -51,11 +51,13 @@
   --f-xing: 'TM-Xing', 'TM-WenKai', serif;
   --f-seal: 'TM-Seal', 'TM-MaShanZheng', serif;
 
-  /* 字号阶（1080 高时：12 13 15 17 21 25 34 46 58） */
-  --fs-1: .75rem;
-  --fs-2: .8125rem;
-  --fs-3: .9375rem;
-  --fs-4: 1.0625rem;
+  /* 字号阶（1080 高时：12 13 15 17 21 25 34 46 58）。界面随窗口等比缩，但正文四阶各有像素下限——
+     1366×768 的笔记本上不再缩到八九像素；再乘典章「字号」--fs-k（标准 1、大 1.12、特大 1.25，core/settings.js 写） */
+  --fs-k: 1;
+  --fs-1: calc(max(.75rem, 11px) * var(--fs-k));
+  --fs-2: calc(max(.8125rem, 12px) * var(--fs-k));
+  --fs-3: calc(max(.9375rem, 13px) * var(--fs-k));
+  --fs-4: calc(max(1.0625rem, 14px) * var(--fs-k));
   --fs-5: 1.3125rem;
   --fs-6: 1.5625rem;
   --fs-7: 2.125rem;

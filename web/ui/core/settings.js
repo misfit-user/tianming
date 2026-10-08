@@ -8,9 +8,12 @@ const DEFAULTS = {
   quality: 'auto',        // auto | high | medium | low
   numerals: 'cn',         // cn 汉字记数 | arabic 阿拉伯数字
   motion: 'full',         // full | less（少动效：只留淡入淡出）
+  textSize: 'std',        // std 标准 | large 大 | xlarge 特大（正文四阶字号的倍数，见 kit/tokens.css --fs-k）
   musicVolume: 0.6,
   soundVolume: 0.8
 };
+
+const TEXT_K = { std: 1, large: 1.12, xlarge: 1.25 };
 
 let values = { ...DEFAULTS };
 
@@ -42,6 +45,7 @@ function applySideEffects() {
   setNumeralStyle(values.numerals);
   const reduce = values.motion === 'less' || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   document.documentElement.dataset.motion = reduce ? 'less' : 'full';
+  document.documentElement.style.setProperty('--fs-k', String(TEXT_K[values.textSize] || 1));
 }
 
 export function installSettings() {

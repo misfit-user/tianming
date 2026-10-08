@@ -8,6 +8,12 @@
 .gw-tabs i { grid-area: g; width: 1.625rem; height: 1.625rem; display: grid; place-items: center; font: normal 400 var(--fs-3)/1 var(--f-title); color: #f9ead2; background: #8a3048; }
 .gw-tabs b { grid-area: b; font-weight: 400; font-size: var(--fs-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gw-tabs small { grid-area: n; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; }
+/* 窄屏（左页不足 250 像素）：字号有像素下限，页签容不下题字小方块和名目——收起小方块，名目不致截成「后…」 */
+.gw-tabs { container-type: inline-size; }
+@container (max-width: 250px) {
+  .gw-tabs button { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'b' 'n'; text-align: center; }
+  .gw-tabs i { display: none; }
+}
 
 .gw-list { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .1875rem; padding-right: .25rem; scrollbar-width: thin; scrollbar-color: rgba(120, 60, 30, .45) transparent; }
 .gw-grp { margin: .5rem 0 .125rem; padding-bottom: .125rem; font: var(--fs-1) var(--f-title); letter-spacing: .3em; color: #8a3048; border-bottom: 1px dashed rgba(138, 48, 72, .35); }

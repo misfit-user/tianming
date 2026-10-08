@@ -101,11 +101,11 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-zhang { display: flex; align-items: center; gap: .5625rem; padding-left: .75rem; border-left: 1px solid var(--gold-faint); }
 .q-zhang > em { writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); font-style: normal; letter-spacing: .28em; }
 .q-zhang > ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
-.q-zhang li { display: flex; align-items: baseline; gap: .3125rem; font-size: .875rem; line-height: 1.125rem; white-space: nowrap; }
+.q-zhang li { display: flex; align-items: baseline; gap: .3125rem; font-size: max(.875rem, 11px); line-height: 1.125rem; white-space: nowrap; }
 .q-zhang li > i { font-style: normal; font-size: var(--fs-1); color: var(--gold); }
 .q-zhang li > b { font-weight: 400; color: #f6ecd8; letter-spacing: .04em; }
-.q-zhang li > u { text-decoration: none; font-size: .6875rem; color: var(--ivory-soft); margin-left: -.1875rem; }
-.q-zhang li > s { text-decoration: none; font-size: .6875rem; color: var(--loss); }
+.q-zhang li > u { text-decoration: none; font-size: max(.6875rem, 9.5px); color: var(--ivory-soft); margin-left: -.1875rem; }
+.q-zhang li > s { text-decoration: none; font-size: max(.6875rem, 9.5px); color: var(--loss); }
 .q-zhang li > s.up { color: var(--gain); }
 
 /* ---------- 九品刻度 ---------- */
@@ -133,7 +133,7 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-keben::before { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(42, 29, 20, .6); pointer-events: none; }
 .q-keben > h3 { margin: 0 0 0 .5rem; padding: 1.625rem 0 0; font: 400 1.6875rem/2.125rem var(--f-print); letter-spacing: .3em; background: var(--yuwei) 50% .25rem / 1.625rem .8125rem no-repeat; flex: none; }
 .q-keben > p { margin: 0; font: 1rem/2rem var(--f-print); letter-spacing: .1em; border-left: 1px solid rgba(42, 29, 20, .35); padding: 0 1px; }
-.q-keben > p > em { font-style: normal; display: inline-block; width: 1.1875rem; height: 1.1875rem; text-align: center; background: var(--verm); color: #fbeee0; font: .6875rem/1.1875rem var(--f-kai); margin-bottom: .4375rem; letter-spacing: 0; }
+.q-keben > p > em { font-style: normal; display: inline-block; width: 1.1875rem; height: 1.1875rem; text-align: center; background: var(--verm); color: #fbeee0; font: max(.6875rem, 10px)/1.1875rem var(--f-kai); margin-bottom: .4375rem; letter-spacing: 0; }
 .q-keben > p.soft > em { background: #7c6a4f; }
 
 /* ---------- 笺：朱丝栏竖写小笺 ---------- */
@@ -144,7 +144,7 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-jian > .c.t { font: 400 1.625rem/2.125rem var(--f-title); letter-spacing: .2em; }
 .q-jian > .c.s { font-size: var(--fs-1); color: var(--ink-soft); }
 .q-jian > .c.bad, .q-jian > .c.w { color: var(--verm); }
-.q-jian > .c.w { font-size: .875rem; white-space: normal; }
+.q-jian > .c.w { font-size: calc(max(.875rem, 12px) * var(--fs-k)); white-space: normal; }
 
 /* ---------- 卷：展卷对话框（手卷左右两轴，展开时两轴分开） ---------- */
 .q-juan-veil { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 50%, rgba(14, 7, 3, .35), rgba(14, 7, 3, .72));
@@ -194,7 +194,7 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-kaiguan > input { position: absolute; opacity: 0; width: 0; height: 0; }
 .q-kaiguan > .cao { position: relative; width: 3rem; height: 1.25rem; border-radius: .625rem; background: linear-gradient(180deg, #0c0604, #24150d);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, .8), 0 1px 0 rgba(236, 210, 154, .2), 0 0 0 1px rgba(201, 164, 92, .45); }
-.q-kaiguan > .cao::before, .q-kaiguan > .cao::after { position: absolute; top: 50%; transform: translateY(-50%); font: .625rem/1 var(--f-kai); color: rgba(236, 210, 154, .55); }
+.q-kaiguan > .cao::before, .q-kaiguan > .cao::after { position: absolute; top: 50%; transform: translateY(-50%); font: max(.625rem, 9px)/1 var(--f-kai); color: rgba(236, 210, 154, .55); }
 .q-kaiguan > .cao::before { content: '否'; right: .4375rem; }
 .q-kaiguan > .cao::after { content: '是'; left: .4375rem; opacity: 0; }
 .q-kaiguan > .cao > i { position: absolute; left: .125rem; top: .125rem; width: 1rem; height: 1rem; border-radius: 50%;

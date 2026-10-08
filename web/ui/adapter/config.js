@@ -192,15 +192,29 @@ const TOGGLES = [
     ['talentCohortEnabled', '人才范式渗透', false]
   ]]
 ];
+// 本局开关：存在档里（GM），只在局中列出；走内核 tm-battle-turn.js 的设置处理器（会出提示）
+const GAME_TOGGLES = ['战事（本局）', [
+  ['game:_yujiaQinzheng', '御驾亲征·战术战斗（直辖军接敌可亲操此战）', '_tmSetYujiaQinzheng'],
+  ['game:_yujiaObserve', '他方战事旁观（回合末可遣人观之，不改战果）', '_tmSetYujiaObserve']
+]];
 export function toggles() {
   const c = conf();
   const master = w.TM && w.TM.OfficeFlags && typeof w.TM.OfficeFlags.masterOn === 'function' ? () => w.TM.OfficeFlags.masterOn() : null;
-  return TOGGLES.map(([group, rows]) => ({
+  const out = TOGGLES.map(([group, rows]) => ({
     group,
     rows: rows.map(([key, label, def]) => ({ key, label, on: key === 'officeActivationEnabled' && master ? !!master() : c[key] === undefined ? def : !!c[key] }))
   }));
+  const g = w.GM;
+  if (g && g.running) out.unshift({ group: GAME_TOGGLES[0], rows: GAME_TOGGLES[1].filter(([, , f]) => typeof w[f] === 'function').map(([key, label]) => ({ key, label, on: !!g[key.slice(5)] })) });
+  return out.filter((x) => x.rows.length);
 }
 export function setToggle(key, on) {
+  const game = GAME_TOGGLES[1].find(([k]) => k === key);
+  if (game) {
+    if (typeof w[game[2]] !== 'function') throw new Error('内核缺战事开关');
+    w[game[2]](!!on);
+    return;
+  }
   if (typeof w._togglePConf !== 'function') throw new Error('内核缺 _togglePConf');
   w._togglePConf(key, !!on);
 }

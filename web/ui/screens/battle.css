@@ -1,0 +1,47 @@
+/* 战事三卷：请旨（彼此兵力、庙算把握、亲征与委之三策）、会战战报（各军损余、主将、补员）、他方战事 */
+/* 战场页留在 body 里（挪进新前端根节点 iframe 会重载）；index.html 那条「body 下除新前端根节点外一律不显」要为它让路 */
+html.tm-newui body > div#tm-battle-overlay { display: block !important; }
+
+.bt-ask { display: flex; flex-direction: column; gap: .875rem; }
+.bt-sides { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .75rem; }
+.bt-sides > i { font: normal 400 var(--fs-4) var(--f-title); color: var(--ink-faint); }
+.bt-side { display: flex; flex-direction: column; align-items: center; gap: .125rem; padding: .5rem; background: rgba(255, 250, 238, .55); }
+.bt-side.us { box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .3); }
+.bt-side.them { box-shadow: inset 0 -.1875rem 0 #3b4a5c, inset 0 0 0 1px rgba(59, 74, 92, .3); }
+.bt-side small { font: var(--fs-1) var(--f-title); letter-spacing: .3em; color: var(--ink-faint); }
+.bt-side b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .05em; }
+.bt-side.us b { color: #7d1d12; } .bt-side.them b { color: #2f3d4e; }
+.bt-side span { font-size: var(--fs-2); color: var(--ink-soft); }
+.bt-odds { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: .625rem; font-size: var(--fs-2); }
+.bt-odds .meter { height: .4375rem; background: rgba(59, 74, 92, .35); }
+.bt-odds .meter u { display: block; height: 100%; background: linear-gradient(90deg, #7d1d12, #c4553a); }
+.bt-odds b { font: 400 var(--fs-4) var(--f-title); }
+.bt-odds em { font-style: normal; padding: 0 .375rem; font: var(--fs-2)/1.7 var(--f-title); letter-spacing: .15em; color: #f9ead2; background: #9a8f78; }
+.bt-odds.up em { background: #3f6e5e; } .bt-odds.down em { background: #a3301f; }
+.bt-main, .bt-delegate button { display: flex; flex-direction: column; align-items: center; gap: .125rem; border: 0; cursor: pointer; font-family: var(--f-kai); }
+.bt-main { padding: .75rem; color: #f9ead2; background: linear-gradient(180deg, #b13423, #7d1d12); box-shadow: inset 0 0 0 1px rgba(249, 234, 210, .35); }
+.bt-main b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .4em; }
+.bt-main small { font-size: var(--fs-2); opacity: .85; }
+.bt-delegate { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.bt-delegate button { padding: .5rem .375rem; color: var(--ink); background: rgba(255, 250, 238, .65); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35); }
+.bt-delegate button:hover, .bt-main:hover { filter: brightness(1.06); }
+.bt-delegate b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .1em; color: #6a1f12; }
+.bt-delegate small { font-size: var(--fs-1); line-height: 1.5; color: var(--ink-faint); text-align: center; }
+
+.bt-report { display: flex; flex-direction: column; gap: .5rem; }
+.bt-army { padding: .5rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6a4a2a; }
+.bt-army.gone { box-shadow: inset .1875rem 0 0 #a3301f; }
+.bt-army header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .875rem; }
+.bt-army header b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .08em; }
+.bt-army header span { font-size: var(--fs-3); color: var(--ink-soft); white-space: nowrap; }
+.bt-army em.lost { font-style: normal; color: #a3301f; }
+.bt-fate { margin: .25rem 0 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.bt-fate.hurt { color: #8a6a2a; } .bt-fate.lost { color: #a3301f; }
+.bt-fill { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-top: .375rem; }
+.bt-fill button { padding: .1875rem .625rem; border: 0; cursor: pointer; font: var(--fs-2)/1.7 var(--f-kai); color: var(--ink); background: rgba(255, 252, 244, .85); box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .45); }
+.bt-fill button:first-child { box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .45), inset .1875rem 0 0 #3f6e5e; }
+.bt-fill button:disabled { opacity: .45; cursor: default; }
+.bt-fill small { font-size: var(--fs-1); color: var(--ink-faint); }
+
+.bt-observe { display: flex; flex-direction: column; gap: .375rem; }
+.bt-obs { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .375rem .5rem; font-size: var(--fs-3); background: rgba(255, 250, 238, .5); }

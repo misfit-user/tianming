@@ -24,6 +24,7 @@ import { createWenyuan } from './wenyuan.js';
 import { createKeju } from './keju.js';
 import { createGaizhi } from './gaizhi.js';
 import { createTurnVeil } from './turnveil.js';
+import { createBattle } from './battle.js';
 import { createKeyi } from './keyi.js';
 import { createWentian } from './wentian.js';
 import { createGongwei } from './gongwei.js';
@@ -113,6 +114,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
 
   root.append(el, mapEl);
   const turnVeil = createTurnVeil({ root, game });   // 推演幕：过回合时铺满全屏（screens/turnveil.js）
+  createBattle({ game });                             // 战事三卷：会战阶段的请旨、战报、旁观（推演中弹出，压在推演幕上）
 
   function furnish() {
     replaceChildren(rail, prof.books.map(([ch, name, key]) => wadang({ ch, name, onclick: () => onBook(key, name) })));

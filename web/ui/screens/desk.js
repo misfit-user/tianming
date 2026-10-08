@@ -328,6 +328,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       if (!due && tagEl) tagEl.remove();
       kw.title = due ? `${kb[1]} · ${game.keju.STAGES_NEED[due] || '待定夺'}` : '';
     }
+    gaizhiPage.inheritance();                        // 新朝承前一卷若被换场收掉而未阅，回到书案再展
   }
 
   // 一件时政写成一张花笺：题取首句（至多六字），正文拆成三短行（每行至多八字）
@@ -475,7 +476,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onReform: () => { if (!readOnly()) gaizhiPage.show(); } });
   // 改制册叠在科举册之上：开时收起科举册，合时（含付科议）再展开——科议开成则由科议场景收放
   // 召史策对时改制册暂收、不展科举册（召对场景接手，问毕 audiencePage 的 onClose 里 resume 复开改制册）
-  const gaizhiPage = createGaizhi({ root, game, onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: (why) => { if (why !== 'cedui') kejuPage.show(); } });
+  const gaizhiPage = createGaizhi({ root, game, profile: () => prof, seated: () => el.classList.contains('on'), onPerson: (name) => bioPage.show(name), onOpen: () => kejuPage.hide(), onClose: (why) => { if (why !== 'cedui') kejuPage.show(); } });
   let keyiFromBook = false;
   const keyiPage = createKeyi({ root, study, game, profile: () => prof,
     onOpen: () => { keyiFromBook = kejuPage.opened; kejuPage.hide(); el.classList.remove('on'); },
@@ -563,6 +564,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('game:entered', () => loadWorld().then(refresh)));
+      gaizhiPage.inheritance();                      // 开局幕里就断下的新朝承前，落座后展
     },
     hide() {
       el.classList.remove('on');

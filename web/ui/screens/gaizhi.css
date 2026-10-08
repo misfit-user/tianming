@@ -241,3 +241,23 @@
   .kg-subj { grid-template-columns: 4rem minmax(0, 1fr) 3rem 3.5rem 2rem; }
   .kg-subj .kg-range { grid-column: 1 / -1; grid-row: 2; }
 }
+
+/* 新朝承前（开局时一卷）：上半前朝所改，下半本朝所断——一方大印（承青、反朱、折赭）领起断语与文告 */
+.kg-inh { display: flex; flex-direction: column; gap: .875rem; }
+.kg-inh small { font: var(--fs-1) var(--f-title); letter-spacing: .3em; color: var(--ink-faint); }
+.kg-inh-prev { display: flex; flex-direction: column; gap: .25rem; padding: .625rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6a4a2a, inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.kg-inh-prev header { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; }
+.kg-inh-prev header b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .08em; color: #4a3220; }
+.kg-inh-prev header span { font-size: var(--fs-2); color: var(--ink-soft); }
+.kg-inh-prev p { margin: 0; font-size: var(--fs-3); line-height: 1.85; }
+.kg-inh-prev .kg-inh-added { font-size: var(--fs-2); color: var(--ink-soft); }
+.kg-inh-now { --inh: #9a7a32; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .875rem; }
+.kg-inh-now.inherit { --inh: #3f6e5e; }
+.kg-inh-now.reject { --inh: #a3301f; }
+.kg-inh-seal { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; margin-top: .25rem; font: normal 400 var(--fs-7) var(--f-title); color: #f9ead2;
+  background: var(--inh); box-shadow: inset 0 0 0 .1875rem rgba(249, 234, 210, .4), 0 .125rem .375rem rgba(60, 30, 10, .25); transform: rotate(-4deg); }
+.kg-inh-now > div { display: flex; flex-direction: column; gap: .125rem; }
+.kg-inh-now b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .3em; color: var(--inh); }
+.kg-inh-edict { margin: .375rem 0 0; padding: .5rem .75rem; font: var(--fs-3)/2 var(--f-kai); white-space: pre-wrap; background: rgba(255, 252, 244, .7); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.kg-inh-why { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ink-soft); }
+.kg-inh-count { margin: 0; padding-top: .5rem; font-size: var(--fs-3); color: #4a3220; border-top: 1px solid rgba(120, 90, 50, .22); }

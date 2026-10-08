@@ -12,7 +12,7 @@ const zh = (s) => String(s || '').replace(/\d+/g, (m) => num(Number(m)));
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const TABS = ['zhi', 'ke', 'qi', 'sheng', 'kao', 'qu', 'guan', 'shen', 'li', 'yi'];
 
-export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
+export function createGaizhi({ root, game, profile, seated, onOpen, onClose, onPerson }) {
   const Z = game.gaizhi;
   let d = null;              // 草稿
   let tab = 'zhi';
@@ -484,6 +484,30 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
   });
   bus.on('ui:gaizhi', () => show());
 
+  // 新朝承前：开局时内核断下本朝对前朝改制承袭与否，展一卷；开局幕里就断下的，等落座书案再展。卷被别处收掉而未阅，下回落座再展
+  let inhJuan = null;
+  function inheritance() {
+    const x = Z.pendingInheritance();
+    if (!x || inhJuan || !(seated && seated())) return;
+    const ack = (profile && profile() && profile().urgentAck) || '知道了';
+    const year = x.year ? (x.year < 0 ? `前${zh(-x.year)}年` : `${zh(x.year)}年`) : '';
+    const count = x.inherited.length ? `实承${zh(x.inherited.length)}科：${x.inherited.join('、')}`
+      : x.mode === 'reject' ? '前朝所增诸科，一概不承' : '前朝所增诸科，本朝已有，无可再承';
+    inhJuan = juan({ title: '新朝承前', note: x.era ? `前朝 · ${x.era}` : '前朝改制', width: '36rem', closable: false,
+      content: h('div.kg-inh',
+        h('section.kg-inh-prev', h('small', '前朝所改'), h('header', h('b', x.name), h('span', [x.name.startsWith(x.by) ? '' : x.by, year].filter(Boolean).join(' · '))),
+          x.judged ? h('p', x.judged) : null,
+          x.added.length ? h('p.kg-inh-added', `所增诸科：${x.added.join('、')}`) : null),
+        h('section.kg-inh-now.' + (x.mode || 'compromise'), h('i.kg-inh-seal', x.modeName.slice(0, 1)),
+          h('div', h('small', '本朝所断'), h('b', x.modeName),
+            x.edict ? h('p.kg-inh-edict', x.edict) : null,
+            x.why ? h('p.kg-inh-why', x.why) : null)),
+        h('p.kg-inh-count', count)),
+      actions: [{ label: ack, onclick: ({ close }) => { close('ok'); Z.ackInheritance(); } }] });
+    inhJuan.closed.then(() => { inhJuan = null; });
+  }
+  bus.on('gaizhi:inheritance', () => inheritance());
+
   function render() { renderLeft(); renderRight(); }
   function show() {
     const ok = Z.available();
@@ -505,5 +529,5 @@ export function createGaizhi({ root, game, onOpen, onClose, onPerson }) {
     if (!opened || document.querySelector('.q-juan-veil')) return;
     if (e.key === 'Escape' && !/^(INPUT|TEXTAREA)$/.test((document.activeElement || {}).tagName || '')) { e.stopPropagation(); hide(); }
   }, true);
-  return { show, hide, resume, get opened() { return opened; } };
+  return { show, hide, resume, inheritance, get opened() { return opened; } };
 }

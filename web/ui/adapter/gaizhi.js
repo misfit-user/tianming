@@ -540,3 +540,62 @@ export function submit(d, text) {
   if (!asked) { sent = null; throw new Error('科议未能开'); }
   return true;
 }
+
+// ---------- 新朝承前 ----------
+// 开局时本机若存着时代更早的一局里已成的改制（L8 存在 localStorage），内核请 AI 断本朝承袭、反对还是折中，科目随之增删，
+// 断毕 L11 弹一框（#kjp-l11-inh-modal）细说，点「知道了」才记下 __inheritanceAnnounced，不点则下回开局再弹。
+// 这里包 _kjpL11RenderInheritanceModal：老框照弹（开关、去重、收口都由它），认领藏起；所传的前朝档与本朝所断另画一卷，收卷时转点老框的「知道了」。
+export const INHERIT_MODE = { inherit: '承袭', reject: '反对', compromise: '折中' };
+const INH_ID = 'kjp-l11-inh-modal';
+let inheritance = null;
+claimOverlays((n) => n.id === INH_ID);
+// 无 AI 时内核的兜底写「(无 LLM·默 compromise·留半数)」「诏曰·前朝改革有得有失·朕酌行之·钦此」这类开发者口吻，不照搬
+const devText = (s) => /LLM|compromise|inherit|reject/i.test(String(s || ''));
+function edictText(v) {
+  const t = String(v.edict || '').trim();
+  if (!devText(v.rationale)) return t;
+  return t.replace(/^诏曰·/, '诏曰：').replace(/·钦此$/, '。钦此。').replace(/·/g, '，');
+}
+function inheritanceOf(verdict, archive) {
+  const paradigm = G()._kejuParadigm || {};
+  return {
+    era: String(archive.era || ''),
+    name: archive.canonicalName || (archive.emperor ? `${archive.emperor}改制` : '前朝改制'),
+    by: String(archive.emperor || ''),
+    year: n0(archive.year),
+    judged: devText(archive.historicalEvaluation) ? '' : String(archive.historicalEvaluation || ''),
+    added: (archive.addedSubjectNames || []).filter(Boolean),
+    mode: verdict.mode,
+    modeName: INHERIT_MODE[verdict.mode] || '酌定',
+    edict: edictText(verdict),
+    why: devText(verdict.rationale) ? '' : String(verdict.rationale || ''),
+    kept: verdict.mode === 'compromise' ? (verdict.keepSubjects || []).filter(Boolean) : [],
+    inherited: (paradigm.subjects || []).filter((s) => s && s._inheritedFrom === archive.archiveKey).map((s) => s.name).filter(Boolean)
+  };
+}
+function installInheritance() {
+  const f = w._kjpL11RenderInheritanceModal;
+  if (typeof f !== 'function' || f.__newui) return;
+  const wrapped = function (verdict, archive) {
+    const r = f.apply(this, arguments);
+    if (verdict && archive && document.getElementById(INH_ID)) {
+      inheritance = inheritanceOf(verdict, archive);
+      bus.emit('gaizhi:inheritance', inheritance);
+    }
+    return r;
+  };
+  wrapped.__newui = true;
+  w._kjpL11RenderInheritanceModal = wrapped;
+}
+installInheritance();
+bus.on('kernel:ready', installInheritance);
+// 开局幕里就断下来、卷还没人接时，书案起来后可取
+export function pendingInheritance() {
+  return inheritance && document.getElementById(INH_ID) ? inheritance : null;
+}
+export function ackInheritance() {
+  inheritance = null;
+  const node = document.getElementById(INH_ID);
+  const b = node && node.querySelector('.kjp-l11-inh-ack-btn');
+  if (b) b.click(); else if (node) node.remove();
+}

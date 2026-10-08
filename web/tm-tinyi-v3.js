@@ -2503,13 +2503,13 @@ function _ty3_phase1_openSeating(topic, meta) {
 
 function _ty3_renderBench(side, label, items, sumInfl) {
   var html = '<div class="ty3-st-bench ty3-st-bench-' + side + '">';
-  html += '<div class="ty3-st-bench-head">' + escHtml(label) + '<span class="ty3-st-bench-count">' + items.length + ' officials, influence ' + sumInfl + '</span></div>';
+  html += '<div class="ty3-st-bench-head">' + escHtml(label) + '<span class="ty3-st-bench-count">' + items.length + '人 · 势' + sumInfl + '</span></div>';
   if (items.length === 0) {
     html += '<div class="ty3-st-bench-empty">（无人）</div>';
   } else {
     var byParty = {};
     items.forEach(function(it) {
-      var key = it.party || 'No Party';
+      var key = it.party || '无党';
       if (!byParty[key]) byParty[key] = [];
       byParty[key].push(it);
     });

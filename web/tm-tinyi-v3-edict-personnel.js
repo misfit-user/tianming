@@ -96,17 +96,16 @@ function _ty3_phase5_openDraftPicker(decision, archonGrade, opts) {
   document.body.appendChild(bg);
 }
 
+// 草诏底稿：AI 未另拟时即以此为正文，随用印存进诏令——只写玩家读得懂的事由、所议、草诏之人（内部档次 grade、朝代键 dynasty 不入正文）
+var _TY3_DRAFT_MODE_LABEL = { 'majority': '从众议', 'override': '乾纲独断', 'mediation': '居中调停', 'defer': '暂且留中', 'qinding': '钦定', 'public': '付公议', 'reissue': '再颁' };
 function _ty3_buildDraftEdictBody(decision, grade, drafterName, dynasty) {
   var topic = (CY._ty2 && CY._ty2.topic) || (CY._ty3 && CY._ty3.topic) || '';
-  var mode = decision && decision.mode ? decision.mode : 'unknown';
-  var dyn = dynasty || (typeof _ty3_phase6_resolveDynasty === 'function' ? _ty3_phase6_resolveDynasty() : 'default');
+  var how = decision && _TY3_DRAFT_MODE_LABEL[decision.mode];
   return [
-    'Draft decree',
-    'Topic: ' + topic,
-    'Grade: ' + (grade || 'C'),
-    'Mode: ' + mode,
-    'Dynasty: ' + dyn,
-    drafterName ? ('Drafter: ' + drafterName) : ''
+    '奉旨草诏',
+    topic ? ('事由：' + topic) : '',
+    how ? ('所议：' + how) : '',
+    drafterName ? ('草诏：' + drafterName) : ''
   ].filter(Boolean).join('\n');
 }
 
@@ -311,6 +310,22 @@ function _ty3_collectOfficeHolderNames() {
   return Object.keys(byName);
 }
 
+// 廷推只推外朝可任之臣：须是本朝人物；后妃宗室（occupation 皇室）不推；内廷宦官与无外朝官身的女子（乳母、命妇）不推外朝官——
+// 先前只筛在世、非玩家，兵部左侍郎的候选里出过客氏、懿安皇后，中立一池还会混进外国君主与福晋
+var _TY3_INNER_RE = /宦|内官|内侍|中官|太监|司礼|掌印|秉笔|东厂/;
+function _ty3_outerCourtNominee(c, targetOffice) {
+  if (!c || c.alive === false || c.isPlayer) return false;
+  if (typeof _isPlayerFactionChar === 'function' && !_isPlayerFactionChar(c)) return false;
+  var occ = String(c.occupation || '');
+  if (occ === '皇室') return false;
+  var office = String(targetOffice || '');
+  var eunuchPost = /司礼|内官|内侍|太监|东厂/.test(office);   // 拟补的本是宦官之职：宦官可推
+  var palacePost = /尚宫|女官|宫正/.test(office);              // 拟补的本是宫中女官之职：宫中女子可推
+  if (!eunuchPost && _TY3_INNER_RE.test(occ + '|' + String(c.role || '') + '|' + String(c.officialTitle || c.title || ''))) return false;
+  if (c.gender === '女' && !palacePost && !/文官|武官/.test(occ)) return false;
+  return true;
+}
+
 function _ty3_phase3_buildCandidates(targetOffice, meta) {
   var byParty = {};
   var isImpeachment = !!(meta && (meta.kind === 'impeachment' || meta.topicType === 'impeachment' || meta.isAccusation));
@@ -321,7 +336,7 @@ function _ty3_phase3_buildCandidates(targetOffice, meta) {
     if (!p || !p.name) return;
     var leader = _ty3_getPartyLeader(p.name);
     var members = _ty3_getPartyMembers(p.name).filter(function(c) {
-      if (!c || c.alive === false || c.isPlayer) return false;
+      if (!_ty3_outerCourtNominee(c, targetOffice)) return false;
       if (accusedNames.indexOf(c.name) >= 0) return false;
       if (officeHolderAllow && officeHolderAllow.indexOf(c.name) < 0) return false;
       return true;
@@ -345,7 +360,7 @@ function _ty3_phase3_buildCandidates(targetOffice, meta) {
   });
 
   var neutralPool = (GM.chars || []).filter(function(c) {
-    if (!c || c.alive === false || c.isPlayer) return false;
+    if (!_ty3_outerCourtNominee(c, targetOffice)) return false;
     if (c.party) return false;
     if (accusedNames.indexOf(c.name) >= 0) return false;
     if (officeHolderAllow && officeHolderAllow.indexOf(c.name) < 0) return false;
@@ -386,7 +401,7 @@ function _ty3_phase3_open(targetOffice, callback, meta) {
   var html = '<div class="ty3-tj-modal">';
   html += '<div class="ty3-tj-title">〔 廷 推 候 选 〕</div>';
   if (targetOffice) html += '<div class="ty3-tj-target">拟补：' + escHtml(targetOffice) + '</div>';
-  if (meta && (meta.kind === 'impeachment' || meta.topicType === 'impeachment')) html += '<div class="ty3-tj-target">弹劾后续追责·罪状：oose a replacement office holder.</div>';
+  if (meta && (meta.kind === 'impeachment' || meta.topicType === 'impeachment')) html += '<div class="ty3-tj-target">弹劾既定·所劾者去职·另推贤能补缺</div>';
   html += '<div class="ty3-tj-cands">';
   entries.forEach(function(pair) {
     var pName = pair[0];
@@ -743,6 +758,7 @@ function _ty3_recordCourtOutcomeRecord(seal, meta, ctx) {
 function _ty3_phase6_recordSeal(status, ctx, detail) {
   ctx = ctx || {};
   detail = detail || {};
+  if (!CY._ty3) CY._ty3 = {};   // ty2 筹备的廷议不建 CY._ty3；照 _ty3_recordTinyiDraft 补空壳，免得下面写印信状态时抛错
   var grade = ctx.grade || CY._ty3_archonGrade || 'C';
   var topic = (ctx.opts && ctx.opts.topic) || (CY._ty2 && CY._ty2.topic) || (CY._ty3 && CY._ty3.topic) || '';
   var sourceParty = (ctx.opts && ctx.opts.proposerParty) || (CY._ty3 && CY._ty3.proposerParty) || '';

@@ -8895,6 +8895,8 @@
       "platform": "any",
       "sideEffects": "legacy-unknown",
       "provides": [
+        "_TY3_DRAFT_MODE_LABEL",
+        "_TY3_INNER_RE",
         "_ty2_enterDecide",
         "_ty3_advanceToSeal",
         "_ty3_buildDraftEdictBody",
@@ -8909,6 +8911,7 @@
         "_ty3_impeachmentAccusedNames",
         "_ty3_isControversial",
         "_ty3_isHaremTitle",
+        "_ty3_outerCourtNominee",
         "_ty3_phase1_cancel",
         "_ty3_phase1_openSeating",
         "_ty3_phase1_startDebate",

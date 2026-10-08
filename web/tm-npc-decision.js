@@ -268,6 +268,10 @@ function _getNpcDecisionBatchPersonaMaxLen() {
 async function npcDecisionLayer(npc, context) {
   var ledger=TM.NPC.ActionLedger, lease=ledger.capture(), budget=ledger.state(GM);
   if(!npc || npc.isPlayer || !P.ai || !P.ai.key)return null;
+  // Ordinary activities already have a deterministic owner.  The legacy
+  // single-NPC model fallback must not clone a local request merely because
+  // an API key is configured; complex/unmanaged due plans still use this path.
+  if (TM.NPC.LocalAI && typeof TM.NPC.LocalAI.localOnlyDue === 'function' && TM.NPC.LocalAI.localOnlyDue(npc)) return null;
   if(budget.modelTurn!==GM.turn){budget.modelTurn=GM.turn;budget.modelCalls=0;}
   if(budget.modelCalls>=3)return null;
   var decisions=await batchNpcDecisions([npc],buildNpcBehaviorContext(npc),{privateActorId:npc.id});

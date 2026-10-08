@@ -92,6 +92,63 @@ module.exports=async function({win,check,results}){
    const r=await js(`(async()=>{const save=_buildSaveState({format:'project',detach:true}),saved=await tianming.saveProject('日常往来隔离验收',save);if(!saved.success)throw Error(saved.error);const listing=await tianming.listSaves(),row=listing.files.find(x=>x.storageKey===saved.storageKey),loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error);await fullLoadGame(loaded.data,{source:'daily-local-browser',preserveTimeline:true});return{plans:TM.NPC.DailyActivities.plans().map(p=>({id:p.id,status:p.status,messages:p.messages.length})),turn:GM.turn,api:__dailyBrowser.apiAttempts};})()`);
    assert.deepEqual(r.plans,beforePlans,'save/load must preserve every original matter, phase and message count');assert(r.plans.every(p=>p.status==='done'));assert.equal(r.turn,1);assert.deepEqual(r.api,[]);
  });
+ await check('formal daily page creates a sourced consultation without hand-written localGoals',async()=>{
+   // Release the first-turn activity budget through the cumulative clock fixture.
+   // The complete production endTurn transaction is covered by the office-duty bridge gate.
+   await js(`(()=>{const interval=TM.SimTime.prepare(GM);TM.SimTime.commit(GM,interval);GM.turn=2;})()`);
+   // Open an ordinary NPC's人物志 as the formal recipient entry.  The player
+   // dossier intentionally has no outbound letter button; the daily panel
+   // still uses the current player as its actor after this target entry.
+   await js(`(()=>{openCharRenwuPage('周季平');})()`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
+   await js(`(()=>{const panel=document.querySelector(${JSON.stringify(panel)}),target=panel.querySelector('#daily-target'),topic=panel.querySelector('#daily-consultation-topic');target.value='local-b';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='reading_understanding';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+   await click(panel+' [data-daily-new="consultation"]');
+   const r=await js(`(()=>{const p=TM.NPC.DailyActivities.plans().filter(p=>p.localActivity.kind==='consultation').slice(-1)[0];return{status:p&&p.status,source:p&&p.localActivity.sourceOpportunity,topic:p&&p.localActivity.topicId,plans:TM.NPC.DailyActivities.plans().length,api:__dailyBrowser.apiAttempts};})()`);
+   assert(r.source&&r.source.kind==='document'&&r.topic==='reading_understanding',JSON.stringify(r));assert.deepEqual(r.api,[]);
+   const saved=await js(`(async()=>{const x=await tianming.saveProject('请益切磋阶段隔离验收',_buildSaveState({format:'project',detach:true}));if(!x.success)throw Error(x.error);const list=await tianming.listSaves(),row=list.files.find(v=>v.storageKey===x.storageKey),loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error);await fullLoadGame(loaded.data,{source:'npc-life-consultation-reload',preserveTimeline:true});return{status:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='consultation').slice(-1)[0].status,source:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='consultation').slice(-1)[0].localActivity.sourceOpportunity};})()`);
+   assert(saved.source&&saved.status!=='done',JSON.stringify(saved));
+ });
+ await check('formal consultation completes one question and one bounded follow-up through top-level turns',async()=>{
+   // This fixture replaces only the external narrative inference boundary.
+   // The real end-turn preparation, SimTime commit, systems, NPC dispatch,
+   // save boundary and renderer controls remain active.
+   await js(`(()=>{
+     P.ai={key:'npc-life-fixture',url:'https://npc-life-fixture.invalid/v1',model:'fixture'};
+     window._endTurn_aiInfer=async function(){return{timeRatio:1,shizhengji:'按已知事项推进。',zhengwen:'按既定材料结算。',turnSummary:'日常往来',playerStatus:'办理中',playerInner:'继续处理当前事项。',shiluText:'本回合按已知事项推进。',szjTitle:'日常往来',szjSummary:'按既定材料推进。',hourenXishuo:'',personnelChanges:[],events:[{type:'npc-life-fixture',title:'日常往来',text:'按已知事项推进。'}],char_updates:[],office_assignments:[],fiscal_adjustments:[],changes:[],npc_actions:[],edictActions:{appointments:[],dismissals:[],deaths:[],armyBuilds:[],rewards:[],payArrears:[]}};};
+     if(TM.Endturn&&TM.Endturn.AI&&TM.Endturn.AI.subcalls&&typeof TM.Endturn.AI.subcalls.setupInfra==='function'){
+       const original=TM.Endturn.AI.subcalls.setupInfra;
+       TM.Endturn.AI.subcalls.setupInfra=function(ctx){const configured=original(ctx);ctx.subcalls=ctx.subcalls||{};ctx.subcalls._callEndturnAI=async function(){const parsed={turn_summary:'日常往来',shizhengji_basis:'既有事项材料',shilu_text:'本回合按已知事项推进。',szj_title:'日常往来',shizhengji:'按既定材料推进。',szj_summary:'按既定材料推进。',zhengwen:'按既定材料结算。',events:[{type:'npc-life-fixture',title:'日常往来',text:'按已知事项推进。'}],edict_feedback:[],office_assignments:[],personnel_changes:[],changes:[],resource_changes:{}};const raw=JSON.stringify(parsed),data={choices:[{message:{content:raw},finish_reason:'stop'}],usage:{prompt_tokens:1,completion_tokens:1,total_tokens:2}};return{data,raw,parse:{parsed,raw,repaired:false,truncated:false}};};return configured;};
+     }
+     window.scThreeSystemsAI=undefined;window.aiDigestLongTermActions=undefined;
+   })()`);
+   async function formalTurn(){
+     await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);await settle();
+     await click('#gs-turn-big');
+     await js(`(async()=>{for(let i=0;i<200&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing formal end-turn confirmation');ok.click();})()`);
+     await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt')&&typeof _postTurnCourtChoose==='function')_postTurnCourtChoose(false);})()`);
+     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal npc-life endTurn timeout'));return;}setTimeout(poll,100);})()})`);
+     await settle();
+     await js(`(async()=>{if(typeof _awaitPostTurnJobsById==='function')await _awaitPostTurnJobsById(['npc_behavior']);})()`);
+   }
+   async function lifeStatus(){return js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='consultation').slice(-1)[0];return p&&{id:p.id,status:p.status,next:p.nextActorId,messages:p.messages.map(m=>({kind:m.kind,status:m.status,from:m.fromId,to:m.toId})),follow:p.localActivity.followUp||null,result:p.localActivity.result||null};})()`);}
+   for(let i=0;i<8;i++){const s=await lifeStatus();if(!s||s.status==='awaiting_feedback'||s.status==='done')break;await formalTurn();}
+   let state=await lifeStatus();
+   assert(state&&state.status==='awaiting_feedback',JSON.stringify(state));
+   await js(`openCharRenwuPage('周季平')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
+   await click(panel+' [data-daily-answer="ask"]');
+   state=await lifeStatus();assert(state.status!=='done'&&state.follow&&state.follow.question,JSON.stringify(state));
+   const savedFollow=await js(`(async()=>{const x=await tianming.saveProject('请益追问正式恢复验收',_buildSaveState({format:'project',detach:true}));if(!x.success)throw Error(x.error);const list=await tianming.listSaves(),row=list.files.find(v=>v.storageKey===x.storageKey),loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error);const before=window._tmLoadGen||0;await fullLoadGame(loaded.data,{source:'npc-life-followup-reload',preserveTimeline:true});return{save:x.storageKey,before,after:window._tmLoadGen||0,status:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='consultation').slice(-1)[0].status};})()`);
+   assert(savedFollow.after>savedFollow.before&&savedFollow.status!=='done',JSON.stringify(savedFollow));
+   for(let i=0;i<8;i++){state=await lifeStatus();if(state.status==='awaiting_followup_response'||state.status==='awaiting_feedback'||state.status==='done')break;await formalTurn();}
+   state=await lifeStatus();
+   for(let i=0;i<8&&state.status!=='awaiting_feedback'&&state.status!=='done';i++){await formalTurn();state=await lifeStatus();}
+   assert(state.status==='awaiting_feedback'||state.status==='done',JSON.stringify(state));
+   if(state.status==='awaiting_feedback'){
+     await js(`openCharRenwuPage('周季平')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');await click(panel+' [data-daily-answer="reflect"]');
+     for(let i=0;i<4;i++){state=await lifeStatus();if(state.status==='done')break;await formalTurn();}
+   }
+   state=await lifeStatus();assert(state.status==='done'&&state.result&&state.result.followUp&&state.result.followUp.response,JSON.stringify(state));
+   results.push({name:'formal-consultation-followup-timeline',status:'PASS',value:{turn:await js('GM.turn'),state,savedFollow}});
+ });
  const observation=await js(`({apiAttempts:__dailyBrowser.apiAttempts,errors:__dailyBrowser.errors,turn:GM.turn,plans:TM.NPC.DailyActivities.plans().map(p=>({id:p.id,status:p.status,kind:p.localActivity.kind,steps:p.steps.length,messages:p.messages.length}))})`);
  assert.deepEqual(observation.apiAttempts,[],'even swallowed model calls fail this gate');
  assert.deepEqual(traffic,[],'even blocked external attempts fail the zero API workflow');

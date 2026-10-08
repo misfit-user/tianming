@@ -851,7 +851,7 @@ async function runActionReactions(action, item, extra) {
     // 该部主官发声（如是别部则附议·本部则受命）
     addBubble({ kind: 'system', text: '（' + (extra || '某部') + ' 主官出班受命：「臣即召集本部议覆 · 三日内回奏。」）' });
     await delay(380);
-    addBubble({ kind: 'system', text: '（事下 ' + (extra || '某部') + ' · 限期回奏 · GM.deptTasks +1）' });
+    addBubble({ kind: 'system', text: '（事下' + (extra || '某部') + ' · 限期回奏）' });
     return;
   }
   // ─── 下廷议 ───

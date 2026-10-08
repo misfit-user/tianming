@@ -321,13 +321,26 @@
     if (!g) return;
     if(g._npcActionState) {
       if(g._npcActionState.version!==2||!g._npcActionState.receipts||typeof g._npcActionState.receipts!=='object'||!g._npcActionState.schedule)throw Error('unsupported_or_invalid_npc_action_state');
+      if(!g._npcActionState.planning||typeof g._npcActionState.planning!=='object')g._npcActionState.planning={version:1,actors:{},pending:[],directions:{},sequence:0,diagnostics:[],logicalRequests:0,compatibilityRequests:0,modelAttempts:0};
+      else {
+        var existingPlanning=g._npcActionState.planning;
+        if(existingPlanning.version!==1)throw Error('unsupported_or_invalid_npc_planning_state');
+        if(!existingPlanning.actors||typeof existingPlanning.actors!=='object')existingPlanning.actors={};
+        if(!Array.isArray(existingPlanning.pending))existingPlanning.pending=[];
+        if(!existingPlanning.directions||typeof existingPlanning.directions!=='object')existingPlanning.directions={};
+        if(!Array.isArray(existingPlanning.diagnostics))existingPlanning.diagnostics=[];
+        if(!Number.isFinite(Number(existingPlanning.sequence)))existingPlanning.sequence=0;
+        if(!Number.isFinite(Number(existingPlanning.logicalRequests)))existingPlanning.logicalRequests=0;
+        if(!Number.isFinite(Number(existingPlanning.compatibilityRequests)))existingPlanning.compatibilityRequests=0;
+        if(!Number.isFinite(Number(existingPlanning.modelAttempts)))existingPlanning.modelAttempts=0;
+      }
       return;
     }
     var ledger = _arr(g._npcActionLedger).map(function(e) {
       if (e.schemaVersion === 2) return e;
       return Object.assign({}, e, { schemaVersion: 1, legacyStatus: e.status, status: 'legacy_reported' });
     });
-    var next = { version: 2, sequence: 0, receipts: {}, schedule: {} };
+    var next = { version: 2, sequence: 0, receipts: {}, schedule: {}, planning: { version: 1, actors: {}, pending: [], directions: {}, sequence: 0, diagnostics: [], logicalRequests: 0, compatibilityRequests: 0, modelAttempts: 0 } };
     // No old assertion of completion creates an operation, resource or penalty.
     g._npcActionLedger = ledger;
     g._npcActionState = next;
@@ -388,7 +401,7 @@
   }
   function executionSignature(d,actor) {
     var fields=['behaviorType','decision','content','intent','warId','casusBelli','cb','targetType','targetId','target','planId','response','positionId','fromPositionId','organizationId','actingPositionId','appointmentId','authorityRef','amount','fromAccount','toAccount','amounts','purpose','task','diplomacyAction','treatyId','proposalId','obligationId','proposalVersion','proposalType','type','terms','counterTerms','durationTurns','obligations','recipientId','successorId','toFactionId','targetOrganizationId','soldiersDelta','troopsDelta','moraleDelta','trainingDelta','destinationId','armyId','commandReceipt','destination','commanderId','commander','commandHandoverTo','casusBelliId','sourcePlanId','documentType','leaveId','delegationId','delegateId','scope','leaveKind','startDay','latestReturnDay','regionId','sourceRefs','documentId','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestVersion','decisionRef','allowPartial','subjectId','decisionBasis'];
-    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestKind','dutySource','requestVersion','decisionRef','allowPartial','subjectId','executionSpec']);
+    fields=fields.concat(['activityKind','thirdPartyId','expectedRevision','termsVersion','contactMode','sourceGoalId','consultation','sourceOpportunity','exchangeChoice','meeting','matterRef','materialRefs','basis','requestBasis','dutyRequest','requestKind','dutySource','requestVersion','decisionRef','allowPartial','subjectId','executionSpec']);
     var data={actorId:_str(actor.id)};fields.forEach(function(k){if(d[k]!=null&&d[k]!==''&&!(k==='target'&&d.targetId))data[k]=d[k];});
     return TM.PoliticalActions?TM.PoliticalActions.signature(data):JSON.stringify(data);
   }

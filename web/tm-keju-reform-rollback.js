@@ -434,10 +434,10 @@
     if (!reverseDiff) return;
 
     var radical = (targetEntry.magnitudeParsed && targetEntry.magnitudeParsed.radical) || 50;
-    var magnitudeDescriptor = '罢 ' + (targetEntry.canonicalName || targetEntry.magnitudeDescriptor || '改革') +
-                              '·' + (rollbackMode === 'partial' ? '部分回滚'
-                                   : rollbackMode === 'pivot'   ? '改革再造'
-                                   : '全面更化');
+    var magnitudeDescriptor = '议废' + (targetEntry.canonicalName || '前番改制') +
+                              '·' + (rollbackMode === 'partial' ? '罢其一部'
+                                   : rollbackMode === 'pivot'   ? '更化再造'
+                                   : '尽复旧制');
 
     var topicData = {
       topicType: 'reform',
@@ -644,8 +644,7 @@
     var prevName = archive.canonicalName ||
                    ((archive.emperor || '前主') + '改革') ||
                    '前朝改革';
-    var prevEval = archive.historicalEvaluation ||
-                   (archive.magnitudeDescriptor || '前朝改革') + '·后世评待补';
+    var prevEval = archive.historicalEvaluation || '';
     var modeLbl = ({ inherit:'承袭', reject:'反对', compromise:'折中' })[verdict.mode] || verdict.mode;
 
     // count subjects·实算 (post-inherit·paradigm.subjects 已更)
@@ -667,7 +666,7 @@
           '<div class="kjp-l11-inh-prev">' +
             '<b>前朝改革·</b>' + _escHtml(prevName) +
             ' (' + _escHtml(archive.emperor || '') + '·' + (archive.year || 0) + '年)' +
-            '<div class="kjp-l11-inh-eval">' + _escHtml(prevEval) + '</div>' +
+            (prevEval ? '<div class="kjp-l11-inh-eval">' + _escHtml(prevEval) + '</div>' : '') +
           '</div>' +
           '<div class="kjp-l11-inh-mode">' +
             '<b>本朝决议·</b><span class="kjp-l11-inh-mode-' +

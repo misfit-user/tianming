@@ -457,7 +457,7 @@
       if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_tier_change',
-        text: _getCurYear() + '·书院网络·tier ' + oldTier + ' → ' + newTier,
+        text: _getCurYear() + '年·天下书院' + (({ dominant: '讲学大兴', active: '渐兴', nascent: '寥落', banned: '尽遭禁毁' })[newTier] || '势有消长'),
         tags: ['书院', 'tier']
       });
     }
@@ -1069,7 +1069,7 @@
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: curTurn,
             type: 'lecture_meeting',
-            text: pending.year + '·' + pending.academyName + '·讲会 (记略散佚·LLM 失败)',
+            text: pending.year + '年·' + pending.academyName + '·讲会（记略散佚）',
             tags: ['书院', '讲会', 'fallback'],
             academyName: pending.academyName
           });
@@ -1241,7 +1241,7 @@
       if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_wendui_close',
-        text: _getCurYear() + '·' + leader.name + '·议书院·stance=' + stance,
+        text: _getCurYear() + '年·' + leader.name + '议书院·' + (stance === 'support_school' ? '主扶持' : stance === 'oppose_school' ? '主禁抑' : '主观望'),
         tags: ['书院', '问对', stance]
       });
     }
@@ -1349,7 +1349,7 @@
         if (Array.isArray(GM._chronicle)) {
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'school_promoted',
-            text: _getCurYear() + '·议·扶' + school + '·influence +10',
+            text: _getCurYear() + '年·议扶' + school + '·其学渐振',
             tags: ['书院', '扶'], academyName: school
           });
         }
@@ -1625,7 +1625,7 @@
         if (spawnedAcademy && Array.isArray(GM._chronicle)) {
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'feedback_literati_rise',
-            text: curY + '·朝政腐·士林讥·民间书院兴 (corruption ' + corruption + ', tension ' + tension + ')',
+            text: curY + '年·朝政腐·士林讥·民间书院兴',
             tags: ['书院', '反馈', '腐败', '党争']
           });
         }
@@ -1677,7 +1677,7 @@
       if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'school_watershed',
-        text: curY + '·watershed·' + ws.name,
+        text: curY + '年·书院世变·' + ws.name,
         tags: ['书院', 'watershed', ws.action || '']
       });
     }

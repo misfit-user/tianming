@@ -540,6 +540,7 @@ function _prepareGMForSave(GM, P, options) {
   if (P.vassalSystem) GM._savedVassalSystem = _safeClone(P.vassalSystem);
   if (P.titleSystem) GM._savedTitleSystem = _safeClone(P.titleSystem);
   if (P.buildingSystem) GM._savedBuildingSystem = _safeClone(P.buildingSystem);
+  if (P.palaceSystem) GM._savedPalaceSystem = _safeClone(P.palaceSystem);
   if (!skipMirrors._savedAdminHierarchy && P.adminHierarchy) GM._savedAdminHierarchy = _safeClone(P.adminHierarchy);
   if (P.keju) GM._savedKeju = _safeClone(P.keju);
   if (P.officialVassalMapping) GM._savedOfficialVassalMapping = _safeClone(P.officialVassalMapping);
@@ -944,6 +945,7 @@ function _restoreSavedFields(options) {
   if (GM._savedVassalSystem) { P.vassalSystem = GM._savedVassalSystem; delete GM._savedVassalSystem; }
   if (GM._savedTitleSystem) { P.titleSystem = GM._savedTitleSystem; delete GM._savedTitleSystem; }
   if (GM._savedBuildingSystem) { P.buildingSystem = GM._savedBuildingSystem; delete GM._savedBuildingSystem; }
+  if (GM._savedPalaceSystem) { P.palaceSystem = GM._savedPalaceSystem; delete GM._savedPalaceSystem; }
   if (GM._savedAdminHierarchy) { P.adminHierarchy = GM._savedAdminHierarchy; delete GM._savedAdminHierarchy; }
   if (GM._savedKeju) { P.keju = GM._savedKeju; delete GM._savedKeju; }
   if (GM._savedOfficialVassalMapping) { P.officialVassalMapping = GM._savedOfficialVassalMapping; delete GM._savedOfficialVassalMapping; }
@@ -2525,7 +2527,7 @@ function _tmSaveSnapshotSkipKeys(){
   //   ★安全边界(白名单法·多列一个只是多存·漏列一个不丢数据)：只纳入「活字段=GM.x·恢复写回 GM.x·非切片」者。
   //   刻意排除：子系统序列化态(_savedEventOpinions/_savedEventBus·经 OpinionSystem/StoryEventBus 反序列化·无活字段孪生)、
   //   DOM 草稿(_savedEdictDrafts)、逐角色聚合(_savedCharMemExt/_savedCharOfficeFields)、
-  //   P 层孪生(_savedVassalSystem/_savedTitleSystem/_savedBuildingSystem/_savedKeju/_savedOfficialVassalMapping/_savedGovernment/_savedOfficeConfig·跨 GM/P)、
+  //   P 层孪生(_savedVassalSystem/_savedTitleSystem/_savedBuildingSystem/_savedPalaceSystem/_savedKeju/_savedOfficialVassalMapping/_savedGovernment/_savedOfficeConfig·跨 GM/P)、
   //   截断切片(_savedNpcDecisionDiagnostics=slice(-120)·镜像≠活字段)、_savedRenli(并行线在飞·避让)。
   return {
     _aiTelemetry:1, _debugSnapshots:1, _aiBranchDiag:1, _aiDiag:1,

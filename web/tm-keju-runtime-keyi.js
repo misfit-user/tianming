@@ -882,6 +882,7 @@ function _keyiConfirmStart(method) {
           opposingMinisters: KEYI_STATE._opposingMinisters || [],
           opposingParties: KEYI_STATE._opposingParties || [],
           breakdown: KEYI_STATE._breakdown,
+          stances: KEYI_STATE.stances,   // 逐人表态（名 → {stance}）：改制史记赞成、反对之人用；breakdown 只是计数
           support: KEYI_STATE.support,
           passed: KEYI_STATE._passed
         });

@@ -445,7 +445,7 @@
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'enke_libu_oppose',
-          text: _getCurYear() + '年·礼部 ' + libuLeader.name + ' 劝阻开恩科·affinity -10',
+          text: _getCurYear() + '年·礼部' + libuLeader.name + '劝阻开恩科·议寝',
           tags: ['科举', '恩科', '礼部', '劝阻']
         });
       }

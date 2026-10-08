@@ -134,9 +134,9 @@
               (typeof GM !== 'undefined' && GM && GM._kejuParadigm && GM._kejuParadigm.initEra) || '';
     var firstReform = reforms[0] || {};
     return {
-      text: '(无 LLM·' + name + '·' + era + '朝人·主导' +
-            (firstReform.canonicalName || firstReform.magnitudeDescriptor || '改革') +
-            '等' + reforms.length + '事·后世评待补)',
+      text: name + '，' + (era ? era + '朝人。' : '') + '主持' +
+            (firstReform.canonicalName || '科举改制') +
+            (reforms.length > 1 ? '等' + reforms.length + '事。' : '。'),
       birthYear: null, deathYear: null, faction: '中立'
     };
   }

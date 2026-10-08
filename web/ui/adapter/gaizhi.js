@@ -549,7 +549,8 @@ export const INHERIT_MODE = { inherit: '承袭', reject: '反对', compromise: '
 const INH_ID = 'kjp-l11-inh-modal';
 let inheritance = null;
 claimOverlays((n) => n.id === INH_ID);
-// 无 AI 时内核的兜底写「(无 LLM·默 compromise·留半数)」「诏曰·前朝改革有得有失·朕酌行之·钦此」这类开发者口吻，不照搬
+// 无 AI 时内核的兜底原写「(无 LLM·默 compromise·留半数)」「诏曰·前朝改革有得有失·朕酌行之·钦此」这类开发者口吻（主干 d810e13b 起已改）；
+// 旧存档里早已断下的承袭仍是旧话，照旧不照搬
 const devText = (s) => /LLM|compromise|inherit|reject/i.test(String(s || ''));
 function edictText(v) {
   const t = String(v.edict || '').trim();

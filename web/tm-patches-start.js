@@ -1475,6 +1475,9 @@ function doActualStart(sid, requestToken){
   }
   _tmStartApplyMapChoice(sid, sc);
   if(sc.buildingSystem) P.buildingSystem = deepClone(sc.buildingSystem);
+  // 皇城宫殿：皇城面板、推演提示、宫殿变动落地都读 P.palaceSystem，向来没从剧本抄进来，三部官方剧本的宫殿名录运行时全是空的。
+  // 剧本没写的就清空，免得上一局的宫殿（推演中还会增改）漏进这一局
+  P.palaceSystem = sc.palaceSystem ? deepClone(sc.palaceSystem) : { enabled: false, capitalName: '', capitalDescription: '', palaces: [] }; // arch-ok scenario reset owns immutable scenario template hydration
   if(sc.battleConfig) P.battleConfig = deepClone(sc.battleConfig);
   if(sc.mechanicsConfig) P.mechanicsConfig = deepClone(sc.mechanicsConfig);
   if(sc.militaryConfig) P.militaryConfig = deepClone(sc.militaryConfig);

@@ -53,7 +53,7 @@ var _MODEL_CTX_MAP = [
   {p:'deepseek-v4-pro',k:256,o:64},{p:'deepseek-v4',k:256,o:64},
   {p:'deepseek-r1-0528',k:128,o:64},{p:'deepseek-r1',k:128,o:64},
   {p:'deepseek-v3-0324',k:128,o:8},{p:'deepseek-v3',k:128,o:8},
-  {p:'deepseek-chat',k:64,o:8},{p:'deepseek-coder',k:128,o:8},{p:'deepseek-reasoner',k:64,o:64},{p:'deepseek',k:64,o:8},
+  {p:'deepseek-chat',k:128,o:8},{p:'deepseek-coder',k:128,o:8},{p:'deepseek-reasoner',k:128,o:64},{p:'deepseek',k:128,o:8},
 
   // === Google Gemini ===
   {p:'gemini-2.5-pro',k:1024,o:64},{p:'gemini-2.5-flash',k:1024,o:64},{p:'gemini-2.5',k:1024,o:64},

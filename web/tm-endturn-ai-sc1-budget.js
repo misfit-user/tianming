@@ -55,11 +55,11 @@
       finitePositive(body && (body.max_completion_tokens != null ? body.max_completion_tokens : body.max_tokens), Math.floor(contextTokens * 0.25)));
     completionTokens = Math.min(completionTokens, Math.max(1, contextTokens - 1));
     var protocolReserve = Math.max(128, Math.ceil((body && body.messages && body.messages.length || 0) * 8));
+    // 可用输入 = 窗口 − 回复预留。getPromptBudget().budget 是窗口的七成五，那四分之一本就是留给回复与缓冲的；
+    // 这里已另行扣掉 completionTokens，若再与它取小，回复预留就扣了两次——128K 窗口、16K 回复只剩 98,304 而非 114,688，
+    // 天启首回合约 9.9 万即被拒。调用方要更严可传 inputTokenLimit
     var contextInputLimit = contextTokens - completionTokens;
-    var configuredInputLimit = configured && finitePositive(configured.budget, 0);
-    var inputLimit = configuredInputLimit
-      ? Math.min(contextInputLimit, configuredInputLimit)
-      : contextInputLimit;
+    var inputLimit = contextInputLimit;
     var override = finitePositive(options.inputTokenLimit, 0);
     if (override) inputLimit = Math.min(inputLimit, override);
     if (inputLimit <= protocolReserve) {

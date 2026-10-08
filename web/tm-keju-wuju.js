@@ -1340,8 +1340,8 @@
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_party_tier_change',
-          text: (GM.year || 0) + '·武勋派 tier ' + prev + ' → ' + newTier +
-                ' (prestige ' + p + ', cohorts ' + (GM._wujuParty.totalCohorts || 0) + ')',
+          text: (GM.year || 0) + '年·武举出身之将' + (({ dominant: '势倾朝野', established: '渐成一派', nascent: '势复微弱' })[newTier] || '势有消长') +
+                '·历科' + (GM._wujuParty.totalCohorts || 0) + '榜',
           tags: ['科举', '武举', '武勋派']
         });
       }
@@ -1377,7 +1377,7 @@
       if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'wuju_lifecycle_cost',
-        text: _getCurYear() + '年·诏令·武举·apply lifecycle cost (军+15·士林-3·国库-15)',
+        text: _getCurYear() + '年·诏开武举·军心振奋·士林微词·国库支费',
         tags: ['科举', '武举', '诏令', 'cost'],
         resistanceTotal: Object.keys(wc.resistance || {}).reduce(function(s, k) { return s + (wc.resistance[k] || 0); }, 0),
         affectedClasses: ac,
@@ -1546,7 +1546,7 @@
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           type: 'wuju_bingbu_oppose',
-          text: _getCurYear() + '年·兵部 ' + bingbuLeader.name + ' 劝阻开武举·affinity -10',
+          text: _getCurYear() + '年·兵部' + bingbuLeader.name + '劝阻开武举·议寝',
           tags: ['科举', '武举', '兵部', '劝阻']
         });
       }
@@ -1625,7 +1625,7 @@
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1,
             type: 'wuju_yuan_skip',
-            text: '元朝无武举制·G1 spawn 之 wuju entry 清除',
+            text: '元朝不设武举·已排定的武举罢之',
             tags: ['科举', '武举', 'yuan-skip']
           });
         }

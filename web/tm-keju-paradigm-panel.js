@@ -1226,9 +1226,21 @@
   // §7·_kjpClassifyDiffTags·扩到全字段
   // ════════════════════════════════════════════════════════════════
 
+  // 议废的反向差异（_kjpL11BuildReverseDiff）只带科目与几项旗，没有主考、取额、仪轨等对象；
+  // 分类、算幅度前补成空的，免得 Object.keys(undefined) 抛错——抛了 L7 就记不下议废这一条，原改制也标不上「已废」
+  var DIFF_OBJECT_FIELDS = ['examinerRules', 'candidateRules', 'quota', 'allocationRules', 'taxPrivilege', 'ceremony', 'penalties'];
+  function _kjpDiffShape(diff) {
+    var d = Object.assign({}, diff);
+    var s = d.subjects || {};
+    d.subjects = { added: s.added || [], removed: s.removed || [], weightChanged: s.weightChanged || [] };
+    DIFF_OBJECT_FIELDS.forEach(function(k) { if (!d[k] || typeof d[k] !== 'object') d[k] = {}; });
+    return d;
+  }
+
   function _kjpClassifyDiffTags(diff) {
     var tags = ['reform'];
     if (!diff) return tags;
+    diff = _kjpDiffShape(diff);
     if (diff.intent === 'restoration') tags.push('restoration');
     if (diff.subjects.added.length || diff.subjects.removed.length || diff.subjects.weightChanged.length) tags.push('subject-change');
     if (diff.examInterval || diff.retakePolicy) tags.push('tier-cycle-change');
@@ -1283,6 +1295,7 @@
 
   function _kjpDiffMagnitude(diff) {
     if (!diff) return 0;
+    diff = _kjpDiffShape(diff);
     var W = MAGNITUDE_WEIGHTS;
     var m = 0;
     m += diff.subjects.added.length * W.subjectAdd;
@@ -1683,12 +1696,11 @@
     try {
       if (typeof GM !== 'undefined' && GM && Array.isArray(GM._chronicle)) {
         // C4 修·_escHtml topic text·防 XSS·虽然 Electron local
-        // A4 修·加"待 L7 apply"·让 user 知改革效果待后续 slice
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           date: GM._gameDate || '',
           type: 'keju-reform-proposed',
-          text: (intent === 'restoration' ? '复古议' : '改革议') + '·' + _escHtml(topicText.slice(0, 60)) + '·（议毕·待 L7 apply）',
+          text: (intent === 'restoration' ? '复古议' : '改革议') + '·' + _escHtml(topicText.slice(0, 60)) + '·付科议',
           tags: ['科举', 'paradigm', intent || 'reform']
         });
       }

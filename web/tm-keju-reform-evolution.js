@@ -80,6 +80,7 @@
   function _kjpL8EvolveFallback(entry, year) {
     var elapsed = year - ((entry && entry.year) || year);
     return {
+      _fallback: true,
       text: '(无 LLM·' + ((entry && entry.magnitudeDescriptor) || '改革') +
             '·施行第 ' + elapsed + ' 年·朝野循常·待真演化)',
       snippets: [],
@@ -92,10 +93,10 @@
     var subs = (archive && archive.addedSubjectNames) || [];
     return {
       mode: 'compromise',
-      edict: '诏曰·前朝改革有得有失·朕酌行之·钦此',
+      edict: '诏曰：前朝改制有得有失，朕酌而行之，所增诸科存其半。钦此。',
       keepSubjects: subs.slice(0, Math.ceil(subs.length / 2)),
       removeSubjects: [],
-      rationale: '(无 LLM·默 compromise·留半数)',
+      rationale: '',
       fromArchive: (archive && archive.archiveKey) || '',
       by: (currentScenario && currentScenario.emperor) || '陛下',
       year: (typeof GM !== 'undefined' && GM && GM.year) ||
@@ -349,7 +350,7 @@
       entry._l8FailCount = 0;   // 成功·清 fail count
       _kjpL8ApplyEvolutionDeltas(entry, evo);
       try {
-        if (Array.isArray(GM._chronicle) && evo.text) {
+        if (Array.isArray(GM._chronicle) && evo.text && !evo._fallback) {
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-evolution',
             text: year + '年·改革志·' + evo.text.slice(0, 60) + '…',
@@ -533,7 +534,7 @@
         if (Array.isArray(GM._chronicle)) {
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-inheritance',
-            text: '新朝承前·' + verdict.mode + '·' + (verdict.edict || '').slice(0, 60) + '…',
+            text: '新朝承前·' + (({ inherit: '承袭', reject: '反对', compromise: '折中' })[verdict.mode] || '酌定') + '·' + (verdict.edict || '').slice(0, 60) + '…',
             tags: ['科举', 'reform', 'inheritance'],
             mode: verdict.mode
           });
@@ -660,16 +661,21 @@
   var BLACK_SWAN_TYPES = Object.keys(BLACK_SWAN_TYPE_LABEL);
   var BLACK_SWAN_SEVERITY = ['low', 'mid', 'high'];
 
-  // L9·a·命名 fallback (无 LLM 时)·年 + method + 简描
+  // L9·a·命名 fallback (无 LLM 时)·照史家惯例以年号名之：天启科举新制、天启复古之制、议废那一场称更化；史评留空
   function _kjpL9NameFallback(entry) {
     if (!entry) return null;
-    var yr = entry.year ? (entry.year + '年') : '';
-    var mid = entry.method === 'edict' ? '诏行'
-            : entry.method === 'defy'  ? '强推'
-            : '议定';
+    var eraName = '';
+    try {
+      var d = (typeof calcDateFromTurn === 'function') ? calcDateFromTurn(entry.turn || GM.turn || 1) : null;
+      eraName = (d && d.eraInfo && d.eraInfo.era) || GM.eraName || '';
+    } catch (_) {}
+    var head = eraName || (entry.year ? entry.year + '年' : '');
+    var tail = entry.intent === 'restoration' ? '复古之制'
+             : entry.intent === 'rollback'    ? '更化'
+             : '科举新制';
     return {
-      canonicalName: (yr + mid + String(entry.magnitudeDescriptor || '改革').slice(0, 4)).slice(0, 12),
-      historicalEvaluation: '(无 LLM·simple naming·' + (entry.magnitudeDescriptor || '改革') + ')'
+      canonicalName: (head + tail).slice(0, 12),
+      historicalEvaluation: ''
     };
   }
 
@@ -678,8 +684,8 @@
     return {
       type: 'examiner_corrupt',
       severity: 'low',
-      target: '(unknown)',
-      narrative: '(无 LLM·' + year + '年·改革施行中·偶有舞弊·朝中议)',
+      target: '',
+      narrative: '新制推行之中，偶有主考舞弊，朝中颇有议论。',
       dimDelta: { corruption: 3, civilianReact: 0, factionTension: 0 },
       npcImpact: null,
       memorialTrigger: null
@@ -842,7 +848,7 @@
         if (Array.isArray(GM._chronicle)) {
           if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
             turn: GM.turn || 1, type: 'keju-reform-named',
-            text: '改革命名·' + named.canonicalName + (named.historicalEvaluation ? '·' + named.historicalEvaluation.slice(0, 40) + '…' : ''),
+            text: '改制定名「' + named.canonicalName + '」' + (named.historicalEvaluation ? '·' + named.historicalEvaluation.slice(0, 40) + '…' : ''),
             tags: ['科举', 'reform', 'named'], reformId: entry.id
           });
         }
@@ -990,7 +996,7 @@
       if (Array.isArray(GM._chronicle)) {
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1, type: 'keju-reform-blackswan',
-          text: year + '年·改革黑天鹅·' + (BLACK_SWAN_TYPE_LABEL[event.type] || event.type) +
+          text: year + '年·改制生变·' + (BLACK_SWAN_TYPE_LABEL[event.type] || event.type) +
                 '·' + (event.narrative || '').slice(0, 40) + '…',
           tags: ['科举', 'reform', 'blackswan'],
           reformId: entry.id, severity: event.severity

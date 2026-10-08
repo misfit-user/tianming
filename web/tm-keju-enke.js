@@ -1033,7 +1033,7 @@
       if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
         turn: GM.turn || 1,
         type: 'enke_lifecycle_cost',
-        text: _getCurYear() + '年·诏令·恩科·apply lifecycle cost (士林+10·国库-8)',
+        text: _getCurYear() + '年·诏开恩科·士林感奋·国库支费',
         tags: ['科举', '恩科', '诏令', 'cost'],
         resistanceTotal: Object.keys(ec.resistance || {}).reduce(function(s, k) { return s + (ec.resistance[k] || 0); }, 0),
         affectedClasses: ac,

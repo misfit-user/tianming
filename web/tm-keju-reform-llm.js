@@ -200,7 +200,7 @@
     if (diff.subjects && diff.subjects.removed && diff.subjects.removed.length) parts.push('废' + diff.subjects.removed.map(function(s){return s.name;}).join('、'));
     if (diff.examinerRules && diff.examinerRules.blindScoring === false) parts.push('罢糊名');
     if (diff.candidateRules && diff.candidateRules.allowMinority === true) parts.push('准蒙古色目');
-    if (diff.ideology) parts.push('改 ideology·' + diff.ideology.new);
+    if (diff.ideology) parts.push('宗旨改为' + (({ traditional: '守经', reformist: '变法', practical: '实学', modern: '新学' })[diff.ideology.new] || diff.ideology.new));
     return parts.length ? parts.join('·') : '(微调·权重 / 仪轨)';
   }
 
@@ -1349,13 +1349,12 @@
             if (existing.firstReformId && existing.firstReformId !== firstReformId) {
               existing.firstReformId = '多 reform';
             }
-            existing.text = '改革议·' + existing.spawnCount + ' 条反对奏疏入「百官奏疏」' +
-                            (existing.firstReformId ? '·涉 ' + existing.firstReformId : '');
+            existing.text = '改革议·反对奏疏' + existing.spawnCount + '道入「百官奏疏」';
           } else {
             if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
               turn: turn,
               type: 'keju-objection-memorial-spawn',
-              text: '改革议·' + spawnCount + ' 条反对奏疏入「百官奏疏」' + (firstReformId ? '·涉 ' + firstReformId : ''),
+              text: '改革议·反对奏疏' + spawnCount + '道入「百官奏疏」',
               tags: ['科举', 'reform', 'objection'],
               spawnCount: spawnCount,
               firstReformId: firstReformId

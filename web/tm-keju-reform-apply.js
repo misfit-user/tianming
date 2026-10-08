@@ -489,8 +489,9 @@
       paradigmDigest: paradigmDigest,
       tags: tags,
       diff: diff || null,
-      supportNpcs: _kjpL7ListFromBreakdown(ctx && ctx.breakdown, 'support'),
-      opposeNpcs: _kjpL7ListFromBreakdown(ctx && ctx.breakdown, 'oppose'),
+      // 按科议的逐人表态（名 → {stance}）取；ctx.breakdown 是赞反弃的计数，从它取永远是空的
+      supportNpcs: _kjpL7ListFromBreakdown(ctx && ctx.stances, 'support'),
+      opposeNpcs: _kjpL7ListFromBreakdown(ctx && ctx.stances, 'oppose'),
       cedui: _kjpL7ListCeduiAdvisorsForDigest(paradigmDigest),
       outcome: outcome,
       status: outcome.passed && (applyResult && applyResult.applied) ? 'ramping' : 'rejected',

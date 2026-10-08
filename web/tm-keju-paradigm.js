@@ -214,15 +214,15 @@
     try {
       if (Array.isArray(GM._chronicle)) {
         var ib = paradigm.initBy || 'init';
-        var verb = (ib === 'migration') ? '已迁 (旧存档自动升级)' :
-                   (ib === 'reset')     ? '已重置' :
-                                          '立';
+        var verb = (ib === 'migration') ? '随旧档承用' :
+                   (ib === 'reset')     ? '重定' :
+                                          '初立';
         if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
           turn: GM.turn || 1,
           date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
           type: 'keju-paradigm-' + (ib === 'init' ? 'init' : ib),
-          text: (era || '本朝') + ' 科举 paradigm ' + verb + '·' + paradigm.subjects.length + ' 科·' +
-                paradigm.tiers.length + ' tier·' + paradigm.quota.total + ' 名',
+          text: (era || '本朝') + '科举之制' + verb + '：凡' + paradigm.subjects.length + '科，考分' +
+                paradigm.tiers.length + '级，取额' + paradigm.quota.total + '名',
           tags: ['科举', 'paradigm', ib, era]
         });
       }
@@ -547,7 +547,7 @@
           turn: GM.turn || 1,
           date: GM._gameDate || '',
           type: 'keju-paradigm-import',
-          text: '科举 paradigm 从外部 import' + (versionMismatch ? ' (auto-migrated)' : ''),
+          text: '科举之制自外导入' + (versionMismatch ? '（旧式，已自动换为新式）' : ''),
           tags: ['科举', 'paradigm', 'import']
         });
       }

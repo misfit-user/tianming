@@ -101,13 +101,6 @@ html[data-layout='compact'] .scr-desk .left { display: none; }
 .scr-desk .viewas small { font-size: var(--fs-1); color: var(--ink-faint); letter-spacing: .08em; }
 .scr-desk .viewas.hide { display: none; }
 
-/* 推演中：案上一层薄纱，中间一行进度 */
-.advancing { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(14, 7, 3, .55); opacity: 0; transition: opacity var(--t-3); pointer-events: none; }
-.advancing.on { opacity: 1; pointer-events: auto; }
-.advancing .box { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1.5rem 2.5rem; }
-.advancing .box b { font: 400 var(--fs-7) var(--f-title); letter-spacing: .4em; }
-.advancing .box span { font: var(--fs-3) var(--f-kai); letter-spacing: .3em; color: var(--ivory-soft); }
-
 /* ---------- 舆图 ---------- */
 /* 看法图例：一行注、一排色块与字（书案左列与舆图面板同式） */
 .legend { margin-top: .5rem; display: flex; flex-direction: column; gap: .3125rem; }

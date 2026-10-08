@@ -23,6 +23,7 @@ import { createArchive } from './archive.js';
 import { createWenyuan } from './wenyuan.js';
 import { createKeju } from './keju.js';
 import { createGaizhi } from './gaizhi.js';
+import { createTurnVeil } from './turnveil.js';
 import { createKeyi } from './keyi.js';
 import { createWentian } from './wentian.js';
 import { createGongwei } from './gongwei.js';
@@ -110,8 +111,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
   const mapEl = h('section.scr.scr-map', mappanel, back, card);
 
-  const veil = h('div.advancing', h('div.box.q-qi', h('b.q-gold', '推 演'), h('span', '')));
-  root.append(el, mapEl, veil);
+  root.append(el, mapEl);
+  const turnVeil = createTurnVeil({ root, game });   // 推演幕：过回合时铺满全屏（screens/turnveil.js）
 
   function furnish() {
     replaceChildren(rail, prof.books.map(([ch, name, key]) => wadang({ ch, name, onclick: () => onBook(key, name) })));
@@ -371,20 +372,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     });
   }
   async function runAdvance() {
-    const cap = veil.querySelector('span');
-    cap.textContent = '';
-    veil.classList.add('on');
-    const offs = [
-      game.on('kernel:loading', (p) => { if (p.text) cap.textContent = p.text; }),
-      game.on('game:advance-progress', (p) => { if (p.label) cap.textContent = p.label; })
-    ];
+    turnVeil.begin();
     try {
       await game.advance({ court: false });
     } catch (err) {
       if (!(err && err.shown)) bus.emit('kernel:toast', { text: String(err && err.message || err) });
     } finally {
-      offs.forEach((off) => off());
-      veil.classList.remove('on');
+      turnVeil.end();
       refresh();
     }
   }

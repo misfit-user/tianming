@@ -1,0 +1,95 @@
+/* 推演幕：铺满全屏的暗场。幕后场景画缓移、墨晕换景；左立大题竖书，右垂起居注，底下九枚组印成一线 */
+html.tm-newui #tm-etl, html.tm-newui #tm-recovery-progress { display: none !important; }   /* 老电影化加载层、复核进度条由本幕与书案小签顶替 */
+
+.tv { position: fixed; inset: 0; z-index: 32; display: none; overflow: hidden; color: #f3e6c8; background: #0b0805; isolation: isolate; }
+.tv.on { display: block; animation: tv-in .7s ease both; }
+.tv.leaving { animation: tv-out .7s ease both; }
+@keyframes tv-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tv-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* 幕后：两层叠，新层以径向遮罩自中心晕开 */
+.tv-bg { position: absolute; inset: -3%; z-index: 0; opacity: 0; background: #0b0805 center / cover no-repeat;
+  filter: saturate(.8) contrast(1.06) brightness(.66) sepia(.12); transform: scale(1.04); }
+.tv-bg.on { opacity: 1; animation: tv-drift 26s ease-in-out infinite alternate; }
+.tv-bg.on.in { animation: tv-wipe 1.6s ease both, tv-drift 26s ease-in-out infinite alternate; z-index: 1; }
+@keyframes tv-drift { from { transform: scale(1.04) translate3d(0, 0, 0); } to { transform: scale(1.09) translate3d(-1.2%, .6%, 0); } }
+@keyframes tv-wipe {
+  from { opacity: 0; -webkit-mask-image: radial-gradient(circle at 46% 52%, #000 0%, transparent 18%); mask-image: radial-gradient(circle at 46% 52%, #000 0%, transparent 18%); }
+  60% { opacity: 1; }
+  to { opacity: 1; -webkit-mask-image: radial-gradient(circle at 46% 52%, #000 70%, transparent 100%); mask-image: radial-gradient(circle at 46% 52%, #000 70%, transparent 100%); }
+}
+.tv-shade { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse at 42% 46%, rgba(11, 8, 5, 0) 30%, rgba(11, 8, 5, .55) 72%, rgba(11, 8, 5, .9) 100%),
+    linear-gradient(90deg, rgba(11, 8, 5, .72) 0%, rgba(11, 8, 5, .1) 34%, rgba(11, 8, 5, .1) 64%, rgba(11, 8, 5, .78) 100%),
+    linear-gradient(0deg, rgba(11, 8, 5, .92) 0%, rgba(11, 8, 5, 0) 26%); }
+
+/* 左：组印、大题、诗行（竖书） */
+.tv-head { position: absolute; z-index: 3; left: 6vw; top: 9vh; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
+.tv-seal { width: 4.25rem; height: 4.25rem; display: grid; place-items: center; font: normal 400 2.5rem/1 var(--f-title); color: #f9ead2;
+  background: radial-gradient(circle at 35% 30%, #c9452e, #8e2414 70%); box-shadow: inset 0 0 0 .1875rem rgba(249, 234, 210, .55), inset 0 0 0 .375rem #8e2414, 0 .5rem 1.5rem rgba(0, 0, 0, .55);
+  transform: rotate(-3deg); }
+.tv-cols { display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 1.25rem; }
+.tv-title { margin: 0; writing-mode: vertical-rl; font: 400 4.25rem/1.1 var(--f-title); letter-spacing: .35em; color: #f3e6c8; text-shadow: 0 .25rem 1.5rem rgba(0, 0, 0, .8); }
+.tv-line { margin: 1.25rem 0 0; writing-mode: vertical-rl; font: 400 1.375rem/1.6 var(--f-kai); letter-spacing: .3em; color: rgba(243, 230, 200, .82); text-shadow: 0 .125rem .75rem rgba(0, 0, 0, .9); }
+.tv-tone { writing-mode: vertical-rl; margin-top: .5rem; font: var(--fs-2) var(--f-kai); letter-spacing: .4em; color: rgba(240, 217, 140, .55); }
+.tv.retitle .tv-title { animation: tv-ink 1.1s ease both; }
+.tv.retitle .tv-seal { animation: tv-press .6s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes tv-ink { from { opacity: 0; filter: blur(6px); letter-spacing: .6em; } to { opacity: 1; filter: none; letter-spacing: .35em; } }
+@keyframes tv-press { from { transform: rotate(-3deg) scale(1.5); opacity: 0; } to { transform: rotate(-3deg) scale(1); opacity: 1; } }
+
+/* 右：起居注（纸条竖书，新者在右） */
+.tv-side { position: absolute; z-index: 3; right: 5vw; top: 8vh; height: 62vh; width: min(30rem, 30vw); box-sizing: border-box; display: flex; flex-direction: row-reverse; gap: .75rem;
+  padding: 1.25rem 1rem; color: #2b1d10; background: linear-gradient(180deg, rgba(239, 228, 201, .93), rgba(226, 210, 172, .9));
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(120, 90, 50, .35), inset 0 0 0 .3125rem rgba(239, 228, 201, .9), inset 0 0 0 .375rem rgba(163, 48, 31, .35); }
+.tv-side header { writing-mode: vertical-rl; padding-left: .75rem; font: 400 1.75rem/1 var(--f-title); letter-spacing: .5em; color: #7d1d12; border-left: 1px solid rgba(163, 48, 31, .4); }
+.tv-annals { flex: 1; min-width: 0; display: flex; flex-direction: row-reverse; gap: 0; overflow: hidden; }   /* 新者在右，旧者往左推出纸外 */
+.tv-annals p { flex: none; }
+.tv-annals p { margin: 0; padding: 0 .5rem; writing-mode: vertical-rl; font: var(--fs-3)/1.6 var(--f-kai); letter-spacing: .12em; color: rgba(43, 29, 16, .62);
+  border-left: 1px solid rgba(163, 48, 31, .22); animation: tv-col .9s ease both; }
+.tv-annals p b { font: 400 var(--fs-4)/1.6 var(--f-title); letter-spacing: .2em; color: rgba(43, 29, 16, .78); }
+.tv-annals p span { margin-top: .75rem; }
+.tv-annals p.now { color: #2b1d10; }
+.tv-annals p.now b { color: #7d1d12; }
+@keyframes tv-col { from { opacity: 0; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+
+/* 底：九印一线、现行与次第、细进度 */
+.tv-foot { position: absolute; z-index: 3; left: 6vw; right: 5vw; bottom: 5vh; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+.tv-rail { position: relative; display: flex; gap: 2.25rem; margin: 0; padding: 0; list-style: none; }
+.tv-rail::before { content: ''; position: absolute; left: 1rem; right: 1rem; top: 1rem; height: 1px; background: rgba(240, 217, 140, .35); }
+.tv-rail li { position: relative; display: flex; flex-direction: column; align-items: center; gap: .3125rem; }
+.tv-rail li i { width: 2rem; height: 2rem; display: grid; place-items: center; font: normal 400 var(--fs-3)/1 var(--f-title); color: rgba(243, 230, 200, .55);
+  background: rgba(11, 8, 5, .85); box-shadow: inset 0 0 0 1px rgba(240, 217, 140, .45); transition: all .5s ease; }
+.tv-rail li small { font: var(--fs-1) var(--f-kai); letter-spacing: .15em; color: rgba(243, 230, 200, .45); }
+.tv-rail li.done i { color: #2b1d10; background: linear-gradient(180deg, #f0d98c, #c9a24a); box-shadow: none; }
+.tv-rail li.done small { color: rgba(240, 217, 140, .75); }
+.tv-rail li.now i { color: #f9ead2; background: radial-gradient(circle at 35% 30%, #c9452e, #8e2414 70%); box-shadow: 0 0 0 .1875rem rgba(201, 69, 46, .35), 0 0 1.25rem rgba(201, 69, 46, .7);
+  animation: tv-pulse 2.4s ease-in-out infinite; }
+.tv-rail li.now small { color: #f3e6c8; }
+@keyframes tv-pulse { 50% { box-shadow: 0 0 0 .3125rem rgba(201, 69, 46, .2), 0 0 2rem rgba(201, 69, 46, .9); } }
+.tv-status { display: flex; align-items: baseline; gap: 1.5rem; font-family: var(--f-kai); }
+.tv-now { font: 400 var(--fs-5) var(--f-title); letter-spacing: .25em; color: #f3e6c8; }
+.tv-next, .tv-count { font-size: var(--fs-2); letter-spacing: .12em; color: rgba(243, 230, 200, .6); }
+.tv-extra { min-height: 1.2em; margin: 0; font: var(--fs-2) var(--f-kai); letter-spacing: .1em; color: rgba(240, 217, 140, .75); }
+.tv-bar { width: min(56rem, 70vw); height: 2px; background: rgba(240, 217, 140, .15); }
+.tv-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, rgba(240, 217, 140, .2), #f0d98c); transition: width 1.2s ease; }
+
+/* 收幕：「成」字大印 */
+.tv-stamp { position: absolute; z-index: 4; left: 50%; top: 44%; width: 9rem; height: 9rem; margin: -4.5rem 0 0 -4.5rem; display: grid; place-items: center; opacity: 0; pointer-events: none; }
+.tv-stamp span { width: 100%; height: 100%; display: grid; place-items: center; font: 400 5.5rem/1 var(--f-title); color: #f9ead2;
+  background: radial-gradient(circle at 35% 30%, #c9452e, #8e2414 72%); box-shadow: inset 0 0 0 .375rem rgba(249, 234, 210, .5), inset 0 0 0 .75rem #8e2414, 0 1rem 3rem rgba(0, 0, 0, .6); transform: rotate(-6deg); }
+.tv.done .tv-stamp { animation: tv-stamp .55s cubic-bezier(.2, 1.5, .4, 1) .15s both; }
+@keyframes tv-stamp { from { opacity: 0; transform: scale(1.8); } to { opacity: 1; transform: scale(1); } }
+
+@media (max-width: 1280px) {
+  .tv-title { font-size: 3.25rem; }
+  .tv-rail { gap: 1.25rem; }
+}
+
+/* 回合复核、应急恢复：幕在时写在幕底一行，幕收后挂书案右下小签 */
+.tv-review { display: flex; align-items: baseline; gap: .75rem; min-height: 1.2em; margin: 0; font: var(--fs-2) var(--f-kai); letter-spacing: .1em; color: rgba(186, 205, 174, .85); }
+.tv-review button, .tv-chip button { padding: 0 .5rem; border: 0; cursor: pointer; font: var(--fs-1)/1.7 var(--f-title); letter-spacing: .15em; color: #f9ead2; background: rgba(163, 48, 31, .85); }
+.tv-chip { position: fixed; right: 6.5rem; top: 5.25rem; z-index: 31; display: none; align-items: baseline; gap: .625rem; padding: .375rem .75rem; font: var(--fs-2) var(--f-kai); color: #2b1d10;
+  background: linear-gradient(180deg, rgba(239, 228, 201, .97), rgba(226, 210, 172, .95)); box-shadow: 0 .375rem 1.25rem rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(120, 90, 50, .4), inset .1875rem 0 0 #3f6e5e; }
+.tv-chip.on { display: flex; animation: tv-in .5s ease both; }
+.tv-chip.over { box-shadow: 0 .375rem 1.25rem rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(120, 90, 50, .4), inset .1875rem 0 0 #c9a24a; }
+.tv-chip b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .15em; color: #2f5a4c; }

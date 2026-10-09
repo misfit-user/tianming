@@ -108,6 +108,7 @@ module.exports=async function({win,check,results}){
    const extraPlan=await js(`(()=>{const p=TM.NPC.DailyActivities.plans().filter(p=>p.localActivity.kind==='assistance').slice(-1)[0];return{id:p&&p.id,status:p&&p.status};})()`);
    assert(extraPlan&&extraPlan.status==='awaiting_feedback',JSON.stringify(extraPlan));
    await click(panel+' [data-daily-plan="'+extraPlan.id+'"] [data-daily-answer="satisfied"]');
+   await js(`(()=>{const interval=TM.SimTime.prepare(GM);TM.SimTime.commit(GM,interval);GM.turn=3;})()`);
    await js(`(()=>{const panel=document.querySelector(${JSON.stringify(panel)}),target=panel.querySelector('#daily-target'),topic=panel.querySelector('#daily-consultation-topic');target.value='local-b';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='reading_understanding';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
    await click(panel+' [data-daily-new="consultation"]');
    const r=await js(`(()=>{const p=TM.NPC.DailyActivities.plans().filter(p=>p.localActivity.kind==='consultation').slice(-1)[0];return{status:p&&p.status,source:p&&p.localActivity.sourceOpportunity,topic:p&&p.localActivity.topicId,plans:TM.NPC.DailyActivities.plans().length,api:__dailyBrowser.apiAttempts};})()`);

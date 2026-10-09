@@ -3,7 +3,7 @@
 // 内帑为收支名目与宫中条陈（两库互拨、大典，拟入清册）；户口为各省（汇总叶子）户口、民心、吏治。经 game.fiscal。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num, roundSig } from '../core/numerals.js';
+import { num, roundSig, yearNum } from '../core/numerals.js';
 import { qianzi, juan } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -34,6 +34,7 @@ export function createFiscal({ root, game }) {
     if (!a) { replaceChildren(leftBody, h('p.ce-unk', '此账未具')); replaceChildren(right); return; }
     replaceChildren(leftBody,
       a.forecast ? h('p.fi-note', '本期尚未结账，所列为预估') : null,
+      a.distorted ? h('p.fi-note', '库存与银之收支皆据有司所奏，未经核实') : null,
       a.res.map((r) => h('article.fi-card' + (r.key === res ? '.on' : ''), { onclick: () => { res = r.key; render(); } },
         h('header', h('b', r.label), h('small', r.unit)),
         h('div.stock', amt(r.stock), h('small', r.unit)),
@@ -46,7 +47,25 @@ export function createFiscal({ root, game }) {
       h('div.fi-cols', bars('岁入名目', r.sources, r.inn, r.unit, 'in'), bars('支用科目', r.sinks, r.out, r.unit, 'out')),
       r.deficits.length ? h('section.fi-sec', h('h4', `欠项 · ${amt(r.deficit)}${r.unit}`), h('div.fi-debts', r.deficits.slice(0, 12).map((d) => h('p', h('span', d.name || d.kind), h('b', `${amt(d.amount)}`)))),
         r.deficits.length > 12 ? h('p.fi-more', `余${num(r.deficits.length - 12)}项`) : null) : null,
+      tab === 'guoku' && r.key === 'money' ? historyEl(r.unit) : null,
       tab === 'guoku' ? guokuActions() : palaceActions());
+  }
+  // 帑廪·银：近十二期收支（收支对柱、期末库银）与近五年决算
+  function historyEl(unit) {
+    let H = null;
+    try { H = F.history(); } catch (_e) { return null; }
+    if (H.sealed) return h('section.fi-sec', h('h4', '收支史'), h('p.fi-note', '往年账目皆有司所奏，未经核实，不列。'));
+    if (!H.months.length && !H.years.length) return null;
+    const max = Math.max(1, ...H.months.flatMap((m) => [m.inn, m.out]));
+    return h('section.fi-sec.fi-hist',
+      H.months.length ? [h('h4', `近${num(H.months.length)}期收支`),
+        h('div.fi-hbars', H.months.map((m) => h('div', { title: `第${num(m.turn)}回合　收${amt(m.inn)} 支${amt(m.out)} 净${signed(m.net)}　期末库银${amt(m.balance)}${unit}` },
+          h('i.in', { style: { height: `${(m.inn / max) * 100}%` } }), h('i.out', { style: { height: `${(m.out / max) * 100}%` } }), h('small', num(m.turn))))),
+        h('p.fi-note', '左柱收、右柱支；悬停见当期之数。')] : null,
+      H.years.length ? [h('h4', '年度决算'), H.years.map((y) => h('details.fi-year',
+        h('summary', h('b', `${yearNum(y.year)}年`), h('span', `入${amt(y.inn)} · 出${amt(y.out)}`), h('em' + (y.net < 0 ? '.neg' : ''), signed(y.net)), y.bankrupt ? h('small.neg', `破产${num(y.bankrupt)}月`) : null),
+        h('p', `年终库银${amt(y.balance)}${unit}`),
+        y.regions.length ? h('div.fi-debts', y.regions.map((x) => h('p', h('span', x.name), h('b', `${signed(x.net)}`)))) : null))] : null);
   }
   function bars(title, list, total, unit, cls) {
     const max = Math.max(1, ...list.map((x) => x.amount));

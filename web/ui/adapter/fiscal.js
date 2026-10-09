@@ -1,6 +1,8 @@
 // 财计（书目「财」）：帑廪（国库）与内帑的银粮布三账——库存、本期收支、收支名目分项、欠项；户口（全国与各省，汇总叶子）；
 // 户部条陈与借贷。规矩照现行老面板：加派、开仓赈济拟入议事清册，下旨方生效（「户部财计·诏书驱动」）；
 // 借贷、减重改铸、财政改革由引擎当场办（GuokuEngine）。两库互拨、大典也拟入清册。
+// 可见之律：奏报失真层开着时，帑廪三库存与银的本期收支照顶栏同一口径据奏（内核 _barReported：库藏、岁入报多，岁支报少），
+// 收支名目按比例随之缩放，免得分项之和露出真数；内帑是天子私账，不设失真。历年收支（history）是真账，失真层开着时不列。
 import { bus } from '../core/bus.js';
 
 const w = window;
@@ -33,6 +35,26 @@ function ledgerView(l, L) {
     sources: rows(l.sources, L.inn), sinks: rows(l.sinks, L.out), deficit: num(l.deficit), deficits
   };
 }
+function reported(key, val, dir) {
+  const f = fn('_barReported');
+  if (!f) return { shown: val, distorted: false };
+  try { const r = f(key, val, dir); return { shown: num(Number(r && r.shown), val), distorted: !!(r && r.distorted) }; } catch (_e) { return { shown: val, distorted: false }; }
+}
+function scaleRows(list, k) { return k === 1 ? list : list.map((x) => ({ ...x, amount: x.amount * k })); }
+// 帑廪据奏：库存三项；银的本期收支与名目、上期收支同比例
+function reportGuoku(res) {
+  let distorted = false;
+  const out = res.map((r) => {
+    const st = reported(`guoku.${r.key}`, r.stock, 'good');
+    distorted = distorted || st.distorted;
+    if (r.key !== 'money') return { ...r, stock: st.shown };
+    const ri = reported('fiscal.turnIncome', r.inn, 'good'), ro = reported('fiscal.turnExpense', r.out, 'bad');
+    distorted = distorted || ri.distorted || ro.distorted;
+    const ki = r.inn ? ri.shown / r.inn : 1, ko = r.out ? ro.shown / r.out : 1;
+    return { ...r, stock: st.shown, inn: ri.shown, out: ro.shown, lastIn: r.lastIn * ki, lastOut: r.lastOut * ko, sources: scaleRows(r.sources, ki), sinks: scaleRows(r.sinks, ko) };
+  });
+  return { res: out, distorted };
+}
 // kind：guoku 帑廪 ／ neitang 内帑
 export function account(kind) {
   const g = G();
@@ -45,7 +67,28 @@ export function account(kind) {
   if (!acc) return null;
   unit = unit || acc.unit || { money: '两', grain: '石', cloth: '匹' };
   const led = acc.ledgers || {};
-  return { kind, forecast, unit, res: RES.map(([k, label]) => ({ key: k, label, unit: unit[k] || '', ...ledgerView(led[k], L) })) };
+  const res = RES.map(([k, label]) => ({ key: k, label, unit: unit[k] || '', ...ledgerView(led[k], L) }));
+  if (kind !== 'guoku') return { kind, forecast, unit, res, distorted: false };
+  const rv = reportGuoku(res);
+  return { kind, forecast, unit, res: rv.res, distorted: rv.distorted };
+}
+// 帑廪收支史：近十二期（每期收、支、净、期末库银）与近五年决算。失真层开着则封存（sealed）
+export function history() {
+  const g = G();
+  const hist = (g.guoku && g.guoku.history) || {};
+  const RV = w.TM && w.TM.ReportedView;
+  let sealed = false;
+  try { sealed = !!(RV && RV.active(w.P || null) && !RV.revealed('fiscal', 'history')); } catch (_e) { sealed = false; }
+  if (sealed) return { sealed: true, months: [], years: [] };
+  const months = (Array.isArray(hist.monthly) ? hist.monthly : []).slice(-12).map((m) => {
+    const inn = num(m.periodIncome, num(m.income)), out = num(m.periodExpense, num(m.expense));
+    return { turn: num(m.turn), inn, out, net: inn - out, balance: num(m.balance) };
+  });
+  const years = (Array.isArray(hist.yearly) ? hist.yearly : []).slice(-5).reverse().map((y) => ({
+    year: num(y.year), inn: num(y.totalIncome), out: num(y.totalExpense), net: num(y.netChange), balance: num(y.finalBalance), bankrupt: num(y.bankruptcyMonths),
+    regions: y.byRegion && typeof y.byRegion === 'object' ? Object.keys(y.byRegion).map((k) => ({ name: String(y.byRegion[k].name || k), inn: num(y.byRegion[k].cumIn), out: num(y.byRegion[k].cumOut), net: num(y.byRegion[k].net) })).sort((a, b) => b.net - a.net).slice(0, 8) : []
+  }));
+  return { sealed: false, months, years };
 }
 // 在借款项与可借之源
 export function loans() {

@@ -71,3 +71,17 @@
 /* 顶栏账簿可点开度支册 */
 .topbar .q-zhang.link { cursor: pointer; }
 .topbar .q-zhang.link:hover { filter: brightness(1.15); }
+
+/* 收支史：近期收支对柱、年度决算 */
+.fi-hbars { display: flex; align-items: flex-end; gap: .375rem; height: 6rem; padding: .25rem 0 1.125rem; }
+.fi-hbars > div { position: relative; flex: 1; display: flex; align-items: flex-end; gap: 2px; height: 100%; }
+.fi-hbars i { flex: 1; min-height: 2px; }
+.fi-hbars i.in { background: linear-gradient(180deg, #5f8f7e, #2f5a4a); }
+.fi-hbars i.out { background: linear-gradient(180deg, #c4553a, #7d1d12); }
+.fi-hbars small { position: absolute; left: 0; right: 0; bottom: -1.125rem; text-align: center; font-size: var(--fs-1); color: var(--ink-faint); }
+.fi-year { border-bottom: 1px dashed rgba(120, 90, 50, .2); }
+.fi-year summary { display: flex; align-items: baseline; gap: .75rem; padding: .3125rem 0; cursor: pointer; font-size: var(--fs-2); }
+.fi-year summary b { font-weight: 400; font-family: var(--f-title); font-size: var(--fs-3); }
+.fi-year summary em { font-style: normal; margin-left: auto; color: #3f6e5e; }
+.fi-year summary em.neg, .fi-year summary small.neg { color: #a3301f; }
+.fi-year > p { margin: 0 0 .25rem; font-size: var(--fs-2); color: var(--ink-soft); }

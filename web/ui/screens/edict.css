@@ -25,7 +25,7 @@
 .scr-edict .crumb small { font-size: var(--fs-1); letter-spacing: .2em; color: var(--ivory-soft); }
 .scr-edict .back { position: fixed; right: 1.875rem; top: 1.625rem; padding: .5rem 1.125rem .4375rem; }
 /* 左列：议事清册 */
-.ed-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 15.5rem; padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.ed-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(15.5rem, 198px); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
 .ed-sugs { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: .5rem; }
 .ed-sug { display: flex; flex-direction: column; gap: .125rem; padding: .5rem .625rem; border: 0; text-align: left; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: var(--sh-lift); transition: transform var(--t-1); }
@@ -38,7 +38,7 @@
 .ed-sug span { font-size: var(--fs-2); line-height: 1.6; }
 .ed-none { margin: 1rem 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ivory-soft); letter-spacing: .06em; }
 /* 右列：行止、私行、档案 */
-.ed-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 17rem; padding: .75rem .875rem .875rem; display: flex; flex-direction: column; gap: .5rem; overflow: auto; }
+.ed-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(17rem, 218px); padding: .75rem .875rem .875rem; display: flex; flex-direction: column; gap: .5rem; overflow: auto; }
 .ed-right h4 { margin: .25rem 0 0; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
 .ed-conduct { min-height: 6.5rem; padding: .5rem .625rem; border: 0; outline: 0; resize: vertical; font: var(--fs-2)/1.8 var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }

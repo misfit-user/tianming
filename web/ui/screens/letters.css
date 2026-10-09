@@ -49,7 +49,7 @@
 .lt-route span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* 左列：名册 */
-.lt-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 16.5rem; padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.lt-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(16.5rem, 211px); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
 .lt-tools { display: flex; gap: .375rem; margin-bottom: .5rem; }
 .lt-search { flex: 1; min-width: 0; padding: .3125rem .5rem; border: 0; outline: 0; font: var(--fs-2) var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35); }
@@ -79,7 +79,7 @@
 .lt-none { margin: 1rem 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ivory-soft); letter-spacing: .06em; }
 
 /* 右列：往来书札（或截获密函） */
-.lt-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: 17rem; padding: .75rem .75rem .75rem; display: flex; flex-direction: column; gap: .5rem; }
+.lt-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(17rem, 218px); padding: .75rem .75rem .75rem; display: flex; flex-direction: column; gap: .5rem; }
 .lt-who { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: .625rem; align-items: center; }
 .lt-who .av { width: 3.25rem; height: 3.25rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #4a3020, #1d120a);
   box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .55); font: var(--fs-6) var(--f-title); color: var(--gold-hi); }

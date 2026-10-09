@@ -1,6 +1,7 @@
 // 军：军籍册。左叶「诸军」按兵种分组列各军（兵额为奏报之数），标出告急、欠饷、在途、缺帅；「战事」列进行中的战事与流寇。
 // 右叶为所选一军的全貌：统帅、驻地、军质、器械、动态，士气训练忠诚控制补给与兵变之险，兵种构成、编制、饷给、军令；
 // 案底：核饷点验、补饷、整训、调防、易将、付廷议、接战预勾。「战事」页右叶为近来战录。经 game.army。
+// 通用一套（非元首坐下）只看所统之兵：scope() 交回统帅名，诸军只列其人所统，册题写「所统」（所知之律：他军之数非其所能知）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
@@ -10,7 +11,7 @@ const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const TABS = [['armies', '诸军'], ['war', '战事']];
 
-export function createArmy({ root, game, onCourt, onFiscal }) {
+export function createArmy({ root, game, onCourt, onFiscal, scope = () => null }) {
   const A = game.army;
   let tab = 'armies';
   let sel = '';
@@ -28,8 +29,17 @@ export function createArmy({ root, game, onCourt, onFiscal }) {
   root.append(ov);
 
   function run(f) { try { return f(); } catch (e) { toast(e.message); return null; } }
+  // 所统口径：只留此人所统诸军，合计照留下的重算
+  function scoped(R) {
+    const who = scope();
+    left.querySelector('.ce-head small').textContent = who ? '所统' : '军籍';
+    if (!who) return R;
+    const groups = R.groups.map((g) => ({ ...g, rows: g.rows.filter((r) => r.commander === who) })).filter((g) => g.rows.length).map((g) => ({ ...g, soldiers: g.rows.reduce((s, r) => s + r.soldiers, 0) }));
+    const rows = groups.flatMap((g) => g.rows);
+    return { groups, count: rows.length, total: rows.reduce((s, r) => s + r.soldiers, 0), hot: rows.filter((r) => r.hot).length, arrears: rows.filter((r) => r.arrears).length, marching: rows.filter((r) => r.march).length };
+  }
   function render() {
-    const R = A.roster();
+    const R = scoped(A.roster());
     replaceChildren(sumEl, `在册${num(R.count)}支 · 兵${amt(R.total)}`,
       R.hot ? h('em.hot', `告急${num(R.hot)}`) : null, R.arrears ? h('em', `欠饷${num(R.arrears)}`) : null, R.marching ? h('em.go', `在途${num(R.marching)}`) : null);
     if (tab === 'war') return renderWar();
@@ -42,7 +52,7 @@ export function createArmy({ root, game, onCourt, onFiscal }) {
         h('span.who', [r.vacant ? h('em', '缺帅') : r.commander, r.location].filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))),
         h('span.n', amt(r.soldiers)),
         h('span.marks', r.march ? h('i.go', '行') : null, r.arrears ? h('i', '欠') : null, r.hot ? h('i.hot', '急') : null)))))
-      : [h('p.ce-unk', '本朝无兵在册')]);
+      : [h('p.ce-unk', scope() ? '麾下无兵' : '本朝无兵在册')]);
     if (sel) renderArmy(sel); else replaceChildren(right, h('p.ce-unk', '择一军观之'));
   }
 

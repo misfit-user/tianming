@@ -210,3 +210,9 @@
 .lz-fit details { font-size: var(--fs-1); color: var(--ink-faint); }
 .lz-fit details summary { cursor: pointer; }
 .lz-fit .q-yapai { margin-top: .25rem; }
+
+/* 与我：姓名下一行，照 CK3「This is you / Your Cousin…」 */
+.lz-tome { margin: .125rem 0 0; font-size: var(--fs-2); letter-spacing: .08em; color: var(--ink-soft); }
+.lz-tome em { margin-left: .375rem; font-style: normal; font-family: var(--f-kai); }
+.lz-tome.good em { color: #3f6b3a; }
+.lz-tome.bad em { color: #a3301f; }

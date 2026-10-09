@@ -36,7 +36,7 @@ function radar(axes, color, size = 250) {
     axes.map(([k, v], i) => { const [x, y] = pt(i, 1.2); return s('text', { x: x.toFixed(1), y: (y + 4).toFixed(1), 'text-anchor': 'middle', class: 'lab' }, k, s('tspan', { class: 'v', x: x.toFixed(1), dy: '1.05em' }, v == null ? '?' : String(v))); }));
 }
 
-export function createBio({ root, game, profile, onAudience, onLetter, onOffices, onEdict, onAtlas }) {
+export function createBio({ root, game, profile, onAudience, onLetter, onOffices, onEdict, onAtlas, viewer = () => '' }) {
   const B = game.bio;
   let cur = null;
   let vol = 'overview';
@@ -73,6 +73,9 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         h('p.line', [p.age != null ? `${num(p.age)}岁` : '', p.gender].filter(Boolean).join(' · ')),
         h('p.office', p.office[0] || '布衣', p.rank ? h('em', p.rank) : null),
         p.office.length > 1 ? h('p.conc', `兼　${p.office.slice(1).join('、')}`) : null,
+        // 与我（照 CK3 角色窗口姓名下那一行关系）：本人写「此即本人」，他人写对君上的亲疏（与「心性」卷同源）
+        p.isPlayer || (viewer() && viewer() === p.name) ? h('p.lz-tome', '此即本人') : p.alive && p.toLord ? h('p.lz-tome' + (p.toLord.favor > 0 ? '.good' : p.toLord.favor < 0 ? '.bad' : ''),
+          `视${t.lord}：${p.toLord.label || '平'}`, h('em', signed(p.toLord.favor))) : null,
         h('p.line', [p.faction, p.party ? `${p.party}${p.partyRank ? '·' + p.partyRank : ''}` : ''].filter(Boolean).join(' · ')),
         p.honorary.length ? h('div.lz-hon', p.honorary.map((x) => h('span', { title: '加衔或身份称号' }, `衔 ${x}`))) : null),
       p.banner ? h('div.lz-banner', h('i', p.banner.glyph), h('div', h('b', p.banner.title), p.banner.note ? h('small', p.banner.note) : null)) : null);

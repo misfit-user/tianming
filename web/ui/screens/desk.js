@@ -675,9 +675,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }
     if (key === 'people') return atlas.show();
     if (key === 'charge') return openCharge();
-    if (key === 'family') { const k = standing && standing.family.key; return k ? realmPage.show({ tab: 'families', key: k }) : building(name, ''); }
+    // 家：本人列传的家族一卷（照 CK3 角色窗口的家人页：父母、配偶、子女、兄弟、族中统览）；族谱另在朝野册「家族」
+    if (key === 'family') return bioPage.show(per.name, 'family');
     if (key === 'gazette') return openGazette({ game });
-    if (key === 'annals') return archivePage.show();
+    // 史：元首翻史馆（实录、起居注……）；通用一套是本人年谱——列传的纪传一卷（履历与近事），国史非其所能翻
+    if (key === 'annals') return per.tier === 'sovereign' ? archivePage.show() : bioPage.show(per.name, 'career');
     if (key === 'offices') return officesPage.show();
     if (key === 'fiscal') return fiscalPage.show();
     if (key === 'army') return armyPage.show();
@@ -751,7 +753,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onBio: (name) => bioPage.show(name) });
   // 列传：召对、传书、官制、追赠（开撰写）、回图志
   const bioPage = createBio({ root, game, profile: () => prof, onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onLetter: (name) => openLetters(name),
-    onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => atlas.show(name) });
+    onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => atlas.show(name),
+    viewer: () => per.name });
   const edictPage = createEdict({ root, study, game, profile: () => sceneProfile(), onClose: () => { el.classList.add('on'); refresh(); backHome(); }, onPromulgate: () => confirmAdvance() });
   function openEdict(at) {
     el.classList.remove('on');
@@ -812,7 +815,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const helpPage = createHelp({ root, game, profile: () => prof });
   const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
-  const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show() });
+  const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
+    scope: () => (per.tier === 'sovereign' ? null : per.name) });
   const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');

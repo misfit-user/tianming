@@ -714,6 +714,8 @@ export function mapRegions() {
   const ownerOf = (r) => r.factionId || r.owner || '';
   const facInfo = map.factions || {};
   const regions = [];
+  // 上级：府州的 parentId 多半就是所属省道（circuitId），那已在省道名里；真有上级府州的才取其名（不露内部 id）
+  const nameById = new Map(map.regions.map((x) => [x.id, x.name]));
   for (const r of map.regions) {
     const ring = ringOf(r);
     if (!ring || ring.length < 3) continue;
@@ -724,7 +726,8 @@ export function mapRegions() {
     }
     const center = r.referenceSeat || r.center || r.centroid;
     regions.push({
-      id: r.id, name: r.name || '', circuit: r.circuitName || '', parent: r.parentId || '', faction: fid,
+      id: r.id, name: r.name || '', circuit: r.circuitName || '', faction: fid, terrain: r.terrain || '',
+      parent: r.parentName || (r.parentId && r.parentId !== r.circuitId ? nameById.get(r.parentId) || '' : ''),
       poly: ring.map(toWorld), center: center ? toWorld(center) : toWorld(ring[0])
     });
   }

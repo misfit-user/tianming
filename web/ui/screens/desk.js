@@ -112,7 +112,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const mapChips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
   const mapNote = h('small', '');
   const legendMap = h('div.legend');
-  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote), mapChips, legendMap);
+  // 检府州：输入或下拉择名，镜头缓移其上（同点选出小签）
+  let mapRegionList = [];
+  const regionDl = h('datalist', { id: 'tm-map-regions' });
+  const regionSearch = h('input.map-search', { type: 'search', placeholder: '检府州', list: 'tm-map-regions', spellcheck: false, autocomplete: 'off',
+    onkeydown: (e) => { if (e.key === 'Enter') seekRegion(regionSearch.value); }, onchange: () => seekRegion(regionSearch.value) });
+  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote), h('div.map-seek', regionSearch, regionDl), mapChips, legendMap);
   const card = h('div.card.hide');
   const backLabel = h('b.q-gold', '');
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
@@ -172,13 +177,40 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const r = map.pickScreen(ev.clientX, ev.clientY);
     if (!r) { card.classList.add('hide'); map.select(null); return; }
     map.select(r.index);
+    showRegionCard(r, ev.clientX, ev.clientY);
+  });
+  // 府州小签：点选与检府州共用
+  function showRegionCard(r, x, y) {
     const fac = r.faction && factions[r.faction];
     const lv = layer && layer.byId[r.id];
-    replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [['府治', r.parent ? '属' + r.parent : '—'], ...(lv ? [[layerLabel, lv.mark + (typeof lv.score === 'number' ? '　' + num(Math.round(lv.score)) : '')]] : [])] }));
-    card.style.transform = `translate(${Math.min(window.innerWidth - 300, ev.clientX + 24)}px, ${Math.max(90, ev.clientY - 60)}px)`;
+    replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [r.parent ? ['上隶', r.parent] : ['地形', r.terrain || '—'], ...(lv ? [[layerLabel, lv.mark + (typeof lv.score === 'number' ? '　' + num(Math.round(lv.score)) : '')]] : [])] }));
+    card.style.transform = `translate(${Math.min(window.innerWidth - 300, x + 24)}px, ${Math.max(90, y - 60)}px)`;
     card.classList.remove('hide');
-  });
+  }
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dive.mode === 'map') dive.rise(); });
+  // 检府州：先全名、再包含；镜头沿当前俯角与朝向缓移到其治所上空（约 0.9 秒），落定后点亮并出小签
+  function seekRegion(q) {
+    const name = String(q || '').trim();
+    if (!name || dive.mode !== 'map' || dive.busy) return;
+    const i = mapRegionList.findIndex((r) => r.name === name) >= 0 ? mapRegionList.findIndex((r) => r.name === name) : mapRegionList.findIndex((r) => r.name && r.name.includes(name));
+    if (i < 0) { bus.emit('kernel:toast', { text: `舆图上无「${name}」` }); return; }
+    const r = mapRegionList[i];
+    const from = map.pose();
+    const to = { ...from, target: [r.center[0], 0, r.center[1]], dist: Math.min(from.dist, 520) };
+    const t0 = performance.now();
+    const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
+    const step = () => {
+      const k = Math.min(1, (performance.now() - t0) / 900);
+      const e = ease(k);
+      map.setPose({ target: from.target.map((v, j) => v + (to.target[j] - v) * e), dist: from.dist + (to.dist - from.dist) * e, polar: from.polar, az: from.az });
+      if (k < 1) { requestAnimationFrame(step); return; }
+      map.select(i);
+      const [sx, sy] = map.worldToScreen(r.center[0], r.center[1]);
+      showRegionCard({ index: i, ...r }, sx, sy);
+    };
+    requestAnimationFrame(step);
+    regionSearch.blur();
+  }
 
   // 舆图看法：民情、阶层、财赋、军务、官守、役政按老舆图的计分分档淡染；势力为本色。书案上的绢图随之重画
   let layer = null, layerLabel = '势力', layerTok = 0;
@@ -357,6 +389,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const mr = game.select.mapRegions();
     factions = (mr && mr.factions) || {};
     map.setRegions(mr || { regions: [], factions: {} });
+    mapRegionList = (mr && mr.regions) || [];
+    replaceChildren(regionDl, mapRegionList.map((r) => h('option', { value: r.name }, [r.circuit, r.parent].filter(Boolean).join(' · '))));
     await applyFocus();
   }
 

@@ -212,3 +212,13 @@ select.st-in:disabled { opacity: .45; cursor: default; }
 .st-num small { font-size: var(--fs-1); color: var(--ink-faint); }
 .st-more { margin-top: .5rem; }
 .st-more > summary { cursor: pointer; padding: .375rem 0; font: 400 var(--fs-3) var(--f-title); letter-spacing: .2em; color: #6a1f12; }
+
+/* 曲库 */
+.st-music { display: flex; flex-direction: column; gap: .375rem; }
+.st-tracks { margin: 0; padding: 0; list-style: none; max-height: 11rem; overflow: auto; scrollbar-width: thin; box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.st-tracks li { display: flex; align-items: center; border-bottom: 1px dashed rgba(120, 90, 50, .15); }
+.st-tracks li button { border: 0; background: none; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--ink); text-align: left; }
+.st-tracks li > button:first-child { flex: 1; min-width: 0; padding: .25rem .5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-tracks li > button:first-child small { margin-left: .5rem; color: var(--ink-faint); font-size: var(--fs-1); }
+.st-tracks li.on > button:first-child { color: #a3301f; box-shadow: inset .1875rem 0 0 #a3301f; }
+.st-tracks li button.del { flex: none; padding: .25rem .5rem; color: #a3301f; font-size: var(--fs-1); }

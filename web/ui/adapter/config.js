@@ -287,3 +287,42 @@ export function setAudio(patch) {
   if ('musicVolume' in patch) call('_settingsAudioSetBgmVolume', patch.musicVolume);
   if ('soundVolume' in patch) call('_settingsAudioSetSfxVolume', patch.soundVolume);
 }
+
+// 曲库：内置殿乐与导入之曲（AudioSystem.playlist）、当前所奏、循环之法（顺序／单曲／随机）。
+// 导入走内核 importUserMusic（本会话即接入，并存本机 IndexedDB），移除只限导入之曲
+export function playlist() {
+  const a = w.AudioSystem;
+  if (!a || typeof a.loadPlaylist !== 'function') return null;
+  let list = [];
+  try { list = a.loadPlaylist() || []; } catch (_e) { list = a.playlist || []; }
+  return { loop: a.loopMode || 'sequence', current: String(a.currentTrackId || ''),
+    tracks: list.filter(Boolean).map((t) => ({ id: String(t.id), title: String(t.title || t.id), meta: String(t.meta || ''), user: !!t.user })) };
+}
+export function playTrack(id) {
+  const a = w.AudioSystem;
+  if (a && typeof a.playTrack === 'function') a.playTrack(String(id));
+}
+export function setLoop(mode) {
+  const a = w.AudioSystem;
+  if (!a || typeof a.setLoopMode !== 'function') return;
+  a.setLoopMode(mode);
+  if (typeof a.saveSettings === 'function') a.saveSettings();
+}
+export function importMusic(files) {
+  const a = w.AudioSystem;
+  return new Promise((resolve) => {
+    if (!a || typeof a.importUserMusic !== 'function') { resolve(false); return; }
+    a.importUserMusic(files, () => resolve(true));
+  });
+}
+export function removeTrack(id) {
+  const a = w.AudioSystem;
+  return !!(a && typeof a.removeUserTrack === 'function' && a.removeUserTrack(String(id)));
+}
+// 显示：全屏或窗口（内核 _tmSetFullscreen：桌面版走主进程，浏览器走 Fullscreen API；偏好存本机，默认全屏）
+export function fullscreen() {
+  try { return localStorage.getItem('tm.fullscreen') !== '0'; } catch (_e) { return true; }
+}
+export function setFullscreen(on) {
+  if (typeof w._tmSetFullscreen === 'function') w._tmSetFullscreen(!!on);
+}

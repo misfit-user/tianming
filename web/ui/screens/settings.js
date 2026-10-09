@@ -150,8 +150,33 @@ export function openSettings({ tab = 'ai' } = {}) {
         { value: getSetting('textSize'), onchange: (v) => setSetting('textSize', v) }), '正文字号。小屏上已自动放到看得清，仍嫌小可再放大。'),
       row('记数', kaiguan('汉字记数（关则用阿拉伯数字）', { checked: getSetting('numerals') !== 'arabic', onchange: (on) => setSetting('numerals', on ? 'cn' : 'arabic') })),
       row('动效', kaiguan('少动效（只留淡入淡出）', { checked: getSetting('motion') === 'less', onchange: (on) => setSetting('motion', on ? 'less' : 'full') })),
+      row('显示', qianzi([{ value: 'fs', label: '全屏' }, { value: 'win', label: '窗口' }], { value: cfg.fullscreen() ? 'fs' : 'win', onchange: (v) => cfg.setFullscreen(v === 'fs') }), '偏好存本机。'),
       a ? row('殿乐', h('div.st-inline', kaiguan('', { checked: a.music, onchange: (on) => cfg.setAudio({ music: on }) }), vol(a.musicVolume, 'musicVolume'))) : null,
+      a ? row('曲库', musicBox(), '点曲名即奏；导入之曲存本机，可移除。') : null,
       a ? row('音效', h('div.st-inline', kaiguan('', { checked: a.sound, onchange: (on) => cfg.setAudio({ sound: on }) }), vol(a.soundVolume, 'soundVolume'))) : null);
+  }
+
+  // 曲库：循环之法、导入；曲目一行一首，当前所奏标朱
+  function musicBox() {
+    const box = h('div.st-music');
+    const pick = () => {
+      const inp = h('input', { type: 'file', accept: 'audio/*', multiple: true });
+      inp.addEventListener('change', async () => { await cfg.importMusic(inp.files); draw(); });
+      inp.click();
+    };
+    function draw() {
+      const pl = cfg.playlist();
+      if (!pl) { replaceChildren(box, h('small.st-note', '曲库未就绪')); return; }
+      replaceChildren(box,
+        h('div.st-inline', qianzi([{ value: 'sequence', label: '顺序' }, { value: 'single', label: '单曲' }, { value: 'random', label: '随机' }], { value: pl.loop, onchange: (v) => cfg.setLoop(v) }),
+          h('button.q-yapai', { type: 'button', onclick: pick }, '导入乐曲')),
+        pl.tracks.length ? h('ol.st-tracks', pl.tracks.map((t) => h('li' + (t.id === pl.current ? '.on' : ''),
+          h('button', { type: 'button', title: '奏此曲', onclick: () => { cfg.playTrack(t.id); draw(); } }, t.title, t.meta ? h('small', t.meta) : null),
+          t.user ? h('button.del', { type: 'button', title: '移除此导入之曲', onclick: () => { cfg.removeTrack(t.id); draw(); } }, '去') : null)))
+          : h('small.st-note', '曲库无曲'));
+    }
+    draw();
+    return box;
   }
 
   // ---------- 推演之法 ----------

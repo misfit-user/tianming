@@ -1,5 +1,5 @@
 // 方志：一府一州的志书，绫裱册页。左叶：页头（路径、名目、状态小签、隶属主官上官地形税级诸签、描述）、读数带、本道排名、六卷检签、页脚动作；
-// 右叶：所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）。
+// 右叶：所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）、账本（赋税核算、公库、实绩、灾异）。
 // 据奏之数标「据奏」或「据报」。入口：入图后点府州小签。数据与动作经 game.fangzhi（adapter/fangzhi.js）。
 // 本方府州的营造卷可「兴造」：剧本工籍点选，或自拟营造（配了模型可先请有司核议），录入议事清册，颁行后由回合推演核办（game.yingzao）。
 import { h, replaceChildren } from '../core/dom.js';
@@ -94,7 +94,39 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
         : h('p.fz-note', '此地尚无在册工役。'));
       if (cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
     }
+    if (v.ledger) body.push(...ledgerEls());
     replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
+  }
+  function ledgerEls() {
+    let L = null;
+    try { L = F.ledger(cur.id); } catch (e) { toast(e.message); }
+    if (!L) return [h('p.fz-note', '此地无账可查。')];
+    const out = [];
+    const sec = (title, note, ...kids) => h('section.fz-sub', h('h4', title, note ? h('small', note) : null), ...kids);
+    const fs = (v, unit) => (v ? `${num(Math.abs(v) >= 1e4 ? roundSig(v, 3) : Math.round(v))}${unit || ''}` : '—');   // 表里取三位有效，零记「—」
+    if (L.taxes) out.push(sec('赋税核算', '按现行税则与征收损耗预计一年；钱、粮、布分计',
+      h('table.fz-table.fz-ledger', h('thead', h('tr', ['税目', '税基', '名义', '上解', '留用'].map((t) => h('th', t)))),
+        h('tbody', L.taxes.rows.map((x) => h('tr', h('td', x.name), h('td', x.base == null ? '—' : [fs(x.base, x.baseUnit), h('i', x.baseKind)]),
+          h('td', fs(x.nominal, x.unit)), h('td', fs(x.central, x.unit)), h('td', fs(x.local, x.unit)))))),
+      L.taxes.total.length ? h('p.fz-note', `合计上解　${L.taxes.total.map((t) => fmt(t.central, t.unit)).join('　')}`) : null));
+    if (L.treasury) {
+      const T = L.treasury;
+      out.push(sec('公库三账', '本地库藏',
+        h('div.fz-books', T.books.map((bk) => h('div.fz-book' + (bk.deficit ? '.bad' : ''),
+          h('p', h('small', bk.label), bk.deficit ? h('em', `亏${fmt(bk.deficit)}`) : null), h('b', fmt(bk.stock, bk.unit)),
+          bk.quota ? [h('i.fz-bar', h('i', { style: { width: `${bk.fill}%` } })), h('small', `额${fmt(bk.quota)} · 实占${num(bk.fill)}%`)] : null,
+          bk.inflow || bk.outflow ? h('small', [bk.inflow ? `本回合入${fmt(bk.inflow)}` : '', bk.outflow ? `出${fmt(bk.outflow)}` : ''].filter(Boolean).join('　')) : null))),
+        T.head || T.prev || T.handovers ? h('p.fz-note', [T.head ? `现掌库　${T.head}` : '', T.prev ? `前任　${T.prev}` : '', T.handovers ? `交接案卷${num(T.handovers)}条` : ''].filter(Boolean).join('　·　')) : null));
+    }
+    out.push(sec('本回合实绩', '与上回合比',
+      L.achieve.length ? h('dl.fz-rows.fz-achieve', L.achieve.map((a) => [h('dt', a.label),
+        h('dd.' + (a.delta > 0 ? 'good' : 'bad'), `${fmt(a.before)} → ${fmt(a.after, a.unit)}`,
+          h('small', `${a.delta > 0 ? '+' : '−'}${fmt(Math.abs(a.delta))}${a.pct != null && Math.abs(a.pct) >= 0.1 ? `（${a.delta > 0 ? '+' : '−'}${Math.abs(a.pct)}%）` : ''}${a.note ? `　${a.note}` : ''}`))]))
+        : h('p.fz-note', L.firstTurn ? '尚无上回合之数可比——首回合或新近设立。' : '本回合诸数与上回合无异。')));
+    if (L.disasters.length || L.loss) out.push(sec('在灾实录', '',
+      L.disasters.map((d) => h('p.fz-zai', h('b', d.kind), h('em', d.sev), d.since != null ? h('small', `起于第${num(d.since)}回合`) : null, d.note ? h('span', d.note) : null)),
+      L.loss ? h('p.fz-zai.bad', `本回合税基折损：田减${num(L.loss.farm)}%，商减${num(L.loss.trade)}%`) : null));
+    return out;
   }
 
   function doAct(kind) {

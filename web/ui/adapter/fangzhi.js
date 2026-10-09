@@ -2,7 +2,8 @@
 // 但不用其 HTML：经 TMPhase8FormalBridge.__p8MapParts 取 regionBundle 等现成算法，组成结构化的页头、读数带、本道排名与六卷，交书页去画。
 // 可见之律（奏报失真层开着、该地未揭时）：民心、吏治一律据奏评分；丁口取据报之数并注明；贪腐取据奏；役政有据奏对应的役负、抛荒改显据奏，
 // 不露瞒报之比。老方志在后几处会漏真值（职官志贪腐、户口小注丁、役政真值行、军备真兵数），新界面收紧。
-// 动作：本方州县安民、巡按、调粮、拟诏（老 regionAction，记行为信号）、改隶（TM.DivisionReassign）；兴造、地方账本另片。
+// 动作：本方州县安民、巡按、调粮、拟诏（老 regionAction，记行为信号）、改隶（TM.DivisionReassign）；兴造见 adapter/yingzao.js。
+// 第七卷「账本」点开才取（ledger）。
 import { bus } from '../core/bus.js';
 
 const w = window;
@@ -212,8 +213,9 @@ function build(p, r) {
     { key: 'junbei', seal: '军', name: '军备志', sub: '戎政边防', rows: junbei, armies },
     { key: 'zhiguan', seal: '官', name: '职官志', sub: '官守治理', rows: zhiguan },
     { key: 'fengwu', seal: '物', name: '风物志', sub: '物产设施', rows: fengwu, grid: fengwuGrid },
-    { key: 'yingzao', seal: '营', name: '营造志', sub: '已建之业 · 工役', works: worksOf(r, b) }
-  ].filter((v) => (v.rows && v.rows.length) || (v.grid && v.grid.length) || (v.works && v.works.length) || v.key === 'yingzao');
+    { key: 'yingzao', seal: '营', name: '营造志', sub: '已建之业 · 工役', works: worksOf(r, b) },
+    b.liveDivision ? { key: 'zhang', seal: '账', name: '账本', sub: '赋税核算 · 公库 · 实绩 · 灾异', ledger: true } : null   // 点开才算（ledger）
+  ].filter((v) => v && ((v.rows && v.rows.length) || (v.grid && v.grid.length) || (v.works && v.works.length) || v.key === 'yingzao' || v.ledger));
 
   return {
     id: r.id, head, band, rank: rankOf(p, r, b, circuit), vols, mine,
@@ -650,4 +652,83 @@ export function bantu(f, key, withAlerts) {
     }
     return { count: mine.length, groups, none: none.map(link), alerts };
   });
+}
+
+// ---------- 地方账本（方志「账」卷） ----------
+// 照老「地方账本」（tm-endturn-province.js openDivisionDetail）取四段，不用其 HTML：
+//   赋税核算——CascadeTax.previewRevenue 按现行税则与征收损耗预计本地各税一年的名义、上解、留用（钱粮布分计）；
+//   公库三账——存、额、亏、本回合出入，掌库与交接；本回合实绩——在编田亩、名义已征、实征、上解与上回合比；在灾实录。
+// 老账本另有户龄结构、承载力完整账、田亩诚实账（不经奏报的底账）与按粗估公式的经费核算（摆样的估数），新界面不列。
+// 财赋诸数与财赋志同口径（奏报失真层不及地方钱粮）
+const DISASTER = { drought: '旱', flood: '水', plague: '瘟', locust: '蝗', earthquake: '震', cold: '寒' };
+export function ledger(id) {
+  const p = P8();
+  const r = regionOf(id);
+  const div = r && p && typeof p.findLiveAdminDivision === 'function' ? p.findLiveAdminDivision(r) : null;
+  if (!div) return null;
+  const g = G();
+  let U = { money: '两', grain: '石', cloth: '匹' };
+  try { if (w.CurrencyUnit && w.CurrencyUnit.getUnit) U = { ...U, ...w.CurrencyUnit.getUnit() }; } catch (_e) { /* 照默认 */ }
+  const num0 = (v) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
+
+  let taxes = null;
+  const CT = w.CascadeTax;
+  if (CT && typeof CT.previewRevenue === 'function' && g.fiscalConfig && g.fiscalConfig.productionTaxVersion) {
+    let f = null;
+    try { f = CT.previewRevenue({ game: g, division: div }); } catch (e) { console.warn('[newui] 赋税预计失败', e); }
+    if (f && Array.isArray(f.regions)) {
+      const by = new Map();
+      f.regions.forEach((rg) => (rg.taxes || []).forEach((t) => {
+        let x = by.get(t.id);
+        if (!x) by.set(t.id, x = { name: String(t.name || t.id), resource: t.resource, nominal: 0, central: 0, local: 0, base: 0,
+          baseUnit: t.productionTax && t.productionTax.quantityUnit, assessed: t.taxBasePolicy === 'retained-assessment' });
+        x.nominal += num0(t.nominal); x.central += num0(t.central); x.local += num0(t.local); x.base += num0(t.baseValue);
+      }));
+      const rows = [...by.values()].filter((x) => x.nominal > 0 || x.central > 0 || x.local > 0).map((x) => {
+        const baseUnit = x.baseUnit === '本位钱' ? U.money : x.baseUnit || (x.assessed ? U[x.resource] : '');
+        return { name: x.name, unit: U[x.resource] || '', nominal: Math.round(x.nominal), central: Math.round(x.central), local: Math.round(x.local),
+          base: baseUnit ? Math.round(x.base) : null, baseUnit, baseKind: x.baseUnit ? '税基' : '账额' };
+      });
+      const total = ['money', 'grain', 'cloth'].map((k) => ({ unit: U[k], central: Math.round([...by.values()].filter((x) => x.resource === k).reduce((s, x) => s + x.central, 0)) })).filter((x) => x.central > 0);
+      if (rows.length) taxes = { rows, total };
+    }
+  }
+
+  let treasury = null;
+  const pt = div.publicTreasury;
+  if (pt && typeof pt === 'object') {
+    const books = [['money', '银账'], ['grain', '粮账'], ['cloth', '布账']].map(([k, label]) => {
+      const led = pt[k];
+      if (!led) return null;
+      const stock = num0(led.stock), quota = num0(led.quota);
+      return { label, unit: U[k], stock, quota: quota || null, fill: quota > 0 ? Math.min(100, Math.round(stock / quota * 100)) : null,
+        deficit: num0(led.deficit) || null, inflow: num0(led.inflowThisTurn || led.inflow) || null, outflow: num0(led.outflowThisTurn || led.outflow) || null };
+    }).filter(Boolean);
+    if (books.length) treasury = { books, head: String(pt.currentHead || ''), prev: String(pt.previousHead || ''), handovers: Array.isArray(pt.handoverLog) ? pt.handoverLog.length : 0 };
+  }
+
+  const achieve = [];
+  const land = div._thisTurnLandFlow;
+  if (land && land.before !== land.after) {
+    const d = num0(land.after) - num0(land.before);
+    achieve.push({ label: '在编田亩', before: num0(land.before), after: num0(land.after), unit: '亩', note: num0(land.surveyed) > 0 ? '清丈复田' : d > 0 ? '开垦增田' : '兼并失田' });
+  }
+  const lt = div._lastTurnFiscal, fis = div.fiscal || {};
+  if (lt) {
+    [['claimedRevenue', '名义已征'], ['actualRevenue', '实征到账'], ['remittedToCenter', '上解中央']].forEach(([k, label]) => {
+      if (fis[k] == null || num0(fis[k]) === num0(lt[k])) return;
+      achieve.push({ label, before: num0(lt[k]), after: num0(fis[k]), unit: U.money, note: '' });
+    });
+  }
+  achieve.forEach((a) => { a.delta = a.after - a.before; a.pct = a.before > 0 ? Math.round(a.delta / a.before * 1000) / 10 : null; });
+
+  const eb = div.economyBase || {};
+  const disasters = (Array.isArray(eb.disasterRecord) ? eb.disasterRecord : []).map((rec) => {
+    const sev = num0(rec.severity) || 1;
+    return { kind: DISASTER[rec.type] || String(rec.type || '灾'), sev: sev >= 3 ? '重' : sev >= 2 ? '中' : '轻', since: rec.startTurn != null ? num0(rec.startTurn) : null, note: String(rec.note || '') };
+  });
+  const der = div._disasterEconomyReduce;
+  const loss = der && (num0(der.farmland) > 0 || num0(der.commerceVolume) > 0) ? { farm: Math.round(num0(der.farmland) * 100), trade: Math.round(num0(der.commerceVolume) * 100) } : null;
+
+  return { taxes, treasury, achieve, disasters, loss, firstTurn: !lt && !land };
 }

@@ -42,7 +42,8 @@ export function createHelp({ root, game, profile }) {
       ] },
       { key: 'keys', title: '键位', body: () => [h('dl.hp-dl', [
         ['Esc', '收卷、合册；书案上按则暂停；舆图里起身离图'], ['Ctrl+Enter', '问对、朝议、密问、科议里递话；问天里问天'],
-        ['← →', `批阅${p.docket.name}时翻折；人物图志里翻页`], ['PageUp / PageDown', `批阅${p.docket.name}时换一件`]].map(([k, v]) => [h('dt', h('kbd', k)), h('dd', v)]))] }
+        ['← →', `批阅${p.docket.name}时翻折；人物图志里翻页；史官实录里翻回`], ['PageUp / PageDown', `批阅${p.docket.name}时换一件`],
+        ['1～9、0', '案前开右侧书目第几册（舆图、人物图志……依次）'], ['F1', '开此帮助册']].map(([k, v]) => [h('dt', h('kbd', k)), h('dd', v)]))] }
     ];
   }
   function all() {

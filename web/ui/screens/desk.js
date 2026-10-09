@@ -132,7 +132,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   createBattle({ game });                             // 战事三卷：会战阶段的请旨、战报、旁观（推演中弹出，压在推演幕上）
 
   function furnish() {
-    replaceChildren(rail, prof.books.map(([ch, name, key]) => wadang({ ch, name, onclick: () => onBook(key, name) })));
+    replaceChildren(rail, prof.books.map(([ch, name, key], i) => { const b = wadang({ ch, name, onclick: () => onBook(key, name) }); if (i < 10) b.title = `${name}（数字键${(i + 1) % 10}）`; return b; }));
     plaques = {};
     for (const c of prof.channels) plaques[c.key] = pai({ title: c.title, sub: c.sub, onclick: () => onChannel(c) });
     replaceChildren(dock, ...Object.values(plaques), sealButton({ chars: prof.seal.chars, title: prof.seal.title, onclick: () => onSeal() }));
@@ -194,6 +194,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     card.classList.remove('hide');
   }
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dive.mode === 'map') dive.rise(); });
+  // 数字键一至九、〇：开右侧书目第几册（案前、无卷无册开着、不在输入时）
+  window.addEventListener('keydown', (e) => {
+    if (!/^[0-9]$/.test(e.key) || e.ctrlKey || e.altKey || e.metaKey || e.repeat) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    if (!el.classList.contains('on') && dive.mode !== 'map') return;
+    if (document.querySelector('.ce-ov.on, .q-juan-veil') || (window.GM && window.GM.busy)) return;
+    const book = prof.books[(Number(e.key) + 9) % 10];
+    if (!book) return;
+    e.preventDefault();
+    onBook(book[2], book[1]);
+  });
   // 检府州：先全名、再包含；镜头沿当前俯角与朝向缓移到其治所上空（约 0.9 秒），落定后点亮并出小签
   function seekRegion(q) {
     const name = String(q || '').trim();

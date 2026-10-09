@@ -20,7 +20,7 @@
 .ar-row .who { grid-area: who; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-row .who em { font-style: normal; color: #8a2a1c; }
 .ar-row .marks { grid-area: marks; display: flex; gap: .125rem; }
-.ar-row .marks i { font: normal max(.75rem, 10px)/max(1.25rem, 15px) var(--f-kai); width: max(1.25rem, 15px); text-align: center; color: #8a5a12; border: 1px solid rgba(138, 90, 18, .45); }
+.ar-row .marks i { font: normal max(.75rem, 11px)/max(1.25rem, 16px) var(--f-kai); width: max(1.25rem, 16px); text-align: center; color: #8a5a12; border: 1px solid rgba(138, 90, 18, .45); }
 .ar-row .marks i.hot { color: #f9ead2; background: #a3301f; border-color: #a3301f; }
 .ar-row .marks i.go { color: #2f6b55; border-color: rgba(47, 107, 85, .5); }
 .ar-row.hot b { color: #7d1d12; }
@@ -50,11 +50,11 @@
 .ar-unit { display: grid; grid-template-columns: minmax(0, 7.5rem) auto minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; margin: 0 0 .1875rem; font-size: var(--fs-2); }
 .ar-unit b { font-weight: 400; font-size: var(--fs-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-unit em { font-style: normal; font-size: var(--fs-1); color: #8a5a12; }
-.ar-unit small { color: var(--ink-faint); white-space: nowrap; }
+.ar-unit small { font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; }
 .ar-kv { display: flex; align-items: baseline; gap: .5rem; margin: 0 0 .1875rem; font-size: var(--fs-2); }
 .ar-kv span { min-width: 4rem; color: var(--ink-soft); }
 .ar-kv b { font: 400 var(--fs-3) var(--f-title); }
-.ar-kv small { color: var(--ink-faint); }
+.ar-kv small { font-size: var(--fs-1); color: var(--ink-faint); }
 .ar-arrears { margin: .375rem 0 0; font-size: var(--fs-2); color: #8a2a1c; letter-spacing: .1em; }
 .ar-command { white-space: pre-wrap; font-size: var(--fs-2); line-height: 1.8; color: var(--ink-soft); }
 /* 处置一栏钉在右叶底边，长卷滚动时也在手边 */

@@ -35,7 +35,7 @@
         var col = typeColor[t] || 'var(--txt-d)';
         var lbl = typeLabel[t] || t;
         var sub = [];
-        if (it.owner) sub.push('\u5c5e\u65bc:' + escHtml(it.owner));
+        if (it.owner) sub.push('属于:' + escHtml(it.owner));
         if (it.controller) sub.push('\u63a7\u5236:' + escHtml(it.controller));
         if (it.population) sub.push('\u4eba\u53e3:' + escHtml(it.population));
         if (it.climate) sub.push('\u6c14\u5019:' + escHtml(it.climate));
@@ -62,7 +62,7 @@
     if (!ex) return;
     if (t === 'city') {
       ex.innerHTML =
-        '<div class="form-group"><label>\u5c5e\u65bc</label><input id="gm_owner"></div>' +
+        '<div class="form-group"><label>属于</label><input id="gm_owner"></div>' +
         '<div class="form-group"><label>\u4eba\u53e3</label><input id="gm_population"></div>' +
         '<div class="form-group"><label>\u8d44\u6e90</label><input id="gm_resources"></div>' +
         '<div class="form-group"><label>\u9632\u5fa1</label><input id="gm_defenses"></div>';
@@ -90,7 +90,7 @@
     var extraHTML = '';
     if (t === 'city') {
       extraHTML =
-        '<div class="form-group"><label>\u5c5e\u65bc</label><input id="gm_owner" value="' + escHtml(item.owner||'') + '"></div>' +
+        '<div class="form-group"><label>属于</label><input id="gm_owner" value="' + escHtml(item.owner||'') + '"></div>' +
         '<div class="form-group"><label>\u4eba\u53e3</label><input id="gm_population" value="' + escHtml(item.population == null ? '' : item.population) + '"></div>' +
         '<div class="form-group"><label>\u8d44\u6e90</label><input id="gm_resources" value="' + escHtml(item.resources||'') + '"></div>' +
         '<div class="form-group"><label>\u9632\u5fa1</label><input id="gm_defenses" value="' + escHtml(item.defenses||'') + '"></div>';

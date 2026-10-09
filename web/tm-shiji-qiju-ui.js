@@ -107,11 +107,11 @@ function renderShijiList(force){
   function _sjTypes(sj){
     var types = {};
     var txt = (sj.shizhengji||'') + ' ' + (sj.shilu||'') + ' ' + (sj.szjTitle||'');
-    if (/\u6218|\u6218\u4E8B|\u653B\u57CE|\u6212|\u53D7\u9677|\u65CB\u5E08|\u51FA\u5175|\u6218\u5F79|\u5927\u6377/.test(txt)) types.war = 1;
-    if (/\u6B81|\u5D29|\u8584|\u55E1|\u4EBA\u6BBB|\u75C5\u6B7B|\u611F\u75BE|\u81EA\u5208/.test(txt)) types.death = 1;
+    if (/战|战事|攻城|戒|失陷|旋师|出兵|战役|大捷/.test(txt)) types.war = 1;
+    if (/殁|崩|薨|薨|人殁|病死|感疾|自刎/.test(txt)) types.death = 1;
     if (/\u5BC6\u8C0B|\u963F\u8C0B|\u9634\u8C0B/.test(txt)) types.scheme = 1;
     if (/\u515A\u4E89|\u515A\u6D3E|\u4E1C\u6797|\u9609\u515A|\u515A\u7FBD/.test(txt)) types.faction = 1;
-    if (/\u65F1|\u6D2A|\u96EA\u707E|\u9739\u9738|\u9707\u707E|\u75AB|\u7792|\u5929\u706B|\u4EBA\u707E|\u8759/.test(txt)) types.calamity = 1;
+    if (/旱|洪|雪灾|霹霸|震灾|疫|蝗|天火|人灾|蝙/.test(txt)) types.calamity = 1;
     if (Array.isArray(sj.personnel) && sj.personnel.length > 0) types.event = 1;
     return types;
   }
@@ -153,7 +153,7 @@ function renderShijiList(force){
   var typeOpts = [
     {k:'', l:'\u5168\u90E8\u7C7B\u578B'},
     {k:'war', l:'\u2694 \u6218\u4E8B'},
-    {k:'death', l:'\u2623 \u4EBA\u6BBB'},
+    {k:'death', l:'\u2623 人殁'},
     {k:'calamity', l:'\u26A1 \u707E\u5F02'},
     {k:'scheme', l:'\u25C9 \u5BC6\u8C0B'},
     {k:'faction', l:'\u25CE \u515A\u4E89'},
@@ -215,7 +215,7 @@ function renderShijiList(force){
       // tags
       var tags = [];
       if (types.war) tags.push({cls:'war', l:'\u6218\u4E8B'});
-      if (types.death) tags.push({cls:'death', l:'\u4EBA\u6BBB'});
+      if (types.death) tags.push({cls:'death', l:'人殁'});
       if (types.scheme) tags.push({cls:'scheme', l:'\u5BC6\u8C0B'});
       if (types.faction) tags.push({cls:'faction', l:'\u515A\u4E89'});
       if (types.calamity) tags.push({cls:'calamity', l:'\u707E\u5F02'});
@@ -257,11 +257,11 @@ function _sjlExtractDeltas(sj) {
   }
   // 兜底：从文字中抽出主要字眼
   var t = (sj.shizhengji||'') + (sj.shilu||'');
-  if (/\u8FBD\u9952|\u9952\u94F6|\u62E8\u9952/.test(t)) badges.push({dir:'dn', lbl:'\u8FBD\u9952', val:'\u53D1'});
+  if (/辽饷|饷银|拨饷/.test(t)) badges.push({dir:'dn', lbl:'辽饷', val:'发'});
   if (/\u80DC\u6377|\u5927\u6377|\u5C0F\u80DC/.test(t)) badges.push({dir:'up', lbl:'\u519B\u5A01', val:'+'});
   if (/\u65F1|\u6D2A|\u96EA\u707E/.test(t)) badges.push({dir:'dn', lbl:'\u707E\u5BB3', val:'\u5347'});
-  if (/\u64A2\u804C|\u8D2C|\u964D/.test(t)) badges.push({dir:'dn', lbl:'\u4EBA\u4E8B', val:'\u53D8'});
-  if (/\u5347\u64A2|\u6269\u6743|\u64A2\u4EBB/.test(t)) badges.push({dir:'up', lbl:'\u5347\u64A2', val:'+'});
+  if (/撤职|贬|降/.test(t)) badges.push({dir:'dn', lbl:'人事', val:'变'});
+  if (/升擢|扩权|擢任/.test(t)) badges.push({dir:'up', lbl:'升擢', val:'+'});
   if (/\u515A|\u4E89|\u5F39\u52BE/.test(t)) badges.push({dir:'dn', lbl:'\u671D\u7EB2', val:'\u635F'});
   return badges;
 }

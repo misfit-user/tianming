@@ -571,7 +571,7 @@ async function _osmConfirm(){
 // Helper: build style+refText prefix for prompts
 function _aiStylePrefix(styleVal, refVal) {
   var parts = [];
-  if (styleVal) parts.push('\u5399\u4e8b\u98ce\u683c\uff1a' + styleVal + '\u3002');
+  if (styleVal) parts.push('叙事风格：' + styleVal + '。');
   if (refVal) parts.push('\u53c2\u8003\u8d44\u6599\uff1a' + refVal + '\u3002');
   return parts.join('');
 }
@@ -596,7 +596,7 @@ function _aiGenOptionsHTML(containerId, showMode) {
   return modeHtml +
     '<details style="margin-bottom:0.4rem;"><summary style="font-size:0.82rem;color:var(--txt-d);cursor:pointer;">\u2699\ufe0f \u9ad8\u7ea7\u9009\u9879</summary>'+
     '<div style="padding:0.4rem 0;">'+
-    '<div style="margin-bottom:0.3rem;"><label style="font-size:0.8rem;color:var(--txt-d);">\u5399\u4e8b\u98ce\u683c\u8986\u76d6 <span style="font-size:0.75rem;">(\u7a7a\u5219\u7528\u5168\u5c40\u8bbe\u7f6e: '+_officeEditorEsc((typeof P!=='undefined'&&P.conf&&P.conf.style)||'\u6587\u5b66\u5316')+')</span></label>'+
+    '<div style="margin-bottom:0.3rem;"><label style="font-size:0.8rem;color:var(--txt-d);">叙事风格覆盖 <span style="font-size:0.75rem;">(空则用全局设置: '+_officeEditorEsc((typeof P!=='undefined'&&P.conf&&P.conf.style)||'文学化')+')</span></label>'+
     '<input id="'+containerId+'-style" placeholder="\u5982\uff1a\u5c0f\u8bf4\u98ce\u683c/\u8bf4\u4e66\u4eba\u98ce\u683c/\u6b63\u53f2\u98ce\u683c" style="width:100%;font-size:0.82rem;"></div>'+
     '<div><label style="font-size:0.8rem;color:var(--txt-d);">\u53c2\u8003\u8d44\u6599\u8986\u76d6 <span style="font-size:0.75rem;">(\u7a7a\u5219\u7528\u5168\u5c40\u53c2\u8003\u6587\u672c)</span></label>'+
     '<textarea id="'+containerId+'-ref" rows="2" placeholder="\u53ef\u8d34\u5165\u53c2\u8003\u6587\u672c\u3001\u53f2\u4e66\u6bb5\u843d\u7b49\u2026" style="width:100%;font-size:0.82rem;"></textarea></div>'+
@@ -664,10 +664,10 @@ window.aiGenChr = async function() {
         var scnName = ctx ? ctx.name : '';
         var promptBody;
         if (mode === 'manual' && manualDesc) {
-          promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62125\u4e2a\u89d2\u8272\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:[{"name":"","title":"","desc":"","personality":"","stats":{},"loyalty":70,"ambition":50,"benevolence":50,"intelligence":70,"valor":60,"morale":75,"stance":"","faction":"","isHistorical":false}]';
+          promptBody = '请根据以下描述生成5个角色：' + manualDesc + '。返回json:[{"name":"","title":"","desc":"","personality":"","stats":{},"loyalty":70,"ambition":50,"benevolence":50,"intelligence":70,"valor":60,"morale":75,"stance":"","faction":"","isHistorical":false}]';
         } else {
           var histReq = '\u300a\u8981\u6c42\u300b\u4eba\u7269\u5fc5\u987b\u662f' + era + '\u65f6\u671f\u5b9e\u9645\u5b58\u5728\u7684\u5386\u53f2\u4eba\u7269\uff0c\u4e0d\u5f97\u865a\u6784\u3002';
-          promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002' + histReq + '\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62125\u4e2a\u5386\u53f2\u4eba\u7269\uff0c\u4e25\u683c\u6309\u6b63\u53f2\u8fd8\u539f\u3002\u8fd4\u56dejson:[{"name":"","title":"","desc":"","personality":"","stats":{},"loyalty":70,"ambition":50,"benevolence":50,"intelligence":70,"valor":60,"morale":75,"stance":"","faction":"","isHistorical":true}]';
+          promptBody = '你是中国历史专家。' + histReq + '请为剧本《' + scnName + '》(' + era + ')生成5个历史人物，严格按正史还原。返回json:[{"name":"","title":"","desc":"","personality":"","stats":{},"loyalty":70,"ambition":50,"benevolence":50,"intelligence":70,"valor":60,"morale":75,"stance":"","faction":"","isHistorical":true}]';
         }
         var content = await callAISmart(prefix + promptBody, 2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
         var generatedCharacters = extractJSON(content);
@@ -703,10 +703,10 @@ window.aiGenFac = async function() {
         var scnName = ctx ? ctx.name : '';
         var promptBody;
         if (mode === 'manual' && manualDesc) {
-          promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62123-5\u4e2a\u6d3e\u7cfb\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:[{"name":"","leader":"","desc":"","strength":50,"ideology":"","territory":"","traits":[]}]';
+          promptBody = '请根据以下描述生成3-5个派系：' + manualDesc + '。返回json:[{"name":"","leader":"","desc":"","strength":50,"ideology":"","territory":"","traits":[]}]';
         } else {
-          var histReq = '\u300a\u8981\u6c42\u300b\u6d3e\u7cfb\u5fc5\u987b\u662f' + era + '\u65f6\u671f\u771f\u5b9e\u5b58\u5728\u7684\u5386\u53f2\u6d3e\u7cfb\u3001\u5355\u8425\u6216\u653f\u6cbb\u96c6\u56e2\uff0c\u9886\u8896\u4eba\u7269\u5fc5\u987b\u662f\u8be5\u65f6\u671f\u5b9e\u6709\u5176\u4eba\uff0c\u4e0d\u5f97\u865a\u6784\u3002';
-          promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002' + histReq + '\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5386\u53f2\u4e0a\u5b9e\u9645\u5b58\u5728\u7684\u6d3e\u7cfb\u6216\u653f\u6cbb\u96c6\u56e2\uff0c\u4e25\u683c\u6309\u6b63\u53f2\u8fd8\u539f\u3002\u8fd4\u56dejson:[{"name":"","leader":"","desc":"","strength":50,"ideology":"","territory":"","traits":[]}]';
+          var histReq = '《要求》派系必须是' + era + '时期真实存在的历史派系、阵营或政治集团，领袖人物必须是该时期实有其人，不得虚构。';
+          promptBody = '你是中国历史专家。' + histReq + '请为剧本《' + scnName + '》(' + era + ')生成3-5个历史上实际存在的派系或政治集团，严格按正史还原。返回json:[{"name":"","leader":"","desc":"","strength":50,"ideology":"","territory":"","traits":[]}]';
         }
         var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
         var generatedFactions = extractJSON(c);
@@ -741,9 +741,9 @@ window.aiGenVar = async function() {
       var ctx = (scn.name||'') + (scn.era ? ',' + scn.era : '') + (scn.background ? ',' + scn.background.slice(0,80) : '');
       var promptBody;
       if (mode === 'manual' && manualDesc) {
-        promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62126\u4e2a\u53d8\u91cf\u548c5\u4e2a\u5173\u7cfb\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:{"variables":[{"name":"","value":50,"min":0,"max":100,"desc":""}],"relations":[{"name":"","from":"","to":"","type":"","value":50}]}';
+        promptBody = '请根据以下描述生成6个变量和5个关系：' + manualDesc + '。返回json:{"variables":[{"name":"","value":50,"min":0,"max":100,"desc":""}],"relations":[{"name":"","from":"","to":"","type":"","value":50}]}';
       } else {
-        promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002\u5267\u672c\u80cc\u666f\uff1a' + ctx + '\n\u8bf7\u751f\u62126\u4e2a\u5168\u5c40\u53d8\u91cf\u548c5\u4e2a\u4eba\u7269\u5173\u7cfb\u3002\u53d8\u91cf\u5e94\u53cd\u6620\u8be5\u65f6\u671f\u771f\u5b9e\u653f\u6cbb\u3001\u519b\u4e8b\u3001\u7ecf\u6d4e\u3001\u6c11\u5fc3\u72b6\u51b5\u3002\n\u8fd4\u56dejson:{"variables":[{"name":"","value":50,"min":0,"max":100,"desc":""}],"relations":[{"name":"","from":"","to":"","type":"","value":50}]}';
+        promptBody = '你是中国历史专家。剧本背景：' + ctx + '\n请生成6个全局变量和5个人物关系。变量应反映该时期真实政治、军事、经济、民心状况。\n返回json:{"variables":[{"name":"","value":50,"min":0,"max":100,"desc":""}],"relations":[{"name":"","from":"","to":"","type":"","value":50}]}';
       }
       showLoading('\u751f\u6210\u53d8\u91cf\u4e0e\u5173\u7cfb...');
       try {
@@ -786,9 +786,9 @@ window.aiGenTech = async function() {
         var era = ctx ? ctx.era : '';
         var promptBody;
         if (mode === 'manual' && manualDesc) {
-          promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62128\u4e2a\u79d1\u6280\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:[{"name":"","desc":"","prereqs":[],"costs":[],"effect":{},"era":""}]';
+          promptBody = '请根据以下描述生成8个科技：' + manualDesc + '。返回json:[{"name":"","desc":"","prereqs":[],"costs":[],"effect":{},"era":""}]';
         } else {
-          promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62128\u4e2a\u8be5\u65f6\u671f\u5b9e\u9645\u5b58\u5728\u7684\u5386\u53f2\u79d1\u6280\u6216\u5236\u5ea6\u521b\u65b0\u3002\u8fd4\u56dejson:[{"name":"","desc":"","prereqs":[],"costs":[{"variable":"\u7ecf\u6d4e\u5b9e\u529b","amount":20}],"effect":{},"era":"\u521d\u7ea7/\u4e2d\u7ea7/\u9ad8\u7ea7"}]';
+          promptBody = '你是中国历史专家。请为剧本《' + scnName + '》(' + era + ')生成8个该时期实际存在的历史科技或制度创新。返回json:[{"name":"","desc":"","prereqs":[],"costs":[{"variable":"经济实力","amount":20}],"effect":{},"era":"初级/中级/高级"}]';
         }
         var c = await callAISmart(prefix + promptBody, 2000,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=8;}catch(e){return false;}}});
         var generatedTechs = extractJSON(c);
@@ -824,9 +824,9 @@ window.aiGenCivic = async function() {
         var scnName = ctx ? ctx.name : '';
         var promptBody;
         if (mode === 'manual' && manualDesc) {
-          promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62123-5\u4e2a\u5e02\u653f\u6216\u5236\u5ea6\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]';
+          promptBody = '请根据以下描述生成3-5个市政或制度：' + manualDesc + '。返回json:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]';
         } else {
-          promptBody = '\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002\u8bf7\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5e02\u653f\u6b63\u7b56\u6216\u5236\u5ea6\uff0c\u5fc5\u987b\u662f\u8be5\u65f6\u671f\u5386\u53f2\u4e0a\u5b9e\u9645\u5b58\u5728\u7684\u3002\u8fd4\u56dejson:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]';
+          promptBody = '你是中国历史专家。请为剧本《' + scnName + '》(' + era + ')生成3-5个市政政策或制度，必须是该时期历史上实际存在的。返回json:[{"name":"","desc":"","era":"","prereqs":[],"effect":{},"costs":[]}]';
         }
         var c = await callAISmart(prefix + promptBody, 2000,{minLength:150,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
         var generatedCivics = extractJSON(c);
@@ -862,9 +862,9 @@ window.aiGenItems = async function() {
         var era = ctx ? ctx.era : '';
         var promptBody;
         if (mode === 'manual' && manualDesc) {
-          promptBody = '\u8bf7\u6839\u636e\u4ee5\u4e0b\u63cf\u8ff0\u751f\u62123-5\u4e2a\u7269\u54c1\uff1a' + manualDesc + '\u3002\u8fd4\u56dejson:[{"name":"","type":"item/tech/policy","desc":"","effect":{},"prerequisite":""}]';
+          promptBody = '请根据以下描述生成3-5个物品：' + manualDesc + '。返回json:[{"name":"","type":"item/tech/policy","desc":"","effect":{},"prerequisite":""}]';
         } else {
-          promptBody = '\u4e3a\u5267\u672c\u300a' + scnName + '\u300b(' + era + ')\u751f\u62123-5\u4e2a\u5177\u6709\u5386\u53f2\u611f\u7684\u7269\u54c1\u6216\u5b9d\u7269\u3002\u8fd4\u56dejson:[{"name":"","type":"item","desc":"","effect":{},"prerequisite":""}]';
+          promptBody = '为剧本《' + scnName + '》(' + era + ')生成3-5个具有历史感的物品或宝物。返回json:[{"name":"","type":"item","desc":"","effect":{},"prerequisite":""}]';
         }
         var c = await callAISmart(prefix + promptBody, 1500,{minLength:100,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=3;}catch(e){return false;}}});
         var generatedItems = extractJSON(c);
@@ -889,14 +889,14 @@ window.aiGenFullScenario = function() {
   panel.innerHTML =
     '<div class="cd"><h4 style="color:var(--gold);">\uD83E\uDD16 AI\u751f\u6210\u5386\u53f2\u5267\u672c</h4>'+
     '<div class="rw"><div class="fd full"><label>\u671d\u4ee3 / \u7687\u5e1d <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u5fc5\u586b\uff09</span></label>'+
-    '<input id="fg-dynasty" placeholder="\u5982\uff1a\u660e\u671d\u5d07\u797a\u7687\u5e1d / \u5510\u671d\u674e\u4e16\u6c11" style="width:100%;"></div></div>'+
+    '<input id="fg-dynasty" placeholder="如：明朝崇祯皇帝 / 唐朝李世民" style="width:100%;"></div></div>'+
     '<div class="rw"><div class="fd full"><label>\u8865\u5145\u63cf\u8ff0 <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u53ef\u9009\uff0c\u6307\u5b9a\u80cc\u666f\u3001\u4e8b\u4ef6\uff09</span></label>'+
-    '<textarea id="fg-desc" rows="2" placeholder="\u5982\uff1a\u5d07\u797a\u5341\u4e03\u5e74\uff0c\u674e\u81ea\u6210\u5175\u4e34\u57ce\u4e0b\uff0c\u671d\u5c40\u52a8\u8361\u2026"></textarea></div></div>'+
+    '<textarea id="fg-desc" rows="2" placeholder="如：崇祯十七年，李自成兵临城下，朝局动荡…"></textarea></div></div>'+
     '<div class="rw"><div class="fd"><label>\u751f\u6210\u8be6\u7ec6\u7a0b\u5ea6</label>'+
     '<select id="fg-words"><option value="brief">\u7b80\u7565\uff08\u5feb\u901f\uff09</option><option value="normal" selected>\u6807\u51c6\uff08\u63a8\u8350\uff09</option><option value="detailed">\u8be6\u7ec6\uff08\u5185\u5bb9\u4e30\u5bcc\uff09</option><option value="full">\u5b8c\u6574\uff08\u6700\u8be6\u5c3d\uff09</option></select></div></div>'+
     '<details style="margin:0.4rem 0;"><summary style="font-size:0.82rem;color:var(--txt-d);cursor:pointer;">\u2699\ufe0f \u9ad8\u7ea7\u9009\u9879</summary>'+
     '<div style="padding:0.4rem 0;">'+
-    '<div style="margin-bottom:0.3rem;"><label style="font-size:0.8rem;color:var(--txt-d);">\u5399\u4e8b\u98ce\u683c\u8986\u76d6 <span style="font-size:0.75rem;">(\u7a7a\u5219\u7528\u5168\u5c40: ' + _officeEditorEsc(globalStyle) + ')</span></label>'+
+    '<div style="margin-bottom:0.3rem;"><label style="font-size:0.8rem;color:var(--txt-d);">叙事风格覆盖 <span style="font-size:0.75rem;">(空则用全局: ' + _officeEditorEsc(globalStyle) + ')</span></label>'+
     '<input id="fg-style" placeholder="\u5982\uff1a\u5c0f\u8bf4\u98ce\u683c/\u8bf4\u4e66\u4eba\u98ce\u683c/\u6b63\u53f2\u98ce\u683c" style="width:100%;font-size:0.82rem;"></div>'+
     '<div><label style="font-size:0.8rem;color:var(--txt-d);">\u53c2\u8003\u8d44\u6599\u8986\u76d6 <span style="font-size:0.75rem;">(\u7a7a\u5219\u7528\u5168\u5c40\u53c2\u8003\u6587\u672c)</span></label>'+
     '<textarea id="fg-ref" rows="2" placeholder="\u53ef\u8d34\u5165\u53c2\u8003\u6587\u672c\u3001\u53f2\u4e66\u6bb5\u843d\u7b49\u2026" style="width:100%;font-size:0.82rem;"></textarea></div>'+
@@ -2003,7 +2003,7 @@ function aiGenOfficeEd() {
   }
   openGenericModal('\uD83E\uDD16 AI\u751F\u6210\u5B98\u5236\uFF08\u5B8C\u6574\u7248\uFF09',
     '<div class="form-group"><label>\u671D\u4EE3 / \u5386\u53F2\u80CC\u666F\u65F6\u671F</label>'
-    +'<input id="gmf-dynasty" placeholder="\u5982\uFF1A\u5510\u671D\u5F00\u5143\u5E74\u95F4\u3001\u660E\u671D\u5D07\u797A\u5341\u4E03\u5E74" value="' + escHtml(_scnBg) + '"></div>'
+    +'<input id="gmf-dynasty" placeholder="如：唐朝开元年间、明朝崇祯十七年" value="' + escHtml(_scnBg) + '"></div>'
     +'<div class="form-group"><label>\u751F\u6210\u8303\u56F4</label>'
     +'<select id="gmf-scope"><option value="full">\u5B8C\u6574\u5B98\u5236\uFF08\u6240\u6709\u90E8\u95E8+\u5173\u952E\u89D2\u8272\uFF09</option><option value="skeleton">\u4EC5\u9AA8\u67B6\uFF08\u4E0D\u751F\u6210\u89D2\u8272\uFF09</option></select></div>'
     +'<div style="font-size:0.75rem;color:var(--txt-d);margin-top:0.3rem;">AI\u5C06\u67E5\u8BE2\u8BE5\u671D\u4EE3\u804C\u5B98\u5FD7/\u767E\u5B98\u5FD7\uFF0C\u5B8C\u6574\u751F\u6210\u6240\u6709\u90E8\u95E8\u548C\u5B98\u804C\u3002\u53EF\u80FD\u9700\u8981\u591A\u6B21API\u8C03\u7528\u3002</div>',

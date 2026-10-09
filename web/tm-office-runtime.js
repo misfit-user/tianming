@@ -18,7 +18,7 @@
 // v10·三朝 tab 配置（通用古制·跨朝代适配）
 var OFFICE_SUBTABS = {
   central: [
-    { key:'all', name:'\u5168 \u90E8', desc:'\u4E2D\u592E\u8862\u95E8\u00B7\u4E0D\u5206\u7C7B' },
+    { key:'all', name:'全 部', desc:'中央衙门·不分类' },
     { key:'shuji', name:'\u67A2 \u673A \u8F85 \u653F', desc:'\u76F8\u8F85\u00B7\u79E6\u6C49\u4E09\u516C/\u5510\u4E09\u7701/\u5B8B\u4E8C\u5E9C/\u660E\u9601/\u6E05\u519B\u673A' },
     { key:'liucao', name:'\u516D \u66F9 \u767E \u53F8', desc:'\u540F\u6237\u793C\u5175\u5211\u5DE5\u00B7\u79E6\u6C49\u4E5D\u537F\u2192\u5510\u5B8B\u516D\u90E8' },
     { key:'taijian', name:'\u53F0 \u8C0F \u98CE \u5BAA', desc:'\u5FA1\u53F2\u53F0/\u90FD\u5BDF\u9662/\u516D\u79D1\u00B7\u98CE\u5BAA\u76D1\u5BDF' },
@@ -29,7 +29,7 @@ var OFFICE_SUBTABS = {
     { key:'all', name:'\u5168 \u90E8', desc:'\u5185\u5EF7\u00B7\u4E0D\u5206\u7C7B' },
     { key:'zhongchao', name:'\u4E2D \u671D \u673A \u8981', desc:'\u8FD1\u4F8D\u6279\u9605\u00B7\u6C49\u4E2D\u671D/\u660E\u53F8\u793C/\u6E05\u519B\u673A\u6C49\u5316\u524D' },
     { key:'tiqi', name:'\u7F07 \u9A91 \u8033 \u76EE', desc:'\u4FA6\u7F09\u7279\u52A1\u00B7\u6C49\u7EE3\u8863/\u660E\u9526\u8863\u536B\u4E1C\u5382' },
-    { key:'suwei', name:'\u5BBF \u536B \u7981 \u519B', desc:'\u5BAB\u7981\u7532\u5175\u00B7\u6C49\u5357\u5317\u519B/\u5510\u5317\u8862/\u660E\u5FA1\u9A6C\u56DB\u536B/\u6E05\u4F8D\u536B' },
+    { key:'suwei', name:'宿 卫 禁 军', desc:'宫禁甲兵·汉南北军/唐北衙/明御马四卫/清侍卫' },
     { key:'gongyu', name:'\u4F9B \u5FA1 \u5BAB \u52A1', desc:'\u5BAB\u95F1\u4F9B\u5FA1\u00B7\u6C49\u5C11\u5E9C/\u5510\u6BBF\u4E2D/\u660E\u4E8C\u5341\u56DB\u76D1/\u6E05\u5185\u52A1\u5E9C' }
   ],
   region: [
@@ -47,27 +47,27 @@ var _OFFICE_CLASSIFIER_PATTERNS = [
   // 中央·寺监聚合（九寺/五监等合并节点·名内含子司名·须先于个别寺/监正则·跨朝代通用·非单朝专名）
   [/九寺|五监/, { court:'central', group:'sijian' }],
   // 内廷·中朝机要
-  [/\u53F8\u793C\u76D1|\u4E1C\u5382|\u4E2D\u66F8\u79D1|\u4FBF\u6BBF/, { court:'inner', group:'zhongchao' }],
+  [/司礼监|东厂|中书科|便殿/, { court:'inner', group:'zhongchao' }],
   // 内廷·缇骑耳目
   [/\u9526\u8863|\u897F\u5382|\u7ED3\u9526|\u7EE3\u8863|\u7F07\u9A91/, { court:'inner', group:'tiqi' }],
   // 内廷·宿卫禁军
-  [/\u5FA1\u9A6C|\u56DB\u536B|\u4E94\u519B\u90FD\u7763|\u4F8D\u536B|\u5357\u5317\u519B|\u671F\u95E8|\u7FBD\u6797|\u5317\u8862|\u5343\u725B|\u7687\u57CE|\u8BF8\u73ED\u76F4|\u73ED\u76F4/, { court:'inner', group:'suwei' }],
+  [/御马|四卫|五军都督|侍卫|南北军|期门|羽林|北衙|千牛|皇城|诸班直|班直/, { court:'inner', group:'suwei' }],
   // 内廷·供御宫务
-  [/\u5185\u5B98\u76D1|\u5C1A\u8863|\u5C1A\u81B3|\u5C1A\u5BB6|\u5C1A\u529E|\u4E0A\u6797\u82D1|\u5185\u627F\u8FD0|\u795E\u5BAB|\u76F4\u6BBF|\u5185\u5EF7|\u6BBF\u4E2D\u7701|\u5C11\u5E9C|\u5185\u52A1/, { court:'inner', group:'gongyu' }],
+  [/内官监|尚衣|尚膳|尚宫|尚功|上林苑|内承运|神宫|直殿|内廷|殿中省|少府|内务/, { court:'inner', group:'gongyu' }],
   // 地方·边镇节帅
   [/\u603B\u5175|\u4E5D\u8FB9|\u8FB9\u9547|\u536B\u6240|\u5C06\u519B/, { court:'region', group:'bianzhen' }],
   // 地方·封疆督抚
-  [/\u603B\u7763|\u5DE1\u629A|\u7ECF\u7565|\u6309\u629A|\u7BC0\u5EA6|\u5B89\u629A|\u89C2\u5BDF|\u8F6C\u8FD0|\u7559\u5B88|\u5BA3\u629A|\u5236\u7F6E|\u62DB\u629A|\u7ECF\u5236|\u9547\u629A|\u7763\u629A/, { court:'region', group:'fengjiang' }],
+  [/总督|巡抚|经略|按抚|节度|安抚|观察|转运|留守|宣抚|制置|招抚|经制|镇抚|督抚/, { court:'region', group:'fengjiang' }],
   // 地方·藩臬三司
   [/\u5E03\u653F|\u6309\u5BDF|\u90FD\u6307\u6325|\u53C2\u653F|\u53C2\u8BAE|\u76D1\u53F8|\u6F15\u53F8|\u5BAA\u53F8|\u4ED3\u53F8|\u77E5\u5E9C|\u77E5\u5DDE|\u77E5\u53BF|\u5E9C\u5DDE|\u519B\u76D1|\u8BF8\u8DEF|\u8DEF\u5206|\u53BF|\u4EB2\u6C11|\u8D64\u757F/, { court:'region', group:'fannie' }],
   // 中央·枢机辅政
   [/\u5185\u9601|\u7FF0\u6797|\u8A79\u4E8B|\u4E2D\u4E66\u7701|\u95E8\u4E0B\u7701|\u5C1A\u4E66\u7701|\u540C\u5E73\u7AE0\u4E8B|\u53C2\u77E5\u653F\u4E8B|\u4E1E\u76F8|\u5927\u5B66\u58EB|\u519B\u673A|\u653F\u4E8B\u5802|\u4E2D\u4E66\u95E8\u4E0B|\u67A2\u5BC6|\u5E73\u7AE0|\u5BB0\u6267|\u90FD\u5802|\u6BBF\u9601/, { court:'central', group:'shuji' }],
   // 中央·台谏风宪（先于六部匹配·避免都察院被判为六部）
-  [/\u90FD\u5BDF\u9662|\u5FA1\u53F2|\u5927\u7406|\u901A\u653F|\u516D\u79D1|\u7ED9\u4E8B\u4E2D|\u8C0F\u9662|\u8C0F\u8BAE|\u53F8\u9685|\u94F6\u53F0|\u767B\u95FB|\u901A\u8FDB|\u9F13\u9662/, { court:'central', group:'taijian' }],
+  [/都察院|御史|大理|通政|六科|给事中|谏院|谏议|司隶|银台|登闻|通进|鼓院/, { court:'central', group:'taijian' }],
   // 中央·六曹百司
-  [/\u5409\u90E8|\u6237\u90E8|\u793C\u90E8|\u5175\u90E8|\u5211\u90E8|\u5DE5\u90E8|\u540F\u90E8|\u5C1A\u4E66|\u4F8D\u90CE|\u4E5D\u537F(?!\u5BFA)|\u592A\u5E38|\u592A\u4EC6|\u592A\u5C09|\u5EF7\u5C09|\u5927\u9E3F\u81FA|\u5927\u53F8\u519C|\u5927\u884C\u4EBA/, { court:'central', group:'liucao' }],
+  [/吏部|户部|礼部|兵部|刑部|工部|吏部|尚书|侍郎|九卿(?!寺)|太常|太仆|太尉|廷尉|大鸿胪|大司农|大行人/, { court:'central', group:'liucao' }],
   // 中央·寺监九卿
-  [/\u5149\u7984|\u592A\u4EC6|\u9E3F\u80EA|\u5C1A\u5B9D|\u56FD\u5B50|\u94A6\u5929|\u6B3D\u5929|\u592A\u533B|\u5BFA\u5378|\u76D1\u5378|\u5B9D\u6E90|\u79D8\u4E66|\u5DE6\u98DE|\u79D1\u9053|\u53F8\u5929|\u592A\u53F2|\u5C06\u4F5C|\u519B\u5668|\u90FD\u6C34/, { court:'central', group:'sijian' }],
+  [/光禄|太仆|鸿胪|尚宝|国子|钦天|欽天|太医|寺卿|监卿|宝源|秘书|左飞|科道|司天|太史|将作|军器|都水/, { court:'central', group:'sijian' }],
   // 中央·勋戚加衔
   [/\u5B97\u4EBA|\u4E09\u516C|\u4E09\u5B64|\u4E09\u5C11|\u592A\u5E08|\u592A\u5085|\u592A\u4FDD|\u5C11\u5E08|\u5C11\u5085|\u5C11\u4FDD|\u987A\u5929\u5E9C|\u5E94\u5929\u5E9C|\u7235|\u4F2F\u7235|\u4FAF|\u7687\u65CF|\u5B97\u5BA4/, { court:'central', group:'xunqi' }]
 ];
@@ -870,7 +870,7 @@ function _ogRenderDeptCard(fi, idx, NW, cardH, pathStr) {
     html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'add_pos\',\'' + _safeDept + '\')" title="\u589E\u8BBE\u5B98\u804C">+\u5B98</button>';
     html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'add_sub\',\'' + _safeDept + '\')" title="\u589E\u8BBE\u4E0B\u5C5E\u90E8\u95E8">+\u5C40</button>';
     html += '<button class="og-dept-btn" onclick="event.stopPropagation();_offReformToEdict(\'rename\',\'' + _safeDept + '\')" title="\u6539\u540D">\u6539</button>';
-    html += '<button class="og-dept-btn danger" onclick="event.stopPropagation();_offReformToEdict(\'abolish\',\'' + _safeDept + '\')" title="\u88C1\u6492">\u88C1</button>';
+    html += '<button class="og-dept-btn danger" onclick="event.stopPropagation();_offReformToEdict(\'abolish\',\'' + _safeDept + '\')" title="裁撤">裁</button>';
     html += '</div>';
   }
   html += '</div>'; // .og-dept-body
@@ -1102,15 +1102,15 @@ function _ogRenderPosCard(fi, idx, NW, cardH) {
       html += '<div class="og-sick-banner"><span class="icon">\u2695</span><span class="sec-lbl">\u544A \u75C5</span><span>' + _skTxt + '</span>' + (_skDays ? '<span style="margin-left:auto;">\u2192 <b>' + _skDays + ' \u65E5</b></span>' : '') + '</div>';
     } else if (_holder && _holder._actingPos) {
       var _ap = _holder._actingPos;
-      var _apNote = _ap.note || ('\u4EE5' + (_ap.fromPos||'\u4F9B\u804C') + '\u6444' + (nd.name||'\u5C1A\u4E66') + '\u4E8B\u00B7\u4FDF\u9662\u4E0B\u7B80\u62D4\u6B63\u5B98');
+      var _apNote = _ap.note || ('以' + (_ap.fromPos||'供职') + '摄' + (nd.name||'尚书') + '事·俟陛下简拔正官');
       html += '<div class="og-acting-note">' + escHtml(_apNote) + '</div>';
     } else if (_holder && _holder._demoted) {
       var _dm = _holder._demoted;
-      var _dmReason = _dm.reason || '\u88AB\u8D2C\u00B7\u56DE\u4EFB\u5E0C\u671B\u6E3A\u8302';
+      var _dmReason = _dm.reason || '被贬·回任希望渺茫';
       html += '<div class="og-state-note demoted">' + escHtml(_dmReason) + '</div>';
     } else if (_holder && _holder._retirePending) {
       var _rp = _holder._retirePending;
-      var _rpTxt = (_holder.age ? _holder.age + '\u5C81' : '\u5E74\u9AD8') + (_rp.count ? '\u00B7' + _rp.count + '\u5EA6\u8BF7\u8F9E' : '\u00B7\u8BF7\u9AB8\u9AA8\u5F52') + '\u00B7\u9661\u4E0B\u672A\u5141';
+      var _rpTxt = (_holder.age ? _holder.age + '岁' : '年高') + (_rp.count ? '·' + _rp.count + '度请辞' : '·请骸骨归') + '·陛下未允';
       html += '<div class="og-state-note retire">' + escHtml(_rpTxt) + '</div>';
     }
     if (_holder._concurrentWith) {
@@ -1709,7 +1709,7 @@ function _ogRenderGroupBanner(fi, themeSuffix) {
   html += '<div class="og-group-desc">' + escHtml(g.desc || '') + '</div>';
   html += '</div>';
   html += '<div class="og-group-stats">';
-  html += '<span>\u8862 <span class="dept-count"><b>' + deptCnt + '</b></span></span>';
+  html += '<span>衙 <span class="dept-count"><b>' + deptCnt + '</b></span></span>';
   html += '<span>\u7F16 <b>' + pos + '</b></span>';
   if (vac > 0) html += '<span class="vac">\u7F3A <b>' + vac + '</b></span>';
   html += '</div>';

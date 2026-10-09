@@ -1499,21 +1499,21 @@ export function createCore(deps) {
       // \u4E0B\u72F1/\u5165\u72F1/\u7CFB\u72F1/\u6349\u62FF/\u902E\u6355 -> imprison
       if (_tmReasonIsImprison(changeText)) {
         action = 'dismiss'; reason = changeText;
-      // \u62C4\u5BB6/\u62C4\u6CA1/\u7C4D\u6CA1/\u67E5\u62C4/\u6CA1\u5B98 -> confiscate
+      // 抄家/抄没/籍没/查抄/没官 -> confiscate
       } else if (/抄家|抄没|籍没|查抄|没官/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
       // \u6D41\u653E/\u53D1\u914D/\u620D\u8FB9 -> exile
       } else if (/\u6D41\u653E|\u53D1\u914D|\u620D\u8FB9/.test(changeText)) {
         action = 'dismiss'; reason = changeText;
-      } else if (/(革职|革除|撤职|褫职|削职|夺职|解职|\u514D\u804C|\u7F62\u5B98|\u7F62\u514D|\u7F62|\u514D|\u8D2C|\u9EDC|\u81F4\u4ED5|\u9000\u4F11|\u9A7B)/.test(changeText)) {
+      } else if (/(革职|革除|撤职|褫职|削职|夺职|解职|免职|罢官|罢免|罢|免|贬|黜|致仕|退休|驱逐)/.test(changeText)) {
         action = 'dismiss'; reason = changeText + (pc.reason ? '；' + pc.reason : '');
-      } else if (/(\u65A9|\u8BDB|\u66B4\u6BD9|\u8D50\u6B7B|\u6B3B|\u8BDB\u6740|\u8BDB\u4E5D\u65CF|\u62C4\u5BB6)/.test(changeText)) {
+      } else if (/(斩|诛|暴毙|赐死|处死|诛杀|诛九族|抄家)/.test(changeText)) {
         action = 'dismiss'; reason = 'execute';
       } else {
         // 任命类：拜/授/擢/迁/转/命X为Y/升/进
         var m;
         // 命…为 XX / 拜 XX / 授 XX / 擢 XX / 为 XX
-        if ((m = changeText.match(/(?:\u547D|\u4EE4|\u62DC|\u6388|\u6412|\u8FC1|\u8F6C|\u8FC1\u8F6C|\u8FDB|\u5347|\u4E3A|\u4EFB)\s*([^\s，,。.；;]+)/))) {
+        if ((m = changeText.match(/(?:命|令|拜|授|擢|迁|转|迁转|进|升|为|任)\s*([^\s，,。.；;]+)/))) {
           post = m[1].replace(/^(\u4E3A|\u4EFB)/, '');
         }
         if (!post && pc.former && changeText.indexOf(pc.former) < 0 && (_findOfficePos(G.officeTree, changeText) || _isKnownOfficeType(G, changeText))) {
@@ -1894,7 +1894,7 @@ export function createCore(deps) {
         var _tgtLbl = fa.target === 'guoku' ? '帑廪' : fa.target === 'neitang' ? '内帑' : fa.target;
         if (typeof global.addEB === 'function') {
           if (executionStatus === 'blocked') {
-            global.addEB('\u8D22\u653F\u2757\u2757', _tgtLbl + '\u8D4C\u7A7A\u2014\u300C' + (fa.name||'') + '\u300D\u65E0\u6CD5\u6267\u884C\uFF01\u8BF7' + amount + _resLbl + '\u00B7\u4E00\u6587\u672A\u62E8');
+            global.addEB('财政\u2757\u2757', _tgtLbl + '亏空—「' + (fa.name||'') + '」无法执行！请' + amount + _resLbl + '·一文未拨');
           } else if (executionStatus === 'partial') {
             global.addEB('\u8D22\u653F\u2757', _tgtLbl + '\u4E0D\u8DB3\uFF01' + (fa.name||'') + '\u8BF7' + amount + _resLbl + '\uFF0C\u4EC5\u62E8' + actualApplied + '\uFF0C\u4E8F' + shortfall);
           } else {

@@ -351,11 +351,11 @@ function renderGameState(options){
   // 官制面板
   var offP=document.createElement("div");offP.className="g-tab-panel";offP.id="gt-office";offP.style.cssText="flex:1;overflow-y:auto;padding:0;";
   offP.innerHTML='<div class="og-panel-wrap"><div class="og-inner">'
-    +'<div class="og-title"><div class="seal">\u5B98<br>\u5236</div><div class="main">\u516D \u90E8 \u537F \u5BFA</div><div class="sub">\u8862\u3000\u95E8\u3000\u804C\u3000\u5B98\u3000\u3000\u3000\u3000\u73ED\u3000\u4F4D\u3000\u5404\u3000\u53F8\u3000\u5176\u3000\u804C</div></div>'
+    +'<div class="og-title"><div class="seal">官<br>制</div><div class="main">六 部 卿 寺</div><div class="sub">衙　门　职　官　　　　班　位　各　司　其　职</div></div>'
 
     // 总览区
     +'<div class="og-section-hdr">'
-    +'<span class="tag">\u8862 \u95E8 \u603B \u89C8</span>'
+    +'<span class="tag">衙 门 总 览</span>'
     +'<span class="desc">\u2014\u2014 \u7F16\u5236\u00B7\u6743\u529B\u683C\u5C40\u00B7\u4FF8\u7984\u5F00\u652F</span>'
     +'<span class="act">'
     +'<button class="og-hdr-btn" onclick="_offReformToEdict(\'add_dept\',\'\')">\u589E \u8BBE \u90E8 \u95E8</button>'
@@ -369,7 +369,7 @@ function renderGameState(options){
 
     // 树
     +'<div class="og-section-hdr">'
-    +'<span class="tag">\u8862 \u95E8 \u5C42 \u7EA7</span>'
+    +'<span class="tag">衙 门 层 级</span>'
     +'<span class="desc">\u2014\u2014 \u9F20\u8F6E\u7F29\u653E\u00B7\u62D6\u62FD\u5E73\u79FB\u00B7\u70B9\u51FB\u5361\u7247\u5C55\u5F00\u8BE6\u60C5</span>'
     +'</div>'
     +'<div class="og-tree-topbar">'
@@ -395,7 +395,7 @@ function renderGameState(options){
     +'<div class="wy-tools">'
     +'<span class="wy-tools-lbl">\u62AB \u89C8</span>'
     +'<div class="wy-search-wrap"><input id="wy-search" class="wy-search" placeholder="\u641C\u7D22\u4F5C\u8005\u00B7\u6807\u9898\u00B7\u8BD7\u6587\u2026" oninput="_scheduleWenyuanRender()"></div>'
-    +'<select id="wy-cat-filter" class="wy-filter" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u89E6\u53D1</option><option value="career">\u79D1\u4E3E\u5B98\u9014</option><option value="adversity">\u9006\u5883\u8D2C\u8C2A</option><option value="social">\u793E\u4EA4\u916C\u9154</option><option value="duty">\u4EFB\u4E0A\u65BD\u653F</option><option value="travel">\u6E38\u5386\u5C71\u6C34</option><option value="private">\u5BB6\u4E8B\u79C1\u60C5</option><option value="times">\u65F6\u5C40\u5929\u4E0B</option><option value="mood">\u60C5\u611F\u5FC3\u5883</option></select>'
+    +'<select id="wy-cat-filter" class="wy-filter" onchange="renderWenyuan()"><option value="all">全部触发</option><option value="career">科举官途</option><option value="adversity">逆境贬谪</option><option value="social">社交酬酢</option><option value="duty">任上施政</option><option value="travel">游历山水</option><option value="private">家事私情</option><option value="times">时局天下</option><option value="mood">情感心境</option></select>'
     +'<select id="wy-genre-filter" class="wy-filter" onchange="renderWenyuan()"><option value="all">\u5168\u90E8\u6587\u4F53</option><option value="shi">\u8BD7</option><option value="ci">\u8BCD</option><option value="fu">\u8D4B</option><option value="qu">\u66F2</option><option value="ge">\u6B4C\u884C</option><option value="wen">\u6563\u6587</option><option value="apply">\u5E94\u7528\u6587</option><option value="ji">\u8BB0\u53D9\u6587</option><option value="ritual">\u796D\u6587\u7891\u94ED</option><option value="paratext">\u5E8F\u8DCB</option></select>'
     +'<select id="wy-sort" class="wy-filter" onchange="renderWenyuan()"><option value="recent">\u6392\uFF1A\u8FD1\u4F5C</option><option value="quality">\u6392\uFF1A\u54C1\u8BC4</option><option value="author">\u6392\uFF1A\u4F5C\u8005</option><option value="date">\u6392\uFF1A\u5E74\u4EE3</option></select>'
     +'<label class="wy-chk"><input type="checkbox" id="wy-preserved-only" onchange="renderWenyuan()">\u4EC5\u4F20\u4E16</label>'
@@ -441,7 +441,7 @@ function renderGameState(options){
     +'<div class="ji-search-wrap"><input id="jishi-kw" class="ji-search" placeholder="\u641C\u7D22\u8BAE\u9898\u00B7\u4EBA\u7269\u00B7\u5BF9\u8BDD\u2026\u2026" oninput="_jishiKw=this.value;_jishiPage=0;_scheduleJishiRender();"></div>'
     +'<select id="jishi-char-filter" class="ji-filter" onchange="_jishiCharFilter=this.value;_jishiPage=0;renderJishi();"><option value="all">\u5168\u90E8\u4EBA\u7269</option></select>'
     +'<button class="ji-star-btn" onclick="_jishiToggleStarred()" id="js-star-toggle" title="\u4EC5\u770B\u661F\u6807">\u2606</button>'
-    +'<button class="ji-export-btn" onclick="_jishiExport()" title="\u5BFC\u51FA\u7EB5\u7EAA\u5B8C\u6574\u8BB0\u5F55">\u5BFC \u51FA</button>'
+    +'<button class="ji-export-btn" onclick="_jishiExport()" title="导出纪事完整记录">导 出</button>'
     +'</div>'
     +'<div id="jishi-legend" class="ji-legend"></div>'
     +'<div id="jishi-list"></div>'

@@ -172,7 +172,7 @@
         html += '<div style="white-space:nowrap;font-weight:700;font-size:0.9rem;color:var(--gold,#c9a85f);">'+((a.soldiers||a.size||0).toLocaleString())+'<span style="font-size:0.64rem;color:var(--txt-d);font-weight:400;"> \u5175</span></div>';
         html += '</div>';
         // 指标网格:粮/气/训/欠饷/兵变(状态色+大值+迷你条·一眼见军情)
-        var _cells=[['\u7cae',_sup,_milClr(_sup,60,30,false),_sup],['\u6c14',_mor,_milClr(_mor,60,40,false),_mor],['\u8bad',_trn,_milClr(_trn,60,40,false),_trn],['\u6b20\u997a',_arr+'\u6708',_arr>=3?'#d9694a':(_arr>0?'#e0a040':'#7bbd8f'),Math.min(100,_arr*25)],['\u5175\u53d8',_mut,_milClr(_mut,60,30,true),_mut]];
+        var _cells=[['粮',_sup,_milClr(_sup,60,30,false),_sup],['气',_mor,_milClr(_mor,60,40,false),_mor],['训',_trn,_milClr(_trn,60,40,false),_trn],['欠饷',_arr+'月',_arr>=3?'#d9694a':(_arr>0?'#e0a040':'#7bbd8f'),Math.min(100,_arr*25)],['兵变',_mut,_milClr(_mut,60,30,true),_mut]];
         html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0.35rem;margin-bottom:0.5rem;">';
         _cells.forEach(function(c){ html += '<div style="text-align:center;"><div style="font-size:0.6rem;color:var(--txt-d);letter-spacing:0.04em;margin-bottom:1px;">'+c[0]+'</div><div style="font-size:0.98rem;font-weight:700;line-height:1;color:'+c[2]+';font-variant-numeric:tabular-nums;">'+c[1]+'</div><div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:3px;overflow:hidden;"><div style="height:100%;width:'+Math.max(0,Math.min(100,c[3]))+'%;background:'+c[2]+';"></div></div></div>'; });
         html += '</div>';
@@ -205,8 +205,8 @@
           html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.4rem;margin-top:0.55rem;">';
           var _abtn='display:flex;align-items:center;justify-content:center;font-size:0.76rem;min-height:44px;padding:0.4rem 0.2rem;touch-action:manipulation;';
           html += '<button class="bt bs" onclick="_tsTransferArmy(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">\u8c03\u5175</button>';
-          html += '<button class="bt bs" onclick="_tsBoostMorale(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">\u72a9\u519b</button>';
-          html += '<button class="bt bs" onclick="_tsSettleArrears(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">\u53d1\u997a</button>';
+          html += '<button class="bt bs" onclick="_tsBoostMorale(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">犒军</button>';
+          html += '<button class="bt bs" onclick="_tsSettleArrears(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">发饷</button>';
           html += '<button class="bt bs" onclick="_tsAppointGeneral(\''+jsEsc(a.name)+'\')" style="'+_abtn+'">\u6613\u5c06</button>';
           html += '</div>';
         }

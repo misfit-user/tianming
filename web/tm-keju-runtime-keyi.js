@@ -100,7 +100,7 @@ function _keyiDecisionContent(method, topicType) {
     if (method === 'edict') return '\u4E0D\u987E\u8BAE\u51B3\u00B7\u4E0B\u8BCF\u5F3A\u63A8\u79D1\u4E3E\u6539\u9769';
     if (method === 'defy') return '\u9006\u4F17\u8BAE\u5F3A\u63A8\u00B7\u72EC\u65AD\u6539\u5236';
   }
-  if (method === 'council') return '\u4F9D\u8BAE\u5F00\u79D1\u4E3E\u00B7\u541B\u81E3\u5171\u8BDB';
+  if (method === 'council') return '依议开科举·君臣共议';
   if (method === 'edict') return '\u4E0D\u987E\u8BAE\u51B3\u00B7\u4E0B\u8BCF\u5F3A\u63A8\u79D1\u4E3E';
   if (method === 'defy') return '\u9006\u4F17\u8BAE\u5F3A\u63A8\u00B7\u72EC\u65AD\u5F00\u79D1';
   return '';
@@ -151,7 +151,7 @@ function openKeyiSession(opts) {
       if (/\u540E|\u5983|\u5AD4|\u8D35\u4EBA|\u592A\u540E|\u592A\u5983|\u516C\u4E3B|\u90E1\u4E3B|\u592A\u76D1|\u5B66\u751F/.test(role)) return false;
       var t = (c.officialTitle || c.title || '');
       if (!t) return false;
-      if (/\u7687\u540E|\u8D35\u5983|\u8D24\u5983|\u6DD1\u5983|\u5BB8\u5983|\u5AAC\u5983|\u5BB9\u534E|\u5145\u4EAA|\u592A\u540E|\u592A\u5983|\u516C\u4E3B|\u90E1\u4E3B|\u592A\u76D1|\u76D1\u751F$|\u79C0\u624D$|\u4E3E\u4EBA$|\u751F\u5458$|\u7AE5\u751F|\u5EB6\u5409\u58EB$|\u5E73\u6C11|\u5E03\u8863|\u8349\u6C11|\u5EB6\u4EBA|\u767E\u59D3|\u4F7F\u8282|\u5916\u4F7F|\u5546\u9986|\u6B96\u6C11/.test(t)) return false;
+      if (/皇后|贵妃|贤妃|淑妃|宸妃|德妃|容华|充仪|太后|太妃|公主|郡主|太监|监生$|秀才$|举人$|生员$|童生|庶吉士$|平民|布衣|草民|庶人|百姓|使节|外使|商馆|殖民/.test(t)) return false;
       if (!_keyiOfficialWhitelist.test(t)) return false;
     }
     if (typeof _cc3_classifyAbsent === 'function') {
@@ -294,8 +294,8 @@ function _keyiRenderDiscuss(body, footer) {
   // v4·始终显示玩家发言框·可多轮辩论·玩家插言即影响后续立场
   var isBusy = !!KEYI_STATE._busy;
   var hint = isBusy
-    ? '\u9661\u4E0B\u5982\u6709\u5723\u8C15\u00B7\u8F93\u5165\u540E\u4F17\u81E3\u5373\u9000\u4E0B\u8FD4\u5E94\u2026'
-    : '\u9661\u4E0B\u53EF\u968F\u65F6\u63D2\u8A00\u00B7\u5723\u8C15\u4F1A\u5F71\u54CD\u5927\u81E3\u7ACB\u573A\u4E0E\u6700\u7EC8\u8868\u51B3';
+    ? '陛下如有圣谕·输入后众臣即逐一回应…'
+    : '陛下可随时插言·圣谕会影响大臣立场与最终表决';
   var footerHtml = ''
     + '<div style="display:flex;gap:0.4rem;align-items:stretch;">'
     +   '<textarea id="keyi-player-input" rows="2" placeholder="' + hint + '" style="flex:1;background:var(--bg-2);border:1px solid var(--bdr);border-radius:4px;padding:0.4rem 0.6rem;font-size:0.82rem;color:var(--color-foreground);resize:vertical;"></textarea>'
@@ -327,7 +327,7 @@ function _keyiInferPlayerStance(text) {
   if (!text) return null;
   var s = text.toLowerCase();
   // 反对类词
-  if (/\u4E0D\u53EF|\u4E0D\u8A56|\u4E0D\u7528|\u6682\u7F13|\u505C|\u7F72|\u5EA2|\u4E0D\u7406|\u7F13\u884C|\u4E0D\u8FEB|\u6263\u627F|\u672A\u5FC5|\u6682\u4E0D|\u6697\u6697|\u4E0D\u59A5|\u4E0D\u5B9C/.test(s)) return 'oppose';
+  if (/不可|不詖|不用|暂缓|停|罢|废|不理|缓行|不迫|扣承|未必|暂不|暗暗|不妥|不宜/.test(s)) return 'oppose';
   // 支持类词
   if (/\u7740|\u5373\u884C|\u901F|\u4EC7|\u7545|\u5F00|\u8BB8|\u51C6|\u4F9D\u8BAE|\u8D5E|\u540C|\u53EF|\u610F|\u884C|\u8881|\u5F00\u79D1|\u4E3E\u529E|\u601D|\u771F\u597D|\u5584/.test(s)) return 'support';
   return 'abstain'; // 不明显
@@ -351,7 +351,7 @@ async function _keyiPlayerSpeak() {
   KEYI_STATE.speeches = KEYI_STATE.speeches.filter(function(sp){ return !sp._streaming; });
   // 推入玩家气泡·立场按推断
   KEYI_STATE.speeches.push({
-    name: '\u9661\u4E0B',
+    name: '陛下',
     title: '\u5723\u8C15',
     stance: playerStance,
     line: text,
@@ -399,7 +399,7 @@ function _keyiBubbleHtml(sp) {
   var typeLbl = stance==='support' ? '\u8D5E\u6210' : stance==='oppose' ? '\u53CD\u5BF9' : '\u89C2\u671B';
   if (sp._isPlayer) {
     return '<div style="background:linear-gradient(135deg,rgba(184,154,83,0.18),rgba(184,154,83,0.05));border:1px solid var(--gold-d);border-radius:10px 3px 10px 10px;padding:0.5rem 0.8rem;margin:6px 0 6px 40px;box-shadow:0 1px 3px rgba(184,154,83,0.25);">'+
-      '<div style="font-size:0.72rem;color:var(--gold);"><strong>\u9661\u4E0B</strong> <span style="color:var(--txt-d);">\u00B7 \u5723\u8C15</span></div>'+
+      '<div style="font-size:0.72rem;color:var(--gold);"><strong>陛下</strong> <span style="color:var(--txt-d);">· 圣谕</span></div>'+
       '<div style="font-size:0.82rem;line-height:1.7;margin-top:3px;color:var(--color-foreground);">' + escHtml(sp.line || '') + '</div>'+
       '</div>';
   }
@@ -430,7 +430,7 @@ async function _keyiStreamRound() {
   var guoku = Math.round(((GM.guoku && GM.guoku.money) || 0) / 10000);
   var wars = (GM.activeWars||[]).length;
   var lastExam = P.keju.lastExamDate ? (P.keju.lastExamDate.year + '\u5E74') : '\u4ECE\u672A\u4E3E\u529E';
-  var ctxBase = '\u3010\u79D1\u8BAE\u80CC\u666F\u3011' + era + year + '\u5E74\u00B7\u5F00\u79D1\u4E3E\u8BAE\u00B7\u5E11\u5EAA ' + guoku + ' \u4E07\u00B7\u6218\u4E8B ' + wars + ' \u5904\u00B7\u4E0A\u79D1 ' + lastExam + '\u3002';
+  var ctxBase = '【科议背景】' + era + year + '年·开科举议·帑廪 ' + guoku + ' 万·战事 ' + wars + ' 处·上科 ' + lastExam + '。';
 
   for (var i=0; i<KEYI_STATE.speakers.length; i++) {
     if (KEYI_STATE.abort) break;
@@ -445,7 +445,7 @@ async function _keyiStreamRound() {
     _keyiRender();
 
     var prev = KEYI_STATE.speeches.slice(-8, -1).map(function(x){
-      var who = x._isPlayer ? '\u9661\u4E0B(\u5723\u8C15)' : x.name;
+      var who = x._isPlayer ? '陛下(圣谕)' : x.name;
       return who + '[' + (x.stance||'') + ']\uFF1A' + (x.line||'').slice(0,60);
     }).join('\n');
     var hasPlayerRecent = KEYI_STATE.speeches.slice(-6).some(function(x){ return x._isPlayer; });
@@ -481,7 +481,7 @@ async function _keyiStreamRound() {
       '\u5FE0\u8BDA ' + (s.loyalty||50) + '\u3001\u515A\u6D3E ' + (s.party||'\u65E0\u515A') + '\u3001\u8EAB\u4EFD ' + (ch && ch.class || '') + '\n' +
       _reformInjection + _privateAudienceHint + _ownCeduiHint + _ownObjectionHint +
       (prev ? '\u5DF2\u53D1\u8A00\uFF1A\n' + prev + '\n' : '') +
-      (hasPlayerRecent ? '\u2605 \u9661\u4E0B\u521A\u521A\u9F99\u97F3\u5F00\u53E3\u00B7\u4F60\u5FC5\u987B\u606D\u656C\u56DE\u5E94\u5723\u8C15\u00B7\u53EF\u5927\u7EB2\u987A\u5723\u610F\u4E5F\u53EF\u59D4\u5A49\u9648\u8BF4\u96BE\u5904\uFF08\u4F46\u9700\u4FDD\u6301\u81EA\u5DF1\u672C\u6765\u7684\u515A\u6D3E\u7ACB\u573A\uFF09\u3002\n' : '') +
+      (hasPlayerRecent ? '\u2605 陛下刚刚龙音开口·你必须恭敬回应圣谕·可大纲顺圣意也可委婉陈说难处（但需保持自己本来的党派立场）。\n' : '') +
       '\u8BF7\u5C31\u300C' + _topicLabel + '\u300D\u7ACB\u573A\u53D1\u8868 80-160 \u5B57\u534A\u6587\u8A00\u5EAD\u8BAE\u3002\n' +
       '\u683C\u5F0F\uFF1A\u7B2C\u4E00\u884C\u4EC5\u8F93\u51FA\u7ACB\u573A\u6807\u8BB0 support\u3001oppose \u6216 abstain \u4E09\u8BCD\u4E4B\u4E00\u3002\u4ECE\u7B2C\u4E8C\u884C\u8D77\u8F93\u51FA\u53D1\u8A00\u6B63\u6587\u3002';
 
@@ -643,7 +643,7 @@ async function _keyiGenAllStances() {
     _keyiRender();
     var ctx = '\u79D1\u8BAE\u5DF2\u5386 ' + KEYI_STATE.round + ' \u8F6E\u00B7\u4E3B\u8981\u53D1\u8A00\uFF1A\n' +
       KEYI_STATE.speeches.slice(-12).map(function(sp){
-        var who = sp._isPlayer ? '\u9661\u4E0B(\u5723\u8C15)' : sp.name;
+        var who = sp._isPlayer ? '陛下(圣谕)' : sp.name;
         return who + '[' + sp.stance + ']\uFF1A' + (sp.line||'').slice(0, 60);
       }).join('\n') + '\n\n';
     // 约束给 AI 知晓
@@ -671,7 +671,7 @@ async function _keyiGenAllStances() {
     var playerStanceHint = '';
     if (KEYI_STATE.playerStance) {
       var lbl = KEYI_STATE.playerStance === 'support' ? '\u503E\u5411\u652F\u6301' : KEYI_STATE.playerStance === 'oppose' ? '\u503E\u5411\u53CD\u5BF9' : '\u7ACB\u573A\u4E2D\u7ACB';
-      playerStanceHint = '\u2605 \u9661\u4E0B\u5723\u8C15\u5DF2\u4E0B\uFF1A' + lbl + '\u3002\u8868\u51B3\u65F6\u5FC5\u987B\u5145\u5206\u8003\u8651\u5723\u610F\u3002\n';
+      playerStanceHint = '\u2605 陛下圣谕已下：' + lbl + '。表决时必须充分考虑圣意。\n';
     }
     var prompt = ctx + playerStanceHint + cognitionCtx +
       '\u8BF7\u4E3A\u4EE5\u4E0B ' + KEYI_STATE.attendees.length + ' \u540D\u5927\u81E3\u5404\u81EA\u5224\u5B9A\u6700\u7EC8\u7ACB\u573A\u5E76\u7ED9\u51FA 10-30 \u5B57\u7406\u7531\uFF1A\n' +
@@ -754,7 +754,7 @@ function _keyiRenderVote(body, footer) {
       +   '<div style="text-align:center;font-size:0.82rem;color:var(--txt-d);margin-top:0.5rem;">' + Math.round(prog) + '% \u00B7 ' + (KEYI_STATE._busyText || '\u8868\u51B3\u8FDB\u884C\u4E2D') + '</div>'
       + '</div>';
     body.innerHTML = barHtml;
-    footer.innerHTML = '<div style="text-align:center;color:var(--txt-d);font-size:0.78rem;">\u8ACB\u5019\u00B7\u8868\u51B3\u5B8C\u6BD5\u81EA\u52A8\u51FA\u7ED3\u679C\u2026</div>';
+    footer.innerHTML = '<div style="text-align:center;color:var(--txt-d);font-size:0.78rem;">请候·表决完毕自动出结果…</div>';
     return;
   }
   // 完成·显示结果
@@ -816,10 +816,10 @@ function _keyiRenderDecide(body, footer) {
     ? '\u8BAE\u5DF2\u901A\u8FC7\u00B7\u53EF\u4F9D\u8BAE\u63A8\u884C\u6539\u9769\u3002'
     : '\u8BAE\u5DF2\u901A\u8FC7\u00B7\u53EF\u4F9D\u8BAE\u5F00\u79D1\u3002';
   var failText = topicType === 'reform'
-    ? '\u8BAE\u672A\u901A\u8FC7\u00B7\u82E5\u8981\u63A8\u884C\u6539\u9769\u00B7\u9700\u4E0B\u8BCF\u5F3A\u63A8\u3002\u9038\u60E9\u7F5A\uFF1A'
-    : '\u8BAE\u672A\u901A\u8FC7\u00B7\u82E5\u8981\u5F00\u79D1\u00B7\u9700\u4E0B\u8BCF\u5F3A\u63A8\u3002\u9038\u60E9\u7F5A\uFF1A';
+    ? '议未通过·若要推行改革·需下诏强推。惩罚：'
+    : '议未通过·若要开科·需下诏强推。惩罚：';
   var html = '<div style="background:linear-gradient(135deg,rgba(184,154,83,0.08),transparent);border:1px solid var(--gold-d);padding:0.8rem;border-radius:6px;margin-top:0.6rem;">'+
-    '<div style="font-weight:700;color:var(--gold);margin-bottom:0.5rem;">\u9661\u4E0B\u88C1\u51B3</div>'+
+    '<div style="font-weight:700;color:var(--gold);margin-bottom:0.5rem;">陛下裁决</div>'+
     '<div style="font-size:0.82rem;color:var(--txt-s);line-height:1.8;">'+
     (passed ? passText : failText) +
     (!passed ? '<br>\u00B7 \u4E0B\u8BCF\u5F3A\u63A8\uFF1A\u7687\u5A01-10\u00B7\u7687\u6743-5\u00B7\u53CD\u5BF9\u5927\u81E3\u597D\u611F-8' : '') +
@@ -914,15 +914,15 @@ function _keyiPersistToCourtRecords(method) {
   });
   // 皇帝最终裁决作为 "adopted"
   var adoptedArr = method === 'council' ? [{
-    author: (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B',
+    author: (P.playerInfo && P.playerInfo.characterName) || '陛下',
     content: _keyiDecisionContent(method, topicTypeForRec),
     stance: 'support'
   }] : method === 'edict' ? [{
-    author: (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B',
+    author: (P.playerInfo && P.playerInfo.characterName) || '陛下',
     content: _keyiDecisionContent(method, topicTypeForRec),
     stance: 'support'
   }] : method === 'defy' ? [{
-    author: (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B',
+    author: (P.playerInfo && P.playerInfo.characterName) || '陛下',
     content: _keyiDecisionContent(method, topicTypeForRec),
     stance: 'support'
   }] : [];
@@ -983,7 +983,7 @@ function _keyiPersistToCourtRecords(method) {
     var bd = KEYI_STATE._breakdown || {};
     if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
       turn: GM.turn, date: dateStr,
-      content: '\u3010\u79D1\u8BAE\u3011' + topicSubject + '\u00B7\u652F\u6301 ' + (bd.support||0) + '/\u53CD\u5BF9 ' + (bd.oppose||0) + '/\u89C2\u671B ' + (bd.abstain||0) + '\u00B7\u9661\u4E0B' + methodLabel + '\u3002'
+      content: '【科议】' + topicSubject + '·支持 ' + (bd.support||0) + '/反对 ' + (bd.oppose||0) + '/观望 ' + (bd.abstain||0) + '·陛下' + methodLabel + '。'
     });
   }
 
@@ -1017,7 +1017,7 @@ function _keyiMemoryEffects(method) {
   var methodLabel = (_keyiMethodLabels(topicType)[method]) || method;
   var topicSubject = _keyiTopicSubject(pending);
   var active = KEYI_STATE.attendees.filter(function(a){ return !a._excluded; });
-  var playerName = (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B';
+  var playerName = (P.playerInfo && P.playerInfo.characterName) || '陛下';
 
   active.forEach(function(a){
     var ch = a._ch || findCharByName(a.name);
@@ -1160,7 +1160,7 @@ function renderFinishedStage(container) {
     html += ' \u00B7 \u699C\u773C <span style="color:var(--gold);">' + escHtml(results[1].name) + '</span>';
     html += ' \u00B7 \u63A2\u82B1 <span style="color:var(--gold);">' + escHtml(results[2].name) + '</span></div>';
   }
-  html += '<div style="font-size:0.75rem;color:var(--txt-d);margin-top:0.5rem;">\u6BBE\u8BD5\u9898\u76EE\uFF1A' + escHtml((exam.playerQuestion||'').substring(0,40)) + '...</div>';
+  html += '<div style="font-size:0.75rem;color:var(--txt-d);margin-top:0.5rem;">殿试题目：' + escHtml((exam.playerQuestion||'').substring(0,40)) + '...</div>';
   html += '</div>';
 
   // 三甲——留中央任职
@@ -1279,7 +1279,7 @@ function showAnswerModal(candidate) {
     html += '<div style="background:linear-gradient(135deg,rgba(192,64,48,0.08),rgba(140,40,30,0.04));border:1px solid rgba(192,64,48,0.35);border-left:4px solid #C04030;padding:0.9rem 1.1rem;border-radius:6px;margin-bottom:1rem;position:relative;">'
       + '<div style="font-size:0.72rem;color:#C04030;letter-spacing:0.15em;font-weight:700;margin-bottom:6px;">\u3014 \u4E3B\u8003\u6279\u8BED \u3015</div>'
       + '<div style="font-size:0.9rem;line-height:1.9;color:#D9A99B;font-style:italic;">\u201C' + escHtml(candidate.chiefExaminerComment) + '\u201D</div>'
-      + '<div style="text-align:right;font-size:0.72rem;color:var(--txt-d);margin-top:6px;">\u2014\u2014 \u4E3B\u8003 ' + escHtml(chiefName) + ' \u5212\u5B9A</div>'
+      + '<div style="text-align:right;font-size:0.72rem;color:var(--txt-d);margin-top:6px;">—— 主考 ' + escHtml(chiefName) + ' 判定</div>'
       + '</div>';
   }
   // 考官综合评语（较低调）
@@ -1370,7 +1370,7 @@ function recruitCandidate(index) {
     diplomacy: 40 + randInt(0, 29),
     morale: 85,
     stress: 0,
-    personality: candidate.rank <= 3 ? '\u624D\u534E\u6A2A\u6EA2\uFF0C\u5FD7\u5728\u62A5\u56FD' : '\u52E4\u594B\u597D\u5B66\uFF0C\u604D\u5FCD\u4E0D\u62D4',
+    personality: candidate.rank <= 3 ? '才华横溢，志在报国' : '勤奋好学，坚忍不拔',
     appearance: '',
     bio: '\u7B2C' + candidate.rank + '\u540D\u8FDB\u58EB\uFF0C' + (candidate.origin || '') + '\u4EBA\u3002' + (candidate.evaluation || ''),
     description: candidate.answerSummary || '',
@@ -1423,7 +1423,7 @@ function recruitCandidate(index) {
     AffinityMap.add(candidate.name, _playerName, 12, '\u5929\u5B50\u95E8\u751F\u4E4B\u6069');
     if (typeof NpcMemorySystem !== 'undefined') {
       var _rankTitle = candidate.rank === 1 ? '\u72B6\u5143' : candidate.rank === 2 ? '\u699C\u773C' : '\u63A2\u82B1';
-      NpcMemorySystem.remember(candidate.name, '\u6BBE\u8BD5\u53CA\u7B2C\uFF0C\u8499\u5929\u5B50\u4EB2\u7B56\u70B9\u4E3A' + _rankTitle, '\u656C', 9, _playerName);
+      NpcMemorySystem.remember(candidate.name, '殿试及第，蒙天子亲策点为' + _rankTitle, '敬', 9, _playerName);
     }
   }
 
@@ -1969,7 +1969,7 @@ async function _aiGenerateFullCharacter(candidate, rankKey) {
         isHistorical: !!candidate.isHistorical,
         _memorySeeds: [{
           turn: GM.turn,
-          event: '\u6BBE\u8BD5\u53CA\u7B2C\u00B7\u8499' + ((P.playerInfo && P.playerInfo.characterName) || '\u5929\u5B50') + '\u4EB2\u7B56\u4E3A' + (rankKey === 'zhuangyuan' ? '\u72B6\u5143' : rankKey === 'bangyan' ? '\u699C\u773C' : rankKey === 'tanhua' ? '\u63A2\u82B1' : '\u8FDB\u58EB'),
+          event: '殿试及第·蒙' + ((P.playerInfo && P.playerInfo.characterName) || '天子') + '亲策为' + (rankKey === 'zhuangyuan' ? '状元' : rankKey === 'bangyan' ? '榜眼' : rankKey === 'tanhua' ? '探花' : '进士'),
           emotion: '\u656C'
         }]
       };

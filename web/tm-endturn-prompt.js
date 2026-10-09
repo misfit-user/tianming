@@ -397,14 +397,14 @@
       tp += '\u3010\u65F6\u95F4\u523B\u5EA6\u3011' + _turnDesc + '\n';
       tp += '  resource_changes\u4E2D\u7684\u6570\u503C\u5E94\u4E0E\u6B64\u65F6\u95F4\u5C3A\u5EA6\u5339\u914D\u3002\u4F8B\u5982\uFF1A\u82E5\u6BCF\u5E74\u7A0E\u6536\u4E3A1000\uFF0C\u6BCF\u56DE\u5408=1\u6708\u5219\u6BCF\u56DE\u5408\u53D8\u5316\u7EA6+83\uFF1B\u82E5\u6BCF\u56DE\u5408=1\u5E74\u5219+1000\u3002\n';
       tp += '  \u7EA7\u8054\u601D\u7EF4\uFF1Aresource_changes\u5E94\u8003\u8651\u53D8\u91CF\u95F4\u7684\u8FDE\u9501\u5F71\u54CD\u3002\u4F8B\u5982\uFF1A\n';
-      tp += '    \u51CF\u7A0E\u2192\u56FD\u5E93\u6536\u5165\u964D\u2192\u519B\u997F\u53EF\u80FD\u4E0D\u8DB3\u2192\u58EB\u6C14\u53EF\u80FD\u4E0B\u964D\n';
-      tp += '    \u5927\u5174\u571F\u6728\u2192\u56FD\u5E93\u652F\u51FA\u589E\u2192\u6C11\u529B\u758F\u8017\u2192\u6C11\u5FC3\u53EF\u80FD\u4E0B\u964D\n';
+      tp += '    减税\u2192国库收入降\u2192军饷可能不足\u2192士气可能下降\n';
+      tp += '    大兴土木\u2192国库支出增\u2192民力疲耗\u2192民心可能下降\n';
       tp += '    \u5F00\u6218\u2192\u5175\u529B\u6D88\u8017+\u7CAE\u8349\u6D88\u8017+\u8D22\u653F\u538B\u529B\u2192\u591A\u4E2A\u53D8\u91CF\u540C\u65F6\u53D8\u5316\n';
       tp += '    \u8BF7\u5728resource_changes\u4E2D\u4E00\u6B21\u6027\u4F53\u73B0\u6240\u6709\u7EA7\u8054\u5F71\u54CD\uFF0C\u800C\u4E0D\u662F\u53EA\u6539\u4E00\u4E2A\u53D8\u91CF\u3002\n';
       tp += '  \u3010\u52A8\u6001\u53D8\u91CF\u521B\u5EFA\u3011resource_changes\u53EF\u4EE5\u5F15\u7528\u4E0D\u5B58\u5728\u7684\u53D8\u91CF\u540D\uFF0C\u7CFB\u7EDF\u4F1A\u81EA\u52A8\u521B\u5EFA\u3002\u7528\u9014\uFF1A\n';
       tp += '    - \u5236\u5EA6\u6539\u9769\u8FDB\u5EA6\uFF1A\u5982 "\u52DF\u5175\u5236\u6539\u9769\u8FDB\u5EA6":+10\uFF0C\u6BCF\u56DE\u5408\u63A8\u8FDB\uFF0C\u8FBE\u5230100\u89C6\u4E3A\u5B8C\u6210\n';
       tp += '    - \u7279\u6B8A\u8D44\u6E90\uFF1A\u5982 "\u6218\u9A6C\u50A8\u5907":+500\uFF0C\u8BB0\u5F55\u7279\u5B9A\u8D44\u6E90\u7684\u79EF\u7D2F\n';
-      tp += '    - \u4E34\u65F6\u72B6\u6001\uFF1A\u5982 "\u7626\u75AB\u4E25\u91CD\u7A0B\u5EA6":+30\uFF0C\u8FFD\u8E2A\u4E34\u65F6\u5C40\u52BF\n';
+      tp += '    - 临时状态：如 "瘟疫严重程度":+30，追踪临时局势\n';
     }
 
     // —— 机械结算结果注入（战斗引擎/补给等确定性结果，AI不可更改数字）——
@@ -1221,7 +1221,7 @@
           if (m.action === 'approved') tp += '    \u2192 \u672C\u56DE\u5408\u5E94\u6709\u6267\u884C\u8FDB\u5C55\u6216\u65B0\u95EE\u9898\u7684\u594F\u62A5\n';
           else if (m.action === 'rejected') tp += '    \u2192 \u5FE0\u81E3\u53EF\u80FD\u7EED\u594F\u6B7B\u8C0F\uFF0C\u4F5E\u81E3\u53EF\u80FD\u6000\u6068\u6697\u4E2D\u6D3B\u52A8\n';
           else if (m.action === 'annotated') tp += '    \u2192 \u5B98\u5458\u5E94\u6309\u6279\u793A\u610F\u89C1\u6267\u884C\u5E76\u56DE\u594F\u7ED3\u679C\n';
-          else if (m.action === 'referred') tp += '    \u2192 \u8BE5\u8861\u95E8\u4E3B\u5B98\u672C\u56DE\u5408\u5E94\u4E0A\u594F\u8BAE\u5904\u7ED3\u8BBA\n';
+          else if (m.action === 'referred') tp += '    \u2192 该衙门主官本回合应上奏议处结论\n';
           else if (m.action === 'court_debate') tp += '    \u2192 \u672C\u56DE\u5408\u671D\u8BAE\u4E2D\u5E94\u8BA8\u8BBA\u6B64\u4E8B\n';
         });
       }
@@ -2711,7 +2711,7 @@
         if (_d.deeperMotives) sysP += '\n\u88AB\u5FFD\u89C6\u7684\u52A8\u673A\uFF1A' + _d.deeperMotives;
         if (_d.wildcardCharacters) sysP += '\n\u53D8\u6570\u4EBA\u7269\uFF1A' + _d.wildcardCharacters;
         if (_d.strategicBlindSpots) sysP += '\n\u6218\u7565\u76F2\u70B9\uFF1A' + _d.strategicBlindSpots;
-        if (_d.dramaticIrony) sysP += '\n\u620F\u5267\u53CD\u8BD7\uFF1A' + _d.dramaticIrony;
+        if (_d.dramaticIrony) sysP += '\n戏剧反讽：' + _d.dramaticIrony;
         if (_d.socialUndercurrents) sysP += '\n\u793E\u4F1A\u6697\u6D41\uFF1A' + _d.socialUndercurrents;
         if (_d.macroTrajectory) sysP += '\n\u5B8F\u89C2\u8D70\u5411\uFF1A' + _d.macroTrajectory;
         if (_d.tippingPoints) sysP += '\n\u4E34\u754C\u70B9\uFF1A' + _d.tippingPoints;
@@ -2776,7 +2776,7 @@
       }
     }
 
-    sysP += '\n\u53D9\u4E8B\u54F2\u5B66\uFF1A\u5FE0\u8A00\u9006\u8033\uFF0C\u4F73\u8BDD\u60A6\u5FC3\u3002\u5FE0\u81E3\u7684\u8BDD\u867D\u7136\u6B63\u786E\u4F46\u8BF7\u5199\u5F97\u8BA9\u4EBA\u89C9\u5F97\u70E6\u8E81\u548C\u7D2F\uFF0C\u4F5E\u81E3\u7684\u8BDD\u867D\u7136\u7A7A\u6D1E\u4F46\u8BF7\u5199\u5F97\u8BA9\u4EBA\u89C9\u5F97\u8212\u670D\u548C\u5F00\u5FC3\u3002\u8FD9\u662F\u7406\u89E3\u5386\u53F2\u7684\u6838\u5FC3\u3002';
+    sysP += '\n叙事哲学：忠言逆耳，佞话悦心。忠臣的话虽然正确但请写得让人觉得烦躁和累，佞臣的话虽然空洞但请写得让人觉得舒服和开心。这是理解历史的核心。';
     _mark('context');
     // 注入玩家角色详情（双重身份：私人+政治）
     if (P.playerInfo) {
@@ -2868,7 +2868,7 @@
               var lb = typeof getHaremRankLevel === 'function' ? getHaremRankLevel(b.spouseRank) : 9;
               return la - lb;
             });
-            sysP += '\n  \u540E\u5BAE\uFF1A';
+            sysP += '\n  后宫：';
             _sysSpouses.forEach(function(sp) {
               var rkName = typeof getHaremRankName === 'function' ? getHaremRankName(sp.spouseRank) : (sp.spouseRank || '\u5983');
               sysP += sp.name + '(' + rkName;
@@ -2882,7 +2882,7 @@
             if (GM.harem) {
               if (GM.harem.succession) sysP += '\n  \u7EE7\u627F\u5236\u5EA6:' + GM.harem.succession;
               if (GM.harem.successionNote) sysP += '(' + GM.harem.successionNote + ')';
-              if (GM.harem.haremDescription) sysP += '\n  \u540E\u5BAE\u8BF4\u660E:' + String(GM.harem.haremDescription);
+              if (GM.harem.haremDescription) sysP += '\n  后宫说明:' + String(GM.harem.haremDescription);
               if (GM.harem.motherClanSystem) sysP += '\n  \u6BCD\u65CF\u5236\u5EA6:' + String(GM.harem.motherClanSystem);
             }
             if (GM.harem && GM.harem.pregnancies && GM.harem.pregnancies.length > 0) {
@@ -2891,8 +2891,8 @@
           }
         }
         sysP += '\n  \u203B player_status\u53EA\u5199\u653F\u6CBB\u683C\u5C40\uFF1Bplayer_inner\u5199\u89D2\u8272\u5185\u5FC3\u2014\u2014\u7528\u7B2C\u4E00\u4EBA\u79F0\uFF0C\u4F53\u73B0\u79C1\u4EBA\u60C5\u611F\u548C\u6027\u683C\u3002';
-        sysP += '\n  \u516C\u52A1\u51B3\u7B56\u53EF\u80FD\u8FDD\u80CC\u4E2A\u4EBA\u610F\u613F\uFF08\u5982\u4E0D\u5F97\u4E0D\u6740\u4EB2\u4FE1\uFF09\uFF0C\u79C1\u4EBA\u60C5\u611F\u53EF\u80FD\u6697\u4E2D\u5F71\u54CD\u653F\u6CBB\u5224\u65AD\uFF08\u5982\u504F\u889B\u5BA0\u81E3\uFF09\u3002';
-        sysP += '\n  \u4E3B\u89D2\u7684\u3010\u884C\u6B62\u3011\u662F\u89D2\u8272\u4E2A\u4EBA\u7684\u4E3E\u52A8\uFF08\u4E0E\u8BCF\u4E66\u4E92\u8865\uFF1A\u8BCF\u4E66=\u5143\u9996\u53D1\u4EE4\uFF0C\u884C\u6B62=\u4E2A\u4EBA\u884C\u52A8\uFF09\u3002\u884C\u6B62\u5185\u5BB9\u53EF\u80FD\u5305\u62EC\u53EC\u89C1\u3001\u5DE1\u89C6\u3001\u5B74\u8BF7\u3001\u591C\u8BFB\u3001\u5FAE\u670D\u7B49\uFF0CAI\u6839\u636E\u5177\u4F53\u60C5\u5883\u5224\u65AD\u54EA\u4E9BNPC\u4F1A\u77E5\u60C5\u3002';
+        sysP += '\n  公务决策可能违背个人意愿（如不得不杀亲信），私人情感可能暗中影响政治判断（如偏袒宠臣）。';
+        sysP += '\n  主角的【行止】是角色个人的举动（与诏书互补：诏书=元首发令，行止=个人行动）。行止内容可能包括召见、巡视、宴请、夜读、微服等，AI根据具体情境判断哪些NPC会知情。';
       }
     }
 
@@ -3121,9 +3121,9 @@
     if (_td >= 15) {
       var _tyrantStage = _td >= 85 ? 'depraved' : _td >= 60 ? 'addicted' : _td >= 35 ? 'indulging' : 'tempted';
       var _tyrantStagePrompts = {
-        tempted: '\n\u3010\u6606\u541B\u79CD\u5B50\u3011\u73A9\u5BB6\u521A\u5F00\u59CB\u5C1D\u8BD5\u4EAB\u4E50\u3002AI\u5728player_inner\u4E2D\u5076\u5C14\u63D2\u5165\u8BF1\u60D1\u5FF5\u5934\uFF08\u201C\u4ECA\u65E5\u6279\u6298\u751A\u7D2F\uFF0C\u4E0D\u5982\u2026\u7B97\u4E86\u201D\uFF09\u3002\u4F5E\u81E3\u5F00\u59CB\u8BD5\u63A2\u6027\u5730\u732E\u7B56\u3002\u5FE0\u81E3\u5C1A\u672A\u5BDF\u89C9\u3002',
+        tempted: '\n【昏君种子】玩家刚开始尝试享乐。AI在player_inner中偶尔插入诱惑念头（“今日批折甚累，不如…算了”）。佞臣开始试探性地献策。忠臣尚未察觉。',
         indulging: '\n\u3010\u6C89\u6EBA\u521D\u671F\u3011\u4F5E\u81E3\u4E3B\u52A8\u732E\u7B56\u9891\u7387\u589E\u52A0\uFF0C\u63AA\u8F9E\u66F4\u5927\u80C6\u3002\u5FE0\u81E3\u5F00\u59CB\u9690\u7EA6\u62C5\u5FE7\u4F46\u4EE5\u4E3A\u53EA\u662F\u4E00\u65F6\u3002player_inner\u4E2D\u5FEB\u611F\u589E\u591A\u4F46\u5076\u6709\u4E00\u4E1D\u4E0D\u5B89\u3002',
-        addicted: '\n\u3010\u4E0D\u53EF\u81EA\u62D4\u3011\u5FE0\u81E3\u6FC0\u70C8\u8FDB\u8C0F\uFF08\u5BC6\u96C6\u7684\u5197\u957F\u594F\u758F\u3001\u5F53\u9762\u75DB\u54ED\u6D41\u6D95\u2014\u2014\u4EE4\u4EBA\u975E\u5E38\u53CC\u70E6\uFF09\u3002\u4F5E\u81E3\u628A\u6301\u65E5\u5E38\u653F\u52A1\u3002player_inner\u5B8C\u5168\u6C89\u6D78\u4EAB\u4E50\uFF0C\u5BF9\u5FE0\u81E3\u7684\u8FDB\u8C0F\u611F\u5230\u6781\u5EA6\u70E6\u8E81\u3002\u671D\u653F\u5F00\u59CB\u660E\u663E\u5931\u63A7\u4F46\u73A9\u5BB6\u611F\u89C9\u5F88\u723D\u3002',
+        addicted: '\n【不可自拔】忠臣激烈进谏（密集的冗长奏疏、当面痛哭流涕——令人非常厌烦）。佞臣把持日常政务。player_inner完全沉浸享乐，对忠臣的进谏感到极度烦躁。朝政开始明显失控但玩家感觉很爽。',
         depraved: '\n\u3010\u672B\u8DEF\u72C2\u6B22\u3011\u5FE0\u81E3\u5DF2\u88AB\u6392\u6324\u6216\u6C89\u9ED8\u3002\u4F5E\u81E3\u5B8C\u5168\u638C\u63A7\uFF0C\u671D\u5EF7\u4E0A\u4E0B\u4E00\u7247\u6B4C\u529F\u9882\u5FB7\u3002\u5916\u654C\u8D81\u865A\u800C\u5165\u3002\u6C11\u95F4\u6028\u58F0\u8F7D\u9053\u4F46\u6D88\u606F\u88AB\u5C4F\u853D\u3002\u73A9\u5BB6\u4ECD\u5728\u4EAB\u4E50\u6CE1\u6CE1\u4E2D\u2014\u2014\u76F4\u5230\u5D29\u6E83\u6765\u4E34\u3002'
       };
       sysP += _tyrantStagePrompts[_tyrantStage] || '';
@@ -3143,7 +3143,7 @@
         sysP += '\n\u2022 \u5FE0\u81E3\u4E4B\u95F4\u4E5F\u4F1A\u56E0\u6539\u9769\u8DEF\u7EBF\u4E89\u5435\uFF08\u6539\u9769\u6D3EA vs \u6539\u9769\u6D3EB\uFF09';
         sysP += '\n\u2022 \u767E\u59D3\u77ED\u671F\u4E0D\u9886\u60C5\uFF08\u201C\u51CF\u7A0E\u662F\u5E94\u8BE5\u7684\u201D\u800C\u975E\u201C\u8C22\u6069\u201D\uFF09';
         sysP += '\n\u2022 \u5916\u56FD\u53CD\u800C\u66F4\u5F3A\u786C\uFF08\u660E\u541B=\u5B9E\u529B\u5F3A\u2192\u4E0D\u5FC5\u8BA8\u597D\uFF09';
-        sysP += '\n\u2022 player_inner\u5B64\u72EC\u611F\u52A0\u91CD\uFF1A\u201C\u670D\u505A\u4E86\u8FD9\u4E48\u591A\uFF0C\u7ADF\u65E0\u4E00\u4EBA\u8BF4\u58F0\u597D\u201D';
+        sysP += '\n\u2022 player_inner孤独感加重：“朕做了这么多，竟无一人说声好”';
       }
     }
 
@@ -3151,7 +3151,7 @@
     var _reignYears = (typeof getReignYears === 'function') ? getReignYears() : ((GM.turn || 0) * _daysPerTurnLocal() / 365);
     if (_reignYears > 15) {
       sysP += '\n\n\u3010\u738B\u671D\u79EF\u5F0A\u671F\uFF08\u5728\u4F4D' + Math.round(_reignYears) + '\u5E74\uFF09\u3011';
-      sysP += '\n\u627F\u5E73\u65E5\u4E45\uFF0C\u5E94\u81EA\u7136\u6D8C\u73B0\uFF1A\u5409\u6CBB\u8150\u8D25\u3001\u519B\u961F\u677E\u5F1B\u3001\u4E16\u5BB6\u81A8\u80C0\u3001\u571F\u5730\u517C\u5E76\u3001\u8FB9\u9632\u61C8\u6020\u3002';
+      sysP += '\n承平日久，应自然涌现：吏治腐败、军队松弛、世家膨胀、土地兼并、边防懈怠。';
       sysP += '\n\u8D8A\u592A\u5E73\u8D8A\u8981\u57CB\u5371\u673A\u79CD\u5B50\u2014\u2014\u76DB\u4E16\u4E0B\u7684\u9690\u60A3\u6BD4\u8870\u4E16\u66F4\u81F4\u547D\u3002';
     }
 
@@ -3619,7 +3619,7 @@
     sysP += '\n  · 真正的"外行"是：从未接触过、能力也低(对应值<40)、从政时间短的角色';
     _mark('personnel');
     sysP += '\n- character_deaths: 让当前真实在册角色死亡（包括玩家角色→继统裁决或游戏结束），每项必须含 name+reason；不得改 char_updates.alive/dead 代替';
-    sysP += '\n- faction_changes: \u4FEE\u6539\u52BF\u529B\u5C5E\u6027\uFF08strength_delta\u5B9E\u529B\uFF0Ceconomy_delta\u7ECF\u6D4E\uFF0CplayerRelation_delta\u5BF9\u7389\u5173\u7CFB\u3002strength\u964D\u81F30\u2192\u52BF\u529B\u8986\u706D\uFF09';
+    sysP += '\n- faction_changes: 修改势力属性（strength_delta实力，economy_delta经济，playerRelation_delta对玩家关系。strength降至0\u2192势力覆灭）';
     sysP += '\n- faction_events: 创造势力间自主事件（战争/联盟/政变/行军/围城等）';
     sysP += '\n  ⚠ 涉及行军/围城的事件，必须在geoData中提供地理推算数据！';
     sysP += '\n- faction_relation_changes: 改变势力间关系';
@@ -3663,7 +3663,7 @@
     sysP += '\n- harem_events: \u540E\u5BAB\u4E8B\u4EF6\u3002\u7C7B\u578B\uFF1A';
     sysP += '\n    pregnancy(\u6709\u5B55) / birth(\u751F\u80B2\uFF0C\u4EC5\u8BB0\u5F55\u4E8B\u4EF6\uFF0C\u4E0D\u5728\u56DE\u5408\u63A8\u6F14\u4E2D\u81EA\u52A8\u521B\u5EFA\u5B50\u55E3\u89D2\u8272) / rank_change(\u664B\u5C01/\u964D\u4F4D\uFF0CnewRank\u586B\u4F4D\u5206id)';
     sysP += '\n    death(\u85A8\u901D) / favor_change(\u5BA0\u7231\u53D8\u5316\uFF0Cfavor_delta\u6570\u503C) / scandal(\u4E11\u95FB/\u7EA0\u7EB7\uFF0Cdetail\u63CF\u8FF0)';
-    sysP += '\n    \u540E\u5BAB\u4E0D\u53EA\u662F\u751F\u80B2\u5DE5\u5177\u2014\u2014\u5983\u5B50\u6709\u6027\u683C\u3001\u91CE\u5FC3\u3001\u6BCD\u65CF\u80CC\u666F\uFF0C\u4F1A\u4E3B\u52A8\u4E89\u5BA0\u3001\u7ED3\u515A\u3001\u8C0B\u5BB3\u3001\u5E72\u653F\u3002AI\u5E94\u8BA9\u540E\u5BAB\u6210\u4E3A\u53D9\u4E8B\u7684\u6D3B\u8DC3\u8BBE\u5F00\u573A\u666F';
+    sysP += '\n    后宫不只是生育工具——妃子有性格、野心、母族背景，会主动争宠、结党、谋害、干政。AI应让后宫成为叙事的活跃场景';
     sysP += '\n- tech_civic_unlocks: 解锁科技或推行民政政策（自动扣费+应用效果）';
     sysP += '\n- policy_changes: 国策变更（action:"add"施行/"remove"废除 + name国策名 + reason原因）。须满足前置条件。';
     sysP += '\n- scheme_actions: 阴谋干预（schemer阴谋发起者 + action:"advance"推进/"disrupt"阻碍/"abort"中止/"expose"揭露 + reason原因）';

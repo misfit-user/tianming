@@ -1186,7 +1186,7 @@
               fac.destroyed = true;
               addEB('\u52BF\u529B\u52A8\u6001', fc.name + '\u5DF2\u8986\u706D\uFF1A' + (fc.reason || ''));
               if (typeof GameEventBus !== 'undefined') GameEventBus.emit('faction:defeated', { name: fc.name, reason: fc.reason || '' });
-              // \u2605\u6279\u4E19 C2 \u53BB\u91CD\u88C1\u5B9A(2026-07-22)\uFF1A\u6210\u5458\u6811\u5012\u7300\u72F2\u6563\u53CD\u5E94(\u54C0 imp7+loyalty-3+stress+8\u00B7\u4EAC\u4E2D\u4FA7\u76EE)
+              // \u2605批丙 C2 去重裁定(2026-07-22)：成员树倒猢狲散反应(哀 imp7+loyalty-3+stress+8·京中侧目)
               //   \u5DF2\u6536\u53E3\u5230 _factionCollapseRipple(tm-endturn-helpers.js\u00B7faction:defeated \u8BA2\u9605\u00B7\u4E0A\u884C emit \u540C\u6B65\u8DD1)\u3002
               //   \u539F\u6B64\u5904\u5185\u8054\u7ED9\u5168\u4F53\u6210\u5458\u5199\u300C\u6240\u5C5E\u52BF\u529B\u8986\u706D\u00B7\u5FE7imp8\u300D\u8BB0\u5FC6\u00B7\u4E0E\u6D9F\u6F2A\u6210\u5458\u8BB0\u5FC6\u91CD\u53E0=\u53CC\u6CE8\u5165\u00B7\u6545\u4E0D\u518D\u5185\u8054\u5199(\u5355 chokepoint\u6536\u53E3)\u3002
               var _collapseLifecycle = (typeof TM !== 'undefined' && TM.Factions) || null;
@@ -1619,7 +1619,7 @@
               if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
                 turn: GM.turn,
                 date: typeof getTSText === 'function' ? getTSText(GM.turn) : '',
-                content: '\u3010\u5B98\u5236\u5B9E\u4F53\u3011\u900F\u8FC7\u63A8\u6F14\u6D89\u53CA\uFF0C' + targetDept.name + sp.position + '\u4E4B\u4F4D\u4E4B\u4EFB\u804C\u8005' + sp.holderName + '\u6D6E\u51FA\u53F2\u4E0B\u3002' + (sp.reason || ''),
+                content: '【官制实体】透过推演涉及，' + targetDept.name + sp.position + '之位之任职者' + sp.holderName + '浮出水面。' + (sp.reason || ''),
                 category: '\u5B98\u5236'
               });
             }
@@ -2031,7 +2031,7 @@
             }
             // 领袖伤亡
             if (ru.leaderCasualty) {
-              var _fatalLeaderCasualty = /\u6B7B|\u6218\u6B7B|\u88AB\u6740|\u906E\u6BD9/.test(ru.leaderCasualty);
+              var _fatalLeaderCasualty = /死|战死|被杀|击毙/.test(ru.leaderCasualty);
               var _leaderCasualtyApplied = !_fatalLeaderCasualty || _tmApplyCanonicalDeath(r.leaderName, ru.leaderCasualty, 'revolt_update.leaderCasualty');
               if (_leaderCasualtyApplied) addEB('\u8D77\u4E49', '\u3010' + r.leaderName + '\u3011' + ru.leaderCasualty);
               if (_fatalLeaderCasualty && _leaderCasualtyApplied) {
@@ -2267,8 +2267,8 @@
             // 从列表中移除（保留 _dissolvedTurn 供历史追溯）
             GM.parties = GM.parties.filter(function(p){return p.name !== pd.name;});
             var _cLbl = {banned:'被查禁',liquidated:'被肃清',faded:'自然消亡',leaderKilled:'领袖被杀而散',absorbed:'被吞并'}[pd.cause] || pd.cause || '覆灭';
-            addEB('\u515A\u4E89', '\u3010\u515A\u6D3E\u89E6\u706D\u3011' + pd.name + _cLbl + (pd.perpetrator?'\uFF08' + pd.perpetrator + '\u4E3B\u7F16\uFF09':'') + (pd.reason?'\uFF1A' + pd.reason:''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u515A\u6D3E\u89E6\u706D\u3011' + pd.name + _cLbl + '\u3002' + (pd.reason||''), category: '\u515A\u6D3E' });
+            addEB('党争', '【党派覆灭】' + pd.name + _cLbl + (pd.perpetrator?'（' + pd.perpetrator + '主使）':'') + (pd.reason?'：' + pd.reason:''));
+            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【党派覆灭】' + pd.name + _cLbl + '。' + (pd.reason||''), category: '党派' });
           });
         }
 
@@ -2404,8 +2404,8 @@
               throw new Error('势力注销失败：' + ((_removeFactionResult && _removeFactionResult.reason) || fd.name));
             }
             var _fcLbl = {conquered:'被征服',absorbed:'被并入',collapsed:'内部崩解',seceded_all:'分崩离析',replaced:'被取代'}[fd.cause] || fd.cause || '覆灭';
-            addEB('\u52BF\u529B', '\u3010\u52BF\u529B\u89E6\u706D\u3011' + fd.name + _fcLbl + (fd.conqueror?'\uFF08\u4E3A' + fd.conqueror + '\u6240\u7EC8\uFF09':'') + (fd.territoryFate?'\uFF0C\u7586\u571F:' + fd.territoryFate:'') + (fd.leaderFate?'\u2014\u2014\u9996\u8111:' + fd.leaderFate:'') + (fd.reason?'\uFF1A' + fd.reason:''));
-            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '\u3010\u52BF\u529B\u89E6\u706D\u3011' + fd.name + _fcLbl + '\u3002' + (fd.reason||''), category: '\u52BF\u529B' });
+            addEB('势力', '【势力覆灭】' + fd.name + _fcLbl + (fd.conqueror?'（为' + fd.conqueror + '所终）':'') + (fd.territoryFate?'，疆土:' + fd.territoryFate:'') + (fd.leaderFate?'——首脑:' + fd.leaderFate:'') + (fd.reason?'：' + fd.reason:''));
+            if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({ turn: GM.turn, date: typeof getTSText==='function'?getTSText(GM.turn):'', content: '【势力覆灭】' + fd.name + _fcLbl + '。' + (fd.reason||''), category: '势力' });
           });
         }
 
@@ -3805,7 +3805,7 @@
                       _tmApplyLoyaltyDelta(_lgCh, -10, '\u4EFB\u6240\u5931\u5730', 'admin-territory-lost-governor');
                       _lgCh.stress = Math.min(100, (_lgCh.stress || 0) + 15);
                       if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-                        NpcMemorySystem.remember(_lostGov, '\u6240\u8F96' + adu.division + '\u5931\u9677\u4E8E' + (adu.lostTo || '\u654C\u65B9') + '\uFF0C\u5BF9\u6B64\u6DF1\u611F\u7126\u8651\u548C\u7F9A\u803B', '\u5FE7', 7, undefined, { type: 'trauma' }); // \u53C2\u6570\u9519\u4F4D\u4FEE:'trauma'\u66FE\u5360emotion\u4F4D\u00B7importance\u843D\u9ED8\u8BA45\u6C38\u4E0D\u6210\u4F24\u75A4(2026-07-04 \u5BA1\u67E5\u5B9A\u7F6A)
+                        NpcMemorySystem.remember(_lostGov, '所辖' + adu.division + '失陷于' + (adu.lostTo || '敌方') + '，对此深感焦虑和羞耻', '忧', 7, undefined, { type: 'trauma' }); // 参数错位修:'trauma'曾占emotion位·importance落默认5永不成伤疤(2026-07-04 审查定罪)
                       }
                     }
                   }

@@ -143,7 +143,7 @@ function renderWenduiChars(force, options){
   function _wdCardClass(ch) {
     var t = (ch.title || '') + ' ' + (ch.officialTitle || '');
     if (_wdIsPlayerConsort(ch)) return 'wdp-consort';
-    if (/\u4E1C\u5382|\u53F8\u793C|\u5B98|\u592A\u76D1/.test(t)) return 'wdp-eunuch'; // 宦官
+    if (/东厂|司礼|宦|太监/.test(t)) return 'wdp-eunuch'; // 宦官
     if (/\u5C06\u519B|\u603B\u5175|\u603B\u7763|\u6307\u6325|\u6307\u6325\u4F7F/.test(t)) return 'wdp-mili'; // 武将
     if (ch.party === '\u4E1C\u6797\u515A' || ch.faction === '\u4E1C\u6797') return 'wdp-dongin';
     if (ch.party && /\u6D59/.test(ch.party)) return 'wdp-zhejian';
@@ -158,7 +158,7 @@ function renderWenduiChars(force, options){
   }
   // 工具：派系标签
   function _wdFactionTag(ch) {
-    if (_wdIsPlayerConsort(ch)) return '<span class="wdp-tag" style="color:var(--vermillion-300);">\u5BAB\u773B</span>';
+    if (_wdIsPlayerConsort(ch)) return '<span class="wdp-tag" style="color:var(--vermillion-300);">宫眷</span>';
     if (ch.party) return '<span class="wdp-tag" style="color:var(--celadon-400);">' + escHtml(String(ch.party).slice(0,4)) + '</span>';
     if (ch.faction && ch.faction !== '\u671D\u5EF7') return '<span class="wdp-tag" style="color:var(--indigo-400);">' + escHtml(String(ch.faction).slice(0,4)) + '</span>';
     if (/\u5C06\u519B|\u603B\u5175|\u603B\u7763/.test(ch.title||'')) return '<span class="wdp-tag" style="color:var(--vermillion-400);">\u6B66\u5C06</span>';
@@ -171,7 +171,7 @@ function renderWenduiChars(force, options){
   if (!options.skipStatePreparation) _wdPrepareAudienceRenderState();
   if (Array.isArray(GM._pendingAudiences) && GM._pendingAudiences.length > 0) {
     html += '<div class="wdp-group wdp-g-envoy">';
-    html += '<div class="wdp-group-title"><span class="tag">\u9636 \u4E0B \u5F85 \u89C1</span><span class="desc">\u4F7F\u8282\u00B7\u5916\u85E9\u00B7\u7279\u8BF7\u00B7\u7B49\u5F85\u9661\u4E0B\u51B3\u65AD</span><span class="count">' + GM._pendingAudiences.length + ' \u4EBA</span></div>';
+    html += '<div class="wdp-group-title"><span class="tag">阶 下 待 见</span><span class="desc">使节·外藩·特请·等待陛下决断</span><span class="count">' + GM._pendingAudiences.length + ' 人</span></div>';
     html += '<div class="wdp-req-list">';
     GM._pendingAudiences.forEach(function(q, qi) {
       var _nm = escHtml(q.name || '?');
@@ -308,7 +308,7 @@ function openWenduiPick(name) {
   var hist = GM.wenduiHistory && GM.wenduiHistory[name] && GM.wenduiHistory[name].length > 0;
   var _initial = escHtml(String(name||'?').charAt(0));
   var _portraitHtml = ch.portrait ? '<img src="'+escHtml(ch.portrait)+'" loading="lazy" decoding="async">' : _initial;
-  var _subTitle = escHtml((ch.officialTitle || ch.title || '').slice(0,20)) + (_wdIsPlayerConsort(ch) ? ' \u00B7 \u540E\u59C3' : '');
+  var _subTitle = escHtml((ch.officialTitle || ch.title || '').slice(0,20)) + (_wdIsPlayerConsort(ch) ? ' · 后妃' : '');
   var modal = document.createElement('div');
   modal.className = 'modal-bg show';
   modal.id = 'wd-pick-modal';
@@ -511,7 +511,7 @@ function openWenduiModal(name, mode, prefillMsg) {
     + '<div class="wd-main">'
     // 提示 + 情绪指示条
     + '<div class="wd-modal-hint"><span>\u5212\u51FA\u5927\u81E3\u8BF4\u7684\u8BDD\u52A0\u5165\u5EFA\u8BAE\u5E93</span>'
-    + '<span id="wd-emotion-bar" style="margin-left:var(--space-3);font-size:0.7rem;"><span style="color:var(--celadon-400);">\u955C\u5B9A</span> <span id="wd-emotion-dots" class="wd-emo-track"><i class="wd-emo-mark"></i></span><span style="color:var(--vermillion-400);">\u7D27\u5F20</span></span>'
+    + '<span id="wd-emotion-bar" style="margin-left:var(--space-3);font-size:0.7rem;"><span style="color:var(--celadon-400);">镇定</span> <span id="wd-emotion-dots" class="wd-emo-track"><i class="wd-emo-mark"></i></span><span style="color:var(--vermillion-400);">紧张</span></span>'
     + '</div>'
     // 推荐话题
     + '<div id="wd-topics" style="display:flex;gap:4px;flex-wrap:wrap;padding:2px 8px;"></div>'
@@ -604,7 +604,7 @@ function openWenduiModal(name, mode, prefillMsg) {
     var _off = (ch.officialTitle || '').toLowerCase();
     if (_off.indexOf('\u5175') >= 0 || _off.indexOf('\u5C06') >= 0 || _off.indexOf('\u519B') >= 0 || (ch.military || 0) > 65) _topics.push('\u8FB9\u5883\u519B\u60C5\u5982\u4F55');
     if (_off.indexOf('\u6237') >= 0 || _off.indexOf('\u5EA6\u652F') >= 0 || _off.indexOf('\u8D22') >= 0) _topics.push('\u56FD\u5E93\u8D22\u653F\u73B0\u72B6');
-    if (_off.indexOf('\u5409') >= 0 || _off.indexOf('\u94E8') >= 0 || _off.indexOf('\u4EBA') >= 0) _topics.push('\u5B98\u5458\u8003\u8BFE\u60C5\u51B5');
+    if (_off.indexOf('吏') >= 0 || _off.indexOf('铨') >= 0 || _off.indexOf('人') >= 0) _topics.push('官员考课情况');
     if (_off.indexOf('\u793C') >= 0 || _off.indexOf('\u592A\u5E38') >= 0) _topics.push('\u793C\u5236\u4E0E\u7956\u5236');
     // 按性格/关系推荐
     if ((ch.loyalty || 50) > 80) _topics.push('\u670B\u515A\u4E4B\u5F0A');
@@ -1891,7 +1891,7 @@ function _wdUpdateEmotionBar(name) {
   var e = Math.max(1, Math.min(5, state.emotion));
   var mark = dots.querySelector ? dots.querySelector('.wd-emo-mark') : null;
   if (mark) {
-    // \u60C5\u7EEA 1(\u955C\u5B9A)\u21925(\u7D27\u5F20)\u00B7\u6ED1\u5757\u6CBF\u9752\u2194\u6731\u8F68\u79FB\u52A8
+    // 情绪 1(镇定)\u21925(紧张)·滑块沿青\u2194朱轨移动
     mark.style.left = Math.round((e - 1) / 4 * 100) + '%';
   } else {
     var filled = '', empty = '';

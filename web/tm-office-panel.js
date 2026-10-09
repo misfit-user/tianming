@@ -48,9 +48,9 @@ function _offRenderPickerList() {
         +   '<div style="font-size:1.6rem;color:var(--ink-400);margin-bottom:0.3rem;">\u5C3D</div>'
         +   '<div style="font-size:0.86rem;color:var(--ink-300);letter-spacing:0.15em;margin-bottom:0.2rem;">\u65E0\u53EF\u4EFB\u7528\u4E4B\u4EBA</div>'
         +   '<div style="font-size:0.72rem;color:var(--ink-400);line-height:1.7;margin-bottom:1rem;max-width:360px;margin-left:auto;margin-right:auto;">'
-        +     '\u5E9C\u5E93\u4EBA\u624D\u65B9\u4E1A\u4E4F\u7ED9\uFF0C\u7329\u529B\u5FE0\u8BDA\u4E4B\u58EB\u96BE\u8FC5\u5C31\u9644\u3002<br>\u53EF\u4E0B\u8BCF\u5FB4\u53EC\u65B0\u4EBA\uFF0C\u53D7\u547D\u4E4B\u540E\u518D\u884C\u6388\u804C\u3002'
+        +     '府库人才方今乏给，得力忠诚之士难迅就附。<br>可下诏征召新人，受命之后再行授职。'
         +   '</div>'
-        +   '<button onclick="_offRecruitNewForPost()" class="bt" style="padding:8px 20px;background:linear-gradient(180deg,rgba(184,154,83,0.25),rgba(184,154,83,0.1));border:1px solid var(--gold-400);color:var(--gold-300);font-size:0.82rem;letter-spacing:0.15em;border-radius:var(--radius-sm);cursor:pointer;">\u2767 \u4E0B\u8BCF\u5FB4\u53EC \u2767</button>'
+        +   '<button onclick="_offRecruitNewForPost()" class="bt" style="padding:8px 20px;background:linear-gradient(180deg,rgba(184,154,83,0.25),rgba(184,154,83,0.1));border:1px solid var(--gold-400);color:var(--gold-300);font-size:0.82rem;letter-spacing:0.15em;border-radius:var(--radius-sm);cursor:pointer;">\u2767 下诏征召 \u2767</button>'
         +   '<div style="font-size:0.7rem;color:var(--ink-400);margin-top:0.6rem;">AI \u5C06\u6839\u636E\u6B64\u804C\u9700\u6C42\u751F\u6210\u5019\u9009\u4EBA\u7269</div>'
         + '</div>';
     } else {
@@ -203,13 +203,13 @@ function _offPickerConfirmPre(charName, deptName, posName, oldHolder) {
     +   '<div style="font-size:0.96rem;font-weight:700;color:var(--color-foreground);margin-bottom:0.3rem;">' + escHtml(charName) + ' \u73B0\u4EFB <span style="color:var(--gold-400);">' + escHtml(existingPost) + '</span></div>'
     +   '<div style="font-size:0.78rem;color:var(--ink-300);line-height:1.7;margin-bottom:0.8rem;">'
     +     '\u65B0\u6388\uFF1A<b style="color:var(--celadon-400);">' + escHtml(deptName) + '\u00B7' + escHtml(posName) + '</b><br>'
-    +     '\u8BF7\u6BBF\u4E0B\u660E\u65A8\uFF1A'
+    +     '请殿下明断：'
     +   '</div>'
     +   '<div style="display:flex;flex-direction:column;gap:0.4rem;">'
     +     '<button class="bt" style="padding:8px 12px;text-align:left;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);" '
     +         'onclick="this.closest(\'div[style*=fixed]\').remove();_offPickerConfirm(\'' + _nameS + '\',\'' + _deptS + '\',\'' + _posS + '\',\'' + _oldS + '\',\'resign\')">'
     +       '<div style="font-size:0.84rem;font-weight:700;color:var(--gold-400);">\u8F9E\u65E7\u5C31\u65B0</div>'
-    +       '<div style="font-size:0.7rem;color:var(--ink-300);margin-top:2px;">\u5151\u53BB\u539F\u804C <b>' + escHtml(existingPost) + '</b>\u00B7\u5168\u529B\u8D74\u4EFB\u65B0\u804C</div>'
+    +       '<div style="font-size:0.7rem;color:var(--ink-300);margin-top:2px;">免去原职 <b>' + escHtml(existingPost) + '</b>·全力赴任新职</div>'
     +     '</button>'
     +     '<button class="bt" style="padding:8px 12px;text-align:left;background:var(--color-elevated);border:1px solid var(--color-border);color:var(--color-foreground);" '
     +         'onclick="this.closest(\'div[style*=fixed]\').remove();_offPickerConfirm(\'' + _nameS + '\',\'' + _deptS + '\',\'' + _posS + '\',\'' + _oldS + '\',\'concurrent\')">'
@@ -369,10 +369,10 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     newChar._memorySeeds.push({ turn: GM.turn, event: '蒙陛下简拔·授' + deptName + posName + (mode==='concurrent'?'（兼）':''), emotion: '敬感' });
     // 好感 +5·被委以重任
     if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-      AffinityMap.add(charName, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 5, '被委以重任');
+      AffinityMap.add(charName, (P.playerInfo && P.playerInfo.characterName) || '陛下', 5, '被委以重任');
     }
     if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-      NpcMemorySystem.remember(charName, '蒙简擢为 ' + deptName + posName, '\u559C', 7, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B');
+      NpcMemorySystem.remember(charName, '蒙简擢为 ' + deptName + posName, '喜', 7, (P.playerInfo && P.playerInfo.characterName) || '陛下');
     }
   }
   if (oldChar) {
@@ -388,7 +388,7 @@ function _offPickerConfirm(charName, deptName, posName, oldHolder, mode) {
     if (!oldChar.careerHistory) oldChar.careerHistory = [];
     oldChar.careerHistory.push({ turn: GM.turn, event: '奉诏免 ' + deptName + posName + '·由 ' + charName + ' 代' });
     if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-      AffinityMap.add(oldHolder, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', -10, '被免职');
+      AffinityMap.add(oldHolder, (P.playerInfo && P.playerInfo.characterName) || '陛下', -10, '被免职');
     }
   }
 
@@ -548,13 +548,13 @@ function _offRecruitNewForPost() {
   bg.onclick = function(e){ if (e.target === bg) bg.remove(); };
   bg.innerHTML = ''
     + '<div style="background:var(--color-surface);border:1px solid var(--gold-500);border-radius:var(--radius-lg);padding:1.2rem 1.5rem;width:min(420px,92vw);">'
-    +   '<div style="font-size:0.76rem;color:var(--ink-300);letter-spacing:0.2em;margin-bottom:0.3rem;">\u3014 \u5FB4 \u53EC \u3015</div>'
+    +   '<div style="font-size:0.76rem;color:var(--ink-300);letter-spacing:0.2em;margin-bottom:0.3rem;">〔 征 召 〕</div>'
     +   '<div style="font-size:0.96rem;font-weight:700;color:var(--gold-400);margin-bottom:0.2rem;">' + escHtml(deptName) + '\u00B7' + escHtml(posName) + '</div>'
     +   (pos.rank ? '<div style="font-size:0.72rem;color:var(--ink-300);margin-bottom:0.6rem;">\u54C1\u7EA7\uFF1A' + escHtml(pos.rank) + '</div>' : '<div style="margin-bottom:0.6rem;"></div>')
-    +   '<label style="display:block;font-size:0.72rem;color:var(--ink-300);margin-bottom:0.2rem;">\u53EC\u964D\u4E4B\u4EBA\u59D3\u540D</label>'
+    +   '<label style="display:block;font-size:0.72rem;color:var(--ink-300);margin-bottom:0.2rem;">征召之人姓名</label>'
     +   '<input id="recruit-name-input" type="text" placeholder="\u4F8B\uFF1A\u8881\u5D07\u7115\u00B7\u6216\u7559\u7A7A\u8BA9 AI \u81EA\u751F" maxlength="20" '
     +     'style="width:100%;padding:6px 10px;font-size:0.88rem;background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-foreground);margin-bottom:0.3rem;"/>'
-    +   '<div style="font-size:0.7rem;color:var(--ink-400);line-height:1.5;margin-bottom:0.8rem;">\u00B7 \u8F93\u5165\u5386\u53F2\u540D\u81E3\u5C06 AI \u751F\u6210\u5B9E\u5386\u5B66\u5BD8\u00B7 \u7559\u7A7A\u5219 AI \u81EA\u62DF\u540D</div>'
+    +   '<div style="font-size:0.7rem;color:var(--ink-400);line-height:1.5;margin-bottom:0.8rem;">· 输入历史名臣将 AI 生成史实履历· 留空则 AI 自拟名</div>'
     +   '<div style="display:flex;gap:0.6rem;justify-content:flex-end;">'
     +     '<button class="bt bsm" onclick="this.closest(\'div[style*=fixed]\').remove();">\u53D6\u6D88</button>'
     +     '<button class="bt bsm" style="background:var(--gold-500);color:#1a1510;border-color:var(--gold-500);" onclick="_offRecruitSubmit()">\u4E0B \u8BCF</button>'
@@ -579,17 +579,17 @@ function _offRecruitSubmit() {
     return;
   }
   if (typeof edictRecruitCharacter !== 'function') {
-    if (typeof toast === 'function') toast('\u5FB4\u53EC\u6A21\u5757\u672A\u52A0\u8F7D');
+    if (typeof toast === 'function') toast('征召模块未加载');
     return;
   }
 
-  if (typeof toast === 'function') toast('\u6B63\u5728\u5FB4\u53EC ' + name + '\u2026AI \u751F\u6210\u4E2D');
+  if (typeof toast === 'function') toast('正在征召 ' + name + '…AI 生成中');
   var _capName = name;
   Promise.resolve().then(function(){
-    return edictRecruitCharacter(_capName, deptName + posName, '\u56E0 ' + deptName + posName + ' \u7F3A\u5458\u8D2B\u8352\u00B7\u7279\u4E0B\u8BCF\u5FB4\u53EC');
+    return edictRecruitCharacter(_capName, deptName + posName, '因 ' + deptName + posName + ' 缺员乏人·特下诏征召');
   }).then(function(ch){
     if (!ch) {
-      if (typeof toast === 'function') toast('\u5FB4\u53EC\u5931\u8D25\u00B7\u8BF7\u91CD\u8BD5');
+      if (typeof toast === 'function') toast('征召失败·请重试');
       return;
     }
     // 生成成功·重开 picker（新人已在候选池中）
@@ -603,7 +603,7 @@ function _offRecruitSubmit() {
     setTimeout(function(){ _offOpenPicker(_path, _dept, _pos, _cur); }, 50);
   }).catch(function(err){
     (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(err, '_offRecruitSubmit') : console.error('[_offRecruitSubmit] err:', err);
-    if (typeof toast === 'function') toast('\u5FB4\u53EC\u51FA\u9519\u00B7' + (err && err.message || ''));
+    if (typeof toast === 'function') toast('征召出错·' + (err && err.message || ''));
   });
 }
 
@@ -630,7 +630,7 @@ function _offImpeach(charName, deptName, posName) {
   if (_isForeign2) _baseSucc += 15;
   _baseSucc = Math.max(10, Math.min(90, _baseSucc));
   var _succClr = _baseSucc >= 60 ? 'var(--celadon-400)' : _baseSucc >= 35 ? 'var(--gold-400)' : 'var(--vermillion-400)';
-  var _succLbl = _baseSucc >= 60 ? '\u6613\u4E0B' : _baseSucc >= 35 ? '\u53EF\u8BD5' : '\u5197\u56FE';
+  var _succLbl = _baseSucc >= 60 ? '易下' : _baseSucc >= 35 ? '可试' : '难图';
 
   bg.innerHTML = ''
     + '<div style="background:var(--color-surface);border:1px solid var(--vermillion-400);border-radius:var(--radius-lg);padding:1.2rem 1.4rem;width:min(460px,92vw);">'
@@ -647,7 +647,7 @@ function _offImpeach(charName, deptName, posName) {
     +   '</div>'
     +   '<div style="font-size:0.7rem;color:var(--ink-300);line-height:1.6;margin-bottom:0.8rem;">'
     +     '\u2022 AI \u5C06\u5728\u672C\u56DE\u5408\u63A8\u6F14\u4E2D\u5224\u5B9A\u5F39\u52BE\u6210\u8D25<br>'
-    +     '\u2022 \u5F39\u52BE\u5931\u8D25\u00B7\u7687\u5A01\u964D\u00B7\u88AB\u5F39\u8005\u5BF9\u966A\u4E1A\u7A7A<br>'
+    +     '\u2022 弹劾失败·皇威降·被弹者对陛下生怨<br>'
     +     '\u2022 \u5F39\u52BE\u6210\u529F\u00B7\u7A7A\u51FA\u804C\u4F4D\u5F85\u8865\u4EFB'
     +   '</div>'
     +   '<div style="display:flex;gap:0.6rem;justify-content:flex-end;">'
@@ -883,7 +883,7 @@ function _offUndoAppointment(deptName, posName) {
     }
     // 反向 Affinity +5·回正 -5
     if (pe._snapAppliedAffinity && typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-      try { AffinityMap.add(pe.newHolder, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', -5, '\u8BCF\u4E66\u64A4\u56DE'); } catch(_){}
+      try { AffinityMap.add(pe.newHolder, (P.playerInfo && P.playerInfo.characterName) || '陛下', -5, '诏书撤回'); } catch(_){}
     }
   }
 
@@ -897,7 +897,7 @@ function _offUndoAppointment(deptName, posName) {
       oldChar.careerHistory.pop();
     }
     if (pe._snapAppliedAffinity && typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-      try { AffinityMap.add(pe.prevHolder, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 10, '\u8BCF\u4E66\u64A4\u56DE'); } catch(_){}
+      try { AffinityMap.add(pe.prevHolder, (P.playerInfo && P.playerInfo.characterName) || '陛下', 10, '诏书撤回'); } catch(_){}
     }
   }
 
@@ -1274,7 +1274,7 @@ function renderBiannian(force){
   if(!force && typeof _gtTabVisible==='function' && !_gtTabVisible('gt-biannian')) return;
   // 类型→(label,cat,icon) 映射
   var _BN_TYPE = {
-    keju:             {label:'\u79D1\u4E3E\u884C\u671D',     cat:'keju',     icon:'\u6587'},
+    keju:             {label:'科举进程',     cat:'keju',     icon:'文'},
     edict:            {label:'\u957F\u671F\u8BCF\u4EE4',     cat:'edict',    icon:'\u8BCF'},
     project:          {label:'\u5DE5\u7A0B\u5546\u961F',     cat:'project',  icon:'\u5DE5'},
     pending_memorial: {label:'\u79EF\u538B\u594F\u758F',     cat:'memorial', icon:'\u79EF'},
@@ -1289,12 +1289,12 @@ function renderBiannian(force){
   // 史册类别→cat-* 映射
   function _bnEntryCat(c) {
     var s = (c.category||'') + (c.title||'');
-    if (/\u519B|\u5175|\u6218|\u88D7|\u5E05|\u5BC6/.test(s)) return 'cat-mil';
-    if (/\u707E|\u5F02|\u65F1|\u6D3A|\u5730\u9707|\u661F|\u6A90\u66C4|\u96EA|\u5929\u8C61|\u65E5\u98DF|\u6708\u98DF|\u864E|\u72FC/.test(s)) return 'cat-nat';
+    if (/军|兵|战|袭|帅|寇/.test(s)) return 'cat-mil';
+    if (/灾|异|旱|洪|地震|星|檐曄|雪|天象|日食|月食|虎|狼/.test(s)) return 'cat-nat';
     if (/\u7ECF|\u8D4B|\u7A0E|\u8D22|\u7C73|\u94F6|\u79DF|\u5E01|\u8D4B\u5F79|\u8D44/.test(s)) return 'cat-eco';
     if (/\u5916\u4EA4|\u85E9|\u8D21|\u8D1F\u76DF|\u4F7F\u81E3|\u548C\u4EB2|\u518C\u5C01/.test(s)) return 'cat-dip';
     if (/\u6587|\u79D1\u4E3E|\u8D24|\u5B66|\u793C|\u7965|\u7948|\u796D|\u4E66/.test(s)) return 'cat-cult';
-    if (/\u653F|\u5B98|\u8BCF|\u5415|\u7F62|\u514D|\u664B|\u7F62\u804C|\u5BA3|\u514D\u804C|\u5149\u5E1D|\u5373\u4F4D/.test(s)) return 'cat-pol';
+    if (/政|官|诏|吏|罢|免|晋|罢职|宣|免职|先帝|即位/.test(s)) return 'cat-pol';
     return 'cat-misc';
   }
 
@@ -1724,7 +1724,7 @@ function renderOfficeDeptV2(dept,path){
         holderDetail += '</div>';
         if (_lastEval) {
           holderDetail += '<div style="font-size:0.7rem;color:var(--color-foreground-muted);padding:2px 0;border-top:1px solid var(--color-border-subtle);">';
-          holderDetail += '\u8003\u8BC4\uFF08' + escHtml(_lastEval.evaluator||'\u5417\u90E8') + '\uFF09\uFF1A' + escHtml(_lastEval.comment||'');
+          holderDetail += '考评（' + escHtml(_lastEval.evaluator||'吏部') + '）：' + escHtml(_lastEval.comment||'');
           holderDetail += '</div>';
         }
       }

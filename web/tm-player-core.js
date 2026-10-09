@@ -315,7 +315,7 @@ var _CRED_META = {
   'high':   { label:'\u53EF\u4FE1',       color:'var(--green)' },  // 可信（钦差/账册/确证）
   'medium': { label:'\u53C2\u8003',       color:'var(--gold)'  },  // 参考（士林风议/部分证据）
   'low':    { label:'\u98CE\u95FB',       color:'var(--txt-d)' },  // 风闻（流言/未核实）
-  'biased': { label:'\u504F\u9882',       color:'var(--purple,#8a5cf5)' } // 偏颇（宦官耳报/党人揭发）
+  'biased': { label:'偏颇',       color:'var(--purple,#8a5cf5)' } // 偏颇（宦官耳报/党人揭发）
 };
 
 function _fmtEvt(e){
@@ -1065,7 +1065,7 @@ function _renderDifangPanel(force) {
       var _hasWar = GM.activeWars.some(function(w) { return (w.location||'').indexOf(item.name) >= 0 || (w.province||'') === item.name; });
       if (_hasWar) _evChips.push({ cls:'war', txt:'\u6218\u4E8B' });
     }
-    if (finiteNumberOr(item.yearOutput, 1) > 1.2 && !isCrisis) _evChips.push({ cls:'bumper', txt:'\u4E30\u79BB' });
+    if (finiteNumberOr(item.yearOutput, 1) > 1.2 && !isCrisis) _evChips.push({ cls:'bumper', txt:'丰稔' });
     if (_evChips.length) {
       html += '<div class="df-events">';
       _evChips.slice(0, 5).forEach(function(e) { html += '<span class="df-event-chip ' + e.cls + '">' + escHtml(e.txt) + '</span>'; });
@@ -1550,37 +1550,37 @@ function _dfNonDirectAction(divName, autonomyType) {
   var _title = '', _desc = '';
   if (autonomyType === 'fanguo') {
     _title = '\u5BF9\u85E9\u56FD\u3010' + divName + '\u3011\u53EF\u884C\u4E4B\u7B56';
-    _desc = '\u6B64\u4E43 ' + holder + ' \u4E4B\u5C01\u56FD\u3002\u9675\u4E0B\u82E5\u6B32\u7F6E\u5587\uFF0C\u6709\u6570\u7B56\u53EF\u884C\uFF1A';
+    _desc = '此乃 ' + holder + ' 之封国。陛下若欲置喙，有数策可行：';
     _actions = [
-      { label: '\u884C\u63A8\u6069\u4EE4', hint: '\u5F3A\u5236\u5206\u5C01\u5176\u5B50\u7B49\u2014\u2014\u5982\u6C49\u6B66\u6545\u4E8B\uFF0C\u6BCF\u4EE3\u5206\u8584\uFF0C\u4E94\u4EE3\u540E\u85E9\u6743\u81EA\u6D88', action: 'edict:\u5BF9' + divName + '\u8840\u8109\u884C\u63A8\u6069\u4EE4\uFF0C\u4EE4' + holder + '\u540E\u5D3F\u7686\u5E94\u5206\u5C01\uFF0C\u6BCF\u4EE3\u5206\u8584\u5176\u571F' },
-      { label: '\u65AD\u7136\u524A\u85E9', hint: '\u76F4\u63A5\u5269\u593A\u85E9\u738B\u7235\u571F\u2014\u2014\u5FE0\u8BDA\u66B4\u8DCC\uFF0C\u5F88\u53EF\u80FD\u5F15\u53D1\u53DB\u4E71(\u5982\u4E03\u56FD\u4E4B\u4E71\u3001\u9756\u96BE\u4E4B\u5F79)', action: 'edict:\u524A\u85E9' + divName + '\uFF0C\u5269\u593A' + holder + '\u7235\u571F\uFF0C\u539F\u5C01\u5730\u6536\u5F52\u671D\u5EF7\u76F4\u8F96' },
+      { label: '行推恩令', hint: '强制分封其子等——如汉武故事，每代分薄，五代后藩权自消', action: 'edict:对' + divName + '血脉行推恩令，令' + holder + '后嗣皆应分封，每代分薄其土' },
+      { label: '断然削藩', hint: '直接剥夺藩王爵土——忠诚暴跌，很可能引发叛乱(如七国之乱、靖难之役)', action: 'edict:削藩' + divName + '，剥夺' + holder + '爵土，原封地收归朝廷直辖' },
       { label: '\u4F20\u65E8\u89C4\u8C0F', hint: '\u5229\u7528\u73B0\u6709\u8BCF\u4EE4\u5668\u68B0\u8F93\u9001\u610F\u5FD7\u2014\u2014\u6267\u884C\u529B\u770B\u85E9\u738B\u5FE0\u8BDA', action: 'edict:\u547D' + holder + '\u6574\u6CBB' + divName + '\uFF0C\u5174\u5229\u9664\u5F0A' },
-      { label: '\u6696\u6BEB\u62DC\u547D', hint: '\u8D50\u7269\u3001\u52A0\u5C01\u3001\u4EE5\u6069\u62C9\u62E2\u85E9\u738B\u5FE0\u5FC3', action: 'edict:\u8D50' + holder + '\u6042\u5149\uFF0C\u63D0\u9AD8\u5176\u5BF9\u671D\u5EF7\u5FE0\u8BDA' }
+      { label: '厚赐加封', hint: '赐物、加封、以恩拉拢藩王忠心', action: 'edict:赐' + holder + '恩光，提高其对朝廷忠诚' }
     ];
   } else if (autonomyType === 'jimi') {
     _title = '\u5BF9\u7F81\u7E3B\u571F\u53F8\u3010' + divName + '\u3011\u53EF\u884C\u4E4B\u7B56';
-    _desc = '\u6B64\u4E43 ' + holder + ' \u4E16\u88AD\u4E4B\u571F\u3002\u671D\u5EF7\u4F8B\u4E0D\u7F6E\u6D41\u5B98\uFF0C\u9675\u4E0B\u53EF\u884C\uFF1A';
+    _desc = '此乃 ' + holder + ' 世袭之土。朝廷例不置流官，陛下可行：';
     _actions = [
       { label: '\u6539\u571F\u5F52\u6D41', hint: '\u5C06\u571F\u53F8\u4E4B\u5730\u6539\u4E3A\u6D41\u5B98\u7BA1\u8F96\u2014\u2014\u987B\u5F85\u571F\u53F8\u53DB\u4E71\u6216\u7EDD\u55E3\uFF0C\u6216\u629B\u5F00\u540E\u679C\u5F3A\u63A8', action: 'edict:\u884C\u6539\u571F\u5F52\u6D41\u4E8E' + divName + '\uFF0C\u53D6\u6D88' + holder + '\u571F\u53F8\u8EAB\u4EFD\uFF0C\u7F6E\u6D41\u5B98\u8F96\u5236' },
-      { label: '\u6566\u8C15\u5B89\u629A', hint: '\u9063\u4F7F\u6566\u8C15\u6216\u8D50\u5C01\u2014\u2014\u4EE5\u6069\u5B89\u629A\uFF0C\u7EF4\u6301\u5C5E\u4F7F\u5173\u7CFB', action: 'edict:\u9063\u4F7F\u6566\u8C15' + holder + '\uFF0C\u8D50\u5C01\u5B89\u629A\u4F7F\uFF0C\u6C38\u9547\u4E00\u65B9' },
+      { label: '敦谕安抚', hint: '遣使敦谕或赐封——以恩安抚，维持臣属关系', action: 'edict:遣使敦谕' + holder + '，赐封安抚使，永镇一方' },
       { label: '\u8C03\u6574\u8D21\u989D', hint: '\u589E\u51CF\u571F\u53F8\u8D21\u8D4B\u989D\u5EA6', action: 'edict:\u8C03\u6574' + holder + '\u5E74\u8D21\u989D\u5EA6' },
       { label: '\u51C6\u5176\u627F\u88AD', hint: '\u627F\u8BA4\u65B0\u4EFB\u571F\u53F8\u8EAB\u4EFD', action: 'edict:\u51C6\u4E88' + holder + '\u7236\u5B50\u627F\u88AD\u571F\u53F8\u4E4B\u804C' }
     ];
   } else if (autonomyType === 'chaogong') {
     _title = '\u5BF9\u671D\u8D21\u5916\u85E9\u3010' + divName + '\u3011\u53EF\u884C\u4E4B\u7B56';
-    _desc = '\u6B64\u4E43 ' + holder + ' \u4E4B\u56FD\uFF0C\u5C5E\u591A\u56FD\u5916\u85E9\u3002\u5929\u671D\u4E0D\u5F97\u76F4\u8F96\uFF0C\u552F\u6709\uFF1A';
+    _desc = '此乃 ' + holder + ' 之国，属朝贡外藩。天朝不得直辖，唯有：';
     _actions = [
-      { label: '\u518C\u5C01\u5176\u541B', hint: '\u9057\u4F7F\u518C\u5C01\u5176\u56FD\u738B/\u4E16\u5B50\u2014\u2014\u5F3A\u5316\u5B97\u85E9\u5173\u7CFB', action: 'edict:\u9057\u4F7F\u518C\u5C01' + holder + '\u4E3A\u5176\u56FD\u541B\u4E3B\uFF0C\u8D50\u4E88\u507D\u547D' },
-      { label: '\u52E7\u4EE4\u8FDB\u8D21', hint: '\u52E0\u4EE4\u521D\u8D21\u6216\u5047\u9053\u4ECB\u5165', action: 'edict:\u52E0\u4EE4' + holder + '\u6309\u671F\u8FDB\u8D21\uFF0C\u4EE5\u793A\u5C0A\u670F' },
-      { label: '\u6D3E\u9063\u4F7F\u81E3', hint: '\u4E34\u65F6\u6D3E\u4F7F\u8C03\u89E3\u7EAA\u5F8B\u6216\u51B2\u7A81', action: 'edict:\u6D3E\u9063\u4F7F\u81E3\u524D\u5F80' + divName + '\uFF0C\u8C03\u89E3\u5B89\u629A' },
-      { label: '\u5174\u5E08\u5F81\u8BA8', hint: '\u5F81\u8BA8\u5E76\u7F6E\u90E1\u2014\u2014\u6C49\u6B66\u706D\u5357\u8D8A\u6545\u4E8B\uFF0C\u9700\u5E74\u9A6C\u538B\u5883', action: 'edict:\u5174\u5E08\u5F81\u8BA8' + holder + '\uFF0C\u5E73\u5B9A\u540E\u4E8E\u5176\u5730\u7F6E\u90E1\u53BF' }
+      { label: '册封其君', hint: '遣使册封其国王/世子——强化宗藩关系', action: 'edict:遣使册封' + holder + '为其国君主，赐予诰命' },
+      { label: '劝令进贡', hint: '勒令入贡或假道介入', action: 'edict:勒令' + holder + '按期进贡，以示尊崇' },
+      { label: '派遣使臣', hint: '临时派使调解纠纷或冲突', action: 'edict:派遣使臣前往' + divName + '，调解安抚' },
+      { label: '兴师征讨', hint: '征讨并置郡——汉武灭南越故事，需兵马压境', action: 'edict:兴师征讨' + holder + '，平定后于其地置郡县' }
     ];
   } else if (autonomyType === 'fanzhen') {
     _title = '\u5BF9\u85E9\u9547\u3010' + divName + '\u3011\u53EF\u884C\u4E4B\u7B56';
     _desc = '\u6B64\u4E43 ' + holder + ' \u4E4B\u85E9\u9547\uFF0C\u519B\u653F\u5408\u4E00\u3002\u671D\u5EF7\u96BE\u4EE5\u8282\u5236\uFF1A';
     _actions = [
-      { label: '\u5BA3\u8C15\u5165\u671D', hint: '\u52E0\u4EE4\u8282\u5EA6\u4F7F\u5165\u671D\u2014\u2014\u4E00\u822C\u88AB\u963F\u8FDE\u6216\u53CD\u62B3', action: 'edict:\u5BA3\u8C15' + holder + '\u5165\u671D\u89C1\u9A7E\uFF0C\u4EA4\u51FA\u5175\u6743' },
-      { label: '\u963B\u5176\u4F20\u8896', hint: '\u963B\u6B62\u5176\u5B50\u7EE7\u627F\u85E9\u9547\u2014\u2014\u6613\u5F15\u81EA\u7ACB', action: 'edict:\u4E0D\u51C6' + holder + '\u4E4B\u5B50\u7EE7\u4EFB' + divName + '\u8282\u5EA6\u4F7F' },
+      { label: '宣谕入朝', hint: '勒令节度使入朝——一般被拖延或反抗', action: 'edict:宣谕' + holder + '入朝见驾，交出兵权' },
+      { label: '阻其传袭', hint: '阻止其子继承藩镇——易引自立', action: 'edict:不准' + holder + '之子继任' + divName + '节度使' },
       { label: '\u5174\u5E08\u8BA8\u4F10', hint: '\u76F4\u63A5\u51FA\u5175\u8BA8\u4F10', action: 'edict:\u5174\u5E08\u8BA8\u4F10' + holder + '\uFF0C\u5E73\u5B9A\u540E\u6539' + divName + '\u4E3A\u76F4\u8F96' }
     ];
   } else {
@@ -1858,7 +1858,7 @@ function renderLeftPanel(){
       var pStressDiv = document.createElement("div");
       pStressDiv.style.cssText = "margin-bottom:0.4rem;";
       var pStress = _pChar.stress || 0;
-      var pStressLabel = pStress > 70 ? '\u5FC3\u529B\u4EA4\u7601' : pStress > 50 ? '\u7126\u8651\u4E0D\u5B89' : pStress > 30 ? '\u7565\u611F\u7591\u60D1' : '\u5C1A\u53EF';
+      var pStressLabel = pStress > 70 ? '心力交瘁' : pStress > 50 ? '焦虑不安' : pStress > 30 ? '略感疲惫' : '尚可';
       var pStressColor = pStress > 70 ? 'var(--red)' : pStress > 50 ? '#e67e22' : pStress > 30 ? 'var(--blue)' : 'var(--txt-d)';
       var _moodIcon = '';
       if (_pChar._mood && _pChar._mood !== '\u5E73') {

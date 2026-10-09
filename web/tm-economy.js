@@ -682,7 +682,7 @@ function applyInheritanceOutcome(inheritanceData, deadChar, deadCharOffices, off
     deadCharOffices.forEach(function(office) {
       office.position.holder = '';
     });
-    addEB('\u7EDD\u5F7C', deadChar.name + '\u53BB\u4E16\uFF0C' + officeList + '\u51FA\u7F3A\u3002');
+    addEB('绝嗣', deadChar.name + '去世，' + officeList + '出缺。');
     addEB('\u540E\u679C', inheritanceData.consequence);
   }
 }

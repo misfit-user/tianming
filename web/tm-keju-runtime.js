@@ -231,15 +231,15 @@ async function initKejuSystem(scenario) {
       '  "tiers": [\n' +
       '    {"name":"\u89E3\u8BD5/\u4E61\u8BD5","level":"local","interactive":false,"desc":"\u5730\u65B9\u9009\u62D4\uFF0C\u81EA\u52A8\u6A21\u62DF"},\n' +
       '    {"name":"\u7701\u8BD5/\u4F1A\u8BD5","level":"national","interactive":true,"desc":"\u5168\u56FD\u8003\u8BD5\uFF0C\u73A9\u5BB6\u53EF\u53C2\u4E0E\u51FA\u9898"},\n' +
-      '    {"name":"\u6BBE\u8BD5","level":"imperial","interactive":true,"desc":"\u5929\u5B50\u4EB2\u7B56\uFF0C\u73A9\u5BB6\u51FA\u9898"}\n' +
+      '    {"name":"殿试","level":"imperial","interactive":true,"desc":"天子亲策，玩家出题"}\n' +
       '  ],\n' +
       '  "subjects": "\u8FDB\u58EB\u79D1/\u660E\u7ECF\u79D1\u7B49",\n' +
       '  "features": "\u7279\u8272\u63CF\u8FF050\u5B57(\u5982\u7CCA\u540D\u5236\u3001\u8A8A\u5F55\u5236\u7B49)"\n' +
       '}\n\n' +
-      '\u6CE8\u610F\uFF1A\n- \u5510\u4EE3\uFF1A\u89E3\u8BD5\u2192\u7701\u8BD5\u2192\u6BBE\u8BD5\uFF0C\u6BCF\u5E74\u4E00\u79D1\uFF0C\u4E0D\u7CCA\u540D\n' +
-      '- \u5B8B\u4EE3\uFF1A\u89E3\u8BD5\u2192\u7701\u8BD5\u2192\u6BBE\u8BD5\uFF0C\u4E09\u5E74\u4E00\u79D1\uFF0C\u5F00\u59CB\u7CCA\u540D\n' +
-      '- \u660E\u6E05\uFF1A\u53BF\u8BD5\u2192\u5E9C\u8BD5\u2192\u9662\u8BD5\u2192\u4E61\u8BD5\u2192\u4F1A\u8BD5\u2192\u6BBE\u8BD5\uFF0C\u4E09\u5E74\u4E00\u79D1\n' +
-      '- \u9699\u4EE5\u524D\uFF1Aenabled=false\uFF0C\u586B\u5199alternativeSystem\n' +
+      '注意：\n- 唐代：解试\u2192省试\u2192殿试，每年一科，不糊名\n' +
+      '- 宋代：解试\u2192省试\u2192殿试，三年一科，开始糊名\n' +
+      '- 明清：县试\u2192府试\u2192院试\u2192乡试\u2192会试\u2192殿试，三年一科\n' +
+      '- 隋以前：enabled=false，填写alternativeSystem\n' +
       '\u53EA\u8F93\u51FAJSON\u3002';
 
     // 时空约束·科举体系初始化配置(JSON·clauseOnly)（typeof守卫·防加载序）
@@ -333,17 +333,17 @@ function _getDefaultTiers(era) {
     {name:'\u9662\u8BD5',level:'province_pre',interactive:false,desc:'\u5B66\u653F\u4E3B\u6301'},
     {name:'\u4E61\u8BD5',level:'province',interactive:false,desc:'\u7701\u57CE\u4E3E\u4EBA\u8003\u8BD5'},
     {name:'\u4F1A\u8BD5',level:'national',interactive:true,desc:'\u793C\u90E8\u4E3B\u6301\uFF0C\u73A9\u5BB6\u53EF\u53C2\u4E0E'},
-    {name:'\u6BBE\u8BD5',level:'imperial',interactive:true,desc:'\u5929\u5B50\u4EB2\u7B56'}
+    {name:'殿试',level:'imperial',interactive:true,desc:'天子亲策'}
   ];
   if (/\u5510|\u5B8B|\u4E94\u4EE3|\u8FBD|\u91D1|\u5143/.test(era)) return [
     {name:'\u89E3\u8BD5',level:'local',interactive:false,desc:'\u5730\u65B9\u9009\u62D4'},
     {name:'\u7701\u8BD5',level:'national',interactive:true,desc:'\u5168\u56FD\u8003\u8BD5'},
-    {name:'\u6BBE\u8BD5',level:'imperial',interactive:true,desc:'\u5929\u5B50\u4EB2\u7B56'}
+    {name:'殿试',level:'imperial',interactive:true,desc:'天子亲策'}
   ];
   return [
     {name:'\u521D\u8BD5',level:'local',interactive:false,desc:'\u5730\u65B9\u9009\u62D4'},
     {name:'\u4F1A\u8BD5',level:'national',interactive:true,desc:'\u4E2D\u592E\u8003\u8BD5'},
-    {name:'\u6BBE\u8BD5',level:'imperial',interactive:true,desc:'\u5929\u5B50\u4EB2\u7B56'}
+    {name:'殿试',level:'imperial',interactive:true,desc:'天子亲策'}
   ];
 }
 
@@ -521,7 +521,7 @@ function startKejuExam(opts) {
   }
   var _dpt2 = (typeof _getDaysPerTurn === 'function') ? _getDaysPerTurn() : ((P.time && P.time.daysPerTurn) || 30);
   var _turns = Math.ceil(totalDays / Math.max(1, _dpt2));
-  toast((isEnke ? '\uD83C\uDF89 \u6069\u79D1' : '\uD83D\uDCDC \u79D1\u4E3E') + '\u5F00\u59CB\u00B7\u9884\u8BA1 ' + totalDays + ' \u65E5 (\u7EA6 ' + _turns + ' \u56DE\u5408)\u00B7\u9700\u4E32\u4E8B\u7684\u6AAF\u6BB5\u4F1A\u9010\u6B21\u63D0\u8BF7\u9661\u4E0B\u5B9A\u593A');
+  toast((isEnke ? '\uD83C\uDF89 恩科' : '\uD83D\uDCDC 科举') + '开始·预计 ' + totalDays + ' 日 (约 ' + _turns + ' 回合)·需互动的阶段会逐次提请陛下定夺');
 }
 
 /**
@@ -996,10 +996,10 @@ function selectExaminer(name) {
   // v5·纪事 + NPC 记忆：主考官任命是重大荣誉
   if (typeof _kejuWriteJishi === 'function') _kejuWriteJishi('\u4EFB\u547D\u4E3B\u8003', name + '\u00B7' + (ch.officialTitle||ch.title||''), '\u515A:' + (ch.party||'\u65E0\u515A') + '\u00B7\u667A' + (ch.intelligence||0));
   if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-    NpcMemorySystem.remember(name, '\u8499\u7687\u5E1D\u4EFB\u547D\u4E3A\u79D1\u4E3E\u4F1A\u8BD5\u4E3B\u8003\u5B98\u00B7\u6B64\u4E3A\u6587\u81E3\u8363\u5BA0', '\u559C', 8, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B');
+    NpcMemorySystem.remember(name, '蒙皇帝任命为科举会试主考官·此为文臣荣宠', '喜', 8, (P.playerInfo && P.playerInfo.characterName) || '陛下');
   }
   if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-    AffinityMap.add(name, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 5, '\u7687\u5E1D\u6388\u4E3B\u8003\u4E4B\u8363');
+    AffinityMap.add(name, (P.playerInfo && P.playerInfo.characterName) || '陛下', 5, '皇帝授主考之荣');
   }
 }
 
@@ -1037,7 +1037,7 @@ function renderHuishiStage(container) {
   // 考官出题
   html += '<div style="background:linear-gradient(135deg,var(--bg-2),rgba(138,109,27,0.04));padding:1rem;border-radius:8px;border:1px solid var(--gold-d);margin-bottom:1rem;">';
   html += '<h4 style="color:var(--gold);margin-bottom:0.5rem;">\uD83D\uDCDC ' + escHtml(tierName) + '\u8BD5\u9898</h4>';
-  html += '<p style="color:var(--txt-d);font-size:0.82rem;margin-bottom:0.5rem;">\u4E3B\u8003\u5B98\u62DF\u9898\u5448\u62A5\u5FA1\u89C8\u3002\u966D\u4E0B\u53EF\u4FEE\u6539\u6216\u53E6\u62DF\uFF0C\u4EA6\u53EF\u51C6\u5949\u3002</p>';
+  html += '<p style="color:var(--txt-d);font-size:0.82rem;margin-bottom:0.5rem;">主考官拟题呈报御览。陛下可修改或另拟，亦可准奏。</p>';
   html += '<textarea id="huishi-topic" rows="4" oninput="if(typeof _kjUpdateAlignmentUI===\'function\')_kjUpdateAlignmentUI();" style="width:100%;padding:0.6rem;background:var(--bg-1);border:1px solid var(--bdr);border-radius:4px;color:var(--txt);font-family:inherit;line-height:1.7;font-size:0.92rem;" placeholder="\u8BF7\u7B49\u5F85\u8003\u5B98\u62DF\u9898\uFF0C\u6216\u76F4\u63A5\u8F93\u5165...">' + escHtml(exam && exam.huishiTopic ? exam.huishiTopic : '') + '</textarea>';
   // v7.1\u00B7C3\u00B7alignment warning div (oninput \u66F4\u65B0)
   html += '<div id="kj-alignment-warn"></div>';
@@ -1153,10 +1153,10 @@ async function generateHuishiResults(examOverride) {
       '\n\u3010\u751F\u6210\u8981\u6C42\u3011\n' +
       '1. passedCount: \u4F1A\u8BD5\u5F55\u53D6\u603B\u4EBA\u6570\uFF08\u6CBB\u7406\u597D\u2192200-300\uFF0C\u6CBB\u7406\u5DEE\u219280-150\uFF09\n' +
       '2. quality: \u8003\u751F\u6574\u4F53\u8D28\u91CF\uFF08\u4F18\u79C0/\u826F\u597D/\u4E00\u822C/\u8F83\u5DEE\uFF09\n' +
-      '3. dianshiCount: \u53D6\u591A\u5C11\u540D\u8FDB\u5165\u6BBE\u8BD5\uFF0815-40\u4EBA\uFF09\n' +
+      '3. dianshiCount: 取多少名进入殿试（15-40人）\n' +
       '4. ethnicRatio: \u6C11\u65CF\u5360\u6BD4\n5. classRatio: \u9636\u5C42\u5360\u6BD4\uFF08\u58EB\u65CF/\u5BD2\u95E8/\u5546\u8D3E\u7B49\uFF09\n' +
       '6. partyRatio: \u515A\u6D3E\u5360\u6BD4\uFF08\u8003\u5B98\u515A\u6D3E\u7684\u8003\u751F\u4F1A\u504F\u591A\uFF09\n' +
-      '7. localEffect: \u5F55\u53D6\u8005\u5206\u914D\u5730\u65B9\u5BF9\u5409\u6CBB\u7684\u5F71\u54CD\uFF0830\u5B57\uFF09\n' +
+      '7. localEffect: 录取者分配地方对吏治的影响（30字）\n' +
       '8. note: \u8003\u5B98\u8BC4\u8BED\uFF0840\u5B57\uFF09\n\n' +
       '\u8FD4\u56DEJSON\u3002\u53EA\u8F93\u51FAJSON\u3002';
 
@@ -1205,15 +1205,15 @@ async function generateHuishiResults(examOverride) {
       var _qualBonus = data.quality === '\u4F18\u79C0' ? 0.03 : data.quality === '\u826F\u597D' ? 0.02 : data.quality === '\u4E00\u822C' ? 0.01 : 0;
       GM.eraState.bureaucracyStrength = Math.min(1, (GM.eraState.bureaucracyStrength || 0.5) + _qualBonus);
       if (_qualBonus > 0) {
-        addEB('\u79D1\u4E3E', '\u4F1A\u8BD5\u5F55\u53D6' + passedCount + '\u4EBA\u5206\u914D\u5730\u65B9\uFF0C\u5409\u6CBB\u6539\u5584(+' + Math.round(_qualBonus*100) + '%)');
+        addEB('科举', '会试录取' + passedCount + '人分配地方，吏治改善(+' + Math.round(_qualBonus*100) + '%)');
       }
     }
 
     hideLoading();
-    toast('\u2705 \u4F1A\u8BD5\u7ED3\u675F\uFF0C\u5F55\u53D6' + passedCount + '\u4EBA\uFF0C\u524D' + dianshiCount + '\u540D\u8FDB\u5165\u6BBE\u8BD5');
+    toast('\u2705 会试结束，录取' + passedCount + '人，前' + dianshiCount + '名进入殿试');
     // v5·纪事
     if (typeof _kejuWriteJishi === 'function') {
-      _kejuWriteJishi('\u4F1A\u8BD5\u5F00\u699C', '\u5F55\u53D6' + passedCount + '\u4EBA\u00B7\u524D' + dianshiCount + '\u8FDB\u5165\u6BBE\u8BD5\u00B7\u8D28\u91CF\u300C' + (data.quality||'') + '\u300D', data.note || '');
+      _kejuWriteJishi('会试开榜', '录取' + passedCount + '人·前' + dianshiCount + '进入殿试·质量「' + (data.quality||'') + '」', data.note || '');
     }
     renderKejuStage();
   } catch(e) {
@@ -1285,7 +1285,7 @@ function renderDianshiStage(container) {
     // 场景描写
     '<div style="text-align:center;margin-bottom:1rem;">' +
     '<div style="font-size:2rem;margin-bottom:0.3rem;">\uD83D\uDC51</div>' +
-    '<h3 style="color:var(--gold);margin-bottom:0.5rem;">\u6BBE\u8BD5</h3>' +
+    '<h3 style="color:var(--gold);margin-bottom:0.5rem;">殿试</h3>' +
     '<p style="color:var(--txt-d);font-size:0.85rem;line-height:1.7;max-width:500px;margin:0 auto;">' +
     '\u4F1A\u8BD5\u5DF2\u6BD5\uFF0C\u5F55\u53D6' + (stats.passedCount||0) + '\u4EBA\u3002' +
     '\u5176\u4E2D' + dianshiCount + '\u540D\u4F73\u58EB\u5C06\u5165\u5927\u6BBF\uFF0C\u5F85\u5929\u5B50\u4EB2\u81EA\u7B56\u95EE\uFF0C\u8BD5\u5176\u6CBB\u56FD\u7ECF\u4E16\u4E4B\u624D\u3002' +
@@ -1295,7 +1295,7 @@ function renderDianshiStage(container) {
     '<summary style="color:var(--gold);font-size:0.9rem;cursor:pointer;font-weight:700;">\u4F1A\u8BD5\u7EDF\u8BA1 \u00B7 \u5F55\u53D6' + (stats.passedCount||0) + '\u4EBA \u00B7 \u8D28\u91CF\u201C' + (stats.quality||'') + '\u201D</summary>' +
     '<div style="margin-top:0.5rem;font-size:0.85rem;">' +
     '<p>\u8003\u5B98\u8BC4\u8BED\uFF1A' + (stats.note||'') + '</p>' +
-    (stats.localEffect ? '<p style="color:var(--green);">\u5730\u65B9\u5409\u6CBB\u5F71\u54CD\uFF1A' + stats.localEffect + '</p>' : '') +
+    (stats.localEffect ? '<p style="color:var(--green);">地方吏治影响：' + stats.localEffect + '</p>' : '') +
     '<div style="display:flex;gap:2rem;margin-top:0.5rem;flex-wrap:wrap;">' +
     '<div><span style="font-weight:700;">\u6C11\u65CF</span>: ' + _fmtRatio(stats.ethnicRatio) + '</div>' +
     '<div><span style="font-weight:700;">\u9636\u5C42</span>: ' + _fmtRatio(stats.classRatio) + '</div>' +
@@ -1304,13 +1304,13 @@ function renderDianshiStage(container) {
     // 殿试出题
     '<div style="background:linear-gradient(135deg,var(--bg-2),rgba(138,109,27,0.06));padding:1.2rem;border-radius:8px;border:1px solid var(--gold-d);">' +
     '<h4 style="color:var(--gold);font-size:1rem;margin-bottom:0.8rem;">\uD83D\uDCDC \u5929\u5B50\u7B56\u95EE</h4>' +
-    '<p style="color:var(--txt-d);font-size:0.85rem;margin-bottom:0.6rem;">\u8BF7\u62DF\u5B9A\u6BBE\u8BD5\u7B56\u95EE\u9898\u76EE\u2014\u2014\u8003\u5BDF\u8003\u751F\u5BF9\u65F6\u5C40\u7684\u89C1\u89E3\u3001\u6CBB\u56FD\u7684\u65B9\u7565</p>' +
-    '<textarea id="dianshi-question" rows="6" oninput="if(typeof _kjUpdateAlignmentUI===\'function\')_kjUpdateAlignmentUI();" style="width:100%;padding:0.8rem;background:var(--bg-1);border:1px solid var(--bdr);border-radius:4px;color:var(--txt);font-family:inherit;resize:vertical;line-height:1.8;font-size:0.95rem;" placeholder="\u4F8B\uFF1A\u671D\u5EF7\u79EF\u5F0A\u65E5\u6DF1\uFF0C\u5916\u60A3\u672A\u5DF2\u3002\u6614\u7BA1\u4EF2\u76F8\u9F50\uFF0C\u5C0A\u738B\u653D\u5937\uFF0C\u4E5D\u5408\u8BF8\u4FAF...\u4F55\u4EE5\u6559\u8054\uFF1F">' + escHtml(exam.playerQuestion || '') + '</textarea>' +
+    '<p style="color:var(--txt-d);font-size:0.85rem;margin-bottom:0.6rem;">请拟定殿试策问题目——考察考生对时局的见解、治国的方略</p>' +
+    '<textarea id="dianshi-question" rows="6" oninput="if(typeof _kjUpdateAlignmentUI===\'function\')_kjUpdateAlignmentUI();" style="width:100%;padding:0.8rem;background:var(--bg-1);border:1px solid var(--bdr);border-radius:4px;color:var(--txt);font-family:inherit;resize:vertical;line-height:1.8;font-size:0.95rem;" placeholder="例：朝廷积弊日深，外患未已。昔管仲相齐，尊王攘夷，九合诸侯...何以教朕？">' + escHtml(exam.playerQuestion || '') + '</textarea>' +
     '<div id="kj-alignment-warn"></div>' +
     '<div style="display:flex;gap:0.5rem;margin-top:0.6rem;">' +
     '<button class="bt bp" onclick="generateDianshiQuestion()" style="flex:1;">\uD83E\uDD16 AI\u4EE3\u62DF\u7B56\u95EE</button>' +
     '<button class="bt" onclick="if(typeof _kjOpenLibuKeyi===\'function\')_kjOpenLibuKeyi();" style="flex:0.8;color:var(--gold);">\uD83D\uDCDC \u53EC\u793C\u90E8\u5546\u8BAE</button>' +
-    '<button class="bt bp" onclick="startDianshi()" style="flex:1;background:var(--gold-d);font-weight:700;">\uD83D\uDCDC \u5F00\u59CB\u6BBE\u8BD5</button>' +
+    '<button class="bt bp" onclick="startDianshi()" style="flex:1;background:var(--gold-d);font-weight:700;">\uD83D\uDCDC 开始殿试</button>' +
     '</div>' +
     '</div>' +
     '</div>';
@@ -1352,7 +1352,7 @@ async function generateDianshiQuestion() {
       '2. \u8003\u5BDF\u8003\u751F\u7684\u6CBB\u56FD\u7406\u653F\u80FD\u529B\u548C\u5386\u53F2\u89C1\u89E3\n' +
       '3. \u9898\u76EE\u957F\u5EA6100-250\u5B57\uFF0C\u4EFF\u53E4\u6587\u7B56\u95EE\u4F53\n' +
       '4. \u7B56\u95EE\u5E94\u5F15\u7528\u5386\u53F2\u5148\u4F8B\uFF0C\u5982\u201C\u6614\u7BA1\u4EF2\u76F8\u9F50...\u201D\n' +
-      '5. \u7ED3\u5C3E\u4EE5\u201C\u5B50\u5176\u8BD5\u4E3A\u8054\u5BF9\u4E4B\u201D\u6216\u201C\u4F55\u4EE5\u6559\u8054\u201D\u53E5\u5F0F\u53D1\u95EE\n\n' +
+      '5. 结尾以“子其试为朕对之”或“何以教朕”句式发问\n\n' +
       '\u76F4\u63A5\u8F93\u51FA\u9898\u76EE\uFF0C\u4E0D\u8981JSON\u683C\u5F0F\u3002';
 
     // 时空约束·扫描近期事件涉议人物·殿试策问(JSON外自由文但改clauseOnly·天子亲策·防塞全朝无关活人名成正向姓名诱导)（typeof守卫·防加载序）
@@ -1402,7 +1402,7 @@ function _kejuOpenDianshiProgress() {
     '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:12px;width:90%;max-width:560px;padding:1.5rem 1.8rem;">'
     + '<div style="text-align:center;margin-bottom:1rem;">'
     +   '<div style="font-size:2.2rem;margin-bottom:0.3rem;">\uD83D\uDCDC</div>'
-    +   '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;">\u3014 \u6BBE\u8BD5 \u3015</div>'
+    +   '<div style="font-size:1.1rem;font-weight:700;color:var(--gold);letter-spacing:0.08em;">〔 殿试 〕</div>'
     +   '<div id="dianshi-progress-subtitle" style="font-size:0.82rem;color:var(--txt-d);margin-top:0.3rem;">\u6574\u7406\u8003\u751F\u7B54\u5377\u4E2D\u2026</div>'
     + '</div>'
     + '<div style="background:var(--bg-2);padding:0.9rem 1rem;border-radius:8px;">'
@@ -1457,7 +1457,7 @@ async function startDianshi() {
   for (var attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       // generateDianshiResults 内部自行推进进度条（5→95%）·此处仅标记尝试
-      _kejuUpdateDianshiProgress('\u7B2C ' + attempt + '/' + maxRetries + ' \u6B21\u5C1D\u8BD5\u00B7\u542F\u52A8\u6BBE\u8BD5\u2026', 2);
+      _kejuUpdateDianshiProgress('第 ' + attempt + '/' + maxRetries + ' 次尝试·启动殿试…', 2);
       await generateDianshiResults();
       if (!exam.dianshiResults || exam.dianshiResults.length < 3) {
         throw new Error('\u6709\u6548\u7B54\u5377\u5C11\u4E8E 3 \u5377');
@@ -1473,7 +1473,7 @@ async function startDianshi() {
       return;
     } catch(e) {
       lastErr = e;
-      console.error('[\u79D1\u4E3E\u00B7\u6BBE\u8BD5] \u7B2C' + attempt + '\u6B21\u5931\u8D25:', e);
+      console.error('[科举·殿试] 第' + attempt + '次失败:', e);
       if (attempt < maxRetries) {
         _kejuUpdateDianshiProgress('\u26A0 \u7B2C ' + attempt + ' \u6B21\u5931\u8D25\u00B7' + ((e && e.message) || '\u672A\u77E5\u9519\u8BEF') + '\u00B7 2 \u79D2\u540E\u91CD\u8BD5\u2026', 50);
         await new Promise(function(r){ setTimeout(r, 2000); });
@@ -1481,7 +1481,7 @@ async function startDianshi() {
         _kejuUpdateDianshiProgress('\u274C \u5DF2\u91CD\u8BD5 ' + maxRetries + ' \u6B21\u7686\u5931\u8D25\u00B7\u8BF7\u68C0\u67E5 AI \u914D\u7F6E\u6216\u91CD\u8BD5', 100);
         await new Promise(function(r){ setTimeout(r, 1600); });
         _kejuCloseDianshiProgress();
-        toast('\u274C \u6BBE\u8BD5\u5931\u8D25\uFF08\u5DF2\u91CD\u8BD5 ' + maxRetries + ' \u6B21\uFF09\uFF1A' + ((lastErr && lastErr.message) || '\u672A\u77E5\u9519\u8BEF'));
+        toast('\u274C 殿试失败（已重试 ' + maxRetries + ' 次）：' + ((lastErr && lastErr.message) || '未知错误'));
       }
     }
   }
@@ -1584,12 +1584,12 @@ async function generateDianshiResults(options) {
   candidates = candidates.filter(function(c){
     if (!c || !c.name) return false;
     if (_offSet[c.name]) {
-      console.warn('[\u6BBE\u8BD5\u00B7\u6EE4] \u4E22\u5F03\u5DF2\u4EFB\u5B98\u5019\u9009:', c.name);
+      console.warn('[殿试·滤] 丢弃已任官候选:', c.name);
       return false;
     }
     var _ech = (typeof findCharByName === 'function') ? findCharByName(c.name) : null;
     if (_ech && (_ech.officialTitle || _ech.title || _ech.spouse || _ech.isPlayer)) {
-      console.warn('[\u6BBE\u8BD5\u00B7\u6EE4] \u4E22\u5F03\u5DF2\u4EFB\u5B98\u5019\u9009:', c.name);
+      console.warn('[殿试·滤] 丢弃已任官候选:', c.name);
       return false;
     }
     if (_ech && _ech.alive === false) return false;
@@ -1649,7 +1649,7 @@ async function generateDianshiResults(options) {
         });
       }
     } catch(e) {
-      console.warn('[\u6BBE\u8BD5\u00B7F3] \u7B2C ' + (b+1) + ' \u6279\u7B54\u5377\u751F\u6210\u5931\u8D25\uFF0C\u7EE7\u7EED\u4E0B\u4E00\u6279:', e.message||e);
+      console.warn('[殿试·F3] 第 ' + (b+1) + ' 批答卷生成失败，继续下一批:', e.message||e);
     }
   }
 
@@ -1658,7 +1658,7 @@ async function generateDianshiResults(options) {
   try {
     await _kejuGenChiefExaminerComments(exam, candidates);
   } catch(e) {
-    console.warn('[\u6BBE\u8BD5\u00B7\u4E3B\u8003\u6279\u8BED] \u751F\u6210\u5931\u8D25:', e);
+    console.warn('[殿试·主考批语] 生成失败:', e);
   }
 
   // 若有考生 fullAnswer 仍缺（某批失败）·补上占位·避免 UI 显示 undefined
@@ -1667,10 +1667,10 @@ async function generateDianshiResults(options) {
   }
   if (_palace) candidates.forEach(function(c){
     if (!c.fullAnswer || c.fullAnswer.length < 200) {
-      c.fullAnswer = (c.fullAnswer || '') + '\n\n\uFF08\u672C\u5377\u56E0\u629E\u65E9\u6295\u5377\u0020\u6216\u7B54\u7B80\u8981\uFF0C\u539F\u6587\u4EC5\u5B58\u6458\u8981\uFF09';
+      c.fullAnswer = (c.fullAnswer || '') + '\n\n（本卷因提早投卷\u0020或答简要，原文仅存摘要）';
     }
-    if (!c.evaluation) c.evaluation = '\u6587\u8BEF\u6355\u4F7F\uFF0C\u51FA\u5165\u7ECF\u5178\u3002';
-    if (!c.chiefExaminerComment) c.chiefExaminerComment = '\u6279\u66F0\uFF1A\u5370\u8BC1\u6CA1\u5199\u3002';
+    if (!c.evaluation) c.evaluation = '文词博雅，出入经典。';
+    if (!c.chiefExaminerComment) c.chiefExaminerComment = '批曰：中规中矩。';
   });
 
   exam.dianshiResults = candidates;
@@ -1708,9 +1708,9 @@ async function _kejuGenChiefExaminerComments(exam, candidates) {
   }).join('\n');
   var prompt = '请以主考官' + chiefInfo + '的口吻，为以下' + candidates.length + '名考生的' + _examName + '答卷各写一则批语。\n\n'
     + '题目：' + _question.slice(0,150) + '\n\n'
-    + '\u5377\u4ECE\uFF1A\n' + listStr + '\n\n'
+    + '考卷：\n' + listStr + '\n\n'
     + '\u8981\u6C42\uFF1A\n'
-    + '1. \u6BCF\u5219\u6279\u8BED 40-100 \u5B57\uFF0C\u4EFF\u53E4\u4EE3\u4E3B\u8003\u5B98\u8BED\u6C14\uFF08\u201C\u7B56\u8BBA\u5BCF\u6377\u201D\u300C\u6587\u91CC\u6709\u675F\u300D\u300C\u8BED\u591A\u514F\u4E2D\u201D\u300C\u6C14\u6025\u672A\u7EAF\u201D\u7B49\uFF09\n'
+    + '1. 每则批语 40-100 字，仿古代主考官语气（“策论敏捷”「文理有条」「语多切中”「气息未纯”等）\n'
     + '2. 批语须体现主考本人的性情与学问，对本卷具体论点有所褒贬，不可套用其他时代的党争。\n'
     + '3. \u6279\u8BED\u53EF\u5BBD\u53EF\u4E25\u00B7\u4F46\u5FC5\u987B\u5177\u4F53\u6307\u51FA\u4F18\u70B9\u6216\u7F3A\u5931\n'
     + '\u8FD4\u56DE JSON\uFF1A[{"rank":1,"name":"...","chiefExaminerComment":"..."}, ...]\u00B7\u53EA\u8F93\u51FA JSON\u3002';
@@ -1768,9 +1768,9 @@ async function _kejuGenExaminerSuggestions(exam) {
   var suggestions = {};
   for (var i=0; i<examiners.length; i++) {
     var ex = examiners[i];
-    var prompt = '\u4F60\u662F\u6BBE\u8BD5\u9605\u5377\u5B98 ' + ex.name + '\uFF08' + (ex.officialTitle||ex.title||'') +
+    var prompt = '你是殿试阅卷官 ' + ex.name + '（' + (ex.officialTitle||ex.title||'') +
       '\u00B7\u515A\u6D3E:' + (ex.party||'\u65E0\u515A') + '\u00B7\u7ACB\u573A:' + (ex.stance||ex.personality||'') + '\u667A' + (ex.intelligence||70) + '\uFF09\u3002\n\n' +
-      '\u3010\u6BBE\u8BD5\u9898\u76EE\u3011' + (exam.playerQuestion||'').slice(0,200) + '\n\n' +
+      '【殿试题目】' + (exam.playerQuestion||'').slice(0,200) + '\n\n' +
       '\u3010\u524D 20 \u540D\u8003\u751F\u3011\n' + candidateInfo + '\n\n' +
       '\u8BF7\u7ED9\u51FA\u4F60\u5BF9\u524D 20 \u540D\u7684\u6392\u5E8F\u5EFA\u8BAE\uFF08\u53D7\u81EA\u8EAB\u515A\u6D3E/\u7ACB\u573A/\u80FD\u529B\u504F\u5FC3\u5F71\u54CD\uFF0C\u4E0D\u4E00\u5B9A\u4F9D\u7EFC\u5408\u5206\uFF09\u3002\n' +
       '\u8FD4\u56DE JSON\uFF1A[{"name":"\u59D3\u540D","reason":"\u63A8\u8350\u7406\u7531 30-50 \u5B57"}, ...] \u00B7 \u5171 20 \u9879 \u00B7 \u53EA\u8F93\u51FA JSON\u3002';
@@ -1810,8 +1810,8 @@ function renderDianshiDecideStage(container) {
 
   var html = '<div style="margin-bottom:1.2rem;text-align:center;">'+
     '<div style="font-size:2rem;">\uD83D\uDCDC</div>'+
-    '<h3 style="color:var(--gold);">\u6BBE\u8BD5\u8BFB\u5377\u00B7\u9661\u4E0B\u94A6\u5B9A\u4E09\u7532</h3>'+
-    '<p style="color:var(--txt-d);font-size:0.8rem;">\u6BBE\u8BD5\u9898\u76EE\uFF1A' + escHtml((exam.playerQuestion||'').slice(0,60)) + '...</p></div>';
+    '<h3 style="color:var(--gold);">殿试读卷·陛下钦定三甲</h3>'+
+    '<p style="color:var(--txt-d);font-size:0.8rem;">殿试题目：' + escHtml((exam.playerQuestion||'').slice(0,60)) + '...</p></div>';
 
   // 考官意见
   var sugs = exam.examinerSuggestions || {};
@@ -1842,7 +1842,7 @@ function renderDianshiDecideStage(container) {
     '</div>';
 
   // 20 卷列表
-  html += '<div style="font-size:0.85rem;color:var(--txt-d);margin-bottom:0.4rem;">\u00B7 20 \u5377\u8BFB\u5377\u5019\u6765\uFF08\u70B9\u51FB\u7B54\u5377\u00B7\u94A6\u70B9\u4F4D\u6B21\uFF09</div>';
+  html += '<div style="font-size:0.85rem;color:var(--txt-d);margin-bottom:0.4rem;">· 20 卷读卷候选（点击答卷·钦点位次）</div>';
   results.forEach(function(c, i){
     var slotTaken = pr.zhuangyuan === c.name ? '\uD83E\uDD47\u72B6\u5143' : pr.bangyan === c.name ? '\uD83E\uDD48\u699C\u773C' : pr.tanhua === c.name ? '\uD83E\uDD49\u63A2\u82B1' : '';
     var histMark = c.isHistorical ? ' <span style="color:var(--amber-400);font-size:0.7rem;">\u53F2</span>' : '';
@@ -1909,14 +1909,14 @@ function confirmFinalRanking() {
 
   // v5·纪事 + 三甲 NPC 记忆
   if (typeof _kejuWriteJishi === 'function') {
-    _kejuWriteJishi('\u6BBE\u8BD5\u94A6\u5B9A\u4E09\u7532', pr.zhuangyuan + '/' + pr.bangyan + '/' + pr.tanhua, '\u9661\u4E0B\u4EB2\u5B9A\u72B6\u5143\u3001\u699C\u773C\u3001\u63A2\u82B1');
+    _kejuWriteJishi('殿试钦定三甲', pr.zhuangyuan + '/' + pr.bangyan + '/' + pr.tanhua, '陛下亲定状元、榜眼、探花');
   }
   if (typeof addEB === 'function') addEB('\u79D1\u4E3E', '\u94A6\u5B9A\u4E09\u7532\u00B7\u72B6\u5143' + pr.zhuangyuan + '\u00B7\u699C\u773C' + pr.bangyan + '\u00B7\u63A2\u82B1' + pr.tanhua);
   if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-    var playerName = (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B';
+    var playerName = (P.playerInfo && P.playerInfo.characterName) || '陛下';
     [pr.zhuangyuan, pr.bangyan, pr.tanhua].forEach(function(name, idx){
       var rankLbl = ['\u72B6\u5143','\u699C\u773C','\u63A2\u82B1'][idx];
-      NpcMemorySystem.remember(name, '\u6BBE\u8BD5\u53CA\u7B2C\u00B7\u8499' + playerName + '\u4EB2\u7B56\u94A6\u70B9\u4E3A' + rankLbl + '\u00B7\u5929\u5B50\u95E8\u751F\u4E4B\u8363', '\u656C', 9, playerName);
+      NpcMemorySystem.remember(name, '殿试及第·蒙' + playerName + '亲策钦点为' + rankLbl + '·天子门生之荣', '敬', 9, playerName);
     });
   }
 
@@ -1950,10 +1950,10 @@ function _kejuJudgeRankingControversy(exam) {
   if (totalEx > 0 && disagreeExaminers.length >= Math.ceil(totalEx / 2)) {
     disagreeExaminers.forEach(function(nm){
       if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-        AffinityMap.add(nm, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', -15, '\u6BBE\u8BD5\u94A6\u5B9A\u8FDD\u80CC\u5176\u610F');
+        AffinityMap.add(nm, (P.playerInfo && P.playerInfo.characterName) || '陛下', -15, '殿试钦定违背其意');
       }
     });
-    _adjustHuangwei(-3, '\u72EC\u65AD\u94A6\u5B9A\u00B7\u8003\u5B98\u8865\u3D02');
+    _adjustHuangwei(-3, '独断钦定·考官不满');
     if (typeof addEB === 'function') addEB('\u79D1\u4E3E', '\u94A6\u5B9A\u8FDD\u591A\u6570\u8003\u5B98\u610F\u89C1\u00B7' + disagreeExaminers.slice(0,3).join('\u3001') + ' \u597D\u611F-15');
   }
 }

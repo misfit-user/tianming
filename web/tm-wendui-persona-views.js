@@ -430,13 +430,13 @@ function _wdBuildPrompt(ch, name) {
     p += '\u3010\u8981\u6C42\u3011\n';
     p += '\u2022 \u5B8C\u5168\u4EE5' + ch.name + '\u7684\u53E3\u543B\u5E94\u7B54\uFF0C\u8981\u6709\u4E2A\u4EBA\u60C5\u611F\u3001\u7ACB\u573A\u3001\u5C0F\u5FC3\u601D\n';
     p += _isPlayerConsort
-      ? '\u2022 \u592B\u59BB\u5BF9\u8BDD\uFF0C\u53EF\u4EB2\u6602\u3001\u62B1\u6028\u3001\u6492\u5A07\u3001\u51B7\u6DE1\n'
+      ? '\u2022 夫妻对话，可亲昵、抱怨、撒娇、冷淡\n'
       : (_isPrivateMode
         ? '\u2022 \u8BED\u6C14\u81EA\u7136\u4EB2\u5207\uFF0C\u53EF\u804A\u79C1\u4E8B\u3001\u8BF4\u671D\u5802\u4E0A\u4E0D\u65B9\u4FBF\u8BF4\u7684\u8BDD\n'
         : '\u2022 \u6587\u8A00\u4E3A\u4E3B\u4F46\u4E0D\u5FC5\u523B\u677F\uFF0C\u6C47\u62A5\u653F\u52A1\u6761\u7406\u6E05\u6670\n');
     p += '\u2022 \u52A8\u4F5C\u548C\u795E\u6001\u7528\u62EC\u53F7\u6807\u6CE8\n\u2022 ' + _charRangeText('wd') + '\n';
     p += '\u2022 \u89D2\u8272\u4FE1\u606F\u53D7\u7ACB\u573A\u548C\u80FD\u529B\u9650\u5236\uFF0C\u4E0D\u4E00\u5B9A\u51C6\u786E\n';
-    p += '\u2022 \u3010\u5C42\u53E0\u5DEE\u5F02\u5316\u2014\u2014\u62095\u5C42\u4F9D\u6B21\u53E0\u52A0\u751F\u6210\u6B64\u4EBA\u7684\u56DE\u7B54\u3011\n';
+    p += '\u2022 【层叠差异化——按5层依次叠加生成此人的回答】\n';
     p += '  \u5C421\u00B7\u80FD\u529B\u57FA\u5E95\uFF1A\u6B64\u4EBA\u8C08\u8BBA\u7684\u8BDD\u9898\u662F\u5426\u5176\u64C5\u957F\u9886\u57DF\uFF1F\n';
     p += '    \u8C08\u6218\u7565\u7528\u5175\u2192\u770B\u519B\u4E8B\u503C  \u8C08\u4E2A\u4EBA\u640F\u6218\u2192\u770B\u6B66\u52C7\u503C  \u8C08\u6CBB\u56FD\u2192\u770B\u653F\u52A1\u503C  \u793E\u4EA4\u2192\u770B\u9B45\u529B\n';
     p += '    \u203B\u6B66\u52C7\u2260\u519B\u4E8B\uFF1A\u6B66\u52C7=\u4E2A\u4EBA\u6B66\u529B\uFF0C\u519B\u4E8B=\u7EDF\u5175\u6307\u6325\n';
@@ -445,7 +445,7 @@ function _wdBuildPrompt(ch, name) {
     p += '  \u5C422\u00B7\u5B66\u8BC6\u4FEE\u6B63\uFF1A\u5B66\u8BC6\u9AD8\u7684\u4EBA\u5373\u4F7F\u4E0D\u64C5\u957F\u4E5F\u80FD\u8BF4\u5F97\u50CF\u6A21\u50CF\u6837\n';
     p += '  \u5C423\u00B7\u4E94\u5E38+\u7279\u8D28\u4FEE\u6B63\uFF1A\u77E5\u9053\u81EA\u5DF1\u4E0D\u884C\u65F6\u600E\u4E48\u529E\uFF1F\n';
     p += '    \u4FE1\u9AD8+\u5766\u8BDA\u2192\u76F4\u8A00\u201C\u975E\u81E3\u6240\u957F\u201D  \u4FE1\u4F4E+\u72E1\u8BC8\u2192\u63A9\u9970\u65E0\u77E5\u4F83\u4F83\u800C\u8C08\n';
-    p += '    \u793C\u9AD8\u2192\u59D4\u5A49\u5F97\u4F53  \u793C\u4F4E\u2192\u5F00\u6028\u4E0D\u7559\u9762  \u4EC1\u9AD8\u2192\u5148\u60F3\u767E\u59D3  \u91CE\u5FC3\u9AD8\u2192\u6697\u542B\u81EA\u5229\n';
+    p += '    礼高\u2192委婉得体  礼低\u2192出言不留情面  仁高\u2192先想百姓  野心高\u2192暗含自利\n';
     p += '  层4·信仰文化：提供价值观滤镜，但可被高能力覆盖\n'; // 修:原行首裸+缺p+=·孤立表达式·层4从未进过prompt(2026-07-04 审查定罪)
     p += '  \u5C425\u00B7\u8BB0\u5FC6\u7ECF\u5386\uFF1A\u6B64\u65F6\u6B64\u523B\u7684\u60C5\u7EEA\u57FA\u8C03\u2014\u2014\u8FD1\u671F\u906D\u9047>\u4E00\u5207\u957F\u671F\u5C5E\u6027\n';
     if (opinionVal > 70) p += '\u2022 \u5FE0\u5FC3' + Math.round(ch.loyalty||50) + (_isPrivateMode ? '\u2014\u2014\u79C1\u4E0B\u66F4\u5766\u8BDA\u4E5F\u66F4\u7D6E\u53E8\n' : '\u2014\u2014\u4F46\u8BF4\u8BDD\u603B\u5E26\u8BF4\u6559\u5473\n');
@@ -559,14 +559,14 @@ function _wdBuildPrompt(ch, name) {
       p += _cogSnip;
       p += '\u25B2 \u4E0A\u8FF0\u8BA4\u77E5\u662F\u6B64\u4EBA\u7684\u771F\u5B9E\u4FE1\u606F\u9762\u2014\u2014\u4E0D\u5F97\u63D0\u53CA doesntKnow \u4E2D\u7684\u4E8B\uFF0C\u4E5F\u4E0D\u5F97\u88C5\u4F5C\u4E0D\u77E5 knows \u4E2D\u7684\u4E8B\u3002\n';
       p += '\u25B2 \u5982\u88AB\u95EE\u53CA doesntKnow \u4E2D\u4E8B\uFF0C\u5982\u4F55\u5904\u7406\u6309\u4EBA\u7269\u6027\u683C+\u4E94\u5E38+\u7279\u8D28+\u5FE0\u5FD7\u5EC9\u51B3\u5B9A\uFF1A\n';
-      p += '  \u00B7 \u4EC1\u7FA9\u6E56\u5EC9+\u4FE1\u9AD8 \u2192 \u5766\u8BDA\u2014\u2014\u201C\u81E3\u6709\u4E0B\u60C5\uFF0C\u662F\u4E0D\u77E5\u6B64\u4E8B\u8BF7\u9665\u4E0B\u606F\u7F61\u201D\n';
-      p += '  \u00B7 \u673A\u5DE7\u00B7\u6743\u53D8 \u2192 \u654F\u884D\u8F6C\u79FB\u2014\u2014\u201C\u6B64\u4E8B\u5B59\u5176\u4ED6\u5403\u5728\u00B7\u5192\u662F\u8BBA\u5176\u5427\u6559\u6709\u5F77\u3002\u201D\n';
-      p += '  \u00B7 \u4E0D\u61C2\u88C5\u61C2\u7C7B \u2192 \u6A21\u7CCA\u7F16\u9020\u2014\u2014\u5F15\u4E00\u6BB5\u7EC4\u7F1A\u6CB9\u6587\u5F52\u8BF4\uFF0C\u610F\u5728\u6EE1\u5B87\uFF0C\u5176\u7EE7\u4E0D\u9053\u5BE1\u5F92\u4F5C\u89E3\n';
-      p += '  \u00B7 \u5FC3\u673A\u6DF1\u6C89 \u2192 \u4F3C\u662F\u800C\u975E\u2014\u2014\u201C\u81E3\u6709\u6240\u6258\u4E4B\uFF0C\u4E0D\u59A8\u5FE0\u6B64\uFF0C\u4F46\u4EC5\u8C08\u6D45\u89C1\u3002\u201D\n';
-      p += '  \u00B7 \u50B2\u6162\u81EA\u5927 \u2192 \u62D2\u7B54\u6216\u53CD\u95EE\u2014\u2014\u201C\u542C\u7528\u67D0\u5C31\u4E2D\u5BAB\u7334\u5BFC\u8FBE\u5FFD\u6D3B\uFF0C\u4F55\u85D0\u3002\u201D\n';
-      p += '  \u00B7 \u81EA\u5351\u60F6\u6050 \u2192 \u8FC7\u5EA6\u89E3\u91CA\u00B7\u7ED3\u5DF4\uFF0C\u53CD\u88AB\u770B\u51FA\u8675\u9A6D\n';
-      p += '  \u00B7 \u6B66\u72B9\u8DDF\u76F4 \u2192 \u76F4\u8BF4\u201C\u5F5F\u4EBA\u4E0D\u77E5\u5148\u5224\u6C34\u6784\u201D\u4F46\u7B80\u7EC3\u4E0D\u606F\n';
-      p += '  \u00B7 \u6F54\u566A\u4EE3\u7D26 \u2192 \u65E2\u4E0D\u8010\u7194\u4E5F\u4E0D\u4E01\u7075\u96A2\u5BB9\u7B80\u4E3A\u201C\u975E\u81E3\u6240\u638C\uFF0C\u4E0D\u654C\u5984\u8A00\u201D\n';
+      p += '  · 仁义清廉+信高 \u2192 坦诚——“臣有下情，实不知此事，请陛下恕罪”\n';
+      p += '  · 机巧·权变 \u2192 敷衍转移——“此事容臣详查·且先议他事。”\n';
+      p += '  · 不懂装懂类 \u2192 模糊编造——引一段经史旧文附会，意在搪塞，其实不知所以强作解人\n';
+      p += '  · 心机深沉 \u2192 似是而非——“臣略有所闻，不敢断言，姑陈浅见。”\n';
+      p += '  · 傲慢自大 \u2192 拒答或反问——“此等小事也来问老夫，何其可笑。”\n';
+      p += '  · 自卑惶恐 \u2192 过度解释·结巴，反被看出破绽\n';
+      p += '  · 武人耿直 \u2192 直说“末将不知此事”但简练不赘\n';
+      p += '  · 清高孤傲 \u2192 既不耐烦也不掩饰，只简答为“非臣所掌，不敢妄言”\n';
     }
   }
   // ★ 时空约束·防 NPC 说还活着的人已死/用未来史实
@@ -601,7 +601,7 @@ function _wdAddToEdict() {
   var name = GM.wenduiTarget || '?';
   var stored = _wdStoreEdictSuggestion(name, text, { mode: _wenduiMode || 'formal' });
   if (stored && typeof _renderEdictSuggestions === 'function') _renderEdictSuggestions();
-  toast(stored ? '\u5DF2\u6458\u5165\u8BF8\u4E66\u5EFA\u8BAE\u5E93\uFF0C\u5F85\u4F5C\u8349\u8BCF' : '\u5EFA\u8BAE\u4E3A\u7A7A\uFF0C\u672A\u7EB3\u5165');
+  toast(stored ? '已摘入诏书建议库，待作草诏' : '建议为空，未纳入');
 }
 
 var _jishiPage=0,_jishiKw='',_jishiPageSize=10,_jishiView='time',_jishiCharFilter='all',_jishiStarredOnly=false,_jishiSrcFilter='';
@@ -627,7 +627,7 @@ function _jishiSource(r) {
   if (/\u9E3F\u96C1|\u4E66\u51FD|\u6765\u51FD|\u5F80\u6765\u4E66\u4FE1/.test(ps)) return { key:'letter', label:'\u9E3F\u3000\u96C1', icon:'\u96C1' };
   // 5. 杂类
   if (/\u5BC6\u62A5|\u4E1C\u5382|\u4FA6\u8BE2/.test(ps)) return { key:'mibao', label:'\u5BC6\u3000\u62A5', icon:'\u5BC6' };
-  if (/NPC\u4E3B\u52A8\u6C42\u89C1|\u6C42\u89C1/.test(ps)) return { key:'audience', label:'\u6C42\u3000\u89C1', icon:'\u89C9' };
+  if (/NPC主动求见|求见/.test(ps)) return { key:'audience', label:'求　见', icon:'见' };
   // 6. 旧朝议（fallback·如 mode 为空但含 "朝议"）
   if (/\u671D\u8BAE/.test(ps)) return { key:'tingyi', label:'\u5EF7\u3000\u8BAE', icon:'\u5EF7' };
   // 7. 默认·杂录
@@ -744,7 +744,7 @@ function renderJishi(force){
       {key:'memo',      label:'\u594F\u3000\u758F',       icon:'\u594F'},
       {key:'kangshu',   label:'\u6297\u3000\u758F',       icon:'\u6297'},
       {key:'letter',    label:'\u9E3F\u3000\u96C1',       icon:'\u96C1'},
-      {key:'audience',  label:'\u6C42\u3000\u89C1',       icon:'\u89C9'},
+      {key:'audience',  label:'求　见',       icon:'见'},
       {key:'mibao',     label:'\u5BC6\u3000\u62A5',       icon:'\u5BC6'},
       {key:'record',    label:'\u6742\u3000\u5F55',       icon:'\u5F55'}
     ];
@@ -949,7 +949,7 @@ function _jishiRenderRecord(r) {
     var outTxt = r.outcome || r.finalRuling || r.decree || r.approval;
     var outCls = r.final ? ' decision' : (src.key === 'memo' || src.key === 'kangshu') ? '' : '';
     if (r.decree) outCls = ' decree';
-    if (r.held || /\u7559\u4E2D|\u6682\u641C/.test(String(outTxt))) outCls = ' delay';
+    if (r.held || /留中|暂搁/.test(String(outTxt))) outCls = ' delay';
     h += '<div class="ji-outcome' + outCls + '">' + escHtml(outTxt) + '</div>';
   }
 

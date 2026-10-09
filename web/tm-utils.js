@@ -572,7 +572,7 @@ var NotificationSystem = (function() {
       overlay.innerHTML = '<div class="notify-urgent-box">' +
         '<div class="notify-urgent-title">' + (typeof escHtml==='function'?escHtml(title):title) + '</div>' +
         (detail ? '<div class="notify-urgent-detail">' + (typeof escHtml==='function'?escHtml(detail):detail) + '</div>' : '') +
-        '<button class="notify-urgent-btn">\u673A\u5DF2\u77E5\u6089</button>' +
+        '<button class="notify-urgent-btn">朕已知悉</button>' +
         '</div>';
       overlay.querySelector('.notify-urgent-btn').onclick = function() {
         overlay.classList.add('closing');
@@ -1747,10 +1747,10 @@ function _trDetectCritical(sj){
   if (!sj) return tags;
   var t = (sj.shizhengji||'') + ' ' + (sj.shilu||'') + ' ' + (sj.html||'');
   if (/\u6218\u4E8B|\u6218\u5F79|\u653B\u57CE|\u5927\u6377|\u51FA\u5175|\u65CB\u5E08|\u5931\u9677/.test(t)) tags.push({cls:'war', txt:'\u6218 \u4E8B'});
-  if (/\u6B81|\u5D29|\u55E1|\u4EBA\u6BBA|\u75C5\u6B7B|\u81EA\u5208/.test(t)) tags.push({cls:'death', txt:'\u4EBA \u6B81'});
-  if (/\u5BC6\u8C0B|\u963F\u8C0B|\u9634\u8C0B|\u8C0B\u907F/.test(t)) tags.push({cls:'scheme', txt:'\u5BC6 \u8C0B'});
+  if (/殁|崩|薨|宾天|病死|自刎/.test(t)) tags.push({cls:'death', txt:'人 殁'});
+  if (/密谋|阿谋|阴谋|谋逆/.test(t)) tags.push({cls:'scheme', txt:'密 谋'});
   if (/\u515A\u4E89|\u515A\u6D3E|\u4E1C\u6797|\u9609\u515A/.test(t)) tags.push({cls:'faction', txt:'\u515A \u4E89'});
-  if (/\u65F1\u707E|\u6D2A\u707E|\u96EA\u707E|\u9707\u707E|\u75AB|\u7792|\u5929\u706B|\u5730\u9707|\u5929\u5E1D\u6C44/.test(t)) tags.push({cls:'calamity', txt:'\u707E \u5F02'});
+  if (/旱灾|洪灾|雪灾|震灾|疫|蝗|天火|地震|天帝汄/.test(t)) tags.push({cls:'calamity', txt:'灾 异'});
   return tags.slice(0, 4);
 }
 

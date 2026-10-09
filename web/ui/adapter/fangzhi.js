@@ -118,7 +118,7 @@ function build(p, r) {
     { k: '户口', v: n(first(d.population, b.pop.mouths)),
       subPre: '丁', subN: dingConceal && renliVeiled ? n(rp.ding) : n(b.pop.ding), subTag: dingConceal && renliVeiled ? '据报' : '' },
     { k: '实征', v: n(b.fiscal.actualRevenue), sub: has(b.fiscal.compliance) ? `合规${pct(b.fiscal.compliance)}` : '' },
-    { k: '驻军', v: n(first(d.garrison, b.army.troops, r.troops)), sub: String(first(d.armyPressure) || '') },
+    ((g) => ({ k: '驻军', v: g.v, reported: g.reported, sub: String(first(d.armyPressure) || '') }))(garrisonOf(r, b)),
     has(first(d.minxinLocal, r.mood, d.prosperity)) ? { k: '民心', v: n(mood), sub: moodG.mark || '', warn: p.gradeIsWarn ? !!p.gradeIsWarn('mood', moodG) : false, reported: veiled('minxin', r) } : null,
     has(corr) ? { k: '吏治', v: n(office), sub: officeG.mark || '', warn: p.gradeIsWarn ? !!p.gradeIsWarn('office', officeG) : false, reported: veiled('corruption', r) } : null
   ].filter((x) => x && x.v != null);
@@ -144,9 +144,10 @@ function build(p, r) {
     has(d.wealth) && String(d.wealth) !== String(prosperity) ? row('财富', d.wealth) : null,
     has(d.development) && String(d.development) !== String(prosperity) ? row('发展', d.development) : null,
     row('不稳', d.unrest, 'bad'),
-    cp && (cp.count > 0 || Number(cp.score) > 0) ? row('阶层压力', has(cp.score) ? Math.round(Number(cp.score)) : '', Number(cp.score) >= 50 ? 'bad' : '', { note: '满分一百' }) : null,
-    cp && (cp.count > 0 || Number(cp.score) > 0) ? row('牵动阶层', (cp.classNames || []).join('、')) : null,
-    cp && (cp.count > 0 || Number(cp.score) > 0) ? row('地方处境', cp.reason) : null
+    // 阶层压力由各阶层真满意推出：失真层开着且本地未揭时不列（阶层满意据奏见朝野册）
+    !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('阶层压力', has(cp.score) ? Math.round(Number(cp.score)) : '', Number(cp.score) >= 50 ? 'bad' : '', { note: '满分一百' }) : null,
+    !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('牵动阶层', (cp.classNames || []).join('、')) : null,
+    !veiled('minxin', r) && cp && (cp.count > 0 || Number(cp.score) > 0) ? row('地方处境', cp.reason) : null
   ]);
   const yizheng = yizhengOf(p, r, renliVeiled);
   const fc = b.fiscal;
@@ -166,10 +167,10 @@ function build(p, r) {
     row('豪强', magnate(b.liveStats), 'bad')
   ]);
   const armies = armiesOf(b.army.liveArmies || []);
-  const troopsShown = armies.length ? armies.reduce((s, a) => s + (a.soldiers || 0), 0) : first(d.garrison, b.army.troops, r.troops);
+  const garrison = garrisonOf(r, b);
   const fortParts = [b.liveDivision && Number(b.liveDivision.fortLevel) > 0 ? `${b.liveDivision.fortLevel}档` : '', has(b.army.fortification) ? String(val(b.army.fortification)) : ''].filter(Boolean);
   const junbei = keep([
-    row('驻军', troopsShown, '', armies.some((a) => a.reported) ? { tag: '据奏' } : {}),
+    row('驻军', garrison.v, '', garrison.reported ? { tag: '据奏' } : {}),
     armies.length ? row('在驻之师', (b.army.liveArmies || []).length, '', { unit: '支' }) : null,
     row('可募兵源', first(d.militaryRecruits, b.army.recruits)),
     row('军压', first(d.armyPressure, r.armyPressure), 'bad'),
@@ -231,6 +232,20 @@ function magnate(ls) {
   if (!ls || typeof ls.magnatePower !== 'number' || ls.magnatePower < 20) return '';
   const mp = ls.magnatePower;
   return `${Math.round(mp)} · ${mp >= 70 ? '势大难制' : mp >= 50 ? '坐大' : mp >= 35 ? '渐起' : '抬头'}${ls._magnateCollusion ? ' · 勾结州县' : ''}`;
+}
+// 驻军显示数：在驻之师逐军据奏相加；无师可指时，失真层开着则整数据奏（army:garrison.region.<id>，与兵额同向虚增）。
+// 读数带、军备志、通志读数与辖境表都走这里，免得一处据奏、一处露真
+function garrisonOf(r, b) {
+  const d = b.data || {};
+  const army = b.army || {};
+  const live = armiesOf(army.liveArmies || []);
+  if (live.length) return { v: live.reduce((s, a) => s + (a.soldiers || 0), 0), reported: live.some((a) => a.reported) };
+  const raw = n(first(d.garrison, army.troops, r.troops));
+  const rv = RV();
+  let on = false;
+  try { on = !!(rv && rv.active(w.P || null) && typeof rv.value === 'function'); } catch (_e) { on = false; }
+  if (raw == null || !on) return { v: raw, reported: false };
+  try { const res = rv.value('army', `garrison.region.${r.id || r.name}`, raw, { direction: 'good', dept: 'military' }); return { v: Math.round(Number(res.shown)), reported: true }; } catch (_e) { return { v: raw, reported: false }; }
 }
 // 在驻之师：兵数照新军务卷的失真口径（失真层开着则取据奏之数）
 function armiesOf(list) {
@@ -470,7 +485,7 @@ function buildCircuit(p, MC, c, clicked) {
       rows: lifted.rows.map((rw) => {
         const r = rw.region, b = p.regionBundle(r), d = b.data || {};
         const ms = p.moodViewScore(r, b), os = p.officeViewScore(r, b);
-        return { ...link(r), pop: n(first(d.population, b.pop && b.pop.mouths)), tax: n(b.fiscal && b.fiscal.actualRevenue), troops: n(first(d.garrison, b.army && b.army.troops, r.troops)),
+        return { ...link(r), pop: n(first(d.population, b.pop && b.pop.mouths)), tax: n(b.fiscal && b.fiscal.actualRevenue), troops: garrisonOf(r, b).v,
           mood: n(ms), moodMark: (p.gradeOf('mood', ms) || {}).mark || '', office: n(os), officeMark: (p.gradeOf('office', os) || {}).mark || '', reasons: rw.reasons || [], warn: rw.score > 0 };
       }),
       others: split.others.map((o) => ({ owner: String(first(o.regions[0] && p.ownerName(o.regions[0]), o.owner) || ''), regions: o.regions.map(link) }))
@@ -511,7 +526,7 @@ function buildCircuit(p, MC, c, clicked) {
     band: [
       { k: '户口', v: n(sum.population), subPre: '丁', subN: n(sum.ding) },
       { k: '实征', v: n(sum.actualRevenue), subPre: '起运', subN: n(sum.remittedToCenter) },
-      { k: '驻军', v: n(sum.troops), subPre: '', subN: n(sum.garrisoned), subPost: '州有驻' },
+      { k: '驻军', v: own.length ? own.reduce((s, r) => s + (garrisonOf(r, p.regionBundle(r)).v || 0), 0) : n(sum.troops), subPre: '', subN: n(sum.garrisoned), subPost: '州有驻' },
       sum.mood != null ? { k: '民心', v: n(sum.mood), sub: moodG.mark || '', warn: !!p.gradeIsWarn('mood', moodG) } : null,
       sum.office != null ? { k: '吏治', v: n(sum.office), sub: offG.mark || '', warn: !!p.gradeIsWarn('office', offG) } : null
     ].filter((x) => x && x.v != null),

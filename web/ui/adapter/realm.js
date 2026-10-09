@@ -5,6 +5,8 @@
 // tabooMoves / hiddenAgenda / leaderPrivate）——老卷照列，新界面不列；胜局、败局只列本朝。
 // 版图卷按省道收拢、本方区划预警，取数在 adapter/fangzhi.js（bantu）。
 import { bantu as bantuOf } from './fangzhi.js';
+import { roster as armyRoster } from './army.js';
+import { census as nationalCensus } from './select.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -103,6 +105,16 @@ function facIndex(f) {
   const idx = G()._facIndex || {};
   return idx[f.name] || idx[f.id] || null;
 }
+// 本朝兵额：失真层开着时取军务册据奏之和（逐军 army:soldiers.<名>，吃空饷虚增），与军务册对得上；他方之数照势力索引
+const rvOn = () => { const RV = w.TM && w.TM.ReportedView; try { return !!(RV && RV.active(w.P || null)); } catch (_e) { return false; } };
+function myTroops(fallback) {
+  if (!rvOn()) return fallback;
+  try { return armyRoster().total; } catch (_e) { return fallback; }
+}
+// 本朝户口：失真层开着时只给据奏编户（与顶栏、度支册同口径），实口是不经奏报的底数，不列
+function myPop() {
+  try { return nationalCensus().mouths; } catch (_e) { return null; }
+}
 const isMine = (f) => !!(f.isPlayer || (G().playerFaction && f.name === G().playerFaction) || (w.P && w.P.playerInfo && w.P.playerInfo.factionName === f.name));
 function attitudeOf(f) {
   const a = f.attitude && typeof f.attitude === 'object' ? f.attitude.self : f.attitude;
@@ -114,7 +126,7 @@ export function factions() {
     const ix = facIndex(f);
     const m = (ix && ix.metrics) || {};
     return { key: String(f.id || f.name), name: String(f.name), type: pp(first(f.type, f.factionType)), leader: pp(first(f.leader, f.leaderName, f.ruler)).split(/[（(]/)[0].trim(),
-      strength: Math.round(Number(f.strength) || 0), soldiers: m.armyCount > 0 ? Number(m.totalSoldiers) || 0 : Number(f.militaryStrength) || 0,
+      strength: Math.round(Number(f.strength) || 0), soldiers: ((s) => (isMine(f) ? myTroops(s) : s))(m.armyCount > 0 ? Number(m.totalSoldiers) || 0 : Number(f.militaryStrength) || 0),
       attitude: attitudeOf(f), hostile: /敌/.test(attitudeOf(f)), mine: isMine(f), collapsing: !!f._collapsing };
   }).sort((a, b) => (b.mine - a.mine) || (b.strength - a.strength));
 }
@@ -126,7 +138,7 @@ export function faction(key) {
   const m = (ix && ix.metrics) || {};
   const mine = isMine(f);
   const provinces = (ix && Array.isArray(ix.provinces) ? ix.provinces : []).map((p) => (typeof p === 'object' ? pp(first(p.name, p.title, p.id)) : String(p))).filter(Boolean);
-  const troops = m.armyCount > 0 ? Number(m.totalSoldiers) : Number(first(f.militaryStrength, f.strength));
+  const troops = ((s) => (mine ? myTroops(s) : s))(m.armyCount > 0 ? Number(m.totalSoldiers) : Number(first(f.militaryStrength, f.strength)));
   const pop = f.population && typeof f.population === 'object' ? f.population : null;
   const attitudeObj = f.attitude && typeof f.attitude === 'object' ? f.attitude : null;
 
@@ -173,7 +185,7 @@ export function faction(key) {
   const succ = f.succession && typeof f.succession === 'object' ? f.succession : null;
   const caiji = {
     rows: [row('经济', f.economy), row('库钱', tre && tre.money), row('库藏粮', tre && tre.grain), row('库帛', tre && tre.cloth), row('战马', tre && tre.horses), row('库藏注', tre && tre.note),
-      pop ? row('编户 / 实口', [pop.registered, pop.actual].filter(has).map(mapNum).join(' / ')) : row('户口', f.population),
+      mine && rvOn() ? row('编户（据奏）', myPop()) : pop ? row('编户 / 实口', [pop.registered, pop.actual].filter(has).map(mapNum).join(' / ')) : row('户口', f.population),
       eco ? row('赋税之政', enumText(eco.taxation)) : row('经济政策', f.economicPolicy), eco ? row('商贸之政', enumText(eco.trade)) : null,
       eco ? row('币制', enumText(eco.currency)) : null, eco ? row('役法', enumText(eco.labor)) : null, row('文教', f.cultureLevel),
       succ ? row('继承', [enumText(succ.rule), has(succ.designatedHeir) ? `储 ${pp(succ.designatedHeir)}` : '储位未定', Number.isFinite(Number(succ.stability)) ? `稳定 ${succ.stability}` : ''].filter(Boolean).join(' · ')) : row('继承', f.succession)
@@ -216,7 +228,7 @@ export function faction(key) {
     pills: [has(first(f.leader, f.leaderName, f.ruler)) ? `${pp(first(f.leaderTitle, '首领'))} ${pp(first(f.leader, f.leaderName, f.ruler))}` : '',
       has(first(f.capital, f.home)) ? `都 ${pp(first(f.capital, f.home))}` : '', mine ? '' : attitudeOf(f), pp(first(f.government, f.ideology)).slice(0, 12)].filter(Boolean),
     hostile: !mine && /敌/.test(attitudeOf(f)),
-    stats: [['领地', provinces.length ? `${provinces.length} 块` : ''], ['总兵', Number.isFinite(troops) && troops ? mapNum(troops) : ''], ['户口', pop ? mapNum(first(pop.actual, pop.registered)) : pp(f.population)],
+    stats: [['领地', provinces.length ? `${provinces.length} 块` : ''], ['总兵', Number.isFinite(troops) && troops ? mapNum(troops) : ''], ['户口', mine && rvOn() ? mapNum(myPop()) : pop ? mapNum(first(pop.actual, pop.registered)) : pp(f.population)],
       ['实力', has(f.strength) ? String(Math.round(Number(f.strength))) : ''], ['人物', m.charCount ? `${m.charCount} 人` : '']].filter(([, v]) => v),
     juan: [['君臣', '首脑重臣', junchen], ['版图', '所辖之地', bantu], ['军略', '兵制方略', junlue], ['财计', '库藏经济', caiji], ['邦交', '与国之谊', bangjiao], ['史略', '优劣大略', shilue]]
   };

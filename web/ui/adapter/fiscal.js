@@ -35,11 +35,12 @@ function ledgerView(l, L) {
     sources: rows(l.sources, L.inn), sinks: rows(l.sinks, L.out), deficit: num(l.deficit), deficits
   };
 }
-function reported(key, val, dir) {
+function reported(key, val, dir, domain) {
   const f = fn('_barReported');
   if (!f) return { shown: val, distorted: false };
-  try { const r = f(key, val, dir); return { shown: num(Number(r && r.shown), val), distorted: !!(r && r.distorted) }; } catch (_e) { return { shown: val, distorted: false }; }
+  try { const r = f(key, val, dir, domain); return { shown: num(Number(r && r.shown), val), distorted: !!(r && r.distorted) }; } catch (_e) { return { shown: val, distorted: false }; }
 }
+const flipped = (domain) => { const f = fn('_barFlipToPerceived'); try { return !!(f && f(domain, 'index')); } catch (_e) { return false; } };
 function scaleRows(list, k) { return k === 1 ? list : list.map((x) => ({ ...x, amount: x.amount * k })); }
 // 帑廪据奏：库存三项；银的本期收支与名目、上期收支同比例
 function reportGuoku(res) {
@@ -110,6 +111,8 @@ export function takeLoan(sourceId, amount, term) {
 }
 
 // ---------- 户口 ----------
+// 可见之律：失真层开着时，全国之数照顶栏同一口径据奏（renli 域 national.*，瞒减）；各省之数按全国据奏与真数之比缩放，
+// 各省相加仍与全国对得上；各省民心、吏治是叶子真值加权，未揭时不列（据奏的分州民心、吏治见舆图）；黄册准确率亦不列
 export function census() {
   const g = G();
   let nat = null;
@@ -138,9 +141,21 @@ export function census() {
       minxin: a.mxW ? Math.round(a.mx / a.mxW) : null, lizhi: a.coW ? Math.round(100 - a.co / a.coW) : null });
   }
   provinces.sort((a, b) => b.mouths - a.mouths);
+  const raw = { households: num(n.households), mouths: num(n.mouths), ding: num(n.ding), fugitives: num(n.fugitives), hidden: num(n.hiddenCount) };
+  const shown = {}, k = {};
+  let distorted = false;
+  for (const key of Object.keys(raw)) {
+    const r = reported(`national.${key}`, raw[key], 'bad', 'renli');
+    shown[key] = r.shown;
+    k[key] = raw[key] ? r.shown / raw[key] : 1;
+    distorted = distorted || r.distorted;
+  }
+  const mxHide = flipped('minxin'), coHide = flipped('corruption');
+  const provs = provinces.map((p) => ({ ...p, households: p.households * k.households, mouths: p.mouths * k.mouths, ding: p.ding * k.ding, fugitives: p.fugitives * k.fugitives, hidden: p.hidden * k.hidden,
+    minxin: mxHide ? null : p.minxin, lizhi: coHide ? null : p.lizhi }));
   return {
-    households: num(n.households), mouths: num(n.mouths), ding: num(n.ding), fugitives: num(n.fugitives), hidden: num(n.hiddenCount),
-    accuracy: meta.registrationAccuracy != null ? num(meta.registrationAccuracy) : null, provinces
+    ...shown, distorted, sealedMood: mxHide || coHide,
+    accuracy: !distorted && meta.registrationAccuracy != null ? num(meta.registrationAccuracy) : null, provinces: provs
   };
 }
 

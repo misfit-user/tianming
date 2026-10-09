@@ -161,6 +161,7 @@ export function createFiscal({ root, game }) {
         h('div.fi-cen', [['户', c.households], ['口', c.mouths], ['丁', c.ding], ['逃户', c.fugitives], ['隐户', c.hidden]].filter(([, v]) => v).map(([k, v]) => h('p', h('span', k), h('b', amt(v)))))));
     const max = Math.max(1, ...c.provinces.map((p) => p.mouths));
     replaceChildren(right, h('header.fi-title', h('h3', '各省户口'), h('small', `${num(c.provinces.length)}省 · 合下辖府州之数`)),
+      c.distorted || c.sealedMood ? h('p.fi-note', [c.distorted ? '全国与各省户口皆据有司所奏，未经核实' : '', c.sealedMood ? '各省民心、吏治未经核实，不列（据奏之数见舆图分州）' : ''].filter(Boolean).join('；')) : null,
       h('div.fi-prov', h('p.hd', h('span', '省'), h('span', '口'), h('span', '户'), h('span', '丁'), h('span', '逃'), h('span', '民心'), h('span', '吏治')),
         c.provinces.map((p) => h('p', h('span.n', p.name), h('span.bar', h('i', { style: { width: `${(p.mouths / max) * 100}%` } }), h('b', amt(p.mouths))),
           h('span', amt(p.households)), h('span', amt(p.ding)), h('span', p.fugitives ? amt(p.fugitives) : '—'),

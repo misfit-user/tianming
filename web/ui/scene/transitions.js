@@ -62,7 +62,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
     step();
   }
 
-  async function dive(point) {
+  async function dive(point, dist = 820) {
     if (busy || mode !== 'desk') return;
     busy = true;
     onMode('flying');
@@ -89,7 +89,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
     onMode('map');
     // 3) 起山：地形由平而起，设色由旧转鲜，镜头斜倾到落点
     const end = point
-      ? { target: [point[0], 0, point[1]], dist: 820, polar: 0.8, az: 0.04 }
+      ? { target: [point[0], 0, point[1]], dist, polar: 0.8, az: 0.04 }
       : { target: [1190, 0, 690], dist: 1500, polar: 0.52, az: 0 };
     await mapTween(end, { relief: RELIEF, look: [LOOK_QINGLV_AGED, LOOK_QINGLV], duration: 2.0 });
     map.controls.minPolarAngle = 0.12;

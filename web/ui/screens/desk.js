@@ -79,7 +79,9 @@ const LEDGERS = {
     } else if (c.kind === 'army') rows = [{ k: '兵', v: c.soldiers }, { k: '欠饷', text: c.arrears ? `${num(c.arrears)}月` : '无' }];
     else if (c.kind === 'office') rows = [{ k: '在任', v: c.staff }, { k: '缺员', v: c.vacant }];
     if (!rows.length) return null;
-    const el = zhang(c.name.replace(/布政使司$/, ''), rows);
+    // 账名竖写只容三字：辖区去「布政使司」，本镇写「所统」，衙门名过三字写「本署」
+    const short = c.kind === 'army' ? '所统' : c.kind === 'office' ? (c.name.length <= 3 ? c.name : '本署') : c.name.replace(/布政使司$|承宣布政使司$/, '').slice(0, 3);
+    const el = zhang(short, rows);
     el.title = `所掌：${c.name}`;
     return el;
   }
@@ -118,6 +120,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const legendDesk = h('div.legend');
   const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips, legendDesk);
   const dibao = h('div.dibao', { onclick: () => openGazette({ game }), title: '展邸报全卷', style: { cursor: 'pointer' } });
+  let dibaoShut = (() => { try { return localStorage.getItem('tm_ui_dibao') === '0'; } catch (_e) { return false; } })();
   const left = h('div.left', renwu, maptools, dibao);
 
   // ---------- 右列书目、案底五渠道与印、器物牙牌：按身份档摆（furnish） ----------
@@ -144,7 +147,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     h('div.hm-side', h('div.hm-plate', h('div.hm-namerow', selfName, selfBadges), selfTitle, selfUp, selfEnergy), ring));
   const alerts = h('nav.hm-alerts');
   const corner = h('div.hm-corner');
-  el.append(selfBox, alerts, corner);
+  // 提纲（照 CK3 的 Outliner）：钉选之人、所掌（通用一套）、诸军；可收起，收放记在本机
+  const outline = h('aside.hm-outline');
+  let outlineOpen = (() => { try { return localStorage.getItem('tm_ui_outline') !== '0'; } catch (_e) { return true; } })();
+  el.append(selfBox, alerts, corner, outline);
   let ringBtns = {}, deskBtn = null, diveReady = false;
   // 两种主画面各自的摆法：舆图为家时时钟、工具挪到右下，顶栏只留读数
   function arrange() {
@@ -265,6 +271,35 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     map.select(r.index);
     showRegionCard(r, ev.clientX, ev.clientY);
   });
+  stage.canvas.addEventListener('contextmenu', (ev) => {
+    if (dive.mode !== 'map' || dive.busy) return;
+    ev.preventDefault();
+    const r = map.pickScreen(ev.clientX, ev.clientY);
+    if (!r) return;
+    map.select(r.index);
+    card.classList.add('hide');
+    regionMenu(r, ev.clientX, ev.clientY);
+  });
+  function regionMenu(r, x, y) {
+    let info = null;
+    try { info = game.fangzhi.region(r.id); } catch (_e) { info = null; }
+    const ro = per.previewing ? '借视角时只读' : '';
+    const fac = r.faction && factions[r.faction];
+    const acts = (info && info.acts) || [];
+    const NOTE = { 安民: '拟一条安民之策入议事清册', 巡按: '拟遣员巡按此地入议事清册', 调粮: '拟调粮接济入议事清册', 拟诏: '就此地拟一条入议事清册' };
+    kewei({
+      title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), x, y,
+      groups: [
+        { label: '观', items: [
+          { label: '展方志', onclick: () => fangzhiPage.show(r.id) },
+          r.circuit ? { label: '展通志', note: r.circuit, onclick: () => fangzhiPage.showCircuit(r.id) } : null,
+          { label: '镜头移至此地', onclick: () => flyMapTo(r.center, Math.min(map.pose().dist, 520)) }].filter(Boolean) },
+        { label: (prof.channels.find((c) => c.key === 'ling') || {}).title || '令',
+          items: (acts.length ? acts : ['安民', '巡按', '调粮', '拟诏']).map((k) => ({ label: k, note: NOTE[k], off: ro || (acts.length ? '' : '非本方州县'),
+            onclick: () => { try { if (game.fangzhi.act(r.id, k)) bus.emit('kernel:toast', { text: `${r.name}·${k}，已拟入议事清册` }); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); } } })) }
+      ]
+    });
+  }
   // 府州小签：点选与检府州共用
   function showRegionCard(r, x, y) {
     const fac = r.faction && factions[r.faction];
@@ -404,7 +439,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 牙牌跟着器物走；挡在面板后面的就藏起来
   study.onFrame(() => {
     if (!el.classList.contains('on')) return;
-    const covered = [left, rail, dock, topbar, selfBox, alerts, corner].map((n) => n.getBoundingClientRect());
+    const covered = [left, rail, dock, topbar, selfBox, alerts, corner, outline].map((n) => n.getBoundingClientRect());
     for (const t of tagEls) {
       const a = study.anchors[t.dataset.k];
       if (!a) continue;
@@ -459,7 +494,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) })));
     renwu.querySelector('.q-ti small').textContent = `${num(people.length)}人`;
     const news = s.news ? s.news(8) : [];
-    replaceChildren(dibao, keben('邸报', news.length ? news.map((n, i) => ({ tag: n.tag, text: n.text, soft: i > 2 })) : [{ tag: '闻', text: '今日无报', soft: true }]));
+    replaceChildren(dibao, keben('邸报', news.length ? news.map((n, i) => ({ tag: n.tag, text: n.text, soft: i > 2 })) : [{ tag: '闻', text: '今日无报', soft: true }]),
+      // 舆图为家时邸报可收成一条（只露报头），让出舆图；收放记在本机
+      h('button.hm-fold', { type: 'button', title: dibaoShut ? '展开邸报' : '收起邸报', onclick: (e) => { e.stopPropagation(); dibaoShut = !dibaoShut; try { localStorage.setItem('tm_ui_dibao', dibaoShut ? '0' : '1'); } catch (_e) { /* 只这一回 */ } refresh(); } }, dibaoShut ? '展' : '收'));
+    dibao.classList.toggle('shut', dibaoShut);
     // 案头待批：眼下内核只有元首的奏疏；别的身份的案头（申文、书札）等官本位玩法接上
     const docket = per.tier === 'sovereign' && !per.previewing ? s.memorials().length : 0;
     const chan = prof.channels.find((c) => c.key === 'pi');
@@ -529,12 +567,34 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     badge(ringBtns.pi, docket);
     badge(ringBtns.shu, fresh);
     const items = [
-      ['批', `${prof.docket.name}待批`, docket, () => readOnly() || openDocket()],
-      ['政', prof.issues.title, open.length, () => readOnly() || issues.open()],
-      ['函', '新到来函', fresh, () => openLetters()],
-      ['科', game.keju.STAGES_NEED[due] || '科举待定夺', due ? 1 : 0, () => readOnly() || kejuPage.show()]
+      ['批', `${prof.docket.name}待批`, docket, () => readOnly() || openDocket(), 'zhu'],
+      ['政', prof.issues.title, open.length, () => readOnly() || issues.open(), 'qing'],
+      ['函', '新到来函', fresh, () => openLetters(), 'lv'],
+      ['科', game.keju.STAGES_NEED[due] || '科举待定夺', due ? 1 : 0, () => readOnly() || kejuPage.show(), 'jin']
     ].filter((x) => x[2]);
-    replaceChildren(alerts, items.map(([ch, title, n, go]) => h('button.hm-alert', { type: 'button', title: `${title}　${num(n)}`, onclick: go }, h('b', ch), ch !== '科' ? h('span', num(n)) : null)));
+    replaceChildren(alerts, items.map(([ch, title, n, go, tone]) => tiao(h(`button.hm-alert.t-${tone}`, { type: 'button', 'aria-label': title, onclick: go }, h('b', ch), ch !== '科' ? h('span', num(n)) : null),
+      () => ({ title, text: ch === '科' ? '点开科举册定夺' : `${num(n)}件，点开即办` }))));
+    paintOutline();
+  }
+  // 提纲：三段，空段不列；人可右键出可为单
+  function paintOutline() {
+    const face = (c) => h('i.hm-oface', c.portrait ? h('img', { src: c.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.remove() }) : null, [...(c.name || '？')][0]);
+    const people = game.select.characters().filter((c) => pinned(c)).slice(0, 8).map((c) =>
+      h('button.hm-row', { type: 'button', dataset: { person: c.name }, title: [c.name, c.title, c.location].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) },
+        face(c), h('b', c.name), h('small', c.title || c.location || '')));
+    const KIND = { region: '地', circuit: '道', army: '兵', office: '署', household: '家' };
+    const charges = standing ? standing.charges.map((c) => h('button.hm-row', { type: 'button', title: c.name, onclick: () => openChargeOf(c) },
+      h('i.hm-oicon', KIND[c.kind] || '掌'), h('b', c.name.replace(/布政使司$/, '')), h('small', c.kind === 'army' ? `${num(c.soldiers)}人` : c.kind === 'office' ? `在任${num(c.staff)}` : ''))) : [];
+    let armies = [];
+    try { armies = game.army.roster().groups.flatMap((g) => g.rows); } catch (_e) { armies = []; }
+    armies = (standing ? armies.filter((a) => a.commander === per.name) : armies.filter((a) => a.hot || a.march)).slice(0, 6);
+    const armyRows = standing && standing.charges.some((c) => c.kind === 'army') ? [] : armies.map((a) => h('button.hm-row', { type: 'button', title: [a.name, a.commander, a.location].filter(Boolean).join(' · '), onclick: () => armyPage.show(a.key) },
+      h('i.hm-oicon' + (a.hot ? '.hot' : ''), '兵'), h('b', a.name), h('small', [a.hot ? '告急' : '', a.march ? '行军' : '', `${num(a.soldiers)}人`].filter(Boolean).join(' · '))));
+    const sec = (title, rows, empty) => (rows.length || empty ? h('section', h('h4', title, rows.length ? h('small', num(rows.length)) : null), rows.length ? rows : h('p', empty)) : null);
+    const toggle = () => { outlineOpen = !outlineOpen; try { localStorage.setItem('tm_ui_outline', outlineOpen ? '1' : '0'); } catch (_e) { /* 只这一回 */ } paintOutline(); };
+    outline.classList.toggle('shut', !outlineOpen);
+    replaceChildren(outline, h('header', h('button', { type: 'button', title: outlineOpen ? '收起提纲' : '展开提纲', onclick: toggle }, h('b', '提纲'), h('i', outlineOpen ? '收' : '展'))),
+      outlineOpen ? [sec('钉选之人', people, '右键人像可钉选'), standing ? sec('所掌', charges, '') : null, sec(standing ? '所统之兵' : '告急行军', armyRows, '')] : null);
   }
 
   // 一件时政写成一张花笺：题取首句（至多六字），正文拆成三短行（每行至多八字）
@@ -656,7 +716,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 「辖」：所掌那一块——辖区开方志或通志，本镇开军务，本衙门开官制
   function openCharge() {
     const c = standing && standing.charges.find((x) => x.kind !== 'household');
-    if (!c) return;
+    if (c) openChargeOf(c);
+  }
+  function openChargeOf(c) {
+    if (c.kind === 'household') return c.key ? realmPage.show({ tab: 'families', key: c.key }) : null;
     if (c.kind === 'circuit' && c.key) return fangzhiPage.showCircuit(c.key);
     if (c.kind === 'region' && c.key) return fangzhiPage.show(c.key);
     if (c.kind === 'army') return armyPage.show(c.key);
@@ -839,7 +902,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     async home() {
       if (!homeMap() || dive.mode !== 'desk') return;
       await new Promise((r) => setTimeout(r, 700));
-      await dive.dive(focus && focus.center);
+      // 元首看全境；通用一套落到所掌上空近些
+      await dive.dive(focus && focus.center, prof.tier === 'sovereign' ? undefined : 460);
     },
     hide() {
       if (dive.mode === 'map') dive.toStudy();

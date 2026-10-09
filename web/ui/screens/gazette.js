@@ -1,4 +1,5 @@
 // 邸报全卷：左列那叶刻本点开即此。编年由新到旧、按日期分；每条急、议、闻一字，题与全文，长的可展开。
+// 另有「风闻」（朝野近事）与「告示」（内核通知史：急报、驻留提示、提示条，按回合分）两页。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
@@ -20,6 +21,8 @@ export function openGazette({ game, tab = '' }) {
     h('i.gz-sep'),
     h('button' + (only === '风闻' ? '.on' : ''), { type: 'button', title: '朝野近事、势力动态、人物动向与心绪', onclick: () => { only = '风闻'; renderTabs(); render(); } },
       '风闻', fw ? h('small', num(fw.length)) : null),
+    h('button' + (only === '告示' ? '.on' : ''), { type: 'button', title: '急报、驻留提示与提示条（最近五十条）', onclick: () => { only = '告示'; renderTabs(); render(); } },
+      '告示', h('small', num(game.select.notices().length))),
     only === '风闻' ? h('span.gz-back', '回看', [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [999, '全部']].map(([n, label]) =>
       h('button' + (back === n ? '.on' : ''), { type: 'button', onclick: () => { back = n; renderTabs(); render(); } }, label))) : null);
   }
@@ -48,8 +51,23 @@ export function openGazette({ game, tab = '' }) {
     return h('article.gz-item', h('em.' + ({ 急: 'ji', 议: 'yi', 闻: 'wen' })[e.tag], e.tag),
       h('div', e.title ? h('b', e.title) : null, h('small', e.type), p, more));
   }
+  const LEVEL = { urgent: ['ji', '急'], persist: ['yi', '留'], flash: ['wen', '示'] };
+  function renderNotices() {
+    const rows = game.select.notices();
+    if (!rows.length) { replaceChildren(body, h('p.gz-none', '尚无告示')); return; }
+    const turns = [];
+    for (const r of rows) {
+      const last = turns[turns.length - 1];
+      if (last && last.turn === r.turn) last.rows.push(r);
+      else turns.push({ turn: r.turn, rows: [r] });
+    }
+    replaceChildren(body, turns.map((t) => h('section.gz-day', h('h4', t.turn ? `第${num(t.turn)}回合` : '开局之前'),
+      t.rows.map((r) => h('article.gz-item' + (r.level === 'urgent' ? '.hot' : ''), h('em.' + LEVEL[r.level][0], LEVEL[r.level][1]),
+        h('div', h('p', r.text)))))));
+  }
   function render() {
     if (only === '风闻') { renderRumors(); return; }
+    if (only === '告示') { renderNotices(); return; }
     const rows = all.filter((e) => !only || e.tag === only);
     if (!rows.length) { replaceChildren(body, h('p.gz-none', '今日无报')); return; }
     const days = [];

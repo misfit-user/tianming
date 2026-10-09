@@ -733,3 +733,14 @@ export function mapRegions() {
   }
   return { mapId: map.id, regions, factions };
 }
+
+// 告示：内核的通知史（NotificationSystem 留最近五十条——急报、驻留提示、提示条），新的在前。
+// 新前端把驻留提示改成数秒即逝的纸签、急报收卷即去，错过了可在邸报全卷「告示」页翻回
+export function notices() {
+  const ns = w.NotificationSystem;
+  let list = [];
+  try { list = ns && typeof ns.getHistory === 'function' ? ns.getHistory() || [] : []; } catch (_e) { list = []; }
+  return list.slice().reverse().filter((x) => x && x.msg).map((x) => {
+    return { level: x.level === 'urgent' ? 'urgent' : x.level === 'persist' ? 'persist' : 'flash', text: String(x.msg), turn: num(x.turn) };
+  });
+}

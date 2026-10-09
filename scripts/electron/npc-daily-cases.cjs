@@ -150,7 +150,9 @@ module.exports=async function({win,check,results}){
    results.push({name:'formal-consultation-followup-timeline',status:'PASS',value:{turn:await js('GM.turn'),state,savedFollow}});
  });
  await check('formal composite meeting carries a sourced onsite consultation through save, return and result',async()=>{
-   await js(`openCharRenwuPage('来客')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
+   // The player dossier is read-only for outbound letters; enter through the
+   // ordinary recipient dossier while the daily panel keeps the player as actor.
+   await js(`openCharRenwuPage('周季平')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
    await js(`(()=>{const p=document.querySelector(${JSON.stringify(panel)}),target=p.querySelector('#daily-target'),topic=p.querySelector('#daily-consultation-topic');target.value='local-a';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='letter_style';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
    await click(panel+' [data-daily-new="meeting"]');
    let state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,messages:p.messages.length};})()`);

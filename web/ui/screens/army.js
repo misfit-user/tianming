@@ -89,10 +89,27 @@ export function createArmy({ root, game, onCourt, onFiscal }) {
         h('button.q-yapai', { type: 'button', title: '点验名册，掀出实额', onclick: () => inspect(d) }, '核饷点验'),
         d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${d.arrears}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
         h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.train(d.key)) }, '整训'),
-        h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.redeploy(d.key)) }, '调防'),
+        run(() => A.marchable(d.key))
+          ? h('button.q-yapai', { type: 'button', title: '下军令移防（行军系统）', onclick: () => marchTo(d) }, '移防')
+          : h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.redeploy(d.key)) }, '调防'),
         d.own ? h('button.q-yapai', { type: 'button', onclick: () => pickCommander(d) }, '易将') : null,
         onCourt ? h('button.q-yapai', { type: 'button', onclick: () => { const t = run(() => A.courtTopic(d.key)); if (t) { hide(); onCourt(t); } } }, '付廷议') : null,
         d.own ? h('button.q-yapai' + (d.stance !== 'ask' ? '.on' : ''), { type: 'button', onclick: go(() => A.cycleStance(d.key)) }, A.STANCES[d.stance]) : null));
+  }
+  // 移防：择目的地（可输可选），下确定性军令
+  function marchTo(d) {
+    const list = run(() => A.destinations()) || [];
+    const id = 'ar-march-dests';
+    const inp = h('input.st-in', { type: 'text', placeholder: '目的地', list: id, style: { width: '100%' } });
+    const j = juan({
+      title: '移防', note: d.name, width: '30rem',
+      content: h('div', { style: { lineHeight: 2 } },
+        h('p', { style: { margin: '0 0 .5rem' } }, `现驻：${d.location || '不明'}。指定目的地：`), inp,
+        h('datalist', { id }, list.map((n) => h('option', { value: n })))),
+      actions: [{ label: '发军令', onclick: ({ close }) => { const r = run(() => A.march(d.key, inp.value)); if (r) { toast(r); close('ok'); render(); } } }]
+    });
+    setTimeout(() => inp.focus(), 60);
+    return j;
   }
   // 核饷：失真层开着则当场掀出实额、留在本册；没开就去度支册看饷
   function inspect(d) {

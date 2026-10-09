@@ -221,6 +221,36 @@ export function redeploy(key) {
   changed('edict-suggestion');
   return '已纳入诏书建议库：调防 ' + name;
 }
+// 移防（确定性军令）：行军系统开着（MarchSystem._getConfig().enabled）、本朝之军、不在途时可下；目的地取各方行政区的末级（照老左栏 _leafDivisions）
+export function marchable(key) {
+  const M = w.MarchSystem;
+  if (!M || typeof M.orderMarch !== 'function' || typeof M._getConfig !== 'function') return false;
+  try { if (!M._getConfig().enabled) return false; } catch (_e) { return false; }
+  const a = find(key);
+  return mine(a, { player: playerFactions(), known: knownFactions() }) && !marchOf(a);
+}
+export function destinations() {
+  const names = [];
+  const seen = new Set();
+  const roots = G().adminHierarchy || {};
+  const walk = (arr) => (Array.isArray(arr) ? arr : []).forEach((d) => {
+    if (!d) return;
+    const kids = d.divisions || d.children;
+    if (kids && kids.length) walk(kids);
+    else if (d.name && !seen.has(d.name)) { seen.add(d.name); names.push(String(d.name)); }
+  });
+  Object.keys(roots).forEach((k) => walk(roots[k] && (roots[k].divisions || roots[k].children)));
+  return names.slice(0, 400);
+}
+export function march(key, to) {
+  const a = find(key);
+  const dest = String(to || '').trim();
+  if (!dest) throw new Error('未定目的地');
+  const r = w.MarchSystem.orderMarch(a.id || a.name, dest);
+  if (!(r && r.ok)) throw new Error((r && r.reason) || '军令未能成行');
+  changed('army');
+  return `军令已发：${a.name}移防${dest}（约${(r.order && r.order.totalTurns) || '若干'}回合）`;
+}
 // 易将：候选为在世将才（同朝优先、武略为序，内核所排），至多六十名
 export function candidates(key) {
   const a = find(key);

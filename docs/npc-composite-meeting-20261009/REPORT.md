@@ -44,7 +44,8 @@
 
 ## C3 与限制
 
-- `scripts/electron/npc-daily-cases.cjs` 已接入正式页面、顶层 endTurn、保存/加载和组合 meeting 场景，但本候选没有 `node_modules`，可复用的锁定依赖也缺少 `electron/dist/electron.exe`；`verify-electron-bridge.js --npc-daily` 未运行成功。
-- 因此正式页面三流程、两处真实保存/加载和持续 30 日场景仍是待验，不把 production smoke 当成完整试玩。
+- `scripts/electron/npc-daily-cases.cjs` 在当前候选上正式页面、顶层 endTurn、保存/加载、请益追问流程通过；新的组合会面 Electron 夹具在本轮定位到面板 lease/路线提示/重载边界，已撤出 CI，避免把不稳定测试当成生产通过。
+- 因此正式页面的组合会面、两处组合保存/加载和持续 30 日场景仍是待验；生产模块官方组合 smoke 不能替代完整试玩。
+- 本机按 CI 安装了 Electron runtime；`--npc-daily` 实际通过，实验性 `--npc-composite` 未作为候选门禁。
 - 本候选未改版本、未打包、未部署、未推送、未创建 PR、未合并。
 - 其他两个官方剧本只通过现有 parity/加载兼容检查，未宣称完整三流程。

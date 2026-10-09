@@ -33,7 +33,7 @@ module.exports=async function({win,check,results}){
    P.ai={key:'',url:'',model:''};P.time={year:1627,startMonth:9,startDay:1,daysPerTurn:1};P.playerInfo={characterId:'local-player',characterName:'来客',factionId:'',factionName:'',location:'城内'};P.characters=[];
    GM=Object.assign({},GM,{sid:'local-daily-browser',_campaignId:'local-daily-browser',_timelineId:'local-daily-browser',turn:1,running:true,busy:false,_endTurnBusy:false,
      chars:people,facs:[],armies:[],officeTree:[],playerInfo:P.playerInfo,vars:{},rels:{},letters:[],memorials:[],edicts:[],evtLog:[],_npcPlans:[],_npcActionLedger:[],_npcExecutionResults:[],
-     _npcDecisionDiagnostics:[],_capital:'城内',affinityMap:{'周季平|沈同文':45},_pendingAudiences:[],_turnContext:{npcActionsThisTurn:[]},
+     _npcDecisionDiagnostics:[],_capital:'城内',affinityMap:{'周季平|沈同文':45,'来客|沈同文':45},_pendingAudiences:[],_turnContext:{npcActionsThisTurn:[]},
      mapData:{locationBindingContract:{schema:'source-text-location-v2'},regions:[{id:'same-city',name:'城内'}]}});
    delete GM._npcActionState;delete GM.nativeWorld;delete GM.startContext;
    if(typeof buildIndices==='function')buildIndices();

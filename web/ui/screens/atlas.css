@@ -107,3 +107,22 @@
 .cm-anchors h5 { margin: 0 0 .25rem; font: 400 var(--fs-3) var(--f-title); color: #6a1f12; }
 .cm-anchors p { margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
 .cm-acts { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .75rem; }
+
+/* 对参栏与对看卷 */
+.ce-cmp { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; padding: .375rem .5rem; margin-top: .375rem; background: rgba(163, 48, 31, .06); box-shadow: inset .1875rem 0 0 #a3301f; font-size: var(--fs-2); }
+.ce-cmp > span { font-family: var(--f-title); letter-spacing: .2em; color: #6a1f12; }
+.ce-cmp-who { padding: .0625rem .5rem; border: 0; cursor: pointer; font: var(--fs-2) var(--f-kai); color: var(--ink); background: rgba(255, 250, 238, .8); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.ce-cmp-who:hover { text-decoration: line-through; }
+.ce-cmp small { color: var(--ink-faint); }
+.ce-cmp-clear { margin-left: auto; border: 0; background: none; cursor: pointer; font: var(--fs-2) var(--f-kai); color: #a3301f; }
+.ce-cmp-wrap { overflow: auto; }
+.ce-cmp-table { width: 100%; border-collapse: collapse; font-size: var(--fs-2); }
+.ce-cmp-table th, .ce-cmp-table td { padding: .25rem .5rem; border-bottom: 1px dashed rgba(120, 90, 50, .2); text-align: center; }
+.ce-cmp-table tbody th { text-align: left; font-weight: 400; font-family: var(--f-title); color: #6a1f12; white-space: nowrap; }
+.ce-cmp-table th.who { vertical-align: bottom; }
+.ce-cmp-table th.who .q-zhou { width: 6rem; margin: 0 auto .25rem; }
+.ce-cmp-table th.who .q-zhou img, .ce-cmp-table th.who .q-zhou .face { height: 7.5rem; object-fit: cover; }
+.ce-cmp-table td.txt { text-align: left; color: var(--ink-soft); }
+.ce-cmp-table td.best { color: #a3301f; font-weight: 700; }
+.ce-cmp-table tr.sep th { padding-top: .5rem; font-size: var(--fs-3); letter-spacing: .3em; border-bottom: 1px solid rgba(163, 40, 27, .3); }
+.ce-cmp-note { margin: .5rem 0 0; font-size: var(--fs-1); color: var(--ink-faint); }

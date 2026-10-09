@@ -1,6 +1,7 @@
 // 人物图志：一本绫裱册页。左页一叶叶立轴小像（可按势力、排序、搜索、显已殁筛，翻页），右页是选中之人的小传：
 // 身份、处境、心性（忠诚、野心）、才具六项与五常（九品刻度）、名望贤能廉、特质、交游、生平。
-// 问对、传书转召对、鸿雁两页，详传翻列传。卷首「策名」可把历史人物纳入名册（screens/ceming.js）。数据经 game.select.people()。
+// 问对、传书转召对、鸿雁两页，详传翻列传。卷首「策名」可把历史人物纳入名册（screens/ceming.js）。
+// 「对参」把人放进对参栏（至多三人），展一卷并排比官职、心性、才具、五常、名望诸项，每行最优者标朱。数据经 game.select.people()。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { zhou, pin, qianzi, kaiguan, juan } from '../kit/index.js';
@@ -15,6 +16,7 @@ export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
   let page = 0;
   let pick = null;
   let opts = { faction: '', sort: 'rank', q: '', dead: false };
+  let cmp = [];                     // 对参栏：人名，至多三人
 
   const count = h('small');
   const search = h('input.ce-search', { type: 'search', placeholder: '检人名、官职、势力', oninput: (e) => { opts.q = e.target.value.trim(); page = 0; filter(); } });
@@ -25,13 +27,51 @@ export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
   const pageNote = h('span.ce-page');
   const prevBtn = h('button.ce-turn', { type: 'button', title: '上一叶', onclick: () => turn(-1) }, '‹');
   const nextBtn = h('button.ce-turn', { type: 'button', title: '下一叶', onclick: () => turn(1) }, '›');
+  const cmpBar = h('div.ce-cmp');
+  function renderCmp() {
+    cmp = cmp.filter((n) => all.some((p) => p.name === n));
+    cmpBar.hidden = !cmp.length;
+    replaceChildren(cmpBar, h('span', '对参'), cmp.map((n) => h('button.ce-cmp-who', { type: 'button', title: '移出对参', onclick: () => { cmp = cmp.filter((x) => x !== n); renderCmp(); renderPerson(); } }, n)),
+      cmp.length >= 2 ? h('button.q-yapai', { type: 'button', onclick: () => openCompare() }, '对看') : h('small', '再择一人'),
+      h('button.ce-cmp-clear', { type: 'button', title: '清空对参', onclick: () => { cmp = []; renderCmp(); renderPerson(); } }, '清'));
+  }
+  // 对看：每列一人，每行一项；数值行最优者标朱（野心以低为优，不标）
+  function openCompare() {
+    const ps = cmp.map((n) => all.find((p) => p.name === n)).filter(Boolean);
+    if (ps.length < 2) return;
+    const best = (vals, low) => { const xs = vals.filter((v) => v != null); if (xs.length < 2) return null; const m = low ? Math.min(...xs) : Math.max(...xs); return xs.filter((v) => v === m).length === xs.length ? null : m; };
+    const numRow = (label, get, opt = {}) => {
+      const vals = ps.map(get);
+      if (vals.every((v) => v == null)) return null;          // 诸人皆未详的项不列
+      const b = opt.noMark ? null : best(vals, opt.low);
+      return h('tr', h('th', label), vals.map((v) => h('td' + (v != null && v === b ? '.best' : ''), v == null ? '—' : num(v))));
+    };
+    const textRow = (label, get) => { const vals = ps.map(get); return vals.some(Boolean) ? h('tr', h('th', label), vals.map((v) => h('td.txt', v || '—'))) : null; };
+    // 一节：节名一行，其下诸行；诸行皆空则整节不列
+    const group = (title, rows) => { const rs = rows.filter(Boolean); return rs.length ? [h('tr.sep', h('th', title), ps.map(() => h('td'))), ...rs] : []; };
+    const table = h('table.ce-cmp-table',
+      h('thead', h('tr', h('th'), ps.map((p) => h('th.who', zhou({ name: p.name, src: p.portrait, dead: p.dead }))))),
+      h('tbody',
+        textRow('官职', (p) => [p.office, p.rank.label].filter(Boolean).join(' · ')),
+        textRow('所属', (p) => [p.faction, p.party ? `${p.party}${p.partyRank ? '·' + p.partyRank : ''}` : ''].filter(Boolean).join(' · ')),
+        numRow('年齿', (p) => p.age, { noMark: true }),
+        textRow('处境', (p) => [p.location ? `在${p.location}` : '', ...p.states].filter(Boolean).join(' · ')),
+        group('心性', [numRow('忠诚', (p) => p.loyalty), numRow('野心', (p) => p.ambition, { noMark: true })]),
+        group('才具', ps[0].stats.map(([k], i) => numRow(k, (p) => (p.stats[i] ? p.stats[i][1] : null)))),
+        group('五常', ps[0].wuchang.map(([k], i) => numRow(k, (p) => (p.wuchang[i] ? p.wuchang[i][1] : null)))),
+        group('声望', [numRow('名望', (p) => p.fame), numRow('贤能', (p) => p.merit), numRow('廉', (p) => p.integrity)]),
+        textRow('性情', (p) => p.traits.map((t) => t.name).join('、'))));
+    const j = juan({ title: '对参', note: ps.map((p) => p.name).join(' · '), width: `${18 + ps.length * 13}rem`, content: h('div.ce-cmp-wrap', table, h('p.ce-cmp-note', onBio ? '每行最优者标朱；野心、年齿不标。点人名入其详传。' : '每行最优者标朱；野心、年齿不标。')) });
+    if (onBio) table.querySelectorAll('th.who .q-zhou').forEach((b, i) => { b.style.cursor = 'pointer'; b.title = '入其详传'; b.addEventListener('click', () => { j.close('ok'); hide(); onBio(ps[i].name); }); });
+  }
   const left = h('section.ce-leaf.left',
     h('header.ce-head', h('h2', '人物图志'), count,
       game.ceming && game.ceming.ready() ? h('button.q-yapai.ce-ceming', { type: 'button', title: '策名：把历史人物纳入名册（不授官）', onclick: () => openCeming({ game, onBio: (name) => { hide(); if (onBio) onBio(name); } }) }, '策名') : null),
     h('div.ce-tools', search, deadSw),
     h('div.ce-sorts', h('span', '排'), sorts),
     facBox, grid,
-    h('footer.ce-foot', prevBtn, pageNote, nextBtn));
+    h('footer.ce-foot', prevBtn, pageNote, nextBtn),
+    cmpBar);
   const right = h('section.ce-leaf.right');
   const close = h('button.ce-close.q-yapai', { type: 'button', onclick: () => hide() }, '合册');
   const book = h('div.ce-book', h('div.ce-ling'), left, h('div.ce-gutter'), right, close);
@@ -111,7 +151,12 @@ export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
       p.bio ? sec('生平', h('p.ce-bio.q-scroll.ink', p.bio)) : null,
       h('div.ce-acts',
         !p.dead && !p.isPlayer ? h('button.q-yapai', { type: 'button', onclick: p.away ? (onLetter ? () => { hide(); onLetter(p.name); } : later('传书')) : (onAudience ? () => { hide(); onAudience(p.name); } : later('问对')) }, p.away ? '传书' : '问对') : null,
-        h('button.q-yapai', { type: 'button', onclick: onBio ? () => { hide(); onBio(p.name); } : later('列传') }, '详传')));
+        h('button.q-yapai', { type: 'button', onclick: onBio ? () => { hide(); onBio(p.name); } : later('列传') }, '详传'),
+        h('button.q-yapai', { type: 'button', title: cmp.includes(p.name) ? '移出对参' : '放进对参栏，至多三人并排比', onclick: () => {
+          if (cmp.includes(p.name)) cmp = cmp.filter((x) => x !== p.name);
+          else { cmp = [...cmp, p.name].slice(-3); }
+          renderCmp(); renderPerson();
+        } }, cmp.includes(p.name) ? '撤对参' : '对参')));
   }
 
   function onKey(e) {
@@ -125,6 +170,7 @@ export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
 
   function show(name) {
     load();
+    renderCmp();
     if (name) { const p = list.find((x) => x.name === name); if (p) { pick = p; page = Math.floor(list.indexOf(p) / PER_PAGE); } }
     renderGrid();
     renderPerson();

@@ -118,7 +118,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const regionDl = h('datalist', { id: 'tm-map-regions' });
   const regionSearch = h('input.map-search', { type: 'search', placeholder: '检府州', list: 'tm-map-regions', spellcheck: false, autocomplete: 'off',
     onkeydown: (e) => { if (e.key === 'Enter') seekRegion(regionSearch.value); }, onchange: () => seekRegion(regionSearch.value) });
-  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote), h('div.map-seek', regionSearch, regionDl), mapChips, legendMap);
+  // 诸道：翻本方谱牒的版图卷——各道户口、民心、吏治一览，区划预警，点道开通志、点州开方志
+  const openDao = () => { let key = ''; try { key = (game.realm.factions().find((f) => f.mine) || {}).key || ''; } catch (_e) { /* 无势力册 */ } realmPage.show({ tab: 'factions', key, juan: '版图' }); };
+  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote),
+    h('div.map-seek', regionSearch, regionDl, h('button.q-yapai', { type: 'button', title: '本方诸道一览：区划预警、各道读数', onclick: openDao }, '诸道')), mapChips, legendMap);
   const card = h('div.card.hide');
   const backLabel = h('b.q-gold', '');
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
@@ -528,6 +531,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
   const fangzhiPage = createFangzhi({ root, game, profile: () => prof, onPerson: (name) => { fangzhiPage.hide(); bioPage.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); atlas.show(name); },
+    onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });

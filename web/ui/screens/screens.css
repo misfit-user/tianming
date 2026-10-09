@@ -113,7 +113,9 @@ html[data-layout='compact'] .scr-desk .left { display: none; }
 .legend .sw span { display: inline-flex; align-items: center; gap: .25rem; }
 .legend .sw i { width: .75rem; height: .75rem; box-shadow: inset 0 0 0 1px rgba(255, 240, 210, .35); }
 .scr-map .mappanel { position: fixed; left: 1.25rem; top: 6.25rem; width: 21rem; padding: .625rem .75rem .8125rem; }
-.scr-map .map-seek { margin: 0 0 .625rem; }
+.scr-map .map-seek { display: flex; align-items: center; gap: .375rem; margin: 0 0 .625rem; }
+.scr-map .map-seek .map-search { flex: 1; min-width: 0; width: auto; }
+.scr-map .map-seek .q-yapai { flex: none; }
 .scr-map .map-search { width: 100%; box-sizing: border-box; padding: .3125rem .5rem; border: 0; outline: 0; font: var(--fs-2) var(--f-kai); color: var(--ivory, #f3e6c8);
   background: rgba(20, 12, 6, .45); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .35); }
 .scr-map .map-search::placeholder { color: rgba(243, 230, 200, .45); }

@@ -153,3 +153,28 @@
 .rm-ev-sum h5 { margin: 0 0 .375rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
 a.rm-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .2em; }
 a.rm-who:hover { color: #a3301f; }
+/* 版图：区划预警、诸道（一行一道，展开见所辖府州） */
+.rm-dao { display: flex; flex-direction: column; gap: .625rem; }
+.rm-dao-sum { margin: 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.rm-dao button { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: #3a1a10; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .2em; }
+.rm-dao button:hover { color: var(--verm); }
+.rm-alerts { padding: .5rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.rm-alerts h5 { margin: 0 0 .375rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
+.rm-alerts h5 small { margin-left: .5rem; font: var(--fs-1) var(--f-kai); letter-spacing: 0; color: var(--ink-faint); }
+.rm-alerts p { display: flex; flex-wrap: wrap; align-items: baseline; gap: .125rem .625rem; margin: .1875rem 0; font-size: var(--fs-2); line-height: 1.7; }
+.rm-alerts p small { font-size: var(--fs-1); color: var(--ink-faint); }
+.rm-alerts p span { color: var(--ink-soft); }
+.rm-alerts .rm-common b { font-weight: 400; color: #a3301f; }
+.rm-more { font-size: var(--fs-1); color: var(--ink-faint); }
+.rm-daolist { display: flex; flex-direction: column; }
+.rm-daohead, .rm-daorow summary { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .8fr) minmax(0, 1fr) minmax(0, .9fr) minmax(0, .9fr); gap: .5rem; align-items: baseline; padding: .3125rem .5rem; }
+.rm-daohead { margin: 0; font: var(--fs-2) var(--f-title); letter-spacing: .15em; color: #6a1f12; border-bottom: 1px solid rgba(163, 40, 27, .3); }
+.rm-daorow { border-bottom: 1px dashed rgba(120, 90, 50, .2); }
+.rm-daorow summary { cursor: pointer; list-style: none; font-size: var(--fs-2); color: var(--ink); }
+.rm-daorow summary::-webkit-details-marker { display: none; }
+.rm-daorow summary::before { content: none; }
+.rm-daorow[open] summary, .rm-daorow summary:hover { background: rgba(255, 246, 226, .7); }
+.rm-daoname { justify-self: start; font-family: var(--f-title) !important; font-size: var(--fs-3) !important; }
+.rm-daorow summary span i { font-style: normal; margin-left: .25rem; font-size: var(--fs-1); color: var(--ink-faint); }
+.rm-daorow summary span.warn, .rm-daorow summary span.warn i { color: #a3301f; }
+.rm-daoregs { display: flex; flex-wrap: wrap; gap: .25rem .75rem; padding: .375rem .5rem .5rem 1.25rem; font-size: var(--fs-2); }

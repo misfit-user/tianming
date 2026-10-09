@@ -10,6 +10,8 @@ import { qianzi } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
+// 内核写好的说明文字里夹着阿拉伯数字（「民心 49 忧」），按记数设置改写；小数照旧
+const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
 const signed = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(Math.round(v * 10) / 10))}`;
 const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层'], ['dongtai', '动态'], ['nian', '逆案']];
 const DT_WINS = [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [0, '全部']];
@@ -18,7 +20,7 @@ const NUM_WORD = ['一', '二', '三', '四', '五', '六', '七'];
 const REL = { meng: '盟好', di: '敌对', zhong: '中立' };
 
 // profile().social：卷底三样动作的叫法（召人、付议、拟令）；不设则此身份不列动作
-export function createRealm({ root, game, profile, onPerson, onAudience, onCourt }) {
+export function createRealm({ root, game, profile, onPerson, onAudience, onCourt, onRegion, onCircuit }) {
   const R = game.realm;
   const S = game.social;
   let tab = 'factions';
@@ -156,7 +158,30 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       d.acts && d.acts.length ? h('div.rm-acts', d.acts.map((a) => h('button.q-yapai', { type: 'button', disabled: a.disabled, title: a.title || '', onclick: a.onclick }, a.label))) : null);
     right.scrollTop = 0;
   }
-  const BODY_KEYS = ['people', 'rows', 'chips', 'places', 'breakdown', 'relations', 'strengths', 'weaknesses', 'texts', 'links', 'lines', 'bars', 'chain', 'sealed'];
+  // 版图：区划预警（本方），诸道一行一道（道名开通志，展开见所辖府州、点州开方志），未设省道者平铺
+  const fmtN = (v) => (v == null ? '—' : Math.abs(v) >= 1e4 ? amt(v) : num(Math.round(v)));
+  const regionBtn = (x) => (onRegion ? h('button', { type: 'button', title: '展其方志', onclick: () => { hide(); onRegion(x.id); } }, x.name) : h('em', x.name));
+  function daoEl(d) {
+    const al = d.alerts;
+    return h('div.rm-dao',
+      h('p.rm-dao-sum', `据有${num(d.count)}州，分隶${num(d.groups.length)}道`, d.none.length ? `，未设省道${num(d.none.length)}块` : '', '。'),
+      al && (al.common.length || al.rows.length) ? h('section.rm-alerts', h('h5', '区划预警', h('small', '民心吏治据奏 · 按问题轻重')),
+        al.common.length ? h('p.rm-common', '通国皆然：', h('b', digits(al.common.join(' · '))), '。下列只标各州独有之患。') : null,
+        al.rows.map((x) => h('p', regionBtn(x), x.circuit ? h('small', x.circuit) : null, h('span', digits(x.reasons.join('；'))))),
+        al.more ? h('small.rm-more', `另有${num(al.more)}州次之`) : null) : null,
+      d.groups.length ? h('div.rm-daolist',
+        h('p.rm-daohead', ['省道', '府州', '户口', '民心', '吏治'].map((t) => h('span', t))),
+        d.groups.map((g) => h('details.rm-daorow',
+          h('summary',
+            onCircuit ? h('button.rm-daoname', { type: 'button', title: '展其通志', onclick: (e) => { e.preventDefault(); hide(); onCircuit(g.key); } }, g.label) : h('b.rm-daoname', g.label),
+            h('span', g.held === g.of ? num(g.held) : `${num(g.held)}／${num(g.of)}`),
+            h('span', fmtN(g.pop)),
+            h('span' + (g.moodWarn ? '.warn' : ''), g.mood == null ? '—' : [num(Math.round(g.mood)), h('i', g.moodMark)]),
+            h('span' + (g.officeWarn ? '.warn' : ''), g.office == null ? '—' : [num(Math.round(g.office)), h('i', g.officeMark)])),
+          h('div.rm-daoregs', g.regions.map(regionBtn))))) : null,
+      d.none.length ? h('div.rm-chips.links', h('span', '未设省道'), h('div', d.none.map(regionBtn))) : null);
+  }
+  const BODY_KEYS = ['dao', 'people', 'rows', 'chips', 'places', 'breakdown', 'relations', 'strengths', 'weaknesses', 'texts', 'links', 'lines', 'bars', 'chain', 'sealed'];
   function hasBody(b) { return BODY_KEYS.some((k) => Array.isArray(b[k]) ? b[k].length : !!b[k]); }
   const rowsEl = (list) => (list && list.length ? h('div.rm-rows', list.map((r) => h('p' + (r.tone === 'zhu' ? '.zhu' : ''), h('span', r.k), h('b', r.v)))) : null);
   const chipGroups = (groups) => (groups || []).map((g) => h('div.rm-chips', h('span', g.title), h('div', g.items.map((c) => h('em' + (c.warn ? '.warn' : ''), c.label, c.value != null && c.value !== '' ? h('b', c.value) : null)))));
@@ -170,6 +195,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       parts.push(h('div.rm-break', h('div.bar', b.breakdown.map((x, i) => h('i.c' + i, { style: { flexGrow: String(x.value) }, title: `${x.label} ${amt(x.value)}` }))),
         h('div.legend', b.breakdown.map((x, i) => h('span', h('i.c' + i), `${x.label} ${amt(x.value)}`)), h('small', `总 ${amt(total)}`))));
     }
+    if (b.dao) parts.push(daoEl(b.dao));
     if (b.places && b.places.length) parts.push(h('div.rm-places', h('span', `所辖 ${num(b.places.length)} 块`), h('div', b.places.slice(0, 80).map((p) => h('em', p)), b.places.length > 80 ? h('small', `余${num(b.places.length - 80)}块`) : null)));
     if (b.relations && b.relations.length) parts.push(h('div.rm-rel', b.relations.map((r) => h('p.' + r.kind, h('i'), r.onclick ? h('button', { type: 'button', onclick: r.onclick }, r.name) : h('b', r.name), h('em', REL[r.kind]), r.note ? h('small', r.note) : null))));
     if (b.bars && b.bars.length) parts.push(h('div.rm-bars', b.bars.map((x) => h('p', h('span', x.label), h('i', h('b', { style: { width: `${Math.max(0, Math.min(100, x.value))}%` } })), h('small', num(x.value))))));
@@ -294,11 +320,17 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   }
 
   // key：直开某势力；{ tab, key }：直开某页某条
+  // key：直开某势力；{ tab, key, juan }：直开某页某条（juan 为势力谱牒的卷名，翻到该卷）
   function show(key) {
     if (key && typeof key === 'object') { tab = key.tab || tab; if (key.key) sel[tab] = key.key; tabs.setValue(tab); } else if (key) { tab = 'factions'; sel.factions = key; tabs.setValue(tab); }
     render();
     ov.classList.add('on');
     opened = true;
+    const juanTo = key && typeof key === 'object' ? key.juan : '';
+    const go = () => { if (!juanTo) return; const el = right.querySelector(`.rm-juan[data-juan="${juanTo}"]`); if (el) el.scrollIntoView({ block: 'start' }); };
+    // 省道分组随老地名模块载入；未载时先平铺，载好再画一遍
+    if (game.fangzhi && !game.fangzhi.circuitsReady()) game.fangzhi.ensureCircuits().then(() => { if (opened) { render(); go(); } });
+    else go();
   }
   function hide() {
     ov.classList.remove('on');

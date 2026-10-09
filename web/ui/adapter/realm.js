@@ -3,6 +3,9 @@
 // （TMPhase8FormalBridge.__p8MapParts），标签与老卷一致；总兵、人物、领地取内核势力索引 GM._facIndex。
 // 不显给玩家的：AI 推演用的画像、决策提示、禁忌动作、暗中议程、首领私心（aiProfile / decisionHints / npcDecisionHints /
 // tabooMoves / hiddenAgenda / leaderPrivate）——老卷照列，新界面不列；胜局、败局只列本朝。
+// 版图卷按省道收拢、本方区划预警，取数在 adapter/fangzhi.js（bantu）。
+import { bantu as bantuOf } from './fangzhi.js';
+
 const w = window;
 const G = () => w.GM || {};
 const parts = () => (w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.__p8MapParts) || {};
@@ -139,7 +142,10 @@ export function faction(key) {
   if (!junchen.chips.length) { const c = row('凝聚', f.cohesion); if (c) junchen.rows.push(c); }
 
   // 二、版图
-  const bantu = { places: provinces, rows: [row('剧本领土', f.territory), row('资源', first(f.resources, f.mainResources))].filter(Boolean) };
+  // 舆图上据有的府州按省道收拢（本方另出区划预警）；舆图未载时退回势力索引的地名平铺
+  let dao = null;
+  try { dao = bantuOf(f, key, mine); } catch (e) { console.warn('[newui] 版图按省道收拢失败', e); }
+  const bantu = { dao, places: dao ? [] : provinces, rows: [row('剧本领土', f.territory), row('资源', first(f.resources, f.mainResources))].filter(Boolean) };
 
   // 三、军略
   const mb = f.militaryBreakdown && typeof f.militaryBreakdown === 'object' ? f.militaryBreakdown : null;

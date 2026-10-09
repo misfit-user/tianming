@@ -14,6 +14,7 @@ const n = (v) => { const x = Number(v); return Number.isFinite(x) ? x : null; };
 
 // 省道分组（TMMapRealmLayout）只在老正式地图渲染时才载；方志的省道、本道排名、上官都靠它
 let circuitsAsked = null;
+export const circuitsReady = () => !!w.TMMapRealmLayout;
 export function ensureCircuits() {
   if (w.TMMapRealmLayout) return Promise.resolve(true);
   if (!circuitsAsked) {
@@ -553,4 +554,64 @@ export function circuitAct(key, kind) {
   const ok = p.circuitAction(String(key), kind);
   if (ok) bus.emit('game:changed', { what: 'edict-suggestion' });
   return ok;
+}
+
+// ---------- 版图（谱牒版图卷） ----------
+// 某势力已据的府州按正式省道收拢，每道汇总户口与民心、吏治（据奏评分），未设省道的另列——与老谱牒版图卷同法，
+// 但省道索引自建一次（老 findCircuit 每查一州都重算索引签名，一百多州要一秒）。本方另出区划预警：
+// 全境各州问题轻重（民心、吏治落警档、灾异、民变），通国皆有的提出来说一次，余者取最重的十州
+export function bantu(f, key, withAlerts) {
+  const p = P8();
+  const MC = w.TM && w.TM.MapCircuits;
+  const map = p && p.getMapData ? p.getMapData() : null;
+  if (!p || !map || !Array.isArray(map.regions) || typeof p.factionOwnsRegion !== 'function') return null;
+  const run = typeof p.withRenderBatch === 'function' ? p.withRenderBatch : (fn) => fn();
+  return run(() => {
+    const ownKey = f.stableOwnerKey || f.mapFactionId || f.id || key;
+    const mine = map.regions.filter((r) => p.factionOwnsRegion(r, ownKey, f));
+    if (!mine.length) return null;
+    const link = (r) => ({ id: r.id || r.name, name: p.regionTitle(r) });
+    let index = null;
+    if (MC && w.TMMapRealmLayout) {
+      const owners = new Map(), memo = new Map();
+      map.regions.forEach((r) => {
+        const k = JSON.stringify([p.ownerKey(r), (r && (r.factionName || r.ownerName)) || '']);
+        if (!owners.has(k)) owners.set(k, p.canonicalOwnerKey(r));
+        memo.set(r, owners.get(k));
+      });
+      index = MC.indexCircuits(map, { layout: w.TMMapRealmLayout, ownerOf: (r) => memo.get(r) });
+    }
+    const byKey = new Map(), none = [], circuitOfRegion = new Map();
+    mine.forEach((r) => {
+      const c = index ? MC.circuitOf(index, r) : null;
+      if (!c || !MC.isRealCircuit(c)) { none.push(r); return; }
+      if (!byKey.has(c.key)) byKey.set(c.key, { c, regions: [] });
+      byKey.get(c.key).regions.push(r);
+      circuitOfRegion.set(r, c.label);
+    });
+    const grade = (mode, v) => { const g = v == null ? null : p.gradeOf(mode, v) || {}; return { mark: (g && g.mark) || '', warn: !!(g && p.gradeIsWarn(mode, g)) }; };
+    const groups = [...byKey.values()].map(({ c, regions }) => {
+      const sum = MC.summarize(regions, { bundle: p.regionBundle, mood: p.moodViewScore, office: p.officeViewScore });
+      const mg = grade('mood', sum.mood), og = grade('office', sum.office);
+      return { key: c.key, label: c.label, held: regions.length, of: c.members.length, pop: n(sum.population), tax: n(sum.actualRevenue),
+        mood: n(sum.mood), moodMark: mg.mark, moodWarn: mg.warn, office: n(sum.office), officeMark: og.mark, officeWarn: og.warn,
+        regions: regions.map(link) };
+    }).sort((a, b) => (b.pop || 0) - (a.pop || 0) || String(a.label).localeCompare(String(b.label), 'zh-CN'));
+    let alerts = null;
+    if (withAlerts && MC) {
+      const ranked = MC.rankProblems(mine, {
+        score: p.modeScore, grade: p.gradeOf, isWarn: p.gradeIsWarn,
+        statusOf: (r) => { const b = p.regionBundle(r); return (b.liveDivision && b.liveDivision.statusEffects) || []; },
+        unrestOf: (r) => { const b = p.regionBundle(r), d = b.data || {}; return first(d.unrest, b.liveDivision && b.liveDivision.unrest); }
+      });
+      const lifted = MC.liftCommonProblems(ranked, { populationOf: (r) => { const b = p.regionBundle(r); return first((b.data || {}).population, b.pop && b.pop.mouths); } });
+      const rows = lifted.rows.filter((rw) => rw.score > 0 && rw.reasons && rw.reasons.length);
+      alerts = {
+        common: lifted.common.map((x) => x.label + (x.mark ? ` ${x.mark}` : '')),
+        rows: rows.slice(0, 10).map((rw) => ({ ...link(rw.region), circuit: circuitOfRegion.get(rw.region) || '', reasons: rw.reasons })),
+        more: Math.max(0, rows.length - 10)
+      };
+    }
+    return { count: mine.length, groups, none: none.map(link), alerts };
+  });
 }

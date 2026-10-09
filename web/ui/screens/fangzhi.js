@@ -9,9 +9,11 @@ import { juan, qianzi, shu } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」），按记数设置改写
-const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));   // 只改整数，小数（执行率 +1.5%）照旧
-// 数：大数取四位有效，按记数设置写；负数前加「−」；字照原样
-const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Math.abs(v) >= 1e4 ? roundSig(Math.abs(v), 4) : Math.round(Math.abs(v) * 10) / 10)}${unit || ''}` : `${v}${unit ? unit : ''}`);
+// 「3.6万」先折成整数再写；其余只改整数，小数（执行率 +1.5%）照旧
+const digits = (t) => String(t).replace(/(?<![\d.])(\d+\.\d+)万/g, (m, x) => num(Math.round(Number(x) * 1e4)))
+  .replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
+// 数：大数取四位有效，按记数设置写；负数前加「−」；字里夹的整数也按记数设置改写
+const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Math.abs(v) >= 1e4 ? roundSig(Math.abs(v), 4) : Math.round(Math.abs(v) * 10) / 10)}${unit || ''}` : `${digits(v)}${unit ? unit : ''}`);
 
 export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
   const F = game.fangzhi;

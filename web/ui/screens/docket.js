@@ -155,7 +155,32 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
     replaceChildren(slips, prof.docket.verdicts.map(([key, label, note], i) =>
       h('button.slip' + (i === 0 ? '.go' : '') + (m && m.status === key ? '.on' : ''), {
         type: 'button', title: note, disabled: !m, onclick: () => decide(key, label)
-      }, label)));
+      }, label)),
+    m && m.qiaozhi ? h('button.slip.qz', { type: 'button', title: '失地之后，其建置撤销、存名或侨置于他处', onclick: () => qiaozhi(m) }, '侨置') : null);
+  }
+
+  // ---------- 侨置（失地急奏） ----------
+  function qiaozhi(m) {
+    const q = game.select.qiaozhi(m.qiaozhi);
+    if (!q) { bus.emit('kernel:toast', { text: '此地侨置已定' }); return renderSlips(); }
+    let host = q.hosts[0] || '';
+    const pick = (mode, note) => {
+      let ok = false;
+      try { ok = game.act.qiaozhi(q.name, mode, host); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); return; }
+      j.close('ok');
+      if (ok) commit(m, 'approved', reply.value.trim() || note);
+    };
+    const row = (title, desc, onclick, extra) => h('div.qz-opt', h('div', h('b', title), h('small', desc), extra), h('button.q-yapai', { type: 'button', onclick }, '定'));
+    const j = juan({
+      title: '侨置', note: q.name, width: '34rem',
+      content: h('div.qz',
+        h('p', `「${q.name}」已失于${q.lostTo}（第${num(q.turn)}回合）。原有人口${num(q.population)}，繁荣${num(q.prosperity)}。`),
+        row('不侨置，撤销建置', '放弃此地的名义与官制。', () => pick('none', `${q.name}既失，撤其建置。`)),
+        row('纯名义侨置', `保留官制官职（如侨置${q.name}），无实土、不征赋。`, () => pick('nominal', `侨置${q.name}之名，以存故土。`)),
+        q.hosts.length ? row('划出治所侨置', '自现有行政区划出一隅为其治所，宿主人口相应划出，宿主主官或生不满。',
+          () => pick('allocated', `侨置${q.name}于${host}。`),
+          h('label.qz-host', '宿主　', h('select', { onchange: (e) => { host = e.target.value; } }, q.hosts.map((n) => h('option', { value: n }, n))))) : null)
+    });
   }
 
   // ---------- 批 ----------

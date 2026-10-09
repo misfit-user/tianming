@@ -265,6 +265,30 @@ const act = {
     bus.emit('game:changed', { what: 'memorial', id });
     return r;
   },
+  // 侨置：mode 为 none（撤销）、nominal（纯名义）、allocated（划出治所，须给宿主 host）。
+  // 内核 doQiaozhi 划治所时从 #qiaozhi-host 下拉取宿主——临时垫一个，用毕撤去
+  qiaozhi(name, mode, host) {
+    if (typeof w.doQiaozhi !== 'function') throw new Error('内核缺 doQiaozhi');
+    let pad = null;
+    if (mode === 'allocated') {
+      pad = document.createElement('select');
+      pad.id = 'qiaozhi-host';
+      pad.hidden = true;
+      const o = document.createElement('option');
+      o.value = String(host || '');
+      o.selected = true;
+      pad.append(o);
+      document.body.append(pad);
+    }
+    try {
+      w.doQiaozhi(name, mode);
+    } finally {
+      if (pad) pad.remove();
+    }
+    const done = !((w.GM && w.GM._lostTerritories) || {})[name];
+    bus.emit('game:changed', { what: 'qiaozhi', name });
+    return done;
+  },
   // 时政决断：选第 index 项。异步——开关开着时内核先请 AI 据国势裁定后果（数秒），失败回落固定后果。
   // 返回内核的结果（{ ok:false, code } 表示没办成，例如世局已变、事件不许此选）
   async issue(id, index) {

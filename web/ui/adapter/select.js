@@ -327,6 +327,7 @@ export function docket() {
       urgent: m.priority === 'urgent', reliability: yanyi ? m.reliability || '' : '',
       remoteFrom: m._remoteFrom || '', replySent: !!m._replyLetterSent, replyArrived: !!(m._replyDeliveryTurn && turn >= m._replyDeliveryTurn),
       status: m.status || 'pending', reply: m.reply || '', referredTo: m._referredTo || '',
+      qiaozhi: m._qiaozhiTarget && (g._lostTerritories || {})[m._qiaozhiTarget] ? String(m._qiaozhiTarget) : '',   // 失地待定侨置
       group: m.status === 'pending_review' ? 'held' : MEM_DONE.includes(m.status) ? 'done' : m.priority === 'urgent' ? 'urgent' : 'pending',
       turn: m.turn, date: ts && m.turn != null ? String(ts(m.turn)) : ''
     };
@@ -461,6 +462,19 @@ export function gazette(limit = 160) {
       title: m ? m[1] : '', text: (m ? text.replace(m[0], '') : text).replace(/^【[^】]{1,12}】/, '').trim()
     };
   });
+}
+
+// 侨置：失地之名→原人口、繁荣、失于谁、第几回合，及可作宿主的本方行政区（照内核 openQiaozhiPanel 取法）
+export function qiaozhi(name) {
+  const g = G();
+  const lost = (g._lostTerritories || {})[name];
+  if (!lost) return null;
+  const node = lost.node || {};
+  const ah = w.P && w.P.adminHierarchy;
+  const key = ah ? (ah.player ? 'player' : Object.keys(ah)[0]) : null;
+  const divs = key && ah[key] && Array.isArray(ah[key].divisions) ? ah[key].divisions : [];
+  return { name, population: Number(node.population) || 0, prosperity: Number(node.prosperity) || 0, lostTo: lost.lostTo || '敌方', turn: lost.turn,
+    hosts: divs.map((d) => d && d.name).filter((n) => n && n !== '未定行政区') };
 }
 
 // 精力：玩家本人的（GM._energy／_energyMax），召对、批阅、狱中问对等皆耗；各档皆有

@@ -91,3 +91,12 @@
 /* 进出批阅：一层墨色薄幕 */
 .dk-veil { position: fixed; inset: 0; z-index: 40; background: #0c0603; opacity: 0; pointer-events: none; transition: opacity 260ms var(--ease-in-out); }
 .dk-veil.on { opacity: 1; pointer-events: auto; }
+/* 侨置：失地急奏另有一签，与七签隔开 */
+.scr-docket .slip.qz { margin-left: .75rem; color: #f9ead2; background: linear-gradient(180deg, #6b4a2a, #4a3018); }
+.qz p { margin: 0 0 .75rem; font-size: var(--fs-3); line-height: 1.9; color: var(--ink); }
+.qz-opt { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .75rem; padding: .625rem .75rem; margin-bottom: .5rem;
+  background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.qz-opt b { display: block; font: 400 var(--fs-4) var(--f-title); letter-spacing: .15em; color: #3a1a10; }
+.qz-opt small { display: block; margin-top: .125rem; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
+.qz-host { display: block; margin-top: .375rem; font-size: var(--fs-2); color: var(--ink-soft); }
+.qz-host select { font: var(--fs-2) var(--f-kai); padding: .125rem .375rem; }

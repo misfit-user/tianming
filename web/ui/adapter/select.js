@@ -463,6 +463,24 @@ export function gazette(limit = 160) {
   });
 }
 
+// 风闻：老右栏「风闻情报」与左侧邸报流的同一份汇集（TMPhase8FormalBridge._collectRecentEvents：GM.evtLog——addEB 的唯一落点，
+// 成就、继位、里程碑、史事临御案都只播在这里——以及势力动态、回合人物动向、人物经历、承诺、心绪等），回合倒序、最多一百二十条。
+// lookback 为回看几回合（999 即全部）；hot 照老面板：题、类、文里有危乱叛灾兵饷腐急警者为「待察」
+const HOT = /危|乱|叛|灾|兵|饷|腐|急|警/;
+export function rumors(lookback = 3) {
+  const B = w.TMPhase8FormalBridge;
+  if (!B || typeof B._collectRecentEvents !== 'function') return [];
+  let rows = [];
+  try { rows = B._collectRecentEvents(lookback) || []; } catch (_e) { rows = []; }
+  return rows.map((r) => {
+    const text = String(r.text || r.detail || '').trim();
+    const title = String(r.title || '').trim();
+    return { turn: r.turn, time: String(r.time || ''), type: String(r.type || '近事'), title: title && title !== text ? title : '', text,
+      meta: (r.meta || []).map(String).filter((x) => x && !/^[a-z_]+$/i.test(x)).slice(0, 3),
+      hot: HOT.test(`${title}${r.type || ''}${text}`) };
+  });
+}
+
 // 时政（御案时政／案头要事）全账：待决、省览（信息卡，无须拍板）、已决。与老面板 openShizhengTasks 同口径
 const SEVERITY = { urgent: '紧急', high: '重要', warn: '警戒', info: '平常' };
 export function issueList() {

@@ -5,6 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
+import { pinned, togglePin } from '../core/pins.js';
 import { zhou, juan } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -90,6 +91,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
       if (onLetter) list.push(btn('传书', () => { hide(); onLetter(p.name); }));
       if (onOffices) list.push(btn('官制', () => { hide(); onOffices(p.name); }));
     }
+    if (!p.isPlayer && p.alive) list.push(btn(pinned(p) ? '去钉' : '钉选', () => { const on = togglePin(p); toast(on ? `${p.name}已钉选：书案图志与召对名单列在前头` : `${p.name}已去钉`); renderLeft(); }, '钉选之人在书案人物图志与召对名单里排在前头'));
     if (onAtlas) list.push(btn('图志', () => { hide(); onAtlas(p.name); }, '回人物图志'));
     list.push(btn('导出', exportBio, '存成一份列传文本'));
     replaceChildren(acts, list);

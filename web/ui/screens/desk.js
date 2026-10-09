@@ -5,6 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum } from '../core/numerals.js';
+import { pinned, pinnedFirst } from '../core/pins.js';
 import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag, tiao, kaiguan } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
@@ -303,7 +304,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const me = people.find((c) => c.id === per.id) || people.find((c) => c.isPlayer);
     const place = String(per.location || '').split('·')[0];
     const near = per.tier === 'sovereign' ? [] : people.filter((c) => c !== me && place && String(c.location || '').split('·')[0] === place);
-    const shown = [me, ...near, ...people.filter((c) => c !== me && c.portrait && !near.includes(c))].filter(Boolean).slice(0, 4);
+    // 钉选之人排在近臣之前（core/pins，与老正式界面同一份）
+    const pins = pinnedFirst(people.filter((c) => c !== me && c.alive !== false)).filter((c) => pinned(c));
+    const shown = [...new Set([me, ...pins, ...near, ...people.filter((c) => c !== me && c.portrait && !near.includes(c))].filter(Boolean))].slice(0, 4);
     replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) })));
     renwu.querySelector('.q-ti small').textContent = `${num(people.length)}人`;
     const news = s.news ? s.news(8) : [];
@@ -582,6 +585,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('ui:help', () => { if (el.classList.contains('on')) helpPage.show(); }),
+        bus.on('pins:changed', refresh),
         game.on('game:entered', () => loadWorld().then(refresh)));
       gaizhiPage.inheritance();                      // 开局幕里就断下的新朝承前，落座后展
     },

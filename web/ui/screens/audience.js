@@ -5,6 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
+import { pinnedFirst } from '../core/pins.js';
 import { juan, qianzi, zhou, loadFonts, closeScrolls } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -358,7 +359,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
         h('b', c.name, h('small', c.title)), h('p', c.reason),
         h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openSeeking(c.name))) }, t.accept),
           h('button.q-yapai', { type: 'button', onclick: () => { try { A.deny(c.name); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.refuse))))) : null,
-      h('section', h('h5', `${t.court} · ${num(R.court.length)}`), R.court.length ? h('div.au-faces', R.court.map((c) => face(c, go(() => summon(c.name))))) : h('p.au-none', '朝中无人可召')),
+      h('section', h('h5', `${t.court} · ${num(R.court.length)}`), R.court.length ? h('div.au-faces', pinnedFirst(R.court).map((c) => face(c, go(() => summon(c.name))))) : h('p.au-none', '朝中无人可召')),
       R.away.length ? h('section', h('h5', `${t.away} · ${num(R.away.length)}`), h('p.au-hint', '远方之人不能面对，点名即改遣书札'),
         h('div.au-away', R.away.map((c) => h('button', { type: 'button', title: c.location, onclick: go(() => onLetter && onLetter(c.name)) }, c.name, h('small', c.travel ? `→${c.travel}` : c.location))))) : null);
     j = juan({ title: t.title, note: game.select.date().text || '', width: '58rem', height: 'min(46rem, 86vh)', content });

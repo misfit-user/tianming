@@ -590,7 +590,7 @@ async function _tmStartCheckOpeningHistory(sc, requestToken) {
     return true;
   }
   showLoading('\u53F2\u5B9E\u6821\u9A8C\u4E2D...', 92);
-  var prompt = '\u4F60\u662F\u5386\u53F2\u987E\u95EEAI\u3002\u8BF7\u68C0\u4EE5\u4E0B\u5F00\u573A\u767D\u662F\u5426\u5B58\u5728\u660E\u663E\u7684\u53F2\u5B9E\u9519\u8BEF\uFF08\u4EBA\u7269\u5E74\u4EE3\u3001\u4E8B\u4EF6\u987A\u5E8F\u3001\u5730\u7406\u7B49\uFF09\u3002\n\n'
+  var prompt = '你是历史顾问AI。请检查以下开场白是否存在明显的史实错误（人物年代、事件顺序、地理等）。\n\n'
     + '\u3010\u5267\u672C\u3011' + (sc.name || '') + '\n\u3010\u65F6\u4EE3\u3011' + (sc.era || '') + '\n\u3010\u89D2\u8272\u3011' + (sc.role || '')
     + '\n\u3010\u5F00\u573A\u767D\u3011\n' + sc.opening
     + '\n\n\u53EA\u8FD4\u56DEJSON: {"hasErrors":true/false,"errorCount":0,"errors":["\u9519\u8BEF"],"correctedText":"\u4FEE\u6B63\u6587\u672C"}\u3002';
@@ -1778,7 +1778,7 @@ function doActualStart(sid, requestToken){
       // 初始化家族（若缺失，从姓氏提取——开局后由AI丰富为郡望格式）
       if (!c.family) {
         var _nameStr = c.name || '';
-        var _compSurnames = ['\u53F8\u9A6C','\u8BF8\u845B','\u4E0A\u5B98','\u6B27\u9633','\u7687\u752B','\u4EE4\u72D0','\u592A\u53F2','\u5B87\u6587','\u957F\u5B59','\u6148\u79A7','\u53F8\u5F92','\u7AEF\u6728','\u4E07\u4FDF','\u767E\u91CC','\u5C09\u8FDF','\u547C\u5EF6','\u5B8C\u989C','\u8D6B\u8FDE','\u72EC\u5B64','\u6155\u5BB9','\u62D3\u8DCB','\u5148\u8F9C','\u5CB3\u98DE','\u52A0\u5F00','\u4E2D\u5C71'];
+        var _compSurnames = ['司马','诸葛','上官','欧阳','皇甫','令狐','太史','宇文','长孙','夏侯','司徒','端木','万俟','百里','尉迟','呼延','完颜','赫连','独孤','慕容','拓跋','鲜于','公孙','东方','钟离'];
         var _surname = '';
         for (var _si = 0; _si < _compSurnames.length; _si++) {
           if (_nameStr.indexOf(_compSurnames[_si]) === 0) { _surname = _compSurnames[_si]; break; }

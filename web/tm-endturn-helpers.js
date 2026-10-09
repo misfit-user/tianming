@@ -887,7 +887,7 @@ function _showEndgameScreen(type, failGoal) {
   // === 标签页2：关键事件时间轴 ===
   h += '<div id="_end-timeline" class="_end-panel" style="display:none;">';
   var _keyEvents = (GM.evtLog || []).filter(function(e) {
-    return /\u6218|\u53DB|\u4EA1|\u7B5B|\u5A5A|\u6539\u9769|\u79D1\u4E3E|\u7EE7\u627F|\u9A7E\u5D29|\u6210\u5C31|\u4F0F\u7B14|\u8F6C\u6298|\u706D|\u5BA3\u6218/.test(e.text || '');
+    return /战|叛|亡|篡|婚|改革|科举|继承|驾崩|成就|伏笔|转折|灭|宣战/.test(e.text || '');
   });
   if (_keyEvents.length > 0) {
     _keyEvents.slice(-30).forEach(function(evt) {
@@ -1009,9 +1009,9 @@ if (typeof GameEventBus !== 'undefined') {
     var _ch = typeof findCharByName === 'function' ? findCharByName(data.name) : null;
     var _isImportant = _ch && (_ch.isPlayer || (_ch.importance && _ch.importance >= 80) || _ch.isRuler);
     if (_isImportant && typeof notifyUrgent === 'function') {
-      notifyUrgent(data.name + ' \u6B83', data.reason || '');
+      notifyUrgent(data.name + ' 殁', data.reason || '');
     } else if (typeof notifyPersist === 'function') {
-      notifyPersist(data.name + ' \u6B83\uFF1A' + (data.reason || ''), '\u2620');
+      notifyPersist(data.name + ' 殁：' + (data.reason || ''), '\u2620');
     }
     // 级联：清 officeTree 所有 holder 登记·让职位空缺可见·生成空缺事件
     try {
@@ -1024,7 +1024,7 @@ if (typeof GameEventBus !== 'undefined') {
             if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
               turn: GM.turn || 0, date: GM._gameDate || '',
               type: '官缺',
-              text: v.chain + '·' + v.pos + '\u00B7\u56E0 ' + data.name + ' \u6B83\u800C\u7F3A\u5458',
+              text: v.chain + '·' + v.pos + '·因 ' + data.name + ' 殁而缺员',
               tags: ['官职','身故','缺员']
             });
           });
@@ -1765,14 +1765,14 @@ SettlementPipeline.register('healthDecay', '\u89D2\u8272\u5065\u5EB7\u5206\u6790
       var dateInfo = calcDateFromTurn(GM.turn);
       if (dateInfo && dateInfo.adYear >= c.deathYear) {
         var yearsPast = dateInfo.adYear - c.deathYear;
-        healthAlerts.push(c.name + '\u5DF2\u8FC7\u53F2\u5B9E\u5356\u5E74(' + c.deathYear + '\u5E74\uFF0C\u5DF2\u8FC7' + yearsPast + '\u5E74)\uFF0CAI\u5E94\u8003\u8651\u5176\u5065\u5EB7\u72B6\u51B5(health:' + Math.round(c.health) + ')');
+        healthAlerts.push(c.name + '已过史实卒年(' + c.deathYear + '年，已过' + yearsPast + '年)，AI应考虑其健康状况(health:' + Math.round(c.health) + ')');
       }
     }
 
     // 生成AI提示
     if (c.health <= 0) {
       healthAlerts.push(c.name + '\u5DF2\u6CB9\u5C3D\u706F\u67AF(health:0)\uFF0CAI\u5E94\u5728character_deaths\u4E2D\u5904\u7406');
-      if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(c.name, '\u75C5\u5165\u818F\u80B2\uFF0C\u547D\u60AC\u4E00\u7EBF', '\u5FE7', 9);
+      if (typeof NpcMemorySystem !== 'undefined') NpcMemorySystem.remember(c.name, '病入膏肓，命悬一线', '忧', 9);
     } else if (c.health < 20) {
       healthAlerts.push(c.name + '\u4F53\u5F31\u591A\u75C5(health:' + Math.round(c.health) + ')\uFF0C\u8FD1\u671F\u53EF\u80FD\u75C5\u4EA1');
       if (typeof NpcMemorySystem !== 'undefined' && !c._healthMemoryWritten) {

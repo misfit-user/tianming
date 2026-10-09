@@ -282,18 +282,18 @@
   function INFLUENCE_GROUP_CATALOG_HAN() {
     return mergeInfluenceGroupCatalog(INFLUENCE_GROUP_CATALOG_BASE(), {
       eunuch: {
-        titleKeywords: ['\u4e2d\u5e38\u4f8d', '\u9ec4\u95e8\u4ee4', '\u6399\u5ead\u4ee4', '\u5c0f\u9ec4\u95e8', '\u4e2d\u9ec4\u95e8', '\u5c1a\u65b9\u4ee4', '\u592a\u76d1'],
-        occupationKeywords: ['\u5b98\u5bb6', '\u5ba6\u5b98', '\u9ec4\u95e8'],
-        keyOffices: ['\u4e2d\u5e38\u4f8d', '\u9ec4\u95e8\u4ee4', '\u6399\u5ead\u4ee4']
+        titleKeywords: ['中常侍', '黄门令', '掖庭令', '小黄门', '中黄门', '尚方令', '太监'],
+        occupationKeywords: ['宦者', '宦官', '黄门'],
+        keyOffices: ['中常侍', '黄门令', '掖庭令']
       },
       waiqi: {
         relationKeywords: ['empress_family', 'consort_family', '\u540e\u65cf', '\u7687\u540e\u6bcd\u5bb6'],
-        titleKeywords: ['\u56fd\u8205', '\u5916\u621a', '\u9a7e\u9a6c', '\u5927\u5c06\u519b', '\u9a84\u9a91\u5c06\u519b', '\u8f66\u9a91\u5c06\u519b'],
-        keyOffices: ['\u5927\u5c06\u519b', '\u9a84\u9a91\u5c06\u519b', '\u8f66\u9a91\u5c06\u519b']
+        titleKeywords: ['国舅', '外戚', '驸马', '大将军', '骠骑将军', '车骑将军'],
+        keyOffices: ['大将军', '骠骑将军', '车骑将军']
       },
       consort: {
         relationKeywords: ['empress', 'consort', 'former_empress', 'emperor_spouse', '\u7687\u540e', '\u540e\u5983'],
-        titleKeywords: ['\u7687\u540e', '\u7687\u592a\u540e', '\u662d\u5100', '\u5a4f\u5983', '\u592b\u4eba', '\u7f8e\u4eba', '\u826f\u4eba'],
+        titleKeywords: ['皇后', '皇太后', '昭仪', '婕妤', '夫人', '美人', '良人'],
         keyOffices: ['\u7687\u540e', '\u592a\u540e']
       }
     });
@@ -302,9 +302,9 @@
   function INFLUENCE_GROUP_CATALOG_TANG() {
     return mergeInfluenceGroupCatalog(INFLUENCE_GROUP_CATALOG_BASE(), {
       eunuch: {
-        titleKeywords: ['\u5185\u4f7f\u76d1', '\u795e\u7b56\u519b\u4e2d\u5c09', '\u67a2\u5bc6\u4f7f', '\u5185\u5e38\u4f8d', '\u5185\u7ed9\u4e8b', '\u9ad8\u529b\u58eb', '\u674e\u8f85\u56fd'],
+        titleKeywords: ['内侍监', '神策军中尉', '枢密使', '内常侍', '内给事', '高力士', '李辅国'],
         occupationKeywords: ['\u5ba6\u5b98', '\u5185\u4f7f'],
-        keyOffices: ['\u5185\u4f7f\u76d1', '\u795e\u7b56\u519b\u4e2d\u5c09', '\u67a2\u5bc6\u4f7f']
+        keyOffices: ['内侍监', '神策军中尉', '枢密使']
       },
       waiqi: {
         relationKeywords: ['empress_family', 'consort_family', '\u540e\u65cf', '\u7687\u540e\u6bcd\u5bb6'],
@@ -313,7 +313,7 @@
       },
       consort: {
         relationKeywords: ['empress', 'consort', 'former_empress', 'emperor_spouse', '\u7687\u540e', '\u540e\u5983'],
-        titleKeywords: ['\u7687\u540e', '\u8d35\u5983', '\u662d\u5100', '\u5b9d\u6797', '\u5a4f\u5983', '\u7f8e\u4eba', '\u592b\u4eba'],
+        titleKeywords: ['皇后', '贵妃', '昭仪', '宝林', '婕妤', '美人', '夫人'],
         keyOffices: ['\u7687\u540e', '\u592a\u540e']
       }
     });
@@ -328,12 +328,12 @@
       },
       waiqi: {
         relationKeywords: ['empress_family', 'consort_family', '\u540e\u65cf', '\u7687\u540e\u6bcd\u5bb6'],
-        titleKeywords: ['\u627f\u6069\u516c', '\u9a7e\u9a6c', '\u56fd\u8205', '\u5916\u621a', '\u9526\u8863\u536b\u90fd\u6307\u6325\u4f7f'],
-        keyOffices: ['\u627f\u6069\u516c', '\u9a7e\u9a6c']
+        titleKeywords: ['承恩公', '驸马', '国舅', '外戚', '锦衣卫都指挥使'],
+        keyOffices: ['承恩公', '驸马']
       },
       consort: {
         relationKeywords: ['empress', 'consort', 'former_empress', 'emperor_spouse', '\u7687\u540e', '\u540e\u5983'],
-        titleKeywords: ['\u7687\u540e', '\u8d35\u5983', '\u9009\u4f8d', '\u5a4f\u5983', '\u5983', '\u592a\u540e', '\u61ff\u5b89\u7687\u540e'],
+        titleKeywords: ['皇后', '贵妃', '选侍', '婕妤', '妃', '太后', '懿安皇后'],
         keyOffices: ['\u7687\u540e', '\u592a\u540e']
       }
     });
@@ -348,12 +348,12 @@
       },
       waiqi: {
         relationKeywords: ['empress_family', 'consort_family', '\u540e\u65cf', '\u7687\u540e\u6bcd\u5bb6'],
-        titleKeywords: ['\u627f\u6069\u516c', '\u989d\u9a74', '\u56fd\u8205', '\u5916\u621a'],
-        keyOffices: ['\u627f\u6069\u516c', '\u989d\u9a74']
+        titleKeywords: ['承恩公', '额驸', '国舅', '外戚'],
+        keyOffices: ['承恩公', '额驸']
       },
       consort: {
         relationKeywords: ['empress', 'consort', 'former_empress', 'emperor_spouse', '\u7687\u540e', '\u540e\u5983'],
-        titleKeywords: ['\u7687\u8d35\u5983', '\u8d35\u5983', '\u8d35\u4eba', '\u5e38\u5728', '\u7b54\u5e94', '\u5a4f\u5983', '\u5983', '\u592a\u540e'],
+        titleKeywords: ['皇贵妃', '贵妃', '贵人', '常在', '答应', '婕妤', '妃', '太后'],
         keyOffices: ['\u7687\u540e', '\u592a\u540e', '\u7687\u8d35\u5983']
       }
     });

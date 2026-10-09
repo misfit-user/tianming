@@ -148,11 +148,11 @@
         groups[key].push(t);
       });
       var typeLabels = {
-        keju: '\u79D1\u4E3E\u884C\u671D', edict: '\u957F\u671F\u8BCF\u4EE4', scheme: '\u9634\u8C0B\u5E03\u5C40(\u9690)',
+        keju: '科举进程', edict: '长期诏令', scheme: '阴谋布局(隐)',
         project: '\u5DE5\u7A0B\u00B7\u5546\u961F', pending_memorial: '\u79EF\u538B\u594F\u758F',
         faction_treaty: '\u52BF\u529B\u7EA6\u671F', npc_action: 'NPC \u957F\u671F\u884C\u52A8',
         tingyi_pending: '\u5EF7\u8BAE\u5F85\u843D\u5B9E', chaoyi_pending: '\u671D\u8BAE\u5F85\u6267\u884C',
-        dynasty_event: '\u7AF9\u4EE3\u4E8B\u4EF6', other: '\u5176\u4ED6'
+        dynasty_event: '朝代事件', other: '其他'
       };
       var lines = [];
       Object.keys(groups).forEach(function(k){
@@ -166,7 +166,7 @@
           if (t.currentStage) parts.push('\u9636\u6BB5:'+t.currentStage);
           if (t.progress != null) parts.push(t.progress+'%');
           var elapsed = (G.turn||0) - (t.startTurn||0);
-          parts.push('\u5C04\u7EC4' + elapsed + '\u56DE\u5408');
+          parts.push('历经' + elapsed + '回合');
           if (t.expectedEndTurn && t.expectedEndTurn > G.turn) parts.push('\u9884\u671F\u8FD8\u4F59 ' + (t.expectedEndTurn - G.turn) + ' \u56DE\u5408');
           if (t.nextDeadline && t.nextDeadline <= (G.turn||0)) parts.push('\u26A0\u903E\u671F');
           if (t.priority === 'high') parts.push('\u9AD8\u4F18\u5148');
@@ -175,7 +175,7 @@
         });
       });
       return '\u3010\u957F\u671F\u4E8B\u52BF\u00B7\u7F16\u5E74\u8FDB\u884C\u4E2D\u3011\n'
-           + '\u6CA1\u6709\u5B8C\u6210\u7684\u6D3B\u52A8\u5FC5\u987B\u5728\u672C\u56DE\u5408\u8BE6\u5F00\u5C31\u884C\u6216\u66F4\u65B0\u3002\u4E0D\u53EF\u5FDC\u610F\u7EC8\u65AD\u3002\u9690\u3011\u6807\u8BB0\u6761\u76EE\u5BF9\u73A9\u5BB6\u4E0D\u5C55\u793A\uFF0C\u4F46\u4F60\uFF08\u63A8\u6F14\uFF09\u77E5\u6653\u3002\n'
+           + '没有完成的活动必须在本回合继续推进或更新。不可随意中断。【隐】标记条目对玩家不展示，但你（推演）知晓。\n'
            + lines.join('\n');
     },
 
@@ -282,7 +282,7 @@
         sourceId: s.id,
         title: (s.schemer||'?') + ' \u8C0B ' + (s.target||'?'),
         actor: s.schemer || '',
-        stakeholders: s.allies ? String(s.allies).split(/[\u9017\uFF0C,]/).map(function(x){return x.trim();}).filter(Boolean) : [],
+        stakeholders: s.allies ? String(s.allies).split(/[、，,]/).map(function(x){return x.trim();}).filter(Boolean) : [],
         currentStage: s.progress || '\u915D\u917F\u4E2D',
         progress: progMap[s.progress] != null ? progMap[s.progress] : 30,
         narrative: String(s.plan||'').slice(0,80),
@@ -356,7 +356,7 @@
       var stale = cur - (t.lastUpdateTurn||t.startTurn||0);
       if (stale > 12) {
         t.status = 'stalled';
-        t.result = '\u4E45\u65E0\u66F4\u65B0\u00B7\u81EA\u52A8\u6263\u7F6E';
+        t.result = '久无更新·自动搁置';
       }
     });
   }

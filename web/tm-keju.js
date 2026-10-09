@@ -176,7 +176,7 @@ function openKejuPanel(){
       '<p>\u2705 \u79D1\u4E3E\u5236\u5EA6\u5DF2\u542F\u7528</p>'+
       '<p>\u8003\u8BD5\u95F4\u9694\uFF1A'+(P.keju.examIntervalNote||'\u7531\u671D\u5EF7\u51B3\u5B9A')+'</p>'+
       (P.keju.examSubjects?'<p>\u8003\u8BD5\u79D1\u76EE\uFF1A'+escHtml(P.keju.examSubjects)+'</p>':'')+
-      (P.keju.quotaPerExam?'<p>\u6BCF\u79D1\u53D6\u58EB\uFF1A'+P.keju.quotaPerExam+'\u4EBA\u8FDB\u5165\u6BBE\u8BD5</p>':'')+
+      (P.keju.quotaPerExam?'<p>每科取士：'+P.keju.quotaPerExam+'人进入殿试</p>':'')+
       (P.keju.specialRules?'<p>\u7279\u6B8A\u89C4\u5219\uFF1A'+escHtml(P.keju.specialRules)+'</p>':'')+
       '<p>\u4E0A\u6B21\u79D1\u4E3E\uFF1A'+(_kejuFmtDate(P.keju.lastExamDate)||'\u4ECE\u672A\u4E3E\u529E')+'</p>';
 
@@ -388,13 +388,13 @@ function resolveKejuCouncilResult(councilSupport) {
   bg.innerHTML = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:10px;padding:1.4rem 1.6rem;max-width:480px;">'+
     '<div style="font-size:1.08rem;color:var(--gold);font-weight:700;margin-bottom:0.8rem;">\u3014\u671D\u8BAE\u7ED3\u679C\uFF1A\u7B79\u529E\u79D1\u4E3E\u3015</div>'+
     '<div style="font-size:0.85rem;color:var(--txt-s);margin-bottom:0.6rem;line-height:1.7;">'+
-      '\u652F\u6301\u5EA6\uFF1A' + Math.round(councilSupport*100) + '% / \u9605\u9608 ' + Math.round(threshold*100) + '%\u00B7' +
+      '支持度：' + Math.round(councilSupport*100) + '% / 阈值 ' + Math.round(threshold*100) + '%·' +
       (passed ? '<span style="color:var(--celadon-400);">\u5DF2\u901A\u8FC7</span>' : '<span style="color:var(--vermillion-400);">\u672A\u901A\u8FC7</span>') +
       '<br>' + libuTip +
     '</div>'+
     '<div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">'+
       (passed ? '<button class="bt bp" onclick="startKejuByMethod(\'council\');this.closest(\'div[style*=fixed]\').remove();">\u4F9D\u8BAE\u542F\u52A8 (\u65E0\u60E9\u7F5A)</button>'
-              : '<button class="bt bp" onclick="startKejuByMethod(\'edict\');this.closest(\'div[style*=fixed]\').remove();">\u4E0B\u8BCF\u5F3A\u63A8 (\u76AE\u5A01-10 \u76AE\u6743-5)</button>'+
+              : '<button class="bt bp" onclick="startKejuByMethod(\'edict\');this.closest(\'div[style*=fixed]\').remove();">下诏强推 (皇威-10 皇权-5)</button>'+
                 '<button class="bt" style="color:var(--vermillion-400);" onclick="startKejuByMethod(\'defy\');this.closest(\'div[style*=fixed]\').remove();">\u9006\u4F17\u8BAE\u5F3A\u63A8 (\u91CD\u60E9)</button>') +
       '<button class="bt" onclick="this.closest(\'div[style*=fixed]\').remove();GM.keju._pendingProposal.resolved=true;toast(\'\u7F62\u4E0D\u8BAE\u4E86\');">\u7F62\u8BAE</button>'+
     '</div></div>';
@@ -536,7 +536,7 @@ function _kejuSettleLocalCosts(exam) {
     }
   });
   if (shortfallProvinces.length) {
-    _adjustMinxin(-2, '\u79D1\u4E3E\u00B7\u5730\u65B9\u7ECF\u8D39\u65ED\u4E0D\u8DB3\u00B7' + shortfallProvinces.slice(0,3).join('\u3001'));
+    _adjustMinxin(-2, '科举·地方经费不足·' + shortfallProvinces.slice(0,3).join('、'));
   }
 }
 
@@ -551,7 +551,7 @@ function _kejuSettleProvincialCosts(exam) {
     if (!_kejuDeductFromDivision(prov, perProv)) {
       // 回落无上级·本省预选减半
       prov._kejuPreliminaryHalved = true;
-      _adjustMinxin(-1, '\u4E61\u8BD5\u7ECF\u8D39\u65ED\u4E0D\u8DB3\u00B7' + prov.name);
+      _adjustMinxin(-1, '乡试经费不足·' + prov.name);
     }
   });
 }
@@ -570,7 +570,7 @@ async function _kejuGenChiefExaminerMemorial(exam) {
   var era = (P.dynasty || P.era || '');
   var partyCtx = examiner.party && examiner.party !== '无党派' ? ('\u4E3B\u8003\u5B98\u515A\u6D3E\uFF1A' + examiner.party + '\n') : '';
   var stanceCtx = examiner.stance ? ('\u7ACB\u573A\uFF1A' + examiner.stance + '\n') : '';
-  var prompt = '\u4F60\u6263\u5F17\u4F60\u662F' + era + '\u79D1\u4E3E\u4F1A\u8BD5\u4E3B\u8003\u5B98 ' + exam.chiefExaminer +
+  var prompt = '你是' + era + '科举会试主考官 ' + exam.chiefExaminer +
     '\uFF08' + (examiner.officialTitle || examiner.title || '') + '\uFF09\u3002\u8BF7\u5411\u7687\u5E1D\u4E0A\u9898\u672C\uFF0C\u62DF\u5B9A 3 \u9053\u4F1A\u8BD5\u5907\u9009\u9898\u76EE\u3002\n\n' +
     partyCtx + stanceCtx +
     '\u667A\u8C0B' + (examiner.intelligence || 70) + '\u3001\u6027\u683C' + (examiner.personality || '') + '\n' +
@@ -599,10 +599,10 @@ async function _kejuGenChiefExaminerMemorial(exam) {
       var topicsSum = exam.huishiTopicCandidates.slice(0,3).map(function(c,i){return (i+1)+'.'+(c.topic||c).slice(0,40);}).join(' | ');
       _kejuWriteJishi('\u4E3B\u8003\u9898\u672C', exam.chiefExaminer + '\u4E0A\u9898\u672C', topicsSum);
     }
-    if (typeof addEB === 'function') addEB('\u79D1\u4E3E', exam.chiefExaminer + '\u4E0A\u4F1A\u8BD5\u9898\u672C\u00B7\u5F85\u9662\u4E0B\u9605\u65B0');
+    if (typeof addEB === 'function') addEB('科举', exam.chiefExaminer + '上会试题本·待陛下阅定');
     // 主考官 NPC 记忆
     if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-      NpcMemorySystem.remember(exam.chiefExaminer, '\u4E3A\u672C\u79D1\u4F1A\u8BD5\u62DF\u9898\u00B7\u4E0A\u9898\u672C\u4E8E\u9661\u4E0B', '\u5FD7', 6);
+      NpcMemorySystem.remember(exam.chiefExaminer, '为本科会试拟题·上题本于陛下', '志', 6);
     }
   } catch(e) {
     console.warn('[科举·E1] 题本生成失败', e);
@@ -632,8 +632,8 @@ function kejuConsultCourtier() {
 function kejuConsultGuanGe() {
   var exam = P.keju.currentExam;
   if (!exam) return;
-  var topic = exam.playerQuestion || '\u6BBE\u8BD5\u7B56\u95EE';
-  var context = '\u6BBE\u8BD5\u4F59\u6B32\u4EB2\u7B56\uFF1A\n' + topic.slice(0, 200);
+  var topic = exam.playerQuestion || '殿试策问';
+  var context = '殿试余欲亲策：\n' + topic.slice(0, 200);
   // 筛馆阁·内阁大学士+翰林院+礼部
   var guanGeChars = (GM.chars || []).filter(function(c){
     if (!c || c.alive === false) return false;
@@ -642,12 +642,12 @@ function kejuConsultGuanGe() {
   }).slice(0, 6);
 
   if (typeof openWenduiPanel === 'function') {
-    openWenduiPanel({ initialTopic: '\u54A8\u8BE2\u6BBE\u8BD5\u62DF\u9898', contextHint: context, suggestedChars: guanGeChars.map(function(c){return c.name;}) });
+    openWenduiPanel({ initialTopic: '咨询殿试拟题', contextHint: context, suggestedChars: guanGeChars.map(function(c){return c.name;}) });
   } else if (typeof _ty2_openSetup === 'function') {
     _ty2_openSetup();
     setTimeout(function(){
       var topicEl = _$('ty2-topic');
-      if (topicEl) topicEl.value = '\u54A8\u8BE2\u6BBE\u8BD5\u7B56\u95EE\uFF1A' + topic.slice(0,60);
+      if (topicEl) topicEl.value = '咨询殿试策问：' + topic.slice(0,60);
     }, 100);
   }
   toast('\u2709 \u5DF2\u5F00\u95EE\u5BF9\u00B7\u5F85\u9986\u9601\u610F\u89C1');
@@ -698,7 +698,7 @@ function openDianshiDelegatePicker() {
     return c && c.alive !== false && !c.isPlayer && c.officialTitle && _isAtCapital(c)
            && _isPlayerFactionChar(c);  // ★ 仅本朝/玩家势力官员可代主殿试
   });
-  if (!candidates.length) { toast('\u4EAC\u4E2D\u65E0\u5728\u4EFB\u5B98\u5458\u53EF\u4EE3\u4E3B\u6BBE\u8BD5'); return; }
+  if (!candidates.length) { toast('京中无在任官员可代主殿试'); return; }
   // 排序：品级→智力
   candidates.sort(function(a,b){
     var ra = _parseRankNumber ? _parseRankNumber(a) : 9;
@@ -710,8 +710,8 @@ function openDianshiDelegatePicker() {
   bg.id = 'dianshi-delegate-picker';
   bg.style.cssText = 'position:fixed;inset:0;z-index:4850;background:rgba(0,0,0,0.78);display:flex;align-items:center;justify-content:center;';
   var html = '<div style="background:var(--bg-1);border:1px solid var(--gold-d);border-radius:10px;padding:1.2rem 1.4rem;max-width:680px;width:90%;max-height:80vh;overflow-y:auto;">'+
-    '<div style="font-size:1.08rem;color:var(--gold);font-weight:700;margin-bottom:0.6rem;">\u3014\u9009\u4EFB\u6BBE\u8BD5\u4EE3\u4E3B\u4EBA\u3015</div>'+
-    '<div style="font-size:0.8rem;color:var(--txt-d);margin-bottom:0.8rem;line-height:1.7;">\u7687\u5E1D\u4E0D\u5728\u4EAC\u5E08\u00B7\u9700\u9009\u5728\u4EAC\u5B98\u5458\u4EE3\u4E3B\u6BBE\u8BD5\u3002\u4E0D\u540C\u8EAB\u4EFD\u5F71\u54CD\u5929\u5B50\u95E8\u751F\u5173\u7CFB\u3002</div>'+
+    '<div style="font-size:1.08rem;color:var(--gold);font-weight:700;margin-bottom:0.6rem;">〔选任殿试代主人〕</div>'+
+    '<div style="font-size:0.8rem;color:var(--txt-d);margin-bottom:0.8rem;line-height:1.7;">皇帝不在京师·需选在京官员代主殿试。不同身份影响天子门生关系。</div>'+
     '<input id="delegate-search" placeholder="\u641C\u7D22\u59D3\u540D/\u5B98\u804C" style="width:100%;padding:5px 8px;margin-bottom:0.5rem;background:var(--bg-3);border:1px solid var(--bdr);color:var(--txt);" oninput="_scheduleDelegateFilter(this.value)">'+
     '<div id="delegate-list" style="max-height:360px;overflow-y:auto;">';
   candidates.forEach(function(c){
@@ -809,8 +809,8 @@ function _pickDianshiDelegate(name) {
   } else if (lbl === '武将') {
     // 武将代主·皇威-2 (D1 加强)·民心-2·礼部抗议
     if (typeof _adjustHuangwei === 'function') _adjustHuangwei(-2, '武将代主');
-    _adjustMinxin(-2, '武将代主殾试·礼部抗议');
-    if (typeof addEB === 'function') addEB('科举', '礼部大臣抗议武将主殾试');
+    _adjustMinxin(-2, '武将代主殿试·礼部抗议');
+    if (typeof addEB === 'function') addEB('科举', '礼部大臣抗议武将主殿试');
   } else if (lbl === '司礼监') {
     // v7.1·D4 第 7 类·司礼监代主·明清专有·宦党擅权
     // TODO·I1 GM._eunuchInterference 实现后接·宦党 prestige+10·反宦联盟 enmity+15
@@ -823,14 +823,14 @@ function _pickDianshiDelegate(name) {
     _kjUpdateFactionTension({ party: c.party, delta: +3, reason: '代主=主考·权位重叠' });
     if (typeof toast === 'function') toast('⚠ 代主即主考·议政忌惮');
   }
-  toast('\u5DF2\u4EFB '+name+' \u4E3A\u6BBE\u8BD5\u4EE3\u4E3B');
+  toast('已任 '+name+' 为殿试代主');
   // v5·纪事 + NPC 记忆
-  if (typeof _kejuWriteJishi === 'function') _kejuWriteJishi('\u59D4\u4EFB\u6BBE\u8BD5\u4EE3\u4E3B', name + '\u00B7' + lbl, '\u7687\u5E1D\u4E0D\u5728\u4EAC\u5E08\u00B7\u6388\u6743\u4EE3\u4E3B');
+  if (typeof _kejuWriteJishi === 'function') _kejuWriteJishi('委任殿试代主', name + '·' + lbl, '皇帝不在京师·授权代主');
   if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-    NpcMemorySystem.remember(name, '\u8499\u7687\u5E1D\u59D4\u4EFB\u4EE3\u4E3B\u6BBE\u8BD5\u00B7' + lbl + '\u00B7\u4E3A\u663E\u8D35\u4E4B\u6743', '\u5FD7', 8, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B');
+    NpcMemorySystem.remember(name, '蒙皇帝委任代主殿试·' + lbl + '·为显贵之权', '志', 8, (P.playerInfo && P.playerInfo.characterName) || '陛下');
   }
   if (typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-    AffinityMap.add(name, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B', 4, '\u7687\u5E1D\u6388\u6BBE\u8BD5\u4EE3\u4E3B\u4E4B\u8363');
+    AffinityMap.add(name, (P.playerInfo && P.playerInfo.characterName) || '陛下', 4, '皇帝授殿试代主之荣');
   }
   var pp = document.getElementById('dianshi-delegate-picker'); if (pp) pp.remove();
 }
@@ -884,19 +884,19 @@ function _kejuNotifyUrgentStage(exam, stage) {
   var cfg = {
     examiner_select: {
       title: '\u793C\u90E8\u5019\u65E8\u00B7\u9009\u4EFB\u672C\u79D1\u4E3B\u8003',
-      urgency: '\u4F59 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.examiner_select) || 15) + ' \u65E5\u00B7\u9010\u671F\u5C06\u7531\u5409\u90E8\u4EE3\u9009\u00B7\u6263\u7687\u5A01 3',
+      urgency: '余 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.examiner_select) || 15) + ' 日·逾期将由吏部代选·扣皇威 3',
       action: '\u5373\u523B\u9009\u4EFB',
       color: '#B89A53'
     },
     huishi_draft: {
       title: '\u4E3B\u8003\u5B98\u5DF2\u4E0A\u9898\u672C\u00B7\u5F85\u9605\u5B9A',
-      urgency: '\u4F59 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.huishi_draft) || 20) + ' \u65E5\u00B7\u9010\u671F\u91C7\u4E3B\u8003\u9996\u9009\u00B7\u6263\u7687\u5A01 2',
+      urgency: '余 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.huishi_draft) || 20) + ' 日·逾期采主考首选·扣皇威 2',
       action: '\u5373\u523B\u5BA1\u9605',
       color: '#B89A53'
     },
     dianshi_draft: {
-      title: '\u6BBE\u8BD5\u5FC5\u7531\u5929\u5B50\u4EB2\u62DF\u7B56\u95EE',
-      urgency: '\u4F59 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.dianshi_draft) || 15) + ' \u65E5\u00B7\u9010\u671F AI \u4EE3\u62DF\u00B7\u6263\u7687\u5A01 2',
+      title: '殿试必由天子亲拟策问',
+      urgency: '余 ' + ((P.keju.stageDurationDays && P.keju.stageDurationDays.dianshi_draft) || 15) + ' 日·逾期 AI 代拟·扣皇威 2',
       action: '\u4EB2\u62DF\u7B56\u95EE',
       color: '#C44040'
     }
@@ -1027,7 +1027,7 @@ async function pickHistoricalCandidates(exam) {
   );
 
   var prompt = '\u4F60\u662F\u5386\u53F2\u8003\u636E AI\u3002\u4E3A' + (P.dynasty || P.era || '') + '\u671D ' + year +
-    ' \u5E74\u7684\u79D1\u4E3E\u6BBE\u8BD5\u68C0\u7D22\u5F53\u65F6\u53EF\u80FD\u5165\u9009\u7684\u5386\u53F2\u540D\u81E3\u8003\u751F\u3002\n\n' +
+    ' 年的科举殿试检索当时可能入选的历史名臣考生。\n\n' +
     '\u3010\u786C\u89C4\u5219\u3011\u6240\u9009\u4EBA\u9009\u5FC5\u987B\u4E3A\u5E03\u8863/\u76D1\u751F/\u4E3E\u4EBA/\u672A\u51FA\u4ED5\u7684\u4E66\u751F\u00B7\u7EDD\u4E0D\u80FD\u662F\u5DF2\u4EFB\u5B98\u804C\u8005\uFF08\u90FD\u5FA1\u53F2/\u5C1A\u4E66/\u5927\u5B66\u58EB/\u90E8\u4F8D\u90CE/\u5C06\u519B/\u6307\u6325\u4F7F/\u540E\u5983\u7B49\u5747\u4E0D\u53EF\uFF09\u3002\n' +
     '\u3010\u786C\u89C4\u5219\u3011\u6240\u9009\u4EBA\u9009\u5728\u672C\u671D\u53F2\u4E66\u4E2D\u4E0D\u80FD\u5DF2\u7ECF\u767B\u79D1\u00B7\u5FC5\u987B\u662F ' + year + ' \u5E74\u524D\u540E\u624D\u4E2D\u79D1\u6216\u5C1A\u672A\u4E2D\u79D1\u4E4B\u4EBA\u3002\n' +
     '\u65F6\u95F4\u7EA6\u675F\uFF1A' + (window ? ('\u987B\u4E3A ' + (year - window) + '~' + (year + window) + ' \u5E74\u95F4\u5386\u53F2\u6D3B\u8DC3\u7684\u4EBA\u7269') : '\u4EFB\u610F\u671D\u4EE3\u5386\u53F2\u540D\u81E3\u7686\u53EF\uFF08\u6F14\u4E49\u6A21\u5F0F\uFF09') + '\n' +
@@ -1145,7 +1145,7 @@ function _kejuSettleCentralCost(exam, stage) {
     if (typeof FiscalEngine !== 'undefined' && FiscalEngine.spendFromGuoku) FiscalEngine.spendFromGuoku({ money: amount }, '科举经费');
     exam.costsPaid.central = (exam.costsPaid.central || 0) + amount;
     exam.costsPaid['_stage_' + stage] = true;
-    if (typeof addEB === 'function') addEB('\u79D1\u4E3E\u7ECF\u8D39', '\u5E11\u5EAA\u6263 ' + amount + ' \u4E24\u00B7' + stage);
+    if (typeof addEB === 'function') addEB('科举经费', '帑廪扣 ' + amount + ' 两·' + stage);
     return { paid: amount, source: 'guoku' };
   }
   // 帑廪不足·弹窗问是否内帑补贴

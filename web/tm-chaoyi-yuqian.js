@@ -293,7 +293,7 @@ async function _yq2_oneAdvisorSpeak(name, roundNum) {
     } catch (_tcYqE) {}
   }
   var _yqDiv = addCYBubble(name, '\u2026', false);
-  try { _yq2_setSpeaker(name); if (_yqDiv && CY._yq2 && CY._yq2.candorMap && CY._yq2.candorMap[name] && CY._yq2.candorMap[name].candor <= 50) _yqDiv.classList.add('yq-guard'); } catch(_yqSpErr) {}   // \u8c01\u6df1\u8a00\u5219\u8c01\u7acb\u7ed8 + \u5766\u767d\u5ea6\u6761
+  try { _yq2_setSpeaker(name); if (_yqDiv && CY._yq2 && CY._yq2.candorMap && CY._yq2.candorMap[name] && CY._yq2.candorMap[name].candor <= 50) _yqDiv.classList.add('yq-guard'); } catch(_yqSpErr) {}   // 谁发言则谁立绘 + 坦白度条
   try { _yq2_tagBubbleCandor(_yqDiv, candorLevel); } catch(_yqCdErr) {}   // name 行坦白度标签（对齐预览 .cand）
   var _yqBubble = _yqDiv && _yqDiv.querySelector ? _yqDiv.querySelector('.cy-bubble') : null;
   var _yqRaf = false;

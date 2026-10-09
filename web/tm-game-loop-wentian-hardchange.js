@@ -1106,7 +1106,7 @@ function _wtClearChatLog() {
 
 /** 清除所有玩家指令 */
 function _wtClearDirectives() {
-  if (!confirm('\u786E\u5B9A\u6E05\u9664\u6240\u6709\u7384\u5929\u6307\u4EE4\uFF1F')) return;
+  if (!confirm('确定清除所有问天指令？')) return;
   GM._playerDirectives = [];
   if (!GM._wentianHistory) GM._wentianHistory = [];
   GM._wentianHistory.push({ role: 'system', content: '\u6240\u6709\u6307\u4EE4\u5DF2\u6E05\u9664\u3002' });

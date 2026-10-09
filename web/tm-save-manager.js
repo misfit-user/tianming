@@ -363,7 +363,7 @@ var SaveManager = {
                   if (found.length === 0) toast('\u26A0 \u5199\u5165\u540E\u672A\u5728 IDB \u627E\u5230\u00B7\u53EF\u80FD\u7F13\u5B58\u95EE\u9898');
                 });
               }, 100);
-              toast('\u2705 \u5B58\u6863\u5DF2\u5F52\u6863\u5230\u5361\u4F4D ' + (slotId + 1));
+              toast('\u2705 存档已归档到槽位 ' + (slotId + 1));
               resolve(true);
             } else {
               toast('\u274C \u5199\u5165 IndexedDB \u5931\u8D25');

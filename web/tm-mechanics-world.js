@@ -479,7 +479,7 @@ function inferBloodRelations(familyName) {
     [0, 1].forEach(function(idx) {
       var uncle = parts[idx], sibling = parts[1 - idx];
       (childrenMap[sibling] || []).forEach(function(nephew) {
-        if (!getFamilyRelation(uncle, nephew)) setFamilyRelation(familyName, uncle, nephew, '\u53D4\u4FA8');
+        if (!getFamilyRelation(uncle, nephew)) setFamilyRelation(familyName, uncle, nephew, '叔侄');
       });
     });
   });
@@ -536,7 +536,7 @@ var _DEFAULT_HAREM_RANKS = [
   {id:'empress', name:'\u7687\u540E', level:0, icon:'\u{1F451}'},
   {id:'consort_noble', name:'\u8D35\u5983', level:1, icon:'\u{1F490}'},
   {id:'consort', name:'\u5983', level:2, icon:'\u{1F490}'},
-  {id:'concubine', name:'\u5ABE', level:3, icon:'\u{1F338}'},
+  {id:'concubine', name:'嫔', level:3, icon:'\u{1F338}'},
   {id:'attendant', name:'\u8D35\u4EBA', level:4, icon:'\u{1F33C}'},
   {id:'maid', name:'\u5E38\u5728', level:5, icon:'\u{1F33C}'}
 ];
@@ -564,7 +564,7 @@ function getHaremRankName(rankId) {
   var r = ranks.find(function(x) { return x.id === rankId; });
   if (r) return r.name;
   // 兼容旧数据的英文id
-  var fallback = {'empress':'\u7687\u540E','queen':'\u738B\u540E','consort':'\u5983','concubine':'\u5ABE','attendant':'\u4F8D\u59BE'};
+  var fallback = {'empress':'皇后','queen':'王后','consort':'妃','concubine':'嫔','attendant':'侍妾'};
   return fallback[rankId] || rankId;
 }
 
@@ -615,7 +615,7 @@ async function _aiGenerateHaremRanks() {
     var prompt = '\u8BF7\u6839\u636E"' + era + '"\u671D\u4EE3\uFF0C\u8FD4\u56DE\u8BE5\u671D\u4EE3\u7684\u540E\u5BAB\u4F4D\u4EFD\u7B49\u7EA7\u5236\u5EA6\u3002\n';
     prompt += '\u8FD4\u56DEJSON\u6570\u7EC4\uFF0C\u6309\u5C0A\u5351\u6392\u5E8F\uFF1A[{"id":"english_id","name":"\u4E2D\u6587\u540D","level":0},...]\n';
     prompt += 'level=0\u662F\u6700\u9AD8\u4F4D\uFF08\u7687\u540E/\u738B\u540E\uFF09\uFF0C\u5F80\u4E0B\u9012\u589E\u3002\n';
-    prompt += '\u793A\u4F8B\uFF08\u5510\u671D\uFF09\uFF1A[{"id":"empress","name":"\u7687\u540E","level":0},{"id":"guifei","name":"\u8D35\u5983","level":1},{"id":"shufei","name":"\u6DD1\u5983","level":1},{"id":"defei","name":"\u5FB7\u5983","level":1},{"id":"xiangfei","name":"\u8D24\u5983","level":1},{"id":"pin","name":"\u5ABE","level":2},{"id":"jieyu","name":"\u5A55\u5983","level":3},{"id":"meiren","name":"\u7F8E\u4EBA","level":4},{"id":"cairen","name":"\u624D\u4EBA","level":5}]\n';
+    prompt += '示例（唐朝）：[{"id":"empress","name":"皇后","level":0},{"id":"guifei","name":"贵妃","level":1},{"id":"shufei","name":"淑妃","level":1},{"id":"defei","name":"德妃","level":1},{"id":"xiangfei","name":"贤妃","level":1},{"id":"pin","name":"嫔","level":2},{"id":"jieyu","name":"婕妤","level":3},{"id":"meiren","name":"美人","level":4},{"id":"cairen","name":"才人","level":5}]\n';
     prompt += '\u53EA\u8FD4\u56DEJSON\uFF0C\u4E0D\u8981\u89E3\u91CA\u3002';
     var result = await callAI(prompt, 500);
     var parsed = extractJSON(result);
@@ -710,7 +710,7 @@ function updateFamilyBonds() {
       var cap = 25, strength = 1;
       if (rel === '\u7236\u5B50' || rel === '\u6BCD\u5B50') { cap = 35; strength = 2; }
       else if (rel === '\u5144\u5F1F' || rel === '\u5144\u59B9') { cap = 25; strength = 1; }
-      else if (rel === '\u53D4\u4FA8') { cap = 15; strength = 1; }
+      else if (rel === '叔侄' || rel === '叔侨') { cap = 15; strength = 1; }
       // 但如果已经有仇（cur < -10），不再自动修复——家族内部矛盾由AI驱动
       if (cur < -10) return;
       if (cur < cap) AffinityMap.add(parts[0], parts[1], strength, rel);

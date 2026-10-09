@@ -423,14 +423,14 @@
       (opts.age ? '\u3010\u5DF2\u77E5\u5E74\u9F84\u3011' + opts.age + '\n' : '') +
       (opts.party ? '\u3010\u5DF2\u77E5\u515A\u6D3E\u3011' + opts.party + '\n' : '') +
       (opts.faction ? '\u3010\u5DF2\u77E5\u52BF\u529B\u3011' + opts.faction + '\n' : '') +
-      (opts.assignPost ? '\u3010\u7686\u5C06\u88AB\u4EFB\u547D\u3011' + opts.assignPost + '\n' : '') +
+      (opts.assignPost ? '【即将被任命】' + opts.assignPost + '\n' : '') +
       (sourceContext ? '\u3010\u6765\u6E90\u4E0A\u4E0B\u6587\u3011' + sourceContext.slice(0, 700) + '\n' : '') +
       '\n\u3010\u6838\u5B9E\u8981\u6C42\u3011\n' +
       '1. \u9996\u5148\u5224\u65AD\u6B64\u4EBA\u662F\u5426\u4E3A\u771F\u5B9E\u5386\u53F2\u4EBA\u7269\u3002\u82E5\u662F\u00B7\u4E25\u683C\u6309\u53F2\u6599\u51C6\u786E\u751F\u6210\u3002\n' +
-      '2. \u82E5\u6B64\u4EBA\u4E8E ' + year + ' \u5E74\u5DF2\u4EE1\u6216\u5C1A\u672A\u51FA\u751F\u00B7\u8FD4\u56DE {"error":"\u53F2\u5B9E\u4E0D\u53EF\u73B0"}\n' +
+      '2. 若此人于 ' + year + ' 年已仙逝或尚未出生·返回 {"error":"史实不可现"}\n' +
       '3. \u5E74\u9F84\u5FC5\u987B\u5408 ' + year + ' \u5E74\u53F2\u5B9E\uFF08\u82E5\u6B64\u4EBA\u751F\u4E8E 1600 \u5E74\u00B7' + year + '=1627 \u5219\u5E74 27\uFF09\n' +
       '4. \u771F\u5B9E\u5386\u53F2\u4EBA\u7269\u5FC5\u9700 shiliao \u5B57\u6BB5\u00B7\u53F2\u4E66\u539F\u6587\u6458\u5F15 80-200 \u5B57\n' +
-      '5. \u867A\u6784\u4EBA\u7269\u59D3\u540D/\u7C4D\u8D2F/\u6027\u683C\u987B\u7B26\u5408\u8BE5\u671D\u4EE3\u5730\u57DF\u7279\u5F81\n\n' +
+      '5. 虚构人物姓名/籍贯/性格须符合该朝代地域特征\n\n' +
       '【★ 史实优先原则 ★】真实历史人物·能力数值与五常须严格按其史书记载推导·下表只是兜底参考·与史册冲突时一律以史册为准。\n' +
       '步骤零·先列史评关键词（仅历史人物·虚构跳过）：\n' +
       '  · 在内心列出 3-5 个史书评价此人的关键词（如黄道周："硕儒/义士/礼学/刚直/不屈"·张居正："权相/能吏/苛察/改革/夺情"）\n' +
@@ -498,7 +498,7 @@
       '  "ethnicity": "\u6C49/\u6EE1/\u8499/\u7B49",\n' +
       '  "origin": "\u7C4D\u8D2F\u5982\u798F\u5EFA\u5357\u5B89",\n' +
       '  "birthplace": "\u51FA\u751F\u5730",\n' +
-      '  "location": "\u5F53\u524D\u6240\u5728\u5730(\u5982\u5728\u4EFB\u4EC5\u586B\u4EFB\u6240\uFF1B\u5F85\u5B85\u5219\u586B\u5BB6\u4E61)",\n' +
+      '  "location": "当前所在地(如在任仅填任所；闲居则填家乡)",\n' +
       '  "faction": "★必须严格等于下列纯势力名之一·禁止括号/领袖/地域装饰·只填纯名字: [' + (_facNamesOnly.length ? _facNamesOnly.join(' | ') : '中立') + ']",\n' +
       '  "historicalFaction": "★史实中此人原属势力名称·即使该势力不在当前清单也照实填(如范文程→后金·岳飞→南宋·诸葛亮→蜀汉·秦桧→南宋)·虚构人物或平民隐士留空",\n' +
       '  "class": "\u58EB\u65CF/\u5BD2\u95E8/\u5546\u8D3E/\u5B97\u5BA4/\u7B49",\n' +
@@ -506,7 +506,7 @@
       '  "appearance": "\u5916\u8C8C 40-80 \u5B57",\n' +
       '  "charisma": 40-90,\n' +
       '  "bio": "\u751F\u5E73 300-600 \u5B57\u00B7\u5305\u542B\u51FA\u8EAB/\u6C0F\u65CF/\u65E9\u5E74/\u5E08\u627F/\u4E60\u4E1A/\u6210\u5C31\u3002\u82E5\u662F\u5386\u53F2\u4EBA\u7269\u00B7\u672B\u6BB5\u5355\u5217 \u3010\u53F2\u6599\u51FA\u5904\u3011+ shiliao \u539F\u6587",\n' +
-      '  "shiliao": "\u5386\u53F2\u4EBA\u7269\u586B\u53F2\u4E66\u539F\u6587\u3001\u867A\u6784\u4EBA\u7269\u7A7A\u5B57\u7B26\u4E32",\n' +
+      '  "shiliao": "历史人物填史书原文、虚构人物空字符串",\n' +
       '  "personalGoal": "\u5FD7\u5411 10-30 \u5B57",\n' +
       '  "abilityRationale": "用 30-80 字说明此人数值依据：史评/履历/身份如何对应十维能力",\n' +
       '  "statArchetype": "military|scholar|reformer|corrupt|eunuch|regent|clean|loyal|diplomat|merchant|admin|normal",\n' +
@@ -535,7 +535,7 @@
       '  "hobbies": ["\u68CB","\u4E66"],\n' +
       '  "party": "' + (opts.party || '') + '(\u82E5\u672C\u671D\u58EB\u5927\u592B\u4ECE\u3010\u5F53\u524D\u515A\u6D3E\u3011\u9009\u4E00\u4E2A\u00B7\u6216\u586B\u7A7A)",\n' +
       '  "relations": {"\u5DF2\u6709\u67D0\u4EBA":{"affinity":0-100,"trust":0-100,"respect":0-100,"fear":0-100,"hostility":0-100,"labels":["\u540C\u4E61","\u5E08\u751F"]}},\n' +
-      '  "privateWealthHint": "\u6309\u8EAB\u4EFD\u4F30\u8BA1\u6D41\u52A8\u8D22\u4EA7\u00B7\u6570\u5B57\u5355\u4F4D\u4E24(\u767D\u9298\u5B98\u5219\u6570\u5343-\u6570\u4E07\u00B7\u8FB9\u5C06 2-10 \u4E07\u00B7\u8D2A\u5B98 20+ \u4E07\u00B7\u5E73\u6C11 <1000)",\n' +
+      '  "privateWealthHint": "按身份估计流动财产·数字单位两(清官则数千-数万·边将 2-10 万·贪官 20+ 万·平民 <1000)",\n' +
       '  "timeAnomaly": false\n' +
       '}\n\u53EA\u8F93\u51FA JSON\u3002';
 
@@ -799,13 +799,13 @@
 
         // 好感加成
         if (opts.affinityBonus && typeof AffinityMap !== 'undefined' && AffinityMap.add) {
-          var playerName = (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B';
+          var playerName = (P.playerInfo && P.playerInfo.characterName) || '陛下';
           AffinityMap.add(name, playerName, opts.affinityBonus, reason);
         }
 
         // NPC 记忆
         if (typeof NpcMemorySystem !== 'undefined' && NpcMemorySystem.remember) {
-          NpcMemorySystem.remember(name, reason + '\u00B7\u8499\u7687\u5E1D\u77E5\u9047', '\u656C', 7, (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B');
+          NpcMemorySystem.remember(name, reason + '·蒙皇帝知遇', '敬', 7, (P.playerInfo && P.playerInfo.characterName) || '陛下');
         }
 
         // 任命官职（若有）
@@ -820,7 +820,7 @@
         }
 
         delete GM._generatingChars[name];
-        _dbg('[\u89D2\u8272\u81EA\u751F\u6210] \u5B8C\u6210\uFF1A' + name + '\u00B7' + (data.isHistorical ? '\u5386\u53F2\u4EBA\u7269' : '\u867A\u6784\u4EBA\u7269') + '\u00B7' + _faction + '\u00B7\u79C1\u4EA7' + _parsedCash);
+        _dbg('[角色自生成] 完成：' + name + '·' + (data.isHistorical ? '历史人物' : '虚构人物') + '·' + _faction + '·私产' + _parsedCash);
         return newChar;
       } catch(e) {
         lastErr = e;
@@ -941,7 +941,7 @@
       if (typeof toast === 'function') toast(name + ' \u5DF2\u5728\u4EBA\u7269\u5FD7');
       return findCharByName(name);
     }
-    if (typeof showLoading === 'function') showLoading('\u5F81\u8BCF ' + name + ' \u5165\u671D\u00B7\u4E0A\u7B79\u5BB6\u7545\u2026\u2026', 50);
+    if (typeof showLoading === 'function') showLoading('征诏 ' + name + ' 入朝·查访家世……', 50);
     try {
       var newChar = await aiGenerateCompleteCharacter(name, {
         reason: '\u7687\u5E1D\u5F81\u8BCF\u8BCF',
@@ -973,8 +973,8 @@
 
   /** 吏部/礼部尚书关系调整 */
   function _affectBureauchiefs(delta, reason) {
-    var playerName = (P.playerInfo && P.playerInfo.characterName) || '\u9661\u4E0B';
-    ['\u5409\u90E8\u5C1A\u4E66', '\u793C\u90E8\u5C1A\u4E66'].forEach(function(titleKey){
+    var playerName = (P.playerInfo && P.playerInfo.characterName) || '陛下';
+    ['吏部尚书', '礼部尚书'].forEach(function(titleKey){
       var ch = (GM.chars||[]).find(function(c){
         if (!c || c.alive === false) return false;
         var t = c.officialTitle || c.title || '';
@@ -992,7 +992,7 @@
     var results = [];
     var patterns = [
       // 征召 徐鸿渐 入朝
-      /(?:\u5F81\u53EC|\u5F81|\u8BCF)(?:\s*)([^\uff0c\uff0e\u3002\uff01\uff1f\u3001\s，。]{2,4})(?:\s*)(?:\u5165\u671D|\u5165\u5173|\u5165\u9663|\u4E3A\u58EB|\u5165\u90FD|\u5F92\u5165)/g,
+      /(?:征召|征|诏)(?:\s*)([^，．。！？、\s，。]{2,4})(?:\s*)(?:入朝|入关|入阵|为士|入都|徒入)/g,
       // 诏 郑成功 为 福建巡抚 / 诏 X 为 Y
       /\u8BCF(?:\s*)([^\uff0c\uff0e\u3002\uff01\uff1f\u3001\s，。]{2,4})(?:\s*)\u4E3A(?:\s*)([^\uff0c\uff0e\u3002\uff01\uff1f\u3001\s，。]{2,8})/g,
       // 起复 袁崇焕
@@ -1132,7 +1132,7 @@
         var st = document.getElementById('chargen-status');
         if (st) {
           if (cur < 25) st.textContent = '\u68C0\u7D22\u53F2\u6599\u4E0E\u4E0A\u4E0B\u6587\u2026';
-          else if (cur < 50) st.textContent = '\u9274\u522B\u771F\u5047\u00B7\u6838\u5408\u5E74\u9F84\u2026';
+          else if (cur < 50) st.textContent = '鉴别真假·核对年龄…';
           else if (cur < 70) st.textContent = '\u4EE4\u94E8\u66F9\u8BB0\u4E0B\u7C4D\u8D2F\u5BB6\u8C31\u4E0E\u751F\u5E73\u2026';
           else st.textContent = '\u8BB0\u8F7D\u8EAB\u4EFD\u00B7\u54C1\u8BC4\u6027\u60C5\u2026';
         }
@@ -1261,11 +1261,11 @@
   }
 
   /** 简易人名提取：基于姓氏字典+2-4 字模式 */
-  var COMMON_SURNAMES = '\u8D75\u94B1\u5B59\u674E\u5468\u5434\u90D1\u738B\u51AF\u9648\u80CE\u536B\u848B\u6C88\u97E9\u6768\u6731\u79E6\u5C24\u8BB8\u4F55\u5415\u65BD\u5F20\u5B54\u66F9\u4E25\u534E\u91D1\u9B4F\u9676\u59DC\u621A\u8C22\u90B9\u55BB\u67CF\u6C34\u7AC7\u7AE0\u4E91\u82CF\u6F58\u845B\u595A\u8303\u5F6D\u90CE\u9C81\u97E6\u660C\u9A6C\u82D7\u51E4\u82B1\u65B9\u4FDE\u4EFB\u8881\u67F3\u9146\u9C8D\u53F2\u5510\u8D39\u5ED6\u5CD1\u859B\u96F7\u8D3A\u502A\u6C64\u6EE1\u4E8E\u5E24\u6BB7\u7F57\u74D5\u5176\u90DD\u4E4C\u5B89\u5E38\u4E50\u4E8E\u65F6\u5085\u76AE\u535E\u9F50\u5EB7\u4F0D\u4F59\u5143\u535C\u987E\u5B5F\u5E73\u9EC4\u548C\u7A46\u8427\u5C39\u59DA\u90B5\u6E5B\u6C6A\u7941\u6BDB\u79B9\u72C4\u7C73\u8D1D\u660E\u81E7\u8BA1\u4F0F\u6210\u6234\u8C08\u5B8B\u8305\u5E9E\u718A\u7EAA\u8212\u5C48\u9879\u795D\u8463\u6881\u675C\u962E\u84DD\u95F5\u5E2D\u5B63\u9EBB\u5F3A\u8D3E\u8DEF\u5A04\u5371\u6C5F\u7AE5\u989C\u90ED\u6885\u76DB\u6797\u5201\u953A\u5F90\u4E18\u9A86\u9AD8\u590F\u8521\u7530\u6A0A\u80E1\u51CC\u970D\u865E\u4E07\u652F\u67EF\u54B8\u7BA1\u5362\u83AB\u7ECF\u623F\u88D8\u7F2A\u5E72\u89E3\u5E94\u5B97\u4E01\u5BA3\u8D32\u9093\u90C1\u5355\u676D\u6D2A\u5305\u8BF8\u5DE6\u77F3\u5D14\u5409\u94AE\u9F9A\u7A0B\u5D47\u90A2\u6ED1\u88F4\u9646\u8363\u7FC1\u8340\u7F8A\u65BC\u60E0\u7504\u9E92\u5BB6\u5C01\u82EE\u7FF1\u5112\u65E7\u6B27\u67E5\u540E\u8346\u7EA2\u6E38\u7AFA\u6743\u9011\u76D6\u76CA\u6853\u516C\u4E07\u4FDF\u53F8\u9A6C\u4E0A\u5B98\u6B27\u9633\u590F\u4FAF\u8BF8\u845B\u95FB\u4EBA\u4E1C\u65B9\u8D6B\u8FDE\u7687\u7518\u7A7A\u53D4\u5B6B\u6155\u5BB9\u4EE4\u72D0\u949F\u79BB\u5B87\u6587\u4EBA\u957F\u5B59\u6155\u5BB9\u9C9C\u4E8E\u95FE\u4E18\u53F8\u5F92\u53F8\u7A7A\u4E38\u4E0A\u5B98\u6B27\u9633';
+  var COMMON_SURNAMES = '赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜戚谢邹喻柏水窦章云苏潘葛奚范彭郎鲁韦昌马苗凤花方俞任袁柳酆鲍史唐费廖岑薛雷贺倪汤满于滕殷罗毕郝乌安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵湛汪祁毛禹狄米贝明臧计伏成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄危江童颜郭梅盛林刁锺徐丘骆高夏蔡田樊胡凌霍虞万支柯咸管卢莫经房裘缪干解应宗丁宣贲邓郁单杭洪包诸左石崔吉钮龚程嵇邢滑裴陆荣翁荀羊於惠甄曲家封芮羿储靳欧查后荆红游竺权逯盖益桓公万俟司马上官欧阳夏侯诸葛闻人东方赫连皇甫空叔孙慕容令狐钟离宇文长孙慕容鲜于闾丘司徒司空亓上官欧阳';
   var COMMON_TITLE_KEYWORDS = ['\u5927\u4EBA', '\u5B98', '\u5C06\u519B', '\u4E1E\u76F8', '\u5927\u5B66\u58EB', '\u4F8D\u90CE', '\u5C1A\u4E66', '\u90CE\u4E2D', '\u5F52\u8BDA'];
 
   // 复姓白名单——只有开头命中复姓时才允许 3-4 字；否则姓只占 1 字
-  var COMPOUND_SURNAMES = ['\u53F8\u9A6C','\u6B27\u9633','\u590F\u4FAF','\u8BF8\u845B','\u4E0A\u5B98','\u4EE4\u72D0','\u8D6B\u8FDE','\u6155\u5BB9','\u5B87\u6587','\u4E07\u4FDF','\u7533\u5C60','\u95FB\u4EBA','\u4E1C\u65B9','\u65BC\u94B1','\u516C\u51B6','\u8F69\u8F95','\u7687\u752B','\u957F\u5B59','\u5B97\u653F','\u5BB0\u7236','\u4E1C\u90ED','\u5357\u95E8','\u897F\u95E8','\u4E1C\u95E8','\u516C\u5B59','\u4EF2\u5B59','\u590F\u8C37','\u76D6\u805B','\u6EE1\u5BB9','\u95FE\u4E18','\u6FEE\u9633','\u4E50\u6B63','\u8C37\u6881','\u5DE6\u4E18','\u4E1C\u91CC','\u5357\u5BAB','\u516C\u4E58','\u6E06\u53F0','\u7AEF\u6728','\u5DEB\u9A6C','\u5B50\u8F66','\u9885\u5B59','\u516C\u897F','\u7F8A\u820C','\u5FE0\u541B'];
+  var COMPOUND_SURNAMES = ['司马','欧阳','夏侯','诸葛','上官','令狐','赫连','慕容','宇文','万俟','申屠','闻人','东方','於钱','公冶','轩辕','皇甫','长孙','宗政','宰父','东郭','南门','西门','东门','公孙','仲孙','夹谷','盖聛','满容','闾丘','濮阳','乐正','谷梁','左丘','东里','南宫','公乘','澹台','端木','巫马','子车','颛孙','公西','羊舌','忠君'];
   // 修 bug：误抓数字/量词/机构名（其一/万两/羽林卫）
   var DIGIT_CHARS = '一二三四五六七八九十百千万亿两壹贰叁肆伍陆柒捌玖拾佰仟廿卅';
   var QUANTIFIER_TAIL_CHARS = '两钱匹石斗升亩顷丈寸里尺斤贯';
@@ -1287,7 +1287,7 @@
   };
 
   // 人名后常接的动词/助词/语气词——若 3-4 字名以此结尾，说明误抓，须截短
-  var TRAIL_TRIM_CHARS = '\u63A5\u5165\u51FA\u767B\u5949\u594F\u8BF4\u8A00\u8BF7\u4EE4\u6D3E\u9063\u4F7F\u5E26\u9886\u7387\u547D\u4F20\u544A\u62A5\u53D7\u884C\u53BB\u8FD4\u8D70\u8FDB\u9000\u7559\u5C45\u7ACB\u5750\u6B7B\u6D3B\u751F\u4EA1\u901D\u85A8\u5D29\u9635\u65A9\u6740\u64DE\u4FD8\u8D25\u80DC\u6218\u5F81\u4F10\u653B\u5B88\u5F00\u95ED\u8BFB\u5199\u4E34\u5C65\u62DC\u8C22\u62D2\u7EB3\u8D50\u8D4F\u7F5A\u8D2C\u8FC1\u6388\u53EC\u8F9E\u8BBF\u63A2\u5F80\u5F52\u8FD8\u8DEA\u4E4B\u7684\u4E4E\u4E5F\u77E3\u7109\u54C9\u8033\u800C\u4E14\u6216\u65E2\u5C24\u4E0E\u548C\u540C\u5408\u5171\u8FDE\u504C\u5E76\u4EA6\u53C8\u518D\u590D\u6108\u8D8A\u66F4\u6B64\u662F\u5373\u4E43\u4FBF\u5C31\u5219\u76D6\u975E\u5C82\u4F55\u5974\u66F0\u80E1\u5B89\u59CB\u7EC8\u672B\u521D\u5728\u4ECE\u5411\u4EE5\u4E3A\u7531\u56E0\u4E8E\u6308\u52D1\u5374\u4E26\u53EA\u4EC5\u7686\u5C1A\u53CA\u90A3\u8FD9\u770B\u95EE\u7B54\u8BAE\u79FB\u5EF7\u9047\u5F17\u6302\u79BB\u5EFA\u8D77\u79F0\u964D\u5352\u6B81\u8D74\u8FCE\u643A\u903C\u56F4\u51FB\u7834\u7F1A\u541B\u5F13\u6EE1\u653E\u53D6\u6DF1\u5FE0\u4FE1\u660E\u5FAA\u6307\u62F1\u5F80\u8FD0\u81F3\u5230\u5012\u6258\u5347\u8F6C\u5DE1\u628A\u5EA7\u6B63\u4E1C\u897F\u5357\u5317\u4E2D\u4E0A\u4E0B\u547C\u53F7\u5E9C\u6BD2\u8D23\u8BAD\u7B97';
+  var TRAIL_TRIM_CHARS = '接入出登奉奏说言请令派遣使带领率命传告报受行去返走进退留居立坐死活生亡逝薨崩阵斩杀擒俘败胜战征伐攻守开闭读写临履拜谢拒纳赐赏罚贬迁授召辞访探往归还跪之的乎也矣焉哉耳而且或既尤与和同合共连偌并亦又再复愈越更此是即乃便就则盖非岂何奴曰胡安始终末初在从向以为由因于挈勑却並只仅皆尚及那这看问答议移廷遇弗挂离建起称降卒殁赴迎携逼围击破缚君弓满放取深忠信明循指拱往运至到倒托升转巡把座正东西南北中上下呼号府毒责训算';
 
   // 判定候选是否疑似只是人名+尾部动词/助词：迭代截短直至末字不是动词/助词
   // 例："张惟贤言曰" → "张惟贤言" → "张惟贤"（单次截短不够，需循环）
@@ -1515,9 +1515,9 @@
 
   // 语境锚点：姓名后常紧跟这些动词/虚词·是抓非汉姓名(皇太极/努尔哈赤/林丹汗等)的关键
   // 匹配"[2-5字实体] + 动作词"·如"皇太极奏曰/努尔哈赤遣使/林丹汗叛"
-  var CONTEXT_VERB_PATTERNS = '\u594F\u66F0|\u594F\u79F0|\u594F\u4E8E|\u8868\u594F|\u4E0A\u8868|\u4E0A\u7591|\u4E0A\u8A00|\u4E0A\u4E66|\u8C0F\u66F0|\u8C0F\u8BF7|\u5F39\u52BE|\u5BC6\u594F|\u6539\u594F|\u884C\u6587|\u8868\u8BF7|\u4EA7\u661F|\u8A00\u4E8E|\u544A\u7262|\u544A\u78AA|\u4E0A\u8FD0|\u7591\u66F0|\u8C0F\u4E91|\u613F\u8FD0|\u76F4\u9648|\u884C\u6587|\u6C42\u89C1|\u6267\u4E8C|\u5165\u66F0|\u5165\u8003|\u4E0A\u79C9|\u8C0F\u79C1|\u4E0A\u4EE3|\u7591\u9648|\u8C0F\u8BDE|\u4EE3\u594F|\u53CC\u594F|\u66F0|\u4E91|\u7ADF|\u91CA|\u590D\u594F|\u793B\u594F';
-  var CONTEXT_ACTION_PATTERNS = '\u9063\u4F7F|\u8D77\u5175|\u53CD\u53DB|\u6295\u8BDA|\u964D\u660E|\u53DB\u660E|\u6295\u660E|\u8BE0\u6B7B|\u5F52\u9644|\u7387\u90E8|\u4F39\u5175|\u6311\u8845|\u72EF\u8FB9|\u5BC7\u8FB9|\u5165\u8FB9|\u8FDB\u8D21|\u4F20\u6A9C|\u6253\u5192\u8FEB\u8FD1|\u519B\u4F7F|\u7EB3\u522B|\u8FD4\u4EAC|\u8FDB\u4EAC|\u628A\u8FD4';
-  var CONTEXT_APPOINT_PATTERNS = '\u6388|\u62DC|\u8865|\u8C03|\u5347|\u4EFB|\u7F58|\u8FC1|\u51FA\u4EFB|\u89D2|\u8FDB|\u64E2|\u547D|\u5982|\u8D70\u8865|\u5F52\u4E8E|\u6388\u4E88';
+  var CONTEXT_VERB_PATTERNS = '奏曰|奏称|奏于|表奏|上表|上疏|上言|上书|谏曰|谏请|弹劾|密奏|改奏|行文|表请|产星|言于|告牢|告碪|上运|疏曰|谏云|愿运|直陈|行文|求见|执二|入曰|入考|上禀|谏私|上代|疏陈|谏诞|代奏|双奏|曰|云|竟|释|复奏|礻奏';
+  var CONTEXT_ACTION_PATTERNS = '遣使|起兵|反叛|投诚|降明|叛明|投明|诠死|归附|率部|伹兵|挑衅|犯边|寇边|入边|进贡|传檄|打冒迫近|军使|纳别|返京|进京|把返';
+  var CONTEXT_APPOINT_PATTERNS = '授|拜|补|调|升|任|署|迁|出任|角|进|擢|命|如|走补|归于|授予';
 
   function _extractNames(text) {
     if (!text) return [];
@@ -1597,7 +1597,7 @@
         if (!cand || cand.length < 2) continue;
         // 过滤：官职/虚词/称呼
         if (/[\u738B\u8D75\u674E\u5218]\u671D|[\u540E\u5FA1]|[\u4ED6\u6211\u4F60]/.test(cand)) continue;
-        if (/^(\u7687\u5E1D|\u9661\u4E0B|\u6211\u5927|\u672C\u671D|\u671D\u5EF7|\u540E\u5BAB|\u592A\u76D1)$/.test(cand)) continue;
+        if (/^(皇帝|陛下|我大|本朝|朝廷|后宫|太监)$/.test(cand)) continue;
         var _hitTitle = false;
         for (var _tk = 0; _tk < COMMON_TITLE_KEYWORDS.length; _tk++) {
           if (cand.indexOf(COMMON_TITLE_KEYWORDS[_tk]) >= 0) { _hitTitle = true; break; }

@@ -163,7 +163,7 @@ function renderRenwu(force){
       + '<div class="rw-stat-card s-all"><div class="rw-stat-lbl">\u5728 \u671D \u7FA4 \u81E3</div><div class="rw-stat-num">'+_stat.all+'</div><div class="rw-stat-sub">\u5458</div></div>'
       + '<div class="rw-stat-card s-civil"><div class="rw-stat-lbl">\u6587 \u81E3</div><div class="rw-stat-num">'+_stat.civil+'</div><div class="rw-stat-sub">\u6587\u5B98</div></div>'
       + '<div class="rw-stat-card s-mili"><div class="rw-stat-lbl">\u6B66 \u5C06</div><div class="rw-stat-num">'+_stat.mili+'</div><div class="rw-stat-sub">\u5C06\u9886</div></div>'
-      + '<div class="rw-stat-card s-harem"><div class="rw-stat-lbl">\u540E \u5BAB</div><div class="rw-stat-num">'+_stat.harem+'</div><div class="rw-stat-sub">\u5AD4\u59C3</div></div>'
+      + '<div class="rw-stat-card s-harem"><div class="rw-stat-lbl">后 宫</div><div class="rw-stat-num">'+_stat.harem+'</div><div class="rw-stat-sub">嫔妃</div></div>'
       + '<div class="rw-stat-card s-bu"><div class="rw-stat-lbl">\u5E03 \u8863</div><div class="rw-stat-num">'+_stat.bu+'</div><div class="rw-stat-sub">\u8349\u83BD</div></div>'
       + '<div class="rw-stat-card s-dead"><div class="rw-stat-lbl">\u5DF2 \u6B81</div><div class="rw-stat-num">'+_stat.dead+'</div><div class="rw-stat-sub">\u5352</div></div>';
   }
@@ -371,7 +371,7 @@ function _rwRenderCard(c,ctx) {
     var _heldT = Math.max(0, (GM.turn||0) - (_ch._imprisonedTurn||0));
     // 体魄沿用 _ch.health (char-economy-engine 维护)
     var _hpVal = (typeof _ch.health === 'number') ? Math.round(_ch.health) : 80;
-    _stateHtml += '<span class="rw-state-chip imprison" title="' + escHtml(_ch._imprisonReason||'\u4E0B\u72F1') + ' / \u7FA4\u62BC ' + _heldT + ' \u6708 / \u4F53\u9B44 ' + _hpVal + '">\u8BCF\u72F1</span>';
+    _stateHtml += '<span class="rw-state-chip imprison" title="' + escHtml(_ch._imprisonReason||'下狱') + ' / 羁押 ' + _heldT + ' 月 / 体魄 ' + _hpVal + '">诏狱</span>';
   }
   if (_ch._exiled || _ch.exiled) _stateHtml += '<span class="rw-state-chip exile" title="' + escHtml(_ch._exileReason||'\u6D41\u653E') + '">\u6D41\u653E</span>';
   if (_ch._fled || _ch._missing) _stateHtml += '<span class="rw-state-chip fled">\u9003\u4EA1</span>';
@@ -390,7 +390,7 @@ function _rwRenderCard(c,ctx) {
     + _rwStatRow('\u653F', 'zheng', _ch.administration)
     + _rwStatRow('\u519B', 'jun', _ch.military)
     + _rwStatRow('\u4EA4', 'jiao', _ch.diplomacy)
-    + _rwStatRow('\u62B1', 'ye', _ch.ambition)
+    + _rwStatRow('野', 'ye', _ch.ambition)
     + _rwStatRow('\u538B', 'ya', _ch.stress);
 
   // 五常
@@ -971,7 +971,7 @@ function viewRenwu(i){
   var _isLeader2 = false;
   if (GM.facs) _isLeader2 = GM.facs.some(function(f) { return f.leader === ch.name; });
   if (_rwIsPlayerConsort(ch)) {
-    var _rkDisplay = {'empress':'\u7687\u540E','queen':'\u738B\u540E','consort':'\u5983','concubine':'\u5ABE','attendant':'\u4F8D\u59BE'};
+    var _rkDisplay = {'empress':'皇后','queen':'王后','consort':'妃','concubine':'嫔','attendant':'侍妾'};
     html += '<div style="margin-bottom:0.6rem;padding:0.5rem;background:linear-gradient(135deg,rgba(232,67,147,0.05),rgba(253,121,168,0.05));border-radius:6px;border-left:3px solid #e84393;">';
     html += '<div style="font-weight:600;color:#e84393;font-size:0.85rem;margin-bottom:0.3rem;">\uD83D\uDC90 ' + (_rkDisplay[ch.spouseRank] || '\u59BB\u5BA4') + '</div>';
     if (ch.motherClan) html += '<div style="font-size:0.78rem;color:var(--txt-s);margin-bottom:0.2rem;">\u6BCD\u65CF\uFF1A<span style="color:var(--blue);">' + escHtml(ch.motherClan) + '</span></div>';
@@ -999,11 +999,11 @@ function viewRenwu(i){
   if (_isPlayerChar && GM.chars) {
     var _mySpouses = GM.chars.filter(function(c) { return c.alive !== false && _rwIsPlayerConsort(c); });
     if (_mySpouses.length > 0) {
-      html += '<div style="margin-bottom:0.6rem;"><div style="font-weight:600;color:#e84393;font-size:0.85rem;margin-bottom:0.3rem;">\uD83C\uDFDB\uFE0F \u540E\u5BAE</div>';
+      html += '<div style="margin-bottom:0.6rem;"><div style="font-weight:600;color:#e84393;font-size:0.85rem;margin-bottom:0.3rem;">\uD83C\uDFDB\uFE0F 后宫</div>';
       var _rkOrder = {'empress':0,'queen':0,'consort':1,'concubine':2,'attendant':3};
       _mySpouses.sort(function(a,b){return (_rkOrder[a.spouseRank]||9) - (_rkOrder[b.spouseRank]||9);});
       _mySpouses.forEach(function(sp) {
-        var _rkD = {'empress':'\u7687\u540E','queen':'\u738B\u540E','consort':'\u5983','concubine':'\u5ABE','attendant':'\u4F8D\u59BE'};
+        var _rkD = {'empress':'皇后','queen':'王后','consort':'妃','concubine':'嫔','attendant':'侍妾'};
         html += '<div style="display:flex;justify-content:space-between;padding:0.2rem 0;font-size:0.78rem;border-bottom:1px solid var(--bg-4);cursor:pointer;" onclick="closeGenericModal();viewRenwu(\'' + sp.name.replace(/'/g, "\\'") + '\')">';
         html += '<span><span style="color:#e84393;">' + (_rkD[sp.spouseRank] || '') + '</span> ' + escHtml(sp.name) + '</span>';
         var _childCount = sp.children ? sp.children.length : 0;
@@ -1050,7 +1050,7 @@ function viewRenwu(i){
   var _modalTitle = ch.name;
   if(ch.title) _modalTitle += ' · ' + ch.title;
   if(_rwIsPlayerConsort(ch)) {
-    var _rkT = {'empress':'\u7687\u540E','queen':'\u738B\u540E','consort':'\u5983','concubine':'\u5ABE','attendant':'\u4F8D\u59BE'};
+    var _rkT = {'empress':'皇后','queen':'王后','consort':'妃','concubine':'嫔','attendant':'侍妾'};
     _modalTitle += ' · ' + (_rkT[ch.spouseRank] || '\u59BB\u5BA4');
   }
   openGenericModal(_modalTitle, html);

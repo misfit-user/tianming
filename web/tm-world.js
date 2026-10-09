@@ -607,7 +607,7 @@ function buildAIContext(deepMode) {
         if (c.charisma && c.charisma > 75) parts.push('\u9B45\u529B\u51FA\u4F17');
         if (c.administration && c.administration > 75) parts.push('\u6CBB\u653F\u51FA\u4F17');
         if (c.stress && c.stress > 20) {
-          parts.push('\u538B\u529B' + c.stress + (c.stress > 60 ? '(\u6FC2\u5D29)' : c.stress > 40 ? '(\u7126\u8651)' : ''));
+          parts.push('压力' + c.stress + (c.stress > 60 ? '(濒崩)' : c.stress > 40 ? '(焦虑)' : ''));
         }
         if (c.personalGoal) parts.push('\u6C42:' + c.personalGoal.slice(0, 15));
         if (typeof getWuchangText === 'function') parts.push(getWuchangText(c));
@@ -1212,7 +1212,7 @@ function buildAIContext(deepMode) {
       _spouses.forEach(function(sp) {
         var parts = ['  ' + sp.name];
         if (sp.spouseRank) {
-          var _rkNames = {'empress':'\u7687\u540E/\u6B63\u59BB','queen':'\u738B\u540E','consort':'\u5983','concubine':'\u5ABE','attendant':'\u4F8D\u59BE'};
+          var _rkNames = {'empress':'皇后/正妻','queen':'王后','consort':'妃','concubine':'嫔','attendant':'侍妾'};
           parts.push(_rkNames[sp.spouseRank] || sp.spouseRank);
         }
         if (sp.motherClan) parts.push('\u6BCD\u65CF:' + sp.motherClan);
@@ -1252,7 +1252,7 @@ function buildAIContext(deepMode) {
         });
         if (_clanInfo.length > 0) {
           ctx += '  \u3010\u5916\u621A\u52BF\u529B\u3011' + _clanInfo.join('\uFF1B') + '\n';
-          ctx += '  \u203B \u5916\u621A\u662F\u540E\u5BAB\u4E0E\u524D\u671D\u7684\u6865\u6881\u3002\u5F97\u5BA0\u5983\u5ABE\u7684\u6BCD\u65CF\u5728\u671D\u4E2D\u52BF\u529B\u81A8\u80C0\uFF0C\u53EF\u80FD\u5E72\u653F/\u5F04\u6743\uFF1B\u5931\u5BA0\u8005\u6BCD\u65CF\u8870\u843D\u3002\n';
+          ctx += '  \u203B 外戚是后宫与前朝的桥梁。得宠妃嫔的母族在朝中势力膨胀，可能干政/弄权；失宠者母族衰落。\n';
         }
       }
       // 子嗣详情
@@ -1277,7 +1277,7 @@ function buildAIContext(deepMode) {
         });
         if (_allChildren.length > 1) ctx += '    \u203B \u591A\u7687\u5B50\u5E76\u5B58\u65F6\uFF0C\u50A8\u4F4D\u4E4B\u4E89\u662F\u81EA\u7136\u4E8B\u4EF6\u3002\u5404\u6BCD\u65CF\u4F1A\u4E3A\u5916\u5B59\u4E89\u53D6\u592A\u5B50\u4E4B\u4F4D\u3002\n';
       }
-      ctx += '  \u53D9\u4E8B\u4E2D\u53EF\u81EA\u7136\u878D\u5165\u540E\u5BAB\u4E8B\u52A1\uFF1A\u5AC9\u5992\u3001\u8054\u59FB\u3001\u679D\u8FB9\u98CE\u3001\u5B50\u55E3\u7EB7\u4E89\u3001\u8D24\u540E\u52B5\u8C0F\u3001\u5916\u621A\u5E72\u653F\u7B49\u3002\n';
+      ctx += '  叙事中可自然融入后宫事务：嫉妒、联姻、枕边风、子嗣纷争、贤后劝谏、外戚干政等。\n';
     }
   }
 
@@ -1288,7 +1288,7 @@ function buildAIContext(deepMode) {
       _stressChars.sort(function(a, b) { return (b.stress || 0) - (a.stress || 0); });
       ctx += '【高压角色】\n';
       _stressChars.slice(0, 5).forEach(function(c) {
-        var label = (c.stress || 0) > 70 ? '\u6FC2\u5D29' : (c.stress || 0) > 50 ? '\u7126\u8651' : '\u7D27\u5F20';
+        var label = (c.stress || 0) > 70 ? '濒崩' : (c.stress || 0) > 50 ? '焦虑' : '紧张';
         ctx += '  ' + c.name + ' \u538B\u529B' + (c.stress || 0) + '(' + label + ')';
         if (c._mood && c._mood !== '\u5E73') ctx += ' \u60C5\u7EEA:' + c._mood;
         ctx += '\n';

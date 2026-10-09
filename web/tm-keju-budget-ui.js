@@ -57,7 +57,7 @@
     var breakdown = '';
     if (local > 0)      breakdown += '<span>地方 (童/府/院) ·<strong>' + local + '</strong> 两</span>';
     if (provincial > 0) breakdown += '<span>乡试 ·<strong>' + provincial + '</strong> 两</span>';
-    if (central > 0)    breakdown += '<span>中央 (会/殾) ·<strong>' + central + '</strong> 两</span>';
+    if (central > 0)    breakdown += '<span>中央 (会/殿) ·<strong>' + central + '</strong> 两</span>';
 
     return '<div class="kj-budget-row" style="margin-bottom:0.6rem;padding:0.55rem 0.85rem;background:var(--bg-2);border-radius:6px;font-size:0.85rem;line-height:1.7;border-left:3px solid var(--gold);">'
       + '<div style="color:var(--gold);font-weight:700;margin-bottom:0.3rem;display:flex;justify-content:space-between;align-items:center;">'

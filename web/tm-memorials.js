@@ -488,7 +488,7 @@ async function genMemorialsAI(count){
         prompt += '  \u00B7 \u51C6\u594F\u7684\u2192\u5E94\u6709\u6267\u884C\u8FDB\u5C55\u6216\u65B0\u95EE\u9898\u7684\u594F\u62A5\n';
         prompt += '  \u00B7 \u9A73\u56DE\u7684\u2192\u5FE0\u81E3\u53EF\u80FD\u7EED\u594F\u6B7B\u8C0F\uFF08\u5FC5\u987B\u5F15\u7528\u4E0A\u6B21\u88AB\u9A73\u7684\u7406\u7531\u5E76\u52A0\u4EE5\u8FA9\u9A73\uFF09\uFF0C\u4F5E\u81E3\u53EF\u80FD\u8F6C\u800C\u6697\u4E2D\u6D3B\u52A8\n';
         prompt += '  \u00B7 \u6279\u793A\u7684\u2192\u5B98\u5458\u5E94\u6309\u6279\u793A\u6267\u884C\u540E\u56DE\u594F\u7ED3\u679C\n';
-        prompt += '  \u00B7 \u8F6C\u6709\u53F8\u7684\u2192\u8BE5\u8861\u95E8\u4E3B\u5B98\u5E94\u4E0A\u594F\u8BAE\u5904\u7ED3\u8BBA\n';
+        prompt += '  · 转有司的\u2192该衙门主官应上奏议处结论\n';
       }
     }
     prompt += '\u3010\u8054\u540D\u4E0E\u5BF9\u594F\u3011\n';
@@ -869,7 +869,7 @@ function renderMemorials(force){
   }
   if (gHeld.length > 0) {
     html += '<div class="mem-group mem-g-held">';
-    html += '<div class="mem-group-title"><span class="tag">\u7559 \u4E2D \u4E4B \u6298</span><span class="desc">\u6682\u641C\u7F6E\u00B7\u5019\u65F6\u673A\u00B7\u6216\u89C2\u671B\u4E8B\u52BF</span><span class="count">' + gHeld.length + ' \u6298</span></div>';
+    html += '<div class="mem-group-title"><span class="tag">留 中 之 折</span><span class="desc">暂搁置·候时机·或观望事势</span><span class="count">' + gHeld.length + ' 折</span></div>';
     gHeld.forEach(function(m){ html += _renderCard(m); });
     html += '</div>';
   }
@@ -1214,15 +1214,15 @@ function _summonRecall(name) {
   if (typeof TM !== 'undefined' && TM.Chronicle) TM.Chronicle.record({
     turn: GM.turn,
     date: GM._gameDate || (typeof getTSText === 'function' ? getTSText(GM.turn) : ''),
-    type: '\u5FB4\u53EC\u56DE\u4EAC',
-    title: name + ' \u5956\u65E8\u56DE\u4EAC',
-    content: name + ' \u81EA' + ch.location + ' \u5956\u65E8\u8D77\u7A0B\u56DE\u4EAC\u9762\u5723\u00B7\u9884\u8BA1 ' + Math.ceil(travelTurns * dpv) + ' \u65E5\uFF08' + travelTurns + ' \u56DE\u5408\uFF09\u62B5\u4EAC\u3002',
+    type: '征召回京',
+    title: name + ' 奉旨回京',
+    content: name + ' 自' + ch.location + ' 奉旨起程回京面圣·预计 ' + Math.ceil(travelTurns * dpv) + ' 日（' + travelTurns + ' 回合）抵京。',
     category: '\u4EBA\u4E8B', tags: ['人事', '召回', '启程', name]
   });
   if (!Array.isArray(GM.qijuHistory)) GM.qijuHistory = [];
   if (typeof TM !== 'undefined' && TM.Qiju) TM.Qiju.recordEntry({
     turn: GM.turn, date: GM._gameDate || '',
-    content: '\u3010\u5FB4\u53EC\u3011' + name + ' \u5956\u65E8\u81EA' + ch.location + ' \u56DE\u4EAC\u00B7\u9884\u8BA1 ' + Math.ceil(travelTurns * dpv) + ' \u65E5\u62B5\u8FBE\u3002'
+    content: '【征召】' + name + ' 奉旨自' + ch.location + ' 回京·预计 ' + Math.ceil(travelTurns * dpv) + ' 日抵达。'
   });
   // 也设新字段以便 v10 pos card 显示
   ch._travelTo = capital;

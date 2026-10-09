@@ -1231,7 +1231,7 @@
       showLoading("AI\u6DF1\u5EA6\u601D\u8003",42);
       var tp0 = tp + '\n\u8BF7\u6781\u5176\u6DF1\u5165\u5730\u5206\u6790\u5F53\u524D\u5C40\u52BF\uFF0C\u8FD4\u56DEJSON\uFF1A\n' +
         '{"tensions":"\u5F53\u524D5\u4E2A\u6700\u5927\u77DB\u76FE/\u5371\u673A\u53CA\u5176\u4E25\u91CD\u7A0B\u5EA6(150\u5B57)","consequences":"\u73A9\u5BB6\u672C\u56DE\u5408\u6BCF\u4E2A\u884C\u52A8\u7684\u8BE6\u7EC6\u540E\u679C\u5206\u6790(150\u5B57)","npc_spotlight":"\u672C\u56DE\u5408\u6700\u53EF\u80FD\u6709\u52A8\u4F5C\u76845\u4E2ANPC\u53CA\u5176\u52A8\u673A\u548C\u884C\u52A8\u65B9\u5F0F(200\u5B57)","faction_dynamics":"\u975E\u73A9\u5BB6\u52BF\u529B\u672C\u56DE\u5408\u7684\u81EA\u4E3B\u884C\u52A8\u8BE6\u7EC6\u63A8\u6F14(200\u5B57)","family_dynamics":"\u5BB6\u65CF/\u540E\u5BAB/\u5A5A\u59FB\u5C42\u9762\u7684\u6F5C\u5728\u53D8\u5316(100\u5B57)","class_unrest":"\u5404\u9636\u5C42\u7684\u4E0D\u6EE1\u60C5\u7EEA\u548C\u53EF\u80FD\u7684\u6C11\u53D8(100\u5B57)","economic_pressure":"\u8D22\u653F\u538B\u529B\u548C\u7ECF\u6D4E\u8D70\u5411(80\u5B57)","foreshadow":"\u5E94\u57CB\u4E0B\u76843\u4E2A\u4F0F\u7B14\u53CA\u5176\u5C06\u5728\u4F55\u65F6\u5F15\u7206(100\u5B57)","mood":"\u672C\u56DE\u5408\u53D9\u4E8B\u5E94\u8425\u9020\u7684\u60C5\u611F\u57FA\u8C03(50\u5B57)","memoryQueries":[{"keywords":["关键词1","关键词2"],"turnRange":[起始回合,结束回合],"participant":"相关人物名(可空)","minImportance":5,"purpose":"为何要检索"}]}\n' +
-        '\u8FD9\u662F\u4F60\u7684\u6DF1\u5EA6\u601D\u8003\u8FC7\u7A0B\uFF0C\u4E0D\u663E\u793A\u7ED9\u73A9\u5BB6\u3002\u8BF7\u5145\u5206\u601D\u8003\uFF0C\u4E0D\u8981\u5401\u60DC\u5B57\u6570\u3002\n' +
+        '这是你的深度思考过程，不显示给玩家。请充分思考，不要吝惜字数。\n' +
         '【memoryQueries】如需要回忆更早的具体事件·在此列出 1-4 条检索查询·系统将从四源永久档案中检索并注入后续推演·否则留空数组。\n' +
         '  · 四个检索源：(1) NPC 个人记忆 (2) 长期事势(ChronicleTracker) (3) 史记本传(shijiHistory) (4) 已埋伏笔(_foreshadows)\n' +
         '  · 适合查询的场景：「此人是否真在那回合背叛过」「某改革当年具体推进到哪里」「玩家曾埋下何种伏笔」「某事件距今多少回合」\n' +
@@ -2312,7 +2312,7 @@
         "\"item_changes\":[{\"name\":\"\u7269\u54C1\u540D\",\"acquired\":true,\"owner\":\"\u65B0\u6301\u6709\u8005\",\"reason\":\"\u83B7\u5F97/\u5931\u53BB\u539F\u56E0\"}],"+
         "\"era_state_delta\":{\"socialStability_delta\":0,\"economicProsperity_delta\":0,\"centralControl_delta\":0,\"militaryProfessionalism_delta\":0},"+
         "\"global_state_delta\":{\"taxPressure_delta\":0},"+
-        "\"office_changes\":[{\"dept\":\"\u90E8\u95E8\",\"position\":\"\u5B98\u804C\",\"action\":\"appoint/dismiss/promote/demote/transfer/evaluate/reform\",\"person\":\"\u4EBA\u540D\",\"reason\":\"\u539F\u56E0\",\"newDept\":\"\u65B0\u90E8\u95E8(transfer\u65F6)\",\"newPosition\":\"\u65B0\u5B98\u804C(transfer/promote\u65F6)\",\"newRank\":\"\u65B0\u54C1\u7EA7(promote/demote\u65F6)\",\"evaluator\":\"\u8003\u8BC4\u8005NPC\u540D(evaluate\u65F6\u5FC5\u586B)\",\"grade\":\"\u5353\u8D8A/\u79F0\u804C/\u5E73\u5EB8/\u5931\u804C(evaluate\u65F6)\",\"comment\":\"\u8003\u8BC4\u8BC4\u8BED(evaluate\u65F6)\",\"reformDetail\":\"\u6539\u9769\u5185\u5BB9(reform\u65F6\uFF1A\u589E\u8BBE/\u88C1\u6492/\u5408\u5E76/\u6539\u540D)\"}],"+
+        "\"office_changes\":[{\"dept\":\"部门\",\"position\":\"官职\",\"action\":\"appoint/dismiss/promote/demote/transfer/evaluate/reform\",\"person\":\"人名\",\"reason\":\"原因\",\"newDept\":\"新部门(transfer时)\",\"newPosition\":\"新官职(transfer/promote时)\",\"newRank\":\"新品级(promote/demote时)\",\"evaluator\":\"考评者NPC名(evaluate时必填)\",\"grade\":\"卓越/称职/平庸/失职(evaluate时)\",\"comment\":\"考评评语(evaluate时)\",\"reformDetail\":\"改革内容(reform时：增设/裁撤/合并/改名)\"}],"+
         "\"office_aggregate\":[{\"dept\":\"\u90E8\u95E8\u540D\",\"actualCount_delta\":\"\u5B9E\u6709\u4EBA\u6570\u53D8\u5316(+N\u9012\u8865/-N\u79BB\u804C)\",\"evaluation_summary\":{\"excellent\":0,\"good\":0,\"average\":0,\"poor\":0,\"named_excellent\":[\"\u5177\u8C61\u89D2\u8272\"],\"named_good\":[\"\u5177\u8C61\u89D2\u8272\"]},\"corruption_found\":0,\"named_corrupt\":[\"\u5177\u8C61\u8D2A\u8150\u8005\"],\"narrative\":\"\u6DF7\u5408\u53D9\u8FF0\u2014\u2014\u5177\u8C61\u89D2\u8272\u70B9\u540D+\u5176\u4F59\u7528\u6570\u5B57\"}],"+
         // 官制占位实体化——当推演涉及编辑器留的 generated:false 占位时，AI 按史料风格生成对应任职者
         "\"office_spawn\":[{\"dept\":\"部门名(与officeTree中的node.name精确匹配)\",\"position\":\"官职名(与positions[].name精确匹配)\",\"holderName\":\"按本朝代命名习惯起的真实姓名(不得重复现有角色)\",\"age\":35,\"abilities\":{\"intelligence\":60,\"administration\":65,\"military\":40,\"valor\":35,\"charisma\":55,\"diplomacy\":50,\"benevolence\":55},\"personality\":\"性格简述\",\"stance\":\"中立/君党/太子党/外戚党等\",\"loyalty\":55,\"reason\":\"为何在本回合被实体化(如'玩家下诏涉及此官''推演提及此官员')\"}],"+
@@ -2507,7 +2507,7 @@
         "\"npc_correspondence\":[{\"from\":\"\u53D1\u4FE1NPC\",\"to\":\"\u6536\u4FE1NPC\",\"content\":\"\u4FE1\u4EF6\u5185\u5BB9(50-150\u5B57)\",\"summary\":\"\u4E00\u53E5\u8BDD\u6982\u62EC\",\"implication\":\"\u5BF9\u5C40\u52BF\u7684\u6F5C\u5728\u5F71\u54CD\",\"type\":\"secret/alliance/conspiracy/routine\"}],"+
         "\"route_disruptions\":[{\"route\":\"\u8D77\u70B9-\u7EC8\u70B9\",\"reason\":\"\u963B\u65AD\u539F\u56E0(\u6218\u4E71/\u6D2A\u6C34/\u53DB\u519B\u5360\u636E)\",\"resolved\":false}],"+
         "\"foreshadowing\":[{\"action\":\"plant/resolve\",\"content\":\"\u4F0F\u7B14\u5185\u5BB9\",\"type\":\"threat/opportunity/mystery/romance\",\"resolveCondition\":\"\u56DE\u6536\u6761\u4EF6(plant\u65F6\u586B)\"}],"+
-        "\"current_issues_update\":[{\"action\":\"add/resolve/update\",\"title\":\"\u65F6\u653F\u8BAE\u9898\u6807\u9898(\u5982:\u6CB3\u5317\u5175\u997F\u62D6\u6B20\u3001\u6C34\u5229\u5E74\u4E45\u5931\u4FEE\u3001\u67D0\u5DDE\u523A\u53F2\u8D2A\u8150\u88AB\u52BE)\",\"category\":\"\u519B\u653F/\u8D22\u8D4B/\u6C34\u5229/\u5409\u51F6/\u8FB9\u9632/\u5F62\u52BF/\u4EBA\u4E8B/\u6C11\u751F\",\"description\":\"\u534A\u6587\u8A00200-500\u5B57\uFF0C\u7ED3\u5408\u63A8\u6F14\u5B9E\u9645\u7EC6\u5316\u63CF\u8FF0\u5177\u4F53\u65F6\u653F\u95EE\u9898\u7684\u6765\u7531\u3001\u6D89\u53CA\u4EBA\u7269\u3001\u5F53\u524D\u6001\u52BF\",\"id\":\"\u66F4\u65B0/\u89E3\u51B3\u65F6\u586B\u5DF2\u6709\u8981\u52A1id\"}],"+
+        "\"current_issues_update\":[{\"action\":\"add/resolve/update\",\"title\":\"时政议题标题(如:河北兵饷拖欠、水利年久失修、某州刺史贪腐被劾)\",\"category\":\"军政/财赋/水利/吉凶/边防/形势/人事/民生\",\"description\":\"半文言200-500字，结合推演实际细化描述具体时政问题的来由、涉及人物、当前态势\",\"id\":\"更新/解决时填已有要务id\"}],"+
         "\"character_memory_updates\":[{\"actor\":\"NPC name\",\"memory_type\":\"commitment/belief/relationship/preference/grudge/favor/fear/intention/reputation\",\"memory\":\"one concrete actor-scoped memory; no hard_state\",\"private\":false,\"confidence\":0.7,\"source_refs\":[{\"type\":\"jishiRecords/courtRecords/events/edictTracker\",\"id\":\"source id\"}]}],"+
         "\"map_changes\":{\"ownership_changes\":[],\"development_changes\":[]},"+
         // ═══ AI 至高权力·v2 新增语义通道（可选·按需使用）═══
@@ -4219,7 +4219,7 @@
           if (_chronCtxB) {
             tp1b += '\n' + _chronCtxB + '\n';
             tp1b += '\n\u3010\u2605 \u957F\u671F\u4E8B\u52BF\u7A7F\u900F\u5230\u6587\u4E8B/\u9E3F\u96C1/\u5BC6\u4FE1\u3011\n';
-            tp1b += '  \u00B7 cultural_works(\u540E\u4EBA\u620F\u8BF4/\u6587\u82D1\u4F5C\u54C1)\uFF1A\u8FDB\u5EA6 \u226570% \u5DE5\u7A0B\u00B7\u76F8\u5173 NPC \u5F53\u4F5C\u300C\u9882\u529F\u8BD7\u8D4B/\u54CF\u53F9\u5DE5\u827A\u300D\u00B7\u8FDB\u5EA6 <20% \u5386\u591A\u56DE\u5408\u00B7\u5F53\u4F5C\u300C\u8BBD\u523A\u8BD7/\u5F39\u52BE\u6587/\u6C11\u8C23\u8BAF\u4E4B\u300D\u3002\n';
+            tp1b += '  · cultural_works(后人戏说/文苑作品)：进度 \u226570% 工程·相关 NPC 当作「颂功诗赋/咏叹工艺」·进度 <20% 历多回合·当作「讽刺诗/弹劾文/民谣讥之」。\n';
             tp1b += '  \u00B7 npc_letters(\u9E3F\u96C1\u4F20\u4E66)\uFF1A\u53C2\u4E0E\u8BE5\u5DE5\u7A0B\u7684\u5730\u65B9\u5B98\u5E94\u6709\u594F\u62A5\u672C\u5DE5\u7A0B\u8FDB\u5C55\u7684\u4E66\u4FE1(\u5982\u6CBB\u6CB3 60% \u2192 \u6CB3\u9053\u603B\u7763\u594F\u300C\u6CB3\u5DE5\u73B0\u72B6\u00B7\u5824\u5DF2\u6210\u516B\u4E5D\u00B7\u5C1A\u9700\u2026\u2026\u300D)\u3002\n';
             tp1b += '  \u00B7 npc_correspondence(\u5BC6\u4FE1)\uFF1A\u957F\u671F\u5DE5\u7A0B\u4E2D\u5931\u610F/\u53CD\u5BF9\u65B9 NPC \u5E94\u6709\u79C1\u4E0B\u62B1\u6028/\u4E32\u8054(\u5982\u53D8\u6CD5\u5C06\u6210 \u2192 \u53CD\u5BF9\u515A\u515A\u9B41\u4E0E\u95E8\u751F\u5BC6\u8BAE\u300C\u6B64\u6CD5\u96BE\u4E45\u00B7\u5F53\u5F85\u65F6\u7FFB\u6848\u300D)\u3002\n';
             tp1b += '  \u00B7 npc_interactions(NPC \u4E92\u52A8)\uFF1A\u957F\u671F\u5DE5\u7A0B\u4E3B\u594F\u8005\u4E0E stakeholder \u4E4B\u95F4\u5E94\u6709\u534F\u8C03\u4E92\u52A8\u3002\n';
@@ -4242,14 +4242,14 @@
         tp1b += '  \u6309\u89E6\u53D1\u6E90\uFF08A\u79D1\u4E3E\u5BA6\u9014/B\u9006\u5883\u8D2C\u8C2A/C\u793E\u4EA4\u916C\u9162/D\u4EFB\u4E0A\u65BD\u653F/E\u6E38\u5386\u5C71\u6C34/F\u5BB6\u4E8B\u79C1\u60C5/G\u65F6\u5C40\u5929\u4E0B/H\u60C5\u611F\u5FC3\u5883\uFF09\u9009\u6709\u8D44\u683C\u7684 NPC \u751F\u6210\u5176\u4F5C\u54C1\u3002\n';
         tp1b += '  \u2605 content \u5FC5\u987B\u5168\u6587\u771F\u5B9E\u751F\u6210\uFF1A\u7EDD\u53E5 20/\u5F8B\u8BD7 40\u621656/\u8BCD\u6309\u8BCD\u724C\u5B57\u6570/\u8D4B 300-800/\u6587 200-600\uFF1B\u53E4\u6587\u5FCC\u73B0\u4EE3\u8BCD\u6C47\uFF1B\u683C\u5F8B\u8BD7\u5C3D\u529B\u8BB2\u5E73\u4EC4\u5BF9\u4ED7\u3002\u4E0D\u5F97\u5199\u5360\u4F4D\u7B26\u5982"(\u6B64\u5904\u8BD7)"\u3002\n';
         tp1b += '  \u5B57\u6BB5\uFF1A{author, turn:' + (GM.turn||1) + ', date, location, triggerCategory, trigger, motivation, lifeStage, genre, subtype, title, content, mood, theme, elegance, dedicatedTo[], inspiredBy, commissionedBy, praiseTarget, satireTarget, quality, politicalImplication, politicalRisk, narrativeContext, preservationPotential}\n';
-        tp1b += '  motivation\uFF1Aspontaneous\u81EA\u53D1/commissioned\u53D7\u547D/flattery\u5E72\u8C12/response\u916C\u7B54/mourning\u54C0\u60BC/critique\u8BBD\u8C15/celebration\u9882\u626C/farewell\u9001\u522B/memorial\u7EAA\u5FF5/ghostwrite\u4EE3\u7B14/duty\u5E94\u5236/self_express\u81EA\u62D2\n';
+        tp1b += '  motivation：spontaneous自发/commissioned受命/flattery干谒/response酬答/mourning哀悼/critique讽谕/celebration颂扬/farewell送别/memorial纪念/ghostwrite代笔/duty应制/self_express自抒\n';
         tp1b += '  genre\uFF1Ashi\u8BD7/ci\u8BCD/fu\u8D4B/qu\u66F2/ge\u6B4C\u884C/wen\u6563\u6587/apply\u5E94\u7528\u6587/ji\u8BB0\u53D9\u6587/ritual\u796D\u6587\u7891\u94ED/paratext\u5E8F\u8DCB\n';
         tp1b += '  politicalRisk\uFF1A\u8BBD\u8C15/critique \u7C7B\u9AD8\uFF0C\u5E73\u548C\u7C7B\u4F4E\u3002preservationPotential \u8D28\u91CF\u8D8A\u9AD8/\u9898\u6750\u8D8A\u91CD\u8D8A\u5BB9\u6613\u4F20\u4E16\u3002\n';
         tp1b += '  \u89E6\u53D1\u6761\u4EF6\uFF1A\u667A\u529B\u226570 + scholar/theologian/eccentric/pensive/curious \u7279\u8D28 \u2192 \u9AD8\u6743\u91CD\uFF1B\u9047\u8D2C/\u4E01\u5FE7/\u81F4\u4ED5/\u6218\u80DC/\u593A\u804C/\u4E54\u8FC1/\u5BFF\u8FB0 \u2192 \u5F3A\u89E6\u53D1\uFF1Bstress>60 \u501F\u6587\u53D1\u6CC4\u3002lazy/craven \u964D\u6743\u3002\n\n';
 
         tp1b += '\u25C6 npc_letters\uFF08\u9E3F\u96C1\u4F20\u4E66\u00B7\u6BCF\u56DE\u5408 2-5 \u5C01\uFF09\u2014\u2014\n';
         tp1b += '  \u4E0D\u5728 ' + _capB + ' \u7684 NPC \u9047\u91CD\u5927\u4E8B\u4EF6\u4E3B\u52A8\u5199\u4FE1\u7ED9\u7687\u5E1D\u3002from \u5FC5\u987B\u662F\u4E0D\u5728\u9996\u90FD\u7684 NPC\u3002\n';
-        tp1b += '  \u5B57\u6BB5\uFF1A{from, type:"report\u5954\u544A/plea\u6C42\u63F4/warning\u8B66\u62A5/personal\u79C1\u60C5/intelligence\u60C5\u62A5", urgency:"normal/urgent/extreme", content(100-200\u5B57\u53E4\u5178\u4E2D\u6587), suggestion(1-2\u53E5\u53EF\u7701), subjectLine:"\u4FE1\u51FD\u9898\u540D\u00B75-12\u5B57\u5982\u300A\u8FBD\u4E1C\u544A\u6025\u758F\u300B", replyExpected:true}\n';
+        tp1b += '  字段：{from, type:"report奏告/plea求援/warning警报/personal私情/intelligence情报", urgency:"normal/urgent/extreme", content(100-200字古典中文), suggestion(1-2句可省), subjectLine:"信函题名·5-12字如《辽东告急疏》", replyExpected:true}\n';
         tp1b += '  \u53C2\u8003\u4FE1\u4EF6\u6A21\u5F0F\uFF1A\u8FB9\u5C06\u544A\u6025\u00B7\u5730\u65B9\u5B98\u8BF7\u547D\u00B7\u6D41\u5B98\u8FF0\u60C5\u00B7\u51FA\u4F7F\u56DE\u62A5\u00B7\u79BB\u4EAC\u65E7\u81E3\u6000\u60F3\u00B7\u5BC6\u63A2\u5BC6\u62A5\u3002\n\n';
 
         tp1b += '\u25C6 npc_correspondence\uFF08NPC \u4E4B\u95F4\u5BC6\u4FE1\u00B72-5 \u6761\uFF09\u2014\u2014\n';
@@ -4264,7 +4264,7 @@
         tp1b += '  \u5BB4\u96C6/\u8BD7\u4F1A/\u996F\u884C/\u6258\u5B64\u7C7B\u53EF\u5E26 involvedOthers \u5217\u5168\u4F53\u4E0E\u4F1A\u8005(\u7ED3\u540C\u5E2D\u4E4B\u8C0A)\uFF1Bgift_present \u53EF\u5E26 giftPurpose(\u8D3A\u5BFF/\u6C42\u60C5/\u8C22\u6069)\u3002\n';
         tp1b += '  \u5B57\u6BB5\uFF1A{actor, target, type, description(30-60\u5B57), involvedOthers?, publicKnown?(true/false)}\n';
         tp1b += '  \u6309\u4EBA\u7269\u6027\u683C/\u6D3E\u7CFB/\u5173\u7CFB\u9009\u5408\u9002\u7684 type\uFF0C\u907F\u514D"\u5FA1\u53F2\u5FC5\u8C0F/\u5C06\u519B\u5FC5\u8BF7\u6218"\u5DE5\u5177\u4EBA\u6A21\u677F\u3002\n';
-        tp1b += '  \u7279\u522B\u6CE8\u610F\uFF1A\u5305\u542B\u5F39\u52BE/\u8350\u4E3E/\u5BC6\u5BFF/\u8FAD\u7E41/\u5F92\u5F92\u4F20\u9053\u7B49\u53E4\u5178\u653F\u6CBB\u884C\u4E3A\uFF0C\u4E00\u90E8\u5206 publicKnown=true \u8FDB\u98CE\u95FB\uFF0C\u4E00\u90E8\u5206 false \u79C1\u4E0B\u3002\n\n';
+        tp1b += '  特别注意：包含弹劾/荐举/密奏/辞官/师徒传道等古典政治行为，一部分 publicKnown=true 进风闻，一部分 false 私下。\n\n';
 
         tp1b += '\u3010\u786C\u89C4\u5219\u3011\n';
         tp1b += '  \u00B7 \u53EA\u8FD4\u56DE\u4E0A\u8FF0\u56DB\u4E2A\u5B57\u6BB5\u7684 JSON\uFF08\u65E0\u5176\u4ED6\u5B57\u6BB5\uFF09\n';
@@ -4450,10 +4450,10 @@
         tp1c += '    \u85E9\u5C5E\uFF1Ademand_tribute\u7D22\u8D21/pay_tribute\u732E\u8D21/royal_marriage\u548C\u4EB2/send_hostage\u8D28\u5B50/gift_treasure\u8D60\u5B9D\n';
         tp1c += '    \u7ECF\u6D4E\uFF1Aopen_market\u4E92\u5E02/trade_embargo\u8D38\u6613\u7981\u8FD0/pay_indemnity\u8D54\u6B3E\n';
         tp1c += '    \u6587\u5316\uFF1Acultural_exchange\u6587\u5316\u4EA4\u6D41/religious_mission\u5B97\u6559\u4F7F\u8282\n';
-        tp1c += '    \u519B\u4E8B\uFF1Amilitary_aid\u519B\u63F4/proxy_war\u4EE3\u7406\u6218\u4E89/incite_rebellion\u7172\u52A8\u53DB\u4E71\n';
+        tp1c += '    军事：military_aid军援/proxy_war代理战争/incite_rebellion煽动叛乱\n';
         tp1c += '    \u60C5\u62A5\uFF1Aspy_infiltration\u7EC6\u4F5C/assassin_dispatch\u523A\u5BA2\n';
         tp1c += '  \u5B57\u6BB5\uFF1A{from, to, type, viaProxy?(proxy_war\u65F6), terms, tributeItems?(tribute\u65F6), marriageDetails?(marriage\u65F6\u2014\u2014"XX\u516C\u4E3B\u5AC1YY\u738B"), hostageDetails?(hostage\u65F6\u2014\u2014"XX\u5B50\u5165\u8D28"), treatyType?(\u76DF\u597D/\u79F0\u81E3/\u505C\u6218/\u4E92\u4E0D\u4FB5\u72AF), description, durationTurns, reason}\n';
-        tp1c += '  \u5386\u53F2\u53C2\u8003\uFF1A\u662D\u541B\u51FA\u585E/\u6587\u6210\u516C\u4E3B\u5165\u85CF(kinshipTies+/hostility-)\uFF1B\u6E05\u521D\u8D28\u5B50(trust+)\uFF1B\u695A\u6C49\u7528\u8BF8\u4FAF\u4EE3\u7406\u6218\u4E89(trust-)\uFF1B\u5BCB\u6E0A\u5C81\u5E01/\u660E\u518C\u5C01\u671D\u9C9C\u7434\u7409\u7403\uFF1B\u5B8B\u8FBD\u6982\u573A/\u660E\u8499\u9A6C\u5E02(economicTies+)\n';
+        tp1c += '  历史参考：昭君出塞/文成公主入藏(kinshipTies+/hostility-)；清初质子(trust+)；楚汉用诸侯代理战争(trust-)；澶渊岁币/明册封朝鲜与琉球；宋辽榷场/明蒙马市(economicTies+)\n';
         tp1c += '  \u4E00\u81F4\u6027\u5F0F\uFF1A\u80CC\u76DF/\u6BC1\u7EA6/\u523A\u6740\u5F71\u54CD\u6DF1\u8FDC\u4E0D\u53EF\u8F7B\u6613"\u548C\u597D"\uFF1B\u548C\u4EB2/\u8D28\u5B50\u8981\u5177\u4F53\u4EBA\u540D\n\n';
 
         tp1c += '\u25C6 faction_events\uFF08\u52BF\u529B\u95F4/\u5185\u90E8\u4E8B\u4EF6\u00B7\u5E38\u6001 3-6 \u6761\uFF09\u2014\u2014\n';
@@ -4470,10 +4470,10 @@
         tp1c += '  \u5173\u7CFB\u516D\u7EF4\uFF1Atrust\u4FE1\u4EFB/hostility\u654C\u610F/economicTies\u7ECF\u6D4E/culturalAffinity\u6587\u5316/kinshipTies\u59FB\u4EB2/territorialDispute\u9886\u571F\uFF1B\u6309\u4E92\u52A8\u5BFC\u81F4\u7684\u7EF4\u5EA6\u66F4\u65B0\n\n';
 
         tp1c += '\u25C6 faction_succession\uFF08\u52BF\u529B\u7EE7\u627F\u00B7\u4EC5\u5F53\u9996\u9886\u6B7B\u4EA1/\u5931\u5FC3/\u6C11\u53D8\u65F6\u89E6\u53D1\uFF09\u2014\u2014\n';
-        tp1c += '  \u5B57\u6BB5\uFF1A{faction, oldLeader, newLeader, legitimacy:70, stability_delta:-10, disputeType:"\u6B63\u5E38\u7EE7\u627F/\u4E89\u4F4D/\u7BE1\u4F4D/\u5185\u6218/\u5916\u621A\u4E13\u653F/\u91CD\u81E3\u63A8\u8F7D", narrative(40\u5B57)}\n\n';
+        tp1c += '  字段：{faction, oldLeader, newLeader, legitimacy:70, stability_delta:-10, disputeType:"正常继承/争位/篡位/内战/外戚专政/重臣推戴", narrative(40字)}\n\n';
 
         tp1c += '\u25C6 npc_schemes\uFF08NPC \u9634\u8C0B\u00B7\u65B0\u589E\u9634\u8C0B\u3002\u5E38\u6001 2-4 \u6761\uFF0C\u5F20\u529B\u671F 4-8 \u6761\uFF09\u2014\u2014\n';
-        tp1c += '  \u8DE8\u56DE\u5408\u9634\u8C0B\u2014\u2014\u6743\u81E3\u6392\u6324\u5BF9\u624B\u3001\u5C06\u519B\u6697\u8054\u5916\u90E8\u3001\u6536\u96C6\u53CD\u5BF9\u6D3E\u7F6A\u8BC1\u3001\u6B3E\u586B\u4E00\u8D1D\u3001\u4EA4\u5851\u540E\u5BAB\u3001\u6D41\u8A00\u9020\u52BF\u3001\u540E\u9752\u52FE\u7ED3\u7B49\u957F\u671F\u5E03\u5C40\n';
+        tp1c += '  跨回合阴谋——权臣排挤对手、将军暗联外部、收集反对派罪证、敛财自肥、交结后宫、流言造势、内外勾结等长期布局\n';
         tp1c += '  \u5B57\u6BB5\uFF1A{schemer, target, plan(40\u5B57\u63CF\u8FF0), progress:"\u915D\u917F\u4E2D/\u5373\u5C06\u53D1\u52A8/\u957F\u671F\u5E03\u5C40", allies:"\u540C\u8C0B\u8005\uFF08\u4EBA\u540D\u9017\u53F7\u5206\u9694\uFF09", motive:"\u52A8\u673A\u00B7\u636E\u5176\u6240\u6C42/\u6069\u6028(20\u5B57\u00B7\u5982\u300C\u6068\u674E\u67D0\u6784\u9677\u3001\u6B32\u62A5\u6B64\u4EC7\u300D)", method:"\u624B\u6BB5\u00B71\u8BCD\u5982\u8BEC\u9677/\u7ED3\u515A/\u8D3F\u8D42/\u6784\u9677/\u5BC6\u594F/\u8054\u59FB/\u6563\u8C23", secrecy:"\u9690\u79D8\u5EA6\u00B7\u6781\u9690/\u534A\u516C\u5F00/\u5F20\u626C", winCondition:"\u4F55\u4E3A\u5F97\u624B\u00B720\u5B57"}\n\n';
 
         tp1c += '\u25C6 scheme_actions\uFF08\u5DF2\u6709\u9634\u8C0B\u63A8\u8FDB\u00B71-3 \u6761\uFF0C\u5BF9\u5E94\u4E0A\u4E00\u56DE\u5408\u9634\u8C0B\uFF09\u2014\u2014\n';
@@ -4481,48 +4481,48 @@
 
         tp1c += '\u25C6 hidden_moves\uFF08NPC \u6697\u4E2D\u884C\u52A8\u00B7\u81F3\u5C11 8 \u6761\uFF0C\u5B57\u7B26\u4E32\u6570\u7EC4\uFF09\u2014\u2014\n';
         tp1c += '  \u6BCF\u6761\u683C\u5F0F\uFF1A"\u67D0\u89D2\u8272\uFF1A\u56E0\u4E3A\u4EC0\u4E48\u2192\u6697\u4E2D\u505A\u4E86\u4EC0\u4E48\u2192\u76EE\u7684\u662F\u4EC0\u4E48"\uFF0830-60\u5B57\uFF09\n';
-        tp1c += '  \u5FC5\u5305\u542B\uFF1A\u2265 3 \u6761 NPC\u5BF9NPC\u6697\u884C\uFF1B\u2265 1 \u6761 \u52BF\u529B\u5185\u90E8\u6697\u6D41\uFF1B\u2265 1 \u6761 \u5C0F\u4EBA\u7269\u52A8\u4F5C\uFF08\u5C0F\u540F\u8D2A\u5893/\u5546\u4EBA\u56E4\u8D27/\u63A2\u5B50\u4F20\u4FE1/\u6D41\u6C11\u805A\u96C6\uFF09\n\n';
+        tp1c += '  必包含：\u2265 3 条 NPC对NPC暗行；\u2265 1 条 势力内部暗流；\u2265 1 条 小人物动作（小吏贪墨/商人囤货/探子传信/流民聚集）\n\n';
 
         tp1c += '\u25C6 fengwen_snippets\uFF08\u98CE\u95FB\u5F55\u4E8B\u00B7\u5E38\u6001 12-20 \u6761\uFF09\u2014\u2014\n';
-        tp1c += '  \u4EBA\u7269\u548C\u52BF\u529B\u7684\u6D3B\u52A8\u98CE\u95FB\u2014\u2014\u6E90\u81EA\u5751\u95F4\u8033\u76EE\u3001\u671D\u5802\u98CE\u8BEE\u3001\u5F80\u6765\u5BC6\u51FD\u7B49\uFF0C\u901A\u8FC7\u8D77\u5C45\u6CE8/\u8033\u62A5/\u5857\u62A5/\u574A\u95F4\u4F20\u95FB\u62A5\u5165\u3002\n';
-        tp1c += '  \u5B57\u6BB5\uFF1A{type, text(30-60\u5B57\u53E4\u5178\u4E2D\u6587\u98CE), credibility(0.3-0.95), actors:["\u4EBA\u540D\u6216\u52BF\u529B\u540D"], source:"\u574A\u95F4/\u671D\u5802/\u8033\u76EE/\u5857\u62A5/\u5BC6\u672D/\u8FB9\u5173", mood?:"\u5FE7/\u559C/\u6012/\u6050/\u4EB2/\u4EC7(\u4F20\u9012\u7ED9 actors \u8BB0\u5FC6\u7684\u4E3B\u5BFC\u60C5\u7EEA)"}\n';
-        tp1c += '  type \u5206\u7C7B\uFF1A\u5F39\u52BE/\u8350\u4E3E/\u594F\u8BAE/\u7ED3\u515A/\u9020\u8C23/\u79C1\u8BBF/\u5BB4\u996E/\u6E38\u5BB4/\u8BD7\u793E/\u5B66\u8BBA/\u6C42\u5A5A/\u6BCD\u796D/\u4E39\u9053/\u85AC\u91CA/\u5DE1\u89C6/\u5DE1\u8005/\u8D51\u635C/\u53F8\u6CD5/\u6838\u67E5/\u6350\u4FF8/\u8D22\u884C/\u5BB6\u4E8B/\u7F6E\u4EA7/\u5C45\u7740/\u96C5\u793A/\u5BC6\u8054/\u6218\u62A5/\u8FB9\u62A5/\u548C\u4EB2/\u8D28\u5B50/\u671D\u8D21/\u4E92\u5E02/\u76DF\u7EA6/\u9063\u4F7F/\u63ED\u79C1\n';
+        tp1c += '  人物和势力的活动风闻——源自坊间耳目、朝堂风议、往来密函等，通过起居注/耳报/邸报/坊间传闻报入。\n';
+        tp1c += '  字段：{type, text(30-60字古典中文风), credibility(0.3-0.95), actors:["人名或势力名"], source:"坊间/朝堂/耳目/邸报/密札/边关", mood?:"忧/喜/怒/恐/亲/仇(传递给 actors 记忆的主导情绪)"}\n';
+        tp1c += '  type 分类：弹劾/荐举/奏议/结党/造谣/私访/宴饮/游宴/诗社/学论/求婚/母祭/丹道/药释/巡视/巡者/赑搜/司法/核查/捐俸/财行/家事/置产/居着/雅集/密联/战报/边报/和亲/质子/朝贡/互市/盟约/遣使/揭私\n';
         tp1c += '  \u4F8B\uFF1A{type:"\u8BD7\u793E", text:"\u897F\u6E56\u4E09\u96C5\u96C6\u4E8E\u5317\u5C71\uFF0C\u67D0\u7532\u8D4B\u300A\u79CB\u6C34\u300B\uFF0C\u67D0\u4E59\u6B21\u97F5\uFF0C\u67D0\u4E19\u7ACB\u5212\u70B9\u65AD\u53E5\u3002", credibility:0.75, actors:["\u67D0\u7532","\u67D0\u4E59"], source:"\u574A\u95F4", mood:"\u559C"}\n';
         tp1c += '  \u3010\u786C\u89C4\u5219\u00B7\u98CE\u95FB\u8986\u76D6\u8981\u6C42\u3011\n';
-        tp1c += '    \u00B7 \u4E0A\u8FF0\u65B0\u83DC\u5355\u6240\u6709\u7C7B\u578B\u4E3B\u52A8\u884C\u4E3A\uFF08\u540D\u671B\u5EFA\u6784/\u5730\u65B9\u6CBB\u7406/\u4E2D\u592E\u5C65\u804C/\u79C1\u4EA7\u7ECF\u8425/\u516C\u5E93\u62C5\u5F53/\u653F\u6597\u535A\u5F08/\u4EBA\u6C11\u4E92\u52A8\u793E\u4EA4/\u79C1\u4EBA\u751F\u6D3B\uFF09\u5F53\u5C06\u751F\u6210 1+ \u6761\u98CE\u95FB\n';
+        tp1c += '    · 上述新菜单所有类型主动行为（名望建构/地方治理/中央履职/私产经营/公库担当/政斗博弈/人物互动社交/私人生活）当将生成 1+ 条风闻\n';
         tp1c += '    \u00B7 \u52BF\u529B\u7684\u516C\u5F00\u4E92\u52A8\u4E5F\u4F1A\u81EA\u52A8\u8FDB\u98CE\u95FB\uFF08\u5DF2\u7CFB\u7EDF\u81EA\u52A8\u5904\u7406\uFF0C\u4F60\u4E0D\u9700\u91CD\u590D\uFF09\n';
-        tp1c += '    \u00B7 \u65AD\u8BAE\u7ED3\u679C/\u94A5\u5B66\u4FEE\u9C81\u7B49\u79C1\u4EBA\u884C\u4E3A\u4F1A\u5728\u5750\u95F4\u52AD\u7EEC\u50E3\u6709\u81C0\u5854\u4E39\u9038\u4E0B\u906E\n';
+        tp1c += '    · 宴饮结交/讲学修书等私人行为会在坊间流传，亦应生成相应风闻\n';
         tp1c += '    \u26A0 \u3010\u9634\u8C0B npc_schemes \u4E0D\u5F97\u8FDB\u98CE\u95FB_snippets\uFF01\u3011\u2014\u2014\u9634\u8C0B\u9ED8\u8BA4\u9690\u85CF\uFF0C\u53EA\u6709\u5728 scheme_actions.expose \u65F6\u7531\u7CFB\u7EDF\u81EA\u52A8\u751F\u6210\u300C\u63ED\u79C1\u300D\u98CE\u95FB\u3002\n';
-        tp1c += '    \u00B7 \u4F53\u73B0\u5F53\u4E8B\u4EBA\u5FC3\u7EEA\uFF1Afengwen \u7684 mood \u5B57\u6BB5\u4F1A\u4F20\u9012\u7ED9 actors \u7684\u8BB0\u5FC6\u2014\u2014\u5F39\u52BE/\u63ED\u79C1 \u2192 \u6012\uFF1B\u8350\u4E3E/\u9054\u706E \u2192 \u559C\uFF1B\u4E0A\u7F8E\u4E0B\u9700 \u2192 \u4EB2\uFF1B\u5956\u5F0F\u80B2\u5169 \u2192 \u559C\uFF1B\u8D22\u5343\u9020\u8C23 \u2192 \u4EC7\u3002\n\n';
+        tp1c += '    · 体现当事人心绪：fengwen 的 mood 字段会传递给 actors 的记忆——弹劾/揭私 \u2192 怒；荐举/提携 \u2192 喜；宴饮唱和 \u2192 亲；奖掖后进 \u2192 喜；构陷造谣 \u2192 仇。\n\n';
 
         tp1c += '\u3010\u6D3B\u52A8\u5185\u5BB9\u65B9\u5411\uFF08AI \u63A8\u7406\u53C2\u8003\uFF09\u3011\n';
         tp1c += '  \u65E0\u9700\u6BCF\u79CD\u90FD\u7528\uFF0C\u6309 NPC/\u52BF\u529B\u6027\u683C\u3001\u5F53\u524D\u5C40\u52BF\u3001\u79C1\u5FC3\u81EA\u7531\u9009\u62E9\u2014\u2014\u8BE5\u5206\u7C7B\u4EC5\u4F9B\u6269\u5C55\u601D\u8DEF\uFF0C\u907F\u514D\u5355\u8C03\u91CD\u590D\u3002\n\n';
 
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u653F\u6597\u671D\u5802\u535A\u5F08\u3011\n';
-        tp1c += '    \u00B7 \u4E0A\u758F\u4E89\u8FA9\uFF08\u4E3A\u67D0\u653F\u7B56\u5386\u4E0B\u53CD\u590D\u529B\u4E89\uFF09\n';
+        tp1c += '    · 上疏争辩（为某政策御前反复力争）\n';
         tp1c += '    \u00B7 \u5F39\u52BE\u53CD\u5F39\u8FDE\u73AF\uFF08\u5F39\u8005\u53CD\u88AB\u53CD\u8BD8\u7275\u8FDE\uFF09\n';
-        tp1c += '    \u00B7 \u7ED3\u515A\u00B7\u8054\u540D\u5954\u8FF0\uFF08\u7ACB\u573A\u76F8\u8FD1\u8005\u5171\u540C\u4E0A\u8868\uFF09\n';
+        tp1c += '    · 结党·联名奏述（立场相近者共同上表）\n';
         tp1c += '    \u00B7 \u79C1\u4E0B\u6E38\u8BF4\u4E2D\u7ACB\u6D3E\uFF08\u5BB4\u8BF7\u00B7\u8BB8\u4EE5\u597D\u5904\u6216\u5A01\u80C1\uFF09\n';
         tp1c += '    \u00B7 \u501F\u5929\u8C61/\u707E\u5F02\u8FDB\u8A00\uFF08\u9644\u4F1A\u9634\u9633\u00B7\u6258\u8A00\u5929\u8B66\uFF09\n';
         tp1c += '    \u00B7 \u8BA9\u65C1\u4EBA\u4F5C\u66FF\u8EAB\u2014\u2014\u907F\u76F4\u63A5\u51B2\u7A81\uFF08\u501F\u5FA1\u53F2\u53F0/\u501F\u8BD7\u6587\u5F71\u5C04/\u501F\u5F1F\u5B50\u9677\u9635\uFF09\n';
         tp1c += '    \u00B7 \u6536\u96C6\u5BF9\u624B\u628A\u67C4/\u4F3A\u673A\u53D1\u96BE\uFF08\u8D26\u76EE\u00B7\u79C1\u4EA4\u00B7\u5BB6\u4EBA\u8FC7\u5931\uFF09\n';
-        tp1c += '    \u00B7 \u5236\u9020\u8206\u8BBA\u00B7\u6563\u5E03\u6D41\u8A00\uFF08\u501F\u7AE5\u8C23\u00B7\u8C36\u8BED\u00B7\u79C1\u8BE9\uFF09\n';
+        tp1c += '    · 制造舆论·散布流言（借童谣·谶语·私语）\n';
         tp1c += '    \u00B7 \u6258\u5BA6\u5B98/\u5916\u621A/\u540E\u5983\u8FDB\u8A00\uFF08\u8D70\u5185\u7EBF\u00B7\u7ED5\u5F00\u524D\u671D\uFF09\n';
-        tp1c += '    \u00B7 \u62D2\u4E0D\u8868\u6001\u00B7\u660E\u54F2\u4FDD\u8EAB\uFF08\u7ACB\u573A\u4E0D\u660E\u00B7\u6301\u9EBB\u4F7F\u524D\uFF09\n';
-        tp1c += '    \u00B7 \u79BB\u673A\u8C0B\u4F4D\u00B7\u4E0A\u7591\u5DE5\u5F85\u52BF\uFF08\u5C0F\u4EBA\u4E4B\u9A9A\u6269\u5927/\u770B\u98CE\u4F7F\u8235\uFF09\n\n';
+        tp1c += '    · 拒不表态·明哲保身（立场不明·首鼠两端）\n';
+        tp1c += '    · 伺机谋位·隐忍待势（小人得志/看风使舵）\n\n';
 
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u6CBB\u7406\u516C\u52A1\u5904\u7F6E\u3011\n';
-        tp1c += '    \u00B7 \u6279\u9605\u6587\u4E66/\u79EF\u538B\u6848\u724D\uFF08\u8BE5\u5B98\u7C7B\u578B\u6027\u663E\uFF09\n';
-        tp1c += '    \u00B7 \u53EC\u96C6\u50DA\u5C5E\u8BAE\u4E8B/\u5802\u6742\u00B7\u4F1A\u516C\u5546\u4E8B\n';
-        tp1c += '    \u00B7 \u5DE1\u89C6\u8F96\u533A\u00B7\u5DE1\u6D4E\u4EB2\u770B\uFF08\u6C34\u5229/\u5175\u9632/\u72F1\u8BBC/\u519C\u65F6\uFF09\n';
-        tp1c += '    \u00B7 \u5FAE\u670D\u8BBF\u6C11\u60C5\u00B7\u767E\u59D3\u6B8A\u547C\n';
-        tp1c += '    \u00B7 \u6574\u985D\u98CE\u7EAA\u00B7\u60E9\u8D2A\u9501\u5BB3\uFF08\u67E5\u5C5E\u90E8\u00B7\u6838\u7269\u5238\uFF09\n';
+        tp1c += '    · 批阅文书/积压案牍（视该官类型而定）\n';
+        tp1c += '    · 召集僚属议事/堂议·会同商事\n';
+        tp1c += '    · 巡视辖区·躬亲察看（水利/兵防/狱讼/农时）\n';
+        tp1c += '    · 微服访民情·体察疾苦\n';
+        tp1c += '    · 整顿风纪·惩贪除害（查属部·核物券）\n';
         tp1c += '    \u00B7 \u67E5\u9605\u6237\u7C4D\u00B7\u4E08\u91CF\u7530\u4EA9\u00B7\u6CBB\u7406\u9690\u6237\n';
         tp1c += '    \u00B7 \u4FEE\u8BA2\u5730\u65B9\u89C4\u7AE0\u00B7\u4FBF\u5B9C\u884C\u4E8B\n';
-        tp1c += '    \u00B7 \u8350\u4E3E\u90E8\u5C5E\u00B7\u8003\u8BFE\u9EDC\u9677\uFF08\u4E0A\u9650\u5355/\u8003\u8BE6\u5355\uFF09\n';
-        tp1c += '    \u00B7 \u5BA1\u7406\u7591\u96BE\u6848\u4EF6\u00B7\u5BB9\u6781\u51A4\u72F1\n';
+        tp1c += '    · 荐举部属·考课黜陟（上限单/考详单）\n';
+        tp1c += '    · 审理疑难案件·平反冤狱\n';
         tp1c += '    \u00B7 \u629A\u6170\u6D41\u6C11/\u53D1\u4ED3\u8D48\u6D4E/\u8D44\u9063\u8FD4\u4E61\n';
-        tp1c += '    \u00B7 \u7B79\u63AA\u519B\u9700/\u6574\u5907\u9632\u52A1/\u589E\u5385\u5C11\u961F\n';
+        tp1c += '    · 筹措军需/整备防务/增募兵勇\n';
         tp1c += '    \u00B7 \u62DB\u629A\u76D7\u8D3C/\u8BAE\u548C\u8FB9\u6C11\n';
         tp1c += '    \u00B7 \u7B79\u5EFA\u5DE5\u7A0B\uFF08\u6865\u6881/\u5824\u575D/\u9A7F\u9053/\u5B66\u5BAB/\u7985\u9662\uFF09\n';
         tp1c += '    \u00B7 \u5904\u7406\u4E0A\u7EA7\u578B\u6307\u4EE4\u00B7\u52A0\u76D6\u8F6C\u53D1\u4E0B\u53F8\n\n';
@@ -4530,127 +4530,127 @@
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u5F7C\u6B64\u4E92\u52A8\u793E\u4EA4\u96C5\u4E8B\u3011\n';
         tp1c += '    \u00B7 \u540C\u50DA\u5BB4\u996E\u00B7\u8BD7\u9152\u5531\u548C\n';
         tp1c += '    \u00B7 \u5B66\u672F\u5207\u78CB\u00B7\u8BBA\u5B66\u8FA9\u96BE\u00B7\u8BB2\u4F1A\n';
-        tp1c += '    \u00B7 \u8BBF\u53CB\u95EE\u5B66\u00B7\u8BF7\u6559\u524D\u8F88\u00B7\u8868\u62A5\u5E08\u95E8\n';
-        tp1c += '    \u00B7 \u8054\u59FB\u6C42\u4EB2\u00B7\u4EA4\u6362\u5A5A\u8BFA\u00B7\u5408\u5C01\u5C54\u5973\n';
-        tp1c += '    \u00B7 \u5E08\u5F92\u4F20\u9053\u00B7\u6536\u5F92\u7ACB\u6D3E\u00B7\u9616\u5B8B\u4F20\u7ECF\n';
+        tp1c += '    · 访友问学·请教前辈·拜谒师门\n';
+        tp1c += '    · 联姻求亲·交换婚诺·议配儿女\n';
+        tp1c += '    · 师徒传道·收徒立派·开宗传经\n';
         tp1c += '    \u00B7 \u79C1\u4E0B\u8C03\u505C\u53CC\u65B9\u7EA0\u7EB7\u00B7\u8BB0\u6069\u4E0E\u6068\n';
         tp1c += '    \u00B7 \u5546\u8BAE\u5171\u540C\u4E0A\u758F\u00B7\u8054\u540D\u5448\u8BF7\n';
         tp1c += '    \u00B7 \u8F6C\u6C42\u540C\u95E8/\u540C\u4E61\u63F4\u5F15\n';
-        tp1c += '    \u00B7 \u5199\u4FE1\u6170\u95EE\u75C5\u8005\u00B7\u540A\u5510\u4E27\u8005\u00B7\u8D53\u793C\u7230\u5BD7\n';
+        tp1c += '    · 写信慰问病者·吊唁丧者·馈礼问安\n';
         tp1c += '    \u00B7 \u540C\u89C2\u4E66\u753B\u00B7\u5171\u8D4F\u53E4\u73A9\u00B7\u6B23\u8D4F\u82B1\u6728\n';
-        tp1c += '    \u00B7 \u7ED3\u793E\u96C5\u96C6\uFF08\u8BD7\u793E/\u6587\u793E/\u4E49\u793E/\u4E91\u7845\u4F1A\uFF09\n';
-        tp1c += '    \u00B7 \u65C5\u884C\u540C\u6E38\u00B7\u8BBF\u53E4\u5BFB\u80DC\u00B7\u5BFC\u6E38\u516C\u4E8B\n';
-        tp1c += '    \u00B7 \u8D60\u7B54\u6587\u5B57\u00B7\u6B21\u97F5\u552F\u92F3\u7B54\u7B54\n\n';
+        tp1c += '    · 结社雅集（诗社/文社/义社/耆英会）\n';
+        tp1c += '    · 旅行同游·访古寻胜·兼办公事\n';
+        tp1c += '    · 赠答文字·次韵唱酬\n\n';
 
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u4E3B\u52A8\u5EFA\u6784\u540D\u671B\u8D24\u80FD\u884C\u4E3A\uFF08\u5FC3\u6709\u91CE\u671B/\u91CD\u89C6\u540D\u8282\u7684 NPC \u5E94\u4E3B\u52A8\u4E3A\u4E4B\uFF09\u3011\n';
-        tp1c += '    \u00B7 \u6551\u6D4E\u707E\u6C11\u00B7\u65BD\u7CA5\u6296\u8863\uFF08\u540D\u671B+ \u8D24\u80FD+\uFF09\n';
-        tp1c += '    \u00B7 \u6350\u8D44\u5174\u5B66\u00B7\u5EFA\u4E66\u9662\u00B7\u7F62\u5B66\u8D4F\u4E8B\uFF08\u540D\u671B+\uFF09\n';
+        tp1c += '    · 救济灾民·施粥舍衣（名望+ 贤能+）\n';
+        tp1c += '    · 捐资兴学·建书院·劝学奖士（名望+）\n';
         tp1c += '    \u00B7 \u8BB2\u5B66\u00B7\u7ACB\u8A00\u00B7\u8457\u4E66\u7ACB\u5B66\u6D3E\uFF08\u6587\u540D+\uFF09\n';
-        tp1c += '    \u00B7 \u5956\u638E\u540E\u8FDB\u00B7\u8350\u62D4\u8D24\u624D\u00B7\u63D0\u643A\u4E0B\u58EB\uFF08\u8D24\u80FD++\uFF09\n';
-        tp1c += '    \u00B7 \u4FEE\u5FD7\u7F16\u53F2\u00B7\u96C6\u8D24\u8BEF\u7279\u7AD9\uFF08\u6587\u5316\u8D21\u732E\u00B7\u540D\u671B+\uFF09\n';
+        tp1c += '    · 奖掖后进·荐拔贤才·提携下士（贤能++）\n';
+        tp1c += '    · 修志编史·集贤校书（文化贡献·名望+）\n';
         tp1c += '    \u00B7 \u5174\u4FEE\u6C34\u5229\u00B7\u5EFA\u8DEF\u7B51\u6865\u00B7\u60E0\u6C11\u5DE5\u7A0B\uFF08\u540D\u671B+ \u8D24\u80FD+\uFF09\n';
-        tp1c += '    \u00B7 \u6E05\u5EC9\u81EA\u5B88\u00B7\u62D2\u8D3F\u4E0D\u62DC\u00B7\u5404\u6D01\u8EAB\u4EE5\u98DF\uFF08\u8D24\u80FD+\uFF09\n';
-        tp1c += '    \u00B7 \u629A\u6070\u5B64\u5BA1\u00B7\u65BD\u60E0\u8001\u5F31\u00B7\u89E3\u56F0\u5982\u4EB2\uFF08\u8D24\u80FD+\uFF09\n';
-        tp1c += '    \u00B7 \u5E73\u53CD\u51A4\u72F1\u00B7\u56F4\u590D\u540D\u6D41\u00B7\u6B63\u6C89\u53D7\u5C48\uFF08\u540D\u671B++ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    · 清廉自守·拒贿不受·洁身自好（贤能+）\n';
+        tp1c += '    · 抚恤孤寡·施惠老弱·解困如亲（贤能+）\n';
+        tp1c += '    · 平反冤狱·恢复名誉·昭雪受屈（名望++ 贤能+）\n';
         tp1c += '    \u00B7 \u4E3B\u6301\u4E61\u796D\u00B7\u8C03\u505C\u5B97\u65CF\u7EA0\u7EB7\uFF08\u5730\u65B9\u540D\u671B+\uFF09\n';
         tp1c += '    \u00B7 \u66FF\u4EBA\u62C5\u4FDD\u00B7\u8DF5\u8BFA\u5B88\u4FE1\u00B7\u4E49\u8D48\u6025\u96BE\uFF08\u4FE1\u4E49+ \u8D24\u80FD+\uFF09\n';
-        tp1c += '    \u00B7 \u4E3A\u56FD\u732E\u7B56\u00B7\u72AF\u9A6C\u76F4\u8C0F\u00B7\u62A5\u56FD\u5C4E\u8EAB\uFF08\u5FE0\u540D+\uFF09\n';
-        tp1c += '    \u00B7 \u6784\u7C50\u8BD7\u6587\u00B7\u9898\u8DCB\u540D\u54C1\u00B7\u9700\u987B\u96B6\u5B66\uFF08\u6587\u540D+\uFF09\n';
-        tp1c += '    \u00B7 \u7F6E\u4E49\u7530\u4E49\u58AE\u00B7\u4EA4\u4E8B\u5BD7\u65CF\u4EBA\uFF08\u65CF\u671B+ \u8D24\u80FD+\uFF09\n';
+        tp1c += '    · 为国献策·犯颜直谏·报国忘身（忠名+）\n';
+        tp1c += '    · 撰作诗文·题跋名品·研习书法（文名+）\n';
+        tp1c += '    · 置义田义塾·周济族人（族望+ 贤能+）\n';
         tp1c += '    \u2605 \u9700\u6839\u636E NPC \u6027\u683C\u4E0E\u91CE\u5FC3\u9009\u62E9\uFF1A\u6E05\u6D41\u58EB\u5927\u592B\u504F\u5411\u6587\u5316\u00B7\u8BB2\u5B66\u00B7\u7F6E\u4E49\u7530\uFF0C\n';
-        tp1c += '      \u529F\u5229\u578B\u504F\u5411\u6350\u8D44\u5174\u6559\u00B7\u8350\u62D4\u00B7\u60E0\u6C11\u5DE5\u7A0B\uFF0C\u5FE0\u81EA\u578B\u504F\u5411\u76F4\u8C0F\u00B7\u5CD7\u8074\u00B7\u62A5\u56FD\uFF0C\u4EC1\u5FB7\u578B\u504F\u5411\u5E73\u51A4\u00B7\u5B88\u4FE1\u00B7\u629A\u6070\u3002\n';
+        tp1c += '      功利型偏向捐资兴教·荐拔·惠民工程，忠直型偏向直谏·献策·报国，仁德型偏向平冤·守信·抚恤。\n';
         tp1c += '    \u2605 \u4EE5\u4E0A\u884C\u4E3A\u53EF\u901A\u8FC7 npc_interactions \u8F93\u51FA\uFF08type \u53EF\u4EE3\u5165 mediate/recommend/guarantee/petition_jointly\u7B49\uFF09\uFF0C\n';
-        tp1c += '      \u6216\u901A\u8FC7 fengwen_snippets \u98CE\u95FB\u6761\u5230\u6620\u5728\u73A9\u5BB6\u76F8\u5173\u9762\u677F\u3002\n\n';
+        tp1c += '      或通过 fengwen_snippets 风闻条目反映在玩家相关面板。\n\n';
 
         tp1c += '  \u3010\u5730\u65B9\u5B98\u00B7\u8F96\u533A\u6CBB\u7406\u884C\u4E3A\uFF08\u5728\u5730\u65B9\u4EFB\u804C\u7684 NPC \u5E94\u4E3A\u672C\u8F96\u4E4B\u653F\uFF09\u3011\n';
-        tp1c += '    \u00B7 \u52DD\u8BFE\u519C\u6851\u00B7\u7763\u7A3B\u5782\u6E9E\uFF08\u6625\u8015\u79CB\u6536\u65F6\u8282\uFF09\n';
-        tp1c += '    \u00B7 \u5174\u4FEE\u6C34\u5229\u00B7\u7591\u5824\u758F\u6CB3\u00B7\u62A4\u5821\u7B51\u9655\n';
-        tp1c += '    \u00B7 \u6E05\u4E08\u7530\u4EA9\u00B7\u6838\u9AA8\u6237\u53E3\u00B7\u8FFD\u8FFD\u9690\u6237\u00B7\u6536\u62DB\u6D41\u6C11\n';
-        tp1c += '    \u00B7 \u5BA1\u7406\u523B\u72F1\u00B7\u5A87\u96F7\u51A4\u72F1\u00B7\u907F\u796D\u6B24\u9F50\u7AED\n';
-        tp1c += '    \u00B7 \u6574\u987F\u9A7F\u4F20\u00B7\u5DE1\u4F50\u5173\u5361\u00B7\u6682\u6CC4\u76D7\u532A\u00B7\u7ACB\u7AAD\u5802\u6A50\n';
-        tp1c += '    \u00B7 \u5174\u529E\u5B66\u5BAB\u00B7\u9009\u62D4\u8D21\u751F\u00B7\u8BAE\u4E0A\u4E61\u5B66\u00B7\u9080\u6743\u8BB2\u5B66\n';
-        tp1c += '    \u00B7 \u5907\u8352\u4ED3\u5EEA\u00B7\u5E73\u7C74\u5E73\u7C75\u00B7\u8D48\u707E\u6296\u60E0\n';
-        tp1c += '    \u00B7 \u6574\u6CBB\u80E5\u540F\u00B7\u60E9\u8BAE\u7EB9\u5C24\u00B7\u63AD\u9664\u5347\u6597\u6301\u6237\n';
-        tp1c += '    \u00B7 \u7981\u6BC1\u6DEB\u7960\u00B7\u79FB\u98CE\u6613\u4FD7\u00B7\u65BD\u8005\u6E05\u81D5\u9664\u75B0\n';
-        tp1c += '    \u00B7 \u7AC0\u8BA7\u7269\u4EF7\u00B7\u7763\u67E5\u5E02\u6728\u00B7\u62B1\u514B\u632A\u66FF\u00B7\u7F6E\u55BD\u53AA\u5BBF\n';
-        tp1c += '    \u00B7 \u6309\u5BDF\u6B66\u4E61\u00B7\u56E0\u4E8B\u8BF7\u5D1C\u6C11\u529B\u00B7\u5BD2\u4E8B\u5385\u6EEA\n';
-        tp1c += '    \u2605 \u6210\u4EE3\u5B9E\u65BD\u53EF\u63D2 localActions (region/type/amount/reason/proposer)\uFF0C\u4EA6\u53EF\u5165 fengwen_snippets\u3002\n\n';
+        tp1c += '    · 劝课农桑·督促耕获（春耕秋收时节）\n';
+        tp1c += '    · 兴修水利·筑堤疏河·护堡筑寨\n';
+        tp1c += '    · 清丈田亩·核实户口·追查隐户·收招流民\n';
+        tp1c += '    · 审理刑狱·昭雪冤狱·清理积案\n';
+        tp1c += '    · 整顿驿传·巡查关卡·缉捕盗匪·编立保甲\n';
+        tp1c += '    · 兴办学宫·选拔贡生·倡立乡学·延师讲学\n';
+        tp1c += '    · 备荒仓廪·平籴平粜·赈灾施惠\n';
+        tp1c += '    · 整治胥吏·惩治贪蠹·革除升斗浮收\n';
+        tp1c += '    · 禁毁淫祠·移风易俗·施药除疫\n';
+        tp1c += '    · 平抑物价·督查市肆·禁止囤积·安置流寓\n';
+        tp1c += '    · 按察乡里·因事征调民力·农隙兴役\n';
+        tp1c += '    \u2605 具体实施可插 localActions (region/type/amount/reason/proposer)，亦可入 fengwen_snippets。\n\n';
 
-        tp1c += '  \u3010\u4E2D\u592E\u5B98\u5458\u00B7\u90E8\u5236\u5C65\u804C\u00B7\u9673\u66FF\u884C\u4E3A\uFF08\u4EAC\u4E2D\u4EFB\u804C\u7684 NPC \u5E94\u4E3A\u5C5E\u7CFB\u4E4B\u4E8B\uFF09\u3011\n';
-        tp1c += '    \u00B7 \u6279\u9605\u79EF\u538B\u6587\u4E66\u00B7\u4F1A\u5BA1\u5357\u5317\u9707\u58AC\u00B7\u5904\u7F6E\u5076\u6298\u5F52\u5B98\n';
-        tp1c += '    \u00B7 \u5802\u53F8\u4F1A\u516C\u00B7\u96F2\u4F7F\u548C\u8BAE\u00B7\u53EC\u96C6\u8FDE\u4E95\u00B7\u4F1A\u4F1A\u503E\u5CE7\u8868\n';
-        tp1c += '    \u00B7 \u4E3B\u6301\u90E8\u52A1\u4F1A\u8BAE\u00B7\u4E0B\u8BB0\u90E8\u5C5E\u00B7\u8003\u5BDF\u8D4E\u9EDC\u9676\n';
-        tp1c += '    \u00B7 \u5949\u65E8\u67E5\u6838\u67D0\u4E8B\u00B7\u8F9F\u9B42\u8C03\u9605\u6863\u6848\u00B7\u8C03\u5BFB\u7B25\u58AB\u53B2\u5171\n';
-        tp1c += '    \u00B7 \u5E9C\u540E\u805D\u4E0B\u90E8\u5C5E\u00B7\u7763\u8B3C\u6EE1\u8F93\u597A\u6210\u90E8\u00B7\u8003\u57CE\u51E1\u6240\u636F\n';
+        tp1c += '  【中央官员·部院履职·本职行为（京中任职的 NPC 应为本司之事）】\n';
+        tp1c += '    · 批阅积压文书·会审要案·处置奏折公文\n';
+        tp1c += '    · 堂司会商·遣使议和·召集僚属·会同具表\n';
+        tp1c += '    · 主持部务会议·训示部属·考察黜陟\n';
+        tp1c += '    · 奉旨查核某事·调阅档案·调取簿册核对\n';
+        tp1c += '    · 督责部属·督促各部完成职守·考核所属\n';
         tp1c += '    \u00B7 \u6D1D\u5C06\u6C97\u76EE\u00B7\u4F7F\u5B98\u4F53\u7B25\u7B49\u900F\u00B7\u5B66\u80FD\u6025\u89C4\n';
-        tp1c += '    \u00B7 \u4E3B\u6301\u5927\u793C\u00B7\u8FD8\u9882\u793E\u7A37\u00B7\u53EC\u5F00\u796D\u6BBF\u00B7\u66FF\u7687\u4E0B\u6388\u8BC4\n';
-        tp1c += '    \u00B7 \u63A5\u5F85\u5916\u4F7F\u00B7\u5C5E\u56FD\u671D\u8D21\u00B7\u4F1A\u8C08\u5916\u4F7F\u00B7\u8BB0\u6C88\u5916\u4E0B\n';
-        tp1c += '    \u00B7 \u7B79\u5212\u672C\u90E8\u6539\u9769\u00B7\u8BAE\u5E76\u5E9C\u5C40\u00B7\u5351\u963B\u51FA\u5C5E\u5B5D\u5FC6\u8ACB\u7684\n';
-        tp1c += '    \u00B7 \u540C\u4E8B\u4F1A\u8BAE\u3001\u8054\u540D\u4E0A\u7983\u00B7\u4F1A\u540C\u4E0D\u540C\u90E8\u95E8\u5E9C\u5177\u5171\u4EE4\n';
-        tp1c += '    \u2605 \u90E8\u5185\u884C\u4E3A\u53EF\u7528 npc_interactions (type:mediate/petition_jointly/recommend) \u6216 fengwen_snippets(type:\u594F\u8BAE/\u594F\u8BEE/\u8BAE\u793A)\u3002\n\n';
+        tp1c += '    · 主持大礼·祭告社稷·陪祀太庙·代陛下行礼\n';
+        tp1c += '    · 接待外使·属国朝贡·会谈外使·记录外情\n';
+        tp1c += '    · 筹划本部改革·议并府局·裁汰冗员\n';
+        tp1c += '    · 同事会议、联名上疏·会同不同部门共议政令\n';
+        tp1c += '    \u2605 部内行为可用 npc_interactions (type:mediate/petition_jointly/recommend) 或 fengwen_snippets(type:奏议/弹劾/核查)。\n\n';
 
-        tp1c += '  \u3010\u4EBA\u7269\u00B7\u79C1\u4EA7\u7ECF\u8425\u884C\u4E3A\uFF08\u51E0\u4E4E\u6240\u6709 NPC \u90FD\u4F1A\u8003\u8651\u5BB6\u5E9F\uFF09\u3011\n';
-        tp1c += '    \u00B7 \u8D2D\u7F6E\u7530\u4EA9\u00B7\u540A\u7F6E\u5B85\u9662\u00B7\u628A\u58F0\u540C\u4EA7\u00B7\u4FEE\u7F6E\u5E84\u56ED\n';
-        tp1c += '    \u00B7 \u79C1\u4E0B\u7ECF\u5546\u00B7\u5F00\u8BBE\u5178\u5F53\u00B7\u653E\u8D37\u53D6\u606F\u00B7\u6295\u81D3\u7980\u5385\u4E1A\n';
-        tp1c += '    \u00B7 \u6536\u53D7\u793C\u91D1\u00B7\u4E0B\u5C5E\u5B5D\u656C\u00B7\u5916\u585E\u6C14\u541F\u793C\u00B7\u4E92\u79FB\u8D35\u91CD\u8D60\u4E86\n';
-        tp1c += '    \u00B7 \u5C06\u4E2A\u4EBA\u8D22\u4EA7\u8F6C\u79FB\u6216\u863E\u533F\u00B7\u79C1\u4E0B\u884C\u4E50\n';
-        tp1c += '    \u00B7 \u5957\u7528\u516C\u5B34\u00B7\u6D6A\u8D39\u516C\u6B3E\u00B7\u4F53\u5F52\u6578\u8D22\u00B7\u8C15\u8106\u5173\u6BBF\n';
-        tp1c += '    \u00B7 \u878D\u8D44\u65CF\u4EA7\u00B7\u5BB6\u5B5F\u6E4F\u6E34\u00B7\u517B\u95E8\u5BA2\u6216\u96C7\u7528\u4EBA\n';
-        tp1c += '    \u00B7 \u538B\u4EAC\u4FE1\u00B7\u8D44\u52A9\u4ECE\u7BE5\u4EB2\u53CB\u00B7\u5B8C\u6210\u4E3B\u7537\u5973\u5A5A\u5B50\u5C00\n';
-        tp1c += '    \u00B7 \u8D2A\u6E9A\u6311\u62DB\u00B7\u8D37\u9057\u79C1\u4EBA\u50A8\u91D1\u00B7\u7528\u4E8E\u7529\u961F\u9886\u8A00\u6280\u5DE7\u7B49\n';
+        tp1c += '  【人物·私产经营行为（几乎所有 NPC 都会考虑家计）】\n';
+        tp1c += '    · 购置田亩·添置宅院·兼并田产·修置庄园\n';
+        tp1c += '    · 私下经商·开设典当·放贷取息·投资产业\n';
+        tp1c += '    · 收受礼金·下属孝敬·外官馈礼·互赠贵重礼物\n';
+        tp1c += '    · 将个人财产转移或藏匿·私下行乐\n';
+        tp1c += '    · 挪用公帑·浪费公款·侵吞钱财·贿赂关节\n';
+        tp1c += '    · 经营族产·家用开销·养门客或雇用人\n';
+        tp1c += '    · 接济亲族·资助贫寒亲友·操办儿女婚事\n';
+        tp1c += '    · 贪墨挪借·积攒私人储金·用于打点钻营等\n';
         tp1c += '    \u2605 \u901A\u8FC7 char_updates.updates.resources.private.money (delta) \u4F53\u73B0\u79C1\u4EA7\u53D8\u5316\uFF1B\n';
         tp1c += '      \u6216 fengwen_snippets (type:\u8D22\u884C/\u5BB6\u4E8B/\u7F6E\u4EA7) \u98CE\u95FB\u4F20\u3002\n';
-        tp1c += '    \u26A0 \u4FB5\u5E05\u7C7B\u884C\u4E3A (\u5957\u7528\u516C\u5B34/\u53D7\u8D3F) \u4F1A\u4F7F\u540D\u671B\u7F29\u51CF\uFF1B\u8907\u9ED1\u7684\u4F1A\u88AB\u8BAE\u79C1\u4E0B\u4F20\u6B66\n\n';
+        tp1c += '    \u26A0 侵占类行为 (挪用公帑/受贿) 会使名望缩减；败露的会被私下议论传开\n\n';
 
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u516C\u5E93\u5173\u5207\u62C5\u5F53\u884C\u4E3A\uFF08\u4EC5\u6709\u80FD\u529B/\u5FD7\u5411/\u4E94\u5E38\u4EC1\u4E49+ \u7684 NPC \u624D\u4F1A\u4E3A\u4E4B\uFF09\u3011\n';
-        tp1c += '    \u00B7 \u6350\u4FF8\u8865\u516C\u5E93\u4E8F\u7A7A\u00B7\u8DDF\u4E0D\u53D7\u63D0\u996E\u00B7\u4EE5\u79C1\u8D27\u57AB\u529E\u516C\u4E8B\n';
-        tp1c += '    \u00B7 \u51FB\u76D8\u4FDD\u5F92\u00B7\u4E3B\u52A8\u6838\u67E5\u8D26\u76EE\u00B7\u67E5\u63ED\u8D2A\u5F0A\u00B7\u9A71\u9010\u8D2A\u5414\n';
-        tp1c += '    \u00B7 \u7BC0\u6D41\u7701\u8D39\u00B7\u5F01\u5E9F\u79C1\u8D39\u00B7\u8DDF\u683C\u5F15\u7BC0\u516C\u9A7F\u6F14\n';
-        tp1c += '    \u00B7 \u4E0A\u7687\u8BF7\u589E\u62E8\u6B3E\u00B7\u79E6\u8BF7\u6BEA\u52A8\u516C\u5E93\u00B7\u8BF7\u8C03\u9971\u6D88\u5206\u5F01\n';
-        tp1c += '    \u00B7 \u5F39\u52BE\u632A\u6324\u516C\u5E93\u8005\u00B7\u6770\u7D22\u56DE\u8086\u53D1\u6263\u6B3E\n';
+        tp1c += '    · 捐俸补公库亏空·拒不受馈赠·以私财垫办公事\n';
+        tp1c += '    · 盘库保帑·主动核查账目·查揭贪弊·驱逐贪吏\n';
+        tp1c += '    · 节流省费·裁废冗费·严格节制公费\n';
+        tp1c += '    · 上奏请增拨款·奏请调动公库·请调饷银分拨\n';
+        tp1c += '    · 弹劾挪用公库者·追索被克扣款项\n';
         tp1c += '    \u00B7 \u4E88\u4EE5\u4EFB\u4E00\u884C\u4E3A\u4E2D\u8D44\u8D28\u4E8E\u5751\u516C\u4EBA\u4EFB\u7684\u7269\u4EF7\u76D2\u5FAA\u5229\u751F\u4F1A\u8FE3\u4E4B\n';
         tp1c += '    \u2605 \u8D24\u80FD+\u5EC9 \u2265 65 \u4E14 \u4ED6 \u8D1F\u8D23\u4E86\u67D0\u516C\u5E93 \u2192 \u9AD8\u6982\u7387\u8003\u8651\u4E3A\u4E4B\uFF1B\n';
         tp1c += '      \u79C1\u5FC3\u91CD/\u5EC9<40 \u2192 \u5C11\u6709\u5173\u5207\uFF0C\u4E00\u5207\u79C1\u4E3A\u5148\u3002\n';
-        tp1c += '    \u2605 \u884C\u4E3A\u6279\u5230 npc_interactions (type:expose_secret/impeach/guarantee) \u6216 char_updates\u8C03\u516C\u5E93\uFF1B\n';
+        tp1c += '    \u2605 行为落到 npc_interactions (type:expose_secret/impeach/guarantee) 或 char_updates调公库；\n';
         tp1c += '      fengwen_snippets (type:\u53F8\u6CD5/\u6838\u67E5/\u6350\u4FF8) \u4F20\u98CE\u95FB\u3002\n\n';
 
         tp1c += '  \u3010\u4EBA\u7269\u00B7\u79C1\u4EBA\u751F\u6D3B\u65E5\u5E38\u3011\n';
         tp1c += '    \u00B7 \u5BB6\u4E8B\u5904\u7406\uFF08\u796D\u7956/\u5A5A\u5A36/\u4E27\u846C/\u8BAD\u5B50/\u5206\u5BB6\uFF09\n';
-        tp1c += '    \u00B7 \u5B97\u6559\u4FE1\u4EF0\uFF08\u8FDB\u5E99/\u793C\u4F5B/\u6C42\u9053/\u9F4B\u6212/\u7167\u706B\u7586\u75AB\uFF09\n';
+        tp1c += '    · 宗教信仰（进庙/礼佛/求道/斋戒/祈禳驱疫）\n';
         tp1c += '    \u00B7 \u517B\u751F\u4FDD\u5065\uFF08\u670D\u836F/\u9759\u5750/\u5BFC\u5F15/\u4E94\u79BD\u620F\uFF09\n';
-        tp1c += '    \u00B7 \u6587\u623F\u96C5\u4E8B\uFF08\u6536\u85CF\u91D1\u77F3/\u9898\u8DCB\u4E27\u672C/\u4E34\u5E16/\u523B\u5370\uFF09\n';
-        tp1c += '    \u00B7 \u56ED\u6797\u6E38\u61A9\uFF08\u8D4F\u82B1/\u542C\u7434/\u9493\u9C7C/\u5F02\u745E\u552F\u548C\uFF09\n';
+        tp1c += '    · 文房雅事（收藏金石/题跋善本/临帖/刻印）\n';
+        tp1c += '    · 园林游憩（赏花/听琴/钓鱼/弈棋唱和）\n';
         tp1c += '    \u00B7 \u7814\u7A76\u8457\u8FF0\uFF08\u6821\u52D8\u7ECF\u7C4D/\u64B0\u53F2/\u6CE8\u758F/\u4FEE\u65B9\u5FD7\uFF09\n';
         tp1c += '    \u00B7 \u5904\u7406\u75BE\u75C5\u00B7\u4E27\u670D\u5B88\u5236\n';
-        tp1c += '    \u00B7 \u4E91\u6E38\u53E4\u8FF9\u00B7\u65E0\u65E0\u5C81\u6708\u00B7\u6E29\u8F66\u6253\u5149\n\n';
+        tp1c += '    · 云游古迹·闲度岁月·消磨时光\n\n';
 
         tp1c += '  \u3010\u52BF\u529B\u00B7\u5185\u653F\u6D3B\u52A8\u3011\n';
         tp1c += '    \u00B7 \u6574\u987F\u5F8B\u6CD5\u00B7\u9881\u5E03\u65B0\u4EE4\n';
         tp1c += '    \u00B7 \u6E05\u67E5\u6237\u53E3\u00B7\u4E08\u91CF\u7530\u4EA9\n';
-        tp1c += '    \u00B7 \u6539\u5143\u00B7\u66F4\u5B9A\u5E74\u53F7\u00B7\u6539\u5236\u5189\u5B98\n';
+        tp1c += '    · 改元·更定年号·改制设官\n';
         tp1c += '    \u00B7 \u5BAB\u5EF7\u4EBA\u4E8B\u6574\u987F\u00B7\u7F62\u9769\u5B66\u5E9C/\u56FD\u5B50\u76D1\n';
-        tp1c += '    \u00B7 \u7F62\u9769\u5BA6\u5B98\u00B7\u6574\u9970\u5185\u5BAB\n\n';
+        tp1c += '    · 罢革宦官·整饬内宫\n\n';
 
         tp1c += '  \u3010\u52BF\u529B\u00B7\u519B\u4E8B\u6D3B\u52A8\u3011\n';
         tp1c += '    \u00B7 \u7B79\u5EFA\u65B0\u519B\u00B7\u6574\u7F16\u65E7\u90E8\n';
-        tp1c += '    \u00B7 \u4FEE\u7B51\u57CE\u9632\u00B7\u589E\u8BBE\u8FB9\u585E/\u5821\u91D1\n';
+        tp1c += '    · 修筑城防·增设边塞/堡垒\n';
         tp1c += '    \u00B7 \u8C03\u52A8\u9A7B\u519B\u00B7\u66F4\u6362\u5C06\u9886\n';
         tp1c += '    \u00B7 \u50A8\u5907\u7CAE\u8349\u00B7\u8C03\u8FD0\u519B\u9700\n';
         tp1c += '    \u00B7 \u5F81\u52DF\u5175\u6E90\u00B7\u7EC3\u5175\u8BB2\u6B66\n';
         tp1c += '    \u00B7 \u519B\u5C6F\u519B\u7530\u6539\u5236\n\n';
 
         tp1c += '  \u3010\u52BF\u529B\u00B7\u7ECF\u6D4E\u6C11\u751F\u6D3B\u52A8\u3011\n';
-        tp1c += '    \u00B7 \u5F00\u5E02\u901A\u5546\u00B7\u6574\u8083\u5E02\u6988\n';
+        tp1c += '    · 开市通商·整肃市肆\n';
         tp1c += '    \u00B7 \u53EC\u52DF\u6D41\u6C11\u5C6F\u57A6\n';
-        tp1c += '    \u00B7 \u63A8\u884C\u5E73\u7C74/\u5E73\u7C75\n';
+        tp1c += '    · 推行平籴/平粜\n';
         tp1c += '    \u00B7 \u6539\u94F8\u94B1\u5E01\u00B7\u6574\u7406\u76D0\u94C1\n';
         tp1c += '    \u00B7 \u5174\u529E\u77FF\u51B6\u00B7\u7B79\u5EFA\u6F15\u8FD0\n';
         tp1c += '    \u00B7 \u8BBE\u7ACB\u4ED3\u50A8\u00B7\u8D48\u707E\u6D4E\u6C11\n\n';
 
         tp1c += '  \u3010\u52BF\u529B\u00B7\u6587\u5316\u5B97\u6559\u5916\u4EA4\u6D3B\u52A8\u3011\n';
         tp1c += '    \u00B7 \u4E3E\u529E\u79D1\u4E3E/\u796D\u5929/\u5C01\u7985\n';
-        tp1c += '    \u00B7 \u5174\u5EFA\u5BFA\u89C2\u00B7\u656C\u4E8B\u795E\u7948\n';
-        tp1c += '    \u00B7 \u6574\u7406\u5178\u7C4D\u00B7\u7F16\u7EAE\u56FD\u53F2\n';
+        tp1c += '    · 兴建寺观·敬事神祇\n';
+        tp1c += '    · 整理典籍·编纂国史\n';
         tp1c += '    \u00B7 \u63A8\u5E7F\u672C\u65CF\u6587\u5316/\u6587\u5B57\n';
         tp1c += '    \u00B7 \u6291\u5236\u5F02\u7AEF\u00B7\u7981\u6BC1\u90AA\u8BF4\n';
         tp1c += '    \u00B7 \u6D3E\u9063\u4F7F\u8005/\u63A5\u7EB3\u6D41\u4EA1\n';
@@ -4662,7 +4662,7 @@
         tp1c += '  \u00B7 \u9632\u6B62"\u5FA1\u53F2\u5FC5\u8C0F\u00B7\u5C06\u519B\u5FC5\u6218\u00B7\u6E05\u6D41\u5FC5\u52BE\u5BA6\u5B98"\u5DE5\u5177\u4EBA\u6A21\u677F\u2014\u2014\u6309 NPC \u6027\u683C/\u6D3E\u7CFB/\u4E0E\u76EE\u6807\u5173\u7CFB/\u5FE0\u5FD7\u5EC9\u9009\u884C\u4E3A\n';
         tp1c += '  \u00B7 \u591A\u6570\u4EBA\u89C2\u671B/\u660E\u54F2\u4FDD\u8EAB\uFF0C\u5C11\u6570\u4EBA\u4ECB\u5165\n';
         tp1c += '  \u00B7 \u73A9\u5BB6 ' + _pNameC + ' \u4E0D\u5F97\u4F5C\u4EFB\u4F55\u5B57\u6BB5\u4E2D\u7684 actor/schemer\n';
-        tp1c += '  \u00B7 \u5386\u53F2\u8D26\u672C\u4E00\u81F4\u6027\u2014\u2014\u767E\u5E74\u524D\u7684\u4EE4\u6068/\u6069\u60E0\u4ECA\u4ECD\u6709\u4F59\u6CE2\uFF1B\u4E0D\u53EF\u8F7B\u6613\u201C\u548C\u597D\u201D\u4E4B\u524D\u7684\u5C60\u57CE/\u80CC\u76DF\u4EC7\u6577\n';
+        tp1c += '  · 历史账本一致性——百年前的仇恨/恩惠今仍有余波；不可轻易“和好”之前的屠城/背盟仇怨\n';
 
         tp1c += '\n\u8FD4\u56DE\u683C\u5F0F\u793A\u4F8B\uFF1A\n';
         tp1c += '{\n  "faction_interactions_advanced":[{...}],\n  "faction_events":[{...}],\n  "faction_ai_outcomes":[{...}],\n  "faction_relation_changes":[{...}],\n  "faction_succession":[{...}],\n  "npc_schemes":[{...}],\n  "scheme_actions":[{...}],\n  "hidden_moves":["..."],\n  "fengwen_snippets":[{...}]\n}';
@@ -4781,10 +4781,10 @@
               // type → 默认 mood 映射（若 AI 未显式给 mood）
               var _fwMoodMap = {
                 '\u5F39\u52BE':'\u6012','\u6784\u9677':'\u6012','\u9020\u8C23':'\u6012','\u8BBD\u523A':'\u6012','\u63ED\u79C1':'\u6012',
-                '\u8350\u4E3E':'\u559C','\u6350\u4FF8':'\u559C','\u5BB4\u996E':'\u559C','\u6E38\u5BB4':'\u559C','\u8BD7\u793E':'\u559C','\u5956\u5F0F':'\u559C','\u96C5\u793A':'\u559C','\u6C42\u5A5A':'\u559C','\u4E92\u5E02':'\u559C','\u76DF\u7EA6':'\u559C',
+                '荐举':'喜','捐俸':'喜','宴饮':'喜','游宴':'喜','诗社':'喜','奖掖':'喜','雅集':'喜','求婚':'喜','互市':'喜','盟约':'喜',
                 '\u7ED3\u515A':'\u5E73','\u79C1\u8BBF':'\u5E73','\u5B66\u8BBA':'\u5E73','\u8D22\u884C':'\u5E73','\u7F6E\u4EA7':'\u5E73','\u5C45\u7740':'\u5E73','\u8FB9\u62A5':'\u5E73','\u671D\u8D21':'\u5E73','\u9063\u4F7F':'\u5E73',
-                '\u6BCD\u796D':'\u5FE7','\u4E27\u796D':'\u5FE7','\u6218\u62A5':'\u5FE7','\u4E39\u9053':'\u5FE7','\u85AC\u91CA':'\u5FE7','\u5BB6\u4E8B':'\u5FE7',
-                '\u5BC6\u8054':'\u5FE7','\u5DE1\u89C6':'\u5E73','\u5DE1\u8005':'\u5E73','\u8D51\u635C':'\u6050','\u53F8\u6CD5':'\u5FE7','\u6838\u67E5':'\u5FE7','\u548C\u4EB2':'\u559C','\u8D28\u5B50':'\u5FE7'
+                '母祭':'忧','丧祭':'忧','战报':'忧','丹道':'忧','药释':'忧','家事':'忧',
+                '密联':'忧','巡视':'平','巡者':'平','赑搜':'恐','司法':'忧','核查':'忧','和亲':'喜','质子':'忧'
               };
               p1c.fengwen_snippets.forEach(function(fw){
                 if (!fw || !fw.text) return;

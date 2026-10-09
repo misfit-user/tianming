@@ -1381,9 +1381,9 @@ export function createReconcile(deps) {
     G._fiscalDeficitStreak++;
     if (G._fiscalDeficitStreak >= 3) {
       // 持续 3+ 回合赤字：弹窗+重大告警
-      if (typeof global.addEB === 'function') global.addEB('\u8D22\u653F\u2757\u2757', '\u8D4C\u7A7A\u7EE7\u7EED ' + G._fiscalDeficitStreak + ' \u56DE\u5408\uFF01\u7687\u5A01 -' + hwPenalty + ' \u6C11\u5FC3 -' + mxPenalty + ' \u52A8\u4E71+' + Math.round(totalMult*0.4));
+      if (typeof global.addEB === 'function') global.addEB('财政\u2757\u2757', '亏空继续 ' + G._fiscalDeficitStreak + ' 回合！皇威 -' + hwPenalty + ' 民心 -' + mxPenalty + ' 动乱+' + Math.round(totalMult*0.4));
     } else {
-      if (typeof global.addEB === 'function') global.addEB('\u8D22\u653F\u2757', '\u56FD\u5EAA\u8D64\u5B57\uFF01' + pens.map(function(p){return p.label+p.tierLabel;}).join('\u3001') + ' \u2192 \u7687\u5A01-' + hwPenalty + ' \u6C11\u5FC3-' + mxPenalty);
+      if (typeof global.addEB === 'function') global.addEB('财政\u2757', '国库赤字！' + pens.map(function(p){return p.label+p.tierLabel;}).join('、') + ' \u2192 皇威-' + hwPenalty + ' 民心-' + mxPenalty);
     }
   }
   // 若连续两回合均未赤字·streak 归零（入口：某处定期重置）

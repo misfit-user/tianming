@@ -131,20 +131,20 @@ function _renderEdictSuggestions() {
       html += '<span class="act">\u6458\u5165</span>';
       // Phase G\u00b7F7\u00b7Path B wendui inline button\u00b7G2 enke / G3 wuju\u00b7click \u89e6\u672c\u90e8 wendui
       if (s._enkeSubtype && typeof window._kjG2OpenLibuEnkeWendui === 'function') {
-        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--celadon-400,#6a9);background:rgba(120,180,140,0.12);color:var(--celadon-400,#6a9);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG2OpenLibuEnkeWendui();" title="\u4eb2\u95ee\u793c\u90e8\u00b7\u8c10\u5546\u5f00\u79d1">\u95ee\u793c\u90e8</button>';
+        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--celadon-400,#6a9);background:rgba(120,180,140,0.12);color:var(--celadon-400,#6a9);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG2OpenLibuEnkeWendui();" title="亲问礼部·咨商开科">问礼部</button>';
       }
       if (s._wujuSubtype && typeof window._kjG3OpenBingbuWujuWendui === 'function') {
-        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--vermillion-400,#c87);background:rgba(200,120,100,0.12);color:var(--vermillion-400,#c87);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG3OpenBingbuWujuWendui();" title="\u4eb2\u95ee\u5175\u90e8\u00b7\u8c10\u5546\u5f00\u6b66\u4e3e">\u95ee\u5175\u90e8</button>';
+        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--vermillion-400,#c87);background:rgba(200,120,100,0.12);color:var(--vermillion-400,#c87);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG3OpenBingbuWujuWendui();" title="亲问兵部·咨商开武举">问兵部</button>';
       }
       // Phase H\u00b7H5\u00b7Path B \u95ee\u5b66\u653f button (\u671d\u4ee3\u5dee\u5f02 label)
       if (s._schoolSubtype && typeof window._kjpHOpenLibuSchoolWendui === 'function') {
         var _xzLabel = typeof window._kjpHGetXuezhengLabel === 'function' ? window._kjpHGetXuezhengLabel() : '\u95ee\u5b66\u653f';
         var _xzShort = _xzLabel.length > 4 ? _xzLabel.slice(0, 4) : _xzLabel;
-        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--indigo-400,#779);background:rgba(120,140,200,0.12);color:var(--indigo-400,#779);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjpHOpenLibuSchoolWendui();" title="\u4eb2\u95ee ' + escHtml(_xzLabel) + '\u00b7\u8c10\u5546\u4e66\u9662">\u95ee' + escHtml(_xzShort) + '</button>';
+        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--indigo-400,#779);background:rgba(120,140,200,0.12);color:var(--indigo-400,#779);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjpHOpenLibuSchoolWendui();" title="亲问 ' + escHtml(_xzLabel) + '·咨商书院">问' + escHtml(_xzShort) + '</button>';
       }
       // G5 v2\u00b7\u7ae5\u5b50\u79d1\u00b7\u95ee\u793c\u90e8 button (audit Fix 2)
       if (s._tongziSubtype && typeof window._kjG5OpenLibuTongziWendui === 'function') {
-        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--rose-400,#c79);background:rgba(200,120,150,0.12);color:var(--rose-400,#c79);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG5OpenLibuTongziWendui();" title="\u4eb2\u95ee\u793c\u90e8\u00b7\u8c10\u5546\u8350\u795e\u7ae5">\u95ee\u793c\u90e8</button>';
+        html += '<button class="ed-sug-wendui" style="position:absolute;right:30px;top:6px;font-size:11px;padding:1px 6px;border:1px solid var(--rose-400,#c79);background:rgba(200,120,150,0.12);color:var(--rose-400,#c79);cursor:pointer;border-radius:2px;" onclick="event.stopPropagation();window._kjG5OpenLibuTongziWendui();" title="亲问礼部·咨商荐神童">问礼部</button>';
       }
       html += '<button class="del" onclick="event.stopPropagation();GM._edictSuggestions[' + _realIdx + '].used=true;_renderEdictSuggestions();" title="\u5220\u9664">\u2715</button>';
       html += '</div>';

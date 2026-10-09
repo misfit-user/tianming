@@ -609,7 +609,7 @@ async function aiDeepReadScenario(options) {
     if (f.leaderTitle) line += '(' + f.leaderTitle + ')';
     if (f.militaryStrength) line += ' \u5175\u529B:' + f.militaryStrength;
     if (f.economy) line += ' \u7ECF\u6D4E:' + f.economy;
-    if (f.playerRelation !== undefined && f.playerRelation !== 0) line += ' \u5BF9\u7389\u5173\u7CFB:' + f.playerRelation;
+    if (f.playerRelation !== undefined && f.playerRelation !== 0) line += ' 对玩家关系:' + f.playerRelation;
     if (f.resources) line += ' \u8D44\u6E90:' + f.resources;
     // Phase B4·派生指标 (健康/凝聚/财政压)·让 AI 看 derivation chain·而非只读硬填 strength
     if (f.derivedHealth && f.derivedHealth.labels) {
@@ -873,7 +873,7 @@ async function aiDeepReadScenario(options) {
     var _activeThreads = GM._plotThreads.filter(function(t) { return t.status !== 'resolved'; });
     if (_activeThreads.length > 0) {
       var _stallThresh = (typeof turnsForDuration === 'function') ? turnsForDuration('3months') : 3;
-      blockC += '\n\u3010\u6D3B\u8DC3\u5267\u60C5\u7EBF\u2014\u2014\u5FC5\u987B\u63A8\u8FDB\u6BCF\u4E00\u6761\u6216\u89E3\u91CA\u641E\u7F6E\u539F\u56E0\u3011\n';
+      blockC += '\n【活跃剧情线——必须推进每一条或解释搁置原因】\n';
       _activeThreads.forEach(function(t) {
         var age = GM.turn - (t.lastUpdateTurn || t.startTurn);
         var stalled = age >= _stallThresh;

@@ -794,7 +794,7 @@ async function aiGenChr(){
   try{var ctx=findScenarioById(editingScenarioId);
     var era=ctx?ctx.era:"";var scnName=ctx?ctx.name:"";
     var histReq="\u3010\u8981\u6C42\u3011\u4EBA\u7269\u5FC5\u987B\u662F"+era+"\u65F6\u671F\u5B9E\u9645\u5B58\u5728\u7684\u5386\u53F2\u4EBA\u7269\uff0c\u4E0D\u5F97\u865A\u6784\u3002";
-    var existChr=P.characters.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote1=existChr.length?"已有人物（不得重复）："+existChr.join("、")+"\n":"";var content=await callAISmart("\u4F60\u662F\u4E2D\u56FD\u5386\u53F2\u4E13\u5BB6\u3002"+histReq+existNote1+"\u8BF7\u4E3A\u5267\u672C\u300A"+scnName+"\u300B("+era+")\u751F\u62125\u4E2A\u65B0\u5386\u53F2\u4EBA\u7269\uff0c\u4E25\u683C\u6309\u6B63\u53F2\u8FD8\u539F\u3002\u8FD4\u56DEJSON:\n[{\"name\":\"\",\"title\":\"\",\"desc\":\"\",\"personality\":\"\",\"stats\":{},\"loyalty\":70,\"ambition\":50,\"benevolence\":50,\"intelligence\":70,\"valor\":60,\"morale\":75,\"stance\":\"\",\"faction\":\"\",\"isHistorical\":true}]",2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
+    var existChr=P.characters.filter(function(x){return x.sid===editingScenarioId;}).map(function(x){return x.name;});var existNote1=existChr.length?"已有人物（不得重复）："+existChr.join("、")+"\n":"";var content=await callAISmart("你是中国历史专家。"+histReq+existNote1+"请为剧本《"+scnName+"》("+era+")生成5个新历史人物，严格按正史还原。返回JSON:\n[{\"name\":\"\",\"title\":\"\",\"desc\":\"\",\"personality\":\"\",\"stats\":{},\"loyalty\":70,\"ambition\":50,\"benevolence\":50,\"intelligence\":70,\"valor\":60,\"morale\":75,\"stance\":\"\",\"faction\":\"\",\"isHistorical\":true}]",2500,{minLength:200,maxRetries:3,validator:function(c){try{var arr=extractJSON(c);return Array.isArray(arr)&&arr.length>=5;}catch(e){return false;}}});
     var generatedChars=extractJSON(content);if(Array.isArray(generatedChars)){generatedChars.forEach(function(c){P.characters.push({sid:editingScenarioId,name:c.name||"",title:c.title||"",desc:c.desc||"",stats:c.stats||{},stance:c.stance||"",playable:false,personality:c.personality||"",appearance:"",skills:[],loyalty:c.loyalty!=null?c.loyalty:70,morale:c.morale!=null?c.morale:75,ambition:c.ambition!=null?c.ambition:50,benevolence:c.benevolence!=null?c.benevolence:50,intelligence:c.intelligence!=null?c.intelligence:70,valor:c.valor!=null?c.valor:60,dialogues:[],secret:"",faction:c.faction||"",aiPersonaText:"",behaviorMode:"",valueSystem:"",speechStyle:"",rels:[],isHistorical:c.isHistorical!==false,age:30,gender:"\u7537"});});renderEdTab("t-chr");toast("\u2705 \u5DF2\u751F\u6210");}
   }catch(err){toast("\u5931\u8D25: "+err.message);}
   finally{hideLoading();}
@@ -953,9 +953,9 @@ function aiGenFullScenario(){
   panel.style.display="block";
   panel.innerHTML='<div class="cd"><h4 style="color:var(--gold);">\uD83E\uDD16 AI\u751F\u6210\u5386\u53F2\u5267\u672C</h4>'+
     '<div class="rw"><div class="fd full"><label>\u671D\u4EE3 / \u7687\u5E1D <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u5FC5\u586B\uff09</span></label>'+
-    '<input id="fg-dynasty" placeholder="\u5982\uff1A\u660E\u671D\u5D07\u797A\u7687\u5E1D / \u5510\u671D\u674E\u4E16\u6C11" style="width:100%;"></div></div>'+
+    '<input id="fg-dynasty" placeholder="如：明朝崇祯皇帝 / 唐朝李世民" style="width:100%;"></div></div>'+
     '<div class="rw"><div class="fd full"><label>\u8865\u5145\u63CF\u8FF0 <span style="color:var(--txt-d);font-size:0.8rem;">\uff08\u53EF\u9009\uff0C\u6307\u5B9A\u80CC\u666F\u3001\u4E8B\u4EF6\uff09</span></label>'+
-    '<textarea id="fg-desc" rows="2" placeholder="\u5982\uff1A\u5D07\u797A\u5341\u4E03\u5E74\uff0C\u674E\u81EA\u6210\u5175\u4E34\u57CE\u4E0B\uff0C\u671D\u5C40\u52A8\u8361\u2026"></textarea></div></div>'+
+    '<textarea id="fg-desc" rows="2" placeholder="如：崇祯十七年，李自成兵临城下，朝局动荡…"></textarea></div></div>'+
     '<div class="rw"><div class="fd"><label>\u751F\u6210\u8BE6\u7EC6\u7A0B\u5EA6</label>'+
     '<select id="fg-words"><option value="brief">\u7B80\u7565\uff08\u5FEB\u901F\uff09</option><option value="normal" selected>\u6807\u51C6\uff08\u63A8\u8350\uff09</option><option value="detailed">\u8BE6\u7EC6\uff08\u5185\u5BB9\u4E30\u5BCC\uff09</option><option value="full">\u5B8C\u6574\uff08\u6700\u8BE6\u5C3D\uff09</option></select></div>'+
     '<div class="fd"><label>\u4E16\u754C\u7C7B\u578B</label>'+
@@ -1032,7 +1032,7 @@ async function execFullGen(){
       "\u8bf7\u4e3a\u300a"+context+"\u300b\u521b\u4f5c\u4e00\u4e2a\u5386\u53f2\u7b56\u7565\u6e38\u620f\u5267\u672c\u57fa\u7840\u8bbe\u5b9a\u3002"+
       "\u8981\u6c42:\n1. era\u5fc5\u987b\u662f\u771f\u5b9e\u5386\u53f2\u5e74\u4ee3\u3002\n2. background\u8be6\u7ec6\u63cf\u5199\u653f\u6cbb\u683c\u5c40\u3001\u7ecf\u6d4e\u72b6\u51b5\u3001\u793e\u4f1a\u77db\u76fe\uff0c\u7ea6"+bgLen+"\u3002\n3. opening\u5f00\u573a\u767d\u5c55\u793a\u5c40\u52bf\u7d27\u8feb\u611f\uff0c\u7ea6"+openLen+"\u3002"+
       "\n4. role\u662f\u73a9\u5bb6\u626e\u6f14\u7684\u771f\u5b9e\u5386\u53f2\u4eba\u7269\u3002\n5. name\u662f\u5267\u672c\u6807\u9898\u3002\n6. suggestions\u662f3\u4e2a\u5267\u60c5\u5efa\u8bae\u6570\u7ec4\u3002"+
-      "\n\u8fd4\u56de\u7eefJSON\uff1a{\"era\":\"...\",\"name\":\"...\",\"role\":\"...\",\"background\":\"...\",\"opening\":\"...\",\"suggestions\":[\"...\",\"...\",\"...\"]}";
+      "\n返回纯JSON：{\"era\":\"...\",\"name\":\"...\",\"role\":\"...\",\"background\":\"...\",\"opening\":\"...\",\"suggestions\":[\"...\",\"...\",\"...\"]}";
     var r1=await _fgFire(prompt1,2000,{signal:_fgAbortCtrl.signal,minLength:300,maxRetries:3});   // 3a · API/网络错误降级为''(走下面 JSON 兜底)·不再让单次 AI 故障整体失败
     var ctxScn="";
     try{
@@ -1047,7 +1047,7 @@ async function execFullGen(){
     var prompt2="\u4f60\u662f\u4e2d\u56fd\u5386\u53f2\u4e13\u5bb6\u3002"+histNote+
       "\u80cc\u666f\uff1a"+ctxScn+
       "\n\u8bf7\u751f\u6210"+chrCount+"\u4e2a\u771f\u5b9e\u5386\u53f2\u4eba\u7269\u3002\u6bcf\u4e2a\u5305\u542b: name(\u771f\u5b9e\u59d3\u540d), role(\u5b98\u804c), faction(\u9635\u8425), personality(\u6027\u683c\u63cf\u8ff0), loyalty(0-100), ambition(0-100), benevolence(0-100), intelligence(0-100), valor(0-100), morale(0-100)\u3002"+
-      "\n\u8fd4\u56de\u7eefJSON\u6570\u7ec4: [{\"name\":\"...\",\"role\":\"...\",\"faction\":\"...\",\"personality\":\"...\",\"loyalty\":70,\"ambition\":60,\"benevolence\":50,\"intelligence\":80,\"valor\":65,\"morale\":75},...]";
+      "\n返回纯JSON数组: [{\"name\":\"...\",\"role\":\"...\",\"faction\":\"...\",\"personality\":\"...\",\"loyalty\":70,\"ambition\":60,\"benevolence\":50,\"intelligence\":80,\"valor\":65,\"morale\":75},...]";
     var r2=await _fgFire(prompt2,3000,{signal:_fgAbortCtrl.signal,minLength:500,maxRetries:3,validator:function(c){try{var j=JSON.parse(_stripJsonFence(c));return Array.isArray(j)&&j.length>=Math.min(chrCount,3);}catch(e){return false;}}});   // 3a · 降级为''·不整体失败
     var chrs=[];var ctxChrs="";
     try{

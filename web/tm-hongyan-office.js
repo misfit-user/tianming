@@ -185,7 +185,7 @@ function renderLetterPanel() {
     // \u5BA3\u5927\u00B7\u5C71\u897F\uFF08\u72EC\u7ACB\u51FA\u6765\uFF09
     if (/\u5927\u540C|\u5BA3\u5E9C|\u5BA3\u9547|\u592A\u539F|\u4EE3\u5DDE|\u84B2\u5DDE|\u5C71\u897F|\u5F52\u5316/.test(loc)) return '\u5BA3\u5927\u00B7\u5C71\u897F';
     // \u897F\u9672\u00B7\u8FB9\u9547
-    if (/\u9655|\u897F\u5B89|\u5EF6|\u7518|\u5B81\u590F|\u5170\u5DDE|\u4E09\u8FB9|\u51C9|\u6986\u6797|\u56FA\u539F|\u7C73\u8102|\u5B89\u585E|\u5E9C\u8C37/.test(loc)) return '\u897F\u9677\u00B7\u8FB9\u9547';
+    if (/陕|西安|延|甘|宁夏|兰州|三边|凉|榆林|固原|米脂|安塞|府谷/.test(loc)) return '西陲·边镇';
     // \u897F\u5357\u00B7\u5DF4\u8700
     if (/\u56DB\u5DDD|\u91CD\u5E86|\u4E91|\u8D35|\u8700|\u5DF4|\u77F3\u67F1|\u6210\u90FD/.test(loc)) return '\u897F\u5357\u00B7\u5DF4\u8700';
     // \u5357\u65B9\u00B7\u6D77\u7586\uFF08\u542B\u5916\u85E9\uFF09
@@ -220,14 +220,14 @@ function renderLetterPanel() {
         if (!_groups[r]) _groups[r] = [];
         _groups[r].push(ch);
       });
-      // \u987A\u5E8F\uFF1A\u8FBD\u4E1C\u00B7\u5317\u5883 / \u5BA3\u5927\u00B7\u5C71\u897F / \u897F\u9677\u00B7\u8FB9\u9547 / \u4E2D\u539F\u00B7\u9C81\u8C6B / \u6C5F\u5357\u00B7\u6C5F\u6D59 / \u897F\u5357\u00B7\u5DF4\u8700 / \u5357\u65B9\u00B7\u6D77\u7586 / \u5176\u4ED6
-      var _grpOrder = ['\u5185\u5EF7','\u5728\u4EAC','\u8FBD\u4E1C\u00B7\u5317\u5883','\u5BA3\u5927\u00B7\u5C71\u897F','\u897F\u9677\u00B7\u8FB9\u9547','\u4E2D\u539F\u00B7\u9C81\u8C6B','\u6C5F\u5357\u00B7\u6C5F\u6D59','\u897F\u5357\u00B7\u5DF4\u8700','\u5357\u65B9\u00B7\u6D77\u7586','\u5176\u4ED6'];
+      // 顺序：辽东·北境 / 宣大·山西 / 西陲·边镇 / 中原·鲁豫 / 江南·江浙 / 西南·巴蜀 / 南方·海疆 / 其他
+      var _grpOrder = ['内廷','在京','辽东·北境','宣大·山西','西陲·边镇','中原·鲁豫','江南·江浙','西南·巴蜀','南方·海疆','其他'];
 
       function _cardClass(ch) {
         var t = (ch.title||'') + (ch.officialTitle||'');
         if (/\u5C06|\u603B\u5175|\u7763|\u6307\u6325|\u6307\u6325\u4F7F/.test(t)) return 'hy-c-mili';
         if ((ch.loyalty||50) >= 75) return 'hy-c-loyal';
-        if (/\u5B66\u58EB|\u4FA8|\u5C1A\u4E66|\u90CE\u4E2D|\u4FA8\u5B66|\u7AE5\u5B9E|\u4F5B|\u5FB4\u58EB|\u6559\u6388|\u4FA8\u516C|\u84DD\u77E5/.test(t)) return 'hy-c-scholar';
+        if (/学士|儒|尚书|郎中|儒学|童生|博士|征士|教授|处士|监生/.test(t)) return 'hy-c-scholar';
         return 'hy-c-normal';
       }
 
@@ -430,7 +430,7 @@ function _ltRenderLetterCard(l, target) {
   // 正文（在途来函遮蔽全文）
   html += '<div class="body wd-selectable">' + (_inFlightIn ? '<em style="opacity:.65">〔信使在途·尚未送抵御前〕</em>' : escHtml(l.content || '')) + '</div>';
   // 署名
-  var _sig = isOutgoing ? '\u6731\u624B\u4E66' : ('\u81E3 ' + escHtml(l.from||target) + ' \u987F\u9996');
+  var _sig = isOutgoing ? '朕手书' : ('臣 ' + escHtml(l.from||target) + ' 顿首');
   html += '<div class="signature">' + escHtml(sentDate) + '\u00B7' + _sig + '</div>';
   // 回信（朱笔批注/来回信内容）
   if (l.reply && (l.status === 'returned' || l.status === 'intercepted_forging') && isOutgoing) {

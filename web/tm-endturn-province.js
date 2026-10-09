@@ -685,7 +685,7 @@ function _renderDivisionNode(div, depth) {
     html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;padding:6px 10px;background:rgba(0,0,0,0.15);border-radius:4px;">';
     if (_minxin != null) html += _peGauge(_minxin, 100, _mxClr, '\u6C11\u5FC3');
     else html += '<div></div>';
-    if (_corr != null) html += _peGauge(_corr, 100, _crClr, '\u5426\u8150');
+    if (_corr != null) html += _peGauge(_corr, 100, _crClr, '贪腐');
     else html += '<div></div>';
     html += _peGauge(_auto * 100, 100, 'var(--indigo-400,#7986cb)', '\u81EA\u6CBB');
     html += '</div>';
@@ -874,7 +874,7 @@ function _renderDivisionNode(div, depth) {
       }
       if (exp.illicit && exp.illicit.length) {
         _ab += '<div style="padding:4px 8px;background:rgba(192,64,48,0.08);border-left:2px solid var(--vermillion-400);border-radius:2px;font-size:0.7rem;color:var(--vermillion-400);">';
-        _ab += '\u2716 \u79C1\u5F0A ' + exp.illicit.length + ' \u8D77 \u00B7 \u6324\u6D3E\u4E2D\u98FD ' + _peN(exp.illicit.reduce(function(s,x){return s+(x.amount||0);},0)) + _U.money;
+        _ab += '\u2716 私弊 ' + exp.illicit.length + ' 起 · 摊派中饱 ' + _peN(exp.illicit.reduce(function(s,x){return s+(x.amount||0);},0)) + _U.money;
         _ab += '</div>';
       }
       if (exp.fixed && exp.fixed.length) {

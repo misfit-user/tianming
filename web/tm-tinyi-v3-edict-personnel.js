@@ -493,7 +493,7 @@ function _ty3_phase3_doPublicVote() {
   }
   var ch = (typeof findCharByName === 'function') ? findCharByName(winner.name) : null;
   if (ch) {
-    if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(ch, 5, '\u5EAD\u63A8\u6240\u5B9A', { source:'tinyi-v3-public-vote' });
+    if (typeof adjustCharacterLoyalty === 'function') adjustCharacterLoyalty(ch, 5, '廷推所定', { source:'tinyi-v3-public-vote' });
     else ch.loyalty = Math.min(100, ((typeof ch.loyalty === 'number' && isFinite(ch.loyalty)) ? ch.loyalty : 50) + 5);
     ch.prestige = Math.min(100, (ch.prestige || 50) + 1);
   }
@@ -642,7 +642,7 @@ function _ty3_enqueueTinyiFollowUp(entry) {
       expectedEndTurn: queued.dueTurn,
       currentStage: '\u5F85\u590D\u8BC4',
       progress: 45,
-      summary: queued.sealStatus === 'blocked' ? '\u88AB\u963B\u64CE\u7684\u671D\u8BAE\u5F85\u590D\u8BC4' : '\u5DF2\u5165\u6743\u5E76\u7B49\u5F85\u590D\u8BC4',
+      summary: queued.sealStatus === 'blocked' ? '被阻挡的朝议待复评' : '已入档并等待复评',
       narrative: (queued.draftEdict && queued.draftEdict.body) ? String(queued.draftEdict.body).slice(0, 120) : '',
       shortTermBalance: queued.sealStatus || '',
       longTermBalance: queued.draftEdict && queued.draftEdict.body ? String(queued.draftEdict.body).slice(0, 120) : '',

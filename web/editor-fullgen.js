@@ -157,7 +157,7 @@
           + '\ncontextDescription(100-200字的时代背景描述，包含政治格局、社会矛盾、经济状况等)}'
           + '\n数值必须基于史实精确评估，如安史之乱后socialStability应<0.3，开元盛世应>0.8。只输出JSON。' },
       { key:'characters', label:'\u4E3B\u8981\u4EBA\u7269', minItems: 12,
-        prompt: '\u4F60\u662F\u5929\u547D\u6E38\u620F\u526F\u672C\u8BBE\u8BA1\u5E08\uFF0C\u7CBE\u901A\u4E2D\u56FD\u53E4\u4EE3\u53F2\u3002' + ctx + playerSpec + historicalCharLimit + refContext
+        prompt: '你是天命游戏剧本设计师，精通中国古代史。' + ctx + playerSpec + historicalCharLimit + refContext
           + '\n\u751F\u621012-20\u540D\u91CD\u8981\u4EBA\u7269\uFF0C\u8FD4\u56DEJSON\u6570\u7EC4\u3002'
           + '\n\n\u3010\u6BCF\u4E2A\u4EBA\u7269\u5FC5\u987B\u5305\u542B\u5168\u90E8\u5B57\u6BB5\u3011\uFF1A'
           + '\nname, title(\u5B98\u804C/\u5C01\u53F7), type("historical"\u6216"fictional"), faction, party, role, attitude'
@@ -182,17 +182,17 @@
           + '\n- \u53EA\u6709\u5B8C\u5168\u865A\u6784\u7684\u8D2B\u5BD2\u5C0F\u5352/\u5BB6\u4EC6\u7B49\u624D\u7528"fictional"'
           + '\n\n\u3010\u5176\u4ED6\u89C4\u5219\u3011\uFF1A'
           + '\n- ' + (playerCharacter ? '\u5FC5\u987B\u5305\u542B\u73A9\u5BB6\u89D2\u8272' + playerCharacter : '\u7981\u6B62\u751F\u6210\u73A9\u5BB6\u89D2\u8272(' + emperor + ')')
-          + '\n- \u5E94\u5305\u542B1-3\u540D\u540E\u5BAB\u5983\u5ABE(spouse=true,\u6709\u5177\u4F53motherClan)'
+          + '\n- 应包含1-3名后宫妃嫔(spouse=true,有具体motherClan)'
           + '\n- faction\u5E94\u5BF9\u5E94\u5DF2\u6709\u52BF\u529B\u6216"' + dynasty + '\u671D\u5EF7"'
           + '\n\u53EA\u8F93\u51FAJSON\u3002' },
       { key:'factions', label:'\u52BF\u529B', minItems: 6,
-        prompt: '\u4F60\u662F\u5929\u547D\u6E38\u620F\u526F\u672C\u8BBE\u8BA1\u5E08\u3002' + ctx
+        prompt: '你是天命游戏剧本设计师。' + ctx
           + '\n\u751F\u62106-10\u4E2A\u4E0E\u73A9\u5BB6\u52BF\u529B\u5E76\u5B58\u7684\u72EC\u7ACB\u653F\u6743\u5B9E\u4F53\uFF0C\u8FD4\u56DEJSON\u6570\u7EC4\u3002'
           + '\n\u6BCF\u4E2A\u52BF\u529B\u5FC5\u987B\u5305\u542B\uFF1A'
           + '\n{name,type(\u4E3B\u6743\u56FD/\u85E9\u9547/\u756A\u5C5E\u5C0F\u56FD/\u540D\u4E49\u4ECE\u5C5E),leader,leaderTitle,'
           + '\nterritory(\u5360\u636E\u5730\u76D8),goal(\u6218\u7565\u76EE\u6807),strength(1-100\u6570\u5B57),attitude(\u53CB\u597D/\u4E2D\u7ACB/\u654C\u5BF9/\u9644\u5C5E/\u5B97\u4E3B/\u540D\u4E49\u4ECE\u5C5E/\u671D\u8D21),'
           + '\nresources(\u4E3B\u8981\u8D44\u6E90),mainstream(\u4E3B\u4F53\u6C11\u65CF),culture(\u6587\u5316\u7279\u5F81),'
-          + '\nmilitaryStrength(\u5175\u529B\u6982\u4F30,\u6570\u5B57),economy(0-100\u7ECF\u6D4E\u5B9E\u529B),playerRelation(-100~100\u5BF9\u7389\u5173\u7CFB),description(100\u5B57)}'
+          + '\nmilitaryStrength(兵力概估,数字),economy(0-100经济实力),playerRelation(-100~100对玩家关系),description(100字)}'
           + '\n\n\u3010\u91CD\u8981\u3011'
           + '\n- \u4E0D\u8981\u751F\u6210\u73A9\u5BB6\u6240\u5728\u52BF\u529B\uFF08' + dynasty + '\u671D\u5EF7\uFF09'
           + '\n- \u4E0D\u8981\u5C06\u515A\u6D3E\u3001\u9636\u5C42\u3001\u5546\u4F1A\u3001\u5B97\u6559\u7EC4\u7EC7\u5217\u4E3A\u52BF\u529B'
@@ -279,7 +279,7 @@
       { key:'variables_other', label:'剧本变量', minItems: 5,
         prompt: '你是天命游戏副本设计师。' + ctx + '\n生成5-8个该剧本特有的变量，返回JSON数组，每项：{name,type,defaultValue,description}。这些变量应与剧本背景紧密相关。\n\n【重要】变量名称(name字段)必须使用简体中文，不得使用英文或拼音。例如："宦官势力"、"藩镇割据度"、"科举公正度"等。\n\n只输出JSON。' },
       { key:'adminHierarchy', label:'\u884C\u653F\u533A\u5212', minItems: 8,
-        prompt: '\u4F60\u662F\u5929\u547D\u6E38\u620F\u526F\u672C\u8BBE\u8BA1\u5E08\uFF0C\u7CBE\u901A\u4E2D\u56FD\u5386\u53F2\u884C\u653F\u533A\u5212\u3002' + ctx
+        prompt: '你是天命游戏剧本设计师，精通中国历史行政区划。' + ctx
           + '\n\u4E3A\u73A9\u5BB6\u52BF\u529B\u751F\u6210\u884C\u653F\u533A\u5212\u6811\uFF0C\u5305\u542B2-3\u5C42\u5D4C\u5957\u3002'
           + '\n\u8FD4\u56DEJSON\u6570\u7EC4\uFF0C\u6BCF\u9879\uFF1A{id,name,level,description,children}\u3002'
           + '\n\u7B2C\u4E00\u5C42\uFF1A8-12\u4E2A\u9876\u5C42\u884C\u653F\u533A\uFF08\u5982\u5510\u4EE3\u7684\u201C\u9053\u201D\u3001\u5B8B\u4EE3\u7684\u201C\u8DEF\u201D\u3001\u660E\u4EE3\u7684\u201C\u5E03\u653F\u4F7F\u53F8\u201D\uFF09'

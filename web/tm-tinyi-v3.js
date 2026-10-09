@@ -1288,10 +1288,10 @@ function _ty3_buildAccusationMemorialStructured(accuserName, accuserCh, accusedC
   var verdictGrade = meta.verdictGrade || _ty3_impeachmentVerdictGrade(charges, _ty3_partyMetrics(accusedCh.party || ''), inquiryBody, accusedCh);
   var consequenceLadder = Array.isArray(meta.consequenceLadder) ? meta.consequenceLadder.slice() : _ty3_impeachmentConsequenceLadder(verdictGrade);
   var content = '';
-  content += '\u81e3' + accuserNameText + '\u6020\u6162\u5230\u8FBE\uFF0C\u8BF7\u4E0A\u8FBE\u5F39\u52BE\u3002\n';
+  content += '臣' + accuserNameText + '谨奏，请上达弹劾。\n';
   content += '\u4F0F\u5BDF' + (accusedCh.officialTitle || accusedCh.title || '') + accusedCh.name + '\uFF0C';
-  content += '\u7D20\u8457\u58F0\u671B\uFF0C\u800C\u5F80\u6765\u884C\u672A\u80FD\u5F97\u5F53\uFF0C\u5176\u4E8B\u6709\u4E0D\u53EF\u4E0D\u8BE6\u8003\u8005\u3002\n';
-  content += '\u5F84\u5F55\u4E66\u9662\uFF1A' + (inquiryBody.name || 'censorate') + '\u3002\u5B9A\u7B49\uFF1A' + verdictGrade + '\u3002\n';
+  content += '素著声望，而往来行事未能得当，其事有不可不详考者。\n';
+  content += '承审衙门：' + (inquiryBody.name || 'censorate') + '。定等：' + verdictGrade + '。\n';
   content += '\u8BC1\u72B6\u5982\u4E0B\uFF1A\n';
   charges.forEach(function(ch, i) {
     content += '\u5176' + (i + 1) + '\u3001' + ch.name + '\uFF0C\u4E25\u91CD\u4E3A' + (ch.severity || 1);
@@ -1345,7 +1345,7 @@ function _ty3_strifeLabel(value) {
   var v = (typeof value === 'number') ? value :
           (typeof GM.partyStrife === 'number' ? GM.partyStrife : 50);
   if (v <= 20) return { state: '\u671d\u5802\u6e05\u660e', flavor: '\u6d77\u664f\u6cb3\u6e05\u00b7\u767e\u5b98\u540c\u5fc3', tier: 'pristine' };
-  if (v <= 40) return { state: '\u671d\u5c40\u7a33\u5065', flavor: '\u671d\u7ec5\u7a0d\u632f\u00b7\u5c0f\u6709\u9f83\u9f89', tier: 'stable' };
+  if (v <= 40) return { state: '朝局稳健', flavor: '朝纲稍振·小有龃龉', tier: 'stable' };
   if (v <= 60) return { state: '\u515a\u4e89\u5bfb\u5e38', flavor: '\u671d\u5802\u5206\u6b67\u00b7\u6216\u6709\u76f8\u8bbc', tier: 'normal' };
   if (v <= 80) return { state: '\u515a\u4e89\u6fc0\u70c8', flavor: '\u515a\u4e89\u5df2\u70bd\u00b7\u76f8\u4f3a\u653b\u8ba6', tier: 'fierce' };
   return { state: '\u515a\u7978\u6ed4\u5929', flavor: '\u515a\u7978\u5df2\u6210\u00b7\u52bf\u540c\u6c34\u706b', tier: 'catastrophic' };

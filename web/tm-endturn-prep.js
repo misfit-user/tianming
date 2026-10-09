@@ -134,7 +134,7 @@ function _generateConsortLiterary() {
     if (neglectTurns >= 4) prob += 0.06;     // 冷落久→借文抒怀
     if (c.traitIds && P.traitDefinitions) {
       var tNames = c.traitIds.map(function(id){var d=P.traitDefinitions.find(function(t){return t.id===id;}); return d?d.name:'';}).join('');
-      if (/\u7B14|\u6587|\u98A8\u96C5|\u624D\u5973|\u806A\u6167/.test(tNames)) prob += 0.1;
+      if (/笔|文|风雅|才女|聪慧/.test(tNames)) prob += 0.1;
     }
     prob = Math.min(0.3, prob);
     if (Math.random() > prob) return;
@@ -153,8 +153,8 @@ function _generateConsortLiterary() {
     // 风格标签按情绪
     var mood = motive.indexOf('宫怨') >= 0 || motive.indexOf('幽') >= 0 ? '\u5E7D\u6028'
              : motive.indexOf('邀') >= 0 ? '\u7F20\u7EF5'
-             : motive.indexOf('规') >= 0 ? '\u89C4\u52B8'
-             : motive.indexOf('发泄') >= 0 ? '\u6115\u5F85'
+             : motive.indexOf('规') >= 0 ? '规劝'
+             : motive.indexOf('发泄') >= 0 ? '愤懑'
              : '\u6E05\u96C5';
     var work = {
       id: 'cw_consort_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),

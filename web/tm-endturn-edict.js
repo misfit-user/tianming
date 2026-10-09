@@ -1197,9 +1197,9 @@ function processEdictEffects(allEdictText, edictCategory) {
   // v5·人物生成 A：诏令征召识别（异步 fire-and-forget）
   try {
     if (typeof handleEdictTextForRecruit === 'function') {
-      handleEdictTextForRecruit(allEdictText).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '\u8BCF\u4EE4\u5F81\u8BCF] \u5F02\u5E38') : console.warn('[\u8BCF\u4EE4\u5F81\u8BCF] \u5F02\u5E38', e); });
+      handleEdictTextForRecruit(allEdictText).catch(function(e){ (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, '诏令征召] 异常') : console.warn('[诏令征召] 异常', e); });
     }
-  } catch(_rE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rE, '\u8BCF\u4EE4\u5F81\u8BCF') : console.warn('[\u8BCF\u4EE4\u5F81\u8BCF]', _rE); }
+  } catch(_rE) { (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(_rE, '诏令征召') : console.warn('[诏令征召]', _rE); }
 
   if (typeof TM !== 'undefined' && TM.CommandAuthority) TM.CommandAuthority.observeEdict(allEdictText);
   // 收集执行管线信息（如果有配置）

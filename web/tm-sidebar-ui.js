@@ -351,7 +351,7 @@ function openMilitaryDetailPanel() {
       // 岁饷
       if (Array.isArray(a.salary) && a.salary.length > 0) {
         html += '<div style="margin-bottom:0.5rem;">';
-        html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-bottom:3px;">\u5C81\u9972</div>';
+        html += '<div style="font-size:0.7rem;color:var(--txt-d);margin-bottom:3px;">岁饷</div>';
         html += '<div style="display:flex;flex-wrap:wrap;gap:6px;font-size:0.7rem;">';
         a.salary.forEach(function(s) {
           if (!s || !s.resource) return;

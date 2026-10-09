@@ -899,7 +899,7 @@ function openWentian() {
     + '<button class="wt-cat-btn" data-cat="setting" onclick="_wtPickCat(\'setting\')" title="\u80CC\u666F\u8BBE\u5B9A\uFF1A\u6CE8\u5165\u5267\u672C\u80CC\u666F\u6216\u72B6\u6001">\u8BBE\u5B9A</button>'
     + '<button class="wt-cat-btn" data-cat="hardChange" onclick="_wtPickCat(\'hardChange\')" title="\u76F4\u6539\u6570\u503C\uFF1A\u7ACB\u5373\u5199\u5165 GM/P \u5177\u4F53\u5B57\u6BB5">\u2696\ufe0e\u76F4\u6539</button>'
     + '<button class="wt-cat-btn" data-cat="edictSubstitute" onclick="_wtPickCat(\'edictSubstitute\')" title="\u8BE5\u8D70\u8BCF\u4EE4\uFF1A\u81EA\u52A8\u6539\u5199\u5E76\u586B\u5165\u8BCF\u4EE4\u6846">\u2709\ufe0e\u8BCF\u4EE4</button>'
-    + '<button class="wt-cat-btn" data-cat="absolute" onclick="_wtPickCat(\'absolute\')" title="\u5929\u610F/\u81F3\u9AD8\uFF1A\u4E16\u754C\u6CD5\u5219\u5F3A\u5236\u751F\u6548\u00B7\u65E0\u63A8\u8FAD">\u2605\u5929\u610F</button>'
+    + '<button class="wt-cat-btn" data-cat="absolute" onclick="_wtPickCat(\'absolute\')" title="天意/至高：世界法则强制生效·无推辞">\u2605天意</button>'
     + '</div>'
     + '<div style="display:flex;gap:var(--space-2);">'
     + '<textarea id="wt-input" placeholder="\u5BF9\u63A8\u6F14AI\u8BF4\u2026\u2026\uFF08\u7EA0\u6B63\u63A8\u6F14/\u52A0\u5165\u89C4\u5219/\u52A0\u5165\u5185\u5BB9\uFF09" rows="3" style="flex:1;resize:none;padding:0.4rem;font-size:var(--text-sm);font-family:inherit;background:var(--color-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-foreground);"></textarea>'
@@ -1033,7 +1033,7 @@ async function _wtSend() {
     if (!GM._playerDirectives) GM._playerDirectives = [];
     var did = 'dir_' + (GM.turn||0) + '_' + Math.random().toString(36).slice(2,7);
     GM._playerDirectives.push({ id: did, content: content, type: _wtForceCategory==='absolute'?'rule':type, category:_wtForceCategory||'narrative', _absolute:_wtForceCategory==='absolute', _lastStatus:'pending', turn: GM.turn });
-    GM._wentianHistory.push({ role: 'system', content: '\u2705 \u5DF2\u5F55\u5165\uFF08\u65E0AI\u89E3\u8BFB\u00B7\u914D\u914D key \u540E\u53EF\u542F\u7528\u89E3\u8BFB\u4E0E\u786E\u8BA4\u6D41\u7A0B\uFF09' });
+    GM._wentianHistory.push({ role: 'system', content: '\u2705 已录入（无AI解读·配置 key 后可启用解读与确认流程）' });
     _wtRenderHistory();
     toast('\u6307\u4EE4\u5DF2\u5F55\u5165');
     return;
@@ -1190,7 +1190,7 @@ function _wtShowPendingConfirmation() {
     'setting':     { label:'\u4E16\u754C\u8BBE\u5B9A', color:'var(--celadon-400)', hint:'\u5C06\u4F5C\u4E3A\u5267\u672C\u80CC\u666F\u6CE8\u5165' },
     'hardChange':  { label:'\u2696\ufe0e\u76F4\u6539\u6570\u503C', color:'var(--vermillion-400)', hint:'\u5C06\u7ACB\u5373\u5199\u5165 GM/P \u5177\u4F53\u5B57\u6BB5' },
     'edictSubstitute': { label:'\u8BE5\u8D70\u8BCF\u4EE4', color:'var(--amber-400)', hint:'AI \u5DF2\u6539\u5199\u4E3A\u8BCF\u4EE4\u8349\u7A3F\u00B7\u70B9\u786E\u8BA4\u5373\u586B\u5165\u8BCF\u4EE4\u8F93\u5165\u6846' },
-    'absolute':    { label:'\u2605 \u5929 \u610F \u00B7 \u81F3 \u9AD8 \u2605', color:'#b08bc8', hint:'\u4E16\u754C\u6CD5\u5219\u76F4\u63A5\u751F\u6548\u00B7AI \u65E0\u63A8\u8FAD\u00B7\u5FC5\u5B57\u9762\u8001\u5B9E\u843D\u5B9E' }
+    'absolute':    { label:'\u2605 天 意 · 至 高 \u2605', color:'#b08bc8', hint:'世界法则直接生效·AI 无推辞·必字面老实落实' }
   };
   var cat = catMeta[p.category] || catMeta['narrative'];
   var box = document.createElement('div');
@@ -1625,7 +1625,7 @@ function _showCharNotFoundPopup(charName, evt) {
     +   '</div>'
     + '</div>'
     + '<div class="char-popup-info" style="font-size:0.78rem;line-height:1.7;color:var(--color-foreground-muted);margin-top:4px;">'
-    +   '\u6B64\u4EBA\u5C1A\u672A\u5F55\u5165\u4EBA\u7269\u5FD7\u3002\u94E8\u66F9\u53EF\u67E5\u627E\u5176\u6765\u5386\u00B7\u5982\u7CFB\u53F2\u5B9E\u4EBA\u7269\u5219\u91C7\u53F2\u4E66\u7ACB\u4F20\u00B7\u5982\u867A\u6784\u5219\u6784\u5176\u8EAB\u4E16\u3002'
+    +   '此人尚未录入人物志。铨曹可查找其来历·如系史实人物则采史书立传·如虚构则构其身世。'
     + '</div>'
     + '<div class="char-popup-actions" style="margin-top:8px;">'
     +   '<button class="char-popup-btn" onclick="document.querySelector(\'.char-popup\').remove();_lookupCharDossier(\'' + safeName + '\');">\uD83D\uDCDA \u67E5\u627E\u6863\u6848</button>'

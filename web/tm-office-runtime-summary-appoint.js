@@ -550,7 +550,7 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
     +   '<div style="padding:0.9rem 1.2rem 0.7rem;border-bottom:1px solid var(--color-border-subtle);background:linear-gradient(180deg,rgba(184,154,83,0.04),transparent);">'
     +     '<div style="display:flex;justify-content:space-between;align-items:baseline;">'
     +       '<div>'
-    +         '<div style="font-size:0.72rem;color:var(--ink-300);letter-spacing:0.2em;">\u3014 \u9078 \u4EFB \u3015</div>'
+    +         '<div style="font-size:0.72rem;color:var(--ink-300);letter-spacing:0.2em;">〔 选 任 〕</div>'
     +         '<div style="font-size:1.05rem;font-weight:700;color:' + modeClr + ';margin-top:3px;">' + modeLbl + escHtml(deptName) + '\u00B7' + escHtml(posName)
     +           (pos.rank ? '<span style="font-size:0.7rem;font-weight:400;color:var(--ink-300);margin-left:6px;">' + escHtml(pos.rank) + '</span>' : '')
     +         '</div>'
@@ -565,7 +565,7 @@ function _offOpenPicker(pathArr, deptName, posName, currentHolder) {
     +       '\u8F85\u4EE5' + escHtml(req.secondaryLabel) + ' \u00B7 '
     +       '\u5FE0\u8BDA\u2265<strong style="color:var(--gold-400);">' + req.loyNeeded + '</strong>'
     +     '</div>'
-    +     (currentHolder ? '<div class="off-pk-replacing">\u2192 \u73B0\u4EFB\uFF1A<b>' + escHtml(currentHolder) + '</b>\uFF08\u9009\u4EFB\u540E\u5C06\u81EA\u52A8\u51FB\u514D\u65E7\u4EFB\u00B7\u8D77\u7528\u65B0\u4EBA\uFF09</div>' : '')
+    +     (currentHolder ? '<div class="off-pk-replacing">\u2192 现任：<b>' + escHtml(currentHolder) + '</b>（选任后将自动罢免旧任·起用新人）</div>' : '')
     +   '</div>'
     // 过滤栏（chip 带计数）
     +   '<div style="padding:0.5rem 1rem;border-bottom:1px solid var(--color-border-subtle);display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap;">'

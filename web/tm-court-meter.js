@@ -79,7 +79,7 @@ function _settleCourtMeter() {
     (GM.chars || []).forEach(function(c) {
       if (c && c.alive !== false && (c.integrity || 50) > 60) {
         if (typeof adjustCharacterLoyalty === 'function') {
-          adjustCharacterLoyalty(c, 1, '\u8FDE\u4E09\u6708\u52E4\u653F\u53CC\u671D', { source:'court-meter-diligent:' + (m.diligentStreak || 0), oncePerTurn:true });
+          adjustCharacterLoyalty(c, 1, '连三月勤政视朝', { source:'court-meter-diligent:' + (m.diligentStreak || 0), oncePerTurn:true });
         } else {
           var oldDiligentL = (typeof c.loyalty === 'number' && isFinite(c.loyalty)) ? c.loyalty : 50;
           c.loyalty = Math.min(100, oldDiligentL + 1);

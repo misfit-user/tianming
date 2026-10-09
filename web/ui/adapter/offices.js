@@ -71,6 +71,21 @@ export function department(path) {
   return d ? deptView(d, [path[0]]) : null;
 }
 
+// ---------- 任官参考 ----------
+// 照老图志 officeRecommendations（TM.OfficeFit.list）：按此人基础能力六成、五常四成，对官制树各职打适配分，取前三十。
+// 分数只作参考，不是任命资格或履职保证；每职附 pos（与官制册同形），任命仍走 candidates / appoint
+export function fitFor(name, vacantOnly = false) {
+  const fit = w.TM && w.TM.OfficeFit;
+  const ch = findChar(name);
+  if (!fit || typeof fit.list !== 'function') throw new Error('任官参考未就绪');
+  if (!ch) throw new Error('查无此人');
+  const rows = fit.list(G(), ch, { vacantOnly: !!vacantOnly }) || [];
+  return rows.slice(0, 30).map((r) => ({
+    score: Math.round(Number(r.score) * 10) / 10, deptPath: String(r.deptPath || ''), profile: String(r.profile || ''), basis: String(r.basis || ''), missing: (r.missing || []).map(String),
+    held: !!(r.stats && (r.stats.holders || []).includes(name)), pos: positionView(r.position, r.path, r.deptName || '')
+  }));
+}
+
 // ---------- 任命 ----------
 // 候选：内核 _offOpenPicker 先算好（存在全局 _OFF_PICKER）再拼弹窗；这里取算好的名单，弹窗摘掉不用
 export function candidates(pos) {

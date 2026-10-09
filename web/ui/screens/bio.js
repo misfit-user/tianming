@@ -1,7 +1,8 @@
 // 列传：一人的全卷，册页两叶。左叶卷首——立像、名字、官职、处境、加衔，十卷卷目，对此人的批注，动作；
 // 右叶展开一卷：总览（八维五常两盘、心性、功名、志向特质）、身份（档案、功名出身、公私身份、形貌传略）、心绪、
 // 关系（对君上之心、君上之疑、人际图谱、亲疏细览、观感五维、印象、血亲）、纪传（长卷、任事、历练）、家族（五代谱、统览、后宫子嗣）、
-// 记忆、文事、视角、史料。人名可翻其列传。数据经 game.bio；叫法（君上、批注、追赠）取 profile().bio。
+// 记忆、文事、视角、史料、任官（在世臣僚：任官参考，点一职走官制册的任命流程）。人名可翻其列传。
+// 数据经 game.bio、game.offices；叫法（君上、批注、追赠）取 profile().bio。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
@@ -16,7 +17,7 @@ function s(tag, attrs, ...kids) {
   for (const c of kids.flat()) if (c != null) el.append(c instanceof Node ? c : document.createTextNode(String(c)));
   return el;
 }
-const VOLS = [['overview', '总览'], ['identity', '身份'], ['mind', '心绪'], ['relations', '关系'], ['career', '纪传'], ['family', '家族'], ['memory', '记忆'], ['works', '文事'], ['pov', '视角'], ['sources', '史料']];
+const VOLS = [['overview', '总览'], ['identity', '身份'], ['mind', '心绪'], ['relations', '关系'], ['career', '纪传'], ['family', '家族'], ['memory', '记忆'], ['works', '文事'], ['pov', '视角'], ['sources', '史料'], ['office', '任官']];
 const EMO = ['喜', '怒', '忧', '惧', '恨', '敬', '平'];
 const signed = (v) => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : '0');
 // 记忆的回合：开局前的旧事记成负回合，写作「前事」，第零回合写作「开局」
@@ -76,7 +77,8 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         p.honorary.length ? h('div.lz-hon', p.honorary.map((x) => h('span', { title: '加衔或身份称号' }, `衔 ${x}`))) : null),
       p.banner ? h('div.lz-banner', h('i', p.banner.glyph), h('div', h('b', p.banner.title), p.banner.note ? h('small', p.banner.note) : null)) : null);
     const count = { relations: p.relations.length, career: p.career.length, family: p.blood.length, memory: p.memory.length, works: p.works.length };
-    replaceChildren(vols, VOLS.map(([k, label]) => h('button' + (k === vol ? '.on' : ''), { type: 'button', dataset: { vol: k }, onclick: () => { vol = k; markVol(); renderRight(); } },
+    if (vol === 'office' && !canOffice(p)) vol = 'overview';
+    replaceChildren(vols, VOLS.filter(([k]) => k !== 'office' || canOffice(p)).map(([k, label]) => h('button' + (k === vol ? '.on' : ''), { type: 'button', dataset: { vol: k }, onclick: () => { vol = k; markVol(); renderRight(); } },
       h('b', label), count[k] ? h('small', num(count[k])) : null)));
     const text = B.note(p.name);
     replaceChildren(noteBox, h('h5', t.note, h('button', { type: 'button', onclick: editNote }, text ? '改' : '批')), text ? h('p', text) : h('p.empty', '未批'));
@@ -95,6 +97,39 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
     if (onAtlas) list.push(btn('图志', () => { hide(); onAtlas(p.name); }, '回人物图志'));
     list.push(btn('导出', exportBio, '存成一份列传文本'));
     replaceChildren(acts, list);
+  }
+  // 任官：在世、非君上本人，且本身份可任免（元首档有官制册）
+  const canOffice = (p) => p.alive && !p.isPlayer && !!game.offices && !!onOffices;
+  let vacantOnly = false;
+  function officeSecs(p) {
+    let rows = [];
+    try { rows = game.offices.fitFor(p.name, vacantOnly); } catch (e) { return [stub(e.message)]; }
+    const toggle = h('label.lz-vac', h('input', { type: 'checkbox', checked: vacantOnly, onchange: (e) => { vacantOnly = e.target.checked; renderRight(); } }), '只看缺额');
+    return [sec('任官参考', '能力六成 · 五常四成',
+      h('p.lz-prose', '依现行官制，按此人才具与各职所需打适配分。分数只作参考，不是任命资格或履职保证。任命照官制册之法：即时生效，并录入本回合所颁；要撤销去官制册。'), toggle,
+      rows.length ? h('div.lz-fits', rows.map((r) => h('article.lz-fit' + (r.held ? '.held' : ''),
+        h('header', h('b', r.pos.name, r.pos.rank ? h('small', r.pos.rank) : null), h('span.score', h('span.track', h('i', { style: { width: `${Math.max(0, Math.min(100, r.score))}%` } })), h('em', `适配${num(Math.round(r.score))}`))),
+        h('p.path', r.deptPath, r.profile ? `　·　${r.profile}` : ''),
+        h('p.stat', `额${num(r.pos.head)}　在${num(r.pos.actual)}${r.pos.vacant ? `　缺${num(r.pos.vacant)}` : ''}${r.pos.holders.length ? `　现任${r.pos.holders.map((x) => x.name).join('、')}` : ''}`),
+        h('details', h('summary', '评分依据'), h('p', r.basis), r.missing.length ? h('p', `未录之项暂按五十估：${r.missing.join('、')}`) : null),
+        (() => { const pend = r.pos.pending && String(r.pos.pending.line || '').includes(p.name);   // 本回合所任（撤销去官制册）
+          return h('button.q-yapai', { type: 'button', disabled: r.held || pend, title: pend ? '本回合所任，已生效；要撤销去官制册' : '', onclick: () => appointTo(p, r) }, pend ? '本回合新任' : r.held ? '已在此职' : r.pos.holders.length && !r.pos.vacant ? '改换为此' : '任此职'); })())))
+        : stub(vacantOnly ? '官制中暂无缺额。去掉「只看缺额」可看全部官职。' : '本剧本尚无可读的官制。'))];
+  }
+  // 照官制册的任命：先核此人在不在该职可选名册（年龄、所属、现任），一身两职另问辞旧或兼任
+  function appointTo(p, r) {
+    let data;
+    try { data = game.offices.candidates(r.pos); } catch (e) { toast(e.message); return; }
+    const c = data.list.find((x) => x.name === p.name);
+    if (!c) { toast(`${p.name}不在${r.pos.name}的可选名册内（年龄、所属或现任情形不合）`); return; }
+    const go = (mode) => { try { game.offices.appoint(r.pos, p.name, mode); } catch (e) { toast(e.message); } renderRight(); };   // 成否内核自以提示告知
+    const old = r.pos.holders[0] && !r.pos.vacant ? r.pos.holders[0].name : '';
+    const k = juan({ title: old ? '改换' : '任命', note: `${r.pos.dept}·${r.pos.name}`, width: '30rem', content: h('div.au-pick',
+      h('p.of-ask', old ? `以${p.name}代${old}为${r.pos.name}。` : `以${p.name}为${r.pos.name}。`),
+      c.holdsPost && c.holdsPost !== r.pos.name
+        ? [h('button.au-pick-row', { type: 'button', onclick: () => { k.close('ok'); go('resign'); } }, h('b', '辞旧就新'), h('small', `免去原职${c.holdsPost}，全力赴任新职`)),
+          h('button.au-pick-row', { type: 'button', onclick: () => { k.close('ok'); go('concurrent'); } }, h('b', '兼任两职'), h('small', '原职依旧，新职兼管；精力分散，效率打折'))]
+        : h('button.au-pick-row', { type: 'button', onclick: () => { k.close('ok'); go('resign'); } }, h('b', '任之'), h('small', `胜任${num(c.match)}${c.travelDays ? `　赴任约${num(c.travelDays)}日` : ''}`))) });
   }
   function markVol() { vols.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.vol === vol)); }
   function editNote() {
@@ -193,6 +228,8 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
       ];
     } else if (vol === 'sources') {
       body = [sourcesSec(p)];
+    } else if (vol === 'office') {
+      body = officeSecs(p);
     }
     replaceChildren(right, h('header.lz-rhead', h('span', VOLS.find(([k]) => k === vol)[1]), h('small', p.name)), ...body.filter(Boolean));
     right.scrollTop = 0;

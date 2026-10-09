@@ -193,3 +193,20 @@
 .lz-src a { font-size: var(--fs-2); color: #8a2a1c; }
 .lz-quote { margin: .5rem 0; padding: .375rem .75rem; box-shadow: inset .1875rem 0 0 #a8833a; background: rgba(255, 250, 238, .5); }
 .lz-ref { margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
+
+/* 任官参考 */
+.lz-vac { display: inline-flex; align-items: center; gap: .375rem; margin: .25rem 0 .5rem; font-size: var(--fs-2); color: var(--ink-soft); cursor: pointer; }
+.lz-fits { display: flex; flex-direction: column; gap: .5rem; }
+.lz-fit { padding: .5rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6b4a2a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.lz-fit.held { box-shadow: inset .1875rem 0 0 #3f6e5e, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.lz-fit header { display: flex; align-items: baseline; gap: .75rem; }
+.lz-fit header b { font: 400 var(--fs-4) var(--f-title); color: #2a1608; }
+.lz-fit header b small { margin-left: .5rem; font: var(--fs-1) var(--f-kai); color: #6a1f12; }
+.lz-fit .score { margin-left: auto; display: inline-flex; align-items: center; gap: .375rem; }
+.lz-fit .score .track { display: block; width: 6rem; height: .3125rem; background: rgba(120, 90, 50, .15); }
+.lz-fit .score .track i { display: block; height: 100%; background: linear-gradient(90deg, #8a6a2a, #c9a45c); }
+.lz-fit .score em { font-style: normal; font-size: var(--fs-2); color: #6a1f12; }
+.lz-fit p { margin: .125rem 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
+.lz-fit details { font-size: var(--fs-1); color: var(--ink-faint); }
+.lz-fit details summary { cursor: pointer; }
+.lz-fit .q-yapai { margin-top: .25rem; }

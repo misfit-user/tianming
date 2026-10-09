@@ -1,7 +1,8 @@
 // 朝野：朝野册，三页。
 //   势力：左叶天下诸势力（本朝居首，敌对者标朱），右叶所选势力的谱牒——印、名、类、述、要数，六卷（君臣、版图、军略、财计、邦交、史略）；
 //   党派：左叶诸党（秉政、在野、边缘，影响为条），右叶党籍——纲领、党人、党势、议程、事链五卷，卷底召党魁、付议、拟令；
-//   阶层：左叶诸阶层（满意据奏），右叶阶层志——本末、诉求、民情、人物、事链五卷，卷底召代表、付议、拟令（叫法随身份）。
+//   阶层：左叶诸阶层（满意据奏），右叶阶层志——本末、诉求、民情、人物、事链五卷，卷底召代表、付议、拟令（叫法随身份）；
+//   家族：左叶天下门第（按声望），右叶一族之谱——门第、族人、姻仇、家史四卷，族人在册者可翻图志。
 // 卷首一排小签可跳卷。人名可翻人物图志，党名阶层名互相跳。经 game.realm（势力）与 game.social（党派、阶层）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
@@ -13,9 +14,9 @@ const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 49 忧」），按记数设置改写；小数照旧
 const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
 const signed = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(Math.round(v * 10) / 10))}`;
-const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层'], ['dongtai', '动态'], ['nian', '逆案']];
+const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层'], ['families', '家族'], ['dongtai', '动态'], ['nian', '逆案']];
 const DT_WINS = [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [0, '全部']];
-const JUAN_MARK = { 君臣: '君', 版图: '图', 军略: '军', 财计: '财', 邦交: '交', 史略: '史', 纲领: '纲', 党人: '人', 党势: '势', 议程: '议', 事链: '链', 本末: '本', 诉求: '诉', 民情: '情', 人物: '人' };
+const JUAN_MARK = { 门第: '门', 族人: '族', 姻仇: '姻', 家史: '史', 君臣: '君', 版图: '图', 军略: '军', 财计: '财', 邦交: '交', 史略: '史', 纲领: '纲', 党人: '人', 党势: '势', 议程: '议', 事链: '链', 本末: '本', 诉求: '诉', 民情: '情', 人物: '人' };
 const NUM_WORD = ['一', '二', '三', '四', '五', '六', '七'];
 const REL = { meng: '盟好', di: '敌对', zhong: '中立' };
 
@@ -24,7 +25,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   const R = game.realm;
   const S = game.social;
   let tab = 'factions';
-  const sel = { factions: '', parties: '', classes: '', dongtai: '', nian: '' };
+  const sel = { factions: '', parties: '', classes: '', families: '', dongtai: '', nian: '' };
   let dtWin = 6;
   let opened = false;
   let rows = [];
@@ -43,14 +44,14 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   // ---------- 左叶 ----------
   function render() {
     if (tab === 'dongtai' || tab === 'nian') return renderIntrigue();
-    try { rows = tab === 'factions' ? R.factions() : tab === 'parties' ? S.parties() : S.classes(); } catch (e) { rows = []; toast(e.message); }
+    try { rows = tab === 'factions' ? R.factions() : tab === 'parties' ? S.parties() : tab === 'families' ? R.families() : S.classes(); } catch (e) { rows = []; toast(e.message); }
     if (!rows.some((r) => r.key === sel[tab])) sel[tab] = (rows[0] || {}).key || '';
     replaceChildren(leftNote, ...noteOf());
     leftNote.hidden = !leftNote.childNodes.length;
     const max = Math.max(1, ...rows.map((f) => f.strength || 0));
     replaceChildren(leftBody, rows.length ? rows.map((r) => h('button.rm-fac' + (r.key === sel[tab] ? '.on' : '') + (r.hostile ? '.hostile' : '') + (r.mine ? '.mine' : ''),
       { type: 'button', dataset: { key: r.key }, onclick: () => { sel[tab] = r.key; renderRight(); markSel(); } }, ...rowOf(r, max)))
-      : [h('p.ce-unk', tab === 'factions' ? '天下无势力在册' : tab === 'parties' ? '朝中无党派在册' : '此世无阶层在册')]);
+      : [h('p.ce-unk', tab === 'factions' ? '天下无势力在册' : tab === 'parties' ? '朝中无党派在册' : tab === 'families' ? '天下无家族在册' : '此世无阶层在册')]);
     if (sel[tab]) renderRight(); else replaceChildren(right);
   }
   // ---------- 动态、逆案 ----------
@@ -113,6 +114,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
         h('p', `已发${num(d.past.length)}案：得逞${num(succ)}、败露${num(d.past.length - succ)}。已露形之谋${num(d.brewing.length)}桩${d.brewing.some((x) => x.ripe) ? '，其中有将发者' : ''}。`)));
   }
   function noteOf() {
+    if (tab === 'families') return [h('span', `天下门第${num(rows.length)}家，按声望`)];
     if (tab !== 'classes') return [];
     const o = S.classOverview();
     return [h('span', '平均满意', h('b', num(o.avg)), o.sealedAny ? h('i', '据奏') : null),
@@ -124,6 +126,9 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     if (tab === 'parties') return [h('b', r.name), r.standing ? h('em' + (r.standing === '秉政' ? '.mine' : ''), r.standing) : null,
       h('span.meta', [r.status, r.leader && `魁${r.leader}`, r.allies || r.foes ? `盟${num(r.allies)}／敌${num(r.foes)}` : ''].filter(Boolean).join(' · ')),
       h('i.bar', h('b', { style: { width: `${r.influence}%` } })), h('small', `影响${num(r.influence)}`)];
+    if (tab === 'families') return [h('b', r.name), r.tier ? h('em' + (r.declining ? '.low' : ''), r.tier) : null,
+      h('span.meta', [r.head && `宗主${r.head}`, r.members ? `族人${num(r.members)}` : '', r.prominence].filter(Boolean).join(' · ')),
+      h('i.bar', h('b', { style: { width: `${Math.max(0, Math.min(100, r.renown))}%` } })), h('small', `望${num(r.renown)}`)];
     const tone = r.sat < 45 ? '.low' : r.sat > 62 ? '.high' : '';
     return [h('b', r.name), h('em' + tone, `满意${num(r.sat)}`, r.sealed ? h('i', '奏') : null),
       h('span.meta', [r.trend ? `${r.trend > 0 ? '▲' : '▼'}${num(Math.abs(r.trend))}` : '', r.pressure, r.radical, r.brief].filter(Boolean).join(' · ')),
@@ -143,7 +148,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   function renderRight() {
     if (tab === 'dongtai' || tab === 'nian') { replaceChildren(right, intrigueDoc()); return; }
     let d;
-    try { d = tab === 'factions' ? R.faction(sel[tab]) : tab === 'parties' ? partyDoc(S.party(sel[tab])) : classDoc(S.klass(sel[tab])); } catch (e) { toast(e.message); replaceChildren(right); return; }
+    try { d = tab === 'factions' ? R.faction(sel[tab]) : tab === 'parties' ? partyDoc(S.party(sel[tab])) : tab === 'families' ? familyDoc(R.family(sel[tab])) : classDoc(S.klass(sel[tab])); } catch (e) { toast(e.message); replaceChildren(right); return; }
     const juans = d.juan.filter(([, , body]) => hasBody(body));
     const nav = h('nav.rm-nav', juans.map(([title]) => h('button', { type: 'button', title, onclick: () => { const t = right.querySelector(`[data-juan="${title}"]`); if (t) right.scrollTo({ top: t.offsetTop - nav.offsetHeight - 8, behavior: 'smooth' }); } }, JUAN_MARK[title] || title.charAt(0))));
     replaceChildren(right,
@@ -247,6 +252,27 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   }
   function audienceWith(name) { if (onAudience && name) { hide(); onAudience(name); } }
 
+  // 一族之谱：族人带注（「侄·宁国公」），在人物册里的可点
+  const kinLink = (x, role) => ({ label: x.name, sub: [role, x.note].filter(Boolean).join(' · '), onclick: x.known && onPerson ? () => onPerson(x.name) : null, title: x.known ? '翻人物图志' : '' });
+  function familyDoc(f) {
+    return {
+      short: String(f.name).charAt(0), name: f.name, type: f.tier, desc: f.fortunes ? `近况：${f.fortunes}` : '',
+      pills: [f.prominence, f.seat && `祖籍${f.seat}`].filter(Boolean),
+      stats: [['声望', num(f.renown)], ['族人', num(f.members.length || f.branches.reduce((s, b) => s + b.members.length, 0))], f.branches.length ? ['支系', num(f.branches.length)] : null].filter(Boolean),
+      juan: [
+        ['门第', '祖籍·家业·家风', { rows: f.menDi }],
+        ['族人', '宗主·嗣·支系', { links: [
+          f.head ? { title: '宗主', items: [kinLink(f.head)] } : null,
+          f.heir ? { title: '嗣', items: [kinLink(f.heir)] } : null,
+          f.members.length ? { title: '族人', items: f.members.map((x) => kinLink(x)) } : null,
+          ...f.branches.filter((b) => !(f.members.length && f.branches.length === 1)).map((b) => ({ title: b.name, items: [b.head ? kinLink(b.head, '房长') : null, ...b.members.filter((x) => !b.head || x.name !== b.head.name).map((x) => kinLink(x))].filter(Boolean) }))
+        ].filter(Boolean) }],
+        ['姻仇', '联姻·宿怨·往来', { rows: f.yinChou }],
+        ['家史', '族中大事', { lines: f.history.length ? [{ title: '近事', items: f.history.map((x) => ({ head: x.turn != null ? `第${num(x.turn)}回合` : '', body: [x.event, x.desc].filter(Boolean).join('：') })) }] : [] }]
+      ],
+      acts: []
+    };
+  }
   function partyDoc(p) {
     const memberSet = new Set(p.lead.flatMap((l) => l.people.map((x) => x.name)));
     return {

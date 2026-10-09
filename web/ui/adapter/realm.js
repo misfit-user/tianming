@@ -221,3 +221,60 @@ export function faction(key) {
     juan: [['君臣', '首脑重臣', junchen], ['版图', '所辖之地', bantu], ['军略', '兵制方略', junlue], ['财计', '库藏经济', caiji], ['邦交', '与国之谊', bangjiao], ['史略', '优劣大略', shilue]]
   };
 }
+
+// ---------- 家族 ----------
+// 天下门第（GM.families）：剧本写定的显姓与按人物自生的家族。照老抽屉「家族门第」按声望排，新界面另展一族之谱——
+// 门第、族人（宗主、嗣、支系，在册者可点）、姻仇、近况与家史。剧本作者的按语（note）多写身后事，不列。
+// 门第之称照剧本编辑器的 familyTier 名表
+const FAMILY_TIER = { imperial: '宗室帝胄', royal: '宗室', imperial_relative: '宗亲', imperial_consort: '后妃外戚', common: '平民', commoner: '平民', gentry: '士绅',
+  scholar_official: '士大夫', civil: '文官', military: '将门', noble: '世家', great_clan: '巨族', lesser_clan: '小族', eunuch: '宦官', steppe_noble: '草原贵族',
+  steppe_royal: '草原汗室', samurai_elite: '武士门第', daimyo: '大名', shogunal: '幕府', princely: '藩王', yangban: '两班', tusi: '土司', tusi_remnant: '土司残部',
+  colonial_elite: '殖民权贵', religious_order: '教团', company_officer: '商团军官', regional_lord: '地方领主', local_elite: '地方望族', tribal: '部族' };
+const PROMINENCE = { rising: '方兴', stable: '安稳', declining: '渐衰' };
+const tierText = (t) => FAMILY_TIER[t] || (/^[a-z_]+$/i.test(String(t || '')) ? '' : String(t || ''));
+// 「declining(暂)」→ 渐衰（暂）；「rising(rapid)」→ 方兴（急）
+const promText = (p) => {
+  const s = String(p || '').trim();
+  const m = /^([a-z]+)\s*[（(]?([^）)]*)[）)]?$/i.exec(s);
+  if (!m) return /[a-z]/i.test(s) ? '' : s;
+  const base = PROMINENCE[m[1]] || '';
+  const tail = m[2] ? ({ rapid: '急' }[m[2]] || (/[a-z]/i.test(m[2]) ? '' : m[2])) : '';
+  return base && tail ? `${base}（${tail}）` : base;
+};
+const renownOf = (f) => Number(first(f.renown, f.prestige)) || 0;
+// 「魏良卿(侄·宁国公)」→ 名「魏良卿」、注「侄·宁国公」；在人物册里的可点
+function kin(s) {
+  const t = String(s || '').trim();
+  const m = /^([^（(]+)[（(](.+)[）)]$/.exec(t);
+  const name = (m ? m[1] : t).trim(), note = m ? m[2].trim() : '';
+  const known = !!(name && typeof w.findCharByName === 'function' && w.findCharByName(name));
+  return { name, note, known };
+}
+export function families() {
+  const all = G().families || {};
+  return Object.keys(all).map((k) => {
+    const f = all[k] || {};
+    const members = Array.isArray(f.members) ? f.members.length : (f.branches || []).reduce((s, b) => s + ((b && b.members) || []).length, 0);
+    return { key: k, name: String(f.name || k), tier: tierText(f.tier), renown: Math.round(renownOf(f)), head: kin(first(f.currentHead, (f.branches || [])[0] && f.branches[0].head)).name, members,
+      prominence: promText(f.prominence), declining: /declin/.test(String(f.prominence || '')) };
+  }).sort((a, b) => b.renown - a.renown || a.name.localeCompare(b.name, 'zh-CN'));
+}
+export function family(key) {
+  const f = (G().families || {})[key];
+  if (!f) throw new Error('此族已不在册');
+  const branches = (Array.isArray(f.branches) ? f.branches : []).filter((b) => b && ((b.members || []).length || b.head));
+  const members = Array.isArray(f.members) ? f.members.map(kin) : [];
+  const head = has(f.currentHead) ? kin(f.currentHead) : branches[0] && branches[0].head ? kin(branches[0].head) : null;
+  const heir = has(f.heir) ? kin(f.heir) : null;
+  const relations = f.relations && typeof f.relations === 'object' && !Array.isArray(f.relations) ? Object.keys(f.relations).map((k) => `${k}：${pp(f.relations[k])}`).filter((x) => !/：$/.test(x)) : [];
+  const hist = (Array.isArray(f.history) ? f.history : []).filter((x) => x && (x.event || x.desc)).slice(-12).reverse();
+  return {
+    name: String(f.name || key), tier: tierText(f.tier), renown: Math.round(renownOf(f)), prominence: promText(f.prominence), declining: /declin/.test(String(f.prominence || '')),
+    seat: pp(f.ancestralSeat), fortunes: pp(f.recentFortunes), head, heir,
+    menDi: [row('祖籍', f.ancestralSeat), row('始祖', f.founder), row('先人', f.notableAncestors), row('家业', f.wealth), row('立场', f.politicalStance), row('家训', f.motto), row('家风', f.tradition)].filter(Boolean),
+    members,
+    branches: branches.map((b) => ({ name: String(b.name || '支系'), head: b.head ? kin(b.head) : null, members: (b.members || []).map(kin) })),
+    yinChou: [row('联姻', f.marriages), row('宿怨', f.feuds, 'zhu'), relations.length ? { k: '往来', v: relations.join('；') } : null].filter(Boolean),
+    history: hist.map((x) => ({ turn: x.turn, event: String(x.event || ''), desc: String(x.desc || '') }))
+  };
+}

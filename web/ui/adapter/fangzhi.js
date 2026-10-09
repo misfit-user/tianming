@@ -514,7 +514,8 @@ function buildCircuit(p, MC, c, clicked) {
       sum.office != null ? { k: '吏治', v: n(sum.office), sub: offG.mark || '', warn: !!p.gradeIsWarn('office', offG) } : null
     ].filter((x) => x && x.v != null),
     xiajing, xingshi, caiji, yingzao,
-    acts: viewer.player ? CIRCUIT_ACTS : []
+    acts: viewer.player ? CIRCUIT_ACTS : [],
+    canReassign: viewer.player && !!(w.TM && w.TM.DivisionReassign)
   };
 }
 function officialOf(p, profile, own, sum, c, viewer) {
@@ -547,6 +548,41 @@ function officialOf(p, profile, own, sum, c, viewer) {
       : !crow ? '下一回合起生效' : `执行率均${signed(crow.execAvg || 0, true)} · 吏治每月${signed(crow.corrMonthly || 0, false)}（近驻地，远者递减）`;
   }
   return out;
+}
+// 调整辖区（照老 circuitReassignPanel）：划出——本道本方各州可改隶到接壤的本方别道（首府不可动，由 movable 判）；
+// 划入——与本道接壤、同属本方、今隶别道且可动的州。选定一条即录入议事清册（reassign）
+export function circuitReassignOptions(key) {
+  const p = P8();
+  const MC = w.TM && w.TM.MapCircuits;
+  const dr = w.TM && w.TM.DivisionReassign;
+  if (!p || !MC || !dr || typeof p.findCircuit !== 'function') return { ok: false, reason: '改隶未就绪' };
+  const c = p.findCircuit(String(key));
+  if (!c) return { ok: false, reason: '此道未在舆图上' };
+  const run = typeof p.withRenderBatch === 'function' ? p.withRenderBatch : (fn) => fn();
+  return run(() => {
+    const viewer = viewerOf(p, c, null);
+    if (!viewer.player) return { ok: false, reason: '他方之道，不可调整' };
+    const own = MC.partitionByOwner(c, viewer.owner).own;
+    const idOf = (r) => String(r.id || r.name || '');
+    const ownIds = new Set(own.map(idOf));
+    const out = own.map((r) => {
+      const m = dr.movable(r, {});
+      if (!m || !m.ok) return null;
+      const targets = (dr.targetsFor(r, {}) || []).filter((t) => t.adjacent).map((t) => ({ key: t.key, label: t.label }));
+      return targets.length ? { id: idOf(r), name: p.regionTitle(r), targets } : null;
+    }).filter(Boolean);
+    const seen = new Set(), into = [];
+    own.forEach((r) => (Array.isArray(r.neighbors) ? r.neighbors : []).forEach((nb) => {
+      const x = p.findRegion(nb);
+      const xid = x ? idOf(x) : '';
+      if (!x || seen.has(xid) || ownIds.has(xid) || p.canonicalOwnerKey(x) !== p.canonicalOwnerKey(r)) return;
+      seen.add(xid);
+      const m = dr.movable(x, {});
+      if (!m || !m.ok || !m.from || m.from.key === c.key) return;
+      into.push({ id: xid, name: p.regionTitle(x), from: m.from.label });
+    }));
+    return { ok: true, key: c.key, name: c.label, out, into };
+  });
 }
 export function circuitAct(key, kind) {
   const p = P8();

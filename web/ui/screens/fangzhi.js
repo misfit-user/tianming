@@ -228,7 +228,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
     const slips = h('div.fz-slips', live.map(([k, seal, name]) => h('button.fz-slip' + (k === cvol ? '.on' : ''), { type: 'button', onclick: () => { cvol = k; renderCircuitLeft(); renderCircuitRight(); } }, h('i', seal), h('b', name))));
-    const acts = c.acts.length ? h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a))) : null;
+    const acts = c.acts.length || c.canReassign ? h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a)),
+      c.canReassign ? h('button.q-yapai', { type: 'button', title: '州县划出划入（入议事清册，回合末落地）', onclick: () => circuitReassign() }, '调整辖区') : null) : null;
     replaceChildren(left,
       h('header.fz-head', h('span.fz-seal', '通志'), h('div',
         h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null, h('i', '›'), h('b', c.name)),
@@ -262,6 +263,26 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
       }
     }
     replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
+  }
+  function circuitReassign() {
+    let o;
+    try { o = F.circuitReassignOptions(curC.key); } catch (e) { toast(e.message); return; }
+    if (!o.ok) { toast(o.reason); return; }
+    const pick = (id, name, key, label) => {
+      let ok = false;
+      try { ok = F.reassign(id, key); } catch (e) { toast(e.message); return; }
+      if (ok) { toast(`已录入议事清册：改隶${name}于${label}`); j.close('ok'); }
+    };
+    const j = juan({
+      title: '调整辖区', note: o.name, width: '34rem',
+      content: h('div.fz-reassign',
+        h('p', '选定一条即录入议事清册，回合末三处同改（行政、舆图、省道）。首府不可划出。'),
+        h('h4.fz-rs-sec', '划出本道'),
+        o.out.length ? o.out.map((x) => h('div.fz-rs-row', h('span', x.name), h('div', x.targets.map((t) => h('button.q-yapai', { type: 'button', title: `改隶${t.label}`, onclick: () => pick(x.id, x.name, t.key, t.label) }, `入${t.label}`)))))
+          : h('p.fz-note', '本道各州没有接壤的本方别道可改隶。'),
+        o.into.length ? [h('h4.fz-rs-sec', '划入本道'), o.into.map((x) => h('div.fz-rs-row', h('span', x.name, h('small', `今隶${x.from}`)),
+          h('div', h('button.q-yapai', { type: 'button', onclick: () => pick(x.id, x.name, o.key, o.name) }, '划入本道'))))] : null)
+    });
   }
   function doCircuitAct(kind) {
     let ok = false;

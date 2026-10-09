@@ -113,3 +113,7 @@
 /* 色带、民情图上的字一律素白（盖过上面按色调给的字色） */
 .gs-ov .gs-spec i, .gs-ov .gs-tiles span { color: #f9ead2; }
 .gs-ov .gs-spec i span { text-shadow: 0 1px 1px rgba(40, 15, 5, .5); }
+
+/* 时运签：与四方印同格，无刻度 */
+.gs-seal.gs-yun { grid-template-areas: 'ch name grade' 'ch sub sub'; }
+.gs-seal.gs-yun .ch { background: radial-gradient(circle at 35% 30%, #6b4a2a, #3a2412); }

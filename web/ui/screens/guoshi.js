@@ -1,10 +1,13 @@
 // 国势：国势册。左叶四方印（吏治、民心、皇权、皇威），各标九品与刻度；右叶为所选一项的详情——总览、色谱、分维、源降两账、
 // 警示、名目诸列，次序照老抽屉。真值能否见由适配层定（奏报失真层、监察之律），封存时右叶只给朝廷视野并注明。
+// 四方印下另有「时运」签：朝代阶段、气运警兆、典章祖制。
 // 名目里可直达的去处（批阅、撰写、召对、朝议）经 onGo 交书案去开。经 game.guoshi、game.select.gauges。
 import { h, replaceChildren } from '../core/dom.js';
 import { num, roundSig, grade, gradeIndex } from '../core/numerals.js';
 
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
+// 内核写好的警兆文字里夹着阿拉伯数字（「满意 10」），按记数设置改写
+const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
 
 const GO_NAME = { docket: '去批阅', edict: '去撰写', audience: '去召对', court: '去朝议' };
 
@@ -33,8 +36,16 @@ export function createGuoshi({ root, game, onGo }) {
         h('b.ch', ch), h('span.name', label), h('span.grade', grade(v)),
         h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : '')))),
         h('small', sub));
-    }));
+    }), shiyunCard());
     renderDetail(S.detail(sel));
+  }
+
+  function shiyunCard() {
+    let c = null;
+    try { c = S.detail('shiyun').card; } catch (_e) { return null; }
+    return h('button.gs-seal.gs-yun' + (sel === 'shiyun' ? '.on' : ''), { type: 'button', onclick: () => { sel = 'shiyun'; render(); } },
+      h('b.ch', '运'), h('span.name', '时运'), h('span.grade', c.phase),
+      h('small', [c.warns ? `气运警兆${num(c.warns)}条` : c.veiled ? '据奏未见警兆' : '眼下无警兆', c.statutes ? `祖制${num(c.statutes)}典` : ''].filter(Boolean).join(' · ')));
   }
 
   // ---------- 右叶 ----------
@@ -76,7 +87,7 @@ export function createGuoshi({ root, game, onGo }) {
       case 'list': return box(s.lead ? h('p.gs-note', s.lead) : null,
         s.items.length ? h('div.gs-list', s.items.map((x) => h('div' + (x.tone ? '.' + x.tone : ''), h('b', x.title), x.meta ? h('span', x.meta) : null, x.side ? h('small', x.side) : null)))
           : h('p.gs-empty', s.empty || '无'));
-      case 'alert': return box(h('div.gs-alert', s.lead ? h('b', s.lead) : null, s.lines.map((t) => h('p', t)), s.note ? h('small', s.note) : null));
+      case 'alert': return box(h('div.gs-alert', s.lead ? h('b', s.lead) : null, s.lines.map((t) => h('p', digits(t))), s.note ? h('small', s.note) : null));
       case 'hints': return box(h('div.gs-hints', s.items.map(([t, go]) => h('button', { type: 'button', onclick: () => { if (onGo) { hide(); onGo(go); } } }, t))), s.note ? h('p.gs-note', s.note) : null);
       case 'ledger': return box(h('div.gs-ledger', s.items.map((x) => h('p', h('span', x.label), h('b.' + (x.tone || 'plain'), x.value)))));
       case 'bars': return box(h('div.gs-bars', s.items.map((x) => h('div', h('p', h('span', x.label), h('i', h('b.' + x.tone, { style: { width: `${Math.max(0, Math.min(100, x.value))}%` } })), h('em.' + x.tone, `${num(Math.round(x.value))}${x.trend}`)),

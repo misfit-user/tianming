@@ -5,6 +5,7 @@
 //     真值与由真值推出的分账（诸源、分阶层、分区、分部门真账、税赋三数等）一概封存——老抽屉在此处会露真值，新界面不露；
 //   · 吏治另有监察之律（老面板 getCorrVisibility）：监察不足五十，真浊度与分部门真账不显，只据地方所奏。
 // 皇权、皇威内核不设失真，照老抽屉直显。只读，处置去诏令、奏疏、问对、朝议。
+// 四项之外另有「时运」一页（朝代阶段、气运警兆、典章祖制），见文末 shiyun。
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -278,5 +279,65 @@ function huangwei() {
 }
 
 export function detail(key) {
-  return key === 'lizhi' ? lizhi() : key === 'minxin' ? minxin() : key === 'huangquan' ? huangquan() : huangwei();
+  return key === 'shiyun' ? shiyun() : key === 'lizhi' ? lizhi() : key === 'minxin' ? minxin() : key === 'huangquan' ? huangquan() : huangwei();
 }
+
+// ---------- 时运 ----------
+// 老抽屉左栏三面板并作一页：朝代阶段（GM.eraState：盛衰之期、时局总述、正统之源、田制）、
+// 气运（WorldDigest.previewData：若不干预、势将如此的警兆）、典章祖制（TM.Dianzhang：熬过考验著为成宪的制度）。
+// 可见之律：气运警兆里按真值判的三类——民心、吏治、阶层满意——失真层开着且未揭时不列（同项据奏另有所示，这里再报便是漏底）；
+// 「某人之谋将发」点的是未露形之谋的首犯，一概不列（已露形者见朝野册逆案页）。eraState 的诸项系数是给推演的，不列。
+const PHASE = { founding: '草创', rising: '兴起', peak: '盛世', stable: '守成', decline: '衰世', collapse: '末路' };
+const LEGIT = { hereditary: '世袭', mandate: '天命', military: '武功', conquest: '征服', election: '推举', religious: '神授', usurpation: '篡立' };
+const LAND = { mixed: '官民田杂', equal_field: '均田', private: '私田', state: '官田', manorial: '庄园', feudal: '分封' };
+const DZ_KIND = { office: '官制', policy: '国是', keju: '科举' };
+function omens() {
+  const WD = w.WorldDigest;
+  if (!WD || typeof WD.previewData !== 'function') return { warns: [], notes: [], veiled: false };
+  let list = [];
+  try { list = WD.previewData(G(), { limit: 8 }) || []; } catch (_e) { return { warns: [], notes: [], veiled: false }; }
+  const RV = w.TM && w.TM.ReportedView;
+  const rvOn = (() => { try { return !!(RV && RV.active(w.P || null)); } catch (_e) { return false; } })();
+  const classOpen = (name) => { try { return !!(RV && RV.revealed && RV.revealed('minxin', `class.${name}`)); } catch (_e) { return false; } };
+  const keep = list.filter((x) => {
+    if (!x || !x.line) return false;
+    if (x.domain === '阴谋') return false;
+    if (x.domain === '民心') return !flipped('minxin');
+    if (x.domain === '吏治') return !flipped('corruption');
+    if (x.domain === '阶层') return !rvOn || classOpen(String(x.line).split(' 满意 ')[0]);
+    return true;
+  });
+  return {
+    veiled: list.some((x) => x && x.domain !== '阴谋' && !keep.includes(x)),   // 有警兆因失真层未揭而不列：空时改说「据奏未见」
+    warns: keep.filter((x) => x.kind !== 'institutional').slice(0, 4).map((x) => `〔${x.domain}〕${x.line}`),
+    notes: keep.filter((x) => x.kind === 'institutional').map((x) => String(x.line))
+  };
+}
+export function shiyun() {
+  const g = G();
+  const era = g.eraState || {};
+  const phase = PHASE[era.dynastyPhase] || '';
+  const om = omens();
+  const DZ = w.TM && w.TM.Dianzhang;
+  let statutes = [], bonus = 0;
+  try { if (DZ && typeof DZ.list === 'function') statutes = DZ.list(g) || []; } catch (_e) { statutes = []; }
+  try { if (DZ && typeof DZ.legitimacyBonus === 'function') bonus = n0(DZ.legitimacyBonus(g)); } catch (_e) { bonus = 0; }
+  const turn = n0(g.turn);
+  const rows = [
+    phase ? { label: '世运', value: phase, big: true, tone: /衰|末/.test(phase) ? 'bad' : /盛|兴/.test(phase) ? 'good' : 'plain' } : null,
+    LEGIT[era.legitimacySource] ? { label: '正统', value: LEGIT[era.legitimacySource] } : null,
+    LAND[era.landSystemType] ? { label: '田制', value: LAND[era.landSystemType] } : null,
+    { label: '气运', value: om.warns.length ? '有警兆' : '无警兆', tone: om.warns.length ? 'bad' : 'good' },
+    { label: '祖制', value: statutes.length ? '已立' : '未立' }
+  ].filter(Boolean);
+  const sections = [
+    era.contextDescription ? { kind: 'cases', title: '时局', items: [String(era.contextDescription)] } : null,
+    om.warns.length ? { kind: 'alert', title: '气运', tone: 'bad', badge: '若不干预 · 势将如此', lines: om.warns, note: '逆之即改命。此为前瞻，实际由本回合所为与推演定。' }
+      : { kind: 'list', title: '气运', badge: '若不干预 · 势将如此', items: [], empty: om.veiled ? '据有司所奏，未见危殆之兆。' : '眼下诸事未到危殆之边，无警兆。' },
+    om.notes.length ? { kind: 'cases', title: '现任职掌', items: om.notes } : null,
+    { kind: 'list', title: '典章 · 祖制', badge: statutes.length ? `予正统 +${bonus}` : '', lead: '制度熬过考验，著为成宪：累世成宪予正统，然祖制既立则难轻改，渐失变通。',
+      items: statutes.map((s) => ({ title: String(s.name || ''), meta: DZ_KIND[s.kind] || '', side: `历${Math.max(0, turn - n0(s.maturedTurn))}回合` })), empty: '尚无著为祖制之典。' }
+  ].filter(Boolean);
+  return { key: 'shiyun', title: '时运', sub: phase ? `世运 · ${phase}` : '世运', rows, sealed: false, sections, card: { phase: phase || '—', warns: om.warns.length, veiled: om.veiled, statutes: statutes.length } };
+}
+

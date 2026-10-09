@@ -149,6 +149,37 @@ module.exports=async function({win,check,results}){
    state=await lifeStatus();assert(state.status==='done'&&state.result&&state.result.followUp&&state.result.followUp.response,JSON.stringify(state));
    results.push({name:'formal-consultation-followup-timeline',status:'PASS',value:{turn:await js('GM.turn'),state,savedFollow}});
  });
+ await check('formal composite meeting carries a sourced onsite consultation through save, return and result',async()=>{
+   await js(`openCharRenwuPage('来客')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
+   await js(`(()=>{const p=document.querySelector(${JSON.stringify(panel)}),target=p.querySelector('#daily-target'),topic=p.querySelector('#daily-consultation-topic');target.value='local-a';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='letter_style';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+   await click(panel+' [data-daily-new="meeting"]');
+   let state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,messages:p.messages.length};})()`);
+   assert(state&&state.discussion&&state.discussion.topicId==='letter_style',JSON.stringify(state));
+   let saved=null;
+   async function compositeTurn(){
+     await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);await settle();await click('#gs-turn-big');
+     await js(`(async()=>{for(let i=0;i<200&&!document.getElementById('cet-ok');i++)await new Promise(r=>setTimeout(r,50));const ok=document.getElementById('cet-ok');if(!ok)throw Error('missing composite end-turn confirmation');ok.click();})()`);
+     await js(`(async()=>{for(let i=0;i<40&&!document.getElementById('post-turn-court-prompt');i++)await new Promise(r=>setTimeout(r,50));if(document.getElementById('post-turn-court-prompt')&&typeof _postTurnCourtChoose==='function')_postTurnCourtChoose(false);})()`);
+     await js(`new Promise((resolve,reject)=>{const t=Date.now();(function poll(){if(!GM.busy&&!GM._endTurnBusy){resolve(true);return;}if(Date.now()-t>90000){reject(new Error('formal composite endTurn timeout'));return;}setTimeout(poll,100);})()})`);await settle();
+     await js(`(async()=>{if(typeof _awaitPostTurnJobsById==='function')await _awaitPostTurnJobsById(['npc_behavior']);})()`);
+   }
+   for(let i=0;i<12;i++){
+     state=await js(`(()=>{const p=GM._npcPlans.find(x=>x.id||'')&&GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,meeting:p.localActivity.meeting,messages:p.messages.length};})()`);
+     if(!state)break;
+     if(!saved&&/^(traveling|response_in_transit|scheduled|waiting_departure)$/.test(state.status)){
+       saved=await js(`(async()=>{const x=await tianming.saveProject('组合约见出发恢复验收',_buildSaveState({format:'project',detach:true}));if(!x.success)throw Error(x.error);const list=await tianming.listSaves(),row=list.files.find(v=>v.storageKey===x.storageKey),loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error);const before=window._tmLoadGen||0;await fullLoadGame(loaded.data,{source:'npc-composite-meeting-reload',preserveTimeline:true});return{storageKey:x.storageKey,before,after:window._tmLoadGen||0,status:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='meeting').slice(-1)[0].status};})()`);
+     }
+     if(state.status==='in_meeting')break;
+     await compositeTurn();
+   }
+   state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,meeting:p.localActivity.meeting};})()`);
+   assert(state&&state.status==='in_meeting',JSON.stringify(state));
+   await js(`openCharRenwuPage('来客')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');await click(panel+' [data-daily-exchange="question"]');
+   for(let i=0;i<10;i++){state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,participation:p.localActivity.meeting&&p.localActivity.meeting.participation};})()`);if(state.status==='done')break;await compositeTurn();}
+   state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,participation:p.localActivity.meeting&&p.localActivity.meeting.participation};})()`);
+   assert(state.status==='done'&&state.discussion&&state.discussion.result&&state.participation&&state.participation.discussion&&saved&&saved.after>saved.before,JSON.stringify({state,saved}));
+   results.push({name:'formal-composite-meeting-timeline',status:'PASS',value:{turn:await js('GM.turn'),state,saved}});
+ });
  const observation=await js(`({apiAttempts:__dailyBrowser.apiAttempts,errors:__dailyBrowser.errors,turn:GM.turn,plans:TM.NPC.DailyActivities.plans().map(p=>({id:p.id,status:p.status,kind:p.localActivity.kind,steps:p.steps.length,messages:p.messages.length}))})`);
  assert.deepEqual(observation.apiAttempts,[],'even swallowed model calls fail this gate');
  assert.deepEqual(traffic,[],'even blocked external attempts fail the zero API workflow');

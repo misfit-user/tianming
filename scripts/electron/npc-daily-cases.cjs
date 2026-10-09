@@ -100,10 +100,10 @@ module.exports=async function({win,check,results}){
    // dossier intentionally has no outbound letter button; the daily panel
    // still uses the current player as its actor after this target entry.
    await js(`(()=>{openCharRenwuPage('周季平');})()`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
-   await js(`(()=>{const panel=document.querySelector(${JSON.stringify(panel)}),target=panel.querySelector('#daily-target'),topic=panel.querySelector('#daily-consultation-topic');target.value='local-b';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='reading_understanding';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+   await js(`(()=>{const panel=document.querySelector(${JSON.stringify(panel)}),target=panel.querySelector('#daily-target'),topic=panel.querySelector('#daily-consultation-topic');target.value='local-a';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='letter_style';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
    await click(panel+' [data-daily-new="consultation"]');
    const r=await js(`(()=>{const p=TM.NPC.DailyActivities.plans().filter(p=>p.localActivity.kind==='consultation').slice(-1)[0];return{status:p&&p.status,source:p&&p.localActivity.sourceOpportunity,topic:p&&p.localActivity.topicId,plans:TM.NPC.DailyActivities.plans().length,api:__dailyBrowser.apiAttempts};})()`);
-   assert(r.source&&r.source.kind==='document'&&r.topic==='reading_understanding',JSON.stringify(r));assert.deepEqual(r.api,[]);
+   assert(r.source&&r.source.kind==='contact'&&r.topic==='letter_style',JSON.stringify(r));assert.deepEqual(r.api,[]);
    const saved=await js(`(async()=>{const x=await tianming.saveProject('请益切磋阶段隔离验收',_buildSaveState({format:'project',detach:true}));if(!x.success)throw Error(x.error);const list=await tianming.listSaves(),row=list.files.find(v=>v.storageKey===x.storageKey),loaded=await tianming.loadProject(row);if(!loaded.success)throw Error(loaded.error);await fullLoadGame(loaded.data,{source:'npc-life-consultation-reload',preserveTimeline:true});return{status:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='consultation').slice(-1)[0].status,source:GM._npcPlans.filter(p=>p.localActivity&&p.localActivity.kind==='consultation').slice(-1)[0].localActivity.sourceOpportunity};})()`);
    assert(saved.source&&saved.status!=='done',JSON.stringify(saved));
  });
@@ -153,10 +153,10 @@ module.exports=async function({win,check,results}){
    // The player dossier is read-only for outbound letters; enter through the
    // ordinary recipient dossier while the daily panel keeps the player as actor.
    await js(`openCharRenwuPage('周季平')`);await settle();await click('#tm-zhi-folio [data-zhi-action="letter"]');
-   await js(`(()=>{const p=document.querySelector(${JSON.stringify(panel)}),target=p.querySelector('#daily-target'),topic=p.querySelector('#daily-consultation-topic');target.value='local-a';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='letter_style';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+   await js(`(()=>{const p=document.querySelector(${JSON.stringify(panel)}),target=p.querySelector('#daily-target'),topic=p.querySelector('#daily-consultation-topic');target.value='local-b';target.dispatchEvent(new Event('change',{bubbles:true}));topic.value='reading_understanding';topic.dispatchEvent(new Event('change',{bubbles:true}));})()`);
    await click(panel+' [data-daily-new="meeting"]');
    let state=await js(`(()=>{const p=GM._npcPlans.filter(x=>x.localActivity&&x.localActivity.kind==='meeting').slice(-1)[0];return p&&{id:p.id,status:p.status,discussion:p.localActivity.meeting&&p.localActivity.meeting.discussion,messages:p.messages.length};})()`);
-   assert(state&&state.discussion&&state.discussion.topicId==='letter_style',JSON.stringify(state));
+   assert(state&&state.discussion&&state.discussion.topicId==='reading_understanding',JSON.stringify(state));
    let saved=null;
    async function compositeTurn(){
      await js(`(()=>{if(TM.UI&&TM.UI.turnResult&&typeof TM.UI.turnResult.closeTurnResult==='function')TM.UI.turnResult.closeTurnResult();})()`);await settle();await click('#gs-turn-big');

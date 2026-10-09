@@ -1,0 +1,95 @@
+/* 舆图为家（典章「主画面」＝舆图为家；?home=map 开发时临时改）。格局照 CK3：
+   左下立像与一圈圆钮（五渠道、回案），左上待办、其下邸报，右上读数一条，右缘书目，右下时钟与工具，舆图看法在时钟之上。
+   器物（回纹、瓦当、印、刻本、九品刻度）与御案为家同一套，只换摆法。 */
+
+.scr-desk .hm-me, .scr-desk .hm-alerts, .scr-desk .hm-corner { display: none; }
+.scr-desk.home-map .hm-me, .scr-desk.home-map .hm-alerts, .scr-desk.home-map .hm-corner { display: flex; }
+.scr-desk.home-map .dock, .scr-desk.home-map .left > .q-qi { display: none; }
+
+/* 入图、飞行时界面不撤：舆图就是家；案上牙牌、提示照旧只在案前（飞行途中不接点击） */
+.scr-desk.home-map.inmap > *:not(.tags):not(.hint) { opacity: 1; pointer-events: auto !important; }
+.scr-desk.home-map.flying > *:not(.tags):not(.hint) { opacity: 1; pointer-events: none !important; }
+
+/* ---------- 右上读数：一条漆匾从右上角垂下，左端斜收 ---------- */
+.scr-desk.home-map .topbar { left: auto; right: 0; height: 4.25rem; gap: 1.375rem; padding: 0 1.375rem 0 2.75rem; max-width: calc(100vw - 19rem);
+  clip-path: polygon(1.5rem 0, 100% 0, 100% 100%, 0 100%); }
+.scr-desk.home-map .topbar::after { content: ''; position: absolute; left: .75rem; top: 0; bottom: -.625rem; width: 1px; background: linear-gradient(180deg, rgba(201, 164, 92, 0), rgba(201, 164, 92, .55)); transform: skewX(-19deg); }
+.scr-desk.home-map .ledger { flex: none; container-type: normal; gap: 1.125rem; }
+.scr-desk.home-map .gauges { gap: .875rem; }
+
+/* ---------- 右缘书目：让过读数条 ---------- */
+.scr-desk.home-map .rail { top: 5.75rem; }
+
+/* ---------- 左上待办：朱印菱章，一事一章，章角记数 ---------- */
+.scr-desk.home-map .hm-alerts { position: fixed; left: 1.625rem; top: 1.5rem; gap: 1rem; align-items: center; }
+.hm-alert { position: relative; width: 2.5rem; height: 2.5rem; padding: 0; border: 0; cursor: pointer; transform: rotate(45deg);
+  background: linear-gradient(135deg, #b9382a, #7a1f13 70%); box-shadow: 0 .3125rem .75rem rgba(10, 5, 2, .65), inset 0 0 0 2px rgba(236, 210, 154, .55), inset 0 0 0 4px rgba(122, 31, 19, .9), inset 0 0 0 5px rgba(236, 210, 154, .3);
+  transition: transform var(--t-2) var(--ease-out), filter var(--t-2); animation: hm-alert-in 600ms var(--ease-out) both; }
+.hm-alert:hover { transform: rotate(45deg) scale(1.08); filter: brightness(1.12); }
+.hm-alert > b { display: block; transform: rotate(-45deg); font: 400 1.25rem/2.5rem var(--f-title); color: #f9ead2; text-shadow: 0 1px 2px rgba(60, 10, 4, .8); }
+.hm-alert > span { position: absolute; right: -.625rem; bottom: -.625rem; min-width: 1.375rem; height: 1.375rem; padding: 0 .25rem; box-sizing: border-box; transform: rotate(-45deg);
+  border-radius: .6875rem; font: max(.75rem, 11px)/1.375rem var(--f-kai); color: #2a1608; background: linear-gradient(180deg, #f3e2b8, #d9bf86); box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+@keyframes hm-alert-in { from { opacity: 0; transform: rotate(45deg) scale(.6); } to { opacity: 1; transform: rotate(45deg) scale(1); } }
+
+/* ---------- 左上邸报：待办之下 ---------- */
+.scr-desk.home-map .left { top: 5.25rem; width: auto; }
+.scr-desk.home-map .dibao { margin-left: 0; }
+
+/* ---------- 左下立像：画框里是本人，左下角压一方印（元首国号、余者本姓）；右侧名牌、精力，其下一圈圆钮 ---------- */
+.scr-desk.home-map .hm-me { position: fixed; left: 1.125rem; bottom: 1rem; align-items: flex-end; gap: .875rem; }
+.hm-xiang { position: relative; flex: none; width: 8.75rem; height: 11.25rem; padding: .4375rem; border: 0; cursor: pointer;
+  background: linear-gradient(180deg, #3a2416, #1a0e07); box-shadow: 0 .625rem 1.5rem rgba(10, 5, 2, .7), inset 0 0 0 1px rgba(236, 210, 154, .5), inset 0 0 0 .3125rem #24150b, inset 0 0 0 calc(.3125rem + 1px) rgba(201, 164, 92, .45);
+  transition: transform var(--t-2) var(--ease-out); }
+.hm-xiang:hover { transform: translateY(-.1875rem); }
+.hm-xiang::after { content: ''; position: absolute; inset: .4375rem; pointer-events: none; box-shadow: inset 0 -2.5rem 2.5rem -1.5rem rgba(20, 10, 4, .55), inset 0 0 0 1px rgba(20, 10, 4, .6); }
+.hm-face { width: 100%; height: 100%; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651); }
+.hm-face > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 10%; }
+.hm-face > i { display: grid; place-items: center; height: 100%; font: 400 3.5rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .55); }
+.hm-seal { position: absolute; left: -.625rem; bottom: -.5rem; z-index: 1; width: 2.75rem; height: 2.75rem; font-size: 1.875rem; line-height: 1; transform: rotate(-4deg);
+  box-shadow: 0 .25rem .625rem rgba(10, 5, 2, .6); }
+
+.hm-side { display: flex; flex-direction: column; gap: .625rem; padding-bottom: .125rem; }
+.hm-plate { display: flex; flex-direction: column; gap: .1875rem; min-width: 12rem; max-width: 22rem; padding: .5rem 1rem .5625rem .875rem;
+  background: linear-gradient(90deg, rgba(26, 14, 7, .92), rgba(26, 14, 7, .78) 70%, rgba(26, 14, 7, 0)); box-shadow: inset .1875rem 0 0 var(--verm); color: var(--ivory); }
+.hm-namerow { display: flex; align-items: center; gap: .625rem; }
+.hm-namerow > b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .18em; line-height: 1.2; color: #f3e2b8; text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.hm-badges { display: flex; gap: .375rem; }
+.hm-badges > span { padding: .0625rem .375rem; font: max(.75rem, 11px)/1.5 var(--f-kai); letter-spacing: .08em; color: #f9ead2; background: linear-gradient(180deg, #8f2a1b, #5e170d);
+  box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .45); }
+.hm-plate > small { font-size: var(--fs-2); letter-spacing: .12em; color: var(--ivory-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hm-plate > small:empty { display: none; }
+.hm-plate > .hm-up { color: rgba(236, 210, 154, .75); }
+.hm-energy { display: flex; align-items: center; gap: .5rem; margin-top: .25rem; font-size: var(--fs-1); letter-spacing: .15em; color: var(--ivory-soft); }
+.hm-energy:empty { display: none; }
+.hm-energy > i { position: relative; width: 7.5rem; height: .375rem; background: rgba(0, 0, 0, .55); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .35); }
+.hm-energy > i > u { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #8f6a2c, #e8c982); text-decoration: none; transition: width var(--t-3) var(--ease-out); }
+.hm-energy > b { font: 400 var(--fs-2) var(--f-kai); color: #f3e2b8; letter-spacing: .05em; }
+
+/* 圆钮：瓦当小一号，字取渠道本义；悬停时名目从上方浮出；角上记数 */
+.hm-ring { display: flex; gap: .5rem; align-items: flex-end; }
+.hm-btn { position: relative; width: 3rem; height: 3rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+  background: var(--lianzhu) center / 100% no-repeat, radial-gradient(circle at 35% 30%, #5a3620, #2a170c 72%); box-shadow: 0 .3125rem .75rem rgba(10, 5, 2, .65);
+  transition: transform var(--t-2) var(--ease-out), box-shadow var(--t-2); }
+.hm-btn > b { font: 400 1.375rem/1 var(--f-title); background: linear-gradient(180deg, #f6e3ad, #c9a45c 55%, #8f6a2c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hm-btn > small { position: absolute; left: 50%; bottom: calc(100% + .375rem); transform: translate(-50%, .25rem); padding: .1875rem .5rem; white-space: nowrap; pointer-events: none;
+  font-size: var(--fs-2); letter-spacing: .2em; color: var(--ivory); background: rgba(20, 10, 4, .88); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .4); opacity: 0;
+  transition: opacity var(--t-2), transform var(--t-2) var(--ease-out); }
+.hm-btn:hover { transform: translateY(-.25rem); box-shadow: 0 .5rem 1rem rgba(10, 5, 2, .7), 0 0 0 2px rgba(236, 210, 154, .35); }
+.hm-btn:hover > small { opacity: 1; transform: translate(-50%, 0); }
+.hm-btn.hm-desk { margin-left: .375rem; background: var(--lianzhu) center / 100% no-repeat, radial-gradient(circle at 35% 30%, #a83a26, #5e170d 72%); }
+.hm-btn.hm-desk > b { background: none; color: #f9ead2; -webkit-background-clip: border-box; background-clip: border-box; }
+.hm-n { position: absolute; right: -.375rem; top: -.375rem; min-width: 1.25rem; height: 1.25rem; padding: 0 .25rem; box-sizing: border-box; border-radius: .625rem;
+  font: max(.75rem, 11px)/1.25rem var(--f-kai); color: #f9ead2; background: linear-gradient(180deg, #b9382a, #7a1f13); box-shadow: 0 1px 3px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(236, 210, 154, .5); }
+
+/* ---------- 右下一角：工具一排在上，时钟在下；漆底、回纹压顶 ---------- */
+.scr-desk.home-map .hm-corner { position: fixed; right: 0; bottom: 0; flex-direction: column; align-items: flex-end; gap: .5rem; padding: .625rem 1.25rem .75rem 2.5rem;
+  border-top: .5rem solid transparent; border-image: var(--huiwen) 14 round;
+  background: radial-gradient(ellipse at 70% 120%, rgba(255, 220, 170, .1), transparent 60%), linear-gradient(180deg, #2c1b12, #150c07);
+  box-shadow: 0 -.375rem 1.25rem rgba(10, 5, 2, .5); clip-path: polygon(1.5rem 0, 100% 0, 100% 100%, 0 100%); }
+.scr-desk.home-map .hm-corner .tools { display: flex; gap: .4375rem; }
+.scr-desk.home-map .hm-corner .q-clock { gap: .75rem; }
+
+/* ---------- 舆图看法：时钟之上，书目之左 ---------- */
+.scr-map.home-map .mappanel { left: auto; top: auto; right: 5.75rem; bottom: 8.25rem; width: 20rem; }
+.scr-map.home-map .back { display: none; }
+@media (max-height: 52rem) { .scr-map.home-map .mappanel { right: 5rem; bottom: 7.75rem; width: 19rem; } }

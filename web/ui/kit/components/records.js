@@ -30,7 +30,8 @@ export function zhou({ name, src, dead = false, onclick, title }) {
     face = h('img', { src, alt: name, loading: 'lazy', decoding: 'async' });
     face.addEventListener('error', () => face.replaceWith(initial()), { once: true });   // 立像缺失：以名字首字作像
   }
-  return h('figure.q-zhou' + (dead ? '.dead' : ''), { onclick, title: title || name, tabIndex: onclick ? 0 : null }, face, h('figcaption', name));
+  // data-person：右键即出此人的「可为」单（screens/desk.js 统一接）
+  return h('figure.q-zhou' + (dead ? '.dead' : ''), { onclick, title: title || name, tabIndex: onclick ? 0 : null, dataset: { person: name || '' } }, face, h('figcaption', name));
 }
 
 // 邸报刻本一叶：keben('邸报', [{ tag: '急', text: '…', soft }, …])

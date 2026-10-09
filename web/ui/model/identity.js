@@ -1,6 +1,10 @@
-// 身份档：同一张书案的骨架，按视角人物的身份换陈设、名目与读数——看书案就知道你是谁。
-// 皇帝只是其中一档（官本位设计稿第九章「案头即身份」、第十三章 13.4「推演之后看到什么」）。
-// 档由适配层 perspective().tier 现算；这里只管「这一档在界面上怎么呈现」，不碰内核。
+// 身份档：两套（同志 10-10 定「皇帝视角一套，通用视角一套」）。
+//   sovereign 元首一套：御案、帑廪、宫闱、科举钦定……照元首玩法做全。
+//   general   通用一套：元首以外的人都坐这一套（阁臣、尚书、督抚、总兵、知府、致仕乡绅、举人、后妃）。结构只有一份，
+//             书目、顶栏读数、舆图视野里装什么，由适配层 standing()（adapter/standing.js）按这个人现算：职衔、所掌、上、本家。
+//             有官无官的措辞差别（用印发文还是封缄、「本官」还是自称其名）是同一套里的一层覆盖 UNOFFICIAL，不另立档。
+// 档由适配层 perspective().tier 现算（sovereign 以外一律归通用）；这里只管「这一档在界面上怎么呈现」，不碰内核。
+// 设计稿：docs/newui-foundation-20261005/universal-view.md；官本位设计稿第九章「身份与五渠道」。
 // 只属某一档的字（朕、御案、诏书、奏疏、玉玺……）只许写在这里，界面代码一律从档里取（tools/newui/lint-ui-identity.cjs 守着）。
 //
 // 每档：
@@ -11,9 +15,9 @@
 //   channels 五渠道「令、批、书、见、行」在这一档叫什么（设计稿 9.2）
 //   books    右列书目（瓦当）：[字, 名, 键]
 //   tags     案上器物的牙牌
-//   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS）
-//   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威），self 本人四项（名望、贤能、康健、心绪）
-//   map      舆图视野：realm 全境；seat 京师居中；jurisdiction 辖区居中描边；home 本籍居中
+//   ledger   顶栏账簿：哪几本（键见 screens/desk.js 的 LEDGERS；charge 所掌之账、purse 公费、wealth 私财按 standing 取）
+//   gauges   顶栏四品：realm 国势四项（吏治、民心、皇权、皇威）；charge 所掌辖区的民心吏治（据奏）与本人名望贤能
+//   map      舆图视野：realm 全境；charge 所掌描边居中（无所掌则本籍居中）
 //   ling     「令」那一页：纸面（silk 黄绫诏卷／paper 素纸）、议事清册、行止、私行、润色、颁行、档案诸名目，五类的提示，颁行前三种说法
 //   abdicate 暂停卷里的「退位」：叫法、卷首按语、继承人标签、确认语（空则不列）
 //   letters  「书」那一页：可发的文书种类（内核 LETTER_TYPES 的键）、抬头与署名、来函署名、名册与截获密函的叫法
@@ -92,31 +96,33 @@ export const PROFILES = {
       ask: (who) => `确定将大位禅让给${who}？此举不可撤回。`, ok: '禅让', done: (who) => `禅让既成，${who}已继大位` },
     props: { seal: 'imperial', yellowMemorials: true }
   },
-  minister: {
-    name: '京官', room: 'ministry', desk: '公案', self: '本官', enter: '视事',
+  general: {
+    name: '通用', room: 'yamen', desk: '公案', self: '本官', enter: '视事',
     seal: { chars: ['用', '印', '发', '文'], title: '用印发文', note: '发出已拟公文' },
     channels: {
-      ling: ['行文', '题奏·咨文·札付'], pi: ['批详', '堂判公事'], shu: ['私书', '请托·结纳'],
-      jian: ['谒见', '上官·同僚·会推'], xing: ['行止', '告假·出差']
+      ling: ['行文', '题奏·札付·告示'], pi: ['公文', '申详·咨呈'], shu: ['私书', '请托·结纳'],
+      jian: ['谒见', '上官·同僚·属吏'], xing: ['行止', '巡视·告假·赴任']
     },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
-    tags: { memorials: '咨文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '部印' },
-    ledger: ['purse', 'wealth'], gauges: 'self', map: 'seat',
+    // 书目一份，人人一样；「辖」（所掌那一块）无官不列
+    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['辖', '所掌', 'charge'], ['家', '本家', 'family'], ['势', '朝野', 'realm'], ['邸', '邸报', 'gazette'], ['史', '年谱', 'annals']],
+    tags: { memorials: '公文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '官印' },
+    // 顶栏：所掌之账（辖区、本镇、本衙门）、公费、私财；读数：辖区的民心吏治（据奏）与本人名望贤能
+    ledger: ['charge', 'purse', 'wealth'], gauges: 'charge', map: 'charge',
     docket: {
       name: '公文', reply: '批语', hint: '批语', empty: '案上无待批公文',
       excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
-      verdicts: [['approved', '准', '照准'], ['rejected', '驳', '驳回'], ['annotated', '批', '批示'], ['held', '存案', '暂存'],
-        ['referred', '转详', '转上官'], ['court_debate', '会议', '付堂议'], ['summon', '传见', '传来面询']]
+      verdicts: [['approved', '准', '如详办理'], ['rejected', '驳', '驳令另议'], ['annotated', '批', '批示'], ['held', '存案', '暂存'],
+        ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传见', '传来面询']]
     },
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
     urgentAck: '知道了',
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文', archive: '案牍库', note: '批注' },
     guideTitle: '视事须知',
-    guide: [['案头要事', '先看案上公文与要事。'], ['行文', '笔砚行文，上奏下札。'], ['推演', '顶栏「推演」推进时局。']],
+    guide: [['所掌', '右上是所掌之账，左下立像旁是本人的职衔、上官与精力。'], ['行文', '圆钮「令」行文，上奏下札。'], ['推演', '右下「推演」推进时局。']],
     ling: {
       surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '用印发文', archive: '往期公文', done: '已发之文',
       empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
-      hints: { political: '题奏、咨文……', military: '', diplomatic: '', economic: '', other: '' }
+      hints: { political: '题奏、札付、告示……', military: '', diplomatic: '', economic: '', other: '' }
     },
     letters: {
       types: ['greeting', 'personal'], dflt: 'personal',
@@ -133,100 +139,42 @@ export const PROFILES = {
     },
     abdicate: '',
     props: { seal: 'office', yellowMemorials: false }
-  },
-  provincial: {
-    name: '地方官', room: 'yamen', desk: '公案', self: '本官', enter: '视事',
-    seal: { chars: ['用', '印', '发', '文'], title: '用印发文', note: '发出已拟公文' },
-    channels: {
-      ling: ['行文', '札付·牌票·告示'], pi: ['批详', '申文·状纸'], shu: ['私书', '请托·结纳'],
-      jian: ['谒见', '上官·属吏·士绅'], xing: ['行止', '巡视·告假']
-    },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['册', '辖区册籍', 'registry'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
-    tags: { memorials: '申文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '官印' },
-    ledger: ['jurisdiction', 'purse', 'wealth'], gauges: 'self', map: 'jurisdiction',
-    docket: {
-      name: '申文', reply: '堂批', hint: '堂批', empty: '案上无待批申文',
-      excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
-      verdicts: [['approved', '准', '如详办理'], ['rejected', '驳', '驳令另议'], ['annotated', '批', '堂批'], ['held', '存案', '暂存'],
-        ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传讯', '传来面询']]
-    },
-    issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
-    urgentAck: '知道了',
-    annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文', archive: '案牍库', note: '批注' },
-    guideTitle: '视事须知',
-    guide: [['案头要事', '先看案上申文与要事。'], ['行文', '笔砚行文，札付告示。'], ['推演', '顶栏「推演」推进时局。']],
-    ling: {
-      surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '用印发文', archive: '往期公文', done: '已发之文',
-      empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
-      hints: { political: '札付、牌票、告示……', military: '', diplomatic: '', economic: '', other: '' }
-    },
-    letters: {
-      types: ['greeting', 'personal'], dflt: 'personal',
-      to: (n) => `致　${n}`, mine: '手书', theirs: (n) => `${n}　拜上`,
-      far: '远方故旧', compose: '拟书', reply: '回书', send: '寄出', excerpt: '摘录', hint: '致书远方……',
-      intercepted: '风闻密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '同城之人不必传书，宜登门拜会'
-    },
-    audience: {
-      title: '谒见', me: '余', ask: '曰', reply: '曰', privateReply: '曰', input: '问', hint: '问其所知……', send: '相询', leave: '辞别',
-      head: (name) => `与${name}相见`, record: '谈录', privateRecord: '私语',
-      pending: '门外候见', seeking: '登门求见', court: '同城之人', away: '远方之人', accept: '相见', refuse: '不见', dismiss: '改日',
-      screen: '屏退左右', order: '托付', commits: '托付之事', excerpt: '摘录', confront: '请人对质', reward: '馈赠', punish: '责备', adopt: '采纳',
-      envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
-    },
-    abdicate: '',
-    props: { seal: 'office', yellowMemorials: false }
-  },
-  gentry: {
-    name: '不在官', room: 'study', desk: '书案', self: '', enter: '入座',
-    seal: { chars: ['钤', '印', '封', '缄'], title: '钤印封缄', note: '发出已拟家令、书札' },
-    channels: {
-      ling: ['家令', '族规·公呈'], pi: ['家事', '家事·乡事'], shu: ['书信', '投书·往还'],
-      jian: ['拜谒', '谒见·文会'], xing: ['行止', '应试·游学·回籍']
-    },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['族', '家族', 'family'], ['产', '产业', 'estate'], ['邸', '邸报', 'gazette'], ['谱', '年谱', 'annals']],
-    tags: { memorials: '书札', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '书册', seal: '私印' },
-    ledger: ['wealth'], gauges: 'self', map: 'home',
-    docket: {
-      name: '书札', reply: '批语', hint: '批语', empty: '案上无待办之事',
-      excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
-      verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
-    },
-    issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
-    urgentAck: '知道了',
-    annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令', archive: '家乘', note: '眉批' },
-    guideTitle: '入座须知',
-    guide: [['家事乡事', '先看案上书札与家事。'], ['书信', '信匣往还，结交师友。'], ['推演', '顶栏「推演」推进时局。']],
-    ling: {
-      surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '钤印封缄', archive: '往期书札', done: '已发之札',
-      empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
-      hints: { political: '家令、公呈……', military: '', diplomatic: '', economic: '', other: '' }
-    },
-    letters: {
-      types: ['greeting', 'personal'], dflt: 'personal',
-      to: (n) => `致　${n}`, mine: '手书', theirs: (n) => `${n}　拜上`,
-      far: '远方故旧', compose: '拟书', reply: '回书', send: '寄出', excerpt: '摘录', hint: '致书远方……',
-      intercepted: '风闻密函', idle: '择一位远方之人，以见书信往来', empty: '尚无书信往来', atCourt: '同城之人不必传书，宜登门拜会'
-    },
-    audience: {
-      title: '谒见', me: '余', ask: '曰', reply: '曰', privateReply: '曰', input: '问', hint: '问其所知……', send: '相询', leave: '辞别',
-      head: (name) => `与${name}相见`, record: '谈录', privateRecord: '私语',
-      pending: '门外候见', seeking: '登门求见', court: '同城之人', away: '远方之人', accept: '相见', refuse: '不见', dismiss: '改日',
-      screen: '屏退左右', order: '托付', commits: '托付之事', excerpt: '摘录', confront: '请人对质', reward: '馈赠', punish: '责备', adopt: '采纳',
-      envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
-    },
-    abdicate: '',
-    props: { seal: 'private', yellowMemorials: false }
   }
 };
 
-// 将来的档（将帅、宗室、商人……）未立之前，就近借用
-const NEAREST = { general: 'provincial', prince: 'gentry', merchant: 'gentry' };
+// 无官之人（致仕、罢居、举人生员、后妃……）：同一套，只换这些措辞与陈设；书目不列「辖」
+const UNOFFICIAL = {
+  room: 'study', desk: '书案', self: '', enter: '入座',
+  seal: { chars: ['钤', '印', '封', '缄'], title: '钤印封缄', note: '发出已拟家令、书札' },
+  channels: {
+    ling: ['家令', '族规·公呈'], pi: ['家事', '家事·乡事'], shu: ['书信', '投书·往还'],
+    jian: ['拜谒', '谒见·文会'], xing: ['行止', '应试·游学·回籍']
+  },
+  tags: { memorials: '书札', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '书册', seal: '私印' },
+  docket: {
+    name: '书札', reply: '批语', hint: '批语', empty: '案上无待办之事',
+    excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
+    verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
+  },
+  issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
+  annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令', archive: '家乘', note: '眉批' },
+  guideTitle: '入座须知',
+  guide: [['本家', '右上是家产，左下立像旁是本人与精力。'], ['书信', '圆钮「书」往还，结交师友。'], ['推演', '右下「推演」推进时局。']],
+  ling: {
+    surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '钤印封缄', archive: '往期书札', done: '已发之札',
+    empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
+    hints: { political: '家令、公呈……', military: '', diplomatic: '', economic: '', other: '' }
+  },
+  props: { seal: 'private', yellowMemorials: false }
+};
 
 export function profileOf(p) {
-  const tier = (p && p.tier) || 'sovereign';
-  const prof = PROFILES[tier] || PROFILES[NEAREST[tier]] || PROFILES.sovereign;
-  // 自称：不在官的自称其名（去姓）；其余照档
+  const tier = (p && p.tier) === 'sovereign' || !p ? 'sovereign' : 'general';
+  const official = tier === 'general' && !!p && ((p.posts && p.posts.length) || (p.governs && p.governs.length));
+  const base = PROFILES[tier];
+  const prof = tier === 'general' && !official ? { ...base, ...UNOFFICIAL, books: base.books.filter((b) => b[2] !== 'charge') } : base;
+  // 自称：无官的自称其名（去姓）；其余照档
   const bare = p && p.name ? String(p.name).replace(/[（(].*$/, '') : '';
   const self = prof.self || (bare.length > 1 ? bare.slice(1) : bare);
-  return { tier, ...prof, self, channels: CHANNEL_KEYS.map((key) => ({ key, title: prof.channels[key][0], sub: prof.channels[key][1] })) };
+  return { tier, official: tier === 'sovereign' || !!official, ...prof, self, channels: CHANNEL_KEYS.map((key) => ({ key, title: prof.channels[key][0], sub: prof.channels[key][1] })) };
 }

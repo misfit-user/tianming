@@ -145,6 +145,8 @@ export function openSettings({ tab = 'ai' } = {}) {
     const a = cfg.audio();
     const vol = (value, key) => chi({ min: 0, max: 100, step: 1, value, format: (v) => num(Math.round(v)), onchange: (v) => cfg.setAudio({ [key]: v }) });
     return h('div.st-form',
+      row('主画面', qianzi([{ value: 'desk', label: '书案为家' }, { value: 'map', label: '舆图为家' }], { value: getSetting('home'), onchange: (v) => setSetting('home', v) }),
+        '舆图为家：舆图铺满为主画面，书案只在批阅、撰写、传书、召对时升起。即改即用。'),
       row('画质', tierSel, `本机测为「${{ high: '上', medium: '中', low: '下' }[q.detected.tier]}」档（${q.detected.reason}）。改档下次启动生效。`),
       row('字号', qianzi([{ value: 'std', label: '标准' }, { value: 'large', label: '大' }, { value: 'xlarge', label: '特大' }],
         { value: getSetting('textSize'), onchange: (v) => setSetting('textSize', v) }), '正文字号。小屏上已自动放到看得清，仍嫌小可再放大。'),

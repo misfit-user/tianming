@@ -253,3 +253,22 @@ button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow:
 .q-clock > .tuiyan::before { content: ''; position: absolute; left: .375rem; top: 50%; width: .3125rem; height: .3125rem; margin-top: -.15625rem; border-radius: 50%; background: #e8c982; }
 .q-clock > .tuiyan:hover { filter: brightness(1.12); transform: translateY(-1px); }
 .q-clock > .tuiyan:disabled { filter: grayscale(.6) brightness(.8); cursor: progress; }
+
+/* ---------- 可为：右键人物（或一处、一事）的交互单（照 CK3）。漆底金题，门类小标，做不了的灰着并写缘由 ---------- */
+.q-kewei { position: fixed; left: 0; top: 0; z-index: 90; min-width: 13.5rem; max-width: 20rem; padding: .375rem 0 .5rem; color: var(--ivory);
+  background: linear-gradient(180deg, rgba(44, 27, 18, .97), rgba(21, 12, 7, .97)); box-shadow: 0 .75rem 2rem rgba(5, 2, 1, .7), inset 0 0 0 1px rgba(201, 164, 92, .55), inset 0 0 0 .25rem rgba(21, 12, 7, .9), inset 0 0 0 calc(.25rem + 1px) rgba(201, 164, 92, .22);
+  opacity: 0; transition: opacity 160ms var(--ease-out); pointer-events: auto; }
+.q-kewei.on { opacity: 1; }
+.q-kewei > header { display: flex; flex-direction: column; gap: .125rem; padding: .375rem .875rem .5rem; border-bottom: 1px solid rgba(201, 164, 92, .3); }
+.q-kewei > header > b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .15em; color: #f3e2b8; }
+.q-kewei > header > small { font-size: var(--fs-1); color: var(--ivory-soft); letter-spacing: .08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q-kewei > section { padding: .25rem 0 .125rem; }
+.q-kewei h4 { margin: .125rem 0 .125rem; padding: .125rem .875rem; font: 400 var(--fs-1) var(--f-kai); letter-spacing: .3em; color: rgba(236, 210, 154, .7);
+  background: linear-gradient(90deg, rgba(163, 48, 31, .35), transparent 80%); }
+.q-kewei button { display: flex; align-items: baseline; flex-wrap: wrap; gap: .125rem .5rem; width: 100%; padding: .3125rem .875rem .3125rem 1.25rem; border: 0; cursor: pointer; text-align: left;
+  font: var(--fs-3) var(--f-kai); letter-spacing: .1em; color: var(--ivory); background: none; }
+.q-kewei button:hover { background: linear-gradient(90deg, rgba(236, 210, 154, .16), transparent); color: #fff3dc; }
+.q-kewei button > em { margin-left: auto; font: var(--fs-1) var(--f-kai); font-style: normal; color: rgba(236, 210, 154, .75); }
+.q-kewei button > small { flex-basis: 100%; font-size: var(--fs-1); letter-spacing: .05em; color: rgba(214, 120, 96, .85); }
+.q-kewei button.off { cursor: default; color: rgba(243, 230, 200, .38); }
+.q-kewei button.off:hover { background: none; color: rgba(243, 230, 200, .38); }

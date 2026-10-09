@@ -7,3 +7,4 @@ export { zhang, pin, zhou, keben, jian } from './components/records.js';
 export { juan, openScrolls, closeScrolls } from './components/juan.js';
 export { tiao, installTiao } from './components/tiao.js';
 export { clock } from './components/clock.js';
+export { kewei } from './components/kewei.js';

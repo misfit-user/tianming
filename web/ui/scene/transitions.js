@@ -1,5 +1,6 @@
 // 转场：入图（俯身看案上绢图 → 绢图自己发光 → 与立体舆图同机位交叉淡换 → 起山、设色由旧转鲜）与起身回案（倒过来）。
 // 两个视图同在一个舞台上：书房 study、舆图 map。云从镜头前掠过是 DOM 层（clouds.jpg）。
+// 另有快切（toStudy / toMap）：舆图为家时，批阅、撰写、传书这些案上之事要升起书房，一片云过、交叉淡换，镜头不飞，约一秒。
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, RELIEF, mixLook } from './map/looks.js';
 import { SHOTS } from './study/shots.js';
 import { SHEET_EXTENT } from './world.js';
@@ -123,5 +124,44 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
     busy = false;
   }
 
-  return { dive, rise, get mode() { return mode; }, get busy() { return busy; } };
+  // 快切去书房：书房镜头留在原处，由接手的页面（批阅、撰写、传书、召对……）自己飞到所需机位；舆图记下此刻机位，回来时原样还原
+  let mapPose = null;
+  async function toStudy() {
+    if (busy || mode !== 'map') return;
+    busy = true;
+    onMode('flying');
+    mapPose = map.pose();
+    map.setInteractive(false);
+    study.setSheetGlow(0);
+    cloudPass(-1);
+    await stage.fadeTo('study', 0.45);
+    map.setActive(false);
+    mode = 'desk';
+    onMode('desk');
+    onMode('desk-settled');
+    busy = false;
+  }
+  // 快切回舆图：起伏、设色、机位一步到位（离开时的样子）
+  async function toMap() {
+    if (busy || mode !== 'desk') return;
+    busy = true;
+    onMode('flying');
+    map.camera.fov = fov;
+    map.camera.updateProjectionMatrix();
+    map.uniforms.uRelief.value = RELIEF;
+    map.setLook(LOOK_QINGLV);
+    map.controls.minPolarAngle = 0.12;
+    map.controls.maxDistance = 2600;
+    map.setPose(mapPose || { target: [1190, 0, 690], dist: 1500, polar: 0.52, az: 0 });
+    map.setActive(true);
+    cloudPass(+1);
+    await stage.fadeTo('map', 0.45);
+    mode = 'map';
+    onMode('map');
+    map.setInteractive(true);
+    onMode('settled');
+    busy = false;
+  }
+
+  return { dive, rise, toStudy, toMap, get mode() { return mode; }, get busy() { return busy; } };
 }

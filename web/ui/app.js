@@ -66,7 +66,7 @@ export async function startApp(root) {
   game.on('ui:settings', () => openSettings());
   const title = createTitle({
     root, stage, study, game,
-    onEnter: async () => { title.hide(); await desk.show(); showWelcome({ game, profile: () => desk.profile }); }
+    onEnter: async () => { title.hide(); await desk.show(); await desk.home(); showWelcome({ game, profile: () => desk.profile }); }
   });
   await load.done();
   await title.show();

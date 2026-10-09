@@ -26,6 +26,7 @@
 //   game.gongwei.court() / proposeRank / designate …  宫闱：后妃、尊长、皇嗣、宫苑（adapter/gongwei.js）
 //   game.help.topics()                                帮助：内核帮助里与界面无关的几卷（adapter/help.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
+//   game.standing()                         通用一套的「我」：职衔、所掌、上、本家（adapter/standing.js）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
@@ -59,6 +60,7 @@ import * as endgame from './endgame.js';
 import * as fangzhi from './fangzhi.js';
 import * as yingzao from './yingzao.js';
 import * as ceming from './ceming.js';
+import { standing as standingOf } from './standing.js';
 
 const w = window;
 let ready = null;
@@ -344,13 +346,16 @@ let viewAs = null;
 function perspective() {
   return select.perspective(viewAs || undefined);
 }
+function standing() {
+  return standingOf(viewAs || undefined);
+}
 function setViewAs(ref) {
   viewAs = ref || null;
   bus.emit('view:changed', perspective());
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, prison, endgame, fangzhi, yingzao, ceming, wenyuan, keju, gaizhi, turn, battle, keyi, wentian, gongwei, help, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, prison, endgame, fangzhi, yingzao, ceming, wenyuan, keju, gaizhi, turn, battle, keyi, wentian, gongwei, help, perspective, standing, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

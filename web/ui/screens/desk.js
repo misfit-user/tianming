@@ -34,6 +34,7 @@ import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createPrison } from './prison.js';
 import { createEndgame } from './endgame.js';
+import { createFangzhi } from './fangzhi.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -184,6 +185,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const fac = r.faction && factions[r.faction];
     const lv = layer && layer.byId[r.id];
     replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [r.parent ? ['上隶', r.parent] : ['地形', r.terrain || '—'], ...(lv ? [[layerLabel, lv.mark + (typeof lv.score === 'number' ? '　' + num(Math.round(lv.score)) : '')]] : [])] }));
+    card.append(h('small.fz-cardhint', '点签展方志'));
+    card.onclick = () => fangzhiPage.show(r.id);
     card.style.transform = `translate(${Math.min(window.innerWidth - 300, x + 24)}px, ${Math.max(90, y - 60)}px)`;
     card.classList.remove('hide');
   }
@@ -522,6 +525,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     return audiencePage.openRoster();
   } });
   // 朝野册：人名翻人物图志；召党魁、召代表转召对；付廷议即开廷议、带上议题
+  // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
+  const fangzhiPage = createFangzhi({ root, game, onPerson: (name) => { fangzhiPage.hide(); bioPage.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); atlas.show(name); },
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志

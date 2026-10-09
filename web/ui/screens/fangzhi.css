@@ -1,0 +1,90 @@
+/* 方志：骨架沿用人物图志（.ce-*）；左叶页头、读数、六卷检签、动作，右叶所检之卷 */
+.fz-ov .ce-book { grid-template-columns: minmax(0, 27rem) 1.5rem minmax(0, 1fr); }
+.fz-left { gap: .625rem; overflow: auto; scrollbar-width: thin; }
+.fz-head { display: flex; gap: .875rem; align-items: flex-start; }
+.fz-seal { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); letter-spacing: .1em; color: #f9ead2;
+  background: radial-gradient(circle at 35% 30%, #b8432f, #7d1d12); box-shadow: inset 0 0 0 2px rgba(249, 234, 210, .35); }
+.fz-head h2 { margin: .125rem 0 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .2em; color: #2a1608; white-space: nowrap; }
+.fz-level { font-size: var(--fs-2); color: var(--ink-faint); }
+.fz-crumbs { margin: 0; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-crumbs i { font-style: normal; margin: 0 .375rem; }
+.fz-crumbs a { cursor: pointer; text-decoration: underline dotted; text-underline-offset: .2em; }
+.fz-status { display: flex; flex-wrap: wrap; gap: .25rem .375rem; }
+.fz-zt { display: inline-flex; align-items: center; gap: .25rem; padding: .0625rem .5rem .0625rem .125rem; font-size: var(--fs-1); color: var(--ink); background: rgba(255, 250, 238, .6); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.fz-zt i { font-style: normal; display: grid; place-items: center; width: 1.25rem; height: 1.25rem; font-family: var(--f-title); color: #f9ead2; background: #8a6a2a; }
+.fz-zt.bad i { background: #a3301f; }
+.fz-zt.good i { background: #3f6e5e; }
+.fz-zt em { font-style: normal; color: var(--ink-faint); }
+.fz-pills { display: flex; flex-wrap: wrap; gap: .3125rem; }
+.fz-pill { padding: .125rem .5rem; font-size: var(--fs-2); color: var(--ink-soft); background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.fz-pill b { font-weight: 400; color: var(--ink); }
+.fz-pill small { margin-left: .375rem; color: var(--ink-faint); }
+.fz-pill.bad, .fz-pill.bad b { color: #a3301f; }
+a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .2em; }
+.fz-desc { margin: 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ink-soft); max-height: 5.5rem; overflow: auto; }
+.fz-band { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .375rem; }
+.fz-stat { display: flex; flex-direction: column; gap: .0625rem; padding: .375rem .5rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.fz-stat small { font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-stat small em { font-style: normal; margin-left: .25rem; color: #8a5a12; }
+.fz-stat b { font: 400 var(--fs-4) var(--f-title); color: #2a1608; white-space: nowrap; }
+.fz-stat span { font-size: var(--fs-1); color: var(--ink-soft); }
+.fz-stat span em { font-style: normal; margin-left: .25rem; color: #8a5a12; }
+.fz-stat.warn { box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(163, 48, 31, .35); }
+.fz-stat.warn b { color: #a3301f; }
+.fz-rank { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; font-size: var(--fs-2); color: var(--ink-soft); }
+.fz-rank b { font-weight: 400; font-family: var(--f-title); color: #6a1f12; }
+.fz-rank span.low { color: #a3301f; }
+.fz-slips { display: flex; gap: .375rem; flex-wrap: wrap; }
+.fz-slip { display: flex; flex-direction: column; align-items: center; gap: .25rem; width: 3.25rem; padding: .375rem 0 .5rem; border: 0; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
+  background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.fz-slip i { font-style: normal; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; font: 400 var(--fs-3)/1 var(--f-title); color: #f9ead2; background: #6b4a2a; }
+.fz-slip b { font-weight: 400; font-size: var(--fs-1); writing-mode: vertical-rl; letter-spacing: .15em; }
+.fz-slip.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .35); }
+.fz-slip.on i { background: #a3301f; }
+.fz-acts { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: auto; padding-top: .5rem; border-top: 1px solid rgba(163, 40, 27, .2); }
+
+.fz-right { display: flex; flex-direction: column; min-height: 0; }
+.fz-vhead { display: flex; align-items: center; gap: .625rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(163, 40, 27, .25); }
+.fz-vseal { display: grid; place-items: center; width: 2rem; height: 2rem; font: 400 var(--fs-4)/1 var(--f-title); color: #f9ead2; background: #a3301f; }
+.fz-vhead h3 { margin: 0; font: 400 var(--fs-6) var(--f-title); letter-spacing: .3em; color: #3a1a10; }
+.fz-vhead small { font-size: var(--fs-2); color: var(--ink-faint); }
+.fz-vbody { flex: 1; min-height: 0; overflow: auto; padding: .75rem .25rem 0 0; display: flex; flex-direction: column; gap: .875rem; }
+.fz-rows { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 7.5rem) minmax(0, 1fr)); gap: .375rem .875rem; align-items: baseline; }
+.fz-rows dt { font-size: var(--fs-2); color: var(--ink-faint); }
+.fz-rows dt em { font-style: normal; margin-left: .25rem; font-size: var(--fs-1); color: #8a5a12; }
+.fz-rows dd { margin: 0; font-size: var(--fs-3); color: var(--ink); }
+.fz-rows dd.bad { color: #a3301f; }
+.fz-rows dd.gold { color: #8a5a12; }
+.fz-rows dd small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .375rem; }
+.fz-grid > div { padding: .375rem .5rem; background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.fz-grid small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-grid b { font-weight: 400; font-size: var(--fs-3); }
+.fz-armies { display: flex; flex-direction: column; gap: .25rem; }
+.fz-army { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: .75rem; align-items: baseline; padding: .375rem .625rem; font-size: var(--fs-2);
+  background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #6b4a2a; }
+.fz-army b { font-weight: 400; font-family: var(--f-title); font-size: var(--fs-3); }
+.fz-army em { font-style: normal; margin-left: .25rem; font-size: var(--fs-1); color: #8a5a12; }
+.fz-army small.low { color: #a3301f; }
+.fz-note { margin: 0; font-size: var(--fs-2); color: var(--ink-faint); }
+.fz-sub h4 { margin: 0 0 .5rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
+.fz-sub h4 small { margin-left: .5rem; font: var(--fs-1) var(--f-kai); letter-spacing: 0; color: var(--ink-faint); }
+.fz-works { display: flex; flex-direction: column; gap: .5rem; }
+.fz-work { padding: .5rem .75rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #3f6e5e, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.fz-work.bad { box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.fz-work.doing { box-shadow: inset .1875rem 0 0 #a8833a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.fz-work p { margin: .125rem 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
+.fz-wk-head { display: flex; align-items: baseline; gap: .5rem; }
+.fz-wk-head b { font: 400 var(--fs-4) var(--f-title); color: #2a1608; }
+.fz-wk-head em { font-style: normal; margin-left: auto; font-size: var(--fs-1); color: #6a1f12; }
+.fz-fx { display: flex; flex-wrap: wrap; gap: .25rem; }
+.fz-fx span { padding: 0 .375rem; font-size: var(--fs-1); color: #3f6e5e; box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .35); }
+.fz-prog { display: flex; align-items: center; gap: .5rem; }
+.fz-prog i { display: block; height: .375rem; flex: 1; background: linear-gradient(90deg, #a8833a, #c9a45c); }
+.fz-reassign p { margin: 0 0 .75rem; font-size: var(--fs-3); line-height: 1.8; }
+.fz-reassign div { display: flex; flex-wrap: wrap; gap: .375rem; }
+.fz-reassign details { margin-top: .75rem; }
+.fz-reassign summary { cursor: pointer; font-size: var(--fs-2); color: var(--ink-soft); }
+/* 舆图上的府州小签可点开方志 */
+.scr-map .card { cursor: pointer; }
+.scr-map .card .fz-cardhint { position: absolute; bottom: -1.5rem; left: 0; right: 0; text-align: center; font-size: var(--fs-1); color: rgba(243, 230, 200, .8); white-space: nowrap; }

@@ -128,3 +128,28 @@
 .rm-acts { position: sticky; bottom: -1.125rem; z-index: 1; display: flex; justify-content: flex-end; gap: .5rem; margin: auto -1.5rem -1.125rem; padding: .5rem 1.5rem .625rem;
   background: linear-gradient(0deg, #e9dcbd 70%, rgba(233, 220, 189, 0)); }
 .rm-acts .q-yapai[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* 动态、逆案 */
+.rm-lnote .rm-win { margin-left: .25rem; padding: .0625rem .5rem; border: 0; cursor: pointer; font: var(--fs-1) var(--f-kai); color: var(--ink-soft); background: transparent; box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.rm-lnote .rm-win.on { color: #f9ead2; background: #6b4a2a; box-shadow: none; }
+.rm-grp h5 { margin: .625rem 0 .375rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .25em; color: #6a1f12; border-bottom: 1px solid rgba(163, 40, 27, .2); }
+.rm-grp h5 small { margin-left: .5rem; font: var(--fs-1) var(--f-kai); letter-spacing: 0; color: var(--ink-faint); }
+.rm-fac.rm-ev { display: flex; flex-wrap: wrap; align-items: baseline; gap: .125rem .5rem; }
+.rm-fac.rm-ev em { font-style: normal; font-size: var(--fs-2); color: #8a5a12; }
+.rm-fac.rm-ev.hostile em { color: #a3301f; }
+.rm-fac.rm-ev small { font-size: var(--fs-1); color: var(--ink-faint); }
+.rm-fac.rm-ev .rm-ev-meta { flex-basis: 100%; }
+.rm-intr { display: flex; flex-direction: column; gap: 1rem; }
+.rm-intr-head h3 { display: inline; margin: 0; font: 400 var(--fs-6) var(--f-title); letter-spacing: .3em; color: #3a1a10; }
+.rm-intr-head small { margin-left: .75rem; font-size: var(--fs-2); color: var(--ink-faint); }
+.rm-ev-doc { padding: .875rem 1rem; background: rgba(255, 250, 238, .55); box-shadow: inset .1875rem 0 0 #a8833a, inset 0 0 0 1px rgba(120, 90, 50, .2); }
+.rm-ev-doc p, .rm-ev-sum p { margin: 0 0 .375rem; font-size: var(--fs-3); line-height: 1.9; color: var(--ink); }
+.rm-ev-doc b, .rm-ev-sum b { font-weight: 400; font-family: var(--f-title); color: #6a1f12; }
+.rm-ev-line { font-size: var(--fs-4) !important; }
+.rm-ev-line em { font-style: normal; margin: 0 .5rem; color: #8a5a12; }
+.rm-ev-line em.bad { color: #a3301f; }
+.rm-ev-line em.good { color: #3f6e5e; }
+.rm-ev-when { font-size: var(--fs-2) !important; color: var(--ink-faint) !important; }
+.rm-ev-sum h5 { margin: 0 0 .375rem; font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
+a.rm-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .2em; }
+a.rm-who:hover { color: #a3301f; }

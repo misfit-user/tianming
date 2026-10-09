@@ -11,7 +11,8 @@ import { qianzi } from '../kit/index.js';
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const signed = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(Math.round(v * 10) / 10))}`;
-const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层']];
+const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层'], ['dongtai', '动态'], ['nian', '逆案']];
+const DT_WINS = [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [0, '全部']];
 const JUAN_MARK = { 君臣: '君', 版图: '图', 军略: '军', 财计: '财', 邦交: '交', 史略: '史', 纲领: '纲', 党人: '人', 党势: '势', 议程: '议', 事链: '链', 本末: '本', 诉求: '诉', 民情: '情', 人物: '人' };
 const NUM_WORD = ['一', '二', '三', '四', '五', '六', '七'];
 const REL = { meng: '盟好', di: '敌对', zhong: '中立' };
@@ -21,7 +22,8 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   const R = game.realm;
   const S = game.social;
   let tab = 'factions';
-  const sel = { factions: '', parties: '', classes: '' };
+  const sel = { factions: '', parties: '', classes: '', dongtai: '', nian: '' };
+  let dtWin = 6;
   let opened = false;
   let rows = [];
 
@@ -38,6 +40,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
 
   // ---------- 左叶 ----------
   function render() {
+    if (tab === 'dongtai' || tab === 'nian') return renderIntrigue();
     try { rows = tab === 'factions' ? R.factions() : tab === 'parties' ? S.parties() : S.classes(); } catch (e) { rows = []; toast(e.message); }
     if (!rows.some((r) => r.key === sel[tab])) sel[tab] = (rows[0] || {}).key || '';
     replaceChildren(leftNote, ...noteOf());
@@ -47,6 +50,65 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
       { type: 'button', dataset: { key: r.key }, onclick: () => { sel[tab] = r.key; renderRight(); markSel(); } }, ...rowOf(r, max)))
       : [h('p.ce-unk', tab === 'factions' ? '天下无势力在册' : tab === 'parties' ? '朝中无党派在册' : '此世无阶层在册')]);
     if (sel[tab]) renderRight(); else replaceChildren(right);
+  }
+  // ---------- 动态、逆案 ----------
+  // 动态：群臣在诏令之外的举动（招募、构陷、结纳……），按回合分；逆案：已露形之谋在前，已发之案在后
+  const who = (name, isChar = true) => (name && isChar && onPerson ? h('a.rm-who', { onclick: () => onPerson(name) }, name) : h('span', name || ''));
+  function renderIntrigue() {
+    let groups = [];
+    try {
+      if (tab === 'dongtai') {
+        rows = S.dongtai(dtWin);
+        const byWhen = new Map();
+        for (const r of rows) { if (!byWhen.has(r.when)) byWhen.set(r.when, []); byWhen.get(r.when).push(r); }
+        groups = [...byWhen.entries()];
+      } else {
+        const d = S.nian();
+        rows = [...d.brewing, ...d.past];
+        groups = [['暗流酝酿', d.brewing], ['逆案录', d.past]].filter(([, list]) => list.length);
+      }
+    } catch (e) { rows = []; toast(e.message); }
+    if (!rows.some((r) => r.key === sel[tab])) sel[tab] = (rows[0] || {}).key || '';
+    replaceChildren(leftNote, ...(tab === 'dongtai'
+      ? [h('span', '近'), ...DT_WINS.map(([n, label]) => h('button.rm-win' + (dtWin === n ? '.on' : ''), { type: 'button', onclick: () => { dtWin = n; render(); } }, label))]
+      : [h('span', '只列已发之案与已露形之谋；隐秘未露者不在此列')]));
+    leftNote.hidden = false;
+    replaceChildren(leftBody, rows.length
+      ? groups.map(([head, list]) => h('section.rm-grp', h('h5', head, h('small', `${num(list.length)}桩`)), list.map((r) =>
+          h('button.rm-fac.rm-ev' + (r.key === sel[tab] ? '.on' : '') + (r.tone === 'bad' || r.ripe || r.success === true ? '.hostile' : ''),
+            { type: 'button', dataset: { key: r.key }, onclick: () => { sel[tab] = r.key; renderRight(); markSel(); } },
+            h('b', r.actor || r.who), h('em', r.verb || r.act), r.target ? h('small', `→ ${r.target}`) : null,
+            h('small.rm-ev-meta', r.kind === 'plot' ? r.heat : r.kind === 'past' ? `${r.when} · ${r.outcome}` : r.say.slice(0, 18))))))
+      : [h('p.ce-unk', tab === 'dongtai' ? '近来朝野无甚动静' : '本朝尚无逆案')]);
+    renderRight();
+  }
+  function intrigueDoc() {
+    const r = rows.find((x) => x.key === sel[tab]);
+    if (tab === 'dongtai') {
+      const byActor = new Map();
+      for (const x of rows) byActor.set(x.actor, (byActor.get(x.actor) || 0) + 1);
+      const busy = [...byActor.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const bad = rows.filter((x) => x.tone === 'bad').length, good = rows.filter((x) => x.tone === 'good').length;
+      return h('div.rm-intr',
+        h('header.rm-intr-head', h('h3', '朝野动态'), h('small', `${(profile() && profile().annals && profile().annals.orders) || '号令'}之外，众人各自在动`)),
+        r ? h('section.rm-ev-doc',
+          h('p.rm-ev-line', who(r.actor), h('em.' + r.tone, r.verb), r.target ? [h('span', ' → '), who(r.target, r.targetIsChar)] : null),
+          r.say ? h('p', h('b', '称　'), r.say) : null, h('p.rm-ev-when', r.when)) : null,
+        h('section.rm-ev-sum', h('h5', '提要'),
+          h('p', `${dtWin ? `近${num(dtWin)}回合` : '历来'}朝野共${num(rows.length)}桩动静：交恶${num(bad)}、交好${num(good)}、其余${num(rows.length - bad - good)}。`),
+          busy.length ? h('p', '最活跃：', busy.map(([n, c], i) => [i ? '、' : '', who(n), `（${num(c)}）`])) : null));
+    }
+    const d = { brewing: rows.filter((x) => x.kind === 'plot'), past: rows.filter((x) => x.kind === 'past') };
+    const succ = d.past.filter((x) => x.success).length;
+    return h('div.rm-intr',
+      h('header.rm-intr-head', h('h3', '逆案录'), h('small', '谋逆、政变、弑君诸案')),
+      r ? h('section.rm-ev-doc',
+        h('p.rm-ev-line', who(r.who), h('em.bad', r.act), r.target ? [h('span', ' → '), who(r.target)] : null),
+        r.kind === 'plot' ? h('p', h('b', '热度　'), r.heat, r.ripe ? '（将发）' : '') : h('p', h('b', '结局　'), r.outcome, h('small', `　${r.when}`)),
+        r.allies.length ? h('p', h('b', '从党　'), r.allies.map((n, i) => [i ? '、' : '', who(n)])) : h('p', h('b', '从党　'), '尚无'),
+        r.reason ? h('p', h('b', '缘由　'), r.reason) : null) : null,
+      h('section.rm-ev-sum', h('h5', '提要'),
+        h('p', `已发${num(d.past.length)}案：得逞${num(succ)}、败露${num(d.past.length - succ)}。已露形之谋${num(d.brewing.length)}桩${d.brewing.some((x) => x.ripe) ? '，其中有将发者' : ''}。`)));
   }
   function noteOf() {
     if (tab !== 'classes') return [];
@@ -77,6 +139,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
 
   // ---------- 右叶 ----------
   function renderRight() {
+    if (tab === 'dongtai' || tab === 'nian') { replaceChildren(right, intrigueDoc()); return; }
     let d;
     try { d = tab === 'factions' ? R.faction(sel[tab]) : tab === 'parties' ? partyDoc(S.party(sel[tab])) : classDoc(S.klass(sel[tab])); } catch (e) { toast(e.message); replaceChildren(right); return; }
     const juans = d.juan.filter(([, , body]) => hasBody(body));

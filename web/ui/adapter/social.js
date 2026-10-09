@@ -363,3 +363,57 @@ export function edictDraft(type, key) {
   suggest(party ? '党派纲纪' : '阶层民情', name, topic, content);
   return `已纳入议事清册：${name}`;
 }
+
+// ---------- 朝野动态与逆案（照老人物图志 TMZhi 的「朝野动态」「逆案录」两视图） ----------
+// 可见之律同列传：只列群臣做了什么、对外怎么说（publicReason）；各人的私心（motivePrivate）与尚在暗中经营的图谋（_npcPlans）不列——
+// 老图志两样都照列，是上帝视角。逆案只列已发之案与已露形之谋（阴谋引擎 knownPlots 自带「已为玩家所知」之门）。
+const HOSTILE = new Set(['impeach', 'slander', 'frame_up', 'expose_secret', 'conspire', 'betray', 'obstruct', 'form_clique', 'desert', 'rival_compete', 'confront', 'smuggle', 'hoard', 'punish', 'declare_war', 'suppress', 'investigate']);
+const FRIENDLY = new Set(['recommend', 'guarantee', 'gift_present', 'invite_banquet', 'private_visit', 'correspond_secret', 'marriage_alliance', 'master_disciple', 'mentor', 'reconcile', 'mediate', 'duel_poetry', 'mourn_together', 'mourn', 'reward', 'request_loyalty', 'petition_jointly', 'share_intelligence', 'recruit', 'condole', 'celebrate_birthday', 'propose_match', 'entrust_orphan', 'seek_instruction', 'gift_medicine', 'farewell_feast', 'welcome_feast', 'express_gratitude', 'intercede', 'petition_retire']);
+function verbOf(t) {
+  try { if (w.TM && w.TM.NPC && typeof w.TM.NPC.behaviorVerbCN === 'function') { const v = w.TM.NPC.behaviorVerbCN(t); if (v && !/^[a-z_]+$/i.test(v)) return v; } } catch (_e) { /* 内核缺译名则下行兜底 */ }
+  return /[a-z]/i.test(String(t || '')) ? '举动' : String(t || '举动');
+}
+const toneOf = (t) => { const k = String(t || '').toLowerCase().trim(); return HOSTILE.has(k) ? 'bad' : FRIENDLY.has(k) ? 'good' : 'mid'; };
+const whenOf = (t, now) => (t === now ? '本回合' : t === now - 1 ? '上回合' : `${now - t}回合前`);
+const isChar = (name) => !!(name && (G().chars || []).some((c) => c && c.name === name));
+
+// 近 win 回合（0 即全部）群臣的举动，新的在前
+export function dongtai(win = 6) {
+  const g = G();
+  const now = n0(g.turn, 0);
+  const L = Array.isArray(g._npcActionLedger) ? g._npcActionLedger : [];
+  return L.filter((e) => e && e.actor && e.status !== 'blocked' && (!e.preflight || e.preflight.ok !== false) && (win <= 0 || now - n0(e.turn, 0) < win))
+    .slice().sort((a, b) => n0(b.turn) - n0(a.turn) || n0(b.createdAt) - n0(a.createdAt))
+    .map((e, i) => ({
+      key: `dt${i}`, turn: n0(e.turn), when: whenOf(n0(e.turn), now), actor: String(e.actor), verb: verbOf(e.behaviorType), tone: toneOf(e.behaviorType),
+      target: e.target ? String(e.target) : '', targetIsChar: isChar(e.target), say: String(e.publicReason || e.action || '').trim()
+    }));
+}
+
+const NI_ACT = { coup_succeeded: '政变得逞', coup_failed: '政变败露', palace_coup: '宫变', regicide: '弑君', plot_failed: '谋逆未遂', plot: '密谋', conspiracy: '谋逆', rebellion: '举兵谋反', mutiny: '兵变', assassination: '行刺', assassinate: '行刺', poison: '鸩毒', usurp: '篡位', treason: '通敌叛国', sedition: '煽乱' };
+const NI_OUT = { succeeded: '得逞', success: '得逞', suppressed: '事败就擒', failed: '失败', exposed: '败露', foiled: '败露', pending: '未决', ongoing: '未决' };
+const PLOT_KIND = { coup: '图谋社稷', regicide: '弑君', palace_coup: '宫变', plot: '构陷政敌' };
+// 已发之案（GM._conspiracies）与已露形之谋（ConspiracyEngine.knownPlots），后者在前
+export function nian() {
+  const g = G();
+  const now = n0(g.turn, 0);
+  let plots = [];
+  try { if (w.ConspiracyEngine && typeof w.ConspiracyEngine.knownPlots === 'function') plots = w.ConspiracyEngine.knownPlots(g) || []; } catch (_e) { plots = []; }
+  const brewing = plots.filter(Boolean).slice().sort((a, b) => ((b.stage === 'ripe') - (a.stage === 'ripe')) || (n0(b.momentum) - n0(a.momentum))).map((p, i) => ({
+    key: `pl${i}`, kind: 'plot', who: String(p.ringleader || '某人'), act: `暗中${PLOT_KIND[p.kind] || '阴谋'}`, target: p.target ? String(p.target) : '',
+    ripe: p.stage === 'ripe', heat: p.stage === 'ripe' ? '将发' : n0(p.momentum) >= 70 ? '酝酿已深' : n0(p.momentum) >= 40 ? '渐成气候' : '初萌',
+    allies: arr(p.conspirators).map(String)
+  }));
+  const L = Array.isArray(g._conspiracies) ? g._conspiracies : [];
+  const past = L.filter((e) => e && (e.instigator || e.action)).slice().sort((a, b) => n0(b.turn) - n0(a.turn)).map((e, i) => {
+    const o = String(e.outcome || '').toLowerCase().trim();
+    const a = String(e.action || '').toLowerCase().trim();
+    const success = ['suppressed', 'failed', 'exposed', 'foiled'].includes(o) ? false : ['succeeded', 'success'].includes(o) ? true : ['coup_succeeded', 'regicide', 'palace_coup', 'usurp'].includes(a);
+    return {
+      key: `ni${i}`, kind: 'past', turn: n0(e.turn), when: whenOf(n0(e.turn), now), who: String(e.instigator || '某人'),
+      act: NI_ACT[a] || (/[a-z]/i.test(a) ? '逆案' : String(e.action || '逆案')), target: e.target ? String(e.target) : '',
+      outcome: NI_OUT[o] || (/[a-z]/i.test(o) ? '未决' : String(e.outcome || '未决')), success, allies: arr(e.conspirators).map(String), reason: String(e.reason || '').trim()
+    };
+  });
+  return { brewing, past };
+}

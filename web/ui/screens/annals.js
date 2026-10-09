@@ -54,5 +54,15 @@ export function openAnnals({ game, profile, idx = null, onArchive }) {
     actions: [{ label: '前一回', onclick: () => go(-1) }, { label: '后一回', onclick: () => go(1) },
       ...(onArchive ? [{ label: `入${t.archive}`, onclick: ({ close }) => { const id = cur ? `shiji-${cur.idx}` : ''; close('ok'); onArchive(id); } }] : [])]
   });
+  // ←→ 翻前后一回（照老史记弹窗）：只在本卷居最上、且不在输入框里时
+  const onKey = (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
+    if ([...document.querySelectorAll('.q-juan-veil')].pop() !== j.el) return;
+    e.preventDefault();
+    go(e.key === 'ArrowLeft' ? -1 : 1);
+  };
+  window.addEventListener('keydown', onKey);
+  j.closed.then(() => window.removeEventListener('keydown', onKey));
   return j;
 }

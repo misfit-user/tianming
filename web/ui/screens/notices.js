@@ -3,6 +3,7 @@
 import { h } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { juan } from '../kit/index.js';
+import { pendingStorageAlarm } from '../adapter/kernel.js';
 
 export function installNotices({ game, profile }) {
   game.on('kernel:urgent', (u) => {
@@ -14,4 +15,18 @@ export function installNotices({ game, profile }) {
     });
   });
   game.on('kernel:notice', (n) => { if (n.text) bus.emit('kernel:toast', { text: n.text }); });
+  // 本机存储不可用（桌面版）：存档已暂停，须让玩家看见；「重试并重新载入」转点内核横幅上的钮
+  let storageShown = false;
+  const storage = (s) => {
+    if (!s || storageShown) return;
+    storageShown = true;
+    const j = juan({
+      title: s.title, note: '急报', width: '34rem',
+      content: h('p', { style: { margin: 0, lineHeight: 2, whiteSpace: 'pre-wrap' } }, s.detail),
+      actions: [{ label: '重试并重新载入', onclick: ({ close }) => { close('ok'); s.retry(); } }]
+    });
+    j.closed.then(() => { storageShown = false; });
+  };
+  game.on('kernel:storage', storage);
+  storage(pendingStorageAlarm());
 }

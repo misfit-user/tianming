@@ -80,7 +80,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     btn('存', { title: '案卷目录', onclick: () => { if (!readOnly()) openSaves({ game, inGame: true }); } }),
     btn('典', { title: '典章', onclick: () => openSettings() }),
     btn('问', { title: '问天', onclick: () => { if (!readOnly()) wentianPage.show(); } }),
-    btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }));
+    btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }),
+    btn('暂', { title: '暂停', onclick: () => pause() }));        // 触屏没有 Esc，暂停卷（帮助、退位、回启幕）要有个可点的门
   const topbar = h('header.topbar', dyn, time, ledger, gauges, tools);
 
   // ---------- 左列 ----------
@@ -563,6 +564,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('view:changed', refresh),
         game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
+        game.on('ui:help', () => { if (el.classList.contains('on')) helpPage.show(); }),
         game.on('game:entered', () => loadWorld().then(refresh)));
       gaizhiPage.inheritance();                      // 开局幕里就断下的新朝承前，落座后展
     },

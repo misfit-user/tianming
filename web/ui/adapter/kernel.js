@@ -193,6 +193,9 @@ function installRouting() {
   });
   swap('openSaveManager', () => function () { bus.emit('ui:saves', {}); });
   swap('openSettings', () => function () { bus.emit('ui:settings', {}); });
+  swap('openHelp', () => function () { bus.emit('ui:help', {}); });     // F1：老帮助浮层会被兜底挪进来，改开新帮助册
+  // 时政决断后内核会重开老「时局要务」面板来刷新——新前端的时政页自己刷新，这张老面板不必再出（不改道就压在时政页上）
+  swap('openQuarterlyAgenda', () => function () { bus.emit('ui:agenda', {}); });
   // 问对收场：玩家退下、使节准驳后内核自行收场，都经此函数；新前端据 audience:closed 收卷
   swap('closeWenduiModal', (orig) => function () {
     const r = orig.apply(this, arguments);
@@ -231,6 +234,25 @@ export function legacyMutation(list) {
   return list.some((m) => !root || !root.contains(m.target));
 }
 const claimed = (n) => claims.some((f) => { try { return f(n); } catch (_e) { return false; } });
+// 桌面版本机存储打不开时，内核在页底挂一条告警横幅（不铺满，新前端下会隐形）：认领下来改发 kernel:storage，书案展成急报卷。
+// 横幅常在开机时就挂上、早于新前端装好，故另记一份，急报卷装好时来取
+let storageAlarm = null;
+function takeStorageAlarm(n) {
+  if (!n || n.id !== 'tm-storage-unavailable') return false;
+  const retry = n.querySelector('button');
+  storageAlarm = {
+    title: (n.querySelector('strong') || n).textContent.trim() || '存储暂时不可用',
+    detail: ((n.querySelector('p') || {}).textContent || '').trim(),
+    retry: () => { if (retry) retry.click(); }
+  };
+  bus.emit('kernel:storage', storageAlarm);
+  return true;
+}
+claims.push(takeStorageAlarm);
+export function pendingStorageAlarm() {
+  if (!storageAlarm) takeStorageAlarm(document.getElementById('tm-storage-unavailable'));
+  return storageAlarm && document.getElementById('tm-storage-unavailable') ? storageAlarm : null;
+}
 function watchLegacyOverlays() {
   const mo = new MutationObserver((list) => {
     for (const m of list) {

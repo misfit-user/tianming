@@ -255,9 +255,16 @@ const act = {
   async issue(id, index) {
     if (typeof w._chooseIssueOption !== 'function') throw new Error('内核缺 _chooseIssueOption');
     bus.emit('game:changed', { what: 'issue', id, resolving: true });
+    // 内核决断末尾「关闭并重开面板」会摘掉页面上第一个 .modal-bg——新前端下那可能是别处藏在画外、还在用的老弹层；
+    // 垫一个空的在最前头让它摘
+    const decoy = document.createElement('div');
+    decoy.className = 'modal-bg';
+    decoy.hidden = true;
+    document.body.prepend(decoy);
     try {
       return await w._chooseIssueOption(id, index);
     } finally {
+      decoy.remove();
       bus.emit('game:changed', { what: 'issue', id });
     }
   },

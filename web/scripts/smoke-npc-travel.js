@@ -261,7 +261,7 @@ test('the same meeting reads actual office constraints for allowed and leave-req
   assert(allowedPlan.localActivity.meeting.actorJourney && /^(in_transit|arrived)$/.test(allowedPlan.localActivity.meeting.actorJourney.status), 'an allowed holder can start the real route');
 
   const blocked = D.submitNPC(leaveHolder, { actionId: 'office-constrained-leave-required', activityKind: 'meeting', targetId: target2.id,
-    meeting: { locationId: 'west', requestedStartDay: 8, durationDays: 1, actorOfficeConstraint: { positionId: 'seat-leave', requiresLeave: true } } });
+    meeting: { locationId: 'west', requestedStartDay: 8, durationDays: 1 } });
   assert.equal(blocked.outcome, 'submitted', blocked.reason); const blockedPlan = D.get(blocked.planId); advance(c, 3);
   reply = D.submitNPC(target2, { actionId: 'office-constrained-leave-required-reply', planId: blockedPlan.id, phase: 'respond', response: 'accept', expectedRevision: blockedPlan.localActivity.revision, termsVersion: blockedPlan.localActivity.termsVersion });
   assert.equal(reply.outcome, 'submitted', reply.reason); advance(c, 3);

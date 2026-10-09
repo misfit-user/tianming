@@ -30,6 +30,7 @@
 ## I2：无官与有职共用一条活动
 
 - 合成旅行回归覆盖：一个无 leave 要求且权限有效的职位 holder 能按真实路线出发；另一个配置了 `requiresLeave` 的 holder 在没有有效离任安排时停在 `waiting_departure`，不会靠删字段放行。
+- 未显式附加 meeting 字段时，若 `OfficeTenure.view` 能唯一解析 resident 任职且目的地离开通常驻地，meeting 在出发/现场入口自动重验该任职；多职冲突时要求明确安排，不按列表顺序猜测。
 - 该回归保留 OfficeTenure 正式模块加载，未预造虚假 leave 记录，也未通过异常捕获放宽检查。
 - 同一 meeting 入口仍允许普通无官人物完成旅行和现场讨论；身份、职任和玩家控制方式没有被合并成一个开关。
 

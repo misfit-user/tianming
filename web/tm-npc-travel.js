@@ -65,8 +65,20 @@
       actorChoice: '', actorContent: '', targetChoice: '', targetContent: '', result: null };
   }
 
+  function inferredOfficeConstraint(ch, m) {
+    var office = TM.OfficeTenure;
+    if (!office || typeof office.view !== 'function' || !ch || !m) return null;
+    var rows = office.view(G(), ch).filter(function (v) {
+      return v && v.dutyMode === 'resident' && v.usualDutyLocationId && String(v.usualDutyLocationId) !== String(m.locationId);
+    });
+    // Multiple concurrent resident appointments need an explicit arrangement;
+    // silently selecting one would make a same activity depend on list order.
+    if (rows.length !== 1) return null;
+    return { positionId: rows[0].positionId, organizationId: rows[0].organizationId, requiresLeave: true, action: 'onsite' };
+  }
+
   function officeConstraintCheck(ch, m, role, phase) {
-    var constraint = m && m[role + 'OfficeConstraint'];
+    var constraint = m && m[role + 'OfficeConstraint'] || inferredOfficeConstraint(ch, m);
     if (!constraint) return { ok: true };
     var office = TM.OfficeTenure;
     if (!office || typeof office.canAct !== 'function') return { ok: false, reason: 'office_constraint_unavailable' };

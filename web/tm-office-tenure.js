@@ -116,6 +116,22 @@
   function player(g) { var rows = chars(g).filter(function (c) { return c && (c.isPlayer || c.playerControlled || c.controlledBy === 'player'); }); return rows.length === 1 ? rows[0] : null; }
   function controlled(ch, g) { return TM.PoliticalActions && TM.PoliticalActions.controlled ? TM.PoliticalActions.controlled(ch, g) : !!(ch && ch.isPlayer); }
   function ensurePlans(g) { if (!Array.isArray(g._npcPlans)) g._npcPlans = []; return g._npcPlans; }
+  // A delivered office notice is the knowledge source for direction
+  // planning.  It is a normal ActionLedger matter, so transport, save/load
+  // and visibility use the same message boundary as other notices.
+  function notifyOfficeChange(g, recipient, change) {
+    g = g || G(); if (!g || !recipient || !recipient.id) return null;
+    var seq = Number(g._npcOfficeNoticeSequence || 0) + 1; g._npcOfficeNoticeSequence = seq;
+    var id = 'office-notice:' + String(g.sid || 'world') + ':' + String(g.turn || 0) + ':' + seq;
+    var data = Object.assign({ planningRequired: true, important: true, officeChange: true, sourceVersion: Number(g.turn || 0) }, copy(change || {}));
+    var deliveryTurn = n(g.turn, 0) + 1;
+    var p = { version: 2, id: id, type: 'office_notice', actorId: 'office-system', actor: '官署', targetId: key(recipient.id), target: recipient.name || '',
+      intent: data.intent || '任职或差遣已有变化', createdTurn: n(g.turn, 0), updatedTurn: n(g.turn, 0), progress: 0,
+      task: { kind: 'notice', requestKind: 'office-change' }, messages: [], steps: [], knowledge: {}, status: 'in_transit', nextActorId: '', nextTurn: deliveryTurn, revision: 1, termsVersion: 1 };
+    var m = { id: id + ':message', sourceId: id, fromId: 'office-system', toId: key(recipient.id), kind: 'request',
+      content: data.content || '官署通知：你的任职或差遣已有变化，请按收到的现行安排重新考虑后续。', data: data, sentTurn: n(g.turn, 0), deliveryTurn: deliveryTurn, status: 'in_transit' };
+    p.messages.push(m); ensurePlans(g).push(p); return { plan: p, message: m };
+  }
   function pushMessage(g, p, from, to, kind, content, data, deliveryTurn) {
     var m = { id: nextId(g, 'office-message'), sourceId: p.id, fromId: key(from && from.id), toId: key(to && to.id), kind: kind,
       content: s(content), data: copy(data || {}), sentTurn: n(g.turn, 0), deliveryTurn: n(deliveryTurn, n(g.turn, 0) + 1), status: 'in_transit' };
@@ -371,6 +387,9 @@
       if (doc) { doc.status = 'delivered'; doc.deliveredDay = day(g); doc.deliveryRef = m.deliveryRef; note(g, findChar(g, doc.recipientId), findChar(g, doc.authorId), '收到代理文书：' + doc.content, doc.id, 'received_claim'); }
       p.status = 'awaiting_feedback';
     }
+    if (typeof root._npcPlanningObserveDeliveredMessage === 'function') {
+      try { root._npcPlanningObserveDeliveredMessage(p, m, g); } catch (_) {}
+    }
     addPlayerLetter(g, p, m, findChar(g, m.fromId), findChar(g, m.toId));
     return true;
   }
@@ -436,7 +455,7 @@
     returnLeave: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'return', actorId: actor && actor.id }), human === true); },
     receiveReturnReport: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'report', actorId: actor && actor.id }), human === true); },
     performDelegatedDocument: function (actor, d, human) { return submit(actor, Object.assign({}, d, { behaviorType: 'office_tenure', phase: 'perform_document', actorId: actor && actor.id }), human === true); },
-    execute: execute, verifyEvidence: verifyEvidence, onMessageDelivered: onMessageDelivered, advancePlans: advancePlans, tick: tick, renderPanel: renderPanel, uiRequest: uiRequest, uiReport: uiReport,
+    execute: execute, verifyEvidence: verifyEvidence, notifyOfficeChange: notifyOfficeChange, onMessageDelivered: onMessageDelivered, advancePlans: advancePlans, tick: tick, renderPanel: renderPanel, uiRequest: uiRequest, uiReport: uiReport,
     SCOPES: SCOPES };
   TM.OfficeTenure = API;
   if (root.NpcBehaviorRegistry && typeof root.NpcBehaviorRegistry.register === 'function') root.NpcBehaviorRegistry.register('office_tenure', function (actor, target, d) { return execute(actor, target, d); });

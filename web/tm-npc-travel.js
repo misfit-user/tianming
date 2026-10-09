@@ -43,6 +43,62 @@
   function charForRole(p, role) { return person(role === 'actor' ? p.actorId : p.targetId); }
   function finiteNonNegative(v) { return Number.isFinite(Number(v)) && Number(v) >= 0; }
 
+  function discussionTopic(m) {
+    return m && m.discussion && D() && typeof D().topicInfo === 'function' ? D().topicInfo(m.discussion.topicId) : null;
+  }
+
+  function discussionContent(topic, choice, role) {
+    if (!topic) return '';
+    if (role === 'actor') return choice === 'question' ? topic.questionPrompt : choice === 'counter' ? topic.counter : topic.explain;
+    return choice === 'uncertain' ? topic.uncertain : choice === 'counter' ? topic.counter : topic.answer;
+  }
+
+  function normalizeDiscussion(actor, spec) {
+    spec = spec || {};
+    var topic = D() && typeof D().topicInfo === 'function' ? D().topicInfo(spec.topicId) : null;
+    if (!topic || !D().consultationBasis) return null;
+    var basis = D().consultationBasis({ sourceOpportunity: spec.sourceOpportunity }, actor, G());
+    if (!basis || !basis.source) return null;
+    return { topicId: topic.id, question: text(spec.question || topic.question), status: 'pending',
+      sourceOpportunity: copy(basis.source), sourceRefs: copy(basis.source.basisRefs || []),
+      preferredExchange: /^(explain|question|counter)$/.test(text(spec.preferredExchange)) ? text(spec.preferredExchange) : 'explain',
+      actorChoice: '', actorContent: '', targetChoice: '', targetContent: '', result: null };
+  }
+
+  function inferredOfficeConstraint(ch, m) {
+    var office = TM.OfficeTenure;
+    if (!office || typeof office.view !== 'function' || !ch || !m) return null;
+    var rows = office.view(G(), ch).filter(function (v) {
+      return v && v.dutyMode === 'resident' && v.usualDutyLocationId && String(v.usualDutyLocationId) !== String(m.locationId);
+    });
+    // Multiple concurrent resident appointments need an explicit arrangement;
+    // silently selecting one would make a same activity depend on list order.
+    if (rows.length !== 1) return null;
+    return { positionId: rows[0].positionId, organizationId: rows[0].organizationId, requiresLeave: true, action: 'onsite' };
+  }
+
+  function officeConstraintCheck(ch, m, role, phase) {
+    var constraint = m && m[role + 'OfficeConstraint'] || inferredOfficeConstraint(ch, m);
+    if (!constraint) return { ok: true };
+    var office = TM.OfficeTenure;
+    if (!office || typeof office.canAct !== 'function') return { ok: false, reason: 'office_constraint_unavailable' };
+    var checked = office.canAct({ world: G(), actor: ch, actorId: ch && ch.id, positionId: constraint.positionId,
+      organizationId: constraint.organizationId, action: constraint.action || 'onsite', regionId: m.locationId, day: day() });
+    if (!checked.ok) return checked;
+    if (constraint.requiresLeave === true) {
+      var rows = typeof office.view === 'function' ? office.view(G(), ch) : [];
+      var row = rows.find(function (v) { return String(v.positionId) === String(constraint.positionId) && (!constraint.organizationId || String(v.organizationId) === String(constraint.organizationId)); });
+      var validLeave = row && rows && (row.leave || []).some(function (leave) {
+        var terms = leave.terms || {};
+        return /^(approved|active|at_destination|returning)$/.test(leave.status || '') &&
+          (!terms.destinationId || String(terms.destinationId) === String(m.locationId)) &&
+          (terms.startDay == null || day() >= Number(terms.startDay)) && (terms.latestReturnDay == null || day() + Number(m.durationDays || 0) <= Number(terms.latestReturnDay));
+      });
+      if (!validLeave) return { ok: false, reason: phase === 'depart' ? 'meeting_office_leave_required' : 'meeting_office_presence_required' };
+    }
+    return checked;
+  }
+
   function remember(ch, other, p, source, content, factStatus) {
     if (!ch || !root.NpcMemorySystem) return;
     root.NpcMemorySystem.remember(ch.name, content, '平', 4, other && other.name || '', {
@@ -57,7 +113,8 @@
     p.localActivity.revision++; p.updatedTurn = G().turn;
     var row = { id: d.actionId + ':' + d.phase, actionId: d.actionId, phase: d.phase, actorId: id(actor),
       beforeRevision: before, afterRevision: p.localActivity.revision,
-      inputHash: signature({ actionId: d.actionId, phase: d.phase, actorId: id(actor), response: d.response, termsVersion: d.termsVersion, meeting: d.meeting }),
+      inputHash: signature({ actionId: d.actionId, phase: d.phase, actorId: id(actor), response: d.response,
+        exchangeChoice: d.exchangeChoice, termsVersion: d.termsVersion, meeting: d.meeting }),
       day: day(), termsVersion: p.localActivity.termsVersion };
     p.steps.push(row);
     return result(outcome, reason, [{ kind: 'meeting_step', id: row.id, planId: p.id }], {
@@ -186,6 +243,10 @@
   function startJourneyFor(p, role, reason, startAt) {
     var a = p.localActivity, m = a.meeting, ch = charForRole(p, role), returning = /^return$/.test(reason || '');
     if (!alive(ch)) { m[role + 'JourneyStatus'] = 'participant_unavailable'; return false; }
+    if (!returning) {
+      var officeCheck = officeConstraintCheck(ch, m, role, 'depart');
+      if (!officeCheck.ok) { m[role + 'JourneyStatus'] = officeCheck.reason; return false; }
+    }
     var existing = journeyFor(m, role, returning);
     if (existing && /^(in_transit|arrived|stopped|returned|staying)$/.test(existing.status)) return /^(in_transit|arrived|returned|staying)$/.test(existing.status);
     var destination = returning ? m[role + 'HomeRegionId'] : (m.venueLocationId || m.locationId);
@@ -363,8 +424,13 @@
     if (currentRegion(actor) !== String(m.locationId) || currentRegion(target) !== String(m.locationId)) {
       m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; return false;
     }
+    if (!officeConstraintCheck(actor, m, 'actor', 'onsite').ok || !officeConstraintCheck(target, m, 'target', 'onsite').ok) {
+      m.status = 'schedule_conflict'; p.status = 'waiting_schedule'; return false;
+    }
     if (hasConflict(actor, p, start, end) || hasConflict(target, p, start, end)) { m.status = 'schedule_conflict'; p.status = 'waiting_schedule'; return false; }
     m.status = 'in_meeting'; p.status = 'in_meeting'; m.startedDay = start; m.endDay = end;
+    delete m.nextStartDay;
+    if (m.discussion) { m.discussion.status = 'awaiting_actor'; p.nextActorId = p.actorId; p.nextTurn = G().turn; }
     m.participationStart = { id: 'meeting-start:' + p.id, day: start, participants: [p.actorId, p.targetId], locationId: m.locationId, sourcePlanId: p.id };
     return true;
   }
@@ -379,12 +445,21 @@
   function finishMeeting(p, now) {
     var a = p.localActivity, m = a.meeting;
     if (m.status !== 'in_meeting' || !Number.isFinite(m.endDay) || now < m.endDay) return false;
+    if (m.discussion && m.discussion.status !== 'completed') m.discussion.status = 'uncompleted';
     if (!m.participation) {
       m.participation = { id: 'meeting:' + p.id, startDay: m.startedDay, endDay: now, durationDays: now - m.startedDay,
-        participants: [p.actorId, p.targetId], locationId: m.locationId, purpose: m.purpose, sourcePlanId: p.id };
+        participants: [p.actorId, p.targetId], locationId: m.locationId, purpose: m.purpose, sourcePlanId: p.id,
+        discussion: m.discussion && { status: m.discussion.status, topicId: m.discussion.topicId, result: copy(m.discussion.result || null) } };
       var actor = person(p.actorId), target = person(p.targetId);
       remember(actor, target, p, m.participation.id, '与' + target.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
       remember(target, actor, p, m.participation.id + ':target', '与' + actor.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
+      if (m.discussion && m.discussion.result && !m.discussion.effectsApplied) {
+        var discussionText = m.discussion.result.targetContent || m.discussion.result.actorContent || '';
+        remember(actor, target, p, m.discussion.result.id + ':actor', '现场围绕' + m.discussion.result.topicId + '讨论：' + discussionText, 'personal_experience');
+        remember(target, actor, p, m.discussion.result.id + ':target', '现场围绕' + m.discussion.result.topicId + '讨论：' + discussionText, 'personal_experience');
+        if (root.CharacterGrowthSystem && typeof root.CharacterGrowthSystem.recordExperience === 'function') root.CharacterGrowthSystem.recordExperience(actor.name, '现场请益·' + m.discussion.result.topicId, discussionText);
+        m.discussion.effectsApplied = true;
+      }
       if (root.OpinionSystem && typeof root.OpinionSystem.addEventOpinion === 'function') root.OpinionSystem.addEventOpinion(actor, target, 1, '实际约见已完成', { sourceId: m.participation.id });
       m.effectsApplied = true;
     }
@@ -398,7 +473,12 @@
     var m = p.localActivity.meeting;
     if (m.status !== 'returning') return;
     var done = ['actor', 'target'].every(function (role) { var j = journeyFor(m, role, true); return j && /^(arrived|returned|staying)$/.test(j.status); });
-    if (done) { ['actor', 'target'].forEach(function (role) { var j = journeyFor(m, role, true); if (j.status === 'arrived') j.status = 'returned'; }); m.status = 'returned'; p.status = 'done'; p.nextActorId = ''; }
+    if (done) { ['actor', 'target'].forEach(function (role) { var j = journeyFor(m, role, true); if (j.status === 'arrived') j.status = 'returned'; }); m.status = 'returned'; p.status = 'done'; p.nextActorId = '';
+      if (typeof root._npcPlanningStepResult === 'function' && p.localActivity.sourceGoalId) {
+        var discussionOutcome = m.discussion && m.discussion.status === 'uncompleted' ? 'partial' : 'completed';
+        root._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, { outcome: discussionOutcome, reason: discussionOutcome === 'partial' ? 'meeting_returned_without_discussion' : 'meeting_returned', planningOwnerId: p.actorId, verified: discussionOutcome === 'completed' });
+      }
+    }
   }
 
   function deliver(p, msg, deliveredAt) {
@@ -419,8 +499,11 @@
       else if (msg.data.response === 'defer') { m.pendingTerms = copy(msg.data.proposedTerms || null); m.status = 'deferred'; p.status = 'awaiting_reschedule'; p.nextActorId = p.actorId; }
       else {
         m.status = 'scheduled';
-        if (m.actorDeparturePolicy === 'after_acceptance_delivery') startJourneyFor(p, 'actor', 'acceptance_delivered', deliveredAt);
-        else { p.status = 'waiting_departure'; p.nextActorId = p.actorId; }
+        if (m.actorDeparturePolicy === 'after_acceptance_delivery') {
+          var startedAfterAcceptance = startJourneyFor(p, 'actor', 'acceptance_delivered', deliveredAt);
+          if (!startedAfterAcceptance) { p.status = 'waiting_departure'; p.nextActorId = p.actorId; }
+          else aggregateStatus(p);
+        } else { p.status = 'waiting_departure'; p.nextActorId = p.actorId; }
       }
     }
     if (msg.kind === 'meeting_cancel') {
@@ -459,7 +542,17 @@
           var arrivalDay = Math.max(Number(m.actorJourney.arrivedDay || now), Number(m.targetJourney.arrivedDay || now));
           var startDay = Math.max(Number(m.requestedStartDay), arrivalDay);
           if (startDay > Number(m.requestedStartDay) + Number(m.windowDays)) { m.status = 'missed'; p.status = 'missed'; }
-          else beginMeeting(p, now, startDay);
+          // Arrival is a physical fact; it does not consume the future
+          // appointment window.  Keep the plan waiting until the actual
+          // simulation day reaches the agreed start.  If one committed
+          // interval crosses the start, replay the event at its real day and
+          // then continue through the interval; never stamp a future start
+          // into an in_meeting state.
+          else if (startDay > now) { m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; m.nextStartDay = startDay; }
+          else {
+            beginMeeting(p, startDay, startDay);
+            if (m.status === 'in_meeting' && now >= Number(m.endDay)) finishMeeting(p, Number(m.endDay));
+          }
         }
       }
       if (m.status === 'in_meeting' && now >= Number(m.endDay)) finishMeeting(p, Number(m.endDay));
@@ -497,13 +590,16 @@
   function createMeeting(actor, d, target, targetRegion, inviteRoute, locationId) {
     var t = validTerms(d.meeting, inviteRoute); if (!t) return null;
     var a = d.meeting || {}, fallbackReturn = a.returnMode === 'stay' ? 'stay' : 'return';
+    var discussionSpec = a.discussion || a.consultation, discussion = discussionSpec ? normalizeDiscussion(actor, discussionSpec) : null;
+    if (discussionSpec && !discussion) return null;
     return { version: 1, status: 'invitation_in_transit', locationId: locationId, venueLocationId: locationId, locationName: locationName(locationId),
       purpose: text(a.purpose) || '探望与叙谈', mode: text(a.mode) || config.defaultMode, requestedStartDay: t.requestedStartDay,
       windowDays: t.windowDays, durationDays: t.durationDays, actorReturnMode: a.actorReturnMode === 'stay' ? 'stay' : fallbackReturn,
       targetReturnMode: a.targetReturnMode === 'stay' ? 'stay' : fallbackReturn,
+      actorOfficeConstraint: copy(a.actorOfficeConstraint || a.officeConstraint || null), targetOfficeConstraint: copy(a.targetOfficeConstraint || null),
       actorDeparturePolicy: a.departurePolicy === 'manual' || actor.isPlayer ? 'manual' : 'after_acceptance_delivery',
       actorReplyAddressRegionId: currentRegion(actor), inviteDeliveryRegionId: targetRegion, targetKnownRegionId: targetRegion,
-      inviteRoute: copy(inviteRoute), termsHistory: [{ version: 1, terms: copy(t) }], actorResponseDelivered: false };
+      inviteRoute: copy(inviteRoute), termsHistory: [{ version: 1, terms: copy(t) }], actorResponseDelivered: false, discussion: discussion };
   }
 
   function commit(actor, d) {
@@ -518,7 +614,7 @@
       if (!inviteRoute || inviteRoute.status !== 'reachable') return result('blocked', inviteRoute && inviteRoute.reason || 'meeting_invite_route_unavailable');
       var locationId = text(d.meeting && (d.meeting.locationId || d.meeting.venueLocationId)); if (!locationId) locationId = targetRegion;
       var loc = TM.MapRouteDays.resolveRegion(map(), locationId); if (!loc || loc.status !== 'resolved') return result('blocked', 'meeting_location_unresolved');
-      var meeting = createMeeting(actor, d, target, targetRegion, inviteRoute, String(loc.region.id)); if (!meeting) return result('blocked', 'meeting_terms_invalid');
+      var meeting = createMeeting(actor, d, target, targetRegion, inviteRoute, String(loc.region.id)); if (!meeting) return result('blocked', d.meeting && (d.meeting.discussion || d.meeting.consultation) ? 'meeting_discussion_source_required' : 'meeting_terms_invalid');
       if (!D().spend(actor, true)) return result('blocked', 'daily_activity_budget');
       p = { id: 'plan:' + d.actionId, version: 2, type: 'ordinary_interaction', actorId: key, actor: actor.name, targetId: id(target), target: target.name,
         createdTurn: G().turn, updatedTurn: G().turn, progress: 0, intent: '约见与探望', messages: [], steps: [], knowledge: {}, status: 'invitation_in_transit', nextActorId: '', nextTurn: G().turn,
@@ -537,6 +633,29 @@
     if (!isMeeting(p) || a.definitionVersion !== 1) return result('blocked', 'meeting_definition_requires_migration');
     if (!participant(p, key) || !p.knowledge[key]) return result('blocked', 'meeting_participant_not_informed');
     if (d.expectedRevision != null && d.expectedRevision !== a.revision || d.termsVersion != null && d.termsVersion !== a.termsVersion) return result('expired', 'meeting_or_terms_changed');
+    if (d.phase === 'discuss' && key === p.actorId && m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_actor') {
+      if (day() < Number(m.startedDay || 0) || day() >= Number(m.endDay || 0)) return result('blocked', 'meeting_discussion_time_unavailable');
+      if (currentRegion(actor) !== String(m.locationId)) return result('blocked', 'meeting_discussion_location_mismatch');
+      var actorChoice = text(d.exchangeChoice || d.response || 'explain');
+      if (!/^(explain|question|counter)$/.test(actorChoice)) return result('blocked', 'meeting_discussion_choice_required');
+      var actorTopic = discussionTopic(m); if (!actorTopic) return result('blocked', 'meeting_discussion_topic_missing');
+      m.discussion.actorChoice = actorChoice; m.discussion.actorContent = discussionContent(actorTopic, actorChoice, 'actor');
+      m.discussion.status = 'awaiting_target'; p.nextActorId = p.targetId; p.nextTurn = G().turn;
+      return step(p, actor, d, 'submitted', '现场已提出具体理解，等待对方独立回应');
+    }
+    if (d.phase === 'discuss_response' && key === p.targetId && m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_target') {
+      if (day() < Number(m.startedDay || 0) || day() >= Number(m.endDay || 0)) return result('blocked', 'meeting_discussion_time_unavailable');
+      if (currentRegion(actor) !== String(m.locationId)) return result('blocked', 'meeting_discussion_location_mismatch');
+      var targetChoice = text(d.response || 'answer');
+      if (!/^(answer|uncertain|counter)$/.test(targetChoice)) return result('blocked', 'meeting_discussion_response_required');
+      var targetTopic = discussionTopic(m); if (!targetTopic) return result('blocked', 'meeting_discussion_topic_missing');
+      m.discussion.targetChoice = targetChoice; m.discussion.targetContent = discussionContent(targetTopic, targetChoice, 'target');
+      m.discussion.result = { id: 'meeting-discussion:' + p.id + ':1', topicId: targetTopic.id, question: m.discussion.question,
+        actorChoice: m.discussion.actorChoice, targetChoice: targetChoice, actorContent: m.discussion.actorContent,
+        targetContent: m.discussion.targetContent, sourceRefs: copy(m.discussion.sourceRefs || []), day: day(), sourcePlanId: p.id };
+      m.discussion.status = 'completed'; p.nextActorId = '';
+      return step(p, actor, d, 'submitted', '对方已在现场作出独立回应，讨论结果待会面结束后结算');
+    }
     if (d.phase === 'cancel') {
       if (terminal(p)) return result('noop', 'meeting_terminal');
       if (!D().spend(actor, false)) return result('blocked', 'daily_activity_budget');
@@ -616,6 +735,14 @@
     if (p.status === 'awaiting_response' && key === p.targetId) next = 'respond';
     if (p.status === 'waiting_departure' && key === p.actorId) next = 'depart';
     if (p.status === 'awaiting_reschedule' && key === p.actorId) next = 'reschedule';
+    if (m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_actor' && key === p.actorId) next = 'discuss';
+    if (m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_target' && key === p.targetId) next = 'discuss_response';
+    var ownDiscussion = m.discussion && { status: m.discussion.status, topicId: m.discussion.topicId, question: m.discussion.question, preferredExchange: m.discussion.preferredExchange,
+      ownChoice: role === 'actor' ? m.discussion.actorChoice : m.discussion.targetChoice,
+      ownContent: role === 'actor' ? m.discussion.actorContent : m.discussion.targetContent,
+      heardChoice: role === 'target' && /^(awaiting_target|completed|uncompleted)$/.test(m.discussion.status) ? m.discussion.actorChoice : '',
+      heardContent: role === 'target' && /^(awaiting_target|completed|uncompleted)$/.test(m.discussion.status) ? m.discussion.actorContent : '',
+      result: m.discussion.status === 'completed' || m.discussion.status === 'uncompleted' ? copy(m.discussion.result || null) : null };
     return { id: p.id, kind: 'meeting', actorId: p.actorId, targetId: p.targetId, intent: p.intent,
       stage: k.stage, nextPhase: next, revision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion,
       expiresDay: p.localActivity.expiresDay, messages: copy(messages), documents: [], contact: null,
@@ -624,7 +751,16 @@
         actorReturnMode: role === 'actor' ? m.actorReturnMode : undefined, targetReturnMode: role === 'target' ? m.targetReturnMode : undefined,
         ownDecision: role && copy(m[role + 'Decision'] || null), ownJourney: role && publicJourney(journeyFor(m, role, false)),
         ownReturnJourney: role && publicJourney(journeyFor(m, role, true)), participationStart: m.participationStart && copy(m.participationStart),
-        participation: m.participation && copy(m.participation) }, canCancel: !terminal(p), factStatus: 'own_meeting_view' };
+        participation: m.participation && copy(m.participation), discussion: ownDiscussion }, canCancel: !terminal(p), factStatus: 'own_meeting_view' };
+  }
+
+  function topicHistory(ch, topicId) {
+    var characterId = id(ch), topic = text(topicId), count = 0;
+    rows(G() && G()._npcPlans).filter(isMeeting).forEach(function (p) {
+      var d = p.localActivity && p.localActivity.meeting && p.localActivity.meeting.discussion;
+      if (p.actorId === characterId && d && d.result && d.result.topicId === topic && d.effectsApplied) count++;
+    });
+    return count;
   }
 
   function verifyEvidence(ref, d, actor, g, before) {
@@ -635,6 +771,18 @@
     if (d.phase === 'respond' && !messages.some(function (m) { return m.kind === 'meeting_response' && m.fromId === id(actor) && m.data && m.data.response === d.response; })) return false;
     if (d.phase === 'depart' && !(p.localActivity.meeting.actorJourney && /^(in_transit|arrived)$/.test(p.localActivity.meeting.actorJourney.status))) return false;
     if (d.phase === 'cancel' && !/^(cancelled|cancel_pending)$/.test(p.localActivity.meeting.status)) return false;
+    if (d.phase === 'discuss') {
+      var discussion = p.localActivity.meeting.discussion;
+      if (row.actorId !== p.actorId || !discussion || discussion.status !== 'awaiting_target' ||
+          discussion.actorChoice !== text(d.exchangeChoice) || !text(discussion.actorContent) ||
+          day() < Number(p.localActivity.meeting.startedDay || 0) || day() >= Number(p.localActivity.meeting.endDay || 0)) return false;
+    }
+    if (d.phase === 'discuss_response') {
+      var responseDiscussion = p.localActivity.meeting.discussion, responseResult = responseDiscussion && responseDiscussion.result;
+      if (row.actorId !== p.targetId || !responseDiscussion || responseDiscussion.status !== 'completed' ||
+          responseDiscussion.targetChoice !== text(d.response) || !text(responseDiscussion.targetContent) ||
+          !responseResult || responseResult.sourcePlanId !== p.id) return false;
+    }
     return true;
   }
 
@@ -660,7 +808,7 @@
     return { ok: true, advancedDays: advanced, day: day() };
   }
 
-  NPC.Meetings = { config: config, isPlan: isMeeting, commit: commit, beforeTravelAdvance: beforeTravelAdvance, needsAdvance: needsAdvance,
+  NPC.Meetings = { config: config, isPlan: isMeeting, topicHistory: topicHistory, commit: commit, beforeTravelAdvance: beforeTravelAdvance, needsAdvance: needsAdvance,
     advanceWithin: advanceWithin, advanceExternalJourneys: advanceExternalJourneys, startExternalJourney: startExternalJourney, stopExternalJourney: stopExternalJourney, externalJourney: externalJourney,
     view: view, verifyEvidence: verifyEvidence, advanceLocalDays: advanceLocalDays,
     afterVerifiedCommit: function (d, receipt) { advanceWithin(); return receipt; } };

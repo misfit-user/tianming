@@ -67,6 +67,12 @@
         var preference = p.localActivity && p.localActivity.preferredExchange || 'explain';
         d.exchangeChoice = preference === 'question' ? 'question' : disposition.li >= 70 ? 'counter' : 'explain';
         reason = '依据具体话题和本人已知经历选择交流方式';
+      } else if (d.phase === 'discuss' && view.kind === 'meeting' && view.meeting && view.meeting.discussion) {
+        d.exchangeChoice = view.meeting.discussion.preferredExchange || (disposition.li >= 70 ? 'counter' : 'question');
+        reason = '到场后依据当前话题选择现场交流方式';
+      } else if (d.phase === 'discuss_response' && view.kind === 'meeting' && view.meeting && view.meeting.discussion) {
+        d.response = disposition.score < 18 ? 'uncertain' : disposition.li >= 70 ? 'counter' : 'answer';
+        reason = d.response === 'uncertain' ? '说明现场仍有未确认之处' : '依据现场问题独立作答';
       } else if (d.phase === 'question_answer' && view.kind === 'consultation') {
         d.response = disposition.score < 18 ? 'uncertain' : 'answer';
         reason = d.response === 'answer' ? '依据自己的理解回答对方的具体问题' : '说明目前只能给出有限理解';
@@ -110,14 +116,19 @@
     if (b.starts < D.config.dailyStarts) out = opportunityCandidates(ch);
     if (b.starts < D.config.dailyStarts) arr(ch.localGoals).forEach(function (goal) {
       if (!goal || !goal.id || goal.status === 'cancelled' || !/^(greeting|introduction|assistance|meeting|consultation)$/.test(goal.kind)) return;
+      if (typeof root._npcPlanningGoalReady === 'function' && !root._npcPlanningGoalReady(goal)) return;
       var source = String(goal.id) + ':' + Number(goal.version || 1);
       if (related.some(function (p) { return p.actorId === ch.id && p.localActivity.sourceGoalId === source; })) return;
       var target = actor(goal.targetId), third = goal.kind === 'introduction' && actor(goal.thirdPartyId);
       if (!target || target === ch || !D.knows(ch, target) || goal.kind === 'introduction' && (!third || !D.knows(ch, third))) return;
       var willingness = inclination(ch, target, goal.kind);
       if (willingness.stress > 90 || willingness.score < 0) return;
-      out.push({ priority: 50 + willingness.score, source: 'goal:' + source, reason: '推进本人明确的普通交往目标',
-        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: goal.meeting, consultation: goal.consultation } });
+      var meeting = goal.meeting;
+      if (goal.kind === 'meeting' && meeting && meeting.discussion && root.TM.NPC.Meetings && typeof root.TM.NPC.Meetings.topicHistory === 'function' && root.TM.NPC.Meetings.topicHistory(ch, meeting.discussion.topicId) > 0) {
+        meeting = copy(meeting); meeting.discussion = copy(meeting.discussion); meeting.discussion.preferredExchange = 'question';
+      }
+      out.push({ priority: 50 + willingness.score, source: 'goal:' + source, reason: goal.kind === 'meeting' && meeting && meeting.discussion && meeting.discussion.preferredExchange === 'question' ? '依据上次现场结果留下针对性追问' : '推进本人明确的普通交往目标',
+        action: { activityKind: goal.kind, targetId: target.id, thirdPartyId: third && third.id || '', sourceGoalId: source, task: goal.task, meeting: meeting, consultation: goal.consultation } });
     });
     if (!out.length && !due.length && !(options && options.skipUnsolicited) && b.starts < D.config.dailyStarts) {
       D.knownIds(ch).forEach(function (key) {
@@ -705,7 +716,10 @@
           if (typeof root._npcPlanningStepResult === 'function' && receipt && receipt.planId) {
             var _plannedActivity = D.get(receipt.planId);
             if (_plannedActivity && _plannedActivity.localActivity && _plannedActivity.localActivity.sourceGoalId) {
-              root._npcPlanningStepResult(chosen.id, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) ? 'completed' : receipt.outcome, reason: receipt.reason });
+              // The planning direction belongs to the activity owner.  A
+              // partner/player may be the person submitting the response.
+              var planningOwner = _plannedActivity.actorId || chosen.id;
+              root._npcPlanningStepResult(planningOwner, _plannedActivity.localActivity.sourceGoalId, { outcome: D.terminal(_plannedActivity) && _plannedActivity.status === 'done' ? 'completed' : receipt.outcome, reason: receipt.reason, planningOwnerId: planningOwner, verified: D.terminal(_plannedActivity) && _plannedActivity.status === 'done' });
             }
           }
           // A failed domain transaction restores nested state objects; do not keep their stale references.

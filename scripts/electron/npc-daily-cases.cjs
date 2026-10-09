@@ -18,7 +18,7 @@ module.exports=async function({win,check,results}){
  }
  async function screenshot(name){fs.writeFileSync(path.join(dir,name+'.png'),(await win.webContents.capturePage()).toPNG());}
  await check('ordinary activity modules are actually in the production loading path',async()=>{
-   assert.equal(await js(`!!(TM.NPC.DailyActivities&&TM.NPC.LocalAI&&TM.NPC.DailyUI&&NpcBehaviorRegistry._behaviors.ordinary_interaction)`),true);
+   assert.equal(await js(`!!(TM.NPC.DailyActivities&&TM.NPC.LocalAI&&TM.NPC.DailyUI&&TM.OfficeTenure&&NpcBehaviorRegistry._behaviors.ordinary_interaction)`),true);
  });
  await js(`(async()=>{
    await TM_Changelog.getUnreadCount();await new Promise(r=>setTimeout(r,650));TM_Changelog.markRead();TM_Changelog.close();

@@ -15,6 +15,13 @@
   reasons.meeting_location_unresolved = '约见地点没有可核验的地块，未创建行程。';
   reasons.meeting_invite_route_unavailable = '当前支持的路线无法递送这次邀约。';
   reasons.meeting_response_route_unavailable = '回应暂时无法按已知路线传回。';
+  reasons.meeting_discussion_source_required = '当面请益需要已经发生且双方可知的材料或问题来源。';
+  reasons.meeting_discussion_time_unavailable = '当前不在实际会面时段内，不能结算现场讨论。';
+  reasons.meeting_discussion_location_mismatch = '本人尚未在约定地点，不能进行现场讨论。';
+  reasons.meeting_discussion_choice_required = '请先选择一种现场交流方式。';
+  reasons.meeting_discussion_response_required = '请对现场问题作出明确回应。';
+  reasons.meeting_office_leave_required = '当前职任要求先取得有效离任安排，才能按此路线赴约。';
+  reasons.meeting_office_presence_required = '当前职任的在场条件与现场安排冲突。';
   reasons.route_service_unavailable = '路线服务尚未就绪，事项保持等待。';
   var stages = { sent: '文书已递出', awaiting_response: '待本人答复', awaiting_third: '待本人决定是否接受引见',
     awaiting_agreement: '待确认当前条件', ready_forward: '待转达引见', ready_report: '待传回对方答复', ready_confirm: '待确认联系条件',
@@ -48,6 +55,13 @@
     html += '<strong>' + escape(label + ' · ' + who(v.actorId) + ' → ' + who(v.targetId) + (v.thirdPartyId ? ' · 引见 ' + who(v.thirdPartyId) : '')) + '</strong>';
     html += '<p data-daily-stage>' + escape(stageLabel) + '</p><p>事项期限：第' + escape(v.expiresDay) + '日。已承接的工作与已收到的文书继续保留，可办理或取消。</p>';
     if (v.meeting) html += '<p data-daily-meeting>地点：' + escape(v.meeting.locationName || v.meeting.locationId || '未定') + '；目的：' + escape(v.meeting.purpose || '') + '；路线状态：' + escape(stages[v.meeting.status] || v.meeting.status || '待定') + '</p>';
+    if (v.kind === 'meeting' && v.meeting && v.meeting.discussion) {
+      var md = v.meeting.discussion;
+      html += '<p data-daily-meeting-discussion>现场话题：' + escape(md.topicId || '未定') + '；问题：' + escape(md.question || '') + '；讨论状态：' + escape(md.status || '待定') + '</p>';
+        if (md.heardContent) html += '<details open><summary>已听到对方现场发言</summary><p style="white-space:pre-wrap">' + escape(md.heardContent) + '</p></details>';
+      if (md.ownContent) html += '<details open><summary>本人现场发言</summary><p style="white-space:pre-wrap">' + escape(md.ownContent) + '</p></details>';
+      if (md.result) html += '<details open><summary>现场讨论结果</summary><p style="white-space:pre-wrap">' + escape(md.result.targetContent || md.result.actorContent || '') + '</p></details>';
+    }
     if (v.kind === 'consultation') {
       var topic = D().topicInfo && D().topicInfo(v.topicId);
       html += '<p data-daily-consultation>话题：' + escape(topic && topic.title || v.topicId || '未定') + '；问题：' + escape(v.question || topic && topic.question || '') + '；预计占用一个短时段。</p>';
@@ -67,6 +81,8 @@
       var options = choices[v.nextPhase] || [];
       if (v.kind === 'greeting' && v.nextPhase === 'respond') options = [['warm', '关切答复'], ['brief', '简短答复'], ['reject', '婉拒继续往来'], ['defer', '延期答复']];
       if (v.kind === 'meeting' && v.nextPhase === 'respond') options = [['accept', '接受约见'], ['reject', '婉拒约见'], ['defer', '建议改期']];
+      if (v.kind === 'meeting' && v.nextPhase === 'discuss') options = [['explain', '解释要点'], ['question', '先问对方理解'], ['counter', '提出不同看法']];
+      if (v.kind === 'meeting' && v.nextPhase === 'discuss_response') options = [['answer', '说明自己的理解'], ['uncertain', '说明尚未确认'], ['counter', '提出不同看法']];
       if (v.kind === 'consultation' && v.nextPhase === 'respond') options = [['accept', '接受请益'], ['brief', '只作简短切磋'], ['reject', '暂不方便'], ['defer', '改日再议']];
       if (v.kind === 'consultation' && v.nextPhase === 'perform') options = [['explain', '解释要点'], ['question', '先问对方理解'], ['counter', '提出不同看法']];
       if (v.kind === 'consultation' && v.nextPhase === 'question_answer') options = choices.question_answer;
@@ -75,7 +91,7 @@
       if (v.kind === 'assistance' && v.nextPhase === 'respond') options = options.concat([['partial', '仅承接首份材料']]);
       var token = D().ticket(ch, { planId: v.id, phase: v.nextPhase });
       html += '<div data-daily-response="' + escape(token) + '">' + options.map(function (o) {
-        var attr = v.kind === 'consultation' && v.nextPhase === 'perform' ? 'data-daily-exchange' : 'data-daily-answer';
+        var attr = v.kind === 'consultation' && v.nextPhase === 'perform' || v.kind === 'meeting' && v.nextPhase === 'discuss' ? 'data-daily-exchange' : 'data-daily-answer';
         return '<button type="button" class="hy-filter-btn" ' + attr + '="' + o[0] + '">' + o[1] + '</button>';
       }).join('') + '</div>';
       if (v.kind === 'assistance' && /^(agree|feedback)$/.test(v.nextPhase)) html += formMaterials(materials, v.id);
@@ -114,10 +130,10 @@
           if (!composeLease || !NPC.ActionLedger.current(composeLease)) { render(); return; }
           var kind = button.dataset.dailyNew, target = panel.querySelector('#daily-target').value, third = panel.querySelector('#daily-third').value;
           var consultationTopic = panel.querySelector('#daily-consultation-topic');
-          var consultationOpportunity = kind === 'consultation' && D().consultationOpportunities ? D().consultationOpportunities(ch).find(function (o) { return o.action.targetId === target && o.action.consultation.topicId === (consultationTopic && consultationTopic.value); }) : null;
+          var consultationOpportunity = /^(consultation|meeting)$/.test(kind) && D().consultationOpportunities ? D().consultationOpportunities(ch).find(function (o) { return o.action.targetId === target && o.action.consultation.topicId === (consultationTopic && consultationTopic.value); }) : null;
           var request = { activityKind: kind, targetId: target, thirdPartyId: kind === 'introduction' ? third : '', task: kind === 'assistance' ? selectedMaterials(panel, materials, 'new') : undefined,
             consultation: kind === 'consultation' ? { topicId: consultationTopic && consultationTopic.value, sourceOpportunity: consultationOpportunity && consultationOpportunity.action.consultation.sourceOpportunity } : undefined,
-            meeting: kind === 'meeting' ? { purpose: '探望与叙谈', returnMode: 'return' } : undefined };
+            meeting: kind === 'meeting' ? { purpose: '相约读札／当面请益', returnMode: 'return', discussion: consultationOpportunity && consultationOpportunity.action && consultationOpportunity.action.consultation ? { topicId: consultationOpportunity.action.consultation.topicId, question: consultationOpportunity.action.consultation.question, sourceOpportunity: consultationOpportunity.action.consultation.sourceOpportunity } : undefined } : undefined };
           receipt = D().submitHuman(D().ticket(ch, request));
         } else if (button.dataset.dailyCancel) receipt = D().submitHuman(button.dataset.dailyCancel);
         else if (button.dataset.dailyAnswer || button.dataset.dailyExchange) {

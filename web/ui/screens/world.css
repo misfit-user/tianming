@@ -134,3 +134,5 @@
 
 /* 图上不画案上牙牌（器物在书房里，入图时不在画面上） */
 .scr-desk.home-map.inmap > .tags, .scr-desk.home-map.flying > .tags { display: none; }
+/* 主动回案时提纲收起，让出案上器物（奏折、花笺都在右上） */
+.scr-desk.home-map:not(.inmap) .hm-outline { display: none; }

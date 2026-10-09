@@ -237,8 +237,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 案上之事（批阅、撰写、传书、召对、朝议……）：在图上就快切升起书房；事毕书案重亮、别无他景接手时回图
   // 案上之事的页面看到的身份档：舆图为家、从图上来的，「回某」写回舆图
   function sceneProfile() { return homeMap() && !deskVisit ? { ...prof, desk: '舆图' } : prof; }
-  function toStudyIfHome() {
-    if (homeMap() && dive.mode === 'map' && !dive.busy) dive.toStudy();
+  // 正在回图的半途（busy）又点了案上之事：等这一程走完再升起书房，免得页面开在看不见的书房里
+  async function toStudyIfHome() {
+    if (!homeMap()) return;
+    homeTok++;                                       // 撤掉待发的回图
+    while (dive.busy) await new Promise((r) => setTimeout(r, 50));
+    if (dive.mode === 'map') await dive.toStudy();
   }
   let homeTok = 0;
   function backHome() {

@@ -204,3 +204,11 @@ select.st-in:disabled { opacity: .45; cursor: default; }
 .gz-back button { padding: .0625rem .5rem; border: 0; cursor: pointer; font: var(--fs-1) var(--f-kai); color: var(--ink-soft); background: transparent; box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
 .gz-back button.on { color: #f9ead2; background: #6b4a2a; box-shadow: none; }
 .gz-item.hot b { color: #7d1d12; }
+/* 典章·推演之法 */
+.st-ta { width: 100%; resize: vertical; font: var(--fs-2)/1.7 var(--f-kai); }
+.st-nums { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; }
+.st-num { display: inline-flex; align-items: baseline; gap: .375rem; font-size: var(--fs-2); color: var(--ink-soft); }
+.st-num .st-in { flex: none; text-align: right; }
+.st-num small { font-size: var(--fs-1); color: var(--ink-faint); }
+.st-more { margin-top: .5rem; }
+.st-more > summary { cursor: pointer; padding: .375rem 0; font: 400 var(--fs-3) var(--f-title); letter-spacing: .2em; color: #6a1f12; }

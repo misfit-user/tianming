@@ -219,6 +219,60 @@ export function setToggle(key, on) {
   w._togglePConf(key, !!on);
 }
 
+// ---------- 推演之法（老设置面板的文风、模式、AI 深度、篇幅、省道长官、记忆容量、回合读取、预算档位诸节） ----------
+// 键名与取值照老「保存所有设置」与 _tmSetCircuitGovernor*：写 P.conf 后 saveP；数值照老面板的上下限收拢
+export const STYLES = ['文学化', '史书体', '戏剧化', '章回体', '纪传体', '白话文'];
+const NUMS = {
+  qijuLookback: [5, 1, 30], shijiLookback: [5, 1, 30],
+  memoryAnchorKeep: [40, 10, 200], memoryArchiveKeep: [20, 5, 100], characterArcKeep: [10, 3, 50],
+  playerDecisionKeep: [30, 5, 100], chronicleKeep: [10, 3, 50], convKeep: [40, 10, 200],
+  turnTokenBudget: [0, 0, 10000000], contextSizeK: [0, 0, 4096], maxOutputTokens: [0, 0, 1000000]
+};
+export function inference() {
+  const c = conf();
+  const diff = String(c.difficulty || '');
+  const nums = {};
+  for (const [k, [def]] of Object.entries(NUMS)) nums[k] = Number.isFinite(Number(c[k])) && c[k] !== '' ? Number(c[k]) : def;
+  return {
+    style: STYLES.includes(c.style) ? c.style : c.style === '戯剧化' ? '戏剧化' : (c.style || '文学化'),
+    difficulty: /^(narrative|简单|叙事)$/.test(diff) ? 'narrative' : /^(hardcore|困难|地狱|硬核)$/.test(diff) ? 'hardcore' : 'standard',
+    customStyle: String(c.customStyle || ''),
+    gameMode: ['yanyi', 'light_hist', 'strict_hist'].includes(c.gameMode) ? c.gameMode : 'yanyi',
+    aiCallDepth: ['full', 'standard', 'lite'].includes(c.aiCallDepth) ? c.aiCallDepth : 'full',
+    verbosity: ['concise', 'standard', 'detailed', 'custom'].includes(c.verbosity) ? c.verbosity : 'standard',
+    governor: c.circuitGovernorEffects !== false,
+    governorStrength: ['light', 'normal', 'strong'].includes(c.circuitGovernorStrength) ? c.circuitGovernorStrength : 'normal',
+    modelTier: ['auto', 'high', 'medium', 'low'].includes(c.modelTier) ? c.modelTier : 'auto',
+    summaryRule: String(c.summaryRule || ''),
+    nums
+  };
+}
+export function setInference(key, value) {
+  const P = w.P;
+  if (!P) throw new Error('内核未就绪');
+  if (!P.conf) P.conf = {};
+  if (key === 'governor') {
+    if (typeof w._togglePConf !== 'function') throw new Error('内核缺 _togglePConf');
+    w._togglePConf('circuitGovernorEffects', !!value);
+    return;
+  }
+  if (key === 'governorStrength') {
+    if (typeof w._tmSetCircuitGovernorStrength !== 'function') throw new Error('内核缺省道长官力度写口');
+    w._tmSetCircuitGovernorStrength(value);
+    return;
+  }
+  if (NUMS[key]) {
+    const [def, lo, hi] = NUMS[key];
+    const n = Math.round(Number(value));
+    P.conf[key] = Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : def;
+  } else if (['style', 'difficulty', 'customStyle', 'gameMode', 'aiCallDepth', 'verbosity', 'modelTier', 'summaryRule'].includes(key)) {
+    P.conf[key] = String(value == null ? '' : value);
+  } else {
+    throw new Error(`未知设置：${key}`);
+  }
+  if (typeof w.saveP === 'function') w.saveP();
+}
+
 // ---------- 声音（AudioSystem） ----------
 export function audio() {
   const a = w.AudioSystem;

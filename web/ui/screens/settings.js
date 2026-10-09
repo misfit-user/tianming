@@ -21,12 +21,13 @@ export function openSettings({ tab = 'ai' } = {}) {
   let tier = 'primary';
 
   function renderTabs() {
-    replaceChildren(tabs, [['ai', '推演之器'], ['view', '画面声音'], ['play', '玩法']].map(([k, label]) =>
+    replaceChildren(tabs, [['ai', '推演之器'], ['infer', '推演之法'], ['view', '画面声音'], ['play', '玩法']].map(([k, label]) =>
       h('button' + (k === current ? '.on' : ''), { type: 'button', onclick: () => { current = k; renderTabs(); render(); } }, label)));
   }
   function render() {
     if (current === 'ai') replaceChildren(body, aiPane());
     else if (current === 'view') replaceChildren(body, viewPane());
+    else if (current === 'infer') replaceChildren(body, inferPane());
     else replaceChildren(body, playPane());
   }
 
@@ -151,6 +152,42 @@ export function openSettings({ tab = 'ai' } = {}) {
       row('动效', kaiguan('少动效（只留淡入淡出）', { checked: getSetting('motion') === 'less', onchange: (on) => setSetting('motion', on ? 'less' : 'full') })),
       a ? row('殿乐', h('div.st-inline', kaiguan('', { checked: a.music, onchange: (on) => cfg.setAudio({ music: on }) }), vol(a.musicVolume, 'musicVolume'))) : null,
       a ? row('音效', h('div.st-inline', kaiguan('', { checked: a.sound, onchange: (on) => cfg.setAudio({ sound: on }) }), vol(a.soundVolume, 'soundVolume'))) : null);
+  }
+
+  // ---------- 推演之法 ----------
+  // 随改随存（写 P.conf），作用于此后的推演
+  function inferPane() {
+    const s = cfg.inference();
+    const set = (key, value) => { try { cfg.setInference(key, value); } catch (e) { toast(e.message); } };
+    const pick = (key, items) => qianzi(items.map(([value, label]) => ({ value, label })), { value: s[key], onchange: (v) => set(key, v) });
+    const numIn = (key, label, note) => {
+      const el = input(String(s.nums[key]), { type: 'number', width: '6rem' });
+      el.addEventListener('change', () => { set(key, el.value); el.value = String(cfg.inference().nums[key]); });
+      return h('label.st-num', h('span', label), el, note ? h('small', note) : null);
+    };
+    const custom = h('textarea.st-in.st-ta', { rows: 2, placeholder: '另述文风，如：仿《资治通鉴》笔法，简括凝重' });
+    custom.value = s.customStyle;
+    custom.addEventListener('change', () => set('customStyle', custom.value));
+    const verbs = [['concise', '精简'], ['standard', '标准'], ['detailed', '详尽']];
+    if (s.verbosity === 'custom') verbs.push(['custom', '自定义']);
+    return h('div.st-form',
+      h('p.st-lead', '诸项随改随存，作用于此后的推演。'),
+      row('文风', pick('style', cfg.STYLES.map((x) => [x, x])), '推演叙事的笔调。'),
+      row('自定文风', custom, '留空则只用上面所选。'),
+      row('难度', pick('difficulty', [['narrative', '叙事·温和'], ['standard', '标准'], ['hardcore', '硬核']])),
+      row('模式', pick('gameMode', [['yanyi', '演义'], ['light_hist', '轻度史实'], ['strict_hist', '严格史实']]), '严格史实下奏报会失真，须查访方知实情。'),
+      row('推演深度', pick('aiCallDepth', [['full', '完整'], ['standard', '标准'], ['lite', '精简']]), '完整每回合约十八次调用；标准约十四次（合并后续推演）；精简约十次（略去部分人物后续推演）。越精简越省，所知越少。'),
+      row('篇幅', pick('verbosity', verbs), '实录、时政记、文书、问对等的长短：精简约六成、详尽约一倍半。'),
+      row('省道长官', h('div.st-inline', kaiguan('履职', { checked: s.governor, onchange: (on) => set('governor', on) }), pick('governorStrength', [['light', '轻'], ['normal', '中'], ['strong', '强']])),
+        '各道主官的称职与失职只作用本道，离驻地越远越弱。力度：执行率每月至多变动一个半、三、六个百分点。'),
+      h('details.st-more',
+        h('summary', '细项（记忆、读取、预算）'),
+        row('回合读取', h('div.st-nums', numIn('qijuLookback', '起居注'), numIn('shijiLookback', '史记')), '推演时回看最近几回合的起居注与史记。'),
+        row('记忆容量', h('div.st-nums', numIn('memoryAnchorKeep', '记忆锚点'), numIn('memoryArchiveKeep', '年代归档'), numIn('characterArcKeep', '角色弧线'),
+          numIn('playerDecisionKeep', '决策记录'), numIn('chronicleKeep', '叙事记忆'), numIn('convKeep', '对话历史')), '超过所设回合数的记忆压缩为年代摘要。'),
+        row('预算档位', h('div.st-nums', numIn('turnTokenBudget', '每回合预算', '零为不限'), numIn('contextSizeK', '上下文（K）', '零为自动'), numIn('maxOutputTokens', '输出上限', '零为自动')),
+          '预算超支只示警、不阻断。上下文、输出上限留零则按模型探测。'),
+        row('模型档位', pick('modelTier', [['auto', '自动'], ['high', '高'], ['medium', '中'], ['low', '低']]), '手动指定时按此裁剪结构化输出。')));
   }
 
   // ---------- 玩法 ----------

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "candidateBase": "d8915fa67493d1003ededdf5182f8cc6994eda2c",
+  "candidateBranch": "codex/npc-life-candidate-20261010",
+  "candidateHeadBeforeDocsCommit": "a0424d59",
+  "officialScenario": {
+    "id": "sc-jianyan1-1127-shaosong",
+    "name": "绍宋·建炎元年八月",
+    "population": 513,
+    "factions": 39,
+    "actor": {"id": "char_jianyan1_16", "name": "韩世忠"},
+    "target": {"id": "char_jianyan1_18", "name": "张俊"}
+  },
+  "flows": [
+    {
+      "id": "private_meeting",
+      "status": "production_module_pass",
+      "sourcePlanId": "plan:official-composite:assistance",
+      "materialId": "daily-document:official-composite:perform:3",
+      "meetingPlanId": "plan:official-composite:meeting",
+      "topicId": "reading_understanding",
+      "discussionResultId": "meeting-discussion:plan:official-composite:meeting:1",
+      "finalStatus": "done",
+      "simDay": 8,
+      "turn": 9,
+      "modelAttempts": 0,
+      "formalUi": "pending_electron_runtime"
+    },
+    {
+      "id": "office_constraint",
+      "status": "production_module_pass",
+      "positive": "field/explicitly allowed holder starts route",
+      "negative": "resident holder without leave remains waiting_departure",
+      "formalUi": "not_run"
+    },
+    {
+      "id": "important_change_planning",
+      "status": "production_module_pass",
+      "evidence": [
+        "delivered important source creates one bounded planning request",
+        "dependent step waits for actual first response",
+        "late result is rejected after same-save dependency change",
+        "ordinary continuation does not call model again"
+      ],
+      "formalUi": "not_run"
+    }
+  ],
+  "saveRestore": {
+    "formalElectron": "blocked_missing_electron_binary",
+    "productionModuleReload": "covered_by_prior_lifecycle_and_ai-routing_smokes",
+    "newCompositeFullReload": "not_run"
+  },
+  "api": {
+    "ordinaryCompositeAttempts": 0,
+    "externalNetwork": "denied_or_not_used_in_production-module-smoke",
+    "fullWorldOffline": false
+  }
+}

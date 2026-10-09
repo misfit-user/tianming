@@ -1,9 +1,10 @@
 // 人物图志：一本绫裱册页。左页一叶叶立轴小像（可按势力、排序、搜索、显已殁筛，翻页），右页是选中之人的小传：
 // 身份、处境、心性（忠诚、野心）、才具六项与五常（九品刻度）、名望贤能廉、特质、交游、生平。
-// 问对、传书转召对、鸿雁两页，详传翻列传。数据经 game.select.people()。
+// 问对、传书转召对、鸿雁两页，详传翻列传。卷首「策名」可把历史人物纳入名册（screens/ceming.js）。数据经 game.select.people()。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { zhou, pin, qianzi, kaiguan, juan } from '../kit/index.js';
+import { openCeming } from './ceming.js';
 
 const PER_PAGE = 18;
 const SORTS = [['rank', '品秩'], ['loyalty', '忠诚'], ['智', '智'], ['政', '政'], ['军', '军'], ['ambition', '野心']];
@@ -25,7 +26,8 @@ export function createAtlas({ root, game, onLetter, onAudience, onBio }) {
   const prevBtn = h('button.ce-turn', { type: 'button', title: '上一叶', onclick: () => turn(-1) }, '‹');
   const nextBtn = h('button.ce-turn', { type: 'button', title: '下一叶', onclick: () => turn(1) }, '›');
   const left = h('section.ce-leaf.left',
-    h('header.ce-head', h('h2', '人物图志'), count),
+    h('header.ce-head', h('h2', '人物图志'), count,
+      game.ceming && game.ceming.ready() ? h('button.q-yapai.ce-ceming', { type: 'button', title: '策名：把历史人物纳入名册（不授官）', onclick: () => openCeming({ game, onBio: (name) => { hide(); if (onBio) onBio(name); } }) }, '策名') : null),
     h('div.ce-tools', search, deadSw),
     h('div.ce-sorts', h('span', '排'), sorts),
     facBox, grid,

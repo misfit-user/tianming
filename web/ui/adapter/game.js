@@ -58,6 +58,7 @@ import * as prison from './prison.js';
 import * as endgame from './endgame.js';
 import * as fangzhi from './fangzhi.js';
 import * as yingzao from './yingzao.js';
+import * as ceming from './ceming.js';
 
 const w = window;
 let ready = null;
@@ -349,7 +350,7 @@ function setViewAs(ref) {
 }
 
 export const game = {
-  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, prison, endgame, fangzhi, yingzao, wenyuan, keju, gaizhi, turn, battle, keyi, wentian, gongwei, help, perspective, setViewAs,
+  boot, scenarios, newGame, advance, leave, saves, act, select, config, edict, letters, audience, offices, fiscal, court, army, guoshi, realm, social, archive, bio, mizhao, prison, endgame, fangzhi, yingzao, ceming, wenyuan, keju, gaizhi, turn, battle, keyi, wentian, gongwei, help, perspective, setViewAs,
   // 书案显隐时告知内核「是否在局中的案前」（内核的 Esc 暂停、Ctrl+S 案卷等快捷键据此生效）
   setSurface: setGameSurface,
   get viewAs() { return viewAs; },

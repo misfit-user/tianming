@@ -73,3 +73,37 @@
 .ce-bio { max-height: 9.5rem; overflow: auto; white-space: pre-wrap; }
 .ce-acts { display: flex; gap: .75rem; margin-top: .25rem; }
 .ce-acts .q-yapai { cursor: pointer; }
+/* 卷首「策名」 */
+.ce-head .ce-ceming { margin-left: auto; flex: none; }
+/* 策名卷：档案（检、朝代、类型、卡）、检索、身份卡 */
+.cm { display: flex; flex-direction: column; gap: .625rem; min-height: 0; }
+.cm-body { display: flex; flex-direction: column; gap: .5rem; min-height: 0; }
+.cm-tools { display: flex; gap: .5rem; align-items: center; }
+.cm-in { flex: 1; min-width: 0; padding: .3125rem .5rem; border: 0; font: var(--fs-3) var(--f-kai); color: var(--ink); background: rgba(255, 252, 244, .85); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+.cm-in:focus { outline: none; box-shadow: inset 0 0 0 1px #a3301f; }
+.cm-sel { flex: 0 0 11rem; }
+.cm-roles .q-qianzi { flex-wrap: wrap; }
+.cm-count { font-size: var(--fs-1); color: var(--ink-faint); }
+.cm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr)); gap: .5rem; }
+.cm-card { display: flex; flex-direction: column; align-items: flex-start; gap: .125rem; padding: .5rem .625rem; border: 0; cursor: pointer; text-align: left; font-family: var(--f-kai); color: var(--ink);
+  background: rgba(255, 250, 238, .6); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
+.cm-card:hover:not(:disabled) { background: rgba(255, 246, 226, .95); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .35); }
+.cm-card b { font: 400 var(--fs-4) var(--f-title); color: #2a1608; }
+.cm-card b small { margin-left: .375rem; font: var(--fs-1) var(--f-kai); color: var(--ink-faint); }
+.cm-card span { font-size: var(--fs-2); color: var(--ink-soft); }
+.cm-card em { font-style: normal; padding: 0 .375rem; font-size: var(--fs-1); color: #f9ead2; background: #6b4a2a; }
+.cm-card i { font-style: normal; font-size: var(--fs-1); color: #a3301f; }
+.cm-card.off { opacity: .5; cursor: not-allowed; }
+.cm-note, .cm-wait { margin: 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.cm-wait { padding: 2rem 0; text-align: center; color: #6a1f12; }
+.cm-warn { margin: 0; font-size: var(--fs-2); color: #a3301f; }
+.cm-id header h3 { margin: 0; font: 400 var(--fs-6) var(--f-title); letter-spacing: .15em; color: #2a1608; }
+.cm-id header h3 small { margin-left: .5rem; font: var(--fs-2) var(--f-kai); letter-spacing: 0; color: var(--ink-faint); }
+.cm-id header h3 em { font-style: normal; margin-left: .5rem; font: var(--fs-1) var(--f-kai); color: #a3301f; }
+.cm-id header p { margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.cm-facts { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: .375rem .75rem; margin: .75rem 0; }
+.cm-facts dt { font: var(--fs-2) var(--f-title); letter-spacing: .15em; color: #6a1f12; }
+.cm-facts dd { margin: 0; font-size: var(--fs-3); line-height: 1.8; color: var(--ink); }
+.cm-anchors h5 { margin: 0 0 .25rem; font: 400 var(--fs-3) var(--f-title); color: #6a1f12; }
+.cm-anchors p { margin: .125rem 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.cm-acts { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .75rem; }

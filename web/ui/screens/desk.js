@@ -32,6 +32,7 @@ import { createHelp } from './help.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
 import { createPrison } from './prison.js';
+import { createEndgame } from './endgame.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -457,6 +458,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   game.on('court:entered', () => el.classList.remove('on'));
   // 独召密问：选人选题一卷，入对后景同朝议
   createPrison({ game, profile: () => prof });     // 狱中问对：召对下狱之人时自起，不占书案
+  // 终局：一局到头时自起满屏一幅；回启幕不再问「未封存的进度将会失去」（局已终）
+  createEndgame({ root, game, onSaves: () => openSaves({ game, inGame: true }),
+    onLeave: () => game.leave().catch((err) => bus.emit('kernel:toast', { text: String(err && err.message || err) })) });
   const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => el.classList.remove('on'), onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('audience:open', () => el.classList.remove('on'));
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志

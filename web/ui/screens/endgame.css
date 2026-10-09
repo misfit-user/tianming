@@ -1,0 +1,66 @@
+/* 终局页：满屏一幅，墨色压底；左侧竖写大字，右侧一卷。在卷轴（z 40）之下，封存卷可叠在其上 */
+.scr-endgame { position: fixed; inset: 0; z-index: 36; display: grid; grid-template-columns: minmax(10rem, 22vw) minmax(0, 1fr); gap: 2.5rem;
+  padding: 4rem 5vw 3rem 3vw; color: #f3e6c8; opacity: 0; pointer-events: none; transition: opacity 1.4s var(--ease-in-out);
+  background: radial-gradient(ellipse at 20% 40%, rgba(90, 20, 12, .55), transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(10, 6, 4, .9), rgba(6, 3, 2, .97)); }
+.scr-endgame.on { opacity: 1; pointer-events: auto; }
+.scr-endgame.won { background: radial-gradient(ellipse at 20% 40%, rgba(140, 104, 40, .45), transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(14, 9, 4, .9), rgba(8, 5, 2, .97)); }
+
+.eg-side { display: flex; flex-direction: row-reverse; justify-content: center; align-items: flex-start; gap: 1.5rem; min-height: 0; }
+.eg-title { margin: 0; writing-mode: vertical-rl; letter-spacing: .35em; white-space: nowrap; font: 400 clamp(3.5rem, 7vw, 6.5rem)/1 var(--f-shu);
+  color: #c4412e; text-shadow: 0 .25rem 2rem rgba(0, 0, 0, .9); }
+.won .eg-title { color: #e2c46e; }
+.eg-title span { display: inline-block; opacity: 0; animation: eg-ink 1.2s var(--ease-out) forwards; }   /* 竖排里逐字落墨（别用 flex：竖排的 flex 列是横着排的） */
+.eg-title span:nth-child(2) { animation-delay: .35s; }
+.eg-title span:nth-child(3) { animation-delay: .7s; }
+.eg-title span:nth-child(4) { animation-delay: 1.05s; }
+@keyframes eg-ink { from { opacity: 0; filter: blur(.5rem); transform: translateY(-.25em); } to { opacity: 1; filter: none; transform: none; } }
+html[data-motion="less"] .eg-title span { animation: none; opacity: 1; }
+.eg-meta { writing-mode: vertical-rl; display: flex; flex-direction: column; gap: .75rem; padding-top: .5rem; font: var(--fs-3)/1.6 var(--f-kai); letter-spacing: .25em; color: rgba(243, 230, 200, .7); }
+
+.eg-sheet { min-height: 0; display: flex; flex-direction: column; gap: .875rem; padding: 1.75rem 2rem 1.25rem; color: var(--ink);
+  background: var(--paper, #f6efda); background-image: linear-gradient(180deg, rgba(255, 252, 240, .9), rgba(236, 225, 198, .95));
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, .7), inset 0 0 0 1px rgba(120, 90, 50, .35), inset 0 0 0 .375rem rgba(246, 239, 218, .9), inset 0 0 0 calc(.375rem + 1px) rgba(120, 90, 50, .25); }
+.eg-head { display: flex; flex-direction: column; gap: .5rem; }
+.eg-fail b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .2em; color: #7d1d12; }
+.eg-fail p { margin: .25rem 0 0; font-size: var(--fs-3); line-height: 1.8; color: var(--ink-soft); }
+.eg-goals { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: .375rem 1.25rem; font-size: var(--fs-3); color: #3f6e5e; }
+.eg-goals li::before { content: '成 '; font-family: var(--f-title); }
+.eg-fall { margin: 0; font-size: var(--fs-2); color: #8a5a12; letter-spacing: .05em; }
+.eg-tsg { padding: .75rem 1rem; background: rgba(255, 250, 238, .55); box-shadow: inset .25rem 0 0 #7d1d12; }
+.won .eg-tsg { box-shadow: inset .25rem 0 0 #a8833a; }
+.eg-tsg-h { display: block; margin-bottom: .375rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .4em; color: #3a1a10; }
+.eg-tsg-body p, .eg-wait { margin: 0 0 .375rem; font: var(--fs-3)/1.9 var(--f-kai); color: var(--ink); }
+.eg-tsg-body em { font-style: normal; font-family: var(--f-title); color: #7d1d12; margin-right: .25rem; }
+.eg-wait { color: var(--ink-faint); }
+.eg-pane { flex: 1; min-height: 8rem; overflow: auto; padding-right: .5rem; }
+.eg-note { margin: .5rem 0; font-size: var(--fs-2); color: var(--ink-faint); }
+.eg-vol { margin-bottom: 1rem; }
+.eg-vol h4 { margin: 0 0 .25rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
+.eg-vol h4 small { margin-left: .75rem; font: var(--fs-1) var(--f-kai); letter-spacing: .05em; color: var(--ink-faint); }
+.eg-vol p { margin: 0; font: var(--fs-3)/2 var(--f-kai); text-indent: 2em; white-space: pre-wrap; }
+.eg-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); gap: .5rem 1.5rem; }
+.eg-metric { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) 3rem; align-items: center; gap: .5rem; }
+.eg-metric b { font-weight: 400; font-size: var(--fs-2); color: var(--ink-soft); text-align: right; }
+.eg-metric svg { width: 100%; height: 2.25rem; }
+.eg-metric polyline { fill: none; stroke: #7d1d12; stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.eg-metric span { font-size: var(--fs-2); color: #7d1d12; }
+.eg-events { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .375rem; }
+.eg-events li { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: .75rem; font-size: var(--fs-2); line-height: 1.7; padding-left: .625rem; box-shadow: inset .1875rem 0 0 #a8833a; }
+.eg-events li.bad { box-shadow: inset .1875rem 0 0 #a3301f; }
+.eg-events li.good { box-shadow: inset .1875rem 0 0 #3f6e5e; }
+.eg-events small { color: var(--ink-faint); }
+.eg-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .25rem .75rem; }
+.eg-man { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .5rem; align-items: baseline; padding: .25rem .375rem; font-size: var(--fs-2); }
+.eg-man b { font-weight: 400; font-family: var(--f-title); }
+.eg-man small { color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eg-man span { color: #3f6e5e; font-size: var(--fs-1); }
+.eg-man.dead b { color: #6a5a4a; text-decoration: line-through rgba(125, 29, 18, .6); }
+.eg-man.dead span { color: #7d1d12; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eg-foot { display: flex; justify-content: flex-end; gap: .75rem; }
+.eg-realm { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem 2rem; margin: .25rem 0 .5rem; }
+.eg-gauge { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr) 4rem; grid-template-rows: auto auto; align-items: center; gap: .125rem .625rem; }
+.eg-gauge b { grid-row: 1 / 3; font: 400 var(--fs-4) var(--f-title); letter-spacing: .2em; color: #3a1a10; }
+.eg-gauge i { display: block; height: .5rem; background: rgba(120, 90, 50, .18); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.eg-gauge u { display: block; height: 100%; background: linear-gradient(90deg, #7d1d12, #a8833a); }
+.eg-gauge span { font-size: var(--fs-3); color: #7d1d12; text-align: right; white-space: nowrap; }
+.eg-gauge small { grid-column: 2 / 4; font-size: var(--fs-1); color: var(--ink-faint); }

@@ -131,3 +131,6 @@
 .scr-desk.home-map .hm-fold { display: block; position: absolute; left: .375rem; bottom: .375rem; z-index: 1; padding: .125rem .375rem; border: 0; cursor: pointer;
   font: var(--fs-1) var(--f-kai); color: #f9ead2; background: linear-gradient(180deg, #8f2a1b, #5e170d); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .45); }
 .scr-desk.home-map .dibao.shut .hm-fold { left: auto; right: .5rem; }
+
+/* 图上不画案上牙牌（器物在书房里，入图时不在画面上） */
+.scr-desk.home-map.inmap > .tags, .scr-desk.home-map.flying > .tags { display: none; }

@@ -45,12 +45,14 @@ const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势
 // 七种看法对应老舆图的计分（adapter mapLayer）；势力即本色，不另染
 const LAYER_MODE = { 民情: 'mood', 阶层: 'classPressure', 财赋: 'tax', 军务: 'army', 官守: 'office', 役政: 'yizheng', 势力: 'owner' };
 
+const sig4 = (v) => { const n = Number(v) || 0; if (Math.abs(n) < 1e4) return n; const p = 10 ** (Math.floor(Math.log10(Math.abs(n))) - 3); return Math.round(n / p) * p; };
 // 顶栏账簿：身份档的 ledger 列哪几本，这里就按键取
 const row = (r) => ({ k: r.label || r.k, v: r.value ?? r.v, d: r.delta ?? r.d, unit: r.unit });
 const LEDGERS = {
   treasury: (s) => zhang('帑廪', s.treasury().rows.map(row)),
   privy: (s) => zhang('内帑', s.privy().rows.map(row)),
-  census: (s) => { const c = s.census(); return zhang('户口', [{ k: '口', v: c.mouths }, { k: '丁', v: c.ding }]); },
+  // 户口在顶栏只看个大数：取四位有效数字（二千四百六十三万八千六百 → 二千四百六十四万），细数在度支册
+  census: (s) => { const c = s.census(); return zhang('户口', [{ k: '口', v: sig4(c.mouths) }, { k: '丁', v: sig4(c.ding) }]); },
   jurisdiction: (s, p) => {
     const j = p.governs[0] && s.jurisdiction(p.governs[0].id);
     if (!j) return null;
@@ -287,7 +289,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }).filter(Boolean));
     const gs = prof.gauges === 'realm' ? s.gauges() : s.person(per.id).gauges;
     // 国势四项点开即翻到国势册的那一项（元首档）
-    replaceChildren(gauges, gs.map((g) => {
+    // 精力居首（本人之数，与其后的国势或身家四项隔开）：召对、批阅等动作皆耗，原先只见耗费不见余量
+    const en = per.previewing ? null : s.energy();
+    const enPin = en ? pin('精力', Math.round(en.value / en.max * 100), { text: num(en.value) }) : null;
+    if (enPin) { enPin.classList.add('energy'); enPin.title = `精力 ${num(en.value)} / ${num(en.max)}`; }
+    replaceChildren(gauges, enPin, ...gs.map((g) => {
       const el = pin(g.label, g.value);
       if (prof.gauges === 'realm' && g.key && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => guoshiPage.show(g.key)); }
       return el;

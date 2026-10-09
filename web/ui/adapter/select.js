@@ -463,6 +463,15 @@ export function gazette(limit = 160) {
   });
 }
 
+// 精力：玩家本人的（GM._energy／_energyMax），召对、批阅、狱中问对等皆耗；各档皆有
+export function energy() {
+  const g = G();
+  const v = Number(g._energy);
+  if (!Number.isFinite(v)) return null;
+  const max = Number(g._energyMax) > 0 ? Number(g._energyMax) : 100;
+  return { value: Math.round(v), max: Math.round(max) };
+}
+
 // 风闻：老右栏「风闻情报」与左侧邸报流的同一份汇集（TMPhase8FormalBridge._collectRecentEvents：GM.evtLog——addEB 的唯一落点，
 // 成就、继位、里程碑、史事临御案都只播在这里——以及势力动态、回合人物动向、人物经历、承诺、心绪等），回合倒序、最多一百二十条。
 // lookback 为回看几回合（999 即全部）；hot 照老面板：题、类、文里有危乱叛灾兵饷腐急警者为「待察」

@@ -1,10 +1,11 @@
 // 方志：一府一州的志书，绫裱册页。左叶：页头（路径、名目、状态小签、隶属主官上官地形税级诸签、描述）、读数带、本道排名、六卷检签、页脚动作；
 // 右叶：所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）。
 // 据奏之数标「据奏」或「据报」。入口：入图后点府州小签。数据与动作经 game.fangzhi（adapter/fangzhi.js）。
+// 本方府州的营造卷可「兴造」：剧本工籍点选，或自拟营造（配了模型可先请有司核议），录入议事清册，颁行后由回合推演核办（game.yingzao）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
-import { juan } from '../kit/index.js';
+import { juan, qianzi, shu } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」），按记数设置改写
@@ -12,8 +13,10 @@ const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Nu
 // 数：大数取四位有效，按记数设置写；负数前加「−」；字照原样
 const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Math.abs(v) >= 1e4 ? roundSig(Math.abs(v), 4) : Math.round(Math.abs(v) * 10) / 10)}${unit || ''}` : `${v}${unit ? unit : ''}`);
 
-export function createFangzhi({ root, game, onPerson, onFaction }) {
+export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
   const F = game.fangzhi;
+  const Y = game.yingzao;
+  const suggestBook = () => { const p = typeof profile === 'function' ? profile() : profile; return (p && p.ling && p.ling.suggest) || '议事清册'; };
   let cur = null;          // 当前方志数据
   let vol = 'huyi';
   let mode = 'region';     // region 方志 | circuit 通志
@@ -87,6 +90,7 @@ export function createFangzhi({ root, game, onPerson, onFaction }) {
             wk.flowPct > 0 ? h('p.fz-wk-note', `工成之利：地方岁入每回合+${wk.flowPct}%`) : null,
             wk.progress != null ? h('div.fz-prog', h('i', { style: { width: `${wk.progress}%` } }), h('small', `余${num(wk.left)}回合`)) : null)))
         : h('p.fz-note', '此地尚无在册工役。'));
+      if (cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
     }
     replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
   }
@@ -108,6 +112,96 @@ export function createFangzhi({ root, game, onPerson, onFaction }) {
         h('p', `原隶${o.from || '本道'}。择所改隶之道（入议事清册，回合末三处同改：行政、舆图、省道）。`),
         near.length ? h('div', near.map((t) => h('button.q-yapai', { type: 'button', onclick: () => pick(t) }, t.label))) : h('p.fz-note', '无接壤之道。'),
         far.length ? h('details', h('summary', `另有${num(far.length)}道不接壤（成飞地）`), h('div', far.map((t) => h('button.q-yapai', { type: 'button', onclick: () => pick(t) }, t.label)))) : null)
+    });
+  }
+
+  // ---------- 兴造 ----------
+  function xingzao() {
+    let o = null;
+    try { o = Y.open(cur.liveName); } catch (e) { toast(e.message); return; }
+    if (!o) return;
+    const book = suggestBook();
+    const place = o.divName;
+    let busy = false;
+    const done = (ok) => {
+      if (!ok) return;
+      j.close('ok');
+      try { const d = F.region(cur.id); if (d) { cur = d; vol = 'yingzao'; renderLeft(); renderRight(); } } catch (_e) { /* 照旧 */ }
+    };
+    // 剧本工籍：点一件即录入
+    const pick = (b) => { let ok = false; try { ok = Y.submitCatalogue(b.index); } catch (e) { toast(e.message); return; } done(ok); };
+    const pre = h('div.yz-list', o.catalogue.length
+      ? o.catalogue.map((b) => h('button.yz-item', { type: 'button', title: `录入${book}`, onclick: () => pick(b) },
+          h('i.yz-cat', b.cat.slice(0, 2)),
+          h('div.yz-main', h('b', b.name), b.desc ? h('p', b.desc.length > 110 ? `${b.desc.slice(0, 110)}…` : b.desc) : null,
+            b.fx.length ? h('p.fz-fx', b.fx.map((x) => h('span', digits(String(x).replace(/\s+/g, ''))))) : null),
+          h('small.yz-meta', `基费${num(b.cost)}${o.unit}`, h('br'), `工期${num(b.time)}回合`, h('br'), `至${num(b.maxLevel)}级`)))
+      : h('p.fz-note', '剧本未定工籍——请转「自拟营造」。'));
+    // 自拟营造：名目、类属、规制；可请有司核议
+    const name = h('input.yz-in', { type: 'text', placeholder: '如：兴文馆／水车坊／义仓', maxlength: '24' });
+    const result = h('div.yz-result');
+    let verdict = null;            // 本稿的核议（改了规制即作废）
+    const stale = () => { if (verdict || result.childElementCount) { verdict = null; replaceChildren(result, h('p.fz-note', '规制已改，旧核议不再采用；可重新核议，或径直录入。')); } };
+    name.addEventListener('input', stale);
+    const cat = qianzi(Y.CATEGORIES.map((c) => ({ value: c.key, label: c.label })), { value: 'economic', onchange: stale });
+    const desc = shu({ placeholder: '告示有司：欲修何物、预期何效。例：修文馆以藏书刻版，供士子入内议事，以兴文风、安士心。', rows: 4, oninput: stale });
+    const req = () => ({ name: name.value.trim(), category: cat.getValue(), description: desc.value.trim() });
+    const filled = () => { const r = req(); if (!r.name || !r.description) { toast('请填写工役名目与规制'); return null; } return r; };
+    const appraiseBtn = o.agent ? h('button.q-yapai', { type: 'button', onclick: () => appraise() }, '请有司核议') : null;
+    async function appraise() {
+      const r = filled();
+      if (!r || busy) return;
+      busy = true;
+      appraiseBtn.disabled = true;
+      replaceChildren(result, h('p.fz-note', '有司勘议中……'));
+      let a = null;
+      try { a = await Y.appraise(r); } catch (e) { a = { ok: false, reason: e.message }; }
+      busy = false;
+      appraiseBtn.disabled = false;
+      if (a.stale || !result.isConnected) return;
+      const now = req();
+      if (now.name !== r.name || now.category !== r.category || now.description !== r.description) return;   // 核议中改了规制
+      if (!a.ok) { verdict = null; replaceChildren(result, h('p.yz-fail', `有司未能核议：${a.reason}。可径直录入，由回合推演核定。`)); return; }
+      verdict = a.appraisal;
+      const v = verdict;
+      const tone = v.feasibility === '不合理' ? 'bad' : v.feasibility === '勉强' ? 'mid' : 'good';
+      replaceChildren(result, h('div.yz-verdict.' + tone,
+        h('p.yz-vhead', h('b', v.feasibility), v.cost != null ? h('span', `估造价${num(v.cost)}${o.unit}`) : null, v.time != null ? h('span', `工期${num(v.time)}回合`) : null),
+        v.labels.length ? h('p.fz-fx', v.labels.map((x) => h('span', digits(x.replace(/\s+/g, ''))))) : v.trimmed ? h('p.yz-fail', '所拟效用越出可落之账，已削为纯叙事工役。') : null,
+        v.effects ? h('p', v.effects) : null,
+        v.reason ? h('p.yz-judge', `判语：${v.reason}`) : null,
+        v.upkeep != null ? h('p.fz-note', `完工后地方养护约每回合${num(v.upkeep)}${o.unit}，以落账为准。`) : null,
+        h('p.fz-note', v.feasibility === '不合理' ? '有司核为不合理，录入时不附核议；可改规制后重核。' : `录入时附此核议，供颁行时参考；此处不扣款、不计工期。`)));
+    }
+    const submit = () => { const r = filled(); if (!r || busy) return; let ok = false; try { ok = Y.submitCustom(r); } catch (e) { toast(e.message); return; } done(ok); };
+    const cus = h('div.yz-cus',
+      h('label.yz-field', h('small', '工役名目'), name),
+      h('div.yz-field', h('small', '类属'), cat),
+      h('label.yz-field', h('small', '规制与所求'), desc),
+      h('p.yz-rule', '有司核定之制：颁行后由有司核其合理与否（合理、勉强、不合理），定实际造价与工期；效用只落在可记之账（田亩、商贸、盐铁、城防、驿路、解额、募兵、民心、吏治等），且以费用为度，小费小效、大费大效。变更制度风气者（如新式学堂、译书馆），可立持续全局之「国是·风气」，然必招既得之众阻挠。'),
+      h('div.fz-acts', appraiseBtn, h('button.q-yapai', { type: 'button', onclick: submit }, `录入${book}`)),
+      result);
+    // 已立之制与学统风气：两页共见
+    const rulesEl = o.rules.length ? h('section.yz-aside', h('h4', '国是 · 风气', h('small', '已立之制，持续生效')),
+      o.rules.map((c) => h('div.yz-rule-card', h('p', h('b', c.name), h('em', c.status), h('small', `扎根${num(c.strength)}`)),
+        h('i.yz-bar', h('i', { style: { width: `${Math.max(2, Math.min(100, c.strength))}%` } })),
+        c.tends.length ? h('p.fz-fx', c.tends.map((t) => h('span', t))) : null,
+        c.resist ? h('p.yz-fail', `阻力：${c.resist}`) : null))) : null;
+    const tl = o.talent;
+    const talentEl = tl ? h('section.yz-aside', h('h4', '人才与风气', h('small', '学统格局：学堂育才，历练渐渗')),
+      tl.emergent.map((x) => h('div.yz-rule-card', h('p', h('b', x.label), h('em', x.tier), h('small', `渗透${x.pct}%`)),
+        h('i.yz-bar', h('i', { style: { width: `${Math.max(2, Math.min(100, x.pct))}%` } })),
+        h('p.fz-note', `有效${num(x.stock)}　成熟${num(x.mature)}　在训${num(x.training)}　失业${num(x.idle)}　年招${num(x.intake)}　培养${num(x.quality)}%`))),
+      tl.established.map((x) => h('p.fz-note', `既有正统　${x.label}　存量约${num(x.stock)}`)),
+      tl.tends.length ? h('p.fz-fx', tl.tends.map((t) => h('span', `${t.key}+${t.pct}%`))) : null) : null;
+    const panes = { pre, cus };
+    const pane = h('div.yz-pane');
+    const tabs = qianzi([{ value: 'pre', label: '剧本工籍' }, { value: 'cus', label: '自拟营造' }], { value: o.catalogue.length ? 'pre' : 'cus', onchange: (v) => replaceChildren(pane, panes[v]) });
+    replaceChildren(pane, panes[tabs.getValue()]);
+    const j = juan({
+      title: '兴造', note: `于${place}营造工役 · 录入${book}，颁行后由回合推演核办`, width: '44rem',
+      content: h('div.yz', tabs, pane, rulesEl, talentEl, h('p.fz-note', '此处只拟案，不扣款、不计工期。')),
+      onclose: () => Y.close(o.ticket)
     });
   }
 

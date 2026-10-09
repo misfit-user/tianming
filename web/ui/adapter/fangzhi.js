@@ -359,7 +359,8 @@ function worksOf(r, b) {
   (Array.isArray(g._edictSuggestions) ? g._edictSuggestions : []).forEach((s) => {
     if (!s || s.used || s.from !== divName || String(s.source || '') !== '工程') return;
     const order = w.TM && w.TM.BuildingOrders && w.TM.BuildingOrders.list(g).find((o) => o.id === s.buildingOrderId);
-    out.push({ name: order ? order.req.name : String(s.content || '营造案').slice(0, 24), level: '营造案', status: (order && ST[order.status]) || '候诏', tone: 'doing', proposal: true, fx: [], applied: [] });
+    out.push({ name: order ? order.req.name : String(s.content || '营造案').slice(0, 24), level: '营造案', status: (order && ST[order.status]) || '候诏', tone: 'doing', proposal: true, fx: [], applied: [],
+      desc: order && order.receipt && order.receipt.reason ? String(order.receipt.reason) : '已入清册，候颁行后由有司核定造价、工期与效用。' });
   });
   return out;
 }

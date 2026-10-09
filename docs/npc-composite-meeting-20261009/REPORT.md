@@ -5,7 +5,8 @@
 - 上一轮本地规划连续执行基线：`ae156eb2`（`fix: continue NPC planning from verified results`）。
 - 本 worktree：`codex/npc-planning-continuity-20261007`。
 - 开工时 HEAD 为 `ae156eb2`；未强制回退到外部旧主线 `5d4d66b3`。
-- 本轮未 push、未创建 PR、未合并、未部署。`origin/main` 在核查期间继续前进，当前本分支相对它为 ahead 1 / behind 7；未做 rebase/pull。
+- 最终实现提交为 `c65e43d6` 与 `b0d65815`；最终 HEAD 以本报告所在提交为准。
+- 本轮未 push、未创建 PR、未合并、未部署。最终本分支相对当时 `origin/main` 为 ahead 3 / behind 7；未做 rebase/pull。
 - 主工作区 `C:\Users\37814\Desktop\tianming` 的既有修改未触碰。
 
 ## 接线
@@ -65,6 +66,8 @@
 - `node scripts/verify-release-contract.js`：182 assertions。
 - `node web/scripts/verify-official-scenario-parity.js`：41 assertions。
 - startup/native manifests 与 `node scripts/sync-hot-baseline.js --check --version 1.3.5.3`：通过；缺席资产按项目规则容忍 595 条，现场文件 hash/size 严格核对。
+
+最终 `node web/scripts/ci-smokes.js --jobs 2` 在 `b0d65815` 上完成：1155 PASS、2 FAIL、2 WAIVED / 1159。新增 `smoke-npc-composite-official.js` 在全量 runner 中 PASS。两个失败均为既有测试读取缺席派生文件 `web/bundled-scenarios/天启七年·九月（官方）.json`（`smoke-division-reassign.js`、`smoke-map-route-days.js`），没有修改或豁免它们。
 
 ## 限制与遗留
 

@@ -10,6 +10,20 @@ const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
 const n0 = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) ? n : fb; };
 const r = (v) => Math.round(n0(v));
+
+// 历代案例库（内核 PhaseG1.HISTORICAL_CASES、PhaseG3.ABDUCTION_12_CASES）的结局写的是英文键名，老抽屉照印；
+// 这里译成中文。权臣、暴君、谏臣、民变四类共一张表；未收的键原样留着（多是本来就写中文的）
+const CASE_END = {
+  natural_death: '善终', usurped: '篡位自立', usurpation_failed: '谋篡未遂', son_usurped: '其子篡位', descendants_usurped: '子孙篡位',
+  assassination: '遇刺', executed: '被诛', killed: '被杀', suicide: '自尽', exile: '流放', demoted: '贬黜',
+  posthumous_purge: '身后清算', posthumous_demote: '身后追贬', awakened: '晚年悔悟', usurped_by_zhaogao: '为赵高所弑',
+  hailed: '为世所称', hailed_model: '传为楷模', executed_10_clans: '诛十族', removed: '罢官', mixed: '毁誉参半',
+  later_killed: '后遭杀害', imprisoned_died: '下狱而死',
+  suppressed: '被平', suppressed_by_qing: '为清所平', triggered_collapse: '王朝由此崩解', weakened_dynasty: '国势由此中衰',
+  founded_han: '终开汉业', founded_tang: '终开唐业', founded_ming: '终开明业'
+};
+const caseEnd = (k) => CASE_END[k] || String(k || '不详');
+const caseWhen = (c) => `${c.dynasty || ''} ${c.year < 0 ? `前${-c.year}` : c.year}年`.trim();
 const pct100 = (v) => `${Math.round(n0(v) * 100)}%`;
 const fmt = (v) => { const n = n0(v); const a = Math.abs(n); return a >= 1e8 ? `${(n / 1e8).toFixed(2)}亿` : a >= 1e4 ? `${(n / 1e4).toFixed(1)}万` : String(Math.round(n)); };
 const signed = (v) => `${v >= 0 ? '+' : ''}${n0(v).toFixed(1)}`;
@@ -86,7 +100,7 @@ function lizhi() {
   if (g.juanna && g.juanna.active) sections.push({ kind: 'alert', title: '捐纳', lines: [`捐纳（卖官）已开——月入 ${Math.round(n0(g.juanna.monthlyIncome) / 1000)} 千两 · 长期腐败`] });
   const facs = c.entrenchedFactions || [];
   if (facs.length) sections.push({ kind: 'list', title: '腐败集团', badge: `${facs.length} 个`, tone: 'bad',
-    items: facs.map((f) => ({ title: f.name || '某集团', meta: `部门：${f.dept || '—'} · 势力：${n0(f.strength)} · 历时：${n0(f.years)} 年` })) });
+    items: facs.map((f) => ({ title: f.name || '某集团', meta: `部门：${DEPT_NAME[f.dept] || f.dept || '—'} · 势力：${n0(f.strength)} · 历时：${n0(f.years)} 年` })) });
   sections.push({ kind: 'hints', title: '如何措置', items: [
     ['写诏（派钦差/肃贪/俸禄改革/开罢捐纳/酷吏/特务 皆由诏令发起）', 'edict'], ['看奏疏（御史/监察/科道 的弹劾与建言）', 'docket'],
     ['问对御史大夫/都察院 察朝政风气', 'audience'], ['朝议（设特务机构/肃贪运动 等重大争议）', 'court']
@@ -153,7 +167,7 @@ function minxin() {
   if (g.huangwei && g.huangwei.tyrantSyndrome && g.huangwei.tyrantSyndrome.active && FLAT.length) sections.push({ kind: 'quotes', title: '粉饰辞藻 · 暴君段常见', items: FLAT.slice(0, 5) });
   if ((g._fengwenRecord || []).length) sections.push({ kind: 'list', title: '风闻录事', badge: '近 15', items: g._fengwenRecord.slice(-15).reverse().map((f) => ({ title: String(f.text || ''), meta: `${f.type || ''}·T${f.turn}` })) });
   const HC = (w.PhaseG1 && w.PhaseG1.HISTORICAL_CASES) || {};
-  if ((HC.rebellion || []).length) sections.push({ kind: 'cases', title: '历代民变 · 鉴古', badge: String(HC.rebellion.length), items: HC.rebellion.slice(0, 15).map((c) => `［L${c.level}］${c.name}（${c.dynasty} ${c.year}）因 ${c.cause || ''} → ${c.result || ''}`) });
+  if ((HC.rebellion || []).length) sections.push({ kind: 'cases', title: '历代民变 · 鉴古', badge: String(HC.rebellion.length), items: HC.rebellion.slice(0, 15).map((c) => `${c.name}（${caseWhen(c)}）${c.level ? `烈度${'一二三四五'[c.level - 1] || c.level}·` : ''}因${c.cause || '不详'} → ${caseEnd(c.result)}`) });
   return {
     key: 'minxin', title: '民心', sub: flip ? `视 ${r(p)} · ${mxBand(p)}` : `真 ${r(t)} · 视 ${r(p)} · ${MX_PHASE[m.phase] || m.phase || ''}`, rows, sealed: flip, sealedNote: SEALED_NOTE,
     spectrum: { bands: [['揭竿', 0, 20, 'bad'], ['窃盗', 20, 40, 'warn'], ['忍耐', 40, 60, 'mid'], ['安居', 60, 80, 'good'], ['颂圣', 80, 100, 'gold']], mark: shown },
@@ -192,7 +206,7 @@ function huangquan() {
   const ab = (g._abductions || []).filter((a) => n0(g.turn) - n0(a.turn) < 6 && !a.status);
   if (ab.length) sections.push({ kind: 'list', title: '抗疏', badge: String(ab.length), tone: 'bad', go: 'docket', items: ab.map((a) => ({ title: a.objector || '某官', meta: `${String(a.content || '').slice(0, 80)}…`, tone: 'bad' })) });
   const AB12 = (w.PhaseG3 && w.PhaseG3.ABDUCTION_12_CASES) || [];
-  if (AB12.length) sections.push({ kind: 'cases', title: '十二抗疏典范', badge: '历代', items: AB12.map((c) => `${c.name}（${c.dynasty} ${c.year}）→ ${c.outcome || ''}`) });
+  if (AB12.length) sections.push({ kind: 'cases', title: '十二抗疏典范', badge: '历代', items: AB12.map((c) => `${c.name}（${caseWhen(c)}）→ ${caseEnd(c.outcome)}${c.description ? `：${c.description}` : ''}`) });
   const clar = (g._pendingClarifications || []).filter((c) => c.status === 'awaiting_answer');
   if (clar.length) sections.push({ kind: 'list', title: '侍臣问疑', badge: String(clar.length), tone: 'mid', go: 'docket', items: clar.map((c) => ({ title: `诏："${String(c.originalText || '').slice(0, 60)}…"`, meta: (c.questions && c.questions[0]) || '' })) });
   const di = Array.isArray(g.dynamicInstitutions) ? g.dynamicInstitutions : (() => {
@@ -210,7 +224,7 @@ function huangquan() {
   ] });
   if ((g._permanentReforms || []).length) sections.push({ kind: 'list', title: '永制 · 跨朝遗产', items: g._permanentReforms.map((x) => ({ title: String(x.id), meta: `立于 ${x.enactedDynasty || '某朝'} 第 ${x.enactedTurn} 回合${x.effects && x.effects.memorialBurdenMult ? ` · 奏疏负担 ×${x.effects.memorialBurdenMult}` : ''}` })) });
   const HC = (w.PhaseG1 && w.PhaseG1.HISTORICAL_CASES) || {};
-  if ((HC.powerMinister || []).length) sections.push({ kind: 'cases', title: '历代权臣 · 鉴往知来', badge: String(HC.powerMinister.length), items: HC.powerMinister.slice(0, 10).map((c) => `${c.name}（${c.dynasty} ${c.year}）控 ${Math.round(n0(c.control) * 100)}% → ${c.ending || ''}`) });
+  if ((HC.powerMinister || []).length) sections.push({ kind: 'cases', title: '历代权臣 · 鉴往知来', badge: String(HC.powerMinister.length), items: HC.powerMinister.slice(0, 10).map((c) => `${c.name}（${caseWhen(c)}）控 ${Math.round(n0(c.control) * 100)}%${c.summary ? ` · ${c.summary}` : ''} → ${caseEnd(c.ending)}`) });
   return { key: 'huangquan', title: '皇权', sub: `${r(i)} / 100 · ${phase}`, rows, sealed: false,
     spectrum: { bands: [['权臣', 0, 35, 'warn'], ['制衡', 35, 70, 'good'], ['专制', 70, 100, 'bad']], mark: i }, sections };
 }

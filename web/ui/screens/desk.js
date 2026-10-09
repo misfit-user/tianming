@@ -31,6 +31,7 @@ import { createGongwei } from './gongwei.js';
 import { createHelp } from './help.js';
 import { createBio } from './bio.js';
 import { createMizhao } from './mizhao.js';
+import { createPrison } from './prison.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
 import { createAtlas } from './atlas.js';
@@ -455,6 +456,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const courtPage = createCourt({ root, study, game, profile: () => prof, onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('court:entered', () => el.classList.remove('on'));
   // 独召密问：选人选题一卷，入对后景同朝议
+  createPrison({ game, profile: () => prof });     // 狱中问对：召对下狱之人时自起，不占书案
   const mizhaoPage = createMizhao({ root, study, game, profile: () => prof, onOpen: () => el.classList.remove('on'), onClose: () => { el.classList.add('on'); refresh(); } });
   game.on('audience:open', () => el.classList.remove('on'));
   // 职官志：册页浮在书案上；点任职者名字翻到人物图志

@@ -390,3 +390,166 @@ export function reassign(id, key) {
   if (ok) bus.emit('game:changed', { what: 'edict-suggestion' });
   return ok;
 }
+
+// ---------- 通志（一道之志；照老 renderCircuitBookNow，D:1948-2309） ----------
+const CIRCUIT_ACTS = ['整饬吏治', '蠲免', '巡按', '任免'];
+const BUILD_CAT = { military: '军事', economic: '经济', cultural: '文教', administrative: '政务', religious: '祠祀', infrastructure: '工程', social: '民生', other: '其他' };
+function adminFinder() {
+  const byId = new Map(), byName = new Map();
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (node.id != null && !byId.has(node.id)) byId.set(node.id, node);
+    if (node.name && !byName.has(node.name)) byName.set(node.name, node);
+    ['divisions', 'children', 'prefectures'].forEach((k) => (Array.isArray(node[k]) ? node[k] : []).forEach(walk));
+  };
+  const roots = G().adminHierarchy || {};
+  Object.keys(roots).forEach((k) => walk(roots[k]));
+  return (ref) => (ref && ref.id ? byId.get(ref.id) : byName.get(ref && ref.name)) || null;
+}
+function playerNames() {
+  const rail = w.TMPhase8FormalBridge && w.TMPhase8FormalBridge.rightrail;
+  try { return rail && typeof rail.playerFactionNames === 'function' ? rail.playerFactionNames() : []; } catch (_e) { return []; }
+}
+// 视角：本道有玩家的州即以玩家为本方，否则以点开的那一州（或首州）之主为本方
+function viewerOf(p, circuit, clicked) {
+  const names = playerNames();
+  const isPlayer = (owner) => { const f = p.findFaction ? p.findFaction(owner, '') : null; return names.includes(String(owner)) || !!(f && names.includes(String(f.name))); };
+  const mine = circuit.members.find((m) => isPlayer(m.owner));
+  if (mine) return { owner: mine.owner, player: true };
+  const anchor = (clicked && circuit.members.find((m) => m.region === clicked)) || circuit.members[0];
+  return { owner: anchor ? anchor.owner : '', player: false };
+}
+function regionBuildings(p, r) {
+  const live = p.findLiveAdminDivision ? p.findLiveAdminDivision(r) : null;
+  const divName = String(first(live && live.name, r.name) || '');
+  const seen = new Set(), out = [];
+  const add = (bld) => { if (!bld) return; const k = `${bld.territory || bld._territory || divName}|${bld.type || bld.name}`; if (seen.has(k)) return; seen.add(k); out.push(bld); };
+  if (live && Array.isArray(live.buildings)) live.buildings.forEach(add);
+  if (typeof w.getTerritoryBuildingsCompat === 'function' && divName) { try { w.getTerritoryBuildingsCompat(divName).forEach(add); } catch (_e) { /* 无工籍 */ } }
+  return out;
+}
+
+export function circuit(keyOrRegionId) {
+  const p = P8();
+  const MC = w.TM && w.TM.MapCircuits;
+  if (!p || !MC || typeof p.findCircuit !== 'function') throw new Error('省道分组未就绪');
+  const clicked = regionOf(keyOrRegionId);
+  const c = p.findCircuit(clicked || keyOrRegionId);
+  if (!c) return null;
+  const run = typeof p.withRenderBatch === 'function' ? p.withRenderBatch : (f) => f();
+  return run(() => buildCircuit(p, MC, c, clicked));
+}
+
+function buildCircuit(p, MC, c, clicked) {
+  const viewer = viewerOf(p, c, clicked);
+  const split = MC.partitionByOwner(c, viewer.owner);
+  const own = split.own;
+  const profile = MC.profileOf(c, { findAdmin: adminFinder() });
+  const sum = MC.summarize(own, { bundle: p.regionBundle, mood: p.moodViewScore, office: p.officeViewScore });
+  const capRow = profile.capital ? c.members.find((m) => p.regionTitle(m.region) === profile.capital || m.region.name === profile.capital) : null;
+  const capital = capRow ? capRow.region : null;
+  const ownerLabel = String(first(own[0] && p.ownerName(own[0]), viewer.owner) || '');
+  const moodG = p.gradeOf('mood', sum.mood) || {}, offG = p.gradeOf('office', sum.office) || {};
+  const link = (r) => ({ id: r.id || r.name, name: p.regionTitle(r) });
+
+  // 辖境：各州问题轻重，全道共性提出来
+  let xiajing = null;
+  if (own.length) {
+    const ranked = MC.rankProblems(own, {
+      score: p.modeScore, grade: p.gradeOf, isWarn: p.gradeIsWarn,
+      statusOf: (r) => { const b = p.regionBundle(r); return (b.liveDivision && b.liveDivision.statusEffects) || []; },
+      unrestOf: (r) => { const b = p.regionBundle(r), d = b.data || {}; return first(d.unrest, b.liveDivision && b.liveDivision.unrest); }
+    });
+    const lifted = MC.liftCommonProblems(ranked, { populationOf: (r) => { const b = p.regionBundle(r); return first((b.data || {}).population, b.pop && b.pop.mouths); } });
+    xiajing = {
+      common: lifted.common.length ? { count: lifted.common[0].count, of: own.length, items: lifted.common.map((x) => x.label + (x.mark ? ` ${x.mark}` : '')) } : null,
+      rows: lifted.rows.map((rw) => {
+        const r = rw.region, b = p.regionBundle(r), d = b.data || {};
+        const ms = p.moodViewScore(r, b), os = p.officeViewScore(r, b);
+        return { ...link(r), pop: n(first(d.population, b.pop && b.pop.mouths)), tax: n(b.fiscal && b.fiscal.actualRevenue), troops: n(first(d.garrison, b.army && b.army.troops, r.troops)),
+          mood: n(ms), moodMark: (p.gradeOf('mood', ms) || {}).mark || '', office: n(os), officeMark: (p.gradeOf('office', os) || {}).mark || '', reasons: rw.reasons || [], warn: rw.score > 0 };
+      }),
+      others: split.others.map((o) => ({ owner: String(first(o.regions[0] && p.ownerName(o.regions[0]), o.owner) || ''), regions: o.regions.map(link) }))
+    };
+  }
+  // 形势
+  const disasters = own.filter((r) => { const b = p.regionBundle(r); return ((b.liveDivision && b.liveDivision.statusEffects) || []).some((e) => e && e.kind === 'disaster'); });
+  const threats = profile.threats || [];
+  const xingshi = keep([
+    row('战略', profile.strategicValue), row('边警', threats.join('；'), threats.length ? 'bad' : ''),
+    row('灾异', disasters.length ? disasters.map((r) => p.regionTitle(r)).join('、') : '本回合各州无灾异', disasters.length ? 'bad' : ''),
+    row('士绅', (profile.gentry || []).join('、')), row('书院', (profile.academies || []).join('、'))
+  ]);
+  // 财计
+  const caiji = own.length ? keep([
+    row('实征', sum.actualRevenue, '', sum.compliance != null ? { note: `合规${Math.round(sum.compliance * 100)}%` } : {}),
+    row('起运', sum.remittedToCenter), row('留用', sum.retainedBudget),
+    row('公帑·银', sum.treasury && sum.treasury.money), row('公帑·粮', sum.treasury && sum.treasury.grain, '', { note: '各州库藏合计' }),
+    row('掌藏记', profile.custodyNote)
+  ]) : [];
+  // 营造
+  let yingzao = null;
+  if (own.length) {
+    const catOf = (bld) => { const bw = w.TM && w.TM.BuildingWorks; const td = bw && bw.typeDefFor ? bw.typeDefFor(bld && bld.name, w.P || {}) : null; return (td && td.category) || ''; };
+    const bs = MC.summarizeBuildings(own, { buildingsOf: (r) => regionBuildings(p, r), categoryOf: catOf });
+    const types = w.P && w.P.buildingSystem && (w.P.buildingSystem.buildingTypes || w.P.buildingSystem.types);
+    yingzao = bs.total ? {
+      total: bs.total, status: bs.byStatus, cats: Object.keys(bs.byCategory).map((k) => `${BUILD_CAT[k] || k}${bs.byCategory[k]}`),
+      regions: bs.byRegion.map((x) => ({ ...link(x.region), capital: x.region === capital,
+        items: x.buildings.map((bld) => `${bld.name}${bld.level > 1 ? `${bld.level}级` : ''}${bld.status === 'building' ? '（在建）' : bld.status === 'neglected' ? '（失修）' : bld.status === 'damaged' ? '（半损）' : ''}`) }))
+    } : { empty: Array.isArray(types) && types.length ? '本道各州尚无在册工役。' : '本剧本未设营造。' };
+  }
+  return {
+    key: c.key, name: c.label, owner: ownerLabel, ownerKey: viewer.owner, player: viewer.player,
+    members: c.members.length, capital: capital ? link(capital) : null, held: own.length, of: c.members.length,
+    desc: String(first(profile.description, profile.note) || ''),
+    official: officialOf(p, profile, own, sum, c, viewer),
+    band: [
+      { k: '户口', v: n(sum.population), subPre: '丁', subN: n(sum.ding) },
+      { k: '实征', v: n(sum.actualRevenue), subPre: '起运', subN: n(sum.remittedToCenter) },
+      { k: '驻军', v: n(sum.troops), subPre: '', subN: n(sum.garrisoned), subPost: '州有驻' },
+      sum.mood != null ? { k: '民心', v: n(sum.mood), sub: moodG.mark || '', warn: !!p.gradeIsWarn('mood', moodG) } : null,
+      sum.office != null ? { k: '吏治', v: n(sum.office), sub: offG.mark || '', warn: !!p.gradeIsWarn('office', offG) } : null
+    ].filter((x) => x && x.v != null),
+    xiajing, xingshi, caiji, yingzao,
+    acts: viewer.player ? CIRCUIT_ACTS : []
+  };
+}
+function officialOf(p, profile, own, sum, c, viewer) {
+  const g = G();
+  const gv = w.TM && w.TM.CircuitGovernance;
+  const subs = own.every((r) => !!(p.regionBundle(r).data || {}).governorUnrecorded) ? '下辖各州主官均未载姓名' : '下辖各州主官见各州方志';
+  const gov = gv && typeof gv.governorOf === 'function' ? gv.governorOf(g, c, viewer.owner) : null;
+  if (!gov) {
+    if (!has(profile.officialPosition) && !has(profile.title)) return null;
+    return { role: String(first(profile.officialPosition, profile.title, '长官')), who: String(first(profile.governor, '未录')), count: sum.count, line: subs };
+  }
+  const dr = w.TM && w.TM.DivisionReassign;
+  const admin = dr && typeof dr.circuitAdminNode === 'function' ? dr.circuitAdminNode(g, c.key, viewer.owner) : null;
+  const role = gov.status === 'note' ? gov.note : String(first(gov.position && gov.position.name, admin ? admin.officialPosition : profile.officialPosition, '长官'));
+  const who = gov.status === 'note' ? gov.noteDetail || gov.note : gov.status === 'vacant' ? '出缺' : gov.status === 'unbound' ? '未设主官' : gov.holderName;
+  const out = { role, who: String(who || ''), isChar: ['serving', 'travelling'].includes(gov.status) && !!gov.holderName, count: gov.status === 'note' ? null : sum.count, line: gov.status === 'note' ? '本道无单一主官，不计长官之效' : subs };
+  if (gov.status === 'serving' || gov.status === 'travelling') {
+    const md = p.getMapData ? p.getMapData() : null;
+    const seat = gov.seatRegionId && md && md.regions ? md.regions.find((r) => String(r.id) === gov.seatRegionId) : null;
+    out.ability = Math.round(gov.ability);
+    out.band = { high: '称职', mid: '平平', low: '失职' }[gov.band] || '';
+    out.state = gov.status === 'travelling' ? `赴任·余${gov.travelDaysLeft}日` : '在任';
+    out.seat = seat ? p.regionTitle(seat) : '';
+  }
+  if (gov.status !== 'note' && gov.status !== 'unbound') {
+    const fxe = w.TM && w.TM.CircuitGovernorEffects;
+    const crow = g.circuitGovernance && g.circuitGovernance.byCircuit[c.key];
+    const signed = (v, percent) => `${v >= 0 ? '+' : '−'}${Math.abs(v * (percent ? 100 : 1)).toFixed(1)}${percent ? '%' : ''}`;
+    out.effect = fxe && !fxe.enabled() ? '设置中已关闭' : gov.status === 'travelling' ? '赴任未到，暂无长官之效' : crow && crow.status === 'seatLost' ? '首府不在本方，暂无长官之效'
+      : !crow ? '下一回合起生效' : `执行率均${signed(crow.execAvg || 0, true)} · 吏治每月${signed(crow.corrMonthly || 0, false)}（近驻地，远者递减）`;
+  }
+  return out;
+}
+export function circuitAct(key, kind) {
+  const p = P8();
+  if (!p || typeof p.circuitAction !== 'function') throw new Error('内核缺通志动作');
+  const ok = p.circuitAction(String(key), kind);
+  if (ok) bus.emit('game:changed', { what: 'edict-suggestion' });
+  return ok;
+}

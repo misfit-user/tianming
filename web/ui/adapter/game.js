@@ -130,7 +130,20 @@ async function advance({ court = false } = {}) {
   const before = g.turn;
   edict.inject();                                   // 新前端的诏书草稿此刻才写进内核读取处
   try {
-    await w._endTurnInternal({ postTurnCourt: !!court });
+    const run = w._endTurnInternal({ postTurnCourt: !!court });
+    // 后朝与推演并行：内核在推演前快照之后才起后朝之态（GM._isPostTurnCourt），时长不定——每 200ms 看一次，
+    // 起了就让新前端的朝议页接过去（老界面是 200ms 后径开）；推演先了结（出错回滚）就不开
+    if (court) {
+      let settled = false;
+      run.then(() => { settled = true; }, () => { settled = true; });
+      const t0 = Date.now();
+      const poll = () => {
+        if (w.GM && w.GM._isPostTurnCourt) { bus.emit('game:post-turn-court', {}); return; }
+        if (!settled && Date.now() - t0 < 60000) setTimeout(poll, 200);
+      };
+      setTimeout(poll, 200);
+    }
+    await run;
   } finally {
     if (w.GM && w.GM.turn > before) edict.clearDraft();   // 推进成功即已颁行；没推进（出错回滚）草稿留着
     bus.emit('game:advanced', { turn: w.GM && w.GM.turn });

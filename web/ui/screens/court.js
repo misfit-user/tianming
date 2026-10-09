@@ -333,5 +333,10 @@ export function createCourt({ root, study, game, profile, onClose }) {
   function convene(issueId) {
     try { return C.convene(issueId); } catch (e) { toast(e.message); return false; }
   }
+  // 后朝：推演之际另召群臣，场景照常朝
+  game.on('game:post-turn-court', () => {
+    if (opened) return;
+    try { C.postTurn(); } catch (e) { toast(e.message); }
+  });
   return { begin, convene, get opened() { return opened || !!setupJuan; } };
 }

@@ -70,6 +70,7 @@ export const PROFILES = {
     ling: {
       surface: 'silk', suggest: '议事清册', conduct: '主角行止', conductHint: '此期所为——如召见某臣、校阅三军、微服私访、祖庙祭祀……',
       private: '帝王私行', privateNote: '至多三项，后果由推演定', polish: '有司润色', promulgate: '钤玺颁行', archive: '往期诏令', done: '已颁之诏',
+      postCourt: '推演之际另召群臣', postCourtNote: '有司承办诏令之际，另听群臣陈事；朝会上议定的旨意，另行颁付有司。',
       empty: '今日无事，不如休息一番？天下太平，何必事事操心。', ready: '诏令已拟，是否颁行天下？', idle: '不理朝政，只顾享乐——如此甚好！',
       hints: { political: '诏谕天下，如：改革官制、降旨安抚、任免官员……', military: '调兵遣将，如：调动军队、加强边防、讨伐叛贼……',
         diplomatic: '纵横捭阖，如：遣使和亲、结盟讨伐、册封藩属……', economic: '经纶民生，如：减税轻赋、开仓放粮、兴修水利……', other: '其他旨意，如：大赦天下、科举取士、建造宫殿……' }

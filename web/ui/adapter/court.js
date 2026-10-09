@@ -330,6 +330,21 @@ export function begin(mode, { topic = '' } = {}) {
   bus.emit('court:changed', snapshot());
   return true;
 }
+// 后朝：推演之际另召群臣（同老 _postTurnCourtChoose 的开法：v3 常朝 _cc3_open 带 isPostTurn，不受当回合朝会次数之限）。
+// 须在内核已进后朝之态（_beginPostTurnCourtState 置 GM._isPostTurnCourt）后再开，否则推演没起来就别开朝
+export function postTurn() {
+  const g = w.GM;
+  if (!g || !g._isPostTurnCourt) return false;
+  if (typeof w._cc3_open !== 'function') throw new Error('内核缺 _cc3_open');
+  active = true;
+  watch();
+  if (!g._chaoyiCount) g._chaoyiCount = {};
+  if (!g._chaoyiCount[g.turn]) g._chaoyiCount[g.turn] = 0;
+  w._cc3_open({ isPostTurn: true, source: 'post-turn-court' });
+  if (w.CY) { w.CY.mode = 'changchao'; w.CY.topic = ''; }
+  bus.emit('court:changed', snapshot());
+  return true;
+}
 // 点一颗老按钮；要讨文字的先给文字（临时代答 prompt）
 export function press(id, text) {
   const el = byId.get(id);

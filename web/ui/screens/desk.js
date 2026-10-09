@@ -5,7 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum } from '../core/numerals.js';
-import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag, tiao } from '../kit/index.js';
+import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag, tiao, kaiguan } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
@@ -364,6 +364,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const docket = per.tier === 'sovereign' ? game.select.memorials().length : 0;
     const lead = filled.length || done ? t.ready : priv.length && t.idle ? t.idle : t.empty;
     const line = (text, faint) => h('p', { style: { margin: '.375rem 0 0', ...(faint ? { color: 'var(--ink-faint)', fontSize: 'var(--fs-2)' } : {}) } }, text);
+    let court = false;                               // 后朝：只元首档有（内核的朝会是君前之会）
+    const courtRow = t.postCourt && !game.viewAs
+      ? h('div', { style: { marginTop: '.75rem' } }, kaiguan(t.postCourt, { checked: false, onchange: (on) => { court = on; } }), line(t.postCourtNote, true))
+      : null;
     juan({
       title: '推演', note: `第${num(d.turn)}回合`, width: '36rem',
       content: h('div', { style: { lineHeight: 2 } },
@@ -373,14 +377,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         priv.length ? line(`${t.private}：${priv.join('、')}`) : null,
         dr.xinglu && dr.xinglu.trim() ? line(`${t.conduct}：${dr.xinglu.trim().slice(0, 40)}${dr.xinglu.trim().length > 40 ? '……' : ''}`) : null,
         docket ? line(`尚有${num(docket)}件${prof.docket.name}未批`, true) : null,
-        line(`自${d.text || '今日'}起，${num(d.daysPerTurn)}日之间天下之变，由推演落定。推演一回约需数分钟（视 AI 应答快慢）。`, true)),
-      actions: [{ label: t.promulgate, onclick: ({ close }) => { close('ok'); runAdvance(); } }]
+        line(`自${d.text || '今日'}起，${num(d.daysPerTurn)}日之间天下之变，由推演落定。推演一回约需数分钟（视 AI 应答快慢）。`, true),
+        courtRow),
+      actions: [{ label: t.promulgate, onclick: ({ close }) => { close('ok'); runAdvance(court); } }]
     });
   }
-  async function runAdvance() {
+  async function runAdvance(court = false) {
     turnVeil.begin();
     try {
-      await game.advance({ court: false });
+      await game.advance({ court });
     } catch (err) {
       if (!(err && err.shown)) bus.emit('kernel:toast', { text: String(err && err.message || err) });
     } finally {

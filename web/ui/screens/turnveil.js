@@ -147,6 +147,8 @@ export function createTurnVeil({ root, game }) {
     status();
     renderRail();
   }
+  // 后朝：推演之际另召群臣，朝议页进场时推演幕让开；朝会散了（courtDone），下一拍照常再展
+  bus.on('court:entered', () => { if (T.courtHeld()) hide(); });
   bus.on('turn:progress', (p) => {
     if (!running && p.type !== 'start') return;
     if (p.type === 'start') { running = true; start(p.beats); show(); return; }

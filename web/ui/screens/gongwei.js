@@ -1,13 +1,17 @@
 // 宫闱册：左叶四签（后妃、宫中尊长、皇嗣、宫苑），右叶展开一人或一处；未择时看宫规（位分阶梯、后宫之制、外戚之制、继承法）。
 // 后妃可召幸（私下叙谈）、晋封降位（拟入议事清册，推演落地）、看列传；尊长可问安；皇子可立为储君；
-// 宫苑照剧本的宫殿名录（殿宇、居者），修缮、移居、新建拟入议事清册。数据与动作经 game.gongwei；叫法取 profile().gongwei。
+// 宫苑照剧本的宫殿名录（殿宇、居者），修缮、移居、新建拟入议事清册；第五签「宝」列文物奇珍（内府所藏在前，散在臣民在后）。
+// 数据与动作经 game.gongwei；叫法取 profile().gongwei。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { juan, zhou } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
-const TABS = [['consorts', '后'], ['elders', '尊'], ['heirs', '嗣'], ['palaces', '宫']];
+const TABS = [['consorts', '后'], ['elders', '尊'], ['heirs', '嗣'], ['palaces', '宫'], ['treasures', '宝']];
+const RARITY_CLS = ['r0', 'r1', 'r2', 'r3', 'r3'];
+// 印上的字：书名号、括号不算
+const glyph = (name) => String(name).replace(/^[《「『〈（(\s]+/, '').charAt(0);
 
 export function createGongwei({ root, game, profile, onPerson, onAudience }) {
   const Q = game.gongwei;
@@ -29,7 +33,7 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
   root.append(ov);
 
   const T = () => profile().gongwei || {};
-  const label = (k) => ({ consorts: T().consorts || '后妃', elders: T().elders || '宫中尊长', heirs: T().heirs || '皇嗣', palaces: T().palaces || '宫苑' })[k];
+  const label = (k) => ({ consorts: T().consorts || '后妃', elders: T().elders || '宫中尊长', heirs: T().heirs || '皇嗣', palaces: T().palaces || '宫苑', treasures: T().treasures || '文物奇珍' })[k];
   const favorBar = (v) => (v == null ? null : h('span.gw-fav', h('i', h('u', { style: { width: `${Math.max(0, Math.min(100, v))}%` } })), h('small', num(v))));
 
   // ---------- 左叶 ----------
@@ -37,7 +41,7 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
     const t = T();
     title.textContent = t.title || '宫闱';
     sub.textContent = t.sub || '';
-    const counts = { consorts: data.consorts.length, elders: data.elders.length, heirs: data.heirs.length, palaces: data.palaces ? data.palaces.list.length : 0 };
+    const counts = { consorts: data.consorts.length, elders: data.elders.length, heirs: data.heirs.length, palaces: data.palaces ? data.palaces.list.length : 0, treasures: data.treasures.length };
     replaceChildren(tabs, TABS.map(([k, g]) => h('button' + (k === tab ? '.on' : ''), { type: 'button', onclick: () => { tab = k; sel = ''; renderLeft(); renderRight(); } },
       h('i', g), h('b', label(k).slice(-2)), h('small', num(counts[k])))));
     let items = [];
@@ -57,6 +61,16 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
         c.designated ? h('span.marks', h('em.heir', '储')) : null));
       if (data.pending.length) items.push(h('p.gw-grp', '有孕'), ...data.pending.map((p) => h('p.gw-note', `${p.mother} · 第${num(p.since)}回合诊出`)));
       if (!items.length) items = [h('p.ce-unk', '尚无皇嗣')];
+    } else if (tab === 'treasures') {
+      let grp = null;
+      for (const it of data.treasures) {
+        const g2 = it.mine ? '内府所藏' : '散在臣民';
+        if (g2 !== grp) { grp = g2; items.push(h('p.gw-grp', g2)); }
+        items.push(h('button.gw-item.pal' + (it.id === sel ? '.on' : ''), { type: 'button', dataset: { id: it.id }, onclick: () => pick(it.id) },
+          h('i.gw-pal.gw-bao.' + RARITY_CLS[it.rank], glyph(it.name)), h('b', it.name), h('span.meta', [it.type, it.mine ? '' : it.owner].filter(Boolean).join(' · ')),
+          it.rarity ? h('span.marks', h('em.' + RARITY_CLS[it.rank], it.rarity)) : null));
+      }
+      if (!items.length) items = [h('p.ce-unk', '尚无文物在册')];
     } else {
       const pl = data.palaces;
       if (!pl) items = [h('p.ce-unk', '本剧本未载宫殿之序')];
@@ -120,6 +134,22 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
       p.residents.length ? h('section.gw-halls', h('h5', '今居'), h('p', p.residents.map((n, i) => [i ? '、' : null, onPerson ? h('button.link', { type: 'button', onclick: () => person(n) }, n) : n]))) : null,
       acts([[t.renovate || '修缮', () => renovateJuan(p), 'main'], [t.move || '移居', () => moveJuan(p)], [t.build || '修建新宫殿', () => buildJuan()]])];
   }
+  function treasureDoc(it) {
+    return [h('header.gw-head.pal', h('i.gw-pal.big.gw-bao.' + RARITY_CLS[it.rank], glyph(it.name)), h('div', h('h3', it.name, h('em.gw-seal', it.type)), h('p', [it.rarity, it.era].filter(Boolean).join(' · ')))),
+      facts([['所在', it.ownerIsChar && onPerson ? h('button.link', { type: 'button', onclick: () => person(it.ownerName) }, it.owner) : (it.owner || '未详')],
+        ['数量', it.quantity > 1 ? num(it.quantity) : ''], ['估值', it.value ? `${num(it.value)}${it.unit}` : ''], ['来历', it.provenance]]),
+      it.description ? h('p.gw-bio', it.description) : null,
+      it.effect ? h('section.gw-rule', h('h5', '效用'), h('p', it.effect)) : null];
+  }
+  function treasureSummary() {
+    const L = data.treasures;
+    const byRank = ['传说', '珍贵', '精良', '普通'].map((r) => [r, L.filter((x) => x.rarity === r).length]).filter(([, c]) => c);
+    const byType = [...new Set(L.map((x) => x.type))].map((t) => [t, L.filter((x) => x.type === t).length]);
+    return [h('header.gw-head.rules', h('div', h('h3', label('treasures')), h('p', '宝玺、兵器、符节、典籍、珍宝诸物'))),
+      h('section.gw-rule', h('h5', '总目'), h('p', `在册${num(L.length)}件：内府所藏${num(L.filter((x) => x.mine).length)}，散在臣民${num(L.filter((x) => !x.mine).length)}。`)),
+      byRank.length ? h('section.gw-ladder', h('h5', '品第'), h('ol', byRank.map(([r, c]) => h('li', h('b', r), h('small', `${num(c)}件`))))) : null,
+      byType.length ? h('section.gw-ladder', h('h5', '门类'), h('ol', byType.map(([t, c]) => h('li', h('b', t), h('small', `${num(c)}件`))))) : null];
+  }
   function rules() {
     const t = T();
     return [h('header.gw-head.rules', h('div', h('h3', '宫规'), h('p', '位分之序、后宫之制、外戚之制与继承之法'))),
@@ -134,7 +164,9 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
     let out;
     const c = tab === 'consorts' ? data.consorts.find((x) => x.name === sel) : tab === 'elders' ? data.elders.find((x) => x.name === sel) : tab === 'heirs' ? data.heirs.find((x) => x.name === sel) : null;
     const p = tab === 'palaces' && data.palaces ? data.palaces.list.find((x) => x.id === sel) : null;
-    if (tab === 'consorts' && c) out = consortDoc(c);
+    const it = tab === 'treasures' ? data.treasures.find((x) => x.id === sel) : null;
+    if (tab === 'treasures') out = it ? treasureDoc(it) : treasureSummary();
+    else if (tab === 'consorts' && c) out = consortDoc(c);
     else if (tab === 'elders' && c) out = elderDoc(c);
     else if (tab === 'heirs' && c) out = heirDoc(c);
     else if (p) out = palaceDoc(p);

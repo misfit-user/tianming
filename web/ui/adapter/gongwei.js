@@ -91,8 +91,29 @@ export function court() {
   return {
     consorts, elders, heirs, pending, ranks: ranks(),
     succession: str(g.harem && g.harem.successionNote), description: str(g.harem && g.harem.haremDescription), clan: typeof (g.harem && g.harem.motherClanSystem) === 'string' ? g.harem.motherClanSystem : '',
-    palaces: palaces()
+    palaces: palaces(), treasures: treasures()
   };
+}
+
+// ---------- 文物奇珍 ----------
+// GM.items：宝玺、兵器、符节、甲胄、典籍文书、珍宝诸物（天启开局三十三件）。照老抽屉「文物奇珍」列出，新界面另展一件：
+// 品第、所在、估值、来历、效用。所在照 owner：归本人者为内府所藏，余者散在臣民。hiddenAbility（暗藏之能）是给推演的，不列
+const ITEM_TYPE = { seal: '宝玺', weapon: '兵器', token: '符节信物', armor: '甲胄', document: '典籍文书', treasure: '珍宝', special: '奇物' };
+const RARITY = ['传说', '珍贵', '精良', '普通'];
+function treasures() {
+  const items = Array.isArray(G().items) ? G().items : [];
+  const pc = player();
+  let unit = '两';
+  try { if (w.CurrencyUnit && w.CurrencyUnit.getUnit) unit = w.CurrencyUnit.getUnit().money || unit; } catch (_e) { /* 照默认 */ }
+  return items.filter((x) => x && x.name).map((x, i) => {
+    const owner = str(x.owner);
+    const ownerName = owner.split(/[（(]/)[0].trim();
+    const ch = ownerName ? findChar(ownerName) : null;
+    const rank = RARITY.indexOf(str(x.rarity));
+    return { id: String(x.id || `item-${i}`), name: str(x.name), type: ITEM_TYPE[x.type] || '杂项', rarity: str(x.rarity), rank: rank < 0 ? RARITY.length : rank,
+      owner, ownerName, ownerIsChar: !!(ch && ch.alive !== false), mine: !!(pc && ownerName && ownerName === pc.name),
+      value: n0(x.value), unit, quantity: n0(x.quantity, 1), era: str(x.era), provenance: str(x.provenance), description: str(x.description), effect: str(x.effect) };
+  }).sort((a, b) => (b.mine - a.mine) || (a.rank - b.rank) || a.name.localeCompare(b.name, 'zh-CN'));
 }
 
 // ---------- 宫苑 ----------

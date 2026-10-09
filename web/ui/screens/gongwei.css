@@ -1,16 +1,16 @@
 /* 宫闱册：骨架沿用人物图志（.ce-*）；左叶四签与名列，右叶一人一处或宫规 */
 .gw-ov .ce-book { grid-template-columns: minmax(0, 21rem) 1.5rem minmax(0, 1fr); }
 .gw-left { gap: .5rem; }
-.gw-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .375rem; }
+.gw-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .375rem; }
 .gw-tabs button { display: grid; grid-template-columns: 1.625rem minmax(0, 1fr); grid-template-areas: 'g b' 'g n'; align-items: center; column-gap: .3125rem; padding: .3125rem .3125rem;
   border: 0; cursor: pointer; text-align: left; color: var(--ink); font-family: var(--f-kai); background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
 .gw-tabs button.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 -.1875rem 0 #9a3a52, inset 0 0 0 1px rgba(120, 90, 50, .35); }
 .gw-tabs i { grid-area: g; width: 1.625rem; height: 1.625rem; display: grid; place-items: center; font: normal 400 var(--fs-3)/1 var(--f-title); color: #f9ead2; background: #8a3048; }
 .gw-tabs b { grid-area: b; font-weight: 400; font-size: var(--fs-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gw-tabs small { grid-area: n; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; }
-/* 窄屏（左页不足 250 像素）：字号有像素下限，页签容不下题字小方块和名目——收起小方块，名目不致截成「后…」 */
+/* 页签一行五枚：一枚不足七十像素（页签行不足 360 像素）就容不下题字小方块和名目——收起小方块，名目不致截成「后…」 */
 .gw-tabs { container-type: inline-size; }
-@container (max-width: 250px) {
+@container (max-width: 360px) {
   .gw-tabs button { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'b' 'n'; text-align: center; }
   .gw-tabs i { display: none; }
 }
@@ -83,3 +83,10 @@
 .gw-targets button:disabled { opacity: .45; cursor: default; }
 .gw-ta { width: 100%; padding: .5rem .625rem; border: 0; outline: 0; resize: vertical; font: var(--fs-3)/1.8 var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f6eedb, #ebdec0); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .3); }
+
+/* 文物：品第分色（传说朱、珍贵金、精良青、普通褐） */
+.gw-bao.r0 { background: radial-gradient(circle at 35% 30%, #c4553a, #7d1d12); }
+.gw-bao.r1 { background: radial-gradient(circle at 35% 30%, #c9a24a, #8a6a1a); }
+.gw-bao.r2 { background: radial-gradient(circle at 35% 30%, #5f8f7e, #2f5a4a); }
+.gw-bao.r3 { background: radial-gradient(circle at 35% 30%, #8a7458, #4a3a24); }
+.gw-item .marks em.r0 { color: #a3301f; } .gw-item .marks em.r1 { color: #8a6a1a; } .gw-item .marks em.r2 { color: #2f5a4a; } .gw-item .marks em.r3 { color: var(--ink-faint); }

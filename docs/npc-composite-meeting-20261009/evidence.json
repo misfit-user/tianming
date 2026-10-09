@@ -2,14 +2,20 @@
   "schemaVersion": 1,
   "candidateBase": "d8915fa67493d1003ededdf5182f8cc6994eda2c",
   "candidateBranch": "codex/npc-life-candidate-20261010",
-  "candidateHeadBeforeDocsCommit": "a0424d59",
+  "candidateHeadBeforeDocsCommit": "5912652a253c33da324e6c37e09b6e9ec3347181",
   "officialScenario": {
     "id": "sc-jianyan1-1127-shaosong",
     "name": "绍宋·建炎元年八月",
     "population": 513,
     "factions": 39,
-    "actor": {"id": "char_jianyan1_16", "name": "韩世忠"},
-    "target": {"id": "char_jianyan1_18", "name": "张俊"}
+    "actor": {
+      "id": "char_jianyan1_16",
+      "name": "韩世忠"
+    },
+    "target": {
+      "id": "char_jianyan1_18",
+      "name": "张俊"
+    }
   },
   "flows": [
     {
@@ -46,7 +52,7 @@
     }
   ],
   "saveRestore": {
-    "formalElectron": "blocked_missing_electron_binary",
+    "formalElectron": "npc-daily_passed; composite_meeting_not_in_gate",
     "productionModuleReload": "covered_by_prior_lifecycle_and_ai-routing_smokes",
     "newCompositeFullReload": "not_run"
   },
@@ -54,5 +60,16 @@
     "ordinaryCompositeAttempts": 0,
     "externalNetwork": "denied_or_not_used_in_production-module-smoke",
     "fullWorldOffline": false
+  },
+  "mergedMain": "5912652a253c33da324e6c37e09b6e9ec3347181",
+  "pullRequest": {
+    "number": 103,
+    "state": "MERGED",
+    "url": "https://github.com/misfit-user/tianming/pull/103"
+  },
+  "release": {
+    "versionChanged": false,
+    "packaged": false,
+    "deployed": false
   }
 }

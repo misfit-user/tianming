@@ -2,10 +2,10 @@
 
 ## C1：版本与接线
 
-- 当前正式基线：`d8915fa67493d1003ededdf5182f8cc6994eda2c`，与 `origin/main` 一致。
+- 开发基线：`d8915fa67493d1003ededdf5182f8cc6994eda2c`；最终 `main`：`5912652a253c33da324e6c37e09b6e9ec3347181`。
 - 按需规划前序移植：`6dd5a146`，来自 `ae156eb2`。
 - 生活组合前序移植：`73227f08`、`a7519993`、`a0424d59`，来自 `c65e43d6`、`b0d65815`、`4bcc6db9`。
-- 当前候选分支：`codex/npc-life-candidate-20261010`。
+- 候选分支：`codex/npc-life-candidate-20261010`；PR #103 已合并到 `main`，合并提交：`5912652a253c33da324e6c37e09b6e9ec3347181`。
 - 当前正式入口固定为 main 已有 `tm-npc-daily-ui.js` / `scripts/electron/npc-daily-cases.cjs`；没有合并 `claude/newui-foundation-20261005`。
 - 共同安排、现场阶段、结果和返程由同一 `TM.NPC.Meetings` plan 写入；消息/知情由 `DailyActivities` 与 `ActionLedger` 写入；路线由 `Meetings`/`MapLocations` 写入；职任由 `OfficeTenure` 查询；成长由 `CharacterGrowthSystem` 写入；规划由 ActionLedger 引用实际 activity 结果。
 
@@ -23,7 +23,7 @@
 
 `smoke-npc-ai-routing.js` 覆盖本人获知的重要变化、两步依赖、实际回应后激活下一步、同局依赖变化使旧结果失效、读档迟到结果丢弃和普通步骤不重复调用模型。该流程生产模块通过，官方正式页面未验。
 
-三条流程目前均是“生产模块通过”；由于 Electron runtime 缺失，不能标记为正式页面完整通过。
+三条流程目前均是“生产模块通过”；正式日常 Electron 门禁已通过；组合会面 Electron 场景仍未纳入门禁，不能标记为完整三流程正式页面通过。
 
 ## 试玩入口
 
@@ -47,5 +47,5 @@
 - `scripts/electron/npc-daily-cases.cjs` 在当前候选上正式页面、顶层 endTurn、保存/加载、请益追问流程通过；新的组合会面 Electron 夹具在本轮定位到面板 lease/路线提示/重载边界，已撤出 CI，避免把不稳定测试当成生产通过。
 - 因此正式页面的组合会面、两处组合保存/加载和持续 30 日场景仍是待验；生产模块官方组合 smoke 不能替代完整试玩。
 - 本机按 CI 安装了 Electron runtime；`--npc-daily` 实际通过，实验性 `--npc-composite` 未作为候选门禁。
-- 本候选未改版本、未打包、未部署、未推送、未创建 PR、未合并。
+- 未改版本、未打包、未部署；候选已推送，PR #103 已合并，尚未部署。
 - 其他两个官方剧本只通过现有 parity/加载兼容检查，未宣称完整三流程。

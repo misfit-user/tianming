@@ -317,15 +317,19 @@ void main() {
     ground = mix(ground, mix(ground, rc, 0.75), owned * band * mix(0.62, 0.5, nearK) * (1.0 - uLayer) * (1.0 - fillA));
     if (fillA > 0.003) {
       vec3 fc = mix(rc, texture2D(uFillTex, vec2((id + 0.5) / 4096.0, 0.5)).rgb, uTierMid);
-      // 山川明暗：取烘好的明暗（与底色同一套光，起伏取定值，与地势压平无关）
-      vec2 sh = texture2D(uShadeTex, uv).rg;
-      fc = mix(vec3(dot(fc, vec3(0.3, 0.59, 0.11))), fc, 0.86);                   // 颜料不那么艳
-      fc *= clamp(1.0 + (sh.r - 0.62) * 1.25, 0.5, 1.2) * (1.0 - 0.12 * clamp((0.5 - sh.g) * 3.0, 0.0, 1.0));
-      fc = mix(fc, vec3(0.95, 0.94, 0.90), smoothstep(0.72, 0.92, T.r) * 0.55);     // 高处积雪
-      fc *= 0.955 + 0.09 * tnoise(wp * 0.03 + 3.0, 2);                              // 水色不匀
-      float rim = exp(-mix(bd.r, min(bd.r, bd.g), uTierMid) / 1.8);
-      fc = mix(fc, fc * vec3(0.76, 0.72, 0.70), rim * 0.6);
-      ground = mix(ground, fc, fillA * 0.9);
+      // 山川明暗：取烘好的明暗（与底色同一套光，起伏取定值，与地势压平无关）。天下档取糊开的一层（纸图上晕染的山，不起皱），
+      // 推到省道档渐清
+      vec2 sh = mix(texture2D(uShadeTex, uv, 2.5).rg, texture2D(uShadeTex, uv).rg, 0.15 + 0.3 * uTierMid);
+      float lit = clamp(1.0 + (sh.r - 0.62) * mix(0.9, 1.0, uTierMid), 0.62, 1.15) * (1.0 - 0.07 * clamp((0.5 - sh.g) * 3.0, 0.0, 1.0));
+      // 界边色带（照 CK3）：贴着疆界一道浓而深的本色，往里渐淡，透出底下的纸地；省道档各道界边也有一道浅的。宽窄按屏上像素算
+      float wpx = max(pxW, 0.25);
+      float edge = max(0.7 * exp(-bd.r / (7.0 * wpx)) + 0.3 * exp(-bd.r / (26.0 * wpx)), 0.7 * exp(-bd.g / (6.0 * wpx)) * uTierMid);
+      vec3 inner = mix(uSilk * 1.02, fc, 0.74);
+      vec3 deep = mix(vec3(dot(fc, vec3(0.3, 0.59, 0.11))), fc, 1.28) * 0.7;          // 界边：色更浓、更深
+      fc = mix(inner, deep, edge) * lit;
+      fc = mix(fc, vec3(0.95, 0.94, 0.90), smoothstep(0.72, 0.92, T.r) * 0.5);      // 高处积雪
+      fc *= 0.96 + 0.08 * tnoise(wp * 0.03 + 3.0, 2);                               // 水色不匀
+      ground = mix(ground, fc, fillA * 0.94);
     }
   } else if (uFill > 0.0) {
     // 无主之地：远看褪成素纸，衬出诸国

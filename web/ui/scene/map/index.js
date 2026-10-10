@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createLabels, realmTitle } from './labels.js';
+import { createLabels } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
 import { adjacency, politicsOf } from './politics.js';
@@ -478,7 +478,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   function buildCities() {
     if (cities) { scene.remove(cities); cities.geometry.dispose(); cities.material.dispose(); cities = null; }
     if (!regions.length) return;
-    const caps = labels ? labels.capitals : new Set(), seats = labels ? labels.important : new Set();
+    const caps = labels.capitals, seats = labels.important;
     cities = spriteLayer(regions.map((r, i) => {
       const [x, y] = r.center;
       const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
@@ -488,9 +488,11 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     scene.add(cities);
   }
 
-  // ---------- 题名（DOM 层，见 labels.js） ----------
-  const labels = labelLayer ? createLabels({ layer: labelLayer, camera, size: stage.size, heightAt, relief: () => uniforms.uRelief.value }) : null;
-  labels?.setData({ regions, realms: realmList, factions, circuits });
+  // ---------- 题名（写在地面上，见 labels.js） ----------
+  const labels = createLabels({ shared: uniforms, landAt: landOf });
+  scene.add(labels.group);
+  const labelData = () => ({ regions, realms: realmList, circuits, realmByRegion, circuitOf, ids });
+  labels.setData(labelData());
   buildCities();
   const tmp = new THREE.Vector3();
 
@@ -576,8 +578,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   }
 
   // ---------- 案上那幅绢图：同一画法正俯视渲一张，题上势力名 ----------
-  // extent：画世界里的哪一块（默认案上那幅的范围），宽高比须与 width/height 一致
+  // extent：画世界里的哪一块（默认案上那幅的范围），宽高比须与 width/height 一致。
+  // 势力名就用图上那一套（地面上弯写的字），俯身入图时字不跳
   async function renderSheet({ look, width = 2100, height = 1540, names = true, extent = SHEET_EXTENT } = {}) {
+    if (names) await labels.ready;
     const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
     if (look) setLook(look);
     uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
@@ -594,6 +598,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     camera.updateProjectionMatrix();
     setPose({ target: [extent.x0 + extent.w / 2, 0, extent.y0 + extent.h / 2], dist: (extent.h / 2) / Math.tan(THREE.MathUtils.degToRad(10)), polar: 0.0001, az: 0 });
     applyZoom(Math.max(2000, pose().dist), true);     // 案上那幅是天下档：整片设色、地势压平
+    labels.group.visible = names;
+    labels.update(Math.max(2000, pose().dist));
+    const m = 40 * extent.w / width;                  // 画框以内（框线在边上二十二像素处）
+    labels.setClip([extent.x0 + m, extent.y0 + m, extent.x0 + extent.w - m, extent.y0 + extent.h - m]);
     uniforms.uCam.value.copy(camera.position);
     lines.update(pose().dist * 1.6);
     uniforms.uZoom.value = 0;
@@ -624,25 +632,6 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const img = g.createImageData(width, height);
     for (let y = 0; y < height; y++) img.data.set(px.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);   // 读回的行是自下而上
     g.putImageData(img, 0, 0);
-    if (names) {
-      await document.fonts.load('48px "TM-MaShanZheng"', realmList.map((r) => r.name).join(''));
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      const k = width / extent.w;
-      for (const r of realmList) {
-        if (r.area < 600) continue;
-        let px = (r.x - extent.x0) * k, py = (r.y - extent.y0) * k;
-        if (px < 0 || py < 0 || px > width || py > height) continue;
-        const size = Math.max(26, Math.min(112, Math.sqrt(r.area) * 0.24)) * (width / W);
-        g.font = `${size}px "TM-MaShanZheng"`;
-        g.fillStyle = 'rgba(40,24,14,0.86)';
-        const text = [...realmTitle(r.name)].join(' ');
-        const half = g.measureText(text).width / 2, m = 48 * width / W;
-        px = Math.min(width - m - half, Math.max(m + half, px));     // 靠边的势力名挪回框里，免得被裁
-        py = Math.min(height - m - size / 2, Math.max(m + size / 2, py));
-        g.fillText(text, px, py);
-      }
-    }
     g.strokeStyle = 'rgba(40,24,14,0.7)';
     g.lineWidth = 3;
     g.strokeRect(22 * width / W, 22 * height / H, width - 44 * width / W, height - 44 * height / H);
@@ -654,6 +643,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     camera.updateProjectionMatrix();
     setPose(saved.pose);
     applyZoom(saved.pose.dist, true);
+    labels.group.visible = true;
+    labels.setClip(null);
     uniforms.uPx.value = saved.px;
     uniforms.uFocus.value = saved.focus;
     [uniforms.uFogNear.value, uniforms.uFogFar.value] = fog;
@@ -707,7 +698,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         hoverCb?.(g ? { index: id - 1, ...regions[id - 1], tier: g.tier, group: g } : null);
       }
       for (const fn of hooks) fn(time, camera, dt);
-      labels?.update(dist);
+      labels.update(dist);
     },
     render(r, target) {
       r.setRenderTarget(target);
@@ -789,19 +780,22 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       lines.setHover([]);
       lines.setPicked([]);
       applyPolitics();
-      labels?.setCapitals([]);
-      labels?.setImportant([]);
-      labels?.setData({ regions, realms: realmList, factions, circuits });
+      labels.setCapitals([]);
+      labels.setImportant([]);
+      labels.setData(labelData());
       buildCities();
     },
     setOwnership(changes) {
       for (const [i, fac] of Object.entries(changes)) if (regions[i]) regions[i].faction = fac;
       applyPolitics();
-      labels?.setData({ regions, realms: realmList, factions, circuits });
+      labels.setData(labelData());
     },
     // 京城、要府（府州下标）：题名先占位、字大；城郭京城两重楼、要府大一号
-    setCapitals(list) { labels?.setCapitals(list); buildCities(); },
-    setImportant(list) { labels?.setImportant(list); buildCities(); },
+    setCapitals(list) { labels.setCapitals(list); buildCities(); },
+    setImportant(list) { labels.setImportant(list); buildCities(); },
+    get labelsReady() { return labels.ready; },
+    get labelStats() { return labels.stats; },
+    get labelsPlaced() { return labels.placed; },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）
     worldToScreen(x, y) {
       tmp.set(x, heightAt(x, y) * uniforms.uRelief.value + 2, y).project(camera);
@@ -826,7 +820,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       lines.dispose();
       painter.dispose();
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
-      labels?.clear();
+      labels.dispose();
       if (cities) { cities.geometry.dispose(); cities.material.dispose(); }
     }
   };

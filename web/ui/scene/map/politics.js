@@ -130,7 +130,7 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
   for (const c of circuits) c.title = circuitTitle(c.name, realmList[c.realm] && realmList[c.realm].name);
 
   // ---- 省道配色：本色一族深浅（明暗 ±、冷暖 ±），邻道取差得最远的一档
-  const VARIANTS = [[0, 0, 0], [0, -0.06, 0.07], [0, 0.02, -0.07], [7, -0.02, 0.035], [-7, 0.0, -0.035], [4, -0.12, -0.02], [-5, 0.04, 0.10], [10, -0.08, -0.08], [-10, -0.05, 0.02]];
+  const VARIANTS = [[0, 0, 0], [13, -0.04, 0.06], [-13, 0.03, -0.06], [0, -0.1, 0.1], [0, 0.06, -0.1], [18, -0.06, -0.03], [-18, -0.02, 0.05], [7, 0.04, 0.12], [-7, -0.12, -0.05]];
   const circAdj = circuits.map(() => new Set());
   for (const [a, b] of pairs) {
     const ca = circuitOf[a], cb = circuitOf[b];

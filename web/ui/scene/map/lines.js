@@ -464,8 +464,8 @@ void main() {
 const STYLES = {
   river:   { color: [0.33, 0.50, 0.55], worldW: 0.5, minPx: 0.7, maxPx: 40, edge: 1, order: 2 },
   shore:   { color: [0.27, 0.40, 0.44], minPx: 0.9, maxPx: 1.6, alpha: 0.8, order: 3 },
-  pref:    { color: [0.33, 0.26, 0.19], minPx: 0.9, maxPx: 1.2, dash: [5.5, 3.2, 0, 0], order: 4 },
-  circuit: { color: [0.27, 0.19, 0.12], minPx: 1.3, maxPx: 1.8, dash: [16, 8.5, 11.2, 1.8], order: 5 },
+  pref:    { color: [0.30, 0.24, 0.17], minPx: 0.8, maxPx: 1.1, order: 4 },
+  circuit: { color: [0.25, 0.18, 0.11], minPx: 1.4, maxPx: 1.9, order: 5 },
   circuitLine: { color: [0.27, 0.19, 0.12], minPx: 1.2, maxPx: 1.6, order: 5 },
   coast:   { color: [0.22, 0.27, 0.25], minPx: 1.2, maxPx: 1.8, alpha: 0.85, order: 6 },
   realmHalo: { color: [0.16, 0.10, 0.06], minPx: 6, maxPx: 8, soft: 1, alpha: 0.2, order: 7 },
@@ -596,7 +596,7 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     transientOn = on;
     for (const k of ['hover', 'picked', 'pickedHalo']) if (meshes[k]) meshes[k].visible = on;
   }
-  // 层级：天下档国界粗、省界淡；省道档省界实线；府州档省界点划、府界点线（看法设色时府界各档都要看得见）
+  // 层级：天下档国界粗、省界淡；省道档省界实线；府州档省界、府界细实线（照 CK3，不用点划；看法设色时府界各档都要看得见）
   function update(dist) {
     for (const k of ['hover', 'picked', 'pickedHalo']) if (meshes[k]) meshes[k].visible = transientOn;
     const f = shared.uFocus ? shared.uFocus.value : 0;
@@ -604,8 +604,8 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     mats.focusHalo.uniforms.uAlpha.value = 0.35 * f;
     const layer = shared.uLayer ? shared.uLayer.value : 0;
     const fill = shared.uFill ? shared.uFill.value : 0, mid = shared.uTierMid ? shared.uTierMid.value : 0;
-    mats.pref.uniforms.uAlpha.value = Math.max(0.6 * (1 - fill), 0.5 * layer);
-    mats.circuit.uniforms.uAlpha.value = 0.7 * (1 - fill);
+    mats.pref.uniforms.uAlpha.value = Math.max(0.5 * (1 - fill), 0.5 * layer);
+    mats.circuit.uniforms.uAlpha.value = 0.72 * (1 - fill);
     mats.circuitLine.uniforms.uAlpha.value = fill * (0.22 + 0.5 * mid) * (1 - layer);
     mats.realm.uniforms.uMinPx.value = 1.9 + 0.8 * fill;
     mats.realm.uniforms.uMaxPx.value = 2.4 + 1.0 * fill;

@@ -734,6 +734,32 @@ export function mapRegions() {
   return { mapId: map.id, regions, factions };
 }
 
+// 舆图上的京城与省会（名）。省会：行政区划树里各省（区划根下一级）的首府 capitalChildId。
+// 京城：每个势力一组候选名，前面是势力 capital 字段拆出的各段（「沈阳（盛京·……）」拆成沈阳、盛京……），
+// 末一个是其区划第一省的首府（剧本 capital 写成「北京·紫禁城」这类对不上府州名时，靠它落到顺天府）。由舆图那边取第一个对得上的
+export function mapSeats() {
+  const g = G();
+  const P = w.P || {};
+  const pi = { ...(P.playerInfo || {}), ...(g.playerInfo || {}) };
+  const kids = (n) => [].concat(n.prefectures || [], n.children || [], n.divisions || []).filter((x) => x && typeof x === 'object');
+  const capOf = (n) => { const id = n && n.capitalChildId; const c = id ? kids(n).find((x) => String(x.id) === String(id)) : null; return c && c.name ? String(c.name) : ''; };
+  const segs = (t) => String(t || '').split(/[·・（）()\/\s，,、]+/).filter((x) => x && /[一-鿿]/.test(x) && !/^今/.test(x));
+  const seats = new Set(), capitals = [];
+  const roots = g.adminHierarchy || P.adminHierarchy || {};
+  const facs = g.facs || [];
+  for (const k of Object.keys(roots)) {
+    const root = roots[k];
+    if (!root || typeof root !== 'object') continue;
+    const provs = kids(root);
+    for (const prov of provs) { const c = capOf(prov); if (c) seats.add(c); }
+    const fid = root.factionId || (k === 'player' ? pi.factionId : k);
+    const f = facs.find((x) => x && (x.id === fid || x.name === root.factionName)) || null;
+    const alts = [...segs(f && f.capital), ...(k === 'player' ? segs(pi.capital) : []), capOf(provs[0])].filter(Boolean);
+    if (alts.length) capitals.push(alts);
+  }
+  return { capitals, seats: [...seats] };
+}
+
 // 告示：内核的通知史（NotificationSystem 留最近五十条——急报、驻留提示、提示条），新的在前。
 // 新前端把驻留提示改成数秒即逝的纸签、急报收卷即去，错过了可在邸报全卷「告示」页翻回
 export function notices() {

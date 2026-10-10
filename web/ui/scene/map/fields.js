@@ -3,7 +3,7 @@
 // 出：一组半浮点贴图（与旧 CPU 版同一算法：盒式模糊三遍近似高斯、滑窗极值、有符号海岸距离），
 //     外加 CPU 上要用的几张小场（拾取、题名落点、点叶筛选），从显卡读回一次。
 import * as THREE from 'three';
-import { W, H } from './terrain.js';
+import { W, H, waterMask } from './terrain.js';
 
 const VERT = /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
@@ -17,12 +17,13 @@ function makeRunner(renderer) {
   const live = new Set();
   const keyOf = new WeakMap();                  // 离屏 → 规格键（RenderTarget 没有 userData）
   const FORMAT = { 1: THREE.RedFormat, 2: THREE.RGFormat, 4: THREE.RGBAFormat };
-  function target(w, h, { channels = 1, type = THREE.HalfFloatType, filter = THREE.LinearFilter } = {}) {
-    const key = [w, h, channels, type, filter].join(':');
+  // mip：带多级渐远（远看取粗一级，地形明暗不闪）
+  function target(w, h, { channels = 1, type = THREE.HalfFloatType, filter = THREE.LinearFilter, mip = false } = {}) {
+    const key = [w, h, channels, type, filter, mip].join(':');
     const pool = free.get(key);
     let rt = pool && pool.pop();
     if (!rt) {
-      rt = new THREE.WebGLRenderTarget(w, h, { type, format: FORMAT[channels], depthBuffer: false, magFilter: filter, minFilter: filter, generateMipmaps: false });
+      rt = new THREE.WebGLRenderTarget(w, h, { type, format: FORMAT[channels], depthBuffer: false, magFilter: filter, minFilter: mip ? THREE.LinearMipmapLinearFilter : filter, generateMipmaps: mip });
       rt.texture.wrapS = rt.texture.wrapT = THREE.ClampToEdgeWrapping;
       keyOf.set(rt, key);
     }
@@ -204,37 +205,16 @@ function landCanvas(env) {
   return c;
 }
 
-// 河湖：2 倍分辨率画线。R 干流与湖、G 支流；黑底不透明，RGB 即覆盖率（等于原先「去预乘后乘回 alpha」）
-export function riverCanvas(env, scale = 2) {
-  const c = document.createElement('canvas');
-  c.width = W * scale;
-  c.height = H * scale;
-  const g = c.getContext('2d');
-  g.fillStyle = '#000';
-  g.fillRect(0, 0, c.width, c.height);
-  g.globalCompositeOperation = 'lighter';           // 两色相叠时通道各自累加（与旧版分通道取值一致）
-  g.scale(scale, scale);
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
-  g.strokeStyle = 'rgb(0,255,0)';
-  g.lineWidth = 0.6;
-  for (const r of env.rivers) if (!r.major) g.stroke(new Path2D(r.d));
-  g.strokeStyle = 'rgb(255,0,0)';
-  g.lineWidth = 1.3;
-  for (const r of env.rivers) if (r.major) g.stroke(new Path2D(r.d));
-  g.fillStyle = 'rgb(255,0,0)';
-  g.beginPath();
-  for (const lake of env.lakeFaces) {
-    const f = lake.f;
-    for (let i = 0; i + 5 < f.length; i += 6) {
-      g.moveTo(f[i], f[i + 1]);
-      g.lineTo(f[i + 2], f[i + 3]);
-      g.lineTo(f[i + 4], f[i + 5]);
-      g.closePath();
-    }
-  }
-  g.fill();
-  return c;
+// 陆与水面覆盖图（2 倍分辨率，RG 两字节）：带多级渐远，远看海岸不闪
+export function waterTexture(mask) {
+  const t = new THREE.DataTexture(mask.data, mask.width, mask.height, THREE.RGFormat, THREE.UnsignedByteType);
+  t.colorSpace = THREE.NoColorSpace;
+  t.magFilter = THREE.LinearFilter;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.needsUpdate = true;
+  return t;
 }
 
 // 主入口：demImage 为已载入的 dem.png，env 为山河境矢量。返回贴图与 CPU 小场
@@ -303,7 +283,7 @@ export async function buildFieldsGPU(renderer, demImage, env, { hiRes = true } =
   const terrain = R.run('pack3', /* glsl */`
     uniform sampler2D tH; uniform sampler2D tS; uniform sampler2D tW; varying vec2 vUv;
     void main() { gl_FragColor = vec4(texture2D(tH, vUv).r, texture2D(tS, vUv).r, texture2D(tW, vUv).r, 0.0); }`,
-  { tH: height.texture, tS: small.texture, tW: wide.texture }, R.target(W, H, { channels: 4 }));
+  { tH: height.texture, tS: small.texture, tW: wide.texture }, R.target(W, H, { channels: 4, mip: true }));
   R.release(small, wide);
   step('depth+terrain');
   const massifRaw = R.run('massif', MASSIF, { tTerrain: terrain.texture }, R.target(W, H));
@@ -346,14 +326,11 @@ export async function buildFieldsGPU(renderer, demImage, env, { hiRes = true } =
   const coast = R.run('coast', COAST, { tMask: landTex, tIn: dIn.texture, tOut: dOut.texture, uSize: new THREE.Vector2(W, H) }, R.target(W, H));
   R.release(dIn, dOut);
 
-  // 4) 河湖：画布直接上传
+  // 4) 陆与水面（2 倍）：CPU 上也留一份，线层判海岸用
   step('coast');
-  const rivers = new THREE.CanvasTexture(riverCanvas(env, 2));
-  step('rivers');
-  rivers.colorSpace = THREE.NoColorSpace;
-  rivers.flipY = false;
-  rivers.generateMipmaps = false;
-  rivers.minFilter = rivers.magFilter = THREE.LinearFilter;
+  const water = waterMask(env, 2);
+  const waterTex = waterTexture(water);
+  step('water');
 
   // 5) CPU 上要用的小场：R 微糊高（拾取、题名落点）、G 山系、B 大半径起伏幅、A 陆高（点叶筛选）
   const cpuRT = R.target(W, H, { channels: 4, type: THREE.FloatType, filter: THREE.NearestFilter });
@@ -378,7 +355,7 @@ export async function buildFieldsGPU(renderer, demImage, env, { hiRes = true } =
   let hiLand = null;
   if (hiRes) {
     hiLand = R.run('hiLand', /* glsl */`uniform sampler2D tHi; varying vec2 vUv; void main() { gl_FragColor = vec4(texture2D(tHi, vUv).g, 0.0, 0.0, 1.0); }`,
-      { tHi: hi.texture }, R.target(hiW, hiH));
+      { tHi: hi.texture }, R.target(hiW, hiH, { mip: true }));
   }
   R.release(hi, cpuRT);
   step('hiLand');
@@ -389,10 +366,10 @@ export async function buildFieldsGPU(renderer, demImage, env, { hiRes = true } =
   renderer.setRenderTarget(prevTarget);
   return {
     textures: {
-      terrain: terrain.texture, aux: aux.texture, range: range.texture, coast: coast.texture, rivers,
+      terrain: terrain.texture, aux: aux.texture, range: range.texture, coast: coast.texture, water: waterTex,
       heightHi: hiLand ? hiLand.texture : terrain.texture, hiW: hiLand ? hiW : W, hiH: hiLand ? hiH : H
     },
-    cpu: { heightSmall, massif: massifF, relief, height: heightF },
+    cpu: { heightSmall, massif: massifF, relief, height: heightF, water },
     targets: keep
   };
 }

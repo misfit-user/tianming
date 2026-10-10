@@ -14,6 +14,7 @@
 | 屋子 `study/room.glb` + 光照贴图 `study/room-lightmap.hdr` | `blender -b --factory-startup -P tools/ui-art/blender/build_room.py -- <出目录> bake=2048 samples=192` | Blender 5.2（`D:/tools/blender-5.2.2-windows-x64`）；烘光约 5～7 分钟，降噪另起 Blender 跑 `denoise_hdr.py`。改屋子几何必须重烘 |
 | 案上器物 `study/props.glb` | `blender -b --factory-startup -P tools/ui-art/blender/build_props.py -- <出目录>` | |
 | 真实高程 `map/dem.png` | `python tools/ui-art/map/build_dem.py` | 拼 Terrain Tiles 第 6 级，瓦片缓存目录可用 `TM_DEM_TILES` 改 |
+| 舆图干流 `web/ui/scene/map/trunks.js`（进 git 的源码数据） | `node tools/ui-art/map/build_trunks.cjs` | 取 Natural Earth 50m 大河（经 `web/preview/img/east-asia-basemap-data.js`），换到舆图世界坐标、首尾接成干流；只用来给山河境细河分干支、题河名 |
 
 出目录省略时默认写进 `web/ui/assets/` 对应处。重建完跑：
 

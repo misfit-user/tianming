@@ -6,8 +6,17 @@
 /* 舆图题名：势力名毛笔楷墨色，府州名小楷 */
 .map-labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 .m-lbl { position: absolute; left: 0; top: 0; white-space: nowrap; transition: opacity .35s; will-change: transform; }
-.m-lbl.realm { font-family: var(--f-title); letter-spacing: .12em; color: #1d1812; text-shadow: 0 0 8px rgba(242, 234, 216, .95), 0 0 2px rgba(242, 234, 216, .95); }
-.m-lbl.pref { font-family: var(--f-kai); letter-spacing: .08em; color: rgba(40, 30, 20, .8); text-shadow: 0 0 3px rgba(242, 234, 216, .85); }
+/* 势力名一字一格，顺疆域长轴铺开（labels.js）：浓墨大字，四周一圈绢色晕开，压在山水上也认得 */
+.m-lbl.realm-ch { font-family: var(--f-title); line-height: 1; color: #1f1912;
+  text-shadow: 0 0 .5em rgba(240, 230, 208, .7), 0 0 .12em rgba(240, 230, 208, .9); }
+/* 府州名：治所下方，小楷；要府稍大，京城朱色 */
+.m-lbl.pref { font-family: var(--f-kai); letter-spacing: .06em; line-height: 1.2; color: rgba(36, 27, 18, .92);
+  text-shadow: 0 0 2px rgba(244, 236, 216, .95), 0 0 5px rgba(244, 236, 216, .8); }
+.m-lbl.pref.seat { color: #241a10; font-weight: 600; }
+.m-lbl.pref.cap { color: #7d2015; font-weight: 600; letter-spacing: .12em; }
+/* 大河名：石青色，顺流写 */
+.m-lbl.river { font-family: var(--f-kai); letter-spacing: .5em; color: rgba(46, 88, 102, .95);
+  text-shadow: 0 0 3px rgba(236, 232, 214, .9); }
 
 /* 入图时镜头前掠过的云 */
 .dive-cloud { position: fixed; inset: -12%; pointer-events: none; opacity: 0; mix-blend-mode: screen; z-index: 3;

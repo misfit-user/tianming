@@ -616,6 +616,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     factions = (mr && mr.factions) || {};
     map.setRegions(mr || { regions: [], factions: {} });
     mapRegionList = (mr && mr.regions) || [];
+    // 京城、省会：题名先占位、城郭大一号（名对府州：全名或以之开头）
+    const seats = game.select.mapSeats();
+    const indexOf = (n) => mapRegionList.findIndex((r) => r.name && (r.name === n || r.name.startsWith(n) || n.startsWith(r.name)));
+    map.setCapitals(seats.capitals.map((alts) => alts.map(indexOf).find((i) => i >= 0)).filter((i) => i >= 0));
+    map.setImportant(seats.seats.map(indexOf).filter((i) => i >= 0));
     replaceChildren(regionDl, mapRegionList.map((r) => h('option', { value: r.name }, [r.circuit, r.parent].filter(Boolean).join(' · '))));
     await applyFocus();
   }

@@ -3,9 +3,12 @@
 // 坐标为舆图世界坐标（2100×1540）。府州易主后调 setOwnership 重画疆界。
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { W, H, loadImage, decodeDem, coastField, riverMask, regionIdMap, realms as computeRealms, blur, realmBorderDistance, localRange } from './terrain.js';
-import { buildFieldsGPU } from './fields.js';
-import { terrainVertex, terrainFragment, treeFragment, pointsVertex } from './shaders.js';
+import { W, H, loadImage, decodeDem, coastField, waterMask, landSampler, waterSampler, regionIdMap, realms as computeRealms, blur, realmBorderDistance, localRange } from './terrain.js';
+import { buildFieldsGPU, waterTexture } from './fields.js';
+import { createLines } from './lines.js';
+import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
+import { spriteAtlas, SPRITE } from './sprites.js';
+import { createLabels, SHORT } from './labels.js';
 import { LOOK_QINGLV, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
 import { quality } from '../../core/quality.js';
 import { SHEET_EXTENT } from '../world.js';
@@ -53,10 +56,7 @@ function buildFieldsCPU(demImg, env, { hiRes }) {
   const massifRaw = Float32Array.from(height, (v, i) => Math.min(1, Math.max(0, (v - heightWide[i]) / 0.10)));
   const massif = blur(massifRaw, W, H, 2, 2);
   const range = localRange(height, W, H, 12, 6), rangeWide = localRange(height, W, H, 30, 14);
-  const rivers = riverMask(env, 2);
-  const riverTex = new THREE.DataTexture(rivers.data, rivers.width, rivers.height, THREE.RGFormat, THREE.UnsignedByteType);
-  riverTex.magFilter = riverTex.minFilter = THREE.LinearFilter;
-  riverTex.needsUpdate = true;
+  const water = waterMask(env, 2);
   const relief = Float32Array.from(rangeWide.hi, (v, i) => v - rangeWide.lo[i]);
   return {
     textures: {
@@ -64,11 +64,11 @@ function buildFieldsCPU(demImg, env, { hiRes }) {
       aux: halfTexture([massif, depth], W, H, THREE.RGFormat),
       coast: halfTexture([coastField(env)], W, H, THREE.RedFormat),
       range: halfTexture([range.lo, range.hi, rangeWide.lo, rangeWide.hi], W, H, THREE.RGBAFormat),
-      rivers: riverTex,
+      water: waterTexture(water),
       heightHi: hiRes ? halfTexture([Float32Array.from(dem.hi, (v) => Math.max(v, 0))], dem.width, dem.height, THREE.RedFormat) : halfTexture([height], W, H, THREE.RedFormat),
       hiW: hiRes ? dem.width : W, hiH: hiRes ? dem.height : H
     },
-    cpu: { heightSmall, massif, relief, height },
+    cpu: { heightSmall, massif, relief, height, water },
     targets: []
   };
 }
@@ -114,25 +114,39 @@ function gridGeometry(cols, rows) {
   return g;
 }
 
-// 点层：items 经 map() 得 [x, 高度(0~1), y, 尺寸, 类型]
-function pointsLayer(items, map, uniforms, fragmentShader, sizeMul, fade, clampPx = [0.0, 10.0]) {
+// 点景层：items 为 [x, 高度(0~1), y, 世界尺寸, 图集格号]
+function spriteLayer(items, uniforms) {
   const geo = new THREE.BufferGeometry();
   const pos = new Float32Array(items.length * 3), size = new Float32Array(items.length), type = new Float32Array(items.length);
-  items.forEach((it, i) => {
-    const [x, h, y, s, t] = map(it, i);
+  items.forEach(([x, h, y, s, t], i) => {
     pos[i * 3] = x; pos[i * 3 + 1] = h; pos[i * 3 + 2] = y;
     size[i] = s; type[i] = t;
   });
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   geo.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
   geo.setAttribute('aType', new THREE.BufferAttribute(type, 1));
-  const pts = new THREE.Points(geo, new THREE.ShaderMaterial({ uniforms, transparent: true, depthWrite: false, fragmentShader, vertexShader: pointsVertex(sizeMul, fade, clampPx) }));
+  const pts = new THREE.Points(geo, new THREE.ShaderMaterial({
+    uniforms, vertexShader: spriteVertex, fragmentShader: spriteFragment,
+    transparent: true, depthWrite: false, premultipliedAlpha: true, blending: THREE.CustomBlending,
+    blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor
+  }));
   pts.frustumCulled = false;
+  pts.renderOrder = 20;
   return pts;
 }
+let atlasTexture = null;
+function atlas() {
+  if (atlasTexture) return atlasTexture;
+  atlasTexture = new THREE.CanvasTexture(spriteAtlas());
+  atlasTexture.colorSpace = THREE.NoColorSpace;
+  atlasTexture.flipY = false;
+  atlasTexture.premultiplyAlpha = false;
+  atlasTexture.minFilter = THREE.LinearMipmapLinearFilter;
+  atlasTexture.generateMipmaps = true;
+  atlasTexture.anisotropy = 4;
+  return atlasTexture;
+}
 
-// 题名用的简称（剧本势力若带 short 字段就用它）
-const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷兰', '西班牙·马尼拉': '西班牙', '大越黎郑阮格局': '大越', '虾夷地与松前氏': '虾夷', '吐鲁番诸伯克': '吐鲁番', '野人女真诸部': '野人女真', '葡萄牙·澳门': '澳门', '瓦刺诸部': '瓦剌' };
 
 export async function createMapView(stage, { regions = [], factions = {}, labelLayer = null, view = 'world', fov = 30, primary } = {}) {
   const q = quality();
@@ -174,7 +188,15 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const borderTex = new THREE.DataTexture(new Uint16Array(W * H), W, H, THREE.RedFormat, THREE.HalfFloatType);
   borderTex.magFilter = THREE.LinearFilter;
   borderTex.minFilter = THREE.LinearFilter;
+  // 世界坐标处是哪个府州（下标，-1 无）：取编号图
+  const regionIndexAt = (x, y) => {
+    const ix = Math.floor(x * 2), iy = Math.floor(y * 2);
+    if (ix < 0 || iy < 0 || ix >= ids.width || iy >= ids.height) return -1;
+    return ids.data[iy * ids.width + ix] - 1;
+  };
   let realmList = [];
+  let realmByRegion = [];                     // 府州下标 → 势力编号（线层分国界用）
+  let lines = null;
   let focusSet = [];                          // 辖区（身份视野）：府州下标
   const primaryRe = primary ? new RegExp(primary) : undefined;
   function applyPolitics() {
@@ -189,6 +211,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     paletteData.fill(0);
     realmList.forEach((r, i) => { if (i < PALETTE_W) paletteData.set([...hexRgb(swatchFor(r.name, r.color, primaryRe ? { primary: primaryRe } : undefined)), 255], i * 4); });
     paletteTex.needsUpdate = true;
+    realmByRegion = regions.map((_, i) => regionRealm[i + 1]);
+    lines?.setPolitics(realmByRegion);
     const border = realmBorderDistance(ids, regionRealm);
     const half = borderTex.image.data;
     for (let i = 0; i < W * H; i++) half[i] = THREE.DataUtils.toHalfFloat(Math.min(border[i], 200));
@@ -201,7 +225,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uBorder: { value: borderTex },
     uAux: { value: F.textures.aux },
     uCoast: { value: F.textures.coast },
-    uRiver: { value: F.textures.rivers },
+    uWater: { value: F.textures.water },
     uRegion: { value: regionTex }, uRegionInfo: { value: infoTex }, uPalette: { value: paletteTex },
     uTexel: { value: new THREE.Vector2(1 / W, 1 / H) },
     // 低档不载原分辨率高程，用世界网格那一份代替
@@ -222,6 +246,18 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const sample = (field) => (x, y) => field[Math.max(0, Math.min(H - 1, Math.round(y))) * W + Math.max(0, Math.min(W - 1, Math.round(x)))];
   const heightAt = sample(d.heightSmall);
   const massifAt = sample(d.massif);
+
+  // ---------- 线：疆界、省界、府界、海岸、江河 ----------
+  lines = createLines({ env: d.env, shared: uniforms, land: landSampler(d.water), water: waterSampler(d.water), heightAt: sample(d.height), size: stage.size });
+  lines.setRegions(regions, regionIndexAt);
+  lines.setPolitics(realmByRegion);
+  scene.add(lines.group);
+  // ---------- 点景：山上的树（山河境的树位）、平原湿润处的村舍 ----------
+  const spriteUniforms = {
+    uRelief: uniforms.uRelief, uPx: uniforms.uPx, uHalfView: uniforms.uHalfView, uCam: uniforms.uCam,
+    uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar, uFogColor: uniforms.uFogColor,
+    uDpr: { value: stage.size.dpr || 1 }, uFadePx: { value: new THREE.Vector2(7, 12) }, uMaxPx: { value: 34 }, uAtlas: { value: atlas() }
+  };
   if (q.trees) {
     let s = 41;
     const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -229,33 +265,48 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       const i = Math.max(0, Math.min(W - 1, Math.round(x))) + Math.max(0, Math.min(H - 1, Math.round(y))) * W;
       return d.relief[i] > 0.12 && d.height[i] < 0.6;
     };
-    const trees = d.env.trees.filter((t) => massifAt(t[0], t[1]) > 0.08 && forested(t[0], t[1]));
-    scene.add(pointsLayer(trees, (t) => [t[0], heightAt(t[0], t[1]), t[1], t[2] * (0.7 + 0.5 * rnd()), t[3]], uniforms, treeFragment, 2.0, [2.4, 4.4]));
+    const KIND = [SPRITE.pine, SPRITE.dot, SPRITE.jia, SPRITE.grove];
+    const items = d.env.trees.filter((t) => massifAt(t[0], t[1]) > 0.08 && forested(t[0], t[1]))
+      .map((t) => [t[0], heightAt(t[0], t[1]), t[1], 1.5 * t[2] * (0.75 + 0.5 * rnd()), KIND[t[3] % 4]]);
+    // 村舍：湿润低平处（北纬 20～40 度、海拔三四百米以下、不在水上）按网格抖动散布；
+    // 成片聚落（低频噪声）与傍水处密，别处稀，免得撒成均匀的一层；近水处间以柳
+    const landAt = landSampler(d.water), wetAt = waterSampler(d.water);
+    const cluster = (x, y) => { const v = Math.sin(x * 0.031 + 1.7) * Math.sin(y * 0.027 + 0.4) + Math.sin(x * 0.011 - y * 0.013 + 2.2) * 0.6; return Math.max(0, Math.min(1, (v + 0.4) / 1.4)); };
+    for (let y = 3; y < H; y += 5) {
+      const lat = 67 - y / 20;
+      if (lat < 20 || lat > 40.5) continue;
+      for (let x = 3; x < W; x += 5) {
+        const px = x + (rnd() - 0.5) * 4.5, py = y + (rnd() - 0.5) * 4.5;
+        if (landAt(px, py) < 0.5 || wetAt(px, py) || heightAt(px, py) > 0.06 || massifAt(px, py) > 0.05) continue;
+        const byRiver = lines.nearRiver(px, py);
+        if (rnd() > 0.02 + 0.22 * cluster(px, py) ** 2 + (byRiver ? 0.22 : 0)) continue;
+        const nearWater = byRiver || wetAt(px + 2, py) || wetAt(px - 2, py) || wetAt(px, py + 2) || wetAt(px, py - 2);
+        items.push([px, heightAt(px, py), py, 1.5 + rnd() * 0.6, nearWater && rnd() < 0.3 ? SPRITE.willow : SPRITE.hamlet]);
+      }
+    }
+    scene.add(spriteLayer(items, spriteUniforms));
   }
 
-  // ---------- 题名（DOM 层） ----------
-  let labels = [];
-  function buildLabels() {
-    if (!labelLayer) return;
-    labelLayer.replaceChildren();
-    labels = [];
-    realmList.forEach((r) => {
-      if (r.area < 400) return;
-      const el = document.createElement('div');
-      el.className = 'm-lbl realm';
-      el.textContent = factions[r.id]?.short || SHORT[r.name] || r.name;
-      labelLayer.append(el);
-      labels.push({ el, x: r.x, y: r.y, size: Math.max(16, Math.min(64, Math.sqrt(r.area) * 0.16)), kind: 'realm' });
-    });
-    regions.forEach((r) => {
-      const el = document.createElement('div');
-      el.className = 'm-lbl pref';
-      el.textContent = r.name;
-      labelLayer.append(el);
-      labels.push({ el, x: r.center[0], y: r.center[1], size: 12, kind: 'pref' });
-    });
+  // ---------- 城郭：府州治所（京城两重城楼）；近看才显 ----------
+  const cityUniforms = { ...spriteUniforms, uFadePx: { value: new THREE.Vector2(9, 15) }, uMaxPx: { value: 46 } };
+  let cities = null;
+  function buildCities() {
+    if (cities) { scene.remove(cities); cities.geometry.dispose(); cities.material.dispose(); cities = null; }
+    if (!regions.length) return;
+    const caps = labels ? labels.capitals : new Set(), seats = labels ? labels.important : new Set();
+    cities = spriteLayer(regions.map((r, i) => {
+      const [x, y] = r.center;
+      const k = caps.has(i) ? 2 : seats.has(i) ? 1 : 0;
+      return [x, heightAt(x, y), y, k === 2 ? 4.2 : k === 1 ? 3.3 : 2.6, k === 2 ? SPRITE.capital : SPRITE.city];
+    }), cityUniforms);
+    cities.renderOrder = 21;
+    scene.add(cities);
   }
-  buildLabels();
+
+  // ---------- 题名（DOM 层，见 labels.js） ----------
+  const labels = labelLayer ? createLabels({ layer: labelLayer, camera, size: stage.size, heightAt, relief: () => uniforms.uRelief.value }) : null;
+  labels?.setData({ regions, realms: realmList, factions });
+  buildCities();
   const tmp = new THREE.Vector3();
   function placeLabels(dist) {
     const w = stage.size.w, h = stage.size.h;
@@ -340,12 +391,20 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, relief: uniforms.uRelief.value, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
     if (look) setLook(look);
     uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
+    const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
+    uniforms.uFogNear.value = 1e6;                // 绢图正俯视，不要远雾
+    uniforms.uFogFar.value = 2e6;
     camera.fov = 20;
-    uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(10)));   // 点叶按这张图的像素算大小
+    uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(10)));   // 点叶、线宽按这张图的像素算大小
+    lines.setViewport(width, height);
+    lines.transient(false);
+    const dpr = spriteUniforms.uDpr.value;
+    spriteUniforms.uDpr.value = 1;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     setPose({ target: [extent.x0 + extent.w / 2, 0, extent.y0 + extent.h / 2], dist: (extent.h / 2) / Math.tan(THREE.MathUtils.degToRad(10)), polar: 0.0001, az: 0 });
     uniforms.uCam.value.copy(camera.position);
+    lines.update(pose().dist * 1.6);
     uniforms.uZoom.value = 0;
     const rt = new THREE.WebGLRenderTarget(width, height, { samples: 4 });
     renderer.setRenderTarget(rt);
@@ -396,6 +455,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     g.strokeStyle = 'rgba(40,24,14,0.7)';
     g.lineWidth = 3;
     g.strokeRect(22 * width / W, 22 * height / H, width - 44 * width / W, height - 44 * height / H);
+    lines.setViewport(stage.size.w, stage.size.h);
+    lines.transient(true);
+    spriteUniforms.uDpr.value = dpr;
     camera.fov = saved.fov;
     camera.aspect = saved.aspect;
     camera.updateProjectionMatrix();
@@ -403,6 +465,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uniforms.uRelief.value = saved.relief;
     uniforms.uPx.value = saved.px;
     uniforms.uFocus.value = saved.focus;
+    [uniforms.uFogNear.value, uniforms.uFogFar.value] = fog;
     setLook(saved.look);
     return c;
   }
@@ -420,14 +483,19 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       if (interactive) controls.update();
       uniforms.uCam.value.copy(camera.position);
       const dist = camera.position.distanceTo(controls.target);
+      // 远雾：斜看时远处融进绢色（正俯视时各处离镜头差不多远，等于没有）
+      uniforms.uFogNear.value = dist * 1.35;
+      uniforms.uFogFar.value = dist * 3.6;
       uniforms.uZoom.value = 1 - Math.min(1, Math.max(0, (dist - 700) / 700));
       const id = interactive ? pickAt(mouse) : -1;
+      lines.update(dist);
       if (id !== uniforms.uHover.value) {
         uniforms.uHover.value = id;
+        lines.setHover(id - 1);
         hoverCb?.(id > 0 ? { index: id - 1, ...regions[id - 1] } : null);
       }
       for (const fn of hooks) fn(time, camera, dt);
-      if (labelLayer) placeLabels(dist);
+      labels?.update(dist);
     },
     render(r, target) {
       r.setRenderTarget(target);
@@ -437,6 +505,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       uniforms.uPx.value = h / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+      lines.setViewport(w, h);
+      spriteUniforms.uDpr.value = stage.size.dpr || 1;
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
     onHover(fn) { hoverCb = fn; },
@@ -445,7 +515,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     get active() { return active; },
     setLook, setPose, pose, renderSheet,
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
-    select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; },
+    select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; lines.setPicked(index == null ? -1 : index); },
     // 看法设色：colors[府州下标] = '#rrggbb' 或空（不染）；浓淡由 uniforms.uLayer（0～1）定，给空数组就撤
     setLayer(colors) {
       layerData.fill(0);
@@ -462,6 +532,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       for (let i = 1; i < INFO_W; i++) info[i * 4 + 1] = 0;
       for (const k of focusSet) if (k + 1 < INFO_W) info[(k + 1) * 4 + 1] = 255;
       infoTex.needsUpdate = true;
+      lines.setFocus(focusSet);
       if (!focusSet.length) uniforms.uFocus.value = 0;
     },
     // 府州易主：changes = { 府州下标: 新势力 id }
@@ -478,14 +549,24 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       uniforms.uSelected.value = -1;
       focusSet = [];
       uniforms.uFocus.value = 0;
+      lines.setRegions(regions, regionIndexAt);
+      lines.setFocus([]);
+      lines.setHover(-1);
+      lines.setPicked(-1);
       applyPolitics();
-      buildLabels();
+      labels?.setCapitals([]);
+      labels?.setImportant([]);
+      labels?.setData({ regions, realms: realmList, factions });
+      buildCities();
     },
     setOwnership(changes) {
       for (const [i, fac] of Object.entries(changes)) if (regions[i]) regions[i].faction = fac;
       applyPolitics();
-      buildLabels();
+      labels?.setData({ regions, realms: realmList, factions });
     },
+    // 京城、要府（府州下标）：题名先占位、字大；城郭京城两重楼、要府大一号
+    setCapitals(list) { labels?.setCapitals(list); buildCities(); },
+    setImportant(list) { labels?.setImportant(list); buildCities(); },
     // 舆图世界坐标落在屏幕上的位置（高度取地形）
     worldToScreen(x, y) {
       tmp.set(x, heightAt(x, y) * uniforms.uRelief.value + 2, y).project(camera);
@@ -502,8 +583,10 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       stage.canvas.removeEventListener('pointerleave', onLeave);
       controls.dispose();
       for (const t of [regionTex, infoTex, paletteTex, borderTex, layerTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
+      lines.dispose();
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
-      labelLayer?.replaceChildren();
+      labels?.clear();
+      if (cities) { cities.geometry.dispose(); cities.material.dispose(); }
     }
   };
   return mapView;

@@ -109,43 +109,57 @@ export function coastField(env) {
   return out;
 }
 
-// 河湖：2 倍分辨率画线。R 通道是干流与湖，G 通道是支流（着色器里随缩放淡出）
-export function riverMask(env, scale = 2) {
+// 陆与水面：2 倍分辨率的覆盖率（R 陆、G 湖与大江的水面）。着色器按 0.5 取界、双线性插值，近看海岸湖岸也是圆的；
+// 小河不在这里，走矢量线（lines.js）。黑底不透明，RGB 即覆盖率
+export function waterMask(env, scale = 2) {
   const c = document.createElement('canvas');
   c.width = W * scale;
   c.height = H * scale;
   const g = c.getContext('2d', { willReadFrequently: true });
+  g.fillStyle = '#000';
+  g.fillRect(0, 0, c.width, c.height);
   g.scale(scale, scale);
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
-  g.strokeStyle = 'rgb(0,255,0)';
-  g.lineWidth = 0.6;
-  for (const r of env.rivers) if (!r.major) g.stroke(new Path2D(r.d));
-  g.strokeStyle = 'rgb(255,0,0)';
-  g.lineWidth = 1.3;
-  for (const r of env.rivers) if (r.major) g.stroke(new Path2D(r.d));
-  // 湖是三角面列表（每 6 个数一个三角形），算作干流通道
   g.fillStyle = 'rgb(255,0,0)';
-  g.beginPath();
+  for (const p of env.landPaths) g.fill(new Path2D(p.d), 'evenodd');
+  g.globalCompositeOperation = 'lighter';
+  g.fillStyle = 'rgb(0,255,0)';
+  // 湖是三角面列表（每 6 个数一个三角形）；大江是闭合的两岸轮廓
+  const lakes = new Path2D();
   for (const lake of env.lakeFaces) {
     const f = lake.f;
     for (let i = 0; i + 5 < f.length; i += 6) {
-      g.moveTo(f[i], f[i + 1]);
-      g.lineTo(f[i + 2], f[i + 3]);
-      g.lineTo(f[i + 4], f[i + 5]);
-      g.closePath();
+      lakes.moveTo(f[i], f[i + 1]);
+      lakes.lineTo(f[i + 2], f[i + 3]);
+      lakes.lineTo(f[i + 4], f[i + 5]);
+      lakes.closePath();
     }
   }
-  g.fill();
+  g.fill(lakes);
+  for (const r of env.rivers) if (r.major) g.fill(new Path2D(r.d), 'evenodd');
   const px = g.getImageData(0, 0, c.width, c.height).data;
   const out = new Uint8Array(c.width * c.height * 2);
-  // getImageData 给的是去预乘的颜色，边缘覆盖率在 alpha 里，要乘回去
   for (let i = 0; i < c.width * c.height; i++) {
-    const a = px[i * 4 + 3] / 255;
-    out[i * 2] = Math.round(px[i * 4] * a);
-    out[i * 2 + 1] = Math.round(px[i * 4 + 1] * a);
+    out[i * 2] = px[i * 4];
+    out[i * 2 + 1] = px[i * 4 + 1];
   }
-  return { data: out, width: c.width, height: c.height };
+  return { data: out, width: c.width, height: c.height, scale };
+}
+// 是否水面（海，或湖与大江）
+export function waterSampler(mask) {
+  const { data, width, height, scale } = mask;
+  return (x, y) => {
+    const ix = Math.max(0, Math.min(width - 1, Math.floor(x * scale))), iy = Math.max(0, Math.min(height - 1, Math.floor(y * scale)));
+    const i = (iy * width + ix) * 2;
+    return data[i] < 128 || data[i + 1] >= 128;
+  };
+}
+// 取陆的覆盖率（0～1，世界坐标）
+export function landSampler(mask) {
+  const { data, width, height, scale } = mask;
+  return (x, y) => {
+    const ix = Math.max(0, Math.min(width - 1, Math.floor(x * scale))), iy = Math.max(0, Math.min(height - 1, Math.floor(y * scale)));
+    return data[(iy * width + ix) * 2] / 255;
+  };
 }
 
 // 府州编号图：自己做扫描线填充（奇偶规则），不经 Canvas 的抗锯齿，编号逐像素准确。0 表示不属任何府州

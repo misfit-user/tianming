@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>天命 · 舆图台</title>
+<link rel="stylesheet" href="../kit/tokens.css">
+<link rel="stylesheet" href="../kit/fonts.css">
+<link rel="stylesheet" href="../kit/qi.css">
+<link rel="stylesheet" href="../scene/scene.css">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #2a1d14; }
+  .bench-info { position: fixed; right: 1rem; bottom: 1rem; z-index: 10; font: var(--fs-2) var(--f-kai); color: var(--ivory-soft); text-shadow: 0 1px 3px #000; }
+</style>
+<script type="importmap">{ "imports": { "three": "../../vendor/three/three.module.js", "three/addons/": "../../vendor/three/addons/" } }</script>
+</head>
+<body class="q-root">
+<div class="stage-host" id="stage"></div>
+<div class="map-labels" id="labels"></div>
+<div class="stage-vignette"></div>
+<div class="bench-info" id="info"></div>
+<script type="module">
+// 舆图台：只起舆图（不起书房、不开局），拿样本府州看画法。?pose=x,z,dist,polar,az　?quality=high|medium|low　?focus=顺天府,保定府
+// 截图脚本经 window.__bench.map.setPose(...) 换机位
+import { installViewport } from '../core/viewport.js';
+import { installSettings, setSetting } from '../core/settings.js';
+import { resolveQuality } from '../core/quality.js';
+import { installOrnaments } from '../kit/index.js';
+import { createStage } from '../scene/stage.js';
+import { createMapView } from '../scene/map/index.js';
+import { RELIEF } from '../scene/map/looks.js';
+
+const params = new URLSearchParams(location.search);
+installViewport();
+installSettings();
+if (params.get('quality')) setSetting('quality', params.get('quality'));
+const q = resolveQuality();
+installOrnaments();
+const info = document.getElementById('info');
+const t0 = performance.now();
+const stage = createStage(document.getElementById('stage'), { preserve: params.has('shot') });
+const regionsData = await fetch('sample/regions-tianqi.json').then((r) => r.json());
+const map = stage.add(await createMapView(stage, { regions: regionsData.regions, factions: regionsData.factions, labelLayer: document.getElementById('labels'), fov: 30 }));
+map.setActive(true);
+map.uniforms.uRelief.value = RELIEF;
+if (params.get('pose')) {
+  const [x, z, dist, polar, az] = params.get('pose').split(',').map(Number);
+  map.setPose({ target: [x, 0, z], dist, polar, az: az || 0 });
+}
+// 京城与布政司治所（样本剧本，开发台用）
+const idx = (names) => map.regions.map((r, i) => (names.includes(r.name) ? i : -1)).filter((i) => i >= 0);
+map.setCapitals(idx(['顺天府']));
+map.setImportant(idx(['应天府', '西安府', '成都府', '武昌府', '杭州府', '济南府', '开封府', '太原府', '南昌府', '福州府', '广州府', '桂林府', '云南府', '贵阳府', '长沙府', '辽阳']));
+if (params.get('focus')) {
+  const names = params.get('focus').split(',');
+  map.setFocus(map.regions.map((r, i) => (names.includes(r.name) ? i : -1)).filter((i) => i >= 0));
+  map.uniforms.uFocus.value = 1;
+}
+map.setInteractive(!params.has('shot'));
+stage.show('map');
+info.textContent = `舆图 ${((performance.now() - t0) / 1000).toFixed(1)}s · 档 ${q.tier}`;
+window.__bench = { stage, map, regions: regionsData };
+await stage.nextFrames(6);
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

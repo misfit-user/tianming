@@ -78,8 +78,9 @@ export function circuitTitle(name, realmName) {
 }
 
 // regions：府州；realmList：势力（terrain.realms 出的，带 id、name、color、area）；realmByRegion：府州下标 → 势力下标
-// primary：主势力名的正则。出 { realmColors: ['#hex' 按势力下标], circuits: [{ key, name, title, realm, regions, color }], circuitOf: Int16Array }
-export function politicsOf({ regions, realmList, realmByRegion, pairs, primary = /明朝廷|大明/ }) {
+// primary：主势力名的正则。memo：上回配的色（势力 id → 色、省道键 → 色），易主后各国各道照旧用原色，只给新冒出来的配色
+// 出 { realmColors: ['#hex' 按势力下标], circuits: [{ key, name, title, realm, regions, color }], circuitOf: Int16Array }
+export function politicsOf({ regions, realmList, realmByRegion, pairs, primary = /明朝廷|大明/, memo = { realm: new Map(), circuit: new Map() } }) {
   // ---- 势力配色：面积大的先挑；就剧本原色的色相取最近的一色，邻国已用的不取，别国已用的尽量不取
   const realmAdj = realmList.map(() => new Set());
   for (const [a, b] of pairs) {
@@ -92,6 +93,7 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
   const inks = REALM_INKS.map((hex) => ({ hex, rgb: hexRgb(hex), hsl: rgbToHsl(hexRgb(hex)) }));
   for (const i of order) {
     const r = realmList[i];
+    if (memo.realm.has(r.id)) { realmColors[i] = memo.realm.get(r.id); used.set(realmColors[i], (used.get(realmColors[i]) || 0) + 1); continue; }
     if (primary.test(r.name)) { realmColors[i] = REALM_INKS[0]; used.set(REALM_INKS[0], (used.get(REALM_INKS[0]) || 0) + 1); continue; }
     const want = rgbToHsl(hexRgb(r.color || '#999999'));
     // 邻国已用的色、与之相近的色（相差不足一百二）都不取
@@ -107,6 +109,7 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
     realmColors[i] = best || inks[1 + (i % (inks.length - 1))].hex;
     used.set(realmColors[i], (used.get(realmColors[i]) || 0) + 1);
   }
+  realmList.forEach((r, i) => memo.realm.set(r.id, realmColors[i]));
 
   // ---- 省道编号
   const circuits = [], byKey = new Map();
@@ -114,7 +117,7 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
   regions.forEach((r, i) => {
     const realm = realmByRegion[i];
     if (realm < 0) return;
-    const key = realm + '|' + (r.circuit || '#' + i);
+    const key = realmList[realm].id + '|' + (r.circuit || '#' + i);
     let c = byKey.get(key);
     if (!c) {
       c = { key, name: r.circuit || r.name, title: '', realm, regions: [], color: null };
@@ -143,6 +146,8 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
     const count = new Array(shades.length).fill(0);
     for (const ci of sorted) {
       if (list.length === 1) { circuits[ci].color = realmColors[realm]; break; }
+      const kept = memo.circuit.get(circuits[ci].key);
+      if (kept && kept.base === realmColors[realm]) { circuits[ci].color = kept.color; circuits[ci].rgb = hexRgb(kept.color); continue; }
       const nb = [...circAdj[ci]].map((j) => circuits[j].rgb).filter(Boolean);
       let best = 0, bestScore = -Infinity;
       shades.forEach((s, k) => {
@@ -155,6 +160,6 @@ export function politicsOf({ regions, realmList, realmByRegion, pairs, primary =
       circuits[ci].color = toHex(shades[best]);
     }
   }
-  for (const c of circuits) delete c.rgb;
+  for (const c of circuits) { delete c.rgb; memo.circuit.set(c.key, { color: c.color, base: realmColors[c.realm] }); }
   return { realmColors, circuits, circuitOf };
 }

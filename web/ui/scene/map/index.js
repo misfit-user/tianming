@@ -292,6 +292,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   let realmColors = [];                       // 势力下标 → 设色
   let circuits = [], circuitOf = new Int16Array(0);
   let pairs = null;                           // 府州相邻对（换府州时重算）
+  let colorMemo = { realm: new Map(), circuit: new Map() };   // 配过的色：易主后各国各道照旧（换府州时清）
   let lines = null;
   let focusSet = [];                          // 辖区（身份视野）：府州下标
   const primaryRe = primary ? new RegExp(primary) : undefined;
@@ -302,7 +303,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     regions.forEach((r, i) => { regionRealm[i + 1] = realmIndex.has(r.faction) ? realmIndex.get(r.faction) : -1; });
     realmByRegion = regions.map((_, i) => regionRealm[i + 1]);
     if (!pairs) pairs = adjacency(ids, regions.length);
-    ({ realmColors, circuits, circuitOf } = politicsOf({ regions, realmList, realmByRegion, pairs, ...(primaryRe ? { primary: primaryRe } : {}) }));
+    ({ realmColors, circuits, circuitOf } = politicsOf({ regions, realmList, realmByRegion, pairs, memo: colorMemo, ...(primaryRe ? { primary: primaryRe } : {}) }));
     realmList.forEach((r, i) => { r.ink = realmColors[i]; r.circuits = circuits.filter((c) => c.realm === i).length; });
     info.fill(0);
     fillData.fill(0);
@@ -780,6 +781,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       uniforms.uSelected.value = -1;
       hoverKey = pickKey = '';
       pairs = null;
+      colorMemo = { realm: new Map(), circuit: new Map() };
       focusSet = [];
       uniforms.uFocus.value = 0;
       lines.setRegions(regions, regionIndexAt);

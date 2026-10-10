@@ -2,6 +2,7 @@
 // 每帧着色器只取一下，再补近看细节与跟镜头、时间、局势走的东西（shaders.js）。核显上远景一帧原要四五十毫秒，烘后十毫秒内。
 // 两张：今设色（高档 4200×3080、低档 2100×1540）与案上旧绢（2100×1540，只在入图、起身那两秒与案上绢图用）。
 // 另烘一张明暗（两通道：受光、沟脊；与今设色同大），层级设色（天下、省道两档整片设色）时让山川透上来。
+// 先烘一张投影（2100×1540，按高程朝光步进），底色、明暗两张都乘上。
 // 入图时设色由旧转新，着色器按 uLookT 在两张之间插，不用每帧重烘。
 import * as THREE from 'three';
 import { W, H } from './terrain.js';
@@ -49,7 +50,7 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
   const uniforms = {
     uTerrain: { value: fields.terrain }, uHeightHi: { value: fields.heightHi }, uRange: { value: fields.range }, uCoast: { value: fields.coast },
     uTexelHi: { value: new THREE.Vector2(1 / fields.hiW, 1 / fields.hiH) }, uTexel: { value: new THREE.Vector2(1 / W, 1 / H) },
-    uBake: { value: new THREE.Vector2() }, uRelief: { value: relief }, uMode: { value: 0 },
+    uBake: { value: new THREE.Vector2() }, uRelief: { value: relief }, uMode: { value: 0 }, uShadow: { value: null },
     uAmp: { value: new THREE.Vector4() }, uBand: { value: new THREE.Vector4() }, uShade: { value: new THREE.Vector4() }
   };
   for (const k of LOOK_COLORS) uniforms[k.u] = { value: new THREE.Vector3() };
@@ -68,6 +69,8 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
   const fresh = hiRes ? target(W * 2, H * 2) : target(W, H);
   const aged = target(W, H);
   const shade = renderer.capabilities.isWebGL2 ? target(fresh.width, fresh.height, THREE.RGFormat) : target(W, H);
+  const shadow = renderer.capabilities.isWebGL2 ? target(W, H, THREE.RedFormat) : target(W, H);
+  let shadowReady = null;
 
   function setLook(look) {
     for (const k of LOOK_COLORS) {
@@ -80,6 +83,8 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
   }
   // 烘一张：分条画（每条之间交出主线程、送出显卡命令），免得一大道超过系统的显卡超时
   async function bake(rt, look, mode = 0) {
+    if (mode !== 2) await (shadowReady ||= bake(shadow, look, 2));
+    uniforms.uShadow.value = mode === 2 ? null : shadow.texture;     // 烘投影那一道不能把自己当贴图挂着
     setLook(look);
     uniforms.uMode.value = mode;
     const w = rt.width, h = rt.height;
@@ -105,6 +110,6 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
     bakeFresh: (look) => bake(fresh, look),
     bakeAged: (look) => bake(aged, look),
     bakeShade: (look) => bake(shade, look, 1),
-    dispose() { fresh.dispose(); aged.dispose(); shade.dispose(); material.dispose(); quad.geometry.dispose(); }
+    dispose() { fresh.dispose(); aged.dispose(); shade.dispose(); shadow.dispose(); material.dispose(); quad.geometry.dispose(); }
   };
 }

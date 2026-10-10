@@ -747,6 +747,20 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     await applyFocus();
     marks.refresh();
   }
+  // 回合过后：府州易主就重画疆界、设色与题名（只在真有变化时；同一套府州才比，换了剧本走 loadWorld）
+  function syncOwnership() {
+    let mr = null;
+    try { mr = game.select.mapRegions(); } catch (_e) { mr = null; }
+    if (!mr || mr.regions.length !== mapRegionList.length) return;
+    const changes = {};
+    mr.regions.forEach((r, i) => { const old = mapRegionList[i]; if (old && old.id === r.id && old.faction !== r.faction) changes[i] = r.faction; });
+    if (!Object.keys(changes).length) return;
+    Object.assign(factions, mr.factions);           // 新冒出的势力补进舆图手里那份势力表（同一个对象）
+    card.classList.add('hide');
+    map.select(null);
+    map.setOwnership(changes);
+    marks.refresh();
+  }
 
   // ---------- 推演（过回合） ----------
   function confirmAdvance() {
@@ -1025,7 +1039,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       refresh();
       el.classList.add('on');
       game.setSurface(true);
-      offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('view:changed', refresh),
+      offs.push(game.on('game:changed', refresh), game.on('game:advanced', refresh), game.on('game:advanced', syncOwnership), game.on('view:changed', refresh),
         game.on('game:turn-result', (r) => annals(r && r.idx)),
         game.on('ui:pause', pause), game.on('ui:saves', () => { if (el.classList.contains('on')) openSaves({ game, inGame: true }); }),
         game.on('ui:help', () => { if (el.classList.contains('on')) helpPage.show(); }),

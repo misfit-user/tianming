@@ -47,12 +47,27 @@ uniform float uRelief;
 uniform vec3 uSilk, uOchre, uGreen, uBlue, uInk, uDeep;
 uniform vec3 uField, uPaddy, uSteppe;
 uniform vec4 uAmp, uBand, uShade;
-uniform float uMode;             // 0 烘底色；1 烘明暗（R 受光、G 沟脊、B 山体），层级设色时透上来用
+uniform float uMode;             // 0 烘底色；1 烘明暗（R 受光、G 沟脊），层级设色时透上来用；2 烘投影
+uniform sampler2D uShadow;       // 烘好的投影（1 受光、0 全在影里）
 varying vec2 vUv;
 ${ALU_NOISE}
 float hgt(vec2 uv) { return texture2D(uHeightHi, uv).r; }
+// 投影：从此处朝光走二十四像素，沿途地面高过光线就落影；离得越远影越虚（软影）
+float castShadow(vec2 uv) {
+  vec2 dir = normalize(vec2(-0.55, -0.35));
+  float tanE = 0.75 / length(vec2(0.55, 0.35));
+  float h0 = texture2D(uTerrain, uv).g * uRelief;
+  float lit = 1.0;
+  for (int i = 1; i <= 40; i++) {
+    float t = float(i) * 0.6;
+    float hq = texture2D(uTerrain, uv + dir * t / vec2(2100.0, 1540.0)).g * uRelief;
+    lit = min(lit, clamp((h0 + t * tanE - hq) / (0.18 * t) + 0.5, 0.0, 1.0));
+  }
+  return lit;
+}
 void main() {
   vec2 uv = vUv;
+  if (uMode > 1.5) { gl_FragColor = vec4(castShadow(uv), 0.0, 0.0, 1.0); return; }
   vec2 wp = uv * vec2(2100.0, 1540.0);
   float pxW = uBake.x * 2100.0;
   vec4 T = texture2D(uTerrain, uv);
@@ -113,6 +128,9 @@ void main() {
   float k = uShade.x * (0.12 + 0.88 * relief);
   ground = mix(ground, ground * uDeep, smoothstep(0.0, -0.22, dl) * k * 0.95);
   ground = mix(ground, mix(ground, mix(uSilk, uOchre, 0.2) * 1.06, 0.36), smoothstep(0.02, 0.2, dl) * k * 0.75);
+  // 投影：落在影里的偏冷偏暗（沙盘上山的背光一侧拖一片影）
+  float shadow = texture2D(uShadow, uv).r;
+  ground = mix(ground, ground * uDeep * 0.9, (1.0 - shadow) * 0.5 * uShade.x);
   // 矿物颜料颗粒（石青、石绿处）
   ground *= 1.0 + (noise(wp / max(pxW * 1.6, 0.3) + 7.0) - 0.5) * uShade.z * 1.4 * massK * smoothstep(0.4, 0.8, uu);
   // 雪
@@ -123,7 +141,7 @@ void main() {
   if (uMode > 0.5) {
     // 明暗那张：多取原分辨率的法线（层级设色时透上来的山川要清楚）
     float dh = dot(normalize(mix(nLo, nHi, 0.8)), L) - L.y;
-    gl_FragColor = vec4(clamp(0.62 + dh * 0.9, 0.0, 1.0), clamp(0.5 - lap * 6.0, 0.0, 1.0), 0.0, 1.0);
+    gl_FragColor = vec4(clamp(0.62 + dh * 0.9, 0.0, 1.0) * mix(0.72, 1.0, shadow), clamp(0.5 - lap * 6.0, 0.0, 1.0), 0.0, 1.0);
     return;
   }
   gl_FragColor = vec4(clamp(ground, 0.0, 1.0), massK);
@@ -358,9 +376,10 @@ void main() {
   col = mix(uSilk * 0.97, col, edgeFade);
 
   // ---------- 辖区视野、悬停、点选、远雾 ----------
+  // 辖区之外褪色：府州档才褪足；天下、省道两档整片设色时只略褪（看大势时诸国颜色要在），辖区靠描金边认
   if (uFocus > 0.0) {
     float gray = dot(col, vec3(0.3, 0.59, 0.11));
-    col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - info.g) * uFocus * land);
+    col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - info.g) * uFocus * land * (1.0 - 0.75 * uFill));
   }
   float hk = uHoverMode > 1.5 ? realm : uHoverMode > 0.5 ? circ : id;
   float sk = uSelMode > 1.5 ? realm : uSelMode > 0.5 ? circ : id;

@@ -46,6 +46,7 @@ import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
 import { openAnnals } from './annals.js';
 import { openSaves } from './saves.js';
+import { createMapMarks } from './mapmarks.js';
 
 const LAYERS = ['民情', '阶层', '财赋', '军务', '官守', '役政', '势力'];
 // 七种看法对应老舆图的计分（adapter mapLayer）；势力即本色，不另染
@@ -176,7 +177,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   })();
   const legendMap = h('div.mm-legend.hide');
   // 检府州：输入或下拉择名，镜头缓移其上（同点选出小签）
-  let mapRegionList = [];
+  let mapRegionList = [], capitalIdx = -1;
   const regionDl = h('datalist', { id: 'tm-map-regions' });
   const regionSearch = h('input.map-search', { type: 'search', placeholder: '检府州', list: 'tm-map-regions', spellcheck: false, autocomplete: 'off',
     onkeydown: (e) => { if (e.key === 'Enter') seekRegion(regionSearch.value); }, onchange: () => seekRegion(regionSearch.value) });
@@ -236,6 +237,17 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }
   });
   diveReady = true;
+  // 舆图标记：诸军、行军、流寇、交战（screens/mapmarks.js）。所知之律：元首见本方诸军与天下流寇战事；余者只见本人所统与所掌辖区内的
+  const marksLayer = h('div.map-marks.off');
+  labels.after(marksLayer);
+  const inCharge = (r) => !!focus && focus.marked.some((i) => mapRegionList[i] && mapRegionList[i].name === r.name);
+  const marks = createMapMarks({
+    layer: marksLayer, map, game, regionsOf: () => mapRegionList, capitalOf: () => mapRegionList[capitalIdx] || null,
+    isLive: () => dive.mode === 'map' && !dive.busy,
+    knows: ({ army, region }) => per.tier === 'sovereign' || (army && army.commander === per.name) || inCharge(region),
+    onArmy: (key) => (key ? armyPage.show(key) : armyPage.show()),
+    onRebels: () => armyPage.show()
+  });
   // 回案钮：在图上是「回某案」，在案前是「入图」（镜头建好之前 furnish 先摆一次，那时不画）
   function paintDeskBtn() {
     if (!deskBtn || !diveReady) return;
@@ -521,7 +533,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const next = game.perspective();
     const changed = next.id !== per.id || next.tier !== per.tier || next.previewing !== per.previewing;
     per = next;
-    if (changed) { prof = profileOf(per); furnish(); applyFocus(); }
+    if (changed) { prof = profileOf(per); furnish(); applyFocus().then(() => marks.refresh()); }
+    marks.refresh();
     const d = s.date();
     time.update({ era: `${d.era || ''}${d.reignYear ? num(d.reignYear) + '年' : ''}`, year: d.year, month: d.month, day: d.day, settling: d.busy });
     // 左上那方印：元首是国号，余者是本人的姓
@@ -676,10 +689,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     // 京城、省会：题名先占位、城郭大一号（名对府州：全名或以之开头）
     const seats = game.select.mapSeats();
     const indexOf = (n) => mapRegionList.findIndex((r) => r.name && (r.name === n || r.name.startsWith(n) || n.startsWith(r.name)));
-    map.setCapitals(seats.capitals.map((alts) => alts.map(indexOf).find((i) => i >= 0)).filter((i) => i >= 0));
+    const caps = seats.capitals.map((alts) => alts.map(indexOf).find((i) => i >= 0));
+    capitalIdx = caps[0] ?? -1;                     // 头一个是本方（区划树里 player 在前）
+    map.setCapitals(caps.filter((i) => i >= 0));
     map.setImportant(seats.seats.map(indexOf).filter((i) => i >= 0));
     replaceChildren(regionDl, mapRegionList.map((r) => h('option', { value: r.name }, [r.circuit, r.parent].filter(Boolean).join(' · '))));
     await applyFocus();
+    marks.refresh();
   }
 
   // ---------- 推演（过回合） ----------

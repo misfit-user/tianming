@@ -1,0 +1,42 @@
+/* 舆图标记（screens/mapmarks.js）：军旗、行军箭头、流寇墨旗、交战圆章。
+   一面旗：旗杆脚落在治所上，杆顶挂一面燕尾旗（番号首字），杆脚下一块小牌写兵数；同处几部旗角记部数。--mk-s 随远近缩放 */
+.map-marks { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.map-marks.off { visibility: hidden; }
+.mk-routes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.mk-route { fill: none; stroke: #a3281b; stroke-width: 2.4; stroke-dasharray: 8 6; stroke-linecap: round; opacity: .92;
+  filter: drop-shadow(0 0 1.5px rgba(246, 238, 220, .95)); animation: mk-march 1.1s linear infinite; }
+@keyframes mk-march { to { stroke-dashoffset: -14; } }
+.mk-pins { position: absolute; inset: 0; }
+
+.mk { position: absolute; left: 0; top: 0; width: 0; height: 0; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.mk-army { filter: drop-shadow(0 .125rem .1875rem rgba(20, 10, 4, .55)); }
+.mk-army > .mk-pole { position: absolute; left: -.09375rem; bottom: 0; width: .1875rem; height: calc(2.75rem * var(--mk-s, 1));
+  background: linear-gradient(90deg, #5a3c22, #2a1a0d); border-radius: .09375rem; }
+.mk-army > .mk-pole::before { content: ''; position: absolute; left: 50%; top: -.25rem; width: .4375rem; height: .4375rem; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f3d98f, #9b7430); }
+.mk-army > .mk-flag { position: absolute; left: .09375rem; bottom: calc(1.15rem * var(--mk-s, 1)); width: calc(1.875rem * var(--mk-s, 1)); height: calc(1.5rem * var(--mk-s, 1));
+  display: grid; place-items: center; padding-right: calc(.375rem * var(--mk-s, 1)); box-sizing: border-box;
+  font: 400 calc(1.0625rem * var(--mk-s, 1))/1 var(--f-title); color: #fbeed4; text-shadow: 0 1px 1px rgba(60, 10, 4, .8);
+  background: linear-gradient(160deg, #c2402f, #8a2416 60%, #6e1a10); clip-path: polygon(0 0, 100% 0, 78% 50%, 100% 100%, 0 100%);
+  transform-origin: 0 50%; animation: mk-wave 3.2s ease-in-out infinite; }
+@keyframes mk-wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-3deg) scaleX(.95); } }
+.mk-army > .mk-n { position: absolute; left: 50%; top: .25rem; transform: translateX(-50%); padding: .0625rem .375rem .09375rem; white-space: nowrap;
+  font: calc(max(.75rem, 11px) * var(--mk-s, 1)) / 1.25 var(--f-kai); letter-spacing: .04em; color: #2a1608;
+  background: linear-gradient(180deg, #f6ecd2, #e1cc9c); box-shadow: inset 0 0 0 1px rgba(120, 80, 30, .55); }
+.mk-army > .mk-c { position: absolute; left: calc(1.5rem * var(--mk-s, 1)); bottom: calc(2.25rem * var(--mk-s, 1)); min-width: 1rem; height: 1rem; padding: 0 .1875rem; box-sizing: border-box;
+  border-radius: .5rem; font: normal .6875rem/1rem var(--f-kai); text-align: center; color: #2a1608; background: #f3e2b8; box-shadow: 0 0 0 1px rgba(122, 31, 19, .7); }
+.mk-army:hover { filter: drop-shadow(0 .125rem .25rem rgba(20, 10, 4, .6)) brightness(1.12); z-index: 2; }
+/* 告急：旗边一圈朱光一明一暗 */
+.mk-army.hot > .mk-flag { animation: mk-wave 3.2s ease-in-out infinite, mk-hot 1.4s ease-in-out infinite; }
+@keyframes mk-hot { 50% { filter: brightness(1.35) saturate(1.2); } }
+/* 流寇：墨旗 */
+.mk-rebel > .mk-flag { color: #f0e6d0; background: linear-gradient(160deg, #3d3a35, #1c1a17 70%); clip-path: polygon(0 0, 100% 6%, 80% 50%, 96% 100%, 0 94%); }
+.mk-rebel > .mk-n { color: #f0e6d0; background: linear-gradient(180deg, #3d3a35, #1c1a17); box-shadow: inset 0 0 0 1px rgba(240, 230, 208, .3); }
+/* 交战：战字圆章，外一圈朱晕扩散 */
+.mk-battle > b { position: absolute; left: 0; top: 0; width: 1.75rem; height: 1.75rem; transform: translate(-50%, -50%); display: grid; place-items: center; border-radius: 50%;
+  font: 400 1rem/1 var(--f-title); color: #fbeed4; background: radial-gradient(circle at 35% 30%, #c2402f, #6e1a10 75%);
+  box-shadow: 0 0 0 2px rgba(243, 226, 184, .8), 0 .125rem .375rem rgba(20, 10, 4, .6); }
+.mk-battle::after { content: ''; position: absolute; left: 0; top: 0; width: 1.75rem; height: 1.75rem; transform: translate(-50%, -50%); border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(194, 64, 47, .8); animation: mk-ring 1.8s ease-out infinite; pointer-events: none; }
+@keyframes mk-ring { from { transform: translate(-50%, -50%) scale(1); opacity: .9; } to { transform: translate(-50%, -50%) scale(2.4); opacity: 0; } }
+[data-motion='less'] .mk-route, [data-motion='less'] .mk-army > .mk-flag, [data-motion='less'] .mk-battle::after { animation: none; }

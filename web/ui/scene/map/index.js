@@ -217,6 +217,31 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // ---------- 府州与势力 ----------
   // 府州编号图（2 倍分辨率，编号写成两字节）。开局前没有剧本时为空，开局或读档后 setRegions 换上
   let ids = regionIdMap(regions, 2);
+  // 落点校正：剧本给的治所（referenceSeat）常落在本府轮廓边上、甚至海里。不在本府陆上的，就近挪到本府陆上
+  // （离岸两三像素，旗与城郭不压在海岸线上）。改的是传进来的府州对象的 center——题名、城郭、图上标记都按它落
+  const landOf = landSampler(d.water);
+  function settleCenters() {
+    const own = (k, x, y) => {
+      const ix = Math.floor(x * 2), iy = Math.floor(y * 2);
+      return ix >= 0 && iy >= 0 && ix < ids.width && iy < ids.height && ids.data[iy * ids.width + ix] === k + 1;
+    };
+    const inland = (x, y, r) => landOf(x + r, y) > 0.5 && landOf(x - r, y) > 0.5 && landOf(x, y + r) > 0.5 && landOf(x, y - r) > 0.5;
+    const ok = (k, x, y) => own(k, x, y) && landOf(x, y) > 0.5 && inland(x, y, 1.2) && inland(x, y, 2.4);
+    regions.forEach((r, k) => {
+      if (!r.center || ok(k, r.center[0], r.center[1])) return;
+      const [cx, cy] = r.center;
+      for (let rad = 0.5; rad <= 24; rad += 0.5) {
+        let best = null;
+        const n = Math.max(8, Math.round(rad * 12));
+        for (let j = 0; j < n; j++) {
+          const a = j / n * Math.PI * 2, x = cx + Math.cos(a) * rad, y = cy + Math.sin(a) * rad;
+          if (ok(k, x, y)) { best = [x, y]; break; }
+        }
+        if (best) { r.center = [Math.round(best[0] * 100) / 100, Math.round(best[1] * 100) / 100]; return; }
+      }
+    });
+  }
+  settleCenters();
   const idBytes = new Uint8Array(ids.data.length * 2);
   const writeIds = () => {
     for (let i = 0; i < ids.data.length; i++) { idBytes[i * 2] = ids.data[i] & 255; idBytes[i * 2 + 1] = ids.data[i] >> 8; }
@@ -618,6 +643,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       data.regions = regions;
       data.factions = factions;
       ids = regionIdMap(regions, 2);
+      settleCenters();
       writeIds();
       regionTex.needsUpdate = true;
       uniforms.uHover.value = -1;

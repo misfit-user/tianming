@@ -63,6 +63,22 @@ export function relax(p, k = 2, closed = false) {
   return out;
 }
 
+// 加密：长边按 step 世界像素插点。描得粗的府州（塞外、西域多是手描的大折线）不先加密，抹台阶会把整段拉离本来的边，
+// 线就画到着色的界外去了；加密之后抹平、割角只在拐角一两像素内动
+export function densify(p, step = 0.5, closed = false) {
+  const n = p.length;
+  if (n < 2) return p;
+  const out = [];
+  const segs = closed ? n : n - 1;
+  for (let i = 0; i < segs; i++) {
+    const a = p[i], b = p[(i + 1) % n];
+    const k = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
+    for (let j = 0; j < k; j++) out.push([a[0] + (b[0] - a[0]) * j / k, a[1] + (b[1] - a[1]) * j / k]);
+  }
+  if (!closed) out.push(p[n - 1]);
+  return out;
+}
+
 // 道格拉斯—普克简化（容差：世界像素）
 export function simplify(p, tol = 0.08) {
   return simplifyIdx(p, tol).map((i) => p[i]);
@@ -95,7 +111,7 @@ const polyLength = (p) => { let s = 0; for (let i = 1; i < p.length; i++) s += M
 // 返回 [{ pts, a, b, closed }]：a、b 为两侧府州下标；b = -1 临无主之地，b = -2 临海。
 // 相邻两府的边顶点未必对齐（各自描的），只一府有的边按区划图认对面：regionAt(x, y) 给府州下标（-1 无），isSea(x, y) 判海。
 // 对面是别府的，只留下标小的那一府那一侧，免得两条几乎重合的线画两遍
-export function regionChains(regions, regionAt, isSea) {
+export function regionChains(regions, regionAt, isSea, isOcean = isSea) {
   const key = (p) => Math.round(p[0] * 100) + ',' + Math.round(p[1] * 100);
   const point = new Map();
   const edges = new Map();
@@ -122,16 +138,25 @@ export function regionChains(regions, regionAt, isSea) {
       const u = point.get(e.u), v = point.get(e.v);
       const mx = (u[0] + v[0]) / 2, my = (u[1] + v[1]) / 2;
       const dx = v[0] - u[0], dy = v[1] - u[1], L = Math.hypot(dx, dy) || 1;
-      // 府州描的海岸常比真海岸缩进几像素：往外探到 18 像素，先碰到别府的算邻界，碰到海（或江湖水面）的算海岸
-      let other = -1, sea = false;
+      // 府州描的海岸常比真海岸缩进几像素：往外探到 18 像素，先碰到别府的算邻界，碰到海（isOcean）或大湖的算海岸。
+      // 窄的江河水面（再往外十像素又是陆）不算海岸、接着探——不然临江的边界被当成海岸不画，国界断成一截一截
+      // 只往本府外侧探：往里探会穿过本府（安南、朝鲜这样窄的地方十几像素就到对岸海边），把陆上的界当成海岸
+      let other = -1, sea = false, river = false;
       for (const s of [1, -1]) {
+        if (regionAt(mx - dy / L * 0.8 * s, my + dx / L * 0.8 * s) === a) continue;
         for (const r of [0.8, 1.6, 3, 5, 8, 12, 18]) {
           const x = mx - dy / L * r * s, y = my + dx / L * r * s;
           const k = regionAt(x, y);
           if (k === a) continue;
           if (k >= 0) { if (other < 0) other = k; break; }
-          if (isSea(x, y)) { sea = true; break; }
+          if (isOcean(x, y) || (isSea(x, y) && isSea(mx - dy / L * (r + 10) * s, my + dx / L * (r + 10) * s))) { sea = true; break; }
+          if (isSea(x, y)) river = true;
         }
+      }
+      // 外侧没探到别府也没探到海的：五像素内就有海（港汊、小湾），或隔着一道江水八像素内有海（河口），也算海岸
+      if (other < 0 && !sea) {
+        const rs = river ? [2.5, 5, 8] : [2.5, 5];
+        for (let j = 0; j < 8 && !sea; j++) for (const r of rs) if (isOcean(mx + Math.cos(j * Math.PI / 4) * r, my + Math.sin(j * Math.PI / 4) * r)) { sea = true; break; }
       }
       if (other >= 0) { if (other < a) continue; b = other; } else if (sea) b = -2;
     }
@@ -174,8 +199,8 @@ export function regionChains(regions, regionAt, isSea) {
       if (keys.length > 2) chains.push({ pts: keys.slice(0, -1).map((x) => point.get(x)), a: g.a, b: g.b, closed: keys[0] === keys[keys.length - 1] });
     }
   }
-  // 磨圆：先抹台阶再割角，端点（三府交界）不动，两侧共用一条线
-  for (const c of chains) c.pts = simplify(chaikin(relax(relax(c.pts, 2, c.closed), 2, c.closed), 2, c.closed), 0.04);
+  // 磨圆：先加密，再抹台阶、割角，端点（三府交界）不动，两侧共用一条线；线离着色的边（编号图）不出一像素
+  for (const c of chains) c.pts = simplify(chaikin(relax(relax(densify(c.pts, 0.5, c.closed), 2, c.closed), 2, c.closed), 2, c.closed), 0.04);
   return chains;
 }
 
@@ -555,7 +580,7 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
   let realmOf = [];
   let circuitOf = [];
   function setRegions(regions, regionAt) {
-    chains = regionChains(regions, regionAt, isWater);
+    chains = regionChains(regions, regionAt, isWater, isSea);
     circuitOf = regions.map((r) => r.circuit || '');
   }
   function setPolitics(realmByRegion) {

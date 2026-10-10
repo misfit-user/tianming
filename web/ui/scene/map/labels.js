@@ -282,10 +282,10 @@ function collider(cell = 12) {
   };
 }
 
-// ---------- 着色器：字平铺在地面上（取与地形同一张高程），按类定浓淡、墨色与晕 ----------
-// 一个字一块平板，高度取字心与四角最高处：贴着起伏折起来的字压在山脊上会被折断，平铺在最高处就整字可认
+// ---------- 着色器：字平铺在地面上，按类定浓淡、墨色与晕 ----------
+// 一条题名一个高度（各字字心与四角的最高处），整条平铺：贴着起伏折起来的字压在山脊上会被折断；
+// 各字各取各的高，推近、起伏拔高时高处的字在屏上往上跑，字序就乱了（「淡水社」看成「水淡社」）
 const VERT = /* glsl */`
-uniform sampler2D uTerrain;
 uniform float uRelief;
 uniform float uPx;
 uniform vec3 uCam;
@@ -298,21 +298,17 @@ uniform vec4 uHalo[8];
 uniform vec4 uClip;              // 案上绢图：出了画框不多的题名整条挪进框（x0, y0, x1, y1），出得多的不题；平时不限
 attribute float aKind;
 attribute float aSize;
-attribute vec2 aCenter;
+attribute float aH;              // 这条题名的高度（0～1，乘起伏）
 attribute vec4 aBox;             // 这条题名的外框
 varying vec2 vUv;
 varying float vA;
 varying vec3 vInk;
 varying vec4 vHalo;
-float hAt(vec2 w) { return texture2D(uTerrain, w / vec2(2100.0, 1540.0)).g; }
 void main() {
   vec3 p = position;
   vec2 shift = max(uClip.xy - aBox.xy, 0.0) - max(aBox.zw - uClip.zw, 0.0);
   p.xz += shift;
-  vec2 c = aCenter + shift;
-  float r = aSize * 0.5;
-  float h = max(hAt(c), max(max(hAt(c + vec2(r, r)), hAt(c + vec2(-r, r))), max(hAt(c + vec2(r, -r)), hAt(c + vec2(-r, -r)))));
-  p.y = h * uRelief + 0.4;
+  p.y = aH * uRelief + 0.4;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
   int k = int(aKind + 0.5);
@@ -322,6 +318,7 @@ void main() {
   vInk = uInk[k];
   vHalo = uHalo[k];
   vUv = uv;
+  if (vA < 0.004) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);     // 这一档不显的字整块甩出画面，不白跑片元
 }`;
 const FRAG = /* glsl */`
 uniform sampler2D uAtlas;
@@ -344,12 +341,12 @@ void main() {
 
 const fadeBy = (d, a, b) => Math.max(0, Math.min(1, (d - a) / (b - a)));
 
-// shared：与地形共用的 uniform（uTerrain、uRelief、uPx、uCam、远雾）；landAt(x, y) 判陆（0～1）
-export function createLabels({ shared, landAt }) {
+// shared：与地形共用的 uniform（uRelief、uPx、uCam、远雾）；landAt(x, y) 判陆（0～1）；heightAt(x, y) 地面高（0～1，与地形网格同一张）
+export function createLabels({ shared, landAt, heightAt }) {
   const group = new THREE.Group();
   group.renderOrder = 30;
   const uniforms = {
-    uTerrain: shared.uTerrain, uRelief: shared.uRelief, uPx: shared.uPx, uCam: shared.uCam, uFogNear: shared.uFogNear, uFogFar: shared.uFogFar,
+    uRelief: shared.uRelief, uPx: shared.uPx, uCam: shared.uCam, uFogNear: shared.uFogNear, uFogFar: shared.uFogFar,
     uAtlas: { value: null },
     uClip: { value: new THREE.Vector4(-1e6, -1e6, 1e6, 1e6) },
     uKindA: { value: new Array(8).fill(0) },
@@ -435,9 +432,9 @@ export function createLabels({ shared, landAt }) {
         const lay = curveText(sh, prefText[i].length, rule, 1, mul);
         if (!lay || lay.size < 2.2) break;
         if (r.center) avoidSeat(lay, r.center, k, sh.vertical);
-        const rad = lay.size * 0.6;
-        if (!hits.free(lay.glyphs, rad)) continue;
-        hits.add(lay.glyphs, rad);
+        const rad = lay.size * 0.6, seen = lifted(lay.glyphs, lay.size);
+        if (!hits.free(seen, rad)) continue;
+        hits.add(seen, rad);
         out.push({ kind: k === 2 ? KIND.capital : k === 1 ? KIND.seat : KIND.pref, font: 1, chars: prefText[i], ...lay });
         break;
       }
@@ -446,6 +443,17 @@ export function createLabels({ shared, landAt }) {
     for (const l of riverLabels(bigHits, hits)) out.push(l);
     return out;
   }
+
+  // 府州档相撞按「看上去」的位置算：题名整条抬到所在最高处，推近斜看时高处的往北（屏上往上）挪，
+  // 挪多少约为高 × 起伏（府州档约二十九）× 俯角的正切（约一点一）
+  const LIFT = 32;
+  const topOf = (glyphs, size) => {
+    const h = size / 2;
+    let top = 0;
+    for (const g of glyphs) for (const [dx, dy] of [[0, 0], [h, h], [-h, h], [h, -h], [-h, -h]]) top = Math.max(top, heightAt(g.x + dx, g.y + dy));
+    return top;
+  };
+  const lifted = (glyphs, size) => { const dy = topOf(glyphs, size * 1.1) * LIFT; return glyphs.map((g) => ({ x: g.x, y: g.y - dy })); };
 
   // 城郭（立在治所上、向上画）压着字就把字挪开：横写挪到城郭下方，竖写挪到城郭右边。
   // 京城、要府常驻兵马，军旗的兵数签挂在治所下沿，多让出一截
@@ -509,9 +517,9 @@ export function createLabels({ shared, landAt }) {
             glyphs.push({ x: q[0] + ox * off, y: q[1] + oy * off, rot: vertical ? (phi - Math.PI / 2) * 0.5 : phi });
           }
           if (glyphs.some((g) => landAt(g.x, g.y) < 0.5)) continue;
-          const rad = size * 0.6;
-          if (!hitSet.free(glyphs, rad)) continue;
-          hitSet.add(glyphs, rad);
+          const rad = size * 0.6, seen = kind === KIND.riverSmall ? lifted(glyphs, size) : glyphs;
+          if (!hitSet.free(seen, rad)) continue;
+          hitSet.add(seen, rad);
           placed.push({ kind, name, x: c[0], y: c[1] });
           out.push({ kind, font: 1, chars, glyphs, size });
         }
@@ -559,12 +567,13 @@ export function createLabels({ shared, landAt }) {
     let count = 0;
     for (const l of labels) count += l.glyphs.length;
     const pos = new Float32Array(count * 4 * 3), tuv = new Float32Array(count * 4 * 2), kind = new Float32Array(count * 4), size = new Float32Array(count * 4);
-    const center = new Float32Array(count * 4 * 2), box = new Float32Array(count * 4 * 4);
+    const height = new Float32Array(count * 4), box = new Float32Array(count * 4 * 4);
     const idx = new Uint32Array(count * 6);
     let v = 0, e = 0;
     for (const l of labels) {
       const cellW = l.size * CELL / GLYPH, h = l.size * 0.55;
       const bx = [Math.min(...l.glyphs.map((g) => g.x)) - h, Math.min(...l.glyphs.map((g) => g.y)) - h, Math.max(...l.glyphs.map((g) => g.x)) + h, Math.max(...l.glyphs.map((g) => g.y)) + h];
+      const top = topOf(l.glyphs, l.size * 1.1);
       l.glyphs.forEach((g, gi) => {
         const [u0, v0, du, dv] = uv.get(l.font + '|' + l.chars[gi]);
         const c = Math.cos(g.rot), s = Math.sin(g.rot);
@@ -577,8 +586,7 @@ export function createLabels({ shared, landAt }) {
             pos[v * 3 + 2] = g.y + lx * s + ly * c;
             tuv[v * 2] = u0 + i * du;
             tuv[v * 2 + 1] = v0 + j * dv;
-            center[v * 2] = g.x;
-            center[v * 2 + 1] = g.y;
+            height[v] = top;
             box.set(bx, v * 4);
             kind[v] = l.kind.k;
             size[v] = l.size;
@@ -594,7 +602,7 @@ export function createLabels({ shared, landAt }) {
     geo.setAttribute('uv', new THREE.BufferAttribute(tuv, 2));
     geo.setAttribute('aKind', new THREE.BufferAttribute(kind, 1));
     geo.setAttribute('aSize', new THREE.BufferAttribute(size, 1));
-    geo.setAttribute('aCenter', new THREE.BufferAttribute(center, 2));
+    geo.setAttribute('aH', new THREE.BufferAttribute(height, 1));
     geo.setAttribute('aBox', new THREE.BufferAttribute(box, 4));
     geo.setIndex(new THREE.BufferAttribute(idx, 1));
     return geo;

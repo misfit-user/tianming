@@ -489,7 +489,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   }
 
   // ---------- 题名（写在地面上，见 labels.js） ----------
-  const labels = createLabels({ shared: uniforms, landAt: landOf });
+  const labels = createLabels({ shared: uniforms, landAt: landOf, heightAt: groundAt });
   scene.add(labels.group);
   const labelData = () => ({ regions, realms: realmList, circuits, realmByRegion, circuitOf, ids });
   labels.setData(labelData());

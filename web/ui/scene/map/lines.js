@@ -3,7 +3,7 @@
 // 府州多边形是从栅格描出来的（半像素一折的阶梯），先拆成「两侧归属相同」的边链、割角磨圆，再按两侧归属分国界、省界、府界。
 // 江河：山河境的河是按一度一格切碎的短段，先按端点（容差一像素）接成水系，以最低处为出口，按「上游累计长度」定粗细——越往下游越粗。
 import * as THREE from 'three';
-import { W, H } from './terrain.js';
+import { W, H, ringsOf } from './terrain.js';
 import { TRUNKS } from './trunks.js';
 
 // ---------- 折线工具 ----------
@@ -115,9 +115,7 @@ export function regionChains(regions, regionAt, isSea, isOcean = isSea) {
   const key = (p) => Math.round(p[0] * 100) + ',' + Math.round(p[1] * 100);
   const point = new Map();
   const edges = new Map();
-  regions.forEach((r, i) => {
-    const p = r.poly;
-    if (!p || p.length < 3) return;
+  regions.forEach((r, i) => ringsOf(r).forEach((p) => {
     for (let k = 0; k < p.length; k++) {
       const u = p[k], v = p[(k + 1) % p.length];
       const ku = key(u), kv = key(v);
@@ -129,7 +127,7 @@ export function regionChains(regions, regionAt, isSea, isOcean = isSea) {
       if (!e) edges.set(ek, (e = { u: ku, v: kv, owners: [] }));
       if (!e.owners.includes(i)) e.owners.push(i);
     }
-  });
+  }));
   // 按两侧归属分组，组内顺着顶点接成链
   const groups = new Map();
   for (const e of edges.values()) {
@@ -140,7 +138,10 @@ export function regionChains(regions, regionAt, isSea, isOcean = isSea) {
       const dx = v[0] - u[0], dy = v[1] - u[1], L = Math.hypot(dx, dy) || 1;
       // 府州描的海岸常比真海岸缩进几像素：往外探到 18 像素，先碰到别府的算邻界，碰到海（isOcean）或大湖的算海岸。
       // 窄的江河水面（再往外十像素又是陆）不算海岸、接着探——不然临江的边界被当成海岸不画，国界断成一截一截
-      // 只往本府外侧探：往里探会穿过本府（安南、朝鲜这样窄的地方十几像素就到对岸海边），把陆上的界当成海岸
+      // 只往本府外侧探：往里探会穿过本府（安南、朝鲜这样窄的地方十几像素就到对岸海边），把陆上的界当成海岸。
+      // 两侧都是本府的（沿海缩进的缝按最近府州补上之后，旧轮廓的海边成了府内）不是界，不画
+      const side = (s) => regionAt(mx - dy / L * 0.8 * s, my + dx / L * 0.8 * s) === a;
+      if (side(1) && side(-1)) continue;
       let other = -1, sea = false, river = false;
       for (const s of [1, -1]) {
         if (regionAt(mx - dy / L * 0.8 * s, my + dx / L * 0.8 * s) === a) continue;

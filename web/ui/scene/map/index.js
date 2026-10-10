@@ -3,7 +3,7 @@
 // 坐标为舆图世界坐标（2100×1540）。府州易主后调 setOwnership 重画疆界。
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { W, H, loadImage, decodeDem, coastField, waterMask, landSampler, waterSampler, regionIdMap, realms as computeRealms, blur, realmBorderDistance, localRange } from './terrain.js';
+import { W, H, loadImage, decodeDem, coastField, waterMask, landSampler, waterSampler, regionIdMap, fillSlivers, realms as computeRealms, blur, realmBorderDistance, localRange } from './terrain.js';
 import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
@@ -230,11 +230,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   }
 
   // ---------- 府州与势力 ----------
-  // 府州编号图（2 倍分辨率，编号写成两字节）。开局前没有剧本时为空，开局或读档后 setRegions 换上
-  let ids = regionIdMap(regions, 2);
+  // 府州编号图（2 倍分辨率，编号写成两字节）。开局前没有剧本时为空，开局或读档后 setRegions 换上。
+  // 沿海缩进、府间细缝这类陆上无主的小块按最近的府州补上（terrain.fillSlivers）
+  const landOf = landSampler(d.water);
+  const idMap = (list) => { const m = regionIdMap(list, 2); if (list.length) fillSlivers(m, landOf); return m; };
+  let ids = idMap(regions);
   // 落点校正：剧本给的治所（referenceSeat）常落在本府轮廓边上、甚至海里。不在本府陆上的，就近挪到本府陆上
   // （离岸两三像素，旗与城郭不压在海岸线上）。改的是传进来的府州对象的 center——题名、城郭、图上标记都按它落
-  const landOf = landSampler(d.water);
   function settleCenters() {
     const own = (k, x, y) => {
       const ix = Math.floor(x * 2), iy = Math.floor(y * 2);
@@ -764,7 +766,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       factions = (next && next.factions) || {};
       data.regions = regions;
       data.factions = factions;
-      ids = regionIdMap(regions, 2);
+      ids = idMap(regions);
       settleCenters();
       writeIds();
       regionTex.needsUpdate = true;

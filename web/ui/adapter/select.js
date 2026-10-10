@@ -703,12 +703,21 @@ export function mapRegions() {
     const r = m.transformPoint(new DOMPoint(q.x, q.y));
     return [Math.round(r.x * 100) / 100, Math.round(r.y * 100) / 100];
   };
+  // 主环：points（剧本给的主块外廓）；全部环：geometry（多块的府州——建州三卫连着辉发乌拉故地、沿海带岛的、
+  // 绍宋晚唐带飞地与湖心的——只取主环就漏掉其余各块，图上成了无主的窟窿）
   const ringOf = (r) => {
     if (Array.isArray(r.points) && r.points.length >= 3) return r.points;
     const geo = r.geometry;
     if (geo && geo.type === 'Polygon' && geo.coordinates && geo.coordinates[0]) return geo.coordinates[0];
     if (geo && geo.type === 'MultiPolygon' && geo.coordinates && geo.coordinates[0]) return geo.coordinates[0][0];
     return null;
+  };
+  const allRings = (r) => {
+    const geo = r.geometry;
+    const list = geo && Array.isArray(geo.coordinates)
+      ? (geo.type === 'Polygon' ? geo.coordinates : geo.type === 'MultiPolygon' ? geo.coordinates.flat() : [])
+      : [];
+    return list.filter((ring) => Array.isArray(ring) && ring.length >= 3);
   };
   const factions = {};
   const ownerOf = (r) => r.factionId || r.owner || '';
@@ -725,10 +734,12 @@ export function mapRegions() {
       factions[fid] = { name: f.name || r.factionName || r.ownerName || fid, color: f.color || r.factionColor || r.color || '#999999', short: f.shortName || f.short || '' };
     }
     const center = r.referenceSeat || r.center || r.centroid;
+    const rings = allRings(r);
     regions.push({
       id: r.id, name: r.name || '', circuit: r.circuitName || '', faction: fid, terrain: r.terrain || '',
       parent: r.parentName || (r.parentId && r.parentId !== r.circuitId ? nameById.get(r.parentId) || '' : ''),
-      poly: ring.map(toWorld), center: center ? toWorld(center) : toWorld(ring[0])
+      poly: ring.map(toWorld), center: center ? toWorld(center) : toWorld(ring[0]),
+      ...(rings.length > 1 ? { rings: rings.map((x) => x.map(toWorld)) } : {})
     });
   }
   return { mapId: map.id, regions, factions };

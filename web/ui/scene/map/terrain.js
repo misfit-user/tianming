@@ -162,24 +162,29 @@ export function landSampler(mask) {
   };
 }
 
-// 府州编号图：自己做扫描线填充（奇偶规则），不经 Canvas 的抗锯齿，编号逐像素准确。0 表示不属任何府州
+// 府州的各环：多块的府州（飞地、带岛）与带孔的（湖、他府包在里面）给 rings，单块的只有 poly
+export const ringsOf = (region) => (region.rings && region.rings.length ? region.rings : region.poly && region.poly.length >= 3 ? [region.poly] : []);
+
+// 府州编号图：自己做扫描线填充（奇偶规则，各环一起算：多块各自填上、孔留空），不经 Canvas 的抗锯齿，编号逐像素准确。0 表示不属任何府州
 export function regionIdMap(regions, scale = 2) {
   const w = W * scale, h = H * scale;
   const ids = new Uint16Array(w * h);
   const xs = [];
   regions.forEach((region, index) => {
     const id = index + 1;
-    const pts = region.poly;
-    if (!pts || pts.length < 3) return;
+    const rings = ringsOf(region);
+    if (!rings.length) return;
     let minY = Infinity, maxY = -Infinity;
-    for (const p of pts) { minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]); }
+    for (const pts of rings) for (const p of pts) { minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]); }
     const y0 = Math.max(0, Math.floor(minY * scale)), y1 = Math.min(h - 1, Math.ceil(maxY * scale));
     for (let y = y0; y <= y1; y++) {
       const sy = (y + 0.5) / scale;
       xs.length = 0;
-      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-        const [xi, yi] = pts[i], [xj, yj] = pts[j];
-        if ((yi > sy) !== (yj > sy)) xs.push(xi + (sy - yi) / (yj - yi) * (xj - xi));
+      for (const pts of rings) {
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+          const [xi, yi] = pts[i], [xj, yj] = pts[j];
+          if ((yi > sy) !== (yj > sy)) xs.push(xi + (sy - yi) / (yj - yi) * (xj - xi));
+        }
       }
       xs.sort((a, b) => a - b);
       for (let k = 0; k + 1 < xs.length; k += 2) {
@@ -189,6 +194,66 @@ export function regionIdMap(regions, scale = 2) {
     }
   });
   return { data: ids, width: w, height: h };
+}
+
+// 补缝：剧本的府州轮廓是旧描的，沿海常比舆图的海岸线缩进几像素（苏北、山东、辽西），相邻两府之间也偶有细缝——
+// 这些陆上没有府州的小块远看成了一片片无主的素纸。小于 maxArea（世界像素）、不挨图边、挨着府州的这种小块，
+// 按最近的府州补上（编号图上就地改；不动剧本数据）。印度、西伯利亚这类大片无主之地不动
+export function fillSlivers(ids, landAt, maxArea = 1500) {
+  const s = ids.width / W, half = s >> 1, iw = ids.width, data = ids.data, N = W * H;
+  // mark：1 陆上无府州、2 已走过；region：该像素有府州
+  const mark = new Uint8Array(N), region = new Uint8Array(N);
+  for (let y = 0, i = 0; y < H; y++) {
+    const row = (y * s + half) * iw + half;
+    for (let x = 0; x < W; x++, i++) {
+      if (data[row + x * s]) region[i] = 1;
+      else if (landAt(x + 0.5, y + 0.5) > 0.5) mark[i] = 1;
+    }
+  }
+  const flag = new Uint8Array(iw * ids.height);
+  const list = new Int32Array(N);
+  let filled = 0;
+  for (let start = 0; start < N; start++) {
+    if (mark[start] !== 1) continue;
+    let n = 0, head = 0, edge = false, nearRegion = false;
+    list[n++] = start;
+    mark[start] = 2;
+    while (head < n) {
+      const i = list[head++], x = i % W;
+      if (x === 0 || x === W - 1 || i < W || i >= N - W) { edge = true; continue; }
+      let j = i - 1; if (mark[j] === 1) { mark[j] = 2; list[n++] = j; } else if (region[j]) nearRegion = true;
+      j = i + 1; if (mark[j] === 1) { mark[j] = 2; list[n++] = j; } else if (region[j]) nearRegion = true;
+      j = i - W; if (mark[j] === 1) { mark[j] = 2; list[n++] = j; } else if (region[j]) nearRegion = true;
+      j = i + W; if (mark[j] === 1) { mark[j] = 2; list[n++] = j; } else if (region[j]) nearRegion = true;
+    }
+    if (edge || !nearRegion || n > maxArea) continue;
+    filled += n;
+    for (let k = 0; k < n; k++) {
+      const x = list[k] % W, y = (list[k] / W) | 0;
+      for (let dy = 0; dy < s; dy++) for (let dx = 0; dx < s; dx++) { const q = (y * s + dy) * iw + x * s + dx; if (!data[q]) flag[q] = 1; }
+    }
+  }
+  if (!filled) return 0;
+  // 由四周府州往缝里一格一格长（宽度优先），各处归最近的府州
+  const M = flag.length;
+  let queue = [];
+  for (let q = iw; q < M - iw; q++) {
+    if (flag[q] !== 1) continue;
+    for (const r of [q - 1, q + 1, q - iw, q + iw]) if (data[r] && !flag[r]) { queue.push(r); flag[r] = 2; }
+  }
+  while (queue.length) {
+    const next = [];
+    for (const q of queue) {
+      for (const r of [q - 1, q + 1, q - iw, q + iw]) {
+        if (r < 0 || r >= M || flag[r] !== 1 || data[r]) continue;
+        data[r] = data[q];
+        flag[r] = 2;
+        next.push(r);
+      }
+    }
+    queue = next;
+  }
+  return filled;
 }
 
 // 可分离盒式模糊，三遍近似高斯
@@ -287,21 +352,37 @@ export function realmBorderDistance(ids, regionRealm) {
 // 势力：按府州面积加权求题名位置，面积也用来定字号
 export function realms(data) {
   const acc = {};
+  // 一环的面积与形心；落在奇数个别环里的是孔，面积记负
+  const inside = (pt, ring) => {
+    let c = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i], [xj, yj] = ring[j];
+      if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  };
   data.regions.forEach((r) => {
     if (!r.faction) return;
-    let area = 0, cx = 0, cy = 0;
-    const p = r.poly;
-    for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
-      const cross = p[j][0] * p[i][1] - p[i][0] * p[j][1];
-      area += cross;
-      cx += (p[j][0] + p[i][0]) * cross;
-      cy += (p[j][1] + p[i][1]) * cross;
-    }
-    area /= 2;
-    if (Math.abs(area) < 1e-6) return;
-    cx /= 6 * area;
-    cy /= 6 * area;
-    const a = Math.abs(area);
+    const rings = ringsOf(r);
+    let a = 0, cx = 0, cy = 0;
+    rings.forEach((p, k) => {
+      let ra = 0, rx = 0, ry = 0;
+      for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+        const cross = p[j][0] * p[i][1] - p[i][0] * p[j][1];
+        ra += cross;
+        rx += (p[j][0] + p[i][0]) * cross;
+        ry += (p[j][1] + p[i][1]) * cross;
+      }
+      if (Math.abs(ra) < 1e-6) return;
+      rx /= 3 * ra;
+      ry /= 3 * ra;
+      const hole = rings.filter((q, m) => m !== k && inside(p[0], q)).length % 2 === 1;
+      const s = Math.abs(ra / 2) * (hole ? -1 : 1);
+      a += s; cx += rx * s; cy += ry * s;
+    });
+    if (a < 1e-6) return;
+    cx /= a;
+    cy /= a;
     const f = acc[r.faction] || (acc[r.faction] = { id: r.faction, area: 0, x: 0, y: 0 });
     f.area += a;
     f.x += cx * a;

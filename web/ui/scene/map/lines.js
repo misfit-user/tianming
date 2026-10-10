@@ -65,7 +65,11 @@ export function relax(p, k = 2, closed = false) {
 
 // 道格拉斯—普克简化（容差：世界像素）
 export function simplify(p, tol = 0.08) {
-  if (p.length < 3) return p;
+  return simplifyIdx(p, tol).map((i) => p[i]);
+}
+// 同上，给留下的点的下标（江河要按下标取流量）
+export function simplifyIdx(p, tol = 0.08) {
+  if (p.length < 3) return p.map((_, i) => i);
   const keep = new Uint8Array(p.length);
   keep[0] = keep[p.length - 1] = 1;
   const stack = [[0, p.length - 1]];
@@ -80,7 +84,9 @@ export function simplify(p, tol = 0.08) {
     }
     if (best > tol) { keep[bi] = 1; stack.push([a, bi], [bi, b]); }
   }
-  return p.filter((_, i) => keep[i]);
+  const out = [];
+  for (let i = 0; i < p.length; i++) if (keep[i]) out.push(i);
+  return out;
 }
 
 const polyLength = (p) => { let s = 0; for (let i = 1; i < p.length; i++) s += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); return s; };
@@ -334,8 +340,8 @@ export function riverWidth(f) {
 }
 
 // ---------- 带子几何 ----------
-// lines: [{ pts, closed?, w?: 每点宽度系数, f?: 每点流量 }]
-function ribbon(lines) {
+// lines: [{ pts, closed?, w?: 每点宽度系数, f?: 每点流量 }]；heightAt(x, y) 取地面高（0～1，与地形网格同一张微糊高度）
+function ribbon(lines, heightAt) {
   let nv = 0, ni = 0;
   for (const l of lines) {
     const n = l.pts.length + (l.closed ? 1 : 0);
@@ -343,7 +349,7 @@ function ribbon(lines) {
     nv += n * 2;
     ni += (n - 1) * 6;
   }
-  const pos = new Float32Array(nv * 3), prev = new Float32Array(nv * 2), next = new Float32Array(nv * 2);
+  const pos = new Float32Array(nv * 3), prev = new Float32Array(nv * 3), next = new Float32Array(nv * 3);
   const side = new Float32Array(nv), along = new Float32Array(nv), wide = new Float32Array(nv), flow = new Float32Array(nv);
   const index = new Uint32Array(ni);
   let v = 0, k = 0;
@@ -352,16 +358,17 @@ function ribbon(lines) {
     const n = p.length;
     if (n < 2) continue;
     let s = 0;
+    const hs = p.map((q) => heightAt(q[0], q[1]));
     for (let i = 0; i < n; i++) {
       if (i) s += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]);
-      const a = i > 0 ? p[i - 1] : l.closed ? p[n - 2] : [2 * p[0][0] - p[1][0], 2 * p[0][1] - p[1][1]];
-      const b = i < n - 1 ? p[i + 1] : l.closed ? p[1] : [2 * p[n - 1][0] - p[n - 2][0], 2 * p[n - 1][1] - p[n - 2][1]];
+      const a = i > 0 ? [...p[i - 1], hs[i - 1]] : l.closed ? [...p[n - 2], hs[n - 2]] : [2 * p[0][0] - p[1][0], 2 * p[0][1] - p[1][1], hs[0]];
+      const b = i < n - 1 ? [...p[i + 1], hs[i + 1]] : l.closed ? [...p[1], hs[1]] : [2 * p[n - 1][0] - p[n - 2][0], 2 * p[n - 1][1] - p[n - 2][1], hs[n - 1]];
       const wi = l.w ? l.w[Math.min(i, l.w.length - 1)] : 1;
       const fi = l.f ? l.f[Math.min(i, l.f.length - 1)] : 0;
       for (const sd of [-1, 1]) {
-        pos.set([p[i][0], 0, p[i][1]], v * 3);
-        prev.set(a, v * 2);
-        next.set(b, v * 2);
+        pos.set([p[i][0], hs[i], p[i][1]], v * 3);
+        prev.set(a, v * 3);
+        next.set(b, v * 3);
         side[v] = sd;
         along[v] = s;
         wide[v] = wi;
@@ -377,8 +384,8 @@ function ribbon(lines) {
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setAttribute('aPrev', new THREE.BufferAttribute(prev, 2));
-  g.setAttribute('aNext', new THREE.BufferAttribute(next, 2));
+  g.setAttribute('aPrev', new THREE.BufferAttribute(prev, 3));
+  g.setAttribute('aNext', new THREE.BufferAttribute(next, 3));
   g.setAttribute('aSide', new THREE.BufferAttribute(side, 1));
   g.setAttribute('aAlong', new THREE.BufferAttribute(along, 1));
   g.setAttribute('aW', new THREE.BufferAttribute(wide, 1));
@@ -388,15 +395,14 @@ function ribbon(lines) {
 }
 
 const LINE_VERT = /* glsl */`
-uniform sampler2D uTerrain;
 uniform float uRelief;
 uniform vec2 uHalfView;        // 视口一半（CSS 像素）
 uniform float uPx;             // 焦距（CSS 像素）
 uniform float uWorldW;         // 世界宽度（世界像素；江河有实宽，近看变粗）
 uniform float uMinPx, uMaxPx;  // 屏幕宽度上下限
 uniform float uFlowMin;        // 江河：上游累计长度不及此数的淡去（随镜头远近定）
-attribute vec2 aPrev;
-attribute vec2 aNext;
+attribute vec3 aPrev;          // 前一点：x、y（世界）、地面高（0～1）
+attribute vec3 aNext;
 attribute float aSide;
 attribute float aAlong;
 attribute float aW;
@@ -405,12 +411,9 @@ varying float vSide;
 varying float vHalf;
 varying float vAlongPx;
 varying float vFade;
-vec4 clip(vec2 p) {
-  float h = texture2D(uTerrain, p / vec2(${W.toFixed(1)}, ${H.toFixed(1)})).g * uRelief;
-  return projectionMatrix * modelViewMatrix * vec4(p.x, h, p.y, 1.0);
-}
+vec4 clip(vec3 p) { return projectionMatrix * modelViewMatrix * vec4(p.x, p.z * uRelief, p.y, 1.0); }
 void main() {
-  vec4 c = clip(position.xz);
+  vec4 c = clip(position.xzy);
   vec4 a = clip(aPrev);
   vec4 b = clip(aNext);
   vec2 sc = c.xy / c.w * uHalfView, sa = a.xy / a.w * uHalfView, sb = b.xy / b.w * uHalfView;
@@ -477,7 +480,7 @@ function lineMaterial(style, shared) {
   return new THREE.ShaderMaterial({
     vertexShader: LINE_VERT, fragmentShader: LINE_FRAG, transparent: true, depthWrite: false, side: THREE.DoubleSide,   // 带子的绕向随走向而定，两面都画
     uniforms: {
-      uTerrain: shared.uTerrain, uRelief: shared.uRelief, uPx: shared.uPx, uHalfView: shared.uHalfView,
+      uRelief: shared.uRelief, uPx: shared.uPx, uHalfView: shared.uHalfView,
       uWorldW: { value: style.worldW || 0 }, uMinPx: { value: style.minPx }, uMaxPx: { value: style.maxPx },
       uFlowMin: { value: 0 }, uColor: { value: new THREE.Vector3(...style.color) }, uAlpha: { value: style.alpha ?? 1 },
       uDash: { value: new THREE.Vector4(...(style.dash || [0, 0, 0, 0])) }, uSoft: { value: style.soft || 0 }, uEdge: { value: style.edge || 0 }
@@ -496,9 +499,9 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
   function put(kind, lines) {
     if (meshes[kind]) { group.remove(meshes[kind]); meshes[kind].geometry.dispose(); delete meshes[kind]; }
     if (!lines || !lines.length) return;
-    const m = new THREE.Mesh(ribbon(lines), mats[kind]);
+    const m = new THREE.Mesh(ribbon(lines, heightAt), mats[STYLES[kind] ? kind : kind.split(':')[0]]);
     m.frustumCulled = false;
-    m.renderOrder = STYLES[kind].order;
+    m.renderOrder = (STYLES[kind] || STYLES[kind.split(':')[0]]).order;
     meshes[kind] = m;
     group.add(m);
   }
@@ -520,11 +523,14 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
       if (run.length > 1) coast.push(run);
     }
   }
-  put('coast', coast.map((p) => ({ pts: chaikin(p, 1) })));
+  put('coast', coast.map((p) => ({ pts: chaikin(simplify(p, 0.05), 1) })));
 
   // 江河与湖岸
   const rivers = riverNetwork(env, heightAt, isSea);
-  put('river', rivers.map((r) => ({ pts: r.pts, f: r.flow, w: r.flow.map(riverWidth) })));
+  // 江河按一条里最大的流量分三档，各成一网；远看时小的整档不画（着色器里本也淡去了，省得白画）
+  const RIVER_TIERS = [[0, 40], [40, 200], [200, Infinity]];
+  RIVER_TIERS.forEach(([lo, hi], i) => put('river:' + i, rivers.filter((r) => { const f = r.flow[r.flow.length - 1]; return f >= lo && f < hi; })
+    .map((r) => { const keep = simplifyIdx(r.pts, 0.04); return { pts: keep.map((k) => r.pts[k]), f: keep.map((k) => r.flow[k]), w: keep.map((k) => riverWidth(r.flow[k])) }; })));
   // 傍水：江河两侧三像素内记一格（村舍落点用）
   const riverside = new Uint8Array(W * H);
   for (const r of rivers) {
@@ -595,8 +601,11 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     const layer = shared.uLayer ? shared.uLayer.value : 0;             // 看法设色时府界要看得见
     mats.pref.uniforms.uAlpha.value = Math.max(0.55 * near(500, 950), 0.5 * layer);
     mats.circuit.uniforms.uAlpha.value = 0.7 * near(1300, 2000);
-    mats.river.uniforms.uFlowMin.value = Math.max(0, (dist - 150) * 0.3);
+    const flowMin = Math.max(0, (dist - 150) * 0.3);
+    mats.river.uniforms.uFlowMin.value = flowMin;
     mats.river.uniforms.uAlpha.value = 0.95;
+    if (meshes['river:0']) meshes['river:0'].visible = flowMin * 0.4 < 40;
+    if (meshes['river:1']) meshes['river:1'].visible = flowMin * 0.4 < 200;
     mats.realmHalo.uniforms.uAlpha.value = 0.16 + 0.12 * (1 - near(400, 1400));
   }
   function setViewport(w, h) { shared.uHalfView.value.set(w / 2, h / 2); }

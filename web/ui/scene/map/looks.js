@@ -33,6 +33,7 @@ export function mixLook(a, b, t) {
     out[key] = ca.map((v, i) => v + (cb[i] - v) * t);
   }
   for (const k of ['amp', 'band', 'shade']) out[k] = a[k].map((v, i) => v + (b[k][i] - v) * t);
+  out.mix = [a, b, t];                         // 舆图底色烘了这两套时，按此在两张底色间插，不重烘
   return out;
 }
 

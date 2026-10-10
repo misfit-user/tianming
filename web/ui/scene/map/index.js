@@ -9,7 +9,8 @@ import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
 import { createLabels, realmTitle } from './labels.js';
-import { LOOK_QINGLV, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
+import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
+import { createPainter, noiseTex } from './paint.js';
 import { quality } from '../../core/quality.js';
 import { SHEET_EXTENT } from '../world.js';
 
@@ -165,6 +166,53 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   controls.maxDistance = 2600;
   controls.minPolarAngle = 0.12;
   controls.maxPolarAngle = 1.2;
+  // 照 CK3 的手感：左键拖动平移、滚轮朝指针处缩放、中键拖动转向；右键留给「可为」单。触屏单指平移、双指缩放转向
+  controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.ROTATE, RIGHT: null };
+  controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
+  controls.zoomToCursor = true;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 1.0;
+  // 俯角随远近：拉远近乎正俯视（看大势），推近斜下来（看山川起伏）
+  const tiltFor = (dist) => { const t = Math.min(1, Math.max(0, (dist - 150) / 1850)); return 0.95 - 0.6 * t * t * (3 - 2 * t); };
+  const keysDown = new Set();
+  const KEY_PAN = { KeyW: [0, -1], ArrowUp: [0, -1], KeyS: [0, 1], ArrowDown: [0, 1], KeyA: [-1, 0], ArrowLeft: [-1, 0], KeyD: [1, 0], ArrowRight: [1, 0] };
+  const typing = (t) => t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  const onKeyDown = (e) => { if (KEY_PAN[e.code] && !typing(e.target) && !e.ctrlKey && !e.altKey && !e.metaKey) keysDown.add(e.code); };
+  const onKeyUp = (e) => keysDown.delete(e.code);
+  const onBlur = () => keysDown.clear();
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('blur', onBlur);
+  // 每帧：键盘平移（随远近定速）、俯角跟着远近缓缓走、镜头中心夹在图内
+  const panTmp = new THREE.Vector3(), offTmp = new THREE.Vector3(), sph = new THREE.Spherical();
+  function steer(dt) {
+    const dist = camera.position.distanceTo(controls.target);
+    if (keysDown.size && !document.querySelector('.q-juan-veil, .ce-ov.on, .q-kewei')) {
+      let dx = 0, dz = 0;
+      for (const k of keysDown) { dx += KEY_PAN[k][0]; dz += KEY_PAN[k][1]; }
+      const az = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
+      const v = dist * 0.9 * dt;
+      panTmp.set((dx * Math.cos(az) + dz * Math.sin(az)) * v, 0, (-dx * Math.sin(az) + dz * Math.cos(az)) * v);
+      controls.target.add(panTmp);
+      camera.position.add(panTmp);
+    }
+    // 夹住中心：别拖出图外
+    const cx = Math.min(W - 60, Math.max(60, controls.target.x)), cz = Math.min(H - 60, Math.max(60, controls.target.z));
+    if (cx !== controls.target.x || cz !== controls.target.z) {
+      panTmp.set(cx - controls.target.x, 0, cz - controls.target.z);
+      controls.target.add(panTmp);
+      camera.position.add(panTmp);
+    }
+    offTmp.subVectors(camera.position, controls.target);
+    sph.setFromVector3(offTmp);
+    const want = tiltFor(sph.radius);
+    if (Math.abs(sph.phi - want) > 1e-4) {
+      sph.phi += (want - sph.phi) * Math.min(1, dt * 6);
+      offTmp.setFromSpherical(sph);
+      camera.position.copy(controls.target).add(offTmp);
+      camera.lookAt(controls.target);
+    }
+  }
 
   // ---------- 府州与势力 ----------
   // 府州编号图（2 倍分辨率，编号写成两字节）。开局前没有剧本时为空，开局或读档后 setRegions 换上
@@ -239,6 +287,15 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uAmp: { value: new THREE.Vector4() }, uBand: { value: new THREE.Vector4() }, uShade: { value: new THREE.Vector4() }
   };
   for (const k of LOOK_COLORS) uniforms[k.u] = { value: new THREE.Vector3() };
+  // 底色：今设色、案上旧绢各烘一张（paint.js）
+  const painter = createPainter(renderer, F.textures, { hiRes: q.mapHiRes, relief: RELIEF, anisotropy: q.anisotropy });
+  await painter.bakeFresh(LOOK_QINGLV);
+  await painter.bakeAged(LOOK_QINGLV_AGED);
+  let bakedFresh = LOOK_QINGLV;
+  uniforms.uPaint = { value: painter.fresh.texture };
+  uniforms.uPaintAged = { value: painter.aged.texture };
+  uniforms.uLookT = { value: 1 };
+  uniforms.uNoise = { value: noiseTex() };
   const terrain = new THREE.Mesh(gridGeometry(...q.mapGrid), new THREE.ShaderMaterial({ vertexShader: terrainVertex, fragmentShader: terrainFragment, uniforms }));
   terrain.frustumCulled = false;
   scene.add(terrain);
@@ -248,7 +305,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const massifAt = sample(d.massif);
 
   // ---------- 线：疆界、省界、府界、海岸、江河 ----------
-  lines = createLines({ env: d.env, shared: uniforms, land: landSampler(d.water), water: waterSampler(d.water), heightAt: sample(d.height), size: stage.size });
+  // 地面高（双线性，与地形网格取的同一张微糊高度），线与点景贴地用
+  const groundAt = (x, y) => {
+    const fx = Math.max(0, Math.min(W - 1.001, x - 0.5)), fy = Math.max(0, Math.min(H - 1.001, y - 0.5));
+    const x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, f = d.heightSmall, i = y0 * W + x0;
+    return (f[i] * (1 - tx) + f[i + 1] * tx) * (1 - ty) + (f[i + W] * (1 - tx) + f[i + W + 1] * tx) * ty;
+  };
+  lines = createLines({ env: d.env, shared: uniforms, land: landSampler(d.water), water: waterSampler(d.water), heightAt: groundAt, size: stage.size });
   lines.setRegions(regions, regionIndexAt);
   lines.setPolitics(realmByRegion);
   scene.add(lines.group);
@@ -330,8 +393,20 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   }
 
   let currentLook = LOOK_QINGLV;
+  // 设色：烘好的两套之间按比例插（入图、起身时由旧转新）；别的设色（少用）重烘今设色那张
+  function lookT(look) {
+    if (look === bakedFresh) return 1;
+    if (look === LOOK_QINGLV_AGED) return 0;
+    const m = look.mix;
+    if (m && m[0] === LOOK_QINGLV_AGED && m[1] === bakedFresh) return m[2];
+    if (m && m[1] === LOOK_QINGLV_AGED && m[0] === bakedFresh) return 1 - m[2];
+    return null;
+  }
   function setLook(look) {
     currentLook = look;
+    let t = lookT(look);
+    if (t == null) { bakedFresh = look; painter.bakeFresh(look); t = 1; }
+    uniforms.uLookT.value = t;
     for (const k of LOOK_COLORS) {
       const c = look[k.key];
       if (c) uniforms[k.u].value.set(...(typeof c === 'string' ? hexRgb(c) : c).map((v) => v / 255));
@@ -480,7 +555,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     update(t, dt) {
       time += dt;
       uniforms.uTime.value = time;
-      if (interactive) controls.update();
+      if (interactive) { controls.update(); steer(Math.min(dt, 0.05)); }
       uniforms.uCam.value.copy(camera.position);
       const dist = camera.position.distanceTo(controls.target);
       // 远雾：斜看时远处融进绢色（正俯视时各处离镜头差不多远，等于没有）
@@ -581,9 +656,13 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     dispose() {
       stage.canvas.removeEventListener('pointermove', onMove);
       stage.canvas.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
       controls.dispose();
       for (const t of [regionTex, infoTex, paletteTex, borderTex, layerTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
       lines.dispose();
+      painter.dispose();
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });
       labels?.clear();
       if (cities) { cities.geometry.dispose(); cities.material.dispose(); }

@@ -32,7 +32,7 @@
   function alive(ch) { return !!ch && ch.alive !== false && ch.dead !== true; }
   function plan(idValue) { return D() && D().get(idValue, G()); }
   function isMeeting(p) { return !!(p && p.localActivity && p.localActivity.kind === 'meeting' && p.localActivity.meeting); }
-  function terminal(p) { return /^(done|rejected|cancelled|expired|missed)$/.test(p && p.status || ''); }
+  function terminal(p) { return /^(done|ended|rejected|cancelled|expired|missed)$/.test(p && p.status || ''); }
   function signature(v) { return TM.PoliticalActions && TM.PoliticalActions.signature ? TM.PoliticalActions.signature(v) : JSON.stringify(v); }
   function nextId() { return 'daily-message:' + (++L().state(G()).sequence); }
   function participant(p, key) { return p && (p.actorId === key || p.targetId === key); }
@@ -65,38 +65,98 @@
       actorChoice: '', actorContent: '', targetChoice: '', targetContent: '', result: null };
   }
 
-  function inferredOfficeConstraint(ch, m) {
+  function officeRows(ch) {
     var office = TM.OfficeTenure;
-    if (!office || typeof office.view !== 'function' || !ch || !m) return null;
-    var rows = office.view(G(), ch).filter(function (v) {
-      return v && v.dutyMode === 'resident' && v.usualDutyLocationId && String(v.usualDutyLocationId) !== String(m.locationId);
+    if (!office || typeof office.view !== 'function' || !ch) return null;
+    var out = office.view(G(), ch);
+    return Array.isArray(out) ? out.filter(Boolean) : [];
+  }
+
+  // A caller supplied office constraint is only a hint about which duty is
+  // relevant to the meeting.  It cannot remove another active appointment or
+  // weaken its leave requirement.  Returning a structured read also keeps a
+  // missing query distinct from a person who genuinely has no appointments.
+  function inferredOfficeConstraints(ch, m) {
+    var office = TM.OfficeTenure, rows = officeRows(ch);
+    if (rows === null) return { status: 'unknown', constraints: [], reason: 'office_constraint_unavailable' };
+    var location = String(m && m.locationId || '');
+    var constraints = rows.map(function (row) {
+      if (!row || !row.positionId) return null;
+      var outsideResident = row.dutyMode === 'resident' && row.usualDutyLocationId && String(row.usualDutyLocationId) !== location;
+      var outsideFieldScope = row.dutyMode === 'field' && Array.isArray(row.jurisdictionIds) && row.jurisdictionIds.length && row.jurisdictionIds.indexOf(location) < 0;
+      if (!outsideResident && !outsideFieldScope) return null;
+      return { positionId: row.positionId, organizationId: row.organizationId, requiresLeave: !!outsideResident,
+        action: 'private_travel', dutyMode: row.dutyMode, row: row };
+    }).filter(Boolean);
+    return { status: constraints.length ? 'constrained' : 'unconstrained', constraints: constraints };
+  }
+
+  // Kept as a small compatibility projection for diagnostics and older callers.
+  function inferredOfficeConstraint(ch, m) {
+    var found = inferredOfficeConstraints(ch, m);
+    return found.constraints.length === 1 ? found.constraints[0] : null;
+  }
+
+  function routeDays(from, to, mode) {
+    if (!from || !to || String(from) === String(to)) return 0;
+    var r = route(from, to, mode);
+    return r && r.status === 'reachable' && finiteNonNegative(r.days) ? Number(r.days) : NaN;
+  }
+
+  function leaveSupportsMeeting(row, ch, m, phase) {
+    var leaves = row && Array.isArray(row.leave) ? row.leave : [];
+    var home = currentRegion(ch), outbound = routeDays(home, m.locationId, m.mode), back = routeDays(m.locationId, home, m.mode);
+    var now = day(), requested = Number(m.requestedStartDay), duration = Number(m.durationDays || 0);
+    // If a route cannot be evaluated, the office constraint is unknown rather
+    // than an invitation to leave.  Same-location meetings still work.
+    if (!Number.isFinite(outbound) || !Number.isFinite(back)) return { ok: false, reason: 'meeting_office_return_route_unknown' };
+    var arrival = Math.max(requested, now + outbound), latestNeeded = arrival + duration + back;
+    var valid = leaves.find(function (leave) {
+      var terms = leave && leave.terms || {};
+      var status = leave && leave.status || '';
+      var destinationOk = !terms.destinationId || String(terms.destinationId) === String(m.locationId);
+      var startOk = terms.startDay == null || arrival >= Number(terms.startDay);
+      var returnOk = terms.latestReturnDay == null || latestNeeded <= Number(terms.latestReturnDay);
+      var informed = leave.applicantInformed !== false && (leave.approvalReceivedDay == null || Number(leave.approvalReceivedDay) <= now || /^(active|at_destination|returning|overdue)$/.test(status));
+      return /^(approved|active|at_destination|returning|overdue)$/.test(status) && destinationOk && startOk && returnOk && informed;
     });
-    // Multiple concurrent resident appointments need an explicit arrangement;
-    // silently selecting one would make a same activity depend on list order.
-    if (rows.length !== 1) return null;
-    return { positionId: rows[0].positionId, organizationId: rows[0].organizationId, requiresLeave: true, action: 'onsite' };
+    if (valid) return { ok: true, leaveId: valid.id, latestNeeded: latestNeeded };
+    return { ok: false, reason: phase === 'depart' ? 'meeting_office_leave_required' : 'meeting_office_presence_required', latestNeeded: latestNeeded };
   }
 
   function officeConstraintCheck(ch, m, role, phase) {
-    var constraint = m && m[role + 'OfficeConstraint'] || inferredOfficeConstraint(ch, m);
-    if (!constraint) return { ok: true };
-    var office = TM.OfficeTenure;
-    if (!office || typeof office.canAct !== 'function') return { ok: false, reason: 'office_constraint_unavailable' };
-    var checked = office.canAct({ world: G(), actor: ch, actorId: ch && ch.id, positionId: constraint.positionId,
-      organizationId: constraint.organizationId, action: constraint.action || 'onsite', regionId: m.locationId, day: day() });
-    if (!checked.ok) return checked;
-    if (constraint.requiresLeave === true) {
-      var rows = typeof office.view === 'function' ? office.view(G(), ch) : [];
-      var row = rows.find(function (v) { return String(v.positionId) === String(constraint.positionId) && (!constraint.organizationId || String(v.organizationId) === String(constraint.organizationId)); });
-      var validLeave = row && rows && (row.leave || []).some(function (leave) {
-        var terms = leave.terms || {};
-        return /^(approved|active|at_destination|returning)$/.test(leave.status || '') &&
-          (!terms.destinationId || String(terms.destinationId) === String(m.locationId)) &&
-          (terms.startDay == null || day() >= Number(terms.startDay)) && (terms.latestReturnDay == null || day() + Number(m.durationDays || 0) <= Number(terms.latestReturnDay));
-      });
-      if (!validLeave) return { ok: false, reason: phase === 'depart' ? 'meeting_office_leave_required' : 'meeting_office_presence_required' };
+    var office = TM.OfficeTenure, explicit = m && m[role + 'OfficeConstraint'], found = inferredOfficeConstraints(ch, m);
+    if (found.status === 'unknown') return { ok: false, status: 'unknown', reason: found.reason };
+    var rows = officeRows(ch) || [], constraints = found.constraints.slice();
+    // Validate an explicit hint against the actual appointment identity.  It
+    // may select an already inferred row, but never erase the inferred rows.
+    if (explicit) {
+      var explicitRow = rows.find(function (v) { return String(v.positionId) === String(explicit.positionId) && (!explicit.organizationId || String(v.organizationId) === String(explicit.organizationId)); });
+      if (!explicitRow) return { ok: false, status: 'blocked', reason: 'meeting_office_constraint_identity_mismatch' };
+      if (!constraints.some(function (v) { return String(v.positionId) === String(explicitRow.positionId) && String(v.organizationId || '') === String(explicitRow.organizationId || ''); })) {
+        constraints.push({ positionId: explicitRow.positionId, organizationId: explicitRow.organizationId, requiresLeave: false, action: 'private_travel', dutyMode: explicitRow.dutyMode, row: explicitRow });
+      }
     }
-    return checked;
+    if (!constraints.length) return { ok: true, status: 'unconstrained', obligations: [] };
+    if (!office || typeof office.canAct !== 'function') return { ok: false, status: 'unknown', reason: 'office_constraint_unavailable' };
+    var obligations = [];
+    for (var i = 0; i < constraints.length; i++) {
+      var constraint = constraints[i], checked = office.canAct({ world: G(), actor: ch, actorId: ch && ch.id,
+        positionId: constraint.positionId, organizationId: constraint.organizationId, action: 'private_travel',
+        // This is a private-travel check, not a public authority check.  The
+        // separate leave/return validation below still applies to each duty.
+        requireJurisdiction: false, regionId: m.locationId, day: day() });
+      if (!checked.ok) return Object.assign({ status: 'blocked' }, checked, { positionId: constraint.positionId, organizationId: constraint.organizationId });
+      if (constraint.dutyMode === 'field' && !constraint.requiresLeave && !(ch && ch._officeFieldDuty)) {
+        return { ok: false, status: 'blocked', reason: 'meeting_office_field_arrangement_required', positionId: constraint.positionId, organizationId: constraint.organizationId };
+      }
+      if (constraint.requiresLeave) {
+        var leave = leaveSupportsMeeting(constraint.row, ch, m, phase);
+        if (!leave.ok) return Object.assign({ status: 'blocked', positionId: constraint.positionId, organizationId: constraint.organizationId }, leave);
+        obligations.push({ positionId: constraint.positionId, organizationId: constraint.organizationId, leaveId: leave.leaveId, latestNeeded: leave.latestNeeded });
+      }
+    }
+    return { ok: true, status: 'allowed', obligations: obligations };
   }
 
   function remember(ch, other, p, source, content, factStatus) {
@@ -412,6 +472,16 @@
     });
   }
 
+  function participantPresent(p, role) {
+    var m = p && p.localActivity && p.localActivity.meeting, ch = charForRole(p, role), j = m && journeyFor(m, role, false);
+    if (!m || !alive(ch) || !j || j.status !== 'arrived') return false;
+    if (journeyFor(m, role, true)) return false;
+    if (ch._localTravelRef && ch._localTravelRef.role !== role) return false;
+    return currentRegion(ch) === String(m.locationId) && (!ch._officeJourney || ch._officeJourney.status !== 'in_transit');
+  }
+
+  function bothParticipantsPresent(p) { return participantPresent(p, 'actor') && participantPresent(p, 'target'); }
+
   function beginMeeting(p, now, startOverride) {
     var a = p.localActivity, m = a.meeting, aj = m.actorJourney, tj = m.targetJourney;
     if (m.status === 'in_meeting' || m.participation || !aj || !tj || aj.status !== 'arrived' || tj.status !== 'arrived') return false;
@@ -421,7 +491,7 @@
     var end = start + m.durationDays, actor = person(p.actorId), target = person(p.targetId);
     // A stale arrived flag is not enough: both characters must still occupy
     // the agreed venue when the meeting actually starts.
-    if (currentRegion(actor) !== String(m.locationId) || currentRegion(target) !== String(m.locationId)) {
+    if (!bothParticipantsPresent(p)) {
       m.status = 'arrived_waiting'; p.status = 'arrived_waiting'; return false;
     }
     if (!officeConstraintCheck(actor, m, 'actor', 'onsite').ok || !officeConstraintCheck(target, m, 'target', 'onsite').ok) {
@@ -447,9 +517,14 @@
     if (m.status !== 'in_meeting' || !Number.isFinite(m.endDay) || now < m.endDay) return false;
     if (m.discussion && m.discussion.status !== 'completed') m.discussion.status = 'uncompleted';
     if (!m.participation) {
+      var discussionCompleted = !!(m.discussion && m.discussion.status === 'completed');
+      if (m.discussion && !discussionCompleted) {
+        m.discussion.status = 'uncompleted';
+        m.discussion.outcome = m.discussion.actorContent ? 'partial' : 'not_started';
+      }
       m.participation = { id: 'meeting:' + p.id, startDay: m.startedDay, endDay: now, durationDays: now - m.startedDay,
         participants: [p.actorId, p.targetId], locationId: m.locationId, purpose: m.purpose, sourcePlanId: p.id,
-        discussion: m.discussion && { status: m.discussion.status, topicId: m.discussion.topicId, result: copy(m.discussion.result || null) } };
+        discussion: m.discussion && { status: m.discussion.status, outcome: m.discussion.outcome || (discussionCompleted ? 'completed' : 'not_started'), topicId: m.discussion.topicId, result: copy(m.discussion.result || null) } };
       var actor = person(p.actorId), target = person(p.targetId);
       remember(actor, target, p, m.participation.id, '与' + target.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
       remember(target, actor, p, m.participation.id + ':target', '与' + actor.name + '在' + m.locationName + '实际会面，议题：' + m.purpose, 'personal_experience');
@@ -473,10 +548,11 @@
     var m = p.localActivity.meeting;
     if (m.status !== 'returning') return;
     var done = ['actor', 'target'].every(function (role) { var j = journeyFor(m, role, true); return j && /^(arrived|returned|staying)$/.test(j.status); });
-    if (done) { ['actor', 'target'].forEach(function (role) { var j = journeyFor(m, role, true); if (j.status === 'arrived') j.status = 'returned'; }); m.status = 'returned'; p.status = 'done'; p.nextActorId = '';
+    if (done) { ['actor', 'target'].forEach(function (role) { var j = journeyFor(m, role, true); if (j.status === 'arrived') j.status = 'returned'; }); m.status = 'returned';
+      var completed = !!(m.discussion && m.discussion.status === 'completed'); p.status = completed ? 'done' : 'ended'; p.nextActorId = '';
       if (typeof root._npcPlanningStepResult === 'function' && p.localActivity.sourceGoalId) {
-        var discussionOutcome = m.discussion && m.discussion.status === 'uncompleted' ? 'partial' : 'completed';
-        root._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, { outcome: discussionOutcome, reason: discussionOutcome === 'partial' ? 'meeting_returned_without_discussion' : 'meeting_returned', planningOwnerId: p.actorId, verified: discussionOutcome === 'completed' });
+        var discussionOutcome = completed ? 'completed' : (m.discussion && m.discussion.outcome === 'partial' ? 'partial' : 'ended');
+        root._npcPlanningStepResult(p.actorId, p.localActivity.sourceGoalId, { outcome: discussionOutcome, reason: completed ? 'meeting_returned' : 'meeting_returned_without_discussion', planningOwnerId: p.actorId, verified: completed });
       }
     }
   }
@@ -635,7 +711,7 @@
     if (d.expectedRevision != null && d.expectedRevision !== a.revision || d.termsVersion != null && d.termsVersion !== a.termsVersion) return result('expired', 'meeting_or_terms_changed');
     if (d.phase === 'discuss' && key === p.actorId && m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_actor') {
       if (day() < Number(m.startedDay || 0) || day() >= Number(m.endDay || 0)) return result('blocked', 'meeting_discussion_time_unavailable');
-      if (currentRegion(actor) !== String(m.locationId)) return result('blocked', 'meeting_discussion_location_mismatch');
+      if (!bothParticipantsPresent(p)) return result('blocked', 'meeting_discussion_participant_unavailable');
       var actorChoice = text(d.exchangeChoice || d.response || 'explain');
       if (!/^(explain|question|counter)$/.test(actorChoice)) return result('blocked', 'meeting_discussion_choice_required');
       var actorTopic = discussionTopic(m); if (!actorTopic) return result('blocked', 'meeting_discussion_topic_missing');
@@ -645,7 +721,7 @@
     }
     if (d.phase === 'discuss_response' && key === p.targetId && m.status === 'in_meeting' && m.discussion && m.discussion.status === 'awaiting_target') {
       if (day() < Number(m.startedDay || 0) || day() >= Number(m.endDay || 0)) return result('blocked', 'meeting_discussion_time_unavailable');
-      if (currentRegion(actor) !== String(m.locationId)) return result('blocked', 'meeting_discussion_location_mismatch');
+      if (!bothParticipantsPresent(p)) return result('blocked', 'meeting_discussion_participant_unavailable');
       var targetChoice = text(d.response || 'answer');
       if (!/^(answer|uncertain|counter)$/.test(targetChoice)) return result('blocked', 'meeting_discussion_response_required');
       var targetTopic = discussionTopic(m); if (!targetTopic) return result('blocked', 'meeting_discussion_topic_missing');
@@ -672,8 +748,12 @@
       p.nextActorId = ''; return step(p, actor, d, 'submitted', informed.length ? '取消通知已发，其他参与者收到后再决定自己的行程' : '未送达的约见已撤回');
     }
     if (d.phase === 'depart' && key === p.actorId && p.status === 'waiting_departure') {
+      var departureCheck = officeConstraintCheck(actor, m, 'actor', 'depart');
+      if (!departureCheck.ok) return result('blocked', departureCheck.reason || 'meeting_schedule_not_ready');
       if (!D().spend(actor, false)) return result('blocked', 'daily_activity_budget');
-      var departure = startJourneyFor(p, 'actor', 'manual'); aggregateStatus(p); return step(p, actor, d, departure ? 'started' : 'waiting', departure ? '本人已按收到的接受回信启程' : '当前路线或日程不能安全启程');
+      var departure = startJourneyFor(p, 'actor', 'manual');
+      if (!departure) return result('blocked', m.actorJourneyStatus || '当前路线或日程不能安全启程');
+      aggregateStatus(p); return step(p, actor, d, 'started', '本人已按收到的接受回信启程');
     }
     if (d.phase === 'reschedule' && key === p.actorId && p.status === 'awaiting_reschedule' && m.pendingTerms) {
       m.version++; a.termsVersion++; m.requestedStartDay = m.pendingTerms.requestedStartDay; m.windowDays = m.pendingTerms.windowDays; m.durationDays = m.pendingTerms.durationDays; m.termsHistory.push({ version: m.version, terms: copy(m.pendingTerms) }); m.pendingTerms = null;
@@ -742,7 +822,7 @@
       ownContent: role === 'actor' ? m.discussion.actorContent : m.discussion.targetContent,
       heardChoice: role === 'target' && /^(awaiting_target|completed|uncompleted)$/.test(m.discussion.status) ? m.discussion.actorChoice : '',
       heardContent: role === 'target' && /^(awaiting_target|completed|uncompleted)$/.test(m.discussion.status) ? m.discussion.actorContent : '',
-      result: m.discussion.status === 'completed' || m.discussion.status === 'uncompleted' ? copy(m.discussion.result || null) : null };
+      result: m.discussion.status === 'completed' || m.discussion.status === 'uncompleted' ? Object.assign({ outcome: m.discussion.outcome || (m.discussion.status === 'completed' ? 'completed' : 'partial') }, copy(m.discussion.result || {})) : null };
     return { id: p.id, kind: 'meeting', actorId: p.actorId, targetId: p.targetId, intent: p.intent,
       stage: k.stage, nextPhase: next, revision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion,
       expiresDay: p.localActivity.expiresDay, messages: copy(messages), documents: [], contact: null,

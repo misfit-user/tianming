@@ -1,6 +1,7 @@
 // 舆图底色：与镜头无关的那部分着色（青绿设色、气候、明暗、颜料颗粒、雪、远看的山脊）开图时烘成大贴图，
 // 每帧着色器只取一下，再补近看细节与跟镜头、时间、局势走的东西（shaders.js）。核显上远景一帧原要四五十毫秒，烘后十毫秒内。
 // 两张：今设色（高档 4200×3080、低档 2100×1540）与案上旧绢（2100×1540，只在入图、起身那两秒与案上绢图用）。
+// 另烘一张明暗（两通道：受光、沟脊；与今设色同大），层级设色（天下、省道两档整片设色）时让山川透上来。
 // 入图时设色由旧转新，着色器按 uLookT 在两张之间插，不用每帧重烘。
 import * as THREE from 'three';
 import { W, H } from './terrain.js';
@@ -48,7 +49,7 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
   const uniforms = {
     uTerrain: { value: fields.terrain }, uHeightHi: { value: fields.heightHi }, uRange: { value: fields.range }, uCoast: { value: fields.coast },
     uTexelHi: { value: new THREE.Vector2(1 / fields.hiW, 1 / fields.hiH) }, uTexel: { value: new THREE.Vector2(1 / W, 1 / H) },
-    uBake: { value: new THREE.Vector2() }, uRelief: { value: relief },
+    uBake: { value: new THREE.Vector2() }, uRelief: { value: relief }, uMode: { value: 0 },
     uAmp: { value: new THREE.Vector4() }, uBand: { value: new THREE.Vector4() }, uShade: { value: new THREE.Vector4() }
   };
   for (const k of LOOK_COLORS) uniforms[k.u] = { value: new THREE.Vector3() };
@@ -58,14 +59,15 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
   const scene = new THREE.Scene().add(quad);
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-  const target = (w, h) => {
-    const rt = new THREE.WebGLRenderTarget(w, h, { depthBuffer: false, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
+  const target = (w, h, format = THREE.RGBAFormat) => {
+    const rt = new THREE.WebGLRenderTarget(w, h, { format, depthBuffer: false, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter });
     rt.texture.anisotropy = anisotropy;
     rt.texture.wrapS = rt.texture.wrapT = THREE.ClampToEdgeWrapping;
     return rt;
   };
   const fresh = hiRes ? target(W * 2, H * 2) : target(W, H);
   const aged = target(W, H);
+  const shade = renderer.capabilities.isWebGL2 ? target(fresh.width, fresh.height, THREE.RGFormat) : target(W, H);
 
   function setLook(look) {
     for (const k of LOOK_COLORS) {
@@ -77,8 +79,9 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
     uniforms.uShade.value.set(...look.shade);
   }
   // 烘一张：分条画（每条之间交出主线程、送出显卡命令），免得一大道超过系统的显卡超时
-  async function bake(rt, look) {
+  async function bake(rt, look, mode = 0) {
     setLook(look);
+    uniforms.uMode.value = mode;
     const w = rt.width, h = rt.height;
     uniforms.uBake.value.set(1 / w, 1 / h);
     const prev = renderer.getRenderTarget();
@@ -98,9 +101,10 @@ export function createPainter(renderer, fields, { hiRes = true, relief = 20, ani
     return rt.texture;
   }
   return {
-    fresh, aged,
+    fresh, aged, shade,
     bakeFresh: (look) => bake(fresh, look),
     bakeAged: (look) => bake(aged, look),
-    dispose() { fresh.dispose(); aged.dispose(); material.dispose(); quad.geometry.dispose(); }
+    bakeShade: (look) => bake(shade, look, 1),
+    dispose() { fresh.dispose(); aged.dispose(); shade.dispose(); material.dispose(); quad.geometry.dispose(); }
   };
 }

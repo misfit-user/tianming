@@ -9,6 +9,9 @@
 /* 势力名一字一格，顺疆域长轴铺开（labels.js）：浓墨大字，四周一圈绢色晕开，压在山水上也认得 */
 .m-lbl.realm-ch { font-family: var(--f-title); line-height: 1; color: #1f1912;
   text-shadow: 0 0 .5em rgba(240, 230, 208, .7), 0 0 .12em rgba(240, 230, 208, .9); }
+/* 省道名（省道档）：同样顺长轴一字一格，字小、墨稍淡 */
+.m-lbl.circ-ch { font-family: var(--f-title); line-height: 1; color: #2a2016;
+  text-shadow: 0 0 .4em rgba(240, 230, 208, .55), 0 0 .1em rgba(240, 230, 208, .85); }
 /* 府州名：治所下方，小楷；要府稍大，京城朱色 */
 .m-lbl.pref { font-family: var(--f-kai); letter-spacing: .06em; line-height: 1.2; color: rgba(36, 27, 18, .92);
   text-shadow: 0 0 2px rgba(244, 236, 216, .95), 0 0 5px rgba(244, 236, 216, .8); }

@@ -465,10 +465,11 @@ const STYLES = {
   river:   { color: [0.33, 0.50, 0.55], worldW: 0.5, minPx: 0.7, maxPx: 40, edge: 1, order: 2 },
   shore:   { color: [0.27, 0.40, 0.44], minPx: 0.9, maxPx: 1.6, alpha: 0.8, order: 3 },
   pref:    { color: [0.33, 0.26, 0.19], minPx: 0.9, maxPx: 1.2, dash: [5.5, 3.2, 0, 0], order: 4 },
-  circuit: { color: [0.30, 0.22, 0.15], minPx: 1.3, maxPx: 1.8, dash: [16, 8.5, 11.2, 1.8], order: 5 },
+  circuit: { color: [0.27, 0.19, 0.12], minPx: 1.3, maxPx: 1.8, dash: [16, 8.5, 11.2, 1.8], order: 5 },
+  circuitLine: { color: [0.27, 0.19, 0.12], minPx: 1.2, maxPx: 1.6, order: 5 },
   coast:   { color: [0.22, 0.27, 0.25], minPx: 1.2, maxPx: 1.8, alpha: 0.85, order: 6 },
-  realmHalo: { color: [0.62, 0.20, 0.13], minPx: 7, maxPx: 9, soft: 1, alpha: 0.22, order: 7 },
-  realm:   { color: [0.58, 0.17, 0.11], minPx: 1.9, maxPx: 2.6, alpha: 0.95, order: 8 },
+  realmHalo: { color: [0.16, 0.10, 0.06], minPx: 6, maxPx: 8, soft: 1, alpha: 0.2, order: 7 },
+  realm:   { color: [0.20, 0.13, 0.08], minPx: 2.0, maxPx: 3.0, alpha: 0.92, order: 8 },
   focus:   { color: [0.82, 0.62, 0.22], minPx: 2.4, maxPx: 3.2, order: 9 },
   focusHalo: { color: [0.95, 0.80, 0.42], minPx: 8, maxPx: 10, soft: 1, alpha: 0.35, order: 9 },
   hover:   { color: [0.98, 0.93, 0.80], minPx: 1.6, maxPx: 2.0, alpha: 0.9, order: 10 },
@@ -571,6 +572,7 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     put('realm', realm);
     put('realmHalo', realm);
     put('circuit', circuit);
+    put('circuitLine', circuit);
     put('pref', pref);
   }
   // 辖区描金：辖内与辖外之间（含临海一侧）
@@ -580,10 +582,12 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     put('focus', edge);
     put('focusHalo', edge);
   }
-  const outline = (i) => (i >= 0 ? chains.filter((c) => c.a === i || c.b === i) : []);
-  let hoverIdx = -1, pickIdx = -1;
-  function setHover(i) { if (i === hoverIdx) return; hoverIdx = i; put('hover', i === pickIdx ? [] : outline(i)); }
-  function setPicked(i) { if (i === pickIdx) return; pickIdx = i; const o = outline(i); put('picked', o); put('pickedHalo', o); if (hoverIdx === i) put('hover', []); }
+  // 一组府州的外缘（悬停、点选随层级：一府州、一道、一国）；同一组记着，免得每帧重拼
+  const outline = (list) => { const on = new Set(list || []); return on.size ? chains.filter((c) => on.has(c.a) !== (c.b >= 0 && on.has(c.b))) : []; };
+  const sig = (list) => (list || []).join(',');
+  let hoverSig = '', pickSig = '';
+  function setHover(list) { const s = sig(list); if (s === hoverSig) return; hoverSig = s; put('hover', outline(list)); }
+  function setPicked(list) { const s = sig(list); if (s === pickSig) return; pickSig = s; const o = outline(list); put('picked', o); put('pickedHalo', o); }
 
   // 每帧：随镜头远近定各线浓淡（远看府界隐去、小河隐去）
   // 点选、悬停的描边只在活的舆图上（案上绢图不画）
@@ -592,21 +596,32 @@ export function createLines({ env, shared, land, water, heightAt, size }) {
     transientOn = on;
     for (const k of ['hover', 'picked', 'pickedHalo']) if (meshes[k]) meshes[k].visible = on;
   }
+  // 层级：天下档国界粗、省界淡；省道档省界实线；府州档省界点划、府界点线（看法设色时府界各档都要看得见）
   function update(dist) {
     for (const k of ['hover', 'picked', 'pickedHalo']) if (meshes[k]) meshes[k].visible = transientOn;
-    const near = (a, b) => 1 - Math.min(1, Math.max(0, (dist - a) / (b - a)));
     const f = shared.uFocus ? shared.uFocus.value : 0;
     mats.focus.uniforms.uAlpha.value = f;
     mats.focusHalo.uniforms.uAlpha.value = 0.35 * f;
-    const layer = shared.uLayer ? shared.uLayer.value : 0;             // 看法设色时府界要看得见
-    mats.pref.uniforms.uAlpha.value = Math.max(0.55 * near(500, 950), 0.5 * layer);
-    mats.circuit.uniforms.uAlpha.value = 0.7 * near(1300, 2000);
+    const layer = shared.uLayer ? shared.uLayer.value : 0;
+    const fill = shared.uFill ? shared.uFill.value : 0, mid = shared.uTierMid ? shared.uTierMid.value : 0;
+    mats.pref.uniforms.uAlpha.value = Math.max(0.6 * (1 - fill), 0.5 * layer);
+    mats.circuit.uniforms.uAlpha.value = 0.7 * (1 - fill);
+    mats.circuitLine.uniforms.uAlpha.value = fill * (0.22 + 0.5 * mid) * (1 - layer);
+    mats.realm.uniforms.uMinPx.value = 1.9 + 0.8 * fill;
+    mats.realm.uniforms.uMaxPx.value = 2.4 + 1.0 * fill;
     const flowMin = Math.max(0, (dist - 150) * 0.3);
     mats.river.uniforms.uFlowMin.value = flowMin;
     mats.river.uniforms.uAlpha.value = 0.95;
     if (meshes['river:0']) meshes['river:0'].visible = flowMin * 0.4 < 40;
     if (meshes['river:1']) meshes['river:1'].visible = flowMin * 0.4 < 200;
-    mats.realmHalo.uniforms.uAlpha.value = 0.16 + 0.12 * (1 - near(400, 1400));
+    mats.realmHalo.uniforms.uAlpha.value = 0.08 + 0.12 * fill;
+    // 淡到看不见的整网不画（省得白白光栅化一遍）
+    for (const [k, m] of Object.entries(meshes)) {
+      if (k === 'hover' || k === 'picked' || k === 'pickedHalo') continue;
+      const mat = mats[STYLES[k] ? k : k.split(':')[0]];
+      if (mat.uniforms.uAlpha.value < 0.004) m.visible = false;
+      else if (!k.startsWith('river:')) m.visible = true;
+    }
   }
   function setViewport(w, h) { shared.uHalfView.value.set(w / 2, h / 2); }
   function dispose() {

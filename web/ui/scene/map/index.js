@@ -9,14 +9,29 @@ import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
 import { createLabels, realmTitle } from './labels.js';
-import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
+import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
+import { adjacency, politicsOf } from './politics.js';
 import { quality } from '../../core/quality.js';
 import { SHEET_EXTENT } from '../world.js';
 
 const ASSETS = new URL('../../assets/map/', import.meta.url).href;
 const ENV_URL = new URL('../../../vendor/shanhe25d/environment.js', import.meta.url).href;
 const INFO_W = 4096, PALETTE_W = 256;
+
+// ---------- 层级（照 CK3）：随镜头远近，天下 → 省道 → 府州 ----------
+// 天下：各势力整片设色、地势压平如纸图；省道：一国之内各省道一族深浅、题省道名；府州：设色褪去，露出沙盘地形与府州名。
+// 中间都是渐变（交叉淡换），不跳。dist 为镜头到注视点的距离（世界单位）
+const ramp = (d, a, b) => { const t = Math.min(1, Math.max(0, (d - a) / (b - a))); return t * t * (3 - 2 * t); };
+export const TIERS = {
+  realm: { name: '天下', dist: 2000 },
+  circuit: { name: '省道', dist: 1000 },
+  pref: { name: '府州', dist: 430 }
+};
+export function tierAt(dist) { return dist >= 1350 ? 'realm' : dist >= 680 ? 'circuit' : 'pref'; }
+const fillAt = (dist) => ramp(dist, 560, 790);                  // 势力设色浓淡：府州档无、省道档起满
+const circuitAt = (dist) => 1 - ramp(dist, 1250, 1450);         // 设色按省道（1）还是按势力（0）
+const reliefAt = (dist) => 1.45 - 1.1 * ramp(dist, 260, 1500);  // 起伏倍率：近看沙盘拔高、远看压平
 
 // ---------- 地形场：与剧本无关 ----------
 // 入料（dem.png、山河境矢量）全页只载一次；场在显卡上算（fields.js），不支持浮点离屏的设备退回 CPU 算。
@@ -251,14 +266,19 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   regionTex.magFilter = THREE.NearestFilter;
   regionTex.minFilter = THREE.NearestFilter;
   regionTex.needsUpdate = true;
+  // 府州信息表：R 势力下标、G 辖区、B 省道下标（255 无）
   const info = new Uint8Array(INFO_W * 4);
   const infoTex = new THREE.DataTexture(info, INFO_W, 1, THREE.RGBAFormat);
+  // 省道设色：每府州一色（所属省道的色）
+  const fillData = new Uint8Array(INFO_W * 4);
+  const fillTex = new THREE.DataTexture(fillData, INFO_W, 1, THREE.RGBAFormat);
   // 看法设色（民情、财赋……）：每府州一色，A 为有无
   const layerData = new Uint8Array(INFO_W * 4);
   const layerTex = new THREE.DataTexture(layerData, INFO_W, 1, THREE.RGBAFormat);
   const paletteData = new Uint8Array(PALETTE_W * 4);
   const paletteTex = new THREE.DataTexture(paletteData, PALETTE_W, 1, THREE.RGBAFormat);
-  const borderTex = new THREE.DataTexture(new Uint16Array(W * H), W, H, THREE.RedFormat, THREE.HalfFloatType);
+  // 到分界的距离：R 势力之间、G 省道之间；按四分之一世界像素记成一字节（六十多像素以外都算远）
+  const borderTex = new THREE.DataTexture(new Uint8Array(W * H * 2), W, H, THREE.RGFormat, THREE.UnsignedByteType);
   borderTex.magFilter = THREE.LinearFilter;
   borderTex.minFilter = THREE.LinearFilter;
   // 世界坐标处是哪个府州（下标，-1 无）：取编号图
@@ -269,6 +289,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   };
   let realmList = [];
   let realmByRegion = [];                     // 府州下标 → 势力编号（线层分国界用）
+  let realmColors = [];                       // 势力下标 → 设色
+  let circuits = [], circuitOf = new Int16Array(0);
+  let pairs = null;                           // 府州相邻对（换府州时重算）
   let lines = null;
   let focusSet = [];                          // 辖区（身份视野）：府州下标
   const primaryRe = primary ? new RegExp(primary) : undefined;
@@ -277,21 +300,52 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const realmIndex = new Map(realmList.map((r, i) => [r.id, i]));
     const regionRealm = new Int16Array(regions.length + 1).fill(-1);
     regions.forEach((r, i) => { regionRealm[i + 1] = realmIndex.has(r.faction) ? realmIndex.get(r.faction) : -1; });
+    realmByRegion = regions.map((_, i) => regionRealm[i + 1]);
+    if (!pairs) pairs = adjacency(ids, regions.length);
+    ({ realmColors, circuits, circuitOf } = politicsOf({ regions, realmList, realmByRegion, pairs, ...(primaryRe ? { primary: primaryRe } : {}) }));
+    realmList.forEach((r, i) => { r.ink = realmColors[i]; r.circuits = circuits.filter((c) => c.realm === i).length; });
     info.fill(0);
-    for (let i = 1; i < regionRealm.length && i < INFO_W; i++) info[i * 4] = regionRealm[i] >= 0 ? regionRealm[i] : 255;
+    fillData.fill(0);
+    for (let i = 1; i < regionRealm.length && i < INFO_W; i++) {
+      info[i * 4] = regionRealm[i] >= 0 ? regionRealm[i] : 255;
+      const c = circuitOf[i - 1];
+      info[i * 4 + 2] = c >= 0 && c < 255 ? c : 255;
+      if (c >= 0) fillData.set([...hexRgb(circuits[c].color), 255], i * 4);
+    }
     for (const k of focusSet) if (k + 1 < INFO_W) info[(k + 1) * 4 + 1] = 255;
     infoTex.needsUpdate = true;
+    fillTex.needsUpdate = true;
     paletteData.fill(0);
-    realmList.forEach((r, i) => { if (i < PALETTE_W) paletteData.set([...hexRgb(swatchFor(r.name, r.color, primaryRe ? { primary: primaryRe } : undefined)), 255], i * 4); });
+    realmList.forEach((r, i) => { if (i < PALETTE_W) paletteData.set([...hexRgb(realmColors[i]), 255], i * 4); });
     paletteTex.needsUpdate = true;
-    realmByRegion = regions.map((_, i) => regionRealm[i + 1]);
     lines?.setPolitics(realmByRegion);
     const border = realmBorderDistance(ids, regionRealm);
-    const half = borderTex.image.data;
-    for (let i = 0; i < W * H; i++) half[i] = THREE.DataUtils.toHalfFloat(Math.min(border[i], 200));
+    const regionCircuit = new Int16Array(regions.length + 1).fill(-1);
+    for (let i = 0; i < regions.length; i++) regionCircuit[i + 1] = circuitOf[i];
+    const borderC = realmBorderDistance(ids, regionCircuit);
+    const bytes = borderTex.image.data;
+    for (let i = 0; i < W * H; i++) {
+      bytes[i * 2] = Math.min(255, Math.round(border[i] * 4));
+      bytes[i * 2 + 1] = Math.min(255, Math.round(borderC[i] * 4));
+    }
     borderTex.needsUpdate = true;
   }
   applyPolitics();
+  // 某府州所在的那一级（天下：整个势力；省道：整道；府州：本府州）：{ tier, key, name, regions: [下标] }
+  function groupOf(index, tier) {
+    if (index == null || index < 0 || !regions[index]) return null;
+    if (tier === 'realm' && realmByRegion[index] >= 0) {
+      const k = realmByRegion[index], r = realmList[k];
+      return { tier, key: k, name: r.name, faction: r.id, color: realmColors[k], regions: regions.map((_, i) => i).filter((i) => realmByRegion[i] === k), circuits: r.circuits };
+    }
+    if (tier === 'circuit' && circuitOf[index] >= 0) {
+      const k = circuitOf[index], c = circuits[k];
+      return { tier, key: k, name: c.name, title: c.title, faction: realmList[c.realm].id, color: c.color, regions: c.regions.slice() };
+    }
+    return { tier: 'pref', key: index + 1, name: regions[index].name, faction: regions[index].faction, regions: [index] };
+  }
+  // 着色器里比的键：天下比势力下标、省道比省道下标、府州比编号（下标 + 1）
+  const MODE = { pref: 0, circuit: 1, realm: 2 };
 
   const uniforms = {
     uTerrain: { value: F.textures.terrain },
@@ -305,7 +359,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uHeightHi: { value: F.textures.heightHi },
     uTexelHi: { value: new THREE.Vector2(1 / F.textures.hiW, 1 / F.textures.hiH) },
     uRelief: { value: RELIEF }, uTime: { value: 0 }, uZoom: { value: 0 },
-    uHover: { value: -1 }, uSelected: { value: -1 }, uFocus: { value: 0 }, uLayer: { value: 0 }, uLayerTex: { value: layerTex }, uCam: { value: new THREE.Vector3() },
+    uHover: { value: -1 }, uSelected: { value: -1 }, uHoverMode: { value: 0 }, uSelMode: { value: 0 },
+    uFocus: { value: 0 }, uLayer: { value: 0 }, uLayerTex: { value: layerTex }, uCam: { value: new THREE.Vector3() },
+    uFill: { value: 1 }, uTierMid: { value: 0 }, uFillTex: { value: fillTex },
     uFogColor: { value: new THREE.Vector3(0.91, 0.87, 0.78) }, uFogNear: { value: 1e6 }, uFogFar: { value: 2e6 }, uPolitical: { value: 1 },
     uPx: { value: stage.size.h / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2))) },
     uRange: { value: F.textures.range },
@@ -316,9 +372,11 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const painter = createPainter(renderer, F.textures, { hiRes: q.mapHiRes, relief: RELIEF, anisotropy: q.anisotropy });
   await painter.bakeFresh(LOOK_QINGLV);
   await painter.bakeAged(LOOK_QINGLV_AGED);
+  await painter.bakeShade(LOOK_QINGLV);
   let bakedFresh = LOOK_QINGLV;
   uniforms.uPaint = { value: painter.fresh.texture };
   uniforms.uPaintAged = { value: painter.aged.texture };
+  uniforms.uShadeTex = { value: painter.shade.texture };
   uniforms.uLookT = { value: 1 };
   uniforms.uNoise = { value: noiseTex() };
   const terrain = new THREE.Mesh(gridGeometry(...q.mapGrid), new THREE.ShaderMaterial({ vertexShader: terrainVertex, fragmentShader: terrainFragment, uniforms }));
@@ -346,6 +404,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uFogNear: uniforms.uFogNear, uFogFar: uniforms.uFogFar, uFogColor: uniforms.uFogColor,
     uDpr: { value: stage.size.dpr || 1 }, uFadePx: { value: new THREE.Vector2(7, 12) }, uMaxPx: { value: 34 }, uAtlas: { value: atlas() }
   };
+  let trees = null;                           // 点景远看都小过数像素、淡尽了，整层不画
   if (q.trees) {
     let s = 41;
     const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -372,7 +431,44 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         items.push([px, heightAt(px, py), py, 1.5 + rnd() * 0.6, nearWater && rnd() < 0.3 ? SPRITE.willow : SPRITE.hamlet]);
       }
     }
-    scene.add(spriteLayer(items, spriteUniforms));
+    // 林：沙盘上一丛丛的树——丘陵山坡与湿润处成片（江南、西南、关东密，中原、塞外稀），树线以上、水上不长。
+    // 成片与否看一张低频值噪声；格距二点六像素，各点抖开
+    const lattice = Float32Array.from({ length: 66 * 50 }, rnd);
+    const vnoise = (x, y) => {
+      const gx = x / 34, gy = y / 34, x0 = Math.floor(gx), y0 = Math.floor(gy), fx = gx - x0, fy = gy - y0;
+      const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), at = (i, j) => lattice[(j % 50) * 66 + (i % 66)];
+      return (at(x0, y0) * (1 - u) + at(x0 + 1, y0) * u) * (1 - v) + (at(x0, y0 + 1) * (1 - u) + at(x0 + 1, y0 + 1) * u) * v;
+    };
+    const wetOf = (x, y) => {
+      const lat = 67 - y / 20, lon = 55 + x / 20;
+      if (lat < 21 || lat > 54 || lon < 97) return 0;
+      if (lat < 33.5) return 1;
+      if (lon > 117 && lat > 39) return 0.85;
+      if (lat < 37) return 0.55;
+      return lon > 108 ? 0.28 : 0.08;
+    };
+    // 丘陵上看大片（格三十四像素的噪声），平地上只在小丛处（格约十像素）
+    const ramp01 = (v, a, b) => Math.min(1, Math.max(0, (v - a) / (b - a)));
+    const FOREST = [SPRITE.grove, SPRITE.dot, SPRITE.pine, SPRITE.jia];
+    for (let gy = 2; gy < H - 2; gy += 2.1) {
+      for (let gx = 2; gx < W - 2; gx += 2.1) {
+        const px = gx + (rnd() - 0.5) * 2, py = gy + (rnd() - 0.5) * 2;
+        const wet = wetOf(px, py);
+        if (!wet) continue;
+        const i = Math.round(px) + Math.round(py) * W;
+        const h = d.height[i];
+        if (h > 0.5) continue;
+        const hilly = ramp01(d.massif[i], 0.03, 0.16);
+        const k = wet * Math.max(hilly * ramp01(vnoise(px, py), 0.4, 0.6), (1 - hilly) * ramp01(vnoise(px * 3.4 + 911, py * 3.4 + 377), 0.72, 0.84) * 0.9);
+        if (rnd() > k || landAt(px, py) < 0.5 || wetAt(px, py)) continue;
+        const kind = h > 0.25 || (py < 520 && rnd() < 0.6) ? SPRITE.pine : FOREST[Math.floor(rnd() * 4)];
+        items.push([px, heightAt(px, py), py, (hilly > 0.5 ? 1.25 : 1.05) + rnd() * 0.5, kind]);
+      }
+    }
+    // 由北往南排（镜头多朝北看，远的先画、近的压上去）
+    items.sort((a, b) => a[2] - b[2]);
+    trees = spriteLayer(items, spriteUniforms);
+    scene.add(trees);
   }
 
   // ---------- 城郭：府州治所（京城两重城楼）；近看才显 ----------
@@ -393,29 +489,22 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
 
   // ---------- 题名（DOM 层，见 labels.js） ----------
   const labels = labelLayer ? createLabels({ layer: labelLayer, camera, size: stage.size, heightAt, relief: () => uniforms.uRelief.value }) : null;
-  labels?.setData({ regions, realms: realmList, factions });
+  labels?.setData({ regions, realms: realmList, factions, circuits });
   buildCities();
   const tmp = new THREE.Vector3();
-  function placeLabels(dist) {
-    const w = stage.size.w, h = stage.size.h;
-    const showPref = dist < 900;
-    const occupied = [];
-    for (const l of labels) {
-      if (l.kind === 'pref' && !showPref) { l.el.style.opacity = 0; continue; }
-      tmp.set(l.x, heightAt(l.x, l.y) * uniforms.uRelief.value + (l.kind === 'realm' ? 6 : 2), l.y).project(camera);
-      if (tmp.z > 1 || Math.abs(tmp.x) > 1.1 || Math.abs(tmp.y) > 1.1) { l.el.style.opacity = 0; continue; }
-      const sx = (tmp.x * 0.5 + 0.5) * w, sy = (-tmp.y * 0.5 + 0.5) * h;
-      const scale = l.kind === 'realm' ? Math.max(0.45, Math.min(2.2, 1600 / dist)) : Math.max(0.8, Math.min(1.4, 520 / dist));
-      const px = l.size * scale;
-      const half = px * l.el.textContent.length * 0.55;
-      const box = [sx - half, sy - px * 0.6, sx + half, sy + px * 0.6];
-      if (l.kind === 'pref' && occupied.some((b) => !(box[2] < b[0] || box[0] > b[2] || box[3] < b[1] || box[1] > b[3]))) { l.el.style.opacity = 0; continue; }
-      occupied.push(box);
-      l.el.style.opacity = l.kind === 'realm' ? (showPref ? 0.55 : 0.92) : 0.95;
-      l.el.style.fontSize = px.toFixed(1) + 'px';
-      l.el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) translate(-50%, -50%)`;
-    }
+
+  // ---------- 层级：随镜头远近定设色浓淡、按势力还是省道设色、起伏倍率；跨档时通知 ----------
+  let reliefBase = RELIEF;                    // 入图时由 0 升到 RELIEF（转场改的是它）；实际起伏再乘远近倍率
+  let tier = null;
+  const tierHooks = new Set();
+  function applyZoom(dist, silent = false) {
+    uniforms.uFill.value = fillAt(dist);
+    uniforms.uTierMid.value = circuitAt(dist);
+    uniforms.uRelief.value = reliefBase * reliefAt(dist);
+    const t = tierAt(dist);
+    if (t !== tier && !silent) { tier = t; for (const fn of tierHooks) fn(t); }
   }
+  applyZoom(camera.position.distanceTo(controls.target) || 1500);
 
   let currentLook = LOOK_QINGLV;
   // 设色：烘好的两套之间按比例插（入图、起身时由旧转新）；别的设色（少用）重烘今设色那张
@@ -488,7 +577,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   // ---------- 案上那幅绢图：同一画法正俯视渲一张，题上势力名 ----------
   // extent：画世界里的哪一块（默认案上那幅的范围），宽高比须与 width/height 一致
   async function renderSheet({ look, width = 2100, height = 1540, names = true, extent = SHEET_EXTENT } = {}) {
-    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, relief: uniforms.uRelief.value, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
+    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
     if (look) setLook(look);
     uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
     const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
@@ -503,6 +592,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     setPose({ target: [extent.x0 + extent.w / 2, 0, extent.y0 + extent.h / 2], dist: (extent.h / 2) / Math.tan(THREE.MathUtils.degToRad(10)), polar: 0.0001, az: 0 });
+    applyZoom(Math.max(2000, pose().dist), true);     // 案上那幅是天下档：整片设色、地势压平
     uniforms.uCam.value.copy(camera.position);
     lines.update(pose().dist * 1.6);
     uniforms.uZoom.value = 0;
@@ -562,7 +652,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     camera.aspect = saved.aspect;
     camera.updateProjectionMatrix();
     setPose(saved.pose);
-    uniforms.uRelief.value = saved.relief;
+    applyZoom(saved.pose.dist, true);
     uniforms.uPx.value = saved.px;
     uniforms.uFocus.value = saved.focus;
     [uniforms.uFogNear.value, uniforms.uFogFar.value] = fog;
@@ -572,6 +662,19 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
 
   let time = 0;
   const hooks = new Set();
+  let hoverKey = '', pickKey = '';
+  const pickTier = () => (uniforms.uLayer.value > 0 ? 'pref' : tier);
+  // 镜头推拉到某个距离（注视点不动，俯角由 steer 跟着远近走），约 0.8 秒
+  let zoomTween = null;
+  function zoomTo(to, ms = 800) {
+    const from = camera.position.distanceTo(controls.target), t0 = performance.now();
+    zoomTween = () => {
+      const k = Math.min(1, (performance.now() - t0) / ms), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      offTmp.subVectors(camera.position, controls.target).setLength(from + (to - from) * e);
+      camera.position.copy(controls.target).add(offTmp);
+      if (k >= 1) zoomTween = null;
+    };
+  }
   const mapView = {
     name: 'map',
     scene, camera, controls, uniforms,
@@ -587,12 +690,20 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       uniforms.uFogNear.value = dist * 1.35;
       uniforms.uFogFar.value = dist * 3.6;
       uniforms.uZoom.value = 1 - Math.min(1, Math.max(0, (dist - 700) / 700));
+      if (zoomTween) zoomTween(dist);
+      applyZoom(dist);
+      // 悬停随层级：天下档点亮整个势力、省道档整道、府州档本府州（看法设色时各档都按府州）
       const id = interactive ? pickAt(mouse) : -1;
-      lines.update(dist);
-      if (id !== uniforms.uHover.value) {
-        uniforms.uHover.value = id;
-        lines.setHover(id - 1);
-        hoverCb?.(id > 0 ? { index: id - 1, ...regions[id - 1] } : null);
+      const g = id > 0 ? groupOf(id - 1, pickTier()) : null;
+      const hk = g ? MODE[g.tier] + ':' + g.key : '';
+      lines.update(dist, tier);
+      if (trees) trees.visible = dist < 1100;
+      if (hk !== hoverKey) {
+        hoverKey = hk;
+        uniforms.uHover.value = g ? g.key : -1;
+        uniforms.uHoverMode.value = g ? MODE[g.tier] : 0;
+        lines.setHover(g && hk !== pickKey ? g.regions : []);
+        hoverCb?.(g ? { index: id - 1, ...regions[id - 1], tier: g.tier, group: g } : null);
       }
       for (const fn of hooks) fn(time, camera, dt);
       labels?.update(dist);
@@ -615,7 +726,26 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     get active() { return active; },
     setLook, setPose, pose, renderSheet,
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
-    select(index) { uniforms.uSelected.value = index == null ? -1 : index + 1; lines.setPicked(index == null ? -1 : index); },
+    // 点选：index 府州下标；tier 定点亮哪一级（不给即当前层级）
+    select(index, at = pickTier()) {
+      const g = index == null ? null : groupOf(index, at);
+      pickKey = g ? MODE[g.tier] + ':' + g.key : '';
+      uniforms.uSelected.value = g ? g.key : -1;
+      uniforms.uSelMode.value = g ? MODE[g.tier] : 0;
+      lines.setPicked(g ? g.regions : []);
+      if (g && hoverKey === pickKey) lines.setHover([]);
+      return g;
+    },
+    // 层级：当前档、跨档通知、飞到某档、某府州所在的那一级
+    get tier() { return tier; },
+    onTier(fn) { tierHooks.add(fn); return () => tierHooks.delete(fn); },
+    flyTier(name) { if (TIERS[name]) zoomTo(TIERS[name].dist); },
+    zoomTo,
+    groupOf,
+    realmColorOf(factionId) { const k = realmList.findIndex((r) => r.id === factionId); return k >= 0 ? realmColors[k] : null; },
+    // 起伏（入图、起身时由转场升降）；实际起伏再乘远近倍率
+    get relief() { return reliefBase; },
+    set relief(v) { reliefBase = v; applyZoom(camera.position.distanceTo(controls.target), true); },
     // 看法设色：colors[府州下标] = '#rrggbb' 或空（不染）；浓淡由 uniforms.uLayer（0～1）定，给空数组就撤
     setLayer(colors) {
       layerData.fill(0);
@@ -648,22 +778,24 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       regionTex.needsUpdate = true;
       uniforms.uHover.value = -1;
       uniforms.uSelected.value = -1;
+      hoverKey = pickKey = '';
+      pairs = null;
       focusSet = [];
       uniforms.uFocus.value = 0;
       lines.setRegions(regions, regionIndexAt);
       lines.setFocus([]);
-      lines.setHover(-1);
-      lines.setPicked(-1);
+      lines.setHover([]);
+      lines.setPicked([]);
       applyPolitics();
       labels?.setCapitals([]);
       labels?.setImportant([]);
-      labels?.setData({ regions, realms: realmList, factions });
+      labels?.setData({ regions, realms: realmList, factions, circuits });
       buildCities();
     },
     setOwnership(changes) {
       for (const [i, fac] of Object.entries(changes)) if (regions[i]) regions[i].faction = fac;
       applyPolitics();
-      labels?.setData({ regions, realms: realmList, factions });
+      labels?.setData({ regions, realms: realmList, factions, circuits });
     },
     // 京城、要府（府州下标）：题名先占位、字大；城郭京城两重楼、要府大一号
     setCapitals(list) { labels?.setCapitals(list); buildCities(); },
@@ -676,7 +808,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     pickScreen(clientX, clientY) {
       const rect = stage.canvas.getBoundingClientRect();
       const id = pickAt(new THREE.Vector2((clientX - rect.left) / rect.width * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1));
-      return id > 0 ? { index: id - 1, ...regions[id - 1] } : null;
+      if (id <= 0) return null;
+      const g = groupOf(id - 1, pickTier());
+      return { index: id - 1, ...regions[id - 1], tier: g.tier, group: g };
     },
     heightAt,
     dispose() {
@@ -686,7 +820,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
       controls.dispose();
-      for (const t of [regionTex, infoTex, paletteTex, borderTex, layerTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
+      for (const t of [regionTex, infoTex, paletteTex, borderTex, layerTex, fillTex]) t.dispose();   // 地形场归渲染器共用，不在这里释放
       lines.dispose();
       painter.dispose();
       scene.traverse((o) => { o.geometry?.dispose(); o.material?.dispose?.(); });

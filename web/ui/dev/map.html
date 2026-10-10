@@ -42,7 +42,7 @@ const stage = createStage(document.getElementById('stage'), { preserve: params.h
 const regionsData = await fetch('sample/regions-tianqi.json').then((r) => r.json());
 const map = stage.add(await createMapView(stage, { regions: regionsData.regions, factions: regionsData.factions, labelLayer: document.getElementById('labels'), fov: 30 }));
 map.setActive(true);
-map.uniforms.uRelief.value = RELIEF;
+map.relief = RELIEF;
 if (params.get('pose')) {
   const [x, z, dist, polar, az] = params.get('pose').split(',').map(Number);
   map.setPose({ target: [x, 0, z], dist, polar, az: az || 0 });

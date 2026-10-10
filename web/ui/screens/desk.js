@@ -11,7 +11,7 @@ import { bus } from '../core/bus.js';
 import { num, yearNum } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
 import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei } from '../kit/index.js';
-import { LOOK_QINGLV_AGED, swatchFor } from '../scene/map/looks.js';
+import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
@@ -177,7 +177,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   })();
   const legendMap = h('div.mm-legend.hide');
   // 检府州：输入或下拉择名，镜头缓移其上（同点选出小签）
-  let mapRegionList = [], capitalIdx = -1;
+  let mapRegionList = [], capitalIdx = -1, seatNames = new Set();
   const regionDl = h('datalist', { id: 'tm-map-regions' });
   const regionSearch = h('input.map-search', { type: 'search', placeholder: '检府州', list: 'tm-map-regions', spellcheck: false, autocomplete: 'off',
     onkeydown: (e) => { if (e.key === 'Enter') seekRegion(regionSearch.value); }, onchange: () => seekRegion(regionSearch.value) });
@@ -187,8 +187,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const seekBox = h('div.mm-seek.hide', regionSearch, regionDl);
   const toggleSeek = (on = seekBox.classList.contains('hide')) => { seekBox.classList.toggle('hide', !on); if (on) { regionSearch.value = ''; regionSearch.focus(); } };
   regionSearch.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); toggleSeek(false); } });
+  // 层级印（照 CK3 镜头远近换层）：天下、省道、府州三枚，随镜头远近亮一枚；点之镜头推拉到那一档
+  const TIER_SEALS = [['realm', '天', '天下', '诸国疆域，整片设色'], ['circuit', '省', '省道', '一国之内各省道，一族深浅'], ['pref', '府', '府州', '沙盘地形与府州治所']];
+  const tierBtns = TIER_SEALS.map(([k, ch, name, tipText]) => modeBtn(ch, name, tipText, () => map.flyTier(k), k));
+  const tierNav = h('nav.mm-tiers', { 'aria-label': '舆图层级' }, tierBtns);
+  const paintTier = (t) => tierBtns.forEach((b) => { const on = b.dataset.value === t; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  paintTier(map.tier);
+  // 跨档时：题签、点选小签换一级（同一指针下的那一级变了）
+  map.onTier((t) => { paintTier(t); card.classList.add('hide'); map.select(null); });
   const mappanel = h('section.mm-panel', legendMap, seekBox,
-    h('div.mm-row', h('div.mm-tools', modeBtn('检', '检府州', '输名，镜头移至其上', () => toggleSeek()), modeBtn('道', '诸道', '本方各道读数与区划预警', openDao)), mapChips));
+    h('div.mm-row', tierNav, h('div.mm-tools', modeBtn('检', '检府州', '输名，镜头移至其上', () => toggleSeek()), modeBtn('道', '诸道', '本方各道读数与区划预警', openDao)), mapChips));
   const card = h('div.map-card.hide');
   // 悬停题签：指针停在府州上片刻即出，跟着指针走
   const tip = h('div.map-tip.hide');
@@ -305,7 +313,20 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (!r) { tip.classList.add('hide'); return; }
     tipTimer = setTimeout(paintTip, tip.classList.contains('hide') ? 260 : 0);
   });
-  function realmChip(fac) { return h('i.mm-chip', { style: { background: fac ? swatchFor(fac.name, fac.color) : 'transparent' } }); }
+  function realmChip(fid) { return h('i.mm-chip', { style: { background: (fid && map.realmColorOf(fid)) || 'transparent' } }); }
+  // 某势力在朝野势力册里的那一条（首领、态度）；册里没有就空
+  function factionInfo(fid) { try { return game.realm.factions().find((f) => f.key === fid) || null; } catch (_e) { return null; } }
+  // 一级（势力、省道）的读数行：辖几道几府州、首领与态度、省道的首府
+  function groupRows(g) {
+    const regs = g.regions.map((i) => mapRegionList[i]).filter(Boolean);
+    if (g.tier === 'realm') {
+      const f = factionInfo(g.faction);
+      return [f && f.leader ? ['首领', f.leader] : null, f && !f.mine && f.attitude ? ['态度', f.attitude] : null,
+        ['所辖', `${g.circuits > 1 ? num(g.circuits) + '道 · ' : ''}${num(regs.length)}府州`]].filter(Boolean);
+    }
+    const seat = regs.find((r) => seatNames.has(r.name));
+    return [seat ? ['首府', seat.name] : null, ['所辖', `${num(regs.length)}府州`]].filter(Boolean);
+  }
   function layerLine(r) {
     const lv = layer && layer.byId[r.id];
     return lv ? h('span.mm-lv', h('i', { style: { background: lv.color || 'transparent' } }), `${layerLabel}　${lv.mark || '—'}${typeof lv.score === 'number' ? ' · ' + num(Math.round(lv.score)) : ''}`) : null;
@@ -314,7 +335,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const r = tipRegion;
     if (!r || dive.mode !== 'map' || dive.busy || !card.classList.contains('hide') || document.querySelector('.q-kewei')) return;
     const fac = r.faction && factions[r.faction];
-    replaceChildren(tip, h('b', r.name), h('small', realmChip(fac), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地'), layerLine(r));
+    const g = r.group;
+    if (g && g.tier !== 'pref') {
+      const sub = g.tier === 'circuit' ? (fac && fac.name) || '' : (factionInfo(g.faction) || {}).type || '';
+      replaceChildren(tip, h('b', g.name), h('small', realmChip(r.faction), sub), h('small', groupRows(g).map(([k, v]) => `${k} ${v}`).join('　')));
+    } else replaceChildren(tip, h('b', r.name), h('small', realmChip(r.faction), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地'), layerLine(r));
     tip.classList.remove('hide');
     placeTip();
   }
@@ -329,15 +354,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (dive.mode !== 'map' || dive.busy || !down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 5) return;
     const r = map.pickScreen(ev.clientX, ev.clientY);
     if (!r) { card.classList.add('hide'); map.select(null); return; }
-    map.select(r.index);
-    showRegionCard(r, ev.clientX, ev.clientY);
+    map.select(r.index, r.tier);
+    if (r.group && r.tier !== 'pref') showGroupCard(r, ev.clientX, ev.clientY);
+    else showRegionCard(r, ev.clientX, ev.clientY);
   });
   stage.canvas.addEventListener('contextmenu', (ev) => {
     if (dive.mode !== 'map' || dive.busy) return;
     ev.preventDefault();
     const r = map.pickScreen(ev.clientX, ev.clientY);
     if (!r) return;
-    map.select(r.index);
+    map.select(r.index, 'pref');
     card.classList.add('hide');
     regionMenu(r, ev.clientX, ev.clientY);
   });
@@ -363,12 +389,34 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   // 府州小签：点选与检府州共用
   // 府州小签（点选、检府州共用）：题名、所属与归属、上隶或地形、看法读数；方志、通志两枚牙牌，右键另有可为
+  // 势力、省道小签（天下、省道两档点选）：题名、读数；势力翻朝野势力册，省道展通志；「推近」镜头推到下一档、移到其中
+  function showGroupCard(r, x, y) {
+    hideTip();
+    const g = r.group, fac = r.faction && factions[r.faction];
+    const open = (fn) => (e) => { e.stopPropagation(); card.classList.add('hide'); fn(); };
+    const regs = g.regions.map((i) => mapRegionList[i]).filter((v) => v && v.center);
+    const mid = regs.length ? [regs.reduce((s, v) => s + v.center[0], 0) / regs.length, regs.reduce((s, v) => s + v.center[1], 0) / regs.length] : r.center;
+    const closer = () => flyMapTo(mid, g.tier === 'realm' ? 1000 : 430);
+    replaceChildren(card,
+      h('header', h('b', g.name), h('small', realmChip(r.faction), g.tier === 'circuit' ? (fac && fac.name) || '' : (factionInfo(g.faction) || {}).type || '')),
+      h('dl', groupRows(g).map(([k, v]) => [h('dt', k), h('dd', v)])),
+      h('footer',
+        g.tier === 'realm' ? h('button.q-yapai', { type: 'button', onclick: open(() => realmPage.show({ tab: 'factions', key: g.faction })) }, '势力') : null,
+        g.tier === 'circuit' && r.circuit ? h('button.q-yapai', { type: 'button', onclick: open(() => fangzhiPage.showCircuit(r.id)) }, '通志') : null,
+        h('button.q-yapai', { type: 'button', onclick: open(closer) }, '推近'),
+        h('small', g.tier === 'realm' ? '推近看省道' : '推近看府州')));
+    card.onclick = null;
+    card.classList.remove('hide');
+    const b = card.getBoundingClientRect();
+    const left = x + 24 + b.width > innerWidth - 12 ? x - b.width - 18 : x + 24;
+    card.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(90, Math.min(innerHeight - b.height - 16, y - 40)))}px)`;
+  }
   function showRegionCard(r, x, y) {
     hideTip();
     const fac = r.faction && factions[r.faction];
     const open = (fn) => (e) => { e.stopPropagation(); card.classList.add('hide'); fn(); };
     replaceChildren(card,
-      h('header', h('b', r.name), h('small', realmChip(fac), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地')),
+      h('header', h('b', r.name), h('small', realmChip(r.faction), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地')),
       h('dl', r.parent ? [h('dt', '上隶'), h('dd', r.parent)] : null, r.terrain ? [h('dt', '地形'), h('dd', r.terrain)] : null),
       layerLine(r),
       h('footer',
@@ -692,7 +740,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const caps = seats.capitals.map((alts) => alts.map(indexOf).find((i) => i >= 0));
     capitalIdx = caps[0] ?? -1;                     // 头一个是本方（区划树里 player 在前）
     map.setCapitals(caps.filter((i) => i >= 0));
-    map.setImportant(seats.seats.map(indexOf).filter((i) => i >= 0));
+    const seatIdx = seats.seats.map(indexOf).filter((i) => i >= 0);
+    map.setImportant(seatIdx);
+    seatNames = new Set([...seatIdx, ...caps.filter((i) => i >= 0)].map((i) => mapRegionList[i].name));
     replaceChildren(regionDl, mapRegionList.map((r) => h('option', { value: r.name }, [r.circuit, r.parent].filter(Boolean).join(' · '))));
     await applyFocus();
     marks.refresh();

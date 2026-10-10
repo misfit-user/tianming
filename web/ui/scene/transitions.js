@@ -22,7 +22,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
   }
   // 舆图这边的补间：机位、起伏、设色一起走
   function mapTween(to, { relief, look, duration }) {
-    const from = { pose: map.pose(), relief: map.uniforms.uRelief.value };
+    const from = { pose: map.pose(), relief: map.relief };
     return new Promise((resolve) => {
       const t0 = performance.now();
       const step = () => {
@@ -34,7 +34,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
           target: from.pose.target.map((v, i) => lerp(v, to.target[i])),
           dist: lerp(from.pose.dist, to.dist), polar: lerp(from.pose.polar, to.polar), az: lerp(from.pose.az, to.az)
         });
-        map.uniforms.uRelief.value = lerp(from.relief, relief);
+        map.relief = lerp(from.relief, relief);
         if (look) map.setLook(mixLook(look[0], look[1], e));
         if (k < 1) requestAnimationFrame(step); else resolve();
       };
@@ -71,7 +71,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
     map.controls.maxDistance = 1e5;
     map.camera.fov = fov;
     map.camera.updateProjectionMatrix();
-    map.uniforms.uRelief.value = 0;
+    map.relief = 0;
     map.setLook(LOOK_QINGLV_AGED);
     map.setPose(registerPose());
     // 1) 俯身：书房镜头落到绢图正上方；后半段绢图渐渐「自己发光」，屋里的光斑、光柱淡去
@@ -148,7 +148,7 @@ export function createDive({ stage, study, map, clouds = [], fov = 30, onMode = 
     onMode('flying');
     map.camera.fov = fov;
     map.camera.updateProjectionMatrix();
-    map.uniforms.uRelief.value = RELIEF;
+    map.relief = RELIEF;
     map.setLook(LOOK_QINGLV);
     map.controls.minPolarAngle = 0.12;
     map.controls.maxDistance = 2600;

@@ -127,6 +127,14 @@ html[data-layout='compact'] .scr-desk .left { display: none; }
 .mm.on { background: linear-gradient(135deg, #b9382a, #7a1f13 72%); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .7), inset 0 0 0 3px rgba(122, 31, 19, .9), inset 0 0 0 4px rgba(236, 210, 154, .35), 0 .25rem .5rem rgba(60, 10, 4, .5); }
 .mm.on > b { color: #fbeed4; }
 .mm-tools .mm { border-radius: 50%; }
+/* 层级印：天下、省道、府州三枚，一线串起；随镜头远近亮一枚（金底，与看法的朱底分开），点之镜头推拉到那一档 */
+.mm-tiers { position: relative; display: flex; gap: .4375rem; padding-right: .625rem; border-right: 1px solid rgba(201, 164, 92, .3); }
+.mm-tiers::before { content: ''; position: absolute; left: .9rem; right: 1.5rem; top: 50%; height: 1px; background: rgba(201, 164, 92, .5); }
+.mm-tiers .mm { width: 1.875rem; height: 1.875rem; }
+.mm-tiers .mm > b { font-size: 1rem; }
+.mm-tiers .mm.on { background: linear-gradient(135deg, #e6c87c, #a8803a 72%);
+  box-shadow: inset 0 0 0 1px rgba(255, 242, 206, .85), inset 0 0 0 3px rgba(110, 76, 26, .75), 0 .25rem .5rem rgba(40, 24, 6, .5); }
+.mm-tiers .mm.on > b { color: #2a1808; text-shadow: 0 1px 0 rgba(255, 240, 200, .5); }
 .mm > small { position: absolute; right: 0; bottom: calc(100% + .5rem); display: flex; flex-direction: column; align-items: flex-end; gap: .0625rem; padding: .3125rem .625rem .375rem; white-space: nowrap; pointer-events: none;
   font: var(--fs-1) var(--f-kai); letter-spacing: .08em; color: var(--ivory-soft); background: rgba(20, 10, 4, .92); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .4);
   opacity: 0; transform: translateY(.25rem); transition: opacity var(--t-2), transform var(--t-2) var(--ease-out); z-index: 2; }

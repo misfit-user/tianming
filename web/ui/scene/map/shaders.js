@@ -1,8 +1,9 @@
 // 舆图着色器：青绿山水。分两道：
 // · 底色（paintFragment）：绢地 → 赭石打底 → 石绿 → 石青，每座山按它在本山里的高低整座晕染，明暗只在同一色相里深浅；
 //   气候干湿、水色晕、颜料颗粒、雪、山脊墨线。与镜头无关，开图时烘成一张大贴图（paint.js），每帧只取一下。
-// · 每帧（terrainFragment）：取底色；近看时补皴笔、细褶、山脊、山形外廓；湖水、海（网巾水纹、近岸浪）、势力晕带、看法设色、
-//   云气、绢的颗粒、辖区视野、悬停点选、远雾——跟镜头、时间、局势走的都在这里。
+// · 每帧（terrainFragment）：取底色；近看时补皴笔、细褶、山脊、山形外廓；层级设色（天下按势力、省道按省道整片设色，
+//   府州档只留界内晕带）、湖水、海（网巾水纹、近岸浪）、看法设色、云气、绢的颗粒、辖区视野、悬停点选、远雾——
+//   跟镜头、时间、局势走的都在这里。
 // 疆界、海岸、江河是矢量线（lines.js），不在这里画。
 export const terrainVertex = /* glsl */`
 uniform sampler2D uTerrain;
@@ -44,7 +45,9 @@ uniform vec2 uTexel;
 uniform vec2 uBake;              // 一个烘焙像素合多少 uv
 uniform float uRelief;
 uniform vec3 uSilk, uOchre, uGreen, uBlue, uInk, uDeep;
+uniform vec3 uField, uPaddy, uSteppe;
 uniform vec4 uAmp, uBand, uShade;
+uniform float uMode;             // 0 烘底色；1 烘明暗（R 受光、G 沟脊、B 山体），层级设色时透上来用
 varying vec2 vUv;
 ${ALU_NOISE}
 float hgt(vec2 uv) { return texture2D(uHeightHi, uv).r; }
@@ -71,16 +74,19 @@ void main() {
   float lap = (hl + hr + hu + hd - 4.0 * h) / max(oh.x * 4200.0, 1.0);
   vec3 L = normalize(vec3(-0.55, 0.75, -0.35));
 
-  // 绢地：大片水色晕；气候（离海远、偏北则干黄，东南湿润微绿）
+  // 平地：大片水色晕；气候（离海远、偏北则干黄，东南湿润稻绿，关东林草微绿）
   float sd = texture2D(uCoast, uv).r;
   float lat = 67.0 - wp.y / 20.0;
   float inland = max(sd, 0.0);
   float arid = smoothstep(150.0, 480.0, inland) * (1.0 - smoothstep(49.0, 56.0, lat));
   arid = max(arid, smoothstep(0.45, 0.75, hb) * 0.55);
   float humid = (1.0 - arid) * (1.0 - smoothstep(30.0, 37.0, lat));
-  vec3 plain = uSilk * (0.955 + 0.09 * fbm(wp * 0.0042 + 1.3));
-  plain = mix(plain, mix(uSilk, vec3(0.89, 0.79, 0.58), 0.6), arid * 0.85);
-  plain = mix(plain, mix(uSilk, uGreen, 0.22), humid * 0.55 * (1.0 - smoothstep(0.03, 0.2, h)));
+  float guandong = (1.0 - arid) * smoothstep(1240.0, 1400.0, wp.x) * smoothstep(38.0, 42.0, lat) * (1.0 - smoothstep(50.0, 55.0, lat));
+  vec3 plain = uField * (0.955 + 0.09 * fbm(wp * 0.0042 + 1.3));
+  plain = mix(plain, uSteppe, arid * 0.85);
+  plain = mix(plain, uPaddy, (humid * 0.85 + guandong * 0.5) * (1.0 - smoothstep(0.03, 0.2, h)));
+  plain = mix(plain, plain * vec3(1.03, 0.99, 0.9), smoothstep(0.55, 0.75, fbm(wp * 0.012 + 2.4)) * 0.6);   // 一片片熟地略黄
+  plain = mix(plain, plain * vec3(0.9, 0.97, 0.86), smoothstep(0.5, 0.72, fbm(wp * 0.05 + 8.8)) * (0.35 + 0.4 * humid));   // 草木深浅斑驳
   float wv = fbm(wp * 0.021 + 5.1);
   float blot = smoothstep(0.47, 0.57, wv);
   float rim = blot * (1.0 - blot) * 4.0;
@@ -114,6 +120,12 @@ void main() {
   // 山脊墨线（远看那一份；近看每帧再补一笔细的）
   float ridge = smoothstep(0.004, 0.02, -lap) * smoothstep(0.42, 0.8, u) * max(mtn, hillA * 0.5);
   ground = mix(ground, uInk, ridge * uShade.w * 0.4);
+  if (uMode > 0.5) {
+    // 明暗那张：多取原分辨率的法线（层级设色时透上来的山川要清楚）
+    float dh = dot(normalize(mix(nLo, nHi, 0.8)), L) - L.y;
+    gl_FragColor = vec4(clamp(0.62 + dh * 0.9, 0.0, 1.0), clamp(0.5 - lap * 6.0, 0.0, 1.0), 0.0, 1.0);
+    return;
+  }
   gl_FragColor = vec4(clamp(ground, 0.0, 1.0), massK);
 }`;
 
@@ -122,22 +134,29 @@ export const terrainFragment = /* glsl */`
 precision highp float;
 uniform sampler2D uPaint;        // 底色（今设色）
 uniform sampler2D uPaintAged;    // 底色（案上旧绢）
+uniform sampler2D uShadeTex;     // 烘好的明暗：R 受光（0.62 为平地）、G 沟脊
 uniform float uLookT;            // 0 旧绢 → 1 今设色
 uniform sampler2D uNoise;        // 噪声贴图（四通道各一张值噪声，可平铺）
 uniform sampler2D uTerrain;
-uniform sampler2D uBorder;       // R 到势力分界的距离（世界像素，随易主重算）
+uniform sampler2D uBorder;       // 到分界的距离（四分之一世界像素一级，一字节；随易主重算）：R 势力之间、G 省道之间
 uniform sampler2D uAux;          // R 山系场 · G 海深（海拔/6000）
 uniform sampler2D uHeightHi;
 uniform vec2 uTexelHi;
 uniform sampler2D uCoast;
 uniform sampler2D uWater;        // 2 倍覆盖率：R 陆、G 湖与大江水面
 uniform sampler2D uRegion;
-uniform sampler2D uRegionInfo;
-uniform sampler2D uPalette;
+uniform sampler2D uRegionInfo;   // 每府州：R 势力下标、G 辖区、B 省道下标
+uniform sampler2D uPalette;      // 每势力一色
+uniform sampler2D uFillTex;      // 每府州所属省道的色
+uniform float uFill;             // 层级设色浓淡：府州档 0、省道与天下档 1
+uniform float uTierMid;          // 设色按省道（1）还是按势力（0）
+uniform vec2 uTexel;
 uniform sampler2D uRange;
 uniform float uRelief;
 uniform float uTime;
-uniform float uHover;
+uniform float uHover;            // 悬停的键：uHoverMode 0 府州编号、1 省道下标、2 势力下标
+uniform float uHoverMode;
+uniform float uSelMode;
 uniform float uFocus;            // 有无辖区视野：1 时辖区之外略淡
 uniform float uLayer;            // 看法设色的浓淡（0 不染）
 uniform sampler2D uLayerTex;     // 每府州一色（A 为有无）
@@ -147,7 +166,7 @@ uniform vec3 uFogColor;
 uniform float uFogNear;
 uniform float uFogFar;
 uniform float uPolitical;        // 1 显示势力色，0 纯山水
-uniform vec3 uSilk, uBlue, uInk, uDeep, uSea, uSeaDeep, uVeil;
+uniform vec3 uSilk, uOchre, uBlue, uInk, uDeep, uSea, uSeaDeep, uVeil;
 uniform vec4 uAmp, uShade;
 varying vec2 vUv;
 varying vec3 vPos;
@@ -237,6 +256,25 @@ void main() {
     // 山形外廓：整座山晕色的边上一道淡墨（等值线，约一像素宽）
     float edgeW = fwidth(massK) * 1.2 + 1e-4;
     ground = mix(ground, ground * 0.72, (1.0 - smoothstep(0.0, edgeW, abs(massK - 0.45))) * 0.5 * nearK);
+    // 沙盘：陡坡露出赭色山石，沟谷积一层暗
+    float rock = smoothstep(0.32, 0.62, slope) * nearK * max(mtn, hillA * 0.5);
+    ground = mix(ground, mix(ground, uOchre * 0.82, 0.55) * (0.9 + 0.2 * tnoise(wp * 1.7, 2)), rock * 0.6);
+    ground *= 1.0 - smoothstep(0.003, 0.02, lap) * 0.16 * nearK;
+    // 田畴：平地上一块块的田（一块约一像素见方，一大片一个走向），每块田色略异，田埂一线深；格子小过屏上五六像素就淡去
+    float flatK = (1.0 - smoothstep(0.03, 0.12, slope)) * (1.0 - massK) * smoothstep(0.32, 0.16, pxW);
+    if (flatK > 0.01) {
+      float ang = tnoise(wp * 0.006, 3) * 3.1416;
+      vec2 q = mat2(cos(ang), sin(ang), -sin(ang), cos(ang)) * wp / vec2(1.15, 0.8);
+      q.x += floor(q.y) * 0.37;
+      vec2 cell = floor(q), fq = fract(q);
+      float hs = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+      vec3 tint = hs < 0.3 ? vec3(1.04, 1.03, 0.9) : hs < 0.55 ? vec3(0.93, 0.99, 0.86) : hs < 0.8 ? vec3(1.0) : vec3(1.05, 0.98, 0.92);
+      float patchK = flatK * smoothstep(0.35, 0.6, tnoise(wp * 0.03 + 7.0, 1));      // 田一片一片，不铺满
+      ground = mix(ground, ground * tint, patchK * 0.75);
+      vec2 fw = fwidth(q) * 1.3;
+      vec2 e = smoothstep(vec2(0.0), fw, fq) * smoothstep(vec2(0.0), fw, 1.0 - fq);
+      ground *= 1.0 - (1.0 - e.x * e.y) * 0.09 * patchK;
+    }
   }
 
   // ---------- 陆、湖与大江水面 ----------
@@ -245,19 +283,38 @@ void main() {
   float land = smoothstep(0.5 - aw, 0.5 + aw, wm.r);
   float awg = max(fwidth(wm.g) * 0.7, 0.01);
   float lake = smoothstep(0.5 - awg, 0.5 + awg, wm.g) * land;
-  ground = mix(ground, mix(uSea, vec3(0.78, 0.84, 0.78), 0.25), lake);
 
-  // ---------- 势力：界内一条晕带；远看整片薄染。看法设色：一层水色淡染，留住山川明暗 ----------
+  // ---------- 层级设色：天下、省道两档整片设色，透出山川明暗，界边积一道深色（水色）；府州档只留界内一条本色晕带 ----------
+  vec4 T = texture2D(uTerrain, uv);
   float id = regionAt(uv);
-  vec4 info = id > 0.5 ? infoOf(id) : vec4(1.0, 0.0, 0.0, 0.0);
+  vec4 info = id > 0.5 ? infoOf(id) : vec4(1.0, 0.0, 1.0, 0.0);
   float realm = floor(info.r * 255.0 + 0.5);
+  float circ = floor(info.b * 255.0 + 0.5);
   float owned = id > 0.5 && realm < 254.5 ? uPolitical : 0.0;
+  float fillA = uFill * owned * (1.0 - uLayer);
   if (owned > 0.0) {
-    float bd = texture2D(uBorder, uv).r;
-    float band = exp(-bd / mix(9.0, 4.0, nearK));
-    float realmWash = owned * (band * mix(0.55, 0.45, nearK) + (1.0 - nearK) * 0.1) * (1.0 - uLayer);
-    ground = mix(ground, mix(ground, realmColor(realm), 0.6), realmWash);
+    vec2 bd = texture2D(uBorder, uv).rg * 63.75;
+    vec3 rc = realmColor(realm);
+    float band = exp(-bd.r / mix(10.0, 5.0, nearK));
+    ground = mix(ground, mix(ground, rc, 0.75), owned * band * mix(0.62, 0.5, nearK) * (1.0 - uLayer) * (1.0 - fillA));
+    if (fillA > 0.003) {
+      vec3 fc = mix(rc, texture2D(uFillTex, vec2((id + 0.5) / 4096.0, 0.5)).rgb, uTierMid);
+      // 山川明暗：取烘好的明暗（与底色同一套光，起伏取定值，与地势压平无关）
+      vec2 sh = texture2D(uShadeTex, uv).rg;
+      fc = mix(vec3(dot(fc, vec3(0.3, 0.59, 0.11))), fc, 0.86);                   // 颜料不那么艳
+      fc *= clamp(1.0 + (sh.r - 0.62) * 1.25, 0.5, 1.2) * (1.0 - 0.12 * clamp((0.5 - sh.g) * 3.0, 0.0, 1.0));
+      fc = mix(fc, vec3(0.95, 0.94, 0.90), smoothstep(0.72, 0.92, T.r) * 0.55);     // 高处积雪
+      fc *= 0.955 + 0.09 * tnoise(wp * 0.03 + 3.0, 2);                              // 水色不匀
+      float rim = exp(-mix(bd.r, min(bd.r, bd.g), uTierMid) / 1.8);
+      fc = mix(fc, fc * vec3(0.76, 0.72, 0.70), rim * 0.6);
+      ground = mix(ground, fc, fillA * 0.9);
+    }
+  } else if (uFill > 0.0) {
+    // 无主之地：远看褪成素纸，衬出诸国
+    float gl0 = dot(ground, vec3(0.3, 0.59, 0.11));
+    ground = mix(ground, mix(vec3(gl0), uSilk, 0.55) * 1.03, uFill * 0.5);
   }
+  ground = mix(ground, mix(uSea, vec3(0.78, 0.84, 0.78), 0.25), lake);
   if (uLayer > 0.0 && id > 0.5) {
     vec4 lc = texture2D(uLayerTex, vec2((id + 0.5) / 4096.0, 0.5));
     float gl = dot(ground, vec3(0.3, 0.59, 0.11));
@@ -288,10 +345,10 @@ void main() {
   }
 
   // ---------- 云气、绢的颗粒、包浆 ----------
-  float hb = texture2D(uTerrain, uv).b;
+  float hb = T.b;
   vec2 mp = uv * vec2(6.0, 11.0) + vec2(uTime * 0.003, 0.0);
   float mist = smoothstep(0.58, 0.82, texture2D(uNoise, mp / 64.0).r * 0.62 + texture2D(uNoise, mp / 32.0 + 0.37).g * 0.38);
-  mist *= smoothstep(0.02, 0.12, hb) * (1.0 - smoothstep(0.35, 0.6, hb)) * land * (0.4 + 0.6 * (1.0 - nearK));
+  mist *= smoothstep(0.02, 0.12, hb) * (1.0 - smoothstep(0.35, 0.6, hb)) * land * (0.4 + 0.6 * (1.0 - nearK)) * (1.0 - 0.8 * fillA);
   col = mix(col, vec3(0.93, 0.91, 0.85), mist * 0.36);
   float grain = zoomNoise(wp, 2.2 * pxW, 0);
   float fiber = nearK > 0.01 ? zoomNoise(wp * vec2(1.0, 0.18), 1.6 * pxW, 1) : 0.5;   // 绢丝：近看才看得出
@@ -305,8 +362,10 @@ void main() {
     float gray = dot(col, vec3(0.3, 0.59, 0.11));
     col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - info.g) * uFocus * land);
   }
-  float hover = step(0.5, id) * (1.0 - step(0.5, abs(id - uHover)));
-  float picked = step(0.5, id) * (1.0 - step(0.5, abs(id - uSelected)));
+  float hk = uHoverMode > 1.5 ? realm : uHoverMode > 0.5 ? circ : id;
+  float sk = uSelMode > 1.5 ? realm : uSelMode > 0.5 ? circ : id;
+  float hover = step(0.5, id) * (1.0 - step(0.5, abs(hk - uHover)));
+  float picked = step(0.5, id) * (1.0 - step(0.5, abs(sk - uSelected)));
   col = mix(col, col * 1.08 + 0.03, hover * 0.7 * land);
   col = mix(col, col * vec3(1.05, 0.98, 0.9) + vec3(0.04, 0.02, -0.01), picked * 0.6 * land);
   col = mix(col, uFogColor, smoothstep(uFogNear, uFogFar, distance(vPos, uCam)));

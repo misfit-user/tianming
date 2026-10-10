@@ -10,8 +10,8 @@ import { getSetting } from '../core/settings.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
-import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, jian, btn, clock, qiPanel, tag, tiao, kaiguan, kewei } from '../kit/index.js';
-import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
+import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei } from '../kit/index.js';
+import { LOOK_QINGLV_AGED, swatchFor } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
@@ -163,9 +163,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
 
   // ---------- 舆图模式 ----------
-  const mapChips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
-  const mapNote = h('small', '');
-  const legendMap = h('div.legend');
+  // 看法印列（照 CK3 舆图右下那排看法钮）：一法一方印，当前朱底；悬停浮出全名与一句说明
+  const MODE_TIP = { 势力: '各方疆域', 民情: '民心冷暖', 阶层: '各阶层的民心', 财赋: '岁入盈欠', 军务: '兵备缓急', 官守: '吏治清浊', 役政: '徭役轻重' };
+  const modeBtn = (ch, name, tip, onclick, value) => h('button.mm', { type: 'button', 'aria-label': name, onclick, dataset: value ? { value } : {} }, h('b', ch), h('small', h('em', name), tip));
+  const mapChips = (() => {
+    const order = ['势力', ...LAYERS.filter((k) => k !== '势力')];
+    const btns = order.map((k) => modeBtn(k.charAt(0), k, MODE_TIP[k] || '', () => setLayer(k), k));
+    const el = h('nav.mm-modes', { role: 'tablist', 'aria-label': '舆图看法' }, btns);
+    el.setValue = (v) => btns.forEach((b) => { const on = b.dataset.value === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    el.setValue('势力');
+    return el;
+  })();
+  const legendMap = h('div.mm-legend.hide');
   // 检府州：输入或下拉择名，镜头缓移其上（同点选出小签）
   let mapRegionList = [];
   const regionDl = h('datalist', { id: 'tm-map-regions' });
@@ -173,12 +182,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onkeydown: (e) => { if (e.key === 'Enter') seekRegion(regionSearch.value); }, onchange: () => seekRegion(regionSearch.value) });
   // 诸道：翻本方谱牒的版图卷——各道户口、民心、吏治一览，区划预警，点道开通志、点州开方志
   const openDao = () => { let key = ''; try { key = (game.realm.factions().find((f) => f.mine) || {}).key || ''; } catch (_e) { /* 无势力册 */ } realmPage.show({ tab: 'factions', key, juan: '版图' }); };
-  const mappanel = h('section.q-qi.mappanel', h('h3.q-ti', h('span.q-gold', '舆图'), mapNote),
-    h('div.map-seek', regionSearch, regionDl, h('button.q-yapai', { type: 'button', title: '本方诸道一览：区划预警、各道读数', onclick: openDao }, '诸道')), mapChips, legendMap);
-  const card = h('div.card.hide');
+  // 检府州：点「检」才浮出输入框；回车、择定或 Esc 收起
+  const seekBox = h('div.mm-seek.hide', regionSearch, regionDl);
+  const toggleSeek = (on = seekBox.classList.contains('hide')) => { seekBox.classList.toggle('hide', !on); if (on) { regionSearch.value = ''; regionSearch.focus(); } };
+  regionSearch.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); toggleSeek(false); } });
+  const mappanel = h('section.mm-panel', legendMap, seekBox,
+    h('div.mm-row', h('div.mm-tools', modeBtn('检', '检府州', '输名，镜头移至其上', () => toggleSeek()), modeBtn('道', '诸道', '本方各道读数与区划预警', openDao)), mapChips));
+  const card = h('div.map-card.hide');
+  // 悬停题签：指针停在府州上片刻即出，跟着指针走
+  const tip = h('div.map-tip.hide');
   const backLabel = h('b.q-gold', '');
   const back = h('button.q-qi.q-pai.back', { type: 'button', onclick: () => dive.rise() }, backLabel, h('small', '起身离图'));
-  const mapEl = h('section.scr.scr-map', mappanel, back, card);
+  const mapEl = h('section.scr.scr-map', mappanel, back, card, tip);
 
   root.append(el, mapEl);
   const turnVeil = createTurnVeil({ root, game });   // 推演幕：过回合时铺满全屏（screens/turnveil.js）
@@ -214,7 +229,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       if (m === 'map') fadeFocus(focus && focus.marked.length ? (prof.map === 'home' ? 0.6 : 1) : 0, 1.6);
       if (m === 'flying' && dive.mode === 'map') fadeFocus(0, 0.6);
       el.classList.toggle('flying', m === 'flying');
-      if (m === 'flying') { mapEl.classList.remove('on'); card.classList.add('hide'); }
+      if (m === 'flying') { mapEl.classList.remove('on'); card.classList.add('hide'); tip.classList.add('hide'); toggleSeek(false); }
       if (m === 'settled') { mapEl.classList.add('on'); el.classList.add('inmap'); }
       if (m === 'desk' || m === 'desk-settled') el.classList.remove('flying', 'inmap');
       paintDeskBtn();
@@ -268,6 +283,36 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   });
   let down = null;
   stage.canvas.addEventListener('pointerdown', (ev) => { down = [ev.clientX, ev.clientY]; });
+  let tipAt = [0, 0], tipRegion = null, tipTimer = 0;
+  const hideTip = () => { clearTimeout(tipTimer); tip.classList.add('hide'); };
+  stage.canvas.addEventListener('pointermove', (ev) => { tipAt = [ev.clientX, ev.clientY]; placeTip(); });
+  stage.canvas.addEventListener('pointerdown', hideTip);
+  map.onHover((r) => {
+    tipRegion = r;
+    clearTimeout(tipTimer);
+    if (!r) { tip.classList.add('hide'); return; }
+    tipTimer = setTimeout(paintTip, tip.classList.contains('hide') ? 260 : 0);
+  });
+  function realmChip(fac) { return h('i.mm-chip', { style: { background: fac ? swatchFor(fac.name, fac.color) : 'transparent' } }); }
+  function layerLine(r) {
+    const lv = layer && layer.byId[r.id];
+    return lv ? h('span.mm-lv', h('i', { style: { background: lv.color || 'transparent' } }), `${layerLabel}　${lv.mark || '—'}${typeof lv.score === 'number' ? ' · ' + num(Math.round(lv.score)) : ''}`) : null;
+  }
+  function paintTip() {
+    const r = tipRegion;
+    if (!r || dive.mode !== 'map' || dive.busy || !card.classList.contains('hide') || document.querySelector('.q-kewei')) return;
+    const fac = r.faction && factions[r.faction];
+    replaceChildren(tip, h('b', r.name), h('small', realmChip(fac), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地'), layerLine(r));
+    tip.classList.remove('hide');
+    placeTip();
+  }
+  function placeTip() {
+    if (tip.classList.contains('hide')) return;
+    const b = tip.getBoundingClientRect();
+    const x = tipAt[0] + 20 + b.width > innerWidth - 8 ? tipAt[0] - b.width - 14 : tipAt[0] + 20;
+    const y = Math.max(8, Math.min(innerHeight - b.height - 8, tipAt[1] + 18));
+    tip.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px)`;
+  }
   stage.canvas.addEventListener('pointerup', (ev) => {
     if (dive.mode !== 'map' || dive.busy || !down || Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) > 5) return;
     const r = map.pickScreen(ev.clientX, ev.clientY);
@@ -305,14 +350,24 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     });
   }
   // 府州小签：点选与检府州共用
+  // 府州小签（点选、检府州共用）：题名、所属与归属、上隶或地形、看法读数；方志、通志两枚牙牌，右键另有可为
   function showRegionCard(r, x, y) {
+    hideTip();
     const fac = r.faction && factions[r.faction];
-    const lv = layer && layer.byId[r.id];
-    replaceChildren(card, jian({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), rows: [r.parent ? ['上隶', r.parent] : ['地形', r.terrain || '—'], ...(lv ? [[layerLabel, lv.mark + (typeof lv.score === 'number' ? '　' + num(Math.round(lv.score)) : '')]] : [])] }));
-    card.append(h('small.fz-cardhint', '点签展方志'));
-    card.onclick = () => fangzhiPage.show(r.id);
-    card.style.transform = `translate(${Math.min(window.innerWidth - 300, x + 24)}px, ${Math.max(90, y - 60)}px)`;
+    const open = (fn) => (e) => { e.stopPropagation(); card.classList.add('hide'); fn(); };
+    replaceChildren(card,
+      h('header', h('b', r.name), h('small', realmChip(fac), [r.circuit, fac && fac.name].filter(Boolean).join(' · ') || '无主之地')),
+      h('dl', r.parent ? [h('dt', '上隶'), h('dd', r.parent)] : null, r.terrain ? [h('dt', '地形'), h('dd', r.terrain)] : null),
+      layerLine(r),
+      h('footer',
+        h('button.q-yapai', { type: 'button', onclick: open(() => fangzhiPage.show(r.id)) }, '方志'),
+        r.circuit ? h('button.q-yapai', { type: 'button', onclick: open(() => fangzhiPage.showCircuit(r.id)) }, '通志') : null,
+        h('small', '右键 · 可为')));
+    card.onclick = null;
     card.classList.remove('hide');
+    const b = card.getBoundingClientRect();
+    const left = x + 24 + b.width > innerWidth - 12 ? x - b.width - 18 : x + 24;
+    card.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(90, Math.min(innerHeight - b.height - 16, y - 40)))}px)`;
   }
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || dive.mode !== 'map') return;
@@ -344,6 +399,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       showRegionCard({ index: i, ...r }, sx, sy);
     });
     regionSearch.blur();
+    toggleSeek(false);
   }
   // 镜头沿当前俯角与朝向缓移到某处上空（约 0.9 秒）
   function flyMapTo(center, dist, then) {
@@ -375,7 +431,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (mode === 'owner') layer = null;
     else {
       replaceChildren(legendDesk, h('small', '勘算中……'));
-      replaceChildren(legendMap, h('small', '勘算中……'));
+      replaceChildren(legendMap, h('b', label), h('small', '勘算中……'));
+      legendMap.classList.remove('hide');
       const l = await game.select.mapLayer(mode);
       if (tok !== layerTok) return;
       layer = l;
@@ -383,7 +440,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     map.setLayer(layer ? (map.regions || []).map((r) => (layer.byId[r.id] || {}).color) : []);
     map.uniforms.uLayer.value = layer ? 1 : 0;
     replaceChildren(legendDesk, legendOf(layer));
-    replaceChildren(legendMap, legendOf(layer));
+    replaceChildren(legendMap, layer ? [h('b', label), ...legendOf(layer)] : []);
+    legendMap.classList.toggle('hide', !layer);
     if (dive.mode === 'desk') study.setMapSheet(await map.renderSheet({ look: LOOK_QINGLV_AGED }));
   }
 
@@ -520,7 +578,6 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const notes = open.slice(0, 3).map(noteOf);
     const sig = JSON.stringify(notes);
     if (sig !== notesSig) { notesSig = sig; study.setNotes(notes); }
-    mapNote.textContent = `${d.era || ''} · ${num((map.regions || []).length)}府州`;
     // 科举有待定夺之事（选主考、定题、拟策问、钦定三甲……）：书目「科」挂一枝签
     const kb = prof.books.find((b) => b[2] === 'keju');
     const kw = kb && [...rail.children].find((b) => b.dataset.name === kb[1]);

@@ -90,9 +90,9 @@
 .scr-desk.home-map .hm-corner .q-clock { gap: .75rem; }
 
 /* ---------- 舆图看法：时钟之上，书目之左 ---------- */
-.scr-map.home-map .mappanel { left: auto; top: auto; right: 5.75rem; bottom: 8.25rem; width: 20rem; }
+.scr-map.home-map .mm-panel { right: 5.75rem; bottom: 8.5rem; }
 .scr-map.home-map .back { display: none; }
-@media (max-height: 52rem) { .scr-map.home-map .mappanel { right: 5rem; bottom: 7.75rem; width: 19rem; } }
+@media (max-height: 52rem) { .scr-map.home-map .mm-panel { right: 5rem; bottom: 7.75rem; } }
 
 /* ---------- 提纲（照 CK3 的 Outliner）：右上读数之下、书目之左；钉选之人、所掌、诸军，可收起 ---------- */
 .scr-desk .hm-outline { display: none; }

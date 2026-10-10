@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createLabels, SHORT } from './labels.js';
+import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb, swatchFor } from './looks.js';
 import { quality } from '../../core/quality.js';
 import { SHEET_EXTENT } from '../world.js';
@@ -445,7 +445,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
         const size = Math.max(26, Math.min(112, Math.sqrt(r.area) * 0.24)) * (width / W);
         g.font = `${size}px "TM-MaShanZheng"`;
         g.fillStyle = 'rgba(40,24,14,0.86)';
-        const text = [...(factions[r.id]?.short || SHORT[r.name] || r.name)].join(' ');
+        const text = [...realmTitle(r.name)].join(' ');
         const half = g.measureText(text).width / 2, m = 48 * width / W;
         px = Math.min(width - m - half, Math.max(m + half, px));     // 靠边的势力名挪回框里，免得被裁
         py = Math.min(height - m - size / 2, Math.max(m + size / 2, py));

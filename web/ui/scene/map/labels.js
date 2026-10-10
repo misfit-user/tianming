@@ -5,8 +5,13 @@
 import * as THREE from 'three';
 import { TRUNKS } from './trunks.js';
 
-// 题名用的简称（剧本势力若带 short 字段就用它）
-export const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷兰', '西班牙·马尼拉': '西班牙', '大越黎郑阮格局': '大越', '虾夷地与松前氏': '虾夷', '吐鲁番诸伯克': '吐鲁番', '野人女真诸部': '野人女真', '葡萄牙·澳门': '澳门', '瓦刺诸部': '瓦剌' };
+// 题名：势力全名去掉括注；少数太长或俗称另有通名的照表。剧本地图上的 shortName 是图上小标用的一两字缩写（「察哈」「喀尔」），不拿来题名
+export function realmTitle(name) {
+  const n = String(name || '');
+  if (SHORT[n]) return SHORT[n];
+  return n.replace(/[（(][^）)]*[）)]/g, '').split('·')[0].trim() || n;
+}
+const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷兰', '西班牙·马尼拉': '西班牙', '大越黎郑阮格局': '大越', '虾夷地与松前氏': '虾夷', '吐鲁番诸伯克': '吐鲁番', '野人女真诸部': '野人女真', '葡萄牙·澳门': '澳门', '瓦刺诸部': '瓦剌' };
 // 大河：Natural Earth 原名 → 题名；只在北纬 21.5 度以北落字（下游出了国境的不题）
 const RIVERS = { Huang: '黄河', 'Chang Jiang': '长江', Yangtze: '长江', Han: '汉水', Liao: '辽河', Songhua: '松花江', 'Heilong Jiang': '黑龙江', Jinsha: '金沙江', Lancang: '澜沧江', Nu: '怒江', Gan: '赣江' };
 
@@ -64,7 +69,7 @@ export function createLabels({ layer, camera, size, heightAt, relief }) {
       byFaction.get(r.faction).push({ x: r.center[0], y: r.center[1], w: polyArea(r.poly) });
     });
     realmLbls = realms.filter((r) => r.area >= 400 && byFaction.has(r.id)).map((r) => {
-      const text = factions[r.id]?.short || SHORT[r.name] || r.name;
+      const text = realmTitle(r.name);
       const ax = realmAxis(byFaction.get(r.id));
       const chars = [...text];
       const n = chars.length;
@@ -158,7 +163,8 @@ export function createLabels({ layer, camera, size, heightAt, relief }) {
       const fs = (k === 2 ? 16 : k === 1 ? 14 : 12.5) * scale;
       const w = fs * l.len * 1.08, top = p[1] + 4;
       const box = [p[0] - w / 2 - 2, top - 1, p[0] + w / 2 + 2, top + fs * 1.25];
-      if (k < 2 && !free(box)) { hide(l.el); continue; }
+      // 京城向来先占位；远看势力大字铺开时也要让字（不压在国名上）
+      if ((k < 2 || realmAlpha > 0.3) && !free(box)) { hide(l.el); continue; }
       occupied.push(box);
       l.el.style.opacity = (k ? 1 : 0.94 * (1 - fadeBy(dist, limit - 160, limit))).toFixed(2);
       l.el.style.fontSize = fs.toFixed(1) + 'px';

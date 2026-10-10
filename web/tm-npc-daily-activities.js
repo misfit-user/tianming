@@ -66,7 +66,7 @@
   function topicInfo(topicId) { return consultationTopics[text(topicId)] || null; }
   function plans(g) { return rows((g || game())._npcPlans).filter(isPlan); }
   function get(key, g) { var found = plans(g).filter(function (p) { return p.id === key; }); return found.length === 1 ? found[0] : null; }
-  function terminal(p) { return /^(done|rejected|cancelled|expired)$/.test(p.status); }
+  function terminal(p) { return /^(done|ended|rejected|cancelled|expired)$/.test(p.status); }
   function readState(g) { return (g || game())._npcActionState && (g || game())._npcActionState.localDaily; }
   function withIndex(fn) {
     var g = game(), previous = readIndex;

@@ -26,7 +26,7 @@
 //   game.gongwei.court() / proposeRank / designate …  宫闱：后妃、尊长、皇嗣、宫苑（adapter/gongwei.js）
 //   game.help.topics()                                帮助：内核帮助里与界面无关的几卷（adapter/help.js）
 //   game.perspective()                      视角人物（身份、官职、辖区）；game.setViewAs(人) 借视角（开发用）
-//   game.standing()                         通用一套的「我」：职衔、所掌、上、本家（adapter/standing.js）
+//   game.standing(人?)                      通用一套的「我」：职衔、所掌、上、本家（adapter/standing.js）
 //   game.act.memorial(id, action, reply)    交动作
 //   game.on(事件, fn)                       事件见 kernel.js
 import { bus } from '../core/bus.js';
@@ -346,8 +346,9 @@ let viewAs = null;
 function perspective() {
   return select.perspective(viewAs || undefined);
 }
-function standing() {
-  return standingOf(viewAs || undefined);
+// as：看某人的（人物窗读其职衔、所掌）；不给是视角人物
+function standing(as) {
+  return standingOf(as || viewAs || undefined);
 }
 function setViewAs(ref) {
   viewAs = ref || null;

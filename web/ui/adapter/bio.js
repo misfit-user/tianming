@@ -113,6 +113,13 @@ export function person(name) {
     recorded: [['表字', c.zi], ['家族', c.family], ['父', c.father], ['母', c.mother], ['生年', c.birthYear], ['生辰记载', c.birthTime], ['籍贯／出生地', c.birthplace], ['学业', c.learning],
       ['外貌依据', c.appearance], ['爱好', c.hobbies], ['技能说明', Array.isArray(c.skills) ? c.skills.join('、') : c.skills]].filter(([, v]) => v != null && v !== '').map(([k, v]) => [k, String(v)]),
     kin: (c.familyMembers || []).filter((m) => m && m.name).map((m) => `${m.relation || '亲属'}：${m.name}${m.note ? '；' + m.note : ''}`),
+    // 剧本所载亲属（与 blood 互补：名册里没连上血亲的，剧本 familyMembers 常有）；殁与否看名册，名册外看关系字与注里的崩、卒、殁、逝
+    kinList: (c.familyMembers || []).filter((m) => m && m.name).map((m) => {
+      const ch = charOf(String(m.name));
+      const rel = str(m.relation) || '亲属';
+      return { name: str(m.name), relation: rel.replace(/[（(][^）)]*[）)]/g, ''), note: str(m.note), known: !!ch,
+        dead: ch ? ch.alive === false : /殁|故|亡/.test(rel) || /崩|卒|殁|逝|薨/.test(str(m.note)) };
+    }),
     fictional: c.isFictional === true || c.type === 'fictional', fictionalNotes: (c.fictionalSources || []).map(String),
     looseSources: [...new Set(['sourceNotes', 'sources', 'historicalSources'].flatMap((k) => (Array.isArray(c[k]) ? c[k] : [])).filter((x) => typeof x === 'string' && x.trim()))],
     officeNote: str(c.officeEvidenceNote)

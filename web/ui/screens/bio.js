@@ -55,6 +55,8 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
   ov.addEventListener('pointerdown', (e) => { if (e.target === ov) hide(); });
   root.append(ov);
 
+  // 本人：借视角时是所借之人，不是玩家
+  const isSelf = (p) => (viewer() ? viewer() === p.name : !!p.isPlayer);
   const T = () => Object.assign({ lord: '主上', now: '主上', note: '批注', posthumous: '', mind: '自省心志' }, profile().bio || {});
   const link = (name, ok, label) => (ok ? h('button.lz-link', { type: 'button', onclick: () => show(name) }, label || name) : h('span', label || name));
   const sec = (title, sub, ...body) => h('section.lz-sec', h('h4', title, sub ? h('small', sub) : null), ...body);
@@ -74,7 +76,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         h('p.office', p.office[0] || '布衣', p.rank ? h('em', p.rank) : null),
         p.office.length > 1 ? h('p.conc', `兼　${p.office.slice(1).join('、')}`) : null,
         // 与我（照 CK3 角色窗口姓名下那一行关系）：本人写「此即本人」，他人写对君上的亲疏（与「心性」卷同源）
-        p.isPlayer || (viewer() && viewer() === p.name) ? h('p.lz-tome', '此即本人') : p.alive && p.toLord ? h('p.lz-tome' + (p.toLord.favor > 0 ? '.good' : p.toLord.favor < 0 ? '.bad' : ''),
+        isSelf(p) ? h('p.lz-tome', '此即本人') : p.alive && p.toLord ? h('p.lz-tome' + (p.toLord.favor > 0 ? '.good' : p.toLord.favor < 0 ? '.bad' : ''),
           `视${t.lord}：${p.toLord.label || '平'}`, h('em', signed(p.toLord.favor))) : null,
         h('p.line', [p.faction, p.party ? `${p.party}${p.partyRank ? '·' + p.partyRank : ''}` : ''].filter(Boolean).join(' · ')),
         p.honorary.length ? h('div.lz-hon', p.honorary.map((x) => h('span', { title: '加衔或身份称号' }, `衔 ${x}`))) : null),
@@ -87,22 +89,22 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
     replaceChildren(noteBox, h('h5', t.note, h('button', { type: 'button', onclick: editNote }, text ? '改' : '批')), text ? h('p', text) : h('p.empty', '未批'));
     const btn = (label, onclick, title) => h('button.q-yapai', { type: 'button', onclick, title: title || '' }, label);
     const list = [];
-    if (p.isPlayer) list.push(btn(t.mind, () => { vol = 'pov'; markVol(); renderRight(); }));
+    if (isSelf(p)) list.push(btn(t.mind, () => { vol = 'pov'; markVol(); renderRight(); }));
     else if (!p.alive) {
       list.push(btn('阅其遗著', () => { vol = 'works'; markVol(); renderRight(); }));
       if (t.posthumous && onEdict) list.push(btn(t.posthumous, () => { hide(); toast(`${t.posthumous}：${p.name}`); onEdict(p.name); }));
     } else {
-      if (onAudience) list.push(btn('召对', () => { hide(); onAudience(p.name); }));
+      if (onAudience) list.push(btn((profile().audience || {}).title || '召对', () => { hide(); onAudience(p.name); }));
       if (onLetter) list.push(btn('传书', () => { hide(); onLetter(p.name); }));
       if (onOffices) list.push(btn('官制', () => { hide(); onOffices(p.name); }));
     }
-    if (!p.isPlayer && p.alive) list.push(btn(pinned(p) ? '去钉' : '钉选', () => { const on = togglePin(p); toast(on ? `${p.name}已钉选：书案图志与召对名单列在前头` : `${p.name}已去钉`); renderLeft(); }, '钉选之人在书案人物图志与召对名单里排在前头'));
-    if (onAtlas) list.push(btn('图志', () => { hide(); onAtlas(p.name); }, '回人物图志'));
+    if (!isSelf(p) && p.alive) list.push(btn(pinned(p) ? '去钉' : '钉选', () => { const on = togglePin(p); toast(on ? `${p.name}已钉选：书案图志与召对名单列在前头` : `${p.name}已去钉`); renderLeft(); }, '钉选之人在书案人物图志与召对名单里排在前头'));
+    if (onAtlas) list.push(btn('寻人', () => { hide(); onAtlas(p.name); }, '右边展开寻人'));
     list.push(btn('导出', exportBio, '存成一份列传文本'));
     replaceChildren(acts, list);
   }
   // 任官：在世、非君上本人，且本身份可任免（元首档有官制册）
-  const canOffice = (p) => p.alive && !p.isPlayer && !!game.offices && !!onOffices;
+  const canOffice = (p) => p.alive && !isSelf(p) && !!game.offices && !!onOffices;
   let vacantOnly = false;
   function officeSecs(p) {
     let rows = [];

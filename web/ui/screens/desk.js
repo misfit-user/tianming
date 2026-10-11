@@ -42,7 +42,8 @@ import { createEndgame } from './endgame.js';
 import { createFangzhi } from './fangzhi.js';
 import { createCourt } from './court.js';
 import { createIssues } from './issues.js';
-import { createAtlas } from './atlas.js';
+import { createRenwu } from './renwu.js';
+import { createXunren } from './xunren.js';
 import { openAllVars } from './allvars.js';
 import { openGazette } from './gazette.js';
 import { openAnnals } from './annals.js';
@@ -117,13 +118,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
 
   // ---------- 左列 ----------
   const faces = h('div.faces');
-  const renwu = qiPanel({ title: '人物图志', note: '…' }, faces);
+  const facesPanel = qiPanel({ title: '人物图志', note: '…' }, faces);
   const chips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
   const legendDesk = h('div.legend');
   const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips, legendDesk);
   const dibao = h('div.dibao', { onclick: () => openGazette({ game }), title: '展邸报全卷', style: { cursor: 'pointer' } });
   let dibaoShut = (() => { try { return localStorage.getItem('tm_ui_dibao') === '0'; } catch (_e) { return false; } })();
-  const left = h('div.left', renwu, maptools, dibao);
+  const left = h('div.left', facesPanel, maptools, dibao);
 
   // ---------- 右列书目、案底五渠道与印、器物牙牌：按身份档摆（furnish） ----------
   const rail = h('nav.rail');
@@ -145,7 +146,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const selfBadges = h('div.hm-badges');
   const ring = h('nav.hm-ring');
   const selfBox = h('section.hm-me',
-    h('button.hm-xiang', { type: 'button', title: '本人列传', onclick: () => bioPage.show(per.name), dataset: { person: '' } }, selfFace, selfSeal),
+    h('button.hm-xiang', { type: 'button', title: '本人', onclick: () => (renwu.current === per.name ? renwu.hide() : renwu.show(per.name)), dataset: { person: '' } }, selfFace, selfSeal),
     h('div.hm-side', h('div.hm-plate', h('div.hm-namerow', selfName, selfBadges), selfTitle, selfUp, selfEnergy), ring));
   const alerts = h('nav.hm-alerts');
   const corner = h('div.hm-corner');
@@ -430,6 +431,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const left = x + 24 + b.width > innerWidth - 12 ? x - b.width - 18 : x + 24;
     card.style.transform = `translate(${Math.round(left)}px, ${Math.round(Math.max(90, Math.min(innerHeight - b.height - 16, y - 40)))}px)`;
   }
+  // Esc 先收人物窗、再收寻人（挂在 document 的捕获段：册页、卷轴、可为单在 window 上先收，收了就不传到这里），都收了才轮到暂停、起身
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || document.querySelector('.q-juan-veil, .ce-ov.on, .q-kewei')) return;
+    const top = renwu.open ? renwu : xunren.open ? xunren : null;
+    if (!top) return;
+    e.stopPropagation();
+    e.preventDefault();
+    top.hide();
+  }, true);
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || dive.mode !== 'map') return;
     if (!homeMap()) return dive.rise();
@@ -612,8 +622,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     // 钉选之人排在近臣之前（core/pins，与老正式界面同一份）
     const pins = pinnedFirst(people.filter((c) => c !== me && c.alive !== false)).filter((c) => pinned(c));
     const shown = [...new Set([me, ...pins, ...near, ...people.filter((c) => c !== me && c.portrait && !near.includes(c))].filter(Boolean))].slice(0, 4);
-    replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) })));
-    renwu.querySelector('.q-ti small').textContent = `${num(people.length)}人`;
+    replaceChildren(faces, shown.map((c) => zhou({ name: c.name, src: c.portrait, title: [c.name, c.title].filter(Boolean).join(' · '), onclick: () => renwu.show(c.name) })));
+    facesPanel.querySelector('.q-ti small').textContent = `${num(people.length)}人`;
     const news = s.news ? s.news(8) : [];
     replaceChildren(dibao, keben('邸报', news.length ? news.map((n, i) => ({ tag: n.tag, text: n.text, soft: i > 2 })) : [{ tag: '闻', text: '今日无报', soft: true }]),
       // 舆图为家时邸报可收成一条（只露报头），让出舆图；收放记在本机
@@ -700,7 +710,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   function paintOutline() {
     const face = (c) => h('i.hm-oface', c.portrait ? h('img', { src: c.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.remove() }) : null, [...(c.name || '？')][0]);
     const people = game.select.characters().filter((c) => pinned(c)).slice(0, 8).map((c) =>
-      h('button.hm-row', { type: 'button', dataset: { person: c.name }, title: [c.name, c.title, c.location].filter(Boolean).join(' · '), onclick: () => atlas.show(c.name) },
+      h('button.hm-row', { type: 'button', dataset: { person: c.name }, title: [c.name, c.title, c.location].filter(Boolean).join(' · '), onclick: () => renwu.show(c.name) },
         face(c), h('b', c.name), h('small', c.title || c.location || '')));
     const KIND = { region: '地', circuit: '道', army: '兵', office: '署', household: '家' };
     const charges = standing ? standing.charges.map((c) => h('button.hm-row', { type: 'button', title: c.name, onclick: () => openChargeOf(c) },
@@ -817,7 +827,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       if (homeMap() && dive.mode === 'map') return focus && focus.center ? flyMapTo(focus.center, 820) : null;
       return dive.mode === 'desk' ? enterMap() : dive.rise();
     }
-    if (key === 'people') return atlas.show();
+    if (key === 'people') return xunren.open ? xunren.hide() : xunren.show(renwu.current);
     if (key === 'charge') return openCharge();
     // 家：本人列传的家族一卷（照 CK3 角色窗口的家人页：父母、配偶、子女、兄弟、族中统览）；族谱另在朝野册「家族」
     if (key === 'family') return bioPage.show(per.name, 'family');
@@ -840,23 +850,44 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     e.preventDefault();
     personMenu(t.dataset.person, e.clientX, e.clientY);
   });
+  // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
+  function personCan(name) {
+    const ro = per.previewing ? '借视角时只读' : '';
+    const near = (() => { try { return game.audience.canAudience(name); } catch (_e) { return false; } })();
+    const far = (() => { try { return game.letters.contacts().some((p) => p.name === name); } catch (_e) { return false; } })();
+    return {
+      audienceTitle: prof.audience.title, letterTitle: prof.letters.compose,
+      audience: ro || (near ? '' : '人不在近处，宜传书'),
+      letter: ro || (far ? '' : prof.letters.atCourt),
+      office: prof.tier === 'sovereign' ? ro : null
+    };
+  }
+  // 地名 → 舆图镜头飞去（在书房就先俯身入图）；认不出返回 false
+  function locatePlace(text) {
+    const [i] = byPlace(text);
+    const r = i == null ? null : mapRegionList[i];
+    if (!r || !r.center) return false;
+    if (dive.mode === 'map' && !dive.busy) flyMapTo(r.center, Math.min(map.pose().dist, 520));
+    else if (dive.mode === 'desk' && !dive.busy) dive.dive(r.center);
+    else return false;
+    return true;
+  }
   function personMenu(name, x, y) {
     const c = game.select.characters().find((p) => p.name === name);
     const self = !!c && String(c.id) === String(per.id);
-    const ro = per.previewing ? '借视角时只读' : '';
     const ch = (k) => (prof.channels.find((x) => x.key === k) || {}).title || '';
     const groups = [];
     if (c && !self) {
-      const near = (() => { try { return game.audience.canAudience(name); } catch (_e) { return false; } })();
-      const far = new Set(game.letters.contacts().map((p) => p.name));
-      groups.push({ label: ch('jian'), items: [{ label: prof.audience.title, note: '择正式问对或私下叙谈', off: ro || (near ? '' : '人不在近处，宜传书'), onclick: () => audiencePage.summon(name) }] });
-      groups.push({ label: ch('shu'), items: [{ label: prof.letters.compose, off: ro || (far.has(name) ? '' : prof.letters.atCourt), onclick: () => openLetters(name) }] });
-      if (prof.tier === 'sovereign') groups.push({ label: ch('ling'), items: [{ label: '任官', note: '按其才具看各职适配，点一职走官制册的任命', off: ro, onclick: () => bioPage.show(name, 'office') }] });
+      const can = personCan(name);
+      groups.push({ label: ch('jian'), items: [{ label: can.audienceTitle, note: '择正式问对或私下叙谈', off: can.audience, onclick: () => audiencePage.summon(name) }] });
+      groups.push({ label: ch('shu'), items: [{ label: can.letterTitle, off: can.letter, onclick: () => openLetters(name) }] });
+      if (can.office != null) groups.push({ label: ch('ling'), items: [{ label: '任官', note: '按其才具看各职适配，点一职走官制册的任命', off: can.office, onclick: () => bioPage.show(name, 'office') }] });
     }
     groups.push({ label: '观', items: [
-      { label: '详传', onclick: () => bioPage.show(name) },
-      { label: '人物图志', onclick: () => atlas.show(name) },
-      c && !self ? { label: pinned(c) ? '撤钉选' : '钉选', note: '钉选之人排在图志与案前诸人之首', onclick: () => togglePin(c) } : null].filter(Boolean) });
+      { label: '人物', note: '左边展开人物窗', onclick: () => renwu.show(name) },
+      { label: '详传', note: '列传全卷', onclick: () => bioPage.show(name) },
+      c && c.location ? { label: '图上寻其所在', note: c.location, onclick: () => { if (!locatePlace(c.location)) bus.emit('kernel:toast', { text: `舆图上认不出「${c.location}」` }); } } : null,
+      c && !self ? { label: pinned(c) ? '撤钉选' : '钉选', note: '钉选之人排在提纲、寻人之首', onclick: () => togglePin(c) } : null].filter(Boolean) });
     kewei({ title: name, sub: c ? [c.title, c.location].filter(Boolean).join(' · ') : '已故', x, y, groups });
   }
   // 「辖」：所掌那一块——辖区开方志或通志，本镇开军务，本衙门开官制
@@ -894,10 +925,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const docket = createDocket({ root, study, game, profile: () => sceneProfile(), onClose: () => { el.classList.add('on'); refresh(); backHome(); },
     onSummon: (name) => { el.classList.add('on'); audiencePage.summon(name); } });
   const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); }, onSecret: (id) => { if (!readOnly()) mizhaoPage.pick(id); } });
-  const atlas = createAtlas({ root, game, onLetter: (name) => openLetters(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onBio: (name) => bioPage.show(name) });
+  // 人物：照 CK3——点人像左边展开人物窗，书目「人」右边展开寻人；舆图在中间露着（同志 10-11：人物图志不必另做册页）
+  const xunren = createXunren({ root, game, current: () => renwu.current, onPick: (name) => renwu.show(name), onBio: (name) => bioPage.show(name) });
+  const renwu = createRenwu({ root, game,
+    viewer: () => ({ name: per.name, player: !per.previewing, lord: (prof.bio && prof.bio.lord) || '主上' }),
+    can: (name) => personCan(name),
+    onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
+    onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare });
   // 列传：召对、传书、官制、追赠（开撰写）、回图志
   const bioPage = createBio({ root, game, profile: () => prof, onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onLetter: (name) => openLetters(name),
-    onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => atlas.show(name),
+    onOffices: () => officesPage.show(), onEdict: () => { if (!readOnly() && per.tier === 'sovereign') openEdict(); }, onAtlas: (name) => xunren.show(name),
     viewer: () => per.name });
   const edictPage = createEdict({ root, study, game, profile: () => sceneProfile(), onClose: () => { el.classList.add('on'); refresh(); backHome(); }, onPromulgate: () => confirmAdvance() });
   function openEdict(at) {
@@ -939,11 +976,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 朝野册：人名翻人物图志；召党魁、召代表转召对；付廷议即开廷议、带上议题
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
   const fangzhiPage = createFangzhi({ root, game, profile: () => prof, onPerson: (name) => { fangzhiPage.hide(); bioPage.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
-  const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); atlas.show(name); },
+  const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名可翻人物图志
-  const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); atlas.show(name); } });
+  const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); renwu.show(name); } });
   const wenyuanPage = createWenyuan({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
   // 科举册；科议画在殿上，开议时收册，散议后若是从册里起的便回册
   const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onReform: () => { if (!readOnly()) gaizhiPage.show(); } });
@@ -961,7 +998,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
     scope: () => (per.tier === 'sovereign' ? null : per.name) });
-  const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); atlas.show(name); } });
+  const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); renwu.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');
     toStudyIfHome();

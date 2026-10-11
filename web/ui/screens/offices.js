@@ -141,7 +141,15 @@ export function createOffices({ root, game, profile, onPerson, role = () => ({ s
   }
 
   // ---------- 开合 ----------
-  function show() {
+  // show(衙署名)：翻到那一署（各廷各组里找同名的；通用一套「所掌」翻本衙门用）
+  function show(dept) {
+    if (dept) {
+      for (const [k] of O.COURTS) {
+        let hit = null;
+        try { hit = O.departments(k, 'all').find((d) => d.name === dept || d.name.startsWith(dept) || dept.endsWith(d.name)); } catch (_e) { hit = null; }
+        if (hit) { court = k; group = 'all'; picked = hit.path; courts.setValue(k); break; }
+      }
+    }
     renderLeft();
     ov.classList.add('on');
     opened = true;

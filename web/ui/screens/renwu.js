@@ -194,8 +194,10 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     return out.length ? out : [h('p.rw-none', '生平未详。')];
   }
 
-  function show(n, { fresh = false } = {}) {
+  // show(名, { tab })：tab 是 kin 家人、rel 交游、career 履历、life 生平（书目「家」「史」直翻那一页）
+  function show(n, { fresh = false, tab: at = '' } = {}) {
     if (!n) return;
+    if (at && TABS.some(([k]) => k === at)) tab = at;
     if (cur && cur !== n && !fresh && el.classList.contains('on')) back = [...back.filter((x) => x !== cur), cur].slice(-12);
     if (fresh || !el.classList.contains('on')) back = [];
     cur = n;

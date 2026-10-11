@@ -863,11 +863,11 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     }
     if (key === 'people') return xunren.open ? xunren.hide() : xunren.show(renwu.current);
     if (key === 'charge') return openCharge();
-    // 家：本人列传的家族一卷（照 CK3 角色窗口的家人页：父母、配偶、子女、兄弟、族中统览）；族谱另在朝野册「家族」
-    if (key === 'family') return bioPage.show(per.name, 'family');
+    // 家：本人人物窗的家人页（照 CK3 角色窗口的家人页：尊长、配偶、子女、同辈），舆图露着；五代家谱在详传，族谱另在朝野册「家族」
+    if (key === 'family') return renwu.show(per.name, { tab: 'kin' });
     if (key === 'gazette') return openGazette({ game });
-    // 史：元首翻史馆（实录、起居注……）；通用一套是本人年谱——列传的纪传一卷（履历与近事），国史非其所能翻
-    if (key === 'annals') return per.tier === 'sovereign' ? archivePage.show() : bioPage.show(per.name, 'career');
+    // 史：元首翻史馆（实录、起居注……）；通用一套是本人年谱——人物窗的履历页（履历与近事），国史非其所能翻
+    if (key === 'annals') return per.tier === 'sovereign' ? archivePage.show() : renwu.show(per.name, { tab: 'career' });
     if (key === 'offices') return officesPage.show();
     if (key === 'fiscal') return fiscalPage.show();
     if (key === 'army') return armyPage.show();
@@ -968,10 +968,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   }
   function openChargeOf(c) {
     if (c.kind === 'household') return c.key ? realmPage.show({ tab: 'families', key: c.key }) : null;
-    if (c.kind === 'circuit' && c.key) return fangzhiPage.showCircuit(c.key);
-    if (c.kind === 'region' && c.key) return fangzhiPage.show(c.key);
+    // 通志、方志：省道分组未就绪时 key 是空的，就拿舆图府州 id 去认（showCircuit 自会等分组就绪）
+    const at = c.key || (c.mapRegionIds || [])[0];
+    if (c.kind === 'circuit' && at) return fangzhiPage.showCircuit(at);
+    if (c.kind === 'region' && at) return fangzhiPage.show(at);
     if (c.kind === 'army') return armyPage.show(c.key);
-    return officesPage.show();
+    return officesPage.show(c.kind === 'office' && !c.offBook ? c.name : '');
   }
   function onChannel(c) {
     if (readOnly()) return;

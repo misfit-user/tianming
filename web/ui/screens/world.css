@@ -59,6 +59,8 @@
 .hm-plate > small { font-size: var(--fs-2); letter-spacing: .12em; color: var(--ivory-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hm-plate > small:empty { display: none; }
 .hm-plate > .hm-up { color: rgba(236, 210, 154, .75); }
+.hm-upname { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; letter-spacing: inherit; color: inherit; }
+.hm-upname:hover { color: var(--gold-hi); text-decoration: underline dotted; text-underline-offset: .2rem; }
 .hm-energy { display: flex; align-items: center; gap: .5rem; margin-top: .25rem; font-size: var(--fs-1); letter-spacing: .15em; color: var(--ivory-soft); }
 .hm-energy:empty { display: none; }
 .hm-energy > i { position: relative; width: 7.5rem; height: .375rem; background: rgba(0, 0, 0, .55); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .35); }

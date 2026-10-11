@@ -56,7 +56,7 @@ export function createArchive({ root, game, profile, onPerson }) {
     replaceChildren(types, top.length > 1 ? [h('button' + (!type ? '.on' : ''), { type: 'button', onclick: () => { type = ''; renderLeft(); } }, '全部'),
       ...top.map(([t, n]) => h('button' + (t === type ? '.on' : ''), { type: 'button', onclick: () => { type = type === t ? '' : t; limit = PAGE; renderLeft(); } }, t, h('small', num(n))))] : []);
     replaceChildren(filters,
-      who ? h('span', '人　', h('b', who), onPerson ? h('button.link', { type: 'button', onclick: () => onPerson(who) }, '图志') : null, h('button', { type: 'button', title: '撤去', onclick: () => { who = ''; renderLeft(); } }, '×')) : null,
+      who ? h('span', '人　', h('b', who), onPerson ? h('button.link', { type: 'button', onclick: () => onPerson(who) }, '人物') : null, h('button', { type: 'button', title: '撤去', onclick: () => { who = ''; renderLeft(); } }, '×')) : null,
       where ? h('span', '地　', h('b', where), h('button', { type: 'button', title: '撤去', onclick: () => { where = ''; renderLeft(); } }, '×')) : null);
     filters.hidden = !who && !where;
     rows = filtered();

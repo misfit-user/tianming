@@ -46,7 +46,7 @@ export const PROFILES = {
       ling: ['撰写诏书', '起草政令'], pi: ['百官奏疏', '御览奏报'], shu: ['鸿雁传书', '手札密谕'],
       jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '主角行止']
     },
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['科', '科举', 'keju'], ['宫', '宫闱', 'gongwei'], ['史', '史官实录', 'annals']],
+    books: [['舆', '舆图', 'map'], ['人', '人物', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['科', '科举', 'keju'], ['宫', '宫闱', 'gongwei'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
     ledger: ['treasury', 'privy', 'census'], gauges: 'realm', map: 'realm',
     docket: {
@@ -108,7 +108,7 @@ export const PROFILES = {
       jian: ['谒见', '上官·同僚·属吏'], xing: ['行止', '巡视·告假·赴任']
     },
     // 书目一份，人人一样；「辖」（所掌那一块）无官不列
-    books: [['舆', '舆图', 'map'], ['人', '人物图志', 'people'], ['官', '官制', 'offices'], ['辖', '所掌', 'charge'], ['家', '本家', 'family'], ['势', '朝野', 'realm'], ['邸', '邸报', 'gazette'], ['史', '年谱', 'annals']],
+    books: [['舆', '舆图', 'map'], ['人', '人物', 'people'], ['官', '官制', 'offices'], ['辖', '所掌', 'charge'], ['家', '本家', 'family'], ['势', '朝野', 'realm'], ['邸', '邸报', 'gazette'], ['史', '年谱', 'annals']],
     tags: { memorials: '公文', tray: '案头要事', letterbox: '信匣', writing: '笔砚', books: '案卷', seal: '官印' },
     // 顶栏：所掌之账（辖区、本镇、本衙门）、公费、私财；读数：辖区的民心吏治（据奏）与本人名望贤能
     ledger: ['charge', 'purse', 'wealth'], gauges: 'charge', map: 'charge',

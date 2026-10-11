@@ -14,6 +14,7 @@ import { createPainter, noiseTex } from './paint.js';
 import { adjacency, politicsOf } from './politics.js';
 import { quality } from '../../core/quality.js';
 import { SHEET_EXTENT } from '../world.js';
+import { createDesk } from './desk.js';
 
 const ASSETS = new URL('../../assets/map/', import.meta.url).href;
 const ENV_URL = new URL('../../../vendor/shanhe25d/environment.js', import.meta.url).href;
@@ -385,6 +386,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   const terrain = new THREE.Mesh(gridGeometry(...q.mapGrid), new THREE.ShaderMaterial({ vertexShader: terrainVertex, fragmentShader: terrainFragment, uniforms }));
   terrain.frustumCulled = false;
   scene.add(terrain);
+  // 图外是御案：绫边、黄花梨案面（scene/map/desk.js）；载不下贴图就照旧露底色
+  let desk = null;
+  try { desk = await createDesk({ w: W, h: H, shared: uniforms }); scene.add(desk); } catch (err) { console.warn('[newui] 舆图案面未载', err); }
 
   const sample = (field) => (x, y) => field[Math.max(0, Math.min(H - 1, Math.round(y))) * W + Math.max(0, Math.min(W - 1, Math.round(x)))];
   const heightAt = sample(d.heightSmall);
@@ -587,6 +591,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
     if (look) setLook(look);
     uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
+    if (desk) desk.visible = false;               // 绢图只要图心
     const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
     uniforms.uFogNear.value = 1e6;                // 绢图正俯视，不要远雾
     uniforms.uFogFar.value = 2e6;
@@ -650,6 +655,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     uniforms.uPx.value = saved.px;
     uniforms.uFocus.value = saved.focus;
     [uniforms.uFogNear.value, uniforms.uFogFar.value] = fog;
+    if (desk) desk.visible = true;
     setLook(saved.look);
     return c;
   }

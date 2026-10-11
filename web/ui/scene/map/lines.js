@@ -498,7 +498,7 @@ const STYLES = {
   realm:   { color: [0.20, 0.13, 0.08], minPx: 2.0, maxPx: 3.0, alpha: 0.92, order: 8 },
   focus:   { color: [0.82, 0.62, 0.22], minPx: 2.4, maxPx: 3.2, order: 9 },
   focusHalo: { color: [0.95, 0.80, 0.42], minPx: 8, maxPx: 10, soft: 1, alpha: 0.35, order: 9 },
-  hover:   { color: [0.98, 0.93, 0.80], minPx: 1.6, maxPx: 2.0, alpha: 0.9, order: 10 },
+  hover:   { color: [0.92, 0.76, 0.40], minPx: 1.8, maxPx: 2.4, alpha: 0.95, order: 10 },   // 悬停描一道金，不用近白（同志 10-11：几乎纯白，太丑）
   picked:  { color: [0.86, 0.66, 0.24], minPx: 2.6, maxPx: 3.2, order: 11 },
   pickedHalo: { color: [1.0, 0.92, 0.66], minPx: 9, maxPx: 12, soft: 1, alpha: 0.45, order: 10 }
 };

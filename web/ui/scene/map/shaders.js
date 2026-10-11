@@ -381,15 +381,21 @@ void main() {
 
   // ---------- 辖区视野、悬停、点选、远雾 ----------
   // 辖区之外褪色：府州档才褪足；天下、省道两档整片设色时只略褪（看大势时诸国颜色要在），辖区靠描金边认
-  if (uFocus > 0.0) {
-    float gray = dot(col, vec3(0.3, 0.59, 0.11));
-    col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - info.g) * uFocus * land * (1.0 - 0.75 * uFill));
-  }
   float hk = uHoverMode > 1.5 ? realm : uHoverMode > 0.5 ? circ : id;
   float sk = uSelMode > 1.5 ? realm : uSelMode > 0.5 ? circ : id;
   float hover = step(0.5, id) * (1.0 - step(0.5, abs(hk - uHover)));
   float picked = step(0.5, id) * (1.0 - step(0.5, abs(sk - uSelected)));
-  col = mix(col, col * 1.08 + 0.03, hover * 0.7 * land);
+  // 悬停那一块褪色减半（亮出来，又不跳成另一种颜色）
+  if (uFocus > 0.0) {
+    float gray = dot(col, vec3(0.3, 0.59, 0.11));
+    col = mix(col, mix(col, vec3(gray), 0.45) * 0.86, (1.0 - info.g) * uFocus * land * (1.0 - 0.75 * uFill) * (1.0 - 0.6 * hover));
+  }
+  // 悬停：按本色（省道档、府州档取其道色，天下档取国色）乘染一层，山川明暗照透，不往白里提；已整片设色的远看只略提亮
+  if (hover > 0.0) {
+    vec3 hc = owned > 0.0 ? mix(realmColor(realm), texture2D(uFillTex, vec2((id + 0.5) / 4096.0, 0.5)).rgb, uTierMid) : vec3(0.86, 0.80, 0.66);
+    vec3 dyed = col * mix(vec3(1.0), hc * 1.2, 0.24) * 1.04;
+    col = mix(col, mix(dyed, col * 1.07 + 0.012, fillA), hover * land);
+  }
   col = mix(col, col * vec3(1.05, 0.98, 0.9) + vec3(0.04, 0.02, -0.01), picked * 0.6 * land);
   col = mix(col, uFogColor, smoothstep(uFogNear, uFogFar, distance(vPos, uCam)));
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);

@@ -50,7 +50,11 @@ export function person(name) {
   const arcCN = (t) => (z.arcTypeCN ? z.arcTypeCN(t) : t || '纪事');
   const me = playerName();
   const isLord = (n) => n && (n === me || n === '玩家');
-  const office = Array.isArray(p.officeTitles) && p.officeTitles.length ? p.officeTitles : [p.officialTitle || p.title || '布衣'].filter(Boolean);
+  // 同一职两种写法（剧本头衔「大名知府」与官制树「大名府知府」）只留全的那个：短的逐字依次见于长的，即算一职
+  const within = (a, b) => { let i = 0; for (const ch of b) if (ch === a[i]) i++; return i === a.length; };
+  const titles = Array.isArray(p.officeTitles) && p.officeTitles.length ? p.officeTitles.map(str).filter(Boolean) : [];
+  const office = titles.length ? titles.filter((t, i) => !titles.some((o, j) => o !== t && o.length > t.length && within(t, o)) && titles.indexOf(t) === i)
+    : [p.officialTitle || p.title || '布衣'].filter(Boolean);
   const wc = p.wuchang || {};
   const go = p.gongmingOrigin || null;
   const relations = (p.relationships || []).map((r) => ({ name: r.name, label: r.label || relWord(r.strength), strength: r.strength, tone: toneOf(r.strength), desc: str(r.description), known: known(r.name) }));

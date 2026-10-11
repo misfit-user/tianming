@@ -16,30 +16,14 @@ export function shortCount(n) {
 // 番号取一个字上旗：去掉「京营」「镇军」之类的通名，取头一字（关宁军 → 关、延绥镇军 → 延）
 const flagChar = (name) => [...String(name || '军').replace(/^(南京|北京)/, '')][0] || '军';
 
-export function createMapMarks({ layer, map, game, isLive, regionsOf, capitalOf = () => null, knows, onArmy, onRebels }) {
+// placeOf(地名) → 舆图上的府州（落旗于其治所；认法见 model/place.js，书案镜头落点同一份）
+export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArmy, onRebels }) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'mk-routes');
   svg.innerHTML = '<defs><marker id="mk-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 L3,5 z" fill="#a3281b"/></marker></defs>';
   const marks = h('div.mk-pins');
   layer.append(svg, marks);
   let pins = [], routes = [];
-
-  // 地名 → 舆图上的落点（府州治所）：全名、或以之开头、或拆开的某一段（「山东·登州」先试登州；打头那段多是省名，只认全名）。
-  // 京师、北京落到京城；南京落到应天府
-  const ALIAS = { 南京: '应天府' };
-  function placeOf(text) {
-    const list = regionsOf();
-    const t = String(text || '');
-    if (/^(京师|京城|北京)/.test(t) && capitalOf()) return capitalOf();
-    const segs = t.split(/[·・,，\s→>-]+/).filter(Boolean);
-    const tries = [t, ...segs.slice(1).reverse()].map((x) => ALIAS[x] || x);
-    for (const seg of tries) {
-      const r = list.find((x) => x.name === seg) || list.find((x) => x.name && (seg.startsWith(x.name) || (seg.length >= 2 && x.name.startsWith(seg))));
-      if (r) return r;
-    }
-    const head = ALIAS[segs[0]] || segs[0];
-    return (head && segs.length > 1 && list.find((x) => x.name === head || x.name === head + '府')) || null;
-  }
 
   function refresh() {
     let rows = [], rebels = [], battles = [];

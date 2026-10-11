@@ -14,10 +14,10 @@ export function zhang(label, rows) {
     ))));
 }
 
-// 九品刻度：pin('民心', 31) → 「下上」，九格刻度落到第几品
-export function pin(label, value, { text } = {}) {
+// 九品刻度：pin('民心', 31) → 「下上」，九格刻度落到第几品；text 换掉品第字，note 换掉悬停的「名 数」
+export function pin(label, value, { text, note } = {}) {
   const gi = gradeIndex(value);
-  return h('div.q-pin', { title: `${label} ${num(value)}` },
+  return h('div.q-pin', { title: note ? `${label}　${note}` : `${label} ${num(value)}` },
     h('div', h('span', label), h('b.q-gold', text ?? grade(value))),
     h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : '')))));
 }

@@ -184,17 +184,40 @@ export function scenarioPerspective(sc) {
   return { id: pi.characterId || null, name, title: pi.characterTitle || '', role, ruler, tier: tierOf(ruler, posts, governs), posts, governs, isPlayer: true, previewing: false };
 }
 
+// 名望：内核 resources.fame，正负一百（零是寂寂无名，负是恶声）；等第照老人物卡 renderFameSeal（tm-char-economy-ui.js），
+// 顶栏只容两字，全称放提示里。刻度把 −100…100 摊到九品上，零落在中中
+const FAME_RANKS = [[70, '盛名', '名重天下'], [40, '有名', '有名望'], [10, '微名', '略有声望'], [-10, '无闻', '寂寂无名'], [-40, '訾议', '薄有恶声'], [-70, '狼藉', '声名狼藉'], [-Infinity, '骂名', '万世骂名']];
+export function fameRank(v) {
+  const f = num(v);
+  const [, short, full] = FAME_RANKS.find(([min]) => f >= min);
+  return { value: Math.round(f), meter: Math.max(0, Math.min(100, (f + 100) / 2)), text: short, full };
+}
+// 贤能：内核 resources.virtueMerit，六阶（tm-char-economy-engine.js VIRTUE_STAGES：未识 0、有闻 50、清誉 150、儒望 300、朝宗 500、师表 800）；
+// 刻度按阶摊开，阶内按进度
+const VIRTUE_STAGES = [[0, '未识'], [50, '有闻'], [150, '清誉'], [300, '儒望'], [500, '朝宗'], [800, '师表']];
+export function virtueRank(v) {
+  const m = num(v);
+  const stages = ((w.CharEconEngine && w.CharEconEngine.VIRTUE_STAGES) || []).map((s) => [num(s.min), String(s.name || '')]).filter((s) => s[1]);
+  const list = stages.length ? stages : VIRTUE_STAGES;
+  let i = 0;
+  while (i + 1 < list.length && m >= list[i + 1][0]) i++;
+  const next = list[i + 1];
+  const within = next ? Math.max(0, Math.min(1, (m - list[i][0]) / (next[0] - list[i][0]))) : 1;
+  return { value: Math.round(m), meter: ((i + within) / list.length) * 100, text: list[i][1], full: `第${i + 1}阶·${list[i][1]}`, next: next ? next[0] : null };
+}
+
 // 人物自身的读数：名望、贤能、康健、心绪（100−压力）；家产（私财）与公费（所掌公库）
 export function person(ref) {
   const g = G();
   const ch = ref ? charById(g, ref) : playerChar(g);
   const r = (ch && ch.resources) || {};
   const pw = r.privateWealth || {}, pp = r.publicPurse || r.publicTreasury || {};
-  const fame = r.fame != null ? r.fame : ch && ch.fame;
+  const fame = fameRank(r.fame != null ? r.fame : ch && ch.fame);
+  const virtue = virtueRank(r.virtueMerit != null ? r.virtueMerit : r.virtue);
   return {
     gauges: [
-      { key: 'fame', label: '名望', value: Math.round(num(fame)) },
-      { key: 'xianneng', label: '贤能', value: Math.round(num(ch && ch.xianneng, num(r.xianneng))) },
+      { key: 'fame', label: '名望', value: fame.meter, text: fame.text, note: `${fame.full}（${fame.value}）` },
+      { key: 'xianneng', label: '贤能', value: virtue.meter, text: virtue.text, note: `${virtue.full}（${virtue.value}${virtue.next != null ? `，升阶需${virtue.next}` : ''}）` },
       { key: 'health', label: '康健', value: Math.round(num(r.health, num(ch && ch.health, 80))) },
       { key: 'mood', label: '心绪', value: Math.round(100 - num(r.stress, num(ch && ch.stress, 0))) }
     ],
@@ -648,8 +671,9 @@ export function people({ dead = false } = {}) {
       loyalty: Math.round(num(c.loyalty, 50)), ambition: Math.round(num(c.ambition, 50)),
       stats: [['智', num(c.intelligence)], ['政', num(c.administration)], ['军', num(c.military)], ['交', num(c.diplomacy)], ['魅', num(c.charisma)], ['勇', num(c.valor)]],
       wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, wc[k] != null ? num(wc[k]) : null]),
-      fame: c.mingwang != null ? Math.round(num(c.mingwang)) : c.reputation != null ? Math.round(num(c.reputation)) : null,
-      merit: c.xianneng != null ? Math.round(num(c.xianneng)) : null, integrity: c.integrity != null ? Math.round(num(c.integrity)) : null,
+      // 名望、贤能的真源在 resources（fame 可负、virtueMerit 分六阶）；mingwang、reputation 是旧字段，剧本里恒空
+      fame: c.resources && c.resources.fame != null ? Math.round(num(c.resources.fame)) : c.mingwang != null ? Math.round(num(c.mingwang)) : null,
+      merit: c.resources && c.resources.virtueMerit != null ? Math.round(num(c.resources.virtueMerit)) : null, integrity: c.integrity != null ? Math.round(num(c.integrity)) : null,
       traits: traitsOf(c), relations: relationsOf(c),
       personality: c.personality || '', goal: c.personalGoal || '', bio: String(c.bio || ''), appearance: c.appearance || ''
     };

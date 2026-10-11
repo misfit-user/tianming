@@ -98,7 +98,9 @@ function build(p, r) {
   });
   const op = first(d.officialPosition, '主官');
   let governor;
+  const byTitle = d.governorVacant || first(d.governor, d.official) && !d.governorUnrecorded ? null : holderByTitle(p.regionTitle(r));
   if (d.governorVacant) governor = { office: op, name: '空缺·待补', vacant: true };
+  else if (byTitle) governor = { office: op, name: byTitle.name, adm: has(byTitle.administration) ? n(byTitle.administration) : null, isChar: true };
   else if (d.governorUnrecorded) governor = { office: op, name: '任官未详' };
   else {
     const gn = first(d.governor, d.official);
@@ -183,7 +185,7 @@ function build(p, r) {
   ]);
   const corrShown = has(corr) && typeof p.mapReported === 'function' ? p.mapReported('corruption', r, Number(corr), 'bad') : corr;
   const zhiguan = keep([
-    row('主官', d.governorVacant ? '空缺·待补' : d.governorUnrecorded ? '任官未详' : first(d.governor, d.official), d.governorVacant ? 'bad' : ''),
+    row('主官', d.governorVacant ? '空缺·待补' : first(d.governor, d.official) && !d.governorUnrecorded ? first(d.governor, d.official) : (holderByTitle(p.regionTitle(r)) || {}).name || (d.governorUnrecorded ? '任官未详' : ''), d.governorVacant ? 'bad' : ''),
     row('官职', d.officialPosition), row('官缺', first(d.officeVacancy, d.vacancy)),
     has(corr) ? row('贪腐', typeof corrShown === 'number' ? Math.round(corrShown) : corrShown, 'bad', veiled('corruption', r) ? { tag: '据奏' } : {}) : null,
     row('政令执行', first(d.policyExecution, d.execution)), row('地方派系', first(d.localFaction, d.party)),
@@ -296,6 +298,17 @@ function yizhengOf(p, r, isVeiled) {
   if (pol) out.push(row('现行则例', `${{ light: '轻役', normal: '常役', heavy: '重役' }[pol.strength] || '常役'}${Number(pol.remitTurns) > 0 ? ` · 蠲免余${pol.remitTurns}回合` : ''}`));
   return keep(out);
 }
+// 区划上没录主官，名册里却有人的头衔正是此地主官（卢象升「大名知府」、某某「顺天府尹」）：认作主官
+const LOCAL_HEAD = ['知府', '知州', '知县', '府尹'];
+function holderByTitle(name) {
+  name = String(name || '');
+  const stem = name.replace(/(府|州|县)$/, '');
+  if (stem.length < 2) return null;
+  const want = new Set(LOCAL_HEAD.flatMap((t) => [name + t, stem + t]));
+  return (G().chars || []).find((c) => c && c.alive !== false &&
+    String(c.officialTitle || '').replace(/[（(][^）)]*[）)]/g, '').split(/[·・、,，\s]+/).some((seg) => want.has(seg))) || null;
+}
+
 // 上官签（照老 regionSuperiorPill）：只本方州县；现任或出缺或赴任
 function superiorOf(r, b, circuit) {
   const gv = w.TM && w.TM.CircuitGovernance, fxe = w.TM && w.TM.CircuitGovernorEffects, dr = w.TM && w.TM.DivisionReassign;

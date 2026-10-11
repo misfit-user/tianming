@@ -103,7 +103,17 @@ function deptOf(g, name, deptName) {
   walk(officeTree(g));
   return hit;
 }
+// 一职两写：短的逐字依次见于长的（大名知府 ⊂ 大名府知府）
+const samePost = (a, b) => { const [s, l] = a.length <= b.length ? [a, b] : [b, a]; let i = 0; for (const ch of l) if (ch === s[i]) i++; return i === s.length; };
+// 官制树没设的衙门（南京六部之类），内核把人挂在「（编制外）某某」名下：衙门名从职名里取（南京户部尚书 → 南京户部），
+// 那一格里的在任、缺员与堂上官都不是本衙门的，不读
+const OFF_BOOK = /^[（(]编制外[）)]/;
+const POST_TAIL = /(左|右)?(尚书|侍郎|郎中|员外郎|主事|都御史|副都御史|佥都御史|御史|给事中|少卿|卿|丞|学士|侍读|侍讲|编修|检讨|太监|少监|提督|掌印)$/;
 function officeCharge(g, name, post) {
+  if (OFF_BOOK.test(post.dept)) {
+    const dept = post.title.replace(POST_TAIL, '');
+    return { kind: 'office', key: post.dept, name: dept && dept !== post.title ? dept : post.title, title: post.title, head: '', staff: null, vacant: null, offBook: true };
+  }
   const n = deptOf(g, name, post.dept) || deptOf(g, name, '');
   const out = { kind: 'office', key: post.dept, name: post.dept || post.title, title: post.title, head: '', staff: 0, vacant: 0 };
   if (!n) return out;
@@ -157,7 +167,8 @@ export function standing(as) {
   // 区划上没挂主官的地方官（如知府）：从职名认
   for (const p of per.posts) if (p.local || LOCAL_TITLE.test(p.title)) addRegion(divisionByTitle(all, p.title), true);
   const armies = armyCharges(ch.name);
-  const offices = per.posts.filter((p) => !p.local && !LOCAL_TITLE.test(p.title) && !MILITARY_POST.test(p.title))
+  const offices = per.posts.filter((p) => !(OFF_BOOK.test(p.dept) && per.posts.some((q) => q !== p && !OFF_BOOK.test(q.dept) && samePost(p.title, q.title))))
+    .filter((p) => !p.local && !LOCAL_TITLE.test(p.title) && !MILITARY_POST.test(p.title))
     .filter((p, i, list) => list.findIndex((q) => q.dept === p.dept) === i)          // 同署两职（首辅兼文渊阁）只算一署
     .map((p) => officeCharge(g, ch.name, p));
   // 武职先兵后地，其余先地后兵；京官衙门在后；本家人人有，排末
@@ -170,8 +181,9 @@ export function standing(as) {
   // 上：所掌辖区往上的主官（无官者按所在地），本衙门堂上官，末了元首；不列本人、不重出
   const ups = [];
   const push = (u) => { if (u && u.name && u.name !== ch.name && !ups.some((x) => x.name === u.name)) ups.push(u); };
+  // 无官者才按所在地认上（在京之官的籍贯、寓所不是他的上司）
   const firstRegion = charges.find((c) => c.kind === 'region' || c.kind === 'circuit');
-  const anchor = firstRegion ? all.find((x) => x.d.id === firstRegion.divisionId) : divisionByPlace(all, ch.location);
+  const anchor = firstRegion ? all.find((x) => x.d.id === firstRegion.divisionId) : per.posts.length ? null : divisionByPlace(all, ch.location);
   if (anchor) for (const d of anchor.parents.slice().reverse()) { const gv = governorOf(d); if (gv) push({ name: gv, title: `${str(d.name)}主官` }); }
   for (const o of offices) if (o.head) push(o.head);
   if (!per.ruler) push(rulerOf(g, ch));

@@ -14,6 +14,7 @@ import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, cl
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
+import { placeIndex } from '../model/place.js';
 import { openSettings } from './settings.js';
 import { createDocket } from './docket.js';
 import { createEdict } from './edict.js';
@@ -78,7 +79,7 @@ const LEDGERS = {
       const b = (k) => (c.band || []).find((x) => x.k === k);
       rows = [['口', '户口'], ['征', '实征'], ['兵', '驻军']].map(([k, key]) => b(key) && { k, v: sig4(b(key).v) }).filter(Boolean);
     } else if (c.kind === 'army') rows = [{ k: '兵', v: c.soldiers }, { k: '欠饷', text: c.arrears ? `${num(c.arrears)}月` : '无' }];
-    else if (c.kind === 'office') rows = [{ k: '在任', v: c.staff }, { k: '缺员', v: c.vacant }];
+    else if (c.kind === 'office' && c.staff != null) rows = [{ k: '在任', v: c.staff }, { k: '缺员', v: c.vacant }];   // 编制外的衙门不知员额
     if (!rows.length) return null;
     // 账名竖写只容三字：辖区去「布政使司」，本镇写「所统」，衙门名过三字写「本署」
     const short = c.kind === 'army' ? '所统' : c.kind === 'office' ? (c.name.length <= 3 ? c.name : '本署') : c.name.replace(/布政使司$|承宣布政使司$/, '').slice(0, 3);
@@ -250,7 +251,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   labels.after(marksLayer);
   const inCharge = (r) => !!focus && focus.marked.some((i) => mapRegionList[i] && mapRegionList[i].name === r.name);
   const marks = createMapMarks({
-    layer: marksLayer, map, game, regionsOf: () => mapRegionList, capitalOf: () => mapRegionList[capitalIdx] || null,
+    layer: marksLayer, map, game, placeOf: (text) => { const [i] = byPlace(text); return i == null ? null : mapRegionList[i] || null; },
     isLive: () => dive.mode === 'map' && !dive.busy,
     knows: ({ army, region }) => per.tier === 'sovereign' || (army && army.commander === per.name) || inCharge(region),
     onArmy: (key) => (key ? armyPage.show(key) : armyPage.show()),
@@ -509,13 +510,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   // 辖区要在画案上绢图之前定下（绢图与立体舆图同一套着色，俯身入图时才接得上）
   let focus = null;
   const regionList = () => map.regions || [];
+  // 所在地认府州（京师、南京、「保定高阳」「广东东莞」都认得，见 model/place.js）
   function byPlace(text) {
-    const segs = String(text || '').split(/[·・,，\s]+/).filter(Boolean).reverse();
-    for (const seg of segs) {
-      const i = regionList().findIndex((r) => r.name && (r.name === seg || seg.startsWith(r.name) || (seg.length >= 2 && r.name.startsWith(seg))));
-      if (i >= 0) return [i];
-    }
-    return [];
+    const i = placeIndex(text, regionList(), { capital: capitalIdx, seats: seatNames });
+    return i >= 0 ? [i] : [];
   }
   function focusOf() {
     let marked = [], centerOnly = [];
@@ -602,7 +600,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const enPin = en && !homeMap() ? pin('精力', Math.round(en.value / en.max * 100), { text: num(en.value) }) : null;
     if (enPin) { enPin.classList.add('energy'); enPin.title = `精力 ${num(en.value)} / ${num(en.max)}`; }
     replaceChildren(gauges, enPin, ...gs.map((g) => {
-      const el = pin(g.label, g.value, g.text ? { text: g.text } : {});
+      const el = pin(g.label, g.value, { text: g.text, note: g.note });
       if (prof.gauges === 'realm' && g.key && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => guoshiPage.show(g.key)); }
       return el;
     }));
@@ -706,7 +704,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         face(c), h('b', c.name), h('small', c.title || c.location || '')));
     const KIND = { region: '地', circuit: '道', army: '兵', office: '署', household: '家' };
     const charges = standing ? standing.charges.map((c) => h('button.hm-row', { type: 'button', title: c.name, onclick: () => openChargeOf(c) },
-      h('i.hm-oicon', KIND[c.kind] || '掌'), h('b', c.name.replace(/布政使司$/, '')), h('small', c.kind === 'army' ? `${num(c.soldiers)}人` : c.kind === 'office' ? `在任${num(c.staff)}` : ''))) : [];
+      h('i.hm-oicon', KIND[c.kind] || '掌'), h('b', c.name.replace(/布政使司$/, '')), h('small', c.kind === 'army' ? `${num(c.soldiers)}人` : c.kind === 'office' ? (c.staff != null ? `在任${num(c.staff)}` : c.title) : ''))) : [];
     let armies = [];
     try { armies = game.army.roster().groups.flatMap((g) => g.rows); } catch (_e) { armies = []; }
     armies = (standing ? armies.filter((a) => a.commander === per.name) : armies.filter((a) => a.hot || a.march)).slice(0, 6);

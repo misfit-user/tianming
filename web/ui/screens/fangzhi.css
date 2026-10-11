@@ -231,3 +231,8 @@ button.sw-face { cursor: pointer; }
 .sw-name { cursor: pointer; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .25rem; }
 .sw-ruler p { margin: .125rem 0 0; font-size: var(--fs-2); line-height: 1.6; color: var(--ink-soft); }
 .sw-juan { display: flex; flex-direction: column; gap: .75rem; padding-top: .5rem; }
+/* 窗里一栏窄：读数带三格一行（汉字记数「二百三十三万」五格一行挤不下） */
+.zw .fz-band { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.zw .fz-stat b { overflow: hidden; text-overflow: ellipsis; }
+.zw .zw-tabs { gap: .1875rem; }
+.zw .fz-slip { gap: .25rem; padding-right: .375rem; }

@@ -630,6 +630,10 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     // 帑廪、内帑、户口点开即翻到度支册的那一叶
     const FISCAL_TAB = { treasury: 'guoku', privy: 'neitang', census: 'census' };
     standing = per.tier === 'sovereign' ? null : game.standing();
+    // 省道分组是懒建的：所掌是一省而分组未就绪时读数带是空的（顶栏、警讯都缺），等它建好再画一遍（只等一回）
+    if (standing && !circuitWait && standing.charges.some((c) => c.kind === 'circuit' && !c.key)) {
+      circuitWait = Promise.resolve().then(() => game.fangzhi.ensureCircuits()).then(() => refresh(), () => {});
+    }
     replaceChildren(ledger, prof.ledger.map((k) => {
       const el = LEDGERS[k] && LEDGERS[k](s, per, standing);
       if (el && FISCAL_TAB[k] && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => fiscalPage.show(FISCAL_TAB[k])); }
@@ -693,6 +697,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     gaizhiPage.inheritance();                        // 新朝承前一卷若被换场收掉而未阅，回到书案再展
   }
   let standing = null;
+  let circuitWait = null;
   function chargeGauges(s) {
     const self = standing ? standing.gauges : s.person(per.id).gauges;
     const c = standing && standing.charges.find((x) => x.kind === 'region' || x.kind === 'circuit');
@@ -730,14 +735,26 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const badge = (btn, n) => { const old = btn && btn.querySelector('.hm-n'); if (old) old.remove(); if (btn && n) btn.append(h('span.hm-n', num(n))); };
     badge(ringBtns.pi, docket);
     badge(ringBtns.shu, fresh);
+    // 每枚：[字, 题, 件数, 点了做什么, 色, 说明]；说明给了就不记件数（科举待定、所掌警讯是一件事不是几件）
     const items = [
       ['批', `${prof.docket.name}待批`, docket, () => readOnly() || openDocket(), 'zhu'],
       ['政', prof.issues.title, open.length, () => readOnly() || issues.open(), 'qing'],
       ['函', '新到来函', fresh, () => openLetters(), 'lv'],
-      ['科', game.keju.STAGES_NEED[due] || '科举待定夺', due ? 1 : 0, () => readOnly() || kejuPage.show(), 'jin']
+      ['科', game.keju.STAGES_NEED[due] || '科举待定夺', due ? 1 : 0, () => readOnly() || kejuPage.show(), 'jin', '点开科举册定夺']
     ].filter((x) => x[2]);
-    replaceChildren(alerts, items.map(([ch, title, n, go, tone]) => tiao(h(`button.hm-alert.t-${tone}`, { type: 'button', 'aria-label': title, onclick: go }, h('b', ch), ch !== '科' ? h('span', num(n)) : null),
-      () => ({ title, text: ch === '科' ? '点开科举册定夺' : `${num(n)}件，点开即办` }))));
+    // 所掌警讯（通用一套，照 CK3 的警示）：辖区民心、吏治落到警戒档，所统之兵告急、欠饷三月以上，各出一枚菱章，点开即翻所掌那一册
+    if (standing) {
+      for (const c of standing.charges) {
+        if (c.kind === 'region' || c.kind === 'circuit') {
+          for (const b of c.band || []) if (b.warn) items.push([b.k[0], `${c.name.replace(/布政使司$/, '')}${b.k}${b.sub ? '·' + b.sub : ''}`, 1, () => openChargeOf(c), b.k === '民心' ? 'zhu' : 'qing', '所掌之地落到警戒档，点开翻其方志']);
+        } else if (c.kind === 'army') {
+          if (c.hot) items.push(['急', `${c.name}告急`, 1, () => openChargeOf(c), 'zhu', '所统之兵军情告急，点开翻军务']);
+          if (c.arrears >= 3) items.push(['饷', `${c.name}欠饷${num(c.arrears)}月`, 1, () => openChargeOf(c), 'jin', '欠饷日久，军心易变']);
+        }
+      }
+    }
+    replaceChildren(alerts, items.slice(0, 6).map(([ch, title, n, go, tone, note]) => tiao(h(`button.hm-alert.t-${tone}`, { type: 'button', 'aria-label': title, onclick: go }, h('b', ch), note ? null : h('span', num(n))),
+      () => ({ title, text: note || `${num(n)}件，点开即办` }))));
     paintOutline();
   }
   // 提纲：三段，空段不列；人可右键出可为单

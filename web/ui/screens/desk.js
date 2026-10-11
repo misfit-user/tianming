@@ -385,6 +385,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const r = map.pickScreen(ev.clientX, ev.clientY);
     if (!r) { card.classList.add('hide'); map.select(null); return; }
     map.select(r.index, r.tier);
+    // 志窗开着：点府州就换成那一处的方志，点省道换通志（照 CK3 地块页开着时点别处）；天下档仍出势力小签
+    // 势力窗开着也一样：府州档换方志、省道档换通志、天下档换那一国
+    const docked = fangzhiPage.opened || realmPage.docked;
+    if (docked && r.tier === 'pref') { card.classList.add('hide'); fangzhiPage.show(r.id); return; }
+    if (docked && r.tier === 'circuit') { card.classList.add('hide'); fangzhiPage.showCircuit(r.id); return; }
+    if (docked && r.tier === 'realm' && r.group) { card.classList.add('hide'); realmPage.showDock(r.group.faction); return; }
     if (r.group && r.tier !== 'pref') showGroupCard(r, ev.clientX, ev.clientY);
     else showRegionCard(r, ev.clientX, ev.clientY);
   });
@@ -435,7 +441,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       h('header', h('b', g.name), h('small', realmChip(r.faction), g.tier === 'circuit' ? (fac && fac.name) || '' : (factionInfo(g.faction) || {}).type || '')),
       h('dl', groupRows(g).map(([k, v]) => [h('dt', k), h('dd', v)])),
       h('footer',
-        g.tier === 'realm' ? h('button.q-yapai', { type: 'button', onclick: open(() => realmPage.show({ tab: 'factions', key: g.faction })) }, '势力') : null,
+        g.tier === 'realm' ? h('button.q-yapai', { type: 'button', onclick: open(() => realmPage.showDock(g.faction)) }, '势力') : null,
         g.tier === 'circuit' && r.circuit ? h('button.q-yapai', { type: 'button', onclick: open(() => fangzhiPage.showCircuit(r.id)) }, '通志') : null,
         h('button.q-yapai', { type: 'button', onclick: open(closer) }, '推近'),
         h('small', g.tier === 'realm' ? '推近看省道' : '推近看府州')));
@@ -928,6 +934,53 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     e.preventDefault();
     personMenu(t.dataset.person, e.clientX, e.clientY);
   });
+  // 志窗卷首小景：从活舆图斜看此地（一府、或一道诸府），本块描金；同一处一局只渲一回，回合过后重渲（易主、营造会变）
+  const sceneCache = new Map();
+  bus.on('game:advanced', () => sceneCache.clear());
+  // 势力的键：方志「展势力」给的常是势力名（明朝廷），舆图上认的是势力 id——名字就到舆图的势力表里换成 id
+  function facIdOf(key) {
+    const k = String(key || '');
+    if (factions[k] || mapRegionList.some((r) => String(r.faction) === k)) return k;
+    const hit = Object.keys(factions).find((id) => factions[id] && factions[id].name === k);
+    return hit || k;
+  }
+  function zhiRegions(kind, id, label) {
+    if (kind === 'realm') { const fid = facIdOf(id); return mapRegionList.map((r, i) => (String(r.faction) === fid ? i : -1)).filter((i) => i >= 0); }
+    if (kind === 'region') { const i = mapRegionList.findIndex((r) => String(r.id) === String(id)); return i >= 0 ? [i] : []; }
+    const name = String(label || '').replace(/布政使司$/, '');
+    return mapRegionList.map((r, i) => (r.circuit && (r.circuit === name || name.startsWith(r.circuit) || r.circuit.startsWith(name)) ? i : -1)).filter((i) => i >= 0);
+  }
+  function boxOf(list) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const i of list) {
+      const r = mapRegionList[i];
+      for (const ring of r.rings || [r.poly || []]) for (const [x, y] of ring) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+    }
+    return x0 < x1 ? { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 } : null;
+  }
+  async function sceneryOf({ kind, id, name }) {
+    const key = `${kind}:${id}`;
+    if (sceneCache.has(key)) return sceneCache.get(key);
+    const list = zhiRegions(kind, id, name);
+    const b = boxOf(list);
+    if (!b || !map.renderView) return null;
+    // 构图：本块落在画面右上（左下要压志名），镜头往其西南挪；斜看如登高远眺
+    const size = Math.max(b.w, b.h * 1.4);
+    const dist = Math.max(80, Math.min(kind === 'realm' ? 2400 : 1100, size * (kind === 'realm' ? 1.35 : 1.8)));
+    const realm = kind === 'realm';            // 一国：居中、俯得深些，看全境
+    const c = await map.renderView({ width: 840, height: 380, polar: realm ? 0.72 : 1.0, target: realm ? [b.cx, b.cy + b.h * 0.08] : [b.cx - dist * 0.12, b.cy + dist * 0.1], dist,
+      outline: list, names: kind !== 'region', look: LOOK_QINGLV_AGED });
+    sceneCache.set(key, c);
+    return c;
+  }
+  function locateZhi(kind, id) {
+    const b = boxOf(zhiRegions(kind, id, kind === 'circuit' ? (game.fangzhi.circuit(id) || {}).name : ''));
+    if (!b) return false;
+    const dist = Math.max(260, Math.min(2400, Math.max(b.w, b.h) * (kind === 'realm' ? 1.6 : 3.2)));
+    if (dive.mode === 'map' && !dive.busy) flyMapTo([b.cx, b.cy], dist);
+    else if (dive.mode === 'desk' && !dive.busy) dive.dive([b.cx, b.cy]);
+    return true;
+  }
   // 此身份能做什么（方志、职官志、军务、舆图右键据此摆动作；model/identity.js 的 acts）：
   //   sovereign 元首一档照各册原有动作；ro 借视角只读的缘由；off 余档灰着的缘由；own(府州id) 是否所掌之地（无官者是本籍）；self 本人名
   const PENDING = '此身份的玩法尚未接上，官本位接上后可行';
@@ -1081,9 +1134,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   } });
   // 朝野册：人名开人物窗；召党魁、召代表转召对；付廷议即开廷议、带上议题
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
-  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, knows: knowsBook, opens: opensBook, onPerson: (name) => { fangzhiPage.hide(); renwu.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
+  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, knows: knowsBook, opens: opensBook, scenery: sceneryOf, locate: locateZhi,
+    onPerson: (name) => renwu.show(name), onFaction: (key) => realmPage.showDock(key) });
+  // 人物窗、志窗、势力窗同占左边一扇：开一扇收另两扇
+  bus.on('zhi:shown', () => { renwu.hide(); realmPage.hideDock(); });
+  bus.on('renwu:shown', () => { fangzhiPage.hide(); realmPage.hideDock(); });
+  bus.on('shili:shown', () => { renwu.hide(); fangzhiPage.hide(); });
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
+    scenery: sceneryOf, locate: locateZhi, colorOf: (key) => map.realmColorOf(facIdOf(key)),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名开人物窗
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); renwu.show(name); } });

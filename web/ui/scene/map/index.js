@@ -585,33 +585,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
 
   // ---------- 案上那幅绢图：同一画法正俯视渲一张，题上势力名 ----------
   // extent：画世界里的哪一块（默认案上那幅的范围），宽高比须与 width/height 一致。
-  // 势力名就用图上那一套（地面上弯写的字），俯身入图时字不跳
-  async function renderSheet({ look, width = 2100, height = 1540, names = true, extent = SHEET_EXTENT } = {}) {
-    if (names) await labels.ready;
-    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
-    if (look) setLook(look);
-    uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
-    if (desk) desk.visible = false;               // 绢图只要图心
-    const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
-    uniforms.uFogNear.value = 1e6;                // 绢图正俯视，不要远雾
-    uniforms.uFogFar.value = 2e6;
-    camera.fov = 20;
-    uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(10)));   // 点叶、线宽按这张图的像素算大小
-    lines.setViewport(width, height);
-    lines.transient(false);
-    const dpr = spriteUniforms.uDpr.value;
-    spriteUniforms.uDpr.value = 1;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    setPose({ target: [extent.x0 + extent.w / 2, 0, extent.y0 + extent.h / 2], dist: (extent.h / 2) / Math.tan(THREE.MathUtils.degToRad(10)), polar: 0.0001, az: 0 });
-    applyZoom(Math.max(2000, pose().dist), true);     // 案上那幅是天下档：整片设色、地势压平
-    labels.group.visible = names;
-    labels.update(Math.max(2000, pose().dist));
-    const m = 40 * extent.w / width;                  // 画框以内（框线在边上二十二像素处）
-    labels.setClip([extent.x0 + m, extent.y0 + m, extent.x0 + extent.w - m, extent.y0 + extent.h - m]);
-    uniforms.uCam.value.copy(camera.position);
-    lines.update(pose().dist * 1.6);
-    uniforms.uZoom.value = 0;
+  // 离屏渲一帧读回成 canvas（四倍多重采样再解出；读回的行自下而上，翻正）
+  function shoot(width, height) {
     const rt = new THREE.WebGLRenderTarget(width, height, { samples: 4 });
     renderer.setRenderTarget(rt);
     renderer.render(scene, camera);
@@ -639,6 +614,38 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     const img = g.createImageData(width, height);
     for (let y = 0; y < height; y++) img.data.set(px.subarray((height - 1 - y) * width * 4, (height - y) * width * 4), y * width * 4);   // 读回的行是自下而上
     g.putImageData(img, 0, 0);
+    return c;
+  }
+
+  // 势力名就用图上那一套（地面上弯写的字），俯身入图时字不跳
+  async function renderSheet({ look, width = 2100, height = 1540, names = true, extent = SHEET_EXTENT } = {}) {
+    if (names) await labels.ready;
+    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, look: currentLook, focus: uniforms.uFocus.value };
+    if (look) setLook(look);
+    uniforms.uFocus.value = 0;                    // 案上绢图不描辖区：俯身入图之后才浮出来
+    if (desk) desk.visible = false;               // 绢图只要图心
+    const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
+    uniforms.uFogNear.value = 1e6;                // 绢图正俯视，不要远雾
+    uniforms.uFogFar.value = 2e6;
+    camera.fov = 20;
+    uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(10)));   // 点叶、线宽按这张图的像素算大小
+    lines.setViewport(width, height);
+    lines.transient(false);
+    const dpr = spriteUniforms.uDpr.value;
+    spriteUniforms.uDpr.value = 1;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    setPose({ target: [extent.x0 + extent.w / 2, 0, extent.y0 + extent.h / 2], dist: (extent.h / 2) / Math.tan(THREE.MathUtils.degToRad(10)), polar: 0.0001, az: 0 });
+    applyZoom(Math.max(2000, pose().dist), true);     // 案上那幅是天下档：整片设色、地势压平
+    labels.group.visible = names;
+    labels.update(Math.max(2000, pose().dist));
+    const m = 40 * extent.w / width;                  // 画框以内（框线在边上二十二像素处）
+    labels.setClip([extent.x0 + m, extent.y0 + m, extent.x0 + extent.w - m, extent.y0 + extent.h - m]);
+    uniforms.uCam.value.copy(camera.position);
+    lines.update(pose().dist * 1.6);
+    uniforms.uZoom.value = 0;
+    const c = shoot(width, height);
+    const g = c.getContext('2d');
     g.strokeStyle = 'rgba(40,24,14,0.7)';
     g.lineWidth = 3;
     g.strokeRect(22 * width / W, 22 * height / H, width - 44 * width / W, height - 44 * height / H);
@@ -660,9 +667,59 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     return c;
   }
 
+  // 小景：从活舆图斜看一处，作方志、通志卷首的图（照 CK3、EU5 地块页卷首那幅画）。target 世界坐标 [x, y]；
+  // outline 府州下标，描金（点选那一道）；题名照留。镜头、远近档、线宽、雾都借一下，渲完原样还回去，不惊动层级
+  async function renderView({ width = 640, height = 280, target, dist = 420, polar = 0.86, az = 0, fov = 28, outline = [], names = true, look = null } = {}) {
+    if (names) await labels.ready;
+    const saved = { pose: pose(), fov: camera.fov, aspect: camera.aspect, px: uniforms.uPx.value, focus: uniforms.uFocus.value, hover: uniforms.uHover.value, sel: uniforms.uSelected.value, look: currentLook };
+    if (look) setLook(look);
+    const fog = [uniforms.uFogNear.value, uniforms.uFogFar.value];
+    uniforms.uFocus.value = 0;
+    uniforms.uHover.value = -1;
+    uniforms.uSelected.value = -1;
+    camera.fov = fov;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    uniforms.uPx.value = height / (2 * Math.tan(THREE.MathUtils.degToRad(fov / 2)));
+    const dpr = spriteUniforms.uDpr.value;
+    spriteUniforms.uDpr.value = 1;
+    lines.setViewport(width, height);
+    lines.setHover([]);
+    lines.setPicked(outline);
+    setPose({ target: [target[0], 0, target[1]], dist, polar, az });
+    applyZoom(dist, true);
+    labels.group.visible = names;
+    labels.update(dist);
+    uniforms.uCam.value.copy(camera.position);
+    uniforms.uFogNear.value = dist * 1.35;
+    uniforms.uFogFar.value = dist * 3.6;
+    const zoom = uniforms.uZoom.value;
+    uniforms.uZoom.value = 1 - Math.min(1, Math.max(0, (dist - 700) / 700));
+    lines.update(dist);
+    const c = shoot(width, height);
+    uniforms.uZoom.value = zoom;
+    lines.setViewport(stage.size.w, stage.size.h);
+    lines.setPicked(pickedList);
+    spriteUniforms.uDpr.value = dpr;
+    camera.fov = saved.fov;
+    camera.aspect = saved.aspect;
+    camera.updateProjectionMatrix();
+    setPose(saved.pose);
+    applyZoom(saved.pose.dist, true);
+    labels.group.visible = true;
+    uniforms.uPx.value = saved.px;
+    uniforms.uFocus.value = saved.focus;
+    uniforms.uHover.value = saved.hover;
+    uniforms.uSelected.value = saved.sel;
+    [uniforms.uFogNear.value, uniforms.uFogFar.value] = fog;
+    if (look) setLook(saved.look);
+    return c;
+  }
+
   let time = 0;
   const hooks = new Set();
   let hoverKey = '', pickKey = '';
+  let pickedList = [];               // 点亮那几块（小景渲完还回去）
   const pickTier = () => (uniforms.uLayer.value > 0 ? 'pref' : tier);
   // 镜头推拉到某个距离（注视点不动，俯角由 steer 跟着远近走），约 0.8 秒
   let zoomTween = null;
@@ -724,7 +781,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setInteractive(on) { interactive = on; controls.enabled = on; if (!on) mouse.set(-9, -9); },
     setActive(on) { active = on; if (labelLayer) labelLayer.style.visibility = on ? '' : 'hidden'; },
     get active() { return active; },
-    setLook, setPose, pose, renderSheet,
+    setLook, setPose, pose, renderSheet, renderView,
     setPolitical(on) { uniforms.uPolitical.value = on ? 1 : 0; },
     // 点选：index 府州下标；tier 定点亮哪一级（不给即当前层级）
     select(index, at = pickTier()) {
@@ -732,7 +789,8 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
       pickKey = g ? MODE[g.tier] + ':' + g.key : '';
       uniforms.uSelected.value = g ? g.key : -1;
       uniforms.uSelMode.value = g ? MODE[g.tier] : 0;
-      lines.setPicked(g ? g.regions : []);
+      pickedList = g ? g.regions : [];
+      lines.setPicked(pickedList);
       if (g && hoverKey === pickKey) lines.setHover([]);
       return g;
     },

@@ -4,6 +4,8 @@
 //   阶层：左叶诸阶层（满意据奏），右叶阶层志——本末、诉求、民情、人物、事链五卷，卷底召代表、付议、拟令（叫法随身份）；
 //   家族：左叶天下门第（按声望），右叶一族之谱——门第、族人、姻仇、家史四卷，族人在册者可开人物窗。
 // 卷首一排小签可跳卷。人名开人物窗，党名阶层名互相跳。经 game.realm（势力）与 game.social（党派、阶层）。
+// 另有一扇势力窗（showDock）：照 CK3、EU5 靠左展开，舆图露着——舆图上点势力、方志「展势力」开的是它；卷首一幅其疆域小景（scenery），
+// 印、名、类，君主一张小像，读数带，六卷检签（君臣、版图、军略、财计、邦交、史略），卷底可开整本朝野册。与人物窗、志窗同占左边一扇。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
@@ -21,7 +23,8 @@ const NUM_WORD = ['一', '二', '三', '四', '五', '六', '七'];
 const REL = { meng: '盟好', di: '敌对', zhong: '中立' };
 
 // profile().social：卷底三样动作的叫法（召人、付议、拟令）；不设则此身份不列动作
-export function createRealm({ root, game, profile, onPerson, onAudience, onCourt, onRegion, onCircuit }) {
+// scenery({ kind: 'realm', id, name }) → Promise<canvas|null>；locate(kind, id) 舆图镜头飞去；colorOf(势力 key) → 舆图上的国色
+export function createRealm({ root, game, profile, onPerson, onAudience, onCourt, onRegion, onCircuit, scenery = null, locate = null, colorOf = null }) {
   const R = game.realm;
   const S = game.social;
   let tab = 'factions';
@@ -366,6 +369,78 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     if (!opened || document.querySelector('.q-juan-veil')) return;
     if (e.key === 'Escape') { e.stopPropagation(); hide(); }
   }, true);
-  game.on('game:changed', () => { if (opened) render(); });
-  return { show, hide, get opened() { return opened; } };
+  game.on('game:changed', () => { if (opened) render(); if (docked) renderDock(); });
+
+  // ---------- 势力窗 ----------
+  let dKey = '', dJuan = '', docked = false, dTok = 0;
+  const dPic = h('div.zw-pic');
+  const dName = h('div.zw-name');
+  const dTop = h('div.zw-top');
+  const dTabs = h('nav.zw-tabs');
+  const dBody = h('div.zw-body');
+  const dFoot = h('footer.zw-foot');
+  const dFly = h('button.zw-ctl', { type: 'button', title: '舆图镜头移至其境', onclick: () => locate && locate('realm', dKey) }, '图');
+  const dShut = h('button.zw-ctl', { type: 'button', title: '收起（Esc）', onclick: () => hideDock() }, '×');
+  const dSheet = h('div.zw-sheet.q-scroll', dTop, dTabs, dBody);
+  const dock = h('aside.zw.sw', { role: 'dialog', 'aria-label': '势力' }, h('section.zw-hero', dPic, h('div.zw-ctls', dFly, dShut), dName), dSheet, dFoot);
+  root.append(dock);
+  const hex = (c) => (Array.isArray(c) ? `rgb(${c.map((v) => Math.round(v <= 1 ? v * 255 : v)).join(',')})` : c || '');
+  // 君主一张：有立像的出像，在册可点开人物窗
+  function rulerCard(p) {
+    const name = String(p.name || '').replace(/[（(].*$/, '').trim();
+    const ch = (game.select.characters() || []).find((c) => c.name === name);
+    const face = ch && ch.portrait ? h('img', { src: ch.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.replaceWith(h('i', name.charAt(0))) }) : h('i', name.charAt(0));
+    const go = ch && onPerson ? () => onPerson(name) : null;
+    return h('div.sw-ruler', { dataset: { person: ch ? name : '' } },
+      h(go ? 'button.sw-face' : 'span.sw-face', go ? { type: 'button', onclick: go } : {}, face),
+      h('div', h('small', p.title), go ? h('button.sw-name', { type: 'button', onclick: go }, p.name) : h('b', p.name), p.meta ? h('p', p.meta) : null));
+  }
+  function renderDock() {
+    let d;
+    try { d = R.faction(dKey); } catch (e) { toast(e.message); hideDock(); return; }
+    const juans = d.juan.filter(([, , b]) => hasBody(b));
+    if (!juans.some(([t]) => t === dJuan)) dJuan = juans[0] ? juans[0][0] : '';
+    const color = hex(colorOf && colorOf(dKey));
+    replaceChildren(dName, h('span.zw-seal.sw-seal' + (d.hostile ? '.hostile' : ''), color ? { style: { background: color } } : {}, d.short),
+      h('div', h('p.fz-crumbs', [d.type, d.mine ? '本朝' : d.hostile ? '敌对' : ''].filter(Boolean).join(' · ')), h('h2', d.name)));
+    const jc = d.juan.find(([t]) => t === '君臣');
+    const ruler = jc && (jc[2].people || []).find((p) => p.main);
+    replaceChildren(dTop, ruler ? rulerCard(ruler) : null,
+      d.pills.length ? h('div.fz-pills', d.pills.map((p) => h('span.fz-pill' + (/敌|承压|乱民/.test(p) ? '.bad' : ''), p))) : null,
+      d.desc ? h('p.fz-desc', d.desc) : null,
+      d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', v)))) : null);
+    replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; renderDock(); dSheet.scrollTop = Math.min(dSheet.scrollTop, dTop.offsetHeight); } },
+      h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
+    const cur = juans.find(([t]) => t === dJuan);
+    replaceChildren(dBody, cur ? [h('p.fz-vsub', cur[1]), h('div.sw-juan', juanBody(cur[2]))] : h('p.fz-note', '此势力无卷可读。'));
+    replaceChildren(dFoot, h('span.zw-nav', h('button.q-yapai', { type: 'button', title: '整本朝野册：天下诸势力、党派、阶层、家族', onclick: () => { const k = dKey; hideDock(); show(k); } }, '朝野册')));
+  }
+  // showDock(势力 key, 卷名)
+  function showDock(key, juan = '') {
+    if (!key) return;
+    dKey = key;
+    if (juan) dJuan = juan;
+    renderDock();
+    dFly.hidden = !locate;
+    dSheet.scrollTop = 0;
+    const tok = ++dTok;
+    dPic.classList.remove('ready');
+    if (scenery) requestAnimationFrame(() => Promise.resolve(scenery({ kind: 'realm', id: key })).then((c) => { if (tok === dTok && c) { replaceChildren(dPic, c); dPic.classList.add('ready'); } }, () => {}));
+    dock.classList.add('on');
+    if (!docked) bus.emit('shili:shown', { key });
+    docked = true;
+    if (game.fangzhi && !game.fangzhi.circuitsReady()) game.fangzhi.ensureCircuits().then(() => { if (docked && dKey === key) renderDock(); });
+  }
+  function hideDock() {
+    if (!docked) return;
+    dock.classList.remove('on');
+    docked = false;
+    bus.emit('shili:hidden', {});
+  }
+  window.addEventListener('keydown', (e) => {
+    if (!docked || opened || e.key !== 'Escape' || document.querySelector('.q-juan-veil, .q-kewei')) return;
+    e.stopPropagation();
+    hideDock();
+  }, true);
+  return { show, hide, showDock, hideDock, get opened() { return opened; }, get docked() { return docked; } };
 }

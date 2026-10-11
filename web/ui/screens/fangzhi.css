@@ -1,11 +1,43 @@
-/* 方志：骨架沿用人物图志（.ce-*）；左叶页头、读数、六卷检签、动作，右叶所检之卷 */
-.fz-ov .ce-book { grid-template-columns: minmax(0, 27rem) 1.5rem minmax(0, 1fr); }
-.fz-left { gap: .625rem; overflow: auto; scrollbar-width: thin; }
-.fz-head { display: flex; gap: .875rem; align-items: flex-start; }
-.fz-seal { flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); letter-spacing: .1em; color: #f9ead2;
-  background: radial-gradient(circle at 35% 30%, #b8432f, #7d1d12); box-shadow: inset 0 0 0 2px rgba(249, 234, 210, .35); }
-.fz-head h2 { margin: .125rem 0 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .2em; color: #2a1608; white-space: nowrap; }
-.fz-level { font-size: var(--fs-2); color: var(--ink-faint); }
+/* 方志、通志：志窗（.zw）靠左展开，与人物窗同占一扇（照 CK3、EU5 地块页）。漆框，卷首一幅此地小景压志名；其下一叶纸面接着往下读：
+   小签、描述、读数带、排名，检签一排，所检之卷；卷底动作。纸面里的诸件（.fz-*）沿用册页时的样子，只把版式改成一栏 */
+.zw { position: fixed; left: 0; top: 0; bottom: 0; z-index: 20; width: min(36rem, 44vw); display: flex; flex-direction: column;
+  background: var(--lac-grain), linear-gradient(180deg, #23150d, #130a05); border-right: .6875rem solid transparent; border-image: var(--huiwen) 14 round;
+  box-shadow: 1rem 0 2.75rem rgba(8, 4, 2, .62); transform: translateX(-104%); pointer-events: none; transition: transform var(--t-3) var(--ease-paper); }
+.zw.on { transform: none; pointer-events: auto; }
+/* 卷首小景：图渲好之前是一幅素绢；底下压暗，志名从暗处浮出 */
+.zw-hero { position: relative; flex: none; height: clamp(12.5rem, 31vh, 18rem); overflow: hidden; background: var(--ling-mi); }
+.zw-pic { position: absolute; inset: 0; opacity: 0; transition: opacity var(--t-4) var(--ease-out); }
+.zw-pic.ready { opacity: 1; }
+.zw-pic > canvas { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(.08) saturate(.96) contrast(1.05) brightness(1.04); }
+.zw-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(19, 10, 5, .32) 0, rgba(19, 10, 5, 0) 18%, rgba(19, 10, 5, 0) 58%, rgba(19, 10, 5, .72) 94%, #1c110a 100%),
+    radial-gradient(ellipse at 50% 42%, transparent 62%, rgba(19, 10, 5, .32)); }
+.zw-ctls { position: absolute; right: .625rem; top: .625rem; z-index: 2; display: flex; gap: .375rem; }
+.zw-ctl { width: 2rem; height: 2rem; padding: 0; border: 0; cursor: pointer; font: 400 1.125rem/2rem var(--f-kai); color: #f3e2b8; background: rgba(19, 10, 5, .62);
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .5); transition: background var(--t-2); }
+.zw-ctl:hover { background: rgba(122, 31, 19, .85); }
+.zw-ctl[hidden] { display: none; }
+.zw-name { position: absolute; left: 1.125rem; right: 1rem; bottom: .75rem; z-index: 1; display: flex; align-items: flex-end; gap: .75rem; }
+.zw-seal { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); letter-spacing: .1em; color: #f9ead2;
+  background: radial-gradient(circle at 35% 30%, #b8432f, #7d1d12); box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(249, 234, 210, .35); transform: rotate(-4deg); }
+.zw-name h2 { margin: 0; font: 400 var(--fs-7)/1.1 var(--f-title); letter-spacing: .2em; color: transparent; white-space: nowrap;
+  background: linear-gradient(180deg, #fbefcf, #e2c37f 60%, #b48a45); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .85)); }
+.zw-name small { display: block; font-size: var(--fs-2); letter-spacing: .1em; color: var(--ivory-soft); }
+.zw-name .fz-crumbs { color: rgba(236, 210, 154, .8); }
+.zw-name .fz-crumbs a { color: #f3e2b8; }
+.zw-name .fz-crumbs b { font-weight: 400; color: rgba(236, 210, 154, .8); }
+/* 纸面：一叶宣纸，压在漆框里 */
+.zw-sheet { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; margin: 0 .625rem; padding: .875rem 1rem 1rem; color: var(--ink);
+  background: var(--paper-grain), linear-gradient(180deg, #f2e9d6, #e7d9b8); box-shadow: inset 0 0 1.5rem rgba(150, 110, 60, .14); }
+.zw-top { display: flex; flex-direction: column; gap: .625rem; }
+.zw-tabs { position: sticky; top: -.875rem; z-index: 1; display: flex; gap: .25rem; margin: .875rem -1rem 0; padding: .5rem 1rem .375rem; overflow-x: auto; scrollbar-width: none;
+  background: linear-gradient(180deg, #ece2ca, #e6d8b6); border-bottom: 1px solid rgba(163, 40, 27, .3); }
+.zw-body { padding-top: .75rem; }
+.zw-foot { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 0 .625rem; padding: .5rem 1rem .75rem; background: linear-gradient(180deg, #e7d9b8, #ddcaa0);
+  box-shadow: inset 0 1px 0 rgba(163, 40, 27, .25); }
+.zw-foot:empty { display: none; }
+.zw-foot .fz-acts { margin: 0; padding: 0; border: 0; }
+.zw-nav { display: flex; gap: .375rem; margin-left: auto; }
 .fz-crumbs { margin: 0; font-size: var(--fs-1); color: var(--ink-faint); }
 .fz-crumbs i { font-style: normal; margin: 0 .375rem; }
 .fz-crumbs a { cursor: pointer; text-decoration: underline dotted; text-underline-offset: .2em; }
@@ -22,7 +54,7 @@
 .fz-pill.bad, .fz-pill.bad b { color: #a3301f; }
 a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .2em; }
 .fz-desc { margin: 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ink-soft); max-height: 5.5rem; overflow: auto; }
-.fz-band { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: .375rem; }
+.fz-band { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.75rem, 1fr)); gap: .375rem; }
 .fz-stat { display: flex; flex-direction: column; gap: .0625rem; padding: .375rem .5rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
 .fz-stat small { font-size: var(--fs-1); color: var(--ink-faint); }
 .fz-stat small em { font-style: normal; margin-left: .25rem; color: #8a5a12; }
@@ -35,27 +67,29 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .fz-rank b { font-weight: 400; font-family: var(--f-title); color: #6a1f12; }
 .fz-rank span.low { color: #a3301f; }
 .fz-slips { display: flex; gap: .375rem; flex-wrap: wrap; }
-.fz-slip { display: flex; flex-direction: column; align-items: center; gap: .25rem; width: 3.25rem; padding: .375rem 0 .5rem; border: 0; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
+.fz-slip { flex: none; display: flex; align-items: center; gap: .3125rem; padding: .1875rem .5rem .1875rem .1875rem; border: 0; cursor: pointer; font-family: var(--f-kai); color: var(--ink);
   background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
-.fz-slip i { font-style: normal; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; font: 400 var(--fs-3)/1 var(--f-title); color: #f9ead2; background: #6b4a2a; }
-.fz-slip b { font-weight: 400; font-size: var(--fs-1); writing-mode: vertical-rl; letter-spacing: .15em; }
+.fz-slip i { font-style: normal; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; font: 400 var(--fs-2)/1 var(--f-title); color: #f9ead2; background: #6b4a2a; }
+.fz-slip b { font-weight: 400; font-size: var(--fs-2); letter-spacing: .06em; white-space: nowrap; }
 .fz-slip.on { background: rgba(255, 246, 226, .95); box-shadow: inset 0 -.1875rem 0 #a3301f, inset 0 0 0 1px rgba(120, 90, 50, .35); }
 .fz-slip.on i { background: #a3301f; }
 .fz-acts { display: flex; flex-wrap: wrap; gap: .375rem; margin-top: auto; padding-top: .5rem; border-top: 1px solid rgba(163, 40, 27, .2); }
 
-.fz-right { display: flex; flex-direction: column; min-height: 0; }
 .fz-vhead { display: flex; align-items: center; gap: .625rem; padding-bottom: .5rem; border-bottom: 1px solid rgba(163, 40, 27, .25); }
 .fz-vseal { display: grid; place-items: center; width: 2rem; height: 2rem; font: 400 var(--fs-4)/1 var(--f-title); color: #f9ead2; background: #a3301f; }
 .fz-vhead h3 { margin: 0; font: 400 var(--fs-6) var(--f-title); letter-spacing: .3em; color: #3a1a10; }
 .fz-vhead small { font-size: var(--fs-2); color: var(--ink-faint); }
-.fz-vbody { flex: 1; min-height: 0; overflow: auto; padding: .75rem .25rem 0 0; display: flex; flex-direction: column; gap: .875rem; }
-.fz-rows { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 7.5rem) minmax(0, 1fr)); gap: .375rem .875rem; align-items: baseline; }
+.fz-vbody { padding: .75rem 0 0; display: flex; flex-direction: column; gap: .875rem; }
+.fz-rows { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 5.5rem) minmax(0, 1fr)); gap: .375rem .75rem; align-items: baseline; }
 .fz-rows dt { font-size: var(--fs-2); color: var(--ink-faint); }
 .fz-rows dt em { font-style: normal; margin-left: .25rem; font-size: var(--fs-1); color: #8a5a12; }
 .fz-rows dd { margin: 0; font-size: var(--fs-3); color: var(--ink); }
 .fz-rows dd.bad { color: #a3301f; }
 .fz-rows dd.gold { color: #8a5a12; }
 .fz-rows dd small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-rows dt.wide { grid-column-start: 1; }
+.fz-rows dd.wide { grid-column: 2 / -1; }
+.fz-vsub { margin: 0; font-size: var(--fs-1); letter-spacing: .2em; color: var(--ink-faint); }
 .fz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: .375rem; }
 .fz-grid > div { padding: .375rem .5rem; background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .2); }
 .fz-grid small { display: block; font-size: var(--fs-1); color: var(--ink-faint); }
@@ -182,3 +216,18 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .fz-lock { margin: 1.5rem 0; font: var(--fs-3)/1.9 var(--f-kai); color: var(--ink-soft); letter-spacing: .06em; }
 .fz-lock > b { display: block; margin-bottom: .375rem; font: 400 var(--fs-5) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
 .fz-slip.lock { position: relative; }
+
+/* 势力窗（screens/realm.js showDock）：同一扇志窗，印用其国色，君主一张小像在纸面之首 */
+.sw-seal { color: #fbf3e0; text-shadow: 0 1px 2px rgba(0, 0, 0, .55); background: #8a6a3a; box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(249, 234, 210, .45), inset 0 0 1rem rgba(0, 0, 0, .25); }
+.sw-seal.hostile { box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(229, 143, 120, .8), inset 0 0 1rem rgba(0, 0, 0, .25); }
+.sw-ruler { display: grid; grid-template-columns: 3.75rem 1fr; gap: .75rem; align-items: center; padding: .5rem .625rem; background: rgba(255, 250, 238, .55); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
+.sw-face { display: grid; place-items: center; width: 3.75rem; height: 4.625rem; padding: 0; border: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651);
+  box-shadow: 0 .1875rem .5rem rgba(0, 0, 0, .3), 0 0 0 1px rgba(120, 90, 50, .5); }
+button.sw-face { cursor: pointer; }
+.sw-face > img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
+.sw-face > i { font: 400 1.75rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .6); }
+.sw-ruler small { display: block; font-size: var(--fs-1); letter-spacing: .25em; color: var(--ink-faint); }
+.sw-ruler b, .sw-name { display: block; padding: 0; border: 0; background: none; text-align: left; font: 400 var(--fs-5)/1.3 var(--f-title); letter-spacing: .12em; color: #2a1608; }
+.sw-name { cursor: pointer; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .25rem; }
+.sw-ruler p { margin: .125rem 0 0; font-size: var(--fs-2); line-height: 1.6; color: var(--ink-soft); }
+.sw-juan { display: flex; flex-direction: column; gap: .75rem; padding-top: .5rem; }

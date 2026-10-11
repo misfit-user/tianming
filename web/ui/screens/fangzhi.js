@@ -1,5 +1,8 @@
-// 方志：一府一州的志书，绫裱册页。左叶：页头（路径、名目、状态小签、隶属主官上官地形税级诸签、描述）、读数带、本道排名、六卷检签、页脚动作；
-// 右叶：所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）、账本（赋税核算、公库、实绩、灾异）。
+// 方志、通志：一府一州（一道）的志书。照 CK3、EU5 的地块页靠左展开、舆图露着（同志 10-11：原先摊成整本册页盖住舆图，不如老界面的方志）：
+//   卷首一幅此地小景（从活舆图斜看此地，本块描金，scenery 回调给图），其上压志名、路径、名目；右上是图上、退回、收起；
+//   其下纸面一叶接着往下读：状态小签、隶属主官上官地形税级诸签、描述、读数带、本道排名；一排检签（户役、财赋……）点哪卷读哪卷；
+//   卷底是动作（照身份）与展通志、展势力。舆图开着时点别的府州，志窗就换成那一处；与人物窗同占左边一扇，开一扇收一扇。
+// 所检之卷——户役（并役政一节）、财赋、军备（在驻之师）、职官、风物（物产格）、营造（工役卡）、账本（赋税核算、公库、实绩、灾异）。
 // 据奏之数标「据奏」或「据报」。入口：入图后点府州小签。数据与动作经 game.fangzhi（adapter/fangzhi.js）。
 // 本方府州的营造卷可「兴造」：剧本工籍点选，或自拟营造（配了模型可先请有司核议），录入议事清册，颁行后由回合推演核办（game.yingzao）。
 import { h, replaceChildren } from '../core/dom.js';
@@ -24,7 +27,8 @@ const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Ma
 // knows({ region } | { circuit })：所知之律——'full' 册籍俱见；'rough' 所掌之外只知大略：读数带的数只取一位有效冠「约」，民心吏治只写等第，
 //   本道排名不列，户役财赋军备职官诸志与账本不得而见，风物、营造是人所共见；通志的辖境、财计也只写大略
 // opens(志键)：京官本衙门所司的那一门册籍天下各地都见（户部户役财赋账本、兵部军备、吏部职官），读数带里对应那格也写确数
-export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }), knows = () => 'full', opens = () => false }) {
+// scenery({ kind: 'region'|'circuit', id, name }) → Promise<canvas|null>：卷首小景；locate(kind, id) 舆图镜头飞去
+export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }), knows = () => 'full', opens = () => false, scenery = null, locate = null }) {
   const F = game.fangzhi;
   const Y = game.yingzao;
   const suggestBook = () => { const p = typeof profile === 'function' ? profile() : profile; return (p && p.ling && p.ling.suggest) || '议事清册'; };
@@ -35,13 +39,35 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   let cvol = 'xiajing';
   let opened = false;
 
-  const left = h('section.ce-leaf.left.fz-left');
-  const right = h('section.ce-leaf.right.fz-right');
-  const shut = h('button.ce-close.q-yapai', { type: 'button', onclick: () => hide() }, '合册');
-  const book = h('div.ce-book', h('div.ce-ling'), left, h('div.ce-gutter'), right, shut);
-  const ov = h('div.ce-ov.fz-ov', { role: 'dialog', 'aria-label': '方志' }, book);
-  ov.addEventListener('pointerdown', (e) => { if (e.target === ov) hide(); });
+  let history = [];        // 看过的几处（退回）：[{ mode, key }]
+  const pic = h('div.zw-pic');
+  const name = h('div.zw-name');
+  const flyBtn = h('button.zw-ctl', { type: 'button', title: '舆图镜头移至此地', onclick: () => locate && locate(mode, mode === 'circuit' ? curC.key : cur.id) }, '图');
+  const backBtn = h('button.zw-ctl', { type: 'button', title: '退回上一处', onclick: () => goBack() }, '‹');
+  const shutBtn = h('button.zw-ctl', { type: 'button', title: '收起（Esc）', onclick: () => hide() }, '×');
+  const hero = h('section.zw-hero', pic, h('div.zw-ctls', flyBtn, backBtn, shutBtn), name);
+  const left = h('div.zw-top');            // 页头以下、检签以上：小签、描述、读数带、排名
+  const tabs = h('nav.zw-tabs');
+  const right = h('div.zw-body');          // 所检之卷
+  const foot = h('footer.zw-foot');
+  const sheet = h('div.zw-sheet.q-scroll', left, tabs, right);
+  const ov = h('aside.zw', { role: 'dialog', 'aria-label': '方志' }, hero, sheet, foot);
   root.append(ov);
+  // 卷首小景：开窗即先铺素绢，图渲好了换上（同一处只渲一回）
+  let sceneTok = 0;
+  function paintScene(kind, id, label) {
+    const tok = ++sceneTok;
+    pic.classList.remove('ready');
+    if (!scenery) return;
+    requestAnimationFrame(() => Promise.resolve(scenery({ kind, id, name: label })).then((c) => {
+      if (tok !== sceneTok || !c) return;
+      replaceChildren(pic, c);
+      pic.classList.add('ready');
+    }, () => {}));
+  }
+  function nameplate(sealText, crumbs, title, level) {
+    replaceChildren(name, h('span.zw-seal', sealText), h('div', crumbs, h('h2', title), level ? h('small', level) : null));
+  }
 
   const who = (name, isChar) => (name && isChar && onPerson ? h('a.fz-who', { onclick: () => onPerson(name) }, name) : h('span', name || ''));
 
@@ -66,8 +92,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`, x.subTag ? h('em', x.subTag) : null) : x.sub ? h('span', x.sub) : null)));
     const rank = d.rank && !rough ? h('p.fz-rank', h('a.fz-circ', { title: '展其通志', onclick: () => showCircuit(d.rank.circuit.key) }, d.rank.circuit.label), h('small', `本方${num(d.rank.of)}州中`),
       d.rank.items.map((it) => h('span' + (it.low ? '.low' : ''), `${it.label}第${num(it.rank)}`))) : null;
-    const slips = h('div.fz-slips', d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : '') + (rough && !PUBLIC_VOLS.has(v.key) && !opens(v.key) ? '.lock' : ''), { type: 'button', onclick: () => { vol = v.key; renderLeft(); renderRight(); } },
-      h('i', v.seal), h('b', v.name))));
+    const slips = d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : '') + (rough && !PUBLIC_VOLS.has(v.key) && !opens(v.key) ? '.lock' : ''), { type: 'button', title: v.sub, onclick: () => { vol = v.key; renderLeft(); renderRight(); } },
+      h('i', v.seal), h('b', v.name.replace(/志$/, ''))));
     const R = role();
     let acts = null;
     if (R.sovereign && (d.acts.length || d.canReassign)) {
@@ -78,22 +104,28 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       const tour = R.acts.tour;
       acts = h('div.fz-acts', (R.acts.own || []).map(([label, note]) => yapaiOff(label, R.off, { note })), tour ? yapaiOff(tour[0], R.off, { note: tour[1] }) : null);
     }
-    replaceChildren(left,
-      h('header.fz-head', h('span.fz-seal', '方志'), h('div', crumbs, h('h2', hd.name), hd.level ? h('small.fz-level', hd.level) : null)),
-      status, pills.length ? h('div.fz-pills', pills) : null,
-      hd.desc ? h('p.fz-desc', hd.desc) : null,
-      band, rank, slips, acts);
+    nameplate('方志', crumbs, hd.name, hd.level);
+    replaceChildren(left, status, pills.length ? h('div.fz-pills', pills) : null, hd.desc ? h('p.fz-desc', hd.desc) : null, band, rank);
+    replaceChildren(tabs, slips);
+    replaceChildren(foot, acts, h('span.zw-nav',
+      hd.circuit ? h('button.q-yapai', { type: 'button', title: hd.circuit.label, onclick: () => showCircuit(hd.circuit.key) }, '展通志') : null,
+      hd.owner && onFaction ? h('button.q-yapai', { type: 'button', title: hd.owner, onclick: () => onFaction(hd.ownerKey || hd.owner) }, '展势力') : null));
   }
 
   // rough：所掌之外只知大略，数取一位有效冠「约」
   const val = (v, unit, rough) => (rough && typeof v === 'number' ? `${roughOf(v)}${unit || ''}` : fmt(v, unit));
   function rowsEl(rows, rough = false) {
-    return h('dl.fz-rows', rows.map((r) => [h('dt', r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain'), val(r.v, r.unit, rough), r.note && !rough ? h('small', r.note) : null)]));
+    // 一行两对；字长的一对占满一行（承载上限、保甲之类）
+    return h('dl.fz-rows', rows.map((r) => {
+      const v = val(r.v, r.unit, rough);
+      const wide = String(v).length > 11 || (r.note && !rough && String(r.note).length > 14) ? '.wide' : '';
+      return [h('dt' + wide, r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain') + wide, v, r.note && !rough ? h('small', r.note) : null)];
+    }));
   }
   function renderRight() {
     const v = cur.vols.find((x) => x.key === vol) || cur.vols[0];
     if (!v) { replaceChildren(right); return; }
-    const head = h('header.fz-vhead', h('span.fz-vseal', v.seal), h('h3', v.name), h('small', v.sub));
+    const head = h('p.fz-vsub', v.sub);
     const body = [];
     if (knows({ region: cur.id }) === 'rough' && !PUBLIC_VOLS.has(v.key) && !opens(v.key)) {
       replaceChildren(right, head, h('div.fz-vbody', h('p.fz-lock', h('b', '册籍不得而见'), '此地非所掌，户口、钱粮、兵备、官守诸册都在有司手里；所知者，邸报所载与风物而已。')));
@@ -119,7 +151,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       if (role().sovereign && !role().ro && cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
     }
     if (v.ledger) body.push(...ledgerEls());
-    replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
+    replaceChildren(right, head, h('div.fz-vbody', body));
   }
   function ledgerEls() {
     let L = null;
@@ -284,21 +316,21 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', x.sub) : null)));
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
-    const slips = h('div.fz-slips', live.map(([k, seal, name]) => h('button.fz-slip' + (k === cvol ? '.on' : ''), { type: 'button', onclick: () => { cvol = k; renderCircuitLeft(); renderCircuitRight(); } }, h('i', seal), h('b', name))));
+    const slips = live.map(([k, seal, label]) => h('button.fz-slip' + (k === cvol ? '.on' : '') + (rough && (k === 'xiajing' || k === 'caiji') ? '.lock' : ''), { type: 'button', onclick: () => { cvol = k; renderCircuitLeft(); renderCircuitRight(); } }, h('i', seal), h('b', label)));
     const R = role();
     const acts = !R.sovereign || !(c.acts.length || c.canReassign) ? null : R.ro ? h('div.fz-acts', [...c.acts, ...(c.canReassign ? ['调整辖区'] : [])].map((a) => yapaiOff(a, R.ro)))
       : h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a)),
         c.canReassign ? h('button.q-yapai', { type: 'button', title: '州县划出划入（入议事清册，回合末落地）', onclick: () => circuitReassign() }, '调整辖区') : null);
-    replaceChildren(left,
-      h('header.fz-head', h('span.fz-seal', '通志'), h('div',
-        h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null, h('i', '›'), h('b', c.name)),
-        h('h2', c.name), h('small.fz-level', `省道 · 辖${num(c.members)}府州`))),
-      pills.length ? h('div.fz-pills', pills) : null, c.desc ? h('p.fz-desc', c.desc) : null, official, band, slips, acts);
+    nameplate('通志', h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null, h('i', '›'), h('b', c.name)),
+      c.name, `省道 · 辖${num(c.members)}府州`);
+    replaceChildren(left, pills.length ? h('div.fz-pills', pills) : null, c.desc ? h('p.fz-desc', c.desc) : null, official, band);
+    replaceChildren(tabs, slips);
+    replaceChildren(foot, acts, h('span.zw-nav', c.owner && onFaction ? h('button.q-yapai', { type: 'button', title: c.owner, onclick: () => onFaction(c.ownerKey || c.owner) }, '展势力') : null));
   }
   function renderCircuitRight() {
     const c = curC;
     const meta = CVOLS.find(([k]) => k === cvol) || CVOLS[1];
-    const head = h('header.fz-vhead', h('span.fz-vseal', meta[1]), h('h3', meta[2]), h('small', meta[3]));
+    const head = h('p.fz-vsub', meta[3]);
     const body = [];
     const reg = (x) => h('a.fz-who', { onclick: () => show(x.id) }, x.name);
     const rough = knows({ circuit: c.key }) === 'rough';
@@ -325,7 +357,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
         body.push(h('div.fz-works', y.regions.map((x) => h('p.fz-yz', reg(x), x.capital ? h('em', '首府') : null, h('span', x.items.join('、'))))));
       }
     }
-    replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
+    replaceChildren(right, head, h('div.fz-vbody', body));
   }
   function circuitReassign() {
     let o;
@@ -357,12 +389,12 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     let c = null;
     try { c = F.circuit(key); } catch (e) { toast(e.message); return; }
     if (!c) { toast('此地未隶正式省道'); return; }
+    remember('circuit', c.key);
     curC = c;
     mode = 'circuit';
     renderCircuitLeft();
     renderCircuitRight();
-    ov.classList.add('on');
-    opened = true;
+    open('circuit', c.key, c.name);
   }
 
   async function show(id) {
@@ -370,18 +402,43 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     let d = null;
     try { d = F.region(id); } catch (e) { toast(e.message); return; }
     if (!d) { toast('此地无志可展'); return; }
+    remember('region', d.id);
     cur = d;
     mode = 'region';
     if (!cur.vols.some((v) => v.key === vol)) vol = cur.vols[0] ? cur.vols[0].key : 'huyi';
     if (knows({ region: cur.id }) === 'rough' && !PUBLIC_VOLS.has(vol) && !opens(vol)) vol = (cur.vols.find((v) => opens(v.key)) || { key: 'fengwu' }).key;   // 所掌之外先翻本衙所司或人所共见的风物志
     renderLeft();
     renderRight();
+    open('region', d.id, d.head.name);
+  }
+  // 换一处之前记下当前这处（退回用）；同一处不记
+  function remember(m, key) {
+    if (!opened) { history = []; return; }
+    const here = mode === 'circuit' ? curC && { mode, key: curC.key } : cur && { mode, key: cur.id };
+    if (here && !(here.mode === m && String(here.key) === String(key))) history = [...history, here].slice(-12);
+  }
+  function open(kind, key, label) {
+    backBtn.hidden = !history.length;
+    flyBtn.hidden = !locate;
+    sheet.scrollTop = 0;
+    paintScene(kind, key, label);
     ov.classList.add('on');
+    if (!opened) bus.emit('zhi:shown', { kind, key });
     opened = true;
   }
+  function goBack() {
+    const prev = history.pop();
+    if (!prev) return;
+    const keep = history;
+    opened = false;                                   // 退回不再记
+    (prev.mode === 'circuit' ? showCircuit(prev.key) : show(prev.key)).then(() => { history = keep; backBtn.hidden = !history.length; });
+  }
   function hide() {
+    if (!opened) return;
     ov.classList.remove('on');
     opened = false;
+    history = [];
+    bus.emit('zhi:hidden', {});
   }
   window.addEventListener('keydown', (e) => {
     if (!opened || document.querySelector('.q-juan-veil')) return;
@@ -394,5 +451,5 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       else if (cur) { const d = F.region(cur.id); if (d) { cur = d; renderLeft(); renderRight(); } }
     } catch (_e) { /* 照旧 */ }
   });
-  return { show, showCircuit, hide, get opened() { return opened; } };
+  return { show, showCircuit, hide, get opened() { return opened; }, get mode() { return opened ? mode : ''; } };
 }

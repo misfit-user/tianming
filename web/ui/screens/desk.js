@@ -254,7 +254,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const marks = createMapMarks({
     layer: marksLayer, map, game, placeOf: (text) => { const [i] = byPlace(text); return i == null ? null : mapRegionList[i] || null; },
     isLive: () => dive.mode === 'map' && !dive.busy,
-    knows: ({ army, region }) => per.tier === 'sovereign' || (army && army.commander === per.name) || inCharge(region),
+    // 所知之律：元首、本人所统知其确数；所掌辖区内，有官者读册籍知确数，无官之人在本籍只见其大概；此外不画
+    knows: ({ army, region }) => (per.tier === 'sovereign' || (army && army.commander === per.name) ? 'exact'
+      : inCharge(region) ? (prof.official || !army ? 'exact' : 'rough') : false),
     onArmy: (key) => (key ? armyPage.show(key) : armyPage.show()),
     onRebels: () => armyPage.show()
   });

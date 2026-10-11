@@ -30,6 +30,9 @@
 .mk-army.hot > .mk-flag { animation: mk-wave 3.2s ease-in-out infinite, mk-hot 1.4s ease-in-out infinite; }
 @keyframes mk-hot { 50% { filter: brightness(1.35) saturate(1.2); } }
 /* 流寇：墨旗 */
+/* 只见其大概的驻军（无官之人在本籍所见）：旗色褪作赭，不可点 */
+.mk-army.rough { cursor: default; }
+.mk-army.rough > .mk-flag { background: linear-gradient(160deg, #8f6c3f, #5c4325 70%); }
 .mk-rebel > .mk-flag { color: #f0e6d0; background: linear-gradient(160deg, #3d3a35, #1c1a17 70%); clip-path: polygon(0 0, 100% 6%, 80% 50%, 96% 100%, 0 94%); }
 .mk-rebel > .mk-n { color: #f0e6d0; background: linear-gradient(180deg, #3d3a35, #1c1a17); box-shadow: inset 0 0 0 1px rgba(240, 230, 208, .3); }
 /* 交战：战字圆章，外一圈朱晕扩散 */

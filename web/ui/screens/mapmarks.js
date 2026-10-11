@@ -1,6 +1,7 @@
 // 舆图标记（照 CK3 图上的军队与事态标记）：本方诸军一处一面军旗（旗上番号首字、旗下兵数，告急朱边闪），
 // 行军的画一道虚线箭头指向去处；流寇一面墨旗；交战处一枚「战」字圆章。DOM 层，每帧跟着镜头摆位，压在舆图题名之上、界面之下。
-// 看得见哪些由调用方定（knows：所知之律——通用一套只见本人所统与所掌辖区内的）。
+// 看得见哪些由调用方定（knows：所知之律——通用一套只见本人所统与所掌辖区内的）：返回 'exact' 知其确数，'rough' 只见其大概
+// （无官之人在本籍亲见驻军，只知数百、数千、数万），假则不画。
 import { h, replaceChildren } from '../core/dom.js';
 import { num, numeralStyle, cnNum } from '../core/numerals.js';
 import { tiao } from '../kit/index.js';
@@ -12,6 +13,11 @@ export function shortCount(n) {
   if (n >= 1e4) { const k = Math.round(n / 1e3), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}万${b ? cnNum(b) : ''}`; }
   if (n >= 1e3) { const k = Math.round(n / 100), a = Math.floor(k / 10), b = k % 10; return `${cnNum(a)}千${b ? cnNum(b) : ''}`; }
   return cnNum(Math.round(n / 10) * 10) || '〇';
+}
+// 只见其大概：数百、千余、数千、万余、数万、十余万
+export function roughCount(n) {
+  n = Math.max(0, Number(n) || 0);
+  return n < 1000 ? '数百' : n < 2000 ? '千余' : n < 10000 ? '数千' : n < 20000 ? '万余' : n < 100000 ? '数万' : '十余万';
 }
 // 番号取一个字上旗：去掉「京营」「镇军」之类的通名，取头一字（关宁军 → 关、延绥镇军 → 延）
 const flagChar = (name) => [...String(name || '军').replace(/^(南京|北京)/, '')][0] || '军';
@@ -34,21 +40,26 @@ export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArm
     const byPlace = new Map();
     for (const a of rows) {
       const r = placeOf(a.location);
-      if (!r || !knows({ army: a, region: r })) continue;
-      if (!byPlace.has(r.name)) byPlace.set(r.name, { r, list: [] });
-      byPlace.get(r.name).list.push(a);
+      const k = r && knows({ army: a, region: r });
+      if (!k) continue;
+      if (!byPlace.has(r.name)) byPlace.set(r.name, { r, list: [], rough: false });
+      const g = byPlace.get(r.name);
+      g.list.push(a);
+      if (k === 'rough') g.rough = true;
     }
     pins = [];
     routes = [];
     const els = [];
-    for (const { r, list } of byPlace.values()) {
+    for (const { r, list, rough } of byPlace.values()) {
       const total = list.reduce((s, a) => s + (a.soldiers || 0), 0);
       const lead = list.slice().sort((a, b) => (b.soldiers || 0) - (a.soldiers || 0))[0];
       const hot = list.some((a) => a.hot), marching = list.some((a) => a.march);
-      const el = h('button.mk.mk-army' + (hot ? '.hot' : '') + (marching ? '.march' : ''), { type: 'button', 'aria-label': `${r.name}驻军`, onclick: () => onArmy(lead.key) },
-        h('i.mk-pole'), h('b.mk-flag', flagChar(lead.name)), h('span.mk-n', shortCount(total)), list.length > 1 ? h('em.mk-c', num(list.length)) : null);
-      tiao(el, () => ({ title: `${r.name} · ${list.length > 1 ? `${num(list.length)}部` : lead.name}`,
-        text: list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`).join('\n') }));
+      // 只见其大概的：不写番号字、不记几部、点了不翻军务册（册里本无此军）
+      const el = h('button.mk.mk-army' + (hot ? '.hot' : '') + (marching ? '.march' : '') + (rough ? '.rough' : ''), { type: 'button', 'aria-label': `${r.name}驻军`, onclick: rough ? null : () => onArmy(lead.key) },
+        h('i.mk-pole'), h('b.mk-flag', rough ? '兵' : flagChar(lead.name)), h('span.mk-n', rough ? roughCount(total) : shortCount(total)), list.length > 1 && !rough ? h('em.mk-c', num(list.length)) : null);
+      tiao(el, () => (rough ? { title: `${r.name} · 驻军`, text: `约${roughCount(total)}人\n本地所见，不知其番号、主将与确数` }
+        : { title: `${r.name} · ${list.length > 1 ? `${num(list.length)}部` : lead.name}`,
+          text: list.map((a) => `${a.name}　${num(a.soldiers)}人${a.commander ? '　' + a.commander : '　缺帅'}${a.hot ? '　告急' : ''}${a.march ? `　行军往${a.march.to}` : ''}`).join('\n') }));
       els.push(el);
       pins.push({ el, x: r.center[0], y: r.center[1] });
       for (const a of list) {

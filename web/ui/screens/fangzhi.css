@@ -173,3 +173,12 @@ a.fz-who { cursor: pointer; color: #3a1a10; text-decoration: underline dotted rg
 .fz-zai.bad { color: #a3301f; }
 .fz-ledger td { white-space: normal; }
 .fz-ledger td:first-child { min-width: 5em; }
+
+/* 所知之律：所掌之外只知大略（读数带写约数、等第，册籍上锁） */
+.fz-stat.rough > b { color: var(--ink-soft); }
+.fz-stat.rough > small > em { margin-left: .25rem; font-style: normal; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-slip.lock { opacity: .55; }
+.fz-slip.lock::after { content: '锁'; position: absolute; right: .125rem; top: .125rem; font: .625rem/1 var(--f-seal); color: #7d1d12; }
+.fz-lock { margin: 1.5rem 0; font: var(--fs-3)/1.9 var(--f-kai); color: var(--ink-soft); letter-spacing: .06em; }
+.fz-lock > b { display: block; margin-bottom: .375rem; font: 400 var(--fs-5) var(--f-title); letter-spacing: .3em; color: #6a1f12; }
+.fz-slip.lock { position: relative; }

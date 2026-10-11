@@ -13,10 +13,18 @@ const toast = (text) => bus.emit('kernel:toast', { text });
 const digits = (t) => String(t).replace(/(?<![\d.])(\d+\.\d+)万/g, (m, x) => num(Math.round(Number(x) * 1e4)))
   .replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
 // 数：大数取四位有效，按记数设置写；负数前加「−」；字里夹的整数也按记数设置改写
+const PUBLIC_VOLS = new Set(['fengwu', 'yingzao']);
+const BAND_VOL = { 户口: 'huyi', 实征: 'caifu', 驻军: 'junbei', 吏治: 'zhiguan' };
+const roughOf = (v) => (typeof v === 'number' ? (Math.abs(v) < 10 ? '寥寥' : `约${num(roundSig(Math.abs(v), 1))}`) : v);
+// 读数带一格：大略时民心吏治写等第，余者写约数
+const roughStat = (x) => h('div.fz-stat.rough', h('small', x.k, h('em', '大略')), h('b', /民心|吏治/.test(x.k) && x.sub ? x.sub : roughOf(x.v)));
 const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Math.abs(v) >= 1e4 ? roundSig(Math.abs(v), 4) : Math.round(Math.abs(v) * 10) / 10)}${unit || ''}` : `${digits(v)}${unit ? unit : ''}`);
 
 // role()：此身份能做什么（screens/desk.js）——元首一档照原有动作；余者只在所掌之地（无官者本籍）列与身份相符的行文、行止，灰着写缘由
-export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }) }) {
+// knows({ region } | { circuit })：所知之律——'full' 册籍俱见；'rough' 所掌之外只知大略：读数带的数只取一位有效冠「约」，民心吏治只写等第，
+//   本道排名不列，户役财赋军备职官诸志与账本不得而见，风物、营造是人所共见；通志的辖境、财计也只写大略
+// opens(志键)：京官本衙门所司的那一门册籍天下各地都见（户部户役财赋账本、兵部军备、吏部职官），读数带里对应那格也写确数
+export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }), knows = () => 'full', opens = () => false }) {
   const F = game.fangzhi;
   const Y = game.yingzao;
   const suggestBook = () => { const p = typeof profile === 'function' ? profile() : profile; return (p && p.ling && p.ling.suggest) || '议事清册'; };
@@ -52,12 +60,13 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     ].filter(Boolean);
     const status = hd.status.length ? h('div.fz-status', hd.status.map((s) => h('span.fz-zt.' + (s.tone || 'mid'), { title: [s.name, s.desc, s.effects.join('，')].filter(Boolean).join(' · ') },
       h('i', s.seal), s.name, h('em', s.left == null ? '永续' : `余${num(s.left)}回合`)))) : null;
-    const band = h('div.fz-band', d.band.map((x) => h('div.fz-stat' + (x.warn ? '.warn' : ''),
+    const rough = knows({ region: d.id }) === 'rough';
+    const band = h('div.fz-band', d.band.map((x) => rough && !opens(BAND_VOL[x.k]) ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''),
       h('small', x.k, x.reported ? h('em', '据奏') : null), h('b', typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),   // 读数带只看个大数：三位有效
       x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`, x.subTag ? h('em', x.subTag) : null) : x.sub ? h('span', x.sub) : null)));
-    const rank = d.rank ? h('p.fz-rank', h('a.fz-circ', { title: '展其通志', onclick: () => showCircuit(d.rank.circuit.key) }, d.rank.circuit.label), h('small', `本方${num(d.rank.of)}州中`),
+    const rank = d.rank && !rough ? h('p.fz-rank', h('a.fz-circ', { title: '展其通志', onclick: () => showCircuit(d.rank.circuit.key) }, d.rank.circuit.label), h('small', `本方${num(d.rank.of)}州中`),
       d.rank.items.map((it) => h('span' + (it.low ? '.low' : ''), `${it.label}第${num(it.rank)}`))) : null;
-    const slips = h('div.fz-slips', d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : ''), { type: 'button', onclick: () => { vol = v.key; renderLeft(); renderRight(); } },
+    const slips = h('div.fz-slips', d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : '') + (rough && !PUBLIC_VOLS.has(v.key) && !opens(v.key) ? '.lock' : ''), { type: 'button', onclick: () => { vol = v.key; renderLeft(); renderRight(); } },
       h('i', v.seal), h('b', v.name))));
     const R = role();
     let acts = null;
@@ -76,20 +85,27 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       band, rank, slips, acts);
   }
 
-  function rowsEl(rows) {
-    return h('dl.fz-rows', rows.map((r) => [h('dt', r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain'), fmt(r.v, r.unit), r.note ? h('small', r.note) : null)]));
+  // rough：所掌之外只知大略，数取一位有效冠「约」
+  const val = (v, unit, rough) => (rough && typeof v === 'number' ? `${roughOf(v)}${unit || ''}` : fmt(v, unit));
+  function rowsEl(rows, rough = false) {
+    return h('dl.fz-rows', rows.map((r) => [h('dt', r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain'), val(r.v, r.unit, rough), r.note && !rough ? h('small', r.note) : null)]));
   }
   function renderRight() {
     const v = cur.vols.find((x) => x.key === vol) || cur.vols[0];
     if (!v) { replaceChildren(right); return; }
     const head = h('header.fz-vhead', h('span.fz-vseal', v.seal), h('h3', v.name), h('small', v.sub));
     const body = [];
+    if (knows({ region: cur.id }) === 'rough' && !PUBLIC_VOLS.has(v.key) && !opens(v.key)) {
+      replaceChildren(right, head, h('div.fz-vbody', h('p.fz-lock', h('b', '册籍不得而见'), '此地非所掌，户口、钱粮、兵备、官守诸册都在有司手里；所知者，邸报所载与风物而已。')));
+      return;
+    }
     if (v.armies && v.armies.length) body.push(h('div.fz-armies', v.armies.map((a) => h('div.fz-army', h('b', a.name), h('span', fmt(a.soldiers), a.reported ? h('em', '据奏') : null),
       a.commander ? who(a.commander, true) : null, a.morale != null ? h('small' + (a.morale < 45 ? '.low' : ''), `气${num(a.morale)}`) : null))));
-    if (v.grid && v.grid.length) body.push(h('div.fz-grid', v.grid.map((g) => h('div', h('small', g.k), h('b', fmt(g.v, g.unit))))));
-    if (v.rows && v.rows.length) body.push(rowsEl(v.rows));
+    const rough = knows({ region: cur.id }) === 'rough' && !opens(v.key);
+    if (v.grid && v.grid.length) body.push(h('div.fz-grid', v.grid.map((g) => h('div', h('small', g.k), h('b', val(g.v, g.unit, rough))))));
+    if (v.rows && v.rows.length) body.push(rowsEl(v.rows, rough));
     if (v.note) body.push(h('p.fz-note', v.note));
-    if (v.sub2) body.push(h('section.fz-sub', h('h4', v.sub2.title, h('small', v.sub2.note)), rowsEl(v.sub2.rows)));
+    if (v.sub2) body.push(h('section.fz-sub', h('h4', v.sub2.title, h('small', v.sub2.note)), rowsEl(v.sub2.rows, rough)));
     if (v.key === 'yingzao') {
       body.push(v.works.length
         ? h('div.fz-works', v.works.map((wk) => h('div.fz-work.' + wk.tone,
@@ -262,7 +278,8 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       h('p', h('small', o.role), '　', who(o.who, o.isChar)),
       o.ability != null ? h('p.fz-gov', h('span', `能力${num(o.ability)}`), o.band ? h('span', `履职${o.band}`) : null, h('span', o.state), o.seat ? h('span', `驻${o.seat}`) : null) : null,
       o.effect ? h('p.fz-gov-eff', '本道之效：', digits(o.effect)) : null, h('p.fz-note', o.count != null ? `统辖本道${num(o.count)}府州；${o.line}` : o.line)) : null;
-    const band = h('div.fz-band', c.band.map((x) => h('div.fz-stat' + (x.warn ? '.warn' : ''), h('small', x.k),
+    const rough = knows({ circuit: c.key }) === 'rough';
+    const band = h('div.fz-band', c.band.map((x) => rough ? roughStat(x) : h('div.fz-stat' + (x.warn ? '.warn' : ''), h('small', x.k),
       h('b', typeof x.v === 'number' && Math.abs(x.v) >= 1e4 ? num(roundSig(x.v, 3)) : fmt(x.v)),
       x.subN != null ? h('span', `${x.subPre || ''}${fmt(x.subN)}${x.subPost || ''}`) : x.sub ? h('span', x.sub) : null)));
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
@@ -284,7 +301,11 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     const head = h('header.fz-vhead', h('span.fz-vseal', meta[1]), h('h3', meta[2]), h('small', meta[3]));
     const body = [];
     const reg = (x) => h('a.fz-who', { onclick: () => show(x.id) }, x.name);
-    if (cvol === 'xiajing' && c.xiajing) {
+    const rough = knows({ circuit: c.key }) === 'rough';
+    if (rough && (cvol === 'xiajing' || cvol === 'caiji')) {
+      body.push(h('p.fz-lock', h('b', '册籍不得而见'), '此道非所掌，各州户口、钱粮、兵数与问题都在有司手里；只见形势与营造。'));
+      if (cvol === 'xiajing' && c.xiajing) body.push(h('p.fz-note', '辖下：', c.xiajing.rows.map((x, i) => [i ? '、' : '', reg(x)])));
+    } else if (cvol === 'xiajing' && c.xiajing) {
       const xj = c.xiajing;
       if (xj.common) body.push(h('p.fz-common', `全道共性（${num(xj.common.count)}／${num(xj.common.of)}州）：`, h('b', xj.common.items.join(' · ')), '。下列各州只标独有的问题。'));
       body.push(h('table.fz-table', h('thead', h('tr', ['府州', '户口', '实征', '驻军', '民心', '吏治', '主因'].map((t) => h('th', t)))),
@@ -352,6 +373,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     cur = d;
     mode = 'region';
     if (!cur.vols.some((v) => v.key === vol)) vol = cur.vols[0] ? cur.vols[0].key : 'huyi';
+    if (knows({ region: cur.id }) === 'rough' && !PUBLIC_VOLS.has(vol) && !opens(vol)) vol = (cur.vols.find((v) => opens(v.key)) || { key: 'fengwu' }).key;   // 所掌之外先翻本衙所司或人所共见的风物志
     renderLeft();
     renderRight();
     ov.classList.add('on');

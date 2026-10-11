@@ -938,6 +938,22 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       own: (id) => !!focus && focus.marked.some((i) => mapRegionList[i] && String(mapRegionList[i].id) === String(id))
     };
   }
+  // 所知之律（方志、通志）：元首册籍俱见；有官者所掌之地俱见（巡抚连其一省各州）；余者只知大略。
+  // 京官按本衙门所司，天下各地那一门册籍可见：户部户役财赋与账本、兵部军备、吏部职官（opensBook）
+  const DEPT_VOLS = { 户部: ['huyi', 'caifu', 'zhang'], 兵部: ['junbei'], 吏部: ['zhiguan'] };
+  function knowsBook({ region, circuit }) {
+    if (per.tier === 'sovereign') return 'full';
+    if (!prof.official || !standing) return 'rough';
+    const circuits = standing.charges.filter((c) => c.kind === 'circuit');
+    if (circuit != null) return circuits.some((c) => c.key && c.key === circuit) ? 'full' : 'rough';
+    if (role().own(region)) return 'full';
+    const r = mapRegionList.find((x) => String(x.id) === String(region));
+    const under = r && r.circuit && circuits.some((c) => c.name.startsWith(r.circuit) || r.circuit.startsWith(c.name.replace(/布政使司$/, '')));
+    return under ? 'full' : 'rough';
+  }
+  function opensBook(vol) {
+    return per.tier !== 'sovereign' && !!standing && standing.charges.some((c) => c.kind === 'office' && (DEPT_VOLS[c.name] || []).includes(vol));
+  }
   // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
   function personCan(name) {
     const ro = per.previewing ? '借视角时只读' : '';
@@ -1065,7 +1081,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   } });
   // 朝野册：人名开人物窗；召党魁、召代表转召对；付廷议即开廷议、带上议题
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
-  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, onPerson: (name) => { fangzhiPage.hide(); renwu.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
+  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, knows: knowsBook, opens: opensBook, onPerson: (name) => { fangzhiPage.hide(); renwu.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });

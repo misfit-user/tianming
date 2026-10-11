@@ -4,13 +4,14 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
-import { qianzi, juan, zhou } from '../kit/index.js';
+import { qianzi, juan, zhou, yapaiOff } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const TAGS = { vacant: '无官', civil: '文', military: '武', loyal: '忠', remote: '外地' };
 const FILTERS = [['all', '全部'], ['civil', '文'], ['military', '武'], ['loyal', '忠'], ['vacant', '无官'], ['remote', '外地']];
 
-export function createOffices({ root, game, profile, onPerson }) {
+// role()：此身份能做什么（screens/desk.js）——任命、廷推、罢免、荫子、荐贤只元首一档有；余者对在任官只列身份相符的（劾奏），灰着写缘由
+export function createOffices({ root, game, profile, onPerson, role = () => ({ sovereign: true, ro: '' }) }) {
   const O = game.offices;
   let court = 'central';
   let group = 'all';
@@ -56,21 +57,23 @@ export function createOffices({ root, game, profile, onPerson }) {
   }
   function posRow(p) {
     const holder = p.holders[0];
-    const acts = [
+    const R = role();
+    let acts = R.sovereign ? [
       h('button.q-yapai', { type: 'button', onclick: () => openPicker(p) }, holder ? '改换' : '任命'),
       p.level <= 6 ? h('button.q-yapai', { type: 'button', onclick: () => openTingtui(p) }, '廷推') : null,
       holder ? h('button.q-yapai', { type: 'button', onclick: () => run(() => O.dismiss(p, holder.name)) }, '罢免') : null,
       holder ? h('button.q-yapai.danger', { type: 'button', onclick: () => openImpeach(p, holder.name) }, '弹劾') : null,
       holder && p.level <= 6 ? h('button.q-yapai', { type: 'button', title: '三品以上荫一子入仕（候选）', onclick: () => run(() => O.menyin(holder.name)) }, '荫子') : null,
       holder && p.level <= 8 ? h('button.q-yapai', { type: 'button', title: '五品以上荐一布衣贤才（候选）', onclick: () => run(() => O.jianbi(holder.name)) }, '荐贤') : null
-    ];
+    ] : holder && holder.name !== R.self ? (R.acts.office || []).map(([label, note]) => yapaiOff(label, R.off, { note })) : [];
+    if (R.sovereign && R.ro) acts = acts.filter(Boolean).map((b) => yapaiOff(b.textContent, R.ro));
     return h('article.of-pos' + (p.vacant ? '.vacant' : ''),
       h('div.of-rank', p.rank || '—'),
       h('div.of-name', h('b', { title: p.duties }, p.name), h('small', `额${num(p.head)}　在${num(p.actual)}${p.vacant ? '' : ''}`), p.vacant ? h('em', `缺${num(p.vacant)}`) : null),
       h('div.of-holders', p.holders.length ? p.holders.map((x) => h('button.of-holder' + (x.travel ? '.travel' : ''), { type: 'button', onclick: () => onPerson && onPerson(x.name), title: [x.location, x.party].filter(Boolean).join(' · ') },
         h('b', x.name), x.travel ? h('em', '赴任') : null, h('small', `${x.age ? num(x.age) + '岁 ' : ''}忠${num(x.loyalty)} 智${num(x.int)} 政${num(x.adm)} 军${num(x.mil)}`)))
         : h('span.of-empty', p.unnamed ? `在岗${num(p.unnamed)}人·姓名未详` : '此职无人·政务停滞'),
-        p.pending ? h('div.of-pending', h('span', `待下${profile().annals.decree}`), h('i', p.pending.line), h('button', { type: 'button', onclick: () => run(() => O.undo(p)) }, '撤销')) : null),
+        p.pending ? h('div.of-pending', h('span', `待下${profile().annals.decree}`), h('i', p.pending.line), R.sovereign && !R.ro ? h('button', { type: 'button', onclick: () => run(() => O.undo(p)) }, '撤销') : null) : null),
       h('div.of-acts', acts));
   }
   function run(f) {

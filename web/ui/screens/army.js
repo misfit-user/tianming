@@ -5,13 +5,14 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
-import { qianzi, juan } from '../kit/index.js';
+import { qianzi, juan, yapaiOff } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const TABS = [['armies', '诸军'], ['war', '战事']];
 
-export function createArmy({ root, game, onCourt, onFiscal, scope = () => null }) {
+// role()：此身份能做什么（screens/desk.js）——核饷、补饷、整训、调防、易将、付廷议只元首一档有；统兵之人对本部只列身份相符的，灰着写缘由
+export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, role = () => ({ sovereign: true, ro: '' }) }) {
   const A = game.army;
   let tab = 'armies';
   let sel = '';
@@ -93,8 +94,13 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null }
       actions(d));
   }
   function actions(d) {
+    const R = role();
+    if (!R.sovereign) {
+      const own = d.commander === R.self ? (R.acts.army || []).filter(([label]) => label !== '具详请饷' || d.arrears) : [];
+      return own.length ? h('section.fi-sec.ar-acts', h('h4', '处置'), h('div.fi-btns', own.map(([label, note]) => yapaiOff(label, R.off, { note })))) : null;
+    }
     const go = (f) => () => { const r = run(f); if (typeof r === 'string' && r) toast(r); render(); };
-    return h('section.fi-sec.ar-acts', h('h4', '处置'),
+    const sec = h('section.fi-sec.ar-acts', h('h4', '处置'),
       h('div.fi-btns',
         h('button.q-yapai', { type: 'button', title: '点验名册，掀出实额', onclick: () => inspect(d) }, '核饷点验'),
         d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${d.arrears}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
@@ -105,6 +111,8 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null }
         d.own ? h('button.q-yapai', { type: 'button', onclick: () => pickCommander(d) }, '易将') : null,
         onCourt ? h('button.q-yapai', { type: 'button', onclick: () => { const t = run(() => A.courtTopic(d.key)); if (t) { hide(); onCourt(t); } } }, '付廷议') : null,
         d.own ? h('button.q-yapai' + (d.stance !== 'ask' ? '.on' : ''), { type: 'button', onclick: go(() => A.cycleStance(d.key)) }, A.STANCES[d.stance]) : null));
+    if (R.ro) for (const b of [...sec.querySelectorAll('.fi-btns > button')]) b.replaceWith(yapaiOff(b.textContent, R.ro));
+    return sec;
   }
   // 移防：择目的地（可输可选），下确定性军令
   function marchTo(d) {

@@ -3,6 +3,7 @@ import { h } from '../../core/dom.js';
 import { num } from '../../core/numerals.js';
 import { sealCanvas } from '../brush.js';
 import { seedOf } from '../../core/rand.js';
+import { bus } from '../../core/bus.js';
 
 // 朱签角标：竖写数目；n 为 0 或空时不出
 export function qian(n) {
@@ -20,6 +21,12 @@ export function pai({ title, sub, badge = 0, onclick, aside = false, disabled = 
 // 牙牌：小签按钮或标签
 export function yapai(text, { onclick, title } = {}) {
   return h(onclick ? 'button.q-yapai' : 'span.q-yapai', { type: onclick ? 'button' : null, onclick, title }, text);
+}
+
+// 做不了的牙牌：灰着，悬停写缘由，点了也只把缘由报一声（照 CK3：做不了的事不藏，写明差什么）
+export function yapaiOff(text, reason, { note = '' } = {}) {
+  return h('button.q-yapai.off', { type: 'button', 'aria-disabled': 'true', title: [note, reason].filter(Boolean).join('　'),
+    onclick: () => bus.emit('kernel:toast', { text: `${text}：${reason}` }) }, text);
 }
 
 // 系在器物上的牙牌小签（一截红绳一个盘长结），场景层按锚点定位

@@ -370,24 +370,28 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     regionMenu(r, ev.clientX, ev.clientY);
   });
   function regionMenu(r, x, y) {
-    let info = null;
-    try { info = game.fangzhi.region(r.id); } catch (_e) { info = null; }
-    const ro = per.previewing ? '借视角时只读' : '';
+    const R = role();
     const fac = r.faction && factions[r.faction];
-    const acts = (info && info.acts) || [];
-    const NOTE = { 安民: '拟一条安民之策入议事清册', 巡按: '拟遣员巡按此地入议事清册', 调粮: '拟调粮接济入议事清册', 拟诏: '就此地拟一条入议事清册' };
-    kewei({
-      title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), x, y,
-      groups: [
-        { label: '观', items: [
-          { label: '展方志', onclick: () => fangzhiPage.show(r.id) },
-          r.circuit ? { label: '展通志', note: r.circuit, onclick: () => fangzhiPage.showCircuit(r.id) } : null,
-          { label: '镜头移至此地', onclick: () => flyMapTo(r.center, Math.min(map.pose().dist, 520)) }].filter(Boolean) },
-        { label: (prof.channels.find((c) => c.key === 'ling') || {}).title || '令',
-          items: (acts.length ? acts : ['安民', '巡按', '调粮', '拟诏']).map((k) => ({ label: k, note: NOTE[k], off: ro || (acts.length ? '' : '非本方州县'),
-            onclick: () => { try { if (game.fangzhi.act(r.id, k)) bus.emit('kernel:toast', { text: `${r.name}·${k}，已拟入议事清册` }); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); } } })) }
-      ]
-    });
+    const ch = (k) => (prof.channels.find((c) => c.key === k) || {}).title || k;
+    const look = { label: '观', items: [
+      { label: '展方志', onclick: () => fangzhiPage.show(r.id) },
+      r.circuit ? { label: '展通志', note: r.circuit, onclick: () => fangzhiPage.showCircuit(r.id) } : null,
+      { label: '镜头移至此地', onclick: () => flyMapTo(r.center, Math.min(map.pose().dist, 520)) }].filter(Boolean) };
+    const groups = [look];
+    if (R.sovereign) {
+      let info = null;
+      try { info = game.fangzhi.region(r.id); } catch (_e) { info = null; }
+      const acts = (info && info.acts) || [];
+      const NOTE = { 安民: '拟一条安民之策入议事清册', 巡按: '拟遣员巡按此地入议事清册', 调粮: '拟调粮接济入议事清册', 拟诏: '就此地拟一条入议事清册' };
+      groups.push({ label: ch('ling'),
+        items: (acts.length ? acts : ['安民', '巡按', '调粮', '拟诏']).map((k) => ({ label: k, note: NOTE[k], off: R.ro || (acts.length ? '' : '非本方州县'),
+          onclick: () => { try { if (game.fangzhi.act(r.id, k)) bus.emit('kernel:toast', { text: `${r.name}·${k}，已拟入议事清册` }); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); } } })) });
+    } else if (R.own(r.id)) {
+      // 所掌之外与身份无涉，不列
+      groups.push({ label: ch('ling'), items: (R.acts.own || []).map(([label, note]) => ({ label, note, off: R.off, onclick: () => {} })) });
+      if (R.acts.tour) groups.push({ label: ch('xing'), items: [{ label: R.acts.tour[0], note: R.acts.tour[1], off: R.off, onclick: () => {} }] });
+    }
+    kewei({ title: r.name, sub: [r.circuit, fac && fac.name].filter(Boolean).join(' · '), x, y, groups });
   }
   // 府州小签：点选与检府州共用
   // 府州小签（点选、检府州共用）：题名、所属与归属、上隶或地形、看法读数；方志、通志两枚牙牌，右键另有可为
@@ -850,6 +854,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     e.preventDefault();
     personMenu(t.dataset.person, e.clientX, e.clientY);
   });
+  // 此身份能做什么（方志、职官志、军务、舆图右键据此摆动作；model/identity.js 的 acts）：
+  //   sovereign 元首一档照各册原有动作；ro 借视角只读的缘由；off 余档灰着的缘由；own(府州id) 是否所掌之地（无官者是本籍）；self 本人名
+  const PENDING = '此身份的玩法尚未接上，官本位接上后可行';
+  function role() {
+    const ro = per.previewing ? '借视角时只读' : '';
+    return {
+      sovereign: prof.tier === 'sovereign', ro, off: ro || PENDING, acts: prof.acts || {}, self: per.name,
+      own: (id) => !!focus && focus.marked.some((i) => mapRegionList[i] && String(mapRegionList[i].id) === String(id))
+    };
+  }
   // 对一个人能做什么（右键可为单与人物窗左缘圆钮同一份）：见、书照身份取叫法；任官只元首一档有，余者不列；做不了的写缘由
   function personCan(name) {
     const ro = per.previewing ? '借视角时只读' : '';
@@ -975,7 +989,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   } });
   // 朝野册：人名翻人物图志；召党魁、召代表转召对；付廷议即开廷议、带上议题
   // 方志：入图后点府州小签展开；人名翻列传、势力翻朝野谱牒
-  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, onPerson: (name) => { fangzhiPage.hide(); bioPage.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
+  const fangzhiPage = createFangzhi({ root, game, profile: () => prof, role, onPerson: (name) => { fangzhiPage.hide(); renwu.show(name); }, onFaction: (key) => { fangzhiPage.hide(); realmPage.show(key); } });
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
@@ -996,9 +1010,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const helpPage = createHelp({ root, game, profile: () => prof });
   const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
-  const armyPage = createArmy({ root, game, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
+  const armyPage = createArmy({ root, game, role, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
     scope: () => (per.tier === 'sovereign' ? null : per.name) });
-  const officesPage = createOffices({ root, game, profile: () => prof, onPerson: (name) => { officesPage.hide(); renwu.show(name); } });
+  const officesPage = createOffices({ root, game, profile: () => prof, role, onPerson: (name) => { officesPage.hide(); renwu.show(name); } });
   function openDocket(id) {
     el.classList.remove('on');
     toStudyIfHome();

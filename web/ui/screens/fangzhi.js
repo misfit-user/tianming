@@ -5,7 +5,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
-import { juan, qianzi, shu } from '../kit/index.js';
+import { juan, qianzi, shu, yapaiOff } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」），按记数设置改写
@@ -15,7 +15,8 @@ const digits = (t) => String(t).replace(/(?<![\d.])(\d+\.\d+)万/g, (m, x) => nu
 // 数：大数取四位有效，按记数设置写；负数前加「−」；字里夹的整数也按记数设置改写
 const fmt = (v, unit) => (typeof v === 'number' ? `${v < 0 ? '−' : ''}${num(Math.abs(v) >= 1e4 ? roundSig(Math.abs(v), 4) : Math.round(Math.abs(v) * 10) / 10)}${unit || ''}` : `${digits(v)}${unit ? unit : ''}`);
 
-export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
+// role()：此身份能做什么（screens/desk.js）——元首一档照原有动作；余者只在所掌之地（无官者本籍）列与身份相符的行文、行止，灰着写缘由
+export function createFangzhi({ root, game, profile, onPerson, onFaction, role = () => ({ sovereign: true, ro: '' }) }) {
   const F = game.fangzhi;
   const Y = game.yingzao;
   const suggestBook = () => { const p = typeof profile === 'function' ? profile() : profile; return (p && p.ling && p.ling.suggest) || '议事清册'; };
@@ -58,9 +59,16 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
       d.rank.items.map((it) => h('span' + (it.low ? '.low' : ''), `${it.label}第${num(it.rank)}`))) : null;
     const slips = h('div.fz-slips', d.vols.map((v) => h('button.fz-slip' + (v.key === vol ? '.on' : ''), { type: 'button', onclick: () => { vol = v.key; renderLeft(); renderRight(); } },
       h('i', v.seal), h('b', v.name))));
-    const acts = d.acts.length || d.canReassign ? h('div.fz-acts',
-      d.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doAct(a) }, a)),
-      d.canReassign ? h('button.q-yapai', { type: 'button', title: '改隶他道（入议事清册，回合末落地）', onclick: () => reassign() }, '改隶') : null) : null;
+    const R = role();
+    let acts = null;
+    if (R.sovereign && (d.acts.length || d.canReassign)) {
+      acts = h('div.fz-acts', R.ro ? [...d.acts, ...(d.canReassign ? ['改隶'] : [])].map((a) => yapaiOff(a, R.ro)) : [
+        d.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doAct(a) }, a)),
+        d.canReassign ? h('button.q-yapai', { type: 'button', title: '改隶他道（入议事清册，回合末落地）', onclick: () => reassign() }, '改隶') : null]);
+    } else if (!R.sovereign && R.own(d.id)) {
+      const tour = R.acts.tour;
+      acts = h('div.fz-acts', (R.acts.own || []).map(([label, note]) => yapaiOff(label, R.off, { note })), tour ? yapaiOff(tour[0], R.off, { note: tour[1] }) : null);
+    }
     replaceChildren(left,
       h('header.fz-head', h('span.fz-seal', '方志'), h('div', crumbs, h('h2', hd.name), hd.level ? h('small.fz-level', hd.level) : null)),
       status, pills.length ? h('div.fz-pills', pills) : null,
@@ -92,7 +100,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
             wk.flowPct > 0 ? h('p.fz-wk-note', `工成之利：地方岁入每回合+${wk.flowPct}%`) : null,
             wk.progress != null ? h('div.fz-prog', h('i', { style: { width: `${wk.progress}%` } }), h('small', `余${num(wk.left)}回合`)) : null)))
         : h('p.fz-note', '此地尚无在册工役。'));
-      if (cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
+      if (role().sovereign && !role().ro && cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
     }
     if (v.ledger) body.push(...ledgerEls());
     replaceChildren(right, head, h('div.fz-vbody.q-scroll.ink', body));
@@ -260,8 +268,10 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction }) {
     const live = CVOLS.filter(([k]) => (k === 'xingshi') || (c[k] && (Array.isArray(c[k]) ? c[k].length : true)));
     if (!live.some(([k]) => k === cvol)) cvol = live[0] ? live[0][0] : 'xingshi';
     const slips = h('div.fz-slips', live.map(([k, seal, name]) => h('button.fz-slip' + (k === cvol ? '.on' : ''), { type: 'button', onclick: () => { cvol = k; renderCircuitLeft(); renderCircuitRight(); } }, h('i', seal), h('b', name))));
-    const acts = c.acts.length || c.canReassign ? h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a)),
-      c.canReassign ? h('button.q-yapai', { type: 'button', title: '州县划出划入（入议事清册，回合末落地）', onclick: () => circuitReassign() }, '调整辖区') : null) : null;
+    const R = role();
+    const acts = !R.sovereign || !(c.acts.length || c.canReassign) ? null : R.ro ? h('div.fz-acts', [...c.acts, ...(c.canReassign ? ['调整辖区'] : [])].map((a) => yapaiOff(a, R.ro)))
+      : h('div.fz-acts', c.acts.map((a) => h('button.q-yapai', { type: 'button', title: '录入议事清册，候诏颁行', onclick: () => doCircuitAct(a) }, a)),
+        c.canReassign ? h('button.q-yapai', { type: 'button', title: '州县划出划入（入议事清册，回合末落地）', onclick: () => circuitReassign() }, '调整辖区') : null);
     replaceChildren(left,
       h('header.fz-head', h('span.fz-seal', '通志'), h('div',
         h('p.fz-crumbs', c.owner ? (onFaction ? h('a', { onclick: () => onFaction(c.ownerKey || c.owner) }, c.owner) : h('span', c.owner)) : null, h('i', '›'), h('b', c.name)),

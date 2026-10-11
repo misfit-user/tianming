@@ -32,6 +32,9 @@
 //   keyi     科议（科举诸事付廷臣公议）：插言叫什么、提示、再议／付表决／裁决／暂缓，开议前一问的叫法与代价
 //   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
+//   acts     可为（设计稿 9.2）：realm 为真即元首一档，各册原有的动作照旧（安民巡按调粮拟诏改隶兴造、任命廷推罢免弹劾荫子荐贤、补饷整训调防易将）；
+//            余者只列与身份相符的几件——own 所掌之地（无官者是本籍）的行文 [名, 注]，tour 行止，office 对在任官，army 对所统之兵。
+//            内核眼下只能以元首身份玩，余档这些一律灰着写缘由（借视角只读、官本位接上后可行）
 
 const CHANNEL_KEYS = ['ling', 'pi', 'shu', 'jian', 'xing'];
 
@@ -94,7 +97,8 @@ export const PROFILES = {
     },
     abdicate: { name: '禅让退位', note: '传位于后人，此举不可逆', tags: { heir: '储君', 'heir-blood': '皇嗣' },
       ask: (who) => `确定将大位禅让给${who}？此举不可撤回。`, ok: '禅让', done: (who) => `禅让既成，${who}已继大位` },
-    props: { seal: 'imperial', yellowMemorials: true }
+    props: { seal: 'imperial', yellowMemorials: true },
+    acts: { realm: true }
   },
   general: {
     name: '通用', room: 'yamen', desk: '公案', self: '本官', enter: '视事',
@@ -138,7 +142,13 @@ export const PROFILES = {
       envoy: { accept: '允', reject: '却', temporize: '缓议', counter: '还价' }
     },
     abdicate: '',
-    props: { seal: 'office', yellowMemorials: false }
+    props: { seal: 'office', yellowMemorials: false },
+    acts: {
+      own: [['出告示', '对民晓谕：劝农、禁约、赈恤'], ['札付属吏', '对下行文：催办、查报'], ['详文上报', '对上申详：请蠲、请赈、请兵']],
+      tour: ['巡视本辖', '出巡所辖州县'],
+      office: [['劾奏', '具疏劾其不法']],
+      army: [['操练本部', '整饬营伍'], ['具详请饷', '欠饷具详，请上司拨发']]
+    }
   }
 };
 
@@ -165,7 +175,8 @@ const UNOFFICIAL = {
     empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
     hints: { political: '家令、公呈……', military: '', diplomatic: '', economic: '', other: '' }
   },
-  props: { seal: 'private', yellowMemorials: false }
+  props: { seal: 'private', yellowMemorials: false },
+  acts: { own: [['联名公呈', '会同乡绅具呈地方官'], ['递呈', '具状呈请官府']], tour: null, office: [], army: [] }
 };
 
 export function profileOf(p) {

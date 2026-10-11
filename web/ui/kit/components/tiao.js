@@ -1,4 +1,4 @@
-// 签条：悬停提示。元素上写 data-tiao="正文"（可加 data-tiao-title="题"），或用 tiao(el, { title, text })。
+// 签条：悬停提示。元素上写 data-tiao="正文"（可加 data-tiao-title="题"），或用 tiao(el, { title, text })；要排版的给 { node }（一块现成的节点，如人像小签）。
 // 全页只有一张签条，跟着指针走，靠近屏边时翻到另一侧。
 import { h, overlayHost } from '../../core/dom.js';
 
@@ -31,9 +31,11 @@ function place(x, y) {
 
 function show(el, x, y) {
   const c = contentOf(el);
-  if (!c || (!c.text && !c.title)) return;
+  if (!c || (!c.text && !c.title && !c.node)) return;
   ensure();
-  slip.replaceChildren(c.title ? h('b', c.title) : '', c.text || '');
+  if (c.node) slip.replaceChildren(c.node);
+  else slip.replaceChildren(c.title ? h('b', c.title) : '', c.text || '');
+  slip.classList.toggle('card', !!c.node);
   place(x, y);
   slip.classList.add('on');
 }

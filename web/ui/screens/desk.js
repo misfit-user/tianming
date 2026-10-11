@@ -8,7 +8,7 @@
 import { h, replaceChildren } from '../core/dom.js';
 import { getSetting } from '../core/settings.js';
 import { bus } from '../core/bus.js';
-import { num, yearNum } from '../core/numerals.js';
+import { num, yearNum, grade } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
 import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
@@ -259,6 +259,32 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       : inCharge(region) ? (prof.official || !army ? 'exact' : 'rough') : false),
     onArmy: (key) => (key ? armyPage.show(key) : armyPage.show()),
     onRebels: () => armyPage.show()
+  });
+  // 人物所在落图：人物窗开着时，此人所在的府州上落一枚团扇小像（照 CK3 看人时图上标其所在）；收了人物窗就撤。随镜头每帧摆位，只在图上显
+  const wherePin = h('button.rw-where.off', { type: 'button', onclick: () => whereAt && flyMapTo(whereAt, Math.min(map.pose().dist, 520)) }, h('span.rw-where-face'), h('b'));
+  marksLayer.append(wherePin);
+  let whereAt = null;
+  function placeWhere(name) {
+    const c = name ? game.select.characters().find((p) => p.name === name) : null;
+    const [i] = c && c.location ? byPlace(c.location) : [];
+    const r = i == null ? null : mapRegionList[i];
+    whereAt = r && r.center ? r.center : null;
+    wherePin.classList.toggle('off', !whereAt);
+    if (!whereAt) return;
+    const initial = () => h('i', [...c.name][0]);
+    replaceChildren(wherePin.firstChild, c.portrait ? h('img', { src: c.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.replaceWith(initial()) }) : initial());
+    wherePin.lastChild.textContent = c.name;
+    wherePin.dataset.person = c.name;
+    wherePin.classList.remove('land');
+    void wherePin.offsetWidth;                                    // 重起落下那一下
+    wherePin.classList.add('land');
+  }
+  bus.on('renwu:shown', ({ name }) => placeWhere(name));
+  bus.on('renwu:hidden', () => placeWhere(null));
+  map.onFrame(() => {
+    if (!whereAt) return;
+    const [sx, sy] = map.worldToScreen(whereAt[0], whereAt[1]);
+    wherePin.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px)`;
   });
   // 回案钮：在图上是「回某案」，在案前是「入图」（镜头建好之前 furnish 先摆一次，那时不画）
   function paintDeskBtn() {
@@ -851,6 +877,33 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'gongwei') return gongweiPage.show();
     building(name, '');
   }
+  // ---------- 人像悬停小签（照 CK3 悬停人物）：凡写了 data-person 的人像、人名，悬停出一张小签——像、名与字、职衔品级、年齿势力党派、所在、
+  // 与我（元首看其忠诚，余者看交游里与我的亲疏）；寻人单里一行已写全，不再出。原生 title 拿掉，免得两张签叠着
+  let tipPeople = null, tipTurn = -1;
+  function personTip(name) {
+    const turn = game.select.date().turn;
+    if (!tipPeople || tipTurn !== turn) { tipPeople = new Map(game.select.people({ dead: true }).map((p) => [p.name, p])); tipTurn = turn; }
+    const p = tipPeople.get(name);
+    if (!p) return { title: name, text: '名册里无此人' };
+    const initial = () => h('i', [...p.name][0]);
+    const face = p.portrait ? h('img', { src: p.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.replaceWith(initial()) }) : initial();
+    const self = p.name === per.name;
+    const rel = per.previewing && !self ? (p.relations || []).find((r) => r.name === per.name) : null;
+    const tome = self ? '此即本人' : !per.previewing ? `忠诚 ${grade(p.loyalty)}` : rel ? `视我：${rel.tone === 'foe' ? '疏' : '亲'}` : '';
+    return { node: h('div.q-ptip' + (p.dead ? '.dead' : ''), h('span.q-ptip-face', face),
+      h('div', h('b', p.name, p.zi ? h('small', `字${p.zi}`) : null),
+        h('p', [p.office, p.rank.label].filter(Boolean).join(' · ')),
+        h('p', [p.age ? `${num(p.age)}岁` : '', p.faction, p.party].filter(Boolean).join(' · ')),
+        p.dead ? h('p.bad', `已故${p.deathReason ? '：' + p.deathReason : ''}`) : p.location ? h('p', `在${p.location}`) : null,
+        tome ? h('p.tome', tome) : null,
+        h('small', '点开人物窗 · 右键可为'))) };
+  }
+  root.addEventListener('pointerover', (e) => {
+    const t = e.target && e.target.closest ? e.target.closest('[data-person]') : null;
+    if (!t || !t.dataset.person || t._tiao || t.closest('.xr')) return;
+    t.removeAttribute('title');
+    tiao(t, () => (t.dataset.person ? personTip(t.dataset.person) : null));
+  }, true);
   // ---------- 可为：右键人像（立轴、图志、列传、立像）出一张交互单，照 CK3 右键人物——按五渠道分组，做不了的灰着、写明差什么 ----------
   root.addEventListener('contextmenu', (e) => {
     const t = e.target && e.target.closest ? e.target.closest('[data-person]') : null;

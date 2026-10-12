@@ -94,9 +94,10 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
     const { aa } = fixture(), original = base(), d = aa.makeDraft(original), r = await aa.runAuthoringLoop(d, '改名', { ...opts, caller: scripted([[call('applyEdit', { path: 'name', value: '新名' })], [finish]]) });
     assert(r.finished); assert.equal(d.name, '新名'); assert.equal(original.name, '原剧本'); assert(r.finalValidation);
   });
-  await test('existing structural failure still blocks normal finish', async () => {
+  await test('existing structural failure remains visible but does not block unrelated finish', async () => {
     const { aa } = fixture(), d = aa.makeDraft({ factions: [{ name: 'F' }], characters: [{ name: '坏引用', faction: 'missing' }] });
-    const r = await aa.runAuthoringLoop(d, '核对', { ...opts, caller: () => reply(finish) }); assert.equal(r.finished, false); assert.equal(r.stopReason, 'finishBlocked');
+    const r = await aa.runAuthoringLoop(d, '核对', { ...opts, caller: () => reply(finish) }); assert.equal(r.finished, true); assert.equal(r.stopReason, 'finish');
+    assert.equal(r.finalValidation.ok, false); assert(r.finalValidation.violations.some(v => /missing/.test(v)));
   });
   await test('ignored setter is a failed readback, not a verified successful no-op', async () => {
     const { aa } = fixture(), d = { labels: [] }; Object.defineProperty(d, 'name', { enumerable: true, configurable: true, get: () => '原', set() {} });

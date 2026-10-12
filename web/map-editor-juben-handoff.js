@@ -98,9 +98,26 @@
 
   function finishReturn() {
     try { localStorage.removeItem(HANDOFF_KEY); } catch (e) {}
-    // 关闭本标签（御案靠 storage 事件接收）；关不掉则后退
-    try { window.close(); } catch (e) {}
-    setTimeout(function () { if (!window.closed) { try { history.back(); } catch (e) {} } }, 150);
+    // 只有真正由御案 window.open 出来的子窗才允许 close。Electron 单窗 / 直接
+    // 导航到地图编辑器时 window.close() 会关闭承载游戏的主窗，表现为游戏闪退。
+    // 主窗和被拦截弹窗统一走 history.back()，返回御案后由 storage/focus 接收写回。
+    var hasOpener = false;
+    try { hasOpener = !!(window.opener && !window.opener.closed); } catch (e) {}
+    if (hasOpener) {
+      // Electron/Chromium may refuse a scripted close (for example when the
+      // tab was opened by a redirect rather than window.open).  Keep the
+      // close-first behaviour for a real child window, but retain a bounded
+      // history fallback so the user is never stranded in the editor.
+      try { window.close(); } catch (e) {}
+      setTimeout(function () {
+        var closed = false;
+        try { closed = !!window.closed; } catch (e) {}
+        if (closed) return;
+        try { history.back(); } catch (e) {}
+      }, 150);
+      return;
+    }
+    try { history.back(); } catch (e) {}
   }
 
   function start() {

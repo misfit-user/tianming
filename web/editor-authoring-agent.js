@@ -400,22 +400,66 @@
   // 区划人口读取器（字段在不同剧本可能略有出入·单点防御）
   function _getPop(node) {
     if (!node) return null;
-    if (node.populationDetail && typeof node.populationDetail.mouths === 'number') return node.populationDetail.mouths;
+    function finite(value) { return typeof value === 'number' && isFinite(value) && value >= 0 ? value : null; }
     var p = node.population;
-    if (p && typeof p === 'object' && typeof p.mouths === 'number') return p.mouths;
-    if (typeof p === 'number') return p;
-    if (typeof node.mouths === 'number') return node.mouths;
-    if (typeof node.pop === 'number') return node.pop;
+    var detailMouths = node.populationDetail ? finite(node.populationDetail.mouths) : null;
+    var objectMouths = null, objectTotal = null;
+    if (p && typeof p === 'object' && !Array.isArray(p)) {
+      objectMouths = finite(p.mouths);
+      objectTotal = finite(p.total);
+    }
+    // populationDetail is the editor-facing mirror, but older runtime objects
+    // may carry the real value in population.mouths/total while the mirror is
+    // still its default zero. Prefer the non-zero runtime value in that case.
+    if (detailMouths != null && detailMouths > 0) return detailMouths;
+    if (objectMouths != null && objectMouths > 0) return objectMouths;
+    if (objectTotal != null && objectTotal > 0) return objectTotal;
+    if (detailMouths != null) return detailMouths;
+    if (objectMouths != null) return objectMouths;
+    if (objectTotal != null) return objectTotal;
+    var scalar = finite(p); if (scalar != null) return scalar;
+    var mouths = finite(node.mouths); if (mouths != null) return mouths;
+    var pop = finite(node.pop); if (pop != null) return pop;
     return null; // 未知人口·跳过比较·不误报
+  }
+
+  // 增量质量闸不能比较整条中文提示或“当前有几条”——人口数、顺序和汇总文案
+  // 都可能因一次合法编辑而改变。校验器提供稳定实体键，闸只比较同一问题的严重度。
+  function _issueMap(keys, severities, messages) {
+    var out = {};
+    (keys || []).forEach(function (key, i) {
+      if (key == null || key === '') return;
+      var sev = severities && severities[i] != null ? Number(severities[i]) : 1;
+      out[String(key)] = { severity: isFinite(sev) ? Math.max(1, sev) : 1, message: messages && messages[i] != null ? String(messages[i]) : '' };
+    });
+    return out;
   }
 
   // 正式区划的子级是 children；旧国师生成的 divisions 只作兼容读取，勿双写。
   function _adminChildren(node) {
     return Array.isArray(node && node.children) && node.children.length ? node.children : (Array.isArray(node && node.divisions) ? node.divisions : []);
   }
+  // Official late-Tang data keeps foreign administrative wrapper nodes at
+  // population.mouths=0 while their leaf prefectures carry the real ledger.
+  // That zero means "not aggregated for this non-player branch", not a real
+  // zero population.  Keep the player branch strict and only accept this
+  // sentinel when the scenario explicitly identifies its player faction.
+  function _isPlayerAdminRoot(draft, fac, root) {
+    var info = draft && draft.playerInfo;
+    var playerId = info && (info.factionId || info.factionName || info.characterFaction);
+    if (!playerId && draft) playerId = draft.playerFactionId || draft.playerFaction;
+    if (!playerId && Array.isArray(draft && draft.factions)) {
+      var player = draft.factions.filter(function (f) { return f && f.isPlayer; })[0];
+      if (player) playerId = player.id || player.name;
+    }
+    if (!playerId) return null; // legacy/synthetic drafts retain strict behavior
+    var rootId = root && (root.factionId || root.factionName || root.id || root.name);
+    return String(playerId) === String(fac) || String(playerId) === String(rootId);
+  }
   /** ① 行政区划：父级人口 >= 子级人口之和（势力根 divisions，区划 children） */
   function vAdminPopulation(draft) {
     var v = [];
+    var issueKeys = [], issueSeverities = [];
     var h = draft && draft.adminHierarchy;
     if (!h || typeof h !== 'object' || Array.isArray(h)) {
       return { ok: true, violations: [], details: { skipped: '无 adminHierarchy' } };
@@ -425,8 +469,8 @@
       var root = h[fac];
       var divs = root && root.divisions;
       if (!Array.isArray(divs)) return;
-      (function walk(nodes) {
-        nodes.forEach(function(n) {
+      (function walk(nodes, parentPath) {
+        nodes.forEach(function(n, nodeIndex) {
           if (!n) return;
           var kids = _adminChildren(n);
           if (kids.length) {
@@ -436,23 +480,30 @@
               var kp = _getPop(k);
               if (kp == null) allKnown = false; else sum += kp;
             });
-            if (parentPop != null && allKnown) {
+            var playerRoot = _isPlayerAdminRoot(draft, fac, root);
+            var foreignZeroSentinel = playerRoot === false && parentPop === 0 && sum > 0;
+            if (parentPop != null && allKnown && !foreignZeroSentinel) {
               comparisons++;
               if (parentPop < sum) {
+                var deficit = sum - parentPop;
                 v.push('[' + fac + '] ' + (n.name || '?') + ' 人口 ' + parentPop + ' < 子级之和 ' + sum);
+                issueKeys.push('parent=' + String(fac) + '/' + String(n.id || (parentPath + '/' + (n.name || '?') + '#' + nodeIndex)));
+                issueSeverities.push(deficit);
               }
             }
-            walk(kids);
+            walk(kids, parentPath + '/' + String(n.id || n.name || nodeIndex));
           }
         });
-      })(divs);
+      })(divs, String(fac));
     });
-    return { ok: v.length === 0, violations: v, details: { comparisons: comparisons } };
+    return { ok: v.length === 0, violations: v, issueKeys: issueKeys, issueSeverities: issueSeverities,
+      issueMap: _issueMap(issueKeys, issueSeverities, v), details: { comparisons: comparisons } };
   }
 
   /** ② 势力引用合法性：人物/军队/地点引用的势力必须在 factions 中存在 */
   function vFactionRefs(draft) {
     var v = [];
+    var issueKeys = [], issueSeverities = [];
     var facs = (draft && draft.factions) || [];
     if (!Array.isArray(facs) || !facs.length) {
       return { ok: true, violations: [], details: { skipped: '无 factions' } };
@@ -461,14 +512,20 @@
     facs.forEach(function(f) { if (f && f.name) legal[f.name] = true; if (f && f.id) legalId[f.id] = true; });
     function check(ref, who) {
       if (ref == null || ref === '') return;
-      if (!legal[ref]) v.push(who + ' 引用不存在的势力「' + ref + '」');
+      if (!legal[ref]) {
+        v.push(who + ' 引用不存在的势力「' + ref + '」');
+        issueKeys.push(String(who) + '|ref=' + String(ref)); issueSeverities.push(1);
+      }
     }
     // 人物势力关联：优先认 factionId（稳定真相·势力改名/编辑器细化命名后人物不沦孤儿）·factionId 合法即放行；
     // 无 factionId 的人物回退查 faction 名串（兼容旧剧本）。国师 agent 生成/编辑人物时应同步维护 factionId（见 ensureCharFactionId）。
     (draft.characters || []).forEach(function(c) {
       if (!c) return;
       if (c.factionId != null && c.factionId !== '') {
-        if (!legalId[c.factionId]) v.push('人物 ' + (c.name || '?') + ' 的 factionId「' + c.factionId + '」不在 factions');
+        if (!legalId[c.factionId]) {
+          v.push('人物 ' + (c.name || '?') + ' 的 factionId「' + c.factionId + '」不在 factions');
+          issueKeys.push('character=' + String(c.id || c.name || '?') + '|factionId=' + String(c.factionId)); issueSeverities.push(1);
+        }
       } else {
         check(c.faction, '人物 ' + (c.name || '?'));
       }
@@ -488,13 +545,20 @@
       check(m.owner, '地点 ' + (m.name || '?') + '(owner)');
       check(m.controller, '地点 ' + (m.name || '?') + '(controller)');
     });
-    return { ok: v.length === 0, violations: v, details: { legalFactions: Object.keys(legal).length } };
+    return { ok: v.length === 0, violations: v, issueKeys: issueKeys, issueSeverities: issueSeverities,
+      issueMap: _issueMap(issueKeys, issueSeverities, v), details: { legalFactions: Object.keys(legal).length } };
   }
 
   /** ③ 区划↔地图覆盖：末级区划应在 mapData.regions 中有对应区域 */
   function vRegionCoverage(draft) {
     var v = [];
-    var regions = draft && draft.mapData && draft.mapData.regions;
+    var issueKeys = [], issueSeverities = [];
+    // Official drafts use mapData while the reset editor uses map. Prefer a
+    // non-empty regions array, otherwise an empty map alias must not hide the
+    // other one.
+    var map = draft && draft.mapData;
+    if (!map || !Array.isArray(map.regions) || !map.regions.length) map = draft && draft.map;
+    var regions = map && map.regions;
     var h = draft && draft.adminHierarchy;
     if (!Array.isArray(regions) || !regions.length) {
       return { ok: true, violations: [], details: { skipped: '无 mapData.regions' } };
@@ -502,9 +566,14 @@
     if (!h || typeof h !== 'object' || Array.isArray(h)) {
       return { ok: true, violations: [], details: { skipped: '无 adminHierarchy' } };
     }
-    var regionNames = {};
-    regions.forEach(function(r) { if (r && r.name) regionNames[r.name] = true; });
-    var orphans = [];
+    var regionById = {}, regionByName = {};
+    function addKey(out, key, index) { if (key != null && key !== '') out[String(key)] = index; }
+    regions.forEach(function(r, ri) {
+      if (!r) return;
+      [r.id, r.mapRegionId, r.sourceId, r.regionId, r.logicalRegionId, r.parentId, r.circuitId, r.sourceProvinceId].forEach(function(k) { addKey(regionById, k, ri); });
+      if (r.name) addKey(regionByName, r.name, ri);
+    });
+    var adminById = {}, adminByName = {}, adminNodes = [], adminLeaves = [];
     Object.keys(h).forEach(function(fac) {
       var divs = h[fac] && h[fac].divisions;
       if (!Array.isArray(divs)) return;
@@ -512,16 +581,78 @@
         nodes.forEach(function(n) {
           if (!n) return;
           var kids = _adminChildren(n);
-          if (!kids.length && n.name && !regionNames[n.name]) orphans.push(n.name);
+          adminNodes.push({ node: n, faction: fac });
+          if (n.id) adminById[String(n.id)] = { node: n, faction: fac };
+          if (n.name) adminByName[String(n.name)] = { node: n, faction: fac };
+          if (!kids.length) adminLeaves.push({ node: n, faction: fac });
           if (kids.length) walk(kids);
         });
       })(divs);
     });
-    if (orphans.length) {
-      v.push(orphans.length + ' 个末级区划在地图中无对应区域: '
-        + orphans.slice(0, 8).join('、') + (orphans.length > 8 ? '…' : ''));
+    function report(key, message) {
+      v.push(message); issueKeys.push(key); issueSeverities.push(1);
     }
-    return { ok: v.length === 0, violations: v, details: { orphanLeaves: orphans.length } };
+    var legacyOrphans = 0;
+    function bindingValues(row) {
+      if (!row) return [];
+      var values = [];
+      var seen = {};
+      function push(value, explicit) {
+        if (value == null || value === '') return;
+        var key = String(value) + '|' + (explicit ? '1' : '0');
+        if (seen[key]) return;
+        seen[key] = true; values.push({ value: String(value), explicit: !!explicit });
+      }
+      // These fields are ID bindings. If one is present, an equal-name region
+      // is not a valid substitute; this prevents stale IDs silently falling
+      // back to a same-name entity.
+      ['mapRegionId', 'mapRegionID', 'regionId', 'regionKey', 'mapId', 'mapRegionKey', 'mappedRegionId'].forEach(function(k) {
+        if (row[k] != null && row[k] !== '' && (typeof row[k] !== 'object')) push(row[k], true);
+      });
+      if (Array.isArray(row.mappedRegions)) row.mappedRegions.forEach(function(x) {
+        if (x == null || x === '') return;
+        if (typeof x === 'object') {
+          ['id', 'regionId', 'mapRegionId', 'key'].forEach(function(k) { if (x[k] != null && x[k] !== '') push(x[k], true); });
+          if (x.name) push(x.name, false);
+        } else push(x, true);
+      });
+      return values;
+    }
+    var adminBindingRefs = {};
+    adminNodes.forEach(function(entry) { bindingValues(entry.node).forEach(function(ref) { adminBindingRefs[ref.value] = true; }); });
+    var explicitMappingMode = regions.some(function(r) {
+      return r && (r.adminBinding != null && r.adminBinding !== '' || ['mapRegionId', 'mapRegionID', 'regionId', 'regionKey', 'mapId', 'mapRegionKey', 'mappedRegionId'].some(function(k) { return r[k] != null && r[k] !== ''; }));
+    }) || adminNodes.some(function(entry) { return bindingValues(entry.node).length > 0; });
+    // In the legacy name-only schema, keep the original coverage check. Once
+    // either side carries an explicit binding, unbound leaves are allowed
+    // (mobile/sea/diaspora units may have no polygon) and only the explicit
+    // reference itself is required to resolve.
+    if (!explicitMappingMode) adminLeaves.forEach(function(entry) {
+      var n = entry.node;
+      if (n.name && regionByName[String(n.name)] == null) { legacyOrphans++;
+        report('admin=' + String(entry.faction) + '/' + String(n.id || n.name || '?') + '|legacy-name',
+          '[' + entry.faction + '] 末级区划「' + n.name + '」在地图中无对应区域'); }
+    });
+    // Explicit bindings on an administrative node are authoritative.
+    adminNodes.forEach(function(entry) {
+      var n = entry.node, vals = bindingValues(n);
+      vals.forEach(function(ref) {
+        var ri = regionById[ref.value];
+        if (ri == null && !ref.explicit) ri = regionByName[ref.value];
+        if (ri == null) report('admin=' + String(entry.faction) + '/' + String(n.id || n.name || '?') + '|map=' + ref.value,
+          '[' + entry.faction + '] 区划「' + (n.name || n.id || '?') + '」绑定的地图地块「' + ref.value + '」不存在');
+      });
+    });
+    // Explicit adminBinding on a map region is also authoritative. Legacy
+    // name matching is accepted only when the region has no ID binding.
+    regions.forEach(function(r, ri) {
+      if (!r || r.adminBinding == null || r.adminBinding === '' || typeof r.adminBinding === 'object') return;
+      var binding = String(r.adminBinding), hit = adminByName[binding] || adminById[binding] || adminBindingRefs[binding];
+      if (!hit) report('region=' + String(r.id || r.name || ri) + '|admin=' + binding,
+        '地图地块「' + (r.name || r.id || ri) + '」的行政绑定「' + binding + '」不存在');
+    });
+    return { ok: v.length === 0, violations: v, issueKeys: issueKeys, issueSeverities: issueSeverities,
+      issueMap: _issueMap(issueKeys, issueSeverities, v), details: { checkedRegions: regions.length, checkedLeaves: adminLeaves.length, orphanLeaves: legacyOrphans } };
   }
 
   // 方向E · 真实运行时校验（把 tm-invariants 的运行时不变量按剧本 schema draft 化，agent 改完跑真体检并自修）
@@ -639,28 +770,32 @@
   // 顶层 relations 在官方剧本中也是开放图（党派/阶层/已故或未出场人物均可作节点），不能把所有未知端点都当坏外键。
   function vRelationConsistency(draft) {
     var v = [];
+    var issueKeys = [], issueSeverities = [];
     var rels = (draft && draft.relations) || [];
     if (!Array.isArray(rels) || !rels.length) return { ok: true, violations: [] };
     var names = {};
     ((draft && (draft.characters || draft.chars)) || []).forEach(function (c) { if (c && c.name) names[c.name] = 1; });
-    var danglingMap = {}, danglingEdges = 0, selfLoop = 0, dupes = 0, seen = {};
+    var danglingMap = {}, danglingEdges = 0, selfLoop = 0, dupes = 0, seen = {}, edgeOccurrences = {};
     rels.forEach(function (r) {
       if (!r) return;
       var f = r.from, t = r.to, bad = false;
       var strictRefs = r.strictRefs === true;
+      var edgeKey = String(r.id || (String(f) + '→' + String(t) + '·' + String(r.type || '')));
+      edgeOccurrences[edgeKey] = (edgeOccurrences[edgeKey] || 0) + 1;
+      var occurrence = edgeOccurrences[edgeKey];
       if (strictRefs && f && !names[f]) { danglingMap[f] = 1; bad = true; }
       if (strictRefs && t && !names[t]) { danglingMap[t] = 1; bad = true; }
-      if (bad) danglingEdges++;
-      if (f && f === t) selfLoop++;
+      if (bad) { danglingEdges++; issueKeys.push('dangling|' + edgeKey + '#' + occurrence); issueSeverities.push(1); }
+      if (f && f === t) { selfLoop++; issueKeys.push('self-loop|' + edgeKey + '#' + occurrence); issueSeverities.push(1); }
       var k = String(f) + '→' + String(t) + '·' + String(r.type || '');
-      if (seen[k]) dupes++; else seen[k] = 1;
+      if (seen[k]) { dupes++; issueKeys.push('duplicate|' + k + '#' + occurrence); issueSeverities.push(1); } else seen[k] = 1;
     });
     var danglingNames = Object.keys(danglingMap);
     if (danglingNames.length) v.push('严格人物关系边悬空引用 ' + danglingEdges + ' 条（strictRefs=true 且 from/to 不在人物名册）：' + danglingNames.slice(0, 6).join('、') + (danglingNames.length > 6 ? ' 等' : '') + '——人物改名用 renameEntity 联动·删人前 findReferences 清关系');
     if (selfLoop) v.push('关系自环(from=to) ' + selfLoop + ' 条');
     if (dupes) v.push('完全重复关系边(from+to+type 同) ' + dupes + ' 条');
-    // gateScore=边级计数（违规消息按类聚合·消息数对「多了一条悬空」不敏感·质量闸按此比对基线）
-    return { ok: v.length === 0, violations: v, gateScore: danglingEdges + selfLoop + dupes, details: { danglingEdges: danglingEdges, danglingNames: danglingNames.length, selfLoop: selfLoop, dupes: dupes } };
+    return { ok: v.length === 0, violations: v, issueKeys: issueKeys, issueSeverities: issueSeverities,
+      issueMap: _issueMap(issueKeys, issueSeverities, v), details: { danglingEdges: danglingEdges, danglingNames: danglingNames.length, selfLoop: selfLoop, dupes: dupes } };
   }
 
   var _checks = {
@@ -1319,6 +1454,43 @@
       parameters: { type: 'object', properties: { path: { type: 'string', description: '\u6587\u4ef6\u76f8\u5bf9\u8def\u5f84' }, offset: { type: 'number', description: '\u8d77\u59cb\u884c(\u4ece0,\u9ed8\u8ba40)' }, limit: { type: 'number', description: '\u8bfb\u591a\u5c11\u884c(\u9ed8\u8ba4250,\u4e0a\u9650400)' } }, required: ['path'] }
     },
     {
+      name: 'readAttachment',
+      description: '分段读取玩家本轮附加的文本文件。附件不会因 300KB 以上而丢弃；用 name + offset/limit 翻页，直到 done=true 后再修改草稿。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: '附件文件名' },
+        offset: { type: 'number', description: '字符偏移，默认0' },
+        limit: { type: 'number', description: '本段字符数，默认12000，最大20000' }
+      }, required: ['name'] }
+    },
+    {
+      name: 'searchAttachment',
+      description: '在玩家附件正文中做全文检索，不把整件附件塞进上下文。返回命中字符偏移、行号和短片段；拿偏移再用 readAttachment 分页核对上下文。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: '附件文件名' },
+        query: { type: 'string', description: '要查找的文本' },
+        offset: { type: 'number', description: '从该字符偏移继续搜索，默认0' },
+        limit: { type: 'number', description: '最多返回多少个命中，默认20，最大100' }
+      }, required: ['name', 'query'] }
+    },
+    {
+      name: 'readAttachmentJson',
+      description: '按 JSON 路径读取附件字段（懒解析、只返回该字段预览/元数据，适合几十 MB 官方剧本）。path 用点号和数组索引，如 map.regions.406 或 adminHierarchy.宋.divisions；先读清字段再决定是否写入草稿。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: 'JSON 附件文件名' },
+        path: { type: 'string', description: 'JSON 点路径；留空只返回根类型/键名' }
+      }, required: ['name'] }
+    },
+    {
+      name: 'applyAttachmentField',
+      description: '把附件 JSON 的一个字段按需深拷贝写入当前草稿。必须先用 readAttachmentJson 核对来源 path，再传 attachmentPath + draftPath；不会把整个附件放进模型上下文。',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: 'JSON 附件文件名' },
+        attachmentPath: { type: 'string', description: '附件 JSON 点路径' },
+        draftPath: { type: 'string', description: '当前草稿目标路径' },
+        reason: { type: 'string', description: '简短理由（可选）' }
+      }, required: ['name', 'attachmentPath', 'draftPath'] }
+    },
+    {
       name: 'listSource',
       description: '\u5217\u51fa\u4ee3\u7801\u5e93\u91cc\u7684\u6e90\u7801\u6587\u4ef6\u6e05\u5355\uff08\u53ef\u7528 filter \u5b50\u4e32\u8fc7\u6ee4\uff0c\u5982 "tm-" / "phase8" / ".html"\uff09\u3002\u4e0d\u77e5\u9053\u67d0\u529f\u80fd\u5728\u54ea\u4e2a\u6587\u4ef6\u65f6\u5148 listSource \u627e\uff0c\u518d readSource \u8bfb\u3002',
       parameters: { type: 'object', properties: { filter: { type: 'string', description: '\u6587\u4ef6\u540d\u5b50\u4e32\u8fc7\u6ee4(\u53ef\u9009)' } } }
@@ -1593,7 +1765,7 @@
       '- events.historical[]/random[]（事件）: ' + JSON.stringify(T.event),
       '【硬约束】① 中文显示名（人物/势力/地名）保持中文，禁止英译。',
       '② 人物/军队/地点引用的势力名必须在 factions 中存在。',
-      '③ 行政区划父级 populationDetail.mouths（或数值 population）必须 >= 各子级人口之和。'
+      '③ 行政区划父级 populationDetail.mouths（或数值 population）必须 >= 各子级人口之和；官方非玩家势力的上级包装节点若为 population=0，表示未汇总，不能当作真实零人口拦截。'
     ].join('\n');
   }
 
@@ -1749,6 +1921,89 @@
         return { ok: true, path: safe, totalLines: lines.length, from: off + 1, to: Math.min(lines.length, off + lim), content: slice.map(function (l, i) { return (off + i + 1) + '\t' + l; }).join('\n'), truncated: lines.length > off + lim };
       });
     }).catch(function (e) { return { ok: false, reason: '\u8bfb\u53d6\u51fa\u9519\uff1a' + ((e && e.message) || e) }; });
+  }
+  var _attachmentJsonCache = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function _attachmentFile(name, runCtx) {
+    var list = runCtx && Array.isArray(runCtx.attachments) ? runCtx.attachments : [];
+    var key = String(name || '').trim();
+    var file = list.filter(function (item) { return item && String(item.name || '') === key; })[0];
+    return file || null;
+  }
+  function _attachmentMissing(name) {
+    var key = String(name || '').trim();
+    return { ok: false, reason: '未找到本轮附件「' + key + '」；先使用附件名或重新附加文件' };
+  }
+  function _readAttachmentTool(name, offset, limit, runCtx) {
+    var file = _attachmentFile(name, runCtx);
+    if (!file) return _attachmentMissing(name);
+    var text = String(file.text || ''), off = Math.max(0, Number(offset) || 0), lim = Math.min(20000, Math.max(1, Number(limit) || 12000));
+    var content = text.slice(off, off + lim);
+    return { ok: true, name: String(file.name || ''), totalChars: text.length, from: off, to: off + content.length, content: content, done: off + content.length >= text.length, nextOffset: off + content.length };
+  }
+  function _searchAttachmentTool(name, query, offset, limit, runCtx) {
+    var file = _attachmentFile(name, runCtx);
+    if (!file) return _attachmentMissing(name);
+    var q = String(query == null ? '' : query);
+    if (!q) return { ok: false, reason: '需要非空 query' };
+    var text = String(file.text || ''), from = Math.max(0, Number(offset) || 0), cap = Math.min(100, Math.max(1, Number(limit) || 20));
+    var hits = [], pos = from, idx, line = text.slice(0, from).split('\n').length, lineScan = from;
+    while (hits.length < cap && (idx = text.indexOf(q, pos)) >= 0) {
+      var between = text.slice(lineScan, idx);
+      if (between) line += (between.match(/\n/g) || []).length;
+      var start = Math.max(0, idx - 100), end = Math.min(text.length, idx + q.length + 140);
+      hits.push({ offset: idx, line: line, snippet: text.slice(start, end) });
+      pos = idx + Math.max(1, q.length); lineScan = pos;
+    }
+    return { ok: true, name: String(file.name || ''), query: q, totalChars: text.length, from: from, hits: hits,
+      truncated: hits.length >= cap && text.indexOf(q, pos) >= 0, nextOffset: pos };
+  }
+  function _parseAttachmentJson(file) {
+    if (_attachmentJsonCache && _attachmentJsonCache.has(file)) return _attachmentJsonCache.get(file);
+    var parsed;
+    try {
+      var raw = String(file.text || '');
+      if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+      parsed = JSON.parse(raw);
+    }
+    catch (e) { return { ok: false, reason: '附件不是有效 JSON：' + ((e && e.message) || e) }; }
+    var result = { ok: true, value: parsed };
+    if (_attachmentJsonCache) _attachmentJsonCache.set(file, result);
+    return result;
+  }
+  function _attachmentJsonTool(name, path, runCtx) {
+    var file = _attachmentFile(name, runCtx);
+    if (!file) return _attachmentMissing(name);
+    var parsed = _parseAttachmentJson(file);
+    if (!parsed.ok) return parsed;
+    var key = String(path == null ? '' : path).trim();
+    if (!key) {
+      var root = parsed.value;
+      return { ok: true, name: String(file.name || ''), path: '', type: Array.isArray(root) ? 'array' : typeof root,
+        length: Array.isArray(root) ? root.length : undefined, keys: root && typeof root === 'object' && !Array.isArray(root) ? Object.keys(root).slice(0, 200) : undefined };
+    }
+    var resolved = _resolvePath(parsed.value, key);
+    if (!resolved || !resolved.exists) return { ok: false, code: 'attachment-path-not-found', reason: '附件 JSON 路径不存在：' + key };
+    var value = resolved.value, serialized = '';
+    try { serialized = JSON.stringify(value); } catch (_) { serialized = String(value); }
+    return { ok: true, name: String(file.name || ''), path: key, type: Array.isArray(value) ? 'array' : typeof value,
+      size: serialized.length, value: _truncForLLM(value, 12000), truncated: serialized.length > 12000 };
+  }
+  function _applyAttachmentFieldTool(draft, name, attachmentPath, draftPath, reason, runCtx) {
+    var file = _attachmentFile(name, runCtx);
+    if (!file) return _attachmentMissing(name);
+    var parsed = _parseAttachmentJson(file);
+    if (!parsed.ok) return parsed;
+    var sourcePath = String(attachmentPath == null ? '' : attachmentPath).trim();
+    if (!sourcePath) return { ok: false, reason: '需要 attachmentPath' };
+    var source = _resolvePath(parsed.value, sourcePath);
+    if (!source || !source.exists) return { ok: false, code: 'attachment-path-not-found', reason: '附件 JSON 路径不存在：' + sourcePath };
+    var copied;
+    try { copied = _agentClone(source.value); } catch (e) { return { ok: false, reason: '附件字段无法安全复制：' + ((e && e.message) || e) }; }
+    var write = applyEdit(draft, draftPath, copied, { reason: reason || ('应用附件 ' + String(file.name || '') + '·' + sourcePath) });
+    if (!write || write.ok === false) return write;
+    var size = 0; try { size = JSON.stringify(source.value).length; } catch (_) {}
+    return { ok: true, changed: write.changed !== false, name: String(file.name || ''), attachmentPath: sourcePath,
+      draftPath: String(draftPath || ''), sourceType: Array.isArray(source.value) ? 'array' : typeof source.value, sourceSize: size };
   }
   function _listSourceTool(filter) {
     if (!_sourceHasChannel()) return Promise.resolve({ ok: false, reason: '\u5f53\u524d\u73af\u5883\u4e0d\u652f\u6301\u8bfb\u6e90\u7801\uff08\u8bf7\u5728\u684c\u9762\u5ba2\u6237\u7aef\u6216 HTTP(S) \u5de5\u574a\u4e2d\u6253\u5f00\uff09' });
@@ -2008,11 +2263,11 @@
   var _WORKBENCH = global.TM && global.TM.AuthoringExtensions && global.TM.AuthoringExtensions.getWorkbench();
   var _WORKBENCH_TOOLS = _WORKBENCH ? _WORKBENCH.specs : [];
   AGENT_TOOLS = AGENT_TOOLS.concat(_WORKBENCH_TOOLS);
-  var _MUT_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, bulkUpdate: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1, renameEntity: 1, generateImage: 1, copyField: 1 };
+  var _MUT_TOOLS = { applyEdit: 1, applyPush: 1, multiEdit: 1, bulkAdd: 1, bulkUpdate: 1, removeEntity: 1, mapAssignOwner: 1, renameRegion: 1, renameEntity: 1, generateImage: 1, copyField: 1, applyAttachmentField: 1 };
   var _WRITE_TOOLS = _MUT_TOOLS;   // 兼容旧内部命名；不得另建第二份名单
   // 刀G3(2026-07-02·CC 对照) · 只读/致变工具表：重复读去重与"纯勘察打转"检测共用。
   //   validateDraft/preflight 亦只读——结果随草稿变·但去重有"期间零写入"守卫·天然安全。
-  var _READ_TOOLS = { getField: 1, getFields: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listCollection: 1, describeSchema: 1, listGaps: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, mapOverview: 1, checkHistory: 1, validateDraft: 1, preflight: 1, statsAggregate: 1, readQuickTestReport: 1 };
+  var _READ_TOOLS = { getField: 1, getFields: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listCollection: 1, describeSchema: 1, listGaps: 1, fieldContract: 1, genReference: 1, readSource: 1, readAttachment: 1, searchAttachment: 1, readAttachmentJson: 1, listSource: 1, grepSource: 1, mapOverview: 1, checkHistory: 1, validateDraft: 1, preflight: 1, statsAggregate: 1, readQuickTestReport: 1 };
   _WORKBENCH_TOOLS.forEach(function(t){if(t.effect==='read')_READ_TOOLS[t.name]=1;if(t.effect==='draft-write')_MUT_TOOLS[t.name]=1;});
   var _TOOL_PACK_BY_NAME = {
     mapOverview: 'map', mapAssignOwner: 'map', renameRegion: 'map',
@@ -2105,6 +2360,7 @@
     if (workbenchTargets && workbenchTargets.length) return workbenchTargets;
     function field(p) { return 'field:' + String(p || '').replace(/\[(\d+)\]/g, '.$1'); }
     if (name === 'applyEdit' || name === 'generateImage' || name === 'removeEntity') return [field(input.path)];
+    if (name === 'applyAttachmentField') return [field(input.draftPath)];
     if (name === 'copyField') return [field(input.to)];
     if (name === 'multiEdit' && Array.isArray(input.edits) && input.edits.length) return input.edits.map(function(e) { return field(e && e.path); });
     if (name === 'applyPush' || name === 'bulkAdd') return ['append:' + String(input.path || input.collection || '')];
@@ -2117,6 +2373,7 @@
     var roots;
     switch (name) {
       case 'applyEdit': case 'applyPush': case 'removeEntity': case 'generateImage': roots = [_pathRoot(input.path)]; break;
+      case 'applyAttachmentField': roots = [_pathRoot(input.draftPath)]; break;
       case 'copyField': roots = [_pathRoot(input.to)]; break;
       case 'multiEdit': roots = (Array.isArray(input.edits) ? input.edits : []).map(function (e) { return _pathRoot(e && e.path); }); break;
       case 'bulkAdd': case 'bulkUpdate': roots = [_pathRoot(input.collection)]; break;
@@ -2388,6 +2645,10 @@
         return { ok: true, count: sv.length, fields: sv.map(function (s) { return s.field + (s.title ? '(' + s.title + ')' : '') + (s.required ? '\u00b7\u5fc5\u9700' : ''); }) };
       }
       case 'readSource': return _readSourceTool(input.path, input.offset, input.limit);
+      case 'readAttachment': return _readAttachmentTool(input.name, input.offset, input.limit, runCtx);
+      case 'searchAttachment': return _searchAttachmentTool(input.name, input.query, input.offset, input.limit, runCtx);
+      case 'readAttachmentJson': return _attachmentJsonTool(input.name, input.path, runCtx);
+      case 'applyAttachmentField': return _applyAttachmentFieldTool(draft, input.name, input.attachmentPath, input.draftPath, input.reason, runCtx);
       case 'genReference': return _genReferenceTool(input.part, (draft && draft.worldKind === 'fictional') ? 'fictional' : 'historical');
       case 'mapOverview': {
         var _m = (draft && draft.map) || (draft && draft.mapData) || {};
@@ -2612,7 +2873,7 @@
     }, required: ['steps'] }
   };
   function _planTools() {
-    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1, validateDraft: 1, preflight: 1 };
+    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, readAttachment: 1, searchAttachment: 1, readAttachmentJson: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1, validateDraft: 1, preflight: 1 };
     return AGENT_TOOLS.filter(function(t) { return readNames[t.name]; }).concat([PROPOSE_PLAN_TOOL]);
   }
   // 方向D · 审阅模式：只读工具 + submitReview（产出结构化体检报告，不动剧本）
@@ -2632,7 +2893,7 @@
   };
   function _reviewTools() {
     // S11 · recordConvention 入审阅工具集：只产建议不动剧本·「/初始化约定」(Codex /init 对照)靠它总结剧本惯例
-    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1, validateDraft: 1, preflight: 1, recordConvention: 1 };
+    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, readAttachment: 1, searchAttachment: 1, readAttachmentJson: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1, validateDraft: 1, preflight: 1, recordConvention: 1 };
     return AGENT_TOOLS.filter(function(t) { return readNames[t.name]; }).concat([SUBMIT_REVIEW_TOOL]);
   }
   // 方向L · 剧本问答：只读工具 + submitAnswer（查清后直接回答，不动剧本）
@@ -2644,7 +2905,7 @@
     }, required: ['answer'] }
   };
   function _qaTools() {
-    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1 };
+    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, readAttachment: 1, searchAttachment: 1, readAttachmentJson: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1 };
     return AGENT_TOOLS.filter(function(t) { return readNames[t.name]; }).concat([SUBMIT_ANSWER_TOOL]);
   }
   // 方向N · 解释/教学：只读工具 + submitExplanation（讲解剧本设计意图与机制脉络，不动剧本）
@@ -2660,7 +2921,7 @@
     }, required: ['points'] }
   };
   function _explainTools() {
-    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1 };
+    var readNames = { getField: 1, getFields: 1, fieldContract: 1, genReference: 1, readSource: 1, readAttachment: 1, searchAttachment: 1, readAttachmentJson: 1, listSource: 1, grepSource: 1, searchEntities: 1, globalSearch: 1, findReferences: 1, listGaps: 1, listCollection: 1, describeSchema: 1, mapOverview: 1, statsAggregate: 1, readQuickTestReport: 1 };
     return AGENT_TOOLS.filter(function(t) { return readNames[t.name]; }).concat([SUBMIT_EXPLANATION_TOOL]);
   }
   // 方向B · 把玩家的「剧本约定」拼成系统提示词里的一段（空则不注入）
@@ -2977,25 +3238,65 @@
 
   // 刀①(2026-07-10 智能升级B)：finish 质量闸·增量基线——run 起点各「运行时必崩组+关系一致性」的违规数快照。
   // 闸语义=「不得比开工时更糟」：存量坏账不逼 agent 顺手修完（否则小任务也被整局旧病闸死）·但绝不许带新病收尾。
-  var _GATE_GROUPS = ['runtime-boot', 'faction-refs', 'runtime-office', 'runtime-chars', 'relation-consistency'];
-  function _gateCounts(draft) {
-    var counts = {};
+  var _GATE_GROUPS = ['admin-population', 'runtime-boot', 'faction-refs', 'runtime-office', 'runtime-chars', 'relation-consistency'];
+  function _gateIssues(group, report) {
+    var out = {};
+    report = report || {};
+    if (report.issueMap && typeof report.issueMap === 'object') {
+      Object.keys(report.issueMap).forEach(function (key) {
+        var row = report.issueMap[key];
+        out[String(key)] = { severity: row && isFinite(Number(row.severity)) ? Math.max(1, Number(row.severity)) : 1, message: row && row.message ? String(row.message) : '' };
+      });
+      return out;
+    }
+    if (Array.isArray(report.issueKeys) && report.issueKeys.length) {
+      report.issueKeys.forEach(function (key, i) {
+        out[String(key)] = { severity: report.issueSeverities && isFinite(Number(report.issueSeverities[i])) ? Math.max(1, Number(report.issueSeverities[i])) : 1,
+          message: report.violations && report.violations[i] ? String(report.violations[i]) : '' };
+      });
+      return out;
+    }
+    (report.violations || []).forEach(function (message) {
+      // Fallback groups have no entity-level contract yet. Keep the full text
+      // as their key so equal counts with different problems cannot pass.
+      out[String(group) + '|message|' + String(message)] = { severity: 1, message: String(message) };
+    });
+    return out;
+  }
+  function _gateSnapshot(draft) {
+    var snapshot = {};
     _GATE_GROUPS.forEach(function (g) {
       try {
         var r = _checks[g] ? (_checks[g](draft) || { violations: [] }) : { violations: [] };
-        // 优先 gateScore（细粒度·如关系检查按边计数——违规消息按类聚合·对「多了一条悬空」不敏感）
-        counts[g] = (typeof r.gateScore === 'number' && isFinite(r.gateScore)) ? r.gateScore : (r.violations || []).length;
-      } catch (_) { counts[g] = 0; }
+        snapshot[g] = _gateIssues(g, r);
+      } catch (_) { snapshot[g] = {}; }
     });
-    return counts;
+    return snapshot;
+  }
+  function _gateCount(snapshot, group) {
+    var row = snapshot && snapshot[group];
+    return row && typeof row === 'object' ? Object.keys(row).length : 0;
   }
 
   // 取指定 group 的违规（finish 门控只拦 agent 能改的硬不变量·见 blockingChecks 默认值）
-  function _blockingViolations(report, blockingChecks) {
+  function _blockingViolations(report, blockingChecks, baseline) {
     var v = [];
     blockingChecks.forEach(function(g) {
       var r = report.results && report.results[g];
-      if (r && r.violations) r.violations.forEach(function(m) { v.push('[' + g + '] ' + m); });
+      if (!r || !r.violations) return;
+      var current = _gateIssues(g, r), base = baseline && baseline[g];
+      // Resume states created before the stable-key gate used counts. Treat
+      // those conservatively: only a larger count blocks, while new states
+      // compare exact issue keys and severity.
+      if (typeof base === 'number') {
+        if (Object.keys(current).length > base) Object.keys(current).forEach(function(k) { v.push('[' + g + '] ' + (current[k].message || k)); });
+        return;
+      }
+      base = base && typeof base === 'object' ? base : {};
+      Object.keys(current).forEach(function(k) {
+        var row = current[k], old = base[k];
+        if (!old || Number(row.severity || 1) > Number(old.severity || 1)) v.push('[' + g + '] ' + (row.message || k));
+      });
     });
     return v;
   }
@@ -3017,6 +3318,7 @@
     input = input || {};
     switch (name) {
       case 'applyEdit': case 'applyPush': case 'removeEntity': case 'generateImage': return [_topOf(input.path)];
+      case 'applyAttachmentField': return [_topOf(input.draftPath)];
       case 'copyField': return [_topOf(input.to)];
       case 'bulkAdd': case 'bulkUpdate': return [_topOf(input.collection)];
       case 'multiEdit': return (Array.isArray(input.edits) ? input.edits : []).map(function(e) { return _topOf(e && e.path); });
@@ -3071,6 +3373,16 @@
   }
   // direct dispatch 的兼容任务表；正式循环各自持有 control.todoState，不被并行运行重置。
   var _todoState = { list: [] };
+  function _mergeAttachmentRefs(previous, current) {
+    var out = [], byName = {};
+    (Array.isArray(previous) ? previous : []).concat(Array.isArray(current) ? current : []).forEach(function (item) {
+      if (!item || !item.name || typeof item.text !== 'string') return;
+      var name = String(item.name), clean = { name: name, text: item.text };
+      if (byName[name] != null) out[byName[name]] = clean;
+      else { byName[name] = out.length; out.push(clean); }
+    });
+    return out;
+  }
 
   function runAuthoringLoop(draft, userRequest, opts) {
     opts = opts || {};
@@ -3100,7 +3412,7 @@
     var maxTokens = opts.maxTokens || 260000;         // 刀D · 自主度：token 预算放宽·覆盖长任务一次跑完
     var maxFinishAttempts = opts.maxFinishAttempts || 3;
     var blockingChecks = opts.blockingChecks || ['admin-population', 'faction-refs'];
-    var _gateBaseline = resume ? resume.gateBaseline : _gateCounts(draft);
+    var _gateBaseline = resume ? resume.gateBaseline : _gateSnapshot(draft);
     var qualityGateOn = opts.qualityGate !== false || !!(resume && resume.qualityGateOn);
     if (resume) blockingChecks = blockingChecks.concat(resume.blockingChecks || []).filter(function(v, i, a) { return a.indexOf(v) === i; });
     var perms = { allowedCollections: opts.allowedCollections || null, allowedRegionIds:opts.allowedRegionIds||null, allowDestructive: opts.allowDestructive !== false };   // 方向F · 权限（默认无限制·全放行）
@@ -3183,7 +3495,7 @@
     var _localCtrl = !_kernelRun && typeof global.AbortController === 'function' ? new global.AbortController() : null;
     var control = {
       aborted: false, steers: [], sideEffects: resume ? _agentClone(resume.sideEffects) : [], toolReceipts: resume ? _agentClone(resume.toolReceipts) : [],
-      failures: resume ? _agentClone(resume.failures) : [], todoState: { list: [] }, effectPrefix: 'authoring-' + (++_authoringRunSequence),
+      failures: resume ? _agentClone(resume.failures) : [], todoState: { list: [] }, attachments: _mergeAttachmentRefs(resume && resume.attachments, opts.attachments), effectPrefix: 'authoring-' + (++_authoringRunSequence),
       signal: _kernelRun ? _kernelRun.signal : (_localCtrl ? _localCtrl.signal : null),
       abort: function(reason) {
         if (control.aborted) return;
@@ -3308,7 +3620,7 @@
         pendingTodos: control.todoState.list.filter(function(t) { return t.status !== 'completed'; }).map(function(t) { return t.content; }) };
     }
     function checkpoint() {
-      return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list),
+      return _makeResume('loop', draft, { mode: runMode, conversation: _agentClone(conversation), transcript: _agentClone(transcript), todos: _agentClone(control.todoState.list), attachments: control.attachments.slice(),
         sideEffects: _agentClone(control.sideEffects), toolReceipts: _agentClone(control.toolReceipts), failures: _agentClone(control.failures), writeCount: _writeCount,
         gateBaseline: _agentClone(_gateBaseline), qualityGateOn: qualityGateOn, blockingChecks: blockingChecks.slice(), selectedTools:tools.map(function(t){return t.name;}), metrics:Object.assign({},metrics), textToolFallback: textToolFallback, explicitStream: explicitStream, provenToolFormat: provenToolFormat, outputMaxTok: _curMaxTok, apiDiagnostics: _agentClone(apiDiagnostics) });
     }
@@ -3423,12 +3735,17 @@
                   finishAttempts++;
                   return { ok: false, finish: false, errorCode: 'todos-pending', reason: '任务表尚有 ' + _pTd.length + ' 项未完成：' + _pTd.slice(0, 3).map(function (t) { return '「' + t.content + '」'; }).join('、') + (_pTd.length > 3 ? ' 等' : '') + '。请逐项完成并用 todoWrite 标 completed 后再 finish；若某项经查确实不需要做，先用 todoWrite 更新任务表（移除或改写该项）再 finish。' };
                 }
-                var blocking = _blockingViolations(validateDraft(draft), blockingChecks);
+                var blocking = _blockingViolations(validateDraft(draft), blockingChecks, _gateBaseline);
                 if (blocking.length) { finishAttempts++; return { ok: false, finish: false, reason: '\u8349\u7a3f\u4ecd\u6709 ' + blocking.length + ' \u9879\u5fc5\u4fee\u8fdd\u89c4\uff0c\u7981\u6b62\u7ed3\u675f\uff0c\u8bf7\u5148\u4fee\u590d', violations: blocking }; }
                 // \u5200\u2460(2026-07-10 \u667a\u80fd\u5347\u7ea7B)\uff1a\u8d28\u91cf\u95f8\u2014\u2014\u8fd0\u884c\u65f6\u5fc5\u5d29\u7ec4+\u5173\u7cfb\u4e00\u81f4\u6027\u4e0d\u5f97\u6bd4\u5f00\u5de5\u65f6\u66f4\u7cdf\uff08\u5b58\u91cf\u4e0d\u8ffd\u8d23\u00b7\u65b0\u75c5\u4e0d\u653e\u884c\u00b7\u6cbb\u5e26\u75c5\u6536\u5c3e\uff09
                 if (qualityGateOn) {
-                  var _gNow = _gateCounts(draft);
-                  var _gWorse = _GATE_GROUPS.filter(function (g) { return (_gNow[g] || 0) > (_gateBaseline[g] || 0); });
+                  var _gNow = _gateSnapshot(draft);
+                  var _gWorse = _GATE_GROUPS.filter(function (g) {
+                    var now = _gNow[g] || {}, old = _gateBaseline && _gateBaseline[g];
+                    if (typeof old === 'number') return Object.keys(now).length > old;
+                    old = old && typeof old === 'object' ? old : {};
+                    return Object.keys(now).some(function (key) { return !old[key] || Number(now[key].severity || 1) > Number(old[key].severity || 1); });
+                  });
                   if (_gWorse.length) {
                     finishAttempts++;
                     var _gDetail = [];
@@ -3436,8 +3753,8 @@
                       try { ((_checks[g](draft) || {}).violations || []).slice(0, 2).forEach(function (m) { _gDetail.push('[' + g + '] ' + m); }); } catch (_) {}
                     });
                     return { ok: false, finish: false, errorCode: 'quality-gate-worse',
-                      reason: '\u8d28\u91cf\u95f8\uff1a\u4ee5\u4e0b\u68c0\u67e5\u6bd4\u5f00\u5de5\u65f6\u66f4\u7cdf\u00b7\u7981\u6b62\u6536\u5c3e\uff08\u628a\u672c\u6b21\u6539\u52a8\u5f15\u5165\u7684\u65b0\u95ee\u9898\u4fee\u6389\u518d finish\u00b7\u7528 validateDraft(group)/preflight \u5b9a\u4f4d\uff09\uff1a'
-                        + _gWorse.map(function (g) { return g + '(' + (_gateBaseline[g] || 0) + '\u2192' + (_gNow[g] || 0) + ')'; }).join('\u3001'),
+                       reason: '\u8d28\u91cf\u95f8\uff1a\u4ee5\u4e0b\u68c0\u67e5\u6bd4\u5f00\u5de5\u65f6\u66f4\u7cdf\u00b7\u7981\u6b62\u6536\u5c3e\uff08\u628a\u672c\u6b21\u6539\u52a8\u5f15\u5165\u7684\u65b0\u95ee\u9898\u4fee\u6389\u518d finish\u00b7\u7528 validateDraft(group)/preflight \u5b9a\u4f4d\uff09\uff1a'
+                         + _gWorse.map(function (g) { return g + '(' + (typeof (_gateBaseline && _gateBaseline[g]) === 'number' ? _gateBaseline[g] : _gateCount(_gateBaseline, g)) + '\u2192' + _gateCount(_gNow, g) + ')'; }).join('\u3001'),
                       violations: _gDetail.slice(0, 8) };
                   }
                 }

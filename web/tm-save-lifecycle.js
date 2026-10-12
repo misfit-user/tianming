@@ -1171,6 +1171,9 @@ function _tmStripSaveTransportMetadata(target) {
 
 function _tmRuntimeMapSourceForWorld(targetP, targetGM) {
   var source = (targetGM && targetGM.mapData && targetGM.mapData.regions && targetGM.mapData.regions.length > 0) ? targetGM.mapData :
+    // 旧版运行态把可变地图保存在 GM.map；GM.mapData 可能只是启动时补出的空脚手架。
+    // 这份世界态优先于 P.map/P.mapData 两个剧本模板镜像，否则旧自建档会被模板地图替换。
+    (targetGM && targetGM.map && targetGM.map.regions && targetGM.map.regions.length > 0) ? targetGM.map :
     (targetP && targetP.map && targetP.map.regions && targetP.map.regions.length > 0) ? targetP.map :
     (targetP && targetP.mapData && targetP.mapData.regions && targetP.mapData.regions.length > 0) ? targetP.mapData : null;
   if (!source && typeof findScenarioById === 'function' && targetGM && targetGM.sid) {

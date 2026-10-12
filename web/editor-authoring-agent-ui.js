@@ -82,6 +82,8 @@
     if (ui._sessionSwitch) { setStatus('正在切换案卷，请等待载入完成'); return false; }
     var owner = ui._draftOwner || (ui.conversation && ui.conversation.length ? ui._conversationOwner : null);
     if (!owner || _ownerCurrent(owner)) return true;
+    ui._attachmentCarry = null;
+    ui._planAttachments = null;
     setStatus(_ownerError().message);
     return false;
   }
@@ -91,6 +93,7 @@
     ui._activeUiRun = run;
     ui._conversationOwner = owner;
     options = Object.assign({}, options);
+    if (Array.isArray(options.attachments)) ui._attachmentCarry = options.attachments.slice();
     if(ui._workbenchTask){
       if(method!=='runAuthoringLoop')return Promise.reject(new Error('持久预算任务请使用标准国师执行；并行会审尚未接入这份调用预算'));
       options.workbenchTask=Object.assign({},ui._workbenchTask);options.noMemoryRecall=true;
@@ -235,7 +238,7 @@
   function _draftDiff() {
     return AA.computeDiff(ui.baseScenario || (ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : {}), ui.draft || {});
   }
-  function _clearDraft() { ui.draft = null; ui.baseScenario = null; ui._draftOwner = null; ui._staleResult = null; ui._pendingSideEffects = []; ui._recovery = null; ui._resumeNext = false; ui._completion = null; ui._lastErr = null; ui._partialApplyConfirmed = false; }
+  function _clearDraft() { ui.draft = null; ui.baseScenario = null; ui._draftOwner = null; ui._staleResult = null; ui._pendingSideEffects = []; ui._recovery = null; ui._resumeNext = false; ui._completion = null; ui._lastErr = null; ui._partialApplyConfirmed = false; ui._planAttachments = null; }
   function _captureSideEffects(res, append) {
     var fx = (res && Array.isArray(res.sideEffects)) ? res.sideEffects : [];
     if (!append) ui._pendingSideEffects = [];
@@ -1130,17 +1133,33 @@
   // ── S2 · 附件（Claude 桌面端式）：曲别针/拖拽入面板/输入框粘贴截图 → 签行预览 → 发送时
   //    文本文件内联为【附件】上下文·图片走视觉通道（user 消息 images[]·主模型须支持视觉）。 ──
   var _ATT_TEXT_RE = /\.(txt|md|json|csv|tsv|js|yml|yaml|xml|html?)$/i;
-  function _attState() { if (!ui._att) ui._att = { files: [], images: [] }; return ui._att; }
+  var _ATT_TEXT_MAX_BYTES = 128 * 1024 * 1024;
+  var _ATT_TEXT_INLINE_CHARS = 12000;
+  function _attState() {
+    if (!ui._att) ui._att = { files: [], images: [], pending: 0, pendingNames: Object.create(null) };
+    if (!ui._att.pendingNames) ui._att.pendingNames = Object.create(null);
+    return ui._att;
+  }
+  function _mergeTextAttachments(previous, current) {
+    var out = [], byName = Object.create(null);
+    (Array.isArray(previous) ? previous : []).concat(Array.isArray(current) ? current : []).forEach(function (f) {
+      if (!f || !f.name || typeof f.text !== 'string') return;
+      var clean = { name: String(f.name), text: f.text };
+      if (byName[clean.name] != null) out[byName[clean.name]] = clean;
+      else { byName[clean.name] = out.length; out.push(clean); }
+    });
+    return out;
+  }
   function _renderAttach() {
     var box = ui.els && ui.els.attach; if (!box) return;
     var a = _attState();
-    if (!a.files.length && !a.images.length) { box.hidden = true; box.innerHTML = ''; return; }
+    if (!a.files.length && !a.images.length && !a.pending) { box.hidden = true; box.innerHTML = ''; return; }
     box.hidden = false;
     box.innerHTML = a.images.map(function (u, i) {
       return '<span class="att-chip att-img"><img src="' + u + '" alt="附图"><button type="button" class="att-x" data-k="img" data-i="' + i + '" title="移除">×</button></span>';
     }).join('') + a.files.map(function (f, i) {
       return '<span class="att-chip"><span class="att-ic">' + _icon('book') + '</span><span class="att-nm" title="' + esc(f.name) + '">' + esc(f.name) + '</span><span class="att-sz">' + Math.ceil(f.text.length / 1000) + 'k字</span><button type="button" class="att-x" data-k="file" data-i="' + i + '" title="移除">×</button></span>';
-    }).join('');
+    }).join('') + (a.pending ? '<span class="att-chip att-pending">附件读取中…</span>' : '');
   }
   function _ingestFiles(list) {
     var a = _attState();
@@ -1149,25 +1168,36 @@
       if (/^image\//.test(f.type)) {
         if (a.images.length >= 3) { setStatus('图片最多 3 张（已忽略「' + f.name + '」）'); return; }
         if (f.size > 4 * 1024 * 1024) { setStatus('图片过大（>4MB）：' + f.name + ' 已忽略·请截小一点'); return; }
-        var rd = new FileReader();
-        rd.onload = function () { a.images.push(String(rd.result)); _renderAttach(); };
+        var rd = new FileReader(); a.pending++;
+        rd.onload = function () { a.images.push(String(rd.result)); };
+        rd.onerror = function () { setStatus('图片读取失败：' + f.name); };
+        rd.onloadend = function () { a.pending = Math.max(0, a.pending - 1); _renderAttach(); };
+        _renderAttach();
         rd.readAsDataURL(f);
       } else if (_ATT_TEXT_RE.test(f.name) || /^text\//.test(f.type) || f.type === 'application/json') {
-        if (a.files.length >= 4) { setStatus('文本附件最多 4 个（已忽略「' + f.name + '」）'); return; }
-        if (f.size > 300 * 1024) { setStatus('文件过大（>300KB）：' + f.name + ' 已忽略'); return; }
-        var rt = new FileReader();
-        rt.onload = function () { a.files.push({ name: f.name, text: String(rt.result || '').slice(0, 12000) }); _renderAttach(); };
+        if (a.files.length + Object.keys(a.pendingNames || {}).length >= 4) { setStatus('文本附件最多 4 个（已忽略「' + f.name + '」）'); return; }
+        if (a.files.some(function (x) { return x && x.name === f.name; }) || (a.pendingNames && a.pendingNames[f.name])) { setStatus('附件名重复，已忽略「' + f.name + '」·请先重命名后再附加'); return; }
+        if (f.size > _ATT_TEXT_MAX_BYTES) { setStatus('文件过大（>128MB）：' + f.name + ' 已忽略'); return; }
+        var rt = new FileReader(); a.pending++; a.pendingNames[f.name] = true;
+        rt.onload = function () { a.files.push({ name: f.name, text: String(rt.result || '') }); };
+        rt.onerror = function () { setStatus('文本附件读取失败：' + f.name); };
+        rt.onloadend = function () { delete a.pendingNames[f.name]; a.pending = Math.max(0, a.pending - 1); _renderAttach(); };
+        _renderAttach();
         rt.readAsText(f);
       } else setStatus('暂不支持该类型附件：' + f.name + '（支持文本类与图片）');
     });
   }
-  function _attachPrefix() {   // 发送时把文本附件内联进需求（各 12k 上限·总量再由预算/压缩管）
+  function _attachPrefix() {   // 发送时把文本附件内联进需求（完整正文保留在 readAttachment 分段工具）
     var a = _attState();
     if (!a.files.length) return '';
-    return a.files.map(function (f) { return '\n\n【附件 · ' + f.name + '】\n' + f.text; }).join('') + '\n\n（以上为玩家提供的参考附件·按需取用）';
+    return a.files.map(function (f) {
+      var head = f.text.slice(0, _ATT_TEXT_INLINE_CHARS);
+      return '\n\n【附件 · ' + f.name + ' · 共' + f.text.length + '字】\n' + head + (f.text.length > head.length ? '\n（正文未截断，使用 readAttachment(name="' + f.name + '", offset=' + head.length + ') 继续读取）' : '');
+    }).join('') + '\n\n（以上为玩家提供的参考附件·需完整处理时必须分段读完）';
   }
+  function _takeTextAttachments() { return _mergeTextAttachments(ui._attachmentCarry, _attState().files); }
   function _takeImages() { var a = _attState(); var im = a.images.slice(0, 3); return im.length ? im : null; }
-  function _clearAttach() { ui._att = { files: [], images: [] }; _renderAttach(); }
+  function _clearAttach() { ui._att = { files: [], images: [], pending: 0, pendingNames: Object.create(null) }; _renderAttach(); }
   function _ensureAttach() {
     if (!ui.els || ui._attBound) return;
     ui._attBound = true;
@@ -1563,6 +1593,8 @@
       if (ui._sessionSwitch !== switchOwner) return;
       ui._sessionSwitch = null;
       ui._conversationOwner = null;
+      ui._attachmentCarry = null;
+      ui._planAttachments = null;
       if (!viewOnly && meta.fileKey !== _fileKey()) viewOnly = true;
       ui._pendingPlan = false; ui._pendingClarify = false; _clearDraft(); ui._autoCont = 0;
       if (ui._criticsArmed) _disarmCriticsVisual();
@@ -2371,11 +2403,16 @@
   function executePlan() {
     if (ui.running || !ui.draft) return;
     if (!_contextReady()) return;
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再执行计划'); return; }
+    var _planAttachments = _mergeTextAttachments(ui._planAttachments, _attState().files);
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     setRunning(true);
     setStatus('正在按计划执行…');
+    ui._planAttachments = null;
+    _clearAttach();
     _runOwned('runAuthoringLoop', ui.draft, '按上面的计划执行这些改动；改完用 validateDraft 自查后调用 finish。', {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
+      attachments: _planAttachments,
       priorConversation: ui.conversation,
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
@@ -2407,6 +2444,8 @@
     if (ui.running) return;
     if (!_contextReady()) return;
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
+    var _attTxt = _attachPrefix(), _textAttachments = _takeTextAttachments();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     var focus = (ui.els.req.value || '').trim();
     _appendUserMsg(focus || '审阅整个剧本', { kind: 'review', input: focus });   // UI·B 会话流 + UI·Y 重试派发
@@ -2414,9 +2453,11 @@
     ui.conversation = null; ui._pendingPlan = false;
     setRunning(true);
     setStatus('正在审阅剧本…（agent 只读巡查，出体检报告，可能需要数十秒）');
-    _runOwned('runAuthoringLoop', ui.draft, focus, {
+    _clearAttach();
+    _runOwned('runAuthoringLoop', ui.draft, focus + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       reviewOnly: true,
+      attachments: _textAttachments,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('审阅中·第 ' + step.iteration + ' 轮…'); },
       onText: function(text, iter) { appendText(text, iter); }
@@ -2509,15 +2550,19 @@
     var question = (ui.els.req.value || '').trim();
     if (!question) { setStatus('请先在输入框输入你想问的问题'); return; }
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
+    var _attTxt = _attachPrefix(), _textAttachments = _takeTextAttachments();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(question, { kind: 'qa', input: question });   // UI·B 会话流 + UI·Y 重试派发
     _prepareRunDraft('runAuthoringLoop');   // 只读快照或同案卷恢复点
     ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     setRunning(true);
     setStatus('正在查证并回答…（只读，不改剧本）');
-    _runOwned('runAuthoringLoop', ui.draft, question, {
+    _clearAttach();
+    _runOwned('runAuthoringLoop', ui.draft, question + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       qaOnly: true,
+      attachments: _textAttachments,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('查证中·第 ' + step.iteration + ' 轮…'); },
       onText: function(text, iter) { appendText(text, iter); }
@@ -2547,6 +2592,8 @@
     if (ui.running) return;
     if (!_contextReady()) return;
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
+    var _attTxt = _attachPrefix(), _textAttachments = _takeTextAttachments();
     var focus = (ui.els.req.value || '').trim();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(focus || '讲解剧本', { kind: 'explain', input: focus });   // UI·B 会话流 + UI·Y 重试派发
@@ -2554,9 +2601,11 @@
     ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
     setRunning(true);
     setStatus('正在通读剧本并讲解…（只读，不改剧本）');
-    _runOwned('runAuthoringLoop', ui.draft, focus, {
+    _clearAttach();
+    _runOwned('runAuthoringLoop', ui.draft, focus + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       explainOnly: true,
+      attachments: _textAttachments,
       editorContext: _editorContext(),
       onStep: function(step) { appendLog(step); setStatus('通读中·第 ' + step.iteration + ' 轮…'); },
       onText: function(text, iter) { appendText(text, iter); }
@@ -2643,6 +2692,8 @@
     var request = (ui.els.req.value || '').trim();
     if (!request) { setStatus('请先输入需求（大任务会被分解为多步执行）'); return; }
     if (!AA || typeof AA.runOrchestrated !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
+    var _attTxt = _attachPrefix(), _textAttachments = _takeTextAttachments();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(request, { kind: 'orchestrate', input: request });   // UI·B 会话流 + UI·Y 重试派发
     _prepareRunDraft('runOrchestrated');
@@ -2664,8 +2715,10 @@
         return '<div class="cl-item ' + st + '"><span class="cl-ic">' + ic + '</span>' + esc((k + 1) + '. ' + s) + '</div>';
       }).join('');
     }
-    _runOwned('runOrchestrated', ui.draft, request, {
+    _clearAttach();
+    _runOwned('runOrchestrated', ui.draft, request + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
+      attachments: _textAttachments,
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
       allowDestructive: ui.allowDestructive !== false,
@@ -2736,6 +2789,8 @@
     var request = (ui.els.req.value || '').trim();
     if (!request) { _armCritics(); setStatus('三堂会审需要一个需求：先写下要新增/改什么，再点发送'); return; }
     if (!AA || typeof AA.runWithCritics !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
+    var _attTxt = _attachPrefix(), _textAttachments = _takeTextAttachments();
     resetResults(true);   // 聊天化：保留对话流（结果作为新卡 append，不清历史）
     _appendUserMsg(request, { kind: 'critics', input: request });
     _prepareRunDraft('runWithCritics');
@@ -2754,8 +2809,10 @@
         + row(_phase.draft, '① 国师拟稿') + row(_phase.review, '② 史官查史实 + 谏官批平衡' + rv) + row(_phase.revise, '③ 国师据谏修订');
     }
     _render(false);
-    _runOwned('runWithCritics', ui.draft, request, {
+    _clearAttach();
+    _runOwned('runWithCritics', ui.draft, request + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
+      attachments: _textAttachments,
       editorContext: _editorContext(),
       allowedCollections: ui.allowedCollections || null,
       allowDestructive: ui.allowDestructive !== false,
@@ -2863,6 +2920,7 @@
     var request = (ui.els.req.value || '').trim();
     if (!request) { setStatus('请先输入需求'); return; }
     if (!AA || typeof AA.runAuthoringLoop !== 'function') { setStatus('agent 核心未加载'); return; }
+    if (_attState().pending) { setStatus('附件仍在读取，请等待读取完成后再发送'); return; }
     var _autoSelection = null;
     if (ui._autoModeArmed && typeof AA.selectWorkMode === 'function') {
       _autoSelection = AA.selectWorkMode(request, ui.adapter && ui.adapter.getScenario ? ui.adapter.getScenario() : null, { permissionMode: _loadPerm().mode });
@@ -2880,6 +2938,7 @@
     ui._resumeNext = false;
     var _attTxt = _attachPrefix();   // S2 · 文本附件内联为参考上下文
     var _imgs = _takeImages();       // S2 · 图片走视觉通道
+    var _textAttachments = _takeTextAttachments(); // 大文件正文由 readAttachment 分段读取
     var _attN = (_imgs ? _imgs.length : 0) + _attState().files.length;
     resetResults(continuing);   // UI·B · 会话流：续接保留线程+消息流、新对话清空
     _appendUserMsg(request + (_attN ? '（附 ' + _attN + ' 件）' : ''), { input: request });    // 回显用户消息气泡
@@ -2891,11 +2950,13 @@
 
     var _rtd = (continuing && ui._restoredTodos && ui._restoredTodos.length) ? ui._restoredTodos : null;   // 刀H3 · 恢复的任务表一次性回灌
     ui._restoredTodos = null;
+    ui._planAttachments = planOnly ? _textAttachments.slice() : null;
     _clearAttach();   // S2 · 附件随本轮发出·签行清空
     _runOwned('runAuthoringLoop', ui.draft, request + _attTxt, {
       conventions: _convForRun(),   /* S9 · 两层约定注入(全局+本剧本) */
       planOnly: planOnly,
       images: _imgs,
+      attachments: _textAttachments,
       initialTodos: _rtd,
       priorConversation: continuing ? ui.conversation : null,
       memory: continuing ? '' : _buildMemory(),             // 跨会话记忆：新对话才注入历史；续接已在线程里
@@ -3113,6 +3174,7 @@
   function onDiscard() {
     if (ui.running) return;
     _clearDraft();
+    ui._attachmentCarry = null;
     ui._conversationOwner = null;
     ui.conversation = null;   // 维度1 · 放弃后结束会话
     ui._pendingPlan = false;
@@ -3128,6 +3190,7 @@
     if (ui._sessionSwitch) { setStatus('正在切换案卷，请等待载入完成'); return; }
     ui._workbenchTask=null;ui._workbenchCheckpoint=null;ui._budgetedRun=false;
     _clearDraft(); ui.conversation = null; ui._pendingPlan = false; ui._pendingClarify = false;
+    ui._attachmentCarry = null;
     ui._conversationOwner = null;
     ui._restoredTodos = null; ui._sessId = null; _sessPtrSet(_fileKey(), null);   // S5 · 新对话=新会话·旧会话留侧栏可切回·指针置空(开面板不再拉回)
     if (ui._criticsArmed) _disarmCriticsVisual();   // 刀3 · 新对话清掉未用的会审武装

@@ -36,6 +36,23 @@ const startPatch = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8
 const integrationBridge = fs.readFileSync(path.join(ROOT, 'tm-integration-bridge.js'), 'utf8');
 const hujiEngine = fs.readFileSync(path.join(ROOT, 'tm-huji-engine.js'), 'utf8');
 
+{
+  const mapSourceFn = sliceFn(lifecycle, 'function _tmRuntimeMapSourceForWorld(');
+  const ctx = { findScenarioById() { return null; } };
+  vm.createContext(ctx);
+  vm.runInContext(mapSourceFn, ctx, { filename: 'tm-save-lifecycle.js' });
+  const live = { id: 'legacy-live', regions: [{ id: 'custom-live' }] };
+  const placeholder = { id: 'empty-placeholder', regions: [] };
+  const template = { id: 'template', regions: [{ id: 'official-template' }] };
+  ok(ctx._tmRuntimeMapSourceForWorld({ map: template, mapData: template }, { mapData: placeholder, map: live }) === live,
+    'legacy GM.map runtime state wins over an empty GM.mapData scaffold and P templates');
+  const gmRuntime = { id: 'gm-runtime', regions: [{ id: 'gm-region' }] };
+  ok(ctx._tmRuntimeMapSourceForWorld({ map: template }, { mapData: gmRuntime, map: live }) === gmRuntime,
+    'populated GM.mapData remains authoritative over legacy GM.map and P mirrors');
+  ok(ctx._tmRuntimeMapSourceForWorld({ map: template }, { mapData: placeholder }) === template,
+    'P.map remains the fallback when no GM runtime map exists');
+}
+
 console.log('=== 1. unified save snapshot builder ===');
 const snapshotSrc = sliceFn(lifecycle, 'function _tmSaveSnapshotSkipKeys(') + '\n' + sliceFn(lifecycle, 'function _autoSaveSnapshotGM(');
 const builderSrc = sliceFn(lifecycle, 'function _buildSaveState(');

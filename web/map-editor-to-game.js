@@ -465,15 +465,20 @@
         nd.extraPolygons=JSON.parse(JSON.stringify(lr.extraPolygons||[]));
         nd.extraPolygonHoles=JSON.parse(JSON.stringify(lr.extraPolygonHoles||[]));}
     }
-    function walkDivs(divs, facId){
+    // Keep the hierarchy edge when flattening for the map editor.  Older
+    // versions dropped `children` without materialising parentId, so the
+    // editor could only rebuild a flat list and a round trip lost all
+    // province/prefecture/county relationships (most visible in 绍宋).
+    function walkDivs(divs, facId, parentId){
       (divs || []).forEach(function(d){
         if (!d || typeof d !== 'object') return;
         var nd = {};
         for (var k in d){ if (k === 'children') continue; nd[k] = d[k]; }
         attachGeom(nd);
         if (facId && nd.factionId == null) nd.factionId = facId;
+        if (parentId != null && nd.parentId == null) nd.parentId = parentId;
         divisions.push(nd);
-        if (d.children && d.children.length) walkDivs(d.children, facId);
+        if (d.children && d.children.length) walkDivs(d.children, facId, nd.id || nd.name);
       });
     }
 

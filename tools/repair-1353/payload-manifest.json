@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "product": "tianming",
+  "version": "1.3.5.3",
+  "files": [
+    {
+      "path": "editor-authoring-agent.js",
+      "sha256": "0a7c20dbd99bc477b3975dabb0d54d6255753cabfd67fce94e934b8742921650",
+      "bytes": 334333,
+      "originalSha256": "6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e"
+    },
+    {
+      "path": "editor-authoring-agent-ui.js",
+      "sha256": "76bc0a2575fff2f5a5c2a3b8b331161c970ab1d7ac1f2906617a5cdad54febf2",
+      "bytes": 226859,
+      "originalSha256": "ecc4c234633a07e91ab75f074107744f913fbe6e6af5e08176f3d8f8d5b04f6b"
+    },
+    {
+      "path": "map-editor-juben-handoff.js",
+      "sha256": "6c470a6eb43e575d795be56f3015f5e288ed2455f72f9053af67a0f83ccd930f",
+      "bytes": 6667,
+      "originalSha256": "98c995c0a5fcf3e23b39a8ec10e4861b3ea18e9c31df67e3c437af2883c16882"
+    },
+    {
+      "path": "map-editor-to-game.js",
+      "sha256": "40e945cc992f9e422d8bc6e31582e8b81c5327c3d113d39a4dded40b36e5ce63",
+      "bytes": 24479,
+      "originalSha256": "01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87"
+    },
+    {
+      "path": "tm-save-lifecycle.js",
+      "sha256": "a016bf7c18accd8c1b97d5724e22532f14133f50c570f801b286d788065e21b4",
+      "bytes": 169234,
+      "originalSha256": "70fc3100b5aa89011504f1deaccda434f50d75548c04291a248de76a9369cc97"
+    }
+  ]
+}

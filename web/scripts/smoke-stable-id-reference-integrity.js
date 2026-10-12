@@ -30,6 +30,7 @@ const helpers = [
   'function _tmStableIdHash(',
   'function _tmStableIdentityParts(',
   'function _tmCollectAdminDivisionEntries(',
+  'function _tmRepairDuplicateDivisionIds(',
   'function _tmAssignMissingStableIds(',
   'function _tmUniqueEntityIdByName(',
   'function _tmEntityIdSet(',

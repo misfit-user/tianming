@@ -30,7 +30,13 @@ $asarOriginalSha256 = @{
 }
 
 function Log([string]$s) { $line = "[$(Get-Date -Format s)] $s"; Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8; Write-Host $line }
-function Hash([string]$p) { (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() }
+function Hash([string]$p) {
+  # Use .NET directly: a double-clicked Windows PowerShell may not have the
+  # Microsoft.PowerShell.Utility module on PSModulePath.
+  $sha=[Security.Cryptography.SHA256]::Create(); $s=[IO.File]::OpenRead($p)
+  try { $h=$sha.ComputeHash($s); return ([BitConverter]::ToString($h) -replace '-', '').ToLowerInvariant() }
+  finally { $s.Dispose(); $sha.Dispose() }
+}
 function AtomicCopy([string]$src, [string]$dst) {
   $tmp = "$dst.tmp-$PID-$stamp"
   Copy-Item -LiteralPath $src -Destination $tmp -Force
@@ -241,7 +247,9 @@ try {
   $manifest = VerifyPayload
   $running = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match '^(tianming|tianming-history|天命)$' }
   if ($running) { throw '天命仍在运行，请完全退出游戏后再次双击修复器；修复器不会强杀进程。' }
-  $targets = @(FindTargets)
+  $allTargets = @(FindTargets)
+  $targets = @($allTargets | Where-Object { ActiveState $_ })
+  foreach($inactive in @($allTargets | Where-Object { -not (ActiveState $_) })) { Log "SKIP inactive target: $inactive" }
   if (-not $targets.Count) {
     # Full installers have no hot-update shadow.  In that case patch the
     # packaged app.asar after checking package.json and every target baseline.

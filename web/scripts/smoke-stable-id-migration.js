@@ -27,6 +27,7 @@ const functionNames = [
   '_tmStableIdHash',
   '_tmStableIdentityParts',
   '_tmCollectAdminDivisionEntries',
+  '_tmRepairDuplicateDivisionIds',
   '_tmAssignMissingStableIds',
   '_tmUniqueEntityIdByName',
   '_tmEntityIdSet',

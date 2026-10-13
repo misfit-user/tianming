@@ -151,6 +151,7 @@ export function createXunren({ root, game, current, onPick, onBio, seesHearts = 
     load();
     renderCmp();
     el.classList.add('on');
+    bus.emit('xunren:shown');
     // 带名进来：滚到此人那一行
     if (name) {
       const i = list.findIndex((p) => p.name === name);

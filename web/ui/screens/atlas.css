@@ -14,6 +14,29 @@
 .ce-close { position: absolute; right: 1.75rem; top: -.875rem; z-index: 2; cursor: pointer; }
 .ce-unk { margin: 0; font-size: var(--fs-2); letter-spacing: .3em; color: var(--ink-faint); }
 
+/* 靠右展开（舆图为家、人在图上；设计稿「人物窗靠左展开，各册靠右展开，舆图露着」）：不再整屏压暗，册页靠右、与寻人同一位置
+   （右让书目、上让读数条、下让舆图之具与时钟）；册外空处不接指针，图那侧照常可点可拖，合册或 Esc 收起。
+   左叶是目录、右叶是正文，按一比二分（左叶至少 15rem）；册宽让出左边一扇人物窗、志窗（1366 下刚好并排，再窄才压上去）。回案（书房）时照旧居中 */
+body:has(.scr-desk.home-map.inmap) .ce-ov { place-items: stretch end; grid-template-rows: minmax(0, 1fr); padding: 5rem 5.25rem 8.75rem 0; background: none; }
+body:has(.scr-desk.home-map.inmap) .ce-ov.on { pointer-events: none; }
+body:has(.scr-desk.home-map.inmap) .ce-ov.on .ce-book { pointer-events: auto; }
+body:has(.scr-desk.home-map.inmap) .ce-ov .ce-book { width: clamp(42rem, calc(100vw - 43rem), 64rem); height: auto; min-height: 0; padding: 1.25rem;
+  grid-template-columns: minmax(15rem, 1fr) 1.25rem minmax(0, 2fr); transform: translateX(1.5rem); box-shadow: -1rem 1.5rem 3rem rgba(0, 0, 0, .55), inset 0 0 0 1px rgba(255, 230, 190, .18), inset 0 0 0 .5rem rgba(40, 26, 14, .25); }
+body:has(.scr-desk.home-map.inmap) .ce-ov.on .ce-book { transform: none; }
+body:has(.scr-desk.home-map.inmap) .ce-ov .ce-book .ce-ling { left: .5rem; right: .5rem; top: .5rem; bottom: .5rem; }
+body:has(.scr-desk.home-map.inmap) .ce-ov .ce-close { right: 1.25rem; }
+/* 靠边的阅读卷（邸报，kit juan 的 side）同此：靠右、不压暗、卷外不接指针。
+   卷心高是开卷时内联给的，这里按上下所让压低（内联须 !important 才盖得过） */
+body:has(.scr-desk.home-map.inmap) .q-juan-veil.side { place-items: center end; padding: 5rem 5.25rem 8.75rem 0; background: none; pointer-events: none; }
+body:has(.scr-desk.home-map.inmap) .q-juan-veil.side .q-juan { pointer-events: auto; max-width: calc(100vw - 7rem); }
+body:has(.scr-desk.home-map.inmap) .q-juan-veil.side .q-juan > .body { height: min(44rem, calc(100vh - 15.5rem)) !important; }
+/* 册开着时：寻人暂隐（合册后再露）、舆图之具与提纲让位 */
+body:has(.scr-desk.home-map.inmap):has(.ce-ov.on) .xr,
+body:has(.scr-desk.home-map.inmap):has(.ce-ov.on) .scr-map .mm-panel,
+body:has(.scr-desk.home-map.inmap):has(.ce-ov.on) .hm-outline,
+body:has(.scr-desk.home-map.inmap):has(.q-juan-veil.side) .scr-map .mm-panel,
+body:has(.scr-desk.home-map.inmap):has(.q-juan-veil.side) .hm-outline { visibility: hidden; }
+
 /* 左叶卷首：题、检 */
 .ce-head { display: flex; align-items: baseline; gap: .875rem; margin-bottom: .75rem; }
 .ce-head h2 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; white-space: nowrap; flex: none; }

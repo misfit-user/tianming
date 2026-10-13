@@ -4,6 +4,8 @@
 .sg-ov .shiji { --cc: #a83228; } .sg-ov .qiju { --cc: #a8833a; } .sg-ov .jishi { --cc: #4a5e8a; } .sg-ov .biannian { --cc: #557f6f; }
 
 .sg-cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .375rem; }
+/* 靠右展开时左叶窄：四库签两行两列 */
+body:has(.scr-desk.home-map.inmap) .sg-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .sg-cat { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); grid-template-areas: 'g b' 'g n'; align-items: center; column-gap: .375rem; padding: .3125rem .375rem;
   border: 0; cursor: pointer; text-align: left; color: var(--ink); font-family: var(--f-kai); background: rgba(255, 250, 238, .45); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .25); }
 .sg-cat:hover { background: rgba(255, 246, 226, .8); }

@@ -84,5 +84,5 @@ export function openGazette({ game, tab = '', outer = false, self = '' }) {
   }
   renderTabs();
   render();
-  return juan({ title: '邸报', note: '朝野近闻', width: '54rem', height: 'min(44rem, 84vh)', content: h('div.gz-wrap', tabs, body) });
+  return juan({ title: '邸报', note: '朝野近闻', width: '54rem', height: 'min(44rem, 84vh)', side: true, content: h('div.gz-wrap', tabs, body) });
 }

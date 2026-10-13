@@ -10,7 +10,7 @@ import { getSetting } from '../core/settings.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum, grade } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
-import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei } from '../kit/index.js';
+import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei, closeSideScrolls } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
@@ -122,9 +122,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const chips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
   const legendDesk = h('div.legend');
   const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips, legendDesk);
-  // 邸报：元首全见；余者是外间所知（禁中之事只录其目，见 gazette.js）
-  const gazette = () => openGazette({ game, outer: per.tier !== 'sovereign', self: per.name });
-  const dibao = h('div.dibao', { onclick: () => gazette(), title: '展邸报全卷', style: { cursor: 'pointer' } });
+  // 邸报：元首全见；余者是外间所知（禁中之事只录其目，见 gazette.js）。舆图上靠右展开（与诸册、寻人同一扇）
+  let gazetteScroll = null;
+  const gazette = () => {
+    const j = openGazette({ game, outer: per.tier !== 'sovereign', self: per.name });
+    gazetteScroll = j;
+    j.closed.then(() => { if (gazetteScroll === j) gazetteScroll = null; });
+    return j;
+  };
+  const dibao = h('div.dibao', { onclick: () => onBook('gazette'), title: '展邸报全卷', style: { cursor: 'pointer' } });
   let dibaoShut = (() => { try { return localStorage.getItem('tm_ui_dibao') === '0'; } catch (_e) { return false; } })();
   const left = h('div.left', facesPanel, maptools, dibao);
 
@@ -931,7 +937,18 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
       if (homeMap() && dive.mode === 'map') return focus && focus.center ? flyMapTo(focus.center, 820) : null;
       return dive.mode === 'desk' ? enterMap() : dive.rise();
     }
-    if (key === 'people') return xunren.open ? xunren.hide() : xunren.show(renwu.current);
+    // 右边一扇（寻人、诸册、邸报）同时只开一样：点开一样先收其余；再点开着的那一样即收起（照 CK3 顶上诸钮再点即关）
+    const page = { people: xunren, offices: officesPage, fiscal: fiscalPage, army: armyPage, realm: realmPage, wenyuan: wenyuanPage, keju: kejuPage, gongwei: gongweiPage,
+      annals: per.tier === 'sovereign' ? archivePage : null }[key];
+    if (page) {
+      if (page === xunren ? xunren.open : page.opened) return page.hide();
+      clearRight(page);
+    }
+    if (key === 'gazette') {
+      if (gazetteScroll) return gazetteScroll.close('dismiss');
+      clearRight(null);
+    }
+    if (key === 'people') return xunren.show(renwu.current);
     if (key === 'charge') return openCharge();
     // 家：本人人物窗的家人页（照 CK3 角色窗口的家人页：尊长、配偶、子女、同辈），舆图露着；五代家谱在详传，族谱另在朝野册「家族」
     if (key === 'family') return renwu.show(per.name, { tab: 'kin' });
@@ -1187,12 +1204,12 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   bus.on('zhi:shown', () => { renwu.hide(); realmPage.hideDock(); });
   bus.on('renwu:shown', () => { fangzhiPage.hide(); realmPage.hideDock(); });
   bus.on('shili:shown', () => { renwu.hide(); fangzhiPage.hide(); });
-  const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { realmPage.hide(); renwu.show(name); },
+  const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { if (!booksDocked()) realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     scenery: sceneryOf, locate: locateZhi, colorOf: (key) => map.realmColorOf(facIdOf(key)),
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名开人物窗
-  const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { archivePage.hide(); renwu.show(name); } });
+  const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { if (!booksDocked()) archivePage.hide(); renwu.show(name); } });
   const wenyuanPage = createWenyuan({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name) });
   // 科举册；科议画在殿上，开议时收册，散议后若是从册里起的便回册
   const kejuPage = createKeju({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onReform: () => { if (!readOnly()) gaizhiPage.show(); } });
@@ -1210,7 +1227,16 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, role, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
     scope: () => (per.tier === 'sovereign' ? null : per.name) });
-  const officesPage = createOffices({ root, game, profile: () => prof, role, onPerson: (name) => { officesPage.hide(); renwu.show(name); } });
+  const officesPage = createOffices({ root, game, profile: () => prof, role, onPerson: (name) => { if (!booksDocked()) officesPage.hide(); renwu.show(name); } });
+  // 舆图上诸册靠右展开（atlas.css）：册里点人名，左边开人物窗、册不收，两扇并看；开寻人则收起诸册（同在右边一扇）
+  function booksDocked() { return homeMap() && el.classList.contains('inmap'); }
+  const BOOKS = [officesPage, fiscalPage, armyPage, realmPage, archivePage, wenyuanPage, kejuPage, gaizhiPage, gongweiPage, guoshiPage, helpPage, bioPage];
+  function clearRight(keep) {
+    closeSideScrolls();
+    if (keep !== xunren && xunren.open) xunren.hide();
+    for (const p of BOOKS) if (p !== keep && p.opened) p.hide();
+  }
+  bus.on('xunren:shown', () => clearRight(xunren));
   function openDocket(id) {
     el.classList.remove('on');
     toStudyIfHome();

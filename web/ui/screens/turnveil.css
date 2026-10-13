@@ -91,5 +91,7 @@ html.tm-newui #tm-etl, html.tm-newui #tm-recovery-progress { display: none !impo
 .tv-chip { position: fixed; right: 6.5rem; top: 5.25rem; z-index: 31; display: none; align-items: baseline; gap: .625rem; padding: .375rem .75rem; font: var(--fs-2) var(--f-kai); color: #2b1d10;
   background: linear-gradient(180deg, rgba(239, 228, 201, .97), rgba(226, 210, 172, .95)); box-shadow: 0 .375rem 1.25rem rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(120, 90, 50, .4), inset .1875rem 0 0 #3f6e5e; }
 .tv-chip.on { display: flex; animation: tv-in .5s ease both; }
+/* 舆图为家：右上是账簿与提纲，小签改挂右下舆图看法条之上 */
+body:has(.scr-desk.home-map.inmap) .tv-chip { top: auto; right: 5.75rem; bottom: 12rem; }
 .tv-chip.over { box-shadow: 0 .375rem 1.25rem rgba(0, 0, 0, .45), inset 0 0 0 1px rgba(120, 90, 50, .4), inset .1875rem 0 0 #c9a24a; }
 .tv-chip b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .15em; color: #2f5a4c; }

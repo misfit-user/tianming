@@ -915,6 +915,17 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const docket = per.tier === 'sovereign' ? game.select.memorials().length : 0;
     const lead = filled.length || done ? t.ready : priv.length && t.idle ? t.idle : t.empty;
     const line = (text, faint) => h('p', { style: { margin: '.375rem 0 0', ...(faint ? { color: 'var(--ink-faint)', fontSize: 'var(--fs-2)' } : {}) } }, text);
+    // 未接 AI：推演无从起，先在这里说明、径给典章（原先点了才弹一句小签，推演幕还闪一下）
+    if (!game.config.aiConfig('primary').configured) {
+      juan({
+        title: '推演', note: `第${num(d.turn)}回合`, width: '32rem',
+        content: h('div', { style: { lineHeight: 2 } },
+          h('p', { style: { margin: 0, font: '400 var(--fs-5) var(--f-title)', letterSpacing: '.1em' } }, '推演尚无从起笔'),
+          line(`自${d.text || '今日'}起${num(d.daysPerTurn)}日之间天下之变，由 AI 推演落定。须先在典章里填好地址、密钥与模型，体检过了再来；本回所拟都留着。`, true)),
+        actions: [{ label: '去典章', onclick: ({ close }) => { close('ok'); openSettings({ tab: 'ai' }); } }]
+      });
+      return;
+    }
     let court = false;                               // 后朝：只元首档有（内核的朝会是君前之会）
     const courtRow = t.postCourt && !game.viewAs
       ? h('div', { style: { marginTop: '.75rem' } }, kaiguan(t.postCourt, { checked: false, onchange: (on) => { court = on; } }), line(t.postCourtNote, true))

@@ -30,6 +30,8 @@ const GROUP = {
   deepsim: ['诸方并演', '演', '并演'], edict: ['政令落地', '令', '政令'], systems: ['诸司运转', '司', '诸司'], render: ['史官缀笔', '笔', '缀史'], final: ['成卷待阅', '卷', '成卷']
 };
 const SWAP_MS = 14000;    // 同组久推（AI 落笔常数十秒）时也换景
+const GAP_MS = 6000;      // 换组也换景，但两回换景至少隔这么久（诸司结算几拍一秒内连过，景跟着连换只见一片墨晕）
+const WIPE_MS = 1700;     // 新层晕开（turnveil.css tv-wipe 1.6s）期间旧层垫在底下，晕满了才撤
 
 export function createTurnVeil({ root, game }) {
   const T = game.turn;
@@ -56,10 +58,10 @@ export function createTurnVeil({ root, game }) {
   root.append(el, chip);
 
   const scenes = T.scenes();
-  let deck = [], front = 0, swapTimer = 0, hideTimer = 0;
+  let deck = [], front = 0, swapTimer = 0, hideTimer = 0, dropTimer = 0, lastSwap = 0;
   let beats = [], groups = [], at = -1, group = '', shown = false, running = false;
 
-  // ---------- 换景：两层叠，新层以墨晕（径向遮罩）渐显 ----------
+  // ---------- 换景：两层叠，新层以墨晕（径向遮罩）渐显，旧层垫底到晕满才撤（原先旧层先灭，晕开时四周露一圈黑） ----------
   function draw() {
     if (!deck.length) deck = scenes.map((_, i) => i).sort(() => Math.random() - 0.5);
     return scenes[deck.pop()];
@@ -69,17 +71,21 @@ export function createTurnVeil({ root, game }) {
     const sc = draw();
     const img = new Image();
     img.onload = () => {
-      const nextLayer = bgs[1 - front];
+      const nextLayer = bgs[1 - front], prev = bgs[front];
+      clearTimeout(dropTimer);
       nextLayer.style.backgroundImage = `url("${sc.src}")`;
-      nextLayer.classList.remove('on', 'in');
+      nextLayer.classList.remove('on', 'in', 'now');
       void nextLayer.offsetWidth;
       nextLayer.classList.add('on', instant ? 'now' : 'in');
-      bgs[front].classList.remove('on', 'now');
+      prev.classList.remove('in');
+      if (instant) prev.classList.remove('on', 'now');
+      else dropTimer = setTimeout(() => prev.classList.remove('on', 'now'), WIPE_MS);
       front = 1 - front;
       tone.textContent = sc.tone;
     };
     img.onerror = () => { const i = scenes.indexOf(sc); if (i >= 0) scenes.splice(i, 1); deck = []; };
     img.src = sc.src;
+    lastSwap = Date.now();
     clearTimeout(swapTimer);
     swapTimer = setTimeout(() => { if (shown) swapScene(false); }, SWAP_MS);
   }
@@ -95,7 +101,11 @@ export function createTurnVeil({ root, game }) {
     el.classList.remove('retitle');
     void el.offsetWidth;
     el.classList.add('retitle');
-    if (shown) swapScene(false);
+    if (!shown) return;
+    const wait = GAP_MS - (Date.now() - lastSwap);
+    if (wait <= 0) return swapScene(false);
+    clearTimeout(swapTimer);
+    swapTimer = setTimeout(() => { if (shown) swapScene(false); }, wait);
   }
   function renderRail() {
     const cur = groups.indexOf(group);

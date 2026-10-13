@@ -1,6 +1,7 @@
 // 记事的器物：账目、九品刻度、人物小立轴、邸报刻本、朱丝栏小笺。
 import { h } from '../../core/dom.js';
 import { num, delta, grade, gradeIndex } from '../../core/numerals.js';
+import { tiao } from './tiao.js';
 
 // 账：zhang('帑廪', [{ k: '银', v: 1230000, d: -820000, unit: '两' }, …])
 export function zhang(label, rows) {
@@ -14,12 +15,12 @@ export function zhang(label, rows) {
     ))));
 }
 
-// 九品刻度：pin('民心', 31) → 「下上」，九格刻度落到第几品；text 换掉品第字，note 换掉悬停的「名 数」
+// 九品刻度：pin('民心', 31) → 「下上」，九格刻度落到第几品；text 换掉品第字，note 换掉悬停签条上的「品第 数」（调用方可再 tiao 换整张签）
 export function pin(label, value, { text, note } = {}) {
   const gi = gradeIndex(value);
-  return h('div.q-pin', { title: note ? `${label}　${note}` : `${label} ${num(value)}` },
+  return tiao(h('div.q-pin',
     h('div', h('span', label), h('b.q-gold', text ?? grade(value))),
-    h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : '')))));
+    h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : ''))))), { title: label, text: note || `${text ?? grade(value)}　${num(value)}` });
 }
 
 // 人物小立轴：zhou({ name, src, dead, onclick })；没有立像时以名字首字作像

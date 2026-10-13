@@ -645,6 +645,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     replaceChildren(ledger, prof.ledger.map((k) => {
       const el = LEDGERS[k] && LEDGERS[k](s, per, standing);
       if (el && FISCAL_TAB[k] && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => fiscalPage.show(FISCAL_TAB[k])); }
+      if (el && standing) ledgerTip(k, el);
       return el;
     }).filter(Boolean));
     const gs = prof.gauges === 'realm' ? s.gauges() : chargeGauges(s);
@@ -652,7 +653,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     // 精力居首（本人之数，与其后的国势或身家四项隔开）：召对、批阅等动作皆耗，原先只见耗费不见余量
     const en = per.previewing ? null : s.energy();
     const enPin = en && !homeMap() ? pin('精力', Math.round(en.value / en.max * 100), { text: num(en.value) }) : null;
-    if (enPin) { enPin.classList.add('energy'); enPin.title = `精力 ${num(en.value)} / ${num(en.max)}`; }
+    if (enPin) { enPin.classList.add('energy'); tiao(enPin, { title: '精力', text: `余${num(en.value)}，满${num(en.max)}\n召对、批阅诸事皆耗` }); }
     replaceChildren(gauges, enPin, ...gs.map((g) => {
       const el = pin(g.label, g.value, { text: g.text, note: g.note });
       if (prof.gauges === 'realm' && g.key && !per.previewing) { el.classList.add('link'); el.addEventListener('click', () => guoshiPage.show(g.key)); }
@@ -713,8 +714,34 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const mood = b('民心'), office = b('吏治');
     if (!mood && !office) return self;
     // 方志读数带里吏治是浊度（越高越浊），刻度按清浊翻过来；字照方志的等第
-    return [mood && { label: '民心', value: mood.v, text: mood.sub }, office && { label: '吏治', value: 100 - office.v, text: office.sub }]
+    const bandNote = (x, what) => `${x.sub}（${num(x.v)}）\n所掌${c.name}之${what}，据方志读数带（奏报口径）`;
+    return [mood && { label: '民心', value: mood.v, text: mood.sub, note: bandNote(mood, '民心') }, office && { label: '吏治', value: 100 - office.v, text: office.sub, note: bandNote(office, '吏治浊度，越高越浊') }]
       .filter(Boolean).concat(self.filter((g) => g.key === 'fame' || g.key === 'xianneng'));
+  }
+  // 顶栏账簿的签条（通用一套，照 CK3 资源条悬停见来由）：所掌那一栏列全读数、点开翻所掌那一册；公费、私财说明分账
+  function ledgerTip(k, el) {
+    if (k === 'purse') return tiao(el, { title: '公费', text: '职任所领公帑，办公之用，与私财分账' });
+    if (k === 'wealth') return tiao(el, { title: '私财', text: '本人与本家的私产' });
+    if (k !== 'charge') return null;
+    const c = standing.charges.find((x) => x.kind !== 'household');
+    if (!c) return null;
+    el.removeAttribute('title');
+    el.classList.add('link');
+    el.addEventListener('click', () => openChargeOf(c));
+    return tiao(el, () => {
+      let lines = [];
+      if (c.kind === 'region' || c.kind === 'circuit') {
+        // 大数照顶栏取四位有效数字，细数在方志
+        const sub = (b) => b.sub || (b.subPre && b.subN != null ? `${b.subPre}${num(sig4(b.subN))}${b.subTag ? `（${b.subTag}）` : ''}` : '');
+        lines = (c.band || []).map((b) => `${b.k}　${b.text || num(sig4(b.v))}${sub(b) ? '　' + sub(b) : ''}`);
+        lines.push('', `据方志读数带（奏报口径），点开翻${c.kind === 'circuit' ? '通志' : '方志'}`);
+      } else if (c.kind === 'army') {
+        lines = [`兵　${num(c.soldiers)}人`, `欠饷　${c.arrears ? `${num(c.arrears)}月` : '无'}`, '', '点开翻军务'];
+      } else if (c.kind === 'office') {
+        lines = [c.staff != null ? `在任　${num(c.staff)}　缺员　${num(c.vacant)}` : '编制外，不知员额', '', '点开翻官制'];
+      }
+      return { title: `所掌 · ${c.name}`, text: lines.join('\n') };
+    });
   }
   // 舆图为家：立像（本人）、印（元首是国号，余者是姓）、职衔、精力；圆钮上记待批之数、来函之数；左上待办
   function paintHome({ me, en, docket, fresh, open, due }) {

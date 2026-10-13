@@ -413,7 +413,9 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; renderDock(); dSheet.scrollTop = Math.min(dSheet.scrollTop, dTop.offsetHeight); } },
       h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
     const cur = juans.find(([t]) => t === dJuan);
-    replaceChildren(dBody, cur ? [h('p.fz-vsub', cur[1]), h('div.sw-juan', juanBody(cur[2]))] : h('p.fz-note', '此势力无卷可读。'));
+    // 君主已在卷首那张小像卡上，君臣卷从第二位列起
+    const body = cur && cur[0] === '君臣' && ruler ? { ...cur[2], people: cur[2].people.filter((p) => p !== ruler) } : cur && cur[2];
+    replaceChildren(dBody, cur ? [h('p.fz-vsub', cur[1]), h('div.sw-juan', juanBody(body))] : h('p.fz-note', '此势力无卷可读。'));
     replaceChildren(dFoot, h('span.zw-nav', h('button.q-yapai', { type: 'button', title: '整本朝野册：天下诸势力、党派、阶层、家族', onclick: () => { const k = dKey; hideDock(); show(k); } }, '朝野册')));
   }
   // showDock(势力 key, 卷名)

@@ -1,5 +1,7 @@
 /* 列传：册页骨架沿用人物图志（.ce-*）。左叶卷首、卷目、批注、动作；右叶一卷 */
 .lz-ov .ce-book { grid-template-columns: minmax(0, 20rem) 1.5rem minmax(0, 1fr); }
+/* 详传多从别册里点人名翻开（文苑、科举、宫闱……），叠在那一册之上 */
+.ce-ov.lz-ov { z-index: 31; }
 .lz-left { gap: .75rem; overflow: auto; scrollbar-width: thin; }
 .lz-head { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: .875rem; align-items: start; }
 .lz-head .q-zhou { width: 5.5rem; }

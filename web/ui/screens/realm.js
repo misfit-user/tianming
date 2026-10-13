@@ -24,7 +24,8 @@ const REL = { meng: '盟好', di: '敌对', zhong: '中立' };
 
 // profile().social：卷底三样动作的叫法（召人、付议、拟令）；不设则此身份不列动作
 // scenery({ kind: 'realm', id, name }) → Promise<canvas|null>；locate(kind, id) 舆图镜头飞去；colorOf(势力 key) → 舆图上的国色
-export function createRealm({ root, game, profile, onPerson, onAudience, onCourt, onRegion, onCircuit, scenery = null, locate = null, colorOf = null }) {
+// follow(势力键)：册页靠右、舆图露着时，势力页里选中一国，舆图跟着看过去（调用方定飞不飞、描不描）
+export function createRealm({ root, game, profile, onPerson, onAudience, onCourt, onRegion, onCircuit, scenery = null, locate = null, colorOf = null, follow = null }) {
   const R = game.realm;
   const S = game.social;
   let tab = 'factions';
@@ -53,7 +54,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     leftNote.hidden = !leftNote.childNodes.length;
     const max = Math.max(1, ...rows.map((f) => f.strength || 0));
     replaceChildren(leftBody, rows.length ? rows.map((r) => h('button.rm-fac' + (r.key === sel[tab] ? '.on' : '') + (r.hostile ? '.hostile' : '') + (r.mine ? '.mine' : ''),
-      { type: 'button', dataset: { key: r.key }, onclick: () => { sel[tab] = r.key; renderRight(); markSel(); } }, ...rowOf(r, max)))
+      { type: 'button', dataset: { key: r.key }, onclick: () => { sel[tab] = r.key; renderRight(); markSel(); if (tab === 'factions' && follow) follow(r.key); } }, ...rowOf(r, max)))
       : [h('p.ce-unk', tab === 'factions' ? '天下无势力在册' : tab === 'parties' ? '朝中无党派在册' : tab === 'families' ? '天下无家族在册' : '此世无阶层在册')]);
     if (sel[tab]) renderRight(); else replaceChildren(right);
   }

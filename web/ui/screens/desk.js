@@ -1059,11 +1059,15 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     sceneCache.set(key, c);
     return c;
   }
-  function locateZhi(kind, id) {
+  // then：镜头落定后（飞的途中会跨层级，跨层级时舆图清掉点选，要点亮须等落定）
+  function locateZhi(kind, id, then) {
     const b = boxOf(zhiRegions(kind, id, kind === 'circuit' ? (game.fangzhi.circuit(id) || {}).name : ''));
     if (!b) return false;
-    const dist = Math.max(260, Math.min(2400, Math.max(b.w, b.h) * (kind === 'realm' ? 1.6 : 3.2)));
-    if (dive.mode === 'map' && !dive.busy) flyMapTo([b.cx, b.cy], dist);
+    // 两边开着窗时露着的只是中间一块：按那一块的宽折算，远一些才看得全
+    const [l, r] = openSpan();
+    const narrow = innerWidth / Math.max(320, r - l);
+    const dist = Math.max(260, Math.min(2400, Math.max(b.w, b.h) * (kind === 'realm' ? 1.6 : 3.2) * narrow));
+    if (dive.mode === 'map' && !dive.busy) flyMapTo([b.cx, b.cy], dist, then);
     else if (dive.mode === 'desk' && !dive.busy) dive.dive([b.cx, b.cy]);
     return true;
   }
@@ -1229,6 +1233,13 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const realmPage = createRealm({ root, game, profile: () => prof, onPerson: (name) => { if (!booksDocked()) realmPage.hide(); renwu.show(name); },
     onRegion: (id) => fangzhiPage.show(id), onCircuit: (key) => fangzhiPage.showCircuit(key),
     scenery: sceneryOf, locate: locateZhi, colorOf: (key) => map.realmColorOf(facIdOf(key)),
+    // 册页靠右时选中一国：镜头拉到看得全其疆域，疆域描金（照 CK3 选中一国即在图上点亮）；在书房里不飞
+    follow: (key) => {
+      if (!booksDocked()) return;
+      const list = zhiRegions('realm', key);
+      // 跨层级的通知在落定之后那一帧才到（届时清点选），描金晚两帧
+      if (list.length) locateZhi('realm', key, () => setTimeout(() => map.select(list[0], 'realm'), 120));
+    },
     onAudience: (name) => { if (!readOnly()) audiencePage.summon(name); }, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); } });
   // 史馆：四库旧档；一回实录卷的「入史馆」翻到这一回的史记；卷尾人名开人物窗
   const archivePage = createArchive({ root, game, profile: () => prof, onPerson: (name) => { if (!booksDocked()) archivePage.hide(); renwu.show(name); } });

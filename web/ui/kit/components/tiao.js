@@ -51,8 +51,20 @@ export function tiao(el, content) {
   return el;
 }
 
+// 原生 title（浏览器的灰签）一律收编成签条：指针移上来时把 title 挪进 data-tiao，界面里的悬停提示只有一种样子。
+// 收编在悬停那一刻做，代码之后又改了 title 的，下回悬停再收一次；没有别的称呼的，title 留作 aria-label
+function adoptTitle(target) {
+  const n = target.closest?.('[title]');
+  const t = n && n.getAttribute('title');
+  if (!t) return;
+  n.dataset.tiao = t;
+  if (!n.hasAttribute('aria-label') && !(n.textContent || '').trim()) n.setAttribute('aria-label', t);
+  n.removeAttribute('title');
+}
+
 export function installTiao(root = document) {
   root.addEventListener('pointerover', (e) => {
+    adoptTitle(e.target);
     const el = e.target.closest?.('[data-tiao],[data-tiao-title]') || findTiao(e.target);
     if (!el || el === current) return;
     current = el;

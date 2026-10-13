@@ -1118,8 +1118,9 @@ async function _endTurnCore(options){
     var _recoveryHint = _recoveryInfo && _recoveryInfo.state === 'ready' ? '；当前页面保留了 ' + _recoveryInfo.available + ' 份完整响应，重试时严格校验后复用；本地持久候选状态见耗时诊断。' : '';
     // 2026-10-13：玩家只看得到这一句 toast，「Cannot read properties of undefined」定位不到是哪一步崩的。
     // 认不出的错把出错位置（函数@文件:行）带进提示，完整堆栈留在本机（回合耗时诊断里可看可复制）。
-    var _errWhere = _tmEndTurnErrorLocation(error);
-    try { _tmRememberEndTurnFailure(error, _errWhere); } catch (_remErr) {}
+    // 两个助手是本文件顶层函数；只抽 _endTurnCore 单函数装载的测试夹具里没有它们，按 typeof 守卫退回旧提示。
+    var _errWhere = (typeof _tmEndTurnErrorLocation === 'function') ? _tmEndTurnErrorLocation(error) : '';
+    try { if (typeof _tmRememberEndTurnFailure === 'function') _tmRememberEndTurnFailure(error, _errWhere); } catch (_remErr) {}
     toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message + (_errWhere ? '（出错处：' + _errWhere + '，详情见回合耗时诊断）' : ''))) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;

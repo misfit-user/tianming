@@ -90,7 +90,7 @@ function rateAt(g,n,t,base,day,ctx){
   if(p.status==='revoked'||p.startDay>day||(p.endDay!=null&&day>=p.endDay))continue;
   if(!same(p.factionId,fac)&&!same(p.factionName,fac))continue;
   if(!p.regionKeys.includes(id)||!matches(p,t))continue;
-  if(p.operation==='restore')r=Number(base);else if(p.operation==='set')r=p.value;else r*=p.value;
+  if(p.operation==='restore')r=Number(base);else if(p.operation==='set')r=p.bound==='down'?Math.min(r,p.value):p.bound==='up'?Math.max(r,p.value):p.value;else r*=p.value;
  }return Math.max(0,r);
 }
 function effectiveTax(g,n,t,ctx){
@@ -105,7 +105,7 @@ function effectiveTax(g,n,t,ctx){
 }
 var NUM='[零〇一二两三四五六七八九十百\\d]+(?:\\.\\d+)?';
 // 2026-10-13：「取消/废除/撤销/革除/停收 三饷」是玩家最常写的废止句式，原词表不认，整句被当没说；补齐后按全免登记。
-var verbs=/税率(?:为|改为|定为|调整为)|增税|加税|减税|降税|免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除|减免|减征|减半|降低|减少|降为|减为|减至|提高|上调|增加|加征|增征|恢复|复征/;
+var verbs=/税率(?:为|改为|定为|调整为)|增税|加税|减税|降税|免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除|减免|减征|减半|降低|减少|降为|减为|减至|降至|降到|减到|调低|提高|上调|增加|加征|增征|增至|升至|增到|调高|恢复|复征/;
 var TAXWORDS=/税|赋|田租|漕粮|三饷|辽饷|剿饷|练饷|盐课/;
 function parse(g,text,params){
  params=params||{};text=String(text||'').trim();
@@ -118,7 +118,7 @@ function parse(g,text,params){
  for(var clause of pieces){
   if(/研究|讨论|论证|是否|可否|可行性|拟议|建议|核验后|查明后|若|倘/.test(clause))return Object.assign(fail('tax-planning-only','此条是研究或附条件事项，未直接执行征免'),{handled:true});
   if(/明年|来年|翌年|明月|下月|下一回合|次回合/.test(clause))return Object.assign(fail('tax-future-date-unresolved','未来生效时间须明确登记，未提前执行'),{handled:true});
-  var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/,/提高|上调|增加|加征|增征|增税|加税/,/减免|减征|减半|降低|减少|降为|减为|减至|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
+  var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/,/提高|上调|增加|加征|增征|增税|加税|增至|升至|增到|调高/,/减免|减征|减半|降低|减少|降为|减为|减至|降至|降到|减到|调低|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
   if(directions.length>1)return Object.assign(fail('tax-multiple-actions','不同税务动作请用分号分别列明，未合并扩大执行'),{handled:true});
   if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收)/.test(clause))continue;
   if(/[-−]\s*\d+(?:\.\d+)?\s*[%％成]/.test(clause))return Object.assign(fail('tax-rate-negative','负数税率或比例不能直接执行'),{handled:true});
@@ -147,7 +147,7 @@ function parse(g,text,params){
   while(changed){changed=false;cat.forEach(x=>{if(selected.has(x.parent)&&!selected.has(x.id)){selected.add(x.id);changed=true;}});}
   var targets=cat.filter(x=>x.leaf&&x.allowed&&!excluded.has(x.id)&&(national||selected.has(x.id)));
   if(!targets.length)return Object.assign(fail('tax-no-authority','目标没有可操作的本方税权地块'),{handled:true});
-  var operation,value,m;
+  var operation,value,m,bound=null;
   if(/恢复|复征/.test(clause)){operation='restore';value=1;}
   else if(/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/.test(clause)){
     var explicit=clause.match(new RegExp('税率(?:为|改为|定为|调整为)\\s*('+NUM+')\\s*[%％]'));
@@ -158,15 +158,26 @@ function parse(g,text,params){
     if(!Number.isFinite(value)||value<0||value>1)return Object.assign(fail('tax-reduction-invalid','减免比例须明确且介于0至100%之间'),{handled:true});
    }
   else if(/减半/.test(clause)){operation='scale';value=.5;}
+  else if((m=clause.match(new RegExp('(提高|上调|调高|增|升|降低|下调|调低|减|降)(?:到|至|为)\\s*('+NUM+')\\s*成')))){
+   // 2026-10-14：「减至三成」「减为五成」是日常说法「减到原额的三成」，原代码当成税率本身=0.3，
+   // 天启田赋每亩一分四厘被改成三钱（涨二十多倍）、辽饷同理暴涨几十倍。降类动词按原额比例折算；
+   // 「提高到两成」两种读法都说得通（税率定为20%／在现额上加两成），不猜，请写明。
+   var tenth=number(m[2])/10;
+   if(/提高|上调|调高|增|升/.test(m[1]))return Object.assign(fail('tax-rate-ambiguous','「'+m[0]+'」有两种读法（税率定为'+Math.round(tenth*100)+'%，还是在现额上加'+m[2]+'成），未猜测；请写「税率提高到X%」或「加征X成」'),{handled:true});
+   if(!Number.isFinite(tenth)||tenth<0||tenth>1)return Object.assign(fail('tax-rate-invalid','「减至X成」的成数须在零到十成之间'),{handled:true});
+   operation='scale';value=tenth;
+  }
   else {
-   var target=clause.match(new RegExp('(?:税率(?:为|改为|定为|调整为)|(?:提高|降低|下调|上调|减|降|增)(?:到|至|为))\\s*(百分之)?('+NUM+')\\s*([%％成]?)'));
+   var target=clause.match(new RegExp('(?:税率(?:为|改为|定为|调整为)|(?:提高|降低|下调|上调|调高|调低|减|降|增|升)(?:到|至|为))\\s*(百分之)?('+NUM+')\\s*([%％成]?)'));
    var literals=Array.from(clause.matchAll(new RegExp('('+NUM+')\\s*[%％]|百分之('+NUM+')','g')));
    var c=clause.match(new RegExp('('+NUM+')\\s*成'));
    if(!own(params,'rate')&&!target&&literals.length>1)return Object.assign(fail('tax-multiple-rates','多个税率未明确起点和终点，未猜测税率'),{handled:true});
    var amount=own(params,'rate')?Number(params.rate):target?(target[1]||target[3]?number(target[2])/(target[3]==='成'?10:100):NaN):literals.length?number(literals[0][1]||literals[0][2])/100:c?number(c[1])/10:NaN;
    if(!Number.isFinite(amount)||amount<0||amount>10)return Object.assign(fail('tax-rate-invalid','税率或增减比例不明确，未采用默认值'),{handled:true});
-   if(own(params,'rate')||/税率(?:为|改为|定为|调整为)|(?:提高|降低|下调|上调|减|降|增)(?:到|至|为)/.test(clause)){
+   if(own(params,'rate')||/税率(?:为|改为|定为|调整为)|(?:提高|降低|下调|上调|调高|调低|减|降|增|升)(?:到|至|为)/.test(clause)){
     operation='set';value=amount;if(value>1)return Object.assign(fail('tax-rate-range','百分比税率须在0至100%之间'),{handled:true});
+    // 「减至3%」只能往下走、「提高到5%」只能往上走：现额已经过线的地块不动，不让「减」字反把税抬高。
+    var dir=clause.match(/(提高|上调|调高|增|升|降低|下调|调低|减|降)(?:到|至|为)/);bound=dir?(/提高|上调|调高|增|升/.test(dir[1])?'up':'down'):null;
    }else{operation='scale';value=/增税|加税|提高|上调|增加|加征|增征/.test(clause)?1+amount:1-amount;}
   }
   if(value<0)return Object.assign(fail('tax-rate-range','减免比例不能超过100%'),{handled:true});
@@ -174,7 +185,7 @@ function parse(g,text,params){
   var duration=taxPart.match(new RegExp('('+NUM+')\\s*(个?月|年|回合|天|日)(?![^，,]*(?:汇报|奏报|具奏|回报|复命))'));
   var days=duration?number(duration[1])*({'月':30,'个月':30,'年':360,'回合':turnDays(g),'天':1,'日':1}[duration[2]]):null;
   if(days!=null&&(!(days>0)||days>36000))return Object.assign(fail('tax-duration-invalid','有效期必须为明确的正数'),{handled:true});
-  plans.push({text:clause.trim(),taxKind:taxKind,taxIds:taxIds,operation:operation,value:value,
+  plans.push({text:clause.trim(),taxKind:taxKind,taxIds:taxIds,operation:operation,value:value,bound:bound,
    regionKeys:Array.from(new Set(targets.flatMap(x=>x.keys))),regionNames:targets.map(x=>x.name),
    factionId:fac.id,factionName:fac.name,startDay:now(g),endDay:days==null?null:now(g)+days});
  }return {ok:plans.length>0,handled:true,plans:plans,reason:plans.length?'':'没有可执行的税务调整条款'};

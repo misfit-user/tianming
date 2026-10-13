@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 'use strict';
 // 从当前工作树生成 1.3.5.3 修复包的 payload/ 与 payload-manifest.json。
-//   node tools/repair-1353/build-payload.js
+//   node tools/repair-1353/build-payload.js --release-web E:\tianming-tmp\asar-1353-extract\web
 // 清单是修复器 repair-1353.ps1 的唯一真相源：文件列表、1.3.5.3 原文件哈希（refuse 其它构建）、
 // 此前修复包写入过的哈希（允许覆盖已修过一次的文件）、是否存在于热更新目录（main-impl.js 只在 app.asar 里）。
 // 原文件哈希来自 git 标签 full-1.3.5.3 的 blob（与安装包 app.asar 内字节逐一相同，已核）。
+//
+// --release-web 指向「1.3.5.3 安装包 app.asar 抽出来的 web/ 目录」（asar 里标记 unpacked 的四个文件按标签 blob 补齐）。
+// 原生开局准备清单 web/tm-start-runtime-manifest.json 把 index.html 引到的每个脚本按字节钉死（sha256+长度），
+// 修复包改了脚本就必须一并换成「发布包文件集 + 本包 payload」算出来的新清单，否则多身份剧本开局与工作台校验会 fail closed。
+// 这个清单不能拿开发工作树算（工作树里别的文件和发布包不一样），所以在发布包文件集上临时覆盖 payload 后再算。
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -13,6 +18,11 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const KIT = __dirname;
 const PAYLOAD = path.join(KIT, 'payload');
 const VERSION = '1.3.5.3';
+const NATIVE_MANIFEST = 'web/tm-start-runtime-manifest.json';
+
+const args = process.argv.slice(2);
+function flag(name, fallback) { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : fallback; }
+const RELEASE_WEB = path.resolve(flag('--release-web', 'E:/tianming-tmp/asar-1353-extract/web'));
 
 // 1.3.5.3 完整安装版原文件 SHA-256（git show full-1.3.5.3:<path>）
 const ORIGINAL = {
@@ -28,8 +38,10 @@ const ORIGINAL = {
   'web/tm-endturn-core.js': 'deba2faf6f311f675ac1cbdd44516c3561e09a38564fbd28f8d0ebb24ba76174',
   'web/tm-endturn-timing-ledger.js': '689d6258f97b4adb70458074c90641471587cad391ac59a5d9df0d0779be291a',
   'main-impl.js': '4454c59e7de3932af1a4c8359041cad18ac144bb0d76d942008e096642c75d87'
+  // NATIVE_MANIFEST 的原哈希在下面从发布包文件集现算（与标签 blob 一致，build 复算也逐字节相同，已核）。
 };
-// 此前发给玩家的修复包写入过的哈希（v1·2026-10-13 凌晨）：已修过一次的 app.asar 允许再次覆盖。
+// 此前发给玩家的修复包写入过的哈希：已修过一次的 app.asar 允许再次覆盖。
+//   v1（2026-10-13 凌晨·Codex）：5 个文件；v2（2026-10-14 凌晨·zip repair-1353-v2-20261014）：12 个文件。
 const PRIOR = {
   'web/editor-authoring-agent.js': ['0a7c20dbd99bc477b3975dabb0d54d6255753cabfd67fce94e934b8742921650'],
   'web/editor-authoring-agent-ui.js': ['76bc0a2575fff2f5a5c2a3b8b331161c970ab1d7ac1f2906617a5cdad54febf2'],
@@ -37,6 +49,15 @@ const PRIOR = {
   'web/map-editor-to-game.js': ['40e945cc992f9e422d8bc6e31582e8b81c5327c3d113d39a4dded40b36e5ce63'],
   'web/tm-save-lifecycle.js': ['f8630477e9a55d6d064daeeada04472dbb4918dfb0d902aa5e2f53310c3d9b18']
 };
+// v2 payload 写过的哈希由 --prior-manifest 读入（上一版 payload-manifest.json），避免手抄。
+const PRIOR_MANIFEST = flag('--prior-manifest', '');
+if (PRIOR_MANIFEST) {
+  const prior = JSON.parse(fs.readFileSync(PRIOR_MANIFEST, 'utf8'));
+  prior.files.forEach(function (e) {
+    const list = PRIOR[e.asarPath] || (PRIOR[e.asarPath] = []);
+    if (list.indexOf(e.sha256) < 0) list.push(e.sha256);
+  });
+}
 // hotUpdate=false 的文件不在热更新目录（content/hot-updates/versions/1.3.5.3）里，只修 app.asar。
 const FILES = [
   { asarPath: 'web/editor-authoring-agent.js', hotUpdate: true },
@@ -50,17 +71,45 @@ const FILES = [
   { asarPath: 'web/tm-tax-policy.js', hotUpdate: true },
   { asarPath: 'web/tm-endturn-core.js', hotUpdate: true },
   { asarPath: 'web/tm-endturn-timing-ledger.js', hotUpdate: true },
-  { asarPath: 'main-impl.js', hotUpdate: false }
+  { asarPath: 'main-impl.js', hotUpdate: false },
+  { asarPath: NATIVE_MANIFEST, hotUpdate: true, generated: true }
 ];
 
 function sha256(buffer) { return crypto.createHash('sha256').update(buffer).digest('hex'); }
 
+// —— 原生开局准备清单：发布包文件集 + 本包脚本 ——
+function buildNativeManifest() {
+  if (!fs.existsSync(path.join(RELEASE_WEB, 'index.html'))) {
+    throw new Error('--release-web 不是发布包的 web/ 目录（缺 index.html）：' + RELEASE_WEB);
+  }
+  const builder = require(path.join(ROOT, 'scripts', 'build-native-preparation-manifest.cjs'));
+  const releaseRoot = path.dirname(RELEASE_WEB);
+  const releaseManifest = fs.readFileSync(path.join(RELEASE_WEB, 'tm-start-runtime-manifest.json'));
+  // 基线核对：发布包文件集复算出来的清单必须与发布包自带的清单逐字节相同，否则这个文件集不可信。
+  const baseline = JSON.stringify(builder.build(releaseRoot)) + '\n';
+  if (baseline !== releaseManifest.toString('utf8')) throw new Error('发布包文件集复算的原生清单与发布包自带清单不同，拒绝生成');
+  const overlays = FILES.filter(function (f) { return !f.generated && f.asarPath.indexOf('web/') === 0; });
+  const backups = [];
+  try {
+    overlays.forEach(function (f) {
+      const target = path.join(releaseRoot, f.asarPath);
+      backups.push({ target: target, bytes: fs.readFileSync(target) });
+      fs.writeFileSync(target, fs.readFileSync(path.join(ROOT, f.asarPath)));
+    });
+    const text = JSON.stringify(builder.build(releaseRoot)) + '\n';
+    return { original: sha256(releaseManifest), buffer: Buffer.from(text, 'utf8') };
+  } finally {
+    backups.forEach(function (b) { fs.writeFileSync(b.target, b.bytes); });
+  }
+}
+
 fs.mkdirSync(PAYLOAD, { recursive: true });
+const native = buildNativeManifest();
+ORIGINAL[NATIVE_MANIFEST] = native.original;
 const keep = new Set();
 const entries = FILES.map(function (file) {
-  const src = path.join(ROOT, file.asarPath);
   const name = path.basename(file.asarPath);
-  const buffer = fs.readFileSync(src);
+  const buffer = file.generated ? native.buffer : fs.readFileSync(path.join(ROOT, file.asarPath));
   const hash = sha256(buffer);
   if (!ORIGINAL[file.asarPath]) throw new Error('missing original hash for ' + file.asarPath);
   if (hash === ORIGINAL[file.asarPath]) console.warn('[build-payload] WARN unchanged against 1.3.5.3: ' + file.asarPath);
@@ -81,5 +130,5 @@ fs.readdirSync(PAYLOAD).forEach(function (name) {
 });
 const manifest = { schema: 2, product: 'tianming', version: VERSION, generatedAt: new Date().toISOString(), files: entries };
 fs.writeFileSync(path.join(KIT, 'payload-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
-entries.forEach(function (e) { console.log('[build-payload] ' + e.asarPath + '  ' + e.bytes + ' bytes  ' + e.sha256 + (e.hotUpdate ? '' : '  (asar only)')); });
+entries.forEach(function (e) { console.log('[build-payload] ' + e.asarPath + '  ' + e.bytes + ' bytes  ' + e.sha256 + (e.hotUpdate ? '' : '  (asar only)') + (e.priorSha256.length ? '  prior×' + e.priorSha256.length : '')); });
 console.log('[build-payload] wrote ' + entries.length + ' files to ' + path.relative(ROOT, PAYLOAD));

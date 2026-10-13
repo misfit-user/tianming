@@ -15,7 +15,7 @@ $logPath = Join-Path $PackageRoot ("repair-$stamp.log")
 # （由 build-payload.js 生成），这里不再手抄；LoadManifestTables 在校验完清单后填这几张表。
 # PatchAsar 只接受「1.3.5.3 原文件」或「上一版修复包写入的文件」，其它哈希一律拒绝，
 # 所以这个工具不会把别的构建悄悄改掉。hotUpdate=false 的文件（main-impl.js）不在热更新目录里。
-$KitVersion = 'v2 (2026-10-14)'
+$KitVersion = 'v2.1 (2026-10-14)'
 $files = @(); $hotFiles = @(); $asarFiles = @{}; $asarAccepted = @{}
 function LoadManifestTables($manifest) {
   $script:files = @(); $script:hotFiles = @(); $script:asarFiles = @{}; $script:asarAccepted = @{}

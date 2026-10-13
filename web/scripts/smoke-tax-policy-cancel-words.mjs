@@ -24,4 +24,11 @@ test('「废除辽饷」「撤销剿饷」「全国停收练饷」各自只免�
 test('「陕西革除辽饷」只免陕西',()=>{const h=harness();assert(h.command('陕西革除辽饷').ok);assert.equal(h.amount('sx',1),0);assert.equal(h.amount('hn',1),50);});
 test('「不得取消辽饷」「未经奏准不许废除三饷」不会反向变成免征',()=>{const h=harness();const s=JSON.stringify(h.g);assert(!h.command('全国不得取消辽饷').ok);assert(!h.command('未经奏准不许废除三饷').ok);assert.equal(JSON.stringify(h.g),s);assert.equal(h.amount('sx',1),50);});
 test('取消三饷后再复征恢复原额',()=>{const h=harness();assert(h.command('全国取消三饷').ok);assert.equal(h.amount('sx',1),0);assert(h.command('全国恢复辽饷').ok);assert.equal(h.amount('sx',1),50);assert.equal(h.amount('sx',2),0);});
+// 2026-10-14：龙门-崇宝实测「减至三成」被当成税率本身（田赋每亩一分四厘→三钱，涨二十多倍）。
+test('「陕西田赋减至三成」=减到原额的三成，只动陕西',()=>{const h=harness();assert.equal(h.amount('sx',0),100);const r=h.command('陕西田赋减至三成');assert(r.ok,JSON.stringify(r));assert.equal(h.amount('sx',0),30);assert.equal(h.amount('hn',0),100);assert.equal(h.amount('sx',1),50);});
+test('「全国辽饷减为五成」「全国剿饷降至五成」「全国练饷减到五成」都是打五折',()=>{const h=harness();assert(h.command('全国辽饷减为五成').ok);assert.equal(h.amount('sx',1),25);assert(h.command('全国剿饷降至五成').ok);assert.equal(h.amount('sx',2),10);assert(h.command('全国练饷减到五成').ok);assert.equal(h.amount('sx',3),10);});
+test('「全国田赋提高到两成」两种读法都通，不猜，整档不动',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国田赋提高到两成');assert(!r.ok,JSON.stringify(r));assert(/两种读法/.test(JSON.stringify(r)),JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);assert.equal(h.amount('sx',0),100);});
+test('「减至3%」只往下走：现额已低于目标的辽饷不动，田赋减到 3%',()=>{const h=harness();assert(h.command('全国田赋减至3%').ok);assert.equal(h.amount('sx',0),30);assert(h.command('全国辽饷减至8%').ok);assert.equal(h.amount('sx',1),50);});
+test('「税率提高到5%」只往上走：田赋现额 10% 不会被压到 5%，剿饷从 2% 提到 5%',()=>{const h=harness();assert(h.command('全国田赋税率提高到5%').ok);assert.equal(h.amount('sx',0),100);assert(h.command('全国剿饷税率提高到5%').ok);assert.equal(h.amount('sx',2),50);});
+test('「田赋加征两成」「田赋减征三成」老写法不受影响',()=>{const h=harness();assert(h.command('全国田赋加征两成').ok);assert.equal(h.amount('sx',0),120);assert(h.command('全国辽饷减征三成').ok);assert.equal(h.amount('sx',1),35);});
 console.log(`${passed} passed / ${failed} failed`);process.exit(failed?1:0);

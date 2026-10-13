@@ -22,7 +22,7 @@ export function openSettings({ tab = 'ai' } = {}) {
 
   function renderTabs() {
     replaceChildren(tabs, [['ai', '推演之器'], ['infer', '推演之法'], ['view', '画面声音'], ['play', '玩法']].map(([k, label]) =>
-      h('button' + (k === current ? '.on' : ''), { type: 'button', onclick: () => { current = k; renderTabs(); render(); } }, label)));
+      h('button' + (k === current ? '.on' : ''), { type: 'button', onclick: () => { current = k; renderTabs(); render(); body.closest('.q-scroll')?.scrollTo(0, 0); } }, label)));
   }
   function render() {
     if (current === 'ai') replaceChildren(body, aiPane());
@@ -50,7 +50,7 @@ export function openSettings({ tab = 'ai' } = {}) {
       const p = ps.find((x) => x.id === prov.value);
       if (!p) return;
       if (p.url) url.value = p.url;
-      hint.textContent = [p.keyHint && `Key 去这里拿：${p.keyHint}`, p.modelHint || (p.model && `Model_ID 参考：${p.model}`)].filter(Boolean).join('；');
+      hint.textContent = [p.keyHint && `密钥去这里拿：${p.keyHint}`, p.modelHint || (p.model && `Model_ID 参考：${p.model}`)].filter(Boolean).join('；');
     } }, h('option', { value: '' }, '择一家（只填地址）'), ps.map((p) => h('option', { value: p.id }, p.name)));
     const key = input(c.key, { type: 'password', placeholder: '密钥' });
     const show = h('button.st-mini', { type: 'button', onclick: () => { key.type = key.type === 'password' ? 'text' : 'password'; show.textContent = key.type === 'password' ? '显' : '隐'; } }, '显');
@@ -95,8 +95,8 @@ export function openSettings({ tab = 'ai' } = {}) {
       h('p.st-lead', t === 'secondary' ? '次要 API 承担问对、朝议等小调用，可用更快更省的模型；不填则一律走主 API。' : '推演、来文、史记都靠这一路。填好先「体检」，看评语再「存之」。'),
       row('服务商', prov), hint,
       row('地址', url),
-      row('Key', h('div.st-inline', key, show)),
-      row('Model_ID', h('div.st-inline', model, pull)), models,
+      row('密钥', h('div.st-inline', key, show)),
+      row('模型', h('div.st-inline', model, pull)), models,
       row('思考', h('div.st-inline', thinkSel, proto), '默认即不添思考参数；需服务商支持所选协议。'),
       t === 'primary' ? row('温度', h('div.st-inline', temp, h('small.st-note', '记忆'), mem, h('small.st-note', '上下文（K，空为自动）'), ctx)) : null,
       enabled ? row('', enabled) : null,
@@ -130,7 +130,7 @@ export function openSettings({ tab = 'ai' } = {}) {
     };
     return h('div.st-form',
       h('p.st-lead', '人物立绘等生图用。不出图也能体检：故意用极小尺寸去请求，服务商以尺寸不合拒绝即证明已通，不计费。'),
-      row('地址', url), row('Key', key), row('Model_ID', model),
+      row('地址', url), row('密钥', key), row('模型', model),
       h('div.st-acts',
         h('button.q-yapai', { type: 'button', onclick: test }, '体检'),
         h('button.q-yapai.go', { type: 'button', onclick: () => { const r = cfg.saveImage(d()); toast(r.ok ? '生图 API 已存' : r.error); } }, '存之')),

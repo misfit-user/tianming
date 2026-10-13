@@ -110,7 +110,7 @@
 .st-seg { margin-bottom: .75rem; }
 .st-form { display: flex; flex-direction: column; gap: .5rem; }
 .st-lead { margin: 0 0 .25rem; font-size: var(--fs-2); line-height: 1.8; color: var(--ink-faint); }
-.st-row { display: grid; grid-template-columns: 6rem minmax(0, 1fr); gap: 1rem; align-items: center; padding: .3125rem 0; border-bottom: 1px solid rgba(120, 90, 50, .14); }
+.st-row { display: grid; grid-template-columns: max(6rem, calc(var(--fs-4) * 5)) minmax(0, 1fr); gap: 1rem; align-items: center; padding: .3125rem 0; border-bottom: 1px solid rgba(120, 90, 50, .14); }
 .st-row > label { font: 400 var(--fs-4) var(--f-title); letter-spacing: .2em; }
 .st-inline { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
 .st-in { min-width: 0; flex: 1; padding: .25rem .375rem .3125rem; border: 0; border-bottom: 1px solid rgba(120, 90, 50, .45); outline: 0; background: rgba(255, 255, 255, .25);

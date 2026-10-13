@@ -1,13 +1,15 @@
 // 邸报全卷：左列那叶刻本点开即此。编年由新到旧、按日期分；每条急、议、闻一字，题与全文，长的可展开。
 // 另有「风闻」（朝野近事）与「告示」（内核通知史：急报、驻留提示、提示条，按回合分）两页。
+// outer：通用一套看的是外间所知（适配层 select.gazette/rumors 的 outer）——禁中之事只录其目，封着的那条写缘由；self 是本人，其心绪照列。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
 
 const FOLD = 140;   // 过此字数先收起
 
-export function openGazette({ game, tab = '' }) {
-  const all = game.select.gazette();
+export function openGazette({ game, tab = '', outer = false, self = '' }) {
+  const all = game.select.gazette(160, { outer });
+  const heard = (n) => game.select.rumors(n, { outer, self });
   const body = h('div.gz');
   let only = tab;
   let back = 3;                                    // 风闻回看几回合（999 即全部）
@@ -15,26 +17,28 @@ export function openGazette({ game, tab = '' }) {
   function renderTabs() {
     const counts = { '': all.length, 急: 0, 议: 0, 闻: 0 };
     for (const e of all) counts[e.tag]++;
-    const fw = only === '风闻' ? game.select.rumors(back) : null;
+    const fw = only === '风闻' ? heard(back) : null;
     replaceChildren(tabs, [['', '全'], ['急', '急'], ['议', '议'], ['闻', '闻']].map(([k, label]) =>
       h('button' + (only === k ? '.on' : ''), { type: 'button', onclick: () => { only = k; renderTabs(); render(); } }, label, h('small', num(counts[k])))),
     h('i.gz-sep'),
-    h('button' + (only === '风闻' ? '.on' : ''), { type: 'button', title: '朝野近事、势力动态、人物动向与心绪', onclick: () => { only = '风闻'; renderTabs(); render(); } },
+    h('button' + (only === '风闻' ? '.on' : ''), { type: 'button', title: outer ? '朝野近事、势力动态、人物动向' : '朝野近事、势力动态、人物动向与心绪', onclick: () => { only = '风闻'; renderTabs(); render(); } },
       '风闻', fw ? h('small', num(fw.length)) : null),
     h('button' + (only === '告示' ? '.on' : ''), { type: 'button', title: '急报、驻留提示与提示条（最近五十条）', onclick: () => { only = '告示'; renderTabs(); render(); } },
       '告示', h('small', num(game.select.notices().length))),
     only === '风闻' ? h('span.gz-back', '回看', [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [999, '全部']].map(([n, label]) =>
       h('button' + (back === n ? '.on' : ''), { type: 'button', onclick: () => { back = n; renderTabs(); render(); } }, label))) : null);
   }
+  // 封着的一条：只有题，正文换成缘由
+  const sealedP = (why) => h('p.gz-sealed', h('i', '封'), why);
   function rumorItem(r) {
     const long = r.text.length > FOLD;
     const p = h('p', long ? r.text.slice(0, FOLD) + '……' : r.text);
     const more = long ? h('button.gz-more', { type: 'button', onclick: () => { p.textContent = r.text; more.remove(); } }, '展全文') : null;
     return h('article.gz-item' + (r.hot ? '.hot' : ''), h('em.' + (r.hot ? 'ji' : 'wen'), r.hot ? '察' : '闻'),
-      h('div', r.title ? h('b', r.title) : null, h('small', [r.type, ...r.meta].join(' · ')), p, more));
+      h('div', r.title ? h('b', r.title) : null, h('small', [r.type, ...r.meta].join(' · ')), r.sealed ? sealedP(r.sealed) : [p, more]));
   }
   function renderRumors() {
-    const rows = game.select.rumors(back);
+    const rows = heard(back);
     if (!rows.length) { replaceChildren(body, h('p.gz-none', '近来无所闻')); return; }
     const days = [];
     for (const r of rows) {
@@ -49,7 +53,7 @@ export function openGazette({ game, tab = '' }) {
     const p = h('p', long ? e.text.slice(0, FOLD) + '……' : e.text);
     const more = long ? h('button.gz-more', { type: 'button', onclick: () => { p.textContent = e.text; more.remove(); } }, '展全文') : null;
     return h('article.gz-item', h('em.' + ({ 急: 'ji', 议: 'yi', 闻: 'wen' })[e.tag], e.tag),
-      h('div', e.title ? h('b', e.title) : null, h('small', e.type), p, more));
+      h('div', e.title ? h('b', e.title) : null, h('small', e.type), e.sealed ? sealedP(e.sealed) : [p, more]));
   }
   const LEVEL = { urgent: ['ji', '急'], persist: ['yi', '留'], flash: ['wen', '示'] };
   function renderNotices() {

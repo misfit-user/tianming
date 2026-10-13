@@ -122,7 +122,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const chips = qianzi(LAYERS, { value: '势力', onchange: (v) => setLayer(v) });
   const legendDesk = h('div.legend');
   const maptools = qiPanel({ title: '舆图', note: '七种看法' }, chips, legendDesk);
-  const dibao = h('div.dibao', { onclick: () => openGazette({ game }), title: '展邸报全卷', style: { cursor: 'pointer' } });
+  // 邸报：元首全见；余者是外间所知（禁中之事只录其目，见 gazette.js）
+  const gazette = () => openGazette({ game, outer: per.tier !== 'sovereign', self: per.name });
+  const dibao = h('div.dibao', { onclick: () => gazette(), title: '展邸报全卷', style: { cursor: 'pointer' } });
   let dibaoShut = (() => { try { return localStorage.getItem('tm_ui_dibao') === '0'; } catch (_e) { return false; } })();
   const left = h('div.left', facesPanel, maptools, dibao);
 
@@ -888,7 +890,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (key === 'charge') return openCharge();
     // 家：本人人物窗的家人页（照 CK3 角色窗口的家人页：尊长、配偶、子女、同辈），舆图露着；五代家谱在详传，族谱另在朝野册「家族」
     if (key === 'family') return renwu.show(per.name, { tab: 'kin' });
-    if (key === 'gazette') return openGazette({ game });
+    if (key === 'gazette') return gazette();
     // 史：元首翻史馆（实录、起居注……）；通用一套是本人年谱——人物窗的履历页（履历与近事），国史非其所能翻
     if (key === 'annals') return per.tier === 'sovereign' ? archivePage.show() : renwu.show(per.name, { tab: 'career' });
     if (key === 'offices') return officesPage.show();

@@ -471,18 +471,31 @@ export function annal(idx) {
   };
 }
 
+// 外间所知（通用一套看邸报、风闻，守所知之律）：禁中之事外间只闻其目。
+// 元首案头待决的要务、密奏密议、对元首的陈奏只留题目，sealed 写缘由；问元首「当何以决」的那一句删去。诏令本是颁行天下的，照录。
+const INNER = /密奏|密疏|密揭|密议|密谕|密札|密陈|陛下|朕/;
+const ASK = /何以决|如何处之|宜如何|当如何|圣裁|宸断/;
+const DECREE = /诏|谕|edict/i;
+function outerText(type, text) {
+  if (/要务/.test(type)) return { text: '', sealed: '廷中待决之事，邸抄只录其目' };
+  if (!DECREE.test(type) && INNER.test(text)) return { text: '', sealed: '事涉禁中，外间只闻其目' };
+  return { text: text.split(/(?<=[。！？])/).filter((s) => !ASK.test(s)).join('').trim(), sealed: '' };
+}
+
 // 邸报全卷：编年（GM._chronicle）由新到旧，按日期分；标题取首个【…】，正文去掉标题。系统记账类（paradigm、scenario、system）不列
-export function gazette(limit = 160) {
+// outer：外间所知（见上）
+export function gazette(limit = 160, { outer = false } = {}) {
   const ts = fn('getTSText');
   const list = (G()._chronicle || []).filter((e) => e && e.text && !/paradigm|scenario|^system/i.test(String(e.type || '')));
   return list.slice(-limit).reverse().map((e) => {
     const text = String(e.text);
     const m = text.match(/【([^】]{1,30})】/);
     const tags = Array.isArray(e.tags) ? e.tags : [];
+    const body = (m ? text.replace(m[0], '') : text).replace(/^【[^】]{1,12}】/, '').trim();
     return {
       turn: e.turn, date: e.date || (ts && e.turn != null ? String(ts(e.turn)) : ''), type: e.type || '', tags,
       tag: tags.includes('重要') || tags.includes('关键') || /急|变|乱/.test(e.type || '') ? '急' : /要务|议/.test(e.type || '') ? '议' : '闻',
-      title: m ? m[1] : '', text: (m ? text.replace(m[0], '') : text).replace(/^【[^】]{1,12}】/, '').trim()
+      title: m ? m[1] : '', ...(outer ? outerText(String(e.type || ''), body) : { text: body, sealed: '' })
     };
   });
 }
@@ -512,18 +525,23 @@ export function energy() {
 // 风闻：老右栏「风闻情报」与左侧邸报流的同一份汇集（TMPhase8FormalBridge._collectRecentEvents：GM.evtLog——addEB 的唯一落点，
 // 成就、继位、里程碑、史事临御案都只播在这里——以及势力动态、回合人物动向、人物经历、承诺、心绪等），回合倒序、最多一百二十条。
 // lookback 为回看几回合（999 即全部）；hot 照老面板：题、类、文里有危乱叛灾兵饷腐急警者为「待察」
+// outer：外间所知——御案线索（元首案头的时政）、人物承诺（臣下对元首许的事）不列，人物心绪只列本人（self）的；余者照外间所知删封
 const HOT = /危|乱|叛|灾|兵|饷|腐|急|警/;
-export function rumors(lookback = 3) {
+const PALACE_ONLY = /^(御案线索|人物承诺)$/;
+export function rumors(lookback = 3, { outer = false, self = '' } = {}) {
   const B = w.TMPhase8FormalBridge;
   if (!B || typeof B._collectRecentEvents !== 'function') return [];
   let rows = [];
   try { rows = B._collectRecentEvents(lookback) || []; } catch (_e) { rows = []; }
+  if (outer) rows = rows.filter((r) => !PALACE_ONLY.test(String(r.type || '')) && (r.type !== '人物心绪' || (self && String(r.title || '').startsWith(self))));
   return rows.map((r) => {
-    const text = String(r.text || r.detail || '').trim();
+    const raw = String(r.text || r.detail || '').trim();
     const title = String(r.title || '').trim();
-    return { turn: r.turn, time: String(r.time || ''), type: String(r.type || '近事'), title: title && title !== text ? title : '', text,
+    const type = String(r.type || '近事');
+    const { text, sealed } = outer ? outerText(type, raw) : { text: raw, sealed: '' };
+    return { turn: r.turn, time: String(r.time || ''), type, title: title && title !== raw ? title : '', text, sealed,
       meta: (r.meta || []).map(String).filter((x) => x && !/^[a-z_]+$/i.test(x)).slice(0, 3),
-      hot: HOT.test(`${title}${r.type || ''}${text}`) };
+      hot: HOT.test(`${title}${r.type || ''}${raw}`) };
   });
 }
 

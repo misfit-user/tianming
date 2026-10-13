@@ -806,11 +806,29 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     armies = (standing ? armies.filter((a) => a.commander === per.name) : armies.filter((a) => a.hot || a.march)).slice(0, 6);
     const armyRows = standing && standing.charges.some((c) => c.kind === 'army') ? [] : armies.map((a) => h('button.hm-row', { type: 'button', title: [a.name, a.commander, a.location].filter(Boolean).join(' · '), onclick: () => armyPage.show(a.key) },
       h('i.hm-oicon' + (a.hot ? '.hot' : ''), '兵'), h('b', a.name), h('small', [a.hot ? '告急' : '', a.march ? '行军' : '', `${num(a.soldiers)}人`].filter(Boolean).join(' · '))));
-    const sec = (title, rows, empty) => (rows.length || empty ? h('section', h('h4', title, rows.length ? h('small', num(rows.length)) : null), rows.length ? rows : h('p', empty)) : null);
+    // 左近（通用一套，照 CK3 提纲里身边之人）：与本人同城同府的人，按品秩取前六位，题头记总数——左近可登门谒见，远方才传书
+    const near = standing ? nearby() : [];
+    const nearRows = near.slice(0, 6).map((c) => h('button.hm-row', { type: 'button', dataset: { person: c.name }, onclick: () => renwu.show(c.name) },
+      face(c), h('b', c.name), h('small', [c.office, c.rank.label].filter(Boolean).join(' · '))));
+    const sec = (title, rows, empty, total = rows.length) => (rows.length || empty ? h('section', h('h4', title, rows.length ? h('small', num(total)) : null), rows.length ? rows : h('p', empty)) : null);
     const toggle = () => { outlineOpen = !outlineOpen; try { localStorage.setItem('tm_ui_outline', outlineOpen ? '1' : '0'); } catch (_e) { /* 只这一回 */ } paintOutline(); };
     outline.classList.toggle('shut', !outlineOpen);
     replaceChildren(outline, h('header', h('button', { type: 'button', title: outlineOpen ? '收起提纲' : '展开提纲', onclick: toggle }, h('b', '提纲'), h('i', outlineOpen ? '收' : '展'))),
-      outlineOpen ? [sec('钉选之人', people, '右键人像可钉选'), standing ? sec('所掌', charges, '') : null, sec(standing ? '所统之兵' : '告急行军', armyRows, '')] : null);
+      outlineOpen ? [sec('钉选之人', people, '右键人像可钉选'), standing ? sec('所掌', charges, '') : null, sec('左近', nearRows, '', near.length),
+        sec(standing ? '所统之兵' : '告急行军', armyRows, '')] : null);
+  }
+  // 左近之人：内核判为同地（谒见能否登门同一条），且落在舆图同一府州——两条缺一不可：
+  // 内核按地名首段认，写了省名的「南直隶·桐城」与「南直隶·太仓」也算同地；舆图府州又太粗，蓟州、京师同属顺天府
+  const placeMemo = new Map();
+  let placeMemoFor = null;
+  function placeIdx(text) {
+    if (placeMemoFor !== map.regions) { placeMemo.clear(); placeMemoFor = map.regions; }
+    if (!placeMemo.has(text)) placeMemo.set(text, byPlace(text)[0] ?? -1);
+    return placeMemo.get(text);
+  }
+  function nearby() {
+    const here = per.location ? placeIdx(per.location) : -1;
+    return here < 0 ? [] : game.select.nearby(per.location, { except: per.name }).filter((c) => placeIdx(c.location) === here);
   }
 
   // 一件时政写成一张花笺：题取首句（至多六字），正文拆成三短行（每行至多八字）

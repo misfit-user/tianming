@@ -657,6 +657,13 @@ function relationsOf(c, limit = 6) {
   return out.sort((a, b) => Math.abs(b.strength) - Math.abs(a.strength)).slice(0, limit)
     .map((r) => ({ ...r, tone: r.type === 'foe' || r.type === 'rival' || r.type === 'enemy' || r.strength < -30 ? 'foe' : r.type === 'spouse' || r.type === 'lover' ? 'spouse' : 'friend' }));
 }
+// 同地之人：与某地视为同地者（内核 _isSameLocation：取地名首段查别名，同城、同宫室都算——谒见可登门的那一圈），按品秩由高到低
+export function nearby(location, { except = '' } = {}) {
+  const same = fn('_isSameLocation');
+  if (!location || !same) return [];
+  return people().filter((c) => c.name !== except && c.location && same(c.location, location)).sort((a, b) => a.rank.level - b.rank.level);
+}
+
 export function people({ dead = false } = {}) {
   const g = G();
   const turn = num(g.turn, 1);

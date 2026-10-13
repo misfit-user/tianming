@@ -338,6 +338,13 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     if (e.key === 'Escape' && document.activeElement !== input) { e.preventDefault(); close(); }
   });
 
+  // 求见之人按来意归组（内核按忠诚、承诺、赏罚分档给一句来意：新君初立时阉党十几人都是「神色怏怏，似怀怨望」，
+  // 一行行重复读来呆板）：同一来意几人并作一组，组头写来意；只有一人的照旧单列。组序照来意首见的先后
+  function seekingGroups(list) {
+    const groups = new Map();
+    for (const c of list) { const k = c.reason || ''; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); }
+    return [...groups.entries()];
+  }
   // ---------- 召对卷（名单） ----------
   function openRoster() {
     prof = profile();
@@ -355,10 +362,13 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
         h('b', q.name, q.envoy ? h('em', '使节') : null), h('p', q.reason),
         h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openQueue(q.qid))) }, t.accept),
           h('button.q-yapai', { type: 'button', onclick: () => { try { A.dismissQueue(q.qid); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.dismiss))))) : null,
-      R.seeking.length ? h('section', h('h5', `${t.seeking} · ${num(R.seeking.length)}`), R.seeking.map((c) => h('div.au-req',
-        h('b', c.name, h('small', c.title)), h('p', c.reason),
-        h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openSeeking(c.name))) }, t.accept),
-          h('button.q-yapai', { type: 'button', onclick: () => { try { A.deny(c.name); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.refuse))))) : null,
+      R.seeking.length ? h('section', h('h5', `${t.seeking} · ${num(R.seeking.length)}`), seekingGroups(R.seeking).map(([why, list]) => {
+        const row = (c, bare) => h('div.au-req' + (bare ? '.bare' : ''),
+          h('b', c.name, h('small', { title: c.title }, c.title)), bare ? null : h('p', c.reason),
+          h('div', h('button.q-yapai', { type: 'button', onclick: go(() => enter(() => A.openSeeking(c.name))) }, t.accept),
+            h('button.q-yapai', { type: 'button', onclick: () => { try { A.deny(c.name); } catch (e) { toast(e.message); } j.close('ok'); openRoster(); } }, t.refuse)));
+        return list.length > 1 ? [h('h6.au-why', why, h('small', `${num(list.length)}人`)), h('div.au-reqs', list.map((c) => row(c, true)))] : row(list[0], false);
+      })) : null,
       h('section', h('h5', `${t.court} · ${num(R.court.length)}`), R.court.length ? h('div.au-faces', pinnedFirst(R.court).map((c) => face(c, go(() => summon(c.name))))) : h('p.au-none', '朝中无人可召')),
       R.away.length ? h('section', h('h5', `${t.away} · ${num(R.away.length)}`), h('p.au-hint', '远方之人不能面对，点名即改遣书札'),
         h('div.au-away', R.away.map((c) => h('button', { type: 'button', title: c.location, onclick: go(() => onLetter && onLetter(c.name)) }, c.name, h('small', c.travel ? `→${c.travel}` : c.location))))) : null);

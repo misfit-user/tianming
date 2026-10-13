@@ -121,6 +121,12 @@
 .au-req p { margin: 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }
 .au-req > div { display: flex; gap: .375rem; }
 .au-req .q-yapai { cursor: pointer; }
+/* 来意相同的几人并作一组：组头写来意与人数，组里两列，各列人名职衔与接见、不见 */
+.au-why { display: flex; align-items: baseline; gap: .625rem; margin: .625rem .25rem .125rem; font: 400 var(--fs-3) var(--f-kai); letter-spacing: .08em; color: var(--ink-soft); }
+.au-why small { font-size: var(--fs-1); color: var(--ink-faint); }
+.au-reqs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.5rem; }
+.au-req.bare { grid-template-columns: minmax(0, 1fr) auto; }
+.au-req.bare b small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .au-faces { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr)); gap: .875rem .75rem; }
 .au-face { position: relative; display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--ink); }
 .au-face .q-zhou { width: 4.75rem; }

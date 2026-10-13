@@ -1017,15 +1017,27 @@ function extractEdictFiscalActions(edictText) {
   var CN = { '一':0.1,'二':0.2,'两':0.2,'三':0.3,'四':0.4,'五':0.5,'六':0.6,'七':0.7,'八':0.8,'九':0.9,'十':1.0 };
   // 加派赋税（一次性临时加征）
   // 否定门(2026-07-04 审查定罪)：「蠲免辽饷/罢三饷/停加派」是减免非开征·裸关键词曾把玩家减税诏反向执行成加征
-  var _fisNeg = /(蠲免|蠲除|豁免|减免|免征|罢停|停征|停派|停止|裁撤|裁革|废止|废除|罢|停|免|减)[^。；！\n]{0,8}(加派|三饷|辽饷|剿饷|练饷)|(加派|三饷|辽饷|剿饷|练饷)[^。；！\n]{0,8}(蠲免|蠲除|豁免|减免|免征|停征|停派|裁撤|裁革|废止|废除|尽罢|悉罢|皆罢|俱免|尽免)/;
-  if (/加派|三饷|辽饷|剿饷|练饷/.test(text) && !_fisNeg.test(text)) {
-    var rate = 0.5;
-    var rm = text.match(/([一二两三四五六七八九十])成/);
+  // 2026-10-13 根治（玩家「取消三饷」「不要向农民加派辽饷」被执行成加派五成）：
+  //   ① 否定/废止词表补齐：取消·撤销·革除·免除·不要·不得·不许·不准·勿·毋·禁止·严禁·永不·不再……；
+  //   ② 只认写明征派动作的那一句，否定门按句判，成数也只从这一句读——
+  //      「蠲免辽饷；加派剿饷二成」两句各算各的，不再整篇一把抓；
+  //   ③ 没写成数不再按五成猜：tier 留空，prep 落效时请户部回奏「未写明成数」。
+  var _fisNegBefore = '蠲免|蠲除|蠲|豁免|减免|免征|免收|免除|免去|罢停|停征|停派|停收|停止|裁撤|裁革|废止|废除|废|取消|撤销|撤除|革除|革去|严禁|禁止|禁|勿|毋|莫|不要|不得|不许|不准|不可|不再|不复|永不|罢|停|免|减';
+  var _fisNegAfter = '蠲免|蠲除|豁免|减免|免征|免除|停征|停派|停收|裁撤|裁革|废止|废除|取消|撤销|革除|尽罢|悉罢|皆罢|俱免|尽免|永不|不得|勿|毋';
+  var _fisNeg = new RegExp('(?:' + _fisNegBefore + ')[^。；！\\n]{0,8}(?:加派|加征|加赋|三饷|辽饷|剿饷|练饷)|(?:加派|加征|三饷|辽饷|剿饷|练饷)[^。；！\\n]{0,8}(?:' + _fisNegAfter + ')');
+  var _levySentence = String(edictText).split(/[。；;！!\n]+/).map(function(s) { return s.replace(/\s+/g, ''); }).filter(function(s) {
+    var levy = /加派/.test(s) ||
+      /(加征|增派|派征|开征|征收|征)[^。；！\n，,]{0,4}(三饷|辽饷|剿饷|练饷)|(三饷|辽饷|剿饷|练饷)[^。；！\n]{0,6}(加派|加征|增派|每亩)/.test(s);
+    return levy && !_fisNeg.test(s);
+  })[0];
+  if (_levySentence) {
+    var rate = null;
+    var rm = _levySentence.match(/([一二两三四五六七八九十])成/);
     if (rm && CN[rm[1]] != null) rate = CN[rm[1]];
-    else if (/十成|全饷|尽数加派/.test(text)) rate = 1.0;
-    else if (/薄赋|二成|两成/.test(text)) rate = 0.2;
-    rate = Math.max(0.05, Math.min(1, rate));
-    out.push({ type: 'extraTax', tier: rate, raw: '加派' + Math.round(rate * 100) + '%' });
+    else if (/十成|全饷|尽数加派/.test(_levySentence)) rate = 1.0;
+    else if (/薄赋/.test(_levySentence)) rate = 0.2;
+    if (rate != null) rate = Math.max(0.05, Math.min(1, rate));
+    out.push({ type: 'extraTax', tier: rate, raw: rate != null ? '加派' + Math.round(rate * 100) + '%' : '加派（未写明成数）', clause: _levySentence });
   }
   // 开仓赈济（一次性花库银济灾）
   if (/开仓|赈济|赈灾|放粮/.test(text)) {

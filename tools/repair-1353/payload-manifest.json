@@ -1,37 +1,126 @@
 {
-  "schema": 1,
+  "schema": 2,
   "product": "tianming",
   "version": "1.3.5.3",
+  "generatedAt": "2026-10-13T16:21:50.530Z",
   "files": [
     {
       "path": "editor-authoring-agent.js",
+      "asarPath": "web/editor-authoring-agent.js",
+      "hotUpdate": true,
       "sha256": "0a7c20dbd99bc477b3975dabb0d54d6255753cabfd67fce94e934b8742921650",
       "bytes": 334333,
-      "originalSha256": "6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e"
+      "originalSha256": "6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e",
+      "priorSha256": [
+        "0a7c20dbd99bc477b3975dabb0d54d6255753cabfd67fce94e934b8742921650"
+      ]
     },
     {
       "path": "editor-authoring-agent-ui.js",
+      "asarPath": "web/editor-authoring-agent-ui.js",
+      "hotUpdate": true,
       "sha256": "76bc0a2575fff2f5a5c2a3b8b331161c970ab1d7ac1f2906617a5cdad54febf2",
       "bytes": 226859,
-      "originalSha256": "ecc4c234633a07e91ab75f074107744f913fbe6e6af5e08176f3d8f8d5b04f6b"
+      "originalSha256": "ecc4c234633a07e91ab75f074107744f913fbe6e6af5e08176f3d8f8d5b04f6b",
+      "priorSha256": [
+        "76bc0a2575fff2f5a5c2a3b8b331161c970ab1d7ac1f2906617a5cdad54febf2"
+      ]
     },
     {
       "path": "map-editor-juben-handoff.js",
+      "asarPath": "web/map-editor-juben-handoff.js",
+      "hotUpdate": true,
       "sha256": "6c470a6eb43e575d795be56f3015f5e288ed2455f72f9053af67a0f83ccd930f",
       "bytes": 6667,
-      "originalSha256": "98c995c0a5fcf3e23b39a8ec10e4861b3ea18e9c31df67e3c437af2883c16882"
+      "originalSha256": "98c995c0a5fcf3e23b39a8ec10e4861b3ea18e9c31df67e3c437af2883c16882",
+      "priorSha256": [
+        "6c470a6eb43e575d795be56f3015f5e288ed2455f72f9053af67a0f83ccd930f"
+      ]
     },
     {
       "path": "map-editor-to-game.js",
+      "asarPath": "web/map-editor-to-game.js",
+      "hotUpdate": true,
       "sha256": "40e945cc992f9e422d8bc6e31582e8b81c5327c3d113d39a4dded40b36e5ce63",
       "bytes": 24479,
-      "originalSha256": "01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87"
+      "originalSha256": "01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87",
+      "priorSha256": [
+        "40e945cc992f9e422d8bc6e31582e8b81c5327c3d113d39a4dded40b36e5ce63"
+      ]
     },
     {
       "path": "tm-save-lifecycle.js",
-      "sha256": "f8630477e9a55d6d064daeeada04472dbb4918dfb0d902aa5e2f53310c3d9b18",
-      "bytes": 172417,
-      "originalSha256": "70fc3100b5aa89011504f1deaccda434f50d75548c04291a248de76a9369cc97"
+      "asarPath": "web/tm-save-lifecycle.js",
+      "hotUpdate": true,
+      "sha256": "671d317246f88b750b9a7bc65a33b185c8865fa74bbc79da58c30dce83c9a7e5",
+      "bytes": 170670,
+      "originalSha256": "70fc3100b5aa89011504f1deaccda434f50d75548c04291a248de76a9369cc97",
+      "priorSha256": [
+        "f8630477e9a55d6d064daeeada04472dbb4918dfb0d902aa5e2f53310c3d9b18"
+      ]
+    },
+    {
+      "path": "tm-save-world-validation.js",
+      "asarPath": "web/tm-save-world-validation.js",
+      "hotUpdate": true,
+      "sha256": "cdb62ac74878c1c96565840ce89c5531b1c2285b45c547590f36cfa2bdd724b9",
+      "bytes": 22562,
+      "originalSha256": "f4bda4cd928a699a895197c932c7de2165732eb77644760629fab840504efff1",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-endturn-edict.js",
+      "asarPath": "web/tm-endturn-edict.js",
+      "hotUpdate": true,
+      "sha256": "19e4583c028e23fbb98834d39a24b7b78e4898888873bcc7799340d08975b8ab",
+      "bytes": 90291,
+      "originalSha256": "c787acbd1c36a042a8967d55f091748d736679ba2f3dfce99d0f69f3e90b636b",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-endturn-prep.js",
+      "asarPath": "web/tm-endturn-prep.js",
+      "hotUpdate": true,
+      "sha256": "3541e2f3f0a73bbefdd614f50af7612af212346bf1c9fdca3759423264ad6755",
+      "bytes": 39831,
+      "originalSha256": "cf4212811c0aedd6d88b6612938be5e917f4efe0050891fdd09fb8f39148f78c",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-tax-policy.js",
+      "asarPath": "web/tm-tax-policy.js",
+      "hotUpdate": true,
+      "sha256": "1994a13b8206630d89e56ddd561fc5da8b659f28d7f0d96a66ca39b3454e3a67",
+      "bytes": 20116,
+      "originalSha256": "bf1ecac91e094095264780a51356ef987b3406622dc8eccf81828bed0650072e",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-endturn-core.js",
+      "asarPath": "web/tm-endturn-core.js",
+      "hotUpdate": true,
+      "sha256": "75eb282abf7b220557eeff89a5d5b1d9313297c6391dffd4ed3d43704e4a31b6",
+      "bytes": 109451,
+      "originalSha256": "deba2faf6f311f675ac1cbdd44516c3561e09a38564fbd28f8d0ebb24ba76174",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-endturn-timing-ledger.js",
+      "asarPath": "web/tm-endturn-timing-ledger.js",
+      "hotUpdate": true,
+      "sha256": "f8215b34d9be2f7a81e1e88a75324db22a47c925623cfc1b1a78b663d0ebdc78",
+      "bytes": 17533,
+      "originalSha256": "689d6258f97b4adb70458074c90641471587cad391ac59a5d9df0d0779be291a",
+      "priorSha256": []
+    },
+    {
+      "path": "main-impl.js",
+      "asarPath": "main-impl.js",
+      "hotUpdate": false,
+      "sha256": "03e8d5d42e7eb8e1c37217578de2323a60d9903a64b45bebaac73393ac1b739d",
+      "bytes": 185604,
+      "originalSha256": "4454c59e7de3932af1a4c8359041cad18ac144bb0d76d942008e096642c75d87",
+      "priorSha256": []
     }
   ]
 }

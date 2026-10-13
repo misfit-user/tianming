@@ -72,7 +72,9 @@ function kind(t){
  if(/commerce|shangshui|trade/i.test(s+' '+t.base))return 'commerce';
  if(/salt|yanli/i.test(s))return 'salt';if(/head_tax|dingshui/i.test(s))return 'head';return 'other';
 }
-function matches(p,t){return p.taxIds.length?p.taxIds.includes(String(t.id)):p.taxKind==='all'||p.taxKind===kind(t);}
+// 「三饷」是辽饷、剿饷、练饷的合称：一条税令点名三饷，三种加派一并算在内。
+var SANXIANG=['liaoxiang','jiaoxiang','lianxiang'];
+function matches(p,t){return p.taxIds.length?p.taxIds.includes(String(t.id)):p.taxKind==='all'||p.taxKind===kind(t)||(p.taxKind==='sanxiang'&&SANXIANG.includes(kind(t)));}
 function policies(g){return arr(g&&g.fiscalConfig&&g.fiscalConfig.taxPolicies);}
 function active(g,p){var day=now(g);return p&&p.status!=='revoked'&&p.startDay<=day&&(p.endDay==null||day<p.endDay);}
 function key(n){return String(n&&(n.id||n.mapRegionId||n.code||n.name)||'');}
@@ -102,23 +104,26 @@ function effectiveTax(g,n,t,ctx){
  return Object.assign({},t,{rate:r,_policyBaseRate:base});
 }
 var NUM='[零〇一二两三四五六七八九十百\\d]+(?:\\.\\d+)?';
-var verbs=/税率(?:为|改为|定为|调整为)|增税|加税|减税|降税|免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|减免|减征|减半|降低|减少|降为|减为|减至|提高|上调|增加|加征|增征|恢复|复征/;
+// 2026-10-13：「取消/废除/撤销/革除/停收 三饷」是玩家最常写的废止句式，原词表不认，整句被当没说；补齐后按全免登记。
+var verbs=/税率(?:为|改为|定为|调整为)|增税|加税|减税|降税|免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除|减免|减征|减半|降低|减少|降为|减为|减至|提高|上调|增加|加征|增征|恢复|复征/;
+var TAXWORDS=/税|赋|田租|漕粮|三饷|辽饷|剿饷|练饷|盐课/;
 function parse(g,text,params){
  params=params||{};text=String(text||'').trim();
- if(!/税|赋|田租|漕粮|辽饷|剿饷|练饷|盐课/.test(text)&&!params.taxId)return {handled:false};
+ if(!TAXWORDS.test(text)&&!params.taxId)return {handled:false};
  if(!verbs.test(text)&&!own(params,'rate'))return {handled:false};
  if(text.length>12000)return Object.assign(fail('tax-command-too-long','税令过长，请拆分具体条款'),{handled:true});
- var pieces=text.split(/[。；;\n]+/).filter(s=>verbs.test(s)&&/税|赋|田租|漕粮|辽饷|剿饷|练饷|盐课/.test(s));
+ var pieces=text.split(/[。；;\n]+/).filter(s=>verbs.test(s)&&TAXWORDS.test(s));
  if(!pieces.length&&own(params,'rate'))pieces=[text];var cat=catalog(g),fac=player(g),plans=[];
  if(!fac.id)return Object.assign(fail('tax-authority-unknown','未能确认本方税权，未修改税制'),{handled:true});
  for(var clause of pieces){
   if(/研究|讨论|论证|是否|可否|可行性|拟议|建议|核验后|查明后|若|倘/.test(clause))return Object.assign(fail('tax-planning-only','此条是研究或附条件事项，未直接执行征免'),{handled:true});
   if(/明年|来年|翌年|明月|下月|下一回合|次回合/.test(clause))return Object.assign(fail('tax-future-date-unresolved','未来生效时间须明确登记，未提前执行'),{handled:true});
-  var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征/,/提高|上调|增加|加征|增征|增税|加税/,/减免|减征|减半|降低|减少|降为|减为|减至|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
+  var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/,/提高|上调|增加|加征|增征|增税|加税/,/减免|减征|减半|降低|减少|降为|减为|减至|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
   if(directions.length>1)return Object.assign(fail('tax-multiple-actions','不同税务动作请用分号分别列明，未合并扩大执行'),{handled:true});
-  if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低)/.test(clause))continue;
+  if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收)/.test(clause))continue;
   if(/[-−]\s*\d+(?:\.\d+)?\s*[%％成]/.test(clause))return Object.assign(fail('tax-rate-negative','负数税率或比例不能直接执行'),{handled:true});
   var kinds=KINDS.filter(x=>x[1].test(clause));
+  if(!kinds.length&&/三饷/.test(clause))kinds=[['sanxiang',/三饷/]];
   if(kinds.length>1)return Object.assign(fail('tax-kind-ambiguous','多种税请逐项列明调整'),{handled:true});
   var taxKind=kinds.length===1?kinds[0][0]:'all',taxIds=params.taxId?[String(params.taxId)]:[];
   if(!kinds.length&&!taxIds.length&&!/赋税|税赋|税收|全部税|所有税|各项税|一切税|诸税|免税|减税|增税|加税|降税/.test(clause))return Object.assign(fail('tax-kind-unrecognized','未识别明确税种，未将其扩大为全部赋税'),{handled:true});
@@ -144,7 +149,7 @@ function parse(g,text,params){
   if(!targets.length)return Object.assign(fail('tax-no-authority','目标没有可操作的本方税权地块'),{handled:true});
   var operation,value,m;
   if(/恢复|复征/.test(clause)){operation='restore';value=1;}
-  else if(/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征/.test(clause)){
+  else if(/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/.test(clause)){
     var explicit=clause.match(new RegExp('税率(?:为|改为|定为|调整为)\\s*('+NUM+')\\s*[%％]'));
     var fraction=clause.match(new RegExp('('+NUM+')\\s*[%％]'))||clause.match(new RegExp('百分之('+NUM+')'));
     var tenths=clause.match(new RegExp('('+NUM+')\\s*成'));

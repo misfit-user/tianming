@@ -277,6 +277,15 @@
         if (last.failure) extra += '<div>失败类别：' + _esc(labels[last.failure.category] || last.failure.category) + ' · ' + _esc(last.failure.code) + '</div>';
         extra += '<pre style="white-space:pre-wrap;max-height:260px;overflow:auto">' + _esc(JSON.stringify(last.requests || [], null, 2)) + '</pre><small>仅保存本次页面会话的安全元数据；刷新后清除。</small></details>';
       }
+      var lastFailure = _lastFailure();
+      if (lastFailure) {
+        extra += '<section><h4>最近一次过回合报错</h4><div>' + _esc(lastFailure.at || '') + ' · 第 ' + _esc(lastFailure.turn == null ? '?' : lastFailure.turn) + ' 回合'
+          + (lastFailure.version ? ' · 版本 ' + _esc(lastFailure.version) : '') + '</div><div>' + _esc(lastFailure.message || '') + '</div>'
+          + (lastFailure.where ? '<div>出错处：' + _esc(lastFailure.where) + '</div>' : '')
+          + '<pre style="white-space:pre-wrap;max-height:220px;overflow:auto">' + _esc(lastFailure.stack || '') + '</pre>'
+          + '<button class="bt bs" onclick="TM.Endturn.Timing.copyLastFailure()">复制报错详情</button>'
+          + '<small>回报问题时把这段连同存档一起发给作者，就能定位到崩在哪一步。</small></section>';
+      }
       var recovery = root.TM && root.TM.Endturn && root.TM.Endturn.ResponseRecovery;
       if (recovery) {
         var rs = recovery.status();
@@ -325,6 +334,31 @@
     return ledger;
   }
 
+  // 最近一次过回合报错（tm-endturn-core.js 的 _tmRememberEndTurnFailure 写入；本次会话优先，其次本机留存的最近 5 条）
+  function _lastFailure() {
+    var live = root.TM && root.TM.Endturn && root.TM.Endturn.lastFailure;
+    if (live && typeof live === 'object') return live;
+    try {
+      var list = JSON.parse(root.localStorage.getItem('tm_endturn_failures') || '[]');
+      if (Array.isArray(list) && list.length) return list[list.length - 1];
+    } catch (_) {}
+    return null;
+  }
+  function copyLastFailure() {
+    var record = _lastFailure();
+    if (!record) { try { toast('没有过回合报错记录'); } catch (_) {} return false; }
+    var text = JSON.stringify(record, null, 2);
+    var done = false;
+    try {
+      if (root.navigator && root.navigator.clipboard && root.navigator.clipboard.writeText) {
+        root.navigator.clipboard.writeText(text).then(function() { try { toast('报错详情已复制'); } catch (_) {} });
+        done = true;
+      }
+    } catch (_) {}
+    if (!done) { try { root.prompt('请手动复制下面的报错详情', text); } catch (_) {} }
+    return true;
+  }
+
   root.TM.Endturn.Timing = {
     startLedger: startLedger,
     mark: mark,
@@ -334,6 +368,8 @@
     buildSummary: buildSummary,
     renderSummaryHtml: renderSummaryHtml,
     openDiagnostics: openDiagnostics,
+    lastFailure: _lastFailure,
+    copyLastFailure: copyLastFailure,
     formatMs: _fmtMs
   };
   root.openEndturnTimingDiagnostics = openDiagnostics;

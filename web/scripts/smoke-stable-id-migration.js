@@ -28,6 +28,8 @@ const functionNames = [
   '_tmStableIdentityParts',
   '_tmCollectAdminDivisionEntries',
   '_tmRepairDuplicateDivisionIds',
+  '_tmRepairDuplicateEntityIds',
+  '_tmClearDanglingStableRefs',
   '_tmAssignMissingStableIds',
   '_tmUniqueEntityIdByName',
   '_tmEntityIdSet',

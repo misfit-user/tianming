@@ -614,6 +614,11 @@ function _endTurn_collectInput() {
         try {
           var fn = GuokuEngine.Actions[fa.type];
           if (typeof fn !== 'function') return;
+          // 2026-10-13：加派没写成数不再按默认档擅自征派——户部回奏请旨，这回合不动税率。
+          if (fa.type === 'extraTax' && fa.tier == null) {
+            addEB('诏令落效', '户部·诏书「' + String(fa.clause || '').slice(0, 30) + '」加派未写明成数，户部未敢擅定税率，暂未征派；请明示几成再下');
+            return;
+          }
           var r = (fa.type === 'takeLoan') ? fn(fa.tier, fa.term) : fn(fa.tier);
           addEB('诏令落效', '户部·' + fa.raw + (r && r.success === false ? '（未成：' + (r.reason || '') + '）' : '·已行'));
         } catch (_faOne) {}

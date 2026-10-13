@@ -1116,7 +1116,11 @@ async function _endTurnCore(options){
     var _ehuman = (typeof _tmAiErrHuman === 'function') ? _tmAiErrHuman(error) : null;
     var _recoveryInfo = _responseRecovery && _responseRecovery.status();
     var _recoveryHint = _recoveryInfo && _recoveryInfo.state === 'ready' ? '；当前页面保留了 ' + _recoveryInfo.available + ' 份完整响应，重试时严格校验后复用；本地持久候选状态见耗时诊断。' : '';
-    toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message)) + _recoveryHint);
+    // 2026-10-13：玩家只看得到这一句 toast，「Cannot read properties of undefined」定位不到是哪一步崩的。
+    // 认不出的错把出错位置（函数@文件:行）带进提示，完整堆栈留在本机（回合耗时诊断里可看可复制）。
+    var _errWhere = _tmEndTurnErrorLocation(error);
+    try { _tmRememberEndTurnFailure(error, _errWhere); } catch (_remErr) {}
+    toast((_ehuman ? ('回合中断 · ' + _ehuman) : ('回合处理出错: ' + error.message + (_errWhere ? '（出错处：' + _errWhere + '，详情见回合耗时诊断）' : ''))) + _recoveryHint);
     GM.busy = false;
     GM._endTurnBusy=false;
     _tmRequestEndTurnDesktopAutoSaveFlush('end-turn-error');
@@ -1127,6 +1131,44 @@ async function _endTurnCore(options){
     }
     hideLoading();
   }
+}
+
+// 过回合失败定位（2026-10-13）：从堆栈取第一帧「函数 @ 文件:行」，给 toast 与诊断面板用。
+function _tmEndTurnErrorLocation(error) {
+  try {
+    var lines = String(error && error.stack || '').split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      var m = lines[i].match(/^\s*at\s+(?:(.+?)\s+\()?(?:.*[\/\\])?([^\/\\()]+?):(\d+):(\d+)\)?\s*$/);
+      if (m) return (m[1] ? m[1] + ' @ ' : '') + m[2] + ':' + m[3];
+    }
+  } catch (_) {}
+  return '';
+}
+
+// 失败记录留在本机：TM.Endturn.lastFailure（本次会话）+ localStorage 最近 5 条（刷新后仍在），
+// 不含 API 密钥、请求正文；回合耗时诊断面板可查看、复制，玩家回报时不必再截一句话。
+function _tmRememberEndTurnFailure(error, where) {
+  var record = {
+    at: new Date().toISOString(),
+    turn: (typeof GM !== 'undefined' && GM) ? GM.turn : null,
+    version: (typeof window !== 'undefined' && window.TM_VERSION) ? String(window.TM_VERSION) : '',
+    message: String(error && error.message || error).slice(0, 500),
+    where: where || '',
+    stack: String(error && error.stack || '').slice(0, 6000)
+  };
+  try { if (globalThis.TM && globalThis.TM.Endturn) globalThis.TM.Endturn.lastFailure = record; } catch (_) {}
+  try {
+    if (typeof localStorage !== 'undefined') {
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('tm_endturn_failures') || '[]'); } catch (_) { list = []; }
+      if (!Array.isArray(list)) list = [];
+      list.push(record);
+      while (list.length > 5) list.shift();
+      localStorage.setItem('tm_endturn_failures', JSON.stringify(list));
+    }
+  } catch (_) {}
+  try { console.error('[endTurn] 出错处 ' + (where || '未知') + '\n' + record.stack); } catch (_) {}
+  return record;
 }
 
 // ══════ 史记+起居注列表渲染已迁移到 tm-shiji-qiju-ui.js (R97) ══════

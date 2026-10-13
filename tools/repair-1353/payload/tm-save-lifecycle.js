@@ -1364,57 +1364,6 @@ function _tmAssignMissingStableIds(targetGM, kind, entries) {
   return assigned;
 }
 
-// 自建剧本可能在地图编辑器往返时把两个不同的行政节点写成同一个旧 id。
-// 读档不能把第二个节点静默删掉，也不能把两个节点继续当成同一节点；保留
-// 首个稳定 id，对后续节点按其行政路径生成确定性新 id，并只改该节点子树的
-// parentId。这样旧引用仍指向首个节点，第二棵树不会再撞 ID，下一次读档幂等。
-function _tmRepairDuplicateDivisionIds(targetGM, entries) {
-  entries = Array.isArray(entries) ? entries : [];
-  var byId = Object.create(null), used = Object.create(null), repaired = 0;
-  entries.forEach(function(entry) {
-    var item = entry && entry.item;
-    if (!item || _tmStableIdMissing(item.id)) return;
-    var id = String(item.id).trim();
-    used[id] = true;
-    (byId[id] || (byId[id] = [])).push(entry);
-  });
-  Object.keys(byId).forEach(function(oldId) {
-    var collisions = byId[oldId];
-    if (collisions.length < 2) return;
-    collisions.slice(1).forEach(function(entry) {
-      var item = entry.item;
-      var identity = _tmStableIdentityParts('division', item).join('|') || String(entry.identityPath || entry.path || '');
-      var seed = [targetGM && (targetGM.sid || targetGM._campaignId) || '', 'division-duplicate', oldId, entry.identityPath || entry.path || '', identity].join('|');
-      var candidate = oldId + '__tmdup_' + _tmStableIdHash(seed);
-      var suffix = 2;
-      while (used[candidate]) candidate = oldId + '__tmdup_' + _tmStableIdHash(seed) + '_' + suffix++;
-      item.id = candidate;
-      used[candidate] = true;
-      repaired++;
-      var rootPath = String(entry.identityPath || '');
-      entries.forEach(function(child) {
-        if (!child || child === entry || !child.item || !rootPath) return;
-        var childPath = String(child.identityPath || '');
-        if (childPath.indexOf(rootPath + '/') !== 0) return;
-        if (String(child.item.parentId || '').trim() === oldId) child.item.parentId = candidate;
-      });
-      // 地图行政绑定若同时带行政名称，可安全指向重命名后的第二节点；
-      // 同名或无名称时保留旧引用，避免把一个外部引用猜给错误分支。
-      var name = String(item.name || '').trim();
-      var maps = [targetGM.mapData, targetGM.map];
-      maps.forEach(function(map) {
-        (map && Array.isArray(map.regions) ? map.regions : []).forEach(function(region) {
-          if (!region || !name || String(region.name || '').trim() !== name) return;
-          ['adminBinding', 'divisionId', 'adminDivisionId', 'administrativeDivisionId'].forEach(function(field) {
-            if (String(region[field] == null ? '' : region[field]).trim() === oldId) region[field] = candidate;
-          });
-        });
-      });
-    });
-  });
-  return repaired;
-}
-
 function _tmUniqueEntityIdByName(list) {
   var map = Object.create(null);
   (Array.isArray(list) ? list : []).forEach(function(item) {
@@ -1443,7 +1392,7 @@ function _tmBackfillStableForeignKeys(targetGM) {
   function repairNamedRef(owner, idField, nameValue, idSet, nameMap) {
     if (!owner || (!_tmStableIdMissing(owner[idField]) && idSet[String(owner[idField]).trim()])) return;
     var name = typeof nameValue === 'string' ? nameValue.trim() : '';
-    var id = name && nameMap[name];
+    var id = name ? nameMap[name] : null; // 2026-10-13：name 为空时原写法得到 ''，会把悬空/缺失 id 悄悄抹成空串（无收据、躲过校验）；找不到就留给 _tmClearDanglingStableRefs 记账清理
     if (id != null) owner[idField] = id; // arch-ok: 旧名称外键迁移到稳定实体 ID
   }
   function repairNamedRefArray(owner, field, idSet, nameMap) {
@@ -1526,21 +1475,30 @@ function _tmMigrateCoreStableIds(targetGM) {
     region: ((targetGM.mapData && targetGM.mapData.regions) || []).map(function(item, index) { return { item: item, path: 'mapData/regions/' + index }; }),
     division: _tmCollectAdminDivisionEntries(targetGM)
   };
-  var result = { total: 0, byType: {} };
+  var result = { total: 0, byType: {}, duplicateRepaired: 0, danglingRepaired: 0 };
   Object.keys(groups).forEach(function(kind) {
-    if (kind === 'division') result.duplicateRepaired = (result.duplicateRepaired || 0) + _tmRepairDuplicateDivisionIds(targetGM, groups[kind]);
+    // 修复器与校验器同住 tm-save-world-validation.js（紧邻装载）；单独装载本文件的测试夹具没有它们时按旧行为跳过。
+    var duplicates = (typeof _tmRepairDuplicateEntityIds === 'function') ? _tmRepairDuplicateEntityIds(targetGM, kind, groups[kind]) : 0;
+    if (duplicates > 0) result.duplicateRepaired += duplicates;
     var count = _tmAssignMissingStableIds(targetGM, kind, groups[kind]);
     result.byType[kind] = count;
     result.total += count;
   });
   _tmBackfillStableForeignKeys(targetGM);
-  if (result.total > 0 || result.duplicateRepaired > 0) {
+  var dangling = (typeof _tmClearDanglingStableRefs === 'function') ? _tmClearDanglingStableRefs(targetGM) : [];
+  if (dangling.length) result.danglingRepaired = dangling.length;
+  if (result.total > 0 || result.duplicateRepaired > 0 || dangling.length > 0) {
     if (!targetGM._stableIdMigration || typeof targetGM._stableIdMigration !== 'object') {
       targetGM._stableIdMigration = { version: 3, totalAssigned: 0, byType: {} }; // arch-ok: schema 迁移收据
     }
     targetGM._stableIdMigration.version = 3;
     targetGM._stableIdMigration.totalAssigned = Number(targetGM._stableIdMigration.totalAssigned || 0) + result.total;
     targetGM._stableIdMigration.duplicateRepaired = Number(targetGM._stableIdMigration.duplicateRepaired || 0) + Number(result.duplicateRepaired || 0);
+    if (dangling.length) {
+      targetGM._stableIdMigration.danglingRepaired = Number(targetGM._stableIdMigration.danglingRepaired || 0) + dangling.length;
+      targetGM._stableIdMigration.danglingDetails = dangling.slice(0, 40); // arch-ok: 迁移收据·只留最近一次的样本
+      try { console.warn('[stable-id] 悬空引用已修复 ' + dangling.length + ' 处（按名找回或清空）', dangling.slice(0, 10)); } catch (_) {}
+    }
     Object.keys(result.byType).forEach(function(kind) {
       targetGM._stableIdMigration.byType[kind] = Number(targetGM._stableIdMigration.byType[kind] || 0) + result.byType[kind];
     });

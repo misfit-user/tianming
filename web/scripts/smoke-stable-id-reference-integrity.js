@@ -31,6 +31,8 @@ const helpers = [
   'function _tmStableIdentityParts(',
   'function _tmCollectAdminDivisionEntries(',
   'function _tmRepairDuplicateDivisionIds(',
+  'function _tmRepairDuplicateEntityIds(',
+  'function _tmClearDanglingStableRefs(',
   'function _tmAssignMissingStableIds(',
   'function _tmUniqueEntityIdByName(',
   'function _tmEntityIdSet(',
@@ -144,6 +146,8 @@ console.log('[smoke-stable-id-reference-integrity]');
 }
 
 {
+  // 2026-10-13 改判：找不回的悬空引用由读档迁移清空并留收据，不再整档拒载（玩家自建剧本
+  // 「地图地区[418].factionId 指向不存在的稳定 id」案）。校验器仍然严格：迁移后必须零悬空。
   const world = legacyWorld(['甲', '乙']);
   context._tmMigrateCoreStableIds(world);
   world.armies[0].commander = '不存在的人物';
@@ -152,17 +156,26 @@ console.log('[smoke-stable-id-reference-integrity]');
   let rejected = false;
   try { context._tmValidateStableForeignKeys(world); }
   catch (error) { rejected = /commanderId.*不存在/.test(error.message); }
-  ok(rejected, 'unrepairable dangling commanderId is rejected before gameplay opens');
+  ok(rejected, 'validator alone still rejects an unrepairable dangling commanderId');
+  const result = context._tmMigrateCoreStableIds(world);
+  let valid = true;
+  try { context._tmValidateStableForeignKeys(world); } catch (_) { valid = false; }
+  ok(valid && world.armies[0].commanderId === undefined && world.armies[0].commander === '不存在的人物',
+    'migration clears the unrepairable commanderId, keeps the display name, and the world then validates');
+  ok(result.danglingRepaired === 1 && world._stableIdMigration.danglingRepaired === 1
+    && world._stableIdMigration.danglingDetails[0].field === 'commanderId'
+    && world._stableIdMigration.danglingDetails[0].action === 'cleared',
+    'dangling clearance is receipted on the migration record');
 }
 
 {
   const world = legacyWorld(['甲', '乙']);
   context._tmMigrateCoreStableIds(world);
   world.chars[1].spouseId = 'missing-spouse-id';
-  let rejected = false;
-  try { context._tmValidateStableForeignKeys(world); }
-  catch (error) { rejected = /spouseId.*不存在/.test(error.message); }
-  ok(rejected, 'dangling kinship IDs are rejected before gameplay opens');
+  context._tmMigrateCoreStableIds(world);
+  let valid = true;
+  try { context._tmValidateStableForeignKeys(world); } catch (_) { valid = false; }
+  ok(valid && world.chars[1].spouseId === undefined, 'dangling kinship IDs are cleared by migration instead of blocking the load');
 }
 
 {

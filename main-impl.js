@@ -2803,6 +2803,22 @@ function createWindow() {
   });
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  // 渲染层 console.error / 未捕获异常同样落进桌面日志（2026-10-13）：玩家过回合报错只剩一句 toast，
+  // 之前主进程日志里查不到渲染层堆栈。Electron 33 事件签名是 (event, level, message, line, sourceId)，
+  // 新版改成 (details)，两种都接。只收 warning 以上，避免把普通 console.log 全写盘。
+  try {
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      let lvl = level, msg = message, ln = line, src = sourceId;
+      if (event && typeof event === 'object' && event.message !== undefined && level === undefined) {
+        lvl = event.level; msg = event.message; ln = event.lineNumber; src = event.sourceId;
+      }
+      const isError = lvl === 3 || lvl === 'error';
+      const isWarn = lvl === 2 || lvl === 'warning';
+      if (!isError && !isWarn) return;
+      const where = src ? ' (' + String(src).split(/[\\/]/).pop() + ':' + ln + ')' : '';
+      appendDebugLog(isError ? 'error' : 'warn', 'renderer', String(msg).slice(0, 8000) + where);
+    });
+  } catch (_) {}
   mainWindow.webContents.on('will-navigate', (event, targetUrl) => {
     if (!isTrustedRendererUrl(targetUrl)) event.preventDefault();
   });

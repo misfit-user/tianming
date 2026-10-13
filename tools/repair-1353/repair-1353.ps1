@@ -11,22 +11,27 @@ $PayloadRoot = Join-Path $PackageRoot 'payload'
 $ManifestPath = Join-Path $PackageRoot 'payload-manifest.json'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $logPath = Join-Path $PackageRoot ("repair-$stamp.log")
-$files = @('editor-authoring-agent.js','editor-authoring-agent-ui.js','map-editor-juben-handoff.js','map-editor-to-game.js','tm-save-lifecycle.js')
-$asarFiles = @{
-  'web/editor-authoring-agent.js' = 'editor-authoring-agent.js'
-  'web/editor-authoring-agent-ui.js' = 'editor-authoring-agent-ui.js'
-  'web/map-editor-juben-handoff.js' = 'map-editor-juben-handoff.js'
-  'web/map-editor-to-game.js' = 'map-editor-to-game.js'
-  'web/tm-save-lifecycle.js' = 'tm-save-lifecycle.js'
-}
-# Exact 1.3.5.3 full-installer baseline (package.json reports 1.3.503).
-# Unknown hashes are refused so this utility cannot silently patch another build.
-$asarOriginalSha256 = @{
-  'web/editor-authoring-agent.js' = '6a4891ad1e8ca16e6ece9e6a788c201b440c3aa69605959db6b1f75ea1676c8e'
-  'web/editor-authoring-agent-ui.js' = 'ecc4c234633a07e91ab75f074107744f913fbe6e6af5e08176f3d8f8d5b04f6b'
-  'web/map-editor-juben-handoff.js' = '98c995c0a5fcf3e23b39a8ec10e4861b3ea18e9c31df67e3c437af2883c16882'
-  'web/map-editor-to-game.js' = '01c95b2767d24bf4a151775254a46bd642d12f9f973475ba7bc583273818ec87'
-  'web/tm-save-lifecycle.js' = '70fc3100b5aa89011504f1deaccda434f50d75548c04291a248de76a9369cc97'
+# 文件清单、1.3.5.3 原文件哈希与上一版修复包写入过的哈希全部来自 payload-manifest.json
+# （由 build-payload.js 生成），这里不再手抄；LoadManifestTables 在校验完清单后填这几张表。
+# PatchAsar 只接受「1.3.5.3 原文件」或「上一版修复包写入的文件」，其它哈希一律拒绝，
+# 所以这个工具不会把别的构建悄悄改掉。hotUpdate=false 的文件（main-impl.js）不在热更新目录里。
+$KitVersion = 'v2 (2026-10-14)'
+$files = @(); $hotFiles = @(); $asarFiles = @{}; $asarAccepted = @{}
+function LoadManifestTables($manifest) {
+  $script:files = @(); $script:hotFiles = @(); $script:asarFiles = @{}; $script:asarAccepted = @{}
+  foreach($entry in @($manifest.files)) {
+    $rel = [string]$entry.path
+    $script:files += $rel
+    $asarPath = "web/$rel"
+    if ($entry.PSObject.Properties['asarPath'] -and $entry.asarPath) { $asarPath = [string]$entry.asarPath }
+    $script:asarFiles[$asarPath] = $rel
+    $accepted = @(([string]$entry.originalSha256).ToLowerInvariant())
+    if ($entry.PSObject.Properties['priorSha256']) { foreach($h in @($entry.priorSha256)) { if ($h) { $accepted += ([string]$h).ToLowerInvariant() } } }
+    $script:asarAccepted[$asarPath] = $accepted
+    $isHot = $true
+    if ($entry.PSObject.Properties['hotUpdate']) { $isHot = [bool]$entry.hotUpdate }
+    if ($isHot) { $script:hotFiles += $rel }
+  }
 }
 
 function Log([string]$s) { $line = "[$(Get-Date -Format s)] $s"; Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8; Write-Host $line }
@@ -77,7 +82,7 @@ function RollbackTarget([string]$target) {
   $backupRoot = Join-Path $hot 'repair-backups'
   $latest = Get-ChildItem -LiteralPath $backupRoot -Directory -Filter "$Version-*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
   if (-not $latest) { throw "no repair backup for $target" }
-  foreach($rel in $files) {
+  foreach($rel in $hotFiles) {
     $src = Join-Path $latest.FullName $rel; $dst = Join-Path $target $rel
     if (Test-Path -LiteralPath $src) { AtomicCopy $src $dst }
   }
@@ -192,7 +197,7 @@ function PatchAsar([string]$path, $manifest) {
     $e = $byPath[$ap]; $payloadName = $asarFiles[$ap]; $payload = Join-Path $PayloadRoot $payloadName
     $oldHash = HashAsarRegion $path (8 + $info.HeaderSize + $e.OldOffset) $e.OldSize
     $newHash = ([string]((@($manifest.files) | Where-Object path -eq $payloadName)[0].sha256)).ToLowerInvariant()
-    if ($oldHash -ne $newHash -and $oldHash -ne $asarOriginalSha256[$ap]) { throw "asar 原文件校验失败，拒绝覆盖: $ap ($oldHash)" }
+    if ($oldHash -ne $newHash -and -not ($asarAccepted[$ap] -contains $oldHash)) { throw "asar 原文件校验失败，拒绝覆盖: $ap ($oldHash)" }
     if ($oldHash -ne $newHash) { $repl[$ap] = [pscustomobject]@{ Path=$ap; Payload=$payload; Size=(Get-Item -LiteralPath $payload).Length; Hash=$newHash; Node=$e.Node } }
   }
   if ($repl.Count -eq 0) { Log "SKIP already repaired app.asar: $path"; return $true }
@@ -245,6 +250,8 @@ function FindAsarTargets() {
 
 try {
   $manifest = VerifyPayload
+  LoadManifestTables $manifest
+  Log "天命 $Version 修复器 $KitVersion · 清单文件 $($files.Count) 个（热更新目录 $($hotFiles.Count) 个）"
   $running = Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -match '^(tianming|tianming-history|天命)$' }
   if ($running) { throw '天命仍在运行，请完全退出游戏后再次双击修复器；修复器不会强杀进程。' }
   $allTargets = @(FindTargets)
@@ -269,18 +276,20 @@ try {
   foreach($target in $targets) {
     if (-not (ActiveState $target)) { Log "SKIP inactive target: $target"; continue }
     if ($Rollback) { RollbackTarget $target; continue }
-    foreach($rel in $files) { if (-not (Test-Path -LiteralPath (Join-Path $target $rel))) { throw "target file missing: $target\$rel" } }
+    foreach($rel in $hotFiles) { if (-not (Test-Path -LiteralPath (Join-Path $target $rel))) { throw "target file missing: $target\$rel" } }
     $hot = Split-Path -Parent (Split-Path -Parent $target)
     $backup = Join-Path $hot ("repair-backups\$Version-$stamp")
     New-Item -ItemType Directory -Force -Path $backup | Out-Null
-    foreach($rel in $files) {
+    foreach($rel in $hotFiles) {
       $src = Join-Path $PayloadRoot $rel; $dst = Join-Path $target $rel; $bak = Join-Path $backup $rel
       New-Item -ItemType Directory -Force -Path (Split-Path -Parent $bak) | Out-Null
       Copy-Item -LiteralPath $dst -Destination $bak -Force
       AtomicCopy $src $dst
       if ((Hash $dst) -ne ((@($manifest.files) | Where-Object path -eq $rel)[0].sha256).ToLowerInvariant()) { throw "post-write hash mismatch: $rel" }
     }
-    $receipt = [ordered]@{ schema = 1; product = 'tianming'; version = $Version; installedAt = (Get-Date).ToString('o'); target = $target; backup = $backup; files = $files }
+    # 热更新目录只有 web/ 文件；主进程文件（main-impl.js）在 app.asar 里，热更新用户的桌面日志增强要等下个完整安装包。
+    foreach($rel in $files) { if ($hotFiles -notcontains $rel) { Log "SKIP (not part of hot-update dir): $rel" } }
+    $receipt = [ordered]@{ schema = 2; product = 'tianming'; version = $Version; kit = $KitVersion; installedAt = (Get-Date).ToString('o'); target = $target; backup = $backup; files = $hotFiles }
     $receiptPath = Join-Path $backup 'receipt.json'; $receipt | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $receiptPath -Encoding UTF8
     Log "REPAIRED $target backup=$backup"
   }

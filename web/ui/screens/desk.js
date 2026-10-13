@@ -518,10 +518,32 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     regionSearch.blur();
     toggleSeek(false);
   }
-  // 镜头沿当前俯角与朝向缓移到某处上空（约 0.9 秒）
+  // 舆图露着的那一块：左边人物窗、志窗、势力窗，右边诸册、邸报、寻人之间
+  function openSpan() {
+    let l = 0, r = innerWidth;
+    for (const e of document.querySelectorAll('.rw.on, .zw.on')) l = Math.max(l, e.getBoundingClientRect().right);
+    for (const e of document.querySelectorAll('.ce-ov.on .ce-book, .q-juan-veil.side .q-juan, .xr.on')) r = Math.min(r, e.getBoundingClientRect().left);
+    return r - l > 160 ? [l, r] : [0, innerWidth];
+  }
+  // 镜头落点让开两边的窗：要看的那一点落在露着那一块的正中，不落在被册页挡住的屏幕正中。
+  // 拿眼下的镜头量出一个世界单位合几像素（沿屏幕横向），按新远近折算，目标往横向挪过去
+  function aimAt(center, dist) {
+    const [l, r] = openSpan();
+    const want = innerWidth / 2 - (l + r) / 2;
+    if (Math.abs(want) < 8) return center;
+    const p = map.pose();
+    const right = [Math.cos(p.az), -Math.sin(p.az)];
+    const a = map.worldToScreen(p.target[0], p.target[2]);
+    const b = map.worldToScreen(p.target[0] + right[0] * 100, p.target[2] + right[1] * 100);
+    const px = (Math.hypot(b[0] - a[0], b[1] - a[1]) / 100) * (p.dist / dist);
+    if (!(px > 0)) return center;
+    return [center[0] + right[0] * (want / px), center[1] + right[1] * (want / px)];
+  }
+  // 镜头沿当前俯角与朝向缓移到某处上空（约 0.9 秒）；落点让开两边开着的窗（aimAt）
   function flyMapTo(center, dist, then) {
     const from = map.pose();
-    const to = { ...from, target: [center[0], 0, center[1]], dist };
+    const aim = aimAt(center, dist);
+    const to = { ...from, target: [aim[0], 0, aim[1]], dist };
     const t0 = performance.now();
     const ease = (k) => (k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2);
     const step = () => {
@@ -1226,7 +1248,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const gongweiPage = createGongwei({ root, game, profile: () => prof, onPerson: (name) => bioPage.show(name), onAudience: (name) => { if (!readOnly()) audiencePage.summon(name, 'private'); } });
   const annals = (idx) => openAnnals({ game, profile: () => prof, idx, onArchive: (id) => archivePage.show(id) });
   const armyPage = createArmy({ root, game, role, onCourt: (topic) => { if (!readOnly()) courtPage.begin('tinyi', { topic }); }, onFiscal: () => fiscalPage.show(),
-    scope: () => (per.tier === 'sovereign' ? null : per.name) });
+    scope: () => (per.tier === 'sovereign' ? null : per.name), locate: (text) => booksDocked() && locatePlace(text) });
   const officesPage = createOffices({ root, game, profile: () => prof, role, onPerson: (name) => { if (!booksDocked()) officesPage.hide(); renwu.show(name); } });
   // 舆图上诸册靠右展开（atlas.css）：册里点人名，左边开人物窗、册不收，两扇并看；开寻人则收起诸册（同在右边一扇）
   function booksDocked() { return homeMap() && el.classList.contains('inmap'); }

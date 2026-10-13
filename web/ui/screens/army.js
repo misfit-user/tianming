@@ -12,7 +12,8 @@ const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 const TABS = [['armies', '诸军'], ['war', '战事']];
 
 // role()：此身份能做什么（screens/desk.js）——核饷、补饷、整训、调防、易将、付廷议只元首一档有；统兵之人对本部只列身份相符的，灰着写缘由
-export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, role = () => ({ sovereign: true, ro: '' }) }) {
+// locate(驻地)：册页靠右、舆图露着时，点一支军镜头即飞到其驻地（照 CK3 军队列表点一支即看其所在）；不给或返回假则不飞
+export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, role = () => ({ sovereign: true, ro: '' }), locate = null }) {
   const A = game.army;
   let tab = 'armies';
   let sel = '';
@@ -48,7 +49,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
     if (!all.some((r) => r.key === sel)) sel = (all.find((r) => r.hot) || all[0] || {}).key || '';
     replaceChildren(leftBody, R.groups.length ? R.groups.map((g) => h('section.ar-grp',
       h('h4', h('span', g.type), h('small', `${num(g.rows.length)}支 · ${amt(g.soldiers)}`)),
-      g.rows.map((r) => h('button.ar-row' + (r.key === sel ? '.on' : '') + (r.hot ? '.hot' : ''), { type: 'button', onclick: () => { sel = r.key; render(); } },
+      g.rows.map((r) => h('button.ar-row' + (r.key === sel ? '.on' : '') + (r.hot ? '.hot' : ''), { type: 'button', onclick: () => { sel = r.key; render(); if (locate && r.location) locate(r.location); } },
         h('b', r.name),
         h('span.who', [r.vacant ? h('em', '缺帅') : r.commander, r.location].filter(Boolean).flatMap((x, i) => (i ? [' · ', x] : [x]))),
         h('span.n', amt(r.soldiers)),

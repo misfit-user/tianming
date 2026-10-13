@@ -2,6 +2,7 @@
 // 一行一人：小像、姓名与字、职衔品级、势力；右端是所排之项的数（品秩、忠诚、才具、野心、名望）。点一行，左边人物窗换成此人。
 // 卷首：检（人名、字、官职、势力、党派）、势力几枚签（人多的前六家）、排、显已殁、只看钉选；卷首「策名」可把历史人物纳入名册。
 // 对参：至多三人并排比官职、心性、才具、五常、名望诸项，每行最优者标朱（人物窗、本单行尾都可放人进来）。数据经 game.select.people()。
+// seesHearts()：此视角见不见他人之心（所知之律，同列传）——元首见；余者不列忠诚、野心两种排法与对参里的心性、廉介
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { bus } from '../core/bus.js';
@@ -10,10 +11,11 @@ import { zhou, qianzi, kaiguan, juan, tiao } from '../kit/index.js';
 import { openCeming } from './ceming.js';
 
 const SORTS = [['rank', '品秩'], ['loyalty', '忠诚'], ['智', '智'], ['政', '政'], ['军', '军'], ['ambition', '野心'], ['fame', '名望']];
+const HEART_SORTS = new Set(['loyalty', 'ambition']);
 const STATE_GLYPH = { 诏狱: '狱', 流放: '谪', 逃亡: '逃', 赴任: '行', 丁忧: '忧', 致仕: '休', 密谋: '谋' };
 const SHOW_STEP = 60;
 
-export function createXunren({ root, game, current, onPick, onBio }) {
+export function createXunren({ root, game, current, onPick, onBio, seesHearts = () => true }) {
   let all = [];
   let list = [];
   let shown = SHOW_STEP;
@@ -22,7 +24,17 @@ export function createXunren({ root, game, current, onPick, onBio }) {
 
   const count = h('small');
   const search = h('input.xr-search', { type: 'search', placeholder: '检人名、字、官职、势力', oninput: (e) => { opts.q = e.target.value.trim(); filter(); } });
-  const sorts = qianzi(SORTS.map(([value, label]) => ({ value, label })), { value: 'rank', onchange: (v) => { opts.sort = v; filter(); } });
+  // 排法随视角重摆（见不见人心）：load 时按 seesHearts 摆一次
+  const sortBox = h('div.xr-sorts');
+  let sortsFor = null;
+  function renderSorts() {
+    const hearts = !!seesHearts();
+    if (sortsFor === hearts) return;
+    sortsFor = hearts;
+    if (!hearts && HEART_SORTS.has(opts.sort)) opts.sort = 'rank';
+    const list = SORTS.filter(([value]) => hearts || !HEART_SORTS.has(value));
+    replaceChildren(sortBox, h('span', '排'), qianzi(list.map(([value, label]) => ({ value, label })), { value: opts.sort, onchange: (v) => { opts.sort = v; filter(); } }));
+  }
   const deadSw = kaiguan('显已殁', { onchange: (v) => { opts.dead = v; load(); } });
   const pinSw = kaiguan('只看钉选', { onchange: (v) => { opts.pins = v; filter(); } });
   const facBox = h('div.xr-facs');
@@ -37,12 +49,13 @@ export function createXunren({ root, game, current, onPick, onBio }) {
       h('button.xr-shut', { type: 'button', title: '收起（Esc）', onclick: () => hide() }, '×')),
     h('div.xr-tools', search),
     facBox,
-    h('div.xr-sorts', h('span', '排'), sorts),
+    sortBox,
     h('div.xr-sw', deadSw, pinSw),
     rows, cmpBar);
   root.append(el);
 
   function load() {
+    renderSorts();
     all = game.select.people({ dead: opts.dead });
     renderFactions();
     filter();
@@ -125,10 +138,10 @@ export function createXunren({ root, game, current, onPick, onBio }) {
         textRow('所属', (p) => [p.faction, p.party ? `${p.party}${p.partyRank ? '·' + p.partyRank : ''}` : ''].filter(Boolean).join(' · ')),
         numRow('年齿', (p) => p.age, { noMark: true }),
         textRow('处境', (p) => [p.location ? `在${p.location}` : '', ...p.states].filter(Boolean).join(' · ')),
-        group('心性', [numRow('忠诚', (p) => p.loyalty), numRow('野心', (p) => p.ambition, { noMark: true })]),
+        seesHearts() ? group('心性', [numRow('忠诚', (p) => p.loyalty), numRow('野心', (p) => p.ambition, { noMark: true })]) : [],
         group('才具', ps[0].stats.map(([k], i) => numRow(k, (p) => (p.stats[i] ? p.stats[i][1] : null)))),
         group('五常', ps[0].wuchang.map(([k], i) => numRow(k, (p) => (p.wuchang[i] ? p.wuchang[i][1] : null)))),
-        group('声望', [numRow('名望', (p) => p.fame), numRow('贤能', (p) => p.merit), numRow('廉', (p) => p.integrity)]),
+        group('声望', [numRow('名望', (p) => p.fame), numRow('贤能', (p) => p.merit), seesHearts() ? numRow('廉', (p) => p.integrity) : null]),
         textRow('性情', (p) => p.traits.map((t) => t.name).join('、'))));
     const j = juan({ title: '对参', note: ps.map((p) => p.name).join(' · '), width: `${18 + ps.length * 13}rem`, content: h('div.ce-cmp-wrap', table, h('p.ce-cmp-note', '每行最优者标朱；野心、年齿不标。点人像入其人物窗。')) });
     table.querySelectorAll('th.who .q-zhou').forEach((b, i) => { b.style.cursor = 'pointer'; b.title = '入其人物窗'; b.addEventListener('click', () => { j.close('ok'); onPick(ps[i].name); }); });

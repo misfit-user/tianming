@@ -958,8 +958,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const initial = () => h('i', [...p.name][0]);
     const face = p.portrait ? h('img', { src: p.portrait, alt: '', decoding: 'async', onerror: (e) => e.target.replaceWith(initial()) }) : initial();
     const self = p.name === per.name;
-    const rel = per.previewing && !self ? (p.relations || []).find((r) => r.name === per.name) : null;
-    const tome = self ? '此即本人' : !per.previewing ? `忠诚 ${grade(p.loyalty)}` : rel ? `视我：${rel.tone === 'foe' ? '疏' : '亲'}` : '';
+    const rel = per.tier !== 'sovereign' && !self ? (p.relations || []).find((r) => r.name === per.name) : null;
+    const tome = self ? '此即本人' : per.tier === 'sovereign' ? `忠诚 ${grade(p.loyalty)}` : rel ? `视我：${rel.tone === 'foe' ? '疏' : '亲'}` : '';
     return { node: h('div.q-ptip' + (p.dead ? '.dead' : ''), h('span.q-ptip-face', face),
       h('div', h('b', p.name, p.zi ? h('small', `字${p.zi}`) : null),
         h('p', [p.office, p.rank.label].filter(Boolean).join(' · ')),
@@ -1132,9 +1132,9 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     onSummon: (name) => { el.classList.add('on'); audiencePage.summon(name); } });
   const issues = createIssues({ game, profile: () => prof, onConvene: (id) => { if (!readOnly()) courtPage.convene(id); }, onSecret: (id) => { if (!readOnly()) mizhaoPage.pick(id); } });
   // 人物：照 CK3——点人像左边展开人物窗，书目「人」右边展开寻人；舆图在中间露着（同志 10-11：人物图志不必另做册页）
-  const xunren = createXunren({ root, game, current: () => renwu.current, onPick: (name) => renwu.show(name), onBio: (name) => bioPage.show(name) });
+  const xunren = createXunren({ root, game, current: () => renwu.current, onPick: (name) => renwu.show(name), onBio: (name) => bioPage.show(name), seesHearts: () => per.tier === 'sovereign' });
   const renwu = createRenwu({ root, game,
-    viewer: () => ({ name: per.name, player: !per.previewing, lord: (prof.bio && prof.bio.lord) || '主上' }),
+    viewer: () => ({ name: per.name, player: !per.previewing, sovereign: per.tier === 'sovereign', lord: (prof.bio && prof.bio.lord) || '主上' }),
     can: (name) => personCan(name),
     onAudience: (name) => audiencePage.summon(name), onLetter: (name) => openLetters(name), onOffice: (name) => bioPage.show(name, 'office'),
     onBio: (name) => bioPage.show(name), onFind: (name) => xunren.show(name), locate: (text) => locatePlace(text), compare: xunren.compare });

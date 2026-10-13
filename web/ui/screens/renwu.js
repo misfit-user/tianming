@@ -28,7 +28,8 @@ function kinOf(b) {
 const TABS = [['kin', '家人'], ['rel', '交游'], ['career', '履历'], ['life', '生平']];
 const signed = (v) => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : '〇');
 
-// viewer() → { name, player: 是否玩家本人（非借视角）, lord: 称君上之词 }
+// viewer() → { name, player: 是否玩家本人（非借视角）, sovereign: 是否元首一档（见臣下之心）, lord: 称君上之词 }
+// 人心（所知之律，同列传）：元首见他人的忠诚、野心；余者只见自己的，他人只列名望、贤能这类公论
 // can(name) → { audience: 缘由或空, letter: 缘由或空, office: 缘由或空（空即可行）, readOnly }
 export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onOffice, onBio, onFind, locate, compare }) {
   let cur = null;               // 当前之人的名
@@ -78,7 +79,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const rel = (b.relations || []).find((r) => r.name === v.name);
     const imp = (b.impressions || []).find((x) => x.name === v.name);
     if (rel || imp) return { label: (rel && rel.label) || (imp && imp.label) || '平', score: rel && rel.strength != null ? rel.strength : imp ? imp.favor : null };
-    if (v.player) return b.toLord ? { label: b.toLord.label || '平', score: b.toLord.favor, lord: true } : null;   // 君上那一条没记就不写
+    if (v.sovereign) return b.toLord ? { label: b.toLord.label || '平', score: b.toLord.favor, lord: true } : null;   // 君上那一条没记就不写
     return { label: '素无往来', score: null };
   }
 
@@ -129,7 +130,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     replaceChildren(skills, (b.eight || []).map(([k, val]) => tiao(h('li' + (val >= 80 ? '.hi' : val > 0 && val <= 30 ? '.lo' : ''), h('i', k), h('b', num(val))), () => ({ title: SKILL_NAMES[k] || k, text: `${num(val)}` }))));
     const fame = game.select.fameRank(row.fame);
     const virtue = game.select.virtueRank(row.merit);
-    const heart = Object.fromEntries(b.heart || []);
+    const heart = v.sovereign || self ? Object.fromEntries(b.heart || []) : {};
     replaceChildren(gauges,
       heart['忠诚'] != null ? pin('忠诚', heart['忠诚']) : null,
       heart['野心'] != null ? pin('野心', heart['野心']) : null,

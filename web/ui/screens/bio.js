@@ -57,6 +57,16 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
 
   // 本人：借视角时是所借之人，不是玩家
   const isSelf = (p) => (viewer() ? viewer() === p.name : !!p.isPlayer);
+  // 人心（所知之律）：元首见臣下之心，余者只见自己的——他人的忠诚野心、心绪记忆、眼中诸人、对君上之心不列；
+  // 性情才具、交游、家族、履历、著述是公论，照列（照 CK3：心事与密谋不公开，余者公开）
+  const seesHeart = (p) => profile().tier === 'sovereign' || isSelf(p);
+  const INNER_VOLS = new Set(['mind', 'memory', 'pov']);
+  const PUBLIC_HEART = new Set(['康健', '名望']);
+  const towardMe = (p) => {
+    const r = p.relations.find((x) => x.name === viewer());
+    if (!r) return h('p.lz-tome', '视我：素无往来');
+    return h('p.lz-tome' + (r.strength > 0 ? '.good' : r.strength < 0 ? '.bad' : ''), `视我：${r.label || '平'}`, r.strength != null ? h('em', signed(r.strength)) : null);
+  };
   const T = () => Object.assign({ lord: '主上', now: '主上', note: '批注', posthumous: '', mind: '自省心志' }, profile().bio || {});
   const link = (name, ok, label) => (ok ? h('button.lz-link', { type: 'button', onclick: () => show(name) }, label || name) : h('span', label || name));
   const sec = (title, sub, ...body) => h('section.lz-sec', h('h4', title, sub ? h('small', sub) : null), ...body);
@@ -75,15 +85,16 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         h('p.line', [p.age != null ? `${num(p.age)}岁` : '', p.gender].filter(Boolean).join(' · ')),
         h('p.office', p.office[0] || '布衣', p.rank ? h('em', p.rank) : null),
         p.office.length > 1 ? h('p.conc', `兼　${p.office.slice(1).join('、')}`) : null,
-        // 与我（照 CK3 角色窗口姓名下那一行关系）：本人写「此即本人」，他人写对君上的亲疏（与「心性」卷同源）
-        isSelf(p) ? h('p.lz-tome', '此即本人') : p.alive && p.toLord ? h('p.lz-tome' + (p.toLord.favor > 0 ? '.good' : p.toLord.favor < 0 ? '.bad' : ''),
-          `视${t.lord}：${p.toLord.label || '平'}`, h('em', signed(p.toLord.favor))) : null,
+        // 与我（照 CK3 角色窗口姓名下那一行关系）：本人写「此即本人」；元首看他人写对君上的亲疏（与「心性」卷同源），
+        // 余者看交游里此人与我的那一条（同人物窗）
+        isSelf(p) ? h('p.lz-tome', '此即本人') : !p.alive ? null : seesHeart(p) ? (p.toLord ? h('p.lz-tome' + (p.toLord.favor > 0 ? '.good' : p.toLord.favor < 0 ? '.bad' : ''),
+          `视${t.lord}：${p.toLord.label || '平'}`, h('em', signed(p.toLord.favor))) : null) : towardMe(p),
         h('p.line', [p.faction, p.party ? `${p.party}${p.partyRank ? '·' + p.partyRank : ''}` : ''].filter(Boolean).join(' · ')),
         p.honorary.length ? h('div.lz-hon', p.honorary.map((x) => h('span', { title: '加衔或身份称号' }, `衔 ${x}`))) : null),
       p.banner ? h('div.lz-banner', h('i', p.banner.glyph), h('div', h('b', p.banner.title), p.banner.note ? h('small', p.banner.note) : null)) : null);
     const count = { relations: p.relations.length, career: p.career.length, family: p.blood.length, memory: p.memory.length, works: p.works.length };
-    if (vol === 'office' && !canOffice(p)) vol = 'overview';
-    replaceChildren(vols, VOLS.filter(([k]) => k !== 'office' || canOffice(p)).map(([k, label]) => h('button' + (k === vol ? '.on' : ''), { type: 'button', dataset: { vol: k }, onclick: () => { vol = k; markVol(); renderRight(); } },
+    if ((vol === 'office' && !canOffice(p)) || (INNER_VOLS.has(vol) && !seesHeart(p))) vol = 'overview';
+    replaceChildren(vols, VOLS.filter(([k]) => (k !== 'office' || canOffice(p)) && (!INNER_VOLS.has(k) || seesHeart(p))).map(([k, label]) => h('button' + (k === vol ? '.on' : ''), { type: 'button', dataset: { vol: k }, onclick: () => { vol = k; markVol(); renderRight(); } },
       h('b', label), count[k] ? h('small', num(count[k])) : null)));
     const text = B.note(p.name);
     replaceChildren(noteBox, h('h5', t.note, h('button', { type: 'button', onclick: editNote }, text ? '改' : '批')), text ? h('p', text) : h('p.empty', '未批'));
@@ -155,7 +166,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         sec('禀赋命盘', p.wuchang.some(([, v]) => v != null) ? '八维评量 · 五常心性' : '八维评量',
           h('div.lz-pans', h('figure', radar(p.eight, '#a83228'), h('figcaption', '八维评量')),
             p.wuchang.some(([, v]) => v != null) ? h('figure', radar(p.wuchang, '#557f6f'), h('figcaption', '五常心性')) : h('figure.none', stub('此人未录五常。')))),
-        sec('心性状态', '', h('div.lz-bars', p.heart.map(([k, v]) => bar(k, v, { 忠诚: 'jade', 野心: 'violet', 压力: 'verm', 康健: 'gold', 廉介: 'jade', 名望: 'gold' }[k])))),
+        sec('心性状态', '', h('div.lz-bars', p.heart.filter(([k]) => seesHeart(p) || PUBLIC_HEART.has(k)).map(([k, v]) => bar(k, v, { 忠诚: 'jade', 野心: 'violet', 压力: 'verm', 康健: 'gold', 廉介: 'jade', 名望: 'gold' }[k])))),
         sec('功名', '累积政绩 · 升迁凭据', h('div.lz-merit', h('b', p.gongming.merit == null ? '—' : num(p.gongming.merit)), p.gongming.tier ? h('span', p.gongming.tier) : null, h('small', '六阶累进 · 处事建功而得 · 用于升迁')),
           p.gongming.log.length ? h('div.lz-log', h('h6', '近期功名升降'), p.gongming.log.map((m) => h('p', h('span', `第${num(m.turn)}回`), h('b' + (m.delta > 0 ? '.up' : m.delta < 0 ? '.dn' : ''), m.delta ? signed(m.delta) : '功绩'), h('em', m.reason)))) : null),
         h('div.lz-two', sec('当前志向', '', prose(p.goal || '未录')),
@@ -187,16 +198,16 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
       ];
     } else if (vol === 'relations') {
       body = [
-        p.toLord ? sec(`对${t.lord}之心`, '', h('div.lz-lord', h('b' + (p.toLord.favor >= 0 ? '.good' : '.bad'), signed(p.toLord.favor)), h('span', p.toLord.label), h('small', '受恩与受屈、共事与争执，日积月累，见于今日的亲疏。'))) : null,
-        p.doubts.length ? sec(`${t.lord}之疑`, '问对识破 · 君臣嫌隙', h('div.lz-doubt', p.doubts.map((d) => h('p', h('b', `第${num(d.turn)}回`),
+        p.toLord && seesHeart(p) ? sec(`对${t.lord}之心`, '', h('div.lz-lord', h('b' + (p.toLord.favor >= 0 ? '.good' : '.bad'), signed(p.toLord.favor)), h('span', p.toLord.label), h('small', '受恩与受屈、共事与争执，日积月累，见于今日的亲疏。'))) : null,
+        p.doubts.length && seesHeart(p) ? sec(`${t.lord}之疑`, '问对识破 · 君臣嫌隙', h('div.lz-doubt', p.doubts.map((d) => h('p', h('b', `第${num(d.turn)}回`),
           `${t.lord}${d.caught ? '当面识破' : '隐隐觉出'}其有所隐瞒${d.hiding ? `：所隐者「${d.hiding}」` : ''}`)))) : null,
         p.relations.length ? sec('人际关系图谱', '点姓名可阅其列传', egonet(p)) : null,
         sec('关系强弱细览', '', p.relations.length ? h('div.lz-rels', p.relations.map((r) => h('div' + (r.strength == null ? '.bare' : ''), link(r.name, r.known), h('span.' + (r.tone || 'neu'), r.label),
           r.strength == null ? null : h('i.meter', h('b.' + (r.strength >= 0 ? 'pos' : 'neg'), { style: { left: `${r.strength >= 0 ? 50 : 50 - Math.abs(r.strength) / 2}%`, width: `${Math.abs(r.strength) / 2}%` } })),
           r.strength == null ? null : h('em', signed(r.strength)), r.desc ? h('p', r.desc) : null))) : stub('暂无关系。')),
-        p.wuwei.length ? sec('观感五维', '此人对诸人的亲·信·敬·畏·敌', h('div.lz-rows', p.wuwei.map((x) => h('p', h('span', link(x.name, x.known)), h('b', `亲${x.affinity} · 信${x.trust} · 敬${x.respect} · 畏${x.fear} · 敌${x.hostility}`))))) : null,
+        p.wuwei.length && seesHeart(p) ? sec('观感五维', '此人对诸人的亲·信·敬·畏·敌', h('div.lz-rows', p.wuwei.map((x) => h('p', h('span', link(x.name, x.known)), h('b', `亲${x.affinity} · 信${x.trust} · 敬${x.respect} · 畏${x.fear} · 敌${x.hostility}`))))) : null,
         h('div.lz-two',
-          sec('对他人印象', '', p.impressions.length ? h('div.lz-rows', p.impressions.map((x) => h('p', h('span', link(x.name, x.known)), h('b.' + (x.favor >= 0 ? 'good' : 'bad'), `${x.label}（${signed(x.favor)}）`)))) : stub('暂无印象记录。')),
+          !seesHeart(p) ? null : sec('对他人印象', '', p.impressions.length ? h('div.lz-rows', p.impressions.map((x) => h('p', h('span', link(x.name, x.known)), h('b.' + (x.favor >= 0 ? 'good' : 'bad'), `${x.label}（${signed(x.favor)}）`)))) : stub('暂无印象记录。')),
           sec('血亲', '', p.blood.length ? h('div.lz-rows', p.blood.map((m) => h('p', h('span', m.relation), h('b', link(m.name, m.known, m.name + (m.dead ? ' †' : '')))))) : stub('暂无血亲记录。')))
       ];
     } else if (vol === 'career') {

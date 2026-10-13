@@ -235,4 +235,6 @@ button.sw-face { cursor: pointer; }
 .zw .fz-band { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .zw .fz-stat b { overflow: hidden; text-overflow: ellipsis; }
 .zw .zw-tabs { gap: .1875rem; }
+.zw .zw-tabs.tight .fz-slip { padding: .1875rem .5rem; }
+.zw .zw-tabs.tight .fz-slip i { display: none; }
 .zw .fz-slip { gap: .25rem; padding-right: .375rem; }

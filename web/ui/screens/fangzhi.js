@@ -48,6 +48,11 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
   const hero = h('section.zw-hero', pic, h('div.zw-ctls', flyBtn, backBtn, shutBtn), name);
   const left = h('div.zw-top');            // 页头以下、检签以上：小签、描述、读数带、排名
   const tabs = h('nav.zw-tabs');
+  // 检签一排装不下（窄屏、字号放大）就去掉签前的小方字，只留卷名；排完量一下再定
+  function fitTabs() {
+    tabs.classList.remove('tight');
+    requestAnimationFrame(() => tabs.classList.toggle('tight', tabs.scrollWidth > tabs.clientWidth + 1));
+  }
   const right = h('div.zw-body');          // 所检之卷
   const foot = h('footer.zw-foot');
   const sheet = h('div.zw-sheet.q-scroll', left, tabs, right);
@@ -107,6 +112,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     nameplate('方志', crumbs, hd.name, hd.level);
     replaceChildren(left, status, pills.length ? h('div.fz-pills', pills) : null, hd.desc ? h('p.fz-desc', hd.desc) : null, band, rank);
     replaceChildren(tabs, slips);
+    fitTabs();
     replaceChildren(foot, acts, h('span.zw-nav',
       hd.circuit ? h('button.q-yapai', { type: 'button', title: hd.circuit.label, onclick: () => showCircuit(hd.circuit.key) }, '展通志') : null,
       hd.owner && onFaction ? h('button.q-yapai', { type: 'button', title: hd.owner, onclick: () => onFaction(hd.ownerKey || hd.owner) }, '展势力') : null));
@@ -325,6 +331,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       c.name, `省道 · 辖${num(c.members)}府州`);
     replaceChildren(left, pills.length ? h('div.fz-pills', pills) : null, c.desc ? h('p.fz-desc', c.desc) : null, official, band);
     replaceChildren(tabs, slips);
+    fitTabs();
     replaceChildren(foot, acts, h('span.zw-nav', c.owner && onFaction ? h('button.q-yapai', { type: 'button', title: c.owner, onclick: () => onFaction(c.ownerKey || c.owner) }, '展势力') : null));
   }
   function renderCircuitRight() {

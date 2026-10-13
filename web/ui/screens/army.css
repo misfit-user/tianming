@@ -15,7 +15,7 @@
   padding: .3125rem .5rem; border: 0; text-align: left; cursor: pointer; background: transparent; color: var(--ink); font-family: var(--f-kai); box-shadow: inset 2px 0 0 transparent; }
 .ar-row:hover { background: rgba(255, 246, 226, .6); }
 .ar-row.on { background: rgba(255, 246, 226, .9); box-shadow: inset .1875rem 0 0 #a3301f, inset 0 0 0 1px rgba(140, 40, 28, .3); }
-.ar-row b { grid-area: name; font-weight: 400; font-size: var(--fs-3); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ar-row b { grid-area: name; font-weight: 400; font-size: var(--fs-3); letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-row .n { grid-area: n; font: 400 var(--fs-3) var(--f-title); color: #2a1608; }
 .ar-row .who { grid-area: who; font-size: var(--fs-1); color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-row .who em { font-style: normal; color: #8a2a1c; }

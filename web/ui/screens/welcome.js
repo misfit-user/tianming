@@ -4,6 +4,8 @@ import { h } from '../core/dom.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
 import { openSettings } from './settings.js';
+import { homeMode } from '../core/settings.js';
+import { guideOf } from '../model/identity.js';
 
 const DIM = { political: '政', economic: '财', military: '军', social: '民' };
 const SEEN_KEY = 'tm_ui_seen_guide';                         // 新前端自己的已读标记（老界面的首日引导进局时一弹就写了它自己的，那一张在新前端里看不见）
@@ -27,7 +29,7 @@ export function showWelcome({ game, profile }) {
   let firstTime = false;
   try { firstTime = !localStorage.getItem(SEEN_KEY); if (firstTime) localStorage.setItem(SEEN_KEY, '1'); } catch (_e) { firstTime = false; }
   const max = Math.max(100, ...s.factions.map((f) => f.strength));
-  const guide = (profile() && profile().guide) || [];
+  const guide = profile() ? guideOf(profile(), homeMode()) : [];
   const j = juan({
     title: '天下大势', note: d.text || '', width: '50rem', height: 'min(42rem, 84vh)',
     content: h('div.wel',

@@ -6,7 +6,7 @@
 // 御案作升华——落座后入图，批阅、撰写、传书、召对这些案上之事一片云过升起书房，事毕回图）。舆图为家的格局照 CK3：
 // 左下立像与一圈圆钮（五渠道、回案），左上待办与邸报，右上读数，右缘书目，右下时钟与舆图看法。
 import { h, replaceChildren } from '../core/dom.js';
-import { getSetting } from '../core/settings.js';
+import { homeMode } from '../core/settings.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum, grade } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
@@ -93,8 +93,7 @@ const LEDGERS = {
 export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   let per = game.perspective();
   let prof = profileOf(per);
-  const homeQS = new URLSearchParams(location.search).get('home');
-  const homeMap = () => (homeQS || getSetting('home')) === 'map';
+  const homeMap = () => homeMode() === 'map';
 
   // ---------- 顶栏 ----------
   const dyn = h('div.q-yin.dyn', '');
@@ -491,13 +490,14 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     if (!homeMap()) return dive.rise();
     if (!document.querySelector('.q-juan-veil, .ce-ov.on')) pause();
   });
-  // 数字键一至九、〇：开右侧书目第几册（案前、无卷无册开着、不在输入时）
+  // 数字键一至九、〇：开右侧书目第几册（案前、无卷无册开着、不在输入时）；舆图里诸册靠右时册开着也认——按别号换册、按同号收册，同点书目
   window.addEventListener('keydown', (e) => {
     if (!/^[0-9]$/.test(e.key) || e.ctrlKey || e.altKey || e.metaKey || e.repeat) return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
     if (!el.classList.contains('on') && dive.mode !== 'map') return;
-    if (document.querySelector('.ce-ov.on, .q-juan-veil') || game.select.date().busy) return;
+    const blocking = booksDocked() ? '.q-juan-veil:not(.side)' : '.ce-ov.on, .q-juan-veil';
+    if (document.querySelector(blocking) || game.select.date().busy) return;
     const book = prof.books[(Number(e.key) + 9) % 10];
     if (!book) return;
     e.preventDefault();

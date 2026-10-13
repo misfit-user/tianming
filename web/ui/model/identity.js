@@ -22,7 +22,7 @@
 //   abdicate 暂停卷里的「退位」：叫法、卷首按语、继承人标签、确认语（空则不列）
 //   letters  「书」那一页：可发的文书种类（内核 LETTER_TYPES 的键）、抬头与署名、来函署名、名册与截获密函的叫法
 //   audience 召对（「见」之问对）：自称与「曰」「对曰」、实录卷首、名单分组、诸动作的叫法
-//   guide    进局「临朝须知」几条：[题, 说]
+//   guide    进局「临朝须知」几条：[题, 说]——舆图为家的说法；guideDesk 书案为家的说法（帮助册、欢迎卷按主画面取，见 guideOf）
 //   social   朝野册党派、阶层两页卷底的动作叫法（召人、付议、拟令；不设则不列）
 //   bio      列传：称上之词（君上、今上）、对此人批注的叫法、身后追赠、看本人心志的叫法
 //   annals   史记那一卷：卷名、令的叫法；archive 旧档总库（史馆）的册名，note 起居注上加批的叫法
@@ -72,7 +72,9 @@ export const PROFILES = {
     keyi: { title: '科议', speak: '圣谕', hint: '随时可降圣谕，众臣立场与表决随之而动', again: '再议一轮', vote: '付表决', decide: '继续裁决', shelve: '暂缓',
       ask: '开科议', cost: '耗精力十五' },
     guideTitle: '临朝须知',
-    guide: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
+    guide: [['时政与奏疏', '左上菱章记着待批的奏疏与待决的要务，点开即办；其下邸报传四方消息。'], ['拟诏施政', '立像旁圆钮「令」撰写诏书——施政、任免、征伐皆由此。'],
+      ['召对朝议', '圆钮「见」与群臣议事问对，或开常朝、廷议，听取异见。'], ['推演', '右下「推演」推进时局——AI 演绎天下对这一朝的反应。']],
+    guideDesk: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
       ['召对朝议', '与群臣议事问对，听取异见。'], ['推演', '顶栏「推演」推进时局——AI 演绎天下对这一朝的反应。']],
     ling: {
       surface: 'silk', suggest: '议事清册', conduct: '主角行止', conductHint: '此期所为——如召见某臣、校阅三军、微服私访、祖庙祭祀……',
@@ -123,6 +125,7 @@ export const PROFILES = {
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文', archive: '案牍库', note: '批注' },
     guideTitle: '视事须知',
     guide: [['所掌', '右上是所掌之账，左下立像旁是本人的职衔、上官与精力。'], ['行文', '圆钮「令」行文，上奏下札。'], ['推演', '右下「推演」推进时局。']],
+    guideDesk: [['所掌', '顶栏是所掌之账与本人的名望、贤能。'], ['行文', '案底「行文」一牌，上奏下札。'], ['推演', '顶栏「推演」推进时局。']],
     ling: {
       surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '用印发文', archive: '往期公文', done: '已发之文',
       empty: '此期无文可发。', ready: '公文已拟，是否发出？', idle: '',
@@ -170,6 +173,7 @@ const UNOFFICIAL = {
   annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令', archive: '家乘', note: '眉批' },
   guideTitle: '入座须知',
   guide: [['本家', '右上是家产，左下立像旁是本人与精力。'], ['书信', '圆钮「书」往还，结交师友。'], ['推演', '右下「推演」推进时局。']],
+  guideDesk: [['本家', '顶栏是家产与本人的名望、贤能。'], ['书信', '案底「书信」一牌往还，结交师友。'], ['推演', '顶栏「推演」推进时局。']],
   ling: {
     surface: 'paper', suggest: '摘录', conduct: '行止', conductHint: '此期所为……', private: '私事', privateNote: '', polish: '润色', promulgate: '钤印封缄', archive: '往期书札', done: '已发之札',
     empty: '此期无事。', ready: '书札已拟，是否发出？', idle: '',
@@ -188,4 +192,9 @@ export function profileOf(p) {
   const bare = p && p.name ? String(p.name).replace(/[（(].*$/, '') : '';
   const self = prof.self || (bare.length > 1 ? bare.slice(1) : bare);
   return { tier, official: tier === 'sovereign' || !!official, ...prof, self, channels: CHANNEL_KEYS.map((key) => ({ key, title: prof.channels[key][0], sub: prof.channels[key][1] })) };
+}
+
+// 须知按主画面取：舆图为家用 guide，书案为家用 guideDesk（没有就用 guide）
+export function guideOf(prof, home) {
+  return (home === 'desk' && prof.guideDesk) || prof.guide || [];
 }

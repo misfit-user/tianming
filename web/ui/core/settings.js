@@ -9,7 +9,8 @@ const DEFAULTS = {
   numerals: 'cn',         // cn 汉字记数 | arabic 阿拉伯数字
   motion: 'full',         // full | less（少动效：只留淡入淡出）
   textSize: 'std',        // std 标准 | large 大 | xlarge 特大（正文四阶字号的倍数，见 kit/tokens.css --fs-k）
-  home: 'desk',           // desk 御案为家 | map 舆图为家（舆图铺满为主画面，御案只在案上之事时升起，见 docs/newui-foundation-20261005/universal-view.md）
+  home: 'map',            // map 舆图为家（舆图铺满为主画面，御案只在案上之事时升起，见 docs/newui-foundation-20261005/universal-view.md）| desk 御案为家
+  v: 2,                   // 设置的版本：1 → 2 时主画面迁成舆图为家（同志 10-10 定「舆图为家，御案只是升华」；原默认书案为家，存下的设置里都写着它）
   musicVolume: 0.6,
   soundVolume: 0.8
 };
@@ -29,6 +30,8 @@ function load() {
   try {
     const saved = JSON.parse(raw);
     for (const k of Object.keys(DEFAULTS)) if (k in saved) values[k] = saved[k];
+    // 旧版设置：主画面迁成舆图为家，只迁这一回（之后再切回书案为家照选的）
+    if (!(Number(saved.v) >= 2)) { values.home = 'map'; values.v = 2; save(); }
   } catch (_e) {
     values = { ...DEFAULTS };
   }
@@ -57,6 +60,12 @@ export function installSettings() {
 
 export function getSetting(key) {
   return values[key];
+}
+
+// 主画面：?home=map|desk 开发时临时改，余者照典章「主画面」
+export function homeMode() {
+  const q = new URLSearchParams(location.search).get('home');
+  return q === 'map' || q === 'desk' ? q : values.home;
 }
 
 export function setSetting(key, value) {

@@ -53,6 +53,7 @@
 .scr-docket .mlist h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 .375rem; padding-bottom: .25rem; border-bottom: 1px solid var(--gold-line);
   font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: var(--gold-hi); }
 .scr-docket .mlist h4 small { font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--ivory-soft); }
+.scr-docket .mnone { margin: .5rem .25rem; font: var(--fs-2) var(--f-kai); letter-spacing: .3em; color: var(--ivory-soft); }
 .scr-docket .mi { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; width: 100%; padding: .375rem .5rem; border: 0; border-left: 2px solid transparent;
   background: transparent; color: var(--ivory); text-align: left; cursor: pointer; font-family: var(--f-kai); transition: background var(--t-1); }
 .scr-docket .mi b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }

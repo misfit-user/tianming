@@ -110,7 +110,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
   const tools = h('div.tools',
     btn('存', { title: '案卷目录', onclick: () => { if (!readOnly()) openSaves({ game, inGame: true }); } }),
     btn('典', { title: '典章', onclick: () => openSettings() }),
-    btn('问', { title: '问天', onclick: () => { if (!readOnly()) wentianPage.show(); } }),
+    btn('问', { title: '问天', onclick: () => { if (!readOnly()) wentianPage.show({ back: dive.mode === 'map' ? '回图' : '回案' }); } }),
     btn('总', { title: '全部变量', onclick: () => openAllVars({ game }) }),
     btn('暂', { title: '暂停', onclick: () => pause() }));        // 触屏没有 Esc，暂停卷（帮助、退位、回启幕）要有个可点的门
   const topbar = h('header.topbar', dyn, time, ledger, gauges, tools);

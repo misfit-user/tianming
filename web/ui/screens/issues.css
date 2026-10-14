@@ -187,7 +187,9 @@ select.st-in:disabled { opacity: .45; cursor: default; }
 .sv-row { display: flex; align-items: center; gap: .875rem; margin-bottom: .5rem; }
 .sv-row .q-yapai { cursor: pointer; }
 .sv-row small { font-size: var(--fs-1); color: var(--ink-faint); }
-.sv-none { margin: 3rem 0; text-align: center; letter-spacing: .3em; color: var(--ink-faint); }
+.sv-none { display: flex; flex-direction: column; align-items: center; gap: .875rem; padding: min(8rem, 16vh) 2rem 0; text-align: center; }
+.sv-none b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .4em; text-indent: .4em; color: var(--ink-soft); }
+.sv-none small { max-width: 26em; font-size: var(--fs-2); line-height: 1.9; letter-spacing: .1em; color: var(--ink-faint); }
 
 /* 暂停卷 */
 .pz { display: flex; flex-direction: column; gap: .625rem; align-items: stretch; padding: .25rem 1rem; }

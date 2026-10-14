@@ -140,6 +140,7 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
   function renderList() {
     const d = prof.docket;
     const groups = ORDER.map((g) => [g, items.map((m, i) => [m, i]).filter(([m]) => m.group === g)]).filter(([, xs]) => xs.length);
+    if (!groups.length) return replaceChildren(list, h('p.mnone', '今日无'));
     replaceChildren(list, groups.map(([g, xs]) => h('section',
       h('h4', h('span', d.groups[g]), h('small', `${num(xs.length)}件`)),
       xs.map(([m, i]) => {

@@ -154,7 +154,9 @@ export function createWentian({ root, game }) {
   function clearChat() { ask('清空对话', '清空问天对话记录？已注入的指令与记忆原样保留。', () => W.clearChat()); }
   function clearDirectives() { ask('清除指令', '清除所有在册指令？此后推演不再参照。', () => W.clearDirectives()); }
 
-  function show() {
+  // back：右上圆钮小字写回到哪里（舆图里开的写「回图」）
+  function show({ back = '回案' } = {}) {
+    close.lastChild.textContent = back;
     try { W.open(); } catch (e) { toast(e.message); }
     cat = '';
     try { W.setCategory(''); } catch (_e) { /* 内核未就绪 */ }

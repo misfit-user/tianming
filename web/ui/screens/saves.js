@@ -51,7 +51,7 @@ export function openSaves({ game, inGame = false, onLoaded }) {
         opts.extra || null));
     const autos = L.slots.filter((s) => s.auto), manual = L.slots.filter((s) => !s.auto);
     replaceChildren(body,
-      !L.slots.length && !L.pre && !L.desktop.length ? h('p.sv-none', '尚无封存之卷。') : null,
+      !L.slots.length && !L.pre && !L.desktop.length ? h('div.sv-none', h('b', '尚无封存之卷'), h('small', inGame ? '点卷底「封存此卷」，本局此刻便落一卷在此；别处抄出的副本，可「调入外卷」' : '别处抄出的副本，可「调入外卷」')) : null,
       autos.length ? h('section', h('h5', '自动封存'), autos.map((s) => card(s))) : null,
       manual.length ? h('section', h('h5', `手存诸卷 · ${num(manual.length)}`), manual.map((s) => card(s))) : null,
       L.pre ? h('section', h('h5', '过回合前快照'), h('p.sv-note', '回到本回合推演开始前：所拟所批、对话调动都在，推演须重来。'), card({ ...L.pre, slot: null })) : null,

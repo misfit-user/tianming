@@ -21,9 +21,9 @@
 .wt-head { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 1.25rem 0 .75rem; }
 .wt-head h2 { margin: 0; font: 400 2.75rem/1.1 var(--f-title); letter-spacing: .8em; text-indent: .8em; color: #f0d98c; text-shadow: 0 0 1.25rem rgba(240, 217, 140, .45); }
 .wt-head p { margin: .375rem 0 0; font-size: var(--fs-2); letter-spacing: .3em; color: rgba(233, 226, 204, .6); }
-.wt-close { position: absolute; right: 2rem; top: 1.25rem; width: 3.5rem; height: 3.5rem; border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; align-content: center;
+.wt-close { position: absolute; right: 2rem; top: 1.25rem; width: max(3.5rem, 46px); height: max(3.5rem, 46px); border: 0; border-radius: 50%; cursor: pointer; display: grid; place-items: center; align-content: center;
   font: 400 1.375rem/1 var(--f-title); color: #f0d98c; background: radial-gradient(circle at 40% 35%, #2d3766, #141a38); box-shadow: inset 0 0 0 1px rgba(240, 217, 140, .55), 0 0 1rem rgba(0, 0, 0, .6); }
-.wt-close small { font: var(--fs-1)/1.2 var(--f-kai); letter-spacing: .2em; color: rgba(233, 226, 204, .65); }
+.wt-close small { font: var(--fs-1)/1.2 var(--f-kai); letter-spacing: .1em; white-space: nowrap; color: rgba(233, 226, 204, .65); }
 .wt-close:hover { box-shadow: inset 0 0 0 1px #f0d98c, 0 0 1.25rem rgba(240, 217, 140, .35); }
 
 .wt-body { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 23rem) minmax(0, 1fr); gap: 1.75rem; min-height: 0; padding: 0 2.5rem; }

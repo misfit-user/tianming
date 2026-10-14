@@ -17,8 +17,11 @@ export function showWelcome({ game, profile }) {
   const nokey = () => {
     if (configured) return;
     juan({
-      title: '推演之器未备', note: 'AI 密钥', width: '32rem',
-      content: h('p', { style: { margin: 0, lineHeight: 2 } }, '推演、来文、史记都要靠 AI。眼下尚未配置密钥：可以先翻看各卷、批阅案牍，配好之后再推演。'),
+      // 签上不写「AI」：题字体里拉丁字母是花体，竖排更认不得
+      title: '密钥未配', note: '推演之器', width: '32rem',
+      content: h('div', { style: { lineHeight: 2 } },
+        h('p', { style: { margin: '0 0 .5rem' } }, '推演、来文、史记、问对都要靠 AI，眼下尚未配置密钥。'),
+        h('p', { style: { margin: 0, color: 'var(--ink-soft)' } }, '此时可先翻看各册、批阅案牍、熟悉局势；到典章「推演之器」一卷填好密钥，即可推演。')),
       actions: [{ label: '开典章', onclick: ({ close }) => { close('ok'); openSettings({ tab: 'ai' }); } }]
     });
   };

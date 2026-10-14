@@ -4,7 +4,7 @@
 // 战场页（亲征时那一场实时战斗）是另一个世界，照旧铺满全屏，不在此画。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num } from '../core/numerals.js';
+import { num, roundSig } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -27,7 +27,8 @@ export function createBattle({ game }) {
     const C = game.battle.CHOICES;
     const odds = Math.max(0, Math.min(100, q.odds || 0));
     const tone = odds >= 70 ? 'up' : odds <= 30 ? 'down' : 'even';
-    const side = (label, s, cls) => h('div.bt-side.' + cls, h('small', label), h('b', `${num(s.men)}众`), h('span', `战力${num(s.power)}`));
+    // 战力是庙算的估数，取两位（「三万零九百八十四」在窄卷里折成两行，也无须精到个位）
+    const side = (label, s, cls) => h('div.bt-side.' + cls, h('small', label), h('b', `${num(s.men)}众`), h('span', `战力约${num(roundSig(s.power, 2))}`));
     const pick = (i) => { const j = settle(q.id); if (j) j.close('ok'); act(() => q.pick(i)); };
     keep(q.id, () => juan({ title: `兵临${q.where || '前线'}`, note: '请旨', width: '34rem', closable: false,
       content: h('div.bt-ask',
@@ -37,13 +38,21 @@ export function createBattle({ game }) {
         h('div.bt-delegate', C.slice(1).map(([name, note], k) => h('button', { type: 'button', onclick: () => pick(k + 1) }, h('b', name), h('small', note.replace(/^委之偏裨[：，]?/, '')))))) }));
   });
 
+  // 补员一钮：内核写「募兵补员 +1275（银2550·粮1275）」，拆成名目、可补几人、所费，数照记数设置写
+  function fillEl(f, onclick) {
+    const m = f.label.match(/^(.+?)\s*\+(\d+)\s*[（(](.*?)[）)]$/);
+    if (!m) return h('button', { type: 'button', disabled: f.disabled, onclick }, f.label.replace(/\d+/g, (d) => num(+d)));
+    const cost = m[3].replace(/银(\d+)/, (_, v) => `银${num(+v)}两`).replace(/粮(\d+)/, (_, v) => `粮${num(+v)}石`);
+    return h('button', { type: 'button', disabled: f.disabled, onclick }, h('b', m[1]), h('span', +m[2] ? `+${num(+m[2])}人` : '无可补'), h('small', cost));
+  }
+
   // ---------- 会战战报（补员会改写，同 id 再来即就地重画）----------
   const last = new Map();
   function reportBody(q) {
     return h('div.bt-report', q.rows.map((r, i) => h('section.bt-army' + (r.destroyed ? '.gone' : ''),
       h('header', h('b', r.name), r.destroyed ? h('em.lost', '全军覆没') : [h('span', `损${num(r.loss)}`), h('span', `余${num(r.soldiers)}`), h('span', `历练${num(r.vet)}`)]),
       r.fate ? h('p.bt-fate.' + (FATE[r.fate.outcome] || 'safe'), `主将${r.fate.name}　${r.fate.outcome}`) : null,
-      r.fills.length || r.gap || r.full ? h('div.bt-fill', r.fills.map((f, k) => h('button', { type: 'button', disabled: f.disabled, onclick: () => act(() => q.fill(i, k)) }, f.label.replace(/（/, '　').replace(/）$/, ''))),
+      r.fills.length || r.gap || r.full ? h('div.bt-fill', r.fills.map((f, k) => fillEl(f, () => act(() => q.fill(i, k)))),
         h('small', r.full ? '已补齐' : r.gap ? `缺员${num(r.gap)}` : '')) : null)));
   }
   bus.on('battle:report', (q) => {

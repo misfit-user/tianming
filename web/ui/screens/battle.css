@@ -11,7 +11,7 @@ html.tm-newui body > div#tm-battle-overlay { display: block !important; }
 .bt-side small { font: var(--fs-1) var(--f-title); letter-spacing: .3em; color: var(--ink-faint); }
 .bt-side b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .05em; }
 .bt-side.us b { color: #7d1d12; } .bt-side.them b { color: #2f3d4e; }
-.bt-side span { font-size: var(--fs-2); color: var(--ink-soft); }
+.bt-side span { font-size: var(--fs-2); white-space: nowrap; color: var(--ink-soft); }
 .bt-odds { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: .625rem; font-size: var(--fs-2); }
 .bt-odds .meter { height: .4375rem; background: rgba(59, 74, 92, .35); }
 .bt-odds .meter u { display: block; height: 100%; background: linear-gradient(90deg, #7d1d12, #c4553a); }
@@ -41,6 +41,10 @@ html.tm-newui body > div#tm-battle-overlay { display: block !important; }
 .bt-fill button { padding: .1875rem .625rem; border: 0; cursor: pointer; font: var(--fs-2)/1.7 var(--f-kai); color: var(--ink); background: rgba(255, 252, 244, .85); box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .45); }
 .bt-fill button:first-child { box-shadow: inset 0 0 0 1px rgba(63, 110, 94, .45), inset .1875rem 0 0 #3f6e5e; }
 .bt-fill button:disabled { opacity: .45; cursor: default; }
+.bt-fill button b { font-weight: 400; }
+.bt-fill button span { margin: 0 .5em; color: #2f6b55; }
+.bt-fill button { text-align: left; }
+.bt-fill button small { display: block; font-size: var(--fs-1); line-height: 1.5; color: var(--ink-faint); }
 .bt-fill small { font-size: var(--fs-1); color: var(--ink-faint); }
 
 .bt-observe { display: flex; flex-direction: column; gap: .375rem; }

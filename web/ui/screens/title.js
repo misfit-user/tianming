@@ -7,6 +7,7 @@ import { SHOTS, TITLE_TO_DESK } from '../scene/study/shots.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { openSaves } from './saves.js';
+import { cover } from './loading.js';
 
 const BOARD = [
   { key: 'new', label: '開卷', note: '另起新篇', primary: true },
@@ -74,29 +75,41 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     if (!sid || busy) return;
     busy = true;
     el.classList.remove('on');
-    const off = game.once('game:opening', (o) => showOpening(o));
+    let cov = cover(root, game, '展 卷');
+    await cov.painted;
+    const off = game.once('game:opening', (o) => { cov.done(); showOpening(o, (v) => { cov = v; }); });
     try {
       await game.newGame(sid, { gameMode });
+      await cov.done();
       await enterDesk();
     } catch (err) {
       off();
+      cov.done();
       busy = false;
       el.classList.add('on');
       juan({ title: '未能開卷', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, String(err && err.message || err)) });
     }
   }
 
-  async function showOpening(o) {
+  // onVeil：落座那一下换上新的墨幕，交回开局流程在进书房前撤
+  async function showOpening(o, onVeil) {
     await loadFonts({ 'TM-WenKai': o.opening + (o.player && o.player.bio || ''), 'TM-MaShanZheng': o.name + (o.player && o.player.clean || '') });
     const who = h('div.who',
       zhou({ name: o.player.clean || o.player.name, src: o.player.portrait || '' }),
       h('h4', o.player.clean || o.player.name), o.player.title ? h('small', o.player.title) : null,
       o.player.bio ? h('small', { style: { textAlign: 'left', lineHeight: 1.7 } }, o.player.bio) : null,
       o.eyes && o.eyes.length ? h('ul.eyes', o.eyes.map((e) => h('li', h('b', e.ti), e.ds ? h('div', e.ds) : null))) : null);
+    const enter = profileOf(o.perspective || game.perspective()).enter;
     juan({
       title: o.name.split(/——|—/)[0] || o.name, note: o.name.split(/——|—/)[1] || '', width: '58rem', height: 'min(40rem, 80vh)', closable: false,
       content: h('div.opening', h('div.text', o.opening), who),
-      actions: [{ label: profileOf(o.perspective || game.perspective()).enter, onclick: ({ close }) => { close('ok'); o.begin(); } }]
+      actions: [{ label: enter, onclick: async ({ close }) => {
+        close('ok');
+        const v = cover(root, game, [...enter].join(' '));
+        onVeil(v);
+        await v.painted;
+        o.begin();
+      } }]
     });
   }
 

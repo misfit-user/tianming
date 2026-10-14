@@ -4,6 +4,7 @@ import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
+import { cover } from './loading.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const when = (t) => (t ? new Date(t).toLocaleString('zh-CN', { hour12: false }) : '');
@@ -64,12 +65,15 @@ export function openSaves({ game, inGame = false, onLoaded }) {
     if (busy) return;
     if (inGame && !(await confirmScroll({ title: '启封此卷？', text: '一经启封，当前推演进度将被覆盖（若未封存）。', ok: '启封' }))) return;
     busy = true;
-    toast('史官正在抄录副本……');
+    const cov = cover(document.getElementById('tm-newui-root') || document.body, game, '启 封', '史官正在抄录副本');
+    await cov.painted;
     try {
       await game.saves.load(s.key);
       j && j.close('ok');
+      cov.done();
       onLoaded && onLoaded();
     } catch (err) {
+      cov.done();
       toast(String(err && err.message || err));
     } finally { busy = false; }
   }

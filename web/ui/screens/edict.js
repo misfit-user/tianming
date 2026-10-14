@@ -1,5 +1,5 @@
 // 令：撰写（元首一档即诏书）。镜头俯到案上摊开的一幅黄绫诏卷，字层以单应变换贴在绫面：右起诏首（按朝代），五类各一段竖写，左端年月。
-// 点哪一段，那一段就展宽来写；左列议事清册，点一条摘入正在写的那段；右列主角行止、私行、往期档案、已颁之诏；
+// 点哪一段，那一段就展宽来写；左列议事清册，点一条摘入正在写的那段；右列起居行止、私行、往期档案、已颁之诏；
 // 案底有司润色（择文风，出润色稿可改，颁行天下或手稿入档）与「钤玺颁行」（即推演）。
 // 草稿随写随存本机，推演前一刻写进内核（adapter/edict.js）。名目取身份档 ling。
 import { h, replaceChildren } from '../core/dom.js';
@@ -186,7 +186,7 @@ export function createEdict({ root, study, game, profile, onClose, onPromulgate 
   const veil = h('div.dk-veil');
   root.append(veil);
   const fade = (on) => new Promise((r) => { veil.classList.toggle('on', on); setTimeout(r, on ? 280 : 360); });
-  // at='conduct'：从「行」渠道来，直接落笔在主角行止一栏
+  // at='conduct'：从「行」渠道来，直接落笔在行止一栏
   async function open(at) {
     if (opened) return;
     prof = profile();

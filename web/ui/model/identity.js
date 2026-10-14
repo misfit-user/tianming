@@ -44,7 +44,7 @@ export const PROFILES = {
     seal: { chars: ['诏', '付', '有', '司'], title: '诏付有司', note: '颁行已拟诏书' },
     channels: {
       ling: ['撰写诏书', '起草政令'], pi: ['百官奏疏', '御览奏报'], shu: ['鸿雁传书', '手札密谕'],
-      jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '主角行止']
+      jian: ['召对朝议', '问对·常朝·廷议'], xing: ['巡幸行止', '起居行止']
     },
     books: [['舆', '舆图', 'map'], ['人', '人物', 'people'], ['官', '官制', 'offices'], ['财', '财计', 'fiscal'], ['军', '军务', 'army'], ['势', '朝野', 'realm'], ['文', '文苑', 'wenyuan'], ['科', '科举', 'keju'], ['宫', '宫闱', 'gongwei'], ['史', '史官实录', 'annals']],
     tags: { memorials: '奏折', tray: '时政花笺', letterbox: '信匣', writing: '笔砚', books: '史册', seal: '玉玺' },
@@ -77,7 +77,7 @@ export const PROFILES = {
     guideDesk: [['时政与奏疏', '点案上花笺看当前要务，点那摞奏折批阅臣下所请，心中有数。'], ['拟诏施政', '笔砚或「撰写诏书」下达旨意——施政、任免、征伐皆由此。'],
       ['召对朝议', '与群臣议事问对，听取异见。'], ['推演', '顶栏「推演」推进时局——AI 演绎天下对这一朝的反应。']],
     ling: {
-      surface: 'silk', suggest: '议事清册', conduct: '主角行止', conductHint: '此期所为——如召见某臣、校阅三军、微服私访、祖庙祭祀……',
+      surface: 'silk', suggest: '议事清册', conduct: '起居行止', conductHint: '此期所为——如召见某臣、校阅三军、微服私访、祖庙祭祀……',
       private: '帝王私行', privateNote: '至多三项，后果由推演定', polish: '有司润色', promulgate: '钤玺颁行', archive: '往期诏令', done: '已颁之诏',
       postCourt: '推演之际另召群臣', postCourtNote: '有司承办诏令之际，另听群臣陈事；朝会上议定的旨意，另行颁付有司。',
       empty: '今日无事，不如休息一番？天下太平，何必事事操心。', ready: '诏令已拟，是否颁行天下？', idle: '不理朝政，只顾享乐——如此甚好！',

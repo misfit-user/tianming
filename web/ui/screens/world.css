@@ -44,7 +44,9 @@
 .hm-xiang::after { content: ''; position: absolute; inset: .4375rem; pointer-events: none; box-shadow: inset 0 -2.5rem 2.5rem -1.5rem rgba(20, 10, 4, .55), inset 0 0 0 1px rgba(20, 10, 4, .6); }
 .hm-face { width: 100%; height: 100%; overflow: hidden; background: radial-gradient(ellipse at 50% 35%, #cdb88e, #8d7651); }
 .hm-face > img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 10%; }
-.hm-face > i { display: grid; place-items: center; height: 100%; font: 400 3.5rem var(--f-title); font-style: normal; color: rgba(40, 24, 14, .55); }
+/* 剧本未给立像：深绢上一个金字（原先浅纸灰字，与四周漆色不搭，像没画完） */
+.hm-face > i { display: grid; place-items: center; height: 100%; font: 400 4rem var(--f-title); font-style: normal; color: rgba(236, 210, 154, .8); text-shadow: 0 .125rem .5rem rgba(0, 0, 0, .65);
+  background: radial-gradient(ellipse at 50% 34%, rgba(128, 90, 52, .5), transparent 62%), linear-gradient(180deg, #3b2717, #1b100a); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .28); }
 .hm-seal { position: absolute; left: -.625rem; bottom: -.5rem; z-index: 1; width: 2.75rem; height: 2.75rem; font-size: 1.875rem; line-height: 1; transform: rotate(-4deg);
   box-shadow: 0 .25rem .625rem rgba(10, 5, 2, .6); }
 

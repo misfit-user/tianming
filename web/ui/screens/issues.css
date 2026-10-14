@@ -92,6 +92,9 @@
 .an-tabs button.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
 .an-page { flex: 1; min-height: 0; overflow: auto; padding-right: .5rem; }
 .an-text { white-space: pre-wrap; font-size: var(--fs-4); line-height: 2.05; letter-spacing: .03em; }
+.an-text p { margin: 0 0 .875em; }
+.an-text .an-tag { margin-right: .625em; font-weight: 400; letter-spacing: .12em; color: var(--verm); }
+.an-text .an-tag::before { content: '〔'; } .an-text .an-tag::after { content: '〕'; }
 .an-text.shilu { font-family: var(--f-print); font-size: var(--fs-5); }
 .an-text.houren { color: var(--ink-soft); }
 .an-list { margin: 0; padding-left: 1.5rem; font-size: var(--fs-3); line-height: 1.95; }

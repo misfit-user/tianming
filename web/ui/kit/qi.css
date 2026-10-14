@@ -42,6 +42,8 @@ button.q-yapai, a.q-yapai { cursor: pointer; border: 0; transition: transform va
 button.q-yapai:hover, a.q-yapai:hover { transform: translateY(-2px); box-shadow: 0 .375rem .875rem rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(120, 90, 50, .45); }
 button.q-yapai.off { opacity: .5; cursor: not-allowed; filter: saturate(.4); }
 button.q-yapai.off:hover { transform: none; box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(120, 90, 50, .35); }
+button.q-yapai:disabled { opacity: .45; cursor: default; filter: saturate(.4); }
+button.q-yapai:disabled:hover { transform: none; box-shadow: var(--sh-lift), inset 0 0 0 1px rgba(120, 90, 50, .35); }
 /* 系在器物上的牙牌：一截红绳、一个盘长结 */
 .q-tag { display: flex; align-items: center; white-space: nowrap; pointer-events: none; }
 .q-tag > i { position: relative; width: 1rem; height: 1.5px; background: var(--cinnabar); }

@@ -36,12 +36,27 @@ export function openAnnals({ game, profile, idx = null, onArchive }) {
     else if (vol === 'edicts') page = h('div',
       a.edicts.length ? h('section', h('h5', t.ownOrders), a.edicts.map(([k, v]) => h('p.an-edict', h('b', (k === 'decree' ? t.decree : EDICT_LABEL[k] || k) + '　'), v))) : null,
       a.edictReports.length ? h('section', h('h5', t.echo), h('ol.an-list', a.edictReports.map((x) => h('li', x)))) : null);
-    else page = h('div.an-text.' + vol, (vs.find(([k]) => k === vol) || [, , ''])[2]);
+    else page = prose((vs.find(([k]) => k === vol) || [, , ''])[2], vol);
     replaceChildren(body,
       h('header.an-head', h('b', a.title || a.time), a.title ? h('small', a.time) : null, a.summary ? h('p', a.summary) : null),
       a.playerInner ? h('p.an-inner', a.playerInner) : null,
       tabs, h('div.an-page.q-scroll.ink', page));
     if (j) j.body.querySelector('.tiantou small') && (j.body.querySelector('.tiantou small').textContent = `第${num(a.turn)}回合 · 第${num(a.idx + 1)}卷共${num(a.total)}卷`);
+    edges();
+  }
+  // 一段一段：段首【某事】提作朱色小题（时政记按事分段，原先方括号连着正文挤在一处）
+  function prose(text, cls) {
+    return h('div.an-text.' + cls, String(text || '').split(/\n+/).map((s) => s.trim()).filter(Boolean).map((s) => {
+      const m = s.match(/^【([^】]{1,16})】\s*/);
+      return h('p', m ? [h('b.an-tag', m[1]), s.slice(m[0].length)] : s);
+    }));
+  }
+  // 翻到头、翻到尾，前一回／后一回灰着（原先只一卷也照样亮着，点了没反应）
+  function edges() {
+    if (!j) return;
+    const [prev, next] = j.el.querySelectorAll('footer .q-yapai');
+    if (prev) prev.disabled = !cur || cur.idx <= 0;
+    if (next) next.disabled = !cur || cur.idx >= cur.total - 1;
   }
   function go(d) {
     if (!cur) return;
@@ -54,6 +69,7 @@ export function openAnnals({ game, profile, idx = null, onArchive }) {
     actions: [{ label: '前一回', onclick: () => go(-1) }, { label: '后一回', onclick: () => go(1) },
       ...(onArchive ? [{ label: `入${t.archive}`, onclick: ({ close }) => { const id = cur ? `shiji-${cur.idx}` : ''; close('ok'); onArchive(id); } }] : [])]
   });
+  edges();
   // ←→ 翻前后一回（照老史记弹窗）：只在本卷居最上、且不在输入框里时
   const onKey = (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;

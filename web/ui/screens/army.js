@@ -170,7 +170,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
         h('b', `${r.attacker} 对 ${r.defender}`),
         h('span', r.winner ? `${r.winner}胜` : ''),
         h('small', r.attackerLoss || r.defenderLoss ? `折损 攻${amt(r.attackerLoss)} · 守${amt(r.defenderLoss)}` : ''))))
-        : h('p.ce-unk', '尚无战录'));
+        : h('div.ar-none', h('b', '尚无战录'), h('small', '两军交锋之后，攻守、胜负与折损逐条记在此处')));
   }
 
   function show(key) {

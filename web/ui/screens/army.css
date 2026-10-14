@@ -39,14 +39,18 @@
 .ar-lines p span { flex: none; width: 3rem; font: var(--fs-2) var(--f-title); letter-spacing: .25em; color: var(--ink-faint); line-height: 2; }
 .ar-lines p.desc { color: var(--ink-soft); }
 .ar-bars { display: grid; grid-template-columns: 1fr 1fr; gap: .375rem 1.5rem; }
-.ar-bar { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) 3.5rem; align-items: center; gap: .5rem; font-size: var(--fs-2); }
-.ar-bar span { letter-spacing: .15em; color: var(--ink-soft); }
+.ar-bar { display: grid; grid-template-columns: 5em minmax(0, 1fr) 4em; align-items: center; gap: .5rem; font-size: var(--fs-2); }
+.ar-bar span { letter-spacing: .15em; white-space: nowrap; color: var(--ink-soft); }
 .ar-bar i { height: .5rem; background: rgba(120, 90, 50, .12); }
 .ar-bar i b { display: block; height: 100%; background: linear-gradient(90deg, #3a7d67, #6fae8f); }
 .ar-bar em { font: normal var(--fs-3) var(--f-title); text-align: right; white-space: nowrap; color: var(--ink); }
 .ar-bar.bad i b { background: linear-gradient(90deg, #a3301f, #d0603f); }
 .ar-bar.bad em { color: #8a2a1c; }
 .ar-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+/* 右叶窄（小屏字号有下限，半栏装不下「步兵 刀盾 十四队×一千 历练十五」一行）时两栏改一栏 */
+.ar-right { container-type: inline-size; }
+@container (max-width: 560px) { .ar-cols { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
+.ar-unit span { white-space: nowrap; }
 .ar-unit { display: grid; grid-template-columns: minmax(0, 7.5rem) auto minmax(0, 1fr) auto; align-items: baseline; gap: .5rem; margin: 0 0 .1875rem; font-size: var(--fs-2); }
 .ar-unit b { font-weight: 400; font-size: var(--fs-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ar-unit em { font-style: normal; font-size: var(--fs-1); color: #8a5a12; }
@@ -72,3 +76,6 @@
 .ar-history .when { color: var(--ink-faint); }
 .ar-history b { font-weight: 400; font-size: var(--fs-3); }
 .ar-history small { color: var(--ink-faint); text-align: right; }
+.ar-none { display: flex; flex-direction: column; align-items: center; gap: .875rem; padding: min(8rem, 16vh) 2rem 0; text-align: center; }
+.ar-none b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .4em; text-indent: .4em; color: var(--ink-soft); }
+.ar-none small { max-width: 26em; font-size: var(--fs-2); line-height: 1.9; letter-spacing: .1em; color: var(--ink-faint); }

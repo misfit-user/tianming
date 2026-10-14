@@ -17,7 +17,7 @@ export function createCourt({ root, study, game, profile, onClose }) {
   let snap = null;
   let kind = '';
   const nodes = new Map();      // 实录条目号 → { el, text }
-  let overlayJuan = null, overlayId = '', formText = null;
+  let overlayJuan = null, overlayId = '', formText = null, foreBox = null;
   let setupJuan = null;
 
   const crumbName = h('b.q-gold');
@@ -90,6 +90,7 @@ export function createCourt({ root, study, game, profile, onClose }) {
   }
   function renderControls(s) {
     statusEl.textContent = s.status || '';
+    statusEl.title = s.status || '';
     replaceChildren(slips, s.controls.map((c) => h('button.slip' + (c.go ? '.go' : '') + (c.danger ? '.danger' : ''), { type: 'button', title: c.title, onclick: () => pressCtl(c) }, c.label)));
     sayBox.classList.toggle('off', !s.input);
   }
@@ -116,6 +117,7 @@ export function createCourt({ root, study, game, profile, onClose }) {
     if (id === overlayId) {
       // 同一层只是说明变了（如预审的党派风向随议题更新）：就地改字，不重开卷
       if (o && o.type === 'form' && formText && formText.textContent !== o.text) { formText.textContent = o.text; formText.hidden = !o.text; }
+      if (o && o.type === 'form' && foreBox) paintForecast(o.forecast);
       return;
     }
     if (overlayJuan) { const j = overlayJuan; overlayJuan = null; j.close('sync'); }
@@ -217,6 +219,8 @@ export function createCourt({ root, study, game, profile, onClose }) {
     const picks = o.buttons.filter((b) => b !== cancel);
     formText = h('div.ct-formtext.q-scroll', o.text);
     formText.hidden = !o.text;
+    foreBox = o.forecast ? h('div.ct-row.ct-fore') : null;
+    if (foreBox) paintForecast(o.forecast);
     // 要讨文字的项（如单独深言某人）先开一卷问话，再连字递交
     const go = (b) => {
       if (!b.prompts) { run(() => C.submit(values(), b.id)); return; }
@@ -225,12 +229,27 @@ export function createCourt({ root, study, game, profile, onClose }) {
     };
     const j = juan({
       title: o.title, width: '42rem', closable: !!cancel,
-      content: h('div.ct-form', formText, rows.length ? h('div.ct-fields', rows) : null,
+      content: h('div.ct-form', formText, rows.length ? h('div.ct-fields', rows) : null, foreBox,
         picks.length ? h('div.au-pick', picks.map((b) => h('button.au-pick-row' + (b.danger ? '.danger' : ''), { type: 'button', onclick: () => go(b) }, h('b', b.label), b.title ? h('small', b.title) : null))) : null),
       actions: cancel ? [{ label: cancel.label, onclick: ({ close }) => { close('ok'); go(cancel); } }] : []
     });
     setTimeout(() => { const first = rows.length && rows[0].querySelector('input, textarea'); if (first) first.focus(); }, 400);
     return j;
+  }
+
+  // 预审的党派风向：与站班的朝堂潮汐同一道三色条（支、中、反），下一句断语、两边各几党；议题改了随之重画
+  let foreSig = '';
+  function paintForecast(f) {
+    const sig = JSON.stringify(f || null);
+    if (sig === foreSig && foreBox.childNodes.length) return;
+    foreSig = sig;
+    foreBox.hidden = !f;
+    if (!f) return replaceChildren(foreBox);
+    const segs = [['sup', '支', f.sup], ['neu', '中', f.mid], ['opp', '反', f.opp]].filter((x) => x[2] > 0);
+    replaceChildren(foreBox, h('span', '党派风向'), h('div.ct-fore-body',
+      segs.length ? h('div.ct-tide', segs.map(([cls, ch, v]) => h('i.' + cls, { style: { flexGrow: String(v) } }, v >= 8 ? `${ch} ${num(v)}%` : ''))) : null,
+      h('p.ct-fore-tip', f.tip || '议题未定，无从预估'),
+      f.sides.length ? h('p.ct-fore-sides', f.sides.join('　')) : null));
   }
 
   // ---------- 筹备 ----------

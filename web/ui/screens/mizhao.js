@@ -107,7 +107,7 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
     crumbName.textContent = I().secret;
     crumbNote.textContent = s.issue.title;
     leaveLabel.textContent = I().secretEnd || '退朝';
-    replaceChildren(topicEl, h('b', s.issue.title), s.issue.desc ? h('p', s.issue.desc.length > 160 ? s.issue.desc.slice(0, 160) + '…' : s.issue.desc) : null);
+    replaceChildren(topicEl, h('b', s.issue.title), s.issue.desc ? h('p', { title: s.issue.desc }, s.issue.desc) : null);
     renderEntries(s.entries);
     renderRoster(s);
     renderControls(s);

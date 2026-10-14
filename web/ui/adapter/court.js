@@ -110,7 +110,8 @@ function control(b) {
   const on = b.getAttribute('onclick') || '';
   const cls = String(b.className || '');
   const kids = [...b.children].filter((k) => clean(k.textContent));
-  const label = kids.length > 1 ? clean(kids[0].textContent) : clean(b.textContent);
+  // 「朕欲插言续议」之类签上只写所做之事（竖签六字比旁签高出一截）
+  const label = (kids.length > 1 ? clean(kids[0].textContent) : clean(b.textContent)).replace(/^朕欲(?=\S{2})/, '');
   const note = kids.length > 1 ? kids.slice(1).map((k) => clean(k.textContent)).filter(Boolean).join('·') : '';
   return { id: idOf(b), label, key: callOf(on) || label, title: clean([note, b.title || ''].filter(Boolean).join('　')), go: /\bprimary\b|\bbp\b|\bkey\b/.test(cls), danger: /danger|vermillion/.test(cls + (b.getAttribute('style') || '')),
     muted: /\bmuted\b/.test(cls), prompts: PROMPTS.test(on), ask: (on.match(/_yq2_askAdvisor\(\s*'([^']+)'/) || [])[1] || '' };
@@ -236,14 +237,24 @@ function formOf(bg) {
     const row = inner[i].parentElement;
     b.title = row ? clean(row.textContent.replace(inner[i].textContent, '')).slice(0, 40) : '';
   });
+  // 预审的党派风向：老层画支、中、反三色一条（拆成行只剩「中 100%」一句），读成三数、一句断语、两边各有哪几党
+  // （议题未填、朝中无党时老层只写一句，照录作断语）
+  const fc = bg.querySelector('#ty3-pa-forecast');
+  const bar = fc && fc.querySelector('.ty3-pa-forecast-bar');
+  const pct = (sel) => { const seg = bar && bar.querySelector(sel); return seg ? parseFloat(seg.style.width) || 0 : 0; };
+  const tipEl = fc && fc.querySelector('.ty3-pa-forecast-tip');
+  const forecast = fc ? { sup: pct('.ty3-pa-bar-sup'), mid: pct('.ty3-pa-bar-n'), opp: pct('.ty3-pa-bar-opp'),
+    tip: clean(tipEl ? tipEl.textContent : bar ? '' : fc.textContent).replace(/^[★⚠]\s*/, ''),
+    sides: [...fc.querySelectorAll('.ty3-pa-faction-list > span')].map((s) => clean(s.textContent)).filter(Boolean) } : null;
   // 标签与正文分开：克隆前给标签打个记号（不在所盯的属性之列），克隆后连记号带标签一并去掉
   labels.forEach((l) => l.setAttribute('data-tm-lab', ''));
   const copy = bg.cloneNode(true);
   labels.forEach((l) => l.removeAttribute('data-tm-lab'));
   copy.querySelectorAll('[data-tm-lab], button, [onclick], input, textarea, select, script, style').forEach((n) => n.remove());
+  if (forecast) copy.querySelectorAll('#ty3-pa-forecast').forEach((n) => n.remove());
   copy.querySelectorAll('div, p, li, h1, h2, h3, h4, h5, tr, br').forEach((n) => n.append('\n'));
   const lines = String(copy.textContent || '').split('\n').map(clean).filter(Boolean);
-  return { type: 'form', id: idOf(bg), title: (lines[0] || '择一').replace(/^〔\s*|\s*〕$/g, ''), text: lines.slice(1).join('\n'), fields, buttons };
+  return { type: 'form', id: idOf(bg), title: (lines[0] || '择一').replace(/^〔\s*|\s*〕$/g, ''), text: lines.slice(1).join('\n'), fields, buttons, forecast };
 }
 // 表单卷里边写边同步：把这几项填进老层（触发它自己的 oninput / onchange，如预审的党派风向随议题即时更新），回报老层眼下各项的值
 export function fill(values) {

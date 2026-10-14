@@ -1,7 +1,7 @@
 /* 独召密问的老弹层：照建、挪到画外、点不着；画面由新前端镜出来 */
 html.tm-newui body > div#mizhao-picker, html.tm-newui body > div#mizhao-dialog, html.tm-newui body > div#mz-summary-panel {
   position: fixed !important; left: -300vw !important; top: 0 !important; width: 1200px !important; height: 860px !important; opacity: 0 !important; pointer-events: none !important; }
-.scr-mizhao .ct-topic p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory-soft); }
+.scr-mizhao .ct-topic p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; color: var(--ivory-soft); overflow: hidden; text-overflow: ellipsis; }
 
 /* 选人选题卷 */
 .mz-pick { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: .75rem 1.25rem; height: 100%; min-height: 0; }

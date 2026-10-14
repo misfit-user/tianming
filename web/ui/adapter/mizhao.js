@@ -51,7 +51,8 @@ function entries() {
     const right = el.style && el.style.textAlign === 'right';
     // 老气泡给君上之言冠了「陛下曰：」，新画面自有「上曰」
     return { id: `mz-${i}`, role: right ? 'me' : 'note', text: right ? clean(el.textContent).replace(/^(陛下|朕)\s*曰?\s*[:：]?\s*/, '') : clean(el.textContent) };
-  }).filter((e) => e.text || e.role === 'them');
+  // 老流程两轮毕另落一行「群臣已进言·若欲再问…」，新画面案底状态行已写此意，不再记进实录
+  }).filter((e) => (e.text || e.role === 'them') && !(e.role === 'note' && /群臣已进言/.test(e.text)));
 }
 function summaryOf() {
   const body = $('mz-summary-body');

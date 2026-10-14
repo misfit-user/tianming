@@ -252,6 +252,14 @@ export function createCourt({ root, study, game, profile, onClose }) {
       f.sides.length ? h('p.ct-fore-sides', f.sides.join('　')) : null));
   }
 
+  // 名单注：老层写「顺天府尹忠88 野35」，职衔与忠、野连成一串：拆开、数照记数设置写
+  function noteOf(s) {
+    const t = String(s || '');
+    const zhong = t.match(/忠\s*(\d+)/), ye = t.match(/野\s*(\d+)/);
+    const title = t.replace(/忠\s*\d+|野\s*\d+/g, '').trim();
+    return [title, zhong ? `忠${num(+zhong[1])}` : '', ye ? `野${num(+ye[1])}` : ''].filter(Boolean).join(' · ');
+  }
+
   // ---------- 筹备 ----------
   function renderSetup(st) {
     if (!st) { if (setupJuan) { const j = setupJuan; setupJuan = null; j.close('sync'); } return; }
@@ -272,18 +280,19 @@ export function createCourt({ root, study, game, profile, onClose }) {
         else { if (st.max && picked.size >= st.max) { toast(`至多${num(st.max)}人`); return; } picked.add(p.value); }
         b.classList.toggle('on', picked.has(p.value));
         countEl.textContent = `已召${num(picked.size)}人`;
-      } }, p.label, p.note ? h('small', p.note) : null);
+      } }, p.label, p.note ? h('small', noteOf(p.note)) : null);
       return b;
     }));
     countEl.textContent = `已召${num(picked.size)}人`;
-    const record = yq ? qianzi(st.record.map((x) => ({ value: x.value, label: x.label })), { value: (st.record.find((x) => x.checked) || st.record[0] || {}).value }) : null;
+    // 记不记起居注：两项说明都长，竖签装不下（原先截成「记」「不录（密」），排成两行可点项
+    const record = yq ? qianziOrList(st.record.map((x) => ({ value: x.value, label: x.label })), (st.record.find((x) => x.checked) || st.record[0] || {}).value) : null;
     setupJuan = juan({
       title: modeName(st.kind), note: '筹备', width: '52rem', height: 'min(44rem, 86vh)',
       content: h('div.ct-setup',
         h('label', h('span', '议题'), topic), pend,
         h('div.ct-row', h('span', '议题类型'), types), custom,
         h('div.ct-row', h('span', yq ? '心腹' : '应召官员'), countEl), people,
-        record ? h('div.ct-row', h('span', '起居注'), record) : null),
+        record ? h('div.ct-row', h('span', '起居注')) : null, record ? record.el : null),
       actions: [{ label: '开议', onclick: () => {
         if (!topic.value.trim()) { toast('请写明议题'); topic.focus(); return; }
         run(() => C.startSetup({ topic: topic.value.trim(), pending, type: types.getValue(), custom: custom.value.trim(), people: [...picked], record: record ? record.getValue() : 'keep' }));

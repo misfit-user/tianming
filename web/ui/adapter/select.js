@@ -646,7 +646,8 @@ function traitsOf(c) {
     const id = typeof t === 'string' ? t : (t && (t.id || t.name)) || '';
     const def = lib[id];
     const sum = def && def.effects ? Object.values(def.effects).reduce((a, v) => a + (Number(v) || 0), 0) : 0;
-    return { id, name: (def && def.name) || id, tone: sum >= 3 ? 'pos' : sum <= -3 ? 'neg' : 'neu' };
+    // 特质库里没有的英文 id（剧本写了库里未收的特质）不列
+    return { id, name: (def && def.name) || (/^[a-z][a-z0-9_]*$/.test(id) ? '' : id), tone: sum >= 3 ? 'pos' : sum <= -3 ? 'neg' : 'neu' };
   }).filter((t) => t.name);
 }
 function relationsOf(c, limit = 6) {

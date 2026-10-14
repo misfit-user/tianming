@@ -14,7 +14,8 @@ const G = () => w.GM || {};
 const $ = (id) => document.getElementById(id);
 const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}\u{25A0}-\u{25FF}]/gu;
 // 去表情、并空白；汉字之间的空格（老界面为排版插的，如「准 奏」）去掉
-const clean = (s) => String(s || '').replace(EMOJI, '').replace(/\s+/g, ' ').replace(/(?<=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])\s+(?=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])/g, '').trim();
+// 内核朝议文案偶夹英文数值名（如廷议预审「奏者 prestige-2」），照游戏里的叫法译过来
+const clean = (s) => String(s || '').replace(EMOJI, '').replace(/prestige\s*/gi, '声望').replace(/\s+/g, ' ').replace(/(?<=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])\s+(?=[\u3400-\u9fff\u3000-\u303f\uff00-\uffef·])/g, '').trim();
 const hidden = (el) => !!el.closest('[style*="display:none"], [style*="display: none"]');
 
 export const MODES = [['changchao', '常朝', '例行朝参，多事并奏', 10], ['tinyi', '廷议', '集议一桩大政，群臣各陈可否', 15], ['yuqian', '御前会议', '屏退宫人，密召心腹议机要', 10]];

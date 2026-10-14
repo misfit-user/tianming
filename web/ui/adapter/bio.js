@@ -10,6 +10,8 @@ const G = () => w.GM || {};
 const n0 = (v, fb = null) => { const n = Number(v); return v == null || v === '' || !Number.isFinite(n) ? fb : n; };
 const r0 = (v) => { const n = n0(v); return n == null ? null : Math.round(n); };
 const str = (v) => (v == null ? '' : String(v).trim());
+// 特质库里没有的特质，内核原样吐出英文 id（如天启剧本几位西洋人的 colonial_officer）：不列
+const ASCII_ID = /^[a-z][a-z0-9_]*$/;
 const charOf = (name) => (G().chars || []).find((c) => c && c.name === name) || (G().allCharacters || []).find((c) => c && c.name === name) || null;
 const known = (name) => !!charOf(name);
 const playerName = () => { try { return (w.P && w.P.playerInfo && w.P.playerInfo.characterName) || ''; } catch (_e) { return ''; } };
@@ -52,7 +54,9 @@ export function person(name) {
   const isLord = (n) => n && (n === me || n === '玩家');
   // 同一职两种写法（剧本头衔「大名知府」与官制树「大名府知府」）只留全的那个：短的逐字依次见于长的，即算一职
   const within = (a, b) => { let i = 0; for (const ch of b) if (ch === a[i]) i++; return i === a.length; };
-  const titles = Array.isArray(p.officeTitles) && p.officeTitles.length ? p.officeTitles.map(str).filter(Boolean) : [];
+  // 官制树取的职名去了空格（「大员长官·Pieter Nuyts」成了「…PieterNuyts」）：与剧本头衔去空格后相同的，还用剧本原写
+  const unsquash = (t) => { const o = str(p.officialTitle); return o && t === o.replace(/\s+/g, '') ? o : t; };
+  const titles = Array.isArray(p.officeTitles) && p.officeTitles.length ? p.officeTitles.map(str).filter(Boolean).map(unsquash) : [];
   const office = titles.length ? titles.filter((t, i) => !titles.some((o, j) => o !== t && o.length > t.length && within(t, o)) && titles.indexOf(t) === i)
     : [p.officialTitle || p.title || '布衣'].filter(Boolean);
   const wc = p.wuchang || {};
@@ -86,7 +90,7 @@ export function person(name) {
     eight: [['智', p.intelligence], ['武', p.valor], ['军', p.military], ['政', p.administration], ['管', p.management], ['交', p.diplomacy], ['魅', p.charisma], ['仁', p.benevolence]].map(([k, v]) => [k, r0(v) ?? 0]),
     wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, r0(wc[k])]),
     gongming: { merit: p.gongming, tier: str(p.gongmingTier), log: (p.meritLog || []).map((m) => ({ turn: m.turn || 0, delta: n0(m.delta, 0), reason: str(m.reason) })) },
-    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '' })), personality: str(p.personality),
+    goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '' })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
     identity: [['姓名', p.name], ['字号', p.zi], ['性别', [p.age ? `${p.age}岁` : '', p.gender].filter(Boolean).join('·')], ['籍贯', p.birthplace], ['民族', p.ethnicity], ['信仰', p.faith],
       ['文化', p.culture], ['学识', p.learning], ['立场', p.stance], ['家族', [p.family, TIER[p.familyTier]].filter(Boolean).join('·')], ['辞令', p.speechStyle], ['当前所在', p.location]]
       .map(([k, v]) => [k, str(v)]),

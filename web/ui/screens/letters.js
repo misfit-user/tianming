@@ -172,7 +172,7 @@ export function createLetters({ root, study, game, profile, onClose }) {
       replaceChildren(right, h('h3.q-ti', h('span.q-gold', t.intercepted), h('small', got.length ? `近五月${num(got.length)}件` : '')),
         h('div.lt-thread.q-scroll', got.length ? got.map((c) => h('article.lt-intc',
           h('header', h('b', `${c.from} → ${c.to}`), h('small', c.date)), h('p', c.content), c.implication ? h('p.imp', c.implication) : null))
-          : h('p.lt-none', multi ? '群发：在左列点选收信人，再于笺上拟书。' : t.idle)));
+          : h('p.lt-none', multi ? '群发：在左列点选收信人，再于笺上拟书。' : `近五月未有${t.intercepted}；他人私下的往来一旦为耳目所得，便录于此处`)));
       return;
     }
     const th = L.thread(person.name);

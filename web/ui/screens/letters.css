@@ -111,7 +111,9 @@
   font: var(--fs-2) var(--f-kai); letter-spacing: .12em; color: #fff3dc; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); pointer-events: none !important; }
 
 /* 案底：拟书四组签与遣使；读信时是信上诸事 */
-.lt-bar { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 1.125rem; }
+/* 签是挂着的：各组题名齐在一条线上、签往下垂（原先底齐，签长短不一，四组题名高低错落）；「遣使」一枚落底 */
+.lt-bar { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-start; gap: 1.125rem; }
+.lt-bar > :not(.lt-grp) { align-self: flex-end; }
 .lt-grp { display: flex; flex-direction: column; align-items: center; gap: .3125rem; }
 .lt-grp > .lab { padding-left: .4em; font: 400 var(--fs-3) var(--f-title); letter-spacing: .4em; color: #f3dcb0; text-shadow: 0 1px 2px #000, 0 0 8px rgba(0, 0, 0, .9); }
 .lt-token { max-width: 9rem; font: var(--fs-1) var(--f-kai); color: #ffb08f; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }

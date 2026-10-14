@@ -51,6 +51,70 @@
     return { mode: 'download', fileName: name };
   }
 
+  // 2026-10-14：分块导出。手机「抄送副本」闪退的根子是整档一次性过桥；这里逐块交给原生侧 beginExport/appendChunk/finishExport
+  // 写进缓存临时文件，再弹系统保存窗口。旧壳（没有分块接口）退回整串 saveFile；桌面/网页端用 Blob 多段拼，不再先拼成一个大字符串。
+  var CHUNK_TARGET = 1024 * 1024;  // 每次过桥约 1MB
+  function isUnimplemented(err) {
+    var code = err && (err.code || err.errorCode);
+    return code === 'UNIMPLEMENTED' || /not implemented|unimplemented/i.test(String(err && err.message || ''));
+  }
+  async function saveJsonParts(parts, filename) {
+    if (!Array.isArray(parts) || !parts.length) throw new Error('导出内容为空');
+    var name = safeName(filename);
+    if (isNative()) {
+      if (busy) throw new Error('已有导出窗口打开，请先完成或取消该次导出');
+      var cap = root.Capacitor;
+      var plugin = cap.Plugins && cap.Plugins.TianmingFileExport;
+      if ((typeof cap.isPluginAvailable === 'function' && !cap.isPluginAvailable('TianmingFileExport')) || !plugin) {
+        throw new Error('当前手机版暂不支持选择导出位置，请安装支持此功能的新版安装包');
+      }
+      busy = true;
+      try {
+        var began = false;
+        if (typeof plugin.beginExport === 'function') {
+          try { await plugin.beginExport({ fileName: name, mimeType: 'application/json' }); began = true; }
+          catch (e) { if (!isUnimplemented(e)) throw e; }
+        }
+        if (!began) {
+          if (typeof plugin.saveFile !== 'function') throw new Error('当前手机版暂不支持选择导出位置，请安装支持此功能的新版安装包');
+          busy = false;  // 旧壳退回整串 saveFile，由它自己占 busy
+          return await saveJson(parts.join(''), name);
+        }
+        try {
+          var buf = '';
+          for (var i = 0; i < parts.length; i++) {
+            buf += parts[i];
+            if (buf.length >= CHUNK_TARGET) { await plugin.appendChunk({ chunk: buf }); buf = ''; }
+          }
+          if (buf.length) await plugin.appendChunk({ chunk: buf });
+          var result = await plugin.finishExport({});
+          if (result && result.cancelled) return { mode: 'canceled' };
+          if (!result || !result.saved) throw new Error('文件未保存，请重新选择导出位置');
+          return { mode: 'native', path: result.fileName || name, fileName: result.fileName || name, uri: result.uri };
+        } catch (e2) {
+          try { if (typeof plugin.cancelExport === 'function') await plugin.cancelExport({}); } catch (_) {}
+          throw e2;
+        }
+      } finally {
+        busy = false;
+      }
+    }
+
+    var blob = new Blob(parts, { type: 'application/json;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var anchor = document.createElement('a');
+    try {
+      anchor.href = url;
+      anchor.download = name;
+      document.body.appendChild(anchor);
+      anchor.click();
+    } finally {
+      if (anchor.parentNode) anchor.parentNode.removeChild(anchor);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    }
+    return { mode: 'download', fileName: name };
+  }
+
   root.TM = root.TM || {};
-  root.TM.fileExport = { isNative: isNative, saveJson: saveJson };
+  root.TM.fileExport = { isNative: isNative, saveJson: saveJson, saveJsonParts: saveJsonParts };
 })(window);

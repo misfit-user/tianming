@@ -324,6 +324,8 @@
                 level: Math.max(3, (s.r.level || 3) - 1), turn: turn, leader: String(act.leaderName || ''), _aiBorn: true
               };
               if (act.banner) nr._identity = { banner: String(act.banner).slice(0, 10), leaderName: String(act.leaderName || '').slice(0, 12), leaderFrom: 'new', creed: String(act.creed || '').slice(0, 24), stance: '', agenda: '' };
+              if (!G.minxin || typeof G.minxin !== 'object') G.minxin = {};
+              if (!Array.isArray(G.minxin.revolts)) G.minxin.revolts = [];  // 其余各处 push 前都有这道闸，这里原来没有
               G.minxin.revolts.push(nr);
               _eb('「' + s.fac.name + '」分裂·' + (act.leaderName || '偏帅') + '自树「' + (act.banner || '别部') + '」之旗'); _chron(G, '「' + s.fac.name + '」裂为两股'); applied++;
               return;

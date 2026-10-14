@@ -37,7 +37,14 @@ const ORIGINAL = {
   'web/tm-tax-policy.js': 'bf1ecac91e094095264780a51356ef987b3406622dc8eccf81828bed0650072e',
   'web/tm-endturn-core.js': 'deba2faf6f311f675ac1cbdd44516c3561e09a38564fbd28f8d0ebb24ba76174',
   'web/tm-endturn-timing-ledger.js': '689d6258f97b4adb70458074c90641471587cad391ac59a5d9df0d0779be291a',
-  'main-impl.js': '4454c59e7de3932af1a4c8359041cad18ac144bb0d76d942008e096642c75d87'
+  'main-impl.js': '4454c59e7de3932af1a4c8359041cad18ac144bb0d76d942008e096642c75d87',
+  // v2.2（2026-10-14）追加的六个文件，原哈希同样取自 git show full-1.3.5.3:<path>
+  'web/tm-fiscal-engine.js': 'cbc9911d6335efd89d762063de5b8c05b5b50dc3ccf0505477372d27dab678b3',
+  'web/tm-ai-change-army.js': 'd1fb56ee64a3a8ea009da8928091a788441c59a2bfb0d9ae1235cd1f4b40c4e6',
+  'web/tm-game-loop-wentian-hardchange.js': '0295c1d8ec84bf262204ebc3a2fe6b053af6ab48697f85f10d033f0f6072d145',
+  'web/tm-revolt-inference.js': '3f7b65fcd0f7c0dabd6019be339011420797674c04b2657bdf0a92c11799b674',
+  'web/tm-file-export.js': '415c6dae92d62d0249dbe1c33acfece674ad286ae090f3458abc497256b2ec4a',
+  'web/tm-save-manager.js': '83cf51fdc526cacd48ccf671a2f8d3f331aa2a4ec67a480522894ab42426956f'
   // NATIVE_MANIFEST 的原哈希在下面从发布包文件集现算（与标签 blob 一致，build 复算也逐字节相同，已核）。
 };
 // 此前发给玩家的修复包写入过的哈希：已修过一次的 app.asar 允许再次覆盖。
@@ -49,15 +56,15 @@ const PRIOR = {
   'web/map-editor-to-game.js': ['40e945cc992f9e422d8bc6e31582e8b81c5327c3d113d39a4dded40b36e5ce63'],
   'web/tm-save-lifecycle.js': ['f8630477e9a55d6d064daeeada04472dbb4918dfb0d902aa5e2f53310c3d9b18']
 };
-// v2 payload 写过的哈希由 --prior-manifest 读入（上一版 payload-manifest.json），避免手抄。
-const PRIOR_MANIFEST = flag('--prior-manifest', '');
-if (PRIOR_MANIFEST) {
-  const prior = JSON.parse(fs.readFileSync(PRIOR_MANIFEST, 'utf8'));
+// 此前各版 payload 写过的哈希由 --prior-manifest 读入（可重复给多份历史 payload-manifest.json），避免手抄。
+args.forEach(function (a, i) {
+  if (a !== '--prior-manifest' || !args[i + 1]) return;
+  const prior = JSON.parse(fs.readFileSync(args[i + 1], 'utf8'));
   prior.files.forEach(function (e) {
     const list = PRIOR[e.asarPath] || (PRIOR[e.asarPath] = []);
     if (list.indexOf(e.sha256) < 0) list.push(e.sha256);
   });
-}
+});
 // hotUpdate=false 的文件不在热更新目录（content/hot-updates/versions/1.3.5.3）里，只修 app.asar。
 const FILES = [
   { asarPath: 'web/editor-authoring-agent.js', hotUpdate: true },
@@ -72,6 +79,12 @@ const FILES = [
   { asarPath: 'web/tm-endturn-core.js', hotUpdate: true },
   { asarPath: 'web/tm-endturn-timing-ledger.js', hotUpdate: true },
   { asarPath: 'main-impl.js', hotUpdate: false },
+  { asarPath: 'web/tm-fiscal-engine.js', hotUpdate: true },
+  { asarPath: 'web/tm-ai-change-army.js', hotUpdate: true },
+  { asarPath: 'web/tm-game-loop-wentian-hardchange.js', hotUpdate: true },
+  { asarPath: 'web/tm-revolt-inference.js', hotUpdate: true },
+  { asarPath: 'web/tm-file-export.js', hotUpdate: true },
+  { asarPath: 'web/tm-save-manager.js', hotUpdate: true },
   { asarPath: NATIVE_MANIFEST, hotUpdate: true, generated: true }
 ];
 

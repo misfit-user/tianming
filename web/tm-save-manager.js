@@ -274,18 +274,25 @@ var SaveManager = {
         gameState: record.gameState,
         _format: 'tianming-save-v1'
       };
-      var json;
-      try { json = JSON.stringify(exportRec); }
-      catch(_e) { console.error('[exportSave] JSON.stringify failed:', _e); toast('❌ 序列化失败'); return; }
-      if (!json || json.length < 100) {
+      // 2026-10-14：手机「抄送副本」闪退——原来把整档 JSON.stringify 成一个巨串，再整串过 Capacitor 桥（JS 串→桥报文→Java String→JSONObject
+      // 四五份拷贝），大档直接把手机内存撑爆。改为按顶层键分块序列化（同一字节流·再导入不变），交给分块导出口逐块落盘。
+      var parts;
+      try { parts = _tmSerializeExportParts(exportRec); }
+      catch(_e) { console.error('[exportSave] 序列化失败:', _e); toast('❌ 序列化失败'); return; }
+      var totalLen = 0;
+      for (var _pi = 0; _pi < parts.length; _pi++) totalLen += parts[_pi].length;
+      if (totalLen < 100) {
         toast('❌ 导出内容异常·请重试');
-        console.error('[exportSave] serialized too short:', json && json.length);
+        console.error('[exportSave] serialized too short:', totalLen);
         return;
       }
       var filename = (record.name || 'save') + '_T' + (record.turn||0) + '.json';
-      return TM.fileExport.saveJson(json, filename).then(function(result) {
+      var saver = (TM.fileExport && typeof TM.fileExport.saveJsonParts === 'function')
+        ? TM.fileExport.saveJsonParts(parts, filename)
+        : TM.fileExport.saveJson(parts.join(''), filename);
+      return saver.then(function(result) {
         if (result.mode === 'canceled') { toast('已取消导出'); return; }
-        toast(result.mode === 'native' ? ('✅ 存档已保存到所选位置 · ' + result.fileName) : ('✅ 存档已导出 · ' + (json.length/1024).toFixed(1) + 'KB'));
+        toast(result.mode === 'native' ? ('✅ 存档已保存到所选位置 · ' + result.fileName) : ('✅ 存档已导出 · ' + (totalLen/1024).toFixed(1) + 'KB'));
       });
     }).catch(function(e) {
       (window.TM && TM.errors && TM.errors.capture) ? TM.errors.capture(e, 'exportSave') : console.error('[exportSave] 异常:', e);
@@ -871,6 +878,31 @@ function deleteSaveSlot(slotId) {
 function exportSaveSlot(slotId) {
   SaveManager.exportSave(slotId);
 }
+
+// 把导出记录按顶层键分块序列化成字符串数组：拼起来与 JSON.stringify(rec) 逐字节相同（键序、undefined/函数跳过、数组内 undefined→null 都照 JSON 规矩），
+// 但任何时刻只有一块在手里，大档不再出现整串拷贝。gameState 再往下拆两层（GM/P 及其直属键）。
+function _tmSerializeExportParts(rec) {
+  var parts = [];
+  function emitObject(obj, depth) {
+    if (obj === null || typeof obj !== 'object' || Array.isArray(obj) || depth <= 0 || typeof obj.toJSON === 'function') {
+      parts.push(JSON.stringify(obj === undefined ? null : obj));
+      return;
+    }
+    var first = true;
+    parts.push('{');
+    Object.keys(obj).forEach(function(k) {
+      var v = obj[k];
+      if (v === undefined || typeof v === 'function' || typeof v === 'symbol') return;
+      parts.push((first ? '' : ',') + JSON.stringify(k) + ':');
+      first = false;
+      emitObject(v, depth - 1);
+    });
+    parts.push('}');
+  }
+  emitObject(rec, 3);
+  return parts;
+}
+if (typeof window !== 'undefined') window._tmSerializeExportParts = _tmSerializeExportParts;
 
 // 发为残局：把当前局发到在线工坊（走 TM.ResumePoint.publish → 已 E2E 验过的 uploadPack 路径）。
 // 落 pending 待审；管理员审批后他人可「从此局接演」。剥 AI key 在 buildPayload 内完成，绝不外泄玩家密钥。

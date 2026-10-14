@@ -397,8 +397,10 @@
         supply: _clampNum(change.supply != null ? change.supply : 75, 0, 100),
         training: _clampNum((change.training != null ? change.training : 45) + (Number(change.training_delta) || 0), 0, 100),
         loyalty: _clampNum(change.loyalty != null ? change.loyalty : 60, 0, 100),
-        control: _clampNum(change.control != null ? change.control : 60, 0, 100),
-        controlLevel: _clampNum(change.controlLevel != null ? change.controlLevel : 60, 0, 100),
+        // 2026-10-14：control=朝廷掌控（高=国家兵），controlLevel=私兵度（高=将领家丁），互为 100 补数。
+        // 原来两边都默认 60、改一个另一个同向跟着改，「加强京营掌控」反把私兵度抬过 60 线（bot 10-07 实测）。
+        control: _clampNum(change.control != null ? change.control : (change.controlLevel != null ? 100 - Number(change.controlLevel) : 60), 0, 100),
+        controlLevel: _clampNum(change.controlLevel != null ? change.controlLevel : (change.control != null ? 100 - Number(change.control) : 40), 0, 100),
         location: change.location || change.garrison || change.region || change.province || change.destination || '',
         garrison: change.garrison || change.location || change.region || change.province || change.destination || '',
         commander: commanderInput || '',
@@ -550,13 +552,15 @@
         changed = true;
       }
       if (change.control_delta || change.control != null || change.controlLevel_delta || change.controlLevel != null) {
-        var oldControl = army.control == null ? (army.controlLevel == null ? 60 : Number(army.controlLevel)) : Number(army.control);
-        var controlDelta = Number(change.control_delta != null ? change.control_delta : change.controlLevel_delta || 0);
-        var newControl = (change.control != null || change.controlLevel != null)
-          ? _clampNum(change.control != null ? change.control : change.controlLevel, 0, 100)
-          : _clampNum(oldControl + controlDelta, 0, 100);
+        // 掌控(control)与私兵度(controlLevel)互为 100 补数：先把现状折成掌控，再按 AI 给的是哪一侧去改，两侧永远反向。
+        var oldControl = army.control != null ? Number(army.control) : (army.controlLevel != null ? 100 - Number(army.controlLevel) : 60);
+        var newControl;
+        if (change.control != null) newControl = _clampNum(change.control, 0, 100);
+        else if (change.controlLevel != null) newControl = _clampNum(100 - Number(change.controlLevel), 0, 100);
+        else if (change.control_delta) newControl = _clampNum(oldControl + Number(change.control_delta), 0, 100);
+        else newControl = _clampNum(oldControl - Number(change.controlLevel_delta || 0), 0, 100);
         army.control = newControl;
-        army.controlLevel = newControl;
+        army.controlLevel = _clampNum(100 - newControl, 0, 100);
         changed = true;
       }
       if (change.destination && typeof change.destination === 'string') {

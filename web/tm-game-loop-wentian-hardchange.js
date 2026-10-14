@@ -496,7 +496,9 @@ function _wtCanonicalArmyHardChangeField(field) {
     '训练':'training','訓練':'training','操练':'training','操練':'training','训练度':'training','training':'training',
     '补给':'supply','補給':'supply','粮饷':'supply','糧餉':'supply','供给':'supply','供給':'supply','supply':'supply',
     '忠诚':'loyalty','忠誠':'loyalty','军忠':'loyalty','忠诚度':'loyalty','忠誠度':'loyalty','loyalty':'loyalty',
-    '控制':'control','控制度':'control','军纪':'control','軍紀':'control','掌控':'control','control':'control','controlLevel':'control',
+    '控制':'control','控制度':'control','军纪':'control','軍紀':'control','掌控':'control','control':'control',
+    // 2026-10-14：私兵度是掌控的 100 补数，不再把 controlLevel 当成掌控的别名（原来「加强京营掌控」把私兵度一起抬高）
+    '私兵':'controlLevel','私兵度':'controlLevel','私兵化':'controlLevel','私兵程度':'controlLevel','controlLevel':'controlLevel',
     '兵变险':'mutinyRisk','兵變險':'mutinyRisk','兵变风险':'mutinyRisk','兵變風險':'mutinyRisk','mutinyRisk':'mutinyRisk',
     '欠饷':'payArrearsMonths','欠餉':'payArrearsMonths','欠饷月数':'payArrearsMonths','欠餉月數':'payArrearsMonths','payArrearsMonths':'payArrearsMonths'
   };
@@ -884,16 +886,18 @@ function _wtApplyHardChange(path, op, value, opts) {
       var _oldA = _a[_f];
       var _ascalar = _wtApplyScalarHardChange(_oldA, op || 'set', value);
       if (!_ascalar.ok) return false;
-      var _numFields = { soldiers:1, morale:1, training:1, supply:1, loyalty:1, control:1, mutinyRisk:1, payArrearsMonths:1 };
+      var _numFields = { soldiers:1, morale:1, training:1, supply:1, loyalty:1, control:1, controlLevel:1, mutinyRisk:1, payArrearsMonths:1 };
       var _nv = _ascalar.value;
       if (_numFields[_f]) {
         _nv = Math.round(Number(_nv) || 0);
-        if (_f === 'morale' || _f === 'training' || _f === 'supply' || _f === 'loyalty' || _f === 'control' || _f === 'mutinyRisk') _nv = Math.max(0, Math.min(100, _nv));
+        if (_f === 'morale' || _f === 'training' || _f === 'supply' || _f === 'loyalty' || _f === 'control' || _f === 'controlLevel' || _f === 'mutinyRisk') _nv = Math.max(0, Math.min(100, _nv));
         else _nv = Math.max(0, _nv);
       }
       _a[_f] = _nv;
       if (_f === 'soldiers') { _a.size = _nv; _a.strength = _nv; }   // 与 applier 同口径同步别名
-      if (_f === 'control') { _a.controlLevel = _nv; }
+      // 掌控与私兵度互为 100 补数（2026-10-14·原来掌控直接抄给 controlLevel，掌控越高私兵度越高）
+      if (_f === 'control') { _a.controlLevel = 100 - _nv; }
+      else if (_f === 'controlLevel') { _a.control = 100 - _nv; }
       try { if (typeof TM !== 'undefined' && TM.AIChange && TM.AIChange.Army && TM.AIChange.Army.refreshMilitaryViews) TM.AIChange.Army.refreshMilitaryViews(GM); } catch (_wtRmvE) {}
       _wtAfterHardChange(_armyPath, _oldA, _nv);
       return true;

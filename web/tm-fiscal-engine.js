@@ -1322,7 +1322,14 @@
     var encourage = !!(global.GM && global.GM.policies && global.GM.policies.encourageFarming);
     var reclaimRate = Math.max(0, 1 - carryingLoad) * 0.015 * (encourage ? 2.5 : 1);
     var reclaimGain = Math.round(before * reclaimRate * turnFrac);
-    var cap = Math.max(historicalCap || 0, ccArable * 1.2 || 0, before);
+    // 2026-10-14：carryingCapacity.arable / historicalCap 的单位是「口」（tm-region-enrich：每亩养 0.3 口；编辑器 historicalCap = mouths×1.3），
+    // farmland 的单位是「亩」。原来拿口数直接给亩数封顶，口数只有亩数的三成，中原各府开局就被判「已开满」，
+    // 劝农/屯田诏在中原一亩不涨（bot 10-13 实测：官方天启本只有云贵几十府在涨，晚唐一府不涨）。
+    // 按同一换算把口数折回亩；没有承载力数据的府州按开局田亩的两成封顶（与原「ccArable×1.2」的本意一致）。
+    var MU_PER_MOUTH = 1 / 0.3;
+    if (typeof eb._farmlandBaseline !== 'number' || !isFinite(eb._farmlandBaseline)) eb._farmlandBaseline = before;
+    var capMu = Math.max(historicalCap || 0, ccArable * 1.2 || 0) * MU_PER_MOUTH;
+    var cap = Math.max(capMu, eb._farmlandBaseline * 1.2, before);
     if (reclaimGain > 0 && eb.farmland < cap) {
       reclaimGain = Math.min(reclaimGain, Math.max(0, cap - eb.farmland));
       eb.farmland += reclaimGain;

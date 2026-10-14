@@ -48,6 +48,8 @@ function slotHarness() {
     gameState: { GM: { turn: 8, history: ['原始史书'] }, P: { apiKey: 'private-test-key', name: '天命' } } }) };
   h.ctx._tmStripAiKeyInPlace = p => { delete p.apiKey; };
   h.ctx.SaveCompression = { decompress: async blob => blob.text() };
+  // 2026-10-14：exportSave 改走分块序列化 _tmSerializeExportParts（顶层函数），夹具一并装进沙盒
+  loadFunction(h.ctx, 'tm-save-manager.js', n => n.type === 'FunctionDeclaration' && n.id && n.id.name === '_tmSerializeExportParts', '_tmSerializeExportParts');
   loadFunction(h.ctx, 'tm-save-manager.js', n => n.type === 'Property' && n.key.name === 'exportSave', 'slotProperty');
   return h;
 }

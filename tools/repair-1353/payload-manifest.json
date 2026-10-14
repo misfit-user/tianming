@@ -2,7 +2,7 @@
   "schema": 2,
   "product": "tianming",
   "version": "1.3.5.3",
-  "generatedAt": "2026-10-13T18:10:30.999Z",
+  "generatedAt": "2026-10-14T01:20:56.956Z",
   "files": [
     {
       "path": "editor-authoring-agent.js",
@@ -101,7 +101,8 @@
       "bytes": 21738,
       "originalSha256": "bf1ecac91e094095264780a51356ef987b3406622dc8eccf81828bed0650072e",
       "priorSha256": [
-        "1994a13b8206630d89e56ddd561fc5da8b659f28d7f0d96a66ca39b3454e3a67"
+        "1994a13b8206630d89e56ddd561fc5da8b659f28d7f0d96a66ca39b3454e3a67",
+        "f74b65e2e1a03f5c783fb0284fd3be12a9f307322ff0bf8b192dbe81cad22081"
       ]
     },
     {
@@ -112,7 +113,8 @@
       "bytes": 109709,
       "originalSha256": "deba2faf6f311f675ac1cbdd44516c3561e09a38564fbd28f8d0ebb24ba76174",
       "priorSha256": [
-        "75eb282abf7b220557eeff89a5d5b1d9313297c6391dffd4ed3d43704e4a31b6"
+        "75eb282abf7b220557eeff89a5d5b1d9313297c6391dffd4ed3d43704e4a31b6",
+        "c3e4a845f46c1d4d79d017756db787348039aef439cd422cc4667178a97c94f4"
       ]
     },
     {
@@ -138,13 +140,69 @@
       ]
     },
     {
+      "path": "tm-fiscal-engine.js",
+      "asarPath": "web/tm-fiscal-engine.js",
+      "hotUpdate": true,
+      "sha256": "061959c5e6020f78c6a9856da8a436ab44d20194bbca28efb5b5f1c3244a4a45",
+      "bytes": 166384,
+      "originalSha256": "cbc9911d6335efd89d762063de5b8c05b5b50dc3ccf0505477372d27dab678b3",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-ai-change-army.js",
+      "asarPath": "web/tm-ai-change-army.js",
+      "hotUpdate": true,
+      "sha256": "be12c746f33a4cfaf9aba7e38aedc0e6b701948c969576c827bc3c44c498d87e",
+      "bytes": 48041,
+      "originalSha256": "d1fb56ee64a3a8ea009da8928091a788441c59a2bfb0d9ae1235cd1f4b40c4e6",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-game-loop-wentian-hardchange.js",
+      "asarPath": "web/tm-game-loop-wentian-hardchange.js",
+      "hotUpdate": true,
+      "sha256": "7510121231207ffbd3b1cd0b9826680f6446791dc376727d3ad9ed27bc883fe3",
+      "bytes": 68896,
+      "originalSha256": "0295c1d8ec84bf262204ebc3a2fe6b053af6ab48697f85f10d033f0f6072d145",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-revolt-inference.js",
+      "asarPath": "web/tm-revolt-inference.js",
+      "hotUpdate": true,
+      "sha256": "fea35722f6420f688d0efd8e81e48ce4498bf185f2d02c2068bd1bc2865f275a",
+      "bytes": 32564,
+      "originalSha256": "3f7b65fcd0f7c0dabd6019be339011420797674c04b2657bdf0a92c11799b674",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-file-export.js",
+      "asarPath": "web/tm-file-export.js",
+      "hotUpdate": true,
+      "sha256": "21482a77d6a04c9ab70abb7d98b5f1d8016bd58e3b23d9d80adb8f91b1dab2ab",
+      "bytes": 5523,
+      "originalSha256": "415c6dae92d62d0249dbe1c33acfece674ad286ae090f3458abc497256b2ec4a",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-save-manager.js",
+      "asarPath": "web/tm-save-manager.js",
+      "hotUpdate": true,
+      "sha256": "01c1032adfbd272ae9082767d06324f4009addfef8a2f1d8863669b7cd23fb9f",
+      "bytes": 53732,
+      "originalSha256": "83cf51fdc526cacd48ccf671a2f8d3f331aa2a4ec67a480522894ab42426956f",
+      "priorSha256": []
+    },
+    {
       "path": "tm-start-runtime-manifest.json",
       "asarPath": "web/tm-start-runtime-manifest.json",
       "hotUpdate": true,
-      "sha256": "9f97fc61403ccd4501eba2892420da1e1ed763f2da5eb4c536275318233471c3",
+      "sha256": "d6dd18d2fbba97e63e1bd165c585bde995c71333dcdc3d5d4300719b34218df9",
       "bytes": 137399,
       "originalSha256": "b88ee428be242f2ebe1e8fbc5ed17e28d5e8d531dda9c5596f66d84f44d05d0c",
-      "priorSha256": []
+      "priorSha256": [
+        "9f97fc61403ccd4501eba2892420da1e1ed763f2da5eb4c536275318233471c3"
+      ]
     }
   ]
 }

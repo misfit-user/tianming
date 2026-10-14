@@ -73,11 +73,15 @@ function watch() {
   unwatch();
   const chat = $('wd-modal-chat');
   if (!chat) return;
-  let raf = 0;
+  let raf = 0, opening = false;
   const flushStream = () => {
     raf = 0;
     const s = $('wd-stream-text');
     if (s) bus.emit('audience:stream', { text: s.textContent || '' });
+    // 求见者的开场（有密钥时流式写进 #wd-init-bubble；落定时内核摘掉这个 id）
+    const init = $('wd-init-bubble');
+    if (init) { opening = true; bus.emit('audience:stream', { text: init.textContent || '' }); }
+    else if (opening) { opening = false; bus.emit('audience:opening', { done: true }); }
   };
   watcher = new MutationObserver((records) => {
     for (const r of records) {
@@ -85,9 +89,17 @@ function watch() {
         if (n.nodeType !== 1 || r.target !== chat) continue;
         const cls = String(n.className || '');
         if (n.id === 'wd-stream-active' || n.id === 'wd-ceremony' || /wendui-player/.test(cls)) continue;
-        // 另一枚 NPC 气泡（不是流式那枚）：对质者当庭之言
+        // 求见者先开口：内核在开场后三百毫秒另落一枚开场气泡（不带 wendui-msg）；无密钥时当场落定，有密钥则随后流式写出
+        if (/wendui-npc/.test(cls) && !/wendui-msg/.test(cls)) {
+          opening = !!$('wd-init-bubble');
+          bus.emit('audience:opening', { done: !opening });
+          continue;
+        }
+        // 对质者当庭之言（名字后带「·对质」）；别的 NPC 气泡（例行问候、落定的回话）以史为准，不在这里收
         if (/wendui-npc/.test(cls)) {
-          const who = ((n.querySelector('.wendui-npc-name') || {}).textContent || '').replace(/·对质.*$/, '').trim();
+          const raw = (n.querySelector('.wendui-npc-name') || {}).textContent || '';
+          if (!/·对质/.test(raw)) continue;
+          const who = raw.replace(/·对质.*$/, '').trim();
           const said = ((n.querySelector('.wendui-npc-bubble') || {}).textContent || '').trim();
           if (who && said) bus.emit('audience:aside', { who, text: said });
           continue;
@@ -170,11 +182,17 @@ export function session() {
     emotion: st.emotion || 3, turns: st.turns || 0, ceremony: !!$('wd-ceremony'), screened: !!w._wdScreened, sending: !!w._wenduiSending,
     envoy: !!(c._envoy || c.fromFaction), faction: c.fromFaction || c.faction || '', mission: c.envoyMission || '', counterable,
     topics: [...document.querySelectorAll('#wd-topics button')].map((b) => b.textContent.trim()).filter(Boolean),
-    recap: recap.replace(/^上次问对要点：/, ''), greeting: greetingIn(chat),
+    recap: recap.replace(/^上次问对要点：/, ''), greeting: greetingIn(chat), opening: openingIn(chat),
     confronters: Array.isArray(w._wdConfronters) ? w._wdConfronters.slice() : [],
     // 径开问对的一方可预拟首问（策对的问题、奏疏传召的事由），内核填进它自己的输入框
     draft: String(($('wd-modal-input') || {}).value || '')
   };
+}
+// 求见者的开场：none 无此事；pending 将开口（内核三百毫秒后落气泡）；streaming 正写；done 已入史
+function openingIn(chat) {
+  const b = chat && [...chat.children].find((n) => /wendui-npc/.test(n.className || '') && !/wendui-msg/.test(n.className || ''));
+  if (b) return $('wd-init-bubble') ? 'streaming' : 'done';
+  return G()._wdAudienceMode ? 'pending' : 'none';
 }
 // 开场白：内核开场时随机生成、只画进它的聊天区首个气泡（不入史），从那里读
 function greetingIn(chat) {

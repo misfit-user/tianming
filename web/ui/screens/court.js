@@ -52,6 +52,9 @@ export function createCourt({ root, study, game, profile, onClose }) {
     const t = T();
     if (e.role === 'divider') return h('p.ct-divider', e.text);
     if (e.role === 'note') return h('p.au-note', /^[（(【〔]/.test(e.text) ? e.text : `（${e.text}）`);
+    // 缺朝：按缘由各一句，名单长的只列前八人，悬停看全
+    if (e.role === 'absent') return h('p.au-note.ct-absent', '（缺朝',
+      e.groups.map(([reason, names]) => h('span', { title: names.join('、') }, `　${reason}者${num(names.length)}人：${names.slice(0, 8).join('、')}${names.length > 8 ? '等' : ''}`)), '）');
     if (e.role === 'me') return h('p.au-me', h('b', t.me + t.ask, '：'), h('span.au-text', e.text.replace(/^(朕|陛下)[:：]\s*/, '')));
     const tag = e.stance ? h('em.ct-st.' + (STANCE_CLS[e.stance] || 'neu'), e.stance) : null;
     return h('p.au-them' + (e.streaming ? '.live' : ''), h('b', e.name, e.title ? h('small', `（${e.title}）`) : null, tag, '：'), h('span.au-text', e.streaming ? '……' : e.text),

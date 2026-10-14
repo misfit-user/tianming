@@ -58,6 +58,16 @@ function ccEntries(stage) {
   return [...main.children].map((row) => {
     const id = idOf(row);
     if (row.classList.contains('round-divider')) return { id, role: 'divider', text: clean(row.textContent) };
+    // 缺朝名册：内核一人一个「名（缘由）」平铺，动辄几十人；这里按缘由归拢
+    if (row.classList.contains('absent-roster')) {
+      const groups = new Map();
+      for (const n of row.querySelectorAll('.name')) {
+        const reason = clean((n.nextElementSibling || {}).textContent || '').replace(/^[（(]|[）)]$/g, '') || '未至';
+        if (!groups.has(reason)) groups.set(reason, []);
+        groups.get(reason).push(clean(n.textContent));
+      }
+      return { id, role: 'absent', groups: [...groups], text: clean(row.textContent) };
+    }
     const textEl = row.querySelector('.cy-bubble-text');
     const text = clean(textEl ? textEl.textContent : row.textContent);
     if (!row.classList.contains('cy-bubble-row') || row.classList.contains('system')) return text ? { id, role: 'note', text } : null;

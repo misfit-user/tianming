@@ -16,6 +16,8 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
   let prof = profile();
   let opened = false;
   let s = null;                 // 这一场（adapter session）
+  let seated = false;           // 已读过这一场（开场的事件在字体载完、页面亮起之前也要接）
+  let histLen = 0;              // 已列进实录的史条数（求见者开场落定后，补列新增的）
   let log = [];                 // 实录：{ role: me|them|note|head, text, … }
   let live = null;              // 正在流式写出的那一条
   let busy = false;
@@ -90,7 +92,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
   }
 
   bus.on('audience:stream', ({ text }) => {
-    if (!opened) return;
+    if (!seated) return;
     if (!live) startLive(s && s.name);
     live.text.textContent = text ? text.replace(/〔?[^〔〕\n]*忠诚\s*[+\-]?\d*[^〔〕\n]*〕?\s*$/, '') : '……';
     toEnd();
@@ -102,6 +104,23 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     refreshPlate();
   });
   function entryNode(row) { const e = entry(row); return Array.isArray(e) ? e[0] : e; }
+  // 求见者先开口：替掉例行问候；写着时由 audience:stream 接成流式一条，落定后以史为准
+  bus.on('audience:opening', ({ done }) => {
+    if (!seated) return;
+    log = log.filter((r) => !r.greet);
+    if (done) return settleOpening();
+    if (!live) { render(); startLive(s.name); }
+  });
+  function settleOpening() {
+    const tr = A.transcript();
+    const total = tr.elided + tr.rows.length;
+    if (total > histLen) log.push(...tr.rows.slice(-(total - histLen)).map((r) => ({ ...r, who: r.role === 'them' ? s.name : '' })));
+    histLen = total;
+    live = null;
+    refreshPlate();
+    render();
+    renderBar();
+  }
   // 对质者当庭之言（内核画成另一枚气泡，不经流式）
   bus.on('audience:aside', ({ who, text }) => {
     if (!opened) return;
@@ -226,6 +245,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
   }
   async function send() {
     if (busy) return;
+    if (A.session()?.sending) { toast('对方话未说完'); return; }
     const tn = tone.getValue();
     const text = input.value.trim();
     if (!text && tn !== 'silence') { input.focus(); return; }
@@ -276,14 +296,18 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
     if (tr.elided) log.push({ role: 'note', text: `更早${num(tr.elided)}条已收起` });
     if (s.recap) log.push({ role: 'note', text: `上次要点：${s.recap}` });
     log.push(...tr.rows.map((r) => ({ ...r, who: r.role === 'them' ? s.name : '' })));
-    if (s.greeting) log.push({ role: 'them', text: s.greeting, who: s.name });
+    histLen = tr.elided + tr.rows.length;
+    // 求见者要先开口的，不列例行问候（内核两句同出一源，原先连写两遍）
+    if (s.greeting && s.opening === 'none') log.push({ role: 'them', text: s.greeting, who: s.name, greet: true });
     live = null;
+    seated = true;
     busy = false;
     tone.setValue('direct');
     input.value = s.draft || '';                          // 预拟的首问（策对、传召事由）
     refreshPlate();
     render();
     renderBar();
+    if (s.opening === 'pending' || s.opening === 'streaming') startLive(s.name);   // 求见者正要开口：先落一条「……」
     return true;
   }
   const veil = h('div.dk-veil');
@@ -322,6 +346,7 @@ export function createAudience({ root, study, game, profile, onClose, onLetter, 
   async function finish() {
     if (!opened) return;
     opened = false;
+    seated = false;
     await fade(true);
     el.classList.remove('on');
     live = null;

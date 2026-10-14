@@ -80,8 +80,7 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     const off = game.once('game:opening', (o) => { cov.done(); showOpening(o, (v) => { cov = v; }); });
     try {
       await game.newGame(sid, { gameMode });
-      await cov.done();
-      await enterDesk();
+      await enterDesk(cov);
     } catch (err) {
       off();
       cov.done();
@@ -115,30 +114,34 @@ export function createTitle({ root, stage, study, game, onEnter }) {
 
   // ---------- 續卷：案卷目录 ----------
   function pickSave() {
-    openSaves({ game, inGame: false, onLoaded: () => { busy = true; el.classList.remove('on'); enterDesk(); } });
+    openSaves({ game, inGame: false, onLoaded: (cov) => { busy = true; el.classList.remove('on'); enterDesk(cov); } });
   }
 
   async function startLoad(key) {
     if (busy) return;
     busy = true;
     el.classList.remove('on');
+    const cov = cover(root, game, '启 封', '史官正在抄录副本');
+    await cov.painted;
     try {
       await game.saves.load(key);
-      await enterDesk();
+      await enterDesk(cov);
     } catch (err) {
+      cov.done();
       busy = false;
       el.classList.add('on');
       juan({ title: '未能启封', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, String(err && err.message || err)) });
     }
   }
 
-  // 从窗前走到案后、落座俯看
-  async function enterDesk() {
+  // 从窗前走到案后、落座俯看。cov：开局、启封的墨幕还铺着——幕后飞镜头也看不见，径直落座，等书案（连舆图）摆好再撤幕。
+  // 原先先撤幕、再飞镜头、再摆书案，摆书案那一阵主线程又僵住，书房空着十来秒（绍宋近十秒）像卡死
+  async function enterDesk(cov = null) {
     drift = false;
-    for (const leg of TITLE_TO_DESK) await study.flyTo({ pos: leg.pos, look: leg.look, fov: leg.fov }, leg.duration);
+    if (!cov) for (const leg of TITLE_TO_DESK) await study.flyTo({ pos: leg.pos, look: leg.look, fov: leg.fov }, leg.duration);
     study.setShot('desk');
     busy = false;
-    onEnter();
+    try { await onEnter(); } finally { if (cov) await cov.done(); }
   }
 
   // 离局回启幕：从案后起身、拉高（走开卷那段机位的反程），暗场里换回窗前的陈设与机位，再亮起启幕

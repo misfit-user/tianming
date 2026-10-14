@@ -27,15 +27,31 @@ export function loadingScreen(root, { veil = false } = {}) {
   };
 }
 
+// 内核报的步名多是开发口吻（「进入游戏世界」「构建索引」「NPC 动机与危机分岔」），墨幕上换作书房里的话；
+// 认不得的照录，带洋字、术语的不报（留着上一句）
+const SAY = [
+  [/读取(官方)?剧本|加载剧本配置/, '检阅卷宗'], [/地方区划/, '勘定州县'], [/建筑与经济/, '清点府库'], [/构建索引/, '编次名册'],
+  [/进入游戏世界/, '诸事就绪'], [/深度阅读完成/, '史官研读已毕'], [/深度阅读/, '史官研读典籍'], [/推演锚点|动机与危机/, '揣摩人心时势'],
+  [/首回合候选事件/, '预拟本季时事'], [/势力动态|国际格局/, '揣度四方动静'], [/逻辑审查|史实校验|历史检查|证据校验/, '校核史实'],
+  [/生成|初始化/, '铺陈案牍']
+];
+function inWorld(text) {
+  const t = String(text || '').trim();
+  const hit = SAY.find(([re]) => re.test(t));
+  if (hit) return hit[1];
+  return /[A-Za-z]|缓存|索引|数据|模型|调用|队列/.test(t) ? '' : t;
+}
+
 // 开局、启封这几段长等（读剧本到开场白、临朝到落座、启封旧卷）：内核要独占主线程好一阵，原先画面就僵在那里、点了像没点。
 // 铺一层墨幕，报内核的进度（showLoading 转来的 kernel:loading）；painted 等这一帧真画出来，再把主线程交给内核
 export function cover(root, game, cap, sub = '') {
   const ld = loadingScreen(root, { veil: true });
   ld.set(cap, 0.04);
   ld.sub(sub);
-  loadFonts({ 'TM-WenKai': cap + sub }).catch(() => { /* 字未到就用楷体垫着 */ });
+  loadFonts({ 'TM-WenKai': cap + sub + SAY.map((x) => x[1]).join('') }).catch(() => { /* 字未到就用楷体垫着 */ });
   const off = game.on('kernel:loading', ({ text, pct }) => {
-    if (text) ld.sub(text);
+    const say = inWorld(text);
+    if (say) ld.sub(say);
     if (pct != null) ld.set(cap, Math.max(0.04, pct / 100));
   });
   const painted = new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));

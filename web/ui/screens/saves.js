@@ -70,8 +70,8 @@ export function openSaves({ game, inGame = false, onLoaded }) {
     try {
       await game.saves.load(s.key);
       j && j.close('ok');
-      cov.done();
-      onLoaded && onLoaded();
+      // 从启幕调卷：墨幕交给进书房那一程，书案摆好再撤
+      if (onLoaded) onLoaded(cov); else cov.done();
     } catch (err) {
       cov.done();
       toast(String(err && err.message || err));

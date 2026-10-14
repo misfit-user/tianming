@@ -11,6 +11,9 @@ import { bus } from '../core/bus.js';
 import { num, roundSig } from '../core/numerals.js';
 import { qianzi } from '../kit/index.js';
 
+// 势力读数块：内核的记数写阿拉伯字（「195 块」「182万」「1.50亿」），照记数设置改写，与册里别处一路
+const numText = (v) => String(v).replace(/(\d+(?:\.\d+)?)\s*(亿|万)?/g, (_, d, u) => num(Number(d) * (u === '亿' ? 1e8 : u === '万' ? 1e4 : 1)));
+
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 49 忧」），按记数设置改写；小数照旧
@@ -160,7 +163,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
         h('div.rm-seal', d.short),
         h('div.rm-id', h('h3', d.name, h('small', d.type)), d.pills.length ? h('div.rm-pills', d.pills.map((p) => h('span' + (/敌|承压|乱民/.test(p) ? '.hostile' : ''), p))) : null,
           d.note ? h('p.rm-seal-note', d.note) : null, d.desc ? h('p.rm-desc', d.desc) : null)),
-      d.stats.length ? h('div.rm-stats', d.stats.map(([k, v]) => h('div', h('span', k), h('b', v)))) : null,
+      d.stats.length ? h('div.rm-stats', d.stats.map(([k, v]) => h('div', h('span', k), h('b', numText(v))))) : null,
       nav,
       juans.map(([title, sub, body], i) => h('section.rm-juan', { dataset: { juan: title } },
         h('h4', h('span.no', `卷${NUM_WORD[i]}`), h('span', title), h('small', sub)), juanBody(body))),
@@ -409,7 +412,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     replaceChildren(dTop, ruler ? rulerCard(ruler) : null,
       d.pills.length ? h('div.fz-pills', d.pills.map((p) => h('span.fz-pill' + (/敌|承压|乱民/.test(p) ? '.bad' : ''), p))) : null,
       d.desc ? h('p.fz-desc', d.desc) : null,
-      d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', v)))) : null);
+      d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', numText(v))))) : null);
     replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; renderDock(); dSheet.scrollTop = Math.min(dSheet.scrollTop, dTop.offsetHeight); } },
       h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
     const cur = juans.find(([t]) => t === dJuan);

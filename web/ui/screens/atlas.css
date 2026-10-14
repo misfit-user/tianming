@@ -13,6 +13,10 @@
 .ce-gutter { background: linear-gradient(90deg, rgba(60, 38, 20, .45), rgba(255, 240, 210, .12) 50%, rgba(60, 38, 20, .45)); }
 .ce-close { position: absolute; right: 1.75rem; top: -.875rem; z-index: 2; cursor: pointer; }
 .ce-unk { margin: 0; font-size: var(--fs-2); letter-spacing: .3em; color: var(--ink-faint); }
+/* 右叶空着时居中写一句、下一行说何时会有（原先一行小字贴在左上角，整叶空白） */
+.ce-none { display: flex; flex-direction: column; align-items: center; gap: .875rem; padding: min(8rem, 16vh) 2rem 0; text-align: center; }
+.ce-none b { font: 400 var(--fs-6) var(--f-title); letter-spacing: .4em; text-indent: .4em; color: var(--ink-soft); }
+.ce-none small { max-width: 26em; font-size: var(--fs-2); line-height: 1.9; letter-spacing: .1em; color: var(--ink-faint); }
 
 /* 靠右展开（舆图为家、人在图上；设计稿「人物窗靠左展开，各册靠右展开，舆图露着」）：不再整屏压暗，册页靠右、与寻人同一位置
    （右让书目、上让读数条、下让舆图之具与时钟）；册外空处不接指针，图那侧照常可点可拖，合册或 Esc 收起。

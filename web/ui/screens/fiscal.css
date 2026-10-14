@@ -31,19 +31,23 @@
 .fi-title h3 { margin: 0; font: 400 var(--fs-7) var(--f-title); letter-spacing: .3em; }
 .fi-title small { font-size: var(--fs-2); color: var(--ink-faint); }
 .fi-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+/* 右叶窄（1366 上下）时岁入、支用两栏改一栏：半栏除去名目与数目，条已细得看不见 */
+.fi-right { container-type: inline-size; }
+@container (max-width: 560px) { .fi-cols { grid-template-columns: minmax(0, 1fr); gap: .5rem; } }
 .fi-sec h4 { margin: .25rem 0 .5rem; font: 400 var(--fs-4) var(--f-title); letter-spacing: .25em; color: #5a2a12; }
-.fi-bar { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 6rem 3rem; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
+/* 数目一栏按字宽（em）给：小屏字号有下限，按 rem 给的 6rem 装不下「三十九万六千」，折出一个「千」 */
+.fi-bar { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 7em 3.5em; align-items: center; gap: .5rem; padding: .1875rem 0; font-size: var(--fs-2); }
 .fi-bar .k { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fi-bar .v { height: .5rem; background: rgba(120, 90, 50, .12); }
 .fi-bar .v i { display: block; height: 100%; }
 .fi-bar.in .v i { background: linear-gradient(90deg, #3a7d67, #6fae8f); }
 .fi-bar.out .v i { background: linear-gradient(90deg, #a8822e, #d8b05a); }
-.fi-bar .n { text-align: right; font-family: var(--f-title); }
-.fi-bar small { text-align: right; color: var(--ink-faint); font-size: var(--fs-1); }
+.fi-bar .n { text-align: right; white-space: nowrap; font-family: var(--f-title); }
+.fi-bar small { text-align: right; white-space: nowrap; color: var(--ink-faint); font-size: var(--fs-1); }
 .fi-debts { display: grid; grid-template-columns: 1fr 1fr; gap: .125rem 1.5rem; }
 .fi-debts p { margin: 0; display: flex; justify-content: space-between; gap: .5rem; font-size: var(--fs-2); border-bottom: 1px dotted rgba(120, 90, 50, .25); }
 .fi-debts p span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fi-debts p b { font-weight: 400; color: #8a2a1c; }
+.fi-debts p b { flex: none; white-space: nowrap; font-weight: 400; color: #8a2a1c; }
 .fi-more { margin: .25rem 0 0; font-size: var(--fs-1); color: var(--ink-faint); }
 .fi-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .fi-loan { margin: 0 0 .25rem; font-size: var(--fs-2); line-height: 1.7; color: var(--ink-soft); }

@@ -30,7 +30,10 @@
 .rm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .5rem; }
 .rm-stats div { display: flex; flex-direction: column; gap: .125rem; padding: .375rem .625rem; background: rgba(255, 250, 238, .5); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .22); }
 .rm-stats span { font: var(--fs-1) var(--f-title); letter-spacing: .3em; color: var(--ink-faint); }
-.rm-stats b { font: 400 var(--fs-5) var(--f-title); color: #2a1608; }
+.rm-stats b { font: 400 var(--fs-4) var(--f-title); white-space: nowrap; color: #2a1608; }
+/* 数目照记数设置写成汉字（「一百九十五块」「一亿五千万」）比阿拉伯字长：右叶窄时五块排不下，改三列 */
+.rm-right { container-type: inline-size; }
+@container (max-width: 600px) { .rm-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .rm-nav { position: sticky; top: -1.375rem; z-index: 1; display: flex; gap: .375rem; margin: 0 -1.5rem; padding: .375rem 1.5rem; background: linear-gradient(180deg, #efe4c9 70%, rgba(239, 228, 201, 0)); }
 .rm-nav button { width: 2rem; height: 2rem; border: 0; cursor: pointer; font: 400 var(--fs-3) var(--f-title); color: #f9ead2; background: #8a2a1c; box-shadow: inset 0 0 0 2px rgba(249, 234, 210, .45); }
 .rm-nav button:hover { background: #a3301f; }

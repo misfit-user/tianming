@@ -238,7 +238,8 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
     else if (mode === 'eco') out = renderEco();
     else if (data.exam) out = renderExam(data.exam);
     else if (data.history.length) { out = renderHist(data.history[0]); out.unshift(h('p.kj-tag', '今无开科 · 上一科')); }
-    else out = [h('p.ce-unk', data.enabled ? '今无开科，亦无前科可稽' : '科举未行')];
+    else out = [data.enabled ? h('div.ce-none', h('b', '今无开科'), h('small', '亦无前科可稽。开科之后，乡试、会试、殿试与放榜在此逐场记下'))
+      : h('div.ce-none', h('b', '科举未行'), h('small', '本朝尚未以科举取士'))];
     replaceChildren(right, out.filter(Boolean));
   }
 

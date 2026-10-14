@@ -86,7 +86,7 @@ export function createArchive({ root, game, profile, onPerson }) {
   function renderFolio() {
     const prof = profile();
     const x = all.find((e) => e.id === sel);
-    if (!x) { replaceChildren(right, h('p.ce-unk', '择一卷以观')); return; }
+    if (!x) { replaceChildren(right, h('div.ce-none', h('b', all.length ? '择一卷以观' : '馆中尚无一卷'), h('small', '史记每推演一回成一卷；起居注记召对朝议；纪事、编年随事而增'))); return; }
     const c = A.CATS.find((k) => k.key === x.cat);
     const head = h('header.sg-head',
       h('div.sg-seal.' + x.cat, x.glyph || c.glyph),
@@ -207,6 +207,10 @@ export function createArchive({ root, game, profile, onPerson }) {
     if (id) {
       const x = all.find((e) => e.id === id);
       if (x) { cat = x.cat; sel = x.id; type = ''; q = ''; who = ''; where = ''; search.value = ''; }
+    } else if (!all.some((x) => x.cat === cat)) {
+      // 所停那一库空着（开局时史记、起居注都还没有）：翻到头一个有卷的库
+      const c = A.CATS.find((k) => all.some((x) => x.cat === k.key));
+      if (c) { cat = c.key; type = ''; sel = ''; }
     }
     renderLeft();
     renderFolio();

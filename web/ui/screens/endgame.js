@@ -3,8 +3,8 @@
 // 下分四签：帝王本纪（逐卷修成）、诸项升降、大事、人物结局。卷尾：软终局可「续理残局」，否则「封存此局」「回启幕」。
 // 数据经 game.endgame（adapter/endgame.js 镜内核 _showEndgameScreen）；太史公、本纪由 AI 慢慢写来，页随之刷新。
 import { h, replaceChildren } from '../core/dom.js';
-import { num } from '../core/numerals.js';
-import { qianzi, yapai, loadFonts } from '../kit/index.js';
+import { num, yearNum } from '../core/numerals.js';
+import { qianzi, yapai, loadFonts, closeScrolls } from '../kit/index.js';
 
 const SVG = 'http://www.w3.org/2000/svg';
 function spark(values) {
@@ -49,7 +49,7 @@ export function createEndgame({ root, game, onSaves, onLeave }) {
     replaceChildren(head,
       d.fail ? h('div.eg-fail', h('b', d.fail.title), d.fail.desc ? h('p', d.fail.desc) : null) : null,
       d.goals.length ? h('ul.eg-goals', d.goals.map((g) => h('li', g))) : null,
-      d.fall ? h('p.eg-fall', d.fall) : null);
+      d.fall ? h('p.eg-fall', fallText(d.fall)) : null);
     replaceChildren(tsg, h('b.eg-tsg-h', '太史公曰'),
       d.tsg ? h('div.eg-tsg-body', d.tsg.map((s) => h('p', s.head ? h('em', `【${s.head}】`) : null, s.text)))
         : h('p.eg-wait', d.hasAI ? '太史公正在撰写评语……' : '（未配推演之器，太史公阙评）'));
@@ -84,11 +84,20 @@ export function createEndgame({ root, game, onSaves, onLeave }) {
     }
   }
 
+  // 史上国祚对照是内核拼的一句，数目写的阿拉伯字：照记数设置改写（公元年逐位写，「提前16年7月」作「提前十六年七个月」）
+  function fallText(s) {
+    return String(s).replace(/公元(\d{3,4})年/g, (_, y) => `公元${yearNum(+y)}年`)
+      .replace(/提前(\d+)年(\d+)月/g, (_, y, m) => `提前${num(+y)}年${num(+m)}个月`)
+      .replace(/(\d+)(?=年|个?月)/g, (n) => num(+n));
+  }
+
   async function open() {
     tab = 'benji';
     render();
     const d = E.data();
     if (d) await loadFonts({ 'TM-MaShanZheng': '天命已成绝' });
+    // 局已终：书房里还开着的卷（推演前开着的册、迟到的天下大势之类）一并收起，不压在终局上
+    closeScrolls();
     el.classList.add('on');
     shown = true;
   }

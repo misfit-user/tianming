@@ -45,10 +45,10 @@ html[data-motion="less"] .eg-title span { animation: none; opacity: 1; }
 .eg-metric polyline { fill: none; stroke: #7d1d12; stroke-width: 1.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .eg-metric span { font-size: var(--fs-2); color: #7d1d12; }
 .eg-events { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .375rem; }
-.eg-events li { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: .75rem; font-size: var(--fs-2); line-height: 1.7; padding-left: .625rem; box-shadow: inset .1875rem 0 0 #a8833a; }
+.eg-events li { display: grid; grid-template-columns: 10.75em minmax(0, 1fr); gap: .75rem; font-size: var(--fs-2); line-height: 1.7; padding-left: .625rem; box-shadow: inset .1875rem 0 0 #a8833a; }
 .eg-events li.bad { box-shadow: inset .1875rem 0 0 #a3301f; }
 .eg-events li.good { box-shadow: inset .1875rem 0 0 #3f6e5e; }
-.eg-events small { color: var(--ink-faint); }
+.eg-events small { color: var(--ink-faint); white-space: nowrap; }
 .eg-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .25rem .75rem; }
 .eg-man { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .5rem; align-items: baseline; padding: .25rem .375rem; font-size: var(--fs-2); }
 .eg-man b { font-weight: 400; font-family: var(--f-title); }

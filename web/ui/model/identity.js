@@ -30,7 +30,7 @@
 //   keju     科举册：册名、副题，筹办／启用／改制、礼部议题、策问、钦定、张榜、收科诸叫法
 //   gongwei  宫闱册（后妃、宫中尊长、皇嗣、宫苑）：四签之名与召幸、问安、晋封、降位、立储、修缮、移居、新建诸叫法（不设则书目不列此册）
 //   keyi     科议（科举诸事付廷臣公议）：插言叫什么、提示、再议／付表决／裁决／暂缓，开议前一问的叫法与代价
-//   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么
+//   issues   时政那一页：题名、拍板叫什么、召对与密问的名目、空时说什么；meet 帮助册「回合与推演」里一回合之内与人相见那一句
 //   docket   「批」那一页：待批之件叫什么、批语叫什么、空时说什么、几枝签（[键, 字, 注]）；props 案上器物的换法
 //   acts     可为（设计稿 9.2）：realm 为真即元首一档，各册原有的动作照旧（安民巡按调粮拟诏改隶兴造、任命廷推罢免弹劾荫子荐贤、补饷整训调防易将）；
 //            余者只列与身份相符的几件——own 所掌之地（无官者是本籍）的行文 [名, 注]，tour 行止，office 对在任官，army 对所统之兵。
@@ -54,12 +54,12 @@ export const PROFILES = {
       sign: '{title}臣{name}谨奏', signBare: '{name}谨奏',
       groups: { urgent: '急奏', pending: '启奏', held: '留中', done: '已批' },
       // 抬头：称君上之词另起一行高出两格（双抬），称朝廷之词高出一格（单抬）
-      taitou: { double: ['皇上', '陛下', '圣上', '圣明', '圣恩', '圣裁', '圣躬', '天恩', '天颜', '宸衷', '宸断'], single: ['朝廷', '国家', '宗社', '社稷', '列祖', '祖宗', '天朝'] },
+      taitou: { double: ['皇上', '陛下', '天子', '至尊', '圣上', '圣明', '圣恩', '圣裁', '圣躬', '圣听', '圣意', '圣心', '圣鉴', '圣览', '圣德', '天恩', '天颜', '宸衷', '宸断'], single: ['朝廷', '国家', '宗社', '社稷', '列祖', '祖宗', '天朝'] },
       verdicts: [['approved', '准', '依议准行'], ['rejected', '驳', '不准所请'], ['annotated', '批', '朱笔示意'], ['held', '留中', '暂不发下'],
         ['referred', '交部议', '着有司议处'], ['court_debate', '付廷议', '下廷臣会议'], ['summon', '召对', '召上奏者面询']]
     },
     issues: { title: '御案时政', decide: '圣裁', chosen: '已断', convene: '御前召对群臣', secret: '独召密问', secretEnd: '退朝', secretSummary: '建言要点', empty: '四海升平　暂无要务', people: '关涉群臣' },
-    urgentAck: '朕已知晓',
+    urgentAck: '朕已知晓', meet: '召人问对、付朝议',
     bio: { lord: '君上', now: '今上', note: '御笔朱批', posthumous: '追赠', mind: '御览心志' },
     social: { summonParty: '召党魁', summonClass: '召代表', court: '付廷议', partyDraft: '拟平衡诏', classDraft: '拟安抚诏' },
     annals: { title: '史官实录', orders: '诏令', ownOrders: '本回诏令', echo: '诏令回响', decree: '诏书', archive: '史馆', note: '御批' },
@@ -121,7 +121,7 @@ export const PROFILES = {
         ['referred', '转详', '详报上司'], ['court_debate', '会议', '集议'], ['summon', '传见', '传来面询']]
     },
     issues: { title: '案头要事', decide: '决断', chosen: '已断', convene: '集议', secret: '密询', empty: '案头无要事', people: '关涉之人' },
-    urgentAck: '知道了',
+    urgentAck: '知道了', meet: '谒见上官、会晤同僚',
     annals: { title: '年谱', orders: '公文', ownOrders: '本回公文', echo: '公文回响', decree: '公文', archive: '案牍库', note: '批注' },
     guideTitle: '视事须知',
     guide: [['所掌', '右上是所掌之账，左下立像旁是本人的职衔、上官与精力。'], ['行文', '圆钮「令」行文，上奏下札。'], ['推演', '右下「推演」推进时局。']],
@@ -169,7 +169,7 @@ const UNOFFICIAL = {
     excerpt: '摘录', sign: '{title}{name}呈', signBare: '{name}呈', groups: { urgent: '急件', pending: '待批', held: '存案', done: '已批' }, taitou: { double: [], single: [] },
     verdicts: [['approved', '允', '允行'], ['rejected', '却', '回绝'], ['annotated', '批', '批语'], ['held', '存', '暂存']]
   },
-  issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' },
+  issues: { title: '案头要事', decide: '主意', chosen: '已定', convene: '商议', secret: '私问', empty: '无事萦怀', people: '关涉之人' }, meet: '拜谒师友',
   annals: { title: '年谱', orders: '家令', ownOrders: '本回家令', echo: '回响', decree: '家令', archive: '家乘', note: '眉批' },
   guideTitle: '入座须知',
   guide: [['本家', '右上是家产，左下立像旁是本人与精力。'], ['书信', '圆钮「书」往还，结交师友。'], ['推演', '右下「推演」推进时局。']],

@@ -6,8 +6,9 @@ import { homeMode } from '../core/settings.js';
 import { guideOf } from '../model/identity.js';
 
 const BOOK_NOTE = { map: '天下府州，七种看法', people: '人人一卷，可读列传', offices: '衙署职官，任免补缺', fiscal: '帑廪户口，收支借贷', army: '诸军名册，战事流寇',
-  realm: '势力、党派、阶层', wenyuan: '诗文总集，品评查禁', keju: '开科取士，读卷放榜', gongwei: '后妃、皇嗣、宫苑', annals: '史记、起居、纪事、编年四库',
-  gazette: '四方消息', registry: '辖区册籍', family: '家族谱系', estate: '田宅产业' };
+  realm: '势力、党派、阶层', charge: '所掌辖区、本部或本衙门，点开翻方志、军务或官制', wenyuan: '诗文总集，品评查禁', keju: '开科取士，读卷放榜', gongwei: '后妃、皇嗣、宫苑', annals: '史记、起居、纪事、编年四库',
+  gazette: '四方消息', registry: '辖区册籍', family: '尊长、配偶、子女、同辈', estate: '田宅产业' };
+// 通用一套的「史」是本人年谱（人物窗履历页），不是史馆
 
 export function createHelp({ root, game, profile }) {
   let key = 'guide';
@@ -35,7 +36,7 @@ export function createHelp({ root, game, profile }) {
         h('ol.hp-guide', guideOf(p, map ? 'map' : 'desk').map(([t, s]) => h('li', h('b', t), h('p', s)))),
         h('h4', map ? '立像旁圆钮' : '案底五牌'), h('dl.hp-dl', p.channels.map((c) => [h('dt', c.title), h('dd', c.sub)]),
           map ? [h('dt', `回${p.desk}`), h('dd', '起身看案上器物；在案前时这一枚是「入图」')] : null),
-        h('h4', map ? '右缘书目' : '右列书目'), h('dl.hp-dl', p.books.map(([g, name, k]) => [h('dt', h('i.hp-g', g), name), h('dd', BOOK_NOTE[k] || '')])),
+        h('h4', map ? '右缘书目' : '右列书目'), h('dl.hp-dl', p.books.map(([g, name, k]) => [h('dt', h('i.hp-g', g), name), h('dd', (k === 'annals' && p.tier !== 'sovereign' ? '本人履历与近事' : BOOK_NOTE[k]) || '')])),
         map ? [
           h('h4', '四角'), dl([['左上', '待办菱章（待批之数、警讯）与邸报，邸报可收'], ['右上', '账簿与读数，悬停见来由，点开见细账'],
             ['右侧', '提纲：钉选之人、所掌、左近或告急行军，可收'], ['右下', '年月与调速，「推演」过此一回合；其上舆图层级（天、省、府）与看法'], ...tools]),
@@ -48,7 +49,7 @@ export function createHelp({ root, game, profile }) {
         ]
       ] },
       { key: 'turn', title: '回合与推演', body: () => [
-        h('p', `一回合之内：${map ? '看左上菱章' : '看时政花笺'}知此刻要务，${ch.pi ? `批阅${p.docket.name}，` : ''}召人问对、付朝议，拟定${p.annals.decree}；${p.seal.title}即把本回所拟交出，推演 AI 据之演绎天下。`),
+        h('p', `一回合之内：${map ? '看左上菱章' : `看${tags.tray || '案头要事'}`}知此刻要务，${ch.pi ? `批阅${p.docket.name}，` : ''}${p.meet || '与人相见'}，拟定${p.annals.decree}；${p.seal.title}即把本回所拟交出，推演 AI 据之演绎天下。`),
         h('p', `推演毕，${p.annals.title}记下本回，邸报传来四方消息。所拟之事未必如愿——各方各有打算，天下也有它自己的惯性。`),
         h('p', '许多举措（钱粮、军务、文事、宫中之事……）点了不会立刻生效，而是写进议事清册，待拟入正文颁行后由推演落地，并在下回合回报执行情形。'),
         h('p', '严格史实模式下，许多数字只是据奏之数：实情须厂卫、推问、查案方得掀见，册中以封记标出。')

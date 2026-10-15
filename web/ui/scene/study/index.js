@@ -463,6 +463,8 @@ export async function createStudyView(stage, {
     },
     onFrame(fn) { hooks.add(fn); return () => hooks.delete(fn); },
     setShot, currentPose, flyTo, screenOf, mapToScreen, sheetPose, pickMap, pickProp, setSheetGlow, setMapSheet, setMemorialPaper, paperCorners, dress, setNotes: (list) => props.setNotes(list),
+    // 某件陈设暂且收起／摆回（如批阅时无折可批，左手那摞奏折不摆）
+    setPropVisible(name, on) { const g = props.groups[name]; if (g) g.visible = !!on; },
     get room() { return dressed; },
     get flightProgress() { return flight ? Math.min(1, (time - flight.t0) / flight.duration) : null; },
     get shot() { return current; },

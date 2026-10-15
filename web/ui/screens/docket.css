@@ -64,6 +64,7 @@
 .scr-docket .mi.on { background: rgba(255, 230, 190, .11); border-left-color: var(--gold); }
 /* 签：案底一排竖写牙签，首枝朱红 */
 .scr-docket .slips { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-end; gap: .875rem; }
+.scr-docket .slips[hidden] { display: none; }
 .scr-docket .slip { position: relative; width: 3rem; min-height: 5.75rem; padding: 1rem 0 .75rem; border: 0; border-radius: 0 0 .3125rem .3125rem; cursor: pointer; writing-mode: vertical-rl;
   font: 400 var(--fs-6)/3rem var(--f-title); letter-spacing: .18em; color: var(--ink);
   background: var(--paper-grain), linear-gradient(90deg, #d8c49c, #f4ecdb 45%, #d6c298); box-shadow: 0 .5rem 1.125rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(120, 90, 50, .4);

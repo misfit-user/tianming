@@ -153,6 +153,7 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
 
   function renderSlips() {
     const m = items[cur];
+    slips.hidden = !m;            // 无折可批：一排灰签不挂
     replaceChildren(slips, prof.docket.verdicts.map(([key, label, note], i) =>
       h('button.slip' + (i === 0 ? '.go' : '') + (m && m.status === key ? '.on' : ''), {
         type: 'button', title: note, disabled: !m, onclick: () => decide(key, label)
@@ -303,6 +304,8 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
     study.setMemorialPaper(PAPER);
     study.setShot('memorial');
     reload();
+    // 左手那摞是今日的折子：一件也没有时不摆（原先纸上写「百官无事启奏」，旁边仍堆着一摞）
+    study.setPropVisible?.('memorials', items.length > 0);
     if (id) { const i = items.findIndex((m) => m.id === id); if (i >= 0) cur = i; }
     else { const i = items.findIndex((m) => m.group === 'urgent' || m.group === 'pending'); cur = i >= 0 ? i : 0; }
     await loadFonts({ 'TM-WenKai': items.map((m) => m.from + m.title + m.body + m.date).join('') + prof.docket.empty, 'TM-Xing': items.map((m) => m.reply).join('') + prof.docket.hint });
@@ -321,6 +324,7 @@ export function createDocket({ root, study, game, profile, onClose, onSummon }) 
     el.classList.remove('on');
     pick.classList.remove('on');
     study.setMemorialPaper(null);
+    study.setPropVisible?.('memorials', true);
     study.setShot('desk');
     onClose?.();
     await fade(false);

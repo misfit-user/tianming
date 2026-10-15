@@ -8,6 +8,7 @@ import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { openSaves } from './saves.js';
 import { cover } from './loading.js';
+import { plainError } from '../core/plain.js';
 
 const BOARD = [
   { key: 'new', label: '開卷', note: '另起新篇', primary: true },
@@ -86,7 +87,7 @@ export function createTitle({ root, stage, study, game, onEnter }) {
       cov.done();
       busy = false;
       el.classList.add('on');
-      juan({ title: '未能開卷', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, String(err && err.message || err)) });
+      juan({ title: '未能開卷', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, plainError(String(err && err.message || err))) });
     }
   }
 
@@ -130,7 +131,7 @@ export function createTitle({ root, stage, study, game, onEnter }) {
       cov.done();
       busy = false;
       el.classList.add('on');
-      juan({ title: '未能启封', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, String(err && err.message || err)) });
+      juan({ title: '未能启封', width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, plainError(String(err && err.message || err))) });
     }
   }
 

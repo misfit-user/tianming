@@ -67,13 +67,13 @@ export function createGuoshi({ root, game, onGo }) {
       h('em', { style: { left: `${m}%` } })));
   }
   function head(s) {
-    return h('h4' + (s.tone ? '.' + s.tone : ''), h('span', s.title), s.badge ? h('small', s.badge) : null,
+    return h('h4' + (s.tone ? '.' + s.tone : ''), h('span', s.title), s.badge ? h('small', digits(s.badge)) : null,
       s.go && onGo ? h('button.gs-go', { type: 'button', onclick: () => { hide(); onGo(s.go); } }, GO_NAME[s.go] || '前往') : null);
   }
   function section(s) {
     const box = (...body) => h('section.gs-sec.' + s.kind, head(s), ...body);
     switch (s.kind) {
-      case 'meter': return box(h('div.gs-meter', h('i', { style: { width: `${Math.max(0, Math.min(100, s.value))}%` } })), h('p.gs-note', s.note));
+      case 'meter': return box(h('div.gs-meter', h('i', { style: { width: `${Math.max(0, Math.min(100, s.value))}%` } })), h('p.gs-note', digits(s.note)));
       case 'tax': {
         const max = Math.max(1, s.nominal, s.received, s.paid);
         const line = (label, v, cls) => h('div.gs-tax-row.' + cls, h('span', label), h('i', h('b', { style: { width: `${(v / max) * 100}%` } })), h('em', amt(v)),
@@ -84,20 +84,20 @@ export function createGuoshi({ root, game, onGo }) {
           s.notes.map((t) => h('p.gs-note', digits(t))));
       }
       case 'depts': return box(h('div.gs-depts', s.items.map((x) => h('p', h('span', x.label), dots(x.dots), h('b', digits(x.value)), h('em', x.trend)))));
-      case 'list': return box(s.lead ? h('p.gs-note', s.lead) : null,
+      case 'list': return box(s.lead ? h('p.gs-note', digits(s.lead)) : null,
         s.items.length ? h('div.gs-list', s.items.map((x) => h('div' + (x.tone ? '.' + x.tone : ''), h('b', x.title), x.meta ? h('span', digits(x.meta)) : null, x.side ? h('small', digits(x.side)) : null)))
           : h('p.gs-empty', s.empty || '无'));
-      case 'alert': return box(h('div.gs-alert', s.lead ? h('b', s.lead) : null, s.lines.map((t) => h('p', digits(t))), s.note ? h('small', s.note) : null));
+      case 'alert': return box(h('div.gs-alert', s.lead ? h('b', digits(s.lead)) : null, s.lines.map((t) => h('p', digits(t))), s.note ? h('small', digits(s.note)) : null));
       case 'hints': return box(h('div.gs-hints', s.items.map(([t, go]) => h('button', { type: 'button', onclick: () => { if (onGo) { hide(); onGo(go); } } }, t))), s.note ? h('p.gs-note', s.note) : null);
       case 'ledger': return box(h('div.gs-ledger', s.items.map((x) => h('p', h('span', x.label), h('b.' + (x.tone || 'plain'), digits(x.value))))));
       case 'bars': return box(h('div.gs-bars', s.items.map((x) => h('div', h('p', h('span', x.label), h('i', h('b.' + x.tone, { style: { width: `${Math.max(0, Math.min(100, x.value))}%` } })), h('em.' + x.tone, `${num(Math.round(x.value))}${x.trend}`)),
-        x.note ? h('small', x.note) : null))));
+        x.note ? h('small', digits(x.note)) : null))));
       case 'tiles': return box(h('div.gs-tiles', s.items.map((x) => h('span.' + x.tone, { title: x.label }, h('b', x.label.replace(/(承宣)?布政使司$/, '')), num(x.value)))));
       case 'chain': return box(h('div.gs-chain', s.levels.map((lv) => h('div' + (lv.count ? '.on' : ''), { title: lv.note }, h('span', lv.label), h('b', num(lv.count))))),
-        s.items.length ? h('div.gs-list', s.items.map((x) => h('div.bad', h('b', x.title), x.meta ? h('span', x.meta) : null))) : null);
+        s.items.length ? h('div.gs-list', s.items.map((x) => h('div.bad', h('b', x.title), x.meta ? h('span', digits(x.meta)) : null))) : null);
       case 'dims': return box(h('div.gs-dims', s.items.map((x) => h('div', h('span', x.label), h('b.' + x.tone, `${num(x.value)}${x.trend || ''}`)))));
       case 'quotes': return box(h('div.gs-quotes', s.items.map((t) => h('p', `「${t}」`))));
-      case 'cases': return box(h('div.gs-cases', s.items.map((t) => h('p', t))));
+      case 'cases': return box(h('div.gs-cases', s.items.map((t) => h('p', digits(t)))));
       default: return null;
     }
   }

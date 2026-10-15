@@ -6,7 +6,7 @@
 //   · 吏治另有监察之律（老面板 getCorrVisibility）：监察不足五十，真浊度与分部门真账不显，只据地方所奏。
 // 皇权、皇威内核不设失真，照老抽屉直显。只读，处置去诏令、奏疏、问对、朝议。
 // 四项之外另有「时运」一页（朝代阶段、气运警兆、典章祖制），见文末 shiyun。
-import { turnTag } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -168,7 +168,7 @@ function minxin() {
   }
   const FLAT = (w.PhaseD && w.PhaseD.FLATTERY_PHRASES) || [];
   if (g.huangwei && g.huangwei.tyrantSyndrome && g.huangwei.tyrantSyndrome.active && FLAT.length) sections.push({ kind: 'quotes', title: '粉饰辞藻 · 暴君段常见', items: FLAT.slice(0, 5) });
-  if ((g._fengwenRecord || []).length) sections.push({ kind: 'list', title: '风闻录事', badge: '近 15', items: g._fengwenRecord.slice(-15).reverse().map((f) => ({ title: String(f.text || ''), meta: `${f.type || ''}·T${f.turn}` })) });
+  if ((g._fengwenRecord || []).length) sections.push({ kind: 'list', title: '风闻录事', badge: `近${num(15)}条`, items: g._fengwenRecord.slice(-15).reverse().map((f) => ({ title: String(f.text || ''), meta: [f.type, turnTag(f.turn)].filter(Boolean).join(' · ') })) });
   const HC = (w.PhaseG1 && w.PhaseG1.HISTORICAL_CASES) || {};
   if ((HC.rebellion || []).length) sections.push({ kind: 'cases', title: '历代民变 · 鉴古', badge: String(HC.rebellion.length), items: HC.rebellion.slice(0, 15).map((c) => `${c.name}（${caseWhen(c)}）${c.level ? `烈度${'一二三四五'[c.level - 1] || c.level}·` : ''}因${c.cause || '不详'} → ${caseEnd(c.result)}`) });
   return {
@@ -186,7 +186,7 @@ function huangquan() {
   const i = n0(hq.index, 50);
   const phase = i >= 70 ? '专制' : i >= 35 ? '制衡' : '权臣';
   const tone = i >= 70 ? 'warn' : i >= 35 ? 'mid' : 'bad';
-  const rows = [{ label: '皇权指数', value: `${r(i)} / 100`, tone, big: true }, { label: '段位', value: `${phase}段`, tone }];
+  const rows = [{ label: '皇权指数', value: `${r(i)} / 100`, tone, big: true }, { label: '其势', value: `${phase}之局`, tone }];
   if (hq.executionRate) rows.push({ label: '诏令执行率', value: `${(n0(hq.executionRate) * 100).toFixed(0)}%` });
   if (w.AuthorityComplete && typeof w.AuthorityComplete.getAuthorityQuadrant === 'function') {
     try { const q = w.AuthorityComplete.getAuthorityQuadrant(); if (q) rows.push({ label: '四象限', value: q.name, note: q.description || '', tone: 'good' }); } catch (_e) { /* 未齐 */ }
@@ -258,16 +258,16 @@ function huangwei() {
   if (ts && ts.active) {
     const hd = ts.hiddenDamage || {};
     const TRIG = (w.PhaseD && w.PhaseD.TYRANT_AWAKENING_TRIGGERS) || [];
-    sections.push({ kind: 'alert', title: '暴君综合症激活', lead: `第 ${n0(ts.activatedTurn)} 回合激活`, lines: [
-      `颂圣奏疏率 ${Math.round(n0(ts.flatteryMemorialRatio) * 100)}%`, `过度执行记录 ${(ts.overExecutionLog || []).length} 条`,
-      ...(ts.overExecutionLog || []).slice(-3).map((e) => `· T${e.turn} ${e.id || e.plan || '某诏'} 放大×${e.overScale || 1.3}`),
+    sections.push({ kind: 'alert', title: '暴君之象', lead: `${turnTag(n0(ts.activatedTurn)) || '近来'}始见`, lines: [
+      `颂圣之疏占${Math.round(n0(ts.flatteryMemorialRatio) * 100)}%`, `有司奉行过当${(ts.overExecutionLog || []).length}次`,
+      ...(ts.overExecutionLog || []).slice(-3).map((e) => `· ${turnTag(e.turn) || '某回'}　${e.plan || e.id || '某诏'}　奉行加码×${e.overScale || 1.3}`),
       `隐伤四累：民心暗降 ${r(hd.unreportedMinxinDrop)} · 腐败掩盖 ${r(hd.concealedCorruption)} · 错判积累 ${r(hd.accumulatedMisjudgement)} · 帑廪虚账 ${fmt(hd.fiscalBubble)}`,
-      ...(TRIG.length ? [`五觉醒触发：${TRIG.map((t) => t.name).join('、')}`] : [])
-    ], note: '诸隐伤将于觉醒时一次兑现（皇威 -25）' });
+      ...(TRIG.length ? [`惊觉之机：${TRIG.map((t) => t.name).join('、')}`] : [])
+    ], note: '诸般隐伤，待人主惊觉之日一并兑现（皇威减二十五）' });
   }
   const la = hw.lostAuthorityCrisis;
-  if (la && la.active) sections.push({ kind: 'alert', title: '失威危机激活', lead: `第 ${n0(la.activatedTurn)} 回合激活`, lines: [
-    `抗疏倍频 ×${n0(la.objectionFrequency, 1).toFixed(1)}（失威段日甚）`, `地方观望 ${la.provincialWatching ? '已是' : '未现'}（执行速度 ×0.5）`, `外邦蠢动 ${Math.round(n0(la.foreignEmboldened) * 100)}%`, la._tributeStopped ? '朝贡已止' : ''
+  if (la && la.active) sections.push({ kind: 'alert', title: '失威之危', lead: `${turnTag(n0(la.activatedTurn)) || '近来'}始见`, lines: [
+    `抗疏之多，为常时×${n0(la.objectionFrequency, 1).toFixed(1)}（威愈失愈甚）`, la.provincialWatching ? '地方已在观望（诏令奉行减半）' : '地方尚未观望', `外邦蠢动${Math.round(n0(la.foreignEmboldened) * 100)}%`, la._tributeStopped ? '朝贡已止' : ''
   ].filter(Boolean) });
   const hi = hw.history || {};
   const hum = hi.pastHumiliations || [];

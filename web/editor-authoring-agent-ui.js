@@ -1854,13 +1854,17 @@
     try { var x = new URL(u), p = decodeURIComponent(x.pathname + x.search); return x.hostname + (p.length > 72 ? p.slice(0, 70) + '…' : p); }
     catch (e) { return String(u || '').slice(0, 90); }
   }
+  function _webHas(m, k) { return !!m && Object.prototype.hasOwnProperty.call(m, k); }
   function _webAsk(req) {
     var site = String(req && req.site || '').toLowerCase();
     if (!site) return Promise.resolve(false);
-    if (_webSites()[site]) return Promise.resolve('always');
-    if (ui._webOnce && ui._webOnce[site]) return Promise.resolve('once');
+    if (_webHas(_webSites(), site)) return Promise.resolve('always');
+    if (_webHas(ui._webOnce, site)) return Promise.resolve('once');
     if (!ui.els || !ui.els.log) return Promise.resolve(false);
-    return new Promise(function (resolve) {
+    // 三堂会审里史官、谏官并行审：同一个网站正问着，后来的就等同一张卡，不再摆第二张
+    ui._webPending = ui._webPending || {};
+    if (_webHas(ui._webPending, site)) return ui._webPending[site];
+    var asking = new Promise(function (resolve) {
       var card = document.createElement('div'), settled = false, signal = req.signal;
       card.className = 'tm-aa-msg-ai webask';
       card.innerHTML = '<span class="ai-who">' + _icon('globe', 14) + ' 国师 · 想上网查</span>'
@@ -1898,6 +1902,9 @@
       __aaU._setLive('等你点头：要不要让国师读 ' + site, true);
       _logScrollMaybe(true);
     });
+    ui._webPending[site] = asking;
+    asking.then(function () { if (ui._webPending[site] === asking) delete ui._webPending[site]; });
+    return asking;
   }
   function _fmtDay(t) { var d = new Date(Number(t) || 0); return (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
   function _webSettingsHtml() {

@@ -230,6 +230,8 @@ console.log('smoke-guoshi-webfetch');
     for (const label of ['这次任务里允许', '总是允许这个网站', '不许', '国师 · 想上网查', '只读公开页面，不登录、不带你的账号']) assert.ok(ui.includes(label), label);
     assert.match(ui, /if \(signal\) \{ if \(signal\.aborted\) \{ onAbort\(\); return; \} signal\.addEventListener\('abort', onAbort\); \}/, '停下时问话卡不悬着');
     assert.match(ui, /var watch = setInterval\(function \(\) \{ if \(!card\.isConnected\) finish\(false, ''\); \}, 1000\);/, '卡被清掉（清空对话、换会话）时不让国师干等');
+    assert.match(ui, /if \(_webHas\(ui\._webPending, site\)\) return ui\._webPending\[site\];/, '史官、谏官并行时同一网站只摆一张卡');
+    assert.match(ui, /if \(_webHas\(_webSites\(\), site\)\) return Promise\.resolve\('always'\);/, '查「总是允许」只认自有键');
     assert.match(ui, /      html \+= _webSettingsHtml\(\);\n    \} else if \(tab === 'conv'\) \{/);
     assert.match(ui, /else if \(id === 'web'\) _setWebPref\(on\);/);
     assert.match(ui, /data-web-forget/);

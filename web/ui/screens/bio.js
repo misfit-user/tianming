@@ -8,6 +8,7 @@ import { bus } from '../core/bus.js';
 import { num, turnTag } from '../core/numerals.js';
 import { pinned, togglePin } from '../core/pins.js';
 import { zhou, juan } from '../kit/index.js';
+import { plainError } from '../core/plain.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -119,7 +120,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
   let vacantOnly = false;
   function officeSecs(p) {
     let rows = [];
-    try { rows = game.offices.fitFor(p.name, vacantOnly); } catch (e) { return [stub(e.message)]; }
+    try { rows = game.offices.fitFor(p.name, vacantOnly); } catch (e) { return [stub(plainError(e.message))]; }
     const toggle = h('label.lz-vac', h('input', { type: 'checkbox', checked: vacantOnly, onchange: (e) => { vacantOnly = e.target.checked; renderRight(); } }), '只看缺额');
     return [sec('任官参考', '能力六成 · 五常四成',
       h('p.lz-prose', '依现行官制，按此人才具与各职所需打适配分。分数只作参考，不是任命资格或履职保证。任命照官制册之法：即时生效，并录入本回合所颁；要撤销去官制册。'), toggle,

@@ -4,6 +4,7 @@ import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, yearNum } from '../core/numerals.js';
 import { juan, qianzi } from '../kit/index.js';
+import { plainError } from '../core/plain.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 // 年份：公元前记「前」，按记数设置写
@@ -53,7 +54,7 @@ export function openCeming({ game, onBio }) {
       if (!body.isConnected) return;
       if (r.ok) showCard(r.card);
       else replaceChildren(sOut, h('p.cm-warn', r.message), r.inRoster && onBio ? h('button.q-yapai', { type: 'button', onclick: () => { j.close('ok'); onBio(n); } }, '翻其列传') : null);
-    } catch (e) { replaceChildren(sOut, h('p.cm-warn', e.message || String(e))); } finally { busy = false; }
+    } catch (e) { replaceChildren(sOut, h('p.cm-warn', plainError(e.message || String(e)))); } finally { busy = false; }
   }
 
   // ---------- 身份卡与召入 ----------
@@ -80,7 +81,7 @@ export function openCeming({ game, onBio }) {
       j.close('ok');
       if (onBio) onBio(r.name);
     } catch (e) {
-      replaceChildren(body, h('p.cm-warn', e.message || String(e)), h('div.cm-acts', h('button.q-yapai', { type: 'button', onclick: () => render() }, '返回')));
+      replaceChildren(body, h('p.cm-warn', plainError(e.message || String(e))), h('div.cm-acts', h('button.q-yapai', { type: 'button', onclick: () => render() }, '返回')));
     } finally { busy = false; }
   }
 

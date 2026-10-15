@@ -9,6 +9,7 @@ import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { num, numText, roundSig } from '../core/numerals.js';
 import { juan, qianzi, shu, yapaiOff } from '../kit/index.js';
+import { plainError } from '../core/plain.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 // 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」「3.6万」「1627年」），按记数设置改写（core/numerals numText）
@@ -249,7 +250,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
       appraiseBtn.disabled = true;
       replaceChildren(result, h('p.fz-note', '有司勘议中……'));
       let a = null;
-      try { a = await Y.appraise(r); } catch (e) { a = { ok: false, reason: e.message }; }
+      try { a = await Y.appraise(r); } catch (e) { a = { ok: false, reason: plainError(e.message) }; }
       busy = false;
       appraiseBtn.disabled = false;
       if (a.stale || !result.isConnected) return;

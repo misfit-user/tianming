@@ -266,6 +266,8 @@
     return result;
   }
 
+  // 合规率读侧归一（2026-10-16）：全仓口径是 0..1 比例；旧版 MinxinHardLinks 非统一分支曾写成百分数（85）→ splitCascadeAmount 乘上解额放大百倍（E.B 自建剧本真档 1.41 亿/回合）。>1.5 不可能是比例，按百分数折回（四位小数）并夹 0..1。
+  function _complianceRatio(v, fallback) { var n = Number(v); if (v == null || v === '' || !isFinite(n)) return fallback; if (n > 1.5) n = Math.round(n * 100) / 10000; return Math.max(0, Math.min(1, n)); }
   function _ensureRegionFiscal(region, parentRegion, seen) {
     if (!region || typeof region !== 'object') return region;
 
@@ -306,7 +308,7 @@
     f.remittedToCenter = remitted;
     f.retainedBudget = retained;
     if (f.annualTax === undefined) f.annualTax = actual;
-    if (f.compliance === undefined) f.compliance = fd && fd.compliance !== undefined ? fd.compliance : 0.85;
+    f.compliance = _complianceRatio(f.compliance !== undefined ? f.compliance : (fd && fd.compliance !== undefined ? fd.compliance : 0.85), 0.85); // 2026-10-16：合规率统一按比例·旧档百分数在此折回
     if (f.skimmingRate === undefined) f.skimmingRate = fd && fd.skimmingRate !== undefined ? fd.skimmingRate : 0.1;
     if (f.autonomyLevel === undefined) f.autonomyLevel = fd && fd.autonomyLevel !== undefined ? fd.autonomyLevel : 0.3;
     if (!f.peasantBurden) f.peasantBurden = { claimed: 0, actual: 0 };
@@ -717,7 +719,7 @@
         var adjust = cfg.annualFuyi && Number(cfg.annualFuyi.taxRateAdjust);
         var fuyi = tax.annual && isFinite(adjust) ? 1 + Math.max(-0.5, Math.min(0.5, adjust)) : 1;
         var nominal = fiscalRound(Math.max(0, rawTaxAmount(div, tax) * yf * fuyi));
-        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*Math.max(0,Math.min(1,safeNumber(div.fiscal.compliance,1))));
+        var eligible=computeTaxAmount(div,tax,ctx),collected=fiscalRound(eligible*_complianceRatio(div.fiscal.compliance,1));
         var split = unifiedSplit(div, tax, collected, ctx), r = rec.resources[kind];
         var collection=global.FiscalStatement.collectionTax({nominal:nominal,eligible:eligible,collected:collected,skimmed:split.skimmed,config:Object.assign({},cfg.collection,div.fiscal.collection,tax.collection)});
         global.FiscalStatement.addCollection(rec.collection[kind],collection);global.FiscalStatement.addCollection(totals.collection[kind],collection);
@@ -1625,7 +1627,7 @@
       qiyun = Math.max(qiyun, 0.95);
       cunliu = Math.max(0, 1 - qiyun);
     }
-    var compliance = div.fiscal && div.fiscal.compliance != null ? safeNumber(div.fiscal.compliance, 0.85) : 0.85;
+    var compliance = _complianceRatio(div.fiscal && div.fiscal.compliance, 0.85); // 2026-10-16：比例口径·百分数折回·上解乘数不可能 >1
     var qiyunGross = amount * qiyun;
     var cunliuAmount = amount * cunliu;
     var qiyunNet = qiyunGross * compliance;

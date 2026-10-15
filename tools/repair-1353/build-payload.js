@@ -44,7 +44,11 @@ const ORIGINAL = {
   'web/tm-game-loop-wentian-hardchange.js': '0295c1d8ec84bf262204ebc3a2fe6b053af6ab48697f85f10d033f0f6072d145',
   'web/tm-revolt-inference.js': '3f7b65fcd0f7c0dabd6019be339011420797674c04b2657bdf0a92c11799b674',
   'web/tm-file-export.js': '415c6dae92d62d0249dbe1c33acfece674ad286ae090f3458abc497256b2ec4a',
-  'web/tm-save-manager.js': '83cf51fdc526cacd48ccf671a2f8d3f331aa2a4ec67a480522894ab42426956f'
+  'web/tm-save-manager.js': '83cf51fdc526cacd48ccf671a2f8d3f331aa2a4ec67a480522894ab42426956f',
+  // v2.3（2026-10-16）追加的三个文件（玩家身份收据 / 合规率单位），原哈希同样取自 git show full-1.3.5.3:<path>
+  'web/tm-indices.js': 'c458a542c90b74dc8e24834963e0a801e896f31e3673edf962790efd02e6034b',
+  'web/tm-patches-start.js': 'b310eb450068d73412253a4fc282cb837f227ca6ce2102b38966ea207052c425',
+  'web/tm-minxin-hard-links.js': '6289a9b5f3bd9ac8ea1bfa00af9879e1d18ba7a9246acbbd7923452e628dca25'
   // NATIVE_MANIFEST 的原哈希在下面从发布包文件集现算（与标签 blob 一致，build 复算也逐字节相同，已核）。
 };
 // 此前发给玩家的修复包写入过的哈希：已修过一次的 app.asar 允许再次覆盖。
@@ -85,6 +89,9 @@ const FILES = [
   { asarPath: 'web/tm-revolt-inference.js', hotUpdate: true },
   { asarPath: 'web/tm-file-export.js', hotUpdate: true },
   { asarPath: 'web/tm-save-manager.js', hotUpdate: true },
+  { asarPath: 'web/tm-indices.js', hotUpdate: true },
+  { asarPath: 'web/tm-patches-start.js', hotUpdate: true },
+  { asarPath: 'web/tm-minxin-hard-links.js', hotUpdate: true },
   { asarPath: NATIVE_MANIFEST, hotUpdate: true, generated: true }
 ];
 

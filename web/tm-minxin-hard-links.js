@@ -48,6 +48,17 @@
     return Math.round(n * 100) / 100;
   }
 
+  // 合规率（compliance）全仓口径是 0..1 的比例：编辑器输入 min0/max1、tm-integration-bridge 与 tm-fiscal-engine._ensureRegionFiscal 按比例读、
+  // 中央地方引擎/审计/册页 ratio01 全按比例算。2026-10-16 根治：下面非统一账本分支曾写成百分数 round2(collection*100)=85，
+  // cascade splitCascadeAmount 拿它直接乘上解额 → 中央岁入放大一百倍（开发群 E.B 自建剧本「回合入三百万变 1.4 亿」真档：叶子 fiscal.compliance=85.57）。
+  // 统一写成比例；旧档里残留的百分数（>1.5 不可能是比例）在此折回。
+  function complianceRatio(v, fallback) {
+    var n = Number(v);
+    if (v === undefined || v === null || v === '' || !isFinite(n)) return fallback;
+    if (n > 1.5) n = n / 100;
+    return Math.round(clamp(n, 0, 1) * 10000) / 10000;
+  }
+
   function textOf(v) {
     if (v === undefined || v === null) return '';
     if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') return String(v);
@@ -260,7 +271,7 @@
     }
     if(!unified){
       fd.claimedRevenue=Math.round(claimed);fd.actualRevenue=actual;fd.remittedToCenter=remitted;
-      fd.retainedBudget=Math.max(0,actual-remitted);fd.skimmingRate=round2(skimming);fd.compliance=round2(collection*100);
+      fd.retainedBudget=Math.max(0,actual-remitted);fd.skimmingRate=round2(skimming);fd.compliance=complianceRatio(collection, 1);
     }
     fd.minxinCollectionMultiplier=unified?div.fiscal.compliance:round2(collection);
     md.recruitmentEfficiency = round2(recruitmentEfficiency);
@@ -399,7 +410,7 @@
         fd.actualRevenue = Math.max(0, Math.round((Number(fd.actualRevenue) || 0) * K));
         fd.remittedToCenter = Math.max(0, Math.round((Number(fd.remittedToCenter) || 0) * K));
         fd.retainedBudget = Math.max(0, fd.actualRevenue - fd.remittedToCenter);
-        if (isFinite(Number(fd.compliance))) fd.compliance = round2(clamp(Number(fd.compliance) * K, 0, 120));
+        if (isFinite(Number(fd.compliance))) fd.compliance = complianceRatio(complianceRatio(fd.compliance, 1) * K, 1);
         if (isFinite(Number(fd.minxinCollectionMultiplier))) fd.minxinCollectionMultiplier = round2(clamp(Number(fd.minxinCollectionMultiplier) * K, 0, 1.2));
       });
       impacts.forEach(function (row) {

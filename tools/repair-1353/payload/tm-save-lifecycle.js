@@ -1487,13 +1487,17 @@ function _tmMigrateCoreStableIds(targetGM) {
   _tmBackfillStableForeignKeys(targetGM);
   var dangling = (typeof _tmClearDanglingStableRefs === 'function') ? _tmClearDanglingStableRefs(targetGM) : [];
   if (dangling.length) result.danglingRepaired = dangling.length;
-  if (result.total > 0 || result.duplicateRepaired > 0 || dangling.length > 0) {
+  // 与上面两个修复器同款：单独装载本文件的测试夹具没有它时按旧行为跳过（prod 同文件内恒有）
+  var playerReceipt = (typeof _tmRepairPlayerIdentityReceipt === 'function' && _tmRepairPlayerIdentityReceipt(targetGM)) ? 1 : 0;
+  if (playerReceipt) result.playerIdentityRepaired = playerReceipt;
+  if (result.total > 0 || result.duplicateRepaired > 0 || dangling.length > 0 || playerReceipt > 0) {
     if (!targetGM._stableIdMigration || typeof targetGM._stableIdMigration !== 'object') {
       targetGM._stableIdMigration = { version: 3, totalAssigned: 0, byType: {} }; // arch-ok: schema 迁移收据
     }
     targetGM._stableIdMigration.version = 3;
     targetGM._stableIdMigration.totalAssigned = Number(targetGM._stableIdMigration.totalAssigned || 0) + result.total;
     targetGM._stableIdMigration.duplicateRepaired = Number(targetGM._stableIdMigration.duplicateRepaired || 0) + Number(result.duplicateRepaired || 0);
+    if (playerReceipt) targetGM._stableIdMigration.playerIdentityRepaired = Number(targetGM._stableIdMigration.playerIdentityRepaired || 0) + playerReceipt; // arch-ok: schema 迁移收据
     if (dangling.length) {
       targetGM._stableIdMigration.danglingRepaired = Number(targetGM._stableIdMigration.danglingRepaired || 0) + dangling.length;
       targetGM._stableIdMigration.danglingDetails = dangling.slice(0, 40); // arch-ok: 迁移收据·只留最近一次的样本

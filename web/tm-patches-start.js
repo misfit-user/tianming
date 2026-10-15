@@ -1860,8 +1860,13 @@ function doActualStart(sid, requestToken){
         });
       }
       if (found) {
+        // 2026-10-16（自建剧本「所在地写对了第一回合却一个人都没有」案）：编辑器导出的人物不带 id，原写法把 String(undefined)="undefined"
+        // 存成身份收据，此后 TM.Player.getCharacter 按 id 找不到玩家→所在地退回「京城」→问对/廷议/常朝全空。先按稳定 id 规则给玩家补 id 再写收据。
+        if (typeof _tmStableIdMissing === 'function' && _tmStableIdMissing(found.id) && typeof _tmAssignMissingStableIds === 'function') {
+          _tmAssignMissingStableIds(GM, 'char', [{ item: found, path: 'chars/' + Math.max(0, GM.chars.indexOf(found)) }]);
+        }
         GM.playerInfo = Object.assign({}, GM.playerInfo || pi, { // arch-ok 新游戏构造期绑定唯一运行态玩家身份
-          characterId: String(found.id),
+          characterId: (typeof _tmStableIdMissing === 'function' && _tmStableIdMissing(found.id)) ? '' : String(found.id),
           characterName: found.name
         });
       }

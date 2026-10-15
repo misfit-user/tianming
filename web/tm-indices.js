@@ -101,7 +101,7 @@ function _tmFindPlayerCharRaw() {
       var c = G.chars[i];
       if (c && c.id != null && String(c.id).trim() === pId) return c;
     }
-    return null;
+    // 2026-10-16：收据 id 对不上任何人（自建剧本人物无 id 时曾存成 "undefined"·或旧 id 已被迁移改写）→ 不再直接判空，落到下面按名/按 isPlayer 标记兜底
   }
   var pName = _tmCleanCharLookupName(runtimeInfo && runtimeInfo.characterName || '');
   if (pName) {
@@ -1507,7 +1507,7 @@ var WorldHelper = {
     var id = info && info.characterId != null ? String(info.characterId).trim() : '';
     if (id) {
       var byId = G.chars.find(function(ch) { return ch && ch.id != null && String(ch.id).trim() === id; });
-      return byId || null;
+      if (byId) return byId; // 2026-10-16：收据 id 对不上任何人→落到按名/按标记兜底（与 _tmFindPlayerCharRaw 同款）
     }
     var name = info && info.characterName ? String(info.characterName).trim() : '';
     if (name) {

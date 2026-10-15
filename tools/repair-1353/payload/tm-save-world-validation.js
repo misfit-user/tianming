@@ -424,3 +424,29 @@ function _tmClearDanglingStableRefs(targetGM) {
   })(targetGM.officeTree, 'officeTree');
   return receipts;
 }
+
+// 玩家身份收据修复（2026-10-16·与上面两个修复器同住·tm-save-lifecycle._tmMigrateCoreStableIds 经 typeof 守卫调用·开发群自建剧本「所在地和区划名称一致…第一回合却一个人都没有」案·真档 playerInfo.characterId === "undefined"）：
+// 编辑器导出的人物不带 id，开局 _markPlayer 曾把 String(undefined) 存进收据；TM.Player.getCharacter 只按 id 找→找不到玩家→所在地退回「京城」
+// →问对/廷议/常朝只认京城别名，自建地名全被当「远离京师」。迁移到此时人物 id 已补齐：收据对不上任何人就按 isPlayer 唯一标记→唯一同名找回；
+// 找不回则清空收据，让查找口按名/按标记的兜底生效。旧档读入一次即修好，再读幂等。
+function _tmRepairPlayerIdentityReceipt(targetGM) {
+  var info = targetGM && targetGM.playerInfo;
+  var chars = targetGM && targetGM.chars;
+  if (!info || typeof info !== 'object' || !Array.isArray(chars)) return false;
+  var id = info.characterId == null ? '' : String(info.characterId).trim();
+  if (id && chars.some(function(ch) { return ch && ch.id != null && String(ch.id).trim() === id; })) return false;
+  var flagged = chars.filter(function(ch) { return ch && ch.isPlayer === true; });
+  var name = String(info.characterName || '').replace(/[（(].*$/, '').trim();
+  var named = name ? chars.filter(function(ch) { return ch && ch.name === name; }) : [];
+  var found = flagged.length === 1 ? flagged[0] : (named.length === 1 ? named[0] : null);
+  if (found && !_tmStableIdMissing(found.id)) {
+    info.characterId = String(found.id); // arch-ok: 读档 schema 迁移·玩家身份收据按唯一标记/唯一同名找回
+    if (!String(info.characterName || '').trim()) info.characterName = found.name; // arch-ok: 同上·收据补名
+  } else if (id) {
+    delete info.characterId; // arch-ok: 读档 schema 迁移·对不上任何人的收据清空·查找口按名/按标记兜底
+  } else {
+    return false;
+  }
+  try { console.warn('[stable-id] 玩家身份收据已修复：' + (id || '(空)') + ' → ' + (info.characterId || '(清空)')); } catch (_) {}
+  return true;
+}

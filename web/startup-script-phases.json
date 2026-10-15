@@ -9102,6 +9102,7 @@
         "_tmNormalizeCoreWorldCollections",
         "_tmRebindRuntimeWorld",
         "_tmReconcileFactionLivingWorld",
+        "_tmRepairPlayerIdentityReceipt",
         "_tmReportBackgroundSaveFailure",
         "_tmReportDesktopAutoSaveBoundaryError",
         "_tmRequestDeferredDesktopAutoSaveFlush",

@@ -11,6 +11,13 @@ const DIM = { political: '政', economic: '财', military: '军', social: '民' 
 const SEEN_KEY = 'tm_ui_seen_guide';                         // 新前端自己的已读标记（老界面的首日引导进局时一弹就写了它自己的，那一张在新前端里看不见）
 let shownFor = '';
 
+// 势力名：「·」后、括注前可折行；没有这两处可折的长名（大越黎郑阮格局、虾夷地与松前氏），一段七字的收小一号、八字以上再收一号，不从词中间断开
+function nameEl(name) {
+  const parts = String(name).split(/(?<=·)|\s*(?=[（(])/);
+  const longest = Math.max(...parts.map((x) => [...x].length));
+  return h('b' + (longest >= 8 ? '.longer' : longest >= 7 ? '.long' : ''), parts.map((x) => h('span', x)));
+}
+
 export function showWelcome({ game, profile }) {
   const d = game.select.date();
   const configured = game.config.aiConfig('primary').configured;
@@ -39,7 +46,7 @@ export function showWelcome({ game, profile }) {
       s.player.name ? h('section.wel-me', h('b', s.player.name), h('span', [s.player.title, s.player.faction].filter(Boolean).join(' · ')), s.player.goal ? h('p', `所志：${s.player.goal}`) : null) : null,
       s.factions.length ? h('section', h('h5', '势力格局'), h('div.wel-facs', s.factions.map((f) => h('div.wel-fac' + (f.isPlayer ? '.me' : ''),
         // 名长的（瞿折罗·波罗底诃罗、荷兰·台海(东印度公司)）在「·」后、括注前折行，不从词中间断；首领名长的收成省略号，悬停看全
-        h('b', String(f.name).split(/(?<=·)|\s*(?=[（(])/).map((x) => h('span', x))), h('i', h('em', { style: { width: `${Math.round(f.strength / max * 100)}%` } })),
+        nameEl(f.name), h('i', h('em', { style: { width: `${Math.round(f.strength / max * 100)}%` } })),
         h('small', { title: f.leader || '' }, `实力${num(f.strength)}${f.leader ? ' · ' + f.leader : ''}`))))) : null,
       s.contradictions.length ? h('section', h('h5', '显著矛盾'), s.contradictions.map((c) => h('p.wel-con', c.dimension ? h('em.' + c.dimension, DIM[c.dimension] || '事') : null, c.title, c.parties ? h('small', `（${c.parties}）`) : null))) : null,
       firstTime && guide.length ? h('section.wel-guide', h('h5', (profile() && profile().guideTitle) || '须知'), guide.map(([t, x], i) => h('p', h('b', `${'一二三四五六'[i]} · ${t}`), x))) : null),

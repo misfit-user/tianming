@@ -163,6 +163,8 @@ select.st-in:disabled { opacity: .45; cursor: default; }
 .wel-fac { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); grid-template-rows: auto auto; column-gap: .75rem; align-items: center; }
 .wel-fac b { grid-row: 1 / 3; font-weight: 400; font-size: var(--fs-4); letter-spacing: .03em; line-height: 1.35; }
 .wel-fac b > span { display: inline-block; }
+.wel-fac b.long { font-size: var(--fs-3); letter-spacing: 0; }
+.wel-fac b.longer { font-size: var(--fs-2); letter-spacing: 0; }
 .wel-fac.me b { color: var(--verm); }
 .wel-fac i { display: block; height: .375rem; background: rgba(120, 90, 50, .15); }
 .wel-fac i em { display: block; height: 100%; background: linear-gradient(90deg, #9a6a3a, #c89a5a); }

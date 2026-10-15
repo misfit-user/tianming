@@ -4,7 +4,7 @@
 // 数据与动作经 game.gongwei；叫法取 profile().gongwei。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num, yearNum, turnTag } from '../core/numerals.js';
+import { num, numText, yearNum, turnTag } from '../core/numerals.js';
 import { juan, zhou } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -154,10 +154,10 @@ export function createGongwei({ root, game, profile, onPerson, onAudience }) {
     const t = T();
     return [h('header.gw-head.rules', h('div', h('h3', '宫规'), h('p', '位分之序、后宫之制、外戚之制与继承之法'))),
       data.ranks.length ? h('section.gw-ladder', h('h5', '位分'), h('ol', data.ranks.map((r) => h('li', h('b', r.name), h('small', num(data.consorts.filter((c) => c.rank === r.name).length) + '人'))))) : null,
-      data.description ? h('section.gw-rule', h('h5', '后宫之制'), h('p', data.description)) : null,
-      data.clan ? h('section.gw-rule', h('h5', '外戚之制'), h('p', data.clan)) : null,
-      data.succession ? h('section.gw-rule', h('h5', '继承之法'), h('p', data.succession)) : null,
-      tab === 'palaces' && data.palaces ? h('section.gw-rule', h('h5', data.palaces.capital), h('p', data.palaces.description || '')) : null,
+      data.description ? h('section.gw-rule', h('h5', '后宫之制'), h('p', numText(data.description))) : null,
+      data.clan ? h('section.gw-rule', h('h5', '外戚之制'), h('p', numText(data.clan))) : null,
+      data.succession ? h('section.gw-rule', h('h5', '继承之法'), h('p', numText(data.succession))) : null,
+      tab === 'palaces' && data.palaces ? h('section.gw-rule', h('h5', data.palaces.capital), h('p', numText(data.palaces.description || ''))) : null,
       tab === 'palaces' && data.palaces ? acts([[t.build || '修建新宫殿', () => buildJuan(), 'main']]) : null];
   }
   function renderRight() {

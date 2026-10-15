@@ -35,7 +35,7 @@ export function createGuoshi({ root, game, onGo }) {
       return h('button.gs-seal' + (key === sel ? '.on' : ''), { type: 'button', onclick: () => { sel = key; render(); } },
         h('b.ch', ch), h('span.name', label), h('span.grade', grade(v)),
         h('ol', Array.from({ length: 9 }, (_, i) => h('li' + (i < gi ? '.f' : i === gi ? '.n' : '')))),
-        h('small', sub));
+        h('small', digits(sub)));
     }), shiyunCard());
     renderDetail(S.detail(sel));
   }
@@ -52,7 +52,7 @@ export function createGuoshi({ root, game, onGo }) {
   const dots = (n) => h('span.gs-dots', Array.from({ length: 4 }, (_, i) => h('i' + (i < n ? '.f' : ''))));
   function renderDetail(d) {
     replaceChildren(right,
-      h('header.gs-title', h('h3', d.title), h('small', d.sub)),
+      h('header.gs-title', h('h3', d.title), h('small', digits(d.sub))),
       h('div.gs-rows', d.rows.map((x) => h('p' + (x.big ? '.big' : ''), h('span', x.label),
         x.dots != null ? dots(x.dots) : null, h('b.' + (x.tone || 'plain'), digits(x.value)), x.note ? h('small', digits(x.note)) : null))),
       d.sealed ? h('p.gs-sealed', d.sealedNote) : null,

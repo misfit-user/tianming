@@ -7,7 +7,7 @@
 import { bantu as bantuOf } from './fangzhi.js';
 import { roster as armyRoster } from './army.js';
 import { census as nationalCensus } from './select.js';
-import { turnTag } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -205,15 +205,15 @@ export function faction(key) {
   });
   const spies = f.knownSpies && typeof f.knownSpies === 'object' && !Array.isArray(f.knownSpies) ? f.knownSpies : null;
   const thresholds = Array.isArray(f.offendThresholds) ? f.offendThresholds.map((t) => (t && typeof t === 'object'
-    ? `${Number.isFinite(Number(t.score)) ? `至 ${t.score}：` : ''}${pp(first(t.description, t.desc))}${Array.isArray(t.consequences) && t.consequences.length ? `（${t.consequences.join('·')}）` : ''}` : pp(t))).filter(Boolean) : [];
+    ? `${Number.isFinite(Number(t.score)) ? `至${num(Number(t.score))}：` : ''}${pp(first(t.description, t.desc))}${Array.isArray(t.consequences) && t.consequences.length ? `（${t.consequences.join('·')}）` : ''}` : pp(t))).filter(Boolean) : [];
   const bangjiao = { relations: rel, rows: [
     rel.length ? null : row('关系', f.relations),
     attitudeObj ? row('自居', attitudeObj.self) : row('态度', first(f.attitudeDetail, f.attitude)),
     attitudeObj ? row('所敌', attitudeObj.enemies, 'zhu') : null, attitudeObj ? row('所盟', attitudeObj.allies) : null, attitudeObj ? row('所持中立', attitudeObj.neutrals) : null,
-    row('与本朝', f.playerRelation), thresholds.length ? { k: '冒犯阈值', v: thresholds.join('\n'), tone: 'zhu' } : row('冒犯阈值', f.offendThresholds),
+    row('与本朝', f.playerRelation), thresholds.length ? { k: '触怒之限', v: thresholds.join('\n'), tone: 'zhu' } : row('触怒之限', f.offendThresholds),
     row('内部派系', f.internalParties), row('党派关系', f.partyRelations),
     treatyRow(f), proposalRow(f),
-    spies ? row('已知耳目', Object.keys(spies).filter((k) => Number.isFinite(Number(spies[k]))).map((k) => `${spyPlace(k)} ${spies[k]}`).join(' · ')) : row('已知耳目', f.knownSpies)
+    spies ? row('已知耳目', Object.keys(spies).filter((k) => Number.isFinite(Number(spies[k]))).map((k) => `${spyPlace(k)}${num(Number(spies[k]))}`).join(' · ')) : row('已知耳目', f.knownSpies)
   ].filter(Boolean) };
 
   // 六、史略

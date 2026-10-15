@@ -125,7 +125,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     if (tab !== 'classes') return [];
     const o = S.classOverview();
     return [h('span', '平均满意', h('b', num(o.avg)), o.sealedAny ? h('i', '据奏') : null),
-      o.legitimacy ? (o.legitimacy.sealed ? h('span', '天命权重', h('b', '封存')) : h('span', '天命权重', h('b', o.legitimacy.flag), h('small', `权贵${num(o.legitimacy.clout)}／民心${num(o.legitimacy.pop)}`))) : null];
+      o.legitimacy ? (o.legitimacy.sealed ? h('span', '天命所倚', h('b', '封存')) : h('span', '天命所倚', h('b', o.legitimacy.flag), h('small', `权贵${num(o.legitimacy.clout)}／民心${num(o.legitimacy.pop)}`))) : null];
   }
   function rowOf(r, max) {
     if (tab === 'factions') return [h('b', r.name), r.mine ? h('em.mine', '本朝') : r.attitude ? h('em', r.attitude.slice(0, 6)) : null,

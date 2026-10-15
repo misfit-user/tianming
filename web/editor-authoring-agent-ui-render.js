@@ -62,7 +62,8 @@
     var rest = ss.slice(i).map(_fieldLabel);
     return out + (rest.length ? ' › ' + rest.join(' › ') : '');
   }
-  var _TOOL_CN = { getField: '查看', getFields: '查看', searchEntities: '搜索', globalSearch: '全文检索', findReferences: '查引用', listCollection: '浏览', describeSchema: '查字段形状', listGaps: '查缺口', fieldContract: '查运行契约', genReference: '查生成范式', readSource: '读源码', listSource: '列源码', grepSource: '搜源码', readAttachment: '读附件', searchAttachment: '搜附件', readAttachmentJson: '读附件字段', mapOverview: '看舆图概况', statsAggregate: '统计', readQuickTestReport: '读快测报告', validateDraft: '校验', preflight: '运行时体检', checkHistory: '核对史实', applyEdit: '修改', applyPush: '新增', removeEntity: '删除', renameEntity: '改名', multiEdit: '批量修改', bulkAdd: '批量新增', bulkUpdate: '按条件批改', applyAttachmentField: '从附件取字段', copyField: '复制字段', mapAssignOwner: '改归属', renameRegion: '改地名', generateImage: '生成图像', note: '记一笔', todoWrite: '任务清单', askClarification: '请教你', remonstrate: '进谏', flagUncertain: '标记待核', recordConvention: '记下约定', saveMemory: '记下记忆', useSkill: '展开技能', saveSkill: '存技能', requestTools: '申请工具', finish: '收尾', steer: '你插了一句', macroCompact: '压缩前情' };
+  var _TOOL_CN = { getField: '查看', getFields: '查看', searchEntities: '搜索', globalSearch: '全文检索', findReferences: '查引用', listCollection: '浏览', describeSchema: '查字段形状', listGaps: '查缺口', fieldContract: '查运行契约', genReference: '查生成范式', readSource: '读源码', listSource: '列源码', grepSource: '搜源码', readAttachment: '读附件', searchAttachment: '搜附件', readAttachmentJson: '读附件字段', mapOverview: '看舆图概况', statsAggregate: '统计', readQuickTestReport: '读快测报告', validateDraft: '校验', preflight: '运行时体检', checkHistory: '核对史实', webFetch: '读网页', applyEdit: '修改', applyPush: '新增', removeEntity: '删除', renameEntity: '改名', multiEdit: '批量修改', bulkAdd: '批量新增', bulkUpdate: '按条件批改', applyAttachmentField: '从附件取字段', copyField: '复制字段', mapAssignOwner: '改归属', renameRegion: '改地名', generateImage: '生成图像', note: '记一笔', todoWrite: '任务清单', askClarification: '请教你', remonstrate: '进谏', flagUncertain: '标记待核', recordConvention: '记下约定', saveMemory: '记下记忆', useSkill: '展开技能', saveSkill: '存技能', requestTools: '申请工具', finish: '收尾', steer: '你插了一句', macroCompact: '压缩前情' };
+  function _webSite(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return String(u || '').slice(0, 40); } }
   function _friendlyStep(step) {
     var n = step.name, i = step.input || {}, r = step.result || {};
     function coll(c) { return _COLL_CN[c] || _fieldLabel(c || ''); }
@@ -94,6 +95,7 @@
       case 'mapOverview': return '看舆图概况';
       case 'mapAssignOwner': return '把「' + (i.region || i.regionId || '') + '」划归「' + (i.owner || i.faction || '') + '」';
       case 'renameRegion': return '地名「' + (i.region || i.regionId || '') + '」改作「' + (i.name || i.newName || '') + '」';
+      case 'webFetch': return '读网页 ' + _webSite(i.url) + (r.title ? '「' + _shortVal(r.title, 24) + '」' : '') + (i.find ? ' · 找「' + _shortVal(i.find, 12) + '」' : (i.start ? ' · 接着读' : '')) + (r.ok === false && r.reason ? '：' + _shortVal(r.reason, 40) : '');
       case 'checkHistory': return '核对史实 ' + ((i.facts || []).length || '') + ' 条' + (r.lowConfidence ? '，' + r.lowConfidence + ' 条存疑' : '');
       case 'note': return '记一笔：' + _shortVal(i.text, 60);
       case 'todoWrite': return '更新任务清单（' + ((i.todos || []).length) + ' 项' + ((i.todos || []).filter(function(t) { return t && t.status === 'completed'; }).length ? '，已完成 ' + (i.todos || []).filter(function(t) { return t && t.status === 'completed'; }).length : '') + '）';

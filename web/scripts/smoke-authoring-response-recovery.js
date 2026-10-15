@@ -139,7 +139,8 @@ async function test(name, fn) { try { await fn(); pass++; console.log('PASS ' + 
   await test('default edit exposes every registered tool up front and listGaps does not need requestTools', async () => {
     let packet;const f=fixture(async(_,init)=>{packet=JSON.parse(init.body);return reply([call('listGaps',{}),done]);});
     const d=f.aa.makeDraft({name:'原'}),r=await f.aa.runAuthoringLoop(d,'核验现状',opts);
-    assert.deepEqual(packet.tools.map(t=>t.function.name).sort(),Array.from(f.aa.AGENT_TOOLS,t=>t.name).sort());
+    // 读网页（webFetch）要宿主给「问玩家」回调才出现，这里没给
+    assert.deepEqual(packet.tools.map(t=>t.function.name).sort(),Array.from(f.aa.AGENT_TOOLS,t=>t.name).filter(n=>n!=='webFetch').sort());
     assert(r.finished);assert.equal(r.transcript[0].name,'listGaps');assert.notEqual(r.transcript[0].result.errorCode,'tool-not-authorized');assert(!r.transcript.some(t=>t.name==='requestTools'));
   });
   await test('run estimate includes the same full catalog and an explicit editing subset remains enforced', async () => {

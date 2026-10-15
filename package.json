@@ -51,6 +51,7 @@
       "main-workshop-lock.js",
       "main-account-requests.js",
       "main-safe-remote.js",
+      "main-web-fetch.js",
       "preload-impl.js",
       "resources/hot-update-public-key.pem",
       "web/**/*",

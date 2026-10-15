@@ -89,6 +89,9 @@ function createSafeRemote(deps) {
       const target = await validate(current), response = await request(target, { ...init, method });
       if (![301, 302, 303, 307, 308].includes(response.status)) return { response, url: current };
       if (response.body) await response.body.cancel();
+      // 调用方可以要求某些跳转不跟、原样报回（读网页：跨站跳转要换个网站再问玩家）
+      const stopAt = typeof init.stopRedirect === 'function' && response.headers.get('location') ? new URL(response.headers.get('location'), current).href : '';
+      if (stopAt && init.stopRedirect(stopAt, current)) return { response, url: current, redirect: stopAt };
       if (hop === maxRedirects) throw new Error('远程地址重定向次数超过上限');
       if (!['GET', 'HEAD'].includes(method)) throw new Error('非只读请求不允许重定向');
       const location = response.headers.get('location'); if (!location) throw new Error('远程响应缺少重定向地址');

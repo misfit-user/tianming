@@ -70,7 +70,7 @@
   // 工作过程 · 步骤行的工具类别图标（写/读/校/记/完成）
   var _TOOL_ICON = {
     applyEdit: 'pen', applyPush: 'pen', multiEdit: 'pen', bulkAdd: 'pen', bulkUpdate: 'pen', copyField: 'pen', renameEntity: 'pen', removeEntity: 'trash', mapAssignOwner: 'map', renameRegion: 'map', applyAttachmentField: 'pen',
-    getField: 'search', getFields: 'search', searchEntities: 'search', globalSearch: 'search', findReferences: 'search', listCollection: 'search', describeSchema: 'search', listGaps: 'search', readSource: 'search', grepSource: 'search', listSource: 'search', mapOverview: 'map', genReference: 'book', checkHistory: 'scroll', fieldContract: 'search', statsAggregate: 'layers',
+    getField: 'search', getFields: 'search', searchEntities: 'search', globalSearch: 'search', findReferences: 'search', listCollection: 'search', describeSchema: 'search', listGaps: 'search', readSource: 'search', grepSource: 'search', listSource: 'search', mapOverview: 'map', genReference: 'book', checkHistory: 'scroll', webFetch: 'globe', fieldContract: 'search', statsAggregate: 'layers',
     readAttachment: 'clip', searchAttachment: 'clip', readAttachmentJson: 'clip', readQuickTestReport: 'pulse',
     validateDraft: 'pulse', preflight: 'pulse', generateImage: 'image',
     note: 'book', todoWrite: 'book', recordConvention: 'scroll', flagUncertain: 'flag', steer: 'chat', macroCompact: 'undo',
@@ -363,6 +363,12 @@
       // 国师的请教 / 进谏
       '.tm-aa-msg-ai{align-self:stretch;padding:10px 13px;background:var(--bg2);border:1px solid var(--line2);border-left:3px solid var(--gold);border-radius:10px;font-size:13.5px;line-height:1.75;color:var(--tx)}',
       '.tm-aa-msg-ai.remon{border-left-color:var(--verm-hi)}',
+      '.tm-aa-msg-ai.webask .ai-who svg{vertical-align:-2px;margin-right:2px}',
+      '.tm-aa-msg-ai .wa-url{margin:4px 0 2px;padding:4px 8px;font:12px/1.55 var(--f-mono);color:var(--tx2);background:var(--bg);border:1px solid var(--line);border-radius:6px;word-break:break-all}',
+      '.tm-aa-msg-ai .wa-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}',
+      '.tm-aa-msg-ai .wa-acts button{height:34px}',
+      '.tm-aa-msg-ai .wa-done{margin-top:6px;font-size:12.5px;color:var(--tx2)}',
+      '.tm-aa-msg-ai.webask.done{opacity:.82}',
       '.tm-aa-msg-ai .ai-who{display:block;font-family:var(--f-kai);font-size:14px;color:var(--gold-hi);letter-spacing:.1em;margin-bottom:4px;font-weight:600}',
       '.tm-aa-msg-ai.remon .ai-who{color:var(--verm-hi)}',
       '.tm-aa-msg-ai .ai-sev{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;color:var(--rm);background:var(--rm-bg);margin-right:6px}',

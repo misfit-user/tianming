@@ -130,8 +130,8 @@ export function items(d) {
   if (x.intent === 'restoration') put.zhi(x.restorationDynasty ? `复${x.restorationDynasty}旧章` : '复祖宗成法');
   if (x.ideology) put.zhi(`取士之本由${IDEOLOGY[x.ideology.old] || x.ideology.old}转${IDEOLOGY[x.ideology.new] || x.ideology.new}`);
   x.subjects.removed.forEach((s) => put.ke(`罢${s.name}一科`));
-  x.subjects.added.forEach((s) => put.ke(`增${s.name}一科${s.format ? `（${s.format}）` : ''}，占${n0(s.weight)}%`));
-  x.subjects.weightChanged.forEach((s) => put.ke(`${s.name}所占由${s.oldW}%改为${s.newW}%`));
+  x.subjects.added.forEach((s) => put.ke(`增${s.name}一科${s.format ? `（${s.format}）` : ''}，占${num(n0(s.weight))}%`));
+  x.subjects.weightChanged.forEach((s) => put.ke(`${s.name}所占由${num(s.oldW)}%改为${num(s.newW)}%`));
   if (x.examInterval) put.qi(`考期由${years(x.examInterval.old)}改为${years(x.examInterval.new)}`);
   if (x.retakePolicy) put.qi(`落第者${RETAKE[x.retakePolicy.new] || x.retakePolicy.new}`);
   const er = x.examinerRules;

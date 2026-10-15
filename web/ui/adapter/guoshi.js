@@ -260,7 +260,7 @@ function huangwei() {
   if (ts && ts.active) {
     const hd = ts.hiddenDamage || {};
     const TRIG = (w.PhaseD && w.PhaseD.TYRANT_AWAKENING_TRIGGERS) || [];
-    sections.push({ kind: 'alert', title: '暴君之象', lead: `${turnTag(n0(ts.activatedTurn)) || '近来'}始见`, lines: [
+    sections.push({ kind: 'alert', title: '暴君之象', lead: `${turnTag(ts.activatedTurn) || '近来'}始见`, lines: [
       `颂圣之疏占${Math.round(n0(ts.flatteryMemorialRatio) * 100)}%`, `有司奉行过当${(ts.overExecutionLog || []).length}次`,
       ...(ts.overExecutionLog || []).slice(-3).map((e) => `· ${turnTag(e.turn) || '某回'}　${e.plan || e.id || '某诏'}　奉行加码×${e.overScale || 1.3}`),
       `隐伤四累：民心暗降 ${r(hd.unreportedMinxinDrop)} · 腐败掩盖 ${r(hd.concealedCorruption)} · 错判积累 ${r(hd.accumulatedMisjudgement)} · 帑廪虚账 ${fmt(hd.fiscalBubble)}`,
@@ -268,7 +268,7 @@ function huangwei() {
     ], note: '诸般隐伤，待人主惊觉之日一并兑现（皇威减二十五）' });
   }
   const la = hw.lostAuthorityCrisis;
-  if (la && la.active) sections.push({ kind: 'alert', title: '失威之危', lead: `${turnTag(n0(la.activatedTurn)) || '近来'}始见`, lines: [
+  if (la && la.active) sections.push({ kind: 'alert', title: '失威之危', lead: `${turnTag(la.activatedTurn) || '近来'}始见`, lines: [
     `抗疏之多，为常时×${n0(la.objectionFrequency, 1).toFixed(1)}（威愈失愈甚）`, la.provincialWatching ? '地方已在观望（诏令奉行减半）' : '地方尚未观望', `外邦蠢动${Math.round(n0(la.foreignEmboldened) * 100)}%`, la._tributeStopped ? '朝贡已止' : ''
   ].filter(Boolean) });
   const hi = hw.history || {};

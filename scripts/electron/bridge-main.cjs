@@ -111,6 +111,20 @@ app.on('browser-window-created', (_event, win) => {
         if (!baseline) assert.equal(bridge.protocol, 2);
         results.push({ name: 'observed-turn-data-protocol', value: bridge.protocol === undefined ? null : bridge.protocol, status: 'PASS', required: baseline ? 'bridge-only baseline; no v2 claim' : 2 });
       });
+      // 国师读网页：经真实预载与 IPC，本机、内网、明文、非 http(s) 一律拒（离线、不联网）
+      await check('authoring-web-fetch-refuses-local', async () => {
+        const r = await win.webContents.executeJavaScript(`(async () => {
+          const b = window.tianming, out = [];
+          for (const u of ['https://127.0.0.1/', 'https://localhost/', 'http://example.com/', 'ftp://example.com/']) out.push(await b.webFetch(u));
+          return { type: typeof b.webFetch, out: out.map(x => ({ success: x && x.success, error: String(x && x.error || '') })) };
+        })()`);
+        assert.equal(r.type, 'function');
+        r.out.forEach(x => assert.equal(x.success, false, JSON.stringify(x)));
+        if (mode !== 'test-exports') {
+          assert.match(r.out[0].error, /IP/); assert.match(r.out[1].error, /私网|保留/);
+          assert.match(r.out[2].error, /HTTPS/); assert.match(r.out[3].error, /http\(s\)/);
+        }
+      });
       await check('production-test-exports-boundary', () => {
         const exports = require(path.join(root, 'main-impl.js'));
         assert.equal(!!exports.__test, mode === 'test-exports');

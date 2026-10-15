@@ -3,7 +3,7 @@
 // 一切经 game.wentian（adapter/wentian.js，老管线照用）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 import { juan } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
@@ -58,7 +58,7 @@ export function createWentian({ root, game }) {
   // ---------- 左列 ----------
   function renderSide(s) {
     const dirs = s.directives.length ? s.directives.map((d) => h('div.wt-dir.' + d.tone + (d.absolute ? '.abs' : ''),
-      h('p.top', h('b', `第${num(d.turn || 0)}回合`), h('span', d.kind), d.absolute ? h('em.abs', '天意') : null, h('em.' + d.tone, { title: d.reason || '' }, d.status),
+      h('p.top', h('b', turnTag(d.turn || 0)), h('span', d.kind), d.absolute ? h('em.abs', '天意') : null, h('em.' + d.tone, { title: d.reason || '' }, d.status),
         d.watch ? h('em.dim', d.watch) : null, d.stale ? h('em.bad', '久未遵·宜裁撤') : null,
         h('span.ops', d.canUndo ? h('button', { type: 'button', title: '回滚本条直改（仅限当回合）', onclick: () => act(() => W.undo(d.id)) }, '撤') : null,
           h('button', { type: 'button', title: '裁撤此条', onclick: () => act(() => W.removeDirective(d.i)) }, '✕'))),

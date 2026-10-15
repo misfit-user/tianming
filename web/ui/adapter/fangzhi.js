@@ -374,7 +374,7 @@ function worksOf(r, b) {
     const total = Number(bld.timeActual) || Number(typeDef && typeDef.buildTime) || Math.max(1, Number(bld.remainingTurns) || 1);
     const doing = bld.status === 'building';
     out.push({
-      name: String(bld.name || ''), level: `${bld.isCustom ? '自拟 · ' : ''}${bld.level || 1}级`,
+      name: String(bld.name || ''), level: `${bld.isCustom ? '自拟 · ' : ''}${num(bld.level || 1)}级`,
       status: doing ? '工役中' : bld.status === 'neglected' ? '失修' : bld.status === 'damaged' ? '半损' : '完好',
       tone: doing ? 'doing' : bld.status === 'neglected' || bld.status === 'damaged' ? 'bad' : 'good',
       desc: String(bld.description || '').slice(0, 90), fx: bw && bw.fxLabels ? bw.fxLabels(bld, typeDef) : [],
@@ -529,7 +529,7 @@ function buildCircuit(p, MC, c, clicked) {
     yingzao = bs.total ? {
       total: bs.total, status: bs.byStatus, cats: Object.keys(bs.byCategory).map((k) => `${BUILD_CAT[k] || k}${bs.byCategory[k]}`),
       regions: bs.byRegion.map((x) => ({ ...link(x.region), capital: x.region === capital,
-        items: x.buildings.map((bld) => `${bld.name}${bld.level > 1 ? `${bld.level}级` : ''}${bld.status === 'building' ? '（在建）' : bld.status === 'neglected' ? '（失修）' : bld.status === 'damaged' ? '（半损）' : ''}`) }))
+        items: x.buildings.map((bld) => `${bld.name}${bld.level > 1 ? `${num(bld.level)}级` : ''}${bld.status === 'building' ? '（在建）' : bld.status === 'neglected' ? '（失修）' : bld.status === 'damaged' ? '（半损）' : ''}`) }))
     } : { empty: Array.isArray(types) && types.length ? '本道各州尚无在册工役。' : '本剧本未设营造。' };
   }
   return {

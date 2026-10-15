@@ -235,7 +235,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   const classLink = (n, sub) => ({ label: n, sub, onclick: S.classes().some((c) => c.key === n) ? () => jump('classes', n) : null });
   const causeLines = (list) => list.map((c) => ({ head: [turnTag(c.turn), c.source].filter(Boolean).join(' · '), body: c.text }));
   const ecoLines = (eco) => [
-    eco.edges.length ? { title: '生态关系', sub: '动态亲和', items: eco.edges.map((e) => ({ head: e.peer, body: `${e.status} · 亲和${e.affinity} · 信${e.trust} · 怨${e.grievance}${e.note ? ' · ' + e.note : ''}` })) } : null,
+    eco.edges.length ? { title: '生态关系', sub: '动态亲和', items: eco.edges.map((e) => ({ head: e.peer, body: digits(`${e.status} · 亲和${e.affinity} · 信${e.trust} · 怨${e.grievance}${e.note ? ' · ' + e.note : ''}`) })) } : null,
     eco.signals.length ? { title: '生态信号', items: eco.signals.map((s) => ({ head: [turnTag(s.turn), s.kind].filter(Boolean).join(' · '), body: s.note || '暂无细节' })) } : null
   ].filter(Boolean);
   // 卷底动作：叫法取 profile().social；某样不设即不列

@@ -221,7 +221,7 @@ function huangquan() {
   if (di.length || pendInst.length) sections.push({ kind: 'list', title: '动态机构 · 制度志', badge: String(di.length + pendInst.length), items: [
     ...di.map((inst) => (inst._migratedToTree
       ? { title: inst.name, meta: '已归官制树·著为定制（员额俸给循官制·详见官制册页）', tone: 'good' }
-      : { title: inst.name, meta: `品 ${inst.rank != null ? inst.rank : '—'} · ${inst.stage} · 员额 ${n0(inst.staffSize)} · 岁支 ${fmt(inst.annualBudget)}${inst.effectiveness !== undefined ? ` · 效率 ${Math.round(n0(inst.effectiveness) * 100)}% · 腐败 ${r(inst.corruption)}` : ''}`, tone: inst.stage === 'abolished' ? 'bad' : inst.stage === 'running' ? 'good' : 'mid' })),
+      : { title: inst.name, meta: `${inst.rank != null ? `品级${inst.rank}` : '品级未定'} · ${INST_STAGE[inst.stage] || inst.stage || '未定'} · 员额${n0(inst.staffSize)} · 岁支${fmt(inst.annualBudget)}${inst.effectiveness !== undefined ? ` · 成效${Math.round(n0(inst.effectiveness) * 100)}% · 腐败${r(inst.corruption)}` : ''}`, tone: inst.stage === 'abolished' ? 'bad' : inst.stage === 'running' ? 'good' : 'mid' })),
     ...pendInst.map((it) => ({ title: `${it.reformDetail || '改制'} ${it.dept || ''}`, meta: ['待廷议裁定', it.reason ? String(it.reason).slice(0, 40) : '',
       it._charter && Array.isArray(it._charter.positions) ? `章程已拟${it._charterRevised ? '·御笔批红改定' : ''}·«${it._charter.name || it.dept || ''}» ${it._charter.positions.map((cp) => `${cp.name}(${cp.rank}×${cp.count})`).join('·')} · 开办 ${fmt(it._charter.setupCost)} 两` : ''].filter(Boolean).join(' · '), tone: 'mid' }))
   ] });
@@ -235,6 +235,8 @@ function huangquan() {
 // ---------- 皇威 ----------
 const HW_SRC = { militaryVictory: '军胜', territoryExpansion: '拓疆', grandCeremony: '大典', executeRebelMinister: '诛逆', suppressRevolt: '平乱', auspicious: '祥瑞', benevolence: '德政', selfBlame: '罪己', tribute: '朝贡', imperialFuneral: '国丧', rehabilitation: '昭雪', culturalAchievement: '文治', personalCampaign: '亲征', structuralReform: '新制' };
 const HW_DRN = { militaryDefeat: '军败', diplomaticHumiliation: '辱国', idleGovern: '怠政', courtScandal: '宫闱', heavenlySign: '天象', forcedAbdication: '逼禅', brokenPromise: '食言', deposeFailure: '废立挫', imperialFlight: '出奔', capitalFall: '京畿陷', personalCampaignFail: '亲征败', familyScandal: '帝家丑', memorialObjection: '抗疏', lostVirtueRumor: '失德谣' };
+// 动态机构的阶段（内核 tm-edict-parser 写英文键；_institutionStageLabel 只认四个）
+const INST_STAGE = { running: '在办', proposal: '拟设', underfunded: '经费不继', abolished: '已废', trial: '试行', debate: '廷议中', failed: '未成', pendingReform: '待改制' };
 const HW_PHASE = { tyrant: '暴君', majesty: '威严', normal: '常望', decline: '衰微', lost: '失威' };
 function huangwei() {
   const g = G(), hw = g.huangwei || {};

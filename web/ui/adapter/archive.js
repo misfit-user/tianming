@@ -117,6 +117,9 @@ const CHRONICLE_TYPE = { keju: '科举', edict: '诏令', scheme: '阴谋', proj
   tingyi_pending: '廷议待落实', chaoyi_pending: '朝议待执行', changchao_pending: '常朝待落实', dynasty_event: '朝代大事', other: '长期事势' };
 
 // ---------- 合目 ----------
+// 事势的阶段：内核有几处写英文键（tm-chronicle-tracker 的 execution、诸状态的 active 之类），读成中文；认不得的英文照兜底写
+const AFFAIR_STAGE = { execution: '施行中', drafting: '拟议中', proposal: '拟议中', debate: '廷议中', active: '进行中', ongoing: '进行中', pending: '待办', brewing: '酝酿中', ripe: '将发', done: '已毕', completed: '已毕', finished: '已毕', resolved: '已了', failed: '未成', abolished: '已废', running: '在办', paused: '暂停' };
+const stageText = (v, fallback) => { const t = str(v); return !t ? fallback : /^[\x20-\x7e]+$/.test(t) ? AFFAIR_STAGE[t] || fallback : t; };
 export function catalog() {
   const g = G();
   const chars = Array.isArray(g.chars) ? g.chars : [];
@@ -175,7 +178,7 @@ export function catalog() {
       const text = str(t.narrative || t.content || t.desc);
       push({
         id: `affair-${t.id || i}`, cat: 'biannian', sub: 'affair', turn, seq: i, when: when(turn, t), type, auth: authority(t),
-        title: str(t.title || t.name) || '长期事势', body: text, actor: str(t.actor || t.owner), status: str(t.currentStage || t.stage || t.status) || '推进中',
+        title: str(t.title || t.name) || '长期事势', body: text, actor: str(t.actor || t.owner), status: stageText(t.currentStage || t.stage || t.status, '推进中'),
         progress: Math.max(0, Math.min(100, Number(t.progress || t.progressPercent || 0) || 0)), endTurn: Number(t.endTurn || 0),
         persons: arr(t.persons).length ? arr(t.persons).map(str) : personsIn(text), factions: arr(t.factions || t.faction).map(str), regions: arr(t.regions || t.region).map(str), text
       });
@@ -190,7 +193,7 @@ export function catalog() {
     const text = str(it.content || it.desc || it.description);
     push({
       id: `item-${it.id || i}`, cat: 'biannian', sub: 'affair', turn: start, seq: i, when: when(start, it), type: str(it.type || it.category) || '长期事项', auth: authority(it),
-      title: str(it.title || it.name) || '长期事项', body: text, actor: str(it.actor || it.owner || it.assignee), status: str(it.stage || it.status) || '进行中',
+      title: str(it.title || it.name) || '长期事项', body: text, actor: str(it.actor || it.owner || it.assignee), status: stageText(it.stage || it.status, '进行中'),
       progress: Math.max(0, Math.min(100, Number(it.progress || it.progressPercent || Math.round((elapsed / dur) * 100)) || 0)), endTurn: start + dur,
       persons: arr(it.persons).length ? arr(it.persons).map(str) : personsIn(text), text
     });

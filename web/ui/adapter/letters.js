@@ -2,6 +2,7 @@
 // 往来书札都在 GM.letters（tm-hongyan-office.js）；遣使走内核 sendLetter 的参数接缝（不读老面板的输入框），
 // 信上动作（追回、改用密旨、重发、存疑、遣使核实、摘入、标记）直接调老面板同名函数——它们不读 DOM。
 // 名册不照老面板的地名正则分组（那套只认得明代地名），改按人物所在地的上级区划分；外方人物按所属势力分。
+import { turnTag } from '../core/numerals.js';
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -131,7 +132,7 @@ export function agents() {
 
 // ---------- 往来书札 ----------
 const URG = Object.fromEntries(URGENCY.map(([k, l]) => [k, l]));
-const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turn != null ? `第${turn}回合` : ''; };
+const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turnTag(turn); };
 function view(l) {
   const g = G();
   const out = l.from === '玩家';

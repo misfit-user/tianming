@@ -100,7 +100,7 @@ function lizhi() {
   const CRED = { high: '可信', medium: '参考', low: '风闻' };
   sections.push({ kind: 'list', title: '近期风闻', badge: `${rumors.length} 条`, empty: '暂无相关风闻——或监察力度不足以察觉', go: rumors.length ? 'docket' : '',
     items: rumors.map((x) => ({ title: String(x.text || ''), meta: x.type || '弹章', side: `${CRED[x.credibility] || '偏颇'} · ${x.time || turnTag(x.turn) || '时日未详'}` })) });
-  if (g.juanna && g.juanna.active) sections.push({ kind: 'alert', title: '捐纳', lines: [`捐纳（卖官）已开——月入 ${Math.round(n0(g.juanna.monthlyIncome) / 1000)} 千两 · 长期腐败`] });
+  if (g.juanna && g.juanna.active) sections.push({ kind: 'alert', title: '捐纳', lines: [`捐纳（卖官）已开——月入${Math.round(n0(g.juanna.monthlyIncome) / 1000)}千两 · 长期腐败`] });
   const facs = c.entrenchedFactions || [];
   if (facs.length) sections.push({ kind: 'list', title: '腐败集团', badge: `${facs.length} 个`, tone: 'bad',
     items: facs.map((f) => ({ title: f.name || '某集团', meta: `部门：${DEPT_NAME[f.dept] || f.dept || '—'} · 势力：${n0(f.strength)} · 历时：${n0(f.years)} 年` })) });

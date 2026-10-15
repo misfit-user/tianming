@@ -8,6 +8,8 @@
 // 答卷：内核 viewAnswer 生成后会自开老卷，这里临时把 showAnswerModal 换成空，由新前端自画。
 import { bus } from '../core/bus.js';
 import { claimOverlays, legacyMutation } from './kernel.js';
+import { num, yearNum, turnTag } from '../core/numerals.js';
+const yearOf = (y) => (Number.isFinite(Number(y)) && y !== '' ? `${Number(y) < 0 ? '前' : ''}${yearNum(Number(y))}` : String(y));
 
 const w = window;
 const G = () => w.GM || {};
@@ -23,7 +25,7 @@ const n0 = (v, fb = 0) => { const n = Number(v); return Number.isFinite(n) ? n :
 const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 const findChar = (name) => (fn('findCharByName') ? w.findCharByName(name) : (G().chars || []).find((c) => c && c.name === name)) || null;
 const changed = () => bus.emit('game:changed', { what: 'keju' });
-const fmtDate = (d) => (fn('_kejuFmtDate') ? w._kejuFmtDate(d) : d && d.year != null ? `${d.year}年${d.month != null ? d.month + '月' : ''}` : String(d || ''));
+const fmtDate = (d) => (fn('_kejuFmtDate') ? w._kejuFmtDate(d) : d && d.year != null ? `${yearOf(d.year)}年${d.month != null ? num(d.month) + '月' : ''}` : String(d || ''));
 
 // ---------- 老浮层 ----------
 const outcomeModal = (n) => n.classList && n.classList.contains('modal-bg') && /keju-panel-modal/.test(n.innerHTML || '') && /确认/.test(n.textContent || '');
@@ -80,7 +82,7 @@ bus.on('kernel:ready', redirect);
 function histRows(arr, kind) {
   const reason = fn('_kjExamReasonCN');
   return (Array.isArray(arr) ? arr : []).slice().reverse().map((h) => ({
-    year: h.year != null ? `${h.year}年` : '', reason: reason ? reason(h) : '', examiner: h.examiner || '',
+    year: h.year != null ? `${yearOf(h.year)}年` : '', reason: reason ? reason(h) : '', examiner: h.examiner || '',
     count: kind === 'enke' ? h.jinshiCount : kind === 'wuju' ? h.wujinshiCount : h.poolSize,
     names: (kind === 'enke' ? h.jinshiNames : kind === 'wuju' ? h.wujinshiNames : null) || []
   }));
@@ -102,7 +104,7 @@ export function overview() {
     restrictions: k.restrictions && k.restrictions.provinces && k.restrictions.provinces.length ? k.restrictions : null,
     cooldown: k._reformCooldown || null, graduateTitle: fn('_kejuGraduateTitle') ? w._kejuGraduateTitle() : '',
     history: (Array.isArray(k.history) ? k.history : []).filter(Boolean).slice().reverse().map((h) => ({
-      date: fmtDate(h.date) || (h.turn != null ? `第${h.turn}回合` : '时间不详'), passed: h.passedCount, quality: h.quality || '',
+      date: fmtDate(h.date) || (turnTag(h.turn) || '时间不详'), passed: h.passedCount, quality: h.quality || '',
       top3: top3Of(h).filter(Boolean), question: h.question || '', examiner: h.chiefExaminer || '', party: h.examinerParty || '',
       enke: h.type === 'enke', national: h.terminalLevel === 'national'
     })),

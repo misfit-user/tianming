@@ -8,7 +8,7 @@
 //     （revoltState）是推演用的规则与内部钟，不列（老右栏也不列）。
 // 动作三样同老右栏：召党魁／召代表（问对）、付廷议（写入 GM._pendingTinyiTopics 再开廷议）、拟平衡诏／拟安抚诏（议事清册）。
 import { suggest } from './edict.js';
-import { turnTag } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -197,7 +197,7 @@ function pressureOf(c) {
 function radicalOf(c) {
   const rf = Number(c._radicalFrac);
   if (!Number.isFinite(rf) || rf < 0.2) return '';
-  return `乱民${Math.round(rf * 10)}成·${rf < 0.4 ? '不稳' : rf < 0.6 ? '汹汹' : '鼎沸'}`;
+  return `乱民${num(Math.round(rf * 10))}成·${rf < 0.4 ? '不稳' : rf < 0.6 ? '汹汹' : '鼎沸'}`;
 }
 const AGENDA_KIND = { seed: '本位诉求', ai: '时局诉求' };
 const EI_LABEL = { wealth: '家资', taxBurden: '赋负', landHolding: '田产' };
@@ -277,7 +277,7 @@ export function klass(key) {
   const ei = c.economicIndicators && typeof c.economicIndicators === 'object' ? Object.keys(c.economicIndicators).filter((k) => Number.isFinite(Number(c.economicIndicators[k])))
     .map((k) => ({ label: EI_LABEL[k] || k, value: Math.round(Number(c.economicIndicators[k])) })) : [];
   const parties = classParties(c, name);
-  const size = [text(c.size || c.population || c.scale), c.populationEstimate ? `约${Math.round(n0(c.populationEstimate))}口` : ''].filter(Boolean).join('　');
+  const size = [text(c.size || c.population || c.scale), c.populationEstimate ? `约${num(Math.round(n0(c.populationEstimate)))}口` : ''].filter(Boolean).join('　');
   return {
     name, short: name.charAt(0), sat: Math.round(s.shown), sealed, sealedNote: sealed ? SEALED_NOTE : '', influence,
     trend: sealed ? 0 : trendOf(c), pressure: sealed ? '' : pressureOf(c), radical: sealed ? '' : radicalOf(c),
@@ -289,9 +289,9 @@ export function klass(key) {
     factions: arr(c.internalFaction).filter((f) => f && f.name).map((f) => ({ name: text(f.name), size: text(f.size), stance: text(f.stance) })),
     agenda: arr(c._agenda && c._agenda.items).slice().sort((a, b) => n0(b.urgency, 1) - n0(a.urgency, 1)).slice(0, 6).map((it) => {
       const dur = it.sinceTurn != null ? Math.max(0, n0(G().turn) - n0(it.sinceTurn)) : 0;
-      return { text: String(it.text || '').slice(0, 20) + (dur >= 2 ? `·${dur}回合` : ''), kind: AGENDA_KIND[it.kind] || '结构诉求', urgency: Math.max(1, Math.min(3, n0(it.urgency, 1))) };
+      return { text: String(it.text || '').slice(0, 20) + (dur >= 2 ? `·${num(dur)}回合` : ''), kind: AGENDA_KIND[it.kind] || '结构诉求', urgency: Math.max(1, Math.min(3, n0(it.urgency, 1))) };
     }),
-    movements: arr(G()._politicalMovements).filter((m) => m && m.className === name).slice(0, 3).map((m) => ({ label: `运动·${loc(m.label || m.kind)}·${loc(m.phase)}${Math.round(n0(m.support))}`, level: n0(m.support) >= 70 ? 3 : n0(m.support) >= 40 ? 2 : 1 })),
+    movements: arr(G()._politicalMovements).filter((m) => m && m.className === name).slice(0, 3).map((m) => ({ label: `运动·${loc(m.label || m.kind)}·${loc(m.phase)}（${num(Math.round(n0(m.support)))}）`, level: n0(m.support) >= 70 ? 3 : n0(m.support) >= 40 ? 2 : 1 })),
     regions: sealed ? [] : arr(c.regionalVariants).filter((v) => v && v.region && Number.isFinite(Number(v.satisfaction))).sort((a, b) => a.satisfaction - b.satisfaction).slice(0, 4)
       .map((v) => ({ region: String(v.region), sat: Math.round(v.satisfaction), base: Number.isFinite(Number(v._structBaseline)) ? Math.round(v._structBaseline) : null, note: text(v.distinguishing).slice(0, 22) })),
     ledger: sealed ? [] : arr(c._satLedger).slice(-4).reverse().map((e) => ({ turn: e.t, d: n0(e.d), why: loc(e.why || e.src).slice(0, 44) })),

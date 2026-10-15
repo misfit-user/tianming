@@ -8,16 +8,16 @@
 // 印、名、类，君主一张小像，读数带，六卷检签（君臣、版图、军略、财计、邦交、史略），卷底可开整本朝野册。与人物窗、志窗同占左边一扇。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num, roundSig, turnTag } from '../core/numerals.js';
+import { num, numText, roundSig, turnTag } from '../core/numerals.js';
 import { qianzi } from '../kit/index.js';
 
 // 势力读数块：内核的记数写阿拉伯字（「195 块」「182万」「1.50亿」），照记数设置改写，与册里别处一路
-const numText = (v) => String(v).replace(/(\d+(?:\.\d+)?)\s*(亿|万)?/g, (_, d, u) => num(Number(d) * (u === '亿' ? 1e8 : u === '万' ? 1e4 : 1)));
+const statText = (v) => String(v).replace(/(\d+(?:\.\d+)?)\s*(亿|万)?/g, (_, d, u) => num(Number(d) * (u === '亿' ? 1e8 : u === '万' ? 1e4 : 1)));
 
 const toast = (text) => bus.emit('kernel:toast', { text });
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
-// 内核写好的说明文字里夹着阿拉伯数字（「民心 49 忧」），按记数设置改写；小数照旧
-const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
+// 内核写好的说明文字里夹着阿拉伯数字（「民心 49 忧」「3.6万」），按记数设置改写；小数照旧
+const digits = numText;
 const signed = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(Math.round(v * 10) / 10))}`;
 const TABS = [['factions', '势力'], ['parties', '党派'], ['classes', '阶层'], ['families', '家族'], ['dongtai', '动态'], ['nian', '逆案']];
 const DT_WINS = [[3, '三回合'], [6, '六回合'], [12, '十二回合'], [0, '全部']];
@@ -163,7 +163,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
         h('div.rm-seal', d.short),
         h('div.rm-id', h('h3', d.name, h('small', d.type)), d.pills.length ? h('div.rm-pills', d.pills.map((p) => h('span' + (/敌|承压|乱民/.test(p) ? '.hostile' : ''), p))) : null,
           d.note ? h('p.rm-seal-note', d.note) : null, d.desc ? h('p.rm-desc', d.desc) : null)),
-      d.stats.length ? h('div.rm-stats', d.stats.map(([k, v]) => h('div', h('span', k), h('b', numText(v))))) : null,
+      d.stats.length ? h('div.rm-stats', d.stats.map(([k, v]) => h('div', h('span', k), h('b', statText(v))))) : null,
       nav,
       juans.map(([title, sub, body], i) => h('section.rm-juan', { dataset: { juan: title } },
         h('h4', h('span.no', `卷${NUM_WORD[i]}`), h('span', title), h('small', sub)), juanBody(body))),
@@ -412,7 +412,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     replaceChildren(dTop, ruler ? rulerCard(ruler) : null,
       d.pills.length ? h('div.fz-pills', d.pills.map((p) => h('span.fz-pill' + (/敌|承压|乱民/.test(p) ? '.bad' : ''), p))) : null,
       d.desc ? h('p.fz-desc', d.desc) : null,
-      d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', numText(v))))) : null);
+      d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', statText(v))))) : null);
     replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; renderDock(); dSheet.scrollTop = Math.min(dSheet.scrollTop, dTop.offsetHeight); } },
       h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
     const cur = juans.find(([t]) => t === dJuan);

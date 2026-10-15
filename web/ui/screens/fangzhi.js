@@ -7,14 +7,12 @@
 // 本方府州的营造卷可「兴造」：剧本工籍点选，或自拟营造（配了模型可先请有司核议），录入议事清册，颁行后由回合推演核办（game.yingzao）。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num, roundSig } from '../core/numerals.js';
+import { num, numText, roundSig } from '../core/numerals.js';
 import { juan, qianzi, shu, yapaiOff } from '../kit/index.js';
 
 const toast = (text) => bus.emit('kernel:toast', { text });
-// 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」），按记数设置改写
-// 「3.6万」先折成整数再写；其余只改整数，小数（执行率 +1.5%）照旧
-const digits = (t) => String(t).replace(/(?<![\d.])(\d+\.\d+)万/g, (m, x) => num(Math.round(Number(x) * 1e4)))
-  .replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
+// 内核写好的说明文字里夹着阿拉伯数字（「民心 37 忧」「3.6万」「1627年」），按记数设置改写（core/numerals numText）
+const digits = numText;
 // 数：大数取四位有效，按记数设置写；负数前加「−」；字里夹的整数也按记数设置改写
 const PUBLIC_VOLS = new Set(['fengwu', 'yingzao']);
 const BAND_VOL = { 户口: 'huyi', 实征: 'caifu', 驻军: 'junbei', 吏治: 'zhiguan' };
@@ -125,7 +123,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     return h('dl.fz-rows', rows.map((r) => {
       const v = val(r.v, r.unit, rough);
       const wide = String(v).length > 11 || (r.note && !rough && String(r.note).length > 14) ? '.wide' : '';
-      return [h('dt' + wide, r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain') + wide, v, r.note && !rough ? h('small', r.note) : null)];
+      return [h('dt' + wide, r.k, r.tag ? h('em', r.tag) : null), h('dd.' + (r.tone || 'plain') + wide, v, r.note && !rough ? h('small', digits(r.note)) : null)];
     }));
   }
   function renderRight() {
@@ -142,7 +140,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
     const rough = knows({ region: cur.id }) === 'rough' && !opens(v.key);
     if (v.grid && v.grid.length) body.push(h('div.fz-grid', v.grid.map((g) => h('div', h('small', g.k), h('b', val(g.v, g.unit, rough))))));
     if (v.rows && v.rows.length) body.push(rowsEl(v.rows, rough));
-    if (v.note) body.push(h('p.fz-note', v.note));
+    if (v.note) body.push(h('p.fz-note', digits(v.note)));
     if (v.sub2) body.push(h('section.fz-sub', h('h4', v.sub2.title, h('small', v.sub2.note)), rowsEl(v.sub2.rows, rough)));
     if (v.key === 'yingzao') {
       body.push(v.works.length

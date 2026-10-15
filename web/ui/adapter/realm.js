@@ -7,6 +7,7 @@
 import { bantu as bantuOf } from './fangzhi.js';
 import { roster as armyRoster } from './army.js';
 import { census as nationalCensus } from './select.js';
+import { turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -71,7 +72,7 @@ function treatyRow(f) {
     const end = t.expiryTurn || t.expiresTurn;
     const live = t.active !== false && !TREATY_STATUS[t.status] && (!end || G().turn < end);
     const name = t.title || t.typeName || PROPOSAL_TYPE[t.type] || t.type || '条约';
-    return `${name}·与${other || '某方'}${start ? `·第${start}回合起` : ''}${end ? `·至第${end}回合` : '·不限期'}${live ? '' : `（${TREATY_STATUS[t.status] || '已止'}）`}`;
+    return `${name}·与${other || '某方'}${start ? `·${turnTag(start)}起` : ''}${end ? `·至${turnTag(end)}` : '·不限期'}${live ? '' : `（${TREATY_STATUS[t.status] || '已止'}）`}`;
   });
   return rows.length ? { k: '盟约', v: rows.slice(-8).join('\n') } : null;
 }

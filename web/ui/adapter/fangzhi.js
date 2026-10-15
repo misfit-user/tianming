@@ -5,6 +5,7 @@
 // 动作：本方州县安民、巡按、调粮、拟诏（老 regionAction，记行为信号）、改隶（TM.DivisionReassign）；兴造见 adapter/yingzao.js。
 // 第七卷「账本」点开才取（ledger）。
 import { bus } from '../core/bus.js';
+import { num } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -295,7 +296,7 @@ function yizhengOf(p, r, isVeiled) {
   out.push(row(explicit ? '本地产食缺口' : '缺粮', rg ? rg.foodDeficit : '', 'bad'));
   if (alloc) out.push(row('丁分配', `务农${fmtN(alloc.farm)} · 应役${fmtN(alloc.corvee)} · 应征${fmtN(alloc.draft)} · 优免${fmtN(alloc.exempt)}`));
   if (pd) out.push(row('册载丁', pd.registeredDing), row('优免丁', pd.exemptDing, 'bad'), row('诡寄丁', pd.commendedDing, 'bad'));
-  if (pol) out.push(row('现行则例', `${{ light: '轻役', normal: '常役', heavy: '重役' }[pol.strength] || '常役'}${Number(pol.remitTurns) > 0 ? ` · 蠲免余${pol.remitTurns}回合` : ''}`));
+  if (pol) out.push(row('现行则例', `${{ light: '轻役', normal: '常役', heavy: '重役' }[pol.strength] || '常役'}${Number(pol.remitTurns) > 0 ? ` · 蠲免余${num(pol.remitTurns)}回合` : ''}`));
   return keep(out);
 }
 // 区划上没录主官，名册里却有人的头衔正是此地主官（卢象升「大名知府」、某某「顺天府尹」）：认作主官

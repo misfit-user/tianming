@@ -5,6 +5,7 @@
 // 败局多半停局（GM.running=false）；亡国信号是软终局，不停局——页上据 running 给「续理残局」或「回启幕」。
 import { bus } from '../core/bus.js';
 import { claimOverlays } from './kernel.js';
+import { turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -60,8 +61,8 @@ export function data() {
     : null;
   // 本纪
   const benji = g._benji && Array.isArray(g._benji.sections) ? g._benji.sections.map((s) => ({
-    from: typeof w.getTSText === 'function' ? w.getTSText(s.fromTurn) : `第${s.fromTurn}回合`,
-    to: typeof w.getTSText === 'function' ? w.getTSText(s.toTurn) : `第${s.toTurn}回合`,
+    from: typeof w.getTSText === 'function' ? w.getTSText(s.fromTurn) : turnTag(s.fromTurn),
+    to: typeof w.getTSText === 'function' ? w.getTSText(s.toTurn) : turnTag(s.toTurn),
     text: String(s.text || '')
   })) : [];
   const benjiStatus = cur.node && cur.node.querySelector('#_benji_status') ? cur.node.querySelector('#_benji_status').textContent.trim() : '';
@@ -82,7 +83,7 @@ export function data() {
     { label: '皇威', value: Math.round(n(hw.index)), seen: hw.perceivedIndex !== undefined ? Math.round(n(hw.perceivedIndex)) : null }
   ].map((x) => ({ ...x, seen: x.seen !== null && Math.abs(x.seen - x.value) >= 3 ? x.seen : null }));
   const events = (g.evtLog || []).filter((e) => KEY_EVENT.test(e && e.text || '')).slice(-30).map((e) => ({
-    when: typeof w.getTSText === 'function' ? w.getTSText(e.turn) : `第${e.turn}回合`, text: String(e.text || ''),
+    when: typeof w.getTSText === 'function' ? w.getTSText(e.turn) : turnTag(e.turn), text: String(e.text || ''),
     tone: /战|叛|亡|灭/.test(e.text) ? 'bad' : /婚|科举|成就/.test(e.text) ? 'good' : 'mid'
   }));
   const people = (g.chars || []).slice().sort((a, b) => (b.importance || 50) - (a.importance || 50)).slice(0, 60).map((c) => ({

@@ -8,6 +8,7 @@
 // 召史策对借问对的 cedui 一式（新前端召对场景接手）；议废前番改制照 L11 的反向差异付科议；逐年所记读 L8 的 _reformChronicle。
 import { bus } from '../core/bus.js';
 import { claimOverlays } from './kernel.js';
+import { num } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -154,12 +155,12 @@ export function items(d) {
     if (cr.excludedClasses.added.length) put.sheng(`禁${cr.excludedClasses.added.join('、')}应考`);
   }
   const q = x.quota;
-  if (q.total) put.qu(`每科取士由${q.total.old}名改为${q.total.new}名`);
+  if (q.total) put.qu(`每科取士由${num(q.total.old)}名改为${num(q.total.new)}名`);
   Object.keys(q.ratios || {}).forEach((k) => { const r = q.ratios[k]; put.qu(r.enabled ? `行${RATIO[k] || k}${ratioText(r.values) ? `（${ratioText(r.values)}）` : ''}` : `罢${RATIO[k] || k}`); });
   if (x.rankingRule) put.qu(`名次${RANKING[x.rankingRule.new] || x.rankingRule.new}`);
   const a = x.allocationRules;
   Object.keys(ALLOC).forEach((k) => { if (a[k]) put.guan(`${ALLOC[k]}${n0(a[k].count)}人，授${(a[k].positions || []).join('、') || '（未定）'}`); });
-  if (a.waitingYears) put.guan(`新科候选由${a.waitingYears.old}年改为${a.waitingYears.new}年`);
+  if (a.waitingYears) put.guan(`新科候选由${num(a.waitingYears.old)}年改为${num(a.waitingYears.new)}年`);
   if (a.imperialReviewRequired !== undefined) put.guan(yn(a.imperialReviewRequired, '授官须经亲审', '授官不必亲审'));
   if (a.posthumousAdjustment !== undefined) put.guan(yn(a.posthumousAdjustment, '许身后改定门生', '不许身后改定门生'));
   if (x.graduateTitle) put.shen(`登第者改称${x.graduateTitle.new || '（空）'}`);
@@ -353,7 +354,7 @@ export function advisors() {
 // 首问由这里拟：内核 _kjpBuildCeduiPrefill 只写幅度数值（「LLM 解 30/100」）、不列所改诸条；AI 的背景另由全局草稿供给，不靠这句
 function ceduiQuestion(d, school) {
   const list = items(d).map((x) => x.text);
-  const head = list.slice(0, 6).join('；') + (list.length > 6 ? `，凡${list.length}条` : '');
+  const head = list.slice(0, 6).join('；') + (list.length > 6 ? `，凡${num(list.length)}条` : '');
   const pilot = d.pilotScope && d.pilotScope.name && !/^全国/.test(d.pilotScope.name) ? `，先试于${d.pilotScope.name}` : '';
   const mag = d.magnitudeDescriptor ? `其势“${d.magnitudeDescriptor}”` : '';
   return `卿素以${school}见称。朕欲更定取士之法，所议：${head}。${mag}${pilot}${mag || pilot ? '。' : ''}卿试如汉贤良对策：行之五年、十年，于士风、吏治、党局、钱粮各将如何？`;

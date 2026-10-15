@@ -3497,6 +3497,10 @@
     if (Array.isArray(priorConversation) && priorConversation.length) {
       conversation = _agentClone(priorConversation);
       var _fu = { role: 'user', text: _buildFollowUpUser(draft, userRequest, surfaces, editorContext), userInstruction: String(userRequest || '') };
+      if (Array.isArray(opts.stateNotes) && opts.stateNotes.length) {
+        _fu.text = '【玩家在你上次回复之后动过剧本】\n' + opts.stateNotes.slice(0, 12).map(function (n) { return '- ' + String(n).slice(0, 200); }).join('\n')
+          + '\n（以当前剧本为准：撤销掉的改动已经不在了，别再当它们还在；要用到就重新查。）\n\n' + _fu.text;
+      }
       if (_turnImages) _fu.images = _turnImages;
       conversation.push(_fu);
       try { _priorTokens = _estimateTokens(JSON.stringify(opts.priorConversation)); } catch (e) {}

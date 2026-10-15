@@ -112,6 +112,9 @@
       // 只管显示：案卷换了就不画，但不像下面那些回调去中断国师——中断时机留给真正的步骤回调
       options.stream = true; options.onDelta = function (ev) { if (current()) _onDelta(ev); };
     }
+    if (options.stateNotes == null && ui._stateNotes && ui._stateNotes.length) {   // 撤销/恢复过国师的改动：下一句告诉它
+      options.stateNotes = ui._stateNotes.slice(); ui._stateNotes = [];
+    }
     if (options.webAsk == null && _webOn()) {   // S7 · 读网页：每个网站先问玩家一次（设置·权限可关）
       options.webAsk = function (req) { return current() ? _webAsk(req) : Promise.resolve(false); };
     }
@@ -1715,6 +1718,8 @@
     var fp = __aaU._friendlyPath || function (x) { return x; };
     return '<ul class="lg-cf-list">' + (conflicts || []).slice(0, 6).map(function (c) { return '<li>' + esc(fp(c.path)) + '</li>'; }).join('') + ((conflicts || []).length > 6 ? '<li>…还有 ' + (conflicts.length - 6) + ' 处</li>' : '') + '</ul>';
   }
+  // 撤销、恢复以后记一句，下次发送时告诉国师（它的对话里还记着那些改动）
+  function _noteState(text) { ui._stateNotes = (ui._stateNotes || []).concat([text]).slice(-12); }
   function _undoEntry(id, opts) {
     opts = opts || {};
     if (ui.running) { setStatus('国师还在忙，先停下再撤销'); return; }
@@ -1751,6 +1756,7 @@
       });
       try { var app = global.TM_SCENARIO_EDITOR_RESET_APP; var first = chain[chain.length - 1].diffs[0]; if (first && app && typeof app.revealPath === 'function') app.revealPath(first.path); } catch (e3) {}
       ui._exemplarsCache = null;
+      _noteState('在改动史里撤销了「' + _entryTitle(target) + '」那次应用' + (chain.length > 1 ? '（连带它之后的 ' + (chain.length - 1) + ' 次）' : '') + '，共 ' + n + ' 处回到了改前');
       setStatus('撤销了 ' + (chain.length > 1 ? chain.length + ' 次应用、' : '') + n + ' 处' + (opts.force ? '（覆盖了后来手改的几处）' : '') + '。想要回来，在改动史里点「恢复」');
     });
   }
@@ -1773,6 +1779,7 @@
       catch (e2) { setStatus('没恢复成：' + ((e2 && e2.message) || e2)); return; }
       L.update(id, { undone: false, undoneAt: null, redoneAt: Date.now() }).then(function (e) { _repaintLedgerTags([e]); _refreshLedgerSheet(); });
       ui._exemplarsCache = null;
+      _noteState('在改动史里恢复了「' + _entryTitle(target) + '」那次应用的 ' + (target.total || (target.diffs || []).length) + ' 处');
       setStatus('恢复了这次应用的 ' + (target.total || (target.diffs || []).length) + ' 处');
     });
   }

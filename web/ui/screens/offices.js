@@ -36,7 +36,8 @@ export function createOffices({ root, game, profile, onPerson, role = () => ({ s
     replaceChildren(groupBox, gs.map((g) => h('button' + (g.key === group ? '.on' : ''), { type: 'button', title: g.note, onclick: () => { group = g.key; picked = null; renderLeft(); } }, g.name)));
     const ds = O.departments(court, group);
     const t = ds.reduce((a, d) => ({ head: a.head + d.total.head, actual: a.actual + d.total.actual, vacant: a.vacant + d.total.vacant }), { head: 0, actual: 0, vacant: 0 });
-    sum.textContent = `${num(ds.length)}署 · 员${num(t.head)} · 缺${num(t.vacant)}`;
+    // 一项一段不折开（小屏上「缺零」原先折成「缺／零」）
+    replaceChildren(sum, ...[`${num(ds.length)}署`, `员${num(t.head)}`, `缺${num(t.vacant)}`].flatMap((x, i) => (i ? [' · ', h('span', x)] : [h('span', x)])));
     if (!picked || !ds.some((d) => d.path[0] === picked[0])) picked = ds[0] ? ds[0].path : null;
     replaceChildren(deptList, ds.length ? ds.map((d) => h('button.of-dept' + (picked && d.path[0] === picked[0] ? '.on' : ''), { type: 'button', title: d.desc, onclick: () => { picked = d.path; renderLeft(); } },
       h('b', d.name), h('small', `员${num(d.total.head)}　在${num(d.total.actual)}`), d.total.vacant ? h('em', `缺${num(d.total.vacant)}`) : null)) : [h('p.ce-unk', '此组无衙署')]);
@@ -72,7 +73,9 @@ export function createOffices({ root, game, profile, onPerson, role = () => ({ s
       h('div.of-name', h('b', { title: p.duties }, p.name), h('small', `额${num(p.head)}　在${num(p.actual)}${p.vacant ? '' : ''}`), p.vacant ? h('em', `缺${num(p.vacant)}`) : null),
       h('div.of-holders', p.holders.length ? p.holders.map((x) => h('button.of-holder' + (x.travel ? '.travel' : ''), { type: 'button', onclick: () => onPerson && onPerson(x.name), title: [x.location, x.party].filter(Boolean).join(' · ') },
         // 忠诚是人心：元首见、本人见，余者不列（所知之律，同列传）
-        h('b', x.name), x.travel ? h('em', '赴任') : null, h('small', `${x.age ? num(x.age) + '岁 ' : ''}${R.sovereign || x.name === R.self ? `忠${num(x.loyalty)} ` : ''}智${num(x.int)} 政${num(x.adm)} 军${num(x.mil)}`)))
+        // 年齿与四项各成一段，窄栏里只在段与段之间折行（原先「忠五十／五」折在数字中间）
+        h('b', x.name), x.travel ? h('em', '赴任') : null, h('small', [x.age ? `${num(x.age)}岁` : '', R.sovereign || x.name === R.self ? `忠${num(x.loyalty)}` : '', `智${num(x.int)}`, `政${num(x.adm)}`, `军${num(x.mil)}`]
+          .filter(Boolean).flatMap((t, i) => (i ? [' ', h('span', t)] : [h('span', t)])))))
         : h('span.of-empty', p.unnamed ? `在岗${num(p.unnamed)}人·姓名未详` : '此职无人·政务停滞'),
         p.pending ? h('div.of-pending', h('span', `待下${profile().annals.decree}`), h('i', p.pending.line), R.sovereign && !R.ro ? h('button', { type: 'button', onclick: () => run(() => O.undo(p)) }, '撤销') : null) : null),
       h('div.of-acts', acts));

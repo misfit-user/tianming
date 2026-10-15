@@ -37,7 +37,8 @@
 .of-holder { display: flex; align-items: baseline; flex-wrap: wrap; gap: .375rem; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; font-family: var(--f-kai); color: var(--ink); }
 .of-holder b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .06em; border-bottom: 1px solid transparent; }
 .of-holder:hover b { border-bottom-color: rgba(138, 42, 28, .6); }
-.of-holder small { font-size: var(--fs-1); color: var(--ink-faint); }
+.of-holder small { flex-basis: 100%; font-size: var(--fs-1); color: var(--ink-faint); }
+.of-holder small span, .of-left .ce-head small span { white-space: nowrap; }
 .of-holder em { font: normal var(--fs-1) var(--f-kai); padding: 0 .25rem; color: #2f6b55; border: 1px solid rgba(58, 125, 103, .45); }
 .of-empty { font-size: var(--fs-2); color: #8a2a1c; letter-spacing: .08em; }
 .of-pending { display: flex; align-items: baseline; gap: .5rem; margin-top: .125rem; padding: .25rem .5rem; font-size: var(--fs-2); background: rgba(233, 199, 102, .18); box-shadow: inset 0 0 0 1px rgba(150, 96, 22, .35); }
@@ -47,6 +48,12 @@
 .of-acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .25rem; max-width: 15rem; }
 .of-acts .q-yapai { font-size: var(--fs-2); padding: .125rem .5rem .125rem .875rem; }
 .of-acts .q-yapai.danger { color: #8a2a1c; }
+/* 右叶窄（1366 上下）时处置牌落到第二行、靠右排开，任职者一栏不再被挤成一字一行 */
+.of-right { container-type: inline-size; }
+@container (max-width: 600px) {
+  .of-pos { grid-template-columns: 3.75rem 8.5rem minmax(0, 1fr); row-gap: .375rem; }
+  .of-pos > .of-acts { grid-column: 2 / -1; max-width: none; }
+}
 
 /* 择人卷 */
 .of-picker { display: flex; flex-direction: column; gap: .5rem; height: 100%; }

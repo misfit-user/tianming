@@ -71,7 +71,7 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
   function renderRoster(s) {
     const live = s.speeches.find((e) => e.streaming);
     rosterTitle.textContent = `上台${num(s.speakers.length)}人`;
-    replaceChildren(rosterList, s.speakers.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', c.title) : null,
+    replaceChildren(rosterList, s.speakers.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', { title: c.title }, c.title) : null,
       c.stance ? h('em.ct-st.' + CLS[c.stance], Y.STANCE[c.stance]) : null)));
   }
   function renderControls(s) {

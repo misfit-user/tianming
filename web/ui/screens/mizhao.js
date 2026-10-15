@@ -79,7 +79,7 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose }) {
   }
   function renderRoster(s) {
     const live = s.entries.find((e) => e.streaming);
-    replaceChildren(rosterList, s.chars.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', c.title) : null, c.said ? h('em.ct-st.neu', `言${num(c.said)}`) : null)));
+    replaceChildren(rosterList, s.chars.map((c) => h('div.ct-mem' + (live && live.name === c.name ? '.speaking' : ''), h('b', c.name), c.title ? h('small', { title: c.title }, c.title) : null, c.said ? h('em.ct-st.neu', `言${num(c.said)}`) : null)));
   }
   function renderControls(s) {
     const t = I();

@@ -182,7 +182,7 @@ export function createCourt({ root, study, game, profile, onClose }) {
     const j = juan({
       title: '起议站班', note: o.topic, width: '60rem', closable: !!o.cancel,
       content: h('div.ct-seating',
-        o.proposer ? h('p.ct-proposer', h('small', '主奏'), o.proposer) : null,
+        o.proposer ? h('p.ct-proposer', h('small', '主奏'), o.proposer.replace(/\d+/g, (d) => num(+d))) : null,
         h('div.ct-row', h('span', '朝堂潮汐'), tide),
         h('div.ct-benches', o.benches.map(bench))),
       actions: [o.go ? { label: o.go.label, onclick: () => run(() => C.press(o.go.id)) } : null,

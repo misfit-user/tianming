@@ -172,7 +172,8 @@ button.q-yapai:disabled:hover { transform: none; box-shadow: var(--sh-lift), ins
 .q-juan > .body > .tiantou > h2 { flex: none; margin: 0; writing-mode: vertical-rl; padding: .875rem .3125rem 1.25rem;
   font: 400 1.375rem/1.75rem var(--f-title); letter-spacing: .3em; color: var(--ink); white-space: nowrap;
   background: var(--paper-grain), linear-gradient(90deg, #e9e0c8, #f6f0e0 45%, #e2d7bb); box-shadow: 0 1px 3px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(120, 90, 50, .3); }
-.q-juan > .body > .tiantou > small { writing-mode: vertical-rl; font-size: var(--fs-1); letter-spacing: .3em; color: rgba(240, 232, 214, .85); white-space: nowrap; }
+.q-juan > .body > .tiantou > small { writing-mode: vertical-rl; font-size: var(--fs-1); letter-spacing: .3em; color: rgba(240, 232, 214, .85); white-space: nowrap;
+  min-height: 0; overflow: hidden; text-overflow: ellipsis; }   /* 竖注长过卷高：收成省略号、悬停看全（原先悄悄截掉） */
 /* 画心：洒金笺，四周白局条一圈 */
 .q-juan > .body > .xin { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; margin: 0 .25rem 0 1.25rem;
   background: var(--paper-grain), linear-gradient(180deg, #f2e8d2, #e4d4b2); box-shadow: 0 0 0 .3125rem #efe6cf, 0 0 0 .375rem rgba(120, 90, 50, .35); }

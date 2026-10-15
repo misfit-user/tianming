@@ -14,7 +14,7 @@ export function juan({ title, note, content, actions = [], width = '46rem', heig
     closable ? h('span.close', yapai('收卷', { onclick: () => close('dismiss') })) : null
   ].filter(Boolean);
   const body = h('div.body', { style: { width, height } },
-    h('div.tiantou', h('h2', title), note ? h('small', note) : null),
+    h('div.tiantou', h('h2', title), note ? h('small', { title: note }, note) : null),
     h('div.xin', h('div.content.q-scroll.ink', content), foot.length ? h('footer', foot) : null));
   const scroll = h('div.q-juan', { role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, h('div.axis.l'), body, h('div.axis.r'));
   const veil = h('div.q-juan-veil' + (side ? '.side' : ''), scroll);

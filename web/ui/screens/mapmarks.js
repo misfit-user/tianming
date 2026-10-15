@@ -27,11 +27,9 @@ function flagChar(name) {
   const parts = String(name || '军').replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim()).filter(Boolean);
   if (!parts.length) return '军';
   const last = parts[parts.length - 1];
-  if (parts.length > 1) {
-    const banner = /^两?([黄红白蓝])旗/.exec(last);
-    if (banner) return banner[1];
-    if (!/^(正|残|总|余|本|全|诸)/.test(last)) return [...last][0];
-  }
+  const banner = /^(?:两|正|镶)?([黄红白蓝])旗/.exec(last);   // 八旗取旗色：两黄旗、正白旗、镶蓝旗
+  if (banner) return banner[1];
+  if (parts.length > 1 && !/^(正|残|总|余|本|全|诸)/.test(last)) return [...last][0];
   return [...parts[0].replace(/^(南京|北京|御营)(?=..)/, '')][0] || '军';
 }
 

@@ -97,7 +97,7 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose }) {
     statusEl.textContent = `赞成${num(v.support)} · 观望${num(v.abstain)} · 反对${num(v.oppose)} · 支持率${num(v.pct)}%／门槛${num(v.threshold)}%（${v.libu}）· ${v.passed ? '通过' : '未通过'}`;
     const total = Math.max(1, v.support + v.abstain + v.oppose);
     replaceChildren(tide, h('div.ct-tide', [['sup', v.support, '赞成'], ['neu', v.abstain, '观望'], ['opp', v.oppose, '反对']].filter(([, n]) => n > 0)
-      .map(([k, n, label]) => h('i.' + k, { style: { flexGrow: n } }, `${label}${num(n)}`)), h('b.ky-line', { style: { left: `${v.threshold}%` }, title: `门槛${v.threshold}%` })),
+      .map(([k, n, label]) => h('i.' + k, { style: { flexGrow: n } }, `${label}${num(n)}`)), h('b.ky-line', { style: { left: `${v.threshold}%` }, title: `门槛${num(v.threshold)}%` })),
       h('small', `${num(Math.round((v.support * 100) / total))}%`));
     if (s.phase === 'vote') {
       replaceChildren(slips, slip('众臣立场', () => showStances(v)), slip(t.decide || '继续裁决', () => Y.toDecide(), true, 'go'));

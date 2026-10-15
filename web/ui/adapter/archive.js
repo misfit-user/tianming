@@ -3,6 +3,8 @@
 // 归类、来源、权威级（信史／存疑／风闻）、人物与势力地域的回填，照老史馆（phase8-formal-records.js shiBuildArchive）。
 // 可见之律：史记的「国势升降」取自核心指标快照（GM._metricHistory），是真值之差；奏报失真层开着时不列。
 // 写口两处，与老史馆同：起居注可加批注（_annotation），纪事可标要事（_starred）。
+import { turnTag } from '../core/numerals.js';
+
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -23,7 +25,7 @@ function when(turn, raw) {
   if (raw && str(raw.date)) return str(raw.date);
   if (raw && str(raw.time)) return str(raw.time);
   try { if (ts && turn) return String(ts(turn)); } catch (_e) { /* 纪年取不到就只写回合 */ }
-  return turn ? `第${turn}回合` : '';
+  return turn ? turnTag(turn) : '';
 }
 // 权威级：authorityLevel / confidence；泄出、机密者存疑
 function authority(raw) {
@@ -132,7 +134,7 @@ export function catalog() {
       ['续时政记', s.shizhengji2], ['起居', s.qijuHistory], ['御批回听', s.yupiHuiting]].map(([k, v]) => [k, str(v)]).filter(([, v]) => v);
     push({
       id: `shiji-${i}`, cat: 'shiji', turn, seq: i, when: when(turn, s), type: str(s.szjType || s.type) || '时政', auth: authority(s), starred: !!s._starred,
-      title: str(s.szjTitle) || str(s.turnSummary) || `第${turn}回合史记`, summary: str(s.turnSummary || s.szjSummary),
+      title: str(s.szjTitle) || str(s.turnSummary) || `${turnTag(turn)}史记`, summary: str(s.turnSummary || s.szjSummary),
       persons: [...new Set([...personnel.map((p) => p && p.name).filter(Boolean), ...personsIn([s.shilu, s.shizhengji].map(str).join('\n'))])].slice(0, 8), factions: arr(s.factions || s.faction).map(str), regions: arr(s.regions || s.region).map(str),
       vols, personnel: personnel.map(lineOf).filter(Boolean), edicts: edictList(s.edicts), reports: (Array.isArray(s.edictReports) ? s.edictReports : []).map(lineOf).filter(Boolean),
       delta: delta(turn), text: vols.map(([, v]) => v).join('\n')

@@ -3,11 +3,11 @@
 // 四方印下另有「时运」签：朝代阶段、气运警兆、典章祖制。
 // 名目里可直达的去处（批阅、撰写、召对、朝议）经 onGo 交书案去开。经 game.guoshi、game.select.gauges。
 import { h, replaceChildren } from '../core/dom.js';
-import { num, roundSig, grade, gradeIndex } from '../core/numerals.js';
+import { num, numText, roundSig, grade, gradeIndex } from '../core/numerals.js';
 
 const amt = (v) => num(roundSig(Math.abs(v || 0), 3));
 // 内核写好的警兆文字里夹着阿拉伯数字（「满意 10」），按记数设置改写
-const digits = (t) => String(t).replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
+const digits = numText;
 
 const GO_NAME = { docket: '去批阅', edict: '去撰写', audience: '去召对', court: '去朝议' };
 
@@ -54,7 +54,7 @@ export function createGuoshi({ root, game, onGo }) {
     replaceChildren(right,
       h('header.gs-title', h('h3', d.title), h('small', d.sub)),
       h('div.gs-rows', d.rows.map((x) => h('p' + (x.big ? '.big' : ''), h('span', x.label),
-        x.dots != null ? dots(x.dots) : null, h('b.' + (x.tone || 'plain'), x.value), x.note ? h('small', x.note) : null))),
+        x.dots != null ? dots(x.dots) : null, h('b.' + (x.tone || 'plain'), digits(x.value)), x.note ? h('small', digits(x.note)) : null))),
       d.sealed ? h('p.gs-sealed', d.sealedNote) : null,
       d.spectrum ? spectrum(d.spectrum) : null,
       d.sections.map(section));
@@ -77,19 +77,19 @@ export function createGuoshi({ root, game, onGo }) {
       case 'tax': {
         const max = Math.max(1, s.nominal, s.received, s.paid);
         const line = (label, v, cls) => h('div.gs-tax-row.' + cls, h('span', label), h('i', h('b', { style: { width: `${(v / max) * 100}%` } })), h('em', amt(v)),
-          h('small', cls === 'nom' ? '基准' : `${v - s.nominal >= 0 ? '+' : ''}${Math.round(((v - s.nominal) / (s.nominal || 1)) * 100)}%`));
+          h('small', cls === 'nom' ? '基准' : digits(`${v - s.nominal >= 0 ? '+' : ''}${Math.round(((v - s.nominal) / (s.nominal || 1)) * 100)}%`)));
         return box(h('p.gs-note', s.label),
           line('应征（名义）', s.nominal, 'nom'), line('官府实收', s.received, 'rec'), line('民间实缴', s.paid, 'paid'),
           s.loss > 0 ? h('div.gs-gaps', h('p.gs-note', `差额去向（${amt(s.loss)}两）`), s.gaps.map((g) => h('p', h('span', g.label), h('b', amt(g.value)), h('small', `${num(g.share)}%`)))) : null,
-          s.notes.map((t) => h('p.gs-note', t)));
+          s.notes.map((t) => h('p.gs-note', digits(t))));
       }
-      case 'depts': return box(h('div.gs-depts', s.items.map((x) => h('p', h('span', x.label), dots(x.dots), h('b', x.value), h('em', x.trend)))));
+      case 'depts': return box(h('div.gs-depts', s.items.map((x) => h('p', h('span', x.label), dots(x.dots), h('b', digits(x.value)), h('em', x.trend)))));
       case 'list': return box(s.lead ? h('p.gs-note', s.lead) : null,
-        s.items.length ? h('div.gs-list', s.items.map((x) => h('div' + (x.tone ? '.' + x.tone : ''), h('b', x.title), x.meta ? h('span', x.meta) : null, x.side ? h('small', x.side) : null)))
+        s.items.length ? h('div.gs-list', s.items.map((x) => h('div' + (x.tone ? '.' + x.tone : ''), h('b', x.title), x.meta ? h('span', digits(x.meta)) : null, x.side ? h('small', digits(x.side)) : null)))
           : h('p.gs-empty', s.empty || '无'));
       case 'alert': return box(h('div.gs-alert', s.lead ? h('b', s.lead) : null, s.lines.map((t) => h('p', digits(t))), s.note ? h('small', s.note) : null));
       case 'hints': return box(h('div.gs-hints', s.items.map(([t, go]) => h('button', { type: 'button', onclick: () => { if (onGo) { hide(); onGo(go); } } }, t))), s.note ? h('p.gs-note', s.note) : null);
-      case 'ledger': return box(h('div.gs-ledger', s.items.map((x) => h('p', h('span', x.label), h('b.' + (x.tone || 'plain'), x.value)))));
+      case 'ledger': return box(h('div.gs-ledger', s.items.map((x) => h('p', h('span', x.label), h('b.' + (x.tone || 'plain'), digits(x.value))))));
       case 'bars': return box(h('div.gs-bars', s.items.map((x) => h('div', h('p', h('span', x.label), h('i', h('b.' + x.tone, { style: { width: `${Math.max(0, Math.min(100, x.value))}%` } })), h('em.' + x.tone, `${num(Math.round(x.value))}${x.trend}`)),
         x.note ? h('small', x.note) : null))));
       case 'tiles': return box(h('div.gs-tiles', s.items.map((x) => h('span.' + x.tone, { title: x.label }, h('b', x.label.replace(/(承宣)?布政使司$/, '')), num(x.value)))));

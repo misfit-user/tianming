@@ -151,7 +151,7 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
             wk.desc ? h('p', wk.desc) : null,
             wk.fx.length ? h('p.fz-fx', wk.fx.map((x) => h('span', x))) : null,
             wk.applied.length ? h('p.fz-wk-note', `实入账：${wk.applied.join(' · ')}`) : null,
-            wk.flowPct > 0 ? h('p.fz-wk-note', `工成之利：地方岁入每回合+${wk.flowPct}%`) : null,
+            wk.flowPct > 0 ? h('p.fz-wk-note', digits(`工成之利：地方岁入每回合+${wk.flowPct}%`)) : null,
             wk.progress != null ? h('div.fz-prog', h('i', { style: { width: `${wk.progress}%` } }), h('small', `余${num(wk.left)}回合`)) : null)))
         : h('p.fz-note', '此地尚无在册工役。'));
       if (role().sovereign && !role().ro && cur.mine && cur.liveName && Y && Y.ready()) body.push(h('div.fz-acts', h('button.q-yapai', { type: 'button', title: `拟一件营造案，录入${suggestBook()}`, onclick: () => xingzao() }, '兴造')));
@@ -285,11 +285,11 @@ export function createFangzhi({ root, game, profile, onPerson, onFaction, role =
         c.resist ? h('p.yz-fail', `阻力：${c.resist}`) : null))) : null;
     const tl = o.talent;
     const talentEl = tl ? h('section.yz-aside', h('h4', '人才与风气', h('small', '学统格局：学堂育才，历练渐渗')),
-      tl.emergent.map((x) => h('div.yz-rule-card', h('p', h('b', x.label), h('em', x.tier), h('small', `渗透${x.pct}%`)),
+      tl.emergent.map((x) => h('div.yz-rule-card', h('p', h('b', x.label), h('em', x.tier), h('small', digits(`渗透${x.pct}%`))),
         h('i.yz-bar', h('i', { style: { width: `${Math.max(2, Math.min(100, x.pct))}%` } })),
         h('p.fz-note', `有效${num(x.stock)}　成熟${num(x.mature)}　在训${num(x.training)}　失业${num(x.idle)}　年招${num(x.intake)}　培养${num(x.quality)}%`))),
       tl.established.map((x) => h('p.fz-note', `既有正统　${x.label}　存量约${num(x.stock)}`)),
-      tl.tends.length ? h('p.fz-fx', tl.tends.map((t) => h('span', `${t.key}+${t.pct}%`))) : null) : null;
+      tl.tends.length ? h('p.fz-fx', tl.tends.map((t) => h('span', digits(`${t.key}+${t.pct}%`)))) : null) : null;
     const panes = { pre, cus };
     const pane = h('div.yz-pane');
     const tabs = qianzi([{ value: 'pre', label: '剧本工籍' }, { value: 'cus', label: '自拟营造' }], { value: o.catalogue.length ? 'pre' : 'cus', onchange: (v) => replaceChildren(pane, panes[v]) });

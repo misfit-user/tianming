@@ -203,7 +203,7 @@ export function virtueRank(v) {
   while (i + 1 < list.length && m >= list[i + 1][0]) i++;
   const next = list[i + 1];
   const within = next ? Math.max(0, Math.min(1, (m - list[i][0]) / (next[0] - list[i][0]))) : 1;
-  return { value: Math.round(m), meter: ((i + within) / list.length) * 100, text: list[i][1], full: `第${i + 1}阶·${list[i][1]}`, next: next ? next[0] : null };
+  return { value: Math.round(m), meter: ((i + within) / list.length) * 100, text: list[i][1], stage: i + 1, full: list[i][1], next: next ? next[0] : null };
 }
 
 // 人物自身的读数：名望、贤能、康健、心绪（100−压力）；家产（私财）与公费（所掌公库）

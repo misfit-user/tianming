@@ -83,7 +83,7 @@ export function createXunren({ root, game, current, onPick, onBio, seesHearts = 
   function metric(p) {
     const k = opts.sort;
     if (k === 'rank') return p.rank.label || '';
-    if (k === 'fame') { const f = game.select.fameRank(p.fame); return h('span', { title: `${f.full}（${f.value}）` }, f.text); }
+    if (k === 'fame') { const f = game.select.fameRank(p.fame); return h('span', { title: `${f.full}（${num(f.value)}）` }, f.text); }
     const label = SORTS.find(([key]) => key === k)[1];
     return h('span', h('i', label), num(valOf(p, k)));
   }

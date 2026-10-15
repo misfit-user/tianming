@@ -5,7 +5,7 @@
 //   · 「君上之疑」只对他人；问对里当面识破的，才写出所隐之事，只隐隐觉出的不写——现行图志两样都写出所隐之事，新界面收紧；
 //   · 忠诚、才具等不走奏报失真层（现行图志亦然）。
 // 写口一处：对此人的批注，存本机 localStorage「tm_zhubi_<名>」，与现行图志同键，不入存档。
-import { turnTag } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -30,7 +30,7 @@ const genOf = (rel) => { rel = String(rel || ''); return /祖/.test(rel) ? -2 : 
 function banner(p) {
   const turn = n0(G().turn, 0);
   if (p.alive === false) return { glyph: '殁', title: '已殁', note: [str(p.deathReason), turnTag(p.deathTurn)].filter(Boolean).join(' · ') };
-  if (p._imprisoned) return { glyph: '狱', title: `下诏狱${p._imprisonedTurn != null ? `·已系${Math.max(0, turn - n0(p._imprisonedTurn, 0))}回合` : ''}`, note: str(p._imprisonReason) || '系于狴犴' };
+  if (p._imprisoned) return { glyph: '狱', title: `下诏狱${p._imprisonedTurn != null ? `·已系${num(Math.max(0, turn - n0(p._imprisonedTurn, 0)))}回合` : ''}`, note: str(p._imprisonReason) || '系于狴犴' };
   if (p._exiled) return { glyph: '谪', title: '流放在外', note: str(p._exileReason) || '谪戍边方' };
   if (p._travelTo) return { glyph: '行', title: '赴任途中', note: `${str(p.location)} → ${str(p._travelTo.toLocation || p._travelTo)}` };
   if (p._scheming) return { glyph: '谋', title: '密谋异动', note: '察其交结，谨防其变' };
@@ -93,7 +93,7 @@ export function person(name) {
     wuchang: ['仁', '义', '礼', '智', '信'].map((k) => [k, r0(wc[k])]),
     gongming: { merit: p.gongming, tier: str(p.gongmingTier), log: (p.meritLog || []).map((m) => ({ turn: m.turn || 0, delta: n0(m.delta, 0), reason: str(m.reason) })) },
     goal: str(p.personalGoal), traits: (p.traits || []).map((t) => ({ name: t.n, tone: t.c || '' })).filter((t) => t.name && !ASCII_ID.test(t.name)), personality: str(p.personality),
-    identity: [['姓名', p.name], ['字号', p.zi], ['性别', [p.age ? `${p.age}岁` : '', p.gender].filter(Boolean).join('·')], ['籍贯', p.birthplace], ['民族', p.ethnicity], ['信仰', p.faith],
+    identity: [['姓名', p.name], ['字号', p.zi], ['性别', [p.age ? `${num(Number(p.age) || 0)}岁` : '', p.gender].filter(Boolean).join('·')], ['籍贯', p.birthplace], ['民族', p.ethnicity], ['信仰', p.faith],
       ['文化', p.culture], ['学识', p.learning], ['立场', p.stance], ['家族', [p.family, TIER[p.familyTier]].filter(Boolean).join('·')], ['辞令', p.speechStyle], ['当前所在', p.location]]
       .map(([k, v]) => [k, str(v)]),
     origin: go ? { title: str(go.title) || '布衣', honors: (go.honors || []).map(str).filter(Boolean), zhengtu: !!go.zhengtu, liupin: go.liupin || 'mid', liupinLabel: str(go.liupinLabel) || '中流',

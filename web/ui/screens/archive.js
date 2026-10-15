@@ -180,7 +180,7 @@ export function createArchive({ root, game, profile, onPerson }) {
     const prof = profile();
     const c = A.CATS.find((k) => k.key === cat);
     const scope = [c.label, type, who && `人：${who}`, where && `地：${where}`, q && `检：${q}`].filter(Boolean).join(' · ');
-    const lines = [`${prof.annals.archive}抄录　${scope}　共${rows.length}卷`, ''];
+    const lines = [`${prof.annals.archive}抄录　${scope}　共${num(rows.length)}卷`, ''];
     for (const x of rows) {
       lines.push(`【${x.title}】${[x.type, x.when].filter(Boolean).join(' · ')}${x.auth !== 'faith' ? `（${A.AUTH[x.auth]}）` : ''}`);
       lines.push(x.text || '');

@@ -61,6 +61,16 @@ export function num(n) {
   return style === 'arabic' ? arabicNum(n) : cnNum(n);
 }
 
+// 内核写好的文字里夹着阿拉伯数字（「民心 37 忧」「欠饷 3.6万」），按记数设置改写：带万、亿的折成整数再写，
+// 年份（三四位数后跟「年」）逐位写，其余整数照数写，小数照旧（执行率 +1.5%）。阿拉伯记数时原样
+export function numText(t) {
+  const s = t == null ? '' : String(t);
+  if (style === 'arabic') return s;
+  return s.replace(/(?<![\d.])(\d+(?:\.\d+)?)\s*(亿|万)/g, (m, d, u) => num(Math.round(Number(d) * (u === '亿' ? 1e8 : 1e4))))
+    .replace(/(?<![\d.])\d{3,4}(?=年)/g, (m) => yearNum(Number(m)))
+    .replace(/(?<![\d.])\d+(?![\d.])/g, (m) => num(Number(m)));
+}
+
 // 回合记号：第三回合（short 作「第三回」）；零是开局，负数是开局之前的前事；不知则空。不写「T3」
 export function turnTag(t, short = false) {
   if (t == null || t === '' || !Number.isFinite(Number(t))) return '';

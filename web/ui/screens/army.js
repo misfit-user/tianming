@@ -104,7 +104,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
     const sec = h('section.fi-sec.ar-acts', h('h4', '处置'),
       h('div.fi-btns',
         h('button.q-yapai', { type: 'button', title: '点验名册，掀出实额', onclick: () => inspect(d) }, '核饷点验'),
-        d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${d.arrears}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
+        d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${num(d.arrears)}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
         h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.train(d.key)) }, '整训'),
         run(() => A.marchable(d.key))
           ? h('button.q-yapai', { type: 'button', title: '下军令移防（行军系统）', onclick: () => marchTo(d) }, '移防')

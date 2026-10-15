@@ -134,8 +134,8 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     replaceChildren(gauges,
       heart['忠诚'] != null ? pin('忠诚', heart['忠诚']) : null,
       heart['野心'] != null ? pin('野心', heart['野心']) : null,
-      pin('名望', fame.meter, { text: fame.text, note: `${fame.full}（${fame.value}）` }),
-      pin('贤能', virtue.meter, { text: virtue.text, note: `${virtue.full}（${virtue.value}）` }));
+      pin('名望', fame.meter, { text: fame.text, note: `${fame.full}（${num(fame.value)}）` }),
+      pin('贤能', virtue.meter, { text: virtue.text, note: `第${num(virtue.stage)}阶·${virtue.text}（${num(virtue.value)}）` }));
 
     // 职掌：现职、所在、所掌；势力、党派、家族、出身
     let st = null;

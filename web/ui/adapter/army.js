@@ -4,6 +4,7 @@
 // 付廷议（屏幕层开朝议并带上议题）、接战预勾三态。老军务面板的「犒军」（白给士气）与 prompt 调兵现行界面已不用，这里也不接。
 import { bus } from '../core/bus.js';
 import { suggest } from './edict.js';
+import { num, turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -15,7 +16,7 @@ const numOf = (a, keys, fb) => { let v = first(a, keys, null); if (typeof v === 
 const pct = (a, keys, fb) => Math.max(0, Math.min(100, numOf(a, keys, fb)));
 const COMMANDER = ['commander', 'commanderName', 'commanderDisplayName', 'commander_name', 'general', 'generalName', 'leader', 'leaderName', 'commandingOfficer', 'chiefCommander', 'chiefGeneral', 'mainGeneral'];
 const FACTION = ['faction', 'factionName', 'owner', 'camp', 'force', 'realm', 'country', 'polity'];
-const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turn != null ? `第${turn}回合` : ''; };
+const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turnTag(turn); };
 
 // ---------- 本朝之军 ----------
 const cleanFac = (v) => String(v || '').replace(/[\s·\-—_]/g, '').replace(/^大/, '').replace(/(朝廷|王朝|政权|汗国|幕府|朝)$/g, '');
@@ -249,7 +250,7 @@ export function march(key, to) {
   const r = w.MarchSystem.orderMarch(a.id || a.name, dest);
   if (!(r && r.ok)) throw new Error((r && r.reason) || '军令未能成行');
   changed('army');
-  return `军令已发：${a.name}移防${dest}（约${(r.order && r.order.totalTurns) || '若干'}回合）`;
+  return `军令已发：${a.name}移防${dest}（约${r.order && r.order.totalTurns ? num(r.order.totalTurns) : '若干'}回合）`;
 }
 // 易将：候选为在世将才（同朝优先、武略为序，内核所排），至多六十名
 export function candidates(key) {

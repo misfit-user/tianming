@@ -89,6 +89,19 @@ function J(x) { return JSON.stringify(x); }
     ok(a > 0 && b > a && c > b, page + '：改动账脚本装在核心之后、面板之前');
   }
 
+  // 撤销/恢复后告诉国师（tovarish：撤销后告诉模型文件已回滚）：只加在接着说的那条消息上
+  {
+    const seen = [];
+    const caller = (conv) => { seen.push(conv[conv.length - 1].text || ''); return Promise.resolve({ text: '', toolCalls: [{ id: 'f' + seen.length, name: 'finish', input: { summary: '好' } }] }); };
+    const first = await AA.runAuthoringLoop(AA.makeDraft(base), '改袁崇焕', { caller, conventions: '', blockingChecks: [], stateNotes: ['不该出现'] });
+    ok(!/动过剧本/.test(seen[0]), '新开对话不加便条（模型没有旧记忆，看当前剧本就够）');
+    await AA.runAuthoringLoop(AA.makeDraft(base), '接着改', { caller, conventions: '', blockingChecks: [], priorConversation: first.conversation, stateNotes: ['在改动史里撤销了「改袁崇焕」那次应用，共 2 处回到了改前'] });
+    ok(/^【玩家在你上次回复之后动过剧本】\n- 在改动史里撤销了「改袁崇焕」那次应用，共 2 处回到了改前\n（以当前剧本为准：撤销掉的改动已经不在了/.test(seen[seen.length - 1]), '接着说时便条写在这条用户消息最前面');
+    const ui = fs.readFileSync(path.join(__dirname, '..', 'editor-authoring-agent-ui.js'), 'utf8');
+    ok(/_noteState\('在改动史里撤销了「' \+ _entryTitle\(target\)/.test(ui) && /_noteState\('在改动史里恢复了「' \+ _entryTitle\(target\)/.test(ui), '撤销、恢复成功后各记一句');
+    ok(/options\.stateNotes = ui\._stateNotes\.slice\(\); ui\._stateNotes = \[\];/.test(ui), '下次发送带上便条，发出即清');
+  }
+
   console.log('\nsmoke-guoshi-ledger ' + (F === 0 ? 'PASS' : 'FAIL') + ' ' + P + '/' + (P + F));
   process.exit(F === 0 ? 0 : 1);
 })().catch(function (e) { console.error('CHAIN FAIL', e && e.stack || e); process.exit(1); });

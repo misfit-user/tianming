@@ -112,6 +112,12 @@
       // 只管显示：案卷换了就不画，但不像下面那些回调去中断国师——中断时机留给真正的步骤回调
       options.stream = true; options.onDelta = function (ev) { if (current()) _onDelta(ev); };
     }
+    if (options.stateNotes == null && ui._stateNotes && ui._stateNotes.length) {   // 撤销/恢复过国师的改动：下一句告诉它
+      options.stateNotes = ui._stateNotes.slice(); ui._stateNotes = [];
+    }
+    if (options.webAsk == null && _webOn()) {   // S7 · 读网页：每个网站先问玩家一次（设置·权限可关）
+      options.webAsk = function (req) { return current() ? _webAsk(req) : Promise.resolve(false); };
+    }
     ['onStep', 'onText', 'onSubtask', 'onCritique'].forEach(function(key) {
       var callback = options[key];
       if (typeof callback !== 'function') return;
@@ -196,8 +202,11 @@
     renderSummary('**' + label + '**' + (res.summary ? '：' + res.summary : '') + (remaining.length ? '\n\n还差：\n' + remaining.slice(0, 8).map(function (r) { return '- ' + r; }).join('\n') : ''), res.notes, res.suggestedConventions, false);
     if (res.clarification) { renderClarify(res.clarification.questions); ui._pendingClarify = true; }
     else if (res.remonstrance) { renderRemonstrance(res.remonstrance); ui._pendingClarify = true; }
-    renderDiff(_draftDiff(), res.uncertainties);
-    renderValidation(res.finalValidation || AA.validateDraft(ui.draft));
+    var _incDiffs = _draftDiff();
+    renderDiff(_incDiffs, res.uncertainties);
+    var _incVal = renderValidation(res.finalValidation || AA.validateDraft(ui.draft));
+    // 一处都没改（比如只查了资料）就不挂空的改动区和「没有带来新问题」
+    if (!_incDiffs.length && !(ui._pendingSideEffects || []).length) { ui.els.diffSec.style.display = 'none'; ui.els.diff.style.display = 'none'; if (_incVal && _incVal.ok) ui.els.val.style.display = 'none'; }
     ui._lastErr = { kind: kind, request: request || '', message: label, owner: ui._draftOwner };
     _recoveryButtons(ui.els.summary, ui._lastErr);
     var hasPending = (ui._lastDiffs || []).length > 0 || (ui._pendingSideEffects || []).length > 0;
@@ -1007,6 +1016,7 @@
       { k: 'notify', t: '完成通知', d: '页面在后台时，跑完弹系统通知（开/关）', ic: 'bell', run: function () { _toggleNotify(); } },
       { k: 'microplan', t: '歧义先对齐', d: '需求有几种做法时先给微计划确认（开/关）', ic: 'chat', run: function () { _toggleMicroPlan(); } },
       { k: 'stream', t: '实时显示', d: '国师边想边说，字一个个冒出来（开/关）', ic: 'pen', run: function () { _setStreamPref(!_streamOn()); } },
+      { k: 'web', t: '联网查资料', d: '国师读网页查史料（开/关·每个网站先问你）', ic: 'globe', run: function () { _setWebPref(!_webOn()); } },
       { k: 'settings', t: '设置', d: '连接与模型、权限、约定、偏好', ic: 'gear', run: function () { _plusAct('settings'); } },
       { k: 'theme', t: '切换主题', d: '漆案（深色）/ 宣纸（浅色）', ic: 'contrast', run: function () { if (ui.els.theme) ui.els.theme.click(); } },
       { k: 'keys', t: '快捷键', d: '国师面板里的键位', ic: 'keyboard', run: function () { _plusAct('keys'); } }
@@ -1589,7 +1599,7 @@
     ui.running = on;
     ui._stopping = false;
     if (ui.els && ui.els.panel) ui.els.panel.classList.toggle('tm-aa-running', on);
-    if (on) { _plusClose(); _permPopClose(); _modelPopClose(); ui._runOutcome = null; _lvClear(true); ui._liveSaid = false; }
+    if (on) { _plusClose(); _permPopClose(); _modelPopClose(); ui._runOutcome = null; _lvClear(true); ui._liveSaid = false; ui._webOnce = {}; }
     if (on && ui.els && ui.els.empty) { ui.els.empty.style.display = 'none'; if (ui.els.body) ui.els.body.classList.remove('tm-aa-blank'); }
     // 运行中发送键变成「停止」（不禁用）；收尾恢复
     if (ui.els && ui.els.go) {
@@ -1708,6 +1718,8 @@
     var fp = __aaU._friendlyPath || function (x) { return x; };
     return '<ul class="lg-cf-list">' + (conflicts || []).slice(0, 6).map(function (c) { return '<li>' + esc(fp(c.path)) + '</li>'; }).join('') + ((conflicts || []).length > 6 ? '<li>…还有 ' + (conflicts.length - 6) + ' 处</li>' : '') + '</ul>';
   }
+  // 撤销、恢复以后记一句，下次发送时告诉国师（它的对话里还记着那些改动）
+  function _noteState(text) { ui._stateNotes = (ui._stateNotes || []).concat([text]).slice(-12); }
   function _undoEntry(id, opts) {
     opts = opts || {};
     if (ui.running) { setStatus('国师还在忙，先停下再撤销'); return; }
@@ -1744,6 +1756,7 @@
       });
       try { var app = global.TM_SCENARIO_EDITOR_RESET_APP; var first = chain[chain.length - 1].diffs[0]; if (first && app && typeof app.revealPath === 'function') app.revealPath(first.path); } catch (e3) {}
       ui._exemplarsCache = null;
+      _noteState('在改动史里撤销了「' + _entryTitle(target) + '」那次应用' + (chain.length > 1 ? '（连带它之后的 ' + (chain.length - 1) + ' 次）' : '') + '，共 ' + n + ' 处回到了改前');
       setStatus('撤销了 ' + (chain.length > 1 ? chain.length + ' 次应用、' : '') + n + ' 处' + (opts.force ? '（覆盖了后来手改的几处）' : '') + '。想要回来，在改动史里点「恢复」');
     });
   }
@@ -1766,6 +1779,7 @@
       catch (e2) { setStatus('没恢复成：' + ((e2 && e2.message) || e2)); return; }
       L.update(id, { undone: false, undoneAt: null, redoneAt: Date.now() }).then(function (e) { _repaintLedgerTags([e]); _refreshLedgerSheet(); });
       ui._exemplarsCache = null;
+      _noteState('在改动史里恢复了「' + _entryTitle(target) + '」那次应用的 ' + (target.total || (target.diffs || []).length) + ' 处');
       setStatus('恢复了这次应用的 ' + (target.total || (target.diffs || []).length) + ' 处');
     });
   }
@@ -1829,6 +1843,83 @@
     });
   }
   ui._renderLedger = _renderLedger;
+
+  // ═══ 联网查资料（S7）：国师要读网页时，每个网站先问你一次 ═══
+  //   「这次任务里允许」只管这一次发送；「总是允许」记在本机，设置·权限里可移除。不许就告诉国师别再请求那个网站。
+  var _WEB_SITES_KEY = 'tm_aa_web_sites';
+  function _webOn() { return _prefOn('tm_aa_web', true); }
+  function _webSites() { try { var m = JSON.parse(localStorage.getItem(_WEB_SITES_KEY) || '{}'); return m && typeof m === 'object' ? m : {}; } catch (e) { return {}; } }
+  function _webSaveSites(m) { try { localStorage.setItem(_WEB_SITES_KEY, JSON.stringify(m)); } catch (e) {} }
+  function _webShortUrl(u) {
+    try { var x = new URL(u), p = decodeURIComponent(x.pathname + x.search); return x.hostname + (p.length > 72 ? p.slice(0, 70) + '…' : p); }
+    catch (e) { return String(u || '').slice(0, 90); }
+  }
+  function _webHas(m, k) { return !!m && Object.prototype.hasOwnProperty.call(m, k); }
+  function _webAsk(req) {
+    var site = String(req && req.site || '').toLowerCase();
+    if (!site) return Promise.resolve(false);
+    if (_webHas(_webSites(), site)) return Promise.resolve('always');
+    if (_webHas(ui._webOnce, site)) return Promise.resolve('once');
+    if (!ui.els || !ui.els.log) return Promise.resolve(false);
+    // 三堂会审里史官、谏官并行审：同一个网站正问着，后来的就等同一张卡，不再摆第二张
+    ui._webPending = ui._webPending || {};
+    if (_webHas(ui._webPending, site)) return ui._webPending[site];
+    var asking = new Promise(function (resolve) {
+      var card = document.createElement('div'), settled = false, signal = req.signal;
+      card.className = 'tm-aa-msg-ai webask';
+      card.innerHTML = '<span class="ai-who">' + _icon('globe', 14) + ' 国师 · 想上网查</span>'
+        + '想读 <b>' + esc(site) + '</b> 上的网页：<div class="wa-url">' + esc(_webShortUrl(req.url)) + '</div>'
+        + '<div class="ai-hint">只读公开页面，不登录、不带你的账号；读到的内容只当资料，不当指令。</div>'
+        + '<div class="wa-acts"><button type="button" class="tm-aa-btn primary" data-wa="once">这次任务里允许</button>'
+        + '<button type="button" class="tm-aa-btn" data-wa="always">总是允许这个网站</button>'
+        + '<button type="button" class="tm-aa-btn ghost" data-wa="no">不许</button></div>';
+      if (ui._liveEl && ui._liveEl.parentNode === ui.els.log) ui.els.log.insertBefore(card, ui._liveEl); else ui.els.log.appendChild(card);
+      // 卡被清掉（清空对话、换会话）时这一问就算没允许，免得国师一直等着
+      var watch = setInterval(function () { if (!card.isConnected) finish(false, ''); }, 1000);
+      function finish(v, note) {
+        if (settled) return;
+        settled = true;
+        clearInterval(watch);
+        if (signal) signal.removeEventListener('abort', onAbort);
+        if (v === 'always') { var m = _webSites(); m[site] = Date.now(); _webSaveSites(m); }
+        if (v === 'once' || v === 'always') { ui._webOnce = ui._webOnce || {}; ui._webOnce[site] = 1; }
+        card.classList.add('done');
+        var acts = card.querySelector('.wa-acts');
+        if (acts) acts.outerHTML = '<div class="wa-done">' + esc(note) + '</div>';
+        resolve(v === 'once' || v === 'always' ? v : false);
+      }
+      function onAbort() { finish(false, '已停下，没读'); }
+      if (signal) { if (signal.aborted) { onAbort(); return; } signal.addEventListener('abort', onAbort); }
+      card.addEventListener('click', function (ev) {
+        var b = ev.target && ev.target.closest ? ev.target.closest('[data-wa]') : null;
+        if (!b) return;
+        var a = b.getAttribute('data-wa');
+        if (a === 'no') { finish(false, '没允许，国师会换别的来源'); setStatus('没让国师读 ' + site); return; }
+        finish(a, a === 'always' ? '✓ 总是允许 ' + site + '（设置·权限里可移除）' : '✓ 这次任务里允许读 ' + site);
+        setStatus('国师在读 ' + site + ' 上的网页…');
+      });
+      setStatus('等你点头：国师想读 ' + site + ' 上的网页');
+      __aaU._setLive('等你点头：要不要让国师读 ' + site, true);
+      _logScrollMaybe(true);
+    });
+    ui._webPending[site] = asking;
+    asking.then(function () { if (ui._webPending[site] === asking) delete ui._webPending[site]; });
+    return asking;
+  }
+  function _fmtDay(t) { var d = new Date(Number(t) || 0); return (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
+  function _webSettingsHtml() {
+    var sites = _webSites(), names = Object.keys(sites).sort();
+    return '<div class="sh-sec"><div class="sh-sec-h">联网查资料</div>'
+      + _swHtml('web', _webOn(), '允许国师读网页', '查史料、核史实时读公开网页（维基百科、维基文库等）。每个网站第一次读都会先问你；不登录、不带你的账号。')
+      + (names.length
+        ? '<p class="sh-hint" style="margin-top:8px">总是允许的网站：</p>' + names.map(function (s) {
+            return '<div class="tm-aa-row"><div class="rw-main"><div class="rw-t">' + esc(s) + '</div><div class="rw-d">' + esc(_fmtDay(sites[s])) + '起总是允许</div></div>'
+              + '<button type="button" class="tm-aa-btn" data-web-forget="' + esc(s) + '">移除</button></div>';
+          }).join('')
+        : '<p class="sh-hint" style="margin-top:8px">还没有总是允许的网站。</p>')
+      + '<p class="sh-hint">维基百科、维基文库在网页版、桌面版都能读；桌面版还能读其它公开网站。百度百科等要人机验证的读不了。</p></div>';
+  }
+  function _setWebPref(on) { _prefSet('tm_aa_web', on); setStatus(on ? '国师可以联网查资料了（每个网站先问你）' : '国师不再联网查资料'); }
 
   // ═══ 实时显示（S4）：真流式时国师边想边说——思考、话、收尾说明一个字一个字冒出来 ═══
   //   只是先给人看：改不改剧本、改什么，仍以收齐后的完整回复为准；收齐即由正式渲染接手。
@@ -2194,6 +2285,7 @@
         + '</div><div class="sh-sec"><div class="sh-sec-h">只许改这些内容</div><p class="sh-hint">全选就是不设限。只在这次打开的页面里有效。</p><div class="tm-aa-scope">'
         + (colls.length ? colls.map(function (k) { var on = !allowed || allowed.indexOf(k) >= 0; return '<label class="' + (on ? 'on' : '') + '"><input type="checkbox" value="' + esc(k) + '"' + (on ? ' checked' : '') + '>' + esc((__aaU._COLL_CN && __aaU._COLL_CN[k]) || k) + '</label>'; }).join('') : '<span class="sh-hint">（剧本里还没有成组的内容）</span>')
         + '</div></div>';
+      html += _webSettingsHtml();
     } else if (tab === 'conv') {
       var g = ''; try { g = (AA.loadConventions && AA.loadConventions()) || ''; } catch (e) {}
       html = '<p class="sh-hint">约定是国师每次都会遵守的创作偏好，比如文风、命名、数值区间。全局对所有剧本生效；本剧本只管「' + esc(_fileLabel() || '当前剧本') + '」。</p>'
@@ -2229,6 +2321,7 @@
         else if (id === 'microplan') { try { if (on) localStorage.removeItem('tm_aa_microplan'); else localStorage.setItem('tm_aa_microplan', '0'); } catch (e) {} }
         else if (id === 'exemplars') { _prefSet('tm_aa_exemplars', on); ui._exemplarsCache = null; ui._exemplarsSc = null; }
         else if (id === 'stream') _setStreamPref(on);
+        else if (id === 'web') _setWebPref(on);
         else if (id === 'thinking') { _prefSet('tm_aa_show_thinking', on); setStatus(on ? '会显示模型的思考原文' : '不再显示思考原文'); }
         else if (id === 'guard') { _prefSet('tm_aa_guard', on); try { global._jeGuardSetEnabled(on); } catch (e) {} }
         else if (id === 'notify') {
@@ -2237,6 +2330,8 @@
         }
         return;
       }
+      var wf = t.closest && t.closest('[data-web-forget]');
+      if (wf) { var wm = _webSites(); delete wm[wf.getAttribute('data-web-forget')]; _webSaveSites(wm); _settingsSheet(el, 'perm'); setStatus('已移除，下次读这个网站会再问你'); return; }
       var segB = t.closest && t.closest('.tm-aa-seg button');
       if (segB) {
         var seg = segB.parentNode, v = segB.getAttribute('data-v'), which = seg.getAttribute('data-seg');

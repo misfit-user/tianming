@@ -184,7 +184,7 @@ console.log('smoke-guoshi-stream');
     assert.match(ui, /k: 'stream', t: '实时显示'[\s\S]{0,120}_setStreamPref\(!_streamOn\(\)\)/, '命令面板也能开关');
     assert.match(ui, /function _setStreamPref\(on\) \{[\s\S]{0,200}delete m\[_streamLineKey\(\)\]/, '重开时清掉这条线路的「不支持」记号');
     assert.match(ui, /_LIVE_ANSWER_KEY = \{ finish: 'summary', submitAnswer: 'answer'/);
-    assert.match(ui, /ui\._runOutcome = null; _lvClear\(true\); ui\._liveSaid = false; \}/);
+    assert.match(ui, /ui\._runOutcome = null; _lvClear\(true\); ui\._liveSaid = false;/);
   });
   console.log('\nsmoke-guoshi-stream ' + (fail === 0 ? 'PASS' : 'FAIL') + ' ' + pass + '/' + (pass + fail));
   process.exit(fail === 0 ? 0 : 1);

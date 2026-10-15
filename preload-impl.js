@@ -221,6 +221,10 @@ contextBridge.exposeInMainWorld('tianming', {
   onAppCloseFlushRequest: (callback) =>
     _subscribeAppCloseFlush(callback),
 
+  // === 国师读网页：只读公网 https 页面，主进程代取（网页里跨站读不到的站也能读）===
+  webFetch: (url) =>
+    ipcRenderer.invoke('web-fetch', { url: String(url || '').slice(0, 2048) }),
+
   // === 读 web 目录文本文件（国师源码工具·file:// 下 fetch 不可用的桌面通道）===
   readWebFile: (relPath) =>
     ipcRenderer.invoke('read-web-file', relPath),

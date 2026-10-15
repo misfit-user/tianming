@@ -3906,6 +3906,18 @@ ipcMain.handle('online-service-status', async (event, options = {}) => {
   }
 });
 
+// 国师「读网页」：只读公网 https 页面，校验与连接都走 safeRemote（逐跳 DNS 校验、钉地址、不带凭据、不走代理）
+const authoringWebFetch = require('./main-web-fetch.js').createWebFetch({
+  fetchRemoteResponse: (url, init, maxRedirects) => safeRemote.fetchRemoteResponse(url, init, maxRedirects)
+});
+ipcMain.handle('web-fetch', async (event, request = {}) => {
+  try {
+    return Object.assign({ success: true }, await authoringWebFetch.fetchPage(request && request.url));
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+});
+
 ipcMain.handle('online-request', async (event, request = {}) => {
   try {
     return await handleOnlineRendererRequest(request.method, request.pathname, request.body);

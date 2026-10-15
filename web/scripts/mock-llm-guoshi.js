@@ -59,6 +59,8 @@ function decide(messages, toolNames, allText, userText) {
   if (d) return d;
   const m = mapDemo(messages.slice(lastUser + 1), has, turnsSince, userText);
   if (m) return m;
+  const w = webDemo(messages.slice(lastUser + 1), has, turnsSince, userText);
+  if (w) return w;
   // 会审修订阶段
   if (/三堂会审[··].*修订|据.*意见.*修订/.test(userText)) {
     if (!didMutate && has('applyEdit')) return [tc('applyEdit', { path: 'worldSettings.note', value: '（mock）已据史官·谏官意见修订：纪年改保守措辞、新势力资源下调一档' })];
@@ -105,6 +107,26 @@ function mapDemo(messages, has, aTurns, userText) {
   return [tc('finish', { summary: rename
     ? '把「' + ((divs[0] && divs[0].name) || '第一块地') + '」改名为「' + rename[1] + '」，其余属性没动。'
     : (names.length ? '这张图上有 ' + divs.length + ' 块：' + names.join('、') + (divs.length > 12 ? ' 等' : '') + '。' : '这张图上还没有地块。') })];
+}
+
+// 「查证：X」：先上维基百科读 X（跳到「生平」），再据读到的收尾；玩家不许读或读不到就照实说
+function webDemo(messages, has, aTurns, userText) {
+  if (!/查证[：:]/.test(userText) || !has('webFetch')) return null;
+  const subject = (/查证[：:]\s*([^\s，。,.的]+)/.exec(userText) || [])[1] || '袁崇焕';
+  if (aTurns === 0) {
+    return Object.assign([tc('webFetch', { url: 'https://zh.wikipedia.org/wiki/' + subject, find: '生平' })], { content: '先上维基百科查「' + subject + '」。' });
+  }
+  let res = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role !== 'tool') continue;
+    try { res = JSON.parse(messages[i].content); } catch (e) {}
+    break;
+  }
+  if (res && res.ok && res.text) {
+    const body = String(res.text).split('\n').filter(function (l) { return l && !/^(网址|标题|来源)：|^（以下是网页内容|^#/.test(l); }).join(' ').slice(0, 110);
+    return [tc('finish', { status: 'completed', summary: '查了维基百科「' + (res.title || subject) + '」：' + body + '……\n\n出处：' + res.url })];
+  }
+  return [tc('finish', { status: 'partial', summary: '没读到网页（' + ((res && res.reason) || '没有结果') + '），这次只能凭已有资料，要紧处我会标出来请你核。' })];
 }
 
 function demo(messages, has, aTurns, userText) {
@@ -155,6 +177,8 @@ function reply(res, toolCalls) {
 const STREAM_MS = Math.max(0, Number(process.env.MOCK_STREAM_MS || 25) || 0);
 function _thought(calls) {
   const names = (calls || []).map(function (c) { return c.function.name; });
+  if (names.indexOf('webFetch') >= 0) return '这件事要核史实，凭记忆写容易错。先上维基百科读一读「生平」那段，再据实回你。';
+  if (names.indexOf('finish') >= 0 && /维基百科|没读到网页/.test(String(calls[0].function.arguments || ''))) return '读到了。挑要紧的几句回给你，附上出处，你可以自己点开核。';
   if (names.indexOf('finish') >= 0) return '都改完、校验也过了。收尾要把改了什么、为什么这么改讲清楚：袁崇焕那条点明月份待核；两位新人说清出身和派系，免得读的人以为是随手编的。';
   if (names.indexOf('applyPush') >= 0 || names.indexOf('applyEdit') >= 0) return '查到了：袁崇焕眼下挂的还是旧衔。崇祯元年四月起复，加兵部尚书兼右副都御史、督师蓟辽——但确切月份各书说法不一，改完得标个待核。\n\n补文官要挑这一年真在朝或刚起复的东林人：文震孟、郑三俊都合适，得有表字、籍贯、性格和五常，不能是空壳。';
   if (names.indexOf('validateDraft') >= 0) return '改了一处、加了两人，自查一遍引用和必填字段。';
@@ -191,6 +215,7 @@ http.createServer(function (req, res) {
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); res.end(); return; }
   if (req.method !== 'POST') { res.writeHead(200, CORS_JSON); res.end(JSON.stringify({ ok: true, hint: 'POST /v1/chat/completions' })); return; }
   let buf = '';
+  req.setEncoding('utf8');   // 按流解码：请求体大了会分块，逐块转字符串会把块边界上的汉字切坏
   req.on('data', function (c) { buf += c; });
   req.on('end', function () {
     let body = {};

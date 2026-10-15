@@ -12,6 +12,7 @@ import { num, yearNum, grade } from '../core/numerals.js';
 import { pinned, pinnedFirst, togglePin } from '../core/pins.js';
 import { juan, qianzi, wadang, pai, sealButton, zhang, pin, zhou, keben, btn, clock, qiPanel, tag, tiao, kaiguan, kewei, closeSideScrolls } from '../kit/index.js';
 import { LOOK_QINGLV_AGED } from '../scene/map/looks.js';
+import { realmTitle } from '../scene/map/labels.js';
 import { createDive } from '../scene/transitions.js';
 import { profileOf } from '../model/identity.js';
 import { placeIndex } from '../model/place.js';
@@ -662,7 +663,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     const d = s.date();
     time.update({ era: `${d.era || ''}${d.reignYear ? num(d.reignYear) + '年' : ''}`, year: d.year, month: d.month, day: d.day, settling: d.busy });
     // 左上那方印：元首是国号（明朝廷、唐朝廷去「朝廷」，大宋、大金去「大」），余者是本人的姓
-    dyn.textContent = (per.tier === 'sovereign' ? (per.faction || '').replace(/朝廷$/, '').replace(/^大(?=.)/, '') : per.name).charAt(0) || '天';
+    dyn.textContent = (per.tier === 'sovereign' ? realmTitle(per.faction).replace(/^大(?=.)/, '') : per.name).charAt(0) || '天';   // 国号印：唐朝廷→唐、大宋→宋、唐·魏博镇→魏
     // 帑廪、内帑、户口点开即翻到度支册的那一叶
     const FISCAL_TAB = { treasury: 'guoku', privy: 'neitang', census: 'census' };
     standing = per.tier === 'sovereign' ? null : game.standing();

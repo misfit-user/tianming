@@ -52,8 +52,11 @@ export function createIssues({ game, profile, onConvene, onSecret }) {
     const sec = (label, ...body) => h('section.iss-sec', h('h5', `〔 ${label} 〕`), ...body);
     const choiceBtns = it.choices.map((c) => h('button.iss-choice', { type: 'button', onclick: () => choose(c) }, h('b', c.text), c.desc ? h('small', c.desc) : null));
     const busy = h('div.iss-busy', { hidden: true }, '裁断中……');
+    // 门类、缓急、所涉之地写在正文上头一行（原先全挤在卷轴竖注里，竖写装不下，截掉了后半）
+    const tags = [it.category, it.severity, it.region ? `涉${it.region}` : ''].filter(Boolean);
     const content = h('div.iss-detail',
       it.legacyRelief ? h('p.iss-warn', '旧版独立试验案，仅保留历史数据；本页不再提供独立立案、拨款或撤止。请先核对原流水，勿重复支付。') : null,
+      tags.length ? h('p.iss-tagline', tags.map((t) => h('span' + (/紧急|急/.test(t) ? '.hot' : ''), t))) : null,
       h('div.iss-desc', it.description),
       it.narrative ? sec('详情', h('div.iss-text', it.narrative)) : null,
       it.chars.length || it.factions.length ? h('div.iss-links',
@@ -64,7 +67,7 @@ export function createIssues({ game, profile, onConvene, onSecret }) {
       it.chosen ? sec(t.chosen, h('div.iss-chosen', it.chosen)) : null,
       it.group === 'open' && it.choices.length ? sec(t.decide, h('div.iss-choices', choiceBtns), busy) : null,
       it.resolvedOn ? h('div.iss-when', `· 于 ${it.resolvedOn} 议决 ·`) : null);
-    const meta = [it.raised, it.category, it.severity, it.region ? '影响·' + it.region : ''].filter(Boolean).join(' · ');
+    const meta = it.raised || '';
     const j = juan({
       title: it.title, note: meta, width: '50rem', height: 'min(44rem, 84vh)', content,
       actions: it.group === 'open' ? [onConvene ? { label: t.convene, onclick: ({ close }) => { close('ok'); onConvene(it.id); } } : null,

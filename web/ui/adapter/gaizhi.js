@@ -8,7 +8,7 @@
 // 召史策对借问对的 cedui 一式（新前端召对场景接手）；议废前番改制照 L11 的反向差异付科议；逐年所记读 L8 的 _reformChronicle。
 import { bus } from '../core/bus.js';
 import { claimOverlays } from './kernel.js';
-import { num } from '../core/numerals.js';
+import { num, numText } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -126,7 +126,7 @@ export function items(d) {
   const x = diffOf(d);
   const out = [];
   const put = {};
-  for (const k of Object.keys(SECTIONS)) put[k] = (text) => out.push({ sec: k, text });
+  for (const k of Object.keys(SECTIONS)) put[k] = (text) => out.push({ sec: k, text: numText(text) });   // 年岁、人数、次数照记数设置写
   if (x.intent === 'restoration') put.zhi(x.restorationDynasty ? `复${x.restorationDynasty}旧章` : '复祖宗成法');
   if (x.ideology) put.zhi(`取士之本由${IDEOLOGY[x.ideology.old] || x.ideology.old}转${IDEOLOGY[x.ideology.new] || x.ideology.new}`);
   x.subjects.removed.forEach((s) => put.ke(`罢${s.name}一科`));

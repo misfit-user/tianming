@@ -227,7 +227,7 @@ export function createKeju({ root, game, profile, onPerson, onReform }) {
   function renderEco() {
     const e = data.ecology;
     const rows = (list, unit) => (list.length ? list.map((r) => h('p.kj-eco-row', h('b', r.year || '—'), r.reason ? h('em', r.reason) : null, r.examiner ? h('span', `主考${r.examiner}`) : null,
-      h('span', `${unit}${r.count != null ? num(Number(r.count) || 0) : '?'}${unit === '选童' ? '名' : '人'}`), r.names.length ? h('small', r.names.slice(0, 8).join('、') + (r.names.length > 8 ? '等' : '')) : null)) : [h('p.dim', '暂无开科记录')]);
+      h('span', `${unit}${r.count != null ? num(Number(r.count) || 0) : '若干'}${unit === '选童' ? '名' : '人'}`), r.names.length ? h('small', r.names.slice(0, 8).join('、') + (r.names.length > 8 ? '等' : '')) : null)) : [h('p.dim', '暂无开科记录')]);
     return [head('特科与学派', '特科随朝廷事故而开（寿诞、乱后、祥瑞、战功……），学派由山长自驱讲会。'),
       h('section.kj-block', h('h5', '恩科'), rows(e.enke, '中式')), h('section.kj-block', h('h5', '武举'), rows(e.wuju, '中式')), h('section.kj-block', h('h5', '童子科'), rows(e.tongzi, '选童')),
       h('section.kj-block', h('h5', '书院与学派'), h('p', `私学书院${num(e.academies)}处 · 学派${num(e.lineages)}家`))];

@@ -8,7 +8,7 @@
 // 印、名、类，君主一张小像，读数带，六卷检签（君臣、版图、军略、财计、邦交、史略），卷底可开整本朝野册。与人物窗、志窗同占左边一扇。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num, roundSig } from '../core/numerals.js';
+import { num, roundSig, turnTag } from '../core/numerals.js';
 import { qianzi } from '../kit/index.js';
 
 // 势力读数块：内核的记数写阿拉伯字（「195 块」「182万」「1.50亿」），照记数设置改写，与册里别处一路
@@ -233,10 +233,10 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   // 「阉党(附者)」「浙党(部分)」也认得是哪一党
   const partyLink = (n) => { const k = String(n).split(/[（(]/)[0].trim(); return { label: n, onclick: S.parties().some((p) => p.key === k) ? () => jump('parties', k) : null }; };
   const classLink = (n, sub) => ({ label: n, sub, onclick: S.classes().some((c) => c.key === n) ? () => jump('classes', n) : null });
-  const causeLines = (list) => list.map((c) => ({ head: `T${c.turn ?? '?'}${c.source ? ' · ' + c.source : ''}`, body: c.text }));
+  const causeLines = (list) => list.map((c) => ({ head: [turnTag(c.turn), c.source].filter(Boolean).join(' · '), body: c.text }));
   const ecoLines = (eco) => [
     eco.edges.length ? { title: '生态关系', sub: '动态亲和', items: eco.edges.map((e) => ({ head: e.peer, body: `${e.status} · 亲和${e.affinity} · 信${e.trust} · 怨${e.grievance}${e.note ? ' · ' + e.note : ''}` })) } : null,
-    eco.signals.length ? { title: '生态信号', items: eco.signals.map((s) => ({ head: `T${s.turn ?? '?'} ${s.kind}`, body: s.note || '暂无细节' })) } : null
+    eco.signals.length ? { title: '生态信号', items: eco.signals.map((s) => ({ head: [turnTag(s.turn), s.kind].filter(Boolean).join(' · '), body: s.note || '暂无细节' })) } : null
   ].filter(Boolean);
   // 卷底动作：叫法取 profile().social；某样不设即不列
   function actsOf(type, who) {
@@ -299,12 +299,12 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
           relations: [...p.allies.map((n) => ({ name: n, kind: 'meng' })), ...p.foes.map((n) => ({ name: n, kind: 'di' })), ...p.neutrals.map((n) => ({ name: n, kind: 'zhong' }))]
             .map((r) => { const k = r.name.split(/[（(]/)[0]; return Object.assign(r, S.parties().some((x) => x.key === k) ? { onclick: () => jump('parties', k) } : {}); }),
           lines: [
-            p.ledger.length ? { title: '党势近账', sub: '何因消长', items: p.ledger.map((e) => ({ head: `T${e.turn ?? '?'} ${e.label}${signed(e.d)}`, tone: e.d < 0 ? 'neg' : 'pos', body: e.why || '—' })) } : null,
+            p.ledger.length ? { title: '党势近账', sub: '何因消长', items: p.ledger.map((e) => ({ head: [turnTag(e.turn), `${e.label}${signed(e.d)}`].filter(Boolean).join(' · '), tone: e.d < 0 ? 'neg' : 'pos', body: e.why || '—' })) } : null,
             { title: '近因', items: p.causes.length ? causeLines(p.causes) : [{ body: '暂无可追溯变化' }] },
             p.disputes.length ? { title: '争端', items: p.disputes.map((d) => ({ head: d.rival ? `对${d.rival}` : '', body: `${d.topic}${d.stakes ? ' —— ' + d.stakes : ''}` })) } : null
           ].filter(Boolean) }],
         ['议程', '沿革·史略', {
-          lines: p.agendaHistory.length ? [{ title: '议程沿革', items: p.agendaHistory.map((a) => ({ head: a.turn != null ? (a.turn > 0 ? `T${a.turn}` : a.turn === 0 ? '开局' : '前事') : '', body: `${a.agenda}${a.outcome ? ' → ' + a.outcome : ''}` })) }] : [],
+          lines: p.agendaHistory.length ? [{ title: '议程沿革', items: p.agendaHistory.map((a) => ({ head: turnTag(a.turn), body: `${a.agenda}${a.outcome ? ' → ' + a.outcome : ''}` })) }] : [],
           texts: p.history ? [['史略', p.history]] : [] }],
         ['事链', '诉求→议题→裁决', {
           chain: [{ k: '目标', v: p.chain.demand }, { k: '党派', v: p.chain.party }, { k: '议题', v: p.chain.issue || '待付廷议', empty: !p.chain.issue, onclick: p.chain.issue && onCourt ? () => { hide(); onCourt(p.chain.issue); } : null },
@@ -331,11 +331,11 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
         ['民情', '地域·近账·民心', c.sealed ? { sealed: `据奏之下，满意的分地、分账与升降一概封存。${c.sealedNote}` } : {
           lines: [
             c.regions.length ? { title: '地域分账', sub: '同阶不同地', items: c.regions.map((v) => ({ head: `${v.region} ${num(v.sat)}`, tone: v.sat < 35 ? 'neg' : 'pos', body: [v.base != null ? `势位${num(v.base)}` : '', v.note].filter(Boolean).join(' · ') || '—' })) } : null,
-            c.ledger.length ? { title: '满意近账', sub: '何因增减', items: c.ledger.map((e) => ({ head: `T${e.turn ?? '?'} ${signed(e.d)}`, tone: e.d < 0 ? 'neg' : 'pos', body: e.why || '—' })) } : null,
+            c.ledger.length ? { title: '满意近账', sub: '何因增减', items: c.ledger.map((e) => ({ head: [turnTag(e.turn), signed(e.d)].filter(Boolean).join(' · '), tone: e.d < 0 ? 'neg' : 'pos', body: e.why || '—' })) } : null,
             { title: '近因', items: c.causes.length ? causeLines(c.causes) : [{ body: '暂无可追溯变化' }] },
             c.minxin ? { title: '阶层民心', sub: '民心联动', items: [
               c.minxin.true != null ? { head: '民心', body: `真实${num(c.minxin.true)} · 感知${num(c.minxin.perceived)}${c.minxin.phase ? ' · ' + c.minxin.phase : ''}${c.minxin.pressure ? ' · ' + c.minxin.pressure : ''}` } : null,
-              ...c.minxin.ledger.map((x) => ({ head: `T${x.turn ?? '?'} ${x.source}`, body: x.note || '—' }))].filter(Boolean) } : null
+              ...c.minxin.ledger.map((x) => ({ head: [turnTag(x.turn), x.source].filter(Boolean).join(' · '), body: x.note || '—' }))].filter(Boolean) } : null
           ].filter(Boolean) }],
         ['人物', '代表·受益·怨恨', { links: [
           c.representatives.length ? { title: '名册代表', items: c.representatives.map((r) => personLink(r)) } : null,

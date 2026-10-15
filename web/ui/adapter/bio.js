@@ -5,6 +5,8 @@
 //   · 「君上之疑」只对他人；问对里当面识破的，才写出所隐之事，只隐隐觉出的不写——现行图志两样都写出所隐之事，新界面收紧；
 //   · 忠诚、才具等不走奏报失真层（现行图志亦然）。
 // 写口一处：对此人的批注，存本机 localStorage「tm_zhubi_<名>」，与现行图志同键，不入存档。
+import { turnTag } from '../core/numerals.js';
+
 const w = window;
 const G = () => w.GM || {};
 const n0 = (v, fb = null) => { const n = Number(v); return v == null || v === '' || !Number.isFinite(n) ? fb : n; };
@@ -27,7 +29,7 @@ const genOf = (rel) => { rel = String(rel || ''); return /祖/.test(rel) ? -2 : 
 
 function banner(p) {
   const turn = n0(G().turn, 0);
-  if (p.alive === false) return { glyph: '殁', title: '已殁', note: [str(p.deathReason), p.deathTurn ? `T${p.deathTurn}` : ''].filter(Boolean).join(' · ') };
+  if (p.alive === false) return { glyph: '殁', title: '已殁', note: [str(p.deathReason), turnTag(p.deathTurn)].filter(Boolean).join(' · ') };
   if (p._imprisoned) return { glyph: '狱', title: `下诏狱${p._imprisonedTurn != null ? `·已系${Math.max(0, turn - n0(p._imprisonedTurn, 0))}回合` : ''}`, note: str(p._imprisonReason) || '系于狴犴' };
   if (p._exiled) return { glyph: '谪', title: '流放在外', note: str(p._exileReason) || '谪戍边方' };
   if (p._travelTo) return { glyph: '行', title: '赴任途中', note: `${str(p.location)} → ${str(p._travelTo.toLocation || p._travelTo)}` };
@@ -104,7 +106,7 @@ export function person(name) {
     relations, wuwei: p.isPlayer ? [] : (p.wuweiRels || []).map((x) => ({ name: x.name, affinity: x.affinity, trust: x.trust, respect: x.respect, fear: x.fear, hostility: x.hostility, known: known(x.name) })),
     impressions, blood,
     career: [...(p.career || []).map((x) => ({ when: str(x.year), title: str(x.title), desc: str(x.desc), key: !!x.milestone, tag: '履历' })),
-      ...(p.arcs || []).slice().sort((a, b) => (a.turn || 0) - (b.turn || 0)).map((a) => ({ when: `T${a.turn}`, title: arcCN(a.type), desc: str(a.desc), tag: '近事' }))],
+      ...(p.arcs || []).slice().sort((a, b) => (a.turn || 0) - (b.turn || 0)).map((a) => ({ when: turnTag(a.turn), title: arcCN(a.type), desc: str(a.desc), tag: '近事' }))],
     post: [['现职', p.officialTitle || p.title || '未仕'], ['品秩', p.rank || '未记'], ['出身', p.learning || '未记'], ['任所', [str(p.location) || '未记', p._travelTo ? str(p._travelTo.toLocation || p._travelTo) : ''].filter(Boolean).join(' → ')]],
     domains: Object.entries(domains), lifeExp,
     family: { tier: TIER[p.familyTier] || '', members: blood.length, fame: r0(p.mingwang), family: str(p.family) },
@@ -157,7 +159,7 @@ export async function sources(name) {
       const data = await loadRef(wkey);
       const e = data && data.scenarioId === c.sid && data.characters && data.characters[a.key || c.id];
       const conf = { H: '证据较直接', M: '有解释空间', L: '证据有限／人设估值', F: '虚构设定' };
-      if (e) out.wuchang = { rows: ['仁', '义', '礼', '智', '信'].map((k) => [k, `开局 ${e.initialScores ? e.initialScores[k] : '?'} · ${conf[e.confidence && e.confidence[k]] || '未注明'}`]), note: str(e.note),
+      if (e) out.wuchang = { rows: ['仁', '义', '礼', '智', '信'].map((k) => [k, `开局 ${e.initialScores && e.initialScores[k] != null ? e.initialScores[k] : '未详'} · ${conf[e.confidence && e.confidence[k]] || '未注明'}`]), note: str(e.note),
         refs: (e.sources || []).map((s) => ({ book: str(s.book), url: /^https:\/\/\S+$/.test(s.url || '') ? s.url : '' })) };
       else out.wuchangError = '尚未读取到本人的评定条目。';
     } catch (err) { out.wuchangError = `史料参考文件读取失败：${err && err.message ? err.message : err}。人物的五常数值仍然保留。`; }

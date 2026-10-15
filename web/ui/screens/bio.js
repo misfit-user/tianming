@@ -5,7 +5,7 @@
 // 数据经 game.bio、game.offices；叫法（君上、批注、追赠）取 profile().bio。
 import { h, replaceChildren } from '../core/dom.js';
 import { bus } from '../core/bus.js';
-import { num } from '../core/numerals.js';
+import { num, turnTag } from '../core/numerals.js';
 import { pinned, togglePin } from '../core/pins.js';
 import { zhou, juan } from '../kit/index.js';
 
@@ -21,7 +21,7 @@ const VOLS = [['overview', '总览'], ['identity', '身份'], ['mind', '心绪']
 const EMO = ['喜', '怒', '忧', '惧', '恨', '敬', '平'];
 const signed = (v) => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : '0');
 // 记忆的回合：开局前的旧事记成负回合，写作「前事」，第零回合写作「开局」
-const when = (t) => (t == null ? '?' : t < 0 ? '前事' : t === 0 ? '开局' : `T${t}`);
+const when = (t) => turnTag(t, true);
 
 // 雷达：axes = [[字, 0..100|null], …]
 function radar(axes, color, size = 250) {
@@ -33,7 +33,7 @@ function radar(axes, color, size = 250) {
     [0.25, 0.5, 0.75, 1].map((f) => s('polygon', { points: ring(f), class: 'grid' })),
     axes.map((_, i) => { const [x, y] = pt(i, 1); return s('line', { x1: c, y1: c, x2: x.toFixed(1), y2: y.toFixed(1), class: 'spoke' }); }),
     s('polygon', { points: val, class: 'val', style: `--rc:${color}` }),
-    axes.map(([k, v], i) => { const [x, y] = pt(i, 1.2); return s('text', { x: x.toFixed(1), y: (y + 4).toFixed(1), 'text-anchor': 'middle', class: 'lab' }, k, s('tspan', { class: 'v', x: x.toFixed(1), dy: '1.05em' }, v == null ? '?' : String(v))); }));
+    axes.map(([k, v], i) => { const [x, y] = pt(i, 1.2); return s('text', { x: x.toFixed(1), y: (y + 4).toFixed(1), 'text-anchor': 'middle', class: 'lab' }, k, s('tspan', { class: 'v', x: x.toFixed(1), dy: '1.05em' }, v == null ? '未详' : num(v))); }));
 }
 
 export function createBio({ root, game, profile, onAudience, onLetter, onOffices, onEdict, onAtlas, viewer = () => '' }) {
@@ -193,7 +193,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
         h('div.lz-two',
           sec('当前心绪', '', h('div.lz-mood', h('b', `〔${m.mood}〕${m.moodText}`), h('small', `压力 ${num(m.stress)} / 100 · ${m.stressLabel}`))),
           sec('心性变量', '', h('div.lz-bars', bar('压力', p.heart[2][1], 'verm'), bar('野心', p.heart[1][1], 'violet'), bar('廉介', p.heart[4][1], 'jade')))),
-        sec('五常心性', '', h('div.lz-wc', p.wuchang.map(([k, v]) => h('span.' + (v == null ? 'mid' : v >= 60 ? 'hi' : v >= 30 ? 'mid' : 'lo'), k, h('small', v == null ? '?' : num(v)))))),
+        sec('五常心性', '', h('div.lz-wc', p.wuchang.map(([k, v]) => h('span.' + (v == null ? 'mid' : v >= 60 ? 'hi' : v >= 30 ? 'mid' : 'lo'), k, h('small', v == null ? '未详' : num(v)))))),
         sec('内省与行止', '', prose([p.personality, p.bio].filter(Boolean).join('　') || '未录', '.indent'))
       ];
     } else if (vol === 'relations') {
@@ -226,13 +226,13 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
       ];
     } else if (vol === 'memory') {
       body = [
-        sec('此人记忆', `${num(p.memory.length)} 条`, p.memory.length ? h('div.lz-mems', p.memory.map((m) => h('p', h('span', { title: m.turn != null ? `第${m.turn}回合` : '' }, when(m.turn)), h('i.' + (EMO.includes(m.emotion) ? 'e' + EMO.indexOf(m.emotion) : 'e6'), m.emotion), h('b', m.event, m.who ? h('small', ` → ${m.who}`) : null)))) : stub('暂无活跃记忆。'),
+        sec('此人记忆', `${num(p.memory.length)} 条`, p.memory.length ? h('div.lz-mems', p.memory.map((m) => h('p', h('span', { title: turnTag(m.turn) }, when(m.turn)), h('i.' + (EMO.includes(m.emotion) ? 'e' + EMO.indexOf(m.emotion) : 'e6'), m.emotion), h('b', m.event, m.who ? h('small', ` → ${m.who}`) : null)))) : stub('暂无活跃记忆。'),
           p.archive.length ? h('details.lz-arc', h('summary', `往事归档（${num(p.archive.length)}段）`), h('div.lz-mems', p.archive.map((a) => h('p', h('span', a.period), h('b', a.summary))))) : null),
-        sec('角色弧线', '', p.arcs.length ? h('div.lz-rows', p.arcs.map((a) => h('p', h('span', `T${a.turn} · ${a.type}`), h('b', a.desc)))) : stub('暂无角色弧线。'))
+        sec('角色弧线', '', p.arcs.length ? h('div.lz-rows', p.arcs.map((a) => h('p', h('span', [when(a.turn), a.type].filter(Boolean).join(' · ')), h('b', a.desc)))) : stub('暂无角色弧线。'))
       ];
     } else if (vol === 'works') {
       body = [sec('著述文事', p.works.length ? `${num(p.works.length)} 篇` : '', p.works.length ? h('div.lz-works', p.works.map((x) => h('div', h('b', x.preserved ? h('i', '★') : null, `《${x.title}》`),
-        h('small', [x.genre, x.mood, `T${x.turn}`, `品 ${num(x.quality)}`].filter(Boolean).join(' · '))))) : stub('此人未有著述传世。'))];
+        h('small', [x.genre, x.mood, when(x.turn), `品 ${num(x.quality)}`].filter(Boolean).join(' · '))))) : stub('此人未有著述传世。'))];
     } else if (vol === 'pov') {
       const v = p.pov;
       body = [
@@ -319,7 +319,7 @@ export function createBio({ root, game, profile, onAudience, onLetter, onOffices
     const L = [`【${p.name}${p.zi ? '　字' + p.zi : ''}】`, `${p.office.join('、')}${p.rank ? '　' + p.rank : ''}　${p.faction}${p.party ? '·' + p.party : ''}`];
     if (p.appearance) L.push('', `形貌：${p.appearance}`);
     if (p.bio) L.push('', p.bio);
-    L.push('', `才具：${p.eight.map(([k, v]) => `${k}${v}`).join(' ')}`, `五常：${p.wuchang.map(([k, v]) => `${k}${v ?? '?'}`).join(' ')}`, `心性：${p.heart.filter(([, v]) => v != null).map(([k, v]) => `${k}${v}`).join(' ')}`);
+    L.push('', `才具：${p.eight.map(([k, v]) => `${k}${v}`).join(' ')}`, `五常：${p.wuchang.map(([k, v]) => `${k}${v ?? '未详'}`).join(' ')}`, `心性：${p.heart.filter(([, v]) => v != null).map(([k, v]) => `${k}${v}`).join(' ')}`);
     if (p.goal) L.push(`志向：${p.goal}`);
     if (p.career.length) { L.push('', '纪传：'); p.career.forEach((c) => L.push(`　${c.when}　${c.title}${c.desc ? '　' + c.desc : ''}`)); }
     const url = URL.createObjectURL(new Blob([L.join('\n')], { type: 'text/plain;charset=utf-8' }));

@@ -6,6 +6,8 @@
 //   · 吏治另有监察之律（老面板 getCorrVisibility）：监察不足五十，真浊度与分部门真账不显，只据地方所奏。
 // 皇权、皇威内核不设失真，照老抽屉直显。只读，处置去诏令、奏疏、问对、朝议。
 // 四项之外另有「时运」一页（朝代阶段、气运警兆、典章祖制），见文末 shiyun。
+import { turnTag } from '../core/numerals.js';
+
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -97,7 +99,7 @@ function lizhi() {
   const rumors = fn('_collectRecentCases') ? w._collectRecentCases() : [];
   const CRED = { high: '可信', medium: '参考', low: '风闻' };
   sections.push({ kind: 'list', title: '近期风闻', badge: `${rumors.length} 条`, empty: '暂无相关风闻——或监察力度不足以察觉', go: rumors.length ? 'docket' : '',
-    items: rumors.map((x) => ({ title: String(x.text || ''), meta: x.type || '弹章', side: `${CRED[x.credibility] || '偏颇'} · ${x.time || 'T' + (x.turn != null ? x.turn : '?')}` })) });
+    items: rumors.map((x) => ({ title: String(x.text || ''), meta: x.type || '弹章', side: `${CRED[x.credibility] || '偏颇'} · ${x.time || turnTag(x.turn) || '时日未详'}` })) });
   if (g.juanna && g.juanna.active) sections.push({ kind: 'alert', title: '捐纳', lines: [`捐纳（卖官）已开——月入 ${Math.round(n0(g.juanna.monthlyIncome) / 1000)} 千两 · 长期腐败`] });
   const facs = c.entrenchedFactions || [];
   if (facs.length) sections.push({ kind: 'list', title: '腐败集团', badge: `${facs.length} 个`, tone: 'bad',
@@ -159,7 +161,7 @@ function minxin() {
       items: ongoing.map((x) => { const lv = LEVELS[(x.level || 1) - 1] || { name: 'L' + x.level }; return { title: `［${lv.name}］${x.region || '某地'} · 众 ${fmt(x.scale || 5000)}${x.cause ? ' · 因 ' + x.cause : ''}`, meta: x._suppressionOrder ? `官军 ${fmt(x._suppressionOrder.strength)} 讨伐中` : '', tone: 'bad' }; }) });
   }
   const signs = (g.heavenSigns || []).filter((s) => n0(g.turn) - n0(s.turn) < 12);
-  if (signs.length) sections.push({ kind: 'list', title: '近年天象·祥瑞', badge: String(signs.length), items: signs.slice(-10).map((s) => ({ title: String(s.name || ''), meta: `T${s.turn}`, tone: s.type === 'good' ? 'good' : 'bad' })) });
+  if (signs.length) sections.push({ kind: 'list', title: '近年天象·祥瑞', badge: String(signs.length), items: signs.slice(-10).map((s) => ({ title: String(s.name || ''), meta: turnTag(s.turn), tone: s.type === 'good' ? 'good' : 'bad' })) });
   if (m.prophecy) {
     const pend = m.prophecy.pendingTriggers || [];
     if (pend.length || n0(m.prophecy.intensity) > 0.05) sections.push({ kind: 'list', title: '谶纬·童谣', badge: String(pend.length), lead: `流传强度 ${pct100(m.prophecy.intensity)}`, items: pend.slice(-6).map((x) => ({ title: `「${x.text}」`, side: `信度 ${pct100(x.credibility != null ? x.credibility : 0.5)}`, tone: 'mid' })) });

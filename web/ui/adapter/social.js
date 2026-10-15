@@ -8,6 +8,7 @@
 //     （revoltState）是推演用的规则与内部钟，不列（老右栏也不列）。
 // 动作三样同老右栏：召党魁／召代表（问对）、付廷议（写入 GM._pendingTinyiTopics 再开廷议）、拟平衡诏／拟安抚诏（议事清册）。
 import { suggest } from './edict.js';
+import { turnTag } from '../core/numerals.js';
 
 const w = window;
 const G = () => w.GM || {};
@@ -100,7 +101,7 @@ function actorActions(type, row) {
   }).slice(-4).reverse().map((a) => {
     const pend = arr(g._pendingTinyiTopics).find((t) => a.linkedIssue && String(t.issueId || t.id || t.topicId || t.linkedIssue || '') === String(a.linkedIssue));
     return {
-      head: loc([a.turn != null ? `T${a.turn}` : '', a.actionType || a.action || 'action', a.status || 'planned'].filter(Boolean).join(' · ')),
+      head: loc([turnTag(a.turn), a.actionType || a.action || 'action', a.status || 'planned'].filter(Boolean).join(' · ')),
       body: loc([a.agenda || a.grievance || '', a.delegateCharacter ? `代理人物：${a.delegateCharacter}${a.delegateRole ? `（${ROLE[String(a.delegateRole).toLowerCase()] || '代表'}）` : ''}` : '',
         a.delegateEvidence ? `近因：${loc(a.delegateEvidence)}` : '', pend && pend.topic ? `廷议 ${pend.topic}` : a.linkedIssue ? `议题 ${a.linkedIssue}` : '', a.source || ''].filter(Boolean).join(' · ')) || '自主压力'
     };

@@ -61,6 +61,13 @@ export function num(n) {
   return style === 'arabic' ? arabicNum(n) : cnNum(n);
 }
 
+// 回合记号：第三回合（short 作「第三回」）；零是开局，负数是开局之前的前事；不知则空。不写「T3」
+export function turnTag(t, short = false) {
+  if (t == null || t === '' || !Number.isFinite(Number(t))) return '';
+  const n = Number(t);
+  return n < 0 ? '前事' : n === 0 ? '开局' : `第${num(n)}${short ? '回' : '回合'}`;
+}
+
 // 取几位有效数字（账上的增减不必记到个位）
 export function roundSig(v, digits = 3) {
   if (!v) return 0;

@@ -109,21 +109,23 @@ export function createTurnVeil({ root, game }) {
   }
   function renderRail() {
     const cur = groups.indexOf(group);
-    replaceChildren(rail, groups.map((g, i) => h('li' + (i < cur ? '.done' : i === cur ? '.now' : ''), h('i', (GROUP[g] || [])[1] || ''), h('small', (GROUP[g] || [])[2] || g))));
+    replaceChildren(rail, groups.map((g, i) => h('li' + (i < cur ? '.done' : i === cur ? '.now' : ''), h('i', (GROUP[g] || [])[1] || ''), h('small', (GROUP[g] || [])[2] || '推演'))));
   }
   function addAnnal(id) {
-    const [name, verse] = BEAT[id] || [id, ''];
+    const [name, verse] = BEAT[id] || ['诸事推演', ''];
     annals.querySelectorAll('p.now').forEach((p) => p.classList.remove('now'));
     annals.prepend(h('p.now', h('b', name), verse ? h('span', verse) : null));
     while (annals.children.length > 14) annals.lastElementChild.remove();
   }
   function status() {
     const b = beats[at];
-    const [name, verse] = b ? (BEAT[b.id] || [b.id, '']) : BEAT['core-start'];
+    // 内核日后添的拍不在表里：取其所在一组的题，不露拍的英文 id
+    const named = (x) => BEAT[x.id] || [(GROUP[x.group] || ['推演'])[0], ''];
+    const [name, verse] = b ? named(b) : BEAT['core-start'];
     now.textContent = name;
     line.textContent = verse;
     const nb = beats[at + 1];
-    next.textContent = nb ? `次　${(BEAT[nb.id] || [nb.id])[0]}` : '次　成卷待阅';
+    next.textContent = nb ? `次　${named(nb)[0]}` : '次　成卷待阅';
     count.textContent = beats.length ? `第${num(Math.max(1, at + 1))}项／共${num(beats.length)}项` : '';
   }
   function show() {

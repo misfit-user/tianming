@@ -19,8 +19,21 @@ export function roughCount(n) {
   n = Math.max(0, Number(n) || 0);
   return n < 1000 ? '数百' : n < 2000 ? '千余' : n < 10000 ? '数千' : n < 20000 ? '万余' : n < 100000 ? '数万' : '十余万';
 }
-// 番号取一个字上旗：去掉「京营」「镇军」之类的通名，取头一字（关宁军 → 关、延绥镇军 → 延）
-const flagChar = (name) => [...String(name || '军').replace(/^(南京|北京)/, '')][0] || '军';
+// 番号取一个字上旗，同一衙门、同一路下的几军要分得开：
+//   无「·」的去掉京城、御营之类的冠称取头一字（关宁军 → 关、御营右军 → 右）；
+//   有「·」的取末段头一字（京营·神机营 → 神、荆湖·岳飞部 → 岳、宁远副总兵·祖氏家丁 → 祖），八旗取旗色（后金·两黄旗 → 黄）；
+//   末段是正兵、残部、总览这类泛称的仍取前段（东京留守司·正兵 → 东）
+function flagChar(name) {
+  const parts = String(name || '军').replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim()).filter(Boolean);
+  if (!parts.length) return '军';
+  const last = parts[parts.length - 1];
+  if (parts.length > 1) {
+    const banner = /^两?([黄红白蓝])旗/.exec(last);
+    if (banner) return banner[1];
+    if (!/^(正|残|总|余|本|全|诸)/.test(last)) return [...last][0];
+  }
+  return [...parts[0].replace(/^(南京|北京|御营)(?=..)/, '')][0] || '军';
+}
 
 // placeOf(地名) → 舆图上的府州（落旗于其治所；认法见 model/place.js，书案镜头落点同一份）
 export function createMapMarks({ layer, map, game, isLive, placeOf, knows, onArmy, onRebels }) {

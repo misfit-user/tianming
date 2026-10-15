@@ -661,8 +661,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     marks.refresh();
     const d = s.date();
     time.update({ era: `${d.era || ''}${d.reignYear ? num(d.reignYear) + '年' : ''}`, year: d.year, month: d.month, day: d.day, settling: d.busy });
-    // 左上那方印：元首是国号，余者是本人的姓
-    dyn.textContent = (per.tier === 'sovereign' ? (per.faction || '').replace(/朝廷$/, '') : per.name).charAt(0) || '天';
+    // 左上那方印：元首是国号（明朝廷、唐朝廷去「朝廷」，大宋、大金去「大」），余者是本人的姓
+    dyn.textContent = (per.tier === 'sovereign' ? (per.faction || '').replace(/朝廷$/, '').replace(/^大(?=.)/, '') : per.name).charAt(0) || '天';
     // 帑廪、内帑、户口点开即翻到度支册的那一叶
     const FISCAL_TAB = { treasury: 'guoku', privy: 'neitang', census: 'census' };
     standing = per.tier === 'sovereign' ? null : game.standing();

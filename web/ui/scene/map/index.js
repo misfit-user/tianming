@@ -8,7 +8,7 @@ import { buildFieldsGPU, waterTexture } from './fields.js';
 import { createLines } from './lines.js';
 import { terrainVertex, terrainFragment, spriteVertex, spriteFragment } from './shaders.js';
 import { spriteAtlas, SPRITE } from './sprites.js';
-import { createLabels } from './labels.js';
+import { createLabels, realmTitle } from './labels.js';
 import { LOOK_QINGLV, LOOK_QINGLV_AGED, LOOK_COLORS, RELIEF, BACKGROUND, VIEWS, hexRgb } from './looks.js';
 import { createPainter, noiseTex } from './paint.js';
 import { adjacency, politicsOf } from './politics.js';
@@ -298,7 +298,9 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
   let colorMemo = { realm: new Map(), circuit: new Map() };   // 配过的色：易主后各国各道照旧（换府州时清）
   let lines = null;
   let focusSet = [];                          // 辖区（身份视野）：府州下标
-  const primaryRe = primary ? new RegExp(primary) : undefined;
+  let primaryRe = primary ? new RegExp(primary) : undefined;
+  // 换府州时带来的主势力名：名同或题名同（明朝廷／大明）即是
+  const primaryOf = (name) => ({ test: (n) => n === name || realmTitle(n) === realmTitle(name) });
   function applyPolitics() {
     realmList = computeRealms(data);
     const realmIndex = new Map(realmList.map((r, i) => [r.id, i]));
@@ -828,6 +830,7 @@ export async function createMapView(stage, { regions = [], factions = {}, labelL
     setRegions(next) {
       regions = (next && next.regions) || [];
       factions = (next && next.factions) || {};
+      if (next && next.primary) primaryRe = primaryOf(next.primary);
       data.regions = regions;
       data.factions = factions;
       ids = idMap(regions);

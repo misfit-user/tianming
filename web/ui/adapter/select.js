@@ -792,7 +792,9 @@ export function mapRegions() {
       ...(rings.length > 1 ? { rings: rings.map((x) => x.map(toWorld)) } : {})
     });
   }
-  return { mapId: map.id, regions, factions };
+  // 主势力（玩家所属）：舆图上着缃黄（politics.js REALM_INKS[0]），不只天启的明朝廷
+  const pi = { ...(P.playerInfo || {}), ...(g.playerInfo || {}) };
+  return { mapId: map.id, regions, factions, primary: pi.factionName || '' };
 }
 
 // 舆图上的京城与省会（名）。省会：行政区划树里各省（区划根下一级）的首府 capitalChildId。

@@ -14,7 +14,13 @@ import { W, H } from './terrain.js';
 export function realmTitle(name) {
   const n = String(name || '');
   if (SHORT[n]) return SHORT[n];
-  return n.replace(/[（(][^）)]*[）)]/g, '').split('·')[0].trim() || n;
+  const parts = n.replace(/[（(][^）)]*[）)]/g, '').split('·').map((s) => s.trim());
+  // 「唐·魏博镇」：前头一字是所属朝代，题后半（藩镇）；「播州土司·杨氏」题前半
+  if (parts.length > 1 && [...parts[0]].length === 1 && parts[1]) return parts[1];
+  // 「唐朝廷」→ 大唐
+  const court = /^(.)朝廷$/.exec(parts[0]);
+  if (court) return `大${court[1]}`;
+  return parts[0] || n;
 }
 const SHORT = { '明朝廷': '大明', '荷兰·台海(东印度公司)': '荷兰', '西班牙·马尼拉': '西班牙', '大越黎郑阮格局': '大越', '虾夷地与松前氏': '虾夷', '吐鲁番诸伯克': '吐鲁番', '野人女真诸部': '野人女真', '葡萄牙·澳门': '澳门', '瓦刺诸部': '瓦剌' };
 // 府州题名：去括注；名前冠了本省名以示区别的（南直隶太平府、江西建昌府）图上去掉省名——落在哪一省一看便知

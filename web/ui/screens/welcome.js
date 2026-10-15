@@ -38,7 +38,9 @@ export function showWelcome({ game, profile }) {
     content: h('div.wel',
       s.player.name ? h('section.wel-me', h('b', s.player.name), h('span', [s.player.title, s.player.faction].filter(Boolean).join(' · ')), s.player.goal ? h('p', `所志：${s.player.goal}`) : null) : null,
       s.factions.length ? h('section', h('h5', '势力格局'), h('div.wel-facs', s.factions.map((f) => h('div.wel-fac' + (f.isPlayer ? '.me' : ''),
-        h('b', f.name), h('i', h('em', { style: { width: `${Math.round(f.strength / max * 100)}%` } })), h('small', `实力${num(f.strength)}${f.leader ? ' · ' + f.leader : ''}`))))) : null,
+        // 名长的（瞿折罗·波罗底诃罗、荷兰·台海(东印度公司)）在「·」后、括注前折行，不从词中间断；首领名长的收成省略号，悬停看全
+        h('b', String(f.name).split(/(?<=·)|\s*(?=[（(])/).map((x) => h('span', x))), h('i', h('em', { style: { width: `${Math.round(f.strength / max * 100)}%` } })),
+        h('small', { title: f.leader || '' }, `实力${num(f.strength)}${f.leader ? ' · ' + f.leader : ''}`))))) : null,
       s.contradictions.length ? h('section', h('h5', '显著矛盾'), s.contradictions.map((c) => h('p.wel-con', c.dimension ? h('em.' + c.dimension, DIM[c.dimension] || '事') : null, c.title, c.parties ? h('small', `（${c.parties}）`) : null))) : null,
       firstTime && guide.length ? h('section.wel-guide', h('h5', (profile() && profile().guideTitle) || '须知'), guide.map(([t, x], i) => h('p', h('b', `${'一二三四五六'[i]} · ${t}`), x))) : null),
     actions: [{ label: '开卷理事', onclick: ({ close }) => close('ok') }]

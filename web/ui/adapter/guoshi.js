@@ -59,7 +59,7 @@ function lizhi() {
   const vis = sup >= 80 ? 'accurate' : sup >= 50 ? 'moderate' : sup >= 20 ? 'vague' : 'blind';
   const flip = flipped('corruption');
   const showTrue = !flip && (vis === 'accurate' || vis === 'moderate');
-  const rows = [{ label: '朝廷视野', dots: inkDots(p), value: LZ_PHASE(p) }];
+  const rows = [{ label: '朝廷所见', dots: inkDots(p), value: LZ_PHASE(p) }];
   if (showTrue) {
     rows.push({ label: '真实浊度', dots: inkDots(t), value: LZ_PHASE(t) });
     const gap = Math.abs(Math.round(t - p));
@@ -126,9 +126,9 @@ function minxin() {
   const flip = flipped('minxin');
   const shown = flip ? p : t;
   const rows = flip
-    ? [{ label: '朝廷视野', value: `${r(p)} / 100`, tone: toneOf(p), big: true }]
-    : [{ label: '真实民心', value: `${r(t)} / 100`, tone: toneOf(t), big: true }, { label: '朝廷视野', value: `${r(p)}（粉饰 ${p - t >= 0 ? '+' : ''}${r(p - t)}）` }];
-  rows.push({ label: '段位', value: flip ? mxBand(p) : MX_PHASE[m.phase] || m.phase || mxBand(t), tone: toneOf(shown) });
+    ? [{ label: '朝廷所见', value: `${r(p)} / 100`, tone: toneOf(p), big: true }]
+    : [{ label: '真实民心', value: `${r(t)} / 100`, tone: toneOf(t), big: true }, { label: '朝廷所见', value: `${r(p)}（粉饰 ${p - t >= 0 ? '+' : ''}${r(p - t)}）` }];
+  rows.push({ label: '其势', value: flip ? mxBand(p) : MX_PHASE[m.phase] || m.phase || mxBand(t), tone: toneOf(shown) });
   if (!flip) {
     if (g._conscriptEffMult !== undefined) rows.push({ label: '征兵效率', value: `${(n0(g._conscriptEffMult) * 100).toFixed(0)}%` });
     if (g._reformToleranceMult !== undefined) rows.push({ label: '改革容忍度', value: `×${n0(g._reformToleranceMult).toFixed(2)}` });
@@ -245,9 +245,9 @@ function huangwei() {
   const exec = phase === 'tyrant' ? 1.3 : phase === 'majesty' ? 1.0 : phase === 'normal' ? 0.85 : phase === 'decline' ? 0.65 : 0.35;
   const rows = [
     { label: '真实威望', value: `${r(i)} / 100`, tone, big: true },
-    { label: '朝廷视野', value: `${r(p)}（粉饰 ${p - i >= 0 ? '+' : ''}${r(p - i)}）` },
-    { label: '段位', value: `${HW_PHASE[phase] || phase}段`, tone },
-    { label: '执行度乘数', value: `×${exec.toFixed(2)}（${exec >= 1.2 ? '令出必行' : exec >= 0.9 ? '诏命畅达' : exec >= 0.6 ? '诏行有阻' : '诏不出京'}）`, tone: exec >= 1 ? 'good' : exec >= 0.7 ? 'mid' : 'bad' }
+    { label: '朝廷所见', value: `${r(p)}（粉饰 ${p - i >= 0 ? '+' : ''}${r(p - i)}）` },
+    { label: '其势', value: HW_PHASE[phase] || phase, tone },
+    { label: '诏行之力', value: `×${exec.toFixed(2)}（${exec >= 1.2 ? '令出必行' : exec >= 0.9 ? '诏命畅达' : exec >= 0.6 ? '诏行有阻' : '诏不出京'}）`, tone: exec >= 1 ? 'good' : exec >= 0.7 ? 'mid' : 'bad' }
   ];
   if (g.dynasty && w.PhaseG1 && w.PhaseG1.DYNASTY_AUTHORITY_PRESETS && w.PhaseG1.DYNASTY_AUTHORITY_PRESETS[g.dynasty]) rows.push({ label: '朝代', value: `${g.dynasty}（参朝代预设表）` });
   const sections = [];

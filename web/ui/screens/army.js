@@ -107,7 +107,7 @@ export function createArmy({ root, game, onCourt, onFiscal, scope = () => null, 
         d.arrears ? h('button.q-yapai', { type: 'button', title: `欠饷${num(d.arrears)}月，自国库实付`, onclick: go(() => A.settle(d.key)) }, '补饷') : null,
         h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.train(d.key)) }, '整训'),
         run(() => A.marchable(d.key))
-          ? h('button.q-yapai', { type: 'button', title: '下军令移防（行军系统）', onclick: () => marchTo(d) }, '移防')
+          ? h('button.q-yapai', { type: 'button', title: '下军令移防，沿途行军', onclick: () => marchTo(d) }, '移防')
           : h('button.q-yapai', { type: 'button', title: '拟入议事清册', onclick: go(() => A.redeploy(d.key)) }, '调防'),
         d.own ? h('button.q-yapai', { type: 'button', onclick: () => pickCommander(d) }, '易将') : null,
         onCourt ? h('button.q-yapai', { type: 'button', onclick: () => { const t = run(() => A.courtTopic(d.key)); if (t) { hide(); onCourt(t); } } }, '付廷议') : null,

@@ -4,13 +4,14 @@ import { h } from '../core/dom.js';
 import { bus } from '../core/bus.js';
 import { juan } from '../kit/index.js';
 import { pendingStorageAlarm } from '../adapter/kernel.js';
+import { numText } from '../core/numerals.js';
 
 export function installNotices({ game, profile }) {
   game.on('kernel:urgent', (u) => {
     const ack = (profile() && profile().urgentAck) || '知道了';
     juan({
-      title: u.title || '急报', note: '急报', width: '34rem', closable: false,
-      content: h('p', { style: { margin: 0, lineHeight: 2, whiteSpace: 'pre-wrap' } }, u.detail || ''),
+      title: numText(u.title) || '急报', note: '急报', width: '34rem', closable: false,
+      content: h('p', { style: { margin: 0, lineHeight: 2, whiteSpace: 'pre-wrap' } }, numText(u.detail)),
       actions: [{ label: ack, onclick: ({ close }) => { close('ok'); u.confirm(); } }]
     });
   });

@@ -1,5 +1,6 @@
-// 提示条：内核的 toast 一律改成一张纸签，从顶上淡入、数秒后淡出；同一句话连发只留一张。
+// 提示条：内核的 toast 一律改成一张纸签，从顶上淡入、数秒后淡出；同一句话连发只留一张。内核话里夹的阿拉伯数字照记数设置写。
 import { h } from '../core/dom.js';
+import { numText } from '../core/numerals.js';
 
 export function installToasts(root, game) {
   const box = h('div.toasts');
@@ -10,7 +11,7 @@ export function installToasts(root, game) {
     const now = performance.now();
     if (recent.has(text) && now - recent.get(text) < 2500) return;
     recent.set(text, now);
-    const slip = h('div', text);
+    const slip = h('div', numText(text));
     box.append(slip);
     setTimeout(() => slip.remove(), 4300);
     while (box.children.length > 3) box.firstChild.remove();

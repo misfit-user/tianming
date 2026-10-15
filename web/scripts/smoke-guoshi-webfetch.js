@@ -171,6 +171,36 @@ console.log('smoke-guoshi-webfetch');
     assert.equal((await wf.fetchPage('https://pic.example.com/')).binary, true);
     await assert.rejects(wf.fetchPage('ftp://x.example.com/'), /只能读 http\(s\)/);
     await assert.rejects(wf.fetchPage('https://u:p@x.example.com/'), /账号密码/);
+    // 慢慢吐字的网站：每 50 毫秒一个字节，单块都不超时，但读正文总共 300 毫秒封顶
+    let iv = null;
+    const drip = new ReadableStream({
+      start(c) { let n = 0; iv = setInterval(() => { if (++n > 40) { clearInterval(iv); c.close(); } else c.enqueue(new Uint8Array([97])); }, 50); },
+      cancel() { clearInterval(iv); }
+    });
+    const slow = createWebFetch({ timeoutMs: 300, fetchRemoteResponse: async (url) => ({ response: new Response(drip, { headers: { 'content-type': 'text/plain' } }), url }) });
+    const t0 = Date.now();
+    await assert.rejects(slow.fetchPage('https://slow.example.com/'), /网页读取超时/);
+    assert.ok(Date.now() - t0 < 1500, '总时限到了就停，不等它吐完');
+  });
+
+  await test('桌面通道：主进程迟迟不回时「停下」立刻生效；字节回来能解码；fake-ip 说人话', async () => {
+    W._setTransportForTest(null);
+    const saved = global.tianming;
+    try {
+      global.tianming = { webFetch: () => new Promise(() => {}) };   // 永远不回
+      const ctrl = new AbortController(), t0 = Date.now();
+      setTimeout(() => ctrl.abort(), 50);
+      await assert.rejects(W.fetchPage('https://hang.example.com/', { signal: ctrl.signal }), (e) => e.name === 'AbortError');
+      assert.ok(Date.now() - t0 < 1000, '不等主进程');
+      global.tianming = { webFetch: async (u) => ({ success: true, url: u, status: 200, contentType: 'text/html; charset=utf-8', body: enc('<html><head><title>某页</title></head><body><p>正文一段。</p></body></html>') }) };
+      const page = await W.fetchPage('https://ok.example.com/a');
+      assert.equal(page.via, 'desktop'); assert.match(page.text, /正文一段/);
+      global.tianming = { webFetch: async () => ({ success: false, error: '远程地址解析到私网或保留地址' }) };
+      await assert.rejects(W.fetchPage('https://fakeip.example.com/'), /fake-ip/);
+    } finally {
+      if (saved === undefined) delete global.tianming; else global.tianming = saved;
+      W._clearCache();
+    }
   });
 
   await test('安全请求：stopRedirect 在跳转处停下报回；不传时同站跳转照跟', async () => {

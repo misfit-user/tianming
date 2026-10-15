@@ -15,6 +15,7 @@
   var PAGE_CHARS = 6000;            // 一次交给模型的字数（中文一字约一个 token）
   var MAX_BYTES = 3 * 1024 * 1024;  // 最多下载这么多，超出截断
   var TIMEOUT_MS = 20000;
+  var DESKTOP_WAIT_MS = 60000;      // 桌面版等主进程最多这么久（它那头连每一跳 20 秒、读正文 20 秒封顶）
   var CACHE_TTL_MS = 15 * 60 * 1000, CACHE_MAX = 20;   // 翻页时从这里拿，不再上网
   var WIKI_HOST = /^([a-z0-9-]+)\.(wikipedia|wikisource|wiktionary|wikiquote|wikibooks|wikivoyage)\.org$/i;
   var ZH_VARIANT = { 'zh-cn': 1, 'zh-hans': 1, 'zh-sg': 1, 'zh-my': 1, 'zh-tw': 1, 'zh-hant': 1, 'zh-hk': 1, 'zh-mo': 1 };
@@ -272,7 +273,17 @@
   }
   function _desktopGet(url, signal) {
     if (signal && signal.aborted) return Promise.reject(_abortError());
-    return Promise.resolve(_desktopBridge().webFetch(url)).then(function (res) {
+    // 进程间调用撤不回来：跟「停下」和超时赛跑，谁先到算谁
+    var timer = null, onAbort = null;
+    var giveUp = new Promise(function (_, reject) {
+      timer = setTimeout(function () { var e = new Error('网站 ' + Math.round(DESKTOP_WAIT_MS / 1000) + ' 秒没读完'); e.code = 'web-timeout'; reject(e); }, DESKTOP_WAIT_MS);
+      onAbort = function () { reject(_abortError()); };
+      if (signal) signal.addEventListener('abort', onAbort, { once: true });
+    });
+    function done() { clearTimeout(timer); if (signal) signal.removeEventListener('abort', onAbort); }
+    return Promise.race([Promise.resolve(_desktopBridge().webFetch(url)), giveUp])
+      .then(function (res) { done(); return res; }, function (e) { done(); throw e; })
+      .then(function (res) {
       if (signal && signal.aborted) throw _abortError();
       if (!res || res.success === false) {
         var msg = String(res && res.error || '主进程没有返回结果');

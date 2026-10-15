@@ -3,7 +3,8 @@
 //   - 只读公网 https 页面：GET、不带 cookie 与凭据、不走代理；地址校验、逐跳 DNS 校验、钉住解析出的地址
 //     全部交给 main-safe-remote（私网、本机、保留地址一律拒）。
 //   - 同站跳转照跟；跳到别的网站不跟，原样报回——那是另一个网站，要让玩家再点一次头。
-//   - 只取正文字节：最多 3MB，超出截断并标明；不认的压缩、超时都报错。解码与转正文留给网页那边做。
+//   - 只取正文字节：最多 3MB，超出截断并标明；读正文总共 20 秒封顶（不是每块各 20 秒）；不认的压缩、超时都报错。
+//     解码与转正文留给网页那边做。
 const MAX_BYTES = 3 * 1024 * 1024;
 const TIMEOUT_MS = 20000;
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 Tianming-Guoshi';
@@ -14,14 +15,14 @@ function siteKey(url) {
 
 async function readLimited(response, maxBytes, timeoutMs) {
   if (!response.body || typeof response.body.getReader !== 'function') return { bytes: new Uint8Array(0), truncated: false };
-  const reader = response.body.getReader(), chunks = [];
+  const reader = response.body.getReader(), chunks = [], deadline = Date.now() + timeoutMs;
   let total = 0, truncated = false;
   try {
     while (true) {
       let timer;
       const chunk = await Promise.race([
         reader.read(),
-        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('网页读取超时')), timeoutMs); })
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('网页读取超时')), Math.max(0, deadline - Date.now())); })
       ]).finally(() => clearTimeout(timer));
       if (chunk.done) break;
       const piece = Buffer.from(chunk.value);

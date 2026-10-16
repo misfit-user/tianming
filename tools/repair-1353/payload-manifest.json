@@ -2,7 +2,7 @@
   "schema": 2,
   "product": "tianming",
   "version": "1.3.5.3",
-  "generatedAt": "2026-10-15T17:42:30.803Z",
+  "generatedAt": "2026-10-16T17:01:10.291Z",
   "files": [
     {
       "path": "editor-authoring-agent.js",
@@ -57,7 +57,8 @@
       "originalSha256": "70fc3100b5aa89011504f1deaccda434f50d75548c04291a248de76a9369cc97",
       "priorSha256": [
         "f8630477e9a55d6d064daeeada04472dbb4918dfb0d902aa5e2f53310c3d9b18",
-        "671d317246f88b750b9a7bc65a33b185c8865fa74bbc79da58c30dce83c9a7e5"
+        "671d317246f88b750b9a7bc65a33b185c8865fa74bbc79da58c30dce83c9a7e5",
+        "c19c48610620e756f8066480a57b48f9ab3083e3a47e05a7241955c048ea5787"
       ]
     },
     {
@@ -68,7 +69,8 @@
       "bytes": 24751,
       "originalSha256": "f4bda4cd928a699a895197c932c7de2165732eb77644760629fab840504efff1",
       "priorSha256": [
-        "cdb62ac74878c1c96565840ce89c5531b1c2285b45c547590f36cfa2bdd724b9"
+        "cdb62ac74878c1c96565840ce89c5531b1c2285b45c547590f36cfa2bdd724b9",
+        "4e7cdda08f6f78715df687185793370ad68a8d56c479350bebbc7c3561dc675f"
       ]
     },
     {
@@ -143,11 +145,12 @@
       "path": "tm-fiscal-engine.js",
       "asarPath": "web/tm-fiscal-engine.js",
       "hotUpdate": true,
-      "sha256": "992f3843a9c4fbdab1f364f15ccb7a3353f507326c27b4c7304b3f724af1c792",
-      "bytes": 167031,
+      "sha256": "053946f4d8797e3df7d169e819793e0be131ab3cea2117c82e8029141c64c2f6",
+      "bytes": 168174,
       "originalSha256": "cbc9911d6335efd89d762063de5b8c05b5b50dc3ccf0505477372d27dab678b3",
       "priorSha256": [
-        "061959c5e6020f78c6a9856da8a436ab44d20194bbca28efb5b5f1c3244a4a45"
+        "061959c5e6020f78c6a9856da8a436ab44d20194bbca28efb5b5f1c3244a4a45",
+        "992f3843a9c4fbdab1f364f15ccb7a3353f507326c27b4c7304b3f724af1c792"
       ]
     },
     {
@@ -212,7 +215,9 @@
       "sha256": "fe4b7aa558c3eb4de8e6f2a6c4f15edfb7cf532315854e6ce13235173f551e34",
       "bytes": 68951,
       "originalSha256": "c458a542c90b74dc8e24834963e0a801e896f31e3673edf962790efd02e6034b",
-      "priorSha256": []
+      "priorSha256": [
+        "fe4b7aa558c3eb4de8e6f2a6c4f15edfb7cf532315854e6ce13235173f551e34"
+      ]
     },
     {
       "path": "tm-patches-start.js",
@@ -221,7 +226,9 @@
       "sha256": "6bc601926b8729c7673ed9d10a72b8642c882fd1f54e8be3e0c6c9d6d60a1eca",
       "bytes": 131049,
       "originalSha256": "b310eb450068d73412253a4fc282cb837f227ca6ce2102b38966ea207052c425",
-      "priorSha256": []
+      "priorSha256": [
+        "6bc601926b8729c7673ed9d10a72b8642c882fd1f54e8be3e0c6c9d6d60a1eca"
+      ]
     },
     {
       "path": "tm-minxin-hard-links.js",
@@ -230,18 +237,39 @@
       "sha256": "bad86543f6810e26e20b61e3f0a04cb587a7ab50a8dc34ccfd0eea9c54c63f7d",
       "bytes": 29257,
       "originalSha256": "6289a9b5f3bd9ac8ea1bfa00af9879e1d18ba7a9246acbbd7923452e628dca25",
+      "priorSha256": [
+        "bad86543f6810e26e20b61e3f0a04cb587a7ab50a8dc34ccfd0eea9c54c63f7d"
+      ]
+    },
+    {
+      "path": "tm-fiscal-statements.js",
+      "asarPath": "web/tm-fiscal-statements.js",
+      "hotUpdate": true,
+      "sha256": "77307f9c93b9026fcae9adf1f7dcd57aa65e508135ede834db45b52fa343d69c",
+      "bytes": 27629,
+      "originalSha256": "6f1e2e1dd0b4ee2fde6d0e40341c609c90c3a98293e09ef7e6c9f196f29d94a1",
+      "priorSha256": []
+    },
+    {
+      "path": "tm-guoku-engine.js",
+      "asarPath": "web/tm-guoku-engine.js",
+      "hotUpdate": true,
+      "sha256": "78ef26e74ec58a0676c8b322eb4a0426c1cc0ba00dbbb2b360a0ffec1fdfe4cb",
+      "bytes": 152448,
+      "originalSha256": "55214795a25d1fb7b75c27872076ce22ad97b312df64c430a3257f98f910c55f",
       "priorSha256": []
     },
     {
       "path": "tm-start-runtime-manifest.json",
       "asarPath": "web/tm-start-runtime-manifest.json",
       "hotUpdate": true,
-      "sha256": "e00049f7f901f1ef6f391d31d572c90681abd75c7c929bd9b5f12cbd5dd85448",
+      "sha256": "750c226d0c2537957b0a72859b7606da02c7a19720e67acb04c32d9d9a626e5e",
       "bytes": 137399,
       "originalSha256": "b88ee428be242f2ebe1e8fbc5ed17e28d5e8d531dda9c5596f66d84f44d05d0c",
       "priorSha256": [
         "9f97fc61403ccd4501eba2892420da1e1ed763f2da5eb4c536275318233471c3",
-        "d6dd18d2fbba97e63e1bd165c585bde995c71333dcdc3d5d4300719b34218df9"
+        "d6dd18d2fbba97e63e1bd165c585bde995c71333dcdc3d5d4300719b34218df9",
+        "e00049f7f901f1ef6f391d31d572c90681abd75c7c929bd9b5f12cbd5dd85448"
       ]
     }
   ]

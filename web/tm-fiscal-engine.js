@@ -218,6 +218,7 @@
       Object.keys(source).forEach(function(key) {
         var item = source[key];
         if (item && typeof item === 'object') out[key] = clone(item);
+        else if (typeof item === 'boolean') out[key] = item ? { enabled: true } : { enabled: false, authorDisabled: true }; // 2026-10-17：编辑器存的布尔开关原先在此被丢弃，作者关掉的税种照征
       });
     }
     return out;
@@ -613,6 +614,9 @@
     var override = cfg.factionOverrides && (cfg.factionOverrides[fac.id] || cfg.factionOverrides[fac.name]);
     if (override) copyFields(cfg, override);
     if (fac.fiscalConfig) copyFields(cfg, fac.fiscalConfig);
+    var taxSwitches = {}, FS = global.FiscalStatement; // 作者税种开关按层单独收集（2026-10-17）：GM 层 taxesEnabled 已被 enableTaxesByDynasty 整理成对象表，上面整字段覆盖会盖掉 P/剧本里的布尔开关。
+    if (FS && FS.taxSwitches) [sc && sc.fiscalConfig, global.P && global.P.fiscalConfig, G && G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, override, fac.fiscalConfig].forEach(function(layer) { if (layer) FS.taxSwitches(layer.taxesEnabled, taxSwitches); });
+    Object.defineProperty(cfg, '_taxSwitches', { value: taxSwitches, writable: true, configurable: true }); // 不可枚举：不进快照与存档
     if (cfg.productionTaxVersion && G && !(G.fiscalConfig && G.fiscalConfig.productionTaxVersion) && G._isFreshNewGame !== true) {
       var oldLayers = [cfg.legacyTaxConfig, global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, fac.fiscalConfig];
       var saved = Object.assign.apply(Object, [{}].concat(oldLayers.filter(function(c) { return c && !c.productionTaxVersion; })));
@@ -1426,14 +1430,11 @@
       taxes = DEFAULT_TAXES.map(function(t) { return clone(t); });
     }
 
-    var enabled = fc && fc.taxesEnabled;
-    if (enabled && typeof enabled === 'object' && !Array.isArray(enabled)) {
-      taxes = taxes.filter(function(t) {
-        if (enabled[t.id] === false) return false;
-        if (enabled[t.sourceTag] === false) return false;
-        return true;
-      });
-    }
+    // 作者税种开关（2026-10-17）：按 id、标签、国库大类三层认「关」；朝代推断的 enabled:false 不算（见 FiscalStatement.taxSwitches）。
+    var FS = global.FiscalStatement, switches = (fc && fc._taxSwitches) || (FS && FS.taxSwitches ? FS.taxSwitches(fc && fc.taxesEnabled) : {});
+    if (Object.keys(switches).length) taxes = taxes.filter(function(t) {
+      return switches[t.id] !== false && switches[t.sourceTag] !== false && switches[FS && FS.taxCategory ? FS.taxCategory(t.sourceTag) : t.sourceTag] !== false;
+    });
 
     if (Array.isArray(fc && fc.customTaxes)) {
       fc.customTaxes.forEach(function(ct) {

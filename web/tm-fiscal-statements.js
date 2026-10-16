@@ -297,5 +297,25 @@
     }, {daysPerYear:year, turnDays:days});
   }
 
-  global.FiscalStatement={previewRevenue:previewRevenue,productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,hasActualLedger:hasActualLedger,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
+  // 税种标签 → 国库收入大类（2026-10-17）。编辑器「税种启用」八个勾选框、国库册页分类、级联征税过滤共用这一张表；
+  // 原先只内联在国库新税表分支里，征税过滤用不到，作者关掉「盐铁专卖」后 salt_iron、yanke 这类标签照征。
+  var TAX_TAG_CATEGORY={tianfu_money:'tianfu',tianfu_silver:'tianfu',ding:'dingshui',yanke:'yanlizhuan',salt_iron:'yanlizhuan',shibo:'shipaiShui',guanshui:'shipaiShui',maritime:'shipaiShui',kuangye:'mining',shangShui:'quanShui',chake:'quanShui',jiuke:'quanShui'};
+  function taxCategory(tag){
+    var category = TAX_TAG_CATEGORY[tag] || tag;
+    return Object.prototype.hasOwnProperty.call(IN, category) ? category : 'qita';
+  }
+  // 作者税种开关：编辑器存布尔（只写 false）；FiscalEngine.enableTaxesByDynasty 整理成对象表后，作者关的记 authorDisabled。
+  // 朝代推断出的 enabled:false 不算作者开关：官方晚唐税表明写了市舶，朝代表却记作「宋明清才有」。
+  function taxSwitches(map, into){
+    into = into || {};
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return into;
+    Object.keys(map).forEach(function(key){
+      var value = map[key];
+      if (typeof value === 'boolean') into[key] = value;
+      else if (value && typeof value === 'object' && value.authorDisabled === true) into[key] = false;
+    });
+    return into;
+  }
+
+  global.FiscalStatement={taxCategory:taxCategory,taxSwitches:taxSwitches,previewRevenue:previewRevenue,productionTaxBase:productionTaxBase,productionTaxAmount:productionTaxAmount,taxRevenuePreview:taxRevenuePreview,read:read,sync:sync,flowIsActual:flowIsActual,hasActualLedger:hasActualLedger,expenseKey:expenseKey,expenseLabel:expenseLabel,flowTag:flowTag,recordExpense:recordExpense,recordFlow:recordFlow,repayDeficits:repayDeficits,collectionZero:collectionZero,collectionTax:collectionTax,addCollection:addCollection,budgetFlows:budgetFlows,fixedSummary:fixedSummary,taxThree:taxThree,labels:labels,contextAccount:contextAccount};
 })(typeof window!=='undefined'?window:globalThis);

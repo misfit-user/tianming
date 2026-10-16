@@ -48,7 +48,10 @@ const ORIGINAL = {
   // v2.3（2026-10-16）追加的三个文件（玩家身份收据 / 合规率单位），原哈希同样取自 git show full-1.3.5.3:<path>
   'web/tm-indices.js': 'c458a542c90b74dc8e24834963e0a801e896f31e3673edf962790efd02e6034b',
   'web/tm-patches-start.js': 'b310eb450068d73412253a4fc282cb837f227ca6ce2102b38966ea207052c425',
-  'web/tm-minxin-hard-links.js': '6289a9b5f3bd9ac8ea1bfa00af9879e1d18ba7a9246acbbd7923452e628dca25'
+  'web/tm-minxin-hard-links.js': '6289a9b5f3bd9ac8ea1bfa00af9879e1d18ba7a9246acbbd7923452e628dca25',
+  // v2.4（2026-10-17）追加的两个文件（作者税种开关），原哈希同样取自 git show full-1.3.5.3:<path>
+  'web/tm-fiscal-statements.js': '6f1e2e1dd0b4ee2fde6d0e40341c609c90c3a98293e09ef7e6c9f196f29d94a1',
+  'web/tm-guoku-engine.js': '55214795a25d1fb7b75c27872076ce22ad97b312df64c430a3257f98f910c55f'
   // NATIVE_MANIFEST 的原哈希在下面从发布包文件集现算（与标签 blob 一致，build 复算也逐字节相同，已核）。
 };
 // 此前发给玩家的修复包写入过的哈希：已修过一次的 app.asar 允许再次覆盖。
@@ -92,6 +95,8 @@ const FILES = [
   { asarPath: 'web/tm-indices.js', hotUpdate: true },
   { asarPath: 'web/tm-patches-start.js', hotUpdate: true },
   { asarPath: 'web/tm-minxin-hard-links.js', hotUpdate: true },
+  { asarPath: 'web/tm-fiscal-statements.js', hotUpdate: true },
+  { asarPath: 'web/tm-guoku-engine.js', hotUpdate: true },
   { asarPath: NATIVE_MANIFEST, hotUpdate: true, generated: true }
 ];
 

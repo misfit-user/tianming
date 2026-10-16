@@ -1983,10 +1983,9 @@
       _wrappedSources[key] = function() {
         var declared = declaredProductionForecast();
         if (declared) {
-          var aliases = {tianfu_money:'tianfu',tianfu_silver:'tianfu',ding:'dingshui',yanke:'yanlizhuan',salt_iron:'yanlizhuan',shibo:'shipaiShui',guanshui:'shipaiShui',maritime:'shipaiShui',kuangye:'mining',shangShui:'quanShui',chake:'quanShui',jiuke:'quanShui'}, items = [], total = 0;
+          var items = [], total = 0; // 标签归类与征税过滤共用 FiscalStatement.taxCategory（2026-10-17·新税表分支经 CascadeTax 必有 FiscalStatement）
           declared.regions.forEach(function(r) { r.taxes.forEach(function(t) {
-            var category = aliases[t.sourceTag] || t.sourceTag;
-            if (!Object.prototype.hasOwnProperty.call(_origSources, category)) category = 'qita';
+            var category = global.FiscalStatement.taxCategory(t.sourceTag);
             if (category === key && t.resource === 'money') { total += t.central; items.push({id:t.id,name:t.name,amount:t.central,note:'现行税表年度上解预计'}); }
           }); });
           var grouped = {};
@@ -1995,7 +1994,8 @@
           return total;
         }
         var cfg = (sourceFiscalConfig() || GM.fiscalConfig || {}).taxesEnabled;
-        if (cfg && cfg[key] === false) return 0;
+        var switches = global.FiscalStatement && global.FiscalStatement.taxSwitches ? global.FiscalStatement.taxSwitches(cfg) : (cfg || {}); // 2026-10-17：布尔开关与整理后的 authorDisabled 同认
+        if (switches[key] === false) return 0;
         var val = _origSources[key]() || 0;
         var mults = (GM.guoku && GM.guoku.sourceMultipliers) || {};
         if (mults[key] !== undefined) val *= mults[key];

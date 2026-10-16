@@ -44,4 +44,8 @@ test('「迫不得已」不是否定：「全国迫不得已取消三饷」照�
 
 test('同句先禁一项又改一项（同一种动作）：「全国不得废除辽饷，废除田赋」明确报出、不静默跳过',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国不得废除辽饷，废除田赋');assert(!r.ok&&/既有被禁止的税务动作/.test(JSON.stringify(r)),JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);});
 
+// 2026-10-17 三次复审（Astra 6）：判不准就不执行；明白照办的照办
+test('不能执行：另令属员 / 未经批准不得执行 / 此事不准执行 / 无需 / 「陕西不免税」',()=>{const h=harness();const s=JSON.stringify(h.g);for(const t of ['全国禁止地方官员另令属员取消三饷','全国取消三饷，未经朕批准不得执行','全国田赋税率改为2%，此事不准执行','全国无需取消三饷','陕西不免税'])assert(!h.command(t).ok,t);assert.equal(JSON.stringify(h.g),s);});
+test('照办：「之事不得停止」「修建宫室之议，著即停止」「严禁盗窃，取消三饷」「严禁贪污！全国取消三饷」',()=>{for(const t of ['全国取消三饷之事不得停止','全国取消三饷，修建宫室之议，著即停止','全国严禁盗窃，取消三饷','严禁贪污！全国取消三饷']){const h=harness();const r=h.command(t);assert(r.ok,t+' '+JSON.stringify(r));assert.equal(h.amount('sx',1),0,t);}});
+
 console.log(`${passed} passed / ${failed} failed`);process.exit(failed?1:0);

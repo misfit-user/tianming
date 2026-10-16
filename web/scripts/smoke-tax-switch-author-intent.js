@@ -214,5 +214,21 @@ console.log('[smoke-tax-switch-author-intent]');
   ok(on > 0 && on === legacy(LONE, { yanlizhuan: false }, { yanlizhuan: true }), '旧档的旧税配置开着、新模板外层关着：照旧配置征收，两条路一致（' + Math.round(on) + '）');
 }
 
+{ // ⑫ 三次复审（Astra 6·R3-5）：旧档作者开关也认 factionOverrides；不带生产税版本的 P 层本身是旧格式，照样生效
+  const WITH = ['tm-patches-start.js', 'tm-guoku-engine.js', 'tm-fiscal-statements.js', 'tm-fiscal-engine.js'];
+  const run = (pCfg, gmCfg, scCfg) => {
+    const sb = makeSandbox(WITH);
+    sb.P = { fiscalConfig: pCfg };
+    sb.GM = { turn: 12, sid: 'legacy-case', fiscalConfig: gmCfg, playerInfo: { factionId: 'own' }, facs: [{ id: 'own', name: '本朝' }] };
+    if (scCfg) sb.findScenarioById = () => ({ fiscalConfig: scCfg });
+    sb.GuokuEngine.ensureModel();
+    return sb.GuokuEngine.Sources.yanlizhuan();
+  };
+  const legacyOn = { productionTaxVersion: 1, legacyTaxConfig: { taxesEnabled: { yanlizhuan: true } } }, legacyOff = { productionTaxVersion: 1, legacyTaxConfig: { taxesEnabled: { yanlizhuan: false } } };
+  ok(run(legacyOn, { factionOverrides: { own: { taxesEnabled: { yanlizhuan: false } } } }) === 0, '旧档：旧税配置开、本方势力覆盖关 → 盐利 0（原来覆盖层被丢、照征 250000）');
+  ok(run(legacyOff, { factionOverrides: { own: { taxesEnabled: { yanlizhuan: true } } } }) > 0, '旧档：旧税配置关、本方势力覆盖开 → 照征');
+  ok(run({ taxesEnabled: { yanlizhuan: false } }, {}, legacyOn) === 0, '旧档：剧本层带旧税配置（开），P 层不带生产税版本、本身就是旧格式（关）→ P 层优先，盐利 0');
+}
+
 console.log('\n[smoke-tax-switch-author-intent] ' + pass + ' passed / ' + fail + ' failed');
 if (fail) process.exit(1);

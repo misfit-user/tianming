@@ -620,6 +620,7 @@
     if (cfg.productionTaxVersion && G && !(G.fiscalConfig && G.fiscalConfig.productionTaxVersion) && G._isFreshNewGame !== true) {
       var oldLayers = [cfg.legacyTaxConfig, global.P && global.P.fiscalConfig, G.fiscalConfig, global.scriptData && global.scriptData.fiscalConfig, fac.fiscalConfig];
       var saved = Object.assign.apply(Object, [{}].concat(oldLayers.filter(function(c) { return c && !c.productionTaxVersion; })));
+      cfg._taxSwitches = {}; [cfg.legacyTaxConfig || (global.P && global.P.fiscalConfig)].concat(oldLayers.slice(2).filter(function(c) { return c && !c.productionTaxVersion; })).forEach(function(layer) { if (layer && FS && FS.taxSwitches) FS.taxSwitches(layer.taxesEnabled, cfg._taxSwitches); }); // 旧档的税种开关同样按旧税配置收集，与国库旧入口 sourceFiscalConfig 同源（2026-10-17·二次复审 R2-4：原来仍按新模板外层开关，有无财政引擎结果不同）
       ['taxList','taxes','customTaxes','centralLocalRules'].forEach(function(k) { if (saved[k] != null) cfg[k] = saved[k]; else delete cfg[k]; });
       delete cfg.productionTaxVersion;
     }

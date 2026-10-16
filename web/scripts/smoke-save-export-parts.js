@@ -134,6 +134,20 @@ const bigAll = bigParts.join('');
     assert(chunks.every(c => { const last = c.charCodeAt(c.length - 1); return !(last >= 0xD800 && last <= 0xDBFF); }), 'a chunk ends with a lone high surrogate');
   });
 
+  // 2026-10-17 二次复审（Astra 6）：上一段恰好以高代理收尾、低代理在下一段开头，块边界落在两段之间
+  await testAsync('代理对跨两段且恰在块边界：高代理留到下一块，拼回等于全文', async () => {
+    const MB = 1024 * 1024;
+    for (const parts of [['a'.repeat(MB - 1) + '\uD83D', '\uDE00z'], ['a'.repeat(MB - 2) + '\uD83D', '', '\uDE00z'], ['a'.repeat(MB - 2), '\uD83D', '\uDE00', 'z']]) {
+      const chunks = [];
+      const plugin = { async beginExport() { return { started: true }; }, async appendChunk(o) { chunks.push(o.chunk); return {}; },
+        async finishExport() { return { saved: true, fileName: 's.json' }; }, async cancelExport() { return {}; } };
+      await exportContext(plugin, true).TM.fileExport.saveJsonParts(parts, 's');
+      assert.strictEqual(chunks.join(''), parts.join(''));
+      assert(chunks.every(c => c.length <= MB), 'chunk over 1MB');
+      assert(chunks.every(c => { const last = c.charCodeAt(c.length - 1); return !(last >= 0xD800 && last <= 0xDBFF); }), 'a chunk ends with a lone high surrogate: ' + chunks.map(c => c.length));
+    }
+  });
+
   await testAsync('桌面/网页：多段 Blob 直接下载，mode=download', async () => {
     const ctx = exportContext(null, false);
     const r = await ctx.TM.fileExport.saveJsonParts(['{"a":', '1}'], 'd');

@@ -296,7 +296,7 @@ function _tmRepairDuplicateEntityIds(targetGM, kind, entries, dupGroups) {
     var collisions = byId[oldId];
     if (collisions.length < 2) return;
     // 记下重复组（2026-10-17·复审 F1）：补外键与玩家收据按组内名字 / 唯一玩家标记确定引用归谁
-    var record = dupGroups ? ((dupGroups[kind] || (dupGroups[kind] = {}))[oldId] = [{ id: oldId, name: collisions[0].item.name, isPlayer: collisions[0].item.isPlayer === true }]) : null;
+    var record = dupGroups ? ((dupGroups[kind] || (dupGroups[kind] = Object.create(null)))[oldId] = [{ id: oldId, name: collisions[0].item.name, isPlayer: collisions[0].item.isPlayer === true }]) : null;
     collisions.slice(1).forEach(function(entry) {
       var item = entry.item;
       var identity = _tmStableIdentityParts(kind, item).join('|') || String(entry.path || '');
@@ -437,13 +437,15 @@ function _tmRepairPlayerIdentityReceipt(targetGM, dupGroups) {
   var chars = targetGM && targetGM.chars;
   if (!info || typeof info !== 'object' || !Array.isArray(chars)) return false;
   var id = info.characterId == null ? '' : String(info.characterId).trim();
-  var group = id && dupGroups && dupGroups.char ? dupGroups.char[id] : null;
+  var table = dupGroups && dupGroups.char, group = id && table && Object.prototype.hasOwnProperty.call(table, id) && Array.isArray(table[id]) ? table[id] : null; // 只认自有键（二次复审 R2-5）
   if (group) { // 收据 id 撞上重复组（2026-10-17·复审 F1）：按收据姓名、再按组内唯一玩家标记确定是谁；分不清就不动
-    var key = function(s) { return String(s == null ? '' : s).replace(/[（(].*$/, '').trim(); };
-    var byName = key(info.characterName) ? group.filter(function(m) { return key(m.name) === key(info.characterName); }) : [];
+    var key = function(s) { return String(s == null ? '' : s).replace(/[（(].*$/, '').trim(); }, full = String(info.characterName == null ? '' : info.characterName).trim();
+    var byName = full ? group.filter(function(m) { return String(m.name == null ? '' : m.name).trim() === full; }) : []; // 先按完整名字（含括注）匹配，没有精确命中才去括注兜底（二次复审 R2-6）
+    if (!byName.length && key(full)) byName = group.filter(function(m) { return key(m.name) === key(full); });
     var byFlag = group.filter(function(m) { return m.isPlayer; });
     var pick = byName.length === 1 ? byName[0] : (byFlag.length === 1 ? byFlag[0] : null);
-    if (!pick || pick.id === id) return false;
+    if (!pick) return 'ambiguous'; // 分不清：收据保持原样，由迁移收据计入 duplicateRefsAmbiguous（二次复审补充）
+    if (pick.id === id) return false;
     info.characterId = pick.id; // arch-ok: 读档 schema 迁移·重复 id 组内按收据姓名 / 唯一玩家标记改绑
     try { console.warn('[stable-id] 玩家身份收据随重复 id 改绑：' + id + ' → ' + pick.id); } catch (_) {}
     return true;

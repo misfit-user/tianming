@@ -200,5 +200,19 @@ console.log('[smoke-tax-switch-author-intent]');
   ok(lone.GuokuEngine.Sources.yanlizhuan() === 0, '不装财政引擎的兜底分支同样不被空的 P 配置遮住');
 }
 
+{ // ⑪ 二次复审（Astra 6·R2-4）：旧档（P 有生产税版本、GM 没有）按旧税配置的开关，装不装财政引擎结果一致
+  const WITH = ['tm-patches-start.js', 'tm-guoku-engine.js', 'tm-fiscal-statements.js', 'tm-fiscal-engine.js'], LONE = ['tm-fiscal-statements.js', 'tm-guoku-engine.js'];
+  const legacy = (files, outer, inner) => {
+    const sb = makeSandbox(files);
+    sb.P = { fiscalConfig: { productionTaxVersion: 1, taxesEnabled: outer, legacyTaxConfig: { taxesEnabled: inner } } };
+    sb.GM = { turn: 12, fiscalConfig: {} };
+    sb.GuokuEngine.ensureModel();
+    return sb.GuokuEngine.Sources.yanlizhuan();
+  };
+  ok(legacy(WITH, {}, { yanlizhuan: false }) === 0 && legacy(LONE, {}, { yanlizhuan: false }) === 0, '旧档的旧税配置关掉盐利：装不装财政引擎都是 0（原来装上引擎变 250000）');
+  const on = legacy(WITH, { yanlizhuan: false }, { yanlizhuan: true });
+  ok(on > 0 && on === legacy(LONE, { yanlizhuan: false }, { yanlizhuan: true }), '旧档的旧税配置开着、新模板外层关着：照旧配置征收，两条路一致（' + Math.round(on) + '）');
+}
+
 console.log('\n[smoke-tax-switch-author-intent] ' + pass + ' passed / ' + fail + ' failed');
 if (fail) process.exit(1);

@@ -1390,11 +1390,12 @@ function _tmBackfillStableForeignKeys(targetGM, dupGroups) {
   var factionIds = _tmEntityIdSet(targetGM.facs);
   var charIds = _tmEntityIdSet(targetGM.chars);
   // 重复 id 组（2026-10-17·复审 F1）：撞上组的引用按旁边的名字在组内唯一确定归属；没名字或重名时保持原样并计数
-  var dupStats = { rebound: 0, ambiguous: 0 }, dupKey = function(s) { return String(s == null ? '' : s).replace(/[（(].*$/, '').trim(); };
+  var dupStats = { rebound: 0, ambiguous: 0 }, dupKey = function(s) { return String(s == null ? '' : s).replace(/[（(].*$/, '').trim(); }, fullKey = function(s) { return String(s == null ? '' : s).trim(); };
   function pickDuplicate(owner, idField, nameValue, idSet) {
-    var group = dupGroups && !_tmStableIdMissing(owner[idField]) ? (dupGroups[idSet === charIds ? 'char' : 'faction'] || {})[String(owner[idField]).trim()] : null;
+    var table = dupGroups && dupGroups[idSet === charIds ? 'char' : 'faction'], ref = _tmStableIdMissing(owner[idField]) ? '' : String(owner[idField]).trim(), group = table && ref && Object.prototype.hasOwnProperty.call(table, ref) && Array.isArray(table[ref]) ? table[ref] : null; // 只认自有键：id 叫 constructor / __proto__ 的不能撞上原型（二次复审 R2-5）
     if (!group) return false;
-    var hits = dupKey(nameValue) ? group.filter(function(m) { return dupKey(m.name) === dupKey(nameValue); }) : [];
+    var hits = fullKey(nameValue) ? group.filter(function(m) { return fullKey(m.name) === fullKey(nameValue); }) : []; // 先按完整名字（含括注）唯一匹配，没有精确命中才去括注兜底（二次复审 R2-6）
+    if (!hits.length && dupKey(nameValue)) hits = group.filter(function(m) { return dupKey(m.name) === dupKey(nameValue); });
     if (hits.length !== 1) { dupStats.ambiguous++; return true; }
     if (hits[0].id !== String(owner[idField]).trim()) { owner[idField] = hits[0].id; dupStats.rebound++; } // arch-ok: 读档 schema 迁移·重复 id 组内按名字改绑
     return true;
@@ -1410,7 +1411,7 @@ function _tmBackfillStableForeignKeys(targetGM, dupGroups) {
     if (!owner || !Array.isArray(owner[field])) return;
     owner[field] = owner[field].map(function(value) {
       var key = typeof value === 'string' ? value.trim() : '';
-      if (!key || idSet[key]) return value;
+      if (!key || idSet[key]) { var table = dupGroups && dupGroups[idSet === charIds ? 'char' : 'faction']; if (key && table && Object.prototype.hasOwnProperty.call(table, key)) dupStats.ambiguous++; return value; } // 数组里撞上重复组的 id 旁边没有名字可凭，保持原样只计数（二次复审补充）
       return nameMap[key] != null ? nameMap[key] : value; // arch-ok: 旧姓名数组外键仅在唯一可解析时迁移
     });
   }
@@ -1502,7 +1503,7 @@ function _tmMigrateCoreStableIds(targetGM) {
   var dangling = (typeof _tmClearDanglingStableRefs === 'function') ? _tmClearDanglingStableRefs(targetGM) : [];
   if (dangling.length) result.danglingRepaired = dangling.length;
   // 与上面两个修复器同款：单独装载本文件的测试夹具没有它时按旧行为跳过（prod 同文件内恒有）
-  var playerReceipt = (typeof _tmRepairPlayerIdentityReceipt === 'function' && _tmRepairPlayerIdentityReceipt(targetGM, dupGroups)) ? 1 : 0;
+  var receiptFix = typeof _tmRepairPlayerIdentityReceipt === 'function' ? _tmRepairPlayerIdentityReceipt(targetGM, dupGroups) : false, playerReceipt = receiptFix === true ? 1 : 0; if (receiptFix === 'ambiguous') result.duplicateRefsAmbiguous = (result.duplicateRefsAmbiguous || 0) + 1; // 收据撞上重复组又分不清：保持原样、计入分不清（二次复审补充）
   if (playerReceipt) result.playerIdentityRepaired = playerReceipt;
   if (result.total > 0 || result.duplicateRepaired > 0 || dangling.length > 0 || playerReceipt > 0) {
     if (!targetGM._stableIdMigration || typeof targetGM._stableIdMigration !== 'object') {

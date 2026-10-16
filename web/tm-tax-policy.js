@@ -103,6 +103,54 @@ function effectiveTax(g,n,t,ctx){
  }else r=rateAt(g,n,t,base,start,ctx);
  return Object.assign({},t,{rate:r,_policyBaseRate:base});
 }
+// 诏令里一个动作是照办、被禁止还是说不清（2026-10-17 二次复审 R2-1/R2-7）。
+// 加派（tm-endturn-edict.js·extractEdictFiscalActions 内）与税政（tm-tax-policy.js）各一份、逐字相同，smoke-edict-levy-negation 比对两份源码。
+// 否定只管到它所在的那一层命令：
+//   ① 同一子句里禁令词在动作前面，中间没有「并命 / 并照章」之类另起的命令 → 禁止；
+//   ② 紧挨着的前一子句只有禁令词（「严禁：」「全国严禁，」）→ 禁止；
+//   ③ 动作之后单独一句「著即停止 / 作罢 / 毋庸议」，或同一子句「……之事……停止」→ 收回；
+//   ④ 更早子句里的禁令落在另一件具体的事上（「严禁贪污军粮，加派……」「严禁私自加派，户部加派……」）→ 不相干；
+//      禁令没落到具体的事上（「不得以筹饷为由，向……加派」）→ 说不清，不执行、交回请旨。
+// 「不得已 / 不得不 / 不论 / 禁军」之类不是否定，先抹掉。
+// from：从第几个子句起找动作（同句前一处被禁止时接着看后一处）。
+// 返回 { mood: 'do' | 'ban' | 'unclear' | 'none', clauses: 抹过的子句, at: 动作所在子句, hit: 动作在子句里的位置, layer: 本层命令里动作前的文字 }。
+function actionMood(sentence, actionRe, nextSentence, from) {
+  var mask = function(s) {
+    return String(s == null ? '' : s).replace(/\s+/g, '')
+      .replace(/迫不得已|不得已|不得不|不可不|不能不|不容不|莫不|无不|不论|无论|毋论|不拘|不问|不管|不惜|不计|不日|不时|不久|不分|不止/g, function(w) { return w.replace(/./g, '＃'); })
+      .replace(/(^|[^严查厉明饬勿不永])禁(?=军|卫|旅|苑)/g, '$1＃');
+  };
+  var BAN_LONG = /禁止|严禁|不得|不许|不准|不要|不可|不必|不宜|不予|不再|不复|永不|毋得|毋庸|毋再|勿得|勿再|切勿|切莫|休得|暂缓/;
+  var BAN_ANY = new RegExp(BAN_LONG.source + '|[勿毋莫禁]');
+  var BAN_NEAR = /(?:[勿毋莫禁]|不(?=[向对在于为给再必应宜可得许准要能肯愿敢欲另又]))[^，,：:]{0,4}$|[不未]$/;
+  var HEADER = /^(?:全国|天下|各地|各省|地方|内外|中外|朝野|一律|一概|著即|着即|著|着|即|今|兹|特|再|永远|永|务必|务|须|亦|仍)*(?:禁止|严禁|不得|不许|不准|不要|不可|毋得|勿得|永不|切勿|切莫|禁|勿|毋|莫)$/;
+  var RESTART = /(?:并|且|另|又|同时|随即|旋即)(?:命|令|著|着|饬|敕|谕|责成|准予|准|照章|依例|按例|照例|如例|依制|按制|如数|照数)/g;
+  var COMMAND = /^(?:全国|天下|今|兹|特|另|著即|着即|即)*(?:命|令|著|着|饬|敕|谕|责成|准予|准|特命)/;
+  var OFFENSE = /贪|赃|贿|侵吞|侵占|侵渔|侵蚀|侵冒|冒领|冒支|冒滥|虚报|谎报|瞒报|隐匿|隐瞒|克扣|扣减|中饱|勒索|敲诈|讹诈|需索|索取|苛索|苛派|苛敛|苛征|科敛|科派|摊派|私派|私征|滥征|滥派|浮收|浮征|多征|多收|加耗|火耗|骚扰|扰民|滋扰|扰害|欺压|鱼肉|害民|病民|虐民|抢掠|劫掠|掳掠|奸淫|擅杀|械斗|聚众|赌|酗酒|舞弊|作弊|徇私|营私|结党|包揽|把持|挪用|盗卖|走私|私铸|私贩|囤积|哄抬|拖欠|延误|迟误|推诿|懈怠|废弛|玩忽|渎职|擅离|逃匿|滥收|滥支|滥用|滥刑|私收|私加|私扣|私吞|飞洒|诡寄|欺隐|隐漏|折勒|勒派|勒捐|派累|扰累|刁难/;
+  var PRETEXT = /(?:为由|为名|之名|为辞|借口|名义|擅自|私自|任意|随意|再行|向|对|于|把|将|以|借|藉|因|凭)$/;
+  var STOP = '停止|中止|作罢|罢之|罢议|免议|毋庸议|撤回|收回|作废|寝之';
+  var RETRACT = new RegExp('^(?:著即|着即|即行|应即|立即|立刻|著|着|即|速|一律|均|俱|亦|仍|一概|暂|姑|此事|此议|此令|前令|前旨|所议|所请|其|之)*(?:' + STOP + '|罢|毋庸|不必|不准|不允|不行|勿行|毋行|缓议|暂缓|缓行|从缓|缓办|(?:永不|不再|不复|勿再|毋再|不得)(?:施行|举行|行|议))(?:之|行|办|议|其事)?$');
+  var TAIL_STOP = new RegExp('(?:之事|之议|一事|此事|此议|之令|之举)[^，,：:]*(?:' + STOP + ')(?:之|行|办|议)?$');
+  var clauses = mask(sentence).split(/[，,：:]/), at = -1, hit = -1;
+  for (var i = from || 0; i < clauses.length && at < 0; i++) { hit = clauses[i].search(actionRe); if (hit >= 0) at = i; }
+  var head = at >= 0 ? clauses[at].slice(0, hit) : '', cut = -1, m;
+  RESTART.lastIndex = 0;
+  while ((m = RESTART.exec(head))) cut = m.index + m[0].length;
+  var layer = cut >= 0 ? head.slice(cut) : head;
+  var result = function(mood) { return { mood: mood, clauses: clauses, at: at, hit: hit, layer: layer }; };
+  if (at < 0) return result('none');
+  if (BAN_LONG.test(layer) || BAN_NEAR.test(layer) || TAIL_STOP.test(clauses[at].slice(hit))) return result('ban');
+  var later = clauses.slice(at + 1).concat(nextSentence == null ? [] : [mask(nextSentence)]);
+  if (later.some(function(c) { return RETRACT.test(c); })) return result('ban');
+  if (cut >= 0) return result('do');
+  var fresh = COMMAND.test(clauses[at]), unclear = false;
+  for (var k = at - 1; k >= 0; k--) {
+    var c = clauses[k], b = c.search(BAN_ANY);
+    if (HEADER.test(c)) { if (k === at - 1 && !fresh) return result('ban'); unclear = true; }
+    else if (b >= 0 && !((fresh || OFFENSE.test(c.slice(b)) || actionRe.test(c.slice(b))) && !PRETEXT.test(c))) unclear = true;  // 禁的是它自己那个动作，也不相干
+  }
+  return result(unclear ? 'unclear' : 'do');
+}
 var NUM='[零〇一二两三四五六七八九十百\\d]+(?:\\.\\d+)?';
 // 2026-10-13：「取消/废除/撤销/革除/停收 三饷」是玩家最常写的废止句式，原词表不认，整句被当没说；补齐后按全免登记。
 var verbs=/税率(?:为|改为|定为|调整为)|增税|加税|减税|降税|免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除|减免|减征|减半|降低|减少|降为|减为|减至|降至|降到|减到|调低|提高|上调|增加|加征|增征|增至|升至|增到|调高|恢复|复征/;
@@ -112,7 +160,7 @@ function parse(g,text,params){
  if(!TAXWORDS.test(text)&&!params.taxId)return {handled:false};
  if(!verbs.test(text)&&!own(params,'rate'))return {handled:false};
  if(text.length>12000)return Object.assign(fail('tax-command-too-long','税令过长，请拆分具体条款'),{handled:true});
- var pieces=text.split(/[。；;\n]+/).filter(s=>verbs.test(s)&&TAXWORDS.test(s));
+ var sentences=text.split(/[。；;\n]+/),pieces=sentences.filter(s=>verbs.test(s)&&TAXWORDS.test(s));
  if(!pieces.length&&own(params,'rate'))pieces=[text];var cat=catalog(g),fac=player(g),plans=[];
  if(!fac.id)return Object.assign(fail('tax-authority-unknown','未能确认本方税权，未修改税制'),{handled:true});
  for(var clause of pieces){
@@ -120,8 +168,11 @@ function parse(g,text,params){
   if(/明年|来年|翌年|明月|下月|下一回合|次回合/.test(clause))return Object.assign(fail('tax-future-date-unresolved','未来生效时间须明确登记，未提前执行'),{handled:true});
   var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/,/提高|上调|增加|加征|增征|增税|加税|增至|升至|增到|调高/,/减免|减征|减半|降低|减少|降为|减为|减至|降至|降到|减到|调低|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
   if(directions.length>1)return Object.assign(fail('tax-multiple-actions','不同税务动作请用分号分别列明，未合并扩大执行'),{handled:true});
-  // 否定在同一子句：单字否定看 4 个字；双字以上的禁令词不限距离（「不得未经奏准且未查明实情就取消三饷」隔了 11 个字·2026-10-17 复审 F2）
-  if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收)/.test(clause)||/(?:禁止|严禁|不得(?!已)|不可|不准|不许|不要|不予|毋得|勿得|暂缓)[^，,：:]*(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收|罢征)/.test(clause))continue;
+  // 否定按「命令层」判（2026-10-17 二次复审 R2-1/R2-7·与加派同一份 actionMood）：原来的字数窗口跨冒号、逗号就漏，「严禁贪污并命户部取消三饷」又被误伤；
+  // 「不得已」之类两条旧正则一条认一条不认。禁止的跳过；禁令管不管到这项税务说不清的，不执行、请分句写明。
+  var at=sentences.indexOf(clause),mood=actionMood(clause,verbs,at>=0?sentences[at+1]:undefined);
+  if(mood.mood==='ban'){if(actionMood(clause,verbs,undefined,mood.at+1).mood==='none')continue;return Object.assign(fail('tax-multiple-actions','一句里既有被禁止的税务动作又有别的税务动作，未执行；请分句写明'),{handled:true});}
+  if(mood.mood==='unclear')return Object.assign(fail('tax-negation-unclear','禁令词与税务动作在同一句，管不管到这项税务说不清，未执行；请把禁令与命令分句写明'),{handled:true});
   if(/[-−]\s*\d+(?:\.\d+)?\s*[%％成]/.test(clause))return Object.assign(fail('tax-rate-negative','负数税率或比例不能直接执行'),{handled:true});
   var kinds=KINDS.filter(x=>x[1].test(clause));
   if(!kinds.length&&/三饷/.test(clause))kinds=[['sanxiang',/三饷/]];
@@ -240,6 +291,6 @@ function describe(g,query){
  return list.slice(-12).map(p=>'['+p.id+'] '+p.text+'；'+(active(g,p)?'现行有效':'已到期或未生效')+'；生效日'+p.startDay+(p.endDay==null?'，长期有效':'，截至第'+p.endDay+'日')+'；范围：'+p.regionNames.slice(0,8).join('、')).join('\n');
 }
 function staticFactor(g,n,ctx){return effectiveTax(g,n,{id:'__static_all_tax',name:'合并税收',rate:1},ctx).rate;}
-TM.TaxPolicy={coversTask:coversTask,parse:parse,apply:apply,effectiveTax:effectiveTax,receipts:receipts,describe:describe,
+TM.TaxPolicy={coversTask:coversTask,parse:parse,actionMood:actionMood,apply:apply,effectiveTax:effectiveTax,receipts:receipts,describe:describe,
  active:active,now:now,turnDays:turnDays,number:number,player:player,catalog:catalog,staticFactor:staticFactor};
 })(typeof window!=='undefined'?window:globalThis);

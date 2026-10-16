@@ -1023,13 +1023,59 @@ function extractEdictFiscalActions(edictText) {
   //      「蠲免辽饷；加派剿饷二成」两句各算各的，不再整篇一把抓；
   //   ③ 没写成数不再按五成猜：tier 留空，prep 落效时请户部回奏「未写明成数」。
   var _fisNegBefore = '蠲免|蠲除|蠲|豁免|减免|免征|免收|免除|免去|罢停|停征|停派|停收|停止|裁撤|裁革|废止|废除|废|取消|撤销|撤除|革除|革去|严禁|禁止|禁|勿|毋|莫|不要|不得|不许|不准|不可|不再|不复|永不|罢|停|免|减';
-  var _fisNegAfter = '蠲免|蠲除|豁免|减免|免征|免除|停征|停派|停收|裁撤|裁革|废止|废除|取消|撤销|革除|尽罢|悉罢|皆罢|俱免|尽免|永不|不得|勿|毋';
-  var _fisNeg = new RegExp('(?:' + _fisNegBefore + ')[^。；！\\n]{0,8}(?:加派|加征|加赋|三饷|辽饷|剿饷|练饷)|(?:加派|加征|三饷|辽饷|剿饷|练饷)[^。；！\\n]{0,8}(?:' + _fisNegAfter + ')');
-  // 2026-10-17 复审（Astra 6）F2：①双字以上禁令词与征派动作同一子句时不限距离（「不得向全国所有灾民和贫苦农户加派」隔了 12 个字）；
-  //   ②「禁军/禁卫…」里的「禁」不是否定词；③成数只从加派子句和其后只补成数的子句读，不借别的税种子句的成数；
-  //   ④成数认「十一成」（超过十成留空请明示）、「2成」「百分之二十」「15%」。
-  var _fisNegLong = /(?:禁止|严禁|不得(?!已)|不许|不准|不要|不可|不再|不复|永不|毋得|勿再|勿得)[^，,：:]*(?:加派|加征|加赋|增派|派征|开征|三饷|辽饷|剿饷|练饷)/;
-  function _fisMaskNouns(s) { return s.replace(/(^|[^严查厉明饬勿不永])禁(?=军|卫|旅|苑)/g, '$1＊'); }  // 「禁军」不是否定，「严禁军士」「严禁地方」仍是
+  var _fisNegAfter = '蠲免|蠲除|豁免|减免|免征|免除|停征|停派|停收|裁撤|裁革|废止|废除|取消|撤销|革除|尽罢|悉罢|皆罢|俱免|尽免';
+  // 2026-10-17 二次复审（Astra 6·R2-1/2/3/7）：否定范围改由 actionMood 按「命令层」判，与税政同一份；原来的前后字数窗口跨逗号误伤
+  //   「严禁贪污军粮，加派……」、又漏掉「严禁：……加派」「加派……，著即停止」。说不清的不执行，交回请旨。
+  //   成数只认：加派子句本身；其后只补成数的子句（中间隔着不带税目的说明子句也行）；紧挨着的前一子句「辽饷二成」。
+  //   带负号、为零、超过十成、同句几个不同成数都不猜；去掉 5% 下限，按明示值执行（原来 2% 被抬成 5%）。
+  // 诏令里一个动作是照办、被禁止还是说不清（2026-10-17 二次复审 R2-1/R2-7）。
+  // 加派（tm-endturn-edict.js·extractEdictFiscalActions 内）与税政（tm-tax-policy.js）各一份、逐字相同，smoke-edict-levy-negation 比对两份源码。
+  // 否定只管到它所在的那一层命令：
+  //   ① 同一子句里禁令词在动作前面，中间没有「并命 / 并照章」之类另起的命令 → 禁止；
+  //   ② 紧挨着的前一子句只有禁令词（「严禁：」「全国严禁，」）→ 禁止；
+  //   ③ 动作之后单独一句「著即停止 / 作罢 / 毋庸议」，或同一子句「……之事……停止」→ 收回；
+  //   ④ 更早子句里的禁令落在另一件具体的事上（「严禁贪污军粮，加派……」「严禁私自加派，户部加派……」）→ 不相干；
+  //      禁令没落到具体的事上（「不得以筹饷为由，向……加派」）→ 说不清，不执行、交回请旨。
+  // 「不得已 / 不得不 / 不论 / 禁军」之类不是否定，先抹掉。
+  // from：从第几个子句起找动作（同句前一处被禁止时接着看后一处）。
+  // 返回 { mood: 'do' | 'ban' | 'unclear' | 'none', clauses: 抹过的子句, at: 动作所在子句, hit: 动作在子句里的位置, layer: 本层命令里动作前的文字 }。
+  function actionMood(sentence, actionRe, nextSentence, from) {
+    var mask = function(s) {
+      return String(s == null ? '' : s).replace(/\s+/g, '')
+        .replace(/迫不得已|不得已|不得不|不可不|不能不|不容不|莫不|无不|不论|无论|毋论|不拘|不问|不管|不惜|不计|不日|不时|不久|不分|不止/g, function(w) { return w.replace(/./g, '＃'); })
+        .replace(/(^|[^严查厉明饬勿不永])禁(?=军|卫|旅|苑)/g, '$1＃');
+    };
+    var BAN_LONG = /禁止|严禁|不得|不许|不准|不要|不可|不必|不宜|不予|不再|不复|永不|毋得|毋庸|毋再|勿得|勿再|切勿|切莫|休得|暂缓/;
+    var BAN_ANY = new RegExp(BAN_LONG.source + '|[勿毋莫禁]');
+    var BAN_NEAR = /(?:[勿毋莫禁]|不(?=[向对在于为给再必应宜可得许准要能肯愿敢欲另又]))[^，,：:]{0,4}$|[不未]$/;
+    var HEADER = /^(?:全国|天下|各地|各省|地方|内外|中外|朝野|一律|一概|著即|着即|著|着|即|今|兹|特|再|永远|永|务必|务|须|亦|仍)*(?:禁止|严禁|不得|不许|不准|不要|不可|毋得|勿得|永不|切勿|切莫|禁|勿|毋|莫)$/;
+    var RESTART = /(?:并|且|另|又|同时|随即|旋即)(?:命|令|著|着|饬|敕|谕|责成|准予|准|照章|依例|按例|照例|如例|依制|按制|如数|照数)/g;
+    var COMMAND = /^(?:全国|天下|今|兹|特|另|著即|着即|即)*(?:命|令|著|着|饬|敕|谕|责成|准予|准|特命)/;
+    var OFFENSE = /贪|赃|贿|侵吞|侵占|侵渔|侵蚀|侵冒|冒领|冒支|冒滥|虚报|谎报|瞒报|隐匿|隐瞒|克扣|扣减|中饱|勒索|敲诈|讹诈|需索|索取|苛索|苛派|苛敛|苛征|科敛|科派|摊派|私派|私征|滥征|滥派|浮收|浮征|多征|多收|加耗|火耗|骚扰|扰民|滋扰|扰害|欺压|鱼肉|害民|病民|虐民|抢掠|劫掠|掳掠|奸淫|擅杀|械斗|聚众|赌|酗酒|舞弊|作弊|徇私|营私|结党|包揽|把持|挪用|盗卖|走私|私铸|私贩|囤积|哄抬|拖欠|延误|迟误|推诿|懈怠|废弛|玩忽|渎职|擅离|逃匿|滥收|滥支|滥用|滥刑|私收|私加|私扣|私吞|飞洒|诡寄|欺隐|隐漏|折勒|勒派|勒捐|派累|扰累|刁难/;
+    var PRETEXT = /(?:为由|为名|之名|为辞|借口|名义|擅自|私自|任意|随意|再行|向|对|于|把|将|以|借|藉|因|凭)$/;
+    var STOP = '停止|中止|作罢|罢之|罢议|免议|毋庸议|撤回|收回|作废|寝之';
+    var RETRACT = new RegExp('^(?:著即|着即|即行|应即|立即|立刻|著|着|即|速|一律|均|俱|亦|仍|一概|暂|姑|此事|此议|此令|前令|前旨|所议|所请|其|之)*(?:' + STOP + '|罢|毋庸|不必|不准|不允|不行|勿行|毋行|缓议|暂缓|缓行|从缓|缓办|(?:永不|不再|不复|勿再|毋再|不得)(?:施行|举行|行|议))(?:之|行|办|议|其事)?$');
+    var TAIL_STOP = new RegExp('(?:之事|之议|一事|此事|此议|之令|之举)[^，,：:]*(?:' + STOP + ')(?:之|行|办|议)?$');
+    var clauses = mask(sentence).split(/[，,：:]/), at = -1, hit = -1;
+    for (var i = from || 0; i < clauses.length && at < 0; i++) { hit = clauses[i].search(actionRe); if (hit >= 0) at = i; }
+    var head = at >= 0 ? clauses[at].slice(0, hit) : '', cut = -1, m;
+    RESTART.lastIndex = 0;
+    while ((m = RESTART.exec(head))) cut = m.index + m[0].length;
+    var layer = cut >= 0 ? head.slice(cut) : head;
+    var result = function(mood) { return { mood: mood, clauses: clauses, at: at, hit: hit, layer: layer }; };
+    if (at < 0) return result('none');
+    if (BAN_LONG.test(layer) || BAN_NEAR.test(layer) || TAIL_STOP.test(clauses[at].slice(hit))) return result('ban');
+    var later = clauses.slice(at + 1).concat(nextSentence == null ? [] : [mask(nextSentence)]);
+    if (later.some(function(c) { return RETRACT.test(c); })) return result('ban');
+    if (cut >= 0) return result('do');
+    var fresh = COMMAND.test(clauses[at]), unclear = false;
+    for (var k = at - 1; k >= 0; k--) {
+      var c = clauses[k], b = c.search(BAN_ANY);
+      if (HEADER.test(c)) { if (k === at - 1 && !fresh) return result('ban'); unclear = true; }
+      else if (b >= 0 && !((fresh || OFFENSE.test(c.slice(b)) || actionRe.test(c.slice(b))) && !PRETEXT.test(c))) unclear = true;  // 禁的是它自己那个动作，也不相干
+    }
+    return result(unclear ? 'unclear' : 'do');
+  }
   function _fisCnNumber(s) {
     if (/^\d+(?:\.\d+)?$/.test(s)) return parseFloat(s);
     var digit = { '零':0,'〇':0,'一':1,'二':2,'两':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9 }, total = 0, cur = 0, seen = false;
@@ -1041,33 +1087,58 @@ function extractEdictFiscalActions(edictText) {
     }
     return seen ? total + cur : NaN;
   }
-  function _fisLevyRate(scope) {
-    var m = scope.match(/(\d+(?:\.\d+)?)\s*[%％]/) || scope.match(/百分之([零〇一二两三四五六七八九十百\d]+)/);
-    if (m) return _fisCnNumber(m[1]) / 100;
-    m = scope.match(/([零〇一二两三四五六七八九十\d.]+)成(半)?/);
-    if (m) return _fisCnNumber(m[1]) / 10 + (m[2] ? 0.05 : 0);
-    if (/全饷|尽数加派/.test(scope)) return 1.0;
-    if (/薄赋/.test(scope)) return 0.2;
-    return null;
-  }
-  var _levySentence = String(edictText).split(/[。；;！!\n]+/).map(function(s) { return s.replace(/\s+/g, ''); }).filter(function(s) {
-    var levy = /加派/.test(s) ||
-      /(加征|增派|派征|开征|征收|征)[^。；！\n，,]{0,4}(三饷|辽饷|剿饷|练饷)|(三饷|辽饷|剿饷|练饷)[^。；！\n]{0,6}(加派|加征|增派|每亩)/.test(s);
-    var masked = _fisMaskNouns(s);
-    return levy && !_fisNeg.test(masked) && !_fisNegLong.test(masked);
-  })[0];
-  if (_levySentence) {
-    var _clauses = _levySentence.split(/[，,：:]/), _first = -1;
-    for (var ci = 0; ci < _clauses.length && _first < 0; ci++) { if (/加派|加征|增派|派征|开征|征收|三饷|辽饷|剿饷|练饷/.test(_clauses[ci])) _first = ci; }
-    var _scope = _first >= 0 ? _clauses[_first] : _levySentence;
-    for (var cj = _first + 1; _first >= 0 && cj < _clauses.length; cj++) {
-      if (/田赋|丁|漕|盐|商税|关税|榷|赋|税|课|饷|减|免|蠲|停|罢|加派|加征/.test(_clauses[cj])) break;
-      _scope += '，' + _clauses[cj];
+  var _fisRate = /([-−－﹣负]?)(?:(\d+(?:\.\d+)?)[%％]|百分之([零〇一二两三四五六七八九十百\d]+)|([零〇一二两三四五六七八九十百\d.]+)成(半)?)/g;
+  function _fisRates(s) {
+    var list = [], m;
+    _fisRate.lastIndex = 0;
+    while ((m = _fisRate.exec(s))) {
+      var v = m[2] != null ? _fisCnNumber(m[2]) / 100 : m[3] != null ? _fisCnNumber(m[3]) / 100 : _fisCnNumber(m[4]) / 10 + (m[5] ? 0.05 : 0);
+      list.push(m[1] ? NaN : Math.round(v * 1000) / 1000);  // 带负号的记为无效
     }
-    var rate = _fisLevyRate(_scope);
-    if (rate != null && !(rate > 0 && rate <= 1)) rate = null;  // 超过十成或为零：不猜，留空请明示
-    if (rate != null) rate = Math.max(0.05, Math.min(1, rate));
-    out.push({ type: 'extraTax', tier: rate, raw: rate != null ? '加派' + Math.round(rate * 100) + '%' : '加派（未写明成数）', clause: _levySentence });
+    return list;
+  }
+  var _fisRateOnly = /^[按照以每约为定计著着即酌加派征收至到限率度之数上下左右亩两石银粮田地丁口户钱文分厘再行一律俱均各皆其共合总额例]*$/;
+  var _levyStrong = /加派|加征|加赋|增派|派征|开征/;
+  var _levyWeak = /征收|征派|(?:征|派)(?=[^，,：:]{0,4}(?:三饷|辽饷|剿饷|练饷))|(?:三饷|辽饷|剿饷|练饷)(?=[^，,：:]{0,6}每亩)/;
+  var _fisOppBefore = new RegExp('(?:' + _fisNegBefore + ')[^，,：:]{0,8}$');
+  var _fisOppAfter = new RegExp('^(?:加派|加征|加赋|增派|派征|开征|征收|征派|征|派|三饷|辽饷|剿饷|练饷)[^，,：:]{0,8}(?:' + _fisNegAfter + ')');
+  var _fisOppElsewhere = new RegExp('(?:' + _fisNegAfter + '|罢|停|免)[^，,：:]{0,8}(?:加派|加征|三饷|辽饷|剿饷|练饷)|(?:加派|加征|三饷|辽饷|剿饷|练饷)[^，,：:]{0,8}(?:' + _fisNegAfter + ')');
+  var _levySentences = String(edictText).split(/[。；;！!？?\n]+/).map(function(s) { return s.replace(/\s+/g, ''); });
+  for (var si = 0; si < _levySentences.length; si++) {
+    var _sent = _levySentences[si];
+    if (!(/加派/.test(_sent) || /(加征|增派|派征|开征|征收|征)[^。；！\n，,]{0,4}(三饷|辽饷|剿饷|练饷)|(三饷|辽饷|剿饷|练饷)[^。；！\n]{0,6}(加派|加征|增派|每亩)/.test(_sent))) continue;
+    // 同句里这一处被禁止或说的是蠲免停罢，接着看后面还有没有另一处加派（「严禁私自加派，户部加派辽饷二成」）
+    var _mood = null;
+    for (var _from = 0; ; ) {
+      var _m = actionMood(_sent, _levyStrong, _levySentences[si + 1], _from);
+      if (_m.mood === 'none' && _from === 0) _m = actionMood(_sent, _levyWeak, _levySentences[si + 1], 0);
+      if (_m.mood === 'none') break;
+      if (_m.mood !== 'ban' && !_fisOppBefore.test(_m.layer) && !_fisOppAfter.test(_m.clauses[_m.at].slice(_m.hit))) { _mood = _m; break; }
+      _from = _m.at + 1;
+    }
+    if (!_mood) continue;
+    var _cl = _mood.clauses, _act = _cl[_mood.at], _own = (_act.match(/三饷|辽饷|剿饷|练饷/) || [])[0];
+    // 前面子句蠲免停罢的正是这项加派（同名饷、三饷，或本处没写饷名）才算抵触；「蠲免辽饷，加派剿饷二成」各算各的
+    var _why = _mood.mood === 'unclear' ? '禁令与加派同在一句，管不管到加派说不清'
+      : (_cl.slice(0, _mood.at).some(function(c) { return _fisOppElsewhere.test(c) && (!_own || c.indexOf(_own) >= 0 || /三饷|加派|加征/.test(c)); }) ? '同一句里先蠲免停罢、又加派，两相抵触' : null);
+    var _rates = _fisRates(_act);
+    for (var cj = _mood.at + 1; !_rates.length && cj < _cl.length; cj++) {
+      var _r = _fisRates(_cl[cj]);
+      if (_r.length) { if (_fisRateOnly.test(_cl[cj].replace(_fisRate, ''))) _rates = _r; break; }
+      if (/田赋|丁|漕|盐|商税|关税|榷|赋|税|课|饷|减|免|蠲|停|罢|加派|加征/.test(_cl[cj])) break;
+    }
+    if (!_rates.length && _mood.at > 0 && _fisRateOnly.test(_cl[_mood.at - 1].replace(_fisRate, '').replace(/三饷|辽饷|剿饷|练饷/g, ''))) _rates = _fisRates(_cl[_mood.at - 1]);
+    var rate = null;
+    if (!_why && _rates.length) {
+      if (_rates.some(function(v) { return !(v > 0 && v <= 1); })) _why = '成数不合：负数、为零或超过十成';
+      else if (_rates.some(function(v) { return v !== _rates[0]; })) _why = '同一句写了几个不同的成数';
+      else rate = _rates[0];
+    } else if (!_why && /全饷|尽数加派/.test(_act)) rate = 1.0;
+    else if (!_why && /薄赋/.test(_act)) rate = 0.2;
+    var _fa = { type: 'extraTax', tier: rate, raw: rate != null ? '加派' + Math.round(rate * 100) + '%' : '加派（' + (_why || '未写明成数') + '）', clause: _sent };
+    if (_why) _fa.why = _why;
+    out.push(_fa);
+    break;
   }
   // 开仓赈济（一次性花库银济灾）
   if (/开仓|赈济|赈灾|放粮/.test(text)) {

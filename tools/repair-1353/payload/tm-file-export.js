@@ -90,7 +90,11 @@
               var end = Math.min(part.length, pos + CHUNK_TARGET - buf.length);
               if (end < part.length && end > pos) { var hi = part.charCodeAt(end - 1); if (hi >= 0xD800 && hi <= 0xDBFF) end--; }
               buf += part.slice(pos, end); pos = end;
-              if (buf.length >= CHUNK_TARGET - 1) { await plugin.appendChunk({ chunk: buf }); buf = ''; }
+              if (buf.length >= CHUNK_TARGET - 1) {
+                // 上一段恰好以高代理收尾时，留到下一块与下一段开头的低代理一起过桥（二次复审 F3 补充边界）
+                var last = buf.charCodeAt(buf.length - 1), hold = last >= 0xD800 && last <= 0xDBFF ? buf.slice(-1) : '';
+                await plugin.appendChunk({ chunk: hold ? buf.slice(0, -1) : buf }); buf = hold;
+              }
             }
           }
           if (buf.length) await plugin.appendChunk({ chunk: buf });

@@ -154,5 +154,31 @@ console.log('[smoke-player-identity-receipt]');
   ok(flagOnly.playerInfo.characterId === flagOnly.chars[1].id, '同名重复且收据没写名字时，按组内唯一玩家标记归属');
 }
 
+{ // 2026-10-17 二次复审（Astra 6）：重复组查找只认自有键；先按完整名字（含括注）匹配；分不清的收据与数组引用也计数
+  const ctx = makeContext();
+  ['constructor', 'toString', '__proto__', 'hasOwnProperty'].forEach(key => {
+    const world = { sid: 'proto-' + key, chars: [{ id: key, name: '甲' }], facs: [], armies: [{ id: 'a', commanderId: key, commander: '甲' }], playerInfo: { characterId: key }, mapData: { regions: [] } };
+    let error = null;
+    try { ctx._tmMigrateCoreStableIds(world); } catch (e) { error = e; }
+    ok(!error && world.armies[0].commanderId === key && world.playerInfo.characterId === key, '人物 id 叫 ' + key + '、没有任何重复：迁移不抛错、引用原样' + (error ? '（' + error.message + '）' : ''));
+  });
+  const paren = { sid: 'dup-paren', chars: [{ id: 'dup', name: '甲（父）' }, { id: 'dup', name: '甲（子）' }, { id: 'dup', name: '乙' }], facs: [],
+    armies: [{ id: 'a', commanderId: 'dup', commander: '甲（子）' }], playerInfo: { characterId: 'dup', characterName: '甲（父）' }, mapData: { regions: [] } };
+  ctx._tmMigrateCoreStableIds(paren);
+  ok(paren.armies[0].commanderId === paren.chars[1].id && paren.playerInfo.characterId === paren.chars[0].id, '括注名能精确区分时按完整名字归属：统帅归「甲（子）」，收据归「甲（父）」');
+  const loose = { sid: 'dup-loose', chars: [{ id: 'dup', name: '甲' }, { id: 'dup', name: '乙（藩王）' }, { id: 'dup', name: '丙' }], facs: [],
+    armies: [{ id: 'a', commanderId: 'dup', commander: '乙（旧称）' }], mapData: { regions: [] } };
+  ctx._tmMigrateCoreStableIds(loose);
+  ok(loose.armies[0].commanderId === loose.chars[1].id, '完整名字没有命中时仍按去括注的名字兜底');
+  const amb = { sid: 'dup-amb', chars: [{ id: 'dup', name: '甲' }, { id: 'dup', name: '乙' }, { id: 'dup', name: '乙' }, { id: 'x', name: '子', childrenIds: ['dup'] }], facs: [], armies: [],
+    playerInfo: { characterId: 'dup', characterName: '乙' }, mapData: { regions: [] } };
+  const r = ctx._tmMigrateCoreStableIds(amb);
+  ok(amb.playerInfo.characterId === 'dup' && amb.chars[3].childrenIds[0] === 'dup' && r.duplicateRefsAmbiguous === 2 && amb._stableIdMigration.duplicateRefsAmbiguous === 2,
+    '分不清的玩家收据和数组引用保持原样，都计入 duplicateRefsAmbiguous（' + r.duplicateRefsAmbiguous + '）');
+  const snap = JSON.stringify(amb);
+  ctx._tmMigrateCoreStableIds(amb);
+  ok(JSON.stringify(amb) === snap, '再读一次档不变、不重复计数');
+}
+
 console.log('\n[smoke-player-identity-receipt] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

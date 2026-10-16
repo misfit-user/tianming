@@ -35,4 +35,13 @@ test('「田赋加征两成」「田赋减征三成」老写法不受影响',()=
 test('长否定：「全国不得未经奏准且未查明实情就取消三饷」不登记全免，整档不动',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国不得未经奏准且未查明实情就取消三饷');assert(!r.ok,JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);assert.equal(h.amount('sx',1),50);});
 test('长否定：「各省严禁借灾情之名擅自停收辽饷」不登记停征',()=>{const h=harness();const s=JSON.stringify(h.g);assert(!h.command('全国各省严禁借灾情之名擅自停收辽饷').ok);assert.equal(JSON.stringify(h.g),s);});
 
+// 2026-10-17 二次复审（Astra 6）：否定按「命令层」判，与加派同一份 actionMood
+test('冒号隔开的禁令仍管到动作：「全国严禁：……擅自停收三饷」不停征',()=>{const h=harness();const s=JSON.stringify(h.g);assert(!h.command('全国严禁：地方官员借灾情之名擅自停收三饷').ok);assert(!h.command('全国严禁:地方官员借灾情之名擅自停收三饷').ok);assert.equal(JSON.stringify(h.g),s);});
+test('禁令没落到具体的事上：「全国不得以灾情为名，……擅自取消三饷」说不清、不执行',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国不得以灾情为名，未经户部核准擅自取消三饷');assert(!r.ok&&/tax-negation-unclear|说不清/.test(JSON.stringify(r)),JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);});
+test('收回：「全国取消三饷之议著即停止」「全国取消三饷，著即停止」都不免',()=>{const h=harness();const s=JSON.stringify(h.g);assert(!h.command('全国取消三饷之议著即停止').ok);assert(!h.command('全国取消三饷，著即停止').ok);assert.equal(JSON.stringify(h.g),s);});
+test('禁令落在别的事上不误伤：「全国严禁贪污并命户部立即取消三饷」「严禁胥吏需索，全国取消辽饷」照办',()=>{let h=harness();assert(h.command('全国严禁贪污并命户部立即取消三饷').ok);assert.equal(h.amount('sx',1),0);h=harness();const r=h.command('严禁胥吏需索，全国取消辽饷');assert(r.ok,JSON.stringify(r));assert.equal(h.amount('sx',1),0);});
+test('「迫不得已」不是否定：「全国迫不得已取消三饷」照办',()=>{const h=harness();assert(h.command('全国迫不得已取消三饷').ok);assert.equal(h.amount('sx',1),0);});
+
+test('同句先禁一项又改一项（同一种动作）：「全国不得废除辽饷，废除田赋」明确报出、不静默跳过',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国不得废除辽饷，废除田赋');assert(!r.ok&&/既有被禁止的税务动作/.test(JSON.stringify(r)),JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);});
+
 console.log(`${passed} passed / ${failed} failed`);process.exit(failed?1:0);

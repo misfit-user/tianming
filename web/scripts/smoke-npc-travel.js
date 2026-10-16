@@ -109,11 +109,15 @@ test('one long committed interval and segmented intervals keep the same meeting 
       expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion
     });
     if (segmented) for (let i = 0; i < 12; i++) advance(c, 1); else advance(c, 12);
-    const m = p.localActivity.meeting;
-    return { status: m.status, start: m.startedDay, end: m.endDay, participation: m.participation && m.participation.durationDays,
-      actor: a.location, target: b.location, returned: p.status };
+    const current = c.TM.NPC.DailyActivities.get(p.id), m = current.localActivity.meeting;
+    return { status: m.status, start: m.startedDay, end: m.endDay, participation: m.participation && m.participation.durationDays, discussionOutcome: m.participation && m.participation.discussion && m.participation.discussion.outcome,
+      actor: a.location, target: b.location, returned: current.status };
   }
   assert.deepEqual(run(true), run(false));
+  const longRun = run(false);
+  assert.equal(longRun.status, 'returned');
+  assert.equal(longRun.discussionOutcome, null);
+  assert.equal(longRun.returned, 'ended');
 });
 
 test('route segment progress, roadblock and cancellation do not teleport or clear the other journey', () => {
@@ -221,19 +225,30 @@ test('one meeting plan carries a sourced onsite consultation and returns both pa
   assert(opportunity && opportunity.action.consultation, 'the meeting purpose must come from the completed contact');
   const request = D.submitNPC(actor, { actionId: 'composite-meeting', activityKind: 'meeting', targetId: teacher.id,
     meeting: { locationId: 'east', requestedStartDay: 2, durationDays: 1, purpose: '相约读札／当面请益', discussion: opportunity.action.consultation } });
-  assert.equal(request.outcome, 'submitted', request.reason); const p = D.get(request.planId); c.deliver();
+  assert.equal(request.outcome, 'submitted', request.reason); let p = D.get(request.planId); c.deliver();
   const reply = D.submitNPC(teacher, { actionId: 'composite-meeting-reply', planId: p.id, phase: 'respond', response: 'accept', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
   assert.equal(reply.outcome, 'submitted', reply.reason); c.deliver();
   assert.notEqual(p.localActivity.meeting.status, 'in_meeting', 'acceptance before the agreed day must still wait');
   advance(c, 1); // arrive at the agreed start day before speaking
   assert.equal(p.localActivity.meeting.status, 'in_meeting');
+  // A stale arrived flag or a matching old region is not enough.  If the
+  // other participant has actually left, the question cannot be recorded.
+  let currentTeacher = D.person(teacher.id, c.GM);
+  currentTeacher.location = '西城'; currentTeacher.regionId = 'west'; currentTeacher.mapRegionId = 'west'; currentTeacher._travelCurrentRegionId = 'west';
+  const unavailable = D.submitNPC(actor, { actionId: 'composite-discuss-away', planId: p.id, phase: 'discuss', exchangeChoice: 'question', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
+  assert.equal(unavailable.outcome, 'blocked');
+  assert.equal(unavailable.reason, 'meeting_discussion_participant_unavailable');
+  currentTeacher = D.person(teacher.id, c.GM);
+  currentTeacher.location = '东城'; currentTeacher.regionId = 'east'; currentTeacher.mapRegionId = 'east'; currentTeacher._travelCurrentRegionId = 'east';
   const discuss = D.submitNPC(actor, { actionId: 'composite-discuss', planId: p.id, phase: 'discuss', exchangeChoice: 'question', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
   assert.equal(discuss.outcome, 'submitted', discuss.reason);
-  const targetView = D.view(p, teacher);
+  const targetView = D.view(D.get(p.id), D.person(teacher.id, c.GM));
   assert(targetView && targetView.meeting && targetView.meeting.discussion.heardContent, 'the target sees the spoken onsite question only after it occurs');
-  const answer = D.submitNPC(teacher, { actionId: 'composite-discuss-answer', planId: p.id, phase: 'discuss_response', response: 'answer', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
+  const currentAfterQuestion = D.get(p.id);
+  const answer = D.submitNPC(teacher, { actionId: 'composite-discuss-answer', planId: p.id, phase: 'discuss_response', response: 'answer', expectedRevision: currentAfterQuestion.localActivity.revision, termsVersion: currentAfterQuestion.localActivity.termsVersion });
   assert.equal(answer.outcome, 'submitted', answer.reason);
   advance(c, 1);
+  p = D.get(p.id);
   assert.equal(p.localActivity.meeting.discussion.status, 'completed');
   assert(p.localActivity.meeting.participation && p.localActivity.meeting.participation.discussion.result);
   assert.equal(p.status, 'done');
@@ -253,6 +268,14 @@ test('the same meeting reads actual office constraints for allowed and leave-req
       actualHolders: [{ characterId: leaveHolder.id, name: leaveHolder.name, appointmentId: 'appt-leave' }], appointmentId: 'appt-leave',
       officeTenure: { dutyMode: 'resident', usualDutyLocationId: 'east', leave: { requiresApproval: true } } }
   ] }];
+  // The first positive branch has a real, person/position-bound leave
+  // arrangement.  The activity hint below is deliberately looser; it must
+  // not be able to erase this actual duty requirement.
+  c.GM.officeTree[0].positions[0]._officeTenureState = { version: 1, sequence: 1, leaves: [{
+    id: 'leave-ok', positionId: 'seat-ok', organizationId: 'org', holderId: actor.id,
+    status: 'approved', applicantInformed: true, termsVersion: 1,
+    terms: { destinationId: 'west', startDay: 0, latestReturnDay: 20 }
+  }], delegations: [], reports: [] };
   const allowed = D.submitNPC(actor, { actionId: 'office-constrained-allowed', activityKind: 'meeting', targetId: target.id,
     meeting: { locationId: 'west', requestedStartDay: 8, durationDays: 1, actorOfficeConstraint: { positionId: 'seat-ok', requiresLeave: false } } });
   assert.equal(allowed.outcome, 'submitted', allowed.reason); const allowedPlan = D.get(allowed.planId); advance(c, 3);
@@ -267,6 +290,36 @@ test('the same meeting reads actual office constraints for allowed and leave-req
   assert.equal(reply.outcome, 'submitted', reply.reason); advance(c, 3);
   assert.equal(blockedPlan.status, 'waiting_departure');
   assert.equal(blockedPlan.localActivity.meeting.actorJourney, undefined, 'leave-required holder cannot start before a valid leave');
+});
+
+test('multiple appointments cannot be hidden by a loose hint and valid leave covers the full return window', () => {
+  const c = world(), D = c.TM.NPC.DailyActivities, actor = c.add('a', '甲'), target = c.add('b', '乙');
+  c.GM.affinityMap = { '甲|乙': 80 };
+  c.GM.officeTree = [{ id: 'dept', organizationId: 'org', name: '署', positions: [
+    { id: 'seat-a', holderId: actor.id, actualHolders: [{ characterId: actor.id, appointmentId: 'appt-a' }], appointmentId: 'appt-a', officeTenure: { dutyMode: 'resident', usualDutyLocationId: 'east', leave: { requiresApproval: true } } },
+    { id: 'seat-b', holderId: actor.id, actualHolders: [{ characterId: actor.id, appointmentId: 'appt-b' }], appointmentId: 'appt-b', officeTenure: { dutyMode: 'resident', usualDutyLocationId: 'east', leave: { requiresApproval: true } } }
+  ] }];
+  const request = D.submitNPC(actor, { actionId: 'office-multi-duty', activityKind: 'meeting', targetId: target.id,
+    meeting: { locationId: 'west', requestedStartDay: 8, durationDays: 1, actorOfficeConstraint: { positionId: 'seat-a', requiresLeave: false } } });
+  assert.equal(request.outcome, 'submitted', request.reason); let p = D.get(request.planId);
+  advance(c, 3);
+  assert.equal(D.submitNPC(target, { actionId: 'office-multi-duty-response', planId: p.id, phase: 'respond', response: 'accept', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion }).outcome, 'submitted');
+  advance(c, 3);
+  assert.equal(p.status, 'waiting_departure', 'one loose constraint must not erase either resident duty');
+  assert.equal(p.localActivity.meeting.actorJourney, undefined);
+  // Only one leave is sufficient to identify the remaining unmet duty; the
+  // second one is added below to prove the positive path.
+  c.GM.officeTree[0].positions.forEach(function (pos, index) {
+    pos._officeTenureState = { version: 1, sequence: 1, leaves: index === 0 ? [{ id: 'leave-a', positionId: pos.id, organizationId: 'org', holderId: actor.id, status: 'approved', applicantInformed: true, termsVersion: 1, terms: { destinationId: 'west', startDay: 0, latestReturnDay: 20 } }] : [], delegations: [], reports: [] };
+  });
+  let depart = D.submitNPC(actor, { actionId: 'office-multi-duty-depart-one', planId: p.id, phase: 'depart', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
+  assert.equal(depart.outcome, 'blocked');
+  assert.equal(p.localActivity.meeting.actorJourney, undefined, 'one of two duties still blocks departure');
+  c.GM.officeTree[0].positions[1]._officeTenureState = { version: 1, sequence: 1, leaves: [{ id: 'leave-b', positionId: 'seat-b', organizationId: 'org', holderId: actor.id, status: 'approved', applicantInformed: true, termsVersion: 1, terms: { destinationId: 'west', startDay: 0, latestReturnDay: 20 } }], delegations: [], reports: [] };
+  depart = D.submitNPC(actor, { actionId: 'office-multi-duty-depart-both', planId: p.id, phase: 'depart', expectedRevision: p.localActivity.revision, termsVersion: p.localActivity.termsVersion });
+  p = D.get(p.id);
+  assert.equal(depart.outcome, 'started', depart.reason);
+  assert(p.localActivity.meeting.actorJourney && /^(in_transit|arrived)$/.test(p.localActivity.meeting.actorJourney.status));
 });
 
 console.log('PASS ' + passed + ' travel groups');

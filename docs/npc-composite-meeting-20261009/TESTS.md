@@ -4,14 +4,14 @@
 
 | 类别 | 命令 | 结果 |
 |---|---|---|
-| 组合旅行 | `node web/scripts/smoke-npc-travel.js` | PASS 10 groups |
+| 组合旅行 | `node web/scripts/smoke-npc-travel.js` | PASS 11 groups |
 | 按需规划 | `node web/scripts/smoke-npc-ai-routing.js` | PASS 7 groups |
 | 生活机会 | `node web/scripts/smoke-npc-life-opportunities.js` | PASS 11 groups |
 | 生命周期 | `node web/scripts/smoke-npc-daily-lifecycle.js` | PASS 17 groups |
 | 职任/公库回归 | `smoke-office-tenure.js`, `smoke-office-duty-reliability.js` | PASS |
 | 官方组合 | `node web/scripts/smoke-npc-composite-official.js` | PASS，513 人物，39 势力，0 API attempt |
 | 架构 | `node web/scripts/lint-arch-all.js` | PASS |
-| 发布契约 | `node scripts/verify-release-contract.js` | PASS 182 assertions |
+| 发布契约 | `node scripts/verify-release-contract.js` | 本候选环境阻塞：工作树缺少全量发布资产，canonical 基线资产检查未通过 |
 | 官方 parity | `node web/scripts/verify-official-scenario-parity.js` | PASS 41 assertions |
 | 生成清单 | native/startup/hot `--check` | PASS |
 | Electron | `node scripts/verify-electron-bridge.js --npc-daily` | PASS：正式页面请益/追问、真实 endTurn、保存加载、0 API；组合会面 Electron 场景未纳入门禁 |

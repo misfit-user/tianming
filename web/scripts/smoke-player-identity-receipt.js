@@ -133,5 +133,26 @@ console.log('[smoke-player-identity-receipt]');
     'after pre-assignment the full migration keeps the id and finds the receipt valid');
 }
 
+{ // 2026-10-17 复审（Astra 6）F1：重复人物 id 修复后，带名字的引用与玩家收据按名字 / 唯一玩家标记归到改名后的那一位
+  const ctx = makeContext();
+  const world = { sid: 'dup-case', chars: [{ id: 'same', name: '甲' }, { id: 'same', name: '乙', isPlayer: true }], facs: [],
+    armies: [{ id: 'a1', name: '亲军', commander: '乙', commanderId: 'same' }, { id: 'a2', name: '边军', commander: '甲', commanderId: 'same' }, { id: 'a3', name: '杂军', commanderId: 'same' }],
+    playerInfo: { characterId: 'same', characterName: '乙' }, mapData: { regions: [] } };
+  const result = ctx._tmMigrateCoreStableIds(world);
+  const jia = world.chars[0], yi = world.chars[1];
+  ok(jia.id === 'same' && yi.id !== 'same', '重复 id：甲保留、乙改名');
+  ok(world.playerInfo.characterId === yi.id, '玩家收据跟着乙改名后的 id（原来仍指向甲）');
+  ok(world.armies[0].commanderId === yi.id && world.armies[1].commanderId === 'same', '统帅引用按统帅名分别归乙、甲');
+  ok(world.armies[2].commanderId === 'same' && result.duplicateRefsAmbiguous === 1, '没写统帅名的引用分不清，保持原样并计数');
+  ok(result.duplicateRefsRebound === 1 && world._stableIdMigration.duplicateRefsRebound === 1, '改绑计入迁移收据');
+  ctx.GM = world;
+  ok(ctx.getPlayerCharacter(world) === yi && ctx._tmFindPlayerCharRaw() === yi, '两个查找口都找到乙');
+  const again = ctx._tmMigrateCoreStableIds(world);
+  ok(again.duplicateRepaired === 0 && world.playerInfo.characterId === yi.id && world.armies[0].commanderId === yi.id, '再读一次档不变');
+  const flagOnly = { sid: 'dup-flag', chars: [{ id: 'p', name: '同名' }, { id: 'p', name: '同名', isPlayer: true }], facs: [], armies: [], playerInfo: { characterId: 'p' }, mapData: { regions: [] } };
+  ctx._tmMigrateCoreStableIds(flagOnly);
+  ok(flagOnly.playerInfo.characterId === flagOnly.chars[1].id, '同名重复且收据没写名字时，按组内唯一玩家标记归属');
+}
+
 console.log('\n[smoke-player-identity-receipt] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

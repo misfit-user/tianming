@@ -1994,7 +1994,8 @@
           return total;
         }
         var cfg = (sourceFiscalConfig() || GM.fiscalConfig || {}).taxesEnabled;
-        var switches = global.FiscalStatement && global.FiscalStatement.taxSwitches ? global.FiscalStatement.taxSwitches(cfg) : (cfg || {}); // 2026-10-17：布尔开关与整理后的 authorDisabled 同认
+        // 2026-10-17：布尔开关与整理后的作者标记同认；有财政引擎时用它的分层开关，与征税过滤同一套，空的上层配置不再遮住下层（复审 F9）
+        var switches = global.FiscalEngine && global.FiscalEngine.authorTaxSwitches ? global.FiscalEngine.authorTaxSwitches(GM) : (global.FiscalStatement && global.FiscalStatement.taxSwitches ? global.FiscalStatement.taxSwitches((GM.fiscalConfig || {}).taxesEnabled, global.FiscalStatement.taxSwitches(cfg)) : (cfg || {})); // 无财政引擎时按 P / 旧配置 → GM 两层合并，与 getFiscalConfig 同序
         if (switches[key] === false) return 0;
         var val = _origSources[key]() || 0;
         var mults = (GM.guoku && GM.guoku.sourceMultipliers) || {};

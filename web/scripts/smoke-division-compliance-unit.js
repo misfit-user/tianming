@@ -119,5 +119,16 @@ console.log('[smoke-division-compliance-unit]');
   void sb;
 }
 
+{ // 2026-10-17 复审（Astra 6）统一账本分支：tick 收到旧百分数（85）先折回比例，不再先被夹成 1
+  const sb = makeSandbox();
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'tm-fiscal-statements.js'), 'utf8'), sb, { filename: 'tm-fiscal-statements.js' }); // 统一账本分支要用 FiscalStatement
+  const fc = Object.assign({ accounting: { schema: 'tm-fiscal-ledger/2' } }, AUTHORED_TAX);
+  sb.GM = world([leaf('pct', { fiscal: { compliance: 85 } }), leaf('ratio', { fiscal: { compliance: 0.85 } })], fc);
+  ok(sb.CascadeTax.isUnified(sb.GM, 'player'), '夹具确实走统一账本分支');
+  sb.MinxinHardLinks.tick(sb.GM, { turn: 1 });
+  const pct = sb.GM.adminHierarchy.player.divisions[0], ratio = sb.GM.adminHierarchy.player.divisions[1];
+  ok(Math.abs(pct.fiscal.compliance - ratio.fiscal.compliance) < 1e-9 && pct.fiscal.compliance < 1, '统一分支：百分数 85 与比例 0.85 结果相同（' + pct.fiscal.compliance + ' / ' + ratio.fiscal.compliance + '）');
+}
+
 console.log('\n[smoke-division-compliance-unit] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

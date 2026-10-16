@@ -120,6 +120,20 @@ const bigAll = bigParts.join('');
     assert.strictEqual(r.mode, 'canceled');
   });
 
+  // 2026-10-17 复审（Astra 6）：真实大档有单段近 30MB（地图数组整段序列化），原来整段一次过桥
+  await testAsync('超大单段（约 3.5MB 一段，块边界恰好落在代理对上）：每次过桥不超过 1MB，代理对不劈开，拼回等于全文', async () => {
+    const MB = 1024 * 1024, prefix = '{"m":"';
+    const huge = 'a'.repeat(MB - 1 - prefix.length) + '\uD83D\uDE00' + '\u6C49'.repeat(2 * MB) + 'z'.repeat(MB / 2);
+    const chunks = [];
+    const plugin = { async beginExport() { return { started: true }; }, async appendChunk(o) { chunks.push(o.chunk); return {}; },
+      async finishExport() { return { saved: true, fileName: 'h.json' }; }, async cancelExport() { return {}; } };
+    const r = await exportContext(plugin, true).TM.fileExport.saveJsonParts([prefix, huge, '"}'], 'h');
+    assert.strictEqual(r.mode, 'native');
+    assert.strictEqual(chunks.join(''), prefix + huge + '"}');
+    assert(chunks.every(c => c.length <= MB), 'chunk over 1MB: ' + Math.max.apply(null, chunks.map(c => c.length)));
+    assert(chunks.every(c => { const last = c.charCodeAt(c.length - 1); return !(last >= 0xD800 && last <= 0xDBFF); }), 'a chunk ends with a lone high surrogate');
+  });
+
   await testAsync('桌面/网页：多段 Blob 直接下载，mode=download', async () => {
     const ctx = exportContext(null, false);
     const r = await ctx.TM.fileExport.saveJsonParts(['{"a":', '1}'], 'd');

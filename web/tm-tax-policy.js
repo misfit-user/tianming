@@ -120,7 +120,8 @@ function parse(g,text,params){
   if(/明年|来年|翌年|明月|下月|下一回合|次回合/.test(clause))return Object.assign(fail('tax-future-date-unresolved','未来生效时间须明确登记，未提前执行'),{handled:true});
   var directions=[/免税|免赋|免田赋|免除|蠲免|蠲除|豁免|免征|停征|罢征|停收|取消|废除|废止|撤销|革除/,/提高|上调|增加|加征|增征|增税|加税|增至|升至|增到|调高/,/减免|减征|减半|降低|减少|降为|减为|减至|降至|降到|减到|调低|减税|降税/,/恢复|复征/].filter(re=>re.test(clause));
   if(directions.length>1)return Object.assign(fail('tax-multiple-actions','不同税务动作请用分号分别列明，未合并扩大执行'),{handled:true});
-  if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收)/.test(clause))continue;
+  // 否定在同一子句：单字否定看 4 个字；双字以上的禁令词不限距离（「不得未经奏准且未查明实情就取消三饷」隔了 11 个字·2026-10-17 复审 F2）
+  if(/(?:不|未|勿|禁止|不得|不可|不予|暂缓)[^，,]{0,4}(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收)/.test(clause)||/(?:禁止|严禁|不得(?!已)|不可|不准|不许|不要|不予|毋得|勿得|暂缓)[^，,：:]*(?:免税|免赋|免田赋|免除|免征|减免|减税|加税|加征|提高|降低|取消|废除|废止|撤销|革除|停征|停收|罢征)/.test(clause))continue;
   if(/[-−]\s*\d+(?:\.\d+)?\s*[%％成]/.test(clause))return Object.assign(fail('tax-rate-negative','负数税率或比例不能直接执行'),{handled:true});
   var kinds=KINDS.filter(x=>x[1].test(clause));
   if(!kinds.length&&/三饷/.test(clause))kinds=[['sanxiang',/三饷/]];

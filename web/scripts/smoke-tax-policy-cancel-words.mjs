@@ -31,4 +31,8 @@ test('「全国田赋提高到两成」两种读法都通，不猜，整档不�
 test('「减至3%」只往下走：现额已低于目标的辽饷不动，田赋减到 3%',()=>{const h=harness();assert(h.command('全国田赋减至3%').ok);assert.equal(h.amount('sx',0),30);assert(h.command('全国辽饷减至8%').ok);assert.equal(h.amount('sx',1),50);});
 test('「税率提高到5%」只往上走：田赋现额 10% 不会被压到 5%，剿饷从 2% 提到 5%',()=>{const h=harness();assert(h.command('全国田赋税率提高到5%').ok);assert.equal(h.amount('sx',0),100);assert(h.command('全国剿饷税率提高到5%').ok);assert.equal(h.amount('sx',2),50);});
 test('「田赋加征两成」「田赋减征三成」老写法不受影响',()=>{const h=harness();assert(h.command('全国田赋加征两成').ok);assert.equal(h.amount('sx',0),120);assert(h.command('全国辽饷减征三成').ok);assert.equal(h.amount('sx',1),35);});
+// 2026-10-17 复审（Astra 6）：否定词与「取消」隔得远时原来只看 4 个字，整句被登记成全免
+test('长否定：「全国不得未经奏准且未查明实情就取消三饷」不登记全免，整档不动',()=>{const h=harness();const s=JSON.stringify(h.g);const r=h.command('全国不得未经奏准且未查明实情就取消三饷');assert(!r.ok,JSON.stringify(r));assert.equal(JSON.stringify(h.g),s);assert.equal(h.amount('sx',1),50);});
+test('长否定：「各省严禁借灾情之名擅自停收辽饷」不登记停征',()=>{const h=harness();const s=JSON.stringify(h.g);assert(!h.command('全国各省严禁借灾情之名擅自停收辽饷').ok);assert.equal(JSON.stringify(h.g),s);});
+
 console.log(`${passed} passed / ${failed} failed`);process.exit(failed?1:0);

@@ -81,10 +81,17 @@
           return await saveJson(parts.join(''), name);
         }
         try {
+          // 每次过桥严格不超过 CHUNK_TARGET 个 UTF-16 码元：超大单段（真实大档的地图数组一段近 30MB）在段内切开，
+          // 切口不落在代理对中间（2026-10-17·复审 F3：原来先拼整段再判阈值，大段整段过桥）。
           var buf = '';
           for (var i = 0; i < parts.length; i++) {
-            buf += parts[i];
-            if (buf.length >= CHUNK_TARGET) { await plugin.appendChunk({ chunk: buf }); buf = ''; }
+            var part = String(parts[i]), pos = 0;
+            while (pos < part.length) {
+              var end = Math.min(part.length, pos + CHUNK_TARGET - buf.length);
+              if (end < part.length && end > pos) { var hi = part.charCodeAt(end - 1); if (hi >= 0xD800 && hi <= 0xDBFF) end--; }
+              buf += part.slice(pos, end); pos = end;
+              if (buf.length >= CHUNK_TARGET - 1) { await plugin.appendChunk({ chunk: buf }); buf = ''; }
+            }
           }
           if (buf.length) await plugin.appendChunk({ chunk: buf });
           var result = await plugin.finishExport({});

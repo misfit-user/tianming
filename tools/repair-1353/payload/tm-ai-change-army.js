@@ -383,6 +383,8 @@
       if (delta <= 0 && !_forceCreate) return { ok:false, reason:'army not found', name:name };
       var armyType = change.armyType || change.type || change.branch || change.kind || '募兵';
       var factionName = _playerFactionNameForArmy(G, change);
+      // 掌控与私兵度互为 100 补数；两个字段都给且矛盾（如 80/80）时以掌控为准、私兵度由它派生，与改军路径同一规则（2026-10-17·复审 F7）
+      var _createControl = _clampNum(change.control != null ? change.control : (change.controlLevel != null ? 100 - Number(change.controlLevel) : 60), 0, 100);
       army = {
         id: change.id || ('army_' + (G.turn || 0) + '_' + Math.random().toString(36).slice(2, 7)),
         name: name,
@@ -399,8 +401,8 @@
         loyalty: _clampNum(change.loyalty != null ? change.loyalty : 60, 0, 100),
         // 2026-10-14：control=朝廷掌控（高=国家兵），controlLevel=私兵度（高=将领家丁），互为 100 补数。
         // 原来两边都默认 60、改一个另一个同向跟着改，「加强京营掌控」反把私兵度抬过 60 线（bot 10-07 实测）。
-        control: _clampNum(change.control != null ? change.control : (change.controlLevel != null ? 100 - Number(change.controlLevel) : 60), 0, 100),
-        controlLevel: _clampNum(change.controlLevel != null ? change.controlLevel : (change.control != null ? 100 - Number(change.control) : 40), 0, 100),
+        control: _createControl,
+        controlLevel: _clampNum(100 - _createControl, 0, 100),
         location: change.location || change.garrison || change.region || change.province || change.destination || '',
         garrison: change.garrison || change.location || change.region || change.province || change.destination || '',
         commander: commanderInput || '',

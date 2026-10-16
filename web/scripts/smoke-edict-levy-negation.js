@@ -50,5 +50,23 @@ const full = levy('辽饷尽数加派');
 ok(full.length === 1 && full[0].tier === 1, '「尽数加派」=十成');
 ok(levy('拨辽饷二十万两解宁远').length === 0, '开支拨付不算加派');
 
+// 2026-10-17 复审（Astra 6）：否定词与动作隔得远、成数从别的子句借来、成数的各种写法
+ok(levy('不得向全国所有灾民和贫苦农户加派辽饷二成').length === 0, '长否定：「不得……加派辽饷二成」不算加派（原来隔了 12 个字就被执行成加派两成）');
+ok(levy('严禁各府州县以修城为名向小民加派剿饷').length === 0, '长否定：「严禁……加派剿饷」不算加派');
+const borrowed = levy('加派辽饷，田赋减至三成');
+ok(borrowed.length === 1 && borrowed[0].tier === null, '成数不从别的税种子句借：「加派辽饷，田赋减至三成」里辽饷没写成数');
+const trailing = levy('加派辽饷，以二成为度');
+ok(trailing.length === 1 && trailing[0].tier === 0.2, '紧跟着只补成数的子句仍算本次加派');
+ok(levy('为禁军加派辽饷一成').length === 1, '「禁军」里的「禁」不当否定词');
+ok(levy('严禁军士向百姓加派剿饷').length === 0 && levy('严禁地方加派练饷').length === 0, '「严禁军士」「严禁地方」仍是否定');
+const eleven = levy('加派辽饷十一成');
+ok(eleven.length === 1 && eleven[0].tier === null, '「十一成」超过十成，不再读成一成，留空请明示');
+const digits = levy('加派辽饷2成');
+ok(digits.length === 1 && digits[0].tier === 0.2, '阿拉伯数字「2成」读作两成');
+const pct = levy('加派辽饷百分之二十');
+ok(pct.length === 1 && pct[0].tier === 0.2, '「百分之二十」读作两成');
+const pct2 = levy('加派剿饷15%');
+ok(pct2.length === 1 && pct2[0].tier === 0.15, '「15%」读作一成半');
+
 console.log('\n[smoke-edict-levy-negation] ' + pass + ' passed / ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

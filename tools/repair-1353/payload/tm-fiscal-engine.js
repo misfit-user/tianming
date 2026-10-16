@@ -218,7 +218,7 @@
       Object.keys(source).forEach(function(key) {
         var item = source[key];
         if (item && typeof item === 'object') out[key] = clone(item);
-        else if (typeof item === 'boolean') out[key] = item ? { enabled: true } : { enabled: false, authorDisabled: true }; // 2026-10-17：编辑器存的布尔开关原先在此被丢弃，作者关掉的税种照征
+        else if (typeof item === 'boolean') out[key] = item ? { enabled: true, authorEnabled: true } : { enabled: false, authorDisabled: true }; // 2026-10-17：编辑器存的布尔开关原先在此被丢弃，作者关掉的税种照征；开也记来源（复审 F6）
       });
     }
     return out;
@@ -1430,12 +1430,6 @@
       taxes = DEFAULT_TAXES.map(function(t) { return clone(t); });
     }
 
-    // 作者税种开关（2026-10-17）：按 id、标签、国库大类三层认「关」；朝代推断的 enabled:false 不算（见 FiscalStatement.taxSwitches）。
-    var FS = global.FiscalStatement, switches = (fc && fc._taxSwitches) || (FS && FS.taxSwitches ? FS.taxSwitches(fc && fc.taxesEnabled) : {});
-    if (Object.keys(switches).length) taxes = taxes.filter(function(t) {
-      return switches[t.id] !== false && switches[t.sourceTag] !== false && switches[FS && FS.taxCategory ? FS.taxCategory(t.sourceTag) : t.sourceTag] !== false;
-    });
-
     if (Array.isArray(fc && fc.customTaxes)) {
       fc.customTaxes.forEach(function(ct) {
         if (!ct || !ct.id || !ct.formulaType) return;
@@ -1490,6 +1484,9 @@
         if (converted) taxes.push(converted);
       });
     }
+    // 作者税种开关（2026-10-17）：按 id、标签、国库大类三层认「关」，自定义税合并之后统一过滤（复审 F4）；朝代推断的 enabled:false 不算（见 FiscalStatement.taxSwitches）。
+    var FS = global.FiscalStatement, switches = (fc && fc._taxSwitches) || (FS && FS.taxSwitches ? FS.taxSwitches(fc && fc.taxesEnabled) : {});
+    if (Object.keys(switches).length) taxes = taxes.filter(function(t) { return switches[t.id] !== false && switches[t.sourceTag] !== false && switches[FS && FS.taxCategory ? FS.taxCategory(t.sourceTag) : t.sourceTag] !== false; });
     if (fc && fc.productionTaxVersion) taxes.forEach(function(t) { t._productionTaxScope = true; });
     return taxes;
   }
@@ -2892,7 +2889,7 @@
     ATOMIC_TAX_TYPES_19: ATOMIC_TAX_TYPES_19,
     EXPENDITURE_EFFECTS_14: EXPENDITURE_EFFECTS_14,
     resolveDynasty: resolveDynasty,
-    enableTaxesByDynasty: enableTaxesByDynasty,
+    enableTaxesByDynasty: enableTaxesByDynasty, authorTaxSwitches: function(G) { return getFiscalConfig(G)._taxSwitches || {}; }, // 国库旧税表分支与征税过滤共用的分层作者开关（2026-10-17·复审 F9）
     _ensureRegionFiscal: _ensureRegionFiscal,
     splitTaxByAllocation: splitTaxByAllocation,
     executeLocalAction: executeLocalAction,

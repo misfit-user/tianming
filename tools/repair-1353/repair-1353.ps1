@@ -15,10 +15,10 @@ $logPath = Join-Path $PackageRoot ("repair-$stamp.log")
 # （由 build-payload.js 生成），这里不再手抄；LoadManifestTables 在校验完清单后填这几张表。
 # PatchAsar 只接受「1.3.5.3 原文件」或「上一版修复包写入的文件」，其它哈希一律拒绝，
 # 所以这个工具不会把别的构建悄悄改掉。hotUpdate=false 的文件（main-impl.js）不在热更新目录里。
-$KitVersion = 'v2.4 (2026-10-17)'
-$files = @(); $hotFiles = @(); $asarFiles = @{}; $asarAccepted = @{}
+$KitVersion = 'v2.5 (2026-10-17)'
+$files = @(); $hotFiles = @(); $asarFiles = @{}; $asarAccepted = @{}; $hotAccepted = @{}; $payloadSha = @{}
 function LoadManifestTables($manifest) {
-  $script:files = @(); $script:hotFiles = @(); $script:asarFiles = @{}; $script:asarAccepted = @{}
+  $script:files = @(); $script:hotFiles = @(); $script:asarFiles = @{}; $script:asarAccepted = @{}; $script:hotAccepted = @{}; $script:payloadSha = @{}
   foreach($entry in @($manifest.files)) {
     $rel = [string]$entry.path
     $script:files += $rel
@@ -28,6 +28,8 @@ function LoadManifestTables($manifest) {
     $accepted = @(([string]$entry.originalSha256).ToLowerInvariant())
     if ($entry.PSObject.Properties['priorSha256']) { foreach($h in @($entry.priorSha256)) { if ($h) { $accepted += ([string]$h).ToLowerInvariant() } } }
     $script:asarAccepted[$asarPath] = $accepted
+    $script:hotAccepted[$rel] = $accepted
+    $script:payloadSha[$rel] = ([string]$entry.sha256).ToLowerInvariant()
     $isHot = $true
     if ($entry.PSObject.Properties['hotUpdate']) { $isHot = [bool]$entry.hotUpdate }
     if ($isHot) { $script:hotFiles += $rel }
@@ -80,7 +82,10 @@ function ActiveState([string]$target) {
 function RollbackTarget([string]$target) {
   $hot = Split-Path -Parent (Split-Path -Parent $target)
   $backupRoot = Join-Path $hot 'repair-backups'
-  $latest = Get-ChildItem -LiteralPath $backupRoot -Directory -Filter "$Version-*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+  $candidates = @(Get-ChildItem -LiteralPath $backupRoot -Directory -Filter "$Version-*" -ErrorAction SilentlyContinue | Sort-Object Name -Descending)
+  # 优先选写完收据的完整备份；早期版本的备份没有收据时退回最新一份（2026-10-17·复审 F5）
+  $latest = @($candidates | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'receipt.json') }) | Select-Object -First 1
+  if (-not $latest) { $latest = $candidates | Select-Object -First 1 }
   if (-not $latest) { throw "no repair backup for $target" }
   foreach($rel in $hotFiles) {
     $src = Join-Path $latest.FullName $rel; $dst = Join-Path $target $rel
@@ -277,10 +282,20 @@ try {
     if (-not (ActiveState $target)) { Log "SKIP inactive target: $target"; continue }
     if ($Rollback) { RollbackTarget $target; continue }
     foreach($rel in $hotFiles) { if (-not (Test-Path -LiteralPath (Join-Path $target $rel))) { throw "target file missing: $target\$rel" } }
+    # 与 PatchAsar 同一道门（2026-10-17·复审 F5）：写入前核对全部目标，只接受 1.3.5.3 原文件、历史修复包写过的或本版；
+    # 全部已是本版就跳过、不再新建备份——否则第二次运行会把补丁版当成原件备份，回滚就回不去了。
+    $pending = @()
+    foreach($rel in $hotFiles) {
+      $cur = Hash (Join-Path $target $rel)
+      if ($cur -eq $payloadSha[$rel]) { continue }
+      if (-not ($hotAccepted[$rel] -contains $cur)) { throw "热更新原文件校验失败，拒绝覆盖: $target\$rel ($cur)" }
+      $pending += $rel
+    }
+    if (-not $pending.Count) { Log "SKIP already repaired $target"; continue }
     $hot = Split-Path -Parent (Split-Path -Parent $target)
     $backup = Join-Path $hot ("repair-backups\$Version-$stamp")
     New-Item -ItemType Directory -Force -Path $backup | Out-Null
-    foreach($rel in $hotFiles) {
+    foreach($rel in $pending) {
       $src = Join-Path $PayloadRoot $rel; $dst = Join-Path $target $rel; $bak = Join-Path $backup $rel
       New-Item -ItemType Directory -Force -Path (Split-Path -Parent $bak) | Out-Null
       Copy-Item -LiteralPath $dst -Destination $bak -Force
@@ -289,7 +304,7 @@ try {
     }
     # 热更新目录只有 web/ 文件；主进程文件（main-impl.js）在 app.asar 里，热更新用户的桌面日志增强要等下个完整安装包。
     foreach($rel in $files) { if ($hotFiles -notcontains $rel) { Log "SKIP (not part of hot-update dir): $rel" } }
-    $receipt = [ordered]@{ schema = 2; product = 'tianming'; version = $Version; kit = $KitVersion; installedAt = (Get-Date).ToString('o'); target = $target; backup = $backup; files = $hotFiles }
+    $receipt = [ordered]@{ schema = 2; product = 'tianming'; version = $Version; kit = $KitVersion; installedAt = (Get-Date).ToString('o'); target = $target; backup = $backup; files = $pending }
     $receiptPath = Join-Path $backup 'receipt.json'; $receipt | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $receiptPath -Encoding UTF8
     Log "REPAIRED $target backup=$backup"
   }

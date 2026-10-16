@@ -162,5 +162,43 @@ console.log('[smoke-tax-switch-author-intent]');
   ok(sb.GuokuEngine.Sources.yanlizhuan() === 0, '国库旧税表分支照旧认布尔开关');
 }
 
+{ // ⑧ 复审补（Astra 6）：自定义税同受开关约束（按 id、标签、国库大类），原来在过滤之后才追加
+  const sb = makeSandbox(ENGINE);
+  const custom = [{ id: 'custom-salt', name: '盐引附加', formulaType: 'perMu', rate: 0.03, sourceTag: 'salt_iron' }, { id: 'custom-cha', name: '茶马附加', formulaType: 'perMu', rate: 0.01, sourceTag: 'chake' }];
+  sb.GM = { turn: 3, dynasty: '宋', fiscalConfig: { taxList: clone(LIST), customTaxes: clone(custom), taxesEnabled: { yanlizhuan: false } } };
+  sb.FiscalEngine.enableTaxesByDynasty(sb.GM);
+  const ids = catalogIds(sb);
+  ok(ids.indexOf('custom-salt') < 0 && ids.indexOf('custom-cha') >= 0, '关掉盐利后标为 salt_iron 的自定义税一并停征，茶类自定义税照征');
+  sb.GM.fiscalConfig.taxesEnabled = { 'custom-cha': false };
+  ok(catalogIds(sb).indexOf('custom-cha') < 0 && catalogIds(sb).indexOf('custom-salt') >= 0, '按 id 单独关掉一项自定义税有效');
+}
+
+{ // ⑨ 复审补（Astra 6·本批新增回归）：作者显式「开」整理后仍压过下层的「关」
+  const sb = makeSandbox(ENGINE);
+  sb.P = { fiscalConfig: { taxesEnabled: { yanlizhuan: false } } };
+  sb.GM = { turn: 3, dynasty: '宋', fiscalConfig: { taxList: clone(LIST), taxesEnabled: { yanlizhuan: true } } };
+  const before = catalogIds(sb);
+  sb.FiscalEngine.enableTaxesByDynasty(sb.GM);
+  const after = catalogIds(sb);
+  sb.FiscalEngine.enableTaxesByDynasty(sb.GM);
+  ok(before.indexOf('salt') >= 0 && after.indexOf('salt') >= 0 && catalogIds(sb).indexOf('salt') >= 0, 'GM 层显式开启盐利：整理前、整理后、再整理一次，目录都保留盐税');
+  ok(sb.GM.fiscalConfig.taxesEnabled.yanlizhuan.authorEnabled === true, '整理后的对象带 authorEnabled 标记');
+}
+
+{ // ⑩ 复审补（Astra 6）：国库旧税表分支与征税过滤同一套分层开关，空的上层配置不再遮住下层
+  const sb = makeSandbox(['tm-patches-start.js', 'tm-guoku-engine.js', 'tm-fiscal-statements.js', 'tm-fiscal-engine.js']);
+  sb.GM = { turn: 12, fiscalConfig: { taxesEnabled: { yanlizhuan: { enabled: false, authorDisabled: true } } } };
+  sb.GuokuEngine.ensureModel();
+  sb.P = { fiscalConfig: {} };
+  ok(sb.GuokuEngine.Sources.yanlizhuan() === 0, 'GM 层作者关掉盐利、P 层是空配置：国库旧分支盐利为 0（原来 250000）');
+  sb.GM.fiscalConfig.taxesEnabled = {};
+  ok(sb.GuokuEngine.Sources.yanlizhuan() > 0, '对照：没有开关时盐利照常');
+  const lone = makeSandbox(['tm-fiscal-statements.js', 'tm-guoku-engine.js']);  // 不装财政引擎时走兜底：P / 旧配置 → GM 两层合并
+  lone.GM = { turn: 12, fiscalConfig: { taxesEnabled: { yanlizhuan: { enabled: false, authorDisabled: true } } } };
+  lone.GuokuEngine.ensureModel();
+  lone.P = { fiscalConfig: {} };
+  ok(lone.GuokuEngine.Sources.yanlizhuan() === 0, '不装财政引擎的兜底分支同样不被空的 P 配置遮住');
+}
+
 console.log('\n[smoke-tax-switch-author-intent] ' + pass + ' passed / ' + fail + ' failed');
 if (fail) process.exit(1);

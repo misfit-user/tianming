@@ -233,7 +233,7 @@
     var unified=!!(global.CascadeTax&&global.CascadeTax.isUnified&&global.CascadeTax.isUnified(root,'player'));
     if(unified){
       if(!div.fiscal)div.fiscal=Object.assign({},fd);
-      var previous=div._minxinHardLink,base=Number(div.fiscal.compliance);if(!isFinite(base))base=1;
+      var previous=div._minxinHardLink,base=complianceRatio(div.fiscal.compliance,1); // 旧档百分数先折回比例再加民心变化（2026-10-17·复审 F8：原来 85 先被夹成 1，读侧救不回）
       var change=previous&&isFinite(Number(previous.truth))?(truth-Number(previous.truth))*0.0072:0;
       div.fiscal.compliance=fd.compliance=Math.round(clamp(base+change,0,1)*10000)/10000;
     }

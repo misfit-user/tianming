@@ -279,9 +279,9 @@ function _tmRepairDuplicateDivisionIds(targetGM, entries) {
 
 // 人物/势力/军队/地区的重复稳定 id 同款处理（2026-10-13）：自建剧本经国师批量改写或地图
 // 编辑器往返后，同一数组里可能出现两个同 id 的实体。校验器原本直接拒载整档；这里保留首个，
-// 后续实体按语义身份派生确定性新 id。旧引用仍指向首个（两者共用 id 时引用本就分不清），
+// 后续实体按语义身份派生确定性新 id。带名字的引用（统帅、主官、玩家收据等）随后在补外键时按名字在重复组内确定归属（2026-10-17·复审 F1），没名字或重名的仍指向首个，
 // 再读一次档不会再改。行政区划走上面那条带子树 parentId 的专用路径。
-function _tmRepairDuplicateEntityIds(targetGM, kind, entries) {
+function _tmRepairDuplicateEntityIds(targetGM, kind, entries, dupGroups) {
   if (kind === 'division') return _tmRepairDuplicateDivisionIds(targetGM, entries);
   entries = Array.isArray(entries) ? entries : [];
   var byId = Object.create(null), used = Object.create(null), repaired = 0;
@@ -295,6 +295,8 @@ function _tmRepairDuplicateEntityIds(targetGM, kind, entries) {
   Object.keys(byId).forEach(function(oldId) {
     var collisions = byId[oldId];
     if (collisions.length < 2) return;
+    // 记下重复组（2026-10-17·复审 F1）：补外键与玩家收据按组内名字 / 唯一玩家标记确定引用归谁
+    var record = dupGroups ? ((dupGroups[kind] || (dupGroups[kind] = {}))[oldId] = [{ id: oldId, name: collisions[0].item.name, isPlayer: collisions[0].item.isPlayer === true }]) : null;
     collisions.slice(1).forEach(function(entry) {
       var item = entry.item;
       var identity = _tmStableIdentityParts(kind, item).join('|') || String(entry.path || '');
@@ -304,6 +306,7 @@ function _tmRepairDuplicateEntityIds(targetGM, kind, entries) {
       while (used[candidate]) candidate = oldId + '__tmdup_' + _tmStableIdHash(seed) + '_' + suffix++;
       item.id = candidate; // arch-ok: 读档 schema 迁移·重复稳定 id 的确定性重写
       used[candidate] = true;
+      if (record) record.push({ id: candidate, name: item.name, isPlayer: item.isPlayer === true });
       repaired++;
     });
   });
@@ -429,11 +432,22 @@ function _tmClearDanglingStableRefs(targetGM) {
 // 编辑器导出的人物不带 id，开局 _markPlayer 曾把 String(undefined) 存进收据；TM.Player.getCharacter 只按 id 找→找不到玩家→所在地退回「京城」
 // →问对/廷议/常朝只认京城别名，自建地名全被当「远离京师」。迁移到此时人物 id 已补齐：收据对不上任何人就按 isPlayer 唯一标记→唯一同名找回；
 // 找不回则清空收据，让查找口按名/按标记的兜底生效。旧档读入一次即修好，再读幂等。
-function _tmRepairPlayerIdentityReceipt(targetGM) {
+function _tmRepairPlayerIdentityReceipt(targetGM, dupGroups) {
   var info = targetGM && targetGM.playerInfo;
   var chars = targetGM && targetGM.chars;
   if (!info || typeof info !== 'object' || !Array.isArray(chars)) return false;
   var id = info.characterId == null ? '' : String(info.characterId).trim();
+  var group = id && dupGroups && dupGroups.char ? dupGroups.char[id] : null;
+  if (group) { // 收据 id 撞上重复组（2026-10-17·复审 F1）：按收据姓名、再按组内唯一玩家标记确定是谁；分不清就不动
+    var key = function(s) { return String(s == null ? '' : s).replace(/[（(].*$/, '').trim(); };
+    var byName = key(info.characterName) ? group.filter(function(m) { return key(m.name) === key(info.characterName); }) : [];
+    var byFlag = group.filter(function(m) { return m.isPlayer; });
+    var pick = byName.length === 1 ? byName[0] : (byFlag.length === 1 ? byFlag[0] : null);
+    if (!pick || pick.id === id) return false;
+    info.characterId = pick.id; // arch-ok: 读档 schema 迁移·重复 id 组内按收据姓名 / 唯一玩家标记改绑
+    try { console.warn('[stable-id] 玩家身份收据随重复 id 改绑：' + id + ' → ' + pick.id); } catch (_) {}
+    return true;
+  }
   if (id && chars.some(function(ch) { return ch && ch.id != null && String(ch.id).trim() === id; })) return false;
   var flagged = chars.filter(function(ch) { return ch && ch.isPlayer === true; });
   var name = String(info.characterName || '').replace(/[（(].*$/, '').trim();

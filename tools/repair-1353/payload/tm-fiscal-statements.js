@@ -304,7 +304,7 @@
     var category = TAX_TAG_CATEGORY[tag] || tag;
     return Object.prototype.hasOwnProperty.call(IN, category) ? category : 'qita';
   }
-  // 作者税种开关：编辑器存布尔（只写 false）；FiscalEngine.enableTaxesByDynasty 整理成对象表后，作者关的记 authorDisabled。
+  // 作者税种开关：编辑器存布尔（只写 false）；FiscalEngine.enableTaxesByDynasty 整理成对象表后，作者关的记 authorDisabled、开的记 authorEnabled。
   // 朝代推断出的 enabled:false 不算作者开关：官方晚唐税表明写了市舶，朝代表却记作「宋明清才有」。
   function taxSwitches(map, into){
     into = into || {};
@@ -313,6 +313,7 @@
       var value = map[key];
       if (typeof value === 'boolean') into[key] = value;
       else if (value && typeof value === 'object' && value.authorDisabled === true) into[key] = false;
+      else if (value && typeof value === 'object' && value.authorEnabled === true) into[key] = true; // 作者显式开（复审 F6）：整理后仍压过下层的关
     });
     return into;
   }

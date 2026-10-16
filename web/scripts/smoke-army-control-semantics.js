@@ -113,5 +113,21 @@ test('AI 新建军：给 control 80 → 私兵度 20；什么都不给 → 掌�
   assert.strictEqual(a2.controlLevel, 40);
 });
 
+// 2026-10-17 复审（Astra 6）：新建军两个字段都给且相互矛盾时，原来照写 80/80（总和 160）
+test('AI 新建军同时给 control 与 controlLevel 且相互矛盾（80/80）：以掌控为准、私兵度派生为 20，与改军路径同一规则', () => {
+  const ctx = aiContext();
+  const A = ctx.TM.AIChange.Army;
+  const r = A.applyAIArmyChange({ armyName: '御前亲军', action: 'create', soldiers: 5000, control: 80, controlLevel: 80, faction: '明朝廷', location: '京师', reason: '编练亲军' }, {});
+  assert(r.ok && r.created, JSON.stringify(r));
+  const a = ctx.GM.armies.find(x => x.name === '御前亲军');
+  assert.strictEqual(a.control, 80);
+  assert.strictEqual(a.controlLevel, 20);
+  const r2 = A.applyAIArmyChange({ armyName: '标营', action: 'create', soldiers: 2000, controlLevel: 70, faction: '明朝廷', location: '京师', reason: '编练' }, {});
+  assert(r2.ok && r2.created, JSON.stringify(r2));
+  const b = ctx.GM.armies.find(x => x.name === '标营');
+  assert.strictEqual(b.control, 30);
+  assert.strictEqual(b.controlLevel, 70);
+});
+
 console.log(`${passed} passed / ${failed} failed`);
 process.exit(failed ? 1 : 0);

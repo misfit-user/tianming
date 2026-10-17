@@ -48,4 +48,9 @@ test('同句先禁一项又改一项（同一种动作）：「全国不得废�
 test('不能执行：另令属员 / 未经批准不得执行 / 此事不准执行 / 无需 / 「陕西不免税」',()=>{const h=harness();const s=JSON.stringify(h.g);for(const t of ['全国禁止地方官员另令属员取消三饷','全国取消三饷，未经朕批准不得执行','全国田赋税率改为2%，此事不准执行','全国无需取消三饷','陕西不免税'])assert(!h.command(t).ok,t);assert.equal(JSON.stringify(h.g),s);});
 test('照办：「之事不得停止」「修建宫室之议，著即停止」「严禁盗窃，取消三饷」「严禁贪污！全国取消三饷」',()=>{for(const t of ['全国取消三饷之事不得停止','全国取消三饷，修建宫室之议，著即停止','全国严禁盗窃，取消三饷','严禁贪污！全国取消三饷']){const h=harness();const r=h.command(t);assert(r.ok,t+' '+JSON.stringify(r));assert.equal(h.amount('sx',1),0,t);}});
 
+// 2026-10-17 四次复审（Astra 6）：入口传上一句、分句保留问号、宽口径疑义词；比例统一整段读数，认不出的、只写分厘的、几个不同比例的都不执行
+test('四次复审·不能执行：上一句只有禁令、问句、提议、条件、搁置、「禁止贪污军粮的官员另令属员」',()=>{const h=harness();const s=JSON.stringify(h.g);for(const t of ['严禁\n全国取消三饷','严禁；全国取消三饷','全国取消三饷？','全国取消三饷?','全国取消三饷吗','有司议请全国取消三饷','据奏全国取消三饷','如果国库不足就全国取消三饷','搁置全国取消三饷','全国取消三饷，不执行','禁止贪污军粮的官员另令属员全国取消三饷'])assert(!h.command(t).ok,t);assert.equal(JSON.stringify(h.g),s);});
+test('四次复审·比例：认不出、带负号、只写分厘、几个不同比例都不执行',()=>{const h=harness();const s=JSON.stringify(h.g);for(const t of ['全国田赋税率改为－2%','全国田赋税率改为负二成','全国田赋免除二分','全国田赋免除五厘','全国田赋免除廿五%','全国田赋免除2成，以三成为率'])assert(!h.command(t).ok,t);assert.equal(JSON.stringify(h.g),s);});
+test('四次复审·比例读准：「百分之二点五」=2.5%、「减免二成五」=减 25%、「２％」=2%',()=>{let h=harness();assert(h.command('全国田赋税率改为百分之二点五').ok);assert.equal(h.amount('sx',0),25);h=harness();assert(h.command('全国田赋减免二成五').ok);assert.equal(h.amount('sx',0),75);h=harness();assert(h.command('全国田赋税率改为２％').ok);assert.equal(h.amount('sx',0),20);});
+test('四次复审·照办：「严禁受贿，全国取消三饷」「全国取消三饷，不得阳奉阴违」「由户部派若干官员办理」',()=>{for(const t of ['严禁受贿，全国取消三饷','全国取消三饷，不得阳奉阴违','全国取消三饷，由户部派若干官员办理']){const h=harness();const r=h.command(t);assert(r.ok,t+' '+JSON.stringify(r));assert.equal(h.amount('sx',1),0,t);}});
 console.log(`${passed} passed / ${failed} failed`);process.exit(failed?1:0);

@@ -2,7 +2,7 @@
   "schema": 2,
   "product": "tianming",
   "version": "1.3.5.3",
-  "generatedAt": "2026-10-16T20:21:30.892Z",
+  "generatedAt": "2026-10-16T21:04:21.888Z",
   "files": [
     {
       "path": "editor-authoring-agent.js",
@@ -81,13 +81,14 @@
       "path": "tm-endturn-edict.js",
       "asarPath": "web/tm-endturn-edict.js",
       "hotUpdate": true,
-      "sha256": "7a5ce70c12b99413b5aa4bb7a87ecb846498ece6395d19b57849f2ee66dc6981",
-      "bytes": 106174,
+      "sha256": "d18861b0c342fdb55e8bc298b0c75820a0d752713d2b777bcd630675f120b40b",
+      "bytes": 112401,
       "originalSha256": "c787acbd1c36a042a8967d55f091748d736679ba2f3dfce99d0f69f3e90b636b",
       "priorSha256": [
         "19e4583c028e23fbb98834d39a24b7b78e4898888873bcc7799340d08975b8ab",
         "454b8f2fc1b2350005f69e2f98e4f58a6d59c1fa550b27a7c39cf600546ac100",
-        "9ed048d4800a1f32de3f729cfce13d57eb971c161bf5dbe95cfd6ea8c9931040"
+        "9ed048d4800a1f32de3f729cfce13d57eb971c161bf5dbe95cfd6ea8c9931040",
+        "7a5ce70c12b99413b5aa4bb7a87ecb846498ece6395d19b57849f2ee66dc6981"
       ]
     },
     {
@@ -106,14 +107,15 @@
       "path": "tm-tax-policy.js",
       "asarPath": "web/tm-tax-policy.js",
       "hotUpdate": true,
-      "sha256": "2873c571c874d3844fae0b7cf7e41bad3a31432e28a404656583b9ea6f1e3422",
-      "bytes": 31632,
+      "sha256": "62f64cb225587dfe977b677ead1c14ad56eb525817876509f6b485b5b68f4ca5",
+      "bytes": 40533,
       "originalSha256": "bf1ecac91e094095264780a51356ef987b3406622dc8eccf81828bed0650072e",
       "priorSha256": [
         "1994a13b8206630d89e56ddd561fc5da8b659f28d7f0d96a66ca39b3454e3a67",
         "f74b65e2e1a03f5c783fb0284fd3be12a9f307322ff0bf8b192dbe81cad22081",
         "901ddae8ce78785f01b2325ee0fb78fcdc93cd920b27f24b59207d0426c21f6b",
-        "bb48a1796627c6b687cec1dfa5a5545dca488f9e3258abfbae07f7f49c156131"
+        "bb48a1796627c6b687cec1dfa5a5545dca488f9e3258abfbae07f7f49c156131",
+        "2873c571c874d3844fae0b7cf7e41bad3a31432e28a404656583b9ea6f1e3422"
       ]
     },
     {
@@ -162,7 +164,8 @@
         "992f3843a9c4fbdab1f364f15ccb7a3353f507326c27b4c7304b3f724af1c792",
         "053946f4d8797e3df7d169e819793e0be131ab3cea2117c82e8029141c64c2f6",
         "ab1179f445a49fea96660840c6b11dc9d055d3a075d297a7efba4fb1f527d2ae",
-        "3cf0c8d813e0e10df26a3ded627de5f78ea27eb5903d65326a1d32ace77e866a"
+        "3cf0c8d813e0e10df26a3ded627de5f78ea27eb5903d65326a1d32ace77e866a",
+        "39f1da77712dab73873027b605c3af3682053b0b9491e4726136325dc4cf9389"
       ]
     },
     {
@@ -285,7 +288,7 @@
       "path": "tm-start-runtime-manifest.json",
       "asarPath": "web/tm-start-runtime-manifest.json",
       "hotUpdate": true,
-      "sha256": "0a154601f7993130daae24dc82b36c629282255dff50c41098eea7700b8e06ef",
+      "sha256": "651edfd9d1759f8c8952ef4b178d399ab95822306a8ecd1417201403f0972c39",
       "bytes": 137400,
       "originalSha256": "b88ee428be242f2ebe1e8fbc5ed17e28d5e8d531dda9c5596f66d84f44d05d0c",
       "priorSha256": [
@@ -294,7 +297,8 @@
         "e00049f7f901f1ef6f391d31d572c90681abd75c7c929bd9b5f12cbd5dd85448",
         "750c226d0c2537957b0a72859b7606da02c7a19720e67acb04c32d9d9a626e5e",
         "07769decf252aedcac757acb60b96c4835c97940f9fdd67a9505c4014e2609e9",
-        "6ca410bea4f2039be6afe0a2f92a59041034874ad41057977a4b0afa717ec6b2"
+        "6ca410bea4f2039be6afe0a2f92a59041034874ad41057977a4b0afa717ec6b2",
+        "0a154601f7993130daae24dc82b36c629282255dff50c41098eea7700b8e06ef"
       ]
     }
   ]

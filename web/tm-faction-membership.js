@@ -310,15 +310,20 @@
    * 单 province 改归属·空 newFacName = 无主
    * @returns {boolean} 实际是否变化
    */
-  // Resolve an explicit region reference; names are accepted only when unambiguous.
-  function _provinceTransferRecord(g, ref) {
-    var map = g.mapData || g.map, regions = (map && map.regions) || [];
-    var region = regions.find(function(r) { return r && String(r.id) === String(ref); });
-    if (!region) {
-      var matches = regions.filter(function(r) { return r && [r.name, r.adminBinding, r.mapRegionId].indexOf(ref) >= 0; });
-      if (matches.length > 1) throw new Error('地块引用不唯一，请使用稳定 ID：' + ref);
-      region = matches[0] || null;
-    }
+  // A batch resolves every reference before writing. Share only this immutable lookup,
+  // never a cache across transactions: ownership transfers may restructure the tree.
+  function _provinceTransferLookup(g) {
+    var map=g.mapData || g.map, regions=(map && map.regions) || [];
+    var regionIds=new Map(),regionAliases=new Map(),regionNames=new Map();
+    regions.forEach(function(r){
+      if(!r)return;
+      var id=String(r.id);if(!regionIds.has(id))regionIds.set(id,r);
+      regionNames.set(r.name,(regionNames.get(r.name)||0)+1);
+      new Set([r.name,r.adminBinding,r.mapRegionId]).forEach(function(key){
+        if(!regionAliases.has(key))regionAliases.set(key,[]);
+        regionAliases.get(key).push(r);
+      });
+    });
     var divisions = [], seen = new Set();
     function walk(n) {
       if (!n || typeof n !== 'object' || seen.has(n)) return;
@@ -328,17 +333,37 @@
       ['children','divisions','prefectures','counties'].forEach(function(k) { if (n[k]) walk(n[k]); });
     }
     Object.keys(g.adminHierarchy || {}).forEach(function(k) { walk(g.adminHierarchy[k]); });
+    var divisionIds=new Map(),divisionNames=new Map(),mappedRegions=new Map();
+    divisions.forEach(function(d){
+      if(d.id && !divisionIds.has(String(d.id)))divisionIds.set(String(d.id),d);
+      if(!divisionNames.has(d.name))divisionNames.set(d.name,[]);
+      divisionNames.get(d.name).push(d);
+      (Array.isArray(d.mappedRegions)?d.mappedRegions:[]).forEach(function(id){if(!mappedRegions.has(id))mappedRegions.set(id,d);});
+    });
+    return {map:map,regionIds:regionIds,regionAliases:regionAliases,regionNames:regionNames,
+      divisionIds:divisionIds,divisionNames:divisionNames,mappedRegions:mappedRegions};
+  }
+
+  // Resolve an explicit region reference; names are accepted only when unambiguous.
+  function _provinceTransferRecord(g, ref, lookup) {
+    lookup=lookup || _provinceTransferLookup(g);
+    var map=lookup.map,region=lookup.regionIds.get(String(ref));
+    if(!region){
+      var matches=lookup.regionAliases.get(ref) || [];
+      if(matches.length>1)throw new Error('地块引用不唯一，请使用稳定 ID：'+ref);
+      region=matches[0] || null;
+    }
     var binding = region && (region.adminBinding || region.mapRegionId || region.id);
     if(binding && typeof binding==='object')binding=binding.id || binding.divisionId || binding.regionId;
-    var division = divisions.find(function(d) { return d.id && String(d.id) === String(binding || ref); });
-    if (!division && region) division = divisions.find(function(d) { return Array.isArray(d.mappedRegions) && d.mappedRegions.indexOf(region.id) >= 0; });
+    var division = lookup.divisionIds.get(String(binding || ref));
+    if (!division && region) division = lookup.mappedRegions.get(region.id);
     if (!division) {
-      var ds = divisions.filter(function(d) { return d.name === (region && region.name || ref); });
+      var ds = lookup.divisionNames.get(region && region.name || ref) || [];
       if (ds.length === 1) division = ds[0];
     }
     var aliases = [ref, region && region.id, region && region.name, binding, division && division.id, division && division.name];
     aliases = Array.from(new Set(aliases.filter(function(v) { return v !== undefined && v !== null && v !== ''; }).map(String)));
-    var uniqueName=!region || regions.filter(function(r){return r && r.name===region.name;}).length===1;
+    var uniqueName=!region || lookup.regionNames.get(region.name)===1;
     if(!uniqueName)aliases=aliases.filter(function(k){return k!==region.name;});
     return { key:uniqueName ? (region && region.name || division && division.name || String(ref)) : region.id, map:map, region:region, division:division, aliases:aliases, name:region && region.name || division && division.name || String(ref), id:region && region.id || division && division.id || String(ref) };
   }
@@ -372,7 +397,11 @@
     if (!found) oldName = rec.region && (rec.region.currentOwner || rec.region.owner) || rec.division && (rec.division.currentOwner || rec.division.owner) || g.provinceStats && g.provinceStats[rec.name] && g.provinceStats[rec.name].owner || '';
     var oldFac = _findFacById(oldName) || _findFac(oldName); if (oldFac) oldName=oldFac.name;
     var journal = [], changed = false, seenObjects = new Set();
-    function remember(obj) { if (!obj || seenObjects.has(obj)) return; seenObjects.add(obj); journal.push({obj:obj, before:Object.assign({},obj)}); }
+    function remember(obj) {
+      if (opts._remember) { opts._remember(obj); return; }
+      if (!obj || seenObjects.has(obj)) return;
+      seenObjects.add(obj); journal.push({obj:obj, before:Object.assign({},obj)});
+    }
     function write(obj, isMap) { if (!obj) return; remember(obj); if (_writeProvinceOwner(obj,newName,newId,isMap)) changed=true; }
     function list(f, key, value) {
       var old=f[key]; if (!Array.isArray(old) && f.name!==newName) return;
@@ -554,7 +583,7 @@
   function applyProvinceTransfers(changes, options) {
     options=options || {};
     var g=_gm();if(!g || !Array.isArray(changes))throw new Error('易主批次格式无效');
-    var plans=[],seen=new Map(),facs=Array.isArray(g.facs)?g.facs:[];
+    var plans=[],seen=new Map(),facs=Array.isArray(g.facs)?g.facs:[],lookup=null;
     var migratedMap=g.mapData||g.map;
     if(migratedMap && Array.isArray(migratedMap.provinceMigration)) {
       var cells=migratedMap.regions||[],registry=migratedMap.circuitRegistry||[];
@@ -576,7 +605,8 @@
       if(!row || typeof row!=='object' || Array.isArray(row))throw new Error('易主条目格式无效');
       var ref=row.regionRef;
       if(typeof ref!=='string' && typeof ref!=='number')throw new Error('易主缺少地块引用');
-      var rec=_provinceTransferRecord(g,String(ref));
+      if(!lookup)lookup=_provinceTransferLookup(g);
+      var rec=_provinceTransferRecord(g,String(ref),lookup);
       if(!rec.region && !rec.division && !Object.prototype.hasOwnProperty.call(g._provinceToFaction || {},ref))throw new Error('地块不存在：'+ref);
       var owner=row.newOwner;
       if(owner!==null && typeof owner!=='string' && typeof owner!=='number')throw new Error('易主缺少有效的新势力');
@@ -610,16 +640,16 @@
       Object.keys(g.adminHierarchy||{}).forEach(function(k){rememberTree(g.adminHierarchy[k]);});
       remember(g._mapRetiredProvinceContainers);Object.keys(g._mapRetiredProvinceContainers||{}).forEach(function(k){rememberTree(g._mapRetiredProvinceContainers[k].node);});
     }
+    Object.keys(g.provinceStats || {}).forEach(function(k){remember(g.provinceStats[k]);});
     plans.forEach(function(p){
       remember(p.rec.region);remember(p.rec.division);
-      Object.keys(g.provinceStats || {}).forEach(function(k){remember(g.provinceStats[k]);});
       (p.rec.map && p.rec.map.items || []).forEach(function(item){if(item && String(item.id)===String(p.rec.id))remember(item);});
     });
     (options.records || []).forEach(remember);
     try{
       plans.forEach(function(p){
         var rec=p.rec,from=rec.region && (rec.region.currentOwner || rec.region.owner) || '';
-        var changed=_assignProvinceCore(rec.id,p.name,{reason:p.reason,silent:true,targetFactionId:p.id,byTurn:options.byTurn,_deferEffects:true,_record:rec});
+        var changed=_assignProvinceCore(rec.id,p.name,{reason:p.reason,silent:true,targetFactionId:p.id,byTurn:options.byTurn,_deferEffects:true,_record:rec,_remember:remember});
         if(changed)dirty=true;
         if(changed && String(from)!==String(p.id))receipts.push({province:rec.name,regionId:rec.id,from:from,to:p.id,reason:p.reason});
       });

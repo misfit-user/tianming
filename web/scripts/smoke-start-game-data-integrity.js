@@ -55,19 +55,10 @@ function installNodeExtras(win) {
 }
 
 const compiledScripts = new Map(); // Reuse parsed code only; every case still owns a fresh world and VM.
-let disposeGame = function() {};
-function loadGame(selectedSid = SID) {
-  // Each case owns a VM. Release its timers before the next complete game boots.
-  disposeGame();
-  const env = helpers.makeStubs();
-  const pending = new Set(), intervals = new Set();
-  env.win.setTimeout = function(fn, ms, ...args) { const id = setTimeout(function(){ pending.delete(id); fn(...args); }, ms); pending.add(id); return id; };
-  env.win.clearTimeout = function(id) { pending.delete(id); clearTimeout(id); };
-  env.win.setInterval = function(fn, ms, ...args) { const id = setInterval(fn, ms, ...args); intervals.add(id); return id; };
-  env.win.clearInterval = function(id) { intervals.delete(id); clearInterval(id); };
-  disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
-  installNodeExtras(env.win);
-  const sandbox = vm.createContext(env.win);
+// The files are immutable during this process; only parsed code is shared, never VM state.
+const bootScripts = new Map();
+function getBootScripts(selectedSid) {
+  if (bootScripts.has(selectedSid)) return bootScripts.get(selectedSid);
   const scripts = helpers.parseIndexHtmlScripts({ includeLazyScenarios: false });
   const cutoff = scripts.findIndex((src) => path.basename(src) === 'tm-test-harness.js');
   const loadScripts = cutoff >= 0 ? scripts.slice(0, cutoff) : scripts;
@@ -81,16 +72,37 @@ function loadGame(selectedSid = SID) {
   if (!loadScripts.includes(selected.scriptUrl)) loadScripts.push(selected.scriptUrl);
   }
 
+  bootScripts.set(selectedSid, Object.freeze(loadScripts));
+  return bootScripts.get(selectedSid);
+}
+let disposeGame = function() {};
+function loadGame(selectedSid = SID) {
+  // Each case owns a VM. Release its timers before the next complete game boots.
+  disposeGame();
+  const env = helpers.makeStubs();
+  const pending = new Set(), intervals = new Set();
+  env.win.setTimeout = function(fn, ms, ...args) { const id = setTimeout(function(){ pending.delete(id); fn(...args); }, ms); pending.add(id); return id; };
+  env.win.clearTimeout = function(id) { pending.delete(id); clearTimeout(id); };
+  env.win.setInterval = function(fn, ms, ...args) { const id = setInterval(fn, ms, ...args); intervals.add(id); return id; };
+  env.win.clearInterval = function(id) { intervals.delete(id); clearInterval(id); };
+  disposeGame = function() { pending.forEach(clearTimeout); intervals.forEach(clearInterval); pending.clear(); intervals.clear(); };
+  installNodeExtras(env.win);
+  const sandbox = vm.createContext(env.win);
+  const loadScripts = getBootScripts(selectedSid);
+
   loadScripts.forEach((src) => {
     const abs = path.join(ROOT, src);
     assert(fs.existsSync(abs), 'script missing: ' + src);
-    const code = fs.readFileSync(abs, 'utf8');
+    let compiled = compiledScripts.get(src);
+    if (!compiled) {
+      const code = fs.readFileSync(abs, 'utf8');
+      compiled = new vm.Script(code, { filename: src, displayErrors: true });
+      compiledScripts.set(src, compiled);
+    }
     const scriptNode = sandbox.document.createElement('script');
     scriptNode.src = new URL(src, 'http://localhost/index.html').href;
     sandbox.document.currentScript = scriptNode;
-    let compiled = compiledScripts.get(src);
-    if (!compiled || compiled.source !== code) { compiled = { source: code, script: new vm.Script(code, { filename: src, displayErrors: true }) }; compiledScripts.set(src, compiled); }
-    try { compiled.script.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
+    try { compiled.runInContext(sandbox, { displayErrors: true, timeout: 10000 }); } finally { sandbox.document.currentScript = null; }
   });
 
   vm.runInContext(`

@@ -902,8 +902,10 @@ console.log('天命游戏脚本开始加载...');
 <script src="tm-bgm-config.js?v=20260928-release1353"></script>
 <!-- R131 (2026-04-25) tm-audio-theme.js 拆分 → audio-theme + save-lifecycle + office-editor -->
 <script src="tm-audio-theme.js?v=20260928-release1353"></script>
-<script src="tm-save-world-validation.js?v=20260929-local-npc"></script>
-<script src="tm-save-lifecycle.js?v=20260929-local-npc"></script>
+<!-- Stable-ID migration split: keep these three scripts adjacent and ordered. -->
+<script src="tm-save-stable-id-migration.js?v=20261022-save-stable-ids"></script>
+<script src="tm-save-world-validation.js?v=20261022-save-stable-ids"></script>
+<script src="tm-save-lifecycle.js?v=20261022-save-stable-ids"></script>
 <script src="tm-save-close-flush.js?v=20260928-release1353"></script><!-- 必须紧随 save-lifecycle：应用退出前排空 canonical + 桌面镜像 -->
 <script src="tm-office-editor.js?v=20260928-release1353-vacancy"></script>
 <script src="tm-topbar-vars.js?v=20260928-release1353"></script>

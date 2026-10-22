@@ -2230,12 +2230,20 @@
 
   // 刀G8(CC autocompact 对照) · 宏压缩两助手（微压缩不够/上下文超窗时·把旧对话换成结构化前情摘要）
   // 尾部保留切片：从末尾保 keepMsgs 条·起点对齐轮边界(落在 tool 消息上就前挪含入其配对 assistant·不孤儿化)
-  function _compactTailSlice(conv, keepMsgs) {
+  function _compactTailSlice(conv, keepMsgs, maxTailTokens) {
     if (!Array.isArray(conv)) return [];
     if (keepMsgs <= 0) return [];
-    if (conv.length <= keepMsgs) return conv.slice();
-    var start = conv.length - keepMsgs;
+    var start = Math.max(0, conv.length - keepMsgs);
     while (start > 0 && conv[start] && conv[start].role === 'tool') start--;
+    // A recent large write can fill the whole window. Move complete rounds to
+    // the summary instead of preserving an oversized tail forever. User text
+    // moved out of the tail is still retained verbatim by _macroUserLines.
+    if (typeof maxTailTokens === 'number') {
+      while (start < conv.length && _estimateTokens(JSON.stringify(conv.slice(start), function(k, v) { return k === 'userInstruction' || k === 'userInstructions' ? undefined : v; })) > maxTailTokens) {
+        start++;
+        while (start < conv.length && conv[start] && conv[start].role === 'tool') start++;
+      }
+    }
     return conv.slice(start);
   }
   // 拍平对话供摘要请求：逐条限长(防单条巨型)·超预算时保头 25% + 尾 75%(近事优先)·frac=相对当前体量的目标比例
@@ -2252,7 +2260,8 @@
       }
     }
     var s = lines.join('\n');
-    var budget = Math.max(20000, Math.floor(s.length * (frac || 0.45)));
+    // Bound the summary request itself, including batches with many tools.
+    var budget = Math.min(12000, Math.max(6000, Math.floor(s.length * (frac || 0.45))));
     if (s.length > budget) {
       var headKeep = Math.floor(budget * 0.25), tailKeep = budget - headKeep;
       s = s.slice(0, headKeep) + '\n……【中段 ' + (s.length - budget) + ' 字已略·以头尾与摘要要求为准】……\n' + s.slice(s.length - tailKeep);
@@ -3073,7 +3082,7 @@
     opts = opts || {};
     if (!Array.isArray(conversation) || conversation.length < 4) return Promise.resolve({ ok: false, reason: 'too-small' });
     var beforeN = conversation.length;
-    var tail = _compactTailSlice(conversation, opts.keepTail != null ? opts.keepTail : 6), originals;
+    var tail = _compactTailSlice(conversation, opts.keepTail != null ? opts.keepTail : 6, 12000), originals;
     try { originals = _macroUserLines(conversation, tail.length, opts.userKeep); }
     catch (error) { return Promise.resolve({ ok: false, reason: error.code, detail: error.message }); }
     var flat = _flattenForSummary(conversation, opts.frac != null ? opts.frac : 0.45);
@@ -3083,7 +3092,13 @@
         var s = _macroPickSummary(r);
         if (s.length < 200) return { ok: false, reason: 'thin' };
         var out = [{ role: 'user', text: _macroHead(s, draft, opts.surfaces || [], tail.length, originals), userInstructions: originals }].concat(tail);
-        return { ok: true, conversation: out, before: beforeN, after: out.length, summaryChars: s.length };
+        // Count only transmitted context, as in the automatic loop. Retained
+        // instruction metadata is bookkeeping, not extra prompt content.
+        var transmitted = function(k, v) { return k === 'userInstruction' || k === 'userInstructions' ? undefined : v; };
+        var tokensBefore = _estimateTokens(JSON.stringify(conversation, transmitted));
+        var tokensAfter = _estimateTokens(JSON.stringify(out, transmitted));
+        if (tokensAfter >= tokensBefore) return { ok: false, reason: 'no-reduction', tokensBefore: tokensBefore, tokensAfter: tokensAfter, detail: '摘要未缩小上下文，原对话和草稿已保留。' };
+        return { ok: true, conversation: out, before: beforeN, after: out.length, summaryChars: s.length, tokensBefore: tokensBefore, tokensAfter: tokensAfter };
       });
   }
 
@@ -3239,7 +3254,7 @@
 
   // 刀①(2026-07-10 智能升级B)：finish 质量闸·增量基线——run 起点各「运行时必崩组+关系一致性」的违规数快照。
   // 闸语义=「不得比开工时更糟」：存量坏账不逼 agent 顺手修完（否则小任务也被整局旧病闸死）·但绝不许带新病收尾。
-  var _GATE_GROUPS = ['admin-population', 'runtime-boot', 'faction-refs', 'runtime-office', 'runtime-chars', 'relation-consistency'];
+  var _GATE_GROUPS = ['admin-population', 'runtime-boot', 'faction-refs', 'runtime-office', 'runtime-chars', 'relation-consistency', 'region-coverage'];
   function _gateIssues(group, report) {
     var out = {};
     report = report || {};
@@ -3270,6 +3285,11 @@
       try {
         var r = _checks[g] ? (_checks[g](draft) || { violations: [] }) : { violations: [] };
         snapshot[g] = _gateIssues(g, r);
+        // A new broken explicit binding is a real regression. Legacy leaves
+        // without a same-name polygon remain warnings, as in 1.3.5.3.
+        if (g === 'region-coverage') Object.keys(snapshot[g]).forEach(function(key) {
+          if (/\|legacy-name$/.test(key)) delete snapshot[g][key];
+        });
       } catch (_) { snapshot[g] = {}; }
     });
     return snapshot;
@@ -3417,6 +3437,11 @@
     var maxFinishAttempts = opts.maxFinishAttempts || 3;
     var blockingChecks = opts.blockingChecks || ['admin-population', 'faction-refs'];
     var _gateBaseline = resume ? resume.gateBaseline : _gateSnapshot(draft);
+    // Older recovery records did not capture map bindings. Establish that
+    // one missing baseline at upgrade time; never replace a recorded baseline.
+    if (_gateBaseline && !Object.prototype.hasOwnProperty.call(_gateBaseline, 'region-coverage')) {
+      _gateBaseline['region-coverage'] = _gateSnapshot(draft)['region-coverage'];
+    }
     var qualityGateOn = opts.qualityGate !== false || !!(resume && resume.qualityGateOn);
     if (resume) blockingChecks = blockingChecks.concat(resume.blockingChecks || []).filter(function(v, i, a) { return a.indexOf(v) === i; });
     var perms = { allowedCollections: opts.allowedCollections || null, allowedRegionIds:opts.allowedRegionIds||null, allowDestructive: opts.allowDestructive !== false };   // 方向F · 权限（默认无限制·全放行）
@@ -3561,6 +3586,7 @@
     // 刀G3(CC「File unchanged since last read」对照) · 重复读去重 + 纯勘察防打转
     var _seenReads = {};        // key=name|JSON(input) → {iter, writes}(写世代号=新鲜度)
     var _writeCount = resume ? resume.writeCount : 0;
+    var _runWriteStart = _writeCount;
     var _readOnlyStreak = 0, _spinWarned = 0;
     var stalledRounds = 0, noProgressLimit = Math.max(3, Math.min(16, opts.noProgressLimit || 8)), observed = Object.create(null), progressEffects = Object.create(null), progressTools = [];
     var _editingMode = !planOnly && !reviewOnly && !qaOnly && !explainOnly;   // 只读模式纯勘察是本分·豁免
@@ -3584,20 +3610,28 @@
     var _macroAt = (opts.macroCompactAt != null ? opts.macroCompactAt : 0.85);   // 主动触发水位(×maxTokens)
     var _macroKeepTail = (opts.macroKeepTail != null ? opts.macroKeepTail : 6);  // 压缩后保留的近尾原文条数
     function _applyMacroResult(summary, reasonTag) {
-      var tail = _compactTailSlice(conversation, _macroKeepTail);
+      var tailBudget = Math.max(0, Math.min(12000, Math.floor((maxTokens - _sysTok - _toolsTok) * 0.35)));
+      var tail = _compactTailSlice(conversation, _macroKeepTail, tailBudget);
       var originals = _macroUserLines(conversation, tail.length, opts.macroUserKeep);
       var head = _macroHead(summary, draft, surfaces, tail.length, originals);
+      var compacted = [{ role: 'user', text: head, userInstructions: originals }].concat(tail);
+      var afterTokens = _sysTok + _toolsTok + _estimateTokens(JSON.stringify(compacted, function(k, v) { return k === 'userInstruction' || k === 'userInstructions' ? undefined : v; }));
+      if (afterTokens >= tokensUsed) {
+        record('macroCompact', { trigger: reasonTag, attempt: _macroTries }, { ok: false, reason: 'no-reduction', tokensBefore: tokensUsed, tokensAfter: afterTokens });
+        return false;
+      }
       conversation.length = 0;
-      conversation.push({ role: 'user', text: head, userInstructions: originals });
-      for (var ti = 0; ti < tail.length; ti++) conversation.push(tail[ti]);
+      for (var ti = 0; ti < compacted.length; ti++) conversation.push(compacted[ti]);
       _seenReads = {};   // "与第N轮相同"的轮次引用随压缩失效·全部作废
       _convRecount(); tokensUsed = _reqTokens();
       _macroDone++;
       record('macroCompact', { trigger: reasonTag, attempt: _macroTries }, { ok: true, summaryChars: summary.length, keptTail: tail.length, tokensAfter: tokensUsed });
+      return true;
     }
     function _macroCompact(reasonTag) {
       if (_macroTries >= 2 || _convTok < 6000) return Promise.resolve(false);   // 熔断 + 对话太小不救
-      try { _macroUserLines(conversation, _compactTailSlice(conversation, _macroKeepTail).length, opts.macroUserKeep); }
+      var tailBudget = Math.max(0, Math.min(12000, Math.floor((maxTokens - _sysTok - _toolsTok) * 0.35)));
+      try { _macroUserLines(conversation, _compactTailSlice(conversation, _macroKeepTail, tailBudget).length, opts.macroUserKeep); }
       catch (e) { return Promise.reject(e); }
       _macroTries++;
       var flat = _flattenForSummary(conversation, _macroTries === 1 ? 0.45 : 0.2);   // 二次尝试再砍半(摘要请求自身超限的退路)
@@ -3606,8 +3640,7 @@
         .then(function (r) {
           var s = _macroPickSummary(r);
           if (s.length < 200) return false;   // 摘要太薄不可信·按失败处理(不替换对话)
-          _applyMacroResult(s, reasonTag);
-          return true;
+          return _applyMacroResult(s, reasonTag);
         })
         .catch(function (eM) {
           try { console.warn('[authoring-agent] 宏压缩失败(继续不压)', eM); } catch (eW) {}
@@ -3978,7 +4011,7 @@
         runTrace: _kernelRun ? _kernelRun.snapshot() : null,
         todos: control.todoState.list.slice(),
         completion: completion(state), resumed: !!resume,
-        progress: { stalledRounds: stalledRounds, limit: noProgressLimit, lastTools: progressTools.slice() },
+        progress: { stalledRounds: stalledRounds, limit: noProgressLimit, lastTools: progressTools.slice(), changedWrites: _writeCount - _runWriteStart },
         metrics: Object.assign({},metrics), apiDiagnostics: _agentClone(apiDiagnostics),
         resumeState: (!finished || stopReason === 'needsClarification' || stopReason === 'needsConfirmation') ? checkpoint() : null,
         summary: _finishSummary,   // 改动说明：做了什么+为什么

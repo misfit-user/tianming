@@ -94,7 +94,7 @@ function culturalRestoreSource(root = ROOT) {
     .map(name => functionSource(source, name)).join('\n');
 }
 function saveBuilder(root = ROOT) {
-  const source = read(root, 'web/tm-save-lifecycle.js'), drafts = { 'edict-pol': { value: '保留正在输入的诏令😀e\u0301' } };
+  const source = read(root, 'web/tm-save-stable-id-migration.js') + read(root, 'web/tm-save-lifecycle.js'), drafts = { 'edict-pol': { value: '保留正在输入的诏令😀e\u0301' } };
   const work = { clones: 0, cloneMs: 0 };
   class FixedDate extends Date { constructor(...args) { super(...(args.length ? args : [1700000000000])); } static now() { return 1700000000000; } }
   const c = { console: { log() {}, warn() {}, error() {} }, Date: FixedDate, structuredClone, setTimeout() {}, clearTimeout() {},

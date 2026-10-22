@@ -2,7 +2,7 @@
 const assert=require('assert/strict'),{politicalFixture}=require('./lib-political-action-fixture');
 const c=politicalFixture(),B=c.TM.PoliticalActions,D=c.TM.FactionDiplomacy,L=c.TM.NPC.ActionLedger;
 c.setTimeout=()=>0;c.clearTimeout=()=>{};c.localStorage={getItem:()=>null,setItem(){},removeItem(){}};c.generateMemorials=()=>{};
-['tm-utils.js','tm-save-world-validation.js','tm-save-lifecycle.js','tm-faction-npc-settings.js'].forEach(c.load);
+['tm-utils.js','tm-save-stable-id-migration.js','tm-save-world-validation.js','tm-save-lifecycle.js','tm-faction-npc-settings.js'].forEach(c.load);
 const r=D.recordProposals(c.fa,[{toFactionId:'fb',type:'alliance',terms:'共同防御；文书到达后再独立决定'}],c.GM.turn,{binding:B.bind(c.fa,'a',{actingPositionId:'pa',sourceId:'saved-treaty'})}),id=r.results[0].proposalId;
 B.defer(B.bind(c.fb,'b',{actingPositionId:'pb',sourceId:'saved-office'}),{actions:[{type:'office_change',targetId:'s',positionId:'vb'}]});
 for(let t=0;t<15;t++){B.localCandidates('memorial');B.localCandidates('edict');B.localCandidates('court_alignment');}assert.equal(c.GM._npcPlans.length,6,'repeated local planning has bounded outstanding matters');

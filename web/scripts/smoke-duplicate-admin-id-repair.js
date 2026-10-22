@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const src = fs.readFileSync(path.join(__dirname, '..', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(__dirname, '..', 'tm-save-lifecycle.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '..', 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(__dirname, '..', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(__dirname, '..', 'tm-save-lifecycle.js'), 'utf8');
 function sliceFn(marker) {
   const start = src.indexOf(marker); if (start < 0) throw new Error('missing ' + marker);
   let i = src.indexOf('{', start), depth = 0;

@@ -10,7 +10,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const source = fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
+const source = fs.readFileSync(path.join(ROOT, 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 let pass = 0, fail = 0;
 function ok(condition, message) {
   if (condition) { pass++; console.log('  PASS - ' + message); }

@@ -11,7 +11,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const lifecycleSrc = fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
+const lifecycleSrc = fs.readFileSync(path.join(ROOT, 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const indicesSrc = fs.readFileSync(path.join(ROOT, 'tm-indices.js'), 'utf8');
 const startSrc = fs.readFileSync(path.join(ROOT, 'tm-patches-start.js'), 'utf8');
 let pass = 0, fail = 0;

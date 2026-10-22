@@ -18,7 +18,7 @@ function sliceFn(src, marker) {
   return src.slice(a, j);
 }
 
-const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
+const lifecycle = fs.readFileSync(path.join(ROOT, 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'tm-save-lifecycle.js'), 'utf8');
 const core = fs.readFileSync(path.join(ROOT, 'tm-endturn-core.js'), 'utf8');
 const render = fs.readFileSync(path.join(ROOT, 'tm-endturn-render.js'), 'utf8');
 const pipeline = fs.readFileSync(path.join(ROOT, 'tm-endturn-pipeline-steps.js'), 'utf8');

@@ -193,7 +193,8 @@
     var label = status === 'cancelled' ? '停下了，任务未完成' : (status === 'partial' ? '只完成了一部分' : '任务未完成');
     var remaining = (res.completion && res.completion.unresolved || []).map(function(f) { return f.tool + '：' + (f.targets || []).join('、'); });
     remaining = remaining.concat(res.completion && res.completion.pendingTodos || []);
-    renderSummary('**' + label + '**' + (res.summary ? '：' + res.summary : '') + (remaining.length ? '\n\n还差：\n' + remaining.slice(0, 8).map(function (r) { return '- ' + r; }).join('\n') : ''), res.notes, res.suggestedConventions, false);
+    var stopDetail = res.summary || (res.stopReason === 'tokenBudget' ? '上下文仍超过本次上限，已停止自动续做。已完成草稿保留；请先压缩前情或拆分剩余任务后继续。' : '');
+    renderSummary('**' + label + '**' + (stopDetail ? '：' + stopDetail : '') + (remaining.length ? '\n\n还差：\n' + remaining.slice(0, 8).map(function (r) { return '- ' + r; }).join('\n') : ''), res.notes, res.suggestedConventions, false);
     if (res.clarification) { renderClarify(res.clarification.questions); ui._pendingClarify = true; }
     else if (res.remonstrance) { renderRemonstrance(res.remonstrance); ui._pendingClarify = true; }
     renderDiff(_draftDiff(), res.uncertainties);
@@ -2767,7 +2768,7 @@
     setStatus('正在压缩前情…（一次小结调用 · 优先走次要模型）');
     AA.compactConversation(ui.conversation, draft, {}).then(function (r) {
       if (!_ownerCurrent(compactOwner) || ui.conversation !== compactConversation || ui.running) { setStatus('案卷或会话已变化，未替换当前前情'); return; }
-      if (!r || !r.ok) { setStatus(r && r.reason === 'too-small' ? '对话太短 · 无需压缩' : '压缩失败（模型没给出可信摘要）· 原对话未动'); return; }
+      if (!r || !r.ok) { setStatus(r && r.reason === 'too-small' ? '对话太短 · 无需压缩' : (r && r.reason === 'no-reduction' ? '摘要未缩小上下文 · 原对话和草稿已保留，请拆分剩余任务' : '压缩失败（模型没给出可信摘要）· 原对话未动')); return; }
       ui.conversation = r.conversation;
       _saveSession({ conversation: r.conversation, todos: ui._restoredTodos || [], tokensUsed: 0 }, '压缩前情', null);
       _infoCard('压缩前情', function () {
@@ -4088,10 +4089,11 @@
       ui.conversation = res.conversation;   // 维度1 · 存住线程
       _saveSession(res, request, res.remonstrance ? '进谏' : (res.clarification ? '澄清' : (res.plan ? '计划' : '编辑')));   // S5 · 落盘到当前会话(跨刷新/跨剧本可切回)
       _captureSideEffects(res, continuing);   // saveMemory/saveSkill 先暂存，随草稿一起批准/放弃
-      // 自动续接：未完成且因轮次/token 上限停 → 自动发「继续」续接（复用连续会话线程·持续调用直到完整·安全上限 3 次）。
-      if (!planOnly && !res.finished && (res.stopReason === 'maxIterations' || res.stopReason === 'tokenBudget') && (ui._autoCont || 0) < 3) {
+      // Only continue a round limit after new verified writes. Repeating an
+      // unchanged over-budget context cannot restore space and spends requests.
+      if (!planOnly && !res.finished && res.stopReason === 'maxIterations' && res.progress && res.progress.changedWrites > 0 && (ui._autoCont || 0) < 3) {
         ui._autoCont = (ui._autoCont || 0) + 1;
-        setStatus('这一轮' + (res.stopReason === 'tokenBudget' ? '的 token 预算' : '的轮数') + '用完了还没做完，接着做（第 ' + ui._autoCont + '/3 次）…');
+        setStatus('这一轮的轮数用完了，本轮已有实际改动，接着做（第 ' + ui._autoCont + '/3 次）…');
         ui.els.req.value = '继续完成上面尚未完成的改动，全部完成后再调用 finish，不要重复已做的。';
         var nextOwner = ui._draftOwner, nextConversation = ui.conversation;
         setTimeout(function() { if (_ownerCurrent(nextOwner) && ui.conversation === nextConversation) onGenerate(); }, 60);

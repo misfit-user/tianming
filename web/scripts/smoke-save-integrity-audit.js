@@ -10,7 +10,7 @@ const vm = require('vm');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const main = fs.readFileSync(path.join(ROOT, 'main-impl.js'), 'utf8');
-const lifecycle = fs.readFileSync(path.join(ROOT, 'web', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'web', 'tm-save-lifecycle.js'), 'utf8');
+const lifecycle = fs.readFileSync(path.join(ROOT, 'web', 'tm-save-stable-id-migration.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'web', 'tm-save-world-validation.js'), 'utf8') + fs.readFileSync(path.join(ROOT, 'web', 'tm-save-lifecycle.js'), 'utf8');
 const huji = fs.readFileSync(path.join(ROOT, 'web', 'tm-huji-engine.js'), 'utf8');
 const storage = fs.readFileSync(path.join(ROOT, 'web', 'tm-storage.js'), 'utf8');
 let pass = 0;

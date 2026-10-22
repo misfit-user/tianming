@@ -314,34 +314,70 @@
     var facById = {};
     (meData.factions || []).forEach(function(f){ if (f && f.id) facById[f.id] = f; });
 
-    // 先全转 admin 节点(divisionForAdmin 补 children:[])·按 id 索引·便于按 parentId 挂层级树
-    var nodeById = {};
-    var items = meData.divisions.map(function(d){
-      var node = divisionForAdmin(d);
-      if (d.id) nodeById[d.id] = node;
-      return { d: d, node: node };
+    // Some older exports contain both nested children and the same flat
+    // parentId rows. Build one fresh node per stable ID before linking edges;
+    // never append into the input children array or count the same leaf twice.
+    var nodeById = Object.create(null), records = [], visitedSources = [];
+    function hasId(value){ return value != null && value !== ''; }
+    function remember(d, flat){
+      if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error('行政区划节点必须是对象');
+      var key = hasId(d.id) ? String(d.id) : null;
+      var rec = key != null ? nodeById[key] : null;
+      if (!rec) rec = records.filter(function(r){ return r.source === d; })[0];
+      if (rec) {
+        if (flat && rec.flat && rec.source !== d) throw new Error('地图存在重复行政区划 ID：' + key);
+        if (rec.node.name && d.name && rec.node.name !== d.name && (flat || !rec.flat || !rec.source.name)) throw new Error('行政区划 ID 对应多个名称：' + key);
+        // Flat editor rows contain the current edited values. Retain extra
+        // fields from a nested-only copy without overwriting those edits.
+        var extra = divisionForAdmin(d);
+        Object.keys(extra).forEach(function(k){ if (rec.node[k] === undefined) rec.node[k] = extra[k]; });
+        return rec;
+      }
+      rec = { source:d, node:divisionForAdmin(d), flat:!!flat, containers:[], factionId:d.factionId || null, parent:null };
+      records.push(rec);
+      if (key != null) nodeById[key] = rec;
+      return rec;
+    }
+    // Register flat rows first so map-editor changes take precedence over
+    // stale nested copies. Nested-only children are collected below as well.
+    meData.divisions.forEach(function(d){ remember(d, true); });
+    function collect(d, container, inheritedFaction){
+      var rec = remember(d, false);
+      if (container && rec.containers.indexOf(container) < 0) rec.containers.push(container);
+      if (!rec.factionId) rec.factionId = inheritedFaction || null;
+      if (visitedSources.indexOf(d) >= 0) return;
+      visitedSources.push(d);
+      if (d.children != null && !Array.isArray(d.children)) throw new Error('行政区划 children 必须是数组：' + (d.id || d.name || '?'));
+      (d.children || []).forEach(function(child){ collect(child, rec, rec.factionId); });
+    }
+    meData.divisions.forEach(function(d){ collect(d, null, d.factionId); });
+    records.forEach(function(rec){
+      if (hasId(rec.node.parentId)) {
+        // An explicit stable parent ID wins over a stale nested location.
+        // Retain the old top-level fallback when that parent is absent.
+        rec.parent = nodeById[String(rec.node.parentId)] || null;
+      } else {
+        if (rec.containers.length > 1) throw new Error('行政区划同时属于多个父级：' + (rec.node.id || rec.node.name || '?'));
+        rec.parent = rec.containers[0] || null;
+      }
     });
-
+    records.forEach(function(rec){
+      var seen = [], p = rec;
+      while (p) {
+        if (seen.indexOf(p) >= 0) throw new Error('行政区划父子关系形成循环：' + (rec.node.id || rec.node.name || '?'));
+        seen.push(p); p = p.parent;
+      }
+    });
     var byFac = {};
-    items.forEach(function(item){
-      var d = item.d, node = item.node;
-      // 子地块(府/县·parentId 指上级)→ 挂到父的 children·实现层级聚合(liveRegionVitals walk children
-      //   把府县数据加权汇到省)·而非与父并列。父不存在则回落顶层势力分组。
-      var par = d.parentId && nodeById[d.parentId];
-      if (par && par !== node){
-        par.children.push(node);
+    records.forEach(function(rec){
+      var node = rec.node;
+      if (rec.parent) {
+        rec.parent.node.children.push(node);
+        if (!hasId(node.parentId) && hasId(rec.parent.node.id)) node.parentId = rec.parent.node.id;
         return;
       }
-      // 顶层(省/路·无父)→ 按势力分组进 divisions
-      var facName;
-      if (d.factionId && facById[d.factionId]){
-        facName = facById[d.factionId].name || d.factionId;
-      } else {
-        facName = '未归属';
-      }
-      if (!byFac[facName]){
-        byFac[facName] = { name: facName, divisions: [] };
-      }
+      var facName = rec.factionId && facById[rec.factionId] ? (facById[rec.factionId].name || rec.factionId) : '未归属';
+      if (!byFac[facName]) byFac[facName] = { name:facName, divisions:[] };
       byFac[facName].divisions.push(node);
     });
     return byFac;
@@ -356,10 +392,10 @@
   function divisionForAdmin(d){
     var clone = {};
     for (var k in d){
-      if (GEOMETRY_KEYS[k]) continue;
-      clone[k] = d[k];
+      if (GEOMETRY_KEYS[k] || k === 'children') continue;
+      clone[k] = d[k] && typeof d[k] === 'object' ? JSON.parse(JSON.stringify(d[k])) : d[k];
     }
-    if (!clone.children) clone.children = [];
+    clone.children = [];
     // runtime _peRender* 兼容·div.minxin / div.corruption 优先于 *Local
     if (clone.minxin == null && typeof clone.minxinLocal === 'number') clone.minxin = clone.minxinLocal;
     if (clone.corruption == null && typeof clone.corruptionLocal === 'number') clone.corruption = clone.corruptionLocal;

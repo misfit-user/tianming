@@ -259,6 +259,9 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   var oq = 0, oSum = 0;
   var fatReq = '需求很长' + '求'.repeat(28000);
   var r9 = await AA.runAuthoringLoop(AA.makeDraft({ name: '甲' }), fatReq, {
+    // Real overflow recovery needs compressible history; raw user instructions
+    // are preserved verbatim and cannot become smaller by adding a summary.
+    priorConversation: [{ role: 'user', text: '原始任务', userInstruction: '原始任务' }, { role: 'assistant', text: '旧工具结果'.repeat(30000), toolCalls: [] }],
     macroKeepTail: 0,
     caller: function (conv, tools2) {
       if (tools2 && tools2.length === 1 && tools2[0].name === 'submitSummary') { oSum++; return Promise.resolve({ text: '①用户给了超长需求 ②尚未改动 ③无任务表 ④草稿完好 ⑤首轮请求超窗 ⑥压缩自救 ⑦下一步:直接完成需求并 finish。' + '摘'.repeat(200), toolCalls: [] }); }
@@ -610,7 +613,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   var _oldFetch13 = global.fetch;
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv13 = [];
-  for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(60).join('内容'), toolCalls: [] });
+  for (var ci13 = 0; ci13 < 10; ci13++) conv13.push({ role: ci13 % 2 ? 'assistant' : 'user', text: '第' + ci13 + '条·' + new Array(ci13 % 2 ? 1200 : 60).join('内容'), toolCalls: [] });
   var rc13 = await AA.compactConversation(conv13, AA.makeDraft({ name: '甲' }), { cfg: { url: 'https://api.x.com', key: 'k', model: 'm' } });
   ok(rc13 && rc13.ok === true && rc13.after < rc13.before && /【前情摘要·上下文已压缩】/.test(rc13.conversation[0].text), 'H13 手动压缩：N 条→摘要头+近尾(真走 caller 管线)');
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '太薄', tool_calls: [] } }] })); };
@@ -632,6 +635,7 @@ function jsonResponse(value) { return new Response(JSON.stringify(value), { head
   console.log('— H14 压缩保用户原话 —');
   global.fetch = function () { return Promise.resolve(jsonResponse({ choices: [{ finish_reason: 'stop', message: { content: '', tool_calls: [{ id: 't1', function: { name: 'submitSummary', arguments: JSON.stringify({ summary: _sumTxt }) } }] } }] })); };
   var conv14 = [
+    { role: 'assistant', text: '历史工具结果'.repeat(2000), toolCalls: [] },
     { role: 'user', text: '【用户需求】\n给东林补两个能干的文官\n\n【草稿现状】\n（很长的构建附文·不该进原话）\n\n开始：先按需 getField 查看。' },
     { role: 'assistant', text: '好', toolCalls: [] },
     { role: 'user', text: '【前情摘要·上下文已压缩】旧摘要头·非玩家原话' },

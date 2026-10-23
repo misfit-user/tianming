@@ -761,9 +761,21 @@
     var hasKnownRelations = !!(g.affinityMap && Object.keys(g.affinityMap).length) || chars.some(function (ch) { return ch && domain().relationshipRefs(ch).some(function (ref) { return domain().relationshipIds(ref, g).length; }); });
     if (!hasGoals && !hasMatters && !hasDutyMatters && !hasKnownRelations && !g._npcLocalAiEnabled) return;
     var lease = ledger().capture();
-    root.setTimeout(function () {
+    function runEntry() {
       if (!ledger().current(lease)) return;
       wake('enter'); if (NPC.DailyUI) NPC.DailyUI.render();
+    }
+    root.setTimeout(function () {
+      if (!ledger().current(lease)) return;
+      // Let already-requested scripts settle before synchronous NPC work can
+      // occupy the renderer. Failed features still release the ordinary loop.
+      var features = TM.Features;
+      var loading = features && typeof features.status === 'function' && typeof features.ensure === 'function'
+        ? arr(features.status()).filter(function (feature) { return feature.state === 'loading'; }) : [];
+      if (!loading.length) { runEntry(); return; }
+      Promise.allSettled(loading.map(function (feature) { return features.ensure(feature.feature); })).then(function () {
+        root.setTimeout(runEntry, 0);
+      });
     }, 0);
   }
   function localOnlyDue(ch) {

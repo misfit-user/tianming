@@ -84,7 +84,7 @@ const SWEEP_OK = /^(AI|API|HTTP|Ctrl|Enter|Esc|Shift|Tab|Alt)$/;
   // 收回主画面：开着的卷、窗、册一层层 Esc，书案让位的页回来后等镜头走完
   const shut = async () => {
     for (let i = 0; i < 5; i++) {
-      const open = await p.evaluate(() => !document.querySelector('.scr-desk.on') || !!document.querySelector('.rw.on, .xr.on, .ce-ov.on, .q-juan-veil, .q-kewei'));
+      const open = await p.evaluate(() => !document.querySelector('.scr-desk.on') || !!document.querySelector('.rw.on, .xr.on, .ce-ov.on, .wt-ov.on, .q-juan-veil, .q-kewei'));
       if (!open) break;
       await key('Escape');
       await wait(900);

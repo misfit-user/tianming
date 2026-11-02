@@ -131,7 +131,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
         : h('p.rw-tome' + (t.score > 0 ? '.good' : t.score < 0 ? '.bad' : ''), h('i', '与'), t.lord ? `视${v.lord}：${t.label}` : `视我：${t.label}`, t.score != null ? h('em', signed(t.score)) : null));
 
     // 性情、才具、心性声望
-    replaceChildren(traits, (b.traits || []).length ? b.traits.map((x) => h('span.' + (x.tone || 'plain'), x.name)) : h('span.none', '性情未详'));
+    replaceChildren(traits, (b.traits || []).map((x) => h('span.' + (x.tone || 'plain'), x.name)));   // 没有词条就空着：性情的文字在生平页
     replaceChildren(skills, (b.eight || []).map(([k, val]) => tiao(h('li' + (val >= 80 ? '.hi' : val > 0 && val <= 30 ? '.lo' : ''), h('i', k), h('b', num(val))), () => ({ title: SKILL_NAMES[k] || k, text: `${num(val)}` }))));
     const fame = game.select.fameRank(row.fame);
     const virtue = game.select.virtueRank(row.merit);

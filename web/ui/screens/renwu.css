@@ -79,7 +79,7 @@
 .rw-traits > span { padding: .125rem .5rem; font: var(--fs-2)/1.45 var(--f-kai); letter-spacing: .1em; color: #f3e2b8; background: rgba(236, 210, 154, .07); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .4); }
 .rw-traits > span.good { color: #dbe9c4; background: rgba(79, 129, 96, .22); box-shadow: inset 0 0 0 1px rgba(150, 190, 140, .45); }
 .rw-traits > span.bad { color: #f4c8b8; background: rgba(163, 40, 27, .22); box-shadow: inset 0 0 0 1px rgba(229, 143, 120, .45); }
-.rw-traits > span.none { color: var(--ivory-soft); box-shadow: none; background: none; padding-left: 0; }
+.rw-traits:empty { display: none; }
 
 /* 才具八项：一格一项，字在圆章里，数在下 */
 .rw-skills { display: grid; grid-template-columns: repeat(8, 1fr); gap: .25rem; margin: 0; padding: 0; list-style: none; }

@@ -51,6 +51,20 @@ function val(v) {
   return p && p.ppValue ? String(p.ppValue(v)) : String(v);
 }
 const row = (k, v, tone = '', extra = {}) => ({ k, v: val(v), tone, ...extra });
+// 承载、保甲在内核里是一包数：挑读得懂的写成一句（通用的 ppValue 会把系数、英文枚举也摊出来，「气候：一」「承载制度：已记录」）。字里的数由书页按记数设置改写
+const hundreds = (x) => Math.round(Number(x) / 100) * 100;
+function capacityText(c) {
+  if (!c || typeof c !== 'object') return c;
+  const parts = [['可耕地可养', c.arable], ['水利可养', c.water], ['历来至多', c.historicalCap]].filter(([, v]) => Number(v) > 0).map(([k, v]) => `${k}${hundreds(v)}口`);
+  if (Number(c.currentLoad) > 0) parts.push(`负载${Math.round(Number(c.currentLoad) * 100)}%`);
+  return parts.join('，');
+}
+function baojiaText(x) {
+  if (!x || typeof x !== 'object') return x;
+  const parts = [['保', x.baoCount], ['甲', x.jiaCount], ['牌', x.paiCount]].filter(([, v]) => Number(v) > 0).map(([k, v]) => `${k}${Math.round(Number(v))}`);
+  if (Number(x.registerAccuracy) > 0) parts.push(`造册精度${Math.round(Number(x.registerAccuracy) * 100)}%`);
+  return parts.join('，');
+}
 const keep = (rows) => rows.filter((x) => x && x.v !== '' && x.v != null);
 
 const ZT_SEAL = { wonder: '观', disaster: '灾', player: '裁', event: '云', building: '营' };
@@ -143,7 +157,7 @@ function build(p, r) {
     row(mouthsUnit ? '隐匿人口（估）' : '隐户', b.pop.hiddenCount, 'bad'),
     b.pop.actualMouths != null ? row('居民估数', b.pop.actualMouths, '', { unit: '口' }) : null,
     b.pop.taxableHouseholds != null ? row('当前应税户', b.pop.taxableHouseholds) : null,
-    row('承载上限', d.carryingCapacity), row('保甲', d.baojia), row('繁荣', prosperity),
+    row('承载上限', capacityText(d.carryingCapacity)), row('保甲', baojiaText(d.baojia)), row('繁荣', prosperity),
     has(d.wealth) && String(d.wealth) !== String(prosperity) ? row('财富', d.wealth) : null,
     has(d.development) && String(d.development) !== String(prosperity) ? row('发展', d.development) : null,
     row('不稳', d.unrest, 'bad'),

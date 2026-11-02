@@ -1,36 +1,42 @@
 /* 方志、通志：志窗（.zw）靠左展开，与人物窗同占一扇（照 CK3、EU5 地块页）。漆框，卷首一幅此地小景压志名；其下一叶纸面接着往下读：
    小签、描述、读数带、排名，检签一排，所检之卷；卷底动作。纸面里的诸件（.fz-*）沿用册页时的样子，只把版式改成一栏 */
-.zw { position: fixed; left: 0; top: 0; bottom: 0; z-index: 20; width: min(36rem, 44vw); display: flex; flex-direction: column;
+.zw { --zw-hero: clamp(11rem, 30vh, 18rem); --zw-band: 4.875rem;   /* 小景的高；往下读时小景收成的窄带的高（压得下路径、志名） */
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 20; width: min(37.5rem, 44vw); display: flex; flex-direction: column;
   background: var(--lac-grain), linear-gradient(180deg, #23150d, #130a05); border-right: .6875rem solid transparent; border-image: var(--huiwen) 14 round;
   box-shadow: 1rem 0 2.75rem rgba(8, 4, 2, .62); transform: translateX(-104%); pointer-events: none; transition: transform var(--t-3) var(--ease-paper); }
 .zw.on { transform: none; pointer-events: auto; }
+/* 整卷一处滚动：小景粘住只露底下一条窄带，检签粘在窄带之下，卷底在滚动之外 */
+.zw-scroll { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-x: hidden; }
 /* 卷首小景：图渲好之前是一幅素绢；底下压暗，志名从暗处浮出 */
-.zw-hero { position: relative; flex: none; height: clamp(12.5rem, 31vh, 18rem); overflow: hidden; background: var(--ling-mi); }
+.zw-hero { position: sticky; top: calc(var(--zw-band) - var(--zw-hero)); z-index: 3; flex: none; height: var(--zw-hero); overflow: hidden; background: var(--ling-mi); }
 .zw-pic { position: absolute; inset: 0; opacity: 0; transition: opacity var(--t-4) var(--ease-out); }
 .zw-pic.ready { opacity: 1; }
 .zw-pic > canvas { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(.08) saturate(.96) contrast(1.05) brightness(1.04); }
 .zw-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(19, 10, 5, .32) 0, rgba(19, 10, 5, 0) 18%, rgba(19, 10, 5, 0) 58%, rgba(19, 10, 5, .72) 94%, #1c110a 100%),
-    radial-gradient(ellipse at 50% 42%, transparent 62%, rgba(19, 10, 5, .32)); }
-.zw-ctls { position: absolute; right: .625rem; top: .625rem; z-index: 2; display: flex; gap: .375rem; }
+  background: linear-gradient(180deg, rgba(19, 10, 5, .32) 0, rgba(19, 10, 5, 0) 18%, rgba(19, 10, 5, 0) 38%, rgba(19, 10, 5, .84) 72%, #1c110a 100%),
+    radial-gradient(ellipse at 50% 30%, transparent 62%, rgba(19, 10, 5, .32)); }
+.zw-ctls { position: absolute; right: 1rem; top: .625rem; z-index: 4; display: flex; gap: .375rem; }
 .zw-ctl { width: 2rem; height: 2rem; padding: 0; border: 0; cursor: pointer; font: 400 1.125rem/2rem var(--f-kai); color: #f3e2b8; background: rgba(19, 10, 5, .62);
   box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .5); transition: background var(--t-2); }
 .zw-ctl:hover { background: rgba(122, 31, 19, .85); }
 .zw-ctl[hidden] { display: none; }
-.zw-name { position: absolute; left: 1.125rem; right: 1rem; bottom: .75rem; z-index: 1; display: flex; align-items: flex-end; gap: .75rem; }
-.zw-seal { flex: none; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; writing-mode: vertical-rl; font: 400 var(--fs-3)/1 var(--f-title); letter-spacing: .1em; color: #f9ead2;
+.zw-name { position: absolute; left: 1.125rem; right: 1rem; bottom: .625rem; z-index: 1; display: flex; align-items: flex-end; gap: .75rem; }
+.zw-name > div { min-width: 0; }
+.zw-titles { display: flex; align-items: baseline; gap: .875rem; min-width: 0; }
+.zw-seal { flex: none; display: grid; place-items: center; font: 400 var(--fs-3)/1 var(--f-title); width: max(2.5rem, 2.75em); height: max(2.5rem, 2.75em); writing-mode: vertical-rl; letter-spacing: .1em; color: #f9ead2;   /* 字有像素下限，印跟着字走，别让矮窗里的字撑破印框 */
   background: radial-gradient(circle at 35% 30%, #b8432f, #7d1d12); box-shadow: 0 .25rem .625rem rgba(0, 0, 0, .55), inset 0 0 0 2px rgba(249, 234, 210, .35); transform: rotate(-4deg); }
 .zw-name h2 { margin: 0; font: 400 var(--fs-7)/1.1 var(--f-title); letter-spacing: .2em; color: transparent; white-space: nowrap;
   background: linear-gradient(180deg, #fbefcf, #e2c37f 60%, #b48a45); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .85)); }
-.zw-name small { display: block; font-size: var(--fs-2); letter-spacing: .1em; color: var(--ivory-soft); }
-.zw-name .fz-crumbs { color: rgba(236, 210, 154, .8); }
+.zw-name small { font-size: var(--fs-2); letter-spacing: .1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ivory-soft); text-shadow: 0 1px 2px rgba(0, 0, 0, .85); }
+.zw-name .fz-crumbs { font-size: var(--fs-2); color: rgba(236, 210, 154, .8); text-shadow: 0 1px 2px rgba(0, 0, 0, .9); }
 .zw-name .fz-crumbs a { color: #f3e2b8; }
-.zw-name .fz-crumbs b { font-weight: 400; color: rgba(236, 210, 154, .8); }
+.zw-name .fz-crumbs a:hover { color: #fff3d6; }
+.zw-name .fz-crumbs b { font-weight: 400; color: rgba(236, 210, 154, .75); }
 /* 纸面：一叶宣纸，压在漆框里 */
-.zw-sheet { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; margin: 0 .625rem; padding: .875rem 1rem 1rem; color: var(--ink);
+.zw-sheet { flex: 1 0 auto; margin: 0 .625rem; padding: .875rem 1rem 1rem; color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f2e9d6, #e7d9b8); box-shadow: inset 0 0 1.5rem rgba(150, 110, 60, .14); }
 .zw-top { display: flex; flex-direction: column; gap: .625rem; }
-.zw-tabs { position: sticky; top: -.875rem; z-index: 1; display: flex; gap: .25rem; margin: .875rem -1rem 0; padding: .5rem 1rem .375rem; overflow-x: auto; scrollbar-width: none;
+.zw-tabs { position: sticky; top: var(--zw-band); z-index: 2; display: flex; gap: .25rem; margin: .875rem -1rem 0; padding: .5rem 1rem .375rem; overflow-x: auto; scrollbar-width: none;
   background: linear-gradient(180deg, #ece2ca, #e6d8b6); border-bottom: 1px solid rgba(163, 40, 27, .3); }
 .zw-body { padding-top: .75rem; }
 .zw-foot { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 0 .625rem; padding: .5rem 1rem .75rem; background: linear-gradient(180deg, #e7d9b8, #ddcaa0);
@@ -38,6 +44,7 @@
 .zw-foot:empty { display: none; }
 .zw-foot .fz-acts { margin: 0; padding: 0; border: 0; }
 .zw-nav { display: flex; gap: .375rem; margin-left: auto; }
+.zw-foot .fz-acts { flex: 1; }
 .fz-crumbs { margin: 0; font-size: var(--fs-1); color: var(--ink-faint); }
 .fz-crumbs i { font-style: normal; margin: 0 .375rem; }
 .fz-crumbs a { cursor: pointer; text-decoration: underline dotted; text-underline-offset: .2em; }
@@ -231,10 +238,30 @@ button.sw-face { cursor: pointer; }
 .sw-name { cursor: pointer; text-decoration: underline dotted rgba(120, 90, 50, .5); text-underline-offset: .25rem; }
 .sw-ruler p { margin: .125rem 0 0; font-size: var(--fs-2); line-height: 1.6; color: var(--ink-soft); }
 .sw-juan { display: flex; flex-direction: column; gap: .75rem; padding-top: .5rem; }
-/* 窗里一栏窄：读数带三格一行（汉字记数「二百三十三万」五格一行挤不下） */
-.zw .fz-band { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.zw .fz-stat b { overflow: hidden; text-overflow: ellipsis; }
+/* 窗里一栏窄：读数带排成朱丝栏（一叶纸上红线分格，不打小方盒）。三格一行；末行余两格、余一格就撑满，不留空洞。
+   汉字记数「二百三十三万」五格一行挤不下 */
+.zw .fz-band { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0; overflow: hidden; border-top: 1px solid rgba(163, 40, 27, .5); border-bottom: 1px solid rgba(163, 40, 27, .5); }
+.zw .fz-stat { grid-column: span 2; padding: .4375rem .625rem .5rem; background: none; box-shadow: -1px 0 0 rgba(163, 40, 27, .22), 0 -1px 0 rgba(163, 40, 27, .22); }
+.zw .fz-stat:nth-child(3n+1):nth-last-child(2), .zw .fz-stat:nth-child(3n+2):last-child { grid-column: span 3; }
+.zw .fz-stat:nth-child(3n+1):last-child { grid-column: span 6; }
+.zw .fz-stat b { font-size: var(--fs-5); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; }
+.zw .fz-stat.warn b { color: #a3301f; }
+/* 隶属、主官、上官几项：一行字，竖线隔开 */
+.zw .fz-pills { gap: .1875rem 0; }
+.zw .fz-pill { padding: 0 .625rem; background: none; box-shadow: -1px 0 0 rgba(120, 90, 50, .35); }
+.zw .fz-pills { overflow: hidden; margin-left: -.625rem; }
+.zw .fz-desc { max-height: none; overflow: visible; }
 .zw .zw-tabs { gap: .1875rem; }
 .zw .zw-tabs.tight .fz-slip { padding: .1875rem .5rem; }
 .zw .zw-tabs.tight .fz-slip i { display: none; }
 .zw .fz-slip { gap: .25rem; padding-right: .375rem; }
+/* 通志辖境：一州一条 */
+.fz-xj { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.fz-xj > li { padding: .4375rem .25rem .5rem .625rem; border-bottom: 1px dashed rgba(120, 90, 50, .25); }
+.fz-xj > li.warn { box-shadow: inset .1875rem 0 0 #a3301f; }
+.fz-xj-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: .125rem .875rem; font-size: var(--fs-2); color: var(--ink-faint); }
+.fz-xj-h > a { margin-right: auto; font: 400 var(--fs-4) var(--f-title); letter-spacing: .08em; color: #3a1a10; }
+.fz-xj-h b { font-weight: 400; font-size: var(--fs-3); color: var(--ink); }
+.fz-xj-h i { margin-left: .25rem; font-style: normal; font-size: var(--fs-1); color: var(--ink-faint); }
+.fz-xj > li > p { display: flex; flex-wrap: wrap; gap: 0 .875rem; margin: .125rem 0 0; font-size: var(--fs-2); color: var(--ink-soft); }
+.fz-xj > li > p.why { color: #6a1f12; }

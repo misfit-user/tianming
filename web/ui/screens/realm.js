@@ -385,8 +385,9 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
   const dFoot = h('footer.zw-foot');
   const dFly = h('button.zw-ctl', { type: 'button', title: '舆图镜头移至其境', onclick: () => locate && locate('realm', dKey) }, '图');
   const dShut = h('button.zw-ctl', { type: 'button', title: '收起（Esc）', onclick: () => hideDock() }, '×');
-  const dSheet = h('div.zw-sheet.q-scroll', dTop, dTabs, dBody);
-  const dock = h('aside.zw.sw', { role: 'dialog', 'aria-label': '势力' }, h('section.zw-hero', dPic, h('div.zw-ctls', dFly, dShut), dName), dSheet, dFoot);
+  const dSheet = h('div.zw-sheet', dTop, dTabs, dBody);
+  const dScroll = h('div.zw-scroll.q-scroll', h('section.zw-hero', dPic, dName), dSheet);
+  const dock = h('aside.zw.sw', { role: 'dialog', 'aria-label': '势力' }, dScroll, h('div.zw-ctls', dFly, dShut), dFoot);
   root.append(dock);
   const hex = (c) => (Array.isArray(c) ? `rgb(${c.map((v) => Math.round(v <= 1 ? v * 255 : v)).join(',')})` : c || '');
   // 君主一张：有立像的出像，在册可点开人物窗
@@ -406,14 +407,14 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     if (!juans.some(([t]) => t === dJuan)) dJuan = juans[0] ? juans[0][0] : '';
     const color = hex(colorOf && colorOf(dKey));
     replaceChildren(dName, h('span.zw-seal.sw-seal' + (d.hostile ? '.hostile' : ''), color ? { style: { background: color } } : {}, d.short),
-      h('div', h('p.fz-crumbs', [d.type, d.mine ? '本朝' : d.hostile ? '敌对' : ''].filter(Boolean).join(' · ')), h('h2', d.name)));
+      h('div', h('p.fz-crumbs', [d.type, d.mine ? '本朝' : d.hostile ? '敌对' : ''].filter(Boolean).join(' · ')), h('div.zw-titles', h('h2', d.name))));
     const jc = d.juan.find(([t]) => t === '君臣');
     const ruler = jc && (jc[2].people || []).find((p) => p.main);
     replaceChildren(dTop, ruler ? rulerCard(ruler) : null,
       d.pills.length ? h('div.fz-pills', d.pills.map((p) => h('span.fz-pill' + (/敌|承压|乱民/.test(p) ? '.bad' : ''), p))) : null,
       d.desc ? h('p.fz-desc', d.desc) : null,
       d.stats.length ? h('div.fz-band', d.stats.map(([k, v]) => h('div.fz-stat', h('small', k), h('b', statText(v))))) : null);
-    replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; renderDock(); dSheet.scrollTop = Math.min(dSheet.scrollTop, dTop.offsetHeight); } },
+    replaceChildren(dTabs, juans.map(([t, sub]) => h('button.fz-slip' + (t === dJuan ? '.on' : ''), { type: 'button', title: sub, onclick: () => { dJuan = t; dScroll.scrollTop = Math.min(dScroll.scrollTop, dTop.offsetTop + dTop.offsetHeight - parseFloat(getComputedStyle(dTabs).top)); renderDock(); } },
       h('i', JUAN_MARK[t] || t.charAt(0)), h('b', t))));
     const cur = juans.find(([t]) => t === dJuan);
     // 君主已在卷首那张小像卡上，君臣卷从第二位列起
@@ -428,7 +429,7 @@ export function createRealm({ root, game, profile, onPerson, onAudience, onCourt
     if (juan) dJuan = juan;
     renderDock();
     dFly.hidden = !locate;
-    dSheet.scrollTop = 0;
+    dScroll.scrollTop = 0;
     const tok = ++dTok;
     dPic.classList.remove('ready');
     if (scenery) requestAnimationFrame(() => Promise.resolve(scenery({ kind: 'realm', id: key })).then((c) => { if (tok === dTok && c) { replaceChildren(dPic, c); dPic.classList.add('ready'); } }, () => {}));

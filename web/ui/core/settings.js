@@ -62,6 +62,11 @@ export function getSetting(key) {
   return values[key];
 }
 
+// 新界面试看包：打包时主进程带 ?demo=1 开页（tools/newui/build-demo.cjs），启幕不列工坊、写一行说明
+export function demoBuild() {
+  return new URLSearchParams(location.search).has('demo');
+}
+
 // 主画面：?home=map|desk 开发时临时改，余者照典章「主画面」
 export function homeMode() {
   const q = new URLSearchParams(location.search).get('home');

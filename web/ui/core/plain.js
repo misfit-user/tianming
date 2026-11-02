@@ -8,6 +8,6 @@ export function plainError(text) {
   if (!missing && !RUNTIME.test(s)) return s;
   console.warn('[新前端] 程序报错原话：', s);
   const lead = /^([^A-Za-z]*[\u4e00-\u9fff][^A-Za-z]*?[：:])/.exec(s);
-  const why = missing ? '游戏内核未备此项' : '内核出了差错';
-  return `${lead ? lead[1] + why : `此事没有办成，${why}`}（原话记在控制台）`;
+  const why = missing ? '这一版里还没有这一项' : '程序出了差错';
+  return lead ? lead[1] + why : `此事没有办成，${why}`;
 }

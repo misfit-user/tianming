@@ -87,7 +87,7 @@ export function createIssues({ game, profile, onConvene, onSecret }) {
       busy.hidden = true;
       if (r && r.ok === false) {
         choiceBtns.forEach((b) => { b.disabled = false; b.classList.remove('picked'); });
-        bus.emit('kernel:toast', { text: `未能决断（${r.code || '内核未受理'}）` });
+        bus.emit('kernel:toast', { text: `未能决断（${r.code || '未受理'}）` });
         return;
       }
       j.close('ok');

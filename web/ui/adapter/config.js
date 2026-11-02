@@ -319,6 +319,13 @@ export function removeTrack(id) {
   const a = w.AudioSystem;
   return !!(a && typeof a.removeUserTrack === 'function' && a.removeUserTrack(String(id)));
 }
+// 退出游戏：桌面版无边框全屏，得有个门；window.close() 走主进程的存盘握手再退。浏览器关不掉玩家自己开的页，不给这个门
+export function canQuit() {
+  return !!(w.tianming && w.tianming.isDesktop);
+}
+export function quit() {
+  w.close();
+}
 // 显示：全屏或窗口（内核 _tmSetFullscreen：桌面版走主进程，浏览器走 Fullscreen API；偏好存本机，默认全屏）
 export function fullscreen() {
   try { return localStorage.getItem('tm.fullscreen') !== '0'; } catch (_e) { return true; }

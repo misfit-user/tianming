@@ -7,6 +7,7 @@ import { SHOTS, TITLE_TO_DESK } from '../scene/study/shots.js';
 import { profileOf } from '../model/identity.js';
 import { openSettings } from './settings.js';
 import { openSaves } from './saves.js';
+import { demoBuild } from '../core/settings.js';
 import { cover } from './loading.js';
 import { plainError } from '../core/plain.js';
 
@@ -20,11 +21,14 @@ const BOARD = [
 export function createTitle({ root, stage, study, game, onEnter }) {
   const board = h('nav.q-qi.board', { 'aria-label': '卷目' });
   const foot = h('div.foot', h('span', '传世诸卷'));
-  const el = h('section.scr.scr-title', h('div.shade'), board, foot);
+  const demoNote = demoBuild() ? h('p.demo-note', '新界面试看版。只为看看界面，游戏内容停在十月，不是正式更新，存档与正式版各归各。') : null;
+  const el = h('section.scr.scr-title', h('div.shade'), board, foot, demoNote);
   root.append(el);
   let busy = false;
 
-  for (const b of BOARD) {
+  const items = BOARD.filter((b) => !(demoBuild() && b.key === 'author'));
+  if (game.config.canQuit()) items.push({ key: 'quit', label: '掩卷', note: '退出游戏' });
+  for (const b of items) {
     board.append(h('button' + (b.primary ? '.primary' : ''), { type: 'button', onclick: () => act(b.key) }, h('b.q-gold', b.label), h('small', b.note)));
   }
   const fill = () => {
@@ -48,7 +52,8 @@ export function createTitle({ root, stage, study, game, onEnter }) {
     if (key === 'new') pickScenario();
     else if (key === 'load') pickSave();
     else if (key === 'rules') openSettings();
-    else juan({ title: '著卷', note: '剧本工坊', width: '34rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '剧本工坊沿用旧版界面，不在此番重做之列；新前端整体切换时由此处直通旧版工坊。') });
+    else if (key === 'quit') game.config.quit();
+    else juan({ title: '著卷', note: '剧本工坊', width: '34rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '剧本工坊不在这一版里。') });
   }
 
   // ---------- 開卷：选卷 ----------

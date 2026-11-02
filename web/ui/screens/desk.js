@@ -964,7 +964,7 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
     return true;
   }
   function building(title, note) {
-    juan({ title, note, width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '此卷正在营建，地基落成后逐一开张。') });
+    juan({ title, note, width: '30rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '这一卷还没有做好，这一版先不开。') });
   }
   function onBook(key, name) {
     if (key === 'map') {
@@ -1309,7 +1309,8 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         item(prof.annals.title, () => annals()),
         item('帮助', () => helpPage.show()),
         prof.abdicate && !game.viewAs ? item(prof.abdicate.name, () => openAbdicate()) : null,
-        item('回启幕', () => leaveGame()))
+        item('回启幕', () => leaveGame()),
+        game.config.canQuit() ? item('退出游戏', () => quitGame()) : null)
     });
     j.closed.then(() => { pausing = false; });
   }
@@ -1337,15 +1338,21 @@ export function createDesk({ root, stage, study, map, game, labels, clouds }) {
         : h('p.sv-none', '无合适继承人。')
     });
   }
-  async function leaveGame() {
-    const sure = await new Promise((resolve) => {
+  // 离开此局先问一声：未封存的进度会失去（回启幕、退出游戏同此）
+  function askLeave(title, text, yesLabel) {
+    return new Promise((resolve) => {
       let yes = false;
-      const c = juan({ title: '回启幕', width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, '离开此局，回到启幕。未封存的进度将会失去。'),
-        actions: [{ label: '先封存', onclick: ({ close }) => { close('ok'); openSaves({ game, inGame: true }); } }, { label: '离开', onclick: ({ close }) => { yes = true; close('ok'); } }] });
+      const c = juan({ title, width: '28rem', content: h('p', { style: { margin: 0, lineHeight: 2 } }, text),
+        actions: [{ label: '先封存', onclick: ({ close }) => { close('ok'); openSaves({ game, inGame: true }); } }, { label: yesLabel, onclick: ({ close }) => { yes = true; close('ok'); } }] });
       c.closed.then(() => resolve(yes));
     });
-    if (!sure) return;
+  }
+  async function leaveGame() {
+    if (!await askLeave('回启幕', '离开此局，回到启幕。未封存的进度将会失去。', '离开')) return;
     try { await game.leave(); } catch (err) { bus.emit('kernel:toast', { text: String(err && err.message || err) }); }
+  }
+  async function quitGame() {
+    if (await askLeave('退出游戏', '退出游戏。未封存的进度将会失去。', '退出')) game.config.quit();
   }
 
   const offs = [];

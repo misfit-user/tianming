@@ -1,6 +1,7 @@
 /* 新前端设计令牌：色、字、尺度、影、动。
  * 尺度一律用 rem：html 的字号由 core/viewport.js 按窗口大小定（1080 高时 1rem = 16px），整套界面随窗口等比缩放。
  * 色名取器物本色：漆、金、纸、牙、墨、朱、石青石绿、赭、绢、瓷青。界面固定文案朝代中立。 */
+html { font-size: var(--ui-rem, 16px) !important; }   /* 根字号归 core/viewport.js；内核老界面也写 html 的行内字号，这里压住 */
 :root {
   /* 漆：黑漆由深到浅 */
   --lac-0: #0f0805;

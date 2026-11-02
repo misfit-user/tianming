@@ -96,17 +96,18 @@
 /* ---------- 舆图看法：时钟之上，书目之左 ---------- */
 .scr-map.home-map .mm-panel { right: 5.75rem; bottom: 8.5rem; }
 .scr-map.home-map .back { display: none; }
-@media (max-height: 52rem) { .scr-map.home-map .mm-panel { right: 5rem; bottom: 7.75rem; } }
+@media (max-height: 734px) { .scr-map.home-map .mm-panel { right: 5rem; bottom: 7.75rem; } }
 
 /* ---------- 提纲（照 CK3 的 Outliner）：右上读数之下、书目之左；钉选之人、所掌、诸军，可收起 ---------- */
 .scr-desk .hm-outline { display: none; }
-.scr-desk.home-map .hm-outline { position: fixed; right: 5.5rem; top: 5.5rem; width: 15rem; max-height: calc(100vh - 25rem); display: flex; flex-direction: column; overflow: hidden;
+.scr-desk.home-map .hm-outline { position: fixed; right: 5.5rem; top: 5.5rem; width: 15rem; max-height: calc(100vh - 19rem); display: block; overflow: hidden auto; scrollbar-width: thin; scrollbar-color: rgba(201, 164, 92, .6) transparent;   /* 整张提纲一处滚动，不分段各滚各的 */
   background: linear-gradient(180deg, rgba(36, 22, 14, .9), rgba(21, 12, 7, .86)); box-shadow: 0 .5rem 1.25rem rgba(10, 5, 2, .5), inset 0 0 0 1px rgba(201, 164, 92, .4); }
 .scr-desk.home-map .hm-outline.shut { width: auto; }
+.hm-outline > header { position: sticky; top: 0; z-index: 1; background: #24160e; }
 .hm-outline > header > button { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; width: 100%; padding: .4375rem .75rem .375rem; border: 0; cursor: pointer; background: none; }
 .hm-outline > header b { font: 400 var(--fs-4) var(--f-title); letter-spacing: .3em; color: #f3e2b8; }
 .hm-outline > header i { font: var(--fs-1) var(--f-kai); font-style: normal; color: rgba(236, 210, 154, .7); }
-.hm-outline > section { overflow: auto; scrollbar-width: thin; padding: 0 0 .375rem; border-top: 1px solid rgba(201, 164, 92, .22); }
+.hm-outline > section { padding: 0 0 .375rem; border-top: 1px solid rgba(201, 164, 92, .22); }
 .hm-outline h4 { display: flex; justify-content: space-between; margin: 0; padding: .3125rem .75rem .1875rem; font: 400 var(--fs-1) var(--f-kai); letter-spacing: .25em; color: rgba(236, 210, 154, .75); }
 .hm-outline h4 small { letter-spacing: 0; color: var(--ivory-soft); }
 .hm-outline section > p { margin: 0; padding: .125rem .75rem .25rem; font-size: var(--fs-1); color: rgba(243, 230, 200, .45); }
@@ -140,3 +141,19 @@
 .scr-desk.home-map.inmap > .tags, .scr-desk.home-map.flying > .tags { display: none; }
 /* 主动回案时提纲收起，让出案上器物（奏折、花笺都在右上） */
 .scr-desk.home-map:not(.inmap) .hm-outline { display: none; }
+
+/* ---------- 矮窗、窄窗（放在卷尾，压过上面的基础摆法） ---------- */
+/* 手机横屏这样的矮窗：书目站不下一列，折成两列（第二列往左长），提纲、看法让开 */
+@media (max-height: 559px) {
+  .scr-desk.home-map .rail { height: calc(100vh - 14rem); flex-flow: column wrap-reverse; align-content: flex-start; }
+  .scr-desk.home-map .hm-outline { right: 9rem; max-height: calc(100vh - 16rem); }
+  .scr-map.home-map .mm-panel { right: 9rem; }
+}
+/* 窄窗：读数条收起各行后头的盈亏小字（细账在度支册）；人物窗、志窗开着时再收起内帑一账（再窄连帑廪也收），不让窗盖住半截字 */
+@media (max-width: 1180px) {
+  .scr-desk.home-map .ledger .q-zhang li > s { display: none; }
+  body:has(.rw.on, .zw.on) .scr-desk.home-map .ledger > :nth-child(2) { display: none; }
+}
+@media (max-width: 900px) {
+  body:has(.rw.on, .zw.on) .scr-desk.home-map .ledger > :nth-child(1) { display: none; }
+}

@@ -1,12 +1,11 @@
 // 人物窗：照 CK3 的角色窗口，靠左展开，舆图露着（同志 10-11：「人物图志没必要做成专门 UI，可以做成 CK3 那种」）。
 // 点任何一处人像（案前诸人、提纲、寻人、各册里的人名、右键可为单）都开这一扇；再点别人就换人，左上「‹」退回上一位。
-//   卷首：立像铺满（剧本立像本是带景的画），左缘一列圆钮是能对此人做的事（见、书、任、钉、参，做不了的灰着写缘由），
-//         右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋）。
-//   名衔：姓名与字、年齿、职衔与品级章、与我（此即本人／视我亲疏与好感）。
-//   性情一行、才具八项、心性声望一行（忠诚、野心、名望、贤能，九品刻度）。
-//   职掌：现职、所在（点了舆图镜头飞去）、所掌之地与兵；势力、党派、家族门第、出身。
+//   一整卷只有一处滚动：往下读时立像收成一条压着姓名职衔的窄带，页签吸在窄带之下，读生平不必在一条缝里翻；卷底的事一直在手边。
+//   卷首：立像铺满（剧本立像本是带景的画），右下配偶与子嗣两枚小像，左上压处境印（殁、狱、谪、行、谋），底下姓名、品级、职衔。
+//   年齿与亲疏（此即本人／视我亲疏与好感）一行，性情一行、才具八项、心性声望一行（忠诚、野心、名望、贤能，九品刻度）。
+//   职掌：所在（点了舆图镜头飞去）、所掌之地与兵；势力、党派、门第、出身。
 //   四页：家人（尊长、配偶、子女、同辈，人像可点）、交游（亲疏与好感）、履历、生平。
-//   卷底：详传（列传全卷）、寻人。
+//   卷底：能对此人做的事（召见、传书、任官、钉选、对参，做不了的灰着写缘由），详传（列传全卷）、寻人。
 // 数据：game.bio.person（列传同源，tm-renwu-tuzhi.js adaptChar）、game.select.people（品秩、处境）、game.standing（所掌）。
 import { h, replaceChildren } from '../core/dom.js';
 import { num } from '../core/numerals.js';
@@ -42,18 +41,23 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
   const kin = h('div.rw-kin');
   const backBtn = h('button.rw-ctl', { type: 'button', title: '退回上一位', onclick: () => goBack() }, '‹');
   const shutBtn = h('button.rw-ctl', { type: 'button', title: '收起（Esc）', onclick: () => hide() }, '×');
-  const hero = h('section.rw-hero', pic, seal, acts, kin, h('div.rw-ctls', backBtn, shutBtn));
   const name = h('header.rw-name');
+  const hero = h('section.rw-hero', pic, seal, kin, name);
+  const lead = h('div.rw-lead');
   const traits = h('div.rw-traits');
   const skills = h('ol.rw-skills');
   const gauges = h('div.rw-gauges');
   const post = h('section.rw-post');
   const tabBar = h('nav.rw-tabs');
-  const page = h('div.rw-page.q-scroll');
-  const foot = h('footer.rw-foot');
-  const body = h('div.rw-body', name, traits, skills, gauges, post, tabBar, page);
-  const el = h('aside.rw', { role: 'dialog', 'aria-label': '人物' }, hero, body, foot);
+  const page = h('div.rw-page');
+  const footMore = h('div.rw-more');
+  const foot = h('footer.rw-foot', acts, footMore);
+  const body = h('div.rw-body', lead, traits, skills, gauges, post);
+  const scroller = h('div.rw-scroll.q-scroll', hero, body, tabBar, page);
+  const el = h('aside.rw', { role: 'dialog', 'aria-label': '人物' }, scroller, h('div.rw-ctls', backBtn, shutBtn), foot);
   root.append(el);
+  // 页签吸住时卷身该滚到的位置：卷身到底，减去窄带的高（页签的 top）
+  const tabsStuckAt = () => body.offsetTop + body.offsetHeight - parseFloat(getComputedStyle(tabBar).top);
 
   let peopleCache = null;
   const peopleRow = (n) => {
@@ -95,16 +99,16 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     replaceChildren(pic, b.portrait ? h('img', { src: b.portrait, alt: b.name, decoding: 'async', onerror: (e) => e.target.replaceWith(h('i', [...b.name][0])) }) : h('i', [...b.name][0]));
     el.classList.toggle('dead', !b.alive);
     replaceChildren(seal, b.banner ? tiao(h('b', b.banner.glyph), () => ({ title: b.banner.title, text: b.banner.note || '' })) : null);
-    const act = (glyph, label, off, onclick, on) => tiao(h('button.rw-act' + (off ? '.off' : '') + (on ? '.on' : ''), { type: 'button', 'aria-label': label, 'aria-disabled': off ? 'true' : 'false',
-      onclick: () => { if (!off) onclick(); } }, h('b', glyph)), () => ({ title: label, text: off || '' }));
+    const act = (label, note, off, onclick, on) => tiao(h('button.q-yapai' + (off ? '.off' : '') + (on ? '.on' : ''), { type: 'button', 'aria-disabled': off ? 'true' : 'false',
+      onclick: () => { if (!off) onclick(); } }, label), () => (off || note ? { title: note || label, text: off || '' } : null));
     const list = [];
     if (!self && b.alive) {
-      list.push(act('见', c.audienceTitle || '召见', c.audience, () => onAudience(b.name)));
-      list.push(act('书', c.letterTitle || '传书', c.letter, () => onLetter(b.name)));
-      if (c.office != null) list.push(act('任', '任官', c.office, () => onOffice(b.name)));
+      list.push(act(c.audienceTitle || '召见', '', c.audience, () => onAudience(b.name)));
+      list.push(act(c.letterTitle || '传书', '', c.letter, () => onLetter(b.name)));
+      if (c.office != null) list.push(act('任官', '', c.office, () => onOffice(b.name)));
     }
-    if (!self && b.alive) list.push(act('钉', pinned(row.id ? row : b) ? '撤钉选' : '钉选（排在提纲、寻人之首）', '', () => { togglePin(row.id ? row : b); render(); }, pinned(row.id ? row : b)));
-    if (compare) list.push(act('参', compare.has(b.name) ? '移出对参' : '放进对参（至多三人并看）', '', () => { compare.toggle(b.name); render(); }, compare.has(b.name)));
+    if (!self && b.alive) list.push(act(pinned(row.id ? row : b) ? '撤钉' : '钉选', pinned(row.id ? row : b) ? '' : '排在提纲、寻人之首', '', () => { togglePin(row.id ? row : b); render(); }, pinned(row.id ? row : b)));
+    if (compare) list.push(act('对参', compare.has(b.name) ? '已在对参，再点移出' : '放进对参，至多三人并看', '', () => { compare.toggle(b.name); render(); }, compare.has(b.name)));
     replaceChildren(acts, list);
     // 配偶与子嗣：各取一位在世者（剧本名册里有的），小像压在卷首右下
     const blood = kinOf(b);
@@ -120,7 +124,8 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const ages = [b.age != null ? `${num(b.age)}岁` : '', b.gender, fam.replace(/[（(].*$/, '')].filter(Boolean).join(' · ');
     replaceChildren(name,
       h('div.rw-title', h('h2', b.name, b.zi ? h('small', `字${b.zi}`) : null), b.rank ? h('span.rw-rank', b.rank) : null),
-      h('p.rw-office', b.office.join('、') || '布衣'),
+      h('p.rw-office', { title: b.office.length > 1 ? b.office.join('、') : null }, b.office.join('、') || '布衣'));
+    replaceChildren(lead,
       h('p.rw-line', ages),
       !t ? null : t.self ? h('p.rw-tome.self', h('i', '我'), '此即本人')
         : h('p.rw-tome' + (t.score > 0 ? '.good' : t.score < 0 ? '.bad' : ''), h('i', '与'), t.lord ? `视${v.lord}：${t.label}` : `视我：${t.label}`, t.score != null ? h('em', signed(t.score)) : null));
@@ -144,24 +149,31 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     const KIND = { region: '地', circuit: '省', army: '兵', office: '署' };
     const place = b.location ? h('button.rw-place', { type: 'button', title: '舆图镜头飞往此地', disabled: !locate, onclick: () => locate && !locate(b.location) && bus.emit('kernel:toast', { text: `舆图上认不出「${b.location}」` }) },
       b.location, b.travelTo ? h('small', ` → ${b.travelTo}`) : null) : h('span', '未详');
-    const chips = [b.faction, b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : '', (b.family && b.family.tier) || '', b.origin && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : ''].filter(Boolean);
+    const facts = [['势力', b.faction], ['党派', b.party ? `${b.party}${b.partyRank ? '·' + b.partyRank : ''}` : ''], ['门第', (b.family && b.family.tier) || ''], ['出身', b.origin && b.origin.title && b.origin.title !== '布衣' ? b.origin.title : '']].filter((x) => x[1]);
     replaceChildren(post,
-      h('div.rw-kv', h('span', '所在'), place),
-      charges.length ? h('div.rw-kv', h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
+      h('div.rw-kv.wide', h('span', '所在'), place),
+      charges.length ? h('div.rw-kv.wide', h('span', '所掌'), h('div.rw-charges', charges.map((x) => h('button.rw-charge', { type: 'button', disabled: !(locate && (x.kind === 'region' || x.kind === 'circuit' || x.kind === 'army')),
         onclick: () => locate && locate(x.kind === 'army' ? x.location : x.name) }, h('i', KIND[x.kind] || '掌'), x.name.replace(/布政使司$/, ''), x.kind === 'army' ? h('small', `${num(x.soldiers)}人`) : null)))) : null,
-      chips.length ? h('div.rw-chips', chips.map((x) => h('span', x))) : null);
+      facts.map(([k, x]) => h('div.rw-kv', h('span', k), h('b', x))));
 
     // 四页
     const counts = { kin: blood.length, rel: (b.relations || []).length, career: (b.career || []).length };
-    replaceChildren(tabBar, TABS.map(([k, label]) => h('button' + (k === tab ? '.on' : ''), { type: 'button', onclick: () => { tab = k; render(); } }, label, counts[k] ? h('small', num(counts[k])) : null)));
+    replaceChildren(tabBar, TABS.map(([k, label]) => h('button' + (k === tab ? '.on' : ''), { type: 'button', onclick: () => turnTab(k) }, label, counts[k] ? h('small', num(counts[k])) : null)));
     replaceChildren(page, ...pageOf(b));
-    page.scrollTop = 0;
 
     // 卷底
-    replaceChildren(foot,
+    replaceChildren(footMore,
       h('button.q-yapai', { type: 'button', onclick: () => onBio(b.name) }, '详传'),
       h('button.q-yapai', { type: 'button', onclick: () => onFind(b.name) }, '寻人'),
       v.player || self ? null : h('small', '借视角：只读'));
+  }
+
+  // 翻页签：已经往下读了的，新一页从页签底下开始（短的一页不至于把人甩回卷首）
+  function turnTab(k) {
+    tab = k;
+    const was = scroller.scrollTop;
+    render();
+    scroller.scrollTop = Math.min(was, tabsStuckAt());
   }
 
   function pageOf(b) {
@@ -205,6 +217,9 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     peopleCache = null;
     render();
     el.classList.add('on');
+    scroller.scrollTop = 0;
+    // 指明翻哪一页（书目「家」「史」）而窗太矮看不见页签的，直接翻到页签
+    if (at && tabBar.offsetTop + tabBar.offsetHeight + page.firstElementChild?.offsetHeight > scroller.clientHeight) scroller.scrollTop = tabsStuckAt();
     bus.emit('renwu:shown', { name: n });
   }
   function goBack() {
@@ -213,6 +228,7 @@ export function createRenwu({ root, game, viewer, can, onAudience, onLetter, onO
     cur = prev;
     peopleCache = null;
     render();
+    scroller.scrollTop = 0;
     bus.emit('renwu:shown', { name: prev });
   }
   function hide() {

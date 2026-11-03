@@ -32,6 +32,10 @@
 .lt-flow .lab span { display: inline-block; padding: 8px 0; width: 30px; text-align: center; background: rgba(150, 30, 18, .85); color: #f9ead2; font: 16px/30px var(--f-kai); letter-spacing: .3em; }
 .lt-flow .veiled { text-align: center; color: rgba(70, 46, 22, .5); letter-spacing: .3em; }
 .lt-flow .note { color: #8a1a10; font-size: 18px; letter-spacing: .2em; }
+/* 长信往左还有：朱字落在左边笺边的空白里 */
+.lt-fold > .lt-more { position: absolute; left: 34px; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; font: 18px/1 var(--f-kai); letter-spacing: .3em; color: #8a1a10; }
+.lt-fold > .lt-more.on { display: block; }
+.lt-more i { display: block; width: 0; height: 0; margin: 0 auto 8px; border: 7px solid transparent; border-right-color: #8a1a10; transform: translateX(-4px); }
 .lt-idle { height: 100%; justify-content: center; align-items: center; }
 .lt-idle > span { writing-mode: vertical-rl; font: 26px/46px var(--f-kai); letter-spacing: .5em; color: rgba(60, 40, 20, .55); }
 
@@ -48,38 +52,66 @@
 .lt-route b { font: 400 var(--fs-3) var(--f-title); letter-spacing: .3em; color: #ffd9a8; }
 .lt-route span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* 左列：名册 */
-.lt-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(16.5rem, 211px); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
-.lt-tools { display: flex; gap: .375rem; margin-bottom: .5rem; }
+/* 左列：来函、在途、名册、截获四页。案底在正中，两列可以一直落到窗底 */
+.lt-left { position: fixed; left: 1.25rem; top: 6.5rem; bottom: 1.25rem; width: max(18rem, 230px); padding: .625rem .625rem .75rem; display: flex; flex-direction: column; }
+.lt-tabs { flex: none; display: flex; margin-bottom: .5rem; border-bottom: 1px solid var(--gold-line); }
+.lt-tab { position: relative; flex: 1 1 0; display: flex; justify-content: center; align-items: baseline; gap: .1875rem; padding: .3125rem 0 .4375rem; border: 0; background: none; cursor: pointer; white-space: nowrap;
+  font: 400 var(--fs-3) var(--f-title); letter-spacing: .1em; color: var(--ivory-soft); transition: color var(--t-1); }
+.lt-tab:hover { color: var(--ivory); }
+.lt-tab.on { color: var(--gold-hi); }
+.lt-tab.on::after { content: ''; position: absolute; left: .25rem; right: .25rem; bottom: -1px; height: 2px; background: var(--gold); }
+.lt-tab em { padding: 0 .1875rem; font: normal var(--fs-1)/1.3 var(--f-kai); letter-spacing: 0; color: #e8c982; border: 1px solid rgba(232, 201, 130, .5); }
+.lt-tab em.hot { color: #f9ead2; background: #a3301f; border-color: #a3301f; }
+.lt-tools { flex: none; display: flex; gap: .375rem; margin-bottom: .5rem; }
+.lt-tools[hidden] { display: none; }
 .lt-search { flex: 1; min-width: 0; padding: .3125rem .5rem; border: 0; outline: 0; font: var(--fs-2) var(--f-kai); color: var(--ink);
   background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: inset 0 0 0 1px rgba(120, 90, 50, .35); }
 .lt-multi { flex: none; padding: .25rem .625rem; border: 0; cursor: pointer; font: var(--fs-2) var(--f-kai); letter-spacing: .15em; color: var(--ivory);
   background: rgba(255, 230, 190, .07); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .35); }
 .lt-multi.on { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: none; }
-.lt-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .75rem; }
+.lt-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .75rem; overflow-x: hidden; }
+.lt-list > section { flex: none; }
+.lt-allread { padding: 0 .375rem; border: 0; cursor: pointer; background: none; font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--gold-hi); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .4); }
+.lt-allread:hover { background: rgba(255, 230, 190, .1); }
 .lt-list h4 { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 .25rem; padding-bottom: .25rem; border-bottom: 1px solid var(--gold-line);
   font: 400 var(--fs-3) var(--f-title); letter-spacing: .25em; color: var(--gold-hi); }
 .lt-list h4 small { font: var(--fs-1) var(--f-kai); letter-spacing: .1em; color: var(--ivory-soft); }
-.lt-pi { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: .5rem; align-items: center; width: 100%;
+.lt-pi, .lt-li { display: grid; box-sizing: border-box; grid-template-columns: 2.25rem minmax(0, 1fr) auto; grid-template-rows: auto auto; column-gap: .5rem; align-items: center; width: 100%;
   padding: .3125rem .375rem; border: 0; border-left: 2px solid transparent; background: transparent; color: var(--ivory); text-align: left; cursor: pointer; font-family: var(--f-kai);
   transition: background var(--t-1); }
-.lt-pi:hover { background: rgba(255, 230, 190, .06); }
-.lt-pi.on { background: rgba(255, 230, 190, .12); border-left-color: var(--gold); }
-.lt-pi .av { grid-row: 1 / 3; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center;
+.lt-pi:hover, .lt-li:hover { background: rgba(255, 230, 190, .06); }
+.lt-pi.on, .lt-li.on { background: rgba(255, 230, 190, .12); border-left-color: var(--gold); }
+.lt-pi .av, .lt-li .av { grid-row: 1 / 3; width: 2.25rem; height: 2.25rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center;
   background: radial-gradient(circle at 35% 30%, #4a3020, #1d120a); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .45); font: var(--fs-4) var(--f-title); color: var(--gold-hi); }
-.lt-pi .av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
-.lt-pi .who { display: flex; align-items: baseline; gap: .375rem; min-width: 0; }
-.lt-pi .who b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }
-.lt-pi .who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
-.lt-pi .loc { grid-column: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: rgba(236, 222, 196, .55); }
-.lt-pi .marks { grid-column: 3; grid-row: 1 / 3; display: flex; gap: .1875rem; }
-.lt-pi em, .lt-mi em { font: normal var(--fs-1)/1.3 var(--f-kai); padding: 0 .25rem; color: #e8c982; border: 1px solid rgba(232, 201, 130, .5); }
-.lt-pi em.fresh, .lt-mi em.fresh { color: #f9ead2; background: #a3301f; border-color: #a3301f; }
-.lt-pi em.lost { color: #e88a6c; border-color: rgba(232, 138, 108, .6); }
+.lt-pi .av img, .lt-li .av img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+.lt-pi .who, .lt-li .who { display: flex; align-items: baseline; gap: .375rem; min-width: 0; }
+.lt-pi .who b, .lt-li .who b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }
+.lt-pi .who small, .lt-li .who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
+.lt-pi .loc { grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: rgba(236, 222, 196, .6); }
+.lt-pi .marks { grid-column: 3; grid-row: 1; display: flex; gap: .1875rem; }
+/* 一封信一行：第一行谁、什么信、标记；第二行信首几句或还要几日 */
+.lt-li .tags { grid-column: 3; grid-row: 1; display: flex; gap: .1875rem; }
+.lt-li .ex { grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: rgba(236, 222, 196, .68); }
+.lt-li.new .who b { color: #fbe6ba; }
+.lt-li.new { box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .22); background: rgba(255, 230, 190, .05); }
+.lt-li.read { opacity: .62; }
+.lt-li.read:hover, .lt-li.read.on { opacity: 1; }
+.lt-li.bare { grid-template-columns: minmax(0, 1fr); }
+.lt-li.bare .ex { grid-column: 1; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.5; }
+.lt-pi em, .lt-mi em, .lt-li em { font: normal var(--fs-1)/1.3 var(--f-kai); padding: 0 .25rem; white-space: nowrap; color: #e8c982; border: 1px solid rgba(232, 201, 130, .5); }
+.lt-pi em.fresh, .lt-mi em.fresh, .lt-li em.fresh { color: #f9ead2; background: #a3301f; border-color: #a3301f; }
+.lt-li em.hot { color: #ffd9a8; border-color: rgba(255, 150, 100, .6); }
+.lt-pi em.lost, .lt-li em.lost { color: #e88a6c; border-color: rgba(232, 138, 108, .6); }
 .lt-none { margin: 1rem 0; font-size: var(--fs-2); line-height: 1.8; color: var(--ivory-soft); letter-spacing: .06em; }
 
-/* 右列：往来书札（或截获密函） */
-.lt-right { position: fixed; right: 1.25rem; top: 6.5rem; bottom: 9.5rem; width: max(17rem, 218px); padding: .75rem .75rem .75rem; display: flex; flex-direction: column; gap: .5rem; }
+/* 右列：与此人的往来书札（没选人时是案头一览） */
+.lt-right { position: fixed; right: 1.25rem; top: 6.5rem; max-height: calc(100vh - 7.75rem); box-sizing: border-box; width: calc(max(18rem, 230px) + 1.5rem); padding: .75rem .75rem .75rem; display: flex; flex-direction: column; gap: .5rem; }   /* 高随内容：没几封信时不留一大片空柱子 */
+.lt-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .375rem; }
+.lt-stat { display: flex; flex-direction: column; align-items: center; gap: .125rem; padding: .625rem 0 .5rem; border: 0; cursor: pointer; color: var(--ivory); background: rgba(255, 230, 190, .05); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .25); transition: background var(--t-1); }
+.lt-stat:hover { background: rgba(255, 230, 190, .1); }
+.lt-stat b { font: 400 var(--fs-6) var(--f-title); color: var(--gold-hi); }
+.lt-stat.hot b { color: #f6a58a; }
+.lt-stat small { font: var(--fs-1) var(--f-kai); letter-spacing: .2em; color: var(--ivory-soft); }
 .lt-who { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: .625rem; align-items: center; }
 .lt-who .av { width: 3.25rem; height: 3.25rem; overflow: hidden; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #4a3020, #1d120a);
   box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .55); font: var(--fs-6) var(--f-title); color: var(--gold-hi); }
@@ -87,32 +119,41 @@
 .lt-who div { display: flex; flex-direction: column; min-width: 0; }
 .lt-who b { font: 400 var(--fs-5) var(--f-title); letter-spacing: .15em; color: var(--gold-hi); }
 .lt-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
+.lt-who small.reach { color: #e8c982; white-space: normal; }
+.lt-who small.reach.bad { color: #e88a6c; }
+.lt-who .av { cursor: pointer; }
 .lt-rbtn { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding-bottom: .375rem; border-bottom: 1px solid var(--gold-line); }
 .lt-rbtn .q-yapai { cursor: pointer; }
 .lt-rbtn small { font-size: var(--fs-1); color: var(--ivory-soft); letter-spacing: .1em; }
-.lt-thread { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .25rem; }
-.lt-mi { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: baseline; gap: .375rem; width: 100%; padding: .375rem .5rem; border: 0; border-left: 2px solid transparent;
+.lt-thread { flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; gap: .25rem; }
+/* 往来一行：来朱去金一枚小印，一眼分清来去；第二行信首几句 */
+.lt-mi { display: grid; box-sizing: border-box; flex: none; grid-template-columns: 1.625rem minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: .4375rem; width: 100%; padding: .3125rem .375rem; border: 0; border-left: 2px solid transparent;
   background: transparent; color: var(--ivory); text-align: left; cursor: pointer; font-family: var(--f-kai); transition: background var(--t-1); }
-.lt-mi b { grid-column: 1 / 4; font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; }
-.lt-mi.in b { color: #f3dcb0; }
-.lt-mi small { font-size: var(--fs-1); color: var(--ivory-soft); }
-.lt-mi i { font-style: normal; color: var(--gold-hi); }
+.lt-mi .dir { grid-row: 1 / 3; display: grid; place-items: center; width: 1.625rem; height: 1.625rem; font: normal var(--fs-2)/1 var(--f-title); }
+.lt-mi.in .dir { color: #f9ead2; background: linear-gradient(180deg, #a3301f, #7d1d12); box-shadow: inset 0 0 0 1px rgba(236, 210, 154, .35); }
+.lt-mi.out .dir { color: var(--gold-hi); box-shadow: inset 0 0 0 1px rgba(201, 164, 92, .55); }
+.lt-mi .ttl { display: flex; align-items: baseline; gap: .375rem; min-width: 0; }
+.lt-mi .ttl b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; white-space: nowrap; }
+.lt-mi.in .ttl b { color: #f3dcb0; }
+.lt-mi .ttl small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: var(--ivory-soft); }
+.lt-mi .tags { grid-column: 3; grid-row: 1; display: flex; align-items: baseline; gap: .1875rem; }
+.lt-mi .star { font-style: normal; color: var(--gold-hi); }
+.lt-mi .ex { grid-column: 2 / 4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-1); color: rgba(236, 222, 196, .62); }
+.lt-mi.pick { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto; }
+.lt-mi.pick b { font-weight: 400; font-size: var(--fs-3); letter-spacing: .08em; }
+.lt-mi.pick i { font-style: normal; color: var(--ivory-soft); }
 .lt-mi:hover { background: rgba(255, 230, 190, .06); }
 .lt-mi.on { background: rgba(255, 230, 190, .12); border-left-color: var(--gold); }
-.lt-intc { padding: .5rem .625rem; font-family: var(--f-kai); color: var(--ink); background: var(--paper-grain), linear-gradient(180deg, #f3ead6, #e3d3b2); box-shadow: var(--sh-lift); }
-.lt-intc header { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
-.lt-intc header b { font-weight: 400; font-size: var(--fs-2); color: #8a2a1c; letter-spacing: .06em; }
-.lt-intc header small { font-size: var(--fs-1); color: var(--ink-faint); }
-.lt-intc p { margin: .25rem 0 0; font-size: var(--fs-2); line-height: 1.7; }
-.lt-intc p.imp { color: #6a3a20; font-size: var(--fs-1); }
 
 /* 笺下一行 */
-.lt-meta { position: fixed; left: 50%; bottom: 9.25rem; transform: translateX(-50%); max-width: 44rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+/* 笺下一行与案底同在一个容器里：永远贴在最长的签上方，不靠算高度（字号有下限，算不准） */
+.lt-foot { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .4375rem; }
+.lt-meta { max-width: min(44rem, calc(100vw - 2 * (max(18rem, 230px) + 3.5rem))); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   font: var(--fs-2) var(--f-kai); letter-spacing: .12em; color: #fff3dc; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); pointer-events: none !important; }
 
 /* 案底：拟书四组签与遣使；读信时是信上诸事 */
 /* 签是挂着的：各组题名齐在一条线上、签往下垂（原先底齐，签长短不一，四组题名高低错落）；「遣使」一枚落底 */
-.lt-bar { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); display: flex; align-items: flex-start; gap: 1.125rem; }
+.lt-bar { display: flex; align-items: flex-start; gap: 1.125rem; }
 .lt-bar > :not(.lt-grp) { align-self: flex-end; }
 .lt-grp { display: flex; flex-direction: column; align-items: center; gap: .3125rem; }
 .lt-grp > .lab { padding-left: .4em; font: 400 var(--fs-3) var(--f-title); letter-spacing: .4em; color: #f3dcb0; text-shadow: 0 1px 2px #000, 0 0 8px rgba(0, 0, 0, .9); }
@@ -127,3 +168,15 @@
 .scr-letters .slip.go { color: #f9ead2; background: linear-gradient(90deg, #7d1d12, #b13423 45%, #7d1d12); box-shadow: 0 .625rem 1.375rem rgba(40, 10, 4, .55), inset 0 0 0 1px rgba(236, 210, 154, .6); }
 .scr-letters .slip.go::before { background: #e8c982; }
 .scr-letters .slip:hover { transform: translateY(-.25rem); }
+/* 下一封：金签，角上记还有几封 */
+.scr-letters .slip.next { color: #2a1608; background: var(--paper-grain), linear-gradient(90deg, #c9a45c, #f0dca6 45%, #c9a45c); box-shadow: 0 .625rem 1.375rem rgba(40, 20, 4, .55), inset 0 0 0 1px rgba(120, 80, 30, .5); }
+.scr-letters .slip.next em { position: absolute; right: -.5rem; top: -.5rem; min-width: 1.375rem; height: 1.375rem; writing-mode: horizontal-tb; border-radius: .6875rem; font: normal max(.75rem, 11px)/1.375rem var(--f-kai); letter-spacing: 0; text-align: center; color: #f9ead2; background: #a3301f; box-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+/* 窄窗案底会撞到两列：两列让回去 */
+@media (max-width: 1000px) {
+  .lt-left { bottom: 9.5rem; }
+  .lt-right { max-height: calc(100vh - 16rem); }
+}
+@media (max-width: 900px) {
+  .lt-left { bottom: 15.5rem; }
+  .lt-right { max-height: calc(100vh - 22rem); }
+}

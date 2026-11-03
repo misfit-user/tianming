@@ -2,7 +2,7 @@
 // 往来书札都在 GM.letters（tm-hongyan-office.js）；遣使走内核 sendLetter 的参数接缝（不读老面板的输入框），
 // 信上动作（追回、改用密旨、重发、存疑、遣使核实、摘入、标记）直接调老面板同名函数——它们不读 DOM。
 // 名册不照老面板的地名正则分组（那套只认得明代地名），改按人物所在地的上级区划分；外方人物按所属势力分。
-import { turnTag } from '../core/numerals.js';
+import { turnTag, num } from '../core/numerals.js';
 const w = window;
 const G = () => w.GM || {};
 const fn = (name) => (typeof w[name] === 'function' ? w[name] : null);
@@ -100,9 +100,10 @@ export function contacts() {
   const bump = (name) => cnt[name] || (cnt[name] = { unread: 0, fresh: 0, transit: 0, lost: 0 });
   for (const l of g.letters || []) {
     if (!l) continue;
-    if (l.from && l.from !== '玩家' && !l._playerRead) { const c = bump(l.from); c.unread++; if (l.status === 'returned') c.fresh++; }
+    if (l.from && l.from !== '玩家' && !l._playerRead) { const c = bump(l.from); c.unread++; if (l.status !== 'traveling') c.fresh++; }
     if (l.to && l.from === '玩家') {
       const c = bump(l.to);
+      if (replyNew(l)) c.fresh++;
       if (l.status === 'traveling' || l.status === 'replying') c.transit++;
       if (l.status === 'intercepted' || (l.status === 'traveling' && g.turn > l.deliveryTurn + late)) c.lost++;
     }
@@ -130,16 +131,58 @@ export function agents() {
     .map((c) => ({ name: c.name, title: c.officialTitle || c.title || '' }));
 }
 
+// 一个写过信的人：在名册里就用名册那条；回了京、故去的不在名册，信照样要读得到（away 说明为何不能再传书）
+export function person(name) {
+  const hit = contacts().find((c) => c.name === name);
+  if (hit) return hit;
+  const c = (G().chars || []).find((x) => x && x.name === name);
+  return { id: c ? c.id : '', name, title: c ? c.officialTitle || c.title || c.role || '' : '', location: c ? c.location || '' : '', portrait: c ? c.portrait || '' : '',
+    group: '', foreign: false, travel: '', travelDays: 0, blocked: false, unread: 0, fresh: 0, transit: 0, lost: 0, away: !c || c.alive === false ? 'dead' : 'near' };
+}
+
 // ---------- 往来书札 ----------
 const URG = Object.fromEntries(URGENCY.map(([k, l]) => [k, l]));
 const dateOf = (turn) => { const f = fn('getTSText'); return f && turn != null ? f(turn) : turnTag(turn); };
+// 日子：内核的到达、回书都按累计天数算，旧档只有回合数的按回合折
+const today = () => { const f = fn('getCurrentGameDay'); return f ? f() : 0; };
+const perTurn = () => { const f = fn('_getDaysPerTurn'); return f ? f() : 30; };
+const dayOf = (own, turn) => (typeof own === 'number' ? own : typeof turn === 'number' ? (turn - 1) * perTurn() : null);
+// 回书到了：同老面板显示回书的条件。内核只记来函已读、不记回书，这里记在信上（_replySeen）；
+// 旧档第一次读到时以当时回合为界，免得从前的回书全算成新到
+const replyIn = (l) => l.from === '玩家' && !!l.reply && (l.status === 'returned' || l.status === 'intercepted_forging');
+function replyNew(l) {
+  if (!replyIn(l) || l._replySeen) return false;
+  const g = G();
+  if (typeof g._ltReplyBaseTurn !== 'number') g._ltReplyBaseTurn = g.turn || 0;
+  return (typeof l.replyTurn === 'number' ? l.replyTurn : g.turn || 0) >= g._ltReplyBaseTurn;
+}
+// 内核的状态字带警示符、阿拉伯数字；界面上一律写成本作的数字
+const plain = (s) => String(s || '').replace(/⚠\s*/g, '').replace(/\s*(\d+)\s*/g, (_m, d) => num(Number(d)));
+const snippet = (s) => String(s || '').replace(/\s+/g, '').slice(0, 40);
+// 还要多久：在途一行写这个（内核的状态字带日期，太长）
+function etaOf(l) {
+  if (l.status === 'traveling') {
+    if (l._recallSent) return '追回信使已派出';
+    const at = dayOf(l._deliveryDay, l.deliveryTurn);
+    if (at == null) return '信使在途';
+    const d = Math.ceil(at - today());
+    return d < 0 ? `逾期${num(-d)}日` : d === 0 ? '即将送达' : `约${num(d)}日后送达`;
+  }
+  if (l.status === 'replying') {
+    const at = dayOf(l._replyDay, l.replyTurn);
+    if (at == null) return '回函在途';
+    const d = Math.ceil(at - today());
+    return d <= 0 ? '回函将至' : `回函约${num(d)}日后到`;
+  }
+  return '';
+}
 function view(l) {
   const g = G();
   const out = l.from === '玩家';
   const inFlight = !out && l.status === 'traveling';
   const lost = l.status === 'intercepted' || (l.status === 'traveling' && g.turn > l.deliveryTurn + lateTurns());
   const suspects = g._letterSuspects || [];
-  const replied = (l.status === 'returned' || l.status === 'intercepted_forging') && !!l.reply && out;
+  const replied = replyIn(l);
   const st = fn('_ltGetStatusText');
   const showStatus = ['traveling', 'delivered', 'replying', 'blocked', 'intercepted', 'intercepted_forging', 'recalled'].includes(l.status);
   return {
@@ -149,9 +192,11 @@ function view(l) {
     mode: l._sendMode === 'secret_agent' ? `密使${l._agentName ? '·' + l._agentName : ''}` : l._sendMode === 'multi_courier' ? '多路' : '',
     multi: l._multiRecipients || 0, date: dateOf(l.sentTurn), day: typeof l._sentDay === 'number' ? l._sentDay : (l.sentTurn || 0) * 1000,
     content: inFlight ? '' : String(l.content || ''), inFlight,
+    excerpt: inFlight ? '信使在途，尚未送抵' : snippet(replied ? l.reply : l.content), eta: etaOf(l), hot: out ? 0 : { extreme: 2, urgent: 1 }[l.urgency] || 0,   // 急不急只看来函；去函的缓急是自己选的，回书不因此要紧
+    at: (out ? dayOf(l._replyDay, l.replyTurn) : dayOf(l._deliveryDay, l.deliveryTurn)) ?? dayOf(l._sentDay, l.sentTurn) ?? 0, replyNew: replyNew(l),
     reply: replied ? String(l.reply) : '', replyDate: replied ? dateOf(l.replyTurn || g.turn) : '',
     suspected: replied && suspects.includes(l.id), forged: !!l._forgedRevealed,
-    status: l.status || '', statusText: showStatus && st ? st(l) : '', lost,
+    status: l.status || '', statusText: showStatus && st ? plain(st(l)) : '', lost,
     unread: !out && !l._playerRead, starred: !!l._starred, plan: !!l.npcPlanId, local: !!l._localActivity,
     can: {
       bypass: l.status === 'blocked' && out,
@@ -161,7 +206,8 @@ function view(l) {
       verify: replied,
       reply: !out && l.status === 'returned' && !!l._npcInitiated && !l._playerReplied && !l._localActivity,
       excerpt: !out && l.status === 'returned' && !!l._npcInitiated
-    }
+    },
+    awaiting: !out && l.status === 'returned' && !!l._npcInitiated && !l._playerReplied && !l._localActivity && l._replyExpected !== false
   };
 }
 export function thread(name) {
@@ -179,13 +225,56 @@ export function intercepted() {
   return (g._npcCorrespondence || []).filter((c) => c && g.turn - c.turn <= span)
     .map((c) => ({ from: c.from || '', to: c.to || '', date: dateOf(c.turn), content: String(c.content || c.summary || ''), implication: c.implication || '' })).reverse();
 }
+const isFresh = (l) => (l.from !== '玩家' && !l._playerRead && l.status !== 'traveling') || replyNew(l);
 export function unreadTotal() {
-  return (G().letters || []).filter((l) => l && l.from !== '玩家' && !l._playerRead && l.status !== 'traveling').length;
+  return (G().letters || []).filter((l) => l && isFresh(l)).length;
 }
-// 读过：来函一经摊开即算已读（在途者不算——信使未到）
+// 新到的是谁写来的（书案上的菱章悬停时列名），要紧的在前
+export function freshFrom() {
+  const rows = (G().letters || []).filter((l) => l && isFresh(l)).map(view).sort(byUrgency);
+  return [...new Set(rows.map((v) => (v.out ? v.to : v.from)))];
+}
+const byUrgency = (a, b) => (b.hot - a.hot) || (b.at - a.at);
+// 以信为准的四摞（keep：这一趟进来时新到的，读过了也留在原处，不让列表跳）。每条带写信人的像与职衔
+export function inbox(keep = null) {
+  const box = { fresh: [], waiting: [], transit: [], trouble: [] };
+  const held = (v) => !!(keep && keep.has(v.id));
+  for (const l of G().letters || []) {
+    if (!l) continue;
+    const v = view(l);
+    const c = (G().chars || []).find((x) => x && x.name === (v.out ? v.to : v.from));
+    const row = { ...v, who: { name: v.out ? v.to : v.from, title: c ? c.officialTitle || c.title || '' : '', portrait: c ? c.portrait || '' : '' } };
+    if (v.out) {
+      if (v.replyNew || (held(v) && v.reply)) box.fresh.push(row);
+      if (v.can.bypass || v.can.resend || v.lost) box.trouble.push(row);
+      else if (l.status === 'traveling' || l.status === 'replying') box.transit.push(row);
+    } else if (v.inFlight) box.transit.push(row);
+    else if (v.unread || held(v)) box.fresh.push(row);
+    else if (v.awaiting) box.waiting.push(row);
+  }
+  box.fresh.sort(byUrgency);
+  box.waiting.sort((a, b) => b.at - a.at);
+  box.trouble.sort((a, b) => b.at - a.at);
+  box.transit.sort((a, b) => a.at - b.at);
+  return box;
+}
+// 读过：来函一经摊开即算已读（在途者不算——信使未到）；去函摊开时回书若已到，回书算看过
 export function markRead(id) {
   const l = (G().letters || []).find((x) => x && x.id === id);
-  if (l && l.from !== '玩家' && l.status !== 'traveling') l._playerRead = true;
+  if (!l) return;
+  if (l.from !== '玩家') { if (l.status !== 'traveling') l._playerRead = true; } else if (replyIn(l)) l._replySeen = true;
+}
+export function markAllRead() {
+  for (const l of G().letters || []) if (l && isFresh(l)) markRead(l.id);
+}
+// 这封信几日能到、回书几日可望：同内核 sendLetter 的算法（密使一倍半，回书路程两倍加三日）
+export function reach(name, urgency, sendMode) {
+  const f = fn('calcLetterDays');
+  const c = (G().chars || []).find((x) => x && x.name === name);
+  if (!f || !c) return null;
+  const base = f(capital(), c.location || capital(), urgency);
+  const days = sendMode === 'secret_agent' ? Math.ceil(base * 1.5) : base;
+  return { days, back: days * 2 + 3 };
 }
 
 // 计划来函（npcPlanId）的回应选项：随事项所处阶段而变（照老面板 _ltReplyToNpc）

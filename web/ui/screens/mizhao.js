@@ -193,7 +193,9 @@ export function createMizhao({ root, study, game, profile, onOpen, onClose, onPe
     await fade(true);
     onOpen?.();
     study.setShot('court');
-    render(s);
+    // 淡入的这一会儿内核可能已往下走了：用最新的快照，别拿开场那份盖回去
+    const now = M.snapshot();
+    render(now.open ? now : s);
     await loadFonts({ 'TM-WenKai': s.issue.title + s.issue.desc + s.chars.map((c) => c.name + c.title).join(''), 'TM-MaShanZheng': I().secret });
     opened = true;
     el.classList.add('on');

@@ -174,7 +174,9 @@ export function createKeyi({ root, study, game, profile, onOpen, onClose, onPers
     await fade(true);
     onOpen?.();
     study.setShot('court');
-    render(s);
+    // 淡入的这一会儿内核可能已议完（没配 AI 时两轮是一口气跑完的）：用最新的快照，别拿开场那份盖回去
+    const now = Y.snapshot();
+    render(now.open ? now : s);
     await loadFonts({ 'TM-WenKai': s.title + s.speakers.map((c) => c.name + c.title).join(''), 'TM-MaShanZheng': (T().title || '科议') });
     el.classList.add('on');
     await fade(false);

@@ -400,21 +400,9 @@ function stop() {
 }
 
 // ---------- 动作 ----------
-// 有的剧本把党派的 policyStance 写成一句话（晚唐）。内核别处两种写法都认，唯独廷议两处（起议站班时算议题立场、议题提示）
-// 当数组用，一抛整场廷议起不来。内核共用不动，开议前切成标签——数组本来就是它的正式写法
-function tidyParties() {
-  const list = G().parties;
-  if (!Array.isArray(list)) return;
-  for (const p of list) {
-    const raw = p && p.policyStance;
-    if (!raw || Array.isArray(raw)) continue;
-    p.policyStance = typeof raw === 'string' ? raw.split(/[、，,；;／/\s]+/).filter(Boolean) : Object.values(raw).map(String);
-  }
-}
 // 开议：同老卡片的路子（openChaoyi 建宿主，_cy_pickMode 过精力、次数关）
 export function begin(mode, { topic = '' } = {}) {
   if (typeof w.openChaoyi !== 'function' || typeof w._cy_pickMode !== 'function') throw new Error('内核缺 openChaoyi / _cy_pickMode');
-  tidyParties();
   active = true;
   watch();
   if (!$('chaoyi-modal') && !$('cy-stage')) w.openChaoyi();
@@ -435,7 +423,6 @@ export function postTurn() {
   const g = w.GM;
   if (!g || !g._isPostTurnCourt) return false;
   if (typeof w._cc3_open !== 'function') throw new Error('内核缺 _cc3_open');
-  tidyParties();
   active = true;
   watch();
   if (!g._chaoyiCount) g._chaoyiCount = {};
@@ -523,7 +510,6 @@ export function todayCount() {
 // 时政「御前召对群臣」：内核把议题记入待议，开廷议筹备并填好议题（_shizhengConvene）
 export function convene(issueId) {
   if (typeof w._shizhengConvene !== 'function') throw new Error('内核缺 _shizhengConvene');
-  tidyParties();
   active = true;
   watch();
   w._shizhengConvene(issueId);

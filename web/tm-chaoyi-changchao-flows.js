@@ -12,6 +12,7 @@ async function runDissentFlow(action, item) {
   const candidates = collectByStance(item, targetStance, 1, item.presenter);
   if (candidates.length === 0) return false;
   const dissenter = candidates[0];
+  if (!$('cy-stage')) return false; // 已退朝
 
   const main = $('cy-stage-main');
   const panel = document.createElement('div');
@@ -45,6 +46,7 @@ async function runDissentFlow(action, item) {
 }
 
 window.resolveDissent = async function(choice) {
+  holdActions();
   const dissenter = state._dissentTarget;
   const item = state._dissentItem;
   const action = state._dissentAction;
@@ -77,6 +79,7 @@ window.resolveDissent = async function(choice) {
 };
 
 window.resolveDissentFinal = async function(choice) {
+  holdActions();
   const dissenter = state._dissentTarget;
   const item = state._dissentItem;
   const action = state._dissentAction;
@@ -114,7 +117,9 @@ async function maybeFireChaos(item) {
   if (state.debateRound < 2) return false;
   if (item.controversial < 8) return false;
   state._chaosFired = true;
-  $('cy-stage').classList.add('chaos');
+  const _chaosStage = $('cy-stage');
+  if (!_chaosStage) return false; // 已退朝
+  _chaosStage.classList.add('chaos');
   addBubble({ kind: 'system', sysKind: 'warn', text: '（殿中喧哗 · 几人同声相应！声浪未歇。）' });
   await delay(450);
   addBubble({ kind: 'system', sysKind: 'warn', text: '（' + (item.target ? item.target + ' 与' : '') + '数员争辩不休 · 班次为之微乱。）' });
@@ -132,6 +137,7 @@ window.calmChaos = async function() {
 };
 
 async function anotherDebateRound() {
+  holdActions();
   state.debateRound++;
   setPhase('【议 论】 第 ' + state.debateRound + ' 轮', '百官辩难继续 · 陛下可即说');
   // 议论分隔
@@ -167,6 +173,8 @@ async function anotherDebateRound() {
 
 // 收尾
 async function runClosing() {
+  if (!$('cy-stage')) return; // 中途退朝：朝会记录和后朝钩子 _cc3_close 已办
+  if (state.phase === 'closing' || state.done) return; // 已在收尾：朝会记录只记一条
   state.phase = 'closing';
   // 清阶段标签状态
   const tag = $('cy-phase-tag'); tag.classList.remove('strict', 'urgent');
@@ -177,6 +185,7 @@ async function runClosing() {
   await delay(600);
   addBubble({ kind: 'system', text: '（陛下整衣 · 起身。百官伏首恭送。）' });
   await delay(700);
+  if (!$('cy-stage')) return; // 收尾动画里退朝了，同上
   // 退朝鸣鞭（视觉化）
   const main = $('cy-stage-main');
   const bell = document.createElement('div');
@@ -187,6 +196,7 @@ async function runClosing() {
   await delay(1400);
   addBubble({ kind: 'system', sysKind: 'ceremony', text: '〔 鸣 鞭 · 卷 帘 退 朝 〕' });
   await delay(700);
+  if (!$('cy-stage')) return; // 收尾动画里退朝了，同上
   state.done = true;
   // P0 C6·朝会决议持久化到 GM._courtRecords
   _cc3_persistCourtRecord();
@@ -1029,8 +1039,7 @@ async function runActionReactions(action, item, extra) {
     }
     outDiv.className = 'reprimand-outcome ' + outClass;
     outDiv.innerHTML = line;
-    main.appendChild(outDiv);
-    main.scrollTop = main.scrollHeight;
+    if (main) { main.appendChild(outDiv); main.scrollTop = main.scrollHeight; }
     await delay(380);
     return;
   }
@@ -1367,12 +1376,20 @@ function _cc3_close() {
     if (CY.abortCtrl) try { CY.abortCtrl.abort(); } catch(_){}
   }
 
+  // 中途退朝：已决之事也要进朝会记录（推演读「上回合圣意」靠它，内核自己还提示过「陛下是否退朝」）；一事未决不留空记录
+  if (!_alreadyDone && typeof state !== 'undefined' && state.decisions && state.decisions.length) {
+    try { _cc3_persistCourtRecord(); } catch(_e) {
+      if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_e, 'cc3_close] persist:');
+    }
+  }
+
   // 朔朝退朝兜底·若 runClosing 还没跑过(state.done!=true)·补触发后朝结束钩子
   if (_wasPostTurn && !_alreadyDone && typeof _onPostTurnCourtEnd === 'function') {
     try { _onPostTurnCourtEnd(); } catch(_e) {
       if (window.TM && TM.errors && TM.errors.capture) TM.errors.capture(_e, 'cc3_close] postTurnEnd:');
     }
   }
+  if (typeof state !== 'undefined') state.done = true; // 记录、钩子都办过了：这一场到此为止
 }
 
 try { window._cc3_open = _cc3_open; } catch (_) {}

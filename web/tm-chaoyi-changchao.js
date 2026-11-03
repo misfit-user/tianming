@@ -1788,6 +1788,10 @@ function setActions(html) {
   if (!el) return;
   el.innerHTML = html;
 }
+// 决断一下，签立刻收掉：否则反应、写账这几秒里再按一下，同一事决两次，议程序号多跳一格、下一事被跳过
+function holdActions() {
+  setActions('<span style="color:var(--ink-500);font-size:var(--text-xs);">承旨……</span>');
+}
 
 function setPhase(label, hint) {
   var lbl = $('cy-phase-label'); if (lbl) lbl.textContent = label;
@@ -1888,6 +1892,7 @@ async function runOpening() {
   setPhase('【鸣 鞭】', '百官入班候旨');
   setActions('<span style="color:var(--ink-500);font-size:12px;">入殿仪礼中……</span>');
   await delay(1300);
+  if (!$('cy-stage')) return; // 入殿仪礼中退朝了：老舞台已拆
   $('cy-ceremony').style.display = 'none';
 
   // ── 鸣鞭三响（视觉化·CSS 动画总时长 ~1.2s） ──
@@ -1951,6 +1956,8 @@ async function runOpening() {
 }
 
 async function runNextItem() {
+  state._settling = null; // 上一事已了（state 跨场复用，这里一并清上一场的）
+  if (!$('cy-stage')) return; // 中途退朝：流程到此为止（否则后面每一事都撞上已拆的舞台，被当议程异常一路跳到收尾）
   try { _cc3_renderAgendaList(); } catch(_) {}
   console.log('[cc3] runNextItem·idx=' + state.currentIdx + '·AGENDA.length=' + AGENDA.length);
   if (state.currentIdx >= AGENDA.length) {
@@ -1997,6 +2004,7 @@ async function runAnnounce() {
   setPhase('【启 奏】' + (item.urgency === 'urgent' ? ' · 急 奏' : ''), '官员请奏 · 陛下定夺');
   await delay(400);
 
+  if (!$('cy-stage')) return; // 已退朝
   // ── 急奏特殊处理：先弹"此为急奏 陛下是否先听？"卡片 ──
   if (item.urgency === 'urgent') {
     const main = $('cy-stage-main');
@@ -2024,6 +2032,8 @@ async function runAnnounce() {
 
 async function onAnnounceChoice(choice) {
   const item = AGENDA[state.currentIdx];
+  if (!item) return; // 议程已尽
+  holdActions(); // 免议、改日双击同样会多跳一格
   if (choice === 'proceed') {
     addBubble({ kind: 'player', text: '奏来。' });
     await delay(300);
@@ -2101,6 +2111,7 @@ function classifyForStrict(reactor) {
 }
 
 async function runDetail() {
+  if (!$('cy-stage')) return; // 已退朝
   const item = AGENDA[state.currentIdx];
   state.phase = 'detail';
   state._strictQueue = null;  // 每条议程开始重置
@@ -2259,6 +2270,9 @@ function toggleMorePopover() {
 
 async function doAction(action, extra) {
   const item = AGENDA[state.currentIdx];
+  if (!item) return; // 议程已尽
+  if (state._settling === state.currentIdx) return; // 这一事正在写账
+  holdActions();
   // 如有议论高争议 + 玩家直接决断（非议论后），则进议论
   if ((action === 'approve' || action === 'reject') && item.controversial > 5 && state.phase !== 'debate' && item.debate && item.debate.length > 0) {
     return runDebate();
@@ -2266,7 +2280,25 @@ async function doAction(action, extra) {
   return finalizeAction(action, extra);
 }
 
+// 决断入口：同一事只决一次（连按、金口再说一遍都不重决）；写账时抛错就把签还回去，别卡在「承旨」
 async function finalizeAction(action, extra) {
+  const idx = state.currentIdx;
+  if (!AGENDA[idx]) return; // 议程已尽
+  if (state._settling === idx) return;
+  state._settling = idx;
+  holdActions();
+  try {
+    return await _cc3_settleAction(action, extra);
+  } catch (e) {
+    if (!$('cy-stage') || state.currentIdx !== idx) throw e; // 已退朝，或已走到下一事：不是这一事的账
+    console.error('[cc3] 决断写账抛错·item idx=' + idx, e);
+    state._settling = null;
+    addBubble({ kind: 'system', sysKind: 'warn', text: '（此事未能入账，请再决一次。' + (e && e.message || e) + '）' });
+    if (state.phase === 'debate') showDebateActions(); else showDetailActions();
+  }
+}
+
+async function _cc3_settleAction(action, extra) {
   const item = AGENDA[state.currentIdx];
   const labels = {
     approve: '准奏', reject: '驳奏', hold: '留中',
